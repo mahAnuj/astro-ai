@@ -15,6 +15,7 @@ from openai import OpenAI
 from astro_ai.chart import (
     Chart,
     DailyPanchang,
+    GocharImpact,
     TransitSnapshot,
     VedicFlags,
     format_flags_for_prompt,
@@ -33,10 +34,10 @@ _LANG_SUFFIX: dict[str, str] = {
         "\n\n"
         "IMPORTANT: Respond entirely in Hindi using Devanagari script. "
         "Translate the section headings into Hindi as well "
-        "(## व्यक्तित्व, ## करियर और धन, ## संबंध और विवाह, "
-        "## स्वास्थ्य और कुशल-क्षेम, ## यात्रा और अवसर). "
+        "(## व्यक्तित्व, ## करियर और व्यवसाय, ## धन और समृद्धि, "
+        "## संबंध और विवाह, ## स्वास्थ्य और कुशल-क्षेम, ## यात्रा और अवसर). "
         "Use Sanskrit Vedic terms naturally: राशि, लग्न, ग्रह, नक्षत्र, भाव, "
-        "मंगल दोष, साढ़े साती. The seeker reads Hindi; do not include any English. "
+        "मंगल दोष, साढ़े साती, धन भाव, लाभ भाव. The seeker reads Hindi; do not include any English. "
         "Each section heading must still begin with `## ` on its own line."
     ),
 }
@@ -93,6 +94,75 @@ def _format_seeker_message(details: BirthDetails, chart: Chart, flags: VedicFlag
         f"{format_for_prompt(chart)}\n"
         f"\n"
         f"{format_flags_for_prompt(flags)}\n"
+    )
+
+
+def generate_outlook_reading(
+    details: BirthDetails,
+    natal: Chart,
+    transit: TransitSnapshot,
+    flags: VedicFlags,
+    gochar_impacts: list[GocharImpact],
+    prompt_path: Path,
+    model: str | None = None,
+    lang: str = "en",
+) -> str:
+    """Multi-week or multi-month outlook (used by /monthly and /yearly).
+
+    Shape mirrors generate_daily_reading but accepts no Panchang (irrelevant
+    for windows >1 day) and adds the slow-mover gochar impacts list, which
+    is the primary signal at these timescales.
+    """
+    chosen_model = model or os.environ.get("ASTRO_AI_MODEL", DEFAULT_MODEL)
+    api_base = os.environ.get("ASTRO_AI_API_BASE")
+    client = OpenAI(base_url=api_base) if api_base else OpenAI()
+    response = client.chat.completions.create(
+        model=chosen_model,
+        messages=[
+            {"role": "system", "content": _system_prompt(prompt_path, lang)},
+            {
+                "role": "user",
+                "content": _format_outlook_message(details, natal, transit, flags, gochar_impacts),
+            },
+        ],
+    )
+    content = response.choices[0].message.content or ""
+    return content.strip()
+
+
+def _format_outlook_message(
+    details: BirthDetails,
+    natal: Chart,
+    transit: TransitSnapshot,
+    flags: VedicFlags,
+    gochar_impacts: list[GocharImpact],
+) -> str:
+    """User-message block: seeker + natal + current transits + flags + gochar impacts."""
+    name_line = f"Name: {details.name}" if details.name.strip() else "Name: (not provided)"
+    gochar_lines = ["Gochar impacts (slow movers, sign + house + favourability):"]
+    for g in gochar_impacts:
+        retro = " (retrograde)" if g.retrograde else ""
+        gochar_lines.append(
+            f"- {g.planet}{retro}: {g.sign} — natal house {g.house_from_lagna} from Lagna, "
+            f"house {g.house_from_moon} from natal Moon. Favourability: {g.favorability}."
+        )
+    return (
+        f"{name_line}\n"
+        f"Birth date: {details.birth_date}\n"
+        f"Birth time: {details.birth_time} (local time)\n"
+        f"Birth place: {details.birth_place}\n"
+        f"\n"
+        f"--- NATAL CHART ---\n"
+        f"{format_for_prompt(natal)}\n"
+        f"\n"
+        f"--- CURRENT TRANSITS (start of window) ---\n"
+        f"{format_transit_for_prompt(transit)}\n"
+        f"\n"
+        f"--- VEDIC FLAGS ---\n"
+        f"{format_flags_for_prompt(flags)}\n"
+        f"\n"
+        f"--- GOCHAR IMPACTS ---\n"
+        + "\n".join(gochar_lines) + "\n"
     )
 
 

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="{{ lang or 'en' }}" class="h-full">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,15 +13,17 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@500;700&display=swap" rel="stylesheet">
+<!-- Inter for Latin body, Crimson Pro for display, Noto Sans Devanagari for Hindi. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script>
   tailwind.config = {
     theme: {
       extend: {
         fontFamily: {
-          sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-          display: ['"Crimson Pro"', 'ui-serif', 'Georgia', 'serif'],
+          // Inter for Latin, Noto Sans Devanagari as a graceful fallback for Hindi text.
+          sans: ['Inter', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          display: ['"Crimson Pro"', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
         },
         colors: {
           cream: '#faf7f2',
@@ -45,6 +47,10 @@
   .htmx-request .htmx-default { display: none; }
   .htmx-indicator { display: none; }
   .htmx-request .htmx-indicator { display: inline-flex; align-items: center; gap: 0.5rem; }
+
+  /* Devanagari script renders optically smaller than Latin at the same px size —
+     bump the root by ~8% in Hindi so headings and body feel evenly weighted. */
+  html[lang="hi"] { font-size: 108%; }
 
   /* Print stylesheet — used by the "Print / Save as PDF" buttons.
      Strips the chrome and lets the reading itself fill the page. */

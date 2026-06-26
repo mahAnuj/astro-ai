@@ -41,6 +41,23 @@ RASHIS = [
 RASHI_SHORT = ["Ari", "Tau", "Gem", "Can", "Leo", "Vir",
                "Lib", "Sco", "Sag", "Cap", "Aqu", "Pis"]
 
+# Rashi (0..11 = Aries..Pisces) → ruling planet. Used by house-profile
+# computation and by matching.py's Graha Maitri scoring.
+RASHI_LORDS: tuple[str, ...] = (
+    "Mars",     # Aries (Mesha)
+    "Venus",    # Taurus (Vrishabha)
+    "Mercury",  # Gemini (Mithuna)
+    "Moon",     # Cancer (Karka)
+    "Sun",      # Leo (Simha)
+    "Mercury",  # Virgo (Kanya)
+    "Venus",    # Libra (Tula)
+    "Mars",     # Scorpio (Vrishchika)
+    "Jupiter",  # Sagittarius (Dhanu)
+    "Saturn",   # Capricorn (Makara)
+    "Saturn",   # Aquarius (Kumbha)
+    "Jupiter",  # Pisces (Meena)
+)
+
 # 2-letter Vedic graha codes for cell-interior labels.
 PLANET_SHORT = {
     "Sun": "Su", "Moon": "Mo", "Mars": "Ma", "Mercury": "Me",
@@ -401,6 +418,218 @@ def _ordinal(n: int) -> str:
     """1 → '1st', 22 → '22nd', etc."""
     suffix = "th" if 11 <= (n % 100) <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
     return f"{n}{suffix}"
+
+
+# ---------------------------------------------------------------------------
+# Structured insight panels — Sade Sati, Manglik, Marriage, Wealth
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class HouseProfile:
+    """Snapshot of one house: its rashi, ruling planet, and any natal occupants.
+
+    Used as the building block for the Marriage panel (7th), Wealth panel
+    (2nd + 11th), and future house-centric panels.
+    """
+
+    number: int                   # 1..12
+    sign: str                     # e.g. "Cancer (Karka)"
+    sign_idx: int                 # 0..11
+    lord: str                     # planet ruling the sign
+    planets: tuple[str, ...]      # planets occupying this house
+
+
+def house_profile(chart: Chart, house: int) -> HouseProfile:
+    """Compute a HouseProfile for the Nth house (1-indexed) of `chart`."""
+    lagna_idx = _rashi_index(chart.lagna_rashi)
+    sign_idx = (lagna_idx + house - 1) % 12
+    occupants = tuple(p.name for p in chart.planets if p.house == house)
+    return HouseProfile(
+        number=house,
+        sign=RASHIS[sign_idx],
+        sign_idx=sign_idx,
+        lord=RASHI_LORDS[sign_idx],
+        planets=occupants,
+    )
+
+
+@dataclass(frozen=True)
+class ManglikDetails:
+    """Manglik (Mangal Dosh) — fuller than VedicFlags so we can render an explanatory panel."""
+
+    is_manglik: bool
+    houses: tuple[int, ...]       # all qualifying Mars houses (1/2/4/7/8/12 from Lagna or Moon)
+    primary_house: int            # most-severe house (or 0 if not manglik)
+    severity: str                 # "high" | "moderate" | "low" | "none"
+
+
+def compute_manglik_details(chart: Chart) -> ManglikDetails:
+    """Identify all Manglik-qualifying Mars positions + grade severity by worst house."""
+    mars = next(p for p in chart.planets if p.name == "Mars")
+    moon = next(p for p in chart.planets if p.name == "Moon")
+    moon_idx = _rashi_index(moon.rashi)
+    mars_idx = _rashi_index(mars.rashi)
+
+    qualifying = set()
+    if mars.house in {1, 2, 4, 7, 8, 12}:
+        qualifying.add(mars.house)
+    mars_from_moon = ((mars_idx - moon_idx) % 12) + 1
+    if mars_from_moon in {1, 2, 4, 7, 8, 12}:
+        qualifying.add(mars_from_moon)
+
+    if not qualifying:
+        return ManglikDetails(is_manglik=False, houses=(), primary_house=0, severity="none")
+
+    # Severity grading: 7th/8th = most serious; 1st/4th/12th = moderate; 2nd alone = low.
+    if {7, 8} & qualifying:
+        severity = "high"
+    elif {1, 4, 12} & qualifying:
+        severity = "moderate"
+    else:
+        severity = "low"
+
+    # "Primary" house for storytelling — the most-impactful qualifying house.
+    house_priority = (7, 8, 1, 4, 12, 2)
+    primary = next(h for h in house_priority if h in qualifying)
+    return ManglikDetails(
+        is_manglik=True,
+        houses=tuple(sorted(qualifying)),
+        primary_house=primary,
+        severity=severity,
+    )
+
+
+@dataclass(frozen=True)
+class SadeSatiDetails:
+    """Sade Sati — phase + Saturn position relative to natal Moon, for educational panel."""
+
+    is_active: bool
+    phase: str | None                  # "rising" | "peak" | "setting"
+    saturn_house_from_moon: int        # 1..12
+
+
+def compute_sade_sati_details(chart: Chart, when: datetime | None = None) -> SadeSatiDetails:
+    """Same calc as the flag, exposed as a dedicated value object for the panel."""
+    flags = compute_vedic_flags(chart, when)
+    return SadeSatiDetails(
+        is_active=flags.sade_sati,
+        phase=flags.sade_sati_phase,
+        saturn_house_from_moon=flags.saturn_house_from_natal_moon,
+    )
+
+
+@dataclass(frozen=True)
+class MarriageProfile:
+    """Compact relationship readout drawn from the natal chart."""
+
+    seventh: HouseProfile             # marriage / partnerships
+    venus_sign: str                   # love + romance significator
+    venus_house: int
+    is_manglik: bool                  # surface the dosha here too — it's marriage-relevant
+
+
+def compute_marriage_profile(chart: Chart) -> MarriageProfile:
+    venus = next(p for p in chart.planets if p.name == "Venus")
+    flags = compute_vedic_flags(chart)
+    return MarriageProfile(
+        seventh=house_profile(chart, 7),
+        venus_sign=venus.rashi,
+        venus_house=venus.house,
+        is_manglik=flags.manglik,
+    )
+
+
+@dataclass(frozen=True)
+class WealthProfile:
+    """Compact wealth/money readout drawn from the natal chart.
+
+    Two key houses (2nd = accumulated wealth/family/speech; 11th = gains/income)
+    plus Jupiter (wealth significator in classical Vedic astrology).
+    """
+
+    dhana: HouseProfile               # 2nd house — accumulated wealth, family, speech
+    labha: HouseProfile               # 11th house — gains, income, aspirations
+    jupiter_sign: str
+    jupiter_house: int
+
+
+# ---------------------------------------------------------------------------
+# Gochar (transit) impacts — slow movers' current placement + favourability
+# ---------------------------------------------------------------------------
+
+
+# Classical favourability per (planet, house from Lagna). Houses 3/6/10/11
+# generally support malefics (Saturn especially); 5/9/2/11 favour benefics.
+# Anything not listed defaults to neutral.
+_GOCHAR_FAVOURABILITY: dict[tuple[str, int], str] = {
+    # Saturn — likes upachaya houses (3, 6, 10, 11)
+    ("Saturn", 3): "favorable", ("Saturn", 6): "favorable", ("Saturn", 11): "favorable",
+    ("Saturn", 4): "challenging", ("Saturn", 8): "challenging", ("Saturn", 12): "challenging",
+    # Jupiter — favours dharma + dhana houses
+    ("Jupiter", 1): "favorable", ("Jupiter", 2): "favorable", ("Jupiter", 5): "favorable",
+    ("Jupiter", 9): "favorable", ("Jupiter", 11): "favorable",
+    ("Jupiter", 6): "challenging", ("Jupiter", 8): "challenging", ("Jupiter", 12): "challenging",
+    # Rahu — broadly unpredictable; mark known patterns
+    ("Rahu", 3): "favorable", ("Rahu", 6): "favorable", ("Rahu", 11): "favorable",
+    ("Rahu", 1): "challenging", ("Rahu", 7): "challenging", ("Rahu", 8): "challenging",
+    # Ketu — similar but mirror
+    ("Ketu", 3): "favorable", ("Ketu", 9): "favorable", ("Ketu", 12): "favorable",
+    ("Ketu", 1): "challenging", ("Ketu", 7): "challenging", ("Ketu", 8): "challenging",
+}
+
+
+@dataclass(frozen=True)
+class GocharImpact:
+    """One slow-mover's current transit + houses + favourability classification."""
+
+    planet: str
+    sign: str
+    house_from_lagna: int
+    house_from_moon: int
+    retrograde: bool
+    favorability: str  # "favorable" | "neutral" | "challenging"
+
+
+def compute_gochar_impacts(natal: Chart, when: datetime | None = None) -> list[GocharImpact]:
+    """Slow-mover gochar (Saturn, Jupiter, Rahu, Ketu) with houses + favourability.
+
+    These four planets define the life-chapter backdrop of any given period —
+    Saturn (~2.5 yr/sign), Jupiter (~13 mo/sign), Rahu/Ketu (~18 mo/sign).
+    For monthly and yearly views, we re-use this with different `when=` dates.
+    """
+    transit = compute_transit_snapshot(natal, when)
+    moon = next(p for p in natal.planets if p.name == "Moon")
+    moon_idx = _rashi_index(moon.rashi)
+
+    impacts: list[GocharImpact] = []
+    for name in ("Saturn", "Jupiter", "Rahu", "Ketu"):
+        p = next((t for t in transit.planets if t.name == name), None)
+        if p is None:
+            continue
+        sign_idx = _rashi_index(p.rashi)
+        h_from_moon = ((sign_idx - moon_idx) % 12) + 1
+        impacts.append(
+            GocharImpact(
+                planet=name,
+                sign=p.rashi,
+                house_from_lagna=p.house,
+                house_from_moon=h_from_moon,
+                retrograde=p.retrograde,
+                favorability=_GOCHAR_FAVOURABILITY.get((name, p.house), "neutral"),
+            )
+        )
+    return impacts
+
+
+def compute_wealth_profile(chart: Chart) -> WealthProfile:
+    jupiter = next(p for p in chart.planets if p.name == "Jupiter")
+    return WealthProfile(
+        dhana=house_profile(chart, 2),
+        labha=house_profile(chart, 11),
+        jupiter_sign=jupiter.rashi,
+        jupiter_house=jupiter.house,
+    )
 
 
 # ---------------------------------------------------------------------------

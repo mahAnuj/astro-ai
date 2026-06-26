@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t(lang, 'matching_results') }} — astro-ai{% endblock %}
+
+{% block content %}
+{# Pick a colour scheme based on verdict tier. #}
+{% set verdict_palette = {
+  "Uttam":           {"border": "border-emerald-300", "bg": "bg-emerald-50", "text": "text-emerald-800", "dot": "bg-emerald-500"},
+  "Madhyam":         {"border": "border-astro-300",   "bg": "bg-astro-50",   "text": "text-astro-800",   "dot": "bg-astro-500"},
+  "Avara":           {"border": "border-amber-300",   "bg": "bg-amber-50",   "text": "text-amber-800",   "dot": "bg-amber-500"},
+  "Not recommended": {"border": "border-rose-300",    "bg": "bg-rose-50",    "text": "text-rose-800",    "dot": "bg-rose-500"},
+} %}
+{% set palette = verdict_palette[guna.overall_verdict] %}
+
+<nav class="border-b border-stone-200/60 bg-cream/80 backdrop-blur sticky top-0 z-10 no-print">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+    <a href="/" class="font-display text-xl text-astro-700 font-bold">astro-ai</a>
+    <div class="flex items-center gap-3 sm:gap-4 text-sm">
+      {% include "_lang_picker.html" %}
+      <button onclick="window.print()" class="text-stone-500 hover:text-stone-700">{{ t(lang, 'nav_print') }}</button>
+      <a href="/" class="text-stone-500 hover:text-stone-700">{{ t(lang, 'nav_home') }}</a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+
+  <!-- HEADER ------------------------------------------------------ -->
+  <header>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">{{ t(lang, 'matching_results') }}</h1>
+    <p class="text-sm text-stone-600">
+      {{ groom.name or t(lang, 'matching_groom') }}
+      <span class="text-stone-400">&times;</span>
+      {{ bride.name or t(lang, 'matching_bride') }}
+    </p>
+  </header>
+
+  <!-- SCORE HERO -------------------------------------------------- -->
+  <section class="bg-white rounded-2xl border {{ palette.border }} shadow-sm overflow-hidden">
+    <div class="{{ palette.bg }} px-6 sm:px-8 py-8 grid sm:grid-cols-[auto_1fr] gap-6 items-center">
+
+      <div class="text-center sm:text-left">
+        <div class="text-xs font-semibold uppercase tracking-wider {{ palette.text }} opacity-70 mb-1">{{ t(lang, 'matching_total') }}</div>
+        <div class="font-display text-6xl sm:text-7xl {{ palette.text }} tabular-nums leading-none">
+          {{ "%.1f"|format(guna.total_awarded) }}
+        </div>
+        <div class="text-sm text-stone-600 mt-1">{{ t(lang, 'matching_out_of', max=guna.total_max) }} &middot; {{ guna.percent }}%</div>
+      </div>
+
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'matching_verdict') }}</div>
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border {{ palette.border }} {{ palette.text }} font-semibold text-base">
+          <span class="w-2 h-2 rounded-full {{ palette.dot }}"></span>
+          {{ t(lang, verdict_key) }}
+        </div>
+
+        <!-- Visual bar -->
+        <div class="mt-4 h-3 rounded-full bg-stone-200 overflow-hidden">
+          <div class="h-full {{ palette.dot }} transition-all" style="width: {{ guna.percent }}%;"></div>
+        </div>
+        <div class="flex justify-between text-xs text-stone-400 mt-1">
+          <span>0</span>
+          <span>18 (Avara)</span>
+          <span>24 (Madhyam)</span>
+          <span>30 (Uttam)</span>
+          <span>36</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Mangal Dosh strip -->
+    <div class="px-6 sm:px-8 py-4 border-t {{ palette.border }} flex items-start gap-3
+                {% if guna.mangal_dosh_compatible %}bg-emerald-50/30{% else %}bg-rose-50/40{% endif %}">
+      <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0
+                  {% if guna.mangal_dosh_compatible %}bg-emerald-500{% else %}bg-rose-500{% endif %}"></div>
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider mb-0.5
+                    {% if guna.mangal_dosh_compatible %}text-emerald-700{% else %}text-rose-700{% endif %}">
+          {{ t(lang, 'matching_mangal') }} &middot;
+          {% if guna.mangal_dosh_compatible %}{{ t(lang, 'matching_mangal_compat') }}{% else %}{{ t(lang, 'matching_mangal_incompat') }}{% endif %}
+        </div>
+        <p class="text-sm text-stone-700 leading-relaxed">{{ guna.mangal_dosh_note }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- KOOTA BREAKDOWN TABLE --------------------------------------- -->
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
+    <h2 class="font-display text-xl text-astro-700 mb-4">{{ t(lang, 'matching_breakdown') }}</h2>
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-stone-200 text-xs font-semibold uppercase tracking-wider text-stone-500">
+          <th class="text-left py-2">{{ t(lang, 'matching_col_koota') }}</th>
+          <th class="text-right py-2 w-16">{{ t(lang, 'matching_col_max') }}</th>
+          <th class="text-right py-2 w-20">{{ t(lang, 'matching_col_score') }}</th>
+          <th class="text-left py-2 pl-4">{{ t(lang, 'matching_col_note') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for k in guna.kootas %}
+        {% set pct = (k.awarded / k.max_points * 100) | round(0, "floor") | int %}
+        <tr class="border-b border-stone-100 last:border-0">
+          <td class="py-3">
+            <div class="font-semibold text-stone-900">{{ k.name }}</div>
+            <div class="text-xs text-stone-400">{{ k.sanskrit }}</div>
+          </td>
+          <td class="py-3 text-right text-stone-500 tabular-nums">{{ k.max_points }}</td>
+          <td class="py-3 text-right tabular-nums">
+            <span class="font-display text-lg
+                         {% if pct >= 75 %}text-emerald-700{% elif pct >= 33 %}text-stone-800{% else %}text-rose-700{% endif %}">
+              {{ "%.1f"|format(k.awarded) }}
+            </span>
+          </td>
+          <td class="py-3 pl-4 text-stone-700 leading-relaxed">{{ k.note }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="border-t-2 border-stone-300 font-semibold">
+          <td class="py-3 text-stone-900">{{ t(lang, 'matching_total') }}</td>
+          <td class="py-3 text-right text-stone-500 tabular-nums">{{ guna.total_max }}</td>
+          <td class="py-3 text-right">
+            <span class="font-display text-xl {{ palette.text }} tabular-nums">{{ "%.1f"|format(guna.total_awarded) }}</span>
+          </td>
+          <td class="py-3 pl-4 text-stone-600">{{ t(lang, verdict_key) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="text-center no-print">
+    <a href="/matching" class="inline-flex items-center gap-1 text-astro-600 hover:text-astro-700 font-semibold text-sm">
+      <span aria-hidden="true">&larr;</span> {{ t(lang, 'matching_back') }}
+    </a>
+  </div>
+
+</main>
+{% endblock %}
