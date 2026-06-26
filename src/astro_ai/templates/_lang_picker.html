@@ -1,15 +1,15 @@
-{# Shared 2-button language picker. Posts to /lang with the current path
-   as `next` so we land back where we were. Caller passes `lang` (the
-   currently active language code: "en" or "hi"). #}
-<form method="post" action="/lang" class="flex items-center gap-1">
+{# Language selector — native HTML <select> that auto-submits on change.
+   Caller provides `lang` (current language code). Scales to more languages
+   later by adding <option> rows; no JS framework needed. #}
+<form method="post" action="/lang" class="inline-flex items-center">
   <input type="hidden" name="next" value="{{ request.url.path }}">
-  <button type="submit" name="lang" value="en"
-          class="text-xs px-1.5 py-0.5 rounded {{ 'text-astro-700 font-bold bg-astro-100' if lang == 'en' else 'text-stone-400 hover:text-stone-600' }}">
-    EN
-  </button>
-  <button type="submit" name="lang" value="hi"
-          class="text-xs px-1.5 py-0.5 rounded {{ 'text-astro-700 font-bold bg-astro-100' if lang == 'hi' else 'text-stone-400 hover:text-stone-600' }}"
-          style="font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;">
-    हिन्दी
-  </button>
+  <select name="lang" onchange="this.form.submit()"
+          class="bg-white border border-stone-300 rounded-md px-2 py-1 text-xs text-stone-700
+                 hover:border-astro-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500
+                 focus:outline-none cursor-pointer transition-colors"
+          aria-label="Language">
+    <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+    <option value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी (Hindi)</option>
+  </select>
+  <noscript><button type="submit" class="ml-1 text-xs text-stone-500 underline">Apply</button></noscript>
 </form>

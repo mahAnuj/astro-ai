@@ -3,12 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}astro-ai{% endblock %}</title>
+<title>{% block title %}Bhagya{% endblock %}</title>
 
 <!-- Tailwind Play CDN — no build step. Fine for MVP; bake into a build pipeline before production scale. -->
 <script src="https://cdn.tailwindcss.com"></script>
 
 <!-- HTMX for hx-boost (AJAX nav) + loading indicators. -->
+<!-- responseHandling: swap response body for ALL status codes (including 4xx/5xx
+     error pages we render server-side), so error responses become visible
+     instead of silently dropped. -->
+<meta name="htmx-config" content='{"responseHandling": [{"code": ".*", "swap": true}]}'>
 <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,6 +55,11 @@
   /* Devanagari script renders optically smaller than Latin at the same px size —
      bump the root by ~8% in Hindi so headings and body feel evenly weighted. */
   html[lang="hi"] { font-size: 108%; }
+
+  /* Hide the default disclosure triangle on <summary> elements; pages use
+     their own chevron SVG that rotates via group-open:rotate-180. */
+  summary { list-style: none; }
+  summary::-webkit-details-marker { display: none; }
 
   /* Print stylesheet — used by the "Print / Save as PDF" buttons.
      Strips the chrome and lets the reading itself fill the page. */

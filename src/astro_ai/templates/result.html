@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{% if details.name %}{{ t(lang, 'natal_title', name=details.name) }}{% else %}{{ t(lang, 'natal_title_anon') }}{% endif %} — astro-ai{% endblock %}
+{% block title %}{% if details.name %}{{ t(lang, 'natal_title', name=details.name) }}{% else %}{{ t(lang, 'natal_title_anon') }}{% endif %} — Bhagya{% endblock %}
 
 {% block content %}
 {# Pre-compute Lagna / Sun / Moon for summary chips. #}
@@ -14,22 +14,8 @@
 {% set manglik_about_key = {'high': 'manglik_about_high', 'moderate': 'manglik_about_moderate', 'low': 'manglik_about_low'}.get(manglik.severity, 'manglik_about_moderate') %}
 {% set manglik_severity_label = {'high':'manglik_severity_high','moderate':'manglik_severity_moderate','low':'manglik_severity_low'}.get(manglik.severity, 'manglik_severity_moderate') %}
 
-<nav class="border-b border-stone-200/60 bg-cream/80 backdrop-blur sticky top-0 z-10 no-print">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-    <a href="/" class="font-display text-xl text-astro-700 font-bold">astro-ai</a>
-    <div class="flex items-center gap-3 sm:gap-4 text-sm">
-      {% include "_lang_picker.html" %}
-      <button onclick="window.print()" class="text-stone-500 hover:text-stone-700" title="{{ t(lang, 'nav_print') }}">
-        {{ t(lang, 'nav_print') }}
-      </button>
-      <a href="/today" class="text-astro-600 hover:text-astro-700 font-semibold">{{ t(lang, 'nav_today_link') }} &rarr;</a>
-      <a href="/monthly" class="text-stone-500 hover:text-stone-700">{{ t(lang, 'nav_monthly_link') }}</a>
-      <a href="/yearly" class="text-stone-500 hover:text-stone-700">{{ t(lang, 'nav_yearly_link') }}</a>
-      <a href="/matching" class="text-stone-500 hover:text-stone-700">{{ t(lang, 'nav_matching_link') }}</a>
-      <a href="/" class="text-stone-500 hover:text-stone-700">{{ t(lang, 'nav_home') }}</a>
-    </div>
-  </div>
-</nav>
+{% set active_page = "natal" %}
+{% include "_nav.html" %}
 
 <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
@@ -59,6 +45,35 @@
       <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'sun_rashi') }}</div>
       <div class="font-display text-lg text-astro-700">{{ sun.rashi }}</div>
       <div class="text-sm text-stone-500 mt-0.5">{{ sun.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
+    </div>
+  </section>
+
+  <!-- ACTIVE DASHA CARD ------------------------------------------- -->
+  <section class="bg-white rounded-2xl border border-astro-200 shadow-sm overflow-hidden">
+    <div class="bg-gradient-to-r from-astro-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-3">
+      <div>
+        <h2 class="font-display text-xl text-astro-700">{{ t(lang, 'dasha_card_title') }}</h2>
+        <p class="text-sm text-stone-500 mt-0.5">{{ t(lang, 'dasha_card_subtitle') }}</p>
+      </div>
+      <a href="/dasha" class="text-sm text-astro-600 hover:text-astro-700 font-semibold whitespace-nowrap no-print">
+        {{ t(lang, 'dasha_view_full') | safe }}
+      </a>
+    </div>
+    <div class="px-6 py-5 grid sm:grid-cols-2 gap-4">
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">{{ t(lang, 'dasha_active_maha') }}</div>
+        <div class="font-display text-2xl text-stone-900">{{ dasha.mahadasha.lord }}</div>
+        <div class="text-sm text-stone-500 mt-1 tabular-nums">
+          {{ dasha.mahadasha.start.isoformat() }} <span class="text-stone-300">→</span> {{ dasha.mahadasha.end.isoformat() }}
+        </div>
+      </div>
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-1">{{ t(lang, 'dasha_active_antar') }}</div>
+        <div class="font-display text-2xl text-stone-900">{{ dasha.antardasha.lord }}</div>
+        <div class="text-sm text-stone-500 mt-1 tabular-nums">
+          {{ dasha.antardasha.start.isoformat() }} <span class="text-stone-300">→</span> {{ dasha.antardasha.end.isoformat() }}
+        </div>
+      </div>
     </div>
   </section>
 
@@ -272,12 +287,12 @@
         <p class="text-sm text-stone-600 leading-relaxed">{{ t(lang, 'kundali_matching_desc') }}</p>
       </a>
 
-      <div class="bg-white/80 backdrop-blur rounded-xl p-4 border border-white relative">
-        <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_soon') }}</span>
+      <a href="/dasha" class="group bg-white rounded-xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
+        <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#9211;</div>
-        <h3 class="font-display text-base text-stone-900 mb-0.5">{{ t(lang, 'dasha_periods') }}</h3>
+        <h3 class="font-display text-base text-stone-900 mb-0.5 group-hover:text-astro-700">{{ t(lang, 'dasha_periods') }} &rarr;</h3>
         <p class="text-sm text-stone-600 leading-relaxed">{{ t(lang, 'dasha_periods_desc') }}</p>
-      </div>
+      </a>
     </div>
   </section>
 

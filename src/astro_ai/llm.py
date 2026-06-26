@@ -7,6 +7,7 @@ so editing the prompt during development requires only a refresh — no restart.
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -16,10 +17,14 @@ from astro_ai.chart import (
     Chart,
     DailyPanchang,
     GocharImpact,
+    LifeChapter,
+    TransitEvent,
     TransitSnapshot,
     VedicFlags,
+    format_events_for_prompt,
     format_flags_for_prompt,
     format_for_prompt,
+    format_life_chapters_for_prompt,
     format_panchang_for_prompt,
     format_transit_for_prompt,
 )
@@ -33,12 +38,13 @@ _LANG_SUFFIX: dict[str, str] = {
     "hi": (
         "\n\n"
         "IMPORTANT: Respond entirely in Hindi using Devanagari script. "
-        "Translate the section headings into Hindi as well "
-        "(## व्यक्तित्व, ## करियर और व्यवसाय, ## धन और समृद्धि, "
-        "## संबंध और विवाह, ## स्वास्थ्य और कुशल-क्षेम, ## यात्रा और अवसर). "
+        "Translate any section headings into Hindi as well "
+        "(e.g. ## व्यक्तित्व, ## करियर और व्यवसाय, ## धन और समृद्धि, "
+        "## संबंध और विवाह, ## स्वास्थ्य और कुशल-क्षेम, ## यात्रा और अवसर, "
+        "## जीवन की अवस्थाएँ — and for outlooks, segment labels in Hindi). "
         "Use Sanskrit Vedic terms naturally: राशि, लग्न, ग्रह, नक्षत्र, भाव, "
-        "मंगल दोष, साढ़े साती, धन भाव, लाभ भाव. The seeker reads Hindi; do not include any English. "
-        "Each section heading must still begin with `## ` on its own line."
+        "मंगल दोष, साढ़े साती. The seeker reads Hindi; do not include any English. "
+        "Any section heading must still begin with `## ` on its own line."
     ),
 }
 
@@ -63,11 +69,13 @@ def generate_reading(
     details: BirthDetails,
     chart: Chart,
     flags: VedicFlags,
+    life_chapters: list[LifeChapter],
     prompt_path: Path,
     model: str | None = None,
     lang: str = "en",
 ) -> str:
-    """Sectioned natal reading. Returns raw markdown-sectioned text from the LLM."""
+    """Sectioned natal reading. The 7th 'Life Stages' section uses life_chapters
+    (the Mahadasha sequence framed as age windows) to ground age-based predictions."""
     chosen_model = model or os.environ.get("ASTRO_AI_MODEL", DEFAULT_MODEL)
     api_base = os.environ.get("ASTRO_AI_API_BASE")
     client = OpenAI(base_url=api_base) if api_base else OpenAI()
@@ -75,15 +83,20 @@ def generate_reading(
         model=chosen_model,
         messages=[
             {"role": "system", "content": _system_prompt(prompt_path, lang)},
-            {"role": "user", "content": _format_seeker_message(details, chart, flags)},
+            {"role": "user", "content": _format_seeker_message(details, chart, flags, life_chapters)},
         ],
     )
     content = response.choices[0].message.content or ""
     return content.strip()
 
 
-def _format_seeker_message(details: BirthDetails, chart: Chart, flags: VedicFlags) -> str:
-    """Render birth details + chart + Vedic flags into the user message."""
+def _format_seeker_message(
+    details: BirthDetails,
+    chart: Chart,
+    flags: VedicFlags,
+    life_chapters: list[LifeChapter],
+) -> str:
+    """Render birth details + chart + flags + life chapters into the user message."""
     name_line = f"Name: {details.name}" if details.name.strip() else "Name: (not provided)"
     return (
         f"{name_line}\n"
@@ -94,6 +107,8 @@ def _format_seeker_message(details: BirthDetails, chart: Chart, flags: VedicFlag
         f"{format_for_prompt(chart)}\n"
         f"\n"
         f"{format_flags_for_prompt(flags)}\n"
+        f"\n"
+        f"{format_life_chapters_for_prompt(life_chapters)}\n"
     )
 
 
@@ -103,6 +118,7 @@ def generate_outlook_reading(
     transit: TransitSnapshot,
     flags: VedicFlags,
     gochar_impacts: list[GocharImpact],
+    events: list[TransitEvent],
     prompt_path: Path,
     model: str | None = None,
     lang: str = "en",
@@ -122,7 +138,7 @@ def generate_outlook_reading(
             {"role": "system", "content": _system_prompt(prompt_path, lang)},
             {
                 "role": "user",
-                "content": _format_outlook_message(details, natal, transit, flags, gochar_impacts),
+                "content": _format_outlook_message(details, natal, transit, flags, gochar_impacts, events),
             },
         ],
     )
@@ -136,8 +152,9 @@ def _format_outlook_message(
     transit: TransitSnapshot,
     flags: VedicFlags,
     gochar_impacts: list[GocharImpact],
+    events: list[TransitEvent],
 ) -> str:
-    """User-message block: seeker + natal + current transits + flags + gochar impacts."""
+    """User-message block: seeker + natal + transits + flags + gochar + events."""
     name_line = f"Name: {details.name}" if details.name.strip() else "Name: (not provided)"
     gochar_lines = ["Gochar impacts (slow movers, sign + house + favourability):"]
     for g in gochar_impacts:
@@ -163,32 +180,130 @@ def _format_outlook_message(
         f"\n"
         f"--- GOCHAR IMPACTS ---\n"
         + "\n".join(gochar_lines) + "\n"
+        f"\n"
+        f"--- KEY TRANSIT EVENTS IN WINDOW ---\n"
+        f"{format_events_for_prompt(events)}\n"
+    )
+
+
+def generate_matching_narrative(
+    groom_name: str,
+    bride_name: str,
+    groom_chart: Chart,
+    bride_chart: Chart,
+    guna: object,           # GunaMilan — typed as object to avoid circular import
+    prompt_path: Path,
+    model: str | None = None,
+    lang: str = "en",
+) -> str:
+    """Sectioned LLM narrative interpreting a Kundali matching result.
+
+    `guna` is a matching.GunaMilan — we type-erase to dodge an import cycle
+    (matching imports from chart; we'd otherwise need llm → matching → chart).
+    """
+    chosen_model = model or os.environ.get("ASTRO_AI_MODEL", DEFAULT_MODEL)
+    api_base = os.environ.get("ASTRO_AI_API_BASE")
+    client = OpenAI(base_url=api_base) if api_base else OpenAI()
+    response = client.chat.completions.create(
+        model=chosen_model,
+        messages=[
+            {"role": "system", "content": _system_prompt(prompt_path, lang)},
+            {
+                "role": "user",
+                "content": _format_matching_message(groom_name, bride_name, groom_chart, bride_chart, guna),
+            },
+        ],
+    )
+    content = response.choices[0].message.content or ""
+    return content.strip()
+
+
+def _format_matching_message(
+    groom_name: str,
+    bride_name: str,
+    groom_chart: Chart,
+    bride_chart: Chart,
+    guna: object,
+) -> str:
+    """User-message block for matching narrative — both charts (slim) + koota scores."""
+    def _seeker_block(label: str, name: str, chart: Chart) -> str:
+        moon = next(p for p in chart.planets if p.name == "Moon")
+        return (
+            f"{label}: {name or '(unnamed)'}\n"
+            f"  Lagna: {chart.lagna_rashi}\n"
+            f"  Moon: {moon.rashi} ({moon.nakshatra} Nakshatra)\n"
+        )
+
+    g_block = _seeker_block("GROOM", groom_name, groom_chart)
+    b_block = _seeker_block("BRIDE", bride_name, bride_chart)
+
+    koota_lines = ["Koota-by-koota scores:"]
+    for k in guna.kootas:  # type: ignore[attr-defined]
+        koota_lines.append(f"- {k.name}: {k.awarded}/{k.max_points} — {k.note}")
+
+    return (
+        f"{g_block}\n"
+        f"{b_block}\n"
+        f"--- KUNDALI MATCHING RESULT ---\n"
+        + "\n".join(koota_lines) + "\n"
+        + f"\nTotal: {guna.total_awarded}/{guna.total_max} ({guna.percent}%)\n"  # type: ignore[attr-defined]
+        + f"Verdict: {guna.overall_verdict_label}\n"  # type: ignore[attr-defined]
+        + f"Mangal Dosh compatibility: "
+        + ("Compatible" if guna.mangal_dosh_compatible else "Needs review")  # type: ignore[attr-defined]
+        + f"\nMangal Dosh note: {guna.mangal_dosh_note}\n"  # type: ignore[attr-defined]
     )
 
 
 def parse_sectioned_reading(text: str) -> list[tuple[str, str]]:
     """Split a `## Heading`-delimited reading into [(title, body), ...].
 
-    Falls back to a single ("Reading", text) if no headings are found — keeps
-    rendering robust against LLMs that occasionally ignore the format directive.
+    Drops any text before the first `## ` heading. Use this when the prompt
+    instructs the LLM to start with a section heading (e.g. natal reading).
+    Falls back to a single ("Reading", text) if no headings are found.
     """
+    intro, sections = parse_intro_and_sections(text)
+    if sections:
+        return sections
+    return [("Reading", intro)] if intro else [("Reading", text.strip())]
+
+
+_BARE_HEADING_RE = re.compile(r"^#+\s*$")
+
+
+def parse_intro_and_sections(text: str) -> tuple[str, list[tuple[str, str]]]:
+    """Like `parse_sectioned_reading` but also returns text BEFORE the first
+    `## ` heading as the `intro`.
+
+    Use this for outlook readings (monthly/yearly) where the LLM produces
+    flowing time-segmented prose first, then sectioned life-area blocks.
+    Returns (intro_text, [(title, body), ...]); either may be empty.
+
+    Robust against malformed LLM output: lines that are JUST hash marks with
+    no heading text (e.g. a stray "##" between paragraphs) are dropped.
+    """
+    intro_lines: list[str] = []
     sections: list[tuple[str, str]] = []
     current_title: str | None = None
     current_lines: list[str] = []
     for line in text.splitlines():
         stripped = line.strip()
+        # Drop lone heading markers — LLM sometimes emits a bare "##" as
+        # paragraph separator. Treating these as content surfaces ugly artifacts.
+        if _BARE_HEADING_RE.match(stripped):
+            continue
         if stripped.startswith("## ") and len(stripped) > 3:
             if current_title is not None:
                 sections.append((current_title, "\n".join(current_lines).strip()))
             current_title = stripped[3:].strip()
             current_lines = []
         else:
-            current_lines.append(line)
+            if current_title is None:
+                intro_lines.append(line)
+            else:
+                current_lines.append(line)
     if current_title is not None:
         sections.append((current_title, "\n".join(current_lines).strip()))
-    if not sections:
-        return [("Reading", text.strip())]
-    return sections
+    return ("\n".join(intro_lines).strip(), sections)
 
 
 def generate_daily_reading(

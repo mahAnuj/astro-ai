@@ -1,19 +1,30 @@
 {% extends "base.html" %}
 
-{% block title %}astro-ai — Your Vedic chart + AI reading, free{% endblock %}
+{% block title %}Bhagya — your Vedic chart, decoded by AI{% endblock %}
 
 {% block content %}
+{% set active_page = "home" %}
+{% set show_print = false %}
+{% include "_nav.html" %}
 
-<!-- Top navigation strip — minimal, just brand + tagline + language picker. -->
-<nav class="border-b border-stone-200/60 bg-cream/80 backdrop-blur sticky top-0 z-10">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-    <a href="/" class="font-display text-xl text-astro-700 font-bold">astro-ai</a>
-    <div class="flex items-center gap-3">
-      <span class="text-xs text-stone-500 hidden sm:inline">Free Vedic astrology, powered by AI</span>
-      {% include "_lang_picker.html" %}
-    </div>
+{# If the seeker arrived here because they clicked a feature without a saved chart, name what they were trying to reach. #}
+{% if needs_chart_for %}
+{% set feature_label = {
+  'natal':    "Kundli",
+  'today':    "Today's Horoscope",
+  'monthly':  "Monthly Horoscope",
+  'yearly':   "Horoscope " ~ current_year(),
+  'dasha':    "Dasha Periods",
+}.get(needs_chart_for, "that feature") %}
+<div class="bg-astro-100 border-b border-astro-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 text-sm text-astro-800 flex items-start gap-2">
+    <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span><strong>{{ feature_label }}</strong> needs your birth details first. Fill the form below &mdash; takes a few seconds, no signup.</span>
   </div>
-</nav>
+</div>
+{% endif %}
 
 <!-- HERO ------------------------------------------------------------- -->
 <section class="relative overflow-hidden">
@@ -33,9 +44,9 @@
         <span class="text-astro-700">decoded by AI.</span>
       </h1>
       <p class="text-lg text-stone-600 leading-relaxed mb-6">
-        Enter your birth details to get a personalised Vedic reading grounded in your real
-        Janma Kundali &mdash; computed via the same Swiss Ephemeris engine used by professional
-        Jyotishis.
+        Free Janma Kundali, daily horoscope, monthly &amp; yearly outlooks, Vimshottari Dasha periods,
+        and Ashtakoot Kundli matching &mdash; all powered by frontier AI grounded in real Swiss Ephemeris
+        calculations.
       </p>
       <ul class="space-y-2.5 text-stone-700">
         <li class="flex items-start gap-2.5">
@@ -65,64 +76,75 @@
           The active chart powers today&rsquo;s reading. Switch any time.
         </p>
 
-        <ul class="space-y-3">
-          {% for c in collection.charts %}
-          {% set is_active = (c.id == collection.active.id) %}
-          <li class="rounded-xl border {{ 'border-astro-400 bg-astro-50/40' if is_active else 'border-stone-200 bg-white' }} p-4">
-            <div class="flex items-start justify-between gap-2 mb-2">
-              <div>
-                <div class="font-semibold text-stone-900 flex items-center gap-2">
-                  {{ c.name if c.name else 'Saved chart' }}
-                  {% if is_active %}
-                  <span class="text-[9px] font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Active</span>
-                  {% endif %}
-                </div>
-                <div class="text-xs text-stone-500 mt-0.5">
-                  {{ c.birth_date }} &middot; {{ c.birth_time }} &middot; {{ c.birth_place }}
-                </div>
+        {% set active = collection.active %}
+        {# ACTIVE chart — prominent card with actions. #}
+        <div class="rounded-xl border-2 border-astro-500 bg-astro-50/40 p-4 mb-3">
+          <div class="flex items-start justify-between gap-2 mb-1">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-semibold text-stone-900 text-base truncate">{{ active.name if active.name else 'Saved chart' }}</span>
+                <span class="text-[9px] font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Active</span>
               </div>
-              {% if collection.charts | length > 1 %}
-              <form method="post" action="/delete-chart"
-                    onsubmit="return confirm('Delete this saved chart?');">
-                <input type="hidden" name="chart_id" value="{{ c.id }}">
-                <button type="submit" class="text-stone-400 hover:text-rose-600 text-xs" aria-label="Delete">
-                  &times;
-                </button>
-              </form>
-              {% endif %}
+              <div class="text-xs text-stone-500 mt-0.5 truncate">
+                {{ active.birth_date }} &middot; {{ active.birth_time }} &middot; {{ active.birth_place }}
+              </div>
             </div>
-
-            {% if is_active %}
-            <div class="flex flex-wrap gap-2 mt-3">
-              <a href="/today"
-                 class="flex-1 text-center px-3 py-1.5 bg-astro-600 hover:bg-astro-700 text-white text-sm font-semibold rounded-md">
-                Today&rsquo;s reading &rarr;
-              </a>
-              <a href="/natal"
-                 class="flex-1 text-center px-3 py-1.5 border border-astro-300 text-astro-700 hover:bg-astro-100 text-sm font-semibold rounded-md">
-                Natal reading
-              </a>
-            </div>
-            {% else %}
-            <form method="post" action="/switch" class="mt-3">
-              <input type="hidden" name="chart_id" value="{{ c.id }}">
-              <input type="hidden" name="next" value="/">
-              <button type="submit"
-                      class="w-full px-3 py-1.5 border border-stone-300 text-stone-700 hover:bg-stone-50 text-sm font-semibold rounded-md">
-                Make active
+            {% if collection.charts | length > 1 %}
+            <form method="post" action="/delete-chart"
+                  onsubmit="return confirm('Delete this saved chart?');">
+              <input type="hidden" name="chart_id" value="{{ active.id }}">
+              <button type="submit" class="text-stone-400 hover:text-rose-600 text-lg leading-none px-1" aria-label="Delete">
+                &times;
               </button>
             </form>
             {% endif %}
-          </li>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <a href="/today" class="flex-1 text-center px-3 py-1.5 bg-astro-600 hover:bg-astro-700 text-white text-sm font-semibold rounded-md">
+              Today's Horoscope &rarr;
+            </a>
+            <a href="/natal" class="flex-1 text-center px-3 py-1.5 border border-astro-300 text-astro-700 hover:bg-astro-100 text-sm font-semibold rounded-md">
+              Kundli
+            </a>
+          </div>
+        </div>
+
+        {# INACTIVE charts — compact tappable rows in a scrollable list. #}
+        {% set inactive = collection.charts | rejectattr('id', 'equalto', active.id) | list %}
+        {% if inactive %}
+        <div class="text-xs uppercase tracking-wider font-semibold text-stone-500 mb-1.5 mt-4">
+          Switch to
+        </div>
+        <div class="max-h-48 overflow-y-auto -mx-1 px-1 space-y-1">
+          {% for c in inactive %}
+          <div class="flex items-center gap-1 group">
+            <form method="post" action="/switch" class="flex-1 min-w-0">
+              <input type="hidden" name="chart_id" value="{{ c.id }}">
+              <input type="hidden" name="next" value="/">
+              <button type="submit"
+                      class="w-full text-left px-3 py-2 rounded-md hover:bg-stone-50 border border-transparent hover:border-stone-200 flex items-center gap-2 text-sm min-w-0">
+                <span class="text-stone-300 group-hover:text-astro-500 transition-colors flex-shrink-0">○</span>
+                <span class="font-semibold text-stone-900 truncate">{{ c.name if c.name else 'Saved chart' }}</span>
+                <span class="text-xs text-stone-500 truncate ml-auto">{{ c.birth_date }} &middot; {{ c.birth_place.split(',')[0] }}</span>
+              </button>
+            </form>
+            <form method="post" action="/delete-chart"
+                  onsubmit="return confirm('Delete this saved chart?');">
+              <input type="hidden" name="chart_id" value="{{ c.id }}">
+              <button type="submit"
+                      class="text-stone-300 hover:text-rose-600 text-base leading-none px-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Delete {{ c.name }}">&times;</button>
+            </form>
+          </div>
           {% endfor %}
-        </ul>
+        </div>
+        {% endif %}
 
         {% if collection.charts | length < 10 %}
-        <details class="mt-5">
-          <summary class="cursor-pointer text-sm text-astro-700 hover:text-astro-800 font-semibold inline-flex items-center gap-1">
-            <span aria-hidden="true">+</span> Save another chart
-          </summary>
-          <form method="post" action="/reading" class="mt-4 space-y-3">
+        <div class="mt-6 pt-5 border-t border-stone-100">
+          <h3 class="font-display text-lg text-astro-700 mb-1">+ Save another chart</h3>
+          <p class="text-sm text-stone-500 mb-3">Add a family member, partner, or friend &mdash; up to 10 total.</p>
+          <form method="post" action="/reading" class="space-y-2.5">
             <input type="text" name="name" placeholder="Name (optional)"
                    class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
             <input type="date" name="birth_date" required
@@ -136,9 +158,9 @@
               Save &amp; read &rarr;
             </button>
           </form>
-        </details>
+        </div>
         {% else %}
-        <p class="text-xs text-stone-500 mt-5">
+        <p class="text-sm text-stone-500 mt-5 pt-5 border-t border-stone-100">
           You&rsquo;ve saved the max of 10 charts. Delete one above to add another.
         </p>
         {% endif %}
@@ -195,65 +217,58 @@
   </div>
 </section>
 
-<!-- WHAT YOU GET ----------------------------------------------------- -->
+<!-- FEATURES — 6-card grid, every link goes to a live page -------------- -->
 <section class="border-t border-stone-200/70 bg-white/60">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-    <h2 class="font-display text-3xl sm:text-4xl text-center text-stone-900 mb-3">What you get</h2>
-    <p class="text-center text-stone-600 max-w-xl mx-auto mb-12">
-      A real Vedic chart and a reading that uses it &mdash; not a generic horoscope mass-produced
-      for one of twelve sun signs.
+    <h2 class="font-display text-3xl sm:text-4xl text-center text-stone-900 mb-3">Everything a Vedic-astrology app should do</h2>
+    <p class="text-center text-stone-600 max-w-2xl mx-auto mb-12">
+      Free, signup-optional, all powered by your real chart. Click any tile to open it.
     </p>
 
-    <div class="grid md:grid-cols-3 gap-6">
-
-      <div class="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm">
-        <div class="w-11 h-11 rounded-xl bg-astro-100 text-astro-700 flex items-center justify-center mb-4">
-          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>
-        </div>
-        <h3 class="font-display text-xl text-stone-900 mb-1.5">Accurate Janma Kundali</h3>
-        <p class="text-sm text-stone-600 leading-relaxed">
-          Lagna, all 9 grahas with sign + house + nakshatra, retrograde markers. Sidereal
-          (Lahiri ayanamsa), Whole Sign houses &mdash; the classical Parashari setup.
-        </p>
+    {# Reusable feature-card macro to keep the 6 cards consistent. #}
+    {% macro feature_card(href, icon_svg, title, body) %}
+    <a href="{{ href }}"
+       class="group bg-white rounded-2xl border border-stone-200 p-6 shadow-sm
+              hover:border-astro-400 hover:shadow-md transition-all relative">
+      <div class="w-11 h-11 rounded-xl bg-astro-100 text-astro-700 flex items-center justify-center mb-4 group-hover:bg-astro-200 transition-colors">
+        {{ icon_svg | safe }}
       </div>
+      <h3 class="font-display text-xl text-stone-900 mb-1.5 group-hover:text-astro-700 transition-colors">{{ title }} &rarr;</h3>
+      <p class="text-sm text-stone-600 leading-relaxed">{{ body }}</p>
+    </a>
+    {% endmacro %}
 
-      <div class="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm">
-        <div class="w-11 h-11 rounded-xl bg-astro-100 text-astro-700 flex items-center justify-center mb-4">
-          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-        </div>
-        <h3 class="font-display text-xl text-stone-900 mb-1.5">AI personality reading</h3>
-        <p class="text-sm text-stone-600 leading-relaxed">
-          A 200-word personalised reading that references <em>your</em> actual Lagna, Moon
-          nakshatra, and key planetary placements &mdash; written by a frontier LLM, not pulled
-          from a template.
-        </p>
-      </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-      <div class="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm relative overflow-hidden">
-        <span class="absolute top-3 right-3 text-[10px] font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full uppercase">Live</span>
-        <div class="w-11 h-11 rounded-xl bg-astro-100 text-astro-700 flex items-center justify-center mb-4">
-          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        </div>
-        <h3 class="font-display text-xl text-stone-900 mb-1.5">Daily forecast</h3>
-        <p class="text-sm text-stone-600 leading-relaxed">
-          Today's planetary transits read against <em>your</em> chart &mdash; not a Sun-sign
-          template. Come back daily; the reading updates with each refresh.
-        </p>
-      </div>
-    </div>
+      {{ feature_card("/natal",
+        '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>',
+        "Kundli",
+        "Your full Janma Kundali plus a 7-section AI reading covering personality, career, money, relationships, health, travel, and life stages. North Indian diamond chart included.") }}
 
-    <!-- Coming-next strip beneath the live cards -->
-    <div class="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-stone-500">
-      <span class="text-stone-400 uppercase text-xs tracking-wider font-semibold">Coming next:</span>
-      <span class="inline-flex items-center gap-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Vimshottari Dasha periods
-      </span>
-      <span class="inline-flex items-center gap-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Kundali matching (marriage)
-      </span>
-      <span class="inline-flex items-center gap-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Monthly &amp; yearly outlook
-      </span>
+      {{ feature_card("/today",
+        '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M4.9 19.1l1.4-1.4m11.4-11.4l1.4-1.4"/></svg>',
+        "Today's Horoscope",
+        "Today's transits read against your natal chart, plus the full Panchang — Rahu Kaal window to avoid, Abhijit Muhurta to act in, and the day's favourable colour.") }}
+
+      {{ feature_card("/monthly",
+        '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
+        "Monthly Horoscope",
+        "Fortnight-by-fortnight outlook with five life-area cards — career, money, love, health, emotional wellbeing.") }}
+
+      {{ feature_card("/yearly",
+        '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h18v18H3zM3 9h18M9 3v18"/></svg>',
+        "Horoscope " ~ current_year(),
+        "Quarter-by-quarter narrative plus Varshaphala (your annual chart cast at solar return). Same five life areas, year-long horizon.") }}
+
+      {{ feature_card("/dasha",
+        '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+        "Dasha Periods",
+        "Your active Vimshottari Mahadasha and Antardasha, plus upcoming sub-periods and the next major chapter ahead.") }}
+
+      {{ feature_card("/matching",
+        '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>',
+        "Kundli Matching",
+        "Full 8-koota Ashtakoot Guna Milan with verdict, Mangal Dosh check, and an AI compatibility narrative covering emotional bond, daily life, and marriage foundation.") }}
 
     </div>
   </div>
@@ -316,7 +331,7 @@
 <footer class="border-t border-stone-200/70">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-center text-xs text-stone-500 leading-relaxed">
     Readings are interpretive and for personal reflection &mdash; not medical, legal or financial advice.<br>
-    <span class="text-stone-400">astro-ai &middot; built with care.</span>
+    <span class="text-stone-400">Bhagya &middot; built with care.</span>
   </div>
 </footer>
 

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t(lang, 'dasha_title') }} — Bhagya{% endblock %}
+
+{% block content %}
+{% set active_page = "dasha" %}
+{% include "_nav.html" %}
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+
+  <!-- HEADER ------------------------------------------------------ -->
+  <header>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">{{ t(lang, 'dasha_title') }}</h1>
+    <p class="text-sm text-stone-600">{{ t(lang, 'dasha_subtitle') }}</p>
+  </header>
+
+  <!-- ACTIVE MAHA + ANTAR HERO ------------------------------------ -->
+  <section class="grid sm:grid-cols-2 gap-4">
+
+    <div class="bg-white rounded-2xl border border-astro-300 shadow-sm p-6">
+      <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-2">{{ t(lang, 'dasha_active_maha') }}</div>
+      <div class="font-display text-4xl text-astro-700 mb-2">{{ dasha.mahadasha.lord }}</div>
+      <div class="text-sm text-stone-600">
+        {{ t(lang, 'dasha_period', start=dasha.mahadasha.start.isoformat(), end=dasha.mahadasha.end.isoformat()) }}
+      </div>
+      <div class="text-xs text-stone-500 mt-1 tabular-nums">
+        {{ "%.1f"|format(dasha.mahadasha.years) }} {{ t(lang, 'dasha_years_suffix') }}
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-emerald-300 shadow-sm p-6">
+      <div class="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-2">{{ t(lang, 'dasha_active_antar') }}</div>
+      <div class="font-display text-4xl text-emerald-700 mb-2">{{ dasha.antardasha.lord }}</div>
+      <div class="text-sm text-stone-600">
+        {{ t(lang, 'dasha_period', start=dasha.antardasha.start.isoformat(), end=dasha.antardasha.end.isoformat()) }}
+      </div>
+      <div class="text-xs text-stone-500 mt-1 tabular-nums">
+        {{ "%.2f"|format(dasha.antardasha.years) }} {{ t(lang, 'dasha_years_suffix') }}
+      </div>
+    </div>
+
+  </section>
+
+  <!-- UPCOMING ANTARDASHAS IN CURRENT MAHA ------------------------ -->
+  {% if dasha.upcoming_antardashas %}
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
+    <h2 class="font-display text-xl text-astro-700 mb-3">{{ t(lang, 'dasha_upcoming') }}</h2>
+    <ul class="divide-y divide-stone-100">
+      {% for p in dasha.upcoming_antardashas %}
+      <li class="py-3 grid grid-cols-[1fr_auto] items-center gap-4">
+        <div>
+          <span class="font-display text-lg text-stone-900">{{ p.lord }}</span>
+          <span class="text-sm text-stone-500 ml-2 tabular-nums">{{ "%.2f"|format(p.years) }} {{ t(lang, 'dasha_years_suffix') }}</span>
+        </div>
+        <div class="text-sm text-stone-600 tabular-nums">
+          {{ p.start.isoformat() }} <span class="text-stone-300">→</span> {{ p.end.isoformat() }}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <!-- NEXT MAHADASHA ---------------------------------------------- -->
+  {% if dasha.next_mahadasha %}
+  <section class="bg-gradient-to-br from-astro-50 to-amber-50/40 border border-astro-100 rounded-2xl p-6">
+    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1.5">{{ t(lang, 'dasha_next_maha') }}</div>
+    <div class="font-display text-2xl text-astro-800 mb-1">{{ dasha.next_mahadasha.lord }}</div>
+    <div class="text-sm text-stone-600 tabular-nums">
+      {{ t(lang, 'dasha_period', start=dasha.next_mahadasha.start.isoformat(), end=dasha.next_mahadasha.end.isoformat()) }}
+      &middot; {{ "%.0f"|format(dasha.next_mahadasha.years) }} {{ t(lang, 'dasha_years_suffix') }}
+    </div>
+  </section>
+  {% endif %}
+
+</main>
+{% endblock %}

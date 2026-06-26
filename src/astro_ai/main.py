@@ -15,12 +15,16 @@ from fastapi.templating import Jinja2Templates
 from astro_ai.chart import (
     ChartError,
     compute_chart,
+    compute_dasha_state,
     compute_gochar_impacts,
+    compute_life_chapters,
     compute_manglik_details,
     compute_marriage_profile,
     compute_panchang,
     compute_sade_sati_details,
+    compute_transit_events,
     compute_transit_snapshot,
+    compute_varshaphala,
     compute_vedic_flags,
     compute_wealth_profile,
 )
@@ -28,8 +32,10 @@ from astro_ai.i18n import translate as _i18n_translate
 from astro_ai.llm import (
     BirthDetails,
     generate_daily_reading,
+    generate_matching_narrative,
     generate_outlook_reading,
     generate_reading,
+    parse_intro_and_sections,
     parse_sectioned_reading,
 )
 from astro_ai.matching import compute_guna_milan
@@ -66,17 +72,25 @@ PROMPT_PATH = PROMPTS_DIR / "natal.txt"
 DAILY_PROMPT_PATH = PROMPTS_DIR / "daily.txt"
 MONTHLY_PROMPT_PATH = PROMPTS_DIR / "monthly.txt"
 YEARLY_PROMPT_PATH = PROMPTS_DIR / "yearly.txt"
+MATCHING_PROMPT_PATH = PROMPTS_DIR / "matching.txt"
 
 app = FastAPI(title="astro-ai", version="0.0.1")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 # Expose i18n to every template as `t(key, **kwargs)`. Templates pass the
 # current `lang` (also injected per-request) into the call.
 templates.env.globals["t"] = _i18n_translate
+# current_year used by nav labels like "Horoscope 2026" — auto-updates yearly.
+templates.env.globals["current_year"] = lambda: date.today().year
 
 
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request) -> HTMLResponse:
-    """Form for new visitors, chart-list + form for returning seekers."""
+async def index(request: Request, needs_chart: str | None = None) -> HTMLResponse:
+    """Form for new visitors, chart-list + form for returning seekers.
+
+    `?needs_chart=<feature>` is set when other routes redirect here because
+    no saved chart exists yet. We surface a brief banner naming the feature
+    the seeker tried to reach, so the redirect isn't silent.
+    """
     collection = load_collection(request)
     return templates.TemplateResponse(
         request,
@@ -85,6 +99,7 @@ async def index(request: Request) -> HTMLResponse:
             "collection": collection,
             "saved": collection.active,
             "lang": _lang(request),
+            "needs_chart_for": needs_chart,
         },
     )
 
@@ -97,70 +112,33 @@ async def reading(
     birth_time: str = Form(...),
     birth_place: str = Form(...),
 ) -> HTMLResponse:
-    """Take the form submission, call the LLM, render the reading."""
+    """Form submission → save chart to cookie collection → render natal reading.
+
+    Delegates rendering to `_render_natal_for` so this POST path produces the
+    same fully-populated page as GET /natal — sectioned reading + Marriage /
+    Wealth / Manglik / Sade Sati / Dasha panels. Saves to cookie only when
+    the reading actually renders OK; chart-cap errors short-circuit before
+    the expensive LLM call.
+    """
     details = BirthDetails(
         name=name.strip(),
         birth_date=birth_date,
         birth_time=birth_time,
         birth_place=birth_place.strip(),
     )
-    if not os.environ.get("OPENAI_API_KEY"):
-        return templates.TemplateResponse(
-            request,
-            "error.html",
-            {
-                "title": "API key not configured",
-                "message": (
-                    "The server can't reach the LLM because OPENAI_API_KEY isn't set. "
-                    "Copy .env.example to .env, paste your key, and the dev server will "
-                    "pick it up on the next request."
-                ),
-            },
-            status_code=503,
-        )
-    try:
-        chart = compute_chart(
-            birth_date=details.birth_date,
-            birth_time=details.birth_time,
-            place=details.birth_place,
-        )
-    except ChartError as err:
-        # Most commonly a geocoding miss — surface as friendly form-level message.
-        return templates.TemplateResponse(
-            request,
-            "error.html",
-            {"title": "Couldn't compute the chart", "message": str(err)},
-            status_code=400,
-        )
-    try:
-        reading_text = generate_reading(details, chart=chart, prompt_path=PROMPT_PATH)
-    except Exception as err:  # upstream LLM error → friendly page, not stack trace
-        return templates.TemplateResponse(
-            request,
-            "error.html",
-            {
-                "title": "Couldn't generate a reading",
-                "message": f"{type(err).__name__}: {err}",
-            },
-            status_code=502,
-        )
-    response = templates.TemplateResponse(
-        request,
-        "result.html",
-        {"details": details, "reading": reading_text, "chart": chart},
-    )
-    # Append to the seeker's collection (or reactivate the matching saved chart).
+    # Cap check up-front so we don't spend an LLM call only to fail the save.
     try:
         collection = load_collection(request).add(details)
     except ValueError as err:
-        # Hit the chart-cap. Surface as friendly error rather than swallow.
         return templates.TemplateResponse(
             request,
             "error.html",
             {"title": "Chart limit reached", "message": str(err)},
             status_code=400,
         )
-    save_collection(response, collection)
+    response = await _render_natal_for(request, details)
+    if response.status_code == 200:
+        save_collection(response, collection)
     return response
 
 
@@ -169,7 +147,7 @@ async def natal(request: Request) -> HTMLResponse:
     """Re-render the natal reading for the currently active saved chart."""
     saved = load_collection(request).active
     if saved is None:
-        return RedirectResponse("/", status_code=303)
+        return RedirectResponse("/?needs_chart=natal", status_code=303)
     return await _render_natal_for(request, saved.to_birth_details())
 
 
@@ -198,10 +176,12 @@ async def _render_natal_for(request: Request, details: BirthDetails) -> HTMLResp
             status_code=503,
         )
     flags = compute_vedic_flags(chart)
+    life_chapters = compute_life_chapters(chart)
     lang = _lang(request)
     try:
         reading_text = generate_reading(
-            details, chart=chart, flags=flags, prompt_path=PROMPT_PATH, lang=lang
+            details, chart=chart, flags=flags, life_chapters=life_chapters,
+            prompt_path=PROMPT_PATH, lang=lang,
         )
     except Exception as err:
         return templates.TemplateResponse(
@@ -229,6 +209,7 @@ async def _render_natal_for(request: Request, details: BirthDetails) -> HTMLResp
             "wealth":   compute_wealth_profile(chart),
             "manglik":  compute_manglik_details(chart),
             "sade_sati":compute_sade_sati_details(chart),
+            "dasha":    compute_dasha_state(chart),
         },
     )
 
@@ -238,7 +219,7 @@ async def today(request: Request) -> HTMLResponse:
     """Today's personalised Vedic reading using the active saved chart."""
     saved = load_collection(request).active
     if saved is None:
-        return RedirectResponse("/", status_code=303)
+        return RedirectResponse("/?needs_chart=today", status_code=303)
     saved_details = saved.to_birth_details()
 
     try:
@@ -335,6 +316,7 @@ async def monthly(request: Request) -> HTMLResponse:
     """30-day outlook for the active saved chart."""
     return await _render_outlook(
         request,
+        active_page="monthly",
         prompt_path=MONTHLY_PROMPT_PATH,
         template_name="outlook.html",
         title_key="monthly_title",
@@ -342,14 +324,19 @@ async def monthly(request: Request) -> HTMLResponse:
         subtitle_key="monthly_subtitle",
         reading_label_key="monthly_reading",
         window_label="30 days",
+        events_days=30,
+        events_step_days=1,
+        events_planets=("Sun", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"),
+        include_varshaphala=False,
     )
 
 
 @app.get("/yearly", response_class=HTMLResponse)
 async def yearly(request: Request) -> HTMLResponse:
-    """12-month outlook for the active saved chart."""
+    """12-month outlook for the active saved chart, with Varshaphala (annual chart)."""
     return await _render_outlook(
         request,
+        active_page="yearly",
         prompt_path=YEARLY_PROMPT_PATH,
         template_name="outlook.html",
         title_key="yearly_title",
@@ -357,12 +344,18 @@ async def yearly(request: Request) -> HTMLResponse:
         subtitle_key="yearly_subtitle",
         reading_label_key="yearly_reading",
         window_label="12 months",
+        events_days=365,
+        events_step_days=7,
+        # For yearly: weekly steps + drop Sun (changes every month — noisy).
+        events_planets=("Mercury", "Venus", "Mars", "Jupiter", "Saturn"),
+        include_varshaphala=True,
     )
 
 
 async def _render_outlook(
     request: Request,
     *,
+    active_page: str,
     prompt_path: Path,
     template_name: str,
     title_key: str,
@@ -370,11 +363,15 @@ async def _render_outlook(
     subtitle_key: str,
     reading_label_key: str,
     window_label: str,
+    events_days: int,
+    events_step_days: int,
+    events_planets: tuple[str, ...],
+    include_varshaphala: bool = False,
 ) -> HTMLResponse:
-    """Shared monthly/yearly renderer — same flow, different prompt + labels."""
+    """Shared monthly/yearly renderer — same flow, different prompt + labels + scan window."""
     saved = load_collection(request).active
     if saved is None:
-        return RedirectResponse("/", status_code=303)
+        return RedirectResponse(f"/?needs_chart={active_page}", status_code=303)
     saved_details = saved.to_birth_details()
 
     try:
@@ -390,6 +387,9 @@ async def _render_outlook(
     transit = compute_transit_snapshot(natal)
     flags = compute_vedic_flags(natal)
     gochar_impacts = compute_gochar_impacts(natal)
+    events = compute_transit_events(
+        natal, days=events_days, step_days=events_step_days, planets=events_planets
+    )
     lang = _lang(request)
 
     if not os.environ.get("OPENAI_API_KEY"):
@@ -410,6 +410,7 @@ async def _render_outlook(
             transit=transit,
             flags=flags,
             gochar_impacts=gochar_impacts,
+            events=events,
             prompt_path=prompt_path,
             lang=lang,
         )
@@ -424,16 +425,23 @@ async def _render_outlook(
             status_code=502,
         )
 
+    # Split the LLM output: time-segmented prose intro + 5 life-area cards.
+    intro, sections = parse_intro_and_sections(reading_text)
     return templates.TemplateResponse(
         request,
         template_name,
         {
+            "active_page": active_page,
             "details": saved_details,
             "natal": natal,
             "transit": transit,
             "flags": flags,
             "gochar_impacts": gochar_impacts,
+            "events": events,
+            "varshaphala": compute_varshaphala(natal) if include_varshaphala else None,
             "reading": reading_text,
+            "reading_intro": intro,
+            "reading_sections": sections,
             "lang": lang,
             "title_key": title_key,
             "title_anon_key": title_anon_key,
@@ -445,13 +453,47 @@ async def _render_outlook(
     )
 
 
+@app.get("/dasha", response_class=HTMLResponse)
+async def dasha(request: Request) -> HTMLResponse:
+    """Vimshottari Dasha timeline for the active saved chart."""
+    saved = load_collection(request).active
+    if saved is None:
+        return RedirectResponse("/?needs_chart=dasha", status_code=303)
+    saved_details = saved.to_birth_details()
+    try:
+        natal = compute_chart(saved_details.birth_date, saved_details.birth_time, saved_details.birth_place)
+    except ChartError as err:
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Couldn't compute the chart", "message": str(err)},
+            status_code=400,
+        )
+    return templates.TemplateResponse(
+        request,
+        "dasha.html",
+        {
+            "details": saved_details,
+            "natal": natal,
+            "dasha": compute_dasha_state(natal),
+            "lang": _lang(request),
+        },
+    )
+
+
 @app.get("/matching", response_class=HTMLResponse)
 async def matching_form(request: Request) -> HTMLResponse:
-    """Form for two seekers — collects birth details for both, no auth needed."""
+    """Form for two seekers — collects birth details for both, no auth needed.
+
+    Passes the saved-chart collection so each side of the form can offer a
+    "pick from saved" dropdown that auto-fills the four fields client-side.
+    """
     return templates.TemplateResponse(
         request,
         "matching.html",
-        {"lang": _lang(request)},
+        {
+            "lang": _lang(request),
+            "collection": load_collection(request),
+        },
     )
 
 
@@ -488,6 +530,24 @@ async def matching_result(
         "Not recommended":  "matching_verdict_below",
     }[guna.overall_verdict]
 
+    # LLM narrative — sectioned compatibility reading. Best-effort; if the LLM
+    # call fails we still show the scores + table, just without the prose.
+    narrative_sections: list[tuple[str, str]] = []
+    if os.environ.get("OPENAI_API_KEY"):
+        try:
+            narrative_text = generate_matching_narrative(
+                groom_name=g_name.strip(),
+                bride_name=b_name.strip(),
+                groom_chart=groom_chart,
+                bride_chart=bride_chart,
+                guna=guna,
+                prompt_path=MATCHING_PROMPT_PATH,
+                lang=lang,
+            )
+            narrative_sections = parse_sectioned_reading(narrative_text)
+        except Exception:
+            narrative_sections = []  # surface as no-narrative; scores still render
+
     return templates.TemplateResponse(
         request,
         "matching_result.html",
@@ -495,6 +555,7 @@ async def matching_result(
             "lang": lang,
             "guna": guna,
             "verdict_key": verdict_key,
+            "sections": narrative_sections,
             "groom": {
                 "name": g_name.strip(), "birth_date": g_birth_date,
                 "birth_time": g_birth_time, "birth_place": g_birth_place.strip(),

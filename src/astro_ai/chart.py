@@ -555,6 +555,225 @@ class WealthProfile:
 
 
 # ---------------------------------------------------------------------------
+# Vimshottari Dasha — 120-year planetary period system
+# ---------------------------------------------------------------------------
+
+
+# Standard 9-planet order for Vimshottari (Ketu first by convention).
+_VIM_ORDER: tuple[str, ...] = (
+    "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury",
+)
+
+# Years allotted to each planet's Mahadasha (sum = 120).
+_VIM_YEARS: dict[str, int] = {
+    "Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7,
+    "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17,
+}
+
+# Each nakshatra's ruling planet — determines which Maha starts at birth.
+# (Pattern cycles through _VIM_ORDER every 9 nakshatras: Ashwini→Ketu,
+# Bharani→Venus, Krittika→Sun, etc.)
+_NAKSHATRA_LORDS: dict[str, str] = {
+    NAKSHATRAS[i]: _VIM_ORDER[i % 9] for i in range(27)
+}
+
+# Length of a year in days used for Dasha calculation. Vedic tradition uses
+# the solar (tropical) year ≈ 365.2425 days; close enough to Julian 365.25
+# for our purposes. We use 365.25 — matches Future Point, JHora.
+_DAYS_PER_YEAR: float = 365.25
+
+
+@dataclass(frozen=True)
+class DashaPeriod:
+    """One Vimshottari period (Mahadasha or Antardasha)."""
+
+    lord: str
+    start: date_
+    end: date_
+    years: float       # nominal duration of this period (Maha years, or Antar fraction)
+
+
+@dataclass(frozen=True)
+class DashaState:
+    """Currently-active Mahadasha + Antardasha + lookaheads."""
+
+    mahadasha: DashaPeriod
+    antardasha: DashaPeriod
+    upcoming_antardashas: tuple[DashaPeriod, ...]  # remaining Antardashas in this Maha
+    next_mahadasha: DashaPeriod | None              # the Maha after the current one
+
+
+def compute_dasha_state(natal: Chart, when: datetime | None = None) -> DashaState:
+    """Find the active Mahadasha + Antardasha at the given moment.
+
+    Algorithm:
+      1. Moon's absolute sidereal longitude → nakshatra index + fractional position
+      2. Nakshatra → first Dasha lord; fractional position → portion already
+         consumed at birth (so the first Maha is shorter than its nominal years)
+      3. Walk forward from birth date through full Mahadashas to find the
+         one covering `when`. Then sub-divide it into Antardashas the same way.
+    """
+    moment = (when or datetime.now(ZoneInfo("UTC"))).astimezone(ZoneInfo("UTC")).date()
+    moon = next(p for p in natal.planets if p.name == "Moon")
+    moon_abs_long = _rashi_index(moon.rashi) * 30.0 + moon.longitude
+
+    nak_span = 360.0 / 27.0
+    nak_idx = int(moon_abs_long // nak_span)
+    nak_position = (moon_abs_long % nak_span) / nak_span   # 0..1 within the nakshatra
+    first_lord = _NAKSHATRA_LORDS[NAKSHATRAS[nak_idx]]
+    first_lord_years = _VIM_YEARS[first_lord]
+
+    # Maha already "consumed" at birth — the chunk between nakshatra start and Moon's position.
+    consumed_at_birth_years = nak_position * first_lord_years
+    first_remaining_years = first_lord_years - consumed_at_birth_years
+
+    birth_date = natal.birth_utc.date()
+
+    # Build forward sequence of Mahadashas (first is partial, rest are full).
+    periods: list[DashaPeriod] = []
+    cursor = birth_date
+    end = cursor + timedelta(days=first_remaining_years * _DAYS_PER_YEAR)
+    periods.append(DashaPeriod(first_lord, cursor, end, first_remaining_years))
+    cursor = end
+
+    start_idx = _VIM_ORDER.index(first_lord)
+    # Keep extending until we pass `moment` by at least one more full cycle's worth.
+    while cursor < moment + timedelta(days=120 * _DAYS_PER_YEAR):
+        for i in range(1, 10):
+            lord = _VIM_ORDER[(start_idx + i) % 9]
+            yrs = _VIM_YEARS[lord]
+            new_end = cursor + timedelta(days=yrs * _DAYS_PER_YEAR)
+            periods.append(DashaPeriod(lord, cursor, new_end, float(yrs)))
+            cursor = new_end
+            if cursor > moment + timedelta(days=60 * _DAYS_PER_YEAR):
+                break
+        # Reset the inner ordering pointer to continue cycling.
+        start_idx = (start_idx + 9) % 9  # always 0; restart from first_lord
+        # Avoid infinite loop — break once we've definitely passed `moment`.
+        if cursor > moment + timedelta(days=60 * _DAYS_PER_YEAR):
+            break
+
+    # Identify the active Mahadasha.
+    active_maha = next((p for p in periods if p.start <= moment <= p.end), periods[0])
+    active_idx = periods.index(active_maha)
+    next_maha = periods[active_idx + 1] if active_idx + 1 < len(periods) else None
+
+    # Sub-divide active Maha into Antardashas.
+    antardashas = _build_antardashas(active_maha)
+    active_antar = next((p for p in antardashas if p.start <= moment <= p.end), antardashas[0])
+    active_antar_idx = antardashas.index(active_antar)
+    upcoming = tuple(antardashas[active_antar_idx + 1 :])
+
+    return DashaState(
+        mahadasha=active_maha,
+        antardasha=active_antar,
+        upcoming_antardashas=upcoming,
+        next_mahadasha=next_maha,
+    )
+
+
+def _build_antardashas(maha: DashaPeriod) -> list[DashaPeriod]:
+    """9 sub-periods within `maha`, starting with the Maha lord, weighted by Vimshottari years."""
+    start_idx = _VIM_ORDER.index(maha.lord)
+    out: list[DashaPeriod] = []
+    cursor = maha.start
+    for i in range(9):
+        sub_lord = _VIM_ORDER[(start_idx + i) % 9]
+        sub_years = (maha.years * _VIM_YEARS[sub_lord]) / 120.0
+        new_end = cursor + timedelta(days=sub_years * _DAYS_PER_YEAR)
+        # Clamp last sub-period to exact Maha end to avoid float drift.
+        if i == 8:
+            new_end = maha.end
+        out.append(DashaPeriod(sub_lord, cursor, new_end, sub_years))
+        cursor = new_end
+    return out
+
+
+@dataclass(frozen=True)
+class LifeChapter:
+    """One Mahadasha period framed as an age window (for natal Life Stages section)."""
+
+    lord: str             # Vimshottari dasha lord (Vedic-technical, hidden from output)
+    start_age: float      # seeker's age at start
+    end_age: float        # seeker's age at end
+
+
+def compute_life_chapters(natal: Chart, until_age: float = 80.0) -> list[LifeChapter]:
+    """Return all Mahadasha periods from birth up to `until_age`, in age-window form.
+
+    Used by the natal LLM prompt to ground the 'Life Stages' section in real
+    dasha timing — the LLM phrases the chapters in life-experience language
+    (the lord name is NOT mentioned in the output, only used for reasoning).
+    """
+    moon = next(p for p in natal.planets if p.name == "Moon")
+    moon_abs_long = _rashi_index(moon.rashi) * 30.0 + moon.longitude
+
+    nak_span = 360.0 / 27.0
+    nak_idx = int(moon_abs_long // nak_span)
+    nak_position = (moon_abs_long % nak_span) / nak_span
+    first_lord = _NAKSHATRA_LORDS[NAKSHATRAS[nak_idx]]
+    first_lord_years = _VIM_YEARS[first_lord]
+    first_remaining_years = first_lord_years * (1 - nak_position)
+
+    birth_date = natal.birth_utc.date()
+    chapters: list[LifeChapter] = []
+
+    cursor = birth_date
+    cursor_end = cursor + timedelta(days=first_remaining_years * _DAYS_PER_YEAR)
+    chapters.append(LifeChapter(
+        lord=first_lord,
+        start_age=(cursor - birth_date).days / _DAYS_PER_YEAR,
+        end_age=(cursor_end - birth_date).days / _DAYS_PER_YEAR,
+    ))
+    cursor = cursor_end
+
+    start_idx = _VIM_ORDER.index(first_lord)
+    i = 1
+    while True:
+        lord = _VIM_ORDER[(start_idx + i) % 9]
+        yrs = _VIM_YEARS[lord]
+        cursor_end = cursor + timedelta(days=yrs * _DAYS_PER_YEAR)
+        end_age = (cursor_end - birth_date).days / _DAYS_PER_YEAR
+        chapters.append(LifeChapter(
+            lord=lord,
+            start_age=(cursor - birth_date).days / _DAYS_PER_YEAR,
+            end_age=end_age,
+        ))
+        cursor = cursor_end
+        i += 1
+        if end_age >= until_age:
+            break
+    return chapters
+
+
+def format_life_chapters_for_prompt(chapters: list[LifeChapter]) -> str:
+    """Plain-English Mahadasha sequence for the natal LLM (lord names included
+    because the LLM uses them to reason; instructions tell it to NOT name them
+    in output)."""
+    lines = ["Vimshottari Mahadasha sequence (lord per age range — for reasoning only, do NOT name planets in output):"]
+    for c in chapters:
+        lines.append(f"- Age {c.start_age:.1f} to {c.end_age:.1f}: {c.lord}")
+    return "\n".join(lines)
+
+
+def format_dasha_for_prompt(state: DashaState) -> str:
+    """One-block summary of the active Dasha for inclusion in LLM user message."""
+    m = state.mahadasha
+    a = state.antardasha
+    lines = [
+        "Active Vimshottari Dasha (120-year planetary-period system):",
+        f"- Mahadasha: {m.lord} ({m.start.isoformat()} to {m.end.isoformat()})",
+        f"- Antardasha: {a.lord} ({a.start.isoformat()} to {a.end.isoformat()})",
+    ]
+    if state.next_mahadasha:
+        lines.append(
+            f"- Next Mahadasha (after current): {state.next_mahadasha.lord} "
+            f"starting {state.next_mahadasha.start.isoformat()}"
+        )
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 # Gochar (transit) impacts — slow movers' current placement + favourability
 # ---------------------------------------------------------------------------
 
@@ -620,6 +839,232 @@ def compute_gochar_impacts(natal: Chart, when: datetime | None = None) -> list[G
             )
         )
     return impacts
+
+
+# ---------------------------------------------------------------------------
+# Varshaphala — annual chart cast at the moment of solar return
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Varshaphala:
+    """The annual chart (Tajik / Varshaphala basics) for the seeker.
+
+    The full Tajik system includes Muntha, Year Lord (Patyayini Dasha lord),
+    Sahams, and dozens of other layers. For v1 we expose the four headline
+    elements most readers care about:
+
+    - solar_return_moment: the UT moment when Sun returns to natal longitude
+    - annual_chart: a Chart object cast for that moment at natal birthplace
+    - muntha_house: the house in the annual chart that holds the natal Sun's
+      sign (classical Muntha — the "year house")
+    - year_lord: the lord of the annual chart's Lagna
+    """
+
+    solar_return_moment: datetime
+    annual_chart: Chart
+    muntha_house: int
+    year_lord: str
+
+
+def compute_varshaphala(natal: Chart, when: datetime | None = None) -> Varshaphala:
+    """Compute the annual chart cast at solar return for the year containing `when`.
+
+    Finds the upcoming solar return (within the next 365 days from `when`),
+    then casts a Chart at that moment using natal birthplace coords.
+    Search algorithm: scan day-by-day until the angular distance to natal Sun
+    crosses zero, then bisect to minute precision.
+    """
+    natal_sun = next(p for p in natal.planets if p.name == "Sun")
+    natal_sun_long = _rashi_index(natal_sun.rashi) * 30.0 + natal_sun.longitude
+
+    start = (when or datetime.now(ZoneInfo("UTC"))).astimezone(ZoneInfo("UTC"))
+    # Coarse scan: step day-by-day for up to 366 days, find where Sun's angular
+    # distance from natal Sun crosses through zero (signed minimum).
+    coarse_step = timedelta(days=1)
+    prev_diff = _sun_angular_diff(natal, start, natal_sun_long)
+    cursor = start + coarse_step
+    found_after = None
+    while cursor < start + timedelta(days=370):
+        diff = _sun_angular_diff(natal, cursor, natal_sun_long)
+        # Sign-flip from negative to positive (or vice versa, given Sun's
+        # monotonic eastward motion) means we crossed the natal longitude.
+        if prev_diff <= 0 and diff > 0:
+            found_after = cursor
+            break
+        prev_diff = diff
+        cursor += coarse_step
+
+    # If solar return is somehow missed (shouldn't happen — Sun returns ~yearly),
+    # fall back to one full year ahead.
+    refine_anchor = found_after or (start + timedelta(days=365))
+    # Bisect within [refine_anchor - 1 day, refine_anchor] to find minute-precision moment.
+    lo = refine_anchor - coarse_step
+    hi = refine_anchor
+    for _ in range(40):  # ~ minute precision well within 40 bisections
+        mid = lo + (hi - lo) / 2
+        diff = _sun_angular_diff(natal, mid, natal_sun_long)
+        if diff < 0:
+            lo = mid
+        else:
+            hi = mid
+    sr_moment = hi
+
+    # Cast the annual chart at the solar-return moment, natal birthplace.
+    annual_chart = _cast_chart_at(sr_moment, natal.birth_lat, natal.birth_lon, natal.birth_tz)
+
+    # Muntha — the natal Sun's sign in the annual chart, expressed as a house from annual Lagna.
+    annual_lagna_idx = _rashi_index(annual_chart.lagna_rashi)
+    natal_sun_sign_idx = _rashi_index(natal_sun.rashi)
+    muntha_house = ((natal_sun_sign_idx - annual_lagna_idx) % 12) + 1
+
+    year_lord = RASHI_LORDS[annual_lagna_idx]
+
+    return Varshaphala(
+        solar_return_moment=sr_moment,
+        annual_chart=annual_chart,
+        muntha_house=muntha_house,
+        year_lord=year_lord,
+    )
+
+
+def _sun_angular_diff(natal: Chart, at: datetime, target_long: float) -> float:
+    """Sun's signed angular distance from `target_long` at moment `at`.
+
+    Returns a value in (-180, +180]. Negative = Sun hasn't reached target yet;
+    positive = Sun has crossed past target. Used by the solar-return search.
+    """
+    jd = swe.julday(
+        at.year, at.month, at.day,
+        at.hour + at.minute / 60 + at.second / 3600,
+    )
+    pos, _ = swe.calc_ut(jd, swe.SUN, swe.FLG_SIDEREAL)
+    sun_now = float(pos[0])
+    diff = (sun_now - target_long) % 360
+    return diff if diff <= 180 else diff - 360
+
+
+def _cast_chart_at(moment: datetime, lat: float, lon: float, tz_name: str) -> Chart:
+    """Build a Chart for an arbitrary moment + place (used for Varshaphala annual chart).
+
+    Mirrors compute_chart's internals, but skips the form-input parsing path —
+    the moment is already a tz-aware datetime in UT.
+    """
+    moment_utc = moment.astimezone(ZoneInfo("UTC"))
+    jd = swe.julday(
+        moment_utc.year, moment_utc.month, moment_utc.day,
+        moment_utc.hour + moment_utc.minute / 60 + moment_utc.second / 3600,
+    )
+    _, ascmc = swe.houses_ex(jd, lat, lon, b"W", swe.FLG_SIDEREAL)
+    asc_long = float(ascmc[0])
+    lagna_sign_idx = int(asc_long // 30)
+    planets = _compute_planet_positions(jd, lagna_sign_idx)
+    return Chart(
+        lagna_rashi=RASHIS[lagna_sign_idx],
+        lagna_longitude=asc_long - lagna_sign_idx * 30,
+        planets=planets,
+        birth_lat=lat,
+        birth_lon=lon,
+        birth_tz=tz_name,
+        birth_utc=moment_utc,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Transit event detection — sign changes + retrograde flips
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class TransitEvent:
+    """One notable transit event detected within a future window.
+
+    `event_type` is one of: 'sign_change', 'retrograde_start', 'retrograde_end'.
+    `summary` is a one-line human label like "Mercury enters Cancer" or
+    "Mercury goes retrograde".
+    """
+
+    date: date_
+    planet: str
+    event_type: str
+    from_state: str
+    to_state: str
+    summary: str
+
+
+def compute_transit_events(
+    natal: Chart,
+    start: datetime | None = None,
+    days: int = 30,
+    step_days: int = 1,
+    planets: tuple[str, ...] = ("Sun", "Mercury", "Venus", "Mars", "Jupiter", "Saturn"),
+) -> list[TransitEvent]:
+    """Scan day-by-day for sign changes and retrograde flips within the window.
+
+    `step_days=1` works well for the 30-day monthly window. For the 365-day
+    yearly window pass `step_days=7` and a narrower planet list (slow movers
+    only) to keep the cost down — daily steps over a year is 365 swisseph
+    calls per planet but still completes in well under a second.
+
+    Rahu/Ketu are excluded from retrograde detection by design — Vedic
+    convention shows them perpetually retrograde, so the flag never flips.
+    They're still tracked for sign changes if included in `planets`.
+    """
+    anchor = (start or datetime.now(ZoneInfo("UTC"))).astimezone(ZoneInfo("UTC"))
+
+    prev_snap = compute_transit_snapshot(natal, anchor)
+    prev_state: dict[str, tuple[str, bool]] = {
+        p.name: (p.rashi, p.retrograde) for p in prev_snap.planets
+    }
+
+    events: list[TransitEvent] = []
+    for offset in range(step_days, days + 1, step_days):
+        d = anchor + timedelta(days=offset)
+        snap = compute_transit_snapshot(natal, d)
+        for p in snap.planets:
+            if p.name not in planets:
+                continue
+            prev_rashi, prev_retro = prev_state.get(p.name, (p.rashi, p.retrograde))
+            if p.rashi != prev_rashi:
+                events.append(
+                    TransitEvent(
+                        date=d.date(),
+                        planet=p.name,
+                        event_type="sign_change",
+                        from_state=prev_rashi,
+                        to_state=p.rashi,
+                        summary=f"{p.name} enters {p.rashi}",
+                    )
+                )
+            # Retrograde flip — skip Rahu/Ketu (always-retrograde by Vedic convention).
+            if p.name not in {"Rahu", "Ketu"} and p.retrograde != prev_retro:
+                events.append(
+                    TransitEvent(
+                        date=d.date(),
+                        planet=p.name,
+                        event_type="retrograde_end" if prev_retro else "retrograde_start",
+                        from_state="retrograde" if prev_retro else "direct",
+                        to_state="retrograde" if p.retrograde else "direct",
+                        summary=(
+                            f"{p.name} goes retrograde"
+                            if p.retrograde
+                            else f"{p.name} returns to direct motion"
+                        ),
+                    )
+                )
+            prev_state[p.name] = (p.rashi, p.retrograde)
+
+    return events
+
+
+def format_events_for_prompt(events: list[TransitEvent]) -> str:
+    """Plain-English event list for the LLM user message; empty → 'None notable'."""
+    if not events:
+        return "Notable transit events in this window: none detected."
+    lines = ["Notable transit events in this window (chronological):"]
+    for e in events:
+        lines.append(f"- {e.date.isoformat()}: {e.summary}")
+    return "\n".join(lines)
 
 
 def compute_wealth_profile(chart: Chart) -> WealthProfile:

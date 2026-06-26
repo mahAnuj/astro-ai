@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t(lang, 'todays_reading') }} &middot; {{ today_date }} — astro-ai{% endblock %}
+{% block title %}{{ t(lang, 'todays_reading') }} &middot; {{ today_date }} — Bhagya{% endblock %}
 
 {% block content %}
 {# Pull out the two transit placements people care about most. #}
@@ -9,23 +9,8 @@
 {# Sade Sati phase label translates via i18n. #}
 {% set sade_phase_key = {'rising': 'phase_rising', 'peak': 'phase_peak', 'setting': 'phase_setting'}.get(flags.sade_sati_phase, '') %}
 
-<!-- Sticky top nav with brand -->
-<nav class="border-b border-stone-200/60 bg-cream/80 backdrop-blur sticky top-0 z-10 no-print">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-    <a href="/" class="font-display text-xl text-astro-700 font-bold">astro-ai</a>
-    <div class="flex items-center gap-3 sm:gap-4 text-sm">
-      {% include "_lang_picker.html" %}
-      <button onclick="window.print()" class="text-stone-500 hover:text-stone-700" title="{{ t(lang, 'nav_print') }}">
-        {{ t(lang, 'nav_print') }}
-      </button>
-      <a href="/monthly" class="text-stone-500 hover:text-stone-700">{{ t(lang, 'nav_monthly_link') }}</a>
-      <a href="/yearly" class="text-stone-500 hover:text-stone-700">{{ t(lang, 'nav_yearly_link') }}</a>
-      <a href="/matching" class="text-stone-500 hover:text-stone-700">{{ t(lang, 'nav_matching_link') }}</a>
-      <a href="/natal" class="text-stone-500 hover:text-stone-700">{{ t(lang, 'nav_natal_link') }}</a>
-      <a href="/" class="text-stone-500 hover:text-stone-700">{{ t(lang, 'nav_home') }}</a>
-    </div>
-  </div>
-</nav>
+{% set active_page = "today" %}
+{% include "_nav.html" %}
 
 <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 

@@ -18,11 +18,12 @@ from typing import Any, Final
 
 # English is the fallback for any missing Hindi key, so it must be complete.
 _EN: Final[dict[str, str]] = {
-    # nav / common
+    # nav / common — labels chosen to match what readers actually search for
+    # (matches AstroSage / Indian-astro convention).
     "nav_print":           "Print",
     "nav_home":            "Home",
-    "nav_today_link":      "Today's reading",
-    "nav_natal_link":      "Natal reading",
+    "nav_today_link":      "Today's Horoscope",
+    "nav_natal_link":      "Kundli",
     "back_form":           "Back to the form",
     "new_reading":         "New reading",
 
@@ -157,10 +158,25 @@ _EN: Final[dict[str, str]] = {
     "favorability_neutral":      "Neutral",
     "favorability_challenging":  "Challenging",
 
-    # monthly / yearly / matching
-    "nav_monthly_link":    "Monthly",
-    "nav_yearly_link":     "Yearly",
-    "nav_matching_link":   "Match charts",
+    # monthly / yearly / matching — AstroSage-style vocabulary
+    "nav_monthly_link":    "Monthly Horoscope",
+    "nav_yearly_link":     "Horoscope {year}",
+    "nav_matching_link":   "Kundli Matching",
+    "nav_dasha_link":      "Dasha Periods",
+
+    # Vimshottari Dasha
+    "dasha_title":         "Vimshottari Dasha",
+    "dasha_subtitle":      "The 120-year planetary-period system that defines your life's chapters",
+    "dasha_active_maha":   "Active Mahadasha",
+    "dasha_active_antar":  "Active Antardasha",
+    "dasha_remaining":     "Remaining in this Maha",
+    "dasha_upcoming":      "Upcoming Antardashas in current Mahadasha",
+    "dasha_next_maha":     "Next Mahadasha",
+    "dasha_period":        "{start} to {end}",
+    "dasha_years_suffix":  "years",
+    "dasha_card_title":    "Current Dasha",
+    "dasha_card_subtitle": "Your active Vimshottari period",
+    "dasha_view_full":     "Full Dasha timeline &rarr;",
 
     # kundali matching form
     "matching_title":      "Kundali Matching",
@@ -195,6 +211,19 @@ _EN: Final[dict[str, str]] = {
     "yearly_reading":      "This year's reading",
     "window_label":        "Window",
     "computed_today":      "Computed today",
+    "events_title":        "Key transit events",
+    "events_subtitle":     "Sign changes and retrograde flips of the inner planets, in chronological order",
+    "events_none":         "No notable transit events detected in this window.",
+
+    # Varshaphala — annual chart at solar return
+    "varshaphala_title":     "Varshaphala &mdash; your annual chart",
+    "varshaphala_subtitle":  "The chart cast at the moment Sun returns to its natal sidereal longitude this year",
+    "varshaphala_solar_return": "Solar return moment",
+    "varshaphala_annual_lagna": "Annual Lagna",
+    "varshaphala_annual_moon":  "Annual Moon",
+    "varshaphala_year_lord":    "Year Lord",
+    "varshaphala_muntha":       "Muntha house",
+    "varshaphala_muntha_note":  "Muntha is the house in the annual chart that holds the natal Sun's sign &mdash; classically known as the year's focus house.",
 
     # generic errors
     "error_chart":         "Couldn't compute the chart",
@@ -205,8 +234,8 @@ _EN: Final[dict[str, str]] = {
 _HI: Final[dict[str, str]] = {
     "nav_print":           "प्रिंट करें",
     "nav_home":            "मुख्य पृष्ठ",
-    "nav_today_link":      "आज का पठन",
-    "nav_natal_link":      "जन्म कुंडली",
+    "nav_today_link":      "आज का राशिफल",
+    "nav_natal_link":      "कुंडली",
     "back_form":           "फॉर्म पर वापस जाएं",
     "new_reading":         "नया पठन",
 
@@ -340,10 +369,25 @@ _HI: Final[dict[str, str]] = {
     "favorability_neutral":      "तटस्थ",
     "favorability_challenging":  "चुनौतीपूर्ण",
 
-    # monthly / yearly / matching
-    "nav_monthly_link":    "मासिक",
-    "nav_yearly_link":     "वार्षिक",
+    # monthly / yearly / matching — AstroSage-style vocabulary
+    "nav_monthly_link":    "मासिक राशिफल",
+    "nav_yearly_link":     "राशिफल {year}",
     "nav_matching_link":   "कुंडली मिलान",
+    "nav_dasha_link":      "दशा काल",
+
+    # Vimshottari Dasha
+    "dasha_title":         "विंशोत्तरी दशा",
+    "dasha_subtitle":      "120 वर्ष का ग्रह-दशा तंत्र जो आपके जीवन के अध्याय निर्धारित करता है",
+    "dasha_active_maha":   "वर्तमान महादशा",
+    "dasha_active_antar":  "वर्तमान अंतर्दशा",
+    "dasha_remaining":     "इस महादशा में शेष",
+    "dasha_upcoming":      "वर्तमान महादशा में आगामी अंतर्दशाएँ",
+    "dasha_next_maha":     "अगली महादशा",
+    "dasha_period":        "{start} से {end}",
+    "dasha_years_suffix":  "वर्ष",
+    "dasha_card_title":    "वर्तमान दशा",
+    "dasha_card_subtitle": "आपकी सक्रिय विंशोत्तरी अवधि",
+    "dasha_view_full":     "पूर्ण दशा समय-रेखा &rarr;",
 
     # kundali matching
     "matching_title":      "कुंडली मिलान",
@@ -378,6 +422,19 @@ _HI: Final[dict[str, str]] = {
     "yearly_reading":      "इस वर्ष का पठन",
     "window_label":        "अवधि",
     "computed_today":      "आज परिकलित",
+    "events_title":        "मुख्य गोचर घटनाएँ",
+    "events_subtitle":     "आंतरिक ग्रहों के राशि-परिवर्तन और वक्री-मार्गी परिवर्तन, कालक्रम में",
+    "events_none":         "इस अवधि में कोई उल्लेखनीय गोचर घटना नहीं मिली।",
+
+    # Varshaphala
+    "varshaphala_title":     "वर्षफल &mdash; आपका वार्षिक कुंडली",
+    "varshaphala_subtitle":  "इस वर्ष जब सूर्य अपनी जन्म-सायन देशांश पर लौटेगा, उस क्षण पर निर्मित कुंडली",
+    "varshaphala_solar_return": "सूर्य-प्रत्यागमन का क्षण",
+    "varshaphala_annual_lagna": "वार्षिक लग्न",
+    "varshaphala_annual_moon":  "वार्षिक चंद्र",
+    "varshaphala_year_lord":    "वर्ष का स्वामी",
+    "varshaphala_muntha":       "मुंथा भाव",
+    "varshaphala_muntha_note":  "मुंथा वह भाव है जिसमें वार्षिक कुंडली के अनुसार जन्म-सूर्य की राशि स्थित है &mdash; शास्त्रीय रूप से वर्ष का केंद्रित भाव।",
 }
 
 _TABLES: Final[dict[str, dict[str, str]]] = {"en": _EN, "hi": _HI}
