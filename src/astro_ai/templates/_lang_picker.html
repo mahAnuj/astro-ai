@@ -1,0 +1,15 @@
+{# Shared 2-button language picker. Posts to /lang with the current path
+   as `next` so we land back where we were. Caller passes `lang` (the
+   currently active language code: "en" or "hi"). #}
+<form method="post" action="/lang" class="flex items-center gap-1">
+  <input type="hidden" name="next" value="{{ request.url.path }}">
+  <button type="submit" name="lang" value="en"
+          class="text-xs px-1.5 py-0.5 rounded {{ 'text-astro-700 font-bold bg-astro-100' if lang == 'en' else 'text-stone-400 hover:text-stone-600' }}">
+    EN
+  </button>
+  <button type="submit" name="lang" value="hi"
+          class="text-xs px-1.5 py-0.5 rounded {{ 'text-astro-700 font-bold bg-astro-100' if lang == 'hi' else 'text-stone-400 hover:text-stone-600' }}"
+          style="font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;">
+    हिन्दी
+  </button>
+</form>

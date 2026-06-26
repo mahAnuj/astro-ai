@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}astro-ai — Your Vedic chart + AI reading, free{% endblock %}
+
+{% block content %}
+
+<!-- Top navigation strip — minimal, just brand + tagline + language picker. -->
+<nav class="border-b border-stone-200/60 bg-cream/80 backdrop-blur sticky top-0 z-10">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+    <a href="/" class="font-display text-xl text-astro-700 font-bold">astro-ai</a>
+    <div class="flex items-center gap-3">
+      <span class="text-xs text-stone-500 hidden sm:inline">Free Vedic astrology, powered by AI</span>
+      {% include "_lang_picker.html" %}
+    </div>
+  </div>
+</nav>
+
+<!-- HERO ------------------------------------------------------------- -->
+<section class="relative overflow-hidden">
+  <!-- Subtle radial gradient backdrop for warmth without being noisy. -->
+  <div class="absolute inset-0 -z-10 bg-gradient-to-b from-astro-50/60 via-cream to-cream"></div>
+  <div class="absolute -top-24 -right-24 -z-10 w-96 h-96 rounded-full bg-astro-200/30 blur-3xl"></div>
+  <div class="absolute -bottom-24 -left-24 -z-10 w-96 h-96 rounded-full bg-amber-200/30 blur-3xl"></div>
+
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20 grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
+    <!-- LEFT — value prop -->
+    <div>
+      <span class="inline-block text-xs font-semibold tracking-wider text-astro-700 uppercase bg-astro-100 px-3 py-1 rounded-full mb-4">
+        Free &middot; No signup &middot; Astronomically accurate
+      </span>
+      <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl text-stone-900 leading-tight mb-4">
+        Your Vedic chart,<br>
+        <span class="text-astro-700">decoded by AI.</span>
+      </h1>
+      <p class="text-lg text-stone-600 leading-relaxed mb-6">
+        Enter your birth details to get a personalised Vedic reading grounded in your real
+        Janma Kundali &mdash; computed via the same Swiss Ephemeris engine used by professional
+        Jyotishis.
+      </p>
+      <ul class="space-y-2.5 text-stone-700">
+        <li class="flex items-start gap-2.5">
+          <svg class="w-5 h-5 text-astro-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Lagna, all 9 grahas, houses, nakshatras &mdash; matches Future Point
+        </li>
+        <li class="flex items-start gap-2.5">
+          <svg class="w-5 h-5 text-astro-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          Frontier AI reads <em>your</em> chart, not a generic Sun-sign template
+        </li>
+        <li class="flex items-start gap-2.5">
+          <svg class="w-5 h-5 text-astro-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          No paywall, no per-minute astrologer fees, no spam
+        </li>
+      </ul>
+    </div>
+
+    <!-- RIGHT — chart list if cookie present, else form -->
+    <div>
+    {% if collection and collection.charts %}
+      <div class="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-astro-900/5 p-6 sm:p-8">
+        <span class="inline-block text-xs font-semibold tracking-wider text-astro-700 uppercase bg-astro-100 px-3 py-1 rounded-full mb-3">
+          {{ collection.charts | length }} saved chart{{ "s" if collection.charts | length != 1 else "" }}
+        </span>
+        <h2 class="font-display text-2xl text-astro-700 mb-1">Your charts</h2>
+        <p class="text-sm text-stone-500 mb-5">
+          The active chart powers today&rsquo;s reading. Switch any time.
+        </p>
+
+        <ul class="space-y-3">
+          {% for c in collection.charts %}
+          {% set is_active = (c.id == collection.active.id) %}
+          <li class="rounded-xl border {{ 'border-astro-400 bg-astro-50/40' if is_active else 'border-stone-200 bg-white' }} p-4">
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <div class="font-semibold text-stone-900 flex items-center gap-2">
+                  {{ c.name if c.name else 'Saved chart' }}
+                  {% if is_active %}
+                  <span class="text-[9px] font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Active</span>
+                  {% endif %}
+                </div>
+                <div class="text-xs text-stone-500 mt-0.5">
+                  {{ c.birth_date }} &middot; {{ c.birth_time }} &middot; {{ c.birth_place }}
+                </div>
+              </div>
+              {% if collection.charts | length > 1 %}
+              <form method="post" action="/delete-chart"
+                    onsubmit="return confirm('Delete this saved chart?');">
+                <input type="hidden" name="chart_id" value="{{ c.id }}">
+                <button type="submit" class="text-stone-400 hover:text-rose-600 text-xs" aria-label="Delete">
+                  &times;
+                </button>
+              </form>
+              {% endif %}
+            </div>
+
+            {% if is_active %}
+            <div class="flex flex-wrap gap-2 mt-3">
+              <a href="/today"
+                 class="flex-1 text-center px-3 py-1.5 bg-astro-600 hover:bg-astro-700 text-white text-sm font-semibold rounded-md">
+                Today&rsquo;s reading &rarr;
+              </a>
+              <a href="/natal"
+                 class="flex-1 text-center px-3 py-1.5 border border-astro-300 text-astro-700 hover:bg-astro-100 text-sm font-semibold rounded-md">
+                Natal reading
+              </a>
+            </div>
+            {% else %}
+            <form method="post" action="/switch" class="mt-3">
+              <input type="hidden" name="chart_id" value="{{ c.id }}">
+              <input type="hidden" name="next" value="/">
+              <button type="submit"
+                      class="w-full px-3 py-1.5 border border-stone-300 text-stone-700 hover:bg-stone-50 text-sm font-semibold rounded-md">
+                Make active
+              </button>
+            </form>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+
+        {% if collection.charts | length < 10 %}
+        <details class="mt-5">
+          <summary class="cursor-pointer text-sm text-astro-700 hover:text-astro-800 font-semibold inline-flex items-center gap-1">
+            <span aria-hidden="true">+</span> Save another chart
+          </summary>
+          <form method="post" action="/reading" class="mt-4 space-y-3">
+            <input type="text" name="name" placeholder="Name (optional)"
+                   class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+            <input type="date" name="birth_date" required
+                   class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+            <input type="time" name="birth_time" required
+                   class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+            <input type="text" name="birth_place" required placeholder="Birth place (city, country)"
+                   class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+            <button type="submit"
+                    class="w-full py-2.5 bg-astro-600 hover:bg-astro-700 text-white text-sm font-semibold rounded-lg">
+              Save &amp; read &rarr;
+            </button>
+          </form>
+        </details>
+        {% else %}
+        <p class="text-xs text-stone-500 mt-5">
+          You&rsquo;ve saved the max of 10 charts. Delete one above to add another.
+        </p>
+        {% endif %}
+
+        <form method="post" action="/reset" class="text-center mt-4 pt-4 border-t border-stone-100">
+          <button type="submit" class="text-xs text-stone-400 hover:text-rose-600 underline">
+            Forget all charts
+          </button>
+        </form>
+      </div>
+    {% else %}
+      <form method="post" action="/reading"
+            class="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-astro-900/5 p-6 sm:p-8">
+        <h2 class="font-display text-2xl text-astro-700 mb-1">Start with your birth details</h2>
+        <p class="text-sm text-stone-500 mb-5">All four fields take a few seconds.</p>
+
+        <div class="space-y-4">
+          <label class="block">
+            <span class="text-sm font-semibold text-stone-700">Name <span class="text-stone-400 font-normal">(optional)</span></span>
+            <input type="text" name="name" placeholder="e.g. Anuj"
+                   class="mt-1.5 w-full px-3 py-2.5 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+          </label>
+          <label class="block">
+            <span class="text-sm font-semibold text-stone-700">Birth date</span>
+            <input type="date" name="birth_date" required
+                   class="mt-1.5 w-full px-3 py-2.5 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+          </label>
+          <label class="block">
+            <span class="text-sm font-semibold text-stone-700">Birth time <span class="text-stone-400 font-normal">(24-hour, local)</span></span>
+            <input type="time" name="birth_time" required
+                   class="mt-1.5 w-full px-3 py-2.5 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+          </label>
+          <label class="block">
+            <span class="text-sm font-semibold text-stone-700">Birth place <span class="text-stone-400 font-normal">(city, country)</span></span>
+            <input type="text" name="birth_place" placeholder="e.g. Mumbai, India" required
+                   class="mt-1.5 w-full px-3 py-2.5 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+          </label>
+        </div>
+
+        <button type="submit"
+                class="mt-6 w-full py-3 bg-astro-600 hover:bg-astro-700 active:bg-astro-800 text-white font-semibold rounded-lg transition-colors disabled:bg-stone-400 disabled:cursor-wait">
+          <span class="htmx-default">Get my free reading &rarr;</span>
+          <span class="htmx-indicator">
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle>
+              <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+            </svg>
+            Consulting the chart...
+          </span>
+        </button>
+      </form>
+    {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- WHAT YOU GET ----------------------------------------------------- -->
+<section class="border-t border-stone-200/70 bg-white/60">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
+    <h2 class="font-display text-3xl sm:text-4xl text-center text-stone-900 mb-3">What you get</h2>
+    <p class="text-center text-stone-600 max-w-xl mx-auto mb-12">
+      A real Vedic chart and a reading that uses it &mdash; not a generic horoscope mass-produced
+      for one of twelve sun signs.
+    </p>
+
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <div class="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm">
+        <div class="w-11 h-11 rounded-xl bg-astro-100 text-astro-700 flex items-center justify-center mb-4">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>
+        </div>
+        <h3 class="font-display text-xl text-stone-900 mb-1.5">Accurate Janma Kundali</h3>
+        <p class="text-sm text-stone-600 leading-relaxed">
+          Lagna, all 9 grahas with sign + house + nakshatra, retrograde markers. Sidereal
+          (Lahiri ayanamsa), Whole Sign houses &mdash; the classical Parashari setup.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm">
+        <div class="w-11 h-11 rounded-xl bg-astro-100 text-astro-700 flex items-center justify-center mb-4">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        </div>
+        <h3 class="font-display text-xl text-stone-900 mb-1.5">AI personality reading</h3>
+        <p class="text-sm text-stone-600 leading-relaxed">
+          A 200-word personalised reading that references <em>your</em> actual Lagna, Moon
+          nakshatra, and key planetary placements &mdash; written by a frontier LLM, not pulled
+          from a template.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm relative overflow-hidden">
+        <span class="absolute top-3 right-3 text-[10px] font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full uppercase">Live</span>
+        <div class="w-11 h-11 rounded-xl bg-astro-100 text-astro-700 flex items-center justify-center mb-4">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+        <h3 class="font-display text-xl text-stone-900 mb-1.5">Daily forecast</h3>
+        <p class="text-sm text-stone-600 leading-relaxed">
+          Today's planetary transits read against <em>your</em> chart &mdash; not a Sun-sign
+          template. Come back daily; the reading updates with each refresh.
+        </p>
+      </div>
+    </div>
+
+    <!-- Coming-next strip beneath the live cards -->
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-stone-500">
+      <span class="text-stone-400 uppercase text-xs tracking-wider font-semibold">Coming next:</span>
+      <span class="inline-flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Vimshottari Dasha periods
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Kundali matching (marriage)
+      </span>
+      <span class="inline-flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Monthly &amp; yearly outlook
+      </span>
+
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS ----------------------------------------------------- -->
+<section>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
+    <h2 class="font-display text-3xl sm:text-4xl text-center text-stone-900 mb-12">How it works</h2>
+
+    <div class="grid md:grid-cols-3 gap-8 md:gap-6">
+
+      <div class="text-center md:text-left">
+        <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-astro-600 text-white font-bold font-display text-lg mb-3">1</div>
+        <h3 class="font-display text-lg text-stone-900 mb-1">You share birth details</h3>
+        <p class="text-sm text-stone-600">Date, time and place. Time matters &mdash; Lagna shifts every two hours.</p>
+      </div>
+
+      <div class="text-center md:text-left">
+        <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-astro-600 text-white font-bold font-display text-lg mb-3">2</div>
+        <h3 class="font-display text-lg text-stone-900 mb-1">We compute the chart</h3>
+        <p class="text-sm text-stone-600">Swiss Ephemeris calculates exact planetary positions in the sidereal zodiac.</p>
+      </div>
+
+      <div class="text-center md:text-left">
+        <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-astro-600 text-white font-bold font-display text-lg mb-3">3</div>
+        <h3 class="font-display text-lg text-stone-900 mb-1">AI reads your chart</h3>
+        <p class="text-sm text-stone-600">A frontier LLM interprets the placements into a flowing 200-word reading.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- WHY US ----------------------------------------------------------- -->
+<section class="border-t border-stone-200/70 bg-astro-50/40">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+    <div class="grid md:grid-cols-4 gap-6 text-center">
+      <div>
+        <div class="font-display text-3xl text-astro-700 mb-1">10/10</div>
+        <div class="text-xs uppercase tracking-wider text-stone-500">planet positions match Future Point</div>
+      </div>
+      <div>
+        <div class="font-display text-3xl text-astro-700 mb-1">Lahiri</div>
+        <div class="text-xs uppercase tracking-wider text-stone-500">ayanamsa, the Indian standard</div>
+      </div>
+      <div>
+        <div class="font-display text-3xl text-astro-700 mb-1">Free</div>
+        <div class="text-xs uppercase tracking-wider text-stone-500">no signup, no per-minute fees</div>
+      </div>
+      <div>
+        <div class="font-display text-3xl text-astro-700 mb-1">~3s</div>
+        <div class="text-xs uppercase tracking-wider text-stone-500">end-to-end reading time</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER ----------------------------------------------------------- -->
+<footer class="border-t border-stone-200/70">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-center text-xs text-stone-500 leading-relaxed">
+    Readings are interpretive and for personal reflection &mdash; not medical, legal or financial advice.<br>
+    <span class="text-stone-400">astro-ai &middot; built with care.</span>
+  </div>
+</footer>
+
+{% endblock %}

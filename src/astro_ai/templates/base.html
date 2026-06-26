@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}astro-ai{% endblock %}</title>
+
+<!-- Tailwind Play CDN — no build step. Fine for MVP; bake into a build pipeline before production scale. -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- HTMX for hx-boost (AJAX nav) + loading indicators. -->
+<script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@500;700&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+          display: ['"Crimson Pro"', 'ui-serif', 'Georgia', 'serif'],
+        },
+        colors: {
+          cream: '#faf7f2',
+          astro: {
+            50:  '#f6f1fb',
+            100: '#ece1f6',
+            500: '#8b5cf6',
+            600: '#7c3aed',
+            700: '#6b21a8',
+            800: '#581c87',
+            900: '#3b0764',
+          },
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  /* HTMX loading state: swap "default" / "loading" copy inside any button while a request is in flight. */
+  .htmx-request .htmx-default { display: none; }
+  .htmx-indicator { display: none; }
+  .htmx-request .htmx-indicator { display: inline-flex; align-items: center; gap: 0.5rem; }
+
+  /* Print stylesheet — used by the "Print / Save as PDF" buttons.
+     Strips the chrome and lets the reading itself fill the page. */
+  @media print {
+    .no-print, nav, footer { display: none !important; }
+    body { background: white !important; }
+    main { max-width: 100% !important; padding: 0 !important; }
+    article, section, .bg-white { box-shadow: none !important; border: 1px solid #e5e5e5 !important; }
+    a { color: inherit !important; text-decoration: none !important; }
+    /* Keep each reading section + the diamond chart on one page if possible. */
+    article, section, table, svg { page-break-inside: avoid; }
+    h1, h2, h3 { page-break-after: avoid; }
+  }
+</style>
+</head>
+
+<body hx-boost="true" class="bg-cream text-stone-900 font-sans min-h-full antialiased">
+  {% block content %}{% endblock %}
+</body>
+</html>

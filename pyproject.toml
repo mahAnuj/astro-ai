@@ -1,0 +1,47 @@
+[project]
+name = "astro-ai"
+version = "0.0.1"
+description = "Vedic astrology reading web app — MVP using LLM-only chart inference."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "jinja2>=3.1.0",
+    "python-multipart>=0.0.9",
+    "openai>=1.50.0",
+    "python-dotenv>=1.0.0",
+    "prompteval",
+    # Chart calculation stack — real ephemeris instead of LLM guessing.
+    # pyswisseph: Swiss Ephemeris (AGPL or commercial). Industry-standard
+    # planetary positions; supports sidereal/Vedic mode with Lahiri ayanamsa.
+    "pyswisseph>=2.10",
+    # geopy with Nominatim: free, no API key, place name -> (lat, lon).
+    "geopy>=2.4",
+    # timezonefinder: offline, lat/lon -> IANA timezone name. Handles
+    # historical TZ correctly when paired with stdlib zoneinfo.
+    "timezonefinder>=6.5",
+    # itsdangerous: signed cookies (persist seeker birth details client-side
+    # without a DB, tamper-proofed by HMAC).
+    "itsdangerous>=2.2",
+]
+
+[project.scripts]
+astro-ai = "astro_ai.main:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/astro_ai"]
+# .txt files inside the package (prompts/, templates/) are included by default,
+# but be explicit so a future build tweak doesn't silently drop them.
+include = [
+    "src/astro_ai/prompts/*.txt",
+    "src/astro_ai/templates/*.html",
+]
+
+[tool.uv.sources]
+# Use the sibling local checkout so prompteval changes show up here without
+# a republish. Swap to a pinned PyPI version once prompteval ships v0.1.0.
+prompteval = { path = "../prompteval", editable = true }

@@ -1,0 +1,360 @@
+"""FastAPI app — form, natal reading, today's transits, cookie-persisted seeker."""
+
+from __future__ import annotations
+
+import os
+from datetime import date
+from pathlib import Path
+
+import uvicorn
+from dotenv import load_dotenv
+from fastapi import FastAPI, Form, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+
+from astro_ai.chart import (
+    ChartError,
+    compute_chart,
+    compute_panchang,
+    compute_transit_snapshot,
+    compute_vedic_flags,
+)
+from astro_ai.llm import (
+    BirthDetails,
+    generate_daily_reading,
+    generate_reading,
+    parse_sectioned_reading,
+)
+from astro_ai.session import (
+    ChartCollection,
+    clear_collection,
+    load_collection,
+    save_collection,
+)
+
+# Language preference is stored in its own cookie (separate from the chart
+# collection — it's a UI/reading-output preference, not chart data).
+LANG_COOKIE = "astro_ai_lang"
+SUPPORTED_LANGS = {"en", "hi"}
+
+
+def _lang(request: Request) -> str:
+    """Read the seeker's language preference cookie; defaults to English."""
+    candidate = request.cookies.get(LANG_COOKIE, "en")
+    return candidate if candidate in SUPPORTED_LANGS else "en"
+
+# override=True so .env edits actually take effect when uvicorn reloads —
+# otherwise the first-loaded values stick for the lifetime of the process
+# and editing .env feels silently broken.
+load_dotenv(override=True)
+
+# Project layout: src/astro_ai/main.py → templates and production prompts live
+# alongside the code. The sibling `evals/` folder is the prompt-evaluation
+# sub-project (separate concern, not a runtime dependency).
+HERE = Path(__file__).resolve().parent
+TEMPLATES_DIR = HERE / "templates"
+PROMPTS_DIR = HERE / "prompts"
+PROMPT_PATH = PROMPTS_DIR / "natal.txt"
+DAILY_PROMPT_PATH = PROMPTS_DIR / "daily.txt"
+
+app = FastAPI(title="astro-ai", version="0.0.1")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request) -> HTMLResponse:
+    """Form for new visitors, chart-list + form for returning seekers."""
+    collection = load_collection(request)
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {
+            "collection": collection,
+            "saved": collection.active,
+            "lang": _lang(request),
+        },
+    )
+
+
+@app.post("/reading", response_class=HTMLResponse)
+async def reading(
+    request: Request,
+    name: str = Form(default=""),
+    birth_date: str = Form(...),
+    birth_time: str = Form(...),
+    birth_place: str = Form(...),
+) -> HTMLResponse:
+    """Take the form submission, call the LLM, render the reading."""
+    details = BirthDetails(
+        name=name.strip(),
+        birth_date=birth_date,
+        birth_time=birth_time,
+        birth_place=birth_place.strip(),
+    )
+    if not os.environ.get("OPENAI_API_KEY"):
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {
+                "title": "API key not configured",
+                "message": (
+                    "The server can't reach the LLM because OPENAI_API_KEY isn't set. "
+                    "Copy .env.example to .env, paste your key, and the dev server will "
+                    "pick it up on the next request."
+                ),
+            },
+            status_code=503,
+        )
+    try:
+        chart = compute_chart(
+            birth_date=details.birth_date,
+            birth_time=details.birth_time,
+            place=details.birth_place,
+        )
+    except ChartError as err:
+        # Most commonly a geocoding miss — surface as friendly form-level message.
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {"title": "Couldn't compute the chart", "message": str(err)},
+            status_code=400,
+        )
+    try:
+        reading_text = generate_reading(details, chart=chart, prompt_path=PROMPT_PATH)
+    except Exception as err:  # upstream LLM error → friendly page, not stack trace
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {
+                "title": "Couldn't generate a reading",
+                "message": f"{type(err).__name__}: {err}",
+            },
+            status_code=502,
+        )
+    response = templates.TemplateResponse(
+        request,
+        "result.html",
+        {"details": details, "reading": reading_text, "chart": chart},
+    )
+    # Append to the seeker's collection (or reactivate the matching saved chart).
+    try:
+        collection = load_collection(request).add(details)
+    except ValueError as err:
+        # Hit the chart-cap. Surface as friendly error rather than swallow.
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {"title": "Chart limit reached", "message": str(err)},
+            status_code=400,
+        )
+    save_collection(response, collection)
+    return response
+
+
+@app.get("/natal", response_class=HTMLResponse)
+async def natal(request: Request) -> HTMLResponse:
+    """Re-render the natal reading for the currently active saved chart."""
+    saved = load_collection(request).active
+    if saved is None:
+        return RedirectResponse("/", status_code=303)
+    return await _render_natal_for(request, saved.to_birth_details())
+
+
+async def _render_natal_for(request: Request, details: BirthDetails) -> HTMLResponse:
+    """Shared natal-reading renderer used by both GET /natal and POST /reading."""
+    try:
+        chart = compute_chart(details.birth_date, details.birth_time, details.birth_place)
+    except ChartError as err:
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {"title": "Couldn't compute the chart", "message": str(err)},
+            status_code=400,
+        )
+    if not os.environ.get("OPENAI_API_KEY"):
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {
+                "title": "API key not configured",
+                "message": (
+                    "The server can't reach the LLM because OPENAI_API_KEY isn't set. "
+                    "Add it to .env and reload."
+                ),
+            },
+            status_code=503,
+        )
+    flags = compute_vedic_flags(chart)
+    lang = _lang(request)
+    try:
+        reading_text = generate_reading(
+            details, chart=chart, flags=flags, prompt_path=PROMPT_PATH, lang=lang
+        )
+    except Exception as err:
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {
+                "title": "Couldn't generate a reading",
+                "message": f"{type(err).__name__}: {err}",
+            },
+            status_code=502,
+        )
+    sections = parse_sectioned_reading(reading_text)
+    return templates.TemplateResponse(
+        request,
+        "result.html",
+        {
+            "details": details,
+            "reading": reading_text,
+            "sections": sections,
+            "chart": chart,
+            "flags": flags,
+            "lang": lang,
+        },
+    )
+
+
+@app.get("/today", response_class=HTMLResponse)
+async def today(request: Request) -> HTMLResponse:
+    """Today's personalised Vedic reading using the active saved chart."""
+    saved = load_collection(request).active
+    if saved is None:
+        return RedirectResponse("/", status_code=303)
+    saved_details = saved.to_birth_details()
+
+    try:
+        natal = compute_chart(saved_details.birth_date, saved_details.birth_time, saved_details.birth_place)
+    except ChartError as err:
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {"title": "Couldn't compute the chart", "message": str(err)},
+            status_code=400,
+        )
+
+    transit = compute_transit_snapshot(natal)
+    flags = compute_vedic_flags(natal)
+    panchang = compute_panchang(natal)
+    lang = _lang(request)
+
+    if not os.environ.get("OPENAI_API_KEY"):
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {
+                "title": "API key not configured",
+                "message": (
+                    "The server can't reach the LLM because OPENAI_API_KEY isn't set. "
+                    "Add it to .env and reload."
+                ),
+            },
+            status_code=503,
+        )
+
+    try:
+        reading_text = generate_daily_reading(
+            saved_details,
+            natal=natal,
+            transit=transit,
+            flags=flags,
+            panchang=panchang,
+            prompt_path=DAILY_PROMPT_PATH,
+            lang=lang,
+        )
+    except Exception as err:
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {
+                "title": "Couldn't generate today's reading",
+                "message": f"{type(err).__name__}: {err}",
+            },
+            status_code=502,
+        )
+
+    return templates.TemplateResponse(
+        request,
+        "today.html",
+        {
+            "details": saved_details,
+            "natal": natal,
+            "transit": transit,
+            "flags": flags,
+            "panchang": panchang,
+            "reading": reading_text,
+            "today_date": date.today().isoformat(),
+            "lang": lang,
+        },
+    )
+
+
+@app.post("/lang")
+async def set_lang(
+    request: Request,
+    lang: str = Form(...),
+    next: str = Form(default="/"),
+) -> RedirectResponse:
+    """Switch reading language; persisted in its own cookie."""
+    if lang not in SUPPORTED_LANGS:
+        lang = "en"
+    response = RedirectResponse(_safe_redirect_target(next), status_code=303)
+    response.set_cookie(
+        LANG_COOKIE,
+        lang,
+        max_age=60 * 60 * 24 * 365 * 5,  # 5 years
+        httponly=False,  # readable from JS (purely a UI preference)
+        samesite="lax",
+        secure=False,
+    )
+    return response
+
+
+@app.post("/switch")
+async def switch(
+    request: Request,
+    chart_id: str = Form(...),
+    next: str = Form(default="/"),
+) -> RedirectResponse:
+    """Activate the named saved chart, then redirect to `next` (default home)."""
+    collection = load_collection(request).set_active(chart_id)
+    response = RedirectResponse(_safe_redirect_target(next), status_code=303)
+    save_collection(response, collection)
+    return response
+
+
+@app.post("/delete-chart")
+async def delete_chart(
+    request: Request,
+    chart_id: str = Form(...),
+) -> RedirectResponse:
+    """Remove a saved chart; if it was active, activate whatever remains first."""
+    collection = load_collection(request).remove(chart_id)
+    response = RedirectResponse("/", status_code=303)
+    if not collection.charts:
+        clear_collection(response)
+    else:
+        save_collection(response, collection)
+    return response
+
+
+@app.post("/reset")
+async def reset() -> RedirectResponse:
+    """Wipe all saved charts — fresh-start button on the welcome-back panel."""
+    response = RedirectResponse("/", status_code=303)
+    clear_collection(response)
+    return response
+
+
+def _safe_redirect_target(candidate: str) -> str:
+    """Allow only same-origin paths in `next=` redirects (open-redirect guard)."""
+    return candidate if candidate.startswith("/") and not candidate.startswith("//") else "/"
+
+
+def cli() -> None:
+    """Entry point for the `astro-ai` console script: starts uvicorn on localhost:8000."""
+    uvicorn.run("astro_ai.main:app", host="127.0.0.1", port=8000, reload=True)
+
+
+if __name__ == "__main__":
+    cli()

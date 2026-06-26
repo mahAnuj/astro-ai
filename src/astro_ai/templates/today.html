@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Today's reading &middot; {{ today_date }} — astro-ai{% endblock %}
+
+{% block content %}
+{# Pull out the two transit placements people care about most. #}
+{% set transit_moon = transit.planets | selectattr("name", "equalto", "Moon") | first %}
+{% set transit_sun  = transit.planets | selectattr("name", "equalto", "Sun")  | first %}
+
+<!-- Sticky top nav with brand -->
+<nav class="border-b border-stone-200/60 bg-cream/80 backdrop-blur sticky top-0 z-10 no-print">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+    <a href="/" class="font-display text-xl text-astro-700 font-bold">astro-ai</a>
+    <div class="flex items-center gap-3 sm:gap-4 text-sm">
+      {% include "_lang_picker.html" %}
+      <button onclick="window.print()" class="text-stone-500 hover:text-stone-700" title="Print or save as PDF">
+        Print
+      </button>
+      <a href="/" class="text-stone-500 hover:text-stone-700">Home</a>
+      <a href="/natal" class="text-astro-600 hover:text-astro-700 font-semibold">
+        Natal reading &rarr;
+      </a>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+
+  <!-- HEADER ------------------------------------------------------ -->
+  <header>
+    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">
+      Today &middot; {{ today_date }}
+    </div>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
+      {% if details.name %}{{ details.name }}'s outlook{% else %}Your outlook today{% endif %}
+    </h1>
+    <p class="text-sm text-stone-600">
+      Based on your natal chart (Lagna in {{ natal.lagna_rashi }}) and today's transits.
+    </p>
+  </header>
+
+  <!-- TRANSIT CHIPS — Moon + Sun headline placements ---------------- -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div class="bg-white rounded-xl border border-stone-200 p-4">
+      <div class="text-[10px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Moon transits</div>
+      <div class="font-display text-lg text-astro-700">{{ transit_moon.rashi }}</div>
+      <div class="text-xs text-stone-500 mt-0.5">
+        House {{ transit_moon.house }} from natal Lagna &middot; {{ transit_moon.nakshatra }} Nakshatra
+      </div>
+    </div>
+    <div class="bg-white rounded-xl border border-stone-200 p-4">
+      <div class="text-[10px] font-semibold uppercase tracking-wider text-stone-500 mb-1">Sun transits</div>
+      <div class="font-display text-lg text-astro-700">{{ transit_sun.rashi }}</div>
+      <div class="text-xs text-stone-500 mt-0.5">
+        House {{ transit_sun.house }} from natal Lagna &middot; {{ transit_sun.nakshatra }} Nakshatra
+      </div>
+    </div>
+  </section>
+
+  <!-- SADE SATI BADGE (if active) --------------------------------- -->
+  {% if flags.sade_sati %}
+  <section>
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
+      <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+      Sade Sati &middot; {{ flags.sade_sati_phase }} phase
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- PANCHANG: Rahu Kaal, Abhijit Muhurta, day's colour ----------- -->
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
+    <div class="flex items-baseline justify-between mb-4">
+      <h2 class="text-[10px] font-semibold uppercase tracking-wider text-stone-500">
+        Today's Panchang
+      </h2>
+      <span class="text-xs text-stone-500">
+        {{ panchang.weekday }} &middot; ruled by {{ panchang.day_lord }}
+      </span>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-3">
+
+      <!-- Rahu Kaal — avoid -->
+      <div class="rounded-xl border border-rose-200 bg-rose-50/50 p-4">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-rose-700">Rahu Kaal &middot; avoid</h3>
+        </div>
+        <div class="font-display text-xl text-rose-900">
+          {{ panchang.rahu_kaal_start.strftime('%H:%M') }} &ndash; {{ panchang.rahu_kaal_end.strftime('%H:%M') }}
+        </div>
+        <p class="text-xs text-rose-700/80 mt-1 leading-relaxed">
+          Inauspicious window. Avoid starting new ventures, signing important papers, or big decisions during this time.
+        </p>
+      </div>
+
+      <!-- Abhijit Muhurta — auspicious -->
+      <div class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Abhijit Muhurta &middot; auspicious</h3>
+        </div>
+        <div class="font-display text-xl text-emerald-900">
+          {{ panchang.abhijit_start.strftime('%H:%M') }} &ndash; {{ panchang.abhijit_end.strftime('%H:%M') }}
+        </div>
+        <p class="text-xs text-emerald-700/80 mt-1 leading-relaxed">
+          Most auspicious window of the day. Favourable for important actions, meetings, signing, beginnings.
+        </p>
+      </div>
+
+      <!-- Favourable colour -->
+      <div class="rounded-xl border border-stone-200 bg-white p-4">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Favourable colour</h3>
+        <div class="flex items-center gap-2">
+          <span class="w-5 h-5 rounded-full border border-stone-300 flex-shrink-0"
+                style="background-color: {{ panchang.day_color_hex }};"></span>
+          <span class="font-display text-lg text-stone-800">{{ panchang.day_color }}</span>
+        </div>
+        <p class="text-xs text-stone-500 mt-1 leading-relaxed">
+          Associated with {{ panchang.day_lord }}, the lord of {{ panchang.weekday }}.
+        </p>
+      </div>
+
+      <!-- Sunrise / sunset -->
+      <div class="rounded-xl border border-stone-200 bg-white p-4">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">Solar window</h3>
+        <div class="font-display text-lg text-stone-800">
+          {{ panchang.sunrise.strftime('%H:%M') }} &ndash; {{ panchang.sunset.strftime('%H:%M') }}
+        </div>
+        <p class="text-xs text-stone-500 mt-1 leading-relaxed">
+          Sunrise to sunset at your natal birthplace, used to derive today's Muhurta windows.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- DAILY READING ----------------------------------------------- -->
+  <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+    <h2 class="text-[10px] font-semibold uppercase tracking-wider text-stone-500 mb-3">Today's reading</h2>
+    <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-[1.02rem]">{{ reading }}</p>
+  </article>
+
+  <!-- ALL TRANSITS TABLE ------------------------------------------ -->
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
+    <h2 class="text-[10px] font-semibold uppercase tracking-wider text-stone-500 mb-3">All transits today</h2>
+    <table class="w-full text-sm">
+      <tbody>
+        {% for p in transit.planets %}
+        <tr class="border-b border-stone-100 last:border-0">
+          <td class="py-2 text-stone-700 w-24 align-top">
+            {{ p.name }}{% if p.retrograde %}<span class="text-[10px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded ml-1 align-middle">R</span>{% endif %}
+          </td>
+          <td class="py-2 text-stone-800 leading-relaxed">
+            <div>
+              now in {{ p.rashi }}
+              <span class="text-stone-400">&middot;</span>
+              transiting your natal house {{ p.house }}
+              <span class="text-stone-400">&middot;</span>
+              {{ "%.1f"|format(p.longitude) }}&deg;
+            </div>
+            <div class="text-xs text-stone-500">{{ p.nakshatra }} Nakshatra</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="text-xs text-stone-500 mt-3">
+      Computed for {{ transit.moment.strftime('%Y-%m-%d %H:%M UT') }}.
+      Houses are reckoned from your natal Lagna in {{ natal.lagna_rashi }}.
+    </p>
+  </section>
+
+  <!-- ACTIONS ----------------------------------------------------- -->
+  <div class="flex flex-wrap gap-3 justify-center pt-2">
+    <a href="/today" class="px-4 py-2 bg-astro-600 hover:bg-astro-700 text-white text-sm font-semibold rounded-lg">
+      Refresh today
+    </a>
+    <a href="/" class="px-4 py-2 border border-stone-300 text-stone-700 hover:bg-stone-50 text-sm font-semibold rounded-lg">
+      Back home
+    </a>
+  </div>
+
+</main>
+{% endblock %}

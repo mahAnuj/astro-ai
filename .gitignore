@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.python-version
+
+# Env / secrets
+.env
+
+# prompteval artifacts
+.prompteval/
+report.html
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
