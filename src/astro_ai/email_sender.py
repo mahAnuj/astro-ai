@@ -23,7 +23,7 @@ import httpx
 log = logging.getLogger(__name__)
 
 BREVO_ENDPOINT = "https://api.brevo.com/v3/smtp/email"
-_DEFAULT_FROM_NAME = "Bhagya"
+_DEFAULT_FROM_NAME = "Shubh Bhagya"
 
 
 def _api_key() -> str | None:

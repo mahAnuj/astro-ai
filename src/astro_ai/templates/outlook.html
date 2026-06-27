@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}{% if details.name %}{{ t(lang, title_key, name=details.name) }}{% else %}{{ t(lang, title_anon_key) }}{% endif %} — Bhagya{% endblock %}
+{% block title %}{% if details.name %}{{ t(lang, title_key, name=details.name) }}{% else %}{{ t(lang, title_anon_key) }}{% endif %} — Shubh Bhagya{% endblock %}
+{% block meta_description %}Your {{ 'monthly' if active_page == 'monthly' else 'yearly' }} Vedic horoscope — career, money, love, health, and wellbeing across each phase, grounded in your natal chart and current transits.{% endblock %}
 
 {% block content %}
 {% set sade_phase_key = {'rising': 'phase_rising', 'peak': 'phase_peak', 'setting': 'phase_setting'}.get(flags.sade_sati_phase, '') %}

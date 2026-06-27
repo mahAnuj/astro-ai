@@ -3,9 +3,57 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>{% block title %}Bhagya{% endblock %}</title>
+<title>{% block title %}Shubh Bhagya — Free Vedic Astrology, Kundli, Rashifal{% endblock %}</title>
 
-<!-- PWA: manifest declares Bhagya as an installable web app. -->
+{# SEO meta — pages override `meta_description` and `og_image` blocks as needed. #}
+<meta name="description" content="{% block meta_description %}Free Vedic astrology by Shubh Bhagya — your Janma Kundli, daily Rashifal for all 12 rashis, dasha periods, and life readings rooted in classical Parashari tradition.{% endblock %}">
+<link rel="canonical" href="{{ site_url }}{{ request.url.path }}">
+
+{# Open Graph — controls how the page renders when shared on WhatsApp,
+   FB, LinkedIn etc. og:image is the diamond icon by default; readings
+   pages can override the og_image block with chart-specific imagery. #}
+<meta property="og:site_name" content="Shubh Bhagya">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ self.title() }}">
+<meta property="og:description" content="{{ self.meta_description() }}">
+<meta property="og:url" content="{{ site_url }}{{ request.url.path }}">
+<meta property="og:image" content="{% block og_image %}{{ site_url }}/static/icons/icon-512.png{% endblock %}">
+<meta property="og:locale" content="{% if lang == 'hi' %}hi_IN{% else %}en_IN{% endif %}">
+
+{# Twitter Cards — small distinct format from OG, surfaces in X previews. #}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ self.title() }}">
+<meta name="twitter:description" content="{{ self.meta_description() }}">
+<meta name="twitter:image" content="{{ self.og_image() }}">
+
+{# Structured data — tells Google we're a real Organization + WebSite so
+   the brand can earn a knowledge-panel sidebar eventually. JSON-LD format
+   is preferred over microdata; safe to leave alongside whatever else. #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "{{ site_url }}/#org",
+      "name": "Shubh Bhagya",
+      "url": "{{ site_url }}/",
+      "logo": "{{ site_url }}/static/icons/icon-512.png",
+      "description": "Free Vedic astrology — Kundli, Rashifal, Dasha, and life readings rooted in classical Parashari tradition."
+    },
+    {
+      "@type": "WebSite",
+      "@id": "{{ site_url }}/#website",
+      "name": "Shubh Bhagya",
+      "url": "{{ site_url }}/",
+      "publisher": { "@id": "{{ site_url }}/#org" },
+      "inLanguage": ["en", "hi"]
+    }
+  ]
+}
+</script>
+
+<!-- PWA: manifest declares Shubh Bhagya as an installable web app. -->
 <link rel="manifest" href="/static/manifest.webmanifest">
 <!-- theme-color tints the Android Chrome address bar and PWA status bar
      to match the nav's astro-700 backdrop. -->
@@ -18,7 +66,7 @@
      smaller icons unflatteringly. -->
 <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Bhagya">
+<meta name="apple-mobile-web-app-title" content="Shubh Bhagya">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
 <!-- Browser tab favicon — crisp 32x32 PNG that browsers prefer over the
@@ -113,7 +161,7 @@
     <div class="flex items-start gap-3">
       <img src="/static/icons/icon-192.png" alt="" class="w-10 h-10 rounded shrink-0">
       <div class="flex-1 min-w-0">
-        <div class="font-semibold text-stone-900">Install Bhagya</div>
+        <div class="font-semibold text-stone-900">Install Shubh Bhagya</div>
         <div id="pwa-install-msg" class="text-stone-600 text-xs mt-0.5"></div>
       </div>
       <button id="pwa-install-close" type="button" class="text-stone-400 hover:text-stone-700"

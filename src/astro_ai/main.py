@@ -9,7 +9,7 @@ from pathlib import Path
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, Response, status
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
@@ -189,6 +189,72 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env.globals["t"] = _i18n_translate
 # current_year used by nav labels like "Horoscope 2026" — auto-updates yearly.
 templates.env.globals["current_year"] = lambda: date.today().year
+
+
+def _site_url() -> str:
+    """Canonical site URL for SEO meta + email links.
+
+    Returned by the Jinja global `site_url` and used by sitemap.xml etc.
+    Defaults to the production custom domain; override per-environment with
+    BHAGYA_SITE_URL when running on a staging/preview deploy.
+    """
+    return os.environ.get("BHAGYA_SITE_URL", "").rstrip("/") or "https://shubhagya.com"
+
+
+# Expose site_url to every template so canonical/OG/JSON-LD tags can build
+# absolute URLs without each handler passing it in.
+templates.env.globals["site_url"] = _site_url()
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap() -> Response:
+    """XML sitemap for search engines.
+
+    Lists every crawlable, publicly accessible page. Excluded: chart-specific
+    pages that need a user-supplied chart (/today, /natal, /monthly, /yearly,
+    /dasha — Google won't reach them anyway without cookies), and /admin/usage
+    (also blocked in robots.txt for defense-in-depth).
+
+    The yearly horoscope path /yearly takes its title from the current year,
+    so updates implicitly via the current_year template global.
+    """
+    base = _site_url()
+    today = date.today().isoformat()
+    # changefreq + priority are hints — Google mostly ignores them but other
+    # search engines (Bing, Yandex) still use them as ranking signals.
+    pages = [
+        ("/",         "daily",   "1.0"),
+        ("/rashifal", "daily",   "0.9"),
+        ("/matching", "monthly", "0.7"),
+    ]
+    body = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    body += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for path, freq, prio in pages:
+        body += "  <url>\n"
+        body += f"    <loc>{base}{path}</loc>\n"
+        body += f"    <lastmod>{today}</lastmod>\n"
+        body += f"    <changefreq>{freq}</changefreq>\n"
+        body += f"    <priority>{prio}</priority>\n"
+        body += "  </url>\n"
+    body += "</urlset>\n"
+    return Response(content=body, media_type="application/xml")
+
+
+@app.get("/robots.txt", include_in_schema=False)
+async def robots() -> Response:
+    """Crawler directives.
+
+    Allows everything except /admin/* (auth-gated; no point indexing). Points
+    crawlers at the sitemap so they discover all canonical URLs without having
+    to follow internal links.
+    """
+    body = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin/\n"
+        f"\nSitemap: {_site_url()}/sitemap.xml\n"
+    )
+    return Response(content=body, media_type="text/plain")
 
 
 @app.get("/sw.js", include_in_schema=False)
@@ -756,7 +822,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     today_iso = date.today().isoformat()
     today_pretty = date.today().strftime("%A, %d %B %Y")
     prompt_fp = cache.fingerprint_prompt(RASHIFAL_PROMPT_PATH)
-    site_url = os.environ.get("BHAGYA_SITE_URL", "").rstrip("/") or "https://bhagya.app"
+    site_url = _site_url()
 
     # Build the Rashifal section list for each language we actually need.
     # We trigger generation via _shared_three_tier so cold-start days still
@@ -812,7 +878,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
             site_url=site_url,
             unsubscribe_url=unsub_url,
         )
-        subject = "आज का राशिफल — Bhagya" if lang == "hi" else "Today's Rashifal — Bhagya"
+        subject = "आज का राशिफल — Shubh Bhagya" if lang == "hi" else "Today's Rashifal — Shubh Bhagya"
         ok = email_sender.send(sub["email"], subject=subject, html=html)
         if ok:
             sent += 1
