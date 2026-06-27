@@ -10,8 +10,9 @@ from pathlib import Path
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from astro_ai.chart import (
@@ -169,6 +170,7 @@ load_dotenv(override=True)
 HERE = Path(__file__).resolve().parent
 TEMPLATES_DIR = HERE / "templates"
 PROMPTS_DIR = HERE / "prompts"
+STATIC_DIR = HERE / "static"
 PROMPT_PATH = PROMPTS_DIR / "natal.txt"
 DAILY_PROMPT_PATH = PROMPTS_DIR / "daily.txt"
 MONTHLY_PROMPT_PATH = PROMPTS_DIR / "monthly.txt"
@@ -177,12 +179,36 @@ MATCHING_PROMPT_PATH = PROMPTS_DIR / "matching.txt"
 RASHIFAL_PROMPT_PATH = PROMPTS_DIR / "rashifal.txt"
 
 app = FastAPI(title="astro-ai", version="0.0.1")
+# Serve the PWA manifest, service worker, and icons from /static/.
+# StaticFiles mounts must precede route definitions for the most specific
+# path to win, but FastAPI's router handles this correctly either way.
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 # Expose i18n to every template as `t(key, **kwargs)`. Templates pass the
 # current `lang` (also injected per-request) into the call.
 templates.env.globals["t"] = _i18n_translate
 # current_year used by nav labels like "Horoscope 2026" — auto-updates yearly.
 templates.env.globals["current_year"] = lambda: date.today().year
+
+
+@app.get("/sw.js", include_in_schema=False)
+async def service_worker() -> FileResponse:
+    """Serve the PWA service worker from the root path.
+
+    Why not just /static/sw.js: a service worker's "scope" defaults to the
+    path it was served from. Serving at /static/sw.js would limit caching
+    to /static/* requests. Serving at /sw.js gives it scope `/`, so it can
+    intercept and cache HTML pages too.
+
+    Cache-Control: no-cache means the browser revalidates the SW file on
+    every load — critical for being able to ship SW updates without users
+    being stuck on a stale version forever.
+    """
+    return FileResponse(
+        STATIC_DIR / "sw.js",
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-cache"},
+    )
 
 
 @app.get("/", response_class=HTMLResponse)

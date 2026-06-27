@@ -38,11 +38,14 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/astro_ai"]
-# .txt files inside the package (prompts/, templates/) are included by default,
-# but be explicit so a future build tweak doesn't silently drop them.
+# Non-code assets inside the package — be explicit so a future build tweak
+# doesn't silently drop them (prompts/templates/manifest/icons/SW).
 include = [
     "src/astro_ai/prompts/*.txt",
     "src/astro_ai/templates/*.html",
+    "src/astro_ai/static/*.webmanifest",
+    "src/astro_ai/static/*.js",
+    "src/astro_ai/static/icons/*.png",
 ]
 
 # prompteval is a dev/eval-only tool, not a runtime dep — it lives in the

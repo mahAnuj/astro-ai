@@ -2,8 +2,23 @@
 <html lang="{{ lang or 'en' }}" class="h-full">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{% block title %}Bhagya{% endblock %}</title>
+
+<!-- PWA: manifest declares Bhagya as an installable web app. -->
+<link rel="manifest" href="/static/manifest.webmanifest">
+<!-- theme-color tints the Android Chrome address bar and PWA status bar
+     to match the nav's astro-700 backdrop. -->
+<meta name="theme-color" content="#6b21a8">
+
+<!-- iOS Safari: PWA install via "Add to Home Screen" needs separate hints
+     because Safari ignores most of the manifest. apple-mobile-web-app-capable
+     hides the Safari URL bar once installed; the touch icon is what shows
+     on the home screen. -->
+<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bhagya">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 
 <!-- Tailwind Play CDN — no build step. Fine for MVP; bake into a build pipeline before production scale. -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -78,5 +93,96 @@
 
 <body hx-boost="true" class="bg-cream text-stone-900 font-sans min-h-full antialiased">
   {% block content %}{% endblock %}
+
+  {# PWA install banner: appears on mobile when the app isn't installed yet.
+     Two paths — Chrome/Android fires `beforeinstallprompt` (real button),
+     iOS Safari needs static instructions because Apple doesn't surface the
+     event. Banner self-dismisses on close and remembers the choice. #}
+  <div id="pwa-install-banner" class="hidden fixed bottom-3 inset-x-3 sm:left-3 sm:right-auto sm:w-80
+                                       z-40 bg-white border border-stone-300 rounded-lg shadow-lg p-3 text-sm no-print">
+    <div class="flex items-start gap-3">
+      <img src="/static/icons/icon-192.png" alt="" class="w-10 h-10 rounded shrink-0">
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-stone-900">Install Bhagya</div>
+        <div id="pwa-install-msg" class="text-stone-600 text-xs mt-0.5"></div>
+      </div>
+      <button id="pwa-install-close" type="button" class="text-stone-400 hover:text-stone-700"
+              aria-label="Dismiss install banner">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+    </div>
+    <button id="pwa-install-action" type="button"
+            class="hidden mt-2 w-full bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium py-1.5 rounded">
+      Install
+    </button>
+  </div>
+
+  <script>
+    // PWA bootstrap: register the service worker and manage the install banner.
+    // Runs once per page load; silent when the user already installed or
+    // dismissed previously.
+    (function() {
+      var DISMISS_KEY = 'bhagya_pwa_install_dismissed';
+
+      // 1. Register the SW. /sw.js is served from root (see main.py) so its
+      //    default scope is `/`, letting it intercept HTML pages too.
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').catch(function(err) {
+            console.warn('SW registration failed', err);
+          });
+        });
+      }
+
+      // 2. Decide whether to even attempt the install banner.
+      try {
+        if (localStorage.getItem(DISMISS_KEY) === '1') return;
+        if (window.matchMedia('(display-mode: standalone)').matches) return;
+        if (window.navigator.standalone === true) return;  // iOS standalone
+      } catch (e) { return; }
+
+      var banner = document.getElementById('pwa-install-banner');
+      var msg    = document.getElementById('pwa-install-msg');
+      var btn    = document.getElementById('pwa-install-action');
+      var close  = document.getElementById('pwa-install-close');
+      if (!banner) return;
+
+      function dismiss() {
+        banner.classList.add('hidden');
+        try { localStorage.setItem(DISMISS_KEY, '1'); } catch (e) {}
+      }
+      close.addEventListener('click', dismiss);
+
+      // Chrome/Edge/Android path: capture the event, show a real Install button.
+      var deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        msg.textContent = 'Add to your home screen — works offline, no ads.';
+        btn.classList.remove('hidden');
+        banner.classList.remove('hidden');
+      });
+      btn.addEventListener('click', function() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function() {
+          deferredPrompt = null;
+          dismiss();
+        });
+      });
+
+      // iOS Safari path: no install event exists, so static instructions.
+      var ua = navigator.userAgent.toLowerCase();
+      var isIos    = /iphone|ipad|ipod/.test(ua);
+      var isSafari = /safari/.test(ua) && !/crios|fxios|edgios|chrome/.test(ua);
+      if (isIos && isSafari) {
+        msg.innerHTML = 'Tap <strong>Share</strong> &rarr; <strong>Add to Home Screen</strong>.';
+        btn.classList.add('hidden');
+        banner.classList.remove('hidden');
+      }
+    })();
+  </script>
 </body>
 </html>
