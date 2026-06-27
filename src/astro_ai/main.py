@@ -779,11 +779,76 @@ async def subscribe(request: Request,
     Called from the modal in _subscribe_modal.html via fetch(). Returns JSON
     `{ok: true}` on success or `{ok: false, error: "..."}` so the frontend
     can show inline feedback without a full page reload.
+
+    Side effect: sends a one-off welcome email to brand-new subscribers
+    (skipped for re-subscribes). Welcome failure is logged but doesn't
+    block the success response — the subscription itself already saved.
     """
-    ok, msg = subscribers.subscribe(email, lang)
-    if ok:
-        return JSONResponse({"ok": True})
-    return JSONResponse({"ok": False, "error": msg}, status_code=400)
+    ok, is_new, msg = subscribers.subscribe(email, lang)
+    if not ok:
+        return JSONResponse({"ok": False, "error": msg}, status_code=400)
+    if is_new:
+        try:
+            _send_welcome_email(email, lang)
+        except Exception as err:
+            # Log and continue — the user is already subscribed; missing
+            # welcome is a minor degradation, not a failure.
+            import logging
+            logging.getLogger(__name__).warning("welcome email failed for %s: %s", email, err)
+    return JSONResponse({"ok": True})
+
+
+def _send_welcome_email(email: str, lang: str) -> bool:
+    """Send the one-off welcome email to a newly-subscribed user.
+
+    Embeds today's Rashifal so the first email delivers immediate value
+    (not just a "you're subscribed" confirmation). Reuses _shared_three_tier
+    so the welcome email piggybacks on the same daily-generated Rashifal
+    that the morning blast uses — zero extra LLM cost.
+    """
+    today_iso = date.today().isoformat()
+    prompt_fp = cache.fingerprint_prompt(RASHIFAL_PROMPT_PATH)
+    site_url = _site_url()
+
+    # Build today's Rashifal sections — may trigger generation if neither
+    # GCS nor SQLite has today's content for this language yet.
+    try:
+        neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+        transit = compute_transit_snapshot(neutral_chart)
+        text = _shared_three_tier(
+            route="rashifal",
+            cache_key=f"rashifal:{today_iso}:{lang}:{prompt_fp}",
+            storage_key=f"rashifal/{today_iso}-{lang}-{prompt_fp}.txt",
+            lang=lang,
+            call_fn=lambda: generate_rashifal(
+                transit=transit, today_iso=today_iso,
+                prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
+            ),
+        )
+        sections = [
+            (symbol_for_rashi_label(title) or "✦", title, body)
+            for title, body in parse_sectioned_reading(text)
+        ]
+    except Exception:
+        # If we can't build today's Rashifal (LLM/provider all failed),
+        # send a no-rashifal welcome — better than failing the whole signup.
+        sections = []
+
+    unsub_url = (
+        f"{site_url}/unsubscribe?email={email}&token={subscribers.unsubscribe_token(email)}"
+    )
+    html = templates.env.get_template("email/welcome.html").render(
+        lang=lang,
+        rashifal_sections=sections,
+        site_url=site_url,
+        unsubscribe_url=unsub_url,
+    )
+    subject = (
+        "Shubh Bhagya में स्वागत है — कल से दैनिक राशिफल शुरू"
+        if lang == "hi"
+        else "Welcome to Shubh Bhagya — your daily Rashifal starts tomorrow"
+    )
+    return email_sender.send(email, subject=subject, html=html)
 
 
 @app.get("/unsubscribe", response_class=HTMLResponse)

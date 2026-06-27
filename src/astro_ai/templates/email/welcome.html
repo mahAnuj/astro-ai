@@ -1,0 +1,177 @@
+{#- Welcome email — sent once, immediately after a NEW successful subscribe.
+    Subscribers who re-add the same email don't get this again (subscribers.py
+    returns is_new=False on the second hit).
+
+    Goals:
+      1. Confirm the subscription (transactional, expected by Gmail/Outlook)
+      2. Set expectations (when, what, how to unsubscribe)
+      3. Deliver immediate value — include today's Rashifal preview so the
+         first email lands with real content, not just confirmation
+      4. Surface other Shubh Bhagya features the new subscriber may not know about
+
+    Same email-safe constraints as daily_rashifal.html: table layout, inline
+    styles, 600px max width, web-safe font fallback chain. No <style> block,
+    no flexbox, no JS.
+
+    Variables expected:
+      lang             — 'en' | 'hi'
+      rashifal_sections — list of (glyph, title, body) tuples (today's reading)
+      site_url         — 'https://shubhagya.com'
+      unsubscribe_url  — per-recipient HMAC-signed link
+-#}
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% if lang == 'hi' %}Shubh Bhagya में स्वागत है{% else %}Welcome to Shubh Bhagya{% endif %}</title>
+</head>
+<body style="margin:0;padding:0;background:#faf7f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans Devanagari',sans-serif;color:#1c1917;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e7e5e4;">
+
+        {#- Header: logo + wordmark -#}
+        <tr>
+          <td style="padding:24px 28px 12px 28px;border-bottom:1px solid #f5f5f4;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="vertical-align:middle;padding-right:10px;">
+                  <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="display:block;color:#6b21a8;">
+                    <g fill="none" stroke="currentColor" stroke-width="6">
+                      <polygon points="50,5 95,50 50,95 5,50"/>
+                      <line x1="50" y1="5" x2="50" y2="95"/>
+                      <line x1="5" y1="50" x2="95" y2="50"/>
+                      <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
+                    </g>
+                    <circle cx="50" cy="50" r="7" fill="#ffd764"/>
+                  </svg>
+                </td>
+                <td style="vertical-align:middle;">
+                  <span style="font-size:22px;font-weight:700;color:#6b21a8;letter-spacing:-0.3px;">Shubh Bhagya</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        {#- Welcome headline + brief greeting -#}
+        <tr>
+          <td style="padding:24px 28px 8px 28px;">
+            <div style="font-size:32px;line-height:1;margin-bottom:8px;">🪔</div>
+            <h1 style="margin:0;font-size:22px;font-weight:700;color:#1c1917;">
+              {% if lang == 'hi' %}नमस्ते — स्वागत है!{% else %}Namaste — welcome aboard!{% endif %}
+            </h1>
+            <p style="margin:10px 0 0 0;font-size:14px;color:#44403c;line-height:1.6;">
+              {% if lang == 'hi' %}आप अब Shubh Bhagya की दैनिक राशिफल सेवा में सदस्य हैं। हर सुबह सूर्योदय के समय आपको एक ईमेल मिलेगा।{% else %}You're now subscribed to Shubh Bhagya's daily Rashifal. One email each morning at sunrise — keeps your day grounded.{% endif %}
+            </p>
+          </td>
+        </tr>
+
+        {#- What to expect -#}
+        <tr>
+          <td style="padding:18px 28px 4px 28px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;border-radius:6px;">
+              <tr>
+                <td style="padding:14px 16px;">
+                  <div style="font-size:13px;font-weight:600;color:#6b21a8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">
+                    {% if lang == 'hi' %}आप क्या उम्मीद कर सकते हैं{% else %}What to expect{% endif %}
+                  </div>
+                  <ul style="margin:0;padding-left:18px;font-size:13px;color:#44403c;line-height:1.7;">
+                    <li>{% if lang == 'hi' %}हर सुबह ~7 बजे IST एक ईमेल{% else %}One email every morning, ~7 AM IST{% endif %}</li>
+                    <li>{% if lang == 'hi' %}सभी 12 राशियों का आज का राशिफल — अपनी राशि चुनें{% else %}Today's reading for all 12 rashis — scroll to find yours{% endif %}</li>
+                    <li>{% if lang == 'hi' %}आज का पंचांग, राहु काल, अभिजित मुहूर्त{% else %}Today's Panchang, Rahu Kaal, Abhijit Muhurta{% endif %}</li>
+                    <li>{% if lang == 'hi' %}हर ईमेल में एक-क्लिक सदस्यता समाप्त करने का लिंक{% else %}One-click unsubscribe in every email's footer{% endif %}</li>
+                  </ul>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        {#- First gift: today's Rashifal, embedded so the welcome email itself
+            has immediate value rather than just being a confirmation. -#}
+        {% if rashifal_sections %}
+        <tr>
+          <td style="padding:24px 28px 0 28px;">
+            <h2 style="margin:0 0 4px 0;font-size:18px;font-weight:700;color:#1c1917;">
+              {% if lang == 'hi' %}आज का राशिफल{% else %}Today's Rashifal — your first reading{% endif %}
+            </h2>
+            <p style="margin:0 0 8px 0;font-size:12px;color:#78716c;">
+              {% if lang == 'hi' %}कल से यह आपके इनबॉक्स में अपने आप पहुँचेगा।{% else %}From tomorrow this lands automatically in your inbox.{% endif %}
+            </p>
+          </td>
+        </tr>
+        {% for glyph, title, body in rashifal_sections %}
+        <tr>
+          <td style="padding:10px 28px 0 28px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;border-radius:6px;">
+              <tr>
+                <td style="padding:14px 16px;">
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                      <td style="font-size:20px;color:#6b21a8;padding-right:8px;vertical-align:middle;">{{ glyph }}</td>
+                      <td style="font-size:15px;font-weight:600;color:#1c1917;vertical-align:middle;">{{ title }}</td>
+                    </tr>
+                  </table>
+                  <div style="font-size:14px;color:#44403c;line-height:1.55;margin-top:6px;">
+                    {{ body }}
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+
+        {#- Other Shubh Bhagya features — discovery, drives traffic to the site -#}
+        <tr>
+          <td style="padding:24px 28px 0 28px;">
+            <h2 style="margin:0 0 10px 0;font-size:18px;font-weight:700;color:#1c1917;">
+              {% if lang == 'hi' %}Shubh Bhagya पर और मुफ्त उपलब्ध{% else %}Also free on Shubh Bhagya{% endif %}
+            </h2>
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr><td style="padding:6px 0;font-size:14px;color:#44403c;line-height:1.5;">
+                <strong>{% if lang == 'hi' %}जन्म कुंडली{% else %}Janma Kundli{% endif %}</strong>
+                — {% if lang == 'hi' %}अपनी जन्म तिथि से व्यक्तित्व, करियर, धन, विवाह का पूरा विश्लेषण।{% else %}Personality, career, money, marriage, and life-stage analysis from your birth chart.{% endif %}
+              </td></tr>
+              <tr><td style="padding:6px 0;font-size:14px;color:#44403c;line-height:1.5;">
+                <strong>{% if lang == 'hi' %}विवाह के लिए कुंडली मिलान{% else %}Kundli Matching for Marriage{% endif %}</strong>
+                — {% if lang == 'hi' %}अष्टकूट गुण मिलान, मंगल दोष, और संगतता रिपोर्ट।{% else %}Ashtakoot Guna Milan, Manglik check, and compatibility breakdown.{% endif %}
+              </td></tr>
+              <tr><td style="padding:6px 0;font-size:14px;color:#44403c;line-height:1.5;">
+                <strong>{% if lang == 'hi' %}दशा अवधि{% else %}Dasha Periods{% endif %}</strong>
+                — {% if lang == 'hi' %}विम्शोत्तरी दशा की समय रेखा — अभी आपके जीवन में कौन सा ग्रह सक्रिय है।{% else %}Vimshottari Dasha timeline showing which planet is active in your life right now.{% endif %}
+              </td></tr>
+            </table>
+          </td>
+        </tr>
+
+        {#- CTA back to the site -#}
+        <tr>
+          <td align="center" style="padding:24px 28px 24px 28px;">
+            <a href="{{ site_url }}" style="background:#6b21a8;color:#ffffff;text-decoration:none;padding:11px 22px;border-radius:6px;font-size:14px;font-weight:600;display:inline-block;">
+              {% if lang == 'hi' %}अपनी पूरी कुंडली देखें →{% else %}Get your full Kundli →{% endif %}
+            </a>
+          </td>
+        </tr>
+
+        {#- Footer with unsubscribe — legally required (CAN-SPAM / GDPR). -#}
+        <tr>
+          <td style="padding:20px 28px;border-top:1px solid #f5f5f4;background:#faf7f2;">
+            <div style="font-size:12px;color:#78716c;text-align:center;line-height:1.6;">
+              {% if lang == 'hi' %}यह ईमेल आपको Shubh Bhagya की दैनिक राशिफल सदस्यता के लिए मिला है।{% else %}You're receiving this because you just subscribed to Shubh Bhagya's daily Rashifal.{% endif %}<br>
+              <a href="{{ unsubscribe_url }}" style="color:#78716c;text-decoration:underline;">{% if lang == 'hi' %}सदस्यता समाप्त करें{% else %}Unsubscribe{% endif %}</a>
+              &nbsp;&middot;&nbsp;
+              <a href="{{ site_url }}" style="color:#78716c;text-decoration:underline;">Shubh Bhagya</a>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

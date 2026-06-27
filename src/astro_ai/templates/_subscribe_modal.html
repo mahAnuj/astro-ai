@@ -41,19 +41,48 @@
         {% if lang == 'hi' %}हर सुबह सभी 12 राशियों का राशिफल। एक भी ईमेल, मुफ्त, कभी भी बंद कर सकते हैं।{% else %}A single morning email with today's reading for all 12 rashis. Free, opt out anytime.{% endif %}
       </p>
 
-      <form id="subscribe-modal-form" class="flex flex-col gap-2">
+      <form id="subscribe-modal-form" class="flex flex-col gap-3">
         <input type="email" name="email" required autocomplete="email"
                placeholder="{% if lang == 'hi' %}आपका ईमेल{% else %}your@email.com{% endif %}"
                class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm
                       focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
-        <input type="hidden" name="lang" value="{{ lang }}">
+
+        {# Explicit language picker — pre-selects current page language but
+           lets subscribers override (e.g. browse in English, prefer email
+           in Hindi). Chip-style radio buttons for tap-friendly mobile. #}
+        <div>
+          <div class="text-xs text-stone-500 mb-1.5">
+            {% if lang == 'hi' %}ईमेल किस भाषा में?{% else %}Email language{% endif %}
+          </div>
+          <div class="flex gap-2">
+            <label class="flex-1 relative cursor-pointer">
+              <input type="radio" name="lang" value="en" class="peer sr-only"
+                     {% if lang != 'hi' %}checked{% endif %}>
+              <div class="text-center py-1.5 px-3 text-sm rounded-md border border-stone-300
+                          peer-checked:bg-astro-50 peer-checked:border-astro-500 peer-checked:text-astro-700
+                          peer-checked:font-semibold hover:border-astro-300 transition-colors">
+                English
+              </div>
+            </label>
+            <label class="flex-1 relative cursor-pointer">
+              <input type="radio" name="lang" value="hi" class="peer sr-only"
+                     {% if lang == 'hi' %}checked{% endif %}>
+              <div class="text-center py-1.5 px-3 text-sm rounded-md border border-stone-300
+                          peer-checked:bg-astro-50 peer-checked:border-astro-500 peer-checked:text-astro-700
+                          peer-checked:font-semibold hover:border-astro-300 transition-colors">
+                हिन्दी
+              </div>
+            </label>
+          </div>
+        </div>
+
         <button type="submit"
                 class="bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium py-2 rounded-md transition-colors">
           <span class="subscribe-default-text">{% if lang == 'hi' %}सदस्यता लें{% else %}Subscribe{% endif %}</span>
           <span class="subscribe-loading-text hidden">…</span>
         </button>
         <button type="button" id="subscribe-modal-later"
-                class="text-xs text-stone-500 hover:text-stone-700 mt-1">
+                class="text-xs text-stone-500 hover:text-stone-700">
           {% if lang == 'hi' %}बाद में{% else %}Maybe later{% endif %}
         </button>
         <div id="subscribe-modal-error" class="hidden text-xs text-red-600 mt-1"></div>

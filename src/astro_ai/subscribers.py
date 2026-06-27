@@ -63,24 +63,32 @@ def verify_unsubscribe_token(email: str, token: str) -> bool:
     return hmac.compare_digest(unsubscribe_token(email), token)
 
 
-def subscribe(email: str, lang: str = "en") -> tuple[bool, str]:
-    """Add a subscriber. Returns (ok, message).
+def subscribe(email: str, lang: str = "en") -> tuple[bool, bool, str]:
+    """Add a subscriber. Returns (ok, is_new, message).
 
-    Idempotent: re-subscribing the same email is a no-op success (keeps the
-    original timestamp). lang is updated if it changed (user might switch).
+    `is_new` is True only when this email wasn't in the list before; callers
+    use it to decide whether to send the welcome email (we don't want to
+    re-welcome someone who re-subscribed by accident).
+
+    Idempotent: re-subscribing the same email keeps the original timestamp
+    but updates `lang` if the user picked a different language this time.
     """
     email = _normalize(email)
     if not _EMAIL_RE.match(email):
-        return False, "Please enter a valid email address."
+        return False, False, "Please enter a valid email address."
     if lang not in {"en", "hi"}:
         lang = "en"
 
+    # Closure-captured flag so the mutator can report whether it added a new
+    # entry; update_json doesn't have a "did the entry already exist" signal.
+    state = {"was_new": True}
+
     def _add(current):
         data = current or {"subscribers": []}
-        # In-place upsert: update lang if already present, else append.
         for existing in data["subscribers"]:
             if existing["email"] == email:
                 existing["lang"] = lang
+                state["was_new"] = False
                 return data
         data["subscribers"].append({
             "email": email,
@@ -91,8 +99,8 @@ def subscribe(email: str, lang: str = "en") -> tuple[bool, str]:
 
     result = storage.update_json(SUBSCRIBERS_KEY, _add, default={"subscribers": []})
     if result is None:
-        return False, "Couldn't save your subscription right now. Please try again later."
-    return True, "Subscribed."
+        return False, False, "Couldn't save your subscription right now. Please try again later."
+    return True, state["was_new"], "Subscribed."
 
 
 def unsubscribe(email: str) -> tuple[bool, str]:
