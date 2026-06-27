@@ -11,7 +11,7 @@
  * clients drop their stale cache on the next service-worker install.
  */
 
-const CACHE_VERSION = 'bhagya-v1';
+const CACHE_VERSION = 'bhagya-v2';  // bump after every static-asset change
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 

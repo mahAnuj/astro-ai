@@ -14,11 +14,17 @@
 <!-- iOS Safari: PWA install via "Add to Home Screen" needs separate hints
      because Safari ignores most of the manifest. apple-mobile-web-app-capable
      hides the Safari URL bar once installed; the touch icon is what shows
-     on the home screen. -->
-<link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+     on the home screen. 180x180 is Apple's canonical size — Safari upscales
+     smaller icons unflatteringly. -->
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Bhagya">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<!-- Browser tab favicon — crisp 32x32 PNG that browsers prefer over the
+     legacy .ico format. -->
+<link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
 
 <!-- Tailwind Play CDN — no build step. Fine for MVP; bake into a build pipeline before production scale. -->
 <script src="https://cdn.tailwindcss.com"></script>
