@@ -6,7 +6,7 @@
 <title>{% block title %}Shubh Bhagya — Free Vedic Astrology, Kundli, Rashifal{% endblock %}</title>
 
 {# SEO meta — pages override `meta_description` and `og_image` blocks as needed. #}
-<meta name="description" content="{% block meta_description %}Free Vedic astrology by Shubh Bhagya — your Janma Kundli, daily Rashifal for all 12 rashis, dasha periods, and life readings rooted in classical Parashari tradition.{% endblock %}">
+<meta name="description" content="{% block meta_description %}Free Vedic astrology by Shubh Bhagya — your Janma Kundli, today's Rashifal for all 12 rashis, Dasha periods, Manglik &amp; Sade Sati checks, and Kundali matching for marriage. No signup, no spam.{% endblock %}">
 <link rel="canonical" href="{{ site_url }}{{ request.url.path }}">
 
 {# Open Graph — controls how the page renders when shared on WhatsApp,
@@ -39,7 +39,7 @@
       "name": "Shubh Bhagya",
       "url": "{{ site_url }}/",
       "logo": "{{ site_url }}/static/icons/icon-512.png",
-      "description": "Free Vedic astrology — Kundli, Rashifal, Dasha, and life readings rooted in classical Parashari tradition."
+      "description": "Free Vedic astrology — Janma Kundli, daily Rashifal, Dasha periods, Manglik &amp; Sade Sati checks, and Kundali matching for marriage."
     },
     {
       "@type": "WebSite",
@@ -172,10 +172,10 @@
             <span class="font-display text-lg font-bold">Shubh Bhagya</span>
           </div>
           <p class="text-sm text-stone-600 leading-relaxed">
-            Free Vedic astrology rooted in classical Parashari tradition &mdash;
-            Janma Kundli, daily Rashifal for all 12 rashis, Vimshottari Dasha
-            periods, Manglik &amp; Sade Sati analysis, and Ashtakoot Kundali
-            matching. Powered by real Swiss Ephemeris calculations.
+            Free Vedic astrology &mdash; your Janma Kundli, today's Rashifal
+            for all 12 rashis, Dasha periods, Manglik &amp; Sade Sati
+            analysis, and Kundali matching for marriage. Accurate, simple,
+            and easy to use.
           </p>
         </div>
 
@@ -190,7 +190,7 @@
             <li><a href="/monthly"  class="text-stone-700 hover:text-astro-700">Monthly Horoscope</a></li>
             <li><a href="/yearly"   class="text-stone-700 hover:text-astro-700">Horoscope {{ current_year() }}</a></li>
             <li><a href="/dasha"    class="text-stone-700 hover:text-astro-700">Vimshottari Dasha</a></li>
-            <li><a href="/matching" class="text-stone-700 hover:text-astro-700">Kundli Matching</a></li>
+            <li><a href="/matching" class="text-stone-700 hover:text-astro-700">Kundli Matching for Marriage</a></li>
           </ul>
         </div>
 
@@ -213,9 +213,9 @@
         <div class="md:col-span-2">
           <h3 class="text-xs uppercase font-semibold text-stone-500 tracking-wider mb-3">Why us</h3>
           <ul class="space-y-2 text-sm text-stone-700">
-            <li>&check; Free, forever</li>
+            <li>&check; Free Kundli &amp; Rashifal</li>
             <li>&check; No signup needed</li>
-            <li>&check; No astrologer fees</li>
+            <li>&check; No spam, ever</li>
             <li>&check; Chart stays in your browser</li>
           </ul>
         </div>
