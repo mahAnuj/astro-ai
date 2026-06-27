@@ -10,7 +10,6 @@ dependencies = [
     "python-multipart>=0.0.9",
     "openai>=1.50.0",
     "python-dotenv>=1.0.0",
-    "prompteval",
     # Chart calculation stack — real ephemeris instead of LLM guessing.
     # pyswisseph: Swiss Ephemeris (AGPL or commercial). Industry-standard
     # planetary positions; supports sidereal/Vedic mode with Lahiri ayanamsa.
@@ -46,7 +45,7 @@ include = [
     "src/astro_ai/templates/*.html",
 ]
 
-[tool.uv.sources]
-# Use the sibling local checkout so prompteval changes show up here without
-# a republish. Swap to a pinned PyPI version once prompteval ships v0.1.0.
-prompteval = { path = "../prompteval", editable = true }
+# prompteval is a dev/eval-only tool, not a runtime dep — it lives in the
+# sibling repo and is invoked from evals/ scripts directly when needed.
+# Keeping it out of pyproject.toml means the Docker build doesn't try to
+# resolve a local path that doesn't exist inside the build context.
