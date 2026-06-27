@@ -1,7 +1,7 @@
 {# Shared sticky nav. Single source of truth for site navigation.
 
    Caller passes:
-     active_page  — one of: 'home' | 'natal' | 'today' | 'dasha' |
+     active_page  — one of: 'home' | 'natal' | 'today' | 'rashifal' | 'dasha' |
                             'monthly' | 'yearly' | 'matching'
                     (used to bold the current page link and skip its href change)
      show_print   — optional bool (defaults true). False on form pages where
@@ -9,17 +9,44 @@
 
    Anything outside that set ('home' etc.) just renders the full nav with
    nothing highlighted, which is the right behaviour.
+
+   Mobile (< md): logo + hamburger; tapping the hamburger reveals the link
+   list stacked vertically. Desktop (md+): the link list is inline on the
+   right, hamburger is hidden.
 #}
 {% set show_print = show_print if show_print is defined else true %}
 <nav class="border-b border-stone-200/60 bg-cream/80 backdrop-blur sticky top-0 z-10 no-print">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-x-4 gap-y-2 flex-wrap">
-    <a href="/" class="font-display text-2xl text-astro-700 font-bold tracking-tight shrink-0">Bhagya</a>
-    <div class="flex items-center gap-x-4 gap-y-1 text-sm flex-wrap justify-end min-w-0">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-y-2">
+    {# Top bar: logo on left, hamburger on right (mobile only) #}
+    <div class="flex items-center justify-between">
+      <a href="/" class="font-display text-2xl text-astro-700 font-bold tracking-tight">Bhagya</a>
+      <button id="nav-toggle" type="button"
+              class="md:hidden inline-flex items-center justify-center p-2 -mr-2 text-stone-700 hover:text-astro-700"
+              aria-label="Toggle navigation menu"
+              aria-expanded="false"
+              aria-controls="nav-menu">
+        <svg id="nav-icon-open" class="w-6 h-6" fill="none" stroke="currentColor"
+             stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <svg id="nav-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor"
+             stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+    </div>
+
+    {# Link list: hidden by default on mobile, always inline on md+.
+       JS toggles `hidden` ↔ `flex` on tap; md:flex keeps it visible on desktop. #}
+    <div id="nav-menu"
+         class="hidden md:flex flex-col md:flex-row md:items-center md:justify-end
+                gap-y-1 md:gap-y-0 md:gap-x-4 text-sm pb-1 md:pb-0">
       {% macro link(href, label, page_key) -%}
         {% if active_page == page_key -%}
-          <span class="text-astro-700 font-semibold border-b-2 border-astro-500 pb-0.5">{{ label }}</span>
+          <span class="text-astro-700 font-semibold border-l-2 md:border-l-0 md:border-b-2
+                       border-astro-500 pl-2 md:pl-0 md:pb-0.5 py-1 md:py-0">{{ label }}</span>
         {%- else -%}
-          <a href="{{ href }}" class="text-stone-500 hover:text-astro-700">{{ label }}</a>
+          <a href="{{ href }}" class="text-stone-500 hover:text-astro-700 py-1 md:py-0">{{ label }}</a>
         {%- endif %}
       {%- endmacro %}
 
@@ -33,10 +60,33 @@
       {{ link("/matching", t(lang, 'nav_matching_link'), 'matching') }}
 
       {% if show_print %}
-      <button onclick="window.print()" class="text-stone-500 hover:text-stone-700"
+      <button onclick="window.print()" type="button"
+              class="text-stone-500 hover:text-astro-700 text-left py-1 md:py-0"
               title="{{ t(lang, 'nav_print') }}">{{ t(lang, 'nav_print') }}</button>
       {% endif %}
       {% include "_lang_picker.html" %}
     </div>
   </div>
 </nav>
+
+<script>
+  // Mobile nav hamburger toggle. Vanilla JS, runs on every nav render so it
+  // re-attaches cleanly after htmx-boosted navigations (which swap the body).
+  (function() {
+    var btn = document.getElementById('nav-toggle');
+    var menu = document.getElementById('nav-menu');
+    var iconOpen = document.getElementById('nav-icon-open');
+    var iconClose = document.getElementById('nav-icon-close');
+    if (!btn || !menu) return;
+    btn.addEventListener('click', function() {
+      var willOpen = menu.classList.contains('hidden');
+      menu.classList.toggle('hidden');
+      menu.classList.toggle('flex');
+      btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      if (iconOpen && iconClose) {
+        iconOpen.classList.toggle('hidden');
+        iconClose.classList.toggle('hidden');
+      }
+    });
+  })();
+</script>
