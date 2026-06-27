@@ -1,0 +1,170 @@
+{#- Daily Rashifal subscribe modal.
+
+   Renders hidden; JS in the script tag at the bottom decides when to show:
+     - Show on the 3rd visit (per localStorage counter)
+     - Show again on the 6th visit if dismissed once
+     - Never show after 2 dismissals (or after a successful subscribe)
+
+   Posts to /subscribe with email + current lang. On success, swaps to a
+   thank-you state for ~3 seconds before closing.
+
+   No framework — vanilla JS, ~80 lines including the form submission.
+-#}
+<div id="subscribe-modal-backdrop"
+     class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 no-print"
+     role="dialog" aria-modal="true" aria-labelledby="subscribe-modal-title">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+    <button id="subscribe-modal-close" type="button" aria-label="Close"
+            class="absolute top-3 right-3 text-stone-400 hover:text-stone-700 p-1">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
+      </svg>
+    </button>
+
+    {#- Default state -#}
+    <div id="subscribe-modal-default">
+      <div class="flex items-center gap-3 mb-3">
+        <svg viewBox="0 0 100 100" class="w-9 h-9 text-astro-700 shrink-0" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="6">
+            <polygon points="50,5 95,50 50,95 5,50"/>
+            <line x1="50" y1="5" x2="50" y2="95"/>
+            <line x1="5" y1="50" x2="95" y2="50"/>
+            <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
+          </g>
+          <circle cx="50" cy="50" r="7" fill="#ffd764"/>
+        </svg>
+        <h2 id="subscribe-modal-title" class="font-display text-xl font-bold text-stone-900">
+          {% if lang == 'hi' %}रोज़ का राशिफल अपने इनबॉक्स में{% else %}Today's Rashifal in your inbox{% endif %}
+        </h2>
+      </div>
+      <p class="text-sm text-stone-600 leading-relaxed mb-4">
+        {% if lang == 'hi' %}हर सुबह सभी 12 राशियों का राशिफल। एक भी ईमेल, मुफ्त, कभी भी बंद कर सकते हैं।{% else %}A single morning email with today's reading for all 12 rashis. Free, opt out anytime.{% endif %}
+      </p>
+
+      <form id="subscribe-modal-form" class="flex flex-col gap-2">
+        <input type="email" name="email" required autocomplete="email"
+               placeholder="{% if lang == 'hi' %}आपका ईमेल{% else %}your@email.com{% endif %}"
+               class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm
+                      focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+        <input type="hidden" name="lang" value="{{ lang }}">
+        <button type="submit"
+                class="bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium py-2 rounded-md transition-colors">
+          <span class="subscribe-default-text">{% if lang == 'hi' %}सदस्यता लें{% else %}Subscribe{% endif %}</span>
+          <span class="subscribe-loading-text hidden">…</span>
+        </button>
+        <button type="button" id="subscribe-modal-later"
+                class="text-xs text-stone-500 hover:text-stone-700 mt-1">
+          {% if lang == 'hi' %}बाद में{% else %}Maybe later{% endif %}
+        </button>
+        <div id="subscribe-modal-error" class="hidden text-xs text-red-600 mt-1"></div>
+      </form>
+    </div>
+
+    {#- Success state -#}
+    <div id="subscribe-modal-success" class="hidden text-center py-4">
+      <div class="text-3xl mb-2">🪔</div>
+      <h2 class="font-display text-xl font-bold text-stone-900 mb-1">
+        {% if lang == 'hi' %}धन्यवाद!{% else %}You're in.{% endif %}
+      </h2>
+      <p class="text-sm text-stone-600">
+        {% if lang == 'hi' %}कल सुबह आपको पहला राशिफल मिलेगा।{% else %}Your first Rashifal arrives tomorrow morning.{% endif %}
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Subscribe modal: visit-counter triggered, vanilla JS, IIFE so it re-runs
+  // cleanly on htmx-boosted navigation. The global `bhagyaShowSubscribeModal`
+  // function is always wired so inline CTAs work even when the auto-show
+  // suppression rules kick in.
+  (function() {
+    var VISITS_KEY    = 'bhagya_visit_count';
+    var DISMISSED_KEY = 'bhagya_subscribe_dismissed';
+    var DONE_KEY      = 'bhagya_subscribe_done';
+    var SHOW_AT_VISITS = [3, 6];
+    var MAX_DISMISSALS = 2;
+
+    var backdrop = document.getElementById('subscribe-modal-backdrop');
+    var defaultPanel = document.getElementById('subscribe-modal-default');
+    var successPanel = document.getElementById('subscribe-modal-success');
+    var form     = document.getElementById('subscribe-modal-form');
+    var closeBtn = document.getElementById('subscribe-modal-close');
+    var laterBtn = document.getElementById('subscribe-modal-later');
+    var errBox   = document.getElementById('subscribe-modal-error');
+    if (!backdrop) return;
+
+    function show()  { backdrop.classList.remove('hidden'); backdrop.classList.add('flex'); }
+    function hide()  { backdrop.classList.add('hidden');    backdrop.classList.remove('flex'); }
+
+    function dismiss() {
+      hide();
+      try {
+        var d = parseInt(localStorage.getItem(DISMISSED_KEY) || '0', 10) + 1;
+        localStorage.setItem(DISMISSED_KEY, String(d));
+      } catch (e) {}
+    }
+
+    closeBtn.addEventListener('click', dismiss);
+    laterBtn.addEventListener('click', dismiss);
+    backdrop.addEventListener('click', function(e) {
+      if (e.target === backdrop) dismiss();
+    });
+
+    // Expose show() globally so manual CTAs anywhere on the site can open
+    // the modal regardless of the auto-suppression rules.
+    window.bhagyaShowSubscribeModal = show;
+    document.querySelectorAll('[data-subscribe-trigger]').forEach(function(el) {
+      el.addEventListener('click', function(e) { e.preventDefault(); show(); });
+    });
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      errBox.classList.add('hidden');
+      var btn = form.querySelector('button[type="submit"]');
+      btn.querySelector('.subscribe-default-text').classList.add('hidden');
+      btn.querySelector('.subscribe-loading-text').classList.remove('hidden');
+      btn.disabled = true;
+
+      var data = new FormData(form);
+      fetch('/subscribe', { method: 'POST', body: data })
+        .then(function(r) { return r.json(); })
+        .then(function(j) {
+          if (j.ok) {
+            defaultPanel.classList.add('hidden');
+            successPanel.classList.remove('hidden');
+            try { localStorage.setItem(DONE_KEY, '1'); } catch (e) {}
+            setTimeout(hide, 3000);
+          } else {
+            errBox.textContent = j.error || 'Something went wrong. Please try again.';
+            errBox.classList.remove('hidden');
+            btn.disabled = false;
+            btn.querySelector('.subscribe-default-text').classList.remove('hidden');
+            btn.querySelector('.subscribe-loading-text').classList.add('hidden');
+          }
+        })
+        .catch(function() {
+          errBox.textContent = 'Network error. Please try again.';
+          errBox.classList.remove('hidden');
+          btn.disabled = false;
+          btn.querySelector('.subscribe-default-text').classList.remove('hidden');
+          btn.querySelector('.subscribe-loading-text').classList.add('hidden');
+        });
+    });
+
+    // Auto-show on visits 3/6 — but only if not already dismissed twice
+    // or successfully subscribed before. Manual CTAs above this check still
+    // work even when auto-show is suppressed.
+    try {
+      if (localStorage.getItem(DONE_KEY) === '1') return;
+      var visits = parseInt(localStorage.getItem(VISITS_KEY) || '0', 10) + 1;
+      localStorage.setItem(VISITS_KEY, String(visits));
+      var dismissed = parseInt(localStorage.getItem(DISMISSED_KEY) || '0', 10);
+      if (dismissed >= MAX_DISMISSALS) return;
+      if (SHOW_AT_VISITS.indexOf(visits) === -1) return;
+    } catch (e) { return; }
+
+    // Delay 1.5s so we don't interrupt the user the moment they land.
+    setTimeout(show, 1500);
+  })();
+</script>

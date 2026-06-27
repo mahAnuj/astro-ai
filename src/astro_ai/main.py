@@ -10,7 +10,7 @@ from pathlib import Path
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -44,7 +44,7 @@ from astro_ai.llm import (
     parse_sectioned_reading,
 )
 from astro_ai.matching import compute_guna_milan
-from astro_ai import cache, storage
+from astro_ai import cache, email_sender, storage, subscribers
 import time as _time
 from astro_ai.session import (
     ChartCollection,
@@ -702,6 +702,132 @@ async def rashifal(request: Request) -> HTMLResponse:
         request, "rashifal.html",
         {"lang": lang, "today_date": today_iso, "sections": sections_with_glyphs},
     )
+
+
+@app.post("/subscribe")
+async def subscribe(request: Request,
+                    email: str = Form(...),
+                    lang: str = Form("en")) -> JSONResponse:
+    """Add an email to the daily-Rashifal subscriber list.
+
+    Called from the modal in _subscribe_modal.html via fetch(). Returns JSON
+    `{ok: true}` on success or `{ok: false, error: "..."}` so the frontend
+    can show inline feedback without a full page reload.
+    """
+    ok, msg = subscribers.subscribe(email, lang)
+    if ok:
+        return JSONResponse({"ok": True})
+    return JSONResponse({"ok": False, "error": msg}, status_code=400)
+
+
+@app.get("/unsubscribe", response_class=HTMLResponse)
+async def unsubscribe(request: Request, email: str = "", token: str = "") -> HTMLResponse:
+    """One-click unsubscribe landing page. Linked from every email's footer.
+
+    Token is an HMAC of the email signed with our cookie secret, so we can't
+    be tricked into removing arbitrary addresses by URL-tampering attackers.
+    """
+    if not email or not token or not subscribers.verify_unsubscribe_token(email, token):
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Invalid unsubscribe link",
+             "message": "This link looks broken. Please reply to one of your Bhagya emails and we'll remove you manually."},
+            status_code=400,
+        )
+    ok, _ = subscribers.unsubscribe(email)
+    title = "You're unsubscribed" if ok else "Couldn't process right now"
+    body = ("We've removed your email from Bhagya's daily Rashifal list. You can resubscribe anytime."
+            if ok else "Please try again in a minute, or reply to one of our emails.")
+    return templates.TemplateResponse(
+        request, "error.html",
+        {"title": title, "message": body},
+        status_code=200 if ok else 503,
+    )
+
+
+@app.post("/admin/send-daily-rashifal", dependencies=[Depends(require_admin)])
+async def send_daily_rashifal(request: Request) -> JSONResponse:
+    """Send today's Rashifal email to every active subscriber.
+
+    Triggered by Cloud Scheduler at 7 AM IST daily. Auth-gated by basic auth
+    so a leaked URL can't drain Brevo quota. Reads (or generates if needed)
+    today's Rashifal per language, then per-subscriber sends via Brevo.
+    """
+    today_iso = date.today().isoformat()
+    today_pretty = date.today().strftime("%A, %d %B %Y")
+    prompt_fp = cache.fingerprint_prompt(RASHIFAL_PROMPT_PATH)
+    site_url = os.environ.get("BHAGYA_SITE_URL", "").rstrip("/") or "https://bhagya.app"
+
+    # Build the Rashifal section list for each language we actually need.
+    # We trigger generation via _shared_three_tier so cold-start days still
+    # produce content rather than emailing empty bodies.
+    try:
+        neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+    except ChartError as err:
+        return JSONResponse({"ok": False, "error": f"Couldn't compute reference chart: {err}"}, status_code=500)
+    transit = compute_transit_snapshot(neutral_chart)
+
+    sections_by_lang: dict[str, list] = {}
+    for lang in ("en", "hi"):
+        cache_key = f"rashifal:{today_iso}:{lang}:{prompt_fp}"
+        storage_key = f"rashifal/{today_iso}-{lang}-{prompt_fp}.txt"
+        try:
+            text = _shared_three_tier(
+                route="rashifal",
+                cache_key=cache_key,
+                storage_key=storage_key,
+                lang=lang,
+                call_fn=lambda lang=lang: generate_rashifal(
+                    transit=transit, today_iso=today_iso,
+                    prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
+                ),
+            )
+            sections_by_lang[lang] = [
+                (symbol_for_rashi_label(title) or "✦", title, body)
+                for title, body in parse_sectioned_reading(text)
+            ]
+        except Exception as err:
+            return JSONResponse(
+                {"ok": False, "error": f"Couldn't load Rashifal ({lang}): {type(err).__name__}: {err}"},
+                status_code=502,
+            )
+
+    # Render + send per subscriber.
+    template = templates.env.get_template("email/daily_rashifal.html")
+    sent = failed = 0
+    failures: list[str] = []
+    for sub in subscribers.list_subscribers():
+        lang = sub.get("lang", "en")
+        if lang not in sections_by_lang:
+            lang = "en"
+        unsub_url = (
+            f"{site_url}/unsubscribe?email={sub['email']}&token={subscribers.unsubscribe_token(sub['email'])}"
+        )
+        html = template.render(
+            lang=lang,
+            today_iso=today_iso,
+            today_pretty=today_pretty,
+            rashifal_sections=sections_by_lang[lang],
+            shlok=None,
+            site_url=site_url,
+            unsubscribe_url=unsub_url,
+        )
+        subject = "आज का राशिफल — Bhagya" if lang == "hi" else "Today's Rashifal — Bhagya"
+        ok = email_sender.send(sub["email"], subject=subject, html=html)
+        if ok:
+            sent += 1
+        else:
+            failed += 1
+            failures.append(sub["email"])
+
+    return JSONResponse({
+        "ok": True,
+        "date": today_iso,
+        "total_subscribers": len(subscribers.list_subscribers()),
+        "sent": sent,
+        "failed": failed,
+        "failed_emails": failures[:20],  # cap so we don't return MB-sized lists
+    })
 
 
 @app.get("/admin/usage", response_class=HTMLResponse, dependencies=[Depends(require_admin)])

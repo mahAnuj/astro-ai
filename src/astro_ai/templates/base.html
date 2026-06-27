@@ -100,6 +100,10 @@
 <body hx-boost="true" class="bg-cream text-stone-900 font-sans min-h-full antialiased">
   {% block content %}{% endblock %}
 
+  {# Subscribe modal: visit-counter triggered on visits 3 and 6. Captures
+     email for the daily Rashifal newsletter. See _subscribe_modal.html. #}
+  {% include "_subscribe_modal.html" %}
+
   {# PWA install banner: appears on mobile when the app isn't installed yet.
      Two paths — Chrome/Android fires `beforeinstallprompt` (real button),
      iOS Safari needs static instructions because Apple doesn't surface the

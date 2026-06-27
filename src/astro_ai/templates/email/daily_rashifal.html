@@ -1,0 +1,139 @@
+{#- Daily Rashifal email — sent at 7 AM IST to opted-in subscribers.
+
+    Email clients (Gmail, Outlook, Apple Mail) have notoriously inconsistent
+    CSS support, so this template uses:
+      - Tables for layout (NOT flex/grid)
+      - Inline styles only (NO <style> blocks except media-queries)
+      - Web-safe fonts (system fonts as last fallback)
+      - 600px max width — the de-facto standard for email
+      - No external CSS, no JS, no @font-face
+
+    Variables expected:
+      lang             — 'en' | 'hi'
+      today_iso        — '2026-06-27'
+      today_pretty     — 'Saturday, 27 June 2026'
+      rashifal_sections — list of (glyph, title, body) tuples
+      shlok            — optional dict {sanskrit, transliteration, meaning}
+      site_url         — 'https://bhagya.app' (no trailing slash)
+      unsubscribe_url  — 'https://bhagya.app/unsubscribe?email=...&token=...'
+-#}
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% if lang == 'hi' %}आज का राशिफल{% else %}Today's Rashifal{% endif %}</title>
+</head>
+<body style="margin:0;padding:0;background:#faf7f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans Devanagari',sans-serif;color:#1c1917;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;background:#ffffff;border-radius:8px;overflow:hidden;border:1px solid #e7e5e4;">
+
+        {#- Header with logo + wordmark -#}
+        <tr>
+          <td style="padding:24px 28px 12px 28px;border-bottom:1px solid #f5f5f4;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="vertical-align:middle;padding-right:10px;">
+                  {#- Inline SVG Kundli diamond logo — uses currentColor so
+                      stroke matches the wordmark. -#}
+                  <svg width="28" height="28" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="display:block;color:#6b21a8;">
+                    <g fill="none" stroke="currentColor" stroke-width="6">
+                      <polygon points="50,5 95,50 50,95 5,50"/>
+                      <line x1="50" y1="5" x2="50" y2="95"/>
+                      <line x1="5" y1="50" x2="95" y2="50"/>
+                      <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
+                    </g>
+                    <circle cx="50" cy="50" r="7" fill="#ffd764"/>
+                  </svg>
+                </td>
+                <td style="vertical-align:middle;">
+                  <span style="font-size:22px;font-weight:700;color:#6b21a8;letter-spacing:-0.3px;">Bhagya</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        {#- Date + greeting -#}
+        <tr>
+          <td style="padding:20px 28px 4px 28px;">
+            <div style="font-size:14px;color:#78716c;text-transform:uppercase;letter-spacing:1px;">
+              {{ today_pretty }}
+            </div>
+            <h1 style="margin:6px 0 0 0;font-size:22px;font-weight:700;color:#1c1917;">
+              {% if lang == 'hi' %}आज का राशिफल{% else %}Today's Rashifal{% endif %}
+            </h1>
+            <p style="margin:6px 0 0 0;font-size:13px;color:#57534e;line-height:1.5;">
+              {% if lang == 'hi' %}सभी 12 राशियों के लिए आज की भविष्यवाणी। अपनी जन्म राशि देखें।{% else %}Today's reading for all 12 Moon signs — scroll to find your Janma Rashi.{% endif %}
+            </p>
+          </td>
+        </tr>
+
+        {#- Rashifal grid — single column for readability in narrow email windows -#}
+        {% for glyph, title, body in rashifal_sections %}
+        <tr>
+          <td style="padding:14px 28px 0 28px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;border-radius:6px;">
+              <tr>
+                <td style="padding:14px 16px;">
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                    <tr>
+                      <td style="font-size:20px;color:#6b21a8;padding-right:8px;vertical-align:middle;">{{ glyph }}</td>
+                      <td style="font-size:15px;font-weight:600;color:#1c1917;vertical-align:middle;">{{ title }}</td>
+                    </tr>
+                  </table>
+                  <div style="font-size:14px;color:#44403c;line-height:1.55;margin-top:6px;">
+                    {{ body }}
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        {% endfor %}
+
+        {#- Shlok (optional) -#}
+        {% if shlok %}
+        <tr>
+          <td style="padding:24px 28px 0 28px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#fef3c7;border-left:3px solid #d97706;border-radius:4px;">
+              <tr>
+                <td style="padding:14px 16px;">
+                  <div style="font-size:15px;color:#1c1917;font-style:italic;line-height:1.6;">{{ shlok.sanskrit }}</div>
+                  {% if shlok.transliteration %}<div style="font-size:12px;color:#78716c;margin-top:4px;">{{ shlok.transliteration }}</div>{% endif %}
+                  <div style="font-size:13px;color:#57534e;margin-top:6px;line-height:1.5;">— {{ shlok.meaning }}</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        {% endif %}
+
+        {#- CTA back to Bhagya -#}
+        <tr>
+          <td align="center" style="padding:28px 28px 24px 28px;">
+            <a href="{{ site_url }}" style="background:#6b21a8;color:#ffffff;text-decoration:none;padding:11px 20px;border-radius:6px;font-size:14px;font-weight:600;display:inline-block;">
+              {% if lang == 'hi' %}अपनी पूरी कुंडली देखें →{% else %}Get your full Kundli on Bhagya →{% endif %}
+            </a>
+          </td>
+        </tr>
+
+        {#- Footer with unsubscribe — legally required for marketing emails. -#}
+        <tr>
+          <td style="padding:20px 28px;border-top:1px solid #f5f5f4;background:#faf7f2;">
+            <div style="font-size:12px;color:#78716c;text-align:center;line-height:1.6;">
+              {% if lang == 'hi' %}यह ईमेल आपको Bhagya की दैनिक राशिफल सदस्यता के लिए मिला है।{% else %}You're receiving this because you subscribed to Bhagya's daily Rashifal.{% endif %}<br>
+              <a href="{{ unsubscribe_url }}" style="color:#78716c;text-decoration:underline;">{% if lang == 'hi' %}सदस्यता समाप्त करें{% else %}Unsubscribe{% endif %}</a>
+              &nbsp;&middot;&nbsp;
+              <a href="{{ site_url }}" style="color:#78716c;text-decoration:underline;">Bhagya</a>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

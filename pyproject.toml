@@ -27,6 +27,10 @@ dependencies = [
     # future feature with cross-user-shared output. Falls back silently to the
     # SQLite cache when BHAGYA_STORAGE_BUCKET isn't configured.
     "google-cloud-storage>=2.18",
+    # httpx: direct HTTP client for the Brevo transactional-email API. Already
+    # a transitive dep of openai, but pin it explicitly since email_sender.py
+    # uses it directly.
+    "httpx>=0.27",
 ]
 
 [project.scripts]
@@ -42,7 +46,7 @@ packages = ["src/astro_ai"]
 # doesn't silently drop them (prompts/templates/manifest/icons/SW).
 include = [
     "src/astro_ai/prompts/*.txt",
-    "src/astro_ai/templates/*.html",
+    "src/astro_ai/templates/**/*.html",
     "src/astro_ai/static/*.webmanifest",
     "src/astro_ai/static/*.js",
     "src/astro_ai/static/icons/*.png",

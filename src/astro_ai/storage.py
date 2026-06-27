@@ -105,3 +105,66 @@ def get_json(key: str) -> Any | None:
 def put_json(key: str, value: Any) -> bool:
     """Serialize `value` as JSON and write to `key`."""
     return put(key, json.dumps(value, ensure_ascii=False), content_type="application/json")
+
+
+def update_json(key: str, mutator, *, default: Any = None, max_retries: int = 5) -> Any | None:
+    """Atomically read-modify-write a JSON value at `key`.
+
+    Uses GCS object-generation matching for compare-and-swap, so two concurrent
+    writers can't silently clobber each other (e.g. two subscriptions arriving
+    in the same second). Returns the final value (post-mutation) on success,
+    or None if the underlying storage is unavailable.
+
+    `mutator(current_value) -> new_value` may freely mutate or return a new
+    object; it should NOT have side effects beyond returning the next state
+    because we'll re-invoke it on contention.
+
+    `default` is what mutator receives when the key doesn't yet exist.
+    """
+    bucket_name = _bucket_name()
+    if not bucket_name:
+        log.warning("storage.update_json(%s): no bucket configured", key)
+        return None
+    client = _client()
+    if client is None:
+        return None
+
+    import time as _t  # local: only used in this rare path
+    blob = client.bucket(bucket_name).blob(key)
+
+    for attempt in range(max_retries):
+        try:
+            blob.reload()  # populates blob.generation (None if missing)
+            generation = blob.generation
+            if generation is not None:
+                current = json.loads(blob.download_as_text())
+            else:
+                current = default
+        except Exception as err:
+            # Most likely the blob doesn't exist yet (404). Treat as initial.
+            log.debug("storage.update_json(%s) read-miss: %s", key, err)
+            generation = 0  # 0 = "must not exist" precondition in GCS
+            current = default
+
+        new_value = mutator(current)
+        body = json.dumps(new_value, ensure_ascii=False)
+
+        try:
+            # if_generation_match enforces CAS — write only if the blob's
+            # generation hasn't changed since our read. 0 means "blob must
+            # not exist", a positive number means "must be this exact gen".
+            blob.upload_from_string(
+                body,
+                content_type="application/json",
+                if_generation_match=generation if generation is not None else 0,
+            )
+            return new_value
+        except Exception as err:
+            # 412 Precondition Failed → another writer beat us. Retry the
+            # read-modify-write loop with the latest generation.
+            log.info("storage.update_json(%s) CAS miss on attempt %d: %s",
+                     key, attempt + 1, err)
+            _t.sleep(0.05 * (2 ** attempt))  # exponential backoff
+
+    log.error("storage.update_json(%s) gave up after %d retries", key, max_retries)
+    return None
