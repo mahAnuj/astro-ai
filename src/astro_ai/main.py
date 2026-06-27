@@ -298,21 +298,24 @@ async def index(request: Request, needs_chart: str | None = None) -> HTMLRespons
     )
 
 
-@app.post("/reading", response_class=HTMLResponse)
+@app.post("/reading")
 async def reading(
     request: Request,
     name: str = Form(default=""),
     birth_date: str = Form(...),
     birth_time: str = Form(...),
     birth_place: str = Form(...),
-) -> HTMLResponse:
-    """Form submission → save chart to cookie collection → render natal reading.
+) -> Response:
+    """Form submission → save chart to cookie → 303 redirect to GET /natal.
 
-    Delegates rendering to `_render_natal_for` so this POST path produces the
-    same fully-populated page as GET /natal — sectioned reading + Marriage /
-    Wealth / Manglik / Sade Sati / Dasha panels. Saves to cookie only when
-    the reading actually renders OK; chart-cap errors short-circuit before
-    the expensive LLM call.
+    Post-Redirect-Get pattern. The actual reading renders at GET /natal,
+    not here. Benefits:
+      - Browser URL bar shows `/natal` after submission (bookmarkable).
+      - Refreshing the result page doesn't re-submit the form.
+      - The lang picker's `next` field captures `/natal` (a valid GET
+        route) instead of `/reading` (POST only — which used to return
+        a JSON 405 when the lang form tried to redirect back to it).
+      - Back button works correctly.
     """
     details = BirthDetails(
         name=name.strip(),
@@ -320,7 +323,18 @@ async def reading(
         birth_time=birth_time,
         birth_place=birth_place.strip(),
     )
-    # Cap check up-front so we don't spend an LLM call only to fail the save.
+    # Validate chart math + geocoding up-front so the user sees birth-date
+    # / city errors immediately instead of after a redirect dance.
+    try:
+        compute_chart(details.birth_date, details.birth_time, details.birth_place)
+    except ChartError as err:
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {"title": "Couldn't compute the chart", "message": str(err)},
+            status_code=400,
+        )
+    # Cap check before saving so we don't accept a chart we can't store.
     try:
         collection = load_collection(request).add(details)
     except ValueError as err:
@@ -330,10 +344,19 @@ async def reading(
             {"title": "Chart limit reached", "message": str(err)},
             status_code=400,
         )
-    response = await _render_natal_for(request, details)
-    if response.status_code == 200:
-        save_collection(response, collection)
+    response = RedirectResponse("/natal", status_code=303)
+    save_collection(response, collection)
     return response
+
+
+@app.get("/reading")
+async def reading_get() -> RedirectResponse:
+    """Safety net for any stale GET to /reading (bookmarks, lang next=, etc.).
+
+    Was returning JSON 405 before — confusing for users. Now politely
+    nudges them to the canonical /natal URL.
+    """
+    return RedirectResponse("/natal", status_code=303)
 
 
 @app.get("/natal", response_class=HTMLResponse)
