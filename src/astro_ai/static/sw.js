@@ -11,13 +11,16 @@
  * clients drop their stale cache on the next service-worker install.
  */
 
-const CACHE_VERSION = 'bhagya-v2';  // bump after every static-asset change
+const CACHE_VERSION = 'bhagya-v3';  // bump after every static-asset change
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
-const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
 // Assets we want available offline as soon as the SW installs.
+// Critical: do NOT precache `/` — the homepage renders the user's saved
+// charts from their cookie. A cached homepage shows whatever charts existed
+// when the SW first installed (often empty), and the network-first override
+// can race with form submissions. Static-only precache keeps the install
+// banner working without risking the user-personalised pages.
 const PRECACHE_URLS = [
-  '/',
   '/static/manifest.webmanifest',
   '/static/icons/icon-192.png',
   '/static/icons/icon-512.png',
@@ -70,17 +73,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // HTML pages: network-first, fall back to cache when offline. This way
-  // users always see fresh content when online but get the last-good copy
-  // when the network drops mid-train/lift/etc.
-  event.respondWith(
-    fetch(req).then((res) => {
-      // Only cache successful HTML responses (200 OK, content-type text/html).
-      if (res.ok && res.headers.get('content-type')?.includes('text/html')) {
-        const copy = res.clone();
-        caches.open(RUNTIME_CACHE).then((c) => c.put(req, copy));
-      }
-      return res;
-    }).catch(() => caches.match(req).then((hit) => hit || caches.match('/')))
-  );
+  // HTML pages: NEVER cache. Every Bhagya page is cookie-personalized
+  // (saved charts on home, active chart on /today, language preference
+  // everywhere). Caching means one user/session sees another's state, or
+  // a fresh-cookie navigation sees the pre-cookie cached version. Just
+  // pass-through to network so the server-rendered, cookie-aware response
+  // always reaches the user. Offline-mode HTML is sacrificed but readings
+  // need network anyway (LLM calls).
+  event.respondWith(fetch(req));
 });
