@@ -63,24 +63,27 @@ def verify_unsubscribe_token(email: str, token: str) -> bool:
     return hmac.compare_digest(unsubscribe_token(email), token)
 
 
-def subscribe(email: str, lang: str = "en") -> tuple[bool, bool, str]:
+def subscribe(email: str, lang: str = "en", city: str = "") -> tuple[bool, bool, str]:
     """Add a subscriber. Returns (ok, is_new, message).
 
     `is_new` is True only when this email wasn't in the list before; callers
     use it to decide whether to send the welcome email (we don't want to
     re-welcome someone who re-subscribed by accident).
 
+    `city` is optional — when set, the daily email computes Panchang for
+    that location. Blank/missing falls back to a sensible default at send
+    time.
+
     Idempotent: re-subscribing the same email keeps the original timestamp
-    but updates `lang` if the user picked a different language this time.
+    but updates `lang` and `city` if the user changed either.
     """
     email = _normalize(email)
     if not _EMAIL_RE.match(email):
         return False, False, "Please enter a valid email address."
     if lang not in {"en", "hi"}:
         lang = "en"
+    city = (city or "").strip()[:80]  # cap length to keep cookies/payloads sane
 
-    # Closure-captured flag so the mutator can report whether it added a new
-    # entry; update_json doesn't have a "did the entry already exist" signal.
     state = {"was_new": True}
 
     def _add(current):
@@ -88,13 +91,18 @@ def subscribe(email: str, lang: str = "en") -> tuple[bool, bool, str]:
         for existing in data["subscribers"]:
             if existing["email"] == email:
                 existing["lang"] = lang
+                if city:
+                    existing["city"] = city
                 state["was_new"] = False
                 return data
-        data["subscribers"].append({
+        entry = {
             "email": email,
             "lang": lang,
             "subscribed_at": _now_iso(),
-        })
+        }
+        if city:
+            entry["city"] = city
+        data["subscribers"].append(entry)
         return data
 
     result = storage.update_json(SUBSCRIBERS_KEY, _add, default={"subscribers": []})

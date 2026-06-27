@@ -47,6 +47,19 @@
                class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm
                       focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
 
+        {# Optional city — drives per-subscriber Panchang in the daily
+           email (sunrise / Rahu Kaal / Abhijit Muhurta vary by location).
+           Skipped entirely if blank — no incorrect Delhi-default times. #}
+        <div>
+          <input type="text" name="city" autocomplete="address-level2"
+                 placeholder="{% if lang == 'hi' %}आपका शहर (वैकल्पिक){% else %}Your city (optional){% endif %}"
+                 class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm
+                        focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+          <p class="text-xs text-stone-500 mt-1 leading-relaxed">
+            {% if lang == 'hi' %}हम आपके शहर का सूर्योदय, राहु काल और अभिजित मुहूर्त ईमेल में जोड़ेंगे। ख़ाली छोड़ें तो पंचांग नहीं भेजा जाएगा।{% else %}We'll add your local sunrise, Rahu Kaal &amp; Abhijit Muhurta to the email. Leave blank to skip Panchang.{% endif %}
+          </p>
+        </div>
+
         {# Explicit language picker — pre-selects current page language but
            lets subscribers override (e.g. browse in English, prefer email
            in Hindi). Chip-style radio buttons for tap-friendly mobile. #}

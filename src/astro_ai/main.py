@@ -44,7 +44,7 @@ from astro_ai.llm import (
     parse_sectioned_reading,
 )
 from astro_ai.matching import compute_guna_milan
-from astro_ai import cache, email_sender, storage, subscribers
+from astro_ai import cache, email_sender, festivals, shloks, storage, subscribers, trivia
 import time as _time
 from astro_ai.session import (
     ChartCollection,
@@ -773,7 +773,8 @@ async def rashifal(request: Request) -> HTMLResponse:
 @app.post("/subscribe")
 async def subscribe(request: Request,
                     email: str = Form(...),
-                    lang: str = Form("en")) -> JSONResponse:
+                    lang: str = Form("en"),
+                    city: str = Form("")) -> JSONResponse:
     """Add an email to the daily-Rashifal subscriber list.
 
     Called from the modal in _subscribe_modal.html via fetch(). Returns JSON
@@ -784,12 +785,12 @@ async def subscribe(request: Request,
     (skipped for re-subscribes). Welcome failure is logged but doesn't
     block the success response — the subscription itself already saved.
     """
-    ok, is_new, msg = subscribers.subscribe(email, lang)
+    ok, is_new, msg = subscribers.subscribe(email, lang, city)
     if not ok:
         return JSONResponse({"ok": False, "error": msg}, status_code=400)
     if is_new:
         try:
-            _send_welcome_email(email, lang)
+            _send_welcome_email(email, lang, city)
         except Exception as err:
             # Log and continue — the user is already subscribed; missing
             # welcome is a minor degradation, not a failure.
@@ -798,20 +799,69 @@ async def subscribe(request: Request,
     return JSONResponse({"ok": True})
 
 
-def _send_welcome_email(email: str, lang: str) -> bool:
+def _panchang_for_city(city: str | None, request_cache: dict | None = None):
+    """Compute today's Panchang for a city. Returns None when no city given.
+
+    Panchang (sunrise, Rahu Kaal, Abhijit Muhurta) is location-dependent —
+    Delhi's times don't match Bangalore's. Rather than show wrong times,
+    skip the Panchang section entirely when the subscriber hasn't told us
+    where they are. Empty/blank/whitespace-only city all count as "no city".
+
+    `request_cache` is keyed by city string and shared across the send loop
+    so 200 Mumbai subscribers don't each trigger a Nominatim lookup.
+    """
+    resolved = (city or "").strip()
+    if not resolved:
+        return None
+    if request_cache is not None and resolved in request_cache:
+        return request_cache[resolved]
+    try:
+        # compute_chart's only job here is to geocode + give lat/lon/tz;
+        # the date+time are throwaway. ~50-200ms incl. Nominatim lookup.
+        chart_for_loc = compute_chart("2000-01-01", "12:00", resolved)
+        p = compute_panchang(chart_for_loc)
+    except Exception:
+        # Couldn't geocode this city — degrade gracefully to no-Panchang
+        # rather than guessing with a wrong location.
+        p = None
+    if request_cache is not None and p is not None:
+        request_cache[resolved] = p
+    return p
+
+
+def _email_context(*, lang: str, city: str | None, request_cache: dict | None = None) -> dict:
+    """Build the per-subscriber template context shared by daily + welcome emails.
+
+    All the date/shlok/festival/trivia lookups are deterministic for a given
+    date + lang, so they're computed once per (lang, date) and reused inside
+    the same send call. Panchang is per-city.
+    """
+    today = date.today()
+    panchang = _panchang_for_city(city, request_cache=request_cache)
+    return {
+        "lang": lang,
+        "today_iso": today.isoformat(),
+        "today_pretty": today.strftime("%A, %d %B %Y"),
+        "panchang": panchang,
+        "shlok": shloks.shlok_for_date(today),
+        "festival": festivals.festival_for_date(today),
+        "trivia": trivia.trivia_for_date(today),
+        "site_url": _site_url(),
+    }
+
+
+def _send_welcome_email(email: str, lang: str, city: str = "") -> bool:
     """Send the one-off welcome email to a newly-subscribed user.
 
-    Embeds today's Rashifal so the first email delivers immediate value
-    (not just a "you're subscribed" confirmation). Reuses _shared_three_tier
-    so the welcome email piggybacks on the same daily-generated Rashifal
-    that the morning blast uses — zero extra LLM cost.
+    Embeds today's Rashifal + Panchang + shlok + trivia so the first email
+    delivers immediate value, not just a "you're subscribed" confirmation.
+    Reuses _shared_three_tier so the Rashifal piggybacks on the same daily
+    generation the morning blast uses — zero extra LLM cost.
     """
     today_iso = date.today().isoformat()
     prompt_fp = cache.fingerprint_prompt(RASHIFAL_PROMPT_PATH)
-    site_url = _site_url()
 
-    # Build today's Rashifal sections — may trigger generation if neither
-    # GCS nor SQLite has today's content for this language yet.
+    # Build today's Rashifal sections (may trigger generation if cold).
     try:
         neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
         transit = compute_transit_snapshot(neutral_chart)
@@ -830,19 +880,18 @@ def _send_welcome_email(email: str, lang: str) -> bool:
             for title, body in parse_sectioned_reading(text)
         ]
     except Exception:
-        # If we can't build today's Rashifal (LLM/provider all failed),
-        # send a no-rashifal welcome — better than failing the whole signup.
+        # If Rashifal generation fails entirely, send the rest of the
+        # welcome anyway — better than blocking on a missed reading.
         sections = []
 
-    unsub_url = (
-        f"{site_url}/unsubscribe?email={email}&token={subscribers.unsubscribe_token(email)}"
+    ctx = _email_context(lang=lang, city=city)
+    ctx["rashifal_sections"] = sections
+    ctx["unsubscribe_url"] = (
+        f"{ctx['site_url']}/unsubscribe?email={email}"
+        f"&token={subscribers.unsubscribe_token(email)}"
     )
-    html = templates.env.get_template("email/welcome.html").render(
-        lang=lang,
-        rashifal_sections=sections,
-        site_url=site_url,
-        unsubscribe_url=unsub_url,
-    )
+
+    html = templates.env.get_template("email/welcome.html").render(**ctx)
     subject = (
         "Shubh Bhagya में स्वागत है — कल से दैनिक राशिफल शुरू"
         if lang == "hi"
@@ -923,26 +972,25 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
                 status_code=502,
             )
 
-    # Render + send per subscriber.
+    # Render + send per subscriber. Panchang is per-city, cached across
+    # the send so subscribers sharing a city only trigger one geocode.
     template = templates.env.get_template("email/daily_rashifal.html")
+    panchang_cache: dict = {}
     sent = failed = 0
     failures: list[str] = []
     for sub in subscribers.list_subscribers():
         lang = sub.get("lang", "en")
         if lang not in sections_by_lang:
             lang = "en"
-        unsub_url = (
-            f"{site_url}/unsubscribe?email={sub['email']}&token={subscribers.unsubscribe_token(sub['email'])}"
+
+        ctx = _email_context(lang=lang, city=sub.get("city", ""),
+                             request_cache=panchang_cache)
+        ctx["rashifal_sections"] = sections_by_lang[lang]
+        ctx["unsubscribe_url"] = (
+            f"{site_url}/unsubscribe?email={sub['email']}"
+            f"&token={subscribers.unsubscribe_token(sub['email'])}"
         )
-        html = template.render(
-            lang=lang,
-            today_iso=today_iso,
-            today_pretty=today_pretty,
-            rashifal_sections=sections_by_lang[lang],
-            shlok=None,
-            site_url=site_url,
-            unsubscribe_url=unsub_url,
-        )
+        html = template.render(**ctx)
         subject = "आज का राशिफल — Shubh Bhagya" if lang == "hi" else "Today's Rashifal — Shubh Bhagya"
         ok = email_sender.send(sub["email"], subject=subject, html=html)
         if ok:
