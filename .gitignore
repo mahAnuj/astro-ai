@@ -20,3 +20,7 @@ bhagya.db-journal
 .vscode/
 .idea/
 .DS_Store
+
+# Firebase CLI local cache (auth, deploy artifacts)
+.firebase/
+firebase-debug.log

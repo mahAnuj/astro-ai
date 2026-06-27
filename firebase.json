@@ -1,0 +1,15 @@
+{
+  "hosting": {
+    "public": "firebase-hosting",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "bhagya",
+          "region": "asia-south1"
+        }
+      }
+    ]
+  }
+}
