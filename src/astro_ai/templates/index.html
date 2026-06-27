@@ -181,8 +181,8 @@
         </form>
       </div>
     {% else %}
-      <form method="post" action="/reading"
-            class="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-astro-900/5 p-6 sm:p-8">
+      <form method="post" action="/reading" id="kundli-form"
+            class="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-astro-900/5 p-6 sm:p-8 scroll-mt-20">
         <h2 class="font-display text-2xl text-astro-700 mb-1">Start with your birth details</h2>
         <p class="text-sm text-stone-500 mb-5">All four fields take a few seconds.</p>
 
@@ -262,7 +262,7 @@
   <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
     <div class="text-center mb-8">
       <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Your Janma Kundali</div>
-      <h2 class="font-display text-2xl sm:text-3xl text-stone-900">A classical North Indian Diamond chart</h2>
+      <h2 class="font-display text-2xl sm:text-3xl text-stone-900">What your Kundali looks like</h2>
     </div>
 
     <div class="grid md:grid-cols-2 gap-8 items-center max-w-4xl mx-auto">
@@ -330,8 +330,8 @@
       <!-- RIGHT — short explanation of what they're looking at -->
       <div>
         <p class="text-stone-700 leading-relaxed mb-4">
-          This is the classical layout pandits have used for centuries. Twelve houses (Bhavas) arranged
-          around a central diamond, each holding a Rashi (sign) and any planets sitting in it.
+          Twelve houses (Bhavas) arranged around a central diamond. Each house holds a Rashi (sign)
+          and any planets sitting in it.
         </p>
         <ul class="space-y-3 text-sm text-stone-700">
           <li class="flex gap-2"><span class="text-astro-600 font-bold">&middot;</span> <span><strong>Numbers</strong> show the Rashi (Aries=1, Taurus=2 &hellip; Pisces=12).</span></li>
@@ -344,10 +344,14 @@
   </div>
 </section>
 
-<!-- FEATURES — 6-card grid, every link goes to a live page -------------- -->
+<!-- FEATURES — 7-card grid, every link goes to a live page -------------- -->
 <section class="border-t border-stone-200/70 bg-white/60">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-    <h2 class="font-display text-3xl sm:text-4xl text-center text-stone-900 mb-3">Six readings from one chart</h2>
+    <!-- Decorative strip of all 12 rashi glyphs — visual anchor before the cards. -->
+    <div class="flex justify-center gap-3 sm:gap-5 text-2xl sm:text-3xl text-astro-600/70 mb-6 flex-wrap" aria-hidden="true">
+      <span>♈</span><span>♉</span><span>♊</span><span>♋</span><span>♌</span><span>♍</span><span>♎</span><span>♏</span><span>♐</span><span>♑</span><span>♒</span><span>♓</span>
+    </div>
+    <h2 class="font-display text-3xl sm:text-4xl text-center text-stone-900 mb-3">Six readings, one chart</h2>
     <p class="text-center text-stone-600 max-w-2xl mx-auto mb-12">
       Enter your birth details once &mdash; every reading below works off the same chart. No signup, no per-minute fees.
     </p>
@@ -377,6 +381,11 @@
         "Today's Horoscope",
         "Today's transits read against your natal chart, plus the full Panchang — Rahu Kaal window to avoid, Abhijit Muhurta to act in, and the day's favourable colour.") }}
 
+      {{ feature_card("/rashifal",
+        '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+        "Rashifal",
+        "Daily horoscope for all 12 Moon signs &mdash; the classical newspaper-style format. No birth details needed; just scroll to your Janma Rashi.") }}
+
       {{ feature_card("/monthly",
         '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
         "Monthly Horoscope",
@@ -387,17 +396,54 @@
         "Horoscope " ~ current_year(),
         "Quarter-by-quarter narrative plus Varshaphala (your annual chart cast at solar return). Same five life areas, year-long horizon.") }}
 
-      {{ feature_card("/dasha",
-        '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
-        "Dasha Periods",
-        "Your active Vimshottari Mahadasha and Antardasha, plus upcoming sub-periods and the next major chapter ahead.") }}
-
       {{ feature_card("/matching",
         '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>',
         "Kundli Matching",
         "Full 8-koota Ashtakoot Guna Milan with verdict, Mangal Dosh check, and a compatibility reading covering emotional bond, daily life, and marriage foundation.") }}
 
     </div>
+  </div>
+</section>
+
+<!-- DON'T FEAR YOUR KUNDALI — reframes Manglik / Sade Sati / Kal Sarpa anxieties -->
+<section class="border-t border-stone-200/70 bg-gradient-to-br from-astro-50/60 via-cream to-amber-50/30">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-14 sm:py-18 text-center">
+
+    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-2">For those who hesitate</div>
+    <h2 class="font-display text-3xl sm:text-4xl text-stone-900 mb-5">Don&rsquo;t fear your Kundali</h2>
+
+    <p class="text-stone-700 leading-relaxed mb-8 max-w-2xl mx-auto text-base sm:text-[1.05rem]">
+      Many people avoid checking their birth chart because they&rsquo;ve heard scary things about
+      <strong>Sade Sati</strong>, <strong>Manglik dosha</strong>, or <strong>Kal Sarpa yoga</strong>.
+      But these are not curses. They are periods and patterns with constructive meaning &mdash;
+      Sade Sati builds maturity, Manglik shapes assertive energy, every dosha has classical remedies.
+      Bhagya explains each in plain language so you <em>understand</em> instead of worry.
+    </p>
+
+    <!-- Shloka card — Gita 18.66, the perfect verse for this message -->
+    <div class="bg-white/70 backdrop-blur rounded-2xl border border-astro-100 p-6 sm:p-8 mb-8 max-w-2xl mx-auto">
+      <p class="font-display text-lg sm:text-xl text-astro-800 italic leading-relaxed mb-3" lang="sa">
+        सर्वधर्मान्परित्यज्य मामेकं शरणं व्रज।<br>
+        अहं त्वा सर्वपापेभ्यो मोक्षयिष्यामि <span class="text-rose-700">मा शुचः</span>॥
+      </p>
+      <p class="text-xs text-stone-400 italic mb-2">Bhagavad Gita 18.66 &mdash; Krishna's final teaching</p>
+      <p class="text-sm text-stone-700 leading-relaxed">
+        &ldquo;Take refuge in the Divine. I will free you from all that weighs you down &mdash;
+        <strong>do not fear, do not grieve</strong>.&rdquo;
+      </p>
+      <p class="text-xs text-stone-500 mt-3 leading-relaxed">
+        No chart, no dosha, no transit is above devotion. Recite the name of your chosen deity
+        with sincerity and even Saturn lightens his hand.
+      </p>
+    </div>
+
+    <a href="#kundli-form" class="inline-flex items-center gap-2 px-6 py-3 bg-astro-600 hover:bg-astro-700 active:bg-astro-800 text-white font-semibold rounded-lg transition-colors">
+      See your free Kundli
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+      </svg>
+    </a>
+
   </div>
 </section>
 

@@ -167,6 +167,94 @@ evals/                   Reserved for the future prompteval sub-project
 `evals/` is for the planned prompt-evaluation harness (not yet wired). The
 app never imports from `evals/`.
 
+## Deploying to GCP Cloud Run
+
+Bhagya ships with a single-stage `Dockerfile` and a `deploy.sh` script
+targeting Google Cloud Run. Cloud Run's Always-Free tier (2M requests / 360k
+vCPU-seconds / 180k GiB-seconds / 1 GB outbound per month) comfortably covers
+small-to-modest traffic.
+
+### One-time setup
+
+1. **Install gcloud CLI** &mdash; `brew install --cask google-cloud-sdk` on macOS or follow
+   [Google's install docs](https://cloud.google.com/sdk/docs/install).
+2. **Create a GCP project** in the [console](https://console.cloud.google.com/) (free).
+3. **Enable billing** &mdash; required even for Always-Free services. You'll be
+   asked for a credit card; nothing is charged unless you exceed limits.
+   Set a budget alert (Billing &rarr; Budgets &amp; alerts) to get an email at
+   $5 / $10 / $25 thresholds.
+4. **Enable the APIs**: Cloud Run + Cloud Build:
+   ```bash
+   gcloud services enable run.googleapis.com cloudbuild.googleapis.com
+   ```
+5. **Authenticate**:
+   ```bash
+   gcloud auth login
+   gcloud config set project YOUR_PROJECT_ID
+   ```
+
+### Every-time deploy
+
+```bash
+GCP_PROJECT=your-project-id \
+OPENAI_API_KEY=gsk_... \
+ASTRO_AI_API_BASE=https://api.groq.com/openai/v1 \
+ASTRO_AI_MODEL=llama-3.3-70b-versatile \
+ASTRO_AI_COOKIE_SECRET=$(openssl rand -hex 32) \
+ADMIN_PASSWORD=$(openssl rand -hex 12) \
+./deploy.sh
+```
+
+Default region is **`asia-south1` (Mumbai)** &mdash; sub-100ms latency for
+Indian users. Override with `GCP_REGION=us-central1` (etc.) if you'd rather
+host elsewhere.
+
+The script builds the container via Cloud Build, deploys it as a Cloud Run
+service, and prints the public URL. Auto-scales 0 to 5 instances based on
+demand; reverts to zero when idle so you pay nothing for empty time.
+
+### Optional: shared GCS cache for Rashifal
+
+The SQLite cache lives at `/tmp/bhagya.db` and dies on every cold start.
+For per-user readings (natal, daily, etc.) that's fine &mdash; cookies hold the
+chart. But the daily Rashifal is identical for every visitor, so regenerating
+it on each cold start is wasted LLM spend. Pointing the app at a GCS bucket
+makes Rashifal truly **one LLM call per day per language**, globally.
+
+1. **Create a US-multi-region bucket** (stays inside GCS Always-Free &mdash;
+   5 GB storage / 5K writes / 50K reads / 100 GB egress per month):
+   ```bash
+   gcloud storage buckets create gs://bhagya-cache-us \
+     --project YOUR_PROJECT_ID --location US
+   ```
+2. **Grant the Cloud Run service account access**. Default account is
+   `PROJECT_NUMBER-compute@developer.gserviceaccount.com`:
+   ```bash
+   PROJECT_NUMBER=$(gcloud projects describe YOUR_PROJECT_ID --format='value(projectNumber)')
+   gcloud storage buckets add-iam-policy-binding gs://bhagya-cache-us \
+     --member "serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+     --role roles/storage.objectAdmin
+   ```
+3. **Pass the bucket name on deploy** &mdash; `deploy.sh` picks it up automatically:
+   ```bash
+   BHAGYA_STORAGE_BUCKET=bhagya-cache-us ./deploy.sh
+   ```
+
+The app degrades gracefully: if the var is unset (or GCS errors out) the
+SQLite cache still serves Rashifal &mdash; you just pay for one regeneration per
+cold start.
+
+### Notes
+
+- **Per-user cache reset on cold start**: chart-specific routes still
+  regenerate on cold boots (chart data lives in user cookies so it's
+  transparent). Only Rashifal benefits from GCS because its output is shared.
+- **Secrets**: `deploy.sh` passes secrets via `--set-env-vars` for simplicity.
+  Visible in the GCP console to anyone with project read access. For
+  production, migrate to Secret Manager (`--set-secrets` instead).
+- **Budget alerts**: strongly recommend setting these in the Billing console
+  &mdash; protects you from runaway bills from unexpected traffic.
+
 ## Roadmap
 
 - [x] Natal reading + chart + diamond Kundali

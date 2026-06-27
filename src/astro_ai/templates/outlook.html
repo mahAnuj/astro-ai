@@ -21,15 +21,10 @@
     <p class="text-sm text-stone-600">{{ t(lang, subtitle_key) }}</p>
   </header>
 
-  <!-- SADE SATI BADGE (if active) --------------------------------- -->
-  {% if flags.sade_sati %}
-  <section>
-    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold">
-      <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-      {{ t(lang, 'sade_sati') }} &middot; {{ t(lang, sade_phase_key) if sade_phase_key else flags.sade_sati_phase }}
-    </div>
-  </section>
-  {% endif %}
+  {# Sade Sati badge intentionally NOT shown on outlook pages either —
+     reads as a scary out-of-context warning. The full educational panel
+     (with dates, remaining time, and guidance) lives on /natal. The LLM
+     outlook prose can mention it naturally when relevant. #}
 
   <!-- VARSHAPHALA (yearly only) ----------------------------------- -->
   {% if varshaphala %}

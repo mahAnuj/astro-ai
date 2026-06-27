@@ -41,6 +41,53 @@ RASHIS = [
 RASHI_SHORT = ["Ari", "Tau", "Gem", "Can", "Leo", "Vir",
                "Lib", "Sco", "Sag", "Cap", "Aqu", "Pis"]
 
+# Unicode zodiac glyphs — universal visual shorthand for each rashi.
+# Same 12 symbols Western astrology uses; Vedic users recognise them too.
+RASHI_SYMBOLS: tuple[str, ...] = (
+    "♈",  # ♈ Aries
+    "♉",  # ♉ Taurus
+    "♊",  # ♊ Gemini
+    "♋",  # ♋ Cancer
+    "♌",  # ♌ Leo
+    "♍",  # ♍ Virgo
+    "♎",  # ♎ Libra
+    "♏",  # ♏ Scorpio
+    "♐",  # ♐ Sagittarius
+    "♑",  # ♑ Capricorn
+    "♒",  # ♒ Aquarius
+    "♓",  # ♓ Pisces
+)
+
+# Synonyms for fuzzy-matching section titles back to a rashi index.
+# Each tuple covers English + Sanskrit names (lowercased) for one rashi.
+_RASHI_NAME_TOKENS: tuple[tuple[str, ...], ...] = (
+    ("aries", "mesha"),
+    ("taurus", "vrishabha", "vrish"),
+    ("gemini", "mithuna", "mithun"),
+    ("cancer", "karka"),
+    ("leo", "simha", "sinh"),
+    ("virgo", "kanya"),
+    ("libra", "tula"),
+    ("scorpio", "vrishchika", "vrischika"),
+    ("sagittarius", "dhanu"),
+    ("capricorn", "makara", "makar"),
+    ("aquarius", "kumbha", "kumbh"),
+    ("pisces", "meena", "min"),
+)
+
+
+def symbol_for_rashi_label(label: str) -> str | None:
+    """Return the Unicode glyph for a rashi label like 'Cancer', 'Karka', or
+    'Cancer (Karka)' or 'Aries / Mesha'. Returns None if no match.
+    """
+    if not label:
+        return None
+    lower = label.lower()
+    for i, tokens in enumerate(_RASHI_NAME_TOKENS):
+        if any(t in lower for t in tokens):
+            return RASHI_SYMBOLS[i]
+    return None
+
 # Rashi (0..11 = Aries..Pisces) → ruling planet. Used by house-profile
 # computation and by matching.py's Graha Maitri scoring.
 RASHI_LORDS: tuple[str, ...] = (
@@ -502,21 +549,129 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
 
 @dataclass(frozen=True)
 class SadeSatiDetails:
-    """Sade Sati — phase + Saturn position relative to natal Moon, for educational panel."""
+    """Sade Sati — phase + timing + Saturn position, for the educational panel.
+
+    Timing fields are computed only when active (otherwise None):
+      - overall_start: when Saturn first entered the 12th from natal Moon
+      - overall_end:   when Saturn will exit the 2nd from natal Moon
+      - phase_end:     when the current phase (rising/peak/setting) ends
+    """
 
     is_active: bool
     phase: str | None                  # "rising" | "peak" | "setting"
     saturn_house_from_moon: int        # 1..12
+    overall_start: date_ | None
+    overall_end: date_ | None
+    phase_end: date_ | None
 
 
 def compute_sade_sati_details(chart: Chart, when: datetime | None = None) -> SadeSatiDetails:
-    """Same calc as the flag, exposed as a dedicated value object for the panel."""
+    """Sade Sati state + start/end dates when active."""
     flags = compute_vedic_flags(chart, when)
+    if not flags.sade_sati:
+        return SadeSatiDetails(
+            is_active=False, phase=None,
+            saturn_house_from_moon=flags.saturn_house_from_natal_moon,
+            overall_start=None, overall_end=None, phase_end=None,
+        )
+
+    moon_idx = _rashi_index(next(p for p in chart.planets if p.name == "Moon").rashi)
+    anchor = (when or datetime.now(ZoneInfo("UTC"))).astimezone(ZoneInfo("UTC"))
+    current_house = flags.saturn_house_from_natal_moon
+
+    phase_end = _saturn_house_change_forward(moon_idx, anchor, current_house)
+    overall_start = _walk_back_to_ss_entry(moon_idx, anchor, current_house)
+    overall_end = _walk_forward_to_ss_exit(moon_idx, anchor, current_house)
+
     return SadeSatiDetails(
-        is_active=flags.sade_sati,
+        is_active=True,
         phase=flags.sade_sati_phase,
-        saturn_house_from_moon=flags.saturn_house_from_natal_moon,
+        saturn_house_from_moon=current_house,
+        overall_start=overall_start,
+        overall_end=overall_end,
+        phase_end=phase_end,
     )
+
+
+def _saturn_house_from_natal_moon(moon_idx: int, at: datetime) -> int:
+    """Compute Saturn's house (from natal Moon) at moment `at` — single swisseph call."""
+    jd = swe.julday(at.year, at.month, at.day, at.hour + at.minute / 60.0)
+    pos, _ = swe.calc_ut(jd, swe.SATURN, swe.FLG_SIDEREAL)
+    sign_idx = int(float(pos[0]) // 30)
+    return ((sign_idx - moon_idx) % 12) + 1
+
+
+def _saturn_house_change_forward(moon_idx: int, start: datetime, target_house: int) -> date_:
+    """Find the last day Saturn is still in `target_house` (going forward from start).
+
+    Weekly stride + daily bisection. Bounded at 3 years (Saturn changes sign
+    every ~2.5 years so a single phase never exceeds that).
+    """
+    cursor = start
+    step = timedelta(days=7)
+    for _ in range(52 * 3):
+        cursor += step
+        if _saturn_house_from_natal_moon(moon_idx, cursor) != target_house:
+            # Refine: bracket between cursor-step and cursor, find last day in target.
+            lo, hi = cursor - step, cursor
+            for _ in range(8):
+                mid = lo + (hi - lo) / 2
+                if _saturn_house_from_natal_moon(moon_idx, mid) == target_house:
+                    lo = mid
+                else:
+                    hi = mid
+            return lo.date()
+    return cursor.date()
+
+
+def _saturn_house_change_backward(moon_idx: int, start: datetime, target_house: int) -> date_:
+    """First day going BACK that Saturn was still in `target_house`. Mirror of forward."""
+    cursor = start
+    step = timedelta(days=7)
+    for _ in range(52 * 3):
+        cursor -= step
+        if _saturn_house_from_natal_moon(moon_idx, cursor) != target_house:
+            lo, hi = cursor, cursor + step  # lo is OUT of target, hi is IN
+            for _ in range(8):
+                mid = lo + (hi - lo) / 2
+                if _saturn_house_from_natal_moon(moon_idx, mid) == target_house:
+                    hi = mid
+                else:
+                    lo = mid
+            return hi.date()
+    return cursor.date()
+
+
+def _walk_back_to_ss_entry(moon_idx: int, start: datetime, current_house: int) -> date_:
+    """Walk back through SS phases to find when Saturn first entered 12th from Moon.
+
+    Sequence (in reverse): setting (h=2) → peak (h=1) → rising (h=12).
+    Each phase is ~2.5 years, so worst-case 3 phase boundaries to cross.
+    """
+    cursor = start
+    house = current_house
+    while house in {12, 1, 2}:
+        phase_start = _saturn_house_change_backward(moon_idx, cursor, house)
+        cursor = datetime.combine(phase_start, datetime.min.time(), tzinfo=ZoneInfo("UTC"))
+        if house == 12:
+            return phase_start  # rising-phase entry = overall Sade Sati start
+        # Step one day earlier to check the previous house.
+        previous_day = cursor - timedelta(days=1)
+        house = _saturn_house_from_natal_moon(moon_idx, previous_day)
+    return cursor.date()
+
+
+def _walk_forward_to_ss_exit(moon_idx: int, start: datetime, current_house: int) -> date_:
+    """Walk forward through SS phases to find when Saturn exits the 2nd from Moon."""
+    cursor = start
+    house = current_house
+    while house in {12, 1, 2}:
+        phase_end_date = _saturn_house_change_forward(moon_idx, cursor, house)
+        cursor = datetime.combine(phase_end_date, datetime.min.time(), tzinfo=ZoneInfo("UTC")) + timedelta(days=1)
+        if house == 2:
+            return phase_end_date  # setting-phase exit = overall Sade Sati end
+        house = _saturn_house_from_natal_moon(moon_idx, cursor)
+    return cursor.date()
 
 
 @dataclass(frozen=True)

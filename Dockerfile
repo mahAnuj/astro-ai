@@ -1,0 +1,34 @@
+# Cloud Run container for Bhagya.
+# Single-stage build using uv (the same tool we use in dev).
+#
+# Why slim, not alpine: pyswisseph ships C-extension wheels for glibc/manylinux
+# but not for musl/alpine. Slim keeps the image small (~150MB final) while
+# letting us pull in prebuilt wheels — no compiler needed.
+
+FROM python:3.12-slim
+
+# Install uv globally (single binary; fastest Python toolchain available).
+RUN pip install --no-cache-dir uv
+
+WORKDIR /app
+
+# Copy lockfile + manifest first so layer cache survives source edits.
+COPY pyproject.toml uv.lock README.md ./
+COPY src ./src
+
+# Install runtime deps + the package, frozen to uv.lock; skip dev deps.
+RUN uv sync --frozen --no-dev
+
+# Cloud Run injects $PORT (defaults to 8080); listen on it.
+ENV PORT=8080
+
+# Cloud Run filesystems are read-only EXCEPT /tmp. Put the SQLite cache there
+# so put/get works at runtime. Cache survives within an instance's lifetime
+# (typically minutes to hours), gets wiped on cold start — fine for us since
+# chart data lives in user cookies and cache misses just re-trigger LLM calls.
+ENV BHAGYA_CACHE_DB=/tmp/bhagya.db
+
+EXPOSE 8080
+
+# uvicorn launched via uv so it finds the in-venv interpreter.
+CMD ["sh", "-c", "uv run uvicorn astro_ai.main:app --host 0.0.0.0 --port ${PORT}"]

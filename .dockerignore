@@ -1,0 +1,34 @@
+# Keep the build context small — Docker copies only what's needed,
+# faster uploads to Cloud Build and smaller layers.
+
+# Python / uv
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.python-version
+
+# Secrets — must NEVER end up in the image
+.env
+
+# Runtime cache (regenerated on first request)
+bhagya.db
+bhagya.db-journal
+
+# Git / GitHub
+.git/
+.github/
+.gitignore
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Eval sub-project — not needed at runtime
+evals/
+
+# Deploy artifacts
+deploy.sh
+*.dockerignore
+Dockerfile

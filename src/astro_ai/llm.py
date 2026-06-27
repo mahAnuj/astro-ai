@@ -186,6 +186,36 @@ def _format_outlook_message(
     )
 
 
+def generate_rashifal(
+    transit: TransitSnapshot,
+    today_iso: str,
+    prompt_path: Path,
+    model: str | None = None,
+    lang: str = "en",
+) -> str:
+    """Generate today's Rashifal — sectioned predictions for all 12 rashis.
+
+    Generic across all users (not personalised by chart) so the caller can
+    cache the result for 24 hours.
+    """
+    chosen_model = model or os.environ.get("ASTRO_AI_MODEL", DEFAULT_MODEL)
+    api_base = os.environ.get("ASTRO_AI_API_BASE")
+    client = OpenAI(base_url=api_base) if api_base else OpenAI()
+    user_message = (
+        f"Today's date: {today_iso}\n\n"
+        f"Today's planetary positions (for your reasoning only — do NOT mention in output):\n"
+        f"{format_transit_for_prompt(transit)}\n"
+    )
+    response = client.chat.completions.create(
+        model=chosen_model,
+        messages=[
+            {"role": "system", "content": _system_prompt(prompt_path, lang)},
+            {"role": "user", "content": user_message},
+        ],
+    )
+    return (response.choices[0].message.content or "").strip()
+
+
 def generate_matching_narrative(
     groom_name: str,
     bride_name: str,

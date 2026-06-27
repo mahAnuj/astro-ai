@@ -149,6 +149,28 @@ _EN: Final[dict[str, str]] = {
     "sade_sati_peak_guidance":  "Focus on physical health and quiet routines. Accept limitations as teachers. Do disciplined work and avoid major life risks. The pressure is real but constructive — Saturn rewards integrity here.",
     "sade_sati_setting_guidance":"Be measured in speech. Rebuild finances steadily. Mend family rifts. Consolidate gains. This is where seeds planted during the cycle begin to mature.",
 
+    # Sade Sati — timing labels
+    "sade_sati_timeline":    "Timeline",
+    "sade_sati_started":     "Started",
+    "sade_sati_ends":        "Ends fully",
+    "sade_sati_phase_ends":  "Current phase ends",
+    "sade_sati_elapsed":     "elapsed",
+    "sade_sati_remaining":   "remaining",
+    "sade_sati_years":       "years",
+    "sade_sati_months":      "months",
+    "sade_sati_precautions_label": "Traditional precautions",
+    "sade_sati_precautions":
+        "Donate black sesame, black cloth, or iron on Saturdays. "
+        "Light a mustard-oil lamp under a peepal tree. "
+        "Recite the Hanuman Chalisa or Shani Stotra regularly. "
+        "Eat simple food, sleep on time, and avoid hasty decisions. "
+        "Help the elderly, the poor, and those in service work — Saturn rewards humility and service.",
+    "sade_sati_balance_label": "What this period gives in return",
+    "sade_sati_balance":
+        "Sade Sati is not a punishment. The pressure shapes lasting maturity, discernment, and resilience. "
+        "Many people emerge with stronger character, clearer values, and structures that hold for decades. "
+        "The classical view: those who meet Saturn with patience and discipline are rewarded with deep, durable gains.",
+
     # gochar highlights panel
     "gochar_title":        "Gochar (Slow Transits)",
     "gochar_subtitle":     "The slow-mover chapter the sky is writing — these define the multi-month backdrop",
@@ -163,6 +185,12 @@ _EN: Final[dict[str, str]] = {
     "nav_yearly_link":     "Horoscope {year}",
     "nav_matching_link":   "Kundli Matching",
     "nav_dasha_link":      "Dasha Periods",
+    "nav_rashifal_link":   "Rashifal",
+
+    # Rashifal page
+    "rashifal_title":      "Today's Rashifal",
+    "rashifal_subtitle":   "Daily predictions for all 12 Moon signs &mdash; find your Janma Rashi below.",
+    "rashifal_dont_know":  "Don't know your Moon sign? Generate your free Kundli &mdash; it tells you instantly.",
 
     # Vimshottari Dasha
     "dasha_title":         "Vimshottari Dasha",
@@ -360,6 +388,28 @@ _HI: Final[dict[str, str]] = {
     "sade_sati_peak_guidance":  "शारीरिक स्वास्थ्य और शांत दिनचर्या पर ध्यान दें। सीमाओं को शिक्षक मानें। अनुशासित कार्य करें और बड़े जोखिमों से बचें। दबाव वास्तविक है पर रचनात्मक — शनि यहाँ सत्यनिष्ठा को पुरस्कृत करते हैं।",
     "sade_sati_setting_guidance":"वाणी में संयम रखें। वित्त धीरे-धीरे पुनर्निर्मित करें। पारिवारिक मतभेद सुलझाएँ। यह वह चरण है जब चक्र के दौरान बोए गए बीज परिपक्व होने लगते हैं।",
 
+    # Sade Sati — timing labels
+    "sade_sati_timeline":    "समय-रेखा",
+    "sade_sati_started":     "आरम्भ",
+    "sade_sati_ends":        "पूर्ण समाप्ति",
+    "sade_sati_phase_ends":  "वर्तमान चरण समाप्त",
+    "sade_sati_elapsed":     "बीत चुके",
+    "sade_sati_remaining":   "शेष",
+    "sade_sati_years":       "वर्ष",
+    "sade_sati_months":      "महीने",
+    "sade_sati_precautions_label": "पारंपरिक सावधानियाँ",
+    "sade_sati_precautions":
+        "शनिवार को काले तिल, काला कपड़ा या लोहे का दान करें। "
+        "पीपल वृक्ष के नीचे सरसों के तेल का दीपक जलाएँ। "
+        "हनुमान चालीसा या शनि स्तोत्र का नियमित पाठ करें। "
+        "सादा भोजन करें, समय पर सोएँ, और जल्दबाज़ी में निर्णय लेने से बचें। "
+        "वृद्धों, ज़रूरतमंदों और सेवा कर्म करने वालों की सहायता करें — शनि विनम्रता और सेवा का पुरस्कार देते हैं।",
+    "sade_sati_balance_label": "इस अवधि का सकारात्मक पक्ष",
+    "sade_sati_balance":
+        "साढ़े साती कोई दण्ड नहीं है। यह दबाव चरित्र को परिपक्व, विवेकशील और सशक्त बनाता है। "
+        "बहुत से लोग इस अवधि से अधिक मज़बूत चरित्र, स्पष्ट मूल्यों और स्थिर संरचनाओं के साथ निकलते हैं। "
+        "शास्त्रीय मत: जो धैर्य और अनुशासन के साथ शनि का सामना करते हैं, उन्हें गहरे, टिकाऊ लाभ मिलते हैं।",
+
     # gochar highlights panel
     "gochar_title":        "गोचर (मंद ग्रह संचार)",
     "gochar_subtitle":     "आकाश में चल रहा मंद-ग्रह अध्याय — ये कई महीनों की पृष्ठभूमि तय करते हैं",
@@ -374,6 +424,12 @@ _HI: Final[dict[str, str]] = {
     "nav_yearly_link":     "राशिफल {year}",
     "nav_matching_link":   "कुंडली मिलान",
     "nav_dasha_link":      "दशा काल",
+    "nav_rashifal_link":   "राशिफल",
+
+    # Rashifal page
+    "rashifal_title":      "आज का राशिफल",
+    "rashifal_subtitle":   "सभी 12 राशियों के लिए आज का भविष्यफल &mdash; अपनी जन्म राशि नीचे खोजें।",
+    "rashifal_dont_know":  "अपनी जन्म राशि नहीं जानते? मुफ्त कुंडली बनाएँ &mdash; तुरंत पता चलेगा।",
 
     # Vimshottari Dasha
     "dasha_title":         "विंशोत्तरी दशा",

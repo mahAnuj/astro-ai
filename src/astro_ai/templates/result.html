@@ -31,20 +31,29 @@
 
   <!-- SUMMARY CHIPS ----------------------------------------------- -->
   <section class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-    <div class="bg-white rounded-xl border border-stone-200 p-4">
-      <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'lagna') }}</div>
-      <div class="font-display text-lg text-astro-700">{{ chart.lagna_rashi }}</div>
-      <div class="text-sm text-stone-500 mt-0.5">{{ "%.1f"|format(chart.lagna_longitude) }}&deg;</div>
+    <div class="bg-white rounded-xl border border-stone-200 p-4 flex items-start gap-3">
+      {% if lagna_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ lagna_glyph }}</span>{% endif %}
+      <div class="min-w-0">
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'lagna') }}</div>
+        <div class="font-display text-lg text-astro-700">{{ chart.lagna_rashi }}</div>
+        <div class="text-sm text-stone-500 mt-0.5">{{ "%.1f"|format(chart.lagna_longitude) }}&deg;</div>
+      </div>
     </div>
-    <div class="bg-white rounded-xl border border-stone-200 p-4">
-      <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'moon_rashi') }}</div>
-      <div class="font-display text-lg text-astro-700">{{ moon.rashi }}</div>
-      <div class="text-sm text-stone-500 mt-0.5">{{ moon.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
+    <div class="bg-white rounded-xl border border-stone-200 p-4 flex items-start gap-3">
+      {% if moon_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ moon_glyph }}</span>{% endif %}
+      <div class="min-w-0">
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'moon_rashi') }}</div>
+        <div class="font-display text-lg text-astro-700">{{ moon.rashi }}</div>
+        <div class="text-sm text-stone-500 mt-0.5">{{ moon.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
+      </div>
     </div>
-    <div class="bg-white rounded-xl border border-stone-200 p-4">
-      <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'sun_rashi') }}</div>
-      <div class="font-display text-lg text-astro-700">{{ sun.rashi }}</div>
-      <div class="text-sm text-stone-500 mt-0.5">{{ sun.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
+    <div class="bg-white rounded-xl border border-stone-200 p-4 flex items-start gap-3">
+      {% if sun_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ sun_glyph }}</span>{% endif %}
+      <div class="min-w-0">
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'sun_rashi') }}</div>
+        <div class="font-display text-lg text-astro-700">{{ sun.rashi }}</div>
+        <div class="text-sm text-stone-500 mt-0.5">{{ sun.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
+      </div>
     </div>
   </section>
 
@@ -198,6 +207,42 @@
     </div>
     <div class="px-6 py-5 space-y-4">
       <p class="text-base text-stone-800 leading-relaxed">{{ t(lang, sade_about_key) }}</p>
+
+      {# TIMELINE — 3-column compact stat strip with dates + progress #}
+      {% if sade_sati.overall_start and sade_sati.overall_end %}
+      {% set total_days = (sade_sati.overall_end - sade_sati.overall_start).days %}
+      {% set elapsed_days = (today_date | string | safe and 0) %}
+      {# Compute elapsed/remaining via dates passed in context: rely on Jinja math #}
+      <div class="grid sm:grid-cols-3 gap-3 bg-stone-50 rounded-lg p-4 border border-stone-100">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-0.5">{{ t(lang, 'sade_sati_started') }}</div>
+          <div class="font-display text-base text-stone-900 tabular-nums">{{ sade_sati.overall_start.strftime('%b %Y') }}</div>
+        </div>
+        {% if sade_sati.phase_end %}
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-0.5">{{ t(lang, 'sade_sati_phase_ends') }}</div>
+          <div class="font-display text-base text-stone-900 tabular-nums">{{ sade_sati.phase_end.strftime('%b %Y') }}</div>
+        </div>
+        {% endif %}
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-0.5">{{ t(lang, 'sade_sati_ends') }}</div>
+          <div class="font-display text-base text-stone-900 tabular-nums">{{ sade_sati.overall_end.strftime('%b %Y') }}</div>
+        </div>
+      </div>
+
+      {# Progress bar across the full SS cycle #}
+      {% set pct = sade_sati_progress %}
+      <div>
+        <div class="h-2 rounded-full bg-stone-200 overflow-hidden">
+          <div class="h-full bg-amber-500 transition-all" style="width: {{ pct }}%;"></div>
+        </div>
+        <div class="flex justify-between text-xs text-stone-500 mt-1.5 tabular-nums">
+          <span>{{ sade_sati_elapsed_years }} {{ t(lang, 'sade_sati_years') }} {{ t(lang, 'sade_sati_elapsed') }}</span>
+          <span>{{ sade_sati_remaining_years }} {{ t(lang, 'sade_sati_years') }} {{ t(lang, 'sade_sati_remaining') }}</span>
+        </div>
+      </div>
+      {% endif %}
+
       <div class="grid sm:grid-cols-2 gap-4">
         <div class="bg-amber-50/50 border border-amber-100 rounded-lg p-4">
           <div class="text-xs font-semibold uppercase tracking-wider text-amber-700 mb-1.5">{{ t(lang, 'sade_sati_themes_label') }}</div>
@@ -208,6 +253,19 @@
           <p class="text-sm text-stone-700 leading-relaxed">{{ t(lang, sade_guide_key) }}</p>
         </div>
       </div>
+
+      {# Balance — what this period gives in return #}
+      <div class="bg-stone-50 border border-stone-100 rounded-lg p-4">
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">{{ t(lang, 'sade_sati_balance_label') }}</div>
+        <p class="text-sm text-stone-700 leading-relaxed">{{ t(lang, 'sade_sati_balance') }}</p>
+      </div>
+
+      {# Traditional precautions / remedies #}
+      <div class="bg-astro-50/40 border border-astro-100 rounded-lg p-4">
+        <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1.5">{{ t(lang, 'sade_sati_precautions_label') }}</div>
+        <p class="text-sm text-stone-700 leading-relaxed">{{ t(lang, 'sade_sati_precautions') }}</p>
+      </div>
+
     </div>
   </section>
   {% endif %}

@@ -23,6 +23,11 @@ dependencies = [
     # itsdangerous: signed cookies (persist seeker birth details client-side
     # without a DB, tamper-proofed by HMAC).
     "itsdangerous>=2.2",
+    # google-cloud-storage: optional generic key→file store (see storage.py).
+    # Survives Cloud Run cold starts; used by Rashifal today, available to any
+    # future feature with cross-user-shared output. Falls back silently to the
+    # SQLite cache when BHAGYA_STORAGE_BUCKET isn't configured.
+    "google-cloud-storage>=2.18",
 ]
 
 [project.scripts]

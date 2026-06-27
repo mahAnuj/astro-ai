@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import os
+import secrets
 from datetime import date
 from pathlib import Path
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, Form, Request
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 
 from astro_ai.chart import (
@@ -27,6 +29,7 @@ from astro_ai.chart import (
     compute_varshaphala,
     compute_vedic_flags,
     compute_wealth_profile,
+    symbol_for_rashi_label,
 )
 from astro_ai.i18n import translate as _i18n_translate
 from astro_ai.llm import (
@@ -34,11 +37,14 @@ from astro_ai.llm import (
     generate_daily_reading,
     generate_matching_narrative,
     generate_outlook_reading,
+    generate_rashifal,
     generate_reading,
     parse_intro_and_sections,
     parse_sectioned_reading,
 )
 from astro_ai.matching import compute_guna_milan
+from astro_ai import cache, storage
+import time as _time
 from astro_ai.session import (
     ChartCollection,
     clear_collection,
@@ -57,6 +63,101 @@ def _lang(request: Request) -> str:
     candidate = request.cookies.get(LANG_COOKIE, "en")
     return candidate if candidate in SUPPORTED_LANGS else "en"
 
+
+_basic_auth = HTTPBasic(realm="Bhagya admin")
+_ADMIN_DEV_FALLBACK = "bhagya-dev-only-CHANGE-ME"
+
+
+def require_admin(creds: HTTPBasicCredentials = Depends(_basic_auth)) -> None:
+    """HTTP Basic Auth gate for admin routes.
+
+    Username must be 'admin'; password comes from the ADMIN_PASSWORD env var.
+    If unset, falls back to a clearly-flagged dev placeholder so local
+    development still works — but the var MUST be set before any deploy.
+    `secrets.compare_digest` is used on both sides to dodge timing attacks.
+    """
+    expected_password = os.environ.get("ADMIN_PASSWORD", _ADMIN_DEV_FALLBACK)
+    ok_user = secrets.compare_digest(creds.username, "admin")
+    ok_pass = secrets.compare_digest(creds.password, expected_password)
+    if not (ok_user and ok_pass):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid admin credentials",
+            headers={"WWW-Authenticate": 'Basic realm="Bhagya admin"'},
+        )
+
+
+def _shared_three_tier(
+    *, route: str, cache_key: str, storage_key: str, lang: str, call_fn,
+) -> str:
+    """3-tier cache for content that's identical across users: GCS → SQLite → LLM.
+
+    Use this for routes where every visitor would get the same LLM output
+    (e.g. Rashifal — today only). Per-chart routes should stick with
+    `_cached`; GCS gives them nothing because the SQLite key is unique per
+    user anyway.
+
+    Cache writes propagate UP: a GCS hit also populates SQLite so the same
+    instance skips the GCS round-trip next time; a fresh generation populates
+    both layers.
+    """
+    # Tier 1: GCS — survives Cloud Run cold starts.
+    persistent = storage.get(storage_key)
+    if persistent is not None:
+        cache.log_call(route, lang, cache_hit=True)
+        cache.put(cache_key, persistent, route=route, ttl_days=1)  # warm SQLite
+        return persistent
+
+    # Tier 2: SQLite — per-instance, alive while the container is.
+    sqlite_hit = cache.get(cache_key)
+    if sqlite_hit is not None:
+        cache.log_call(route, lang, cache_hit=True)
+        storage.put(storage_key, sqlite_hit)  # backfill GCS
+        return sqlite_hit
+
+    # Tier 3: LLM generation. Persist to both layers.
+    started = _time.time()
+    text = call_fn()
+    latency_ms = int((_time.time() - started) * 1000)
+    in_tok = cache.estimate_tokens(text) * 2
+    out_tok = cache.estimate_tokens(text)
+    cache.put(cache_key, text, route=route, ttl_days=1,
+              input_tokens=in_tok, output_tokens=out_tok)
+    cache.log_call(route, lang, cache_hit=False,
+                   input_tokens=in_tok, output_tokens=out_tok, latency_ms=latency_ms)
+    storage.put(storage_key, text)
+    return text
+
+
+def _cached(
+    cache_key: str,
+    *,
+    route: str,
+    lang: str,
+    ttl_days: int | None,
+    call_fn,
+) -> str:
+    """Cache-wrap an LLM call. Logs every attempt (hit or miss) for /admin/usage.
+
+    `call_fn` is a zero-arg callable that returns the LLM text. We do the
+    cache-check and the per-route logging here so every reading benefits from
+    the same observability surface without duplicating boilerplate.
+    """
+    hit = cache.get(cache_key)
+    if hit is not None:
+        cache.log_call(route, lang, cache_hit=True)
+        return hit
+    started = _time.time()
+    text = call_fn()
+    latency_ms = int((_time.time() - started) * 1000)
+    in_tok = cache.estimate_tokens(text) * 2  # input ≈ 2x output for our prompts (rough)
+    out_tok = cache.estimate_tokens(text)
+    cache.put(cache_key, text, route=route, ttl_days=ttl_days,
+              input_tokens=in_tok, output_tokens=out_tok)
+    cache.log_call(route, lang, cache_hit=False,
+                   input_tokens=in_tok, output_tokens=out_tok, latency_ms=latency_ms)
+    return text
+
 # override=True so .env edits actually take effect when uvicorn reloads —
 # otherwise the first-loaded values stick for the lifetime of the process
 # and editing .env feels silently broken.
@@ -73,6 +174,7 @@ DAILY_PROMPT_PATH = PROMPTS_DIR / "daily.txt"
 MONTHLY_PROMPT_PATH = PROMPTS_DIR / "monthly.txt"
 YEARLY_PROMPT_PATH = PROMPTS_DIR / "yearly.txt"
 MATCHING_PROMPT_PATH = PROMPTS_DIR / "matching.txt"
+RASHIFAL_PROMPT_PATH = PROMPTS_DIR / "rashifal.txt"
 
 app = FastAPI(title="astro-ai", version="0.0.1")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -178,10 +280,16 @@ async def _render_natal_for(request: Request, details: BirthDetails) -> HTMLResp
     flags = compute_vedic_flags(chart)
     life_chapters = compute_life_chapters(chart)
     lang = _lang(request)
+    chart_fp = cache.fingerprint_chart(details.birth_date, details.birth_time, details.birth_place)
+    prompt_fp = cache.fingerprint_prompt(PROMPT_PATH)
+    cache_key = f"natal:{chart_fp}:{lang}:{prompt_fp}"
     try:
-        reading_text = generate_reading(
-            details, chart=chart, flags=flags, life_chapters=life_chapters,
-            prompt_path=PROMPT_PATH, lang=lang,
+        reading_text = _cached(
+            cache_key, route="natal", lang=lang, ttl_days=None,
+            call_fn=lambda: generate_reading(
+                details, chart=chart, flags=flags, life_chapters=life_chapters,
+                prompt_path=PROMPT_PATH, lang=lang,
+            ),
         )
     except Exception as err:
         return templates.TemplateResponse(
@@ -194,6 +302,23 @@ async def _render_natal_for(request: Request, details: BirthDetails) -> HTMLResp
             status_code=502,
         )
     sections = parse_sectioned_reading(reading_text)
+    sade_sati = compute_sade_sati_details(chart)
+
+    # Pre-compute SS progress for the template (Jinja can't do date arithmetic cleanly).
+    ss_progress = 0
+    ss_elapsed_years = 0.0
+    ss_remaining_years = 0.0
+    if sade_sati.is_active and sade_sati.overall_start and sade_sati.overall_end:
+        today = date.today()
+        total_days = (sade_sati.overall_end - sade_sati.overall_start).days
+        elapsed_days = max(0, min(total_days, (today - sade_sati.overall_start).days))
+        ss_progress = int(elapsed_days / total_days * 100) if total_days else 0
+        ss_elapsed_years = round(elapsed_days / 365.25, 1)
+        ss_remaining_years = round((total_days - elapsed_days) / 365.25, 1)
+
+    # Zodiac glyphs for the three summary chips (Lagna, Moon, Sun).
+    moon_plt = next(p for p in chart.planets if p.name == "Moon")
+    sun_plt  = next(p for p in chart.planets if p.name == "Sun")
     return templates.TemplateResponse(
         request,
         "result.html",
@@ -204,12 +329,19 @@ async def _render_natal_for(request: Request, details: BirthDetails) -> HTMLResp
             "chart": chart,
             "flags": flags,
             "lang": lang,
+            "lagna_glyph": symbol_for_rashi_label(chart.lagna_rashi),
+            "moon_glyph":  symbol_for_rashi_label(moon_plt.rashi),
+            "sun_glyph":   symbol_for_rashi_label(sun_plt.rashi),
             # Structured insight panels — see chart.py for shape.
             "marriage": compute_marriage_profile(chart),
             "wealth":   compute_wealth_profile(chart),
             "manglik":  compute_manglik_details(chart),
-            "sade_sati":compute_sade_sati_details(chart),
+            "sade_sati": sade_sati,
             "dasha":    compute_dasha_state(chart),
+            # Pre-computed SS timeline values for the panel.
+            "sade_sati_progress": ss_progress,
+            "sade_sati_elapsed_years": ss_elapsed_years,
+            "sade_sati_remaining_years": ss_remaining_years,
         },
     )
 
@@ -252,15 +384,23 @@ async def today(request: Request) -> HTMLResponse:
             status_code=503,
         )
 
+    chart_fp = cache.fingerprint_chart(
+        saved_details.birth_date, saved_details.birth_time, saved_details.birth_place
+    )
+    prompt_fp = cache.fingerprint_prompt(DAILY_PROMPT_PATH)
+    cache_key = f"today:{chart_fp}:{date.today().isoformat()}:{lang}:{prompt_fp}"
     try:
-        reading_text = generate_daily_reading(
-            saved_details,
-            natal=natal,
-            transit=transit,
-            flags=flags,
-            panchang=panchang,
-            prompt_path=DAILY_PROMPT_PATH,
-            lang=lang,
+        reading_text = _cached(
+            cache_key, route="today", lang=lang, ttl_days=1,
+            call_fn=lambda: generate_daily_reading(
+                saved_details,
+                natal=natal,
+                transit=transit,
+                flags=flags,
+                panchang=panchang,
+                prompt_path=DAILY_PROMPT_PATH,
+                lang=lang,
+            ),
         )
     except Exception as err:
         return templates.TemplateResponse(
@@ -403,16 +543,32 @@ async def _render_outlook(
             status_code=503,
         )
 
+    chart_fp = cache.fingerprint_chart(
+        saved_details.birth_date, saved_details.birth_time, saved_details.birth_place
+    )
+    prompt_fp = cache.fingerprint_prompt(prompt_path)
+    today_str = date.today().isoformat()
+    # Monthly: bucket by week (cache for 7 days); Yearly: bucket by month (30 days).
+    if active_page == "monthly":
+        bucket = f"week-{date.today().isocalendar()[0]}-{date.today().isocalendar()[1]}"
+        ttl = 7
+    else:
+        bucket = date.today().strftime("%Y-%m")  # year-month
+        ttl = 30
+    cache_key = f"{active_page}:{chart_fp}:{bucket}:{lang}:{prompt_fp}"
     try:
-        reading_text = generate_outlook_reading(
-            saved_details,
-            natal=natal,
-            transit=transit,
-            flags=flags,
-            gochar_impacts=gochar_impacts,
-            events=events,
-            prompt_path=prompt_path,
-            lang=lang,
+        reading_text = _cached(
+            cache_key, route=active_page, lang=lang, ttl_days=ttl,
+            call_fn=lambda: generate_outlook_reading(
+                saved_details,
+                natal=natal,
+                transit=transit,
+                flags=flags,
+                gochar_impacts=gochar_impacts,
+                events=events,
+                prompt_path=prompt_path,
+                lang=lang,
+            ),
         )
     except Exception as err:
         return templates.TemplateResponse(
@@ -450,6 +606,89 @@ async def _render_outlook(
             "window_label": window_label,
             "today_date": date.today().isoformat(),
         },
+    )
+
+
+@app.get("/rashifal", response_class=HTMLResponse)
+async def rashifal(request: Request) -> HTMLResponse:
+    """Daily Rashifal — generic predictions for all 12 Moon signs.
+
+    No saved chart needed — readers just scroll to their own rashi. Cached
+    per (date, lang) so all visitors share the same generation.
+    """
+    lang = _lang(request)
+    today_iso = date.today().isoformat()
+    prompt_fp = cache.fingerprint_prompt(RASHIFAL_PROMPT_PATH)
+    cache_key = f"rashifal:{today_iso}:{lang}:{prompt_fp}"
+
+    if not os.environ.get("OPENAI_API_KEY"):
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "API key not configured",
+             "message": "Add OPENAI_API_KEY to .env to generate today's Rashifal."},
+            status_code=503,
+        )
+
+    # Use a low-cost transit reference for the LLM context.
+    # Build a "neutral" anchor — Lagna and Moon use a dummy fixed natal so
+    # the transit snapshot just reports today's planet positions; we don't
+    # use the natal-relative house numbers in the Rashifal prompt anyway.
+    try:
+        neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+    except ChartError as err:
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Couldn't compute reference chart", "message": str(err)},
+            status_code=500,
+        )
+    transit = compute_transit_snapshot(neutral_chart)
+
+    # Three-tier cache for Rashifal: GCS (cross-instance) → SQLite (per-instance) → LLM.
+    # Each tier is written back from below on a miss, so future requests hit
+    # the fastest tier available. Storage key includes prompt fingerprint so
+    # a prompt edit auto-invalidates yesterday's cache.
+    storage_key = f"rashifal/{today_iso}-{lang}-{prompt_fp}.txt"
+    try:
+        text = _shared_three_tier(
+            route="rashifal",
+            cache_key=cache_key,
+            storage_key=storage_key,
+            lang=lang,
+            call_fn=lambda: generate_rashifal(
+                transit=transit, today_iso=today_iso,
+                prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
+            ),
+        )
+    except Exception as err:
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Couldn't generate Rashifal",
+             "message": f"{type(err).__name__}: {err}"},
+            status_code=502,
+        )
+
+    # Augment each section with its zodiac glyph (♈♉..♓) for the cards.
+    sections_with_glyphs = [
+        (symbol_for_rashi_label(title) or "✦", title, body)
+        for title, body in parse_sectioned_reading(text)
+    ]
+    return templates.TemplateResponse(
+        request, "rashifal.html",
+        {"lang": lang, "today_date": today_iso, "sections": sections_with_glyphs},
+    )
+
+
+@app.get("/admin/usage", response_class=HTMLResponse, dependencies=[Depends(require_admin)])
+async def admin_usage(request: Request, days: int = 1) -> HTMLResponse:
+    """Observability page — recent LLM-call counts grouped by route + cache hit rate.
+
+    Protected by HTTP Basic Auth (username 'admin', password from
+    ADMIN_PASSWORD env var). Browser shows the standard login prompt.
+    """
+    summary = cache.usage_summary(days=days)
+    return templates.TemplateResponse(
+        request, "admin_usage.html",
+        {"lang": _lang(request), "summary": summary, "days": days},
     )
 
 
@@ -535,14 +774,23 @@ async def matching_result(
     narrative_sections: list[tuple[str, str]] = []
     if os.environ.get("OPENAI_API_KEY"):
         try:
-            narrative_text = generate_matching_narrative(
-                groom_name=g_name.strip(),
-                bride_name=b_name.strip(),
-                groom_chart=groom_chart,
-                bride_chart=bride_chart,
-                guna=guna,
-                prompt_path=MATCHING_PROMPT_PATH,
-                lang=lang,
+            g_fp = cache.fingerprint_chart(g_birth_date, g_birth_time, g_birth_place)
+            b_fp = cache.fingerprint_chart(b_birth_date, b_birth_time, b_birth_place)
+            # Sort so the order of the two people doesn't matter for cache hits.
+            pair_key = ":".join(sorted([g_fp, b_fp]))
+            prompt_fp = cache.fingerprint_prompt(MATCHING_PROMPT_PATH)
+            cache_key = f"matching:{pair_key}:{lang}:{prompt_fp}"
+            narrative_text = _cached(
+                cache_key, route="matching", lang=lang, ttl_days=None,
+                call_fn=lambda: generate_matching_narrative(
+                    groom_name=g_name.strip(),
+                    bride_name=b_name.strip(),
+                    groom_chart=groom_chart,
+                    bride_chart=bride_chart,
+                    guna=guna,
+                    prompt_path=MATCHING_PROMPT_PATH,
+                    lang=lang,
+                ),
             )
             narrative_sections = parse_sectioned_reading(narrative_text)
         except Exception:

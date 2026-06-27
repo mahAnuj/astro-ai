@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Admin · Usage &mdash; Bhagya{% endblock %}
+
+{% block content %}
+{% set active_page = "" %}
+{% include "_nav.html" %}
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+
+  <header>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">Usage &mdash; last {{ days }} day(s)</h1>
+    <p class="text-sm text-stone-600">
+      Window controls: <a href="/admin/usage?days=1" class="text-astro-600 hover:underline">today</a> ·
+      <a href="/admin/usage?days=7" class="text-astro-600 hover:underline">7d</a> ·
+      <a href="/admin/usage?days=30" class="text-astro-600 hover:underline">30d</a> ·
+      <a href="/admin/usage?days=90" class="text-astro-600 hover:underline">90d</a>
+    </p>
+  </header>
+
+  <!-- TOTALS -->
+  <section class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="bg-white rounded-xl border border-stone-200 p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Total calls</div>
+      <div class="font-display text-2xl text-astro-700 tabular-nums">{{ summary.total_calls }}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-stone-200 p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Cache hits</div>
+      <div class="font-display text-2xl text-emerald-700 tabular-nums">{{ summary.cache_hits }}
+        <span class="text-sm text-stone-500">({{ summary.hit_rate_pct }}%)</span>
+      </div>
+    </div>
+    <div class="bg-white rounded-xl border border-stone-200 p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Cache misses</div>
+      <div class="font-display text-2xl text-rose-700 tabular-nums">{{ summary.cache_misses }}</div>
+    </div>
+    <div class="bg-white rounded-xl border border-stone-200 p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Avg miss latency</div>
+      <div class="font-display text-2xl text-stone-700 tabular-nums">{{ summary.avg_miss_latency_ms }}ms</div>
+    </div>
+  </section>
+
+  <!-- BY ROUTE -->
+  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
+    <h2 class="font-display text-xl text-astro-700 mb-4">By route</h2>
+    {% if summary.by_route %}
+    <table class="w-full text-sm">
+      <thead class="text-xs font-semibold uppercase tracking-wider text-stone-500">
+        <tr class="border-b border-stone-200">
+          <th class="text-left py-2">Route</th>
+          <th class="text-right py-2">Calls</th>
+          <th class="text-right py-2">Hits</th>
+          <th class="text-right py-2">Hit rate</th>
+          <th class="text-right py-2">Input tokens (est.)</th>
+          <th class="text-right py-2">Output tokens (est.)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in summary.by_route %}
+        <tr class="border-b border-stone-100 last:border-0">
+          <td class="py-2 font-semibold text-stone-900">/{{ r.route }}</td>
+          <td class="py-2 text-right text-stone-800 tabular-nums">{{ r.calls }}</td>
+          <td class="py-2 text-right text-emerald-700 tabular-nums">{{ r.hits }}</td>
+          <td class="py-2 text-right text-stone-600 tabular-nums">{{ r.hit_rate_pct }}%</td>
+          <td class="py-2 text-right text-stone-500 tabular-nums">{{ r.input_tokens }}</td>
+          <td class="py-2 text-right text-stone-500 tabular-nums">{{ r.output_tokens }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="text-sm text-stone-500">No calls logged in this window yet.</p>
+    {% endif %}
+  </section>
+
+  <!-- CACHE -->
+  <section class="bg-stone-50 border border-stone-200 rounded-2xl p-5">
+    <div class="flex items-baseline gap-3">
+      <div class="font-display text-xl text-astro-700">{{ summary.cache_entries }}</div>
+      <div class="text-sm text-stone-600">cached responses currently in storage (bhagya.db)</div>
+    </div>
+    <p class="text-xs text-stone-500 mt-1">
+      Token counts are <em>estimates</em> from text length (~4 chars/token Latin, ~2.5 Devanagari).
+      For exact numbers, check the LLM provider's own dashboard.
+    </p>
+  </section>
+
+</main>
+{% endblock %}

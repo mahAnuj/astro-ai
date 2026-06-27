@@ -12,6 +12,10 @@ __pycache__/
 .prompteval/
 report.html
 
+# Bhagya runtime cache (LLM-response cache + usage log)
+bhagya.db
+bhagya.db-journal
+
 # Editor / OS
 .vscode/
 .idea/
