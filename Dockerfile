@@ -10,8 +10,10 @@
 FROM python:3.12-slim
 
 # Build toolchain — needed for pyswisseph's source build on linux/3.12.
+# build-essential pulls gcc + g++ + make (pyswisseph bundles sqlite3
+# C++ sources, so g++ alone wasn't enough).
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        gcc \
+        build-essential \
         python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
