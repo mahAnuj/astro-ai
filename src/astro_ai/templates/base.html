@@ -148,6 +148,92 @@
 <body hx-boost="true" class="bg-cream text-stone-900 font-sans min-h-full antialiased">
   {% block content %}{% endblock %}
 
+  {# Site-wide footer — present on every page for SEO (cross-linking,
+     keyword density, E-E-A-T trust signals) and consistent UX. Each route
+     can opt out by overriding the `footer` block with empty content. #}
+  {% block footer %}
+  <footer class="border-t border-stone-200/70 bg-cream/40 no-print mt-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
+
+        {# Brand + description — keyword-rich paragraph reinforces what
+           the site is about on every page. #}
+        <div class="md:col-span-4">
+          <div class="flex items-center gap-2 mb-3 text-astro-700">
+            <svg viewBox="0 0 100 100" class="w-7 h-7 shrink-0" aria-hidden="true">
+              <g fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="miter">
+                <polygon points="50,5 95,50 50,95 5,50"/>
+                <line x1="50" y1="5" x2="50" y2="95"/>
+                <line x1="5" y1="50" x2="95" y2="50"/>
+                <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
+              </g>
+              <circle cx="50" cy="50" r="7" fill="#ffd764"/>
+            </svg>
+            <span class="font-display text-lg font-bold">Shubh Bhagya</span>
+          </div>
+          <p class="text-sm text-stone-600 leading-relaxed">
+            Free Vedic astrology rooted in classical Parashari tradition &mdash;
+            Janma Kundli, daily Rashifal for all 12 rashis, Vimshottari Dasha
+            periods, Manglik &amp; Sade Sati analysis, and Ashtakoot Kundali
+            matching. Powered by real Swiss Ephemeris calculations.
+          </p>
+        </div>
+
+        {# Internal links to every main reading page. Crawlers and users
+           both win — site-wide navigation discoverable from any URL. #}
+        <div class="md:col-span-3">
+          <h3 class="text-xs uppercase font-semibold text-stone-500 tracking-wider mb-3">Readings</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/"         class="text-stone-700 hover:text-astro-700">Free Janma Kundli</a></li>
+            <li><a href="/rashifal" class="text-stone-700 hover:text-astro-700">Daily Rashifal</a></li>
+            <li><a href="/today"    class="text-stone-700 hover:text-astro-700">Today's Horoscope</a></li>
+            <li><a href="/monthly"  class="text-stone-700 hover:text-astro-700">Monthly Horoscope</a></li>
+            <li><a href="/yearly"   class="text-stone-700 hover:text-astro-700">Horoscope {{ current_year() }}</a></li>
+            <li><a href="/dasha"    class="text-stone-700 hover:text-astro-700">Vimshottari Dasha</a></li>
+            <li><a href="/matching" class="text-stone-700 hover:text-astro-700">Kundli Matching</a></li>
+          </ul>
+        </div>
+
+        {# Connect column — trust signals (real email), conversion CTA
+           (subscribe), and a sitemap pointer for power users. #}
+        <div class="md:col-span-3">
+          <h3 class="text-xs uppercase font-semibold text-stone-500 tracking-wider mb-3">Connect</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="mailto:contact@shubhagya.com" class="text-stone-700 hover:text-astro-700">contact@shubhagya.com</a></li>
+            <li><button type="button" data-subscribe-trigger
+                        class="text-stone-700 hover:text-astro-700 underline-offset-2 hover:underline text-left">
+                  Daily Rashifal in your inbox &rarr;
+                </button></li>
+            <li><a href="/sitemap.xml" class="text-stone-500 hover:text-astro-700 text-xs">Sitemap</a></li>
+          </ul>
+        </div>
+
+        {# Trust bullets — repeat the core value-prop one more time at
+           the bottom; reduces bounces on landing pages. #}
+        <div class="md:col-span-2">
+          <h3 class="text-xs uppercase font-semibold text-stone-500 tracking-wider mb-3">Why us</h3>
+          <ul class="space-y-2 text-sm text-stone-700">
+            <li>&check; Free, forever</li>
+            <li>&check; No signup needed</li>
+            <li>&check; No astrologer fees</li>
+            <li>&check; Chart stays in your browser</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-stone-200 mt-8 pt-6 text-center text-xs text-stone-500 leading-relaxed">
+        <p class="mb-2">
+          Readings are interpretive and for personal reflection &mdash;
+          not medical, legal, or financial advice.
+        </p>
+        <p class="text-stone-400">
+          &copy; {{ current_year() }} Shubh Bhagya &middot; Built with care in India.
+        </p>
+      </div>
+    </div>
+  </footer>
+  {% endblock %}
+
   {# Subscribe modal: visit-counter triggered on visits 3 and 6. Captures
      email for the daily Rashifal newsletter. See _subscribe_modal.html. #}
   {% include "_subscribe_modal.html" %}
