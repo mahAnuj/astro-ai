@@ -7,20 +7,20 @@
      show_print   — optional bool (defaults true). False on form pages where
                     Print isn't useful (matching form, error pages).
 
-   Anything outside that set ('home' etc.) just renders the full nav with
-   nothing highlighted, which is the right behaviour.
+   Layout — three zones on md+ (desktop):
+     [Logo]                       [Home Kundli Today ...]                       [Print | Lang]
+       LEFT (shrinkwrap)           CENTER (flex-1, justify-center)               RIGHT (shrinkwrap)
 
-   Mobile (< md): logo + hamburger; tapping the hamburger reveals the link
-   list stacked vertically. Desktop (md+): the link list is inline on the
-   right, hamburger is hidden.
+   On < md (mobile), all three zones stack vertically inside the hamburger
+   panel. Hamburger toggle reveals/hides BOTH #nav-menu (links) and
+   #nav-utility (print + lang) together.
 #}
 {% set show_print = show_print if show_print is defined else true %}
 <nav class="border-b border-stone-200/60 bg-cream/80 backdrop-blur sticky top-0 z-10 no-print">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-y-2">
-    {# Top bar: logo + wordmark on left, hamburger on right (mobile only).
-       Logo is an inline SVG of the Kundli diamond — stays crisp at any size
-       and uses currentColor so it inherits the wordmark's text-astro-700. #}
-    <div class="flex items-center justify-between">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center gap-y-2 md:gap-x-4">
+
+    {# LEFT ZONE: logo + (mobile-only) hamburger toggle #}
+    <div class="flex items-center justify-between md:justify-start md:flex-shrink-0">
       <a href="/" class="flex items-center gap-2 text-astro-700">
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
              class="w-7 h-7 shrink-0" aria-hidden="true">
@@ -50,11 +50,12 @@
       </button>
     </div>
 
-    {# Link list: hidden by default on mobile, always inline on md+.
-       JS toggles `hidden` ↔ `flex` on tap; md:flex keeps it visible on desktop. #}
+    {# CENTER ZONE: main nav links. flex-1 + justify-center centers them
+       inside the leftover horizontal space between logo and utility. On
+       mobile, becomes a vertical stack inside the hamburger panel. #}
     <div id="nav-menu"
-         class="hidden md:flex flex-col md:flex-row md:items-center md:justify-end
-                gap-y-1 md:gap-y-0 md:gap-x-4 text-sm pb-1 md:pb-0">
+         class="hidden md:flex flex-col md:flex-row md:flex-1 md:justify-center md:items-center
+                gap-y-1 md:gap-y-0 md:gap-x-4 text-sm">
       {% macro link(href, label, page_key) -%}
         {% if active_page == page_key -%}
           <span class="text-astro-700 font-semibold border-l-2 md:border-l-0 md:border-b-2
@@ -72,7 +73,14 @@
       {{ link("/monthly",  t(lang, 'nav_monthly_link'),  'monthly') }}
       {{ link("/yearly",   t(lang, 'nav_yearly_link', year=current_year()),   'yearly') }}
       {{ link("/matching", t(lang, 'nav_matching_link'), 'matching') }}
+    </div>
 
+    {# RIGHT ZONE: utility actions (print + language). Visually separate
+       from the main nav so they don't fight for attention with primary
+       links. On mobile, stacks at the bottom of the hamburger panel. #}
+    <div id="nav-utility"
+         class="hidden md:flex flex-col md:flex-row md:items-center
+                gap-y-1 md:gap-y-0 md:gap-x-3 text-sm md:flex-shrink-0">
       {% if show_print %}
       <button onclick="window.print()" type="button"
               class="text-stone-500 hover:text-astro-700 text-left py-1 md:py-0"
@@ -84,18 +92,24 @@
 </nav>
 
 <script>
-  // Mobile nav hamburger toggle. Vanilla JS, runs on every nav render so it
-  // re-attaches cleanly after htmx-boosted navigations (which swap the body).
+  // Mobile nav hamburger toggle. Reveals BOTH the main nav links and
+  // utility actions together — they're separate zones on desktop but
+  // stack into a single mobile menu when collapsed. Re-runs on every
+  // template render so it re-attaches after htmx-boosted navigations.
   (function() {
     var btn = document.getElementById('nav-toggle');
     var menu = document.getElementById('nav-menu');
+    var util = document.getElementById('nav-utility');
     var iconOpen = document.getElementById('nav-icon-open');
     var iconClose = document.getElementById('nav-icon-close');
     if (!btn || !menu) return;
     btn.addEventListener('click', function() {
       var willOpen = menu.classList.contains('hidden');
-      menu.classList.toggle('hidden');
-      menu.classList.toggle('flex');
+      [menu, util].forEach(function(el) {
+        if (!el) return;
+        el.classList.toggle('hidden');
+        el.classList.toggle('flex');
+      });
       btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
       if (iconOpen && iconClose) {
         iconOpen.classList.toggle('hidden');
