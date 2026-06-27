@@ -47,22 +47,19 @@ from astro_ai.matching import compute_guna_milan
 from astro_ai import cache, email_sender, festivals, shloks, storage, subscribers, trivia
 import time as _time
 from astro_ai.session import (
+    SUPPORTED_LANGS,
     ChartCollection,
     clear_collection,
     load_collection,
+    load_lang,
     save_collection,
+    save_lang,
 )
-
-# Language preference is stored in its own cookie (separate from the chart
-# collection — it's a UI/reading-output preference, not chart data).
-LANG_COOKIE = "astro_ai_lang"
-SUPPORTED_LANGS = {"en", "hi"}
 
 
 def _lang(request: Request) -> str:
-    """Read the seeker's language preference cookie; defaults to English."""
-    candidate = request.cookies.get(LANG_COOKIE, "en")
-    return candidate if candidate in SUPPORTED_LANGS else "en"
+    """Backwards-compat alias — read lang from the combined __session cookie."""
+    return load_lang(request)
 
 
 _basic_auth = HTTPBasic(realm="Bhagya admin")
@@ -345,7 +342,7 @@ async def reading(
             status_code=400,
         )
     response = RedirectResponse("/natal", status_code=303)
-    save_collection(response, collection)
+    save_collection(response, collection, request)
     return response
 
 
@@ -551,18 +548,9 @@ async def set_lang(
     lang: str = Form(...),
     next: str = Form(default="/"),
 ) -> RedirectResponse:
-    """Switch reading language; persisted in its own cookie."""
-    if lang not in SUPPORTED_LANGS:
-        lang = "en"
+    """Switch reading language; persisted in the combined __session cookie."""
     response = RedirectResponse(_safe_redirect_target(next), status_code=303)
-    response.set_cookie(
-        LANG_COOKIE,
-        lang,
-        max_age=60 * 60 * 24 * 365 * 5,  # 5 years
-        httponly=False,  # readable from JS (purely a UI preference)
-        samesite="lax",
-        secure=False,
-    )
+    save_lang(response, lang, request)
     return response
 
 
@@ -1179,7 +1167,7 @@ async def switch(
     """Activate the named saved chart, then redirect to `next` (default home)."""
     collection = load_collection(request).set_active(chart_id)
     response = RedirectResponse(_safe_redirect_target(next), status_code=303)
-    save_collection(response, collection)
+    save_collection(response, collection, request)
     return response
 
 
@@ -1194,7 +1182,7 @@ async def delete_chart(
     if not collection.charts:
         clear_collection(response)
     else:
-        save_collection(response, collection)
+        save_collection(response, collection, request)
     return response
 
 

@@ -1,7 +1,11 @@
-"""Signed-cookie persistence for a SEEKER'S COLLECTION of saved charts.
+"""Signed-cookie persistence for the seeker's session state.
 
-The cookie holds:
-    {"charts": [SavedChart, ...], "active_id": "abc12345"}
+The cookie holds a combined payload:
+    {
+      "charts": [SavedChart, ...],
+      "active_id": "abc12345",
+      "lang": "en"     # 'en' or 'hi'
+    }
 
 `itsdangerous` HMAC-signs the JSON payload with `ASTRO_AI_COOKIE_SECRET`;
 any tampering invalidates the signature and we treat the visitor as fresh.
@@ -9,8 +13,14 @@ any tampering invalidates the signature and we treat the visitor as fresh.
 Capped at MAX_CHARTS so the cookie can't grow unbounded — at ~150 bytes per
 SavedChart, 10 fits comfortably inside the 4 KB browser cookie limit.
 
-Old single-chart cookies (a flat BirthDetails dict, pre-multi-chart) are
-migrated transparently on read into a 1-chart collection.
+WHY THE COOKIE IS NAMED `__session`:
+
+Firebase Hosting strips ALL cookies from inbound requests before forwarding
+to Cloud Run, EXCEPT cookies named exactly `__session` (this is hardcoded
+behaviour to keep the Fastly CDN cache efficient). If we used our own cookie
+name, browsers would store the cookie but Firebase would never forward it,
+and every subsequent request would look stateless. Hence: one combined
+`__session` cookie holds everything we need to persist.
 """
 
 from __future__ import annotations
@@ -25,9 +35,12 @@ from itsdangerous import BadSignature, URLSafeSerializer
 
 from astro_ai.llm import BirthDetails
 
-COOKIE_NAME: Final[str] = "astro_ai_chart"
+# Must be exactly "__session" — see module docstring for why.
+COOKIE_NAME: Final[str] = "__session"
 COOKIE_MAX_AGE: Final[int] = 60 * 60 * 24 * 365  # 1 year
 MAX_CHARTS: Final[int] = 10
+DEFAULT_LANG: Final[str] = "en"
+SUPPORTED_LANGS: Final[frozenset[str]] = frozenset({"en", "hi"})
 _DEV_SECRET: Final[str] = "astro-ai-dev-secret-CHANGE-FOR-PROD"
 
 
@@ -125,7 +138,9 @@ class ChartCollection:
 
 
 # ---------------------------------------------------------------------------
-# Cookie I/O
+# Cookie I/O — the cookie is read once per request and written as a whole
+# blob; helpers below operate on the parsed dict so chart and lang updates
+# coexist without clobbering each other.
 # ---------------------------------------------------------------------------
 
 
@@ -134,51 +149,72 @@ def _serializer() -> URLSafeSerializer:
     return URLSafeSerializer(secret, salt="birth-details")
 
 
-def load_collection(request: Request) -> ChartCollection:
-    """Read + decode the cookie, or return an empty collection."""
+def _load_session(request: Request) -> dict:
+    """Read + decode the cookie, or return an empty dict. All callers go through
+    this so we only HMAC-verify once per request."""
     raw = request.cookies.get(COOKIE_NAME)
     if raw is None:
-        return ChartCollection(charts=(), active_id=None)
+        return {}
     try:
         data = _serializer().loads(raw)
     except BadSignature:
-        return ChartCollection(charts=(), active_id=None)
-    if not isinstance(data, dict):
-        return ChartCollection(charts=(), active_id=None)
-
-    # Migrate the old single-chart format: a flat BirthDetails dict.
-    if "charts" not in data:
-        try:
-            legacy = BirthDetails(**data)
-        except TypeError:
-            return ChartCollection(charts=(), active_id=None)
-        return ChartCollection(charts=(), active_id=None).add(legacy)
-
-    try:
-        charts = tuple(SavedChart(**c) for c in data["charts"])
-    except (TypeError, KeyError):
-        return ChartCollection(charts=(), active_id=None)
-    return ChartCollection(charts=charts, active_id=data.get("active_id"))
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
-def save_collection(response: Response, collection: ChartCollection) -> None:
-    """Sign and write the collection cookie on `response`."""
-    payload = _serializer().dumps(
-        {
-            "charts": [asdict(c) for c in collection.charts],
-            "active_id": collection.active_id,
-        }
-    )
+def _write_session(response: Response, data: dict) -> None:
+    """Sign and write the combined session payload."""
+    payload = _serializer().dumps(data)
     response.set_cookie(
         COOKIE_NAME,
         payload,
         max_age=COOKIE_MAX_AGE,
         httponly=True,
         samesite="lax",
-        secure=False,  # dev only; flip to True when behind HTTPS
+        secure=False,  # dev only; flip to True when behind HTTPS-only
     )
 
 
+def load_collection(request: Request) -> ChartCollection:
+    """Pull the ChartCollection out of the session cookie."""
+    data = _load_session(request)
+    raw_charts = data.get("charts", [])
+    try:
+        charts = tuple(SavedChart(**c) for c in raw_charts)
+    except (TypeError, KeyError):
+        return ChartCollection(charts=(), active_id=None)
+    return ChartCollection(charts=charts, active_id=data.get("active_id"))
+
+
+def save_collection(response: Response, collection: ChartCollection,
+                    request: Request | None = None) -> None:
+    """Write the chart collection without clobbering the lang preference.
+
+    `request` lets us preserve the existing `lang` from the current session
+    cookie. If omitted (rare — only legacy callers), lang gets reset to the
+    default; pass `request` from any route handler that has it.
+    """
+    data = _load_session(request) if request is not None else {}
+    data["charts"] = [asdict(c) for c in collection.charts]
+    data["active_id"] = collection.active_id
+    _write_session(response, data)
+
+
+def load_lang(request: Request) -> str:
+    """Read the seeker's language preference. Defaults to English."""
+    candidate = _load_session(request).get("lang", DEFAULT_LANG)
+    return candidate if candidate in SUPPORTED_LANGS else DEFAULT_LANG
+
+
+def save_lang(response: Response, lang: str, request: Request) -> None:
+    """Write the lang preference without clobbering chart data."""
+    if lang not in SUPPORTED_LANGS:
+        lang = DEFAULT_LANG
+    data = _load_session(request)
+    data["lang"] = lang
+    _write_session(response, data)
+
+
 def clear_collection(response: Response) -> None:
-    """Wipe everything — fresh start."""
+    """Wipe the whole session — fresh start (clears chart + lang)."""
     response.delete_cookie(COOKIE_NAME)
