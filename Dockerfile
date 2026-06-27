@@ -1,11 +1,19 @@
 # Cloud Run container for Bhagya.
 # Single-stage build using uv (the same tool we use in dev).
 #
-# Why slim, not alpine: pyswisseph ships C-extension wheels for glibc/manylinux
-# but not for musl/alpine. Slim keeps the image small (~150MB final) while
-# letting us pull in prebuilt wheels — no compiler needed.
+# Why slim, not alpine: pyswisseph + sqlite3 link against glibc, not musl.
+# We install gcc + python3-dev because pyswisseph's current release doesn't
+# ship a manylinux wheel for Python 3.12 (yet) — it builds from source.
+# Final image is ~350MB; multi-stage could shrink it but the simpler
+# single-stage is easier to reason about.
 
 FROM python:3.12-slim
+
+# Build toolchain — needed for pyswisseph's source build on linux/3.12.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        gcc \
+        python3-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install uv globally (single binary; fastest Python toolchain available).
 RUN pip install --no-cache-dir uv
