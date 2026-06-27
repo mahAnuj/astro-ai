@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}{% if details.name %}{{ t(lang, 'natal_title', name=details.name) }}{% else %}{{ t(lang, 'natal_title_anon') }}{% endif %} — Shubh Bhagya{% endblock %}
-{% block meta_description %}Your full Vedic Janma Kundli reading — personality, career, wealth, marriage, Manglik &amp; Sade Sati timing, Dasha periods, and life-stage predictions, all from your own birth chart.{% endblock %}
+{% block meta_description %}Your instant Vedic Janma Kundli reading online — personality, career, wealth, marriage, Manglik &amp; Sade Sati timing, Dasha periods, and life-stage predictions from your own birth chart.{% endblock %}
 
 {% block content %}
 {# Pre-compute Lagna / Sun / Moon for summary chips. #}
