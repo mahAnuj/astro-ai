@@ -1,18 +1,20 @@
-"""OpenAI wrapper — single call producing a Vedic reading from birth details.
+"""Reading-generator functions — call providers.chat() with a per-feature prompt.
 
 The system prompt is loaded from a file at request time (not module-import time)
 so editing the prompt during development requires only a refresh — no restart.
+
+Provider selection (Groq / Cerebras / Together / OpenAI / ...) and the
+rate-limit fallback chain live in providers.py — every function here just
+hands `messages` to providers.chat() and gets back text.
 """
 
 from __future__ import annotations
 
-import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from openai import OpenAI
-
+from astro_ai import providers
 from astro_ai.chart import (
     Chart,
     DailyPanchang,
@@ -28,8 +30,6 @@ from astro_ai.chart import (
     format_panchang_for_prompt,
     format_transit_for_prompt,
 )
-
-DEFAULT_MODEL = "gpt-4o-mini"
 
 # Appended to the system prompt to switch the LLM's output language.
 # UI strings stay English (full i18n deferred); only the reading text translates.
@@ -76,17 +76,10 @@ def generate_reading(
 ) -> str:
     """Sectioned natal reading. The 7th 'Life Stages' section uses life_chapters
     (the Mahadasha sequence framed as age windows) to ground age-based predictions."""
-    chosen_model = model or os.environ.get("ASTRO_AI_MODEL", DEFAULT_MODEL)
-    api_base = os.environ.get("ASTRO_AI_API_BASE")
-    client = OpenAI(base_url=api_base) if api_base else OpenAI()
-    response = client.chat.completions.create(
-        model=chosen_model,
-        messages=[
-            {"role": "system", "content": _system_prompt(prompt_path, lang)},
-            {"role": "user", "content": _format_seeker_message(details, chart, flags, life_chapters)},
-        ],
-    )
-    content = response.choices[0].message.content or ""
+    content = providers.chat(messages=[
+        {"role": "system", "content": _system_prompt(prompt_path, lang)},
+        {"role": "user", "content": _format_seeker_message(details, chart, flags, life_chapters)},
+    ])
     return content.strip()
 
 
@@ -129,20 +122,13 @@ def generate_outlook_reading(
     for windows >1 day) and adds the slow-mover gochar impacts list, which
     is the primary signal at these timescales.
     """
-    chosen_model = model or os.environ.get("ASTRO_AI_MODEL", DEFAULT_MODEL)
-    api_base = os.environ.get("ASTRO_AI_API_BASE")
-    client = OpenAI(base_url=api_base) if api_base else OpenAI()
-    response = client.chat.completions.create(
-        model=chosen_model,
-        messages=[
-            {"role": "system", "content": _system_prompt(prompt_path, lang)},
-            {
-                "role": "user",
-                "content": _format_outlook_message(details, natal, transit, flags, gochar_impacts, events),
-            },
-        ],
-    )
-    content = response.choices[0].message.content or ""
+    content = providers.chat(messages=[
+        {"role": "system", "content": _system_prompt(prompt_path, lang)},
+        {
+            "role": "user",
+            "content": _format_outlook_message(details, natal, transit, flags, gochar_impacts, events),
+        },
+    ])
     return content.strip()
 
 
@@ -198,22 +184,16 @@ def generate_rashifal(
     Generic across all users (not personalised by chart) so the caller can
     cache the result for 24 hours.
     """
-    chosen_model = model or os.environ.get("ASTRO_AI_MODEL", DEFAULT_MODEL)
-    api_base = os.environ.get("ASTRO_AI_API_BASE")
-    client = OpenAI(base_url=api_base) if api_base else OpenAI()
     user_message = (
         f"Today's date: {today_iso}\n\n"
         f"Today's planetary positions (for your reasoning only — do NOT mention in output):\n"
         f"{format_transit_for_prompt(transit)}\n"
     )
-    response = client.chat.completions.create(
-        model=chosen_model,
-        messages=[
-            {"role": "system", "content": _system_prompt(prompt_path, lang)},
-            {"role": "user", "content": user_message},
-        ],
-    )
-    return (response.choices[0].message.content or "").strip()
+    content = providers.chat(messages=[
+        {"role": "system", "content": _system_prompt(prompt_path, lang)},
+        {"role": "user", "content": user_message},
+    ])
+    return content.strip()
 
 
 def generate_matching_narrative(
@@ -231,20 +211,13 @@ def generate_matching_narrative(
     `guna` is a matching.GunaMilan — we type-erase to dodge an import cycle
     (matching imports from chart; we'd otherwise need llm → matching → chart).
     """
-    chosen_model = model or os.environ.get("ASTRO_AI_MODEL", DEFAULT_MODEL)
-    api_base = os.environ.get("ASTRO_AI_API_BASE")
-    client = OpenAI(base_url=api_base) if api_base else OpenAI()
-    response = client.chat.completions.create(
-        model=chosen_model,
-        messages=[
-            {"role": "system", "content": _system_prompt(prompt_path, lang)},
-            {
-                "role": "user",
-                "content": _format_matching_message(groom_name, bride_name, groom_chart, bride_chart, guna),
-            },
-        ],
-    )
-    content = response.choices[0].message.content or ""
+    content = providers.chat(messages=[
+        {"role": "system", "content": _system_prompt(prompt_path, lang)},
+        {
+            "role": "user",
+            "content": _format_matching_message(groom_name, bride_name, groom_chart, bride_chart, guna),
+        },
+    ])
     return content.strip()
 
 
@@ -347,17 +320,10 @@ def generate_daily_reading(
     lang: str = "en",
 ) -> str:
     """Today's personalised Vedic reading — natal + transits + flags + Panchang."""
-    chosen_model = model or os.environ.get("ASTRO_AI_MODEL", DEFAULT_MODEL)
-    api_base = os.environ.get("ASTRO_AI_API_BASE")
-    client = OpenAI(base_url=api_base) if api_base else OpenAI()
-    response = client.chat.completions.create(
-        model=chosen_model,
-        messages=[
-            {"role": "system", "content": _system_prompt(prompt_path, lang)},
-            {"role": "user", "content": _format_daily_message(details, natal, transit, flags, panchang)},
-        ],
-    )
-    content = response.choices[0].message.content or ""
+    content = providers.chat(messages=[
+        {"role": "system", "content": _system_prompt(prompt_path, lang)},
+        {"role": "user", "content": _format_daily_message(details, natal, transit, flags, panchang)},
+    ])
     return content.strip()
 
 
