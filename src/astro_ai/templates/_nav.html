@@ -17,9 +17,23 @@
 {% set show_print = show_print if show_print is defined else true %}
 <nav class="border-b border-stone-200/60 bg-cream/80 backdrop-blur sticky top-0 z-10 no-print">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-y-2">
-    {# Top bar: logo on left, hamburger on right (mobile only) #}
+    {# Top bar: logo + wordmark on left, hamburger on right (mobile only).
+       Logo is an inline SVG of the Kundli diamond — stays crisp at any size
+       and uses currentColor so it inherits the wordmark's text-astro-700. #}
     <div class="flex items-center justify-between">
-      <a href="/" class="font-display text-2xl text-astro-700 font-bold tracking-tight">Bhagya</a>
+      <a href="/" class="flex items-center gap-2 text-astro-700">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
+             class="w-7 h-7 shrink-0" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="miter">
+            <polygon points="50,5 95,50 50,95 5,50"/>
+            <line x1="50" y1="5" x2="50" y2="95"/>
+            <line x1="5" y1="50" x2="95" y2="50"/>
+            <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
+          </g>
+          <circle cx="50" cy="50" r="7" fill="#ffd764"/>
+        </svg>
+        <span class="font-display text-2xl font-bold tracking-tight">Bhagya</span>
+      </a>
       <button id="nav-toggle" type="button"
               class="md:hidden inline-flex items-center justify-center p-2 -mr-2 text-stone-700 hover:text-astro-700"
               aria-label="Toggle navigation menu"
