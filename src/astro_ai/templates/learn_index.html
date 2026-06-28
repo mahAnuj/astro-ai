@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Learn Vedic Astrology — Shubh Bhagya{% endblock %}
+{% block meta_description %}Plain-English guides to Vedic astrology — doshas, planets, yogas, dasha periods, and remedies. Authoritative, free, no signup.{% endblock %}
+
+{% block content %}
+{% set active_page = "learn" %}
+{% include "_nav.html" %}
+
+<main class="bg-cream">
+
+  <!-- HERO -->
+  <header class="border-b border-stone-200/70 bg-gradient-to-br from-astro-50 via-cream to-cream">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center">
+      <span class="text-[11px] font-semibold uppercase tracking-wider text-astro-700 bg-astro-100 px-2.5 py-1 rounded-full inline-block mb-3">
+        Learning Hub
+      </span>
+      <h1 class="font-display text-3xl sm:text-5xl text-stone-900 leading-tight mb-3">
+        Vedic Astrology, Clearly Explained
+      </h1>
+      <p class="text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
+        Doshas, planets, yogas, dasha periods, remedies — straightforward guides written by people who care about getting it right. Free, no signup.
+      </p>
+    </div>
+  </header>
+
+  <!-- ARTICLE GRID -->
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+    {% if not articles %}
+    <p class="text-center text-stone-500 italic">More articles coming soon.</p>
+    {% else %}
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {% for a in articles %}
+      <a href="/learn/{{ a.slug }}/"
+         class="group block bg-white border border-stone-200 rounded-2xl overflow-hidden hover:border-astro-300 hover:shadow-lg transition-all">
+        <div class="aspect-[16/10] bg-gradient-to-br from-astro-50 to-cream flex items-center justify-center p-6">
+          <img src="{{ a.hero_image }}" alt="" class="max-h-full max-w-full" loading="lazy">
+        </div>
+        <div class="p-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-astro-700">{{ a.category }}</span>
+            <span class="text-[10px] text-stone-400">&middot;</span>
+            <span class="text-[10px] text-stone-500">{{ a.read_time }}</span>
+          </div>
+          <h2 class="font-display text-lg text-stone-900 leading-snug mb-2 group-hover:text-astro-700">
+            {{ a.title }}
+          </h2>
+          <p class="text-sm text-stone-600 leading-relaxed line-clamp-3">{{ a.summary }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- BOTTOM CTA -->
+  <section class="max-w-3xl mx-auto px-4 sm:px-6 pb-14 text-center">
+    <div class="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8">
+      <h3 class="font-display text-xl text-stone-900 mb-2">Want it personalised to your own chart?</h3>
+      <p class="text-sm text-stone-600 mb-4">
+        Get your free Janma Kundli &mdash; every dosha, yoga, and dasha checked against your actual placements.
+      </p>
+      <a href="/" class="inline-block bg-astro-700 hover:bg-astro-800 text-white font-semibold text-sm px-5 py-2 rounded-md">
+        Get my free Kundli &rarr;
+      </a>
+    </div>
+  </section>
+
+</main>
+{% endblock %}

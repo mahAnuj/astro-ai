@@ -1,0 +1,249 @@
+{# Base template for every /learn/<slug>/ article. Children fill the
+   `article_body` block with prose; everything else (hero, breadcrumb,
+   FAQ accordion, JSON-LD schema, related-articles, CTA) is rendered
+   automatically from the registry metadata.
+
+   Children only need:
+     {% extends "learn_article_base.html" %}
+     {% block article_body %}<!-- prose --!>{% endblock %}
+#}
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} — Shubh Bhagya{% endblock %}
+{% block meta_description %}{{ article.summary }}{% endblock %}
+{% block og_image %}{{ site_url }}{{ article.hero_image }}{% endblock %}
+
+{% block content %}
+{% set active_page = "learn" %}
+{% include "_nav.html" %}
+
+<main class="bg-cream">
+
+  {# HERO — gradient backdrop + title + hero illustration #}
+  <header class="border-b border-stone-200/70 bg-gradient-to-br from-astro-50 via-cream to-cream">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+
+      {# Breadcrumb #}
+      <nav class="text-xs text-stone-500 mb-4" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-astro-700">Home</a>
+        <span class="mx-1 text-stone-300">/</span>
+        <a href="/learn/" class="hover:text-astro-700">Learn</a>
+        <span class="mx-1 text-stone-300">/</span>
+        <span class="text-stone-400">{{ article.category }}</span>
+      </nav>
+
+      <div class="grid md:grid-cols-[1.6fr_1fr] gap-8 items-center">
+        <div>
+          <div class="inline-flex items-center gap-2 mb-3">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-astro-700 bg-astro-100 px-2.5 py-1 rounded-full">
+              {{ article.category }}
+            </span>
+            <span class="text-xs text-stone-500">{{ article.read_time }} read</span>
+          </div>
+          <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-stone-900 leading-tight mb-4">
+            {{ article.title }}
+          </h1>
+          <p class="text-base sm:text-lg text-stone-600 leading-relaxed">
+            {{ article.summary }}
+          </p>
+        </div>
+        <div class="hidden md:block">
+          <img src="{{ article.hero_image }}" alt="" class="w-full max-w-xs mx-auto" loading="lazy">
+        </div>
+      </div>
+    </div>
+  </header>
+
+  {# ARTICLE BODY — children override this with their prose. Wrapped in
+     a max-w-2xl container so line length stays readable (60-75 chars). #}
+  <article class="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14
+                  article-prose
+                  text-[16px] leading-[1.75] text-stone-800">
+    {% block article_body %}{% endblock %}
+  </article>
+
+  {# FAQ section — accordion + JSON-LD FAQPage schema for Google rich
+     results. Only renders if the registry includes FAQs. #}
+  {% if article.faqs %}
+  <section class="max-w-2xl mx-auto px-4 sm:px-6 pb-10">
+    <h2 class="font-display text-2xl text-stone-900 mb-5">Frequently asked</h2>
+    <div class="space-y-2">
+      {% for faq in article.faqs %}
+      <details class="group bg-white border border-stone-200 rounded-xl overflow-hidden">
+        <summary class="cursor-pointer p-4 sm:p-5 list-none flex items-center justify-between gap-4
+                        text-stone-900 font-semibold text-base hover:bg-stone-50">
+          <span>{{ faq.q }}</span>
+          <svg class="w-5 h-5 flex-shrink-0 text-astro-600 transition-transform group-open:rotate-180"
+               fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </summary>
+        <div class="px-4 sm:px-5 pb-5 pt-1 text-stone-700 leading-relaxed">{{ faq.a }}</div>
+      </details>
+      {% endfor %}
+    </div>
+  </section>
+  {# JSON-LD FAQPage — earns Google's rich-result expandable answers in SERPs. #}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {%- for faq in article.faqs %}
+      {
+        "@type": "Question",
+        "name": {{ faq.q | tojson }},
+        "acceptedAnswer": {"@type": "Answer", "text": {{ faq.a | tojson }}}
+      }{% if not loop.last %},{% endif %}
+      {%- endfor %}
+    ]
+  }
+  </script>
+  {# JSON-LD Article — helps Google understand publish/update dates. #}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": {{ article.title | tojson }},
+    "description": {{ article.summary | tojson }},
+    "image": "{{ site_url }}{{ article.hero_image }}",
+    "datePublished": "{{ article.last_updated }}-01",
+    "dateModified": "{{ article.last_updated }}-01",
+    "author": {"@type": "Organization", "name": "Shubh Bhagya"},
+    "publisher": {"@type": "Organization", "name": "Shubh Bhagya",
+                  "logo": {"@type": "ImageObject", "url": "{{ site_url }}/static/icons/icon-512.png"}}
+  }
+  </script>
+  {% endif %}
+
+  {# CTA — every article funnels back to a chart check, the core action. #}
+  <section class="max-w-2xl mx-auto px-4 sm:px-6 pb-10">
+    <div class="bg-gradient-to-br from-astro-700 to-astro-800 text-white rounded-2xl p-6 sm:p-8 text-center shadow-lg">
+      <svg viewBox="0 0 100 100" class="w-10 h-10 mx-auto mb-3 text-white/90" aria-hidden="true">
+        <g fill="none" stroke="currentColor" stroke-width="6">
+          <polygon points="50,5 95,50 50,95 5,50"/>
+          <line x1="50" y1="5" x2="50" y2="95"/>
+          <line x1="5" y1="50" x2="95" y2="50"/>
+          <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
+        </g>
+        <circle cx="50" cy="50" r="7" fill="#ffd764"/>
+      </svg>
+      <h3 class="font-display text-xl sm:text-2xl font-bold mb-2">See it in YOUR chart</h3>
+      <p class="text-sm sm:text-base text-astro-100 mb-5 max-w-md mx-auto">
+        Get your free Janma Kundli — every dosha, dasha, and remedy checked against your actual placements.
+      </p>
+      <a href="/" class="inline-block bg-white text-astro-700 font-semibold text-sm sm:text-base px-6 py-3 rounded-md hover:bg-astro-50 transition-colors">
+        Get my free Kundli &rarr;
+      </a>
+    </div>
+  </section>
+
+  {# RELATED articles — internal linking boosts both SEO and engagement. #}
+  {% if related %}
+  <section class="max-w-2xl mx-auto px-4 sm:px-6 pb-14">
+    <h2 class="font-display text-xl text-stone-900 mb-4">Related reading</h2>
+    <div class="grid sm:grid-cols-2 gap-4">
+      {% for r in related %}
+      <a href="/learn/{{ r.slug }}/"
+         class="block bg-white border border-stone-200 rounded-xl p-5 hover:border-astro-300 hover:shadow-md transition-all">
+        <div class="text-[11px] font-semibold uppercase tracking-wider text-astro-700 mb-1">{{ r.category }}</div>
+        <h3 class="font-display text-base text-stone-900 leading-snug mb-1">{{ r.title }}</h3>
+        <p class="text-sm text-stone-600 leading-relaxed">{{ r.summary }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</main>
+
+{# Shared prose styles for all article bodies. Inline so the design system
+   ships with the template, no external stylesheet to maintain. #}
+<style>
+  .article-prose h2 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.6rem;
+    color: #1c1917;
+    margin-top: 2.2rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.25;
+  }
+  .article-prose h2:first-child { margin-top: 0; }
+  .article-prose h3 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.25rem;
+    color: #292524;
+    margin-top: 1.6rem;
+    margin-bottom: 0.5rem;
+  }
+  .article-prose p { margin-bottom: 1rem; }
+  .article-prose ul, .article-prose ol {
+    margin-bottom: 1rem;
+    padding-left: 1.4rem;
+  }
+  .article-prose ul { list-style: disc; }
+  .article-prose ol { list-style: decimal; }
+  .article-prose li { margin-bottom: 0.4rem; padding-left: 0.2rem; }
+  .article-prose strong { color: #1c1917; font-weight: 600; }
+  .article-prose a {
+    color: #6b21a8;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+  .article-prose a:hover { color: #581c87; }
+  /* Custom callouts — author uses these via <div class="callout callout-tip"> */
+  .article-prose .callout {
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    border-left: 3px solid;
+  }
+  .article-prose .callout p:last-child { margin-bottom: 0; }
+  .article-prose .callout-tip      { background: #fef3c7; border-color: #d97706; }
+  .article-prose .callout-warning  { background: #fee2e2; border-color: #dc2626; }
+  .article-prose .callout-insight  { background: #f0e7fb; border-color: #6b21a8; }
+  .article-prose .callout-classic  { background: #fafaf9; border-color: #78716c; }
+  .article-prose .callout-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.35rem;
+    opacity: 0.85;
+  }
+  /* Pull quote — large italic with purple accent */
+  .article-prose .pullquote {
+    margin: 2rem 0;
+    padding: 1rem 0 1rem 1.5rem;
+    border-left: 4px solid #6b21a8;
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.25rem;
+    font-style: italic;
+    color: #44403c;
+    line-height: 1.55;
+  }
+  /* Shlok card — cream background with Devanagari */
+  .article-prose .shlok {
+    margin: 1.75rem 0;
+    padding: 1.25rem 1.5rem;
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 0.75rem;
+    text-align: center;
+  }
+  .article-prose .shlok .sanskrit {
+    font-family: 'Noto Sans Devanagari', serif;
+    font-size: 1.2rem;
+    color: #1c1917;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+  }
+  .article-prose .shlok .meaning {
+    font-size: 0.9rem;
+    color: #78716c;
+    font-style: italic;
+  }
+</style>
+{% endblock %}

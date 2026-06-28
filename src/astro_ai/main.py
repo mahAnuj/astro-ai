@@ -46,7 +46,7 @@ from astro_ai.llm import (
     parse_sectioned_reading,
 )
 from astro_ai.matching import compute_guna_milan
-from astro_ai import cache, email_sender, feedback, festivals, shloks, storage, subscribers, trivia
+from astro_ai import cache, email_sender, feedback, festivals, learn_registry, shloks, storage, subscribers, trivia
 import time as _time
 from astro_ai.session import (
     SUPPORTED_LANGS,
@@ -269,7 +269,13 @@ async def sitemap() -> Response:
         ("/",         "daily",   "1.0"),
         ("/rashifal", "daily",   "0.9"),
         ("/matching", "monthly", "0.7"),
+        ("/learn/",   "weekly",  "0.8"),
     ]
+    # Auto-include every learning article so Google can crawl them all from
+    # one place. New articles dropped into learn_registry appear here
+    # automatically — no sitemap maintenance.
+    for a in learn_registry.all_articles():
+        pages.append((f"/learn/{a.slug}/", "monthly", "0.7"))
     body = '<?xml version="1.0" encoding="UTF-8"?>\n'
     body += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for path, freq, prio in pages:
@@ -1117,6 +1123,38 @@ async def submit_feedback(
     return JSONResponse({"ok": True})
 
 
+@app.get("/learn/", response_class=HTMLResponse)
+async def learn_index(request: Request) -> HTMLResponse:
+    """Hub page listing every learning article. Public, indexable, no auth."""
+    return templates.TemplateResponse(
+        request,
+        "learn_index.html",
+        {
+            "lang": _lang(request),
+            "articles": learn_registry.all_articles(),
+        },
+    )
+
+
+@app.get("/learn/{slug}/", response_class=HTMLResponse)
+async def learn_article(request: Request, slug: str) -> HTMLResponse:
+    """Render one learning article. Each article is a hand-written Jinja
+    template at templates/learn/<slug>.html that extends learn_article_base.
+    Registry holds metadata (title, summary, FAQs, related links)."""
+    article = learn_registry.get_article(slug)
+    if article is None:
+        raise HTTPException(status_code=404)
+    return templates.TemplateResponse(
+        request,
+        f"learn/{slug}.html",
+        {
+            "lang": _lang(request),
+            "article": article,
+            "related": learn_registry.related_articles(slug),
+        },
+    )
+
+
 @app.get("/admin/feedback", response_class=HTMLResponse,
          dependencies=[Depends(require_admin)])
 async def admin_feedback(request: Request) -> HTMLResponse:
@@ -1274,9 +1312,10 @@ async def ask_form(request: Request, q: str | None = None, c: str | None = None)
     )
 
 
-# Daily per-cookie quota — generous enough that real users won't hit it,
-# tight enough that one user can't drain the LLM provider's free tier.
-_ASK_DAILY_LIMIT = 10
+# Daily per-cookie quota. Tight at 3/day while we're on free LLM tiers —
+# one motivated user can't drain Groq/Cerebras's daily quota for everyone.
+# Bump this when we have paid LLM capacity or revenue covering the cost.
+_ASK_DAILY_LIMIT = 3
 _ASK_CATEGORIES = {"general", "career", "marriage", "money", "health",
                    "spiritual", "travel", "relationships"}
 
