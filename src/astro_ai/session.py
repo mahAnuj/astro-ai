@@ -218,3 +218,24 @@ def save_lang(response: Response, lang: str, request: Request) -> None:
 def clear_collection(response: Response) -> None:
     """Wipe the whole session — fresh start (clears chart + lang)."""
     response.delete_cookie(COOKIE_NAME)
+
+
+# ─── Ask Bhagya rate-limit helpers ──────────────────────────────────────────
+# Per-cookie daily counter keeps one user from draining the LLM provider's
+# free tier. Kept in the same __session payload so we don't need a second
+# cookie (Firebase only forwards one anyway — see module docstring).
+
+
+def load_ask_usage(request: Request) -> tuple[str, int]:
+    """Return (date_iso, count_used) of today's Ask Bhagya usage."""
+    data = _load_session(request)
+    return data.get("ask_date", ""), int(data.get("ask_count", 0))
+
+
+def save_ask_usage(response: Response, request: Request,
+                   date_iso: str, count: int) -> None:
+    """Persist today's ask quota state into the session cookie."""
+    data = _load_session(request)
+    data["ask_date"] = date_iso
+    data["ask_count"] = count
+    _write_session(response, data)

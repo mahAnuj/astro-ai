@@ -174,6 +174,39 @@ def _format_outlook_message(
     )
 
 
+def generate_ask_answer(
+    chart: Chart,
+    dasha: DashaState | None,
+    flags: VedicFlags | None,
+    question: str,
+    category: str,
+    prompt_path: Path,
+    lang: str = "en",
+) -> str:
+    """Personalised free-form Q&A grounded in the seeker's chart.
+
+    Provides chart + current dasha + flags as context so the LLM can
+    ground its answer in the actual placements rather than generic
+    planetary meanings. Question and category come from the user form.
+    """
+    chart_block = format_for_prompt(chart)
+    dasha_block = format_dasha_for_prompt(dasha) if dasha else "(no dasha state)"
+    flags_block = format_flags_for_prompt(flags) if flags else ""
+    user_message = (
+        f"--- SEEKER'S NATAL CHART ---\n{chart_block}\n\n"
+        f"--- CURRENT DASHA ---\n{dasha_block}\n\n"
+        f"{('--- VEDIC FLAGS ---' + chr(10) + flags_block + chr(10) + chr(10)) if flags_block else ''}"
+        f"--- QUESTION ---\n"
+        f"Category hint: {category}\n"
+        f"Question: {question.strip()}\n"
+    )
+    content = providers.chat(messages=[
+        {"role": "system", "content": _system_prompt(prompt_path, lang)},
+        {"role": "user", "content": user_message},
+    ])
+    return content.strip()
+
+
 def generate_dasha_deep_dive(
     chart: Chart,
     dasha: DashaState,

@@ -35,6 +35,7 @@ from astro_ai.chart import (
 from astro_ai.i18n import translate as _i18n_translate
 from astro_ai.llm import (
     BirthDetails,
+    generate_ask_answer,
     generate_daily_reading,
     generate_dasha_deep_dive,
     generate_matching_narrative,
@@ -51,8 +52,10 @@ from astro_ai.session import (
     SUPPORTED_LANGS,
     ChartCollection,
     clear_collection,
+    load_ask_usage,
     load_collection,
     load_lang,
+    save_ask_usage,
     save_collection,
     save_lang,
 )
@@ -176,6 +179,7 @@ YEARLY_PROMPT_PATH = PROMPTS_DIR / "yearly.txt"
 MATCHING_PROMPT_PATH = PROMPTS_DIR / "matching.txt"
 RASHIFAL_PROMPT_PATH = PROMPTS_DIR / "rashifal.txt"
 DASHA_DEEP_DIVE_PROMPT_PATH = PROMPTS_DIR / "dasha_deep_dive.txt"
+ASK_PROMPT_PATH = PROMPTS_DIR / "ask.txt"
 
 app = FastAPI(title="astro-ai", version="0.0.1")
 # Serve the PWA manifest, service worker, and icons from /static/.
@@ -1238,6 +1242,185 @@ async def dasha_deep_dive(request: Request) -> HTMLResponse:
             "lang": lang,
         },
     )
+
+
+@app.get("/ask", response_class=HTMLResponse)
+async def ask_form(request: Request, q: str | None = None, c: str | None = None) -> HTMLResponse:
+    """Free-form Q&A about the seeker's chart.
+
+    GET shows the question form. If `q` and `c` are present (after a POST
+    redirect or cache-hit re-visit), the answer is rendered alongside the
+    form so the user can ask follow-ups.
+    """
+    saved = load_collection(request).active
+    if saved is None:
+        return RedirectResponse("/?needs_chart=ask", status_code=303)
+    lang = _lang(request)
+    answer = None
+    if q:
+        # Render a previously-asked question by re-running the cached lookup.
+        # POST handler stores the (question, category) and we look it up.
+        answer = _ask_lookup(saved, q, c or "general", lang)
+    return templates.TemplateResponse(
+        request, "ask.html",
+        {
+            "lang": lang,
+            "active_chart": saved,
+            "current_question": q or "",
+            "current_category": c or "general",
+            "answer": answer,
+            "remaining_today": _ask_quota_remaining(request),
+        },
+    )
+
+
+# Daily per-cookie quota — generous enough that real users won't hit it,
+# tight enough that one user can't drain the LLM provider's free tier.
+_ASK_DAILY_LIMIT = 10
+_ASK_CATEGORIES = {"general", "career", "marriage", "money", "health",
+                   "spiritual", "travel", "relationships"}
+
+
+def _ask_quota_remaining(request: Request) -> int:
+    """Read today's remaining ask count from the session cookie."""
+    stored_date, used = load_ask_usage(request)
+    today = date.today().isoformat()
+    if stored_date != today:
+        return _ASK_DAILY_LIMIT
+    return max(0, _ASK_DAILY_LIMIT - used)
+
+
+def _ask_quota_bump(request: Request, response: Response) -> None:
+    """Increment today's count on the response cookie."""
+    stored_date, used = load_ask_usage(request)
+    today = date.today().isoformat()
+    new_count = (used + 1) if stored_date == today else 1
+    save_ask_usage(response, request, today, new_count)
+
+
+def _ask_cache_key(saved, question: str, category: str, lang: str) -> str:
+    """Stable cache key for an (chart, question, category) combination."""
+    chart_fp = cache.fingerprint_chart(
+        saved.birth_date, saved.birth_time, saved.birth_place
+    )
+    prompt_fp = cache.fingerprint_prompt(ASK_PROMPT_PATH)
+    # Python's hash() is randomised per-process; use a stable hash so the
+    # cache key survives container restarts.
+    import hashlib
+    q_fp = hashlib.sha1(question.strip().encode("utf-8")).hexdigest()[:16]
+    return f"ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}"
+
+
+def _ask_lookup(saved, question: str, category: str, lang: str) -> str | None:
+    """Look up an already-cached answer without burning a fresh LLM call."""
+    return cache.get(_ask_cache_key(saved, question, category, lang))
+
+
+@app.post("/ask")
+async def ask_submit(
+    request: Request,
+    question: str = Form(""),
+    category: str = Form("general"),
+) -> Response:
+    """Submit a question. PRG-style: validate → generate → cache → 303 to GET."""
+    saved = load_collection(request).active
+    if saved is None:
+        return RedirectResponse("/?needs_chart=ask", status_code=303)
+    lang = _lang(request)
+    question = (question or "").strip()
+    if not question or len(question) < 5:
+        return templates.TemplateResponse(
+            request, "ask.html",
+            {
+                "lang": lang,
+                "active_chart": saved,
+                "current_question": question,
+                "current_category": category,
+                "answer": None,
+                "error": "Please write a question of at least a few words.",
+                "remaining_today": _ask_quota_remaining(request),
+            },
+            status_code=400,
+        )
+    if len(question) > 600:
+        return templates.TemplateResponse(
+            request, "ask.html",
+            {
+                "lang": lang, "active_chart": saved,
+                "current_question": question[:600], "current_category": category,
+                "answer": None,
+                "error": "Question is too long (max 600 characters).",
+                "remaining_today": _ask_quota_remaining(request),
+            },
+            status_code=400,
+        )
+    if category not in _ASK_CATEGORIES:
+        category = "general"
+    if _ask_quota_remaining(request) <= 0:
+        return templates.TemplateResponse(
+            request, "ask.html",
+            {
+                "lang": lang, "active_chart": saved,
+                "current_question": question, "current_category": category,
+                "answer": None,
+                "error": "You've used today's question quota. Come back tomorrow.",
+                "remaining_today": 0,
+            },
+            status_code=429,
+        )
+
+    if not os.environ.get("OPENAI_API_KEY"):
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "API key not configured",
+             "message": "Add OPENAI_API_KEY (or set BHAGYA_LLM_PROVIDERS) before asking."},
+            status_code=503,
+        )
+
+    # Cache key includes question fingerprint so re-asking the same question
+    # serves instantly from cache. Counts against quota only on first ask.
+    try:
+        chart = compute_chart(saved.birth_date, saved.birth_time, saved.birth_place)
+    except ChartError as err:
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Couldn't compute the chart", "message": str(err)},
+            status_code=400,
+        )
+    dasha = compute_dasha_state(chart)
+    flags = compute_vedic_flags(chart)
+    cache_key = _ask_cache_key(saved, question, category, lang)
+    was_cached = cache.get(cache_key) is not None
+    try:
+        _cached(
+            cache_key=cache_key,
+            route="ask",
+            lang=lang,
+            ttl_days=None,
+            call_fn=lambda: generate_ask_answer(
+                chart=chart, dasha=dasha, flags=flags,
+                question=question, category=category,
+                prompt_path=ASK_PROMPT_PATH, lang=lang,
+            ),
+        )
+    except Exception as err:
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Couldn't generate the answer",
+             "message": f"{type(err).__name__}: {err}"},
+            status_code=502,
+        )
+
+    # Redirect with the question + category in the URL so refresh doesn't
+    # re-submit, the user can bookmark / share the URL, and back/forward
+    # works naturally. Only bump the quota on a fresh generation.
+    from urllib.parse import urlencode
+    response = RedirectResponse(
+        f"/ask?{urlencode({'q': question, 'c': category})}", status_code=303
+    )
+    if not was_cached:
+        _ask_quota_bump(request, response)
+    return response
 
 
 @app.get("/matching", response_class=HTMLResponse)

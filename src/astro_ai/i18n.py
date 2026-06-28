@@ -186,6 +186,7 @@ _EN: Final[dict[str, str]] = {
     "nav_matching_link":   "Kundli Matching",
     "nav_dasha_link":      "Dasha Periods",
     "nav_rashifal_link":   "Rashifal",
+    "nav_ask_link":        "Ask",
 
     # Rashifal page
     "rashifal_title":      "Today's Rashifal",
@@ -425,6 +426,7 @@ _HI: Final[dict[str, str]] = {
     "nav_matching_link":   "कुंडली मिलान",
     "nav_dasha_link":      "दशा काल",
     "nav_rashifal_link":   "राशिफल",
+    "nav_ask_link":        "पूछें",
 
     # Rashifal page
     "rashifal_title":      "आज का राशिफल",
