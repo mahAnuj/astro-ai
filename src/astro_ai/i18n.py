@@ -190,8 +190,8 @@ _EN: Final[dict[str, str]] = {
 
     # Rashifal page
     "rashifal_title":      "Today's Rashifal",
-    "rashifal_subtitle":   "Daily predictions for all 12 Moon signs &mdash; find your Janma Rashi below.",
-    "rashifal_dont_know":  "Don't know your Moon sign? Generate your free Kundli &mdash; it tells you instantly.",
+    "rashifal_subtitle":   "Daily predictions for all 12 Moon signs — find your Janma Rashi below.",
+    "rashifal_dont_know":  "Don't know your Moon sign? Generate your free Kundli — it tells you instantly.",
 
     # Vimshottari Dasha
     "dasha_title":         "Vimshottari Dasha",
@@ -205,7 +205,7 @@ _EN: Final[dict[str, str]] = {
     "dasha_years_suffix":  "years",
     "dasha_card_title":    "Current Dasha",
     "dasha_card_subtitle": "Your active Vimshottari period",
-    "dasha_view_full":     "Full Dasha timeline &rarr;",
+    "dasha_view_full":     "Full Dasha timeline →",
 
     # kundali matching form
     "matching_title":      "Kundali Matching",
@@ -245,14 +245,14 @@ _EN: Final[dict[str, str]] = {
     "events_none":         "No notable transit events detected in this window.",
 
     # Varshaphala — annual chart at solar return
-    "varshaphala_title":     "Varshaphala &mdash; your annual chart",
+    "varshaphala_title":     "Varshaphala — your annual chart",
     "varshaphala_subtitle":  "The chart cast at the moment Sun returns to its natal sidereal longitude this year",
     "varshaphala_solar_return": "Solar return moment",
     "varshaphala_annual_lagna": "Annual Lagna",
     "varshaphala_annual_moon":  "Annual Moon",
     "varshaphala_year_lord":    "Year Lord",
     "varshaphala_muntha":       "Muntha house",
-    "varshaphala_muntha_note":  "Muntha is the house in the annual chart that holds the natal Sun's sign &mdash; classically known as the year's focus house.",
+    "varshaphala_muntha_note":  "Muntha is the house in the annual chart that holds the natal Sun's sign — classically known as the year's focus house.",
 
     # generic errors
     "error_chart":         "Couldn't compute the chart",
@@ -430,8 +430,8 @@ _HI: Final[dict[str, str]] = {
 
     # Rashifal page
     "rashifal_title":      "आज का राशिफल",
-    "rashifal_subtitle":   "सभी 12 राशियों के लिए आज का भविष्यफल &mdash; अपनी जन्म राशि नीचे खोजें।",
-    "rashifal_dont_know":  "अपनी जन्म राशि नहीं जानते? मुफ्त कुंडली बनाएँ &mdash; तुरंत पता चलेगा।",
+    "rashifal_subtitle":   "सभी 12 राशियों के लिए आज का भविष्यफल — अपनी जन्म राशि नीचे खोजें।",
+    "rashifal_dont_know":  "अपनी जन्म राशि नहीं जानते? मुफ्त कुंडली बनाएँ — तुरंत पता चलेगा।",
 
     # Vimshottari Dasha
     "dasha_title":         "विंशोत्तरी दशा",
@@ -445,7 +445,7 @@ _HI: Final[dict[str, str]] = {
     "dasha_years_suffix":  "वर्ष",
     "dasha_card_title":    "वर्तमान दशा",
     "dasha_card_subtitle": "आपकी सक्रिय विंशोत्तरी अवधि",
-    "dasha_view_full":     "पूर्ण दशा समय-रेखा &rarr;",
+    "dasha_view_full":     "पूर्ण दशा समय-रेखा →",
 
     # kundali matching
     "matching_title":      "कुंडली मिलान",
@@ -485,14 +485,14 @@ _HI: Final[dict[str, str]] = {
     "events_none":         "इस अवधि में कोई उल्लेखनीय गोचर घटना नहीं मिली।",
 
     # Varshaphala
-    "varshaphala_title":     "वर्षफल &mdash; आपका वार्षिक कुंडली",
+    "varshaphala_title":     "वर्षफल — आपका वार्षिक कुंडली",
     "varshaphala_subtitle":  "इस वर्ष जब सूर्य अपनी जन्म-सायन देशांश पर लौटेगा, उस क्षण पर निर्मित कुंडली",
     "varshaphala_solar_return": "सूर्य-प्रत्यागमन का क्षण",
     "varshaphala_annual_lagna": "वार्षिक लग्न",
     "varshaphala_annual_moon":  "वार्षिक चंद्र",
     "varshaphala_year_lord":    "वर्ष का स्वामी",
     "varshaphala_muntha":       "मुंथा भाव",
-    "varshaphala_muntha_note":  "मुंथा वह भाव है जिसमें वार्षिक कुंडली के अनुसार जन्म-सूर्य की राशि स्थित है &mdash; शास्त्रीय रूप से वर्ष का केंद्रित भाव।",
+    "varshaphala_muntha_note":  "मुंथा वह भाव है जिसमें वार्षिक कुंडली के अनुसार जन्म-सूर्य की राशि स्थित है — शास्त्रीय रूप से वर्ष का केंद्रित भाव।",
 }
 
 _TABLES: Final[dict[str, dict[str, str]]] = {"en": _EN, "hi": _HI}
