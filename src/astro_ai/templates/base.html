@@ -74,6 +74,20 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
 
+{# Analytics — all tracking code lives in /static/analytics.js.
+   Templates call `Analytics.kundliGenerated({lang})` etc. and never touch
+   GA4 / Clarity SDKs directly. Server passes config via a single inline
+   blob; the wrapper script reads it and bootstraps providers. Both fields
+   optional — set zero, one, or both. Unconfigured → Analytics methods
+   become harmless no-ops (so call sites stay clean either way). #}
+<script>
+  window.BHAGYA_ANALYTICS_CONFIG = {
+    ga4:     "{{ ga4_measurement_id }}",
+    clarity: "{{ clarity_project_id }}"
+  };
+</script>
+<script src="/static/analytics.js"></script>
+
 <!-- Tailwind Play CDN — no build step. Fine for MVP; bake into a build pipeline before production scale. -->
 <script src="https://cdn.tailwindcss.com"></script>
 

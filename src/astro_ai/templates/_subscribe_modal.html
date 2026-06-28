@@ -176,6 +176,8 @@
             defaultPanel.classList.add('hidden');
             successPanel.classList.remove('hidden');
             try { localStorage.setItem(DONE_KEY, '1'); } catch (e) {}
+            var langSel = form.querySelector('input[name="lang"]:checked');
+            Analytics.subscribeCompleted({ lang: langSel ? langSel.value : 'en' });
             setTimeout(hide, 3000);
           } else {
             errBox.textContent = j.error || 'Something went wrong. Please try again.';

@@ -201,6 +201,13 @@ def _site_url() -> str:
 # Expose site_url to every template so canonical/OG/JSON-LD tags can build
 # absolute URLs without each handler passing it in.
 templates.env.globals["site_url"] = _site_url()
+# GA4 measurement ID — base.html conditionally loads gtag.js when set.
+# Leave unset in local dev / preview so analytics don't pollute the prod
+# property with junk events.
+templates.env.globals["ga4_measurement_id"] = os.environ.get("GA4_MEASUREMENT_ID", "").strip()
+# Microsoft Clarity project ID — for session recordings + heatmaps. Free,
+# complements GA4. Loaded only when set (skip on dev / preview).
+templates.env.globals["clarity_project_id"] = os.environ.get("CLARITY_PROJECT_ID", "").strip()
 
 
 @app.get("/sitemap.xml", include_in_schema=False)
