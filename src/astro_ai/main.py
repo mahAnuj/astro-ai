@@ -36,6 +36,7 @@ from astro_ai.i18n import translate as _i18n_translate
 from astro_ai.llm import (
     BirthDetails,
     generate_daily_reading,
+    generate_dasha_deep_dive,
     generate_matching_narrative,
     generate_outlook_reading,
     generate_rashifal,
@@ -174,6 +175,7 @@ MONTHLY_PROMPT_PATH = PROMPTS_DIR / "monthly.txt"
 YEARLY_PROMPT_PATH = PROMPTS_DIR / "yearly.txt"
 MATCHING_PROMPT_PATH = PROMPTS_DIR / "matching.txt"
 RASHIFAL_PROMPT_PATH = PROMPTS_DIR / "rashifal.txt"
+DASHA_DEEP_DIVE_PROMPT_PATH = PROMPTS_DIR / "dasha_deep_dive.txt"
 
 app = FastAPI(title="astro-ai", version="0.0.1")
 # Serve the PWA manifest, service worker, and icons from /static/.
@@ -1125,6 +1127,80 @@ async def dasha(request: Request) -> HTMLResponse:
             "natal": natal,
             "dasha": compute_dasha_state(natal),
             "lang": _lang(request),
+        },
+    )
+
+
+@app.get("/dasha/deep-dive", response_class=HTMLResponse)
+async def dasha_deep_dive(request: Request) -> HTMLResponse:
+    """Long-form personalised reading of the current Mahadasha + Antardasha.
+
+    Goes deeper than the timeline at /dasha: looks at where the period
+    lords actually sit in this seeker's chart, explains the interaction,
+    forecasts the next Antardasha, and lists remedies tied to the current
+    Antardasha lord. Cached by (chart fingerprint, antardasha id) so we
+    only burn an LLM call once per active Antardasha — periods last weeks
+    to months so this is heavily reused.
+    """
+    saved = load_collection(request).active
+    if saved is None:
+        return RedirectResponse("/?needs_chart=dasha", status_code=303)
+    saved_details = saved.to_birth_details()
+    try:
+        natal = compute_chart(saved_details.birth_date, saved_details.birth_time, saved_details.birth_place)
+    except ChartError as err:
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Couldn't compute the chart", "message": str(err)},
+            status_code=400,
+        )
+    dasha = compute_dasha_state(natal)
+    lang = _lang(request)
+
+    if not os.environ.get("OPENAI_API_KEY"):
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "API key not configured",
+             "message": "Add OPENAI_API_KEY (or set up BHAGYA_LLM_PROVIDERS) before generating readings."},
+            status_code=503,
+        )
+
+    # Cache key: chart fingerprint + antardasha start (changes when antardasha
+    # rolls over) + prompt fingerprint (changes when we tune the prompt) + lang.
+    chart_fp = cache.fingerprint_chart(natal)
+    prompt_fp = cache.fingerprint_prompt(DASHA_DEEP_DIVE_PROMPT_PATH)
+    antar_id = f"{dasha.antardasha.lord}-{dasha.antardasha.start.isoformat()}"
+    cache_key = f"dasha_deep_dive:{chart_fp}:{antar_id}:{prompt_fp}:{lang}"
+
+    try:
+        text = _cached(
+            cache_key=cache_key,
+            route="dasha_deep_dive",
+            lang=lang,
+            ttl_days=None,  # never expire on its own — antar_id in key handles invalidation
+            call_fn=lambda: generate_dasha_deep_dive(
+                chart=natal, dasha=dasha,
+                prompt_path=DASHA_DEEP_DIVE_PROMPT_PATH, lang=lang,
+            ),
+        )
+    except Exception as err:
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Couldn't generate the deep dive",
+             "message": f"{type(err).__name__}: {err}"},
+            status_code=502,
+        )
+
+    sections = parse_sectioned_reading(text)
+    return templates.TemplateResponse(
+        request,
+        "dasha_deep_dive.html",
+        {
+            "details": saved_details,
+            "natal": natal,
+            "dasha": dasha,
+            "sections": sections,
+            "lang": lang,
         },
     )
 

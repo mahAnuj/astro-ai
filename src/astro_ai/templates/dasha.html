@@ -42,6 +42,20 @@
 
   </section>
 
+  <!-- DEEP-DIVE CTA — links to the per-(Maha,Antar) personalised reading. -->
+  <aside class="bg-astro-50 border border-astro-100 rounded-2xl p-6 sm:p-8 text-center no-print">
+    <div class="font-display text-xl font-bold text-astro-700 mb-2">
+      Want to understand THIS period for your chart?
+    </div>
+    <p class="text-sm text-stone-600 max-w-xl mx-auto mb-4">
+      A long-form reading of your {{ dasha.mahadasha.lord }} Mahadasha and {{ dasha.antardasha.lord }} Antardasha &mdash; grounded in where these planets sit in your own Kundli, with a forecast of what's next and remedies for this sub-period.
+    </p>
+    <a href="/dasha/deep-dive"
+       class="inline-block bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium px-5 py-2 rounded-md transition-colors">
+      Read the deep dive &rarr;
+    </a>
+  </aside>
+
   <!-- UPCOMING ANTARDASHAS IN CURRENT MAHA ------------------------ -->
   {% if dasha.upcoming_antardashas %}
   <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">

@@ -18,11 +18,13 @@ from astro_ai import providers
 from astro_ai.chart import (
     Chart,
     DailyPanchang,
+    DashaState,
     GocharImpact,
     LifeChapter,
     TransitEvent,
     TransitSnapshot,
     VedicFlags,
+    format_dasha_for_prompt,
     format_events_for_prompt,
     format_flags_for_prompt,
     format_for_prompt,
@@ -170,6 +172,32 @@ def _format_outlook_message(
         f"--- KEY TRANSIT EVENTS IN WINDOW ---\n"
         f"{format_events_for_prompt(events)}\n"
     )
+
+
+def generate_dasha_deep_dive(
+    chart: Chart,
+    dasha: DashaState,
+    prompt_path: Path,
+    lang: str = "en",
+) -> str:
+    """Long-form personalised reading of the seeker's CURRENT (Maha + Antar) pair.
+
+    The prompt asks the LLM to ground every interpretation in where the
+    period lords actually sit in this seeker's chart — not generic
+    "Saturn = discipline" boilerplate. Includes timeline + remedies.
+    """
+    user_message = (
+        f"--- SEEKER'S NATAL CHART ---\n"
+        f"{format_for_prompt(chart)}\n"
+        f"\n"
+        f"--- CURRENT DASHA STATE ---\n"
+        f"{format_dasha_for_prompt(dasha)}\n"
+    )
+    content = providers.chat(messages=[
+        {"role": "system", "content": _system_prompt(prompt_path, lang)},
+        {"role": "user", "content": user_message},
+    ])
+    return content.strip()
 
 
 def generate_rashifal(
