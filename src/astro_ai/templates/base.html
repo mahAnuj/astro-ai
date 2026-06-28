@@ -160,6 +160,53 @@
 </head>
 
 <body hx-boost="true" class="bg-cream text-stone-900 font-sans min-h-full antialiased">
+  {# Global navigation loader — a thin animated bar pinned at the top of
+     the page. Visible during every htmx-boosted nav and form POST so the
+     user sees their click registered immediately (some routes take 3-8s
+     for the LLM call). Vanilla JS; pure-CSS animation. #}
+  <div id="bhagya-loader" class="fixed top-0 left-0 right-0 z-50 h-1 pointer-events-none no-print">
+    <div id="bhagya-loader-bar"
+         class="h-full bg-gradient-to-r from-astro-500 via-astro-600 to-astro-700
+                transition-all ease-out shadow-[0_0_8px_rgba(139,92,246,0.6)]"
+         style="width:0;opacity:0;transition-duration:300ms;"></div>
+  </div>
+  <script>
+    (function () {
+      var bar = document.getElementById('bhagya-loader-bar');
+      if (!bar) return;
+      var doneTimer;
+      function start() {
+        clearTimeout(doneTimer);
+        bar.style.transitionDuration = '150ms';
+        bar.style.opacity = '1';
+        bar.style.width = '20%';
+        // Crawl from 20% → 75% over 2s so the bar feels like it's making
+        // progress even while we wait for the server. Stays at 75% until
+        // the request finishes.
+        setTimeout(function () {
+          bar.style.transitionDuration = '1800ms';
+          bar.style.width = '75%';
+        }, 50);
+      }
+      function finish() {
+        clearTimeout(doneTimer);
+        bar.style.transitionDuration = '200ms';
+        bar.style.width = '100%';
+        doneTimer = setTimeout(function () {
+          bar.style.opacity = '0';
+          // Reset width after fade-out so the next nav animates from 0.
+          setTimeout(function () { bar.style.width = '0'; }, 300);
+        }, 200);
+      }
+      // htmx covers hx-boost navs, form submits, and any explicit hx-* requests.
+      document.body.addEventListener('htmx:beforeRequest', start);
+      document.body.addEventListener('htmx:afterRequest', finish);
+      document.body.addEventListener('htmx:responseError', finish);
+      document.body.addEventListener('htmx:sendError', finish);
+      document.body.addEventListener('htmx:abort', finish);
+    })();
+  </script>
+
   {% block content %}{% endblock %}
 
   {# Site-wide footer — present on every page for SEO (cross-linking,
