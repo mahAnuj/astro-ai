@@ -1167,7 +1167,9 @@ async def dasha_deep_dive(request: Request) -> HTMLResponse:
 
     # Cache key: chart fingerprint + antardasha start (changes when antardasha
     # rolls over) + prompt fingerprint (changes when we tune the prompt) + lang.
-    chart_fp = cache.fingerprint_chart(natal)
+    chart_fp = cache.fingerprint_chart(
+        saved_details.birth_date, saved_details.birth_time, saved_details.birth_place
+    )
     prompt_fp = cache.fingerprint_prompt(DASHA_DEEP_DIVE_PROMPT_PATH)
     antar_id = f"{dasha.antardasha.lord}-{dasha.antardasha.start.isoformat()}"
     cache_key = f"dasha_deep_dive:{chart_fp}:{antar_id}:{prompt_fp}:{lang}"
