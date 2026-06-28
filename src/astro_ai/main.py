@@ -44,7 +44,7 @@ from astro_ai.llm import (
     parse_sectioned_reading,
 )
 from astro_ai.matching import compute_guna_milan
-from astro_ai import cache, email_sender, festivals, shloks, storage, subscribers, trivia
+from astro_ai import cache, email_sender, feedback, festivals, shloks, storage, subscribers, trivia
 import time as _time
 from astro_ai.session import (
     SUPPORTED_LANGS,
@@ -1030,6 +1030,62 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
         "failed": failed,
         "failed_emails": failures[:20],  # cap so we don't return MB-sized lists
     })
+
+
+@app.post("/feedback")
+async def submit_feedback(
+    request: Request,
+    type: str = Form("other"),
+    message: str = Form(""),
+    email: str = Form(""),
+    page: str = Form(""),
+) -> JSONResponse:
+    """Persist a feedback entry to GCS + notify admin via email.
+
+    Called from the floating feedback widget via fetch(). Returns JSON
+    `{ok: true}` on success or `{ok: false, error: ...}` for inline
+    error display in the modal.
+    """
+    user_agent = request.headers.get("user-agent", "")
+    ok, msg, entry = feedback.add(
+        type=type, message=message, email=email,
+        page=page, user_agent=user_agent,
+    )
+    if not ok:
+        return JSONResponse({"ok": False, "error": msg}, status_code=400)
+
+    # Notify admin via email so feedback doesn't sit unread in a GCS file.
+    # Best-effort — failure to email shouldn't fail the user's submit.
+    try:
+        admin_to = os.environ.get("BHAGYA_EMAIL_FROM", "").strip()
+        if admin_to and entry:
+            label = {"problem": "🐛 Problem", "feature": "✨ Feature request",
+                     "other": "💬 Feedback"}.get(entry["type"], "Feedback")
+            html = (
+                f"<p><strong>{label}</strong> via {entry['page'] or 'unknown page'}</p>"
+                f"<blockquote style='border-left:3px solid #6b21a8;padding:8px 12px;"
+                f"margin:8px 0;background:#faf7f2;'>{entry['message']}</blockquote>"
+                f"<p style='font-size:12px;color:#78716c;'>"
+                f"From: {entry['email'] or '(anonymous)'}<br>"
+                f"At: {entry['ts']}<br>"
+                f"ID: <code>{entry['id']}</code></p>"
+            )
+            email_sender.send(admin_to, subject=f"[Shubh Bhagya feedback] {label}", html=html)
+    except Exception as err:
+        import logging
+        logging.getLogger(__name__).warning("admin feedback notification failed: %s", err)
+
+    return JSONResponse({"ok": True})
+
+
+@app.get("/admin/feedback", response_class=HTMLResponse,
+         dependencies=[Depends(require_admin)])
+async def admin_feedback(request: Request) -> HTMLResponse:
+    """List every feedback entry, most recent first. Auth-gated like /admin/usage."""
+    return templates.TemplateResponse(
+        request, "admin_feedback.html",
+        {"lang": _lang(request), "entries": feedback.list_all()},
+    )
 
 
 @app.get("/admin/usage", response_class=HTMLResponse, dependencies=[Depends(require_admin)])

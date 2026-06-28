@@ -252,6 +252,12 @@
      email for the daily Rashifal newsletter. See _subscribe_modal.html. #}
   {% include "_subscribe_modal.html" %}
 
+  {# Feedback widget: floating button bottom-right + modal. On every page
+     (admin templates override the `feedback_widget` block to hide it). #}
+  {% block feedback_widget %}
+  {% include "_feedback_widget.html" %}
+  {% endblock %}
+
   {# PWA install banner: appears on mobile when the app isn't installed yet.
      Two paths — Chrome/Android fires `beforeinstallprompt` (real button),
      iOS Safari needs static instructions because Apple doesn't surface the
