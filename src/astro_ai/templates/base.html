@@ -85,8 +85,33 @@
     ga4:     "{{ ga4_measurement_id }}",
     clarity: "{{ clarity_project_id }}"
   };
+  // Server-derived signals that every page can use for identification.
+  // Age bucket comes from the saved chart birthdate (never the raw date);
+  // lang is the active i18n preference. has_chart tells GA4 which users
+  // are "activated" vs landing-only.
+  window.BHAGYA_USER_PROPS = {
+    age_bucket: "{{ user_age_bucket(request) }}",
+    lang:       "{{ lang or 'en' }}",
+    has_chart:  "{{ 'yes' if user_age_bucket(request) else 'no' }}"
+  };
 </script>
 <script src="/static/analytics.js"></script>
+<script>
+  // Auto-fire identification + feature view on every page render.
+  // - userIdentified sets GA4 user properties so every subsequent event
+  //   is filterable by age bucket / language / activation status.
+  // - featureView extracts the first path segment (e.g. /kundli, /dasha,
+  //   /rashifal) so GA4 funnels read as feature names instead of raw URLs.
+  (function () {
+    if (!window.Analytics) return;
+    Analytics.userIdentified(window.BHAGYA_USER_PROPS);
+    var seg = location.pathname.split('/')[1] || 'home';
+    // Don't pollute analytics with admin/internal pages.
+    if (seg !== 'admin' && seg !== 'static' && seg !== 'sw.js') {
+      Analytics.featureView(seg);
+    }
+  })();
+</script>
 
 <!-- Tailwind Play CDN — no build step. Fine for MVP; bake into a build pipeline before production scale. -->
 <script src="https://cdn.tailwindcss.com"></script>

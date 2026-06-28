@@ -71,6 +71,31 @@
     languageSwitched:   function (p) { track('language_switched',    p); },
     pwaInstalled:       function ( ) { track('pwa_installed');           },
     feedbackSent:       function (p) { track('feedback_sent',        p); },
+
+    // Identify the user with anonymous demographic / preference signals.
+    // Called once per page with whatever the server knows: age bucket
+    // (derived from their saved chart's birthdate, NEVER the raw date),
+    // language preference, has-saved-chart, etc. GA4 stores these as
+    // user properties so every subsequent event is sliceable by them.
+    userIdentified: function (props) {
+      props = props || {};
+      if (window.gtag) {
+        window.gtag('set', 'user_properties', props);
+      }
+      // Also track as an event so the property appears immediately in
+      // realtime view (user_properties alone can take ~24h to surface).
+      track('user_identified', props);
+    },
+
+    // Record that a feature page was viewed — derived automatically from
+    // location.pathname by the auto-instrument in base.html. Lets us
+    // build clean GA4 funnels like /kundli → /dasha → /matching without
+    // wading through every URL variation.
+    featureView: function (feature) {
+      if (!feature) return;
+      track('feature_view', { feature: feature });
+    },
+
     // Manual pageview helper. GA4's auto-config sends the initial pageview;
     // call this on SPA-style nav (hx-boost swap) so subsequent pages also
     // register. Path defaults to the current URL.

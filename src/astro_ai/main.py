@@ -212,6 +212,39 @@ templates.env.globals["ga4_measurement_id"] = os.environ.get("GA4_MEASUREMENT_ID
 templates.env.globals["clarity_project_id"] = os.environ.get("CLARITY_PROJECT_ID", "").strip()
 
 
+def _user_age_bucket(request: Request) -> str:
+    """Derive the seeker's age bucket from their saved chart's birthdate.
+
+    Returns one of: 'under-18', '18-24', '25-34', '35-44', '45-54', '55+',
+    or '' when there's no saved chart yet. Sent to GA4 as a user property
+    so we can slice every event by age cohort — answers questions like
+    "do 25-34 users subscribe to daily Rashifal more often than 45-54?".
+
+    Privacy: we NEVER expose the raw birthdate to analytics — only the
+    bucket. The chart cookie itself is HMAC-signed and HttpOnly, the bucket
+    is computed server-side and the value sent is one of 6 broad ranges.
+    """
+    collection = load_collection(request)
+    if not collection.active:
+        return ""
+    try:
+        birth_year = int(collection.active.birth_date[:4])
+        age = date.today().year - birth_year
+    except (ValueError, TypeError):
+        return ""
+    if age < 18:  return "under-18"
+    if age < 25:  return "18-24"
+    if age < 35:  return "25-34"
+    if age < 45:  return "35-44"
+    if age < 55:  return "45-54"
+    return "55+"
+
+
+# Expose as a template function: {{ user_age_bucket(request) }} in any
+# template (Jinja's TemplateResponse provides `request` to all templates).
+templates.env.globals["user_age_bucket"] = _user_age_bucket
+
+
 @app.get("/sitemap.xml", include_in_schema=False)
 async def sitemap() -> Response:
     """XML sitemap for search engines.
