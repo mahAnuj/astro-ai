@@ -215,7 +215,7 @@ async def sitemap() -> Response:
     """XML sitemap for search engines.
 
     Lists every crawlable, publicly accessible page. Excluded: chart-specific
-    pages that need a user-supplied chart (/today, /natal, /monthly, /yearly,
+    pages that need a user-supplied chart (/today, /kundli, /monthly, /yearly,
     /dasha — Google won't reach them anyway without cookies), and /admin/usage
     (also blocked in robots.txt for defense-in-depth).
 
@@ -310,13 +310,14 @@ async def reading(
     birth_time: str = Form(...),
     birth_place: str = Form(...),
 ) -> Response:
-    """Form submission → save chart to cookie → 303 redirect to GET /natal.
+    """Form submission → save chart to cookie → 303 redirect to GET /kundli.
 
-    Post-Redirect-Get pattern. The actual reading renders at GET /natal,
+    Post-Redirect-Get pattern. The actual reading renders at GET /kundli,
     not here. Benefits:
-      - Browser URL bar shows `/natal` after submission (bookmarkable).
+      - Browser URL bar shows `/kundli` after submission (bookmarkable,
+        matches the term users actually search for).
       - Refreshing the result page doesn't re-submit the form.
-      - The lang picker's `next` field captures `/natal` (a valid GET
+      - The lang picker's `next` field captures `/kundli` (a valid GET
         route) instead of `/reading` (POST only — which used to return
         a JSON 405 when the lang form tried to redirect back to it).
       - Back button works correctly.
@@ -348,27 +349,31 @@ async def reading(
             {"title": "Chart limit reached", "message": str(err)},
             status_code=400,
         )
-    response = RedirectResponse("/natal", status_code=303)
+    response = RedirectResponse("/kundli", status_code=303)
     save_collection(response, collection, request)
     return response
 
 
 @app.get("/reading")
 async def reading_get() -> RedirectResponse:
-    """Safety net for any stale GET to /reading (bookmarks, lang next=, etc.).
-
-    Was returning JSON 405 before — confusing for users. Now politely
-    nudges them to the canonical /natal URL.
-    """
-    return RedirectResponse("/natal", status_code=303)
+    """Safety net for any stale GET to /reading (bookmarks, lang next=, etc.)."""
+    return RedirectResponse("/kundli", status_code=303)
 
 
-@app.get("/natal", response_class=HTMLResponse)
-async def natal(request: Request) -> HTMLResponse:
-    """Re-render the natal reading for the currently active saved chart."""
+@app.get("/natal", include_in_schema=False)
+async def natal_legacy_redirect() -> RedirectResponse:
+    """Old URL — kept so existing bookmarks, SEO indexes, and any cached
+    SW responses still work. Permanent redirect to the renamed canonical
+    /kundli route."""
+    return RedirectResponse("/kundli", status_code=301)
+
+
+@app.get("/kundli", response_class=HTMLResponse)
+async def kundli(request: Request) -> HTMLResponse:
+    """Render the Janma Kundli reading for the currently active saved chart."""
     saved = load_collection(request).active
     if saved is None:
-        return RedirectResponse("/?needs_chart=natal", status_code=303)
+        return RedirectResponse("/?needs_chart=kundli", status_code=303)
     return await _render_natal_for(request, saved.to_birth_details())
 
 
