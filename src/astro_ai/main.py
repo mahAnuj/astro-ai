@@ -89,6 +89,22 @@ def require_admin(creds: HTTPBasicCredentials = Depends(_basic_auth)) -> None:
         )
 
 
+def _rashifal_teaser(body: str, sentences: int = 2) -> str:
+    """Pull the first ~2 sentences of a rashi body for the scannable teaser.
+
+    Used by both the web /rashifal accordion and the daily email <details>
+    summary. Keeps the visible-by-default snippet short enough to scan all
+    12 rashis in seconds; the rest reveals on click/tap.
+    """
+    import re as _re
+    parts = _re.split(r"(?<=[.!?])\s+", (body or "").strip())
+    teaser = " ".join(parts[:sentences]).strip()
+    if len(parts) > sentences and not teaser.endswith(("...", "…")):
+        # No ellipsis — the "Read full" button makes the truncation explicit.
+        pass
+    return teaser
+
+
 def _shared_three_tier(
     *, route: str, cache_key: str, storage_key: str, lang: str, call_fn,
 ) -> str:
@@ -827,9 +843,11 @@ async def rashifal(request: Request) -> HTMLResponse:
             status_code=502,
         )
 
-    # Augment each section with its zodiac glyph (♈♉..♓) for the cards.
+    # Augment each section with glyph + teaser + full body so the template
+    # can render a click-to-expand accordion. The teaser is the first ~2
+    # sentences — enough for a quick scan; the full reading reveals on tap.
     sections_with_glyphs = [
-        (symbol_for_rashi_label(title) or "✦", title, body)
+        (symbol_for_rashi_label(title) or "✦", title, _rashifal_teaser(body), body)
         for title, body in parse_sectioned_reading(text)
     ]
     return templates.TemplateResponse(
@@ -842,7 +860,8 @@ async def rashifal(request: Request) -> HTMLResponse:
 async def subscribe(request: Request,
                     email: str = Form(...),
                     lang: str = Form("en"),
-                    city: str = Form("")) -> JSONResponse:
+                    city: str = Form(""),
+                    rashi: str = Form("all")) -> JSONResponse:
     """Add an email to the daily-Rashifal subscriber list.
 
     Called from the modal in _subscribe_modal.html via fetch(). Returns JSON
@@ -853,12 +872,12 @@ async def subscribe(request: Request,
     (skipped for re-subscribes). Welcome failure is logged but doesn't
     block the success response — the subscription itself already saved.
     """
-    ok, is_new, msg = subscribers.subscribe(email, lang, city)
+    ok, is_new, msg = subscribers.subscribe(email, lang, city, rashi)
     if not ok:
         return JSONResponse({"ok": False, "error": msg}, status_code=400)
     if is_new:
         try:
-            _send_welcome_email(email, lang, city)
+            _send_welcome_email(email, lang, city, rashi)
         except Exception as err:
             # Log and continue — the user is already subscribed; missing
             # welcome is a minor degradation, not a failure.
@@ -918,7 +937,16 @@ def _email_context(*, lang: str, city: str | None, request_cache: dict | None = 
     }
 
 
-def _send_welcome_email(email: str, lang: str, city: str = "") -> bool:
+def _filter_rashi_sections(sections: list, rashi: str) -> list:
+    """If a subscriber chose a single rashi, return just that card. Otherwise
+    return all 12. Matches by the English slug (first word of "Aries / Mesha")."""
+    if not rashi or rashi == "all":
+        return sections
+    return [s for s in sections
+            if s[1].split('/')[0].strip().lower() == rashi.lower()] or sections
+
+
+def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all") -> bool:
     """Send the one-off welcome email to a newly-subscribed user.
 
     Embeds today's Rashifal + Panchang + shlok + trivia so the first email
@@ -944,7 +972,7 @@ def _send_welcome_email(email: str, lang: str, city: str = "") -> bool:
             ),
         )
         sections = [
-            (symbol_for_rashi_label(title) or "✦", title, body)
+            (symbol_for_rashi_label(title) or "✦", title, _rashifal_teaser(body), body)
             for title, body in parse_sectioned_reading(text)
         ]
     except Exception:
@@ -953,7 +981,7 @@ def _send_welcome_email(email: str, lang: str, city: str = "") -> bool:
         sections = []
 
     ctx = _email_context(lang=lang, city=city)
-    ctx["rashifal_sections"] = sections
+    ctx["rashifal_sections"] = _filter_rashi_sections(sections, rashi)
     ctx["unsubscribe_url"] = (
         f"{ctx['site_url']}/unsubscribe?email={email}"
         f"&token={subscribers.unsubscribe_token(email)}"
@@ -1031,7 +1059,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
                 ),
             )
             sections_by_lang[lang] = [
-                (symbol_for_rashi_label(title) or "✦", title, body)
+                (symbol_for_rashi_label(title) or "✦", title, _rashifal_teaser(body), body)
                 for title, body in parse_sectioned_reading(text)
             ]
         except Exception as err:
@@ -1053,7 +1081,9 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
 
         ctx = _email_context(lang=lang, city=sub.get("city", ""),
                              request_cache=panchang_cache)
-        ctx["rashifal_sections"] = sections_by_lang[lang]
+        ctx["rashifal_sections"] = _filter_rashi_sections(
+            sections_by_lang[lang], sub.get("rashi", "all")
+        )
         ctx["unsubscribe_url"] = (
             f"{site_url}/unsubscribe?email={sub['email']}"
             f"&token={subscribers.unsubscribe_token(sub['email'])}"

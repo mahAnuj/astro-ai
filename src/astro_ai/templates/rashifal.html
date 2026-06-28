@@ -1,13 +1,18 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t(lang, 'rashifal_title') }} &middot; {{ today_date }} &mdash; Shubh Bhagya{% endblock %}
+{% block title %}{{ t(lang, 'rashifal_title') }} · {{ today_date }} — Shubh Bhagya{% endblock %}
 {% block meta_description %}Today's Rashifal for all 12 rashis — Mesh, Vrishabh, Mithun, Karka, Simha, Kanya, Tula, Vrishchik, Dhanu, Makar, Kumbh, Meena. Generated fresh daily by Shubh Bhagya.{% endblock %}
 
 {% block content %}
 {% set active_page = "rashifal" %}
 {% include "_nav.html" %}
 
-<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+{# Derive an anchor slug from each rashi title ("Aries / Mesha" → "aries").
+   Used both for the jump-strip at the top AND for email links coming in
+   like /rashifal#aries (anchor scroll on page load). #}
+{% macro slug(title) -%}{{ title.split('/')[0].strip().lower() }}{%- endmacro %}
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
   <!-- HEADER ------------------------------------------------------ -->
   <header>
@@ -21,15 +26,55 @@
     </p>
   </header>
 
-  <!-- 12 RASHI CARDS — 2-col on tablet, 3-col on desktop. Glyph + title header. -->
-  <section class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-    {% for glyph, title, body in sections %}
-    <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
+  <!-- JUMP TO STRIP — quick navigation to any rashi card. Horizontal scroll
+       on mobile so all 12 are reachable in one swipe. -->
+  <nav aria-label="Jump to rashi" class="bg-white rounded-2xl border border-stone-200 p-3 sm:p-4">
+    <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-2 px-1">
+      {% if lang == 'hi' %}अपनी राशि चुनें{% else %}Jump to your rashi{% endif %}
+    </div>
+    <div class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+      {% for glyph, title, teaser, body in sections %}
+      <a href="#{{ slug(title) }}"
+         class="flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg
+                bg-stone-50 hover:bg-astro-50 hover:text-astro-700
+                text-stone-600 text-xs font-medium transition-colors flex-shrink-0 min-w-[56px]">
+        <span class="text-base leading-none" aria-hidden="true">{{ glyph }}</span>
+        <span class="text-[10px] leading-tight">{{ title.split('/')[0].strip() }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </nav>
+
+  <!-- 12 RASHI CARDS — accordion. Teaser visible by default; "Read more"
+       expands the full reading inline. Anchor ID supports deep-linking
+       from emails (e.g. /rashifal#aries). -->
+  <section class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for glyph, title, teaser, body in sections %}
+    <article id="{{ slug(title) }}"
+             class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6
+                    scroll-mt-24 target:ring-2 target:ring-astro-400"
+             data-rashi-card>
       <div class="flex items-center gap-3 mb-3 border-b border-stone-100 pb-3">
         <span class="text-3xl text-astro-700 leading-none" aria-hidden="true">{{ glyph }}</span>
         <h2 class="font-display text-lg text-astro-700 leading-tight">{{ title }}</h2>
       </div>
-      <p class="text-sm text-stone-700 leading-relaxed whitespace-pre-wrap">{{ body }}</p>
+
+      {# Teaser is the only thing rendered until the user expands. #}
+      <p class="rashi-teaser text-sm text-stone-700 leading-relaxed">{{ teaser }}</p>
+
+      {# Full body sits collapsed below. If JS is unavailable (or the
+         user prefers no-JS), CSS keeps the full body hidden too — but
+         the data-rashi-expand button still exists as a fallback link. #}
+      <div class="rashi-full hidden mt-2 text-sm text-stone-700 leading-relaxed whitespace-pre-wrap">{{ body }}</div>
+
+      <button type="button" data-rashi-expand
+              class="mt-3 text-xs font-semibold text-astro-700 hover:text-astro-800 inline-flex items-center gap-1">
+        <span class="rashi-expand-default">{% if lang == 'hi' %}पूरा पढ़ें{% else %}Read full{% endif %}</span>
+        <span class="rashi-expand-open hidden">{% if lang == 'hi' %}छुपाएँ{% else %}Show less{% endif %}</span>
+        <svg class="w-3 h-3 transition-transform rashi-expand-chev" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
     </article>
     {% endfor %}
   </section>
@@ -60,4 +105,34 @@
   </aside>
 
 </main>
+
+<script>
+  // Per-card accordion. If the URL has a #rashi anchor (e.g. from an email
+  // link), auto-expand THAT card so the reader lands on the full reading.
+  (function () {
+    document.querySelectorAll('[data-rashi-card]').forEach(function (card) {
+      var btn   = card.querySelector('[data-rashi-expand]');
+      var full  = card.querySelector('.rashi-full');
+      var defLb = card.querySelector('.rashi-expand-default');
+      var opnLb = card.querySelector('.rashi-expand-open');
+      var chev  = card.querySelector('.rashi-expand-chev');
+      if (!btn || !full) return;
+
+      function setOpen(open) {
+        full.classList.toggle('hidden', !open);
+        defLb.classList.toggle('hidden', open);
+        opnLb.classList.toggle('hidden', !open);
+        if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
+      }
+      btn.addEventListener('click', function () {
+        var isOpen = !full.classList.contains('hidden');
+        setOpen(!isOpen);
+      });
+      // Auto-open if the page was loaded with this card's anchor.
+      if (location.hash && location.hash.slice(1) === card.id) {
+        setOpen(true);
+      }
+    });
+  })();
+</script>
 {% endblock %}

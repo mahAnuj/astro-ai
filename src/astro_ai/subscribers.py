@@ -63,7 +63,16 @@ def verify_unsubscribe_token(email: str, token: str) -> bool:
     return hmac.compare_digest(unsubscribe_token(email), token)
 
 
-def subscribe(email: str, lang: str = "en", city: str = "") -> tuple[bool, bool, str]:
+# Allowed rashi slugs (English Vimshottari order). "all" means send every
+# rashi; specific value filters the daily email to just that rashi card.
+RASHI_SLUGS: frozenset[str] = frozenset({
+    "all", "aries", "taurus", "gemini", "cancer", "leo", "virgo",
+    "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces",
+})
+
+
+def subscribe(email: str, lang: str = "en", city: str = "",
+              rashi: str = "all") -> tuple[bool, bool, str]:
     """Add a subscriber. Returns (ok, is_new, message).
 
     `is_new` is True only when this email wasn't in the list before; callers
@@ -74,15 +83,22 @@ def subscribe(email: str, lang: str = "en", city: str = "") -> tuple[bool, bool,
     that location. Blank/missing falls back to a sensible default at send
     time.
 
+    `rashi` is "all" (default — every rashi sent) or one of 12 English slugs
+    (filters the daily email to just that rashi's card). Lets readers who
+    know their Janma Rashi opt into a much shorter, focused email.
+
     Idempotent: re-subscribing the same email keeps the original timestamp
-    but updates `lang` and `city` if the user changed either.
+    but updates `lang` / `city` / `rashi` if the user changed any of them.
     """
     email = _normalize(email)
     if not _EMAIL_RE.match(email):
         return False, False, "Please enter a valid email address."
     if lang not in {"en", "hi"}:
         lang = "en"
-    city = (city or "").strip()[:80]  # cap length to keep cookies/payloads sane
+    city = (city or "").strip()[:80]
+    rashi = (rashi or "all").strip().lower()
+    if rashi not in RASHI_SLUGS:
+        rashi = "all"
 
     state = {"was_new": True}
 
@@ -93,11 +109,13 @@ def subscribe(email: str, lang: str = "en", city: str = "") -> tuple[bool, bool,
                 existing["lang"] = lang
                 if city:
                     existing["city"] = city
+                existing["rashi"] = rashi
                 state["was_new"] = False
                 return data
         entry = {
             "email": email,
             "lang": lang,
+            "rashi": rashi,
             "subscribed_at": _now_iso(),
         }
         if city:

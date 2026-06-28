@@ -56,7 +56,33 @@
                  class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm
                         focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
           <p class="text-xs text-stone-500 mt-1 leading-relaxed">
-            {% if lang == 'hi' %}हम आपके शहर का सूर्योदय, राहु काल और अभिजित मुहूर्त ईमेल में जोड़ेंगे। ख़ाली छोड़ें तो पंचांग नहीं भेजा जाएगा।{% else %}We'll add your local sunrise, Rahu Kaal &amp; Abhijit Muhurta to the email. Leave blank to skip Panchang.{% endif %}
+            {% if lang == 'hi' %}हम आपके शहर का सूर्योदय, राहु काल और अभिजित मुहूर्त ईमेल में जोड़ेंगे।{% else %}We'll add your local sunrise, Rahu Kaal &amp; Abhijit Muhurta to the email.{% endif %}
+          </p>
+        </div>
+
+        {# Optional rashi selector — readers who know their Janma Rashi
+           can opt into a focused single-rashi email instead of the full
+           12-card reading. Defaults to "all". #}
+        <div>
+          <select name="rashi"
+                  class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm bg-white
+                         focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+            <option value="all">{% if lang == 'hi' %}सभी 12 राशियाँ भेजें (डिफ़ॉल्ट){% else %}Send all 12 rashis (default){% endif %}</option>
+            <option value="aries">♈ {% if lang == 'hi' %}मेष (Aries){% else %}Aries / Mesha{% endif %}</option>
+            <option value="taurus">♉ {% if lang == 'hi' %}वृषभ (Taurus){% else %}Taurus / Vrishabha{% endif %}</option>
+            <option value="gemini">♊ {% if lang == 'hi' %}मिथुन (Gemini){% else %}Gemini / Mithuna{% endif %}</option>
+            <option value="cancer">♋ {% if lang == 'hi' %}कर्क (Cancer){% else %}Cancer / Karka{% endif %}</option>
+            <option value="leo">♌ {% if lang == 'hi' %}सिंह (Leo){% else %}Leo / Simha{% endif %}</option>
+            <option value="virgo">♍ {% if lang == 'hi' %}कन्या (Virgo){% else %}Virgo / Kanya{% endif %}</option>
+            <option value="libra">♎ {% if lang == 'hi' %}तुला (Libra){% else %}Libra / Tula{% endif %}</option>
+            <option value="scorpio">♏ {% if lang == 'hi' %}वृश्चिक (Scorpio){% else %}Scorpio / Vrishchika{% endif %}</option>
+            <option value="sagittarius">♐ {% if lang == 'hi' %}धनु (Sagittarius){% else %}Sagittarius / Dhanu{% endif %}</option>
+            <option value="capricorn">♑ {% if lang == 'hi' %}मकर (Capricorn){% else %}Capricorn / Makara{% endif %}</option>
+            <option value="aquarius">♒ {% if lang == 'hi' %}कुम्भ (Aquarius){% else %}Aquarius / Kumbha{% endif %}</option>
+            <option value="pisces">♓ {% if lang == 'hi' %}मीन (Pisces){% else %}Pisces / Meena{% endif %}</option>
+          </select>
+          <p class="text-xs text-stone-500 mt-1 leading-relaxed">
+            {% if lang == 'hi' %}अपनी जन्म राशि चुनें तो ईमेल छोटा और केंद्रित मिलेगा।{% else %}Pick your Janma Rashi for a shorter, focused email.{% endif %}
           </p>
         </div>
 
