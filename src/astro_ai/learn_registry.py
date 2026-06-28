@@ -36,6 +36,37 @@ class Article:
 
 ARTICLES: tuple[Article, ...] = (
     Article(
+        slug="rahu-mahadasha-ketu-antardasha",
+        title="Rahu Mahadasha + Ketu Antardasha: Surviving the Nodal Axis Flip",
+        summary="The exact transition Reddit asks about: Rahu's 18-year outward hunger meeting Ketu's ~12-month inward release. What it feels like, why it hits so hard, what the classical texts say, and how to make it through.",
+        category="Dasha",
+        hero_image="/static/learn/rahu-mahadasha-ketu-antardasha/hero.svg",
+        read_time="9 min",
+        related=("manglik-dosh",),
+        faqs=(
+            {
+                "q": "How long does Ketu Antardasha inside Rahu Mahadasha last?",
+                "a": "Precisely 1 year, 0 months, 18 days (~12.6 months). Rahu's Mahadasha is 18 years; Ketu's share inside it is calculated as (7 × 18) / 120 from the Vimshottari proportions.",
+            },
+            {
+                "q": "What comes after Ketu Antardasha in Rahu Mahadasha?",
+                "a": "Venus Antardasha — 3 years of significantly softer, more pleasure-oriented energy. Most people describe the Rahu–Ketu period as a dark tunnel and Rahu–Venus as the light at the end. If you're in the hard part, mark that date on your calendar.",
+            },
+            {
+                "q": "Why is Rahu Mahadasha + Ketu Antardasha considered uniquely difficult?",
+                "a": "Rahu and Ketu sit exactly 180 degrees apart in your chart — they're perpetual opposites. When their energies overlap in time as well as space, internal contradiction maxes out. Part of you keeps chasing (Rahu); part of you is exhausted (Ketu). Both pull simultaneously and neither resolves.",
+            },
+            {
+                "q": "If Ketu is in my 11th house with Saturn, what does this transition mean?",
+                "a": "The 11th house rules gains, friendships, and ambition. Ketu in 11th means the very area you'd reach toward during Rahu Mahadasha is where you'll feel the dissolution — relationships go hollow, networks stop paying off, big ambitions deflate. Saturn alongside adds slow, grinding lessons. The combination teaches detachment from outcomes in social-economic life. Many with this placement end up doing meaningful work in service or quiet professions once the chasing stops.",
+            },
+            {
+                "q": "What's the best remedy during Ketu Antardasha?",
+                "a": "Beyond mantras and donations: classical texts emphasise tyaga (willing renunciation). What you give up during Ketu antardasha, you get back tenfold during the Venus antardasha that follows. Stop optimising for outcomes, reduce intake (news/social/ambition-feed), pick one anchor (one practice, one relationship, one piece of steady work), don't make permanent decisions in the worst weeks.",
+            },
+        ),
+    ),
+    Article(
         slug="manglik-dosh",
         title="Manglik Dosh: What It Really Means, How to Check, and Remedies",
         summary="A clear, honest guide to Manglik Dosh — what it actually is, the houses that cause it, the cancellation rules most websites skip, and the remedies classical texts recommend.",

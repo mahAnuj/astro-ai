@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Rahu-Ketu nodal axis: two shadow circles on a celestial backdrop.
+     The serpent-and-tail symbolism without literal serpent — kept abstract,
+     suits the article's contemplative tone. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Rahu and Ketu nodal axis">
+  <defs>
+    <radialGradient id="cosmos" cx="0.5" cy="0.5" r="0.7">
+      <stop offset="0%" stop-color="#f0e7fb" stop-opacity="1"/>
+      <stop offset="60%" stop-color="#e9d5ff" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rahu" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#581c87"/>
+      <stop offset="100%" stop-color="#1c1917"/>
+    </linearGradient>
+    <linearGradient id="ketu" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#6b21a8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Cosmic backdrop -->
+  <circle cx="160" cy="160" r="150" fill="url(#cosmos)"/>
+
+  <!-- Stars / nakshatra dots -->
+  <g fill="#d97706" opacity="0.7">
+    <circle cx="56"  cy="78"  r="1.5"/>
+    <circle cx="240" cy="68"  r="2"/>
+    <circle cx="280" cy="155" r="1.5"/>
+    <circle cx="48"  cy="200" r="2"/>
+    <circle cx="265" cy="245" r="1.5"/>
+    <circle cx="80"  cy="270" r="1.5"/>
+    <circle cx="200" cy="288" r="2"/>
+    <circle cx="100" cy="56"  r="1"/>
+    <circle cx="190" cy="48"  r="1.5"/>
+  </g>
+
+  <!-- The nodal axis: a thin diagonal line connecting Rahu and Ketu -->
+  <line x1="90" y1="220" x2="230" y2="100" stroke="#6b21a8" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.5"/>
+
+  <!-- Rahu — dark, dense, eclipse-like circle (north node, "head") -->
+  <circle cx="90" cy="220" r="42" fill="url(#rahu)"/>
+  <!-- Rahu glyph: ☊ stylised -->
+  <g transform="translate(70 200)" stroke="#ffd764" stroke-width="3" fill="none" stroke-linecap="round">
+    <path d="M5 30 Q5 5 20 5 Q35 5 35 30"/>
+    <circle cx="9" cy="36" r="3" fill="#ffd764"/>
+    <circle cx="31" cy="36" r="3" fill="#ffd764"/>
+  </g>
+
+  <!-- Ketu — light, ethereal circle (south node, "tail") -->
+  <circle cx="230" cy="100" r="36" fill="url(#ketu)" opacity="0.9"/>
+  <!-- Ketu glyph: ☋ stylised (inverted) -->
+  <g transform="translate(212 82)" stroke="#fef3c7" stroke-width="3" fill="none" stroke-linecap="round">
+    <path d="M5 6 Q5 31 20 31 Q35 31 35 6"/>
+    <circle cx="9"  cy="0"  r="3" fill="#fef3c7"/>
+    <circle cx="31" cy="0"  r="3" fill="#fef3c7"/>
+  </g>
+
+  <!-- Devanagari labels -->
+  <text x="90"  y="285" text-anchor="middle"
+        font-family="'Noto Sans Devanagari', serif"
+        font-size="20" fill="#6b21a8" font-weight="600">राहु</text>
+  <text x="230" y="60" text-anchor="middle"
+        font-family="'Noto Sans Devanagari', serif"
+        font-size="20" fill="#6b21a8" font-weight="600">केतु</text>
+</svg>
