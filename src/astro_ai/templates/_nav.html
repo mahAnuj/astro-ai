@@ -2,18 +2,22 @@
 
    Caller passes:
      active_page  — one of: 'home' | 'natal' | 'today' | 'rashifal' | 'dasha' |
-                            'monthly' | 'yearly' | 'matching'
-                    (used to bold the current page link and skip its href change)
-     show_print   — optional bool (defaults true). False on form pages where
-                    Print isn't useful (matching form, error pages).
+                            'monthly' | 'yearly' | 'matching' | 'ask' | 'learn'
+                    (used to bold the current page link)
+     show_print   — optional bool (defaults true).
 
    Layout — three zones on md+ (desktop):
-     [Logo]                       [Home Kundli Today ...]                       [Print | Lang]
-       LEFT (shrinkwrap)           CENTER (flex-1, justify-center)               RIGHT (shrinkwrap)
+     [Logo]                       [Kundli  Readings▾  Rashifal  Learn ...]                       [Print | Lang]
+       LEFT (shrinkwrap)           CENTER (flex-1, justify-center)                                RIGHT (shrinkwrap)
+
+   The "Readings" dropdown groups the personalised readings (Today, Monthly,
+   Yearly, Dasha, Matching, Ask) — all derived from a saved chart, all lower
+   on the navigation priority than the front-door destinations (Kundli,
+   Rashifal, Learn). Keeps the top-level nav from looking jammed.
 
    On < md (mobile), all three zones stack vertically inside the hamburger
-   panel. Hamburger toggle reveals/hides BOTH #nav-menu (links) and
-   #nav-utility (print + lang) together.
+   panel and the dropdown auto-expands as a labeled section. No nested
+   tap-to-open dance.
 #}
 {% set show_print = show_print if show_print is defined else true %}
 <nav class="border-b border-stone-200/60 bg-cream/80 backdrop-blur sticky top-0 z-10 no-print">
@@ -50,12 +54,11 @@
       </button>
     </div>
 
-    {# CENTER ZONE: main nav links. flex-1 + justify-center centers them
-       inside the leftover horizontal space between logo and utility. On
-       mobile, becomes a vertical stack inside the hamburger panel. #}
+    {# CENTER ZONE: main nav links — front-door destinations stay top-level,
+       personalised readings live under the Readings ▾ dropdown. #}
     <div id="nav-menu"
          class="hidden md:flex flex-col md:flex-row md:flex-1 md:justify-center md:items-center
-                gap-y-1 md:gap-y-0 md:gap-x-4 text-sm">
+                gap-y-1 md:gap-y-0 md:gap-x-5 text-sm">
       {% macro link(href, label, page_key) -%}
         {% if active_page == page_key -%}
           <span class="text-astro-700 font-semibold border-l-2 md:border-l-0 md:border-b-2
@@ -65,20 +68,54 @@
         {%- endif %}
       {%- endmacro %}
 
-      {{ link("/",         t(lang, 'nav_home'),          'home') }}
       {{ link("/kundli",   t(lang, 'nav_natal_link'),    'natal') }}
-      {{ link("/today",    t(lang, 'nav_today_link'),    'today') }}
       {{ link("/rashifal", t(lang, 'nav_rashifal_link'), 'rashifal') }}
-      {{ link("/dasha",    t(lang, 'nav_dasha_link'),    'dasha') }}
-      {{ link("/monthly",  t(lang, 'nav_monthly_link'),  'monthly') }}
-      {{ link("/yearly",   t(lang, 'nav_yearly_link', year=current_year()),   'yearly') }}
-      {{ link("/matching", t(lang, 'nav_matching_link'), 'matching') }}
-      {{ link("/ask",      t(lang, 'nav_ask_link'),      'ask') }}
+
+      {# READINGS dropdown — groups personalised-chart features. On mobile
+         this becomes a labeled section with the items always visible (no
+         tap-to-expand inside the hamburger panel). On desktop, click the
+         label to toggle, click outside to close. #}
+      {% set readings_pages = ['today','monthly','yearly','dasha','matching','ask'] %}
+      {% set readings_active = active_page in readings_pages %}
+      <div class="nav-dropdown md:relative" data-nav-dropdown>
+        <button type="button"
+                class="nav-dropdown-trigger inline-flex items-center gap-1 w-full md:w-auto py-1 md:py-0
+                       {% if readings_active %}text-astro-700 font-semibold{% else %}text-stone-500 hover:text-astro-700{% endif %}"
+                aria-haspopup="true" aria-expanded="false">
+          Readings
+          <svg class="nav-dropdown-chev w-3 h-3 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        {# Default visibility:
+             mobile (no md:): always visible — show as flat list under "Readings" label
+             desktop (md:):    hidden by default, JS toggles to flex when clicked.
+           Position: relative on mobile (in-flow), absolute on desktop (floating menu). #}
+        <div class="nav-dropdown-menu flex flex-col gap-y-1 md:gap-y-0
+                    md:hidden md:absolute md:top-full md:left-1/2 md:-translate-x-1/2 md:mt-2
+                    md:w-52 md:bg-white md:rounded-md md:shadow-lg md:border md:border-stone-200
+                    md:py-1 md:z-20
+                    pl-4 md:pl-0">
+          {% macro dlink(href, label, page_key) -%}
+            <a href="{{ href }}"
+               class="text-sm py-1 md:py-2 md:px-4 transition-colors
+                      {% if active_page == page_key %}text-astro-700 font-semibold md:bg-astro-50{% else %}text-stone-600 hover:text-astro-700 md:hover:bg-stone-50{% endif %}">
+              {{ label }}
+            </a>
+          {%- endmacro %}
+          {{ dlink("/today",    t(lang, 'nav_today_link'),    'today') }}
+          {{ dlink("/monthly",  t(lang, 'nav_monthly_link'),  'monthly') }}
+          {{ dlink("/yearly",   t(lang, 'nav_yearly_link', year=current_year()), 'yearly') }}
+          {{ dlink("/dasha",    t(lang, 'nav_dasha_link'),    'dasha') }}
+          {{ dlink("/matching", t(lang, 'nav_matching_link'), 'matching') }}
+          {{ dlink("/ask",      t(lang, 'nav_ask_link'),      'ask') }}
+        </div>
+      </div>
+
+      {{ link("/learn/",   "Learn",                      'learn') }}
     </div>
 
-    {# RIGHT ZONE: utility actions (print + language). Visually separate
-       from the main nav so they don't fight for attention with primary
-       links. On mobile, stacks at the bottom of the hamburger panel. #}
+    {# RIGHT ZONE: utility actions (print + language). #}
     <div id="nav-utility"
          class="hidden md:flex flex-col md:flex-row md:items-center
                 gap-y-1 md:gap-y-0 md:gap-x-3 text-sm md:flex-shrink-0">
@@ -93,29 +130,70 @@
 </nav>
 
 <script>
-  // Mobile nav hamburger toggle. Reveals BOTH the main nav links and
-  // utility actions together — they're separate zones on desktop but
-  // stack into a single mobile menu when collapsed. Re-runs on every
-  // template render so it re-attaches after htmx-boosted navigations.
-  (function() {
+  // Nav scripts: hamburger toggle + Readings dropdown.
+  // IIFE so it re-runs cleanly after htmx-boosted navigations swap the body.
+  (function () {
+    // --- hamburger ---
     var btn = document.getElementById('nav-toggle');
     var menu = document.getElementById('nav-menu');
     var util = document.getElementById('nav-utility');
     var iconOpen = document.getElementById('nav-icon-open');
     var iconClose = document.getElementById('nav-icon-close');
-    if (!btn || !menu) return;
-    btn.addEventListener('click', function() {
-      var willOpen = menu.classList.contains('hidden');
-      [menu, util].forEach(function(el) {
-        if (!el) return;
-        el.classList.toggle('hidden');
-        el.classList.toggle('flex');
+    if (btn && menu) {
+      btn.addEventListener('click', function () {
+        var willOpen = menu.classList.contains('hidden');
+        [menu, util].forEach(function (el) {
+          if (!el) return;
+          el.classList.toggle('hidden');
+          el.classList.toggle('flex');
+        });
+        btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+        if (iconOpen && iconClose) {
+          iconOpen.classList.toggle('hidden');
+          iconClose.classList.toggle('hidden');
+        }
       });
-      btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
-      if (iconOpen && iconClose) {
-        iconOpen.classList.toggle('hidden');
-        iconClose.classList.toggle('hidden');
+    }
+
+    // --- Readings dropdown (desktop only — mobile shows items inline) ---
+    var DESKTOP = '(min-width: 768px)';
+    document.querySelectorAll('[data-nav-dropdown]').forEach(function (wrap) {
+      var trigger = wrap.querySelector('.nav-dropdown-trigger');
+      var panel   = wrap.querySelector('.nav-dropdown-menu');
+      var chev    = wrap.querySelector('.nav-dropdown-chev');
+      if (!trigger || !panel) return;
+
+      function isDesktop() { return window.matchMedia(DESKTOP).matches; }
+      function open()  {
+        panel.classList.remove('md:hidden');
+        panel.classList.add('md:flex');
+        trigger.setAttribute('aria-expanded', 'true');
+        if (chev) chev.style.transform = 'rotate(180deg)';
       }
+      function close() {
+        panel.classList.add('md:hidden');
+        panel.classList.remove('md:flex');
+        trigger.setAttribute('aria-expanded', 'false');
+        if (chev) chev.style.transform = '';
+      }
+      function isOpen() { return !panel.classList.contains('md:hidden'); }
+
+      trigger.addEventListener('click', function (e) {
+        if (!isDesktop()) return;  // mobile shows items inline; no toggle
+        e.stopPropagation();
+        if (isOpen()) close(); else open();
+      });
+
+      // Click outside → close
+      document.addEventListener('click', function (e) {
+        if (!isDesktop() || !isOpen()) return;
+        if (!wrap.contains(e.target)) close();
+      });
+
+      // Escape → close
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && isDesktop() && isOpen()) close();
+      });
     });
   })();
 </script>
