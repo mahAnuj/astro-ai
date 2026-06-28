@@ -116,25 +116,33 @@
   </script>
   {% endif %}
 
-  {# CTA — every article funnels back to a chart check, the core action. #}
+  {# CTA — compact two-action banner. Both buttons inline; total height
+     is one info row + one button row. Funnels into Kundli first, then Ask. #}
   <section class="max-w-2xl mx-auto px-4 sm:px-6 pb-10">
-    <div class="bg-gradient-to-br from-astro-700 to-astro-800 text-white rounded-2xl p-6 sm:p-8 text-center shadow-lg">
-      <svg viewBox="0 0 100 100" class="w-10 h-10 mx-auto mb-3 text-white/90" aria-hidden="true">
-        <g fill="none" stroke="currentColor" stroke-width="6">
-          <polygon points="50,5 95,50 50,95 5,50"/>
-          <line x1="50" y1="5" x2="50" y2="95"/>
-          <line x1="5" y1="50" x2="95" y2="50"/>
-          <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
-        </g>
-        <circle cx="50" cy="50" r="7" fill="#ffd764"/>
-      </svg>
-      <h3 class="font-display text-xl sm:text-2xl font-bold mb-2">See it in YOUR chart</h3>
-      <p class="text-sm sm:text-base text-astro-100 mb-5 max-w-md mx-auto">
-        Get your free Janma Kundli — every dosha, dasha, and remedy checked against your actual placements.
-      </p>
-      <a href="/" class="inline-block bg-white text-astro-700 font-semibold text-sm sm:text-base px-6 py-3 rounded-md hover:bg-astro-50 transition-colors">
-        Get my free Kundli &rarr;
-      </a>
+    <div class="bg-gradient-to-br from-astro-700 to-astro-800 text-white rounded-xl p-4 sm:p-5">
+      <div class="flex items-center gap-3 mb-3">
+        <svg viewBox="0 0 100 100" class="w-7 h-7 shrink-0 text-white/90" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="6">
+            <polygon points="50,5 95,50 50,95 5,50"/>
+            <line x1="50" y1="5" x2="50" y2="95"/>
+            <line x1="5" y1="50" x2="95" y2="50"/>
+            <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
+          </g>
+          <circle cx="50" cy="50" r="7" fill="#ffd764"/>
+        </svg>
+        <div class="min-w-0">
+          <div class="font-display font-bold text-base sm:text-lg leading-tight">See it in YOUR chart</div>
+          <div class="text-xs text-astro-200">Free Kundli &middot; then ask anything &middot; both instant</div>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-2">
+        <a href="/" class="flex-1 text-center bg-white text-astro-700 font-semibold text-sm px-3 py-2 rounded-md hover:bg-astro-50 transition-colors">
+          Get your free Kundli &rarr;
+        </a>
+        <a href="/ask" class="flex-1 text-center bg-astro-900/50 hover:bg-astro-900/70 text-white font-semibold text-sm px-3 py-2 rounded-md border border-white/20 transition-colors">
+          Ask Shubh Bhagya &rarr;
+        </a>
+      </div>
     </div>
   </section>
 
