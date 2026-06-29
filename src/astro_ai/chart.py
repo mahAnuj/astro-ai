@@ -804,19 +804,19 @@ def _sun_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="ubhayachara_yoga", name="Ubhayachara Yoga", category="sun",
             effect="All comforts, royal stature; planets flanking the Sun on both sides",
-            source="Rao Ch.11 (BPHS)",
+            source="Brihat Parashara Hora Shastra",
         ))
     elif in_2nd:
         out.append(YogaResult(
             slug="vesi_yoga", name="Vesi Yoga", category="sun",
             effect="Balanced outlook, truthful, content",
-            source="Rao Ch.11 (BPHS)",
+            source="Brihat Parashara Hora Shastra",
         ))
     elif in_12th:
         out.append(YogaResult(
             slug="vosi_yoga", name="Vosi Yoga", category="sun",
             effect="Skillful, charitable, famous, learned",
-            source="Rao Ch.11 (BPHS)",
+            source="Brihat Parashara Hora Shastra",
         ))
 
     # Budha-Aditya: Sun + Mercury same sign. Combust if within ~6° → weakened.
@@ -828,7 +828,7 @@ def _sun_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="budha_aditya_yoga", name="Budha-Aditya Yoga (Nipuna)", category="sun",
             effect=f"Intelligence, skill, respect; bright mind{combust_note}",
-            source="Rao Ch.11 (BPHS)",
+            source="Brihat Parashara Hora Shastra",
         ))
     return out
 
@@ -847,19 +847,19 @@ def _moon_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="duradhara_yoga", name="Duradhara Yoga", category="moon",
             effect="Pleasures, charity, wealth, vehicles, good servants",
-            source="Rao Ch.11 (BPHS)",
+            source="Brihat Parashara Hora Shastra",
         ))
     elif in_2nd:
         out.append(YogaResult(
             slug="sunaphaa_yoga", name="Sunaphaa Yoga", category="moon",
             effect="Royal stature; intelligence, wealth, fame, self-earned success",
-            source="Rao Ch.11 (BPHS)",
+            source="Brihat Parashara Hora Shastra",
         ))
     elif in_12th:
         out.append(YogaResult(
             slug="anaphaa_yoga", name="Anaphaa Yoga", category="moon",
             effect="Good-looking, disease-free, reputed, comfortable",
-            source="Rao Ch.11 (BPHS)",
+            source="Brihat Parashara Hora Shastra",
         ))
 
     # Kemadruma: NONE of 1st/2nd/12th from Moon AND no planets in kendras from Lagna.
@@ -870,7 +870,7 @@ def _moon_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="kemadruma_yoga", name="Kemadruma Yoga", category="moon",
             effect="Lonely / unsupported Moon; emotional fragility — verify cancellations before alarm",
-            source="Rao Ch.11 (BPHS) — phrase gently per Section 8 guardrails",
+            source="Brihat Parashara Hora Shastra",
         ))
 
     # Chandra-Mangala: Moon and Mars conjunct
@@ -879,7 +879,7 @@ def _moon_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="chandra_mangala_yoga", name="Chandra-Mangala Yoga", category="moon",
             effect="Worldly-wise, materially successful; energetic relationship with money",
-            source="Rao Ch.11 (BPHS)",
+            source="Brihat Parashara Hora Shastra",
         ))
 
     # Gaja-Kesari: Jupiter in kendra (1/4/7/10) FROM Moon (not from Lagna).
@@ -892,7 +892,7 @@ def _moon_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="gaja_kesari_yoga", name="Gaja-Kesari Yoga", category="moon",
             effect=f"Fame, wealth, intelligence, virtue, favor from authority{note}",
-            source="Rao Ch.11 (BPHS)",
+            source="Brihat Parashara Hora Shastra",
         ))
     return out
 
@@ -937,7 +937,7 @@ def _other_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="guru_mangala_yoga", name="Guru-Mangala Yoga", category="other",
             effect="Righteous energy; courage directed at dharmic action",
-            source="Rao Ch.11",
+            source="Classical Vedic tradition",
         ))
 
     # Trilochana: Sun, Moon, Mars in mutual trines (4 signs apart from each other)
@@ -947,7 +947,7 @@ def _other_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="trilochana_yoga", name="Trilochana Yoga", category="other",
             effect="Wealthy, intelligent, long-lived, victorious",
-            source="Rao Ch.11",
+            source="Classical Vedic tradition",
         ))
 
     # Amala: only natural benefics in 10th from Lagna
@@ -956,7 +956,7 @@ def _other_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="amala_yoga", name="Amala Yoga", category="other",
             effect="Ever-lasting fame, royal respect, virtue — clean reputation through career",
-            source="Rao Ch.11",
+            source="Classical Vedic tradition",
         ))
 
     # Vasumati: benefics in upachayas (3rd, 6th, 10th, 11th from Lagna)
@@ -966,7 +966,7 @@ def _other_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="vasumati_yoga", name="Vasumati Yoga", category="other",
             effect="Abundant wealth — benefics concentrated in growth-houses",
-            source="Rao Ch.11",
+            source="Classical Vedic tradition",
         ))
 
     # Adhi: natural benefics in 6th, 7th and 8th from Moon
@@ -979,7 +979,7 @@ def _other_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="adhi_yoga", name="Adhi Yoga", category="other",
             effect="Leadership at scale — minister, army chief, or trusted authority",
-            source="Rao Ch.11",
+            source="Classical Vedic tradition",
         ))
     return out
 
