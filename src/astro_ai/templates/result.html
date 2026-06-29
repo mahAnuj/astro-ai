@@ -94,12 +94,12 @@
   {% set _eff_colour = {'cancelled':'emerald', 'mitigated':'amber', 'present':'rose'}.get(_eff, 'rose') %}
   {% set _eff_label  = {'cancelled':'Cancelled', 'mitigated':'Mitigated', 'present':'Present — no cancellations'}.get(_eff, 'Present') %}
   <section class="bg-white rounded-2xl border border-{{ _eff_colour }}-200 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-{{ _eff_colour }}-100/60 to-{{ _eff_colour }}-50/30 px-6 py-4 border-b border-{{ _eff_colour }}-200/60 flex items-baseline justify-between gap-4">
+    <div class="bg-gradient-to-r from-{{ _eff_colour }}-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
-        <h2 class="font-display text-xl text-{{ _eff_colour }}-800">{{ t(lang, 'manglik_title') }}</h2>
-        <p class="text-sm text-{{ _eff_colour }}-700/80 mt-0.5">{{ _eff_label }} &middot; {{ t(lang, manglik_severity_label) }}</p>
+        <h2 class="font-display text-xl text-{{ _eff_colour }}-700">{{ t(lang, 'manglik_title') }}</h2>
+        <p class="text-sm text-stone-500 mt-0.5">{{ _eff_label }} &middot; {{ t(lang, manglik_severity_label) }}</p>
       </div>
-      <span class="text-xs font-semibold uppercase tracking-wider text-{{ _eff_colour }}-800 bg-{{ _eff_colour }}-100 px-2 py-1 rounded">
+      <span class="text-xs font-semibold uppercase tracking-wider text-{{ _eff_colour }}-700 bg-{{ _eff_colour }}-50 border border-{{ _eff_colour }}-200 px-2 py-1 rounded">
         {{ _eff_label }}
       </span>
     </div>
@@ -160,12 +160,12 @@
        ('other',              'Other Classical Yogas',         'Other strengths active in your chart'),
   ] %}
   <section class="bg-white rounded-2xl border border-emerald-200 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-emerald-100/60 to-emerald-50/30 px-6 py-4 border-b border-emerald-200/60 flex items-baseline justify-between gap-4">
+    <div class="bg-gradient-to-r from-emerald-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
-        <h2 class="font-display text-xl text-emerald-800">Yogas in your chart</h2>
-        <p class="text-sm text-emerald-700/80 mt-0.5">{{ yogas | length }} classical combination{{ '' if yogas | length == 1 else 's' }} active</p>
+        <h2 class="font-display text-xl text-emerald-700">Yogas in your chart</h2>
+        <p class="text-sm text-stone-500 mt-0.5">{{ yogas | length }} classical combination{{ '' if yogas | length == 1 else 's' }} active</p>
       </div>
-      <span class="text-xs font-semibold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-1 rounded">Strengths</span>
+      <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded">Strengths</span>
     </div>
     <div class="px-6 py-5 space-y-5">
       {% for cat_slug, cat_label, cat_desc in _yoga_groups %}
@@ -196,12 +196,12 @@
   <!-- SADE SATI panel (only if active) ---------------------------- -->
   {% if sade_sati.is_active %}
   <section class="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-amber-100/60 to-amber-50/30 px-6 py-4 border-b border-amber-200/60 flex items-baseline justify-between gap-4">
+    <div class="bg-gradient-to-r from-amber-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
-        <h2 class="font-display text-xl text-amber-800">{{ t(lang, 'sade_sati_title') }}</h2>
-        <p class="text-sm text-amber-700/80 mt-0.5">{{ t(lang, 'sade_sati_active') }} &middot; {{ t(lang, 'sade_sati_duration') }}</p>
+        <h2 class="font-display text-xl text-amber-700">{{ t(lang, 'sade_sati_title') }}</h2>
+        <p class="text-sm text-stone-500 mt-0.5">{{ t(lang, 'sade_sati_active') }} &middot; {{ t(lang, 'sade_sati_duration') }}</p>
       </div>
-      <span class="text-xs font-semibold uppercase tracking-wider text-amber-800 bg-amber-100 px-2 py-1 rounded">
+      <span class="text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded">
         {{ t(lang, sade_phase_key) }}
       </span>
     </div>
