@@ -87,77 +87,6 @@
     </div>
   </section>
 
-  <!-- MARRIAGE & LOVE panel --------------------------------------- -->
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-rose-50/60 to-white px-6 py-4 border-b border-stone-100">
-      <h2 class="font-display text-xl text-astro-700">{{ t(lang, 'marriage_title') }}</h2>
-      <p class="text-sm text-stone-500 mt-0.5">{{ t(lang, 'marriage_subtitle') }}</p>
-    </div>
-    <div class="px-6 py-5 space-y-4">
-      <div class="grid sm:grid-cols-2 gap-5">
-        <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">{{ t(lang, 'marriage_seventh') }}</div>
-          <div class="font-display text-lg text-stone-900">{{ marriage.seventh.sign }}</div>
-          <dl class="mt-2 text-sm text-stone-600 space-y-0.5">
-            <div><span class="text-stone-500">{{ t(lang, 'marriage_lord') }}:</span> <span class="text-stone-800">{{ marriage.seventh.lord }}</span></div>
-            <div><span class="text-stone-500">{{ t(lang, 'marriage_occupants') }}:</span>
-              <span class="text-stone-800">{% if marriage.seventh.planets %}{{ marriage.seventh.planets | join(", ") }}{% else %}{{ t(lang, 'marriage_no_occupants') }}{% endif %}</span></div>
-          </dl>
-        </div>
-        <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">{{ t(lang, 'marriage_venus') }}</div>
-          <div class="font-display text-lg text-stone-900">{{ marriage.venus_sign }}</div>
-          <div class="mt-2 text-sm text-stone-600">{{ t(lang, 'marriage_in_house', n=marriage.venus_house) }}</div>
-        </div>
-      </div>
-      {% if marriage.is_manglik %}
-      <div class="text-sm text-rose-800 bg-rose-50 border border-rose-200 rounded-lg px-4 py-2.5">
-        {{ t(lang, 'marriage_manglik_note') }}
-      </div>
-      {% endif %}
-    </div>
-  </section>
-
-  <!-- WEALTH & MONEY panel ---------------------------------------- -->
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-amber-50/60 to-white px-6 py-4 border-b border-stone-100">
-      <h2 class="font-display text-xl text-astro-700">{{ t(lang, 'wealth_title') }}</h2>
-      <p class="text-sm text-stone-500 mt-0.5">{{ t(lang, 'wealth_subtitle') }}</p>
-    </div>
-    <div class="px-6 py-5 grid sm:grid-cols-3 gap-5">
-
-      <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'wealth_dhana') }}</div>
-        <p class="text-sm text-stone-400 mb-1.5">{{ t(lang, 'wealth_dhana_desc') }}</p>
-        <div class="font-display text-base text-stone-900">{{ wealth.dhana.sign }}</div>
-        <dl class="mt-1.5 text-sm text-stone-600 space-y-0.5">
-          <div><span class="text-stone-500">{{ t(lang, 'marriage_lord') }}:</span> {{ wealth.dhana.lord }}</div>
-          <div><span class="text-stone-500">{{ t(lang, 'wealth_planets_label') }}:</span>
-            {% if wealth.dhana.planets %}{{ wealth.dhana.planets | join(", ") }}{% else %}<span class="text-stone-400">{{ t(lang, 'wealth_no_planets') }}</span>{% endif %}</div>
-        </dl>
-      </div>
-
-      <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'wealth_labha') }}</div>
-        <p class="text-sm text-stone-400 mb-1.5">{{ t(lang, 'wealth_labha_desc') }}</p>
-        <div class="font-display text-base text-stone-900">{{ wealth.labha.sign }}</div>
-        <dl class="mt-1.5 text-sm text-stone-600 space-y-0.5">
-          <div><span class="text-stone-500">{{ t(lang, 'marriage_lord') }}:</span> {{ wealth.labha.lord }}</div>
-          <div><span class="text-stone-500">{{ t(lang, 'wealth_planets_label') }}:</span>
-            {% if wealth.labha.planets %}{{ wealth.labha.planets | join(", ") }}{% else %}<span class="text-stone-400">{{ t(lang, 'wealth_no_planets') }}</span>{% endif %}</div>
-        </dl>
-      </div>
-
-      <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'wealth_jupiter') }}</div>
-        <p class="text-sm text-stone-400 mb-1.5">&nbsp;</p>
-        <div class="font-display text-base text-stone-900">{{ wealth.jupiter_sign }}</div>
-        <div class="mt-1.5 text-sm text-stone-600">{{ t(lang, 'marriage_in_house', n=wealth.jupiter_house) }}</div>
-      </div>
-
-    </div>
-  </section>
-
   <!-- MANGAL DOSH panel (only if present) ------------------------- -->
   {% if manglik.is_manglik %}
   {# Effective-status colour swap: cancelled = emerald (good news), mitigated = amber, present = rose (warn) #}
@@ -349,6 +278,32 @@
   </article>
   {% endfor %}
 
+  <!-- ASK SHUBH BHAGYA CTA — natural moment after the reading -------- -->
+  <section class="bg-gradient-to-br from-astro-100 via-amber-50 to-rose-50 border-2 border-astro-300 rounded-2xl p-6 sm:p-8 no-print">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 text-astro-700 mb-2">
+          <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+          <span class="text-xs font-semibold uppercase tracking-wider">
+            {% if lang == 'hi' %}अपनी कुंडली से पूछें{% else %}Got a question about your chart?{% endif %}
+          </span>
+        </div>
+        <h2 class="font-display text-xl sm:text-2xl text-astro-800 mb-1.5">
+          {% if lang == 'hi' %}शुभ भाग्य से पूछें{% else %}Ask Shubh Bhagya{% endif %}
+        </h2>
+        <p class="text-stone-700 text-sm sm:text-base leading-relaxed max-w-xl">
+          {% if lang == 'hi' %}करियर, विवाह, स्वास्थ्य या किसी भी जीवन के विषय पर अपनी कुंडली के आधार पर सटीक उत्तर पाएँ। आपका चार्ट पहले से सहेजा गया है।{% else %}Ask anything about career, marriage, health, or life timing — answers grounded in your saved chart, not generic advice. Your chart is already loaded.{% endif %}
+        </p>
+      </div>
+      <a href="/ask" class="inline-flex items-center justify-center gap-2 bg-astro-700 hover:bg-astro-800 text-white font-semibold px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all text-sm sm:text-base whitespace-nowrap flex-shrink-0">
+        {% if lang == 'hi' %}प्रश्न पूछें{% else %}Ask a question{% endif %}
+        <span aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+  </section>
+
   <!-- DIAMOND CHART + TABLE --------------------------------------- -->
   <section class="grid lg:grid-cols-5 gap-6">
 
@@ -400,13 +355,20 @@
   <section class="bg-gradient-to-br from-astro-50 to-amber-50/40 border border-astro-100 rounded-2xl p-6 sm:p-8 no-print">
     <h2 class="font-display text-xl text-astro-700 mb-2">{{ t(lang, 'continue_chart') }}</h2>
     <p class="text-stone-600 text-sm mb-5">{{ t(lang, 'continue_chart_desc') }}</p>
-    <div class="grid sm:grid-cols-3 gap-4">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
       <a href="/today" class="group bg-white rounded-xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
         <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#9728;</div>
         <h3 class="font-display text-base text-stone-900 mb-0.5 group-hover:text-astro-700">{{ t(lang, 'daily_horoscope') }} &rarr;</h3>
         <p class="text-sm text-stone-600 leading-relaxed">{{ t(lang, 'daily_horoscope_desc') }}</p>
+      </a>
+
+      <a href="/ask" class="group bg-white rounded-xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
+        <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
+        <div class="text-2xl mb-1">&#128172;</div>
+        <h3 class="font-display text-base text-stone-900 mb-0.5 group-hover:text-astro-700">{% if lang == 'hi' %}प्रश्न पूछें{% else %}Ask a question{% endif %} &rarr;</h3>
+        <p class="text-sm text-stone-600 leading-relaxed">{% if lang == 'hi' %}अपनी कुंडली पर आधारित कोई भी प्रश्न पूछें{% else %}Free-form Q&amp;A grounded in your chart{% endif %}</p>
       </a>
 
       <a href="/matching" class="group bg-white rounded-xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
