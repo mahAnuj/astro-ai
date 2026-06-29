@@ -1202,41 +1202,6 @@ def _walk_forward_to_ss_exit(moon_idx: int, start: datetime, current_house: int)
     return cursor.date()
 
 
-@dataclass(frozen=True)
-class MarriageProfile:
-    """Compact relationship readout drawn from the natal chart."""
-
-    seventh: HouseProfile             # marriage / partnerships
-    venus_sign: str                   # love + romance significator
-    venus_house: int
-    is_manglik: bool                  # surface the dosha here too — it's marriage-relevant
-
-
-def compute_marriage_profile(chart: Chart) -> MarriageProfile:
-    venus = next(p for p in chart.planets if p.name == "Venus")
-    flags = compute_vedic_flags(chart)
-    return MarriageProfile(
-        seventh=house_profile(chart, 7),
-        venus_sign=venus.rashi,
-        venus_house=venus.house,
-        is_manglik=flags.manglik,
-    )
-
-
-@dataclass(frozen=True)
-class WealthProfile:
-    """Compact wealth/money readout drawn from the natal chart.
-
-    Two key houses (2nd = accumulated wealth/family/speech; 11th = gains/income)
-    plus Jupiter (wealth significator in classical Vedic astrology).
-    """
-
-    dhana: HouseProfile               # 2nd house — accumulated wealth, family, speech
-    labha: HouseProfile               # 11th house — gains, income, aspirations
-    jupiter_sign: str
-    jupiter_house: int
-
-
 # ---------------------------------------------------------------------------
 # Vimshottari Dasha — 120-year planetary period system
 # ---------------------------------------------------------------------------
@@ -1748,16 +1713,6 @@ def format_events_for_prompt(events: list[TransitEvent]) -> str:
     for e in events:
         lines.append(f"- {e.date.isoformat()}: {e.summary}")
     return "\n".join(lines)
-
-
-def compute_wealth_profile(chart: Chart) -> WealthProfile:
-    jupiter = next(p for p in chart.planets if p.name == "Jupiter")
-    return WealthProfile(
-        dhana=house_profile(chart, 2),
-        labha=house_profile(chart, 11),
-        jupiter_sign=jupiter.rashi,
-        jupiter_house=jupiter.house,
-    )
 
 
 # ---------------------------------------------------------------------------

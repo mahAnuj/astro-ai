@@ -22,14 +22,12 @@ from astro_ai.chart import (
     compute_gochar_impacts,
     compute_life_chapters,
     compute_manglik_details,
-    compute_marriage_profile,
     compute_panchang,
     compute_sade_sati_details,
     compute_transit_events,
     compute_transit_snapshot,
     compute_varshaphala,
     compute_vedic_flags,
-    compute_wealth_profile,
     compute_yogas,
     symbol_for_rashi_label,
 )
@@ -519,8 +517,6 @@ async def _render_natal_for(request: Request, details: BirthDetails) -> HTMLResp
             "moon_glyph":  symbol_for_rashi_label(moon_plt.rashi),
             "sun_glyph":   symbol_for_rashi_label(sun_plt.rashi),
             # Structured insight panels — see chart.py for shape.
-            "marriage": compute_marriage_profile(chart),
-            "wealth":   compute_wealth_profile(chart),
             "manglik":  compute_manglik_details(chart),
             "yogas":    compute_yogas(chart),
             "sade_sati": sade_sati,
