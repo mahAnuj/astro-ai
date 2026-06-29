@@ -85,7 +85,11 @@
               {% if lang == 'hi' %}आज का राशिफल{% else %}Today's Rashifal{% endif %}
             </h1>
             <p style="margin:6px 0 0 0;font-size:13px;color:#57534e;line-height:1.5;">
-              {% if lang == 'hi' %}सभी 12 राशियों के लिए आज की भविष्यवाणी। अपनी जन्म राशि देखें।{% else %}Today's reading for all 12 Moon signs — scroll to find your Janma Rashi.{% endif %}
+              {% if rashifal_sections | length > 1 %}
+                {% if lang == 'hi' %}सभी 12 राशियों का संक्षिप्त राशिफल। पूरी भविष्यवाणी पढ़ने के लिए लिंक पर क्लिक करें।{% else %}A quick preview for all 12 rashis. Tap any card to read the full prediction on Shubh Bhagya.{% endif %}
+              {% else %}
+                {% if lang == 'hi' %}आपकी जन्म राशि के लिए आज का पूरा राशिफल।{% else %}Today's full reading for your Janma Rashi.{% endif %}
+              {% endif %}
             </p>
           </td>
         </tr>
@@ -155,40 +159,57 @@
         </tr>
         {% endif %}
 
-        {#- RASHIFAL — accordion using <details>/<summary>. Teaser is always
-            visible inside the summary; full body reveals on tap in clients
-            that support it (Apple Mail, Gmail web, Yahoo). Outlook + Gmail
-            mobile will render both inline as a fallback — still readable. -#}
+        {#- RASHIFAL CARDS — mode-aware rendering, no interactive accordion.
+            Reason: <details>/<summary> is stripped by Gmail mobile and Outlook
+            (the majority of Indian inboxes), rendering everything expanded by
+            default. No cross-client HTML/CSS technique reliably solves this.
+
+            Instead:
+              - DIGEST mode (length > 1, default "all 12" subscriber): show
+                only the 2-sentence teaser per rashi with a prominent
+                "Read full reading →" deep link to /rashifal#<slug>.
+              - SINGLE mode (length == 1, per-rashi subscriber): show the
+                full body inline (teaser is redundant because the body
+                already opens with those sentences). -#}
+        {% set is_digest = rashifal_sections | length > 1 %}
         {% for glyph, title, teaser, body in rashifal_sections %}
         {% set rashi_slug = title.split('/')[0].strip().lower() %}
         <tr>
           <td style="padding:10px 28px 0 28px;">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;border-radius:6px;">
               <tr>
-                <td style="padding:12px 14px;">
-                  <details>
-                    <summary style="cursor:pointer;list-style:none;outline:none;">
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                        <tr>
-                          <td style="font-size:20px;color:#6b21a8;padding-right:8px;vertical-align:middle;width:28px;">{{ glyph }}</td>
-                          <td style="font-size:15px;font-weight:600;color:#1c1917;vertical-align:middle;">{{ title }}</td>
-                          <td align="right" style="font-size:11px;color:#9c7bc4;font-weight:600;vertical-align:middle;text-transform:uppercase;letter-spacing:0.5px;">read more &#9662;</td>
-                        </tr>
-                      </table>
-                      <div style="font-size:14px;color:#44403c;line-height:1.55;margin-top:6px;">
-                        {{ teaser }}
-                      </div>
-                    </summary>
-                    <div style="font-size:14px;color:#44403c;line-height:1.55;margin-top:8px;padding-top:8px;border-top:1px solid #e7e5e4;">
-                      {{ body }}
-                    </div>
-                    <div style="margin-top:10px;">
-                      <a href="{{ site_url }}/rashifal#{{ rashi_slug }}"
-                         style="font-size:12px;color:#6b21a8;text-decoration:underline;">
-                        Read on Shubh Bhagya &rarr;
-                      </a>
-                    </div>
-                  </details>
+                <td style="padding:14px 16px;">
+                  {#- Header row: glyph + rashi name -#}
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                    <tr>
+                      <td style="font-size:20px;color:#6b21a8;padding-right:8px;vertical-align:middle;width:28px;">{{ glyph }}</td>
+                      <td style="font-size:15px;font-weight:600;color:#1c1917;vertical-align:middle;">{{ title }}</td>
+                    </tr>
+                  </table>
+
+                  {% if is_digest %}
+                  {#- DIGEST: teaser-only + prominent deep link -#}
+                  <div style="font-size:14px;color:#44403c;line-height:1.55;margin-top:8px;">
+                    {{ teaser }}
+                  </div>
+                  <div style="margin-top:10px;">
+                    <a href="{{ site_url }}/rashifal#{{ rashi_slug }}"
+                       style="font-size:13px;color:#6b21a8;font-weight:600;text-decoration:none;">
+                      {% if lang == 'hi' %}पूरा राशिफल पढ़ें{% else %}Read full reading{% endif %} &rarr;
+                    </a>
+                  </div>
+                  {% else %}
+                  {#- SINGLE rashi: full body inline (teaser is already its opening) -#}
+                  <div style="font-size:14px;color:#44403c;line-height:1.55;margin-top:8px;">
+                    {{ body }}
+                  </div>
+                  <div style="margin-top:12px;">
+                    <a href="{{ site_url }}/rashifal#{{ rashi_slug }}"
+                       style="font-size:12px;color:#6b21a8;text-decoration:underline;">
+                      {% if lang == 'hi' %}Shubh Bhagya पर देखें{% else %}Read on Shubh Bhagya{% endif %} &rarr;
+                    </a>
+                  </div>
+                  {% endif %}
                 </td>
               </tr>
             </table>
