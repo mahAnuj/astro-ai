@@ -30,6 +30,7 @@ from astro_ai.chart import (
     compute_varshaphala,
     compute_vedic_flags,
     compute_wealth_profile,
+    compute_yogas,
     symbol_for_rashi_label,
 )
 from astro_ai.i18n import translate as _i18n_translate
@@ -521,6 +522,7 @@ async def _render_natal_for(request: Request, details: BirthDetails) -> HTMLResp
             "marriage": compute_marriage_profile(chart),
             "wealth":   compute_wealth_profile(chart),
             "manglik":  compute_manglik_details(chart),
+            "yogas":    compute_yogas(chart),
             "sade_sati": sade_sati,
             "dasha":    compute_dasha_state(chart),
             # Pre-computed SS timeline values for the panel.

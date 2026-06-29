@@ -160,14 +160,18 @@
 
   <!-- MANGAL DOSH panel (only if present) ------------------------- -->
   {% if manglik.is_manglik %}
-  <section class="bg-white rounded-2xl border border-rose-200 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-rose-100/60 to-rose-50/30 px-6 py-4 border-b border-rose-200/60 flex items-baseline justify-between gap-4">
+  {# Effective-status colour swap: cancelled = emerald (good news), mitigated = amber, present = rose (warn) #}
+  {% set _eff = manglik.effective_status %}
+  {% set _eff_colour = {'cancelled':'emerald', 'mitigated':'amber', 'present':'rose'}.get(_eff, 'rose') %}
+  {% set _eff_label  = {'cancelled':'Cancelled', 'mitigated':'Mitigated', 'present':'Present — no cancellations'}.get(_eff, 'Present') %}
+  <section class="bg-white rounded-2xl border border-{{ _eff_colour }}-200 shadow-sm overflow-hidden">
+    <div class="bg-gradient-to-r from-{{ _eff_colour }}-100/60 to-{{ _eff_colour }}-50/30 px-6 py-4 border-b border-{{ _eff_colour }}-200/60 flex items-baseline justify-between gap-4">
       <div>
-        <h2 class="font-display text-xl text-rose-800">{{ t(lang, 'manglik_title') }}</h2>
-        <p class="text-sm text-rose-700/80 mt-0.5">{{ t(lang, 'manglik_present') }}</p>
+        <h2 class="font-display text-xl text-{{ _eff_colour }}-800">{{ t(lang, 'manglik_title') }}</h2>
+        <p class="text-sm text-{{ _eff_colour }}-700/80 mt-0.5">{{ _eff_label }} &middot; {{ t(lang, manglik_severity_label) }}</p>
       </div>
-      <span class="text-xs font-semibold uppercase tracking-wider text-rose-800 bg-rose-100 px-2 py-1 rounded">
-        {{ t(lang, manglik_severity_label) }}
+      <span class="text-xs font-semibold uppercase tracking-wider text-{{ _eff_colour }}-800 bg-{{ _eff_colour }}-100 px-2 py-1 rounded">
+        {{ _eff_label }}
       </span>
     </div>
     <div class="px-6 py-5 space-y-4">
@@ -176,7 +180,7 @@
         <ul class="text-sm text-stone-700 space-y-0.5">
           {% for h in manglik.houses %}
           <li class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-{{ _eff_colour }}-400"></span>
             Mars in {{ h }}{% if h == 1 %}st{% elif h == 2 %}nd{% else %}th{% endif %} house
           </li>
           {% endfor %}
@@ -186,10 +190,76 @@
         <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">{{ t(lang, 'manglik_about_label') }}</div>
         <p class="text-base text-stone-800 leading-relaxed">{{ t(lang, manglik_about_key) }}</p>
       </div>
+      {# COMPUTED CANCELLATIONS — replaces the old "consult an astrologer" boilerplate
+         with the actual classical rules that fire for this chart, cited by source. #}
+      {% if manglik.cancellations %}
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">
+          {% if _eff == 'cancelled' %}Classical cancellation rules that apply{% else %}Mitigations that apply{% endif %}
+        </div>
+        <ul class="text-sm text-stone-700 space-y-2">
+          {% for rule in manglik.cancellations %}
+          <li class="flex items-start gap-2">
+            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-{{ _eff_colour }}-400 flex-shrink-0"></span>
+            <span>
+              <span class="text-stone-800">{{ rule.description }}</span>
+              <span class="text-xs text-stone-500 italic ml-1">— {{ rule.source }}</span>
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% else %}
       <div>
         <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">{{ t(lang, 'manglik_cancel_label') }}</div>
-        <p class="text-base text-stone-700 leading-relaxed">{{ t(lang, 'manglik_cancel_text') }}</p>
+        <p class="text-base text-stone-700 leading-relaxed">No classical cancellation rules apply to this chart. The traditional remedy is to match with another Manglik partner (a partner who also has Mars in a Manglik house), which classically cancels the dosha mutually. Consult a knowledgeable astrologer before relying on remedies.</p>
       </div>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- YOGAS panel (only if at least one detected) ----------------- -->
+  {% if yogas %}
+  {# Group yogas by category for readable display. Order: Pancha Mahapurusha first (lifetime gifts),
+     then Sun yogas, Moon yogas, Vipareeta Raja (struggle-to-success), then other. #}
+  {% set _yoga_groups = [
+       ('pancha_mahapurusha', 'Pancha Mahapurusha Yogas',     'Lifetime "great person" gifts'),
+       ('sun',                'Sun-related Yogas',             'Strengths around your inner self and authority'),
+       ('moon',               'Moon-related Yogas',            'Strengths around your mind and emotional life'),
+       ('vipareeta_raja',     'Vipareeta Raja Yogas',          'Tremendous success after struggle'),
+       ('other',              'Other Classical Yogas',         'Other strengths active in your chart'),
+  ] %}
+  <section class="bg-white rounded-2xl border border-emerald-200 shadow-sm overflow-hidden">
+    <div class="bg-gradient-to-r from-emerald-100/60 to-emerald-50/30 px-6 py-4 border-b border-emerald-200/60 flex items-baseline justify-between gap-4">
+      <div>
+        <h2 class="font-display text-xl text-emerald-800">Yogas in your chart</h2>
+        <p class="text-sm text-emerald-700/80 mt-0.5">{{ yogas | length }} classical combination{{ '' if yogas | length == 1 else 's' }} active</p>
+      </div>
+      <span class="text-xs font-semibold uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-1 rounded">Strengths</span>
+    </div>
+    <div class="px-6 py-5 space-y-5">
+      {% for cat_slug, cat_label, cat_desc in _yoga_groups %}
+        {% set cat_yogas = yogas | selectattr("category", "equalto", cat_slug) | list %}
+        {% if cat_yogas %}
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-0.5">{{ cat_label }}</div>
+          <div class="text-xs text-stone-400 mb-2.5">{{ cat_desc }}</div>
+          <div class="grid sm:grid-cols-2 gap-3">
+            {% for y in cat_yogas %}
+            <div class="bg-emerald-50/40 border border-emerald-100 rounded-lg p-3.5">
+              <div class="font-display text-base text-emerald-900 mb-1">{{ y.name }}</div>
+              <p class="text-sm text-stone-700 leading-relaxed">{{ y.effect }}</p>
+              <div class="text-[11px] text-stone-500 italic mt-1.5">Source: {{ y.source }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+      <p class="text-xs text-stone-500 italic border-t border-stone-100 pt-3">
+        Yogas are classical planetary combinations that grant specific gifts across life. Compiled from Brihat Parashara Hora Shastra and P.V.R. Narasimha Rao's <em>Vedic Astrology: An Integrated Approach</em> (Ch. 11).
+      </p>
     </div>
   </section>
   {% endif %}

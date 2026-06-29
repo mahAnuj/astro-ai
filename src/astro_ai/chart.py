@@ -502,17 +502,147 @@ def house_profile(chart: Chart, house: int) -> HouseProfile:
 
 
 @dataclass(frozen=True)
+class ManglikRule:
+    """One classical Mangal Dosha cancellation or mitigation that applies to this chart.
+
+    Carrying the source on each rule lets the LLM cite specific texts
+    (Jataka Parijata, Phaladeepika, …) instead of asserting cancellations
+    on its own authority — turning a generic "don't worry" into a defensible
+    statement the seeker can verify.
+    """
+
+    slug: str          # stable id for code paths / tests
+    description: str   # human-readable rule
+    effect: str        # "cancels" | "mitigates"
+    source: str        # classical text it comes from
+
+
+@dataclass(frozen=True)
 class ManglikDetails:
-    """Manglik (Mangal Dosh) — fuller than VedicFlags so we can render an explanatory panel."""
+    """Manglik (Mangal Dosh) — fuller than VedicFlags so we can render an explanatory panel.
+
+    Raw mathematical flag (`is_manglik`) is augmented with cancellation /
+    mitigation rules from classical practice. `effective_status` summarises
+    what to actually tell the seeker. See knowledge/vedic_reference.md §1.3
+    for the rule catalogue + classical citations.
+    """
 
     is_manglik: bool
-    houses: tuple[int, ...]       # all qualifying Mars houses (1/2/4/7/8/12 from Lagna or Moon)
-    primary_house: int            # most-severe house (or 0 if not manglik)
-    severity: str                 # "high" | "moderate" | "low" | "none"
+    houses: tuple[int, ...]                 # all qualifying Mars houses (1/2/4/7/8/12 from Lagna or Moon)
+    primary_house: int                      # most-severe house (or 0 if not manglik)
+    severity: str                           # "high" | "moderate" | "low" | "none"
+    cancellations: tuple[ManglikRule, ...]  # all cancellation / mitigation rules that fired
+    effective_status: str                   # "none" | "present" | "mitigated" | "cancelled"
+
+
+def _jupiter_aspects(jupiter_house: int, target_house: int) -> bool:
+    """Jupiter's 5/7/9 graha drishti — true if Jupiter aspects the target house."""
+    delta = (target_house - jupiter_house) % 12
+    return delta in {4, 6, 8}   # +4 = 5th aspect, +6 = 7th, +8 = 9th
+
+
+def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
+    """All classical cancellation/mitigation rules that apply to this chart's Mars.
+
+    Compiled from Jataka Parijata, Phaladeepika, Jataka Chandrika, and Muhurtha
+    Chintamani via P.V.R. Narasimha Rao's Jagannath Hora rule-set. See
+    knowledge/vedic_reference.md §1.3 for the full citation list — keep that
+    file and this function in sync when adding new rules.
+    """
+    mars = next(p for p in chart.planets if p.name == "Mars")
+    jupiter = next(p for p in chart.planets if p.name == "Jupiter")
+    venus = next(p for p in chart.planets if p.name == "Venus")
+    sun = next(p for p in chart.planets if p.name == "Sun")
+
+    # Rashis are stored as "Aries (Mesha)" — strip the Sanskrit gloss for sign checks.
+    mars_sign = mars.rashi.split(" ")[0]
+    lagna_sign = chart.lagna_rashi.split(" ")[0]
+
+    rules: list[ManglikRule] = []
+
+    # Sign-based cancellations
+    if mars_sign in {"Aries", "Scorpio"}:
+        rules.append(ManglikRule(
+            slug="mars_own_sign",
+            description=f"Mars in own sign ({mars_sign})",
+            effect="cancels",
+            source="Jataka Parijata",
+        ))
+    if mars_sign == "Capricorn":
+        rules.append(ManglikRule(
+            slug="mars_exalted",
+            description="Mars exalted in Capricorn",
+            effect="cancels",
+            source="Jataka Parijata",
+        ))
+    if mars_sign == "Cancer":
+        rules.append(ManglikRule(
+            slug="mars_debilitated",
+            description="Mars debilitated in Cancer (lacks strength to disturb)",
+            effect="cancels",
+            source="Jataka Chandrika",
+        ))
+
+    # Ascendant-specific yogakaraka exclusions (Cancer/Leo lagna)
+    if lagna_sign == "Cancer":
+        rules.append(ManglikRule(
+            slug="cancer_lagna_yogakaraka",
+            description="Cancer Lagna — Mars is Yogakaraka (rules 5th + 10th); excluded from dosha",
+            effect="cancels",
+            source="Jataka Parijata / Muhurtha Chintamani",
+        ))
+    if lagna_sign == "Leo":
+        rules.append(ManglikRule(
+            slug="leo_lagna_yogakaraka",
+            description="Leo Lagna — Mars is Yogakaraka (rules 4th + 9th); excluded from dosha",
+            effect="cancels",
+            source="Jataka Parijata / Muhurtha Chintamani",
+        ))
+
+    # Benefic conjunction / aspect — Jupiter is the primary classical cancellation
+    if mars.house == jupiter.house:
+        rules.append(ManglikRule(
+            slug="mars_jupiter_conjunct",
+            description="Mars conjunct Jupiter (Jupiter neutralises Martian disturbance)",
+            effect="cancels",
+            source="Jataka Parijata",
+        ))
+    elif _jupiter_aspects(jupiter.house, mars.house):
+        rules.append(ManglikRule(
+            slug="jupiter_aspects_mars",
+            description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",
+            effect="cancels",
+            source="Phaladeepika",
+        ))
+
+    # Venus with Mars — relationship karaka channels Martian energy
+    if mars.house == venus.house:
+        rules.append(ManglikRule(
+            slug="venus_with_mars",
+            description="Venus conjunct Mars (relationship karaka channels Martian energy)",
+            effect="mitigates",
+            source="Classical compatibility practice",
+        ))
+
+    # Combustion — Mars within 6° of Sun in the same rashi
+    if mars.rashi == sun.rashi and abs(mars.longitude - sun.longitude) < 6.0:
+        rules.append(ManglikRule(
+            slug="mars_combust",
+            description=f"Mars combust (within {abs(mars.longitude - sun.longitude):.1f}° of Sun)",
+            effect="cancels",
+            source="Classical matching practice",
+        ))
+
+    return tuple(rules)
 
 
 def compute_manglik_details(chart: Chart) -> ManglikDetails:
-    """Identify all Manglik-qualifying Mars positions + grade severity by worst house."""
+    """Identify all Manglik-qualifying Mars positions + apply classical cancellation rules.
+
+    Two-step model: first detect the raw mathematical Manglik pattern, then
+    overlay cancellation/mitigation rules to compute an `effective_status`
+    that the UI and LLM can act on without re-deriving classical doctrine.
+    """
     mars = next(p for p in chart.planets if p.name == "Mars")
     moon = next(p for p in chart.planets if p.name == "Moon")
     moon_idx = _rashi_index(moon.rashi)
@@ -526,7 +656,10 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
         qualifying.add(mars_from_moon)
 
     if not qualifying:
-        return ManglikDetails(is_manglik=False, houses=(), primary_house=0, severity="none")
+        return ManglikDetails(
+            is_manglik=False, houses=(), primary_house=0, severity="none",
+            cancellations=(), effective_status="none",
+        )
 
     # Severity grading: 7th/8th = most serious; 1st/4th/12th = moderate; 2nd alone = low.
     if {7, 8} & qualifying:
@@ -539,12 +672,403 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
     # "Primary" house for storytelling — the most-impactful qualifying house.
     house_priority = (7, 8, 1, 4, 12, 2)
     primary = next(h for h in house_priority if h in qualifying)
+
+    # Apply cancellation rules and reduce to a single effective status.
+    cancellations = _manglik_cancellations(chart)
+    has_cancel = any(r.effect == "cancels" for r in cancellations)
+    has_mitigate = any(r.effect == "mitigates" for r in cancellations)
+    if has_cancel:
+        effective_status = "cancelled"
+    elif has_mitigate:
+        effective_status = "mitigated"
+    else:
+        effective_status = "present"
+
     return ManglikDetails(
         is_manglik=True,
         houses=tuple(sorted(qualifying)),
         primary_house=primary,
         severity=severity,
+        cancellations=cancellations,
+        effective_status=effective_status,
     )
+
+
+# ---------------------------------------------------------------------------
+# Yogas — classical planetary combinations
+#
+# Source: P.V.R. Narasimha Rao, "Vedic Astrology: An Integrated Approach",
+# Chapter 11 (data/vedic_astro_textbook.pdf), cross-checked with BPHS and
+# Phaladeepika. See knowledge/vedic_reference.md §4 for the full catalogue
+# and rule definitions — keep this code and that file in sync when adding
+# new yogas.
+#
+# Scope decision: we implement the high-signal trivially-computable yogas
+# (Pancha Mahapurusha, Sun/Moon yogas, Vipareeta Raja, Trilochana, Amala,
+# Vasumati, Guru-Mangala). Complex yogas requiring Jaimini karakas, navamsa
+# dispositor chains, or functional malefic logic are deferred to V2.
+# ---------------------------------------------------------------------------
+
+
+# Natural-benefic / malefic classification.
+# Mercury is benefic unless conjoined with a malefic (deferred — V1 treats
+# Mercury as benefic). Moon's waxing/waning gradient is also deferred.
+_NATURAL_BENEFICS: frozenset[str] = frozenset({"Jupiter", "Venus", "Mercury", "Moon"})
+_NATURAL_MALEFICS: frozenset[str] = frozenset({"Saturn", "Mars", "Sun", "Rahu", "Ketu"})
+
+# Own-sign + exaltation tables for Pancha Mahapurusha detection.
+# Sourced from BPHS, Chapter 3 (Planets). Capricorn for Sasa is Saturn's
+# moolatrikona; Cancer for Hamsa is Jupiter's exaltation sign.
+_PMP_QUALIFYING_SIGNS: dict[str, set[str]] = {
+    "Mars":    {"Aries", "Scorpio", "Capricorn"},     # own (Ar, Sc) + exalted (Cp)
+    "Mercury": {"Gemini", "Virgo"},                   # own (Ge) + own/exalted (Vi)
+    "Jupiter": {"Sagittarius", "Pisces", "Cancer"},   # own (Sg, Pi) + exalted (Cn)
+    "Venus":   {"Taurus", "Libra", "Pisces"},         # own (Ta, Li) + exalted (Pi)
+    "Saturn":  {"Capricorn", "Aquarius", "Libra"},    # own (Cp, Aq) + exalted (Li)
+}
+
+_KENDRA_HOUSES: frozenset[int] = frozenset({1, 4, 7, 10})
+_TRINE_HOUSES: frozenset[int] = frozenset({1, 5, 9})
+_UPACHAYA_HOUSES: frozenset[int] = frozenset({3, 6, 10, 11})
+_DUSTHANA_HOUSES: frozenset[int] = frozenset({6, 8, 12})
+
+
+def _sign_name(rashi_label: str) -> str:
+    """Strip the Sanskrit parenthesis from a rashi label.
+
+    "Cancer (Karka)" -> "Cancer". Centralised here so every yoga rule
+    can do a clean equality check without re-parsing the format.
+    """
+    return rashi_label.split(" ")[0]
+
+
+def _house_from_planet(target_house: int, ref_house: int) -> int:
+    """Distance in houses from ref_planet to target. 1 = same house, 2 = next, …, 12 = previous."""
+    return ((target_house - ref_house) % 12) + 1
+
+
+@dataclass(frozen=True)
+class YogaResult:
+    """One yoga detected in the chart.
+
+    `slug` is a stable id for tests / templates; `name` is human-readable;
+    `category` groups yogas in the prompt block; `effect` is a 1-line
+    significations string the LLM can paraphrase; `source` is the classical
+    text or modern compilation it comes from.
+    """
+
+    slug: str
+    name: str
+    category: str       # "pancha_mahapurusha" | "sun" | "moon" | "vipareeta_raja" | "other"
+    effect: str
+    source: str
+
+
+def _pancha_mahapurusha_yogas(chart: Chart) -> list[YogaResult]:
+    """The 5 'Great Person' yogas — own/exalted graha in a kendra from Lagna.
+
+    Skipped for Sun and Moon (these are luminaries, not the 5 non-luminary grahas).
+    """
+    out: list[YogaResult] = []
+    names = {
+        "Mars":    ("ruchaka_yoga",  "Ruchaka Yoga",  "Fiery great-man: courage, leadership, victory, occult skill"),
+        "Mercury": ("bhadra_yoga",   "Bhadra Yoga",   "Earthy great-man: learning, eloquence, systematic mind, business"),
+        "Jupiter": ("hamsa_yoga",    "Hamsa Yoga",    "Ethery great-man: wisdom, dharma, respect, scholarly fame"),
+        "Venus":   ("malavya_yoga",  "Malavya Yoga",  "Watery great-man: beauty, luxury, art, marital happiness"),
+        "Saturn":  ("sasha_yoga",    "Sasha Yoga",    "Airy great-man: discipline, leadership of multitudes, charity"),
+    }
+    for p in chart.planets:
+        if p.name not in _PMP_QUALIFYING_SIGNS:
+            continue
+        sign = _sign_name(p.rashi)
+        if sign in _PMP_QUALIFYING_SIGNS[p.name] and p.house in _KENDRA_HOUSES:
+            slug, name, effect = names[p.name]
+            out.append(YogaResult(
+                slug=slug, name=name, category="pancha_mahapurusha",
+                effect=effect, source="BPHS / Phaladeepika",
+            ))
+    return out
+
+
+def _sun_yogas(chart: Chart) -> list[YogaResult]:
+    """Vesi, Vosi, Ubhayachara, Budha-Aditya — planet placements around the Sun."""
+    out: list[YogaResult] = []
+    sun = next(p for p in chart.planets if p.name == "Sun")
+    others = [p for p in chart.planets if p.name not in {"Sun", "Moon", "Rahu", "Ketu"}]
+
+    # 2nd / 12th from Sun (excluding Moon, per classical definition)
+    in_2nd = any(_house_from_planet(p.house, sun.house) == 2 for p in others)
+    in_12th = any(_house_from_planet(p.house, sun.house) == 12 for p in others)
+
+    if in_2nd and in_12th:
+        out.append(YogaResult(
+            slug="ubhayachara_yoga", name="Ubhayachara Yoga", category="sun",
+            effect="All comforts, royal stature; planets flanking the Sun on both sides",
+            source="Rao Ch.11 (BPHS)",
+        ))
+    elif in_2nd:
+        out.append(YogaResult(
+            slug="vesi_yoga", name="Vesi Yoga", category="sun",
+            effect="Balanced outlook, truthful, content",
+            source="Rao Ch.11 (BPHS)",
+        ))
+    elif in_12th:
+        out.append(YogaResult(
+            slug="vosi_yoga", name="Vosi Yoga", category="sun",
+            effect="Skillful, charitable, famous, learned",
+            source="Rao Ch.11 (BPHS)",
+        ))
+
+    # Budha-Aditya: Sun + Mercury same sign. Combust if within ~6° → weakened.
+    mercury = next(p for p in chart.planets if p.name == "Mercury")
+    if mercury.rashi == sun.rashi:
+        combust_note = ""
+        if abs(mercury.longitude - sun.longitude) < 6.0:
+            combust_note = " (weakened — Mercury is combust within 6° of Sun)"
+        out.append(YogaResult(
+            slug="budha_aditya_yoga", name="Budha-Aditya Yoga (Nipuna)", category="sun",
+            effect=f"Intelligence, skill, respect; bright mind{combust_note}",
+            source="Rao Ch.11 (BPHS)",
+        ))
+    return out
+
+
+def _moon_yogas(chart: Chart) -> list[YogaResult]:
+    """Sunaphaa, Anaphaa, Duradhara, Kemadruma, Chandra-Mangala, Gaja-Kesari."""
+    out: list[YogaResult] = []
+    moon = next(p for p in chart.planets if p.name == "Moon")
+    others = [p for p in chart.planets if p.name not in {"Moon", "Sun", "Rahu", "Ketu"}]
+
+    in_2nd = any(_house_from_planet(p.house, moon.house) == 2 for p in others)
+    in_12th = any(_house_from_planet(p.house, moon.house) == 12 for p in others)
+    in_same = any(p.house == moon.house for p in others)
+
+    if in_2nd and in_12th:
+        out.append(YogaResult(
+            slug="duradhara_yoga", name="Duradhara Yoga", category="moon",
+            effect="Pleasures, charity, wealth, vehicles, good servants",
+            source="Rao Ch.11 (BPHS)",
+        ))
+    elif in_2nd:
+        out.append(YogaResult(
+            slug="sunaphaa_yoga", name="Sunaphaa Yoga", category="moon",
+            effect="Royal stature; intelligence, wealth, fame, self-earned success",
+            source="Rao Ch.11 (BPHS)",
+        ))
+    elif in_12th:
+        out.append(YogaResult(
+            slug="anaphaa_yoga", name="Anaphaa Yoga", category="moon",
+            effect="Good-looking, disease-free, reputed, comfortable",
+            source="Rao Ch.11 (BPHS)",
+        ))
+
+    # Kemadruma: NONE of 1st/2nd/12th from Moon AND no planets in kendras from Lagna.
+    # Classical cancellations exist (Moon conjoined with planet, kendras occupied);
+    # we apply the second cancellation deterministically. Don't flag if any kendra is occupied.
+    kendras_occupied = any(p.house in _KENDRA_HOUSES for p in chart.planets if p.name not in {"Moon"})
+    if not in_2nd and not in_12th and not in_same and not kendras_occupied:
+        out.append(YogaResult(
+            slug="kemadruma_yoga", name="Kemadruma Yoga", category="moon",
+            effect="Lonely / unsupported Moon; emotional fragility — verify cancellations before alarm",
+            source="Rao Ch.11 (BPHS) — phrase gently per Section 8 guardrails",
+        ))
+
+    # Chandra-Mangala: Moon and Mars conjunct
+    mars = next(p for p in chart.planets if p.name == "Mars")
+    if moon.house == mars.house:
+        out.append(YogaResult(
+            slug="chandra_mangala_yoga", name="Chandra-Mangala Yoga", category="moon",
+            effect="Worldly-wise, materially successful; energetic relationship with money",
+            source="Rao Ch.11 (BPHS)",
+        ))
+
+    # Gaja-Kesari: Jupiter in kendra (1/4/7/10) FROM Moon (not from Lagna).
+    # Strict version requires Jupiter not debilitated/combust/in enemy sign — we
+    # apply the debilitation check (Jupiter in Capricorn) as a downgrade signal.
+    jupiter = next(p for p in chart.planets if p.name == "Jupiter")
+    if _house_from_planet(jupiter.house, moon.house) in {1, 4, 7, 10}:
+        debilitated = _sign_name(jupiter.rashi) == "Capricorn"
+        note = " (weakened — Jupiter debilitated in Capricorn)" if debilitated else ""
+        out.append(YogaResult(
+            slug="gaja_kesari_yoga", name="Gaja-Kesari Yoga", category="moon",
+            effect=f"Fame, wealth, intelligence, virtue, favor from authority{note}",
+            source="Rao Ch.11 (BPHS)",
+        ))
+    return out
+
+
+def _vipareeta_raja_yogas(chart: Chart) -> list[YogaResult]:
+    """Harsha / Sarala / Vimala — lord of a dusthana placed in own dusthana.
+
+    Classical pattern that turns the 'house of suffering' into a source of
+    strength through struggle. Computed via the house's ruling lord (rashi
+    lord of the sign occupying that house).
+    """
+    out: list[YogaResult] = []
+    lagna_idx = _rashi_index(chart.lagna_rashi)
+    names = {
+        6:  ("harsha_yoga",  "Harsha Yoga (Vipareeta Raja)",  "Strength against enemies and illness; success after struggle"),
+        8:  ("sarala_yoga",  "Sarala Yoga (Vipareeta Raja)",  "Long life, fearlessness, learning, lasting prosperity"),
+        12: ("vimala_yoga",  "Vimala Yoga (Vipareeta Raja)",  "Frugality, independence, noble character"),
+    }
+    for house, (slug, name, effect) in names.items():
+        sign_idx = (lagna_idx + house - 1) % 12
+        lord = RASHI_LORDS[sign_idx]
+        lord_planet = next((p for p in chart.planets if p.name == lord), None)
+        if lord_planet and lord_planet.house == house:
+            out.append(YogaResult(
+                slug=slug, name=name, category="vipareeta_raja",
+                effect=effect, source="BPHS / Phaladeepika",
+            ))
+    return out
+
+
+def _other_yogas(chart: Chart) -> list[YogaResult]:
+    """Guru-Mangala, Trilochana, Amala, Vasumati, Adhi."""
+    out: list[YogaResult] = []
+    sun = next(p for p in chart.planets if p.name == "Sun")
+    moon = next(p for p in chart.planets if p.name == "Moon")
+    mars = next(p for p in chart.planets if p.name == "Mars")
+    jupiter = next(p for p in chart.planets if p.name == "Jupiter")
+
+    # Guru-Mangala: Jupiter and Mars conjunct or in mutual 7th
+    delta = (mars.house - jupiter.house) % 12
+    if delta == 0 or delta == 6:
+        out.append(YogaResult(
+            slug="guru_mangala_yoga", name="Guru-Mangala Yoga", category="other",
+            effect="Righteous energy; courage directed at dharmic action",
+            source="Rao Ch.11",
+        ))
+
+    # Trilochana: Sun, Moon, Mars in mutual trines (4 signs apart from each other)
+    diffs = sorted({(sun.house - mars.house) % 12, (moon.house - mars.house) % 12,
+                    (sun.house - moon.house) % 12})
+    if all(d in {0, 4, 8} for d in diffs):
+        out.append(YogaResult(
+            slug="trilochana_yoga", name="Trilochana Yoga", category="other",
+            effect="Wealthy, intelligent, long-lived, victorious",
+            source="Rao Ch.11",
+        ))
+
+    # Amala: only natural benefics in 10th from Lagna
+    in_10th_lagna = [p for p in chart.planets if p.house == 10 and p.name not in {"Rahu", "Ketu"}]
+    if in_10th_lagna and all(p.name in _NATURAL_BENEFICS for p in in_10th_lagna):
+        out.append(YogaResult(
+            slug="amala_yoga", name="Amala Yoga", category="other",
+            effect="Ever-lasting fame, royal respect, virtue — clean reputation through career",
+            source="Rao Ch.11",
+        ))
+
+    # Vasumati: benefics in upachayas (3rd, 6th, 10th, 11th from Lagna)
+    benefics_in_upachaya = [p for p in chart.planets
+                             if p.name in _NATURAL_BENEFICS and p.house in _UPACHAYA_HOUSES]
+    if len(benefics_in_upachaya) >= 2:
+        out.append(YogaResult(
+            slug="vasumati_yoga", name="Vasumati Yoga", category="other",
+            effect="Abundant wealth — benefics concentrated in growth-houses",
+            source="Rao Ch.11",
+        ))
+
+    # Adhi: natural benefics in 6th, 7th and 8th from Moon
+    adhi_houses_from_moon = {6, 7, 8}
+    benefics_present = {
+        _house_from_planet(p.house, moon.house)
+        for p in chart.planets if p.name in _NATURAL_BENEFICS
+    }
+    if adhi_houses_from_moon.issubset(benefics_present):
+        out.append(YogaResult(
+            slug="adhi_yoga", name="Adhi Yoga", category="other",
+            effect="Leadership at scale — minister, army chief, or trusted authority",
+            source="Rao Ch.11",
+        ))
+    return out
+
+
+def compute_yogas(chart: Chart) -> tuple[YogaResult, ...]:
+    """Detect all classical yogas this chart triggers.
+
+    Aggregates Pancha Mahapurusha, Sun/Moon yogas, Vipareeta Raja, and the
+    high-signal 'other' yogas. Order is deterministic (category-grouped) so
+    repeated calls produce identical output for cache fingerprinting.
+    """
+    all_yogas: list[YogaResult] = []
+    all_yogas.extend(_pancha_mahapurusha_yogas(chart))
+    all_yogas.extend(_sun_yogas(chart))
+    all_yogas.extend(_moon_yogas(chart))
+    all_yogas.extend(_vipareeta_raja_yogas(chart))
+    all_yogas.extend(_other_yogas(chart))
+    return tuple(all_yogas)
+
+
+def format_yogas_for_prompt(yogas: tuple[YogaResult, ...]) -> str:
+    """Tiny LLM hint listing detected yogas — only emitted when at least one fires.
+
+    Stays ~50-300 tokens depending on how many yogas hit. Each line: name +
+    effect + classical source. LLM is told to weave them into the reading
+    naturally and cite the source. Empty string when no yogas detected.
+    """
+    if not yogas:
+        return ""
+    lines = [
+        "--- YOGAS DETECTED ---",
+        "Classical planetary combinations active in this chart. Mention them by NAME",
+        "in the relevant section, paraphrase the effect, and cite the source briefly.",
+    ]
+    for y in yogas:
+        lines.append(f"  • {y.name}: {y.effect}  [{y.source}]")
+    return "\n".join(lines)
+
+
+def format_manglik_for_prompt(details: ManglikDetails) -> str:
+    """Tiny LLM hint for the Relationships section — only inject when relevant.
+
+    Stays ~80-220 tokens regardless of how many cancellations apply. Lets the
+    LLM cite specific classical sources by name instead of inventing prose,
+    and tells it explicitly how to FRAME the dosha based on effective status.
+    Skip emitting this entirely when `effective_status == "none"`.
+    """
+    if details.effective_status == "none":
+        return ""
+
+    houses_str = ", ".join(_ordinal(h) for h in details.houses)
+    lines = [
+        f"--- MANGLIK DETAIL ---",
+        f"Mathematical: YES — Mars in {houses_str} (severity: {details.severity}).",
+    ]
+
+    cancels = [r for r in details.cancellations if r.effect == "cancels"]
+    mitigates = [r for r in details.cancellations if r.effect == "mitigates"]
+
+    if cancels:
+        lines.append("Cancellation rules that apply (CITE the source by name when discussing):")
+        for r in cancels:
+            lines.append(f"  • {r.description}  [{r.source}]")
+    if mitigates:
+        lines.append("Mitigation rules that apply:")
+        for r in mitigates:
+            lines.append(f"  • {r.description}  [{r.source}]")
+    if not cancels and not mitigates:
+        lines.append("No classical cancellation or mitigation rules apply to this chart.")
+
+    lines.append(f"Effective status: {details.effective_status.upper()}.")
+
+    if details.effective_status == "cancelled":
+        lines.append(
+            "→ Tell the seeker: the dosha is present but cancelled. "
+            "CITE the cancellation source(s) by name. Do not alarm."
+        )
+    elif details.effective_status == "mitigated":
+        lines.append(
+            "→ Acknowledge the dosha honestly but explain the mitigation, citing the source. "
+            "Avoid 'your marriage will fail'-style framing."
+        )
+    else:
+        lines.append(
+            "→ Mention the dosha honestly as 'something to be aware of', not as destiny. "
+            "Suggest the classical remedy of matching with another Manglik partner. "
+            "Do NOT predict marital failure."
+        )
+    return "\n".join(lines)
 
 
 @dataclass(frozen=True)

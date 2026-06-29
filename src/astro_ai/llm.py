@@ -24,13 +24,17 @@ from astro_ai.chart import (
     TransitEvent,
     TransitSnapshot,
     VedicFlags,
+    compute_manglik_details,
+    compute_yogas,
     format_dasha_for_prompt,
     format_events_for_prompt,
     format_flags_for_prompt,
     format_for_prompt,
     format_life_chapters_for_prompt,
+    format_manglik_for_prompt,
     format_panchang_for_prompt,
     format_transit_for_prompt,
+    format_yogas_for_prompt,
 )
 
 # Appended to the system prompt to switch the LLM's output language.
@@ -91,8 +95,20 @@ def _format_seeker_message(
     flags: VedicFlags,
     life_chapters: list[LifeChapter],
 ) -> str:
-    """Render birth details + chart + flags + life chapters into the user message."""
+    """Render birth details + chart + flags + life chapters into the user message.
+
+    Conditional Manglik block: only emitted when the chart actually triggers
+    the dosha — keeps the per-call prompt small for the ~70% of charts that
+    aren't Manglik, while giving classical citations to the LLM when it matters.
+    """
     name_line = f"Name: {details.name}" if details.name.strip() else "Name: (not provided)"
+    manglik_block = format_manglik_for_prompt(compute_manglik_details(chart))
+    yogas_block = format_yogas_for_prompt(compute_yogas(chart))
+    optional_blocks = ""
+    if manglik_block:
+        optional_blocks += f"\n\n{manglik_block}"
+    if yogas_block:
+        optional_blocks += f"\n\n{yogas_block}"
     return (
         f"{name_line}\n"
         f"Birth date: {details.birth_date}\n"
@@ -101,7 +117,8 @@ def _format_seeker_message(
         f"\n"
         f"{format_for_prompt(chart)}\n"
         f"\n"
-        f"{format_flags_for_prompt(flags)}\n"
+        f"{format_flags_for_prompt(flags)}"
+        f"{optional_blocks}\n"
         f"\n"
         f"{format_life_chapters_for_prompt(life_chapters)}\n"
     )

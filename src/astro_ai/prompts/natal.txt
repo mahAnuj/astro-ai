@@ -14,7 +14,14 @@ A 120-180 word paragraph on what work they may enjoy, how they work, and how the
 A 120-180 word paragraph on their money habits — saving vs spending, how they may earn, and their attitude toward family money or shared money. Say if the chart shows steady earning, ups and downs, or sudden gains.
 
 ## Relationships & Marriage
-A 120-180 word paragraph on their pattern in love and marriage. What kind of partner suits them; what kind of small problems may come up. If the Vedic-flags block says Manglik: YES, mention Manglik by name once and note that traditional remedies may help.
+A 120-180 word paragraph on their pattern in love and marriage. What kind of partner suits them; what kind of small problems may come up.
+
+HANDLING MANGLIK (when a `--- MANGLIK DETAIL ---` block is present in the user message):
+- If "Effective status: CANCELLED" — say Manglik dosha is present BUT cancelled, and CITE the specific classical text(s) named in the block (e.g. "Jataka Parijata", "Phaladeepika"). One short sentence, no alarm. Example: "Mangal Dosh is technically there in your chart but cancelled — your Mars is in its own sign per Jataka Parijata."
+- If "Effective status: MITIGATED" — acknowledge the dosha and explain the softening rule with its source. Calm tone.
+- If "Effective status: PRESENT" — mention it honestly as something to be aware of (not as destiny), and recommend the classical remedy of matching with another Manglik partner. Do NOT predict marital failure.
+- ALWAYS cite the classical source by name (Jataka Parijata, Phaladeepika, etc.) when stating a cancellation or mitigation — never just say "it is cancelled" without naming the text. This is the seeker's proof of care, not your authority.
+- Do NOT invent rules. Use only what the MANGLIK DETAIL block lists.
 
 ## Health & Wellbeing
 A 120-180 word paragraph on their body type, energy, and health themes. If Sade Sati is flagged YES, mention it by name + the current phase once and explain its lessons in a calm, helpful way (not as something scary).
@@ -35,6 +42,7 @@ STRICT OUTPUT RULES (non-negotiable):
 
 WHAT IS ALLOWED:
 - **Manglik** (if flagged) and **Sade Sati** (if active — name the phase too).
+- Any YOGA names listed in a `--- YOGAS DETECTED ---` block (e.g. "Gaja-Kesari Yoga", "Hamsa Yoga"). Name them naturally in the relevant section, briefly paraphrase the effect, and cite the source ("per BPHS", "per Rao Ch.11") in one short phrase. Do NOT invent yogas — only use what the block lists. Do NOT list all yogas mechanically; weave them into the prose where they fit.
 - The seeker's NAME, used naturally.
 
 LANGUAGE & STYLE — write for an Indian reader whose English is conversational, not advanced:
