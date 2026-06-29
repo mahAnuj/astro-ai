@@ -1003,29 +1003,32 @@ def compute_yogas(chart: Chart) -> tuple[YogaResult, ...]:
 def format_yogas_for_prompt(yogas: tuple[YogaResult, ...]) -> str:
     """Tiny LLM hint listing detected yogas — only emitted when at least one fires.
 
-    Stays ~50-300 tokens depending on how many yogas hit. Each line: name +
-    effect + classical source. LLM is told to weave them into the reading
-    naturally and cite the source. Empty string when no yogas detected.
+    Stays ~50-300 tokens depending on how many yogas hit. Each line is just
+    yoga name + effect; classical sources are deliberately omitted so the
+    LLM can't echo them back as user-facing "per Rao Ch.11" jargon. Sources
+    live in the structured UI panel, not in the LLM prose path.
     """
     if not yogas:
         return ""
     lines = [
         "--- YOGAS DETECTED ---",
         "Classical planetary combinations active in this chart. Mention them by NAME",
-        "in the relevant section, paraphrase the effect, and cite the source briefly.",
+        "in the relevant section and paraphrase the effect in plain words. Do NOT name",
+        "classical texts, chapters, or sanskrit shastra in your prose — those live in",
+        "the UI panel separately.",
     ]
     for y in yogas:
-        lines.append(f"  • {y.name}: {y.effect}  [{y.source}]")
+        lines.append(f"  • {y.name}: {y.effect}")
     return "\n".join(lines)
 
 
 def format_manglik_for_prompt(details: ManglikDetails) -> str:
     """Tiny LLM hint for the Relationships section — only inject when relevant.
 
-    Stays ~80-220 tokens regardless of how many cancellations apply. Lets the
-    LLM cite specific classical sources by name instead of inventing prose,
-    and tells it explicitly how to FRAME the dosha based on effective status.
-    Skip emitting this entirely when `effective_status == "none"`.
+    Stays ~80-180 tokens. Tells the LLM the effective status and the
+    cancelling/mitigating reasons in plain language; sources are deliberately
+    omitted so the LLM can't echo them back as user-facing "per Phaladeepika"
+    jargon. Classical citations live in the structured UI panel.
     """
     if details.effective_status == "none":
         return ""
@@ -1040,33 +1043,34 @@ def format_manglik_for_prompt(details: ManglikDetails) -> str:
     mitigates = [r for r in details.cancellations if r.effect == "mitigates"]
 
     if cancels:
-        lines.append("Cancellation rules that apply (CITE the source by name when discussing):")
+        lines.append("Reasons the dosha is cancelled in this chart:")
         for r in cancels:
-            lines.append(f"  • {r.description}  [{r.source}]")
+            lines.append(f"  • {r.description}")
     if mitigates:
-        lines.append("Mitigation rules that apply:")
+        lines.append("Reasons the dosha is softened in this chart:")
         for r in mitigates:
-            lines.append(f"  • {r.description}  [{r.source}]")
+            lines.append(f"  • {r.description}")
     if not cancels and not mitigates:
-        lines.append("No classical cancellation or mitigation rules apply to this chart.")
+        lines.append("No classical cancellation or mitigation reasons apply to this chart.")
 
     lines.append(f"Effective status: {details.effective_status.upper()}.")
 
     if details.effective_status == "cancelled":
         lines.append(
-            "→ Tell the seeker: the dosha is present but cancelled. "
-            "CITE the cancellation source(s) by name. Do not alarm."
+            "→ Tell the seeker the dosha is present but cancelled, and paraphrase the "
+            "reason(s) above in plain words. Do not alarm. Do NOT name classical texts, "
+            "chapters, or sanskrit shastra — those live in the UI panel separately."
         )
     elif details.effective_status == "mitigated":
         lines.append(
-            "→ Acknowledge the dosha honestly but explain the mitigation, citing the source. "
-            "Avoid 'your marriage will fail'-style framing."
+            "→ Acknowledge the dosha honestly but explain the softening reason in plain words. "
+            "Avoid 'your marriage will fail'-style framing. Do NOT name classical texts."
         )
     else:
         lines.append(
             "→ Mention the dosha honestly as 'something to be aware of', not as destiny. "
-            "Suggest the classical remedy of matching with another Manglik partner. "
-            "Do NOT predict marital failure."
+            "Suggest the traditional remedy of matching with another Manglik partner. "
+            "Do NOT predict marital failure. Do NOT name classical texts."
         )
     return "\n".join(lines)
 
