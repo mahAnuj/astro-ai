@@ -152,6 +152,23 @@ def list_subscribers() -> list[dict]:
     return data.get("subscribers", [])
 
 
+def find_by_email(email: str) -> dict | None:
+    """Return the subscriber record for `email`, or None if not subscribed.
+
+    Powers the /subscribe/lookup endpoint so the modal can prefill lang / city /
+    rashi with a returning subscriber's existing choices — avoids the silent
+    reset that happens when a user re-submits the form with default field
+    values (see `subscribe()` docstring for the update semantics).
+    """
+    email_norm = _normalize(email)
+    if not _EMAIL_RE.match(email_norm):
+        return None
+    for sub in list_subscribers():
+        if sub.get("email") == email_norm:
+            return sub
+    return None
+
+
 def count() -> int:
     """Quick subscriber count for the admin dashboard."""
     return len(list_subscribers())

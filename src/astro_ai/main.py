@@ -856,6 +856,35 @@ async def rashifal(request: Request) -> HTMLResponse:
     )
 
 
+@app.post("/subscribe/lookup")
+async def subscribe_lookup(email: str = Form(...)) -> JSONResponse:
+    """Return the current preferences for a subscriber, or defaults if unknown.
+
+    Called from the subscribe modal on email input (debounced) so the form
+    prefills with the subscriber's existing lang / city / rashi choices. This
+    prevents the silent reset that happens when a returning subscriber submits
+    the form with default field values — the `subscribe()` upsert overwrites
+    lang and rashi unconditionally.
+
+    Same shape returned for subscribed and unsubscribed emails; the
+    `subscribed` flag distinguishes them so the UI can show a "welcome back"
+    hint. Not privacy-perfect (an attacker can enumerate) but proportional
+    for a public astrology mailing list at this scale.
+    """
+    sub = subscribers.find_by_email(email)
+    if sub is None:
+        return JSONResponse({
+            "ok": True, "subscribed": False,
+            "lang": "en", "city": "", "rashi": "all",
+        })
+    return JSONResponse({
+        "ok": True, "subscribed": True,
+        "lang": sub.get("lang", "en"),
+        "city": sub.get("city", ""),
+        "rashi": sub.get("rashi", "all"),
+    })
+
+
 @app.post("/subscribe")
 async def subscribe(request: Request,
                     email: str = Form(...),

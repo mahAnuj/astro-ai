@@ -47,6 +47,14 @@
                class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm
                       focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
 
+        {# "Welcome back" banner — appears when /subscribe/lookup finds an
+           existing subscription. Prevents the silent-reset bug where a
+           returning user's rashi/lang would revert to defaults. #}
+        <div id="subscribe-welcome-back"
+             class="hidden bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-md px-3 py-2">
+          {% if lang == 'hi' %}स्वागत है! हमने आपकी मौजूदा पसंद लोड की है — बदलाव करके सहेजें।{% else %}Welcome back — loaded your existing preferences. Change any field and Subscribe to update.{% endif %}
+        </div>
+
         {# Optional city — drives per-subscriber Panchang in the daily
            email (sunrise / Rahu Kaal / Abhijit Muhurta vary by location).
            Skipped entirely if blank — no incorrect Delhi-default times. #}
@@ -160,7 +168,63 @@
     var closeBtn = document.getElementById('subscribe-modal-close');
     var laterBtn = document.getElementById('subscribe-modal-later');
     var errBox   = document.getElementById('subscribe-modal-error');
+    var welcomeBack = document.getElementById('subscribe-welcome-back');
     if (!backdrop) return;
+
+    // --------------------------------------------------------------------
+    // Prefill lang / city / rashi for returning subscribers.
+    // On email input (debounced 500ms), POST /subscribe/lookup and, if the
+    // email is already subscribed, load the stored preferences into the form
+    // + show the "welcome back" banner. Prevents the silent-reset bug where
+    // a returning user's rashi/lang gets reverted to defaults.
+    // --------------------------------------------------------------------
+    var emailInput = form.querySelector('input[name="email"]');
+    var cityInput  = form.querySelector('input[name="city"]');
+    var rashiSel   = form.querySelector('select[name="rashi"]');
+    var langRadios = form.querySelectorAll('input[name="lang"]');
+    var lookupTimer = null;
+    var lastLookedUp = '';
+
+    function setLangRadio(v) {
+      langRadios.forEach(function(r) { r.checked = (r.value === v); });
+    }
+
+    function isPlausibleEmail(s) {
+      // Loose sanity check — matches the backend's relaxed regex spirit.
+      return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s);
+    }
+
+    function doLookup(email) {
+      if (email === lastLookedUp) return;   // already fetched this exact email
+      lastLookedUp = email;
+      var data = new FormData();
+      data.append('email', email);
+      fetch('/subscribe/lookup', { method: 'POST', body: data })
+        .then(function(r) { return r.json(); })
+        .then(function(j) {
+          if (!j || !j.ok || !j.subscribed) {
+            welcomeBack.classList.add('hidden');
+            return;
+          }
+          // Prefill only when the user hasn't manually changed the fields —
+          // we don't want to clobber active edits mid-typing. Simple rule:
+          // always prefill on lookup response for now (user can override).
+          if (typeof j.lang === 'string')  setLangRadio(j.lang);
+          if (typeof j.city === 'string' && cityInput) cityInput.value = j.city;
+          if (typeof j.rashi === 'string' && rashiSel) rashiSel.value = j.rashi;
+          welcomeBack.classList.remove('hidden');
+        })
+        .catch(function() { /* silent — lookup is a nice-to-have */ });
+    }
+
+    emailInput.addEventListener('input', function() {
+      welcomeBack.classList.add('hidden');
+      lastLookedUp = '';                    // typing again → allow re-fetch
+      if (lookupTimer) clearTimeout(lookupTimer);
+      var v = emailInput.value.trim().toLowerCase();
+      if (!isPlausibleEmail(v)) return;
+      lookupTimer = setTimeout(function() { doLookup(v); }, 500);
+    });
 
     function show()  { backdrop.classList.remove('hidden'); backdrop.classList.add('flex'); }
     function hide()  { backdrop.classList.add('hidden');    backdrop.classList.remove('flex'); }
