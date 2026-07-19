@@ -242,6 +242,125 @@
     }
   }
 
+  /* ─── Diamond chart draw-in (signature moment on Kundli page) ───────
+     Each SVG stroke draws itself via stroke-dashoffset animation.
+     Per-element --dash CSS var carries the path length (border 1584,
+     diamond side 280, diagonal 560), animation-delay is inline in
+     the SVG source (result.html). After all strokes complete (~1.4s),
+     the .chart-labels <g> fades in the sign numbers + planet labels. */
+  @keyframes chartDraw {
+    to { stroke-dashoffset: 0; }
+  }
+  .chart-draw {
+    stroke-dasharray: var(--dash);
+    stroke-dashoffset: var(--dash);
+    animation: chartDraw 900ms cubic-bezier(0.65, 0.05, 0.36, 1) both;
+  }
+  @keyframes chartLabels {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .chart-labels {
+    opacity: 0;
+    animation: chartLabels 500ms ease-out 1500ms forwards;
+  }
+
+  /* ─── Sitewide card hover polish ────────────────────────────────────
+     Any element with .shadow-sm (the card-shadow convention used
+     across the site — rashifal cards, learn cards, saved chart tiles,
+     Kundli panels, yoga cards, matching form, etc.) lifts 2px on
+     hover with a softly-tinted shadow. Subtle enough that panels
+     don't feel over-eager, pronounced enough that clickable cards
+     invite the click. GPU-only transform + shadow — no layout thrash.
+
+     Skips elements marked .no-lift for opt-out (e.g. sticky nav or
+     any card that should feel anchored). */
+  .shadow-sm:not(.no-lift) {
+    transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+                box-shadow 220ms ease-out;
+  }
+  .shadow-sm:not(.no-lift):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px -12px rgba(93, 62, 180, 0.18),
+                0 6px 12px -6px rgba(0, 0, 0, 0.06);
+  }
+
+  /* ─── Yoga card hover reveal ────────────────────────────────────────
+     The classical source citation on each yoga card is hidden by
+     default (compressed to zero height + zero opacity) and slides
+     down into place when the card is hovered or focused-within.
+     Keeps the resting card visually clean but preserves the citation
+     for readers who want to dig deeper. */
+  .yoga-card .yoga-source {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    margin-top: 0;
+    transition: max-height 240ms ease-out,
+                opacity 200ms ease-out,
+                margin-top 240ms ease-out;
+  }
+  .yoga-card:hover .yoga-source,
+  .yoga-card:focus-within .yoga-source {
+    max-height: 3rem;
+    opacity: 1;
+    margin-top: 0.375rem;
+  }
+
+  /* Fallback keyframe defs — Tailwind CDN emits these via the
+     inline config extend, but declare them here too so the animations
+     work even if Tailwind's utility CSS hasn't finished bootstrapping. */
+  @keyframes spinSlow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.025); }
+  }
+
+  /* ─── Kundli generation loader (mandala overlay) ────────────────────
+     Full-screen overlay shown during the /reading POST → /kundli
+     navigation. Rotating mandala SVG + caption. Only appears for
+     Kundli generation (see htmx event wiring below); other page
+     nav uses the existing top-bar loader. */
+  #kundli-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: rgba(254, 250, 240, 0.94);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1.25rem;
+    opacity: 0;
+    transition: opacity 200ms ease-out;
+  }
+  #kundli-loader.is-visible {
+    display: flex;
+    opacity: 1;
+  }
+  #kundli-loader .mandala {
+    width: 120px;
+    height: 120px;
+    color: #6b21a8;
+    animation: spinSlow 6s linear infinite;
+  }
+  #kundli-loader .mandala-inner {
+    animation: spinSlow 4s linear infinite reverse;
+    transform-origin: center;
+  }
+  #kundli-loader .caption {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.1rem;
+    color: #6b21a8;
+    font-style: italic;
+    animation: breathe 2s ease-in-out infinite;
+  }
+
   /* ─── Nav dropdown smooth expand ────────────────────────────────────
      The "Readings ▾" dropdown in _nav.html toggles between the classes
      .md\:hidden (closed) and .md\:flex (open) on desktop. Currently
@@ -430,6 +549,58 @@
       document.body.addEventListener('htmx:responseError', finish);
       document.body.addEventListener('htmx:sendError', finish);
       document.body.addEventListener('htmx:abort', finish);
+    })();
+  </script>
+
+  {# Full-page mandala loader — only shown during Kundli generation
+     (POST /reading), which involves a 3-8s LLM call. Other page nav
+     uses the top-bar loader above, which is enough for sub-second
+     responses. The rotating mandala + Sanskrit caption reads as
+     intentional preparation rather than an interruption. #}
+  <div id="kundli-loader" role="status" aria-live="polite" aria-hidden="true">
+    <svg class="mandala" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      {# Outer petals #}
+      <g>
+        {% for angle in [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330] %}
+        <ellipse cx="60" cy="15" rx="4" ry="12" transform="rotate({{ angle }} 60 60)" opacity="0.55"/>
+        {% endfor %}
+      </g>
+      {# Middle concentric ring #}
+      <circle cx="60" cy="60" r="30" opacity="0.7"/>
+      {# Inner rotating star — counter-rotates for compound-motion feel #}
+      <g class="mandala-inner">
+        <circle cx="60" cy="60" r="18" opacity="0.55"/>
+        <polygon points="60,45 68,60 60,75 52,60" opacity="0.7"/>
+        <polygon points="45,60 60,52 75,60 60,68" opacity="0.7"/>
+        <circle cx="60" cy="60" r="4" fill="currentColor" stroke="none"/>
+      </g>
+    </svg>
+    <div class="caption">Reading your chart&hellip;</div>
+  </div>
+  <script>
+    (function () {
+      var overlay = document.getElementById('kundli-loader');
+      if (!overlay) return;
+      function show() {
+        overlay.classList.add('is-visible');
+        overlay.setAttribute('aria-hidden', 'false');
+      }
+      function hide() {
+        overlay.classList.remove('is-visible');
+        overlay.setAttribute('aria-hidden', 'true');
+      }
+      // Fire only for the Kundli-generation path — /reading is the POST
+      // endpoint that runs the LLM reading. Every other htmx request
+      // (rashifal, ask, monthly, etc.) uses the top-bar loader above.
+      document.addEventListener('htmx:beforeRequest', function (ev) {
+        var cfg = ev.detail && ev.detail.requestConfig;
+        var path = cfg && cfg.path;
+        if (typeof path === 'string' && path.indexOf('/reading') === 0) show();
+      });
+      document.addEventListener('htmx:afterRequest', hide);
+      document.addEventListener('htmx:responseError', hide);
+      document.addEventListener('htmx:sendError', hide);
+      document.addEventListener('htmx:abort', hide);
     })();
   </script>
 

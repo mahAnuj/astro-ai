@@ -176,10 +176,14 @@
           <div class="text-xs text-stone-400 mb-2.5">{{ cat_desc }}</div>
           <div class="grid sm:grid-cols-2 gap-3">
             {% for y in cat_yogas %}
-            <div class="bg-emerald-50/40 border border-emerald-100 rounded-lg p-3.5">
+            {# Group hover reveals the classical source citation — hidden
+               by default so the card feels clean, appears on hover with
+               a small upward slide. Focus-within keeps it accessible for
+               keyboard users. #}
+            <div class="yoga-card group bg-emerald-50/40 border border-emerald-100 rounded-lg p-3.5 transition-shadow hover:shadow-md">
               <div class="font-display text-base text-emerald-900 mb-1">{{ y.name }}</div>
               <p class="text-sm text-stone-700 leading-relaxed">{{ y.effect }}</p>
-              <div class="text-[11px] text-stone-500 italic mt-1.5">Source: {{ y.source }}</div>
+              <div class="yoga-source text-[11px] text-stone-500 italic mt-1.5">Source: {{ y.source }}</div>
             </div>
             {% endfor %}
           </div>
@@ -309,21 +313,43 @@
 
     <div class="lg:col-span-2 bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
       <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-3">{{ t(lang, 'lagna_kundali') }}</h2>
+      {# Signature moment: each stroke draws itself in sequence
+         (border → four diamond sides → two diagonals) and then all
+         labels fade in. Powered by stroke-dashoffset animation via
+         the .chart-draw class + per-element --dash CSS var (length
+         of the path) and animation-delay in inline style. The
+         diamond polygon is split into 4 individual <line> elements
+         so each side can draw independently. #}
       <svg viewBox="0 0 400 400" class="w-full max-w-md mx-auto block" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="2" width="396" height="396" fill="white" stroke="#6b21a8" stroke-width="2"/>
-        <polygon points="200,2 398,200 200,398 2,200" fill="none" stroke="#6b21a8" stroke-width="2"/>
-        <line x1="2"   y1="2"   x2="398" y2="398" stroke="#6b21a8" stroke-width="2"/>
-        <line x1="398" y1="2"   x2="2"   y2="398" stroke="#6b21a8" stroke-width="2"/>
-        {% for c in chart.diamond_chart() %}
-        <text x="{{ c.sign_x }}" y="{{ c.sign_y }}" text-anchor="middle"
-              font-size="11" font-weight="700" fill="#a16207"
-              style="font-family: Inter, sans-serif">{{ c.sign_num }}</text>
-        {% for p in c.planets %}
-        <text x="{{ c.planet_cx }}" y="{{ c.planet_cy + loop.index0 * 13 }}" text-anchor="middle"
-              font-size="11" font-weight="600" fill="#1c1917"
-              style="font-family: Inter, sans-serif">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}<tspan font-size="9" fill="#b45309">&nbsp;R</tspan>{% endif %}</text>
-        {% endfor %}
-        {% endfor %}
+        <rect x="2" y="2" width="396" height="396" fill="white" stroke="#6b21a8" stroke-width="2"
+              class="chart-draw" style="--dash: 1584; animation-delay: 0ms"/>
+        {# Diamond outline — 4 sides, each ~280px long. #}
+        <line x1="200" y1="2"   x2="398" y2="200" stroke="#6b21a8" stroke-width="2"
+              class="chart-draw" style="--dash: 280; animation-delay: 200ms"/>
+        <line x1="398" y1="200" x2="200" y2="398" stroke="#6b21a8" stroke-width="2"
+              class="chart-draw" style="--dash: 280; animation-delay: 320ms"/>
+        <line x1="200" y1="398" x2="2"   y2="200" stroke="#6b21a8" stroke-width="2"
+              class="chart-draw" style="--dash: 280; animation-delay: 440ms"/>
+        <line x1="2"   y1="200" x2="200" y2="2"   stroke="#6b21a8" stroke-width="2"
+              class="chart-draw" style="--dash: 280; animation-delay: 560ms"/>
+        {# Two diagonals — ~560px each. #}
+        <line x1="2"   y1="2"   x2="398" y2="398" stroke="#6b21a8" stroke-width="2"
+              class="chart-draw" style="--dash: 560; animation-delay: 720ms"/>
+        <line x1="398" y1="2"   x2="2"   y2="398" stroke="#6b21a8" stroke-width="2"
+              class="chart-draw" style="--dash: 560; animation-delay: 850ms"/>
+        {# Sign numbers + planet labels fade in after all strokes finish. #}
+        <g class="chart-labels">
+          {% for c in chart.diamond_chart() %}
+          <text x="{{ c.sign_x }}" y="{{ c.sign_y }}" text-anchor="middle"
+                font-size="11" font-weight="700" fill="#a16207"
+                style="font-family: Inter, sans-serif">{{ c.sign_num }}</text>
+          {% for p in c.planets %}
+          <text x="{{ c.planet_cx }}" y="{{ c.planet_cy + loop.index0 * 13 }}" text-anchor="middle"
+                font-size="11" font-weight="600" fill="#1c1917"
+                style="font-family: Inter, sans-serif">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}<tspan font-size="9" fill="#b45309">&nbsp;R</tspan>{% endif %}</text>
+          {% endfor %}
+          {% endfor %}
+        </g>
       </svg>
     </div>
 

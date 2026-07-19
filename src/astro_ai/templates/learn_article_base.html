@@ -231,7 +231,10 @@
     color: #44403c;
     line-height: 1.55;
   }
-  /* Shlok card — cream background with Devanagari */
+  /* Shlok card — cream background with Devanagari. The Sanskrit line
+     fades in with a slow upward rise on scroll into view; the meaning
+     line follows shortly after. Feels like the verse is being written
+     onto the page, without the complexity of per-glyph SVG stroking. */
   .article-prose .shlok {
     margin: 1.75rem 0;
     padding: 1.25rem 1.5rem;
@@ -240,6 +243,10 @@
     border-radius: 0.75rem;
     text-align: center;
   }
+  @keyframes shlokReveal {
+    from { opacity: 0; transform: translateY(10px); filter: blur(2px); }
+    to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+  }
   .article-prose .shlok .sanskrit {
     font-family: 'Noto Sans Devanagari', serif;
     font-size: 1.2rem;
@@ -247,6 +254,10 @@
     font-weight: 600;
     line-height: 1.5;
     margin-bottom: 0.5rem;
+    animation: shlokReveal 900ms ease-out both;
+  }
+  .article-prose .shlok .meaning {
+    animation: shlokReveal 900ms ease-out 350ms both;
   }
   .article-prose .shlok .meaning {
     font-size: 0.9rem;
