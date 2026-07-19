@@ -346,6 +346,69 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="gochar-2026-planetary-transits",
+        title="Gochar 2026: The Year's Major Planetary Transits and How They Affect Your Rashi",
+        summary="2026 is a rare year — Jupiter exalted in Cancer for the full year, Saturn still testing Aquarius/Pisces/Aries Moons via Sade Sati, and the Rahu-Ketu axis shifting into Capricorn-Cancer in December. Here's what's happening in the sky and what it means for each Moon sign.",
+        category="Concepts",
+        hero_image="/static/learn/gochar-2026-planetary-transits/hero.svg",
+        read_time="12 min",
+        related=("sade-sati", "guru-jupiter-in-vedic-astrology", "shani-saturn"),
+        last_updated="2026-07",
+        faqs=(
+            {
+                "q": "What is Gochar in Vedic astrology?",
+                "a": "Gochar means 'movement' — it refers to the current transit of a planet through the zodiac, as opposed to its natal position in your birth chart. Transit interpretation asks 'where is Jupiter right now, and how does that interact with my natal Moon?' The two together — natal placement + current gochar — is how Vedic astrology predicts near-term events.",
+            },
+            {
+                "q": "Which is the biggest transit of 2026?",
+                "a": "Jupiter exalted in Cancer (Karka) — Jupiter entered Cancer in May 2026 and stays there until roughly May 2027. This happens only once every 12 years and is one of the most benevolent single transits in Vedic astrology. Jupiter in its exaltation sign amplifies its natural blessings — wisdom, wealth, children, dharma — for anyone whose Moon or Lagna is well-positioned relative to Cancer.",
+            },
+            {
+                "q": "How long is Saturn in Pisces?",
+                "a": "Saturn entered Pisces in early 2025 and stays there until roughly late February / early March 2027 — about 2.5 years total. During this window, Sade Sati is active for Aquarius (Sade Sati setting phase, final 2.5 years), Pisces (peak phase), and Aries Moons (rising phase). All three groups feel Saturn's transit differently.",
+            },
+            {
+                "q": "What happens to the Rahu-Ketu axis in late 2026?",
+                "a": "The Rahu-Ketu axis shifts around December 2026 — Rahu moves from Aquarius into Capricorn, and Ketu moves from Leo into Cancer. This is a major karmic-axis reset. Anyone with Moon or Lagna in Capricorn (new Rahu placement), Cancer (new Ketu placement), Aquarius (departing Rahu), or Leo (departing Ketu) feels the shift most.",
+            },
+            {
+                "q": "How do I know how these transits affect me specifically?",
+                "a": "Two things matter: your Janma Rashi (Moon sign) and your Lagna (rising sign). Every article per-rashi guidance in this post uses Moon sign because that's the primary reference in Vedic astrology. Generate your free Kundli on Shubh Bhagya to know your exact Moon sign, then read that section for the year's outlook.",
+            },
+        ),
+    ),
+    Article(
+        slug="kundali-matching-ashtakoot-guna-milan",
+        title="Kundali Matching: The 36-Guna Compatibility System Explained",
+        summary="Before Indian marriages, families traditionally match Kundlis to check compatibility. The Ashtakoot Guna Milan system scores compatibility on 36 points across 8 factors. Here's what each of the 8 factors measures, what the total score really means, and why it's not the whole story.",
+        category="Concepts",
+        hero_image="/static/learn/kundali-matching-ashtakoot-guna-milan/hero.svg",
+        read_time="11 min",
+        related=("manglik-dosh", "shukra-venus-in-vedic-astrology", "guru-jupiter-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "What is Ashtakoot Guna Milan?",
+                "a": "Ashtakoot (eight factors) Guna Milan (matching of gunas) is the classical Vedic system for checking marriage compatibility between two Kundlis. It scores compatibility on 8 factors totalling 36 points. The classical guidance: 18+ acceptable (Avara), 24+ good (Madhyam), 30+ excellent (Uttam). Below 18 traditionally advises against marriage — though modern practice weighs individual factors, especially Nadi, more than the raw total.",
+            },
+            {
+                "q": "What are the 8 kootas that get matched?",
+                "a": "The eight kootas each measure a different dimension of compatibility: Varna (1 pt — spiritual affinity), Vashya (2 — mutual influence), Tara (3 — health/destiny), Yoni (4 — sexual compatibility), Graha Maitri (5 — mental compatibility), Gana (6 — temperament), Bhakoot (7 — emotional / love / family), and Nadi (8 — genetic/health/progeny). Note: point weights aren't equal — Nadi carries the most weight for a reason.",
+            },
+            {
+                "q": "Is a 36/36 score guaranteed happiness?",
+                "a": "No. Guna Milan measures compatibility potential, not lived experience. Many high-scoring matches have complicated marriages because Guna Milan doesn't measure Manglik status, individual chart strength, Navamsa (D-9 marriage chart) compatibility, current dasha timing, or the two people's actual emotional intelligence. A 32/36 with individual chart problems is often harder than a 22/36 with clean individual charts.",
+            },
+            {
+                "q": "What is Nadi Dosha and why does it matter?",
+                "a": "Nadi is the 8-point factor and by classical rules the single most-weighted koota. If both partners have the same Nadi (Adi, Madhya, or Antya — derived from birth Nakshatra), Nadi Dosha is said to form, classically indicating risk to progeny (fertility issues, health of children). This is why many high-scoring matches get rejected — even a 30/36 overall score with Nadi Dosha is considered problematic. Cancellations exist (same Rashi + same Nakshatra + different Pada; both partners Manglik; etc.), but the concern is taken seriously.",
+            },
+            {
+                "q": "How can I get an accurate Kundli matching for my chart?",
+                "a": "Use Shubh Bhagya's free Kundli matching tool at /matching. Enter both people's birth details and the tool computes all 8 kootas, the Manglik compatibility, and generates an AI-narrative interpretation of what the score actually means for the specific chart pair — not a generic 'compatible / not compatible' verdict.",
+            },
+        ),
+    ),
+    Article(
         slug="sun-mahadasha",
         title="Sun Mahadasha: 6 Years of Authority, Vitality, and Visibility",
         summary="Sun's Mahadasha is short (6 years) but intense. Career visibility rises, father / authority themes activate, and the mandate is to become someone. What each of the nine antardashas within Sun Maha tends to bring, and how to make the most of the period.",
