@@ -284,6 +284,16 @@ def generate_rashifal(
             f"{panchang.day_lord}-coloured; that mood MUST shape all 12 rashi "
             f"cards, not just one."
         )
+        tithi_note = (
+            f"Today's tithi: {panchang.tithi_paksha} Paksha, {panchang.tithi_name}"
+        )
+        if panchang.tithi_significance:
+            tithi_note += f" ({panchang.tithi_significance})"
+        tithi_note += (
+            ". Tithi shifts every ~24 hours and colours the day's karmic character — "
+            "reference it in at least 2 cards where the guidance genuinely fits."
+        )
+        day_signals.append(tithi_note)
     if moon:
         day_signals.append(
             f"Moon today: {moon.rashi} in {moon.nakshatra} nakshatra. "

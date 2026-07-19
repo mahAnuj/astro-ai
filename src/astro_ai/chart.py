@@ -1745,41 +1745,133 @@ _RAHU_KAAL_SEGMENT: dict[int, int] = {
 }
 
 
+# 30 Tithi names — 15 waxing (Shukla Paksha) then 15 waning (Krishna Paksha).
+# Purnima (index 14) = full moon; Amavasya (index 29) = new moon.
+# Classical significance is loose but widely-cited; used to colour the day's
+# character in the LLM Rashifal prompt.
+_TITHI_NAMES: tuple[str, ...] = (
+    "Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami",
+    "Shashti",   "Saptami", "Ashtami", "Navami",    "Dashami",
+    "Ekadashi",  "Dwadashi","Trayodashi","Chaturdashi","Purnima",
+    "Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami",
+    "Shashti",   "Saptami", "Ashtami", "Navami",    "Dashami",
+    "Ekadashi",  "Dwadashi","Trayodashi","Chaturdashi","Amavasya",
+)
+
+# Widely-cited classical character notes for the special tithis. Not exhaustive
+# — deliberately short so the LLM can weave them into readings without turning
+# them into a lecture. Empty string = ordinary tithi, no special guidance.
+_TITHI_SIGNIFICANCE: dict[str, str] = {
+    "Ekadashi":    "fasting day, spiritual introspection, avoid grains",
+    "Dwadashi":    "breaking-fast day after Ekadashi, gentle refuelling",
+    "Trayodashi":  "Pradosh Vrat — evening Shiva worship, releasing tension",
+    "Chaturdashi": "sensitive day, meditation and quiet effort favoured",
+    "Purnima":     "full moon — culmination, generosity, worship, emotional peak",
+    "Amavasya":    "new moon — ancestral rites (Pitru), quiet resets, avoid new ventures",
+    "Chaturthi":   "Ganesh day — remove obstacles, start small things",
+    "Panchami":    "Nag/Saraswati themes — learning, arts, snakes in symbolism",
+    "Saptami":     "Sun-themed — health, vitality, father matters",
+    "Ashtami":     "Durga/Shakti themes — courage, protection, focused action",
+    "Navami":      "Devi themes — completion of a cycle of worship",
+    "Dashami":     "Vijayadashami undertones — victory, right action",
+}
+
+
 @dataclass(frozen=True)
 class DailyPanchang:
     """Today's Muhurta data — what to do (and not do), plus the day's favourable color.
 
-    All times are tz-aware local datetimes at the natal birthplace. Rahu Kaal
-    is the inauspicious window; Abhijit Muhurta is the most auspicious window
-    (centered on solar noon).
+    Mixes UNIVERSAL fields (weekday, day_lord, tithi, tithi_paksha,
+    tithi_significance — same worldwide for any given date) with
+    LOCATION-DEPENDENT fields (sunrise/sunset and the Rahu Kaal / Abhijit
+    windows derived from them — differ by lat/lon).
+
+    All time fields are tz-aware local datetimes at the natal birthplace.
+    Rahu Kaal is the inauspicious window; Abhijit Muhurta is the most
+    auspicious window (centered on solar noon).
     """
 
-    weekday: str            # "Friday"
-    day_lord: str           # "Venus"
-    day_color: str          # human-readable, e.g. "White or Light Pink"
-    day_color_hex: str      # for a UI color swatch
-    sunrise: datetime
-    sunset: datetime
-    rahu_kaal_start: datetime
-    rahu_kaal_end: datetime
-    abhijit_start: datetime
-    abhijit_end: datetime
+    weekday: str              # "Friday" — universal
+    day_lord: str             # "Venus" — universal
+    day_color: str            # e.g. "White or Light Pink" — universal
+    day_color_hex: str        # UI swatch — universal
+    tithi_index: int          # 0..29 — universal (0=Shukla Pratipada, 14=Purnima, 29=Amavasya)
+    tithi_name: str           # e.g. "Ekadashi" — universal
+    tithi_paksha: str         # "Shukla" (bright/waxing) or "Krishna" (dark/waning) — universal
+    tithi_significance: str   # classical character note; "" if ordinary tithi — universal
+    sunrise: datetime         # local time at natal birthplace — LOCATION-DEPENDENT
+    sunset: datetime          # local time at natal birthplace — LOCATION-DEPENDENT
+    rahu_kaal_start: datetime # LOCATION-DEPENDENT
+    rahu_kaal_end: datetime   # LOCATION-DEPENDENT
+    abhijit_start: datetime   # LOCATION-DEPENDENT
+    abhijit_end: datetime     # LOCATION-DEPENDENT
+
+
+# In-process cache keyed by (date, rounded lat, rounded lon, tz name). Two
+# subscribers in the same city on the same day share one compute — the
+# per-request panchang_cache dict in the send loop already dedups within a
+# batch; this cache extends dedup across the whole process's lifetime.
+#
+# Rounded to ~55km (0.5deg) — sunrise/sunset differ by seconds within that
+# radius, well below the ~2min classical rounding. Cache is bounded by the
+# small number of cities in the subscriber base, so we don't LRU-cap it.
+_PANCHANG_CACHE: dict[tuple, "DailyPanchang"] = {}
+
+
+def _tithi_at(julian_day: float) -> tuple[int, str, str, str]:
+    """(index 0-29, name, paksha, significance) at the given Julian Day.
+
+    Formula: tithi = (Moon_longitude - Sun_longitude) mod 360, divided by 12.
+    Uses sidereal Lahiri to match the rest of the chart code (though tithi is
+    actually invariant under ayanamsa choice — both Sun and Moon shift equally).
+    """
+    sun_pos, _ = swe.calc_ut(julian_day, swe.SUN, swe.FLG_SIDEREAL)
+    moon_pos, _ = swe.calc_ut(julian_day, swe.MOON, swe.FLG_SIDEREAL)
+    diff = (float(moon_pos[0]) - float(sun_pos[0])) % 360.0
+    idx = int(diff / 12.0)
+    name = _TITHI_NAMES[idx]
+    paksha = "Shukla" if idx < 15 else "Krishna"
+    significance = _TITHI_SIGNIFICANCE.get(name, "")
+    return idx, name, paksha, significance
 
 
 def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchang:
-    """Compute today's Rahu Kaal, Abhijit Muhurta, and day's color for the natal birthplace.
+    """Compute today's Panchang for the natal birthplace, cached per (date, city).
 
     Uses natal lat/lon because we don't know where the seeker physically is
     now. Note this on the UI — for the most precise local Muhurta, the
     seeker should ideally compute against their current location.
+
+    Location-independent fields (weekday, tithi, paksha) are the same
+    worldwide for a given date; location-dependent ones (sunrise, Rahu Kaal,
+    Abhijit) genuinely vary by city. The in-process cache dedups per city.
     """
     tz = ZoneInfo(natal.birth_tz)
     moment = (when or datetime.now(tz)).astimezone(tz)
     today = moment.date()
-    weekday = today.weekday()  # 0=Mon..6=Sun
 
+    # Cache key: date + coarse coords + tz. ~55km radius shares one entry.
+    cache_key = (
+        today.isoformat(),
+        round(natal.birth_lat * 2) / 2,
+        round(natal.birth_lon * 2) / 2,
+        natal.birth_tz,
+    )
+    cached = _PANCHANG_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
+    weekday = today.weekday()  # 0=Mon..6=Sun
     weekday_name, day_lord, day_color, day_color_hex = _WEEKDAY_LORDS[weekday]
     sunrise, sunset = _sunrise_sunset(today, natal.birth_lat, natal.birth_lon, tz)
+
+    # Tithi at local sunrise — the classical convention for "today's tithi".
+    sunrise_ut = sunrise.astimezone(ZoneInfo("UTC"))
+    sunrise_jd = swe.julday(
+        sunrise_ut.year, sunrise_ut.month, sunrise_ut.day,
+        sunrise_ut.hour + sunrise_ut.minute / 60 + sunrise_ut.second / 3600,
+    )
+    tithi_idx, tithi_name, tithi_paksha, tithi_sig = _tithi_at(sunrise_jd)
 
     # Rahu Kaal: which 1/8 segment of the daylight period?
     day_seconds = (sunset - sunrise).total_seconds()
@@ -1792,11 +1884,15 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
     # spanning roughly day_length/15 (~48 minutes on equinox days).
     midday = sunrise + timedelta(seconds=day_seconds / 2.0)
     abhijit_half = timedelta(seconds=(day_seconds / 15.0) / 2.0)
-    return DailyPanchang(
+    result = DailyPanchang(
         weekday=weekday_name,
         day_lord=day_lord,
         day_color=day_color,
         day_color_hex=day_color_hex,
+        tithi_index=tithi_idx,
+        tithi_name=tithi_name,
+        tithi_paksha=tithi_paksha,
+        tithi_significance=tithi_sig,
         sunrise=sunrise,
         sunset=sunset,
         rahu_kaal_start=rk_start,
@@ -1804,13 +1900,19 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
         abhijit_start=midday - abhijit_half,
         abhijit_end=midday + abhijit_half,
     )
+    _PANCHANG_CACHE[cache_key] = result
+    return result
 
 
 def format_panchang_for_prompt(panchang: DailyPanchang) -> str:
     """Plain-English Panchang block for the daily-reading user message."""
+    tithi_line = f"- Tithi: {panchang.tithi_paksha} {panchang.tithi_name}"
+    if panchang.tithi_significance:
+        tithi_line += f" — {panchang.tithi_significance}"
     return (
         "Today's Panchang (computed for the seeker's natal birthplace):\n"
         f"- Day: {panchang.weekday}, ruled by {panchang.day_lord}\n"
+        f"{tithi_line}\n"
         f"- Favourable color: {panchang.day_color}\n"
         f"- Sunrise: {panchang.sunrise.strftime('%H:%M')} local\n"
         f"- Sunset: {panchang.sunset.strftime('%H:%M')} local\n"
