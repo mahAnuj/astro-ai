@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 9 Grahas overview: nine planet glyphs orbiting a warm central sun.
+     Arranged in a rough mandala pattern with the classical order: Sun (center),
+     Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu around. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="The nine grahas of Vedic astrology">
+  <defs>
+    <radialGradient id="aura-9g" cx="0.5" cy="0.5" r="0.7">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#f0e7fb" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sun-9g" cx="0.4" cy="0.4" r="0.7">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Backdrop aura -->
+  <circle cx="160" cy="160" r="150" fill="url(#aura-9g)"/>
+
+  <!-- Stars -->
+  <g fill="#6b21a8" opacity="0.35">
+    <circle cx="45"  cy="60"  r="1.5"/>
+    <circle cx="275" cy="75"  r="2"/>
+    <circle cx="55"  cy="255" r="1.5"/>
+    <circle cx="280" cy="245" r="1.5"/>
+    <circle cx="30"  cy="160" r="1"/>
+    <circle cx="290" cy="170" r="1.5"/>
+  </g>
+
+  <!-- Orbit ring -->
+  <circle cx="160" cy="160" r="110" fill="none" stroke="#c4b5fd" stroke-width="1.2" opacity="0.7" stroke-dasharray="2 4"/>
+
+  <!-- Central Sun (glyph in white circle on gold body) -->
+  <circle cx="160" cy="160" r="34" fill="url(#sun-9g)"/>
+  <circle cx="160" cy="160" r="7" fill="#ffffff"/>
+
+  <!-- 8 grahas around, evenly spaced. Radius 110. Font-family fallback to sans. -->
+  <g font-family="Crimson Pro, Georgia, serif" font-size="22" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#6b21a8">
+    <text x="160" y="50">☾</text>            <!-- Moon top -->
+    <text x="238" y="82">♂</text>            <!-- Mars top-right -->
+    <text x="270" y="160">☿</text>           <!-- Mercury right -->
+    <text x="238" y="238">♃</text>           <!-- Jupiter bottom-right -->
+    <text x="160" y="270">♀</text>           <!-- Venus bottom -->
+    <text x="82"  y="238">♄</text>           <!-- Saturn bottom-left -->
+    <text x="50"  y="160">☊</text>           <!-- Rahu left -->
+    <text x="82"  y="82">☋</text>            <!-- Ketu top-left -->
+  </g>
+</svg>
