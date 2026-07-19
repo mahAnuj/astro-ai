@@ -182,7 +182,11 @@ def _cached(
 # override=True so .env edits actually take effect when uvicorn reloads —
 # otherwise the first-loaded values stick for the lifetime of the process
 # and editing .env feels silently broken.
+# Load order: .env (committed defaults) → .env.local (git-ignored local
+# overrides, e.g. dev secrets that shouldn't live in .env). .env.local wins
+# on any key it defines.
 load_dotenv(override=True)
+load_dotenv(".env.local", override=True)
 
 # Project layout: src/astro_ai/main.py → templates and production prompts live
 # alongside the code. The sibling `evals/` folder is the prompt-evaluation
