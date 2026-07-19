@@ -98,13 +98,12 @@
     init();
   }
 
-  // htmx:load fires on initial page load AND after every boosted swap.
-  // Using it as the single source of truth for "new DOM is ready".
-  document.body && document.body.addEventListener('htmx:load', init);
-  // If body wasn't ready when we ran (extremely unlikely with defer), bind on DCL.
-  if (!document.body) {
-    document.addEventListener('DOMContentLoaded', function () {
-      document.body.addEventListener('htmx:load', init);
-    });
-  }
+  // Attach htmx listeners to `document` (NOT document.body) — hx-boost
+  // replaces the body element on navigation, so any listener attached to
+  // body would be discarded during the swap. htmx events bubble up to
+  // document, so this survives every boost swap.
+  //   - htmx:load        fires on newly-added DOM (initial + every swap)
+  //   - htmx:afterSwap   redundant safety net if htmx:load ever misses
+  document.addEventListener('htmx:load', init);
+  document.addEventListener('htmx:afterSwap', init);
 })();
