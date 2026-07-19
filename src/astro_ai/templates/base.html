@@ -96,6 +96,9 @@
   };
 </script>
 <script src="/static/analytics.js"></script>
+{# Scroll-reveal helper — handles any element with [data-reveal] via one
+   shared IntersectionObserver. Tiny (~1KB). No dependencies. #}
+<script src="/static/reveal.js" defer></script>
 <script>
   // Auto-fire identification + feature view on every page render.
   // - userIdentified sets GA4 user properties so every subsequent event
@@ -149,6 +152,46 @@
             900: '#3b0764',
           },
         },
+        // ─── Motion vocabulary ────────────────────────────────────────
+        // Consistent durations + easings across the whole site. Every
+        // animation the templates use should reach for one of these
+        // rather than inventing its own keyframes. The gate below
+        // (@media prefers-reduced-motion) neutralises all of them for
+        // motion-sensitive users.
+        keyframes: {
+          revealUp: {
+            '0%':   { opacity: '0', transform: 'translateY(8px)' },
+            '100%': { opacity: '1', transform: 'translateY(0)' },
+          },
+          breathe: {
+            '0%, 100%': { transform: 'scale(1)' },
+            '50%':      { transform: 'scale(1.025)' },
+          },
+          flicker: {
+            '0%, 100%': { opacity: '1' },
+            '50%':      { opacity: '0.85' },
+          },
+          drawIn: {
+            '0%':   { strokeDashoffset: '100%' },
+            '100%': { strokeDashoffset: '0' },
+          },
+          spinSlow: {
+            'from': { transform: 'rotate(0deg)' },
+            'to':   { transform: 'rotate(360deg)' },
+          },
+          shimmer: {
+            '0%':   { backgroundPosition: '-200% 0' },
+            '100%': { backgroundPosition: '200% 0' },
+          },
+        },
+        animation: {
+          'reveal-up': 'revealUp 400ms ease-out forwards',
+          'breathe':   'breathe 3s ease-in-out infinite',
+          'flicker':   'flicker 1.4s ease-in-out infinite',
+          'draw-in':   'drawIn 1.2s ease-out forwards',
+          'spin-slow': 'spinSlow 20s linear infinite',
+          'shimmer':   'shimmer 2s ease-in-out infinite',
+        },
       },
     },
   };
@@ -159,6 +202,41 @@
   .htmx-request .htmx-default { display: none; }
   .htmx-indicator { display: none; }
   .htmx-request .htmx-indicator { display: inline-flex; align-items: center; gap: 0.5rem; }
+
+  /* ─── Scroll-reveal helpers ─────────────────────────────────────────
+     Any element with [data-reveal] starts invisible + shifted down 8px,
+     then eases into place when reveal.js adds .reveal-visible (fires when
+     the element enters the viewport). Delay is per-element via
+     [data-reveal-delay="N"] where N is milliseconds (rendered inline
+     via style="transition-delay:...ms"). GPU-only properties (opacity
+     + transform) — no layout thrash. */
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 400ms ease-out, transform 400ms ease-out;
+    will-change: opacity, transform;
+  }
+  [data-reveal].reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── Motion accessibility ──────────────────────────────────────────
+     Users who opt into reduced motion in their OS settings see an
+     instant, static site. Every animation, transition, and reveal is
+     neutralised. Hard requirement; must survive future edits. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    [data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
 
   /* Devanagari script renders optically smaller than Latin at the same px size —
      bump the root by ~8% in Hindi so headings and body feel evenly weighted. */
