@@ -242,6 +242,41 @@
     }
   }
 
+  /* ─── Nav dropdown smooth expand ────────────────────────────────────
+     The "Readings ▾" dropdown in _nav.html toggles between the classes
+     .md\:hidden (closed) and .md\:flex (open) on desktop. Currently
+     that snaps the panel in/out. Override the .md\:hidden display:none
+     with opacity + transform so the panel eases open from just above
+     the trigger, then eases closed.
+
+     Desktop-only: mobile shows the dropdown items inline under the
+     "Readings" label with no toggle needed. */
+  @media (min-width: 768px) {
+    .nav-dropdown-menu {
+      transform-origin: top center;
+      will-change: opacity, transform;
+    }
+    .nav-dropdown-menu.md\:hidden {
+      display: flex !important;
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+      pointer-events: none;
+      visibility: hidden;
+      transition: opacity 180ms ease-out,
+                  transform 180ms ease-out,
+                  visibility 0s linear 180ms;
+    }
+    .nav-dropdown-menu.md\:flex {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+      visibility: visible;
+      transition: opacity 180ms ease-out,
+                  transform 180ms ease-out,
+                  visibility 0s;
+    }
+  }
+
   /* ─── Form focus glow ───────────────────────────────────────────────
      Most text inputs / textareas / selects sitewide already have
      Tailwind's `focus:ring-2 focus:ring-astro-500` — the ring just
