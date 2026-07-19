@@ -93,7 +93,7 @@
   {% set _eff = manglik.effective_status %}
   {% set _eff_colour = {'cancelled':'emerald', 'mitigated':'amber', 'present':'rose'}.get(_eff, 'rose') %}
   {% set _eff_label  = {'cancelled':'Cancelled', 'mitigated':'Mitigated', 'present':'Present — no cancellations'}.get(_eff, 'Present') %}
-  <section class="bg-white rounded-2xl border border-{{ _eff_colour }}-200 shadow-sm overflow-hidden">
+  <section data-reveal class="bg-white rounded-2xl border border-{{ _eff_colour }}-200 shadow-sm overflow-hidden">
     <div class="bg-gradient-to-r from-{{ _eff_colour }}-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
         <h2 class="font-display text-xl text-{{ _eff_colour }}-700">{{ t(lang, 'manglik_title') }}</h2>
@@ -159,7 +159,7 @@
        ('vipareeta_raja',     'Vipareeta Raja Yogas',          'Tremendous success after struggle'),
        ('other',              'Other Classical Yogas',         'Other strengths active in your chart'),
   ] %}
-  <section class="bg-white rounded-2xl border border-emerald-200 shadow-sm overflow-hidden">
+  <section data-reveal class="bg-white rounded-2xl border border-emerald-200 shadow-sm overflow-hidden">
     <div class="bg-gradient-to-r from-emerald-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
         <h2 class="font-display text-xl text-emerald-700">Yogas in your chart</h2>
@@ -195,7 +195,7 @@
 
   <!-- SADE SATI panel (only if active) ---------------------------- -->
   {% if sade_sati.is_active %}
-  <section class="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
+  <section data-reveal class="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
     <div class="bg-gradient-to-r from-amber-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
         <h2 class="font-display text-xl text-amber-700">{{ t(lang, 'sade_sati_title') }}</h2>
@@ -272,14 +272,14 @@
 
   <!-- SECTIONED LLM READING --------------------------------------- -->
   {% for title, body in sections %}
-  <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+  <article data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
     <h2 class="font-display text-xl text-astro-700 mb-3">{{ title }}</h2>
     <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-base">{{ body }}</p>
   </article>
   {% endfor %}
 
   <!-- ASK SHUBH BHAGYA CTA — natural moment after the reading -------- -->
-  <section class="bg-gradient-to-br from-astro-100 via-amber-50 to-rose-50 border-2 border-astro-300 rounded-2xl p-6 sm:p-8 no-print">
+  <section data-reveal class="bg-gradient-to-br from-astro-100 via-amber-50 to-rose-50 border-2 border-astro-300 rounded-2xl p-6 sm:p-8 no-print">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
       <div class="flex-1 min-w-0">
         <div class="flex items-center gap-2 text-astro-700 mb-2">
@@ -305,7 +305,7 @@
   </section>
 
   <!-- DIAMOND CHART + TABLE --------------------------------------- -->
-  <section class="grid lg:grid-cols-5 gap-6">
+  <section data-reveal class="grid lg:grid-cols-5 gap-6">
 
     <div class="lg:col-span-2 bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
       <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-3">{{ t(lang, 'lagna_kundali') }}</h2>
@@ -352,7 +352,7 @@
   </section>
 
   <!-- CONTINUE YOUR CHART ----------------------------------------- -->
-  <section class="bg-gradient-to-br from-astro-50 to-amber-50/40 border border-astro-100 rounded-2xl p-6 sm:p-8 no-print">
+  <section data-reveal class="bg-gradient-to-br from-astro-50 to-amber-50/40 border border-astro-100 rounded-2xl p-6 sm:p-8 no-print">
     <h2 class="font-display text-xl text-astro-700 mb-2">{{ t(lang, 'continue_chart') }}</h2>
     <p class="text-stone-600 text-sm mb-5">{{ t(lang, 'continue_chart_desc') }}</p>
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
