@@ -242,6 +242,44 @@
     }
   }
 
+  /* ─── Modal open/close transitions ──────────────────────────────────
+     Any modal backdrop tagged with [data-modal-backdrop] fades in
+     (opacity 0 → 1 over 220ms) and its child panel scales in (0.95 →
+     1 with a decelerated ease-out). Existing show/hide JS keeps using
+     the .hidden class — we override .hidden's display:none so the
+     transitions can actually run, and use visibility to keep the
+     closed modal out of the accessibility tree.
+
+     Compatibility contract: any modal that adds this attribute must
+     have exactly ONE direct child element (the visible panel). Both
+     the sign-in modal (base.html) and subscribe modal (_subscribe_modal
+     .html) match this shape. */
+  [data-modal-backdrop] {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 220ms ease-out,
+                visibility 0s linear 220ms;
+  }
+  [data-modal-backdrop]:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 220ms ease-out, visibility 0s;
+  }
+  /* Override the Tailwind .hidden display:none so opacity can transition. */
+  [data-modal-backdrop].hidden {
+    display: flex !important;
+  }
+  [data-modal-backdrop] > * {
+    transform: scale(0.95);
+    transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+  }
+  [data-modal-backdrop]:not(.hidden) > * {
+    transform: scale(1);
+  }
+
   /* ─── Primary CTA hover polish ──────────────────────────────────────
      Any button/link/submit that uses the brand primary background
      (bg-astro-700 or bg-astro-600) gets a subtle lift on hover — a 2%
@@ -540,6 +578,7 @@
      to avoid the ~15KB payload on every page load for users who won't sign in. #}
   {% if google_client_id %}
   <div id="google-signin-backdrop"
+       data-modal-backdrop
        class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 no-print"
        role="dialog" aria-modal="true" aria-labelledby="google-signin-title">
     <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 relative">
