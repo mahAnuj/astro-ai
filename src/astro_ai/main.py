@@ -45,7 +45,7 @@ from astro_ai.llm import (
     parse_sectioned_reading,
 )
 from astro_ai.matching import compute_guna_milan
-from astro_ai import cache, email_sender, feedback, festivals, learn_registry, shloks, storage, subscribers, trivia
+from astro_ai import cache, email_sender, feedback, festivals, learn_registry, shloks, storage, subscribers, trivia, users
 import time as _time
 from astro_ai.session import (
     SUPPORTED_LANGS,
@@ -698,6 +698,18 @@ async def auth_google(
         sub=str(info["sub"]),
         since=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
     )
+    # Persist to users.json — silent failure on storage error (auth still
+    # succeeds; user just isn't in our persistent record). Cookie is the
+    # source-of-truth for THIS session; users.json is for cross-device
+    # continuity, Premium subscription tracking, and analytics.
+    try:
+        users.upsert_user(sub=user.sub, email=user.email, name=user.name)
+    except Exception as err:
+        # Log and continue — never let a storage hiccup block sign-in.
+        import logging
+        logging.getLogger(__name__).warning(
+            "users.upsert_user failed for %s: %s", user.email, err
+        )
     response = JSONResponse({"ok": True, "email": user.email, "name": user.name})
     save_user(response, request, user)
     return response
@@ -723,6 +735,12 @@ async def account(request: Request) -> HTMLResponse:
     if user is None:
         return RedirectResponse("/", status_code=303)
     collection = load_collection(request)
+    # Prefer persisted created_at from users.json — accurate "member since"
+    # that survives sign-out / cookie clear. Falls back to the session
+    # cookie's `since` (this-session-only) if the persistent record is
+    # missing (e.g. storage was unavailable when they first signed in).
+    persisted = users.find_by_sub(user.sub)
+    member_since = (persisted.created_at if persisted else user.since) or user.since
     return templates.TemplateResponse(
         request, "account.html",
         {
@@ -730,6 +748,7 @@ async def account(request: Request) -> HTMLResponse:
             "charts": collection.charts,
             "active_id": collection.active_id,
             "saved_charts_count": len(collection.charts),
+            "member_since": member_since,
             "lang": _lang(request),
         },
     )
@@ -1346,9 +1365,20 @@ async def admin_usage(request: Request, days: int = 1) -> HTMLResponse:
     ADMIN_PASSWORD env var). Browser shows the standard login prompt.
     """
     summary = cache.usage_summary(days=days)
+    # Persistent-user counts — separate from Rashifal email subscribers.
+    # These are people who signed in with Google (may or may not be subscribed
+    # to daily emails).
+    user_count = users.count()
+    subscriber_count = subscribers.count()
     return templates.TemplateResponse(
         request, "admin_usage.html",
-        {"lang": _lang(request), "summary": summary, "days": days},
+        {
+            "lang": _lang(request),
+            "summary": summary,
+            "days": days,
+            "user_count": user_count,
+            "subscriber_count": subscriber_count,
+        },
     )
 
 
