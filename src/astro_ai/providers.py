@@ -71,12 +71,20 @@ class ProviderConfig:
         return os.environ.get(self.api_key_env)
 
 
-# Registry of known providers — all OpenAI-compatible, all serving Llama 3.3 70B
-# or close equivalents. Models picked for the best quality-on-free-tier balance
-# as of mid-2026. Override with {NAME}_MODEL env var if you want something else.
+# Registry of known providers — all OpenAI-compatible. Defaults picked for the
+# best quality-on-free-tier balance as of mid-2026.
+#
+# NOTE on the Groq default: Groq deprecated `llama-3.3-70b-versatile` on
+# 2026-08-16 (announced mid-July 2026). We default Groq to `openai/gpt-oss-120b`
+# — the higher-quality of the two replacements Groq recommended (the other
+# being Qwen3 27B, which we passed on because our bilingual narrative use case
+# rewards the larger model). Cerebras + Together still serve Llama 3.3 70B, so
+# the fallback chain keeps a mixed model mix — that's fine at the API surface
+# but expect slight tonal drift between providers. Override any default via
+# the `{NAME}_MODEL` env var without a code change.
 PROVIDERS: dict[str, ProviderConfig] = {
     "groq":     ProviderConfig("groq",     "https://api.groq.com/openai/v1",
-                                "llama-3.3-70b-versatile",                   "GROQ_API_KEY"),
+                                "openai/gpt-oss-120b",                       "GROQ_API_KEY"),
     "cerebras": ProviderConfig("cerebras", "https://api.cerebras.ai/v1",
                                 "llama3.3-70b",                              "CEREBRAS_API_KEY"),
     "together": ProviderConfig("together", "https://api.together.xyz/v1",
