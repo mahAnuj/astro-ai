@@ -5,8 +5,10 @@ __pycache__/
 .venv/
 .python-version
 
-# Env / secrets
+# Env / secrets — covers .env, .env.local, .env.production, .env.staging etc.
 .env
+.env.*
+!.env.example
 
 # prompteval artifacts
 .prompteval/
