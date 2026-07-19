@@ -37,7 +37,15 @@
         var el = entry.target;
         var delay = parseInt(el.getAttribute('data-reveal-delay') || '0', 10);
         if (delay > 0) el.style.transitionDelay = delay + 'ms';
-        el.classList.add('reveal-visible');
+        // Double-rAF: guarantee the browser paints the initial hidden state
+        // for at least one frame before we flip the class, so the CSS
+        // transition actually plays. Without this, above-fold elements can
+        // skip the animation and pop straight into place.
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            el.classList.add('reveal-visible');
+          });
+        });
         observer.unobserve(el);
       });
     }, {
