@@ -239,3 +239,54 @@ def save_ask_usage(response: Response, request: Request,
     data["ask_date"] = date_iso
     data["ask_count"] = count
     _write_session(response, data)
+
+
+# ─── Signed-in user helpers ─────────────────────────────────────────────────
+# Google Sign-In stores a compact user record inside the same __session cookie
+# (Firebase only forwards __session — hence one cookie for everything). Payload
+# is small: email + display name + Google sub (unique ID) + signed-in-at ISO.
+# Total ~150 bytes, well within the ~4KB per-cookie limit.
+
+
+@dataclass(frozen=True)
+class SessionUser:
+    """The signed-in user, as persisted in the session cookie."""
+
+    email: str
+    name: str      # display name from Google; may be empty
+    sub: str       # Google's stable unique user ID (safer than email as key)
+    since: str     # ISO timestamp of when this session was authenticated
+
+
+def load_user(request: Request) -> SessionUser | None:
+    """Return the signed-in user for this request, or None if not signed in."""
+    data = _load_session(request).get("user")
+    if not isinstance(data, dict):
+        return None
+    try:
+        return SessionUser(
+            email=str(data["email"]),
+            name=str(data.get("name", "")),
+            sub=str(data["sub"]),
+            since=str(data.get("since", "")),
+        )
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def save_user(response: Response, request: Request, user: SessionUser) -> None:
+    """Persist the signed-in user into the session cookie.
+
+    Preserves other session state (charts, lang, ask usage) — this only
+    writes the `user` key of the combined payload.
+    """
+    data = _load_session(request)
+    data["user"] = asdict(user)
+    _write_session(response, data)
+
+
+def clear_user(response: Response, request: Request) -> None:
+    """Sign out — remove the user record but keep other session state."""
+    data = _load_session(request)
+    data.pop("user", None)
+    _write_session(response, data)

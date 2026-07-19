@@ -31,6 +31,10 @@ dependencies = [
     # a transitive dep of openai, but pin it explicitly since email_sender.py
     # uses it directly.
     "httpx>=0.27",
+    # google-auth: verifies Google Identity Services ID tokens server-side.
+    # Used by /auth/google to validate a Sign-in-with-Google credential JWT
+    # against Google's public keys before granting a session.
+    "google-auth>=2.30",
 ]
 
 [project.scripts]
