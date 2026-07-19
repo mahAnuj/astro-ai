@@ -96,9 +96,8 @@
   };
 </script>
 <script src="/static/analytics.js"></script>
-{# Scroll-reveal helper — handles any element with [data-reveal] via one
-   shared IntersectionObserver. Tiny (~1KB). No dependencies. #}
-<script src="/static/reveal.js" defer></script>
+{# Scroll-reveal is pure CSS keyframe now — see [data-reveal] rule in
+   the <style> block below. No JS needed. #}
 <script>
   // Auto-fire identification + feature view on every page render.
   // - userIdentified sets GA4 user properties so every subsequent event
@@ -204,24 +203,23 @@
   .htmx-request .htmx-indicator { display: inline-flex; align-items: center; gap: 0.5rem; }
 
   /* ─── Scroll-reveal helpers ─────────────────────────────────────────
-     Any element with [data-reveal] starts invisible, shifted down 32px,
-     and scaled to 0.97, then eases into place when reveal.js adds
-     .reveal-visible (fires when the element enters the viewport).
-     Delay is per-element via [data-reveal-delay="N"] where N is
-     milliseconds (rendered inline via style="transition-delay:...ms").
+     Any element with [data-reveal] fades up + scales in on page load.
+     Pure CSS keyframe — no JS scroll observer, no HTMX boost concerns.
+     If HTML renders, the animation runs. Zero dependency on cache
+     freshness or event listener survival.
+
+     Stagger is opt-in via inline style: style="animation-delay:120ms".
      GPU-only properties (opacity + transform) — no layout thrash.
      Tuning: 32px rise + 0.97→1 scale over 700ms is unambiguously
-     visible on first landing without feeling bouncy. Sacred, not
-     playful — the ease curve is a slow-start decelerated ease. */
+     visible without feeling bouncy — sacred, not playful. */
+  @keyframes revealUp {
+    from { opacity: 0; transform: translateY(32px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
   [data-reveal] {
     opacity: 0;
-    transform: translateY(32px) scale(0.97);
-    transition: opacity 700ms ease-out, transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    animation: revealUp 700ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
     will-change: opacity, transform;
-  }
-  [data-reveal].reveal-visible {
-    opacity: 1;
-    transform: translateY(0) scale(1);
   }
 
   /* ─── Motion accessibility ──────────────────────────────────────────
