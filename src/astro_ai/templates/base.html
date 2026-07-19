@@ -242,6 +242,23 @@
     }
   }
 
+  /* ─── Form focus glow ───────────────────────────────────────────────
+     Most text inputs / textareas / selects sitewide already have
+     Tailwind's `focus:ring-2 focus:ring-astro-500` — the ring just
+     snaps in with no transition. Add a smooth 200ms transition on
+     box-shadow and border-color so the focus ring glows in gently.
+
+     Excludes non-visual input types (checkbox, radio, submit, button,
+     hidden, file, image) where the ring treatment would look wrong.
+     :where() keeps specificity at 0 so nothing here fights inline
+     Tailwind utilities. */
+  input:where(:not([type="submit"]):not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="file"]):not([type="image"])),
+  select,
+  textarea {
+    transition: box-shadow 200ms ease-out,
+                border-color 200ms ease-out;
+  }
+
   /* ─── Modal open/close transitions ──────────────────────────────────
      Any modal backdrop tagged with [data-modal-backdrop] fades in
      (opacity 0 → 1 over 220ms) and its child panel scales in (0.95 →
