@@ -31,11 +31,12 @@ finds on an existing record.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Optional
 
 from astro_ai import storage
+from astro_ai.session import ChartCollection, MAX_CHARTS, SavedChart
 
 log = logging.getLogger(__name__)
 
@@ -163,3 +164,125 @@ def list_users() -> list[dict]:
 def count() -> int:
     """Total signed-up user count for the /admin/usage dashboard."""
     return len(list_users())
+
+
+# ─── Cross-device chart sync ────────────────────────────────────────────────
+# Signed-in users get their SavedChart list synced to users.json — the cookie
+# remains the fast local cache but users.json is the cross-device source of
+# truth. On sign-in we merge (device charts) ∪ (cross-device charts) and
+# write the union back to both places, so charts follow the user.
+
+
+def _chart_dedup_key(chart: SavedChart) -> tuple[str, str, str]:
+    """Charts are considered "the same" when birth details match.
+
+    Case-insensitive place matching so "Delhi" and "delhi" don't dedupe as
+    different charts. Time and date are compared as-is (both are stored
+    from user input, so they're already in a consistent format).
+    """
+    return (chart.birth_date, chart.birth_time, chart.birth_place.strip().lower())
+
+
+def load_charts(sub: str) -> ChartCollection:
+    """Load a signed-in user's persisted ChartCollection. Empty if not found."""
+    if not sub:
+        return ChartCollection(charts=(), active_id=None)
+    for row in list_users():
+        if row.get("sub") == sub:
+            raw = row.get("charts", [])
+            try:
+                charts = tuple(SavedChart(**c) for c in raw)
+            except (TypeError, KeyError):
+                charts = ()
+            return ChartCollection(charts=charts, active_id=row.get("active_id"))
+    return ChartCollection(charts=(), active_id=None)
+
+
+def save_charts(sub: str, collection: ChartCollection) -> bool:
+    """Persist a signed-in user's ChartCollection to users.json.
+
+    Silent failure (returns False + logs) when storage isn't configured or
+    when the user doesn't exist in users.json — this is best-effort sync,
+    the cookie remains the source of truth for THIS session. The user
+    record is expected to already exist (upsert_user runs before this on
+    sign-in); if it doesn't, we skip rather than create a phantom record.
+    """
+    if not sub:
+        return False
+
+    def _add(current):
+        data = current or {"users": []}
+        for existing in data["users"]:
+            if existing.get("sub") == sub:
+                existing["charts"] = [asdict(c) for c in collection.charts]
+                existing["active_id"] = collection.active_id
+                return data
+        # User not in users.json — skip. upsert_user creates the record;
+        # sync should only happen after that. If we hit this, it's a race
+        # or an anonymous user; either way, do nothing.
+        return None
+
+    result = storage.update_json(USERS_KEY, _add, default={"users": []})
+    if result is None:
+        log.warning("users.save_charts: storage unavailable or user %s not found", sub)
+        return False
+    return True
+
+
+def merge_collections(cookie: ChartCollection, user: ChartCollection) -> ChartCollection:
+    """Merge (device charts) ∪ (cross-device charts), dedup by birth details.
+
+    Merge policy:
+    - User (cross-device) charts come first — treated as authoritative for
+      any dedup collisions (they carry the historical id, may have been
+      renamed on another device).
+    - Cookie charts NOT already in the user set get appended.
+    - Cap at MAX_CHARTS: if total exceeds, drop the tail (least-recently-
+      added cookie charts are lost; user's cross-device set is preserved).
+    - active_id: prefer cookie's (that's what this device was just looking
+      at). If cookie's active didn't survive dedup, fall back to user's
+      active. If neither survives, first merged chart.
+    """
+    seen: set[tuple[str, str, str]] = set()
+    merged: list[SavedChart] = []
+
+    for chart in user.charts:
+        key = _chart_dedup_key(chart)
+        if key not in seen:
+            seen.add(key)
+            merged.append(chart)
+
+    for chart in cookie.charts:
+        key = _chart_dedup_key(chart)
+        if key not in seen and len(merged) < MAX_CHARTS:
+            seen.add(key)
+            merged.append(chart)
+
+    # Cap at MAX_CHARTS — trim from the tail (user's earliest cross-device
+    # charts get priority over cookie additions).
+    merged = merged[:MAX_CHARTS]
+
+    # Resolve active_id — prefer cookie, then user, then first.
+    merged_ids = {c.id for c in merged}
+    active_id: Optional[str] = None
+    if cookie.active_id and cookie.active_id in merged_ids:
+        active_id = cookie.active_id
+    elif user.active_id and user.active_id in merged_ids:
+        active_id = user.active_id
+    elif merged:
+        active_id = merged[0].id
+    # Also handle: cookie's active chart might have deduped away — find its
+    # replacement in the user set by matching birth details.
+    if active_id is None and cookie.active_id:
+        for c in cookie.charts:
+            if c.id == cookie.active_id:
+                target_key = _chart_dedup_key(c)
+                for m in merged:
+                    if _chart_dedup_key(m) == target_key:
+                        active_id = m.id
+                        break
+                break
+        if active_id is None and merged:
+            active_id = merged[0].id
+
+    return ChartCollection(charts=tuple(merged), active_id=active_id)
