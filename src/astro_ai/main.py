@@ -69,6 +69,27 @@ def _lang(request: Request) -> str:
     return load_lang(request)
 
 
+def _save_collection_synced(response: Response, collection: ChartCollection, request: Request) -> None:
+    """Save a ChartCollection to the cookie AND (if signed in) to users.json.
+
+    Wrapper around session.save_collection that ensures signed-in users'
+    chart state stays in sync across their devices. Anonymous users get
+    exactly the previous behaviour (cookie-only). Silent failure on
+    users.json write — cookie remains the source of truth for THIS
+    session either way.
+    """
+    save_collection(response, collection, request)
+    user = load_user(request)
+    if user is not None:
+        try:
+            users.save_charts(user.sub, collection)
+        except Exception as err:
+            import logging
+            logging.getLogger(__name__).warning(
+                "chart sync to users.json failed for %s: %s", user.email, err
+            )
+
+
 _basic_auth = HTTPBasic(realm="Bhagya admin")
 _ADMIN_DEV_FALLBACK = "bhagya-dev-only-CHANGE-ME"
 
@@ -426,7 +447,7 @@ async def reading(
             status_code=400,
         )
     response = RedirectResponse("/kundli", status_code=303)
-    save_collection(response, collection, request)
+    _save_collection_synced(response, collection, request)
     return response
 
 
@@ -710,7 +731,24 @@ async def auth_google(
         logging.getLogger(__name__).warning(
             "users.upsert_user failed for %s: %s", user.email, err
         )
+
+    # Cross-device chart sync: merge (this device's charts) ∪ (user's
+    # cross-device charts) and write the union back to BOTH the cookie
+    # and users.json. Signed-in users' charts follow them across devices;
+    # anonymous / storage-unavailable paths silently keep the cookie as-is.
     response = JSONResponse({"ok": True, "email": user.email, "name": user.name})
+    try:
+        cookie_collection = load_collection(request)
+        user_collection = users.load_charts(user.sub)
+        merged = users.merge_collections(cookie=cookie_collection, user=user_collection)
+        save_collection(response, merged, request)
+        users.save_charts(user.sub, merged)  # silent no-op if storage unavailable
+    except Exception as err:
+        import logging
+        logging.getLogger(__name__).warning(
+            "chart sync on sign-in failed for %s: %s", user.email, err
+        )
+
     save_user(response, request, user)
     return response
 
@@ -1771,7 +1809,7 @@ async def switch(
     """Activate the named saved chart, then redirect to `next` (default home)."""
     collection = load_collection(request).set_active(chart_id)
     response = RedirectResponse(_safe_redirect_target(next), status_code=303)
-    save_collection(response, collection, request)
+    _save_collection_synced(response, collection, request)
     return response
 
 
@@ -1785,8 +1823,16 @@ async def delete_chart(
     response = RedirectResponse("/", status_code=303)
     if not collection.charts:
         clear_collection(response)
+        # Also clear the persisted charts for signed-in users so their
+        # cross-device state stays consistent with what they see here.
+        user = load_user(request)
+        if user is not None:
+            try:
+                users.save_charts(user.sub, collection)  # empty collection
+            except Exception:
+                pass
     else:
-        save_collection(response, collection, request)
+        _save_collection_synced(response, collection, request)
     return response
 
 
