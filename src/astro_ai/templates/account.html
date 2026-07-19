@@ -38,8 +38,8 @@
         <dd class="text-stone-800">{{ saved_charts_count }} of 10</dd>
       </div>
       <div>
-        <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-0.5">Signed in since</dt>
-        <dd class="text-stone-800">{{ current_user.since[:10] if current_user.since else '—' }}</dd>
+        <dt class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-0.5">Member since</dt>
+        <dd class="text-stone-800">{{ member_since[:10] if member_since else '—' }}</dd>
       </div>
     </dl>
   </section>
