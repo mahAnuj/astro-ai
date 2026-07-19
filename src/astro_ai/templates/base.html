@@ -242,6 +242,35 @@
     }
   }
 
+  /* ─── Primary CTA hover polish ──────────────────────────────────────
+     Any button/link/submit that uses the brand primary background
+     (bg-astro-700 or bg-astro-600) gets a subtle lift on hover — a 2%
+     scale-up and a warm violet shadow. On press, it dips back to 0.98
+     for tactile feedback. GPU-only transforms; :disabled skipped so
+     the loading/wait state doesn't shimmy.
+     Automatically applies to every primary CTA sitewide without
+     touching individual templates. */
+  a.bg-astro-700, a.bg-astro-600,
+  button.bg-astro-700, button.bg-astro-600,
+  input[type="submit"].bg-astro-700, input[type="submit"].bg-astro-600 {
+    transition: transform 180ms ease-out,
+                box-shadow 180ms ease-out,
+                background-color 180ms ease-out;
+  }
+  a.bg-astro-700:hover, a.bg-astro-600:hover,
+  button.bg-astro-700:not(:disabled):hover, button.bg-astro-600:not(:disabled):hover,
+  input[type="submit"].bg-astro-700:not(:disabled):hover, input[type="submit"].bg-astro-600:not(:disabled):hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 10px 22px -8px rgba(93, 62, 180, 0.42),
+                0 4px 8px -4px rgba(0, 0, 0, 0.08);
+  }
+  a.bg-astro-700:active, a.bg-astro-600:active,
+  button.bg-astro-700:not(:disabled):active, button.bg-astro-600:not(:disabled):active,
+  input[type="submit"].bg-astro-700:not(:disabled):active, input[type="submit"].bg-astro-600:not(:disabled):active {
+    transform: translateY(0) scale(0.98);
+    transition-duration: 80ms;
+  }
+
   /* Devanagari script renders optically smaller than Latin at the same px size —
      bump the root by ~8% in Hindi so headings and body feel evenly weighted. */
   html[lang="hi"] { font-size: 108%; }
