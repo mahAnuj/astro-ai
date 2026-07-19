@@ -160,6 +160,192 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="guru-jupiter-in-vedic-astrology",
+        title="Guru (Jupiter): The Great Benefic and Teacher",
+        summary="Jupiter — Guru, Brihaspati — is the planet of wisdom, wealth, children, and dharma. The single most benevolent graha in the Vedic system, and often the one that decides whether a life feels expansive or constrained. Understanding your Jupiter is understanding what protects you.",
+        category="Grahas",
+        hero_image="/static/learn/guru-jupiter-in-vedic-astrology/hero.svg",
+        read_time="11 min",
+        related=("the-9-grahas-overview", "surya-sun-in-vedic-astrology", "shani-saturn"),
+        faqs=(
+            {
+                "q": "Why is Jupiter called the 'Great Benefic'?",
+                "a": "Jupiter is the strongest natural benefic — its energy expands, blesses, and protects the significations of any house or planet it aspects or occupies. A well-placed Jupiter cushions the effects of every other difficult placement in the chart. Classical texts call it Devaguru (teacher of the gods) precisely because Jupiter's role is to give wisdom that saves you from your own mistakes. This is why matching charts for marriage weighs Jupiter's placement so heavily.",
+            },
+            {
+                "q": "What does Jupiter signify in Vedic astrology?",
+                "a": "Jupiter is the karaka (natural significator) for the 2nd house (wealth, family), 5th (children, intelligence), 9th (dharma, teachers, fortune), and 11th (gains, elder siblings). It rules wisdom, learning (especially religious/spiritual learning), law, ethics, prosperity, and children. In a woman's chart Jupiter is also the karaka for husband and marriage.",
+            },
+            {
+                "q": "What does 'strong Jupiter' mean?",
+                "a": "Jupiter is strong when placed in Cancer (exalted), Sagittarius or Pisces (own signs), in a kendra (1st/4th/7th/10th), or aspected by other benefics. Strong Jupiter people tend to be wise, respected, materially comfortable, and blessed with good children. They also often serve as teachers or mentors to others, whether formally or informally.",
+            },
+            {
+                "q": "What does debilitated Jupiter mean?",
+                "a": "Jupiter debilitated in Capricorn loses its natural expansiveness — the sign belongs to Saturn (limits, structure), and Jupiter's optimism gets compressed. Common manifestations: struggles with children or fertility, difficulty finding good teachers, tendency toward pessimism, and material scarcity despite hard work. Cancellation exists — if the Capricorn lord Saturn is well-placed, Neechabhanga Raja Yoga forms and the debilitation flips into strength.",
+            },
+            {
+                "q": "What's the best remedy for a weak Jupiter?",
+                "a": "Honour your teachers and elders — Jupiter is the guru principle. Chant the Guru mantra 'Om Gum Gurave Namah' or 'Om Brahaspataye Namah' on Thursdays. Fast on Thursdays with yellow foods (turmeric rice, chana daal). Wear yellow, donate yellow items (turmeric, gram, saffron, gold, yellow cloth) on Thursdays. Yellow Sapphire (Pukhraj) is the classical gem but only after chart consultation — a functional-malefic Jupiter with Yellow Sapphire can inflate ego or worsen the very issues it's meant to solve.",
+            },
+        ),
+    ),
+    Article(
+        slug="mangal-mars-in-vedic-astrology",
+        title="Mangal (Mars): The Warrior Planet — Energy, Courage, and Manglik",
+        summary="Mars is the karaka of courage, physical strength, siblings, and property — and the planet behind the most-searched dosha in Indian astrology. Understanding Mars means understanding your fight, your drive, and your capacity to act decisively when it matters.",
+        category="Grahas",
+        hero_image="/static/learn/mangal-mars-in-vedic-astrology/hero.svg",
+        read_time="11 min",
+        related=("manglik-dosh", "the-9-grahas-overview", "shani-saturn"),
+        faqs=(
+            {
+                "q": "What does Mars signify in Vedic astrology?",
+                "a": "Mars is the karaka for the 3rd house (courage, younger siblings, communication skill), the 6th house (enemies, disputes, service), and — indirectly — for real estate and physical labour. It governs energy, willpower, competitive drive, surgical / martial skill, muscle strength, blood, and the capacity to protect what's yours. In terms of relationships, Mars matters heavily for Manglik status; see our full Manglik guide.",
+            },
+            {
+                "q": "What's the connection between Mars and Manglik Dosh?",
+                "a": "Manglik Dosh forms when Mars sits in the 1st, 2nd, 4th, 7th, 8th, or 12th house counted from Lagna, Moon, or Venus. Because Mars is the karaka for aggression, its presence in the houses affecting marriage (7th) or its immediate neighbours can classically indicate friction in marital life. Multiple cancellation rules apply — Mars in own sign, exalted Mars, Jupiter aspect, Cancer/Leo Yogakaraka exclusion — see the dedicated Manglik article.",
+            },
+            {
+                "q": "What is 'strong Mars' in a chart?",
+                "a": "Mars is strong when placed in Aries (own sign, mooltrikona), Scorpio (own sign), Capricorn (exalted), in the 10th house (its Digbala — natural home), or aspected by Jupiter. Strong Mars people are usually courageous, physically robust, direct in speech, quick to act, and effective in competitive fields (military, sports, surgery, engineering). Very strong Mars can also mean aggression if not channelled — Mars rewards discipline more than it does raw force.",
+            },
+            {
+                "q": "What does debilitated Mars mean?",
+                "a": "Mars debilitated in Cancer loses much of its drive — the fiery planet in the watery, emotional sign becomes indecisive, easily upset, and less able to hold ground under pressure. Interestingly, a debilitated Mars in a Manglik house actually cancels the Manglik dosha per classical rule (Jataka Chandrika) — the weakened Mars lacks the strength to disturb marriage. Cancellation of debilitation (Neechabhanga) exists when the Cancer lord Moon is well-placed.",
+            },
+            {
+                "q": "What's the best remedy for a difficult Mars?",
+                "a": "The universal Mars remedy is Hanuman Chalisa daily, especially on Tuesdays — Hanuman is considered the mediator between the seeker and Mars's fierce energy. Recite the Mangal mantra 'Om Ang Angarakaya Namah' 108 times Tuesday morning. Fast on Tuesdays with a single meal, avoiding salt. Donate red lentils (masoor dal), copper, or jaggery on Tuesdays. Physical exercise is an underrated Mars remedy — controlled physical exertion channels the planet's energy productively. Red Coral (Moonga) requires chart consultation before wearing.",
+            },
+        ),
+    ),
+    Article(
+        slug="shukra-venus-in-vedic-astrology",
+        title="Shukra (Venus): Love, Marriage, Comfort, and the Feminine Principle",
+        summary="Venus is the karaka of marriage, romantic love, and material comfort — the planet that decides how much beauty, pleasure, and connection your life holds. Understanding Venus is understanding what you're drawn to and how you experience partnership.",
+        category="Grahas",
+        hero_image="/static/learn/shukra-venus-in-vedic-astrology/hero.svg",
+        read_time="11 min",
+        related=("the-9-grahas-overview", "manglik-dosh", "chandra-moon-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "What does Venus signify in Vedic astrology?",
+                "a": "Venus is the karaka for the 7th house (marriage, spouse) — and specifically the karaka for the wife in a male's chart (Jupiter serves this role for a female). It also governs love, romance, comfort, luxury, art, music, poetry, dance, vehicles, jewellery, beauty, cosmetics, and the feminine principle generally. Where Venus sits shapes what you find beautiful and how you experience partnership.",
+            },
+            {
+                "q": "How does Venus determine marriage timing?",
+                "a": "Marriage typically happens during the Mahadasha or Antardasha of Venus (in a male's chart), Jupiter (in a female's chart), the 7th house lord, or a planet occupying / aspecting the 7th house. When multiple such signals cluster in the same window, marriage becomes probable. Venus Mahadasha runs 20 years and often coincides with marriage; Venus Antardasha within other Mahadashas also frequently triggers it.",
+            },
+            {
+                "q": "What is 'strong Venus' in a chart?",
+                "a": "Venus is strong in Pisces (exalted), Taurus or Libra (own signs), in a kendra (especially the 7th, its natural home), or aspected by Jupiter. Strong Venus people are usually attractive, artistic, socially graceful, and enjoy comfortable material lives. They tend to have loving marriages and are drawn to beauty in all forms. When exalted in Pisces AND in a kendra, Venus forms Malavya Yoga — one of the five Pancha Mahapurush yogas — granting lifelong luxury and marital happiness.",
+            },
+            {
+                "q": "What does debilitated Venus mean?",
+                "a": "Venus debilitated in Virgo (Mercury's analytical, service-oriented sign) loses its natural warmth and grace. Common manifestations: difficulty in romantic relationships (over-analysis of partners), tendency toward criticism in love, delayed marriage, or discomfort with sensual pleasure and material luxury. Cancellation exists — if Mercury (the Virgo lord) is strong, Neechabhanga Raja Yoga forms.",
+            },
+            {
+                "q": "What's the best remedy for a weak Venus?",
+                "a": "Honour and support the women in your life — Venus is the feminine karaka. Fast on Fridays with white foods (rice, milk, yogurt). Wear white or light pink on Fridays. Chant 'Om Shum Shukraya Namah' 108 times Friday morning. Donate white items (rice, milk, sugar, silver, white cloth) or serve women in need. Diamond is the classical gem for Venus — the safest of the major gemstones to wear, though still worth a chart consultation. For unmarried people delaying marriage, worship Goddess Parvati or Lakshmi.",
+            },
+        ),
+    ),
+    Article(
+        slug="budha-mercury-in-vedic-astrology",
+        title="Budha (Mercury): The Planet of Intellect and Communication",
+        summary="Mercury governs your mind's analytical layer — how you speak, think, learn, calculate, and do business. Understanding Mercury tells you how you process information, why you communicate the way you do, and where your intellectual edge lies.",
+        category="Grahas",
+        hero_image="/static/learn/budha-mercury-in-vedic-astrology/hero.svg",
+        read_time="10 min",
+        related=("the-9-grahas-overview", "surya-sun-in-vedic-astrology", "guru-jupiter-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "What does Mercury signify in Vedic astrology?",
+                "a": "Mercury is the karaka for the 10th house (career, especially in communication or trade). Its themes are intellect, speech, writing, mathematics, education, commerce, short-distance travel, siblings' friends, and youthful mental agility. Mercury governs the nervous system and the throat/speech faculties. It's also the karaka for memory when studied via specific reference points in the chart.",
+            },
+            {
+                "q": "What is 'strong Mercury' in a chart?",
+                "a": "Mercury is strong in Virgo (both exalted and own sign — a rare combination), in Gemini (own sign), in the 1st house (its Digbala — natural home), or when forming Budha-Aditya Yoga (conjunct Sun). Strong Mercury people are quick-witted, articulate, mathematically inclined, and often successful in business, media, teaching, writing, or trade. They tend to be flexible, adaptable, and good at building networks.",
+            },
+            {
+                "q": "What does Budha-Aditya Yoga mean?",
+                "a": "Budha-Aditya Yoga forms when Sun and Mercury sit in the same sign. It's one of the most-cited beneficial combinations in classical Vedic astrology — grants intelligence, communication skill, career recognition, and respect. However, it's weakened when Mercury is combust (very close to the Sun, within ~14 degrees) — the Sun's fire burns Mercury's articulation. A Budha-Aditya without combustion is a much stronger gift than one with it.",
+            },
+            {
+                "q": "What does debilitated Mercury mean?",
+                "a": "Mercury debilitated in Pisces loses precision — the analytical planet in the mystical, boundless sign struggles with concrete thinking. Common manifestations: scattered focus, difficulty with numbers or details, tendency toward dreaminess over action. Interestingly, debilitated Mercury can be excellent for spiritual pursuits, poetry, and intuitive work — it's specifically the linear-analytical function that suffers. Cancellation exists when Jupiter (Pisces lord) is strong.",
+            },
+            {
+                "q": "What's the best remedy for a weak Mercury?",
+                "a": "Honour scholars, teachers, and young students — Mercury is the karaka for the youthful learning mind. Chant 'Om Bum Budhaya Namah' or the Vishnu Sahasranama on Wednesdays. Wear green on Wednesdays. Fast on Wednesdays with a single meal. Donate green items (moong dal, green vegetables), books, or educational supplies to students. Feed and care for young girls (kanya). Emerald (Panna) is the classical gem for Mercury — one of the safer gems to wear, though a chart consultation is still recommended.",
+            },
+        ),
+    ),
+    Article(
+        slug="rahu-in-vedic-astrology",
+        title="Rahu: The Dragon's Head — Hunger, Obsession, and Foreign Paths",
+        summary="Rahu is a mathematical point, not a physical planet — but its influence on your chart is anything but subtle. Where Rahu sits shapes what you obsessively chase, where you'll travel, what unconventional path calls you, and what your soul came here to explore in this lifetime.",
+        category="Grahas",
+        hero_image="/static/learn/rahu-in-vedic-astrology/hero.svg",
+        read_time="11 min",
+        related=("rahu-mahadasha-ketu-antardasha", "ketu-in-vedic-astrology", "the-9-grahas-overview"),
+        faqs=(
+            {
+                "q": "What is Rahu if it's not a physical planet?",
+                "a": "Rahu is the north lunar node — the mathematical point where the Moon's orbit crosses the Sun's ecliptic going northward. It's not a physical body you can point to in the sky, but its position is precisely calculable and its astrological effects are treated as fully real. Classical mythology tells the story of Rahu as the head of a demon (Svarbhanu) who drank the amrita (nectar of immortality) before being decapitated by Vishnu; the head became Rahu, the body became Ketu. Because both retained immortality, they became grahas.",
+            },
+            {
+                "q": "What does Rahu signify in Vedic astrology?",
+                "a": "Rahu signifies obsession, sudden ambition, hunger for the new, foreign lands and cultures, unconventional paths, technology, mass appeal, illusion, addiction, and karmic patterns brought forward from past lives. It amplifies whatever house it sits in — for good or ill. Rahu is the planet of 'this is different, I need to try it' — the outward pull toward what you haven't yet experienced.",
+            },
+            {
+                "q": "Is Rahu always malefic?",
+                "a": "Rahu is classified as a natural malefic but is deeply context-dependent. In favourable houses (3rd, 6th, 10th, 11th) with benefic aspects, Rahu can grant tremendous worldly success — foreign wealth, technology fortune, unconventional achievements. In unfavourable positions (like the 7th, disturbing marriage) or without benefic support, Rahu tends toward obsession, deception, and unstable ambition. Modern successful entrepreneurs, actors, and technology founders often have strong Rahu.",
+            },
+            {
+                "q": "What does Rahu Mahadasha bring?",
+                "a": "Rahu Mahadasha runs 18 years — the second-longest after Venus. It typically brings dramatic life transformation — foreign travel or settlement, obsessive pursuits, sudden career shifts, addiction risk, and boom-and-bust cycles. Where Rahu sits in your natal chart shapes which life area gets the transformation. See our detailed Rahu-Ketu antardasha guide for the classic mid-Mahadasha inflection point.",
+            },
+            {
+                "q": "What's the best remedy for a difficult Rahu?",
+                "a": "The classical Rahu remedy is Durga worship — chant 'Om Ram Rahave Namah' or the Durga Chalisa daily. Feed birds (especially crows), donate to lepers or the marginalised, and worship the goddess in her fierce forms (Kali, Durga, Chamunda). Blue or grey clothing on Saturdays. Meditation practice is unusually helpful for Rahu — the outward hunger settles when the mind learns to sit still. Hessonite (Gomedh) is the classical gemstone but requires careful chart consultation.",
+            },
+        ),
+    ),
+    Article(
+        slug="ketu-in-vedic-astrology",
+        title="Ketu: The Dragon's Tail — Detachment, Moksha, and Past-Life Karma",
+        summary="Ketu is Rahu's cosmic counterpart — the released half of the same karmic story. Where Rahu chases outward, Ketu drops inward. Where Rahu wants more, Ketu wants less. Understanding your Ketu tells you what you've already mastered in past lives and what your soul is here to release.",
+        category="Grahas",
+        hero_image="/static/learn/ketu-in-vedic-astrology/hero.svg",
+        read_time="11 min",
+        related=("rahu-in-vedic-astrology", "rahu-mahadasha-ketu-antardasha", "the-9-grahas-overview"),
+        faqs=(
+            {
+                "q": "What is Ketu if it's not a physical planet?",
+                "a": "Ketu is the south lunar node — the mathematical point exactly 180 degrees from Rahu, where the Moon's orbit crosses the Sun's ecliptic going southward. Like Rahu, it's not a physical body but a precisely calculated point. Mythologically, Ketu is the decapitated body of the demon Svarbhanu — the immortal remainder after Rahu (the head) was severed. Because Ketu retained the amrita, it too became a graha, and always sits exactly opposite Rahu in every chart.",
+            },
+            {
+                "q": "What does Ketu signify in Vedic astrology?",
+                "a": "Ketu signifies detachment, spiritual liberation (moksha), past-life karma and mastery, sudden endings, occult knowledge, introspection, isolation, and the capacity to renounce. Ketu is the karaka for moksha (via the 12th house from AK/Karakamsa in Rao's methodology). It amplifies whatever house it occupies — but where Rahu amplifies craving, Ketu amplifies detachment. Both grahas together represent your karmic axis: what you're pulled toward (Rahu) and what you're releasing (Ketu).",
+            },
+            {
+                "q": "Why is Ketu sometimes called 'the mokshakaraka'?",
+                "a": "Because Ketu's core signature is release rather than accumulation, it's associated with the path of liberation. Rao's methodology specifically flags Ketu in the 12th house from Karakamsa (AK's navamsa position) as a strong indicator of moksha-inclined life. Historically, many great spiritual figures have had strong Ketu — the planet of 'I don't need this' is naturally the planet of the renunciate.",
+            },
+            {
+                "q": "What does Ketu Mahadasha bring?",
+                "a": "Ketu Mahadasha runs 7 years — short but psychologically deep. Common themes: sudden loss of interest in what you were pursuing, spiritual awakening, isolation (voluntary or forced), health matters that seem to appear from nowhere and disappear the same way, and profound inner clarity that comes through subtraction rather than addition. Not a period for launching new ventures — Ketu clarifies through release, and permanent decisions made in Ketu often get regretted once Venus (which follows) opens.",
+            },
+            {
+                "q": "What's the best remedy for a difficult Ketu?",
+                "a": "The classical Ketu remedy is Ganesha worship — chant 'Om Gam Ganapataye Namah' 108 times daily. Ganesha, as the remover of obstacles and lord of beginnings, is considered Ketu's presiding deity. Serve dogs and stray animals (Ketu's associated creatures). Meditate daily — Ketu responds to inner stillness more than any other planet. Donate blankets, sesame oil, or grey/multi-coloured cloth on Tuesdays. Visit ancestral temples or perform Pitru Tarpan — Ketu rules ancestral karma. Cat's Eye (Lehsunia) is the classical gem but should never be worn without careful chart review.",
+            },
+        ),
+    ),
+    Article(
         slug="sun-mahadasha",
         title="Sun Mahadasha: 6 Years of Authority, Vitality, and Visibility",
         summary="Sun's Mahadasha is short (6 years) but intense. Career visibility rises, father / authority themes activate, and the mandate is to become someone. What each of the nine antardashas within Sun Maha tends to bring, and how to make the most of the period.",
@@ -259,7 +445,7 @@ ARTICLES: tuple[Article, ...] = (
         category="Grahas",
         hero_image="/static/learn/shani-saturn/hero.svg",
         read_time="10 min",
-        related=("sade-sati", "rahu-mahadasha-ketu-antardasha"),
+        related=("sade-sati", "guru-jupiter-in-vedic-astrology", "the-9-grahas-overview"),
         faqs=(
             {
                 "q": "Why is Saturn considered the most-feared planet?",

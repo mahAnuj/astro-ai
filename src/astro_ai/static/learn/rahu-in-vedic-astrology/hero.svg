@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Rahu: shadowy deep-violet body with smoke tendrils rising. Rahu is the
+     dragon's head — hungry, obsessive, foreign. Not physical, so the body
+     is deliberately less solid than the classical grahas. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Rahu — the north lunar node, the shadow of hunger">
+  <defs>
+    <radialGradient id="aura-ra" cx="0.5" cy="0.5" r="0.7">
+      <stop offset="0%" stop-color="#ddd6fe" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#c4b5fd" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="rahu-body" cx="0.35" cy="0.35" r="0.7">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="55%" stop-color="#4c1d95"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </radialGradient>
+  </defs>
+
+  <circle cx="160" cy="160" r="150" fill="url(#aura-ra)"/>
+
+  <!-- More/brighter stars — Rahu's cosmic-shadow domain -->
+  <g fill="#c4b5fd" opacity="0.75">
+    <circle cx="40"  cy="55"  r="1.7"/>
+    <circle cx="70"  cy="90"  r="1.2"/>
+    <circle cx="275" cy="70"  r="2"/>
+    <circle cx="255" cy="105" r="1.2"/>
+    <circle cx="55"  cy="255" r="1.5"/>
+    <circle cx="280" cy="245" r="1.5"/>
+    <circle cx="25"  cy="165" r="1"/>
+    <circle cx="295" cy="175" r="1"/>
+  </g>
+
+  <!-- Smoke tendrils rising -->
+  <g fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linecap="round" opacity="0.5">
+    <path d="M 130 80 Q 120 60 135 45 Q 150 35 145 20"/>
+    <path d="M 195 85 Q 210 65 200 45 Q 185 30 195 15"/>
+    <path d="M 160 60 Q 175 40 165 25"/>
+  </g>
+
+  <!-- Rahu body -->
+  <circle cx="160" cy="160" r="76" fill="url(#rahu-body)"/>
+
+  <!-- Serpentine gleam suggesting shadow -->
+  <path d="M 100 160 Q 130 140 160 160 Q 190 180 220 160" fill="none" stroke="#a78bfa" stroke-width="2.5" opacity="0.55"/>
+
+  <!-- Rahu glyph ☊ -->
+  <text x="160" y="172" text-anchor="middle" font-family="Crimson Pro, Georgia, serif" font-size="60" font-weight="700" fill="#ede9fe" opacity="0.85">☊</text>
+</svg>
