@@ -492,7 +492,12 @@
   </div>
 </section>
 
-<!-- DAILY RASHIFAL CTA — low-friction subscribe pitch for the email loop -->
+<!-- DAILY RASHIFAL CTA — low-friction subscribe pitch for the email loop.
+     Signed-in subscribers see a "you're subscribed" confirmation state
+     instead of the subscribe button, so we don't nudge them for something
+     they've already opted into. -->
+{% set _cta_user = load_current_user(request) %}
+{% set _cta_subscribed = _cta_user and is_subscribed(_cta_user.email) %}
 <section class="border-t border-stone-200/70 bg-cream">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-14 text-center">
     <div class="inline-flex items-center gap-2 text-astro-700 mb-3">
@@ -507,6 +512,22 @@
       </svg>
       <span class="font-display text-2xl font-bold">Today's Rashifal, every morning</span>
     </div>
+
+    {% if _cta_subscribed %}
+    {# Already subscribed — show a confirmation badge instead of the CTA. #}
+    <p class="text-stone-600 max-w-xl mx-auto mb-5">
+      Your Rashifal arrives every morning at sunrise. Delivered to <strong>{{ _cta_user.email }}</strong>.
+    </p>
+    <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium px-5 py-2.5 rounded-full">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+      </svg>
+      You're subscribed
+    </div>
+    <p class="text-xs text-stone-500 mt-3">
+      Change preferences or unsubscribe from any email footer.
+    </p>
+    {% else %}
     <p class="text-stone-600 max-w-xl mx-auto mb-5">
       One short email at sunrise &mdash; all 12 rashis, today's reading. Free, unsubscribe in one click.
     </p>
@@ -514,6 +535,7 @@
             class="bg-astro-700 hover:bg-astro-800 text-white font-medium px-6 py-3 rounded-md transition-colors">
       Subscribe &mdash; it's free
     </button>
+    {% endif %}
   </div>
 </section>
 

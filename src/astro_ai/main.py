@@ -268,6 +268,21 @@ templates.env.globals["google_client_id"] = os.environ.get("GOOGLE_CLIENT_ID", "
 templates.env.globals["load_current_user"] = load_user
 
 
+def _is_subscribed(email: str | None) -> bool:
+    """Template helper — does this email have an active Rashifal subscription?
+
+    Used by the daily-Rashifal CTA on the homepage so signed-in subscribers
+    see a "you're subscribed" state instead of being nudged to subscribe
+    again. Empty/None email returns False.
+    """
+    if not email:
+        return False
+    return subscribers.find_by_email(email.strip().lower()) is not None
+
+
+templates.env.globals["is_subscribed"] = _is_subscribed
+
+
 def _user_age_bucket(request: Request) -> str:
     """Derive the seeker's age bucket from their saved chart's birthdate.
 
