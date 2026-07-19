@@ -421,5 +421,111 @@
       }
     })();
   </script>
+
+  {# Google Sign-In modal + Google Identity Services loader.
+     Only rendered when GOOGLE_CLIENT_ID is set — otherwise the auth
+     UI is entirely invisible (nav's Sign In button also hides itself).
+     GIS script is loaded lazily on the FIRST click of [data-signin-trigger]
+     to avoid the ~15KB payload on every page load for users who won't sign in. #}
+  {% if google_client_id %}
+  <div id="google-signin-backdrop"
+       class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 no-print"
+       role="dialog" aria-modal="true" aria-labelledby="google-signin-title">
+    <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 relative">
+      <button id="google-signin-close" type="button" aria-label="Close"
+              class="absolute top-3 right-3 text-stone-400 hover:text-stone-700 p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
+      <h2 id="google-signin-title" class="font-display text-xl font-bold text-stone-900 mb-2">Sign in to Shubh Bhagya</h2>
+      <p class="text-sm text-stone-600 mb-4 leading-relaxed">
+        Sign in with Google to save unlimited charts, sync your Kundlis across devices, and access account features. No password to remember.
+      </p>
+      <div id="g_id_onload"
+           data-client_id="{{ google_client_id }}"
+           data-callback="handleGoogleSignIn"
+           data-auto_prompt="false"></div>
+      <div class="g_id_signin flex justify-center"
+           data-type="standard"
+           data-shape="rectangular"
+           data-theme="outline"
+           data-text="signin_with"
+           data-size="large"
+           data-logo_alignment="left"></div>
+      <p id="google-signin-error" class="hidden text-xs text-red-600 mt-3"></p>
+      <p class="text-xs text-stone-400 mt-4 leading-relaxed">
+        We only receive your email + name from Google. We never post on your behalf and never share your data.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Sign-in modal glue. Lazy-loads Google Identity Services on first trigger.
+    (function () {
+      var backdrop = document.getElementById('google-signin-backdrop');
+      var closeBtn = document.getElementById('google-signin-close');
+      var errBox = document.getElementById('google-signin-error');
+      if (!backdrop) return;
+
+      var gisLoaded = false;
+      function loadGIS() {
+        if (gisLoaded) return;
+        gisLoaded = true;
+        var s = document.createElement('script');
+        s.src = 'https://accounts.google.com/gsi/client';
+        s.async = true;
+        s.defer = true;
+        document.head.appendChild(s);
+      }
+
+      function showModal() {
+        loadGIS();
+        backdrop.classList.remove('hidden');
+        backdrop.classList.add('flex');
+      }
+      function hideModal() {
+        backdrop.classList.add('hidden');
+        backdrop.classList.remove('flex');
+        errBox.classList.add('hidden');
+      }
+
+      closeBtn.addEventListener('click', hideModal);
+      backdrop.addEventListener('click', function (e) {
+        if (e.target === backdrop) hideModal();
+      });
+
+      // Any element with [data-signin-trigger] opens the modal.
+      document.querySelectorAll('[data-signin-trigger]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          e.preventDefault();
+          showModal();
+        });
+      });
+
+      // Called by Google Identity Services after the user completes sign-in.
+      // Global function so GIS can find it via data-callback.
+      window.handleGoogleSignIn = function (response) {
+        errBox.classList.add('hidden');
+        var body = new FormData();
+        body.append('credential', response.credential);
+        fetch('/auth/google', { method: 'POST', body: body })
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            if (j.ok) {
+              location.reload();
+            } else {
+              errBox.textContent = j.error || 'Sign-in failed. Please try again.';
+              errBox.classList.remove('hidden');
+            }
+          })
+          .catch(function () {
+            errBox.textContent = 'Network error. Please try again.';
+            errBox.classList.remove('hidden');
+          });
+      };
+    })();
+  </script>
+  {% endif %}
 </body>
 </html>

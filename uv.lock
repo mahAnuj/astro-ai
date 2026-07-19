@@ -44,6 +44,7 @@ source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "geopy" },
+    { name = "google-auth" },
     { name = "google-cloud-storage" },
     { name = "httpx" },
     { name = "itsdangerous" },
@@ -60,6 +61,7 @@ dependencies = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115.0" },
     { name = "geopy", specifier = ">=2.4" },
+    { name = "google-auth", specifier = ">=2.30" },
     { name = "google-cloud-storage", specifier = ">=2.18" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "itsdangerous", specifier = ">=2.2" },

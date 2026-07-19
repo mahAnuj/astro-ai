@@ -50,13 +50,17 @@ import time as _time
 from astro_ai.session import (
     SUPPORTED_LANGS,
     ChartCollection,
+    SessionUser,
     clear_collection,
+    clear_user,
     load_ask_usage,
     load_collection,
     load_lang,
+    load_user,
     save_ask_usage,
     save_collection,
     save_lang,
+    save_user,
 )
 
 
@@ -229,6 +233,14 @@ templates.env.globals["ga4_measurement_id"] = os.environ.get("GA4_MEASUREMENT_ID
 # Microsoft Clarity project ID — for session recordings + heatmaps. Free,
 # complements GA4. Loaded only when set (skip on dev / preview).
 templates.env.globals["clarity_project_id"] = os.environ.get("CLARITY_PROJECT_ID", "").strip()
+# Google Identity Services client ID — templates use this to render the
+# Sign-In button. Safe to expose publicly (it's the OAuth client ID, not the
+# secret). Empty in dev if unset; sign-in button hides itself in that case.
+templates.env.globals["google_client_id"] = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
+# Request-scoped current user helper — templates call {{ load_current_user(request) }}
+# at the top of _nav.html / _account_menu.html to decide what to render.
+# Fast: just deserialises the cookie.
+templates.env.globals["load_current_user"] = load_user
 
 
 def _user_age_bucket(request: Request) -> str:
@@ -623,6 +635,100 @@ async def set_lang(
     response = RedirectResponse(_safe_redirect_target(next), status_code=303)
     save_lang(response, lang, request)
     return response
+
+
+# ─── Google Sign-In auth endpoints ──────────────────────────────────────────
+# GIS flow: browser gets an ID token from Google, POSTs it here. We verify
+# the token against Google's public keys (signature, expiry, audience) and
+# persist the resulting user into the same __session cookie. No password
+# management, no OAuth redirect dance.
+
+
+@app.post("/auth/google")
+async def auth_google(
+    request: Request,
+    credential: str = Form(...),
+) -> JSONResponse:
+    """Verify a Google Identity Services ID token and start a signed-in session.
+
+    The `credential` is a JWT from the GIS button callback on the frontend.
+    We validate it against Google's public keys with the expected audience
+    (our GOOGLE_CLIENT_ID). On success we store {email, name, sub, since}
+    in the session cookie. The client then reloads / navigates as needed.
+    """
+    from datetime import datetime, timezone
+    from google.oauth2 import id_token as google_id_token
+    from google.auth.transport import requests as google_requests
+
+    client_id = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
+    if not client_id:
+        return JSONResponse(
+            {"ok": False, "error": "Google Sign-In not configured on server."},
+            status_code=503,
+        )
+    try:
+        info = google_id_token.verify_oauth2_token(
+            credential,
+            google_requests.Request(),
+            client_id,
+            clock_skew_in_seconds=30,  # small tolerance for clock drift
+        )
+    except ValueError as err:
+        # Bad signature, wrong audience, expired token — treat all as auth failure.
+        return JSONResponse(
+            {"ok": False, "error": f"Invalid Google credential: {err}"},
+            status_code=401,
+        )
+
+    # Only email-verified accounts are accepted — otherwise anyone can
+    # sign in with an arbitrary unverified email.
+    if not info.get("email") or not info.get("email_verified"):
+        return JSONResponse(
+            {"ok": False, "error": "Google account email is not verified."},
+            status_code=401,
+        )
+
+    user = SessionUser(
+        email=str(info["email"]).lower(),
+        name=str(info.get("name", "")),
+        sub=str(info["sub"]),
+        since=datetime.now(tz=timezone.utc).isoformat(timespec="seconds"),
+    )
+    response = JSONResponse({"ok": True, "email": user.email, "name": user.name})
+    save_user(response, request, user)
+    return response
+
+
+@app.post("/auth/logout")
+async def auth_logout(request: Request) -> JSONResponse:
+    """Sign the user out — clears the user portion of the session cookie."""
+    response = JSONResponse({"ok": True})
+    clear_user(response, request)
+    return response
+
+
+@app.get("/account", response_class=HTMLResponse)
+async def account(request: Request) -> HTMLResponse:
+    """Signed-in user profile page — email, saved charts, sign-out.
+
+    Redirects home if not signed in (soft nudge: they can click the Sign In
+    button in nav from wherever). Later this page will show Premium status
+    and manage-subscription controls.
+    """
+    user = load_user(request)
+    if user is None:
+        return RedirectResponse("/", status_code=303)
+    collection = load_collection(request)
+    return templates.TemplateResponse(
+        request, "account.html",
+        {
+            "current_user": user,
+            "charts": collection.charts,
+            "active_id": collection.active_id,
+            "saved_charts_count": len(collection.charts),
+            "lang": _lang(request),
+        },
+    )
 
 
 @app.get("/monthly", response_class=HTMLResponse)
