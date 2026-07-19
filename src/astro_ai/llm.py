@@ -17,7 +17,7 @@ from pathlib import Path
 from astro_ai import providers
 from astro_ai.chart import (
     Chart,
-    DailyPanchang,
+    DailyPanchang,  # used by daily reading + rashifal day-signal block
     DashaState,
     GocharImpact,
     LifeChapter,
@@ -256,16 +256,61 @@ def generate_rashifal(
     prompt_path: Path,
     model: str | None = None,
     lang: str = "en",
+    panchang: DailyPanchang | None = None,
+    festival: dict | None = None,
 ) -> str:
     """Generate today's Rashifal — sectioned predictions for all 12 rashis.
 
     Generic across all users (not personalised by chart) so the caller can
     cache the result for 24 hours.
+
+    Day-varying signals (panchang, moon nakshatra, festival, retrogrades)
+    are surfaced up-front in the user message so the LLM anchors today's
+    reading on what's actually different about TODAY vs. yesterday — without
+    these, the reading tends to drift toward day-agnostic boilerplate.
     """
+    # Fastest-changing sky signal: Moon's nakshatra shifts ~every day.
+    moon = next((p for p in transit.planets if p.name == "Moon"), None)
+    # Rahu/Ketu are ALWAYS retrograde in Vedic convention — filter them out
+    # so we only surface newsworthy retrogrades (Merc/Ven/Mars/Jup/Sat).
+    retrogrades = [p.name for p in transit.planets
+                    if p.retrograde and p.name not in ("Rahu", "Ketu")]
+
+    day_signals: list[str] = [f"Today's date: {today_iso}"]
+    if panchang:
+        day_signals.append(
+            f"Weekday: {panchang.weekday} — ruled by {panchang.day_lord}. "
+            f"Classical Vedic tradition treats this day's overall tone as "
+            f"{panchang.day_lord}-coloured; that mood MUST shape all 12 rashi "
+            f"cards, not just one."
+        )
+    if moon:
+        day_signals.append(
+            f"Moon today: {moon.rashi} in {moon.nakshatra} nakshatra. "
+            f"This is the fastest-changing sky signal — it grounds today's "
+            f"emotional weather and MUST be referenced at least once across the 12 cards."
+        )
+    if retrogrades:
+        day_signals.append(
+            f"Planets currently retrograde: {', '.join(retrogrades)}. "
+            f"Their significations feel internal/reflective/second-look right now — "
+            f"mention this in at least one card where it fits."
+        )
+    if festival:
+        fname = festival.get(f"name_{lang}") or festival.get("name_en", "festival")
+        fnote = festival.get(f"note_{lang}") or festival.get("note_en", "")
+        day_signals.append(
+            f"Today is {fname} — {fnote} Weave this into at least 3 rashi cards "
+            f"where it lands naturally (not all 12 — that would be forced)."
+        )
+
     user_message = (
-        f"Today's date: {today_iso}\n\n"
-        f"Today's planetary positions (for your reasoning only — do NOT mention in output):\n"
-        f"{format_transit_for_prompt(transit)}\n"
+        "TODAY'S SKY SIGNALS (use these to make the reading feel like TODAY):\n"
+        + "\n".join(f"- {s}" for s in day_signals)
+        + "\n\n"
+        + "Raw planetary positions (background context — do NOT recite in output):\n"
+        + format_transit_for_prompt(transit)
+        + "\n"
     )
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
