@@ -831,6 +831,8 @@ async def rashifal(request: Request) -> HTMLResponse:
             call_fn=lambda: generate_rashifal(
                 transit=transit, today_iso=today_iso,
                 prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
+                panchang=compute_panchang(neutral_chart),
+                festival=festivals.festival_for_date(date.today()),
             ),
         )
     except Exception as err:
@@ -967,6 +969,8 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
             call_fn=lambda: generate_rashifal(
                 transit=transit, today_iso=today_iso,
                 prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
+                panchang=compute_panchang(neutral_chart),
+                festival=festivals.festival_for_date(date.today()),
             ),
         )
         sections = [
@@ -1054,6 +1058,8 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
                 call_fn=lambda lang=lang: generate_rashifal(
                     transit=transit, today_iso=today_iso,
                     prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
+                    panchang=compute_panchang(neutral_chart),
+                    festival=festivals.festival_for_date(date.today()),
                 ),
             )
             sections_by_lang[lang] = [
