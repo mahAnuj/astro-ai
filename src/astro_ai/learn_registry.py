@@ -598,6 +598,46 @@ ARTICLES: tuple[Article, ...] = (
             },
         ),
     ),
+    # ── Nakshatra series ─────────────────────────────────────────────────
+    # 27 lunar mansions. Each page: archetype, deity, symbol, gana/nadi,
+    # personality, career, relationships, and matching notes drawn from
+    # vedic_reference.md §27. Ashwini is the template — the batch of the
+    # remaining 26 follows.
+    Article(
+        slug="ashwini-nakshatra",
+        title="Ashwini Nakshatra: The Celestial Healer, First of the 27 Lunar Mansions",
+        summary="Ashwini is the first nakshatra of the zodiac — the archetype of speed, initiation, and healing. Ruled by Ketu with the Ashwini Kumaras as deities, it defines the personality of anyone born with the Moon in Aries 0°00'–13°20'.",
+        category="Nakshatras",
+        hero_image="/static/learn/ashwini-nakshatra/hero.svg",
+        read_time="8 min",
+        related=("mangal-mars-in-vedic-astrology", "ketu-in-vedic-astrology", "kundali-matching-ashtakoot-guna-milan"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Ashwini nakshatra?",
+                "a": "Your Moon needs to be between 0°00' and 13°20' of Aries in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya — the chart engine calculates your Janma Nakshatra automatically using the Lahiri ayanamsa and displays it under the Moon row in the planetary table.",
+            },
+            {
+                "q": "What is the ruling planet of Ashwini and why does it matter?",
+                "a": "Ashwini is ruled by Ketu — the south lunar node, significator of moksha, past-life karma, and detachment. If you're born with Moon in Ashwini, your Vimshottari Mahadasha sequence starts with Ketu (7 years). This is why Ashwini natives often live front-loaded lives — early spiritual questioning, then breakthrough, then a long Venus period at ~7 that shapes their taste and relationships.",
+            },
+            {
+                "q": "Who are the Ashwini Kumaras?",
+                "a": "The Ashwini Kumaras are the twin celestial healers of the Rig Veda — physicians to the gods. They are famous for arriving at dawn just before the Sun, on a golden chariot, to heal the sick and restore the dying. This is why Ashwini nakshatra is associated with speed, medicine, dawn (new beginnings), and healing that comes 'just in time'.",
+            },
+            {
+                "q": "What kind of career suits Ashwini nakshatra people?",
+                "a": "Anything involving speed, healing, or being first: medicine and surgery (especially emergency), veterinary practice, sports and athletics, motorsports, first-responder work, entrepreneurship, and any pioneer role. Ashwini natives often thrive as the person who starts something new but hand it off to someone else to sustain — the archetype is 'the one who arrives first, heals, and moves on'.",
+            },
+            {
+                "q": "Which nakshatras are compatible with Ashwini for marriage?",
+                "a": "By classical Ashtakoot Guna Milan, Ashwini pairs strongly with other Deva-gana, Adi-nadi female nakshatras — Punarvasu, Pushya (Deva gana), or Hasta / Swati / Anuradha (also Deva) with a compatible nadi. Same-nadi matches (Adi-Adi) score zero on Nadi Kuta (8 points), which is a serious deduction, so an Ashwini native looking at another Ashwini or Ardra or Punarvasu partner should check the rest of the chart carefully. A proper Ashtakoot analysis matters more than any single-attribute rule.",
+            },
+            {
+                "q": "What are the strengths and weaknesses of Ashwini natives?",
+                "a": "Strengths: speed of thought, initiative, healing capacity (medical or emotional), youthful energy, physical grace, willingness to try. Weaknesses: impatience, difficulty finishing what they start, restlessness in relationships (the 'move on to next thing' pattern), and a tendency to burn out from taking on too many pioneer projects at once.",
+            },
+        ),
+    ),
 )
 
 

@@ -897,3 +897,138 @@ When adding new rules:
 
 *Last updated: 2026-06-29*
 *Maintained for: Shubh Bhagya (shubhagya.com)*
+
+---
+
+## 27. Nakshatras — the lunar mansions
+
+Nakshatras are the **27 divisions of the 360° zodiac**, each spanning
+**13°20'** (800 arc-minutes). Every nakshatra is further split into **4
+padas** (quarters) of 3°20' each — the pada system feeds Navamsha
+calculations. The Moon transits one nakshatra roughly every 24 hours,
+which is why the system is called the **"lunar mansions"**.
+
+The **nakshatra of the Moon at birth** — called the **Janma Nakshatra**
+— carries the most weight in classical practice:
+
+- It determines the **first Mahadasha** in the Vimshottari sequence
+  (via the nakshatra lord — see §5).
+- It's what a subscriber's daily Rashifal is ideally personalised to.
+- It's the primary axis of **Ashtakoot Guna Milan** compatibility
+  (see the Kundali Matching article).
+
+Every nakshatra carries a fixed set of attributes that classical texts
+(Brihat Parashara Hora Shastra, Brihat Samhita, Muhurta Chintamani,
+Nakshatra Vijnana) use for interpretation, remedies, and matching.
+
+### 27.1 Attribute glossary
+
+| Attribute | Values | What it decides |
+|-----------|--------|-----------------|
+| **Ruling planet** (Lord) | Sun, Moon, Mars, Rahu, Jupiter, Saturn, Mercury, Ketu, Venus | Vimshottari Dasha sequence; general nakshatra flavour |
+| **Deity** | Vedic deity (varies) | Psychological / spiritual theme |
+| **Symbol** | Object or image | Iconography, easy remembering |
+| **Gana** | Deva / Manushya / Rakshasa | Temperament + marriage compatibility (Gana Kuta) |
+| **Guna** | Sattva / Rajas / Tamas | Inherent quality (pure / active / inertial) |
+| **Varna** | Brahmin / Kshatriya / Vaishya / Shudra | Occupation type (Varna Kuta) |
+| **Yoni** | Animal (14 kinds) | Instinct + physical compatibility (Yoni Kuta) |
+| **Nadi** | Adi / Madhya / Antya | Health/dosha type (Nadi Kuta — most weighted, 8 pts) |
+| **Direction** | Cardinal direction | Beneficial direction for muhurta |
+| **Nature** (activity) | Chara / Sthira / Ugra / Mridu / Kshipra / Mishra / Tikshna | What kinds of activities suit this nakshatra |
+
+### 27.2 The 27 nakshatras — canonical reference table
+
+Below: name (Sanskrit), sidereal range (degrees within the zodiac),
+lord (Vimshottari), deity, symbol, gana, guna, and 1-line psychological
+theme. **Vimshottari lord cycle** is Ketu → Venus → Sun → Moon → Mars →
+Rahu → Jupiter → Saturn → Mercury, repeating every 9 nakshatras.
+
+| # | Name | Range | Lord | Deity | Symbol | Gana | Guna | Theme |
+|---|------|-------|------|-------|--------|------|------|-------|
+| 1 | **Ashwini** | Ari 0°00'–13°20' | Ketu | Ashwini Kumaras (celestial healers) | Horse's head | Deva | Rajas | Speed, initiation, healing, first-mover |
+| 2 | **Bharani** | Ari 13°20'–26°40' | Venus | Yama (god of death & dharma) | Yoni / womb | Manushya | Rajas | Bearing, transformation, endurance, sensual power |
+| 3 | **Krittika** | Ari 26°40'–Tau 10°00' | Sun | Agni (fire) | Razor / flame | Rakshasa | Rajas | Sharp cutting away, purification, criticism |
+| 4 | **Rohini** | Tau 10°00'–23°20' | Moon | Brahma (creator) | Chariot / banyan tree | Manushya | Rajas | Growth, sensual beauty, abundance, favourite of the Moon |
+| 5 | **Mrigashira** | Tau 23°20'–Gem 6°40' | Mars | Soma (moon nectar) | Deer's head | Deva | Tamas | Seeking, curious, restless, searching for truth |
+| 6 | **Ardra** | Gem 6°40'–20°00' | Rahu | Rudra (storm form of Shiva) | Teardrop | Manushya | Tamas | Storm, breakthrough after grief, sudden change |
+| 7 | **Punarvasu** | Gem 20°00'–Can 3°20' | Jupiter | Aditi (mother of gods) | Quiver of arrows / house | Deva | Sattva | Renewal, return home, wisdom after wandering |
+| 8 | **Pushya** | Can 3°20'–16°40' | Saturn | Brihaspati (guru of gods) | Cow's udder / lotus | Deva | Tamas | Nourishment, most auspicious nakshatra, spiritual growth |
+| 9 | **Ashlesha** | Can 16°40'–30°00' | Mercury | Nagas (serpents) | Coiled serpent | Rakshasa | Sattva | Occult, hypnotic, cunning, healing through poison |
+| 10 | **Magha** | Leo 0°00'–13°20' | Ketu | Pitris (ancestors) | Royal throne | Rakshasa | Tamas | Ancestral pride, authority, ritual, lineage |
+| 11 | **Purva Phalguni** | Leo 13°20'–26°40' | Venus | Bhaga (delight, wealth) | Front legs of a bed | Manushya | Rajas | Enjoyment, love-making, creativity, leisure |
+| 12 | **Uttara Phalguni** | Leo 26°40'–Vir 10°00' | Sun | Aryaman (patron of contracts) | Back legs of a bed | Manushya | Rajas | Commitment, patronage, generous friendship, second half of Phalguni's rest |
+| 13 | **Hasta** | Vir 10°00'–23°20' | Moon | Savitar (Sun as inspirer) | Palm of a hand | Deva | Rajas | Craftsmanship, skill of the hand, sleight, healing touch |
+| 14 | **Chitra** | Vir 23°20'–Lib 6°40' | Mars | Vishvakarma (divine architect) | Bright jewel / pearl | Rakshasa | Tamas | Design, dazzling appearance, artistic construction |
+| 15 | **Swati** | Lib 6°40'–20°00' | Rahu | Vayu (wind) | Young shoot swaying in wind / coral | Deva | Tamas | Independence, movement, sway, unattached self-going |
+| 16 | **Vishakha** | Lib 20°00'–Sco 3°20' | Jupiter | Indra & Agni (dual power) | Triumphal arch / potter's wheel | Rakshasa | Sattva | Goal-oriented, focused ambition, determined pursuit |
+| 17 | **Anuradha** | Sco 3°20'–16°40' | Saturn | Mitra (friendship, contracts) | Lotus / triumphal arch | Deva | Tamas | Devotion, loyalty in friendship, disciplined love |
+| 18 | **Jyeshtha** | Sco 16°40'–30°00' | Mercury | Indra (chief of gods) | Umbrella / earring | Rakshasa | Sattva | Seniority, protective authority, hidden burdens of the eldest |
+| 19 | **Mula** | Sag 0°00'–13°20' | Ketu | Nirriti (goddess of dissolution) | Bunch of roots / tied roots | Rakshasa | Tamas | Getting to the root, uprooting, deep investigation, difficult starts |
+| 20 | **Purva Ashadha** | Sag 13°20'–26°40' | Venus | Apas (cosmic waters) | Fan / winnowing basket | Manushya | Rajas | Invincible, cleansing waters, undefeatable optimism |
+| 21 | **Uttara Ashadha** | Sag 26°40'–Cap 10°00' | Sun | Vishvedevas (all-gods) | Elephant tusk / small bed | Manushya | Sattva | Late-blooming victory, lasting achievements, patient success |
+| 22 | **Shravana** | Cap 10°00'–23°20' | Moon | Vishnu (preserver) | Ear / three footsteps | Deva | Rajas | Listening, learning, connection to sacred sound (Om) |
+| 23 | **Dhanishta** | Cap 23°20'–Aqu 6°40' | Mars | Ashta Vasus (eight elemental gods) | Drum / flute | Rakshasa | Tamas | Rhythm, wealth, music, group cohesion |
+| 24 | **Shatabhisha** | Aqu 6°40'–20°00' | Rahu | Varuna (cosmic waters, oaths) | 100 flowers / empty circle | Rakshasa | Tamas | Healing the many, mystic, secretive, veiled |
+| 25 | **Purva Bhadrapada** | Aqu 20°00'–Pis 3°20' | Jupiter | Aja Ekapada (one-footed goat) | Front legs of a funeral bed / two-faced man | Manushya | Sattva | Intensity, penance, transformative fire |
+| 26 | **Uttara Bhadrapada** | Pis 3°20'–16°40' | Saturn | Ahir Budhnya (serpent of the deep) | Back legs of a funeral bed / twin | Manushya | Tamas | Depth, wisdom from the depths, calm after storm |
+| 27 | **Revati** | Pis 16°40'–30°00' | Mercury | Pushan (nourisher, shepherd of souls) | Fish / drum | Deva | Sattva | Wholeness, safe passage, gentle guide, completion |
+
+### 27.3 Gana / Yoni / Nadi cheat-sheet (for matching)
+
+**Gana** — temperament:
+- **Deva** (godly): Ashwini, Mrigashira, Punarvasu, Pushya, Hasta,
+  Swati, Anuradha, Shravana, Revati.
+- **Manushya** (human): Bharani, Rohini, Ardra, Purva & Uttara
+  Phalguni, Purva & Uttara Ashadha, Purva & Uttara Bhadrapada.
+- **Rakshasa** (demonic — intense, driven): Krittika, Ashlesha, Magha,
+  Chitra, Vishakha, Jyeshtha, Mula, Dhanishta, Shatabhisha.
+
+**Nadi** — dosha type (used for Nadi Kuta, most heavily weighted at 8
+of 36 points in Ashtakoot matching):
+- **Adi (Vata / air)**: Ashwini, Ardra, Punarvasu, Uttara Phalguni,
+  Hasta, Jyeshtha, Mula, Shatabhisha, Purva Bhadrapada.
+- **Madhya (Pitta / fire)**: Bharani, Mrigashira, Pushya, Purva
+  Phalguni, Chitra, Anuradha, Purva Ashadha, Dhanishta, Uttara
+  Bhadrapada.
+- **Antya (Kapha / earth-water)**: Krittika, Rohini, Ashlesha, Magha,
+  Swati, Vishakha, Uttara Ashadha, Shravana, Revati.
+
+### 27.4 Nakshatra activity types (Muhurta selection)
+
+Classical Muhurta Chintamani groups nakshatras by suitable activity:
+
+- **Chara (movable)**: Punarvasu, Swati, Shravana, Dhanishta, Shatabhisha
+  → travel, buying vehicles, moving.
+- **Sthira (fixed)**: Rohini, Uttara Phalguni, Uttara Ashadha, Uttara
+  Bhadrapada → building, gruha pravesh, coronations, planting.
+- **Ugra (fierce)**: Bharani, Magha, Purva Phalguni, Purva Ashadha,
+  Purva Bhadrapada → confrontation, destruction of enemies, difficult
+  medical procedures. Avoid for weddings.
+- **Mridu (soft)**: Mrigashira, Chitra, Anuradha, Revati → art, music,
+  friendship, marriage, romance.
+- **Kshipra (swift/light)**: Ashwini, Pushya, Hasta → learning,
+  transactions, trade, medicine.
+- **Mishra (mixed)**: Krittika, Vishakha → mixed activities, festivals.
+- **Tikshna (sharp)**: Ardra, Ashlesha, Jyeshtha, Mula → tantra, occult,
+  surgery, exorcism. Avoid for weddings.
+
+### 27.5 How to phrase nakshatra readings
+
+- Lead with the **archetype** (2-3 words: "the healer", "the seeker",
+  "the ancestral throne") — that's what readers remember.
+- Then explain the **classical symbol + deity** — this is what
+  distinguishes serious sources from generic sun-sign content.
+- Then move to practical: **career suits**, **relationship style**,
+  **health tendencies**, **which nakshatras it matches well/poorly
+  with**.
+- Always ground in the **chart engine** where possible: if the reader
+  has a saved chart, surface their Moon nakshatra explicitly ("Your
+  Moon is in Ashwini — you're the initiator archetype in Vedic
+  terms.").
+- **Avoid deterministic language**: never "you will marry X" or "your
+  career must be Y". Frame as tendencies: "Ashwini natives often
+  gravitate toward…".
+
+---
+
+*Nakshatra reference last updated: 2026-07-20*
