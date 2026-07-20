@@ -604,6 +604,68 @@ ARTICLES: tuple[Article, ...] = (
     # vedic_reference.md §27. Ashwini is the template — the batch of the
     # remaining 26 follows.
     Article(
+        slug="bharani-nakshatra",
+        title="Bharani Nakshatra: The Bearer at the Threshold of Birth and Death",
+        summary="Bharani is the second nakshatra — 13°20' to 26°40' of Aries. Ruled by Venus with Yama as its deity, its symbol is the yoni (womb). Bharani natives are the bearers — intense, sensual, unafraid of transformation.",
+        category="Nakshatras",
+        hero_image="/static/learn/bharani-nakshatra/hero.svg",
+        read_time="7 min",
+        related=("ashwini-nakshatra", "shukra-venus-in-vedic-astrology", "kundali-matching-ashtakoot-guna-milan"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Bharani nakshatra?",
+                "a": "Your Moon needs to sit between 13°20' and 26°40' of Aries in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya — the planetary table shows your Janma Nakshatra under the Moon row, calculated with the Lahiri ayanamsa.",
+            },
+            {
+                "q": "Why is Yama the deity of Bharani?",
+                "a": "Yama is not the villain of Vedic myth — he is the first king of the dead and the first upholder of dharma. Bharani's yoni symbol represents the threshold where birth and death meet. Yama presides because the classical Vedic view is that to give birth is to accept eventual passing; the two are inseparable. Bharani natives carry this unflinching acceptance of hard truths.",
+            },
+            {
+                "q": "What career suits Bharani nakshatra people?",
+                "a": "Anything involving deep transformation: obstetrics and midwifery, gynecology, IVF, hospice and end-of-life care, psychology and therapy, funeral work, radical activism, law and criminal justice reform. Also arts that go deep — performance, sensual arts, fashion (Venus rulership). Bharani natives struggle with roles that require superficial engagement.",
+            },
+            {
+                "q": "Is Bharani a good nakshatra for marriage?",
+                "a": "Bharani is classified as Ugra (fierce) — not ideal for weddings by classical muhurta rules. For matching Bharani natives to partners: best matches are Manushya-gana partners with different Nadi (Uttara Phalguni is often cited as strong — same gana, different nadi). Same-nadi partners (Madhya-Madhya: Mrigashira, Pushya, Chitra, Anuradha, Dhanishta, Uttara Bhadrapada) lose 8 of 36 Ashtakoot points on Nadi Kuta.",
+            },
+            {
+                "q": "What are Bharani's strengths and weaknesses?",
+                "a": "Strengths: capacity to carry heavy responsibilities, strong moral compass, artistic and sensual depth, resilience through transformation, unshakeable when they know what's right. Weaknesses: rigidity when the moral compass tips into judgment, difficulty asking for help (the 'bearer' archetype makes it hard), intensity that can exhaust gentler partners.",
+            },
+        ),
+    ),
+    Article(
+        slug="krittika-nakshatra",
+        title="Krittika Nakshatra: The Sacred Fire That Reveals",
+        summary="Krittika is the third nakshatra — 26°40' Aries to 10°00' Taurus. Ruled by the Sun with Agni as its deity, symbolised by a razor or flame. Krittika natives are the truth-tellers — sharp, purifying, and unable to look away from what others avoid.",
+        category="Nakshatras",
+        hero_image="/static/learn/krittika-nakshatra/hero.svg",
+        read_time="7 min",
+        related=("ashwini-nakshatra", "bharani-nakshatra", "surya-sun-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Krittika nakshatra?",
+                "a": "Your Moon needs to sit between 26°40' Aries and 10°00' Taurus in the sidereal zodiac. Krittika straddles two signs, which is unusual. Generate your free Janma Kundli on Shubh Bhagya to see your exact Moon position and nakshatra.",
+            },
+            {
+                "q": "Why is Krittika linked to the Pleiades?",
+                "a": "Krittika is astronomically associated with the Pleiades cluster in Taurus — the seven visible stars. In classical myth, six Krittika mothers nursed the war-god Kartikeya, born of Agni's spark. Kartikeya's name literally means 'son of the Krittikas'. This is why Krittika natives carry the fierce-nurturer archetype: the mother who tells you the truth because she loves you.",
+            },
+            {
+                "q": "What career suits Krittika nakshatra people?",
+                "a": "Anything requiring sharp judgment: editing, quality control, critique, investigative journalism, teaching with high standards, military and law enforcement, surgery and precision medicine, priesthood (Agni's classical portfolio), cooking, metalwork. Krittika natives struggle in roles requiring flattery, superficial diplomacy, or looking the other way.",
+            },
+            {
+                "q": "Are Krittika natives too blunt?",
+                "a": "Often — yes, at least by conventional standards. The gift is that they're the person others trust to tell the truth. The shadow is that when the cutting edge turns inward it becomes perfectionism, and when it turns outward without care it becomes cruelty. Classical remedy: remember Agni's role is fire that reveals, not fire that destroys.",
+            },
+            {
+                "q": "Which nakshatras match well with Krittika?",
+                "a": "Best matches by Ashtakoot Guna Milan: Rakshasa-gana partners with different Nadi — Vishakha, Jyeshtha, Chitra work well on Gana Kuta. Manushya-gana partners are workable if the other kutas score high. Same-Antya-nadi pairs (Rohini, Ashlesha, Magha, Swati, Uttara Ashadha, Shravana, Revati) lose 8 Nadi Kuta points, which is a serious deduction.",
+            },
+        ),
+    ),
+    Article(
         slug="ashwini-nakshatra",
         title="Ashwini Nakshatra: The Celestial Healer, First of the 27 Lunar Mansions",
         summary="Ashwini is the first nakshatra of the zodiac — the archetype of speed, initiation, and healing. Ruled by Ketu with the Ashwini Kumaras as deities, it defines the personality of anyone born with the Moon in Aries 0°00'–13°20'.",

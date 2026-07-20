@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Krittika — the "cutter". Symbol: a razor/flame. Deity: Agni. Ruled
+     by the Sun. Rendered as a rising flame with sharp cutting edges,
+     against a golden sun disc. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Krittika nakshatra symbol — Agni's cutting flame">
+  <defs>
+    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.55">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#fbbf24" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="krflame" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#7c2d12"/>
+      <stop offset="35%" stop-color="#dc2626"/>
+      <stop offset="75%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fef3c7"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <circle cx="160" cy="160" r="140" fill="url(#halo)"/>
+
+  <!-- Sun disc -->
+  <circle cx="160" cy="185" r="72" fill="url(#sun)" opacity="0.9"/>
+  <circle cx="160" cy="185" r="72" fill="none" stroke="#b45309" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- Rising cutting flame (dramatic upward sharp tips) -->
+  <path d="M 145 220
+           C 138 200, 132 178, 144 152
+           C 150 168, 152 174, 156 176
+           C 158 158, 154 138, 168 108
+           C 170 132, 174 148, 178 158
+           C 180 148, 178 138, 186 122
+           C 190 138, 188 154, 184 168
+           C 190 172, 194 178, 196 192
+           C 198 208, 190 220, 175 224
+           C 165 226, 152 224, 145 220 Z"
+        fill="url(#krflame)"/>
+
+  <!-- Razor edge highlight -->
+  <path d="M 168 108 L 174 158 L 186 122" stroke="#fef3c7" stroke-width="1.5" fill="none" opacity="0.7"/>
+
+  <!-- Small "3" -->
+  <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
+        font-weight="700" fill="#6b21a8" opacity="0.35">3</text>
+</svg>

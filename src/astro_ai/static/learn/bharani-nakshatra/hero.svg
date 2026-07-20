@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bharani — the "bearing" nakshatra. Symbol: yoni (womb) representing
+     the creative-destructive threshold. Deity: Yama, god of death and
+     dharma. Rendered as a stylised chalice/womb shape holding a flame,
+     with a subtle Yama-black backdrop rising from the base. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Bharani nakshatra symbol — yoni chalice holding sacred flame">
+  <defs>
+    <linearGradient id="chalice" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="60%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="flame" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="55%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#fef3c7"/>
+    </linearGradient>
+    <radialGradient id="ember" cx="0.5" cy="0.55" r="0.55">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#fbbf24" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <ellipse cx="160" cy="170" rx="120" ry="110" fill="url(#ember)"/>
+
+  <!-- Chalice / yoni shape -->
+  <path d="M 100 180
+           C 100 145, 130 118, 160 118
+           C 190 118, 220 145, 220 180
+           L 220 210
+           C 220 224, 208 236, 194 236
+           L 126 236
+           C 112 236, 100 224, 100 210 Z"
+        fill="url(#chalice)"/>
+
+  <!-- Base ring -->
+  <ellipse cx="160" cy="240" rx="55" ry="7" fill="#4c1d95" opacity="0.55"/>
+
+  <!-- Flame rising from within -->
+  <path d="M 160 190
+           C 152 175, 148 158, 154 142
+           C 158 152, 162 156, 165 158
+           C 168 148, 168 138, 172 130
+           C 176 145, 178 158, 172 175
+           C 168 184, 164 190, 160 190 Z"
+        fill="url(#flame)"/>
+
+  <!-- Small "2" -->
+  <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
+        font-weight="700" fill="#6b21a8" opacity="0.35">2</text>
+</svg>
