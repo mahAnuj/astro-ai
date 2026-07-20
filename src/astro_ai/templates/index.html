@@ -514,18 +514,24 @@
     </div>
 
     {% if _cta_subscribed %}
-    {# Already subscribed — show a confirmation badge instead of the CTA. #}
+    {# Already subscribed — show a confirmation badge + edit link. #}
     <p class="text-stone-600 max-w-xl mx-auto mb-5">
       Your Rashifal arrives every morning at sunrise. Delivered to <strong>{{ _cta_user.email }}</strong>.
     </p>
-    <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium px-5 py-2.5 rounded-full">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-      </svg>
-      You're subscribed
+    <div class="inline-flex items-center gap-3 flex-wrap justify-center">
+      <span class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium px-5 py-2.5 rounded-full">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+        You're subscribed
+      </span>
+      <button type="button" data-subscribe-trigger
+              class="text-astro-700 hover:text-astro-800 font-medium underline underline-offset-2">
+        Edit preferences
+      </button>
     </div>
     <p class="text-xs text-stone-500 mt-3">
-      Change preferences or unsubscribe from any email footer.
+      Change your rashi, language, city, or unsubscribe anytime.
     </p>
     {% else %}
     <p class="text-stone-600 max-w-xl mx-auto mb-5">

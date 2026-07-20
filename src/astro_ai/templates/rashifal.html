@@ -82,6 +82,8 @@
   </section>
 
   <!-- INLINE SUBSCRIBE CTA — high-intent moment, right after reading. -->
+  {% set _rc_user = load_current_user(request) %}
+  {% set _rc_subscribed = _rc_user and is_subscribed(_rc_user.email) %}
   <aside class="bg-astro-50 border border-astro-100 rounded-2xl p-6 sm:p-8 text-center no-print">
     <div class="inline-flex items-center gap-2 text-astro-700 mb-2">
       <svg viewBox="0 0 100 100" class="w-6 h-6" aria-hidden="true">
@@ -94,9 +96,29 @@
         <circle cx="50" cy="50" r="7" fill="#ffd764"/>
       </svg>
       <span class="font-display font-bold text-lg">
-        {% if lang == 'hi' %}रोज़ का राशिफल अपने इनबॉक्स में{% else %}Get the daily Rashifal in your inbox{% endif %}
+        {% if _rc_subscribed %}
+          {% if lang == 'hi' %}आप सदस्य हैं{% else %}You're subscribed{% endif %}
+        {% else %}
+          {% if lang == 'hi' %}रोज़ का राशिफल अपने इनबॉक्स में{% else %}Get the daily Rashifal in your inbox{% endif %}
+        {% endif %}
       </span>
     </div>
+
+    {% if _rc_subscribed %}
+    <p class="text-sm text-stone-600 max-w-md mx-auto mb-4">
+      {% if lang == 'hi' %}आपको हर सुबह <strong>{{ _rc_user.email }}</strong> पर राशिफल मिलेगा।{% else %}Your Rashifal arrives every morning at <strong>{{ _rc_user.email }}</strong>.{% endif %}
+    </p>
+    <div class="inline-flex items-center gap-3">
+      <span class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium px-4 py-2 rounded-full text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        {% if lang == 'hi' %}सक्रिय{% else %}Active{% endif %}
+      </span>
+      <button type="button" data-subscribe-trigger
+              class="text-sm text-astro-700 hover:text-astro-800 font-medium underline underline-offset-2">
+        {% if lang == 'hi' %}प्राथमिकताएँ बदलें{% else %}Edit preferences{% endif %}
+      </button>
+    </div>
+    {% else %}
     <p class="text-sm text-stone-600 max-w-md mx-auto mb-4">
       {% if lang == 'hi' %}हर सुबह सभी 12 राशियों का राशिफल। मुफ्त, कभी भी बंद कर सकते हैं।{% else %}One morning email with today's reading for all 12 rashis. Free, opt out anytime.{% endif %}
     </p>
@@ -104,6 +126,7 @@
             class="bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium px-5 py-2 rounded-md transition-colors">
       {% if lang == 'hi' %}सदस्यता लें{% else %}Subscribe — it's free{% endif %}
     </button>
+    {% endif %}
   </aside>
 
 </main>
