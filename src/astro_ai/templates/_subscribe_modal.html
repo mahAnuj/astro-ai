@@ -244,11 +244,24 @@
       if (e.target === backdrop) dismiss();
     });
 
+    // When the signed-in user opens the modal (e.g. via "Edit preferences"),
+    // prefill their email + trigger the lookup so their existing rashi /
+    // lang / city load immediately without them having to retype.
+    var _signedInEmail = {{ (load_current_user(request).email if load_current_user(request) else '') | tojson }};
+    function showAndPrefill() {
+      if (_signedInEmail && emailInput && !emailInput.value) {
+        emailInput.value = _signedInEmail;
+        // Trigger the lookup path immediately.
+        doLookup(_signedInEmail);
+      }
+      show();
+    }
+
     // Expose show() globally so manual CTAs anywhere on the site can open
     // the modal regardless of the auto-suppression rules.
-    window.bhagyaShowSubscribeModal = show;
+    window.bhagyaShowSubscribeModal = showAndPrefill;
     document.querySelectorAll('[data-subscribe-trigger]').forEach(function(el) {
-      el.addEventListener('click', function(e) { e.preventDefault(); show(); });
+      el.addEventListener('click', function(e) { e.preventDefault(); showAndPrefill(); });
     });
 
     form.addEventListener('submit', function(e) {
@@ -290,6 +303,12 @@
     // Auto-show on visits 3/6 — but only if not already dismissed twice
     // or successfully subscribed before. Manual CTAs above this check still
     // work even when auto-show is suppressed.
+    //
+    // Signed-in server-side check: if the user is already subscribed, don't
+    // auto-prompt them. Handles the case where they subscribed on a
+    // different device (localStorage DONE_KEY wouldn't catch it).
+    var _alreadySubscribedServerSide = {{ 'true' if (load_current_user(request) and is_subscribed(load_current_user(request).email)) else 'false' }};
+    if (_alreadySubscribedServerSide) return;
     try {
       if (localStorage.getItem(DONE_KEY) === '1') return;
       var visits = parseInt(localStorage.getItem(VISITS_KEY) || '0', 10) + 1;

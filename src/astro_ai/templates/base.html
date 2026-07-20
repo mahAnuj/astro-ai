@@ -831,17 +831,30 @@
           <span>No password to remember. Free.</span>
         </li>
       </ul>
-      <div id="g_id_onload"
-           data-client_id="{{ google_client_id }}"
-           data-callback="handleGoogleSignIn"
-           data-auto_prompt="false"></div>
-      <div class="g_id_signin flex justify-center"
-           data-type="standard"
-           data-shape="rectangular"
-           data-theme="outline"
-           data-text="signin_with"
-           data-size="large"
-           data-logo_alignment="left"></div>
+      <div id="google-signin-controls">
+        <div id="g_id_onload"
+             data-client_id="{{ google_client_id }}"
+             data-callback="handleGoogleSignIn"
+             data-auto_prompt="false"></div>
+        <div class="g_id_signin flex justify-center"
+             data-type="standard"
+             data-shape="rectangular"
+             data-theme="outline"
+             data-text="signin_with"
+             data-size="large"
+             data-logo_alignment="left"></div>
+      </div>
+      {# Loading state — replaces the Google button the moment the user
+         completes the OAuth popup, so they aren't staring at an
+         unchanged modal for 2-3 seconds while we verify + set the
+         cookie + reload the page. #}
+      <div id="google-signin-loading" class="hidden flex-col items-center gap-3 py-2">
+        <svg class="w-8 h-8 text-astro-700 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.25"/>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <p class="text-sm text-stone-600">Signing you in&hellip;</p>
+      </div>
       <p id="google-signin-error" class="hidden text-xs text-red-600 mt-3"></p>
       <p class="text-xs text-stone-400 mt-4 leading-relaxed">
         We only receive your email + name from Google. We never post on your behalf and never share your data.
@@ -877,6 +890,12 @@
         backdrop.classList.add('hidden');
         backdrop.classList.remove('flex');
         errBox.classList.add('hidden');
+        // Reset any lingering spinner state so re-opening shows the Google
+        // button, not a stuck "Signing you in…" from a previous attempt.
+        var _c = document.getElementById('google-signin-controls');
+        var _l = document.getElementById('google-signin-loading');
+        if (_c) _c.classList.remove('hidden');
+        if (_l) { _l.classList.add('hidden'); _l.classList.remove('flex'); }
       }
 
       closeBtn.addEventListener('click', hideModal);
@@ -892,10 +911,31 @@
         });
       });
 
+      var controls = document.getElementById('google-signin-controls');
+      var loading  = document.getElementById('google-signin-loading');
+      function showSigningIn() {
+        if (controls) controls.classList.add('hidden');
+        if (loading) {
+          loading.classList.remove('hidden');
+          loading.classList.add('flex');
+        }
+      }
+      function hideSigningIn() {
+        if (controls) controls.classList.remove('hidden');
+        if (loading) {
+          loading.classList.add('hidden');
+          loading.classList.remove('flex');
+        }
+      }
+
       // Called by Google Identity Services after the user completes sign-in.
       // Global function so GIS can find it via data-callback.
       window.handleGoogleSignIn = function (response) {
         errBox.classList.add('hidden');
+        // Swap the Google button for a spinner IMMEDIATELY so the user gets
+        // instant feedback that we're processing — otherwise the modal
+        // sits there unchanged for 2-3s while we verify the JWT server-side.
+        showSigningIn();
         var body = new FormData();
         body.append('credential', response.credential);
         fetch('/auth/google', { method: 'POST', body: body })
@@ -904,11 +944,13 @@
             if (j.ok) {
               location.reload();
             } else {
+              hideSigningIn();
               errBox.textContent = j.error || 'Sign-in failed. Please try again.';
               errBox.classList.remove('hidden');
             }
           })
           .catch(function () {
+            hideSigningIn();
             errBox.textContent = 'Network error. Please try again.';
             errBox.classList.remove('hidden');
           });
