@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Rohini — the "reddish one", favourite of the Moon. Symbol: chariot
+     or banyan tree. Deity: Brahma. Ruled by the Moon. Rendered as a
+     lush banyan tree with hanging aerial roots + a full moon behind. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Rohini nakshatra symbol — banyan tree beneath a full moon">
+  <defs>
+    <radialGradient id="moon" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fef9c3"/>
+      <stop offset="80%" stop-color="#fef3c7" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="foliage" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="60%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+
+  <!-- Full moon -->
+  <circle cx="230" cy="90" r="42" fill="url(#moon)"/>
+  <circle cx="230" cy="90" r="30" fill="#fef9c3" opacity="0.9"/>
+
+  <!-- Trunk -->
+  <path d="M 154 245 L 156 155 Q 160 145 164 155 L 166 245 Z"
+        fill="#6b21a8"/>
+
+  <!-- Aerial roots (banyan signature) -->
+  <path d="M 135 170 L 137 245" stroke="#7c3aed" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 118 178 L 118 245" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 185 170 L 183 245" stroke="#7c3aed" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 202 178 L 202 245" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Foliage: overlapping circles -->
+  <g fill="url(#foliage)">
+    <circle cx="160" cy="120" r="55" opacity="0.95"/>
+    <circle cx="120" cy="140" r="42" opacity="0.9"/>
+    <circle cx="200" cy="140" r="42" opacity="0.9"/>
+    <circle cx="145" cy="105" r="30" opacity="0.85"/>
+    <circle cx="180" cy="105" r="30" opacity="0.85"/>
+  </g>
+
+  <!-- Base ground line -->
+  <line x1="70" y1="248" x2="250" y2="248" stroke="#c084fc" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- Small "4" -->
+  <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
+        font-weight="700" fill="#6b21a8" opacity="0.35">4</text>
+</svg>
