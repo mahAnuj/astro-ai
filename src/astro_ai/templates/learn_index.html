@@ -24,15 +24,58 @@
     </div>
   </header>
 
+  <!-- SEARCH + CATEGORY FILTER -->
+  {% if articles %}
+  {# Build the unique category list from the articles themselves, so new
+     categories added to learn_registry.py appear here automatically. #}
+  {% set _cats = articles | map(attribute='category') | unique | list | sort %}
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-2">
+    <div class="flex flex-col gap-4">
+      {# Search bar #}
+      <div class="relative">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 pointer-events-none"
+             fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5" stroke-linecap="round"/>
+        </svg>
+        <input id="learn-search" type="search" autocomplete="off"
+               placeholder="Search articles — try &quot;manglik&quot;, &quot;dasha&quot;, &quot;saturn&quot;..."
+               class="w-full pl-11 pr-11 py-3 bg-white border border-stone-300 rounded-full text-sm text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none shadow-sm">
+        <button id="learn-search-clear" type="button" aria-label="Clear search"
+                class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 p-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      {# Category chips #}
+      <div id="learn-categories" class="flex flex-wrap items-center gap-2">
+        <button type="button" data-cat="all"
+                class="learn-cat-chip is-active px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider border transition-colors">
+          All <span class="opacity-70 font-normal normal-case">({{ articles | length }})</span>
+        </button>
+        {% for cat in _cats %}
+        {% set _n = (articles | selectattr('category', 'equalto', cat) | list | length) %}
+        <button type="button" data-cat="{{ cat }}"
+                class="learn-cat-chip px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider border transition-colors">
+          {{ cat }} <span class="opacity-70 font-normal normal-case">({{ _n }})</span>
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
   <!-- ARTICLE GRID -->
-  <section class="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-10 sm:pb-14">
     {% if not articles %}
     <p class="text-center text-stone-500 italic">More articles coming soon.</p>
     {% else %}
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div id="learn-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {% for a in articles %}
+      {# data-title / data-summary / data-cat power the client-side filter. #}
       <a href="/learn/{{ a.slug }}/"
-         class="group block bg-white border border-stone-200 rounded-2xl overflow-hidden hover:border-astro-300 hover:shadow-lg transition-all">
+         class="learn-card group block bg-white border border-stone-200 rounded-2xl overflow-hidden hover:border-astro-300 hover:shadow-lg transition-all"
+         data-cat="{{ a.category }}"
+         data-title="{{ a.title | lower }}"
+         data-summary="{{ a.summary | lower }}">
         <div class="aspect-[16/10] bg-gradient-to-br from-astro-50 to-cream flex items-center justify-center p-6">
           <img src="{{ a.hero_image }}" alt="" class="max-h-full max-w-full" loading="lazy">
         </div>
@@ -50,8 +93,80 @@
       </a>
       {% endfor %}
     </div>
+    {# Empty state — shown when search + category filter yields no matches. #}
+    <p id="learn-empty" class="hidden text-center text-stone-500 italic mt-10">
+      No articles match your search. Try a different keyword or category.
+    </p>
     {% endif %}
   </section>
+
+  {% if articles %}
+  <style>
+    .learn-cat-chip {
+      background: #fff;
+      color: #57534e;       /* stone-600 */
+      border-color: #e7e5e4; /* stone-200 */
+    }
+    .learn-cat-chip:hover {
+      color: #6b21a8;       /* astro-700 */
+      border-color: #c084fc; /* astro-300 */
+    }
+    .learn-cat-chip.is-active {
+      background: #6b21a8;   /* astro-700 */
+      color: #fff;
+      border-color: #6b21a8;
+    }
+  </style>
+  <script>
+    (function () {
+      var input   = document.getElementById('learn-search');
+      var clear   = document.getElementById('learn-search-clear');
+      var grid    = document.getElementById('learn-grid');
+      var empty   = document.getElementById('learn-empty');
+      var cards   = grid ? grid.querySelectorAll('.learn-card') : [];
+      var chips   = document.querySelectorAll('.learn-cat-chip');
+      if (!input || !cards.length) return;
+
+      var state = { q: '', cat: 'all' };
+
+      function apply() {
+        var q = state.q.trim().toLowerCase();
+        var c = state.cat;
+        var shown = 0;
+        cards.forEach(function (card) {
+          var matchesCat = (c === 'all') || (card.getAttribute('data-cat') === c);
+          var matchesQ = !q ||
+            card.getAttribute('data-title').indexOf(q) !== -1 ||
+            card.getAttribute('data-summary').indexOf(q) !== -1 ||
+            (card.getAttribute('data-cat') || '').toLowerCase().indexOf(q) !== -1;
+          var visible = matchesCat && matchesQ;
+          card.style.display = visible ? '' : 'none';
+          if (visible) shown++;
+        });
+        if (empty) empty.classList.toggle('hidden', shown !== 0);
+        if (clear) clear.classList.toggle('hidden', !q);
+      }
+
+      input.addEventListener('input', function () { state.q = input.value; apply(); });
+      if (clear) clear.addEventListener('click', function () {
+        input.value = ''; state.q = ''; apply(); input.focus();
+      });
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chips.forEach(function (c) { c.classList.remove('is-active'); });
+          chip.classList.add('is-active');
+          state.cat = chip.getAttribute('data-cat');
+          apply();
+        });
+      });
+
+      // ?q=... deep-link support (share a search from another page).
+      var params = new URLSearchParams(window.location.search);
+      var initial = params.get('q');
+      if (initial) { input.value = initial; state.q = initial; apply(); }
+    })();
+  </script>
+  {% endif %}
 
   <!-- BOTTOM CTA -->
   <section class="max-w-3xl mx-auto px-4 sm:px-6 pb-14 text-center">
