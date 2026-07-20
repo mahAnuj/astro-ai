@@ -486,10 +486,11 @@ async def kundli(request: Request) -> HTMLResponse:
     saved = load_collection(request).active
     if saved is None:
         return RedirectResponse("/?needs_chart=kundli", status_code=303)
-    return await _render_natal_for(request, saved.to_birth_details())
+    return await _render_natal_for(request, saved.to_birth_details(), chart_id=saved.id)
 
 
-async def _render_natal_for(request: Request, details: BirthDetails) -> HTMLResponse:
+async def _render_natal_for(request: Request, details: BirthDetails,
+                            chart_id: str = "") -> HTMLResponse:
     """Shared natal-reading renderer used by both GET /natal and POST /reading."""
     try:
         chart = compute_chart(details.birth_date, details.birth_time, details.birth_place)
@@ -539,6 +540,24 @@ async def _render_natal_for(request: Request, details: BirthDetails) -> HTMLResp
         )
     sections = parse_sectioned_reading(reading_text)
     sade_sati = compute_sade_sati_details(chart)
+
+    # Persist to signed-in user's reading history so they can revisit it
+    # from any device. Best-effort — never fails the render.
+    _signed_in = load_user(request)
+    if _signed_in and _signed_in.sub:
+        _title = f"{details.name}'s Kundli reading" if details.name else "Kundli reading"
+        try:
+            users.save_reading(
+                sub=_signed_in.sub,
+                kind="natal",
+                chart_id=chart_id,
+                title=_title,
+                body=reading_text,
+                meta={"birth_date": details.birth_date,
+                      "birth_place": details.birth_place},
+            )
+        except Exception:  # noqa: BLE001 — history is best-effort
+            log.warning("save_reading(natal) failed for %s", _signed_in.sub)
 
     # Pre-compute SS progress for the template (Jinja can't do date arithmetic cleanly).
     ss_progress = 0
@@ -1687,7 +1706,7 @@ async def ask_submit(
     cache_key = _ask_cache_key(saved, question, category, lang)
     was_cached = cache.get(cache_key) is not None
     try:
-        _cached(
+        answer_text = _cached(
             cache_key=cache_key,
             route="ask",
             lang=lang,
@@ -1705,6 +1724,24 @@ async def ask_submit(
              "message": f"{type(err).__name__}: {err}"},
             status_code=502,
         )
+
+    # Save the Ask answer to the signed-in user's reading history so they can
+    # revisit past questions from /account. Best-effort — never fails the
+    # redirect. Only saves fresh generations (not cache hits) to avoid dupes.
+    if not was_cached:
+        _signed_in = load_user(request)
+        if _signed_in and _signed_in.sub and answer_text:
+            try:
+                users.save_reading(
+                    sub=_signed_in.sub,
+                    kind="ask",
+                    chart_id=saved.id,
+                    title=question[:80] + ("…" if len(question) > 80 else ""),
+                    body=answer_text,
+                    meta={"question": question, "category": category},
+                )
+            except Exception:  # noqa: BLE001 — history is best-effort
+                log.warning("save_reading(ask) failed for %s", _signed_in.sub)
 
     # Redirect with the question + category in the URL so refresh doesn't
     # re-submit, the user can bookmark / share the URL, and back/forward

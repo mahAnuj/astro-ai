@@ -811,10 +811,26 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
         </svg>
       </button>
-      <h2 id="google-signin-title" class="font-display text-xl font-bold text-stone-900 mb-2">Sign in to Shubh Bhagya</h2>
-      <p class="text-sm text-stone-600 mb-4 leading-relaxed">
-        Sign in with Google to save unlimited charts, sync your Kundlis across devices, and access account features. No password to remember.
-      </p>
+      <h2 id="google-signin-title" class="font-display text-xl font-bold text-stone-900 mb-1.5">Sign in to Shubh Bhagya</h2>
+      <p class="text-sm text-stone-600 mb-3.5 leading-relaxed">Your account, on any device:</p>
+      <ul class="space-y-2 mb-4 text-sm text-stone-700">
+        <li class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <span>Keep your Kundli chart forever &mdash; on phone, laptop, wherever.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <span>Save unlimited charts (family, friends, clients).</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <span>Revisit past readings &amp; Ask answers anytime.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <span>No password to remember. Free.</span>
+        </li>
+      </ul>
       <div id="g_id_onload"
            data-client_id="{{ google_client_id }}"
            data-callback="handleGoogleSignIn"

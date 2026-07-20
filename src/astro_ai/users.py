@@ -7,6 +7,10 @@ users). When we outgrow flat-file JSON, migrate to Firestore; the API
 surface here (upsert / find / count / list) stays the same, only the
 storage backend swaps.
 
+Reading history: per-user list of generated readings (natal, ask, etc.)
+appended in reverse-chronological order, capped at MAX_READINGS_PER_USER.
+See save_reading / list_readings at the bottom of this module.
+
 WHY GOOGLE `sub` AS PRIMARY KEY (not email):
 
 The Google-issued `sub` (subject) is a stable, opaque unique identifier
@@ -31,6 +35,7 @@ finds on an existing record.
 from __future__ import annotations
 
 import logging
+import uuid
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from typing import Optional
@@ -41,6 +46,11 @@ from astro_ai.session import ChartCollection, MAX_CHARTS, SavedChart
 log = logging.getLogger(__name__)
 
 USERS_KEY = "users.json"
+
+# Per-user reading history cap. Older entries drop off the tail.
+# Set high enough that a regular user won't hit it in a year of use,
+# low enough that users.json stays a reasonable size in GCS.
+MAX_READINGS_PER_USER = 50
 
 
 def _now_iso() -> str:
@@ -286,3 +296,98 @@ def merge_collections(cookie: ChartCollection, user: ChartCollection) -> ChartCo
             active_id = merged[0].id
 
     return ChartCollection(charts=tuple(merged), active_id=active_id)
+
+
+# ─── Reading history ────────────────────────────────────────────────────────
+# Signed-in users' generated readings (natal readings, Ask answers, etc.)
+# persist to users.json so they can revisit anything they've generated,
+# from any device. Non-signed-in users don't get history — cookie-only.
+
+
+@dataclass(frozen=True)
+class Reading:
+    """One saved reading in a user's history."""
+
+    id: str            # uuid — stable ID for detail links
+    kind: str          # 'natal' | 'ask' — extend as more types are wired
+    chart_id: str      # which SavedChart this is about (may be "" for Ask)
+    title: str         # short display title, e.g. "Aastha's Kundli reading"
+    body: str          # full text content (LLM output)
+    created_at: str    # ISO timestamp
+    meta: dict         # kind-specific extras (question text for ask, etc.)
+
+
+def save_reading(sub: str, kind: str, chart_id: str, title: str,
+                 body: str, meta: dict | None = None) -> bool:
+    """Append a reading to a signed-in user's history. Idempotent-ish.
+
+    Prepends to the list (newest first). Caps at MAX_READINGS_PER_USER —
+    older entries are dropped from the tail.
+
+    Silent no-op when sub is empty (anonymous user) or storage isn't
+    configured. Best-effort — the calling route never fails because of
+    a history-save miss.
+    """
+    if not sub or not kind or not body:
+        return False
+
+    entry = {
+        "id": uuid.uuid4().hex,
+        "kind": kind,
+        "chart_id": chart_id or "",
+        "title": title or kind.title(),
+        "body": body,
+        "created_at": _now_iso(),
+        "meta": meta or {},
+    }
+
+    def _add(current):
+        data = current or {"users": []}
+        for existing in data["users"]:
+            if existing.get("sub") == sub:
+                readings = existing.get("readings", [])
+                readings.insert(0, entry)
+                # Cap oldest first — trim the tail.
+                if len(readings) > MAX_READINGS_PER_USER:
+                    readings = readings[:MAX_READINGS_PER_USER]
+                existing["readings"] = readings
+                return data
+        return None  # user not found — skip silently
+
+    result = storage.update_json(USERS_KEY, _add, default={"users": []})
+    if result is None:
+        log.warning("users.save_reading: storage unavailable or user %s not found", sub)
+        return False
+    return True
+
+
+def list_readings(sub: str, limit: int = MAX_READINGS_PER_USER) -> list[Reading]:
+    """Return a signed-in user's reading history, newest first. Empty if none."""
+    if not sub:
+        return []
+    for row in list_users():
+        if row.get("sub") == sub:
+            raw = row.get("readings", [])[:limit]
+            return [
+                Reading(
+                    id=str(r.get("id", "")),
+                    kind=str(r.get("kind", "")),
+                    chart_id=str(r.get("chart_id", "")),
+                    title=str(r.get("title", "")),
+                    body=str(r.get("body", "")),
+                    created_at=str(r.get("created_at", "")),
+                    meta=dict(r.get("meta", {}) or {}),
+                )
+                for r in raw
+            ]
+    return []
+
+
+def find_reading(sub: str, reading_id: str) -> Optional[Reading]:
+    """Fetch one reading by id from a user's history. None if not found."""
+    if not sub or not reading_id:
+        return None
+    for r in list_readings(sub):
+        if r.id == reading_id:
+            return r
+    return None
