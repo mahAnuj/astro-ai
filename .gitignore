@@ -26,3 +26,7 @@ bhagya.db-journal
 # Firebase CLI local cache (auth, deploy artifacts)
 .firebase/
 firebase-debug.log
+
+# Knowledge source PDFs — kept local only for copyright hygiene.
+# Extractions live in src/astro_ai/knowledge/*.md and vedic_reference.md.
+data/
