@@ -666,6 +666,99 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="hasta-nakshatra",
+        title="Hasta Nakshatra: Savitar's Skilled Hand — The Healer, The Craftsman",
+        summary="Hasta is the thirteenth nakshatra — Virgo 10°00'–23°20'. Ruled by the Moon with Savitar (the Sun as inspirer) as its deity, symbolised by an open palm. Hasta natives are the skilled hands of the zodiac — dexterous, healing, quietly capable.",
+        category="Nakshatras",
+        hero_image="/static/learn/hasta-nakshatra/hero.svg",
+        read_time="8 min",
+        related=("uttara-phalguni-nakshatra", "chandra-moon-in-vedic-astrology", "chitra-nakshatra"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Hasta nakshatra?",
+                "a": "Your Moon needs to sit between 10°00' and 23°20' of Virgo in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position. Hasta natives always have the Moon as their first Mahadasha (10 years), producing a distinctive mother-shaped early childhood.",
+            },
+            {
+                "q": "Who is Savitar, the deity of Hasta?",
+                "a": "Savitar is one of the oldest and most sacred deities in the Vedas — the aspect of the Sun that inspires and awakens human awareness. The Gayatri Mantra, one of the most powerful classical prayers, is addressed to Savitar. What Savitar inspires, the human being executes with their hands. This is the Hasta connection — divine inspiration delivered through the physical hand.",
+            },
+            {
+                "q": "What careers suit Hasta natives?",
+                "a": "Medicine (especially surgery, physiotherapy, dentistry, obstetrics), massage and bodywork, craft trades (carpentry, jewellery-making, tailoring, watchmaking, luthiery), culinary arts, fine arts (painting, calligraphy, sculpture, ceramics), teaching young children, astrology and palmistry (Hasta is the classical nakshatra of hand-reading), magic and illusion (sleight-of-hand is literal Hasta work). Hasta natives struggle in purely abstract intellectual roles with no physical outlet.",
+            },
+            {
+                "q": "What is the shadow side of Hasta?",
+                "a": "Perfectionism. The skill-orientation can tip into never-being-satisfied-with-the-work. Combined with Virgo's already-critical mind, Hasta natives can drive themselves and collaborators hard trying to reach a standard that keeps moving. The Moon rulership softens this — the mature Hasta learns that 'good enough, delivered with warmth' often serves people better than 'perfect, delivered late'.",
+            },
+            {
+                "q": "Which nakshatras match well with Hasta?",
+                "a": "By Ashtakoot Guna Milan: best matches are Deva-gana partners with Adi or Madhya nadi — Ashwini (Adi), Punarvasu (Adi), Pushya (Madhya — often cited as classical strong Hasta partner), Anuradha (Madhya). Same-Antya-nadi partners (Krittika, Rohini, Ashlesha, Magha, Swati, Uttara Ashadha, Shravana, Revati) lose 8 Nadi Kuta points.",
+            },
+        ),
+    ),
+    Article(
+        slug="chitra-nakshatra",
+        title="Chitra Nakshatra: Vishvakarma's Dazzling Jewel",
+        summary="Chitra is the fourteenth nakshatra — Virgo 23°20' to Libra 6°40'. Ruled by Mars with Vishvakarma (the divine architect) as its deity, symbolised by a bright pearl or gem. Chitra natives are the striking designers — beautiful, constructive, magnetic.",
+        category="Nakshatras",
+        hero_image="/static/learn/chitra-nakshatra/hero.svg",
+        read_time="8 min",
+        related=("hasta-nakshatra", "mangal-mars-in-vedic-astrology", "swati-nakshatra"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Chitra nakshatra?",
+                "a": "Your Moon needs to sit between 23°20' Virgo and 6°40' Libra. Chitra straddles two signs — the first two padas are in Virgo (precise, service-oriented), the last two in Libra (aesthetic, relational). Generate your free Janma Kundli on Shubh Bhagya to see your Moon position. Chitra natives always have Mars as their first Mahadasha (7 years).",
+            },
+            {
+                "q": "Who is Vishvakarma, the deity of Chitra?",
+                "a": "Vishvakarma is the classical divine craftsman — the one who designed and built everything from the palaces of the gods to Indra's weapons to the golden city of Lanka. His name literally means 'the maker of all', and he holds patronage over every trade that shapes raw material into something beautiful and functional. As Chitra's deity, he gives the nakshatra its quality of seeing design possibility in whatever is present.",
+            },
+            {
+                "q": "Why does 'chitra' mean 'picture'?",
+                "a": "The Sanskrit word chitra is still used in modern Indian languages (Hindi, Marathi, Tamil, etc.) to mean 'picture', 'image', or 'painting'. This isn't accidental — the nakshatra name specifically evokes visual composition, the arrangement of elements into something the eye finds beautiful. Chitra natives usually have a strong instinct for visual arrangement, whether or not they work professionally in visual arts.",
+            },
+            {
+                "q": "What careers suit Chitra natives?",
+                "a": "Architecture and interior design (Vishvakarma's direct portfolio), fashion and jewellery design, visual arts (painting, photography, graphic design), film (especially cinematography and production design), engineering and construction, fine crafts (metalwork, ceramics, glassblowing), landscape design, cosmetics and aesthetics. Chitra natives struggle in purely administrative roles with no design element.",
+            },
+            {
+                "q": "Which nakshatras match well with Chitra?",
+                "a": "By Ashtakoot Guna Milan: best matches are Rakshasa-gana partners with Adi or Antya nadi — Vishakha (Antya — often specifically cited as classical Chitra partner, both Rakshasa with different nadi), Jyeshtha (Adi), Mula (Adi), Ashlesha (Antya). Same-Madhya-nadi partners (Bharani, Mrigashira, Pushya, Purva Phalguni, Anuradha, Purva Ashadha, Dhanishta, Uttara Bhadrapada) lose 8 Nadi Kuta points.",
+            },
+        ),
+    ),
+    Article(
+        slug="swati-nakshatra",
+        title="Swati Nakshatra: The Self-Going Wind — Independence and Diplomatic Grace",
+        summary="Swati is the fifteenth nakshatra — Libra 6°40'–20°00'. Ruled by Rahu with Vayu (wind) as its deity, symbolised by a young shoot swaying in the breeze. Swati natives are the independents — self-directed, diplomatic, refusing to be tied down.",
+        category="Nakshatras",
+        hero_image="/static/learn/swati-nakshatra/hero.svg",
+        read_time="8 min",
+        related=("chitra-nakshatra", "rahu-in-vedic-astrology", "vishakha-nakshatra"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Swati nakshatra?",
+                "a": "Your Moon needs to sit between 6°40' and 20°00' of Libra in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position. Swati natives always have Rahu as their first Mahadasha (18 years, the longest first-Mahadasha of any nakshatra), producing a distinctive Rahu-shaped early life — unusual family circumstances, international influences, or early independence.",
+            },
+            {
+                "q": "Who is Vayu, the deity of Swati?",
+                "a": "Vayu is one of the five great Vedic elemental deities (with Agni/fire, Varuna/water, Prithvi/earth, Akasha/space). But Vayu is distinctive: the wind cannot be held, cannot be tied down, cannot be permanently owned. It moves where it wishes, fills what needs filling, withdraws when the moment passes. This is Swati's essential quality — attachment causes suffering, and the moment something starts to own the Swati native rather than the other way around, an internal Vayu-quality rises and starts looking for the exit.",
+            },
+            {
+                "q": "What does the 'coral' symbolism mean for Swati?",
+                "a": "Some classical texts give Swati a secondary symbol: coral. Coral self-forms in the sea — it doesn't need a template, an architect, or an external framework. It builds itself into beautiful shapes according to its own inner rules. This is the deeper Swati message: independent doesn't mean rootless; it means self-directed. The Swati native, like coral, has an internal ordering principle that doesn't need external validation.",
+            },
+            {
+                "q": "What careers suit Swati natives?",
+                "a": "Diplomacy and international relations, business (especially trade, import/export, brokerage — Swati is classically strong for commerce), law (especially mediation and arbitration), consulting and advisory work, aviation and shipping (literal Vayu portfolio), freelancing, music (especially wind instruments and voice work — Vayu rules breath), journalism and translation. Swati natives struggle in rigid corporate hierarchies with no autonomy.",
+            },
+            {
+                "q": "What is the shadow side of Swati?",
+                "a": "Rootlessness. The independence quality can tip into chronic inability to commit — to relationships, careers, places, or communities. Swati natives sometimes discover in mid-life that they haven't built deep roots anywhere, and the wind that seemed liberating starts to feel lonely. Classical remedy: distinguish between healthy self-direction and reflexive avoidance of anything that might bind.",
+            },
+        ),
+    ),
+    Article(
         slug="magha-nakshatra",
         title="Magha Nakshatra: The Royal Throne of the Ancestors",
         summary="Magha is the tenth nakshatra — Leo 0°00'–13°20'. Ruled by Ketu with the Pitris (ancestors) as its deities, symbolised by the royal throne. Magha natives carry the classical weight and grace of inherited authority — dignified, ancestrally-carried, quietly royal.",
