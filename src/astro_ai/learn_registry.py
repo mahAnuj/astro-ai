@@ -666,6 +666,107 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="punarvasu-nakshatra",
+        title="Punarvasu Nakshatra: The Return Home — Aditi's Boundless Renewal",
+        summary="Punarvasu is the seventh nakshatra — Gemini 20°00' to Cancer 3°20'. Ruled by Jupiter with Aditi (mother of the gods) as its deity, symbolised by a quiver of arrows or a house. Punarvasu natives are the renewers — resilient, warm, wisdom-carrying, and always finding their way back.",
+        category="Nakshatras",
+        hero_image="/static/learn/punarvasu-nakshatra/hero.svg",
+        read_time="8 min",
+        related=("ardra-nakshatra", "guru-jupiter-in-vedic-astrology", "pushya-nakshatra"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Punarvasu nakshatra?",
+                "a": "Your Moon needs to sit between 20°00' Gemini and 3°20' Cancer. Punarvasu spans two signs — the first three padas are in Gemini (airy communicative quality), the last pada is in Cancer (watery emotional-home). Generate your free Janma Kundli on Shubh Bhagya to see your exact Moon position. Punarvasu natives always have Jupiter as their first Mahadasha.",
+            },
+            {
+                "q": "What does 'Punarvasu' actually mean?",
+                "a": "Classical texts break it into two Sanskrit roots: punar (again) and vasu (wealth, goods, resources). Together: 'the return of the wealth'. This is unusual — most nakshatras are named after their symbol or character, but Punarvasu is named after its promise. What was lost will return. The Aditi-mothering quality carries through: whatever leaves Aditi's household eventually comes back.",
+            },
+            {
+                "q": "What careers suit Punarvasu natives?",
+                "a": "Teaching, writing, publishing (Jupiter's classical portfolio), counselling and mentoring, law (especially advisory), real estate and hospitality (the 'house' symbol taken literally), publishing and editing, travel writing and cultural bridging, restoration work (art, historical buildings, cultural revival). Punarvasu natives struggle in aggressive competitive environments where their Sattvic temperament is a liability.",
+            },
+            {
+                "q": "What is the shadow side of Punarvasu?",
+                "a": "'Over-return.' Sometimes Punarvasu natives go back to relationships, jobs, or patterns that shouldn't be revisited — attaching the recovery archetype to something that has genuinely completed its arc. The classical remedy is to honour the return-instinct but check with a trusted friend whether this particular return serves growth. Distinguishing 'coming home' from 'going back to what harmed me' is the key skill.",
+            },
+            {
+                "q": "Which nakshatras match well with Punarvasu?",
+                "a": "By Ashtakoot Guna Milan: best matches are Deva-gana partners with Madhya or Antya nadi — Pushya is often specifically cited (same gana, different nadi, complementary Jupiter–Saturn temperaments), Hasta (Antya), Anuradha (Madhya), Shravana (Antya), Revati (Antya). Same-Adi-nadi (Ashwini, Ardra, Hasta's Adi pada, Jyeshtha, Mula, Shatabhisha, Purva Bhadrapada) lose 8 Nadi Kuta points.",
+            },
+        ),
+    ),
+    Article(
+        slug="pushya-nakshatra",
+        title="Pushya Nakshatra: The Nourisher — Most Auspicious of the 27 (Except for Weddings)",
+        summary="Pushya is the eighth nakshatra — Cancer 3°20' to 16°40'. Classical Vedic tradition ranks it the most auspicious nakshatra of the zodiac. Ruled by Saturn with Brihaspati (guru of the gods) as deity. Pushya natives are the quiet teachers and nourishers.",
+        category="Nakshatras",
+        hero_image="/static/learn/pushya-nakshatra/hero.svg",
+        read_time="8 min",
+        related=("punarvasu-nakshatra", "shani-saturn", "guru-jupiter-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Pushya nakshatra?",
+                "a": "Your Moon needs to sit between 3°20' and 16°40' of Cancer in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position and nakshatra. Pushya natives always have Saturn as their first Mahadasha — the longest of all Mahadashas at 19 years — which shapes their whole approach to life from childhood.",
+            },
+            {
+                "q": "Why is Pushya called the most auspicious nakshatra?",
+                "a": "The combination is unique: Saturn's discipline + Brihaspati's dharma + Deva gana refinement + Cancer's emotional depth. This collection of factors is more universally favourable than any other single nakshatra. Ancient muhurta rules use 'when the Moon is in Pushya' as the default good time for almost any auspicious activity — with one striking exception.",
+            },
+            {
+                "q": "Why should you not marry during Pushya nakshatra?",
+                "a": "This is Pushya's one classical exception. Muhurta texts explicitly exclude Pushya from wedding date suggestions. Reasons vary: some say because Pushya is Brihaspati's nakshatra and his grace prefers scholarly over romantic beginnings; others say Cancer's emotional intensity + Saturn's slowness makes for a heavy start to a marriage. Either way, muhurta calendars honour this exclusion. Every other kind of auspicious start is welcomed on Pushya days.",
+            },
+            {
+                "q": "What careers suit Pushya nakshatra people?",
+                "a": "Teaching (Brihaspati's portfolio), medicine and healthcare (nourishing/healing archetype), food and hospitality (chefs, nutritionists, dieticians), financial advising and wealth management (Saturn's discipline applied to protecting others' resources), priesthood and ritual work, agriculture and dairy (literal cow-udder symbolism), real estate, long-term project management. Pushya natives struggle in fast-moving glamour-industry work.",
+            },
+            {
+                "q": "Which nakshatras match well with Pushya?",
+                "a": "By Ashtakoot Guna Milan: Punarvasu-Pushya is a classical strong pairing (same Deva gana, different nadi, complementary Jupiter–Saturn temperaments). Also good: Ashwini (Adi nadi), Hasta (Antya), Shravana (Antya), Revati (Antya). Same-Madhya-nadi partners (Bharani, Mrigashira, Purva Phalguni, Chitra, Anuradha, Purva Ashadha, Dhanishta, Uttara Bhadrapada) lose 8 Nadi Kuta points.",
+            },
+            {
+                "q": "What is 'Pushya Nakshatra shopping'?",
+                "a": "A well-known Indian folk tradition: buying gold, silver, or long-term assets on the day the Moon transits Pushya nakshatra brings prosperity. Jewellers actively market 'Pushya Nakshatra shopping days'. Classical support: Pushya is Kshipra (swift/light) + auspicious + Saturn-ruled — all favouring the accumulation of durable wealth. Even skeptical shoppers often check the Pushya calendar for large purchases.",
+            },
+        ),
+    ),
+    Article(
+        slug="ashlesha-nakshatra",
+        title="Ashlesha Nakshatra: The Entwiner — Serpent Wisdom and Occult Power",
+        summary="Ashlesha is the ninth nakshatra — Cancer 16°40' to 30°00'. Ruled by Mercury with the Nagas (serpent beings) as its deities, symbolised by a coiled serpent. Ashlesha natives are the mystical readers of hidden patterns — hypnotic, penetrating, capable of both healing and harm.",
+        category="Nakshatras",
+        hero_image="/static/learn/ashlesha-nakshatra/hero.svg",
+        read_time="9 min",
+        related=("pushya-nakshatra", "budha-mercury-in-vedic-astrology", "magha-nakshatra"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Ashlesha nakshatra?",
+                "a": "Your Moon needs to sit between 16°40' and 30°00' of Cancer. Ashlesha natives always have Mercury as their first Mahadasha (17 years). Generate your free Janma Kundli on Shubh Bhagya to see your Moon position. Note: the very last portion of Ashlesha (Cancer 26°40'–30°00') is the gandanta zone — a classical 'spiritual knot' before Leo begins, considered turbulent for children born there but potent for spiritual work later.",
+            },
+            {
+                "q": "Are Nagas evil in Vedic astrology?",
+                "a": "No — this is a common Western misreading. In Vedic tradition the Nagas (serpent beings) are wisdom-carriers. Vasuki was the churning-rope in the classical churning of the ocean of milk that produced Amrita, the nectar of immortality. Shesha is the coiled bed on which Vishnu rests. Snakes in Vedic imagination are not adversaries — they are the beings who hold what is too dangerous or profound for the surface world.",
+            },
+            {
+                "q": "What careers suit Ashlesha natives?",
+                "a": "Medicine (especially toxicology, pharmacology, snake-bite research), depth psychology and psychiatry (trauma work, personality disorders), occult and tantra at professional depth, investigative work (journalism, intelligence, criminal investigation), Ayurvedic medicine and herbalism (Nagas are classical teachers of pharmacology), politics behind the scenes (Ashlesha is more effective as strategist/advisor than as public leader), research and analysis roles.",
+            },
+            {
+                "q": "What is the shadow side of Ashlesha?",
+                "a": "'Manipulation'. Because Ashlesha natives read others so well and can be so hypnotically persuasive, the shadow expression is using this capacity for personal gain rather than healing. Classical texts warn about the 'coiled serpent' quality turning inward as self-poisoning (chronic resentment, brooding, holding grudges) or outward as manipulation. The mature Ashlesha uses the serpent's gift to heal; the immature one uses it to bind.",
+            },
+            {
+                "q": "What is the gandanta zone?",
+                "a": "Gandanta means 'spiritual knot' — the classical name for the last portion of a watery sign that borders a fiery sign. Ashlesha (end of Cancer, before Leo) is one of three gandanta zones. Classical texts consider births in the very final degrees of Ashlesha (~26°40'–30°00' Cancer) turbulent — the transition-energy is intense. But the same texts also emphasise that gandanta natives who survive early difficulty develop unusual spiritual power. The serpent that swallows poison and transforms it is the exact archetype.",
+            },
+            {
+                "q": "Which nakshatras match well with Ashlesha?",
+                "a": "By Ashtakoot Guna Milan: best matches are Rakshasa-gana partners with Adi or Madhya nadi — Jyeshtha (Adi), Chitra (Madhya), Mula (Adi). Manushya-gana partners work if other kutas score high. Same-Antya-nadi partners (Krittika, Rohini, Magha, Swati, Uttara Ashadha, Shravana, Revati) lose 8 Nadi Kuta points. Deva-gana partners create Gana-Kuta friction.",
+            },
+        ),
+    ),
+    Article(
         slug="rohini-nakshatra",
         title="Rohini Nakshatra: The Moon's Favourite, Nakshatra of Growth and Abundance",
         summary="Rohini is the fourth nakshatra — Taurus 10°00'–23°20'. Ruled by the Moon with Brahma the Creator as its deity, symbolised by a chariot or the banyan tree. Rohini natives are the makers — sensual, magnetic, patient builders of beauty and abundance.",

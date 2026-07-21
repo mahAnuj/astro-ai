@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ashlesha — "the entwiner". Symbol: coiled serpent. Deity: the
+     Nagas (serpent beings). Ruled by Mercury. Rendered as a dark
+     coiled serpent with hypnotic eye, in deep-purple/emerald palette
+     to evoke the mystical/occult quality. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Ashlesha nakshatra symbol — coiled serpent with hypnotic eye">
+  <defs>
+    <radialGradient id="alaura" cx="0.5" cy="0.5" r="0.6">
+      <stop offset="0%" stop-color="#a7f3d0" stop-opacity="0.4"/>
+      <stop offset="55%" stop-color="#6b21a8" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#312e81" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="alsnake" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="55%" stop-color="#6b21a8"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+    <radialGradient id="aleye" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="60%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <circle cx="160" cy="160" r="140" fill="url(#alaura)"/>
+
+  <!-- Outer coil -->
+  <path d="M 160 235
+           C 90 235, 55 195, 55 155
+           C 55 105, 100 70, 165 70
+           C 220 70, 250 105, 250 145
+           C 250 175, 225 195, 195 195
+           C 175 195, 160 185, 160 170
+           C 160 158, 170 152, 180 152
+           C 190 152, 195 158, 195 165"
+        stroke="url(#alsnake)" stroke-width="18" fill="none"
+        stroke-linecap="round"/>
+
+  <!-- Snake head (at top of coil) -->
+  <ellipse cx="200" cy="170" rx="18" ry="12" fill="url(#alsnake)"/>
+
+  <!-- Fangs (subtle) -->
+  <path d="M 191 176 L 189 182 M 209 176 L 211 182"
+        stroke="#fef3c7" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Hypnotic eye — the signature Ashlesha element -->
+  <circle cx="200" cy="166" r="5" fill="url(#aleye)"/>
+  <circle cx="200" cy="166" r="2" fill="#312e81"/>
+
+  <!-- Scale texture hints on coil (small dots) -->
+  <g fill="#fef9c3" opacity="0.35">
+    <circle cx="90" cy="200" r="1.5"/>
+    <circle cx="120" cy="215" r="1.5"/>
+    <circle cx="150" cy="220" r="1.5"/>
+    <circle cx="180" cy="220" r="1.5"/>
+    <circle cx="90" cy="140" r="1.5"/>
+    <circle cx="90" cy="110" r="1.5"/>
+    <circle cx="130" cy="85" r="1.5"/>
+    <circle cx="180" cy="80" r="1.5"/>
+    <circle cx="220" cy="95" r="1.5"/>
+  </g>
+
+  <!-- Small "9" -->
+  <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
+        font-weight="700" fill="#6b21a8" opacity="0.35">9</text>
+</svg>
