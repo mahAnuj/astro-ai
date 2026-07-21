@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Mrigashira — the "deer's head". Symbol: stag/deer head. Deity:
+     Soma (moon nectar). Ruled by Mars. Rendered as a graceful deer's
+     head silhouette with antlers, framed by a crescent moon. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Mrigashira nakshatra symbol — deer's head under a crescent moon">
+  <defs>
+    <radialGradient id="mgmist" cx="0.5" cy="0.5" r="0.6">
+      <stop offset="0%" stop-color="#fef9c3" stop-opacity="0.8"/>
+      <stop offset="70%" stop-color="#fef3c7" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mgdeer" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="60%" stop-color="#6b21a8"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <circle cx="160" cy="180" r="140" fill="url(#mgmist)"/>
+
+  <!-- Crescent moon top-right -->
+  <path d="M 240 65
+           A 30 30 0 1 0 260 105
+           A 22 22 0 1 1 240 65 Z"
+        fill="#fbbf24"/>
+
+  <!-- Deer head silhouette -->
+  <g fill="url(#mgdeer)">
+    <!-- Neck + head -->
+    <path d="M 128 245
+             L 122 175
+             Q 118 148, 138 128
+             Q 152 112, 172 116
+             Q 192 122, 200 145
+             Q 204 165, 194 178
+             L 190 200
+             Q 188 218, 172 235
+             Q 158 248, 128 245 Z"/>
+
+    <!-- Left antler -->
+    <path d="M 138 128
+             Q 128 105, 118 88
+             M 132 108
+             Q 122 95, 108 92
+             M 128 118
+             Q 118 108, 100 108"
+          stroke="url(#mgdeer)" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+    <!-- Right antler -->
+    <path d="M 172 116
+             Q 178 92, 192 78
+             M 178 100
+             Q 190 90, 205 92
+             M 182 112
+             Q 195 105, 210 112"
+          stroke="url(#mgdeer)" stroke-width="4" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- Eye -->
+  <circle cx="175" cy="150" r="3" fill="#fbbf24"/>
+
+  <!-- Small "5" -->
+  <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
+        font-weight="700" fill="#6b21a8" opacity="0.35">5</text>
+</svg>

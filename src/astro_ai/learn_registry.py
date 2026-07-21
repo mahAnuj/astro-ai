@@ -666,6 +666,99 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="rohini-nakshatra",
+        title="Rohini Nakshatra: The Moon's Favourite, Nakshatra of Growth and Abundance",
+        summary="Rohini is the fourth nakshatra — Taurus 10°00'–23°20'. Ruled by the Moon with Brahma the Creator as its deity, symbolised by a chariot or the banyan tree. Rohini natives are the makers — sensual, magnetic, patient builders of beauty and abundance.",
+        category="Nakshatras",
+        hero_image="/static/learn/rohini-nakshatra/hero.svg",
+        read_time="8 min",
+        related=("ashwini-nakshatra", "chandra-moon-in-vedic-astrology", "shukra-venus-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Rohini nakshatra?",
+                "a": "Your Moon needs to sit between 10°00' and 23°20' of Taurus in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya — the planetary table shows your Janma Nakshatra under the Moon row. Rohini natives get a double blessing: Moon rules the nakshatra AND Moon is exalted in Taurus (exaltation degree is 3° Taurus).",
+            },
+            {
+                "q": "Why is Rohini called 'the Moon's favourite'?",
+                "a": "In classical Vedic myth, Chandra (the Moon-god) was married to all 27 nakshatra sisters but openly favoured Rohini. His preference was so obvious that the other 26 wives complained to their father Daksha, who cursed Chandra to wax and wane monthly. Astrologically, this myth is why Rohini is where the Moon expresses its most beautiful, abundant, sensually-alive form.",
+            },
+            {
+                "q": "What careers suit Rohini natives?",
+                "a": "Agriculture and horticulture (literal Rohini portfolio), fashion, textiles, cosmetics, jewellery, hospitality and food-service, music and dance (Moon+Venus is the strongest artistic combo in Vedic astrology), real estate and land, caregiving professions (Brahma-the-creator theme), and steady-accumulation finance work. Rohini natives struggle with high-volatility work requiring frequent pivots.",
+            },
+            {
+                "q": "What are the strengths and weaknesses of Rohini natives?",
+                "a": "Strengths: visible beauty or magnetism, capacity to attract abundance, patient growth of things (gardens, families, businesses, art), sensual/aesthetic sense, emotional steadiness. Weaknesses: attachment (the Moon holds what it loves — hard to let go), Sthira stubbornness, weight-gain tendency, resistance to necessary change.",
+            },
+            {
+                "q": "Which nakshatras match well with Rohini?",
+                "a": "By classical Ashtakoot Guna Milan: best matches are Manushya-gana partners with different nadi — Ardra (Adi nadi), Bharani (Madhya), Purva/Uttara Phalguni, Purva/Uttara Ashadha, Purva/Uttara Bhadrapada. Same-Antya-nadi partners (Krittika, Ashlesha, Magha, Swati, Vishakha, Uttara Ashadha, Shravana, Revati) lose 8 Nadi Kuta points.",
+            },
+        ),
+    ),
+    Article(
+        slug="mrigashira-nakshatra",
+        title="Mrigashira Nakshatra: The Seeker Who Searches for the Nectar",
+        summary="Mrigashira is the fifth nakshatra — Taurus 23°20' to Gemini 6°40'. Ruled by Mars with Soma as its deity, symbolised by a deer's head. Mrigashira natives are the curious wanderers of the zodiac — always searching for the essence beneath the surface.",
+        category="Nakshatras",
+        hero_image="/static/learn/mrigashira-nakshatra/hero.svg",
+        read_time="8 min",
+        related=("rohini-nakshatra", "mangal-mars-in-vedic-astrology", "ardra-nakshatra"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Mrigashira nakshatra?",
+                "a": "Your Moon needs to sit between 23°20' Taurus and 6°40' Gemini. Mrigashira spans two signs — the first two padas are in Taurus (earthy grounding), the last two in Gemini (airy quick-mind). Generate your free Janma Kundli on Shubh Bhagya to see your exact Moon position.",
+            },
+            {
+                "q": "What is Soma, the deity of Mrigashira?",
+                "a": "Soma in Vedic tradition is both a sacred plant (whose exact botanical identity is still debated) and the essence extracted from it — the nectar of immortality that the gods drink. Ritually, Soma is the nectar of the moon, the cool luminous essence of insight. As Mrigashira's deity, Soma gives the nakshatra its distinctive quality of always seeking the essence beneath the surface. Mrigashira natives don't stop at the appearance of things.",
+            },
+            {
+                "q": "What careers suit Mrigashira nakshatra people?",
+                "a": "Research and investigation (journalism, academic research, private investigation, market research), travel writing/photography/tourism, astrology and occult work, music (especially exploratory or multi-instrumental), consulting (assess-and-move-on style), teaching, perfumery and taste-based crafts (winemaking, tea, fragrance). Mrigashira natives struggle with repetitive assembly-line work.",
+            },
+            {
+                "q": "What is the shadow side of Mrigashira?",
+                "a": "'Never settling.' The searching quality can become an avoidance of arrival. Mrigashira natives sometimes discover in mid-life that they have half-completed skills in twenty domains rather than mastery in one. In relationships, the restless 'is this really the one?' question can undermine partnerships that would deepen if given time. The classical advice: distinguish between search-as-discovery (healthy) and search-as-avoidance (a Vata-nervous pattern needing grounding).",
+            },
+            {
+                "q": "Which nakshatras match well with Mrigashira?",
+                "a": "By Ashtakoot Guna Milan: best matches are Deva-gana partners with Adi or Antya nadi — Ashwini (Adi), Hasta (Antya), Shravana (Antya), Revati (Antya). Ashwini and Hasta are often cited as strong Mrigashira partners. Same-Madhya-nadi partners (Bharani, Pushya, Purva Phalguni, Chitra, Anuradha, Purva Ashadha, Dhanishta, Uttara Bhadrapada) lose 8 Nadi Kuta points.",
+            },
+        ),
+    ),
+    Article(
+        slug="ardra-nakshatra",
+        title="Ardra Nakshatra: The Storm That Breaks Through — Rudra's Teardrop",
+        summary="Ardra is the sixth nakshatra — Gemini 6°40' to 20°00'. Ruled by Rahu with Rudra (the storm form of Shiva) as its deity, symbolised by a teardrop. Ardra natives carry the classical energy of transformation through crisis — sharp, questioning, capable of breakthrough after storm.",
+        category="Nakshatras",
+        hero_image="/static/learn/ardra-nakshatra/hero.svg",
+        read_time="9 min",
+        related=("mrigashira-nakshatra", "rahu-in-vedic-astrology", "punarvasu-nakshatra"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Ardra nakshatra?",
+                "a": "Your Moon needs to sit between 6°40' and 20°00' of Gemini in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position and nakshatra. Ardra natives will also see their first Mahadasha listed as Rahu — often with many years already elapsed by adulthood.",
+            },
+            {
+                "q": "Why is Rudra the deity of Ardra?",
+                "a": "Rudra is one of the oldest deities in the Rig Veda — older than the classical Shiva. He is the fierce storm-god whose approach terrifies but whose passing leaves the land washed and fertile. Rudra doesn't destroy for destruction's sake; he destroys what has become stagnant so new life can grow. This is the Ardra pattern — the most difficult periods of life often turn out to have been the necessary clearing before what came next.",
+            },
+            {
+                "q": "What careers suit Ardra nakshatra people?",
+                "a": "Research (forensic, epidemiological, historical, investigative journalism), emergency response and trauma medicine, trauma-focused psychology, technology and engineering (Rahu-in-Gemini rulership makes Ardra one of the most tech-oriented nakshatras), cybersecurity/cryptography, comedy and satire (dark humour instinct), meteorology, occult and tantric practice.",
+            },
+            {
+                "q": "Is Ardra an unlucky nakshatra?",
+                "a": "No — but it's an intense one. The classical texts describe Ardra as a Tikshna (sharp) nakshatra suited for confrontational and transformative work, not for gentle beginnings. Ardra natives often live through unusually intense life events, but the pattern is turbulence-then-clearing, not misfortune. The classical Vedic view is that Rudra's storms are always followed by growth — the difficulty is real but so is the transformation.",
+            },
+            {
+                "q": "Which nakshatras match well with Ardra?",
+                "a": "By Ashtakoot Guna Milan: best matches are Manushya-gana partners with Madhya or Antya nadi — Rohini (Antya — often cited as one of the strongest Ardra partners, grounding earth-water for Ardra's storm-air), Bharani (Madhya), Purva/Uttara Phalguni, Purva/Uttara Ashadha, Uttara Bhadrapada. Same-Adi-nadi partners (Ashwini, Punarvasu, Hasta, Jyeshtha, Mula, Shatabhisha, Purva Bhadrapada) lose 8 Nadi Kuta points.",
+            },
+        ),
+    ),
+    Article(
         slug="ashwini-nakshatra",
         title="Ashwini Nakshatra: The Celestial Healer, First of the 27 Lunar Mansions",
         summary="Ashwini is the first nakshatra of the zodiac — the archetype of speed, initiation, and healing. Ruled by Ketu with the Ashwini Kumaras as deities, it defines the personality of anyone born with the Moon in Aries 0°00'–13°20'.",
