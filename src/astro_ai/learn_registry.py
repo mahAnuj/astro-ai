@@ -666,6 +666,99 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="magha-nakshatra",
+        title="Magha Nakshatra: The Royal Throne of the Ancestors",
+        summary="Magha is the tenth nakshatra — Leo 0°00'–13°20'. Ruled by Ketu with the Pitris (ancestors) as its deities, symbolised by the royal throne. Magha natives carry the classical weight and grace of inherited authority — dignified, ancestrally-carried, quietly royal.",
+        category="Nakshatras",
+        hero_image="/static/learn/magha-nakshatra/hero.svg",
+        read_time="8 min",
+        related=("ashlesha-nakshatra", "ketu-in-vedic-astrology", "purva-phalguni-nakshatra"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Magha nakshatra?",
+                "a": "Your Moon needs to sit between 0°00' and 13°20' of Leo in the sidereal zodiac. Generate your free Janma Kundli on Shubh Bhagya — the planetary table shows your Janma Nakshatra. Magha natives always have Ketu as their first Mahadasha (7 years), typically producing an unusually reflective/philosophical early childhood.",
+            },
+            {
+                "q": "Who are the Pitris, the deities of Magha?",
+                "a": "The Pitris are the collective ancestors of the family lineage — especially the paternal line back three generations (father, grandfather, great-grandfather). Vedic tradition places enormous weight on the Pitri connection. The annual Pitru Paksha (ancestor fortnight) is dedicated to offerings for the ancestors. Magha natives, more than any other nakshatra, carry ancestral weight directly — their successes and struggles often trace back to the family line more clearly than for others.",
+            },
+            {
+                "q": "Why is Ketu the ruler of a throne-symbolised nakshatra?",
+                "a": "The classical paradox: Magha's symbol is the throne (worldly authority) but its ruler is Ketu (dissolving the ego, moksha). Held together this is the Vedic recognition that true authority is inherited, not earned — the throne isn't yours in any personal sense. You sit on it because those before you sat on it. Your role is to hold it well and pass it on. Many Magha lives include a mid-life humbling that opens the door to spiritual maturity.",
+            },
+            {
+                "q": "What careers suit Magha natives?",
+                "a": "Leadership and executive roles (CEO, senior government, military command), family business succession, politics and public service, traditional profession with lineage (priesthood, classical arts), historical research and genealogy, antique dealing and heritage conservation, foundation and endowment stewardship. Magha natives struggle in startup-like environments requiring rapid pivots without institutional weight.",
+            },
+            {
+                "q": "Which nakshatras match well with Magha?",
+                "a": "By Ashtakoot Guna Milan: best matches are Rakshasa-gana partners with Adi or Madhya nadi — Jyeshtha (Adi), Chitra (Madhya), Mula (Adi). Same-Antya-nadi partners (Krittika, Rohini, Ashlesha, Swati, Uttara Ashadha, Shravana, Revati) lose 8 Nadi Kuta points. Deva-gana partners create Gana-Kuta friction as Magha's intensity can overwhelm the more refined Deva types.",
+            },
+        ),
+    ),
+    Article(
+        slug="purva-phalguni-nakshatra",
+        title="Purva Phalguni Nakshatra: Bhaga's Bed of Delight",
+        summary="Purva Phalguni is the eleventh nakshatra — Leo 13°20'–26°40'. Ruled by Venus with Bhaga (delight, luxury, patron of good fortune) as its deity, symbolised by the front legs of a bed. Purva Phalguni natives are the joyful creators — magnetic, artistic, deeply present to pleasure.",
+        category="Nakshatras",
+        hero_image="/static/learn/purva-phalguni-nakshatra/hero.svg",
+        read_time="8 min",
+        related=("magha-nakshatra", "shukra-venus-in-vedic-astrology", "uttara-phalguni-nakshatra"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Purva Phalguni nakshatra?",
+                "a": "Your Moon needs to sit between 13°20' and 26°40' of Leo. Generate your free Janma Kundli on Shubh Bhagya to see your Moon position and nakshatra. Purva Phalguni natives always have Venus as their first Mahadasha (20 years, the longest of all) — two decades of taste-and-art development shaping their early identity.",
+            },
+            {
+                "q": "Who is Bhaga, the deity of Purva Phalguni?",
+                "a": "Bhaga is one of the twelve Adityas (solar deities), the god of delight, luxury, marital happiness, and good fortune. His name is the root of the Sanskrit word 'bhagya' (fortune, destiny) — which is where Shubh Bhagya's own name comes from. Importantly: Bhaga rules the enjoyment of fortune, not the accumulation of it. A modest meal shared with joy honours Bhaga more than a lavish feast eaten grudgingly.",
+            },
+            {
+                "q": "What does the 'front legs of a bed' symbol mean?",
+                "a": "Classical texts break the bed symbol across the Phalguni pair: Purva Phalguni is the bed as a place of pleasure (where lovers meet, where creative dreams arise), while Uttara Phalguni is the same bed as a place of commitment (where marriage vows are consummated). Together they represent the classical Vedic vision of romantic love: pleasure and commitment held in a single frame.",
+            },
+            {
+                "q": "What careers suit Purva Phalguni natives?",
+                "a": "Performing arts (music, dance, theatre, cinema — Purva Phalguni is classically the strongest performance nakshatra), visual arts (painting, photography, fashion, jewellery design), hospitality (luxury hotels, fine dining, event planning), media and entertainment, wedding industry (bridal wear, wedding planning), romantic writing and poetry, sensory arts (perfumery, sommelierie, pastry). Purva Phalguni natives struggle in joyless corporate environments.",
+            },
+            {
+                "q": "Which nakshatras match well with Purva Phalguni?",
+                "a": "By Ashtakoot Guna Milan: Uttara Phalguni is often the classical strongest match — the two halves of the bed complete each other. Also good: Rohini (Antya nadi), Ardra (Adi nadi), Purva/Uttara Ashadha, Purva/Uttara Bhadrapada. Same-Madhya-nadi partners (Bharani, Mrigashira, Pushya, Chitra, Anuradha, Purva Ashadha, Dhanishta, Uttara Bhadrapada) lose 8 Nadi Kuta points.",
+            },
+        ),
+    ),
+    Article(
+        slug="uttara-phalguni-nakshatra",
+        title="Uttara Phalguni Nakshatra: Aryaman's Contract of Lasting Friendship",
+        summary="Uttara Phalguni is the twelfth nakshatra — Leo 26°40' to Virgo 10°00'. Ruled by the Sun with Aryaman (patron of contracts, friendship, hospitality) as its deity, symbolised by the back legs of a bed. Uttara Phalguni natives are the reliable patrons — steadfast, generous, keepers of long promises.",
+        category="Nakshatras",
+        hero_image="/static/learn/uttara-phalguni-nakshatra/hero.svg",
+        read_time="8 min",
+        related=("purva-phalguni-nakshatra", "surya-sun-in-vedic-astrology", "hasta-nakshatra"),
+        faqs=(
+            {
+                "q": "How do I know if I have Moon in Uttara Phalguni nakshatra?",
+                "a": "Your Moon needs to sit between 26°40' Leo and 10°00' Virgo. Uttara Phalguni straddles two signs — the first pada is in Leo (warm, generous), the last three padas are in Virgo (precise, service-oriented). Generate your free Janma Kundli on Shubh Bhagya to see your exact position. Uttara Phalguni natives always have the Sun as their first Mahadasha (6 years).",
+            },
+            {
+                "q": "Who is Aryaman, the deity of Uttara Phalguni?",
+                "a": "Aryaman is one of the twelve Adityas (solar deities), specifically the god of lasting bonds — sacred contracts of marriage, pledges of friendship, vows of patronage, covenants of hospitality between host and guest. Where Purva Phalguni's Bhaga governs the enjoyment of what is present, Aryaman governs the keeping of what has been promised. Classical Vedic society placed enormous weight on Aryaman's contracts.",
+            },
+            {
+                "q": "Why is the Purva–Uttara Phalguni pairing classical?",
+                "a": "The two Phalguni nakshatras complete each other's symbolism. Purva is the front legs of a bed (pleasure, where lovers meet); Uttara is the back legs (commitment, where they stay). Together they represent the Vedic vision of romantic love in a single frame. Consequently, Purva Phalguni + Uttara Phalguni pairing consistently ranks among the strongest Ashtakoot Guna Milan matches in classical literature.",
+            },
+            {
+                "q": "What careers suit Uttara Phalguni natives?",
+                "a": "Contract law (Aryaman's classical portfolio), HR and executive coaching, diplomatic and ambassadorial work, long-term project management, marriage/family therapy, nonprofit leadership, long-term-care medicine (geriatrics, family practice), family business steward roles. Uttara Phalguni natives struggle in fly-by-night startup work where reliability is treated as naive.",
+            },
+            {
+                "q": "What is the shadow side of Uttara Phalguni?",
+                "a": "Over-obligation. Because Uttara Phalguni natives take commitments so seriously, they can accumulate more than they can carry. The Aryaman quality can tip into codependence — carrying friends and family who should be carrying themselves. Classical remedy: the mature Uttara Phalguni learns to distinguish between commitments they've chosen and obligations others have assumed.",
+            },
+        ),
+    ),
+    Article(
         slug="punarvasu-nakshatra",
         title="Punarvasu Nakshatra: The Return Home — Aditi's Boundless Renewal",
         summary="Punarvasu is the seventh nakshatra — Gemini 20°00' to Cancer 3°20'. Ruled by Jupiter with Aditi (mother of the gods) as its deity, symbolised by a quiver of arrows or a house. Punarvasu natives are the renewers — resilient, warm, wisdom-carrying, and always finding their way back.",
