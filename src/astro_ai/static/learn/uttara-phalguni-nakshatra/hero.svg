@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Uttara Phalguni — the "latter reddish one". Symbol: back legs of
+     a bed / a bed at rest. Deity: Aryaman (patron of contracts and
+     friendship). Ruled by the Sun. Rendered as a canopied bed with a
+     scroll (representing the contract) draped across. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Uttara Phalguni nakshatra symbol — a bed at rest with a contract scroll">
+  <defs>
+    <radialGradient id="upfglow" cx="0.5" cy="0.55" r="0.65">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#f5f5f4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="upfframe" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="60%" stop-color="#6b21a8"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="upfmattress" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef9c3"/>
+      <stop offset="60%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="upfscroll" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <ellipse cx="160" cy="180" rx="150" ry="130" fill="url(#upfglow)"/>
+
+  <!-- Bed frame — canopy top rail -->
+  <rect x="55" y="90" width="210" height="10" fill="url(#upfframe)" rx="3"/>
+
+  <!-- Four posts -->
+  <rect x="55" y="90" width="12" height="180" fill="url(#upfframe)" rx="3"/>
+  <rect x="253" y="90" width="12" height="180" fill="url(#upfframe)" rx="3"/>
+  <rect x="90" y="200" width="8" height="60" fill="#4c1d95"/>
+  <rect x="222" y="200" width="8" height="60" fill="#4c1d95"/>
+
+  <!-- Post caps (decorative bulbs) -->
+  <circle cx="61" cy="85" r="10" fill="#fbbf24"/>
+  <circle cx="259" cy="85" r="10" fill="#fbbf24"/>
+
+  <!-- Mattress -->
+  <rect x="80" y="180" width="160" height="30" fill="url(#upfmattress)" rx="5"/>
+
+  <!-- Pillow -->
+  <ellipse cx="105" cy="177" rx="25" ry="10" fill="#fef9c3"/>
+  <ellipse cx="105" cy="177" rx="25" ry="10" fill="none" stroke="#d97706" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- Blanket draped -->
+  <path d="M 130 190
+           Q 175 200, 235 195
+           L 240 210
+           Q 175 220, 130 210 Z"
+        fill="url(#upfframe)" opacity="0.85"/>
+
+  <!-- Canopy fabric drape -->
+  <path d="M 60 100 Q 100 115, 160 108 Q 220 115, 260 100"
+        stroke="#a855f7" stroke-width="2.5" fill="none" opacity="0.6"/>
+
+  <!-- Contract scroll — the Aryaman signature -->
+  <g transform="translate(160, 130)">
+    <!-- Left roll -->
+    <ellipse cx="-35" cy="0" rx="5" ry="14" fill="#f59e0b"/>
+    <!-- Right roll -->
+    <ellipse cx="35" cy="0" rx="5" ry="14" fill="#f59e0b"/>
+    <!-- Scroll body -->
+    <rect x="-35" y="-14" width="70" height="28" fill="url(#upfscroll)"/>
+    <!-- Text lines on scroll -->
+    <line x1="-25" y1="-6" x2="25" y2="-6" stroke="#78350f" stroke-width="1" opacity="0.6"/>
+    <line x1="-25" y1="0" x2="15" y2="0" stroke="#78350f" stroke-width="1" opacity="0.6"/>
+    <line x1="-25" y1="6" x2="20" y2="6" stroke="#78350f" stroke-width="1" opacity="0.6"/>
+    <!-- Seal / wax dot -->
+    <circle cx="22" cy="6" r="3" fill="#dc2626" opacity="0.7"/>
+  </g>
+
+  <!-- Small "12" -->
+  <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
+        font-weight="700" fill="#6b21a8" opacity="0.35">12</text>
+</svg>
