@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Punarvasu — "return of the goods / return home". Symbol: quiver of
+     arrows or a house. Deity: Aditi (mother of the gods). Ruled by
+     Jupiter. Rendered as a stylised home with a quiver of arrows and
+     a warm homecoming glow. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Punarvasu nakshatra symbol — quiver and home in warm light">
+  <defs>
+    <radialGradient id="pvglow" cx="0.5" cy="0.55" r="0.65">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="pvhome" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="60%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="pvarrow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <circle cx="160" cy="170" r="140" fill="url(#pvglow)"/>
+
+  <!-- House body -->
+  <path d="M 105 245
+           L 105 155
+           L 160 108
+           L 215 155
+           L 215 245 Z"
+        fill="url(#pvhome)"/>
+
+  <!-- Door -->
+  <path d="M 143 245 L 143 205 Q 143 195, 160 195 Q 177 195, 177 205 L 177 245 Z"
+        fill="#fef3c7"/>
+
+  <!-- Roof accent -->
+  <path d="M 160 108 L 100 158 L 220 158 Z" fill="#6b21a8" opacity="0.85"/>
+
+  <!-- Quiver on side -->
+  <g transform="translate(238, 100)">
+    <path d="M 0 0 Q -8 6, -6 14 L 4 60 Q 8 66, 14 62 L 22 8 Q 22 0, 14 -2 Z"
+          fill="#4c1d95"/>
+    <!-- Arrow shafts poking out -->
+    <line x1="4" y1="-8" x2="10" y2="-38" stroke="url(#pvarrow)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="10" y1="-8" x2="18" y2="-42" stroke="url(#pvarrow)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="16" y1="-6" x2="26" y2="-38" stroke="url(#pvarrow)" stroke-width="3" stroke-linecap="round"/>
+    <!-- Arrow fletching (tiny triangles) -->
+    <polygon points="8,-38 12,-42 14,-38" fill="#fbbf24"/>
+    <polygon points="16,-42 20,-46 22,-42" fill="#fbbf24"/>
+    <polygon points="24,-38 28,-42 30,-38" fill="#fbbf24"/>
+  </g>
+
+  <!-- Small "7" -->
+  <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
+        font-weight="700" fill="#6b21a8" opacity="0.35">7</text>
+</svg>

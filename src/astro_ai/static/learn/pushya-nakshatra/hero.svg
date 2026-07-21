@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Pushya — "the nourisher", most auspicious nakshatra. Symbol: cow's
+     udder or lotus flower. Deity: Brihaspati (guru of the gods).
+     Ruled by Saturn. Rendered as a golden lotus fully open, radiating
+     warm energy — the classical "milk of nourishment" imagery. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Pushya nakshatra symbol — golden lotus of nourishment">
+  <defs>
+    <radialGradient id="psglow" cx="0.5" cy="0.5" r="0.6">
+      <stop offset="0%" stop-color="#fef9c3" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="pspetal" cx="0.5" cy="0.6" r="0.6">
+      <stop offset="0%" stop-color="#fef9c3"/>
+      <stop offset="55%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </radialGradient>
+    <radialGradient id="pscentre" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <circle cx="160" cy="160" r="140" fill="url(#psglow)"/>
+
+  <!-- Lotus petals — 8 petals radiating -->
+  <g transform="translate(160, 160)">
+    <ellipse cx="0" cy="-70" rx="20" ry="55" fill="url(#pspetal)" opacity="0.9"/>
+    <ellipse cx="49" cy="-49" rx="20" ry="55" fill="url(#pspetal)" opacity="0.9" transform="rotate(45)"/>
+    <ellipse cx="70" cy="0" rx="20" ry="55" fill="url(#pspetal)" opacity="0.9" transform="rotate(90)"/>
+    <ellipse cx="49" cy="49" rx="20" ry="55" fill="url(#pspetal)" opacity="0.9" transform="rotate(135)"/>
+    <ellipse cx="0" cy="70" rx="20" ry="55" fill="url(#pspetal)" opacity="0.9" transform="rotate(180)"/>
+    <ellipse cx="-49" cy="49" rx="20" ry="55" fill="url(#pspetal)" opacity="0.9" transform="rotate(225)"/>
+    <ellipse cx="-70" cy="0" rx="20" ry="55" fill="url(#pspetal)" opacity="0.9" transform="rotate(270)"/>
+    <ellipse cx="-49" cy="-49" rx="20" ry="55" fill="url(#pspetal)" opacity="0.9" transform="rotate(315)"/>
+  </g>
+
+  <!-- Purple inner ring accent -->
+  <circle cx="160" cy="160" r="42" fill="#6b21a8" opacity="0.85"/>
+
+  <!-- Golden centre -->
+  <circle cx="160" cy="160" r="30" fill="url(#pscentre)"/>
+  <circle cx="160" cy="160" r="12" fill="#fef9c3"/>
+
+  <!-- Small "8" -->
+  <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
+        font-weight="700" fill="#6b21a8" opacity="0.35">8</text>
+</svg>
