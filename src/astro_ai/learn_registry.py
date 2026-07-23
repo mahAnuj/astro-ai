@@ -666,6 +666,41 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="pitru-dosh",
+        title="Pitru Dosh: What It Really Means, How to Check, and Classical Remedies",
+        summary="A clear, honest guide to Pitru Dosh — the classical Vedic idea that unresolved ancestral karma can show up as recurring blockages. Covers the real classical basis, the online exaggerations, and the traditional remedies including their honest limits.",
+        category="Doshas",
+        hero_image="/static/learn/pitru-dosh/hero.svg",
+        read_time="9 min",
+        related=("kaal-sarp-dosh", "manglik-dosh", "surya-sun-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "How do I know if I have Pitru Dosh in my chart?",
+                "a": "The strongest classical signal is Sun conjunct or aspected by Rahu/Ketu, especially in the 9th house (the father's house). Also check whether your 9th house lord sits in the 6th, 8th, or 12th house, or whether malefics occupy the 9th without any benefic aspect. Generate your free Janma Kundli on Shubh Bhagya to see your planetary positions. Important: having one of these combinations does NOT automatically mean catastrophic Pitru Dosh — classical assessment includes checking benefic protection (Jupiter's aspect often shields the 9th house even when malefics are present).",
+            },
+            {
+                "q": "Is Pitru Dosh in the classical Vedic texts, or is it a modern idea?",
+                "a": "Both, partially. Pitru Dosh appears in some classical compilations and is heavily emphasised in later folk Hindu practice, but it is less systematic in the core classical Vedic canon (Brihat Parashara Hora Shastra, Phaladeepika, Jataka Parijata) than Mangal Dosh or Sade Sati. What's definitely classical: Sun conjunct or aspected by Rahu/Ketu weakens the Sun's karakas (father, authority, health, ego). What's more folk than classical: the specific label 'Pitru Dosh' with elaborate remedy schedules. We treat this as respected tradition rather than pure scripture.",
+            },
+            {
+                "q": "What are the classical remedies for Pitru Dosh?",
+                "a": "The core classical remedies focus on acknowledgment and offering rather than payment: (1) Pitru Paksha shraaddha during the annual 16-day fortnight (typically September-October); (2) Tarpana (water offerings) on Amavasya days, especially Mahalaya Amavasya; (3) Feeding the poor, cows, or crows in ancestors' names; (4) Visits to Gaya, Prayag, or Haridwar for pinda-daan; (5) Family memorials or dedicating charitable work to ancestors. Any priest demanding tens of thousands for 'Pitru Dosh nivaran puja' is selling anxiety, not tradition — genuine Pitri offerings are simple.",
+            },
+            {
+                "q": "Does Pitru Dosh mean I cannot have children or succeed?",
+                "a": "No. Pitru Dosh represents difficulty, not impossibility. Many highly successful people have chart patterns that classical texts would label Pitru Dosh — they've simply worked with the pattern rather than being defeated by it. Common manifestations include difficulty having children, recurring career blockages despite genuine effort, unexplained family disputes across generations, and financial patterns of 'almost prospering' that keep collapsing. These are signals to work with, not sentences.",
+            },
+            {
+                "q": "Does Pitru Dosh mean my ancestors are angry at me?",
+                "a": "No — this is a common misreading. The classical model is karmic-mechanical, not vengeful. Ancestors don't punish; unresolved karmic patterns simply carry forward until worked through. The Pitri Paksha rituals aren't about appeasing angry spirits — they're about consciously acknowledging what was inherited, so the pattern can be understood and transformed. The genuine work is usually psychological too: understanding family patterns, having difficult conversations with living relatives, and choosing to break inherited cycles by conscious action.",
+            },
+            {
+                "q": "When is Pitru Paksha 2026?",
+                "a": "Pitru Paksha 2026 runs from Bhadrapada Purnima to Ashwina Amavasya — approximately mid-September to early October 2026 (exact dates vary by lunar calendar; check a Panchang for your specific timings). The Mahalaya Amavasya (the final day, considered the most powerful Pitri offering day of the year) is the peak. This is the traditional time for shraaddha ceremonies, tarpana, and feeding the poor in ancestors' names.",
+            },
+        ),
+    ),
+    Article(
         slug="hasta-nakshatra",
         title="Hasta Nakshatra: Savitar's Skilled Hand — The Healer, The Craftsman",
         summary="Hasta is the thirteenth nakshatra — Virgo 10°00'–23°20'. Ruled by the Moon with Savitar (the Sun as inspirer) as its deity, symbolised by an open palm. Hasta natives are the skilled hands of the zodiac — dexterous, healing, quietly capable.",
