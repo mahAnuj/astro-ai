@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Pitru Dosh — ancestral affliction. Central image: a lit diya on a
+     traditional metal thali, with a subtle chain of ancestral figures
+     receding into the background. Palette: warm gold and deep purple,
+     with a hint of muted grey for the ancestors. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Pitru Dosh — lit diya offering with ancestor lineage behind">
+  <defs>
+    <radialGradient id="pitrudiya" cx="0.5" cy="0.55" r="0.7">
+      <stop offset="0%" stop-color="#fef9c3" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#f5f5f4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="pitruflame" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="55%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#fef9c3"/>
+    </linearGradient>
+    <linearGradient id="pitruthali" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="60%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <ellipse cx="160" cy="170" rx="150" ry="130" fill="url(#pitrudiya)"/>
+
+  <!-- Ancestor silhouettes fading into the background (three figures) -->
+  <g fill="#6b21a8" opacity="0.2">
+    <!-- Grandparent (furthest) -->
+    <circle cx="80" cy="90" r="10"/>
+    <rect x="72" y="100" width="16" height="30" rx="3"/>
+    <!-- Middle ancestor -->
+    <circle cx="55" cy="115" r="9"/>
+    <rect x="48" y="124" width="14" height="26" rx="3"/>
+    <!-- Right ancestor -->
+    <circle cx="240" cy="90" r="10"/>
+    <rect x="232" y="100" width="16" height="30" rx="3"/>
+    <!-- Right middle -->
+    <circle cx="265" cy="115" r="9"/>
+    <rect x="258" y="124" width="14" height="26" rx="3"/>
+  </g>
+
+  <!-- Wispy lines connecting ancestors to the diya (lineage flow) -->
+  <g stroke="#7c3aed" stroke-width="1.5" fill="none" opacity="0.3" stroke-dasharray="3,3">
+    <path d="M 88 130 Q 130 145, 145 175"/>
+    <path d="M 232 130 Q 190 145, 175 175"/>
+  </g>
+
+  <!-- Diya thali (central plate) -->
+  <ellipse cx="160" cy="230" rx="75" ry="12" fill="url(#pitruthali)"/>
+  <ellipse cx="160" cy="228" rx="70" ry="9" fill="#a855f7" opacity="0.7"/>
+
+  <!-- Diya body (small oil lamp) -->
+  <path d="M 130 225
+           Q 130 210, 145 208
+           L 175 208
+           Q 190 210, 190 225
+           L 185 232
+           L 135 232 Z"
+        fill="#d97706"/>
+  <!-- Diya rim highlight -->
+  <path d="M 132 218 Q 160 213, 188 218" stroke="#fbbf24" stroke-width="1.5" fill="none"/>
+
+  <!-- Wick tip -->
+  <line x1="160" y1="208" x2="160" y2="200" stroke="#78350f" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Flame (elongated teardrop) -->
+  <path d="M 160 200
+           C 152 188, 152 175, 158 165
+           C 160 175, 162 178, 164 178
+           C 166 172, 165 165, 168 158
+           C 172 170, 172 180, 168 190
+           C 165 197, 162 200, 160 200 Z"
+        fill="url(#pitruflame)"/>
+
+  <!-- Rice grains around the diya (offering) -->
+  <g fill="#fef9c3">
+    <ellipse cx="105" cy="228" rx="3" ry="2"/>
+    <ellipse cx="115" cy="234" rx="3" ry="2"/>
+    <ellipse cx="205" cy="228" rx="3" ry="2"/>
+    <ellipse cx="215" cy="234" rx="3" ry="2"/>
+    <ellipse cx="100" cy="238" rx="2.5" ry="1.5"/>
+    <ellipse cx="220" cy="238" rx="2.5" ry="1.5"/>
+  </g>
+
+  <!-- Sanskrit "ॐ" symbol subtle top-center -->
+  <text x="160" y="65" text-anchor="middle" font-family="Noto Sans Devanagari, serif"
+        font-size="30" fill="#6b21a8" opacity="0.5">ॐ</text>
+</svg>
