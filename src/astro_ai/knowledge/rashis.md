@@ -10,6 +10,8 @@ sign readings can diverge dramatically for the same person.
 **Primary sources referenced:**
 - BV Raman, *Astrology for Beginners*, Ch. V, pp. 41-45 (henceforth
   **Raman**)
+- P.V.R. Narasimha Rao, *Vedic Astrology: An Integrated Approach*,
+  Ch. 2 "Rasis", §§2.1–2.3 (henceforth **Rao**)
 - Brihat Parashara Hora Shastra (**BPHS**) for classical sign
   qualities (Chara/Sthira/Dwiswabhava)
 - Muhurta Chintamani for tattva (element) assignments
@@ -111,6 +113,171 @@ A planet in its exaltation sign gives peak positive results; in
 debilitation, the opposite. **Neechabhanga** (debility cancellation)
 rules exist — see `vedic_reference.md §5A` for karakas and BPHS for
 the full cancellation logic.
+
+---
+
+## Additional Rao classifications (finer-grained overlays)
+
+Rao's *Vedic Astrology: An Integrated Approach* (Ch. 2 §2.2) adds
+several classifications that Raman doesn't emphasise but that show up
+in advanced classical analysis. Layer these on top of the six above
+for a more complete picture.
+
+### 7. Limbs of Vishnu (Kalapurusha revisited)
+
+Rao teaches that the whole zodiac is a manifestation of Vishnu's
+cosmic body (the same Kalapurusha concept mentioned earlier), and
+each rashi rules the specific body part that lies over it. [Rao §2.2.1]
+
+| Rashi | Body limb / region |
+|-------|-------------------|
+| Aries | Head |
+| Taurus | Face |
+| Gemini | Arms |
+| Cancer | Heart |
+| Leo | Stomach |
+| Virgo | Hip |
+| Libra | Space below navel |
+| Scorpio | Private parts |
+| Sagittarius | Thighs |
+| Capricorn | Knees |
+| Aquarius | Ankles |
+| Pisces | Feet |
+
+Same rule as the earlier Kalapurusha section — use for health readings
+and muhurta selection for medical procedures on specific body regions.
+
+### 8. Odd-footed vs even-footed rasis
+
+Distinct from the odd/even (male/female) classification.
+
+- **Odd-footed (vishamapada / ojapada)**: Aries, Taurus, Gemini,
+  Libra, Scorpio, Sagittarius.
+- **Even-footed (samapada / yugmapada)**: Cancer, Leo, Virgo,
+  Capricorn, Aquarius, Pisces.
+
+Used in some dasha systems (particularly Kalachakra). [Rao §2.2.3]
+
+### 9. Trinity-based movable/fixed/dual rulership
+
+Rao adds a level to the standard chara/sthira/dwiswabhava
+classification — each triplicity is ruled by one of the Trimurti
+deities:
+
+- **Chara (movable)** — Aries, Cancer, Libra, Capricorn — ruled by
+  **Brahma the Creator**. Nature: dynamic, initiating.
+- **Sthira (fixed)** — Taurus, Leo, Scorpio, Aquarius — ruled by
+  **Shiva the Destroyer**. Nature: stable, unwavering, sometimes
+  destructive of what has served its time.
+- **Dwiswabhava (dual)** — Gemini, Virgo, Sagittarius, Pisces —
+  ruled by **Vishnu the Sustainer**. Nature: adaptive, alternately
+  stable and dynamic. [Rao §2.2.4]
+
+### 10. Pitta / Vaata / Kapha (Ayurvedic dosha overlay)
+
+Beyond the Nadi assignment nakshatras carry, Rao maps the rasis
+directly to the three Ayurvedic doshas:
+
+- **Pitta (bilious — fire + water)**: Aries, Leo, Sagittarius. Shows
+  transformation processes; in the body governs digestion.
+- **Vaata (windy — air + ether)**: Taurus, Virgo, Capricorn. Shows
+  movement in and out; in the body governs breathing.
+- **Kapha (phlegmatic — earth + water)**: Cancer, Scorpio, Pisces.
+  Shows binding and structure; in the body governs bones, muscles,
+  fat.
+- **Mixed nature**: Gemini, Libra, Aquarius. [Rao §2.2.6]
+
+Note: This differs from the Nakshatra Nadi classification (Adi/
+Madhya/Antya) which uses the same names but assigns different
+signs. The rasi-dosha rule above is the sign-based version; the
+nakshatra-nadi is the lunar-mansion version. Both are used
+depending on the reading.
+
+### 11. Sattwa / Rajas / Tamas (guna overlay)
+
+- **Saattwik (pure)** signs: Cancer, Leo, Sagittarius, Pisces.
+- **Raajasik (energetic/passionate)** signs: Aries, Taurus, Libra,
+  Scorpio.
+- **Taamasik (heavy/dark)** signs: Gemini, Virgo, Capricorn,
+  Aquarius. [Rao §2.2.7]
+
+Note Rao's assignment differs from some other classical sources on
+this — his sattwa signs are all water and fire, his tamas signs are
+all earth and air. Use in character-quality analysis when reading
+across multiple planet placements.
+
+### 12. Day and Night rasis
+
+- **Nishaa (night)** rasis, strong at night: Aries, Taurus, Gemini,
+  Cancer, Sagittarius, Capricorn.
+- **Divaa (day)** rasis, strong during daytime: Leo, Virgo, Libra,
+  Scorpio, Aquarius, Pisces.
+
+Out of the two rasis owned by each planet (except Sun and Moon), one
+is a day sign and one is a night sign. Moon governs all nishaa rasis;
+Sun governs all divaa rasis. [Rao §2.2.10]
+
+Used in Muhurta selection — a night activity favours placements in
+nishaa signs, and vice versa.
+
+### 13. Seershodaya vs Prishthodaya (rising with head vs feet)
+
+Some rasis rise "head-first" (their high-declination end appears on
+the eastern horizon before their low-declination end), some rise
+"feet-first".
+
+- **Seershodaya (head-rising)**: Gemini, Leo, Virgo, Libra, Scorpio,
+  Aquarius.
+- **Prishthodaya (feet-rising)**: Aries, Taurus, Cancer, Sagittarius,
+  Capricorn.
+- **Pisces rises with both** (unique case). [Rao §2.2.11]
+
+**Interpretive rule (Rao):** planets in Seershodaya rasis give their
+results in the **first half** of their dasha period; planets in
+Prishthodaya rasis give their results in the **second half**. This
+is a subtle timing consideration for Vimshottari dasha analysis.
+
+### 14. Varna (class) overlay
+
+- **Brahmana (scholar)** signs: Cancer, Scorpio, Pisces (all watery).
+- **Kshatriya (warrior)** signs: Aries, Leo, Sagittarius (all fiery).
+- **Vaishya (trader)** signs: Taurus, Virgo, Capricorn (all earthy).
+- **Sudra (worker)** signs: Gemini, Libra, Aquarius (all airy).
+  [Rao §2.2.12]
+
+Used in Varna Kuta of Ashtakoot Guna Milan for marriage matching
+(see `vedic_reference.md §26.5`) — but Rao's mapping is one of
+several classical schemes; some texts assign differently.
+
+---
+
+## Rao's rasi indications — the classical shorthand list
+
+Rao's Ch. 2 §2.3 gives a memorable one-line indication for each
+rashi. These are what advanced astrologers memorise as the "quick
+character" per sign, used for rapid interpretation of any house or
+planet placement.
+
+| Rashi | Rao's indication line |
+|-------|----------------------|
+| **Aries** | Dynamic, enterprising, valiant, ruddy, head, forests, large forehead, hasty, impulsive, restless, thick eyebrows, leadership, overbearing, dry, lean, tall |
+| **Taurus** | Beautiful, face, stable, sluggish, loyal, meadows, plains, luxury halls, dining halls, eating places, fine teeth, large eyes, luxurious, faithful, thick hair, stout |
+| **Gemini** | Chest, garden, communication, journalism, schools, colleges, study rooms, cables, telephone, newspapers, tall, well-built, prominent cheeks, thick hair, broad chest, curious, learned, jovial |
+| **Cancer** | Heart, breast, watery fields, rivers, canals, kitchen, food, attractive, small build, emotional, deeply attached, mother-like, sensitive |
+| **Leo** | Stomach, digestion, navel, mountains, forests, caves, deserts, palaces, parks, forts, boilers, steel factories, thin, dry, hot, royal, self-pride, insolent, domineering |
+| **Virgo** | Hip, appendix, lush gardens, fields, orchards, libraries, bookstores, farms, intelligent, sharp, orator, nervous, physically weak, discretion, tactfulness |
+| **Libra** | Groins, businessmen, markets, trade centers, banks, hotels, amusement parks, entertainment, toilets, cosmetics, balanced, wise, good talker |
+| **Scorpio** | Private parts, holes, deep caves, mines, garages, small build, dusky complexion, bright eyes, secretive, scheming, occult, best friend or worst enemy, peevish, sensitive |
+| **Sagittarius** | Thighs, royal, attorneys, government offices, aircraft, falling, sparse hair, muscular, deep eyes, upright, honest, genial, gambler |
+| **Capricorn** | Knees, marsh lands, watery places, alligators, beasts, bushes, slender build, long neck, prominent teeth, witty, perfectionist, patient, organizer, cautious, secretive, pragmatic |
+| **Aquarius** | Ankles, charity, philosophy, tall, bony, small eyes, mountain spring, places with water, ill-formed teeth, coarse hair, hard-working, stoic, honest |
+| **Pisces** | Feet, oceans, seas, prisons, hospitals, hermitages, short, plump, large eyes, large eyebrows, lazy, emotional, timid, honest, irresolute, talkative, intuitive |
+
+**How to use this:** when reading a house whose sign shows up in a
+chart, add the flavour of that sign's Rao-indications to the base
+house meaning. Example: 10th house of career in Libra → "career in
+businessmen/markets/trade centers/banks/hotels" — Rao's Libra list
+gives the possible career venues.
 
 ---
 
