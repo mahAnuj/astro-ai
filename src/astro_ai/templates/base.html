@@ -45,9 +45,18 @@
       "@type": "WebSite",
       "@id": "{{ site_url }}/#website",
       "name": "Shubh Bhagya",
+      "alternateName": "Shubhagya",
       "url": "{{ site_url }}/",
       "publisher": { "@id": "{{ site_url }}/#org" },
-      "inLanguage": ["en", "hi"]
+      "inLanguage": ["en", "hi"],
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "{{ site_url }}/learn/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
     }
   ]
 }
