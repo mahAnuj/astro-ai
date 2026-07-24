@@ -465,7 +465,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the three phases of Sade Sati?",
-                "a": "Anu (Rising) — Saturn in 12th from Moon, ~2.5 years. Madhya (Peak) — Saturn in your Moon sign, ~2.5 years and most intense. Uttara (Setting) — Saturn in 2nd from Moon, ~2.5 years of integration. Each phase teaches different lessons; the Madhya phase is the hardest.",
+                "a": "Arambha (Rising) — Saturn in 12th from Moon, ~2.5 years. Madhya (Peak) — Saturn in your Moon sign, ~2.5 years and most intense. Uttara (Setting) — Saturn in 2nd from Moon, ~2.5 years of integration. Each phase teaches different lessons; the Madhya phase is the hardest.",
             },
             {
                 "q": "Is Sade Sati always bad?",
