@@ -666,6 +666,72 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="gajakesari-yoga",
+        title="Gajakesari Yoga: The Elephant-Lion Combination of Fame and Wisdom",
+        summary="Gajakesari Yoga forms when Jupiter sits in a quadrant from the Moon with benefic support. Classical texts call it a key yoga for ever-lasting fame, wealth, intelligence, and character. Learn how to check for it in your chart and what it actually produces.",
+        category="Yogas",
+        hero_image="/static/learn/gajakesari-yoga/hero.svg",
+        read_time="8 min",
+        related=("panch-mahapurush-yoga", "guru-jupiter-in-vedic-astrology", "chandra-moon-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "How do I know if I have Gajakesari Yoga in my chart?",
+                "a": "Check three things: (1) Is Jupiter in a quadrant from your Moon (the 1st, 4th, 7th, or 10th sign counted from Moon's sign)? (2) Is Jupiter well-placed — not debilitated (Capricorn), not combust (within 11° of Sun), not in enemy signs like Gemini or Virgo? (3) Is another benefic (Mercury, Venus, or waxing Moon) aspecting or conjoining Jupiter? If all three yes, you have functional Gajakesari Yoga. Generate your free Janma Kundli on Shubh Bhagya to check specific positions.",
+            },
+            {
+                "q": "What does 'Gajakesari' actually mean?",
+                "a": "The name combines two Sanskrit words: gaja (elephant) and kesari (lion). Both are royal animals in Vedic imagery — the elephant for wisdom, strength, and dignity; the lion for courage, leadership, and command. The yoga carries the combined qualities of both: wise dignity paired with commanding presence.",
+            },
+            {
+                "q": "Why doesn't everyone with Gajakesari Yoga become famous?",
+                "a": "Three honest reasons: (1) Magnitude matters — a Gajakesari where Jupiter is debilitated or combust is a very different animal from one where Jupiter is exalted in Cancer in the 10th house. Both are technically Gajakesari; only one produces the classical results. (2) Dashas time the effect — the yoga tends to manifest strongly during Jupiter or Moon Mahadashas. (3) Choices matter — the yoga gives capacity for wisdom/teaching/counselling work; if the person doesn't engage those domains, potential goes unused.",
+            },
+            {
+                "q": "What kind of fame does Gajakesari Yoga produce?",
+                "a": "Not fleeting viral celebrity — that comes from other yogas. Gajakesari produces durable respect that outlasts a career, sometimes outlasts a lifetime. Teachers remembered by generations, writers whose books stay in print, community leaders whose names are invoked years after their death — these charts often show Gajakesari. The fame is character-based, not attention-based.",
+            },
+            {
+                "q": "Can Gajakesari Yoga cancel bad yogas?",
+                "a": "Strong Gajakesari with Jupiter well-placed can significantly mitigate difficult yogas like Manglik, Sade Sati's harsher phases, and even some doshas. But it doesn't fully cancel them — a person with Gajakesari + strong Manglik will still experience Manglik effects, just with more grace and better outcomes than they would without Jupiter's blessing. Vedic astrology doesn't work by simple addition/subtraction; it's a woven pattern where every yoga colours every other.",
+            },
+        ),
+    ),
+    Article(
+        slug="panch-mahapurush-yoga",
+        title="Panch Mahapurush Yoga: The Five Great Person Combinations",
+        summary="Panch Mahapurush Yoga is a group of five classical yogas — Ruchaka (Mars), Bhadra (Mercury), Hamsa (Jupiter), Malavya (Venus), Sasa (Saturn). Each forms when its planet sits in a quadrant from Lagna in own or exaltation sign. Each produces a distinctive type of greatness.",
+        category="Yogas",
+        hero_image="/static/learn/panch-mahapurush-yoga/hero.svg",
+        read_time="9 min",
+        related=("gajakesari-yoga", "the-9-grahas-overview", "guru-jupiter-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "What are the five Panch Mahapurush Yogas?",
+                "a": "The five are: (1) Ruchaka Yoga — Mars in kendra in Ar/Sc/Cp; (2) Bhadra Yoga — Mercury in kendra in Ge/Vi; (3) Hamsa Yoga — Jupiter in kendra in Sg/Pi/Cn; (4) Malavya Yoga — Venus in kendra in Ta/Li/Pi; (5) Sasa Yoga — Saturn in kendra in Cp/Aq/Li. 'Kendra' = 1st, 4th, 7th, or 10th house from your Ascendant (Lagna). Each yoga produces a great person dominated by that planet's tattva (fire/earth/ether/water/air).",
+            },
+            {
+                "q": "Why only these five planets? Where are Sun and Moon?",
+                "a": "The rule requires the planet in own OR exaltation sign. Sun owns only Leo; Moon owns only Cancer. The 'tarah grahas' (star planets: Mars, Mercury, Jupiter, Venus, Saturn) each own two signs plus an exaltation sign, giving them three options for forming the yoga. Sun and Moon each have only two options (own + exaltation), and are classified as luminaries not tarah grahas. Rahu and Ketu are shadow planets that don't traditionally own signs.",
+            },
+            {
+                "q": "How do I check for Panch Mahapurush Yogas in my chart?",
+                "a": "Generate your free Janma Kundli on Shubh Bhagya. Look at your Ascendant sign — the signs sitting in your 1st, 4th, 7th, and 10th houses are your kendras. Then check each of the 5 tarah grahas — is any of them sitting in one of your kendras AND in its own or exalted sign? Every 'yes' is a Mahapurush Yoga present. It's possible to have multiple — the emperor Akbar had both Malavya and Sasa in his 1st house (Libra Ascendant).",
+            },
+            {
+                "q": "What kind of 'greatness' does each yoga produce?",
+                "a": "Ruchaka (Mars) — martial leaders, entrepreneurs, athletes, surgeons; fiery courage. Bhadra (Mercury) — scholars, writers, systematic craftsmen; earthy intellect. Hamsa (Jupiter) — sages, teachers, judges, counsellors; ethereal wisdom. Malavya (Venus) — artists, musicians, luxury-industry leaders; watery beauty. Sasa (Saturn) — long-serving executives, monks, explorers; airy endurance. Each produces distinctly different lives.",
+            },
+            {
+                "q": "Does having a Panch Mahapurush Yoga guarantee wealth or fame?",
+                "a": "No. These yogas describe a specific quality of personality — not a guaranteed outcome. Whether the quality translates into worldly recognition depends on other factors: the strength of the yoga-forming planet, the dashas, the aspects, and the person's own choices. Also, the yoga's effects concentrate during the Mahadasha and Antardasha of the yoga-forming planet, not throughout life. A Ruchaka native experiences Mars-greatness most vividly during Mars Mahadasha (7 years).",
+            },
+            {
+                "q": "Can I have more than one Panch Mahapurush Yoga?",
+                "a": "Yes — and it happens more often than people think. Because the rule requires each planet in own/exaltation in a kendra, someone with multiple planets well-placed in kendras can carry two, three, or (very rarely) more of these yogas simultaneously. Akbar had Malavya and Sasa both in his first house. When multiple mahapurush yogas combine, read them as complementary aspects of a many-sided greatness, not as competing forces.",
+            },
+        ),
+    ),
+    Article(
         slug="pitru-dosh",
         title="Pitru Dosh: What It Really Means, How to Check, and Classical Remedies",
         summary="A clear, honest guide to Pitru Dosh — the classical Vedic idea that unresolved ancestral karma can show up as recurring blockages. Covers the real classical basis, the online exaggerations, and the traditional remedies including their honest limits.",
