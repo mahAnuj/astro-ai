@@ -262,3 +262,52 @@ Top 3 remaining to look at next cycle:
 3. **Repo remote**: this repo (`mahAnuj/astro-ai`) has issue numbers starting at #5 for this cycle. #1-4 were consumed elsewhere (bot/label side-effects) and are not part of this cycle.
 
 ---
+
+## Cycle 6 — 2 Life Questions articles + 2 kundali-qa prompt fixes (2026-07-24)
+
+**Focus:** Phase A shipped the 2 Life Questions articles deferred from cycle 5 (#37 Santan Prapti, #38 Chronic Health). Phase B closed 2 of 3 open kundali-qa issues by surgical prompt edits to natal.txt (#46 banned-vocab hard block, #45 Manglik Lagna-vs-Moon frame disambiguation). Third kundali-qa issue (#47 Life Stages age windows) deferred to cycle 7 with a comment because it requires dev-server verification against a fixture chart, not just prompt inspection.
+
+### Shipped this cycle
+
+- **#37 santan-prapti-children-in-kundli** — Life Questions category, ~2150 words prose (3194 counting HTML). 7-signal walkthrough: 5th house + lord, Jupiter as karaka, D-7 Saptamsa, Dasha timing, Ketu/Rahu/Saturn afflictions to 5th, 5th lord dispositor, remedy pattern. Honest framing — astrology alongside modern fertility care, not instead of it. Called out exploitative "Santan Prapti puja" vendor pattern.
+- **#38 chronic-health-issues-kundli** — Life Questions category, ~2200 words prose (3229 counting HTML). 7-signal walkthrough: Ascendant lord, 6th house (Roga Bhava), 8th house, dhatu (planet→tissue) mapping, current Dasha, Sade Sati / Ashtama Shani / Rahu-Ketu transits, Kalapurusha (sign→body-region) mapping. Opens with an unambiguous callout-warning "see a doctor first" that repeats in the closing. Combines Signal 4 (dhatu) and Signal 7 (Kalapurusha) as the decisive reading.
+- **#46 prompt fix** — restructured the LANGUAGE & STYLE soft "words to avoid" list into a headlined `BANNED WORDS` hard block with per-word allowed alternatives and a closing "These are HARD BANS" sentence. Added the missing common AI-tell words (delve, unlock, harness, empower, leverage, moreover, furthermore, intricacies) alongside the ones already listed (navigate, manifest, amplify, introspection, consolidation, favourability, propensities, endeavour, facilitates).
+- **#45 prompt fix** — added a FRAME DISAMBIGUATION rule to the HANDLING MANGLIK block requiring the LLM to tag which frame (Lagna, Moon, or both) each qualifying Mars placement is counted from. Three worked examples cover the three panel patterns kundali-qa observed. Stays within the existing Manglik-context exception where "Mars" and "house N" are already permitted.
+- **#47 comment** — deferred to cycle 7 with a rationale: prompt-only fix is not enough for this one; it needs uvicorn restart + bhagya.db cache invalidation + fixture re-run to verify the Life Stages section cites the actual chart's Vimshottari age windows rather than the generic pattern.
+
+### Article library state
+
+- Article count: 49 → **51** (santan-prapti, chronic-health added)
+- Life Questions category count: 7 → **9** (including 6 career-cluster articles, marriage-delayed, financial-struggles, santan-prapti, chronic-health)
+- All 4 commits pushed to main this cycle
+
+### Self-QA per article (article-qa 8 checks)
+
+Both new articles PASSED self-QA on all 8 checks:
+- Check 1 (classical accuracy): every rule traces to a specific knowledge/*.md file
+- Check 2 (source coverage): both articles draw from houses.md + grahas.md + remedies.md + divisional_charts.md; chronic-health also from rashis.md (Kalapurusha) and aspects.md
+- Check 3 (AI-tell detection): 0 flagged AI-tells in either article
+- Check 4 (density): both well above 5 actionable items / 1000 words
+- Check 5 (voice consistency): callout-insight + callout-classic + pullquote + second-person + `/` CTA in both; chronic-health adds a callout-warning for the medical-first framing
+- Check 6 (engagement): both open with a hook that mirrors the reader's inner voice ("if you've been trying to conceive and every appointment ends with...", "the same infection every few months, the same joint flaring..."); both have a practice vignette and a screenshot-worthy line
+- Check 7 (dual-audience): Sanskrit terms defined inline first use; FAQs span beginner (Ketu-5 fear, "can astrology diagnose") to expert (D-7 dispositor, dhatu rulership)
+- Check 8 (link health): both have 4-entry related tuple, 5+ inline `/learn/` cross-links, 2 external Wikipedia links, `/` CTA, `/ask` CTA
+
+### Backlog state after cycle 6
+
+- **Closed this cycle:** #37, #38, #46, #45 (4 issues)
+- **Deferred to cycle 7:** #47 (kundali-qa Life Stages age windows — needs dev-server verification)
+- **Remaining open:** 4 UI issues (#39, #41, #42, #43) + 1 kundali-qa (#47) = **5 open**
+
+### Suggested next cycle
+
+- **Focus:** Phase A — knock out remaining 4 UI-fixer issues (they are all site-wide template polish: section-padding consistency, border-radius unification, WCAG AA contrast on stone-400/cream, mobile-readable font size for meta text). Batch them into one branch since they all touch the same shared templates. Phase B — process #47 with the full dev-server verification loop.
+- **Rationale:** Backlog is now at 5, weighted toward small-fix UI. Clearing the UI backlog in one cycle gets us back to a clean tray before the next audit run (which will surface a fresh batch).
+
+### Blockers / notes for human attention
+
+- `.serena` and `.local` directories are appearing in `git status` — likely tooling artefacts. Worth adding to `.gitignore` if they should not be tracked.
+- `QA_LOG.md` is untracked at repo root — appears to be a per-audit log the article-qa skill wants to persist. Consider committing it or moving it to a `docs/` folder tracked separately.
+- The `client_secret_*.json` file remains untracked at repo root — this is credential material and should not be committed. Worth adding a `.gitignore` rule for `client_secret_*.json` to prevent an accidental commit.
+
+---
