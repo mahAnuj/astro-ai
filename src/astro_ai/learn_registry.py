@@ -1198,6 +1198,44 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="chronic-health-issues-kundli",
+        title="Chronic Health Issues in the Kundli: 7 Chart Signals to Check",
+        summary="Recurring health issues that keep coming back? Classical Vedic astrology reads the karmic side of health through 7 chart signals — Ascendant lord (constitution), 6th house (Roga Bhava), 8th house (chronic conditions), planetary karakas and dhatu rulership, current Dasha, Sade Sati and Ashtama Shani transits, and the Kalapurusha body-region mapping. Honest framing throughout — always alongside a doctor, never instead of one.",
+        seo_title="Chronic Health in the Kundli: 7 Vedic Chart Signals",
+        seo_description="Recurring health issues? 7 Vedic chart signals — 6th house, 8th house, planetary karakas, Sade Sati — read alongside medical care, never instead of it.",
+        category="Life Questions",
+        hero_image="/static/learn/chronic-health-issues-kundli/hero.svg",
+        read_time="14 min",
+        last_updated="2026-07",
+        related=("shani-saturn", "sade-sati", "saturn-remedies", "jupiter-remedies"),
+        faqs=(
+            {
+                "q": "Can Vedic astrology diagnose my illness?",
+                "a": "No. Vedic astrology does not diagnose disease — that is a doctor's job, and any practitioner claiming otherwise is not practicing classical tradition. What Vedic astrology can do is describe patterns: which body regions your chart flags as vulnerable, which Dasha windows historically correlate with health themes surfacing, and which classical practices support the specific afflicted karaka in your chart. Astrology reads karmic weather; medicine reads biology. Use them together, never one instead of the other. If a practitioner tells you to skip a doctor because a remedy will handle it, walk away.",
+            },
+            {
+                "q": "Which house shows disease in Vedic astrology?",
+                "a": "The 6th house (Roga Bhava) is the primary house of daily illness, infection, and immune-system function. The 8th house is the house of chronic conditions, hidden illness, and longevity. The Ascendant and its lord describe the underlying constitution. A complete health reading always considers all three together, plus the planetary karakas (Sun for vitality/bones, Moon for blood/mental, Mars for injury/inflammation, Mercury for skin/nervous system, Saturn for chronic conditions) and the current Dasha. No single house tells the whole story.",
+            },
+            {
+                "q": "What is Ashtama Shani and how does it affect health?",
+                "a": "Ashtama Shani is Saturn's roughly 2.5-year transit through the 8th sign from your natal Moon. Classical Vedic tradition holds this as one of the more health-active transit periods — the 8th being the house of chronic conditions and longevity, Saturn being the karaka of both. Ashtama Shani does not mean illness is certain. It means the period is one to invest in preventive care, sleep hygiene, and honest engagement with any nagging symptoms rather than pushing through. Combined with Sade Sati (Saturn transiting the sign before / of / after natal Moon), it forms one of the longest health-active transit windows of a life.",
+            },
+            {
+                "q": "How does dhatu rulership work for health readings?",
+                "a": "Each visible graha rules a specific body tissue in classical Vedic tradition: Sun rules bones, Moon rules blood and body fluids, Mars rules marrow (and muscles in some readings), Mercury rules skin and nervous system, Jupiter rules fat and liver, Venus rules the reproductive system, Saturn rules muscles and joints. When a planet is afflicted in your chart — combust, debilitated, in a dusthana, or heavily aspected by malefics — the tissue it rules is often the site of recurring health themes. Combine the dhatu map with the Kalapurusha body-region map (each rashi rules a body region) for the most decisive reading.",
+            },
+            {
+                "q": "Can classical remedies really help with chronic illness?",
+                "a": "Classical remedies work at the karmic-support layer, not the biological one. Practices like the Mahamrityunjaya Mantra (for general health and longevity), Dhanvantari worship (the deity of Ayurveda), Hanuman worship (Saturn's classical intercessor for chronic conditions), planet-specific mantras and fasting all support the karmic weather around a condition. They do not replace medication, surgery, or specialist care. What we see with patients who engage both: the medical treatment holds its ground more reliably, the emotional side of the illness feels less isolating, and lifestyle discipline (which the remedies embed) supports the biological outcome. Both lenses matter — use them together.",
+            },
+            {
+                "q": "Should I wear a gemstone to fix my health?",
+                "a": "Only after a proper chart consultation — never on general advice. Health-related gemstone prescriptions are the highest-risk category in gemstone remedy: yellow sapphire (Jupiter) can worsen certain metabolic patterns if Jupiter is a functional malefic for your Ascendant; blue sapphire (Saturn) can destabilise a chart quickly if worn wrongly; red coral (Mars) can amplify inflammatory patterns. Safer classical alternatives that require no chart consultation: Mahamrityunjaya Mantra (universal health mantra), Dhanvantari worship, planet-appropriate weekday practices, and — always — competent medical care. Never treat a gemstone as a substitute for a doctor's visit.",
+            },
+        ),
+    ),
+    Article(
         slug="gajakesari-yoga",
         title="Gajakesari Yoga: The Elephant-Lion Combination of Fame and Wisdom",
         summary="Gajakesari Yoga forms when Jupiter sits in a quadrant from the Moon with benefic support. Classical texts call it a key yoga for ever-lasting fame, wealth, intelligence, and character. Learn how to check for it in your chart and what it actually produces.",
