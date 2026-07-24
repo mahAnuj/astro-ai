@@ -583,7 +583,12 @@ ARTICLES: tuple[Article, ...] = (
         category="Doshas",
         hero_image="/static/learn/manglik-dosh/hero.svg",
         read_time="7 min",
-        related=("sade-sati",),
+        related=(
+            "mangal-mars-in-vedic-astrology",
+            "kundali-matching-ashtakoot-guna-milan",
+            "mars-remedies",
+            "sade-sati",
+        ),
         faqs=(
             {
                 "q": "Is Manglik Dosh real, or is it just superstition?",
