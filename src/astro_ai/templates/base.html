@@ -206,6 +206,39 @@
 </script>
 
 <style>
+  /* ─── DESIGN SYSTEM CANONICALS (Cycle 7 consolidation) ─────────────
+     Ratified 2026-07-24 during the site-wide UI polish pass. All new
+     templates must reach for these values first; deviations require a
+     concrete visual reason (e.g. the diamond chart's svg wrapper keeps
+     rounded-xl to hint at its structural role).
+
+     SECTION PADDINGS — pick one of two per <section>:
+       py-8 sm:py-12   → compact / utility sections (reading results,
+                         admin panels, form-heavy pages)
+       py-12 sm:py-20  → major landing sections (hero, feature grids,
+                         evergreen learn-hub pages)
+
+     BORDER RADIUS — pick per component type:
+       rounded-2xl  → cards, callouts, large surfaces
+       rounded-lg   → buttons, primary CTAs
+       rounded-md   → form inputs, small action buttons inside cards
+       rounded-full → pills, chips, avatar wells, tag labels
+       rounded-xl   → RESERVED for the kundli SVG wrapper only
+
+     TEXT COLOR ON bg-cream:
+       text-stone-500 → informational meta (dates, categories, hints).
+                        Passes WCAG AA at ~4.6:1.
+       text-stone-400 → decorative only (subtle disclaimers, italic
+                        transliterations, dot separators). Never for
+                        actionable or standalone-readable text.
+
+     META TEXT SIZE:
+       text-sm  → informational meta text (dates, categories, read
+                  times). Readable on mobile.
+       text-xs  → badges, pills, chips, footer legal fine-print, and
+                  imagery captions where compactness beats readability.
+     ────────────────────────────────────────────────────────────────── */
+
   /* HTMX loading state: swap "default" / "loading" copy inside any button while a request is in flight. */
   .htmx-request .htmx-default { display: none; }
   .htmx-indicator { display: none; }
