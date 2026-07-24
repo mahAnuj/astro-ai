@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Saturn in the 10th house — visual metaphor: Saturn (ringed planet)
+     positioned at the top ("Karma Bhava") of a stylized kundali diamond,
+     with a stone-pillar column below suggesting the durable, load-bearing
+     Saturn-10 career. Purple/gold on cream. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Saturn in the 10th house — ringed Saturn atop the Karma Bhava with a stone pillar rising toward it">
+  <defs>
+    <radialGradient id="s10_aura" cx="0.5" cy="0.35" r="0.7">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="s10_saturn" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="s10_ring" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#f59e0b" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.9"/>
+    </linearGradient>
+    <linearGradient id="s10_pillar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#3b0764"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <ellipse cx="160" cy="120" rx="150" ry="120" fill="url(#s10_aura)"/>
+
+  <!-- Kundali diamond (North-Indian style, thin outline) -->
+  <g transform="translate(160, 160)" opacity="0.35">
+    <rect x="-90" y="-90" width="180" height="180" fill="none" stroke="#7c3aed" stroke-width="1.5"/>
+    <polygon points="0,-90 90,0 0,90 -90,0" fill="none" stroke="#7c3aed" stroke-width="1.2"/>
+    <line x1="-90" y1="-90" x2="90" y2="90" stroke="#7c3aed" stroke-width="1"/>
+    <line x1="90" y1="-90" x2="-90" y2="90" stroke="#7c3aed" stroke-width="1"/>
+  </g>
+
+  <!-- 10th house label at top-center -->
+  <g transform="translate(160, 92)">
+    <circle r="16" fill="#fef3c7" stroke="#fbbf24" stroke-width="1.5" opacity="0.85"/>
+    <text y="4" text-anchor="middle" font-family="serif" font-size="14" fill="#78350f" font-weight="700">10</text>
+  </g>
+
+  <!-- Saturn planet with rings, floating above/on the 10th -->
+  <g transform="translate(160, 60)">
+    <!-- Rings (behind) -->
+    <ellipse cx="0" cy="0" rx="42" ry="10" fill="none" stroke="url(#s10_ring)" stroke-width="3" opacity="0.55"/>
+    <!-- Planet body -->
+    <circle r="20" fill="url(#s10_saturn)"/>
+    <!-- Subtle highlight -->
+    <ellipse cx="-6" cy="-6" rx="6" ry="4" fill="#c084fc" opacity="0.55"/>
+    <!-- Rings (front — arc only) -->
+    <path d="M -42 2 A 42 10 0 0 0 42 2" fill="none" stroke="url(#s10_ring)" stroke-width="3" opacity="0.9"/>
+  </g>
+
+  <!-- Stone pillar rising from base toward the 10th (career built the slow way) -->
+  <g fill="url(#s10_pillar)">
+    <!-- Base slab -->
+    <rect x="120" y="260" width="80" height="12" rx="2"/>
+    <!-- Column shaft with segmented courses (masonry feel) -->
+    <rect x="135" y="205" width="50" height="55" rx="1"/>
+    <rect x="135" y="155" width="50" height="48" rx="1" opacity="0.92"/>
+    <rect x="135" y="115" width="50" height="38" rx="1" opacity="0.78"/>
+    <!-- Course lines -->
+    <line x1="135" y1="230" x2="185" y2="230" stroke="#fefbf3" stroke-width="1.2" opacity="0.6"/>
+    <line x1="135" y1="180" x2="185" y2="180" stroke="#fefbf3" stroke-width="1.2" opacity="0.55"/>
+    <line x1="135" y1="140" x2="185" y2="140" stroke="#fefbf3" stroke-width="1.2" opacity="0.45"/>
+    <!-- Capital slab at top -->
+    <rect x="125" y="108" width="70" height="10" rx="2"/>
+  </g>
+
+  <!-- Gold accent dots (stars/karma points) around Saturn -->
+  <g fill="#fbbf24" opacity="0.75">
+    <circle cx="90" cy="55" r="1.8"/>
+    <circle cx="230" cy="50" r="2.2"/>
+    <circle cx="70" cy="95" r="1.5"/>
+    <circle cx="250" cy="90" r="1.8"/>
+    <circle cx="105" cy="30" r="1.5"/>
+    <circle cx="215" cy="28" r="1.6"/>
+  </g>
+</svg>
