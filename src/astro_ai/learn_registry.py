@@ -24,14 +24,21 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True)
 class Article:
     slug: str
-    title: str            # SEO + page <title> (full descriptive title)
-    summary: str          # 1-2 sentences for cards + meta description
+    title: str            # Long descriptive title — shown in <h1> and card. Can exceed 60 chars.
+    summary: str          # 1-2 sentences shown in cards + fallback meta description.
     category: str         # 'Doshas' | 'Grahas' | 'Yogas' | 'Concepts' | etc.
     hero_image: str       # absolute URL path to hero SVG/image
     read_time: str        # human-readable estimate, "6 min"
     related: tuple[str, ...] = ()        # related slugs
     faqs: tuple[dict, ...] = field(default_factory=tuple)
     last_updated: str = "2026-06"        # YYYY-MM for SEO freshness signal
+    # ─── SEO overrides (optional) ────────────────────────────────────────
+    # If set, these are used for the <title> and meta description tags.
+    # Google truncates title around 60 chars and description around 160 chars.
+    # These override the longer `title` and `summary` fields specifically for
+    # SERP display without changing what the article page itself shows.
+    seo_title: str = ""       # max 60 chars recommended; empty → falls back to `title`
+    seo_description: str = "" # target 140-160 chars; empty → falls back to `summary`
 
 
 ARTICLES: tuple[Article, ...] = (
@@ -381,6 +388,8 @@ ARTICLES: tuple[Article, ...] = (
         slug="kundali-matching-ashtakoot-guna-milan",
         title="Kundali Matching: The 36-Guna Compatibility System Explained",
         summary="Before Indian marriages, families traditionally match Kundlis to check compatibility. The Ashtakoot Guna Milan system scores compatibility on 36 points across 8 factors. Here's what each of the 8 factors measures, what the total score really means, and why it's not the whole story.",
+        seo_title="Kundali Matching Explained: The 36-Guna Ashtakoot System",
+        seo_description="Vedic Kundli matching for marriage uses 36 Guna points across 8 factors. Here's what each factor measures, what the score means, and its real limits.",
         category="Concepts",
         hero_image="/static/learn/kundali-matching-ashtakoot-guna-milan/hero.svg",
         read_time="11 min",
@@ -443,6 +452,8 @@ ARTICLES: tuple[Article, ...] = (
         slug="sade-sati",
         title="Sade Sati: The 7.5-Year Saturn Lesson, Without the Fear",
         summary="Saturn's transit across your Janma Rashi over 7.5 years — the most-feared transit in Vedic astrology and the most misunderstood. The three phases, what each really teaches, classical remedies, and why most lives are better on the other side.",
+        seo_title="Sade Sati: Saturn's 7.5-Year Lesson (Without the Fear)",
+        seo_description="Sade Sati is Saturn's 7.5-year transit across your Janma Rashi — the 3 phases, what each really teaches, classical remedies, and why most emerge stronger.",
         category="Doshas",
         hero_image="/static/learn/sade-sati/hero.svg",
         read_time="8 min",
@@ -567,6 +578,8 @@ ARTICLES: tuple[Article, ...] = (
         slug="manglik-dosh",
         title="Manglik Dosh: What It Really Means, How to Check, and Remedies",
         summary="A clear, honest guide to Manglik Dosh — what it actually is, the houses that cause it, the cancellation rules most websites skip, and the remedies classical texts recommend.",
+        seo_title="Manglik Dosh: What It Means, How to Check, Remedies",
+        seo_description="Manglik Dosh explained honestly — the houses that cause it, the cancellation rules most calculators ignore, and real classical remedies. Free check.",
         category="Doshas",
         hero_image="/static/learn/manglik-dosh/hero.svg",
         read_time="7 min",
@@ -844,6 +857,8 @@ ARTICLES: tuple[Article, ...] = (
         slug="career-not-progressing",
         title="Why Your Career Is Not Progressing: 7 Chart Signals to Check in Your Kundali",
         summary="If you feel your career keeps stalling despite hard work, Vedic astrology has a specific framework for understanding why. This guide walks through the 7 chart signals — 10th house, Sun, Saturn, Dashas, 6th/8th houses, career yogas, Rahu-Ketu axis — with what each affliction means and what to do.",
+        seo_title="Career Not Progressing? 7 Kundali Signals to Check",
+        seo_description="Career stalling despite hard work? 7 Vedic chart signals — 10th house, Sun, Saturn, Dasha — decode what's blocking you and what to do about it.",
         category="Life Questions",
         hero_image="/static/learn/career-not-progressing/hero.svg",
         read_time="12 min",

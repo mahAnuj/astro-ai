@@ -9,8 +9,16 @@
 #}
 {% extends "base.html" %}
 
-{% block title %}{{ article.title }} — Shubh Bhagya{% endblock %}
-{% block meta_description %}{{ article.summary }}{% endblock %}
+{# SEO title: uses `seo_title` field if the registry sets one, else falls
+   back to article.title. NEVER appends the "— Shubh Bhagya" suffix here
+   because the brand appears in every SERP result via the domain — the
+   suffix wastes valuable title characters. Total title should stay
+   under 60 chars for SERP display; the registry is the source of truth. #}
+{% block title %}{{ article.seo_title or article.title }}{% endblock %}
+{# SEO meta description: uses `seo_description` field if set (target 140-160
+   chars), else falls back to article.summary. Registry can override per
+   article for tighter SERP snippets. #}
+{% block meta_description %}{{ article.seo_description or article.summary }}{% endblock %}
 {% block og_image %}{{ site_url }}{{ article.hero_image }}{% endblock %}
 
 {% block content %}
@@ -34,11 +42,20 @@
 
       <div class="grid md:grid-cols-[1.6fr_1fr] gap-8 items-center">
         <div>
-          <div class="inline-flex items-center gap-2 mb-3">
+          <div class="inline-flex items-center gap-2 mb-3 flex-wrap">
             <span class="text-[11px] font-semibold uppercase tracking-wider text-astro-700 bg-astro-100 px-2.5 py-1 rounded-full">
               {{ article.category }}
             </span>
             <span class="text-xs text-stone-500">{{ article.read_time }} read</span>
+            {# Visible "Last updated" date — E-E-A-T freshness signal.
+               Uses <time> element with a machine-readable datetime that
+               matches the JSON-LD Article schema. Google's helpful-content
+               update rewards visible dates for evergreen content. #}
+            <span class="text-xs text-stone-400" aria-hidden="true">·</span>
+            <span class="text-xs text-stone-500">
+              Last updated
+              <time datetime="{{ article.last_updated }}-01">{{ article.last_updated }}</time>
+            </span>
           </div>
           <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-stone-900 leading-tight mb-4">
             {{ article.title }}
