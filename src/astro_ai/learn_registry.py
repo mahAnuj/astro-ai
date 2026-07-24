@@ -719,6 +719,43 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="venus-remedies",
+        title="Venus Remedies: Working with Shukra's Grace Through Lakshmi Worship",
+        summary="Venus (Shukra) is Vedic astrology's classical bhogakaraka — karaka of marriage, love, beauty, comfort, and the feminine principle. Venus remedies are among the gentlest in the tradition, grounded in respect for the feminine, aesthetic devotion, and Lakshmi worship. This guide covers mantras, good deeds, deity worship, and honest guidance on diamond without vendor manipulation.",
+        seo_title="Venus Remedies: Lakshmi Worship & Diamond Guide",
+        seo_description="Classical Venus (Shukra) remedies — bija mantra, Lakshmi worship, Friday practices, diamond safety per Ascendant. Honest, no vendor manipulation.",
+        category="Remedies",
+        hero_image="/static/learn/venus-remedies/hero.svg",
+        read_time="12 min",
+        related=("saturn-remedies", "jupiter-remedies", "mars-remedies", "shukra-venus-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "Is diamond safe to wear for anyone?",
+                "a": "Diamond (Heera) is one of the safer major planetary gemstones — less risky than blue sapphire (Saturn) or red coral (Mars) — but still requires knowing your Ascendant. For Taurus and Libra Ascendants (Venus is the Ascendant lord) and for Capricorn and Aquarius Ascendants (Venus is a Yogakaraka), diamond is classically recommended and generally supports Venus's positive effects. For Aries and Scorpio Ascendants, Venus rules dusthanas and diamond can worsen relationship or health patterns. For Cancer, Leo, Sagittarius, and Pisces Ascendants, Venus's status is mixed — best consulted case-by-case. If genuine diamond of adequate carat weight is beyond budget, classical alternatives include white sapphire, white zircon, or white topaz.",
+            },
+            {
+                "q": "What is Venus's mantra?",
+                "a": "The classical bija (seed) mantra is: Om Draam Dreem Draum Sah Shukraya Namah. Recite 108 times per session on a mala, aiming for daily practice with Fridays as the anchor day. Classical tradition suggests 20,000 total recitations for a full remedial cycle — the largest count among the seven planets, reflecting Venus's 20-year Mahadasha. Best time: Friday morning at dawn. Best direction: north (Venus's classical direction). For deeper practice, add the Shukra Chalisa, Lakshmi Ashtakam, or Sri Sukta.",
+            },
+            {
+                "q": "Why is Lakshmi worship considered a strong Venus remedy?",
+                "a": "Lakshmi is one of Venus's primary ruling deities in classical Vedic tradition. She represents Venus's ideal expression — abundance, grace, beauty, dharmic wealth, and the feminine principle in its most auspicious form. Classical tradition holds that Lakshmi worship pacifies Venus more effectively than direct Shukra worship because the deity form is more accessible than the abstract planet. Practical practices: daily Lakshmi Ashtakam recitation, weekly Sri Sukta on Fridays, offering white flowers and camphor to Lakshmi, extended Lakshmi puja during Diwali (her annual festival).",
+            },
+            {
+                "q": "What are the safest Venus remedies for anyone?",
+                "a": "Four practices anyone can do without chart consultation: (1) Weekly Sri Sukta recitation before a Sri Yantra — the universal safe Venus/Lakshmi practice, Friday mornings preferred; (2) Weekly Friday donation of white or silver items — rice, milk, sugar, camphor, jasmine, white cloth; (3) Deliberate cultivation of respect for the women in your life — actually listening, actually supporting, not performatively; (4) Daily aesthetic attention — genuinely noticing something beautiful each day. Venus is honored by the quality of attention, not the size of the offering. These four together produce measurable improvement in Venus-domain themes and none can backfire.",
+            },
+            {
+                "q": "How do Venus remedies help with delayed marriage?",
+                "a": "Venus is the karaka of the 7th house and specifically the karaka of the wife in a male's chart (Jupiter serves this role for a female — see our Jupiter remedies guide). When marriage delays despite the chart showing it is due, classical Venus remedies specifically help: Kanyadaan Vrata (participate in sponsoring the marriage of a girl in a poor family) is often the fastest marriage-timing remedy. Also: Friday worship of Parvati for women or Lakshmi for men, feeding young unmarried girls (kanya bhojan) on Fridays, and the Solah Somvar Vrat (16-Monday fast to Parvati) for unmarried women. The Katyayani mantra from Bhagavata Purana is the classical mantra of unmarried girls seeking a good husband.",
+            },
+            {
+                "q": "Why does the classical tradition warn against Venus over-indulgence?",
+                "a": "Because Venus is the karaka of enjoyment, and enjoyment can turn into grasping or excess if not held with discipline. Classical Vedic view: uncontrolled sensuality, over-consumption of luxury, and grasping for beautiful things actually weaken Venus's blessing rather than pleasing her. Genuine Venus wealth is what flows in and out with equanimity, enjoyed without clinging. This is the counter-intuitive teaching most modern content misses — the person Venus rewards is the one who has become worth loving, not the one who chants for love. Disciplined enjoyment within dharma is the classical rule.",
+            },
+        ),
+    ),
+    Article(
         slug="mars-remedies",
         title="Mars Remedies: Working with Mangal's Energy Through Hanuman Worship",
         summary="Mars (Mangal / Kuja) is Vedic astrology's warrior — karaka of energy, courage, siblings, and the Manglik marriage pattern. Working with Mars requires channelling his energy, not suppressing it. This guide covers mantras (especially Hanuman practices), good deeds, deity worship, and red coral guidance without vendor manipulation.",

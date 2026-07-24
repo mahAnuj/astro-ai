@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Venus Remedies — Shukra/Lakshmi as karaka of love, marriage, comfort.
+     Soft rose-pink and cream palette (Venus's variegated / feminine colors);
+     a lotus with a small diamond glint and a white flower offering.
+     Devotional, feminine, gentle-abundant. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Venus Remedies — lotus and diamond offering to Shukra">
+  <defs>
+    <radialGradient id="vr_aura" cx="0.5" cy="0.45" r="0.7">
+      <stop offset="0%" stop-color="#fce7f3" stop-opacity="0.9"/>
+      <stop offset="55%" stop-color="#f9a8d4" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#f9a8d4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vr_planet" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#fdf2f8"/>
+      <stop offset="55%" stop-color="#fbcfe8"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+    <radialGradient id="vr_lotus_petal" cx="0.5" cy="0.3" r="0.7">
+      <stop offset="0%" stop-color="#fdf2f8"/>
+      <stop offset="60%" stop-color="#fbcfe8"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </radialGradient>
+    <linearGradient id="vr_diamond" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0f9ff"/>
+      <stop offset="40%" stop-color="#bae6fd"/>
+      <stop offset="100%" stop-color="#7dd3fc"/>
+    </linearGradient>
+    <radialGradient id="vr_white_flower" cx="0.5" cy="0.4" r="0.5">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#f5f5f4"/>
+      <stop offset="100%" stop-color="#d6d3d1"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <circle cx="160" cy="140" r="150" fill="url(#vr_aura)"/>
+
+  <!-- Venus planet (small, top center) -->
+  <circle cx="160" cy="78" r="26" fill="url(#vr_planet)"/>
+  <!-- Venus subtle atmospheric bands -->
+  <ellipse cx="160" cy="73" rx="24" ry="2.5" fill="#f9a8d4" opacity="0.5"/>
+  <ellipse cx="160" cy="83" rx="25" ry="2" fill="#f9a8d4" opacity="0.4"/>
+  <!-- Venus symbol (♀) above -->
+  <text x="160" y="42" text-anchor="middle" font-family="serif" font-size="22"
+        fill="#db2777" opacity="0.7" font-weight="700">♀</text>
+
+  <!-- Rays connecting Venus to the lotus (grace flowing down) -->
+  <g stroke="#f472b6" stroke-width="1" opacity="0.4" stroke-linecap="round">
+    <line x1="150" y1="102" x2="130" y2="145"/>
+    <line x1="170" y1="102" x2="190" y2="145"/>
+    <line x1="160" y1="106" x2="160" y2="140"/>
+  </g>
+
+  <!-- Lotus (Lakshmi's flower — central Venus symbol) -->
+  <g transform="translate(160, 210)">
+    <!-- Outer petals (5 large) -->
+    <ellipse cx="0" cy="-32" rx="14" ry="34" fill="url(#vr_lotus_petal)" opacity="0.85"/>
+    <ellipse cx="-32" cy="-14" rx="14" ry="34" fill="url(#vr_lotus_petal)" opacity="0.8"
+             transform="rotate(-60 -32 -14)"/>
+    <ellipse cx="32" cy="-14" rx="14" ry="34" fill="url(#vr_lotus_petal)" opacity="0.8"
+             transform="rotate(60 32 -14)"/>
+    <ellipse cx="-24" cy="18" rx="12" ry="28" fill="url(#vr_lotus_petal)" opacity="0.75"
+             transform="rotate(-115 -24 18)"/>
+    <ellipse cx="24" cy="18" rx="12" ry="28" fill="url(#vr_lotus_petal)" opacity="0.75"
+             transform="rotate(115 24 18)"/>
+
+    <!-- Inner petals (smaller, brighter) -->
+    <ellipse cx="0" cy="-18" rx="8" ry="20" fill="#fdf2f8" opacity="0.9"/>
+    <ellipse cx="-16" cy="-8" rx="7" ry="18" fill="#fdf2f8" opacity="0.85"
+             transform="rotate(-45 -16 -8)"/>
+    <ellipse cx="16" cy="-8" rx="7" ry="18" fill="#fdf2f8" opacity="0.85"
+             transform="rotate(45 16 -8)"/>
+
+    <!-- Center of lotus (golden pistil holding a diamond) -->
+    <circle cx="0" cy="-6" r="9" fill="#fbbf24" opacity="0.85"/>
+    <circle cx="0" cy="-6" r="5" fill="#f59e0b" opacity="0.7"/>
+
+    <!-- Diamond glint at the very center (Venus's classical gemstone) -->
+    <g transform="translate(0, -6)">
+      <polygon points="0,-7 5,0 0,7 -5,0" fill="url(#vr_diamond)"/>
+      <polygon points="0,-7 5,0 0,0" fill="#ffffff" opacity="0.75"/>
+    </g>
+  </g>
+
+  <!-- White flower offering on the left (Friday jasmine tradition) -->
+  <g transform="translate(60, 240)">
+    <circle cx="0" cy="-8" r="6" fill="url(#vr_white_flower)"/>
+    <circle cx="-8" cy="0" r="6" fill="url(#vr_white_flower)"/>
+    <circle cx="8" cy="0" r="6" fill="url(#vr_white_flower)"/>
+    <circle cx="-5" cy="6" r="6" fill="url(#vr_white_flower)"/>
+    <circle cx="5" cy="6" r="6" fill="url(#vr_white_flower)"/>
+    <circle cx="0" cy="0" r="3" fill="#fbbf24"/>
+  </g>
+
+  <!-- Small pink rose offering on the right -->
+  <g transform="translate(258, 245)">
+    <circle cx="0" cy="-6" r="5" fill="url(#vr_lotus_petal)"/>
+    <circle cx="-6" cy="0" r="5" fill="url(#vr_lotus_petal)"/>
+    <circle cx="6" cy="0" r="5" fill="url(#vr_lotus_petal)"/>
+    <circle cx="-3" cy="5" r="5" fill="url(#vr_lotus_petal)"/>
+    <circle cx="3" cy="5" r="5" fill="url(#vr_lotus_petal)"/>
+    <circle cx="0" cy="0" r="3" fill="#fbbf24"/>
+  </g>
+
+  <!-- Small "ॐ" (Om) top -->
+  <text x="55" y="42" text-anchor="middle" font-family="Noto Sans Devanagari, serif"
+        font-size="18" fill="#db2777" opacity="0.5">ॐ</text>
+
+  <!-- Ground/altar line -->
+  <line x1="40" y1="278" x2="280" y2="278" stroke="#f9a8d4" stroke-width="1" opacity="0.4"/>
+</svg>
