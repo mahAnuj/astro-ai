@@ -1005,6 +1005,44 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="10th-lord-in-6th-house-career",
+        title="10th Lord in the 6th House: When Your Career Feels Like Constant Struggle",
+        summary="The 10th lord in the 6th house — the ruler of the career house sitting in the house of enemies and service — is the classical Vedic signature for careers built through friction. It is not a doomed placement. It produces doctors, litigators, union leaders, HR heads, investigative journalists. This guide walks the core pattern, per-ascendant flavours, when it hurts and when it helps, its relationship to Vipareeta Raja Yoga, Dasha timing, and honest classical remedies.",
+        seo_title="10th Lord in 6th House: Career Effects & Remedies",
+        seo_description="10th lord in 6th house — the career-through-struggle placement. Per-ascendant flavours, when it hurts, best careers, dashas, honest remedies.",
+        category="Life Questions",
+        hero_image="/static/learn/10th-lord-in-6th-house-career/hero.svg",
+        read_time="13 min",
+        last_updated="2026-07",
+        related=("career-not-progressing", "vimshottari-dasha-explained", "career-during-sade-sati"),
+        faqs=(
+            {
+                "q": "Is 10th lord in the 6th house good or bad?",
+                "a": "Neither by default — it is a specifically shaped placement. Classical Vedic tradition holds that the 6th is a dusthana (difficult house) but also an Upachaya (growing house), and placements here tend to be difficult in the early years and increasingly rewarding in the later years. 10th lord in the 6th produces careers built through friction — doctors, litigators, HR heads in contested industries, investigative journalists, senior civil service, debt-recovery specialists. In a career that suits the placement, it produces unusually durable success; in a career that fights the placement, it produces years of unnecessary struggle. Amplifying factors (10th lord exalted or in own sign, Jupiter's aspect) and cancelling factors (Neechabhanga if the 10th lord is debilitated) change the reading significantly. Generate your free Kundli on Shubh Bhagya to see your specific configuration.",
+            },
+            {
+                "q": "Does 10th lord in the 6th house mean job change frequently?",
+                "a": "Not exactly — the placement is more about ongoing conflict within a career than about frequent switching between careers. Frequent job change is more commonly linked to Rahu-related placements or unstable 10th lord aspects. What 10th lord in the 6th typically produces is prolonged workplace conflict inside one professional context, resource battles inside one organisation, and the sense that every promotion has been fought for rather than handed over. That said, the placement can produce a specific pattern of two-career lives — the first career built through friction, walked away from around age 35–40, and the second career (often in a related field but on the person's own terms) built more sustainably.",
+            },
+            {
+                "q": "Which careers suit 10th lord in the 6th house?",
+                "a": "Careers where opposition, service, or overcoming daily obstacles is the actual work. Strongest fits: medicine (especially demanding specialties — surgery, emergency, oncology, infectious disease), law and litigation (trial lawyers, prosecutors, defence counsel, arbitration), human resources and labour relations in industries with real conflict, public service under adversity (police, military, disaster response, tax collection, regulatory enforcement), debt recovery and insolvency practice, opposition politics and coalition-building in hostile terrain, investigative journalism and forensic accounting, and senior customer-service escalation. Careers that fight the placement: frictionless creative roles, easy-flow consulting, hospitality without operational pressure, and hype-driven fields where visible ease is part of the brand.",
+            },
+            {
+                "q": "Can 10th lord in the 6th house give success?",
+                "a": "Yes, and often significant success — but the timing is late-blooming and the arc is unusually durable. The classical pattern: slow early career (before mid-thirties) that feels disproportionately hard versus peers', gradual accumulation of the specific skill the placement builds (persistence through friction), and recognition arriving in the mid-thirties into forties for something built through years of unglamorous work. When combined with 10th lord exalted or in own sign — Saturn exalted in Libra in the 6th for Taurus ascendant, Sun exalted in Aries in the 6th for Scorpio ascendant, Mars in Sagittarius in the 6th for Cancer ascendant — the classical reading tips toward significant career success achieved through struggle rather than effortless rise. This is the practical experience of Vipareeta Raja Yoga even when the strict technical yoga is not formed.",
+            },
+            {
+                "q": "What remedies help 10th lord in the 6th house?",
+                "a": "Safe universal classical practices: weekly worship of the deity associated with your specific 10th lord (Sun → Shiva or Rama; Moon → Devi; Mars → Hanuman or Kartikeya; Mercury → Vishnu; Jupiter → Vishnu or Sri Guru; Venus → Lakshmi or Devi; Saturn → Hanuman as Shani's intercessor); consciously serving people working under difficulty around you (office cleaning staff, delivery workers, security guards — direct 6th-house karma); confronting rather than avoiding professional conflicts (avoided 6th-house conflicts compound); managing debts carefully; maintaining health discipline (regular check-ups, sleep, refusal to overwork past physical limits — the 6th is the house of illness); donating to hospitals or medical charities. Avoid: gemstone remedies for your 10th lord without a proper chart consultation, and expensive dosha-removal packages (there is no such thing as a 10th-lord-in-6th nivaran puja).",
+            },
+            {
+                "q": "Is 10th lord in the 6th house Vipreet Raja Yoga?",
+                "a": "Not strictly. Classical Vedic tradition names three Vipareeta Raja Yogas — Harsha (6th lord in the 6th), Sarala (8th lord in the 8th), and Vimala (12th lord in the 12th). Your 10th lord in the 6th is a related but distinct pattern. It does not carry the strict Vipareeta Raja classical benefit by name. However, when combined with other favourable factors (10th lord exalted in the 6th, benefic aspects especially from Jupiter, strong navamsha placement, favourable Dasha windows), the classical reading tips toward significant career success achieved through struggle rather than effortless rise — the practical experience of Vipareeta Raja without the strict technical yoga formation. Charts that combine 10th lord in the 6th with an actual Harsha Yoga (6th lord also in the 6th) tend to produce especially strong career-through-struggle results.",
+            },
+        ),
+    ),
+    Article(
         slug="rahu-mahadasha-career-problems",
         title="Rahu Mahadasha and Career: The Confusion Years and How to Navigate Them",
         summary="Rahu Mahadasha is 18 years — for career, famously the ambition-without-discipline chapter. Sudden foreign or unconventional openings, fast prestige, and structural confusion. Here is what actually happens in each phase, why the confusion is Rahu's design, and what actually helps.",
