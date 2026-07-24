@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Marriage delayed — visual metaphor: two figures moving toward
+     each other but separated by an hourglass or a pause element,
+     with 7th house indicator in a subtle kundali. Warm purple/gold
+     palette, thoughtful not depressing. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Marriage delayed — two figures with an hourglass between them">
+  <defs>
+    <radialGradient id="md_aura" cx="0.5" cy="0.55" r="0.65">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="md_person1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="md_person2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#831843"/>
+    </linearGradient>
+    <linearGradient id="md_hourglass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <ellipse cx="160" cy="180" rx="150" ry="130" fill="url(#md_aura)"/>
+
+  <!-- Small kundali in top-right with 7th house highlighted -->
+  <g transform="translate(240, 55)">
+    <rect x="-25" y="-22" width="50" height="42" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.55"/>
+    <polygon points="0,-22 25,0 0,22 -25,0" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.55"/>
+    <!-- 7th house at right center -->
+    <circle cx="15" cy="0" r="6" fill="#fbbf24" opacity="0.7"/>
+    <text x="15" y="3" text-anchor="middle" font-family="serif" font-size="7" fill="#78350f" font-weight="700">7</text>
+  </g>
+
+  <!-- Left figure (person 1) - moving toward center -->
+  <g fill="url(#md_person1)">
+    <circle cx="80" cy="160" r="14"/>
+    <path d="M 68 178 L 68 225 Q 68 232, 75 232 L 85 232 Q 92 232, 92 225 L 92 178 Z"/>
+    <!-- Legs (mid-step) -->
+    <line x1="72" y1="232" x2="68" y2="260" stroke="url(#md_person1)" stroke-width="7" stroke-linecap="round"/>
+    <line x1="88" y1="232" x2="94" y2="260" stroke="url(#md_person1)" stroke-width="7" stroke-linecap="round"/>
+    <!-- Arm reaching toward hourglass -->
+    <line x1="88" y1="185" x2="110" y2="195" stroke="url(#md_person1)" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Right figure (person 2) - moving toward center -->
+  <g fill="url(#md_person2)">
+    <circle cx="240" cy="160" r="14"/>
+    <path d="M 228 178 L 228 225 Q 228 232, 235 232 L 245 232 Q 252 232, 252 225 L 252 178 Z"/>
+    <!-- Legs (mid-step) -->
+    <line x1="232" y1="232" x2="228" y2="260" stroke="url(#md_person2)" stroke-width="7" stroke-linecap="round"/>
+    <line x1="248" y1="232" x2="252" y2="260" stroke="url(#md_person2)" stroke-width="7" stroke-linecap="round"/>
+    <!-- Arm reaching toward hourglass -->
+    <line x1="232" y1="185" x2="210" y2="195" stroke="url(#md_person2)" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Hourglass in the middle -->
+  <g transform="translate(160, 190)">
+    <!-- Top triangle -->
+    <path d="M -20 -25 L 20 -25 L 0 0 Z" fill="url(#md_hourglass)" opacity="0.85"/>
+    <!-- Bottom triangle -->
+    <path d="M 0 0 L 20 25 L -20 25 Z" fill="url(#md_hourglass)" opacity="0.85"/>
+    <!-- Wooden top/bottom bars -->
+    <rect x="-25" y="-28" width="50" height="4" fill="#78350f" rx="1"/>
+    <rect x="-25" y="24" width="50" height="4" fill="#78350f" rx="1"/>
+    <!-- Sand grains falling -->
+    <line x1="0" y1="-4" x2="0" y2="4" stroke="#fef9c3" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="0" cy="12" r="1.5" fill="#fef9c3"/>
+    <circle cx="-2" cy="18" r="1" fill="#fef9c3"/>
+    <circle cx="1" cy="21" r="1.5" fill="#fef9c3"/>
+  </g>
+
+  <!-- Small heart above hourglass (dimmed, waiting) -->
+  <g transform="translate(160, 140)">
+    <path d="M 0 3 L -8 -3 A 5 5 0 0 1 0 -5 A 5 5 0 0 1 8 -3 Z" fill="#f472b6" opacity="0.55"/>
+  </g>
+
+  <!-- Ground line -->
+  <line x1="30" y1="265" x2="290" y2="265" stroke="#c084fc" stroke-width="1" opacity="0.4"/>
+</svg>

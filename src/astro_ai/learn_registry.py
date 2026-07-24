@@ -666,6 +666,76 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="marriage-delayed",
+        title="Why Is My Marriage Delayed? 7 Chart Signals from Your Kundali",
+        summary="Marriage delay is one of the most common Vedic astrology questions — and one where classical analysis differs sharply from fear-based online content. This guide walks the 7 chart signals (7th house, Venus/Jupiter, Manglik, current Dasha, Navamsha, Kundli matching, karmic dispositor) with honest classical framing.",
+        category="Life Questions",
+        hero_image="/static/learn/marriage-delayed/hero.svg",
+        read_time="14 min",
+        related=("manglik-dosh", "kundali-matching-ashtakoot-guna-milan", "shukra-venus-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "How do I know if my chart shows marriage delay?",
+                "a": "Check three primary signals: (1) Is your 7th house lord in a dusthana (6th, 8th, 12th house)? (2) Is Venus (for men) or Jupiter (for women) weak, combust, or aspected by Saturn/Rahu? (3) Is Mars in any of the 6 Manglik houses without a cancellation? If two or more signals apply, classical astrology suggests marriage typically comes later than culturally typical — often 30+. Generate your free Janma Kundli on Shubh Bhagya to check specific positions.",
+            },
+            {
+                "q": "What is the most important house for marriage in Vedic astrology?",
+                "a": "The 7th house (Kalatra Bhava) — spouse, marriage, partnerships. But marriage timing depends on the 7th lord's placement AND the current Dasha AND the strength of Venus (men) / Jupiter (women) AND the Navamsha (D-9) chart. No single signal decides marriage — the pattern of all signals together determines timing.",
+            },
+            {
+                "q": "Does Manglik Dosh really block marriage?",
+                "a": "Not automatically. Manglik Dosh is present when Mars is in the 1st, 2nd, 4th, 7th, 8th, or 12th house — but classical texts include several cancellation conditions most calculators ignore: Cancer or Leo Ascendant (Mars is Yogakaraka), Mars in own sign (Aries/Scorpio) or exalted (Capricorn), Jupiter aspecting or conjunct Mars, Mars combust, and mutual Manglik matching. See our dedicated Manglik Dosh article for complete details. Uncancelled Manglik tends to delay marriage but does NOT mean unmarriageable.",
+            },
+            {
+                "q": "How does the current Dasha affect marriage timing?",
+                "a": "Marriage tends to happen during specific Vimshottari Dasha windows — usually when the Antardasha of your 2nd/7th/11th house lord runs, OR when Venus's or Jupiter's Antardasha comes up. Many 'delayed marriage' complaints turn out to be someone moving through a period ruled by a planet with no natural relationship to marriage themes. When that Dasha ends and a marriage-relevant planet takes over, the window opens. Check your Dasha panel on your Kundli to see your upcoming marriage windows.",
+            },
+            {
+                "q": "Should I do expensive puja for marriage delay?",
+                "a": "Almost never. Any priest asking for tens of thousands of rupees for a 'marriage nivaran puja' is selling anxiety, not tradition. Genuine classical remedies are simple: Venus/Jupiter mantras, appropriate weekday fasting (Friday for Venus, Thursday for Jupiter), offering appropriate coloured flowers, worship of Shiva-Parvati as archetypal marriage. If Manglik-specific, matching with another Manglik partner is the classical solution — not a puja. Gemstones should never be worn without proper chart consultation.",
+            },
+            {
+                "q": "What is Navamsha (D-9) and why does it matter for marriage?",
+                "a": "The Navamsha is a divisional chart derived from the birth chart — each 30° sign is divided into 9 parts of 3°20' each. Classical Vedic astrology considers the D-9 chart the primary reference for marriage — often more important than the D-1 (rasi chart) for marriage-specific questions. The D-9 Ascendant sign describes the spouse's fundamental character. Planets in the D-9 7th house describe marriage quality more accurately than planets in the D-1 7th. This is one of the most consistently emphasised classical rules for marriage assessment.",
+            },
+        ),
+    ),
+    Article(
+        slug="financial-struggles",
+        title="Why Do I Keep Losing Money? 7 Chart Signals for Financial Struggles",
+        summary="If money keeps slipping through your hands, Vedic astrology has a specific framework for understanding why. Walks through 7 wealth-related chart signals — 2nd house, Jupiter, 11th house, classical Dhana Yogas, Daridra Yogas, current Dasha, Rahu-Ketu axis — with genuine remedies and honest patterns.",
+        category="Life Questions",
+        hero_image="/static/learn/financial-struggles/hero.svg",
+        read_time="14 min",
+        related=("guru-jupiter-in-vedic-astrology", "gajakesari-yoga", "vimshottari-dasha-explained"),
+        faqs=(
+            {
+                "q": "Which house is most important for wealth in Vedic astrology?",
+                "a": "Four houses together govern wealth: 2nd (liquid wealth, family resources), 5th (purva-punya and luck), 9th (fortune and blessing), 11th (gains and income beyond salary). These are the dhana sthanas. Wealth flows when their lords are strong and mutually connected. If your wealth-signature is weak in multiple of these houses, that's the classical pattern for financial struggle regardless of how hard you work.",
+            },
+            {
+                "q": "What is Dhana Yoga and how do I know if I have it?",
+                "a": "Dhana Yogas are classical combinations that produce wealth. Common ones: 2nd and 11th lords in mutual conjunction or exchange; 5th and 9th lords associated; Jupiter in the 2nd/5th/11th house; Jupiter aspecting your 2nd or 11th; Chandra-Mangala Yoga (Moon+Mars conjoined); Vipreet Raja Yoga (dusthana lords in dusthanas — the 'poverty to riches' arc). Generate your free Janma Kundli on Shubh Bhagya — the Yogas panel automatically flags common wealth yogas.",
+            },
+            {
+                "q": "What is Daridra Yoga? Does it mean I will be poor?",
+                "a": "No. Daridra Yoga does not mean poverty — it means wealth requires disproportionate effort and comes intermittently. Common Daridra patterns: 2nd or 11th lord in 6/8/12 house afflicted; Jupiter debilitated combined with weak 2nd lord; Kemadruma Yoga (isolated Moon); all dhana-sthana lords weak. Many people with Daridra Yoga build lives of adequacy through disciplined systematic work and mid-life success. Understanding the pattern helps you plan around it — prioritise steady income over speculation, build reserves during good periods.",
+            },
+            {
+                "q": "How does my current Dasha affect my wealth?",
+                "a": "Wealth accumulation is rarely uniform across a lifetime. Most people have specific 5-15 year windows when wealth accumulates unusually easily, and specific 5-15 year windows when it drains regardless of effort. Common wealth-favourable Dashas: Jupiter (16 years), Venus (20 years if well-placed), Mercury (17 years if Mercury is business-oriented). Common wealth-difficult Dashas: Saturn (19 years, though lessons often set up wealth in the following Mercury period), Rahu (18 years — unpredictable), Ketu (7 years).",
+            },
+            {
+                "q": "Should I wear yellow sapphire for wealth?",
+                "a": "Not without a proper chart consultation. Yellow sapphire is Jupiter's stone and CAN strengthen a well-placed Jupiter, but wearing it when Jupiter is a functional malefic in your chart (which depends on your Ascendant) can worsen the affliction. Yellow sapphire is generally safer than most other gems, but still requires classical analysis. Better free/safer alternatives: Sri Sukta recitation, worship of Lakshmi, Thursday fasting, feeding brahmins or the poor — no chart-consultation needed and no risk of worsening the pattern.",
+            },
+            {
+                "q": "What are the genuine classical remedies for financial struggles?",
+                "a": "The most reliable: (1) Sri Yantra worship — the classical universal wealth-generating practice, can be done by anyone. (2) For Jupiter strengthening: Sri Sukta, Guru mantra (Om Brihaspataye Namah), Thursday fasting, feeding brahmins. (3) For 2nd house strengthening: disciplined honest speech (2nd rules speech, honest speech produces wealth), generous feeding of family and guests. (4) For 11th house gains: serving elder siblings and mentors. (5) For Rahu-related unstable wealth: Rahu mantra, donating black sesame. Avoid: expensive 'Lakshmi puja packages', speculation without genuine analysis, treating astrological wealth Dashas as guaranteed outcomes.",
+            },
+        ),
+    ),
+    Article(
         slug="career-not-progressing",
         title="Why Your Career Is Not Progressing: 7 Chart Signals to Check in Your Kundali",
         summary="If you feel your career keeps stalling despite hard work, Vedic astrology has a specific framework for understanding why. This guide walks through the 7 chart signals — 10th house, Sun, Saturn, Dashas, 6th/8th houses, career yogas, Rahu-Ketu axis — with what each affliction means and what to do.",
