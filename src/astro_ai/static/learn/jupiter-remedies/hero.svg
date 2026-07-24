@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Jupiter Remedies — Guru/Brihaspati as classical wisdom giver.
+     Golden yellow palette (Jupiter's color); an open book/scripture
+     with a yellow flower offering. Reverent, teacher-oriented. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Jupiter Remedies — book of wisdom with yellow flower offering">
+  <defs>
+    <radialGradient id="jr_aura" cx="0.5" cy="0.45" r="0.7">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.9"/>
+      <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="jr_planet" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#fef9c3"/>
+      <stop offset="60%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="jr_book_cover" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="jr_book_page" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fefbf3"/>
+      <stop offset="100%" stop-color="#fef3c7"/>
+    </linearGradient>
+    <radialGradient id="jr_flower" cx="0.5" cy="0.4" r="0.5">
+      <stop offset="0%" stop-color="#fef9c3"/>
+      <stop offset="70%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <circle cx="160" cy="140" r="150" fill="url(#jr_aura)"/>
+
+  <!-- Jupiter planet (small, top center) -->
+  <circle cx="160" cy="80" r="30" fill="url(#jr_planet)"/>
+  <!-- Jupiter's rings (subtle) -->
+  <ellipse cx="160" cy="80" rx="45" ry="8" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity="0.5"/>
+  <!-- Jupiter body bands -->
+  <ellipse cx="160" cy="75" rx="28" ry="3" fill="#d97706" opacity="0.4"/>
+  <ellipse cx="160" cy="85" rx="29" ry="2.5" fill="#d97706" opacity="0.35"/>
+
+  <!-- Rays connecting Jupiter to the book below (wisdom flowing) -->
+  <g stroke="#fbbf24" stroke-width="1" opacity="0.4" stroke-linecap="round">
+    <line x1="150" y1="105" x2="130" y2="145"/>
+    <line x1="170" y1="105" x2="190" y2="145"/>
+    <line x1="160" y1="110" x2="160" y2="140"/>
+  </g>
+
+  <!-- Open book (scripture / wisdom) -->
+  <g>
+    <!-- Book base (pages spread open) -->
+    <path d="M 80 250
+             L 80 175
+             Q 80 165, 90 165
+             L 155 165
+             L 160 175
+             L 165 165
+             L 230 165
+             Q 240 165, 240 175
+             L 240 250 Z"
+          fill="url(#jr_book_cover)"/>
+
+    <!-- Left page -->
+    <path d="M 90 175
+             L 90 245
+             Q 90 250, 95 250
+             L 155 250
+             L 160 245
+             L 160 175 Z"
+          fill="url(#jr_book_page)"/>
+
+    <!-- Right page -->
+    <path d="M 160 175
+             L 160 245
+             L 165 250
+             L 225 250
+             Q 230 250, 230 245
+             L 230 175 Z"
+          fill="url(#jr_book_page)"/>
+
+    <!-- Text lines on pages -->
+    <g stroke="#7c3aed" stroke-width="1" opacity="0.4">
+      <line x1="98" y1="190" x2="152" y2="190"/>
+      <line x1="98" y1="200" x2="145" y2="200"/>
+      <line x1="98" y1="210" x2="150" y2="210"/>
+      <line x1="98" y1="220" x2="140" y2="220"/>
+      <line x1="98" y1="230" x2="148" y2="230"/>
+
+      <line x1="168" y1="190" x2="222" y2="190"/>
+      <line x1="168" y1="200" x2="215" y2="200"/>
+      <line x1="168" y1="210" x2="220" y2="210"/>
+      <line x1="168" y1="220" x2="210" y2="220"/>
+      <line x1="168" y1="230" x2="218" y2="230"/>
+    </g>
+
+    <!-- Central binding shadow -->
+    <line x1="160" y1="175" x2="160" y2="245" stroke="#4c1d95" stroke-width="1.5" opacity="0.5"/>
+  </g>
+
+  <!-- Yellow flower offering on left of book -->
+  <g transform="translate(60, 210)">
+    <!-- Petals -->
+    <circle cx="0" cy="-8" r="6" fill="url(#jr_flower)"/>
+    <circle cx="-8" cy="0" r="6" fill="url(#jr_flower)"/>
+    <circle cx="8" cy="0" r="6" fill="url(#jr_flower)"/>
+    <circle cx="-5" cy="6" r="6" fill="url(#jr_flower)"/>
+    <circle cx="5" cy="6" r="6" fill="url(#jr_flower)"/>
+    <!-- Center -->
+    <circle cx="0" cy="0" r="4" fill="#78350f"/>
+  </g>
+
+  <!-- Small "ॐ" (Om) top -->
+  <text x="160" y="42" text-anchor="middle" font-family="Noto Sans Devanagari, serif"
+        font-size="22" fill="#7c3aed" opacity="0.55">ॐ</text>
+</svg>
