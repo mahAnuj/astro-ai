@@ -666,6 +666,41 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="career-not-progressing",
+        title="Why Your Career Is Not Progressing: 7 Chart Signals to Check in Your Kundali",
+        summary="If you feel your career keeps stalling despite hard work, Vedic astrology has a specific framework for understanding why. This guide walks through the 7 chart signals — 10th house, Sun, Saturn, Dashas, 6th/8th houses, career yogas, Rahu-Ketu axis — with what each affliction means and what to do.",
+        category="Life Questions",
+        hero_image="/static/learn/career-not-progressing/hero.svg",
+        read_time="12 min",
+        related=("shani-saturn", "sade-sati", "vimshottari-dasha-explained"),
+        faqs=(
+            {
+                "q": "Can astrology really tell me why my career is stuck?",
+                "a": "Vedic astrology describes patterns and tendencies, not fixed outcomes. What it can honestly do is identify specific chart signatures classically associated with career blockage — weak 10th house lord, afflicted Sun, current Saturn/malefic Dasha, dusthana placements — and help you understand which patterns apply to your specific chart. Two people with identical 'career stagnation' chart signals can end up in different places based on their choices. The chart tells you the terrain; you still have to walk it.",
+            },
+            {
+                "q": "What is the most important house for career in Vedic astrology?",
+                "a": "The 10th house (Karma Bhava) is the primary house of profession, status, and worldly achievement. When checking career, always start here. Check: which sign is on your 10th, which planet rules it (that's your 10th lord), where that planet sits, and whether it's afflicted. The 10th lord's placement is often the single most decisive career signal — a strong 10th lord in a good house typically produces smooth career growth; a 10th lord in a dusthana (6/8/12) often produces the classical 'grinding but not advancing' pattern.",
+            },
+            {
+                "q": "Does Saturn always block career?",
+                "a": "No — Saturn is the teacher of patience, not the villain online astrology makes him out to be. Saturn in the 10th house (Digbala) is actually good for career — it gives durable, structured, institutional careers that build over decades. Saturn's 'blockages' usually correspond to the classical Vedic idea of karma phal: the work-fruit that comes when you've done enough foundation work. Saturn insists you do the unglamorous foundation before receiving the result. Those who skip steps find Saturn blocking them; those who do the work often find Saturn eventually opening doors.",
+            },
+            {
+                "q": "How does the current Dasha affect my career?",
+                "a": "This is where astrology becomes specific about timing. Career blockage that feels chronic is often tied to a specific Mahadasha or Antardasha that's due to end. Generate your free Janma Kundli on Shubh Bhagya and check the Dasha panel. If you're in a malefic-ruled period (Saturn, Mars, Rahu, Ketu, Sun) or a period ruled by a planet that governs your 6th, 8th, or 12th house, the career difficulty may lift when the period changes. Some Antardashas are simply hostile to career advancement; others are unusually generous.",
+            },
+            {
+                "q": "Should I change careers if my chart shows blockage?",
+                "a": "Not always — sometimes the answer is remedy (mantras, gemstones after consultation, patience through a dasha), sometimes it's waiting for a specific period to end, sometimes it's genuine redirection. If your Rahu is in the 10th house and you're in a very traditional career, or if your 10th lord is in the 12th (foreign) house and you've never left your home city, the chart may be pointing toward a genuine mismatch. But if your career-signature is strong and you're just in a rough Antardasha, staying the course through the period is often the right call.",
+            },
+            {
+                "q": "What are the fastest classical remedies for career blockage?",
+                "a": "Depends on which planet is afflicted. For weak Sun (career visibility): Aditya Hridayam mantra, Sunday fasting, arghya (water offering to Sun at dawn). For Saturn delays: Shani chalisa, Saturday oil-lamp, service to elderly/poor. For general 10th house strengthening: Vishnu Sahasranama, worship of your ishta devata, disciplined daily work as a spiritual practice. Never wear gemstones without a proper chart consultation — wrong stones can worsen the affliction. The most reliable remedy is often the simplest: doing genuinely good work in the classical Vedic spirit of nishkama karma (action without attachment to reward).",
+            },
+        ),
+    ),
+    Article(
         slug="gajakesari-yoga",
         title="Gajakesari Yoga: The Elephant-Lion Combination of Fame and Wisdom",
         summary="Gajakesari Yoga forms when Jupiter sits in a quadrant from the Moon with benefic support. Classical texts call it a key yoga for ever-lasting fame, wealth, intelligence, and character. Learn how to check for it in your chart and what it actually produces.",
