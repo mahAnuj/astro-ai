@@ -666,6 +666,41 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="saturn-remedies",
+        title="Saturn Remedies: The Classical Vedic Approach to Working with Shani",
+        summary="Saturn is Vedic astrology's most-feared planet and the most misunderstood. This guide walks through the genuine classical remedies from Rao's Ch. 34 — mantras, good deeds, deity worship, and the critical warnings about blue sapphire — without the vendor manipulation that dominates online content.",
+        category="Remedies",
+        hero_image="/static/learn/saturn-remedies/hero.svg",
+        read_time="13 min",
+        related=("shani-saturn", "sade-sati", "career-not-progressing"),
+        faqs=(
+            {
+                "q": "Should I wear blue sapphire for Saturn?",
+                "a": "Only after a proper chart consultation. Blue sapphire is Saturn's classical gemstone AND the single most dangerous gemstone in Vedic astrology when worn incorrectly. Rao (§34.2): wear a planet's gemstone only when that planet is a functional benefic in your chart. Saturn is a functional benefic mainly for Taurus and Libra ascendants (where Saturn is a Yogakaraka). For Aries, Cancer, Leo ascendants Saturn is a functional malefic and blue sapphire should be avoided. Even when indicated, classical tradition recommends a 3-5 day test period first — remove immediately if dreams disturb, sleep breaks, or health dips.",
+            },
+            {
+                "q": "What is the safest Saturn remedy that works for anyone?",
+                "a": "Daily Hanuman Chalisa recitation. This works via a classical myth — Hanuman once rescued Saturn, and Saturn promised anyone devoted to Hanuman would be protected from his harshest effects. Safe for any chart, no consultation needed, no cost. Other universal safe practices: (1) Weekly service to elderly relatives, (2) Sri Yantra worship, (3) Practicing patience deliberately in daily situations. None of these require chart consultation, none can backfire, and all four together are more effective than any expensive puja.",
+            },
+            {
+                "q": "What is Saturn's mantra?",
+                "a": "The classical bija (seed) mantra is: Om Praam Preem Praum Sah Shanaishcharaya Namah. Recite 108 times per session, aiming for daily practice on Saturdays especially. Rao (§34.4) recommends 19,000 total recitations for a full remedial cycle (typically completed over 40+ days). Best time: Saturday morning or Saturday sunset. For full nama stotras like Shani Chalisa, devotion matters more than pronunciation precision.",
+            },
+            {
+                "q": "Is Sade Sati really as bad as people say?",
+                "a": "Sade Sati is genuinely difficult but not the catastrophe online content portrays. It's Saturn's 7.5-year transit around your natal Moon sign — a period of restructuring, testing, and eventual maturation. Remedies during Sade Sati: daily Hanuman Chalisa (very effective), Saturday partial fasting (skip one meal), donations of mustard oil/black sesame/iron, service to elderly, avoiding major new commitments in the middle phase. Most people who work with Sade Sati's lessons emerge stronger. Most people who fight it find the difficulty extended.",
+            },
+            {
+                "q": "Are expensive Shani puja packages worth it?",
+                "a": "Almost never. Any priest demanding tens of thousands of rupees for a Shani nivaran puja is selling anxiety, not tradition. Genuine classical remedies are inexpensive — mantras + Chalisa + Hanuman worship + service to elderly costs almost nothing and is more powerful than expensive rituals done without devotion. The classical framing from Rao: 'Remedies are devotional acts, not transactional payments.' Anyone treating them as 'paying to make the problem go away' misunderstands the tradition and often makes the underlying pattern worse.",
+            },
+            {
+                "q": "Can Saturn remedies remove my career problems?",
+                "a": "No — and this is the honest answer. Rao (§34.1) is emphatic: 'Remedial measures manipulate the exact details of a fated pattern, not the pattern itself.' If Saturn's placement in your chart indicates a difficult career phase during a Saturn period, remedies can soften how the difficulty expresses — but they cannot make the phase disappear entirely. What genuine remedies do: refine the expression, deepen your capacity, align you with what Saturn is teaching. People who work with Saturn's discipline (rather than trying to escape it) often find his lessons open doors that no shortcut could have opened.",
+            },
+        ),
+    ),
+    Article(
         slug="marriage-delayed",
         title="Why Is My Marriage Delayed? 7 Chart Signals from Your Kundali",
         summary="Marriage delay is one of the most common Vedic astrology questions — and one where classical analysis differs sharply from fear-based online content. This guide walks the 7 chart signals (7th house, Venus/Jupiter, Manglik, current Dasha, Navamsha, Kundli matching, karmic dispositor) with honest classical framing.",

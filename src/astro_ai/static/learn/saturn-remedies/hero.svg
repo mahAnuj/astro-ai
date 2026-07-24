@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Saturn Remedies — visual: Saturn's classic ring in dark purple/
+     indigo with a lit oil-lamp offering (Shani deepak) below.
+     Deliberately calm/reverent, not fearsome. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Saturn Remedies — Saturn planet with an offered lamp">
+  <defs>
+    <radialGradient id="sr_aura" cx="0.5" cy="0.4" r="0.7">
+      <stop offset="0%" stop-color="#dbeafe" stop-opacity="0.6"/>
+      <stop offset="55%" stop-color="#c7d2fe" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#c7d2fe" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sr_saturn" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#312e81"/>
+      <stop offset="60%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#0f0d29"/>
+    </linearGradient>
+    <linearGradient id="sr_ring" x1="0" y1="0.5" x2="1" y2="0.5">
+      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#a855f7" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="sr_flame" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="55%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#fef9c3"/>
+    </linearGradient>
+    <linearGradient id="sr_lamp" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#78350f"/>
+      <stop offset="100%" stop-color="#451a03"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <circle cx="160" cy="140" r="150" fill="url(#sr_aura)"/>
+
+  <!-- Saturn planet body (dark indigo) -->
+  <circle cx="160" cy="120" r="55" fill="url(#sr_saturn)"/>
+
+  <!-- Saturn's rings (elliptical, tilted) -->
+  <ellipse cx="160" cy="120" rx="100" ry="18" fill="none"
+           stroke="url(#sr_ring)" stroke-width="5" transform="rotate(-18 160 120)"/>
+  <ellipse cx="160" cy="120" rx="88" ry="14" fill="none"
+           stroke="url(#sr_ring)" stroke-width="3" transform="rotate(-18 160 120)" opacity="0.7"/>
+
+  <!-- Subtle bands on planet -->
+  <ellipse cx="160" cy="115" rx="52" ry="4" fill="#a855f7" opacity="0.25"/>
+  <ellipse cx="160" cy="128" rx="53" ry="3" fill="#a855f7" opacity="0.2"/>
+
+  <!-- Small stars nearby (Saturn's serious sky mood) -->
+  <g fill="#fef9c3" opacity="0.7">
+    <circle cx="50" cy="65" r="1.5"/>
+    <circle cx="80" cy="45" r="1"/>
+    <circle cx="270" cy="70" r="1.5"/>
+    <circle cx="245" cy="45" r="1"/>
+    <circle cx="35" cy="130" r="1"/>
+    <circle cx="290" cy="140" r="1"/>
+  </g>
+
+  <!-- Offering: oil lamp (diya) at bottom, dedicated to Saturn -->
+  <g transform="translate(160, 235)">
+    <!-- Base plate (thali) -->
+    <ellipse cx="0" cy="15" rx="55" ry="8" fill="url(#sr_lamp)"/>
+    <ellipse cx="0" cy="13" rx="52" ry="6" fill="#78350f" opacity="0.8"/>
+
+    <!-- Diya body -->
+    <path d="M -22 8
+             Q -22 -2, -12 -4
+             L 12 -4
+             Q 22 -2, 22 8
+             L 18 14
+             L -18 14 Z"
+          fill="#78350f"/>
+    <!-- Diya rim highlight -->
+    <path d="M -20 2 Q 0 -2, 20 2" stroke="#fbbf24" stroke-width="1.2" fill="none"/>
+
+    <!-- Wick tip -->
+    <line x1="0" y1="-4" x2="0" y2="-12" stroke="#451a03" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Flame -->
+    <path d="M 0 -12
+             C -6 -22, -6 -32, -2 -40
+             C 0 -32, 2 -28, 4 -28
+             C 6 -35, 5 -42, 7 -50
+             C 10 -38, 10 -30, 7 -20
+             C 5 -14, 2 -12, 0 -12 Z"
+          fill="url(#sr_flame)"/>
+  </g>
+
+  <!-- Small "ॐ" (Om) at top -->
+  <text x="160" y="42" text-anchor="middle" font-family="Noto Sans Devanagari, serif"
+        font-size="22" fill="#7c3aed" opacity="0.55">ॐ</text>
+</svg>
