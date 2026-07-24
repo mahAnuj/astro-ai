@@ -666,6 +666,76 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="jupiter-remedies",
+        title="Jupiter Remedies: Guru Blessings, Wisdom Practices, Yellow Sapphire Guide",
+        summary="Jupiter (Guru / Brihaspati) is Vedic astrology's great blessing — karaka of wisdom, wealth, children, marriage, and dharma. His remedies are among the safest and most effective. This guide covers mantras, good deeds, deity worship, and honest guidance on yellow sapphire without vendor manipulation.",
+        category="Remedies",
+        hero_image="/static/learn/jupiter-remedies/hero.svg",
+        read_time="12 min",
+        related=("saturn-remedies", "guru-jupiter-in-vedic-astrology", "gajakesari-yoga"),
+        faqs=(
+            {
+                "q": "Is yellow sapphire safe to wear for anyone?",
+                "a": "Safer than blue sapphire, but still requires knowing your Ascendant. For Aries, Cancer, Leo, Scorpio, Sagittarius, and Pisces Ascendants, Jupiter is a functional benefic and yellow sapphire generally helps. For Taurus and Libra Ascendants, Jupiter is a functional malefic and yellow sapphire should be avoided. Even for indicated Ascendants, a 3-5 day test period is traditionally recommended before permanent wearing. Never buy an expensive Pukhraj without knowing your Ascendant first.",
+            },
+            {
+                "q": "What is Jupiter's mantra?",
+                "a": "The classical bija (seed) mantra is: Om Graam Greem Graum Sah Gurave Namah. Recite 108 times per session on a mala, aiming for daily practice on Thursdays especially. Tradition suggests 16,000 total recitations for a full remedial cycle. Best time: Thursday morning early. Best location: facing north-east (Jupiter's direction). For deeper practice, add the Guru Chalisa or Vishnu Sahasranama (Vishnu being Jupiter's ruling deity).",
+            },
+            {
+                "q": "What are the safest Jupiter remedies for anyone?",
+                "a": "Four practices anyone can do without chart consultation: (1) Daily Vishnu Sahasranama recitation (Vishnu is Jupiter's ruling deity); (2) Weekly Thursday support of a child's education — sponsoring, tutoring, or reading to a child; (3) Weekly feeding of cows or donating to a gaushala; (4) Genuine respect for teachers you encounter. These four together, done consistently over a few months, produce measurable improvement in Jupiter-domain life themes.",
+            },
+            {
+                "q": "How do Jupiter remedies help with marriage or children?",
+                "a": "Jupiter is the karaka of husband for women and karaka of children for both parents. When these life events delay, Jupiter remedies specifically help. For women seeking marriage: Kanyadaan Vrata (participate in sponsoring the marriage of a girl in a poor family). For those seeking children: feeding children (own, siblings', charitable) generously on Thursdays. Donating school supplies. Special worship of Brihaspati during Guru Purnima (the annual festival of the guru).",
+            },
+            {
+                "q": "How long before Jupiter remedies show results?",
+                "a": "Jupiter's timeline is measured in months and years, not days. Consistent Thursday practice over a full lunar year (13 months) is a classical minimum. Faster results often mean the person was already close to alignment and just needed the trigger. Slower results usually indicate the karmic pattern is deeper — but genuine practice always creates change over time, just at Jupiter's pace not our impatient one.",
+            },
+            {
+                "q": "Should I do expensive Guru puja packages?",
+                "a": "Almost never. Genuine Jupiter puja is inexpensive — a simple havan with yellow flowers, ghee, and chick peas offered to Vishnu costs almost nothing. Any priest demanding tens of thousands is selling anxiety, not tradition. Mantras + Chalisa + Vishnu Sahasranama + genuine wisdom-seeking are more powerful than expensive rituals done without devotion. The core teaching: remedies are devotional acts, not transactional payments.",
+            },
+        ),
+    ),
+    Article(
+        slug="mars-remedies",
+        title="Mars Remedies: Working with Mangal's Energy Through Hanuman Worship",
+        summary="Mars (Mangal / Kuja) is Vedic astrology's warrior — karaka of energy, courage, siblings, and the Manglik marriage pattern. Working with Mars requires channelling his energy, not suppressing it. This guide covers mantras (especially Hanuman practices), good deeds, deity worship, and red coral guidance without vendor manipulation.",
+        category="Remedies",
+        hero_image="/static/learn/mars-remedies/hero.svg",
+        read_time="12 min",
+        related=("saturn-remedies", "jupiter-remedies", "manglik-dosh", "mangal-mars-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "Is red coral safe to wear for anyone?",
+                "a": "Moderately safe for most, but still requires knowing your Ascendant. For Cancer, Leo, Scorpio, Sagittarius, and Pisces Ascendants, Mars is functionally benefic and red coral generally helps. For Taurus, Gemini, and Virgo Ascendants, Mars becomes functionally malefic and red coral can worsen anger, conflicts, or blood-related health issues. Also: if your Mars is already over-active (aggressive personality, chronic conflicts), you may need to calm Mars rather than strengthen it — in which case coral would be counterproductive.",
+            },
+            {
+                "q": "Why is Hanuman worship considered the best Mars remedy?",
+                "a": "Because Hanuman himself is the archetypal disciplined warrior — the embodiment of Mars energy channelled through devotion and service rather than ego. Classical tradition holds that Hanuman worship pacifies Mars more effectively than direct Mangal worship because Hanuman represents Mars in his ideal form. The most-used practices: daily Hanuman Chalisa (especially Tuesdays and Saturdays), visits to Hanuman temples with red flowers and ghee lamps, Sundarakanda recitation for deeper practice.",
+            },
+            {
+                "q": "What is Mars's mantra?",
+                "a": "The classical bija (seed) mantra is: Om Kraam Kreem Kraum Sah Bhaumaya Namah. Recite 108 times per session on a mala, aiming for daily practice on Tuesdays especially. Tradition suggests 7,000 total recitations for a full remedial cycle. Best time: Tuesday morning early. Best direction: south (Mars's direction). For deeper practice, add the Hanuman Chalisa or Mangal Chalisa.",
+            },
+            {
+                "q": "What are the safest Mars remedies for anyone?",
+                "a": "Four practices anyone can do without chart consultation: (1) Daily Hanuman Chalisa recitation — the most universally recommended Mars practice; (2) Regular vigorous exercise as spiritual discipline — Mars is honored by disciplined use of physical energy; (3) Blood donation every 3 months — direct Mars-domain service; (4) Practicing controlled anger in daily provocative situations — Mars's own teaching applied as practice. These four together produce measurable improvement in Mars-domain themes and none can backfire.",
+            },
+            {
+                "q": "Do Mars remedies remove Manglik Dosh?",
+                "a": "They mitigate the difficult expressions of Manglik, but don't literally remove the astrological pattern. First check whether your Manglik is genuine or cancelled — many so-called Manglik charts have classical cancellations most calculators ignore (Cancer/Leo Ascendant, Mars in own sign or exalted, Jupiter aspect, Mars combust). See our Manglik Dosh article. If Manglik is genuinely present, the classical remedies are: weekly Hanuman Chalisa, matching with another Manglik partner (mutual cancellation), Tuesday fasting, donating red items on Tuesdays. Expensive 'Mangal nivaran' packages are selling anxiety, not tradition.",
+            },
+            {
+                "q": "Why does my Mars keep causing anger issues?",
+                "a": "Mars is energy. When it's blocked (chart shows weak Mars) it produces frustration and outbursts. When it's over-active (chart shows very strong Mars) it produces aggression and control issues. The remedy differs by which pattern you have. Weak Mars → strengthen through exercise, discipline, service. Over-active Mars → calm through Hanuman devotion, controlled anger practice, avoiding provocation. Rather than trying to eliminate Mars (which is impossible), work with him — channel the energy into disciplined action rather than suppressing or exploding it.",
+            },
+        ),
+    ),
+    Article(
         slug="saturn-remedies",
         title="Saturn Remedies: The Classical Vedic Approach to Working with Shani",
         summary="Saturn is Vedic astrology's most-feared planet and the most misunderstood. This guide walks through the genuine classical remedies from Rao's Ch. 34 — mantras, good deeds, deity worship, and the critical warnings about blue sapphire — without the vendor manipulation that dominates online content.",
