@@ -719,6 +719,43 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="mercury-remedies",
+        title="Mercury Remedies: Working with Budha's Intellect Through Vishnu Worship",
+        summary="Mercury (Budha) is Vedic astrology's kumara — karaka of intellect, speech, commerce, and the youthful learning mind. Mercury remedies are among the gentlest in the tradition, grounded in respect for scholars, service to students, disciplined speech, and Vishnu worship. This guide covers mantras, good deeds, deity worship, and honest guidance on emerald without vendor manipulation.",
+        seo_title="Mercury Remedies: Vishnu Worship & Emerald Guide",
+        seo_description="Classical Mercury (Budha) remedies — bija mantra, Vishnu worship, Wednesday practices, emerald safety per Ascendant. Honest, no vendor manipulation.",
+        category="Remedies",
+        hero_image="/static/learn/mercury-remedies/hero.svg",
+        read_time="12 min",
+        related=("saturn-remedies", "jupiter-remedies", "venus-remedies", "budha-mercury-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "Is emerald safe to wear for anyone?",
+                "a": "Emerald (Panna) is one of the safer major planetary gemstones — less risky than blue sapphire (Saturn) or red coral (Mars) — but still requires knowing your Ascendant. For Gemini and Virgo Ascendants (Mercury is the Ascendant lord), and for Taurus, Cancer, Libra, Capricorn, and Aquarius Ascendants (Mercury rules helpful houses), emerald is generally recommended. For Aries and Scorpio Ascendants, Mercury rules dusthanas and emerald can worsen nervous-system or communication patterns. For Leo, Sagittarius, and Pisces Ascendants, Mercury's status is mixed — best consulted case-by-case. If genuine emerald of adequate carat weight is beyond budget, classical substitutes include green tourmaline, peridot, or aventurine.",
+            },
+            {
+                "q": "What is Mercury's mantra?",
+                "a": "The classical bija (seed) mantra is: Om Braam Breem Braum Sah Budhaya Namah. Recite 108 times per session on a mala, aiming for daily practice with Wednesdays as the anchor day. Classical tradition suggests 17,000 total recitations for a full remedial cycle. Best time: Wednesday morning at dawn. Best direction: east (Mercury's classical direction alongside Jupiter). Best location: in front of a Vishnu icon, or facing east. For deeper practice, add the Budha Chalisa or the Vishnu Sahasranama (Vishnu being Mercury's ruling deity).",
+            },
+            {
+                "q": "Why is Vishnu worship considered a strong Mercury remedy?",
+                "a": "Vishnu (Maha Vishnu) is Mercury's primary ruling deity in classical Vedic tradition. Classical teaching holds that the deity form is often more accessible than the abstract planet — so worshipping Vishnu directly is often more effective than reciting Mercury's own mantras. Practical practices: daily Vishnu Sahasranama recitation (widely available in every major Indian language, safe for anyone), offering tulsi leaves (Vishnu's beloved plant), worshipping Vishnu icons on Wednesdays, and observing Ekadashi (11th day of the lunar fortnight, Vishnu's day). This is also why Buddha worship helps — the Buddha is considered a Vishnu avatar in classical Vedic tradition.",
+            },
+            {
+                "q": "What are the safest Mercury remedies for anyone?",
+                "a": "Four practices anyone can do without chart consultation: (1) Weekly Vishnu Sahasranama recitation — Vishnu is Mercury's ruling deity; safe universal Mercury practice; (2) Weekly Wednesday support of a student's education — sponsoring books, tutoring, or funding a young girl's schooling; (3) Daily disciplined speech practice — reducing unnecessary talk, cultivating clarity and precision; (4) Daily writing or study practice — 10 minutes of journal writing or rigorous study of any subject. Mercury is honored by discipline of the tongue and precision of the mind, not by volume. These four together produce measurable improvement in Mercury-domain themes and none can backfire.",
+            },
+            {
+                "q": "Why does modern life weaken Mercury so much?",
+                "a": "Because Mercury governs the nervous system and the faculty of attention — both of which are being systematically overloaded by modern information environments. Every hour of scattered content-scrolling (social media, news, notifications) actively weakens the Mercury faculty by fragmenting attention and overloading the nervous system with low-quality stimulus. Classical Mercury remedies (mantra, study, disciplined speech) work more slowly than modern content-consumption undoes them. If you're doing Mercury remedies while also consuming 4+ hours of social media daily, the second is undoing the first faster than the first can build. Modern Mercury practice must include a deliberate information diet.",
+            },
+            {
+                "q": "How do Mercury remedies help with communication difficulty or stammer?",
+                "a": "Mercury is the karaka of speech and the physical organs of speech (throat, tongue). Chronic communication difficulty — stammer, verbal freeze under pressure, meandering speech — usually indicates weak or afflicted Mercury. Classical remedies specifically help: daily reading aloud practice (10-15 minutes of scripture, poetry, or serious prose, read slowly and clearly), daily writing practice by hand, weekly Saraswati or Vishnu worship, chanting the Vishnu Sahasranama slowly and aloud (combines speech-practice and mantra dimensions), and reduced consumption of low-quality speech (gossip media, argumentative content). Mercury absorbs what he is fed — feed him well and he strengthens.",
+            },
+        ),
+    ),
+    Article(
         slug="venus-remedies",
         title="Venus Remedies: Working with Shukra's Grace Through Lakshmi Worship",
         summary="Venus (Shukra) is Vedic astrology's classical bhogakaraka — karaka of marriage, love, beauty, comfort, and the feminine principle. Venus remedies are among the gentlest in the tradition, grounded in respect for the feminine, aesthetic devotion, and Lakshmi worship. This guide covers mantras, good deeds, deity worship, and honest guidance on diamond without vendor manipulation.",
