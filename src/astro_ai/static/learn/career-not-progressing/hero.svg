@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Career not progressing — visual metaphor: a staircase with a
+     person paused mid-climb, with a chart/kundali above showing 10th
+     house. Purple/gold palette, thoughtful not depressing. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Career not progressing — pausing mid-climb, looking at chart">
+  <defs>
+    <radialGradient id="cn_aura" cx="0.5" cy="0.55" r="0.65">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cn_stairs" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="cn_person" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <ellipse cx="160" cy="180" rx="150" ry="130" fill="url(#cn_aura)"/>
+
+  <!-- Small chart/kundali floating in the top-right (subtle guide) -->
+  <g transform="translate(220, 55)">
+    <rect x="-30" y="-25" width="60" height="50" fill="none" stroke="#7c3aed" stroke-width="1.5" opacity="0.6"/>
+    <polygon points="0,-25 30,0 0,25 -30,0" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.6"/>
+    <line x1="-30" y1="-25" x2="30" y2="25" stroke="#7c3aed" stroke-width="1" opacity="0.4"/>
+    <line x1="30" y1="-25" x2="-30" y2="25" stroke="#7c3aed" stroke-width="1" opacity="0.4"/>
+    <!-- Highlight one house (10th house — top-center-ish) -->
+    <circle cx="0" cy="-15" r="6" fill="#fbbf24" opacity="0.7"/>
+    <text x="0" y="-12" text-anchor="middle" font-family="serif" font-size="7" fill="#78350f" font-weight="700">10</text>
+  </g>
+
+  <!-- Staircase going up-right, with steps -->
+  <g fill="url(#cn_stairs)">
+    <!-- Step 1 (bottom left, biggest) -->
+    <rect x="30" y="240" width="65" height="30"/>
+    <!-- Step 2 -->
+    <rect x="80" y="210" width="65" height="30"/>
+    <!-- Step 3 (person is here — paused) -->
+    <rect x="130" y="180" width="65" height="30" fill="#6b21a8"/>
+    <!-- Step 4 (empty, showing "what's next") -->
+    <rect x="180" y="150" width="65" height="30" opacity="0.45"/>
+    <!-- Step 5 (fainter, distant) -->
+    <rect x="230" y="120" width="60" height="30" opacity="0.25"/>
+  </g>
+
+  <!-- Person paused on step 3 -->
+  <g fill="url(#cn_person)">
+    <!-- Head -->
+    <circle cx="163" cy="145" r="11"/>
+    <!-- Body -->
+    <path d="M 153 158 L 153 175 Q 153 180, 158 180 L 168 180 Q 173 180, 173 175 L 173 158 Z"/>
+    <!-- Standing legs -->
+    <line x1="157" y1="180" x2="155" y2="200" stroke="url(#cn_person)" stroke-width="6" stroke-linecap="round"/>
+    <line x1="169" y1="180" x2="171" y2="200" stroke="url(#cn_person)" stroke-width="6" stroke-linecap="round"/>
+    <!-- Arm — one pointing up toward next step, one at side (thoughtful) -->
+    <line x1="153" y1="163" x2="140" y2="175" stroke="url(#cn_person)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="173" y1="163" x2="185" y2="150" stroke="url(#cn_person)" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <!-- Small dashed arrow to next step (showing intended direction) -->
+  <path d="M 185 150 Q 200 145, 215 140" stroke="#fbbf24" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="4,4" opacity="0.7"/>
+  <polygon points="215,140 209,137 209,143" fill="#fbbf24" opacity="0.7"/>
+
+  <!-- Question mark above the person's head (they're wondering) -->
+  <text x="163" y="123" text-anchor="middle" font-family="Crimson Pro, serif" font-size="26"
+        fill="#fbbf24" font-weight="700" opacity="0.85">?</text>
+
+  <!-- Ground line -->
+  <line x1="20" y1="270" x2="300" y2="270" stroke="#c084fc" stroke-width="1" opacity="0.4"/>
+</svg>
