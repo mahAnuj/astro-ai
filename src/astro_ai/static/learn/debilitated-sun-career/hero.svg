@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Debilitated Sun in Libra — visual metaphor: a Sun disc rendered muted /
+     dimmed with its rays uneven, balanced against Libra's classical scales.
+     One pan of the scale holds the diminished Sun, the other holds a small
+     opposite counterweight (Saturn / Venus), showing the "authority under
+     negotiation" theme. Purple/gold on cream. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Debilitated Sun — a dimmed Sun sitting on Libra's scales of judgement">
+  <defs>
+    <radialGradient id="ds_aura" cx="0.5" cy="0.4" r="0.7">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.6"/>
+      <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ds_sun" cx="0.4" cy="0.4" r="0.65">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#d97706" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#78350f" stop-opacity="0.55"/>
+    </radialGradient>
+    <linearGradient id="ds_scale" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <ellipse cx="160" cy="130" rx="150" ry="115" fill="url(#ds_aura)"/>
+
+  <!-- Central column of the scale -->
+  <g stroke="url(#ds_scale)" stroke-width="4" fill="none" stroke-linecap="round">
+    <line x1="160" y1="90" x2="160" y2="240"/>
+    <!-- Base -->
+    <line x1="130" y1="255" x2="190" y2="255" stroke-width="6"/>
+    <line x1="150" y1="240" x2="170" y2="240"/>
+  </g>
+
+  <!-- Beam -->
+  <line x1="60" y1="115" x2="260" y2="115" stroke="url(#ds_scale)" stroke-width="4" stroke-linecap="round"/>
+  <!-- Fulcrum knot -->
+  <circle cx="160" cy="115" r="6" fill="#4c1d95"/>
+
+  <!-- Left chains -->
+  <line x1="80" y1="115" x2="65" y2="165" stroke="#4c1d95" stroke-width="1.5" opacity="0.75"/>
+  <line x1="80" y1="115" x2="95" y2="165" stroke="#4c1d95" stroke-width="1.5" opacity="0.75"/>
+  <!-- Right chains -->
+  <line x1="240" y1="115" x2="225" y2="170" stroke="#4c1d95" stroke-width="1.5" opacity="0.75"/>
+  <line x1="240" y1="115" x2="255" y2="170" stroke="#4c1d95" stroke-width="1.5" opacity="0.75"/>
+
+  <!-- Left pan (heavier, holding the dimmed Sun) -->
+  <ellipse cx="80" cy="170" rx="40" ry="8" fill="url(#ds_scale)" opacity="0.9"/>
+  <path d="M 42 170 A 38 22 0 0 0 118 170 Z" fill="url(#ds_scale)" opacity="0.65"/>
+
+  <!-- Dimmed Sun sitting on left pan -->
+  <g transform="translate(80, 155)">
+    <!-- Uneven rays -->
+    <g stroke="#f59e0b" stroke-width="2" opacity="0.55">
+      <line x1="0" y1="-22" x2="0" y2="-14"/>
+      <line x1="14" y1="-14" x2="9" y2="-9"/>
+      <line x1="20" y1="0" x2="14" y2="0"/>
+      <line x1="14" y1="14" x2="9" y2="9"/>
+      <line x1="-14" y1="14" x2="-9" y2="9"/>
+      <line x1="-20" y1="0" x2="-14" y2="0"/>
+      <line x1="-14" y1="-14" x2="-9" y2="-9"/>
+    </g>
+    <circle r="14" fill="url(#ds_sun)"/>
+    <!-- Slight shadow patch indicating "dimmed" -->
+    <path d="M -8 4 Q 0 10 8 4 L 8 -8 L -8 -8 Z" fill="#78350f" opacity="0.28"/>
+  </g>
+
+  <!-- Right pan (lighter, holding a small counterweight — Venus circle) -->
+  <ellipse cx="240" cy="175" rx="34" ry="7" fill="url(#ds_scale)" opacity="0.9"/>
+  <path d="M 208 175 A 32 18 0 0 0 272 175 Z" fill="url(#ds_scale)" opacity="0.55"/>
+
+  <!-- Small Venus symbol / counterweight -->
+  <g transform="translate(240, 160)">
+    <circle r="9" fill="#fef3c7" stroke="#a855f7" stroke-width="1.5"/>
+    <path d="M 0 9 L 0 16 M -4 12 L 4 12" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
+  </g>
+
+  <!-- Gold accent dots -->
+  <g fill="#fbbf24" opacity="0.7">
+    <circle cx="55" cy="55" r="1.8"/>
+    <circle cx="265" cy="60" r="2.1"/>
+    <circle cx="40" cy="90" r="1.5"/>
+    <circle cx="280" cy="88" r="1.6"/>
+    <circle cx="60" cy="30" r="1.5"/>
+    <circle cx="250" cy="28" r="1.6"/>
+  </g>
+</svg>
