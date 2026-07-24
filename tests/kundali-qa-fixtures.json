@@ -1,0 +1,119 @@
+{
+  "_meta": {
+    "description": "Golden test charts for kundali-qa. Each fixture targets a specific classical scenario (see SKILL.md). Dates are chosen so the chart is expected to produce the flagged pattern. Where the expected flag is not deterministic from date-alone (needs verification with local dev server), it is marked with a null and the check falls back to LLM-output-only inspection.",
+    "created": "2026-07-24",
+    "endpoint": "POST /reading (form-urlencoded) then GET /kundli"
+  },
+  "manglik-uncancelled": {
+    "name": "Aastha",
+    "birth_date": "1990-04-15",
+    "birth_time": "07:30",
+    "birth_place": "New Delhi",
+    "notes": "Sun in Aries early morning → Aries or Taurus lagna typical. Mars in Capricorn (exalted) around Apr 1990 — this actually CANCELS Manglik. Fixture may need date shift; kept as example baseline. Verify with chart panel.",
+    "expected_flags": {
+      "manglik_present": null,
+      "manglik_cancelled": null,
+      "sade_sati_active": null,
+      "yogas_expected": []
+    },
+    "expected_dasha": null
+  },
+  "manglik-cancelled-by-jupiter": {
+    "name": "Nikhil",
+    "birth_date": "1988-05-20",
+    "birth_time": "10:15",
+    "birth_place": "Mumbai",
+    "notes": "Chosen so Mars sits in a Manglik house with Jupiter aspecting. Verify Jupiter's aspect from chart output.",
+    "expected_flags": {
+      "manglik_present": true,
+      "manglik_cancelled": true,
+      "sade_sati_active": null,
+      "yogas_expected": []
+    },
+    "expected_dasha": null
+  },
+  "cancer-lagna-manglik-exempt": {
+    "name": "Priya",
+    "birth_date": "1985-08-12",
+    "birth_time": "04:45",
+    "birth_place": "Chennai",
+    "notes": "Early morning August in Chennai → Cancer Ascendant likely (Sun in Leo but Lagna rises hours before Sun). For Cancer lagna, Mars is Yogakaraka; classical rule exempts Cancer/Leo lagna from Manglik regardless of Mars placement.",
+    "expected_flags": {
+      "manglik_present": null,
+      "manglik_cancelled": null,
+      "sade_sati_active": null,
+      "yogas_expected": []
+    },
+    "expected_dasha": null
+  },
+  "sade-sati-active-second-phase": {
+    "name": "Rekha",
+    "birth_date": "1970-06-10",
+    "birth_time": "14:30",
+    "birth_place": "Bengaluru",
+    "notes": "Moon expected in Gemini/Cancer range for this date. Saturn transiting Pisces/Aries in 2026 → Sade Sati around Aries/Taurus moons. Verify via chart Moon-sign; peak phase depends on exact Saturn transit position vs natal Moon.",
+    "expected_flags": {
+      "manglik_present": null,
+      "manglik_cancelled": null,
+      "sade_sati_active": null,
+      "yogas_expected": []
+    },
+    "expected_dasha": null
+  },
+  "strong-gajakesari": {
+    "name": "Ravi",
+    "birth_date": "1975-11-15",
+    "birth_time": "18:20",
+    "birth_place": "Kolkata",
+    "notes": "Moon and Jupiter in kendra from each other; sunset time chosen so both are angular. Verify Gajakesari flag from Yogas panel.",
+    "expected_flags": {
+      "manglik_present": null,
+      "manglik_cancelled": null,
+      "sade_sati_active": null,
+      "yogas_expected": ["Gajakesari"]
+    },
+    "expected_dasha": null
+  },
+  "debilitated-sun-in-10th": {
+    "name": "Kabir",
+    "birth_date": "1982-10-05",
+    "birth_time": "13:00",
+    "birth_place": "Hyderabad",
+    "notes": "Sun in Libra (debilitated Oct 5), 10th house from Cap ascendant would be Libra. Time picked so Capricorn lagna is plausible; verify against chart.",
+    "expected_flags": {
+      "manglik_present": null,
+      "manglik_cancelled": null,
+      "sade_sati_active": null,
+      "yogas_expected": []
+    },
+    "expected_dasha": null
+  },
+  "kaal-sarp": {
+    "name": "Isha",
+    "birth_date": "1995-03-20",
+    "birth_time": "05:10",
+    "birth_place": "Ahmedabad",
+    "notes": "Fixture reserved for a chart where all 7 non-node planets fall on one side of the Rahu-Ketu axis. Requires ephemeris verification; skip Gate 4 check if axis is not clean.",
+    "expected_flags": {
+      "manglik_present": null,
+      "manglik_cancelled": null,
+      "sade_sati_active": null,
+      "yogas_expected": []
+    },
+    "expected_dasha": null
+  },
+  "weak-10th-lord": {
+    "name": "Meera",
+    "birth_date": "1978-02-18",
+    "birth_time": "22:45",
+    "birth_place": "Pune",
+    "notes": "Chosen to place 10th lord in 8th or 12th (career blockage pattern). Verify against chart's house-lord panel.",
+    "expected_flags": {
+      "manglik_present": null,
+      "manglik_cancelled": null,
+      "sade_sati_active": null,
+      "yogas_expected": []
+    },
+    "expected_dasha": null
+  }
+}
