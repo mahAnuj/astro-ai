@@ -967,6 +967,44 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="debilitated-sun-career",
+        title="Debilitated Sun in Your Kundli: Why Authority Feels Off and How to Fix It",
+        summary="Sun debilitated in Libra is one of the most common 'why do I struggle with authority' chart signatures. It does not remove capability — it reshapes leadership into negotiation-forward, coalition-holding, advisory forms. Here is what the placement actually does, the Neecha Bhanga cancellations most explanations miss, which careers suit debilitated Sun natives, and honest classical remedies.",
+        seo_title="Debilitated Sun in Kundli: Career Effects & Fix",
+        seo_description="Sun in Libra debilitated — what it does to authority and career, Neecha Bhanga cancellation rules, best-fit careers, and classical remedies. No fear.",
+        category="Life Questions",
+        hero_image="/static/learn/debilitated-sun-career/hero.svg",
+        read_time="12 min",
+        last_updated="2026-07",
+        related=("surya-sun-in-vedic-astrology", "sun-mahadasha", "career-not-progressing"),
+        faqs=(
+            {
+                "q": "Is a debilitated Sun always bad?",
+                "a": "No. Debilitated Sun (Sun in Libra) reshapes how authority operates in your life — from commanded to negotiated — but it does not remove capability. Many highly successful leaders across history and industry carry this placement, especially in fields where diplomatic authority matters more than dominant authority: judiciary, mediation, senior advisory, coalition politics, academic leadership. When Neecha Bhanga (debilitation cancellation) applies, the placement can even become a source of unusual strength called Neecha Bhanga Raja Yoga, a genuine classical yoga. The actual outcome depends on whether cancellation conditions are present, which house Sun sits in, and how well the career direction is matched to the placement.",
+            },
+            {
+                "q": "What is Neecha Bhanga Raja Yoga for Sun?",
+                "a": "Neecha Bhanga is classical Vedic cancellation of a planet's debilitation, and when it applies, the placement can produce genuine strength. The four most commonly cited conditions for Sun's debilitation in Libra to cancel: (1) Venus (the lord of Libra) is in a kendra (1st/4th/7th/10th) from the Lagna or Moon; (2) Saturn (which is exalted in Libra) is in a kendra from the Lagna or Moon; (3) Mars (which rules Aries, Sun's exaltation sign) is in a kendra from the Lagna or Moon; (4) Sun is exalted in the navamsha (D-9) chart. If any of these are present, the debilitation is functionally cancelled and the person often produces late-blooming institutional recognition and respected leadership. Generate your free Kundli on Shubh Bhagya to see if any of these apply.",
+            },
+            {
+                "q": "Which careers suit debilitated Sun natives?",
+                "a": "Careers where authority is earned through respect rather than commanded through position. The strongest fits: mediation and arbitration, judiciary and law, senior advisory and consulting, diplomacy and international relations, academic leadership (dean and department head roles), partnership-based professional services, collaborative arts (especially music and directing), and coalition politics. Careers that fight the placement: hard-charging sales, aggressive founder roles requiring unwavering conviction, competitive solo politics, and any role that requires you to dominate a room by presence alone. Debilitated Sun natives can absolutely succeed in tough-authority fields, but the placement works with them in negotiation-forward fields and often against them in dominance-forward fields.",
+            },
+            {
+                "q": "How to strengthen a debilitated Sun?",
+                "a": "Safe universal classical practices: offer arghya (water offering) to the rising Sun at dawn, especially on Sundays; recite the Aditya Hridayam (12 or 108 times on Sundays); practice daily Surya Namaskar; slow long-term chanting of the Sun beej mantra Om Hraam Hreem Hraum Sah Suryaya Namah; donate wheat, jaggery, red cloth, or copper vessels on Sundays; and consciously honour the father and elders in your life (Sun is the karaka of the father — repairing that relationship is often the deepest remedy). Never wear a ruby or Sun-related gemstone without a proper chart consultation — for a functional malefic Sun, ruby can amplify difficulty rather than help. Pattern-alignment remedies (matching career to placement) matter more than physical remedies.",
+            },
+            {
+                "q": "Does Sun in Libra mean no government job?",
+                "a": "No, this is a common misreading. Sun rules government and authority, so weak Sun sometimes reduces natural pull toward pure command-and-control government roles, but the placement can succeed excellently in government contexts that reward negotiation and judgement — judiciary, senior civil service in policy and diplomatic roles, arbitral bodies, election commissions, coalition ministerial roles. Many senior judges, diplomats, and civil servants carry this placement. What often does not fit: hard-charging populist political roles requiring dominant personal branding. What often does fit: institutional government roles where longevity, fairness, and judgement compound into respected authority.",
+            },
+            {
+                "q": "Can debilitated Sun give success?",
+                "a": "Yes, and often significant success — but the arc is typically late-blooming rather than early-flashy. The common pattern: early career of over-performance without proportionate recognition, mid-career forced elevation into a leadership role the person did not overtly seek, and late-career unexpected authority earned through years of quiet respect. When Neecha Bhanga applies, the late-career recognition can be substantial (chief justice, senior advisor, coalition leader, respected academic head). The people who suffer most with this placement are those who fight it — trying to force themselves into dominance-forward careers that punish the diplomatic instinct. Those who work with the placement often produce the most respected version of leadership in their field.",
+            },
+        ),
+    ),
+    Article(
         slug="rahu-mahadasha-career-problems",
         title="Rahu Mahadasha and Career: The Confusion Years and How to Navigate Them",
         summary="Rahu Mahadasha is 18 years — for career, famously the ambition-without-discipline chapter. Sudden foreign or unconventional openings, fast prestige, and structural confusion. Here is what actually happens in each phase, why the confusion is Rahu's design, and what actually helps.",
