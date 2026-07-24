@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Panch Mahapurush Yoga — "five great persons". Five kinds of great
+     individuals produced by the 5 tarah grahas (Mars/Mercury/Jupiter/
+     Venus/Saturn) in kendra in own/exalt sign. Rendered as 5 stylised
+     human silhouettes standing under 5 planet symbols, forming a
+     unified group. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Panch Mahapurush Yoga — the five great persons">
+  <defs>
+    <radialGradient id="pm_aura" cx="0.5" cy="0.5" r="0.6">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.85"/>
+      <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#f5f5f4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="pm_figure" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="60%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="pm_gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+  <circle cx="160" cy="160" r="150" fill="url(#pm_aura)"/>
+
+  <!-- Five planet symbols at the top (evenly spaced) -->
+  <g fill="url(#pm_gold)">
+    <!-- Mars (Ruchaka) -->
+    <circle cx="55" cy="70" r="10"/>
+    <text x="55" y="75" text-anchor="middle" font-family="serif"
+          font-size="12" fill="#7c2d12" font-weight="700">M</text>
+    <!-- Mercury (Bhadra) -->
+    <circle cx="107" cy="55" r="10"/>
+    <text x="107" y="60" text-anchor="middle" font-family="serif"
+          font-size="12" fill="#065f46" font-weight="700">☿</text>
+    <!-- Jupiter (Hamsa) — center, largest -->
+    <circle cx="160" cy="45" r="13"/>
+    <text x="160" y="51" text-anchor="middle" font-family="serif"
+          font-size="14" fill="#78350f" font-weight="700">♃</text>
+    <!-- Venus (Malavya) -->
+    <circle cx="213" cy="55" r="10"/>
+    <text x="213" y="60" text-anchor="middle" font-family="serif"
+          font-size="12" fill="#831843" font-weight="700">♀</text>
+    <!-- Saturn (Sasa) -->
+    <circle cx="265" cy="70" r="10"/>
+    <text x="265" y="75" text-anchor="middle" font-family="serif"
+          font-size="12" fill="#111827" font-weight="700">♄</text>
+  </g>
+
+  <!-- Connecting light rays from planets to figures -->
+  <g stroke="#fbbf24" stroke-width="1" opacity="0.4">
+    <line x1="55" y1="85" x2="55" y2="140"/>
+    <line x1="107" y1="70" x2="107" y2="140"/>
+    <line x1="160" y1="62" x2="160" y2="130"/>
+    <line x1="213" y1="70" x2="213" y2="140"/>
+    <line x1="265" y1="85" x2="265" y2="140"/>
+  </g>
+
+  <!-- Five human silhouettes standing in a row -->
+  <g fill="url(#pm_figure)">
+    <!-- Figure 1 (Mars — warrior) -->
+    <circle cx="55" cy="150" r="12"/>
+    <path d="M 45 165 L 45 220 Q 45 225, 50 225 L 60 225 Q 65 225, 65 220 L 65 165 Z"/>
+    <line x1="45" y1="225" x2="45" y2="255" stroke="url(#pm_figure)" stroke-width="6" stroke-linecap="round"/>
+    <line x1="65" y1="225" x2="65" y2="255" stroke="url(#pm_figure)" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- Figure 2 (Mercury — scholar) -->
+    <circle cx="107" cy="150" r="12"/>
+    <path d="M 97 165 L 97 220 Q 97 225, 102 225 L 112 225 Q 117 225, 117 220 L 117 165 Z"/>
+    <line x1="97" y1="225" x2="97" y2="255" stroke="url(#pm_figure)" stroke-width="6" stroke-linecap="round"/>
+    <line x1="117" y1="225" x2="117" y2="255" stroke="url(#pm_figure)" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- Figure 3 (Jupiter — sage/guru, center, tallest) -->
+    <circle cx="160" cy="145" r="14"/>
+    <path d="M 148 162 L 148 220 Q 148 225, 153 225 L 167 225 Q 172 225, 172 220 L 172 162 Z"/>
+    <line x1="148" y1="225" x2="148" y2="258" stroke="url(#pm_figure)" stroke-width="7" stroke-linecap="round"/>
+    <line x1="172" y1="225" x2="172" y2="258" stroke="url(#pm_figure)" stroke-width="7" stroke-linecap="round"/>
+
+    <!-- Figure 4 (Venus — artist) -->
+    <circle cx="213" cy="150" r="12"/>
+    <path d="M 203 165 L 203 220 Q 203 225, 208 225 L 218 225 Q 223 225, 223 220 L 223 165 Z"/>
+    <line x1="203" y1="225" x2="203" y2="255" stroke="url(#pm_figure)" stroke-width="6" stroke-linecap="round"/>
+    <line x1="223" y1="225" x2="223" y2="255" stroke="url(#pm_figure)" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- Figure 5 (Saturn — servant) -->
+    <circle cx="265" cy="150" r="12"/>
+    <path d="M 255 165 L 255 220 Q 255 225, 260 225 L 270 225 Q 275 225, 275 220 L 275 165 Z"/>
+    <line x1="255" y1="225" x2="255" y2="255" stroke="url(#pm_figure)" stroke-width="6" stroke-linecap="round"/>
+    <line x1="275" y1="225" x2="275" y2="255" stroke="url(#pm_figure)" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Ground line -->
+  <line x1="35" y1="260" x2="285" y2="260" stroke="#c084fc" stroke-width="1" opacity="0.4"/>
+
+  <!-- Small "5" indicating five persons -->
+  <text x="30" y="46" font-family="Crimson Pro, serif" font-size="24"
+        font-weight="700" fill="#6b21a8" opacity="0.35">5</text>
+</svg>
