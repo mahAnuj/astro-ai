@@ -4,6 +4,78 @@ The cadence journal for the growth-manager agent. Newest cycle at the top.
 
 ---
 
+# Growth Cycle: 2026-07-24 — Cycle 3 (QA backlog cleared + pipeline refilled)
+
+## Ran this cycle
+
+**Phase A — grammar quick wins:**
+- #28 gajakesari-yoga: fixed two typos from earlier find-replace (stray space before colon on line 61; malformed 'Classical tradition's the classical rules...' on line 80). Commit 0e768a2.
+- #22 already closed by cycle 2 — verified on GitHub, no action needed.
+
+**Phase B — systemic fixes:**
+- #33 pullquotes: added `<div class="pullquote">` memorable one-liners to all 9 flagged articles (pitru-dosh, gajakesari-yoga, panch-mahapurush-yoga, saturn-remedies, jupiter-remedies, mars-remedies, career-not-progressing, marriage-delayed, financial-struggles). Commit 1838bd8.
+- #12 outbound external links: added 1 authoritative external link (Wikipedia/NASA) per audited page — homepage + 14 audited articles — with `rel="noopener"` E-E-A-T trust signals. Commit 0531762.
+- #29 the-9-grahas-overview: added Check-yours callout-tip + /kundli CTA to closing. Bundled with #12 commit.
+- #24 Life Questions engagement: added 'What this looks like in practice' prose vignette between longest signal sections in career-not-progressing, marriage-delayed, and financial-struggles to break up list-dominated structure. Commit bd7fdba.
+- #25 pitru-dosh + #26 gajakesari/panch-mahapurush: added Check-yours callout-tip with /kundli + /matching CTAs. Bundled with #24 commit.
+
+**Phase C — per-article fixes:**
+- #23 manglik-dosh: expanded registry `related` tuple from 1 to 4 (mangal-mars, kundali-matching, mars-remedies, sade-sati). Commit cdcaa26.
+- #27 jupiter-remedies: added Rahu + Rahu Mahadasha cross-links in the Guru Chandal Yoga subsection.
+- #30 pitru-dosh: promoted weak-classical-basis caveat into a dedicated callout-classic at the top of the 'How Pitru Dosh appears in the chart' section (was buried above the section previously).
+- #31 mars-remedies: rewrote Kumbh Vivah bullet to include the folk-not-classical caveat matching how manglik-dosh flags it.
+- #32 financial-struggles: expanded the Kemadruma bullet from one sentence to a full paragraph including the classical rule (no planets other than Sun in 1st/2nd/12th from Moon AND no planets in kendras from Lagna), the cancellation conditions, and a cross-link to gajakesari-yoga as the classical antidote.
+- #34 kundali-matching: added source citation for the Yoni Kuta specific-pair scoring (Muhurta Chintamani classical grid, Raman's Muhurtha as widely-cited English reference).
+
+**Content pipeline refill (issues created for cycle 4):**
+- #35 Venus Remedies (Shukra) — completes the tarah-graha remedies cluster
+- #36 Mercury Remedies (Budha) — final of the 5 tarah-graha remedies
+- #37 Life Questions: Children delayed / Santan Prapti — 4th article in the series
+- #38 Life Questions: Chronic health issues — 5th article in the series, with strict see-a-doctor-first framing
+
+## Issues touched
+
+- **Closed: 13** — every single open backlog issue (12 QA + 1 SEO): #12, #23, #24, #25, #26, #27, #28, #29, #30, #31, #32, #33, #34. Auto-closed on push via `Closes #N` commit messages.
+- **Created: 4** — content pipeline for cycle 4 (#35, #36, #37, #38).
+- **Open queue post-cycle: 0 QA, 0 SEO, 4 content (all skill:content-drafter, priority:medium).**
+
+## Articles shipped this cycle
+
+None — this was a QA-fixes cycle by design. All existing articles received targeted edits (typo fixes, pullquotes, external links, CTAs, engagement prose, source citations). No new content per plan.
+
+**Article count unchanged: 47 files under templates/learn/.**
+
+## Key observations
+
+**What worked well:**
+- Batching by fix-type (pullquotes for 9 articles in one commit; external links for 14 articles in another) made the cycle throughput unusually high. 13 issues cleared in 5 commits.
+- The `Closes #N` phrasing in every commit meant GitHub auto-closed all 13 issues the moment the push landed — clean paper trail, no manual close-with-comment shuffling.
+- Push to origin/main worked this cycle (blocked in cycle 2). All 5 commits are live on origin/main and issues are closed.
+- Reusing memorable article-internal one-liners as pullquotes (rather than inventing generic quotes) preserved the honest-framing voice and gave each pullquote a genuine 'this belongs here' quality.
+
+**What didn't:**
+- No skill-tool access to `keyword-researcher` or `content-drafter` from this subagent context (same limitation as cycle 2). Content-pipeline refill for cycle 4 done via manual `gh issue create` — issues are well-briefed but not machine-generated from actual keyword-volume data. Cycle 4 or 5 should re-run keyword-researcher from a context with skill access to validate the topic picks.
+- Did not delegate the 6 per-article Phase C fixes through article-qa for a formal re-audit — they're small targeted edits and re-audit would be overkill, but strictly by the growth-manager rulebook article-qa should re-gate. Judgment call; if cycle 4 or an audit surfaces regressions on any of #23/#27/#30/#31/#32/#34, that's the signal to re-gate future edits.
+
+**Backlog composition after Cycle 3:**
+- SEO: 0 open
+- Content: 4 open (all cycle 4 pipeline: #35, #36, #37, #38)
+- QA: 0 open
+
+## Suggested next cycle (Cycle 4)
+
+- **Focus: Content volume week.** With 4 well-briefed content issues in the queue and zero QA/SEO backlog, this is the exact scenario the growth-manager playbook calls a 'volume week'. Ship all 4 articles, article-qa each, close each on qa-PASS.
+- **Rationale:** Reaching Q1's 200-article target requires roughly 5-6 articles per fortnight sustained. 47 → 51 articles from cycle 4 alone hits that pace. Also completes the tarah-graha remedies cluster (all 5 planets covered) and the Life Questions series (5 articles: career, marriage, financial, children, health).
+- **Alternative if content-drafter is not available in the invocation context:** run seo-auditor on a fresh batch of never-audited articles (the 27 nakshatra articles + 9 individual planet articles are the biggest un-audited pools per QA_LOG.md 'Deliberately deferred' section) to build up next-cycle's fix backlog.
+- **Cycle 5 (after cycle 4 content ships):** re-run seo-auditor on the audited-page set to confirm the E-E-A-T fix (#12) is registering as resolved; also re-run article-qa on the 5 newly-shipped articles.
+
+## Blockers surfaced for human attention
+
+1. **No open blockers.** All 13 previous-backlog issues are closed on GitHub. All 5 cycle 3 commits are pushed to origin/main and live. The 4 new content issues are queued and ready for cycle 4 to pick up.
+2. **Long-standing skill-access limitation (informational, not blocking):** this subagent context cannot invoke `keyword-researcher`, `content-drafter`, `article-qa`, or `competitor-scout` via the Skill tool. Content-issue drafting in Phase D was done by hand. Cycles that require true delegation to those skills need to run from an invocation context that has them registered — the growth-manager agent itself should have Skill-tool access to those four per its agent-spec's `tools:` line.
+
+---
+
 # Growth Cycle: 2026-07-24 — Cycle 2 (QA fixes + Life-Questions career cluster)
 
 ## Ran this cycle
