@@ -929,6 +929,44 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="career-during-sade-sati",
+        title="Career During Sade Sati: The 7.5-Year Career Reckoning",
+        summary="Sade Sati is often felt at work first. The Arambha, Madhya, and Uttara phases each have a specific career arc — quiet restructuring, forced pivots or breakthroughs, and slow rebuild. Here is what actually happens in each phase, when to change jobs, why some people get promoted, and what to do if you have just been laid off mid-transit.",
+        seo_title="Career During Sade Sati: What to Expect & Do",
+        seo_description="Sade Sati career effects across the 3 phases — job loss, promotions, when to change jobs, what to do if laid off. Honest classical guidance, no fear.",
+        category="Life Questions",
+        hero_image="/static/learn/career-during-sade-sati/hero.svg",
+        read_time="11 min",
+        last_updated="2026-07",
+        related=("sade-sati", "saturn-remedies", "career-not-progressing"),
+        faqs=(
+            {
+                "q": "Does Sade Sati always cause job loss?",
+                "a": "No. Job loss is a common Sade Sati outcome, especially in the Madhya (peak) phase, but it is far from universal. People with strong natal Saturn — in own sign (Capricorn or Aquarius), exalted in Libra, or in a kendra with Jupiter's support — often experience Sade Sati as a period of career elevation rather than loss. People already working in Saturn-native fields (government, judiciary, engineering, infrastructure, elderly care, agriculture, long-form scholarship) frequently see their biggest promotion of the decade during Sade Sati. The actual outcome depends on natal Saturn's strength, current Dasha, industry, and how willingly the person engages the transit. Generate your free Kundli on Shubh Bhagya to see your natal Saturn's condition.",
+            },
+            {
+                "q": "Is it OK to change jobs during Sade Sati?",
+                "a": "Yes, with timing. Classical Vedic tradition cautions against major voluntary moves in the first year of Madhya (peak) — decisions taken in that window often look wrong within twelve months. The safer sub-windows are late Madhya (the final 12–15 months of the peak phase, when Saturn has done most of its subtracting) and Uttara (the rebuild phase). If a change is forced on you by circumstances rather than chosen, treat it as data — take it thoughtfully, do not panic-search, and be willing to accept short contract work while a longer offer matures. Saturn punishes haste more than he punishes patience.",
+            },
+            {
+                "q": "Can I get a promotion during Sade Sati?",
+                "a": "Yes — and for certain chart configurations it is unusually likely. Classical tradition explicitly names the pattern: seniors, people in Saturn-native careers, and natives with strong natal Saturn often receive their most significant institutional recognition during the 7.5-year transit. This is because Saturn rewards patient, structural, long-tenure work — exactly the kind of work senior professionals are usually doing. Promotions during Sade Sati tend to come in late Madhya or Uttara rather than Arambha, and they usually reward years of previous groundwork rather than sudden brilliance.",
+            },
+            {
+                "q": "Should I start a business during Sade Sati?",
+                "a": "Not usually optimal, but not forbidden. The Vedic caution against major long-cycle commitments — a new company, significant debt, a co-founder relationship binding you for a decade — applies particularly to the first year of Madhya. Businesses started in that window survive but disproportionately struggle in years three to five. If you must start a business during Sade Sati, the safer sub-windows are Arambha (planning and quiet incorporation) and late Madhya to Uttara (launch phase, when the ground is more stable). And avoid the founder-with-partner setup unless the partner has been tested through a full year of Madhya first.",
+            },
+            {
+                "q": "Which phase of Sade Sati is worst for career?",
+                "a": "Madhya (Peak), the middle 2.5 years when Saturn transits directly on the natal Moon, is the most consequential and typically the hardest for career. This is when forced pivots, layoffs, business restructuring, and health-driven role changes cluster. Arambha (Rising) is quieter — more the sense of losing an internal sponsor, invisible support drying up, isolation from the inner circle at work. Uttara (Setting) is the rebuild — quieter career, family and career negotiating, savings discipline forced, but the acute pressure of Madhya has passed. The rank order for career difficulty is generally Madhya > Arambha > Uttara.",
+            },
+            {
+                "q": "What remedies help career during Sade Sati?",
+                "a": "Universal Saturn practices apply, with a career emphasis. Recite the Hanuman Chalisa daily (especially on Saturdays) — classical Vedic tradition names Hanuman as the deity whose recitation softens Shani's severity. Serve elders in your professional environment (Saturn rules seniority; being genuinely useful to older colleagues is direct Saturn karma). Work harder, not less — Saturn rewards effort, not escapism. Donate on Saturdays (black sesame, mustard oil, dark cloth, iron, footwear for the elderly poor). Avoid expensive Shani nivaran puja packages — the vendor manipulation around Sade Sati is enormous and largely ineffective. And never wear blue sapphire without a proper chart consultation — it is Saturn's most powerful gem and, when wrong for the chart, the fastest way to destabilise a difficult transit further.",
+            },
+        ),
+    ),
+    Article(
         slug="rahu-mahadasha-career-problems",
         title="Rahu Mahadasha and Career: The Confusion Years and How to Navigate Them",
         summary="Rahu Mahadasha is 18 years — for career, famously the ambition-without-discipline chapter. Sudden foreign or unconventional openings, fast prestige, and structural confusion. Here is what actually happens in each phase, why the confusion is Rahu's design, and what actually helps.",
