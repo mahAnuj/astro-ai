@@ -1160,6 +1160,44 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="santan-prapti-children-in-kundli",
+        title="Santan Prapti: 7 Chart Signals for Children Delay in Your Kundli",
+        summary="Children delayed or difficulty conceiving? Classical Vedic astrology reads the question through 7 specific chart signals — 5th house and its lord, Jupiter as karaka of progeny, Saptamsa (D-7) divisional chart, current Dasha, afflictions to the 5th, dispositor patterns, and remedy patterns. Honest framing on how to combine astrology with modern fertility care.",
+        seo_title="Santan Prapti: 7 Kundli Signals for Children Delay",
+        seo_description="Children delayed in your kundli? 7 Vedic chart signals — 5th house, Jupiter, Saptamsa (D-7), Dasha windows — read alongside modern fertility care.",
+        category="Life Questions",
+        hero_image="/static/learn/santan-prapti-children-in-kundli/hero.svg",
+        read_time="13 min",
+        last_updated="2026-07",
+        related=("guru-jupiter-in-vedic-astrology", "jupiter-remedies", "pitru-dosh", "marriage-delayed"),
+        faqs=(
+            {
+                "q": "How do I know if my chart shows Santan Prapti delay?",
+                "a": "Check three primary signals: (1) Is your 5th house lord in a dusthana (6th, 8th, 12th house)? (2) Is Jupiter — the karaka of children — weak, combust, debilitated in Capricorn, or in the 6th/8th/12th without benefic support? (3) Is the 5th house occupied by Ketu, Rahu, or Saturn without Jupiter's aspect? If two or more signals apply, classical Vedic tradition reads this as a genuine delay pattern that argues for both classical remedy AND a consultation with a fertility specialist if you have been trying for over a year. Generate your free Janma Kundli on Shubh Bhagya to check specific positions.",
+            },
+            {
+                "q": "Does Ketu in the 5th house mean I will have no children?",
+                "a": "No — this is a common online over-reading, not classical astrology. Ketu in the 5th typically indicates one of several patterns: a first-child conception that requires effort while later children (if the couple chooses) come more easily; a soul who fulfils the 5th-house karma through adoption or step-parenting; or a specific karmic detachment from conventional family formation that the person themselves resonates with. Ketu in the 5th is a signal for classical remedy (Ganesha worship is the classical Ketu remedy) and for fertility consultation if you are trying. It is not a verdict.",
+            },
+            {
+                "q": "What is Saptamsa (D-7) and why does it matter for children?",
+                "a": "The Saptamsa is a divisional chart specifically for progeny — each 30° sign is divided into 7 parts of about 4°17' each. Classical Vedic tradition holds the D-7 as the primary reference for children questions, often more decisive than the D-1 5th house alone. The D-7 reveals number of children (though classical counts were written for pre-modern families and need softening), quality of the parent-child relationship, and fertility difficulty patterns. When the D-7 Ascendant lord is in a dusthana AND the D-1 5th house is afflicted, the classical two-signal difficulty pattern argues most strongly for combining astrological remedy with medical support.",
+            },
+            {
+                "q": "When will I conceive according to my Dasha?",
+                "a": "Children in classical Vedic tradition tend to arrive during specific Vimshottari Dasha windows — most often when the Antardasha of the 5th lord, the 9th lord (dharmic progeny), or Jupiter is running. Many 'why aren't we conceiving' questions turn out to involve a Dasha whose ruling planet has no relationship to progeny themes. When that Dasha ends and a children-relevant planet takes over, the window opens. Check your Dasha panel to see which Antardasha you are in and when your next Jupiter or 5th-lord Antardasha begins.",
+            },
+            {
+                "q": "Should I do an expensive Santan Prapti puja to fix children delay?",
+                "a": "Almost never. The vendor market around fertility-related pujas is one of the most exploitative corners of modern astrology. Any priest asking for tens of thousands of rupees for a 'santan nivaran' ceremony is trading on emotional urgency, not classical tradition. Genuine classical remedies are simple and inexpensive: Santan Gopala mantra recitation, Jupiter propitiation (Thursday fasting, yellow flowers, feeding brahmins), Krishna Balgopala worship, and worship of the deity ruling your 5th lord. If a Pitru pattern is also present, honouring ancestors through Shraddha helps. None of this should cost lakhs.",
+            },
+            {
+                "q": "Can Vedic remedies replace IVF or fertility treatment?",
+                "a": "No — and any practitioner who tells you otherwise is not a classical astrologer. Classical Vedic tradition places astrology alongside, not instead of, appropriate medicine. Modern fertility diagnostics identify treatable causes (hormonal, tubal, sperm quality, ovulation timing) that no chart reading can substitute for. The couples we see with the best outcomes usually do both: they work with a good doctor AND they engage classical practices for the 5th house and Jupiter. The two lenses together produce the best results — the doctor reads biology, the chart reads karmic weather, and both matter.",
+            },
+        ),
+    ),
+    Article(
         slug="gajakesari-yoga",
         title="Gajakesari Yoga: The Elephant-Lion Combination of Fame and Wisdom",
         summary="Gajakesari Yoga forms when Jupiter sits in a quadrant from the Moon with benefic support. Classical texts call it a key yoga for ever-lasting fame, wealth, intelligence, and character. Learn how to check for it in your chart and what it actually produces.",
