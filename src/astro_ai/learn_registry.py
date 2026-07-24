@@ -929,6 +929,44 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="rahu-mahadasha-career-problems",
+        title="Rahu Mahadasha and Career: The Confusion Years and How to Navigate Them",
+        summary="Rahu Mahadasha is 18 years — for career, famously the ambition-without-discipline chapter. Sudden foreign or unconventional openings, fast prestige, and structural confusion. Here is what actually happens in each phase, why the confusion is Rahu's design, and what actually helps.",
+        seo_title="Rahu Mahadasha Career: What to Expect & What Helps",
+        seo_description="Rahu Mahadasha career problems explained — the 3 phases of 18 years, which fields Rahu favours, why confusion is structural, and honest remedies.",
+        category="Life Questions",
+        hero_image="/static/learn/rahu-mahadasha-career-problems/hero.svg",
+        read_time="12 min",
+        last_updated="2026-07",
+        related=("rahu-in-vedic-astrology", "rahu-mahadasha-ketu-antardasha", "career-not-progressing"),
+        faqs=(
+            {
+                "q": "Is Rahu Mahadasha good or bad for career?",
+                "a": "Neither by default — it depends on Rahu's placement in your chart. A well-placed Rahu (in the 3rd, 6th, 10th, or 11th house, in a friendly sign, aspected by benefics) in Mahadasha often produces spectacular career growth: foreign postings, sudden promotions, unconventional prestige, technology or media success. An afflicted Rahu (combust, badly aspected by Mars or Saturn, in the 8th or 12th without support) often produces compulsive job-hopping, obsession without direction, and the classical started-three-careers-mastered-none pattern. Generate your free Janma Kundli on Shubh Bhagya to see your Rahu placement.",
+            },
+            {
+                "q": "Should I change jobs during Rahu Mahadasha?",
+                "a": "Slow down big decisions in the first year of any difficult Antardasha within the Mahadasha. Rahu creates distortion the person cannot see in real-time — what looks like a life-defining opportunity often looks very different from year seven. Rahu-Rahu (the first sub-period, about 2 years 8 months) is peak-confusion and the classical window for big moves that later feel unclear. If you must change, keep exit doors open, avoid 5-year commitments in the first 6 months, and journal the pattern so your later self has a record of what you were actually thinking.",
+            },
+            {
+                "q": "Why do I feel confused about my career in Rahu Mahadasha?",
+                "a": "The confusion is structural, not a personal weakness. Classical Vedic tradition describes Rahu as the planet of maya (illusion) and vipreet buddhi (reversed intelligence). He amplifies ambition faster than he amplifies clarity — the person often knows exactly what they want to be seen as but has no idea what they actually want to do. This is a feature of the Mahadasha, not evidence that something is wrong with you. Recognising the pattern is the first step out of it.",
+            },
+            {
+                "q": "Which careers thrive in Rahu Mahadasha?",
+                "a": "Technology and software (Rahu's home in the modern world), foreign trade and cross-border consulting, media, film, advertising, content and social platforms, aviation and shipping and telecommunications, research (especially in fringe or unconventional fields), diplomacy and immigration law, and entrepreneurship in emerging categories. Rahu tends to struggle with traditional government service inside old bureaucracies, ancestral family businesses, classical long-cycle arts and priesthood, and pure-relationship sales in conservative industries.",
+            },
+            {
+                "q": "How long does Rahu Mahadasha last?",
+                "a": "18 years — the second-longest of the nine Vimshottari Mahadashas (only Venus at 20 years is longer). The 18 years break into 9 Antardashas: Rahu (2 years 8 months 12 days), Jupiter (2 years 4 months 24 days), Saturn (2 years 10 months 6 days), Mercury (2 years 6 months 18 days), Ketu (1 year 0 months 18 days), Venus (3 years 0 months 0 days), Sun (0 years 10 months 24 days), Moon (1 year 6 months 0 days), Mars (1 year 0 months 18 days). Each sub-period has a very different flavour, so knowing which one you are in matters more than the outer Mahadasha alone.",
+            },
+            {
+                "q": "What are the best remedies for career during Rahu Mahadasha?",
+                "a": "Safe universal practices: chant the Rahu Beej mantra Om Bhraam Bhreem Bhraum Sah Rahave Namah as a slow long-term practice (classical count 18,000 total), donate black gram daal or blue cloth on Saturdays, serve outsiders and the marginalised (Rahu is the karaka of outsiders), support research or unusual knowledge, undertake a pilgrimage to a shrine you have not visited, and worship Durga (Rahu's classical ruling deity). Avoid: expensive Rahu shanti puja packages, and never wear hessonite (gomedh) without proper chart consultation. The deepest remedy is often alignment — matching your work to what Rahu's placement actually wants.",
+            },
+        ),
+    ),
+    Article(
         slug="gajakesari-yoga",
         title="Gajakesari Yoga: The Elephant-Lion Combination of Fame and Wisdom",
         summary="Gajakesari Yoga forms when Jupiter sits in a quadrant from the Moon with benefic support. Classical texts call it a key yoga for ever-lasting fame, wealth, intelligence, and character. Learn how to check for it in your chart and what it actually produces.",
