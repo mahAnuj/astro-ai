@@ -35,7 +35,10 @@ from astro_ai.chart import (
     format_panchang_for_prompt,
     format_transit_for_prompt,
     format_yogas_for_prompt,
+    format_topic_summaries_for_prompt,
+    topic_summaries_for_chart,
 )
+from .learn_registry import ARTICLES
 
 # Appended to the system prompt to switch the LLM's output language.
 # UI strings stay English (full i18n deferred); only the reading text translates.
@@ -107,11 +110,20 @@ def _format_seeker_message(
     name_line = f"Name: {details.name}" if details.name.strip() else "Name: (not provided)"
     manglik_block = format_manglik_for_prompt(compute_manglik_details(chart))
     yogas_block = format_yogas_for_prompt(compute_yogas(chart), chart=chart)
+    # Topic summaries — distilled article knowledge selected by chart features.
+    # Cheap (~400 tokens for 3-5 summaries) and gives the LLM specific classical
+    # depth PLUS cross-link destinations for the /learn/ articles.
+    topic_summaries_block = ""
+    if dasha_state is not None:
+        summaries = topic_summaries_for_chart(chart, dasha_state, ARTICLES)
+        topic_summaries_block = format_topic_summaries_for_prompt(summaries)
     optional_blocks = ""
     if manglik_block:
         optional_blocks += f"\n\n{manglik_block}"
     if yogas_block:
         optional_blocks += f"\n\n{yogas_block}"
+    if topic_summaries_block:
+        optional_blocks += f"\n\n{topic_summaries_block}"
     return (
         f"{name_line}\n"
         f"Birth date: {details.birth_date}\n"

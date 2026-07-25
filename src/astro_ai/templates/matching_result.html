@@ -83,7 +83,7 @@
   {% for title, body in sections %}
   <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
     <h2 class="font-display text-xl text-astro-700 mb-3">{{ title }}</h2>
-    <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-base">{{ body }}</p>
+    <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-base">{{ body | linkify_learn }}</p>
   </article>
   {% endfor %}
   {% endif %}

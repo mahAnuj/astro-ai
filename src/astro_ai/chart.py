@@ -1000,6 +1000,102 @@ def compute_yogas(chart: Chart) -> tuple[YogaResult, ...]:
     return tuple(all_yogas)
 
 
+@dataclass(frozen=True)
+class TopicSummary:
+    """A distilled article summary for LLM enrichment injection.
+
+    Selected per chart via `topic_summaries_for_chart` (deterministic
+    feature-to-topic map). The LLM uses the summary to add classical depth
+    to the relevant reading section and emits the link as a "For more, see
+    our <title>" cross-link.
+    """
+
+    slug: str        # article slug (for the /learn/ link)
+    title: str       # article title (anchor-text hint for the LLM)
+    summary: str     # 50-100 token distilled classical takeaways
+
+
+def topic_summaries_for_chart(
+    chart: "Chart",
+    dasha_state: "DashaState",
+    articles: tuple,  # tuple[Article, ...] from learn_registry (avoids circular import)
+) -> list[TopicSummary]:
+    """Select 2-5 most relevant article summaries for this chart.
+
+    Deterministic feature-to-topic map — no embeddings, no retrieval, no
+    per-request LLM cost. Reads chart features + Dasha state, returns
+    TopicSummary objects for the LLM to weave into the reading.
+
+    Feature mapping (v1, conservative):
+      - Always: vimshottari-dasha-explained (foundational timing framework)
+      - Dasha lord = Rahu → rahu-mahadasha-career-problems
+      - Manglik flag → manglik-dosh
+      - Sade Sati active → sade-sati
+      - Planet-in-10th → matching career article (sun/saturn/jupiter)
+      - Saturn/Rahu in 7th → marriage-delayed
+
+    Extend the map as more articles get llm_summary backfilled.
+    """
+    selected: list[str] = ["vimshottari-dasha-explained"]
+
+    if dasha_state.mahadasha.lord == "Rahu":
+        selected.append("rahu-mahadasha-career-problems")
+
+    flags = compute_vedic_flags(chart)
+    if flags.manglik:
+        selected.append("manglik-dosh")
+    if flags.sade_sati:
+        selected.append("sade-sati")
+
+    for planet in chart.planets:
+        if planet.house == 10:
+            if planet.name == "Saturn":
+                selected.append("saturn-in-10th-house-career")
+            elif planet.name == "Sun":
+                selected.append("sun-in-10th-house-career")
+            elif planet.name == "Jupiter":
+                selected.append("jupiter-in-10th-house-career")
+        if planet.house == 7 and planet.name in ("Saturn", "Rahu"):
+            selected.append("marriage-delayed")
+
+    # Dedupe preserving order + cap at 5
+    seen: set[str] = set()
+    unique = [s for s in selected if not (s in seen or seen.add(s))][:5]
+
+    by_slug = {a.slug: a for a in articles}
+    result: list[TopicSummary] = []
+    for slug in unique:
+        art = by_slug.get(slug)
+        if art and getattr(art, "llm_summary", ""):
+            result.append(TopicSummary(slug=slug, title=art.title, summary=art.llm_summary))
+    return result
+
+
+def format_topic_summaries_for_prompt(summaries: list[TopicSummary]) -> str:
+    """Emit the RELEVANT TOPIC SUMMARIES block for the LLM.
+
+    Each entry gives the LLM: the topic name, distilled classical rules,
+    and the /learn/ link to emit as a cross-reference from the matching
+    reading section. Empty list ⇒ empty string (no block emitted).
+    """
+    if not summaries:
+        return ""
+    lines = [
+        "--- RELEVANT TOPIC SUMMARIES ---",
+        "Classical distillations for topics that specifically apply to THIS chart.",
+        "Use them to add depth to relevant sections. At the end of each section",
+        "where you draw on a summary, add a natural cross-link like",
+        "  \"For more, see our <title> guide → /learn/<slug>/\"",
+        "so the reader can dig deeper. Do not force every summary in; use only",
+        "where it fits naturally.",
+    ]
+    for s in summaries:
+        lines.append(f"  • [{s.slug}] {s.title}")
+        lines.append(f"    Summary: {s.summary}")
+        lines.append(f"    Link: /learn/{s.slug}/")
+    return "\n".join(lines)
+
+
 _YOGA_ACTIVATORS_STATIC: dict[str, tuple[str, ...]] = {
     # Pancha Mahapurusha — activator is the yoga's own planet
     "ruchaka_yoga":         ("Mars",),

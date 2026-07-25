@@ -238,6 +238,53 @@ templates.env.globals["t"] = _i18n_translate
 templates.env.globals["current_year"] = lambda: date.today().year
 
 
+# slug → title lookup for the linkify filter (renders anchors with the
+# article's proper title instead of the raw slug URL).
+from .learn_registry import ARTICLES as _ARTICLES
+_ARTICLE_TITLE_BY_SLUG: dict[str, str] = {
+    a.slug: (a.seo_title.strip() or a.title.strip()) for a in _ARTICLES
+}
+
+
+def _linkify_learn(text: str) -> str:
+    """Convert plain "/learn/<slug>/" occurrences in LLM output into <a href> tags.
+
+    The natal / matching / ask LLM prompts instruct the model to emit cross-links
+    as bare slug paths (e.g. "For more, see our Vimshottari Dasha guide →
+    /learn/vimshottari-dasha-explained/"). This filter turns those into real
+    clickable anchors when the reading is rendered.
+
+    Anchor label is the article's title (via slug lookup) — much nicer to read
+    than the raw URL. Unknown slugs fall back to the URL as label so nothing
+    silently disappears.
+
+    Escapes HTML first (defence-in-depth against LLM injecting tags), then
+    substitutes the /learn/<slug>/ pattern with an anchor. Returns Markup so
+    Jinja does not re-escape the anchor.
+    """
+    import html as _html
+    import re as _re
+    from markupsafe import Markup
+
+    escaped = _html.escape(text or "")
+    # Only match well-formed slugs (lowercase letters, digits, hyphens).
+    pattern = _re.compile(r"/learn/([a-z0-9][a-z0-9-]*[a-z0-9])/")
+
+    def _replace(match):
+        slug = match.group(1)
+        title = _ARTICLE_TITLE_BY_SLUG.get(slug, f"/learn/{slug}/")
+        return (
+            f'<a href="/learn/{slug}/" '
+            f'class="text-astro-700 hover:text-astro-800 underline underline-offset-2">'
+            f'{_html.escape(title)}</a>'
+        )
+
+    return Markup(pattern.sub(_replace, escaped))
+
+
+templates.env.filters["linkify_learn"] = _linkify_learn
+
+
 def _site_url() -> str:
     """Canonical site URL for SEO meta + email links.
 
