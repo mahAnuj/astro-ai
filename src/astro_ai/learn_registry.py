@@ -1156,6 +1156,44 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="job-or-business-kundli-guide",
+        title="Job or Business? What Your Kundali Actually Says (Vyapar Yoga Guide)",
+        summary="Your Kundali does not give a yes-or-no answer on job vs business — it gives a leaning through a 5-signal checklist. Classical Vedic tradition names Vyapar Yogas (business combinations) and Naukri indicators (employment combinations); most charts show both with one dominant. This guide walks the checklist, the classical yogas on each side, the mixed case with tiebreakers, and the Dasha windows that classically support switching direction.",
+        seo_title="Job or Business Kundli Guide: Vyapar Yoga Signals",
+        seo_description="Should you do a job or business? A 5-signal Kundali checklist — Vyapar Yogas, Naukri indicators, mixed-case tiebreakers, and Dasha timing for a career switch.",
+        category="Life Questions",
+        hero_image="/static/learn/job-or-business-kundli-guide/hero.svg",
+        read_time="12 min",
+        last_updated="2026-07",
+        related=("career-not-progressing", "sun-in-10th-house-career", "vimshottari-dasha-explained"),
+        faqs=(
+            {
+                "q": "Which house indicates business in Kundali?",
+                "a": "No single house — business is read through a combination of the 10th house (career), 3rd house (own effort and initiative), 7th house (partnerships and public dealings), 11th house (gains), and 2nd house (accumulated wealth). Classical Vedic tradition specifically flags the 10th lord's placement in the 3rd or 11th house as a strong self-employment signature. Rahu's involvement in any of these houses — especially in the 10th or 11th — often marks the unconventional-business pattern (startups, technology, foreign trade, novel categories). A single signal in isolation is not decisive; what matters is the balance across the 5-signal checklist covered in the article.",
+            },
+            {
+                "q": "Which planet is strongest for business?",
+                "a": "Classically, Mercury is the primary karaka (significator) of business and trade. When Mercury is strong — in his own signs Gemini or Virgo, in a kendra (1st, 4th, 7th, or 10th house), or forming Bhadra Yoga (Mercury in Gemini or Virgo in a kendra) — the person often builds analytical, systematic, communication-driven businesses. Mars is the secondary business karaka for physical enterprise and independent initiative — real estate, construction, physical trades, competitive high-energy businesses. Rahu is the modern business karaka for unconventional paths — startups, technology, foreign trade, and novel categories that did not exist a generation ago. Well-placed Mercury, Mars, and Rahu together is one of the strongest possible business charts.",
+            },
+            {
+                "q": "Can Kundali tell if I will succeed in business?",
+                "a": "The Kundali shows whether your natal pattern leans toward business, which business fields fit your specific configuration, and which Dasha windows favour launching or expanding. It cannot predict specific commercial outcomes — no chart forecasts your exit valuation, your co-founders, or your customer acquisition cost. What classical Vedic tradition offers on the success question is: (1) is the chart's overall business signature strong or weak; (2) is the current Mahadasha supportive of business; (3) are the wealth yogas (Dhana Yogas — connections between the 2nd, 5th, 9th, and 11th houses) also strong. A strong business signature without strong Dhana Yogas often produces a busy business that does not compound wealth; a strong business signature WITH strong Dhana Yogas often produces sustained commercial success.",
+            },
+            {
+                "q": "What if my Kundali shows both job and business yoga?",
+                "a": "This is the most common configuration — most charts show signals on both sides with one leaning dominant. The classical tiebreakers: (1) which side has more dignified planets? (2) which side is the current Dasha activating? (3) which mode is more sustainable under your actual life circumstances — astrology cannot see your bank balance or family responsibilities. The common healthy pattern for mixed charts is employment first, business later — many charts with mixed signals reward a person who spends the first career phase learning inside an institution (employment karma), then transitions to independent work in the mid-30s or early 40s once skills, network, and capital are in place. Rahu in the 11th house and Mercury-in-10th signatures often play out exactly this way.",
+            },
+            {
+                "q": "When is the right Dasha to start a business?",
+                "a": "Mercury Mahadasha (17 years) is the classical business-favouring window — communication, trade, learning, and networks are all activated. Venus Mahadasha (20 years) favours businesses in beauty, art, luxury, hospitality, and any partnership-based venture. Jupiter Mahadasha (16 years) favours advisory-oriented businesses — consulting, teaching, publishing, dharmic institutions. Rahu Mahadasha (18 years) can produce spectacular business success OR spectacular failure — the first two years (Rahu-Rahu Antardasha) are peak-confusion and NOT the window to make major moves; wait for Rahu-Jupiter or Rahu-Mercury Antardashas within the Mahadasha. Sun Mahadasha and Saturn Mahadasha are traditionally less favourable for launching new businesses (though they can support scaling existing ones).",
+            },
+            {
+                "q": "What is Bhadra Yoga and how does it help business?",
+                "a": "Bhadra Yoga is one of the five Panch Mahapurush yogas — the Mercury version. It forms when Mercury sits in his own signs Gemini or Virgo AND is in a kendra (1st, 4th, 7th, or 10th house) from the Lagna. Classical texts describe the Bhadra Yoga native as characterised by \"learning, eloquence, systematic mind, business\" — often producing successful traders, analytical entrepreneurs, financial-services professionals, and business owners in communication-heavy fields (publishing, media, editorial, technology). Bhadra Yoga in the 10th specifically is one of the strongest possible chart signatures for career-through-business. Generate your free Janma Kundli on Shubh Bhagya to check whether your Mercury is placed to form Bhadra Yoga.",
+            },
+        ),
+    ),
+    Article(
         slug="10th-lord-in-6th-house-career",
         title="10th Lord in the 6th House: When Your Career Feels Like Constant Struggle",
         summary="The 10th lord in the 6th house — the ruler of the career house sitting in the house of enemies and service — is the classical Vedic signature for careers built through friction. It is not a doomed placement. It produces doctors, litigators, union leaders, HR heads, investigative journalists. This guide walks the core pattern, per-ascendant flavours, when it hurts and when it helps, its relationship to Vipareeta Raja Yoga, Dasha timing, and honest classical remedies.",
