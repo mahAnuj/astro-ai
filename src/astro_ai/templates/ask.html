@@ -42,7 +42,7 @@
     </div>
     <p class="text-sm text-stone-700 italic border-l-2 border-astro-300 pl-3 mb-5">{{ current_question }}</p>
 
-    <div class="prose prose-sm sm:prose-base max-w-none text-stone-800 leading-relaxed whitespace-pre-wrap">{{ answer }}</div>
+    <div class="prose prose-sm sm:prose-base max-w-none text-stone-800 leading-relaxed whitespace-pre-wrap">{{ answer | linkify_learn }}</div>
   </article>
   {% endif %}
 

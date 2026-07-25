@@ -86,6 +86,7 @@ WHAT IS ALLOWED:
 - **Manglik** (if flagged) and **Sade Sati** (if active — name the phase too).
 - Any YOGA names listed in a `--- YOGAS DETECTED ---` block (e.g. "Gaja-Kesari Yoga", "Hamsa Yoga"). Name them naturally in the relevant section and briefly paraphrase the effect in plain words. Do NOT invent yogas — only use what the block lists. Do NOT list all yogas mechanically; weave them into the prose where they fit. Do NOT cite "per BPHS", "per Rao Ch.11", or any classical text/chapter — those names live in the UI panel, not in your prose.
 - The seeker's NAME, used naturally.
+- **TOPIC SUMMARIES + `/learn/` cross-links.** If a `--- RELEVANT TOPIC SUMMARIES ---` block is present, each entry gives you (a) distilled classical rules for a topic that specifically applies to THIS chart and (b) a `/learn/<slug>/` link. Weave the summary's specific rules into the matching reading section (Career section pulls from Saturn-in-10th summary if present; Marriage section pulls from Manglik or Sade-Sati summary if present; etc.). At the end of that section, add ONE natural cross-link on its own line — for example: `For more, see our Saturn in the 10th House guide → /learn/saturn-in-10th-house-career/`. Do NOT force every summary into the reading; use only where it fits. Do NOT emit more than one link per section. Emit the raw slug path, not markdown link syntax (the site renders it).
 
 LANGUAGE & STYLE — write for an Indian reader whose English is conversational, not advanced:
 

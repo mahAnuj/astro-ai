@@ -39,6 +39,15 @@ class Article:
     # SERP display without changing what the article page itself shows.
     seo_title: str = ""       # max 60 chars recommended; empty → falls back to `title`
     seo_description: str = "" # target 140-160 chars; empty → falls back to `summary`
+    # ─── LLM enrichment summary (optional) ───────────────────────────────
+    # Distilled classical takeaways from this article, ~50-100 tokens, for
+    # use by the kundali/matching/ask LLM generators. When a chart matches
+    # this article's topic (via topic_summaries_for_chart in chart.py) the
+    # summary is injected into the prompt so the LLM can add specific depth
+    # AND emit a "/learn/<slug>/" link in the relevant section. Empty ⇒ the
+    # article is not exposed to the LLM path (still shown to users normally).
+    # Keep summaries dense with classical rules; skip narrative fluff.
+    llm_summary: str = ""
 
 
 ARTICLES: tuple[Article, ...] = (
@@ -102,6 +111,14 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Can Vimshottari Dasha predict specific events like marriage or job change?",
                 "a": "It can indicate timing windows, not exact dates. A marriage typically fires during the Dasha or Antardasha of Venus (marriage karaka), Jupiter (dharma karaka), the 7th lord, or a planet sitting in / aspecting the 7th house. When multiple such signals cluster in the same window, marriage becomes probable. Transits (gochara) refine the timing further. Prediction is probabilistic — 'a window is more likely', not 'you will marry in March 2027'.",
             },
+        ),
+        llm_summary=(
+            "Keypoints:\n"
+            "• 120-year life map, 9 planetary chapters, calculated from Moon's birth nakshatra\n"
+            "• Durations: Ketu 7y · Venus 20y · Sun 6y · Moon 10y · Mars 7y · Rahu 18y · Jupiter 16y · Saturn 19y · Mercury 17y\n"
+            "• Mahadasha lord sets the chapter's character; Antardasha (sub-period, months to years) sharpens the specific event window\n"
+            "• Events cluster when multiple Dasha lords converge on the same karaka (e.g. Venus + 7th lord → marriage window)\n"
+            "• Timing is probabilistic — narrows to years, not exact dates"
         ),
     ),
     Article(
@@ -480,6 +497,16 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Daily Hanuman Chalisa, especially on Saturdays. Hanuman is the only deity classical texts say can intercede with Shani. Combine with serving the elderly, donating to those who have less, and accepting the lessons Saturn is teaching — Saturn rewards willing students more than ritual compliance.",
             },
         ),
+        llm_summary=(
+            "Keypoints:\n"
+            "• 7.5-year Saturn transit through the 12th, 1st, and 2nd houses from natal Moon\n"
+            "• Rising phase (~2.5y in 12th) → financial pressure, isolation, mental strain\n"
+            "• Peak phase (~2.5y in 1st) → health, identity, self-doubt themes\n"
+            "• Setting phase (~2.5y in 2nd) → family, speech, financial recovery themes\n"
+            "• Not universally bad — forces maturity, discipline, long-term foundation\n"
+            "• Safe remedies: Hanuman Chalisa Saturdays, serve elderly, donate black daal / mustard oil\n"
+            "• Do NOT blame all life difficulty on Sade Sati — check Dasha + transit context first"
+        ),
     ),
     Article(
         slug="kaal-sarp-dosh",
@@ -614,6 +641,15 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Does Manglik Dosh weaken with age?",
                 "a": "You will often see online that Manglik Dosh 'weakens after age 28' or 'dissolves after 36'. This is modern folk tradition, not classical scripture — there is no such verse in Phaladeepika, Brihat Parashara Hora Shastra, Mansagari, or Jataka Parijata. It may resonate as folk wisdom (people do soften with age) but it should not be cited as classical authority.",
             },
+        ),
+        llm_summary=(
+            "Keypoints:\n"
+            "• Mars in the 1st, 4th, 7th, 8th, or 12th house from Lagna = Manglik (also checked from Moon in some traditions)\n"
+            "• Classically linked to marriage delay or spouse conflict — NOT to marriage denial\n"
+            "• Cancellations (any ONE cancels): Jupiter aspect on Mars, mutual-Manglik partnership, Mars in own/exalted sign, Cancer/Leo Ascendant exemption, Mars in same house from both charts\n"
+            "• Popular Manglik readings routinely ignore cancellations — always check\n"
+            "• 'Weakens after age 28' is folk tradition, NOT classical scripture (not in BPHS, Phaladeepika, Mansagari, Jataka Parijata)\n"
+            "• Effective status is per-chart: PRESENT / MITIGATED / CANCELLED"
         ),
     ),
     # ── Nakshatra series ─────────────────────────────────────────────────
@@ -896,6 +932,15 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "The Navamsha is a divisional chart derived from the birth chart — each 30° sign is divided into 9 parts of 3°20' each. Classical Vedic astrology considers the D-9 chart the primary reference for marriage — often more important than the D-1 (rasi chart) for marriage-specific questions. The D-9 Ascendant sign describes the spouse's fundamental character. Planets in the D-9 7th house describe marriage quality more accurately than planets in the D-1 7th. This is one of the most consistently emphasised classical rules for marriage assessment.",
             },
         ),
+        llm_summary=(
+            "Keypoints:\n"
+            "• Marriage-delay indicators: Saturn or Rahu in 7th (or aspecting it), weak/afflicted 7th lord, retrograde 7th lord\n"
+            "• Karaka afflictions: Venus (male chart) or Jupiter (female chart) combust or debilitated\n"
+            "• D-9 Navamsha is the PRIMARY chart for marriage — often more decisive than D-1\n"
+            "• Delay ≠ denial — Saturn-driven late marriages (mid-30s+) often prove more stable\n"
+            "• Remedies focus on strengthening the marriage karaka (Venus for men, Jupiter for women), NOT 'removing' the yoga\n"
+            "• Timing: activate in Venus / Jupiter / 7th-lord Dasha or Antardasha"
+        ),
     ),
     Article(
         slug="financial-struggles",
@@ -1005,6 +1050,18 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "How do I strengthen Saturn for career growth?",
                 "a": "Safe universal practices (no chart consultation needed): Saturday service (physical labor, help for elderly and poor), donating black sesame, iron, or mustard oil on Saturdays, chanting the Shani Beej mantra Om Praam Preem Praum Sah Shanaishcharaya Namah as a slow long-term practice, reciting Dasharatha Krita Shani Stotram on Saturdays, and lighting a mustard-oil lamp under a peepal tree on Saturday evening. Avoid: expensive Shani nivaran puja packages, and never wear blue sapphire without proper chart consultation — it is the single most dangerous gemstone when worn incorrectly. See our full Saturn remedies guide for details.",
             },
+        ),
+        llm_summary=(
+            "Keypoints:\n"
+            "• Saturn in 10th = Saturn's digbala (directional strength) — one of the STRONGEST classical career placements\n"
+            "• Delay-then-elevation pattern:\n"
+            "    - Slow early career (~ages 22-35): hard work, under-recognition\n"
+            "    - Turning point at Saturn return (~29-30)\n"
+            "    - Elevation phase (~36-56): institutional respect that often outlasts peers'\n"
+            "• Best-fit careers: government, judiciary, law, engineering, agriculture, elderly care, long-tenure private roles\n"
+            "• Fights hype-driven, youth-focused, or short-cycle careers\n"
+            "• Safe remedies: Saturday service, black-sesame/iron/mustard-oil charity, Shani Beej mantra\n"
+            "• NEVER wear blue sapphire (Neelam) without full chart consultation — most dangerous gemstone if worn wrong"
         ),
     ),
     Article(
@@ -1305,6 +1362,16 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "What are the best remedies for career during Rahu Mahadasha?",
                 "a": "Safe universal practices: chant the Rahu Beej mantra Om Bhraam Bhreem Bhraum Sah Rahave Namah as a slow long-term practice (classical count 18,000 total), donate black gram daal or blue cloth on Saturdays, serve outsiders and the marginalised (Rahu is the karaka of outsiders), support research or unusual knowledge, undertake a pilgrimage to a shrine you have not visited, and worship Durga (Rahu's classical ruling deity). Avoid: expensive Rahu shanti puja packages, and never wear hessonite (gomedh) without proper chart consultation. The deepest remedy is often alignment — matching your work to what Rahu's placement actually wants.",
             },
+        ),
+        llm_summary=(
+            "Keypoints:\n"
+            "• Rahu Mahadasha = 18 years of ambition-outpacing-clarity in career\n"
+            "• First 2-3 years (Rahu-Rahu Antardasha) = peak-confusion window — big moves here often feel unclear later\n"
+            "• Rahu FAVOURS: technology, foreign work, media, novel categories, entrepreneurship in emerging fields\n"
+            "• Rahu FIGHTS: traditional government service, ancestral businesses, classical priesthood, conservative sales\n"
+            "• Best sub-periods for major decisions: Rahu-Jupiter and Rahu-Mercury Antardashas\n"
+            "• Safe remedies: Rahu Beej mantra (18,000 count target), Durga worship, serve outsiders/marginalized, black-daal Saturday charity\n"
+            "• NEVER wear hessonite (gomedh) without full chart consultation"
         ),
     ),
     Article(
