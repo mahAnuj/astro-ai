@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Jupiter (Guru) in the 10th house — visual metaphor: golden-amber Jupiter
+     orb crowning the Karma Bhava (top segment of a kundali diamond),
+     surrounded by a Hamsa-Yoga swan silhouette suggesting the "great person"
+     yoga signature. Ether-tone palette (deep gold on cream). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Jupiter (Guru) in the 10th house — Brihaspati crowning the Karma Bhava with the Hamsa Yoga signature">
+  <defs>
+    <radialGradient id="j10_aura" cx="0.5" cy="0.32" r="0.75">
+      <stop offset="0%" stop-color="#fef9c3" stop-opacity="0.95"/>
+      <stop offset="50%" stop-color="#fde68a" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#fef9c3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="j10_body" cx="0.4" cy="0.4" r="0.7">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="55%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#854d0e"/>
+    </radialGradient>
+    <linearGradient id="j10_diamond" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="j10_karma" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eab308" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#eab308" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+
+  <!-- Amber aura behind Jupiter -->
+  <ellipse cx="160" cy="90" rx="150" ry="120" fill="url(#j10_aura)"/>
+
+  <!-- Subtle stars -->
+  <g fill="#6b21a8" opacity="0.28">
+    <circle cx="42"  cy="55"  r="1.5"/>
+    <circle cx="278" cy="72"  r="2"/>
+    <circle cx="58"  cy="272" r="1.5"/>
+    <circle cx="272" cy="256" r="1.5"/>
+    <circle cx="180" cy="42"  r="1.2"/>
+  </g>
+
+  <!-- Kundali diamond outline (North-Indian format) -->
+  <g fill="none" stroke="url(#j10_diamond)" stroke-width="2.5" stroke-linejoin="round">
+    <rect x="60" y="140" width="200" height="160" rx="4"/>
+    <polygon points="160,140 260,220 160,300 60,220"/>
+    <line x1="60"  y1="140" x2="260" y2="300"/>
+    <line x1="260" y1="140" x2="60"  y2="300"/>
+  </g>
+
+  <!-- Karma Bhava glow — top triangle is the 10th house in North-Indian -->
+  <polygon points="60,140 160,140 160,220" fill="url(#j10_karma)"/>
+  <polygon points="160,140 260,140 160,220" fill="url(#j10_karma)"/>
+
+  <!-- Hamsa (swan) silhouette wings — abstract, framing Jupiter -->
+  <g fill="none" stroke="#ca8a04" stroke-width="2.5" opacity="0.7" stroke-linecap="round">
+    <!-- Left wing arc -->
+    <path d="M 85 105 Q 60 75 55 55 Q 85 65 108 90"/>
+    <!-- Right wing arc -->
+    <path d="M 235 105 Q 260 75 265 55 Q 235 65 212 90"/>
+    <!-- Feather details -->
+    <line x1="95"  y1="95" x2="75"  y2="70"/>
+    <line x1="88"  y1="105" x2="65"  y2="90"/>
+    <line x1="225" y1="95" x2="245" y2="70"/>
+    <line x1="232" y1="105" x2="255" y2="90"/>
+  </g>
+
+  <!-- Jupiter body — sitting atop the Karma Bhava -->
+  <circle cx="160" cy="98" r="48" fill="url(#j10_body)"/>
+  <!-- Highlight -->
+  <circle cx="146" cy="86" r="9" fill="#fef9c3" opacity="0.7"/>
+
+  <!-- Jupiter glyph -->
+  <text x="160" y="112" text-anchor="middle"
+        font-family="Crimson Pro, Georgia, serif"
+        font-size="42" font-weight="700" fill="#78350f">♃</text>
+
+  <!-- "10" subtle label in the Karma Bhava -->
+  <text x="160" y="200" text-anchor="middle"
+        font-family="Crimson Pro, Georgia, serif"
+        font-size="20" font-weight="700" fill="#7c3aed" opacity="0.75">10</text>
+</svg>

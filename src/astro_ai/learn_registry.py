@@ -1084,6 +1084,44 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="jupiter-in-10th-house-career",
+        title="Jupiter in the 10th House: Career, Hamsa Yoga, and the Dharmic Path",
+        summary="Jupiter in the 10th house is a natural karaka in the karma house — wisdom applied to profession. When Jupiter sits here in Cancer, Sagittarius, or Pisces, he forms Hamsa Yoga — one of the five Panch Mahapurush yogas — producing a lifelong gift of scholarly authority. When debilitated in Capricorn or afflicted, the karma-dharma path stalls. This guide covers the Hamsa Yoga configuration, the debilitated pattern, per-ascendant variations, the career fields Jupiter actually supports, and honestly what this placement does NOT automatically produce.",
+        seo_title="Jupiter in 10th House: Career, Hamsa Yoga & Timing",
+        seo_description="Jupiter in the 10th house — the Hamsa Yoga career placement. Per-ascendant effects, timing windows, dharmic career fit, and honest remedies.",
+        category="Life Questions",
+        hero_image="/static/learn/jupiter-in-10th-house-career/hero.svg",
+        read_time="11 min",
+        last_updated="2026-07",
+        related=("guru-jupiter-in-vedic-astrology", "sun-in-10th-house-career", "vimshottari-dasha-explained"),
+        faqs=(
+            {
+                "q": "Is Jupiter in the 10th house always good?",
+                "a": "Not automatically. Jupiter in the 10th is one of the most fortunate career placements when Jupiter is dignified — in Sagittarius, Pisces, or exalted in Cancer — where it forms Hamsa Yoga (a Panch Mahapurush yoga). When debilitated in Capricorn (Aries ascendant), combust by Sun, retrograde without additional support, or conjoined with Rahu (Guru Chandala Yoga), the placement's benefits diminish significantly. Jupiter is a 10th house karaka but does NOT get digbala (directional strength) in the 10th — his digbala is in the Lagna. So Jupiter in the 10th needs additional dignity to produce the fullest classical outcomes. Generate your free Janma Kundli on Shubh Bhagya to check Jupiter's exact configuration in your chart.",
+            },
+            {
+                "q": "What is Hamsa Yoga and does Jupiter in the 10th create it?",
+                "a": "Hamsa Yoga is one of the five Panch Mahapurush (great person) yogas — the Jupiter version. It forms when Jupiter is in his own sign (Sagittarius or Pisces) or exalted (Cancer) AND in a kendra (1st, 4th, 7th, or 10th house) from the Lagna. Jupiter in the 10th qualifies for Hamsa Yoga specifically for three ascendants: Libra (Jupiter exalted in Cancer 10th — the strongest configuration), Gemini (Jupiter in own sign Pisces 10th), and Pisces (Jupiter in own sign Sagittarius 10th). Classical texts describe Hamsa Yoga natives as dignified, ethical, respected for judgement, drawn toward dharmic professions, and long-lived. The 10th house version is especially career-active — teaching, judiciary, advisory, spiritual leadership, and publishing are common signatures.",
+            },
+            {
+                "q": "Which professions are best for Jupiter in the 10th house?",
+                "a": "Careers where wisdom, judgement, or ethical authority is the actual product. Strongest fits: teaching at any level (schoolteacher to professor to formal mentor); law and jurisprudence (especially advisory, family, constitutional, and appellate work); medicine (particularly long-term care and complex-condition management); finance and wealth advisory (fiduciary, long-view, wealth-preservation side); publishing and editorial (books, journals, curation); religious and spiritual counsel; non-profit and foundation leadership; diplomacy and international relations. Careers that fight this placement: hard-charging sales, transactional dealmaking, industries rewarding youth and speed over depth, and short-cycle competitive businesses. Jupiter in the 10th produces careers that compound slowly through respect rather than win quickly through pressure.",
+            },
+            {
+                "q": "When does Jupiter in the 10th house give career results?",
+                "a": "Three timing windows. First — Jupiter Mahadasha (16 years, second-longest Vimshottari period after Venus) is the peak career activation window; recognition, institutional elevation, and wealth accumulation through dharmic work cluster here. Second — Jupiter Antardasha within another Mahadasha (roughly 2 years 4 months to 2 years 10 months depending on the outer Mahadasha lord) produces smaller versions of the same signature. Third — Jupiter transits: Jupiter takes about 12 years to complete a zodiacal cycle, and when he transits over the natal 10th house or aspects it, career expansion opportunities cluster; Jupiter returns (approximately ages 12, 24, 36, 48, 60, 72) frequently mark career inflection points.",
+            },
+            {
+                "q": "Does retrograde Jupiter in the 10th house give different results?",
+                "a": "Yes — retrograde Jupiter is not weaker, but inward. Retrograde Jupiter in the 10th often produces a career where the person's real work is done privately, refined internally, and only later recognised publicly. Scholars whose books arrive after decades of quiet research, researchers whose theories are appreciated years after publication, creators whose reputation grows posthumously or after a long lag — all common retrograde-Jupiter-in-10 patterns. The classical reading is neither straightforwardly beneficial nor harmful; it simply demands a different relationship to visibility. If you are early-career with retrograde Jupiter in the 10th and feeling the work is not being seen, the chart is often describing a delayed-recognition pattern rather than an unrecognised one.",
+            },
+            {
+                "q": "Does Jupiter in the 10th house automatically bring wealth?",
+                "a": "No — this is one of the most common misreadings. Wealth in Vedic astrology is read through the Dhana Yogas — connections between the 2nd house (accumulated wealth), 11th house (gains), 5th house (past-life merit), and their respective lords. Jupiter in the 10th elevates the career itself, but converting career elevation into accumulated wealth requires the wealth trinity (2nd + 11th + 5th) to also be strong. Many charts with Jupiter in the 10th produce distinguished careers with modest actual wealth. Others combine Jupiter in the 10th with strong Dhana Yogas and produce both career elevation and wealth. Reading Jupiter in the 10th as an automatic wealth marker sets false expectations. What the placement reliably produces is respect and dharmic career direction; wealth is a separate reading.",
+            },
+        ),
+    ),
+    Article(
         slug="sun-in-10th-house-career",
         title="Sun in the 10th House: Career, Authority, and the Digbala Signature",
         summary="Sun in the 10th house is one of the strongest career placements in Vedic astrology — the natural karaka of the 10th, holding his digbala there. The pattern is natural authority rather than fought-for authority. But the placement's dignity, sign, and Dasha timing determine whether it produces the classical government/leadership outcomes or ego problems and father struggles. This guide walks the strong pattern, the shadow pattern, per-ascendant variations, timing windows, the father signature, and honest remedies scoped to your specific Sun.",
