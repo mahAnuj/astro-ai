@@ -516,6 +516,7 @@ async def _render_natal_for(request: Request, details: BirthDetails,
         )
     flags = compute_vedic_flags(chart)
     life_chapters = compute_life_chapters(chart)
+    dasha_state = compute_dasha_state(chart)
     lang = _lang(request)
     chart_fp = cache.fingerprint_chart(details.birth_date, details.birth_time, details.birth_place)
     prompt_fp = cache.fingerprint_prompt(PROMPT_PATH)
@@ -525,7 +526,7 @@ async def _render_natal_for(request: Request, details: BirthDetails,
             cache_key, route="natal", lang=lang, ttl_days=None,
             call_fn=lambda: generate_reading(
                 details, chart=chart, flags=flags, life_chapters=life_chapters,
-                prompt_path=PROMPT_PATH, lang=lang,
+                prompt_path=PROMPT_PATH, lang=lang, dasha_state=dasha_state,
             ),
         )
     except Exception as err:

@@ -66,6 +66,8 @@ Skip infant chapters (under age 5) with one short phrase; give the [NOW] chapter
 
 CHAPTER SELECTION — the block may list 6-9 chapters going out to age 80+. You do NOT need to describe every single one. Prioritise: skip or briefly acknowledge chapters before age 5, cover the education/early-career chapters lightly, give the [NOW] chapter and the next 1-2 [LATER] chapters the most attention, and close with a brief note on the final chapter (age 70+). Flowing prose, not a list. Translate each chapter into simple life-experience language — the reader hears the age boundary and the theme, never the ruling planet.
 
+CURRENT SUB-WINDOW — if the Mahadasha block includes a "CURRENT SUB-WINDOW" line at the bottom, it names a shorter sub-period (months to a couple of years) within the [NOW] chapter with its OWN archetype. You MUST add ONE final sentence to the [NOW] chapter noting this sub-window: use the sub-window's end date (e.g. "and specifically, over the coming months until 2027-03-15, this chapter is being coloured by a [sub-archetype in plain English] sub-current — [one specific consequence]"). Do NOT name the planet ruling the sub-window; describe its archetype in plain life-experience language, same rule as the outer chapter. The sub-window sharpens the reading from "the next few years" to "the specific months right now" — that specificity is what makes the reading feel personal rather than generic.
+
 STRICT OUTPUT RULES (non-negotiable):
 
 - DO NOT name specific planets (Jupiter, Saturn, Rahu, Ketu, Mars, Mercury, Venus, Sun, Moon).

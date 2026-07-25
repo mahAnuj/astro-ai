@@ -79,12 +79,14 @@ def generate_reading(
     prompt_path: Path,
     model: str | None = None,
     lang: str = "en",
+    dasha_state: "DashaState | None" = None,
 ) -> str:
     """Sectioned natal reading. The 7th 'Life Stages' section uses life_chapters
-    (the Mahadasha sequence framed as age windows) to ground age-based predictions."""
+    (the Mahadasha sequence framed as age windows) to ground age-based predictions.
+    If `dasha_state` is passed, the current antardasha enriches the [NOW] chapter."""
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
-        {"role": "user", "content": _format_seeker_message(details, chart, flags, life_chapters)},
+        {"role": "user", "content": _format_seeker_message(details, chart, flags, life_chapters, dasha_state)},
     ])
     return content.strip()
 
@@ -94,6 +96,7 @@ def _format_seeker_message(
     chart: Chart,
     flags: VedicFlags,
     life_chapters: list[LifeChapter],
+    dasha_state: "DashaState | None" = None,
 ) -> str:
     """Render birth details + chart + flags + life chapters into the user message.
 
@@ -120,7 +123,7 @@ def _format_seeker_message(
         f"{format_flags_for_prompt(flags)}"
         f"{optional_blocks}\n"
         f"\n"
-        f"{format_life_chapters_for_prompt(life_chapters)}\n"
+        f"{format_life_chapters_for_prompt(life_chapters, dasha_state.antardasha if dasha_state else None)}\n"
     )
 
 

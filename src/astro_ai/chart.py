@@ -1424,15 +1424,22 @@ _MAHADASHA_ARCHETYPE: dict[str, str] = {
 }
 
 
-def format_life_chapters_for_prompt(chapters: list[LifeChapter]) -> str:
+def format_life_chapters_for_prompt(
+    chapters: list[LifeChapter],
+    current_antardasha: "DashaPeriod | None" = None,
+) -> str:
     """Plain-English Mahadasha sequence for the natal LLM.
 
     Ages rendered as whole years. Each chapter tagged [PAST], [NOW], or
     [LATER] so the LLM picks the right tense. Each chapter also gets an
     ARCHETYPE hint — the flavour of the ruling planet in plain English,
     so the LLM can weave chapter-specific character into the prose
-    without naming the planet itself. Without this hint, the LLM defaults
-    to generic "you'll grow" statements that could apply to anyone.
+    without naming the planet itself.
+
+    If `current_antardasha` is provided, an additional "CURRENT SUB-WINDOW"
+    line appends at the end — used to sharpen the [NOW] chapter's specific
+    right-now-ish months (Mahadasha is 6-19 years; antardasha is months to
+    a couple of years and has its own distinctive flavour).
     """
     _tag = {"past": "[PAST]", "current": "[NOW]", "upcoming": "[LATER]"}
     lines = ["Vimshottari Mahadasha sequence (lord per age range — for reasoning only, do NOT name planets in output. The ARCHETYPE hint is the flavour of that chapter — weave those specific themes into the prose):"]
@@ -1441,6 +1448,13 @@ def format_life_chapters_for_prompt(chapters: list[LifeChapter]) -> str:
         end = int(round(c.end_age))
         archetype = _MAHADASHA_ARCHETYPE.get(c.lord, "")
         lines.append(f"- Age {start} to {end}: {c.lord} {_tag[c.phase]} — ARCHETYPE: {archetype}")
+    if current_antardasha is not None:
+        sub_arch = _MAHADASHA_ARCHETYPE.get(current_antardasha.lord, "")
+        lines.append(
+            f"\nCURRENT SUB-WINDOW (within the [NOW] chapter): "
+            f"{current_antardasha.lord} sub-period from {current_antardasha.start.isoformat()} "
+            f"to {current_antardasha.end.isoformat()} — ARCHETYPE: {sub_arch}"
+        )
     return "\n".join(lines)
 
 
