@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Marriage Timing in Kundli — hourglass with a Venus glyph inside,
+     flanked by two joined diamonds representing the two charts /
+     two lives. Warm cream + astro-purple + gold. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Marriage timing in Kundli — the timing window signalled by Venus, Jupiter, and the 7th lord">
+  <defs>
+    <radialGradient id="mt_aura" cx="0.5" cy="0.5" r="0.65">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.75"/>
+      <stop offset="60%" stop-color="#fbbf24" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mt_diamond" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="mt_hour" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <radialGradient id="mt_venus" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="70%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="320" height="320" fill="#fefbf3" rx="24"/>
+
+  <!-- Warm aura behind hourglass -->
+  <ellipse cx="160" cy="160" rx="140" ry="115" fill="url(#mt_aura)"/>
+
+  <!-- Star field -->
+  <g fill="#6b21a8" opacity="0.32">
+    <circle cx="42" cy="45" r="1.5"/>
+    <circle cx="280" cy="55" r="2"/>
+    <circle cx="275" cy="275" r="1.5"/>
+    <circle cx="50" cy="270" r="1.5"/>
+  </g>
+
+  <!-- LEFT Kundli diamond (partner A) -->
+  <g fill="none" stroke="url(#mt_diamond)" stroke-width="2" stroke-linejoin="round" opacity="0.75">
+    <polygon points="65,145 100,110 135,145 100,180"/>
+    <line x1="100" y1="110" x2="100" y2="180"/>
+    <line x1="65"  y1="145" x2="135" y2="145"/>
+  </g>
+
+  <!-- RIGHT Kundli diamond (partner B) -->
+  <g fill="none" stroke="url(#mt_diamond)" stroke-width="2" stroke-linejoin="round" opacity="0.75">
+    <polygon points="185,145 220,110 255,145 220,180"/>
+    <line x1="220" y1="110" x2="220" y2="180"/>
+    <line x1="185" y1="145" x2="255" y2="145"/>
+  </g>
+
+  <!-- Connecting arc between the two charts -->
+  <path d="M 135 145 Q 160 130 185 145" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.5" stroke-dasharray="3,3"/>
+  <path d="M 135 145 Q 160 160 185 145" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.5" stroke-dasharray="3,3"/>
+
+  <!-- HOURGLASS in the centre (representing the timing window) -->
+  <g fill="none" stroke="url(#mt_hour)" stroke-width="3" stroke-linejoin="round">
+    <!-- Top triangle -->
+    <polygon points="140,60 180,60 160,105"/>
+    <!-- Bottom triangle -->
+    <polygon points="140,255 180,255 160,210"/>
+    <!-- Neck -->
+    <line x1="155" y1="105" x2="165" y2="105"/>
+    <line x1="155" y1="210" x2="165" y2="210"/>
+  </g>
+
+  <!-- Sand grain (Venus glyph) in the neck / falling through -->
+  <circle cx="160" cy="157" r="12" fill="url(#mt_venus)"/>
+  <text x="160" y="164" text-anchor="middle"
+        font-family="Crimson Pro, Georgia, serif"
+        font-size="18" font-weight="700" fill="#78350f">♀</text>
+
+  <!-- Sand at bottom (accumulating time) -->
+  <path d="M 142 250 Q 160 240 178 250 L 178 253 L 142 253 Z" fill="#f59e0b" opacity="0.6"/>
+
+  <!-- Small hearts near hourglass top (romantic theme, subtle) -->
+  <g fill="#e11d48" opacity="0.5">
+    <path d="M 145 78 c -3 -3, -8 0, -5 4 l 5 5 l 5 -5 c 3 -4, -2 -7, -5 -4 z"/>
+    <path d="M 170 82 c -2 -2, -6 0, -4 3 l 4 4 l 4 -4 c 2 -3, -2 -5, -4 -3 z" opacity="0.8"/>
+  </g>
+</svg>
