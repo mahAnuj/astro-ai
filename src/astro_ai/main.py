@@ -1596,8 +1596,27 @@ _ASK_CATEGORIES = {"general", "career", "marriage", "money", "health",
                    "spiritual", "travel", "relationships"}
 
 
+def _is_localhost(request: Request) -> bool:
+    """True when the request is from the developer's own machine.
+
+    Used to bypass the /ask daily quota during local development so the dev
+    can exercise the feature freely without exhausting the production limit.
+    Covers IPv4 loopback, IPv6 loopback, and the "localhost" hostname.
+    """
+    client = request.client
+    if client is None:
+        return False
+    return client.host in {"127.0.0.1", "localhost", "::1"}
+
+
 def _ask_quota_remaining(request: Request) -> int:
-    """Read today's remaining ask count from the session cookie."""
+    """Read today's remaining ask count from the session cookie.
+
+    Localhost bypasses the quota entirely — returns a large sentinel so
+    the UI shows plenty of remaining questions during local development.
+    """
+    if _is_localhost(request):
+        return 9999
     stored_date, used = load_ask_usage(request)
     today = date.today().isoformat()
     if stored_date != today:
@@ -1606,7 +1625,13 @@ def _ask_quota_remaining(request: Request) -> int:
 
 
 def _ask_quota_bump(request: Request, response: Response) -> None:
-    """Increment today's count on the response cookie."""
+    """Increment today's count on the response cookie.
+
+    Localhost skips the increment so local dev exercises the feature
+    without touching production-shaped state.
+    """
+    if _is_localhost(request):
+        return
     stored_date, used = load_ask_usage(request)
     today = date.today().isoformat()
     new_count = (used + 1) if stored_date == today else 1
