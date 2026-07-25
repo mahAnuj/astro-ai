@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Love vs Arranged Marriage — visual metaphor: two overlapping wedding
+     rings, one gold (arranged / traditional path) and one rose-red (love
+     / passionate path), joined in the centre with a small heart to show
+     that either path leads to marriage. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Love vs Arranged Marriage Kundli signatures — two intertwined rings for both paths">
+  <defs>
+    <radialGradient id="lva_aura" cx="0.5" cy="0.5" r="0.7">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.75"/>
+      <stop offset="60%" stop-color="#fce7f3" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="lva_gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="lva_rose" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f43f5e"/>
+      <stop offset="100%" stop-color="#9f1239"/>
+    </linearGradient>
+    <linearGradient id="lva_heart" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f43f5e"/>
+      <stop offset="100%" stop-color="#be123c"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="320" height="320" fill="#fefbf3" rx="24"/>
+
+  <!-- Warm aura behind rings -->
+  <ellipse cx="160" cy="170" rx="150" ry="115" fill="url(#lva_aura)"/>
+
+  <!-- Stars / sparkles -->
+  <g fill="#6b21a8" opacity="0.32">
+    <circle cx="42" cy="45" r="1.5"/>
+    <circle cx="280" cy="55" r="2"/>
+    <circle cx="45" cy="275" r="1.5"/>
+    <circle cx="280" cy="275" r="1.5"/>
+  </g>
+  <g fill="#f43f5e" opacity="0.6">
+    <circle cx="90" cy="80" r="2.5"/>
+    <circle cx="230" cy="85" r="2"/>
+  </g>
+  <g fill="#fbbf24" opacity="0.7">
+    <circle cx="85" cy="255" r="2.5"/>
+    <circle cx="235" cy="255" r="2"/>
+  </g>
+
+  <!-- ARRANGED ring (gold, left) -->
+  <circle cx="130" cy="170" r="72" fill="none" stroke="url(#lva_gold)" stroke-width="10"/>
+  <text x="130" y="270" text-anchor="middle"
+        font-family="Crimson Pro, Georgia, serif"
+        font-size="18" font-weight="700" fill="#78350f"
+        letter-spacing="2">ARRANGED</text>
+
+  <!-- LOVE ring (rose, right) — overlapping the gold ring -->
+  <circle cx="190" cy="170" r="72" fill="none" stroke="url(#lva_rose)" stroke-width="10"/>
+  <text x="190" y="270" text-anchor="middle"
+        font-family="Crimson Pro, Georgia, serif"
+        font-size="18" font-weight="700" fill="#9f1239"
+        letter-spacing="2">LOVE</text>
+
+  <!-- Central intersection heart (marriage — the shared outcome) -->
+  <g transform="translate(160 170)">
+    <path d="M 0 -18
+             C -12 -30, -30 -20, -30 -6
+             C -30 8, -14 20, 0 32
+             C 14 20, 30 8, 30 -6
+             C 30 -20, 12 -30, 0 -18 Z"
+          fill="url(#lva_heart)" stroke="#fef3c7" stroke-width="2"/>
+  </g>
+
+  <!-- Small Venus glyph on love ring side (top-right of love ring) -->
+  <g transform="translate(240 105)">
+    <circle cx="0" cy="0" r="14" fill="#fce7f3" stroke="#f43f5e" stroke-width="1.5"/>
+    <text x="0" y="6" text-anchor="middle"
+          font-family="Crimson Pro, Georgia, serif"
+          font-size="18" font-weight="700" fill="#9f1239">♀</text>
+  </g>
+
+  <!-- Small Jupiter glyph on arranged ring side (top-left of arranged ring) -->
+  <g transform="translate(80 105)">
+    <circle cx="0" cy="0" r="14" fill="#fef3c7" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="0" y="6" text-anchor="middle"
+          font-family="Crimson Pro, Georgia, serif"
+          font-size="18" font-weight="700" fill="#78350f">♃</text>
+  </g>
+</svg>

@@ -1539,6 +1539,49 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="love-vs-arranged-marriage-kundli",
+        title="Love Marriage vs Arranged Marriage — What Your Kundli Actually Shows",
+        summary="Your Kundali does not judge love marriage as better than arranged — it shows which pattern is more natural. Classical Vedic tradition names specific combinations for each: love-marriage yogas (Venus+Rahu, 5th-7th lord exchange, Rahu in 7th, Mars+Venus, Moon+Mars aspects) and arranged-marriage signatures (7th lord in kendra, Jupiter aspect on 7th, strong 4th house family involvement). Most modern Indian charts show a mix; the dominant leaning tells you which path feels effortless. This guide walks each signature set, the mixed case, and Dasha timing.",
+        seo_title="Love Marriage or Arranged Marriage in Your Kundli?",
+        seo_description="Vedic Kundli signatures for love vs arranged marriage — Venus+Rahu, 5th-7th lord exchange, Jupiter aspect, mixed case, Dasha timing, honest framing.",
+        category="Life Questions",
+        hero_image="/static/learn/love-vs-arranged-marriage-kundli/hero.svg",
+        read_time="11 min",
+        last_updated="2026-07",
+        related=("marriage-timing-kundli", "kundali-matching-ashtakoot-guna-milan", "rahu-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "Which yoga indicates love marriage in Kundli?",
+                "a": "Several classical combinations. The most cited: Venus + Rahu conjunction or mutual aspect (breaks the marriage decision out of conventional channels); 5th lord and 7th lord exchange (parivartana) or conjunction (romance leads to marriage); 5th lord in 7th house or 7th lord in 5th house (mutual reinforcement of romance-to-marriage); Rahu in 7th house independently (unconventional partner choice); Mars + Venus conjunction (passionate connection that becomes marriage); Moon + Mars mutual aspect (emotional-physical connection formed before family involvement). When 2-3 of these fire together, love-marriage is astrologically leaning. When none fire, arranged is more natural.",
+            },
+            {
+                "q": "Can Kundli predict inter-caste marriage?",
+                "a": "It can indicate the LEANING toward cross-community marriage, not predict a specific outcome. The classical inter-caste indicators: Rahu in 7th house (primary signature — 'the outsider' partner), Venus with Rahu (unconventional partner choice), 7th lord in 12th house (foreign spouse or leaving community for marriage), 8th lord in 7th house (transformative or hidden marriage), Rahu-Ketu axis on 4th-10th (restructuring of home and public identity through partner). None of these mandate inter-caste marriage — they show the karmic terrain is open to it. Person still chooses within that terrain. Chart cannot predict the specific caste, religion, or community of the partner.",
+            },
+            {
+                "q": "What if my chart shows both love and arranged marriage yoga?",
+                "a": "This is the most common configuration in modern Indian charts — and it is not chart confusion; it is chart accuracy. Modern Indian marriages often blend the two: love-cum-arranged (parents introduce, but couple chooses), arranged-that-becomes-deeply-romantic, or love-marriage-with-family-blessing. When both sets are present at similar strength, look at your current Vimshottari Dasha to see which set is more likely to activate in the marriage window. Rahu Mahadasha typically activates the love-marriage side; Jupiter Mahadasha activates the arranged-marriage side. If neither is running, the CURRENT Antardasha within your Mahadasha usually tips the balance.",
+            },
+            {
+                "q": "Is love marriage bad or good as per Vedic astrology?",
+                "a": "Neither. This is one of the most important honest framings. Classical Vedic tradition does not moralize about love vs arranged marriage. Both patterns have been present in Indian family life for millennia, both are named as legitimate marriage yogas, and both produce equally happy — and equally difficult — marriages. What the chart genuinely reads is which mode feels more natural for THIS person's karmic terrain. A chart leaning love-marriage that goes into arranged marriage often reports never fully settling; a chart leaning arranged-marriage that goes into love-marriage without family involvement often lacks the community-support network the marriage needed. Honour the leaning where possible.",
+            },
+            {
+                "q": "Does Rahu in 7th house mean love marriage?",
+                "a": "Rahu in 7th house is one of the strongest love-marriage / unconventional-marriage signatures — but it does not guarantee love-marriage specifically. It indicates the marriage will not fit the fully conventional arranged-community pattern. That can express as: love-marriage (romance before family involvement), inter-caste marriage (partner from outside your community), foreign spouse (partner from another country), late marriage to an unusual person, or arranged marriage that turns out to be with a partner very different from what the family originally imagined. Multiple flavours; the specific expression depends on Rahu's sign, aspects, and the 7th lord's placement.",
+            },
+        ),
+        llm_summary=(
+            "Keypoints:\n"
+            "• Chart shows LEANING (love vs arranged), not verdict — neither is 'better'\n"
+            "• Love-marriage yogas: Venus+Rahu conjunction/aspect, 5th lord+7th lord exchange or conjunction, 5th lord in 7th (or reverse), Rahu in 7th, Mars+Venus conjunction, Moon+Mars mutual aspect\n"
+            "• Arranged-marriage signatures: 7th lord in kendra with benefic influence, Jupiter aspect on 7th, strong 4th house (mother's role), 9th lord influence on 7th, 7th lord in 2nd (family arrangement)\n"
+            "• Inter-caste marriage indicators: Rahu in 7th (primary), Venus+Rahu, 7th lord in 12th (foreign), 8th lord in 7th\n"
+            "• Mixed case (most common in modern India): love-cum-arranged pattern; check current Dasha to see which set activates\n"
+            "• Timing: Rahu Mahadasha activates love side; Jupiter Mahadasha activates arranged side; Venus is neutral"
+        ),
+    ),
+    Article(
         slug="marriage-timing-kundli",
         title="When Will I Get Married? Reading Marriage Timing in Your Kundli",
         summary="Your Kundali shows a marriage timing WINDOW, not a specific date. Classical Vedic tradition reads timing through four primary signals: the 7th house condition, the 7th lord's placement, Venus (male chart) or Jupiter (female chart) as karakas, and the current Vimshottari Dasha. When multiple signals converge — a marriage-karaka Mahadasha runs, the 7th lord's Antardasha activates, Jupiter transits over natal 7th — the classical marriage window is at peak. This guide walks each signal, the Dasha triggers, transit refinements, and honest limits on what any chart can say about the specific month.",
