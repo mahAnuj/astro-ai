@@ -86,7 +86,7 @@
     <h2 class="font-display text-2xl text-stone-900 mb-5">Frequently asked</h2>
     <div class="space-y-2">
       {% for faq in article.faqs %}
-      <details class="group bg-white border border-stone-200 rounded-xl overflow-hidden">
+      <details class="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
         <summary class="cursor-pointer p-4 sm:p-5 list-none flex items-center justify-between gap-4
                         text-stone-900 font-semibold text-base hover:bg-stone-50">
           <span>{{ faq.q }}</span>
@@ -181,7 +181,7 @@
   {# CTA — compact two-action banner. Both buttons inline; total height
      is one info row + one button row. Funnels into Kundli first, then Ask. #}
   <section class="max-w-2xl mx-auto px-4 sm:px-6 pb-10">
-    <div class="bg-gradient-to-br from-astro-700 to-astro-800 text-white rounded-xl p-4 sm:p-5">
+    <div class="bg-gradient-to-br from-astro-700 to-astro-800 text-white rounded-2xl p-4 sm:p-5">
       <div class="flex items-center gap-3 mb-3">
         <svg viewBox="0 0 100 100" class="w-7 h-7 shrink-0 text-white/90" aria-hidden="true">
           <g fill="none" stroke="currentColor" stroke-width="6">
@@ -198,10 +198,10 @@
         </div>
       </div>
       <div class="flex flex-col sm:flex-row gap-2">
-        <a href="/" class="flex-1 text-center bg-white text-astro-700 font-semibold text-sm px-3 py-2 rounded-md hover:bg-astro-50 transition-colors">
+        <a href="/" class="flex-1 text-center bg-white text-astro-700 font-semibold text-sm px-3 py-2 rounded-lg hover:bg-astro-50 transition-colors">
           Get your free Kundli &rarr;
         </a>
-        <a href="/ask" class="flex-1 text-center bg-astro-900/50 hover:bg-astro-900/70 text-white font-semibold text-sm px-3 py-2 rounded-md border border-white/20 transition-colors">
+        <a href="/ask" class="flex-1 text-center bg-astro-900/50 hover:bg-astro-900/70 text-white font-semibold text-sm px-3 py-2 rounded-lg border border-white/20 transition-colors">
           Ask Shubh Bhagya &rarr;
         </a>
       </div>

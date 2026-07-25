@@ -87,7 +87,7 @@
 
         {% set active = collection.active %}
         {# ACTIVE chart — prominent card with actions. #}
-        <div class="rounded-xl border-2 border-astro-500 bg-astro-50/40 p-4 mb-3">
+        <div class="rounded-2xl border-2 border-astro-500 bg-astro-50/40 p-4 mb-3">
           <div class="flex items-start justify-between gap-2 mb-1">
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
@@ -109,10 +109,10 @@
             {% endif %}
           </div>
           <div class="flex flex-wrap gap-2 mt-3">
-            <a href="/today" class="flex-1 text-center px-3 py-1.5 bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold rounded-md">
+            <a href="/today" class="flex-1 text-center px-3 py-1.5 bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold rounded-lg">
               Today's Horoscope &rarr;
             </a>
-            <a href="/kundli" class="flex-1 text-center px-3 py-1.5 border border-astro-300 text-astro-700 hover:bg-astro-100 text-sm font-semibold rounded-md">
+            <a href="/kundli" class="flex-1 text-center px-3 py-1.5 border border-astro-300 text-astro-700 hover:bg-astro-100 text-sm font-semibold rounded-lg">
               Kundli
             </a>
           </div>
@@ -362,7 +362,7 @@
     <a href="{{ href }}"
        class="group bg-white rounded-2xl border border-stone-200 p-6 shadow-sm
               hover:border-astro-400 hover:shadow-md transition-all relative">
-      <div class="w-11 h-11 rounded-xl bg-astro-100 text-astro-700 flex items-center justify-center mb-4 group-hover:bg-astro-200 transition-colors">
+      <div class="w-11 h-11 rounded-full bg-astro-100 text-astro-700 flex items-center justify-center mb-4 group-hover:bg-astro-200 transition-colors">
         {{ icon_svg | safe }}
       </div>
       <h3 class="font-display text-xl text-stone-900 mb-1.5 group-hover:text-astro-700 transition-colors">{{ title }} &rarr;</h3>
@@ -536,7 +536,7 @@
       One short email at sunrise &mdash; all 12 rashis, today's reading. Free, unsubscribe in one click.
     </p>
     <button type="button" data-subscribe-trigger
-            class="bg-astro-700 hover:bg-astro-800 text-white font-medium px-6 py-3 rounded-md transition-colors">
+            class="bg-astro-700 hover:bg-astro-800 text-white font-medium px-6 py-3 rounded-lg transition-colors">
       Subscribe &mdash; it's free
     </button>
     {% endif %}

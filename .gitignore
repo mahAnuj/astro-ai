@@ -10,6 +10,9 @@ __pycache__/
 .env.*
 !.env.example
 
+# Google OAuth client secret — must never be committed.
+client_secret_*.json
+
 # prompteval artifacts
 .prompteval/
 report.html
