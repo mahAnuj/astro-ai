@@ -1539,6 +1539,51 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="marriage-mahadasha-timing",
+        title="Marriage Timing by Mahadasha — Which Vimshottari Dasha Windows Trigger Weddings",
+        summary="Vimshottari Mahadashas do not fire marriage evenly across life. The classical marriage-trigger periods are Venus Mahadasha (20y, strongest for male charts), Jupiter Mahadasha (16y, especially for female charts), the 7th lord's own Mahadasha, and — with caveats — Rahu Mahadasha for unconventional marriage. Within any Mahadasha, Venus-Jupiter and Jupiter-Venus Antardashas are the classical wedding sub-periods. This guide walks each Mahadasha's marriage character, Antardasha refinements, and transit triggers that co-activate.",
+        seo_title="Marriage Timing by Mahadasha: Venus, Jupiter, Rahu Windows",
+        seo_description="Vimshottari Mahadasha marriage timing — Venus (20y), Jupiter (16y female), Rahu (unconventional), Saturn (delay). Antardasha and transit convergence rules.",
+        category="Life Questions",
+        hero_image="/static/learn/marriage-mahadasha-timing/hero.svg",
+        read_time="12 min",
+        last_updated="2026-07",
+        related=("marriage-timing-kundli", "vimshottari-dasha-explained", "shukra-venus-in-vedic-astrology"),
+        faqs=(
+            {
+                "q": "Does Venus Mahadasha always bring marriage?",
+                "a": "No — but it is the strongest classical marriage-trigger period for male charts (Venus is the karaka of marriage for men). Venus Mahadasha runs 20 years (longest of the nine Vimshottari periods). If it starts in your 20s and you are unmarried, marriage is astrologically strongly indicated within the first 5-7 years. But Venus Mahadasha does NOT guarantee marriage — the 7th house condition must also be workable, Venus itself must not be debilitated (Virgo) or combust (close to Sun), and the person must be in a life situation where marriage is possible. Venus Mahadasha starting later in life (30s+, already married) more commonly expresses as marital harmony, artistic success, or financial prosperity.",
+            },
+            {
+                "q": "Can marriage happen in Saturn Mahadasha?",
+                "a": "Yes, but usually with delay and in the second half of the 19-year Mahadasha. Saturn is the classical planet of delay, discipline, and long structural building. Marriage during Saturn Mahadasha most often happens in the Antardashas of benefic sub-lords — Saturn-Venus and Saturn-Jupiter especially — or after the Mahadasha has been running for several years. Saturn-Mahadasha marriages tend toward mature, longer-tenure partnerships; older partner, marriages that survive external hardship, delay-driven stability. These marriages often prove more durable long-term than sudden-Venus-Mahadasha romances. If you are in Saturn Mahadasha and unmarried, do not panic — the window has not necessarily closed; check upcoming Antardashas.",
+            },
+            {
+                "q": "Which Antardasha is best for marriage?",
+                "a": "The classical wedding-Antardasha combinations are Venus-Jupiter and Jupiter-Venus — these two combine both marriage karakas (Venus for love/marriage and Jupiter for dharmic partnership) and are considered the strongest sub-period marriage triggers regardless of the outer Mahadasha lord. Also strong: any Antardasha of the 7th lord (within any Mahadasha activates marriage themes directly), and Antardashas of planets sitting in the 7th house of your natal chart. Moon Antardashas often trigger the meeting-the-future-partner phase even if not the wedding itself. The strongest overall timing convergence: a marriage-karaka Mahadasha (Venus or Jupiter) running WHILE a marriage-karaka or 7th-lord Antardasha is active AND a favourable Jupiter transit lands on the natal 7th.",
+            },
+            {
+                "q": "Why did marriage happen in Jupiter Mahadasha for many women?",
+                "a": "Because Jupiter is the classical karaka of husband in a female chart. Jupiter's dashas (Mahadasha or Antardasha) in a woman's chart directly activate the marriage-partner theme. Many female charts show marriage arriving within the first 5-6 years of Jupiter Mahadasha's 16-year period. The mother-in-law generation used to say 'as soon as Guru dasha starts, look for a boy' — a folk read that matches the technical Vedic reading. Jupiter Mahadasha in a MALE chart triggers marriage less directly (Venus is the male chart karaka), but often coincides with meeting-the-future-wife, engagement formation, or first serious long-term partnership even if the wedding happens later.",
+            },
+            {
+                "q": "What if 7th lord Dasha runs but no marriage?",
+                "a": "Several classical explanations. First, if your 7th lord is natally placed in a dusthana (6th, 8th, or 12th house), the Dasha still activates 7th-house themes but often expresses as conflict, delay, or hidden partnership rather than a visible wedding. Second, if 7th lord is combust (close to the Sun) or debilitated, the Dasha's marriage-triggering power is significantly reduced. Third, malefic transits during the Antardasha — Saturn or Rahu transiting the 7th house — can suppress marriage even when the Dasha would otherwise fire it. Fourth and most important: astrology does not force marriage on someone who is not ready or in circumstances that make marriage impossible. The window opens; whether you walk through it is your choice.",
+            },
+        ),
+        llm_summary=(
+            "Keypoints:\n"
+            "• Venus Mahadasha (20y): strongest marriage-trigger for male charts; marriage often in first 5-7y if starts in 20s-30s\n"
+            "• Jupiter Mahadasha (16y): primary marriage trigger for female charts (Jupiter = husband karaka); also strong male chart secondary\n"
+            "• Rahu Mahadasha (18y): unconventional/foreign/love marriages; first 2-3y (Rahu-Rahu) too confused for major decisions\n"
+            "• Saturn Mahadasha (19y): delays marriage; when fires, usually in benefic Antardashas (Saturn-Venus, Saturn-Jupiter) or in the second half\n"
+            "• Classical wedding-Antardashas: Venus-Jupiter and Jupiter-Venus (both marriage karakas combined) in ANY outer Mahadasha\n"
+            "• Also strong: any Antardasha of the 7th lord, or Antardashas of planets sitting in the 7th natally\n"
+            "• Convergence rule: marriage-karaka Mahadasha + marriage-karaka/7th-lord Antardasha + Jupiter transit over natal 7th = strongest window\n"
+            "• 7th lord Dasha running WITHOUT marriage often means: 7th lord in dusthana, combust/debilitated, or malefic transit suppressing"
+        ),
+    ),
+    Article(
         slug="love-vs-arranged-marriage-kundli",
         title="Love Marriage vs Arranged Marriage — What Your Kundli Actually Shows",
         summary="Your Kundali does not judge love marriage as better than arranged — it shows which pattern is more natural. Classical Vedic tradition names specific combinations for each: love-marriage yogas (Venus+Rahu, 5th-7th lord exchange, Rahu in 7th, Mars+Venus, Moon+Mars aspects) and arranged-marriage signatures (7th lord in kendra, Jupiter aspect on 7th, strong 4th house family involvement). Most modern Indian charts show a mix; the dominant leaning tells you which path feels effortless. This guide walks each signature set, the mixed case, and Dasha timing.",

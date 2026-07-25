@@ -1108,6 +1108,21 @@ def topic_summaries_for_chart(
         if planet.house == 7 and planet.name in ("Saturn", "Rahu"):
             selected.append("marriage-delayed")
 
+    # Marriage-favouring Mahadasha surfaces the timing / mahadasha guides
+    if maha_lord in ("Venus", "Jupiter"):
+        selected.append("marriage-mahadasha-timing")
+        selected.append("marriage-timing-kundli")
+
+    # Venus + Rahu in the same house or in mutual aspect (7 houses apart) =
+    # classical love-marriage signature; surface the love-vs-arranged guide
+    venus = next((p for p in chart.planets if p.name == "Venus"), None)
+    rahu = next((p for p in chart.planets if p.name == "Rahu"), None)
+    if venus is not None and rahu is not None:
+        same_house = venus.house == rahu.house
+        opposition = abs(venus.house - rahu.house) == 6  # 7 houses apart circularly
+        if same_house or opposition:
+            selected.append("love-vs-arranged-marriage-kundli")
+
     # Moon's nakshatra — adds personality-specific depth
     moon = next((p for p in chart.planets if p.name == "Moon"), None)
     if moon is not None:
