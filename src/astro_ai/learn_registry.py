@@ -1539,6 +1539,50 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="marriage-timing-kundli",
+        title="When Will I Get Married? Reading Marriage Timing in Your Kundli",
+        summary="Your Kundali shows a marriage timing WINDOW, not a specific date. Classical Vedic tradition reads timing through four primary signals: the 7th house condition, the 7th lord's placement, Venus (male chart) or Jupiter (female chart) as karakas, and the current Vimshottari Dasha. When multiple signals converge — a marriage-karaka Mahadasha runs, the 7th lord's Antardasha activates, Jupiter transits over natal 7th — the classical marriage window is at peak. This guide walks each signal, the Dasha triggers, transit refinements, and honest limits on what any chart can say about the specific month.",
+        seo_title="When Will I Get Married? Kundli Marriage Timing Guide",
+        seo_description="Marriage timing in your Kundli — 4 primary signals, Vimshottari Dasha triggers (Venus, Jupiter, 7th lord), Antardasha refinement, transit windows, honest limits.",
+        category="Life Questions",
+        hero_image="/static/learn/marriage-timing-kundli/hero.svg",
+        read_time="11 min",
+        last_updated="2026-07",
+        related=("marriage-delayed", "shukra-venus-in-vedic-astrology", "vimshottari-dasha-explained"),
+        faqs=(
+            {
+                "q": "Which house shows marriage in Kundali?",
+                "a": "Primarily the 7th house (Yuvati Bhava — the young companion), which classical Vedic tradition names as the house of spouse, marriage, and public partnerships. But the 7th house is not read in isolation — the 7th LORD's placement (wherever the ruler of your 7th sign sits) often matters more than what sits in the 7th. Supporting houses include the 2nd (family/wealth via marriage), 5th (romance leading to marriage), 8th (in-laws and hidden marriage themes), 11th (gains through marriage), and 12th (foreign spouse or married-away pattern). The D-9 Navamsha chart is the primary reference chart for marriage-specific questions, often more decisive than the D-1 rasi chart.",
+            },
+            {
+                "q": "Which planet is responsible for marriage?",
+                "a": "Classical Vedic tradition uses two primary karakas (significators). For a male chart, Venus is the karaka of marriage — Venus's condition, dignity, and Dasha timing heavily shape male marriage patterns. For a female chart, Jupiter is the karaka of husband — Jupiter's condition and Jupiter Mahadasha frequently trigger female marriage. Both charts also read the 7th lord as a secondary marriage significator regardless of gender. The Moon is a tertiary marriage-activator because marriage is a mental commitment. When Venus (male) or Jupiter (female) Mahadasha runs AND the 7th lord's Antardasha activates AND a favourable Jupiter transit lands on the natal 7th, the classical marriage window is at peak.",
+            },
+            {
+                "q": "Can Kundali predict exact marriage date?",
+                "a": "No — this is one of the most important honest limits in Vedic astrology. What the chart offers is a timing WINDOW that narrows to years, and sometimes to 12-18 month ranges when multiple signals converge. The chart cannot narrow to a specific month or day because marriage is a life event requiring two people, two families, external circumstance, individual readiness, and often career/visa/health timing that no astrological reading accesses. Astrologers who promise a specific month or year are usually reading a single indicator without checking convergence — a common shortcut that produces confident-sounding but frequently wrong predictions. A legitimate reading names the window, lists the converging factors, and stops there.",
+            },
+            {
+                "q": "What is Venus Mahadasha and does it always bring marriage?",
+                "a": "Venus Mahadasha is a 20-year Vimshottari period (the longest of the nine) ruled by Venus — the classical marriage karaka for male charts and the karaka of romance/luxury/relationships for all. Venus Mahadasha very often triggers marriage, particularly in the first 5-7 years of the period, IF the 7th house is not heavily afflicted and if Venus itself is not debilitated (Virgo) or combust. Venus Mahadasha does NOT always bring marriage — it can also express as artistic success, financial abundance, foreign travel, or partnership formation without wedding. What determines the specific expression is Venus's own placement in your chart plus the current Antardasha within the Mahadasha. Venus Mahadasha starting in your 20s often coincides with marriage; starting in your 40s+ more commonly expresses as second-half-of-life prosperity or partnership.",
+            },
+            {
+                "q": "Why do some people marry early and others late?",
+                "a": "Chart signature difference. Early-marriage charts (before 25) typically show: 7th lord in a kendra (1/4/7/10) with benefic influence, strong Venus/Jupiter as karakas, first marriage-favourable Vimshottari Mahadasha lord activating in the early 20s, no Saturn or Rahu affliction to the 7th house. Late-marriage charts (after 32) typically show: Saturn or Rahu in the 7th (delay pattern), 7th lord in a dusthana (6/8/12), Venus (male) or Jupiter (female) afflicted or debilitated, first marriage-favourable Mahadasha not arriving until mid-30s. Neither is 'better' — they are different karmic terrains. Late marriages often prove more stable when Saturn-driven; early marriages often benefit from Venus-driven ease. The chart shows the terrain; the walking through it is still yours.",
+            },
+        ),
+        llm_summary=(
+            "Keypoints:\n"
+            "• Marriage timing = a WINDOW (year or 12-18 months when signals converge), NEVER a specific date\n"
+            "• 4 primary indicators: 7th house condition, 7th lord placement, Venus (male) or Jupiter (female) karaka, current Vimshottari Mahadasha\n"
+            "• Classical Dasha triggers: Venus Mahadasha (20y, strongest for male charts), Jupiter Mahadasha (16y, esp. female), 7th lord Mahadasha, Moon Mahadasha (secondary)\n"
+            "• Wedding-Antardasha combinations: Venus-Jupiter and Jupiter-Venus\n"
+            "• Transit triggers: Jupiter over natal 7th (12mo window), Saturn over 7th (delay-then-mature), Rahu-Ketu axis on 1st-7th (major restructuring)\n"
+            "• Convergence rule: Dasha + Antardasha + transit lining up = astrologically strongest window\n"
+            "• 'You'll marry at 27' predictions usually ignore Dasha convergence and actual circumstance — treat with scepticism"
+        ),
+    ),
+    Article(
         slug="job-or-business-kundli-guide",
         title="Job or Business? What Your Kundali Actually Says (Vyapar Yoga Guide)",
         summary="Your Kundali does not give a yes-or-no answer on job vs business — it gives a leaning through a 5-signal checklist. Classical Vedic tradition names Vyapar Yogas (business combinations) and Naukri indicators (employment combinations); most charts show both with one dominant. This guide walks the checklist, the classical yogas on each side, the mixed case with tiebreakers, and the Dasha windows that classically support switching direction.",
