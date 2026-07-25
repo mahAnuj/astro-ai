@@ -1156,6 +1156,44 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="foreign-career-yoga-kundli",
+        title="Foreign Career Yoga: When Your Kundali Points Abroad",
+        summary="Vedic astrology has specific classical signatures for a foreign life — but \"foreign\" is not one thing. The 4th (home), 7th (foreign travel), 9th (long journeys), and 12th (foreign residence) houses each read differently. Rahu is the karaka of foreign matters; his placement in the 12th, 9th, or 7th, combined with 12th lord condition and Moon involvement, produces the strongest foreign-life yogas. This guide covers the classical distinctions, primary indicators, uprooting signatures, Dasha activation windows, migration types, and the honest limits on what any chart can say about a specific visa outcome.",
+        seo_title="Foreign Career Yoga: Kundli Signs You Will Go Abroad",
+        seo_description="Vedic foreign-life yogas — Rahu in 12th, 12th lord placements, Moon signatures. Migration types, Dasha timing, and honest limits on visa prediction.",
+        category="Life Questions",
+        hero_image="/static/learn/foreign-career-yoga-kundli/hero.svg",
+        read_time="12 min",
+        last_updated="2026-07",
+        related=("rahu-in-vedic-astrology", "rahu-mahadasha-career-problems", "vimshottari-dasha-explained"),
+        faqs=(
+            {
+                "q": "Which house indicates foreign settlement in Vedic astrology?",
+                "a": "Primarily the 12th house (Vyaya Bhava) — classical texts explicitly name it as governing \"foreign residence and long journeys abroad.\" But foreign life is not one thing: the 4th house governs the home you leave; the 9th house governs long-distance journeys and higher study abroad; the 7th house governs foreign travel and trade plus marriage-based migration; the 12th house governs long-term foreign residence. Reading foreign potential requires looking at how these four houses interact with Rahu (the karaka of foreign matters) and the person's career houses. A chart with a strong 9th but weak 12th often produces a person who studies or works abroad for a few years and returns; a strong 12th with weak 4th often produces long-term settlement.",
+            },
+            {
+                "q": "What is the strongest yoga for going abroad?",
+                "a": "Classical Vedic tradition considers several combinations especially strong. The single most cited: Rahu in the 12th house, which classical rule directly states \"= foreign residence, gains from unusual expenditure abroad.\" Second: a parivartana (mutual exchange) between the 12th lord and the 9th lord — the two foreign-related houses exchanging rulers is one of the strongest foreign-settlement signatures. Third: the 4th lord placed in the 12th house — the ruler of home literally sits in the house of foreign residence. Fourth: Moon in the 12th aspected by Rahu, which orients the mind toward \"elsewhere\" and amplifies through Rahu's ambition. When two or more of these appear together, the foreign signature is significantly strong.",
+            },
+            {
+                "q": "Does Rahu in 12th house mean I will settle abroad?",
+                "a": "Rahu in the 12th house is one of the strongest foreign-life indicators — but it does not automatically mean permanent settlement. It means the karmic terrain leans toward foreign involvement, which can express as permanent migration, a decade abroad followed by return, repeated long-duration travel, or a career built around foreign clients from within India. The specific expression depends on the rest of the chart — especially the 4th house (attachment to home), the 10th lord's placement (whether career itself is location-tied), Moon's involvement (emotional connection to place), and the current Dasha. Rahu-12 combined with 4th house affliction typically produces permanent settlement. Rahu-12 with a well-placed 4th often produces long-term travel with home-country attachment intact.",
+            },
+            {
+                "q": "When will I go abroad as per Kundali?",
+                "a": "The classical activation windows: Rahu Mahadasha (18 years) is the primary foreign-triggering period — most people with foreign yogas activate them during Rahu Mahadasha or its important Antardashas. The Mahadasha or Antardasha of the 12th lord (whichever planet rules your 12th house) frequently triggers foreign events. Saturn Mahadasha activates whichever house Saturn sits in — Saturn in the 12th often produces the long-tenure NRI-professional pattern. Ketu Mahadasha can produce foreign travel motivated by spiritual seeking or unexpected relocation. Transit triggers include Jupiter transiting the 12th/9th/7th and Rahu-Ketu transiting the 4th-10th axis. Migration is most likely when a favourable Dasha and a supportive transit land on your foreign signature together.",
+            },
+            {
+                "q": "Can Kundali predict visa approval?",
+                "a": "No — this is one of the most important honest limits. What the Kundali shows is whether your natal chart carries a foreign-life signature strong enough to matter, which type of foreign life the signature favours, and which Dasha windows classically activate the yoga. It cannot predict specific visa outcomes — the immigration system is governed by policy, timing, administrative variables, and case-specific factors that no astrological reading accesses. Astrologers who guarantee visa approval or promise a specific country result from a single chart reading are overreaching what classical Vedic tradition actually supports. Foreign-yoga scams are common in this space — be careful with anyone selling certainty on visa outcomes specifically.",
+            },
+            {
+                "q": "Which type of foreign work does my chart show?",
+                "a": "Different yoga combinations point to different types of migration. Rahu + Mercury connection (10th or 3rd house) — technology-driven professional migration (the classical Indian-IT-abroad pattern). Rahu + Sun in 10th/9th/12th — government service abroad, diplomatic assignments, international institutions. Jupiter + 9th house strong (with 12th lord involvement) — academic migration for higher studies. Venus + Rahu in the 7th or 12th — marriage-based migration or foreign spouse. Saturn well-supported in the 12th — long-duration professional migration (25-year NRI pattern). Moon in water sign + Rahu-12 — maritime, hospitality, or travel-industry careers abroad. 4th lord in 12th + strong 11th house — the classic remittance-sending NRI professional pattern.",
+            },
+        ),
+    ),
+    Article(
         slug="job-or-business-kundli-guide",
         title="Job or Business? What Your Kundali Actually Says (Vyapar Yoga Guide)",
         summary="Your Kundali does not give a yes-or-no answer on job vs business — it gives a leaning through a 5-signal checklist. Classical Vedic tradition names Vyapar Yogas (business combinations) and Naukri indicators (employment combinations); most charts show both with one dominant. This guide walks the checklist, the classical yogas on each side, the mixed case with tiebreakers, and the Dasha windows that classically support switching direction.",
