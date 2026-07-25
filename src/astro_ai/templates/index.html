@@ -94,7 +94,7 @@
                 <span class="font-semibold text-stone-900 text-base truncate">{{ active.name if active.name else 'Saved chart' }}</span>
                 <span class="text-[9px] font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Active</span>
               </div>
-              <div class="text-xs text-stone-500 mt-0.5 truncate">
+              <div class="text-sm text-stone-500 mt-0.5 truncate">
                 {{ active.birth_date }} &middot; {{ active.birth_time }} &middot; {{ active.birth_place }}
               </div>
             </div>
@@ -134,7 +134,7 @@
                       class="w-full text-left px-3 py-2 rounded-md hover:bg-stone-50 border border-transparent hover:border-stone-200 flex items-center gap-2 text-sm min-w-0">
                 <span class="text-stone-300 group-hover:text-astro-500 transition-colors flex-shrink-0">○</span>
                 <span class="font-semibold text-stone-900 truncate">{{ c.name if c.name else 'Saved chart' }}</span>
-                <span class="text-xs text-stone-500 truncate ml-auto">{{ c.birth_date }} &middot; {{ c.birth_place.split(',')[0] }}</span>
+                <span class="text-sm text-stone-500 truncate ml-auto">{{ c.birth_date }} &middot; {{ c.birth_place.split(',')[0] }}</span>
               </button>
             </form>
             <form method="post" action="/delete-chart"
@@ -432,7 +432,7 @@
         &ldquo;Take refuge in the Divine. I will free you from all that weighs you down &mdash;
         <strong>do not fear, do not grieve</strong>.&rdquo;
       </p>
-      <p class="text-xs text-stone-500 mt-3 leading-relaxed">
+      <p class="text-sm text-stone-500 mt-3 leading-relaxed">
         No chart, no dosha, no transit is above devotion. Recite the name of your chosen deity
         with sincerity and even Saturn lightens his hand.
       </p>
@@ -528,7 +528,7 @@
         Edit preferences
       </button>
     </div>
-    <p class="text-xs text-stone-500 mt-3">
+    <p class="text-sm text-stone-500 mt-3">
       Change your rashi, language, city, or unsubscribe anytime.
     </p>
     {% else %}
