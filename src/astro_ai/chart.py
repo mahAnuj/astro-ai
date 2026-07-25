@@ -1344,14 +1344,16 @@ class LifeChapter:
     lord: str             # Vimshottari dasha lord (Vedic-technical, hidden from output)
     start_age: float      # seeker's age at start
     end_age: float        # seeker's age at end
+    phase: str = "past"   # "past" | "current" | "upcoming" — LLM uses this to pick tense
 
 
 def compute_life_chapters(natal: Chart, until_age: float = 80.0) -> list[LifeChapter]:
     """Return all Mahadasha periods from birth up to `until_age`, in age-window form.
 
-    Used by the natal LLM prompt to ground the 'Life Stages' section in real
-    dasha timing — the LLM phrases the chapters in life-experience language
-    (the lord name is NOT mentioned in the output, only used for reasoning).
+    Each chapter is tagged with `phase` (past / current / upcoming) based on
+    the seeker's current age at chart-generation time — this is what lets the
+    LLM correctly pick tense ("looking back" vs "right now" vs "the years
+    ahead") without duplicating the current chapter or misattributing it.
     """
     moon = next(p for p in natal.planets if p.name == "Moon")
     moon_abs_long = _rashi_index(moon.rashi) * 30.0 + moon.longitude
@@ -1364,14 +1366,27 @@ def compute_life_chapters(natal: Chart, until_age: float = 80.0) -> list[LifeCha
     first_remaining_years = first_lord_years * (1 - nak_position)
 
     birth_date = natal.birth_utc.date()
+    today = date_.today()
+    current_age = (today - birth_date).days / _DAYS_PER_YEAR
+
+    def _phase_for(start: float, end: float) -> str:
+        if end <= current_age:
+            return "past"
+        if start > current_age:
+            return "upcoming"
+        return "current"
+
     chapters: list[LifeChapter] = []
 
     cursor = birth_date
     cursor_end = cursor + timedelta(days=first_remaining_years * _DAYS_PER_YEAR)
+    first_start = (cursor - birth_date).days / _DAYS_PER_YEAR
+    first_end = (cursor_end - birth_date).days / _DAYS_PER_YEAR
     chapters.append(LifeChapter(
         lord=first_lord,
-        start_age=(cursor - birth_date).days / _DAYS_PER_YEAR,
-        end_age=(cursor_end - birth_date).days / _DAYS_PER_YEAR,
+        start_age=first_start,
+        end_age=first_end,
+        phase=_phase_for(first_start, first_end),
     ))
     cursor = cursor_end
 
@@ -1381,11 +1396,13 @@ def compute_life_chapters(natal: Chart, until_age: float = 80.0) -> list[LifeCha
         lord = _VIM_ORDER[(start_idx + i) % 9]
         yrs = _VIM_YEARS[lord]
         cursor_end = cursor + timedelta(days=yrs * _DAYS_PER_YEAR)
+        start_age = (cursor - birth_date).days / _DAYS_PER_YEAR
         end_age = (cursor_end - birth_date).days / _DAYS_PER_YEAR
         chapters.append(LifeChapter(
             lord=lord,
-            start_age=(cursor - birth_date).days / _DAYS_PER_YEAR,
+            start_age=start_age,
             end_age=end_age,
+            phase=_phase_for(start_age, end_age),
         ))
         cursor = cursor_end
         i += 1
@@ -1395,12 +1412,19 @@ def compute_life_chapters(natal: Chart, until_age: float = 80.0) -> list[LifeCha
 
 
 def format_life_chapters_for_prompt(chapters: list[LifeChapter]) -> str:
-    """Plain-English Mahadasha sequence for the natal LLM (lord names included
-    because the LLM uses them to reason; instructions tell it to NOT name them
-    in output)."""
+    """Plain-English Mahadasha sequence for the natal LLM.
+
+    Ages rendered as whole years (birth-age 33 not "33.7"). Each chapter tagged
+    [PAST], [NOW], or [LATER] so the LLM knows which chapter is currently
+    active — critical for the "right now, from X to Y" framing and prevents
+    the LLM from describing the same range twice as past-and-current.
+    """
+    _tag = {"past": "[PAST]", "current": "[NOW]", "upcoming": "[LATER]"}
     lines = ["Vimshottari Mahadasha sequence (lord per age range — for reasoning only, do NOT name planets in output):"]
     for c in chapters:
-        lines.append(f"- Age {c.start_age:.1f} to {c.end_age:.1f}: {c.lord}")
+        start = int(round(c.start_age))
+        end = int(round(c.end_age))
+        lines.append(f"- Age {start} to {end}: {c.lord} {_tag[c.phase]}")
     return "\n".join(lines)
 
 
