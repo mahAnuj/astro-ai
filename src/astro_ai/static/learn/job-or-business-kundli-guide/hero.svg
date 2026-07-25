@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Job or Business — visual metaphor: two diverging paths (a ladder on
+     the left representing employment structure, a rising arrow on the
+     right representing self-employed growth), meeting at a kundali diamond
+     that represents the chart holding the decision. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Job or Business Kundali guide — the two career paths diverging from your chart">
+  <defs>
+    <radialGradient id="jb_aura" cx="0.5" cy="0.5" r="0.65">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.85"/>
+      <stop offset="60%" stop-color="#fde68a" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="jb_ladder" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0891b2"/>
+      <stop offset="100%" stop-color="#164e63"/>
+    </linearGradient>
+    <linearGradient id="jb_arrow" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="jb_diamond" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+
+  <!-- Warm aura behind kundali -->
+  <ellipse cx="160" cy="200" rx="130" ry="90" fill="url(#jb_aura)"/>
+
+  <!-- Stars -->
+  <g fill="#6b21a8" opacity="0.28">
+    <circle cx="30"  cy="30"  r="1.5"/>
+    <circle cx="290" cy="45"  r="2"/>
+    <circle cx="290" cy="280" r="1.5"/>
+    <circle cx="30"  cy="285" r="1.5"/>
+  </g>
+
+  <!-- LEFT PATH: Ladder (employment / job) -->
+  <g stroke="url(#jb_ladder)" stroke-width="4" stroke-linecap="round" fill="none">
+    <!-- Two rails -->
+    <line x1="55"  y1="30"  x2="55"  y2="150"/>
+    <line x1="85"  y1="30"  x2="85"  y2="150"/>
+    <!-- Rungs -->
+    <line x1="55"  y1="45"  x2="85"  y2="45"/>
+    <line x1="55"  y1="70"  x2="85"  y2="70"/>
+    <line x1="55"  y1="95"  x2="85"  y2="95"/>
+    <line x1="55"  y1="120" x2="85"  y2="120"/>
+    <line x1="55"  y1="145" x2="85"  y2="145"/>
+  </g>
+  <!-- JOB label -->
+  <text x="70" y="20" text-anchor="middle"
+        font-family="Crimson Pro, Georgia, serif"
+        font-size="14" font-weight="700" fill="#0e7490">JOB</text>
+
+  <!-- RIGHT PATH: Rising arrow (business / self-employed) -->
+  <g stroke="url(#jb_arrow)" stroke-width="5" stroke-linecap="round" fill="none">
+    <!-- Zigzag rising line -->
+    <polyline points="235,150 245,120 240,105 260,90 255,70 275,50"/>
+  </g>
+  <!-- Arrow head -->
+  <polygon points="275,50 265,55 268,62" fill="#b45309"/>
+  <polygon points="275,50 282,58 275,62" fill="#b45309"/>
+  <!-- BUSINESS label -->
+  <text x="255" y="20" text-anchor="middle"
+        font-family="Crimson Pro, Georgia, serif"
+        font-size="14" font-weight="700" fill="#a16207">BUSINESS</text>
+
+  <!-- Central kundali diamond — the chart the decision comes from -->
+  <g fill="none" stroke="url(#jb_diamond)" stroke-width="2.5" stroke-linejoin="round">
+    <rect x="95" y="165" width="130" height="120" rx="4"/>
+    <polygon points="160,165 225,225 160,285 95,225"/>
+    <line x1="95"  y1="165" x2="225" y2="285"/>
+    <line x1="225" y1="165" x2="95"  y2="285"/>
+  </g>
+
+  <!-- Sun glyph in the 10th (top segment) — reminder that career is
+       first-order read from the 10th -->
+  <text x="160" y="205" text-anchor="middle"
+        font-family="Crimson Pro, Georgia, serif"
+        font-size="18" font-weight="700" fill="#7c3aed">10</text>
+
+  <!-- Connecting lines from kundali toward each path (dashed) -->
+  <g stroke="#a8a29e" stroke-width="1.5" stroke-linecap="round" fill="none" stroke-dasharray="3,3" opacity="0.6">
+    <line x1="105" y1="180" x2="80"  y2="155"/>
+    <line x1="215" y1="180" x2="240" y2="155"/>
+  </g>
+</svg>
