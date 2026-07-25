@@ -20,21 +20,21 @@
 
   <!-- TOTALS -->
   <section class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-    <div class="bg-white rounded-xl border border-stone-200 p-4">
+    <div class="bg-white rounded-2xl border border-stone-200 p-4">
       <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Total calls</div>
       <div class="font-display text-2xl text-astro-700 tabular-nums">{{ summary.total_calls }}</div>
     </div>
-    <div class="bg-white rounded-xl border border-stone-200 p-4">
+    <div class="bg-white rounded-2xl border border-stone-200 p-4">
       <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Cache hits</div>
       <div class="font-display text-2xl text-emerald-700 tabular-nums">{{ summary.cache_hits }}
         <span class="text-sm text-stone-500">({{ summary.hit_rate_pct }}%)</span>
       </div>
     </div>
-    <div class="bg-white rounded-xl border border-stone-200 p-4">
+    <div class="bg-white rounded-2xl border border-stone-200 p-4">
       <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Cache misses</div>
       <div class="font-display text-2xl text-rose-700 tabular-nums">{{ summary.cache_misses }}</div>
     </div>
-    <div class="bg-white rounded-xl border border-stone-200 p-4">
+    <div class="bg-white rounded-2xl border border-stone-200 p-4">
       <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">Avg miss latency</div>
       <div class="font-display text-2xl text-stone-700 tabular-nums">{{ summary.avg_miss_latency_ms }}ms</div>
     </div>

@@ -30,14 +30,14 @@
 
   <!-- TRANSIT CHIPS ----------------------------------------------- -->
   <section class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-    <div class="bg-white rounded-xl border border-stone-200 p-4">
+    <div class="bg-white rounded-2xl border border-stone-200 p-4">
       <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'moon_transits') }}</div>
       <div class="font-display text-lg text-astro-700">{{ transit_moon.rashi }}</div>
       <div class="text-xs text-stone-500 mt-0.5">
         {{ t(lang, 'house_from_lagna', n=transit_moon.house) }} &middot; {{ transit_moon.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}
       </div>
     </div>
-    <div class="bg-white rounded-xl border border-stone-200 p-4">
+    <div class="bg-white rounded-2xl border border-stone-200 p-4">
       <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'sun_transits') }}</div>
       <div class="font-display text-lg text-astro-700">{{ transit_sun.rashi }}</div>
       <div class="text-xs text-stone-500 mt-0.5">
