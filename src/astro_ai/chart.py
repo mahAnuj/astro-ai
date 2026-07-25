@@ -1000,13 +1000,77 @@ def compute_yogas(chart: Chart) -> tuple[YogaResult, ...]:
     return tuple(all_yogas)
 
 
-def format_yogas_for_prompt(yogas: tuple[YogaResult, ...]) -> str:
+_YOGA_ACTIVATORS_STATIC: dict[str, tuple[str, ...]] = {
+    # Pancha Mahapurusha — activator is the yoga's own planet
+    "ruchaka_yoga":         ("Mars",),
+    "bhadra_yoga":          ("Mercury",),
+    "hamsa_yoga":           ("Jupiter",),
+    "malavya_yoga":         ("Venus",),
+    "sasha_yoga":           ("Saturn",),
+    # Sun-related — planets forming Vesi/Vosi/Ubhayachara around Sun
+    "budha_aditya_yoga":    ("Sun", "Mercury"),
+    "vesi_yoga":            ("Sun",),
+    "vosi_yoga":            ("Sun",),
+    "ubhayachara_yoga":     ("Sun",),
+    # Moon-related — planets around/aspecting Moon
+    "anaphaa_yoga":         ("Moon",),
+    "sunaphaa_yoga":        ("Moon",),
+    "duradhara_yoga":       ("Moon",),
+    "gaja_kesari_yoga":     ("Jupiter", "Moon"),
+    "chandra_mangala_yoga": ("Moon", "Mars"),
+    "adhi_yoga":            ("Moon", "Jupiter", "Venus", "Mercury"),
+    "trilochana_yoga":      ("Moon",),
+    # Others — planets forming the specific combination
+    "amala_yoga":           ("Jupiter", "Venus"),
+    "vasumati_yoga":        ("Jupiter", "Venus", "Mercury", "Moon"),
+    "guru_mangala_yoga":    ("Jupiter", "Mars"),
+    "jupiter_aspects_mars": ("Jupiter", "Mars"),
+    "mars_jupiter_conjunct": ("Mars", "Jupiter"),
+    "venus_with_mars":      ("Venus", "Mars"),
+    # Mars descriptors — Mars Dasha activates
+    "mars_combust":         ("Mars",),
+    "mars_debilitated":     ("Mars",),
+    "mars_exalted":         ("Mars",),
+    "mars_own_sign":        ("Mars",),
+    "cancer_lagna_yogakaraka": ("Mars",),
+    "leo_lagna_yogakaraka":    ("Mars",),
+    # Kemadruma is a NEGATIVE yoga (isolated Moon) — no positive activation
+    "kemadruma_yoga":       (),
+}
+
+# Vipareeta Raja Yogas — activator is the ruler of the specific dusthana that
+# the yoga names (6th/8th/12th). Computed dynamically from the chart's Lagna.
+_HOUSE_LORD_YOGAS: dict[str, int] = {
+    "harsha_yoga":  6,
+    "sarala_yoga":  8,
+    "vimala_yoga":  12,
+}
+
+
+def yoga_activator_lords(yoga: YogaResult, chart: Chart) -> tuple[str, ...]:
+    """Which Vimshottari Dasha lords activate this yoga's specific gift.
+
+    Classical rule: a yoga's benefit peaks during the Dasha or Antardasha of
+    the planet(s) forming that yoga. For Vipareeta Raja yogas the activator
+    is the ruler of the specific dusthana (6th/8th/12th) named by the yoga.
+    """
+    if yoga.slug in _YOGA_ACTIVATORS_STATIC:
+        return _YOGA_ACTIVATORS_STATIC[yoga.slug]
+    if yoga.slug in _HOUSE_LORD_YOGAS:
+        house = _HOUSE_LORD_YOGAS[yoga.slug]
+        lagna_idx = _rashi_index(chart.lagna_rashi)
+        sign_idx = (lagna_idx + house - 1) % 12
+        return (RASHI_LORDS[sign_idx],)
+    return ()
+
+
+def format_yogas_for_prompt(yogas: tuple[YogaResult, ...], chart: Chart | None = None) -> str:
     """Tiny LLM hint listing detected yogas — only emitted when at least one fires.
 
-    Stays ~50-300 tokens depending on how many yogas hit. Each line is just
-    yoga name + effect; classical sources are deliberately omitted so the
-    LLM can't echo them back as user-facing "per Rao Ch.11" jargon. Sources
-    live in the structured UI panel, not in the LLM prose path.
+    Stays ~50-300 tokens depending on how many yogas hit. Each line is yoga
+    name + effect + (if chart is provided) which Mahadasha chapters activate
+    its gift. Classical sources are deliberately omitted so the LLM can't
+    echo them back as user-facing "per Rao Ch.11" jargon.
     """
     if not yogas:
         return ""
@@ -1016,9 +1080,17 @@ def format_yogas_for_prompt(yogas: tuple[YogaResult, ...]) -> str:
         "in the relevant section and paraphrase the effect in plain words. Do NOT name",
         "classical texts, chapters, or sanskrit shastra in your prose — those live in",
         "the UI panel separately.",
+        "The [activates in X chapters] hint tells you which Mahadasha chapter(s) bring",
+        "each yoga's gift forward — use this to weave yoga names into the matching",
+        "Life Stages chapter description (still without naming the planet itself).",
     ]
     for y in yogas:
-        lines.append(f"  • {y.name}: {y.effect}")
+        line = f"  • {y.name}: {y.effect}"
+        if chart is not None:
+            activators = yoga_activator_lords(y, chart)
+            if activators:
+                line += f"  [activates in {'/'.join(activators)} chapters]"
+        lines.append(line)
     return "\n".join(lines)
 
 
