@@ -32,7 +32,7 @@
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
 
       {# Breadcrumb #}
-      <nav class="text-xs text-stone-500 mb-4" aria-label="Breadcrumb">
+      <nav class="text-sm text-stone-500 mb-4" aria-label="Breadcrumb">
         <a href="/" class="hover:text-astro-700">Home</a>
         <span class="mx-1 text-stone-300">/</span>
         <a href="/learn/" class="hover:text-astro-700">Learn</a>
@@ -46,13 +46,13 @@
             <span class="text-[11px] font-semibold uppercase tracking-wider text-astro-700 bg-astro-100 px-2.5 py-1 rounded-full">
               {{ article.category }}
             </span>
-            <span class="text-xs text-stone-500">{{ article.read_time }} read</span>
+            <span class="text-sm text-stone-500">{{ article.read_time }} read</span>
             {# Visible "Last updated" date — E-E-A-T freshness signal.
                Uses <time> element with a machine-readable datetime that
                matches the JSON-LD Article schema. Google's helpful-content
                update rewards visible dates for evergreen content. #}
             <span class="text-xs text-stone-400" aria-hidden="true">·</span>
-            <span class="text-xs text-stone-500">
+            <span class="text-sm text-stone-500">
               Last updated
               <time datetime="{{ article.last_updated }}-01">{{ article.last_updated }}</time>
             </span>
