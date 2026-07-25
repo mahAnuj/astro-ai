@@ -1015,6 +1015,47 @@ class TopicSummary:
     summary: str     # 50-100 token distilled classical takeaways
 
 
+_GRAHA_ARTICLE: dict[str, str] = {
+    "Sun":     "surya-sun-in-vedic-astrology",
+    "Moon":    "chandra-moon-in-vedic-astrology",
+    "Mars":    "mangal-mars-in-vedic-astrology",
+    "Mercury": "budha-mercury-in-vedic-astrology",
+    "Jupiter": "guru-jupiter-in-vedic-astrology",
+    "Venus":   "shukra-venus-in-vedic-astrology",
+    "Saturn":  "shani-saturn",
+    "Rahu":    "rahu-in-vedic-astrology",
+    "Ketu":    "ketu-in-vedic-astrology",
+}
+
+_GRAHA_REMEDY_ARTICLE: dict[str, str] = {
+    "Mars":    "mars-remedies",
+    "Mercury": "mercury-remedies",
+    "Jupiter": "jupiter-remedies",
+    "Venus":   "venus-remedies",
+    "Saturn":  "saturn-remedies",
+}
+
+_NAKSHATRA_ARTICLE: dict[str, str] = {
+    "Ashwini":         "ashwini-nakshatra",
+    "Bharani":         "bharani-nakshatra",
+    "Krittika":        "krittika-nakshatra",
+    "Rohini":          "rohini-nakshatra",
+    "Mrigashira":      "mrigashira-nakshatra",
+    "Ardra":           "ardra-nakshatra",
+    "Punarvasu":       "punarvasu-nakshatra",
+    "Pushya":          "pushya-nakshatra",
+    "Ashlesha":        "ashlesha-nakshatra",
+    "Magha":           "magha-nakshatra",
+    "Purva Phalguni":  "purva-phalguni-nakshatra",
+    "Uttara Phalguni": "uttara-phalguni-nakshatra",
+    "Hasta":           "hasta-nakshatra",
+    "Chitra":          "chitra-nakshatra",
+    "Swati":           "swati-nakshatra",
+    # 12 more nakshatras exist classically but articles not yet written;
+    # graceful fallback below skips slugs missing from the registry
+}
+
+
 def topic_summaries_for_chart(
     chart: "Chart",
     dasha_state: "DashaState",
@@ -1026,20 +1067,20 @@ def topic_summaries_for_chart(
     per-request LLM cost. Reads chart features + Dasha state, returns
     TopicSummary objects for the LLM to weave into the reading.
 
-    Feature mapping (v1, conservative):
-      - Always: vimshottari-dasha-explained (foundational timing framework)
-      - Dasha lord = Rahu → rahu-mahadasha-career-problems
-      - Manglik flag → manglik-dosh
-      - Sade Sati active → sade-sati
-      - Planet-in-10th → matching career article (sun/saturn/jupiter)
-      - Saturn/Rahu in 7th → marriage-delayed
+    Selection priority (cap 5):
+      1. Manglik (if flag active)
+      2. Sade Sati (if active)
+      3. Current Mahadasha's graha foundation article + specific dasha article
+         if applicable (currently only rahu-mahadasha)
+      4. Placement-based: planet in 10th → matching career article;
+         Saturn/Rahu in 7th → marriage-delayed
+      5. Moon's nakshatra article (adds personality specificity)
+      6. Filler: current Dasha's remedy article, then Vimshottari foundation
 
-    Extend the map as more articles get llm_summary backfilled.
+    Extend the maps at the top of this module as more articles get
+    llm_summary backfilled or new chart signatures need coverage.
     """
-    selected: list[str] = ["vimshottari-dasha-explained"]
-
-    if dasha_state.mahadasha.lord == "Rahu":
-        selected.append("rahu-mahadasha-career-problems")
+    selected: list[str] = []
 
     flags = compute_vedic_flags(chart)
     if flags.manglik:
@@ -1047,6 +1088,15 @@ def topic_summaries_for_chart(
     if flags.sade_sati:
         selected.append("sade-sati")
 
+    # Current Mahadasha lord — graha foundation + special-case articles
+    maha_lord = dasha_state.mahadasha.lord
+    if maha_lord == "Rahu":
+        selected.append("rahu-mahadasha-career-problems")
+    graha_article = _GRAHA_ARTICLE.get(maha_lord)
+    if graha_article:
+        selected.append(graha_article)
+
+    # Placement-based (planet in 10th house)
     for planet in chart.planets:
         if planet.house == 10:
             if planet.name == "Saturn":
@@ -1058,7 +1108,20 @@ def topic_summaries_for_chart(
         if planet.house == 7 and planet.name in ("Saturn", "Rahu"):
             selected.append("marriage-delayed")
 
-    # Dedupe preserving order + cap at 5
+    # Moon's nakshatra — adds personality-specific depth
+    moon = next((p for p in chart.planets if p.name == "Moon"), None)
+    if moon is not None:
+        nak_slug = _NAKSHATRA_ARTICLE.get(getattr(moon, "nakshatra", ""))
+        if nak_slug:
+            selected.append(nak_slug)
+
+    # Fillers (only if we still have room in the cap)
+    remedy_slug = _GRAHA_REMEDY_ARTICLE.get(maha_lord)
+    if remedy_slug:
+        selected.append(remedy_slug)
+    selected.append("vimshottari-dasha-explained")
+
+    # Dedupe preserving priority order + cap at 5
     seen: set[str] = set()
     unique = [s for s in selected if not (s in seen or seen.add(s))][:5]
 
