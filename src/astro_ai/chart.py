@@ -1411,20 +1411,36 @@ def compute_life_chapters(natal: Chart, until_age: float = 80.0) -> list[LifeCha
     return chapters
 
 
+_MAHADASHA_ARCHETYPE: dict[str, str] = {
+    "Sun":     "authority + visibility + father-figure influence + confidence-building; conflict with hierarchy possible",
+    "Moon":    "emotional life + home + mother + public-facing warmth; mood cycles matter, nurturing central",
+    "Mars":    "energy + drive + conflict + sports/military/property; physical risks, disputes, courage-tested",
+    "Rahu":    "ambition + unconventional paths + foreign/tech pull + sudden rise-or-fall; the outsider chapter, ambition outpaces clarity, confusion-into-breakthrough pattern",
+    "Jupiter": "wisdom + expansion + dharmic authority + marriage-often-triggers + wealth-through-respect + teaching/advisory work; the trust chapter",
+    "Saturn":  "discipline + slow structural building + delay-then-elevation + service + longevity; the long-tenure chapter; unglamorous foundations that compound",
+    "Mercury": "communication + trade + learning + networks + business dealmaking + analytical career-building; often money-and-career-building phase",
+    "Ketu":    "detachment + spirituality + retreat + unexpected loss or letting-go + moksha themes; the inward chapter, worldly pursuits feel hollow",
+    "Venus":   "relationships + marriage + luxury + arts + partnerships + material comfort; the relational chapter, strongest marriage-trigger period",
+}
+
+
 def format_life_chapters_for_prompt(chapters: list[LifeChapter]) -> str:
     """Plain-English Mahadasha sequence for the natal LLM.
 
-    Ages rendered as whole years (birth-age 33 not "33.7"). Each chapter tagged
-    [PAST], [NOW], or [LATER] so the LLM knows which chapter is currently
-    active — critical for the "right now, from X to Y" framing and prevents
-    the LLM from describing the same range twice as past-and-current.
+    Ages rendered as whole years. Each chapter tagged [PAST], [NOW], or
+    [LATER] so the LLM picks the right tense. Each chapter also gets an
+    ARCHETYPE hint — the flavour of the ruling planet in plain English,
+    so the LLM can weave chapter-specific character into the prose
+    without naming the planet itself. Without this hint, the LLM defaults
+    to generic "you'll grow" statements that could apply to anyone.
     """
     _tag = {"past": "[PAST]", "current": "[NOW]", "upcoming": "[LATER]"}
-    lines = ["Vimshottari Mahadasha sequence (lord per age range — for reasoning only, do NOT name planets in output):"]
+    lines = ["Vimshottari Mahadasha sequence (lord per age range — for reasoning only, do NOT name planets in output. The ARCHETYPE hint is the flavour of that chapter — weave those specific themes into the prose):"]
     for c in chapters:
         start = int(round(c.start_age))
         end = int(round(c.end_age))
-        lines.append(f"- Age {start} to {end}: {c.lord} {_tag[c.phase]}")
+        archetype = _MAHADASHA_ARCHETYPE.get(c.lord, "")
+        lines.append(f"- Age {start} to {end}: {c.lord} {_tag[c.phase]} — ARCHETYPE: {archetype}")
     return "\n".join(lines)
 
 

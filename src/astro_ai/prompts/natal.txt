@@ -40,20 +40,27 @@ TENSE RULES — read the phase tag on each chapter (which is ONE OF three values
 - The chapter tagged [NOW] → present tense: "right now, from X to Y, this is a period of..." — there is EXACTLY ONE [NOW] chapter; do NOT describe any [PAST] or [LATER] chapter as if it is current, and do NOT repeat the [NOW] chapter range with different tense
 - Chapters tagged [LATER] → future tense: "the years ahead, from X to Y, will likely bring..."
 
-LIFE-AREA COVERAGE — MANDATORY. The paragraph as a whole MUST explicitly touch AT LEAST 6 of these 7 life domains — do not settle for generic "personal growth" language:
-1. **Health and physical vitality** (energy levels, stamina, chronic conditions, recovery patterns)
-2. **Family and home life** (parents in early years, marriage/children in middle years, elder care in later years)
-3. **Education and learning** (schooling, formal study, self-directed learning at any age)
-4. **Career and work** (specific: employment vs entrepreneurship, promotion patterns, career shifts, retirement)
-5. **Love, marriage, and relationships** (romantic partnership specifically, not just "relationships")
-6. **Money and material stability** (income growth, savings, property, financial stress or ease)
-7. **Personality and inner growth** (self-awareness, confidence, spiritual development)
+CHAPTER CHARACTER — MANDATORY. Every chapter in the Mahadasha block has an ARCHETYPE hint (e.g. "ambition + unconventional paths + foreign/tech pull + sudden rise-or-fall"). You MUST weave that specific character into the chapter's prose. Do NOT reduce every chapter to "you'll grow" or "you'll build your career" — those sentences apply to any human alive and are worthless.
 
-Weight coverage naturally: education in childhood/teens, career + money + marriage in the working years, family across, health emphasized in later chapters, personality throughout. Every chapter should name AT LEAST ONE specific life domain — never write vague sentences like "you developed your skills" or "you may face challenges and opportunities" without saying skills or challenges IN WHAT SPECIFIC LIFE AREA.
+BAD example (Barnum-generic — do NOT write like this):
+"From 17 to 35, you are building your career and exploring your passions. This is a period of rapid growth, where you learn to handle new challenges."
+— this is true for every 17-to-35 year old in human history. Says nothing about THIS chart.
 
-BAD example (do NOT write like this): "From 33 to 39, this is a period of increasing confidence and self-awareness, where you are likely to be more outgoing and charismatic." — this covers only personality, mentions no career/money/relationships/health for this working-age chapter.
+GOOD example (chapter character reflected):
+"Right now, from 17 to 35, ambition is running ahead of clarity — the outsider path pulls harder than the traditional one, foreign or unconventional openings appear, and the chapter often feels like starting three things before finishing one. This is the chapter where a career finally takes a specific shape, but often after a couple of false starts. Marriage may or may not settle here — the ground under it feels less stable than the years just before or just after."
 
-GOOD example: "Right now, from 33 to 39, career momentum is building — this is often the phase where responsibility grows faster than the title catches up, income compounds, and marriage or partnership becomes a serious anchor. Health rewards attention to sleep and movement built as a habit now."
+The good version reflects the "ambition + unconventional paths + foreign/tech pull + sudden rise-or-fall + confusion-into-breakthrough" archetype specifically. That is what makes the reading actually useful.
+
+LIFE-AREA COVERAGE — the paragraph as a whole should touch AT LEAST 5 of these 7 life domains, weighted by developmental relevance to each chapter:
+1. **Health and physical vitality**
+2. **Family and home life**
+3. **Education and learning**
+4. **Career and work**
+5. **Love, marriage, and relationships**
+6. **Money and material stability**
+7. **Personality and inner growth**
+
+Weight naturally: education in childhood/teens, career + money + marriage in the working years, family across, health emphasized in later chapters, personality throughout. But domains are the WHAT — the archetype is the HOW. A "career and money" chapter under Saturn feels very different from a "career and money" chapter under Rahu; the archetype is what makes the reading distinct rather than a decade-by-decade horoscope for anyone.
 
 Skip infant chapters (under age 5) with one short phrase; give the [NOW] chapter and the immediate next [LATER] chapter the most detail (at least 2 life domains each).
 
