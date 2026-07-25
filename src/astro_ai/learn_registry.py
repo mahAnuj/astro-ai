@@ -81,6 +81,15 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "No. Gemstones only help when the planet is a functional benefic in your chart and needs strengthening. Wearing the wrong stone (for a functional malefic) can destabilise things quickly. Classical practice is to consult a knowledgeable astrologer BEFORE wearing any gem — especially Blue Sapphire (Saturn) and Red Coral (Mars), the two most likely to backfire. Devotional remedies (mantras, donations, deity worship) are safer and don't require a chart review.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• 9 Grahas: 7 visible (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn) + 2 shadow-planets (Rahu, Ketu = lunar nodes)\n'
+            '• Natural benefics: Jupiter, Venus, waxing Moon, unafflicted Mercury\n'
+            '• Natural malefics: Saturn, Mars, waning Moon, Sun, Rahu, Ketu, afflicted Mercury\n'
+            '• Karakas (significators): Sun→father/self, Moon→mind/mother, Mars→energy/siblings, Mercury→intellect/communication, Jupiter→wisdom/husband, Venus→spouse/luxury, Saturn→career/discipline, Rahu→foreign/ambition, Ketu→spirituality\n'
+            '• Each planet has: own sign, exaltation sign (deepest at specific degree), debilitation sign, friendly/enemy signs\n'
+            '• Vimshottari Dasha durations sum to 120 years — see Vimshottari Dasha article'
+        ),
     ),
     Article(
         slug="vimshottari-dasha-explained",
@@ -151,6 +160,16 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Sun-worship at sunrise — offer water to the rising Sun (Arghya) with the Aditya Hridayam or Gayatri Mantra. Fast or eat light on Sundays. Respect your father and paternal figures. Donate wheat, jaggery, or copper on Sundays. Ruby is the classical gem but should only be worn after a proper chart consultation — it can amplify ego or Sun-related health issues if Sun is a functional malefic in your chart.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Karaka: soul (atma), father, authority, government, name/fame, physical health (heart, eyes, bones)\n'
+            '• Own sign: Leo (Simha). Exalted: Aries (deepest 10°). Debilitated: Libra (deepest 10°)\n'
+            '• Mulatrikona: Leo 0-20°. Digbala (directional strength) in 10th house\n'
+            '• Friends: Moon, Mars, Jupiter. Enemies: Venus, Saturn. Neutral: Mercury\n'
+            '• Strong Sun: leadership, confidence, government service, strong father-relationship\n'
+            '• Weak Sun: authority problems, low self-esteem, father-issues, ego traps\n'
+            '• Safe remedies: Surya Namaskar sunrise, Aditya Hridaya Stotram, red-lentil/wheat Sunday charity'
+        ),
     ),
     Article(
         slug="chandra-moon-in-vedic-astrology",
@@ -181,6 +200,17 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "What are classical remedies for a weak or afflicted Moon?",
                 "a": "Serve and respect your mother — Moon is the primary karaka for mother. Drink water in silver, wear white on Mondays, offer white flowers or milk at Shiva temples. Fast on Mondays with a light single meal. Chant Chandra Beej Mantra or the Shiva Panchakshari (Om Namah Shivaya). Pearl is the classical gem for Moon but requires chart review — an afflicted natal Moon can be destabilised further by wearing pearl.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Karaka: mind (manas), mother, emotions, water, public-facing life\n'
+            '• Own sign: Cancer (Karka). Exalted: Taurus (deepest 3°). Debilitated: Scorpio (deepest 3°)\n'
+            '• Digbala in 4th house. Waxing (bright half) = benefic; waning (dark half) = malefic\n'
+            '• Friends: Sun, Mercury. Enemies: none. Neutral: Mars, Jupiter, Venus, Saturn\n'
+            "• Vimshottari Dasha starts from Moon's nakshatra at birth — Moon is the timekeeper\n"
+            '• Strong Moon: emotional stability, popularity, good mother-relationship\n'
+            '• Weak Moon (Kemadruma yoga): loneliness, mood cycles, mother-issues, mental agitation\n'
+            '• Safe remedies: Monday fasting, milk offering to Shiva, silver/pearl (with consultation), moon-gazing'
         ),
     ),
     Article(
@@ -213,6 +243,17 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Honour your teachers and elders — Jupiter is the guru principle. Chant the Guru mantra 'Om Gum Gurave Namah' or 'Om Brahaspataye Namah' on Thursdays. Fast on Thursdays with yellow foods (turmeric rice, chana daal). Wear yellow, donate yellow items (turmeric, gram, saffron, gold, yellow cloth) on Thursdays. Yellow Sapphire (Pukhraj) is the classical gem but only after chart consultation — a functional-malefic Jupiter with Yellow Sapphire can inflate ego or worsen the very issues it's meant to solve.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Karaka: wisdom, dharma, teachers, gurus, children (progeny), husband (female chart), wealth\n'
+            '• Own signs: Sagittarius, Pisces. Exalted: Cancer (deepest 5°). Debilitated: Capricorn (deepest 5°)\n'
+            '• Mulatrikona: Sagittarius 0-10°. Digbala in Lagna (1st house)\n'
+            '• Friends: Sun, Moon, Mars. Enemies: Mercury, Venus. Neutral: Saturn\n'
+            '• Great benefic — even a mediocre Jupiter helps; strong Jupiter is transformative\n'
+            '• Hamsa Yoga (Jupiter in kendra in own/exalted sign) is one of the 5 Panch Mahapurush yogas\n'
+            '• Jupiter Mahadasha (16 years) often triggers marriage, wisdom, wealth accumulation\n'
+            '• Safe remedies: Thursday fasting, yellow-item charity, chanting Guru Beej mantra, honour teachers'
+        ),
     ),
     Article(
         slug="mangal-mars-in-vedic-astrology",
@@ -243,6 +284,17 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "What's the best remedy for a difficult Mars?",
                 "a": "The universal Mars remedy is Hanuman Chalisa daily, especially on Tuesdays — Hanuman is considered the mediator between the seeker and Mars's fierce energy. Recite the Mangal mantra 'Om Ang Angarakaya Namah' 108 times Tuesday morning. Fast on Tuesdays with a single meal, avoiding salt. Donate red lentils (masoor dal), copper, or jaggery on Tuesdays. Physical exercise is an underrated Mars remedy — controlled physical exertion channels the planet's energy productively. Red Coral (Moonga) requires chart consultation before wearing.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Karaka: courage, siblings (brothers), energy, real estate, blood, muscle, sports, military, surgery\n'
+            '• Own signs: Aries, Scorpio. Exalted: Capricorn (deepest 28°). Debilitated: Cancer (deepest 28°)\n'
+            '• Mulatrikona: Aries 0-12°. Digbala in 10th house (shared with Sun)\n'
+            '• Friends: Sun, Moon, Jupiter. Enemies: Mercury. Neutral: Venus, Saturn\n'
+            '• Manglik Dosha: Mars in houses 1/4/7/8/12 from Lagna (marriage caveat)\n'
+            '• Strong Mars: courage, victory, real estate, athletic ability\n'
+            '• Weak Mars: accidents, conflict, blood-related health, sibling stress\n'
+            '• Safe remedies: Tuesday fasting, Hanuman Chalisa daily, red-item Tuesday charity, red-coral only with consultation'
         ),
     ),
     Article(
@@ -275,6 +327,17 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Honour and support the women in your life — Venus is the feminine karaka. Fast on Fridays with white foods (rice, milk, yogurt). Wear white or light pink on Fridays. Chant 'Om Shum Shukraya Namah' 108 times Friday morning. Donate white items (rice, milk, sugar, silver, white cloth) or serve women in need. Diamond is the classical gem for Venus — the safest of the major gemstones to wear, though still worth a chart consultation. For unmarried people delaying marriage, worship Goddess Parvati or Lakshmi.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Karaka: spouse (male chart), love, luxury, arts, vehicles, cosmetics, refined pleasures, sexuality\n'
+            '• Own signs: Taurus, Libra. Exalted: Pisces (deepest 27°). Debilitated: Virgo (deepest 27°)\n'
+            '• Mulatrikona: Libra 0-15°. Digbala in 4th house (shared with Moon)\n'
+            '• Friends: Mercury, Saturn. Enemies: Sun, Moon. Neutral: Mars, Jupiter\n'
+            '• Malavya Yoga (Venus in kendra in own/exalted sign) is one of the 5 Panch Mahapurush yogas\n'
+            '• Venus Mahadasha (20 years — longest) frequently coincides with marriage, comfort, artistic success\n'
+            '• Strong Venus: harmonious relationships, prosperity, beauty appreciation\n'
+            '• Safe remedies: Friday fasting, white-item Friday charity, Devi worship, diamond only with consultation'
+        ),
     ),
     Article(
         slug="budha-mercury-in-vedic-astrology",
@@ -305,6 +368,17 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "What's the best remedy for a weak Mercury?",
                 "a": "Honour scholars, teachers, and young students — Mercury is the karaka for the youthful learning mind. Chant 'Om Bum Budhaya Namah' or the Vishnu Sahasranama on Wednesdays. Wear green on Wednesdays. Fast on Wednesdays with a single meal. Donate green items (moong dal, green vegetables), books, or educational supplies to students. Feed and care for young girls (kanya). Emerald (Panna) is the classical gem for Mercury — one of the safer gems to wear, though a chart consultation is still recommended.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Karaka: intellect, communication, speech, business, education, writing, humour, skin, nerves\n'
+            '• Own signs: Gemini (mulatrikona 15-20°), Virgo. Exalted: Virgo (deepest 15°). Debilitated: Pisces (deepest 15°)\n'
+            '• Digbala in Lagna (1st house, shared with Jupiter)\n'
+            '• Friends: Sun, Venus. Enemies: Moon. Neutral: Mars, Jupiter, Saturn\n'
+            '• Takes on nature of associated planet — friendly with benefics, malefic with malefics\n'
+            '• Bhadra Yoga (Mercury in kendra in own/exalted sign) is one of the 5 Panch Mahapurush yogas — strong business signature\n'
+            '• Combustion is common (Mercury close to Sun): reduces natural intellect expression\n'
+            '• Safe remedies: Wednesday fasting, Vishnu worship, green-item charity, emerald only with consultation'
         ),
     ),
     Article(
@@ -337,6 +411,17 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "The classical Rahu remedy is Durga worship — chant 'Om Ram Rahave Namah' or the Durga Chalisa daily. Feed birds (especially crows), donate to lepers or the marginalised, and worship the goddess in her fierce forms (Kali, Durga, Chamunda). Blue or grey clothing on Saturdays. Meditation practice is unusually helpful for Rahu — the outward hunger settles when the mind learns to sit still. Hessonite (Gomedh) is the classical gemstone but requires careful chart consultation.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Shadow planet — northern lunar node. No physical body, no ownership of signs\n'
+            '• Karaka: ambition, foreign, technology, unconventional paths, obsession, sudden gains/losses, alcohol/drugs, deception\n'
+            '• Considered exalted in Taurus (some texts) or Gemini (other texts); debilitated in Scorpio or Sagittarius\n'
+            '• Rahu Mahadasha (18 years) — the second-longest, and most disruptive\n'
+            '• Strong Rahu: material success, foreign gains, entrepreneurial rise, technology mastery\n'
+            '• Weak/afflicted Rahu: addictions, deception (self and others), scandal, confusion\n'
+            '• Amplifies whichever house/planet it associates with — takes on that flavour\n'
+            '• Safe remedies: Rahu Beej mantra, Durga worship, black gram Saturday charity, serve outsiders/marginalized'
+        ),
     ),
     Article(
         slug="ketu-in-vedic-astrology",
@@ -367,6 +452,17 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "What's the best remedy for a difficult Ketu?",
                 "a": "The classical Ketu remedy is Ganesha worship — chant 'Om Gam Ganapataye Namah' 108 times daily. Ganesha, as the remover of obstacles and lord of beginnings, is considered Ketu's presiding deity. Serve dogs and stray animals (Ketu's associated creatures). Meditate daily — Ketu responds to inner stillness more than any other planet. Donate blankets, sesame oil, or grey/multi-coloured cloth on Tuesdays. Visit ancestral temples or perform Pitru Tarpan — Ketu rules ancestral karma. Cat's Eye (Lehsunia) is the classical gem but should never be worn without careful chart review.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Shadow planet — southern lunar node. No physical body, no ownership of signs\n'
+            '• Karaka: detachment, moksha (spiritual liberation), past-life karma, hidden wisdom, spirituality, occult, chronic illness\n'
+            '• Considered exalted in Scorpio; debilitated in Taurus\n'
+            '• Ketu Mahadasha (7 years) — often the most spiritual period of life\n'
+            '• Strong Ketu: intuition, spiritual insight, healing abilities, freedom from illusion\n'
+            '• Weak/afflicted Ketu: mysterious ailments, isolation, loss, confusion about identity\n'
+            '• Ketu in 12th house = classical moksha karaka; in 5th = past-life scholar returning\n'
+            '• Safe remedies: Ganesha worship, sesame-oil charity, Ketu Beej mantra, spiritual retreat'
         ),
     ),
     Article(
@@ -399,6 +495,15 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "How do I know how these transits affect me specifically?",
                 "a": "Two things matter: your Janma Rashi (Moon sign) and your Lagna (rising sign). Every article per-rashi guidance in this post uses Moon sign because that's the primary reference in Vedic astrology. Generate your free Kundli on Shubh Bhagya to know your exact Moon sign, then read that section for the year's outlook.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Gochar = current planetary transits over natal houses (as of the reading date)\n'
+            '• 2026 major shifts: Saturn continues in Pisces (12th-related themes for many), Jupiter transits Cancer (exaltation until mid-year)\n'
+            '• Rahu-Ketu axis: check current transit house from natal Moon for major karmic themes\n'
+            '• Transit effects are amplified when a planet passes over natal position (return) or over natal 7th/10th/1st\n'
+            "• Transits refine Dasha's broad timing — always read Dasha first, then transit\n"
+            '• Jupiter transit over 7th house is a classical marriage-timing trigger; Saturn over 10th signals career restructuring'
         ),
     ),
     Article(
@@ -433,6 +538,15 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Use Shubh Bhagya's free Kundli matching tool at /matching. Enter both people's birth details and the tool computes all 8 kootas, the Manglik compatibility, and generates an AI-narrative interpretation of what the score actually means for the specific chart pair — not a generic 'compatible / not compatible' verdict.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• 8 kootas (categories), 36 total gunas — measures compatibility between two birth Moons\n'
+            '• Threshold: 18+ gunas = acceptable, 24+ = good, 30+ = excellent match\n'
+            '• 8 kootas: Varna (spiritual), Vashya (attraction), Tara (health), Yoni (physical), Graha Maitri (mental), Gana (temperament), Bhakoot (family), Nadi (progeny)\n'
+            '• Nadi Dosha (0/8 on Nadi) and Bhakoot Dosha have specific cancellations — do NOT reject a match on these alone\n'
+            '• Guna Milan is one factor — also check Manglik status, 7th house condition of both charts, D-9 Navamsha compatibility\n'
+            '• A 32+ match with Manglik mismatch is a real concern; a 20 match with strong D-9 harmony often works'
+        ),
     ),
     Article(
         slug="sun-mahadasha",
@@ -463,6 +577,16 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "What's the best way to use Sun Mahadasha well?",
                 "a": "Sun rewards effort in visible, authoritative work. Take on leadership roles, build your professional reputation, mend the relationship with your father if it needs work, pay attention to heart and eye health, honour any government or civic duties. Avoid ego-driven overreach — Sun punishes arrogance more than any planet. Practice the classical Sun Namaskar in the morning, offer water to the rising Sun on Sundays, and give the period the discipline it demands.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• 6-year period ruled by Sun — shortest of the 9 Mahadashas\n'
+            '• Themes: authority, visibility, father-figure influence, government dealings, career elevation, ego-tests\n'
+            '• Well-placed Sun: recognition, promotion, government service opportunities, honour\n'
+            '• Weak/afflicted Sun: conflict with authority, health of eyes/heart, father-related stress, ego problems\n'
+            '• Peak-effect years: middle 2-3 years of the 6-year window\n'
+            '• Antardashas within: Sun-Moon (public dealings), Sun-Mars (conflict/action), Sun-Rahu (sudden change)\n'
+            '• Safe remedies: Surya Namaskar at sunrise, Aditya Hridaya Stotram, red-lentil/wheat/jaggery Sunday charity'
         ),
     ),
     Article(
@@ -538,6 +662,16 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Usually not. The &quot;Kaal Sarp Shanti puja&quot; industry charges ₹5,000-50,000+ and preys on fear. For most charts, simple personal remedies (Mahamrityunjaya mantra, Hanuman Chalisa, Saturday donations) are sufficient. Before paying for an elaborate ceremony, get a clear assessment of whether the dosha applies and what cancellation factors are present.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Kaal Sarp = ALL 7 non-nodal planets between Rahu-Ketu axis (on one side)\n'
+            '• 12 sub-types named by which house Rahu occupies (Ananta, Kulika, Vasuki, etc.)\n'
+            '• Classical scriptures (BPHS, Phaladeepika) do NOT list Kaal Sarp as a named yoga — it is a modern (~20th century) construct\n'
+            '• Modern astrologers report themes: obstacles despite effort, career struggles, ancestral karmic burden\n'
+            '• Many charts are misdiagnosed — even one planet OUTSIDE the axis breaks the yoga classically\n'
+            '• Healthy scepticism recommended — do not accept an expensive puja on the strength of Kaal Sarp alone\n'
+            '• Safe remedies (if you feel it applies): Kaal Bhairava worship, Nag Panchami observance, ancestral tarpan'
+        ),
     ),
     Article(
         slug="shani-saturn",
@@ -569,6 +703,17 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "In your 40s and 50s. Saturn's gifts are slow-built and structural. Anything you try to force into your 20s and 30s, Saturn often dismantles. The right strategy with Saturn is to plan the long arc — pick fewer things, stay longer, build durability. The rewards arrive in midlife and last.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Karaka: discipline, longevity, service, career (esp. long-term), delays, sorrow, elderly, iron, poor/marginalized\n'
+            '• Own signs: Capricorn, Aquarius. Exalted: Libra (deepest 20°). Debilitated: Aries (deepest 20°)\n'
+            '• Mulatrikona: Aquarius 0-20°. Digbala in 7th house\n'
+            '• Friends: Mercury, Venus. Enemies: Sun, Moon, Mars. Neutral: Jupiter\n'
+            '• Slowest planet — ~29.5 years per orbit. Sade Sati = 7.5-year Saturn transit through 12th/1st/2nd from Moon\n'
+            '• Sasha Yoga (Saturn in kendra in own/exalted sign) is one of the 5 Panch Mahapurush yogas — leadership of multitudes\n'
+            '• Strong Saturn: longevity, discipline, methodical success, respect in old age\n'
+            '• Safe remedies: Saturday service (physical labor, elderly help), Shani Beej mantra, sesame-oil/iron Saturday charity, NEVER wear blue sapphire without full chart consultation'
+        ),
     ),
     Article(
         slug="rahu-mahadasha-ketu-antardasha",
@@ -599,6 +744,15 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "What's the best remedy during Ketu Antardasha?",
                 "a": "Beyond mantras and donations: classical texts emphasise tyaga (willing renunciation). What you give up during Ketu antardasha, you get back tenfold during the Venus antardasha that follows. Stop optimising for outcomes, reduce intake (news/social/ambition-feed), pick one anchor (one practice, one relationship, one piece of steady work), don't make permanent decisions in the worst weeks.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• Nodal axis flip — Rahu Mahadasha's Ketu Antardasha is a ~1-year window (Ketu Antardasha in Rahu Mahadasha = 12 months and 18 days)\n"
+            '• Classical difficulty: Rahu wants to grasp, Ketu wants to release — internal tug-of-war\n'
+            '• Common patterns: sudden loss of what Rahu had built, spiritual awakening, relationship endings, career detachment\n'
+            '• Health themes: mysterious ailments, exhaustion, low immunity — Ketu weakens body\n'
+            '• Not universally bad — often initiates the deepest spiritual work of Rahu Mahadasha\n'
+            '• Remedies: Ganesha worship (removes obstacles for both nodes), Ketu Beej mantra, avoid major life decisions'
         ),
     ),
     Article(
@@ -687,6 +841,14 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Strengths: capacity to carry heavy responsibilities, strong moral compass, artistic and sensual depth, resilience through transformation, unshakeable when they know what's right. Weaknesses: rigidity when the moral compass tips into judgment, difficulty asking for help (the 'bearer' archetype makes it hard), intensity that can exhaust gentler partners.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 2nd of 27. Span: Aries 13°20'-26°40'. Lord: Venus\n"
+            '• Symbol: yoni (womb). Deity: Yama (god of death and transition)\n'
+            '• Nature: gatekeeper between birth and death, bearing burdens, moral intensity, creative fertility\n'
+            '• Strong signature: hospice/palliative work, judiciary, creative arts requiring deep commitment, midwifery\n'
+            '• Shadow: extremism, moral rigidity, self-imposed hardship, jealousy'
+        ),
     ),
     Article(
         slug="krittika-nakshatra",
@@ -717,6 +879,14 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Which nakshatras match well with Krittika?",
                 "a": "Best matches by Ashtakoot Guna Milan: Rakshasa-gana partners with different Nadi — Vishakha, Jyeshtha, Chitra work well on Gana Kuta. Manushya-gana partners are workable if the other kutas score high. Same-Antya-nadi pairs (Rohini, Ashlesha, Magha, Swati, Uttara Ashadha, Shravana, Revati) lose 8 Nadi Kuta points, which is a serious deduction.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 3rd of 27. Span: Aries 26°40' - Taurus 10°. Lord: Sun\n"
+            '• Symbol: razor / flame. Deity: Agni (fire) and the Krittikas (Pleiades — six mothers of Kartikeya)\n'
+            '• Nature: cutting through illusion, sharp discernment, purification through fire, exposure of truth\n'
+            "• Strong signature: judge, critic, editor, surgeon, teacher who cuts through student's confusion\n"
+            '• Shadow: harsh criticism, over-cutting, wounding with truth, jealousy'
         ),
     ),
     Article(
@@ -752,6 +922,15 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Should I do expensive Guru puja packages?",
                 "a": "Almost never. Genuine Jupiter puja is inexpensive — a simple havan with yellow flowers, ghee, and chick peas offered to Vishnu costs almost nothing. Any priest demanding tens of thousands is selling anxiety, not tradition. Mantras + Chalisa + Vishnu Sahasranama + genuine wisdom-seeking are more powerful than expensive rituals done without devotion. The core teaching: remedies are devotional acts, not transactional payments.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• Jupiter safe universal practices (any chart): Thursday fasting (light meal only), Vishnu Sahasranama chanting, Guru Beej mantra 'Om Gram Greem Groum Sah Gurave Namah'\n"
+            '• Charity: yellow lentils (chana dal), turmeric, yellow cloth, gold (to genuine teachers or dharmic causes) on Thursdays\n'
+            '• Behavioural: honour teachers/elders, study a wisdom tradition, keep Bhagavad Gita or comparable text in home\n'
+            '• Gemstone (Pukhraj / yellow sapphire): CLASSICAL Jupiter gem BUT never wear without full chart consultation — a debilitated/afflicted Jupiter reacts unpredictably\n'
+            '• Safer alternatives: yellow topaz (Sunela) or citrine as substitute gems\n'
+            '• Vishnu worship on Thursdays, especially in Vaishnava traditions'
         ),
     ),
     Article(
@@ -790,6 +969,15 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Mercury is the karaka of speech and the physical organs of speech (throat, tongue). Chronic communication difficulty — stammer, verbal freeze under pressure, meandering speech — usually indicates weak or afflicted Mercury. Classical remedies specifically help: daily reading aloud practice (10-15 minutes of scripture, poetry, or serious prose, read slowly and clearly), daily writing practice by hand, weekly Saraswati or Vishnu worship, chanting the Vishnu Sahasranama slowly and aloud (combines speech-practice and mantra dimensions), and reduced consumption of low-quality speech (gossip media, argumentative content). Mercury absorbs what he is fed — feed him well and he strengthens.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• Mercury safe universal practices: Wednesday fasting or vegetarian diet, Vishnu Sahasranama, Mercury Beej mantra 'Om Bram Breem Broum Sah Budhaya Namah'\n"
+            '• Charity: green cloth, green lentils (moong dal), emerald-colored items, education-related donations on Wednesdays\n'
+            '• Behavioural: teach a skill freely, help someone learn to read/write, honour communication tools (books, notebooks)\n'
+            '• Gemstone (Emerald / Panna): NEVER without full chart consultation — combusted Mercury commonly problematic\n'
+            '• Skin/nerve care important as Mercury governs these — meditation helps nervous system\n'
+            "• Vishnu worship on Wednesdays; special connection to Vishnu's intellectual/wisdom aspect"
+        ),
     ),
     Article(
         slug="venus-remedies",
@@ -827,6 +1015,15 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Because Venus is the karaka of enjoyment, and enjoyment can turn into grasping or excess if not held with discipline. Classical Vedic view: uncontrolled sensuality, over-consumption of luxury, and grasping for beautiful things actually weaken Venus's blessing rather than pleasing her. Genuine Venus wealth is what flows in and out with equanimity, enjoyed without clinging. This is the counter-intuitive teaching most modern content misses — the person Venus rewards is the one who has become worth loving, not the one who chants for love. Disciplined enjoyment within dharma is the classical rule.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• Venus safe universal practices: Friday fasting (or vegetarian), Sri Lalita Sahasranama, Devi/Lakshmi worship, Venus Beej mantra 'Om Draam Dreem Draum Sah Shukraya Namah'\n"
+            '• Charity: white cloth, white sweets, sugar/rice, cow ghee, cosmetics/perfume to needy women on Fridays\n'
+            '• Behavioural: honour the feminine (mothers, sisters, daughters), avoid harming animals, cultivate beauty in surroundings\n'
+            '• Gemstone (Diamond / Heera): NEVER without full chart consultation — very expensive and unpredictable if wrong\n'
+            '• Safer alternatives: white sapphire (Safed Pukhraj) as substitute\n'
+            "• Sri Yantra recitation is universally safe (Sri = Lakshmi = Venus's presiding energy)"
+        ),
     ),
     Article(
         slug="mars-remedies",
@@ -862,6 +1059,15 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Mars is energy. When it's blocked (chart shows weak Mars) it produces frustration and outbursts. When it's over-active (chart shows very strong Mars) it produces aggression and control issues. The remedy differs by which pattern you have. Weak Mars → strengthen through exercise, discipline, service. Over-active Mars → calm through Hanuman devotion, controlled anger practice, avoiding provocation. Rather than trying to eliminate Mars (which is impossible), work with him — channel the energy into disciplined action rather than suppressing or exploding it.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• Mars safe universal practices: Tuesday fasting, Hanuman Chalisa daily (esp. Tuesday/Saturday), Mars Beej mantra 'Om Kraam Kreem Kroum Sah Bhaumaya Namah'\n"
+            '• Charity: red lentils (masoor dal), red cloth, jaggery, red-flowers to temples on Tuesdays\n'
+            '• Behavioural: honour siblings (esp. brothers), donate blood, physical service to those in need\n'
+            '• Gemstone (Red Coral / Moonga): CLASSICAL Mars gem BUT never without full chart consultation — Manglik or afflicted Mars can react badly\n'
+            '• Hanuman worship is the STRONGEST classical Mars remedy — Hanuman is Rudra-Mars incarnate\n'
+            "• Kartikeya/Muruga worship also strengthens Mars (Kartikeya is Mars's presiding deity)"
+        ),
     ),
     Article(
         slug="saturn-remedies",
@@ -896,6 +1102,16 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Can Saturn remedies remove my career problems?",
                 "a": "No — and this is the honest answer. Rao (§34.1) is emphatic: 'Remedial measures manipulate the exact details of a fated pattern, not the pattern itself.' If Saturn's placement in your chart indicates a difficult career phase during a Saturn period, remedies can soften how the difficulty expresses — but they cannot make the phase disappear entirely. What genuine remedies do: refine the expression, deepen your capacity, align you with what Saturn is teaching. People who work with Saturn's discipline (rather than trying to escape it) often find his lessons open doors that no shortcut could have opened.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• Saturn safe universal practices: Saturday service (physical labor, help for elderly/poor), Shani Beej mantra 'Om Praam Preem Praum Sah Shanaishcharaya Namah', Dasharatha Krita Shani Stotram\n"
+            '• Charity: black sesame seeds, iron items, mustard oil, black cloth to needy laborers on Saturdays\n'
+            '• Behavioural: honour elders, feed stray animals (esp. black dogs, crows), avoid harming ants\n'
+            '• Gemstone (Blue Sapphire / Neelam): the MOST DANGEROUS gemstone when worn wrong — NEVER without full chart consultation. Wrong Neelam can cause dramatic negative effects within 24-48 hours\n'
+            '• Safer alternatives: amethyst (Jamunia) or blue topaz as substitute\n'
+            '• Hanuman is the classical intercessor with Shani — Hanuman Chalisa Saturdays is safest\n'
+            '• Peepal-tree Saturday oil lamp is a classical safe practice'
         ),
     ),
     Article(
@@ -976,6 +1192,15 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "The most reliable: (1) Sri Yantra worship — the classical universal wealth-generating practice, can be done by anyone. (2) For Jupiter strengthening: Sri Sukta, Guru mantra (Om Brihaspataye Namah), Thursday fasting, feeding brahmins. (3) For 2nd house strengthening: disciplined honest speech (2nd rules speech, honest speech produces wealth), generous feeding of family and guests. (4) For 11th house gains: serving elder siblings and mentors. (5) For Rahu-related unstable wealth: Rahu mantra, donating black sesame. Avoid: expensive 'Lakshmi puja packages', speculation without genuine analysis, treating astrological wealth Dashas as guaranteed outcomes.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• 7 chart signals for financial difficulty: weak 2nd house/lord, weak 11th house/lord, 2nd/11th lord in dusthana (6/8/12), afflicted Jupiter (wealth karaka), afflicted Venus (money-flow karaka), Sade Sati impact on 2nd, malefic transits to 11th\n'
+            '• Dhana Yogas (wealth combinations) require multiple positive factors — check 2+5+9+11 house lords for connections\n'
+            '• Daridra Yogas (poverty combinations): 2nd/11th lord in 6th/8th/12th\n'
+            '• Not fate — signals difficulty, not permanent poverty. Chart interacts with effort + circumstance\n'
+            '• Timing: financial pressure often coincides with Saturn/Rahu Mahadasha or Sade Sati\n'
+            '• Remedy focus: strengthen Jupiter (Thursdays) + Venus (Fridays); charity to those with less; never gamble to solve'
+        ),
     ),
     Article(
         slug="career-not-progressing",
@@ -1012,6 +1237,15 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "What are the fastest classical remedies for career blockage?",
                 "a": "Depends on which planet is afflicted. For weak Sun (career visibility): Aditya Hridayam mantra, Sunday fasting, arghya (water offering to Sun at dawn). For Saturn delays: Shani chalisa, Saturday oil-lamp, service to elderly/poor. For general 10th house strengthening: Vishnu Sahasranama, worship of your ishta devata, disciplined daily work as a spiritual practice. Never wear gemstones without a proper chart consultation — wrong stones can worsen the affliction. The most reliable remedy is often the simplest: doing genuinely good work in the classical Vedic spirit of nishkama karma (action without attachment to reward).",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• 7 chart signals for career stagnation: weak 10th lord, 10th lord in dusthana (6/8/12), afflicted Sun (visibility) or Saturn (structure), current Ketu/Saturn Mahadasha, malefic transits to 10th house, weak D-10 Dashamsa Ascendant\n'
+            "• Timing: career growth often blocked during Saturn Mahadasha's early years, Sade Sati peak phase, Ketu Antardasha windows\n"
+            '• The pattern often SHIFTS at Saturn return (~29-30) or during favorable Jupiter transit to 10th\n'
+            '• 10th lord placement matters more than planets IN 10th — see 10th-lord-in-6th-house-career for specific dusthana pattern\n'
+            '• Some blockages are alignment issues: chart shows technical/service career, person pursues creative/hype fields\n'
+            '• Remedies: strengthen 10th lord, aligned service (donate skill to needy), Hanuman Chalisa Tuesday/Saturday'
         ),
     ),
     Article(
@@ -1101,6 +1335,17 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Universal Saturn practices apply, with a career emphasis. Recite the Hanuman Chalisa daily (especially on Saturdays) — classical Vedic tradition names Hanuman as the deity whose recitation softens Shani's severity. Serve elders in your professional environment (Saturn rules seniority; being genuinely useful to older colleagues is direct Saturn karma). Work harder, not less — Saturn rewards effort, not escapism. Donate on Saturdays (black sesame, mustard oil, dark cloth, iron, footwear for the elderly poor). Avoid expensive Shani nivaran puja packages — the vendor manipulation around Sade Sati is enormous and largely ineffective. And never wear blue sapphire without a proper chart consultation — it is Saturn's most powerful gem and, when wrong for the chart, the fastest way to destabilise a difficult transit further.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• Sade Sati's 7.5 years typically forces career restructuring — job change, responsibility increase, or exit\n"
+            '• Rising phase (12th from Moon): financial pressure, work-doubt, quiet exit planning\n'
+            '• Peak phase (1st from Moon): major visible restructuring — promotion, demotion, or full career change\n'
+            '• Setting phase (2nd from Moon): rebuilding on new foundation, family-financial adjustment\n'
+            '• Sade Sati during Saturn Mahadasha (compound Saturn) = deepest restructuring\n'
+            '• Sade Sati during Jupiter/Venus Mahadasha = softer, mentor/opportunity support arrives\n'
+            '• Best-fit career strategies: choose depth over breadth, longer-tenure roles, service-oriented pivots\n'
+            '• Worst-fit: high-hype speculative moves, gambling on quick wins — Saturn punishes shortcuts'
+        ),
     ),
     Article(
         slug="debilitated-sun-career",
@@ -1138,6 +1383,16 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Can debilitated Sun give success?",
                 "a": "Yes, and often significant success — but the arc is typically late-blooming rather than early-flashy. The common pattern: early career of over-performance without proportionate recognition, mid-career forced elevation into a leadership role the person did not overtly seek, and late-career unexpected authority earned through years of quiet respect. When Neecha Bhanga applies, the late-career recognition can be substantial (chief justice, senior advisor, coalition leader, respected academic head). The people who suffer most with this placement are those who fight it — trying to force themselves into dominance-forward careers that punish the diplomatic instinct. Those who work with the placement often produce the most respected version of leadership in their field.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Debilitated Sun = Sun in Libra (deepest 10°). Reshapes authority expression, does NOT remove capability\n'
+            '• Career pattern: over-perform without recognition early → forced-into-leadership mid → respected-authority late\n'
+            '• Best-fit careers: negotiation-forward (judiciary, arbitration, advisory, diplomacy, consulting, academia)\n'
+            '• Fights: dominance-forward (aggressive sales, competitive politics, alpha-founder roles)\n'
+            '• Neechabhanga Raja Yoga (cancellation): Venus/Saturn/Mars in kendra from Lagna/Moon, OR Sun exalted in D-9\n'
+            '• When cancelled, produces unusual late-career strength — chief-justice / senior-advisor patterns\n'
+            '• Remedies: Sun-strengthening practices (Surya Namaskar, water offering), honour father-figures, wheat/jaggery Sunday charity'
         ),
     ),
     Article(
@@ -1177,6 +1432,17 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "No — this is one of the most common misreadings. Wealth in Vedic astrology is read through the Dhana Yogas — connections between the 2nd house (accumulated wealth), 11th house (gains), 5th house (past-life merit), and their respective lords. Jupiter in the 10th elevates the career itself, but converting career elevation into accumulated wealth requires the wealth trinity (2nd + 11th + 5th) to also be strong. Many charts with Jupiter in the 10th produce distinguished careers with modest actual wealth. Others combine Jupiter in the 10th with strong Dhana Yogas and produce both career elevation and wealth. Reading Jupiter in the 10th as an automatic wealth marker sets false expectations. What the placement reliably produces is respect and dharmic career direction; wealth is a separate reading.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Jupiter in 10th = natural karaka in karma house (Jupiter is a 10th house karaka)\n'
+            '• BUT: Jupiter does NOT have digbala in 10th — his digbala is in Lagna. Needs additional dignity to shine\n'
+            '• Hamsa Yoga forms if Jupiter is in Cancer/Sagittarius/Pisces in 10th (Panch Mahapurush yoga)\n'
+            '• Best-fit careers: teaching, judiciary, law, medicine, finance/wealth advisory, publishing, religion, non-profit\n'
+            '• Debilitated in Capricorn (Aries ascendant): capable but institutional recognition stalls; check Neechabhanga\n'
+            '• Guru Chandala Yoga (Jupiter+Rahu): scandal-prone wisdom; unorthodox teachings\n'
+            '• Jupiter Mahadasha (16 years) is peak activation — recognition, wealth via dharma, marriage often triggers\n'
+            '• Does NOT auto-produce wealth — check Dhana Yogas (2+11+5 house connections) separately'
+        ),
     ),
     Article(
         slug="sun-in-10th-house-career",
@@ -1210,6 +1476,17 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "What is the best career path with Sun in the 10th house?",
                 "a": "Careers where visibility, authority, and personal recognition are structural to the work itself. Strongest fits: government service, judiciary, medicine (especially senior specialities), family business at the head, senior corporate leadership, politics, defense, and any career where the person is expected to be the public face. When Sun is dignified, careers requiring you to be seen suit the placement best — the Sun does not thrive in anonymous back-office work. When Sun is weak, the same field categories can still work but the person often does better in institutional roles where authority attaches to the position rather than the personality. The through-line: Sun in the 10th wants an audience. What varies with dignity is whether the audience arrives easily or has to be earned through slow institutional respect.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Sun in 10th = digbala (directional strength) — one of the STRONGEST career placements\n'
+            '• Natural authority pattern: early recognition, visible positions, magnetic quality, respected reputation\n'
+            '• Best-fit careers: government, judiciary, medicine (senior), family business at head, senior corporate, politics\n'
+            '• Debilitated in Libra (Capricorn ascendant): borrowed-authority pattern; check Neechabhanga\n'
+            '• Combust 10th lord (close to Sun): person does the work but credit goes elsewhere\n'
+            '• Sun Mahadasha (6 years) peak-activates the placement — often career high-point\n'
+            '• Father karaka: usually a strong father-figure OR complicated father-authority theme\n'
+            '• Sun-Saturn conjunction: father-child career competition pattern'
         ),
     ),
     Article(
@@ -1249,6 +1526,17 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Different yoga combinations point to different types of migration. Rahu + Mercury connection (10th or 3rd house) — technology-driven professional migration (the classical Indian-IT-abroad pattern). Rahu + Sun in 10th/9th/12th — government service abroad, diplomatic assignments, international institutions. Jupiter + 9th house strong (with 12th lord involvement) — academic migration for higher studies. Venus + Rahu in the 7th or 12th — marriage-based migration or foreign spouse. Saturn well-supported in the 12th — long-duration professional migration (25-year NRI pattern). Moon in water sign + Rahu-12 — maritime, hospitality, or travel-industry careers abroad. 4th lord in 12th + strong 11th house — the classic remittance-sending NRI professional pattern.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 'Foreign' reads differently per house: 4th (home you leave), 7th (foreign trade/marriage), 9th (long journeys/study abroad), 12th (foreign residence)\n"
+            '• Primary indicator: Rahu placement — 12th (settlement), 9th (higher study), 7th (marriage/trade), 10th (foreign career)\n'
+            '• 12th-lord + 9th-lord parivartana (mutual exchange) = strong foreign-life signature\n'
+            '• 4th lord in 12th = uprooting from home country\n'
+            '• Moon in water sign + Rahu = literal crossing-water migration\n'
+            '• Timing: Rahu Mahadasha is the classical foreign-trigger; 12th-lord Dasha; Saturn in 12 activates long-tenure NRI pattern\n'
+            '• Migration types: Rahu+Mercury (IT), Rahu+Sun (govt), Jupiter+9th (academic), Venus+Rahu (marriage)\n'
+            '• Kundli CANNOT predict visa outcomes — that is administrative, not karmic'
+        ),
     ),
     Article(
         slug="job-or-business-kundli-guide",
@@ -1287,6 +1575,16 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Bhadra Yoga is one of the five Panch Mahapurush yogas — the Mercury version. It forms when Mercury sits in his own signs Gemini or Virgo AND is in a kendra (1st, 4th, 7th, or 10th house) from the Lagna. Classical texts describe the Bhadra Yoga native as characterised by \"learning, eloquence, systematic mind, business\" — often producing successful traders, analytical entrepreneurs, financial-services professionals, and business owners in communication-heavy fields (publishing, media, editorial, technology). Bhadra Yoga in the 10th specifically is one of the strongest possible chart signatures for career-through-business. Generate your free Janma Kundli on Shubh Bhagya to check whether your Mercury is placed to form Bhadra Yoga.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 5-signal checklist: 10th house strength, 10th lord placement, 3rd house/lord, Mercury vs Mars strength, Rahu's role\n"
+            '• Business-favouring signatures: strong Mercury (Bhadra Yoga), 10th lord in 3rd/11th, Rahu in 10th, 3rd lord well-placed\n'
+            '• Employment-favouring signatures: strong Sun/Saturn in 10th, 10th lord in 6th, 6th lord in 10th\n'
+            '• Bhadra Yoga (Mercury in kendra in own sign) = strongest classical business signature\n'
+            '• Timing: Mercury/Venus/Jupiter Mahadashas favour business; Sun/Saturn favour employment\n'
+            '• Common healthy pattern: employment first (learn), business later (independent — early 30s to 40s)\n'
+            '• Chart shows leaning, not verdict — bank balance, family obligations, risk tolerance matter equally'
+        ),
     ),
     Article(
         slug="10th-lord-in-6th-house-career",
@@ -1324,6 +1622,17 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Is 10th lord in the 6th house Vipreet Raja Yoga?",
                 "a": "Not strictly. Classical Vedic tradition names three Vipareeta Raja Yogas — Harsha (6th lord in the 6th), Sarala (8th lord in the 8th), and Vimala (12th lord in the 12th). Your 10th lord in the 6th is a related but distinct pattern. It does not carry the strict Vipareeta Raja classical benefit by name. However, when combined with other favourable factors (10th lord exalted in the 6th, benefic aspects especially from Jupiter, strong navamsha placement, favourable Dasha windows), the classical reading tips toward significant career success achieved through struggle rather than effortless rise — the practical experience of Vipareeta Raja without the strict technical yoga formation. Charts that combine 10th lord in the 6th with an actual Harsha Yoga (6th lord also in the 6th) tend to produce especially strong career-through-struggle results.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• 10th lord in 6th (dusthana) — classical career-through-friction signature\n'
+            '• Pattern: slow early career (before 35), gradual skill-through-conflict, late-blooming durable recognition\n'
+            '• Best-fit careers: medicine (esp. surgery/oncology), law/litigation, HR/labour relations, police/military, tax/regulatory, debt recovery, opposition politics, investigative journalism\n'
+            "• Not strict Vipareeta Raja Yoga but shares 'success-through-struggle' character\n"
+            '• Amplifiers: 10th lord exalted/own-sign in 6th, benefic aspects (esp. Jupiter)\n'
+            '• Fights: frictionless creative work, hospitality, hype-driven fields\n'
+            '• Timing: recognition arrives mid-30s into 40s after the struggle years compound into expertise\n'
+            '• Remedies: worship deity of 10th lord, service to those working under hardship, confront rather than avoid conflict'
         ),
     ),
     Article(
@@ -1411,6 +1720,16 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "No — and any practitioner who tells you otherwise is not a classical astrologer. Classical Vedic tradition places astrology alongside, not instead of, appropriate medicine. Modern fertility diagnostics identify treatable causes (hormonal, tubal, sperm quality, ovulation timing) that no chart reading can substitute for. The couples we see with the best outcomes usually do both: they work with a good doctor AND they engage classical practices for the 5th house and Jupiter. The two lenses together produce the best results — the doctor reads biology, the chart reads karmic weather, and both matter.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• 7 chart signals for children delay: weak 5th house/lord, Jupiter (progeny karaka) afflicted, Saptamsa (D-7) weak, current Dasha unfavorable, 5th lord in dusthana, Ketu in 5th (spiritual detachment), Rahu in 5th (adoption/unconventional)\n'
+            '• 5th house = children in general; D-7 Saptamsa = the deep truth of progeny\n'
+            '• Jupiter is the primary progeny karaka — his position + condition heavily determines the picture\n'
+            '• Timing: children often arrive during Jupiter Dasha or 5th-lord Dasha or beneficial transit to 5th\n'
+            '• Chart shows tendency — combine with modern fertility care; astrology does NOT replace medical evaluation\n'
+            '• Safe remedies: Santan Gopal mantra, Krishna worship, help children in need, Thursday practices\n'
+            '• NEVER promise a specific timeline — anxious couples need hope grounded in honest limits, not false certainty'
+        ),
     ),
     Article(
         slug="chronic-health-issues-kundli",
@@ -1449,6 +1768,15 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Only after a proper chart consultation — never on general advice. Health-related gemstone prescriptions are the highest-risk category in gemstone remedy: yellow sapphire (Jupiter) can worsen certain metabolic patterns if Jupiter is a functional malefic for your Ascendant; blue sapphire (Saturn) can destabilise a chart quickly if worn wrongly; red coral (Mars) can amplify inflammatory patterns. Safer classical alternatives that require no chart consultation: Mahamrityunjaya Mantra (universal health mantra), Dhanvantari worship, planet-appropriate weekday practices, and — always — competent medical care. Never treat a gemstone as a substitute for a doctor's visit.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• 7 chart signals: weak Lagna lord, afflicted 6th house/lord, afflicted 8th house/lord, malefics in 1st, weak Sun (vitality) or Moon (fluids), Sade Sati impact, current Rahu/Ketu Mahadasha\n'
+            '• Specific illness types per planet: Sun (heart, eyes, bones), Moon (mind, fluids, chest), Mars (blood, muscle, inflammation), Mercury (nerves, skin), Jupiter (liver, obesity, diabetes), Venus (kidneys, reproductive), Saturn (chronic, joints, teeth), Rahu (mysterious/toxin-related), Ketu (undiagnosed/karmic)\n'
+            '• Kundli suggests SUSCEPTIBILITY — does not diagnose disease; always consult a doctor\n'
+            '• Timing: chronic conditions often flare in Sade Sati peak, Saturn/Rahu Mahadashas, or Antardasha of afflicted 6th/8th lord\n'
+            '• Safe remedies: strengthen Lagna lord + Sun/Moon; genuine karmic-cleansing practices; NEVER replace medical care with astrology\n'
+            "• Warning: this is heavily exploited — avoid 'cure your disease' astrologers charging large fees"
+        ),
     ),
     Article(
         slug="gajakesari-yoga",
@@ -1479,6 +1807,16 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Can Gajakesari Yoga cancel bad yogas?",
                 "a": "Strong Gajakesari with Jupiter well-placed can significantly mitigate difficult yogas like Manglik, Sade Sati's harsher phases, and even some doshas. But it doesn't fully cancel them — a person with Gajakesari + strong Manglik will still experience Manglik effects, just with more grace and better outcomes than they would without Jupiter's blessing. Vedic astrology doesn't work by simple addition/subtraction; it's a woven pattern where every yoga colours every other.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Formation: Jupiter in a kendra (1/4/7/10) from Moon (or from Lagna in some traditions)\n'
+            "• 'Elephant-Lion' combination — the strength of the elephant (Jupiter/wisdom) meets the courage of the lion (Moon/mind)\n"
+            '• Classical effects: fame, wealth, intelligence, favour from authorities, respected reputation\n'
+            '• Requires additional conditions: Jupiter not debilitated/combust, benefic association helps\n'
+            '• Search-intent note: heavily searched — real classical yoga but often oversold as guaranteed success\n'
+            '• Timing: activates in Jupiter or Moon Mahadasha/Antardasha\n'
+            '• Confirmation in D-9 Navamsha strengthens the effect (per classical Raja Yoga confirmation rule)'
         ),
     ),
     Article(
@@ -1515,6 +1853,17 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Yes — and it happens more often than people think. Because the rule requires each planet in own/exaltation in a kendra, someone with multiple planets well-placed in kendras can carry two, three, or (very rarely) more of these yogas simultaneously. Akbar had Malavya and Sasa both in his first house. When multiple mahapurush yogas combine, read them as complementary aspects of a many-sided greatness, not as competing forces.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• The 5 'Great Person' yogas — each formed by one of the 5 non-luminary planets in own/exalted sign in a kendra (1/4/7/10)\n"
+            '• Ruchaka (Mars): Aries/Scorpio/Capricorn in kendra — courage, leadership, victory\n'
+            '• Bhadra (Mercury): Gemini/Virgo in kendra — learning, eloquence, business acumen\n'
+            '• Hamsa (Jupiter): Sagittarius/Pisces/Cancer in kendra — wisdom, dharma, scholarly fame\n'
+            '• Malavya (Venus): Taurus/Libra/Pisces in kendra — beauty, luxury, artistic success, marital happiness\n'
+            '• Sasa (Saturn): Capricorn/Aquarius/Libra in kendra — discipline, leadership of multitudes, longevity\n'
+            '• Each grants LIFELONG signature qualities of that planet — not period-bound\n'
+            "• Activates fully during that planet's Mahadasha; confirmation in D-9 amplifies"
+        ),
     ),
     Article(
         slug="pitru-dosh",
@@ -1550,6 +1899,16 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Pitru Paksha 2026 runs from Bhadrapada Purnima to Ashwina Amavasya — approximately mid-September to early October 2026 (exact dates vary by lunar calendar; check a Panchang for your specific timings). The Mahalaya Amavasya (the final day, considered the most powerful Pitri offering day of the year) is the peak. This is the traditional time for shraaddha ceremonies, tarpana, and feeding the poor in ancestors' names.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Ancestral-karma dosha — indicated by Sun-Rahu, Sun-Saturn, or 9th house afflictions\n'
+            '• Effects: unresolved father-line issues, delayed progeny, career obstruction, financial instability, family peace disruption\n'
+            '• Classical identification: 9th lord in dusthana (6/8/12), Sun conjunct/aspected by malefics in 9th\n'
+            '• Genuine remedy = actual ancestor honoring, not fear-based puja packages\n'
+            "• Safe practices: Amavasya (new moon) tarpan, feeding brahmins/needy in ancestors' names, Gaya Shraddha (once in lifetime)\n"
+            '• Every chart with 9th-house affliction is NOT Pitru Dosh — check family history + Dasha context\n'
+            '• Warning: this is heavily exploited by paid astrologers — be cautious of ₹5,000+ puja packages'
+        ),
     ),
     Article(
         slug="hasta-nakshatra",
@@ -1580,6 +1939,14 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Which nakshatras match well with Hasta?",
                 "a": "By Ashtakoot Guna Milan: best matches are Deva-gana partners with Adi or Madhya nadi — Ashwini (Adi), Punarvasu (Adi), Pushya (Madhya — often cited as classical strong Hasta partner), Anuradha (Madhya). Same-Antya-nadi partners (Krittika, Rohini, Ashlesha, Magha, Swati, Uttara Ashadha, Shravana, Revati) lose 8 Nadi Kuta points.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 13th of 27. Span: Virgo 10°-23°20'. Lord: Moon\n"
+            '• Symbol: hand. Deity: Savitar (sun as inspirer, giver of skill)\n'
+            '• Nature: skilled hand, craftsmanship, healing touch, precise work, cleverness, dexterity\n'
+            '• Strong signature: craftsman, surgeon, artisan, chef, magician, healer, IT/coding\n'
+            '• Shadow: manipulative cleverness, restlessness, thievery (in shadow expression), nervousness'
         ),
     ),
     Article(
@@ -1612,6 +1979,14 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "By Ashtakoot Guna Milan: best matches are Rakshasa-gana partners with Adi or Antya nadi — Vishakha (Antya — often specifically cited as classical Chitra partner, both Rakshasa with different nadi), Jyeshtha (Adi), Mula (Adi), Ashlesha (Antya). Same-Madhya-nadi partners (Bharani, Mrigashira, Pushya, Purva Phalguni, Anuradha, Purva Ashadha, Dhanishta, Uttara Bhadrapada) lose 8 Nadi Kuta points.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 14th of 27. Span: Virgo 23°20' - Libra 6°40'. Lord: Mars\n"
+            '• Symbol: dazzling jewel / pearl. Deity: Vishvakarma (celestial architect)\n'
+            '• Nature: dazzling beauty, artistic brilliance, structural/architectural design, striking presence\n'
+            '• Strong signature: architect, designer, fashion, jewellery, engineering, film-industry visual work\n'
+            '• Shadow: vanity, superficial focus on appearance, unstable emotions, drama-seeking'
+        ),
     ),
     Article(
         slug="swati-nakshatra",
@@ -1642,6 +2017,14 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "What is the shadow side of Swati?",
                 "a": "Rootlessness. The independence quality can tip into chronic inability to commit — to relationships, careers, places, or communities. Swati natives sometimes discover in mid-life that they haven't built deep roots anywhere, and the wind that seemed liberating starts to feel lonely. Classical remedy: distinguish between healthy self-direction and reflexive avoidance of anything that might bind.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 15th of 27. Span: Libra 6°40'-20°. Lord: Rahu\n"
+            '• Symbol: young shoot bending in wind / coral. Deity: Vayu (god of wind)\n'
+            '• Nature: independent, self-going, diplomatic, adaptable, learning through movement, restlessness\n'
+            '• Strong signature: diplomat, trader, business, mediator, independent consultant, foreign trade\n'
+            '• Shadow: isolation, over-independence, indecisive, restlessness that never settles'
         ),
     ),
     Article(
@@ -1674,6 +2057,14 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "By Ashtakoot Guna Milan: best matches are Rakshasa-gana partners with Adi or Madhya nadi — Jyeshtha (Adi), Chitra (Madhya), Mula (Adi). Same-Antya-nadi partners (Krittika, Rohini, Ashlesha, Swati, Uttara Ashadha, Shravana, Revati) lose 8 Nadi Kuta points. Deva-gana partners create Gana-Kuta friction as Magha's intensity can overwhelm the more refined Deva types.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 10th of 27. Span: Leo 0°-13°20'. Lord: Ketu\n"
+            '• Symbol: royal throne. Deity: Pitrs (the ancestors)\n'
+            '• Nature: royal lineage, ancestral pride, ceremonial authority, past-life inherited status\n'
+            '• Strong signature: government service, ancestor-honouring roles, royal-family adjacent, ceremonial/religious authority\n'
+            '• Shadow: entitlement, ancestral karma weight, arrogance, disconnection from present-life effort'
+        ),
     ),
     Article(
         slug="purva-phalguni-nakshatra",
@@ -1704,6 +2095,14 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Which nakshatras match well with Purva Phalguni?",
                 "a": "By Ashtakoot Guna Milan: Uttara Phalguni is often the classical strongest match — the two halves of the bed complete each other. Also good: Rohini (Antya nadi), Ardra (Adi nadi), Purva/Uttara Ashadha, Purva/Uttara Bhadrapada. Same-Madhya-nadi partners (Bharani, Mrigashira, Pushya, Chitra, Anuradha, Purva Ashadha, Dhanishta, Uttara Bhadrapada) lose 8 Nadi Kuta points.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 11th of 27. Span: Leo 13°20'-26°40'. Lord: Venus\n"
+            '• Symbol: front legs of bed / hammock. Deity: Bhaga (god of delight, marriage, luck)\n'
+            '• Nature: pleasure, comfort, romance, luxury, generous hospitality, creative expression\n'
+            '• Strong signature: entertainment, arts, hospitality, romance/wedding industry, luxury goods, sales\n'
+            '• Shadow: laziness, indulgence, superficial charm, pleasure-addicted'
         ),
     ),
     Article(
@@ -1736,6 +2135,14 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "Over-obligation. Because Uttara Phalguni natives take commitments so seriously, they can accumulate more than they can carry. The Aryaman quality can tip into codependence — carrying friends and family who should be carrying themselves. Classical remedy: the mature Uttara Phalguni learns to distinguish between commitments they've chosen and obligations others have assumed.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 12th of 27. Span: Leo 26°40' - Virgo 10°. Lord: Sun\n"
+            '• Symbol: back legs of bed / hammock. Deity: Aryaman (god of contracts, friendship, patronage)\n'
+            '• Nature: dependable partnership, contract-honouring, lasting friendship, humanitarian, patronage\n'
+            '• Strong signature: law, marriage, non-profit leadership, HR/talent management, philanthropy\n'
+            "• Shadow: over-committing, dependency on approval, boring reliability, judgement of others' unreliability"
+        ),
     ),
     Article(
         slug="punarvasu-nakshatra",
@@ -1766,6 +2173,14 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Which nakshatras match well with Punarvasu?",
                 "a": "By Ashtakoot Guna Milan: best matches are Deva-gana partners with Madhya or Antya nadi — Pushya is often specifically cited (same gana, different nadi, complementary Jupiter–Saturn temperaments), Hasta (Antya), Anuradha (Madhya), Shravana (Antya), Revati (Antya). Same-Adi-nadi (Ashwini, Ardra, Hasta's Adi pada, Jyeshtha, Mula, Shatabhisha, Purva Bhadrapada) lose 8 Nadi Kuta points.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 7th of 27. Span: Gemini 20° - Cancer 3°20'. Lord: Jupiter\n"
+            '• Symbol: quiver of arrows / house. Deity: Aditi (boundless mother, mother of the gods)\n'
+            '• Nature: return home, renewal, unconditional love, teaching, moral compass, philosophical\n'
+            '• Strong signature: teacher, philosopher, ethical business, mother-figure roles, hospitality/lodging\n'
+            "• Shadow: over-idealism, escapism to 'home', naive trust, philosophical arrogance"
         ),
     ),
     Article(
@@ -1802,6 +2217,15 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "A well-known Indian folk tradition: buying gold, silver, or long-term assets on the day the Moon transits Pushya nakshatra brings prosperity. Jewellers actively market 'Pushya Nakshatra shopping days'. Classical support: Pushya is Kshipra (swift/light) + auspicious + Saturn-ruled — all favouring the accumulation of durable wealth. Even skeptical shoppers often check the Pushya calendar for large purchases.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 8th of 27. Span: Cancer 3°20'-16°40'. Lord: Saturn\n"
+            '• Symbol: udder / lotus / arrow. Deity: Brihaspati (Jupiter, guru of the gods)\n'
+            '• Nature: MOST auspicious nakshatra classically — nourishment, blessings, dharmic support\n'
+            '• EXCEPT: classical rule forbids weddings on Pushya days (screenshot-worthy fact)\n'
+            '• Strong signature: teacher, priest, physician, counsellor, government service, family-business patriarch\n'
+            '• Shadow: over-protectiveness, self-sacrifice to burnout, rigid tradition'
+        ),
     ),
     Article(
         slug="ashlesha-nakshatra",
@@ -1837,6 +2261,14 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "By Ashtakoot Guna Milan: best matches are Rakshasa-gana partners with Adi or Madhya nadi — Jyeshtha (Adi), Chitra (Madhya), Mula (Adi). Manushya-gana partners work if other kutas score high. Same-Antya-nadi partners (Krittika, Rohini, Magha, Swati, Uttara Ashadha, Shravana, Revati) lose 8 Nadi Kuta points. Deva-gana partners create Gana-Kuta friction.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 9th of 27. Span: Cancer 16°40'-30°. Lord: Mercury\n"
+            '• Symbol: coiled serpent. Deity: the Nagas (serpent beings)\n'
+            '• Nature: hypnotic charm, occult knowledge, kundalini/serpent wisdom, entwining, penetrating insight\n'
+            '• Strong signature: mystic, occultist, psychologist, poison-antidote medicine, hypnotherapist, mystery writer\n'
+            '• Shadow: manipulation, hidden motives, addiction, entangled relationships'
+        ),
     ),
     Article(
         slug="rohini-nakshatra",
@@ -1867,6 +2299,14 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Which nakshatras match well with Rohini?",
                 "a": "By classical Ashtakoot Guna Milan: best matches are Manushya-gana partners with different nadi — Ardra (Adi nadi), Bharani (Madhya), Purva/Uttara Phalguni, Purva/Uttara Ashadha, Purva/Uttara Bhadrapada. Same-Antya-nadi partners (Krittika, Ashlesha, Magha, Swati, Vishakha, Uttara Ashadha, Shravana, Revati) lose 8 Nadi Kuta points.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 4th of 27. Span: Taurus 10°-23°20'. Lord: Moon (Moon's own nakshatra — Moon's exaltation degree falls here)\n"
+            '• Symbol: chariot / banyan. Deity: Brahma (creator)\n'
+            "• Nature: growth, abundance, beauty, sensuality, wealth-accumulation, the Moon's favourite\n"
+            '• Strong signature: agriculture, luxury goods, arts, hospitality, banking, real estate\n'
+            '• Shadow: materialism, jealousy, indulgence, possessiveness'
         ),
     ),
     Article(
@@ -1899,6 +2339,14 @@ ARTICLES: tuple[Article, ...] = (
                 "a": "By Ashtakoot Guna Milan: best matches are Deva-gana partners with Adi or Antya nadi — Ashwini (Adi), Hasta (Antya), Shravana (Antya), Revati (Antya). Ashwini and Hasta are often cited as strong Mrigashira partners. Same-Madhya-nadi partners (Bharani, Pushya, Purva Phalguni, Chitra, Anuradha, Purva Ashadha, Dhanishta, Uttara Bhadrapada) lose 8 Nadi Kuta points.",
             },
         ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 5th of 27. Span: Taurus 23°20' - Gemini 6°40'. Lord: Mars\n"
+            "• Symbol: deer's head. Deity: Soma (moon nectar) / Chandra\n"
+            '• Nature: gentle seeker, restless search for essence, curiosity, poetry, timid explorer\n'
+            '• Strong signature: writer, poet, researcher, traveller, journalist, hunter of ideas\n'
+            '• Shadow: never satisfied, indecisive, wanders without settling, suspicion'
+        ),
     ),
     Article(
         slug="ardra-nakshatra",
@@ -1929,6 +2377,14 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "Which nakshatras match well with Ardra?",
                 "a": "By Ashtakoot Guna Milan: best matches are Manushya-gana partners with Madhya or Antya nadi — Rohini (Antya — often cited as one of the strongest Ardra partners, grounding earth-water for Ardra's storm-air), Bharani (Madhya), Purva/Uttara Phalguni, Purva/Uttara Ashadha, Uttara Bhadrapada. Same-Adi-nadi partners (Ashwini, Punarvasu, Hasta, Jyeshtha, Mula, Shatabhisha, Purva Bhadrapada) lose 8 Nadi Kuta points.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 6th of 27. Span: Gemini 6°40'-20°. Lord: Rahu\n"
+            '• Symbol: teardrop / diamond. Deity: Rudra (fierce Shiva — the storm)\n'
+            '• Nature: destruction-that-clears, transformation through storm, emotional intensity, breakthrough after breakdown\n'
+            '• Strong signature: research (esp. destruction/rebuilding), storm-chasers, mental-health work, IT (Rahu-Mercury)\n'
+            '• Shadow: emotional volatility, addictive patterns, difficulty with grief, deception'
         ),
     ),
     Article(
@@ -1964,6 +2420,14 @@ ARTICLES: tuple[Article, ...] = (
                 "q": "What are the strengths and weaknesses of Ashwini natives?",
                 "a": "Strengths: speed of thought, initiative, healing capacity (medical or emotional), youthful energy, physical grace, willingness to try. Weaknesses: impatience, difficulty finishing what they start, restlessness in relationships (the 'move on to next thing' pattern), and a tendency to burn out from taking on too many pioneer projects at once.",
             },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            "• 1st of 27 nakshatras. Span: Aries 0°-13°20'. Lord: Ketu\n"
+            '• Symbol: horse-head. Deity: Ashwini Kumaras (twin celestial healers)\n'
+            '• Nature: rapid healing, first-mover energy, medicine, sports, initiation, speed\n'
+            '• Strong signature: doctor/healer, athlete, EMT, first-responder, entrepreneur\n'
+            '• Shadow: impulsive action without follow-through, restlessness, accident-proneness'
         ),
     ),
 )
