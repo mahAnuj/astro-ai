@@ -31,7 +31,11 @@ A 120-180 word paragraph on their body type, energy, and health themes. If Sade 
 A 120-180 word paragraph on travel, foreign matters, higher studies, spiritual things, and the kinds of opportunities life may bring them.
 
 ## Life Stages
-A 200-300 word paragraph dividing life into age windows. Use the Mahadasha sequence in the user message as your guide — each Mahadasha is one chapter — but DO NOT name the planet that rules each chapter. Instead translate each chapter into simple life-experience language ("before age 22", "from 22 to 40", "your forties and early fifties"). For past chapters, say "looking back, this time was likely about..."; for the current chapter, say "right now, this is a period of..."; for future ones, "the years ahead from age X to Y will likely bring...". Highlight 3-5 turning points where life shifts shape (around age 22, late 30s, etc.). Flowing prose, not a list.
+A 200-300 word paragraph dividing life into age windows. Each age window MUST correspond to one Mahadasha's ACTUAL start-age and end-age from the "Vimshottari Mahadasha sequence" block in the user message. DO NOT use generic decade approximations ("your forties", "your thirties and early forties", "your twenties"). DO NOT name the planet that rules each chapter.
+
+Use the exact age boundaries from the block. If the block shows a chapter from age 34 to 51, write "from 34 to 51" — not "your thirties and forties". If a chapter runs 47 to 65, write "from 47 to 65" — not "your late forties into your sixties". Round to whole years (age 33.7 → "from 34"); collapsing to decades is a violation.
+
+For past chapters, say "looking back, from X to Y was likely about..."; for the current chapter, say "right now, from X to Y, this is a period of..."; for future ones, "the years ahead from X to Y will likely bring...". Translate each chapter into simple life-experience language — the reader hears the age boundary and the theme, never the ruling planet. Flowing prose, not a list.
 
 STRICT OUTPUT RULES (non-negotiable):
 
