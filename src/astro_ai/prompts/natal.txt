@@ -31,11 +31,33 @@ A 120-180 word paragraph on their body type, energy, and health themes. If Sade 
 A 120-180 word paragraph on travel, foreign matters, higher studies, spiritual things, and the kinds of opportunities life may bring them.
 
 ## Life Stages
-A 200-300 word paragraph dividing life into age windows. Each age window MUST correspond to one Mahadasha's ACTUAL start-age and end-age from the "Vimshottari Mahadasha sequence" block in the user message. DO NOT use generic decade approximations ("your forties", "your thirties and early forties", "your twenties"). DO NOT name the planet that rules each chapter.
+A 250-350 word paragraph dividing life into age windows. Each age window MUST correspond to one Mahadasha's ACTUAL start-age and end-age from the "Vimshottari Mahadasha sequence" block in the user message. DO NOT use generic decade approximations ("your forties", "your thirties and early forties", "your twenties"). DO NOT name the planet that rules each chapter.
 
-Use the exact age boundaries from the block. If the block shows a chapter from age 34 to 51, write "from 34 to 51" — not "your thirties and forties". If a chapter runs 47 to 65, write "from 47 to 65" — not "your late forties into your sixties". Round to whole years (age 33.7 → "from 34"); collapsing to decades is a violation.
+Use the exact age boundaries from the block, which are already given as whole years. If the block shows "Age 34 to 51", write "from 34 to 51". If the block shows "Age 47 to 65", write "from 47 to 65". Never introduce decimals.
 
-For past chapters, say "looking back, from X to Y was likely about..."; for the current chapter, say "right now, from X to Y, this is a period of..."; for future ones, "the years ahead from X to Y will likely bring...". Translate each chapter into simple life-experience language — the reader hears the age boundary and the theme, never the ruling planet. Flowing prose, not a list.
+TENSE RULES — read the phase tag on each chapter (which is ONE OF three values):
+- Chapters tagged [PAST] → past tense: "looking back, from X to Y was likely about..."
+- The chapter tagged [NOW] → present tense: "right now, from X to Y, this is a period of..." — there is EXACTLY ONE [NOW] chapter; do NOT describe any [PAST] or [LATER] chapter as if it is current, and do NOT repeat the [NOW] chapter range with different tense
+- Chapters tagged [LATER] → future tense: "the years ahead, from X to Y, will likely bring..."
+
+LIFE-AREA COVERAGE — MANDATORY. The paragraph as a whole MUST explicitly touch AT LEAST 6 of these 7 life domains — do not settle for generic "personal growth" language:
+1. **Health and physical vitality** (energy levels, stamina, chronic conditions, recovery patterns)
+2. **Family and home life** (parents in early years, marriage/children in middle years, elder care in later years)
+3. **Education and learning** (schooling, formal study, self-directed learning at any age)
+4. **Career and work** (specific: employment vs entrepreneurship, promotion patterns, career shifts, retirement)
+5. **Love, marriage, and relationships** (romantic partnership specifically, not just "relationships")
+6. **Money and material stability** (income growth, savings, property, financial stress or ease)
+7. **Personality and inner growth** (self-awareness, confidence, spiritual development)
+
+Weight coverage naturally: education in childhood/teens, career + money + marriage in the working years, family across, health emphasized in later chapters, personality throughout. Every chapter should name AT LEAST ONE specific life domain — never write vague sentences like "you developed your skills" or "you may face challenges and opportunities" without saying skills or challenges IN WHAT SPECIFIC LIFE AREA.
+
+BAD example (do NOT write like this): "From 33 to 39, this is a period of increasing confidence and self-awareness, where you are likely to be more outgoing and charismatic." — this covers only personality, mentions no career/money/relationships/health for this working-age chapter.
+
+GOOD example: "Right now, from 33 to 39, career momentum is building — this is often the phase where responsibility grows faster than the title catches up, income compounds, and marriage or partnership becomes a serious anchor. Health rewards attention to sleep and movement built as a habit now."
+
+Skip infant chapters (under age 5) with one short phrase; give the [NOW] chapter and the immediate next [LATER] chapter the most detail (at least 2 life domains each).
+
+CHAPTER SELECTION — the block may list 6-9 chapters going out to age 80+. You do NOT need to describe every single one. Prioritise: skip or briefly acknowledge chapters before age 5, cover the education/early-career chapters lightly, give the [NOW] chapter and the next 1-2 [LATER] chapters the most attention, and close with a brief note on the final chapter (age 70+). Flowing prose, not a list. Translate each chapter into simple life-experience language — the reader hears the age boundary and the theme, never the ruling planet.
 
 STRICT OUTPUT RULES (non-negotiable):
 
