@@ -106,7 +106,7 @@ def _format_seeker_message(
     """
     name_line = f"Name: {details.name}" if details.name.strip() else "Name: (not provided)"
     manglik_block = format_manglik_for_prompt(compute_manglik_details(chart))
-    yogas_block = format_yogas_for_prompt(compute_yogas(chart))
+    yogas_block = format_yogas_for_prompt(compute_yogas(chart), chart=chart)
     optional_blocks = ""
     if manglik_block:
         optional_blocks += f"\n\n{manglik_block}"

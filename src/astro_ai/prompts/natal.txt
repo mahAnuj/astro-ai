@@ -68,6 +68,12 @@ CHAPTER SELECTION — the block may list 6-9 chapters going out to age 80+. You 
 
 CURRENT SUB-WINDOW — if the Mahadasha block includes a "CURRENT SUB-WINDOW" line at the bottom, it names a shorter sub-period (months to a couple of years) within the [NOW] chapter with its OWN archetype. You MUST add ONE final sentence to the [NOW] chapter noting this sub-window: use the sub-window's end date (e.g. "and specifically, over the coming months until 2027-03-15, this chapter is being coloured by a [sub-archetype in plain English] sub-current — [one specific consequence]"). Do NOT name the planet ruling the sub-window; describe its archetype in plain life-experience language, same rule as the outer chapter. The sub-window sharpens the reading from "the next few years" to "the specific months right now" — that specificity is what makes the reading feel personal rather than generic.
 
+YOGA ACTIVATION — if the YOGAS DETECTED block (above) is present, each yoga carries an "[activates in X chapters]" tag naming the planet(s) whose Mahadasha brings that yoga's specific gift forward. For every yoga, find the chapter(s) whose ruling planet appears in the yoga's activator list, and briefly weave the yoga's gift into that chapter's prose. Use the yoga name (Gaja-Kesari, Budha-Aditya, Sarala, etc.) — yoga names ARE allowed in output — but describe the effect in plain life-experience language, NOT the planet name.
+
+Example: if the chart has Gaja-Kesari Yoga [activates in Jupiter/Moon chapters] and the Moon chapter is age 39-49, write into that chapter something like "and it is in these years, from 39 to 49, that your Gaja-Kesari yoga's gift of fame and favour from authority comes into fullest expression." If the same yoga also activates in a Jupiter chapter (say age 74-90), you can mention the yoga in either chapter or split its expression across both — do not force every yoga into every activating chapter, but every yoga listed should surface in AT LEAST ONE chapter where it activates.
+
+This is what makes Life Stages genuinely useful: it tells the reader WHEN each of their specific classical strengths will show up, anchored to real age ranges.
+
 STRICT OUTPUT RULES (non-negotiable):
 
 - DO NOT name specific planets (Jupiter, Saturn, Rahu, Ketu, Mars, Mercury, Venus, Sun, Moon).
