@@ -1084,6 +1084,40 @@ ARTICLES: tuple[Article, ...] = (
         ),
     ),
     Article(
+        slug="sun-in-10th-house-career",
+        title="Sun in the 10th House: Career, Authority, and the Digbala Signature",
+        summary="Sun in the 10th house is one of the strongest career placements in Vedic astrology — the natural karaka of the 10th, holding his digbala there. The pattern is natural authority rather than fought-for authority. But the placement's dignity, sign, and Dasha timing determine whether it produces the classical government/leadership outcomes or ego problems and father struggles. This guide walks the strong pattern, the shadow pattern, per-ascendant variations, timing windows, the father signature, and honest remedies scoped to your specific Sun.",
+        seo_title="Sun in 10th House: Career Effects & Remedies",
+        seo_description="Sun in the 10th house — digbala placement for career and authority. Per-ascendant effects, timing, father signature, and honest classical remedies.",
+        category="Life Questions",
+        hero_image="/static/learn/sun-in-10th-house-career/hero.svg",
+        read_time="12 min",
+        last_updated="2026-07",
+        related=("saturn-in-10th-house-career", "surya-sun-in-vedic-astrology", "sun-mahadasha"),
+        faqs=(
+            {
+                "q": "Does Sun in the 10th house always give a government job?",
+                "a": "No. Sun in the 10th is one of the classical signatures for government service, judicial roles, and public leadership, but it does not automatically produce a government job. What it produces is the capacity for visible, authority-carrying work — that capacity translates into government, medicine, family-business leadership, senior corporate roles, politics, or any career where the person is seen and recognised. Whether a specific career shows up depends on Sun's dignity (own sign, exalted, debilitated), the sign of the 10th house, aspects on Sun, and the current Dasha. A weak Sun in the 10th often produces the pattern of high visibility without stable formal position. Generate your free Janma Kundli on Shubh Bhagya to see your Sun's exact configuration.",
+            },
+            {
+                "q": "What if Sun in the 10th house is combust or debilitated?",
+                "a": "Both configurations flip the natural authority pattern. Debilitated Sun in the 10th means Sun in Libra (Capricorn ascendant) — the capable person who cannot get promoted, authority that feels borrowed. However, Neecha Bhanga cancellation rules apply here and often cancel the debilitation, producing late-career elevation. A combust planet in the 10th (usually Mercury or Venus close to Sun) tends to burn the significations of that planet in career — Mercury combust here can indicate analytical skill that is never quite credited; Venus combust can dim creative or partnership recognition. Sun himself is not combust, but he can burn the 10th lord if that lord is close to him. In every case, the placement is workable — Neecha Bhanga, transit windows, and consciously choosing careers aligned to the actual configuration all shift the outcome.",
+            },
+            {
+                "q": "Which ascendants benefit most from Sun in the 10th?",
+                "a": "The three strongest configurations are: Cancer ascendant with Sun exalted in Aries in the 10th (Sun is also 2nd lord — an outstanding placement combining digbala, exaltation, and 2nd-lord elevation); Scorpio ascendant with Sun in his own sign Leo in the 10th (Sun in own sign with digbala — the classical kingly configuration for direct authority); and Aries ascendant with Sun in Capricorn in the 10th (Sun as 5th lord in the 10th — a classical Rajya Yoga configuration where career elevation comes through disciplined institutional work). Leo ascendant is also strong because Sun as lagnesh in the 10th produces the self-made public figure pattern, though Sun is not literally in Leo (Leo's 10th is Taurus).",
+            },
+            {
+                "q": "How does Sun in the 10th house affect the father?",
+                "a": "Sun is the karaka of the father (Pitru Karaka), so his placement in the 10th house always says something about the father's role. A strong Sun in the 10th usually indicates a father who was successful, respected, and a formative model of authority — often the person inherits the father's field or reacts against it. A weak or afflicted Sun in the 10th often indicates a father present but not fully authoritative, or an authority figure whose power was complicated in some way. Sun-Saturn conjunction in the 10th (Surya-Shani yoga) is classically difficult — father-child career competition or the father's shadow feels heavy across achievements. Sun-Rahu in the 10th often indicates a father who was foreign, unconventional, or unusually influential in unorthodox ways. None of these are fixed; consciously working through the father-Sun signature often shifts the pattern significantly.",
+            },
+            {
+                "q": "What is the best career path with Sun in the 10th house?",
+                "a": "Careers where visibility, authority, and personal recognition are structural to the work itself. Strongest fits: government service, judiciary, medicine (especially senior specialities), family business at the head, senior corporate leadership, politics, defense, and any career where the person is expected to be the public face. When Sun is dignified, careers requiring you to be seen suit the placement best — the Sun does not thrive in anonymous back-office work. When Sun is weak, the same field categories can still work but the person often does better in institutional roles where authority attaches to the position rather than the personality. The through-line: Sun in the 10th wants an audience. What varies with dignity is whether the audience arrives easily or has to be earned through slow institutional respect.",
+            },
+        ),
+    ),
+    Article(
         slug="10th-lord-in-6th-house-career",
         title="10th Lord in the 6th House: When Your Career Feels Like Constant Struggle",
         summary="The 10th lord in the 6th house — the ruler of the career house sitting in the house of enemies and service — is the classical Vedic signature for careers built through friction. It is not a doomed placement. It produces doctors, litigators, union leaders, HR heads, investigative journalists. This guide walks the core pattern, per-ascendant flavours, when it hurts and when it helps, its relationship to Vipareeta Raja Yoga, Dasha timing, and honest classical remedies.",

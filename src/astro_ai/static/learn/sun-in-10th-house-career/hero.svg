@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Sun in the 10th house — visual metaphor: radiant Sun crowning the top
+     (10th / Karma Bhava) of a stylized kundali diamond, with golden light
+     radiating from that top segment. Digbala expressed visually. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Sun in the 10th house — Surya crowning the Karma Bhava with radiant authority">
+  <defs>
+    <radialGradient id="s10sun_aura" cx="0.5" cy="0.32" r="0.75">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.95"/>
+      <stop offset="50%" stop-color="#fed7aa" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="s10sun_body" cx="0.4" cy="0.4" r="0.7">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="55%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </radialGradient>
+    <linearGradient id="s10sun_diamond" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="s10sun_karma" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="320" fill="#fefbf3" rx="24"/>
+
+  <!-- Warm aura behind Sun -->
+  <ellipse cx="160" cy="90" rx="150" ry="120" fill="url(#s10sun_aura)"/>
+
+  <!-- Subtle star field -->
+  <g fill="#6b21a8" opacity="0.28">
+    <circle cx="42"  cy="55"  r="1.5"/>
+    <circle cx="278" cy="72"  r="2"/>
+    <circle cx="58"  cy="272" r="1.5"/>
+    <circle cx="272" cy="256" r="1.5"/>
+    <circle cx="180" cy="42"  r="1.2"/>
+  </g>
+
+  <!-- Kundali diamond (North-Indian chart outline) -->
+  <g fill="none" stroke="url(#s10sun_diamond)" stroke-width="2.5" stroke-linejoin="round">
+    <!-- Outer square -->
+    <rect x="60" y="140" width="200" height="160" rx="4"/>
+    <!-- Diamond inside (rotated square = 4 triangular houses meeting at center) -->
+    <polygon points="160,140 260,220 160,300 60,220"/>
+    <!-- Corner diagonals to inner center -->
+    <line x1="60"  y1="140" x2="260" y2="300"/>
+    <line x1="260" y1="140" x2="60"  y2="300"/>
+  </g>
+
+  <!-- Karma Bhava glow — top triangle segment lit up (this IS the 10th house
+       in North-Indian format: the top triangle formed above the diamond) -->
+  <polygon points="60,140 160,140 160,220" fill="url(#s10sun_karma)"/>
+  <polygon points="160,140 260,140 160,220" fill="url(#s10sun_karma)"/>
+
+  <!-- 12 classical sunrays (dwadashaditya) around the Sun -->
+  <g stroke="#d97706" stroke-width="3.5" stroke-linecap="round" opacity="0.85">
+    <line x1="160" y1="10"  x2="160" y2="38"/>
+    <line x1="70"  y1="30"  x2="88"  y2="55"/>
+    <line x1="250" y1="30"  x2="232" y2="55"/>
+    <line x1="35"  y1="90"  x2="65"  y2="98"/>
+    <line x1="285" y1="90"  x2="255" y2="98"/>
+    <line x1="50"  y1="145" x2="80"  y2="135"/>
+    <line x1="270" y1="145" x2="240" y2="135"/>
+    <line x1="115" y1="20"  x2="125" y2="48"/>
+    <line x1="205" y1="20"  x2="195" y2="48"/>
+    <line x1="90"  y1="60"  x2="105" y2="82"/>
+    <line x1="230" y1="60"  x2="215" y2="82"/>
+    <line x1="160" y1="140" x2="160" y2="128"/>
+  </g>
+
+  <!-- Sun body — sitting atop the Karma Bhava -->
+  <circle cx="160" cy="95" r="52" fill="url(#s10sun_body)"/>
+  <circle cx="160" cy="95" r="9" fill="#ffffff" opacity="0.85"/>
+
+  <!-- Classical Sun glyph -->
+  <text x="160" y="105" text-anchor="middle"
+        font-family="Crimson Pro, Georgia, serif"
+        font-size="32" font-weight="700" fill="#7c2d12">☉</text>
+
+  <!-- "10" label in the Karma Bhava (subtle, indicating house number) -->
+  <text x="160" y="200" text-anchor="middle"
+        font-family="Crimson Pro, Georgia, serif"
+        font-size="20" font-weight="700" fill="#7c3aed" opacity="0.75">10</text>
+</svg>
