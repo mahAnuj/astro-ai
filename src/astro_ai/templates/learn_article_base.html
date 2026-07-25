@@ -212,13 +212,24 @@
   {% if related %}
   <section class="max-w-2xl mx-auto px-4 sm:px-6 pb-14">
     <h2 class="font-display text-xl text-stone-900 mb-4">Related reading</h2>
-    <div class="grid sm:grid-cols-2 gap-4">
+    {# Bordered-rows list — footer-nav treatment, not card grid. Full-row
+       click target extends into the section's horizontal padding via negative
+       margin. Chevron animates on hover as a subtle "goes somewhere" cue. #}
+    <div class="border-t border-stone-200">
       {% for r in related %}
       <a href="/learn/{{ r.slug }}/"
-         class="block bg-white border border-stone-200 rounded-2xl p-5 hover:border-astro-300 hover:shadow-md transition-all">
-        <div class="text-[11px] font-semibold uppercase tracking-wider text-astro-700 mb-1">{{ r.category }}</div>
-        <h3 class="font-display text-base text-stone-900 leading-snug mb-1">{{ r.title }}</h3>
-        <p class="text-sm text-stone-600 leading-relaxed">{{ r.summary }}</p>
+         class="group flex items-center justify-between gap-4 border-b border-stone-200
+                py-4 -mx-4 sm:-mx-6 px-4 sm:px-6 hover:bg-astro-50/40 transition-colors">
+        <div class="min-w-0 flex-1">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-astro-700 mb-1">{{ r.category }}</div>
+          <h3 class="font-display text-base sm:text-lg text-stone-900 leading-snug
+                     group-hover:text-astro-700 transition-colors">{{ r.title }}</h3>
+        </div>
+        <svg class="w-5 h-5 text-stone-300 group-hover:text-astro-500
+                    group-hover:translate-x-0.5 transition-all flex-shrink-0"
+             fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
       </a>
       {% endfor %}
     </div>
