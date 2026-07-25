@@ -32,7 +32,7 @@
 
   <!-- SUMMARY CHIPS ----------------------------------------------- -->
   <section class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-    <div class="bg-white rounded-xl border border-stone-200 p-4 flex items-start gap-3">
+    <div class="bg-white rounded-2xl border border-stone-200 p-4 flex items-start gap-3">
       {% if lagna_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ lagna_glyph }}</span>{% endif %}
       <div class="min-w-0">
         <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'lagna') }}</div>
@@ -40,7 +40,7 @@
         <div class="text-sm text-stone-500 mt-0.5">{{ "%.1f"|format(chart.lagna_longitude) }}&deg;</div>
       </div>
     </div>
-    <div class="bg-white rounded-xl border border-stone-200 p-4 flex items-start gap-3">
+    <div class="bg-white rounded-2xl border border-stone-200 p-4 flex items-start gap-3">
       {% if moon_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ moon_glyph }}</span>{% endif %}
       <div class="min-w-0">
         <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'moon_rashi') }}</div>
@@ -48,7 +48,7 @@
         <div class="text-sm text-stone-500 mt-0.5">{{ moon.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
       </div>
     </div>
-    <div class="bg-white rounded-xl border border-stone-200 p-4 flex items-start gap-3">
+    <div class="bg-white rounded-2xl border border-stone-200 p-4 flex items-start gap-3">
       {% if sun_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ sun_glyph }}</span>{% endif %}
       <div class="min-w-0">
         <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'sun_rashi') }}</div>
@@ -301,7 +301,7 @@
           {% if lang == 'hi' %}करियर, विवाह, स्वास्थ्य या किसी भी जीवन के विषय पर अपनी कुंडली के आधार पर सटीक उत्तर पाएँ। आपका चार्ट पहले से सहेजा गया है।{% else %}Ask anything about career, marriage, health, or life timing — answers grounded in your saved chart, not generic advice. Your chart is already loaded.{% endif %}
         </p>
       </div>
-      <a href="/ask" class="inline-flex items-center justify-center gap-2 bg-astro-700 hover:bg-astro-800 text-white font-semibold px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all text-sm sm:text-base whitespace-nowrap flex-shrink-0">
+      <a href="/ask" class="inline-flex items-center justify-center gap-2 bg-astro-700 hover:bg-astro-800 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all text-sm sm:text-base whitespace-nowrap flex-shrink-0">
         {% if lang == 'hi' %}प्रश्न पूछें{% else %}Ask a question{% endif %}
         <span aria-hidden="true">&rarr;</span>
       </a>
@@ -383,28 +383,28 @@
     <p class="text-stone-600 text-sm mb-5">{{ t(lang, 'continue_chart_desc') }}</p>
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-      <a href="/today" class="group bg-white rounded-xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
+      <a href="/today" class="group bg-white rounded-2xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
         <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#9728;</div>
         <h3 class="font-display text-base text-stone-900 mb-0.5 group-hover:text-astro-700">{{ t(lang, 'daily_horoscope') }} &rarr;</h3>
         <p class="text-sm text-stone-600 leading-relaxed">{{ t(lang, 'daily_horoscope_desc') }}</p>
       </a>
 
-      <a href="/ask" class="group bg-white rounded-xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
+      <a href="/ask" class="group bg-white rounded-2xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
         <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#128172;</div>
         <h3 class="font-display text-base text-stone-900 mb-0.5 group-hover:text-astro-700">{% if lang == 'hi' %}प्रश्न पूछें{% else %}Ask a question{% endif %} &rarr;</h3>
         <p class="text-sm text-stone-600 leading-relaxed">{% if lang == 'hi' %}अपनी कुंडली पर आधारित कोई भी प्रश्न पूछें{% else %}Free-form Q&amp;A grounded in your chart{% endif %}</p>
       </a>
 
-      <a href="/matching" class="group bg-white rounded-xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
+      <a href="/matching" class="group bg-white rounded-2xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
         <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#10084;</div>
         <h3 class="font-display text-base text-stone-900 mb-0.5 group-hover:text-astro-700">{{ t(lang, 'kundali_matching') }} &rarr;</h3>
         <p class="text-sm text-stone-600 leading-relaxed">{{ t(lang, 'kundali_matching_desc') }}</p>
       </a>
 
-      <a href="/dasha" class="group bg-white rounded-xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
+      <a href="/dasha" class="group bg-white rounded-2xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
         <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#9211;</div>
         <h3 class="font-display text-base text-stone-900 mb-0.5 group-hover:text-astro-700">{{ t(lang, 'dasha_periods') }} &rarr;</h3>

@@ -14,7 +14,7 @@
      data-modal-backdrop
      class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 no-print"
      role="dialog" aria-modal="true" aria-labelledby="subscribe-modal-title">
-  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
     <button id="subscribe-modal-close" type="button" aria-label="Close"
             class="absolute top-3 right-3 text-stone-400 hover:text-stone-700 p-1">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -125,7 +125,7 @@
         </div>
 
         <button type="submit"
-                class="bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium py-2 rounded-md transition-colors">
+                class="bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium py-2 rounded-lg transition-colors">
           <span class="subscribe-default-text">{% if lang == 'hi' %}सदस्यता लें{% else %}Subscribe{% endif %}</span>
           <span class="subscribe-loading-text hidden">…</span>
         </button>

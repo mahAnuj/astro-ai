@@ -24,14 +24,14 @@
 
     <!-- Quick period stats -->
     <div class="grid sm:grid-cols-2 gap-3 mt-5">
-      <div class="bg-white border border-astro-200 rounded-xl p-4">
+      <div class="bg-white border border-astro-200 rounded-2xl p-4">
         <div class="text-xs uppercase tracking-wider text-astro-700 font-semibold mb-1">Mahadasha</div>
         <div class="text-stone-900 font-semibold">{{ dasha.mahadasha.lord }}</div>
         <div class="text-xs text-stone-500 tabular-nums">
           {{ dasha.mahadasha.start.isoformat() }} &rarr; {{ dasha.mahadasha.end.isoformat() }}
         </div>
       </div>
-      <div class="bg-white border border-emerald-200 rounded-xl p-4">
+      <div class="bg-white border border-emerald-200 rounded-2xl p-4">
         <div class="text-xs uppercase tracking-wider text-emerald-700 font-semibold mb-1">Current Antardasha</div>
         <div class="text-stone-900 font-semibold">{{ dasha.antardasha.lord }}</div>
         <div class="text-xs text-stone-500 tabular-nums">
