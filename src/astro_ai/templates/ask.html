@@ -62,24 +62,10 @@
     {% endif %}
 
     <form method="post" action="/ask" class="space-y-4">
-      <!-- Category chips -->
-      <div>
-        <div class="text-xs text-stone-500 mb-2">Category (optional &mdash; helps focus the answer)</div>
-        <div class="flex flex-wrap gap-2">
-          {% for cat in ['general', 'career', 'marriage', 'money', 'health', 'spiritual', 'travel', 'relationships'] %}
-          <label class="relative cursor-pointer">
-            <input type="radio" name="category" value="{{ cat }}" class="peer sr-only"
-                   {% if (current_category or 'general') == cat %}checked{% endif %}>
-            <div class="px-3 py-1.5 text-xs rounded-full border border-stone-300
-                        peer-checked:bg-astro-50 peer-checked:border-astro-500 peer-checked:text-astro-700
-                        peer-checked:font-semibold hover:border-astro-300 transition-colors capitalize">
-              {{ cat }}
-            </div>
-          </label>
-          {% endfor %}
-        </div>
-      </div>
-
+      {# Primary action first — textarea + submit. Category chips are a
+         secondary refinement below, so users can write their question
+         WITHOUT having to categorize first (which was creating decision
+         fatigue at the friction-heaviest point per engagement-optimizer #71). #}
       <textarea name="question" required rows="4" minlength="5" maxlength="600" autofocus
                 placeholder="e.g. What does Ketu in 11th house mean for my career? Or: when does my current Dasha end?"
                 class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm resize-y
@@ -91,6 +77,25 @@
         <span class="htmx-default">Get my answer &rarr;</span>
         <span class="htmx-indicator">Asking the stars&hellip;</span>
       </button>
+
+      {# Secondary refinement — visually demoted, appears below the submit
+         since it's optional (backend defaults to 'general' if not picked). #}
+      <div class="pt-2 border-t border-stone-100">
+        <div class="text-[11px] text-stone-500 mb-2 uppercase tracking-wider font-semibold">Focus area <span class="font-normal normal-case text-stone-400">(optional)</span></div>
+        <div class="flex flex-wrap gap-1.5">
+          {% for cat in ['general', 'career', 'marriage', 'money', 'health', 'spiritual', 'travel', 'relationships'] %}
+          <label class="relative cursor-pointer">
+            <input type="radio" name="category" value="{{ cat }}" class="peer sr-only"
+                   {% if (current_category or 'general') == cat %}checked{% endif %}>
+            <div class="px-2.5 py-1 text-[11px] rounded-full border border-stone-200
+                        peer-checked:bg-astro-50 peer-checked:border-astro-500 peer-checked:text-astro-700
+                        peer-checked:font-semibold hover:border-astro-300 transition-colors capitalize">
+              {{ cat }}
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
     </form>
   </section>
 
