@@ -1388,6 +1388,57 @@ def format_planet_dignity_for_prompt(chart: "Chart") -> str:
     return "\n".join(lines)
 
 
+_NAKSHATRA_ARCHETYPE_SHORT: dict[str, str] = {
+    "Ashwini":         "rapid healing, first-mover, initiation, speed",
+    "Bharani":         "gatekeeper of transitions, moral intensity, bearing burdens",
+    "Krittika":        "cutting through illusion, sharp discernment, purification by fire",
+    "Rohini":          "growth, abundance, sensuality, wealth-accumulation",
+    "Mrigashira":      "gentle seeker, restless curiosity, poetry, exploration",
+    "Ardra":           "storm-that-clears, breakthrough after breakdown, emotional intensity",
+    "Punarvasu":       "return home, renewal, unconditional love, moral compass",
+    "Pushya":          "MOST auspicious classically — nourishment, blessings, dharmic support",
+    "Ashlesha":        "hypnotic charm, occult knowledge, serpent wisdom, penetrating insight",
+    "Magha":           "royal lineage, ancestral pride, ceremonial authority",
+    "Purva Phalguni":  "pleasure, romance, luxury, creative expression",
+    "Uttara Phalguni": "dependable partnership, contract-honouring, patronage",
+    "Hasta":           "skilled hand, craftsmanship, healing touch, precision",
+    "Chitra":          "dazzling beauty, artistic brilliance, structural design",
+    "Swati":           "independent, diplomatic, adaptable, wind-like movement",
+    "Vishakha":        "goal-oriented, forked path, strategic ambition",
+    "Anuradha":        "devoted friendship, loyal collaboration, spiritual discipline",
+    "Jyeshtha":        "eldest, protective authority, hidden power, responsibility",
+    "Mula":            "root-cutting, philosophical depth, tearing away illusions",
+    "Purva Ashadha":   "early victory, invigorating, purification through water",
+    "Uttara Ashadha":  "unconquerable, lasting victory, ethical achievement",
+    "Shravana":        "listening, learning, tradition-bearing, communication",
+    "Dhanishta":       "wealth of skill, rhythmic mastery, generous prosperity",
+    "Shatabhisha":     "hundred healers, secretive, unconventional healing, mystery",
+    "Purva Bhadrapada":"burning intensity, ascetic fire, dual-natured transformation",
+    "Uttara Bhadrapada":"deep waters, kundalini serpent, wise seclusion, sacrificial giving",
+    "Revati":          "shepherding, nourishment, safe passage, gentle guidance",
+}
+
+
+def format_planet_nakshatras_for_prompt(chart: "Chart") -> str:
+    """Nakshatra placement report per planet (Issue #59).
+
+    For each of the 7 luminary+non-luminary planets, emit the planet's
+    nakshatra + a compact archetype hint. Classical astrologers use
+    nakshatra placement as a finer-grained layer than sign — Sun in Bharani
+    reads very differently than Sun in Krittika even though both are in
+    Aries. Currently the LLM only sees Moon's nakshatra (via life_chapters);
+    this block exposes ALL planets' nakshatras.
+    """
+    lines = ["--- PLANET NAKSHATRA PLACEMENTS (finer layer than sign) ---"]
+    for p in chart.planets:
+        if p.name in ("Rahu", "Ketu"):
+            continue
+        archetype = _NAKSHATRA_ARCHETYPE_SHORT.get(p.nakshatra, "")
+        note = f" — {archetype}" if archetype else ""
+        lines.append(f"  {p.name} in {p.nakshatra}{note}")
+    return "\n".join(lines)
+
+
 def format_manglik_for_prompt(details: ManglikDetails) -> str:
     """Tiny LLM hint for the Relationships section — only inject when relevant.
 
