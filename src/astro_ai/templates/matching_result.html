@@ -6,12 +6,17 @@
 {% block content %}
 {# Pick a colour scheme based on verdict tier. #}
 {% set verdict_palette = {
-  "Uttam":           {"border": "border-emerald-300", "bg": "bg-emerald-50", "text": "text-emerald-800", "dot": "bg-emerald-500"},
-  "Madhyam":         {"border": "border-astro-300",   "bg": "bg-astro-50",   "text": "text-astro-800",   "dot": "bg-astro-500"},
-  "Avara":           {"border": "border-amber-300",   "bg": "bg-amber-50",   "text": "text-amber-800",   "dot": "bg-amber-500"},
-  "Not recommended": {"border": "border-rose-300",    "bg": "bg-rose-50",    "text": "text-rose-800",    "dot": "bg-rose-500"},
+  "Uttam":           {"border": "border-emerald-300", "bg": "bg-emerald-50", "text": "text-emerald-800", "dot": "bg-emerald-500", "hex": "#10b981"},
+  "Madhyam":         {"border": "border-astro-300",   "bg": "bg-astro-50",   "text": "text-astro-800",   "dot": "bg-astro-500",   "hex": "#a855f7"},
+  "Avara":           {"border": "border-amber-300",   "bg": "bg-amber-50",   "text": "text-amber-800",   "dot": "bg-amber-500",   "hex": "#f59e0b"},
+  "Not recommended": {"border": "border-rose-300",    "bg": "bg-rose-50",    "text": "text-rose-800",    "dot": "bg-rose-500",    "hex": "#f43f5e"},
 } %}
 {% set palette = verdict_palette[guna.overall_verdict] %}
+{# Circumference of dial circle (2 * pi * r=80) = 502.65. Target offset =
+   full circumference * (1 - percent/100). Precomputed here so the CSS
+   var can drive the reveal animation without JS math. #}
+{% set _circumference = 502.65 %}
+{% set _target_offset = _circumference * (1 - guna.percent / 100) %}
 
 {% set active_page = "matching" %}
 {% include "_nav.html" %}
@@ -28,36 +33,49 @@
     </p>
   </header>
 
-  <!-- SCORE HERO -------------------------------------------------- -->
+  <!-- SCORE HERO — animated dial (Issue #83) ---------------------- -->
   <section class="bg-white rounded-2xl border {{ palette.border }} shadow-sm overflow-hidden">
-    <div class="{{ palette.bg }} px-6 sm:px-8 py-8 grid sm:grid-cols-[auto_1fr] gap-6 items-center">
+    <div class="{{ palette.bg }} px-6 sm:px-8 py-10 flex flex-col items-center">
 
-      <div class="text-center sm:text-left">
-        <div class="text-xs font-semibold uppercase tracking-wider {{ palette.text }} opacity-70 mb-1">{{ t(lang, 'matching_total') }}</div>
-        <div class="font-display text-6xl sm:text-7xl {{ palette.text }} tabular-nums leading-none">
-          {{ "%.1f"|format(guna.total_awarded) }}
+      {# Radial dial — 200x200 SVG rotated -90° so 0% is at top.
+         Foreground stroke reveals via CSS keyframe (score-driven target). #}
+      <div class="relative w-56 h-56 sm:w-64 sm:h-64">
+        <svg viewBox="0 0 200 200" class="w-full h-full -rotate-90"
+             aria-label="{{ t(lang, 'matching_total') }}: {{ guna.total_awarded }} of {{ guna.total_max }}">
+          {# Background arc — full circle, muted stone #}
+          <circle cx="100" cy="100" r="80" fill="none"
+                  stroke="#e7e5e4" stroke-width="14"/>
+          {# Foreground arc — palette-driven, animates from empty to score #}
+          <circle cx="100" cy="100" r="80" fill="none"
+                  stroke="{{ palette.hex }}" stroke-width="14" stroke-linecap="round"
+                  class="score-dial-fg"
+                  style="stroke-dasharray: {{ _circumference }};
+                         stroke-dashoffset: {{ _circumference }};
+                         --target-offset: {{ _target_offset }};"/>
+        </svg>
+        {# Center content overlay — count-up number driven by JS #}
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <div class="text-[10px] font-semibold uppercase tracking-wider {{ palette.text }} opacity-70 mb-0.5">
+            {{ t(lang, 'matching_total') }}
+          </div>
+          <div class="font-display text-5xl sm:text-6xl {{ palette.text }} tabular-nums leading-none score-dial-num"
+               data-score-target="{{ guna.total_awarded }}"
+               data-score-precision="1">0.0</div>
+          <div class="text-xs text-stone-500 mt-1">of {{ guna.total_max }} &middot; {{ guna.percent }}%</div>
         </div>
-        <div class="text-sm text-stone-600 mt-1">{{ t(lang, 'matching_out_of', max=guna.total_max) }} &middot; {{ guna.percent }}%</div>
       </div>
 
-      <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'matching_verdict') }}</div>
-        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border {{ palette.border }} {{ palette.text }} font-semibold text-base">
-          <span class="w-2 h-2 rounded-full {{ palette.dot }}"></span>
-          {{ t(lang, verdict_key) }}
-        </div>
+      {# Verdict pill below dial #}
+      <div class="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 {{ palette.border }} bg-white {{ palette.text }} font-semibold text-base shadow-sm">
+        <span class="w-2.5 h-2.5 rounded-full {{ palette.dot }}"></span>
+        {{ t(lang, verdict_key) }}
+      </div>
 
-        <!-- Visual bar -->
-        <div class="mt-4 h-3 rounded-full bg-stone-200 overflow-hidden">
-          <div class="h-full {{ palette.dot }} transition-all" style="width: {{ guna.percent }}%;"></div>
-        </div>
-        <div class="flex justify-between text-xs text-stone-500 mt-1">
-          <span>0</span>
-          <span>18 (Avara)</span>
-          <span>24 (Madhyam)</span>
-          <span>30 (Uttam)</span>
-          <span>36</span>
-        </div>
+      {# Scale legend #}
+      <div class="mt-4 text-xs text-stone-500 tracking-wide">
+        0 &middot; 18 <span class="opacity-60">Avara</span> &middot;
+        24 <span class="opacity-60">Madhyam</span> &middot;
+        30 <span class="opacity-60">Uttam</span> &middot; 36
       </div>
 
     </div>
@@ -137,4 +155,48 @@
   </div>
 
 </main>
+
+{# ─── Score-dial animation (Issue #83) ────────────────────────────
+   Dial arc reveal via CSS keyframe (uses inline --target-offset CSS var
+   set by the Jinja template above). Number count-up driven by tiny JS
+   IIFE that reads data-score-target + data-score-precision from the
+   center-number div. Both animations honour prefers-reduced-motion. #}
+<style>
+  @keyframes scoreDialFill {
+    to { stroke-dashoffset: var(--target-offset); }
+  }
+  .score-dial-fg {
+    animation: scoreDialFill 1.4s ease-out forwards;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .score-dial-fg { animation: none; stroke-dashoffset: var(--target-offset); }
+  }
+</style>
+<script>
+  (function () {
+    var el = document.querySelector('.score-dial-num');
+    if (!el) return;
+    var target = parseFloat(el.dataset.scoreTarget) || 0;
+    var precision = parseInt(el.dataset.scorePrecision) || 1;
+
+    // Motion-safe: if user opted out, show the final number immediately.
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      el.textContent = target.toFixed(precision);
+      return;
+    }
+
+    var duration = 1400;        // matches the dial-fill duration
+    var start = performance.now();
+    function tick(now) {
+      var elapsed = now - start;
+      var t = Math.min(1, elapsed / duration);
+      // Ease-out cubic — matches the dial's ease-out for coherent motion
+      var eased = 1 - Math.pow(1 - t, 3);
+      el.textContent = (target * eased).toFixed(precision);
+      if (t < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+</script>
+
 {% endblock %}
