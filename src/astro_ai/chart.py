@@ -1268,6 +1268,126 @@ def format_yogas_for_prompt(yogas: tuple[YogaResult, ...], chart: Chart | None =
     return "\n".join(lines)
 
 
+_HOUSE_LORD_HINT: dict[int, str] = {
+    1:  "(self, personality)",
+    2:  "(wealth, family, speech)",
+    3:  "(courage, siblings, communication)",
+    4:  "(home, mother, comfort)",
+    5:  "(intelligence, children, romance)",
+    6:  "(service, enemies, health struggle)",
+    7:  "(marriage, partnership, public)",
+    8:  "(longevity, in-laws, hidden matters)",
+    9:  "(dharma, father, fortune)",
+    10: "(career, action, status)",
+    11: "(gains, elder siblings, network)",
+    12: "(loss, foreign, moksha)",
+}
+
+_PLACEMENT_HINT: dict[int, str] = {
+    1:  "grounds identity in the lord's themes",
+    2:  "channels resources / speech through the lord",
+    3:  "expresses via own effort and siblings",
+    4:  "roots in home + emotional life",
+    5:  "creative + child + past-life expression",
+    6:  "activates via service / conflict / effort — often struggle-first",
+    7:  "expresses through partnership + public dealings",
+    8:  "hidden / karmic / transformative expression",
+    9:  "flows through dharma + fortune + father",
+    10: "channels into career + public standing",
+    11: "gains + network + elder-sibling channel",
+    12: "loss / foreign / moksha channel",
+}
+
+
+def format_house_lords_for_prompt(chart: "Chart") -> str:
+    """House-lord placement report (Issue #60).
+
+    For each of the 12 houses: which planet rules the sign in that house,
+    where that planet actually sits, and a plain-English hint about what
+    the placement produces. Classical readings live on this data — a chart
+    with 10th lord in the 6th house reads very differently than 10th lord
+    in the 10th, even though both charts have "career" as a theme.
+    """
+    lagna_idx = _rashi_index(chart.lagna_rashi)
+    lines = ["--- HOUSE LORD PLACEMENTS (where each house-ruler sits) ---"]
+    planet_by_name = {p.name: p for p in chart.planets}
+    for house in range(1, 13):
+        sign_idx = (lagna_idx + house - 1) % 12
+        lord = RASHI_LORDS[sign_idx]
+        lord_planet = planet_by_name.get(lord)
+        if lord_planet is None:
+            continue
+        lord_house = lord_planet.house
+        theme = _HOUSE_LORD_HINT[house]
+        placement_note = _PLACEMENT_HINT.get(lord_house, "")
+        lines.append(
+            f"  {house}th lord {theme}: {lord} in house {lord_house} — {placement_note}"
+        )
+    return "\n".join(lines)
+
+
+# Dignity dispositor helpers (used by format_planet_dignity_for_prompt below)
+_OWN_SIGNS: dict[str, set[str]] = {
+    "Sun": {"Leo"},
+    "Moon": {"Cancer"},
+    "Mars": {"Aries", "Scorpio"},
+    "Mercury": {"Gemini", "Virgo"},
+    "Jupiter": {"Sagittarius", "Pisces"},
+    "Venus": {"Taurus", "Libra"},
+    "Saturn": {"Capricorn", "Aquarius"},
+}
+_EXALTATION_SIGN: dict[str, str] = {
+    "Sun": "Aries", "Moon": "Taurus", "Mars": "Capricorn",
+    "Mercury": "Virgo", "Jupiter": "Cancer", "Venus": "Pisces",
+    "Saturn": "Libra",
+}
+_DEBILITATION_SIGN: dict[str, str] = {
+    "Sun": "Libra", "Moon": "Scorpio", "Mars": "Cancer",
+    "Mercury": "Pisces", "Jupiter": "Capricorn", "Venus": "Virgo",
+    "Saturn": "Aries",
+}
+
+
+def format_planet_dignity_for_prompt(chart: "Chart") -> str:
+    """Planet dignity report (Issue #61).
+
+    For each of the 7 luminary+non-luminary planets (Rahu/Ketu don't own
+    signs so are omitted here — their dignity theory is contested), report:
+    - Sign + house
+    - Dignity: EXALTED / OWN SIGN / DEBILITATED / neutral
+    - Combust flag if within ~8° of Sun
+
+    Debilitation dramatically reverses a planet's expression; the LLM often
+    misses this in output. Explicit flag prevents "Sun in Libra is
+    authoritative" errors when Sun is deeply debilitated there.
+    """
+    lines = ["--- PLANET DIGNITY (own sign / exalted / debilitated / combust) ---"]
+    sun = next((p for p in chart.planets if p.name == "Sun"), None)
+    for p in chart.planets:
+        if p.name in ("Rahu", "Ketu"):
+            continue
+        # p.rashi is like "Aries (Mesha)"; extract just the English name
+        # for dict lookups against _OWN_SIGNS / _EXALTATION_SIGN / etc.
+        english_rashi = p.rashi.split(" ")[0]
+        dignities: list[str] = []
+        if english_rashi in _OWN_SIGNS.get(p.name, set()):
+            dignities.append("OWN SIGN")
+        if _EXALTATION_SIGN.get(p.name) == english_rashi:
+            dignities.append("EXALTED")
+        if _DEBILITATION_SIGN.get(p.name) == english_rashi:
+            dignities.append("DEBILITATED")
+        # Combust check: within ~8° of Sun (skip for Sun itself)
+        if sun is not None and p.name != "Sun":
+            sun_abs = _rashi_index(sun.rashi) * 30.0 + sun.longitude
+            p_abs = _rashi_index(p.rashi) * 30.0 + p.longitude
+            sep = min(abs(p_abs - sun_abs), 360 - abs(p_abs - sun_abs))
+            if sep < 8.0:
+                dignities.append(f"COMBUST ({sep:.1f}° from Sun)")
+        tag = " — ".join(dignities) if dignities else "neutral"
+        lines.append(f"  {p.name} in {p.rashi} (house {p.house}) — {tag}")
+    return "\n".join(lines)
+
+
 def format_manglik_for_prompt(details: ManglikDetails) -> str:
     """Tiny LLM hint for the Relationships section — only inject when relevant.
 
