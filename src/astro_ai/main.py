@@ -45,6 +45,29 @@ from astro_ai.llm import (
     parse_sectioned_reading,
 )
 from astro_ai.matching import compute_guna_milan
+from astro_ai.providers import AllProvidersExhausted
+
+
+def _llm_error_friendly(err: Exception) -> tuple[str, str]:
+    """Translate an internal LLM error into a user-friendly (title, message).
+
+    Rate-limit / high-demand errors get a distinct, retry-encouraging copy.
+    Any other error gets a generic apology — the raw exception class name and
+    message are NEVER exposed to the user (they leak internals and confuse
+    non-technical seekers). Full details are logged server-side for debugging.
+    """
+    if isinstance(err, AllProvidersExhausted):
+        return (
+            "High demand right now",
+            "🙏 Many seekers are asking questions at the same time. "
+            "Please try again in a couple of minutes — your input is safe "
+            "to re-submit exactly as you typed it.",
+        )
+    return (
+        "Something went wrong",
+        "We couldn't complete the reading this time. Please try again in "
+        "a moment — your input is safe to re-submit exactly as you typed it.",
+    )
 from astro_ai import cache, email_sender, feedback, festivals, learn_registry, shloks, storage, subscribers, trivia, users
 import time as _time
 from astro_ai.session import (
@@ -577,14 +600,16 @@ async def _render_natal_for(request: Request, details: BirthDetails,
             ),
         )
     except Exception as err:
+        log.exception("natal LLM generation failed")
+        _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request,
             "error.html",
             {
-                "title": "Couldn't generate a reading",
-                "message": f"{type(err).__name__}: {err}",
+                "title": _title,
+                "message": _msg,
             },
-            status_code=502,
+            status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
         )
     sections = parse_sectioned_reading(reading_text)
     sade_sati = compute_sade_sati_details(chart)
@@ -705,14 +730,16 @@ async def today(request: Request) -> HTMLResponse:
             ),
         )
     except Exception as err:
+        log.exception("today's outlook LLM generation failed")
+        _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request,
             "error.html",
             {
-                "title": "Couldn't generate today's reading",
-                "message": f"{type(err).__name__}: {err}",
+                "title": _title,
+                "message": _msg,
             },
-            status_code=502,
+            status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
         )
 
     return templates.TemplateResponse(
@@ -994,14 +1021,16 @@ async def _render_outlook(
             ),
         )
     except Exception as err:
+        log.exception("outlook LLM generation failed")
+        _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request,
             "error.html",
             {
-                "title": "Couldn't generate the reading",
-                "message": f"{type(err).__name__}: {err}",
+                "title": _title,
+                "message": _msg,
             },
-            status_code=502,
+            status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
         )
 
     # Split the LLM output: time-segmented prose intro + 5 life-area cards.
@@ -1085,11 +1114,12 @@ async def rashifal(request: Request) -> HTMLResponse:
             ),
         )
     except Exception as err:
+        log.exception("rashifal LLM generation failed")
+        _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request, "error.html",
-            {"title": "Couldn't generate Rashifal",
-             "message": f"{type(err).__name__}: {err}"},
-            status_code=502,
+            {"title": _title, "message": _msg},
+            status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
         )
 
     # Augment each section with glyph + teaser + full body so the template
@@ -1345,9 +1375,11 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
                 for title, body in parse_sectioned_reading(text)
             ]
         except Exception as err:
+            log.exception("rashifal (per-rashi API) LLM generation failed")
+            _title, _msg = _llm_error_friendly(err)
             return JSONResponse(
-                {"ok": False, "error": f"Couldn't load Rashifal ({lang}): {type(err).__name__}: {err}"},
-                status_code=502,
+                {"ok": False, "error": _msg},
+                status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
             )
 
     # Render + send per subscriber. Panchang is per-city, cached across
@@ -1584,11 +1616,12 @@ async def dasha_deep_dive(request: Request) -> HTMLResponse:
             ),
         )
     except Exception as err:
+        log.exception("dasha deep dive LLM generation failed")
+        _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request, "error.html",
-            {"title": "Couldn't generate the deep dive",
-             "message": f"{type(err).__name__}: {err}"},
-            status_code=502,
+            {"title": _title, "message": _msg},
+            status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
         )
 
     sections = parse_sectioned_reading(text)
@@ -1791,11 +1824,12 @@ async def ask_submit(
             ),
         )
     except Exception as err:
+        log.exception("ask LLM generation failed")
+        _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request, "error.html",
-            {"title": "Couldn't generate the answer",
-             "message": f"{type(err).__name__}: {err}"},
-            status_code=502,
+            {"title": _title, "message": _msg},
+            status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
         )
 
     # Save the Ask answer to the signed-in user's reading history so they can
