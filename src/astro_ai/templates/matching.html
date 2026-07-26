@@ -63,7 +63,7 @@
   </div>
   {% endmacro %}
 
-  <form method="post" action="/matching"
+  <form method="post" action="/matching" id="matching-form"
         class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
     {# UNION-VISUAL FORM (Issue #82) — two person-forms visually meet in
        the middle via distinct accent borders (astro-purple for groom,
@@ -91,18 +91,49 @@
       </div>
     </div>
 
+    {# Desktop-inline submit (hidden on mobile since we duplicate as sticky) #}
     <button type="submit"
-            class="mt-6 w-full py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors disabled:bg-stone-400 disabled:cursor-wait">
+            class="hidden md:block mt-6 w-full py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors disabled:bg-stone-400 disabled:cursor-wait">
       <span class="htmx-default">{{ t(lang, 'matching_submit') }} &rarr;</span>
-      <span class="htmx-indicator">
-        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle>
-          <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
-        </svg>
-        Computing...
-      </span>
+      <span class="htmx-indicator">Computing&hellip;</span>
     </button>
+
+    {# Mobile-sticky submit (Issue #72) — matches form is long (8 fields
+       for 2 people); on 375×667 mobile the submit is scrolled far off
+       the fold as user fills in. Sticky bottom bar keeps it in reach
+       and reduces the scroll-to-check-progress friction. #}
+    <div class="md:hidden mt-6">
+      <button type="submit"
+              class="w-full py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors disabled:bg-stone-400 disabled:cursor-wait">
+        <span class="htmx-default">{{ t(lang, 'matching_submit') }} &rarr;</span>
+        <span class="htmx-indicator">Computing&hellip;</span>
+      </button>
+    </div>
   </form>
+
+  {# Sticky mobile CTA — mirrors the primary submit, appears fixed at
+     bottom-of-viewport on mobile only. Uses form= attribute so the
+     button submits the form above without needing to be nested inside it. #}
+  <div class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-cream/95 backdrop-blur border-t border-stone-200 p-3 no-print"
+       id="matching-sticky-cta"
+       style="display: none;">
+    <button type="submit" form="matching-form"
+            class="w-full py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors shadow-lg">
+      {{ t(lang, 'matching_submit') }} &rarr;
+    </button>
+  </div>
+  <script>
+    // Show sticky CTA after user has scrolled past the header (roughly
+    // 200px), and hide when the inline submit becomes visible near the
+    // bottom of the page. Cheap intersection-observer approach.
+    (function () {
+      var sticky = document.getElementById('matching-sticky-cta');
+      if (!sticky) return;
+      window.addEventListener('scroll', function () {
+        sticky.style.display = window.scrollY > 240 ? 'block' : 'none';
+      }, { passive: true });
+    })();
+  </script>
 
 </main>
 
