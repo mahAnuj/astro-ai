@@ -338,4 +338,47 @@
     font-style: italic;
   }
 </style>
+
+{# Sticky mobile Kundli CTA (Issue #73) — the bottom CTA banner is at
+   the very END of every learn article (~2000 words). Many mobile
+   readers bounce before reaching it. Sticky bar appears after 50%
+   scroll on mobile only; dismissible with X. Not intrusive: only fires
+   after real reading engagement, and the reader can dismiss it. #}
+<div id="learn-sticky-cta"
+     class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-astro-200 px-4 py-3 flex items-center gap-3 no-print"
+     style="display: none; box-shadow: 0 -4px 20px rgba(107, 33, 168, 0.08);">
+  <div class="flex-1 min-w-0">
+    <div class="text-xs font-semibold text-astro-700">Check your own chart</div>
+    <div class="text-[11px] text-stone-500 truncate">Free Janma Kundli · plain English + Hindi</div>
+  </div>
+  <a href="/"
+     class="flex-shrink-0 inline-flex items-center gap-1.5 bg-astro-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
+    Free Kundli &rarr;
+  </a>
+  <button type="button" id="learn-sticky-close" aria-label="Dismiss"
+          class="flex-shrink-0 text-stone-400 hover:text-stone-700 p-1">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+</div>
+<script>
+  (function () {
+    var bar = document.getElementById('learn-sticky-cta');
+    if (!bar) return;
+    // Respect user's dismissal for the session
+    if (sessionStorage.getItem('learn-sticky-dismissed') === '1') return;
+    // Show after user scrolls past ~50% of the article
+    function onScroll() {
+      var scrollTop = window.scrollY;
+      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight > 0 && scrollTop / docHeight > 0.35) {
+        bar.style.display = 'flex';
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    document.getElementById('learn-sticky-close').addEventListener('click', function () {
+      bar.style.display = 'none';
+      sessionStorage.setItem('learn-sticky-dismissed', '1');
+    });
+  })();
+</script>
 {% endblock %}
