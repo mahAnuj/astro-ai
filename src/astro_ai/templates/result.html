@@ -39,11 +39,16 @@
        NOTE: no data-reveal on this section — the chart has its own
        stroke-draw animation via .chart-draw. Double-wrapping in
        data-reveal (which starts at opacity: 0) was hiding the chart. -->
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-7">
+  <section class="bg-astro-50/40 rounded-2xl border border-astro-100 shadow-sm p-5 sm:p-7">
+    {# Title at top — hero chart deserves a proper heading, not a tiny caption. #}
+    <div class="text-center mb-4 sm:mb-5">
+      <h2 class="font-display text-2xl sm:text-3xl text-astro-800">{{ t(lang, 'lagna_kundali') }}</h2>
+      <p class="text-sm text-stone-500 mt-1">{{ chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }} &middot; North Indian style</p>
+    </div>
     {# Signature moment: strokes draw in sequence, labels fade in after.
        Same animation as before; just repositioned. #}
     <svg viewBox="0 0 400 400" class="w-full max-w-lg mx-auto block" xmlns="http://www.w3.org/2000/svg" aria-label="{{ t(lang, 'lagna_kundali') }}">
-      <rect x="2" y="2" width="396" height="396" fill="white" stroke="#6b21a8" stroke-width="2"
+      <rect x="2" y="2" width="396" height="396" fill="transparent" stroke="#6b21a8" stroke-width="2"
             class="chart-draw" style="--dash: 1584; animation-delay: 0ms"/>
       {# Diamond outline — 4 sides #}
       <line x1="200" y1="2"   x2="398" y2="200" stroke="#6b21a8" stroke-width="2"
@@ -73,9 +78,6 @@
         {% endfor %}
       </g>
     </svg>
-    <p class="text-center text-xs font-semibold uppercase tracking-wider text-stone-500 mt-4">
-      {{ t(lang, 'lagna_kundali') }}
-    </p>
   </section>
 
   <!-- SUMMARY CHIPS ----------------------------------------------- -->
