@@ -322,6 +322,36 @@
   </section>
   {% endif %}
 
+  {# Reading-progress bar (Issue #81) — sticky slim bar at the top of the
+     viewport showing how far into the reading the user has scrolled.
+     Fills palette-purple as scroll advances. Motion-safe: without JS,
+     bar stays at 0% (no fallback needed since it's an enhancement). #}
+  <div id="reading-progress-bar"
+       class="fixed top-0 left-0 right-0 z-40 h-1 bg-stone-100/80 no-print pointer-events-none"
+       style="display: none;" aria-hidden="true">
+    <div id="reading-progress-fill" class="h-full bg-astro-500 origin-left transition-transform duration-100"
+         style="transform: scaleX(0);"></div>
+  </div>
+  <script>
+    (function () {
+      var bar = document.getElementById('reading-progress-bar');
+      var fill = document.getElementById('reading-progress-fill');
+      if (!bar || !fill) return;
+      // Only show when there's meaningful scroll (long-enough page)
+      function tick() {
+        var scrollTop = window.scrollY;
+        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        if (docHeight < 400) { bar.style.display = 'none'; return; }
+        var pct = Math.max(0, Math.min(1, scrollTop / docHeight));
+        fill.style.transform = 'scaleX(' + pct + ')';
+        bar.style.display = pct > 0.02 ? 'block' : 'none';
+      }
+      window.addEventListener('scroll', tick, { passive: true });
+      window.addEventListener('resize', tick);
+      tick();
+    })();
+  </script>
+
   <!-- SECTIONED LLM READING (Issue #80 — color-coded chapters) ---
        Each section title maps to a subtle theme accent (border-l colour +
        icon glyph) so the reading feels like distinct chapters, not
