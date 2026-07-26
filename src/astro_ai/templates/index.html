@@ -39,8 +39,10 @@
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20 grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
     <!-- LEFT — value prop -->
     <div>
-      <!-- Navagraha Stotra invocation — salutes all 9 grahas as deities -->
-      <div class="mb-5">
+      {# Navagraha Stotra invocation (Issue #75) — hidden on mobile so the
+         above-fold on 375×667 shows the value prop + form / mini-chart
+         first. Desktop keeps the shloka since there's viewport room. #}
+      <div class="hidden sm:block mb-5">
         <p class="font-display text-base sm:text-lg text-astro-700 italic leading-snug" lang="sa">
           नमः सूर्याय चन्द्राय मङ्गलाय बुधाय च।<br>
           गुरु शुक्र शनिभ्यश्च राहवे केतवे नमः॥
