@@ -318,10 +318,37 @@
   </section>
   {% endif %}
 
-  <!-- SECTIONED LLM READING --------------------------------------- -->
+  <!-- SECTIONED LLM READING (Issue #80 — color-coded chapters) ---
+       Each section title maps to a subtle theme accent (border-l colour +
+       icon glyph) so the reading feels like distinct chapters, not
+       identical white cards. Palette stays within the semantic canonical
+       (astro / amber / emerald / rose — no off-palette blues). -->
+  {% set _section_themes = {
+    'Personality':      {'border': 'border-l-amber-400',   'icon': '☉'},
+    'Character':        {'border': 'border-l-amber-400',   'icon': '☉'},
+    'Career':           {'border': 'border-l-astro-500',   'icon': '⚒'},
+    'Profession':       {'border': 'border-l-astro-500',   'icon': '⚒'},
+    'Wealth':           {'border': 'border-l-amber-500',   'icon': '◎'},
+    'Money':            {'border': 'border-l-amber-500',   'icon': '◎'},
+    'Marriage':         {'border': 'border-l-rose-400',    'icon': '♀'},
+    'Relationships':    {'border': 'border-l-rose-400',    'icon': '♀'},
+    'Health':           {'border': 'border-l-emerald-400', 'icon': '⚕'},
+    'Wellbeing':        {'border': 'border-l-emerald-400', 'icon': '⚕'},
+    'Travel':           {'border': 'border-l-astro-400',   'icon': '✈'},
+    'Opportunities':    {'border': 'border-l-astro-400',   'icon': '✈'},
+    'Life Stages':      {'border': 'border-l-astro-600',   'icon': '⏳'},
+    'Life':             {'border': 'border-l-astro-600',   'icon': '⏳'},
+  } %}
   {% for title, body in sections %}
-  <article data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
-    <h2 class="font-display text-xl text-astro-700 mb-3">{{ title }}</h2>
+  {# Pick a theme by matching the first word of the section title against
+     the map (falls back to neutral astro-purple). #}
+  {% set _first_word = title.split()[0] if title else '' %}
+  {% set _theme = _section_themes.get(_first_word, {'border': 'border-l-astro-500', 'icon': '⋄'}) %}
+  <article data-reveal class="bg-white rounded-2xl border border-stone-200 border-l-4 {{ _theme.border }} shadow-sm p-6 sm:p-8">
+    <h2 class="font-display text-xl text-astro-700 mb-3 flex items-center gap-2.5">
+      <span aria-hidden="true" class="text-2xl leading-none opacity-70">{{ _theme.icon }}</span>
+      <span>{{ title }}</span>
+    </h2>
     <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-base">{{ body | linkify_learn }}</p>
   </article>
   {% endfor %}
