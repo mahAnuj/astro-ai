@@ -50,9 +50,17 @@
   <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
     {% if not answer %}
     <h2 class="font-display text-xl text-stone-900 mb-1">What's on your mind?</h2>
+    {% if remaining_today > 0 %}
+    {# Positive framing (Issue #70): "Free · N per day" instead of scarcity-
+       leading "You have N left today". Same info, less loss-aversion friction. #}
     <p class="text-sm text-stone-500 mb-4">
-      You have <strong>{{ remaining_today }}</strong> question{% if remaining_today != 1 %}s{% endif %} left today.
+      Free &middot; up to <strong>3</strong> questions per day &middot; answers grounded in your chart.
     </p>
+    {% else %}
+    <p class="text-sm text-stone-500 mb-4">
+      You've used today's free questions. Come back tomorrow &mdash; your chart's already saved.
+    </p>
+    {% endif %}
     {% else %}
     <h2 class="font-display text-lg text-stone-900 mb-3">Ask another</h2>
     {% endif %}
