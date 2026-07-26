@@ -57,20 +57,58 @@
         and Kundli matching for marriage &mdash; with the same chart math professional
         astrologers use.
       </p>
-      <ul class="space-y-2.5 text-stone-700">
-        <li class="flex items-start gap-2.5">
-          <svg class="w-5 h-5 text-astro-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-          <span>Lagna, all 9 grahas, houses, nakshatras &mdash; matches Future Point exactly</span>
-        </li>
-        <li class="flex items-start gap-2.5">
-          <svg class="w-5 h-5 text-astro-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-          <span>Readings drawn from <em>your</em> chart &mdash; not a generic Sun-sign template</span>
-        </li>
-        <li class="flex items-start gap-2.5">
-          <svg class="w-5 h-5 text-astro-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-          <span>Free Kundli &amp; daily Rashifal, no signup, no spam</span>
-        </li>
-      </ul>
+      {# SAMPLE KUNDLI PREVIEW (Issue #76) — replaces the 3-checkmark
+         bullet list. A visual preview of the outcome (Vedic is a visual
+         tradition; showing beats telling). Uses the same .chart-draw
+         line-drawing animation as the /kundli page, creating a
+         consistent visual signature across landing → generated chart. #}
+      <div class="mt-2 max-w-xs">
+        <div class="bg-white rounded-2xl border border-stone-200 shadow-md p-3.5">
+          <svg viewBox="0 0 400 400" class="w-full block" xmlns="http://www.w3.org/2000/svg" aria-label="Sample Janma Kundali preview">
+            {# Outer border #}
+            <rect x="2" y="2" width="396" height="396" fill="white" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 1584; animation-delay: 200ms"/>
+            {# Diamond outline — 4 sides #}
+            <line x1="200" y1="2"   x2="398" y2="200" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 280; animation-delay: 400ms"/>
+            <line x1="398" y1="200" x2="200" y2="398" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 280; animation-delay: 520ms"/>
+            <line x1="200" y1="398" x2="2"   y2="200" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 280; animation-delay: 640ms"/>
+            <line x1="2"   y1="200" x2="200" y2="2"   stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 280; animation-delay: 760ms"/>
+            {# Two diagonals #}
+            <line x1="2"   y1="2"   x2="398" y2="398" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 560; animation-delay: 920ms"/>
+            <line x1="398" y1="2"   x2="2"   y2="398" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 560; animation-delay: 1050ms"/>
+            {# Sample house numbers 1-12 in North-Indian arrangement.
+               These are STATIC placeholders — real chart uses per-user
+               computed positions. Numbers fade in after strokes complete. #}
+            <g class="chart-labels">
+              <text x="200" y="88"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">1</text>
+              <text x="110" y="80"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">2</text>
+              <text x="80"  y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">3</text>
+              <text x="112" y="205" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">4</text>
+              <text x="80"  y="295" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">5</text>
+              <text x="110" y="325" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">6</text>
+              <text x="200" y="320" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">7</text>
+              <text x="290" y="325" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">8</text>
+              <text x="320" y="295" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">9</text>
+              <text x="288" y="205" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">10</text>
+              <text x="320" y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">11</text>
+              <text x="290" y="80"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">12</text>
+              {# One sample planet glyph to hint at what a real chart shows #}
+              <text x="200" y="115" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">La</text>
+              <text x="112" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">Mo</text>
+              <text x="288" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">Su</text>
+            </g>
+          </svg>
+        </div>
+        <p class="text-center text-xs text-stone-500 italic mt-2.5">
+          Sample chart &mdash; yours will use your actual birth data
+        </p>
+      </div>
     </div>
 
     <!-- RIGHT — chart list if cookie present, else form -->
