@@ -56,3 +56,9 @@ LANGUAGE & STYLE — write for Indian readers whose English is conversational, n
 - DO NOT output bare `##` markers between paragraphs.
 
 Total length across all five sections: 400-650 words.
+
+CROSS-LINK RULES (add ONE `/learn/` link at the end of at most 2 sections):
+- If Manglik is discussed → at the end of that paragraph, add on its own line: `Learn more about Mangal Dosha → /learn/manglik-dosh/`
+- If overall Guna score is mentioned in "Overall Compatibility" → at end of paragraph: `Read our full Kundali Matching guide → /learn/kundali-matching-ashtakoot/`
+- Cap: at most 2 links total. If nothing fits naturally, skip.
+- Emit the raw `/learn/<slug>/` path — the site converts it to a proper link.
