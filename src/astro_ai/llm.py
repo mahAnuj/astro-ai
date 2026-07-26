@@ -37,6 +37,8 @@ from astro_ai.chart import (
     format_yogas_for_prompt,
     format_topic_summaries_for_prompt,
     topic_summaries_for_chart,
+    format_house_lords_for_prompt,
+    format_planet_dignity_for_prompt,
 )
 from .learn_registry import ARTICLES
 
@@ -110,6 +112,10 @@ def _format_seeker_message(
     name_line = f"Name: {details.name}" if details.name.strip() else "Name: (not provided)"
     manglik_block = format_manglik_for_prompt(compute_manglik_details(chart))
     yogas_block = format_yogas_for_prompt(compute_yogas(chart), chart=chart)
+    # New chart-specific structured blocks (Issues #60 + #61) — house-lord
+    # placements + planet dignity. Deterministic per chart; cheap to compute.
+    house_lords_block = format_house_lords_for_prompt(chart)
+    dignity_block = format_planet_dignity_for_prompt(chart)
     # Topic summaries — distilled article knowledge selected by chart features.
     # Cheap (~400 tokens for 3-5 summaries) and gives the LLM specific classical
     # depth PLUS cross-link destinations for the /learn/ articles.
@@ -118,6 +124,10 @@ def _format_seeker_message(
         summaries = topic_summaries_for_chart(chart, dasha_state, ARTICLES)
         topic_summaries_block = format_topic_summaries_for_prompt(summaries)
     optional_blocks = ""
+    if house_lords_block:
+        optional_blocks += f"\n\n{house_lords_block}"
+    if dignity_block:
+        optional_blocks += f"\n\n{dignity_block}"
     if manglik_block:
         optional_blocks += f"\n\n{manglik_block}"
     if yogas_block:
