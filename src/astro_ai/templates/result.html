@@ -30,6 +30,50 @@
     </p>
   </header>
 
+  <!-- CHART HERO — the visual anchor of the reading (Issue #79) --
+       Moved from below the LLM prose sections to the TOP so the chart
+       IS the hero of the /kundli page (Vedic reading = chart-first,
+       prose-second). The planetary-positions table stays lower as
+       detailed data reference. #}
+  <section data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-7">
+    {# Signature moment: strokes draw in sequence, labels fade in after.
+       Same animation as before; just repositioned. #}
+    <svg viewBox="0 0 400 400" class="w-full max-w-lg mx-auto block" xmlns="http://www.w3.org/2000/svg" aria-label="{{ t(lang, 'lagna_kundali') }}">
+      <rect x="2" y="2" width="396" height="396" fill="white" stroke="#6b21a8" stroke-width="2"
+            class="chart-draw" style="--dash: 1584; animation-delay: 0ms"/>
+      {# Diamond outline — 4 sides #}
+      <line x1="200" y1="2"   x2="398" y2="200" stroke="#6b21a8" stroke-width="2"
+            class="chart-draw" style="--dash: 280; animation-delay: 200ms"/>
+      <line x1="398" y1="200" x2="200" y2="398" stroke="#6b21a8" stroke-width="2"
+            class="chart-draw" style="--dash: 280; animation-delay: 320ms"/>
+      <line x1="200" y1="398" x2="2"   y2="200" stroke="#6b21a8" stroke-width="2"
+            class="chart-draw" style="--dash: 280; animation-delay: 440ms"/>
+      <line x1="2"   y1="200" x2="200" y2="2"   stroke="#6b21a8" stroke-width="2"
+            class="chart-draw" style="--dash: 280; animation-delay: 560ms"/>
+      {# Two diagonals #}
+      <line x1="2"   y1="2"   x2="398" y2="398" stroke="#6b21a8" stroke-width="2"
+            class="chart-draw" style="--dash: 560; animation-delay: 720ms"/>
+      <line x1="398" y1="2"   x2="2"   y2="398" stroke="#6b21a8" stroke-width="2"
+            class="chart-draw" style="--dash: 560; animation-delay: 850ms"/>
+      {# Sign numbers + planet labels #}
+      <g class="chart-labels">
+        {% for c in chart.diamond_chart() %}
+        <text x="{{ c.sign_x }}" y="{{ c.sign_y }}" text-anchor="middle"
+              font-size="11" font-weight="700" fill="#a16207"
+              style="font-family: Inter, sans-serif">{{ c.sign_num }}</text>
+        {% for p in c.planets %}
+        <text x="{{ c.planet_cx }}" y="{{ c.planet_cy + loop.index0 * 13 }}" text-anchor="middle"
+              font-size="11" font-weight="600" fill="#1c1917"
+              style="font-family: Inter, sans-serif">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}<tspan font-size="9" fill="#b45309">&nbsp;R</tspan>{% endif %}</text>
+        {% endfor %}
+        {% endfor %}
+      </g>
+    </svg>
+    <p class="text-center text-xs font-semibold uppercase tracking-wider text-stone-500 mt-4">
+      {{ t(lang, 'lagna_kundali') }}
+    </p>
+  </section>
+
   <!-- SUMMARY CHIPS ----------------------------------------------- -->
   <section class="grid grid-cols-1 sm:grid-cols-3 gap-3">
     <div class="bg-white rounded-2xl border border-stone-200 p-4 flex items-start gap-3">
@@ -308,52 +352,9 @@
     </div>
   </section>
 
-  <!-- DIAMOND CHART + TABLE --------------------------------------- -->
-  <section data-reveal class="grid lg:grid-cols-5 gap-6">
-
-    <div class="lg:col-span-2 bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
-      <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-3">{{ t(lang, 'lagna_kundali') }}</h2>
-      {# Signature moment: each stroke draws itself in sequence
-         (border → four diamond sides → two diagonals) and then all
-         labels fade in. Powered by stroke-dashoffset animation via
-         the .chart-draw class + per-element --dash CSS var (length
-         of the path) and animation-delay in inline style. The
-         diamond polygon is split into 4 individual <line> elements
-         so each side can draw independently. #}
-      <svg viewBox="0 0 400 400" class="w-full max-w-md mx-auto block" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2" y="2" width="396" height="396" fill="white" stroke="#6b21a8" stroke-width="2"
-              class="chart-draw" style="--dash: 1584; animation-delay: 0ms"/>
-        {# Diamond outline — 4 sides, each ~280px long. #}
-        <line x1="200" y1="2"   x2="398" y2="200" stroke="#6b21a8" stroke-width="2"
-              class="chart-draw" style="--dash: 280; animation-delay: 200ms"/>
-        <line x1="398" y1="200" x2="200" y2="398" stroke="#6b21a8" stroke-width="2"
-              class="chart-draw" style="--dash: 280; animation-delay: 320ms"/>
-        <line x1="200" y1="398" x2="2"   y2="200" stroke="#6b21a8" stroke-width="2"
-              class="chart-draw" style="--dash: 280; animation-delay: 440ms"/>
-        <line x1="2"   y1="200" x2="200" y2="2"   stroke="#6b21a8" stroke-width="2"
-              class="chart-draw" style="--dash: 280; animation-delay: 560ms"/>
-        {# Two diagonals — ~560px each. #}
-        <line x1="2"   y1="2"   x2="398" y2="398" stroke="#6b21a8" stroke-width="2"
-              class="chart-draw" style="--dash: 560; animation-delay: 720ms"/>
-        <line x1="398" y1="2"   x2="2"   y2="398" stroke="#6b21a8" stroke-width="2"
-              class="chart-draw" style="--dash: 560; animation-delay: 850ms"/>
-        {# Sign numbers + planet labels fade in after all strokes finish. #}
-        <g class="chart-labels">
-          {% for c in chart.diamond_chart() %}
-          <text x="{{ c.sign_x }}" y="{{ c.sign_y }}" text-anchor="middle"
-                font-size="11" font-weight="700" fill="#a16207"
-                style="font-family: Inter, sans-serif">{{ c.sign_num }}</text>
-          {% for p in c.planets %}
-          <text x="{{ c.planet_cx }}" y="{{ c.planet_cy + loop.index0 * 13 }}" text-anchor="middle"
-                font-size="11" font-weight="600" fill="#1c1917"
-                style="font-family: Inter, sans-serif">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}<tspan font-size="9" fill="#b45309">&nbsp;R</tspan>{% endif %}</text>
-          {% endfor %}
-          {% endfor %}
-        </g>
-      </svg>
-    </div>
-
-    <div class="lg:col-span-3 bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
+  <!-- PLANETARY POSITIONS — data reference (chart itself now in hero) -->
+  <section data-reveal>
+    <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
       <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-3">{{ t(lang, 'planetary_positions') }}</h2>
       <table class="w-full text-sm">
         <tbody>
