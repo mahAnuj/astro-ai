@@ -403,6 +403,44 @@
     animation: breathe 2s ease-in-out infinite;
   }
 
+  /* ─── Chart-cast signature animation (Issue #78) ─────────────────
+     Diamond kundali outline drawn line-by-line via stroke-dashoffset.
+     Plays once per loader-show for ~1.5s, then holds. Signature moment
+     that turns the LLM-generation wait from friction into anticipation. */
+  #kundli-loader .chart-cast {
+    width: 180px;
+    height: 180px;
+    color: #6b21a8;
+    filter: drop-shadow(0 0 20px rgba(107, 33, 168, 0.15));
+  }
+  #kundli-loader .chart-cast .cast-line {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 800;
+    stroke-dashoffset: 800;
+    animation: castDraw 1.4s ease-out forwards;
+  }
+  #kundli-loader .chart-cast .cast-glyph {
+    fill: #f59e0b;
+    opacity: 0;
+    animation: castGlyphIn 500ms ease-out 1.3s forwards;
+  }
+  @keyframes castDraw {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes castGlyphIn {
+    from { opacity: 0; transform: scale(0.6); }
+    to   { opacity: 1; transform: scale(1);   }
+  }
+  /* Motion-safe: skip the draw-in animation for users who opted out */
+  @media (prefers-reduced-motion: reduce) {
+    #kundli-loader .chart-cast .cast-line { stroke-dashoffset: 0; animation: none; }
+    #kundli-loader .chart-cast .cast-glyph { opacity: 1; animation: none; }
+  }
+
   /* ─── Nav dropdown smooth expand ────────────────────────────────────
      The "Readings ▾" dropdown in _nav.html toggles between the classes
      .md\:hidden (closed) and .md\:flex (open) on desktop. Currently
@@ -601,24 +639,36 @@
      responses. The rotating mandala + Sanskrit caption reads as
      intentional preparation rather than an interruption. #}
   <div id="kundli-loader" role="status" aria-live="polite" aria-hidden="true">
-    <svg class="mandala" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-      {# Outer petals #}
-      <g>
-        {% for angle in [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330] %}
-        <ellipse cx="60" cy="15" rx="4" ry="12" transform="rotate({{ angle }} 60 60)" opacity="0.55"/>
-        {% endfor %}
-      </g>
-      {# Middle concentric ring #}
-      <circle cx="60" cy="60" r="30" opacity="0.7"/>
-      {# Inner rotating star — counter-rotates for compound-motion feel #}
-      <g class="mandala-inner">
-        <circle cx="60" cy="60" r="18" opacity="0.55"/>
-        <polygon points="60,45 68,60 60,75 52,60" opacity="0.7"/>
-        <polygon points="45,60 60,52 75,60 60,68" opacity="0.7"/>
-        <circle cx="60" cy="60" r="4" fill="currentColor" stroke="none"/>
-      </g>
+    {# Chart-cast animation (Issue #78) — the kundali diamond outline draws
+       in line-by-line via stroke-dashoffset, with the sacred Om glyph
+       fading in at the centre at the end. Signature moment that primes
+       the seeker for the reading they're about to see. #}
+    <svg class="chart-cast" viewBox="0 0 200 200" aria-hidden="true">
+      {# Outer border rect — draws first #}
+      <rect x="2" y="2" width="196" height="196" rx="4"
+            class="cast-line" style="animation-delay: 0ms"/>
+      {# Diamond outline — 4 lines drawing in from top, clockwise #}
+      <line x1="100" y1="2"  x2="198" y2="100"
+            class="cast-line" style="animation-delay: 150ms"/>
+      <line x1="198" y1="100" x2="100" y2="198"
+            class="cast-line" style="animation-delay: 280ms"/>
+      <line x1="100" y1="198" x2="2"   y2="100"
+            class="cast-line" style="animation-delay: 410ms"/>
+      <line x1="2"   y1="100" x2="100" y2="2"
+            class="cast-line" style="animation-delay: 540ms"/>
+      {# Two internal diagonals — draw last #}
+      <line x1="2"   y1="2"   x2="198" y2="198"
+            class="cast-line" style="animation-delay: 700ms"/>
+      <line x1="198" y1="2"   x2="2"   y2="198"
+            class="cast-line" style="animation-delay: 830ms"/>
+      {# Central Om glyph — fades in after diamond lines complete #}
+      <circle cx="100" cy="100" r="14" class="cast-glyph"/>
+      <text x="100" y="110" text-anchor="middle" class="cast-glyph"
+            font-family="Crimson Pro, Georgia, serif"
+            font-size="24" font-weight="700" fill="#3b0764"
+            style="transform-origin: 100px 100px">ॐ</text>
     </svg>
-    <div class="caption">Reading your chart&hellip;</div>
+    <div class="caption">Casting your chart&hellip;</div>
   </div>
   <script>
     (function () {
