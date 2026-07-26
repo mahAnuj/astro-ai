@@ -1419,6 +1419,56 @@ _NAKSHATRA_ARCHETYPE_SHORT: dict[str, str] = {
 }
 
 
+def _house_diff(from_house: int, to_house: int) -> int:
+    """1-based house distance from -> to (1..12 inclusive)."""
+    return ((to_house - from_house) % 12) + 1
+
+
+def format_aspects_for_prompt(chart: "Chart") -> str:
+    """Classical Vedic aspects report (Issue #63).
+
+    Every planet aspects the 7th house/planet (opposition). Beyond that:
+    - Mars additionally aspects the 4th and 8th from itself
+    - Jupiter additionally aspects the 5th and 9th
+    - Saturn additionally aspects the 3rd and 10th
+    - Rahu/Ketu follow the same rules as Jupiter (5/7/9) in most schools
+
+    Emits the special aspects for each planet — the everyday 7th-aspect
+    (opposition) is universal so we skip it to save tokens; the LLM can
+    infer it if needed. Special aspects are what classically add colour
+    to marriage / career / partnership readings.
+    """
+    _special: dict[str, tuple[int, ...]] = {
+        "Mars":    (4, 8),
+        "Jupiter": (5, 9),
+        "Saturn":  (3, 10),
+        "Rahu":    (5, 9),
+        "Ketu":    (5, 9),
+    }
+    _archetype: dict[str, str] = {
+        "Mars":    "Mars energy — pushes / disrupts / activates",
+        "Jupiter": "Jupiter grace — expands / blesses / protects",
+        "Saturn":  "Saturn discipline — delays / matures / weighs",
+        "Rahu":    "Rahu amplifier — obsesses / distorts / boundary-crosses",
+        "Ketu":    "Ketu detachment — thins / releases / spiritualises",
+    }
+    lines = ["--- CLASSICAL ASPECTS (special drishti — 7th is universal, skipped) ---"]
+    for p in chart.planets:
+        aspects = _special.get(p.name)
+        if not aspects:
+            continue
+        aspected_houses = []
+        for a in aspects:
+            aspected_house = ((p.house - 1 + a - 1) % 12) + 1
+            aspected_houses.append(str(aspected_house))
+        archetype = _archetype.get(p.name, "")
+        lines.append(
+            f"  {p.name} in house {p.house} — aspects houses "
+            f"{' + '.join(aspected_houses)} ({archetype})"
+        )
+    return "\n".join(lines)
+
+
 def format_planet_nakshatras_for_prompt(chart: "Chart") -> str:
     """Nakshatra placement report per planet (Issue #59).
 

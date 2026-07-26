@@ -40,6 +40,7 @@ from astro_ai.chart import (
     format_house_lords_for_prompt,
     format_planet_dignity_for_prompt,
     format_planet_nakshatras_for_prompt,
+    format_aspects_for_prompt,
 )
 from .learn_registry import ARTICLES
 
@@ -119,6 +120,7 @@ def _format_seeker_message(
     house_lords_block = format_house_lords_for_prompt(chart)
     dignity_block = format_planet_dignity_for_prompt(chart)
     nakshatras_block = format_planet_nakshatras_for_prompt(chart)
+    aspects_block = format_aspects_for_prompt(chart)
     # Topic summaries — distilled article knowledge selected by chart features.
     # Cheap (~400 tokens for 3-5 summaries) and gives the LLM specific classical
     # depth PLUS cross-link destinations for the /learn/ articles.
@@ -133,6 +135,8 @@ def _format_seeker_message(
         optional_blocks += f"\n\n{dignity_block}"
     if nakshatras_block:
         optional_blocks += f"\n\n{nakshatras_block}"
+    if aspects_block:
+        optional_blocks += f"\n\n{aspects_block}"
     if manglik_block:
         optional_blocks += f"\n\n{manglik_block}"
     if yogas_block:
