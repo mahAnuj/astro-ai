@@ -34,8 +34,12 @@
        Moved from below the LLM prose sections to the TOP so the chart
        IS the hero of the /kundli page (Vedic reading = chart-first,
        prose-second). The planetary-positions table stays lower as
-       detailed data reference. #}
-  <section data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-7">
+       detailed data reference.
+
+       NOTE: no data-reveal on this section — the chart has its own
+       stroke-draw animation via .chart-draw. Double-wrapping in
+       data-reveal (which starts at opacity: 0) was hiding the chart. -->
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-7">
     {# Signature moment: strokes draw in sequence, labels fade in after.
        Same animation as before; just repositioned. #}
     <svg viewBox="0 0 400 400" class="w-full max-w-lg mx-auto block" xmlns="http://www.w3.org/2000/svg" aria-label="{{ t(lang, 'lagna_kundali') }}">
