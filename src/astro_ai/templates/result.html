@@ -404,7 +404,8 @@
   {% for title, body in sections %}
   {% set _first_word = title.split()[0] if title else '' %}
   {% set _icon = _section_icons.get(_first_word, '⋄') %}
-  <article data-reveal class="bg-white rounded-2xl border border-stone-200 border-l-2 border-l-astro-400 shadow-sm p-6 sm:p-8">
+  <article data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8"
+           style="border-left: 3px solid #a78bfa;">
     <h2 class="font-display text-xl text-astro-700 mb-3 flex items-center gap-2.5">
       <span aria-hidden="true" class="text-2xl leading-none opacity-70">{{ _icon }}</span>
       <span>{{ title }}</span>
