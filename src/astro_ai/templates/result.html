@@ -326,6 +326,102 @@
   </article>
   {% endfor %}
 
+  <!-- RETURN-VISIT TRIGGERS (Issue #68) — natural moment after finishing the
+       reading. Bookmark hint + save-to-account + email nudge, per detected
+       sign-in state. Return visitors are worth 5-10x first-visitors, so
+       triggering the return-intention while attention is highest matters
+       more than any other single funnel change on /kundli. -->
+  <section data-reveal class="bg-gradient-to-br from-astro-50/60 to-amber-50/30 border border-astro-100 rounded-2xl p-6 sm:p-8 no-print">
+    {% set _rt_user = load_current_user(request) %}
+    <div class="flex items-start gap-3 mb-4">
+      <svg class="w-6 h-6 text-astro-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+      </svg>
+      <div>
+        <h2 class="font-display text-xl text-astro-800 mb-1">Come back tomorrow</h2>
+        <p class="text-sm text-stone-700 leading-relaxed">
+          {% if _rt_user %}
+            Your reading is saved to your account. Add a bookmark for one-tap access.
+          {% else %}
+            Your chart is saved in this browser. To keep it forever, add a bookmark now or sign in to sync across devices.
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2.5">
+      {# Bookmark button — Ctrl+D shortcut on desktop; explicit hint on mobile #}
+      <button type="button" data-bookmark-trigger
+              class="inline-flex items-center gap-2 bg-white border border-astro-300 hover:border-astro-500 text-astro-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+        </svg>
+        Bookmark this reading
+      </button>
+
+      {% if not _rt_user and google_client_id %}
+      {# Signed-out visitors: nudge sign-in for cross-device sync of saved charts #}
+      <button type="button" id="google-signin-trigger-natal"
+              class="inline-flex items-center gap-2 bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 12v-4a4 4 0 10-8 0v4M6 12h12v9H6z"/>
+        </svg>
+        Sign in to sync
+      </button>
+      {% endif %}
+
+      {# Rashifal follow-up — the reader's own Moon rashi #}
+      <a href="/rashifal#{{ moon.rashi.split(' ')[0] | lower }}"
+         class="inline-flex items-center gap-2 bg-white border border-stone-300 hover:border-stone-400 text-stone-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2M5 12H3m18 0h-2m-2.05-7.05l-1.41 1.41M6.46 17.54l-1.41 1.41m0-14.14l1.41 1.41m11.08 11.08l1.41 1.41M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        Today's Rashifal for {{ moon.rashi }}
+      </a>
+    </div>
+  </section>
+
+  <script>
+    // Bookmark button — instant tap-to-add on browsers that support the API,
+    // fallback hint on those that don't (which is most modern browsers, since
+    // window.external.AddFavorite was IE-only and browsers now require the
+    // Ctrl+D keyboard shortcut for security reasons).
+    (function () {
+      var btn = document.querySelector('[data-bookmark-trigger]');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var mac = navigator.userAgent.indexOf('Mac') !== -1;
+        var shortcut = mac ? '⌘+D' : 'Ctrl+D';
+        // Try modern (deprecated but still-in-Firefox) API first
+        if (window.sidebar && window.sidebar.addPanel) {
+          window.sidebar.addPanel(document.title, window.location.href, '');
+        } else {
+          // Toast instead of alert() — softer UX
+          var toast = document.createElement('div');
+          toast.textContent = 'Press ' + shortcut + ' to bookmark this reading';
+          toast.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-stone-900 text-white text-sm px-4 py-2.5 rounded-lg shadow-lg';
+          toast.style.transition = 'opacity 400ms';
+          document.body.appendChild(toast);
+          setTimeout(function () { toast.style.opacity = '0'; }, 2600);
+          setTimeout(function () { toast.remove(); }, 3000);
+        }
+      });
+    })();
+
+    // Sign-in trigger — reuses base.html google-signin modal if present
+    (function () {
+      var btn = document.getElementById('google-signin-trigger-natal');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var backdrop = document.getElementById('google-signin-backdrop');
+        if (backdrop) {
+          backdrop.classList.remove('hidden');
+          backdrop.classList.add('flex');
+        }
+      });
+    })();
+  </script>
+
   <!-- ASK SHUBH BHAGYA CTA — natural moment after the reading -------- -->
   <section data-reveal class="bg-gradient-to-br from-astro-100 via-amber-50 to-rose-50 border-2 border-astro-300 rounded-2xl p-6 sm:p-8 no-print">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
