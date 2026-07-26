@@ -143,8 +143,8 @@
   {% set _eff = manglik.effective_status %}
   {% set _eff_colour = {'cancelled':'emerald', 'mitigated':'amber', 'present':'rose'}.get(_eff, 'rose') %}
   {% set _eff_label  = {'cancelled':'Cancelled', 'mitigated':'Mitigated', 'present':'Present — no cancellations'}.get(_eff, 'Present') %}
-  <section data-reveal class="bg-white rounded-2xl border border-{{ _eff_colour }}-200 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-{{ _eff_colour }}-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
+  <section data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
         <h2 class="font-display text-xl text-{{ _eff_colour }}-700">{{ t(lang, 'manglik_title') }}</h2>
         <p class="text-sm text-stone-500 mt-0.5">{{ _eff_label }} &middot; {{ t(lang, manglik_severity_label) }}</p>
@@ -209,8 +209,8 @@
        ('vipareeta_raja',     'Vipareeta Raja Yogas',          'Tremendous success after struggle'),
        ('other',              'Other Classical Yogas',         'Other strengths active in your chart'),
   ] %}
-  <section data-reveal class="bg-white rounded-2xl border border-emerald-200 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-emerald-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
+  <section data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
         <h2 class="font-display text-xl text-emerald-700">Yogas in your chart</h2>
         <p class="text-sm text-stone-500 mt-0.5">{{ yogas | length }} classical combination{{ '' if yogas | length == 1 else 's' }} active</p>
@@ -230,8 +230,8 @@
                by default so the card feels clean, appears on hover with
                a small upward slide. Focus-within keeps it accessible for
                keyboard users. #}
-            <div class="yoga-card group bg-emerald-50/40 border border-emerald-100 rounded-lg p-3.5 transition-shadow hover:shadow-md">
-              <div class="font-display text-base text-emerald-900 mb-1">{{ y.name }}</div>
+            <div class="yoga-card group bg-stone-50 border border-stone-200 rounded-lg p-3.5 transition-shadow hover:shadow-md">
+              <div class="font-display text-base text-emerald-800 mb-1">{{ y.name }}</div>
               <p class="text-sm text-stone-700 leading-relaxed">{{ y.effect }}</p>
               <div class="yoga-source text-[11px] text-stone-500 italic mt-1.5">Source: {{ y.source }}</div>
             </div>
@@ -249,8 +249,8 @@
 
   <!-- SADE SATI panel (only if active) ---------------------------- -->
   {% if sade_sati.is_active %}
-  <section data-reveal class="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-amber-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
+  <section data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
         <h2 class="font-display text-xl text-amber-700">{{ t(lang, 'sade_sati_title') }}</h2>
         <p class="text-sm text-stone-500 mt-0.5">{{ t(lang, 'sade_sati_active') }} &middot; {{ t(lang, 'sade_sati_duration') }}</p>
