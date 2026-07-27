@@ -7,6 +7,9 @@
 
 {# SEO meta — pages override `meta_description` and `og_image` blocks as needed. #}
 <meta name="description" content="{% block meta_description %}Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik &amp; Sade Sati checks, and Kundali matching for marriage. No signup, no spam.{% endblock %}">
+{# meta robots — pages override to opt out of indexing. Snapshot pages
+   (/r/{id}) use "noindex, nofollow" because they contain PII and expire. #}
+<meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
 <link rel="canonical" href="{{ site_url }}{{ request.url.path }}">
 
 {# Open Graph — controls how the page renders when shared on WhatsApp,

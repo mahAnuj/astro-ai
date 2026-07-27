@@ -70,7 +70,7 @@ def _llm_error_friendly(err: Exception) -> tuple[str, str]:
         "We couldn't complete the reading this time. Please try again in "
         "a moment — your input is safe to re-submit exactly as you typed it.",
     )
-from astro_ai import cache, email_sender, feedback, festivals, learn_registry, shloks, storage, subscribers, trivia, users
+from astro_ai import cache, email_sender, feedback, festivals, learn_registry, shloks, snapshots, storage, subscribers, trivia, users
 import time as _time
 from astro_ai.session import (
     SUPPORTED_LANGS,
@@ -440,6 +440,9 @@ async def robots() -> Response:
         "User-agent: *\n"
         "Allow: /\n"
         "Disallow: /admin/\n"
+        # Snapshot pages are user-shared, ephemeral (30-day TTL), and
+        # contain PII (birth details). Not for indexing.
+        "Disallow: /r/\n"
         f"\nSitemap: {_site_url()}/sitemap.xml\n"
     )
     return Response(content=body, media_type="text/plain")
@@ -743,6 +746,211 @@ async def email_kundli_reading(request: Request) -> JSONResponse:
         _EMAIL_KUNDLI_LAST_SENT[user.sub] = now
         return JSONResponse({"ok": True, "email": user.email})
     return JSONResponse({"ok": False, "error": "send_failed"}, status_code=502)
+
+
+# Per-user rate limit on snapshot creation — 5/day/user cap. Keeps casual
+# WhatsApp-share behaviour cheap but prevents someone from generating a
+# thousand snapshots and bloating the storage bucket.
+_SNAPSHOT_CREATED_TODAY: dict[str, list[float]] = {}
+_SNAPSHOT_DAILY_CAP = 5
+
+
+def _snapshot_rate_ok(key: str) -> bool:
+    """True if `key` (user sub or IP) hasn't exceeded today's snapshot cap."""
+    import time as _t
+    now = _t.time()
+    day_ago = now - 86400
+    hits = [t for t in _SNAPSHOT_CREATED_TODAY.get(key, []) if t > day_ago]
+    if len(hits) >= _SNAPSHOT_DAILY_CAP:
+        _SNAPSHOT_CREATED_TODAY[key] = hits
+        return False
+    hits.append(now)
+    _SNAPSHOT_CREATED_TODAY[key] = hits
+    return True
+
+
+@app.post("/kundli/snapshot")
+async def create_kundli_snapshot(request: Request) -> JSONResponse:
+    """Create a public read-only snapshot of the caller's active Kundli reading.
+
+    Returns a short URL the caller can paste into WhatsApp or any messenger;
+    the URL renders a public, expiry-gated view of the exact reading. See
+    snapshots.py for storage + expiry semantics (30-day TTL).
+
+    Requires: an active chart in the session cookie AND (if signed in) a
+    saved reading in the user's history; anonymous callers get the reading
+    text from the fresh render path — no signed-in requirement for the
+    happy path because most /kundli visitors are anonymous.
+    """
+    saved = load_collection(request).active
+    if saved is None:
+        return JSONResponse({"ok": False, "error": "no_chart"}, status_code=400)
+
+    # Rate-limit by signed-in sub if available, else by client IP. Loose but
+    # sufficient for MVP; a real abuse case would need per-IP + captcha.
+    user = load_user(request)
+    rate_key = user.sub if (user and user.sub) else (
+        request.client.host if request.client else "unknown"
+    )
+    if not _snapshot_rate_ok(rate_key):
+        return JSONResponse(
+            {"ok": False, "error": "rate_limited",
+             "message": "Too many share links created today. Try again tomorrow."},
+            status_code=429,
+        )
+
+    # Get the reading text — prefer the persisted reading (signed-in users),
+    # else regenerate from cache. Regeneration path is fast — cache hits
+    # for the same chart+lang; only cold-cache visitors take the LLM hit.
+    details = saved.to_birth_details()
+    lang = _lang(request)
+
+    reading_text = None
+    if user and user.sub:
+        readings = users.list_readings(user.sub, limit=10)
+        for r in readings:
+            if r.kind == "natal":
+                reading_text = r.body
+                break
+
+    if reading_text is None:
+        # Anonymous or no saved reading — synth from cache (or LLM if missed).
+        try:
+            chart = compute_chart(details.birth_date, details.birth_time, details.birth_place)
+            flags = compute_vedic_flags(chart)
+            life_chapters = compute_life_chapters(chart)
+            dasha_state = compute_dasha_state(chart)
+            chart_fp = cache.fingerprint_chart(details.birth_date, details.birth_time, details.birth_place)
+            prompt_fp = cache.fingerprint_prompt(PROMPT_PATH)
+            cache_key = f"natal:{chart_fp}:{lang}:{prompt_fp}"
+            reading_text = _cached(
+                cache_key, route="natal", lang=lang, ttl_days=None,
+                call_fn=lambda: generate_reading(
+                    details, chart=chart, flags=flags, life_chapters=life_chapters,
+                    prompt_path=PROMPT_PATH, lang=lang, dasha_state=dasha_state,
+                ),
+            )
+        except Exception:  # noqa: BLE001 — snapshot can't be built without a reading
+            import logging
+            logging.getLogger(__name__).exception("snapshot: reading generation failed")
+            return JSONResponse(
+                {"ok": False, "error": "reading_unavailable"},
+                status_code=502,
+            )
+
+    birth_details_dict = {
+        "name": details.name or "",
+        "birth_date": details.birth_date,
+        "birth_time": details.birth_time,
+        "birth_place": details.birth_place,
+    }
+    snap = snapshots.create(
+        birth_details=birth_details_dict,
+        reading_text=reading_text,
+        lang=lang,
+        created_by_sub=(user.sub if (user and user.sub) else ""),
+    )
+    if snap is None:
+        # Storage unavailable (no GCS bucket configured OR write failed).
+        # Fall back to a graceful error rather than a broken WhatsApp share.
+        return JSONResponse(
+            {"ok": False, "error": "storage_unavailable",
+             "message": "Sharing is temporarily unavailable. Please try again later."},
+            status_code=503,
+        )
+    return JSONResponse({
+        "ok": True,
+        "id": snap.id,
+        "url": f"{_site_url()}/r/{snap.id}",
+        "expires_at": snap.expires_at,
+    })
+
+
+@app.get("/r/{short_id}", response_class=HTMLResponse)
+async def view_kundli_snapshot(request: Request, short_id: str) -> HTMLResponse:
+    """Public read-only render of a shared Kundli snapshot.
+
+    Renders the sender's reading (chart + LLM sections + flags) with a
+    prominent 'Get your own free reading' CTA. No edit/regenerate paths;
+    no session-state mutation. Expired snapshots 404.
+    """
+    snap = snapshots.load(short_id)
+    if snap is None:
+        return templates.TemplateResponse(
+            request,
+            "snapshot_expired.html",
+            {"lang": _lang(request), "short_id": short_id},
+            status_code=404,
+        )
+
+    # Re-compute chart deterministically from birth details — cheaper than
+    # storing the full chart object in the snapshot, and always fresh with
+    # any chart.py improvements shipped since the snapshot was created.
+    try:
+        chart = compute_chart(
+            snap.birth_details.get("birth_date", ""),
+            snap.birth_details.get("birth_time", ""),
+            snap.birth_details.get("birth_place", ""),
+        )
+    except ChartError as err:
+        return templates.TemplateResponse(
+            request,
+            "error.html",
+            {"title": "Couldn't render shared reading", "message": str(err)},
+            status_code=400,
+        )
+
+    sections = parse_sectioned_reading(snap.reading_text)
+    sade_sati = compute_sade_sati_details(chart)
+    moon_plt = next(p for p in chart.planets if p.name == "Moon")
+    sun_plt = next(p for p in chart.planets if p.name == "Sun")
+
+    ss_progress = 0
+    ss_elapsed_years = 0.0
+    ss_remaining_years = 0.0
+    if sade_sati.is_active and sade_sati.overall_start and sade_sati.overall_end:
+        today = date.today()
+        total_days = (sade_sati.overall_end - sade_sati.overall_start).days
+        elapsed_days = max(0, min(total_days, (today - sade_sati.overall_start).days))
+        ss_progress = int(elapsed_days / total_days * 100) if total_days else 0
+        ss_elapsed_years = round(elapsed_days / 365.25, 1)
+        ss_remaining_years = round((total_days - elapsed_days) / 365.25, 1)
+
+    # Rebuild BirthDetails so result.html can treat this like a normal render.
+    details = BirthDetails(
+        name=snap.birth_details.get("name", ""),
+        birth_date=snap.birth_details.get("birth_date", ""),
+        birth_time=snap.birth_details.get("birth_time", ""),
+        birth_place=snap.birth_details.get("birth_place", ""),
+    )
+    return templates.TemplateResponse(
+        request,
+        "result.html",
+        {
+            "details": details,
+            "reading": snap.reading_text,
+            "sections": sections,
+            "chart": chart,
+            "flags": compute_vedic_flags(chart),
+            "lang": snap.lang,
+            "lagna_glyph": symbol_for_rashi_label(chart.lagna_rashi),
+            "moon_glyph": symbol_for_rashi_label(moon_plt.rashi),
+            "sun_glyph": symbol_for_rashi_label(sun_plt.rashi),
+            "manglik": compute_manglik_details(chart),
+            "navamsha_chart": compute_navamsha_chart(chart),
+            "dashamsa_chart": compute_dashamsa_chart(chart),
+            "yogas": compute_yogas(chart),
+            "sade_sati": sade_sati,
+            "dasha": compute_dasha_state(chart),
+            "sade_sati_progress": ss_progress,
+            "sade_sati_elapsed_years": ss_elapsed_years,
+            "sade_sati_remaining_years": ss_remaining_years,
+            # Snapshot-mode flag — result.html hides interactive controls
+            # (bookmark/email/sign-in/return-triggers) when this is set.
+            "is_snapshot": True,
+            "snapshot": snap,
+        },
+    )
 
 
 @app.get("/today", response_class=HTMLResponse)
