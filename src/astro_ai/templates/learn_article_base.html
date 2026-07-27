@@ -389,11 +389,30 @@
         bar.style.display = 'flex';
       }
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
+    // Coordinate with the feedback widget (bottom-4 right-4) — when this
+     // sticky CTA is visible on mobile, push the feedback bubble up so they
+     // don't overlap. Uses a body class so CSS can target both regardless
+     // of render order.
+    function updateStickyState() {
+      var visible = bar.style.display === 'flex';
+      document.body.classList.toggle('learn-sticky-cta-visible', visible);
+    }
+    function onScrollWithState() { onScroll(); updateStickyState(); }
+    window.removeEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScrollWithState, { passive: true });
     document.getElementById('learn-sticky-close').addEventListener('click', function () {
       bar.style.display = 'none';
+      updateStickyState();
       sessionStorage.setItem('learn-sticky-dismissed', '1');
     });
   })();
 </script>
+<style>
+  /* When the learn-sticky CTA is visible on mobile, push the feedback
+     bubble up so the two don't overlap at bottom-right. Desktop unaffected
+     (sticky CTA is md:hidden). */
+  body.learn-sticky-cta-visible #feedback-fab {
+    bottom: 5rem !important;
+  }
+</style>
 {% endblock %}
