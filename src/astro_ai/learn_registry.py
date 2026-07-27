@@ -2562,6 +2562,163 @@ ARTICLES: tuple[Article, ...] = (
             '• Shadow: impulsive action without follow-through, restlessness, accident-proneness'
         ),
     ),
+    Article(
+        slug="planets-in-7th-house-marriage",
+        title="Planets in the 7th House and What They Mean for Your Marriage",
+        summary="The 7th house is the mirror of your Ascendant — the partner it attracts. This guide walks each of the nine grahas placed in the 7th house (Sun through Ketu), the classical marriage pattern each one produces, and the per-Ascendant shifts that turn the same placement into a very different reading depending on your Lagna.",
+        seo_title="Planets in 7th House: Marriage Meaning of Each Graha",
+        seo_description="What Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, or Ketu in the 7th house means for your marriage — classical Vedic reading with per-Ascendant shifts.",
+        category="Life Questions",
+        hero_image="/static/learn/planets-in-7th-house-marriage/hero.svg",
+        read_time="13 min",
+        last_updated="2026-07",
+        related=(
+            "7th-lord-placement-marriage-guide",
+            "manglik-dosh",
+            "marriage-timing-kundli",
+            "shukra-venus-in-vedic-astrology",
+        ),
+        faqs=(
+            {
+                "q": "Which planet in the 7th house is best for marriage?",
+                "a": "Classically, Venus in the 7th house (in her own signs Taurus or Libra) is the most benefic placement — it produces Malavya Yoga, one of the five Panch Mahapurush yogas, indicating a beautiful and refined spouse, marital happiness, and lifelong prosperity. Jupiter in the 7th is the second-most benefic (wise, dharmic partner and blessings through marriage), with the classical caveat that in a female chart it can indicate late marriage. Waxing Moon in the 7th is also highly favourable — a nurturing, emotionally responsive spouse. The most challenging single-planet placements are Saturn (delay), Rahu (unconventional/foreign, sometimes unstable), Ketu (detachment or separation), and Mars (Manglik friction) — though none of these dooms a marriage; they name specific karmic patterns that need to be worked with.",
+            },
+            {
+                "q": "What does Venus in 7th house mean for marriage?",
+                "a": "Venus in the 7th is one of the strongest marriage placements. The partner tends to be physically attractive, aesthetically inclined, often in beauty, art, luxury, or hospitality fields. Multiple partnership offers are common — the challenge is choosing well, not finding at all. When Venus sits in her own signs Taurus or Libra in the 7th, Malavya Yoga forms — a classical Panch Mahapurush yoga indicating exceptional prosperity, married happiness, and refined tastes. The one caveat: Venus debilitated (Virgo) or combust (too close to the Sun) reverses the reading — partnership friction over money, spouse's spending, or comfort-seeking beyond means.",
+            },
+            {
+                "q": "Is Saturn in 7th house bad for marriage?",
+                "a": "No — Saturn in the 7th is one of the most misread placements. Classical texts are more balanced about it than modern astrologers usually are. The primary reading is delayed marriage (late 20s or 30s for first marriage), an older or more mature spouse (three to ten years older is common), and a long-tenure partnership that lasts because of the accepted commitment Saturn brings. Divorce rates for Saturn-in-7th marriages are classically lower than average. The caution is emotional distance — the Saturnine coolness can leave the marriage feeling steady but not warm; consciously cultivating warmth benefits both partners. Saturn in his own signs (Capricorn or Aquarius) in the 7th produces one of the most stable, dignified marriage signatures.",
+            },
+            {
+                "q": "What does Rahu in 7th house mean?",
+                "a": "Rahu in the 7th is one of the most transformation-heavy 7th-house placements. Classical readings: foreign or unconventional spouse (inter-caste, foreign country, different cultural background), sudden marriage (often with short courtship, sometimes a fated-meeting narrative), fascination-based attraction (magnetic initial pull, reality catches up later), and elevated instability risk when untreated. Untreated Rahu in 7th combined with Saturn or with 7th lord in a dusthana is classically one of the primary second-marriage signatures. Well-modified (Jupiter aspect, own-sign placement, Ashtakoot Guna Milan compatibility with spouse), Rahu in 7th can produce genuinely transformative and enduring inter-cultural marriages.",
+            },
+            {
+                "q": "Does Mars in 7th house always cause Manglik dosha?",
+                "a": "Mars in the 7th is one of the six Manglik-triggering houses (1, 2, 4, 7, 8, 12), but 'Manglik' does not equal 'bad marriage'. Cancellation rules apply and are often ignored by simple online calculators — Cancer or Leo Ascendant excludes Mars from Manglik reading regardless of placement (Mars becomes Yogakaraka), Mars in own sign (Aries, Scorpio) or exalted (Capricorn) softens the dosha significantly, Jupiter aspecting or conjunct Mars cancels much of it, and Manglik-with-Manglik matching classically cancels the dosha between partners. Read our full Manglik Dosh guide for the complete cancellation logic — the label without the cancellation check is over-diagnosed.",
+            },
+            {
+                "q": "What if I have two or more planets in the 7th house?",
+                "a": "Real charts often have conjunctions in the 7th. Read them as a blend, not additively: Sun + Venus in 7th produces the beautiful-and-dominant partner (Sun's authority + Venus's aesthetics); Saturn + Rahu in 7th compounds delay AND unconventional partner AND separation risk (the most difficult 7th-house combination classically); Mercury + Venus in 7th produces a witty, artistically-inclined, often younger-looking spouse with a strong communication-driven partnership. When reading a conjunction, prioritise: (1) the lord of the sign the conjunction sits in, (2) the dominant planet by dignity (own sign or exalted planet dominates the reading), (3) the modifier planets that colour the primary reading.",
+            },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• 7th house planet = the FLAVOUR of the spouse/partnership (self-mirror principle)\n'
+            '• Sun in 7th: dominant/authority spouse, ego friction; Moon in 7th: nurturing, mood-dependent, best when waxing\n'
+            '• Mars in 7th: Manglik trigger + energetic/short-tempered spouse; check cancellations\n'
+            '• Mercury in 7th: communicative, younger-looking spouse, business-partnership orientation\n'
+            '• Jupiter in 7th: wise/dharmic spouse, blessings; classical late-marriage flag for women\n'
+            '• Venus in 7th: BEST — Malavya Yoga possibility (own sign), refined spouse, marital happiness\n'
+            '• Saturn in 7th: delay + older spouse + long-tenure marriage; NOT verdict of bad marriage\n'
+            '• Rahu in 7th: foreign/unconventional spouse, sudden marriage, fascination-based attraction, second-marriage risk if untreated\n'
+            '• Ketu in 7th: detached/spiritual spouse, past-life karma theme, most sombre single placement\n'
+            '• Per-Ascendant shifts matter: Cancer/Leo lagna Saturn in 7th (own sign) reads very differently'
+        ),
+    ),
+    Article(
+        slug="7th-lord-placement-marriage-guide",
+        title="7th Lord Placement Guide: How Your Marriage Life Reads From the Ruler of Partnership",
+        summary="The 7th lord is different from planets IN the 7th — it is the planet ruling the sign that falls in your 7th house, and where it sits shows WHERE your marriage energy is directed. This guide walks all twelve house placements of the 7th lord: 1st (extension of self), 6th (conflict/service), 10th (power-couple), 12th (foreign/spiritual), and every position between.",
+        seo_title="7th Lord Placement Guide: Marriage Reading Across 12 Houses",
+        seo_description="Where your 7th lord sits — 1st through 12th — shapes your marriage. Classical Vedic reading of 7th lord in every house, with softener rules and Dasha timing.",
+        category="Life Questions",
+        hero_image="/static/learn/7th-lord-placement-marriage-guide/hero.svg",
+        read_time="14 min",
+        last_updated="2026-07",
+        related=(
+            "planets-in-7th-house-marriage",
+            "marriage-timing-kundli",
+            "10th-lord-in-6th-house-career",
+            "vimshottari-dasha-explained",
+        ),
+        faqs=(
+            {
+                "q": "What does 7th lord in 6th house mean for marriage?",
+                "a": "The 6th is a dusthana — the house of conflict, service, illness, and enemies. The 7th lord placed in the 6th classically indicates recurring friction pattern in the partnership, sometimes a service-profession spouse (medicine, nursing, social work), and elevated separation risk if the placement is unmodified by benefics. Softeners matter: if the 7th lord in the 6th is exalted, in own sign, or aspected by Jupiter, the friction reads much softer and can express as a marriage where both partners work through significant challenges together, ultimately strengthening the bond. Never a verdict — many marriages with this placement endure through conscious relational work.",
+            },
+            {
+                "q": "Is 7th lord in 8th house always bad?",
+                "a": "No — but it is one of the most complex marriage placements and is honestly named in classical texts as elevating second-marriage probability. The 8th house governs hidden things, transformation, in-laws, and sudden change; the 7th lord here indicates a marriage carrying dimensions that are not visible from outside, potentially significant in-law involvement, and a transformation of the native's identity that either the marriage survives or does not. Not a verdict — many 7th-lord-in-8th marriages endure fully. When the 7th lord in the 8th is exalted, aspected by Jupiter, or in own sign, the difficult readings soften substantially. Always check the D-9 Navamsha before drawing conclusions.",
+            },
+            {
+                "q": "What if 7th lord is in own house (7th)?",
+                "a": "The 7th lord in its own house (swakshetra) is the strongest possible placement for the 7th lord and one of the most classically-praised marriage signatures. Marriage becomes central to life as an organising structure; timing is on-schedule (the karaka is well-placed to activate through its own Dasha); the partnership is stable and long-tenure, with classically low divorce rates. The one caveat: if the 7th lord in the 7th is combust, retrograde, or heavily afflicted, the strength converts to intensity — the marriage is still central, but central as all-consuming or dramatically difficult rather than serenely stable.",
+            },
+            {
+                "q": "Does 7th lord in 12th house mean foreign spouse?",
+                "a": "Foreign spouse is one of the primary classical readings of 7th lord in the 12th, yes — either a partner from a foreign country, or a marriage that results in the native settling abroad, or long periods of the marriage lived in a foreign land. But the 12th (Vyaya Bhava — loss/foreign/spirituality) also carries other readings: spiritual partnership possibility (marriage takes on an ashram-like quality), physical-separation pattern (work-related travel, foreign postings), and interestingly the classical 'bedroom pleasures' theme (strong physical-intimacy compatibility even if other dimensions feel less settled). The 'foreign spouse' reading is the most common modern expression, but not the only one.",
+            },
+            {
+                "q": "Which placement of 7th lord is best for happy marriage?",
+                "a": "The classical shortlist of most-benefic 7th lord placements: (1) 7th lord in own house (7th) — swakshetra dignity, marriage as central life anchor; (2) 7th lord in the 9th (dharmic spouse, marriage brings good fortune, often educated or highly-learned partner); (3) 7th lord in the 1st (spouse feels like extension of self, on-time marriage, high compatibility); (4) 7th lord in the 5th (love-marriage signature, children early, playful lifelong dynamic); (5) 7th lord in the 4th (home-oriented spouse, domestic stability, emotional shelter). The most challenging placements are 6th (conflict), 8th (hidden challenges), and 12th (separation) — but all three can be significantly softened by dignity, Jupiter aspect, or Dasha timing.",
+            },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• 7th lord = planet ruling the sign in the 7th house; different from planets IN the 7th\n'
+            "• 7th lord placement = WHERE the marriage energy is directed (which life-domain)\n"
+            '• Benefic placements: 1st (extension of self), 5th (love marriage), 7th (own house — strongest), 9th (dharmic + lucky), 10th (power couple), 11th (gains through marriage)\n'
+            '• Challenging placements: 6th (conflict, separation risk), 8th (hidden challenges, second-marriage flag), 12th (foreign/separation)\n'
+            '• Neutral-with-flavour: 2nd (family wealth), 3rd (courageous spouse), 4th (home-oriented)\n'
+            '• Softeners: dignity (own sign/exalted), Jupiter aspect, Dasha timing, D-9 confirmation\n'
+            '• Always confirm with D-9 Navamsha 7th lord before drawing conclusions'
+        ),
+    ),
+    Article(
+        slug="second-marriage-yoga-kundli",
+        title="Second Marriage Indicators in Kundli — Classical Rules and Honest Reading",
+        summary="Second marriage is a life event, not a moral judgement. The chart shows tendency, never verdict. Classical Vedic tradition names specific signatures — 7th lord in 8th or 12th, malefics in 7th, Venus in 8th, 8th lord in 7th — that shift second-marriage probability. This guide walks the classical framework, the Dasha windows that activate the pattern, and the editorial guardrails we hold ourselves to on a topic that is often misused for prediction.",
+        seo_title="Second Marriage Yoga in Kundli: Classical Rules, Honest Reading",
+        seo_description="Second-marriage indicators in Kundli — 7th lord in dusthana, malefics in 7th, Venus in 8th, D-9 confirmation. Tendency signatures, never verdicts.",
+        category="Life Questions",
+        hero_image="/static/learn/second-marriage-yoga-kundli/hero.svg",
+        read_time="12 min",
+        last_updated="2026-07",
+        related=(
+            "planets-in-7th-house-marriage",
+            "7th-lord-placement-marriage-guide",
+            "marriage-timing-kundli",
+            "kundali-matching-ashtakoot-guna-milan",
+        ),
+        faqs=(
+            {
+                "q": "Which yoga indicates second marriage in Kundli?",
+                "a": "No single yoga is verdict-level, but a specific set of classical signatures shifts probability when they converge: (1) 7th lord in a dusthana (6th, 8th, or 12th house) — 8th is the strongest single signature; (2) malefics (Mars, Saturn, Rahu, Ketu) in the 7th house, especially two or more conjunct; (3) Venus in the 8th house in a male chart, or Jupiter in the 8th in a female chart (marriage karaka in transformation house); (4) 8th lord placed in the 7th house; (5) multiple planets in a dual (dvi-swabhava) sign in the 7th; (6) 7th house heavily aspected by malefics. Convergence of three or more of these, confirmed in the D-9 Navamsha, produces a meaningful tendency reading. Isolated single signatures should never be taken as prediction.",
+            },
+            {
+                "q": "Does Venus in 8th house always mean second marriage?",
+                "a": "No — this is one of the most over-diagnosed placements in commercial astrology. Venus in the 8th in a male chart is a tendency signature (Venus is the karaka of marriage; 8th is the transformation house — the karaka in a transformative house increases probability of marriage transitions). But 'tendency' is not 'certainty'. Many male charts with Venus in the 8th spend their lives in first marriages, particularly when Venus is well-aspected (Jupiter's aspect is strongly protective), in own sign (Taurus or Libra), or when the 7th house itself is otherwise clean. The signature matters when it converges with other signatures (7th lord in 8th, malefics in 7th, weak Jupiter). Alone, it is a probability shift, not a prediction.",
+            },
+            {
+                "q": "Can Kundli predict divorce?",
+                "a": "No chart predicts divorce as a specific event. What the chart can indicate is whether your karmic terrain contains patterns that make first-marriage transition more probable, and which Dasha windows most heavily activate those patterns. That information is genuinely useful — worth understanding, worth taking into account — but it is never verdict. Chart-based statements about divorce should always be framed as 'your chart carries the signature for elevated separation risk during X Dasha window' rather than 'you will divorce'. If an astrologer confidently predicts divorce as a fact, they are overreaching what classical astrology actually says. Divorce, when it happens, is a function of the whole chart plus the specific person you married plus the specific choices both partners made — most of which no chart can see.",
+            },
+            {
+                "q": "Is second marriage yoga always bad?",
+                "a": "Not at all. Second marriage is a life event, not a moral judgement. Many second marriages are the healthiest, most emotionally mature partnerships in a person's life — arriving with self-knowledge, clarity about what matters, and the practical relational skills the first marriage taught. Classical Vedic tradition does not attach moral valence to second marriage; it simply reads the chart terrain honestly. Where the tradition is worth listening to: the same karmic patterns that made the first marriage difficult can carry into the second unless consciously addressed. Signatures need not be avoided — they need to be understood.",
+            },
+            {
+                "q": "Which Dasha activates second marriage?",
+                "a": "If a chart carries second-marriage signatures, several Dasha windows classically increase the probability of the pattern firing: (1) Mahadasha of a malefic afflicting the 7th (Saturn, Rahu, Ketu Mahadashas are the classical peak-risk periods — Rahu Mahadasha especially, sudden and unexpected transitions); (2) Mahadasha or Antardasha of the 8th lord (activates the transformation/hidden themes); (3) Antardasha of a planet placed in the 7th during a difficult Mahadasha (e.g., Rahu Antardasha in Saturn Mahadasha when Rahu sits in the 7th); (4) Sade Sati (7.5-year Saturn transit) landing on charts with second-marriage signatures; (5) Rahu-Ketu axis transit across natal 1st-7th (~18-month window every ~9 years). A natal signature can sit dormant for decades until Dasha activates it — if the activating Dasha passes without transition, the signature often stays dormant for the rest of life.",
+            },
+            {
+                "q": "What should I do if my chart shows second-marriage signatures?",
+                "a": "The practical response is not fatalism, it is informed attention. First: understand the signature specifically — which houses, which planets, which Dasha window activates it? Vague reassurances are less useful than specific understanding. Second: notice the current Dasha — if the activating Dasha is decades away, this is low priority for immediate attention. Third: address the underlying karmic themes — the signatures point at real patterns (communication styles, conflict tolerance, ability to accommodate a partner) — work on these directly through therapy, counselling, or classical remedies for the relevant planets. Fourth: do NOT read the signature to your spouse as evidence — 'the chart shows we're not meant to last' is not a legitimate conversation opener. Fifth: get a second astrological opinion for major decisions. The chart informs; the life decisions belong to you.",
+            },
+        ),
+        llm_summary=(
+            'Keypoints:\n'
+            '• Second marriage = life event, not moral judgement; chart shows tendency, not verdict\n'
+            '• Classical signatures (need 3+ convergence): 7th lord in dusthana (6/8/12 — 8 strongest), malefics in 7th (Mars/Saturn/Rahu/Ketu), Venus in 8 (male) or Jupiter in 8 (female), 8th lord in 7th, multiple planets in dvi-swabhava sign in 7th, 7th aspected by malefics\n'
+            '• D-9 Navamsha 7th house MUST confirm before drawing conclusions\n'
+            '• Timing: Rahu/Saturn Mahadashas peak-risk, 8th lord Dasha, Sade Sati window, Rahu-Ketu 1st-7th transit\n'
+            '• Supportive signatures against transition: 7th lord in kendra with Jupiter aspect, benefics in 7th, strong Venus/Jupiter karaka, clean D-9\n'
+            '• Guardrails: never predict divorce as fact, never predict spouse-death, always frame as tendency + context'
+        ),
+    ),
 )
 
 

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Second Marriage in Kundli — two overlapping diamond rings symbolising
+     first and second partnerships, threaded by a wisp representing time
+     passing between them. Warm cream + subdued rose + astro-purple. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img"
+     aria-label="Second marriage indicators in Kundli — chart shows tendency, not verdict">
+  <defs>
+    <radialGradient id="sm_aura" cx="0.5" cy="0.5" r="0.7">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.65"/>
+      <stop offset="70%" stop-color="#a855f7" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#fefbf3" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sm_ring1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <linearGradient id="sm_ring2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="sm_wisp" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e11d48" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#e11d48" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#e11d48" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="320" height="320" fill="#fefbf3" rx="24"/>
+
+  <!-- Aura -->
+  <ellipse cx="160" cy="160" rx="140" ry="130" fill="url(#sm_aura)"/>
+
+  <!-- Star field -->
+  <g fill="#6b21a8" opacity="0.28">
+    <circle cx="42" cy="45" r="1.5"/>
+    <circle cx="280" cy="55" r="2"/>
+    <circle cx="275" cy="275" r="1.5"/>
+    <circle cx="50" cy="270" r="1.5"/>
+  </g>
+
+  <!-- FIRST diamond (partnership 1) — top-left, purple -->
+  <g fill="none" stroke="url(#sm_ring1)" stroke-width="2.5" stroke-linejoin="round" opacity="0.75">
+    <polygon points="65,115 130,80 195,115 130,150"/>
+    <line x1="130" y1="80" x2="130" y2="150"/>
+    <line x1="65"  y1="115" x2="195" y2="115"/>
+    <!-- Small crack/gap on the right edge - symbolising completion -->
+    <path d="M 195 115 L 199 111 M 195 115 L 199 119"
+          stroke="#4c1d95" stroke-width="1.5" opacity="0.5"/>
+  </g>
+
+  <!-- SECOND diamond (partnership 2) — bottom-right, amber -->
+  <g fill="none" stroke="url(#sm_ring2)" stroke-width="2.5" stroke-linejoin="round" opacity="0.85">
+    <polygon points="125,205 190,170 255,205 190,240"/>
+    <line x1="190" y1="170" x2="190" y2="240"/>
+    <line x1="125" y1="205" x2="255" y2="205"/>
+  </g>
+
+  <!-- Wisp/thread connecting the two, representing time + passage -->
+  <path d="M 165 130 Q 145 180 155 220"
+        fill="none" stroke="url(#sm_wisp)" stroke-width="2"
+        stroke-linecap="round" stroke-dasharray="4,3"/>
+
+  <!-- Small numeric markers 1 and 2 -->
+  <g font-family="Crimson Pro, Georgia, serif" font-size="14" font-weight="700"
+     text-anchor="middle">
+    <circle cx="40" cy="90" r="12" fill="#f0e7fb" stroke="#6b21a8" stroke-width="1.5"/>
+    <text x="40" y="95" fill="#4c1d95">1</text>
+    <circle cx="280" cy="235" r="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="280" y="240" fill="#78350f">2</text>
+  </g>
+
+  <!-- Small hearts (subdued — sensitive theme) -->
+  <g fill="#e11d48" opacity="0.45">
+    <path d="M 128 100 c -3 -3, -8 0, -5 4 l 5 5 l 5 -5 c 3 -4, -2 -7, -5 -4 z"/>
+    <path d="M 190 190 c -3 -3, -8 0, -5 4 l 5 5 l 5 -5 c 3 -4, -2 -7, -5 -4 z" opacity="0.75"/>
+  </g>
+</svg>
