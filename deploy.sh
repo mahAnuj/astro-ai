@@ -51,6 +51,9 @@ env_pairs=(
 [[ -n "${ASTRO_AI_MODEL:-}"        ]] && env_pairs+=("ASTRO_AI_MODEL=${ASTRO_AI_MODEL}")
 [[ -n "${BHAGYA_STORAGE_BUCKET:-}" ]] && env_pairs+=("BHAGYA_STORAGE_BUCKET=${BHAGYA_STORAGE_BUCKET}")
 [[ -n "${GOOGLE_CLIENT_ID:-}"      ]] && env_pairs+=("GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}")
+# Telegram notifications — both required to enable; silent no-op when unset.
+[[ -n "${BHAGYA_TELEGRAM_BOT_TOKEN:-}"     ]] && env_pairs+=("BHAGYA_TELEGRAM_BOT_TOKEN=${BHAGYA_TELEGRAM_BOT_TOKEN}")
+[[ -n "${BHAGYA_TELEGRAM_OWNER_CHAT_ID:-}" ]] && env_pairs+=("BHAGYA_TELEGRAM_OWNER_CHAT_ID=${BHAGYA_TELEGRAM_OWNER_CHAT_ID}")
 
 env_csv=$(IFS=, ; echo "${env_pairs[*]}")
 
