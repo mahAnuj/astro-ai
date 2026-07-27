@@ -9,18 +9,24 @@
 #     ./deploy.sh
 #
 # Optional env vars: GCP_REGION (default: asia-south1 / Mumbai),
-# ASTRO_AI_API_BASE, ASTRO_AI_MODEL, BHAGYA_STORAGE_BUCKET (enables shared
-# GCS cache for Rashifal — see README for bucket setup).
+# ASTRO_AI_API_BASE, ASTRO_AI_MODEL, BHAGYA_STORAGE_BUCKET, GOOGLE_CLIENT_ID,
+# BHAGYA_TELEGRAM_BOT_TOKEN, BHAGYA_TELEGRAM_OWNER_CHAT_ID.
 #
 # Prereqs:
 #   1. gcloud CLI installed + `gcloud auth login` done
 #   2. GCP project created + billing enabled
 #   3. Cloud Run + Cloud Build APIs enabled in that project
 #
-# Security note: this script passes secrets via --set-env-vars. They land in
-# Cloud Run's env, are visible in the GCP console to anyone with read access
-# to your project, and show in `gcloud run services describe`. Fine for solo
-# dev / small team. For production, migrate to Secret Manager (see README).
+# ENV-VAR SEMANTICS: uses --update-env-vars, NOT --set-env-vars.
+# That means running this script only ADDS or UPDATES the env vars you pass;
+# it never REMOVES vars that are already set on the service. Safe to run
+# even when your shell doesn't have every optional var set. To explicitly
+# remove a var, use `gcloud run services update bhagya --remove-env-vars=NAME`.
+#
+# Security note: secrets pass through the process env and end up in Cloud Run's
+# env, visible in the GCP console to anyone with read access and in
+# `gcloud run services describe`. Fine for solo dev / small team. For production,
+# migrate to Secret Manager (see README).
 
 set -euo pipefail
 
@@ -41,7 +47,9 @@ for var in "${required[@]}"; do
   fi
 done
 
-# Build the --set-env-vars argument; only include optional vars if set.
+# Build the --update-env-vars argument; only include optional vars if set.
+# Vars NOT listed here are preserved on the service (unlike --set-env-vars
+# which would silently remove any unlisted var).
 env_pairs=(
   "OPENAI_API_KEY=${OPENAI_API_KEY}"
   "ASTRO_AI_COOKIE_SECRET=${ASTRO_AI_COOKIE_SECRET}"
@@ -70,7 +78,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --concurrency 80 \
   --min-instances 0 \
   --max-instances 5 \
-  --set-env-vars "${env_csv}"
+  --update-env-vars "${env_csv}"
 
 echo
 echo "Deployed. Service URL:"
