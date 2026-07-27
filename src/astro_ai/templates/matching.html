@@ -15,8 +15,11 @@
     <p class="text-sm text-stone-600">{{ t(lang, 'matching_subtitle') }}</p>
   </header>
 
-  {# Reusable macro: one side of the matching form with optional saved-chart dropdown. #}
+  {# Reusable macro: one side of the matching form with optional saved-chart dropdown.
+     autocomplete uses `section-groom` / `section-bride` prefix so the mobile
+     autofill store doesn't fill BOTH people's fields with the same person. #}
   {% macro person_form(prefix, heading_key, placeholder_place, collection) %}
+  {% set section = 'section-groom' if prefix == 'g_' else 'section-bride' %}
   <div class="space-y-4">
     <h2 class="font-display text-xl text-astro-700">{{ t(lang, heading_key) }}</h2>
 
@@ -24,7 +27,7 @@
     <label class="block">
       <span class="text-sm font-semibold text-stone-700">Pick from saved charts</span>
       <select onchange="autoFillFromSaved(this, '{{ prefix }}')"
-              class="mt-1.5 w-full px-3 py-2.5 border border-stone-300 rounded-lg bg-white text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none cursor-pointer">
+              class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg bg-white text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none cursor-pointer">
         <option value="">— Enter manually below —</option>
         {% for c in collection.charts %}
         <option value="{{ c.id }}"
@@ -42,23 +45,23 @@
 
     <label class="block">
       <span class="text-sm font-semibold text-stone-700">Name <span class="text-stone-400 font-normal">(optional)</span></span>
-      <input type="text" name="{{ prefix }}name" id="{{ prefix }}name" autofocus
-             class="mt-1.5 w-full px-3 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+      <input type="text" name="{{ prefix }}name" id="{{ prefix }}name" autofocus autocomplete="{{ section }} name"
+             class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
     </label>
     <label class="block">
       <span class="text-sm font-semibold text-stone-700">Birth date</span>
-      <input type="date" name="{{ prefix }}birth_date" id="{{ prefix }}birth_date" required
-             class="mt-1.5 w-full px-3 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+      <input type="date" name="{{ prefix }}birth_date" id="{{ prefix }}birth_date" required autocomplete="{{ section }} bday"
+             class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
     </label>
     <label class="block">
       <span class="text-sm font-semibold text-stone-700">Birth time <span class="text-stone-400 font-normal">(24h local)</span></span>
       <input type="time" name="{{ prefix }}birth_time" id="{{ prefix }}birth_time" required
-             class="mt-1.5 w-full px-3 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+             class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
     </label>
     <label class="block">
       <span class="text-sm font-semibold text-stone-700">Birth place <span class="text-stone-400 font-normal">(city, country)</span></span>
-      <input type="text" name="{{ prefix }}birth_place" id="{{ prefix }}birth_place" required placeholder="{{ placeholder_place }}"
-             class="mt-1.5 w-full px-3 py-2.5 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+      <input type="text" name="{{ prefix }}birth_place" id="{{ prefix }}birth_place" required placeholder="{{ placeholder_place }}" autocomplete="{{ section }} address-level2"
+             class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
     </label>
   </div>
   {% endmacro %}

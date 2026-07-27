@@ -76,12 +76,12 @@
          fatigue at the friction-heaviest point per engagement-optimizer #71). #}
       <textarea name="question" required rows="4" minlength="5" maxlength="600" autofocus
                 placeholder="e.g. What does Ketu in 11th house mean for my career? Or: when does my current Dasha end?"
-                class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm resize-y
+                class="w-full border border-stone-300 rounded-md px-3 py-3 text-base resize-y
                        focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">{{ current_question if not answer else '' }}</textarea>
 
       <button type="submit" {% if remaining_today <= 0 %}disabled{% endif %}
               class="w-full bg-astro-700 hover:bg-astro-800 disabled:bg-stone-300 disabled:cursor-not-allowed
-                     text-white text-sm font-medium py-2.5 rounded-lg transition-colors">
+                     text-white text-sm font-medium py-3 rounded-lg transition-colors">
         <span class="htmx-default">Get my answer &rarr;</span>
         <span class="htmx-indicator">Asking the stars&hellip;</span>
       </button>
