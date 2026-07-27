@@ -60,6 +60,29 @@ import logging
 log = logging.getLogger(__name__)
 
 
+def _fire_error_alert(request, err: Exception, source: str) -> None:
+    """Send a Telegram alert with the low-level error details. Best-effort.
+
+    Called from every LLM error path so we get pinged the moment a user
+    hits a provider outage / rate limit / crash. Never raises — Telegram
+    alerts must not add failure modes to already-failed request paths.
+    """
+    try:
+        import traceback as _tb
+        _u = load_user(request) if request is not None else None
+        notify.error_seen(
+            source=source,
+            error_type=type(err).__name__,
+            error_message=str(err) or repr(err),
+            path=(request.url.path if request is not None else ""),
+            method=(request.method if request is not None else ""),
+            user_email=(_u.email if _u else ""),
+            traceback_str=_tb.format_exc(),
+        )
+    except Exception:  # noqa: BLE001 — alert must never mask original error
+        log.debug("notify.error_seen fire failed (swallowed)", exc_info=True)
+
+
 def _llm_error_friendly(err: Exception) -> tuple[str, str]:
     """Translate an internal LLM error into a user-friendly (title, message).
 
@@ -261,6 +284,22 @@ DASHA_DEEP_DIVE_PROMPT_PATH = PROMPTS_DIR / "dasha_deep_dive.txt"
 ASK_PROMPT_PATH = PROMPTS_DIR / "ask.txt"
 
 app = FastAPI(title="astro-ai", version="0.0.1")
+
+
+@app.exception_handler(Exception)
+async def _unhandled_exception_handler(request: Request, exc: Exception) -> Response:
+    """Safety net — fires a Telegram alert for any truly unhandled 500 and
+    returns a bare Internal Server Error so the request finishes cleanly.
+
+    This ONLY fires when nothing else caught the exception (e.g. the pre-log-
+    NameError incident on 2026-07-27). Handled LLM errors don't reach here
+    because they return template responses inline.
+    """
+    log.exception("unhandled exception in request handler")
+    _fire_error_alert(request, exc, "unhandled")
+    return Response("Internal Server Error", status_code=500)
+
+
 # Serve the PWA manifest, service worker, and icons from /static/.
 # StaticFiles mounts must precede route definitions for the most specific
 # path to win, but FastAPI's router handles this correctly either way.
@@ -622,6 +661,7 @@ async def _render_natal_for(request: Request, details: BirthDetails,
         )
     except Exception as err:
         log.exception("natal LLM generation failed")
+        _fire_error_alert(request, err, "natal")
         _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request,
@@ -1027,6 +1067,7 @@ async def today(request: Request) -> HTMLResponse:
         )
     except Exception as err:
         log.exception("today's outlook LLM generation failed")
+        _fire_error_alert(request, err, "today")
         _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request,
@@ -1320,6 +1361,7 @@ async def _render_outlook(
         )
     except Exception as err:
         log.exception("outlook LLM generation failed")
+        _fire_error_alert(request, err, "outlook")
         _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request,
@@ -1413,6 +1455,7 @@ async def rashifal(request: Request) -> HTMLResponse:
         )
     except Exception as err:
         log.exception("rashifal LLM generation failed")
+        _fire_error_alert(request, err, "rashifal")
         _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request, "error.html",
@@ -1676,6 +1719,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
             ]
         except Exception as err:
             log.exception("rashifal (per-rashi API) LLM generation failed")
+            _fire_error_alert(request, err, "rashifal_api")
             _title, _msg = _llm_error_friendly(err)
             return JSONResponse(
                 {"ok": False, "error": _msg},
@@ -1917,6 +1961,7 @@ async def dasha_deep_dive(request: Request) -> HTMLResponse:
         )
     except Exception as err:
         log.exception("dasha deep dive LLM generation failed")
+        _fire_error_alert(request, err, "dasha")
         _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request, "error.html",
@@ -2125,6 +2170,7 @@ async def ask_submit(
         )
     except Exception as err:
         log.exception("ask LLM generation failed")
+        _fire_error_alert(request, err, "ask")
         _title, _msg = _llm_error_friendly(err)
         return templates.TemplateResponse(
             request, "error.html",
