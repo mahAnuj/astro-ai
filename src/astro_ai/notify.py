@@ -202,3 +202,47 @@ def subscribed(*, email: str, source: str, lang: str) -> None:
     ]
     dedup = f"subscribe:{email}"
     notify("\n".join(parts), dedup_key=dedup)
+
+
+def error_seen(
+    *,
+    source: str,                 # short label — "natal", "today", "ask", "rashifal", ...
+    error_type: str,             # exception class name — "AllProvidersExhausted", ...
+    error_message: str,          # str(exception), possibly long — will be truncated
+    path: str = "",              # request URL path, e.g. "/kundli"
+    method: str = "",            # request method, e.g. "GET"
+    user_email: str = "",        # signed-in user's email if any
+    traceback_str: str = "",     # last ~1500 chars of the traceback
+) -> None:
+    """User-facing error → Telegram alert with full low-level details.
+
+    Fired from LLM error handlers (rate limits, provider outages) AND from
+    the global FastAPI exception handler (unhandled 500s). Includes enough
+    detail to diagnose without opening the Cloud Run console.
+    """
+    # Trim overlong values so a single Telegram message fits (~4096 char cap).
+    msg = error_message.strip().replace("\n", " ")
+    if len(msg) > 500:
+        msg = msg[:500] + "…"
+
+    parts = [
+        f"🚨  *Error: {_escape_md(source)}*",
+        f"⚠️ `{error_type}`",
+        f"💬 {_escape_md(msg)}",
+    ]
+    if method or path:
+        parts.append(f"🌐 {method or '?'} {_escape_md(path)}")
+    if user_email:
+        parts.append(f"✉️ {_escape_md(user_email)}")
+    if traceback_str:
+        # Use a code block. Escape backticks so nesting doesn't break markdown.
+        tb_trimmed = traceback_str.strip()
+        if len(tb_trimmed) > 1500:
+            tb_trimmed = "…" + tb_trimmed[-1500:]
+        tb_trimmed = tb_trimmed.replace("`", "'")
+        parts.append("```\n" + tb_trimmed + "\n```")
+
+    # Dedup by (source, error type, path) within 3 seconds. If the same LLM
+    # provider is 429-ing 20 users in a burst, you get ONE alert, not 20.
+    dedup = f"error:{source}:{error_type}:{path}"
+    notify("\n".join(parts), dedup_key=dedup)
