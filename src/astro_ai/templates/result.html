@@ -458,6 +458,18 @@
       </button>
       {% endif %}
 
+      {% if _rt_user %}
+      {# Email-me-this-reading — signed-in only (send goes to their own
+         address). Rate-limited server-side to 1 per minute per user. #}
+      <button type="button" data-email-reading
+              class="inline-flex items-center gap-2 bg-white border border-astro-300 hover:border-astro-500 text-astro-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+        <span data-email-reading-label>Email me this reading</span>
+      </button>
+      {% endif %}
+
       {# Rashifal follow-up — the reader's own Moon rashi #}
       <a href="/rashifal#{{ moon.rashi.split(' ')[0] | lower }}"
          class="inline-flex items-center gap-2 bg-white border border-stone-300 hover:border-stone-400 text-stone-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
@@ -506,6 +518,51 @@
           backdrop.classList.remove('hidden');
           backdrop.classList.add('flex');
         }
+      });
+    })();
+
+    // Email-me-this-reading — signed-in only, sends server-side to the
+    // caller's own address (no target field, so no abuse vector).
+    (function () {
+      var btn = document.querySelector('[data-email-reading]');
+      if (!btn) return;
+      var lbl = btn.querySelector('[data-email-reading-label]');
+      var origLabel = lbl ? lbl.textContent : 'Email me this reading';
+      function toast(msg, isErr) {
+        var t = document.createElement('div');
+        t.textContent = msg;
+        t.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-50 text-sm px-4 py-2.5 rounded-lg shadow-lg ' +
+                      (isErr ? 'bg-rose-700 text-white' : 'bg-emerald-700 text-white');
+        t.style.transition = 'opacity 400ms';
+        document.body.appendChild(t);
+        setTimeout(function () { t.style.opacity = '0'; }, 3000);
+        setTimeout(function () { t.remove(); }, 3400);
+      }
+      btn.addEventListener('click', function () {
+        btn.disabled = true;
+        if (lbl) lbl.textContent = 'Sending…';
+        fetch('/email/kundli-reading', { method: 'POST', headers: { 'Accept': 'application/json' } })
+          .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+          .then(function (res) {
+            if (res.status === 200 && res.data.ok) {
+              toast('Sent to ' + (res.data.email || 'your inbox'));
+              if (lbl) lbl.textContent = 'Sent ✓';
+              setTimeout(function () { if (lbl) lbl.textContent = origLabel; btn.disabled = false; }, 4000);
+            } else if (res.status === 429) {
+              toast('Please wait a minute before sending again', true);
+              if (lbl) lbl.textContent = origLabel; btn.disabled = false;
+            } else if (res.status === 401) {
+              toast('Please sign in first', true);
+              if (lbl) lbl.textContent = origLabel; btn.disabled = false;
+            } else {
+              toast('Email send failed — please try again shortly', true);
+              if (lbl) lbl.textContent = origLabel; btn.disabled = false;
+            }
+          })
+          .catch(function () {
+            toast('Network error — please try again', true);
+            if (lbl) lbl.textContent = origLabel; btn.disabled = false;
+          });
       });
     })();
   </script>

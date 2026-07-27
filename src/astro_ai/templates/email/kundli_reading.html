@@ -1,0 +1,137 @@
+{#- Kundli reading email — sent when a signed-in user clicks
+    "Email me this reading" on /kundli.
+
+    Template variables:
+      lang                 — 'en' or 'hi'
+      site_url             — https://shubhagya.com
+      user_name            — greeting name
+      birth_details        — {name, birth_date, birth_time, birth_place}
+      chart                — {lagna_rashi}
+      sections             — [(title, body), ...] parsed from LLM reading
+      unsubscribe_url      — one-click unsubscribe (transactional, so mainly a courtesy)
+
+    Same email-safe constraints as welcome.html: table layout, inline
+    styles, 600px max width. No <style>, no JS.
+-#}
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% if lang == 'hi' %}आपकी कुंडली रीडिंग{% else %}Your Kundli Reading{% endif %}</title>
+</head>
+<body style="margin:0;padding:0;background:#faf7f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans Devanagari',sans-serif;color:#1c1917;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;">
+  <tr>
+    <td align="center" style="padding:20px 12px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;background:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #e7e5e4;">
+
+        {#- BRANDED HEADER -#}
+        <tr>
+          <td style="background:#6b21a8;padding:22px 28px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+              <tr>
+                <td style="vertical-align:middle;padding-right:12px;">
+                  <svg width="34" height="34" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+                    <g fill="none" stroke="#ffffff" stroke-width="6">
+                      <polygon points="50,5 95,50 50,95 5,50"/>
+                      <line x1="50" y1="5" x2="50" y2="95"/>
+                      <line x1="5" y1="50" x2="95" y2="50"/>
+                      <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
+                    </g>
+                    <circle cx="50" cy="50" r="8" fill="#ffd764"/>
+                  </svg>
+                </td>
+                <td style="vertical-align:middle;">
+                  <div style="font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;line-height:1.1;">Shubh Bhagya</div>
+                  <div style="font-size:12px;color:#e9d5ff;margin-top:2px;letter-spacing:0.5px;">
+                    {% if lang == 'hi' %}आपकी कुंडली रीडिंग{% else %}Your Kundli Reading{% endif %}
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        {#- GREETING -#}
+        <tr>
+          <td style="padding:26px 28px 4px 28px;">
+            <h1 style="margin:0;font-size:22px;font-weight:700;color:#1c1917;line-height:1.25;">
+              {% if lang == 'hi' %}नमस्ते{% else %}Namaste{% endif %}{% if user_name %}, {{ user_name }}{% endif %} 🙏
+            </h1>
+            <p style="margin:10px 0 0 0;font-size:14px;color:#57534e;line-height:1.6;">
+              {% if lang == 'hi' %}आपकी संदर्भ के लिए, यह है आपकी कुंडली रीडिंग। कभी भी वापस देखने के लिए इस ईमेल को सहेज लें।{% else %}Your full Kundli reading, saved to your inbox for reference. Bookmark this email — you can revisit it any time.{% endif %}
+            </p>
+          </td>
+        </tr>
+
+        {#- BIRTH DETAILS PILL -#}
+        {% if birth_details %}
+        <tr>
+          <td style="padding:16px 28px 0 28px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:6px;">
+              <tr>
+                <td style="padding:12px 16px;">
+                  <div style="font-size:11px;color:#7c3aed;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;">
+                    {% if lang == 'hi' %}जन्म विवरण{% else %}Birth details{% endif %}
+                  </div>
+                  <div style="font-size:14px;color:#1c1917;line-height:1.5;">
+                    {% if birth_details.name %}<strong>{{ birth_details.name }}</strong> &middot; {% endif %}
+                    {{ birth_details.birth_date }} {% if birth_details.birth_time %}at {{ birth_details.birth_time }}{% endif %}
+                    {% if birth_details.birth_place %}<br>{{ birth_details.birth_place }}{% endif %}
+                    {% if chart and chart.lagna_rashi %}<br><span style="color:#7c3aed;">{{ chart.lagna_rashi }} {% if lang == 'hi' %}लग्न{% else %}lagna{% endif %}</span>{% endif %}
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        {% endif %}
+
+        {#- READING SECTIONS -#}
+        {% for title, body in sections %}
+        <tr>
+          <td style="padding:22px 28px 0 28px;">
+            <h2 style="margin:0 0 8px 0;font-size:17px;font-weight:700;color:#6b21a8;line-height:1.3;">
+              {{ title }}
+            </h2>
+            <p style="margin:0;font-size:14px;color:#1c1917;line-height:1.7;white-space:pre-wrap;">{{ body }}</p>
+          </td>
+        </tr>
+        {% endfor %}
+
+        {#- CTA BACK TO SITE -#}
+        <tr>
+          <td style="padding:26px 28px 22px 28px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+              <tr>
+                <td align="center" style="padding:18px 16px;background:#faf5ff;border-radius:6px;border:1px solid #e9d5ff;">
+                  <div style="font-size:13px;color:#57534e;margin-bottom:10px;">
+                    {% if lang == 'hi' %}लाइव संस्करण देखें — चार्ट + कुंडली मैचिंग + दैनिक राशिफल{% else %}See the live version — chart, matching, daily Rashifal{% endif %}
+                  </div>
+                  <a href="{{ site_url }}/kundli"
+                     style="display:inline-block;background:#6b21a8;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:10px 22px;border-radius:6px;">
+                    {% if lang == 'hi' %}shubhagya.com पर खोलें{% else %}Open on shubhagya.com{% endif %}
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        {#- FOOTER -#}
+        <tr>
+          <td style="padding:16px 28px 22px 28px;border-top:1px solid #f3f0eb;">
+            <p style="margin:0;font-size:11px;color:#a8a29e;line-height:1.5;text-align:center;">
+              {% if lang == 'hi' %}यह ईमेल आपने Shubh Bhagya पर मांगा था। {% else %}You requested this email from Shubh Bhagya. {% endif %}
+              {% if unsubscribe_url %}<a href="{{ unsubscribe_url }}" style="color:#a8a29e;text-decoration:underline;">{% if lang == 'hi' %}सदस्यता समाप्त करें{% else %}Unsubscribe{% endif %}</a>{% endif %}
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
