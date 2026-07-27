@@ -70,7 +70,7 @@ def _llm_error_friendly(err: Exception) -> tuple[str, str]:
         "We couldn't complete the reading this time. Please try again in "
         "a moment — your input is safe to re-submit exactly as you typed it.",
     )
-from astro_ai import cache, email_sender, feedback, festivals, learn_registry, shloks, snapshots, storage, subscribers, trivia, users
+from astro_ai import cache, email_sender, feedback, festivals, learn_registry, notify, shloks, snapshots, storage, subscribers, trivia, users
 import time as _time
 from astro_ai.session import (
     SUPPORTED_LANGS,
@@ -538,6 +538,12 @@ async def reading(
         )
     response = RedirectResponse("/kundli", status_code=303)
     _save_collection_synced(response, collection, request)
+    _u = load_user(request)
+    notify.kundli_generated(
+        name=details.name, birth_date=details.birth_date,
+        birth_time=details.birth_time, birth_place=details.birth_place,
+        lang=_lang(request), user_email=(_u.email if _u else ""),
+    )
     return response
 
 
@@ -1112,14 +1118,16 @@ async def auth_google(
     # succeeds; user just isn't in our persistent record). Cookie is the
     # source-of-truth for THIS session; users.json is for cross-device
     # continuity, Premium subscription tracking, and analytics.
+    _is_new_user = False
     try:
-        users.upsert_user(sub=user.sub, email=user.email, name=user.name)
+        _ok, _is_new_user = users.upsert_user(sub=user.sub, email=user.email, name=user.name)
     except Exception as err:
         # Log and continue — never let a storage hiccup block sign-in.
         import logging
         logging.getLogger(__name__).warning(
             "users.upsert_user failed for %s: %s", user.email, err
         )
+    notify.new_signin(email=user.email, name=user.name, first_time=_is_new_user)
 
     # Cross-device chart sync: merge (this device's charts) ∪ (user's
     # cross-device charts) and write the union back to BOTH the cookie
@@ -1471,6 +1479,8 @@ async def subscribe(request: Request,
             # welcome is a minor degradation, not a failure.
             import logging
             logging.getLogger(__name__).warning("welcome email failed for %s: %s", email, err)
+        # Only notify on brand-new subscriptions, not re-subscribes.
+        notify.subscribed(email=email, source=(city or "unknown"), lang=lang)
     return JSONResponse({"ok": True})
 
 
@@ -2130,6 +2140,14 @@ async def ask_submit(
             except Exception:  # noqa: BLE001 — history is best-effort
                 log.warning("save_reading(ask) failed for %s", _signed_in.sub)
 
+    # Notify owner of the Q&A submission. Fires on both fresh and cached
+    # generations; the dedup window in notify.py suppresses rapid re-fires.
+    _u_ask = load_user(request)
+    notify.ask_submitted(
+        question=question, category=category, lang=lang,
+        user_email=(_u_ask.email if _u_ask else ""),
+    )
+
     # Redirect with the question + category in the URL so refresh doesn't
     # re-submit, the user can bookmark / share the URL, and back/forward
     # works naturally. Only bump the quota on a fresh generation.
@@ -2185,6 +2203,13 @@ async def matching_result(
         )
 
     guna = compute_guna_milan(groom_chart, bride_chart)
+    _u_match = load_user(request)
+    notify.matching_done(
+        groom_name=g_name.strip(), groom_dob=g_birth_date,
+        bride_name=b_name.strip(), bride_dob=b_birth_date,
+        total_score=f"{guna.total_awarded:g}/{guna.total_max} · {guna.overall_verdict}",
+        lang=lang, user_email=(_u_match.email if _u_match else ""),
+    )
     verdict_key = {
         "Uttam":            "matching_verdict_uttam",
         "Madhyam":          "matching_verdict_madhyam",
