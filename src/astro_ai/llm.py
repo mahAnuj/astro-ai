@@ -42,6 +42,7 @@ from astro_ai.chart import (
     format_planet_nakshatras_for_prompt,
     format_aspects_for_prompt,
     format_navamsha_for_prompt,
+    format_dashamsa_for_prompt,
 )
 from .learn_registry import ARTICLES
 
@@ -123,6 +124,7 @@ def _format_seeker_message(
     nakshatras_block = format_planet_nakshatras_for_prompt(chart)
     aspects_block = format_aspects_for_prompt(chart)
     navamsha_block = format_navamsha_for_prompt(chart)
+    dashamsa_block = format_dashamsa_for_prompt(chart)
     # Topic summaries — distilled article knowledge selected by chart features.
     # Cheap (~400 tokens for 3-5 summaries) and gives the LLM specific classical
     # depth PLUS cross-link destinations for the /learn/ articles.
@@ -141,6 +143,8 @@ def _format_seeker_message(
         optional_blocks += f"\n\n{aspects_block}"
     if navamsha_block:
         optional_blocks += f"\n\n--- D-9 NAVAMSHA ---\n{navamsha_block}"
+    if dashamsa_block:
+        optional_blocks += f"\n\n--- D-10 DASHAMSA ---\n{dashamsa_block}"
     if manglik_block:
         optional_blocks += f"\n\n{manglik_block}"
     if yogas_block:
