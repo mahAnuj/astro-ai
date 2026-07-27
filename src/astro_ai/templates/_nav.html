@@ -7,13 +7,14 @@
      show_print   — optional bool (defaults true).
 
    Layout — three zones on md+ (desktop):
-     [Logo]                       [Kundli  Readings▾  Rashifal  Learn ...]                       [Print | Lang]
-       LEFT (shrinkwrap)           CENTER (flex-1, justify-center)                                RIGHT (shrinkwrap)
+     [Logo]           [Kundli  Matching  Rashifal  Ask  Learn  More▾]           [Print | Lang]
+       LEFT (shrinkwrap)   CENTER (flex-1, justify-center)                        RIGHT (shrinkwrap)
 
-   The "Readings" dropdown groups the personalised readings (Today, Monthly,
-   Yearly, Dasha, Matching, Ask) — all derived from a saved chart, all lower
-   on the navigation priority than the front-door destinations (Kundli,
-   Rashifal, Learn). Keeps the top-level nav from looking jammed.
+   Matching + Ask are top-level because they're the highest-intent
+   destinations for Indian users (every marriage discussion → milan;
+   Ask is the killer chart-based Q&A). The "More" dropdown holds the
+   time-based readings (Today, Monthly, Yearly, Dasha) which are
+   secondary/supporting rather than front-door destinations.
 
    On < md (mobile), all three zones stack vertically inside the hamburger
    panel and the dropdown auto-expands as a labeled section. No nested
@@ -71,28 +72,29 @@
       {%- endmacro %}
 
       {{ link("/kundli",   t(lang, 'nav_natal_link'),    'natal') }}
+      {{ link("/matching", t(lang, 'nav_matching_link'), 'matching') }}
       {{ link("/rashifal", t(lang, 'nav_rashifal_link'), 'rashifal') }}
+      {{ link("/ask",      t(lang, 'nav_ask_link'),      'ask') }}
+      {{ link("/learn/",   "Learn",                      'learn') }}
 
-      {# READINGS dropdown — groups personalised-chart features. On mobile
-         this becomes a labeled section with the items always visible (no
-         tap-to-expand inside the hamburger panel). On desktop, click the
-         label to toggle, click outside to close. #}
-      {% set readings_pages = ['today','monthly','yearly','dasha','matching','ask'] %}
-      {% set readings_active = active_page in readings_pages %}
+      {# MORE dropdown — time-based readings that are supporting rather
+         than front-door. On mobile becomes a flat labeled section (no
+         tap-to-expand inside the hamburger); on desktop, click to toggle. #}
+      {% set more_pages = ['today','monthly','yearly','dasha'] %}
+      {% set more_active = active_page in more_pages %}
       <div class="nav-dropdown md:relative" data-nav-dropdown>
         <button type="button"
                 class="nav-dropdown-trigger inline-flex items-center gap-1 w-full md:w-auto py-1 md:py-0
-                       {% if readings_active %}text-astro-700 font-semibold{% else %}text-stone-700 hover:text-astro-700{% endif %}"
+                       {% if more_active %}text-astro-700 font-semibold{% else %}text-stone-700 hover:text-astro-700{% endif %}"
                 aria-haspopup="true" aria-expanded="false">
-          Readings
+          More
           <svg class="nav-dropdown-chev w-3 h-3 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
         {# Default visibility:
-             mobile (no md:): always visible — show as flat list under "Readings" label
-             desktop (md:):    hidden by default, JS toggles to flex when clicked.
-           Position: relative on mobile (in-flow), absolute on desktop (floating menu). #}
+             mobile (no md:): always visible — show as flat list under "More" label
+             desktop (md:):    hidden by default, JS toggles to flex when clicked. #}
         <div class="nav-dropdown-menu flex flex-col gap-y-1 md:gap-y-0
                     md:hidden md:absolute md:top-full md:left-1/2 md:-translate-x-1/2 md:mt-2
                     md:w-52 md:bg-white md:rounded-md md:shadow-lg md:border md:border-stone-200
@@ -109,12 +111,8 @@
           {{ dlink("/monthly",  t(lang, 'nav_monthly_link'),  'monthly') }}
           {{ dlink("/yearly",   t(lang, 'nav_yearly_link', year=current_year()), 'yearly') }}
           {{ dlink("/dasha",    t(lang, 'nav_dasha_link'),    'dasha') }}
-          {{ dlink("/matching", t(lang, 'nav_matching_link'), 'matching') }}
-          {{ dlink("/ask",      t(lang, 'nav_ask_link'),      'ask') }}
         </div>
       </div>
-
-      {{ link("/learn/",   "Learn",                      'learn') }}
     </div>
 
     {# RIGHT ZONE: utility actions (auth + print + language). #}
