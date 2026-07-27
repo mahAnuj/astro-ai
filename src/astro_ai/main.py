@@ -673,6 +673,74 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     )
 
 
+_EMAIL_KUNDLI_LAST_SENT: dict[str, float] = {}
+_EMAIL_KUNDLI_MIN_INTERVAL_SEC = 60.0  # user can email themselves at most once per minute
+
+
+@app.post("/email/kundli-reading")
+async def email_kundli_reading(request: Request) -> JSONResponse:
+    """Email the signed-in user their most-recent saved Kundli reading.
+
+    Auth-gated (only signed-in users, sending to their own address) so
+    there's no abuse vector — a caller can never target a third-party
+    email. Rate-limited per-user in-memory to prevent hammering.
+    """
+    user = load_user(request)
+    if not user or not user.sub or not user.email:
+        return JSONResponse({"ok": False, "error": "sign_in_required"}, status_code=401)
+
+    import time
+    now = time.time()
+    last = _EMAIL_KUNDLI_LAST_SENT.get(user.sub, 0.0)
+    if now - last < _EMAIL_KUNDLI_MIN_INTERVAL_SEC:
+        return JSONResponse({"ok": False, "error": "rate_limited"}, status_code=429)
+
+    readings = users.list_readings(user.sub, limit=5)
+    kundli_reading = next((r for r in readings if r.kind == "natal"), None)
+    if not kundli_reading:
+        return JSONResponse({"ok": False, "error": "no_reading"}, status_code=404)
+
+    lang = _lang(request)
+    sections = parse_sectioned_reading(kundli_reading.body)
+
+    saved_chart = load_collection(request).active
+    chart_ctx = None
+    birth_details_ctx = None
+    if saved_chart is not None:
+        details = saved_chart.to_birth_details()
+        birth_details_ctx = {
+            "name": details.name,
+            "birth_date": details.birth_date,
+            "birth_time": details.birth_time,
+            "birth_place": details.birth_place,
+        }
+        try:
+            chart_ctx = compute_chart(details.birth_date, details.birth_time, details.birth_place)
+        except Exception:  # noqa: BLE001 — chart is best-effort for the email header
+            chart_ctx = None
+
+    ctx = {
+        "lang": lang,
+        "site_url": _site_url(),
+        "user_name": user.name or "",
+        "birth_details": birth_details_ctx,
+        "chart": chart_ctx,
+        "sections": sections,
+        "unsubscribe_url": "",  # transactional — no subscription list to leave
+    }
+    html = templates.env.get_template("email/kundli_reading.html").render(**ctx)
+    subject = (
+        "आपकी कुंडली रीडिंग — Shubh Bhagya"
+        if lang == "hi"
+        else "Your Kundli Reading — Shubh Bhagya"
+    )
+    ok = email_sender.send(user.email, subject=subject, html=html)
+    if ok:
+        _EMAIL_KUNDLI_LAST_SENT[user.sub] = now
+        return JSONResponse({"ok": True, "email": user.email})
+    return JSONResponse({"ok": False, "error": "send_failed"}, status_code=502)
+
+
 @app.get("/today", response_class=HTMLResponse)
 async def today(request: Request) -> HTMLResponse:
     """Today's personalised Vedic reading using the active saved chart."""
