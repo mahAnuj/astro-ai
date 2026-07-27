@@ -50,6 +50,16 @@ from astro_ai.matching import compute_guna_milan
 from astro_ai.providers import AllProvidersExhausted
 
 
+# Module-level logger used by the LLM-error handlers throughout this file
+# (log.exception "…LLM generation failed" — one such call per LLM route).
+# Before this existed, every one of those error paths crashed with
+# NameError, converting a graceful "LLM temporarily unavailable" page into
+# a bare 500. Any new error-path code in this module should use this
+# logger, not an ad-hoc import.
+import logging
+log = logging.getLogger(__name__)
+
+
 def _llm_error_friendly(err: Exception) -> tuple[str, str]:
     """Translate an internal LLM error into a user-friendly (title, message).
 
