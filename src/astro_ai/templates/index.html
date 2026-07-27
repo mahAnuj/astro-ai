@@ -36,7 +36,7 @@
   <div class="absolute -top-24 -right-24 -z-10 w-96 h-96 rounded-full bg-astro-200/30 blur-3xl"></div>
   <div class="absolute -bottom-24 -left-24 -z-10 w-96 h-96 rounded-full bg-amber-200/30 blur-3xl"></div>
 
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20 grid md:grid-cols-2 gap-10 lg:gap-16 items-center">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-20 grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16 items-center">
     <!-- LEFT — value prop -->
     <div>
       {# Navagraha Stotra invocation (Issue #75) — hidden on mobile so the
@@ -63,8 +63,13 @@
          bullet list. A visual preview of the outcome (Vedic is a visual
          tradition; showing beats telling). Uses the same .chart-draw
          line-drawing animation as the /kundli page, creating a
-         consistent visual signature across landing → generated chart. #}
-      <div class="mt-2 max-w-xs">
+         consistent visual signature across landing → generated chart.
+
+         Hidden on mobile: the SVG eats ~320px of vertical space,
+         pushing the form below the fold on 375×667. Form is the
+         highest-intent element — mobile viewers get the form
+         immediately after the headline instead of after decoration. #}
+      <div class="hidden md:block mt-2 max-w-xs">
         <div class="bg-white rounded-2xl border border-stone-200 shadow-md p-3.5">
           <svg viewBox="0 0 400 400" class="w-full block" xmlns="http://www.w3.org/2000/svg" aria-label="Sample Janma Kundali preview">
             {# Outer border #}
