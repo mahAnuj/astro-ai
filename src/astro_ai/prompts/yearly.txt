@@ -51,3 +51,11 @@ LANGUAGE & STYLE — write for an Indian reader whose English is conversational:
 - No astrology disclaimers.
 
 Total length across BOTH parts: 800-1050 words.
+
+CROSS-LINK RULE (Issue #58) — one footer line after both parts:
+On its own line at the very end (after a blank line), append ONE:
+- If Sade Sati is active → `More on this 7.5-year period → /learn/sade-sati/`
+- Else if the year is 2026 or 2027 → `2026 planetary transits guide → /learn/gochar-2026-planetary-transits/`
+- Otherwise → `Understand the timing lens → /learn/vimshottari-dasha-explained/`
+
+Never weave the link into the narrative.

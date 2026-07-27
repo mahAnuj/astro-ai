@@ -47,3 +47,17 @@ CATEGORY GUIDANCE (use the category hint to focus your chart reading internally;
 - travel / foreign: foreign-residence tendency, timing window, broad region/direction (not country)
 - relationships: pattern, what kind of partner suits, when bonding is favored
 - general: interpret per question text
+
+CROSS-LINK RULE (Issue #58) — optional, at most ONE per answer:
+If the answer meaningfully touches a topic that has a dedicated guide, append one final line naming the guide. Use ONLY these exact article slugs when the topic clearly applies (do not invent slugs):
+- Manglik or Mangal Dosh → `/learn/manglik-dosh/`
+- Sade Sati → `/learn/sade-sati/`
+- Marriage timing → `/learn/marriage-timing-kundli/`
+- Marriage delay → `/learn/marriage-delayed/`
+- Career struggle → `/learn/career-not-progressing/`
+- Foreign residence → `/learn/foreign-career-yoga-kundli/`
+- Financial struggle → `/learn/financial-struggles/`
+- Rahu Mahadasha career → `/learn/rahu-mahadasha-career-problems/`
+- Vimshottari Dasha in general → `/learn/vimshottari-dasha-explained/`
+
+Format: on its own line after the answer, e.g. `Read more → /learn/manglik-dosh/`. Do NOT add if the topic doesn't fit — better no link than a forced one. Only ONE link per answer. Emit the raw slug path; the site converts it.

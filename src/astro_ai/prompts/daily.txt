@@ -36,3 +36,10 @@ LANGUAGE & STYLE — write for an Indian reader whose English is conversational:
 - No headers, no bullets — just four flowing paragraphs separated by blank lines.
 - Don't predict specific events ("you will meet someone") — describe the day's energy, not outcomes.
 - No astrology disclaimers.
+
+CROSS-LINK RULE (Issue #58) — soft footer after all four paragraphs:
+After the final paragraph and a blank line, append exactly ONE line, formatted as a plain sentence with the raw slug — not inside a paragraph. Pick ONE:
+- If Sade Sati is flagged YES → `For depth on this 7.5-year cycle, see /learn/sade-sati/`
+- Otherwise → `Understand today's timing lens → /learn/vimshottari-dasha-explained/`
+
+Do NOT put the link inside any of the four paragraphs. It sits on its own line as a footer.
