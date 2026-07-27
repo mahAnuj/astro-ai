@@ -2656,6 +2656,78 @@ def format_navamsha_for_prompt(chart: Chart) -> str:
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------
+# D-10 Dashamsa divisional chart (Issue #64) — career/dharma lens
+# ---------------------------------------------------------------------------
+#
+# Each rashi is divided into 10 equal parts of 3° each. Starting sign for
+# the 1st pada follows the odd/even rule:
+#   Odd signs (Aries, Gemini, Leo, Libra, Sagittarius, Aquarius) — start
+#     from the same sign; each successive pada is the next sign.
+#   Even signs (Taurus, Cancer, Virgo, Scorpio, Capricorn, Pisces) — start
+#     from the 9th sign from itself (that's +8 in 0-indexed math).
+#
+# Classical use: read the 10th house of D-10 (and its lord) for career
+# strength; a strong D-10 10th confirms professional success even when
+# D-1 10th is weak.
+_DASHAMSA_STEP = 3.0  # 30/10
+
+
+def _dashamsa_sign_index(sign_idx: int, long_in_sign: float) -> int:
+    pada = int(long_in_sign / _DASHAMSA_STEP)
+    if sign_idx % 2 == 0:  # odd sign in classical 1-indexed count
+        return (sign_idx + pada) % 12
+    return (sign_idx + 8 + pada) % 12
+
+
+def compute_dashamsa_chart(chart: Chart) -> Chart:
+    """Compute the D-10 Dashamsa divisional chart from a natal Chart.
+
+    D-10 lens on career/profession. Ascendant + planets remapped by the
+    Parashari odd/even rule. Birth details + nakshatras carry through
+    (same seeker, different divisional lens).
+    """
+    d1_lagna_idx = _rashi_index(chart.lagna_rashi)
+    d10_lagna_idx = _dashamsa_sign_index(d1_lagna_idx, chart.lagna_longitude)
+    pada_pos = chart.lagna_longitude % _DASHAMSA_STEP
+    d10_lagna_long = (pada_pos / _DASHAMSA_STEP) * 30.0
+
+    d10_planets: list[PlanetPosition] = []
+    for p in chart.planets:
+        p_sign_idx = _rashi_index(p.rashi)
+        d10_idx = _dashamsa_sign_index(p_sign_idx, p.longitude)
+        d10_pada_pos = p.longitude % _DASHAMSA_STEP
+        d10_long = (d10_pada_pos / _DASHAMSA_STEP) * 30.0
+        d10_house = ((d10_idx - d10_lagna_idx) % 12) + 1
+        d10_planets.append(PlanetPosition(
+            name=p.name,
+            rashi=RASHIS[d10_idx],
+            house=d10_house,
+            longitude=d10_long,
+            nakshatra=p.nakshatra,
+            retrograde=p.retrograde,
+        ))
+
+    return Chart(
+        lagna_rashi=RASHIS[d10_lagna_idx],
+        lagna_longitude=d10_lagna_long,
+        planets=d10_planets,
+        birth_lat=chart.birth_lat,
+        birth_lon=chart.birth_lon,
+        birth_tz=chart.birth_tz,
+        birth_utc=chart.birth_utc,
+    )
+
+
+def format_dashamsa_for_prompt(chart: Chart) -> str:
+    """Emit D-10 Dashamsa placements for LLM context. Same shape as D-9."""
+    d10 = compute_dashamsa_chart(chart)
+    lines = [f"D-10 Dashamsa Lagna: {d10.lagna_rashi.split(' ')[0]}"]
+    for p in d10.planets:
+        lines.append(f"  {p.name}: {p.rashi.split(' ')[0]} (house {p.house})")
+    return "\n".join(lines)
+
+
 def _parse_local_datetime(date_str: str, time_str: str, tz_name: str) -> datetime:
     """Combine ISO date + HH:MM time + tz name into a tz-aware datetime."""
     try:
