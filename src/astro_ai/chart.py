@@ -2577,6 +2577,85 @@ def _rashi_index(rashi_label: str) -> int:
     return RASHIS.index(rashi_label)
 
 
+# ---------------------------------------------------------------------------
+# D-9 Navamsha divisional chart (Issue #62)
+# ---------------------------------------------------------------------------
+#
+# Each rashi (30°) is divided into 9 equal 3°20' parts (pada). The rashi
+# occupying a given pada follows Parashari rules: from the starting rashi
+# (Aries for Aries/Leo/Sagittarius pada 1; the 9th sign for fixed signs;
+# the 5th sign for dual signs), Navamsha rashis run in zodiacal order.
+#
+# The concise equivalent formula, derivable directly from those rules:
+#     d9_sign_index = int(abs_longitude / (30/9)) % 12
+#
+# where abs_longitude is the sidereal longitude in 0..360°. Verified against
+# classical examples: 15° Aries → Leo (5th pada), 0° Taurus → Capricorn
+# (Taurus is fixed, starts from 9th from itself).
+#
+# Classical use: marriage/dharma readings, and confirming raja yogas —
+# a yoga must survive in D-9 to fully manifest per Parashara.
+_NAVAMSHA_STEP = 30.0 / 9.0  # 3°20'
+
+
+def compute_navamsha_chart(chart: Chart) -> Chart:
+    """Compute the D-9 Navamsha divisional chart from a natal Chart.
+
+    Returns a Chart object carrying D-9 lagna + planet placements; the
+    birth-detail fields (lat/lon/tz/utc) are passed through unchanged
+    because D-9 is a lens on the same birth, not a new event.
+
+    Nakshatra and retrograde are preserved from D-1 (both are properties
+    of the absolute longitude, not the divisional). Longitude within
+    D-9 sign is computed from the residual pada position, so the diamond
+    renderer can still display a degree for context.
+    """
+    d1_asc_abs = _rashi_index(chart.lagna_rashi) * 30.0 + chart.lagna_longitude
+    d9_lagna_step = d1_asc_abs / _NAVAMSHA_STEP
+    d9_lagna_idx = int(d9_lagna_step) % 12
+    d9_lagna_long = (d9_lagna_step - int(d9_lagna_step)) * 30.0
+
+    d9_planets: list[PlanetPosition] = []
+    for p in chart.planets:
+        abs_long = _rashi_index(p.rashi) * 30.0 + p.longitude
+        step = abs_long / _NAVAMSHA_STEP
+        d9_idx = int(step) % 12
+        d9_long = (step - int(step)) * 30.0
+        d9_house = ((d9_idx - d9_lagna_idx) % 12) + 1
+        d9_planets.append(PlanetPosition(
+            name=p.name,
+            rashi=RASHIS[d9_idx],
+            house=d9_house,
+            longitude=d9_long,
+            nakshatra=p.nakshatra,
+            retrograde=p.retrograde,
+        ))
+
+    return Chart(
+        lagna_rashi=RASHIS[d9_lagna_idx],
+        lagna_longitude=d9_lagna_long,
+        planets=d9_planets,
+        birth_lat=chart.birth_lat,
+        birth_lon=chart.birth_lon,
+        birth_tz=chart.birth_tz,
+        birth_utc=chart.birth_utc,
+    )
+
+
+def format_navamsha_for_prompt(chart: Chart) -> str:
+    """Emit D-9 Navamsha placements as compact lines for LLM context.
+
+    Format: one line per planet, plus the D-9 lagna at top. Prefix with
+    a header the prompt can key off. Kept short — house + rashi per
+    planet is enough for classical yoga-confirmation reading.
+    """
+    d9 = compute_navamsha_chart(chart)
+    lines = [f"D-9 Navamsha Lagna: {d9.lagna_rashi.split(' ')[0]}"]
+    for p in d9.planets:
+        lines.append(f"  {p.name}: {p.rashi.split(' ')[0]} (house {p.house})")
+    return "\n".join(lines)
+
+
 def _parse_local_datetime(date_str: str, time_str: str, tz_name: str) -> datetime:
     """Combine ISO date + HH:MM time + tz name into a tz-aware datetime."""
     try:
