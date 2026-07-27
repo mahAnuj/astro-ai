@@ -32,3 +32,11 @@ End date of the current Antardasha, then what comes next. Name the next Antardas
 
 ## Remedies for the Antardasha
 3-5 specific, practical remedies tied to the Antardasha lord. Format as a bulleted list. Mix devotional (mantra, fast day, temple visit), karmic (donation, service), and lifestyle (colour, gemstone caution, food). For benefic Antardasha lords, focus on AMPLIFICATION; for malefic ones, focus on PACIFICATION. Always close with one shloka-style line that grounds the seeker (Sanskrit + 1-line English meaning).
+
+CROSS-LINK RULE (Issue #58):
+After the "The Mahadasha backdrop" section body (before the next heading), append ONE line naming the relevant guide. Match the Mahadasha lord:
+- Sun Mahadasha → `Read our full Sun Mahadasha guide → /learn/sun-mahadasha/`
+- Rahu Mahadasha → `Read our Rahu Mahadasha career guide → /learn/rahu-mahadasha-career-problems/`
+- Otherwise → `Read our Vimshottari Dasha guide → /learn/vimshottari-dasha-explained/`
+
+Emit the raw `/learn/<slug>/` path on its own line — the site converts it to an anchor. Only ONE such link per reading. Do not add links in other sections.

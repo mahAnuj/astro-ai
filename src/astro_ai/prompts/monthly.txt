@@ -52,4 +52,11 @@ LANGUAGE & STYLE — write for an Indian reader whose English is conversational:
 - Tentative: "this month suggests", "may bring", "is likely to", "lean into".
 - No astrology disclaimers.
 
+CROSS-LINK RULE (Issue #58) — footer after the reading:
+On its own line after the final paragraph (blank line separator), append ONE:
+- If Sade Sati is active → `More on this 7.5-year period → /learn/sade-sati/`
+- Otherwise → `Learn the timing lens behind this reading → /learn/vimshottari-dasha-explained/`
+
+Do NOT weave the link into any paragraph.
+
 Total length across BOTH parts: 580-800 words.
