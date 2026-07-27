@@ -2023,6 +2023,8 @@ async def matching_result(
                 "name": b_name.strip(), "birth_date": b_birth_date,
                 "birth_time": b_birth_time, "birth_place": b_birth_place.strip(),
             },
+            "groom_chart": groom_chart,
+            "bride_chart": bride_chart,
         },
     )
 
