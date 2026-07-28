@@ -118,6 +118,7 @@ from astro_ai.session import (
     save_ask_usage,
     save_collection,
     save_lang,
+    save_session_atomic,
     save_user,
 )
 
@@ -1196,19 +1197,23 @@ async def auth_google(
     # and users.json. Signed-in users' charts follow them across devices;
     # anonymous / storage-unavailable paths silently keep the cookie as-is.
     response = JSONResponse({"ok": True, "email": user.email, "name": user.name})
+    merged: ChartCollection | None = None
     try:
         cookie_collection = load_collection(request)
         user_collection = users.load_charts(user.sub)
         merged = users.merge_collections(cookie=cookie_collection, user=user_collection)
-        save_collection(response, merged, request)
         users.save_charts(user.sub, merged)  # silent no-op if storage unavailable
     except Exception as err:
-        import logging
-        logging.getLogger(__name__).warning(
-            "chart sync on sign-in failed for %s: %s", user.email, err
-        )
+        log.exception("chart sync on sign-in failed for %s", user.email)
+        _fire_error_alert(request, err, "auth:chart_sync")
+        merged = None  # leave existing cookie charts untouched on failure
 
-    save_user(response, request, user)
+    # SINGLE atomic cookie write — write user AND merged collection in one
+    # go. Doing two consecutive save_xxx() calls (save_collection then
+    # save_user) would result in the second overwriting the first because
+    # both re-read the request cookie (which hasn't seen the first write).
+    # See session.save_session_atomic docstring for the exact failure mode.
+    save_session_atomic(response, request, user=user, collection=merged)
     return response
 
 
