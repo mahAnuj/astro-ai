@@ -71,14 +71,30 @@ def _fire_error_alert(request, err: Exception, source: str) -> None:
     try:
         import traceback as _tb
         _u = load_user(request) if request is not None else None
+        _user_email = _u.email if _u else ""
+        _path = request.url.path if request is not None else ""
+        _method = request.method if request is not None else ""
+        _tb_str = _tb.format_exc()
         notify.error_seen(
             source=source,
             error_type=type(err).__name__,
             error_message=str(err) or repr(err),
-            path=(request.url.path if request is not None else ""),
-            method=(request.method if request is not None else ""),
-            user_email=(_u.email if _u else ""),
-            traceback_str=_tb.format_exc(),
+            path=_path, method=_method,
+            user_email=_user_email,
+            traceback_str=_tb_str,
+        )
+        # Persistent record so /admin/activity can show error history.
+        events.record(
+            type="error",
+            email=_user_email,
+            data={
+                "source": source,
+                "error_type": type(err).__name__,
+                "error_message": (str(err) or repr(err))[:500],
+                "path": _path, "method": _method,
+                # Keep last ~1500 chars of traceback for post-hoc diagnosis.
+                "traceback": _tb_str[-1500:] if _tb_str else "",
+            },
         )
     except Exception:  # noqa: BLE001 — alert must never mask original error
         log.debug("notify.error_seen fire failed (swallowed)", exc_info=True)
@@ -104,7 +120,7 @@ def _llm_error_friendly(err: Exception) -> tuple[str, str]:
         "We couldn't complete the reading this time. Please try again in "
         "a moment — your input is safe to re-submit exactly as you typed it.",
     )
-from astro_ai import cache, email_sender, feedback, festivals, learn_registry, notify, shloks, snapshots, storage, subscribers, trivia, users
+from astro_ai import cache, email_sender, events, feedback, festivals, learn_registry, notify, shloks, snapshots, storage, subscribers, trivia, users
 import time as _time
 from astro_ai.session import (
     SUPPORTED_LANGS,
@@ -705,6 +721,15 @@ async def _render_natal_for(request: Request, details: BirthDetails,
         birth_time=details.birth_time, birth_place=details.birth_place,
         lang=lang, user_email=(_u_natal.email if _u_natal else ""),
         model=llm_providers.last_used_model(),
+    )
+    events.record(
+        type="form_kundli",
+        email=(_u_natal.email if _u_natal else ""),
+        data={
+            "name": details.name, "birth_date": details.birth_date,
+            "birth_time": details.birth_time, "birth_place": details.birth_place,
+            "lang": lang, "model": llm_providers.last_used_model(),
+        },
     )
 
     # Persist to signed-in user's reading history so they can revisit it
@@ -1927,6 +1952,44 @@ async def admin_usage(request: Request, days: int = 1) -> HTMLResponse:
     )
 
 
+@app.get("/admin/activity", response_class=HTMLResponse, dependencies=[Depends(require_admin)])
+async def admin_activity(request: Request, days: int = 7, limit: int = 200) -> HTMLResponse:
+    """Recent form submissions, Ask questions, and errors — auth-gated.
+
+    Query params: days=1|7|30, limit=100|200|500.
+    """
+    kundlis = events.recent(types=["form_kundli"], days=days, limit=limit)
+    matches = events.recent(types=["form_matching"], days=days, limit=limit)
+    asks = events.recent(types=["form_ask"], days=days, limit=limit)
+    errs = events.recent(types=["error"], days=days, limit=limit)
+    totals = events.counts_by_type(days=days)
+    return templates.TemplateResponse(
+        request, "admin_activity.html",
+        {
+            "lang": _lang(request),
+            "days": days, "limit": limit,
+            "kundlis": kundlis, "matches": matches, "asks": asks, "errors": errs,
+            "totals": totals,
+        },
+    )
+
+
+@app.get("/admin/subscribers", response_class=HTMLResponse, dependencies=[Depends(require_admin)])
+async def admin_subscribers(request: Request) -> HTMLResponse:
+    """Full Rashifal-email subscriber list — auth-gated."""
+    subs = subscribers.list_subscribers()
+    # Newest first — subscribers.list_subscribers order is insertion order.
+    subs_sorted = sorted(subs, key=lambda s: s.get("subscribed_at", ""), reverse=True)
+    return templates.TemplateResponse(
+        request, "admin_subscribers.html",
+        {
+            "lang": _lang(request),
+            "subscribers": subs_sorted,
+            "total": len(subs_sorted),
+        },
+    )
+
+
 @app.get("/dasha", response_class=HTMLResponse)
 async def dasha(request: Request) -> HTMLResponse:
     """Vimshottari Dasha timeline for the active saved chart."""
@@ -2255,6 +2318,14 @@ async def ask_submit(
         user_email=(_u_ask.email if _u_ask else ""),
         model=llm_providers.last_used_model(),
     )
+    events.record(
+        type="form_ask",
+        email=(_u_ask.email if _u_ask else ""),
+        data={
+            "question": question, "category": category, "lang": lang,
+            "model": llm_providers.last_used_model(),
+        },
+    )
 
     # Redirect with the question + category in the URL so refresh doesn't
     # re-submit, the user can bookmark / share the URL, and back/forward
@@ -2359,6 +2430,17 @@ async def matching_result(
         total_score=f"{guna.total_awarded:g}/{guna.total_max} · {guna.overall_verdict}",
         lang=lang, user_email=(_u_match.email if _u_match else ""),
         model=llm_providers.last_used_model(),
+    )
+    events.record(
+        type="form_matching",
+        email=(_u_match.email if _u_match else ""),
+        data={
+            "groom_name": g_name.strip(), "groom_dob": g_birth_date,
+            "bride_name": b_name.strip(), "bride_dob": b_birth_date,
+            "total_score": f"{guna.total_awarded:g}/{guna.total_max}",
+            "verdict": guna.overall_verdict, "lang": lang,
+            "model": llm_providers.last_used_model(),
+        },
     )
 
     return templates.TemplateResponse(
