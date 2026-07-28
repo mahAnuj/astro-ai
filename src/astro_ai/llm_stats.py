@@ -113,6 +113,127 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
         log.debug("llm_stats.record local fallback failed: %s", err)
 
 
+def record_call(*, route: str, cache_hit: bool, latency_ms: int = 0,
+                input_tokens: int = 0, output_tokens: int = 0) -> None:
+    """Bump per-day hit/miss/latency counters. Called from cache.log_call().
+
+    Persisted alongside the per-model counters (same GCS file, extra keys)
+    so a single admin-panel read gets everything. Adds a small write cost
+    per LLM call but survives Cloud Run cold starts / deploys, unlike the
+    SQLite-backed usage_log which lives in /tmp.
+    """
+    today = date.today()
+
+    def _mut(current: dict | None) -> dict:
+        data = current or {
+            "date": today.isoformat(),
+            "counts": {}, "totals": {}, "fallbacks": 0,
+            "calls": {"total": 0, "hits": 0, "misses": 0,
+                       "input_tokens": 0, "output_tokens": 0,
+                       "miss_latency_sum_ms": 0},
+            "call_by_route": {},
+        }
+        data.setdefault("calls", {"total": 0, "hits": 0, "misses": 0,
+                                    "input_tokens": 0, "output_tokens": 0,
+                                    "miss_latency_sum_ms": 0})
+        data.setdefault("call_by_route", {})
+
+        c = data["calls"]
+        c["total"] = c.get("total", 0) + 1
+        if cache_hit:
+            c["hits"] = c.get("hits", 0) + 1
+        else:
+            c["misses"] = c.get("misses", 0) + 1
+            c["miss_latency_sum_ms"] = c.get("miss_latency_sum_ms", 0) + latency_ms
+            c["input_tokens"] = c.get("input_tokens", 0) + input_tokens
+            c["output_tokens"] = c.get("output_tokens", 0) + output_tokens
+
+        rk = route or "unknown"
+        r = data["call_by_route"].setdefault(rk, {"calls": 0, "hits": 0,
+                                                     "input_tokens": 0, "output_tokens": 0})
+        r["calls"] = r.get("calls", 0) + 1
+        if cache_hit:
+            r["hits"] = r.get("hits", 0) + 1
+        else:
+            r["input_tokens"] = r.get("input_tokens", 0) + input_tokens
+            r["output_tokens"] = r.get("output_tokens", 0) + output_tokens
+        return data
+
+    result = storage.update_json(_key_for(today), _mut, default=None)
+    if result is not None:
+        return
+    # Local fallback (dev / preview).
+    try:
+        _LOCAL_FALLBACK_DIR.mkdir(parents=True, exist_ok=True)
+        path = _local_path(today)
+        try:
+            current = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            current = None
+        new_data = _mut(current)
+        path.write_text(json.dumps(new_data, ensure_ascii=False), encoding="utf-8")
+    except Exception as err:  # noqa: BLE001 — stats are best-effort
+        log.debug("llm_stats.record_call local fallback failed: %s", err)
+
+
+def usage_summary(days: int = 1) -> dict[str, Any]:
+    """Return the same shape cache.usage_summary used to, from GCS.
+
+    Aggregates the last `days` days of per-day blobs. Survives Cloud Run
+    cold starts and deploys, so the /admin/usage top panel no longer
+    resets to zero after each push.
+    """
+    days = max(1, min(days, STATS_RETENTION_DAYS))
+    today = date.today()
+    total = 0
+    hits = 0
+    miss_latency_sum = 0
+    misses = 0
+    in_tok = 0
+    out_tok = 0
+    by_route_acc: dict[str, dict[str, int]] = {}
+    for i in range(days):
+        d = today - timedelta(days=i)
+        blob = _read_day(d)
+        if blob is None:
+            continue
+        c = blob.get("calls", {})
+        total += c.get("total", 0)
+        hits += c.get("hits", 0)
+        misses += c.get("misses", 0)
+        miss_latency_sum += c.get("miss_latency_sum_ms", 0)
+        in_tok += c.get("input_tokens", 0)
+        out_tok += c.get("output_tokens", 0)
+        for route, r in blob.get("call_by_route", {}).items():
+            acc = by_route_acc.setdefault(route, {"calls": 0, "hits": 0,
+                                                    "input_tokens": 0, "output_tokens": 0})
+            acc["calls"] += r.get("calls", 0)
+            acc["hits"] += r.get("hits", 0)
+            acc["input_tokens"] += r.get("input_tokens", 0)
+            acc["output_tokens"] += r.get("output_tokens", 0)
+    by_route = sorted(
+        [
+            {"route": k, "calls": v["calls"], "hits": v["hits"],
+             "hit_rate_pct": int(v["hits"] / v["calls"] * 100) if v["calls"] else 0,
+             "input_tokens": v["input_tokens"], "output_tokens": v["output_tokens"]}
+            for k, v in by_route_acc.items()
+        ],
+        key=lambda r: -r["calls"],
+    )
+    return {
+        "days": days,
+        "total_calls": total,
+        "cache_hits": hits,
+        "cache_misses": misses,
+        "hit_rate_pct": int(hits / total * 100) if total else 0,
+        "total_input_tokens": in_tok,
+        "total_output_tokens": out_tok,
+        "avg_miss_latency_ms": int(miss_latency_sum / misses) if misses else 0,
+        "by_route": by_route,
+        "cache_entries": 0,   # SQLite-only concept; filled by admin_usage from cache.py
+    }
+
+
 def _empty_day(day: date) -> dict[str, Any]:
     return {"date": day.isoformat(), "counts": {}, "totals": {}, "fallbacks": 0}
 
