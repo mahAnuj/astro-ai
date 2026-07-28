@@ -206,16 +206,22 @@ def _shared_three_tier(
     # Tier 1: GCS — survives Cloud Run cold starts.
     persistent = storage.get(storage_key)
     if persistent is not None:
-        cache.log_call(route, lang, cache_hit=True)
-        cache.put(cache_key, persistent, route=route, ttl_days=1)  # warm SQLite
-        return persistent
+        ok, reason = llm_providers.passes_quality(persistent, route)
+        if ok:
+            cache.log_call(route, lang, cache_hit=True)
+            cache.put(cache_key, persistent, route=route, ttl_days=1)  # warm SQLite
+            return persistent
+        log.warning("shared cache GCS: bad entry for route=%s (%s) — regenerating", route, reason)
 
     # Tier 2: SQLite — per-instance, alive while the container is.
     sqlite_hit = cache.get(cache_key)
     if sqlite_hit is not None:
-        cache.log_call(route, lang, cache_hit=True)
-        storage.put(storage_key, sqlite_hit)  # backfill GCS
-        return sqlite_hit
+        ok, reason = llm_providers.passes_quality(sqlite_hit, route)
+        if ok:
+            cache.log_call(route, lang, cache_hit=True)
+            storage.put(storage_key, sqlite_hit)  # backfill GCS
+            return sqlite_hit
+        log.warning("shared cache SQLite: bad entry for route=%s (%s) — regenerating", route, reason)
 
     # Tier 3: LLM generation. Persist to both layers.
     started = _time.time()
@@ -244,11 +250,23 @@ def _cached(
     `call_fn` is a zero-arg callable that returns the LLM text. We do the
     cache-check and the per-route logging here so every reading benefits from
     the same observability surface without duplicating boilerplate.
+
+    Self-healing: if the cached text fails the same quality check that the
+    provider chain uses (e.g. missing '## Heading' markers), we treat it as
+    a miss and re-generate — silently cleaning up any garbage that snuck
+    into the cache before quality-gating was live.
     """
     hit = cache.get(cache_key)
     if hit is not None:
-        cache.log_call(route, lang, cache_hit=True)
-        return hit
+        ok, reason = llm_providers.passes_quality(hit, route)
+        if ok:
+            cache.log_call(route, lang, cache_hit=True)
+            return hit
+        log.warning(
+            "cache: dropping bad entry for route=%s (%s) — will regenerate",
+            route, reason,
+        )
+        # Fall through to regeneration; the fresh call will overwrite.
     started = _time.time()
     text = call_fn()
     latency_ms = int((_time.time() - started) * 1000)

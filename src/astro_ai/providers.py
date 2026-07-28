@@ -73,6 +73,57 @@ def last_used_model() -> str:
     return f"{prov}:{mod}"
 
 
+# ─── Response quality validation ─────────────────────────────────────
+#
+# Some smaller/misaligned models produce syntactically-successful responses
+# (200 OK from the API) that are semantically broken — no section headings,
+# way too short, refusals, etc. Without validation these silently poison
+# the cache and users see empty "Reading" boxes.
+#
+# passes_quality() below is called by chat() after each provider succeeds;
+# a failure is treated identically to a 429 and the chain moves on. First
+# hit was 2026-07-28 where openai/gpt-oss-20b returned a natal reading
+# without the `## Heading` markers our parser needs.
+
+
+# Minimum chars we'd accept for each route. Below this the response is
+# certainly truncated or a refusal. Tuned to the shortest a real reading
+# would ever be, minus generous slack.
+_MIN_CHARS_BY_ROUTE: dict[str, int] = {
+    "natal":    800,
+    "outlook":  500,
+    "matching": 500,
+    "today":    400,
+    "dasha":    300,
+    "rashifal": 200,
+    "ask":      100,
+}
+
+# Routes whose prompts require the model to emit `## Heading` blocks. If
+# the model returns fewer than 2 headings on these routes, the parser
+# collapses to a single "Reading" fallback and the user sees an empty
+# card — treat as failure and fall through.
+_STRUCTURED_ROUTES: set[str] = {
+    "natal", "outlook", "matching", "dasha", "rashifal", "today",
+}
+
+
+def passes_quality(text: str, route: str) -> tuple[bool, str]:
+    """Return (ok, reason). Called after each provider's chat() success."""
+    stripped = (text or "").strip()
+    if not stripped:
+        return False, "empty response"
+    min_chars = _MIN_CHARS_BY_ROUTE.get(route, 60)
+    if len(stripped) < min_chars:
+        return False, f"response too short ({len(stripped)} chars < {min_chars} min for {route})"
+    if route in _STRUCTURED_ROUTES:
+        # Count `## ` at line start — same rule the parser uses.
+        heading_count = sum(1 for line in stripped.splitlines() if line.startswith("## "))
+        if heading_count < 2:
+            return False, f"only {heading_count} '## Heading' markers (need ≥2 for {route})"
+    return True, ""
+
+
 @dataclass(frozen=True)
 class ProviderConfig:
     """One OpenAI-compatible provider in the fallback chain.
@@ -246,6 +297,17 @@ def chat(messages: list[dict], *, route: str = "") -> str:
     for provider in order:
         try:
             text = _call_one(provider, messages)
+            # Quality gate — some models return 200 OK but semantically
+            # broken output (no headings, refusals, truncation). Fall
+            # through to the next model rather than caching garbage.
+            ok, reason = passes_quality(text, route)
+            if not ok:
+                log.warning(
+                    "provider %s returned bad output for route=%s (%s) — trying next",
+                    provider.name, route, reason,
+                )
+                last_err = RuntimeError(f"quality-fail: {provider.name} for {route}: {reason}")
+                continue
             # Track which (provider, model) served this request. Downstream
             # code (notify.kundli_generated etc.) reads via last_used_model().
             _last_provider.set(provider.name)
