@@ -41,4 +41,14 @@ ENV BHAGYA_CACHE_DB=/tmp/bhagya.db
 EXPOSE 8080
 
 # uvicorn launched via uv so it finds the in-venv interpreter.
-CMD ["sh", "-c", "uv run uvicorn astro_ai.main:app --host 0.0.0.0 --port ${PORT}"]
+#
+# --proxy-headers + --forwarded-allow-ips="*" tells uvicorn to trust
+# X-Forwarded-Host / X-Forwarded-Proto set by the reverse proxy in
+# front of Cloud Run (Firebase Hosting / Google Frontend / Fastly).
+# Without these flags, FastAPI's automatic trailing-slash redirect
+# generates Location: http://bhagya-<hash>.a.run.app/... — the
+# internal Cloud Run URL — instead of https://shubhagya.com/...,
+# which Google Search Console flags as "Redirect error" and stops
+# indexing those pages. `*` is safe here: the app is only reachable
+# via the trusted proxy, no direct client can spoof headers.
+CMD ["sh", "-c", "uv run uvicorn astro_ai.main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips=*"]
