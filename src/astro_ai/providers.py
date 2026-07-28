@@ -103,8 +103,13 @@ _MIN_CHARS_BY_ROUTE: dict[str, int] = {
 # the model returns fewer than 2 headings on these routes, the parser
 # collapses to a single "Reading" fallback and the user sees an empty
 # card — treat as failure and fall through.
+#
+# NOTE: `today` (daily.txt) is DELIBERATELY unsectioned — the prompt says
+# "four flowing paragraphs separated by blank lines" and "DO NOT output
+# bare `##` markers anywhere." Same for `ask`. Do not add either to this
+# set; both use min-length as the only structural check.
 _STRUCTURED_ROUTES: set[str] = {
-    "natal", "outlook", "matching", "dasha", "rashifal", "today",
+    "natal", "outlook", "matching", "dasha", "rashifal",
 }
 
 
