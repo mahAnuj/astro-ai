@@ -290,3 +290,38 @@ def clear_user(response: Response, request: Request) -> None:
     data = _load_session(request)
     data.pop("user", None)
     _write_session(response, data)
+
+
+def save_session_atomic(
+    response: Response,
+    request: Request,
+    *,
+    user: "SessionUser | None" = None,
+    collection: "ChartCollection | None" = None,
+    lang: str | None = None,
+) -> None:
+    """Update multiple session fields in a SINGLE atomic cookie write.
+
+    Fixes the multi-write clobber bug where two consecutive save_xxx()
+    calls each read `_load_session(request)` (missing each other's
+    writes, since the request cookie is snapshot at request start) and
+    both call `response.set_cookie(COOKIE_NAME, ...)`, appending two
+    Set-Cookie headers. Browsers keep only the LAST one, so the earlier
+    write is silently thrown away.
+
+    Concrete case this fixed (2026-07-28): sign-in on device 2 merged
+    the user's cross-device charts into the cookie, but then save_user
+    re-read the empty pre-sign-in request cookie and overwrote with a
+    user-only cookie. Charts disappeared on the reload.
+    """
+    data = _load_session(request)
+    if user is not None:
+        data["user"] = asdict(user)
+    if collection is not None:
+        data["charts"] = [asdict(c) for c in collection.charts]
+        data["active_id"] = collection.active_id
+    if lang is not None:
+        if lang not in SUPPORTED_LANGS:
+            lang = DEFAULT_LANG
+        data["lang"] = lang
+    _write_session(response, data)
