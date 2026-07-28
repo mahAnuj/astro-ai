@@ -569,6 +569,7 @@ async def reading(
     try:
         compute_chart(details.birth_date, details.birth_time, details.birth_place)
     except ChartError as err:
+        _fire_error_alert(request, err, "chart:reading_form")
         return templates.TemplateResponse(
             request,
             "error.html",
@@ -625,6 +626,7 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     try:
         chart = compute_chart(details.birth_date, details.birth_time, details.birth_place)
     except ChartError as err:
+        _fire_error_alert(request, err, "chart:natal_render")
         return templates.TemplateResponse(
             request,
             "error.html",
@@ -801,6 +803,10 @@ async def email_kundli_reading(request: Request) -> JSONResponse:
     if ok:
         _EMAIL_KUNDLI_LAST_SENT[user.sub] = now
         return JSONResponse({"ok": True, "email": user.email})
+    # Brevo failed — infra issue worth an alert (rate limit, key rotation,
+    # network flake). Raise an exception object so _fire_error_alert has
+    # something structured to report.
+    _fire_error_alert(request, RuntimeError(f"Brevo send failed for {user.email}"), "email:kundli")
     return JSONResponse({"ok": False, "error": "send_failed"}, status_code=502)
 
 
@@ -886,9 +892,9 @@ async def create_kundli_snapshot(request: Request) -> JSONResponse:
                     prompt_path=PROMPT_PATH, lang=lang, dasha_state=dasha_state,
                 ),
             )
-        except Exception:  # noqa: BLE001 — snapshot can't be built without a reading
-            import logging
-            logging.getLogger(__name__).exception("snapshot: reading generation failed")
+        except Exception as err:  # noqa: BLE001 — snapshot can't be built without a reading
+            log.exception("snapshot: reading generation failed")
+            _fire_error_alert(request, err, "snapshot:reading")
             return JSONResponse(
                 {"ok": False, "error": "reading_unavailable"},
                 status_code=502,
@@ -909,6 +915,10 @@ async def create_kundli_snapshot(request: Request) -> JSONResponse:
     if snap is None:
         # Storage unavailable (no GCS bucket configured OR write failed).
         # Fall back to a graceful error rather than a broken WhatsApp share.
+        _fire_error_alert(
+            request, RuntimeError("snapshots.create returned None (GCS + local fallback both failed)"),
+            "snapshot:storage",
+        )
         return JSONResponse(
             {"ok": False, "error": "storage_unavailable",
              "message": "Sharing is temporarily unavailable. Please try again later."},
@@ -949,6 +959,7 @@ async def view_kundli_snapshot(request: Request, short_id: str) -> HTMLResponse:
             snap.birth_details.get("birth_place", ""),
         )
     except ChartError as err:
+        _fire_error_alert(request, err, "snapshot:view")
         return templates.TemplateResponse(
             request,
             "error.html",
@@ -2251,6 +2262,7 @@ async def matching_result(
         groom_chart = compute_chart(g_birth_date, g_birth_time, g_birth_place)
         bride_chart = compute_chart(b_birth_date, b_birth_time, b_birth_place)
     except ChartError as err:
+        _fire_error_alert(request, err, "chart:matching")
         return templates.TemplateResponse(
             request,
             "error.html",
@@ -2297,7 +2309,11 @@ async def matching_result(
                 ),
             )
             narrative_sections = parse_sectioned_reading(narrative_text)
-        except Exception:
+        except Exception as err:
+            # Best-effort soft-fail: user still sees scores + table. But we
+            # DO want to know — silent swallow was hiding LLM issues.
+            log.exception("matching narrative LLM failed (scores still returned)")
+            _fire_error_alert(request, err, "matching:narrative")
             narrative_sections = []  # surface as no-narrative; scores still render
 
     return templates.TemplateResponse(
