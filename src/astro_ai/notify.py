@@ -131,9 +131,9 @@ def _escape_md(s: str) -> str:
 
 def kundli_generated(
     *, name: str, birth_date: str, birth_time: str, birth_place: str,
-    lang: str, user_email: str = "",
+    lang: str, user_email: str = "", model: str = "",
 ) -> None:
-    """/reading POST → new Kundli generated."""
+    """/reading POST → new Kundli generated. `model` is the LLM that served it."""
     parts = [
         "🕉  *Kundli generated*",
         f"👤 {_escape_md(name) or '_(anonymous)_'}",
@@ -142,13 +142,15 @@ def kundli_generated(
     ]
     if user_email:
         parts.append(f"✉️ {_escape_md(user_email)}")
+    if model:
+        parts.append(f"🤖 {_escape_md(model)}")
     dedup = f"kundli:{user_email or name}:{birth_date}"
     notify("\n".join(parts), dedup_key=dedup)
 
 
 def matching_done(
     *, groom_name: str, groom_dob: str, bride_name: str, bride_dob: str,
-    total_score: str, lang: str, user_email: str = "",
+    total_score: str, lang: str, user_email: str = "", model: str = "",
 ) -> None:
     """/matching POST → Ashtakoot matching complete."""
     parts = [
@@ -160,12 +162,15 @@ def matching_done(
     ]
     if user_email:
         parts.append(f"✉️ {_escape_md(user_email)}")
+    if model:
+        parts.append(f"🤖 {_escape_md(model)}")
     dedup = f"matching:{groom_dob}:{bride_dob}"
     notify("\n".join(parts), dedup_key=dedup)
 
 
 def ask_submitted(
     *, question: str, category: str, lang: str, user_email: str = "",
+    model: str = "",
 ) -> None:
     """/ask POST → chart-based Q&A."""
     trimmed = question.strip().replace("\n", " ")
@@ -178,6 +183,8 @@ def ask_submitted(
     ]
     if user_email:
         parts.append(f"✉️ {_escape_md(user_email)}")
+    if model:
+        parts.append(f"🤖 {_escape_md(model)}")
     dedup = f"ask:{user_email}:{trimmed[:80]}"
     notify("\n".join(parts), dedup_key=dedup)
 

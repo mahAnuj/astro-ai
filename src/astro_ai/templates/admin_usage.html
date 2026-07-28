@@ -99,5 +99,90 @@
     </div>
   </section>
 
+  <!-- LLM CALL BREAKDOWN — per-model + per-route ------------------ -->
+  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
+    <div class="flex items-baseline justify-between mb-4 flex-wrap gap-2">
+      <h2 class="font-display text-xl text-astro-700">LLM calls (fresh generations)</h2>
+      <div class="text-xs text-stone-500 tabular-nums">
+        Total: <strong>{{ llm_stats.aggregate.total_calls }}</strong>
+        {% if llm_stats.aggregate.fallbacks %}
+          &middot; Provider fallbacks: <strong class="text-amber-700">{{ llm_stats.aggregate.fallbacks }}</strong>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if llm_stats.aggregate.total_calls == 0 %}
+    <p class="text-sm text-stone-500 italic">No fresh LLM calls in this window &mdash; everything served from cache, or nothing generated yet.</p>
+    {% else %}
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">By model</div>
+        <ul class="text-sm space-y-1.5">
+          {% for model, count in llm_stats.aggregate.by_model.items() %}
+          <li class="flex justify-between border-b border-stone-100 pb-1">
+            <span class="text-stone-700 truncate" title="{{ model }}">{{ model }}</span>
+            <span class="text-astro-700 font-semibold tabular-nums pl-2">{{ count }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">By route</div>
+        <ul class="text-sm space-y-1.5">
+          {% for route, count in llm_stats.aggregate.by_route.items() %}
+          <li class="flex justify-between border-b border-stone-100 pb-1">
+            <span class="text-stone-700">{{ route }}</span>
+            <span class="text-astro-700 font-semibold tabular-nums pl-2">{{ count }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">By provider</div>
+        <ul class="text-sm space-y-1.5">
+          {% for provider, count in llm_stats.aggregate.by_provider.items() %}
+          <li class="flex justify-between border-b border-stone-100 pb-1">
+            <span class="text-stone-700">{{ provider }}</span>
+            <span class="text-astro-700 font-semibold tabular-nums pl-2">{{ count }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+    </div>
+
+    {% if llm_stats.days | length > 1 %}
+    <div class="mt-6">
+      <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">Daily breakdown</div>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-xs uppercase text-stone-500 border-b border-stone-200">
+            <th class="pb-1.5">Date</th>
+            <th class="pb-1.5 text-right">Calls</th>
+            <th class="pb-1.5 text-right">Fallbacks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for day in llm_stats.days %}
+          <tr class="border-b border-stone-100">
+            <td class="py-1 text-stone-700 tabular-nums">{{ day.date }}</td>
+            <td class="py-1 text-right text-astro-700 font-semibold tabular-nums">{{ day.total }}</td>
+            <td class="py-1 text-right tabular-nums {% if day.fallbacks %}text-amber-700 font-semibold{% else %}text-stone-400{% endif %}">{{ day.fallbacks }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <p class="text-xs text-stone-400 mt-4">
+      Cache hits don't count here &mdash; only fresh LLM calls that consumed provider quota.
+    </p>
+    {% endif %}
+  </section>
+
 </main>
 {% endblock %}

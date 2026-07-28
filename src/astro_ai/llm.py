@@ -96,7 +96,7 @@ def generate_reading(
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": _format_seeker_message(details, chart, flags, life_chapters, dasha_state)},
-    ])
+    ], route="natal")
     return content.strip()
 
 
@@ -189,7 +189,7 @@ def generate_outlook_reading(
             "role": "user",
             "content": _format_outlook_message(details, natal, transit, flags, gochar_impacts, events),
         },
-    ])
+    ], route="outlook")
     return content.strip()
 
 
@@ -262,7 +262,7 @@ def generate_ask_answer(
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
-    ])
+    ], route="ask")
     return content.strip()
 
 
@@ -288,7 +288,7 @@ def generate_dasha_deep_dive(
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
-    ])
+    ], route="dasha")
     return content.strip()
 
 
@@ -367,7 +367,7 @@ def generate_rashifal(
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
-    ])
+    ], route="rashifal")
     return content.strip()
 
 
@@ -392,7 +392,7 @@ def generate_matching_narrative(
             "role": "user",
             "content": _format_matching_message(groom_name, bride_name, groom_chart, bride_chart, guna),
         },
-    ])
+    ], route="matching")
     return content.strip()
 
 
@@ -498,7 +498,7 @@ def generate_daily_reading(
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": _format_daily_message(details, natal, transit, flags, panchang)},
-    ])
+    ], route="today")
     return content.strip()
 
 
