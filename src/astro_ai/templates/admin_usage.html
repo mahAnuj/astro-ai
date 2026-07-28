@@ -10,6 +10,11 @@
 
   <header>
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">Usage &mdash; last {{ days }} day(s)</h1>
+    <nav class="text-sm text-stone-600 mb-2">
+      <span class="font-semibold text-astro-800">Usage</span> &middot;
+      <a href="/admin/activity" class="text-astro-600 hover:underline">Activity</a> &middot;
+      <a href="/admin/subscribers" class="text-astro-600 hover:underline">Subscribers</a>
+    </nav>
     <p class="text-sm text-stone-600">
       Window controls: <a href="/admin/usage?days=1" class="text-astro-600 hover:underline">today</a> ·
       <a href="/admin/usage?days=7" class="text-astro-600 hover:underline">7d</a> ·

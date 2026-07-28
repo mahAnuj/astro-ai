@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Admin · Subscribers &mdash; Shubh Bhagya{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block content %}
+{% set active_page = "" %}
+{% include "_nav.html" %}
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+
+  <header>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">Rashifal subscribers</h1>
+    <nav class="text-sm text-stone-600 mb-2">
+      <a href="/admin/usage" class="text-astro-600 hover:underline">Usage</a> &middot;
+      <a href="/admin/activity" class="text-astro-600 hover:underline">Activity</a> &middot;
+      <span class="font-semibold text-astro-800">Subscribers</span>
+    </nav>
+    <p class="text-sm text-stone-500">Total: <strong class="text-astro-700 tabular-nums">{{ total }}</strong></p>
+  </header>
+
+  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
+    {% if not subscribers %}
+    <p class="text-sm text-stone-500 italic">No subscribers yet.</p>
+    {% else %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-xs uppercase text-stone-500 border-b border-stone-200">
+            <th class="pb-1.5 pr-3">Email</th>
+            <th class="pb-1.5 pr-3">Subscribed</th>
+            <th class="pb-1.5 pr-3">Lang</th>
+            <th class="pb-1.5 pr-3">City</th>
+            <th class="pb-1.5">Rashi</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in subscribers %}
+          <tr class="border-b border-stone-100">
+            <td class="py-1.5 pr-3 text-stone-800">{{ s.email }}</td>
+            <td class="py-1.5 pr-3 text-stone-500 tabular-nums whitespace-nowrap">{{ s.subscribed_at[:10] if s.subscribed_at else '—' }}</td>
+            <td class="py-1.5 pr-3 uppercase text-xs">{{ s.lang or 'en' }}</td>
+            <td class="py-1.5 pr-3">{{ s.city or '—' }}</td>
+            <td class="py-1.5 uppercase text-xs">{{ s.rashi or 'all' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </section>
+
+</main>
+{% endblock %}
