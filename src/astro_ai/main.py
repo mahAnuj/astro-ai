@@ -322,6 +322,58 @@ ASK_PROMPT_PATH = PROMPTS_DIR / "ask.txt"
 app = FastAPI(title="astro-ai", version="0.0.1")
 
 
+class _RewriteHostFromForwardedMiddleware:
+    """Rewrite the Host header from X-Forwarded-Host set by the proxy.
+
+    Cloud Run sits behind Firebase Hosting / Google Frontend. The FE
+    sets X-Forwarded-Host: shubhagya.com but leaves the raw Host header
+    pointing at the internal Cloud Run URL (bhagya-<hash>.a.run.app).
+    FastAPI's automatic slash-redirect (redirect_slashes=True) builds
+    Location from request.url, which uses Host → wrong domain.
+
+    uvicorn's --proxy-headers handles X-Forwarded-Proto (scheme) and
+    X-Forwarded-For (client IP) but NOT X-Forwarded-Host. This tiny
+    middleware fills that gap: rewrites Host + scope['server'] BEFORE
+    FastAPI processes the request, so request.url yields the public URL.
+
+    Root-cause fix for Search Console 'Redirect error' where 14 /learn
+    URLs were 307-redirecting to the internal run.app hostname.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            fwd_host = None
+            for name, value in scope.get("headers", []):
+                if name == b"x-forwarded-host" and value:
+                    # Multiple hosts possible ("a, b") — take the first.
+                    fwd_host = value.split(b",")[0].strip()
+                    break
+            if fwd_host:
+                # Immutable list of tuples — rebuild it.
+                new_headers = [
+                    (b"host", fwd_host) if name == b"host" else (name, value)
+                    for name, value in scope["headers"]
+                ]
+                # Add Host if it was absent (some proxies strip it).
+                if not any(n == b"host" for n, _ in scope["headers"]):
+                    new_headers.append((b"host", fwd_host))
+                scope = dict(scope)
+                scope["headers"] = new_headers
+                # scope['server'] is used by Starlette's URL() when Host
+                # header is absent; keep it in sync just in case.
+                try:
+                    scope["server"] = (fwd_host.decode("latin-1"), 443)
+                except Exception:  # noqa: BLE001
+                    pass
+        await self.app(scope, receive, send)
+
+
+app.add_middleware(_RewriteHostFromForwardedMiddleware)
+
+
 @app.exception_handler(Exception)
 async def _unhandled_exception_handler(request: Request, exc: Exception) -> Response:
     """Safety net — fires a Telegram alert for any truly unhandled 500 and
