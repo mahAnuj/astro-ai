@@ -83,8 +83,22 @@ class ProviderConfig:
 # but expect slight tonal drift between providers. Override any default via
 # the `{NAME}_MODEL` env var without a code change.
 PROVIDERS: dict[str, ProviderConfig] = {
+    # Groq: default model + per-model chain variants. Groq's free-tier quotas
+    # are keyed PER MODEL (not per account), so listing multiple Groq models
+    # in BHAGYA_LLM_PROVIDERS gives ~3x effective daily capacity from a single
+    # GROQ_API_KEY. Set:
+    #   BHAGYA_LLM_PROVIDERS=groq120,groq20,groq8
+    # Random shuffle (default balance mode) distributes load across all three;
+    # if one hits 429, the others still have quota. Quality: 120b ≈ 20b > 8b
+    # for prose depth; use groq8 only as a last-resort filler.
     "groq":     ProviderConfig("groq",     "https://api.groq.com/openai/v1",
                                 "openai/gpt-oss-120b",                       "GROQ_API_KEY"),
+    "groq120":  ProviderConfig("groq120",  "https://api.groq.com/openai/v1",
+                                "openai/gpt-oss-120b",                       "GROQ_API_KEY"),
+    "groq20":   ProviderConfig("groq20",   "https://api.groq.com/openai/v1",
+                                "openai/gpt-oss-20b",                        "GROQ_API_KEY"),
+    "groq8":    ProviderConfig("groq8",    "https://api.groq.com/openai/v1",
+                                "llama-3.1-8b-instant",                      "GROQ_API_KEY"),
     "cerebras": ProviderConfig("cerebras", "https://api.cerebras.ai/v1",
                                 "llama3.3-70b",                              "CEREBRAS_API_KEY"),
     "together": ProviderConfig("together", "https://api.together.xyz/v1",
