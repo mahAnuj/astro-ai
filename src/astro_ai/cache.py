@@ -163,7 +163,12 @@ def log_call(
     output_tokens: int = 0,
     latency_ms: int = 0,
 ) -> None:
-    """Append a row to llm_calls for the /admin/usage dashboard."""
+    """Append a row to llm_calls for the /admin/usage dashboard.
+
+    Writes to BOTH SQLite (per-instance, fast local queries) AND GCS via
+    llm_stats.record_call (persists across cold starts / deploys). The
+    admin panel reads from GCS so numbers survive push cycles.
+    """
     with _conn() as c:
         c.execute(
             """
@@ -181,6 +186,16 @@ def log_call(
                 latency_ms,
             ),
         )
+    # Persistent GCS-backed counter — best-effort, never fails the request.
+    # Circular-import-safe via lazy import (cache.py loads before llm_stats).
+    try:
+        from astro_ai import llm_stats
+        llm_stats.record_call(
+            route=route, cache_hit=cache_hit, latency_ms=latency_ms,
+            input_tokens=input_tokens, output_tokens=output_tokens,
+        )
+    except Exception:  # noqa: BLE001 — stats must never break a reading
+        pass
 
 
 def estimate_tokens(text: str) -> int:

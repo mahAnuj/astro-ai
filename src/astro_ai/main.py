@@ -1930,14 +1930,23 @@ async def admin_usage(request: Request, days: int = 1) -> HTMLResponse:
     Protected by HTTP Basic Auth (username 'admin', password from
     ADMIN_PASSWORD env var). Browser shows the standard login prompt.
     """
-    summary = cache.usage_summary(days=days)
+    from astro_ai import llm_stats
+    # Persistent (GCS) usage summary — survives Cloud Run cold starts and
+    # deploys, unlike the SQLite version which lives in /tmp and resets on
+    # every push. We supplement with cache_entries from SQLite (that count
+    # IS instance-scoped but doesn't matter across restarts).
+    summary = llm_stats.usage_summary(days=days)
+    try:
+        sqlite_summary = cache.usage_summary(days=days)
+        summary["cache_entries"] = sqlite_summary.get("cache_entries", 0)
+    except Exception:  # noqa: BLE001
+        pass
     # Persistent-user counts — separate from Rashifal email subscribers.
     # These are people who signed in with Google (may or may not be subscribed
     # to daily emails).
     user_count = users.count()
     subscriber_count = subscribers.count()
     # Per-model / per-route LLM call breakdown for the same window.
-    from astro_ai import llm_stats
     llm_stats_summary = llm_stats.range_summary(days=days)
     return templates.TemplateResponse(
         request, "admin_usage.html",
