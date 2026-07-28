@@ -44,12 +44,33 @@ from __future__ import annotations
 import logging
 import os
 import random
+from contextvars import ContextVar
 from dataclasses import dataclass
 
 from openai import OpenAI
 from openai import APIError, APIConnectionError, APITimeoutError, RateLimitError
 
 log = logging.getLogger(__name__)
+
+# Per-request tracking: which (provider, model) actually served the call.
+# Set inside chat() on the first success; readable by any downstream code
+# in the same request (e.g. notify.kundli_generated wants to include it).
+# Contextvars are async-safe and don't leak across requests.
+_last_provider: ContextVar[str] = ContextVar("_last_provider", default="")
+_last_model: ContextVar[str] = ContextVar("_last_model", default="")
+
+
+def last_used_model() -> str:
+    """Return the model that served the current request's LLM call.
+
+    Format: `"<provider>:<model>"`, e.g. `"groq120:openai/gpt-oss-120b"`.
+    Empty string if no chat() call happened this request (or if it failed).
+    """
+    prov = _last_provider.get("")
+    mod = _last_model.get("")
+    if not prov and not mod:
+        return ""
+    return f"{prov}:{mod}"
 
 
 @dataclass(frozen=True)
@@ -85,20 +106,26 @@ class ProviderConfig:
 PROVIDERS: dict[str, ProviderConfig] = {
     # Groq: default model + per-model chain variants. Groq's free-tier quotas
     # are keyed PER MODEL (not per account), so listing multiple Groq models
-    # in BHAGYA_LLM_PROVIDERS gives ~3x effective daily capacity from a single
-    # GROQ_API_KEY. Set:
-    #   BHAGYA_LLM_PROVIDERS=groq120,groq20,groq8
-    # Random shuffle (default balance mode) distributes load across all three;
-    # if one hits 429, the others still have quota. Quality: 120b ≈ 20b > 8b
-    # for prose depth; use groq8 only as a last-resort filler.
-    "groq":     ProviderConfig("groq",     "https://api.groq.com/openai/v1",
-                                "openai/gpt-oss-120b",                       "GROQ_API_KEY"),
-    "groq120":  ProviderConfig("groq120",  "https://api.groq.com/openai/v1",
-                                "openai/gpt-oss-120b",                       "GROQ_API_KEY"),
-    "groq20":   ProviderConfig("groq20",   "https://api.groq.com/openai/v1",
-                                "openai/gpt-oss-20b",                        "GROQ_API_KEY"),
-    "groq8":    ProviderConfig("groq8",    "https://api.groq.com/openai/v1",
-                                "llama-3.1-8b-instant",                      "GROQ_API_KEY"),
+    # in BHAGYA_LLM_PROVIDERS gives Nx effective daily capacity from a single
+    # GROQ_API_KEY. Recommended chain:
+    #   BHAGYA_LLM_PROVIDERS=groq120,groq20,groq_qwen,groq_l33,groq8
+    # Random-shuffle balance (default) distributes load across all five.
+    # Quality tiers (rough): 120b ≈ l33 ≥ 20b ≈ qwen > 8b for narrative depth.
+    # See https://console.groq.com/docs/models for the current model list.
+    "groq":       ProviderConfig("groq",       "https://api.groq.com/openai/v1",
+                                  "openai/gpt-oss-120b",                       "GROQ_API_KEY"),
+    "groq120":    ProviderConfig("groq120",    "https://api.groq.com/openai/v1",
+                                  "openai/gpt-oss-120b",                       "GROQ_API_KEY"),
+    "groq20":     ProviderConfig("groq20",     "https://api.groq.com/openai/v1",
+                                  "openai/gpt-oss-20b",                        "GROQ_API_KEY"),
+    "groq_qwen":  ProviderConfig("groq_qwen",  "https://api.groq.com/openai/v1",
+                                  "qwen/qwen3.6-27b",                          "GROQ_API_KEY"),
+    # Deprecates 2026-08-16 — remove from chain before then. Kept while
+    # available because it's still high-quality free capacity.
+    "groq_l33":   ProviderConfig("groq_l33",   "https://api.groq.com/openai/v1",
+                                  "llama-3.3-70b-versatile",                   "GROQ_API_KEY"),
+    "groq8":      ProviderConfig("groq8",      "https://api.groq.com/openai/v1",
+                                  "llama-3.1-8b-instant",                      "GROQ_API_KEY"),
     "cerebras": ProviderConfig("cerebras", "https://api.cerebras.ai/v1",
                                 "llama3.3-70b",                              "CEREBRAS_API_KEY"),
     "together": ProviderConfig("together", "https://api.together.xyz/v1",
@@ -192,7 +219,7 @@ def _ordered_for_request() -> list[ProviderConfig]:
     return shuffled
 
 
-def chat(messages: list[dict]) -> str:
+def chat(messages: list[dict], *, route: str = "") -> str:
     """Send `messages` through the configured provider chain.
 
     Order resolution: random shuffle per request (default), or strict
@@ -200,6 +227,10 @@ def chat(messages: list[dict]) -> str:
     or any APIError we log and fall through to the next provider in this
     request's order. Raises AllProvidersExhausted when nothing works —
     callers should treat that as user-visible degradation, not a bug.
+
+    `route` is a short label for the calling feature ("natal", "ask", ...)
+    used for the /admin/usage per-route breakdown. Defaults to empty which
+    aggregates under "unknown".
 
     Returns the assistant's text content.
     """
@@ -215,6 +246,37 @@ def chat(messages: list[dict]) -> str:
     for provider in order:
         try:
             text = _call_one(provider, messages)
+            # Track which (provider, model) served this request. Downstream
+            # code (notify.kundli_generated etc.) reads via last_used_model().
+            _last_provider.set(provider.name)
+            _last_model.set(provider.model())
+            # Structured log line — Cloud Logging indexes JSON fields so you
+            # can filter/graph by provider+model in Log Explorer without any
+            # extra storage or dashboard code. Example query:
+            #   jsonPayload.event="llm_call" AND jsonPayload.provider="groq120"
+            log.info(
+                "llm_call",
+                extra={"json_fields": {
+                    "event": "llm_call",
+                    "provider": provider.name,
+                    "model": provider.model(),
+                    "route": route,
+                    "fallback_from": last_err is not None,
+                    "chars_out": len(text),
+                }},
+            )
+            # Persistent per-day counter for /admin/usage. Best-effort;
+            # never propagates errors. Circular-import-safe via lazy import.
+            try:
+                from astro_ai import llm_stats
+                llm_stats.record(
+                    provider=provider.name,
+                    model=provider.model(),
+                    route=route,
+                    fallback=(last_err is not None),
+                )
+            except Exception:  # noqa: BLE001 — stats never break the reading
+                log.debug("llm_stats.record failed", exc_info=True)
             if last_err is not None:
                 log.info("provider %s succeeded after upstream failures", provider.name)
             return text

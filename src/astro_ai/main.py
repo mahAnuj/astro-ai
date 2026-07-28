@@ -47,6 +47,7 @@ from astro_ai.llm import (
     parse_sectioned_reading,
 )
 from astro_ai.matching import compute_guna_milan
+from astro_ai import providers as llm_providers
 from astro_ai.providers import AllProvidersExhausted
 
 
@@ -589,12 +590,10 @@ async def reading(
         )
     response = RedirectResponse("/kundli", status_code=303)
     _save_collection_synced(response, collection, request)
-    _u = load_user(request)
-    notify.kundli_generated(
-        name=details.name, birth_date=details.birth_date,
-        birth_time=details.birth_time, birth_place=details.birth_place,
-        lang=_lang(request), user_email=(_u.email if _u else ""),
-    )
+    # notify.kundli_generated fires from _render_natal_for after the LLM
+    # succeeds — that way the notification includes the model that actually
+    # served the request. Firing here would fire on form submit, before the
+    # LLM even runs (redirect target renders it).
     return response
 
 
@@ -677,6 +676,18 @@ async def _render_natal_for(request: Request, details: BirthDetails,
         )
     sections = parse_sectioned_reading(reading_text)
     sade_sati = compute_sade_sati_details(chart)
+
+    # Fire owner-notification NOW (after LLM succeeded) so we know the
+    # exact model that served this Kundli. `last_used_model()` reads the
+    # per-request contextvar set by providers.chat(). Empty string on
+    # cache hits — nothing was called this request, so no model to report.
+    _u_natal = load_user(request)
+    notify.kundli_generated(
+        name=details.name, birth_date=details.birth_date,
+        birth_time=details.birth_time, birth_place=details.birth_place,
+        lang=lang, user_email=(_u_natal.email if _u_natal else ""),
+        model=llm_providers.last_used_model(),
+    )
 
     # Persist to signed-in user's reading history so they can revisit it
     # from any device. Best-effort — never fails the render.
@@ -1882,6 +1893,9 @@ async def admin_usage(request: Request, days: int = 1) -> HTMLResponse:
     # to daily emails).
     user_count = users.count()
     subscriber_count = subscribers.count()
+    # Per-model / per-route LLM call breakdown for the same window.
+    from astro_ai import llm_stats
+    llm_stats_summary = llm_stats.range_summary(days=days)
     return templates.TemplateResponse(
         request, "admin_usage.html",
         {
@@ -1890,6 +1904,7 @@ async def admin_usage(request: Request, days: int = 1) -> HTMLResponse:
             "days": days,
             "user_count": user_count,
             "subscriber_count": subscriber_count,
+            "llm_stats": llm_stats_summary,
         },
     )
 
@@ -2214,10 +2229,13 @@ async def ask_submit(
 
     # Notify owner of the Q&A submission. Fires on both fresh and cached
     # generations; the dedup window in notify.py suppresses rapid re-fires.
+    # `model` is populated only on fresh generations (contextvar set by
+    # providers.chat()); cache hits show blank model.
     _u_ask = load_user(request)
     notify.ask_submitted(
         question=question, category=category, lang=lang,
         user_email=(_u_ask.email if _u_ask else ""),
+        model=llm_providers.last_used_model(),
     )
 
     # Redirect with the question + category in the URL so refresh doesn't
@@ -2276,13 +2294,6 @@ async def matching_result(
         )
 
     guna = compute_guna_milan(groom_chart, bride_chart)
-    _u_match = load_user(request)
-    notify.matching_done(
-        groom_name=g_name.strip(), groom_dob=g_birth_date,
-        bride_name=b_name.strip(), bride_dob=b_birth_date,
-        total_score=f"{guna.total_awarded:g}/{guna.total_max} · {guna.overall_verdict}",
-        lang=lang, user_email=(_u_match.email if _u_match else ""),
-    )
     verdict_key = {
         "Uttam":            "matching_verdict_uttam",
         "Madhyam":          "matching_verdict_madhyam",
@@ -2320,6 +2331,17 @@ async def matching_result(
             log.exception("matching narrative LLM failed (scores still returned)")
             _fire_error_alert(request, err, "matching:narrative")
             narrative_sections = []  # surface as no-narrative; scores still render
+
+    # Fire notify AFTER narrative attempt so `model` reflects the LLM that
+    # actually served (empty if narrative was skipped or failed).
+    _u_match = load_user(request)
+    notify.matching_done(
+        groom_name=g_name.strip(), groom_dob=g_birth_date,
+        bride_name=b_name.strip(), bride_dob=b_birth_date,
+        total_score=f"{guna.total_awarded:g}/{guna.total_max} · {guna.overall_verdict}",
+        lang=lang, user_email=(_u_match.email if _u_match else ""),
+        model=llm_providers.last_used_model(),
+    )
 
     return templates.TemplateResponse(
         request,
