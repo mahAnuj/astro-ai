@@ -311,3 +311,71 @@ Both new articles PASSED self-QA on all 8 checks:
 - The `client_secret_*.json` file remains untracked at repo root — this is credential material and should not be committed. Worth adding a `.gitignore` rule for `client_secret_*.json` to prevent an accidental commit.
 
 ---
+
+## Cycle 7 — Post-redirect-fix SEO audit + muhurat cluster seeding (2026-07-30)
+
+Between cycles 6 and 7 a large infra sprint shipped 20+ commits (Telegram notifications, snapshot URL flow, chart-sync fix, quality-gate LLM chain, GCS-backed observability, /admin/{usage,activity,subscribers} panels, redirect fix for Search Console). Cycle 7 focused on verifying SEO health post-redirect-fix and refilling the content pipeline.
+
+### Redirect fix verification (post commits 307638f + 0edaffa)
+
+Search Console had flagged 14 URLs under "Redirect error" — /learn (no trailing slash) and similar were 307-redirecting to `https://bhagya-<hash>.a.run.app/learn/` (internal Cloud Run URL). Root cause was FastAPI's automatic slash-redirect using request.url, which uvicorn built from the internal Host header. Fix: `--proxy-headers` for scheme + custom ASGI middleware `_RewriteHostFromForwardedMiddleware` for host. Verified live:
+
+```
+https://shubhagya.com/learn                          → 307 → https://shubhagya.com/learn/                        ✓
+https://shubhagya.com/learn/manglik-dosh             → 307 → https://shubhagya.com/learn/manglik-dosh/           ✓
+https://shubhagya.com/learn/rahu-in-vedic-astrology  → 307 → https://shubhagya.com/learn/rahu-in-vedic-astrology/✓
+https://shubhagya.com/kundli                         → 303 → /?needs_chart=kundli                                ✓ (expected — session-gated)
+https://shubhagya.com/rashifal                       → 200                                                       ✓
+```
+
+All redirects now point to the public canonical host. User needs to click **Validate fix** in Search Console for the 14 URLs to trigger re-crawl.
+
+### SEO audit — 5 key URLs
+
+Audited /, /rashifal, /learn/, /learn/manglik-dosh/, /learn/kundali-matching-ashtakoot-guna-milan/. All PASSED:
+
+| URL | Title | Desc | Canonical | OG:url | JSON-LD | Body words |
+|---|---|---|---|---|---|---|
+| / | 55 chars ✓ | 139 chars ✓ | shubhagya.com/ ✓ | ✓ | 1 | 4980 |
+| /rashifal | 48 chars ✓ | 165 chars ✓ (upper edge) | shubhagya.com/rashifal ✓ | ✓ | 1 | 2431 |
+| /learn/ | 36 chars ✓ | 126 chars ✓ | shubhagya.com/learn/ ✓ | ✓ | 1 | 4187 |
+| /learn/manglik-dosh/ | 51 chars ✓ | 148 chars ✓ | shubhagya.com/learn/manglik-dosh/ ✓ | ✓ | 4 | 2486 |
+| /learn/kundali-matching-.../ | 56 chars ✓ | 153 chars ✓ | canonical ✓ | ✓ | 4 | 3149 |
+
+Every URL has canonical + OG tags pointing to shubhagya.com (not the internal host — the middleware fix propagates to canonical rendering too). Learn articles have 4 JSON-LD blocks each (Article + BreadcrumbList + FAQPage + WebPage), maximising rich-snippet eligibility. Nothing to fix this cycle.
+
+### Content research — muhurat cluster gap identified
+
+Existing 61 articles cover: 9 planets, 15/27 nakshatras, doshas (manglik/kaal-sarp/pitru/sade-sati), career (10 articles), marriage (7 articles), yogas (panch-mahapurush + gajakesari), timing (vimshottari + sun/rahu mahadasha). BIGGEST GAP: **muhurat pages** — auspicious dates for major life events. Zero coverage. Massive Indian seasonal search volume (wedding season Nov-Feb, house-warming spikes Diwali).
+
+Also seeded one dhana-yoga article — pairs with existing `financial-struggles` to give the wealth cluster both sides (problem + solution).
+
+### Issues created this cycle
+
+- **#94** — [CONTENT] Vivah Muhurat 2027 — Complete auspicious wedding dates. HIGH priority — pre-season window closing. Publish by Sept 2026.
+- **#95** — [CONTENT] Griha Pravesh Muhurat 2026-27 — House-warming dates. HIGH priority — Diwali buying season. Publish by early Oct 2026.
+- **#96** — [CONTENT] Dhana Yogas — 9 classical wealth combinations. MEDIUM — fills wealth-cluster gap; pairs with financial-struggles.
+
+### Article library state
+
+- Article count: 51 → **61** (+10 across cycles 6.5–7 — planets phase 2, gochar 2026, kundali matching, marriage cluster #55/#56/#57)
+- Life Questions category count: 9 → **13**
+- Cross-linking: every article's `related` tuple resolved, 4 JSON-LD blocks per learn page
+
+### Backlog state after cycle 7
+
+- **Content:** 3 open (#94, #95, #96) — all muhurat/wealth angles
+- **SEO:** 0 open
+- **UI/QA/Kundali-QA/Architecture:** 0 open
+
+### Suggested next cycle
+
+- **Cycle 8 = Volume week.** Have content-drafter process #94 (Vivah Muhurat) first — highest seasonal urgency. Then #95, then #96. Mandatory article-qa gate after each. Timeline target: all 3 shipped by end of August 2026 so both muhurat articles land before pre-Diwali search intent peaks.
+- Skip audits this cycle — SEO health is clean, no code changes in the pipeline that would affect it.
+
+### Blockers / notes
+
+- Growth-manager AGENT run (agent id a2f1fa034d92f1322) stalled after 10 min with no output. Same cycle then executed directly without agent delegation — completed in ~5 min. Suggests the general-purpose agent's Skill-tool invocations time out on this project's custom-skill roster. If future cycles need agent delegation, wire growth-manager into ~/.claude/agents/growth-manager.md (currently exists but not registered — Task tool reports "Agent type 'growth-manager' not found").
+- Muhurat article research needs real Panchang dates (Drik Panchang API or classical almanac). Content-drafter must source these accurately — invented dates = user harm.
+
+---
