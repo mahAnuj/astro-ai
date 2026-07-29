@@ -2719,6 +2719,180 @@ ARTICLES: tuple[Article, ...] = (
             '• Guardrails: never predict divorce as fact, never predict spouse-death, always frame as tendency + context'
         ),
     ),
+    # ─── Cycle 8 remedy cluster (#97-102, #107) ───────────────────────
+    Article(
+        slug="rahu-remedies", title="Rahu Remedies: 7 Classical Practices to Soften a Difficult Rahu",
+        summary="Rahu is Vedic astrology's karaka of ambition, foreignness, and sudden change. When afflicted, produces confusion, foreign complications, and reputation shocks. Classical remedies focus on Beej mantra, Durga worship, Ganesha protection, service to outsiders, Saturday charity, and — for severe cases — Trimbakeshwar Nagbali. This guide walks the 7 most classically-cited Rahu remedies with honest expectations for what each does. NO risky gemstones required.",
+        seo_title="Rahu Remedies: 7 Classical Practices That Actually Work",
+        seo_description="7 classical Rahu remedies from BPHS + Phaladeepika — Beej mantra, Durga worship, service to outsiders, Saturday charity. Honest, safe, no expensive rituals.",
+        category="Grahas", hero_image="/static/learn/rahu-remedies/hero.svg", read_time="10 min", last_updated="2026-07",
+        related=("rahu-in-vedic-astrology", "rahu-mahadasha-ketu-antardasha", "kaal-sarp-dosh", "ketu-in-vedic-astrology"),
+        faqs=(
+            {"q": "Which is the strongest remedy for Rahu?", "a": "Consistency across multiple practices > intensity of any single one. The classical primary pairing: daily Rahu Beej mantra (108x) + weekly Durga Chalisa on Saturdays + monthly serving of marginalised communities. Trimbakeshwar Nagbali is the deepest single ritual but only for severe cases with proper chart confirmation."},
+            {"q": "Can I do Rahu remedies without a gemstone?", "a": "Yes — and it's actually recommended. Rahu's classical gemstone (hessonite) can backfire when Rahu is a functional malefic for your Ascendant. All the practices in this guide (mantra, service, charity, Durga worship, Ganesha, Trimbakeshwar) are safe universal remedies that don't require chart analysis."},
+            {"q": "How long do Rahu remedies take to show effect?", "a": "Weeks 1-4: mostly building the habit; internal shifts (quieter mind). Months 2-6: perceptible shifts — situations that used to trigger panic feel manageable. Months 6-12: structural shifts — old patterns dissolve. Year 2+: Rahu's underlying karma unfolds; remedies compound. Faster than medication, slower than instant relief."},
+            {"q": "Do I need to visit Trimbakeshwar for Kaal Sarp remedy?", "a": "Only for serious cases: full Kaal Sarp Dosh + active Rahu Mahadasha + repeated life shocks. For most Rahu afflictions, daily mantra + weekly Durga + monthly service is sufficient. Trimbakeshwar priests are officially registered — beware of touts; legitimate costs are ₹5,000-25,000 range, anyone quoting lakhs is exploiting."},
+            {"q": "Can Rahu remedies fix my addiction?", "a": "Remedies are a support layer, not a substitute for professional care. Rahu-driven addictions (substances, phone/gaming, compulsive behaviours) need therapy + medical support if severe. Remedies help by reducing the underlying restless craving over time."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhram Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) service to outsiders/marginalised/animals, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black til, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Anti-exploitation: legitimate Trimbakeshwar Nagbali ₹5-25K; anything quoted in lakhs is scam'
+        ),
+    ),
+    Article(
+        slug="ketu-remedies", title="Ketu Remedies: Classical Practices for Ketu's Detachment Effects",
+        summary="Ketu is Rahu's shadow twin — karaka of detachment, past-life karma, spiritual insight, and mysterious losses. Classical remedies center on Ganesha worship (Ketu's presiding deity), Ketu Beej mantra, service to ascetics/elderly/orphans, Tuesday charity, fasting, and Pitru Paksha shraddha. Ketu is a spiritual planet — remedies help you cooperate with detachment consciously rather than being blindsided by it.",
+        seo_title="Ketu Remedies: Ganesha, Mantra, Service — What Actually Works",
+        seo_description="Classical Ketu remedies — Ganesha worship, Ketu Beej mantra, service to elderly/ascetics, Tuesday charity, ancestral shraddha. Honest, safe, no expensive rituals.",
+        category="Grahas", hero_image="/static/learn/ketu-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
+        related=("ketu-in-vedic-astrology", "rahu-mahadasha-ketu-antardasha", "kaal-sarp-dosh", "pitru-dosh"),
+        faqs=(
+            {"q": "Which deity is worshipped for Ketu?", "a": "Ganesha. Classical Vedic tradition assigns Ganesha as Ketu's presiding deity. Ganesha is the remover of obstacles and bridges material/spiritual realms — perfectly matched to Ketu's liminal nature. Sankashti Chaturthi observance is Ketu's peak devotional day."},
+            {"q": "Can I wear Cat's Eye for Ketu remedy?", "a": "Only after chart consultation. Cat's Eye (Lehsunia) is Ketu's classical gemstone but can backfire when Ketu is functional malefic for your Ascendant. All the practices in this guide (mantra, Ganesha, service, fasting, shraddha) are safe universal remedies that don't require chart analysis."},
+            {"q": "What is the connection between Ketu and Pitru Dosh?", "a": "Ketu carries ancestral lineage karma — the unfinished business from previous generations. When Ketu is heavily afflicted, Pitru Paksha shraddha directly addresses the ancestral-debt aspect. See our separate Pitru Dosh Remedies guide for the full ancestral karma framework."},
+            {"q": "Why does Ketu cause 'mysterious' losses?", "a": "Ketu operates through what's karmically due to end. When something is meant to conclude — a relationship, career phase, health condition — Ketu accelerates its ending. Sometimes this looks 'mysterious' because there's no visible outer cause. Remedies help you cooperate with the ending consciously rather than resisting."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Ketu = shadow planet, karaka of detachment, past-life karma, mysterious losses, spiritual insight\n• 6 classical remedies: (1) Ganesha worship (presiding deity — Om Gam Ganapataye Namah 108x, Sankashti vrat), (2) Ketu Beej mantra "Om Sram Sreem Sraum Sah Ketave Namah" 108x, (3) service to elderly/ascetics/orphans/animals, (4) Tuesday charity (sesame oil, grey clothes, blankets), (5) fasting (Tuesday partial, Amavasya full, Ekadashi), (6) Pitru Paksha shraddha\n• Day: Tuesday (shared with Mars)\n• SAFE — no gemstone; cat\'s eye requires chart analysis\n• Timeline: weeks (habit), 2-6 mo (attachments loosen), year 2+ (subtle awareness emerges)'
+        ),
+    ),
+    Article(
+        slug="surya-sun-remedies", title="Sun Remedies: Strengthening Surya for Confidence, Authority, and Vitality",
+        summary="The Sun (Surya) is Vedic astrology's karaka of self, authority, father, vitality, and confidence. Weak Sun manifests as low self-worth, difficulty asserting oneself, father-relationship issues, and physical vitality drops. Classical Sun remedies are safe and immediate — daily Surya Namaskar, Aditya Hridaya Stotra, copper vessel water offering at sunrise, Sunday charity of wheat and jaggery, Sun Beej mantra, Sunday partial fast, and serving father/authority.",
+        seo_title="Sun (Surya) Remedies: Surya Namaskar + Aditya Hridaya",
+        seo_description="Classical Sun remedies — Surya Namaskar daily, Aditya Hridaya Stotra, sunrise water offering (arghya), Sunday charity, mantra. Safe, immediate, no expensive rituals.",
+        category="Grahas", hero_image="/static/learn/surya-sun-remedies/hero.svg", read_time="8 min", last_updated="2026-07",
+        related=("surya-sun-in-vedic-astrology", "sun-mahadasha", "debilitated-sun-career", "sun-in-10th-house-career"),
+        faqs=(
+            {"q": "How many rounds of Surya Namaskar should I do?", "a": "Traditional: 12 rounds daily at sunrise facing east — one for each of the 12 Aditya names. Beginners: start with 3 rounds and build to 12 over weeks. Sundays are the peak day; missing weekdays is fine but never miss Sunday."},
+            {"q": "Can I wear Ruby (Manik) without astrologer consultation?", "a": "No. Ruby is safer than hessonite or blue sapphire but STILL requires chart analysis. Never wear ruby when Sun is a functional malefic for your Ascendant (Aquarius, Pisces), combust, or in a dusthana. The practices above are safe universal remedies that don't need chart analysis."},
+            {"q": "What is the Aditya Hridaya Stotra?", "a": "A Sanskrit hymn from the Ramayana (Yuddha Kanda) where Agastya Rishi taught it to Rama on the battlefield before slaying Ravana. Sun's most powerful shastric hymn. Recite once daily at sunrise (~8 minutes), three times on Sundays."},
+            {"q": "How do Sun remedies help with father-relationship?", "a": "Sun is father-karaka. Classical practice: if father is living, serve consciously (touch feet, seek blessings, listen); if deceased, perform annual shraddha. Sun rewards those who honor the father archetype — this often produces healing in the actual relationship over months."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Sun = atmakaraka (self), karaka of authority, father, vitality, confidence\n• 7 classical remedies: (1) Surya Namaskar 12 rounds daily at sunrise, (2) Aditya Hridaya Stotra recitation, (3) copper vessel water offering at sunrise (arghya), (4) Sunday charity (wheat, jaggery, red flowers, copper), (5) Sunday partial fast, (6) Sun Beej mantra "Om Hraam Hreem Hraum Sah Suryaya Namah" 108x, (7) serving father and honoring authority\n• Day: Sunday\n• Ruby (Manik) — SAFER than hessonite/blue sapphire but still needs chart check\n• Timeline: 4-6 weeks morning-energy shift; 6-12 mo confidence shift; year 2+ structural'
+        ),
+    ),
+    Article(
+        slug="chandra-moon-remedies", title="Moon Remedies: Chandra Practices for Emotional Peace and Mental Health",
+        summary="The Moon (Chandra) is Vedic astrology's karaka of mind, emotion, mother, memory, and mental peace. Since psychological wellbeing depends more on Moon than any other planet, Moon remedies are among the most consequential. Classical remedies focus on Monday practices, milk offering to Shiva, Chandra Beej mantra, silver items, pearl gemstone, mother-service, and modern extensions (Nadi Shodhana, sleep hygiene). Complement — never replace — professional mental healthcare.",
+        seo_title="Moon (Chandra) Remedies: Shiva Puja, Silver, Somvar Vrat",
+        seo_description="Classical Moon remedies — Monday Shiva puja, silver items, Chandra Beej mantra, mother-service. Support mental peace; combine with professional mental healthcare when needed.",
+        category="Grahas", hero_image="/static/learn/chandra-moon-remedies/hero.svg", read_time="8 min", last_updated="2026-07",
+        related=("chandra-moon-in-vedic-astrology", "the-9-grahas-overview"),
+        faqs=(
+            {"q": "Are Moon remedies enough for depression or anxiety?", "a": "No. Moon remedies support mental peace but are NOT a substitute for professional mental healthcare. If you have symptoms of depression, anxiety disorder, bipolar, PTSD, or any other diagnosed condition, please consult a mental health professional. Remedies work best as adjunct to treatment."},
+            {"q": "Why milk to Shiva for Moon remedy?", "a": "Shiva holds the crescent Moon on his forehead — he is the deity most closely associated with regulating Chandra's turbulent nature. Monday temple abhishek (milk pouring) + 108 recitations of 'Om Namah Shivaya' + 10 minutes of quiet sitting is the classical primary Moon remedy."},
+            {"q": "What is Solah Somvar vrat?", "a": "16 consecutive Monday fasts (partial: one meal only, no rice, no lentils). Traditionally observed by unmarried women seeking a good spouse, or by anyone with severe emotional difficulty. Peak during Shravana month (July-August). Not for those with medical conditions or pregnancy."},
+            {"q": "Can I wear Pearl (Moti) as Moon remedy?", "a": "Pearl is safer than most gemstones but still requires Ascendant verification. Cancer, Scorpio, Pisces most compatible. Consult a qualified astrologer before wearing. The Monday practices + silver items are safe universal remedies."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Moon = karaka of mind (manas), emotion, mother, mental peace\n• Moon remedies matter MORE than other planet remedies for mental wellbeing\n• Classical: (1) Monday milk offering to Shiva at temple, (2) Somvar vrat / Solah Somvar, (3) Chandra Beej mantra "Om Shraam Shreem Shraum Sah Chandramase Namah" 108x, (4) silver items (glass, ring), (5) Monday charity (rice, milk, white clothes), (6) serving mother, (7) Nadi Shodhana + Brahmi + sleep hygiene as modern complements\n• Day: Monday\n• Pearl (Moti) — safer than most but verify Ascendant\n• CRITICAL: complement — do not replace — professional mental healthcare'
+        ),
+    ),
+    Article(
+        slug="pitru-dosh-remedies", title="Pitru Dosh Remedies: Classical Rituals to Clear Ancestral Karma",
+        summary="Pitru Dosh — ancestral karmic debt — is one of the most misdiagnosed categories in Indian astrology commerce. Genuine remedies are simple: Pitru Paksha shraddha, tarpan (water offering), feeding a Brahmin+cow+crow on death anniversaries, monthly Amavasya practice, and Gaya tri-pindi shraddha for serious cases. This guide walks the classical remedies with strong guardrails against exploitation.",
+        seo_title="Pitru Dosh Remedies: Shraddha, Tarpan, Gaya Pilgrimage",
+        seo_description="Classical Pitru Dosh remedies — Pitru Paksha shraddha, tarpan, Ganesha worship, Gaya pilgrimage. Anti-exploitation guide; every remedy under ₹500 (except optional Gaya trip).",
+        category="Doshas", hero_image="/static/learn/pitru-dosh-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
+        related=("pitru-dosh", "kaal-sarp-dosh", "sade-sati", "chandra-moon-remedies"),
+        faqs=(
+            {"q": "How much does Pitru Dosh puja actually cost?", "a": "All classical remedies in this guide can be done for under ₹500 (except Gaya pilgrimage which costs travel + ₹5-15K for tri-pindi shraddha from Gayawal priests). Anyone quoting ₹50,000+ for 'Pitru Shanti Yagna' or lakhs for Kaal Sarp is exploiting anxiety."},
+            {"q": "What is Pitru Paksha and when is it?", "a": "The 15-day period preceding Sharad Navratri (typically September). Dedicated to ancestor offerings. Peak remedial window for Pitru Dosh. Minimum practice: daily tarpan facing south with sesame water, feed a Brahmin+cow+crow at least once, avoid celebrations."},
+            {"q": "Do I need to go to Gaya?", "a": "Only for serious Pitru Dosh — chronic career/marriage/children obstacles, repeated pattern across generations. Alternatives if Gaya is not accessible: Trimbakeshwar (Nagbali + Narayan Bali), Kurukshetra during eclipses, Rameshwaram for South Indian traditions. Consistent annual Pitru Paksha observance is often sufficient."},
+            {"q": "How do I know if I really have Pitru Dosh?", "a": "Classical signatures: Sun heavily afflicted by Rahu/Saturn, 9th/12th house lords afflicted, Rahu-Ketu on 9th-3rd or 12th-6th axis. Life patterns: repeated obstacles despite competence, children delayed, money slips through fingers, frequent ancestor-related dreams. Verify with proper chart reading before investing in remedies."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Pitru Dosh = ancestral karmic debt (Sun+Rahu/Saturn affliction, 9th/12th house issues)\n• MOST OVER-EXPLOITED category in Indian astrology commerce\n• 6 classical remedies: (1) Pitru Paksha 15-day observance (tarpan, feed Brahmin/cow/crow), (2) annual death anniversary tarpan (Barsi), (3) monthly Amavasya practice, (4) Gaya tri-pindi shraddha for serious cases, (5) Ganesha + Vishnu worship (Ekadashi vrat), (6) serving living elders\n• ALL remedies < ₹500; Gaya adds travel + ₹5-15K\n• Anti-exploitation: anyone quoting ₹50K+ for Pitru Shanti is scamming'
+        ),
+    ),
+    Article(
+        slug="kaal-sarp-dosh-remedies", title="Kaal Sarp Dosh Remedies: Classical Practices That Actually Work",
+        summary="Kaal Sarp Dosh — all 7 non-shadow planets on one side of the Rahu-Ketu axis — is the most exploited category in Indian astrology commerce. Real remedies are simple: Nag Panchami observance, Shiva worship on Mondays, silver serpent offering, combined Rahu+Ketu Beej mantras, and Trimbakeshwar Nagbali for severe cases. This guide walks the seven classically-cited remedies with strong guardrails against exploitation.",
+        seo_title="Kaal Sarp Dosh Remedies: Shiva Puja, Nag Panchami, Trimbakeshwar",
+        seo_description="Classical Kaal Sarp Dosh remedies — Monday Shiva puja, Nag Panchami, silver serpent offering, Trimbakeshwar Nagbali. Anti-exploitation guide with cost sanity checks.",
+        category="Doshas", hero_image="/static/learn/kaal-sarp-dosh-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
+        related=("kaal-sarp-dosh", "rahu-remedies", "ketu-remedies", "pitru-dosh-remedies"),
+        faqs=(
+            {"q": "How much does Trimbakeshwar Kaal Sarp Puja cost?", "a": "Legitimate registered priests at Trimbakeshwar charge ₹5,000-25,000 depending on scope + family size. Anyone quoting ₹50,000+ is overcharging; anyone quoting lakhs is exploiting anxiety. Go through the temple trust, not touts approaching at the town."},
+            {"q": "Is Kaal Sarp Dosh really that serious?", "a": "It's real when all 7 planets are truly between Rahu and Ketu on one semicircle. But it's over-diagnosed — check your chart with our free /kaal-sarp-check tool first. Even genuine KSD is not a curse; it's a specific karmic pattern with named 12 types (Anant, Kulik, Padma, etc.) each with distinct life themes."},
+            {"q": "When is Nag Panchami?", "a": "5th day of the bright half of Shravana month (typically August). Classical annual serpent-worship day and KSD's peak remedial day. Fast during the day, offer milk to serpent images at temple, perform Nag Devata puja."},
+            {"q": "Can I do KSD remedy at home instead of Trimbakeshwar?", "a": "Yes. Weekly Monday Shiva visits, Nag Panchami observance, silver serpent offering, and Rahu+Ketu Beej mantras done consistently at home are the accessible starting point. Save the Trimbakeshwar pilgrimage for when you're certain of the diagnosis and have the time to do it well."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Kaal Sarp Dosh = all 7 non-shadow planets on one semicircle of Rahu-Ketu axis\n• MOST EXPLOITED category in astrology commerce; real remedies are cheap\n• 7 classical remedies: (1) Monday Shiva worship + milk abhishek + Om Namah Shivaya 108x, (2) Nag Panchami annual observance (fast + serpent milk offering), (3) silver serpent offering at Shiva temple or river (₹500-2K, once), (4) Rahu+Ketu Beej mantras combined 108x each, (5) Trimbakeshwar Nagbali Puja ₹5-25K for severe cases, (6) symbolic serpent-serving (donate to reptile rescues), (7) year-long weekly practice\n• Cost sanity: anyone quoting lakhs for KSD Shanti is scamming; ₹15-25K is the ceiling for legitimate Trimbakeshwar puja'
+        ),
+    ),
+    Article(
+        slug="manglik-remedies", title="Manglik Remedies: Classical Practices to Soften Mars in Marriage Charts",
+        summary="Manglik Dosh (Mangal Dosh) remedies focus on softening Mars's placement in the six qualifying houses (1, 2, 4, 7, 8, 12) that classical tradition flags for marriage friction. The most powerful remedies are Hanuman worship (Mars's presiding deity), Tuesday practices, Kumbh Vivah for severe cases, and Ashtakoot matching. This guide walks the seven classically-cited remedies with the honest note that cancellation rules often mean no remedy is even needed.",
+        seo_title="Manglik Remedies: Hanuman Worship, Kumbh Vivah, Matching",
+        seo_description="Classical Manglik Dosh remedies — Hanuman Chalisa, Tuesday practices, Kumbh Vivah, matching another Manglik. Check cancellation rules first — most 'Manglik' charts are actually cancelled.",
+        category="Doshas", hero_image="/static/learn/manglik-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
+        related=("manglik-dosh", "mangal-mars-in-vedic-astrology", "mars-remedies", "kundali-matching-ashtakoot-guna-milan"),
+        faqs=(
+            {"q": "Is Kumbh Vivah remedy legitimate?", "a": "Classical tradition prescribes it for severe uncancelled Manglik before marriage — marriage to a clay pot (kumbh) or peepal tree that 'consumes' the first Manglik-marriage karma. Cost ₹2K-10K from legitimate priests. Not universally accepted by modern astrologers; some question efficacy. Often more valuable as psychological closure than ritual mechanic."},
+            {"q": "Do I need to check Manglik cancellation before doing remedies?", "a": "YES — this is the most important first step. Use our /manglik-check tool which explicitly applies classical cancellation rules (Cancer/Leo Lagna Yogakaraka, Jupiter aspect, own-sign Mars, etc.). Most 'Manglik' charts are actually cancelled and need no remedy at all."},
+            {"q": "Can red coral (Moonga) cancel Manglik?", "a": "Red Coral is Mars's classical gemstone but can backfire when Mars is a functional malefic for your Ascendant. NEVER wear coral without proper chart analysis. Hanuman worship + Tuesday practices are safe universal remedies that don't need chart verification."},
+            {"q": "What if I'm Manglik and my partner is not?", "a": "Classical tradition strongly recommends Manglik-Manglik matching (the two doshas cancel each other). If mismatch: soften with Hanuman practices + Vishnu worship + Kumbh Vivah before marriage. Also: many 'mismatch' cases are actually cancelled Manglik in one or both charts — verify with our /manglik-check tool first."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 from Lagna OR Moon\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching)\n• 7 classical remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) Vishnu Sahasranama + Ekadashi vrat, (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (red masoor, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases, (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
+        ),
+    ),
+    Article(
+        slug="dhana-yoga-wealth-combinations", title="Dhana Yogas: 9 Classical Wealth Combinations to Check in Your Kundli",
+        summary="Dhana Yogas — wealth combinations in your Kundli — form when the lords of the 2nd, 5th, 9th, and 11th houses interact favourably with each other or with strong benefics. Classical texts (BPHS, Phaladeepika, Saravali) list dozens; this guide covers the 9 most consequential: Lakshmi Yoga, Chandra-Mangala, Guru-Mangala, Kubera Yoga, Vasumati, Adhi Yoga, Neelkantha, Panch Mahapurush wealth angles, and Vipreeta Raja Yoga.",
+        seo_title="Dhana Yogas: 9 Wealth Combinations in Your Kundli",
+        seo_description="9 classical Dhana Yogas (wealth combinations) in Vedic astrology — Lakshmi Yoga, Kubera Yoga, Vasumati, Vipreeta Raja Yoga. When Dasha activates them, wealth arrives.",
+        category="Yogas", hero_image="/static/learn/dhana-yoga-wealth-combinations/hero.svg", read_time="10 min", last_updated="2026-07",
+        related=("panch-mahapurush-yoga", "gajakesari-yoga", "financial-struggles", "shukra-venus-in-vedic-astrology", "2nd-lord-placement-wealth-guide", "11th-lord-placement-gains-guide"),
+        faqs=(
+            {"q": "Which is the strongest Dhana Yoga?", "a": "No single one dominates — the strength comes from multiple yogas combined. Lakshmi Yoga (9th lord well-placed + Venus in kendra) is the classical wealth-blessing archetype. Vipreeta Raja Yoga (dusthana lord exchange) often marks self-made wealth. Both together in one chart is exceptional."},
+            {"q": "Do I need multiple Dhana Yogas or is one enough?", "a": "A single strong Dhana Yoga can produce comfortable wealth. Major wealth typically requires 2-3+ combined Dhana Yogas activating in overlapping Dasha periods. Also need supporting infrastructure: strong Jupiter, well-placed 2nd house lord, no severe Saturn afflictions."},
+            {"q": "What if I have Dhana Yogas but still struggle financially?", "a": "The yogas need the right Dasha window to activate. If you're in an unsupportive Mahadasha (Rahu, Saturn, or 6th/8th/12th lord's Dasha), even strong yogas underperform. Also: yogas produce POTENTIAL — actual wealth needs effort + right decisions. Some charts also have Vipreeta Raja Yoga which produces wealth AFTER adversity, not before."},
+            {"q": "How do I check Dhana Yogas in my chart?", "a": "Generate your free Janma Kundli on Shubh Bhagya — the Yogas panel automatically detects most Dhana Yogas including Panch Mahapurush, Gajakesari, and others. For deeper wealth analysis, combine with the 2nd Lord and 11th Lord placement guides."},
+            {"q": "What is Vipreeta Raja Yoga?", "a": "The counterintuitive wealth yoga — formed when the lords of the 6th, 8th, and 12th houses (all dusthanas) exchange positions among themselves. Effect: wealth arises from overcoming adversity. Often present in rags-to-riches biographies and self-made wealthy people. The obstacles themselves become the ladder."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Dhana Yoga = wealth combination from interaction of 2nd + 5th + 9th + 11th house lords with benefics\n• 9 most consequential: Lakshmi Yoga (9L in own/exalted + Venus in kendra), Chandra-Mangala (Moon+Mars), Guru-Mangala (Jupiter+Mars), Kubera Yoga (2L+11L+Jupiter in kendras), Vasumati (benefics in 3/6/10/11), Adhi Yoga (benefics 6/7/8 from Moon), Neelkantha (Jupiter+Mercury), Panch Mahapurush wealth (Ruchaka/Bhadra/Hamsa/Malavya/Shasha), Vipreeta Raja Yoga (6/8/12 lords exchange)\n• Activation: Mahadasha of yoga-planet, Antardasha of 2/5/9/11 lord, Jupiter transit over yoga planet\n• Single yoga = comfortable wealth; 2-3+ combined = major potential; still needs effort'
+        ),
+    ),
+    Article(
+        slug="2nd-lord-placement-wealth-guide", title="2nd Lord Placement Guide: Where the Ruler of Wealth Sits Shapes Your Money Life",
+        summary="The 2nd lord — the planet ruling the sign in your 2nd house — directs your wealth, family, speech, and accumulated resources. Where it sits across the 12 houses shapes HOW money enters your life and what kind of resources you accumulate. Companion to the 7th Lord (marriage) and 10th Lord (career) placement guides.",
+        seo_title="2nd Lord in Different Houses: How Your Wealth Pattern Reads",
+        seo_description="Where your 2nd lord (ruler of wealth) sits across 12 houses shapes your money life. Complete classical reading of all 12 placements with modifier rules.",
+        category="Life Questions", hero_image="/static/learn/2nd-lord-placement-wealth-guide/hero.svg", read_time="9 min", last_updated="2026-07",
+        related=("dhana-yoga-wealth-combinations", "7th-lord-placement-marriage-guide", "10th-lord-in-6th-house-career", "financial-struggles"),
+        faqs=(
+            {"q": "What does 2nd lord in 11th house mean?", "a": "Second-strongest placement after own house. Networks, elder siblings, group ventures drive wealth. Multiple income streams. Classical marker for successful traders and network-based entrepreneurs. Amplified further if 2nd + 11th lords are conjunct."},
+            {"q": "Is 2nd lord in 6th house always bad for wealth?", "a": "No. 6th is a dusthana but wealth here often accumulates through service industries, litigation, medicine, or debt-financing (banking). Recurring inflows AND outflows; requires financial discipline. Softeners like Jupiter aspect can transform this into a strong service-industry wealth signature."},
+            {"q": "What if 2nd lord is in own house (2nd)?", "a": "Strongest placement (Swakshetra). Family wealth is stable, savings accumulate naturally, native speaks with authority. Classical marker for family businesses running across generations."},
+            {"q": "Does 2nd lord in 12th house mean no wealth?", "a": "Not 'no wealth' — wealth flows outward. Spending on travel, luxury, charity, foreign lands, spiritual pursuits. Best when consciously channelled. Combined with Vipreeta Raja Yoga, this can flip to unusual wealth patterns. Alone, native tends toward experience-wealth rather than material-wealth."},
+            {"q": "How do I find my 2nd lord?", "a": "Look at which sign is in your 2nd house — that sign's ruling planet is your 2nd lord. Aries/Scorpio = Mars, Taurus/Libra = Venus, Gemini/Virgo = Mercury, Cancer = Moon, Leo = Sun, Sagittarius/Pisces = Jupiter, Capricorn/Aquarius = Saturn. Generate your free Kundli on Shubh Bhagya to see it computed."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• 2nd lord = ruler of sign in 2nd house = director of wealth, family, speech, accumulated resources\n• Best placements: 2nd (own), 11th (gains), 9th (fortune), 5th (creative)\n• Weakest (require softeners): 6th (service+debt), 8th (hidden/sudden), 12th (outflow)\n• Kendra placements (1/4/7/10): wealth becomes central life theme\n• Modifiers: Jupiter aspect blesses; Saturn delays; Rahu adds sudden/foreign patterns\n• 2nd+11th lord conjunction = classic Dhana Yoga\n• Companion to 7th Lord (marriage) + 10th Lord (career) + 11th Lord (gains) placement guides'
+        ),
+    ),
+    Article(
+        slug="11th-lord-placement-gains-guide", title="11th Lord Placement Guide: How Your Gains and Ambitions Take Shape",
+        summary="The 11th lord — planet ruling the sign in your 11th house (Labha Bhava) — directs your gains, income, ambitions, and network. Where it sits across the 12 houses shapes HOW gains arrive. 11th lord in own house or 2nd brings direct accumulation; in 10th brings career-driven gains; in 12th brings foreign/spiritual gains that don't accumulate materially.",
+        seo_title="11th Lord in Different Houses: How Your Gains Pattern Reads",
+        seo_description="Where your 11th lord (ruler of gains) sits shapes how income arrives — 12 house placements with classical readings.",
+        category="Life Questions", hero_image="/static/learn/11th-lord-placement-gains-guide/hero.svg", read_time="8 min", last_updated="2026-07",
+        related=("dhana-yoga-wealth-combinations", "2nd-lord-placement-wealth-guide", "7th-lord-placement-marriage-guide"),
+        faqs=(
+            {"q": "What does 11th lord in 12th house mean?", "a": "Gains flow outward — foreign lands, luxury, spiritual pursuits, charity. Wealth doesn't accumulate materially; goes to experiences. Combined with 2nd lord in accumulating house, this can produce a natural spend-what-you-earn pattern. Best when consciously channelled to meaningful causes."},
+            {"q": "Is 11th lord in 6th house good for career?", "a": "For employment yes, for business less. Service industries, competition-based earnings, medicine, law. Recurring income patterns. Enemies-become-clients paradox: obstacles become opportunities."},
+            {"q": "What if 11th lord is in own house (11th)?", "a": "Strongest placement. Multiple simultaneous income streams. Networks are prosperous. Group ventures succeed. Elder siblings supportive. Combined with strong 2nd lord = classic multi-source wealth signature."},
+            {"q": "How is 11th lord different from 2nd lord?", "a": "2nd lord = wealth accumulated and held (savings, family wealth). 11th lord = wealth as it arrives (income, gains, network profits). Ideally both are strong; if only one is strong, that domain dominates the wealth story (high earner but poor saver = strong 11th + weak 2nd)."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• 11th lord = ruler of Labha Bhava = director of gains, income, ambitions, network, elder siblings\n• Strongest placements: 11th (own), 10th (career-driven), 2nd (accumulating gains), 9th (fortune-blessed)\n• Weakest placements: 8th (hidden/sudden), 12th (outward flow)\n• 6th house placement: employment > business, service-industry wealth\n• Modifiers: Jupiter aspect blesses; Saturn disciplines; Rahu adds sudden/foreign patterns\n• 2L+11L conjunction/exchange = classic Dhana Yoga\n• DIFFERENCE from 2nd lord: 11th = gains ARRIVING, 2nd = wealth ACCUMULATED'
+        ),
+    ),
 )
 
 

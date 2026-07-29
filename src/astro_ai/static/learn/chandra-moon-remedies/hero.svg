@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Moon remedies — Chandra practices for emotional peace">
+  <defs>
+    <radialGradient id="cr_aura" cx="0.5" cy="0.5" r="0.7">
+      <stop offset="0%" stop-color="#e0e7ff" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#fefbf3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cr_moon" cx="0.4" cy="0.4" r="0.6">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </radialGradient>
+  </defs>
+  <rect width="320" height="320" fill="#fefbf3" rx="24"/>
+  <ellipse cx="160" cy="160" rx="140" ry="130" fill="url(#cr_aura)"/>
+  <g fill="#4f46e5" opacity="0.35">
+    <circle cx="42" cy="45" r="1.5"/><circle cx="280" cy="55" r="2"/>
+    <circle cx="275" cy="275" r="1.5"/><circle cx="50" cy="270" r="1.5"/>
+  </g>
+  <!-- Crescent moon -->
+  <path d="M 200 100 A 80 80 0 1 0 200 220 A 60 60 0 1 1 200 100 Z" fill="url(#cr_moon)" stroke="#64748b" stroke-width="2"/>
+  <text x="140" y="175" font-family="Noto Sans Devanagari, serif" font-size="40" fill="#334155">☾</text>
+  <!-- Water offering (silver bowl) -->
+  <ellipse cx="160" cy="270" rx="40" ry="8" fill="#cbd5e1"/>
+  <path d="M 130 260 Q 130 275 160 275 Q 190 275 190 260" fill="none" stroke="#94a3b8" stroke-width="2.5"/>
+</svg>
