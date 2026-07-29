@@ -1345,6 +1345,48 @@ async def kaal_sarp_check_result(
     return response
 
 
+@app.get("/check-in", response_class=HTMLResponse)
+async def cosmic_check_in(request: Request) -> HTMLResponse:
+    """Cosmic Check-in MVP (Issue #116) — 3-step daily reflective ritual.
+
+    NOT a gamified habit tracker. No streaks, no points, no push nudges.
+    Just a contemplative 30-second practice: tap rashi → read shloka →
+    optional intention. Intention text is client-side only, never sent
+    to server (privacy).
+
+    MVP scope shipped:
+      - 12-rashi mandala tap
+      - Today's shloka from shloks.py
+      - Optional intention text (client-only)
+      - Sadhana acknowledgment on completion
+    Deferred:
+      - 3D mandala for step 1 (adaptive-bandwidth 3D chunk)
+      - Opt-in daily email nudge with unsubscribe
+      - Last-visit tracking for gentle "welcome back N days" copy
+    """
+    from datetime import date as _date
+    from astro_ai import shloks
+    shlok = shloks.shlok_for_date(_date.today())
+    rashis = [
+        {"name": "Mesh (Aries)",     "slug": "mesh",     "glyph": "♈"},
+        {"name": "Vrishabh (Taurus)","slug": "vrishabh", "glyph": "♉"},
+        {"name": "Mithun (Gemini)",  "slug": "mithun",   "glyph": "♊"},
+        {"name": "Karka (Cancer)",   "slug": "karka",    "glyph": "♋"},
+        {"name": "Simha (Leo)",      "slug": "simha",    "glyph": "♌"},
+        {"name": "Kanya (Virgo)",    "slug": "kanya",    "glyph": "♍"},
+        {"name": "Tula (Libra)",     "slug": "tula",     "glyph": "♎"},
+        {"name": "Vrishchik (Scorpio)","slug": "vrishchik","glyph": "♏"},
+        {"name": "Dhanu (Sagittarius)","slug": "dhanu",  "glyph": "♐"},
+        {"name": "Makar (Capricorn)","slug": "makar",    "glyph": "♑"},
+        {"name": "Kumbh (Aquarius)", "slug": "kumbh",    "glyph": "♒"},
+        {"name": "Meen (Pisces)",    "slug": "meen",     "glyph": "♓"},
+    ]
+    return templates.TemplateResponse(
+        request, "check_in.html",
+        {"rashis": rashis, "shlok": shlok, "lang": _lang(request)},
+    )
+
+
 @app.get("/muhurat", response_class=HTMLResponse)
 async def muhurat_finder_form(request: Request) -> HTMLResponse:
     """Muhurat Finder MVP (Issue #108) — Vivah event type only.
