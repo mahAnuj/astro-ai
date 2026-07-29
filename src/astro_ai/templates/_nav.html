@@ -111,6 +111,17 @@
           {{ dlink("/monthly",  t(lang, 'nav_monthly_link'),  'monthly') }}
           {{ dlink("/yearly",   t(lang, 'nav_yearly_link', year=current_year()), 'yearly') }}
           {{ dlink("/dasha",    t(lang, 'nav_dasha_link'),    'dasha') }}
+          {# ─── New tools shipped in cycle 8 (2026-07-30) ─────────── #}
+          <div class="hidden md:block px-4 py-1 mt-1 border-t border-stone-100">
+            <div class="text-xs font-semibold uppercase tracking-wider text-stone-500">Free tools</div>
+          </div>
+          <div class="md:hidden text-xs font-semibold uppercase tracking-wider text-stone-500 mt-2 mb-1">Free tools</div>
+          {{ dlink("/muhurat",         "Muhurat Finder",  'muhurat') }}
+          {{ dlink("/manglik-check",   "Manglik Check",   'manglik-check') }}
+          {{ dlink("/sade-sati-check", "Sade Sati Check", 'sade-sati-check') }}
+          {{ dlink("/kaal-sarp-check", "Kaal Sarp Check", 'kaal-sarp-check') }}
+          {{ dlink("/numerology",      "Numerology",      'numerology') }}
+          {{ dlink("/check-in",        "Cosmic Check-in", 'check-in') }}
         </div>
       </div>
     </div>
