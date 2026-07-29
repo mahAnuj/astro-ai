@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Manglik Dosh Check for {{ details.name or 'you' }} — Shubh Bhagya{% endblock %}
+{% block meta_description %}Instant Manglik Dosh check with the classical cancellation rules applied. See exactly why your chart is Manglik, Cancelled, or clean — and what to do next.{% endblock %}
+
+{% block content %}
+{% set active_page = "" %}
+{% include "_nav.html" %}
+
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+
+  <header>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-1">
+      Manglik Dosh Check {% if details.name %}for {{ details.name }}{% endif %}
+    </h1>
+    <p class="text-sm text-stone-500">
+      {{ details.birth_date }} · {{ details.birth_time }} · {{ details.birth_place }}
+    </p>
+  </header>
+
+  <!-- STATUS PANEL -->
+  {% set status_color = {
+    'none':      ('emerald', 'No Mangal Dosh'),
+    'cancelled': ('emerald', 'Manglik Dosh — Cancelled'),
+    'mitigated': ('amber',   'Manglik Dosh — Mitigated'),
+    'present':   ('rose',    'Manglik Dosh — Present'),
+  }.get(manglik.effective_status, ('stone', 'Unknown')) %}
+  <section class="bg-{{ status_color[0] }}-50 border-2 border-{{ status_color[0] }}-200 rounded-2xl p-6 sm:p-8">
+    <div class="flex items-start gap-4">
+      <div class="text-4xl sm:text-5xl flex-shrink-0" aria-hidden="true">
+        {% if manglik.effective_status == 'none' %}✓{% elif manglik.effective_status == 'cancelled' %}✓{% elif manglik.effective_status == 'mitigated' %}◐{% else %}⚠{% endif %}
+      </div>
+      <div class="min-w-0 flex-1">
+        <h2 class="font-display text-2xl sm:text-3xl text-{{ status_color[0] }}-800 mb-2">
+          {{ status_color[1] }}
+        </h2>
+        {% if manglik.is_manglik %}
+        <p class="text-stone-700 leading-relaxed">
+          Mars sits in your <strong>{{ manglik.primary_house }}{% if manglik.primary_house in [1] %}st{% elif manglik.primary_house in [2] %}nd{% elif manglik.primary_house in [3] %}rd{% else %}th{% endif %} house</strong>{% if manglik.houses | length > 1 %}, and also qualifies from other frames ({{ manglik.houses | join(', ') }}){% endif %}. Classical Vedic tradition names this Mangal Dosh — but cancellation and mitigation rules matter more than the raw diagnosis.
+        </p>
+        {% else %}
+        <p class="text-stone-700 leading-relaxed">
+          Your Mars doesn't fall in any of the six classical Manglik houses (1, 2, 4, 7, 8, or 12) — from your Lagna or from your Moon. Marriage compatibility does not need special Manglik-Manglik matching.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {% if manglik.cancellations %}
+  <!-- CANCELLATIONS -->
+  <section class="bg-white rounded-2xl border border-emerald-200 p-6">
+    <h3 class="font-display text-lg text-emerald-800 mb-3">
+      {% if manglik.effective_status == 'cancelled' %}Why the dosha is cancelled{% else %}Softening factors{% endif %}
+    </h3>
+    <ul class="space-y-2 text-sm text-stone-700">
+      {% for rule in manglik.cancellations %}
+      <li class="flex gap-2">
+        <span class="text-emerald-600 flex-shrink-0" aria-hidden="true">•</span>
+        <span>{{ rule.description }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <!-- WHAT NEXT CTAs -->
+  <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6">
+    <h3 class="font-display text-lg text-astro-800 mb-3">What to do next</h3>
+    <div class="space-y-3">
+      <a href="/kundli" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 mb-0.5">Get your full free Janma Kundli reading →</div>
+        <div class="text-sm text-stone-600">Same birth details, complete chart + LLM narrative + 7 life areas covered.</div>
+      </a>
+      <a href="/matching" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 mb-0.5">Check compatibility with your partner →</div>
+        <div class="text-sm text-stone-600">Full Ashtakoot 36-Guna matching, with Manglik reconciliation between both charts.</div>
+      </a>
+      <a href="/learn/manglik-dosh/" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 mb-0.5">Read the full Manglik Dosh guide →</div>
+        <div class="text-sm text-stone-600">Depth: all six qualifying houses, every classical cancellation rule, and the remedies that actually work.</div>
+      </a>
+    </div>
+  </section>
+
+  <div class="text-center">
+    <a href="/manglik-check" class="text-sm text-astro-600 hover:text-astro-700 underline">Check another chart</a>
+  </div>
+
+</main>
+{% endblock %}
