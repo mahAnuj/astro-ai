@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Kaal Sarp Dosh remedies">
+  <defs>
+    <linearGradient id="ksr_snake" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4c1d95"/>
+      <stop offset="100%" stop-color="#166534"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="#fefbf3" rx="24"/>
+  <g fill="#6b21a8" opacity="0.3">
+    <circle cx="42" cy="45" r="1.5"/><circle cx="280" cy="55" r="2"/>
+    <circle cx="275" cy="275" r="1.5"/><circle cx="50" cy="270" r="1.5"/>
+  </g>
+  <!-- Serpent coiled around Shivalinga -->
+  <ellipse cx="160" cy="220" rx="45" ry="12" fill="#78350f" opacity="0.4"/>
+  <rect x="145" y="140" width="30" height="80" rx="4" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+  <ellipse cx="160" cy="140" rx="20" ry="15" fill="#cbd5e1" stroke="#475569" stroke-width="1.5"/>
+  <!-- Coiling snake -->
+  <path d="M 100 170 Q 130 190 160 180 Q 200 170 220 200 Q 200 210 170 205 Q 140 200 120 195 Q 105 190 100 170 Z"
+        fill="url(#ksr_snake)" opacity="0.85"/>
+  <path d="M 100 170 Q 90 155 100 145 Q 115 140 115 155"
+        fill="none" stroke="#4c1d95" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="112" cy="150" r="3" fill="#f59e0b"/>
+  <!-- Nag Panchami note - twin snakes -->
+  <text x="160" y="90" font-family="Noto Sans Devanagari, serif" font-size="30" text-anchor="middle" fill="#78350f">ॐ नमः शिवाय</text>
+</svg>
