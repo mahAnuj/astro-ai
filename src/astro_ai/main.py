@@ -1345,6 +1345,61 @@ async def kaal_sarp_check_result(
     return response
 
 
+@app.get("/muhurat", response_class=HTMLResponse)
+async def muhurat_finder_form(request: Request) -> HTMLResponse:
+    """Muhurat Finder MVP (Issue #108) — Vivah event type only.
+
+    MVP scope shipped; more event types + fuller Panchang rules deferred
+    to a full-tool sprint. See muhurat.py module for coverage details.
+    """
+    from datetime import date as _date
+    saved = load_collection(request).active
+    prefill_city = saved.birth_place if saved else ""
+    return templates.TemplateResponse(
+        request, "muhurat_finder.html",
+        {"candidates": None, "error": None, "lang": _lang(request),
+         "prefill_city": prefill_city,
+         "prefill_start": _date.today().isoformat()},
+    )
+
+
+@app.post("/muhurat", response_class=HTMLResponse)
+async def muhurat_finder_compute(
+    request: Request,
+    event_type: str = Form("vivah"),
+    city: str = Form(...),
+    start_date: str = Form(...),
+    days: int = Form(60),
+) -> HTMLResponse:
+    from astro_ai import muhurat as _muhurat
+    from datetime import date as _date
+    try:
+        start = _date.fromisoformat(start_date)
+    except ValueError:
+        return templates.TemplateResponse(
+            request, "muhurat_finder.html",
+            {"candidates": None, "error": "Invalid start date.", "lang": _lang(request),
+             "prefill_city": city, "prefill_start": start_date},
+            status_code=400,
+        )
+    try:
+        candidates = _muhurat.find_vivah_candidates(city=city, start=start, days=int(days))
+    except Exception as err:  # noqa: BLE001
+        _fire_error_alert(request, err, "muhurat:compute")
+        return templates.TemplateResponse(
+            request, "muhurat_finder.html",
+            {"candidates": None, "error": f"Could not compute muhurats: {err}",
+             "lang": _lang(request), "prefill_city": city, "prefill_start": start_date},
+            status_code=500,
+        )
+    return templates.TemplateResponse(
+        request, "muhurat_finder.html",
+        {"candidates": candidates, "city": city, "start_date": start_date,
+         "prefill_city": city, "prefill_start": start_date, "error": None,
+         "lang": _lang(request)},
+    )
+
+
 @app.get("/numerology", response_class=HTMLResponse)
 async def numerology_form(request: Request) -> HTMLResponse:
     """Numerology calculator form (Issue #112).
