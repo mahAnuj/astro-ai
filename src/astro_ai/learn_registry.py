@@ -2876,6 +2876,77 @@ ARTICLES: tuple[Article, ...] = (
             'Keypoints:\n• 2nd lord = ruler of sign in 2nd house = director of wealth, family, speech, accumulated resources\n• Best placements: 2nd (own), 11th (gains), 9th (fortune), 5th (creative)\n• Weakest (require softeners): 6th (service+debt), 8th (hidden/sudden), 12th (outflow)\n• Kendra placements (1/4/7/10): wealth becomes central life theme\n• Modifiers: Jupiter aspect blesses; Saturn delays; Rahu adds sudden/foreign patterns\n• 2nd+11th lord conjunction = classic Dhana Yoga\n• Companion to 7th Lord (marriage) + 10th Lord (career) + 11th Lord (gains) placement guides'
         ),
     ),
+    # ─── Muhurat cluster (#94, #95, #103, #104) ───────────────────────
+    Article(
+        slug="vivah-muhurat-2027", title="Vivah Muhurat 2027 — Classical Rules for Auspicious Wedding Dates",
+        summary="A Vivah Muhurat is not just a 'good day' — it's a specific window where six classical criteria align: Guru + Shukra visibility, no Malamas, no Chaturmas, favourable nakshatra + tithi, no Panchak, no Rahu Kaal in ceremony hour. This guide walks the 2027 rules, seasonal patterns, personal chart intersections, and honest guidance beyond the calendar.",
+        seo_title="Vivah Muhurat 2027 — Classical Rules for Wedding Dates",
+        seo_description="Vivah Muhurat 2027 — 6 classical criteria for auspicious wedding dates. Seasonal windows Jan-Feb, Apr-Jun, mid-Nov onwards. Personal chart matters beyond calendar.",
+        category="Life Questions", hero_image="/static/learn/vivah-muhurat-2027/hero.svg", read_time="8 min", last_updated="2026-07",
+        related=("marriage-timing-kundli", "kundali-matching-ashtakoot-guna-milan", "manglik-dosh", "griha-pravesh-muhurat-2026-2027"),
+        faqs=(
+            {"q": "Which months in 2027 are best for marriage?", "a": "Jan-Feb 2027 (winter window), Apr-Jun 2027 (spring/summer, most popular), and mid-Nov 2027 onwards (post-Chaturmas resumption). Chaturmas (mid-Jul to mid-Nov) is traditionally weddings-restricted. Adhik Maas dates are additional blackout — verify with Panchang."},
+            {"q": "What is Deva Uthani Ekadashi and why does it matter?", "a": "Deva Uthani Ekadashi marks the end of Chaturmas — Vishnu 'awakens' from his four-month sleep. This day resumes auspicious ceremonies including weddings. Typically falls in mid-November. Post-Deva-Uthani through spring is the year's densest wedding season."},
+            {"q": "Can I get married during Chaturmas?", "a": "Classical tradition says no; modern practice varies by region and family. If you must marry during Chaturmas, consult a priest for compensating rituals. The tradition's rationale: Vishnu (protector of dharmic bonds) is sleeping, so ceremonies lack full blessing."},
+            {"q": "What is Panchak and why avoid it?", "a": "5-day period when Moon transits the last 5 nakshatras (Dhanishta latter half through Revati). Classical tradition considers Panchak inauspicious for many ceremonies including weddings. Some specific classes of Panchak (Mrityu Panchak on Saturday, Roga Panchak on Tuesday) are particularly cautioned."},
+            {"q": "How do I match a wedding date to my kundli specifically?", "a": "Use our free /manglik-check + /sade-sati-check tools for both partners. Then generate full kundlis via /kundli. Check nakshatra harmony with the intended date's nakshatra, avoid Rahu-Rahu or Ketu-Ketu antardashas, and confirm no severe Sade Sati Peak. We're building a personalised Muhurat Finder tool."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Vivah Muhurat = wedding date meeting 6 classical criteria\n• (1) Guru + Shukra visible above horizon uncombust, (2) not Malamas/Adhik Maas, (3) not Chaturmas (mid-Jul to mid-Nov), (4) favourable nakshatra + tithi, (5) no Panchak, (6) no Rahu Kaal in ceremony hour\n• 2027 windows: Jan-Feb (winter), Apr-Jun (spring/summer), mid-Nov onwards (post-Chaturmas peak)\n• Auspicious nakshatras: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati\n• Personal factors matter: Sade Sati Peak caution, Rahu antardasha caution, Manglik-Manglik matching preferred\n• Personalised date computation deferred to Muhurat Finder tool (#108)'
+        ),
+    ),
+    Article(
+        slug="griha-pravesh-muhurat-2026-2027", title="Griha Pravesh Muhurat 2026-27 — Auspicious House-Warming Dates",
+        summary="Griha Pravesh (house-warming) marks entry into a new home. Classical tradition names three types (Apoorva, Sapoorva, Dwandwa) and seven criteria for auspicious dates. Dates cluster around Nov 2026 (post-Diwali) through May 2027 (pre-Chaturmas). Personal chart matters — this guide walks the criteria, personal factors, and honest guidance on modern practical constraints like builder handover dates.",
+        seo_title="Griha Pravesh Muhurat 2026-27 — Auspicious House-Warming Dates",
+        seo_description="Griha Pravesh Muhurat 2026-27 — 7 classical criteria, three types (Apoorva/Sapoorva/Dwandwa), personal factors, guidance on developer handover conflicts.",
+        category="Life Questions", hero_image="/static/learn/griha-pravesh-muhurat-2026-2027/hero.svg", read_time="7 min", last_updated="2026-07",
+        related=("vivah-muhurat-2027", "gochar-2026-planetary-transits", "kaal-sarp-dosh", "sade-sati"),
+        faqs=(
+            {"q": "What is the best month for Griha Pravesh in 2027?", "a": "Given the 7 classical criteria, prime windows are Nov 2026 (Dev Uthani onwards, peak season), Dec 2026-Feb 2027 (winter window), Mar-Jun 2027 (spring/summer). Chaturmas (mid-Jul to mid-Nov) is traditionally avoided; verify Adhik Maas dates via Panchang."},
+            {"q": "Can I do Griha Pravesh during Chaturmas?", "a": "Traditional practice: no. Modern flexibility varies. If forced (developer handover): do a symbolic entry (bring water, diya, small idol) on an auspicious muhurat, delay full ceremony to next window, or perform compensating ritual via a priest."},
+            {"q": "Does my personal chart matter for Griha Pravesh?", "a": "Yes. A universally-good date can be personally difficult if your moon nakshatra clashes with the date's nakshatra, you're in a Rahu-Rahu antardasha, or currently in Sade Sati Peak. Use our free /sade-sati-check + /kundli tools for personal factors."},
+            {"q": "What if the builder's possession date isn't auspicious?", "a": "Common modern conflict. Options: (1) perform symbolic entry on auspicious muhurat before moving, (2) do provisional entry on handover date and full ceremony later, (3) consult priest for compensating ritual. Never let a bad date force a bad ceremony — always check with an astrologer."},
+            {"q": "Do I need a priest?", "a": "For full traditional Griha Pravesh, yes — the ceremony involves specific mantras + fire ritual + specific offerings a householder cannot easily do alone. For simpler observance: bring water, milk, honey, diya into the new home while chanting Gayatri or Vishnu Sahasranama, distribute prasad, and follow up with full ceremony later."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Griha Pravesh = house-warming ceremony, 3 types (Apoorva new, Sapoorva returning, Dwandwa inherited)\n• 7 criteria: Guru visible + favourable nakshatra + favourable tithi + no Chaturmas + no eclipse + no Panchak + auspicious weekday (Mon/Wed/Thu/Fri best)\n• 2026-27 windows: Nov 2026 (Dev Uthani onwards, peak), Dec-Feb (winter), Mar-Jun 2027 (spring)\n• Personal factors: moon nakshatra harmony, Sade Sati Peak caution, Rahu antardasha caution\n• Builder handover conflict: symbolic entry on auspicious muhurat + full ceremony later'
+        ),
+    ),
+    Article(
+        slug="diwali-muhurat-2026", title="Diwali Muhurat 2026 — Complete 5-Day Ritual Windows",
+        summary="Diwali 2026 spans five days of specific muhurats — Dhanteras (buying), Naraka Chaturdashi (cleansing), Lakshmi Puja (main), Govardhan (food offering), Bhai Dooj (sibling bond). Each has its own auspicious window. This guide walks the classical muhurat rules for all five days.",
+        seo_title="Diwali Muhurat 2026 — Dhanteras, Lakshmi Puja, Bhai Dooj",
+        seo_description="Diwali Muhurat 2026 — all 5 days: Dhanteras buying window, Lakshmi Puja pradosh kaal, Govardhan Puja, Bhai Dooj afternoon muhurat. Classical rules.",
+        category="Life Questions", hero_image="/static/learn/diwali-muhurat-2026/hero.svg", read_time="6 min", last_updated="2026-07",
+        related=("griha-pravesh-muhurat-2026-2027", "vivah-muhurat-2027", "shani-saturn", "sade-sati"),
+        faqs=(
+            {"q": "When is Lakshmi Puja on Diwali 2026?", "a": "Falls on the Amavasya of Kartik month (typically late Oct or early Nov 2026 — verify exact date with Panchang). Puja can be performed in Pradosh Kaal (~6-8 PM, most common), Nishita Kaal (midnight, traditional tantric), or Mahanishita Kaal (deep night, specialised)."},
+            {"q": "What time is the Dhanteras buying muhurat?", "a": "Traditional Dhanteras buying window is Pradosh Kaal — roughly 6-8 PM local time on Dhanteras evening. Gold, silver, brass, utensils, and vehicle purchases are considered especially auspicious in this window. Verify exact times for your city via Panchang."},
+            {"q": "Should businesses do Chopda Pujan on Diwali?", "a": "Yes — Chopda Pujan (worshipping new account books) is traditional for businesses on Diwali night, ideally during Pradosh Kaal Lakshmi Puja. Symbolises starting the new financial year with Lakshmi's blessing. Choose the muhurat that fits your local Panchang."},
+            {"q": "What is Govardhan Puja?", "a": "Falls on Pratipada of Kartik Shukla paksha (day after Diwali). Commemorates Krishna lifting Govardhan hill. Traditional practice: prepare Annakut (mountain of foods), offer to Krishna, distribute as prasad. Morning muhurat preferred."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Diwali 2026 = 5-day sequence: Dhanteras, Naraka Chaturdashi (Chhoti Diwali), Lakshmi Puja, Govardhan Puja, Bhai Dooj\n• Dhanteras: Pradosh Kaal (~6-8 PM) buying window\n• Lakshmi Puja: Pradosh Kaal most common, also Nishita (midnight), Mahanishita (deep night)\n• Business Chopda Pujan on Diwali night\n• Govardhan: Annakut morning muhurat\n• Bhai Dooj: afternoon Aparahnakaal, sisters apply tilak to brothers\n• Location-dependent: exact windows via Panchang for your city'
+        ),
+    ),
+    Article(
+        slug="karva-chauth-2026", title="Karva Chauth 2026 — Complete Vrat Timing, Moon Sighting, and Muhurat",
+        summary="Karva Chauth 2026 is the classical fast observed by married women for husband's wellbeing. Falls on 4th tithi of Kartik Krishna paksha (October 2026). This guide walks the 2026 timing, hour-by-hour vrat sequence (sargi, nirjala fast, puja, moon sighting, breaking fast), classical significance, and honest modern guidance on observance including health cautions.",
+        seo_title="Karva Chauth 2026 — Vrat Timing, Moon Rise, Puja Muhurat",
+        seo_description="Karva Chauth 2026 timing — sargi pre-dawn, nirjala vrat, evening puja, moonrise (~8:15-8:45 PM Delhi). Classical rules + honest modern guidance.",
+        category="Life Questions", hero_image="/static/learn/karva-chauth-2026/hero.svg", read_time="6 min", last_updated="2026-07",
+        related=("vivah-muhurat-2027", "chandra-moon-in-vedic-astrology", "kundali-matching-ashtakoot-guna-milan"),
+        faqs=(
+            {"q": "When is Karva Chauth 2026?", "a": "Falls on 4th tithi (Chaturthi) of Krishna paksha in Kartik month — typically late October or early November 2026. Verify exact date via Panchang."},
+            {"q": "What time is moonrise on Karva Chauth 2026?", "a": "Location-dependent. For Delhi: approximately 8:15-8:45 PM local time. For other cities: check Panchang moonrise times for the specific Karva Chauth date. The moon must be sighted to break the fast."},
+            {"q": "Can I do Karva Chauth if I'm pregnant or on medication?", "a": "Never do nirjala vrat (without water) if pregnant, nursing, diabetic, or on medication that requires food/water. Observe modified vrat (with water) instead, or skip entirely — your health matters more than any ritual."},
+            {"q": "Is Karva Chauth only for Hindu women?", "a": "Traditionally observed within Hindu married women's practice, but modern observance varies. Some observe as personal choice from any background; some observe for same-sex partners; some men observe for their wives. The vrat's core is intention + care + community — how you frame it is personal."},
+        ),
+        llm_summary=(
+            'Keypoints:\n• Karva Chauth = 4th tithi Kartik Krishna paksha, Oct 2026\n• Sequence: Sargi pre-dawn (mother-in-law offers meal), nirjala vrat from sunrise, Pradosh Kaal puja (community), moonrise (~8:15-8:45 PM Delhi), husband feeds first sip\n• Classical significance: sindoor-strengthening, community observance, discipline, devotional bhakti\n• Health-first: no nirjala vrat if pregnant/diabetic/medication; consent matters\n• Modern flexibility: same-sex partners, non-traditional families, some men observe'
+        ),
+    ),
     Article(
         slug="11th-lord-placement-gains-guide", title="11th Lord Placement Guide: How Your Gains and Ambitions Take Shape",
         summary="The 11th lord — planet ruling the sign in your 11th house (Labha Bhava) — directs your gains, income, ambitions, and network. Where it sits across the 12 houses shapes HOW gains arrive. 11th lord in own house or 2nd brings direct accumulation; in 10th brings career-driven gains; in 12th brings foreign/spiritual gains that don't accumulate materially.",

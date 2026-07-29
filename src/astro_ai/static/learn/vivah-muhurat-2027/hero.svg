@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Vivah Muhurat 2027">
+  <defs>
+    <radialGradient id="vm_aura" cx="0.5" cy="0.5" r="0.7"><stop offset="0%" stop-color="#fef3c7" stop-opacity="0.75"/><stop offset="100%" stop-color="#fefbf3" stop-opacity="0"/></radialGradient>
+    <linearGradient id="vm_gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fef08a"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient>
+  </defs>
+  <rect width="320" height="320" fill="#fefbf3" rx="24"/>
+  <ellipse cx="160" cy="160" rx="140" ry="130" fill="url(#vm_aura)"/>
+  <!-- Wedding mandap arch -->
+  <path d="M 60 200 L 60 130 Q 60 90 100 90 L 220 90 Q 260 90 260 130 L 260 200" fill="none" stroke="url(#vm_gold)" stroke-width="6"/>
+  <!-- Pillars -->
+  <rect x="55" y="200" width="10" height="80" fill="url(#vm_gold)"/>
+  <rect x="255" y="200" width="10" height="80" fill="url(#vm_gold)"/>
+  <!-- Two hearts joining -->
+  <path d="M 140 160 c -12 -12, -30 0, -18 15 l 18 18 l 18 -18 c 12 -15, -6 -27, -18 -15 z" fill="#e11d48" opacity="0.75"/>
+  <path d="M 180 160 c -12 -12, -30 0, -18 15 l 18 18 l 18 -18 c 12 -15, -6 -27, -18 -15 z" fill="#e11d48" opacity="0.75"/>
+  <text x="160" y="60" font-family="Noto Sans Devanagari, serif" font-size="24" text-anchor="middle" fill="#78350f">विवाह मुहूर्त</text>
+  <text x="160" y="270" font-family="Crimson Pro, serif" font-size="20" text-anchor="middle" fill="#6b21a8">2027</text>
+</svg>
