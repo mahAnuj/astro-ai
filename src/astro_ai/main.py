@@ -20,6 +20,7 @@ from astro_ai.chart import (
     compute_chart,
     compute_dasha_state,
     compute_gochar_impacts,
+    compute_kaal_sarp,
     compute_life_chapters,
     compute_dashamsa_chart,
     compute_manglik_details,
@@ -1125,6 +1126,223 @@ async def view_kundli_snapshot(request: Request, short_id: str) -> HTMLResponse:
             "snapshot": snap,
         },
     )
+
+
+# ─── Standalone dosha checkers (issues #109 / #110 / #111) ────────────
+#
+# Purpose: dedicated SEO landing pages that rank for high-intent standalone
+# queries like "manglik dosh check", "sade sati calculator", "kaal sarp
+# dosh check" — which currently go to competitors because we bundle every
+# dosha inside /kundli. Each checker reuses chart.py compute functions;
+# no LLM call. Sub-1s response. Form details flow through the cookie so
+# a user can continue to /kundli with pre-filled birth details.
+
+def _dosha_form_ctx(page_title: str, page_lead: str, form_action: str,
+                    submit_label: str, meta_desc: str,
+                    prefill: dict | None = None,
+                    error: str | None = None) -> dict:
+    """Shared context for the dosha_check_form.html template."""
+    return {
+        "page_title": page_title,
+        "page_lead": page_lead,
+        "form_action": form_action,
+        "submit_label": submit_label,
+        "page_meta_description": meta_desc,
+        "prefill": prefill,
+        "error": error,
+    }
+
+
+def _prefill_from_cookie(request: Request) -> dict | None:
+    """If the user's session cookie has an active saved chart, prefill the form."""
+    saved = load_collection(request).active
+    if saved is None:
+        return None
+    return {
+        "name": saved.name or "",
+        "birth_date": saved.birth_date,
+        "birth_time": saved.birth_time,
+        "birth_place": saved.birth_place,
+    }
+
+
+def _dosha_details_from_form(name: str, birth_date: str, birth_time: str,
+                              birth_place: str) -> BirthDetails:
+    return BirthDetails(
+        name=(name or "").strip(),
+        birth_date=birth_date,
+        birth_time=birth_time,
+        birth_place=(birth_place or "").strip(),
+    )
+
+
+@app.get("/manglik-check", response_class=HTMLResponse)
+async def manglik_check_form(request: Request) -> HTMLResponse:
+    """Standalone Manglik Dosh checker form (Issue #109)."""
+    return templates.TemplateResponse(
+        request, "dosha_check_form.html",
+        _dosha_form_ctx(
+            page_title="Free Manglik Dosh Check — With Classical Cancellation Rules",
+            page_lead="Instant Mangal Dosh diagnosis from your birth details, with every classical cancellation rule applied. Free, no sign-up.",
+            form_action="/manglik-check",
+            submit_label="Check Manglik Dosh →",
+            meta_desc="Free Manglik Dosh Check — instant diagnosis with all classical cancellation rules applied. No sign-up. Chart-based, honest, no upsell.",
+            prefill=_prefill_from_cookie(request),
+        ),
+    )
+
+
+@app.post("/manglik-check", response_class=HTMLResponse)
+async def manglik_check_result(
+    request: Request,
+    name: str = Form(default=""),
+    birth_date: str = Form(...),
+    birth_time: str = Form(...),
+    birth_place: str = Form(...),
+) -> HTMLResponse:
+    details = _dosha_details_from_form(name, birth_date, birth_time, birth_place)
+    try:
+        chart = compute_chart(details.birth_date, details.birth_time, details.birth_place)
+    except ChartError as err:
+        _fire_error_alert(request, err, "chart:manglik_check")
+        return templates.TemplateResponse(
+            request, "dosha_check_form.html",
+            _dosha_form_ctx(
+                page_title="Free Manglik Dosh Check — With Classical Cancellation Rules",
+                page_lead="Instant Mangal Dosh diagnosis from your birth details, with every classical cancellation rule applied. Free, no sign-up.",
+                form_action="/manglik-check",
+                submit_label="Check Manglik Dosh →",
+                meta_desc="Free Manglik Dosh Check — instant diagnosis with all classical cancellation rules applied. No sign-up. Chart-based, honest, no upsell.",
+                prefill={"name": name, "birth_date": birth_date, "birth_time": birth_time, "birth_place": birth_place},
+                error=str(err),
+            ),
+            status_code=400,
+        )
+    # Persist to session so /kundli can pick up the same chart if user continues.
+    try:
+        collection = load_collection(request).add(details)
+    except ValueError:
+        collection = None
+    manglik = compute_manglik_details(chart)
+    response = templates.TemplateResponse(
+        request, "manglik_check_result.html",
+        {"details": details, "manglik": manglik, "lang": _lang(request)},
+    )
+    if collection is not None:
+        _save_collection_synced(response, collection, request)
+    return response
+
+
+@app.get("/sade-sati-check", response_class=HTMLResponse)
+async def sade_sati_check_form(request: Request) -> HTMLResponse:
+    """Standalone Sade Sati report form (Issue #110)."""
+    return templates.TemplateResponse(
+        request, "dosha_check_form.html",
+        _dosha_form_ctx(
+            page_title="Free Sade Sati Report — Start & End Dates, Current Phase",
+            page_lead="Instant Sade Sati status: which phase (rising/peak/setting), when it started, when it ends. No sign-up.",
+            form_action="/sade-sati-check",
+            submit_label="Check Sade Sati →",
+            meta_desc="Free Sade Sati Report — instant phase check (rising/peak/setting) with start and end dates. Chart-based, honest, no upsell.",
+            prefill=_prefill_from_cookie(request),
+        ),
+    )
+
+
+@app.post("/sade-sati-check", response_class=HTMLResponse)
+async def sade_sati_check_result(
+    request: Request,
+    name: str = Form(default=""),
+    birth_date: str = Form(...),
+    birth_time: str = Form(...),
+    birth_place: str = Form(...),
+) -> HTMLResponse:
+    details = _dosha_details_from_form(name, birth_date, birth_time, birth_place)
+    try:
+        chart = compute_chart(details.birth_date, details.birth_time, details.birth_place)
+    except ChartError as err:
+        _fire_error_alert(request, err, "chart:sade_sati_check")
+        return templates.TemplateResponse(
+            request, "dosha_check_form.html",
+            _dosha_form_ctx(
+                page_title="Free Sade Sati Report — Start & End Dates, Current Phase",
+                page_lead="Instant Sade Sati status: which phase (rising/peak/setting), when it started, when it ends. No sign-up.",
+                form_action="/sade-sati-check",
+                submit_label="Check Sade Sati →",
+                meta_desc="Free Sade Sati Report — instant phase check with start and end dates.",
+                prefill={"name": name, "birth_date": birth_date, "birth_time": birth_time, "birth_place": birth_place},
+                error=str(err),
+            ),
+            status_code=400,
+        )
+    try:
+        collection = load_collection(request).add(details)
+    except ValueError:
+        collection = None
+    sade_sati = compute_sade_sati_details(chart)
+    response = templates.TemplateResponse(
+        request, "sade_sati_check_result.html",
+        {"details": details, "sade_sati": sade_sati, "lang": _lang(request)},
+    )
+    if collection is not None:
+        _save_collection_synced(response, collection, request)
+    return response
+
+
+@app.get("/kaal-sarp-check", response_class=HTMLResponse)
+async def kaal_sarp_check_form(request: Request) -> HTMLResponse:
+    """Standalone Kaal Sarp Dosh checker form (Issue #111)."""
+    return templates.TemplateResponse(
+        request, "dosha_check_form.html",
+        _dosha_form_ctx(
+            page_title="Free Kaal Sarp Dosh Check — With Type Classification",
+            page_lead="Instant Kaal Sarp Dosh diagnosis — full or partial, plus which of the 12 named types (Anant, Kulik, Padma, etc.) applies to your chart.",
+            form_action="/kaal-sarp-check",
+            submit_label="Check Kaal Sarp Dosh →",
+            meta_desc="Free Kaal Sarp Dosh Check with type classification — Anant, Kulik, Vasuki, Padma, all 12 types. Instant, chart-based, no sign-up.",
+            prefill=_prefill_from_cookie(request),
+        ),
+    )
+
+
+@app.post("/kaal-sarp-check", response_class=HTMLResponse)
+async def kaal_sarp_check_result(
+    request: Request,
+    name: str = Form(default=""),
+    birth_date: str = Form(...),
+    birth_time: str = Form(...),
+    birth_place: str = Form(...),
+) -> HTMLResponse:
+    details = _dosha_details_from_form(name, birth_date, birth_time, birth_place)
+    try:
+        chart = compute_chart(details.birth_date, details.birth_time, details.birth_place)
+    except ChartError as err:
+        _fire_error_alert(request, err, "chart:kaal_sarp_check")
+        return templates.TemplateResponse(
+            request, "dosha_check_form.html",
+            _dosha_form_ctx(
+                page_title="Free Kaal Sarp Dosh Check — With Type Classification",
+                page_lead="Instant Kaal Sarp Dosh diagnosis — full or partial, plus which of the 12 named types applies.",
+                form_action="/kaal-sarp-check",
+                submit_label="Check Kaal Sarp Dosh →",
+                meta_desc="Free Kaal Sarp Dosh Check with type classification.",
+                prefill={"name": name, "birth_date": birth_date, "birth_time": birth_time, "birth_place": birth_place},
+                error=str(err),
+            ),
+            status_code=400,
+        )
+    try:
+        collection = load_collection(request).add(details)
+    except ValueError:
+        collection = None
+    kaal_sarp = compute_kaal_sarp(chart)
+    response = templates.TemplateResponse(
+        request, "kaal_sarp_check_result.html",
+        {"details": details, "kaal_sarp": kaal_sarp, "lang": _lang(request)},
+    )
+    if collection is not None:
+        _save_collection_synced(response, collection, request)
+    return response
 
 
 @app.get("/today", response_class=HTMLResponse)

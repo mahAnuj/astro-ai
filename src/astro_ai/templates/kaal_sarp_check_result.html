@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Kaal Sarp Dosh Check for {{ details.name or 'you' }} — Shubh Bhagya{% endblock %}
+{% block meta_description %}Instant Kaal Sarp Dosh check with type classification. See exactly which of the 12 types applies to your chart — Anant, Kulik, Vasuki, Padma, or others — and what that means.{% endblock %}
+
+{% block content %}
+{% set active_page = "" %}
+{% include "_nav.html" %}
+
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+
+  <header>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-1">
+      Kaal Sarp Dosh Check {% if details.name %}for {{ details.name }}{% endif %}
+    </h1>
+    <p class="text-sm text-stone-500">
+      {{ details.birth_date }} · {{ details.birth_time }} · {{ details.birth_place }}
+    </p>
+  </header>
+
+  {% if kaal_sarp.is_kaal_sarp %}
+  {% set color = 'rose' if not kaal_sarp.is_partial else 'amber' %}
+  <section class="bg-{{ color }}-50 border-2 border-{{ color }}-200 rounded-2xl p-6 sm:p-8">
+    <div class="text-4xl sm:text-5xl mb-3" aria-hidden="true">⚠</div>
+    <h2 class="font-display text-2xl sm:text-3xl text-{{ color }}-800 mb-2">
+      {% if kaal_sarp.is_partial %}Partial Kaal Sarp Dosh{% else %}Kaal Sarp Dosh — Present{% endif %}
+    </h2>
+    <div class="text-xl font-display text-{{ color }}-700 mb-4">{{ kaal_sarp.type_name }}</div>
+
+    <p class="text-stone-700 leading-relaxed mb-4">
+      All 7 non-shadow planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn) sit on one side of the Rahu-Ketu axis in your chart. Rahu falls in your <strong>{{ kaal_sarp.rahu_house }}{% if kaal_sarp.rahu_house == 1 %}st{% elif kaal_sarp.rahu_house == 2 %}nd{% elif kaal_sarp.rahu_house == 3 %}rd{% else %}th{% endif %} house</strong>, Ketu in your <strong>{{ kaal_sarp.ketu_house }}th house</strong> — that combination is classically named <strong>{{ kaal_sarp.type_name }}</strong>.
+    </p>
+
+    <div class="bg-white rounded-lg p-4">
+      <div class="text-xs uppercase tracking-wider text-stone-500 mb-1">What {{ kaal_sarp.type_name }} means</div>
+      <div class="text-stone-800">{{ kaal_sarp.type_meaning }}</div>
+    </div>
+
+    {% if kaal_sarp.is_partial %}
+    <p class="text-sm text-{{ color }}-800 mt-4 italic">
+      Note: this is a <strong>Partial (Anshik)</strong> KSD — one planet straddles the Rahu-Ketu axis within 3°. Some schools do not count Partial KSD as full dosha; interpret as a softer version of the same theme.
+    </p>
+    {% endif %}
+  </section>
+  {% else %}
+  <section class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-6 sm:p-8">
+    <div class="text-4xl mb-3" aria-hidden="true">✓</div>
+    <h2 class="font-display text-2xl sm:text-3xl text-emerald-800 mb-2">No Kaal Sarp Dosh</h2>
+    <p class="text-stone-700 leading-relaxed">
+      Your chart does not have Kaal Sarp Dosh. The 7 non-shadow planets are distributed on both sides of the Rahu-Ketu axis — {{ kaal_sarp.planets_before_rahu | length }} on Rahu's side, {{ kaal_sarp.planets_after_ketu | length }} on Ketu's side.
+    </p>
+  </section>
+  {% endif %}
+
+  <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6">
+    <h3 class="font-display text-lg text-astro-800 mb-3">What to do next</h3>
+    <div class="space-y-3">
+      <a href="/kundli" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 mb-0.5">Get your full free Janma Kundli reading →</div>
+        <div class="text-sm text-stone-600">See how the Rahu-Ketu axis interacts with your Dasha, career, and marriage sections.</div>
+      </a>
+      <a href="/learn/kaal-sarp-dosh/" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 mb-0.5">Read the full Kaal Sarp Dosh guide →</div>
+        <div class="text-sm text-stone-600">All 12 types explained, what's real, what's exaggerated, and honest remedies.</div>
+      </a>
+    </div>
+  </section>
+
+  <div class="text-center">
+    <a href="/kaal-sarp-check" class="text-sm text-astro-600 hover:text-astro-700 underline">Check another chart</a>
+  </div>
+
+</main>
+{% endblock %}

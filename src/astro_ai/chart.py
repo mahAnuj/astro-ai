@@ -2738,3 +2738,125 @@ def _parse_local_datetime(date_str: str, time_str: str, tz_name: str) -> datetim
         raise ChartError(
             f"Couldn't parse birth date/time {date_str!r} {time_str!r}: {err}"
         ) from err
+
+
+# ---------------------------------------------------------------------------
+# Kaal Sarp Dosh — for the standalone /kaal-sarp-check tool (Issue #111)
+# ---------------------------------------------------------------------------
+#
+# Classical rule: when ALL 7 non-shadow planets (Sun, Moon, Mars, Mercury,
+# Jupiter, Venus, Saturn) fall on ONE SIDE of the Rahu-Ketu axis, the chart
+# has Kaal Sarp Dosha. The Rahu-Ketu axis divides the zodiac into two
+# 180° semicircles; ALL 7 planets in one semicircle = KSD.
+#
+# 12 named types based on which house pair holds the Rahu-Ketu axis:
+#   Anant     — Rahu in 1st, Ketu in 7th
+#   Kulik     — Rahu in 2nd, Ketu in 8th
+#   Vasuki    — Rahu in 3rd, Ketu in 9th
+#   Shankhpal — Rahu in 4th, Ketu in 10th
+#   Padma     — Rahu in 5th, Ketu in 11th
+#   Mahapadma — Rahu in 6th, Ketu in 12th
+#   Takshak   — Rahu in 7th, Ketu in 1st
+#   Karkotak  — Rahu in 8th, Ketu in 2nd
+#   Shankchur — Rahu in 9th, Ketu in 3rd
+#   Ghatak    — Rahu in 10th, Ketu in 4th
+#   Vishdhar  — Rahu in 11th, Ketu in 5th
+#   Sheshnag  — Rahu in 12th, Ketu in 6th
+#
+# Partial KSD: if 6 of 7 planets are on one side and 1 straddles, some
+# schools call it Partial (Anshik). We treat this as a soft flag.
+
+_KAAL_SARP_TYPES: dict[int, tuple[str, str]] = {
+    1:  ("Anant",     "Ambition-driven, restless; identity themes; often forceful early-life"),
+    2:  ("Kulik",     "Wealth-family friction, speech guarded; hidden financial pressures"),
+    3:  ("Vasuki",    "Sibling tension, courage tested, effort-heavy chapters; media/writing pull"),
+    4:  ("Shankhpal", "Home/mother themes weight-bearing; property fluctuations; emotional roots strained"),
+    5:  ("Padma",     "Progeny challenges, love-marriage complications, creative outbursts"),
+    6:  ("Mahapadma", "Health/service life demanding; enemy patterns; disciplined recovery"),
+    7:  ("Takshak",   "Partnership instability; foreign spouse or unusual union pattern"),
+    8:  ("Karkotak",  "Sudden life transformations; in-law dynamics complex; hidden gains + losses"),
+    9:  ("Shankchur", "Dharmic wanderings; father-relationship distant; foreign settling common"),
+    10: ("Ghatak",    "Career elevated dramatically OR delayed; authority/reputation swings"),
+    11: ("Vishdhar",  "Elder sibling / large-network gains + karmic tests; group-based work"),
+    12: ("Sheshnag",  "Foreign lands, spiritual retreat, expenditure themes; second-half prominence"),
+}
+
+
+@dataclass(frozen=True)
+class KaalSarpDetails:
+    """Kaal Sarp Dosh — presence, type, and severity for the standalone checker.
+
+    `type_name` and `type_meaning` are populated only when is_kaal_sarp is True.
+    `is_partial` marks the softer case where one non-shadow planet straddles
+    the Rahu-Ketu axis by ≤3° (some schools count this as Anshik / Partial KSD).
+    """
+    is_kaal_sarp: bool
+    is_partial: bool
+    type_name: str          # "" when not KSD
+    type_meaning: str       # "" when not KSD
+    rahu_house: int         # 1..12 (0 if Rahu missing from chart, defensive)
+    ketu_house: int         # 1..12
+    planets_before_rahu: tuple[str, ...]  # non-shadow planets on Rahu's side (walked in zodiacal order Rahu→Ketu)
+    planets_after_ketu: tuple[str, ...]   # non-shadow planets on Ketu's side
+
+
+def compute_kaal_sarp(chart: Chart) -> KaalSarpDetails:
+    """Detect Kaal Sarp Dosh in a natal chart.
+
+    Algorithm:
+      1. Find Rahu's absolute longitude L_R (0..360°); Ketu is L_R + 180°.
+      2. For each of the 7 non-shadow planets, compute their forward angular
+         distance from Rahu: delta = (L_p - L_R) mod 360.
+      3. If ALL 7 planets have delta < 180°, they're on Rahu's side (the
+         Rahu → Ketu half). If ALL 7 have delta > 180°, they're on Ketu's
+         side. Either way = full KSD.
+      4. Partial: one planet within ±3° of the axis (delta in [177, 183] or
+         [357, 3] modulo 360) counts as straddling — flag as partial.
+    """
+    rahu = next((p for p in chart.planets if p.name == "Rahu"), None)
+    ketu = next((p for p in chart.planets if p.name == "Ketu"), None)
+    if rahu is None or ketu is None:
+        return KaalSarpDetails(False, False, "", "", 0, 0, (), ())
+
+    rahu_house = rahu.house
+    ketu_house = ketu.house
+
+    rahu_abs = _rashi_index(rahu.rashi) * 30.0 + rahu.longitude
+
+    non_shadow = [p for p in chart.planets if p.name not in ("Rahu", "Ketu")]
+    on_rahu_side: list[str] = []   # delta in (0, 180) — Rahu → Ketu semicircle
+    on_ketu_side: list[str] = []   # delta in (180, 360) — Ketu → Rahu semicircle
+    straddling = False
+    for p in non_shadow:
+        abs_long = _rashi_index(p.rashi) * 30.0 + p.longitude
+        delta = (abs_long - rahu_abs) % 360.0
+        # Straddle: within 3° of the Rahu or Ketu points
+        if delta < 3.0 or delta > 357.0 or (177.0 < delta < 183.0):
+            straddling = True
+            continue
+        if delta < 180.0:
+            on_rahu_side.append(p.name)
+        else:
+            on_ketu_side.append(p.name)
+
+    is_full = (len(on_rahu_side) == 7 and not straddling) or \
+              (len(on_ketu_side) == 7 and not straddling)
+    is_partial = straddling and (len(on_rahu_side) + len(on_ketu_side)) == 6
+
+    if not (is_full or is_partial):
+        return KaalSarpDetails(
+            False, False, "", "", rahu_house, ketu_house,
+            tuple(on_rahu_side), tuple(on_ketu_side),
+        )
+
+    type_name, type_meaning = _KAAL_SARP_TYPES.get(rahu_house, ("", ""))
+    return KaalSarpDetails(
+        is_kaal_sarp=is_full or is_partial,
+        is_partial=is_partial and not is_full,
+        type_name=type_name,
+        type_meaning=type_meaning,
+        rahu_house=rahu_house,
+        ketu_house=ketu_house,
+        planets_before_rahu=tuple(on_rahu_side),
+        planets_after_ketu=tuple(on_ketu_side),
+    )
