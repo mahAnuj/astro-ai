@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ page_meta }}{% endblock %}
+
+{% block content %}
+{% set active_page = "" %}
+{% include "_nav.html" %}
+
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+
+  {% if not reading %}
+  <header class="text-center">
+    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700 mb-3">Free Numerology Calculator</h1>
+    <p class="text-base sm:text-lg text-stone-600 max-w-xl mx-auto leading-relaxed">
+      Instant Chaldean + Pythagorean numerology reading — Life Path, Destiny, Soul Urge, Personality, and Name Number. Free, no sign-up.
+    </p>
+  </header>
+
+  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+    {% if error %}
+    <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
+    {% endif %}
+    <form method="post" action="/numerology" class="space-y-4">
+      <div>
+        <label for="name" class="block text-sm font-medium text-stone-700 mb-1">Full name (as commonly used)</label>
+        <input type="text" name="name" id="name" required autocomplete="name"
+               placeholder="e.g. Anuj Mahajan"
+               class="w-full border border-stone-300 rounded-md px-3 py-3 text-base focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+      </div>
+      <div>
+        <label for="birth_date" class="block text-sm font-medium text-stone-700 mb-1">Birth date</label>
+        <input type="date" name="birth_date" id="birth_date" required autocomplete="bday"
+               class="w-full border border-stone-300 rounded-md px-3 py-3 text-base focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-stone-700 mb-2">System</label>
+        <div class="flex gap-3">
+          <label class="flex-1 relative cursor-pointer">
+            <input type="radio" name="system" value="chaldean" checked class="peer sr-only">
+            <div class="p-3 border-2 border-stone-200 rounded-lg peer-checked:border-astro-500 peer-checked:bg-astro-50 text-center">
+              <div class="font-semibold text-stone-900">Chaldean</div>
+              <div class="text-xs text-stone-500 mt-0.5">Traditional; recommended</div>
+            </div>
+          </label>
+          <label class="flex-1 relative cursor-pointer">
+            <input type="radio" name="system" value="pythagorean" class="peer sr-only">
+            <div class="p-3 border-2 border-stone-200 rounded-lg peer-checked:border-astro-500 peer-checked:bg-astro-50 text-center">
+              <div class="font-semibold text-stone-900">Pythagorean</div>
+              <div class="text-xs text-stone-500 mt-0.5">Western modern</div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <button type="submit" class="w-full bg-astro-700 hover:bg-astro-800 text-white text-base font-semibold py-3 rounded-lg transition-colors">
+        Calculate my numbers →
+      </button>
+    </form>
+    <p class="text-xs text-stone-500 text-center mt-4">Free. No sign-up needed.</p>
+  </section>
+
+  <section class="prose prose-sm sm:prose-base max-w-none text-stone-800 leading-relaxed">
+    <h2>What numerology reads</h2>
+    <p>Numerology reads your <strong>name + birth date</strong>. Vedic astrology reads your <strong>full birth chart</strong>. These are different lenses on the same person — sometimes they agree, sometimes they don't. When both point the same way, the signal is stronger.</p>
+    <p>Numerology cannot predict marriage timing, career changes, or specific life events — those need chart-based analysis. What numerology offers well: a compact snapshot of your inner drive, external personality, and life theme.</p>
+    <p>For deeper analysis, <a href="/">generate your free Janma Kundli</a> and compare.</p>
+    <h3>The 5 numbers we compute</h3>
+    <ul>
+      <li><strong>Life Path Number</strong> — from your birth date. The main theme of your life journey.</li>
+      <li><strong>Destiny (Expression) Number</strong> — from your full name. Your natural role in the world.</li>
+      <li><strong>Soul Urge Number</strong> — from the vowels of your name. What you inwardly want.</li>
+      <li><strong>Personality Number</strong> — from the consonants. How others perceive you.</li>
+      <li><strong>Name Number</strong> — Chaldean total of your name. The vibration your name carries.</li>
+    </ul>
+  </section>
+
+  {% else %}
+
+  <header>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-1">Numerology Reading for {{ reading.name }}</h1>
+    <p class="text-sm text-stone-500">
+      {{ reading.birth_date }} · {{ reading.system | capitalize }} system
+    </p>
+  </header>
+
+  <section class="grid gap-4">
+    {% for num, label, meaning in [
+      (reading.life_path,   'Life Path Number',   reading.life_path_meaning),
+      (reading.destiny,     'Destiny Number',     reading.destiny_meaning),
+      (reading.soul_urge,   'Soul Urge Number',   reading.soul_urge_meaning),
+      (reading.personality, 'Personality Number', reading.personality_meaning),
+      (reading.name_number, 'Name Number',        reading.name_number_meaning),
+    ] %}
+    <article class="bg-white rounded-2xl border-2 border-astro-100 p-5 sm:p-6 flex gap-4">
+      <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-astro-50 border-2 border-astro-300 flex items-center justify-center">
+        <span class="font-display text-3xl sm:text-4xl text-astro-700 tabular-nums">{{ num }}</span>
+      </div>
+      <div class="min-w-0 flex-1">
+        <h2 class="font-display text-lg text-astro-800 mb-1.5">{{ label }}</h2>
+        <p class="text-sm text-stone-700 leading-relaxed">{{ meaning }}</p>
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+
+  <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6">
+    <h3 class="font-display text-lg text-astro-800 mb-3">Compare with your Vedic chart</h3>
+    <p class="text-sm text-stone-700 mb-4 leading-relaxed">
+      Numerology gave you a snapshot. Your Vedic Kundli gives you the depth — personality, career, marriage, life-stage predictions rooted in classical Jyotish. When both agree, the signal is stronger.
+    </p>
+    <div class="space-y-3">
+      <a href="/" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 mb-0.5">Get your full free Janma Kundli →</div>
+        <div class="text-sm text-stone-600">Complete chart + LLM narrative + 7 life areas covered.</div>
+      </a>
+      <a href="/numerology" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 mb-0.5">Try another name →</div>
+        <div class="text-sm text-stone-600">Compare numbers across family members or partners.</div>
+      </a>
+    </div>
+  </section>
+
+  <div class="text-xs text-stone-500 leading-relaxed">
+    <p><strong>Editorial note:</strong> Numerology is a complementary lens, not a replacement for chart-based Vedic reading. This calculator does not recommend name changes or wearing gems based on numerology alone — both practices can carry unintended consequences. Consult qualified guidance for any major life decision.</p>
+  </div>
+
+  {% endif %}
+
+</main>
+{% endblock %}

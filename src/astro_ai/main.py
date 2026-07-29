@@ -1345,6 +1345,72 @@ async def kaal_sarp_check_result(
     return response
 
 
+@app.get("/numerology", response_class=HTMLResponse)
+async def numerology_form(request: Request) -> HTMLResponse:
+    """Numerology calculator form (Issue #112).
+
+    Positioned as complementary to Vedic astrology, not a replacement.
+    Pure math + interpretation strings — no LLM call.
+    """
+    return templates.TemplateResponse(
+        request, "numerology.html",
+        {
+            "page_title": "Free Numerology Calculator — Life Path, Destiny, Soul Urge",
+            "page_meta": "Free numerology calculator with Chaldean + Pythagorean systems. Life Path, Destiny, Soul Urge, Personality, Name Number — instant, honest, no upsell.",
+            "reading": None,
+            "error": None,
+            "lang": _lang(request),
+        },
+    )
+
+
+@app.post("/numerology", response_class=HTMLResponse)
+async def numerology_calculate(
+    request: Request,
+    name: str = Form(...),
+    birth_date: str = Form(...),
+    system: str = Form("chaldean"),
+) -> HTMLResponse:
+    """Compute numerology reading (Issue #112)."""
+    from astro_ai import numerology as _num
+    name = (name or "").strip()
+    if not name or len(name) < 2:
+        return templates.TemplateResponse(
+            request, "numerology.html",
+            {
+                "page_title": "Free Numerology Calculator",
+                "page_meta": "Free numerology calculator with Chaldean + Pythagorean systems.",
+                "reading": None,
+                "error": "Please enter your full name (at least 2 characters).",
+                "lang": _lang(request),
+            },
+            status_code=400,
+        )
+    if system not in ("chaldean", "pythagorean"):
+        system = "chaldean"
+    try:
+        reading = _num.compute(name=name, birth_date=birth_date, system=system)
+    except Exception as err:  # noqa: BLE001
+        _fire_error_alert(request, err, "numerology:compute")
+        return templates.TemplateResponse(
+            request, "numerology.html",
+            {"page_title": "Free Numerology Calculator",
+             "page_meta": "Free numerology calculator.", "reading": None,
+             "error": f"Couldn't compute: {err}", "lang": _lang(request)},
+            status_code=400,
+        )
+    return templates.TemplateResponse(
+        request, "numerology.html",
+        {
+            "page_title": f"Numerology Reading for {reading.name}",
+            "page_meta": f"Numerology reading — Life Path {reading.life_path}, Destiny {reading.destiny}, Soul Urge {reading.soul_urge}.",
+            "reading": reading,
+            "error": None,
+            "lang": _lang(request),
+        },
+    )
+
+
 @app.get("/kundli/card")
 async def kundli_cosmic_card(request: Request) -> Response:
     """Cosmic Card (Issue #113) — shareable 1080×1920 SVG of the user's chart.
