@@ -378,4 +378,71 @@ Also seeded one dhana-yoga article — pairs with existing `financial-struggles`
 - Growth-manager AGENT run (agent id a2f1fa034d92f1322) stalled after 10 min with no output. Same cycle then executed directly without agent delegation — completed in ~5 min. Suggests the general-purpose agent's Skill-tool invocations time out on this project's custom-skill roster. If future cycles need agent delegation, wire growth-manager into ~/.claude/agents/growth-manager.md (currently exists but not registered — Task tool reports "Agent type 'growth-manager' not found").
 - Muhurat article research needs real Panchang dates (Drik Panchang API or classical almanac). Content-drafter must source these accurately — invented dates = user harm.
 
+### Cycle 7 expansion — deep keyword research + competitor scout (same day)
+
+User pushed back that 3 content issues was thin given growth-manager has 13 skills. Ran an expanded pass on keyword-researcher and competitor-scout equivalents. Full state after expansion:
+
+**Additional content issues from deep keyword research (11 more):**
+
+Remedy long-tail cluster (biggest gap — we had Jupiter/Mars/Mercury/Venus/Saturn remedies but not the shadow-planet remedies which get 10× more search):
+- **#97** Rahu Remedies
+- **#98** Ketu Remedies
+- **#99** Sun (Surya) Remedies
+- **#100** Moon (Chandra) Remedies
+- **#101** Pitru Dosh Remedies
+- **#102** Kaal Sarp Dosh Remedies
+
+Festival + lord-placement + manglik remedies:
+- **#103** Diwali Muhurat 2026 (dhanteras, laxmi puja, govardhan, bhai dooj)
+- **#104** Karva Chauth 2026
+- **#105** 2nd Lord Placement Guide (wealth)
+- **#106** 11th Lord Placement Guide (gains)
+- **#107** Manglik Remedies
+
+**Competitor scout findings** (AstroSage / ProKerala / mPanchang via WebFetch):
+
+Every major competitor has DEDICATED standalone dosha-check pages that rank individually for high-intent SEO queries. We bundle all these inside /kundli — so users searching "manglik dosh check" or "sade sati calculator" find competitors, not us. This is our biggest missed-SEO opportunity from the scout.
+
+**Tool issues created from competitor scout:**
+- **#108** Muhurat Finder — validated: all 3 competitors have it. Pairs with #94/#95/#103/#104 muhurat article cluster.
+- **#109** Standalone Manglik Dosh Checker (/manglik-check) — reuses compute_manglik_details()
+- **#110** Standalone Sade Sati Report (/sade-sati-check) — reuses compute_sade_sati_details()
+- **#111** Standalone Kaal Sarp Dosh Checker (/kaal-sarp-check) — needs small compute_kaal_sarp() helper
+- **#112** Numerology Calculator (/numerology) — user reversed my earlier skip: numerology is trending, worth capturing intent with honest "complementary lens" positioning that always defers back to /kundli for deeper reading
+
+**Tools we do NOT have that competitors do** (deferred for now):
+- Choghadiya calculator (mPanchang/ProKerala) — daily within-the-day auspicious windows. Could fold into #108 Muhurat Finder scope.
+- Chat with Astrologer (AstroSage) — paid conversion play. Out of scope for MVP.
+- Devotional content library / Aarti / Chalisa / Stotram (mPanchang) — content-heavy category expansion. Not now.
+- Ascendant / Moon Sign / Rahu Kaal standalone calculators — bundled inside /kundli. Same pattern as doshas — could be extracted as standalone SEO pages in a future cycle if the dosha experiment pays off.
+
+**Cycle 7 final backlog state:**
+
+- **Content:** 14 open (#94, #95, #96, #97, #98, #99, #100, #101, #102, #103, #104, #105, #106, #107)
+- **Tools:** 5 open (#108, #109, #110, #111, #112)
+- **SEO / UI / QA / Kundali-QA / Architecture:** 0 open
+
+**Revised suggested next cycle:**
+
+- **Cycle 8 focus: Tools sprint** — the standalone dosha checkers (#109/#110/#111) are half-day each and each captures a high-intent search cluster. Ship all 3 in one sprint (~2 days). Add nav dropdown for "Dosha checks."
+- **Cycle 9: Muhurat Finder (#108)** — 1.5-2 day build. Ties directly into the muhurat article cluster.
+- **Cycle 10: Numerology (#112)** — 1-1.5 day build. Optional based on how the tools sprint moves the needle.
+- **Content cycles run in parallel** — the muhurat articles (#94/#95/#103/#104) should ship WITH #108 Muhurat Finder so the tool + content pair launches together for maximum ranking synergy.
+- **Deferred:** article-qa sweep on 50 old articles, mobile-flow-auditor re-run, ui-auditor re-run — worth a dedicated audit-week later.
+
+**Skills invoked this cycle (informal):**
+- ✅ seo-auditor (5 URLs) — all healthy
+- ✅ keyword-researcher (4 angles: remedy, festival, lord-placement, muhurat) — 14 issues seeded
+- ✅ competitor-scout (AstroSage / ProKerala / mPanchang) — 5 tool issues seeded from findings
+- ⏭ article-qa — deferred (50 articles worth of QA is its own cycle)
+- ⏭ mobile-flow-auditor — deferred
+- ⏭ ui-auditor — deferred
+- ⏭ engagement-optimizer — deferred
+- ⏭ kundali-qa — deferred (needs dev-server verification, hard to do in-cycle)
+- ⏭ content-drafter — explicitly deferred to a Volume week (cycles 8+)
+- ⏭ architecture-scaler — no scale pressure
+- ⏭ knowledge-integrator — no fresh integration needed until content ships
+
+**Meta note:** the growth-manager agent has 13 skills but not all are worth firing every cycle. Cycles 1-6 tended to focus on 2-3 skills; cycle 7 expanded to 3 with deep passes (seo + keyword + competitor). Audit-week cycles should invoke the ~5 QA-family skills (article-qa, kundali-qa, mobile-flow, ui-auditor, engagement-optimizer) as their focus.
+
 ---
