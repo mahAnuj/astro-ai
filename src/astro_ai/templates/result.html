@@ -7,6 +7,12 @@
    {% block %} declarations are compile-time, so we conditional INSIDE the
    block rather than wrapping it. #}
 {% block meta_robots %}{% if is_snapshot | default(false) %}noindex, nofollow{% else %}index, follow{% endif %}{% endblock %}
+{# Cosmic Card (Issue #113) as og:image for snapshot pages. WhatsApp/
+   Twitter/LinkedIn previews on shared snapshot URLs render a personalized
+   card of the sender's chart instead of a generic icon. Regular /kundli
+   uses the default icon (personal cookie chart isn't relevant to link
+   previews of the /kundli URL itself). #}
+{% if is_snapshot | default(false) %}{% block og_image %}{{ site_url }}/kundli/card{% endblock %}{% endif %}
 
 {% block content %}
 {# Pre-compute Lagna / Sun / Moon for summary chips. #}
@@ -80,6 +86,17 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
         </svg>
       </button>
+
+      {# Cosmic Card (Issue #113) — 1080×1920 shareable SVG. Opens in new
+         tab so users can right-click / long-press → Save Image on any
+         device. Also usable directly as Instagram Story wallpaper. #}
+      <a href="/kundli/card" target="_blank" rel="noopener"
+         aria-label="Save your Cosmic Card" title="Save your Cosmic Card (shareable image)"
+         class="p-2.5 text-astro-700 hover:text-astro-800 hover:bg-astro-50 rounded-full transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+      </a>
 
       {% if _hdr_user %}
       {# Email — signed-in only, same handler as return-triggers Email button. #}

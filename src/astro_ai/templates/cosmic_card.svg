@@ -1,0 +1,148 @@
+{# Cosmic Card — 1080×1920 shareable SVG (Issue #113).
+   Rendered server-side per chart. Meant for Instagram Story format
+   (9:16 aspect ratio). Set as og:image on /r/{id} snapshot pages.
+
+   Design language mirrors existing hero SVGs (astro-purple + cream
+   + gold) + North Indian diamond chart glyph pattern.
+
+   Fonts: Crimson Pro for display, Noto Devanagari for Sanskrit.
+   Falls back to system serif if fonts missing (SVG renderers on
+   phones handle this OK).
+#}<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <linearGradient id="cc_bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#fefbf3"/>
+      <stop offset="40%" stop-color="#fef3c7" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#f0e7fb"/>
+    </linearGradient>
+    <linearGradient id="cc_diamond" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <radialGradient id="cc_gold" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="70%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#cc_bg)"/>
+
+  {# Star field background #}
+  <g fill="#6b21a8" opacity="0.25">
+    <circle cx="80"   cy="200"  r="3"/>
+    <circle cx="960"  cy="180"  r="3.5"/>
+    <circle cx="200"  cy="400"  r="2"/>
+    <circle cx="900"  cy="500"  r="2"/>
+    <circle cx="120"  cy="900"  r="3"/>
+    <circle cx="990"  cy="1100" r="3"/>
+    <circle cx="180"  cy="1400" r="2"/>
+    <circle cx="920"  cy="1500" r="2.5"/>
+    <circle cx="100"  cy="1700" r="3.5"/>
+  </g>
+
+  {# ─── TOP THIRD: name + title ─────────────────────────────── #}
+  <g font-family="Crimson Pro, Georgia, serif" text-anchor="middle">
+    <text x="540" y="220"
+          font-size="60" font-weight="700" fill="#4c1d95">
+      {{ display_name or 'Janma Kundli' }}
+    </text>
+    {% if display_name %}
+    <text x="540" y="300"
+          font-family="Noto Serif Devanagari, Noto Sans Devanagari, serif"
+          font-size="52" font-weight="500" fill="#6b21a8">
+      {# Devanagari: "janma kundali" #}जन्म कुण्डली
+    </text>
+    {% endif %}
+    <text x="540" y="{% if display_name %}380{% else %}300{% endif %}"
+          font-size="34" font-weight="400" fill="#78350f">
+      {{ details.birth_date }} · {{ details.birth_time }}
+    </text>
+    <text x="540" y="{% if display_name %}430{% else %}350{% endif %}"
+          font-size="30" font-weight="400" fill="#a16207">
+      {{ details.birth_place }}
+    </text>
+  </g>
+
+  {# ─── MIDDLE: diamond kundli chart (North Indian style) ────── #}
+  {# 500×500 diamond centered at (540, 900); house numbers only, no planets #}
+  <g transform="translate(290, 620)" fill="none" stroke="url(#cc_diamond)" stroke-width="4" stroke-linejoin="round">
+    <rect x="0" y="0" width="500" height="500" rx="8"/>
+    <polygon points="250,0 500,250 250,500 0,250"/>
+    <line x1="0" y1="0" x2="500" y2="500"/>
+    <line x1="500" y1="0" x2="0" y2="500"/>
+  </g>
+  {# House numbers 1-12 in traditional N-Indian positions #}
+  <g font-family="Crimson Pro, Georgia, serif" font-size="28" font-weight="700" fill="#6b21a8" text-anchor="middle" opacity="0.7">
+    <text x="540" y="700">1</text>
+    <text x="380" y="700">12</text>
+    <text x="330" y="810">11</text>
+    <text x="330" y="1020">9</text>
+    <text x="380" y="1130">8</text>
+    <text x="540" y="1130">6</text>
+    <text x="710" y="1130">5</text>
+    <text x="750" y="1020">4</text>
+    <text x="750" y="810">2</text>
+    <text x="710" y="700">10</text>
+    <text x="620" y="920">3</text>
+    <text x="460" y="920">7</text>
+  </g>
+
+  {# Lagna glyph in the 1st house — a subtle gold circle #}
+  <circle cx="540" cy="800" r="30" fill="url(#cc_gold)"/>
+  <text x="540" y="810" font-family="Crimson Pro, Georgia, serif" font-size="30" font-weight="700" text-anchor="middle" fill="#78350f">
+    {{ lagna_glyph }}
+  </text>
+
+  {# ─── LOWER THIRD: three hero pills ─────────────────────────── #}
+  <g font-family="Inter, Helvetica, sans-serif" text-anchor="middle">
+    {# Pill 1: Lagna #}
+    <rect x="60" y="1400" width="300" height="150" rx="30" fill="white" stroke="#a855f7" stroke-width="2"/>
+    <text x="210" y="1445" font-size="20" font-weight="600" fill="#78350f" letter-spacing="2">LAGNA</text>
+    <text x="210" y="1495" font-size="34" font-weight="700" fill="#4c1d95">{{ chart.lagna_rashi.split(' ')[0] }}</text>
+    <text x="210" y="1530" font-family="Crimson Pro, Georgia, serif" font-size="34" fill="#f59e0b">{{ lagna_glyph }}</text>
+
+    {# Pill 2: Moon nakshatra #}
+    <rect x="390" y="1400" width="300" height="150" rx="30" fill="white" stroke="#a855f7" stroke-width="2"/>
+    <text x="540" y="1445" font-size="20" font-weight="600" fill="#78350f" letter-spacing="2">MOON</text>
+    <text x="540" y="1495" font-size="30" font-weight="700" fill="#4c1d95">{{ moon_nakshatra or 'Nakshatra' }}</text>
+    <text x="540" y="1530" font-family="Crimson Pro, Georgia, serif" font-size="34" fill="#f59e0b">{{ moon_glyph }}</text>
+
+    {# Pill 3: Sun sign #}
+    {% set sun = chart.planets|selectattr('name','equalto','Sun')|first %}
+    <rect x="720" y="1400" width="300" height="150" rx="30" fill="white" stroke="#a855f7" stroke-width="2"/>
+    <text x="870" y="1445" font-size="20" font-weight="600" fill="#78350f" letter-spacing="2">SUN</text>
+    <text x="870" y="1495" font-size="34" font-weight="700" fill="#4c1d95">{{ sun.rashi.split(' ')[0] if sun else '' }}</text>
+    <text x="870" y="1530" font-family="Crimson Pro, Georgia, serif" font-size="34" fill="#f59e0b">{{ sun_glyph }}</text>
+  </g>
+
+  {# Sade Sati or Manglik flag bar (if either active) #}
+  {% if manglik and manglik.is_manglik %}
+  <g>
+    <rect x="60" y="1600" width="960" height="80" rx="20" fill="#f59e0b" opacity="0.15"/>
+    <text x="540" y="1650" font-family="Inter, sans-serif" font-size="26" font-weight="600" text-anchor="middle" fill="#78350f">
+      ⚠ Mangal Dosh — {{ manglik.effective_status | title }}
+    </text>
+  </g>
+  {% elif sade_sati and sade_sati.is_active %}
+  <g>
+    <rect x="60" y="1600" width="960" height="80" rx="20" fill="#f59e0b" opacity="0.15"/>
+    <text x="540" y="1650" font-family="Inter, sans-serif" font-size="26" font-weight="600" text-anchor="middle" fill="#78350f">
+      ◐ Sade Sati Active — {{ sade_sati.phase | title }} Phase
+    </text>
+  </g>
+  {% endif %}
+
+  {# ─── FOOTER: brand ───────────────────────────────────────── #}
+  <g text-anchor="middle">
+    <text x="540" y="1810" font-family="Crimson Pro, Georgia, serif" font-size="42" font-weight="600" fill="#6b21a8">
+      Shubh Bhagya
+    </text>
+    <text x="540" y="1860" font-family="Inter, sans-serif" font-size="24" font-weight="400" fill="#78350f">
+      Get your free reading · shubhagya.com
+    </text>
+    {# Om glyph #}
+    <text x="540" y="1900" font-family="Noto Sans Devanagari, serif" font-size="30" fill="#a16207" opacity="0.7">ॐ</text>
+  </g>
+</svg>
