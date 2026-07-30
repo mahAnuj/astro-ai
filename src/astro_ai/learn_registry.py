@@ -2748,9 +2748,9 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "Can Rahu remedies fix my addiction?", "a": "Remedies are a support layer, not a substitute for professional care. Rahu-driven addictions (substances, phone/gaming, compulsive behaviours) need therapy + medical support if severe. Remedies help by reducing the underlying restless craving over time."},
         ),
         llm_summary=(
-            'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhram Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) service to outsiders/marginalised/animals, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black til, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Anti-exploitation: legitimate Trimbakeshwar Nagbali ₹5-25K; anything quoted in lakhs is scam'
+            'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhram Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) service to outsiders/marginalised/animals, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black gram/urad daal, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Anti-exploitation: legitimate Trimbakeshwar Nagbali ₹5-25K; anything quoted in lakhs is scam'
         ),
-        qa_status="auto-scanned", qa_date="2026-07-30",
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="ketu-remedies", title="Ketu Remedies: Classical Practices for Ketu's Detachment Effects",
@@ -2840,7 +2840,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Kaal Sarp Dosh = all 7 non-shadow planets on one semicircle of Rahu-Ketu axis\n• MOST EXPLOITED category in astrology commerce; real remedies are cheap\n• 7 classical remedies: (1) Monday Shiva worship + milk abhishek + Om Namah Shivaya 108x, (2) Nag Panchami annual observance (fast + serpent milk offering), (3) silver serpent offering at Shiva temple or river (₹500-2K, once), (4) Rahu+Ketu Beej mantras combined 108x each, (5) Trimbakeshwar Nagbali Puja ₹5-25K for severe cases, (6) symbolic serpent-serving (donate to reptile rescues), (7) year-long weekly practice\n• Cost sanity: anyone quoting lakhs for KSD Shanti is scamming; ₹15-25K is the ceiling for legitimate Trimbakeshwar puja'
         ),
-        qa_status="auto-scanned", qa_date="2026-07-30",
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="manglik-remedies", title="Manglik Remedies: Classical Practices to Soften Mars in Marriage Charts",
@@ -2856,9 +2856,9 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "What if I'm Manglik and my partner is not?", "a": "Classical tradition strongly recommends Manglik-Manglik matching (the two doshas cancel each other). If mismatch: soften with Hanuman practices + Vishnu worship + Kumbh Vivah before marriage. Also: many 'mismatch' cases are actually cancelled Manglik in one or both charts — verify with our /manglik-check tool first."},
         ),
         llm_summary=(
-            'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 from Lagna OR Moon\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching)\n• 7 classical remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) Vishnu Sahasranama + Ekadashi vrat, (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (red masoor, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases, (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
+            'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 from Lagna OR Moon\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching)\n• 7 classical remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) Vishnu Sahasranama + Ekadashi vrat, (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (toor daal/arhar — Mars classical grain, plus red masoor folk offering, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS), (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
         ),
-        qa_status="auto-scanned", qa_date="2026-07-30",
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="dhana-yoga-wealth-combinations", title="Dhana Yogas: 9 Classical Wealth Combinations to Check in Your Kundli",
