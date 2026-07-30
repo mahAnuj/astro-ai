@@ -1235,6 +1235,17 @@ async def manglik_check_result(
     except ValueError:
         collection = None
     manglik = compute_manglik_details(chart)
+    try:
+        _u = load_user(request)
+        notify.dosha_checked(
+            dosha_type="Manglik",
+            birth_place=details.birth_place,
+            is_present=manglik.is_manglik,
+            extra=f"{manglik.effective_status}, {manglik.severity}" if manglik.is_manglik else "",
+            user_email=(_u.email if _u else ""),
+        )
+    except Exception:
+        pass
     response = templates.TemplateResponse(
         request, "manglik_check_result.html",
         {"details": details, "manglik": manglik, "lang": _lang(request)},
@@ -1291,6 +1302,25 @@ async def sade_sati_check_result(
     except ValueError:
         collection = None
     sade_sati = compute_sade_sati_details(chart)
+    try:
+        _u = load_user(request)
+        if sade_sati.is_active:
+            _extra = f"{sade_sati.phase or ''} phase"
+        elif sade_sati.ashtama_shani:
+            _extra = "Ashtama Shani (8H from Moon)"
+        elif sade_sati.kantaka_shani:
+            _extra = "Kantaka Shani (4H from Moon)"
+        else:
+            _extra = f"Saturn in H{sade_sati.saturn_house_from_moon} from Moon"
+        notify.dosha_checked(
+            dosha_type="Sade Sati",
+            birth_place=details.birth_place,
+            is_present=(sade_sati.is_active or sade_sati.ashtama_shani or sade_sati.kantaka_shani),
+            extra=_extra,
+            user_email=(_u.email if _u else ""),
+        )
+    except Exception:
+        pass
     response = templates.TemplateResponse(
         request, "sade_sati_check_result.html",
         {"details": details, "sade_sati": sade_sati, "lang": _lang(request)},
@@ -1347,6 +1377,17 @@ async def kaal_sarp_check_result(
     except ValueError:
         collection = None
     kaal_sarp = compute_kaal_sarp(chart)
+    try:
+        _u = load_user(request)
+        notify.dosha_checked(
+            dosha_type="Kaal Sarp",
+            birth_place=details.birth_place,
+            is_present=kaal_sarp.is_present,
+            extra=(kaal_sarp.type_name or "") if kaal_sarp.is_present else "",
+            user_email=(_u.email if _u else ""),
+        )
+    except Exception:
+        pass
     response = templates.TemplateResponse(
         request, "kaal_sarp_check_result.html",
         {"details": details, "kaal_sarp": kaal_sarp, "lang": _lang(request)},
@@ -1556,6 +1597,16 @@ async def muhurat_finder_compute(
             status_code=500,
         )
     event_label = _muhurat.EVENT_RULES[event_type]["label"]
+    try:
+        _u = load_user(request)
+        _good_count = sum(1 for c in candidates if c.rating != "avoid")
+        notify.muhurat_computed(
+            event_type=event_label, city=city, days_range=int(days),
+            good_count=_good_count,
+            user_email=(_u.email if _u else ""),
+        )
+    except Exception:
+        pass
     return templates.TemplateResponse(
         request, "muhurat_finder.html",
         {"candidates": candidates, "city": city, "start_date": start_date,
@@ -1623,6 +1674,15 @@ async def numerology_calculate(
              "error": f"Couldn't compute: {err}", "lang": _lang(request)},
             status_code=400,
         )
+    try:
+        _u = load_user(request)
+        notify.numerology_computed(
+            name=reading.name, system=system,
+            life_path=int(reading.life_path),
+            user_email=(_u.email if _u else ""),
+        )
+    except Exception:
+        pass
     return templates.TemplateResponse(
         request, "numerology.html",
         {
@@ -2467,6 +2527,17 @@ async def submit_feedback(
     )
     if not ok:
         return JSONResponse({"ok": False, "error": msg}, status_code=400)
+
+    # Telegram alert for the owner — feedback should never sit unread.
+    try:
+        notify.feedback_submitted(
+            type=entry["type"] if entry else type,
+            message=entry["message"] if entry else message,
+            page=entry.get("page", "") if entry else page,
+            email=entry.get("email", "") if entry else email,
+        )
+    except Exception:
+        pass
 
     # Notify admin via email so feedback doesn't sit unread in a GCS file.
     # Best-effort — failure to email shouldn't fail the user's submit.
