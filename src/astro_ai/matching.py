@@ -308,10 +308,19 @@ def _vashya(g_idx: int, b_idx: int) -> KootaScore:
 
 
 def _tara(g_nak: str, b_nak: str) -> KootaScore:
-    """Count nakshatras from each Moon to the other, mod 9. Favourable taras: 0,1,3,5,7."""
+    """Count nakshatras from each Moon to the other, mod 9.
+
+    0-indexed position → 1-indexed classical name:
+      0=Janma, 1=Sampat, 2=Vipat, 3=Kshema, 4=Pratyari,
+      5=Sadhaka, 6=Vadha, 7=Mitra, 8=Ati-Mitra
+    Favourable set = {Janma, Sampat, Kshema, Sadhaka, Mitra, Ati-Mitra}
+    = positions {0, 1, 3, 5, 7, 8}. Ati-Mitra (position 8) is the
+    STRONGEST positive tara — was previously excluded from `favourable`,
+    silently miscounting ~11% of couples as unfavourable.
+    """
     g_i = NAKSHATRAS.index(g_nak)
     b_i = NAKSHATRAS.index(b_nak)
-    favourable = {0, 1, 3, 5, 7}
+    favourable = {0, 1, 3, 5, 7, 8}
     g_to_b = ((b_i - g_i) % 27) % 9
     b_to_g = ((g_i - b_i) % 27) % 9
     g_ok = g_to_b in favourable
