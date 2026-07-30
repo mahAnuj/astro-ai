@@ -121,6 +121,87 @@
     {% endfor %}
   </section>
 
+  {# Rich Life Path profile — the descriptive reading a real numerologist
+     would give (character, strengths, weaknesses, health, career,
+     compatibility, timing, life challenges). All from Johari §4. #}
+  {% if reading.life_path_profile %}
+  {% set prof = reading.life_path_profile %}
+  <section class="bg-white rounded-2xl border-2 border-astro-200 shadow-sm p-5 sm:p-7 space-y-5">
+    <div>
+      <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Your Life Path {{ prof.number }} in depth</div>
+      <h2 class="font-display text-2xl text-astro-800 mb-3">Ruled by {{ prof.planet }} · {{ prof.planet_sanskrit }}</h2>
+      <p class="text-stone-800 leading-relaxed">{{ prof.character }}</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+        <h3 class="text-xs font-semibold uppercase text-emerald-700 mb-2">Your strengths</h3>
+        <ul class="space-y-1 text-sm text-stone-700">
+          {% for s in prof.strengths %}<li class="flex gap-1.5"><span class="text-emerald-600">✓</span><span>{{ s }}</span></li>{% endfor %}
+        </ul>
+      </div>
+      <div class="p-4 bg-amber-50 rounded-lg border border-amber-100">
+        <h3 class="text-xs font-semibold uppercase text-amber-800 mb-2">What to watch out for</h3>
+        <ul class="space-y-1 text-sm text-stone-700">
+          {% for w in prof.weaknesses %}<li class="flex gap-1.5"><span class="text-amber-600">⚠</span><span>{{ w }}</span></li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div>
+      <h3 class="font-display text-lg text-astro-800 mb-2">Life challenges — the honest read</h3>
+      <p class="text-sm text-stone-700 leading-relaxed">{{ prof.life_challenges }}</p>
+    </div>
+
+    <div>
+      <h3 class="font-display text-lg text-astro-800 mb-2">Health tendencies</h3>
+      <p class="text-sm text-stone-700 leading-relaxed">{{ prof.health }}</p>
+      <p class="text-xs text-stone-500 mt-2 italic">Not medical advice. If a health issue is active, consult a physician first — numerology reads karmic pattern, not disease.</p>
+    </div>
+
+    <div>
+      <h3 class="font-display text-lg text-astro-800 mb-2">Career direction</h3>
+      <p class="text-sm text-stone-700 leading-relaxed mb-3">{{ prof.career }}</p>
+      <div class="flex flex-wrap gap-1.5">
+        {% for f in prof.career_fields %}<span class="inline-block px-2 py-1 text-xs bg-astro-50 text-astro-800 rounded border border-astro-200">{{ f }}</span>{% endfor %}
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+        <h3 class="text-xs font-semibold uppercase text-emerald-700 mb-1.5">Best partner numbers</h3>
+        <div class="flex gap-1.5 flex-wrap">
+          {% for p in prof.best_partners %}<span class="w-8 h-8 flex items-center justify-center font-display text-lg font-semibold text-emerald-800 bg-white rounded-full border-2 border-emerald-300">{{ p }}</span>{% endfor %}
+        </div>
+      </div>
+      <div class="p-4 bg-rose-50 rounded-lg border border-rose-100">
+        <h3 class="text-xs font-semibold uppercase text-rose-700 mb-1.5">Challenging partner numbers</h3>
+        <div class="flex gap-1.5 flex-wrap">
+          {% for p in prof.worst_partners %}<span class="w-8 h-8 flex items-center justify-center font-display text-lg font-semibold text-rose-800 bg-white rounded-full border-2 border-rose-300">{{ p }}</span>{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3 class="font-display text-lg text-astro-800 mb-2">Timing patterns</h3>
+      <div class="grid sm:grid-cols-2 gap-3 text-sm">
+        <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-500">Peak career period</span><div class="text-stone-800">{{ prof.peak_period }}</div></div>
+        <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-500">Best day of week</span><div class="text-stone-800 font-medium">{{ prof.best_day }}</div></div>
+        <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-100"><span class="text-xs uppercase text-emerald-700">Strong months</span><div class="text-stone-800">{{ prof.strong_months }}</div></div>
+        <div class="p-3 bg-amber-50 rounded-lg border border-amber-100"><span class="text-xs uppercase text-amber-800">Cautious months</span><div class="text-stone-800">{{ prof.weak_months }}</div></div>
+        <div class="p-3 bg-stone-50 rounded-lg sm:col-span-2">
+          <span class="text-xs uppercase text-stone-500">Auspicious dates for launches (any month)</span>
+          <div class="flex gap-1 flex-wrap mt-1">
+            {% for d in prof.good_dates %}<span class="w-7 h-7 flex items-center justify-center text-xs tabular-nums bg-white rounded border border-stone-300">{{ d }}</span>{% endfor %}
+            {% for d in prof.exalted_dates %}<span class="w-7 h-7 flex items-center justify-center text-xs tabular-nums bg-astro-100 text-astro-800 font-semibold rounded border-2 border-astro-500" title="Exalted — most fortunate">{{ d }}★</span>{% endfor %}
+          </div>
+          {% if prof.exalted_dates %}<div class="text-xs text-stone-500 mt-1 italic">★ = exalted date per Johari (most fortunate birth-dates that reduce to your Life Path)</div>{% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
   {# Vedic remedies for Life Path — Johari's per-number planetary remedies. #}
   {% if reading.life_path_remedy %}
   {% set rem = reading.life_path_remedy %}
