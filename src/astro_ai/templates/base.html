@@ -735,7 +735,7 @@
 
         {# Internal links to every main reading page. Crawlers and users
            both win — site-wide navigation discoverable from any URL. #}
-        <div class="md:col-span-3">
+        <div class="md:col-span-2">
           <h3 class="text-xs uppercase font-semibold text-stone-500 tracking-wider mb-3">Readings</h3>
           <ul class="space-y-2 text-sm">
             <li><a href="/"         class="text-stone-700 hover:text-astro-700">Free Janma Kundli</a></li>
@@ -744,20 +744,35 @@
             <li><a href="/monthly"  class="text-stone-700 hover:text-astro-700">Monthly Horoscope</a></li>
             <li><a href="/yearly"   class="text-stone-700 hover:text-astro-700">Horoscope {{ current_year() }}</a></li>
             <li><a href="/dasha"    class="text-stone-700 hover:text-astro-700">Vimshottari Dasha</a></li>
-            <li><a href="/matching" class="text-stone-700 hover:text-astro-700">Kundli Matching for Marriage</a></li>
+            <li><a href="/matching" class="text-stone-700 hover:text-astro-700">Kundli Matching</a></li>
             <li class="pt-2 mt-2 border-t border-stone-100"><a href="/learn/" class="text-stone-700 hover:text-astro-700 font-semibold">Learning Hub &rarr;</a></li>
+          </ul>
+        </div>
+
+        {# Free tools column — dedicated dosha checkers, muhurat, numerology,
+           check-in. Adds site-wide SEO surface for the standalone tool pages
+           + gives users a persistent way to discover them from any page. #}
+        <div class="md:col-span-2">
+          <h3 class="text-xs uppercase font-semibold text-stone-500 tracking-wider mb-3">Free Tools</h3>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/muhurat"         class="text-stone-700 hover:text-astro-700">Muhurat Finder</a></li>
+            <li><a href="/manglik-check"   class="text-stone-700 hover:text-astro-700">Manglik Dosh Check</a></li>
+            <li><a href="/sade-sati-check" class="text-stone-700 hover:text-astro-700">Sade Sati Report</a></li>
+            <li><a href="/kaal-sarp-check" class="text-stone-700 hover:text-astro-700">Kaal Sarp Check</a></li>
+            <li><a href="/numerology"      class="text-stone-700 hover:text-astro-700">Numerology</a></li>
+            <li><a href="/check-in"        class="text-stone-700 hover:text-astro-700">Daily Check-in</a></li>
           </ul>
         </div>
 
         {# Connect column — trust signals (real email), conversion CTA
            (subscribe), and a sitemap pointer for power users. #}
-        <div class="md:col-span-3">
+        <div class="md:col-span-2">
           <h3 class="text-xs uppercase font-semibold text-stone-500 tracking-wider mb-3">Connect</h3>
           <ul class="space-y-2 text-sm">
-            <li><a href="mailto:contact@shubhagya.com" class="text-stone-700 hover:text-astro-700">contact@shubhagya.com</a></li>
+            <li><a href="mailto:contact@shubhagya.com" class="text-stone-700 hover:text-astro-700 break-all">contact@shubhagya.com</a></li>
             <li><button type="button" data-subscribe-trigger
                         class="text-stone-700 hover:text-astro-700 underline-offset-2 hover:underline text-left">
-                  Daily Rashifal in your inbox &rarr;
+                  Daily Rashifal email &rarr;
                 </button></li>
             <li><a href="/sitemap.xml" class="text-stone-500 hover:text-astro-700 text-xs">Sitemap</a></li>
           </ul>
@@ -768,10 +783,10 @@
         <div class="md:col-span-2">
           <h3 class="text-xs uppercase font-semibold text-stone-500 tracking-wider mb-3">Why us</h3>
           <ul class="space-y-2 text-sm text-stone-700">
-            <li>&check; Free Kundli &amp; Rashifal</li>
+            <li>&check; Free &amp; honest</li>
             <li>&check; No signup needed</li>
             <li>&check; No spam, ever</li>
-            <li>&check; Chart stays in your browser</li>
+            <li>&check; Classical sources cited</li>
           </ul>
         </div>
       </div>
