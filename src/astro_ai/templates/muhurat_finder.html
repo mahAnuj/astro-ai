@@ -113,6 +113,7 @@
             <th class="pb-1.5 pr-3">Nakshatra</th>
             <th class="pb-1.5 pr-3">Rating</th>
             {% if personal_active %}<th class="pb-1.5 pr-3">Personal</th>{% endif %}
+            <th class="pb-1.5 pr-3">Windows</th>
             <th class="pb-1.5">Notes</th>
           </tr>
         </thead>
@@ -125,9 +126,17 @@
             <td class="py-2 pr-3 tabular-nums whitespace-nowrap font-medium">{{ c.d.strftime('%b %d, %Y') }}</td>
             <td class="py-2 pr-3">{{ c.weekday[:3] }}</td>
             <td class="py-2 pr-3">{{ c.tithi }}<span class="text-xs text-stone-400 ml-1">{{ c.tithi_paksha }}</span></td>
-            <td class="py-2 pr-3 text-xs">{{ c.nakshatra }}</td>
+            <td class="py-2 pr-3 text-xs">
+              {{ c.nakshatra }}
+              {% if c.nitya_yoga %}<div class="text-[10px] text-stone-400 mt-0.5">Yoga: {{ c.nitya_yoga }}</div>{% endif %}
+            </td>
             <td class="py-2 pr-3">
-              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-{{ color }}-100 text-{{ color }}-800 capitalize">{{ c.rating }}</span>
+              <div class="flex flex-col gap-1">
+                <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-{{ color }}-100 text-{{ color }}-800 capitalize">{{ c.rating }}</span>
+                {% if c.boosters %}
+                <span class="inline-block px-1.5 py-0.5 text-[10px] rounded bg-emerald-100 text-emerald-800" title="{{ ' + '.join(c.boosters) }}">★ boost</span>
+                {% endif %}
+              </div>
             </td>
             {% if personal_active %}
             <td class="py-2 pr-3 text-xs">
@@ -145,12 +154,19 @@
               {% else %}<span class="text-stone-400">—</span>{% endif %}
             </td>
             {% endif %}
+            <td class="py-2 pr-3 text-[11px] text-stone-600 tabular-nums whitespace-nowrap">
+              <div title="Best 48-min window of the day"><span class="text-emerald-700">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
+              <div title="Rahu Kaal — avoid for launches"><span class="text-rose-600">✗</span> Rahu Kaal {{ c.rahu_kaal }}</div>
+            </td>
             <td class="py-2 text-xs text-stone-600">{{ c.reason }}</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+    <p class="text-xs text-stone-500 mt-2 italic">
+      <span class="text-emerald-700">✓</span> Abhijit Muhurta = best 48-minute window of each day (~solar noon). <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious 90-minute window, avoid for launches. Yoga = Nitya Yoga; Vaidhriti/Vyatipata days are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present (universal auspiciousness).
+    </p>
     {% endif %}
 
     {% if avoid_candidates %}

@@ -97,6 +97,11 @@ class MuhuratCandidate:
     reason: str               # short human explanation
     flags: tuple[str, ...]    # e.g. ("panchak", "chaturmas", "jupiter_combust")
     personal: PersonalMatch | None = None  # only set when a user chart is passed
+    # Sub-day windows already computed in Panchang — surface for planning.
+    rahu_kaal: str = ""       # "13:30–15:00"
+    abhijit_muhurta: str = "" # "11:48–12:36"
+    nitya_yoga: str = ""      # e.g. "Siddhi", "Vyatipata"
+    boosters: tuple[str, ...] = ()  # Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga names
 
 
 # ─── Chaturmas date ranges (Devshayani → Devuthani Ekadashi) ─────────
@@ -132,6 +137,126 @@ _ABUJHA_MUHURATS: dict[int, list[tuple[date, str, tuple[str, ...]]]] = {
 
 
 # ─── Per-event classical rule tables ──────────────────────────────────
+# ─── Adhik Maas (intercalary lunar month) — absolute blocker ─────────
+# Vedic lunisolar calendar adds an extra month every ~3 years to align
+# with the solar year. Adhik Maas = "extra month" = Malamas ("polluted
+# month"). No shubh karya during this window. Dates hardcoded from Drik
+# Panchang. Update annually. Applies to ALL events.
+_ADHIK_MAAS_RANGES: dict[int, list[tuple[date, date, str]]] = {
+    2026: [],  # No Adhik Maas
+    2027: [],  # No Adhik Maas
+    2028: [(date(2028, 5, 15), date(2028, 6, 13), "Adhik Jyeshtha")],
+    2029: [],
+    2030: [],
+    2031: [(date(2031, 8, 3),  date(2031, 9, 1),  "Adhik Bhadrapada")],
+}
+
+
+def _adhik_maas_flag(d: date) -> tuple[bool, str]:
+    """Return (is_adhik, name) if d falls within an Adhik Maas window."""
+    for start, end, name in _ADHIK_MAAS_RANGES.get(d.year, []):
+        if start <= d <= end:
+            return True, f"Adhik Maas ({name}) — no shubh karya during intercalary month"
+    return False, ""
+
+
+# ─── Amrit Siddhi Yoga — universal-auspicious BOOSTERS ───────────────
+# Classical nakshatra+weekday pairings that make a day auto-excellent
+# regardless of other factors (comparable to Abujha muhurats but rule-based
+# rather than fixed-date). Per Muhurta Chintamani. When active, boosts
+# rating to "excellent" with a specific reason.
+_AMRIT_SIDDHI_YOGA: dict[str, str] = {
+    "Sunday|Hasta":     "Amrit Siddhi (Sun + Hasta)",
+    "Monday|Mrigashira":"Amrit Siddhi (Moon + Mrigashira)",
+    "Tuesday|Ashwini":  "Amrit Siddhi (Mars + Ashwini)",
+    "Wednesday|Anuradha":"Amrit Siddhi (Mercury + Anuradha)",
+    "Thursday|Pushya":  "Amrit Siddhi (Jupiter + Pushya)",
+    "Friday|Revati":    "Amrit Siddhi (Venus + Revati)",
+    "Saturday|Rohini":  "Amrit Siddhi (Saturn + Rohini)",
+}
+
+
+# ─── Sarvartha Siddhi Yoga — universal-auspicious BOOSTERS ───────────
+# Broader nakshatra+weekday set. Per Muhurta Chintamani. Slightly less
+# potent than Amrit Siddhi but still classifies the day as universally
+# auspicious for shubh karya. Overrides Dagdha and other soft rules but
+# NOT Panchak, Chaturmas, Kharmas, Adhik Maas, or Eclipse (those are
+# absolute).
+_SARVARTHA_SIDDHI_YOGA: dict[str, list[str]] = {
+    "Sunday":    ["Hasta", "Mula", "Uttara Phalguni", "Uttara Ashadha",
+                    "Uttara Bhadrapada", "Pushya", "Ashwini"],
+    "Monday":    ["Rohini", "Mrigashira", "Pushya", "Anuradha", "Shravana"],
+    "Tuesday":   ["Ashwini", "Mrigashira", "Krittika", "Ashlesha"],
+    "Wednesday": ["Rohini", "Mrigashira", "Anuradha", "Hasta", "Krittika"],
+    "Thursday":  ["Revati", "Anuradha", "Ashwini", "Punarvasu", "Pushya"],
+    "Friday":    ["Revati", "Anuradha", "Ashwini", "Punarvasu", "Shravana"],
+    "Saturday":  ["Rohini", "Swati", "Shravana"],
+}
+
+
+def _amrit_siddhi_flag(weekday: str, nakshatra: str) -> str:
+    """Return the Amrit Siddhi Yoga name if active, else empty."""
+    return _AMRIT_SIDDHI_YOGA.get(f"{weekday}|{nakshatra}", "")
+
+
+def _sarvartha_siddhi_flag(weekday: str, nakshatra: str) -> str:
+    """Return 'Sarvartha Siddhi Yoga' if active, else empty."""
+    if nakshatra in _SARVARTHA_SIDDHI_YOGA.get(weekday, []):
+        return "Sarvartha Siddhi Yoga (universally auspicious)"
+    return ""
+
+
+# ─── Ravi Yoga — Sun-based booster ───────────────────────────────────
+# When Sun's nakshatra + Moon's nakshatra combine in specific ways per
+# Muhurta Chintamani, Ravi Yoga is formed. Simplified rule: Sunday +
+# nakshatras with Sun-lordship (Krittika, Uttara Phalguni, Uttara Ashadha)
+# or Sun-friendly nakshatras. Boost only, doesn't override hard exclusions.
+_RAVI_YOGA_NAKSHATRAS = {"Krittika", "Uttara Phalguni", "Uttara Ashadha",
+                          "Hasta", "Ashwini", "Pushya"}
+
+
+def _ravi_yoga_flag(weekday: str, nakshatra: str) -> str:
+    """Return 'Ravi Yoga' if active, else empty. Only on Sunday."""
+    if weekday == "Sunday" and nakshatra in _RAVI_YOGA_NAKSHATRAS:
+        return "Ravi Yoga (Sun-based auspicious combination)"
+    return ""
+
+
+# ─── Vaidhriti + Vyatipata Nitya Yogas — universal BLOCKERS ──────────
+# Two of the 27 nitya yogas are classical hard-exclusions for shubh karya.
+# Nitya yoga is computed as (Sun_longitude + Moon_longitude) / 13.333°.
+# Positions:
+#   17 = Vyatipata — "great transgression"
+#   27 = Vaidhriti — "no support"
+_NITYA_YOGAS = (
+    "Vishkambha", "Priti", "Ayushman", "Saubhagya", "Shobhana",
+    "Atiganda", "Sukarma", "Dhriti", "Shula", "Ganda",
+    "Vriddhi", "Dhruva", "Vyaghata", "Harshana", "Vajra",
+    "Siddhi", "Vyatipata", "Variyan", "Parigha", "Shiva",
+    "Siddha", "Sadhya", "Shubha", "Shukla", "Brahma",
+    "Aindra", "Vaidhriti",
+)
+_BLOCKING_NITYA_YOGAS = {"Vyatipata", "Vaidhriti"}
+
+
+def _nitya_yoga_flag(chart: Chart, when: datetime) -> tuple[str, bool]:
+    """Return (yoga_name, is_blocking). Uses transit snapshot."""
+    snap = compute_transit_snapshot(chart, when)
+    sun = next((p for p in snap.planets if p.name == "Sun"), None)
+    moon = next((p for p in snap.planets if p.name == "Moon"), None)
+    if not sun or not moon:
+        return "", False
+
+    from astro_ai.chart import _rashi_index as _ri
+    sun_abs = _ri(sun.rashi) * 30.0 + sun.longitude
+    moon_abs = _ri(moon.rashi) * 30.0 + moon.longitude
+    combined = (sun_abs + moon_abs) % 360.0
+    span = 360.0 / 27.0
+    idx = int(combined / span) % 27
+    yoga_name = _NITYA_YOGAS[idx]
+    return yoga_name, yoga_name in _BLOCKING_NITYA_YOGAS
+
+
 # ─── Per-event landing-page SEO copy ─────────────────────────────────
 # Evergreen intro/rules/related content for /muhurat/<slug> landing pages.
 # Slugs match EVENT_RULES keys. Kept outside EVENT_RULES so the scoring
@@ -644,14 +769,24 @@ def _combustion_flags(chart: Chart, when: datetime) -> dict[str, bool]:
 def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
                 is_panchak: bool, is_chaturmas: bool,
                 kharmas_reason: str, eclipse_reason: str,
-                combust: dict[str, bool]) -> tuple[str, str, tuple[str, ...]]:
+                combust: dict[str, bool],
+                adhik_reason: str = "",
+                nitya_yoga: str = "", nitya_blocks: bool = False,
+                boosters: tuple[str, ...] = ()) -> tuple[str, str, tuple[str, ...]]:
     """Return (rating, reason, flags) for the given event type.
 
     HARD exclusions (return 'avoid'), in priority order:
-      1. Eclipse day / ±1 day — universal; applies to all events
-      2. Panchak, Chaturmas, Kharmas, Dagdha (per-event flag)
-      3. Combust karaka (per-event flag)
-      4. Avoid-nakshatra, avoid-tithi
+      1. Adhik Maas — universal blocker for all shubh karya
+      2. Eclipse day / ±1 day — universal
+      3. Panchak, Chaturmas, Kharmas, Dagdha (per-event flag)
+      4. Vaidhriti / Vyatipata Nitya Yogas — universal
+      5. Combust karaka (per-event flag)
+      6. Avoid-nakshatra, avoid-tithi
+
+    UNIVERSAL BOOSTERS override caution/acceptable → excellent:
+      - Amrit Siddhi Yoga (nakshatra+weekday)
+      - Sarvartha Siddhi Yoga (nakshatra+weekday)
+      - Ravi Yoga (Sun-based)
 
     SOFT scoring: +2 favourable tithi, +2 favourable nakshatra, +1 favourable
     weekday. Peak-day (e.g. Thu for Vidyarambh) adds an extra +1. Avoid-weekday
@@ -664,11 +799,19 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
     flags: list[str] = []
     reasons: list[str] = []
 
-    # ─── Hard exclusions ────────────────────────────────────────────
+    # ─── Hard exclusions (universal + per-event) ────────────────────
+    # Adhik Maas is the top-priority universal blocker.
+    if adhik_reason:
+        flags.append("adhik_maas")
+        return "avoid", adhik_reason, tuple(flags)
     # Eclipse is universal — no event override.
     if eclipse_reason:
         flags.append("eclipse")
         return "avoid", eclipse_reason, tuple(flags)
+    # Vaidhriti / Vyatipata nitya yogas — universal blockers.
+    if nitya_blocks:
+        flags.append("nitya_yoga_block")
+        return "avoid", f"{nitya_yoga} Nitya Yoga — universally inauspicious for shubh karya", tuple(flags)
     if rules["check_panchak"] and is_panchak:
         flags.append("panchak")
         return "avoid", f"Panchak day ({nakshatra}) — inauspicious", tuple(flags)
@@ -726,6 +869,24 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
         rating = "acceptable"
     else:
         rating = "caution"
+
+    # ─── Universal boosters override caution/acceptable → excellent ─
+    # Amrit Siddhi, Sarvartha Siddhi, Ravi Yoga are classical universal-
+    # auspicious combinations that lift the day regardless of soft-score
+    # (they cannot override hard exclusions above, only lift the rating).
+    if boosters:
+        flags.extend(f.lower().replace(" ", "_") for f in ("Amrit Siddhi", "Sarvartha Siddhi", "Ravi Yoga") if any(b.startswith(f) for b in boosters))
+        booster_names = "; ".join(boosters)
+        # Amrit Siddhi is the strongest — always lifts to excellent.
+        # Sarvartha Siddhi / Ravi Yoga lift to excellent if not already above.
+        if any(b.startswith("Amrit Siddhi") for b in boosters):
+            rating = "excellent"
+            reasons.insert(0, booster_names)
+        elif rating in ("caution", "acceptable", "good"):
+            # Lift only if not already excellent — don't downgrade.
+            rating = "excellent" if rating != "caution" else "good"
+            reasons.insert(0, booster_names)
+
     return rating, "; ".join(reasons) or "neutral factors", tuple(flags)
 
 
@@ -771,7 +932,21 @@ def find_candidates(event_type: str, city: str, start: date,
             is_chaturmas = _in_chaturmas(d)
             _kharmas_is, kharmas_reason = _kharmas_flag(base_chart, when)
             _eclipse_is, eclipse_reason = _eclipse_flag(d)
+            _adhik_is, adhik_reason = _adhik_maas_flag(d)
+            nitya_yoga, nitya_blocks = _nitya_yoga_flag(base_chart, when)
             combust = _combustion_flags(base_chart, when)
+            # Boosters — universal-auspicious combinations
+            boosters_list: list[str] = []
+            if amrit := _amrit_siddhi_flag(p.weekday, nakshatra):
+                boosters_list.append(amrit)
+            if sarv := _sarvartha_siddhi_flag(p.weekday, nakshatra):
+                boosters_list.append(sarv)
+            if ravi := _ravi_yoga_flag(p.weekday, nakshatra):
+                boosters_list.append(ravi)
+            boosters = tuple(boosters_list)
+            # Sub-day windows for planning — format as "HH:MM-HH:MM"
+            rk_str = f"{p.rahu_kaal_start.strftime('%H:%M')}-{p.rahu_kaal_end.strftime('%H:%M')}"
+            ab_str = f"{p.abhijit_start.strftime('%H:%M')}-{p.abhijit_end.strftime('%H:%M')}"
         except Exception:
             continue
 
@@ -790,12 +965,17 @@ def find_candidates(event_type: str, city: str, start: date,
                 reason=f"Abujha Muhurat — {abujha_name} (universally auspicious)",
                 flags=("abujha_muhurat",),
                 personal=personal,
+                rahu_kaal=rk_str, abhijit_muhurta=ab_str,
+                nitya_yoga=nitya_yoga, boosters=boosters,
             ))
             continue
 
         rating, reason, flags = score_event(
             event_type, p, p.weekday, nakshatra,
             is_panchak, is_chaturmas, kharmas_reason, eclipse_reason, combust,
+            adhik_reason=adhik_reason,
+            nitya_yoga=nitya_yoga, nitya_blocks=nitya_blocks,
+            boosters=boosters,
         )
         candidates.append(MuhuratCandidate(
             d=d, weekday=p.weekday,
@@ -803,6 +983,8 @@ def find_candidates(event_type: str, city: str, start: date,
             nakshatra=nakshatra,
             rating=rating, reason=reason, flags=flags,
             personal=personal,
+            rahu_kaal=rk_str, abhijit_muhurta=ab_str,
+            nitya_yoga=nitya_yoga, boosters=boosters,
         ))
 
     tier_order = {"excellent": 0, "good": 1, "acceptable": 2, "caution": 3, "avoid": 4}
