@@ -86,10 +86,10 @@
       {{ link("/ask",      t(lang, 'nav_ask_link'),      'ask') }}
       {{ link("/learn/",   "Learn",                      'learn') }}
 
-      {# TOOLS dropdown — the 6 free tools shipped in cycle 8. Top-level
+      {# TOOLS dropdown — the free tools shipped in cycle 8. Top-level
          so users can find them without hunting through "More". On mobile
          renders as a flat labeled section inside the hamburger. #}
-      {% set tools_pages = ['muhurat','manglik-check','sade-sati-check','kaal-sarp-check','numerology','check-in'] %}
+      {% set tools_pages = ['muhurat','manglik-check','sade-sati-check','kaal-sarp-check','numerology'] %}
       {% set tools_active = active_page in tools_pages %}
       <div class="nav-dropdown md:relative" data-nav-dropdown>
         <button type="button"
@@ -111,7 +111,6 @@
           {{ dlink("/sade-sati-check", "Sade Sati Report", 'sade-sati-check') }}
           {{ dlink("/kaal-sarp-check", "Kaal Sarp Check",  'kaal-sarp-check') }}
           {{ dlink("/numerology",      "Numerology",       'numerology') }}
-          {{ dlink("/check-in",        "Cosmic Check-in",  'check-in') }}
         </div>
       </div>
 
