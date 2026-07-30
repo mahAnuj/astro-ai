@@ -2801,17 +2801,31 @@ class KaalSarpDetails:
 
 
 def compute_kaal_sarp(chart: Chart) -> KaalSarpDetails:
-    """Detect Kaal Sarp Dosh in a natal chart.
+    """Detect Kaal Sarp Dosh — strict binary per classical Vedic tradition.
+
+    Classical sources (Brihat Parashara Hora Shastra, Phaladeepika, Saravali)
+    treat Kaal Sarp Dosh as BINARY: all 7 non-shadow planets fall on one
+    semicircle of the Rahu-Ketu axis, or they don't. No "partial" concept
+    exists in the classical texts.
+
+    Modern practitioners have introduced "Anshik/Partial KSD" for near-axis
+    cases, but (a) there's no agreed threshold across schools, (b) it
+    generates false-positive anxiety, and (c) most reputable classical
+    astrologers do NOT diagnose it. We follow the classical binary rule.
 
     Algorithm:
       1. Find Rahu's absolute longitude L_R (0..360°); Ketu is L_R + 180°.
       2. For each of the 7 non-shadow planets, compute their forward angular
          distance from Rahu: delta = (L_p - L_R) mod 360.
-      3. If ALL 7 planets have delta < 180°, they're on Rahu's side (the
-         Rahu → Ketu half). If ALL 7 have delta > 180°, they're on Ketu's
-         side. Either way = full KSD.
-      4. Partial: one planet within ±3° of the axis (delta in [177, 183] or
-         [357, 3] modulo 360) counts as straddling — flag as partial.
+      3. If ALL 7 planets have 0 < delta < 180, they're on Rahu's side
+         (the Rahu → Ketu half). If ALL 7 have 180 < delta < 360, they're
+         on Ketu's side. Either way = FULL KSD.
+      4. Otherwise: no KSD. Period.
+
+    Removed the previous "partial" straddle logic (2026-07-30) after a
+    user reported false positive that no astrologer had confirmed. If
+    Anshik/Partial diagnosis is genuinely needed in the future, add it
+    as an explicit opt-in with a documented threshold + classical source.
     """
     rahu = next((p for p in chart.planets if p.name == "Rahu"), None)
     ketu = next((p for p in chart.planets if p.name == "Ketu"), None)
@@ -2826,33 +2840,36 @@ def compute_kaal_sarp(chart: Chart) -> KaalSarpDetails:
     non_shadow = [p for p in chart.planets if p.name not in ("Rahu", "Ketu")]
     on_rahu_side: list[str] = []   # delta in (0, 180) — Rahu → Ketu semicircle
     on_ketu_side: list[str] = []   # delta in (180, 360) — Ketu → Rahu semicircle
-    straddling = False
     for p in non_shadow:
         abs_long = _rashi_index(p.rashi) * 30.0 + p.longitude
         delta = (abs_long - rahu_abs) % 360.0
-        # Straddle: within 3° of the Rahu or Ketu points
-        if delta < 3.0 or delta > 357.0 or (177.0 < delta < 183.0):
-            straddling = True
-            continue
+        # Strict classical: any planet exactly on the axis (delta 0 or 180)
+        # is a measurement-boundary edge case, not a "partial" trigger.
+        # Assign to whichever side is closer.
         if delta < 180.0:
             on_rahu_side.append(p.name)
         else:
             on_ketu_side.append(p.name)
 
-    is_full = (len(on_rahu_side) == 7 and not straddling) or \
-              (len(on_ketu_side) == 7 and not straddling)
-    is_partial = straddling and (len(on_rahu_side) + len(on_ketu_side)) == 6
+    # Strict binary: all 7 must be on the same side.
+    is_full = len(on_rahu_side) == 7 or len(on_ketu_side) == 7
 
-    if not (is_full or is_partial):
+    if not is_full:
         return KaalSarpDetails(
-            False, False, "", "", rahu_house, ketu_house,
-            tuple(on_rahu_side), tuple(on_ketu_side),
+            is_kaal_sarp=False,
+            is_partial=False,          # deprecated; retained in dataclass for template compat
+            type_name="",
+            type_meaning="",
+            rahu_house=rahu_house,
+            ketu_house=ketu_house,
+            planets_before_rahu=tuple(on_rahu_side),
+            planets_after_ketu=tuple(on_ketu_side),
         )
 
     type_name, type_meaning = _KAAL_SARP_TYPES.get(rahu_house, ("", ""))
     return KaalSarpDetails(
-        is_kaal_sarp=is_full or is_partial,
-        is_partial=is_partial and not is_full,
+        is_kaal_sarp=True,
+        is_partial=False,              # never set True — classical binary
         type_name=type_name,
         type_meaning=type_meaning,
         rahu_house=rahu_house,

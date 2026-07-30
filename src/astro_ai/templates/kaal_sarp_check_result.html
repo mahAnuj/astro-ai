@@ -19,13 +19,10 @@
   </header>
 
   {% if kaal_sarp.is_kaal_sarp %}
-  {% set color = 'rose' if not kaal_sarp.is_partial else 'amber' %}
-  <section class="bg-{{ color }}-50 border-2 border-{{ color }}-200 rounded-2xl p-6 sm:p-8">
+  <section class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-6 sm:p-8">
     <div class="text-4xl sm:text-5xl mb-3" aria-hidden="true">⚠</div>
-    <h2 class="font-display text-2xl sm:text-3xl text-{{ color }}-800 mb-2">
-      {% if kaal_sarp.is_partial %}Partial Kaal Sarp Dosh{% else %}Kaal Sarp Dosh — Present{% endif %}
-    </h2>
-    <div class="text-xl font-display text-{{ color }}-700 mb-4">{{ kaal_sarp.type_name }}</div>
+    <h2 class="font-display text-2xl sm:text-3xl text-rose-800 mb-2">Kaal Sarp Dosh — Present</h2>
+    <div class="text-xl font-display text-rose-700 mb-4">{{ kaal_sarp.type_name }}</div>
 
     <p class="text-stone-700 leading-relaxed mb-4">
       All 7 non-shadow planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn) sit on one side of the Rahu-Ketu axis in your chart. Rahu falls in your <strong>{{ kaal_sarp.rahu_house }}{% if kaal_sarp.rahu_house == 1 %}st{% elif kaal_sarp.rahu_house == 2 %}nd{% elif kaal_sarp.rahu_house == 3 %}rd{% else %}th{% endif %} house</strong>, Ketu in your <strong>{{ kaal_sarp.ketu_house }}th house</strong> — that combination is classically named <strong>{{ kaal_sarp.type_name }}</strong>.
@@ -35,12 +32,6 @@
       <div class="text-xs uppercase tracking-wider text-stone-500 mb-1">What {{ kaal_sarp.type_name }} means</div>
       <div class="text-stone-800">{{ kaal_sarp.type_meaning }}</div>
     </div>
-
-    {% if kaal_sarp.is_partial %}
-    <p class="text-sm text-{{ color }}-800 mt-4 italic">
-      Note: this is a <strong>Partial (Anshik)</strong> KSD — one planet straddles the Rahu-Ketu axis within 3°. Some schools do not count Partial KSD as full dosha; interpret as a softer version of the same theme.
-    </p>
-    {% endif %}
   </section>
   {% else %}
   <section class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-6 sm:p-8">
@@ -51,6 +42,10 @@
     </p>
   </section>
   {% endif %}
+
+  <div class="text-xs text-stone-500 leading-relaxed">
+    <p><strong>Classical basis:</strong> This check follows the strict binary rule from Brihat Parashara Hora Shastra and Phaladeepika — either all 7 non-shadow planets sit on one Rahu-Ketu semicircle (KSD present) or they don't. We deliberately do NOT diagnose "Partial/Anshik KSD" because (a) no agreed classical threshold exists, (b) it generates unnecessary anxiety, and (c) most reputable classical astrologers do not use it.</p>
+  </div>
 
   <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6">
     <h3 class="font-display text-lg text-astro-800 mb-3">What to do next</h3>
