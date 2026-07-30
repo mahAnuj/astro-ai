@@ -147,6 +147,8 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         "avoid_days": {"Tuesday", "Saturday"},
         "check_panchak": True,
         "check_chaturmas": True,
+        "check_kharmas":   True,          # Dhanurmas + Meenmas (Sun in Sagittarius/Pisces)
+        "check_dagdha":    True,          # burnt tithi-weekday pairings
         "check_jupiter_combust": True,
         "check_venus_combust":   True,
         "check_mercury_combust": False,
@@ -166,6 +168,8 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         "avoid_days": {"Tuesday", "Saturday"},
         "check_panchak": True,
         "check_chaturmas": True,
+        "check_kharmas":   True,
+        "check_dagdha":    True,
         "check_jupiter_combust": True,
         "check_venus_combust":   False,
         "check_mercury_combust": False,
@@ -190,6 +194,8 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         "avoid_days": {"Tuesday", "Saturday"},
         "check_panchak": True,
         "check_chaturmas": False,   # Namkaran timing is child-driven, not liturgical
+        "check_kharmas":   False,   # ditto — must happen ~11th day post-birth regardless
+        "check_dagdha":    False,   # child-driven timing overrides Dagdha
         "check_jupiter_combust": False,
         "check_venus_combust":   False,
         "check_mercury_combust": False,
@@ -212,6 +218,8 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         "peak_day":   "Thursday",
         "check_panchak": True,
         "check_chaturmas": False,
+        "check_kharmas":   False,   # Vidyarambh is Guru-driven, not Sun-driven
+        "check_dagdha":    True,
         "check_jupiter_combust": True,   # karaka must be visible
         "check_venus_combust":   False,
         "check_mercury_combust": False,
@@ -233,6 +241,8 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
         "peak_day":   "Wednesday",
         "check_panchak": True,
         "check_chaturmas": False,
+        "check_kharmas":   True,   # Sun-in-Dhanu/Meen inauspicious for new ventures
+        "check_dagdha":    True,
         "check_jupiter_combust": False,
         "check_venus_combust":   False,
         "check_mercury_combust": True,   # karaka must be visible
@@ -254,6 +264,97 @@ def _in_chaturmas(d: date) -> bool:
     if rng is None:
         return date(d.year, 7, 15) <= d <= date(d.year, 11, 15)
     return rng[0] <= d <= rng[1]
+
+
+# ─── Kharmas / Malmas (Sun-in-inauspicious-rashi) ────────────────────
+# Traditional weddings-restricted windows driven by the Sun's sidereal
+# rashi (not lunar-month-driven like Chaturmas):
+#   Dhanurmas / Kharmas — Sun in Sagittarius (~Dec 15 to ~Jan 14)
+#   Meenmas / Malmas    — Sun in Pisces (~Mar 14 to ~Apr 14)
+# During these two months, Sun's Guru-sanchara (transit through Jupiter's
+# own sign) is considered a time of teachership/introspection — no shubh
+# karya (weddings, housewarmings, new ventures). This is a hard classical
+# rule in North Indian tradition; South Indian tradition observes it more
+# loosely. We compute dynamically from Swiss Ephemeris (already used for
+# transit snapshots) so it's correct for any year without hardcoded tables.
+_KHARMAS_RASHIS = {
+    "Sagittarius (Dhanu)": "Dhanurmas (Sun in Sagittarius) — Kharmas restriction",
+    "Pisces (Meena)":      "Meenmas (Sun in Pisces) — Kharmas restriction",
+}
+
+
+def _kharmas_flag(chart: Chart, when: datetime) -> tuple[bool, str]:
+    """Return (is_kharmas, reason) — True if Sun is in Sagittarius/Pisces sidereal."""
+    snap = compute_transit_snapshot(chart, when)
+    sun = next((p for p in snap.planets if p.name == "Sun"), None)
+    if not sun:
+        return False, ""
+    reason = _KHARMAS_RASHIS.get(sun.rashi, "")
+    return bool(reason), reason
+
+
+# ─── Eclipse days (Grahana) — universal BLOCKER for all shubh karya ──
+# Classical rule: eclipse day + 1 day before + 1 day after are all inauspicious.
+# Even after grahana sutak ends, the atmosphere is considered energetically
+# unsettled. Dates sourced from NASA eclipse tables + Drik Panchang.
+# Update annually. Applies to ALL event types (universal, not per-event).
+_ECLIPSE_DATES: dict[int, list[tuple[date, str]]] = {
+    2026: [
+        (date(2026, 2, 17), "Annular Solar Eclipse"),
+        (date(2026, 3, 3),  "Total Lunar Eclipse"),
+        (date(2026, 8, 12), "Total Solar Eclipse"),
+        (date(2026, 8, 28), "Partial Lunar Eclipse"),
+    ],
+    2027: [
+        (date(2027, 2, 6),  "Annular Solar Eclipse"),
+        (date(2027, 2, 20), "Penumbral Lunar Eclipse"),
+        (date(2027, 7, 18), "Penumbral Lunar Eclipse"),
+        (date(2027, 8, 2),  "Total Solar Eclipse"),
+    ],
+    2028: [
+        (date(2028, 1, 26), "Annular Solar Eclipse"),
+        (date(2028, 2, 12), "Total Lunar Eclipse"),
+        (date(2028, 7, 22), "Total Solar Eclipse"),
+        (date(2028, 8, 6),  "Partial Lunar Eclipse"),
+    ],
+}
+
+
+def _eclipse_flag(d: date) -> tuple[bool, str]:
+    """True if d is within 1 day of a known eclipse. Applies to ALL events."""
+    for year in (d.year, d.year - 1, d.year + 1):  # handles Jan/Dec boundary
+        for edate, ename in _ECLIPSE_DATES.get(year, []):
+            gap = abs((d - edate).days)
+            if gap == 0:
+                return True, f"{ename} on this date — universal muhurat blocker"
+            if gap == 1:
+                which = "day before" if d < edate else "day after"
+                return True, f"{ename} ({which}, {edate:%b %d}) — traditionally inauspicious"
+    return False, ""
+
+
+# ─── Dagdha ("burnt") tithi-weekday combinations ─────────────────────
+# Classical rule from Muhurtha Chintamani: certain tithi+weekday pairings
+# form Dagdha yoga — the day is "burnt" and unfit for shubh karya. Rule
+# applies to Vivah, Griha Pravesh, Vidyarambh, Business. Not applied to
+# Namkaran (child-driven timing overrides).
+_DAGDHA_TITHI_BY_DAY: dict[str, str] = {
+    "Sunday":    "Dwadashi",
+    "Monday":    "Ekadashi",
+    "Tuesday":   "Panchami",
+    "Wednesday": "Tritiya",
+    "Thursday":  "Shashti",
+    "Friday":    "Ashtami",
+    "Saturday":  "Navami",
+}
+
+
+def _dagdha_flag(weekday: str, tithi: str) -> tuple[bool, str]:
+    """True if this (weekday, tithi) forms a Dagdha yoga."""
+    dagdha_tithi = _DAGDHA_TITHI_BY_DAY.get(weekday)
+    if dagdha_tithi and dagdha_tithi == tithi:
+        return True, f"Dagdha yoga ({weekday} + {tithi}) — day 'burnt', unfit for shubh karya"
+    return False, ""
 
 
 def _moon_nakshatra_for(chart: Chart, when: datetime) -> str:
@@ -387,11 +488,15 @@ def _combustion_flags(chart: Chart, when: datetime) -> dict[str, bool]:
 
 def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
                 is_panchak: bool, is_chaturmas: bool,
+                kharmas_reason: str, eclipse_reason: str,
                 combust: dict[str, bool]) -> tuple[str, str, tuple[str, ...]]:
     """Return (rating, reason, flags) for the given event type.
 
-    HARD exclusions (return 'avoid'): Panchak, Chaturmas (if enabled),
-    combust karaka (if enabled), avoid-nakshatra, avoid-tithi.
+    HARD exclusions (return 'avoid'), in priority order:
+      1. Eclipse day / ±1 day — universal; applies to all events
+      2. Panchak, Chaturmas, Kharmas, Dagdha (per-event flag)
+      3. Combust karaka (per-event flag)
+      4. Avoid-nakshatra, avoid-tithi
 
     SOFT scoring: +2 favourable tithi, +2 favourable nakshatra, +1 favourable
     weekday. Peak-day (e.g. Thu for Vidyarambh) adds an extra +1. Avoid-weekday
@@ -405,12 +510,24 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
     reasons: list[str] = []
 
     # ─── Hard exclusions ────────────────────────────────────────────
+    # Eclipse is universal — no event override.
+    if eclipse_reason:
+        flags.append("eclipse")
+        return "avoid", eclipse_reason, tuple(flags)
     if rules["check_panchak"] and is_panchak:
         flags.append("panchak")
         return "avoid", f"Panchak day ({nakshatra}) — inauspicious", tuple(flags)
     if rules["check_chaturmas"] and is_chaturmas:
         flags.append("chaturmas")
         return "avoid", "Chaturmas period — traditionally restricted", tuple(flags)
+    if rules.get("check_kharmas") and kharmas_reason:
+        flags.append("kharmas")
+        return "avoid", kharmas_reason, tuple(flags)
+    if rules.get("check_dagdha"):
+        dagdha_is, dagdha_reason = _dagdha_flag(weekday_name, panchang.tithi_name)
+        if dagdha_is:
+            flags.append("dagdha")
+            return "avoid", dagdha_reason, tuple(flags)
     if rules["check_jupiter_combust"] and combust.get("jupiter"):
         flags.append("jupiter_combust")
         return "avoid", "Guru (Jupiter) is combust — marriage/learning karaka not visible", tuple(flags)
@@ -497,6 +614,8 @@ def find_candidates(event_type: str, city: str, start: date,
             nakshatra = _moon_nakshatra_for(base_chart, when)
             is_panchak = nakshatra in _PANCHAK_NAKSHATRAS
             is_chaturmas = _in_chaturmas(d)
+            _kharmas_is, kharmas_reason = _kharmas_flag(base_chart, when)
+            _eclipse_is, eclipse_reason = _eclipse_flag(d)
             combust = _combustion_flags(base_chart, when)
         except Exception:
             continue
@@ -521,7 +640,7 @@ def find_candidates(event_type: str, city: str, start: date,
 
         rating, reason, flags = score_event(
             event_type, p, p.weekday, nakshatra,
-            is_panchak, is_chaturmas, combust,
+            is_panchak, is_chaturmas, kharmas_reason, eclipse_reason, combust,
         )
         candidates.append(MuhuratCandidate(
             d=d, weekday=p.weekday,
