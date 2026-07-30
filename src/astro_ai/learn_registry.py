@@ -560,6 +560,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Guna Milan is one factor — also check Manglik status, 7th house condition of both charts, D-9 Navamsha compatibility\n'
             '• A 32+ match with Manglik mismatch is a real concern; a 20 match with strong D-9 harmony often works'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="sun-mahadasha",
@@ -820,6 +821,7 @@ ARTICLES: tuple[Article, ...] = (
             "• 'Weakens after age 28' is folk tradition, NOT classical scripture (not in BPHS, Phaladeepika, Mansagari, Jataka Parijata)\n"
             "• Effective status is per-chart: PRESENT / MITIGATED / CANCELLED"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     # ── Nakshatra series ─────────────────────────────────────────────────
     # 27 lunar mansions. Each page: archetype, deity, symbol, gana/nadi,
@@ -1684,6 +1686,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Convergence rule: Dasha + Antardasha + transit lining up = astrologically strongest window\n"
             "• 'You'll marry at 27' predictions usually ignore Dasha convergence and actual circumstance — treat with scepticism"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="job-or-business-kundli-guide",
