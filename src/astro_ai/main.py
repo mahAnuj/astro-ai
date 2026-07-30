@@ -1601,8 +1601,8 @@ async def numerology_form(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
         request, "numerology.html",
         {
-            "page_title": "Free Numerology Calculator — Life Path, Destiny, Soul Urge",
-            "page_meta": "Free numerology calculator with Chaldean + Pythagorean systems. Life Path, Destiny, Soul Urge, Personality, Name Number — instant, honest, no upsell.",
+            "page_title": "Free Numerology Calculator — Life Path, Vedic Remedies, Personal Year, Karmic Debt",
+            "page_meta": "Free numerology calculator using Chaldean (Kumar) and Vedic (Johari) systems. Life Path + Destiny + Soul Urge + Personality + Name Number, plus per-Life-Path personality profile (character, strengths, challenges, health, career, best partners, timing), Vedic remedies (gemstone, mantra, day, deity), Personal Year, Karmic Debt (13/14/16/19), and compound-number meanings. Includes 2-person compatibility mode. No signup.",
             "reading": None,
             "error": None,
             "lang": _lang(request),
@@ -1657,8 +1657,8 @@ async def numerology_calculate(
     return templates.TemplateResponse(
         request, "numerology.html",
         {
-            "page_title": f"Numerology Reading for {reading.name}",
-            "page_meta": f"Numerology reading — Life Path {reading.life_path}, Destiny {reading.destiny}, Soul Urge {reading.soul_urge}.",
+            "page_title": f"Numerology Reading for {reading.name} — Life Path {reading.life_path}",
+            "page_meta": f"Free numerology reading for {reading.name}: Life Path {reading.life_path}, Destiny {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}, Name Number {reading.name_number}. Includes character profile, life challenges, career fields, health notes, best partners, favourable timing, and Vedic remedies (gemstone / mantra / day / deity) for the Life Path number.",
             "reading": reading,
             "error": None,
             "lang": _lang(request),
