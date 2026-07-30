@@ -5,6 +5,10 @@
 
 {% block content %}
 {% set active_page = "" %}
+{% set tool_name = page_title %}
+{% set tool_desc = page_meta_description %}
+{% set tool_url = form_action %}
+{% include "_tool_seo.html" %}
 {% include "_nav.html" %}
 
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
