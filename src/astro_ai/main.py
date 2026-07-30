@@ -1470,6 +1470,11 @@ async def muhurat_finder_compute(
     groom_dob: str = Form(""),
     groom_time: str = Form(""),
     groom_place: str = Form(""),
+    # Namkaran only — child's birth details to derive first-letter suggestions
+    # from Moon nakshatra pada at birth. Optional; empty = show generic table.
+    child_dob: str = Form(""),
+    child_time: str = Form(""),
+    child_place: str = Form(""),
 ) -> HTMLResponse:
     from astro_ai import muhurat as _muhurat
     from datetime import date as _date
@@ -1521,6 +1526,19 @@ async def muhurat_finder_compute(
             bride_chart = None
             groom_chart = None
 
+    # Namkaran — child's birth chart to derive first-letter suggestions.
+    child_first_letter = ""
+    child_all_letters: tuple[str, ...] = ()
+    child_nakshatra = ""
+    child_pada = 0
+    if event_type == "namkaran" and child_dob and child_time and child_place:
+        try:
+            child_chart = compute_chart(child_dob, child_time, child_place)
+            child_nakshatra, child_pada = _muhurat._child_moon_pada(child_chart)
+            child_first_letter, child_all_letters = _muhurat._namkaran_first_letters(child_nakshatra, child_pada)
+        except Exception:
+            pass
+
     try:
         candidates = _muhurat.find_candidates(
             event_type, city=city, start=start, days=int(days),
@@ -1562,6 +1580,12 @@ async def muhurat_finder_compute(
          "prefill_bride_time": bride_time, "prefill_bride_place": bride_place,
          "prefill_groom_name": groom_name, "prefill_groom_dob": groom_dob,
          "prefill_groom_time": groom_time, "prefill_groom_place": groom_place,
+         "prefill_child_dob": child_dob, "prefill_child_time": child_time,
+         "prefill_child_place": child_place,
+         "child_first_letter": child_first_letter,
+         "child_all_letters": child_all_letters,
+         "child_nakshatra": child_nakshatra,
+         "child_pada": child_pada,
          "lang": _lang(request)},
     )
 
