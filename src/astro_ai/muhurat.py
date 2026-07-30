@@ -775,6 +775,68 @@ def _choghadiya_windows(weekday: str, sunrise: datetime, sunset: datetime) -> li
     return windows
 
 
+# ─── Namkaran first-letter table (Nakshatra + Pada → syllable) ───────
+# Classical 108-syllable naming table (27 nakshatras × 4 padas). The
+# baby's Moon nakshatra pada at BIRTH determines auspicious first
+# letters for the name. Real Namkaran astrologers consult this table.
+# Sources: Muhurta Chintamani + Ashvalayana Grihya Sutra; consolidated
+# per Drik Panchang / traditional Namkaran manuals.
+_NAMKARAN_LETTERS: dict[str, tuple[str, str, str, str]] = {
+    "Ashwini":         ("Chu", "Che", "Cho", "La"),
+    "Bharani":         ("Li",  "Lu",  "Le",  "Lo"),
+    "Krittika":        ("A",   "I",   "U",   "E"),
+    "Rohini":          ("O",   "Va",  "Vi",  "Vu"),
+    "Mrigashira":      ("Ve",  "Vo",  "Ka",  "Ki"),
+    "Ardra":           ("Ku",  "Gha", "Ang", "Chha"),
+    "Punarvasu":       ("Ke",  "Ko",  "Ha",  "Hi"),
+    "Pushya":          ("Hu",  "He",  "Ho",  "Da"),
+    "Ashlesha":        ("Di",  "Du",  "De",  "Do"),
+    "Magha":           ("Ma",  "Mi",  "Mu",  "Me"),
+    "Purva Phalguni":  ("Mo",  "Ta",  "Ti",  "Tu"),
+    "Uttara Phalguni": ("Te",  "To",  "Pa",  "Pi"),
+    "Hasta":           ("Pu",  "Sha", "Na",  "Tha"),
+    "Chitra":          ("Pe",  "Po",  "Ra",  "Ri"),
+    "Swati":           ("Ru",  "Re",  "Ro",  "Ta"),
+    "Vishakha":        ("Ti",  "Tu",  "Te",  "To"),
+    "Anuradha":        ("Na",  "Ni",  "Nu",  "Ne"),
+    "Jyeshtha":        ("No",  "Ya",  "Yi",  "Yu"),
+    "Mula":            ("Ye",  "Yo",  "Bha", "Bhi"),
+    "Purva Ashadha":   ("Bhu", "Dha", "Pha", "Dha"),
+    "Uttara Ashadha":  ("Bhe", "Bho", "Ja",  "Ji"),
+    "Shravana":        ("Khi", "Khu", "Khe", "Kho"),
+    "Dhanishta":       ("Ga",  "Gi",  "Gu",  "Ge"),
+    "Shatabhisha":     ("Go",  "Sa",  "Si",  "Su"),
+    "Purva Bhadrapada":("Se",  "So",  "Da",  "Di"),
+    "Uttara Bhadrapada":("Du", "Tha", "Jha", "Nya"),
+    "Revati":          ("De",  "Do",  "Cha", "Chi"),
+}
+
+
+def _namkaran_first_letters(child_moon_nakshatra: str, child_moon_pada: int) -> tuple[str, tuple[str, ...]]:
+    """Return (recommended_letter, all_pada_letters_for_nakshatra) for a
+    child's Moon nakshatra + pada. recommended_letter is the pada-specific
+    syllable; all_pada_letters shows the full 4-pada set for context (some
+    families choose from the whole nakshatra rather than pada-strict)."""
+    letters = _NAMKARAN_LETTERS.get(child_moon_nakshatra)
+    if not letters or child_moon_pada < 1 or child_moon_pada > 4:
+        return "", ()
+    return letters[child_moon_pada - 1], letters
+
+
+def _child_moon_pada(chart: Chart) -> tuple[str, int]:
+    """Return (nakshatra_name, pada 1-4) for the child's natal Moon."""
+    moon = next((p for p in chart.planets if p.name == "Moon"), None)
+    if not moon:
+        return "", 0
+    from astro_ai.chart import _rashi_index as _ri
+    abs_long = _ri(moon.rashi) * 30.0 + moon.longitude
+    nak_span = 360.0 / 27.0
+    pada_span = nak_span / 4.0
+    pos_in_nak = abs_long % nak_span
+    pada = int(pos_in_nak / pada_span) + 1
+    return moon.nakshatra, min(pada, 4)
+
+
 def _dagdha_flag(weekday: str, tithi: str) -> tuple[bool, str]:
     """True if this (weekday, tithi) forms a Dagdha yoga."""
     dagdha_tithi = _DAGDHA_TITHI_BY_DAY.get(weekday)
