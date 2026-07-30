@@ -386,6 +386,10 @@ class VedicFlags:
     sade_sati: bool
     sade_sati_phase: str | None        # "rising" | "peak" | "setting"
     saturn_house_from_natal_moon: int  # 1..12 — useful even when not Sade Sati
+    # Additional Saturn-transit conditions that are distinct from Sade Sati
+    # but often confused with it. Per knowledge/vedic_reference.md §2.5:
+    ashtama_shani: bool = False        # Saturn in 8th from natal Moon (~2.5y)
+    kantaka_shani: bool = False        # Saturn in 4th from natal Moon (~2.5y)
 
 
 def compute_vedic_flags(natal: Chart, when: datetime | None = None) -> VedicFlags:
@@ -432,6 +436,12 @@ def compute_vedic_flags(natal: Chart, when: datetime | None = None) -> VedicFlag
         sade_sati=sade_sati_phase is not None,
         sade_sati_phase=sade_sati_phase,
         saturn_house_from_natal_moon=saturn_house_from_moon,
+        # Ashtama Shani (Saturn 8th from Moon) and Kantaka Shani (4th) are
+        # distinct ~2.5y Saturn transits that classical texts flag alongside
+        # Sade Sati. Previously the /sade-sati-check would silently report
+        # "no Sade Sati" for users in these phases, leaving them unaware.
+        ashtama_shani=(saturn_house_from_moon == 8),
+        kantaka_shani=(saturn_house_from_moon == 4),
     )
 
 
@@ -457,6 +467,16 @@ def format_flags_for_prompt(flags: VedicFlags) -> str:
         lines.append(
             f"- Sade Sati: NO (Saturn currently transiting {_ordinal(flags.saturn_house_from_natal_moon)} "
             "house from natal Moon)"
+        )
+    if flags.ashtama_shani:
+        lines.append(
+            "- Ashtama Shani: YES — Saturn transiting 8th from natal Moon (~2.5y). "
+            "Health, hidden losses, transformation themes. Address in Health & Wellbeing."
+        )
+    if flags.kantaka_shani:
+        lines.append(
+            "- Kantaka Shani: YES — Saturn transiting 4th from natal Moon (~2.5y). "
+            "Home, mother, inner peace themes. Address in Family / Wellbeing."
         )
     return "\n".join(lines)
 
@@ -582,6 +602,31 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
             effect="cancels",
             source="Jataka Chandrika",
         ))
+    # Movable-sign (Chara rashi) — per Jataka Parijata, Mars in Libra also
+    # cancels (Aries/Cancer/Capricorn already covered by own/exalted/debilitated).
+    if mars_sign == "Libra":
+        rules.append(ManglikRule(
+            slug="mars_libra_movable",
+            description="Mars in Libra (movable sign — Chara rashi cancellation)",
+            effect="cancels",
+            source="Jataka Parijata",
+        ))
+    # Friendly-sign mitigations — Mars in Jupiter's signs (Sagittarius, Pisces)
+    # or Venus's signs (Taurus, Libra; Libra already handled above)
+    if mars_sign in {"Sagittarius", "Pisces"}:
+        rules.append(ManglikRule(
+            slug="mars_in_jupiters_sign",
+            description=f"Mars in Jupiter's sign ({mars_sign}) — dispositor benefic mitigates",
+            effect="mitigates",
+            source="Phaladeepika",
+        ))
+    if mars_sign == "Taurus":
+        rules.append(ManglikRule(
+            slug="mars_in_venus_sign",
+            description="Mars in Taurus (Venus's sign) — dispositor karaka softens marriage impact",
+            effect="mitigates",
+            source="Phaladeepika",
+        ))
 
     # Ascendant-specific yogakaraka exclusions (Cancer/Leo lagna)
     if lagna_sign == "Cancer":
@@ -599,7 +644,9 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
             source="Jataka Parijata / Muhurtha Chintamani",
         ))
 
-    # Benefic conjunction / aspect — Jupiter is the primary classical cancellation
+    # Benefic conjunction / aspect — Jupiter is the primary classical cancellation.
+    # Extended per vedic_reference.md §1.3: Jupiter aspecting the 7th house or
+    # 7th lord ALSO cancels, not only aspecting Mars directly.
     if mars.house == jupiter.house:
         rules.append(ManglikRule(
             slug="mars_jupiter_conjunct",
@@ -614,8 +661,32 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
             effect="cancels",
             source="Phaladeepika",
         ))
+    elif _jupiter_aspects(jupiter.house, 7):
+        rules.append(ManglikRule(
+            slug="jupiter_aspects_7h",
+            description="Jupiter aspects the 7th house (marital karaka support)",
+            effect="cancels",
+            source="Phaladeepika",
+        ))
+    else:
+        # 7th lord aspect check — find who rules the 7th and see if Jupiter aspects them.
+        # Rashi order = ["Aries (Mesha)", ...]; 7th house sign = lagna sign + 6 mod 12.
+        _RASHI_LORDS = ("Mars", "Venus", "Mercury", "Moon", "Sun", "Mercury",
+                          "Venus", "Mars", "Jupiter", "Saturn", "Saturn", "Jupiter")
+        lagna_idx = _rashi_index(chart.lagna_rashi)
+        seventh_sign_idx = (lagna_idx + 6) % 12
+        seventh_lord_name = _RASHI_LORDS[seventh_sign_idx]
+        seventh_lord = next((p for p in chart.planets if p.name == seventh_lord_name), None)
+        if seventh_lord and _jupiter_aspects(jupiter.house, seventh_lord.house):
+            rules.append(ManglikRule(
+                slug="jupiter_aspects_7l",
+                description=f"Jupiter aspects the 7th lord ({seventh_lord_name})",
+                effect="cancels",
+                source="Phaladeepika",
+            ))
 
-    # Venus with Mars — relationship karaka channels Martian energy
+    # Venus with Mars — conjunction OR 7th aspect (opposition) both help.
+    # 7th aspect: Venus and Mars in houses 7 apart from each other.
     if mars.house == venus.house:
         rules.append(ManglikRule(
             slug="venus_with_mars",
@@ -623,12 +694,25 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
             effect="mitigates",
             source="Classical compatibility practice",
         ))
+    elif (mars.house - venus.house) % 12 == 6:
+        rules.append(ManglikRule(
+            slug="venus_aspects_mars",
+            description="Venus aspects Mars from 7th (opposition — relationship karaka moderates)",
+            effect="cancels",
+            source="Phaladeepika",
+        ))
 
-    # Combustion — Mars within 6° of Sun in the same rashi
-    if mars.rashi == sun.rashi and abs(mars.longitude - sun.longitude) < 6.0:
+    # Combustion — Mars within 6° of Sun on absolute sidereal longitude
+    # (not same-rashi only — a Mars at 29° Aries and Sun at 2° Taurus are 3°
+    # apart across the rashi boundary; the old same-rashi check missed this).
+    mars_abs = _rashi_index(mars.rashi) * 30.0 + mars.longitude
+    sun_abs = _rashi_index(sun.rashi) * 30.0 + sun.longitude
+    sep = abs(mars_abs - sun_abs) % 360.0
+    sep = min(sep, 360.0 - sep)
+    if sep < 6.0:
         rules.append(ManglikRule(
             slug="mars_combust",
-            description=f"Mars combust (within {abs(mars.longitude - sun.longitude):.1f}° of Sun)",
+            description=f"Mars combust (within {sep:.1f}° of Sun)",
             effect="cancels",
             source="Classical matching practice",
         ))
@@ -642,11 +726,21 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
     Two-step model: first detect the raw mathematical Manglik pattern, then
     overlay cancellation/mitigation rules to compute an `effective_status`
     that the UI and LLM can act on without re-deriving classical doctrine.
+
+    Detection is from THREE axes per knowledge/vedic_reference.md §1.1:
+      - Lagna (Ascendant)
+      - Chandra (Moon)
+      - Shukra (Venus)
+    Historically only Lagna + Moon were checked here — a chart genuinely
+    Manglik-from-Venus would silently read as clean, producing a
+    false-negative that misleads marriage decisions.
     """
     mars = next(p for p in chart.planets if p.name == "Mars")
     moon = next(p for p in chart.planets if p.name == "Moon")
+    venus = next(p for p in chart.planets if p.name == "Venus")
     moon_idx = _rashi_index(moon.rashi)
     mars_idx = _rashi_index(mars.rashi)
+    venus_idx = _rashi_index(venus.rashi)
 
     qualifying = set()
     if mars.house in {1, 2, 4, 7, 8, 12}:
@@ -654,6 +748,9 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
     mars_from_moon = ((mars_idx - moon_idx) % 12) + 1
     if mars_from_moon in {1, 2, 4, 7, 8, 12}:
         qualifying.add(mars_from_moon)
+    mars_from_venus = ((mars_idx - venus_idx) % 12) + 1
+    if mars_from_venus in {1, 2, 4, 7, 8, 12}:
+        qualifying.add(mars_from_venus)
 
     if not qualifying:
         return ManglikDetails(
@@ -1550,6 +1647,10 @@ class SadeSatiDetails:
       - overall_start: when Saturn first entered the 12th from natal Moon
       - overall_end:   when Saturn will exit the 2nd from natal Moon
       - phase_end:     when the current phase (rising/peak/setting) ends
+
+    Ashtama Shani (Saturn 8th from Moon) and Kantaka Shani (4th) are distinct
+    ~2.5y Saturn transits — surface them here so /sade-sati-check doesn't
+    silently tell users they're clear when they're actually in one of these.
     """
 
     is_active: bool
@@ -1558,6 +1659,8 @@ class SadeSatiDetails:
     overall_start: date_ | None
     overall_end: date_ | None
     phase_end: date_ | None
+    ashtama_shani: bool = False        # Saturn 8th from Moon (~2.5y)
+    kantaka_shani: bool = False        # Saturn 4th from Moon (~2.5y)
 
 
 def compute_sade_sati_details(chart: Chart, when: datetime | None = None) -> SadeSatiDetails:
@@ -1568,6 +1671,8 @@ def compute_sade_sati_details(chart: Chart, when: datetime | None = None) -> Sad
             is_active=False, phase=None,
             saturn_house_from_moon=flags.saturn_house_from_natal_moon,
             overall_start=None, overall_end=None, phase_end=None,
+            ashtama_shani=flags.ashtama_shani,
+            kantaka_shani=flags.kantaka_shani,
         )
 
     moon_idx = _rashi_index(next(p for p in chart.planets if p.name == "Moon").rashi)
@@ -1585,6 +1690,8 @@ def compute_sade_sati_details(chart: Chart, when: datetime | None = None) -> Sad
         overall_start=overall_start,
         overall_end=overall_end,
         phase_end=phase_end,
+        ashtama_shani=flags.ashtama_shani,
+        kantaka_shani=flags.kantaka_shani,
     )
 
 

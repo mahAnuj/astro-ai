@@ -57,12 +57,38 @@
     </p>
   </section>
 
+  {% elif sade_sati.ashtama_shani %}
+  <section class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 sm:p-8">
+    <div class="text-4xl mb-3" aria-hidden="true">◈</div>
+    <h2 class="font-display text-2xl sm:text-3xl text-amber-800 mb-2">Ashtama Shani (Saturn in 8th from Moon)</h2>
+    <p class="text-sm text-stone-600 mb-3">Not Sade Sati — a related ~2.5-year Saturn transit worth knowing about.</p>
+    <p class="text-stone-700 leading-relaxed">
+      Saturn is currently transiting the <strong>8th house from your natal Moon</strong> — the classical "Ashtama Shani" phase. Themes: hidden struggles, health scrutiny, chronic-condition surfacing, unexpected turns, deep transformation, inheritance / legacy matters. Duration ~2.5 years total. This is not part of Sade Sati but is one of the three notable Saturn-from-Moon transits classical astrologers flag alongside it.
+    </p>
+    <p class="text-stone-700 leading-relaxed mt-3">
+      Approach: prioritise health check-ups, avoid speculation and secret ventures, use the period for inner-work and closure rather than new external launches.
+    </p>
+  </section>
+
+  {% elif sade_sati.kantaka_shani %}
+  <section class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 sm:p-8">
+    <div class="text-4xl mb-3" aria-hidden="true">◈</div>
+    <h2 class="font-display text-2xl sm:text-3xl text-amber-800 mb-2">Kantaka Shani (Saturn in 4th from Moon)</h2>
+    <p class="text-sm text-stone-600 mb-3">Not Sade Sati — a related ~2.5-year Saturn transit worth knowing about.</p>
+    <p class="text-stone-700 leading-relaxed">
+      Saturn is currently transiting the <strong>4th house from your natal Moon</strong> — the classical "Kantaka Shani" (thorn-Saturn) phase. Themes: home stability, mother's health, inner peace tested, property matters, feeling emotionally unmoored, relocation possible. Duration ~2.5 years total. Distinct from Sade Sati but classically noted as a challenging Saturn-from-Moon transit.
+    </p>
+    <p class="text-stone-700 leading-relaxed mt-3">
+      Approach: stabilise home base, tend to mother's wellbeing, defer major home renovations to after the transit unless already committed.
+    </p>
+  </section>
+
   {% else %}
   <section class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-6 sm:p-8">
     <div class="text-4xl mb-3" aria-hidden="true">✓</div>
     <h2 class="font-display text-2xl sm:text-3xl text-emerald-800 mb-2">Sade Sati is not currently active</h2>
     <p class="text-stone-700 leading-relaxed">
-      Saturn is currently transiting the {{ sade_sati.saturn_house_from_moon }}{% if sade_sati.saturn_house_from_moon == 1 %}st{% elif sade_sati.saturn_house_from_moon == 2 %}nd{% else %}th{% endif %} house from your natal Moon — outside the 12th-1st-2nd Sade Sati range. Life continues on its own rhythm; Shani's next visit will begin when he enters your Moon's 12th sign.
+      Saturn is currently transiting the {{ sade_sati.saturn_house_from_moon }}{% if sade_sati.saturn_house_from_moon == 1 %}st{% elif sade_sati.saturn_house_from_moon == 2 %}nd{% else %}th{% endif %} house from your natal Moon — outside the 12th-1st-2nd Sade Sati range, and also not Ashtama Shani (8th) or Kantaka Shani (4th). Life continues on its own rhythm; Shani's next visit will begin when he enters your Moon's 12th sign.
     </p>
   </section>
   {% endif %}

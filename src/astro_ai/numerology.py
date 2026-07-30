@@ -150,8 +150,18 @@ _NAME_NUMBER = {
 
 
 def _clean_name(name: str) -> str:
-    """Uppercase A-Z only, spaces + hyphens stripped."""
-    return re.sub(r"[^A-Z]", "", (name or "").upper())
+    """Uppercase A-Z only, spaces + hyphens stripped.
+
+    Unicode-normalize first (NFD form) so accented letters decompose to
+    base+combining and the combining marks get filtered out — 'José' becomes
+    'JOSE', 'Śrī' becomes 'SRI'. Without this step, accented characters would
+    be silently dropped ('José' → 'JOS') and the numerology of Indian /
+    Latin-alphabet names with diacritics would be wrong.
+    """
+    import unicodedata
+    normalized = unicodedata.normalize("NFD", name or "")
+    ascii_only = normalized.encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^A-Z]", "", ascii_only.upper())
 
 
 def _reduce(n: int) -> int:
