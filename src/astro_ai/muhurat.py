@@ -28,7 +28,8 @@ from zoneinfo import ZoneInfo
 
 from astro_ai.chart import (
     Chart, compute_chart, compute_panchang, compute_transit_snapshot,
-    ChartError, NAKSHATRAS,
+    compute_sade_sati_details, compute_dasha_state,
+    ChartError, NAKSHATRAS, RASHIS,
 )
 
 
@@ -45,6 +46,45 @@ _COMBUST_ORB_VENUS   = 10.0
 _COMBUST_ORB_MERCURY = 12.0    # Mercury has widest orb (per BPHS)
 
 
+# ─── Personal-matching classical tables ──────────────────────────────
+# Tara Bala (star strength): count from user's birth nakshatra to the
+# transit day's nakshatra (mod 9 + 1). BPHS assigns each of the 9
+# positions a name + verdict.
+_TARA_BALA_NAMES = {
+    1: ("Janma",     "ok"),        # own birth star — variable (traditionally cautious)
+    2: ("Sampat",    "good"),      # wealth
+    3: ("Vipat",     "avoid"),     # calamity
+    4: ("Kshema",    "good"),      # welfare
+    5: ("Pratyari",  "avoid"),     # obstacle
+    6: ("Sadhaka",   "good"),      # achievement
+    7: ("Vadha",     "avoid"),     # destruction
+    8: ("Mitra",     "good"),      # friend
+    9: ("Ati-Mitra", "excellent"), # best friend
+}
+
+# Chandra Bala (Moon strength): count from user's natal Moon rashi to
+# transit-day Moon rashi (1..12). BPHS marks certain houses as good/bad.
+_CHANDRA_BALA_STRONG = {1, 3, 6, 7, 10, 11}
+_CHANDRA_BALA_WEAK   = {4, 8, 12}
+
+
+@dataclass(frozen=True)
+class PersonalMatch:
+    """Personal chart context for a muhurat candidate.
+
+    Computed only when a user chart is supplied to find_candidates(). Never
+    overrides the classical rating (that stays universal) — surfaces as an
+    additional column so users see BOTH the classical read and the personal
+    overlay.
+    """
+    tara_bala: str          # "excellent" | "good" | "ok" | "avoid"
+    tara_bala_name: str     # "Sampat" (position 2) etc.
+    tara_position: int      # 1..9
+    chandra_bala: str       # "strong" | "neutral" | "weak"
+    chandra_house: int      # 1..12
+    notes: tuple[str, ...]  # e.g. ["Sade Sati Peak — cautious with major events"]
+
+
 @dataclass(frozen=True)
 class MuhuratCandidate:
     """One candidate date with its Panchang details + rating."""
@@ -56,6 +96,7 @@ class MuhuratCandidate:
     rating: str               # "excellent" | "good" | "acceptable" | "caution" | "avoid"
     reason: str               # short human explanation
     flags: tuple[str, ...]    # e.g. ("panchak", "chaturmas", "jupiter_combust")
+    personal: PersonalMatch | None = None  # only set when a user chart is passed
 
 
 # ─── Chaturmas date ranges (Devshayani → Devuthani Ekadashi) ─────────
@@ -222,6 +263,101 @@ def _moon_nakshatra_for(chart: Chart, when: datetime) -> str:
     return moon.nakshatra if moon else ""
 
 
+def _transit_moon(chart: Chart, when: datetime):
+    """Return the transit-day Moon planet object (has .rashi and .nakshatra)."""
+    snap = compute_transit_snapshot(chart, when)
+    return next((p for p in snap.planets if p.name == "Moon"), None)
+
+
+def _tara_bala(user_moon_nakshatra: str, transit_nakshatra: str) -> tuple[int, str, str]:
+    """Return (position, name, verdict) for the user's Tara Bala on this day.
+
+    Position = (transit_index - user_index) mod 9 + 1. Names/verdicts from
+    _TARA_BALA_NAMES (Janma, Sampat, Vipat, ...). Returns (0, '', '') if
+    either nakshatra unknown.
+    """
+    try:
+        u_idx = NAKSHATRAS.index(user_moon_nakshatra)
+        t_idx = NAKSHATRAS.index(transit_nakshatra)
+    except ValueError:
+        return 0, "", ""
+    position = ((t_idx - u_idx) % 9) + 1
+    name, verdict = _TARA_BALA_NAMES.get(position, ("", ""))
+    return position, name, verdict
+
+
+def _chandra_bala(user_moon_rashi: str, transit_moon_rashi: str) -> tuple[int, str]:
+    """Return (house 1..12, verdict) for the user's Chandra Bala on this day."""
+    try:
+        u_idx = RASHIS.index(user_moon_rashi)
+        t_idx = RASHIS.index(transit_moon_rashi)
+    except ValueError:
+        return 0, ""
+    house = ((t_idx - u_idx) % 12) + 1
+    if house in _CHANDRA_BALA_STRONG:
+        verdict = "strong"
+    elif house in _CHANDRA_BALA_WEAK:
+        verdict = "weak"
+    else:
+        verdict = "neutral"
+    return house, verdict
+
+
+def _personal_match_for(user_chart: Chart, when: datetime,
+                         transit_nakshatra: str,
+                         static_notes: tuple[str, ...]) -> PersonalMatch | None:
+    """Compute Tara Bala + Chandra Bala + notes for one candidate day.
+
+    `static_notes` are chart-level notes computed once (Sade Sati, Rahu/Ketu
+    Mahadasha) — passed through per day rather than recomputed.
+    """
+    user_moon = next((p for p in user_chart.planets if p.name == "Moon"), None)
+    if user_moon is None:
+        return None
+    transit_moon = _transit_moon(user_chart, when)
+    if transit_moon is None:
+        return None
+    t_pos, t_name, t_verdict = _tara_bala(user_moon.nakshatra, transit_nakshatra)
+    c_house, c_verdict = _chandra_bala(user_moon.rashi, transit_moon.rashi)
+    return PersonalMatch(
+        tara_bala=t_verdict, tara_bala_name=t_name, tara_position=t_pos,
+        chandra_bala=c_verdict, chandra_house=c_house,
+        notes=static_notes,
+    )
+
+
+def _static_personal_notes(user_chart: Chart, start: date) -> tuple[str, ...]:
+    """Chart-level cautions that apply to the whole search range.
+
+    Computed once at start-of-search rather than per day since they change
+    slowly (Sade Sati spans years; Mahadasha spans years too). If Sade Sati
+    ends mid-range or Mahadasha changes mid-range, the note may slightly
+    over-report — that's an acceptable trade for perf.
+    """
+    notes: list[str] = []
+    anchor = datetime.combine(start, datetime.min.time().replace(hour=12),
+                                tzinfo=ZoneInfo(user_chart.birth_tz))
+    try:
+        ss = compute_sade_sati_details(user_chart, anchor)
+        if ss.is_active:
+            phase_label = (ss.phase or "").capitalize()
+            if ss.phase == "peak":
+                notes.append(f"Sade Sati {phase_label} phase — cautious with major life events")
+            else:
+                notes.append(f"Sade Sati {phase_label} — soft caution around Saturn transits")
+    except Exception:
+        pass
+    try:
+        dasha = compute_dasha_state(user_chart, anchor)
+        if dasha.mahadasha.lord in ("Rahu", "Ketu"):
+            notes.append(f"{dasha.mahadasha.lord} Mahadasha active — some traditions advise deferring major muhurats")
+        elif dasha.antardasha.lord in ("Rahu", "Ketu"):
+            notes.append(f"{dasha.antardasha.lord} Antardasha within {dasha.mahadasha.lord} Mahadasha — mild caution")
+    except Exception:
+        pass
+    return tuple(notes)
+
+
 def _combustion_flags(chart: Chart, when: datetime) -> dict[str, bool]:
     """Return {'jupiter': bool, 'venus': bool, 'mercury': bool} at the moment."""
     snap = compute_transit_snapshot(chart, when)
@@ -322,11 +458,18 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
 
 
 def find_candidates(event_type: str, city: str, start: date,
-                    days: int = 90) -> list[MuhuratCandidate]:
+                    days: int = 90,
+                    personal_chart: Chart | None = None) -> list[MuhuratCandidate]:
     """Return muhurat candidates for the given event in the next `days` days.
 
     Best-first sorted. Includes 'avoid' rows so users see which dates were
     rejected and why (transparency > filtering).
+
+    If `personal_chart` is provided (user's natal Chart), each candidate is
+    annotated with a PersonalMatch containing Tara Bala + Chandra Bala per
+    day and chart-level notes (Sade Sati phase, Rahu/Ketu Mahadasha). The
+    classical rating stays universal — personal factors surface separately
+    so users see BOTH reads.
     """
     if event_type not in EVENT_RULES:
         raise ValueError(f"Unknown event type: {event_type}")
@@ -340,6 +483,12 @@ def find_candidates(event_type: str, city: str, start: date,
     days = max(1, min(days, 365))
     tz = ZoneInfo(base_chart.birth_tz)
 
+    # Chart-level personal notes computed ONCE per search (Sade Sati + Dasha
+    # move slowly; over-report of ~months is acceptable trade for perf).
+    static_notes: tuple[str, ...] = ()
+    if personal_chart is not None:
+        static_notes = _static_personal_notes(personal_chart, start)
+
     for i in range(days):
         d = start + timedelta(days=i)
         try:
@@ -352,6 +501,10 @@ def find_candidates(event_type: str, city: str, start: date,
         except Exception:
             continue
 
+        personal: PersonalMatch | None = None
+        if personal_chart is not None:
+            personal = _personal_match_for(personal_chart, when, nakshatra, static_notes)
+
         # Abujha override — universally auspicious days for this event type.
         abujha_name = _abujha_for(d, event_type)
         if abujha_name:
@@ -362,6 +515,7 @@ def find_candidates(event_type: str, city: str, start: date,
                 rating="excellent",
                 reason=f"Abujha Muhurat — {abujha_name} (universally auspicious)",
                 flags=("abujha_muhurat",),
+                personal=personal,
             ))
             continue
 
@@ -374,6 +528,7 @@ def find_candidates(event_type: str, city: str, start: date,
             tithi=p.tithi_name, tithi_paksha=p.tithi_paksha,
             nakshatra=nakshatra,
             rating=rating, reason=reason, flags=flags,
+            personal=personal,
         ))
 
     tier_order = {"excellent": 0, "good": 1, "acceptable": 2, "caution": 3, "avoid": 4}
