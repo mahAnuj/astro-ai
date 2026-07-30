@@ -4,9 +4,9 @@
 {% block meta_description %}{{ page_meta }}{% endblock %}
 
 {% block content %}
-{% set active_page = "" %}
+{% set active_page = "numerology" %}
 {% set tool_name = "Numerology Calculator" %}
-{% set tool_desc = "Free numerology calculator (Chaldean + Pythagorean) — Life Path, Destiny, Soul Urge, Personality, Name Number." %}
+{% set tool_desc = "Free Vedic + Chaldean numerology — Life Path, Birthday, Destiny, Soul Urge, Personality, Personal Year, Karmic Debt flags, plus per-number remedies (gemstone, colour, deity, mantra)." %}
 {% set tool_url = "/numerology" %}
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
@@ -15,9 +15,9 @@
 
   {% if not reading %}
   <header class="text-center">
-    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700 mb-3">Free Numerology Calculator</h1>
+    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700 mb-3">Free Vedic Numerology Calculator</h1>
     <p class="text-base sm:text-lg text-stone-600 max-w-xl mx-auto leading-relaxed">
-      Instant Chaldean + Pythagorean numerology reading — Life Path, Destiny, Soul Urge, Personality, and Name Number. Free, no sign-up.
+      Instant reading with Life Path, Birthday, Destiny, Soul Urge, Personality numbers PLUS Personal Year forecast, Karmic Debt flags, and per-number remedies (gemstone, colour, deity, mantra) from Johari's Vedic-integrated + Kumar's Chaldean systems. Free, no sign-up.
     </p>
   </header>
 
@@ -87,25 +87,85 @@
     </p>
   </header>
 
+  {# Karmic Debt banner — surfaces Kumar's Ch.1 category prominently.
+     Presence of 13/14/16/19 in any Core Number's intermediate calc
+     is a soul-work indicator worth naming rather than burying. #}
+  {% if reading.karmic_debt_numbers %}
+  <section class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 sm:p-6">
+    <h2 class="font-display text-lg text-amber-900 mb-2">Karmic Debt Numbers detected: {{ reading.karmic_debt_numbers | join(', ') }}</h2>
+    <p class="text-sm text-stone-700 leading-relaxed">
+      Per Kumar's classical framework, these numbers appearing in your Core Number intermediate sums indicate specific karmic work in this life. Not "unlucky" — they mark themes your soul chose to encounter and resolve. Number 13 = ethical vigilance / avoid selfishness; 14 = master balance and freedom; 16 = beware pride and sudden reversals; 19 = handle power without self-glorification. See our upcoming Karmic Debt guide for depth.
+    </p>
+  </section>
+  {% endif %}
+
+  {# Primary numbers — 5 Core Numbers per Kumar + Birthday split from Life Path. #}
   <section class="grid gap-4">
-    {% for num, label, meaning in [
-      (reading.life_path,   'Life Path Number',   reading.life_path_meaning),
-      (reading.destiny,     'Destiny Number',     reading.destiny_meaning),
-      (reading.soul_urge,   'Soul Urge Number',   reading.soul_urge_meaning),
-      (reading.personality, 'Personality Number', reading.personality_meaning),
-      (reading.name_number, 'Name Number',        reading.name_number_meaning),
+    {% for num, label, meaning, subtitle in [
+      (reading.life_path,   'Life Path Number',   reading.life_path_meaning,   'Kumar: Life Path · Johari: Bhagyank (Destiny). Main theme.'),
+      (reading.birthday,    'Birthday Number',    reading.birthday_meaning,    'Kumar: Birthday · Johari: Mulank (Psychic). Self-image, dominant to age ~40.'),
+      (reading.destiny,     'Expression Number',  reading.destiny_meaning,     'Kumar: Expression · Johari: Namank (Name). Your natural role.'),
+      (reading.soul_urge,   'Heart Desire',       reading.soul_urge_meaning,   'Kumar: Heart Desire. From vowels — what you inwardly want.'),
+      (reading.personality, 'Personality Number', reading.personality_meaning, 'Kumar: Personality. From consonants — how others perceive you.'),
     ] %}
     <article class="bg-white rounded-2xl border-2 border-astro-100 p-5 sm:p-6 flex gap-4">
       <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-astro-50 border-2 border-astro-300 flex items-center justify-center">
         <span class="font-display text-3xl sm:text-4xl text-astro-700 tabular-nums">{{ num }}</span>
       </div>
       <div class="min-w-0 flex-1">
-        <h2 class="font-display text-lg text-astro-800 mb-1.5">{{ label }}</h2>
+        <h2 class="font-display text-lg text-astro-800 mb-0.5">{{ label }}</h2>
+        <div class="text-[11px] text-stone-500 mb-2 italic">{{ subtitle }}</div>
         <p class="text-sm text-stone-700 leading-relaxed">{{ meaning }}</p>
       </div>
     </article>
     {% endfor %}
   </section>
+
+  {# Vedic remedies for Life Path — Johari's per-number planetary remedies. #}
+  {% if reading.life_path_remedy %}
+  {% set rem = reading.life_path_remedy %}
+  <section class="bg-white rounded-2xl border-2 border-astro-200 shadow-sm p-5 sm:p-6">
+    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Vedic Remedies</div>
+    <h2 class="font-display text-xl text-astro-800 mb-1">Your Life Path {{ reading.life_path }} is ruled by {{ rem.planet }} ({{ rem.planet_sanskrit }})</h2>
+    <p class="text-xs text-stone-500 mb-4 italic">Per Johari's Vedic-integrated system. Practise consistency over intensity — remedies work by shifting your relationship with the planet's energy, not by magic.</p>
+    <div class="grid sm:grid-cols-2 gap-3 text-sm">
+      <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-500">Best day</span><div class="text-stone-800 font-medium">{{ rem.day }}</div></div>
+      <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-500">Direction to face</span><div class="text-stone-800 font-medium">{{ rem.direction }}</div></div>
+      <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-500">Deity</span><div class="text-stone-800 font-medium">{{ rem.deity }}</div></div>
+      <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-500">Ayurvedic dosha</span><div class="text-stone-800 font-medium">{{ rem.dosha }}</div></div>
+      <div class="p-3 bg-stone-50 rounded-lg sm:col-span-2"><span class="text-xs uppercase text-stone-500">Favourable colours</span><div class="text-stone-800 font-medium">{{ rem.colors }}</div></div>
+      <div class="p-3 bg-stone-50 rounded-lg sm:col-span-2"><span class="text-xs uppercase text-stone-500">Mantra (108 repetitions daily)</span><div class="text-stone-800 font-medium font-serif">{{ rem.mantra }}</div></div>
+      <div class="p-3 bg-stone-50 rounded-lg sm:col-span-2"><span class="text-xs uppercase text-stone-500">Fasting practice (optional)</span><div class="text-stone-800 text-sm">{{ rem.fasting_day }}</div></div>
+    </div>
+    <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900">
+      <div class="font-semibold mb-1">Gemstone: {{ rem.gemstone }}</div>
+      <div>{{ rem.gemstone_caveat }}</div>
+    </div>
+  </section>
+  {% endif %}
+
+  {# Personal Year forecast — Kumar Ch.1 formula. #}
+  {% if reading.personal_year %}
+  <section class="bg-gradient-to-br from-astro-50 to-stone-50 rounded-2xl border border-astro-200 p-5 sm:p-6">
+    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Personal Year {{ reading.personal_year_target }}</div>
+    <div class="flex items-baseline gap-3 mb-2">
+      <span class="font-display text-5xl text-astro-800 tabular-nums">{{ reading.personal_year }}</span>
+      <span class="text-sm text-stone-600">of the 9-year cycle</span>
+    </div>
+    <p class="text-sm text-stone-700 leading-relaxed">{{ reading.personal_year_theme }}</p>
+    <p class="text-xs text-stone-500 mt-3 italic">Kumar's formula: birth-month digits + birth-day digits + target-year digits, reduced. Cycles 1-9 across your life; each year sets the year's theme.</p>
+  </section>
+  {% endif %}
+
+  {# Compound number — Johari §5 attaches meaning to the unreduced name total. #}
+  {% if reading.name_compound and reading.name_compound_meaning %}
+  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
+    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Name Compound Number</div>
+    <h2 class="font-display text-lg text-astro-800 mb-2">Compound {{ reading.name_compound }}</h2>
+    <p class="text-sm text-stone-700 leading-relaxed">{{ reading.name_compound_meaning }}</p>
+    <p class="text-xs text-stone-500 mt-2 italic">Per Johari §5: unreduced name totals 10-52 carry secondary vibrations alongside the reduced Name Number ({{ reading.name_number }}).</p>
+  </section>
+  {% endif %}
 
   <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6">
     <h3 class="font-display text-lg text-astro-800 mb-3">Compare with your Vedic chart</h3>
