@@ -96,6 +96,51 @@ _CHATURMAS_RANGES: dict[int, tuple[date, date]] = {
 }
 
 
+# ─── Abujha Muhurats (self-auspicious days that override Panchang) ────
+# Certain days are considered UNIVERSALLY auspicious for weddings in
+# classical tradition — no muhurat calculation needed. These "Abujha" (also
+# called "swayam-siddha" — self-perfected) dates override normal scoring:
+#
+#   Tulsi Vivah      — Kartik Shukla Dwadashi (day after Devuthani Ekadashi).
+#                       Marks end of Chaturmas + ceremonial marriage of Tulsi
+#                       to Shaligram (Vishnu). Extremely auspicious for weddings.
+#   Basant Panchami  — Magha Shukla Panchami. Saraswati puja day, universally
+#                       auspicious for weddings, especially in North India.
+#   Akshaya Tritiya  — Vaishakha Shukla Tritiya. "Eternal" day — anything begun
+#                       today is said to bring lasting benefit. Very popular
+#                       muhurat, especially for weddings + gold purchases.
+#   Devuthani Ekadashi — Kartik Shukla Ekadashi. Vishnu "awakens" from
+#                       Chaturmas sleep. Marks the start of the wedding season.
+#   Bhadli/Bhadwa Navami — Ashadha Shukla Navami (regionally significant
+#                          in Rajasthan/MP as an abujha muhurat).
+#
+# Dates from Drik Panchang. Update annually — these shift 10-20 days per year
+# because they follow the lunar calendar.
+_ABUJHA_MUHURATS: dict[int, list[tuple[date, str]]] = {
+    2026: [
+        (date(2026, 4, 30), "Akshaya Tritiya"),
+        (date(2026, 6, 24), "Bhadli Navami"),
+        (date(2026, 11, 12), "Tulsi Vivah / Devuthani Ekadashi season"),
+        (date(2026, 11, 13), "Tulsi Vivah"),
+    ],
+    2027: [
+        (date(2027, 1, 23), "Basant Panchami"),
+        (date(2027, 5, 19), "Akshaya Tritiya"),
+        (date(2027, 6, 13), "Bhadli Navami"),
+        (date(2027, 10, 31), "Devuthani Ekadashi"),
+        (date(2027, 11, 1),  "Tulsi Vivah"),
+    ],
+}
+
+
+def _abujha_name(d: date) -> str:
+    """Return the Abujha Muhurat name for this date, or empty string."""
+    for entry_date, name in _ABUJHA_MUHURATS.get(d.year, []):
+        if entry_date == d:
+            return name
+    return ""
+
+
 def _in_chaturmas(d: date) -> bool:
     """True if the date falls within the traditional Chaturmas restriction window."""
     rng = _CHATURMAS_RANGES.get(d.year)
@@ -239,6 +284,21 @@ def find_vivah_candidates(city: str, start: date, days: int = 90) -> list[Muhura
             is_chaturmas = _in_chaturmas(d)
             jup_c, ven_c = _combustion_flags(base_chart, when)
         except Exception:
+            continue
+
+        # Abujha Muhurat check FIRST — these override normal Panchang scoring.
+        # Tulsi Vivah, Basant Panchami, Akshaya Tritiya etc. are universally
+        # auspicious for weddings regardless of other tithi/nakshatra factors.
+        abujha_name = _abujha_name(d)
+        if abujha_name:
+            candidates.append(MuhuratCandidate(
+                d=d, weekday=p.weekday,
+                tithi=p.tithi_name, tithi_paksha=p.tithi_paksha,
+                nakshatra=nakshatra,
+                rating="excellent",
+                reason=f"Abujha Muhurat — {abujha_name} (universally auspicious, no calculation needed)",
+                flags=("abujha_muhurat",),
+            ))
             continue
 
         rating, reason, flags = score_vivah(
