@@ -1432,12 +1432,9 @@ async def cosmic_check_in(request: Request) -> HTMLResponse:
 
 @app.get("/muhurat", response_class=HTMLResponse)
 async def muhurat_finder_form(request: Request) -> HTMLResponse:
-    """Muhurat Finder (Issue #108) — 5 classical event types.
-
-    Supports Vivah, Griha Pravesh, Namkaran, Vidyarambh, Business start.
-    Each event uses per-event scoring rules from muhurat.EVENT_RULES.
-    Abujha Muhurats (Tulsi Vivah, Basant Panchami etc.) override normal
-    scoring when the date qualifies for the chosen event.
+    """Muhurat Finder (Issue #108) — 5 classical event types with optional
+    personal-chart matching (Tara Bala + Chandra Bala + Sade Sati + Dasha
+    caution when a saved chart is in session).
     """
     from datetime import date as _date
     from astro_ai.muhurat import EVENT_RULES
@@ -1450,7 +1447,9 @@ async def muhurat_finder_form(request: Request) -> HTMLResponse:
          "prefill_city": prefill_city,
          "prefill_start": _date.today().isoformat(),
          "event_types": event_types,
-         "selected_event": "vivah"},
+         "selected_event": "vivah",
+         "has_saved_chart": saved is not None,
+         "use_personal": False},
     )
 
 
@@ -1461,16 +1460,22 @@ async def muhurat_finder_compute(
     city: str = Form(...),
     start_date: str = Form(...),
     days: int = Form(60),
+    use_personal: str = Form(""),
 ) -> HTMLResponse:
     from astro_ai import muhurat as _muhurat
     from datetime import date as _date
     event_types = [(k, v["label"]) for k, v in _muhurat.EVENT_RULES.items()]
+    saved = load_collection(request).active
+    has_saved_chart = saved is not None
+    wants_personal = bool(use_personal) and has_saved_chart
+
     if event_type not in _muhurat.EVENT_RULES:
         return templates.TemplateResponse(
             request, "muhurat_finder.html",
             {"candidates": None, "error": f"Unknown event type: {event_type}",
              "lang": _lang(request), "prefill_city": city, "prefill_start": start_date,
-             "event_types": event_types, "selected_event": event_type},
+             "event_types": event_types, "selected_event": event_type,
+             "has_saved_chart": has_saved_chart, "use_personal": wants_personal},
             status_code=400,
         )
     try:
@@ -1480,27 +1485,45 @@ async def muhurat_finder_compute(
             request, "muhurat_finder.html",
             {"candidates": None, "error": "Invalid start date.", "lang": _lang(request),
              "prefill_city": city, "prefill_start": start_date,
-             "event_types": event_types, "selected_event": event_type},
+             "event_types": event_types, "selected_event": event_type,
+             "has_saved_chart": has_saved_chart, "use_personal": wants_personal},
             status_code=400,
         )
+
+    personal_chart = None
+    personal_chart_error = ""
+    if wants_personal:
+        try:
+            details = saved.to_birth_details()
+            personal_chart = compute_chart(details.birth_date, details.birth_time, details.birth_place)
+        except Exception as err:  # noqa: BLE001
+            personal_chart_error = f"Could not compute your chart for personal matching: {err}"
+
     try:
-        candidates = _muhurat.find_candidates(event_type, city=city, start=start, days=int(days))
+        candidates = _muhurat.find_candidates(
+            event_type, city=city, start=start, days=int(days),
+            personal_chart=personal_chart,
+        )
     except Exception as err:  # noqa: BLE001
         _fire_error_alert(request, err, f"muhurat:compute:{event_type}")
         return templates.TemplateResponse(
             request, "muhurat_finder.html",
             {"candidates": None, "error": f"Could not compute muhurats: {err}",
              "lang": _lang(request), "prefill_city": city, "prefill_start": start_date,
-             "event_types": event_types, "selected_event": event_type},
+             "event_types": event_types, "selected_event": event_type,
+             "has_saved_chart": has_saved_chart, "use_personal": wants_personal},
             status_code=500,
         )
     event_label = _muhurat.EVENT_RULES[event_type]["label"]
     return templates.TemplateResponse(
         request, "muhurat_finder.html",
         {"candidates": candidates, "city": city, "start_date": start_date,
-         "prefill_city": city, "prefill_start": start_date, "error": None,
+         "prefill_city": city, "prefill_start": start_date,
+         "error": personal_chart_error or None,
          "event_types": event_types, "selected_event": event_type,
          "event_label": event_label,
+         "has_saved_chart": has_saved_chart, "use_personal": wants_personal,
+         "personal_active": personal_chart is not None,
          "lang": _lang(request)},
     )
 
