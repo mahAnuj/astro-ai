@@ -83,13 +83,14 @@
       {{ link("/kundli",   t(lang, 'nav_natal_link'),    'natal') }}
       {{ link("/matching", t(lang, 'nav_matching_link'), 'matching') }}
       {{ link("/rashifal", t(lang, 'nav_rashifal_link'), 'rashifal') }}
+      {{ link("/numerology", "Numerology",               'numerology') }}
       {{ link("/ask",      t(lang, 'nav_ask_link'),      'ask') }}
       {{ link("/learn/",   "Learn",                      'learn') }}
 
-      {# TOOLS dropdown — the free tools shipped in cycle 8. Top-level
-         so users can find them without hunting through "More". On mobile
-         renders as a flat labeled section inside the hamburger. #}
-      {% set tools_pages = ['muhurat','manglik-check','sade-sati-check','kaal-sarp-check','numerology'] %}
+      {# TOOLS dropdown — the free tools shipped in cycle 8. Numerology
+         was promoted out of this dropdown to top-level nav (cycle 9) since
+         it draws a distinct audience (numerology-curious users). #}
+      {% set tools_pages = ['muhurat','manglik-check','sade-sati-check','kaal-sarp-check'] %}
       {% set tools_active = active_page in tools_pages %}
       <div class="nav-dropdown md:relative" data-nav-dropdown>
         <button type="button"
@@ -110,7 +111,6 @@
           {{ dlink("/manglik-check",   "Manglik Check",    'manglik-check') }}
           {{ dlink("/sade-sati-check", "Sade Sati Report", 'sade-sati-check') }}
           {{ dlink("/kaal-sarp-check", "Kaal Sarp Check",  'kaal-sarp-check') }}
-          {{ dlink("/numerology",      "Numerology",       'numerology') }}
         </div>
       </div>
 
