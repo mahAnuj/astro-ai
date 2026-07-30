@@ -547,7 +547,18 @@ async def sitemap() -> Response:
         ("/rashifal", "daily",   "0.9"),
         ("/matching", "monthly", "0.7"),
         ("/learn/",   "weekly",  "0.8"),
+        # Tools
+        ("/muhurat",         "monthly", "0.7"),
+        ("/manglik-check",   "monthly", "0.7"),
+        ("/sade-sati-check", "monthly", "0.7"),
+        ("/kaal-sarp-check", "monthly", "0.7"),
+        ("/numerology",      "monthly", "0.7"),
+        ("/check-in",        "monthly", "0.6"),
     ]
+    # Muhurat per-event landing pages — evergreen SEO copy per event type.
+    from astro_ai.muhurat import EVENT_LANDING
+    for event_key, landing in EVENT_LANDING.items():
+        pages.append((f"/muhurat/{landing['slug']}", "monthly", "0.7"))
     # Auto-include every learning article so Google can crawl them all from
     # one place. New articles dropped into learn_registry appear here
     # automatically — no sitemap maintenance.
@@ -1428,6 +1439,36 @@ async def cosmic_check_in(request: Request) -> HTMLResponse:
         max_age=400 * 24 * 3600, httponly=True, samesite="lax",
     )
     return response
+
+
+@app.get("/muhurat/{event_slug}", response_class=HTMLResponse)
+async def muhurat_landing(request: Request, event_slug: str) -> HTMLResponse:
+    """Per-event Muhurat landing page (Issue #108).
+
+    /muhurat/vivah, /muhurat/griha-pravesh, /muhurat/namkaran, /muhurat/vidyarambh,
+    /muhurat/business. Renders evergreen classical intro + embedded finder form
+    pre-selected to the event type. Slug (with hyphens) maps to EVENT_RULES key
+    (with underscores) via replace.
+    """
+    from datetime import date as _date
+    from astro_ai.muhurat import EVENT_RULES, EVENT_LANDING
+    # Accept both hyphenated URL slugs and underscored keys for robustness.
+    event_key = event_slug.replace("-", "_")
+    landing = EVENT_LANDING.get(event_key)
+    rules = EVENT_RULES.get(event_key)
+    if landing is None or rules is None:
+        raise HTTPException(status_code=404, detail=f"Unknown event type: {event_slug}")
+    saved = load_collection(request).active
+    prefill_city = saved.birth_place if saved else ""
+    return templates.TemplateResponse(
+        request, "muhurat_landing.html",
+        {"landing": landing, "event_key": event_key,
+         "event_label": rules["label"],
+         "prefill_city": prefill_city,
+         "prefill_start": _date.today().isoformat(),
+         "has_saved_chart": saved is not None,
+         "lang": _lang(request)},
+    )
 
 
 @app.get("/muhurat", response_class=HTMLResponse)
