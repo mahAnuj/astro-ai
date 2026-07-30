@@ -1347,22 +1347,22 @@ async def kaal_sarp_check_result(
 
 @app.get("/check-in", response_class=HTMLResponse)
 async def cosmic_check_in(request: Request) -> HTMLResponse:
-    """Cosmic Check-in MVP (Issue #116) — 3-step daily reflective ritual.
+    """Cosmic Check-in (Issue #116) — 3-step daily reflective ritual.
 
     NOT a gamified habit tracker. No streaks, no points, no push nudges.
     Just a contemplative 30-second practice: tap rashi → read shloka →
     optional intention. Intention text is client-side only, never sent
     to server (privacy).
 
-    MVP scope shipped:
-      - 12-rashi mandala tap
-      - Today's shloka from shloks.py
-      - Optional intention text (client-only)
-      - Sadhana acknowledgment on completion
-    Deferred:
+    Cycle 9 polish added:
+      - Auto-highlight user's moon rashi if saved chart in session
+      - Gentle welcome-back copy on return visits (from last-visit cookie
+        — NOT a streak counter; count of days since last visit only, and
+        only shown as prose, never persisted server-side)
+    Still deferred:
       - 3D mandala for step 1 (adaptive-bandwidth 3D chunk)
-      - Opt-in daily email nudge with unsubscribe
-      - Last-visit tracking for gentle "welcome back N days" copy
+      - Opt-in daily email nudge with unsubscribe (needs cron + tokenised
+        unsubscribe endpoint — real feature, not polish)
     """
     from datetime import date as _date
     from astro_ai import shloks
@@ -1381,10 +1381,53 @@ async def cosmic_check_in(request: Request) -> HTMLResponse:
         {"name": "Kumbh (Aquarius)", "slug": "kumbh",    "glyph": "♒"},
         {"name": "Meen (Pisces)",    "slug": "meen",     "glyph": "♓"},
     ]
-    return templates.TemplateResponse(
+
+    # Auto-highlight the user's moon rashi if a chart is in session. Compute
+    # once from the active saved chart; fall back silently if anything fails
+    # (check-in must render even without a chart).
+    user_rashi_slug = ""
+    saved = load_collection(request).active
+    if saved is not None:
+        try:
+            details = saved.to_birth_details()
+            _chart = compute_chart(details.birth_date, details.birth_time, details.birth_place)
+            moon = next((p for p in _chart.planets if p.name == "Moon"), None)
+            if moon is not None:
+                from astro_ai.chart import RASHIS
+                if moon.rashi in RASHIS:
+                    user_rashi_slug = rashis[RASHIS.index(moon.rashi)]["slug"]
+        except Exception:
+            pass
+
+    # Welcome-back copy — read the last-visit cookie (YYYY-MM-DD). This is
+    # NOT a streak — no counter is persisted server-side and we never show
+    # "day N of your streak". We show at most a soft "welcome back" line if
+    # the gap is >= 2 days. Cookie is set on this response.
+    today = _date.today()
+    welcome_days = 0
+    last_visit_raw = request.cookies.get("checkin_last_visit", "")
+    if last_visit_raw:
+        try:
+            last_visit = _date.fromisoformat(last_visit_raw)
+            gap = (today - last_visit).days
+            if 2 <= gap <= 60:  # cap so a year-away user doesn't get a weird "365 days" note
+                welcome_days = gap
+        except ValueError:
+            pass
+
+    response = templates.TemplateResponse(
         request, "check_in.html",
-        {"rashis": rashis, "shlok": shlok, "lang": _lang(request)},
+        {"rashis": rashis, "shlok": shlok, "lang": _lang(request),
+         "user_rashi_slug": user_rashi_slug,
+         "welcome_days": welcome_days},
     )
+    # 400-day cookie, HttpOnly, SameSite=Lax. Not sensitive but harmless
+    # to lock down.
+    response.set_cookie(
+        "checkin_last_visit", today.isoformat(),
+        max_age=400 * 24 * 3600, httponly=True, samesite="lax",
+    )
+    return response
 
 
 @app.get("/muhurat", response_class=HTMLResponse)
