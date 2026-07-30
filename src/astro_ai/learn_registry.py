@@ -1195,6 +1195,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Remedies focus on strengthening the marriage karaka (Venus for men, Jupiter for women), NOT 'removing' the yoga\n"
             "• Timing: activate in Venus / Jupiter / 7th-lord Dasha or Antardasha"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="financial-struggles",
@@ -1239,6 +1240,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Timing: financial pressure often coincides with Saturn/Rahu Mahadasha or Sade Sati\n'
             '• Remedy focus: strengthen Jupiter (Thursdays) + Venus (Fridays); charity to those with less; never gamble to solve'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="career-not-progressing",
@@ -1285,6 +1287,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Some blockages are alignment issues: chart shows technical/service career, person pursues creative/hype fields\n'
             '• Remedies: strengthen 10th lord, aligned service (donate skill to needy), Hanuman Chalisa Tuesday/Saturday'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="saturn-in-10th-house-career",
@@ -1335,6 +1338,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Safe remedies: Saturday service, black-sesame/iron/mustard-oil charity, Shani Beej mantra\n"
             "• NEVER wear blue sapphire (Neelam) without full chart consultation — most dangerous gemstone if worn wrong"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="career-during-sade-sati",
@@ -1384,6 +1388,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Best-fit career strategies: choose depth over breadth, longer-tenure roles, service-oriented pivots\n'
             '• Worst-fit: high-hype speculative moves, gambling on quick wins — Saturn punishes shortcuts'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="debilitated-sun-career",
@@ -1432,6 +1437,7 @@ ARTICLES: tuple[Article, ...] = (
             '• When cancelled, produces unusual late-career strength — chief-justice / senior-advisor patterns\n'
             '• Remedies: Sun-strengthening practices (Surya Namaskar, water offering), honour father-figures, wheat/jaggery Sunday charity'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="jupiter-in-10th-house-career",
@@ -1481,6 +1487,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Jupiter Mahadasha (16 years) is peak activation — recognition, wealth via dharma, marriage often triggers\n'
             '• Does NOT auto-produce wealth — check Dhana Yogas (2+11+5 house connections) separately'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="sun-in-10th-house-career",
@@ -1526,6 +1533,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Father karaka: usually a strong father-figure OR complicated father-authority theme\n'
             '• Sun-Saturn conjunction: father-child career competition pattern'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="foreign-career-yoga-kundli",
@@ -1575,6 +1583,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Migration types: Rahu+Mercury (IT), Rahu+Sun (govt), Jupiter+9th (academic), Venus+Rahu (marriage)\n'
             '• Kundli CANNOT predict visa outcomes — that is administrative, not karmic'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="marriage-mahadasha-timing",
@@ -1620,6 +1629,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Convergence rule: marriage-karaka Mahadasha + marriage-karaka/7th-lord Antardasha + Jupiter transit over natal 7th = strongest window\n"
             "• 7th lord Dasha running WITHOUT marriage often means: 7th lord in dusthana, combust/debilitated, or malefic transit suppressing"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="love-vs-arranged-marriage-kundli",
@@ -2122,6 +2132,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: craftsman, surgeon, artisan, chef, magician, healer, IT/coding\n'
             '• Shadow: manipulative cleverness, restlessness, thievery (in shadow expression), nervousness'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="chitra-nakshatra",
@@ -2161,6 +2172,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: architect, designer, fashion, jewellery, engineering, film-industry visual work\n'
             '• Shadow: vanity, superficial focus on appearance, unstable emotions, drama-seeking'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="swati-nakshatra",
@@ -2200,6 +2212,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: diplomat, trader, business, mediator, independent consultant, foreign trade\n'
             '• Shadow: isolation, over-independence, indecisive, restlessness that never settles'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="magha-nakshatra",
@@ -2239,6 +2252,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: government service, ancestor-honouring roles, royal-family adjacent, ceremonial/religious authority\n'
             '• Shadow: entitlement, ancestral karma weight, arrogance, disconnection from present-life effort'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="purva-phalguni-nakshatra",
@@ -2278,6 +2292,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: entertainment, arts, hospitality, romance/wedding industry, luxury goods, sales\n'
             '• Shadow: laziness, indulgence, superficial charm, pleasure-addicted'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="uttara-phalguni-nakshatra",
@@ -2317,6 +2332,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: law, marriage, non-profit leadership, HR/talent management, philanthropy\n'
             "• Shadow: over-committing, dependency on approval, boring reliability, judgement of others' unreliability"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="punarvasu-nakshatra",
@@ -2445,6 +2461,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: mystic, occultist, psychologist, poison-antidote medicine, hypnotherapist, mystery writer\n'
             '• Shadow: manipulation, hidden motives, addiction, entangled relationships'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="rohini-nakshatra",
