@@ -143,6 +143,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Events cluster when multiple Dasha lords converge on the same karaka (e.g. Venus + 7th lord → marriage window)\n"
             "• Timing is probabilistic — narrows to years, not exact dates"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="surya-sun-in-vedic-astrology",
@@ -527,6 +528,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Transits refine Dasha's broad timing — always read Dasha first, then transit\n"
             '• Jupiter transit over 7th house is a classical marriage-timing trigger; Saturn over 10th signals career restructuring'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="kundali-matching-ashtakoot-guna-milan",
@@ -611,6 +613,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Antardashas within: Sun-Moon (public dealings), Sun-Mars (conflict/action), Sun-Rahu (sudden change)\n'
             '• Safe remedies: Surya Namaskar at sunrise, Aditya Hridaya Stotram, red-lentil/wheat/jaggery Sunday charity'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="sade-sati",
@@ -780,6 +783,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Not universally bad — often initiates the deepest spiritual work of Rahu Mahadasha\n'
             '• Remedies: Ganesha worship (removes obstacles for both nodes), Ketu Beej mantra, avoid major life decisions'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="manglik-dosh",
@@ -876,6 +880,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: hospice/palliative work, judiciary, creative arts requiring deep commitment, midwifery\n'
             '• Shadow: extremism, moral rigidity, self-imposed hardship, jealousy'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="krittika-nakshatra",
@@ -915,6 +920,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Strong signature: judge, critic, editor, surgeon, teacher who cuts through student's confusion\n"
             '• Shadow: harsh criticism, over-cutting, wounding with truth, jealousy'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="jupiter-remedies",
@@ -2350,6 +2356,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: teacher, philosopher, ethical business, mother-figure roles, hospitality/lodging\n'
             "• Shadow: over-idealism, escapism to 'home', naive trust, philosophical arrogance"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="pushya-nakshatra",
@@ -2394,6 +2401,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: teacher, priest, physician, counsellor, government service, family-business patriarch\n'
             '• Shadow: over-protectiveness, self-sacrifice to burnout, rigid tradition'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="ashlesha-nakshatra",
@@ -2476,6 +2484,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: agriculture, luxury goods, arts, hospitality, banking, real estate\n'
             '• Shadow: materialism, jealousy, indulgence, possessiveness'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="mrigashira-nakshatra",
@@ -2515,6 +2524,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: writer, poet, researcher, traveller, journalist, hunter of ideas\n'
             '• Shadow: never satisfied, indecisive, wanders without settling, suspicion'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="ardra-nakshatra",
@@ -2554,6 +2564,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: research (esp. destruction/rebuilding), storm-chasers, mental-health work, IT (Rahu-Mercury)\n'
             '• Shadow: emotional volatility, addictive patterns, difficulty with grief, deception'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="ashwini-nakshatra",
@@ -2597,6 +2608,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong signature: doctor/healer, athlete, EMT, first-responder, entrepreneur\n'
             '• Shadow: impulsive action without follow-through, restlessness, accident-proneness'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="planets-in-7th-house-marriage",
