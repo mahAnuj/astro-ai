@@ -219,6 +219,23 @@
             <td class="py-2 pr-3 text-[11px] text-stone-600 tabular-nums whitespace-nowrap">
               <div title="Best 48-min window of the day"><span class="text-emerald-700">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
               <div title="Rahu Kaal — avoid for launches"><span class="text-rose-600">✗</span> Rahu Kaal {{ c.rahu_kaal }}</div>
+              {% if c.bhadra_window %}<div class="text-rose-600 text-[10px]" title="Vishti/Bhadra karana active">✗ Bhadra active</div>{% endif %}
+              {% if c.choghadiya %}
+              <details class="mt-1">
+                <summary class="cursor-pointer text-astro-700 text-[10px] font-semibold">Choghadiya ▼</summary>
+                <div class="mt-1 space-y-0.5 min-w-[180px]">
+                  {% for w in c.choghadiya %}
+                  {% set ch_colors = {'best': 'emerald-100 text-emerald-800', 'good': 'emerald-50 text-emerald-700', 'neutral': 'stone-50 text-stone-600', 'avoid': 'rose-50 text-rose-700'} %}
+                  {% set ch_class = ch_colors.get(w.auspiciousness, 'stone-50 text-stone-500') %}
+                  <div class="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-{{ ch_class }}">
+                    <span class="font-semibold w-12">{{ w.name }}</span>
+                    <span class="text-[10px] opacity-70">{{ w.start }}-{{ w.end }}</span>
+                  </div>
+                  {% endfor %}
+                </div>
+              </details>
+              {% if c.bhadra_window %}<div class="text-[10px] text-rose-700 mt-1 whitespace-normal max-w-[220px] leading-tight">{{ c.bhadra_window }}</div>{% endif %}
+              {% endif %}
             </td>
             <td class="py-2 text-xs text-stone-600">{{ c.reason }}</td>
           </tr>

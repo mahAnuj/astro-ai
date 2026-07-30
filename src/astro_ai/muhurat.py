@@ -131,6 +131,9 @@ class MuhuratCandidate:
     abhijit_muhurta: str = "" # "11:48–12:36"
     nitya_yoga: str = ""      # e.g. "Siddhi", "Vyatipata"
     boosters: tuple[str, ...] = ()  # Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga names
+    # Phase B additions — sub-day precision
+    bhadra_window: str = ""   # "" if Bhadra not present; else "Bhadra active 09:00-16:00..."
+    choghadiya: tuple[dict, ...] = ()   # 8 day-windows with name/start/end/auspiciousness
 
 
 # ─── Chaturmas date ranges (Devshayani → Devuthani Ekadashi) ─────────
@@ -658,6 +661,120 @@ _DAGDHA_TITHI_BY_DAY: dict[str, str] = {
 }
 
 
+# ─── Karana (11 of them) + Bhadra / Vishti detection ─────────────────
+# Karana = half a tithi = 6° of Sun-Moon elongation. There are 60 karanas
+# per lunar month cycling through 7 movable karanas (Bava, Balava, Kaulava,
+# Taitila, Gara, Vanij, Vishti) followed by 4 fixed karanas at month-end
+# (Shakuni, Chatushpad, Naga, Kimstughna). Vishti = "Bhadra" — universally
+# inauspicious for shubh karya. Active roughly half of every day.
+_MOVABLE_KARANAS = ("Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanij", "Vishti")
+
+
+def _karana_at(chart: Chart, when: datetime) -> str:
+    """Return the karana name at the given instant.
+
+    Formula: half-tithi index = ((moon_long - sun_long) mod 360) / 6.
+    Range 0..59. Indexes 0-55 cycle through 7 movable karanas (8 cycles).
+    Indexes 56-59 = 4 fixed karanas (Shakuni/Chatushpad/Naga/Kimstughna).
+    """
+    snap = compute_transit_snapshot(chart, when)
+    sun = next((p for p in snap.planets if p.name == "Sun"), None)
+    moon = next((p for p in snap.planets if p.name == "Moon"), None)
+    if not sun or not moon:
+        return ""
+    from astro_ai.chart import _rashi_index as _ri
+    sun_abs = _ri(sun.rashi) * 30.0 + sun.longitude
+    moon_abs = _ri(moon.rashi) * 30.0 + moon.longitude
+    half_tithi = int((((moon_abs - sun_abs) % 360.0) / 6.0)) % 60
+    # 0 = first Kimstughna (fixed) - actually classical order:
+    # index 0 = 1st half of Shukla Pratipada = Kimstughna (fixed)
+    # 1-56 = movable karanas cycling (7 each × 8 cycles)
+    # 57-59 = Shakuni, Chatushpad, Naga
+    # Simplified per Drik Panchang convention:
+    if half_tithi == 0:
+        return "Kimstughna"
+    if half_tithi >= 57:
+        return ("Shakuni", "Chatushpad", "Naga")[half_tithi - 57]
+    return _MOVABLE_KARANAS[(half_tithi - 1) % 7]
+
+
+def _bhadra_active_at(chart: Chart, when: datetime) -> bool:
+    """True if Bhadra (Vishti) karana is active at the given moment."""
+    return _karana_at(chart, when) == "Vishti"
+
+
+def _bhadra_window_for_day(chart: Chart, day_start: datetime) -> str:
+    """Return a short string describing Bhadra's presence during the day.
+
+    Samples 6 points across the day (every 4 hours) — accurate enough
+    for user-facing "morning / afternoon" guidance without doing full
+    half-tithi boundary computation.
+    """
+    from datetime import timedelta as _td
+    hours_active: list[int] = []
+    for h in range(0, 24, 3):
+        when = day_start.replace(hour=h, minute=0, second=0)
+        if _bhadra_active_at(chart, when):
+            hours_active.append(h)
+    if not hours_active:
+        return ""
+    # Compress into a period description.
+    start_h = min(hours_active)
+    end_h = max(hours_active) + 3
+    if end_h > 23:
+        end_h = 23
+    period = "morning" if start_h < 12 and end_h < 15 else \
+             "afternoon" if start_h >= 12 and start_h < 17 else \
+             "evening" if start_h >= 17 else \
+             "most of day"
+    return f"Bhadra active ~{start_h:02d}:00-{end_h:02d}:00 ({period}) — avoid ceremonies in that window"
+
+
+# ─── Choghadiya — 8 sub-day windows per weekday (Muhurta Chintamani) ─
+# Classical day-Choghadiya sequence (sunrise-to-sunset ÷ 8) starts from
+# a different divison per weekday. Real astrologers pick the auspicious
+# Choghadiya window within a good day for the actual ceremony start.
+_CHOGHADIYA_SEQUENCE: dict[str, tuple[str, ...]] = {
+    "Sunday":    ("Udveg", "Chal", "Labh", "Amrit", "Kaal", "Shubh", "Rog", "Udveg"),
+    "Monday":    ("Amrit", "Kaal", "Shubh", "Rog", "Udveg", "Chal", "Labh", "Amrit"),
+    "Tuesday":   ("Rog", "Udveg", "Chal", "Labh", "Amrit", "Kaal", "Shubh", "Rog"),
+    "Wednesday": ("Labh", "Amrit", "Kaal", "Shubh", "Rog", "Udveg", "Chal", "Labh"),
+    "Thursday":  ("Shubh", "Rog", "Udveg", "Chal", "Labh", "Amrit", "Kaal", "Shubh"),
+    "Friday":    ("Chal", "Labh", "Amrit", "Kaal", "Shubh", "Rog", "Udveg", "Chal"),
+    "Saturday":  ("Kaal", "Shubh", "Rog", "Udveg", "Chal", "Labh", "Amrit", "Kaal"),
+}
+_CHOGHADIYA_AUSPICIOUSNESS: dict[str, str] = {
+    "Amrit": "best",   "Shubh": "good",  "Labh": "good",
+    "Chal":  "neutral",
+    "Rog":   "avoid",  "Kaal":  "avoid", "Udveg": "avoid",
+}
+
+
+def _choghadiya_windows(weekday: str, sunrise: datetime, sunset: datetime) -> list[dict]:
+    """Return 8 day-Choghadiya windows for the date.
+
+    Each entry: dict with name, start (HH:MM), end (HH:MM), auspiciousness.
+    Divides sunrise-to-sunset into 8 equal windows and labels them per the
+    classical weekday sequence.
+    """
+    sequence = _CHOGHADIYA_SEQUENCE.get(weekday, ())
+    if not sequence:
+        return []
+    day_seconds = (sunset - sunrise).total_seconds()
+    window_seconds = day_seconds / 8.0
+    windows = []
+    for i, name in enumerate(sequence):
+        w_start = sunrise + timedelta(seconds=i * window_seconds)
+        w_end = sunrise + timedelta(seconds=(i + 1) * window_seconds)
+        windows.append({
+            "name": name,
+            "start": w_start.strftime("%H:%M"),
+            "end":   w_end.strftime("%H:%M"),
+            "auspiciousness": _CHOGHADIYA_AUSPICIOUSNESS.get(name, "neutral"),
+        })
+    return windows
+
+
 def _dagdha_flag(weekday: str, tithi: str) -> tuple[bool, str]:
     """True if this (weekday, tithi) forms a Dagdha yoga."""
     dagdha_tithi = _DAGDHA_TITHI_BY_DAY.get(weekday)
@@ -1053,6 +1170,9 @@ def find_candidates(event_type: str, city: str, start: date,
             # Sub-day windows for planning — format as "HH:MM-HH:MM"
             rk_str = f"{p.rahu_kaal_start.strftime('%H:%M')}-{p.rahu_kaal_end.strftime('%H:%M')}"
             ab_str = f"{p.abhijit_start.strftime('%H:%M')}-{p.abhijit_end.strftime('%H:%M')}"
+            # Phase B — Bhadra / Vishti karana window + Choghadiya table
+            bhadra_window = _bhadra_window_for_day(base_chart, when)
+            choghadiya = tuple(_choghadiya_windows(p.weekday, p.sunrise, p.sunset))
         except Exception:
             continue
 
@@ -1086,6 +1206,7 @@ def find_candidates(event_type: str, city: str, start: date,
                 personal=personal, couple=couple,
                 rahu_kaal=rk_str, abhijit_muhurta=ab_str,
                 nitya_yoga=nitya_yoga, boosters=boosters,
+                bhadra_window=bhadra_window, choghadiya=choghadiya,
             ))
             continue
 
@@ -1104,6 +1225,7 @@ def find_candidates(event_type: str, city: str, start: date,
             personal=personal, couple=couple,
             rahu_kaal=rk_str, abhijit_muhurta=ab_str,
             nitya_yoga=nitya_yoga, boosters=boosters,
+            bhadra_window=bhadra_window, choghadiya=choghadiya,
         ))
 
     tier_order = {"excellent": 0, "good": 1, "acceptable": 2, "caution": 3, "avoid": 4}
