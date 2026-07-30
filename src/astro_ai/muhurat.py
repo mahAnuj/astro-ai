@@ -69,6 +69,34 @@ _CHANDRA_BALA_WEAK   = {4, 8, 12}
 
 
 @dataclass(frozen=True)
+class PartnerFactors:
+    """One partner's per-day factors — used inside CoupleMatch for Vivah.
+
+    Extracted subset of PersonalMatch that avoids the chart-level notes
+    duplication (those go in CoupleMatch.notes as merged bride+groom).
+    """
+    tara_bala: str          # "excellent" | "good" | "ok" | "avoid"
+    tara_bala_name: str
+    chandra_bala: str       # "strong" | "neutral" | "weak"
+    manglik_status: str     # "none" | "cancelled" | "mitigated" | "present"
+    sade_sati_flag: str     # "" | "Sade Sati Peak/Rising/Setting" | "Ashtama Shani" | "Kantaka Shani"
+    dasha_flag: str         # "" | "Rahu Mahadasha" | "Ketu Antardasha" etc.
+
+
+@dataclass(frozen=True)
+class CoupleMatch:
+    """Wedding-specific per-day compatibility — computed when TWO charts
+    (bride + groom) are provided for Vivah event.
+
+    Each partner's factors are computed independently; the combined verdict
+    reflects both partners' Tara + Chandra Bala on the day.
+    """
+    bride: PartnerFactors
+    groom: PartnerFactors
+    combined_verdict: str   # "excellent-for-both" | "good-for-both" | "mixed" | "avoid"
+
+
+@dataclass(frozen=True)
 class PersonalMatch:
     """Personal chart context for a muhurat candidate.
 
@@ -97,6 +125,7 @@ class MuhuratCandidate:
     reason: str               # short human explanation
     flags: tuple[str, ...]    # e.g. ("panchak", "chaturmas", "jupiter_combust")
     personal: PersonalMatch | None = None  # only set when a user chart is passed
+    couple: CoupleMatch | None = None      # only set for Vivah when two charts provided
     # Sub-day windows already computed in Panchang — surface for planning.
     rahu_kaal: str = ""       # "13:30–15:00"
     abhijit_muhurta: str = "" # "11:48–12:36"
@@ -707,6 +736,56 @@ def _personal_match_for(user_chart: Chart, when: datetime,
     )
 
 
+def _partner_factors_for(chart: Chart, when: datetime,
+                           transit_nakshatra: str, transit_moon,
+                           manglik_status: str,
+                           static_notes: tuple[str, ...]) -> PartnerFactors:
+    """Compute one partner's factors for a Vivah candidate day.
+
+    `static_notes` are the chart-level notes (Sade Sati, Rahu-Ketu Dasha)
+    already computed once at start-of-search for this partner. Extract
+    the flags out for structured storage on the PartnerFactors.
+    """
+    p_moon = next((p for p in chart.planets if p.name == "Moon"), None)
+    if p_moon is None or transit_moon is None:
+        return PartnerFactors("", "", "", manglik_status, "", "")
+    _, t_name, t_verdict = _tara_bala(p_moon.nakshatra, transit_nakshatra)
+    _, c_verdict = _chandra_bala(p_moon.rashi, transit_moon.rashi)
+    # Extract Sade Sati and Dasha flags from static_notes (short labels).
+    sade_sati_flag = ""
+    dasha_flag = ""
+    for n in static_notes:
+        if "Sade Sati" in n or "Ashtama Shani" in n or "Kantaka Shani" in n:
+            sade_sati_flag = n.split("—")[0].strip()
+        elif "Mahadasha" in n or "Antardasha" in n:
+            dasha_flag = n.split("—")[0].strip()
+    return PartnerFactors(
+        tara_bala=t_verdict, tara_bala_name=t_name,
+        chandra_bala=c_verdict,
+        manglik_status=manglik_status,
+        sade_sati_flag=sade_sati_flag,
+        dasha_flag=dasha_flag,
+    )
+
+
+def _couple_verdict(bride: PartnerFactors, groom: PartnerFactors) -> str:
+    """Reduce both partners' factors to a single wedding-day verdict."""
+    b_tara_ok = bride.tara_bala in ("excellent", "good", "ok")
+    g_tara_ok = groom.tara_bala in ("excellent", "good", "ok")
+    b_chandra_ok = bride.chandra_bala in ("strong", "neutral")
+    g_chandra_ok = groom.chandra_bala in ("strong", "neutral")
+
+    both_tara_avoid = (bride.tara_bala == "avoid" and groom.tara_bala == "avoid")
+    if both_tara_avoid:
+        return "avoid"
+    if (bride.tara_bala == "excellent" and groom.tara_bala == "excellent"
+            and b_chandra_ok and g_chandra_ok):
+        return "excellent-for-both"
+    if b_tara_ok and g_tara_ok and b_chandra_ok and g_chandra_ok:
+        return "good-for-both"
+    return "mixed"
+
+
 def _static_personal_notes(user_chart: Chart, start: date) -> tuple[str, ...]:
     """Chart-level cautions that apply to the whole search range.
 
@@ -892,7 +971,9 @@ def score_event(event_type: str, panchang, weekday_name: str, nakshatra: str,
 
 def find_candidates(event_type: str, city: str, start: date,
                     days: int = 90,
-                    personal_chart: Chart | None = None) -> list[MuhuratCandidate]:
+                    personal_chart: Chart | None = None,
+                    bride_chart: Chart | None = None,
+                    groom_chart: Chart | None = None) -> list[MuhuratCandidate]:
     """Return muhurat candidates for the given event in the next `days` days.
 
     Best-first sorted. Includes 'avoid' rows so users see which dates were
@@ -903,6 +984,13 @@ def find_candidates(event_type: str, city: str, start: date,
     day and chart-level notes (Sade Sati phase, Rahu/Ketu Mahadasha). The
     classical rating stays universal — personal factors surface separately
     so users see BOTH reads.
+
+    For Vivah specifically: if both `bride_chart` and `groom_chart` are
+    provided, each candidate is annotated with a CoupleMatch containing
+    both partners' Tara/Chandra Bala + Manglik status + Sade Sati / Dasha
+    cautions. Real astrologers ALWAYS check both partners' charts for
+    wedding dates — this promotes the tool from single-perspective to
+    couple-perspective for the top use-case.
     """
     if event_type not in EVENT_RULES:
         raise ValueError(f"Unknown event type: {event_type}")
@@ -921,6 +1009,24 @@ def find_candidates(event_type: str, city: str, start: date,
     static_notes: tuple[str, ...] = ()
     if personal_chart is not None:
         static_notes = _static_personal_notes(personal_chart, start)
+
+    # Couple mode — compute both partners' static notes + Manglik status
+    # once per search. Only meaningful for Vivah.
+    bride_notes: tuple[str, ...] = ()
+    groom_notes: tuple[str, ...] = ()
+    bride_manglik = ""
+    groom_manglik = ""
+    couple_mode = (event_type == "vivah"
+                    and bride_chart is not None and groom_chart is not None)
+    if couple_mode:
+        bride_notes = _static_personal_notes(bride_chart, start)
+        groom_notes = _static_personal_notes(groom_chart, start)
+        try:
+            from astro_ai.chart import compute_manglik_details
+            bride_manglik = compute_manglik_details(bride_chart).effective_status
+            groom_manglik = compute_manglik_details(groom_chart).effective_status
+        except Exception:
+            pass
 
     for i in range(days):
         d = start + timedelta(days=i)
@@ -954,6 +1060,19 @@ def find_candidates(event_type: str, city: str, start: date,
         if personal_chart is not None:
             personal = _personal_match_for(personal_chart, when, nakshatra, static_notes)
 
+        # Couple mode — compute both partners' factors for this day.
+        couple: CoupleMatch | None = None
+        if couple_mode:
+            _tm = _transit_moon(bride_chart, when)  # same transit for both — use either chart
+            bride_f = _partner_factors_for(bride_chart, when, nakshatra, _tm,
+                                             bride_manglik, bride_notes)
+            groom_f = _partner_factors_for(groom_chart, when, nakshatra, _tm,
+                                             groom_manglik, groom_notes)
+            couple = CoupleMatch(
+                bride=bride_f, groom=groom_f,
+                combined_verdict=_couple_verdict(bride_f, groom_f),
+            )
+
         # Abujha override — universally auspicious days for this event type.
         abujha_name = _abujha_for(d, event_type)
         if abujha_name:
@@ -964,7 +1083,7 @@ def find_candidates(event_type: str, city: str, start: date,
                 rating="excellent",
                 reason=f"Abujha Muhurat — {abujha_name} (universally auspicious)",
                 flags=("abujha_muhurat",),
-                personal=personal,
+                personal=personal, couple=couple,
                 rahu_kaal=rk_str, abhijit_muhurta=ab_str,
                 nitya_yoga=nitya_yoga, boosters=boosters,
             ))
@@ -982,7 +1101,7 @@ def find_candidates(event_type: str, city: str, start: date,
             tithi=p.tithi_name, tithi_paksha=p.tithi_paksha,
             nakshatra=nakshatra,
             rating=rating, reason=reason, flags=flags,
-            personal=personal,
+            personal=personal, couple=couple,
             rahu_kaal=rk_str, abhijit_muhurta=ab_str,
             nitya_yoga=nitya_yoga, boosters=boosters,
         ))
