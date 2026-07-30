@@ -116,8 +116,10 @@ _ABUJHA_MUHURATS: dict[int, list[tuple[date, str, tuple[str, ...]]]] = {
     2026: [
         (date(2026, 4, 30), "Akshaya Tritiya",        ("vivah", "griha_pravesh", "business")),
         (date(2026, 6, 24), "Bhadli Navami",          ("vivah",)),
-        (date(2026, 11, 12), "Devuthani Ekadashi",    ("vivah", "griha_pravesh", "business")),
-        (date(2026, 11, 13), "Tulsi Vivah",           ("vivah",)),
+        # Devuthani Ekadashi 2026 = Kartik Shukla Ekadashi = 11 days after
+        # Diwali Amavasya (Nov 8, 2026). Previously wrong at Nov 12.
+        (date(2026, 11, 19), "Devuthani Ekadashi",    ("vivah", "griha_pravesh", "business")),
+        (date(2026, 11, 20), "Tulsi Vivah",           ("vivah",)),
     ],
     2027: [
         (date(2027, 1, 23), "Basant Panchami",        ("vivah", "griha_pravesh", "vidyarambh", "business")),
