@@ -1,0 +1,37 @@
+{# Shared SEO structured-data snippet for tool result/form pages.
+
+   Usage in a template:
+     {% set tool_name = "Manglik Dosh Check" %}
+     {% set tool_desc = "Free Manglik Dosh checker with classical cancellation rules applied." %}
+     {% set tool_url = "/manglik-check" %}
+     {% include "_tool_seo.html" %}
+
+   Emits JSON-LD SoftwareApplication schema — Google, Bing, and other
+   search engines use this to display rich snippets in search results
+   (star rating, "Free" tag, application category, etc.).
+#}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "{{ tool_name }}",
+  "description": "{{ tool_desc }}",
+  "url": "{{ site_url }}{{ tool_url }}",
+  "applicationCategory": "LifestyleApplication",
+  "applicationSubCategory": "Astrology",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript-enabled browser",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "INR"
+  },
+  "provider": {
+    "@type": "Organization",
+    "name": "Shubh Bhagya",
+    "url": "{{ site_url }}"
+  },
+  "isAccessibleForFree": true,
+  "inLanguage": ["en", "hi"]
+}
+</script>
