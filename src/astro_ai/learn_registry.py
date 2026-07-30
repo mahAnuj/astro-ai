@@ -644,6 +644,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Safe remedies: Hanuman Chalisa Saturdays, serve elderly, donate black daal / mustard oil\n"
             "• Do NOT blame all life difficulty on Sade Sati — check Dasha + transit context first"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="kaal-sarp-dosh",
@@ -685,6 +686,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Healthy scepticism recommended — do not accept an expensive puja on the strength of Kaal Sarp alone\n'
             '• Safe remedies (if you feel it applies): Kaal Bhairava worship, Nag Panchami observance, ancestral tarpan'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="shani-saturn",
