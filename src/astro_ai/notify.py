@@ -211,6 +211,79 @@ def subscribed(*, email: str, source: str, lang: str) -> None:
     notify("\n".join(parts), dedup_key=dedup)
 
 
+def feedback_submitted(*, type: str, message: str, page: str = "", email: str = "") -> None:
+    """/feedback POST → user submitted feedback via floating widget."""
+    label = {"problem": "🐛 Problem", "feature": "✨ Feature request",
+             "other": "💬 Feedback"}.get(type, "💬 Feedback")
+    trimmed = (message or "").strip().replace("\n", " ")
+    if len(trimmed) > 300:
+        trimmed = trimmed[:300] + "…"
+    parts = [
+        f"{label}",
+        f"📝 {_escape_md(trimmed) or '_(no message)_'}",
+    ]
+    if page:
+        parts.append(f"📄 page={_escape_md(page)}")
+    if email:
+        parts.append(f"✉️ {_escape_md(email)}")
+    dedup = f"feedback:{email or 'anon'}:{trimmed[:80]}"
+    notify("\n".join(parts), dedup_key=dedup)
+
+
+def dosha_checked(
+    *, dosha_type: str, birth_place: str,
+    is_present: bool, extra: str = "",
+    user_email: str = "",
+) -> None:
+    """/manglik-check | /sade-sati-check | /kaal-sarp-check completion.
+
+    `dosha_type` = 'Manglik' | 'Sade Sati' | 'Kaal Sarp'. `extra` is a short
+    detail string (severity, phase, type) — keep it human-readable.
+    """
+    icon = {"Manglik": "🔥", "Sade Sati": "🪐", "Kaal Sarp": "🐍"}.get(dosha_type, "🔮")
+    status = "*present*" if is_present else "clear"
+    parts = [
+        f"{icon}  *{dosha_type} check*",
+        f"📊 {status}" + (f" · {_escape_md(extra)}" if extra else ""),
+        f"📅 born in {_escape_md(birth_place)}",
+    ]
+    if user_email:
+        parts.append(f"✉️ {_escape_md(user_email)}")
+    dedup = f"dosha:{dosha_type}:{user_email or birth_place}"
+    notify("\n".join(parts), dedup_key=dedup)
+
+
+def muhurat_computed(
+    *, event_type: str, city: str, days_range: int,
+    good_count: int, user_email: str = "",
+) -> None:
+    """/muhurat POST → event-type muhurat search completed."""
+    parts = [
+        "📅  *Muhurat search*",
+        f"🎯 {_escape_md(event_type)} in {_escape_md(city)}",
+        f"📊 {good_count} auspicious of {days_range} days",
+    ]
+    if user_email:
+        parts.append(f"✉️ {_escape_md(user_email)}")
+    dedup = f"muhurat:{event_type}:{user_email or city}"
+    notify("\n".join(parts), dedup_key=dedup)
+
+
+def numerology_computed(
+    *, name: str, system: str, life_path: int, user_email: str = "",
+) -> None:
+    """/numerology POST → numerology reading generated."""
+    parts = [
+        "🔢  *Numerology reading*",
+        f"👤 {_escape_md(name) or '_(anon)_'} · system={system}",
+        f"🛤 life path *{life_path}*",
+    ]
+    if user_email:
+        parts.append(f"✉️ {_escape_md(user_email)}")
+    dedup = f"numerology:{user_email or name}"
+    notify("\n".join(parts), dedup_key=dedup)
+
+
 def error_seen(
     *,
     source: str,                 # short label — "natal", "today", "ask", "rashifal", ...
