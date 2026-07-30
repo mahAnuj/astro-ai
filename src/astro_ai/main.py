@@ -1389,19 +1389,25 @@ async def cosmic_check_in(request: Request) -> HTMLResponse:
 
 @app.get("/muhurat", response_class=HTMLResponse)
 async def muhurat_finder_form(request: Request) -> HTMLResponse:
-    """Muhurat Finder MVP (Issue #108) — Vivah event type only.
+    """Muhurat Finder (Issue #108) — 5 classical event types.
 
-    MVP scope shipped; more event types + fuller Panchang rules deferred
-    to a full-tool sprint. See muhurat.py module for coverage details.
+    Supports Vivah, Griha Pravesh, Namkaran, Vidyarambh, Business start.
+    Each event uses per-event scoring rules from muhurat.EVENT_RULES.
+    Abujha Muhurats (Tulsi Vivah, Basant Panchami etc.) override normal
+    scoring when the date qualifies for the chosen event.
     """
     from datetime import date as _date
+    from astro_ai.muhurat import EVENT_RULES
     saved = load_collection(request).active
     prefill_city = saved.birth_place if saved else ""
+    event_types = [(k, v["label"]) for k, v in EVENT_RULES.items()]
     return templates.TemplateResponse(
         request, "muhurat_finder.html",
         {"candidates": None, "error": None, "lang": _lang(request),
          "prefill_city": prefill_city,
-         "prefill_start": _date.today().isoformat()},
+         "prefill_start": _date.today().isoformat(),
+         "event_types": event_types,
+         "selected_event": "vivah"},
     )
 
 
@@ -1415,29 +1421,43 @@ async def muhurat_finder_compute(
 ) -> HTMLResponse:
     from astro_ai import muhurat as _muhurat
     from datetime import date as _date
+    event_types = [(k, v["label"]) for k, v in _muhurat.EVENT_RULES.items()]
+    if event_type not in _muhurat.EVENT_RULES:
+        return templates.TemplateResponse(
+            request, "muhurat_finder.html",
+            {"candidates": None, "error": f"Unknown event type: {event_type}",
+             "lang": _lang(request), "prefill_city": city, "prefill_start": start_date,
+             "event_types": event_types, "selected_event": event_type},
+            status_code=400,
+        )
     try:
         start = _date.fromisoformat(start_date)
     except ValueError:
         return templates.TemplateResponse(
             request, "muhurat_finder.html",
             {"candidates": None, "error": "Invalid start date.", "lang": _lang(request),
-             "prefill_city": city, "prefill_start": start_date},
+             "prefill_city": city, "prefill_start": start_date,
+             "event_types": event_types, "selected_event": event_type},
             status_code=400,
         )
     try:
-        candidates = _muhurat.find_vivah_candidates(city=city, start=start, days=int(days))
+        candidates = _muhurat.find_candidates(event_type, city=city, start=start, days=int(days))
     except Exception as err:  # noqa: BLE001
-        _fire_error_alert(request, err, "muhurat:compute")
+        _fire_error_alert(request, err, f"muhurat:compute:{event_type}")
         return templates.TemplateResponse(
             request, "muhurat_finder.html",
             {"candidates": None, "error": f"Could not compute muhurats: {err}",
-             "lang": _lang(request), "prefill_city": city, "prefill_start": start_date},
+             "lang": _lang(request), "prefill_city": city, "prefill_start": start_date,
+             "event_types": event_types, "selected_event": event_type},
             status_code=500,
         )
+    event_label = _muhurat.EVENT_RULES[event_type]["label"]
     return templates.TemplateResponse(
         request, "muhurat_finder.html",
         {"candidates": candidates, "city": city, "start_date": start_date,
          "prefill_city": city, "prefill_start": start_date, "error": None,
+         "event_types": event_types, "selected_event": event_type,
+         "event_label": event_label,
          "lang": _lang(request)},
     )
 

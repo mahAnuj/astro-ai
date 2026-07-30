@@ -48,6 +48,19 @@ class Article:
     # article is not exposed to the LLM path (still shown to users normally).
     # Keep summaries dense with classical rules; skip narrative fluff.
     llm_summary: str = ""
+    # ─── QA status ────────────────────────────────────────────────────────
+    # Tracks whether the article has passed the formal article-qa skill audit
+    # (~/.claude/skills/article-qa/SKILL.md, all 6 checks: classical accuracy,
+    # source coverage, AI-tell scan, information density, voice consistency,
+    # link health). Prevents repeat auditing.
+    #   "unaudited"      — never formally QA'd (default for new articles)
+    #   "auto-scanned"   — passed automated batch scan (AI-tells, citation
+    #                       footer, guardrails) but NOT the 6-check formal audit
+    #   "qa-passed"      — passed the full formal article-qa skill
+    #   "needs-revision" — audit found issues; fix pending
+    # See Issue #117 for the deferred formal-audit cycle.
+    qa_status: str = "unaudited"
+    qa_date: str = ""            # YYYY-MM-DD of last audit (empty if unaudited)
 
 
 ARTICLES: tuple[Article, ...] = (
@@ -2737,6 +2750,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhram Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) service to outsiders/marginalised/animals, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black til, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Anti-exploitation: legitimate Trimbakeshwar Nagbali ₹5-25K; anything quoted in lakhs is scam'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="ketu-remedies", title="Ketu Remedies: Classical Practices for Ketu's Detachment Effects",
@@ -2754,6 +2768,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Ketu = shadow planet, karaka of detachment, past-life karma, mysterious losses, spiritual insight\n• 6 classical remedies: (1) Ganesha worship (presiding deity — Om Gam Ganapataye Namah 108x, Sankashti vrat), (2) Ketu Beej mantra "Om Sram Sreem Sraum Sah Ketave Namah" 108x, (3) service to elderly/ascetics/orphans/animals, (4) Tuesday charity (sesame oil, grey clothes, blankets), (5) fasting (Tuesday partial, Amavasya full, Ekadashi), (6) Pitru Paksha shraddha\n• Day: Tuesday (shared with Mars)\n• SAFE — no gemstone; cat\'s eye requires chart analysis\n• Timeline: weeks (habit), 2-6 mo (attachments loosen), year 2+ (subtle awareness emerges)'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="surya-sun-remedies", title="Sun Remedies: Strengthening Surya for Confidence, Authority, and Vitality",
@@ -2771,6 +2786,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Sun = atmakaraka (self), karaka of authority, father, vitality, confidence\n• 7 classical remedies: (1) Surya Namaskar 12 rounds daily at sunrise, (2) Aditya Hridaya Stotra recitation, (3) copper vessel water offering at sunrise (arghya), (4) Sunday charity (wheat, jaggery, red flowers, copper), (5) Sunday partial fast, (6) Sun Beej mantra "Om Hraam Hreem Hraum Sah Suryaya Namah" 108x, (7) serving father and honoring authority\n• Day: Sunday\n• Ruby (Manik) — SAFER than hessonite/blue sapphire but still needs chart check\n• Timeline: 4-6 weeks morning-energy shift; 6-12 mo confidence shift; year 2+ structural'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="chandra-moon-remedies", title="Moon Remedies: Chandra Practices for Emotional Peace and Mental Health",
@@ -2788,6 +2804,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Moon = karaka of mind (manas), emotion, mother, mental peace\n• Moon remedies matter MORE than other planet remedies for mental wellbeing\n• Classical: (1) Monday milk offering to Shiva at temple, (2) Somvar vrat / Solah Somvar, (3) Chandra Beej mantra "Om Shraam Shreem Shraum Sah Chandramase Namah" 108x, (4) silver items (glass, ring), (5) Monday charity (rice, milk, white clothes), (6) serving mother, (7) Nadi Shodhana + Brahmi + sleep hygiene as modern complements\n• Day: Monday\n• Pearl (Moti) — safer than most but verify Ascendant\n• CRITICAL: complement — do not replace — professional mental healthcare'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="pitru-dosh-remedies", title="Pitru Dosh Remedies: Classical Rituals to Clear Ancestral Karma",
@@ -2805,6 +2822,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Pitru Dosh = ancestral karmic debt (Sun+Rahu/Saturn affliction, 9th/12th house issues)\n• MOST OVER-EXPLOITED category in Indian astrology commerce\n• 6 classical remedies: (1) Pitru Paksha 15-day observance (tarpan, feed Brahmin/cow/crow), (2) annual death anniversary tarpan (Barsi), (3) monthly Amavasya practice, (4) Gaya tri-pindi shraddha for serious cases, (5) Ganesha + Vishnu worship (Ekadashi vrat), (6) serving living elders\n• ALL remedies < ₹500; Gaya adds travel + ₹5-15K\n• Anti-exploitation: anyone quoting ₹50K+ for Pitru Shanti is scamming'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="kaal-sarp-dosh-remedies", title="Kaal Sarp Dosh Remedies: Classical Practices That Actually Work",
@@ -2822,6 +2840,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Kaal Sarp Dosh = all 7 non-shadow planets on one semicircle of Rahu-Ketu axis\n• MOST EXPLOITED category in astrology commerce; real remedies are cheap\n• 7 classical remedies: (1) Monday Shiva worship + milk abhishek + Om Namah Shivaya 108x, (2) Nag Panchami annual observance (fast + serpent milk offering), (3) silver serpent offering at Shiva temple or river (₹500-2K, once), (4) Rahu+Ketu Beej mantras combined 108x each, (5) Trimbakeshwar Nagbali Puja ₹5-25K for severe cases, (6) symbolic serpent-serving (donate to reptile rescues), (7) year-long weekly practice\n• Cost sanity: anyone quoting lakhs for KSD Shanti is scamming; ₹15-25K is the ceiling for legitimate Trimbakeshwar puja'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="manglik-remedies", title="Manglik Remedies: Classical Practices to Soften Mars in Marriage Charts",
@@ -2839,6 +2858,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 from Lagna OR Moon\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching)\n• 7 classical remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) Vishnu Sahasranama + Ekadashi vrat, (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (red masoor, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases, (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="dhana-yoga-wealth-combinations", title="Dhana Yogas: 9 Classical Wealth Combinations to Check in Your Kundli",
@@ -2857,6 +2877,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Dhana Yoga = wealth combination from interaction of 2nd + 5th + 9th + 11th house lords with benefics\n• 9 most consequential: Lakshmi Yoga (9L in own/exalted + Venus in kendra), Chandra-Mangala (Moon+Mars), Guru-Mangala (Jupiter+Mars), Kubera Yoga (2L+11L+Jupiter in kendras), Vasumati (benefics in 3/6/10/11), Adhi Yoga (benefics 6/7/8 from Moon), Neelkantha (Jupiter+Mercury), Panch Mahapurush wealth (Ruchaka/Bhadra/Hamsa/Malavya/Shasha), Vipreeta Raja Yoga (6/8/12 lords exchange)\n• Activation: Mahadasha of yoga-planet, Antardasha of 2/5/9/11 lord, Jupiter transit over yoga planet\n• Single yoga = comfortable wealth; 2-3+ combined = major potential; still needs effort'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="2nd-lord-placement-wealth-guide", title="2nd Lord Placement Guide: Where the Ruler of Wealth Sits Shapes Your Money Life",
@@ -2875,6 +2896,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• 2nd lord = ruler of sign in 2nd house = director of wealth, family, speech, accumulated resources\n• Best placements: 2nd (own), 11th (gains), 9th (fortune), 5th (creative)\n• Weakest (require softeners): 6th (service+debt), 8th (hidden/sudden), 12th (outflow)\n• Kendra placements (1/4/7/10): wealth becomes central life theme\n• Modifiers: Jupiter aspect blesses; Saturn delays; Rahu adds sudden/foreign patterns\n• 2nd+11th lord conjunction = classic Dhana Yoga\n• Companion to 7th Lord (marriage) + 10th Lord (career) + 11th Lord (gains) placement guides'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     # ─── Muhurat cluster (#94, #95, #103, #104) ───────────────────────
     Article(
@@ -2894,6 +2916,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Vivah Muhurat = wedding date meeting 6 classical criteria\n• (1) Guru + Shukra visible above horizon uncombust, (2) not Malamas/Adhik Maas, (3) not Chaturmas (mid-Jul to mid-Nov), (4) favourable nakshatra + tithi, (5) no Panchak, (6) no Rahu Kaal in ceremony hour\n• 2027 windows: Jan-Feb (winter), Apr-Jun (spring/summer), mid-Nov onwards (post-Chaturmas peak)\n• Auspicious nakshatras: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Mula, Uttara Ashadha, Uttara Bhadrapada, Revati\n• Personal factors matter: Sade Sati Peak caution, Rahu antardasha caution, Manglik-Manglik matching preferred\n• Personalised date computation deferred to Muhurat Finder tool (#108)'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="griha-pravesh-muhurat-2026-2027", title="Griha Pravesh Muhurat 2026-27 — Auspicious House-Warming Dates",
@@ -2912,6 +2935,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Griha Pravesh = house-warming ceremony, 3 types (Apoorva new, Sapoorva returning, Dwandwa inherited)\n• 7 criteria: Guru visible + favourable nakshatra + favourable tithi + no Chaturmas + no eclipse + no Panchak + auspicious weekday (Mon/Wed/Thu/Fri best)\n• 2026-27 windows: Nov 2026 (Dev Uthani onwards, peak), Dec-Feb (winter), Mar-Jun 2027 (spring)\n• Personal factors: moon nakshatra harmony, Sade Sati Peak caution, Rahu antardasha caution\n• Builder handover conflict: symbolic entry on auspicious muhurat + full ceremony later'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="diwali-muhurat-2026", title="Diwali Muhurat 2026 — Complete 5-Day Ritual Windows",
@@ -2929,6 +2953,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Diwali 2026 = 5-day sequence: Dhanteras, Naraka Chaturdashi (Chhoti Diwali), Lakshmi Puja, Govardhan Puja, Bhai Dooj\n• Dhanteras: Pradosh Kaal (~6-8 PM) buying window\n• Lakshmi Puja: Pradosh Kaal most common, also Nishita (midnight), Mahanishita (deep night)\n• Business Chopda Pujan on Diwali night\n• Govardhan: Annakut morning muhurat\n• Bhai Dooj: afternoon Aparahnakaal, sisters apply tilak to brothers\n• Location-dependent: exact windows via Panchang for your city'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="karva-chauth-2026", title="Karva Chauth 2026 — Complete Vrat Timing, Moon Sighting, and Muhurat",
@@ -2946,6 +2971,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Karva Chauth = 4th tithi Kartik Krishna paksha, Oct 2026\n• Sequence: Sargi pre-dawn (mother-in-law offers meal), nirjala vrat from sunrise, Pradosh Kaal puja (community), moonrise (~8:15-8:45 PM Delhi), husband feeds first sip\n• Classical significance: sindoor-strengthening, community observance, discipline, devotional bhakti\n• Health-first: no nirjala vrat if pregnant/diabetic/medication; consent matters\n• Modern flexibility: same-sex partners, non-traditional families, some men observe'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
     Article(
         slug="11th-lord-placement-gains-guide", title="11th Lord Placement Guide: How Your Gains and Ambitions Take Shape",
@@ -2963,6 +2989,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• 11th lord = ruler of Labha Bhava = director of gains, income, ambitions, network, elder siblings\n• Strongest placements: 11th (own), 10th (career-driven), 2nd (accumulating gains), 9th (fortune-blessed)\n• Weakest placements: 8th (hidden/sudden), 12th (outward flow)\n• 6th house placement: employment > business, service-industry wealth\n• Modifiers: Jupiter aspect blesses; Saturn disciplines; Rahu adds sudden/foreign patterns\n• 2L+11L conjunction/exchange = classic Dhana Yoga\n• DIFFERENCE from 2nd lord: 11th = gains ARRIVING, 2nd = wealth ACCUMULATED'
         ),
+        qa_status="auto-scanned", qa_date="2026-07-30",
     ),
 )
 
