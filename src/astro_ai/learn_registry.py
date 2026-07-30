@@ -1673,6 +1673,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Mixed case (most common in modern India): love-cum-arranged pattern; check current Dasha to see which set activates\n"
             "• Timing: Rahu Mahadasha activates love side; Jupiter Mahadasha activates arranged side; Venus is neutral"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="marriage-timing-kundli",
@@ -1766,6 +1767,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Common healthy pattern: employment first (learn), business later (independent — early 30s to 40s)\n'
             '• Chart shows leaning, not verdict — bank balance, family obligations, risk tolerance matter equally'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="10th-lord-in-6th-house-career",
@@ -1815,6 +1817,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Timing: recognition arrives mid-30s into 40s after the struggle years compound into expertise\n'
             '• Remedies: worship deity of 10th lord, service to those working under hardship, confront rather than avoid conflict'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="rahu-mahadasha-career-problems",
@@ -1863,6 +1866,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Safe remedies: Rahu Beej mantra (18,000 count target), Durga worship, serve outsiders/marginalized, black-daal Saturday charity\n"
             "• NEVER wear hessonite (gomedh) without full chart consultation"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="santan-prapti-children-in-kundli",
@@ -1911,6 +1915,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Safe remedies: Santan Gopal mantra, Krishna worship, help children in need, Thursday practices\n'
             '• NEVER promise a specific timeline — anxious couples need hope grounded in honest limits, not false certainty'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="chronic-health-issues-kundli",
@@ -1958,6 +1963,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Safe remedies: strengthen Lagna lord + Sun/Moon; genuine karmic-cleansing practices; NEVER replace medical care with astrology\n'
             "• Warning: this is heavily exploited — avoid 'cure your disease' astrologers charging large fees"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="gajakesari-yoga",
@@ -2682,6 +2688,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Ketu in 7th: detached/spiritual spouse, past-life karma theme, most sombre single placement\n'
             '• Per-Ascendant shifts matter: Cancer/Leo lagna Saturn in 7th (own sign) reads very differently'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="7th-lord-placement-marriage-guide",
@@ -2731,6 +2738,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Softeners: dignity (own sign/exalted), Jupiter aspect, Dasha timing, D-9 confirmation\n'
             '• Always confirm with D-9 Navamsha 7th lord before drawing conclusions'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="second-marriage-yoga-kundli",
@@ -2783,6 +2791,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Supportive signatures against transition: 7th lord in kendra with Jupiter aspect, benefics in 7th, strong Venus/Jupiter karaka, clean D-9\n'
             '• Guardrails: never predict divorce as fact, never predict spouse-death, always frame as tendency + context'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     # ─── Cycle 8 remedy cluster (#97-102, #107) ───────────────────────
     Article(
