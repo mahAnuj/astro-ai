@@ -1457,6 +1457,19 @@ async def muhurat_finder_compute(
     start_date: str = Form(...),
     days: int = Form(60),
     use_personal: str = Form(""),
+    # Couple mode (Vivah only) — optional bride + groom birth details.
+    # If both partners' full birth details are provided, we compute per
+    # candidate Tara/Chandra Bala for BOTH partners + Manglik + Sade Sati
+    # cautions per partner. Real astrologers require both charts for
+    # wedding dates.
+    bride_name: str = Form(""),
+    bride_dob: str = Form(""),
+    bride_time: str = Form(""),
+    bride_place: str = Form(""),
+    groom_name: str = Form(""),
+    groom_dob: str = Form(""),
+    groom_time: str = Form(""),
+    groom_place: str = Form(""),
 ) -> HTMLResponse:
     from astro_ai import muhurat as _muhurat
     from datetime import date as _date
@@ -1495,10 +1508,24 @@ async def muhurat_finder_compute(
         except Exception as err:  # noqa: BLE001
             personal_chart_error = f"Could not compute your chart for personal matching: {err}"
 
+    # Couple mode — only for Vivah when BOTH partners' details are provided.
+    bride_chart = None
+    groom_chart = None
+    couple_error = ""
+    if event_type == "vivah" and bride_dob and bride_time and bride_place and groom_dob and groom_time and groom_place:
+        try:
+            bride_chart = compute_chart(bride_dob, bride_time, bride_place)
+            groom_chart = compute_chart(groom_dob, groom_time, groom_place)
+        except Exception as err:  # noqa: BLE001
+            couple_error = f"Couple mode disabled — could not compute partner charts: {err}"
+            bride_chart = None
+            groom_chart = None
+
     try:
         candidates = _muhurat.find_candidates(
             event_type, city=city, start=start, days=int(days),
             personal_chart=personal_chart,
+            bride_chart=bride_chart, groom_chart=groom_chart,
         )
     except Exception as err:  # noqa: BLE001
         _fire_error_alert(request, err, f"muhurat:compute:{event_type}")
@@ -1525,11 +1552,16 @@ async def muhurat_finder_compute(
         request, "muhurat_finder.html",
         {"candidates": candidates, "city": city, "start_date": start_date,
          "prefill_city": city, "prefill_start": start_date,
-         "error": personal_chart_error or None,
+         "error": (personal_chart_error or couple_error) or None,
          "event_types": event_types, "selected_event": event_type,
          "event_label": event_label,
          "has_saved_chart": has_saved_chart, "use_personal": wants_personal,
          "personal_active": personal_chart is not None,
+         "couple_active": (bride_chart is not None and groom_chart is not None),
+         "prefill_bride_name": bride_name, "prefill_bride_dob": bride_dob,
+         "prefill_bride_time": bride_time, "prefill_bride_place": bride_place,
+         "prefill_groom_name": groom_name, "prefill_groom_dob": groom_dob,
+         "prefill_groom_time": groom_time, "prefill_groom_place": groom_place,
          "lang": _lang(request)},
     )
 
