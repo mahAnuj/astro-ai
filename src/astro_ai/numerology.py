@@ -566,6 +566,150 @@ _PROFILES: dict[int, LifePathProfile] = {
 }
 
 
+# ─── Number compatibility (Johari §7 per-pair rules) ─────────────────
+# Reduced to 3-tier per-pair table: 'friend' / 'enemy' / 'neutral'.
+# Friend pairs have flowing energy but sometimes lack the friction to
+# grow; enemy pairs feel abrasive but produce growth-through-alertness.
+# Johari's framing: "friend numbers relax and stop progress; enemy
+# numbers create alertness and activity — enemies are actually friends
+# for growth." Take these as descriptions of dynamic, not verdicts.
+_FRIEND_PAIRS: set[frozenset[int]] = {
+    frozenset({1, 1}), frozenset({1, 2}), frozenset({1, 4}),
+    frozenset({2, 7}), frozenset({2, 8}), frozenset({2, 9}),
+    frozenset({3, 3}), frozenset({3, 6}), frozenset({3, 9}),
+    frozenset({4, 6}), frozenset({4, 8}),
+    frozenset({5, 5}), frozenset({5, 6}), frozenset({1, 3}),
+    frozenset({6, 6}), frozenset({6, 8}), frozenset({6, 9}),
+    frozenset({1, 7}), frozenset({3, 7}), frozenset({7, 9}),
+    frozenset({1, 8}), frozenset({3, 8}), frozenset({5, 8}),
+    frozenset({1, 9}), frozenset({1, 5}),
+}
+_ENEMY_PAIRS: set[frozenset[int]] = {
+    frozenset({1, 6}),  # deceptive friendship
+    frozenset({2, 3}), frozenset({2, 5}),
+    frozenset({3, 5}),
+    frozenset({4, 3}), frozenset({4, 5}), frozenset({4, 9}),
+    frozenset({5, 2}), frozenset({5, 7}),
+    frozenset({6, 5}), frozenset({6, 7}),
+    frozenset({7, 4}), frozenset({7, 7}), frozenset({7, 8}),
+    frozenset({8, 8}), frozenset({8, 9}),
+    frozenset({9, 5}), frozenset({9, 9}),
+}
+_MARRIAGE_BEST = {frozenset({1, 2}), frozenset({1, 4}), frozenset({3, 6}),
+                    frozenset({3, 9}), frozenset({6, 9}), frozenset({2, 7})}
+_MARRIAGE_AVOID = {frozenset({1, 8}), frozenset({4, 9}), frozenset({5, 7}),
+                     frozenset({7, 7}), frozenset({8, 9}), frozenset({9, 9})}
+
+
+def _pair_verdict(a: int, b: int) -> str:
+    """Return 'friend' / 'enemy' / 'neutral' for two single-digit numbers.
+
+    Master numbers (11/22/33) reduce to base for pair lookup.
+    """
+    if a in (11, 22, 33):
+        a = {11: 2, 22: 4, 33: 6}[a]
+    if b in (11, 22, 33):
+        b = {11: 2, 22: 4, 33: 6}[b]
+    pair = frozenset({a, b})
+    if pair in _FRIEND_PAIRS:
+        return "friend"
+    if pair in _ENEMY_PAIRS:
+        return "enemy"
+    return "neutral"
+
+
+def _marriage_verdict(a: int, b: int) -> str:
+    """Return 'best' / 'avoid' / '' for the specific marriage context."""
+    if a in (11, 22, 33):
+        a = {11: 2, 22: 4, 33: 6}[a]
+    if b in (11, 22, 33):
+        b = {11: 2, 22: 4, 33: 6}[b]
+    pair = frozenset({a, b})
+    if pair in _MARRIAGE_BEST:
+        return "best"
+    if pair in _MARRIAGE_AVOID:
+        return "avoid"
+    return ""
+
+
+@dataclass(frozen=True)
+class CompatibilityReading:
+    """Two-person numerological compatibility per Johari §7."""
+    person_a_name: str
+    person_a_life_path: int
+    person_a_birthday: int
+    person_a_destiny: int
+    person_b_name: str
+    person_b_life_path: int
+    person_b_birthday: int
+    person_b_destiny: int
+
+    life_path_verdict: str      # 'friend' / 'enemy' / 'neutral'
+    birthday_verdict: str
+    destiny_verdict: str
+
+    marriage_verdict: str       # 'best' / 'avoid' / ''
+    overall_score: int          # 0-100, weighted
+    overall_summary: str        # human paragraph
+
+
+def compute_compatibility(name_a: str, birth_date_a: str,
+                            name_b: str, birth_date_b: str,
+                            context: str = "general") -> CompatibilityReading:
+    """Compute numerological compatibility between two people per Johari §7.
+
+    Context = "general" | "marriage" | "business". Marriage context
+    additionally consults Johari's marriage-specific pair table (§7 end).
+    """
+    from datetime import date as _date  # noqa: F401
+    r_a = compute(name_a, birth_date_a)
+    r_b = compute(name_b, birth_date_b)
+
+    lp_v = _pair_verdict(r_a.life_path, r_b.life_path)
+    bd_v = _pair_verdict(r_a.birthday, r_b.birthday)
+    d_v = _pair_verdict(r_a.destiny, r_b.destiny)
+
+    marriage_v = _marriage_verdict(r_a.life_path, r_b.life_path) if context == "marriage" else ""
+
+    # Overall score — Life Path is weighted most (main theme), then Birthday,
+    # then Destiny. Friend = full points; neutral = half; enemy = quarter.
+    def _score(v: str, weight: int) -> int:
+        return {"friend": weight, "neutral": weight // 2, "enemy": weight // 4}.get(v, 0)
+    total = _score(lp_v, 50) + _score(bd_v, 30) + _score(d_v, 20)
+
+    # Marriage-specific adjustments
+    if context == "marriage":
+        if marriage_v == "best":
+            total = min(100, total + 15)
+        elif marriage_v == "avoid":
+            total = max(0, total - 25)
+
+    # Summary paragraph
+    tone = ("This is a supportive pairing — energies flow easily between you. "
+            "Johari's caveat: friend-pairings can be TOO comfortable and stop growth. Introduce healthy challenge."
+            if lp_v == "friend" else
+            "This is a growth-through-friction pairing. Not easy, but productive. "
+            "Enemy numbers force you both awake — Johari sees this as more valuable than comfort in the long run."
+            if lp_v == "enemy" else
+            "This is a neutral pairing — cooperation possible but requires conscious effort from both sides.")
+    if context == "marriage":
+        if marriage_v == "best":
+            tone += " Classical marriage-favourable pair per Johari — one of the six pairings the text specifically endorses."
+        elif marriage_v == "avoid":
+            tone += " Classical marriage-avoid pair per Johari — extra care with communication, patience, and mutual respect required. Not impossible; just harder."
+
+    return CompatibilityReading(
+        person_a_name=r_a.name, person_a_life_path=r_a.life_path,
+        person_a_birthday=r_a.birthday, person_a_destiny=r_a.destiny,
+        person_b_name=r_b.name, person_b_life_path=r_b.life_path,
+        person_b_birthday=r_b.birthday, person_b_destiny=r_b.destiny,
+        life_path_verdict=lp_v, birthday_verdict=bd_v, destiny_verdict=d_v,
+        marriage_verdict=marriage_v,
+        overall_score=total,
+        overall_summary=tone,
+    )
+
+
 def _get_profile(n: int) -> LifePathProfile | None:
     """Return LifePathProfile for n. Master numbers fall back to base."""
     if n in (11, 22, 33):

@@ -553,6 +553,7 @@ async def sitemap() -> Response:
         ("/sade-sati-check", "monthly", "0.7"),
         ("/kaal-sarp-check", "monthly", "0.7"),
         ("/numerology",      "monthly", "0.7"),
+        ("/numerology/compatibility", "monthly", "0.7"),
     ]
     # Muhurat per-event landing pages — evergreen SEO copy per event type.
     from astro_ai.muhurat import EVENT_LANDING
@@ -1659,6 +1660,68 @@ async def numerology_calculate(
             "page_title": f"Numerology Reading for {reading.name}",
             "page_meta": f"Numerology reading — Life Path {reading.life_path}, Destiny {reading.destiny}, Soul Urge {reading.soul_urge}.",
             "reading": reading,
+            "error": None,
+            "lang": _lang(request),
+        },
+    )
+
+
+@app.get("/numerology/compatibility", response_class=HTMLResponse)
+async def numerology_compat_form(request: Request) -> HTMLResponse:
+    """Numerology compatibility form (Issue #120 Phase 2) — 2-person pairing."""
+    return templates.TemplateResponse(
+        request, "numerology_compat.html",
+        {
+            "page_title": "Numerology Compatibility — 2-Person Pairing Check",
+            "page_meta": "Free numerology compatibility check — Life Path + Birthday + Destiny pair verdicts per Johari's Vedic-integrated system. General / marriage / business contexts.",
+            "compat": None, "error": None, "lang": _lang(request),
+        },
+    )
+
+
+@app.post("/numerology/compatibility", response_class=HTMLResponse)
+async def numerology_compat_compute(
+    request: Request,
+    name_a: str = Form(...),
+    birth_date_a: str = Form(...),
+    name_b: str = Form(...),
+    birth_date_b: str = Form(...),
+    context: str = Form("general"),
+) -> HTMLResponse:
+    from astro_ai import numerology as _num
+    name_a = (name_a or "").strip()
+    name_b = (name_b or "").strip()
+    if not name_a or not name_b or len(name_a) < 2 or len(name_b) < 2:
+        return templates.TemplateResponse(
+            request, "numerology_compat.html",
+            {"page_title": "Numerology Compatibility",
+             "page_meta": "Free numerology compatibility check.",
+             "compat": None,
+             "error": "Please enter both names (at least 2 characters each).",
+             "lang": _lang(request)},
+            status_code=400,
+        )
+    if context not in ("general", "marriage", "business"):
+        context = "general"
+    try:
+        compat = _num.compute_compatibility(name_a, birth_date_a, name_b, birth_date_b, context=context)
+    except Exception as err:  # noqa: BLE001
+        _fire_error_alert(request, err, "numerology:compat")
+        return templates.TemplateResponse(
+            request, "numerology_compat.html",
+            {"page_title": "Numerology Compatibility",
+             "page_meta": "Free numerology compatibility check.",
+             "compat": None,
+             "error": f"Couldn't compute: {err}",
+             "lang": _lang(request)},
+            status_code=400,
+        )
+    return templates.TemplateResponse(
+        request, "numerology_compat.html",
+        {
+            "page_title": f"Compatibility: {compat.person_a_name} × {compat.person_b_name}",
+            "page_meta": f"Numerology compatibility {compat.person_a_name} + {compat.person_b_name}: {compat.overall_score}/100. {compat.overall_summary[:100]}",
+            "compat": compat, "context": context,
             "error": None,
             "lang": _lang(request),
         },
