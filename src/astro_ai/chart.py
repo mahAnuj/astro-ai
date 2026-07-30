@@ -1703,18 +1703,28 @@ def _saturn_house_from_natal_moon(moon_idx: int, at: datetime) -> int:
     return ((sign_idx - moon_idx) % 12) + 1
 
 
-def _saturn_house_change_forward(moon_idx: int, start: datetime, target_house: int) -> date_:
-    """Find the last day Saturn is still in `target_house` (going forward from start).
+# Saturn retrogrades ~140 days per year. When Saturn is exiting a house, it
+# often retrogrades briefly back into that house before continuing forward.
+# A naive "walk until Saturn leaves once" gets the FIRST exit, not the true
+# last day — reported Sade Sati start/end dates could be 6-12 months off.
+_SATURN_RETROGRADE_LOOKAHEAD = timedelta(days=220)
 
-    Weekly stride + daily bisection. Bounded at 3 years (Saturn changes sign
-    every ~2.5 years so a single phase never exceeds that).
+
+def _saturn_house_change_forward(moon_idx: int, start: datetime, target_house: int) -> date_:
+    """Find the definitive last day Saturn is in `target_house`, retrograde-aware.
+
+    Two-pass: first the classical weekly-stride-then-bisect for the initial
+    boundary. Then look ahead ~220 days (Saturn's max retrograde swing) and
+    if Saturn re-enters `target_house`, keep pushing the boundary forward
+    until we find a genuinely quiet 220-day window with no re-entry.
+    Bounded at 3 years (Saturn changes sign every ~2.5 years).
     """
     cursor = start
     step = timedelta(days=7)
+    boundary_dt: datetime | None = None
     for _ in range(52 * 3):
         cursor += step
         if _saturn_house_from_natal_moon(moon_idx, cursor) != target_house:
-            # Refine: bracket between cursor-step and cursor, find last day in target.
             lo, hi = cursor - step, cursor
             for _ in range(8):
                 mid = lo + (hi - lo) / 2
@@ -1722,26 +1732,93 @@ def _saturn_house_change_forward(moon_idx: int, start: datetime, target_house: i
                     lo = mid
                 else:
                     hi = mid
-            return lo.date()
-    return cursor.date()
+            boundary_dt = lo
+            break
+    if boundary_dt is None:
+        return cursor.date()
+
+    # Retrograde-aware pass: search ahead of the boundary for a re-entry.
+    while True:
+        lookahead = boundary_dt + _SATURN_RETROGRADE_LOOKAHEAD
+        re_entry_dt: datetime | None = None
+        probe = boundary_dt + step
+        while probe <= lookahead:
+            if _saturn_house_from_natal_moon(moon_idx, probe) == target_house:
+                re_entry_dt = probe
+                break
+            probe += step
+        if re_entry_dt is None:
+            return boundary_dt.date()
+        # Saturn re-entered — find the new last-in day starting from re_entry.
+        cursor = re_entry_dt
+        for _ in range(52 * 3):
+            cursor += step
+            if _saturn_house_from_natal_moon(moon_idx, cursor) != target_house:
+                lo, hi = cursor - step, cursor
+                for _ in range(8):
+                    mid = lo + (hi - lo) / 2
+                    if _saturn_house_from_natal_moon(moon_idx, mid) == target_house:
+                        lo = mid
+                    else:
+                        hi = mid
+                boundary_dt = lo
+                break
+        else:
+            return cursor.date()
 
 
 def _saturn_house_change_backward(moon_idx: int, start: datetime, target_house: int) -> date_:
-    """First day going BACK that Saturn was still in `target_house`. Mirror of forward."""
+    """First day going BACK that Saturn was in `target_house`, retrograde-aware.
+
+    Mirror of forward: initial boundary, then look BACK ~220 days for a
+    prior-entry; if found, push the boundary earlier and repeat.
+    """
     cursor = start
     step = timedelta(days=7)
+    boundary_dt: datetime | None = None
     for _ in range(52 * 3):
         cursor -= step
         if _saturn_house_from_natal_moon(moon_idx, cursor) != target_house:
-            lo, hi = cursor, cursor + step  # lo is OUT of target, hi is IN
+            lo, hi = cursor, cursor + step  # lo out, hi in
             for _ in range(8):
                 mid = lo + (hi - lo) / 2
                 if _saturn_house_from_natal_moon(moon_idx, mid) == target_house:
                     hi = mid
                 else:
                     lo = mid
-            return hi.date()
-    return cursor.date()
+            boundary_dt = hi
+            break
+    if boundary_dt is None:
+        return cursor.date()
+
+    # Retrograde-aware pass: look further back for an earlier entry.
+    while True:
+        lookback = boundary_dt - _SATURN_RETROGRADE_LOOKAHEAD
+        prior_entry_dt: datetime | None = None
+        probe = boundary_dt - step
+        while probe >= lookback:
+            if _saturn_house_from_natal_moon(moon_idx, probe) == target_house:
+                prior_entry_dt = probe
+                break
+            probe -= step
+        if prior_entry_dt is None:
+            return boundary_dt.date()
+        # Saturn was in target house earlier — find the first-in day.
+        cursor = prior_entry_dt
+        for _ in range(52 * 3):
+            cursor -= step
+            if _saturn_house_from_natal_moon(moon_idx, cursor) != target_house:
+                lo, hi = cursor, cursor + step
+                for _ in range(8):
+                    mid = lo + (hi - lo) / 2
+                    if _saturn_house_from_natal_moon(moon_idx, mid) == target_house:
+                        hi = mid
+                    else:
+                        lo = mid
+                boundary_dt = hi
+                break
+        else:
+            return cursor.date()
 
 
 def _walk_back_to_ss_entry(moon_idx: int, start: datetime, current_house: int) -> date_:

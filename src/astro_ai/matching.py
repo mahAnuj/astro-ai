@@ -225,15 +225,23 @@ def compute_guna_milan(groom: Chart, bride: Chart) -> GunaMilan:
         _graha_maitri(g_rashi_idx, b_rashi_idx),
         _gana(g_nak, b_nak),
         _bhakoot(g_rashi_idx, b_rashi_idx),
-        _nadi(g_nak, b_nak),
+        _nadi(g_moon, b_moon, g_nak, b_nak, g_rashi_idx, b_rashi_idx),
     )
     total = sum(k.awarded for k in kootas)
 
-    # Mangal Dosh compatibility (both same status = favourable).
-    g_flags = compute_vedic_flags(groom)
-    b_flags = compute_vedic_flags(bride)
-    mangal_compatible = (g_flags.manglik == b_flags.manglik)
-    mangal_note = _mangal_dosh_note(g_flags, b_flags)
+    # Mangal Dosh compatibility — uses full compute_manglik_details() rather
+    # than raw VedicFlags so cancellations (Jupiter aspects, own-sign Mars,
+    # etc.) are properly reflected in the matching narrative.
+    from astro_ai.chart import compute_manglik_details
+    g_manglik = compute_manglik_details(groom)
+    b_manglik = compute_manglik_details(bride)
+    # After cancellations, treat "cancelled" as effectively-not-Manglik for
+    # matching purposes. "mitigated" is a middle ground — count as Manglik
+    # since some concerns remain but note the mitigation.
+    g_effective_manglik = g_manglik.effective_status == "present"
+    b_effective_manglik = b_manglik.effective_status == "present"
+    mangal_compatible = (g_effective_manglik == b_effective_manglik)
+    mangal_note = _mangal_dosh_note_v2(g_manglik, b_manglik)
 
     verdict, label = _overall_verdict(total)
     return GunaMilan(
@@ -259,6 +267,11 @@ def _overall_verdict(total: float) -> tuple[str, str]:
 
 
 def _mangal_dosh_note(g: VedicFlags, b: VedicFlags) -> str:
+    """Legacy note using raw VedicFlags (kept for backward-compat callers).
+
+    New callers should use _mangal_dosh_note_v2 which applies cancellation
+    rules via compute_manglik_details().
+    """
     if g.manglik and b.manglik:
         return (
             "Both partners are Manglik. Traditionally this is favourable — the dosha "
@@ -272,6 +285,56 @@ def _mangal_dosh_note(g: VedicFlags, b: VedicFlags) -> str:
         "configuration that requires careful evaluation. Cancellations may apply "
         "(Mars in own/exalted sign, Jupiter aspect, certain conjunctions); these "
         "are not computed here. Consult a knowledgeable astrologer before deciding."
+    )
+
+
+def _mangal_dosh_note_v2(g_m, b_m) -> str:
+    """Manglik matching note using per-partner effective_status.
+
+    Accepts ManglikDetails (from compute_manglik_details). Uses effective_status
+    which has cancellation rules already applied — so a cancelled Manglik is
+    treated as effectively not-Manglik for matching. Removes the old
+    misleading "cancellations may apply, not computed here" caveat.
+    """
+    g_effective = g_m.effective_status  # "none" | "cancelled" | "mitigated" | "present"
+    b_effective = b_m.effective_status
+
+    def _label(status: str) -> str:
+        return {
+            "none":      "not Manglik",
+            "cancelled": "Manglik BUT classical cancellation applies",
+            "mitigated": "Manglik with mitigating factors",
+            "present":   "Manglik (uncancelled)",
+        }.get(status, "unknown")
+
+    g_lbl = _label(g_effective)
+    b_lbl = _label(b_effective)
+
+    # Reduce both to a simple present/absent for match-logic.
+    g_present = g_effective in ("present", "mitigated")
+    b_present = b_effective in ("present", "mitigated")
+
+    if not g_present and not b_present:
+        if g_effective == "cancelled" or b_effective == "cancelled":
+            return (
+                f"Groom: {g_lbl}. Bride: {b_lbl}. Both effectively clear after "
+                "classical cancellations. No Mangal Dosh concerns for the match."
+            )
+        return "Neither partner is Manglik. No Mangal Dosh concerns indicated."
+    if g_present and b_present:
+        return (
+            f"Groom: {g_lbl}. Bride: {b_lbl}. Both effectively Manglik — the "
+            "dosha cancels through matching per classical tradition. Mars-related "
+            "marital concerns are mitigated by the symmetry."
+        )
+    manglik_side = "groom" if g_present else "bride"
+    other_side = "bride" if g_present else "groom"
+    other_note = g_lbl if manglik_side == "bride" else b_lbl
+    return (
+        f"Only the {manglik_side} is effectively Manglik (the {other_side} is {other_note}). "
+        "Classically the configuration requiring careful evaluation. Look at severity "
+        "(7th/8th house Mars is more serious than 1st/4th/12th) and consult before "
+        "deciding — this is the case where matching may need extra remediation."
     )
 
 
@@ -391,17 +454,45 @@ def _gana(g_nak: str, b_nak: str) -> KootaScore:
 
 
 def _bhakoot(g_idx: int, b_idx: int) -> KootaScore:
-    """0 points if Moon-rashi distance is 6-8, 5-9, or 2-12. Otherwise full 7."""
+    """Bhakoot koota with classical cancellation rules.
+
+    Base rule: 0 points if Moon-rashi distance is 6-8, 5-9, or 2-12.
+    Otherwise full 7.
+
+    Classical cancellations (Muhurta Chintamani / BPHS §36) — if any of
+    these hold, Bhakoot Dosh is cancelled and the couple gets full 7 with
+    an explanatory note. Silently omitting these cancellations was flagging
+    many otherwise-compatible couples as incompatible.
+      - Same rashi lord (both rashis ruled by the same planet)
+      - Rashi lords are Naisargika friends
+    """
     distance_g_to_b = ((b_idx - g_idx) % 12) + 1
     distance_b_to_g = ((g_idx - b_idx) % 12) + 1
     dosha_pairs = ({6, 8}, {5, 9}, {2, 12})
     pair_set = {distance_g_to_b, distance_b_to_g}
     for bad in dosha_pairs:
         if pair_set == bad:
+            # Check cancellations before failing.
+            g_lord = _RASHI_LORD[g_idx]
+            b_lord = _RASHI_LORD[b_idx]
+            if g_lord == b_lord:
+                return KootaScore(
+                    name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=7.0,
+                    note=f"Bhakoot dosha ({sorted(bad)}) cancelled — both rashis ruled by "
+                         f"{g_lord}. Same rashi lord dissolves the classical dosha.",
+                )
+            if _planet_relationship(g_lord, b_lord) == "friend":
+                return KootaScore(
+                    name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=7.0,
+                    note=f"Bhakoot dosha ({sorted(bad)}) cancelled — rashi lords "
+                         f"{g_lord} and {b_lord} are Naisargika friends. Classical "
+                         "cancellation per Muhurta Chintamani.",
+                )
             return KootaScore(
                 name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=0.0,
                 note=f"Bhakoot dosha — distance {sorted(bad)} between Moon rashis is "
-                     "classically considered an obstacle to marital harmony",
+                     "classically an obstacle. No cancellation available "
+                     f"(lords {g_lord} + {b_lord} not friendly).",
             )
     return KootaScore(
         name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=7.0,
@@ -409,8 +500,31 @@ def _bhakoot(g_idx: int, b_idx: int) -> KootaScore:
     )
 
 
-def _nadi(g_nak: str, b_nak: str) -> KootaScore:
-    """Different nadis = 8 points; same nadi = 0 (Nadi Dosha — strongly discouraged)."""
+def _moon_pada(moon) -> int:
+    """Return the Moon's pada within its nakshatra (1..4).
+
+    Each nakshatra is 13°20' = 13.3333° wide, split into 4 padas of 3°20' each.
+    We need the Moon's absolute sidereal longitude modulo nakshatra-span.
+    Uses moon.longitude (position within rashi) + rashi index for absolute.
+    """
+    abs_long = RASHIS.index(moon.rashi) * 30.0 + moon.longitude
+    nak_span = 360.0 / 27.0
+    pada_span = nak_span / 4.0
+    pos_in_nak = abs_long % nak_span
+    return int(pos_in_nak / pada_span) + 1
+
+
+def _nadi(g_moon, b_moon, g_nak: str, b_nak: str, g_rashi_idx: int, b_rashi_idx: int) -> KootaScore:
+    """Nadi koota with classical cancellation rules.
+
+    Base rule: different nadis = 8 (favourable), same nadi = 0 (Nadi Dosh).
+
+    Classical cancellations (BPHS matching tradition) — silently omitting
+    these was mislabelling many compatible couples as incompatible on the
+    hardest-weighted koota. Applied when same nadi:
+      - Same nakshatra + different pada → Nadi Dosh cancelled (full 8)
+      - Same rashi + different nakshatra → Nadi Dosh softened (partial 4)
+    """
     g_n = _NAKSHATRA_NADI[g_nak]
     b_n = _NAKSHATRA_NADI[b_nak]
     if g_n != b_n:
@@ -418,8 +532,25 @@ def _nadi(g_nak: str, b_nak: str) -> KootaScore:
             name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=8.0,
             note=f"Different nadis ({g_n} / {b_n}) — favourable",
         )
+    # Same nadi — check cancellations.
+    if g_nak == b_nak:
+        g_pada = _moon_pada(g_moon)
+        b_pada = _moon_pada(b_moon)
+        if g_pada != b_pada:
+            return KootaScore(
+                name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=8.0,
+                note=f"Same nadi ({g_n}) BUT same nakshatra with different padas "
+                     f"({g_pada} vs {b_pada}) — Nadi Dosh cancelled per classical rule.",
+            )
+    if g_rashi_idx == b_rashi_idx and g_nak != b_nak:
+        return KootaScore(
+            name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=4.0,
+            note=f"Same nadi ({g_n}) BUT same Moon rashi with different nakshatras — "
+                 "Nadi Dosh softened per classical practice. Partial credit.",
+        )
     return KootaScore(
         name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=0.0,
-        note=f"Same nadi ({g_n}) — Nadi Dosha. Classically considered the most serious "
-             "obstacle, traditionally requiring consultation before proceeding.",
+        note=f"Same nadi ({g_n}) — Nadi Dosha. No classical cancellation applies "
+             "(different nakshatras + different rashis). Traditionally requires "
+             "consultation before proceeding.",
     )
