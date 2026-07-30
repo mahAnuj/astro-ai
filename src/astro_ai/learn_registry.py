@@ -270,6 +270,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Jupiter Mahadasha (16 years) often triggers marriage, wisdom, wealth accumulation\n'
             '• Safe remedies: Thursday fasting, yellow-item charity, chanting Guru Beej mantra, honour teachers'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="mangal-mars-in-vedic-astrology",
@@ -312,6 +313,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Weak Mars: accidents, conflict, blood-related health, sibling stress\n'
             '• Safe remedies: Tuesday fasting, Hanuman Chalisa daily, red-item Tuesday charity, red-coral only with consultation'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="shukra-venus-in-vedic-astrology",
@@ -440,6 +442,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Amplifies whichever house/planet it associates with — takes on that flavour\n'
             '• Safe remedies: Rahu Beej mantra, Durga worship, black gram Saturday charity, serve outsiders/marginalized'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="ketu-in-vedic-astrology",
@@ -482,6 +485,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Ketu in 12th house = classical moksha karaka; in 5th = past-life scholar returning\n'
             '• Safe remedies: Ganesha worship, sesame-oil charity, Ketu Beej mantra, spiritual retreat'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="gochar-2026-planetary-transits",
@@ -735,6 +739,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong Saturn: longevity, discipline, methodical success, respect in old age\n'
             '• Safe remedies: Saturday service (physical labor, elderly help), Shani Beej mantra, sesame-oil/iron Saturday charity, NEVER wear blue sapphire without full chart consultation'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="rahu-mahadasha-ketu-antardasha",
