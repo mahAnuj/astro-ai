@@ -2768,7 +2768,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Ketu = shadow planet, karaka of detachment, past-life karma, mysterious losses, spiritual insight\n• 6 classical remedies: (1) Ganesha worship (presiding deity — Om Gam Ganapataye Namah 108x, Sankashti vrat), (2) Ketu Beej mantra "Om Sram Sreem Sraum Sah Ketave Namah" 108x, (3) service to elderly/ascetics/orphans/animals, (4) Tuesday charity (sesame oil, grey clothes, blankets), (5) fasting (Tuesday partial, Amavasya full, Ekadashi), (6) Pitru Paksha shraddha\n• Day: Tuesday (shared with Mars)\n• SAFE — no gemstone; cat\'s eye requires chart analysis\n• Timeline: weeks (habit), 2-6 mo (attachments loosen), year 2+ (subtle awareness emerges)'
         ),
-        qa_status="auto-scanned", qa_date="2026-07-30",
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="surya-sun-remedies", title="Sun Remedies: Strengthening Surya for Confidence, Authority, and Vitality",
@@ -2786,7 +2786,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Sun = atmakaraka (self), karaka of authority, father, vitality, confidence\n• 7 classical remedies: (1) Surya Namaskar 12 rounds daily at sunrise, (2) Aditya Hridaya Stotra recitation, (3) copper vessel water offering at sunrise (arghya), (4) Sunday charity (wheat, jaggery, red flowers, copper), (5) Sunday partial fast, (6) Sun Beej mantra "Om Hraam Hreem Hraum Sah Suryaya Namah" 108x, (7) serving father and honoring authority\n• Day: Sunday\n• Ruby (Manik) — SAFER than hessonite/blue sapphire but still needs chart check\n• Timeline: 4-6 weeks morning-energy shift; 6-12 mo confidence shift; year 2+ structural'
         ),
-        qa_status="auto-scanned", qa_date="2026-07-30",
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="chandra-moon-remedies", title="Moon Remedies: Chandra Practices for Emotional Peace and Mental Health",
@@ -2804,7 +2804,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Moon = karaka of mind (manas), emotion, mother, mental peace\n• Moon remedies matter MORE than other planet remedies for mental wellbeing\n• Classical: (1) Monday milk offering to Shiva at temple, (2) Somvar vrat / Solah Somvar, (3) Chandra Beej mantra "Om Shraam Shreem Shraum Sah Chandramase Namah" 108x, (4) silver items (glass, ring), (5) Monday charity (rice, milk, white clothes), (6) serving mother, (7) Nadi Shodhana + Brahmi + sleep hygiene as modern complements\n• Day: Monday\n• Pearl (Moti) — safer than most but verify Ascendant\n• CRITICAL: complement — do not replace — professional mental healthcare'
         ),
-        qa_status="auto-scanned", qa_date="2026-07-30",
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="pitru-dosh-remedies", title="Pitru Dosh Remedies: Classical Rituals to Clear Ancestral Karma",
@@ -2822,7 +2822,7 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n• Pitru Dosh = ancestral karmic debt (Sun+Rahu/Saturn affliction, 9th/12th house issues)\n• MOST OVER-EXPLOITED category in Indian astrology commerce\n• 6 classical remedies: (1) Pitru Paksha 15-day observance (tarpan, feed Brahmin/cow/crow), (2) annual death anniversary tarpan (Barsi), (3) monthly Amavasya practice, (4) Gaya tri-pindi shraddha for serious cases, (5) Ganesha + Vishnu worship (Ekadashi vrat), (6) serving living elders\n• ALL remedies < ₹500; Gaya adds travel + ₹5-15K\n• Anti-exploitation: anyone quoting ₹50K+ for Pitru Shanti is scamming'
         ),
-        qa_status="auto-scanned", qa_date="2026-07-30",
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="kaal-sarp-dosh-remedies", title="Kaal Sarp Dosh Remedies: Classical Practices That Actually Work",
