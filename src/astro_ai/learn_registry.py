@@ -103,6 +103,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Each planet has: own sign, exaltation sign (deepest at specific degree), debilitation sign, friendly/enemy signs\n'
             '• Vimshottari Dasha durations sum to 120 years — see Vimshottari Dasha article'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="vimshottari-dasha-explained",
@@ -183,6 +184,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Weak Sun: authority problems, low self-esteem, father-issues, ego traps\n'
             '• Safe remedies: Surya Namaskar sunrise, Aditya Hridaya Stotram, red-lentil/wheat Sunday charity'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="chandra-moon-in-vedic-astrology",
@@ -225,6 +227,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Weak Moon (Kemadruma yoga): loneliness, mood cycles, mother-issues, mental agitation\n'
             '• Safe remedies: Monday fasting, milk offering to Shiva, silver/pearl (with consultation), moon-gazing'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="guru-jupiter-in-vedic-astrology",
@@ -351,6 +354,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong Venus: harmonious relationships, prosperity, beauty appreciation\n'
             '• Safe remedies: Friday fasting, white-item Friday charity, Devi worship, diamond only with consultation'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="budha-mercury-in-vedic-astrology",
@@ -393,6 +397,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Combustion is common (Mercury close to Sun): reduces natural intellect expression\n'
             '• Safe remedies: Wednesday fasting, Vishnu worship, green-item charity, emerald only with consultation'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="rahu-in-vedic-astrology",
