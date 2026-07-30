@@ -949,6 +949,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Safer alternatives: yellow topaz (Sunela) or citrine as substitute gems\n'
             '• Vishnu worship on Thursdays, especially in Vaishnava traditions'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="mercury-remedies",
@@ -995,6 +996,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Skin/nerve care important as Mercury governs these — meditation helps nervous system\n'
             "• Vishnu worship on Wednesdays; special connection to Vishnu's intellectual/wisdom aspect"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="venus-remedies",
@@ -1041,6 +1043,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Safer alternatives: white sapphire (Safed Pukhraj) as substitute\n'
             "• Sri Yantra recitation is universally safe (Sri = Lakshmi = Venus's presiding energy)"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="mars-remedies",
@@ -1085,6 +1088,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Hanuman worship is the STRONGEST classical Mars remedy — Hanuman is Rudra-Mars incarnate\n'
             "• Kartikeya/Muruga worship also strengthens Mars (Kartikeya is Mars's presiding deity)"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="saturn-remedies",
@@ -1130,6 +1134,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Hanuman is the classical intercessor with Shani — Hanuman Chalisa Saturdays is safest\n'
             '• Peepal-tree Saturday oil lamp is a classical safe practice'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="marriage-delayed",
@@ -1968,6 +1973,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Timing: activates in Jupiter or Moon Mahadasha/Antardasha\n'
             '• Confirmation in D-9 Navamsha strengthens the effect (per classical Raja Yoga confirmation rule)'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="panch-mahapurush-yoga",
@@ -2014,6 +2020,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Each grants LIFELONG signature qualities of that planet — not period-bound\n'
             "• Activates fully during that planet's Mahadasha; confirmation in D-9 amplifies"
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="pitru-dosh",
@@ -2059,6 +2066,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Every chart with 9th-house affliction is NOT Pitru Dosh — check family history + Dasha context\n'
             '• Warning: this is heavily exploited by paid astrologers — be cautious of ₹5,000+ puja packages'
         ),
+        qa_status="qa-passed", qa_date="2026-07-30",
     ),
     Article(
         slug="hasta-nakshatra",
