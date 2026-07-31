@@ -628,6 +628,9 @@ async def sitemap() -> Response:
         ("/kaal-sarp-check", "monthly", "0.7"),
         ("/numerology",      "monthly", "0.7"),
         ("/numerology/compatibility", "monthly", "0.7"),
+        ("/kundli",          "monthly", "0.8"),
+        ("/dasha",           "monthly", "0.7"),
+        ("/about",           "monthly", "0.5"),
     ]
     # Muhurat per-event landing pages — evergreen SEO copy per event type.
     from astro_ai.muhurat import EVENT_LANDING
@@ -688,6 +691,19 @@ async def service_worker() -> FileResponse:
         STATIC_DIR / "sw.js",
         media_type="application/javascript",
         headers={"Cache-Control": "no-cache"},
+    )
+
+
+@app.get("/about", response_class=HTMLResponse)
+async def about_page(request: Request) -> HTMLResponse:
+    """About page — editorial principles, classical sources, team.
+
+    E-E-A-T signal for Google (SEO audit #125): named entity behind the
+    content, cited classical sources, contact-visible. Linked from the
+    footer of every page via _nav.html.
+    """
+    return templates.TemplateResponse(
+        request, "about.html", {"lang": _lang(request)},
     )
 
 

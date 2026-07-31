@@ -53,7 +53,11 @@
                update rewards visible dates for evergreen content. #}
             <span class="text-xs text-stone-400" aria-hidden="true">·</span>
             <span class="text-sm text-stone-500">
-              Last updated
+              By <a href="/about" rel="author" class="text-astro-700 hover:underline">Bhagya Editorial</a>
+            </span>
+            <span class="text-xs text-stone-400" aria-hidden="true">·</span>
+            <span class="text-sm text-stone-500">
+              Updated
               <time datetime="{{ article.last_updated }}-01">{{ article.last_updated }}</time>
             </span>
           </div>
@@ -159,13 +163,15 @@
     "articleSection": {{ article.category | tojson }},
     "author": {
       "@type": "Organization",
-      "name": "Shubh Bhagya",
-      "url": "{{ site_url }}"
+      "name": "Bhagya Editorial",
+      "url": "{{ site_url }}/about",
+      "sameAs": "{{ site_url }}/about"
     },
     "publisher": {
       "@type": "Organization",
       "name": "Shubh Bhagya",
-      "url": "{{ site_url }}",
+      "url": "{{ site_url }}/",
+      "sameAs": "{{ site_url }}/about",
       "logo": {
         "@type": "ImageObject",
         "url": "{{ site_url }}/static/icons/icon-512.png",

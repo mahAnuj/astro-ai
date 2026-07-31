@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}About Shubh Bhagya — Editorial Principles + Classical Sources{% endblock %}
+{% block meta_description %}The people, principles, and classical sources behind Shubh Bhagya. Why we don't do fear-based upsell, which Sanskrit texts we cite, and how our chart math works. Trust the sky, not the salesman.{% endblock %}
+
+{% block content %}
+{% set active_page = "" %}
+{% set breadcrumbs = [('Home', '/'), ('About', '/about')] %}
+{% include "_breadcrumb_schema.html" %}
+{% include "_nav.html" %}
+
+{# JSON-LD AboutPage + Organization sameAs — anchors editorial authority
+   to a real page and links it back to the site-wide Organization node
+   defined in base.html (@id="{{ site_url }}/#org"). #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "url": "{{ site_url }}/about",
+  "name": "About Shubh Bhagya",
+  "description": "Editorial principles + classical sources behind Shubh Bhagya's free Vedic astrology tools.",
+  "publisher": {"@id": "{{ site_url }}/#org"},
+  "inLanguage": ["en", "hi"]
+}
+</script>
+
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
+
+  {# HERO #}
+  <header class="text-center space-y-4">
+    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700">
+      About Shubh Bhagya
+    </h1>
+    <p class="text-lg text-stone-700 max-w-2xl mx-auto leading-relaxed">
+      Free Vedic astrology built the way classical astrologers always meant it —
+      honestly. No fear-based upsell. No astrologer-chat funnels. No prescribed gemstones
+      you never asked for.
+    </p>
+  </header>
+
+  {# MISSION #}
+  <section class="prose prose-stone max-w-none">
+    <h2 class="font-display text-2xl text-astro-800">Why Bhagya exists</h2>
+    <p>
+      Every free Kundli site in India runs the same business model: give away the chart
+      as a doorway, then hand you off to a paid consultant who finds something scary in
+      your reading and prescribes an expensive remedy. That model requires the reading
+      itself to plant anxiety — because a calm, honest reading doesn't convert.
+    </p>
+    <p>
+      Bhagya was built to be the opposite of that. Read the sky honestly, cite the classical
+      source, and let readers act on what they learn. If your chart has a difficult Sade Sati
+      transit, we'll name the challenge and explain the classical response. If it doesn't
+      have Kaal Sarp Dosh, we won't manufacture one. If Manglik cancellations apply,
+      we count them — most tools ignore them because a cancelled dosha doesn't upsell.
+    </p>
+    <p>
+      The site is free forever because it has to be. The moment you owe someone money
+      for an astrology reading, the incentive to tell you what you want to hear starts
+      distorting the reading. Free removes that distortion.
+    </p>
+  </section>
+
+  {# EDITORIAL PRINCIPLES #}
+  <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6 sm:p-8">
+    <h2 class="font-display text-2xl text-astro-800 mb-4">Our editorial principles</h2>
+    <ol class="list-decimal ml-5 space-y-3 text-stone-800">
+      <li>
+        <strong>Every classical rule cited is sourced.</strong> When we say "per BPHS"
+        we mean Brihat Parashara Hora Shastra. When we cite Phaladeepika or Jataka
+        Parijata, we mean those specific texts. When classical texts disagree, we say so.
+      </li>
+      <li>
+        <strong>No fear-based framing.</strong> "Weather, not destiny" is our metaphor
+        of choice. A challenging transit is described as the season it is, not as
+        catastrophe. We do not predict specific events.
+      </li>
+      <li>
+        <strong>Cancellations count.</strong> Real Vedic astrology has as many
+        cancellation rules as it does doshas. Bhagya applies them all — Manglik
+        cancellations from same-sign, from own/exalted Mars, from Jupiter's 7th aspect,
+        from Libra debility; Bhakoot cancellations from same rashi-lord or
+        Naisargika-friend Moon-lords; Nadi cancellations from same-nakshatra-different-pada
+        and same-rashi-different-nakshatra.
+      </li>
+      <li>
+        <strong>Never wear gemstones without a chart consultation.</strong> This is a
+        content-safety rule we hold to strictly. Gemstones are powerful and can worsen
+        a chart if the wrong stone is chosen. We describe classical gemstone options
+        for each planet but always mark them as consultation-required.
+      </li>
+      <li>
+        <strong>No astrologer-chat funnel.</strong> Bhagya does not sell astrologer time.
+        There is no "click to consult" button, no push toward paid readings, no
+        pop-up asking for your phone number. The chart and reading are the whole product.
+      </li>
+      <li>
+        <strong>Honest about limits.</strong> Astrology can describe classical tendencies
+        of a chart. It cannot predict specific events. We say so.
+      </li>
+    </ol>
+  </section>
+
+  {# THE TEAM #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-4">The people behind Bhagya</h2>
+    <div class="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 space-y-4">
+      <div>
+        <h3 class="font-display text-xl text-astro-800 mb-1">Bhagya Editorial</h3>
+        <p class="text-sm text-stone-500 mb-3">Classical Vedic content team</p>
+        <p class="text-stone-700 leading-relaxed">
+          Bhagya's articles and readings are authored by a small editorial team with
+          study in classical Sanskrit astrology texts — Brihat Parashara Hora Shastra,
+          Phaladeepika, Jataka Parijata, Brihat Jataka, Saravali, Uttara Kalamrita —
+          combined with modern software craft. Every article is source-cited; every
+          chart calculation runs through Swiss Ephemeris on sidereal Lahiri ayanamsa.
+        </p>
+      </div>
+      <div class="pt-3 border-t border-stone-100">
+        <p class="text-sm text-stone-600 leading-relaxed">
+          <strong>Have expertise to share?</strong> We're actively looking for named
+          astrologers with formal training (Jyotish Bhushan, Jyotish Acharya, or
+          equivalent) to author guest articles. If that's you, please reach out —
+          <a href="mailto:contact@shubhagya.com" class="text-astro-700 hover:underline">contact@shubhagya.com</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {# CLASSICAL SOURCES #}
+  <section class="prose prose-stone max-w-none">
+    <h2 class="font-display text-2xl text-astro-800">Which classical texts we cite</h2>
+    <p>
+      Vedic astrology has a canonical corpus. Bhagya's articles cite from these primarily:
+    </p>
+    <ul>
+      <li><strong>Brihat Parashara Hora Shastra (BPHS)</strong> — Sage Parashara, ~600 BCE. The foundational text; the largest single source of classical rules Bhagya uses.</li>
+      <li><strong>Phaladeepika</strong> — Mantreshwara, 14th c. Detailed treatment of yogas and prediction; a common cross-reference for Dhana yogas and marriage timing.</li>
+      <li><strong>Jataka Parijata</strong> — Vaidyanatha Dikshita, 15th c. Practical prediction manual; strong on Dasha effects.</li>
+      <li><strong>Brihat Jataka</strong> — Varahamihira, 6th c. CE. Concise classical reference; the oldest of the ones we cite.</li>
+      <li><strong>Saravali</strong> — Kalyana Varma, ~10th c. Referenced for planet-in-house significations.</li>
+      <li><strong>Uttara Kalamrita</strong> — Kalidasa. Referenced for special ascendant and Bhava considerations.</li>
+      <li><strong>Grihya Sutras</strong> — for Muhurat rules including Namkaran and Vidyarambh timings.</li>
+    </ul>
+    <p>
+      For nakshatra padas and the deeper Nakshatra system, we also reference modern
+      classical scholars — Dr. B.V. Raman, K.N. Rao, Dennis Harness, and the
+      Sanskrit editions from Sagar Publications.
+    </p>
+
+    <h2 class="font-display text-2xl text-astro-800 mt-8">How the chart math works</h2>
+    <p>
+      Every chart on Bhagya is computed via <strong>Swiss Ephemeris (pyswisseph)</strong>,
+      the same astronomical library used by every serious astrology software product.
+      Ayanamsa: <strong>sidereal Lahiri (Chitrapaksha)</strong>, the standard Indian
+      classical reference. Houses: <strong>whole-sign</strong> (each rashi = one house),
+      matching the classical Parashari convention rather than the Placidus system used
+      in Western astrology.
+    </p>
+    <p>
+      Nakshatra padas, Vimshottari Dasha, planetary dignities (exaltation/debilitation/
+      moolatrikona), and all classical yogas are computed from first principles per BPHS
+      rules — nothing is hardcoded from a lookup that a competitor might have gotten wrong.
+      Manglik / Sade Sati / Kaal Sarp checks apply the full canonical rule set including
+      every classical cancellation.
+    </p>
+  </section>
+
+  {# CONTACT #}
+  <section class="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 text-center space-y-3">
+    <h2 class="font-display text-xl text-astro-800">Get in touch</h2>
+    <p class="text-stone-700">
+      Questions, feedback, corrections, or an interest in authoring? We read every message.
+    </p>
+    <p>
+      <a href="mailto:contact@shubhagya.com"
+         class="inline-block bg-astro-700 hover:bg-astro-800 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors">
+        contact@shubhagya.com
+      </a>
+    </p>
+    <p class="text-xs text-stone-500 pt-2">
+      Or use the feedback link at the bottom of any tool result page. Bhagya is
+      built and maintained from India, since 2025.
+    </p>
+  </section>
+
+</main>
+{% endblock %}
