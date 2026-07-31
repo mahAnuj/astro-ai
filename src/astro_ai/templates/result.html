@@ -321,9 +321,70 @@
     </details>
   </section>
 
-  {# Ask feature promotion — placed early (right after chart hero) so
-     users see it before they scroll past. Users often generate a chart
-     and leave without noticing the Ask feature; this makes it visible. #}
+  {# ─── BHAGYA SCORE ──────────────────────────────────────────────
+     Gamified 0-100 read of the current chapter. Framed as 'weather,
+     not destiny' — score moves with dashas and transits. Top-3 drivers
+     shown below so a low score reads as 'here is where classical
+     remedies matter most now' rather than 'you have bad luck'. #}
+  {% if bhagya_score %}
+  {% set _c = bhagya_score.label_class %}
+  <section class="bg-gradient-to-br from-{{ _c }}-50 via-white to-astro-50 rounded-2xl border-2 border-{{ _c }}-200 shadow-md p-5 sm:p-7">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+      {# The big number — a stylized dial-style label. #}
+      <div class="shrink-0 relative w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-{{ _c }}-100 via-white to-{{ _c }}-50 border-4 border-{{ _c }}-300 flex flex-col items-center justify-center shadow-lg">
+        <div class="text-[10px] uppercase tracking-wider text-{{ _c }}-700 font-semibold">Bhagya</div>
+        <div class="font-display text-5xl sm:text-6xl text-{{ _c }}-800 tabular-nums leading-none">{{ bhagya_score.value }}</div>
+        <div class="text-[10px] text-{{ _c }}-700">/ 100</div>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="text-xs uppercase tracking-wider font-semibold text-{{ _c }}-700 mb-1">Your Bhagya Score</div>
+        <h2 class="font-display text-xl sm:text-2xl text-stone-900 leading-tight mb-2">{{ bhagya_score.label }}</h2>
+        <p class="text-sm text-stone-700 leading-relaxed">
+          Astrology is weather, not destiny. This number reflects your <strong>current chapter</strong> based on today's dashas and transits — it will shift as they shift. Below: the top signals feeding it.
+        </p>
+      </div>
+    </div>
+    {% if bhagya_score.top_drivers %}
+    <div class="mt-4 pt-4 border-t border-{{ _c }}-200 space-y-2">
+      <div class="text-xs uppercase tracking-wider font-semibold text-stone-500 mb-2">Why this score</div>
+      {% for d in bhagya_score.top_drivers %}
+      <div class="flex items-start gap-2 text-sm">
+        {% if d.kind == 'boost' %}
+        <span class="shrink-0 mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold" title="Booster">+{{ d.weight }}</span>
+        {% else %}
+        <span class="shrink-0 mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs font-bold" title="Reducer">{{ d.weight }}</span>
+        {% endif %}
+        <span class="text-stone-800 leading-snug">{{ d.note }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% if bhagya_score.drivers | length > 3 %}
+    <details class="mt-3 group">
+      <summary class="cursor-pointer text-xs text-stone-500 hover:text-astro-700">
+        Show all {{ bhagya_score.drivers | length }} signals →
+      </summary>
+      <div class="mt-2 space-y-2">
+        {% for d in bhagya_score.drivers[3:] %}
+        <div class="flex items-start gap-2 text-sm">
+          {% if d.kind == 'boost' %}
+          <span class="shrink-0 mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">+{{ d.weight }}</span>
+          {% else %}
+          <span class="shrink-0 mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">{{ d.weight }}</span>
+          {% endif %}
+          <span class="text-stone-800 leading-snug">{{ d.note }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+    {% endif %}
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {# Ask feature promotion — placed after the score so it sits between
+     the score and the reading, catching users at the natural 'now what?'
+     moment. Users often generate a chart and leave without noticing the
+     Ask feature; this makes it visible. #}
   {% include "_ask_cta.html" %}
 
   <!-- SUMMARY CHIPS ----------------------------------------------- -->

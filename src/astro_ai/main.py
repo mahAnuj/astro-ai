@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from astro_ai.chart import (
+    compute_bhagya_score,
     ChartError,
     compute_chart,
     compute_dasha_state,
@@ -907,6 +908,27 @@ async def index(request: Request, needs_chart: str | None = None) -> HTMLRespons
     if collection.active and collection.active.birth_place:
         _city_pref = collection.active.birth_place
     _panchang_strip, _panchang_moon, _panchang_city = _homepage_panchang_cached(_city_pref)
+    # Signed-in / has-chart flow: compute the user's natal Moon rashi so
+    # the homepage can show 'Welcome back — your Rashifal is ready' with
+    # their sign name and a direct link to /rashifal/{slug}. Cheap once
+    # we know the birth details, and only fires when user has a chart.
+    _user_moon_slug = None
+    _user_moon_display = None
+    if collection.active:
+        try:
+            _uc = collection.active
+            _u_chart = compute_chart(_uc.birth_date, _uc.birth_time, _uc.birth_place)
+            _u_moon = next((p for p in _u_chart.planets if p.name == "Moon"), None)
+            if _u_moon:
+                # Map rashi name (English or 'English (Sanskrit)') to canonical slug
+                from astro_ai.llm import RASHI_SLUG_TO_INDEX, RASHI_CANONICAL_SLUGS
+                _rashi_key = _u_moon.rashi.split(" ")[0].split("(")[0].strip().lower()
+                _idx = RASHI_SLUG_TO_INDEX.get(_rashi_key)
+                if _idx is not None:
+                    _user_moon_slug = RASHI_CANONICAL_SLUGS[_idx]
+                    _user_moon_display = _u_moon.rashi
+        except Exception:
+            pass
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -920,6 +942,8 @@ async def index(request: Request, needs_chart: str | None = None) -> HTMLRespons
             "panchang_strip": _panchang_strip,
             "panchang_moon": _panchang_moon,
             "panchang_city": _panchang_city.split(",")[0] if _panchang_city else "",
+            "user_moon_slug": _user_moon_slug,
+            "user_moon_display": _user_moon_display,
         },
     )
 
@@ -1140,6 +1164,11 @@ async def _render_natal_for(request: Request, details: BirthDetails,
             "moon_glyph":  symbol_for_rashi_label(moon_plt.rashi),
             "sun_glyph":   symbol_for_rashi_label(sun_plt.rashi),
             **_ask_cta_ctx(request, hint="about your chart"),
+            # Bhagya Score — 0-100 gamified 'current chapter weather' reading.
+            # Aggregates yogas, doshas, dashas, dignities into one number
+            # with 'why' drivers for transparency. Feature spec in
+            # chart.py compute_bhagya_score.
+            "bhagya_score": compute_bhagya_score(chart),
             # Structured insight panels — see chart.py for shape.
             "manglik":  compute_manglik_details(chart),
             "navamsha_chart": compute_navamsha_chart(chart),

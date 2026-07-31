@@ -3122,3 +3122,165 @@ def compute_kaal_sarp(chart: Chart) -> KaalSarpDetails:
         planets_before_rahu=tuple(on_rahu_side),
         planets_after_ketu=tuple(on_ketu_side),
     )
+
+
+# ---------------------------------------------------------------------------
+# Bhagya Score — gamified 0-100 read of the chart's current chapter
+# ---------------------------------------------------------------------------
+#
+# A single-number 'current-chapter weather' score. Explicitly NOT a
+# 'good-vs-bad chart' rating — the reader sees WHY (top 3 signals) below
+# the number so a low score reads as 'here is where classical remedies
+# matter most right now' rather than 'you have bad luck'.
+#
+# Editorial framing rule (see README): the score changes as transits
+# and dashas shift. Someone with a 42 today may be at 71 in 18 months
+# when Sade Sati exits. It is weather, not destiny.
+#
+# Signals are weighted deliberately so no single signal dominates. Bad
+# transits reduce; classical yogas and benefic dashas restore. Every
+# reducer has a matching booster somewhere on the chart, so the base of
+# 50 tends to move ±20 for most people — extreme scores (either end)
+# require multiple aligned signals and are honest indicators.
+
+@dataclass(frozen=True)
+class BhagyaScoreDriver:
+    """One signal feeding into the Bhagya Score total.
+
+    `weight` is the delta from base (positive or negative). `note` is
+    the human-readable reason shown in the 'why' panel.
+    """
+    weight: int
+    note: str
+    kind: str   # 'boost' or 'reduce' — for template styling
+
+
+@dataclass(frozen=True)
+class BhagyaScore:
+    """0-100 gamified reading of the chart's current chapter.
+
+    Never a fixed 'chart quality' number — it moves with dashas and
+    transits. Template shows drivers so the number is transparent.
+    """
+    value: int              # 0..100
+    label: str              # 'Strong current chapter' / 'Steady period' / etc.
+    label_class: str        # tailwind color for the label ('emerald' / 'astro' / 'amber' / 'rose')
+    drivers: tuple[BhagyaScoreDriver, ...]   # ordered by absolute weight desc
+
+    @property
+    def top_drivers(self) -> tuple[BhagyaScoreDriver, ...]:
+        """Top-3 highest-impact drivers, for the compact 'why' panel."""
+        return self.drivers[:3]
+
+
+def compute_bhagya_score(chart: Chart) -> BhagyaScore:
+    """Compute the Bhagya Score for a chart.
+
+    All classical rules already implemented elsewhere in chart.py — we
+    just aggregate their outputs into a single scalar for gamification.
+    """
+    drivers: list[BhagyaScoreDriver] = []
+    score = 50
+
+    def _add(delta: int, note: str) -> None:
+        nonlocal score
+        score += delta
+        drivers.append(BhagyaScoreDriver(
+            weight=delta, note=note,
+            kind="boost" if delta > 0 else "reduce",
+        ))
+
+    # ─── Yogas: auspicious classical combinations ──────────────────
+    yogas = compute_yogas(chart)
+    if yogas:
+        n_yogas = min(len(yogas), 3)   # cap so a single feature doesn't dominate
+        yoga_names = ", ".join(y.name for y in yogas[:n_yogas])
+        _add(+5 * n_yogas, f"{n_yogas} auspicious yoga{'s' if n_yogas > 1 else ''} active ({yoga_names})")
+
+    # ─── Manglik status (from Mars-in-1/2/4/7/8/12 with all classical
+    #     cancellation rules applied — mangal_details returns the FINAL
+    #     effective status, not the raw placement) ────────────────────
+    mangal = compute_manglik_details(chart)
+    if mangal.effective_status == "cancelled":
+        _add(+5, "Manglik cancellation applies (classical rules)")
+    elif mangal.effective_status == "manglik":
+        _add(-8, "Manglik Dosh active (uncancelled)")
+
+    # ─── Sade Sati transit phase — Saturn ±1 rashi from natal Moon ─
+    flags = compute_vedic_flags(chart)
+    if flags.sade_sati:
+        phase = (flags.sade_sati_phase or "").lower()
+        if phase == "peak":
+            _add(-10, "Sade Sati peak phase — the middle 2.5-year stretch")
+        elif phase == "rising":
+            _add(-5, "Sade Sati rising phase — early ~2.5 years")
+        elif phase == "setting":
+            _add(-3, "Sade Sati setting phase — exit ~2.5 years")
+    else:
+        _add(+3, "Sade Sati is not active")
+
+    # Kantaka + Ashtama Shani — softer classical Saturn cautions.
+    if flags.ashtama_shani:
+        _add(-4, "Ashtama Shani transit (Saturn in 8th from natal Moon)")
+    if flags.kantaka_shani:
+        _add(-3, "Kantaka Shani transit (Saturn in 4th from natal Moon)")
+
+    # ─── Kaal Sarp — strict binary per BPHS ─────────────────────────
+    ksd = compute_kaal_sarp(chart)
+    if ksd.is_kaal_sarp:
+        _add(-12, f"Kaal Sarp Dosh ({ksd.type_name or 'active'})")
+
+    # ─── Planet dignities — exalted planets add, debilitated subtract
+    exalted = []
+    debilitated = []
+    for p in chart.planets:
+        if p.name in ("Rahu", "Ketu"):
+            continue  # nodal dignity theory contested; skip
+        rashi_en = p.rashi.split(" ")[0] if " " in p.rashi else p.rashi
+        if _EXALTATION_SIGN.get(p.name) == rashi_en:
+            exalted.append(p.name)
+        elif _DEBILITATION_SIGN.get(p.name) == rashi_en:
+            debilitated.append(p.name)
+    if exalted:
+        pts = min(len(exalted) * 3, 9)   # cap +9
+        _add(+pts, f"{len(exalted)} planet{'s' if len(exalted)>1 else ''} exalted ({', '.join(exalted)})")
+    if debilitated:
+        pts = -min(len(debilitated) * 3, 9)   # cap -9
+        _add(pts, f"{len(debilitated)} planet{'s' if len(debilitated)>1 else ''} debilitated ({', '.join(debilitated)})")
+
+    # ─── Current Mahadasha lord — Jupiter/Venus/Moon add, Saturn/Rahu subtract
+    #     Sun/Mars/Mercury/Ketu are neutral (context matters too much) ─
+    try:
+        dasha = compute_dasha_state(chart)
+        lord = (dasha.mahadasha.lord or "").split(" ")[0]
+        if lord in ("Jupiter", "Venus", "Moon"):
+            _add(+5, f"Current Mahadasha: {lord} — a natural benefic period")
+        elif lord in ("Saturn", "Rahu"):
+            _add(-3, f"Current Mahadasha: {lord} — a demanding, patience-testing period")
+    except Exception:
+        pass
+
+    # ─── Clamp + label bucket ──────────────────────────────────────
+    score = max(0, min(100, score))
+    if score >= 75:
+        label = "Strong current chapter"
+        label_class = "emerald"
+    elif score >= 50:
+        label = "Steady period"
+        label_class = "astro"
+    elif score >= 25:
+        label = "Testing period — patience compounds"
+        label_class = "amber"
+    else:
+        label = "Deep learning period — classical remedies matter more now"
+        label_class = "rose"
+
+    # Sort drivers by absolute impact so the 'why' panel highlights the
+    # biggest movers first.
+    drivers.sort(key=lambda d: abs(d.weight), reverse=True)
+    return BhagyaScore(
+        value=score,
+        label=label,
+        label_class=label_class,
+        drivers=tuple(drivers),
+    )
