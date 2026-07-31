@@ -80,7 +80,13 @@ class LifePathProfile:
 
 @dataclass(frozen=True)
 class NumerologyRemedy:
-    """Per-number remedy recommendations from Johari's Vedic-integrated system."""
+    """Per-number remedy recommendations from Johari's Vedic-integrated system.
+
+    Every remedy corresponds to the number's ruling planet — gemstone is
+    the loudest lever (needs chart consultation), rudraksha is the safest
+    practical lever (no chart consult needed), charity/puja/plants/yantra
+    are behavioural remedies that anyone can start today.
+    """
     planet: str                # Sun, Moon, Jupiter, Rahu, Mercury, Venus, Ketu, Saturn, Mars
     planet_sanskrit: str
     colors: str                # comma-separated favorable colors
@@ -93,6 +99,14 @@ class NumerologyRemedy:
     mantra: str                # bija mantra transliteration
     dosha: str                 # Vata/Pitta/Kapha dominant
     fasting_day: str           # weekday for fast + prep notes
+    # ─── Classical Vedic remedies added in cycle 10 (per Johari §3 + §4) ──
+    # These are the safe, behavioural remedies traditionally recommended
+    # ALONGSIDE (not instead of) chart-consulted gemstones.
+    rudraksha: str             # mukhi count + wearing note; e.g. "1-mukhi (or 12-mukhi) on red thread"
+    yantra: str                # geometric symbol traditionally worshipped for this planet
+    charity: str               # dan/donation — what to give, to whom, when
+    sacred_plants: str         # trees/herbs sacred to this planet (grow, worship, or use)
+    puja: str                  # specific ritual practice
 
 
 @dataclass(frozen=True)
@@ -252,6 +266,11 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         mantra="Om Hraam Hreem Hraum Sah Suryaya Namah",
         dosha="Pitta dominant",
         fasting_day="Sunday — single meal salt-free before sunset (traditional: chickpea bread + milk with dates + cardamom)",
+        rudraksha="1-mukhi (Ek-mukhi) — rarest and most powerful; 12-mukhi acceptable alternative. Wear on red thread on Sunday sunrise after chanting the Surya mantra 108 times.",
+        yantra="Surya Yantra — engraved on copper or gold plate, installed facing east and worshipped at sunrise with red flowers and jaggery-water.",
+        charity="Wheat, jaggery, copper vessels, red cloth, red sandalwood. Offer to father-figures, elder males, or Surya temples on Sunday morning.",
+        sacred_plants="Bilva (bael), red hibiscus, sunflower, Arka (calotropis). Grow bilva at home; offer bilva leaves or red hibiscus to Surya at sunrise.",
+        puja="Surya Namaskar 12 rounds daily facing east; offer arghya (water with red flowers) at sunrise; Aditya Hridaya Stotra weekly, ideally on Sunday.",
     ),
     2: NumerologyRemedy(
         planet="Moon", planet_sanskrit="Chandra",
@@ -263,6 +282,11 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         mantra="Om Shraam Shreem Shraum Sah Chandraya Namah",
         dosha="Kapha dominant",
         fasting_day="Monday — traditional pradosh vrat, water and fruits during day",
+        rudraksha="2-mukhi (Do-mukhi) — sacred to Shiva-Parvati (Ardhanarishwara). Wear on white silk thread Monday sunrise after Chandra mantra.",
+        yantra="Chandra Yantra — engraved on silver, worshipped Monday evening facing north-west with white flowers and cow milk.",
+        charity="Rice, milk, curd, white cloth, silver, camphor, sugar. Offer to mothers, elderly women, or nursing wards on Monday evening.",
+        sacred_plants="Palasha (butea), white lotus, jasmine, sandalwood, Tulsi. Tulsi worship at dusk strengthens Moon; offer white lotus in Shiva puja.",
+        puja="Shiva abhishek every Monday with cow milk + gangajal; offer white flowers + bilva leaves; recite Chandra bija mantra 108 times before sleep.",
     ),
     3: NumerologyRemedy(
         planet="Jupiter", planet_sanskrit="Guru / Brihaspati",
@@ -274,6 +298,11 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         mantra="Om Gram Greem Graum Sah Gurave Namah",
         dosha="Vata mixed Pitta",
         fasting_day="Thursday — salt-free chickpeas + jaggery, single meal",
+        rudraksha="5-mukhi (Panch-mukhi) — sacred to Guru; the most common Rudraksha, safe for all natives. Wear on yellow thread Thursday sunrise.",
+        yantra="Guru Yantra — engraved on gold or copper, worshipped Thursday sunrise facing north-east with yellow flowers and turmeric.",
+        charity="Yellow cloth, turmeric, yellow gram (chana daal), jaggery, gold jewellery, ghee, books. Offer to teachers, priests, or students on Thursday.",
+        sacred_plants="Peepal (sacred fig), banana tree, Rasala (mango). Water peepal daily; circumambulate 108 times on Thursday morning.",
+        puja="Vishnu Sahasranama recitation Thursday morning; Guru Namaskar; offer yellow flowers + jaggery to Vishnu; Satyanarayan katha on Purnima days.",
     ),
     4: NumerologyRemedy(
         planet="Rahu", planet_sanskrit="Rahu (North Node)",
@@ -285,6 +314,11 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         mantra="Om Bhraam Bhreem Bhraum Sah Rahave Namah",
         dosha="Vata dominant",
         fasting_day="Saturday — partial fast; feed unusual/marginalised people (Rahu's karaka)",
+        rudraksha="8-mukhi (Ath-mukhi) — sacred to Ganesha, Rahu's remedy deity. Wear on grey/black thread Saturday sunrise after Ganesha mantra.",
+        yantra="Rahu Yantra — engraved on panch-dhatu (5-metal alloy), worshipped Saturday facing south-west with blue flowers and black sesame.",
+        charity="Mustard oil, blue-black cloth, coconut, sesame seeds, blanket. Offer to lepers, outcasts, or homeless on Saturday sunset.",
+        sacred_plants="Chandan (sandalwood), Durva grass, blue lotus. Feed dogs (Rahu's animal) with roti and mustard oil on Saturdays.",
+        puja="Ganesha puja every Wednesday morning (the classical Rahu antidote); Durga Saptashati during Rahu dasha; Kaal Bhairav worship at dusk.",
     ),
     5: NumerologyRemedy(
         planet="Mercury", planet_sanskrit="Budha",
@@ -296,6 +330,11 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         mantra="Om Bram Breem Braum Sah Budhaya Namah",
         dosha="Vata-Pitta mixed",
         fasting_day="Wednesday — moong daal khichdi at sunset",
+        rudraksha="4-mukhi (Chatur-mukhi) — sacred to Brahma (Mercury's overlord). Wear on green thread Wednesday sunrise after Budha mantra.",
+        yantra="Budha Yantra — engraved on bronze or silver, worshipped Wednesday facing north with green flowers and durva grass.",
+        charity="Green vegetables, moong daal, bronze utensils, green cloth, books, pens. Offer to young students, scholars, or schools on Wednesday.",
+        sacred_plants="Doob grass (durva), apamarga (chirchita), green tulsi, Vishnukranti (dwarf morning glory). Feed grass to cows on Wednesdays.",
+        puja="Vishnu-Lakshmi worship Wednesday; Vishnu Sahasranama with tulsi leaf offering; feed green fodder to cows; recite Budha stotra 108 times.",
     ),
     6: NumerologyRemedy(
         planet="Venus", planet_sanskrit="Shukra",
@@ -307,6 +346,11 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         mantra="Om Dram Dreem Draum Sah Shukraya Namah",
         dosha="Kapha with Pitta",
         fasting_day="Friday — sattvic food, offer white flowers to Lakshmi",
+        rudraksha="6-mukhi (Chha-mukhi) — sacred to Kartikeya (Venus's disciple); 13-mukhi acceptable for luxury and charm. Wear on white silk Friday morning.",
+        yantra="Shukra Yantra — engraved on silver, worshipped Friday morning facing south-east with white/pink flowers and kheer offering.",
+        charity="Sugar, curd, white silk cloth, silver, cosmetics, perfume, jasmine flowers. Offer to young women or newly-married girls on Friday.",
+        sacred_plants="Rose, jasmine (chameli), cardamom, lotus, jai. Grow white/pink flowers at home; offer to Lakshmi during her puja.",
+        puja="Lakshmi puja Friday evening with 108 white lotus/jasmine flowers; Shri Suktam recitation; offer sweet kheer to Lakshmi; Kanya-bhojan monthly.",
     ),
     7: NumerologyRemedy(
         planet="Ketu", planet_sanskrit="Ketu (South Node)",
@@ -318,6 +362,11 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         mantra="Om Sraam Sreem Sraum Sah Ketave Namah",
         dosha="Vata dominant",
         fasting_day="Tuesday partial fast; Sankashti Chaturthi Ganesh vrat (monthly)",
+        rudraksha="9-mukhi (Nau-mukhi) — sacred to Durga (Ketu's remedy deity). Wear on mixed multicoloured thread Tuesday morning after Ketu mantra.",
+        yantra="Ketu Yantra — engraved on panch-dhatu, worshipped Tuesday facing south-west with sesame seeds and black lentils.",
+        charity="Black sesame, iron, black blanket, ash-grey cloth, blankets. Offer to sadhus, ascetics, sanyasis on Tuesday or Saturday.",
+        sacred_plants="Kusha grass, ashwagandha, ash-coloured tree bark. Feed dogs; offer sesame + black lentils under peepal tree on Saturdays.",
+        puja="Ganesha Sankashti Chaturthi vrat monthly (4th day of Krishna Paksha); Narasimha worship Tuesday morning; Kaal Bhairav puja at dusk.",
     ),
     8: NumerologyRemedy(
         planet="Saturn", planet_sanskrit="Shani",
@@ -329,6 +378,11 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         mantra="Om Praam Preem Praum Sah Shanaishcharaya Namah",
         dosha="Vata dominant",
         fasting_day="Saturday — sunset-only meal; moong-urad khichdi with rock salt",
+        rudraksha="7-mukhi (Sapt-mukhi) — sacred to Saptamatrika; 14-mukhi (Chaudah-mukhi) for accelerated Shani-remediation. Wear on black thread Saturday sunset.",
+        yantra="Shani Yantra — engraved on iron or panch-dhatu, worshipped Saturday facing west with mustard oil lamp and black sesame.",
+        charity="Iron, mustard oil, black clothes, urad daal, black sesame, iron nails, blankets. Offer to poor, aged, disabled on Saturday. Feed crows daily.",
+        sacred_plants="Shami (khejri) — most sacred to Shani; light mustard-oil lamp under it on Saturday. Peepal for shani parikrama; sesame plant.",
+        puja="Hanuman Chalisa daily (Hanuman is Shani's protector); Shani Chalisa every Saturday; peepal-parikrama 7 times Saturday morning; Shani-tail-abhishek at Shani temple.",
     ),
     9: NumerologyRemedy(
         planet="Mars", planet_sanskrit="Mangal",
@@ -340,6 +394,11 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         mantra="Om Kram Kreem Kraum Sah Bhaumaya Namah",
         dosha="Pitta dominant",
         fasting_day="Tuesday — Hanuman Chalisa 5 times, red masoor daal (folk) or toor daal (classical grain)",
+        rudraksha="3-mukhi (Tri-mukhi) — sacred to Agni (Mars's fire element). Wear on red thread Tuesday sunrise after Mars mantra.",
+        yantra="Mangal Yantra — engraved on copper plate, worshipped Tuesday morning facing south with red hibiscus and sindoor.",
+        charity="Red lentils (masoor), copper vessels, red cloth, red flowers, jaggery, sindoor. Offer to soldiers, security guards, brothers on Tuesday.",
+        sacred_plants="Khejri (shami), red hibiscus, arjuna, khadira (catechu). Offer red hibiscus garland to Hanuman on Tuesday.",
+        puja="Hanuman Chalisa 5 or 11 times Tuesday morning; sindoor tilak to Hanuman-ji; Sundara Kanda recitation weekly; feed monkeys on Tuesdays.",
     ),
     # Master numbers reduce to their base for remedy purposes per Johari
     11: None,  # falls back to 2
