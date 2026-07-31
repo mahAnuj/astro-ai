@@ -294,24 +294,39 @@ def generate_dasha_deep_dive(
 
 
 # 12 rashis in canonical order, each described with the classical facts
-# (English + Sanskrit name, ruling planet/Swami, element/Tattva, quality/Guna).
-# Passing these per-rashi to the LLM prevents the failure mode where a single
-# multi-rashi call outputs ~4 unique readings clustered by element — the LLM
-# lazily groups Aries/Sagittarius (both fire), Taurus/Virgo/Capricorn (all
-# earth), etc. Per-rashi calls guarantee 12 distinct outputs.
+# (English + Sanskrit name, ruling planet/Swami, element/Tattva, quality/Guna)
+# plus a per-rashi OPENING STYLE HINT — the second layer of the anti-
+# convergence fix. Because the 12 LLM calls run in parallel and can't see
+# each other's outputs, they all default to horoscope-boilerplate openings
+# ("Today, you may feel..."). Passing each rashi a DIFFERENT opening-style
+# instruction forces structural variety across the 12 outputs on the page.
+# The style hint targets the rashi's own character — Aries opens with a
+# body-image, Taurus with a sensory image, Gemini with a question, etc.
 _RASHI_ANCHORS: tuple[dict[str, str], ...] = (
-    {"en": "Aries",       "sa": "Mesha",       "lord": "Mars",    "element": "Fire",  "quality": "Movable"},
-    {"en": "Taurus",      "sa": "Vrishabha",   "lord": "Venus",   "element": "Earth", "quality": "Fixed"},
-    {"en": "Gemini",      "sa": "Mithuna",     "lord": "Mercury", "element": "Air",   "quality": "Dual"},
-    {"en": "Cancer",      "sa": "Karka",       "lord": "Moon",    "element": "Water", "quality": "Movable"},
-    {"en": "Leo",         "sa": "Simha",       "lord": "Sun",     "element": "Fire",  "quality": "Fixed"},
-    {"en": "Virgo",       "sa": "Kanya",       "lord": "Mercury", "element": "Earth", "quality": "Dual"},
-    {"en": "Libra",       "sa": "Tula",        "lord": "Venus",   "element": "Air",   "quality": "Movable"},
-    {"en": "Scorpio",     "sa": "Vrishchika",  "lord": "Mars",    "element": "Water", "quality": "Fixed"},
-    {"en": "Sagittarius", "sa": "Dhanu",       "lord": "Jupiter", "element": "Fire",  "quality": "Dual"},
-    {"en": "Capricorn",   "sa": "Makara",      "lord": "Saturn",  "element": "Earth", "quality": "Movable"},
-    {"en": "Aquarius",    "sa": "Kumbha",      "lord": "Saturn",  "element": "Air",   "quality": "Fixed"},
-    {"en": "Pisces",      "sa": "Meena",       "lord": "Jupiter", "element": "Water", "quality": "Dual"},
+    {"en": "Aries",       "sa": "Mesha",       "lord": "Mars",    "element": "Fire",  "quality": "Movable",
+     "opening_style": "Open with an active body image (a stance, a stride, a raised hand). Aries moves first — the sentence should move."},
+    {"en": "Taurus",      "sa": "Vrishabha",   "lord": "Venus",   "element": "Earth", "quality": "Fixed",
+     "opening_style": "Open with a sensory image — a smell, a texture, a taste, a piece of music. Taurus lives in the body's five senses."},
+    {"en": "Gemini",      "sa": "Mithuna",     "lord": "Mercury", "element": "Air",   "quality": "Dual",
+     "opening_style": "Open with a question the reader is likely turning over today. Gemini thinks in questions."},
+    {"en": "Cancer",      "sa": "Karka",       "lord": "Moon",    "element": "Water", "quality": "Movable",
+     "opening_style": "Open with a memory or a small home-image — a room, a person from earlier life, a familiar object. Cancer holds the past."},
+    {"en": "Leo",         "sa": "Simha",       "lord": "Sun",     "element": "Fire",  "quality": "Fixed",
+     "opening_style": "Open with a scene where the reader is being seen — a stage moment, a small audience, a photo, a compliment. Leo wants presence."},
+    {"en": "Virgo",       "sa": "Kanya",       "lord": "Mercury", "element": "Earth", "quality": "Dual",
+     "opening_style": "Open with a specific small thing that needs attention — a list item, an unfinished detail, a numbered step. Virgo notices."},
+    {"en": "Libra",       "sa": "Tula",        "lord": "Venus",   "element": "Air",   "quality": "Movable",
+     "opening_style": "Open with a scene of two people — a conversation, a choice between options, a room where balance is required."},
+    {"en": "Scorpio",     "sa": "Vrishchika",  "lord": "Mars",    "element": "Water", "quality": "Fixed",
+     "opening_style": "Open with something hidden the reader knows but hasn't named — a suspicion, a private feeling, an undercurrent."},
+    {"en": "Sagittarius", "sa": "Dhanu",       "lord": "Jupiter", "element": "Fire",  "quality": "Dual",
+     "opening_style": "Open with a horizon image — a road, a book, a travel plan, a distant idea calling for movement or study."},
+    {"en": "Capricorn",   "sa": "Makara",      "lord": "Saturn",  "element": "Earth", "quality": "Movable",
+     "opening_style": "Open with a structure or a milestone — a schedule, a ladder, a target date, something being built. Capricorn thinks in stages."},
+    {"en": "Aquarius",    "sa": "Kumbha",      "lord": "Saturn",  "element": "Air",   "quality": "Fixed",
+     "opening_style": "Open with a group or a wider circle — a community, a cause, a shared interest, an outsider's angle on a familiar situation."},
+    {"en": "Pisces",      "sa": "Meena",       "lord": "Jupiter", "element": "Water", "quality": "Dual",
+     "opening_style": "Open with a dream, an intuition, a piece of music, a boundary that is dissolving. Pisces feels before it thinks."},
 )
 
 
@@ -381,6 +396,10 @@ def _generate_rashifal_single(
         f"- Element (Tattva): {anchor['element']}\n"
         f"- Quality (Guna): {anchor['quality']}\n"
         f"\n"
+        f"OPENING STYLE HINT (CRITICAL — this is how you avoid opening with "
+        f"'Today, you may feel...' like every other rashi will):\n"
+        f"{anchor.get('opening_style', 'Open with a concrete image, not a generic feeling.')}\n"
+        f"\n"
         f"TODAY'S SKY SIGNALS (use these to make the reading feel like TODAY):\n"
         f"{day_signals_block}\n"
         f"\n"
@@ -388,7 +407,8 @@ def _generate_rashifal_single(
         f"{transit_block}\n"
         f"\n"
         f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
-        f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose."
+        f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose. "
+        f"Follow the opening-style hint above. Do not use any banned opening phrase."
     )
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
