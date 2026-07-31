@@ -803,15 +803,27 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
     mars_idx = _rashi_index(mars.rashi)
     venus_idx = _rashi_index(venus.rashi)
 
-    qualifying = set()
+    # Track per-axis qualifying so we can distinguish 'primary Lagna/Moon
+    # Manglik' from 'Venus-axis-only Kuja-Shukra Manglik' — the two are
+    # NOT equivalent in classical weight. Lagna + Moon axes = the standard
+    # Manglik call every mainstream tool (AstroSage / mPanchang / physical
+    # Jataka Parijata-based readings) reports. Venus axis is a
+    # supplementary marriage-specific indicator (Kuja-Shukra Manglik) from
+    # modern extended practice — real per K.N. Rao + Cheiro but weaker
+    # than the primary axes. Reporting Venus-only as full Manglik gives
+    # false positives against people's offline kundalis.
+    from_lagna: set[int] = set()
+    from_moon:  set[int] = set()
+    from_venus: set[int] = set()
     if mars.house in {1, 2, 4, 7, 8, 12}:
-        qualifying.add(mars.house)
+        from_lagna.add(mars.house)
     mars_from_moon = ((mars_idx - moon_idx) % 12) + 1
     if mars_from_moon in {1, 2, 4, 7, 8, 12}:
-        qualifying.add(mars_from_moon)
+        from_moon.add(mars_from_moon)
     mars_from_venus = ((mars_idx - venus_idx) % 12) + 1
     if mars_from_venus in {1, 2, 4, 7, 8, 12}:
-        qualifying.add(mars_from_venus)
+        from_venus.add(mars_from_venus)
+    qualifying = from_lagna | from_moon | from_venus
 
     if not qualifying:
         return ManglikDetails(
@@ -841,6 +853,20 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
         effective_status = "mitigated"
     else:
         effective_status = "present"
+
+    # Venus-axis-only DOWNGRADE — if neither Lagna nor Moon axis fired,
+    # we're looking at pure Kuja-Shukra Manglik (marriage-specific
+    # supplementary indicator). Never report as full 'present' — cap at
+    # 'mitigated' so users don't panic over what their offline kundali
+    # rightly calls a non-Manglik chart. Also downgrade severity by one
+    # notch so the number-badge on the UI reads accurately.
+    if not from_lagna and not from_moon and from_venus:
+        if effective_status == "present":
+            effective_status = "mitigated"
+        if severity == "high":
+            severity = "moderate"
+        elif severity == "moderate":
+            severity = "low"
 
     return ManglikDetails(
         is_manglik=True,
@@ -3206,8 +3232,19 @@ def compute_bhagya_score(chart: Chart) -> BhagyaScore:
     #     - mitigated : Manglik pattern but some (not all) cancellations, -3
     #     - present   : Manglik pattern, no cancellations applied, -8
     mangal = compute_manglik_details(chart)
+    # Detect Venus-axis-only (Kuja-Shukra) case for a friendlier driver
+    # note — many charts flagged 'mitigated' here are actually clean per
+    # the mainstream Lagna/Moon-only Manglik check.
+    v_only = (
+        mangal.is_manglik
+        and mangal.effective_status == "mitigated"
+        and mangal.primary_house == 12
+        and mangal.severity in ("low", "moderate")
+    )
     if mangal.effective_status == "cancelled":
         _add(+5, "Manglik pattern cancelled by classical rules — no net Dosh")
+    elif v_only:
+        _add(-1, "Kuja-Shukra pattern (Venus-axis only) — mainstream Lagna/Moon check reads as non-Manglik")
     elif mangal.effective_status == "mitigated":
         _add(-3, "Manglik pattern partly mitigated (some cancellations apply)")
     elif mangal.effective_status == "present":
