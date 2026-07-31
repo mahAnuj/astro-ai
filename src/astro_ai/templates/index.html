@@ -1,9 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Shubh Bhagya: Free Kundli, Rashifal &amp; Janma Patrika{% endblock %}
-{% block meta_description %}Free Vedic Janma Kundli online — today's Rashifal, Dasha periods, Manglik &amp; Sade Sati checks, Kundali matching for marriage. No signup.{% endblock %}
+{% block title %}Shubh Bhagya — Free Kundli, Rashifal, Panchang, Numerology, Muhurat, Ask 3 Free Questions{% endblock %}
+{% block meta_description %}Free Vedic astrology online — Janma Kundli, daily Rashifal for all 12 rashis, today's Panchang, Numerology (Vedic + Chaldean with per-planet remedies), Vivah Muhurat + 4 other event dates, Kundli Matching, plus 3 free personal questions about your chart every day. Sidereal Lahiri, Swiss Ephemeris, no signup.{% endblock %}
 
 {% block content %}
+{# Panchang strip — always-on top-of-homepage masthead per user request.
+   Cached daily (see _homepage_panchang_cached in main.py) so this
+   costs nothing on repeat homepage loads. #}
+{% include "_panchang_strip.html" %}
 {% set active_page = "home" %}
 {% set show_print = false %}
 {% include "_nav.html" %}
@@ -359,6 +363,24 @@
         '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>',
         "Kundli Matching",
         "Full 8-koota Ashtakoot Guna Milan with verdict, Mangal Dosh check, and a compatibility reading covering emotional bond, daily life, and marriage foundation.") }}
+
+      {# Second row added cycle 10 — cards user asked to elevate on the
+         homepage: Numerology (deep Life Path + remedies), Muhurat (Vivah
+         wedding dates + 4 other events), Ask (3 free personal Q&A). #}
+      {{ feature_card("/numerology",
+        '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m-6 4h6m-6 4h4M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>',
+        "Numerology",
+        "Vedic (Johari) + Chaldean numerology from your name + DOB — Life Path character profile, best partners, career, Vedic remedies (rudraksha, yantra, mantra, plants) per your ruling planet.") }}
+
+      {{ feature_card("/muhurat/vivah",
+        '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/></svg>',
+        "Vivah Muhurat",
+        "Classical wedding-date finder applying tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Nitya Yoga rules + optional bride+groom two-chart Tara/Chandra Bala matching. Also Griha Pravesh, Namkaran, Vidyarambh, Business.") }}
+
+      {{ feature_card("/ask",
+        '<svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+        "Ask",
+        "3 free personal questions per day about your chart — marriage timing, career direction, when a specific transit lands. Real answers from your actual Kundli, not generic horoscope advice.") }}
 
     </div>
   </div>
