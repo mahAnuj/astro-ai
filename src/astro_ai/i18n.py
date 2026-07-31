@@ -258,6 +258,40 @@ _EN: Final[dict[str, str]] = {
     "error_chart":         "Couldn't compute the chart",
     "error_reading":       "Couldn't generate the reading",
     "error_key_missing":   "API key not configured",
+
+    # ─── Nav labels added cycle 10 ───────────────────────────────────
+    "nav_numerology_link":     "Numerology",
+    "nav_learn_link":          "Learn",
+    "nav_tools_menu":          "Tools",
+    "nav_more_menu":           "More",
+    "nav_tool_panchang":       "Panchang Today",
+    "nav_tool_muhurat":        "Muhurat Finder",
+    "nav_tool_manglik":        "Manglik Check",
+    "nav_tool_sade_sati":      "Sade Sati Report",
+    "nav_tool_kaal_sarp":      "Kaal Sarp Check",
+
+    # ─── Bhagya Score section (result.html) ─────────────────────────
+    "bhagya_label":            "Bhagya",
+    "bhagya_out_of":           "/ 100",
+    "bhagya_heading":          "Your Bhagya Score",
+    "bhagya_lede":             "Astrology is weather, not destiny. This number reflects your <strong>current chapter</strong> based on today's dashas and transits — it will shift as they shift. Below: the top signals feeding it.",
+    "bhagya_why":              "Why this score",
+    "bhagya_show_all":         "Show all {n} signals →",
+    # Numerology-only Bhagya Score sits on /numerology
+    "num_bhagya_heading":      "Your Numerology Bhagya Score",
+    "num_bhagya_lede":         "Character-level snapshot from your numbers. Shifts slowly (only the Personal Year updates annually). For daily transit weather, generate your <a href=\"/kundli\" class=\"text-astro-700 hover:underline font-semibold\">Janma Kundli Bhagya Score</a>.",
+
+    # ─── Ask CTA (_ask_cta.html) ────────────────────────────────────
+    "ask_cta_free":            "Free · No signup",
+    "ask_cta_remaining":       "{n} questions left today",
+    "ask_cta_remaining_one":   "1 question left today",
+    "ask_cta_head_saved":      "Ask 3 free questions {hint} today",
+    "ask_cta_head_no_chart":   "Get 3 free personal questions with your Kundli",
+    "ask_cta_body_saved":      "Real answers from your actual chart — marriage timing, career direction, when a specific transit lands. Not generic horoscope advice.",
+    "ask_cta_body_no_chart":   "Generate your free Janma Kundli and you unlock 3 daily questions like \"When will I marry?\" or \"What's the best career for me?\" — answered from your actual chart, not a template.",
+    "ask_cta_button_saved":    "Ask a question →",
+    "ask_cta_button_no_chart": "Generate my Kundli →",
+    "ask_cta_hint_default":    "about your chart",
 }
 
 _HI: Final[dict[str, str]] = {
@@ -493,6 +527,39 @@ _HI: Final[dict[str, str]] = {
     "varshaphala_year_lord":    "वर्ष का स्वामी",
     "varshaphala_muntha":       "मुंथा भाव",
     "varshaphala_muntha_note":  "मुंथा वह भाव है जिसमें वार्षिक कुंडली के अनुसार जन्म-सूर्य की राशि स्थित है — शास्त्रीय रूप से वर्ष का केंद्रित भाव।",
+
+    # ─── Nav labels added cycle 10 ───────────────────────────────────
+    "nav_numerology_link":     "अंकशास्त्र",
+    "nav_learn_link":          "सीखें",
+    "nav_tools_menu":          "उपकरण",
+    "nav_more_menu":           "अधिक",
+    "nav_tool_panchang":       "आज का पंचांग",
+    "nav_tool_muhurat":        "मुहूर्त खोजें",
+    "nav_tool_manglik":        "मंगल दोष जाँच",
+    "nav_tool_sade_sati":      "साढ़े साती",
+    "nav_tool_kaal_sarp":      "काल सर्प जाँच",
+
+    # ─── Bhagya Score section ───────────────────────────────────────
+    "bhagya_label":            "भाग्य",
+    "bhagya_out_of":           "/ 100",
+    "bhagya_heading":          "आपका भाग्य स्कोर",
+    "bhagya_lede":             "ज्योतिष मौसम है, नियति नहीं। यह अंक आपके <strong>वर्तमान अध्याय</strong> को दर्शाता है — आज के महादशा और गोचर के आधार पर। जैसे ये बदलेंगे, यह अंक भी बदलेगा। नीचे देखें कौन से संकेत इसे प्रभावित कर रहे हैं।",
+    "bhagya_why":              "यह अंक क्यों",
+    "bhagya_show_all":         "सभी {n} संकेत दिखाएँ →",
+    "num_bhagya_heading":      "आपका अंकशास्त्र भाग्य स्कोर",
+    "num_bhagya_lede":         "आपकी संख्याओं से चरित्र-स्तरीय झलक। धीरे बदलती है (केवल व्यक्तिगत वर्ष सालाना बदलता है)। दैनिक गोचर के मौसम के लिए, अपनी <a href=\"/kundli\" class=\"text-astro-700 hover:underline font-semibold\">जन्म कुंडली भाग्य स्कोर</a> बनाएँ।",
+
+    # ─── Ask CTA ─────────────────────────────────────────────────────
+    "ask_cta_free":            "मुफ्त · कोई साइनअप नहीं",
+    "ask_cta_remaining":       "आज {n} प्रश्न बाकी",
+    "ask_cta_remaining_one":   "आज 1 प्रश्न बाकी",
+    "ask_cta_head_saved":      "आज अपनी कुंडली के बारे में 3 प्रश्न मुफ्त पूछें",
+    "ask_cta_head_no_chart":   "कुंडली बनाकर 3 मुफ्त व्यक्तिगत प्रश्न पाएं",
+    "ask_cta_body_saved":      "आपकी वास्तविक कुंडली से सटीक उत्तर — विवाह का समय, करियर की दिशा, विशेष गोचर कब आएंगे। सामान्य राशिफल जैसी सलाह नहीं।",
+    "ask_cta_body_no_chart":   "अपनी मुफ्त जन्म कुंडली बनाएँ और रोज़ 3 प्रश्न पूछें — \"मेरा विवाह कब होगा?\" या \"मेरे लिए सबसे अच्छा करियर क्या है?\" — आपकी वास्तविक कुंडली से उत्तर, टेम्पलेट से नहीं।",
+    "ask_cta_button_saved":    "प्रश्न पूछें →",
+    "ask_cta_button_no_chart": "मेरी कुंडली बनाएँ →",
+    "ask_cta_hint_default":    "अपनी कुंडली के बारे में",
 }
 
 _TABLES: Final[dict[str, dict[str, str]]] = {"en": _EN, "hi": _HI}
