@@ -5,6 +5,12 @@
 
 {% block content %}
 {% set active_page = "" %}
+{% set breadcrumbs = [
+  ('Home', '/'),
+  ('Muhurat Finder', '/muhurat'),
+  (event_label, '/muhurat/' + landing.slug),
+] %}
+{% include "_breadcrumb_schema.html" %}
 {% set tool_name = landing.hero_title %}
 {% set tool_desc = landing.seo_desc %}
 {% set tool_url = "/muhurat/" + landing.slug %}

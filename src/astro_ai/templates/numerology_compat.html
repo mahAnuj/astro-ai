@@ -5,6 +5,12 @@
 
 {% block content %}
 {% set active_page = "numerology" %}
+{% set breadcrumbs = [
+  ('Home', '/'),
+  ('Numerology', '/numerology'),
+  ('Compatibility', '/numerology/compatibility'),
+] %}
+{% include "_breadcrumb_schema.html" %}
 {% set tool_name = "Numerology Compatibility" %}
 {% set tool_desc = "Free 2-person numerology compatibility per Johari — Life Path + Birthday + Destiny pair verdicts, general/marriage/business contexts." %}
 {% set tool_url = "/numerology/compatibility" %}

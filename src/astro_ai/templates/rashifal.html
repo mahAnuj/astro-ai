@@ -5,6 +5,32 @@
 
 {% block content %}
 {% set active_page = "rashifal" %}
+{% set breadcrumbs = [
+  ('Home', '/'),
+  ('Rashifal', '/rashifal'),
+] %}
+{% include "_breadcrumb_schema.html" %}
+{# JSON-LD Article — Rashifal is a fresh-daily article, so schema signals
+   news-freshness to Google. datePublished + dateModified track TODAY so
+   Google reads it as "updated today" not "published in 2025". #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ site_url }}/rashifal"},
+  "url": "{{ site_url }}/rashifal",
+  "headline": {{ (t(lang, 'rashifal_title') ~ ' — ' ~ today_pretty) | tojson }},
+  "description": {{ ((lang == 'hi') and ('आज का राशिफल — ' ~ today_pretty ~ '। सभी 12 राशियों के लिए मुफ्त दैनिक भविष्यवाणी।') or ("Today's Rashifal for " ~ today_pretty ~ ' — all 12 rashis, free, no signup.')) | tojson }},
+  "image": {"@type": "ImageObject", "url": "{{ site_url }}/static/icons/icon-512.png", "width": 512, "height": 512},
+  "datePublished": "{{ today_date }}",
+  "dateModified": "{{ today_date }}",
+  "inLanguage": "{{ lang }}",
+  "articleSection": "Rashifal",
+  "author":    {"@type": "Organization", "name": "Shubh Bhagya", "url": "{{ site_url }}/"},
+  "publisher": {"@type": "Organization", "name": "Shubh Bhagya", "url": "{{ site_url }}/",
+                "logo": {"@type": "ImageObject", "url": "{{ site_url }}/static/icons/icon-512.png", "width": 512, "height": 512}}
+}
+</script>
 {% include "_nav.html" %}
 
 {# Derive an anchor slug from each rashi title ("Aries / Mesha" → "aries").

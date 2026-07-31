@@ -5,6 +5,8 @@
 
 {% block content %}
 {% set active_page = "" %}
+{% set breadcrumbs = [('Home', '/'), ('Muhurat Finder', '/muhurat')] %}
+{% include "_breadcrumb_schema.html" %}
 {% set tool_name = "Muhurat Finder" %}
 {% set tool_desc = "Free Muhurat Finder covering Vivah, Griha Pravesh, Namkaran, Vidyarambh and Business dates. Applies classical Panchang rules — tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Adhik Maas, Bhadra Karana, Nitya Yogas (Vaidhriti/Vyatipata avoided), Choghadiya sub-day windows, Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga boosters, plus combustion checks for Guru and Shukra. Bride+groom two-chart scoring for Vivah; baby-first-letter Nakshatra table for Namkaran." %}
 {% set tool_url = "/muhurat" %}

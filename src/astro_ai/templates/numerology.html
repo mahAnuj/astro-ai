@@ -5,6 +5,8 @@
 
 {% block content %}
 {% set active_page = "numerology" %}
+{% set breadcrumbs = [('Home', '/'), ('Numerology', '/numerology')] %}
+{% include "_breadcrumb_schema.html" %}
 {% set tool_name = "Numerology Calculator" %}
 {% set tool_desc = "Free Vedic + Chaldean numerology — Life Path, Birthday, Destiny, Soul Urge, Personality, Personal Year, Karmic Debt flags, plus per-number remedies (gemstone, colour, deity, mantra)." %}
 {% set tool_url = "/numerology" %}
