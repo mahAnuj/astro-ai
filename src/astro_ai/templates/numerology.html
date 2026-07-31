@@ -318,6 +318,12 @@
     <p><strong>Editorial note:</strong> Numerology is a complementary lens, not a replacement for chart-based Vedic reading. This calculator does not recommend name changes or wearing gems based on numerology alone — both practices can carry unintended consequences. Consult qualified guidance for any major life decision.</p>
   </div>
 
+  {% if reading %}
+  {# Ask feature promotion — after user has consumed the numerology reading,
+     surface the chart-based Q&A as the natural next step. #}
+  {% include "_ask_cta.html" %}
+  {% endif %}
+
   {% endif %}
 
 </main>
