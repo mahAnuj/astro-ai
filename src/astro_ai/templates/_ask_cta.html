@@ -1,0 +1,47 @@
+{# Shared 'Ask 3 free questions' CTA. Include this on any result page
+   where the user has just consumed content but might want deeper
+   personal Q&A. Adapts based on whether a chart is saved.
+
+   Context expected:
+     - has_saved_chart: bool  (True if a Kundli has been generated)
+     - ask_remaining: int     (today's remaining question count; optional)
+     - ask_context_hint: str  (e.g. 'about your chart', 'about your numerology',
+                                'about your Kundli match'). Optional; falls
+                                back to a generic phrase.
+   Any of these can be omitted; the template does the right thing.
+#}
+{% set _remaining = ask_remaining if ask_remaining is defined else 3 %}
+{% set _hint = ask_context_hint if ask_context_hint is defined else 'about your chart' %}
+
+<aside class="rounded-2xl border-2 border-astro-300 bg-gradient-to-br from-astro-50 to-white shadow-md p-5 sm:p-6 no-print"
+       data-ask-cta>
+  <div class="flex items-start gap-4">
+    <div class="shrink-0 w-11 h-11 rounded-full bg-astro-100 border border-astro-200 flex items-center justify-center">
+      <svg class="w-6 h-6 text-astro-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+      </svg>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 mb-1 flex-wrap">
+        <span class="text-[11px] uppercase tracking-wider font-semibold text-astro-700 bg-astro-100 px-2 py-0.5 rounded-full">Free · No signup</span>
+        {% if _remaining and _remaining < 3 %}
+        <span class="text-[11px] text-stone-500">{{ _remaining }} question{{ 's' if _remaining != 1 else '' }} left today</span>
+        {% endif %}
+      </div>
+      <h3 class="font-display text-lg sm:text-xl text-astro-800 mb-1">
+        {% if has_saved_chart %}Ask 3 free questions {{ _hint }} today{% else %}Get 3 free personal questions with your Kundli{% endif %}
+      </h3>
+      <p class="text-sm text-stone-700 leading-relaxed mb-3">
+        {% if has_saved_chart %}
+          Real answers from your actual chart — marriage timing, career direction, when a specific transit lands. Not generic horoscope advice.
+        {% else %}
+          Generate your free Janma Kundli and you unlock 3 daily questions like "When will I marry?" or "What's the best career for me?" — answered from your actual chart, not a template.
+        {% endif %}
+      </p>
+      <a href="{% if has_saved_chart %}/ask{% else %}/{% endif %}"
+         class="inline-flex items-center gap-1.5 bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+        {% if has_saved_chart %}Ask a question &rarr;{% else %}Generate my Kundli &rarr;{% endif %}
+      </a>
+    </div>
+  </div>
+</aside>

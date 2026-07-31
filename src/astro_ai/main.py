@@ -1087,6 +1087,7 @@ async def _render_natal_for(request: Request, details: BirthDetails,
             "lagna_glyph": symbol_for_rashi_label(chart.lagna_rashi),
             "moon_glyph":  symbol_for_rashi_label(moon_plt.rashi),
             "sun_glyph":   symbol_for_rashi_label(sun_plt.rashi),
+            **_ask_cta_ctx(request, hint="about your chart"),
             # Structured insight panels — see chart.py for shape.
             "manglik":  compute_manglik_details(chart),
             "navamsha_chart": compute_navamsha_chart(chart),
@@ -1907,6 +1908,7 @@ async def numerology_calculate(
             "reading": reading,
             "error": None,
             "lang": _lang(request),
+            **_ask_cta_ctx(request, hint="about your chart (numerology-related life questions)"),
         },
     )
 
@@ -3225,6 +3227,27 @@ def _is_localhost(request: Request) -> bool:
     return client.host in {"127.0.0.1", "localhost", "::1"}
 
 
+def _ask_cta_ctx(request: Request, hint: str = "about your chart") -> dict:
+    """Build the context dict for the shared _ask_cta.html partial.
+
+    Any result page that wants to show the 'Ask 3 free questions' CTA
+    just merges this into its TemplateResponse context. Handles:
+      - Detecting a saved chart (has_saved_chart)
+      - Reading today's remaining quota
+      - Passing the per-page phrasing hint ('about your chart' vs
+        'about your numerology' vs 'about your Kundli match')
+    """
+    try:
+        has_saved_chart = load_collection(request).active is not None
+    except Exception:
+        has_saved_chart = False
+    return {
+        "has_saved_chart": has_saved_chart,
+        "ask_remaining": _ask_quota_remaining(request),
+        "ask_context_hint": hint,
+    }
+
+
 def _ask_quota_remaining(request: Request) -> int:
     """Read today's remaining ask count from the session cookie.
 
@@ -3540,6 +3563,7 @@ async def matching_result(
             },
             "groom_chart": groom_chart,
             "bride_chart": bride_chart,
+            **_ask_cta_ctx(request, hint="about your Kundli match"),
         },
     )
 
