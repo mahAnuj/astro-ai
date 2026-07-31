@@ -121,7 +121,7 @@ def _llm_error_friendly(err: Exception) -> tuple[str, str]:
         "We couldn't complete the reading this time. Please try again in "
         "a moment — your input is safe to re-submit exactly as you typed it.",
     )
-from astro_ai import cache, email_sender, events, feedback, festivals, learn_registry, notify, shloks, snapshots, storage, subscribers, trivia, users
+from astro_ai import cache, daily_cache, email_sender, events, feedback, festivals, learn_registry, notify, shloks, snapshots, storage, subscribers, trivia, users
 import time as _time
 from astro_ai.session import (
     SUPPORTED_LANGS,
@@ -204,6 +204,46 @@ def _rashifal_teaser(body: str, sentences: int = 2) -> str:
         # No ellipsis — the "Read full" button makes the truncation explicit.
         pass
     return teaser
+
+
+def _daily_rashifal_text(
+    *, lang: str, today_iso: str, cache_key: str, storage_key: str, call_fn,
+) -> str:
+    """Fetch today's Rashifal text with a Tier-0 daily JSON file in front.
+
+    Read order:
+      Tier 0  — data/daily_cache/rashifal/{date}-{lang}.json   (this instance, today)
+      Tier 1  — GCS blob rashifal/{date}-{lang}-{promptfp}.txt (cross-instance)
+      Tier 2  — SQLite key rashifal:{date}:{lang}:{promptfp}   (this instance)
+      Tier 3  — LLM generation (12 per-rashi parallel calls)
+
+    Every write propagates UP to fill the tier-0 file, so the FIRST request of
+    the day pays the cold-generate cost and every subsequent same-day request
+    on the same instance is a single-file read. The file is human-readable —
+    `cat data/daily_cache/rashifal/{date}-{lang}.json` shows exactly what
+    users are seeing today.
+    """
+    hit = daily_cache.get("rashifal", lang, today_iso)
+    if hit is not None and isinstance(hit.get("text"), str) and hit["text"].strip():
+        cache.log_call("rashifal", lang, cache_hit=True)
+        return hit["text"]
+
+    text = _shared_three_tier(
+        route="rashifal",
+        cache_key=cache_key,
+        storage_key=storage_key,
+        lang=lang,
+        call_fn=call_fn,
+    )
+    # Write the tier-0 file so subsequent same-day/same-instance reads skip
+    # everything below. Payload is intentionally verbose for humans debugging
+    # why today's Rashifal looks a certain way.
+    daily_cache.put("rashifal", lang, {
+        "text": text,
+        "lang": lang,
+        "date_iso": today_iso,
+    }, today_iso)
+    return text
 
 
 def _shared_three_tier(
@@ -2215,11 +2255,11 @@ async def rashifal(request: Request) -> HTMLResponse:
     # a prompt edit auto-invalidates yesterday's cache.
     storage_key = f"rashifal/{today_iso}-{lang}-{prompt_fp}.txt"
     try:
-        text = _shared_three_tier(
-            route="rashifal",
+        text = _daily_rashifal_text(
+            lang=lang,
+            today_iso=today_iso,
             cache_key=cache_key,
             storage_key=storage_key,
-            lang=lang,
             call_fn=lambda: generate_rashifal(
                 transit=transit, today_iso=today_iso,
                 prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
@@ -2386,11 +2426,11 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
     try:
         neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
         transit = compute_transit_snapshot(neutral_chart)
-        text = _shared_three_tier(
-            route="rashifal",
+        text = _daily_rashifal_text(
+            lang=lang,
+            today_iso=today_iso,
             cache_key=f"rashifal:{today_iso}:{lang}:{prompt_fp}",
             storage_key=f"rashifal/{today_iso}-{lang}-{prompt_fp}.txt",
-            lang=lang,
             call_fn=lambda: generate_rashifal(
                 transit=transit, today_iso=today_iso,
                 prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
@@ -2475,11 +2515,11 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
         cache_key = f"rashifal:{today_iso}:{lang}:{prompt_fp}"
         storage_key = f"rashifal/{today_iso}-{lang}-{prompt_fp}.txt"
         try:
-            text = _shared_three_tier(
-                route="rashifal",
+            text = _daily_rashifal_text(
+                lang=lang,
+                today_iso=today_iso,
                 cache_key=cache_key,
                 storage_key=storage_key,
-                lang=lang,
                 call_fn=lambda lang=lang: generate_rashifal(
                     transit=transit, today_iso=today_iso,
                     prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,

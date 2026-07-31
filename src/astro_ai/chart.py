@@ -62,7 +62,7 @@ RASHI_SYMBOLS: tuple[str, ...] = (
 # Each tuple covers English + Sanskrit names (lowercased) for one rashi.
 _RASHI_NAME_TOKENS: tuple[tuple[str, ...], ...] = (
     ("aries", "mesha"),
-    ("taurus", "vrishabha", "vrish"),
+    ("taurus", "vrishabha"),
     ("gemini", "mithuna", "mithun"),
     ("cancer", "karka"),
     ("leo", "simha", "sinh"),

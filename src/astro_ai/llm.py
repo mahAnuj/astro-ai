@@ -11,6 +11,7 @@ hands `messages` to providers.chat() and gets back text.
 from __future__ import annotations
 
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -292,6 +293,110 @@ def generate_dasha_deep_dive(
     return content.strip()
 
 
+# 12 rashis in canonical order, each described with the classical facts
+# (English + Sanskrit name, ruling planet/Swami, element/Tattva, quality/Guna).
+# Passing these per-rashi to the LLM prevents the failure mode where a single
+# multi-rashi call outputs ~4 unique readings clustered by element — the LLM
+# lazily groups Aries/Sagittarius (both fire), Taurus/Virgo/Capricorn (all
+# earth), etc. Per-rashi calls guarantee 12 distinct outputs.
+_RASHI_ANCHORS: tuple[dict[str, str], ...] = (
+    {"en": "Aries",       "sa": "Mesha",       "lord": "Mars",    "element": "Fire",  "quality": "Movable"},
+    {"en": "Taurus",      "sa": "Vrishabha",   "lord": "Venus",   "element": "Earth", "quality": "Fixed"},
+    {"en": "Gemini",      "sa": "Mithuna",     "lord": "Mercury", "element": "Air",   "quality": "Dual"},
+    {"en": "Cancer",      "sa": "Karka",       "lord": "Moon",    "element": "Water", "quality": "Movable"},
+    {"en": "Leo",         "sa": "Simha",       "lord": "Sun",     "element": "Fire",  "quality": "Fixed"},
+    {"en": "Virgo",       "sa": "Kanya",       "lord": "Mercury", "element": "Earth", "quality": "Dual"},
+    {"en": "Libra",       "sa": "Tula",        "lord": "Venus",   "element": "Air",   "quality": "Movable"},
+    {"en": "Scorpio",     "sa": "Vrishchika",  "lord": "Mars",    "element": "Water", "quality": "Fixed"},
+    {"en": "Sagittarius", "sa": "Dhanu",       "lord": "Jupiter", "element": "Fire",  "quality": "Dual"},
+    {"en": "Capricorn",   "sa": "Makara",      "lord": "Saturn",  "element": "Earth", "quality": "Movable"},
+    {"en": "Aquarius",    "sa": "Kumbha",      "lord": "Saturn",  "element": "Air",   "quality": "Fixed"},
+    {"en": "Pisces",      "sa": "Meena",       "lord": "Jupiter", "element": "Water", "quality": "Dual"},
+)
+
+
+def _build_rashifal_day_signals(
+    transit: TransitSnapshot,
+    today_iso: str,
+    lang: str,
+    panchang: DailyPanchang | None,
+    festival: dict | None,
+) -> list[str]:
+    """Compute the day-varying context block shared across all 12 per-rashi calls."""
+    moon = next((p for p in transit.planets if p.name == "Moon"), None)
+    # Rahu/Ketu are ALWAYS retrograde in Vedic convention — filter them out
+    # so we only surface newsworthy retrogrades (Merc/Ven/Mars/Jup/Sat).
+    retrogrades = [p.name for p in transit.planets
+                    if p.retrograde and p.name not in ("Rahu", "Ketu")]
+
+    signals: list[str] = [f"Today's date: {today_iso}"]
+    if panchang:
+        signals.append(
+            f"Weekday: {panchang.weekday} — ruled by {panchang.day_lord}. "
+            f"Classical Vedic tradition treats this day's overall tone as "
+            f"{panchang.day_lord}-coloured; that mood must shape today's reading."
+        )
+        tithi_note = (
+            f"Today's tithi: {panchang.tithi_paksha} Paksha, {panchang.tithi_name}"
+        )
+        if panchang.tithi_significance:
+            tithi_note += f" ({panchang.tithi_significance})"
+        tithi_note += (
+            ". Tithi shifts every ~24 hours and colours the day's karmic character."
+        )
+        signals.append(tithi_note)
+    if moon:
+        signals.append(
+            f"Moon today: {moon.rashi} in {moon.nakshatra} nakshatra. "
+            f"This is the fastest-changing sky signal — reference it if it fits."
+        )
+    if retrogrades:
+        signals.append(
+            f"Planets currently retrograde: {', '.join(retrogrades)}. "
+            f"Their significations feel internal/reflective/second-look right now."
+        )
+    if festival:
+        fname = festival.get(f"name_{lang}") or festival.get("name_en", "festival")
+        fnote = festival.get(f"note_{lang}") or festival.get("note_en", "")
+        signals.append(f"Today is {fname} — {fnote} Weave this in if it fits.")
+    return signals
+
+
+def _generate_rashifal_single(
+    anchor: dict[str, str],
+    day_signals_block: str,
+    transit_block: str,
+    prompt_path: Path,
+    lang: str,
+) -> str:
+    """Generate a single rashi's daily reading — one LLM call, ~200 tokens output.
+
+    Called 12× in parallel by generate_rashifal(). Each call is independent so
+    the model can't lazily reuse phrasing across element-groups.
+    """
+    user_message = (
+        f"RASHI TO WRITE FOR:\n"
+        f"- Name: {anchor['en']} / {anchor['sa']}\n"
+        f"- Ruling planet (Swami): {anchor['lord']}\n"
+        f"- Element (Tattva): {anchor['element']}\n"
+        f"- Quality (Guna): {anchor['quality']}\n"
+        f"\n"
+        f"TODAY'S SKY SIGNALS (use these to make the reading feel like TODAY):\n"
+        f"{day_signals_block}\n"
+        f"\n"
+        f"Raw planetary positions (background context — do NOT recite):\n"
+        f"{transit_block}\n"
+        f"\n"
+        f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
+        f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose."
+    )
+    content = providers.chat(messages=[
+        {"role": "system", "content": _system_prompt(prompt_path, lang)},
+        {"role": "user", "content": user_message},
+    ], route="rashifal")
+    return content.strip()
+
+
 def generate_rashifal(
     transit: TransitSnapshot,
     today_iso: str,
@@ -306,69 +411,58 @@ def generate_rashifal(
     Generic across all users (not personalised by chart) so the caller can
     cache the result for 24 hours.
 
-    Day-varying signals (panchang, moon nakshatra, festival, retrogrades)
-    are surfaced up-front in the user message so the LLM anchors today's
-    reading on what's actually different about TODAY vs. yesterday — without
-    these, the reading tends to drift toward day-agnostic boilerplate.
+    Fires 12 parallel per-rashi LLM calls rather than one big-batch call. The
+    big-batch approach failed reliability review — external audit found that
+    a single-call generation produced ~4 unique readings clustered by element
+    (Aries≈Sagittarius, Taurus≈Virgo≈Capricorn, Cancer≈Scorpio≈Pisces,
+    Gemini≈Libra) because the LLM lazily reused phrasing across the same
+    element group. Per-rashi calls make that failure mode impossible.
+
+    `prompt_path` is the SINGLE-rashi prompt (rashifal_single.txt), not the
+    old 12-rashi batch prompt. Callers should pass RASHIFAL_PROMPT_PATH; the
+    module-level constant in main.py has been updated to point at the new
+    single-rashi file.
     """
-    # Fastest-changing sky signal: Moon's nakshatra shifts ~every day.
-    moon = next((p for p in transit.planets if p.name == "Moon"), None)
-    # Rahu/Ketu are ALWAYS retrograde in Vedic convention — filter them out
-    # so we only surface newsworthy retrogrades (Merc/Ven/Mars/Jup/Sat).
-    retrogrades = [p.name for p in transit.planets
-                    if p.retrograde and p.name not in ("Rahu", "Ketu")]
+    day_signals = _build_rashifal_day_signals(transit, today_iso, lang, panchang, festival)
+    day_signals_block = "\n".join(f"- {s}" for s in day_signals)
+    transit_block = format_transit_for_prompt(transit)
 
-    day_signals: list[str] = [f"Today's date: {today_iso}"]
-    if panchang:
-        day_signals.append(
-            f"Weekday: {panchang.weekday} — ruled by {panchang.day_lord}. "
-            f"Classical Vedic tradition treats this day's overall tone as "
-            f"{panchang.day_lord}-coloured; that mood MUST shape all 12 rashi "
-            f"cards, not just one."
-        )
-        tithi_note = (
-            f"Today's tithi: {panchang.tithi_paksha} Paksha, {panchang.tithi_name}"
-        )
-        if panchang.tithi_significance:
-            tithi_note += f" ({panchang.tithi_significance})"
-        tithi_note += (
-            ". Tithi shifts every ~24 hours and colours the day's karmic character — "
-            "reference it in at least 2 cards where the guidance genuinely fits."
-        )
-        day_signals.append(tithi_note)
-    if moon:
-        day_signals.append(
-            f"Moon today: {moon.rashi} in {moon.nakshatra} nakshatra. "
-            f"This is the fastest-changing sky signal — it grounds today's "
-            f"emotional weather and MUST be referenced at least once across the 12 cards."
-        )
-    if retrogrades:
-        day_signals.append(
-            f"Planets currently retrograde: {', '.join(retrogrades)}. "
-            f"Their significations feel internal/reflective/second-look right now — "
-            f"mention this in at least one card where it fits."
-        )
-    if festival:
-        fname = festival.get(f"name_{lang}") or festival.get("name_en", "festival")
-        fnote = festival.get(f"note_{lang}") or festival.get("note_en", "")
-        day_signals.append(
-            f"Today is {fname} — {fnote} Weave this into at least 3 rashi cards "
-            f"where it lands naturally (not all 12 — that would be forced)."
-        )
+    # Capped-parallelism: 4 concurrent calls, so 12 calls run as ~3 waves of 4.
+    # Rationale: 12-wide parallelism can burst-hit free-tier RPM limits on
+    # individual providers (Groq/Cerebras cap ~30 RPM). Providers.chat() has
+    # cross-provider fallback, but the fallback only fires on 429 after the
+    # first attempt — if 12 calls all pick the same fast provider from the
+    # random shuffle in the same second, that provider's per-second budget
+    # is toast before fallback can help. 4-wide keeps peak RPS under any
+    # free-tier limit while still being ~3× faster than sequential.
+    #
+    # Wall-clock: single call ~8-12s → 3 waves ~24-36s cold-cache. Warm-cache
+    # (99% of daily requests) skips this entirely via _shared_three_tier.
+    results: dict[int, str] = {}
+    errors: dict[int, Exception] = {}
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        future_to_idx = {
+            pool.submit(
+                _generate_rashifal_single,
+                anchor, day_signals_block, transit_block, prompt_path, lang,
+            ): idx
+            for idx, anchor in enumerate(_RASHI_ANCHORS)
+        }
+        for fut in as_completed(future_to_idx):
+            idx = future_to_idx[fut]
+            try:
+                results[idx] = fut.result()
+            except Exception as err:  # noqa: BLE001
+                errors[idx] = err
 
-    user_message = (
-        "TODAY'S SKY SIGNALS (use these to make the reading feel like TODAY):\n"
-        + "\n".join(f"- {s}" for s in day_signals)
-        + "\n\n"
-        + "Raw planetary positions (background context — do NOT recite in output):\n"
-        + format_transit_for_prompt(transit)
-        + "\n"
-    )
-    content = providers.chat(messages=[
-        {"role": "system", "content": _system_prompt(prompt_path, lang)},
-        {"role": "user", "content": user_message},
-    ], route="rashifal")
-    return content.strip()
+    if errors:
+        # Surface the first error — cache layer will treat it as a miss and retry.
+        first_idx = min(errors)
+        raise errors[first_idx]
+
+    # Concatenate 12 sections in canonical order — same output shape the
+    # existing parse_sectioned_reading() consumer expects.
+    return "\n\n".join(results[i] for i in range(12))
 
 
 def generate_matching_narrative(
