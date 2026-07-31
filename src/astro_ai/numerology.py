@@ -150,6 +150,351 @@ class NumerologyReading:
     name_compound: int = 0
     name_compound_meaning: str = ""
 
+    # Lo Shu 3×3 birth-number matrix — user's DOB digits plotted on the
+    # classical magic-square grid. Reveals present/absent number patterns
+    # ('arrows') for a real-numerologist-style visual reading. Sourced
+    # from Cheiro's Book of Numbers per knowledge/numerology.md §13.3
+    # (this is outside Johari + Kumar's Chaldean/Vedic scope).
+    lo_shu: "LoShuGrid | None" = None
+
+
+# ─── Lo Shu (birth-number matrix) — Cheiro / Chinese classical ────────
+# The 3×3 grid used by traditional numerologists to visualise a person's
+# birth-number pattern. Each cell holds the digit that sits there in the
+# Lo Shu magic square (rows + columns + diagonals all sum to 15):
+#
+#     4 | 9 | 2
+#     3 | 5 | 7
+#     8 | 1 | 6
+#
+# For a person's chart we count how many times each of digits 1..9
+# appears in their DOB (zeros excluded per Cheiro). Cells with count > 0
+# are 'present'; missing digits are 'life lessons'. Fully-present or
+# fully-missing rows / columns / diagonals form the 8 classical
+# 'arrows' — named patterns with known character interpretations.
+#
+# Source: Cheiro (Count Louis Hamon), *Cheiro's Book of Numbers* (Singh,
+# Rakesh Publisher edition, 1926 original). Cross-referenced with
+# standard Indian numerology practice. Marked separately from Johari +
+# Kumar (see knowledge/numerology.md §13.3).
+
+@dataclass(frozen=True)
+class LoShuArrow:
+    """A row / column / diagonal in the Lo Shu grid — fully present or fully missing."""
+    name: str                                # e.g. 'Arrow of Willpower'
+    digits: tuple[int, int, int]              # the 3 digits forming this arrow
+    kind: str                                 # 'present' | 'missing'
+    meaning: str                              # classical interpretation
+
+
+@dataclass(frozen=True)
+class LoShuDigitMeaning:
+    """Per-digit theme for the grid tooltip / cell caption."""
+    digit: int
+    theme: str            # short theme e.g. 'Ego', 'Sensitivity'
+    planet: str           # ruling planet in the Vedic-integrated system
+    if_present: str       # what having this digit means
+    if_missing: str       # what missing this digit means
+
+
+@dataclass(frozen=True)
+class LoShuGrid:
+    """The complete Lo Shu reading for one person."""
+    dob_digits: str                          # source digits used (e.g. '19880514')
+    counts: dict[int, int]                    # digit 1..9 → count in DOB
+    present_arrows: tuple[LoShuArrow, ...]   # rows/cols/diagonals fully present
+    missing_arrows: tuple[LoShuArrow, ...]   # rows/cols/diagonals fully absent
+    digit_meanings: tuple[LoShuDigitMeaning, ...]   # for template tooltips (all 9)
+
+
+# Physical layout of the grid — rows × cols → the digit at that cell.
+LO_SHU_LAYOUT: tuple[tuple[int, ...], ...] = (
+    (4, 9, 2),   # top row
+    (3, 5, 7),   # middle row
+    (8, 1, 6),   # bottom row
+)
+
+
+# Classical digit themes (per Cheiro + standard Vedic-numerology practice).
+_DIGIT_MEANINGS: tuple[LoShuDigitMeaning, ...] = (
+    LoShuDigitMeaning(
+        digit=1, theme="Ego & self-expression", planet="Sun",
+        if_present="Confident individuality, willingness to lead, clear sense of self.",
+        if_missing="Struggles with self-assertion; may hide behind others' opinions. Practice speaking your own view first.",
+    ),
+    LoShuDigitMeaning(
+        digit=2, theme="Sensitivity & intuition", planet="Moon",
+        if_present="Emotionally attuned to others, receptive, diplomatic in conflict.",
+        if_missing="Can appear cold or insensitive without meaning to. Practice naming what others feel out loud.",
+    ),
+    LoShuDigitMeaning(
+        digit=3, theme="Imagination & communication", planet="Jupiter",
+        if_present="Creative mind, expressive with words or art, quick with ideas.",
+        if_missing="Prefers concrete facts over metaphor; may need to consciously make time for play / art.",
+    ),
+    LoShuDigitMeaning(
+        digit=4, theme="Order & practical skill", planet="Rahu",
+        if_present="Methodical, hands-on, good with detail and structure.",
+        if_missing="Impatient with routine detail; delegate paperwork or use systems that don't need you to remember.",
+    ),
+    LoShuDigitMeaning(
+        digit=5, theme="Balance & freedom (grid centre)", planet="Mercury",
+        if_present="Balanced perspective, adaptable, natural mediator (nearly everyone has this — grid centre).",
+        if_missing="Rare — usually indicates a very unusual DOB. When absent, seek middle-path answers explicitly.",
+    ),
+    LoShuDigitMeaning(
+        digit=6, theme="Love, home & family", planet="Venus",
+        if_present="Warm with family, generous host, aesthetic sense.",
+        if_missing="Home life may feel like effort more than nourishment; practice small rituals that make house feel like home.",
+    ),
+    LoShuDigitMeaning(
+        digit=7, theme="Sacrifice & inner life", planet="Ketu",
+        if_present="Philosophical, comfortable with solitude, drawn to spiritual questions.",
+        if_missing="Very worldly focus; deliberate quiet time or study of a classical text balances the material push.",
+    ),
+    LoShuDigitMeaning(
+        digit=8, theme="Business & material world", planet="Saturn",
+        if_present="Naturally organised with money and systems, patient with long-timeline goals.",
+        if_missing="May struggle with saving / structure; simple habits (fixed savings %, weekly review) close this gap.",
+    ),
+    LoShuDigitMeaning(
+        digit=9, theme="Ambition & universality", planet="Mars",
+        if_present="Drive, courage, willingness to fight for a cause bigger than the self.",
+        if_missing="Rare after year 1000 (calendar digit forces it in most cases). If absent, look for what you'd fight for.",
+    ),
+)
+
+
+# The 8 classical arrows — 3 rows + 3 columns + 2 diagonals. Each has a
+# 'present' interpretation (all 3 digits appear in the DOB) and a
+# 'missing' interpretation (all 3 digits absent). Names cross-referenced
+# from Cheiro + modern Indian-numerology practice (both use the same
+# vocabulary — inherited from a common Chinese/Chaldean source).
+_LO_SHU_ARROW_DEFS: tuple[dict, ...] = (
+    # Rows
+    dict(digits=(4, 9, 2),
+         present_name="Arrow of Intellect",
+         present_meaning="Sharp mind + strong memory + clear reasoning. Natural teachers, writers, analysts.",
+         missing_name="Arrow of Poor Memory",
+         missing_meaning="Tendency to forget names and details. Remedy: keep a written journal; verify important facts twice."),
+    dict(digits=(3, 5, 7),
+         present_name="Arrow of Emotional Balance",
+         present_meaning="Steady inner life, well-grounded in the middle path. Doesn't swing to extremes.",
+         missing_name="Arrow of Emotional Instability",
+         missing_meaning="Emotions may swing high/low quickly. Regular meditation or breath practice stabilises."),
+    dict(digits=(8, 1, 6),
+         present_name="Arrow of Practicality",
+         present_meaning="Gets things done. Bridges vision and execution — rare and valuable in any team.",
+         missing_name="Arrow of the Impractical",
+         missing_meaning="Ideas outrun execution. Partner with a doer or use rigorous checklists to close the gap."),
+    # Columns
+    dict(digits=(4, 3, 8),
+         present_name="Arrow of the Planner",
+         present_meaning="Excellent long-range planner + organiser. Builds systems that outlast you.",
+         missing_name="Arrow of Poor Planner",
+         missing_meaning="Struggles with sequencing multi-step plans. Break work into 3-step chunks; write them down."),
+    dict(digits=(9, 5, 1),
+         present_name="Arrow of Willpower & Determination",
+         present_meaning="Iron will, follows through even when interested parties fall away. Marathon endurance."),
+    dict(digits=(2, 7, 6),
+         present_name="Arrow of the Active",
+         present_meaning="Physically and emotionally engaged with the world. Rarely idle.",
+         missing_name="Arrow of Sensitivity",
+         missing_meaning="Prefers a calmer, quieter pace. Choose environments that respect this — noisy open-plan offices drain you."),
+    # Diagonals
+    dict(digits=(4, 5, 6),
+         present_name="Arrow of Prosperity",
+         present_meaning="Natural flow of material and emotional abundance. Money and love arrive without desperate chase.",
+         missing_name="Arrow of the Skeptic",
+         missing_meaning="Questions everything, sometimes to the point of rejecting real opportunity. Trust a mentor's judgement more than yours in unfamiliar domains."),
+    dict(digits=(2, 5, 8),
+         present_name="Arrow of Determination",
+         present_meaning="Deep resolve — chooses a hard path and does not turn back. Founders, athletes, revolutionaries.",
+         missing_name="Arrow of Hyper-sensitivity",
+         missing_meaning="Small setbacks can feel like personal attacks. Build a small circle of trusted feedback so you can hear criticism without collapse."),
+)
+# Fill in the Willpower arrow's 'missing' variant separately since it has
+# an asymmetric handling in traditional readings — the missing case is
+# sometimes not explicitly named. Add for consistency.
+_LO_SHU_ARROW_DEFS[4]["missing_name"] = "Arrow of Weak Will"
+_LO_SHU_ARROW_DEFS[4]["missing_meaning"] = "Difficulty pushing through when motivation flags. Public commitments (announce goals to friends) create external pressure that substitutes for internal will."
+
+
+# ─── Numerology Bhagya Score ──────────────────────────────────────────
+# Same 0-100 gamified 'current chapter weather' concept as the Kundli
+# Bhagya Score in chart.py, but computed from numerology signals only.
+# Framed identically ('weather not destiny'). Shown on /numerology
+# result so users who compute numerology-first (without a Kundli) still
+# get a headline number to anchor the reading.
+#
+# Numerology signals move much more slowly than chart signals — the only
+# annually-shifting one is Personal Year. So this score is more of a
+# 'core disposition' snapshot than a daily reading. Copy on the template
+# calls this out honestly.
+
+@dataclass(frozen=True)
+class NumBhagyaDriver:
+    """One signal feeding the numerology Bhagya Score."""
+    weight: int
+    note: str
+    kind: str   # 'boost' | 'reduce'
+
+
+@dataclass(frozen=True)
+class NumBhagyaScore:
+    """0-100 numerology-only Bhagya Score."""
+    value: int
+    label: str
+    label_class: str    # 'emerald' | 'astro' | 'amber' | 'rose'
+    drivers: tuple[NumBhagyaDriver, ...]
+
+    @property
+    def top_drivers(self) -> tuple[NumBhagyaDriver, ...]:
+        return self.drivers[:3]
+
+
+# Life-Path-to-Destiny friend-pair map (per Johari §7). Same as the
+# friend-pair used by compute_compatibility() but re-declared here to
+# avoid coupling this score to that helper's private module vars.
+_LP_DESTINY_FRIENDS: set[tuple[int, int]] = {
+    (1, 1), (1, 3), (1, 5), (1, 9),
+    (2, 2), (2, 7), (2, 9),
+    (3, 3), (3, 6), (3, 9),
+    (4, 4), (4, 8),
+    (5, 5), (5, 6),
+    (6, 6), (6, 9),
+    (7, 7),
+    (8, 8),
+    (9, 9),
+}
+_LP_DESTINY_ENEMIES: set[tuple[int, int]] = {
+    (1, 8), (2, 5), (3, 5), (4, 3), (4, 5), (6, 7), (6, 8), (7, 3), (7, 8), (8, 9),
+}
+
+
+def compute_numerology_bhagya_score(reading: NumerologyReading) -> NumBhagyaScore:
+    """Compute the numerology-only Bhagya Score.
+
+    All signals sourced from the NumerologyReading dataclass; no external
+    LLM or chart data required. Master numbers (11/22/33) route through
+    their reduced base for pair lookups but keep their own boost bonus.
+    """
+    drivers: list[NumBhagyaDriver] = []
+    score = 50
+
+    def _add(delta: int, note: str) -> None:
+        nonlocal score
+        score += delta
+        drivers.append(NumBhagyaDriver(
+            weight=delta, note=note,
+            kind="boost" if delta > 0 else "reduce",
+        ))
+
+    lp = int(reading.life_path)
+    lp_base = {11: 2, 22: 4, 33: 6}.get(lp, lp)
+
+    # Master number Life Path — rare and spiritually potent per Kumar
+    if lp in (11, 22, 33):
+        _add(+8, f"Master Number Life Path {lp} — rare, spiritually potent (elevated {lp_base})")
+    # Naturally auspicious Life Paths per Johari §4 (Sun / Jupiter / Mercury / Venus rulers)
+    elif lp_base in (1, 3, 5, 6):
+        planet = {1: "Sun", 3: "Jupiter", 5: "Mercury", 6: "Venus"}[lp_base]
+        _add(+5, f"Life Path {lp} — ruled by {planet}, a naturally supportive number")
+
+    # Karmic Debt Numbers (Kumar Ch.1) — each is soul-work
+    if reading.karmic_debt_numbers:
+        n = len(reading.karmic_debt_numbers)
+        pts = -min(n * 3, 12)   # cap -12
+        names = "/".join(str(k) for k in reading.karmic_debt_numbers)
+        _add(pts, f"Karmic Debt {names} present — a life-lesson theme running through this incarnation")
+
+    # Life Path × Destiny harmony
+    d = int(reading.destiny)
+    d_base = {11: 2, 22: 4, 33: 6}.get(d, d)
+    pair = (min(lp_base, d_base), max(lp_base, d_base))
+    if pair in _LP_DESTINY_FRIENDS:
+        _add(+5, f"Life Path {lp} and Destiny {d} are friendly numbers — inner drive and outer role aligned")
+    elif pair in _LP_DESTINY_ENEMIES:
+        _add(-3, f"Life Path {lp} and Destiny {d} are enemy numbers per Johari — inner drive and outer role pull apart")
+
+    # Personal Year — the ONLY annually-shifting signal in this score.
+    # Dynamic years (1, 3, 5, 9) boost; grinding years (4, 7, 8) reduce.
+    py = int(reading.personal_year)
+    if py in (1, 3, 5, 9):
+        _add(+3, f"Personal Year {py} — a dynamic, initiative-favouring year")
+    elif py in (4, 7, 8):
+        _add(-2, f"Personal Year {py} — a slower, structural-work year")
+    elif py == 6:
+        _add(+2, "Personal Year 6 — a harmony / family / responsibility year")
+
+    # Compound Name number in Johari's most-fortunate 4-tier compounds
+    # (10, 19, 23, 27, 28, 37, 46, 49): +2. The exalted 1s per §5.
+    if reading.name_compound in (10, 19, 23, 27, 28, 37, 46, 49):
+        _add(+2, f"Compound {reading.name_compound} — one of Johari's most-fortunate name compounds")
+    elif reading.name_compound in (13, 14, 16, 26, 43):
+        _add(-2, f"Compound {reading.name_compound} — a challenging classical compound (rise-then-fall pattern)")
+
+    # Clamp + bucket label — same labels as chart Bhagya Score for consistency
+    score = max(0, min(100, score))
+    if score >= 75:
+        label = "Strong numerological chapter"
+        label_class = "emerald"
+    elif score >= 50:
+        label = "Steady numerological base"
+        label_class = "astro"
+    elif score >= 25:
+        label = "Numerology signals ask for patience"
+        label_class = "amber"
+    else:
+        label = "Deep learning theme — remedies matter"
+        label_class = "rose"
+
+    drivers.sort(key=lambda x: abs(x.weight), reverse=True)
+    return NumBhagyaScore(
+        value=score,
+        label=label,
+        label_class=label_class,
+        drivers=tuple(drivers),
+    )
+
+
+def compute_lo_shu_grid(birth_date_iso: str) -> LoShuGrid:
+    """Compute the Lo Shu 3×3 grid from an ISO birth date (YYYY-MM-DD).
+
+    Zeros in the DOB are excluded per Cheiro's classical rule. Life Path
+    and Destiny numbers are NOT added — this is the pure DOB-only grid
+    (some modern traditions extend by adding these; Bhagya sticks with
+    the classical version because it gives cleaner, more repeatable
+    interpretations across sources).
+    """
+    digits_str = "".join(ch for ch in birth_date_iso if ch.isdigit() and ch != "0")
+    counts = {n: 0 for n in range(1, 10)}
+    for ch in digits_str:
+        counts[int(ch)] += 1
+    present_arrows: list[LoShuArrow] = []
+    missing_arrows: list[LoShuArrow] = []
+    for a in _LO_SHU_ARROW_DEFS:
+        cells = a["digits"]
+        all_present = all(counts[c] > 0 for c in cells)
+        all_missing = all(counts[c] == 0 for c in cells)
+        if all_present:
+            present_arrows.append(LoShuArrow(
+                name=a["present_name"], digits=cells, kind="present",
+                meaning=a["present_meaning"],
+            ))
+        elif all_missing:
+            missing_arrows.append(LoShuArrow(
+                name=a["missing_name"], digits=cells, kind="missing",
+                meaning=a["missing_meaning"],
+            ))
+    return LoShuGrid(
+        dob_digits=digits_str,
+        counts=counts,
+        present_arrows=tuple(present_arrows),
+        missing_arrows=tuple(missing_arrows),
+        digit_meanings=_DIGIT_MEANINGS,
+    )
+
 
 # ─── Interpretation strings ──────────────────────────────────────────
 # Hand-written honest interpretations. NEVER predict specific outcomes.
@@ -992,4 +1337,5 @@ def compute(name: str, birth_date: str, system: str = "chaldean",
         karmic_debt_numbers=karmic,
         name_compound=name_compound,
         name_compound_meaning=name_compound_meaning,
+        lo_shu=compute_lo_shu_grid(birth_date),
     )
