@@ -716,6 +716,16 @@ async def index(request: Request, needs_chart: str | None = None) -> HTMLRespons
     the seeker tried to reach, so the redirect isn't silent.
     """
     collection = load_collection(request)
+    # Trust bar counts (SEO audit #134) — real numbers only. Never fake,
+    # never round up. If we have zero of something, don't render that pill.
+    try:
+        _users_ct = users.count()
+    except Exception:
+        _users_ct = 0
+    try:
+        _subs_ct = subscribers.count()
+    except Exception:
+        _subs_ct = 0
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -724,6 +734,8 @@ async def index(request: Request, needs_chart: str | None = None) -> HTMLRespons
             "saved": collection.active,
             "lang": _lang(request),
             "needs_chart_for": needs_chart,
+            "trust_users": _users_ct,
+            "trust_subscribers": _subs_ct,
         },
     )
 
