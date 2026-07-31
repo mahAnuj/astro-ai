@@ -54,6 +54,29 @@
         Free &middot; Instant &middot; No signup needed
       </span>
       <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl text-stone-900 leading-tight mb-4">Your Janma Kundali,<br><span class="text-astro-700">simply explained.</span></h1>
+
+      {# Trust bar (SEO audit #134) — real counts only. Any pill with a
+         zero count is silently dropped so we never render '0 users' as
+         social proof. All fields backed by users.py / subscribers.py. #}
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500 mb-4">
+        {% if trust_users and trust_users > 0 %}
+        <span class="inline-flex items-center gap-1">
+          <svg class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5.13a4 4 0 11-8 0 4 4 0 018 0zm6 3a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <strong class="text-stone-700">{{ "{:,}".format(trust_users) }}</strong> registered readers
+        </span>
+        {% endif %}
+        {% if trust_subscribers and trust_subscribers > 0 %}
+        <span class="inline-flex items-center gap-1">
+          <svg class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <strong class="text-stone-700">{{ "{:,}".format(trust_subscribers) }}</strong> daily Rashifal subscribers
+        </span>
+        {% endif %}
+        <span class="inline-flex items-center gap-1">
+          <svg class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <a href="/about" class="hover:text-astro-700">Since 2025 &middot; classical-source cited</a>
+        </span>
+      </div>
+
       <p class="text-lg text-stone-600 leading-relaxed mb-6">
         Free Janma Kundali, daily horoscope, monthly &amp; yearly readings, Dasha periods,
         and Kundli matching for marriage &mdash; with the same chart math professional
