@@ -138,6 +138,32 @@
       <h2 class="font-display text-2xl sm:text-3xl text-astro-800">{{ t(lang, 'lagna_kundali') }}</h2>
       <p class="text-sm text-stone-500 mt-1">{{ chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</p>
     </div>
+    {# Chart style toggle (SEO audit #130) — North Indian is default (matches
+       every existing screenshot + PDF export); South Indian is preserved via
+       localStorage so returning readers see their preferred style. Both SVGs
+       ship in-page and CSS toggles which is visible — zero flash, no JS
+       loading spinner. #}
+    <div class="flex justify-center mb-3 no-print" data-chart-toggle>
+      <div class="inline-flex bg-white border border-stone-200 rounded-lg p-0.5 text-xs">
+        <button type="button" data-chart-style="north"
+                class="px-3 py-1.5 rounded-md font-semibold text-stone-600 hover:text-astro-700 transition-colors data-[active=true]:bg-astro-700 data-[active=true]:text-white"
+                data-active="true">
+          North Indian
+        </button>
+        <button type="button" data-chart-style="south"
+                class="px-3 py-1.5 rounded-md font-semibold text-stone-600 hover:text-astro-700 transition-colors data-[active=true]:bg-astro-700 data-[active=true]:text-white">
+          South Indian
+        </button>
+      </div>
+    </div>
+    {# South Indian variant — hidden until toggled. Ships next to the
+       North Indian SVG so switching is a pure CSS-class flip; zero flash. #}
+    <div data-chart-style-panel="south" style="display: none">
+      {% set ch = chart %}
+      {% set aria = t(lang, 'lagna_kundali') + ' (South Indian)' %}
+      {% include "_south_indian_chart.html" %}
+    </div>
+    <div data-chart-style-panel="north">
     {# Signature moment: strokes draw in sequence, labels fade in after.
        Same animation as before; just repositioned. #}
     <svg viewBox="0 0 400 400" class="w-full max-w-lg mx-auto block" xmlns="http://www.w3.org/2000/svg" aria-label="{{ t(lang, 'lagna_kundali') }}">
@@ -171,6 +197,36 @@
         {% endfor %}
       </g>
     </svg>
+    </div>{# /data-chart-style-panel=north #}
+    {# Toggle behaviour — restore saved preference + swap panels on click.
+       localStorage-backed so returning users see their style. Progressive
+       enhancement: if JS is disabled, North Indian stays visible (default). #}
+    <script>
+      (function () {
+        var STORAGE_KEY = 'bhagya_chart_style';
+        var toggle = document.querySelector('[data-chart-toggle]');
+        if (!toggle) return;
+        var buttons = toggle.querySelectorAll('button[data-chart-style]');
+        function apply(style) {
+          buttons.forEach(function (b) {
+            b.setAttribute('data-active', b.dataset.chartStyle === style ? 'true' : 'false');
+          });
+          document.querySelectorAll('[data-chart-style-panel]').forEach(function (p) {
+            p.style.display = (p.dataset.chartStylePanel === style) ? '' : 'none';
+          });
+        }
+        var saved = null;
+        try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+        if (saved === 'south' || saved === 'north') apply(saved);
+        buttons.forEach(function (b) {
+          b.addEventListener('click', function () {
+            var s = b.dataset.chartStyle;
+            try { localStorage.setItem(STORAGE_KEY, s); } catch (e) {}
+            apply(s);
+          });
+        });
+      })();
+    </script>
     {# Planet positions table — collapsed by default, sits right under
        the chart so advanced readers can verify data without scrolling
        past 2000 words. The table this replaces at the bottom has been

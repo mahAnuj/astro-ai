@@ -220,6 +220,67 @@ class Chart:
             for h in range(1, 13)
         ]
 
+    def south_indian_chart(self) -> list[dict[str, object]]:
+        """Render-ready data for the South Indian square (chatuska) Lagna chart.
+
+        Different convention from North Indian:
+          - Rashis are FIXED in a 4x4 grid border (Pisces top-left, clockwise).
+            Meena(12) | Mesha(1)     | Vrishabha(2) | Mithuna(3)
+            Kumbha(11)| (middle 2x2  )               | Karka(4)
+            Makara(10)| (empty area )                | Simha(5)
+            Dhanu(9)  | Vrishchika(8)| Tula(7)      | Kanya(6)
+          - Houses ROTATE: the "1st house" is wherever the Lagna rashi's
+            cell is; count clockwise from there for 2, 3, 4 ...
+          - Each cell always shows the same rashi; planets appear in whichever
+            cell corresponds to their rashi.
+
+        This is the standard convention in Tamil Nadu / Karnataka / Andhra /
+        Kerala / Telangana and matches most Sanskrit classical texts.
+        """
+        # Cells laid out per convention above.  (col, row) indexed 0..3.
+        # rashi_num is 1-based (1=Mesha/Aries ... 12=Meena/Pisces).
+        _CELLS = [
+            (0, 0, 12),  # Pisces (Meena) top-left
+            (1, 0, 1),   # Aries (Mesha)
+            (2, 0, 2),   # Taurus (Vrishabha)
+            (3, 0, 3),   # Gemini (Mithuna) top-right
+            (3, 1, 4),   # Cancer (Karka)
+            (3, 2, 5),   # Leo (Simha)
+            (3, 3, 6),   # Virgo (Kanya) bottom-right
+            (2, 3, 7),   # Libra (Tula)
+            (1, 3, 8),   # Scorpio (Vrishchika)
+            (0, 3, 9),   # Sagittarius (Dhanu) bottom-left
+            (0, 2, 10),  # Capricorn (Makara)
+            (0, 1, 11),  # Aquarius (Kumbha)
+        ]
+        lagna_sign_num = _rashi_index(self.lagna_rashi) + 1  # 1..12
+        # Group planets by rashi_num (1..12) for O(1) cell lookup below.
+        per_rashi: dict[int, list[tuple[str, int, bool]]] = {n: [] for n in range(1, 13)}
+        for p in self.planets:
+            per_rashi[_rashi_index(p.rashi) + 1].append(
+                (PLANET_SHORT[p.name], int(round(p.longitude)), p.retrograde)
+            )
+        # House number of a given cell: 1 for the Lagna cell, then count
+        # clockwise around the border.  Precompute a mapping rashi -> house.
+        rashi_to_house: dict[int, int] = {}
+        # Walk the cells in canonical order starting from Mesha and count
+        # forward from wherever the lagna is.
+        for i, (_, _, rashi_num) in enumerate(_CELLS):
+            house = ((rashi_num - lagna_sign_num) % 12) + 1
+            rashi_to_house[rashi_num] = house
+        return [
+            {
+                "col": col,
+                "row": row,
+                "rashi_num": rashi_num,
+                "rashi_short": RASHI_SHORT[rashi_num - 1],
+                "house": rashi_to_house[rashi_num],
+                "is_lagna": rashi_num == lagna_sign_num,
+                "planets": per_rashi[rashi_num],
+            }
+            for col, row, rashi_num in _CELLS
+        ]
+
     def house_summary(self) -> list[HouseSlot]:
         """Group planets by house and resolve each house's rashi.
 
