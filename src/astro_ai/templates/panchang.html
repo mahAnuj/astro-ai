@@ -18,9 +18,24 @@
   <header class="text-center space-y-2">
     <div class="text-xs font-semibold uppercase tracking-wider text-astro-700">Panchang</div>
     <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700">
-      Today's Panchang — <time datetime="{{ today_date }}">{{ today_pretty }}</time>
+      {% if is_today %}Today's Panchang{% else %}Panchang{% endif %} — <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </h1>
     <p class="text-stone-600">Computed for <strong>{{ city_display }}</strong> · sunrise + Rahu Kaal shift by location.</p>
+    {# Prev / next day navigation — indexable so Google can crawl the
+       rolling window without needing every URL in sitemap. #}
+    <nav class="flex items-center justify-center gap-3 text-sm pt-2 no-print" aria-label="Day navigation">
+      <a href="/panchang/{{ prev_day }}" class="text-astro-700 hover:underline" rel="prev">
+        &larr; Previous day
+      </a>
+      {% if not is_today %}
+      <span class="text-stone-300">·</span>
+      <a href="/panchang" class="text-astro-700 hover:underline font-semibold">Jump to today</a>
+      {% endif %}
+      <span class="text-stone-300">·</span>
+      <a href="/panchang/{{ next_day }}" class="text-astro-700 hover:underline" rel="next">
+        Next day &rarr;
+      </a>
+    </nav>
   </header>
 
   {# City picker — inline mini-form. Defaults to Mumbai; users can pick
