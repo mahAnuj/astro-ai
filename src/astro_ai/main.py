@@ -630,6 +630,7 @@ async def sitemap() -> Response:
         ("/numerology/compatibility", "monthly", "0.7"),
         ("/kundli",          "monthly", "0.8"),
         ("/dasha",           "monthly", "0.7"),
+        ("/panchang",        "daily",   "0.8"),
         ("/about",           "monthly", "0.5"),
     ]
     # Muhurat per-event landing pages — evergreen SEO copy per event type.
@@ -691,6 +692,70 @@ async def service_worker() -> FileResponse:
         STATIC_DIR / "sw.js",
         media_type="application/javascript",
         headers={"Cache-Control": "no-cache"},
+    )
+
+
+@app.get("/panchang", response_class=HTMLResponse)
+async def panchang_page(request: Request, city: str = "") -> HTMLResponse:
+    """Today's Panchang for a city (SEO audit #132 Phase 1).
+
+    City resolution priority:
+      1. ?city= query param (form-submitted or shared link)
+      2. Saved active chart's birth_place if user has one
+      3. Default 'Mumbai, India' (largest Indian-Vedic user base)
+
+    Panchang is location-dependent (sunrise/sunset shifts change Rahu
+    Kaal, Abhijit, Choghadiya). Compute via compute_panchang against a
+    throwaway chart_for_loc; degrade gracefully to Mumbai if geocoding
+    fails.
+    """
+    from astro_ai.muhurat import _choghadiya_windows as _choghadiya
+    resolved_city = (city or "").strip()
+    error = False
+    if not resolved_city:
+        saved = load_collection(request).active
+        resolved_city = (saved.birth_place if saved else "") or "Mumbai, India"
+    try:
+        chart_for_loc = compute_chart("2000-01-01", "12:00", resolved_city)
+        p = compute_panchang(chart_for_loc)
+    except Exception:
+        error = True
+        resolved_city = "Mumbai, India"
+        try:
+            chart_for_loc = compute_chart("2000-01-01", "12:00", resolved_city)
+            p = compute_panchang(chart_for_loc)
+        except Exception:
+            p = None
+            chart_for_loc = None
+    choghadiya_windows = []
+    moon_info = None
+    if p and chart_for_loc:
+        try:
+            choghadiya_windows = _choghadiya(p.weekday, p.sunrise, p.sunset)
+        except Exception:
+            choghadiya_windows = []
+        try:
+            transit = compute_transit_snapshot(chart_for_loc)
+            moon = next((pl for pl in transit.planets if pl.name == "Moon"), None)
+            if moon:
+                moon_info = {"rashi": moon.rashi, "nakshatra": moon.nakshatra}
+        except Exception:
+            moon_info = None
+    lang = _lang(request)
+    today_iso = date.today().isoformat()
+    return templates.TemplateResponse(
+        request, "panchang.html",
+        {
+            "p": p,
+            "city": city or resolved_city,
+            "city_display": resolved_city,
+            "today_date": today_iso,
+            "today_pretty": _pretty_date(today_iso, lang),
+            "choghadiya": choghadiya_windows,
+            "moon_info": moon_info,
+            "error": error,
+            "lang": lang,
+        },
     )
 
 

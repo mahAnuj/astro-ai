@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Today's Panchang — {{ today_pretty }} · Tithi, Nakshatra, Rahu Kaal, Choghadiya{% endblock %}
+{% block meta_description %}Today's Panchang for {{ city_display }} — tithi (lunar day), nakshatra (moon's constellation), weekday lord, yoga, karana, sunrise/sunset, Rahu Kaal, Abhijit Muhurta, and full Choghadiya day-window breakdown. Classical Vedic sidereal Lahiri.{% endblock %}
+
+{% block content %}
+{% set active_page = "" %}
+{% set breadcrumbs = [('Home', '/'), ('Panchang', '/panchang')] %}
+{% include "_breadcrumb_schema.html" %}
+{% set tool_name = "Panchang" %}
+{% set tool_desc = "Free daily Panchang — tithi, nakshatra, yoga, karana, weekday lord, sunrise/sunset, Rahu Kaal, Abhijit Muhurta, and Choghadiya day-window auspiciousness." %}
+{% set tool_url = "/panchang" %}
+{% include "_tool_seo.html" %}
+{% include "_nav.html" %}
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+
+  <header class="text-center space-y-2">
+    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700">Panchang</div>
+    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700">
+      Today's Panchang — <time datetime="{{ today_date }}">{{ today_pretty }}</time>
+    </h1>
+    <p class="text-stone-600">Computed for <strong>{{ city_display }}</strong> · sunrise + Rahu Kaal shift by location.</p>
+  </header>
+
+  {# City picker — inline mini-form. Defaults to Mumbai; users can pick
+     any city on demand. If they have a saved Kundli chart, we prefill. #}
+  <form method="get" action="/panchang" class="flex items-end gap-2 justify-center flex-wrap bg-white border border-stone-200 rounded-xl p-3 sm:p-4 no-print">
+    <label class="flex-1 max-w-sm">
+      <span class="block text-xs text-stone-500 mb-1">Change city</span>
+      <input type="text" name="city" value="{{ city }}" placeholder="e.g. Mumbai, India"
+             class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+    </label>
+    <button type="submit" class="bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold px-4 py-2 rounded-md transition-colors">
+      Update
+    </button>
+  </form>
+
+  {% if error %}
+  <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+    Couldn't geocode "{{ city }}" — showing Panchang for Mumbai instead. Try a different spelling or add the country name (e.g. "Delhi, India").
+  </div>
+  {% endif %}
+
+  {% if p %}
+  {# THE 5 ANGAS — the classical Panchang breakdown #}
+  <section class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+    <div class="bg-white border border-stone-200 rounded-xl p-4">
+      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Day &amp; Lord</div>
+      <div class="text-lg font-display text-astro-800">{{ p.weekday }}</div>
+      <div class="text-xs text-stone-600">Ruled by <strong>{{ p.day_lord }}</strong>. Favourable color: {{ p.day_color }}</div>
+    </div>
+    <div class="bg-white border border-stone-200 rounded-xl p-4">
+      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Tithi</div>
+      <div class="text-lg font-display text-astro-800">{{ p.tithi_paksha }} {{ p.tithi_name }}</div>
+      {% if p.tithi_significance %}<div class="text-xs text-stone-600">{{ p.tithi_significance }}</div>{% endif %}
+    </div>
+    <div class="bg-white border border-stone-200 rounded-xl p-4">
+      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Sunrise / Sunset</div>
+      <div class="text-lg font-display text-astro-800 tabular-nums">
+        {{ p.sunrise.strftime('%H:%M') }} — {{ p.sunset.strftime('%H:%M') }}
+      </div>
+      <div class="text-xs text-stone-600">Local time at {{ city_display }}</div>
+    </div>
+    <div class="bg-white border border-stone-200 rounded-xl p-4">
+      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Rahu Kaal (avoid)</div>
+      <div class="text-lg font-display text-red-700 tabular-nums">
+        {{ p.rahu_kaal_start.strftime('%H:%M') }} — {{ p.rahu_kaal_end.strftime('%H:%M') }}
+      </div>
+      <div class="text-xs text-stone-600">Inauspicious 1/8 of daylight</div>
+    </div>
+    <div class="bg-white border border-stone-200 rounded-xl p-4">
+      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Abhijit Muhurat (best)</div>
+      <div class="text-lg font-display text-emerald-700 tabular-nums">
+        {{ p.abhijit_start.strftime('%H:%M') }} — {{ p.abhijit_end.strftime('%H:%M') }}
+      </div>
+      <div class="text-xs text-stone-600">Most auspicious ~48 min around solar noon</div>
+    </div>
+    {% if moon_info %}
+    <div class="bg-white border border-stone-200 rounded-xl p-4">
+      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Moon Today</div>
+      <div class="text-lg font-display text-astro-800">{{ moon_info.rashi }}</div>
+      <div class="text-xs text-stone-600">{{ moon_info.nakshatra }} nakshatra</div>
+    </div>
+    {% endif %}
+  </section>
+
+  {# CHOGHADIYA — 8 sub-day windows #}
+  {% if choghadiya %}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-3">Choghadiya — 8 daytime windows</h2>
+    <p class="text-sm text-stone-600 mb-3">
+      Classical sub-day divisions used for muhurta timing. <strong>Amrit / Shubh / Labh</strong> are auspicious; <strong>Rog / Kaal</strong> avoid; <strong>Udveg / Chal</strong> neutral.
+    </p>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border border-stone-200 bg-white rounded-lg overflow-hidden">
+        <thead class="bg-stone-50 text-stone-600 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="p-2 text-left">Window</th>
+            <th class="p-2 text-left">Name</th>
+            <th class="p-2 text-left">Auspiciousness</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for w in choghadiya %}
+          <tr class="border-t border-stone-100">
+            <td class="p-2 tabular-nums">{{ w.start }} – {{ w.end }}</td>
+            <td class="p-2 font-semibold">{{ w.name }}</td>
+            <td class="p-2">
+              {% set aus = w.auspiciousness %}
+              <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold
+                {% if aus == 'auspicious' %}bg-emerald-100 text-emerald-800
+                {% elif aus == 'avoid' %}bg-red-100 text-red-800
+                {% else %}bg-stone-100 text-stone-700{% endif %}">
+                {{ aus | capitalize }}
+              </span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+  {% endif %}
+
+  {# SEO CONTENT — explainer #}
+  <section class="prose prose-stone max-w-none">
+    <h2 class="font-display text-2xl text-astro-800">What is Panchang?</h2>
+    <p>
+      Panchang (literally "five limbs") is the classical Vedic almanac. Five daily angas describe the character of the day astronomically and karmically:
+    </p>
+    <ul>
+      <li><strong>Vara (weekday)</strong> — Sunday=Sun, Monday=Moon, Tuesday=Mars, Wednesday=Mercury, Thursday=Jupiter, Friday=Venus, Saturday=Saturn. The day's lord shapes its overall tone.</li>
+      <li><strong>Tithi (lunar day)</strong> — the angular distance between Sun and Moon, divided into 30 parts. Shukla Paksha (1-15) is waxing, Krishna Paksha (16-30) is waning. Some tithis have specific classical characters (Ekadashi = fasting, Purnima = culmination, Amavasya = ancestral rites, Chaturthi = Ganesh energy).</li>
+      <li><strong>Nakshatra (lunar constellation)</strong> — the Moon moves through 27 nakshatras in ~27 days, so this is the fastest-changing sky signal and grounds today's emotional weather.</li>
+      <li><strong>Yoga</strong> — the Sun+Moon combination divided into 27 yoga windows. Vaidhriti and Vyatipata are the two most inauspicious yogas and are traditionally avoided for muhurta.</li>
+      <li><strong>Karana</strong> — half-tithi. Vishti (Bhadra) is the karana traditionally avoided for auspicious starts.</li>
+    </ul>
+
+    <h3 class="font-display text-xl text-astro-800 mt-6">Rahu Kaal, Abhijit Muhurta, Choghadiya</h3>
+    <p>
+      Beyond the five angas, classical Vedic timing includes sub-day windows:
+    </p>
+    <ul>
+      <li><strong>Rahu Kaal</strong> — a specific 1/8 slice of daylight considered inauspicious for beginnings. It shifts weekday-by-weekday and depends on your sunrise/sunset (which shifts by location). We compute it correctly for your city.</li>
+      <li><strong>Abhijit Muhurta</strong> — a ~48-minute window around solar noon, considered the most universally auspicious slot of the day. Perfect for signing important documents, starting a business call, or committing to any decision.</li>
+      <li><strong>Yamaganda / Gulikai</strong> — two more classical inauspicious windows on the same weekday-lord principle as Rahu Kaal (not shown above, deferred to a next release).</li>
+      <li><strong>Choghadiya</strong> — 8 equal daytime windows named Amrit / Shubh / Labh (auspicious), Rog / Kaal (avoid), Udveg / Chal (neutral). Which name each window gets rotates with weekday. Useful for picking a specific shop-open time or product-launch minute.</li>
+    </ul>
+
+    <h3 class="font-display text-xl text-astro-800 mt-6">How Bhagya computes it</h3>
+    <p>
+      All calculations use <strong>Swiss Ephemeris</strong> on sidereal <strong>Lahiri (Chitrapaksha) ayanamsa</strong>, the standard Indian classical convention. Sunrise/sunset for your city are computed from the local latitude/longitude + timezone, not approximated. Rahu Kaal, Abhijit, and Choghadiya windows are derived from that local sunrise/sunset — they will not match tables that hardcode Mumbai-only or Delhi-only times.
+    </p>
+  </section>
+
+  {# CROSS-LINKS #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-4">Related</h2>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <a href="/muhurat" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">Muhurat Finder →</div>
+        <div class="text-xs text-stone-600 mt-1">Find auspicious dates for Vivah, Griha Pravesh, Namkaran, Vidyarambh, Business openings.</div>
+      </a>
+      <a href="/rashifal" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">Today's Rashifal →</div>
+        <div class="text-xs text-stone-600 mt-1">Daily reading for all 12 rashis, keyed off today's sky signals.</div>
+      </a>
+    </div>
+  </section>
+
+</main>
+{% endblock %}
