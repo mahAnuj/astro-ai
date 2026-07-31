@@ -1,0 +1,29 @@
+{# BreadcrumbList JSON-LD emitter — earns Google's breadcrumb rich-result
+   ('Home > Numerology > Compatibility' in SERP instead of the raw URL).
+
+   Usage: set a `breadcrumbs` list of (name, path) tuples before the
+   include. `path` is a site-relative URL beginning with '/'.
+
+     {% set breadcrumbs = [
+       ('Home',        '/'),
+       ('Numerology',  '/numerology'),
+       ('Compatibility','/numerology/compatibility'),
+     ] %}
+     {% include '_breadcrumb_schema.html' %}
+
+   Silent no-op if `breadcrumbs` is unset or empty — safe to include
+   unconditionally from a base template.
+#}
+{% if breadcrumbs %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {%- for name, path in breadcrumbs %}
+    {"@type": "ListItem", "position": {{ loop.index }}, "name": {{ name | tojson }}, "item": {{ (site_url ~ path) | tojson }}}{% if not loop.last %},{% endif %}
+    {%- endfor %}
+  ]
+}
+</script>
+{% endif %}
