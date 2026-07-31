@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Free Janma Kundli — Instant Vedic Birth Chart with Dasha, Manglik, Sade Sati{% endblock %}
+{% block meta_description %}Free instant Vedic Janma Kundli — sidereal Lahiri chart with all 12 houses, Vimshottari Mahadasha timeline, Manglik dosh + Sade Sati checks, Nakshatra padas, and honest classical interpretation. No signup, no upsell. Bhagya reads the sky, not your wallet.{% endblock %}
+
+{% block content %}
+{% set active_page = "" %}
+{% set breadcrumbs = [('Home', '/'), ('Janma Kundli', '/kundli')] %}
+{% include "_breadcrumb_schema.html" %}
+{% set tool_name = "Janma Kundli Calculator" %}
+{% set tool_desc = "Free Vedic sidereal Lagna chart with all 12 houses, planetary positions in nakshatra padas, Vimshottari Dasha timeline, Manglik + Sade Sati checks, and classical interpretation." %}
+{% set tool_url = "/kundli" %}
+{% include "_tool_seo.html" %}
+{% include "_nav.html" %}
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
+
+  {# HERO — H1 + intro + form #}
+  <header class="text-center space-y-4">
+    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700">
+      Free Vedic Janma Kundli — Instant, Honest, No Signup
+    </h1>
+    <p class="text-lg text-stone-700 max-w-2xl mx-auto leading-relaxed">
+      Your Janma Kundli (Vedic birth chart) computed on classical sidereal Lahiri ayanamsa —
+      all 12 houses, planetary positions in nakshatra padas, ruling Mahadasha,
+      Manglik &amp; Sade Sati status, and a plain-language reading you can actually use.
+    </p>
+    <p class="text-sm text-stone-500 max-w-lg mx-auto">
+      Bhagya reads the sky, not your wallet. Never fear-based, never sold to astrologer-chat rooms.
+    </p>
+  </header>
+
+  {# FORM #}
+  <form method="post" action="/reading" id="kundli-form"
+        class="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-astro-900/5 p-6 sm:p-8 scroll-mt-20">
+    <h2 class="font-display text-2xl text-astro-700 mb-1">Start with your birth details</h2>
+    <p class="text-sm text-stone-500 mb-5">All four fields take a few seconds. Nothing stored on our servers unless you sign in.</p>
+
+    <div class="space-y-4">
+      <label class="block">
+        <span class="text-sm font-semibold text-stone-700">Name <span class="text-stone-400 font-normal">(optional)</span></span>
+        <input type="text" name="name" placeholder="e.g. Priya" autofocus autocomplete="name"
+               class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+      </label>
+      <label class="block">
+        <span class="text-sm font-semibold text-stone-700">Birth date</span>
+        <input type="date" name="birth_date" required autocomplete="bday"
+               class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+      </label>
+      <label class="block">
+        <span class="text-sm font-semibold text-stone-700">Birth time <span class="text-stone-400 font-normal">(24-hour, local at birthplace)</span></span>
+        <input type="time" name="birth_time" required
+               class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+      </label>
+      <label class="block">
+        <span class="text-sm font-semibold text-stone-700">Birth place <span class="text-stone-400 font-normal">(city, country)</span></span>
+        <input type="text" name="birth_place" placeholder="e.g. Mumbai, India" required autocomplete="address-level2"
+               class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+      </label>
+    </div>
+
+    <button type="submit"
+            class="mt-6 w-full py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors">
+      Get my free Kundli instantly →
+    </button>
+    <p class="text-xs text-stone-500 mt-3 text-center">
+      Accurate birth time is critical — even 5 minutes changes the Lagna and moves planets across house cusps. If you're unsure, use the time on your birth certificate or ask family.
+    </p>
+  </form>
+
+  {# WHAT'S IN A JANMA KUNDLI — SEO content section #}
+  <section class="prose prose-stone max-w-none">
+    <h2 class="font-display text-2xl text-astro-800">What is a Janma Kundli?</h2>
+    <p>
+      A <strong>Janma Kundli</strong> — literally "birth chart" — is a snapshot of the sky at the exact moment and location of your birth. Vedic astrology reads it not as fortune-telling but as a diagnostic: the arrangement of the nine grahas (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu) across the twelve houses tells a classical astrologer where your natural strengths lie, what karmic patterns you'll navigate, and which life periods (dashas) will accelerate or slow certain areas of life.
+    </p>
+    <p>
+      The chart uses the <strong>sidereal Lahiri ayanamsa</strong>, the standard reference frame in Indian classical astrology. This is what makes Vedic astrology different from Western — the same birth date can put your Sun in a different sign because sidereal astrology accounts for the ~24° drift of the zodiac since the classical texts were written. Bhagya computes charts using Swiss Ephemeris, the same astronomical library serious astrologers use in their software.
+    </p>
+
+    <h3 class="font-display text-xl text-astro-800 mt-8">What your free Kundli reading includes</h3>
+    <ul>
+      <li><strong>Lagna (Ascendant)</strong> — your rising sign, the axis around which every house is measured.</li>
+      <li><strong>Rashi chart (D-1)</strong> — the primary chart, all 9 grahas placed in the 12 houses.</li>
+      <li><strong>Planetary positions in nakshatra + pada</strong> — the 27-nakshatra granularity that classical texts actually use.</li>
+      <li><strong>Vimshottari Mahadasha timeline</strong> — the 120-year planetary-period cycle showing which graha rules your current chapter and when the next one begins. <a href="/learn/vimshottari-dasha-explained/" class="text-astro-700 hover:underline">Full explainer →</a></li>
+      <li><strong>Manglik (Mangal) Dosh check</strong> — all classical cancellation rules applied, not just Mars in 1/4/7/8/12. <a href="/learn/manglik-dosh/" class="text-astro-700 hover:underline">What Manglik Dosh actually means →</a></li>
+      <li><strong>Sade Sati status</strong> — Saturn's 7.5-year transit around your natal Moon, with rising / peak / setting phase identification and dates. <a href="/learn/sade-sati/" class="text-astro-700 hover:underline">The honest Sade Sati guide →</a></li>
+      <li><strong>Kaal Sarp Dosh</strong> — strict BPHS binary rule (all 7 grahas one side of Rahu-Ketu axis), not the fear-based version. <a href="/learn/kaal-sarp-dosh/" class="text-astro-700 hover:underline">Why most Kaal Sarp claims are wrong →</a></li>
+      <li><strong>Classical yogas</strong> — Gaja Kesari, Panch Mahapurush, Dhana yogas, and others detected in your chart with their classical significations.</li>
+      <li><strong>A calm, honest reading</strong> — plain language, no fear-based predictions, no "urgent puja needed" upsell.</li>
+    </ul>
+
+    <h3 class="font-display text-xl text-astro-800 mt-8">How Bhagya is different</h3>
+    <p>
+      Most free-Kundli sites are lead-gen funnels for astrologer chat services. The chart is a doorway — the goal is to hand you off to a paid consultant who will find something scary in your chart and prescribe an expensive gemstone or puja. That business model requires the reading to plant anxiety.
+    </p>
+    <p>
+      Bhagya's editorial rule is the opposite: <em>read the sky honestly, and let readers act on what they learn</em>. If your chart has a difficult Sade Sati transit, we'll name the challenge and explain the classical response — we won't manufacture a Kaal Sarp Dosh that isn't there. Every classical rule cited in your reading is sourced from BPHS, Phaladeepika, Jataka Parijata, or another canonical text. When the classical texts disagree, we say so.
+    </p>
+
+    <h3 class="font-display text-xl text-astro-800 mt-8">Do you need your exact birth time?</h3>
+    <p>
+      Yes. The Lagna (Ascendant) changes sign every ~2 hours, and moves ~1° every 4 minutes. A wrong Lagna changes every house cusp — planets get reassigned to different houses, and the interpretation shifts completely. If you don't know your birth time:
+    </p>
+    <ul>
+      <li>Check your birth certificate first — it's usually there.</li>
+      <li>Ask your parents or a close family member.</li>
+      <li>For a rough Moon-sign reading (Chandra Kundli) noon local time is a common convention, but the Ascendant will be unreliable.</li>
+      <li>A classical astrologer can do a <em>birth-time rectification</em> by matching known life events to chart transits — but that's beyond a free-tool scope.</li>
+    </ul>
+  </section>
+
+  {# WHY SIDEREAL section #}
+  <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6 sm:p-8">
+    <h2 class="font-display text-2xl text-astro-800 mb-3">Sidereal vs Tropical — why Vedic looks different</h2>
+    <p class="text-stone-700 leading-relaxed mb-2">
+      Vedic astrology uses the <strong>sidereal zodiac</strong> — signs anchored to the fixed background stars.
+      Western astrology uses the <strong>tropical zodiac</strong> — signs anchored to the seasons (equinoxes and solstices).
+    </p>
+    <p class="text-stone-700 leading-relaxed">
+      Because of a slow wobble in Earth's axis (called <em>precession</em>), the two systems have drifted ~24° apart in the ~2,000 years since ancient astronomers first mapped them. That means someone born on 15 April with a "Western Aries Sun" typically has their sidereal Sun in <strong>Pisces (Meena)</strong>. Bhagya reports the sidereal placements per classical Vedic tradition — the same convention used in every serious Sanskrit text on the subject.
+    </p>
+  </section>
+
+  {# RELATED LINKS #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-4">Learn more about your Kundli</h2>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <a href="/learn/the-9-grahas-overview/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">The 9 Grahas — meet your planets</div>
+        <div class="text-xs text-stone-600 mt-1">Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu — what each governs.</div>
+      </a>
+      <a href="/learn/vimshottari-dasha-explained/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">Vimshottari Dasha explained</div>
+        <div class="text-xs text-stone-600 mt-1">The 120-year planetary-period system that shapes your life chapters.</div>
+      </a>
+      <a href="/learn/manglik-dosh/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">Manglik Dosh — the honest guide</div>
+        <div class="text-xs text-stone-600 mt-1">Why most Manglik declarations ignore classical cancellations.</div>
+      </a>
+      <a href="/learn/sade-sati/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">Sade Sati — 7.5 years of Saturn</div>
+        <div class="text-xs text-stone-600 mt-1">Rising, peak, setting phases and what each demands of you.</div>
+      </a>
+    </div>
+  </section>
+
+  {# FAQ #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-4">Common questions</h2>
+    <div class="space-y-3">
+      {% set faqs = [
+        ('Is my birth data stored anywhere?', 'By default no — the chart lives only in your browser cookie. If you sign in with Google, saved charts sync to your account so you can access them across devices. You can delete them any time.'),
+        ('Which ayanamsa does Bhagya use?', 'Sidereal Lahiri (Chitrapaksha), the standard reference in classical Vedic astrology and the Indian ephemeris used by most astrologers in India. Computations are done via Swiss Ephemeris.'),
+        ('Why is my Sun sign different from what my Western horoscope says?', 'Because Vedic astrology uses the sidereal zodiac (fixed to stars) while Western uses tropical (fixed to seasons). The two have drifted ~24° apart, so most Western-Aries people are sidereal Pisces, most Western-Taurus are sidereal Aries, and so on. Neither is wrong — they measure different things.'),
+        ('What if I do not know my exact birth time?', 'The Ascendant (Lagna) will be unreliable and house-based interpretations may be wrong. If you have your birth certificate, use that. Failing that, ask a parent. A classical astrologer can rectify from known life events but that is beyond a free tool.'),
+        ('Is this the same as AstroSage or ProKerala?', 'The underlying chart math (sidereal Lahiri via Swiss Ephemeris) is identical to what all serious tools use. The differences are editorial: Bhagya has no ads, no astrologer-chat funnel, no fear-based upsell, and every classical rule cited is sourced. You get the chart and a calm reading — nothing else.'),
+      ] %}
+      {% for q, a in faqs %}
+      <details class="group bg-white border border-stone-200 rounded-xl">
+        <summary class="cursor-pointer p-4 font-semibold text-astro-800 text-sm hover:text-astro-700 flex items-center justify-between">
+          {{ q }}
+          <svg class="w-4 h-4 text-stone-400 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </summary>
+        <div class="px-4 pb-4 text-sm text-stone-700 leading-relaxed">{{ a }}</div>
+      </details>
+      {% endfor %}
+    </div>
+
+    {# JSON-LD FAQPage for the above #}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {%- for q, a in faqs %}
+        {"@type": "Question", "name": {{ q | tojson }},
+         "acceptedAnswer": {"@type": "Answer", "text": {{ a | tojson }}}}{% if not loop.last %},{% endif %}
+        {%- endfor %}
+      ]
+    }
+    </script>
+  </section>
+
+</main>
+{% endblock %}

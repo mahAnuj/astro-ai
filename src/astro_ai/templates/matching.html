@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t(lang, 'matching_title') }} — Shubh Bhagya{% endblock %}
-{% block meta_description %}Free instant Kundli matching for marriage online — Ashtakoot Guna Milan with 8 koota compatibility scores, Mangal dosh check, Bhakoot &amp; Nadi dosha analysis from Shubh Bhagya.{% endblock %}
+{% block title %}Free Kundli Matching (Ashtakoot Guna Milan) — 8 Kootas + Manglik + Nadi Cancellation Rules{% endblock %}
+{% block meta_description %}Free Kundli Matching for marriage — full Ashtakoot Guna Milan across all 8 kootas (Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi) with same-rashi-lord + Naisargika-friend Bhakoot cancellations and same-nakshatra-diff-pada Nadi cancellations. Includes Manglik compatibility per BPHS. No signup.{% endblock %}
 
 {% block content %}
 {% set active_page = "matching" %}
+{% set breadcrumbs = [('Home', '/'), ('Kundli Matching', '/matching')] %}
+{% include "_breadcrumb_schema.html" %}
 {% set show_print = false %}
 {% include "_nav.html" %}
 
@@ -137,6 +139,64 @@
       }, { passive: true });
     })();
   </script>
+
+  {# SEO content — indexable explainer for Googlebot + users who scroll
+     past the form. Not a fluff wall; concrete classical rules with
+     cross-links into /learn/. Ships with #123 (money-page landings). #}
+  <section class="prose prose-stone max-w-none mt-10">
+    <h2 class="font-display text-2xl text-astro-800">What is Ashtakoot Guna Milan?</h2>
+    <p>
+      <strong>Ashtakoot Guna Milan</strong> ("eight-fold merit matching") is the classical Vedic system for scoring the compatibility of two natal charts for marriage. Total possible: <strong>36 points</strong>, distributed across eight <em>kootas</em> (compatibility axes). A minimum threshold of <strong>18/36</strong> is the classical "acceptable" line; 24+/36 is considered strong; 30+/36 is rare and excellent. But the raw score alone is only half the picture — Bhakoot dosha, Nadi dosha, and Manglik status can override or be cancelled by other placements, and a good astrologer weighs the felt-life implications of each koota separately rather than just checking the total.
+    </p>
+
+    <h3 class="font-display text-xl text-astro-800 mt-6">The 8 kootas</h3>
+    <ul>
+      <li><strong>Varna (1 point)</strong> — spiritual temperament comparison based on Moon-sign class (Brahmin/Kshatriya/Vaishya/Shudra). Bride's Varna should not exceed groom's.</li>
+      <li><strong>Vashya (2 points)</strong> — mutual attraction based on Moon-sign category (human/quadruped/aquatic/etc). Certain pairings hold natural sway over others.</li>
+      <li><strong>Tara (3 points)</strong> — nakshatra-star compatibility. Bhagya's tool credits position 8 (Ati-Mitra) as favourable per BPHS — most free tools mark it neutral, dropping a real classical positive.</li>
+      <li><strong>Yoni (4 points)</strong> — animal-symbol compatibility of the birth nakshatras. 14 yoni types, with defined friend/enemy pairings.</li>
+      <li><strong>Graha Maitri (5 points)</strong> — friendship between the Moon-lords of the two charts. The single most emotionally important koota.</li>
+      <li><strong>Gana (6 points)</strong> — Deva / Manushya / Rakshasa temperament. Ideally match; Deva-Rakshasa is the most difficult.</li>
+      <li><strong>Bhakoot (7 points)</strong> — 12-house Moon-sign distance. Certain distances (6-8, 5-9, 2-12) traditionally score zero. <strong>Cancellations Bhagya applies:</strong> same rashi-lord for both partners, or Naisargika (natural) friendship between the two Moon-lords.</li>
+      <li><strong>Nadi (8 points)</strong> — the highest-weight koota, ostensibly about progeny and hereditary compatibility. Same-Nadi pairings score zero. <strong>Cancellations Bhagya applies:</strong> same nakshatra but different padas, or same rashi with different nakshatras.</li>
+    </ul>
+
+    <h3 class="font-display text-xl text-astro-800 mt-6">Manglik matching — beyond the checkbox</h3>
+    <p>
+      Manglik (Mangal) Dosh is the classical concern about Mars-placement causing marital friction. Bhagya's matching applies the FULL classical evaluation, not just "Mars in 1st/4th/7th/8th/12th house from Lagna". We also check Mars from the Moon and Mars from Venus (the three-axis rule), and apply every classical cancellation — bride+groom both Manglik cancels the dosha; Mars in own or exalted sign cancels; Jupiter aspecting the 7th house cancels; Mars in Libra (fall) is not counted; and more. Read the full <a href="/learn/manglik-dosh/" class="text-astro-700 hover:underline">Manglik Dosh explainer</a> for the classical logic.
+    </p>
+
+    <h3 class="font-display text-xl text-astro-800 mt-6">Beyond Ashtakoot — what matching does NOT check</h3>
+    <p>
+      A good astrologer doesn't stop at Guna Milan. The full classical evaluation also considers:
+    </p>
+    <ul>
+      <li>7th house of each chart (marriage house), its lord, and any planets there.</li>
+      <li>Venus (Shukra) in both charts — natural karaka of love and marriage for both sexes.</li>
+      <li>Dashas active around any proposed marriage date — Venus/Jupiter Dashas favour marriage; Rahu/Ketu can bring unusual partnerships.</li>
+      <li>Sade Sati and Ashtama Shani transits — Saturn's 7.5-year phases can strain any relationship.</li>
+      <li>Bhava Bala (house strength) via Ashtakvarga — quantifies which houses can carry Their significations.</li>
+    </ul>
+    <p>
+      This is why we cross-link to <a href="/manglik-check" class="text-astro-700 hover:underline">Manglik Check</a> and <a href="/sade-sati-check" class="text-astro-700 hover:underline">Sade Sati Check</a> from the results page. Ashtakoot is the fast screening tool; a full compatibility review requires all these layers.
+    </p>
+
+    <h3 class="font-display text-xl text-astro-800 mt-6">Related reading</h3>
+    <div class="grid sm:grid-cols-2 gap-3 not-prose">
+      <a href="/learn/kundali-matching-ashtakoot-guna-milan/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">Full Ashtakoot Guna Milan article</div>
+      </a>
+      <a href="/learn/manglik-dosh/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">Manglik Dosh explainer</div>
+      </a>
+      <a href="/learn/marriage-timing-kundli/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">Marriage timing in your Kundli</div>
+      </a>
+      <a href="/learn/marriage-delayed/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">Delayed marriage — classical yogas</div>
+      </a>
+    </div>
+  </section>
 
 </main>
 
