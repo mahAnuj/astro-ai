@@ -799,6 +799,46 @@ async def panchang_page(request: Request, city: str = "") -> HTMLResponse:
     return _render_panchang(request, date.today(), city)
 
 
+# In-process daily cache for the homepage Panchang strip. Keyed by
+# (today_iso, city_lower). First homepage load for a given (date, city)
+# pair runs the full compute chain (geocode + chart + panchang + transit
+# snapshot ≈ 200ms cold on first hit); every subsequent same-day load
+# on the same instance is a dict lookup.
+_HOMEPAGE_PANCHANG_CACHE: dict[tuple, tuple] = {}
+
+
+def _homepage_panchang_cached(city: str) -> tuple:
+    """Return (panchang, moon_info, city_display) — cached per day/city.
+
+    Uses date.today() implicitly so a new day naturally busts the cache.
+    Cache is per-process (Cloud Run instances rebuild once each per day),
+    which is fine — the compute is <200ms so cold-start latency is
+    negligible.
+    """
+    today = date.today().isoformat()
+    key = (today, (city or "").strip().lower())
+    if key in _HOMEPAGE_PANCHANG_CACHE:
+        return _HOMEPAGE_PANCHANG_CACHE[key]
+    resolved_city = city or "Mumbai, India"
+    try:
+        chart_for_loc = compute_chart("2000-01-01", "12:00", resolved_city)
+        p = compute_panchang(chart_for_loc)
+        transit = compute_transit_snapshot(chart_for_loc)
+        moon = next((pl for pl in transit.planets if pl.name == "Moon"), None)
+        moon_info = {"rashi": moon.rashi, "nakshatra": moon.nakshatra} if moon else None
+        display = resolved_city.split(",")[0]
+        result = (p, moon_info, display)
+    except Exception:
+        result = (None, None, "")
+    _HOMEPAGE_PANCHANG_CACHE[key] = result
+    # Prevent unbounded growth if many cities are queried across a day.
+    # After ~100 unique entries, drop everything older than today.
+    if len(_HOMEPAGE_PANCHANG_CACHE) > 100:
+        _HOMEPAGE_PANCHANG_CACHE.clear()
+        _HOMEPAGE_PANCHANG_CACHE[key] = result
+    return result
+
+
 @app.get("/panchang/{date_str}", response_class=HTMLResponse)
 async def panchang_archive(request: Request, date_str: str, city: str = "") -> HTMLResponse:
     """Panchang for a specific YYYY-MM-DD (SEO audit #132 Phase 2).
@@ -858,6 +898,15 @@ async def index(request: Request, needs_chart: str | None = None) -> HTMLRespons
         _subs_ct = subscribers.count()
     except Exception:
         _subs_ct = 0
+    # Panchang strip for the homepage masthead (user's request — always
+    # visible without click-away). Cached daily per city via
+    # _homepage_panchang_cached — after first computation for a given
+    # (date, city) pair the same instance serves subsequent homepage
+    # loads with no LLM, no geocode, no swiss-ephemeris compute.
+    _city_pref = "Mumbai, India"
+    if collection.active and collection.active.birth_place:
+        _city_pref = collection.active.birth_place
+    _panchang_strip, _panchang_moon, _panchang_city = _homepage_panchang_cached(_city_pref)
     return templates.TemplateResponse(
         request,
         "index.html",
@@ -868,6 +917,9 @@ async def index(request: Request, needs_chart: str | None = None) -> HTMLRespons
             "needs_chart_for": needs_chart,
             "trust_users": _users_ct,
             "trust_subscribers": _subs_ct,
+            "panchang_strip": _panchang_strip,
+            "panchang_moon": _panchang_moon,
+            "panchang_city": _panchang_city.split(",")[0] if _panchang_city else "",
         },
     )
 
