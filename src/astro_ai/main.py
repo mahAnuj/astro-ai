@@ -637,6 +637,11 @@ async def sitemap() -> Response:
     from astro_ai.muhurat import EVENT_LANDING
     for event_key, landing in EVENT_LANDING.items():
         pages.append((f"/muhurat/{landing['slug']}", "monthly", "0.7"))
+    # Per-rashi Rashifal URLs — 12 daily-fresh pages Google can rank
+    # independently for 'aries daily horoscope' etc.
+    from astro_ai.llm import RASHI_CANONICAL_SLUGS as _RASHI_SLUGS_FOR_SITEMAP
+    for _slug in _RASHI_SLUGS_FOR_SITEMAP:
+        pages.append((f"/rashifal/{_slug}", "daily", "0.7"))
     # Auto-include every learning article so Google can crawl them all from
     # one place. New articles dropped into learn_registry appear here
     # automatically — no sitemap maintenance.
@@ -2357,79 +2362,156 @@ async def _render_outlook(
 
 @app.get("/rashifal", response_class=HTMLResponse)
 async def rashifal(request: Request) -> HTMLResponse:
-    """Daily Rashifal — generic predictions for all 12 Moon signs.
+    """Rashifal landing — 12 flip cards, one per Moon sign.
 
-    No saved chart needed — readers just scroll to their own rashi. Cached
-    per (date, lang) so all visitors share the same generation.
+    Zero LLM traffic on this page. Users tap their sign to reveal today's
+    reading (fetched via HTMX GET /rashifal/{slug}). This replaces the
+    old 'render all 12 sections upfront' flow that made cold-cache visits
+    slow AND caused AllProvidersExhausted when many LLM calls fired at
+    once. Now each user costs exactly one LLM call for their own sign —
+    unless another visitor already warmed the cache for that rashi today.
     """
     lang = _lang(request)
     today_iso = date.today().isoformat()
-    prompt_fp = cache.fingerprint_prompt(RASHIFAL_PROMPT_PATH)
-    cache_key = f"rashifal:{today_iso}:{lang}:{prompt_fp}"
+    return templates.TemplateResponse(
+        request, "rashifal_grid.html",
+        {
+            "lang": lang,
+            "today_date": today_iso,
+            "today_pretty": _pretty_date(today_iso, lang),
+        },
+    )
 
-    if not os.environ.get("OPENAI_API_KEY"):
+
+# Per-rashi metadata used by /rashifal/{rashi} — mirrors _RASHI_ANCHORS
+# in llm.py plus the presentation-only glyph + colour that main.py needs
+# for the standalone-page hero. Kept in main.py rather than llm.py to
+# avoid coupling the LLM layer to UI concerns.
+_RASHIFAL_UI_META: dict[str, dict[str, str]] = {
+    "aries":       {"glyph": "♈", "glyph_color": "text-orange-700",  "element": "fire",  "quality": "Movable",  "lord": "Mars",     "sa": "Mesha"},
+    "taurus":      {"glyph": "♉", "glyph_color": "text-emerald-700", "element": "earth", "quality": "Fixed",    "lord": "Venus",    "sa": "Vrishabha"},
+    "gemini":      {"glyph": "♊", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Dual",     "lord": "Mercury",  "sa": "Mithuna"},
+    "cancer":      {"glyph": "♋", "glyph_color": "text-teal-700",    "element": "water", "quality": "Movable",  "lord": "Moon",     "sa": "Karka"},
+    "leo":         {"glyph": "♌", "glyph_color": "text-orange-700",  "element": "fire",  "quality": "Fixed",    "lord": "Sun",      "sa": "Simha"},
+    "virgo":       {"glyph": "♍", "glyph_color": "text-emerald-700", "element": "earth", "quality": "Dual",     "lord": "Mercury",  "sa": "Kanya"},
+    "libra":       {"glyph": "♎", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Movable",  "lord": "Venus",    "sa": "Tula"},
+    "scorpio":     {"glyph": "♏", "glyph_color": "text-teal-700",    "element": "water", "quality": "Fixed",    "lord": "Mars",     "sa": "Vrishchika"},
+    "sagittarius": {"glyph": "♐", "glyph_color": "text-orange-700",  "element": "fire",  "quality": "Dual",     "lord": "Jupiter",  "sa": "Dhanu"},
+    "capricorn":   {"glyph": "♑", "glyph_color": "text-emerald-700", "element": "earth", "quality": "Movable",  "lord": "Saturn",   "sa": "Makara"},
+    "aquarius":    {"glyph": "♒", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Fixed",    "lord": "Saturn",   "sa": "Kumbha"},
+    "pisces":      {"glyph": "♓", "glyph_color": "text-teal-700",    "element": "water", "quality": "Dual",     "lord": "Jupiter",  "sa": "Meena"},
+}
+
+
+@app.get("/rashifal/{rashi}", response_class=HTMLResponse)
+async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
+    """One rashi's daily reading. Serves 2 use cases:
+
+    1. HTMX fragment — triggered by clicking a flip card on /rashifal.
+       We detect via the HX-Request header and return just the reading
+       content (rendered by _rashifal_card_content.html) for injection
+       into the card's front face.
+
+    2. Full standalone page — /rashifal/aries as a direct-visit URL.
+       This is the SEO play: 12 daily-fresh indexable pages, each with
+       Article JSON-LD schema and a canonical URL. Renders in
+       rashifal_single.html.
+
+    LLM cost: exactly ONE call per (rashi, lang, date) tuple, cached
+    for the rest of the day via daily_cache. When 100 users hit /rashifal
+    and each taps their own sign, worst case is 12 LLM calls across the
+    day (one per rashi), not 100.
+    """
+    from astro_ai.llm import (
+        RASHI_SLUG_TO_INDEX, RASHI_CANONICAL_SLUGS,
+        generate_rashifal_for_rashi,
+    )
+    slug = (rashi or "").strip().lower()
+    idx = RASHI_SLUG_TO_INDEX.get(slug)
+    if idx is None:
         return templates.TemplateResponse(
             request, "error.html",
-            {"title": "API key not configured",
-             "message": "Add OPENAI_API_KEY to .env to generate today's Rashifal."},
+            {"title": "Unknown rashi",
+             "message": f"'{rashi}' is not one of the 12 rashis. Try /rashifal to pick your Moon sign."},
+            status_code=404,
+        )
+    canonical_slug = RASHI_CANONICAL_SLUGS[idx]
+    ui = _RASHIFAL_UI_META[canonical_slug]
+    lang = _lang(request)
+    today_iso = date.today().isoformat()
+    is_htmx = request.headers.get("hx-request") == "true"
+
+    if not os.environ.get("OPENAI_API_KEY"):
+        msg = "Rashifal is temporarily unavailable — API key not configured."
+        if is_htmx:
+            return HTMLResponse(f'<div class="text-sm text-stone-600 p-2">{msg}</div>', status_code=503)
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "API key not configured", "message": msg},
             status_code=503,
         )
 
-    # Use a low-cost transit reference for the LLM context.
-    # Build a "neutral" anchor — Lagna and Moon use a dummy fixed natal so
-    # the transit snapshot just reports today's planet positions; we don't
-    # use the natal-relative house numbers in the Rashifal prompt anyway.
-    try:
-        neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
-    except ChartError as err:
-        return templates.TemplateResponse(
-            request, "error.html",
-            {"title": "Couldn't compute reference chart", "message": str(err)},
-            status_code=500,
-        )
-    transit = compute_transit_snapshot(neutral_chart)
+    # Per-rashi daily cache — key: rashifal_{slug}, e.g. rashifal_aries.
+    cache_key = f"{canonical_slug}-{lang}"
+    cached = daily_cache.get("rashifal_single", cache_key, today_iso)
+    reading_body: str | None = cached.get("body") if cached else None
 
-    # Three-tier cache for Rashifal: GCS (cross-instance) → SQLite (per-instance) → LLM.
-    # Each tier is written back from below on a miss, so future requests hit
-    # the fastest tier available. Storage key includes prompt fingerprint so
-    # a prompt edit auto-invalidates yesterday's cache.
-    storage_key = f"rashifal/{today_iso}-{lang}-{prompt_fp}.txt"
-    try:
-        text = _daily_rashifal_text(
-            lang=lang,
-            today_iso=today_iso,
-            cache_key=cache_key,
-            storage_key=storage_key,
-            call_fn=lambda: generate_rashifal(
-                transit=transit, today_iso=today_iso,
+    if reading_body is None:
+        # Generate. Wrap in the same try/except pattern the old route had
+        # so an LLM failure returns a friendly-error response.
+        try:
+            neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+            transit = compute_transit_snapshot(neutral_chart)
+            panchang_now = compute_panchang(neutral_chart)
+            festival_now = festivals.festival_for_date(date.today())
+            raw = generate_rashifal_for_rashi(
+                rashi_index=idx, transit=transit, today_iso=today_iso,
                 prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
-                panchang=compute_panchang(neutral_chart),
-                festival=festivals.festival_for_date(date.today()),
-            ),
-        )
-    except Exception as err:
-        log.exception("rashifal LLM generation failed")
-        _fire_error_alert(request, err, "rashifal")
-        _title, _msg = _llm_error_friendly(err)
-        return templates.TemplateResponse(
-            request, "error.html",
-            {"title": _title, "message": _msg},
-            status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
-        )
+                panchang=panchang_now, festival=festival_now,
+            )
+            # Strip the '## Rashi / Sanskrit' heading line — we render our own.
+            sections = parse_sectioned_reading(raw)
+            reading_body = sections[0][1] if sections else raw
+            daily_cache.put("rashifal_single", cache_key, {
+                "body": reading_body,
+                "rashi_slug": canonical_slug,
+                "lang": lang,
+            }, today_iso)
+        except Exception as err:
+            log.exception("rashifal single-rashi generation failed for %s", canonical_slug)
+            _fire_error_alert(request, err, f"rashifal_single:{canonical_slug}")
+            _title, _msg = _llm_error_friendly(err)
+            if is_htmx:
+                return HTMLResponse(
+                    f'<div class="text-sm text-red-700 p-3">{_msg}</div>',
+                    status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
+                )
+            return templates.TemplateResponse(
+                request, "error.html",
+                {"title": _title, "message": _msg},
+                status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
+            )
 
-    # Augment each section with glyph + teaser + full body so the template
-    # can render a click-to-expand accordion. The teaser is the first ~2
-    # sentences — enough for a quick scan; the full reading reveals on tap.
-    sections_with_glyphs = [
-        (symbol_for_rashi_label(title) or "✦", title, _rashifal_teaser(body), body)
-        for title, body in parse_sectioned_reading(text)
-    ]
-    return templates.TemplateResponse(
-        request, "rashifal.html",
-        {"lang": lang, "today_date": today_iso,
-         "today_pretty": _pretty_date(today_iso, lang),
-         "sections": sections_with_glyphs},
-    )
+    # Common template context.
+    from astro_ai.llm import _RASHI_ANCHORS
+    anchor = _RASHI_ANCHORS[idx]
+    ctx = {
+        "rashi_slug": canonical_slug,
+        "rashi_en": anchor["en"],
+        "rashi_sa": anchor["sa"],
+        "glyph": ui["glyph"],
+        "glyph_color": ui["glyph_color"],
+        "element": ui["element"],
+        "quality": ui["quality"],
+        "lord": ui["lord"],
+        "reading_body": reading_body,
+        "today_date": today_iso,
+        "today_pretty": _pretty_date(today_iso, lang),
+        "permalink": f"/rashifal/{canonical_slug}",
+        "lang": lang,
+    }
+    template = "_rashifal_card_content.html" if is_htmx else "rashifal_single.html"
+    return templates.TemplateResponse(request, template, ctx)
 
 
 @app.post("/subscribe/lookup")

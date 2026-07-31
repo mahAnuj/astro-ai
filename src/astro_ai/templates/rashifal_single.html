@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ rashi_en }} / {{ rashi_sa }} Rashifal — {{ today_pretty }} · Daily Vedic Horoscope{% endblock %}
+{% block meta_description %}{{ rashi_en }} ({{ rashi_sa }}) daily Rashifal for {{ today_pretty }} — a substantive Vedic Moon-sign reading anchored on today's actual sky (weekday-lord, tithi, moon nakshatra). Free, sidereal Lahiri.{% endblock %}
+
+{% block content %}
+{% set active_page = "rashifal" %}
+{% set breadcrumbs = [('Home', '/'), ('Rashifal', '/rashifal'), (rashi_en, '/rashifal/' + rashi_slug)] %}
+{% include "_breadcrumb_schema.html" %}
+{# Article schema for daily-fresh content — Google indexes this as news-like. #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ site_url }}/rashifal/{{ rashi_slug }}"},
+  "url": "{{ site_url }}/rashifal/{{ rashi_slug }}",
+  "headline": {{ (rashi_en ~ ' Rashifal — ' ~ today_pretty) | tojson }},
+  "description": {{ ((rashi_en ~ ' (' ~ rashi_sa ~ ') daily Vedic horoscope for ' ~ today_pretty ~ ' — sidereal Lahiri.')) | tojson }},
+  "image": {"@type": "ImageObject", "url": "{{ site_url }}/static/icons/icon-512.png", "width": 512, "height": 512},
+  "datePublished": "{{ today_date }}",
+  "dateModified": "{{ today_date }}",
+  "inLanguage": "{{ lang }}",
+  "articleSection": "Rashifal",
+  "author":    {"@type": "Organization", "name": "Bhagya Editorial", "url": "{{ site_url }}/about"},
+  "publisher": {"@type": "Organization", "name": "Shubh Bhagya", "url": "{{ site_url }}/",
+                "logo": {"@type": "ImageObject", "url": "{{ site_url }}/static/icons/icon-512.png", "width": 512, "height": 512}}
+}
+</script>
+{% include "_nav.html" %}
+
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+
+  {# HERO — glyph + name + pretty date #}
+  <header class="text-center space-y-3">
+    <div class="text-xs uppercase tracking-wider text-astro-700 font-semibold">
+      <a href="/rashifal" class="hover:text-astro-700">Rashifal</a> · <time datetime="{{ today_date }}">{{ today_pretty }}</time>
+    </div>
+    <div class="text-7xl {{ glyph_color }} leading-none" aria-hidden="true">{{ glyph }}</div>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700">{{ rashi_en }} <span class="text-stone-400 font-normal">/</span> {{ rashi_sa }}</h1>
+    <p class="text-sm text-stone-500">Element: {{ element | capitalize }} · Quality: {{ quality }} · Ruling planet (Swami): {{ lord }}</p>
+  </header>
+
+  {# READING #}
+  <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-7">
+    <div class="text-base text-stone-800 leading-relaxed space-y-4 whitespace-pre-line">
+{{ reading_body }}
+    </div>
+    <div class="pt-4 mt-4 border-t border-stone-100 flex flex-wrap items-center gap-3 justify-between text-sm no-print">
+      <a href="/rashifal" class="text-astro-700 hover:underline">← All 12 rashis</a>
+      <a href="https://wa.me/?text={{ (rashi_en ~ ' Rashifal — ' ~ site_url ~ '/rashifal/' ~ rashi_slug) | urlencode }}"
+         target="_blank" rel="noopener"
+         class="inline-flex items-center gap-1.5 text-emerald-700 hover:underline">
+        Share on WhatsApp
+      </a>
+    </div>
+  </article>
+
+  {# RELATED — cross-links to Kundli + Learn articles #}
+  <section>
+    <h2 class="font-display text-xl text-astro-800 mb-3">Want a deeper reading?</h2>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <a href="/kundli" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">Free Janma Kundli →</div>
+        <div class="text-xs text-stone-600 mt-1">Full birth chart with dashas, yogas, and personalised reading — beyond the Moon sign.</div>
+      </a>
+      <a href="/panchang" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
+        <div class="font-semibold text-astro-800 text-sm">Today's Panchang →</div>
+        <div class="text-xs text-stone-600 mt-1">Tithi, nakshatra, Rahu Kaal, Abhijit, Choghadiya for your city.</div>
+      </a>
+    </div>
+  </section>
+
+</main>
+{% endblock %}

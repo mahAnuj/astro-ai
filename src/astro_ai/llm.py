@@ -10,12 +10,16 @@ hands `messages` to providers.chat() and gets back text.
 
 from __future__ import annotations
 
+import logging
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 
 from astro_ai import providers
+
+_log = logging.getLogger(__name__)
 from astro_ai.chart import (
     Chart,
     DailyPanchang,  # used by daily reading + rashifal day-signal block
@@ -375,6 +379,62 @@ def _build_rashifal_day_signals(
         fnote = festival.get(f"note_{lang}") or festival.get("note_en", "")
         signals.append(f"Today is {fname} — {fnote} Weave this in if it fits.")
     return signals
+
+
+# Slug → canonical rashi index map. Accepts both English and Sanskrit
+# spellings so URLs like /rashifal/aries and /rashifal/mesha both resolve.
+RASHI_SLUG_TO_INDEX: dict[str, int] = {
+    "aries": 0,       "mesha": 0,
+    "taurus": 1,      "vrishabha": 1,   "vrish": 1,   "vrishab": 1,
+    "gemini": 2,      "mithuna": 2,     "mithun": 2,
+    "cancer": 3,      "karka": 3,       "kark": 3,
+    "leo": 4,         "simha": 4,       "sinh": 4,
+    "virgo": 5,       "kanya": 5,
+    "libra": 6,       "tula": 6,
+    "scorpio": 7,     "vrishchika": 7,  "vrischika": 7,
+    "sagittarius": 8, "dhanu": 8,
+    "capricorn": 9,   "makara": 9,      "makar": 9,
+    "aquarius": 10,   "kumbha": 10,     "kumbh": 10,
+    "pisces": 11,     "meena": 11,      "min": 11,
+}
+
+# Canonical URL slug for each rashi (lowercase English) — use in sitemap
+# and hreflang building.  Index 0..11 = Mesha..Meena in classical order.
+RASHI_CANONICAL_SLUGS: tuple[str, ...] = (
+    "aries", "taurus", "gemini", "cancer", "leo", "virgo",
+    "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces",
+)
+
+
+def generate_rashifal_for_rashi(
+    rashi_index: int,
+    transit: TransitSnapshot,
+    today_iso: str,
+    prompt_path: Path,
+    lang: str = "en",
+    panchang: DailyPanchang | None = None,
+    festival: dict | None = None,
+) -> str:
+    """Generate today's reading for ONE specific rashi.
+
+    Fires exactly one LLM call using the per-rashi anchor + opening-style
+    hint. Used by the on-demand flip-card flow (/rashifal/{rashi}) — the
+    landing page renders 12 flip cards without any LLM traffic; when a
+    user clicks a card, this fires the single call for that rashi and
+    the result is cached for the rest of the day.
+
+    Contrast with generate_rashifal() which fires all 12 in parallel — that
+    path is kept for the email cron where all 12 must be pre-generated for
+    a single subscriber blast.
+    """
+    if not 0 <= rashi_index < 12:
+        raise ValueError(f"rashi_index must be in 0..11, got {rashi_index}")
+    day_signals = _build_rashifal_day_signals(transit, today_iso, lang, panchang, festival)
+    day_signals_block = "\n".join(f"- {s}" for s in day_signals)
+    transit_block = format_transit_for_prompt(transit)
+    return _generate_rashifal_single(
+        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,
+    )
 
 
 def _generate_rashifal_single(
