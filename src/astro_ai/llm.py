@@ -473,7 +473,7 @@ def _generate_rashifal_single(
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
-    ], route="rashifal")
+    ], route="rashifal_single")
     return content.strip()
 
 
