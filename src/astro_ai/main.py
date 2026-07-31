@@ -642,6 +642,15 @@ async def sitemap() -> Response:
     from astro_ai.llm import RASHI_CANONICAL_SLUGS as _RASHI_SLUGS_FOR_SITEMAP
     for _slug in _RASHI_SLUGS_FOR_SITEMAP:
         pages.append((f"/rashifal/{_slug}", "daily", "0.7"))
+    # Rolling 90-day Panchang archive — 30 past + today + 59 future so
+    # Google discovers 'panchang for {upcoming date}' queries + can still
+    # serve retrospective 'what was tithi on {past date}' searches.
+    # SEO audit #132 Phase 2.
+    from datetime import timedelta as _td
+    _today = date.today()
+    for _offset in range(-30, 60):
+        _d = _today + _td(days=_offset)
+        pages.append((f"/panchang/{_d.isoformat()}", "daily", "0.5"))
     # Auto-include every learning article so Google can crawl them all from
     # one place. New articles dropped into learn_registry appear here
     # automatically — no sitemap maintenance.
@@ -700,9 +709,9 @@ async def service_worker() -> FileResponse:
     )
 
 
-@app.get("/panchang", response_class=HTMLResponse)
-async def panchang_page(request: Request, city: str = "") -> HTMLResponse:
-    """Today's Panchang for a city (SEO audit #132 Phase 1).
+def _render_panchang(request: Request, target_date, city: str = "") -> HTMLResponse:
+    """Shared Panchang renderer — powers both /panchang (today) and
+    /panchang/{YYYY-MM-DD} (archive URLs — SEO audit #132 Phase 2).
 
     City resolution priority:
       1. ?city= query param (form-submitted or shared link)
@@ -713,22 +722,31 @@ async def panchang_page(request: Request, city: str = "") -> HTMLResponse:
     Kaal, Abhijit, Choghadiya). Compute via compute_panchang against a
     throwaway chart_for_loc; degrade gracefully to Mumbai if geocoding
     fails.
+
+    `target_date` is a `datetime.date` — the day whose panchang we want.
     """
     from astro_ai.muhurat import _choghadiya_windows as _choghadiya
+    from datetime import datetime as _datetime, timedelta as _timedelta
+    from zoneinfo import ZoneInfo as _ZoneInfo
     resolved_city = (city or "").strip()
     error = False
     if not resolved_city:
         saved = load_collection(request).active
         resolved_city = (saved.birth_place if saved else "") or "Mumbai, India"
+    # Anchor the compute at local noon on the target date so daily-shifting
+    # signals (tithi, sunrise, choghadiya) fall on the intended day.
+    def _target_moment(chart) -> _datetime:
+        tz = _ZoneInfo(chart.birth_tz)
+        return _datetime(target_date.year, target_date.month, target_date.day, 12, 0, tzinfo=tz)
     try:
         chart_for_loc = compute_chart("2000-01-01", "12:00", resolved_city)
-        p = compute_panchang(chart_for_loc)
+        p = compute_panchang(chart_for_loc, when=_target_moment(chart_for_loc))
     except Exception:
         error = True
         resolved_city = "Mumbai, India"
         try:
             chart_for_loc = compute_chart("2000-01-01", "12:00", resolved_city)
-            p = compute_panchang(chart_for_loc)
+            p = compute_panchang(chart_for_loc, when=_target_moment(chart_for_loc))
         except Exception:
             p = None
             chart_for_loc = None
@@ -740,7 +758,7 @@ async def panchang_page(request: Request, city: str = "") -> HTMLResponse:
         except Exception:
             choghadiya_windows = []
         try:
-            transit = compute_transit_snapshot(chart_for_loc)
+            transit = compute_transit_snapshot(chart_for_loc, when=_target_moment(chart_for_loc))
             moon = next((pl for pl in transit.planets if pl.name == "Moon"), None)
             if moon:
                 moon_info = {"rashi": moon.rashi, "nakshatra": moon.nakshatra}
@@ -748,20 +766,64 @@ async def panchang_page(request: Request, city: str = "") -> HTMLResponse:
             moon_info = None
     lang = _lang(request)
     today_iso = date.today().isoformat()
+    target_iso = target_date.isoformat()
+    is_today = (target_iso == today_iso)
+    # Prev / next day for navigation on archive pages (skip on today to
+    # keep the today URL clean).
+    from datetime import timedelta as _td
+    prev_day = (target_date - _td(days=1)).isoformat()
+    next_day = (target_date + _td(days=1)).isoformat()
     return templates.TemplateResponse(
         request, "panchang.html",
         {
             "p": p,
             "city": city or resolved_city,
             "city_display": resolved_city,
-            "today_date": today_iso,
-            "today_pretty": _pretty_date(today_iso, lang),
+            "today_date": target_iso,       # the rendered day (used by <time> element)
+            "today_pretty": _pretty_date(target_iso, lang),
+            "is_today": is_today,
+            "true_today_iso": today_iso,
+            "prev_day": prev_day,
+            "next_day": next_day,
             "choghadiya": choghadiya_windows,
             "moon_info": moon_info,
             "error": error,
             "lang": lang,
         },
     )
+
+
+@app.get("/panchang", response_class=HTMLResponse)
+async def panchang_page(request: Request, city: str = "") -> HTMLResponse:
+    """Today's Panchang. Delegates to _render_panchang with today's date."""
+    return _render_panchang(request, date.today(), city)
+
+
+@app.get("/panchang/{date_str}", response_class=HTMLResponse)
+async def panchang_archive(request: Request, date_str: str, city: str = "") -> HTMLResponse:
+    """Panchang for a specific YYYY-MM-DD (SEO audit #132 Phase 2).
+
+    Each historical / future day gets its own indexable URL. Rolling 90-day
+    window sitemap ensures Google discovers a fresh 3-month archive. Older
+    dates still work by direct link — they just don't sit in the sitemap.
+    """
+    try:
+        target = date.fromisoformat(date_str)
+    except ValueError:
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Bad date", "message": f"'{date_str}' is not a valid YYYY-MM-DD date. Try /panchang for today."},
+            status_code=404,
+        )
+    # Sanity-guard against absurd dates (Swiss Ephemeris breaks pre-1800 /
+    # post-2400). Also blocks crawlers from generating 100M URLs.
+    if target.year < 1900 or target.year > 2100:
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Out-of-range date", "message": "Panchang is available for dates between 1900 and 2100."},
+            status_code=400,
+        )
+    return _render_panchang(request, target, city)
 
 
 @app.get("/about", response_class=HTMLResponse)
