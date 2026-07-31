@@ -96,6 +96,12 @@ _MIN_CHARS_BY_ROUTE: dict[str, int] = {
     "today":    400,
     "dasha":    300,
     "rashifal": 200,
+    # Per-rashi rashifal (single Moon-sign, 120-160 words) — used by the
+    # flip-card /rashifal/{slug} endpoint. Deliberately NOT in
+    # _STRUCTURED_ROUTES because it emits exactly ONE `## Heading` (its
+    # own rashi's name) — the multi-heading gate would reject every
+    # successful generation.
+    "rashifal_single": 300,
     "ask":      100,
 }
 
