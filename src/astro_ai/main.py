@@ -2492,7 +2492,7 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
                     '<div class="h-full flex flex-col items-center justify-center text-center gap-3 p-4">'
                     f'  <div class="text-3xl" aria-hidden="true">{"🕉️" if is_rate else "⚠️"}</div>'
                     f'  <div class="text-sm font-semibold text-stone-800">{"Still gathering today\'s sky…" if is_rate else "Reading could not load"}</div>'
-                    f'  <div class="text-xs text-stone-600 leading-relaxed">{"Free-tier LLM quota is briefly full. Try again in a minute." if is_rate else _msg}</div>'
+                    f'  <div class="text-xs text-stone-600 leading-relaxed">{"Experiencing high traffic. Try again in a minute." if is_rate else _msg}</div>'
                     '  <div class="flex gap-2 pt-1">'
                     f'    <button type="button" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold" '
                     f'            hx-get="/rashifal/{canonical_slug}" hx-target="closest [data-card-front]" hx-swap="innerHTML" '
