@@ -2584,7 +2584,12 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
     ui = _RASHIFAL_UI_META[canonical_slug]
     lang = _lang(request)
     today_iso = date.today().isoformat()
-    is_htmx = request.headers.get("hx-request") == "true"
+    # `hx-boost=true` on <body> means EVERY internal link sends HX-Request,
+    # so we can't use the generic HX-Request header to decide fragment vs
+    # full-page. The card-click on /rashifal grid explicitly sets
+    # HX-Rashifal-Fragment=1 via hx-headers — check that instead so direct
+    # URL bar navigation to /rashifal/aries always renders the full page.
+    is_htmx = request.headers.get("hx-rashifal-fragment") == "1"
 
     if not os.environ.get("OPENAI_API_KEY"):
         msg = "Rashifal is temporarily unavailable — API key not configured."
