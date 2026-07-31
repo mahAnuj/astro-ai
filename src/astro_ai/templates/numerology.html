@@ -186,6 +186,111 @@
     </article>
     {% endfor %}
   </section>
+  {# ─── LO SHU 3×3 GRID ─────────────────────────────────────────────
+     Classical birth-number matrix. Each cell shows a digit + how many
+     times it appeared in the user's DOB. Fully-present or fully-absent
+     rows/cols/diagonals form 'arrows' with named classical
+     interpretations. Sourced from Cheiro's Book of Numbers per
+     knowledge/numerology.md §13.3. #}
+  {% if reading.lo_shu %}
+  {% set _grid = reading.lo_shu %}
+  <section class="bg-white rounded-2xl border border-astro-200 p-5 sm:p-6 shadow-sm">
+    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Lo Shu Birth-Number Matrix</div>
+    <h2 class="font-display text-2xl text-astro-800 mb-2">Your 3×3 Number Grid</h2>
+    <p class="text-sm text-stone-600 mb-4">
+      Classical 3×3 matrix from your DOB digits ({{ _grid.dob_digits }}). Cells show how many times each digit appears in your birth date. Missing digits point to life lessons; repeated digits mark natural strengths. <span class="italic">Per Cheiro's <em>Book of Numbers</em>.</span>
+    </p>
+
+    {# The 3×3 grid — classical Lo Shu magic-square layout 4-9-2 / 3-5-7 / 8-1-6.
+       Cells with count > 0 get filled + coloured; missing cells stay grey. #}
+    <div class="max-w-xs mx-auto mb-6">
+      <div class="grid grid-cols-3 gap-1.5 aspect-square">
+        {% for row_digits in [[4,9,2],[3,5,7],[8,1,6]] %}
+        {% for digit in row_digits %}
+        {% set count = _grid.counts[digit] %}
+        <div class="relative flex flex-col items-center justify-center rounded-lg border-2 {% if count > 0 %}bg-astro-50 border-astro-400{% else %}bg-stone-50 border-stone-200 border-dashed{% endif %} aspect-square">
+          <div class="font-display text-2xl sm:text-3xl {% if count > 0 %}text-astro-800 font-bold{% else %}text-stone-400{% endif %} leading-none">{{ digit }}</div>
+          {% if count > 0 %}
+          <div class="text-[10px] mt-1 px-1.5 py-0.5 rounded-full bg-astro-700 text-white font-semibold tabular-nums">×{{ count }}</div>
+          {% else %}
+          <div class="text-[9px] mt-1 text-stone-400 uppercase tracking-wider">Missing</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Present arrows — fully-filled rows / cols / diagonals = named strengths. #}
+    {% if _grid.present_arrows %}
+    <div class="mb-4">
+      <div class="text-xs uppercase tracking-wider font-semibold text-emerald-700 mb-2">Arrows present ({{ _grid.present_arrows | length }}) — natural strengths</div>
+      <div class="space-y-2">
+        {% for arrow in _grid.present_arrows %}
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ arrow.digits | join('-') }}</span>
+            <span class="font-semibold text-sm text-emerald-900">{{ arrow.name }}</span>
+          </div>
+          <div class="text-sm text-stone-700 leading-relaxed">{{ arrow.meaning }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {# Missing arrows — fully-empty rows / cols / diagonals = named life lessons. #}
+    {% if _grid.missing_arrows %}
+    <div class="mb-4">
+      <div class="text-xs uppercase tracking-wider font-semibold text-amber-800 mb-2">Arrows missing ({{ _grid.missing_arrows | length }}) — life lessons to work on</div>
+      <div class="space-y-2">
+        {% for arrow in _grid.missing_arrows %}
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-[10px] font-mono bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">{{ arrow.digits | join('-') }}</span>
+            <span class="font-semibold text-sm text-amber-900">{{ arrow.name }}</span>
+          </div>
+          <div class="text-sm text-stone-700 leading-relaxed">{{ arrow.meaning }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if not _grid.present_arrows and not _grid.missing_arrows %}
+    <div class="p-3 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-700">
+      No fully-present or fully-missing arrows in your grid. Your digit distribution is balanced across rows, columns, and diagonals — no single classical 'arrow' dominates, which itself indicates versatility.
+    </div>
+    {% endif %}
+
+    {# Per-digit interpretation — expandable so it doesn't dominate. #}
+    <details class="mt-4 group">
+      <summary class="cursor-pointer p-3 bg-astro-50 border border-astro-200 rounded-lg font-semibold text-sm text-astro-800 flex items-center justify-between hover:bg-astro-100 transition-colors">
+        <span>All 9 digit meanings (present + missing in your grid)</span>
+        <svg class="w-4 h-4 text-astro-600 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+      </summary>
+      <div class="mt-3 space-y-2 text-sm">
+        {% for m in _grid.digit_meanings %}
+        {% set c = _grid.counts[m.digit] %}
+        <div class="p-3 rounded-lg {% if c > 0 %}bg-astro-50 border border-astro-200{% else %}bg-stone-50 border border-stone-200{% endif %}">
+          <div class="flex items-baseline gap-2 mb-1">
+            <span class="font-display text-lg font-bold {% if c > 0 %}text-astro-800{% else %}text-stone-500{% endif %}">{{ m.digit }}</span>
+            <span class="text-xs text-stone-500">·</span>
+            <span class="text-sm font-semibold text-stone-800">{{ m.theme }}</span>
+            <span class="text-[10px] text-stone-400">({{ m.planet }})</span>
+            <span class="ml-auto text-[10px] px-1.5 py-0.5 rounded-full {% if c > 0 %}bg-astro-700 text-white{% else %}bg-stone-300 text-stone-700{% endif %} font-semibold tabular-nums">
+              {% if c > 0 %}×{{ c }} present{% else %}missing{% endif %}
+            </span>
+          </div>
+          <div class="text-xs text-stone-700 leading-relaxed">
+            {% if c > 0 %}{{ m.if_present }}{% else %}{{ m.if_missing }}{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+  </section>
+  {% endif %}
 
   {# Rich Life Path profile — the descriptive reading a real numerologist
      would give (character, strengths, weaknesses, health, career,
@@ -378,111 +483,6 @@
     </div>
   </section>
 
-  {# ─── LO SHU 3×3 GRID ─────────────────────────────────────────────
-     Classical birth-number matrix. Each cell shows a digit + how many
-     times it appeared in the user's DOB. Fully-present or fully-absent
-     rows/cols/diagonals form 'arrows' with named classical
-     interpretations. Sourced from Cheiro's Book of Numbers per
-     knowledge/numerology.md §13.3. #}
-  {% if reading.lo_shu %}
-  {% set _grid = reading.lo_shu %}
-  <section class="bg-white rounded-2xl border border-astro-200 p-5 sm:p-6 shadow-sm">
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Lo Shu Birth-Number Matrix</div>
-    <h2 class="font-display text-2xl text-astro-800 mb-2">Your 3×3 Number Grid</h2>
-    <p class="text-sm text-stone-600 mb-4">
-      Classical 3×3 matrix from your DOB digits ({{ _grid.dob_digits }}). Cells show how many times each digit appears in your birth date. Missing digits point to life lessons; repeated digits mark natural strengths. <span class="italic">Per Cheiro's <em>Book of Numbers</em>.</span>
-    </p>
-
-    {# The 3×3 grid — classical Lo Shu magic-square layout 4-9-2 / 3-5-7 / 8-1-6.
-       Cells with count > 0 get filled + coloured; missing cells stay grey. #}
-    <div class="max-w-xs mx-auto mb-6">
-      <div class="grid grid-cols-3 gap-1.5 aspect-square">
-        {% for row_digits in [[4,9,2],[3,5,7],[8,1,6]] %}
-        {% for digit in row_digits %}
-        {% set count = _grid.counts[digit] %}
-        <div class="relative flex flex-col items-center justify-center rounded-lg border-2 {% if count > 0 %}bg-astro-50 border-astro-400{% else %}bg-stone-50 border-stone-200 border-dashed{% endif %} aspect-square">
-          <div class="font-display text-2xl sm:text-3xl {% if count > 0 %}text-astro-800 font-bold{% else %}text-stone-400{% endif %} leading-none">{{ digit }}</div>
-          {% if count > 0 %}
-          <div class="text-[10px] mt-1 px-1.5 py-0.5 rounded-full bg-astro-700 text-white font-semibold tabular-nums">×{{ count }}</div>
-          {% else %}
-          <div class="text-[9px] mt-1 text-stone-400 uppercase tracking-wider">Missing</div>
-          {% endif %}
-        </div>
-        {% endfor %}
-        {% endfor %}
-      </div>
-    </div>
-
-    {# Present arrows — fully-filled rows / cols / diagonals = named strengths. #}
-    {% if _grid.present_arrows %}
-    <div class="mb-4">
-      <div class="text-xs uppercase tracking-wider font-semibold text-emerald-700 mb-2">Arrows present ({{ _grid.present_arrows | length }}) — natural strengths</div>
-      <div class="space-y-2">
-        {% for arrow in _grid.present_arrows %}
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ arrow.digits | join('-') }}</span>
-            <span class="font-semibold text-sm text-emerald-900">{{ arrow.name }}</span>
-          </div>
-          <div class="text-sm text-stone-700 leading-relaxed">{{ arrow.meaning }}</div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    {# Missing arrows — fully-empty rows / cols / diagonals = named life lessons. #}
-    {% if _grid.missing_arrows %}
-    <div class="mb-4">
-      <div class="text-xs uppercase tracking-wider font-semibold text-amber-800 mb-2">Arrows missing ({{ _grid.missing_arrows | length }}) — life lessons to work on</div>
-      <div class="space-y-2">
-        {% for arrow in _grid.missing_arrows %}
-        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-[10px] font-mono bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">{{ arrow.digits | join('-') }}</span>
-            <span class="font-semibold text-sm text-amber-900">{{ arrow.name }}</span>
-          </div>
-          <div class="text-sm text-stone-700 leading-relaxed">{{ arrow.meaning }}</div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
-
-    {% if not _grid.present_arrows and not _grid.missing_arrows %}
-    <div class="p-3 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-700">
-      No fully-present or fully-missing arrows in your grid. Your digit distribution is balanced across rows, columns, and diagonals — no single classical 'arrow' dominates, which itself indicates versatility.
-    </div>
-    {% endif %}
-
-    {# Per-digit interpretation — expandable so it doesn't dominate. #}
-    <details class="mt-4 group">
-      <summary class="cursor-pointer p-3 bg-astro-50 border border-astro-200 rounded-lg font-semibold text-sm text-astro-800 flex items-center justify-between hover:bg-astro-100 transition-colors">
-        <span>All 9 digit meanings (present + missing in your grid)</span>
-        <svg class="w-4 h-4 text-astro-600 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-      </summary>
-      <div class="mt-3 space-y-2 text-sm">
-        {% for m in _grid.digit_meanings %}
-        {% set c = _grid.counts[m.digit] %}
-        <div class="p-3 rounded-lg {% if c > 0 %}bg-astro-50 border border-astro-200{% else %}bg-stone-50 border border-stone-200{% endif %}">
-          <div class="flex items-baseline gap-2 mb-1">
-            <span class="font-display text-lg font-bold {% if c > 0 %}text-astro-800{% else %}text-stone-500{% endif %}">{{ m.digit }}</span>
-            <span class="text-xs text-stone-500">·</span>
-            <span class="text-sm font-semibold text-stone-800">{{ m.theme }}</span>
-            <span class="text-[10px] text-stone-400">({{ m.planet }})</span>
-            <span class="ml-auto text-[10px] px-1.5 py-0.5 rounded-full {% if c > 0 %}bg-astro-700 text-white{% else %}bg-stone-300 text-stone-700{% endif %} font-semibold tabular-nums">
-              {% if c > 0 %}×{{ c }} present{% else %}missing{% endif %}
-            </span>
-          </div>
-          <div class="text-xs text-stone-700 leading-relaxed">
-            {% if c > 0 %}{{ m.if_present }}{% else %}{{ m.if_missing }}{% endif %}
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-    </details>
-  </section>
-  {% endif %}
 
   <div class="text-xs text-stone-500 leading-relaxed">
     <p><strong>Editorial note:</strong> Numerology is a complementary lens, not a replacement for chart-based Vedic reading. This calculator does not recommend name changes or wearing gems based on numerology alone — both practices can carry unintended consequences. Consult qualified guidance for any major life decision.</p>
