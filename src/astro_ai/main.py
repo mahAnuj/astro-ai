@@ -785,10 +785,21 @@ async def natal_legacy_redirect() -> RedirectResponse:
 
 @app.get("/kundli", response_class=HTMLResponse)
 async def kundli(request: Request) -> HTMLResponse:
-    """Render the Janma Kundli reading for the currently active saved chart."""
+    """Render the Janma Kundli reading for the currently active saved chart.
+
+    When no chart is saved (typical for Googlebot + first-time visitors)
+    we render an SEO landing page with the birth-details form inline instead
+    of redirecting to home. Before this change (SEO audit #123) Googlebot
+    was 303-redirected to '/' with a canonical pointing at '/', so /kundli
+    had no indexable page of its own — competitors' /kundli URLs sat on
+    2,000-word explainers while ours was invisible in search.
+    """
     saved = load_collection(request).active
     if saved is None:
-        return RedirectResponse("/?needs_chart=kundli", status_code=303)
+        return templates.TemplateResponse(
+            request, "kundli_landing.html",
+            {"lang": _lang(request)},
+        )
     return await _render_natal_for(request, saved.to_birth_details(), chart_id=saved.id)
 
 
@@ -2794,10 +2805,19 @@ async def admin_subscribers(request: Request) -> HTMLResponse:
 
 @app.get("/dasha", response_class=HTMLResponse)
 async def dasha(request: Request) -> HTMLResponse:
-    """Vimshottari Dasha timeline for the active saved chart."""
+    """Vimshottari Dasha timeline for the active saved chart.
+
+    Same landing/result split as /kundli (SEO audit #123). When no chart
+    cookie is set, render the /dasha explainer + birth-form so Googlebot
+    has an indexable page. The old redirect-to-home meant /dasha had zero
+    SEO presence.
+    """
     saved = load_collection(request).active
     if saved is None:
-        return RedirectResponse("/?needs_chart=dasha", status_code=303)
+        return templates.TemplateResponse(
+            request, "dasha_landing.html",
+            {"lang": _lang(request)},
+        )
     saved_details = saved.to_birth_details()
     try:
         natal = compute_chart(saved_details.birth_date, saved_details.birth_time, saved_details.birth_place)
