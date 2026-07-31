@@ -3199,12 +3199,19 @@ def compute_bhagya_score(chart: Chart) -> BhagyaScore:
 
     # ─── Manglik status (from Mars-in-1/2/4/7/8/12 with all classical
     #     cancellation rules applied — mangal_details returns the FINAL
-    #     effective status, not the raw placement) ────────────────────
+    #     effective status, not the raw placement). Possible values are
+    #     'none' | 'present' | 'mitigated' | 'cancelled'.
+    #     - none      : no Manglik pattern detected, no driver
+    #     - cancelled : all classical cancellations applied, +5
+    #     - mitigated : Manglik pattern but some (not all) cancellations, -3
+    #     - present   : Manglik pattern, no cancellations applied, -8
     mangal = compute_manglik_details(chart)
     if mangal.effective_status == "cancelled":
-        _add(+5, "Manglik cancellation applies (classical rules)")
-    elif mangal.effective_status == "manglik":
-        _add(-8, "Manglik Dosh active (uncancelled)")
+        _add(+5, "Manglik pattern cancelled by classical rules — no net Dosh")
+    elif mangal.effective_status == "mitigated":
+        _add(-3, "Manglik pattern partly mitigated (some cancellations apply)")
+    elif mangal.effective_status == "present":
+        _add(-8, "Manglik Dosh present (no cancellations found in this chart)")
 
     # ─── Sade Sati transit phase — Saturn ±1 rashi from natal Moon ─
     flags = compute_vedic_flags(chart)
@@ -3257,6 +3264,49 @@ def compute_bhagya_score(chart: Chart) -> BhagyaScore:
             _add(+5, f"Current Mahadasha: {lord} — a natural benefic period")
         elif lord in ("Saturn", "Rahu"):
             _add(-3, f"Current Mahadasha: {lord} — a demanding, patience-testing period")
+        # ─── Current Antardasha — shifts every few months, adds daily
+        #     relevance the Mahadasha alone can't. Softer weight than
+        #     Mahadasha because a benefic Antardasha inside a malefic
+        #     Mahadasha still feels malefic overall.
+        ad_lord = (dasha.antardasha.lord or "").split(" ")[0]
+        if ad_lord and ad_lord != lord:  # avoid double-counting Maha=Antar overlap
+            if ad_lord in ("Jupiter", "Venus", "Moon"):
+                _add(+2, f"Current Antardasha: {ad_lord} — the next few months carry benefic sub-flavour")
+            elif ad_lord in ("Saturn", "Rahu"):
+                _add(-2, f"Current Antardasha: {ad_lord} — the next few months carry demanding sub-flavour")
+    except Exception:
+        pass
+
+    # ─── Gochar (today's transits) — the actually-daily-changing layer.
+    #     Score up till now was mostly natal + dasha (both slow). Gochar
+    #     is what makes the score meaningfully move day-to-day. Two most
+    #     impactful classical gochar signals:
+    #       - Jupiter's house from natal Moon (Guru Gochar): 2, 5, 7, 9,
+    #         11 favourable; 3, 4, 8, 12 challenging; 1, 6, 10 neutral
+    #       - Rahu / Ketu currently over natal Moon or Lagna: -2 each
+    try:
+        transit = compute_transit_snapshot(chart)
+        natal_moon = next((p for p in chart.planets if p.name == "Moon"), None)
+        if natal_moon:
+            natal_moon_idx = _rashi_index(natal_moon.rashi)
+            # Jupiter Gochar from Moon
+            t_jup = next((p for p in transit.planets if p.name == "Jupiter"), None)
+            if t_jup:
+                jup_house_from_moon = ((_rashi_index(t_jup.rashi) - natal_moon_idx) % 12) + 1
+                if jup_house_from_moon in (2, 5, 7, 9, 11):
+                    _add(+3, f"Jupiter gochar in {_ordinal(jup_house_from_moon)} from natal Moon — expansive transit")
+                elif jup_house_from_moon in (3, 4, 8, 12):
+                    _add(-2, f"Jupiter gochar in {_ordinal(jup_house_from_moon)} from natal Moon — a slower Jupiter phase")
+            # Rahu / Ketu transiting over natal Moon or natal Lagna axis
+            natal_lagna_idx = _rashi_index(chart.lagna_rashi)
+            for node in ("Rahu", "Ketu"):
+                t_node = next((p for p in transit.planets if p.name == node), None)
+                if t_node:
+                    t_idx = _rashi_index(t_node.rashi)
+                    if t_idx == natal_moon_idx:
+                        _add(-2, f"{node} currently transiting over natal Moon — introspective / restless emotional weather")
+                    elif t_idx == natal_lagna_idx:
+                        _add(-2, f"{node} currently transiting over natal Lagna — self-image being reshaped")
     except Exception:
         pass
 

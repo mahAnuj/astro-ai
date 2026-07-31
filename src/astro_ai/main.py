@@ -1981,12 +1981,18 @@ async def numerology_calculate(
         )
     except Exception:
         pass
+    # Numerology-only Bhagya Score — separate from the chart-based one on
+    # /kundli. Sources signals purely from the numerology reading so
+    # users who compute numerology first (without a Kundli) still get a
+    # headline number.
+    from astro_ai.numerology import compute_numerology_bhagya_score as _num_bhagya
     return templates.TemplateResponse(
         request, "numerology.html",
         {
             "page_title": f"Numerology Reading for {reading.name} — Life Path {reading.life_path}",
-            "page_meta": f"Free numerology reading for {reading.name}: Life Path {reading.life_path}, Destiny {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}, Name Number {reading.name_number}. Includes character profile, life challenges, career fields, health notes, best partners, favourable timing, and Vedic remedies (gemstone / mantra / day / deity) for the Life Path number.",
+            "page_meta": f"Free numerology reading for {reading.name}: Life Path {reading.life_path}, Destiny {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}, Name Number {reading.name_number}. Includes character profile, life challenges, career fields, best partners, Vedic remedies, and the Lo Shu birth-number matrix.",
             "reading": reading,
+            "num_bhagya_score": _num_bhagya(reading),
             "error": None,
             "lang": _lang(request),
             **_ask_cta_ctx(request, hint="about your chart (numerology-related life questions)"),
