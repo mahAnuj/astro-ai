@@ -11,7 +11,7 @@
    Any of these can be omitted; the template does the right thing.
 #}
 {% set _remaining = ask_remaining if ask_remaining is defined else 3 %}
-{% set _hint = ask_context_hint if ask_context_hint is defined else 'about your chart' %}
+{% set _hint = ask_context_hint if ask_context_hint is defined else t(lang, 'ask_cta_hint_default') %}
 
 <aside class="rounded-2xl border-2 border-astro-300 bg-gradient-to-br from-astro-50 to-white shadow-md p-5 sm:p-6 no-print"
        data-ask-cta>
@@ -23,24 +23,24 @@
     </div>
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 mb-1 flex-wrap">
-        <span class="text-[11px] uppercase tracking-wider font-semibold text-astro-700 bg-astro-100 px-2 py-0.5 rounded-full">Free · No signup</span>
+        <span class="text-[11px] uppercase tracking-wider font-semibold text-astro-700 bg-astro-100 px-2 py-0.5 rounded-full">
+          {{ t(lang, 'ask_cta_free') }}
+        </span>
         {% if _remaining and _remaining < 3 %}
-        <span class="text-[11px] text-stone-500">{{ _remaining }} question{{ 's' if _remaining != 1 else '' }} left today</span>
+        <span class="text-[11px] text-stone-500">
+          {{ t(lang, 'ask_cta_remaining_one') if _remaining == 1 else t(lang, 'ask_cta_remaining', n=_remaining) }}
+        </span>
         {% endif %}
       </div>
       <h3 class="font-display text-lg sm:text-xl text-astro-800 mb-1">
-        {% if has_saved_chart %}Ask 3 free questions {{ _hint }} today{% else %}Get 3 free personal questions with your Kundli{% endif %}
+        {{ t(lang, 'ask_cta_head_saved', hint=_hint) if has_saved_chart else t(lang, 'ask_cta_head_no_chart') }}
       </h3>
       <p class="text-sm text-stone-700 leading-relaxed mb-3">
-        {% if has_saved_chart %}
-          Real answers from your actual chart — marriage timing, career direction, when a specific transit lands. Not generic horoscope advice.
-        {% else %}
-          Generate your free Janma Kundli and you unlock 3 daily questions like "When will I marry?" or "What's the best career for me?" — answered from your actual chart, not a template.
-        {% endif %}
+        {{ t(lang, 'ask_cta_body_saved') if has_saved_chart else t(lang, 'ask_cta_body_no_chart') }}
       </p>
       <a href="{% if has_saved_chart %}/ask{% else %}/{% endif %}"
          class="inline-flex items-center gap-1.5 bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-        {% if has_saved_chart %}Ask a question &rarr;{% else %}Generate my Kundli &rarr;{% endif %}
+        {{ t(lang, 'ask_cta_button_saved') if has_saved_chart else t(lang, 'ask_cta_button_no_chart') }}
       </a>
     </div>
   </div>

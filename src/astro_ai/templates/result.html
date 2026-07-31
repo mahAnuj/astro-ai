@@ -332,21 +332,21 @@
     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
       {# The big number — a stylized dial-style label. #}
       <div class="shrink-0 relative w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-{{ _c }}-100 via-white to-{{ _c }}-50 border-4 border-{{ _c }}-300 flex flex-col items-center justify-center shadow-lg">
-        <div class="text-[10px] uppercase tracking-wider text-{{ _c }}-700 font-semibold">Bhagya</div>
+        <div class="text-[10px] uppercase tracking-wider text-{{ _c }}-700 font-semibold">{{ t(lang, 'bhagya_label') }}</div>
         <div class="font-display text-5xl sm:text-6xl text-{{ _c }}-800 tabular-nums leading-none">{{ bhagya_score.value }}</div>
-        <div class="text-[10px] text-{{ _c }}-700">/ 100</div>
+        <div class="text-[10px] text-{{ _c }}-700">{{ t(lang, 'bhagya_out_of') }}</div>
       </div>
       <div class="flex-1 min-w-0">
-        <div class="text-xs uppercase tracking-wider font-semibold text-{{ _c }}-700 mb-1">Your Bhagya Score</div>
+        <div class="text-xs uppercase tracking-wider font-semibold text-{{ _c }}-700 mb-1">{{ t(lang, 'bhagya_heading') }}</div>
         <h2 class="font-display text-xl sm:text-2xl text-stone-900 leading-tight mb-2">{{ bhagya_score.label }}</h2>
         <p class="text-sm text-stone-700 leading-relaxed">
-          Astrology is weather, not destiny. This number reflects your <strong>current chapter</strong> based on today's dashas and transits — it will shift as they shift. Below: the top signals feeding it.
+          {{ t(lang, 'bhagya_lede') | safe }}
         </p>
       </div>
     </div>
     {% if bhagya_score.top_drivers %}
     <div class="mt-4 pt-4 border-t border-{{ _c }}-200 space-y-2">
-      <div class="text-xs uppercase tracking-wider font-semibold text-stone-500 mb-2">Why this score</div>
+      <div class="text-xs uppercase tracking-wider font-semibold text-stone-500 mb-2">{{ t(lang, 'bhagya_why') }}</div>
       {% for d in bhagya_score.top_drivers %}
       <div class="flex items-start gap-2 text-sm">
         {% if d.kind == 'boost' %}
@@ -361,7 +361,7 @@
     {% if bhagya_score.drivers | length > 3 %}
     <details class="mt-3 group">
       <summary class="cursor-pointer text-xs text-stone-500 hover:text-astro-700">
-        Show all {{ bhagya_score.drivers | length }} signals →
+        {{ t(lang, 'bhagya_show_all', n=bhagya_score.drivers | length) }}
       </summary>
       <div class="mt-2 space-y-2">
         {% for d in bhagya_score.drivers[3:] %}
