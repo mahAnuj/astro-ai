@@ -797,7 +797,7 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
 @app.get("/panchang", response_class=HTMLResponse)
 async def panchang_page(request: Request, city: str = "") -> HTMLResponse:
     """Today's Panchang. Delegates to _render_panchang with today's date."""
-    return _render_panchang(request, date.today(), city)
+    return _no_cdn_cache(_render_panchang(request, date.today(), city))
 
 
 # In-process daily cache for the homepage Panchang strip. Keyed by
@@ -859,12 +859,12 @@ async def panchang_archive(request: Request, date_str: str, city: str = "") -> H
     # Sanity-guard against absurd dates (Swiss Ephemeris breaks pre-1800 /
     # post-2400). Also blocks crawlers from generating 100M URLs.
     if target.year < 1900 or target.year > 2100:
-        return templates.TemplateResponse(
+        return _no_cdn_cache(templates.TemplateResponse(
             request, "error.html",
             {"title": "Out-of-range date", "message": "Panchang is available for dates between 1900 and 2100."},
             status_code=400,
-        )
-    return _render_panchang(request, target, city)
+        ))
+    return _no_cdn_cache(_render_panchang(request, target, city))
 
 
 @app.get("/about", response_class=HTMLResponse)
@@ -929,7 +929,7 @@ async def index(request: Request, needs_chart: str | None = None) -> HTMLRespons
                     _user_moon_display = _u_moon.rashi
         except Exception:
             pass
-    return templates.TemplateResponse(
+    return _no_cdn_cache(templates.TemplateResponse(
         request,
         "index.html",
         {
@@ -945,7 +945,7 @@ async def index(request: Request, needs_chart: str | None = None) -> HTMLRespons
             "user_moon_slug": _user_moon_slug,
             "user_moon_display": _user_moon_display,
         },
-    )
+    ))
 
 
 @app.post("/reading")
@@ -2524,14 +2524,14 @@ async def rashifal(request: Request) -> HTMLResponse:
     """
     lang = _lang(request)
     today_iso = date.today().isoformat()
-    return templates.TemplateResponse(
+    return _no_cdn_cache(templates.TemplateResponse(
         request, "rashifal_grid.html",
         {
             "lang": lang,
             "today_date": today_iso,
             "today_pretty": _pretty_date(today_iso, lang),
         },
-    )
+    ))
 
 
 # Per-rashi metadata used by /rashifal/{rashi} — mirrors _RASHI_ANCHORS
@@ -2687,7 +2687,10 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         "lang": lang,
     }
     template = "_rashifal_card_content.html" if is_htmx else "rashifal_single.html"
-    return templates.TemplateResponse(request, template, ctx)
+    # Only cache-harden the full-page render; the HTMX fragment is
+    # per-user-session content that Fastly ignores anyway (POST-like).
+    resp = templates.TemplateResponse(request, template, ctx)
+    return resp if is_htmx else _no_cdn_cache(resp)
 
 
 @app.post("/subscribe/lookup")
@@ -3317,6 +3320,31 @@ def _is_localhost(request: Request) -> bool:
     if client is None:
         return False
     return client.host in {"127.0.0.1", "localhost", "::1"}
+
+
+def _no_cdn_cache(resp: Response) -> Response:
+    """Stamp response with headers that stop CDN edge caches from
+    snapshotting the page across deploys.
+
+    External re-audit caught /rashifal being served from a stale Fastly
+    snapshot even though the site had been deployed with fixes. Root
+    cause: Cloud Run sends `cache-control: private` by default which
+    SHOULD prevent shared-cache storage, but Fastly's default config
+    snapshots aggressively on non-cookie'd anonymous fetches. Stronger
+    directives fix that.
+
+    Applied only to pages whose content changes daily (Rashifal,
+    Panchang) — for evergreen /learn/ articles or static tool pages,
+    the default cache-control is fine and desirable.
+    """
+    resp.headers["Cache-Control"] = "private, no-cache, no-store, must-revalidate, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    # CDN-specific opt-out signals (Fastly / Cloudflare / GCP CDN all
+    # honour at least one of these — belt-and-braces is cheap here).
+    resp.headers["CDN-Cache-Control"] = "no-store"
+    resp.headers["Surrogate-Control"] = "no-store"
+    return resp
 
 
 def _ask_cta_ctx(request: Request, hint: str = "about your chart") -> dict:

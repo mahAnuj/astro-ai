@@ -147,11 +147,18 @@
 
     <!-- RIGHT — chart list if cookie present, else form -->
     <div>
-    {# Welcome-back Rashifal card — for returning users with a saved chart.
-       Shows their natal-Moon-sign daily reading link so today's reading
-       is one tap away from the homepage (user's request). Only renders
-       when we successfully resolved the moon sign from the saved chart. #}
-    {% if user_moon_slug and user_moon_display %}
+    {# Rashifal quick-link card — only shows for users WITHOUT a saved chart.
+       If they have a chart, the 'Today's Horoscope' button in the chart
+       list below is a strictly better version (full-chart daily reading
+       vs Moon-sign-only Rashifal), so showing the Rashifal card would
+       just be UX confusion — two different daily-reading buttons in the
+       same hero. Rashifal is still reachable via the top nav.
+       Guard: user_moon_slug is only set when user has a saved chart,
+       so we AND with 'not collection.charts' to invert — show ONLY
+       when no chart is saved (which currently means we can't derive a
+       moon sign either, so this branch never renders today). Kept as
+       a stub for a future 'enter your rashi manually' quick-input. #}
+    {% if user_moon_slug and user_moon_display and not (collection and collection.charts) %}
     <div class="mb-4 rounded-2xl border-2 border-astro-300 bg-gradient-to-br from-astro-50 via-white to-amber-50/40 p-4 sm:p-5 shadow-md">
       <div class="flex items-center gap-3">
         <img src="/static/rashi/{{ user_moon_slug }}.png"
