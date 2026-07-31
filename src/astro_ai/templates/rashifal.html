@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t(lang, 'rashifal_title') }} · {{ today_date }} — Shubh Bhagya{% endblock %}
-{% block meta_description %}Today's Rashifal for all 12 rashis — Mesh, Vrishabh, Mithun, Karka, Simha, Kanya, Tula, Vrishchik, Dhanu, Makar, Kumbh, Meena. Generated fresh daily by Shubh Bhagya.{% endblock %}
+{% block title %}{{ t(lang, 'rashifal_title') }} — {{ today_pretty }} · All 12 Signs Free · Shubh Bhagya{% endblock %}
+{% block meta_description %}{% if lang == 'hi' %}आज का राशिफल — {{ today_pretty }}। मेष, वृषभ, मिथुन, कर्क, सिंह, कन्या, तुला, वृश्चिक, धनु, मकर, कुंभ, मीन — सभी 12 राशियों के लिए मुफ्त दैनिक भविष्यवाणी।{% else %}Today's Rashifal for {{ today_pretty }} — all 12 rashis (Mesh, Vrishabh, Mithun, Karka, Simha, Kanya, Tula, Vrishchik, Dhanu, Makar, Kumbh, Meena). Generated fresh daily. Free, no signup.{% endif %}{% endblock %}
 
 {% block content %}
 {% set active_page = "rashifal" %}
@@ -35,7 +35,7 @@
   <!-- HEADER ------------------------------------------------------ -->
   <header>
     <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">
-      {{ today_date }}
+      <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </div>
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">{{ t(lang, 'rashifal_title') }}</h1>
     <p class="text-stone-600">{{ t(lang, 'rashifal_subtitle') | safe }}</p>
