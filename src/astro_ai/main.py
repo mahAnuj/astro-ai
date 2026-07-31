@@ -190,6 +190,40 @@ def require_admin(creds: HTTPBasicCredentials = Depends(_basic_auth)) -> None:
         )
 
 
+# Hindi month names for _pretty_date() — English strftime gives us "July"
+# etc. natively but there's no locale-friendly way to get "जुलाई" without
+# pulling in a full ICU dependency, so we spell it out. Month order is
+# Jan=1 .. Dec=12; index 0 is a placeholder to keep month numbers 1-indexed.
+_HINDI_MONTHS: tuple[str, ...] = (
+    "", "जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून",
+    "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर",
+)
+
+
+def _pretty_date(iso_date: str, lang: str = "en") -> str:
+    """Format an ISO date as human-friendly text for user-facing titles.
+
+    ISO dates ('2026-07-31') in page titles kill click-through — external
+    SEO audit flagged this specifically. Use this helper anywhere a date
+    lands in a `<title>`, `<h1>`, or visible page chrome. Keep the raw ISO
+    form for machine-readable slots (`<time datetime="...">`, sitemap
+    lastmod, JSON-LD datePublished).
+
+    English → "31 July 2026" (drops weekday — daily-content pages don't need
+    the extra length; the current-day framing is already implied).
+    Hindi   → "31 जुलाई 2026" (Devanagari digits look wrong here — most Indian
+    UIs use Arabic numerals even in Hindi, matching AstroSage / mPanchang).
+    """
+    from datetime import date as _date
+    try:
+        d = _date.fromisoformat(iso_date)
+    except (TypeError, ValueError):
+        return iso_date  # last-resort — bad input should not break rendering
+    if lang == "hi":
+        return f"{d.day} {_HINDI_MONTHS[d.month]} {d.year}"
+    return d.strftime("%-d %B %Y")
+
+
 def _rashifal_teaser(body: str, sentences: int = 2) -> str:
     """Pull the first ~2 sentences of a rashi body for the scannable teaser.
 
@@ -1901,6 +1935,7 @@ async def today(request: Request) -> HTMLResponse:
             "gochar_impacts": gochar_impacts,
             "reading": reading_text,
             "today_date": date.today().isoformat(),
+            "today_pretty": _pretty_date(date.today().isoformat(), lang),
             "lang": lang,
         },
     )
@@ -2211,6 +2246,7 @@ async def _render_outlook(
             "reading_label_key": reading_label_key,
             "window_label": window_label,
             "today_date": date.today().isoformat(),
+            "today_pretty": _pretty_date(date.today().isoformat(), lang),
         },
     )
 
@@ -2286,7 +2322,9 @@ async def rashifal(request: Request) -> HTMLResponse:
     ]
     return templates.TemplateResponse(
         request, "rashifal.html",
-        {"lang": lang, "today_date": today_iso, "sections": sections_with_glyphs},
+        {"lang": lang, "today_date": today_iso,
+         "today_pretty": _pretty_date(today_iso, lang),
+         "sections": sections_with_glyphs},
     )
 
 

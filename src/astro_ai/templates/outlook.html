@@ -14,7 +14,7 @@
   <!-- HEADER ------------------------------------------------------ -->
   <header>
     <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">
-      {{ t(lang, 'window_label') }} &middot; {{ window_label }} &middot; {{ t(lang, 'computed_today') }} {{ today_date }}
+      {{ t(lang, 'window_label') }} &middot; {{ window_label }} &middot; {{ t(lang, 'computed_today') }} <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </div>
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
       {% if details.name %}{{ t(lang, title_key, name=details.name) }}{% else %}{{ t(lang, title_anon_key) }}{% endif %}
