@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy — Shubh Bhagya{% endblock %}
+{% block meta_description %}What data Shubh Bhagya collects, why, and your rights. Honest short-form privacy policy — no dark patterns, no data sold, no third-party ads.{% endblock %}
+
+{% block content %}
+{% include "_nav.html" %}
+
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+
+  <header>
+    <div class="text-xs uppercase tracking-wider font-semibold text-astro-700 mb-1">Trust &amp; transparency</div>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">Privacy Policy</h1>
+    <p class="text-sm text-stone-600">Last updated: {{ current_year() }}-08-04. Written by a person, not a boilerplate generator.</p>
+  </header>
+
+  <section class="prose prose-sm sm:prose-base max-w-none text-stone-800 leading-relaxed">
+
+    <div class="rounded-2xl border-2 border-astro-300 bg-astro-50/50 p-5 sm:p-6 not-prose">
+      <div class="font-display text-lg text-astro-900 mb-1">The short version</div>
+      <p class="text-sm text-stone-800 leading-relaxed">
+        We keep your birth details to compute your chart. We keep your email if you sign in with Google. We use Google Analytics + Microsoft Clarity to see anonymous usage patterns. We use free-tier LLM providers (Groq, Cerebras, Together, OpenAI) to generate readings — your birth details and question text are sent to them per query. <strong>We don't sell anything, we don't run ads, we don't email you unless you subscribe.</strong> You can delete your data any time by contacting us.
+      </p>
+    </div>
+
+    <h2>What we collect and why</h2>
+    <dl class="space-y-4 not-prose">
+      <div class="bg-white border border-stone-200 rounded-lg p-4">
+        <dt class="font-semibold text-stone-900 mb-1">Birth details (name, date, time, place)</dt>
+        <dd class="text-sm text-stone-800">Required to compute your Vedic birth chart. Stored in an HMAC-signed browser cookie (24-hour rolling TTL) so you don't re-enter them on every visit. If you sign in with Google we also mirror them to server-side storage so they persist across devices. You can clear them via /account or by clearing your browser cookies.</dd>
+      </div>
+      <div class="bg-white border border-stone-200 rounded-lg p-4">
+        <dt class="font-semibold text-stone-900 mb-1">Google sign-in identity (email, name, Google user ID)</dt>
+        <dd class="text-sm text-stone-800">Only if you click "Sign in with Google". Used to persist your saved charts + reading history across devices. We don't have your Google password (Google handles auth). We don't request or receive Gmail contents, calendar, or drive access — just profile basics.</dd>
+      </div>
+      <div class="bg-white border border-stone-200 rounded-lg p-4">
+        <dt class="font-semibold text-stone-900 mb-1">Question text you type into /ask</dt>
+        <dd class="text-sm text-stone-800">Sent to one of our LLM providers (see next section) along with your chart data to generate an answer. Cached on our server for ~14 days so re-asking the same question doesn't re-charge the quota. Never used to train any model on our behalf.</dd>
+      </div>
+      <div class="bg-white border border-stone-200 rounded-lg p-4">
+        <dt class="font-semibold text-stone-900 mb-1">Anonymous usage analytics</dt>
+        <dd class="text-sm text-stone-800">Google Analytics 4 (GA4) and Microsoft Clarity track page views, feature clicks, and (Clarity only) session replays without personal data — no birth details, no email, no question text. Used to understand which features people actually use so we can improve them. You can opt out via your browser's Do Not Track setting or a tracker-blocking extension; the site works fine without either.</dd>
+      </div>
+      <div class="bg-white border border-stone-200 rounded-lg p-4">
+        <dt class="font-semibold text-stone-900 mb-1">Cookies</dt>
+        <dd class="text-sm text-stone-800">One HMAC-signed session cookie (birth details + language + Google sign-in state). One quota-tracking cookie for the daily 3-free-questions /ask limit. GA4 sets its own cookies (_ga, _gid). Clarity sets one too (_clck, _clsk). No advertising cookies. No cross-site tracking.</dd>
+      </div>
+    </dl>
+
+    <h2>Third parties we send data to</h2>
+
+    <p><strong>LLM providers (chart-reading generation):</strong> your birth chart summary + question text are sent per query to whichever of these has capacity available: Groq (groq.com), Cerebras (cerebras.ai), Together AI (together.xyz), Mistral (mistral.ai), or OpenAI (openai.com). Each request is stateless and none of these providers uses our data to train their models (per their API terms). Chart summaries include placements — they do NOT include your name.</p>
+
+    <p><strong>Google (sign-in + analytics):</strong> if you sign in, Google verifies your identity to us via OAuth. Google Analytics 4 receives anonymous page-view and event data.</p>
+
+    <p><strong>Microsoft Clarity (session replay):</strong> anonymized session recordings so we can see where users get stuck. Does NOT capture form input values (birth details typed into the Kundli form are masked before capture).</p>
+
+    <p><strong>Google Cloud (hosting):</strong> the app runs on Google Cloud Run in the Asia South 1 (Mumbai) region. Application logs (not personal data) are stored in Google Cloud Logging.</p>
+
+    <p>We do NOT share your data with any other party. We do NOT sell data. We do NOT run advertising.</p>
+
+    <h2>How long we keep data</h2>
+
+    <ul>
+      <li><strong>Browser cookies:</strong> 24 hours rolling (extended each visit).</li>
+      <li><strong>Signed-in user data on our servers:</strong> until you request deletion (see below).</li>
+      <li><strong>LLM response cache:</strong> ~14 days per unique (chart + question) pair.</li>
+      <li><strong>Application logs:</strong> 30 days on Google Cloud Logging (Google's default).</li>
+      <li><strong>Google Analytics data:</strong> retained per GA4's default (14 months) — we don't extend it.</li>
+    </ul>
+
+    <h2>Your rights (India DPDP Act 2023 + general good practice)</h2>
+
+    <ul>
+      <li><strong>See your data:</strong> visit /account when signed in — everything we've persisted about you is shown.</li>
+      <li><strong>Correct your data:</strong> re-enter birth details on /kundli to overwrite the stored copy.</li>
+      <li><strong>Delete your data:</strong> email {{ contact_email or 'mahajananuj07@gmail.com' }} with the subject "delete my Shubh Bhagya data" and we'll remove your record within 7 days. No questions asked.</li>
+      <li><strong>Withdraw sign-in consent:</strong> click "Sign out" in the nav; you can also revoke Shubh Bhagya's Google OAuth grant at <a href="https://myaccount.google.com/permissions" rel="noopener">myaccount.google.com/permissions</a>.</li>
+      <li><strong>Complain:</strong> for India users, the Data Protection Board of India is the recourse under the DPDP Act. For EU users, your local DPA.</li>
+    </ul>
+
+    <h2>Children's data</h2>
+    <p>Shubh Bhagya is not directed at children under 18. If a parent submits a child's birth details for a Kundli reading, that data is treated identically to adult data. Please don't have a child under 18 create an account.</p>
+
+    <h2>Security</h2>
+    <p>Session cookies are HMAC-signed with a server-side secret so they can't be tampered with client-side. All traffic is HTTPS. Google OAuth tokens are validated per Google's published public keys. We're a small operation — we take reasonable steps but can't guarantee absolute security against a determined attacker; you should treat your birth details the same way you'd treat any personal record you enter online.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>If we materially change data practices, we'll update the "Last updated" date at the top and — for signed-in users — surface a notice on /account next time you visit. Immaterial fixes (typos, clarifications) will happen silently.</p>
+
+    <h2>Contact</h2>
+    <p>Questions or concerns? Email <a href="mailto:{{ contact_email or 'mahajananuj07@gmail.com' }}">{{ contact_email or 'mahajananuj07@gmail.com' }}</a>. Human replies, usually within 48 hours.</p>
+
+    <hr>
+
+    <p class="text-xs text-stone-600 italic">This policy is written to be readable and honest, not to satisfy any specific legal framework. It reflects our actual practice. If you're a lawyer reviewing this on behalf of a user or regulator and something reads ambiguously, please write to us at the address above — we'll clarify or amend.</p>
+  </section>
+
+</main>
+{% endblock %}

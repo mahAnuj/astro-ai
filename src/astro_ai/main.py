@@ -10,6 +10,7 @@ from pathlib import Path
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Form, HTTPException, Request, Response, status
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
@@ -453,10 +454,34 @@ class _RewriteHostFromForwardedMiddleware:
 app.add_middleware(_RewriteHostFromForwardedMiddleware)
 
 
+@app.exception_handler(StarletteHTTPException)
+async def _http_exception_handler(request: Request, exc: StarletteHTTPException) -> Response:
+    """HTTP exception handler — catches 404s (unknown routes) + explicit
+    HTTPExceptions raised by route handlers.
+
+    404 renders a friendly HTML page pointing users to the main features
+    instead of FastAPI's default JSON error. All other 4xx/5xx are
+    delegated to the generic error.html template so the response stays
+    branded and useful. `request` is required so base.html's globals
+    (site_url, lang, etc.) resolve correctly.
+    """
+    if exc.status_code == 404:
+        return templates.TemplateResponse(
+            request, "404.html", {}, status_code=404,
+        )
+    # 401/403/etc. — render the generic error page with the exception detail
+    return templates.TemplateResponse(
+        request, "error.html",
+        {"title": f"Error {exc.status_code}",
+         "message": exc.detail if exc.detail else "An error occurred processing your request."},
+        status_code=exc.status_code,
+    )
+
+
 @app.exception_handler(Exception)
 async def _unhandled_exception_handler(request: Request, exc: Exception) -> Response:
     """Safety net — fires a Telegram alert for any truly unhandled 500 and
-    returns a bare Internal Server Error so the request finishes cleanly.
+    returns a branded error page instead of a bare server-error string.
 
     This ONLY fires when nothing else caught the exception (e.g. the pre-log-
     NameError incident on 2026-07-27). Handled LLM errors don't reach here
@@ -464,7 +489,19 @@ async def _unhandled_exception_handler(request: Request, exc: Exception) -> Resp
     """
     log.exception("unhandled exception in request handler")
     _fire_error_alert(request, exc, "unhandled")
-    return Response("Internal Server Error", status_code=500)
+    # Best-effort branded 500 page. Fall back to bare text if the template
+    # renderer itself is broken (defensive — template failures during a 500
+    # would trigger an infinite loop).
+    try:
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Something went wrong on our side",
+             "message": "The chart engine hit an unexpected error. This has been logged and we'll investigate. If it happened while generating a reading, try refreshing the page — the compute layer is deterministic and the retry usually succeeds."},
+            status_code=500,
+        )
+    except Exception:  # noqa: BLE001
+        log.exception("500 template render also failed — returning bare text")
+        return Response("Internal Server Error", status_code=500)
 
 
 # Serve the PWA manifest, service worker, and icons from /static/.
@@ -636,6 +673,8 @@ async def sitemap() -> Response:
         ("/dasha",           "monthly", "0.7"),
         ("/panchang",        "daily",   "0.8"),
         ("/about",           "monthly", "0.5"),
+        ("/privacy",         "yearly",  "0.3"),
+        ("/terms",           "yearly",  "0.3"),
     ]
     # Muhurat per-event landing pages — evergreen SEO copy per event type.
     from astro_ai.muhurat import EVENT_LANDING
@@ -880,6 +919,26 @@ async def about_page(request: Request) -> HTMLResponse:
     """
     return templates.TemplateResponse(
         request, "about.html", {"lang": _lang(request)},
+    )
+
+
+@app.get("/privacy", response_class=HTMLResponse)
+async def privacy_page(request: Request) -> HTMLResponse:
+    """Honest short-form Privacy Policy. Written by a person, not a
+    boilerplate generator; reflects our actual data practices."""
+    return templates.TemplateResponse(
+        request, "privacy.html",
+        {"lang": _lang(request), "contact_email": "mahajananuj07@gmail.com"},
+    )
+
+
+@app.get("/terms", response_class=HTMLResponse)
+async def terms_page(request: Request) -> HTMLResponse:
+    """Honest short-form Terms of Service. Includes astrology-disclaimer +
+    AI-generated-content disclaimer per Shyamasundara audit follow-up."""
+    return templates.TemplateResponse(
+        request, "terms.html",
+        {"lang": _lang(request), "contact_email": "mahajananuj07@gmail.com"},
     )
 
 
