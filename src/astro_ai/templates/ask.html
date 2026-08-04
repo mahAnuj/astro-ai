@@ -96,7 +96,8 @@
          secondary refinement below, so users can write their question
          WITHOUT having to categorize first (which was creating decision
          fatigue at the friction-heaviest point per engagement-optimizer #71). #}
-      <textarea name="question" required rows="4" minlength="5" maxlength="600" autofocus
+      <label for="question" class="sr-only">Your question about the chart</label>
+      <textarea id="question" name="question" required rows="4" minlength="5" maxlength="600" autofocus
                 placeholder="e.g. What does Ketu in 11th house mean for my career? Or: when does my current Dasha end?"
                 class="w-full border border-stone-300 rounded-md px-3 py-3 text-base resize-y
                        focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">{{ current_question if not answer else '' }}</textarea>
