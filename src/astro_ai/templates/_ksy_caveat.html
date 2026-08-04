@@ -1,0 +1,39 @@
+{# Kaal Sarp Yoga classical-source caveat.
+
+   Rendered on:
+     - /kaal-sarp-check (form page, before submit) — via _dosha_form_ctx
+       show_ksy_caveat=True on the dosha_check_form.html template
+     - /kaal-sarp-check POST result page — inline in
+       kaal_sarp_check_result.html
+
+   Content sourced from independent classical-source research
+   (2026-08-04). Kaal Sarp Yoga does NOT appear in Brihat Parashara
+   Hora Shastra / Brihat Jataka / Saravali / Phaladeepika / Jataka
+   Parijata / Uttara Kalamrita. Its first verifiable Indian print
+   discussion is in The Astrological Magazine, late 1970s–early 1980s.
+   K.N. Rao publicly called it "one of the biggest frauds in astrology."
+   B.V. Raman added it as an APPENDIX to the 9th edition of his book,
+   because it had "become much feared" — his treatment was nuanced. #}
+<aside class="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-5 sm:p-6">
+  <div class="flex items-start gap-3">
+    <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center">
+      <svg class="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+      </svg>
+    </div>
+    <div class="flex-1">
+      <h2 class="font-display text-lg sm:text-xl text-amber-900 mb-2">
+        {{ t(lang, 'ksy_caveat_heading') }}
+      </h2>
+      <p class="text-sm text-stone-800 leading-relaxed mb-2">
+        {{ t(lang, 'ksy_caveat_body_1') }}
+      </p>
+      <p class="text-sm text-stone-800 leading-relaxed mb-2">
+        {{ t(lang, 'ksy_caveat_body_2') }}
+      </p>
+      <p class="text-sm text-stone-800 leading-relaxed">
+        {{ t(lang, 'ksy_caveat_body_3') }}
+      </p>
+    </div>
+  </div>
+</aside>

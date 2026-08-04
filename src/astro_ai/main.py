@@ -1478,8 +1478,14 @@ async def view_kundli_snapshot(request: Request, short_id: str) -> HTMLResponse:
 def _dosha_form_ctx(page_title: str, page_lead: str, form_action: str,
                     submit_label: str, meta_desc: str,
                     prefill: dict | None = None,
-                    error: str | None = None) -> dict:
-    """Shared context for the dosha_check_form.html template."""
+                    error: str | None = None,
+                    show_ksy_caveat: bool = False) -> dict:
+    """Shared context for the dosha_check_form.html template.
+
+    `show_ksy_caveat` renders the Kaal Sarp classical-source honesty
+    partial above the form — used by /kaal-sarp-check so users see the
+    caveat before entering their birth details, not just after submit.
+    """
     return {
         "page_title": page_title,
         "page_lead": page_lead,
@@ -1488,6 +1494,7 @@ def _dosha_form_ctx(page_title: str, page_lead: str, form_action: str,
         "page_meta_description": meta_desc,
         "prefill": prefill,
         "error": error,
+        "show_ksy_caveat": show_ksy_caveat,
     }
 
 
@@ -1677,6 +1684,7 @@ async def kaal_sarp_check_form(request: Request) -> HTMLResponse:
             submit_label="Check the geometry →",
             meta_desc="Honest Kaal Sarp Yoga check with classical-source transparency. We detect the geometric pattern and are upfront that Kaal Sarp is not in the classical Vedic texts — it is a 20th-century Indian classification widely debated even among respected astrologers.",
             prefill=_prefill_from_cookie(request),
+            show_ksy_caveat=True,
         ),
     )
 
@@ -1697,13 +1705,14 @@ async def kaal_sarp_check_result(
         return templates.TemplateResponse(
             request, "dosha_check_form.html",
             _dosha_form_ctx(
-                page_title="Free Kaal Sarp Dosh Check — With Type Classification",
-                page_lead="Instant Kaal Sarp Dosh diagnosis — full or partial, plus which of the 12 named types applies.",
+                page_title="Kaal Sarp geometry check — honest, classical-source-checked",
+                page_lead="Detect the Kaal Sarp geometry in your chart (all seven non-shadow planets on one side of the Rahu-Ketu axis) with a transparent note about where this classification actually comes from — it is not defined in the classical Sanskrit Jyotish texts we cite elsewhere on this site.",
                 form_action="/kaal-sarp-check",
-                submit_label="Check Kaal Sarp Dosh →",
-                meta_desc="Free Kaal Sarp Dosh Check with type classification.",
+                submit_label="Check the geometry →",
+                meta_desc="Honest Kaal Sarp Yoga check with classical-source transparency.",
                 prefill={"name": name, "birth_date": birth_date, "birth_time": birth_time, "birth_place": birth_place},
                 error=str(err),
+                show_ksy_caveat=True,
             ),
             status_code=400,
         )

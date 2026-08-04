@@ -23,33 +23,10 @@
   </header>
 
   {# TOP-OF-PAGE CAVEAT — deliberately shown BEFORE the verdict.
-     Kaal Sarp Yoga is not in the classical Sanskrit texts we cite as
-     sources elsewhere on the site. Users deserve to know that before
-     they read a scary-sounding "present/absent" verdict. Placement
-     recommended by classical-source review (2026-08-04). #}
-  <aside class="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-5 sm:p-6">
-    <div class="flex items-start gap-3">
-      <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center">
-        <svg class="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
-        </svg>
-      </div>
-      <div class="flex-1">
-        <h2 class="font-display text-lg sm:text-xl text-amber-900 mb-2">
-          {{ t(lang, 'ksy_caveat_heading') }}
-        </h2>
-        <p class="text-sm text-stone-800 leading-relaxed mb-2">
-          {{ t(lang, 'ksy_caveat_body_1') }}
-        </p>
-        <p class="text-sm text-stone-800 leading-relaxed mb-2">
-          {{ t(lang, 'ksy_caveat_body_2') }}
-        </p>
-        <p class="text-sm text-stone-800 leading-relaxed">
-          {{ t(lang, 'ksy_caveat_body_3') }}
-        </p>
-      </div>
-    </div>
-  </aside>
+     Same partial is included on the /kaal-sarp-check form page (before
+     submit) so users see the classical-source honesty regardless of
+     whether they land on the form or arrive at the result. #}
+  {% include "_ksy_caveat.html" %}
 
   {% if kaal_sarp.is_kaal_sarp %}
   {# Neutral tone — was rose-alarm ("⚠ Kaal Sarp Dosh — Present"), now
