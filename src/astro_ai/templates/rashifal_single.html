@@ -37,8 +37,9 @@
     </div>
     <img src="/static/rashi/{{ rashi_slug }}.png"
          alt="{{ rashi_en }} ({{ rashi_sa }}) zodiac silhouette"
+         width="180" height="180"
          class="mx-auto h-32 sm:h-40 w-auto object-contain"
-         decoding="async">
+         decoding="async" fetchpriority="high">
     {# The tiny Unicode glyph {{ glyph }} is kept off the visible page
        here — the silhouette carries the visual identity. #}
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700">{{ rashi_en }} <span class="text-stone-500 font-normal">/</span> {{ rashi_sa }}</h1>
