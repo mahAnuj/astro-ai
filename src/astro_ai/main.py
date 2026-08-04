@@ -3289,22 +3289,28 @@ async def dasha_deep_dive(request: Request) -> HTMLResponse:
 
 
 @app.get("/ask", response_class=HTMLResponse)
-async def ask_form(request: Request, q: str | None = None, c: str | None = None) -> HTMLResponse:
+async def ask_form(request: Request, q: str | None = None,
+                   c: str | None = None, ctx: str | None = None) -> HTMLResponse:
     """Free-form Q&A about the seeker's chart.
 
     GET shows the question form. If `q` and `c` are present (after a POST
     redirect or cache-hit re-visit), the answer is rendered alongside the
     form so the user can ask follow-ups.
+
+    `ctx` selects the context type — "chart" (default) or "numerology".
+    Preserved as a hidden form field so "Ask another" from within a
+    numerology-context session stays in numerology-context.
     """
     saved = load_collection(request).active
     if saved is None:
         return RedirectResponse("/?needs_chart=ask", status_code=303)
     lang = _lang(request)
+    context = ctx if ctx in ("chart", "numerology") else "chart"
     answer = None
     if q:
         # Render a previously-asked question by re-running the cached lookup.
         # POST handler stores the (question, category) and we look it up.
-        answer = _ask_lookup(saved, q, c or "general", lang)
+        answer = _ask_lookup(saved, q, c or "general", lang, context=context)
     return templates.TemplateResponse(
         request, "ask.html",
         {
@@ -3312,6 +3318,7 @@ async def ask_form(request: Request, q: str | None = None, c: str | None = None)
             "active_chart": saved,
             "current_question": q or "",
             "current_category": c or "general",
+            "current_context": context,
             "answer": answer,
             "remaining_today": _ask_quota_remaining(request),
         },
@@ -3414,8 +3421,15 @@ def _ask_quota_bump(request: Request, response: Response) -> None:
     save_ask_usage(response, request, today, new_count)
 
 
-def _ask_cache_key(saved, question: str, category: str, lang: str) -> str:
-    """Stable cache key for an (chart, question, category) combination."""
+def _ask_cache_key(saved, question: str, category: str, lang: str,
+                    context: str = "chart") -> str:
+    """Stable cache key for an (chart, question, category, context) tuple.
+
+    `context` (chart|numerology) is baked in so the same question asked
+    with a different context source doesn't collide — a numerology-
+    context answer references the numbers, a chart-context answer
+    doesn't; they are legitimately different responses.
+    """
     chart_fp = cache.fingerprint_chart(
         saved.birth_date, saved.birth_time, saved.birth_place
     )
@@ -3424,12 +3438,14 @@ def _ask_cache_key(saved, question: str, category: str, lang: str) -> str:
     # cache key survives container restarts.
     import hashlib
     q_fp = hashlib.sha1(question.strip().encode("utf-8")).hexdigest()[:16]
-    return f"ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}"
+    base = f"ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}"
+    return base if context == "chart" else f"{base}:ctx={context}"
 
 
-def _ask_lookup(saved, question: str, category: str, lang: str) -> str | None:
+def _ask_lookup(saved, question: str, category: str, lang: str,
+                context: str = "chart") -> str | None:
     """Look up an already-cached answer without burning a fresh LLM call."""
-    return cache.get(_ask_cache_key(saved, question, category, lang))
+    return cache.get(_ask_cache_key(saved, question, category, lang, context=context))
 
 
 @app.post("/ask")
@@ -3437,12 +3453,24 @@ async def ask_submit(
     request: Request,
     question: str = Form(""),
     category: str = Form("general"),
+    context: str = Form("chart"),
 ) -> Response:
-    """Submit a question. PRG-style: validate → generate → cache → 303 to GET."""
+    """Submit a question. PRG-style: validate → generate → cache → 303 to GET.
+
+    `context` is one of:
+      - "chart" (default): natal chart + current dasha + flags only
+      - "numerology": also pass the seeker's numerology reading, computed
+        from the saved chart's own name+birth_date so no extra data
+        collection is required. Enables numerology-flavoured follow-ups
+        from /numerology to be answered against BOTH the numbers and
+        the chart.
+    """
     saved = load_collection(request).active
     if saved is None:
         return RedirectResponse("/?needs_chart=ask", status_code=303)
     lang = _lang(request)
+    if context not in ("chart", "numerology"):
+        context = "chart"
     question = (question or "").strip()
     if not question or len(question) < 5:
         return templates.TemplateResponse(
@@ -3505,7 +3533,29 @@ async def ask_submit(
         )
     dasha = compute_dasha_state(chart)
     flags = compute_vedic_flags(chart)
-    cache_key = _ask_cache_key(saved, question, category, lang)
+
+    # Numerology context: compute the reading from the saved chart's own
+    # name + birth_date so users asking follow-ups from /numerology get
+    # answers that reference BOTH their numbers and their chart. No
+    # extra data collection needed. birth_date on the saved record is
+    # already a str (session.ChartRecord). Silently skipped if reading
+    # fails — we still answer chart-only rather than error the user out.
+    numerology_reading = None
+    if context == "numerology":
+        try:
+            from astro_ai.numerology import compute as _num_compute
+            numerology_reading = _num_compute(
+                saved.name or "Seeker",
+                saved.birth_date,
+                system="chaldean",
+            )
+        except Exception:
+            log.debug("numerology context load failed for /ask", exc_info=True)
+
+    # Cache key includes context so the same question asked from
+    # /numerology (with numerology context) does not collide with the
+    # same question asked from /kundli (chart-only).
+    cache_key = _ask_cache_key(saved, question, category, lang, context=context)
     was_cached = cache.get(cache_key) is not None
     try:
         answer_text = _cached(
@@ -3517,6 +3567,7 @@ async def ask_submit(
                 chart=chart, dasha=dasha, flags=flags,
                 question=question, category=category,
                 prompt_path=ASK_PROMPT_PATH, lang=lang,
+                numerology_reading=numerology_reading,
             ),
         )
     except Exception as err:
@@ -3566,12 +3617,17 @@ async def ask_submit(
         },
     )
 
-    # Redirect with the question + category in the URL so refresh doesn't
-    # re-submit, the user can bookmark / share the URL, and back/forward
-    # works naturally. Only bump the quota on a fresh generation.
+    # Redirect with the question + category (+ context) in the URL so
+    # refresh doesn't re-submit, the user can bookmark / share the URL,
+    # back/forward work naturally, and a follow-up "Ask another" from
+    # the same context stays in the same context. Only bump the quota
+    # on a fresh generation.
     from urllib.parse import urlencode
+    _redirect_params = {"q": question, "c": category}
+    if context != "chart":
+        _redirect_params["ctx"] = context
     response = RedirectResponse(
-        f"/ask?{urlencode({'q': question, 'c': category})}", status_code=303
+        f"/ask?{urlencode(_redirect_params)}", status_code=303
     )
     if not was_cached:
         _ask_quota_bump(request, response)

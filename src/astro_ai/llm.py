@@ -238,6 +238,34 @@ def _format_outlook_message(
     )
 
 
+def _format_numerology_for_prompt(reading) -> str:
+    """Compact numerology summary for the /ask context block.
+
+    Only surfaces the numbers + their names — the LLM's chart-based
+    reasoning is still primary. This just lets it cross-reference when
+    a user asks a numerology-flavoured follow-up.
+    """
+    parts = [
+        f"Life Path: {reading.life_path} ({reading.life_path_meaning[:80]}…)"
+        if reading.life_path_meaning else f"Life Path: {reading.life_path}",
+        f"Birthday: {reading.birthday}",
+        f"Destiny (Expression): {reading.destiny}",
+        f"Soul Urge: {reading.soul_urge}",
+        f"Personality: {reading.personality}",
+        f"Name Number (Chaldean): {reading.name_number}",
+        f"Personal Year: {reading.personal_year}",
+    ]
+    if reading.karmic_debt_numbers:
+        parts.append(f"Karmic Debt numbers present: {', '.join(str(k) for k in reading.karmic_debt_numbers)}")
+    parts.append("Framework note: these are modern-Western (Chaldean/Pythagorean) constructs, not classical Vedic Jyotish.")
+    return "\n".join(parts)
+
+
+def _format_partner_chart_for_prompt(partner_chart) -> str:
+    """Compact partner-chart summary for the /ask matching-context block."""
+    return format_for_prompt(partner_chart)
+
+
 def generate_ask_answer(
     chart: Chart,
     dasha: DashaState | None,
@@ -246,20 +274,46 @@ def generate_ask_answer(
     category: str,
     prompt_path: Path,
     lang: str = "en",
+    numerology_reading=None,
+    partner_chart: Chart | None = None,
+    partner_label: str = "partner",
 ) -> str:
     """Personalised free-form Q&A grounded in the seeker's chart.
 
     Provides chart + current dasha + flags as context so the LLM can
     ground its answer in the actual placements rather than generic
     planetary meanings. Question and category come from the user form.
+
+    Optional context sources (each rendered as its own block when provided):
+      - `numerology_reading` — NumerologyReading. Enables numerology-flavoured
+        follow-ups from /numerology (a user asking "what does my Life Path
+        say about career?" gets an answer that actually references their
+        numbers, not just their chart).
+      - `partner_chart` + `partner_label` — Chart of the second person in a
+        Kundli match. Enables "is this a good match for career alignment?"
+        style follow-ups from /matching that need BOTH charts.
     """
     chart_block = format_for_prompt(chart)
     dasha_block = format_dasha_for_prompt(dasha) if dasha else "(no dasha state)"
     flags_block = format_flags_for_prompt(flags) if flags else ""
+
+    optional_blocks = ""
+    if numerology_reading is not None:
+        optional_blocks += (
+            f"--- SEEKER'S NUMEROLOGY (modern Chaldean/Pythagorean, NOT classical Jyotish — cross-reference only) ---\n"
+            f"{_format_numerology_for_prompt(numerology_reading)}\n\n"
+        )
+    if partner_chart is not None:
+        optional_blocks += (
+            f"--- {partner_label.upper()}'S NATAL CHART ---\n"
+            f"{_format_partner_chart_for_prompt(partner_chart)}\n\n"
+        )
+
     user_message = (
         f"--- SEEKER'S NATAL CHART ---\n{chart_block}\n\n"
         f"--- CURRENT DASHA ---\n{dasha_block}\n\n"
         f"{('--- VEDIC FLAGS ---' + chr(10) + flags_block + chr(10) + chr(10)) if flags_block else ''}"
+        f"{optional_blocks}"
         f"--- QUESTION ---\n"
         f"Category hint: {category}\n"
         f"Question: {question.strip()}\n"
