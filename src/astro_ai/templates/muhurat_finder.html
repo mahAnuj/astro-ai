@@ -145,7 +145,12 @@
   {% set good_candidates = candidates | rejectattr('rating', 'equalto', 'avoid') | list %}
   {% set avoid_candidates = candidates | selectattr('rating', 'equalto', 'avoid') | list %}
   <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
-    <h2 class="font-display text-xl text-astro-700 mb-2">{{ event_label or 'Muhurat' }} candidates for {{ city }}</h2>
+    <div class="flex items-start justify-between gap-3 flex-wrap mb-2">
+      <h2 class="font-display text-xl text-astro-700">{{ event_label or 'Muhurat' }} candidates for {{ city }}</h2>
+      {% with pdf_filename_hint = ((event_label or 'Muhurat') + ' - ' + (city or 'Search')) %}
+        {% include "_pdf_download_button.html" %}
+      {% endwith %}
+    </div>
     <p class="text-sm text-stone-600 mb-4">
       <span class="font-semibold text-astro-700">{{ good_candidates | length }} auspicious dates</span> found in {{ candidates | length }}-day search from {{ start_date }}
       · {{ avoid_candidates | length }} restricted (see below)
