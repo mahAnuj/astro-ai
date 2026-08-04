@@ -201,6 +201,14 @@
   </section>
   {% endif %}
 
+  {# Reflective-voice header — sits ABOVE the per-number cards so a user
+     doesn't read the descriptions as fate. Deliberately quiet visual
+     (small italic stone text) so it doesn't compete with the score
+     panel above; but it's there BEFORE the reading begins. #}
+  <p class="text-sm text-stone-700 italic leading-relaxed border-l-2 border-stone-300 pl-3">
+    {{ t(lang, 'num_reflective_header') }}
+  </p>
+
   {# Primary numbers — Life Path + Birthday + 3 name-derived numbers from
      the modern Western (Balliett/Jordan/Cheiro) framework. Subtitles show
      the Sanskrit-neologism labels (Bhagyank, Mulank, Namank) used in
