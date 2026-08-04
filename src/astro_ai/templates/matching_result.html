@@ -229,8 +229,13 @@
   </aside>
 
   {# Ask feature promotion — matching users often have follow-ups
-     ('when should we marry?', 'is this a Manglik issue?'). #}
-  {% include "_ask_cta.html" %}
+     ('when should we marry?', 'is this a Manglik issue?').
+     ask_context_type='matching' → /ask?ctx=matching → /ask recovers
+     the partner chart from the session cookie set at POST /matching
+     and passes BOTH charts to the LLM. #}
+  {% with ask_context_hint = 'about your Kundli match', ask_context_type = 'matching' %}
+    {% include "_ask_cta.html" %}
+  {% endwith %}
 
   <div class="text-center no-print">
     <a href="/matching" class="inline-flex items-center gap-1 text-astro-600 hover:text-astro-700 font-semibold text-sm">
