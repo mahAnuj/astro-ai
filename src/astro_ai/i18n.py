@@ -251,6 +251,19 @@ _EN: Final[dict[str, str]] = {
     "ksy_absent_heading":      "Kaal Sarp geometry — not present",
     "ksy_absent_body":         "The seven non-shadow planets are distributed on both sides of the Rahu-Ketu axis in your chart, so the Kaal Sarp pattern does not apply.",
     "ksy_variant_note":        "Traditional Naga label for this Rahu-house position. These twelve names are folk taxonomy from mid-20th-century Hindi almanac literature, not classical shastra — so we describe the geometry rather than assigning per-variant predictions.",
+
+    # Numerology caveat — sourced from classical-source research (2026-08-04):
+    # not in BPHS / Brihat Jataka / Saravali / Phaladeepika / Jataka Parijata /
+    # Uttara Kalamrita. Modern "Indian" numerology descends from Cheiro (Wm
+    # John Warner, 1866-1936), L. Dow Balliett (1908), Julia Seton (coined
+    # the word ~1912), Juno Jordan (DeVorss). K.N. Rao was taught numerology
+    # by his mother and DROPPED it; only Sanjay Rath defends it, and only on
+    # philosophical (navagraha ↔ 1-9) rather than textual grounds. Shown at
+    # TOP of /numerology, before both the form and any results.
+    "num_caveat_heading":      "About this tool — honesty about the tradition",
+    "num_caveat_body_1":       "The numerology systems on this page — Chaldean (Cheiro), Pythagorean, and the Lo Shu grid — are modern traditions with 19th- and 20th-century Western and ancient Chinese roots, not branches of classical Vedic Jyotish. Foundational Sanskrit Jyotish texts (Brihat Parashara Hora Shastra, Brihat Jataka, Saravali, Phaladeepika, Jataka Parijata, Uttara Kalamrita) do not describe birth-date reduction or English-alphabet name numerology.",
+    "num_caveat_body_2":       "The Life Path / Expression / Soul Urge framework was built by three Americans between 1908 and mid-20th century — L. Dow Balliett, Julia Seton (who coined the word \"numerology\" ~1912), and Juno Jordan. The \"Chaldean\" name-number tables in wide circulation trace to Cheiro (William John Warner, 1866–1936). Respected Jyotish teachers such as K.N. Rao practice without numerology; scholar Shyamasundara Dasa argues the method is calendar- and alphabet-dependent (reduce your birthdate in Vikram Samvat vs Saka vs Gregorian and you get different numbers) rather than universal.",
+    "num_caveat_body_3":       "We publish these calculators because millions find them meaningful and they can prompt useful self-reflection. But treat the output as reflective, not predictive — and never as a substitute for a Jyotish analysis of your actual birth chart. Of the sections below, the Lo Shu grid is the most textually defensible (genuinely ancient Chinese, independent of the Gregorian calendar); the Life Path and Karmic Debt sections are 20th-century Western frameworks.",
     "matching_verdict_below":   "Below recommended threshold",
     "monthly_title":       "{name}'s month ahead",
     "monthly_title_anon":  "Your month ahead",
@@ -538,6 +551,11 @@ _HI: Final[dict[str, str]] = {
     "ksy_absent_heading":      "काल सर्प ज्यामिति — अनुपस्थित",
     "ksy_absent_body":         "आपकी कुंडली में सातों गैर-छाया ग्रह राहु-केतु अक्ष के दोनों ओर वितरित हैं, इसलिए काल सर्प पैटर्न लागू नहीं होता।",
     "ksy_variant_note":        "इस राहु-भाव स्थिति के लिए पारंपरिक नाग नाम। ये बारह नाम मध्य-20वीं शताब्दी के हिंदी पंचांग साहित्य से लोक-वर्गीकरण हैं, शास्त्रीय शास्त्र नहीं — इसलिए हम ज्यामिति का वर्णन करते हैं, प्रति-प्रकार भविष्यवाणी नहीं देते।",
+
+    "num_caveat_heading":      "इस टूल के बारे में — परम्परा को लेकर ईमानदारी",
+    "num_caveat_body_1":       "इस पृष्ठ पर दिखाई गई अंक-प्रणालियाँ — कालडियन (चीरो), पायथागोरियन, और लो शू ग्रिड — 19वीं और 20वीं शताब्दी की पश्चिमी तथा प्राचीन चीनी जड़ों वाली आधुनिक परम्पराएँ हैं, शास्त्रीय वैदिक ज्योतिष की शाखाएँ नहीं। मूलभूत संस्कृत ज्योतिष ग्रंथ (बृहत् पराशर होरा शास्त्र, बृहज्जातक, सारावली, फलदीपिका, जातक पारिजात, उत्तर कालामृत) जन्मतिथि-न्यूनीकरण या अंग्रेजी-वर्णमाला नाम-अंकशास्त्र का वर्णन नहीं करते।",
+    "num_caveat_body_2":       "लाइफ पाथ / एक्सप्रेशन / सोल अर्ज ढाँचा 1908 से मध्य-20वीं शताब्दी के बीच तीन अमेरिकियों — एल. डो बैलियेट, जूलिया सीटन (जिन्होंने ~1912 में \"numerology\" शब्द गढ़ा), और जूनो जॉर्डन ने बनाया था। व्यापक प्रचलन में \"कालडियन\" नाम-अंक तालिकाएँ चीरो (विलियम जॉन वार्नर, 1866-1936) से आती हैं। के.एन. राव जैसे सम्मानित ज्योतिष आचार्य अंकशास्त्र के बिना अभ्यास करते हैं; विद्वान श्यामसुन्दर दास तर्क देते हैं कि यह विधि सर्वव्यापी न होकर पंचांग- और वर्णमाला-निर्भर है (विक्रम संवत बनाम शक बनाम ग्रेगोरियन में अपनी जन्मतिथि को न्यूनीकरण करें और आपको अलग अंक मिलेंगे)।",
+    "num_caveat_body_3":       "हम ये कैलकुलेटर इसलिए प्रकाशित करते हैं क्योंकि लाखों लोगों को यह अर्थपूर्ण लगता है और यह उपयोगी आत्म-चिंतन को प्रेरित कर सकता है। किन्तु परिणाम को चिंतनशील मानें, भविष्यसूचक नहीं — और अपनी वास्तविक जन्म कुंडली के ज्योतिष विश्लेषण के विकल्प के रूप में कभी नहीं। नीचे के खण्डों में से लो शू ग्रिड सबसे पाठ-सम्मत है (वास्तव में प्राचीन चीनी, ग्रेगोरियन पंचांग से स्वतंत्र); लाइफ पाथ और कर्मिक डेब्ट खण्ड 20वीं शताब्दी के पश्चिमी ढाँचे हैं।",
     "matching_verdict_uttam":   "उत्तम संगतता",
     "matching_verdict_madhyam": "मध्यम संगतता",
     "matching_verdict_avara":   "स्वीकार्य (सावधानी के साथ)",
