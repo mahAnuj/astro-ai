@@ -105,9 +105,10 @@
      hero /kundli chart, sized down. Border tint distinguishes groom
      (astro-purple) from bride (rose) — matches the union-visual on the
      matching form. #}
-  {% macro mini_chart(ch, tint_bg, tint_border, stroke) -%}
+  {% macro mini_chart(ch, tint_bg, tint_border, stroke, chart_label='') -%}
     <div class="{{ tint_bg }} rounded-xl border {{ tint_border }} p-4">
-      <svg viewBox="0 0 400 400" class="w-full block" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 400 400" class="w-full block" xmlns="http://www.w3.org/2000/svg"
+           role="img" aria-label="{{ chart_label or 'Birth chart' }} — North Indian diamond format, Lagna in {{ ch.lagna_rashi }}">
         <rect x="2" y="2" width="396" height="396" fill="transparent" stroke="{{ stroke }}" stroke-width="2"/>
         <line x1="200" y1="2"   x2="398" y2="200" stroke="{{ stroke }}" stroke-width="2"/>
         <line x1="398" y1="200" x2="200" y2="398" stroke="{{ stroke }}" stroke-width="2"/>
@@ -136,14 +137,14 @@
           <div class="font-display text-astro-800">{{ groom.name or t(lang, 'matching_groom') }}</div>
           <div class="text-xs text-stone-600">{{ groom_chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</div>
         </div>
-        {{ mini_chart(groom_chart, 'bg-astro-50/40', 'border-astro-100', '#6b21a8') }}
+        {{ mini_chart(groom_chart, 'bg-astro-50/40', 'border-astro-100', '#6b21a8', chart_label=(groom.name or t(lang, 'matching_groom')) + ' birth chart') }}
       </div>
       <div>
         <div class="flex items-baseline justify-between mb-2">
           <div class="font-display text-rose-800">{{ bride.name or t(lang, 'matching_bride') }}</div>
           <div class="text-xs text-stone-600">{{ bride_chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</div>
         </div>
-        {{ mini_chart(bride_chart, 'bg-rose-50/30', 'border-rose-100', '#be123c') }}
+        {{ mini_chart(bride_chart, 'bg-rose-50/30', 'border-rose-100', '#be123c', chart_label=(bride.name or t(lang, 'matching_bride')) + ' birth chart') }}
       </div>
     </div>
   </section>
