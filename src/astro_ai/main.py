@@ -1168,7 +1168,7 @@ async def _render_natal_for(request: Request, details: BirthDetails,
             # Aggregates yogas, doshas, dashas, dignities into one number
             # with 'why' drivers for transparency. Feature spec in
             # chart.py compute_bhagya_score.
-            "bhagya_score": compute_bhagya_score(chart),
+            "bhagya_score": compute_bhagya_score(chart, lang=_lang(request)),
             # Structured insight panels — see chart.py for shape.
             "manglik":  compute_manglik_details(chart),
             "navamsha_chart": compute_navamsha_chart(chart),
@@ -2009,7 +2009,7 @@ async def numerology_calculate(
             "page_title": f"Numerology Reading for {reading.name} — Life Path {reading.life_path}",
             "page_meta": f"Free numerology reading for {reading.name}: Life Path {reading.life_path}, Destiny {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}, Name Number {reading.name_number}. Character profile, life challenges, career fields, best partners, traditional per-number practices, and the Chinese Lo Shu birth-number matrix. Framework is modern Western (Chaldean/Pythagorean) + ancient Chinese, not classical Vedic Jyotish.",
             "reading": reading,
-            "num_bhagya_score": _num_bhagya(reading),
+            "num_bhagya_score": _num_bhagya(reading, lang=_lang(request)),
             "error": None,
             "lang": _lang(request),
             **_ask_cta_ctx(request, hint="about your chart (numerology-related life questions)"),
