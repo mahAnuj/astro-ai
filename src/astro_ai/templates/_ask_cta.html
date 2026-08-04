@@ -3,15 +3,21 @@
    personal Q&A. Adapts based on whether a chart is saved.
 
    Context expected:
-     - has_saved_chart: bool  (True if a Kundli has been generated)
-     - ask_remaining: int     (today's remaining question count; optional)
-     - ask_context_hint: str  (e.g. 'about your chart', 'about your numerology',
-                                'about your Kundli match'). Optional; falls
-                                back to a generic phrase.
+     - has_saved_chart: bool     (True if a Kundli has been generated)
+     - ask_remaining: int        (today's remaining question count; optional)
+     - ask_context_hint: str     (e.g. 'about your chart', 'about your numerology',
+                                    'about your Kundli match'). Optional; falls
+                                    back to a generic phrase.
+     - ask_context_type: str     (e.g. 'numerology'). Optional; when set to
+                                    a non-default value the /ask link picks
+                                    up ?ctx=<value> so /ask can load the
+                                    right extra context source (numerology
+                                    reading, etc.) alongside the chart.
    Any of these can be omitted; the template does the right thing.
 #}
 {% set _remaining = ask_remaining if ask_remaining is defined else 3 %}
 {% set _hint = ask_context_hint if ask_context_hint is defined else t(lang, 'ask_cta_hint_default') %}
+{% set _ctx = ask_context_type if ask_context_type is defined else '' %}
 
 <aside class="rounded-2xl border-2 border-astro-300 bg-gradient-to-br from-astro-50 to-white shadow-md p-5 sm:p-6 no-print"
        data-ask-cta>
@@ -38,7 +44,7 @@
       <p class="text-sm text-stone-700 leading-relaxed mb-3">
         {{ t(lang, 'ask_cta_body_saved') if has_saved_chart else t(lang, 'ask_cta_body_no_chart') }}
       </p>
-      <a href="{% if has_saved_chart %}/ask{% else %}/{% endif %}"
+      <a href="{% if has_saved_chart %}/ask{% if _ctx %}?ctx={{ _ctx }}{% endif %}{% else %}/{% endif %}"
          class="inline-flex items-center gap-1.5 bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
         {{ t(lang, 'ask_cta_button_saved') if has_saved_chart else t(lang, 'ask_cta_button_no_chart') }}
       </a>

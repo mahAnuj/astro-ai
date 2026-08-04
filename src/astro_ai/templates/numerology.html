@@ -180,8 +180,14 @@
   {% endif %}
 
   {# Ask CTA moved to TOP of the reading (parity with /kundli) — users
-     often finish reading and forget the Ask feature exists. #}
-  {% include "_ask_cta.html" %}
+     often finish reading and forget the Ask feature exists. Passes
+     ask_context_type='numerology' so /ask loads the numerology reading
+     as extra LLM context — a follow-up like "what does my Life Path
+     say about career?" gets an answer that references the actual
+     numbers, not just the chart. #}
+  {% with ask_context_hint = 'about your numerology', ask_context_type = 'numerology' %}
+    {% include "_ask_cta.html" %}
+  {% endwith %}
 
   {# Karmic Debt banner — surfaces Kumar's Ch.1 category prominently.
      Presence of 13/14/16/19 in any Core Number's intermediate calc

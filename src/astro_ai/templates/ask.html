@@ -24,6 +24,9 @@
     <p class="text-xs text-stone-600 mt-2">
       Asking for: <strong>{{ active_chart.display_name() }}</strong>
       &middot; <a href="/" class="text-astro-600 hover:text-astro-700 underline">switch chart</a>
+      {% if current_context == 'numerology' %}
+      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-astro-50 border border-astro-200 text-astro-800 font-semibold text-[10px] uppercase tracking-wider">Numerology context</span>
+      {% endif %}
     </p>
     {% endif %}
   </header>
@@ -38,7 +41,7 @@
         &middot; <span class="text-stone-600 normal-case font-normal">{{ current_category }}</span>
         {% endif %}
       </div>
-      <a href="/ask" class="text-xs text-astro-600 hover:text-astro-700 underline">Ask another</a>
+      <a href="/ask{% if current_context and current_context != 'chart' %}?ctx={{ current_context }}{% endif %}" class="text-xs text-astro-600 hover:text-astro-700 underline">Ask another</a>
     </div>
     <p class="text-sm text-stone-700 italic border-l-2 border-astro-300 pl-3 mb-5">{{ current_question }}</p>
 
@@ -82,6 +85,11 @@
     {% endif %}
 
     <form method="post" action="/ask" class="space-y-4">
+      {# Hidden context field — preserved from GET's ctx query param so
+         a user asking a follow-up from a numerology-context session
+         stays in numerology-context (else the second question falls
+         back to chart-only and loses the numbers reference). #}
+      <input type="hidden" name="context" value="{{ current_context or 'chart' }}">
       {# Primary action first — textarea + submit. Category chips are a
          secondary refinement below, so users can write their question
          WITHOUT having to categorize first (which was creating decision
