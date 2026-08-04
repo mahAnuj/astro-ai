@@ -32,24 +32,24 @@
   <section class="bg-white rounded-2xl border border-astro-200 shadow-sm overflow-hidden">
     <div class="bg-gradient-to-r from-astro-50/70 to-amber-50/40 px-6 py-4 border-b border-stone-100">
       <h2 class="font-display text-xl text-astro-700">{{ t(lang, 'varshaphala_title') | safe }}</h2>
-      <p class="text-sm text-stone-500 mt-0.5">{{ t(lang, 'varshaphala_subtitle') }}</p>
+      <p class="text-sm text-stone-600 mt-0.5">{{ t(lang, 'varshaphala_subtitle') }}</p>
     </div>
     <div class="px-6 py-5 grid sm:grid-cols-2 gap-5">
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'varshaphala_solar_return') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'varshaphala_solar_return') }}</div>
         <div class="font-display text-lg text-stone-900 tabular-nums">{{ varshaphala.solar_return_moment.strftime('%Y-%m-%d %H:%M UT') }}</div>
       </div>
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'varshaphala_year_lord') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'varshaphala_year_lord') }}</div>
         <div class="font-display text-lg text-stone-900">{{ varshaphala.year_lord }}</div>
       </div>
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'varshaphala_annual_lagna') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'varshaphala_annual_lagna') }}</div>
         <div class="font-display text-lg text-astro-700">{{ varshaphala.annual_chart.lagna_rashi }}</div>
       </div>
       <div>
         {% set annual_moon = varshaphala.annual_chart.planets | selectattr("name", "equalto", "Moon") | first %}
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'varshaphala_annual_moon') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'varshaphala_annual_moon') }}</div>
         <div class="font-display text-lg text-astro-700">{{ annual_moon.rashi }}</div>
       </div>
       <div class="sm:col-span-2 mt-2 bg-astro-50/40 border border-astro-100 rounded-lg px-4 py-3">
@@ -71,11 +71,11 @@
         <div>
           <h2 class="font-display text-xl text-astro-700">
             {{ t(lang, 'events_title') }}
-            <span class="text-sm text-stone-500 font-sans font-normal ml-1">({{ events | length }})</span>
+            <span class="text-sm text-stone-600 font-sans font-normal ml-1">({{ events | length }})</span>
           </h2>
-          <p class="text-sm text-stone-500 mt-0.5">{{ t(lang, 'events_subtitle') }}</p>
+          <p class="text-sm text-stone-600 mt-0.5">{{ t(lang, 'events_subtitle') }}</p>
         </div>
-        <svg class="w-5 h-5 text-stone-400 transition-transform group-open:rotate-180 flex-shrink-0 mt-1"
+        <svg class="w-5 h-5 text-stone-500 transition-transform group-open:rotate-180 flex-shrink-0 mt-1"
              fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
         </svg>
@@ -96,7 +96,7 @@
         {% endfor %}
       </ul>
       {% else %}
-      <div class="px-6 py-8 text-center text-sm text-stone-500">{{ t(lang, 'events_none') }}</div>
+      <div class="px-6 py-8 text-center text-sm text-stone-600">{{ t(lang, 'events_none') }}</div>
       {% endif %}
     </details>
   </section>
@@ -104,7 +104,7 @@
   <!-- READING — flowing time-segmented intro, then 5 life-area cards -->
   {% if reading_intro %}
   <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
-    <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-3">{{ t(lang, reading_label_key) }}</h2>
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-3">{{ t(lang, reading_label_key) }}</h2>
     <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-base">{{ reading_intro }}</p>
   </article>
   {% endif %}
@@ -121,7 +121,7 @@
   {# Fallback for LLM outputs that ignored the structure directive. #}
   {% if not reading_intro and not reading_sections %}
   <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
-    <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-3">{{ t(lang, reading_label_key) }}</h2>
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-3">{{ t(lang, reading_label_key) }}</h2>
     <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-base">{{ reading }}</p>
   </article>
   {% endif %}

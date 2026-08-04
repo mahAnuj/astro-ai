@@ -42,7 +42,7 @@
         Tap your Moon sign to reveal today's reading. Written fresh every morning, free, no signup.
       {% endif %}
     </p>
-    <p class="text-sm text-stone-500">
+    <p class="text-sm text-stone-600">
       <a href="/" class="text-astro-600 hover:text-astro-700 underline">{{ t(lang, 'rashifal_dont_know') }}</a>
     </p>
   </header>
@@ -74,7 +74,7 @@
           </div>
           <div class="font-display text-lg sm:text-xl text-stone-900">{{ en }}</div>
           <div class="text-xs text-stone-600 mt-0.5 italic">{{ sa }}</div>
-          <div class="mt-2 text-[10px] uppercase tracking-wider font-semibold text-stone-500">
+          <div class="mt-2 text-[10px] uppercase tracking-wider font-semibold text-stone-600">
             {% if lang == 'hi' %}{{ hi_element }} · {{ hi_quality }}{% else %}{{ element | capitalize }}{% endif %}
           </div>
           <div class="pt-2 text-[11px] font-semibold text-astro-700">
@@ -88,7 +88,7 @@
            the card looks alive between click and fetch-complete. #}
         <div class="rashi-card-face rashi-card-front bg-white border-2 border-white shadow-xl rounded-2xl p-4 sm:p-5 overflow-y-auto">
           <div data-card-front class="h-full flex items-center justify-center">
-            <div class="flex flex-col items-center gap-2 text-stone-400">
+            <div class="flex flex-col items-center gap-2 text-stone-500">
               <svg class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle>
                 <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>

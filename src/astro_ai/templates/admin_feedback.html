@@ -13,13 +13,13 @@
 <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
   <header>
     <h1 class="font-display text-3xl text-astro-700 mb-1">Feedback</h1>
-    <p class="text-sm text-stone-500">
+    <p class="text-sm text-stone-600">
       Total entries: <strong>{{ entries | length }}</strong> &middot; most recent first
     </p>
   </header>
 
   {% if not entries %}
-  <p class="text-stone-500 italic">No feedback received yet.</p>
+  <p class="text-stone-600 italic">No feedback received yet.</p>
   {% else %}
   <div class="space-y-3">
     {% for e in entries %}
@@ -32,16 +32,16 @@
           px-2 py-0.5 rounded">
           {{ e.type }}
         </span>
-        <span class="text-xs text-stone-500">{{ e.ts }}</span>
-        {% if e.page %}<span class="text-xs text-stone-500">&middot; {{ e.page }}</span>{% endif %}
+        <span class="text-xs text-stone-600">{{ e.ts }}</span>
+        {% if e.page %}<span class="text-xs text-stone-600">&middot; {{ e.page }}</span>{% endif %}
         {% if e.email %}<span class="text-xs text-stone-700">&middot; <a href="mailto:{{ e.email }}" class="text-astro-600 hover:underline">{{ e.email }}</a></span>{% endif %}
         <span class="text-[10px] text-stone-300 ml-auto font-mono">{{ e.id }}</span>
       </div>
       <p class="text-sm text-stone-800 whitespace-pre-wrap leading-relaxed">{{ e.message }}</p>
       {% if e.ua %}
       <details class="mt-2">
-        <summary class="text-[10px] text-stone-400 cursor-pointer">user-agent</summary>
-        <p class="text-[10px] text-stone-400 mt-1 font-mono break-all">{{ e.ua }}</p>
+        <summary class="text-[10px] text-stone-500 cursor-pointer">user-agent</summary>
+        <p class="text-[10px] text-stone-500 mt-1 font-mono break-all">{{ e.ua }}</p>
       </details>
       {% endif %}
     </article>

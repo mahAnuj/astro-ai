@@ -28,7 +28,7 @@
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">{{ t(lang, 'matching_results') }}</h1>
     <p class="text-sm text-stone-600">
       {{ groom.name or t(lang, 'matching_groom') }}
-      <span class="text-stone-400">&times;</span>
+      <span class="text-stone-500">&times;</span>
       {{ bride.name or t(lang, 'matching_bride') }}
     </p>
   </header>
@@ -61,7 +61,7 @@
           <div class="font-display text-5xl sm:text-6xl {{ palette.text }} tabular-nums leading-none score-dial-num"
                data-score-target="{{ guna.total_awarded }}"
                data-score-precision="1">0.0</div>
-          <div class="text-xs text-stone-500 mt-1">of {{ guna.total_max }} &middot; {{ guna.percent }}%</div>
+          <div class="text-xs text-stone-600 mt-1">of {{ guna.total_max }} &middot; {{ guna.percent }}%</div>
         </div>
       </div>
 
@@ -72,7 +72,7 @@
       </div>
 
       {# Scale legend #}
-      <div class="mt-4 text-xs text-stone-500 tracking-wide">
+      <div class="mt-4 text-xs text-stone-600 tracking-wide">
         0 &middot; 18 <span class="opacity-60">Avara</span> &middot;
         24 <span class="opacity-60">Madhyam</span> &middot;
         30 <span class="opacity-60">Uttam</span> &middot; 36
@@ -131,14 +131,14 @@
       <div>
         <div class="flex items-baseline justify-between mb-2">
           <div class="font-display text-astro-800">{{ groom.name or t(lang, 'matching_groom') }}</div>
-          <div class="text-xs text-stone-500">{{ groom_chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</div>
+          <div class="text-xs text-stone-600">{{ groom_chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</div>
         </div>
         {{ mini_chart(groom_chart, 'bg-astro-50/40', 'border-astro-100', '#6b21a8') }}
       </div>
       <div>
         <div class="flex items-baseline justify-between mb-2">
           <div class="font-display text-rose-800">{{ bride.name or t(lang, 'matching_bride') }}</div>
-          <div class="text-xs text-stone-500">{{ bride_chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</div>
+          <div class="text-xs text-stone-600">{{ bride_chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</div>
         </div>
         {{ mini_chart(bride_chart, 'bg-rose-50/30', 'border-rose-100', '#be123c') }}
       </div>
@@ -161,7 +161,7 @@
     <h2 class="font-display text-xl text-astro-700 mb-4">{{ t(lang, 'matching_breakdown') }}</h2>
     <table class="w-full text-sm">
       <thead>
-        <tr class="border-b border-stone-200 text-xs font-semibold uppercase tracking-wider text-stone-500">
+        <tr class="border-b border-stone-200 text-xs font-semibold uppercase tracking-wider text-stone-600">
           <th class="text-left py-2">{{ t(lang, 'matching_col_koota') }}</th>
           <th class="text-right py-2 w-16">{{ t(lang, 'matching_col_max') }}</th>
           <th class="text-right py-2 w-20">{{ t(lang, 'matching_col_score') }}</th>
@@ -174,9 +174,9 @@
         <tr class="border-b border-stone-100 last:border-0">
           <td class="py-3">
             <div class="font-semibold text-stone-900">{{ k.name }}</div>
-            <div class="text-xs text-stone-400">{{ k.sanskrit }}</div>
+            <div class="text-xs text-stone-500">{{ k.sanskrit }}</div>
           </td>
-          <td class="py-3 text-right text-stone-500 tabular-nums">{{ k.max_points }}</td>
+          <td class="py-3 text-right text-stone-600 tabular-nums">{{ k.max_points }}</td>
           <td class="py-3 text-right tabular-nums">
             <span class="font-display text-lg
                          {% if pct >= 75 %}text-emerald-700{% elif pct >= 33 %}text-stone-800{% else %}text-rose-700{% endif %}">
@@ -188,7 +188,7 @@
         {% endfor %}
         <tr class="border-t-2 border-stone-300 font-semibold">
           <td class="py-3 text-stone-900">{{ t(lang, 'matching_total') }}</td>
-          <td class="py-3 text-right text-stone-500 tabular-nums">{{ guna.total_max }}</td>
+          <td class="py-3 text-right text-stone-600 tabular-nums">{{ guna.total_max }}</td>
           <td class="py-3 text-right">
             <span class="font-display text-xl {{ palette.text }} tabular-nums">{{ "%.1f"|format(guna.total_awarded) }}</span>
           </td>
@@ -197,6 +197,36 @@
       </tbody>
     </table>
   </section>
+
+  {# Kuta caveat — Ashtakoot alone can score max compatibility while
+     missing individual chart afflictions. Practicing astrologers flag
+     this as the #1 misuse of guna milan by algorithmic tools. Panel
+     placed AFTER the score (so the score is seen first) but BEFORE
+     the Ask CTA (so a user with concerns has an immediate follow-up
+     path). Amber-toned to signal "read this" without being alarming. #}
+  <aside class="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-5 sm:p-6">
+    <div class="flex items-start gap-3">
+      <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center">
+        <svg class="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.732 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="font-display text-lg sm:text-xl text-amber-900 mb-2">
+          {{ t(lang, 'matching_caveat_heading') }}
+        </h3>
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed mb-2">
+          {{ t(lang, 'matching_caveat_body_1') }}
+        </p>
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed mb-2">
+          {{ t(lang, 'matching_caveat_body_2') }}
+        </p>
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+          {{ t(lang, 'matching_caveat_body_3') }}
+        </p>
+      </div>
+    </div>
+  </aside>
 
   {# Ask feature promotion — matching users often have follow-ups
      ('when should we marry?', 'is this a Manglik issue?'). #}

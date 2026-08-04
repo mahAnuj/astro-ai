@@ -31,16 +31,16 @@
   <!-- TRANSIT CHIPS ----------------------------------------------- -->
   <section class="grid grid-cols-1 sm:grid-cols-2 gap-3">
     <div class="bg-white rounded-2xl border border-stone-200 p-4">
-      <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'moon_transits') }}</div>
+      <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'moon_transits') }}</div>
       <div class="font-display text-lg text-astro-700">{{ transit_moon.rashi }}</div>
-      <div class="text-sm text-stone-500 mt-0.5">
+      <div class="text-sm text-stone-600 mt-0.5">
         {{ t(lang, 'house_from_lagna', n=transit_moon.house) }} &middot; {{ transit_moon.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}
       </div>
     </div>
     <div class="bg-white rounded-2xl border border-stone-200 p-4">
-      <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'sun_transits') }}</div>
+      <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'sun_transits') }}</div>
       <div class="font-display text-lg text-astro-700">{{ transit_sun.rashi }}</div>
-      <div class="text-sm text-stone-500 mt-0.5">
+      <div class="text-sm text-stone-600 mt-0.5">
         {{ t(lang, 'house_from_lagna', n=transit_sun.house) }} &middot; {{ transit_sun.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}
       </div>
     </div>
@@ -60,7 +60,7 @@
     <!-- Header strip -->
     <div class="bg-gradient-to-r from-astro-50/60 via-amber-50/30 to-white px-5 py-3 border-b border-stone-100 flex items-center justify-between gap-4">
       <h2 class="font-display text-lg text-astro-700">{{ t(lang, 'todays_panchang') }}</h2>
-      <div class="text-right text-sm text-stone-500">
+      <div class="text-right text-sm text-stone-600">
         <span class="font-semibold text-stone-800">{{ panchang.weekday }}</span>
         &middot; {{ t(lang, 'ruled_by') }} {{ panchang.day_lord }}
       </div>
@@ -84,7 +84,7 @@
           <div class="font-display text-xl text-rose-900 tabular-nums leading-tight">
             {{ panchang.rahu_kaal_start.strftime('%H:%M') }} <span class="text-stone-300">–</span> {{ panchang.rahu_kaal_end.strftime('%H:%M') }}
           </div>
-          <p class="text-sm text-stone-500 mt-1 leading-snug">Avoid starting anything important.</p>
+          <p class="text-sm text-stone-600 mt-1 leading-snug">Avoid starting anything important.</p>
         </div>
       </div>
 
@@ -103,7 +103,7 @@
           <div class="font-display text-xl text-emerald-900 tabular-nums leading-tight">
             {{ panchang.abhijit_start.strftime('%H:%M') }} <span class="text-stone-300">–</span> {{ panchang.abhijit_end.strftime('%H:%M') }}
           </div>
-          <p class="text-sm text-stone-500 mt-1 leading-snug">Best time for important actions.</p>
+          <p class="text-sm text-stone-600 mt-1 leading-snug">Best time for important actions.</p>
         </div>
       </div>
 
@@ -115,7 +115,7 @@
         <div class="min-w-0 flex-1">
           <h3 class="font-display text-base text-stone-800 mb-0.5">{{ t(lang, 'favourable_colour') }}</h3>
           <div class="font-display text-lg text-stone-900 leading-tight">{{ panchang.day_color }}</div>
-          <p class="text-sm text-stone-500 mt-1 leading-snug">{{ panchang.day_lord }} is {{ panchang.weekday }}'s lord.</p>
+          <p class="text-sm text-stone-600 mt-1 leading-snug">{{ panchang.day_lord }} is {{ panchang.weekday }}'s lord.</p>
         </div>
       </div>
 
@@ -131,7 +131,7 @@
           <div class="font-display text-lg text-stone-900 tabular-nums leading-tight">
             {{ panchang.sunrise.strftime('%H:%M') }} <span class="text-stone-300">–</span> {{ panchang.sunset.strftime('%H:%M') }}
           </div>
-          <p class="text-sm text-stone-500 mt-1 leading-snug">Sunrise to sunset, your birthplace.</p>
+          <p class="text-sm text-stone-600 mt-1 leading-snug">Sunrise to sunset, your birthplace.</p>
         </div>
       </div>
 
@@ -144,9 +144,9 @@
       <summary class="cursor-pointer px-5 py-3 hover:bg-stone-50 transition-colors flex items-center justify-between gap-3">
         <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-600">
           {{ t(lang, 'all_transits_today') }}
-          <span class="text-stone-400 font-normal normal-case ml-1">({{ transit.planets | length }} planets)</span>
+          <span class="text-stone-500 font-normal normal-case ml-1">({{ transit.planets | length }} planets)</span>
         </h2>
-        <svg class="w-4 h-4 text-stone-400 transition-transform group-open:rotate-180 flex-shrink-0"
+        <svg class="w-4 h-4 text-stone-500 transition-transform group-open:rotate-180 flex-shrink-0"
              fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
         </svg>
@@ -162,18 +162,18 @@
               <td class="py-2 text-stone-800 leading-relaxed">
                 <div>
                   {{ t(lang, 'now_in') }} {{ p.rashi }}
-                  <span class="text-stone-400">&middot;</span>
+                  <span class="text-stone-500">&middot;</span>
                   {{ t(lang, 'transiting_house', n=p.house) }}
-                  <span class="text-stone-400">&middot;</span>
+                  <span class="text-stone-500">&middot;</span>
                   {{ "%.1f"|format(p.longitude) }}&deg;
                 </div>
-                <div class="text-sm text-stone-500">{{ p.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
+                <div class="text-sm text-stone-600">{{ p.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
               </td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
-        <p class="text-xs text-stone-500 mt-3">
+        <p class="text-xs text-stone-600 mt-3">
           {{ t(lang, 'computed_for', moment=transit.moment.strftime('%Y-%m-%d %H:%M UT'), lagna=natal.lagna_rashi) }}
         </p>
       </div>
@@ -182,7 +182,7 @@
 
   <!-- DAILY READING ----------------------------------------------- -->
   <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
-    <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-3">{{ t(lang, 'todays_reading') }}</h2>
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-3">{{ t(lang, 'todays_reading') }}</h2>
     <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-[1.02rem]">{{ reading }}</p>
   </article>
 

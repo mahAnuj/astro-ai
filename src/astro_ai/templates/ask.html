@@ -21,7 +21,7 @@
       current Dasha, and Vedic flags. Honest, specific, no generic platitudes.
     </p>
     {% if active_chart %}
-    <p class="text-xs text-stone-500 mt-2">
+    <p class="text-xs text-stone-600 mt-2">
       Asking for: <strong>{{ active_chart.display_name() }}</strong>
       &middot; <a href="/" class="text-astro-600 hover:text-astro-700 underline">switch chart</a>
     </p>
@@ -35,7 +35,7 @@
       <div class="text-xs uppercase tracking-wider text-astro-700 font-semibold">
         Your question
         {% if current_category and current_category != 'general' %}
-        &middot; <span class="text-stone-500 normal-case font-normal">{{ current_category }}</span>
+        &middot; <span class="text-stone-600 normal-case font-normal">{{ current_category }}</span>
         {% endif %}
       </div>
       <a href="/ask" class="text-xs text-astro-600 hover:text-astro-700 underline">Ask another</a>
@@ -53,11 +53,11 @@
     {% if remaining_today > 0 %}
     {# Positive framing (Issue #70): "Free · N per day" instead of scarcity-
        leading "You have N left today". Same info, less loss-aversion friction. #}
-    <p class="text-sm text-stone-500 mb-4">
+    <p class="text-sm text-stone-600 mb-4">
       Free &middot; up to <strong>3</strong> questions per day &middot; answers grounded in your chart.
     </p>
     {% else %}
-    <p class="text-sm text-stone-500 mb-4">
+    <p class="text-sm text-stone-600 mb-4">
       You've used today's free questions. Come back tomorrow &mdash; your chart's already saved.
     </p>
     {% endif %}
@@ -89,7 +89,7 @@
       {# Secondary refinement — visually demoted, appears below the submit
          since it's optional (backend defaults to 'general' if not picked). #}
       <div class="pt-2 border-t border-stone-100">
-        <div class="text-[11px] text-stone-500 mb-2 uppercase tracking-wider font-semibold">Focus area <span class="font-normal normal-case text-stone-400">(optional)</span></div>
+        <div class="text-[11px] text-stone-600 mb-2 uppercase tracking-wider font-semibold">Focus area <span class="font-normal normal-case text-stone-500">(optional)</span></div>
         <div class="flex flex-wrap gap-1.5">
           {% for cat in ['general', 'career', 'marriage', 'money', 'health', 'spiritual', 'travel', 'relationships'] %}
           <label class="relative cursor-pointer">
@@ -108,7 +108,7 @@
   </section>
 
   <!-- Honest note about limits -->
-  <p class="text-xs text-stone-500 text-center max-w-xl mx-auto">
+  <p class="text-xs text-stone-600 text-center max-w-xl mx-auto">
     Astrology shows tendencies, not fixed fate. Treat the answer as one lens, not the only one.
     Avoid asking about death, illness, or hard guarantees &mdash; questions about timing, choices, and themes work best.
   </p>

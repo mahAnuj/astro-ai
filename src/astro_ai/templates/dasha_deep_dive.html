@@ -19,7 +19,7 @@
       {{ dasha.mahadasha.lord }} Mahadasha &middot; {{ dasha.antardasha.lord }} Antardasha
     </h1>
     {% if details.name %}
-    <p class="text-sm text-stone-500 mt-1">For {{ details.name }}</p>
+    <p class="text-sm text-stone-600 mt-1">For {{ details.name }}</p>
     {% endif %}
 
     <!-- Quick period stats -->
@@ -27,14 +27,14 @@
       <div class="bg-white border border-astro-200 rounded-2xl p-4">
         <div class="text-xs uppercase tracking-wider text-astro-700 font-semibold mb-1">Mahadasha</div>
         <div class="text-stone-900 font-semibold">{{ dasha.mahadasha.lord }}</div>
-        <div class="text-xs text-stone-500 tabular-nums">
+        <div class="text-xs text-stone-600 tabular-nums">
           {{ dasha.mahadasha.start.isoformat() }} &rarr; {{ dasha.mahadasha.end.isoformat() }}
         </div>
       </div>
       <div class="bg-white border border-emerald-200 rounded-2xl p-4">
         <div class="text-xs uppercase tracking-wider text-emerald-700 font-semibold mb-1">Current Antardasha</div>
         <div class="text-stone-900 font-semibold">{{ dasha.antardasha.lord }}</div>
-        <div class="text-xs text-stone-500 tabular-nums">
+        <div class="text-xs text-stone-600 tabular-nums">
           {{ dasha.antardasha.start.isoformat() }} &rarr; {{ dasha.antardasha.end.isoformat() }}
         </div>
       </div>
@@ -43,7 +43,7 @@
 
   <!-- LLM-GENERATED SECTIONS -->
   {% if not sections %}
-  <p class="text-stone-500 italic">No content generated yet. Please refresh in a few seconds.</p>
+  <p class="text-stone-600 italic">No content generated yet. Please refresh in a few seconds.</p>
   {% else %}
   <div class="space-y-6">
     {% for title, body in sections %}
@@ -63,7 +63,7 @@
       {% for p in dasha.upcoming_antardashas[:3] %}
       <li class="flex justify-between items-baseline border-b border-stone-100 pb-2 last:border-b-0">
         <span><strong class="text-stone-900">{{ p.lord }}</strong> Antardasha</span>
-        <span class="text-stone-500 tabular-nums text-xs">{{ p.start.isoformat() }} &rarr; {{ p.end.isoformat() }}</span>
+        <span class="text-stone-600 tabular-nums text-xs">{{ p.start.isoformat() }} &rarr; {{ p.end.isoformat() }}</span>
       </li>
       {% endfor %}
     </ul>

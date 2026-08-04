@@ -65,7 +65,7 @@
     </div>
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">{{ t(lang, 'rashifal_title') }}</h1>
     <p class="text-stone-600">{{ t(lang, 'rashifal_subtitle') | safe }}</p>
-    <p class="text-sm text-stone-500 mt-2">
+    <p class="text-sm text-stone-600 mt-2">
       <a href="/" class="text-astro-600 hover:text-astro-700 underline">{{ t(lang, 'rashifal_dont_know') }}</a>
     </p>
   </header>
@@ -73,7 +73,7 @@
   <!-- JUMP TO STRIP — quick navigation to any rashi card. Horizontal scroll
        on mobile so all 12 are reachable in one swipe. -->
   <nav aria-label="Jump to rashi" class="bg-white rounded-2xl border border-stone-200 p-3 sm:p-4">
-    <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-2 px-1">
+    <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-600 mb-2 px-1">
       {% if lang == 'hi' %}अपनी राशि चुनें{% else %}Jump to your rashi{% endif %}
     </div>
     <div class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
@@ -107,7 +107,7 @@
         <div class="min-w-0 flex-1">
           <h2 class="font-display text-lg text-astro-700 leading-tight">{{ title }}</h2>
           {% if _meta %}
-          <div class="text-[11px] text-stone-500 mt-0.5">
+          <div class="text-[11px] text-stone-600 mt-0.5">
             {% if lang == 'hi' %}{{ _meta.element_hi }} &middot; {{ _meta.quality_hi }}{% else %}{{ _meta.element }} &middot; {{ _meta.quality }}{% endif %}
           </div>
           {% endif %}

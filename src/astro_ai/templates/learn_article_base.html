@@ -32,12 +32,12 @@
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
 
       {# Breadcrumb #}
-      <nav class="text-sm text-stone-500 mb-4" aria-label="Breadcrumb">
+      <nav class="text-sm text-stone-600 mb-4" aria-label="Breadcrumb">
         <a href="/" class="hover:text-astro-700">Home</a>
         <span class="mx-1 text-stone-300">/</span>
         <a href="/learn/" class="hover:text-astro-700">Learn</a>
         <span class="mx-1 text-stone-300">/</span>
-        <span class="text-stone-500">{{ article.category }}</span>
+        <span class="text-stone-600">{{ article.category }}</span>
       </nav>
 
       <div class="grid md:grid-cols-[1.6fr_1fr] gap-8 items-center">
@@ -46,17 +46,17 @@
             <span class="text-[11px] font-semibold uppercase tracking-wider text-astro-700 bg-astro-100 px-2.5 py-1 rounded-full">
               {{ article.category }}
             </span>
-            <span class="text-sm text-stone-500">{{ article.read_time }} read</span>
+            <span class="text-sm text-stone-600">{{ article.read_time }} read</span>
             {# Visible "Last updated" date — E-E-A-T freshness signal.
                Uses <time> element with a machine-readable datetime that
                matches the JSON-LD Article schema. Google's helpful-content
                update rewards visible dates for evergreen content. #}
-            <span class="text-xs text-stone-400" aria-hidden="true">·</span>
-            <span class="text-sm text-stone-500">
+            <span class="text-xs text-stone-500" aria-hidden="true">·</span>
+            <span class="text-sm text-stone-600">
               By <a href="/about" rel="author" class="text-astro-700 hover:underline">Bhagya Editorial</a>
             </span>
-            <span class="text-xs text-stone-400" aria-hidden="true">·</span>
-            <span class="text-sm text-stone-500">
+            <span class="text-xs text-stone-500" aria-hidden="true">·</span>
+            <span class="text-sm text-stone-600">
               Updated
               <time datetime="{{ article.last_updated }}-01">{{ article.last_updated }}</time>
             </span>
@@ -370,14 +370,14 @@
      style="display: none; box-shadow: 0 -4px 20px rgba(107, 33, 168, 0.08);">
   <div class="flex-1 min-w-0">
     <div class="text-xs font-semibold text-astro-700">Check your own chart</div>
-    <div class="text-[11px] text-stone-500 truncate">Free Janma Kundli · plain English + Hindi</div>
+    <div class="text-[11px] text-stone-600 truncate">Free Janma Kundli · plain English + Hindi</div>
   </div>
   <a href="/"
      class="flex-shrink-0 inline-flex items-center gap-1.5 bg-astro-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
     Free Kundli &rarr;
   </a>
   <button type="button" id="learn-sticky-close" aria-label="Dismiss"
-          class="flex-shrink-0 text-stone-400 hover:text-stone-700 p-1">
+          class="flex-shrink-0 text-stone-500 hover:text-stone-700 p-1">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/></svg>
   </button>
 </div>
