@@ -200,6 +200,49 @@ def save_collection(response: Response, collection: ChartCollection,
     _write_session(response, data)
 
 
+@dataclass(frozen=True)
+class SavedMatching:
+    """The user's most recent /matching submission.
+
+    Persisted in the session cookie so /ask?ctx=matching can recover both
+    charts on the follow-up without asking the user to re-enter. Both
+    parties' full birth details are stored; the seeker can be either
+    party (whoever they identify with) or a curious third-party (rare).
+    """
+    groom_name: str
+    groom_birth_date: str
+    groom_birth_time: str
+    groom_birth_place: str
+    bride_name: str
+    bride_birth_date: str
+    bride_birth_time: str
+    bride_birth_place: str
+
+
+def load_last_matching(request: Request) -> SavedMatching | None:
+    """Read the most-recent matching submission from the session cookie.
+
+    Returns None if the user hasn't done /matching in this session, or
+    if the stored payload is malformed (e.g. schema change).
+    """
+    data = _load_session(request)
+    raw = data.get("last_matching")
+    if not isinstance(raw, dict):
+        return None
+    try:
+        return SavedMatching(**raw)
+    except (TypeError, KeyError):
+        return None
+
+
+def save_last_matching(response: Response, request: Request | None,
+                        matching: SavedMatching) -> None:
+    """Write the most-recent matching submission, preserving other session keys."""
+    data = _load_session(request) if request is not None else {}
+    data["last_matching"] = asdict(matching)
+    _write_session(response, data)
+
+
 def load_lang(request: Request) -> str:
     """Read the seeker's language preference. Defaults to English."""
     candidate = _load_session(request).get("lang", DEFAULT_LANG)

@@ -127,16 +127,19 @@ import time as _time
 from astro_ai.session import (
     SUPPORTED_LANGS,
     ChartCollection,
+    SavedMatching,
     SessionUser,
     clear_collection,
     clear_user,
     load_ask_usage,
     load_collection,
     load_lang,
+    load_last_matching,
     load_user,
     save_ask_usage,
     save_collection,
     save_lang,
+    save_last_matching,
     save_session_atomic,
     save_user,
 )
@@ -3305,7 +3308,7 @@ async def ask_form(request: Request, q: str | None = None,
     if saved is None:
         return RedirectResponse("/?needs_chart=ask", status_code=303)
     lang = _lang(request)
-    context = ctx if ctx in ("chart", "numerology") else "chart"
+    context = ctx if ctx in ("chart", "numerology", "matching") else "chart"
     answer = None
     if q:
         # Render a previously-asked question by re-running the cached lookup.
@@ -3464,12 +3467,18 @@ async def ask_submit(
         collection is required. Enables numerology-flavoured follow-ups
         from /numerology to be answered against BOTH the numbers and
         the chart.
+      - "matching": also pass the "other partner" chart from the user's
+        most recent /matching submission (stored in the session cookie).
+        Enables follow-ups like "is this a good career-alignment match?"
+        that need BOTH charts. If the seeker's saved chart matches one
+        of the two matching parties, the OTHER party is passed; else
+        the groom chart is passed as the partner by default.
     """
     saved = load_collection(request).active
     if saved is None:
         return RedirectResponse("/?needs_chart=ask", status_code=303)
     lang = _lang(request)
-    if context not in ("chart", "numerology"):
+    if context not in ("chart", "numerology", "matching"):
         context = "chart"
     question = (question or "").strip()
     if not question or len(question) < 5:
@@ -3552,6 +3561,44 @@ async def ask_submit(
         except Exception:
             log.debug("numerology context load failed for /ask", exc_info=True)
 
+    # Matching context: recover the partner chart from the last-matching
+    # cookie set by POST /matching. If the seeker's saved chart matches
+    # one of the two matching parties (by name + DOB), the OTHER party
+    # is treated as the partner; else default to the groom.
+    partner_chart = None
+    partner_label = "partner"
+    if context == "matching":
+        last = load_last_matching(request)
+        if last is None:
+            # No recent matching to draw from; downgrade to chart-only.
+            context = "chart"
+        else:
+            def _same(saved_c, name: str, dob: str) -> bool:
+                return (saved_c.birth_date == dob
+                        and (saved_c.name or "").strip().lower() == (name or "").strip().lower())
+            seeker_is_groom = _same(saved, last.groom_name, last.groom_birth_date)
+            seeker_is_bride = _same(saved, last.bride_name, last.bride_birth_date)
+            if seeker_is_groom or not seeker_is_bride:
+                # Seeker identifies with groom (or default): partner = bride
+                p_name = last.bride_name or "Bride"
+                p_dob, p_time, p_place = (last.bride_birth_date,
+                                          last.bride_birth_time,
+                                          last.bride_birth_place)
+                partner_label = "partner (bride from your Kundli match)"
+            else:
+                # Seeker identifies with bride: partner = groom
+                p_name = last.groom_name or "Groom"
+                p_dob, p_time, p_place = (last.groom_birth_date,
+                                          last.groom_birth_time,
+                                          last.groom_birth_place)
+                partner_label = "partner (groom from your Kundli match)"
+            try:
+                partner_chart = compute_chart(p_dob, p_time, p_place)
+            except Exception:
+                log.debug("partner chart compute failed for /ask matching context", exc_info=True)
+                partner_chart = None
+                context = "chart"
+
     # Cache key includes context so the same question asked from
     # /numerology (with numerology context) does not collide with the
     # same question asked from /kundli (chart-only).
@@ -3568,6 +3615,8 @@ async def ask_submit(
                 question=question, category=category,
                 prompt_path=ASK_PROMPT_PATH, lang=lang,
                 numerology_reading=numerology_reading,
+                partner_chart=partner_chart,
+                partner_label=partner_label,
             ),
         )
     except Exception as err:
@@ -3738,7 +3787,7 @@ async def matching_result(
         },
     )
 
-    return templates.TemplateResponse(
+    response = templates.TemplateResponse(
         request,
         "matching_result.html",
         {
@@ -3759,6 +3808,17 @@ async def matching_result(
             **_ask_cta_ctx(request, hint="about your Kundli match"),
         },
     )
+    # Persist the two partners in the session so /ask?ctx=matching can
+    # recover both charts on a follow-up question without asking the
+    # user to re-enter. Kept as one of the fields of the combined
+    # __session cookie (24h TTL, same as the collection).
+    save_last_matching(response, request, SavedMatching(
+        groom_name=g_name.strip(), groom_birth_date=g_birth_date,
+        groom_birth_time=g_birth_time, groom_birth_place=g_birth_place.strip(),
+        bride_name=b_name.strip(), bride_birth_date=b_birth_date,
+        bride_birth_time=b_birth_time, bride_birth_place=b_birth_place.strip(),
+    ))
+    return response
 
 
 @app.post("/switch")
