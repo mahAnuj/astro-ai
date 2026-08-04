@@ -751,3 +751,89 @@ def translate(lang: str, key: str, **kwargs: Any) -> str:
         except (KeyError, IndexError):
             return text
     return text
+
+
+# ---------------------------------------------------------------------------
+# Devanagari lookups for astrology terms interpolated into strings
+# ---------------------------------------------------------------------------
+#
+# The Bhagya-Score driver notes (chart.py compute_bhagya_score) render
+# planet + yoga names inside translated sentences. If we pass raw
+# English names ("Jupiter", "Malavya Yoga") the Hindi output reads
+# "वर्तमान महादशा: Jupiter — एक स्वाभाविक शुभ काल" — jarring for a
+# Hindi reader.
+#
+# These lookups localize a single planet or yoga name at a time so the
+# call-site can render "बृहस्पति" or "मालव्य योग" in Hindi contexts.
+# English name is returned unchanged for any lang != 'hi' or any name
+# not in the lookup (defensive fallback — unknown names never break
+# the sentence).
+
+# 9 grahas in the classical Jyotish sequence. Sanskrit-Devanagari forms
+# match K.N. Rao / P.V.R. Narasimha Rao conventions. Jupiter uses "गुरु"
+# (Guru), which is more common in astrology contexts than "बृहस्पति"
+# though both are correct.
+_PLANET_NAMES_HI: Final[dict[str, str]] = {
+    "Sun":     "सूर्य",
+    "Moon":    "चंद्र",
+    "Mars":    "मंगल",
+    "Mercury": "बुध",
+    "Jupiter": "गुरु",
+    "Venus":   "शुक्र",
+    "Saturn":  "शनि",
+    "Rahu":    "राहु",
+    "Ketu":    "केतु",
+}
+
+# Classical yoga names encoded in chart.py compute layer. Sanskrit
+# spellings. Fallback: return the English name unchanged.
+_YOGA_NAMES_HI: Final[dict[str, str]] = {
+    "Adhi Yoga":                     "अधि योग",
+    "Amala Yoga":                    "अमला योग",
+    "Anaphaa Yoga":                  "अनफा योग",
+    "Bhadra Yoga":                   "भद्र योग",
+    "Chandra-Mangala Yoga":          "चंद्र-मंगल योग",
+    "Duradhara Yoga":                "दुरूधरा योग",
+    "Gaja-Kesari Yoga":              "गजकेसरी योग",
+    "Hamsa Yoga":                    "हंस योग",
+    "Kemadruma Yoga":                "केमद्रुम योग",
+    "Malavya Yoga":                  "मालव्य योग",
+    "Ruchaka Yoga":                  "रुचक योग",
+    "Sasha Yoga":                    "शश योग",
+    "Sunaphaa Yoga":                 "सुनफा योग",
+    "Trilochana Yoga":               "त्रिलोचन योग",
+    "Ubhayachara Yoga":              "उभयचरी योग",
+    "Vasumati Yoga":                 "वसुमती योग",
+    "Vesi Yoga":                     "वेसि योग",
+    "Vosi Yoga":                     "वोसि योग",
+    "Harsha Yoga (Vipareeta Raja)":  "हर्ष योग (विपरीत राज)",
+    "Sarala Yoga (Vipareeta Raja)":  "सरल योग (विपरीत राज)",
+    "Vimala Yoga (Vipareeta Raja)":  "विमल योग (विपरीत राज)",
+}
+
+
+def planet_name(name: str, lang: str) -> str:
+    """Localize a planet name. English pass-through for non-Hindi langs."""
+    if lang == "hi":
+        return _PLANET_NAMES_HI.get(name, name)
+    return name
+
+
+def yoga_name(name: str, lang: str) -> str:
+    """Localize a yoga name. English pass-through for non-Hindi langs."""
+    if lang == "hi":
+        return _YOGA_NAMES_HI.get(name, name)
+    return name
+
+
+def planet_names_joined(names, lang: str, sep: str = ", ") -> str:
+    """Localize an iterable of planet names and join. Common helper for
+    the Bhagya driver notes that need e.g. 'Jupiter, Venus' as one arg."""
+    return sep.join(planet_name(n, lang) for n in names)
+
+
+def yoga_names_joined(names, lang: str, sep: str = ", ") -> str:
+    """Localize an iterable of yoga names and join. Common helper for
+    the Bhagya driver notes that render 'N auspicious yogas active (...)'.
+    """
+    return sep.join(yoga_name(n, lang) for n in names)

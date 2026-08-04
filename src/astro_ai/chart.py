@@ -3229,7 +3229,12 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
     from i18n.py so Hindi users see driver reasons in Devanagari, not
     English mid-page (Shyamasundara audit follow-up 2026-08-04).
     """
-    from astro_ai.i18n import translate
+    from astro_ai.i18n import (
+        translate,
+        planet_name as _p_name,
+        planet_names_joined as _p_joined,
+        yoga_names_joined as _y_joined,
+    )
 
     drivers: list[BhagyaScoreDriver] = []
     score = 50
@@ -3246,7 +3251,7 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
     yogas = compute_yogas(chart)
     if yogas:
         n_yogas = min(len(yogas), 3)   # cap so a single feature doesn't dominate
-        yoga_names = ", ".join(y.name for y in yogas[:n_yogas])
+        yoga_names = _y_joined([y.name for y in yogas[:n_yogas]], lang)
         _add(+5 * n_yogas, "bs_yogas_active", n=n_yogas,
              plural=("s" if n_yogas > 1 and lang == "en" else ""), names=yoga_names)
 
@@ -3317,11 +3322,13 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
     if exalted:
         pts = min(len(exalted) * 3, 9)   # cap +9
         _add(+pts, "bs_exalted", n=len(exalted),
-             plural=("s" if len(exalted) > 1 and lang == "en" else ""), names=", ".join(exalted))
+             plural=("s" if len(exalted) > 1 and lang == "en" else ""),
+             names=_p_joined(exalted, lang))
     if debilitated:
         pts = -min(len(debilitated) * 3, 9)   # cap -9
         _add(pts, "bs_debilitated", n=len(debilitated),
-             plural=("s" if len(debilitated) > 1 and lang == "en" else ""), names=", ".join(debilitated))
+             plural=("s" if len(debilitated) > 1 and lang == "en" else ""),
+             names=_p_joined(debilitated, lang))
 
     # ─── Current Mahadasha lord — Jupiter/Venus/Moon add, Saturn/Rahu subtract
     #     Sun/Mars/Mercury/Ketu are neutral (context matters too much) ─
@@ -3329,9 +3336,9 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
         dasha = compute_dasha_state(chart)
         lord = (dasha.mahadasha.lord or "").split(" ")[0]
         if lord in ("Jupiter", "Venus", "Moon"):
-            _add(+5, "bs_maha_benefic", lord=lord)
+            _add(+5, "bs_maha_benefic", lord=_p_name(lord, lang))
         elif lord in ("Saturn", "Rahu"):
-            _add(-3, "bs_maha_malefic", lord=lord)
+            _add(-3, "bs_maha_malefic", lord=_p_name(lord, lang))
         # ─── Current Antardasha — shifts every few months, adds daily
         #     relevance the Mahadasha alone can't. Softer weight than
         #     Mahadasha because a benefic Antardasha inside a malefic
@@ -3339,9 +3346,9 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
         ad_lord = (dasha.antardasha.lord or "").split(" ")[0]
         if ad_lord and ad_lord != lord:  # avoid double-counting Maha=Antar overlap
             if ad_lord in ("Jupiter", "Venus", "Moon"):
-                _add(+2, "bs_antar_benefic", lord=ad_lord)
+                _add(+2, "bs_antar_benefic", lord=_p_name(ad_lord, lang))
             elif ad_lord in ("Saturn", "Rahu"):
-                _add(-2, "bs_antar_malefic", lord=ad_lord)
+                _add(-2, "bs_antar_malefic", lord=_p_name(ad_lord, lang))
     except Exception:
         pass
 
@@ -3373,9 +3380,9 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
                 if t_node:
                     t_idx = _rashi_index(t_node.rashi)
                     if t_idx == natal_moon_idx:
-                        _add(-2, "bs_node_over_moon", node=node)
+                        _add(-2, "bs_node_over_moon", node=_p_name(node, lang))
                     elif t_idx == natal_lagna_idx:
-                        _add(-2, "bs_node_over_lagna", node=node)
+                        _add(-2, "bs_node_over_lagna", node=_p_name(node, lang))
     except Exception:
         pass
 
