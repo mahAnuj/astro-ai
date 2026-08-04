@@ -1936,8 +1936,8 @@ async def numerology_form(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
         request, "numerology.html",
         {
-            "page_title": "Free Numerology Calculator — Life Path, Vedic Remedies, Personal Year, Karmic Debt",
-            "page_meta": "Free numerology calculator using Chaldean (Kumar) and Vedic (Johari) systems. Life Path + Destiny + Soul Urge + Personality + Name Number, plus per-Life-Path personality profile (character, strengths, challenges, health, career, best partners, timing), Vedic remedies (gemstone, mantra, day, deity), Personal Year, Karmic Debt (13/14/16/19), and compound-number meanings. Includes 2-person compatibility mode. No signup.",
+            "page_title": "Free Numerology Calculator — Chaldean, Pythagorean, and Lo Shu (with honest tradition note)",
+            "page_meta": "Free numerology calculator using Chaldean (Cheiro) and Pythagorean systems plus the Chinese Lo Shu grid. Life Path, Destiny/Expression, Soul Urge, Personality, Name Number, per-Life-Path profile, Personal Year, Karmic Debt (13/14/16/19), traditional per-number practices, and 2-person compatibility. Honest about tradition: these systems are 19th-20th century Western and ancient Chinese, not classical Vedic Jyotish. No signup.",
             "reading": None,
             "error": None,
             "lang": _lang(request),
@@ -1998,7 +1998,7 @@ async def numerology_calculate(
         request, "numerology.html",
         {
             "page_title": f"Numerology Reading for {reading.name} — Life Path {reading.life_path}",
-            "page_meta": f"Free numerology reading for {reading.name}: Life Path {reading.life_path}, Destiny {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}, Name Number {reading.name_number}. Includes character profile, life challenges, career fields, best partners, Vedic remedies, and the Lo Shu birth-number matrix.",
+            "page_meta": f"Free numerology reading for {reading.name}: Life Path {reading.life_path}, Destiny {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}, Name Number {reading.name_number}. Character profile, life challenges, career fields, best partners, traditional per-number practices, and the Chinese Lo Shu birth-number matrix. Framework is modern Western (Chaldean/Pythagorean) + ancient Chinese, not classical Vedic Jyotish.",
             "reading": reading,
             "num_bhagya_score": _num_bhagya(reading),
             "error": None,
@@ -2015,7 +2015,7 @@ async def numerology_compat_form(request: Request) -> HTMLResponse:
         request, "numerology_compat.html",
         {
             "page_title": "Numerology Compatibility — 2-Person Pairing Check",
-            "page_meta": "Free numerology compatibility check — Life Path + Birthday + Destiny pair verdicts per Johari's Vedic-integrated system. General / marriage / business contexts.",
+            "page_meta": "Free numerology compatibility check — Life Path + Birthday + Destiny pair verdicts using the modern Chaldean/Pythagorean framework (not classical Vedic Jyotish). General / marriage / business contexts.",
             "compat": None, "error": None, "lang": _lang(request),
         },
     )

@@ -7,19 +7,49 @@
 {% set active_page = "numerology" %}
 {% set breadcrumbs = [('Home', '/'), ('Numerology', '/numerology')] %}
 {% include "_breadcrumb_schema.html" %}
-{% set tool_name = "Numerology Calculator" %}
-{% set tool_desc = "Free Vedic + Chaldean numerology — Life Path, Birthday, Destiny, Soul Urge, Personality, Personal Year, Karmic Debt flags, plus per-number remedies (gemstone, colour, deity, mantra)." %}
+{% set tool_name = "Numerology Calculator (Chaldean + Pythagorean + Lo Shu)" %}
+{% set tool_desc = "Free numerology calculator — Chaldean (Cheiro), Pythagorean, and Lo Shu grid. Honest about tradition: these are 19th-20th century Western and ancient Chinese systems, not classical Vedic Jyotish." %}
 {% set tool_url = "/numerology" %}
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
 
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
+  {# TOP-OF-PAGE CAVEAT — shown both pre-form and pre-results.
+     Sourced from classical-source research (2026-08-04): none of the six
+     foundational Sanskrit Jyotish texts contain numerology. K.N. Rao
+     dropped it; Cheiro/Balliett/Seton invented the Life Path framework.
+     Users deserve to know the tradition's actual provenance BEFORE they
+     read a reading positioned as "Vedic". #}
+  <aside class="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-5 sm:p-6">
+    <div class="flex items-start gap-3">
+      <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center">
+        <svg class="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h2 class="font-display text-lg sm:text-xl text-amber-900 mb-2">
+          {{ t(lang, 'num_caveat_heading') }}
+        </h2>
+        <p class="text-sm text-stone-800 leading-relaxed mb-2">
+          {{ t(lang, 'num_caveat_body_1') }}
+        </p>
+        <p class="text-sm text-stone-800 leading-relaxed mb-2">
+          {{ t(lang, 'num_caveat_body_2') }}
+        </p>
+        <p class="text-sm text-stone-800 leading-relaxed">
+          {{ t(lang, 'num_caveat_body_3') }}
+        </p>
+      </div>
+    </div>
+  </aside>
+
   {% if not reading %}
   <header class="text-center">
-    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700 mb-3">Free Vedic Numerology Calculator</h1>
+    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700 mb-3">Free Numerology Calculator</h1>
     <p class="text-base sm:text-lg text-stone-600 max-w-xl mx-auto leading-relaxed">
-      Instant reading with Life Path, Birthday, Destiny, Soul Urge, Personality numbers PLUS Personal Year forecast, Karmic Debt flags, and per-number remedies (gemstone, colour, deity, mantra) from Johari's Vedic-integrated + Kumar's Chaldean systems. Free, no sign-up.
+      Chaldean (Cheiro), Pythagorean, and Lo Shu grid calculators — Life Path, Birthday, Destiny/Expression, Soul Urge, Personality numbers plus Personal Year forecast, Karmic Debt flags, per-number remedies (gemstone, colour, deity, mantra), and the 3×3 Lo Shu birth-number matrix. Free, no sign-up. See caveat above about tradition.
     </p>
   </header>
 
@@ -66,17 +96,17 @@
   </section>
 
   <section class="prose prose-sm sm:prose-base max-w-none text-stone-800 leading-relaxed">
-    <h2>What numerology reads</h2>
-    <p>Numerology reads your <strong>name + birth date</strong>. Vedic astrology reads your <strong>full birth chart</strong>. These are different lenses on the same person — sometimes they agree, sometimes they don't. When both point the same way, the signal is stronger.</p>
-    <p>Numerology cannot predict marriage timing, career changes, or specific life events — those need chart-based analysis. What numerology offers well: a compact snapshot of your inner drive, external personality, and life theme.</p>
-    <p>For deeper analysis, <a href="/">generate your free Janma Kundli</a> and compare.</p>
-    <h3>The 5 numbers we compute</h3>
+    <h2>What numerology reads (and doesn't)</h2>
+    <p>Numerology reads your <strong>name + birth date</strong> through a modern Western (Cheiro / Pythagorean) or ancient Chinese (Lo Shu) framework. Vedic astrology reads your <strong>full birth chart</strong> from a completely different tradition. These are separate systems, not two views of the same underlying method — sometimes their readings coincidentally align, sometimes they don't.</p>
+    <p>Numerology cannot predict marriage timing, career changes, or specific life events — those need chart-based Jyotish analysis. What numerology can offer: a compact prompt for self-reflection on your inner drive, external personality, and how you see your own life theme. Treat it as a mirror, not an oracle.</p>
+    <p>For a genuinely Vedic reading, <a href="/">generate your free Janma Kundli</a> — that's classical Jyotish from the actual Sanskrit sources this site cites.</p>
+    <h3>The 5 numbers we compute (and where they come from)</h3>
     <ul>
-      <li><strong>Life Path Number</strong> — from your birth date. The main theme of your life journey.</li>
-      <li><strong>Destiny (Expression) Number</strong> — from your full name. Your natural role in the world.</li>
-      <li><strong>Soul Urge Number</strong> — from the vowels of your name. What you inwardly want.</li>
-      <li><strong>Personality Number</strong> — from the consonants. How others perceive you.</li>
-      <li><strong>Name Number</strong> — Chaldean total of your name. The vibration your name carries.</li>
+      <li><strong>Life Path Number</strong> — birth-date reduction. Origin: L. Dow Balliett / Juno Jordan, USA, ~1908-1940s.</li>
+      <li><strong>Destiny / Expression Number</strong> — English-letter name reduction. Origin: same Balliett/Jordan lineage.</li>
+      <li><strong>Soul Urge Number</strong> — from name vowels. Origin: 20th-c. Western numerology.</li>
+      <li><strong>Personality Number</strong> — from name consonants. Origin: 20th-c. Western numerology.</li>
+      <li><strong>Name Number</strong> — Chaldean total of your name letters. Origin: Cheiro (William John Warner, 1866-1936); tables in wide Indian circulation trace to him.</li>
     </ul>
   </section>
 
@@ -159,20 +189,24 @@
   {% if reading.karmic_debt_numbers %}
   <section class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 sm:p-6">
     <h2 class="font-display text-lg text-amber-900 mb-2">Karmic Debt Numbers detected: {{ reading.karmic_debt_numbers | join(', ') }}</h2>
-    <p class="text-sm text-stone-700 leading-relaxed">
-      Per Kumar's classical framework, these numbers appearing in your Core Number intermediate sums indicate specific karmic work in this life. Not "unlucky" — they mark themes your soul chose to encounter and resolve. Number 13 = ethical vigilance / avoid selfishness; 14 = master balance and freedom; 16 = beware pride and sudden reversals; 19 = handle power without self-glorification. See our upcoming Karmic Debt guide for depth.
+    <p class="text-sm text-stone-800 leading-relaxed">
+      In the modern Western numerology tradition (popularised by 20th-century American authors like Dan Millman and Hans Decoz — not from any classical Vedic text), the numbers 13, 14, 16, and 19 appearing in your Core Number intermediate sums are interpreted as themes for reflection. The framework suggests: 13 = ethical vigilance / avoid selfishness; 14 = master balance and freedom; 16 = beware pride and sudden reversals; 19 = handle power without self-glorification. Not "unlucky" and not scripturally binding — treat as prompts for self-reflection.
     </p>
   </section>
   {% endif %}
 
-  {# Primary numbers — 5 Core Numbers per Kumar + Birthday split from Life Path. #}
+  {# Primary numbers — Life Path + Birthday + 3 name-derived numbers from
+     the modern Western (Balliett/Jordan/Cheiro) framework. Subtitles show
+     the Sanskrit-neologism labels (Bhagyank, Mulank, Namank) used in
+     Hindi-language numerology books, but flag them as modern coinages, not
+     classical shastra terms. #}
   <section class="grid gap-4">
     {% for num, label, meaning, subtitle in [
-      (reading.life_path,   'Life Path Number',   reading.life_path_meaning,   'Kumar: Life Path · Johari: Bhagyank (Destiny). Main theme.'),
-      (reading.birthday,    'Birthday Number',    reading.birthday_meaning,    'Kumar: Birthday · Johari: Mulank (Psychic). Self-image, dominant to age ~40.'),
-      (reading.destiny,     'Expression Number',  reading.destiny_meaning,     'Kumar: Expression · Johari: Namank (Name). Your natural role.'),
-      (reading.soul_urge,   'Heart Desire',       reading.soul_urge_meaning,   'Kumar: Heart Desire. From vowels — what you inwardly want.'),
-      (reading.personality, 'Personality Number', reading.personality_meaning, 'Kumar: Personality. From consonants — how others perceive you.'),
+      (reading.life_path,   'Life Path Number',   reading.life_path_meaning,   'Also called Bhagyank in Hindi numerology books (a modern coinage, not classical). Main life theme, from birth-date reduction.'),
+      (reading.birthday,    'Birthday Number',    reading.birthday_meaning,    'Also called Mulank in Hindi numerology books (modern coinage). Self-image, said to dominate to about age 40.'),
+      (reading.destiny,     'Expression Number',  reading.destiny_meaning,     'Also called Namank (modern coinage). Your natural role, from full-name letter sum.'),
+      (reading.soul_urge,   'Heart Desire',       reading.soul_urge_meaning,   'From name vowels — what you inwardly want. Modern Western framework.'),
+      (reading.personality, 'Personality Number', reading.personality_meaning, 'From name consonants — how others perceive you. Modern Western framework.'),
     ] %}
     <article class="bg-white rounded-2xl border-2 border-astro-100 p-5 sm:p-6 flex gap-4">
       <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-astro-50 border-2 border-astro-300 flex items-center justify-center">
