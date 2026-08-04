@@ -1659,15 +1659,23 @@ async def sade_sati_check_result(
 
 @app.get("/kaal-sarp-check", response_class=HTMLResponse)
 async def kaal_sarp_check_form(request: Request) -> HTMLResponse:
-    """Standalone Kaal Sarp Dosh checker form (Issue #111)."""
+    """Standalone Kaal Sarp geometry check (Issue #111).
+
+    Framing rewritten 2026-08-04 after classical-source review:
+    Kaal Sarp Yoga is not defined in BPHS / Brihat Jataka / Saravali /
+    Phaladeepika / Jataka Parijata / Uttara Kalamrita — it is a
+    20th-century Indian classification. The form and result page are
+    now honest about this; see kaal_sarp_check_result.html for the
+    top-of-page caveat citing K.N. Rao and B.V. Raman.
+    """
     return templates.TemplateResponse(
         request, "dosha_check_form.html",
         _dosha_form_ctx(
-            page_title="Free Kaal Sarp Dosh Check — With Type Classification",
-            page_lead="Instant Kaal Sarp Dosh diagnosis — full or partial, plus which of the 12 named types (Anant, Kulik, Padma, etc.) applies to your chart.",
+            page_title="Kaal Sarp geometry check — honest, classical-source-checked",
+            page_lead="Detect the Kaal Sarp geometry in your chart (all seven non-shadow planets on one side of the Rahu-Ketu axis) with a transparent note about where this classification actually comes from — it is not defined in the classical Sanskrit Jyotish texts we cite elsewhere on this site.",
             form_action="/kaal-sarp-check",
-            submit_label="Check Kaal Sarp Dosh →",
-            meta_desc="Free Kaal Sarp Dosh Check with type classification — Anant, Kulik, Vasuki, Padma, all 12 types. Instant, chart-based, no sign-up.",
+            submit_label="Check the geometry →",
+            meta_desc="Honest Kaal Sarp Yoga check with classical-source transparency. We detect the geometric pattern and are upfront that Kaal Sarp is not in the classical Vedic texts — it is a 20th-century Indian classification widely debated even among respected astrologers.",
             prefill=_prefill_from_cookie(request),
         ),
     )

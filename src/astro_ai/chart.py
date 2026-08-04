@@ -3012,44 +3012,53 @@ def _parse_local_datetime(date_str: str, time_str: str, tz_name: str) -> datetim
 
 
 # ---------------------------------------------------------------------------
-# Kaal Sarp Dosh — for the standalone /kaal-sarp-check tool (Issue #111)
+# Kaal Sarp Yoga — for the standalone /kaal-sarp-check tool (Issue #111)
 # ---------------------------------------------------------------------------
 #
-# Classical rule: when ALL 7 non-shadow planets (Sun, Moon, Mars, Mercury,
-# Jupiter, Venus, Saturn) fall on ONE SIDE of the Rahu-Ketu axis, the chart
-# has Kaal Sarp Dosha. The Rahu-Ketu axis divides the zodiac into two
-# 180° semicircles; ALL 7 planets in one semicircle = KSD.
+# HONEST NOTE ON PROVENANCE (added 2026-08-04 after Shyamasundara Dasa
+# audit + independent classical-source review):
 #
-# 12 named types based on which house pair holds the Rahu-Ketu axis:
-#   Anant     — Rahu in 1st, Ketu in 7th
-#   Kulik     — Rahu in 2nd, Ketu in 8th
-#   Vasuki    — Rahu in 3rd, Ketu in 9th
-#   Shankhpal — Rahu in 4th, Ketu in 10th
-#   Padma     — Rahu in 5th, Ketu in 11th
-#   Mahapadma — Rahu in 6th, Ketu in 12th
-#   Takshak   — Rahu in 7th, Ketu in 1st
-#   Karkotak  — Rahu in 8th, Ketu in 2nd
-#   Shankchur — Rahu in 9th, Ketu in 3rd
-#   Ghatak    — Rahu in 10th, Ketu in 4th
-#   Vishdhar  — Rahu in 11th, Ketu in 5th
-#   Sheshnag  — Rahu in 12th, Ketu in 6th
+# Kaal Sarp Yoga does NOT appear in the classical Sanskrit Jyotish canon —
+# not in Brihat Parashara Hora Shastra, Brihat Jataka, Saravali,
+# Phaladeepika, Jataka Parijata, or Uttara Kalamrita. Its first verifiable
+# Indian print discussion is in The Astrological Magazine in the late
+# 1970s–early 1980s. K.N. Rao (Bharatiya Vidya Bhavan, founder of the
+# Jyotish course) has publicly called it "one of the biggest frauds in
+# astrology" and "of not much importance in individual charts." B.V. Raman
+# added it as an APPENDIX (not the main text) to the 9th edition of
+# Three Hundred Important Combinations because it had become "much feared"
+# — his own treatment was nuanced, not alarmist.
 #
-# Partial KSD: if 6 of 7 planets are on one side and 1 straddles, some
-# schools call it Partial (Anshik). We treat this as a soft flag.
+# We keep the geometric detection because users search for it — but the
+# 12 named variants (Anant, Kulik, Vasuki, ...) are unattributed folk
+# taxonomy stabilised in mid-20th-c. Hindi almanac/pandit literature, not
+# classical shastra. The previous per-variant "effects" text on this list
+# was editorial invention repeated across every Kaal-Sarp site; we have
+# replaced it with neutral geometry-only descriptions. Serious readings
+# of Rahu-Ketu should judge them by the houses/lords they conjoin, not
+# by axis-based blanket yogas.
+#
+# Classical geometric rule: when ALL 7 non-shadow planets (Sun, Moon,
+# Mars, Mercury, Jupiter, Venus, Saturn) fall on ONE SIDE of the
+# Rahu-Ketu axis, the chart matches the Kaal Sarp geometry. The
+# Rahu-Ketu axis divides the zodiac into two 180° semicircles.
+#
+# Traditional Naga labels for each Rahu-house position, with geometry-
+# only descriptions (no unsourced per-variant "effects" prediction):
 
 _KAAL_SARP_TYPES: dict[int, tuple[str, str]] = {
-    1:  ("Anant",     "Ambition-driven, restless; identity themes; often forceful early-life"),
-    2:  ("Kulik",     "Wealth-family friction, speech guarded; hidden financial pressures"),
-    3:  ("Vasuki",    "Sibling tension, courage tested, effort-heavy chapters; media/writing pull"),
-    4:  ("Shankhpal", "Home/mother themes weight-bearing; property fluctuations; emotional roots strained"),
-    5:  ("Padma",     "Progeny challenges, love-marriage complications, creative outbursts"),
-    6:  ("Mahapadma", "Health/service life demanding; enemy patterns; disciplined recovery"),
-    7:  ("Takshak",   "Partnership instability; foreign spouse or unusual union pattern"),
-    8:  ("Karkotak",  "Sudden life transformations; in-law dynamics complex; hidden gains + losses"),
-    9:  ("Shankchur", "Dharmic wanderings; father-relationship distant; foreign settling common"),
-    10: ("Ghatak",    "Career elevated dramatically OR delayed; authority/reputation swings"),
-    11: ("Vishdhar",  "Elder sibling / large-network gains + karmic tests; group-based work"),
-    12: ("Sheshnag",  "Foreign lands, spiritual retreat, expenditure themes; second-half prominence"),
+    1:  ("Anant",     "Rahu-Ketu axis crosses your Lagna (1st) and Partnership (7th) houses — the self/other axis."),
+    2:  ("Kulik",     "Rahu-Ketu axis crosses your Wealth (2nd) and Legacy (8th) houses — the resource/transformation axis."),
+    3:  ("Vasuki",    "Rahu-Ketu axis crosses your Effort (3rd) and Dharma (9th) houses — the initiative/belief axis."),
+    4:  ("Shankhpal", "Rahu-Ketu axis crosses your Home (4th) and Career (10th) houses — the inner-life/public-life axis."),
+    5:  ("Padma",     "Rahu-Ketu axis crosses your Creativity (5th) and Community (11th) houses — the expression/network axis."),
+    6:  ("Mahapadma", "Rahu-Ketu axis crosses your Service (6th) and Retreat (12th) houses — the discipline/dissolution axis."),
+    7:  ("Takshak",   "Rahu-Ketu axis crosses your Partnership (7th) and Lagna (1st) houses — the other/self axis (reverse of Anant)."),
+    8:  ("Karkotak",  "Rahu-Ketu axis crosses your Legacy (8th) and Wealth (2nd) houses — the transformation/resource axis (reverse of Kulik)."),
+    9:  ("Shankchur", "Rahu-Ketu axis crosses your Dharma (9th) and Effort (3rd) houses — the belief/initiative axis (reverse of Vasuki)."),
+    10: ("Ghatak",    "Rahu-Ketu axis crosses your Career (10th) and Home (4th) houses — the public-life/inner-life axis (reverse of Shankhpal)."),
+    11: ("Vishdhar",  "Rahu-Ketu axis crosses your Community (11th) and Creativity (5th) houses — the network/expression axis (reverse of Padma)."),
+    12: ("Sheshnag",  "Rahu-Ketu axis crosses your Retreat (12th) and Service (6th) houses — the dissolution/discipline axis (reverse of Mahapadma)."),
 }
 
 
