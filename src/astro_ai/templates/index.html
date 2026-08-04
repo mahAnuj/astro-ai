@@ -51,7 +51,7 @@
           नमः सूर्याय चन्द्राय मङ्गलाय बुधाय च।<br>
           गुरु शुक्र शनिभ्यश्च राहवे केतवे नमः॥
         </p>
-        <p class="text-xs text-stone-500 mt-1.5 italic">Salutations to all nine grahas &mdash; Navagraha Stotra</p>
+        <p class="text-xs text-stone-600 mt-1.5 italic">Salutations to all nine grahas &mdash; Navagraha Stotra</p>
       </div>
 
       <span class="inline-block text-xs font-semibold tracking-wider text-astro-700 uppercase bg-astro-100 px-3 py-1 rounded-full mb-4">
@@ -62,7 +62,7 @@
       {# Trust bar (SEO audit #134) — real counts only. Any pill with a
          zero count is silently dropped so we never render '0 users' as
          social proof. All fields backed by users.py / subscribers.py. #}
-      <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-500 mb-4">
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-600 mb-4">
         {% if trust_users and trust_users > 0 %}
         <span class="inline-flex items-center gap-1">
           <svg class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5.13a4 4 0 11-8 0 4 4 0 018 0zm6 3a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -139,7 +139,7 @@
             </g>
           </svg>
         </div>
-        <p class="text-center text-xs text-stone-500 italic mt-2.5">
+        <p class="text-center text-xs text-stone-600 italic mt-2.5">
           Sample chart &mdash; yours will use your actual birth data
         </p>
       </div>
@@ -181,7 +181,7 @@
           {{ collection.charts | length }} saved chart{{ "s" if collection.charts | length != 1 else "" }}
         </span>
         <h2 class="font-display text-2xl text-astro-700 mb-1">Your charts</h2>
-        <p class="text-sm text-stone-500 mb-5">
+        <p class="text-sm text-stone-600 mb-5">
           The active chart powers today&rsquo;s reading. Switch any time.
         </p>
 
@@ -194,7 +194,7 @@
                 <span class="font-semibold text-stone-900 text-base truncate">{{ active.name if active.name else 'Saved chart' }}</span>
                 <span class="text-[9px] font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Active</span>
               </div>
-              <div class="text-sm text-stone-500 mt-0.5 truncate">
+              <div class="text-sm text-stone-600 mt-0.5 truncate">
                 {{ active.birth_date }} &middot; {{ active.birth_time }} &middot; {{ active.birth_place }}
               </div>
             </div>
@@ -202,7 +202,7 @@
             <form method="post" action="/delete-chart"
                   onsubmit="return confirm('Delete this saved chart?');">
               <input type="hidden" name="chart_id" value="{{ active.id }}">
-              <button type="submit" class="text-stone-400 hover:text-rose-600 text-lg leading-none px-1" aria-label="Delete">
+              <button type="submit" class="text-stone-500 hover:text-rose-600 text-lg leading-none px-1" aria-label="Delete">
                 &times;
               </button>
             </form>
@@ -221,7 +221,7 @@
         {# INACTIVE charts — compact tappable rows in a scrollable list. #}
         {% set inactive = collection.charts | rejectattr('id', 'equalto', active.id) | list %}
         {% if inactive %}
-        <div class="text-xs uppercase tracking-wider font-semibold text-stone-500 mb-1.5 mt-4">
+        <div class="text-xs uppercase tracking-wider font-semibold text-stone-600 mb-1.5 mt-4">
           Switch to
         </div>
         <div class="max-h-48 overflow-y-auto -mx-1 px-1 space-y-1">
@@ -234,7 +234,7 @@
                       class="w-full text-left px-3 py-2 rounded-md hover:bg-stone-50 border border-transparent hover:border-stone-200 flex items-center gap-2 text-sm min-w-0">
                 <span class="text-stone-300 group-hover:text-astro-500 transition-colors flex-shrink-0">○</span>
                 <span class="font-semibold text-stone-900 truncate">{{ c.name if c.name else 'Saved chart' }}</span>
-                <span class="text-sm text-stone-500 truncate ml-auto">{{ c.birth_date }} &middot; {{ c.birth_place.split(',')[0] }}</span>
+                <span class="text-sm text-stone-600 truncate ml-auto">{{ c.birth_date }} &middot; {{ c.birth_place.split(',')[0] }}</span>
               </button>
             </form>
             <form method="post" action="/delete-chart"
@@ -252,7 +252,7 @@
         {% if collection.charts | length < 10 %}
         <div class="mt-6 pt-5 border-t border-stone-100">
           <h3 class="font-display text-lg text-astro-700 mb-1">+ Save another chart</h3>
-          <p class="text-sm text-stone-500 mb-3">Add a family member, partner, or friend &mdash; up to 10 total.</p>
+          <p class="text-sm text-stone-600 mb-3">Add a family member, partner, or friend &mdash; up to 10 total.</p>
           <form method="post" action="/reading" class="space-y-2.5">
             <input type="text" name="name" placeholder="Name (optional)"
                    class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
@@ -269,13 +269,13 @@
           </form>
         </div>
         {% else %}
-        <p class="text-sm text-stone-500 mt-5 pt-5 border-t border-stone-100">
+        <p class="text-sm text-stone-600 mt-5 pt-5 border-t border-stone-100">
           You&rsquo;ve saved the max of 10 charts. Delete one above to add another.
         </p>
         {% endif %}
 
         <form method="post" action="/reset" class="text-center mt-4 pt-4 border-t border-stone-100">
-          <button type="submit" class="text-xs text-stone-500 hover:text-rose-600 underline">
+          <button type="submit" class="text-xs text-stone-600 hover:text-rose-600 underline">
             Forget all charts
           </button>
         </form>
@@ -284,11 +284,11 @@
       <form method="post" action="/reading" id="kundli-form"
             class="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-astro-900/5 p-6 sm:p-8 scroll-mt-20">
         <h2 class="font-display text-2xl text-astro-700 mb-1">Start with your birth details</h2>
-        <p class="text-sm text-stone-500 mb-5">All four fields take a few seconds.</p>
+        <p class="text-sm text-stone-600 mb-5">All four fields take a few seconds.</p>
 
         <div class="space-y-4">
           <label class="block">
-            <span class="text-sm font-semibold text-stone-700">Name <span class="text-stone-400 font-normal">(optional)</span></span>
+            <span class="text-sm font-semibold text-stone-700">Name <span class="text-stone-500 font-normal">(optional)</span></span>
             <input type="text" name="name" placeholder="e.g. Priya" autofocus autocomplete="name"
                    class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
           </label>
@@ -298,12 +298,12 @@
                    class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
           </label>
           <label class="block">
-            <span class="text-sm font-semibold text-stone-700">Birth time <span class="text-stone-400 font-normal">(24-hour, local)</span></span>
+            <span class="text-sm font-semibold text-stone-700">Birth time <span class="text-stone-500 font-normal">(24-hour, local)</span></span>
             <input type="time" name="birth_time" required
                    class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
           </label>
           <label class="block">
-            <span class="text-sm font-semibold text-stone-700">Birth place <span class="text-stone-400 font-normal">(city, country)</span></span>
+            <span class="text-sm font-semibold text-stone-700">Birth place <span class="text-stone-500 font-normal">(city, country)</span></span>
             <input type="text" name="birth_place" placeholder="e.g. Mumbai, India" required autocomplete="address-level2"
                    class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
           </label>
@@ -330,7 +330,7 @@
      classical anchor stays visible without eating a whole section. #}
   <div class="max-w-4xl mx-auto px-4 sm:px-6 pb-8 sm:pb-10 text-center">
     <p class="font-display text-lg sm:text-xl text-astro-800/90" lang="sa">ज्योतिषं नयनम् वेदस्य</p>
-    <p class="text-xs text-stone-500 mt-1 italic">Jyotisham Nayanam Vedasya &mdash; Astrology is the eye of the Vedas.</p>
+    <p class="text-xs text-stone-600 mt-1 italic">Jyotisham Nayanam Vedasya &mdash; Astrology is the eye of the Vedas.</p>
   </div>
 </section>
 
@@ -435,12 +435,12 @@
         सर्वधर्मान्परित्यज्य मामेकं शरणं व्रज।<br>
         अहं त्वा सर्वपापेभ्यो मोक्षयिष्यामि <span class="text-rose-700">मा शुचः</span>॥
       </p>
-      <p class="text-xs text-stone-400 italic mb-2">Bhagavad Gita 18.66 &mdash; Krishna's final teaching</p>
+      <p class="text-xs text-stone-500 italic mb-2">Bhagavad Gita 18.66 &mdash; Krishna's final teaching</p>
       <p class="text-sm text-stone-700 leading-relaxed">
         &ldquo;Take refuge in the Divine. I will free you from all that weighs you down &mdash;
         <strong>do not fear, do not grieve</strong>.&rdquo;
       </p>
-      <p class="text-sm text-stone-500 mt-3 leading-relaxed">
+      <p class="text-sm text-stone-600 mt-3 leading-relaxed">
         No chart, no dosha, no transit is above devotion. Recite the name of your chosen deity
         with sincerity and even Saturn lightens his hand.
       </p>
@@ -494,7 +494,7 @@
         Edit preferences
       </button>
     </div>
-    <p class="text-sm text-stone-500 mt-3">
+    <p class="text-sm text-stone-600 mt-3">
       Change your rashi, language, city, or unsubscribe anytime.
     </p>
     {% else %}

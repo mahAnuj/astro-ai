@@ -44,6 +44,7 @@ from __future__ import annotations
 import logging
 import os
 import random
+import re
 from contextvars import ContextVar
 from dataclasses import dataclass
 
@@ -51,6 +52,93 @@ from openai import OpenAI
 from openai import APIError, APIConnectionError, APITimeoutError, RateLimitError
 
 log = logging.getLogger(__name__)
+
+
+# Reasoning-model envelopes we strip before rendering. Groq's
+# openai/gpt-oss-*, DeepSeek-R1, Qwen QWQ and other reasoning-tuned models
+# emit their internal chain-of-thought as visible text (usually inside
+# <think>...</think>). Shipping that raw dumps the whole planning process
+# to the user — a real Bhagya user emailed to show /ask returning
+# "<think> Here's a thinking process: ... Constraints: Answer FIRST
+# directly, NO planet/sign/house names... ✅ Ready." verbatim. Every LLM
+# response through the provider chain must be cleaned before it reaches
+# quality gates, cache, or the template.
+_REASONING_BLOCK_PATTERNS = [
+    re.compile(r"<\s*think(?:ing)?\s*>.*?<\s*/\s*think(?:ing)?\s*>", re.DOTALL | re.IGNORECASE),
+    re.compile(r"<\s*reason(?:ing)?\s*>.*?<\s*/\s*reason(?:ing)?\s*>", re.DOTALL | re.IGNORECASE),
+    re.compile(r"<\s*analysis\s*>.*?<\s*/\s*analysis\s*>", re.DOTALL | re.IGNORECASE),
+    re.compile(r"\[\s*REASONING\s*\].*?\[\s*/\s*REASONING\s*\]", re.DOTALL | re.IGNORECASE),
+    re.compile(r"\[\s*THINK(?:ING)?\s*\].*?\[\s*/\s*THINK(?:ING)?\s*\]", re.DOTALL | re.IGNORECASE),
+]
+
+# Orphan reasoning-opener anywhere in the text (paired block removal has
+# already run). If any survivor is found, everything from that opener to
+# end-of-string is treated as reasoning-in-progress that got truncated,
+# and dropped. This catches shapes like:
+#   "Your reading is X <think>need to double-check..." (truncated mid-answer)
+# where the answer prefix is preserved and the leaking scratchpad is cut.
+# When the opener is at position 0 the whole text is dropped (empty →
+# quality gate fails → chain falls through).
+_ORPHAN_REASONING_OPENER = re.compile(
+    r"<\s*(?:think(?:ing)?|reason(?:ing)?|analysis)\s*>|\[\s*(?:THINK(?:ING)?|REASONING)\s*\]",
+    re.IGNORECASE,
+)
+
+# Orphan reasoning-closer (rare: model emitted `</think>` with no opener,
+# usually a mangled shape). Just delete the tag; keep surrounding text.
+_ORPHAN_REASONING_CLOSER = re.compile(
+    r"<\s*/\s*(?:think(?:ing)?|reason(?:ing)?|analysis)\s*>|\[\s*/\s*(?:THINK(?:ING)?|REASONING)\s*\]",
+    re.IGNORECASE,
+)
+
+# Leading meta-preambles some non-reasoning models slip in. Only stripped
+# at the very start of the text; conservative on purpose.
+_META_PREAMBLE_PATTERNS = [
+    re.compile(r"^\s*(?:Here'?s|Here is)\s+(?:my|the|a)\s+(?:thinking|reasoning|analysis|thought)\s+process[:\-]?\s*", re.IGNORECASE),
+    re.compile(r"^\s*(?:Let me|I'll|I will)\s+(?:think|analyze|reason)\s+(?:through|about|step[- ]by[- ]step)[^\n.]*[.\n:]\s*", re.IGNORECASE),
+    re.compile(r"^\s*\*\*Analyze User Input:\*\*.*?(?=\n\s*\n|\Z)", re.DOTALL | re.IGNORECASE),
+]
+
+
+def strip_reasoning_envelope(text: str) -> str:
+    """Strip LLM reasoning-chain leakage from raw model output.
+
+    Applied inside chat() so every provider response is cleaned before
+    it reaches quality gates, cache, or the template. Defensive against:
+      - <think>...</think> and <thinking>...</thinking> (Groq gpt-oss,
+        DeepSeek-R1, Qwen)
+      - <reason>...</reason>, <analysis>...</analysis>
+      - [REASONING]...[/REASONING], [THINK]...[/THINK]
+      - Unclosed opener (truncated response) — returned as "" so quality
+        gate fails cleanly and the chain falls through
+      - Leading meta preambles ("Here's my thinking process:", etc.)
+
+    Whitespace is collapsed around removed blocks. Returns "" if nothing
+    salvageable remains.
+    """
+    if not text:
+        return text
+    cleaned = text
+    # 1. Remove paired reasoning blocks anywhere in the text.
+    for pattern in _REASONING_BLOCK_PATTERNS:
+        cleaned = pattern.sub("", cleaned)
+    # 2. Any surviving orphan opener (truncated response, mid-text leak)
+    #    → drop everything from the opener onward. Preserves any answer
+    #    prefix; when opener is at position 0 the result is empty.
+    m = _ORPHAN_REASONING_OPENER.search(cleaned)
+    if m:
+        cleaned = cleaned[:m.start()]
+    # 3. Any surviving orphan closer (rare mangled shape) → delete the
+    #    tag itself, keep surrounding text.
+    cleaned = _ORPHAN_REASONING_CLOSER.sub("", cleaned)
+    cleaned = cleaned.strip()
+    if not cleaned:
+        return ""
+    # 4. Strip a small set of common leading meta-preambles.
+    for pattern in _META_PREAMBLE_PATTERNS:
+        cleaned = pattern.sub("", cleaned, count=1)
+    cleaned = re.sub(r"\n{3,}", "\n\n", cleaned).strip()
+    return cleaned
 
 # Per-request tracking: which (provider, model) actually served the call.
 # Set inside chat() on the first success; readable by any downstream code
@@ -307,7 +395,18 @@ def chat(messages: list[dict], *, route: str = "") -> str:
     last_err: Exception | None = None
     for provider in order:
         try:
-            text = _call_one(provider, messages)
+            raw_text = _call_one(provider, messages)
+            # Sanitize reasoning-model leakage BEFORE the quality gate so
+            # the heading-count check operates on the visible answer, not
+            # on the model's `<think>` scratchpad. Also prevents any
+            # downstream cache from storing the leaked chain-of-thought.
+            text = strip_reasoning_envelope(raw_text)
+            leaked_reasoning = (raw_text.strip() != text)
+            if leaked_reasoning:
+                log.warning(
+                    "provider %s (%s) leaked reasoning envelope for route=%s (raw=%d, cleaned=%d) — stripped",
+                    provider.name, provider.model(), route, len(raw_text), len(text),
+                )
             # Quality gate — some models return 200 OK but semantically
             # broken output (no headings, refusals, truncation). Fall
             # through to the next model rather than caching garbage.
@@ -336,6 +435,7 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                     "route": route,
                     "fallback_from": last_err is not None,
                     "chars_out": len(text),
+                    "leaked_reasoning": leaked_reasoning,
                 }},
             )
             # Persistent per-day counter for /admin/usage. Best-effort;
@@ -350,6 +450,21 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                 )
             except Exception:  # noqa: BLE001 — stats never break the reading
                 log.debug("llm_stats.record failed", exc_info=True)
+            # Editorial review log (opt-in via BHAGYA_LLM_REVIEW=1). Off in
+            # prod; on locally when eyeballing outputs. Best-effort — the
+            # module swallows all errors internally.
+            try:
+                from astro_ai import llm_review
+                llm_review.record(
+                    route=route,
+                    provider=provider.name,
+                    model=provider.model(),
+                    text=text,
+                    chars_raw=len(raw_text),
+                    leaked_reasoning=leaked_reasoning,
+                )
+            except Exception:  # noqa: BLE001 — review log never breaks the call
+                log.debug("llm_review.record failed", exc_info=True)
             if last_err is not None:
                 log.info("provider %s succeeded after upstream failures", provider.name)
             return text

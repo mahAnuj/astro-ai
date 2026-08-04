@@ -27,7 +27,7 @@
      role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
   <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
     <button id="feedback-close" type="button" aria-label="Close"
-            class="absolute top-3 right-3 text-stone-400 hover:text-stone-700 p-1">
+            class="absolute top-3 right-3 text-stone-500 hover:text-stone-700 p-1">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
       </svg>
@@ -45,7 +45,7 @@
       <form id="feedback-form" class="flex flex-col gap-3">
         {#- Type chips — same chip pattern as subscribe modal -#}
         <div>
-          <div class="text-xs text-stone-500 mb-1.5">
+          <div class="text-xs text-stone-600 mb-1.5">
             {% if lang == 'hi' %}किस बारे में?{% else %}What about?{% endif %}
           </div>
           <div class="grid grid-cols-3 gap-2">

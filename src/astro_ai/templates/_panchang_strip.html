@@ -17,44 +17,44 @@
       <div class="flex items-center gap-1.5">
         <span class="text-astro-600" aria-hidden="true">🌅</span>
         <span class="font-semibold text-stone-800">{{ panchang_strip.weekday }}</span>
-        <span class="text-stone-500">·</span>
+        <span class="text-stone-600">·</span>
         <span class="text-stone-700">{{ panchang_strip.day_lord }}-ruled</span>
       </div>
 
       {# Tithi — lunar day + significance if any #}
       <div class="flex items-center gap-1.5">
-        <span class="text-stone-400">|</span>
-        <span class="text-stone-500 uppercase text-[10px] tracking-wider">Tithi</span>
+        <span class="text-stone-500">|</span>
+        <span class="text-stone-600 uppercase text-[10px] tracking-wider">Tithi</span>
         <span class="text-stone-800 font-medium">{{ panchang_strip.tithi_paksha }} {{ panchang_strip.tithi_name }}</span>
       </div>
 
       {# Moon nakshatra — fastest-changing sky signal #}
       {% if panchang_moon %}
       <div class="flex items-center gap-1.5">
-        <span class="text-stone-400">|</span>
-        <span class="text-stone-500 uppercase text-[10px] tracking-wider">Moon</span>
+        <span class="text-stone-500">|</span>
+        <span class="text-stone-600 uppercase text-[10px] tracking-wider">Moon</span>
         <span class="text-stone-800 font-medium">{{ panchang_moon.nakshatra }} · {{ panchang_moon.rashi.split(' ')[0] }}</span>
       </div>
       {% endif %}
 
       {# Rahu Kaal (avoid) — most-referenced sub-day window #}
       <div class="flex items-center gap-1.5">
-        <span class="text-stone-400">|</span>
+        <span class="text-stone-500">|</span>
         <span class="text-red-700 uppercase text-[10px] tracking-wider font-semibold">Rahu Kaal (avoid)</span>
         <span class="text-stone-800 font-medium tabular-nums">{{ panchang_strip.rahu_kaal_start.strftime('%H:%M') }}–{{ panchang_strip.rahu_kaal_end.strftime('%H:%M') }}</span>
       </div>
 
       {# Abhijit Muhurta (best) — most-referenced auspicious window #}
       <div class="flex items-center gap-1.5">
-        <span class="text-stone-400">|</span>
+        <span class="text-stone-500">|</span>
         <span class="text-emerald-700 uppercase text-[10px] tracking-wider font-semibold">Abhijit (best)</span>
         <span class="text-stone-800 font-medium tabular-nums">{{ panchang_strip.abhijit_start.strftime('%H:%M') }}–{{ panchang_strip.abhijit_end.strftime('%H:%M') }}</span>
       </div>
 
       {# City + link to full page #}
       <div class="flex items-center gap-1.5 ml-auto">
-        <span class="text-stone-400 hidden sm:inline">|</span>
-        <span class="text-stone-500 text-[11px]">for {{ panchang_city or 'Mumbai' }}</span>
+        <span class="text-stone-500 hidden sm:inline">|</span>
+        <span class="text-stone-600 text-[11px]">for {{ panchang_city or 'Mumbai' }}</span>
         <a href="/panchang" class="text-astro-700 hover:underline text-[11px] font-semibold">Full Panchang →</a>
       </div>
     </div>

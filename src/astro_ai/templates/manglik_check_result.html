@@ -17,7 +17,7 @@
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-1">
       Manglik Dosh Check {% if details.name %}for {{ details.name }}{% endif %}
     </h1>
-    <p class="text-sm text-stone-500">
+    <p class="text-sm text-stone-600">
       {{ details.birth_date }} · {{ details.birth_time }} · {{ details.birth_place }}
     </p>
   </header>
@@ -87,7 +87,26 @@
     </div>
   </section>
 
-  <div class="text-xs text-stone-500 leading-relaxed">
+  {# "Mars is not the only malefic" caveat — practicing astrologers
+     rightly point out that Manglik detection over-focuses users on Mars
+     while ignoring 7H lord, Venus, Upapada, and Dasha timing that also
+     shape marital karma. Shown regardless of the Manglik verdict — a
+     clean chart deserves the same nuance as a Manglik one. #}
+  <section class="rounded-2xl border border-stone-200 bg-white shadow-sm p-5 sm:p-6">
+    <div class="flex items-start gap-3">
+      <div class="shrink-0 w-9 h-9 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center">
+        <svg class="w-4 h-4 text-stone-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+        </svg>
+      </div>
+      <div class="flex-1">
+        <h2 class="font-display text-lg text-stone-900 mb-1.5">{{ t(lang, 'manglik_caveat_heading') }}</h2>
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">{{ t(lang, 'manglik_caveat_body') }}</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="text-xs text-stone-600 leading-relaxed">
     <p><strong>Classical basis:</strong> Manglik Dosh rules are compiled from Jataka Parijata, Phaladeepika, Jataka Chandrika, and Muhurtha Chintamani (per P.V.R. Narasimha Rao's Jagannath Hora rule-set). The 6 qualifying houses (1, 2, 4, 7, 8, 12) are counted from BOTH Lagna and Moon. Cancellation rules — Cancer/Leo Lagna Yogakaraka exclusion, Mars in own sign or exaltation, Jupiter conjunction/aspect, matching with another Manglik — are applied automatically. Astronomical positions computed via Swiss Ephemeris (pyswisseph) in sidereal Lahiri ayanamsa, matching classical Vedic tradition.</p>
   </div>
 

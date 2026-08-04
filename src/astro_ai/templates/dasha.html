@@ -24,7 +24,7 @@
       <div class="text-sm text-stone-600">
         {{ t(lang, 'dasha_period', start=dasha.mahadasha.start.isoformat(), end=dasha.mahadasha.end.isoformat()) }}
       </div>
-      <div class="text-xs text-stone-500 mt-1 tabular-nums">
+      <div class="text-xs text-stone-600 mt-1 tabular-nums">
         {{ "%.1f"|format(dasha.mahadasha.years) }} {{ t(lang, 'dasha_years_suffix') }}
       </div>
     </div>
@@ -35,7 +35,7 @@
       <div class="text-sm text-stone-600">
         {{ t(lang, 'dasha_period', start=dasha.antardasha.start.isoformat(), end=dasha.antardasha.end.isoformat()) }}
       </div>
-      <div class="text-xs text-stone-500 mt-1 tabular-nums">
+      <div class="text-xs text-stone-600 mt-1 tabular-nums">
         {{ "%.2f"|format(dasha.antardasha.years) }} {{ t(lang, 'dasha_years_suffix') }}
       </div>
     </div>
@@ -65,7 +65,7 @@
       <li class="py-3 grid grid-cols-[1fr_auto] items-center gap-4">
         <div>
           <span class="font-display text-lg text-stone-900">{{ p.lord }}</span>
-          <span class="text-sm text-stone-500 ml-2 tabular-nums">{{ "%.2f"|format(p.years) }} {{ t(lang, 'dasha_years_suffix') }}</span>
+          <span class="text-sm text-stone-600 ml-2 tabular-nums">{{ "%.2f"|format(p.years) }} {{ t(lang, 'dasha_years_suffix') }}</span>
         </div>
         <div class="text-sm text-stone-600 tabular-nums">
           {{ p.start.isoformat() }} <span class="text-stone-300">→</span> {{ p.end.isoformat() }}

@@ -136,7 +136,7 @@
     {# Title at top — hero chart deserves a proper heading, not a tiny caption. #}
     <div class="text-center mb-4 sm:mb-5">
       <h2 class="font-display text-2xl sm:text-3xl text-astro-800">{{ t(lang, 'lagna_kundali') }}</h2>
-      <p class="text-sm text-stone-500 mt-1">{{ chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</p>
+      <p class="text-sm text-stone-600 mt-1">{{ chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</p>
     </div>
     {# Chart style toggle (SEO audit #130) — North Indian is default (matches
        every existing screenshot + PDF export); South Indian is preserved via
@@ -262,10 +262,10 @@
         <svg class="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
         </svg>
-        D-9 Navamsha chart <span class="text-xs font-normal text-stone-500 ml-1">— marriage &amp; dharma lens</span>
+        D-9 Navamsha chart <span class="text-xs font-normal text-stone-600 ml-1">— marriage &amp; dharma lens</span>
       </summary>
       <div class="mt-3">
-        <p class="text-xs text-stone-500 mb-3">
+        <p class="text-xs text-stone-600 mb-3">
           Ascendant: <span class="font-semibold text-astro-700">{{ navamsha_chart.lagna_rashi }}</span>.
           Read classically for marriage indicators and to confirm which natal yogas fully activate.
         </p>
@@ -280,10 +280,10 @@
         <svg class="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
         </svg>
-        D-10 Dashamsa chart <span class="text-xs font-normal text-stone-500 ml-1">— career &amp; profession lens</span>
+        D-10 Dashamsa chart <span class="text-xs font-normal text-stone-600 ml-1">— career &amp; profession lens</span>
       </summary>
       <div class="mt-3">
-        <p class="text-xs text-stone-500 mb-3">
+        <p class="text-xs text-stone-600 mb-3">
           Ascendant: <span class="font-semibold text-astro-700">{{ dashamsa_chart.lagna_rashi }}</span>.
           Classical career chart — the 10th house here is read for professional strength.
         </p>
@@ -303,7 +303,7 @@
         <tbody>
           <tr class="border-b border-stone-100">
             <td class="py-2 font-semibold text-astro-700 w-24">{{ t(lang, 'lagna') }}</td>
-            <td class="py-2 text-stone-800">{{ chart.lagna_rashi }} <span class="text-stone-500">({{ "%.1f"|format(chart.lagna_longitude) }}&deg;)</span></td>
+            <td class="py-2 text-stone-800">{{ chart.lagna_rashi }} <span class="text-stone-600">({{ "%.1f"|format(chart.lagna_longitude) }}&deg;)</span></td>
           </tr>
           {% for p in chart.planets %}
           <tr class="border-b border-stone-100 last:border-0">
@@ -311,8 +311,8 @@
               {{ p.name }}{% if p.retrograde %}<span class="text-xs font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded ml-1 align-middle">R</span>{% endif %}
             </td>
             <td class="py-2 text-stone-800 leading-relaxed">
-              <div>{{ p.rashi }} <span class="text-stone-400">&middot;</span> House {{ p.house }} <span class="text-stone-400">&middot;</span> {{ "%.1f"|format(p.longitude) }}&deg;</div>
-              <div class="text-sm text-stone-500">{{ p.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
+              <div>{{ p.rashi }} <span class="text-stone-500">&middot;</span> House {{ p.house }} <span class="text-stone-500">&middot;</span> {{ "%.1f"|format(p.longitude) }}&deg;</div>
+              <div class="text-sm text-stone-600">{{ p.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
             </td>
           </tr>
           {% endfor %}
@@ -346,7 +346,7 @@
     </div>
     {% if bhagya_score.top_drivers %}
     <div class="mt-4 pt-4 border-t border-{{ _c }}-200 space-y-2">
-      <div class="text-xs uppercase tracking-wider font-semibold text-stone-500 mb-2">{{ t(lang, 'bhagya_why') }}</div>
+      <div class="text-xs uppercase tracking-wider font-semibold text-stone-600 mb-2">{{ t(lang, 'bhagya_why') }}</div>
       {% for d in bhagya_score.top_drivers %}
       <div class="flex items-start gap-2 text-sm">
         {% if d.kind == 'boost' %}
@@ -360,7 +360,7 @@
     </div>
     {% if bhagya_score.drivers | length > 3 %}
     <details class="mt-3 group">
-      <summary class="cursor-pointer text-xs text-stone-500 hover:text-astro-700">
+      <summary class="cursor-pointer text-xs text-stone-600 hover:text-astro-700">
         {{ t(lang, 'bhagya_show_all', n=bhagya_score.drivers | length) }}
       </summary>
       <div class="mt-2 space-y-2">
@@ -392,25 +392,25 @@
     <div class="bg-white rounded-2xl border border-stone-200 p-4 flex items-start gap-3">
       {% if lagna_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ lagna_glyph }}</span>{% endif %}
       <div class="min-w-0">
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'lagna') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'lagna') }}</div>
         <div class="font-display text-lg text-astro-700">{{ chart.lagna_rashi }}</div>
-        <div class="text-sm text-stone-500 mt-0.5">{{ "%.1f"|format(chart.lagna_longitude) }}&deg;</div>
+        <div class="text-sm text-stone-600 mt-0.5">{{ "%.1f"|format(chart.lagna_longitude) }}&deg;</div>
       </div>
     </div>
     <div class="bg-white rounded-2xl border border-stone-200 p-4 flex items-start gap-3">
       {% if moon_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ moon_glyph }}</span>{% endif %}
       <div class="min-w-0">
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'moon_rashi') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'moon_rashi') }}</div>
         <div class="font-display text-lg text-astro-700">{{ moon.rashi }}</div>
-        <div class="text-sm text-stone-500 mt-0.5">{{ moon.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
+        <div class="text-sm text-stone-600 mt-0.5">{{ moon.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
       </div>
     </div>
     <div class="bg-white rounded-2xl border border-stone-200 p-4 flex items-start gap-3">
       {% if sun_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ sun_glyph }}</span>{% endif %}
       <div class="min-w-0">
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1">{{ t(lang, 'sun_rashi') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'sun_rashi') }}</div>
         <div class="font-display text-lg text-astro-700">{{ sun.rashi }}</div>
-        <div class="text-sm text-stone-500 mt-0.5">{{ sun.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
+        <div class="text-sm text-stone-600 mt-0.5">{{ sun.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
       </div>
     </div>
   </section>
@@ -420,7 +420,7 @@
     <div class="bg-gradient-to-r from-astro-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-3">
       <div>
         <h2 class="font-display text-xl text-astro-700">{{ t(lang, 'dasha_card_title') }}</h2>
-        <p class="text-sm text-stone-500 mt-0.5">{{ t(lang, 'dasha_card_subtitle') }}</p>
+        <p class="text-sm text-stone-600 mt-0.5">{{ t(lang, 'dasha_card_subtitle') }}</p>
       </div>
       <a href="/dasha" class="text-sm text-astro-600 hover:text-astro-700 font-semibold whitespace-nowrap no-print">
         {{ t(lang, 'dasha_view_full') | safe }}
@@ -430,14 +430,14 @@
       <div>
         <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">{{ t(lang, 'dasha_active_maha') }}</div>
         <div class="font-display text-2xl text-stone-900">{{ dasha.mahadasha.lord }}</div>
-        <div class="text-sm text-stone-500 mt-1 tabular-nums">
+        <div class="text-sm text-stone-600 mt-1 tabular-nums">
           {{ dasha.mahadasha.start.isoformat() }} <span class="text-stone-300">→</span> {{ dasha.mahadasha.end.isoformat() }}
         </div>
       </div>
       <div>
         <div class="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-1">{{ t(lang, 'dasha_active_antar') }}</div>
         <div class="font-display text-2xl text-stone-900">{{ dasha.antardasha.lord }}</div>
-        <div class="text-sm text-stone-500 mt-1 tabular-nums">
+        <div class="text-sm text-stone-600 mt-1 tabular-nums">
           {{ dasha.antardasha.start.isoformat() }} <span class="text-stone-300">→</span> {{ dasha.antardasha.end.isoformat() }}
         </div>
       </div>
@@ -454,7 +454,7 @@
     <div class="px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
         <h2 class="font-display text-xl text-{{ _eff_colour }}-700">{{ t(lang, 'manglik_title') }}</h2>
-        <p class="text-sm text-stone-500 mt-0.5">{{ _eff_label }} &middot; {{ t(lang, manglik_severity_label) }}</p>
+        <p class="text-sm text-stone-600 mt-0.5">{{ _eff_label }} &middot; {{ t(lang, manglik_severity_label) }}</p>
       </div>
       <span class="text-xs font-semibold uppercase tracking-wider text-{{ _eff_colour }}-700 bg-{{ _eff_colour }}-50 border border-{{ _eff_colour }}-200 px-2 py-1 rounded">
         {{ _eff_label }}
@@ -462,7 +462,7 @@
     </div>
     <div class="px-6 py-5 space-y-4">
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">{{ t(lang, 'manglik_houses_label') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">{{ t(lang, 'manglik_houses_label') }}</div>
         <ul class="text-sm text-stone-700 space-y-0.5">
           {% for h in manglik.houses %}
           <li class="flex items-center gap-2">
@@ -473,14 +473,14 @@
         </ul>
       </div>
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">{{ t(lang, 'manglik_about_label') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">{{ t(lang, 'manglik_about_label') }}</div>
         <p class="text-base text-stone-800 leading-relaxed">{{ t(lang, manglik_about_key) }}</p>
       </div>
       {# COMPUTED CANCELLATIONS — replaces the old "consult an astrologer" boilerplate
          with the actual classical rules that fire for this chart, cited by source. #}
       {% if manglik.cancellations %}
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">
           {% if _eff == 'cancelled' %}Classical cancellation rules that apply{% else %}Mitigations that apply{% endif %}
         </div>
         <ul class="text-sm text-stone-700 space-y-2">
@@ -489,7 +489,7 @@
             <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-{{ _eff_colour }}-400 flex-shrink-0"></span>
             <span>
               <span class="text-stone-800">{{ rule.description }}</span>
-              <span class="text-xs text-stone-500 italic ml-1">— {{ rule.source }}</span>
+              <span class="text-xs text-stone-600 italic ml-1">— {{ rule.source }}</span>
             </span>
           </li>
           {% endfor %}
@@ -497,10 +497,19 @@
       </div>
       {% else %}
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-1.5">{{ t(lang, 'manglik_cancel_label') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">{{ t(lang, 'manglik_cancel_label') }}</div>
         <p class="text-base text-stone-700 leading-relaxed">No classical cancellation rules apply to this chart. The traditional remedy is to match with another Manglik partner (a partner who also has Mars in a Manglik house), which classically cancels the dosha mutually. Consult a knowledgeable astrologer before relying on remedies.</p>
       </div>
       {% endif %}
+
+      {# "Mars is not the only malefic" — practicing astrologers flag that
+         Manglik detection over-focuses users on Mars while ignoring 7H
+         lord, Venus, Upapada, and Dasha timing. Neutral (stone) tone —
+         not a warning, just a broader-context note. #}
+      <div class="mt-2 pt-4 border-t border-stone-200/70">
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">{{ t(lang, 'manglik_caveat_heading') }}</div>
+        <p class="text-sm text-stone-700 leading-relaxed">{{ t(lang, 'manglik_caveat_body') }}</p>
+      </div>
     </div>
   </section>
   {% endif %}
@@ -520,7 +529,7 @@
     <div class="px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
         <h2 class="font-display text-xl text-emerald-700">Yogas in your chart</h2>
-        <p class="text-sm text-stone-500 mt-0.5">{{ yogas | length }} classical combination{{ '' if yogas | length == 1 else 's' }} active</p>
+        <p class="text-sm text-stone-600 mt-0.5">{{ yogas | length }} classical combination{{ '' if yogas | length == 1 else 's' }} active</p>
       </div>
       <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded">Strengths</span>
     </div>
@@ -529,8 +538,8 @@
         {% set cat_yogas = yogas | selectattr("category", "equalto", cat_slug) | list %}
         {% if cat_yogas %}
         <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-0.5">{{ cat_label }}</div>
-          <div class="text-xs text-stone-500 mb-2.5">{{ cat_desc }}</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-0.5">{{ cat_label }}</div>
+          <div class="text-xs text-stone-600 mb-2.5">{{ cat_desc }}</div>
           <div class="grid sm:grid-cols-2 gap-3">
             {% for y in cat_yogas %}
             {# Group hover reveals the classical source citation — hidden
@@ -540,14 +549,14 @@
             <div class="yoga-card group bg-stone-50 border border-stone-200 rounded-lg p-3.5 transition-shadow hover:shadow-md">
               <div class="font-display text-base text-emerald-800 mb-1">{{ y.name }}</div>
               <p class="text-sm text-stone-700 leading-relaxed">{{ y.effect }}</p>
-              <div class="yoga-source text-[11px] text-stone-500 italic mt-1.5">Source: {{ y.source }}</div>
+              <div class="yoga-source text-[11px] text-stone-600 italic mt-1.5">Source: {{ y.source }}</div>
             </div>
             {% endfor %}
           </div>
         </div>
         {% endif %}
       {% endfor %}
-      <p class="text-xs text-stone-500 italic border-t border-stone-100 pt-3">
+      <p class="text-xs text-stone-600 italic border-t border-stone-100 pt-3">
         Yogas are classical planetary combinations that grant specific gifts across life. Compiled from classical Vedic astrology texts including <em>Brihat Parashara Hora Shastra</em> and <em>Phaladeepika</em>.
       </p>
     </div>
@@ -560,7 +569,7 @@
     <div class="px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
         <h2 class="font-display text-xl text-amber-700">{{ t(lang, 'sade_sati_title') }}</h2>
-        <p class="text-sm text-stone-500 mt-0.5">{{ t(lang, 'sade_sati_active') }} &middot; {{ t(lang, 'sade_sati_duration') }}</p>
+        <p class="text-sm text-stone-600 mt-0.5">{{ t(lang, 'sade_sati_active') }} &middot; {{ t(lang, 'sade_sati_duration') }}</p>
       </div>
       <span class="text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded">
         {{ t(lang, sade_phase_key) }}
@@ -576,17 +585,17 @@
       {# Compute elapsed/remaining via dates passed in context: rely on Jinja math #}
       <div class="grid sm:grid-cols-3 gap-3 bg-stone-50 rounded-lg p-4 border border-stone-100">
         <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-0.5">{{ t(lang, 'sade_sati_started') }}</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-0.5">{{ t(lang, 'sade_sati_started') }}</div>
           <div class="font-display text-base text-stone-900 tabular-nums">{{ sade_sati.overall_start.strftime('%b %Y') }}</div>
         </div>
         {% if sade_sati.phase_end %}
         <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-0.5">{{ t(lang, 'sade_sati_phase_ends') }}</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-0.5">{{ t(lang, 'sade_sati_phase_ends') }}</div>
           <div class="font-display text-base text-stone-900 tabular-nums">{{ sade_sati.phase_end.strftime('%b %Y') }}</div>
         </div>
         {% endif %}
         <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-0.5">{{ t(lang, 'sade_sati_ends') }}</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-0.5">{{ t(lang, 'sade_sati_ends') }}</div>
           <div class="font-display text-base text-stone-900 tabular-nums">{{ sade_sati.overall_end.strftime('%b %Y') }}</div>
         </div>
       </div>
@@ -597,7 +606,7 @@
         <div class="h-2 rounded-full bg-stone-200 overflow-hidden">
           <div class="h-full bg-amber-500 transition-all" style="width: {{ pct }}%;"></div>
         </div>
-        <div class="flex justify-between text-xs text-stone-500 mt-1.5 tabular-nums">
+        <div class="flex justify-between text-xs text-stone-600 mt-1.5 tabular-nums">
           <span>{{ sade_sati_elapsed_years }} {{ t(lang, 'sade_sati_years') }} {{ t(lang, 'sade_sati_elapsed') }}</span>
           <span>{{ sade_sati_remaining_years }} {{ t(lang, 'sade_sati_years') }} {{ t(lang, 'sade_sati_remaining') }}</span>
         </div>
@@ -701,7 +710,7 @@
     <a href="/" class="inline-flex items-center gap-2 bg-astro-700 hover:bg-astro-800 text-white text-base font-semibold px-6 py-3 rounded-lg transition-colors">
       Generate my free Kundli &rarr;
     </a>
-    <p class="text-xs text-stone-500 mt-4">
+    <p class="text-xs text-stone-600 mt-4">
       Shared reading created {{ snapshot.created_at[:10] if snapshot else '' }} &middot;
       Link expires {{ snapshot.expires_at[:10] if snapshot else '' }}
     </p>

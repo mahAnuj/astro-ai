@@ -42,7 +42,7 @@
      any city on demand. If they have a saved Kundli chart, we prefill. #}
   <form method="get" action="/panchang" class="flex items-end gap-2 justify-center flex-wrap bg-white border border-stone-200 rounded-xl p-3 sm:p-4 no-print">
     <label class="flex-1 max-w-sm">
-      <span class="block text-xs text-stone-500 mb-1">Change city</span>
+      <span class="block text-xs text-stone-600 mb-1">Change city</span>
       <input type="text" name="city" value="{{ city }}" placeholder="e.g. Mumbai, India"
              class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
     </label>
@@ -61,31 +61,31 @@
   {# THE 5 ANGAS — the classical Panchang breakdown #}
   <section class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
     <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Day &amp; Lord</div>
+      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Day &amp; Lord</div>
       <div class="text-lg font-display text-astro-800">{{ p.weekday }}</div>
       <div class="text-xs text-stone-600">Ruled by <strong>{{ p.day_lord }}</strong>. Favourable color: {{ p.day_color }}</div>
     </div>
     <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Tithi</div>
+      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Tithi</div>
       <div class="text-lg font-display text-astro-800">{{ p.tithi_paksha }} {{ p.tithi_name }}</div>
       {% if p.tithi_significance %}<div class="text-xs text-stone-600">{{ p.tithi_significance }}</div>{% endif %}
     </div>
     <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Sunrise / Sunset</div>
+      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Sunrise / Sunset</div>
       <div class="text-lg font-display text-astro-800 tabular-nums">
         {{ p.sunrise.strftime('%H:%M') }} — {{ p.sunset.strftime('%H:%M') }}
       </div>
       <div class="text-xs text-stone-600">Local time at {{ city_display }}</div>
     </div>
     <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Rahu Kaal (avoid)</div>
+      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Rahu Kaal (avoid)</div>
       <div class="text-lg font-display text-red-700 tabular-nums">
         {{ p.rahu_kaal_start.strftime('%H:%M') }} — {{ p.rahu_kaal_end.strftime('%H:%M') }}
       </div>
       <div class="text-xs text-stone-600">Inauspicious 1/8 of daylight</div>
     </div>
     <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Abhijit Muhurat (best)</div>
+      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Abhijit Muhurat (best)</div>
       <div class="text-lg font-display text-emerald-700 tabular-nums">
         {{ p.abhijit_start.strftime('%H:%M') }} — {{ p.abhijit_end.strftime('%H:%M') }}
       </div>
@@ -93,7 +93,7 @@
     </div>
     {% if moon_info %}
     <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-500 tracking-wider mb-1">Moon Today</div>
+      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Moon Today</div>
       <div class="text-lg font-display text-astro-800">{{ moon_info.rashi }}</div>
       <div class="text-xs text-stone-600">{{ moon_info.nakshatra }} nakshatra</div>
     </div>

@@ -27,7 +27,7 @@
           {{ t(lang, 'ask_cta_free') }}
         </span>
         {% if _remaining and _remaining < 3 %}
-        <span class="text-[11px] text-stone-500">
+        <span class="text-[11px] text-stone-600">
           {{ t(lang, 'ask_cta_remaining_one') if _remaining == 1 else t(lang, 'ask_cta_remaining', n=_remaining) }}
         </span>
         {% endif %}

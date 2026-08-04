@@ -41,7 +41,7 @@
                placeholder="e.g. Delhi, India"
                value="{{ prefill_city if prefill_city else '' }}"
                class="w-full border border-stone-300 rounded-md px-3 py-3 text-base focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
-        <p class="text-xs text-stone-500 mt-1">Used for local Panchang timing (sunrise, tithi).</p>
+        <p class="text-xs text-stone-600 mt-1">Used for local Panchang timing (sunrise, tithi).</p>
       </div>
       <div class="grid sm:grid-cols-2 gap-4">
         <div>
@@ -67,7 +67,7 @@
                  class="mt-1 h-4 w-4 text-astro-600 border-stone-400 rounded focus:ring-astro-500">
           <span class="text-sm text-stone-700">
             <span class="font-semibold text-astro-800">Match with my chart</span>
-            <span class="block text-xs text-stone-500 mt-0.5">Adds Tara Bala + Chandra Bala per day + soft cautions from Sade Sati or Rahu/Ketu Dasha. Classical rating stays universal — this is an extra column, not an override.</span>
+            <span class="block text-xs text-stone-600 mt-0.5">Adds Tara Bala + Chandra Bala per day + soft cautions from Sade Sati or Rahu/Ketu Dasha. Classical rating stays universal — this is an extra column, not an override.</span>
           </span>
         </label>
       </div>
@@ -78,7 +78,7 @@
       <details class="rounded-lg bg-white border-2 border-astro-200 p-3" {% if prefill_bride_dob or prefill_groom_dob %}open{% endif %} id="couple-fieldset">
         <summary class="cursor-pointer text-sm font-semibold text-astro-800">
           Match for both bride & groom charts (Vivah only — recommended)
-          <span class="block text-xs text-stone-500 font-normal mt-0.5">Real astrologers ALWAYS use both charts for wedding dates. Adds per-partner Tara/Chandra Bala + Manglik + Sade Sati flags per candidate.</span>
+          <span class="block text-xs text-stone-600 font-normal mt-0.5">Real astrologers ALWAYS use both charts for wedding dates. Adds per-partner Tara/Chandra Bala + Manglik + Sade Sati flags per candidate.</span>
         </summary>
         <div class="mt-3 grid sm:grid-cols-2 gap-4">
           <div class="space-y-2">
@@ -112,7 +112,7 @@
                    class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
           </div>
         </div>
-        <p class="text-xs text-stone-500 mt-2 italic">Both partners' full birth details required (date + time + place) for couple mode to activate. Leave empty to use single-chart mode.</p>
+        <p class="text-xs text-stone-600 mt-2 italic">Both partners' full birth details required (date + time + place) for couple mode to activate. Leave empty to use single-chart mode.</p>
       </details>
 
       {# Namkaran only — child's birth details to derive first-letter suggestions. #}
@@ -120,7 +120,7 @@
       <details class="rounded-lg bg-white border-2 border-astro-200 p-3" {% if prefill_child_dob %}open{% endif %}>
         <summary class="cursor-pointer text-sm font-semibold text-astro-800">
           Child's birth details → suggest first letters (Namkaran only)
-          <span class="block text-xs text-stone-500 font-normal mt-0.5">Classical Namkaran uses the child's Moon-nakshatra-pada at birth to pick auspicious first syllables (108-letter table).</span>
+          <span class="block text-xs text-stone-600 font-normal mt-0.5">Classical Namkaran uses the child's Moon-nakshatra-pada at birth to pick auspicious first syllables (108-letter table).</span>
         </summary>
         <div class="mt-3 space-y-2">
           <input type="date" name="child_dob" placeholder="Child's birth date"
@@ -146,7 +146,7 @@
   {% set avoid_candidates = candidates | selectattr('rating', 'equalto', 'avoid') | list %}
   <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
     <h2 class="font-display text-xl text-astro-700 mb-2">{{ event_label or 'Muhurat' }} candidates for {{ city }}</h2>
-    <p class="text-sm text-stone-500 mb-4">
+    <p class="text-sm text-stone-600 mb-4">
       <span class="font-semibold text-astro-700">{{ good_candidates | length }} auspicious dates</span> found in {{ candidates | length }}-day search from {{ start_date }}
       · {{ avoid_candidates | length }} restricted (see below)
       {% if personal_active %}· <span class="text-astro-700 font-semibold">personal chart matching active</span>{% endif %}
@@ -160,7 +160,7 @@
         <span class="text-sm text-stone-600">is the classical starting syllable</span>
       </div>
       <p class="text-sm text-stone-700">Your child was born under nakshatra <strong>{{ child_nakshatra }}</strong>, pada <strong>{{ child_pada }}</strong>. Per Muhurta Chintamani, that pada's assigned syllable is <strong>{{ child_first_letter }}</strong>. Some families prefer to choose from the full nakshatra rather than pada-strict — the four syllables for {{ child_nakshatra }} are: <strong>{{ child_all_letters | join(' · ') }}</strong>.</p>
-      <p class="text-xs text-stone-500 mt-2 italic">Traditional practice: name should start with this syllable, or contain it as the first phoneme. Modern practice often uses it as inspiration rather than a hard rule.</p>
+      <p class="text-xs text-stone-600 mt-2 italic">Traditional practice: name should start with this syllable, or contain it as the first phoneme. Modern practice often uses it as inspiration rather than a hard rule.</p>
     </div>
     {% endif %}
 
@@ -183,7 +183,7 @@
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
-          <tr class="text-left text-xs uppercase text-stone-500 border-b border-stone-200">
+          <tr class="text-left text-xs uppercase text-stone-600 border-b border-stone-200">
             <th class="pb-1.5 pr-3">Date</th>
             <th class="pb-1.5 pr-3">Day</th>
             <th class="pb-1.5 pr-3">Tithi</th>
@@ -203,10 +203,10 @@
           <tr class="border-b border-stone-100 align-top">
             <td class="py-2 pr-3 tabular-nums whitespace-nowrap font-medium">{{ c.d.strftime('%b %d, %Y') }}</td>
             <td class="py-2 pr-3">{{ c.weekday[:3] }}</td>
-            <td class="py-2 pr-3">{{ c.tithi }}<span class="text-xs text-stone-400 ml-1">{{ c.tithi_paksha }}</span></td>
+            <td class="py-2 pr-3">{{ c.tithi }}<span class="text-xs text-stone-500 ml-1">{{ c.tithi_paksha }}</span></td>
             <td class="py-2 pr-3 text-xs">
               {{ c.nakshatra }}
-              {% if c.nitya_yoga %}<div class="text-[10px] text-stone-400 mt-0.5">Yoga: {{ c.nitya_yoga }}</div>{% endif %}
+              {% if c.nitya_yoga %}<div class="text-[10px] text-stone-500 mt-0.5">Yoga: {{ c.nitya_yoga }}</div>{% endif %}
             </td>
             <td class="py-2 pr-3">
               <div class="flex flex-col gap-1">
@@ -229,7 +229,7 @@
                   Chandra: {{ c.personal.chandra_bala }}
                 </span>
               </div>
-              {% else %}<span class="text-stone-400">—</span>{% endif %}
+              {% else %}<span class="text-stone-500">—</span>{% endif %}
             </td>
             {% endif %}
             {% if couple_active %}
@@ -248,7 +248,7 @@
                   Groom: {{ c.couple.groom.tara_bala_name }} · Ch:{{ c.couple.groom.chandra_bala }}
                 </div>
               </div>
-              {% else %}<span class="text-stone-400">—</span>{% endif %}
+              {% else %}<span class="text-stone-500">—</span>{% endif %}
             </td>
             {% endif %}
             <td class="py-2 pr-3 text-[11px] text-stone-600 tabular-nums whitespace-nowrap">
@@ -261,7 +261,7 @@
                 <div class="mt-1 space-y-0.5 min-w-[180px]">
                   {% for w in c.choghadiya %}
                   {% set ch_colors = {'best': 'emerald-100 text-emerald-800', 'good': 'emerald-50 text-emerald-700', 'neutral': 'stone-50 text-stone-600', 'avoid': 'rose-50 text-rose-700'} %}
-                  {% set ch_class = ch_colors.get(w.auspiciousness, 'stone-50 text-stone-500') %}
+                  {% set ch_class = ch_colors.get(w.auspiciousness, 'stone-50 text-stone-600') %}
                   <div class="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-{{ ch_class }}">
                     <span class="font-semibold w-12">{{ w.name }}</span>
                     <span class="text-[10px] opacity-70">{{ w.start }}-{{ w.end }}</span>
@@ -278,7 +278,7 @@
         </tbody>
       </table>
     </div>
-    <p class="text-xs text-stone-500 mt-2 italic">
+    <p class="text-xs text-stone-600 mt-2 italic">
       <span class="text-emerald-700">✓</span> Abhijit Muhurta = best 48-minute window of each day (~solar noon). <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious 90-minute window, avoid for launches. Yoga = Nitya Yoga; Vaidhriti/Vyatipata days are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present (universal auspiciousness).
     </p>
     {% endif %}
@@ -291,7 +291,7 @@
       <div class="mt-3 overflow-x-auto">
         <table class="w-full text-xs">
           <thead>
-            <tr class="text-left uppercase text-stone-500 border-b border-stone-200">
+            <tr class="text-left uppercase text-stone-600 border-b border-stone-200">
               <th class="pb-1 pr-3">Date</th>
               <th class="pb-1 pr-3">Day</th>
               <th class="pb-1">Reason</th>
@@ -311,7 +311,7 @@
     </details>
     {% endif %}
 
-    <div class="text-xs text-stone-500 mt-4 space-y-1">
+    <div class="text-xs text-stone-600 mt-4 space-y-1">
       <p><strong>Classical criteria applied:</strong> tithi + nakshatra + weekday scoring; hard exclusions for Panchak, Chaturmas (Devshayani → Devuthani), Kharmas / Malmas (Sun in Sagittarius/Pisces), Dagdha tithi-weekday combinations, Guru + Shukra + Budh combustion per event karaka, and eclipse days (±1 day universal blocker).</p>
       {% if personal_active %}
       <p><strong>Personal matching:</strong> Tara Bala counts transit-day nakshatra from your natal Moon nakshatra (mod 9); positions Sampat, Kshema, Sadhaka, Mitra, Ati-Mitra are auspicious; Vipat, Pratyari, Vadha are avoided. Chandra Bala checks the transit Moon's house from your natal Moon; houses 1/3/6/7/10/11 are strong, 4/8/12 are weak. Sade Sati and Rahu/Ketu Mahadasha surface as chart-level cautions above.</p>
