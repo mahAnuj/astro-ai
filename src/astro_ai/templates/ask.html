@@ -43,6 +43,18 @@
     <p class="text-sm text-stone-700 italic border-l-2 border-astro-300 pl-3 mb-5">{{ current_question }}</p>
 
     <div class="prose prose-sm sm:prose-base max-w-none text-stone-800 leading-relaxed whitespace-pre-wrap">{{ answer | linkify_learn }}</div>
+
+    {# Per-answer AI honesty note — Shyamasundara Dasa raised the
+       "AI has no intuition, not connected to paramatma" point; rather
+       than argue, disclose it plainly next to every answer where the
+       user actually reads. Slightly softer stone tone so it doesn't
+       overpower the reading itself. #}
+    <div class="mt-4 pt-3 border-t border-stone-200 flex items-start gap-2">
+      <svg class="shrink-0 mt-0.5 w-4 h-4 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+      </svg>
+      <p class="text-xs text-stone-600 leading-relaxed">{{ t(lang, 'ask_ai_note_short') }}</p>
+    </div>
   </article>
   {% endif %}
 
@@ -107,10 +119,10 @@
     </form>
   </section>
 
-  <!-- Honest note about limits -->
-  <p class="text-xs text-stone-600 text-center max-w-xl mx-auto">
-    Astrology shows tendencies, not fixed fate. Treat the answer as one lens, not the only one.
-    Avoid asking about death, illness, or hard guarantees &mdash; questions about timing, choices, and themes work best.
+  <!-- Honest note about limits — expanded to acknowledge AI-generation
+       explicitly (per Shyamasundara Dasa audit reply, 2026-08-02). -->
+  <p class="text-xs text-stone-600 text-center max-w-xl mx-auto leading-relaxed">
+    {{ t(lang, 'ask_ai_note_footer') }}
   </p>
 
 </main>
