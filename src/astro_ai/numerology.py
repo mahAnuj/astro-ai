@@ -372,21 +372,27 @@ _LP_DESTINY_ENEMIES: set[tuple[int, int]] = {
 }
 
 
-def compute_numerology_bhagya_score(reading: NumerologyReading) -> NumBhagyaScore:
+def compute_numerology_bhagya_score(reading: NumerologyReading, lang: str = "en") -> NumBhagyaScore:
     """Compute the numerology-only Bhagya Score.
 
     All signals sourced from the NumerologyReading dataclass; no external
     LLM or chart data required. Master numbers (11/22/33) route through
     their reduced base for pair lookups but keep their own boost bonus.
+
+    `lang` selects driver-note + label language (i18n follow-up
+    2026-08-04 after Shyamasundara audit surfaced that these were
+    English-only regardless of user language).
     """
+    from astro_ai.i18n import translate
+
     drivers: list[NumBhagyaDriver] = []
     score = 50
 
-    def _add(delta: int, note: str) -> None:
+    def _add(delta: int, key: str, **kwargs) -> None:
         nonlocal score
         score += delta
         drivers.append(NumBhagyaDriver(
-            weight=delta, note=note,
+            weight=delta, note=translate(lang, key, **kwargs),
             kind="boost" if delta > 0 else "reduce",
         ))
 
@@ -395,58 +401,58 @@ def compute_numerology_bhagya_score(reading: NumerologyReading) -> NumBhagyaScor
 
     # Master number Life Path — rare and spiritually potent per Kumar
     if lp in (11, 22, 33):
-        _add(+8, f"Master Number Life Path {lp} — rare, spiritually potent (elevated {lp_base})")
+        _add(+8, "nbs_master_lp", lp=lp, base=lp_base)
     # Naturally auspicious Life Paths per Johari §4 (Sun / Jupiter / Mercury / Venus rulers)
     elif lp_base in (1, 3, 5, 6):
         planet = {1: "Sun", 3: "Jupiter", 5: "Mercury", 6: "Venus"}[lp_base]
-        _add(+5, f"Life Path {lp} — ruled by {planet}, a naturally supportive number")
+        _add(+5, "nbs_supportive_lp", lp=lp, planet=planet)
 
     # Karmic Debt Numbers (Kumar Ch.1) — each is soul-work
     if reading.karmic_debt_numbers:
         n = len(reading.karmic_debt_numbers)
         pts = -min(n * 3, 12)   # cap -12
         names = "/".join(str(k) for k in reading.karmic_debt_numbers)
-        _add(pts, f"Karmic Debt {names} present — a life-lesson theme running through this incarnation")
+        _add(pts, "nbs_karmic_debt", names=names)
 
     # Life Path × Destiny harmony
     d = int(reading.destiny)
     d_base = {11: 2, 22: 4, 33: 6}.get(d, d)
     pair = (min(lp_base, d_base), max(lp_base, d_base))
     if pair in _LP_DESTINY_FRIENDS:
-        _add(+5, f"Life Path {lp} and Destiny {d} are friendly numbers — inner drive and outer role aligned")
+        _add(+5, "nbs_lp_dest_friend", lp=lp, d=d)
     elif pair in _LP_DESTINY_ENEMIES:
-        _add(-3, f"Life Path {lp} and Destiny {d} are enemy numbers per Johari — inner drive and outer role pull apart")
+        _add(-3, "nbs_lp_dest_enemy", lp=lp, d=d)
 
     # Personal Year — the ONLY annually-shifting signal in this score.
     # Dynamic years (1, 3, 5, 9) boost; grinding years (4, 7, 8) reduce.
     py = int(reading.personal_year)
     if py in (1, 3, 5, 9):
-        _add(+3, f"Personal Year {py} — a dynamic, initiative-favouring year")
+        _add(+3, "nbs_py_dynamic", py=py)
     elif py in (4, 7, 8):
-        _add(-2, f"Personal Year {py} — a slower, structural-work year")
+        _add(-2, "nbs_py_grind", py=py)
     elif py == 6:
-        _add(+2, "Personal Year 6 — a harmony / family / responsibility year")
+        _add(+2, "nbs_py_harmony")
 
     # Compound Name number in Johari's most-fortunate 4-tier compounds
     # (10, 19, 23, 27, 28, 37, 46, 49): +2. The exalted 1s per §5.
     if reading.name_compound in (10, 19, 23, 27, 28, 37, 46, 49):
-        _add(+2, f"Compound {reading.name_compound} — one of Johari's most-fortunate name compounds")
+        _add(+2, "nbs_compound_good", n=reading.name_compound)
     elif reading.name_compound in (13, 14, 16, 26, 43):
-        _add(-2, f"Compound {reading.name_compound} — a challenging classical compound (rise-then-fall pattern)")
+        _add(-2, "nbs_compound_challenge", n=reading.name_compound)
 
-    # Clamp + bucket label — same labels as chart Bhagya Score for consistency
+    # Clamp + bucket label
     score = max(0, min(100, score))
     if score >= 75:
-        label = "Strong numerological chapter"
+        label = translate(lang, "nbs_label_strong")
         label_class = "emerald"
     elif score >= 50:
-        label = "Steady numerological base"
+        label = translate(lang, "nbs_label_steady")
         label_class = "astro"
     elif score >= 25:
-        label = "Numerology signals ask for patience"
+        label = translate(lang, "nbs_label_patience")
         label_class = "amber"
     else:
-        label = "Deep learning theme — remedies matter"
+        label = translate(lang, "nbs_label_deep")
         label_class = "rose"
 
     drivers.sort(key=lambda x: abs(x.weight), reverse=True)

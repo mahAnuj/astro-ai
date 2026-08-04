@@ -3208,20 +3208,37 @@ class BhagyaScore:
         return self.drivers[:3]
 
 
-def compute_bhagya_score(chart: Chart) -> BhagyaScore:
+def _localize_house_ordinal(n: int, lang: str) -> str:
+    """Render a house number for Bhagya-Score driver notes.
+
+    English: "2nd", "3rd", etc. via _ordinal helper.
+    Hindi:   "{n}वें" (nth) — same suffix works for 2वें/3वें/4वें/...
+    """
+    if lang == "hi":
+        return f"{n}वें"
+    return _ordinal(n)
+
+
+def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
     """Compute the Bhagya Score for a chart.
 
     All classical rules already implemented elsewhere in chart.py — we
     just aggregate their outputs into a single scalar for gamification.
+
+    `lang` selects the driver-note + label language. Notes are looked up
+    from i18n.py so Hindi users see driver reasons in Devanagari, not
+    English mid-page (Shyamasundara audit follow-up 2026-08-04).
     """
+    from astro_ai.i18n import translate
+
     drivers: list[BhagyaScoreDriver] = []
     score = 50
 
-    def _add(delta: int, note: str) -> None:
+    def _add(delta: int, key: str, **kwargs) -> None:
         nonlocal score
         score += delta
         drivers.append(BhagyaScoreDriver(
-            weight=delta, note=note,
+            weight=delta, note=translate(lang, key, **kwargs),
             kind="boost" if delta > 0 else "reduce",
         ))
 
@@ -3230,7 +3247,8 @@ def compute_bhagya_score(chart: Chart) -> BhagyaScore:
     if yogas:
         n_yogas = min(len(yogas), 3)   # cap so a single feature doesn't dominate
         yoga_names = ", ".join(y.name for y in yogas[:n_yogas])
-        _add(+5 * n_yogas, f"{n_yogas} auspicious yoga{'s' if n_yogas > 1 else ''} active ({yoga_names})")
+        _add(+5 * n_yogas, "bs_yogas_active", n=n_yogas,
+             plural=("s" if n_yogas > 1 and lang == "en" else ""), names=yoga_names)
 
     # ─── Manglik status (from Mars-in-1/2/4/7/8/12 with all classical
     #     cancellation rules applied — mangal_details returns the FINAL
@@ -3251,37 +3269,39 @@ def compute_bhagya_score(chart: Chart) -> BhagyaScore:
         and mangal.severity in ("low", "moderate")
     )
     if mangal.effective_status == "cancelled":
-        _add(+5, "Manglik pattern cancelled by classical rules — no net Dosh")
+        _add(+5, "bs_manglik_cancelled")
     elif v_only:
-        _add(-1, "Kuja-Shukra pattern (Venus-axis only) — mainstream Lagna/Moon check reads as non-Manglik")
+        _add(-1, "bs_manglik_kuja_shukra")
     elif mangal.effective_status == "mitigated":
-        _add(-3, "Manglik pattern partly mitigated (some cancellations apply)")
+        _add(-3, "bs_manglik_mitigated")
     elif mangal.effective_status == "present":
-        _add(-8, "Manglik Dosh present (no cancellations found in this chart)")
+        _add(-8, "bs_manglik_present")
 
     # ─── Sade Sati transit phase — Saturn ±1 rashi from natal Moon ─
     flags = compute_vedic_flags(chart)
     if flags.sade_sati:
         phase = (flags.sade_sati_phase or "").lower()
         if phase == "peak":
-            _add(-10, "Sade Sati peak phase — the middle 2.5-year stretch")
+            _add(-10, "bs_sade_sati_peak")
         elif phase == "rising":
-            _add(-5, "Sade Sati rising phase — early ~2.5 years")
+            _add(-5, "bs_sade_sati_rising")
         elif phase == "setting":
-            _add(-3, "Sade Sati setting phase — exit ~2.5 years")
+            _add(-3, "bs_sade_sati_setting")
     else:
-        _add(+3, "Sade Sati is not active")
+        _add(+3, "bs_sade_sati_inactive")
 
     # Kantaka + Ashtama Shani — softer classical Saturn cautions.
     if flags.ashtama_shani:
-        _add(-4, "Ashtama Shani transit (Saturn in 8th from natal Moon)")
+        _add(-4, "bs_ashtama_shani")
     if flags.kantaka_shani:
-        _add(-3, "Kantaka Shani transit (Saturn in 4th from natal Moon)")
+        _add(-3, "bs_kantaka_shani")
 
-    # ─── Kaal Sarp — strict binary per BPHS ─────────────────────────
+    # ─── Kaal Sarp — geometric pattern (not classical shastra — the
+    #     20th-c. modern classification per our /kaal-sarp-check review).
+    #     Keep in the score but treat as a prompt, not a verdict.
     ksd = compute_kaal_sarp(chart)
     if ksd.is_kaal_sarp:
-        _add(-12, f"Kaal Sarp Dosh ({ksd.type_name or 'active'})")
+        _add(-12, "bs_kaal_sarp", variant=(ksd.type_name or "active"))
 
     # ─── Planet dignities — exalted planets add, debilitated subtract
     exalted = []
@@ -3296,10 +3316,12 @@ def compute_bhagya_score(chart: Chart) -> BhagyaScore:
             debilitated.append(p.name)
     if exalted:
         pts = min(len(exalted) * 3, 9)   # cap +9
-        _add(+pts, f"{len(exalted)} planet{'s' if len(exalted)>1 else ''} exalted ({', '.join(exalted)})")
+        _add(+pts, "bs_exalted", n=len(exalted),
+             plural=("s" if len(exalted) > 1 and lang == "en" else ""), names=", ".join(exalted))
     if debilitated:
         pts = -min(len(debilitated) * 3, 9)   # cap -9
-        _add(pts, f"{len(debilitated)} planet{'s' if len(debilitated)>1 else ''} debilitated ({', '.join(debilitated)})")
+        _add(pts, "bs_debilitated", n=len(debilitated),
+             plural=("s" if len(debilitated) > 1 and lang == "en" else ""), names=", ".join(debilitated))
 
     # ─── Current Mahadasha lord — Jupiter/Venus/Moon add, Saturn/Rahu subtract
     #     Sun/Mars/Mercury/Ketu are neutral (context matters too much) ─
@@ -3307,9 +3329,9 @@ def compute_bhagya_score(chart: Chart) -> BhagyaScore:
         dasha = compute_dasha_state(chart)
         lord = (dasha.mahadasha.lord or "").split(" ")[0]
         if lord in ("Jupiter", "Venus", "Moon"):
-            _add(+5, f"Current Mahadasha: {lord} — a natural benefic period")
+            _add(+5, "bs_maha_benefic", lord=lord)
         elif lord in ("Saturn", "Rahu"):
-            _add(-3, f"Current Mahadasha: {lord} — a demanding, patience-testing period")
+            _add(-3, "bs_maha_malefic", lord=lord)
         # ─── Current Antardasha — shifts every few months, adds daily
         #     relevance the Mahadasha alone can't. Softer weight than
         #     Mahadasha because a benefic Antardasha inside a malefic
@@ -3317,9 +3339,9 @@ def compute_bhagya_score(chart: Chart) -> BhagyaScore:
         ad_lord = (dasha.antardasha.lord or "").split(" ")[0]
         if ad_lord and ad_lord != lord:  # avoid double-counting Maha=Antar overlap
             if ad_lord in ("Jupiter", "Venus", "Moon"):
-                _add(+2, f"Current Antardasha: {ad_lord} — the next few months carry benefic sub-flavour")
+                _add(+2, "bs_antar_benefic", lord=ad_lord)
             elif ad_lord in ("Saturn", "Rahu"):
-                _add(-2, f"Current Antardasha: {ad_lord} — the next few months carry demanding sub-flavour")
+                _add(-2, "bs_antar_malefic", lord=ad_lord)
     except Exception:
         pass
 
@@ -3339,10 +3361,11 @@ def compute_bhagya_score(chart: Chart) -> BhagyaScore:
             t_jup = next((p for p in transit.planets if p.name == "Jupiter"), None)
             if t_jup:
                 jup_house_from_moon = ((_rashi_index(t_jup.rashi) - natal_moon_idx) % 12) + 1
+                house_str = _localize_house_ordinal(jup_house_from_moon, lang)
                 if jup_house_from_moon in (2, 5, 7, 9, 11):
-                    _add(+3, f"Jupiter gochar in {_ordinal(jup_house_from_moon)} from natal Moon — expansive transit")
+                    _add(+3, "bs_jup_gochar_good", house=house_str)
                 elif jup_house_from_moon in (3, 4, 8, 12):
-                    _add(-2, f"Jupiter gochar in {_ordinal(jup_house_from_moon)} from natal Moon — a slower Jupiter phase")
+                    _add(-2, "bs_jup_gochar_slow", house=house_str)
             # Rahu / Ketu transiting over natal Moon or natal Lagna axis
             natal_lagna_idx = _rashi_index(chart.lagna_rashi)
             for node in ("Rahu", "Ketu"):
@@ -3350,25 +3373,25 @@ def compute_bhagya_score(chart: Chart) -> BhagyaScore:
                 if t_node:
                     t_idx = _rashi_index(t_node.rashi)
                     if t_idx == natal_moon_idx:
-                        _add(-2, f"{node} currently transiting over natal Moon — introspective / restless emotional weather")
+                        _add(-2, "bs_node_over_moon", node=node)
                     elif t_idx == natal_lagna_idx:
-                        _add(-2, f"{node} currently transiting over natal Lagna — self-image being reshaped")
+                        _add(-2, "bs_node_over_lagna", node=node)
     except Exception:
         pass
 
     # ─── Clamp + label bucket ──────────────────────────────────────
     score = max(0, min(100, score))
     if score >= 75:
-        label = "Strong current chapter"
+        label = translate(lang, "bs_label_strong")
         label_class = "emerald"
     elif score >= 50:
-        label = "Steady period"
+        label = translate(lang, "bs_label_steady")
         label_class = "astro"
     elif score >= 25:
-        label = "Testing period — patience compounds"
+        label = translate(lang, "bs_label_testing")
         label_class = "amber"
     else:
-        label = "Deep learning period — classical remedies matter more now"
+        label = translate(lang, "bs_label_deep")
         label_class = "rose"
 
     # Sort drivers by absolute impact so the 'why' panel highlights the
