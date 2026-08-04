@@ -520,19 +520,24 @@ _LIFE_PATH = {
     33: "The Master Teacher (Master 33) — enlightened service, healing. Elevated 6 — rare number, path involves guiding others toward higher understanding.",
 }
 
+# Softened from a deterministic "Destined to..." voice (which read as
+# fate-predictions) to a reflective "traditionally associated with..."
+# voice matching the framework-honest tone of the /numerology caveat.
+# Content unchanged — same career/role themes; language now invites
+# self-reflection rather than asserting an outcome.
 _DESTINY = {
-    1: "Destined to lead — original ventures, entrepreneurship, being first at something.",
-    2: "Destined for partnership work — mediation, diplomacy, supporting roles that hold things together.",
-    3: "Destined to communicate — writing, speaking, teaching, art. Your voice matters.",
-    4: "Destined to build — real estate, engineering, systems, long-term structures.",
-    5: "Destined for variety — sales, travel, marketing, roles requiring adaptability.",
-    6: "Destined to care — teaching, medicine, family businesses, community roles.",
-    7: "Destined for depth — research, spiritual work, specialised expertise, deep analysis.",
-    8: "Destined for material achievement — business, finance, executive leadership.",
-    9: "Destined for humanitarian work — non-profits, healing arts, global-impact roles.",
-    11: "Destined for visionary work — psychic/spiritual leadership, inspirational teaching.",
-    22: "Destined for large-scale building — architecture, foundational institutions, movements.",
-    33: "Destined for enlightened service — spiritual teaching, deep healing, exceptional care.",
+    1: "Traditionally associated with leadership themes — original ventures, entrepreneurship, being first at something. Use as a prompt for what shape of work you're drawn to, not a prediction.",
+    2: "Traditionally associated with partnership work — mediation, diplomacy, supporting roles that hold things together.",
+    3: "Traditionally associated with communication — writing, speaking, teaching, art. Your voice may be a key instrument.",
+    4: "Traditionally associated with building — real estate, engineering, systems, long-term structures.",
+    5: "Traditionally associated with variety and movement — sales, travel, marketing, roles requiring adaptability.",
+    6: "Traditionally associated with caring roles — teaching, medicine, family businesses, community work.",
+    7: "Traditionally associated with depth — research, spiritual work, specialised expertise, deep analysis.",
+    8: "Traditionally associated with material achievement — business, finance, executive leadership.",
+    9: "Traditionally associated with humanitarian work — non-profits, healing arts, global-impact roles.",
+    11: "Traditionally associated with visionary work — psychic/spiritual leadership, inspirational teaching.",
+    22: "Traditionally associated with large-scale building — architecture, foundational institutions, movements.",
+    33: "Traditionally associated with enlightened service — spiritual teaching, deep healing, exceptional care.",
 }
 
 _SOUL_URGE = {
