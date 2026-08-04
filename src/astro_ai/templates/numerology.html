@@ -114,9 +114,12 @@
 
   <header>
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-1">Numerology Reading for {{ reading.name }}</h1>
-    <p class="text-sm text-stone-600">
+    <p class="text-sm text-stone-600 mb-3">
       {{ reading.birth_date }} · {{ reading.system | capitalize }} system
     </p>
+    {% with pdf_filename_hint = (reading.name or 'Numerology') + ' Numerology' %}
+      {% include "_pdf_download_button.html" %}
+    {% endwith %}
   </header>
 
   {# ─── NUMEROLOGY BHAGYA SCORE ───────────────────────────────────

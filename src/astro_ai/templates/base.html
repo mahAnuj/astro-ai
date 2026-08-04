@@ -573,17 +573,53 @@
   summary { list-style: none; }
   summary::-webkit-details-marker { display: none; }
 
-  /* Print stylesheet — used by the "Print / Save as PDF" buttons.
-     Strips the chrome and lets the reading itself fill the page. */
+  /* Print stylesheet — used by the "Download PDF" and "Print" buttons.
+     Since we don't run weasyprint server-side (Docker weight vs value),
+     the browser's Print → Save as PDF is the actual PDF-generation path.
+     This stylesheet decides how good the resulting PDF looks. */
   @media print {
-    .no-print, nav, footer { display: none !important; }
-    body { background: white !important; }
-    main { max-width: 100% !important; padding: 0 !important; }
-    article, section, .bg-white { box-shadow: none !important; border: 1px solid #e5e5e5 !important; }
+    /* Strip interactive chrome — nav, footer, ask CTAs, feedback widget,
+       print/download buttons themselves, subscription modal, everything
+       tagged .no-print. */
+    .no-print, nav, footer, [data-ask-cta] { display: none !important; }
+    /* Force clean paper background so any brand tint doesn't waste ink. */
+    body { background: white !important; color: #1c1917 !important; }
+    main { max-width: 100% !important; padding: 12mm 0 !important; }
+    /* Card containers — visible border, no shadow (shadows print grey). */
+    article, section, .bg-white {
+      box-shadow: none !important;
+      border: 1px solid #d6d3d1 !important;
+      background: white !important;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    /* Links — inherit body color, no underline noise, but keep hrefs
+       visible so a printed reading remains useful offline. */
     a { color: inherit !important; text-decoration: none !important; }
-    /* Keep each reading section + the diamond chart on one page if possible. */
-    article, section, table, svg { page-break-inside: avoid; }
-    h1, h2, h3 { page-break-after: avoid; }
+    /* Cover-page style header — the H1 gets extra top space so it
+       reads like a report title rather than continuing web body. */
+    main > header { margin-bottom: 8mm !important; padding-bottom: 4mm !important; border-bottom: 2px solid #292524 !important; }
+    main > header h1 { font-size: 24pt !important; margin-bottom: 4pt !important; }
+    /* Major section boundaries — break BEFORE each h2-headed section
+       when the previous section pushes it too far down. Uses `avoid`
+       for the first section (header + score) and `auto` after so long
+       readings paginate naturally. */
+    h1, h2, h3 { page-break-after: avoid; break-after: avoid; }
+    h2 { margin-top: 8mm !important; }
+    /* Diamond chart SVG + tables — never split across pages. */
+    svg, table { break-inside: avoid; page-break-inside: avoid; }
+    /* Bhagya Score dial, Kuta caveat, Manglik caveat — small blocks
+       that look silly split across a page break. */
+    aside, [data-bhagya-score] { break-inside: avoid; page-break-inside: avoid; }
+    /* Reveal-hidden content (JS scroll-reveal) — force visible in
+       print, since paged output never scrolls the reveal trigger. */
+    [data-reveal] { opacity: 1 !important; transform: none !important; }
+    /* Every page footer: brand + URL so the reader knows where to
+       come back. Uses CSS Paged Media (Chromium honours this). */
+    @page {
+      margin: 12mm 12mm 18mm 12mm;
+      size: A4;
+    }
   }
 </style>
 </head>

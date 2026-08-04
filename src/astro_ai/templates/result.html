@@ -65,9 +65,15 @@
       <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
         {% if details.name %}{{ t(lang, 'natal_title', name=details.name) }}{% else %}{{ t(lang, 'natal_title_anon') }}{% endif %}
       </h1>
-      <p class="text-sm text-stone-600">
+      <p class="text-sm text-stone-600 mb-3">
         {{ t(lang, 'natal_subtitle', date=details.birth_date, time=details.birth_time, place=details.birth_place) }}
       </p>
+      {# Download PDF — sits directly under the header line where a user
+         who wants to save a copy actually looks. Uses browser Print →
+         Save as PDF via the polished @media print stylesheet. #}
+      {% with pdf_filename_hint = (details.name or 'Kundli') + ' Kundli' %}
+        {% include "_pdf_download_button.html" %}
+      {% endwith %}
     </div>
     {% if not is_snapshot %}
     {# Top-right action strip (Issue #89) — puts high-intent actions
