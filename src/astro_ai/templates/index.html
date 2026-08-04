@@ -163,7 +163,9 @@
       <div class="flex items-center gap-3">
         <img src="/static/rashi/{{ user_moon_slug }}.png"
              alt="{{ user_moon_display }} silhouette"
-             class="w-14 h-14 object-contain shrink-0" decoding="async">
+             width="56" height="56"
+             class="w-14 h-14 object-contain shrink-0"
+             decoding="async" fetchpriority="high">
         <div class="flex-1 min-w-0">
           <div class="text-[10px] uppercase tracking-wider font-semibold text-astro-700">Your Rashifal today</div>
           <div class="font-display text-lg text-stone-900 truncate">{{ user_moon_display }}</div>

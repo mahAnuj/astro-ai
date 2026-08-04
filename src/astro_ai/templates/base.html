@@ -107,7 +107,7 @@
     has_chart:  "{{ 'yes' if user_age_bucket(request) else 'no' }}"
   };
 </script>
-<script src="/static/analytics.js"></script>
+<script src="/static/analytics.js" defer></script>
 {# Scroll-reveal is pure CSS keyframe now — see [data-reveal] rule in
    the <style> block below. No JS needed. #}
 <script>
@@ -116,7 +116,10 @@
   //   is filterable by age bucket / language / activation status.
   // - featureView extracts the first path segment (e.g. /kundli, /dasha,
   //   /rashifal) so GA4 funnels read as feature names instead of raw URLs.
-  (function () {
+  // Wrapped in DOMContentLoaded so the deferred analytics.js above is
+  // loaded and executed before we call into it (defer scripts fire
+  // before DOMContentLoaded, so window.Analytics is guaranteed ready).
+  document.addEventListener('DOMContentLoaded', function () {
     if (!window.Analytics) return;
     Analytics.userIdentified(window.BHAGYA_USER_PROPS);
     var seg = location.pathname.split('/')[1] || 'home';
@@ -124,7 +127,7 @@
     if (seg !== 'admin' && seg !== 'static' && seg !== 'sw.js') {
       Analytics.featureView(seg);
     }
-  })();
+  });
 </script>
 
 <!-- Tailwind Play CDN — no build step. Fine for MVP; bake into a build pipeline before production scale. -->
@@ -139,7 +142,10 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Inter for Latin body, Crimson Pro for display, Noto Sans Devanagari for Hindi. -->
+<!-- Inter for Latin body, Crimson Pro for display, Noto Sans Devanagari
+     for Hindi. display=swap prevents FOIT — text renders in fallback
+     immediately, then swaps to Inter when it arrives. Combined with the
+     two preconnects above, this saves ~150-300ms LCP on cold cache. -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <script>
@@ -858,7 +864,7 @@
   <div id="pwa-install-banner" class="hidden fixed bottom-3 inset-x-3 sm:left-3 sm:right-auto sm:w-80
                                        z-40 bg-white border border-stone-300 rounded-lg shadow-lg p-3 text-sm no-print">
     <div class="flex items-start gap-3">
-      <img src="/static/icons/icon-192.png" alt="" class="w-10 h-10 rounded shrink-0">
+      <img src="/static/icons/icon-192.png" alt="" loading="lazy" decoding="async" class="w-10 h-10 rounded shrink-0">
       <div class="flex-1 min-w-0">
         <div class="font-semibold text-stone-900">Install Shubh Bhagya</div>
         <div id="pwa-install-msg" class="text-stone-600 text-xs mt-0.5"></div>
