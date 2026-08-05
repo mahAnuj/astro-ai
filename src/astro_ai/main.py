@@ -514,6 +514,13 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env.globals["t"] = _i18n_translate
 # current_year used by nav labels like "Horoscope 2026" — auto-updates yearly.
 templates.env.globals["current_year"] = lambda: date.today().year
+# Astrology-term Devanagari lookups — templates call e.g.
+# {{ planet_name(p.name, lang) }} to render "गुरु" for Hindi users
+# and "Jupiter" for English. See i18n.py for the lookup tables.
+from .i18n import planet_name as _p_name, yoga_name as _y_name, kaal_sarp_variant_name as _ks_name
+templates.env.globals["planet_name"] = _p_name
+templates.env.globals["yoga_name"] = _y_name
+templates.env.globals["kaal_sarp_variant_name"] = _ks_name
 
 
 # slug → title lookup for the linkify filter (renders anchors with the
