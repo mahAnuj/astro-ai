@@ -678,11 +678,12 @@
     })();
   </script>
 
-  {# Full-page mandala loader — only shown during Kundli generation
-     (POST /reading), which involves a 3-8s LLM call. Other page nav
-     uses the top-bar loader above, which is enough for sub-second
-     responses. The rotating mandala + Sanskrit caption reads as
-     intentional preparation rather than an interruption. #}
+  {# Full-page mandala loader — shown during any LLM-backed generation
+     that takes 3-8s. The overlay covers Kundli (POST /reading), Kundali
+     matching (POST /matching), Ask (POST /ask), and Dasha deep-dive
+     (POST /dasha/deep-dive). Caption text is set dynamically per path
+     in the script below so each route reads as intentional preparation.
+     Other page nav uses the top-bar loader above (sub-second responses). #}
   <div id="kundli-loader" role="status" aria-live="polite" aria-hidden="true">
     {# Chart-cast animation (Issue #78) — the kundali diamond outline draws
        in line-by-line via stroke-dashoffset, with the sacred Om glyph
@@ -713,13 +714,36 @@
             font-size="24" font-weight="700" fill="#3b0764"
             style="transform-origin: 100px 100px">ॐ</text>
     </svg>
-    <div class="caption">Casting your chart&hellip;</div>
+    <div class="caption" id="kundli-loader-caption">Casting your chart&hellip;</div>
   </div>
   <script>
     (function () {
       var overlay = document.getElementById('kundli-loader');
       if (!overlay) return;
-      function show() {
+      var captionEl = document.getElementById('kundli-loader-caption');
+
+      // Path → caption map. Each entry is a prefix match; the first
+      // matching prefix wins. Every LLM-backed POST that takes 3-8s
+      // gets its own preparation caption so the wait reads as
+      // intentional per-feature, not generic.
+      var CAPTIONS = [
+        { prefix: '/reading',           caption: 'Casting your chart…' },
+        { prefix: '/matching',          caption: 'Reading both charts…' },
+        { prefix: '/ask',               caption: 'Consulting your chart…' },
+        { prefix: '/dasha/deep-dive',   caption: 'Reading this Dasha period…' },
+      ];
+
+      function captionFor(path) {
+        for (var i = 0; i < CAPTIONS.length; i++) {
+          if (typeof path === 'string' && path.indexOf(CAPTIONS[i].prefix) === 0) {
+            return CAPTIONS[i].caption;
+          }
+        }
+        return null;   // path not in map → don't show overlay
+      }
+
+      function show(caption) {
+        if (captionEl) captionEl.textContent = caption;
         overlay.classList.add('is-visible');
         overlay.setAttribute('aria-hidden', 'false');
       }
@@ -727,13 +751,14 @@
         overlay.classList.remove('is-visible');
         overlay.setAttribute('aria-hidden', 'true');
       }
-      // Fire only for the Kundli-generation path — /reading is the POST
-      // endpoint that runs the LLM reading. Every other htmx request
-      // (rashifal, ask, monthly, etc.) uses the top-bar loader above.
+
+      // Fire on any POST whose path prefix is in the CAPTIONS map.
+      // Only POSTs (GET nav uses the top-bar loader — sub-second).
       document.addEventListener('htmx:beforeRequest', function (ev) {
         var cfg = ev.detail && ev.detail.requestConfig;
-        var path = cfg && cfg.path;
-        if (typeof path === 'string' && path.indexOf('/reading') === 0) show();
+        if (!cfg || cfg.verb !== 'post') return;
+        var cap = captionFor(cfg.path);
+        if (cap) show(cap);
       });
       document.addEventListener('htmx:afterRequest', hide);
       document.addEventListener('htmx:responseError', hide);
