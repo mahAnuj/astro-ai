@@ -3234,6 +3234,7 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
         planet_name as _p_name,
         planet_names_joined as _p_joined,
         yoga_names_joined as _y_joined,
+        kaal_sarp_variant_name as _ks_name,
     )
 
     drivers: list[BhagyaScoreDriver] = []
@@ -3306,7 +3307,8 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
     #     Keep in the score but treat as a prompt, not a verdict.
     ksd = compute_kaal_sarp(chart)
     if ksd.is_kaal_sarp:
-        _add(-12, "bs_kaal_sarp", variant=(ksd.type_name or "active"))
+        _add(-12, "bs_kaal_sarp",
+             variant=_ks_name(ksd.type_name or "active", lang))
 
     # ─── Planet dignities — exalted planets add, debilitated subtract
     exalted = []

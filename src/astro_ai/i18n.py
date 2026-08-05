@@ -785,6 +785,26 @@ _PLANET_NAMES_HI: Final[dict[str, str]] = {
     "Ketu":    "केतु",
 }
 
+# 12 Kaal Sarp Naga variant labels encoded in chart.py _KAAL_SARP_TYPES.
+# These are traditional Naga names in mid-20th-c. Hindi almanac literature
+# (see chart.py provenance comment on classical status). Roman-Sanskrit
+# in the compute layer → Devanagari for Hindi UI.
+_KAAL_SARP_HI: Final[dict[str, str]] = {
+    "Anant":     "अनंत",
+    "Kulik":     "कुलिक",
+    "Vasuki":    "वासुकी",
+    "Shankhpal": "शंखपाल",
+    "Padma":     "पद्म",
+    "Mahapadma": "महापद्म",
+    "Takshak":   "तक्षक",
+    "Karkotak":  "कर्कोटक",
+    "Shankchur": "शंखचूड़",
+    "Ghatak":    "घातक",
+    "Vishdhar":  "विषधर",
+    "Sheshnag":  "शेषनाग",
+}
+
+
 # Classical yoga names encoded in chart.py compute layer. Sanskrit
 # spellings. Fallback: return the English name unchanged.
 _YOGA_NAMES_HI: Final[dict[str, str]] = {
@@ -823,6 +843,14 @@ def yoga_name(name: str, lang: str) -> str:
     """Localize a yoga name. English pass-through for non-Hindi langs."""
     if lang == "hi":
         return _YOGA_NAMES_HI.get(name, name)
+    return name
+
+
+def kaal_sarp_variant_name(name: str, lang: str) -> str:
+    """Localize a Kaal Sarp Naga variant label. English pass-through for
+    non-Hindi langs. Unknown label falls through unchanged."""
+    if lang == "hi":
+        return _KAAL_SARP_HI.get(name, name)
     return name
 
 
