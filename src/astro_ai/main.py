@@ -1141,6 +1141,11 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     chart_fp = cache.fingerprint_chart(details.birth_date, details.birth_time, details.birth_place)
     prompt_fp = cache.fingerprint_prompt(PROMPT_PATH)
     cache_key = f"natal:{chart_fp}:{lang}:{prompt_fp}"
+    # Detect cache hit BEFORE _cached() so we know whether this render
+    # counts as a fresh generation (worth notifying about) or a re-view
+    # of an already-generated reading (silent — user is just refreshing
+    # or navigating back to their chart). Cheap: one extra cache lookup.
+    was_cached = cache.get(cache_key) is not None
     try:
         reading_text = _cached(
             cache_key, route="natal", lang=lang, ttl_days=None,
@@ -1165,26 +1170,28 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     sections = parse_sectioned_reading(reading_text)
     sade_sati = compute_sade_sati_details(chart)
 
-    # Fire owner-notification NOW (after LLM succeeded) so we know the
-    # exact model that served this Kundli. `last_used_model()` reads the
-    # per-request contextvar set by providers.chat(). Empty string on
-    # cache hits — nothing was called this request, so no model to report.
+    # Fire owner-notification + activity event ONLY on fresh generation.
+    # Every /kundli page render (refresh, back-nav, HTMX-boosted click)
+    # used to re-fire these — annoying duplicate Telegram pings for the
+    # same person + inflated activity counts. Cache-hit means the user
+    # is re-viewing their already-generated reading, not a new event.
     _u_natal = load_user(request)
-    notify.kundli_generated(
-        name=details.name, birth_date=details.birth_date,
-        birth_time=details.birth_time, birth_place=details.birth_place,
-        lang=lang, user_email=(_u_natal.email if _u_natal else ""),
-        model=llm_providers.last_used_model(),
-    )
-    events.record(
-        type="form_kundli",
-        email=(_u_natal.email if _u_natal else ""),
-        data={
-            "name": details.name, "birth_date": details.birth_date,
-            "birth_time": details.birth_time, "birth_place": details.birth_place,
-            "lang": lang, "model": llm_providers.last_used_model(),
-        },
-    )
+    if not was_cached:
+        notify.kundli_generated(
+            name=details.name, birth_date=details.birth_date,
+            birth_time=details.birth_time, birth_place=details.birth_place,
+            lang=lang, user_email=(_u_natal.email if _u_natal else ""),
+            model=llm_providers.last_used_model(),
+        )
+        events.record(
+            type="form_kundli",
+            email=(_u_natal.email if _u_natal else ""),
+            data={
+                "name": details.name, "birth_date": details.birth_date,
+                "birth_time": details.birth_time, "birth_place": details.birth_place,
+                "lang": lang, "model": llm_providers.last_used_model(),
+            },
+        )
 
     # Persist to signed-in user's reading history so they can revisit it
     # from any device. Best-effort — never fails the render.
@@ -3713,24 +3720,26 @@ async def ask_submit(
             except Exception:  # noqa: BLE001 — history is best-effort
                 log.warning("save_reading(ask) failed for %s", _signed_in.sub)
 
-    # Notify owner of the Q&A submission. Fires on both fresh and cached
-    # generations; the dedup window in notify.py suppresses rapid re-fires.
-    # `model` is populated only on fresh generations (contextvar set by
-    # providers.chat()); cache hits show blank model.
+    # Notify owner + record activity event ONLY on fresh generation.
+    # Cache-hit means the user re-asked an already-cached question; no
+    # new-Q&A event to notify about. The in-memory dedup window in
+    # notify.py was 3s (too tight — refresh at 5s re-fired) and doesn't
+    # survive Cloud Run multi-instance auto-scale anyway.
     _u_ask = load_user(request)
-    notify.ask_submitted(
-        question=question, category=category, lang=lang,
-        user_email=(_u_ask.email if _u_ask else ""),
-        model=llm_providers.last_used_model(),
-    )
-    events.record(
-        type="form_ask",
-        email=(_u_ask.email if _u_ask else ""),
-        data={
-            "question": question, "category": category, "lang": lang,
-            "model": llm_providers.last_used_model(),
-        },
-    )
+    if not was_cached:
+        notify.ask_submitted(
+            question=question, category=category, lang=lang,
+            user_email=(_u_ask.email if _u_ask else ""),
+            model=llm_providers.last_used_model(),
+        )
+        events.record(
+            type="form_ask",
+            email=(_u_ask.email if _u_ask else ""),
+            data={
+                "question": question, "category": category, "lang": lang,
+                "model": llm_providers.last_used_model(),
+            },
+        )
 
     # Redirect with the question + category (+ context) in the URL so
     # refresh doesn't re-submit, the user can bookmark / share the URL,
@@ -3803,6 +3812,10 @@ async def matching_result(
     # LLM narrative — sectioned compatibility reading. Best-effort; if the LLM
     # call fails we still show the scores + table, just without the prose.
     narrative_sections: list[tuple[str, str]] = []
+    # Track whether the LLM narrative was served from cache — used below
+    # to gate owner-notify + activity event to fresh generations only.
+    # Defaults to False (no LLM = no cache = fresh POST worth notifying).
+    was_cached = False
     if os.environ.get("OPENAI_API_KEY"):
         try:
             g_fp = cache.fingerprint_chart(g_birth_date, g_birth_time, g_birth_place)
@@ -3811,6 +3824,8 @@ async def matching_result(
             pair_key = ":".join(sorted([g_fp, b_fp]))
             prompt_fp = cache.fingerprint_prompt(MATCHING_PROMPT_PATH)
             cache_key = f"matching:{pair_key}:{lang}:{prompt_fp}"
+            # Detect cache hit BEFORE _cached() so downstream notify can skip.
+            was_cached = cache.get(cache_key) is not None
             narrative_text = _cached(
                 cache_key, route="matching", lang=lang, ttl_days=None,
                 call_fn=lambda: generate_matching_narrative(
@@ -3831,27 +3846,31 @@ async def matching_result(
             _fire_error_alert(request, err, "matching:narrative")
             narrative_sections = []  # surface as no-narrative; scores still render
 
-    # Fire notify AFTER narrative attempt so `model` reflects the LLM that
-    # actually served (empty if narrative was skipped or failed).
+    # Fire notify + activity event ONLY on fresh matching. A cache hit
+    # means the same pair was matched before in this window — the user
+    # is re-viewing, not doing a new match. Also protects against browser
+    # refresh / back-nav / prefetch re-firing. `model` (empty on cache
+    # hit) is reported when we do fire.
     _u_match = load_user(request)
-    notify.matching_done(
-        groom_name=g_name.strip(), groom_dob=g_birth_date,
-        bride_name=b_name.strip(), bride_dob=b_birth_date,
-        total_score=f"{guna.total_awarded:g}/{guna.total_max} · {guna.overall_verdict}",
-        lang=lang, user_email=(_u_match.email if _u_match else ""),
-        model=llm_providers.last_used_model(),
-    )
-    events.record(
-        type="form_matching",
-        email=(_u_match.email if _u_match else ""),
-        data={
-            "groom_name": g_name.strip(), "groom_dob": g_birth_date,
-            "bride_name": b_name.strip(), "bride_dob": b_birth_date,
-            "total_score": f"{guna.total_awarded:g}/{guna.total_max}",
-            "verdict": guna.overall_verdict, "lang": lang,
-            "model": llm_providers.last_used_model(),
-        },
-    )
+    if not was_cached:
+        notify.matching_done(
+            groom_name=g_name.strip(), groom_dob=g_birth_date,
+            bride_name=b_name.strip(), bride_dob=b_birth_date,
+            total_score=f"{guna.total_awarded:g}/{guna.total_max} · {guna.overall_verdict}",
+            lang=lang, user_email=(_u_match.email if _u_match else ""),
+            model=llm_providers.last_used_model(),
+        )
+        events.record(
+            type="form_matching",
+            email=(_u_match.email if _u_match else ""),
+            data={
+                "groom_name": g_name.strip(), "groom_dob": g_birth_date,
+                "bride_name": b_name.strip(), "bride_dob": b_birth_date,
+                "total_score": f"{guna.total_awarded:g}/{guna.total_max}",
+                "verdict": guna.overall_verdict, "lang": lang,
+                "model": llm_providers.last_used_model(),
+            },
+        )
 
     response = templates.TemplateResponse(
         request,

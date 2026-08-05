@@ -44,10 +44,19 @@ log = logging.getLogger(__name__)
 _TG_TOKEN_ENV = "BHAGYA_TELEGRAM_BOT_TOKEN"
 _TG_CHAT_ENV = "BHAGYA_TELEGRAM_OWNER_CHAT_ID"
 
-# Simple in-memory dedup — same event key within 3 seconds is suppressed.
-# Guards against double-submit from users tapping the button twice.
+# In-memory dedup — same event key within the window is suppressed.
+# Guards against double-submit from users tapping the button twice AND
+# rapid re-fires from browser prefetch, HTMX secondary swap, etc.
+#
+# CAVEAT: Cloud Run auto-scales to N instances during load — each
+# instance has its OWN in-memory _LAST_FIRED dict, so the same event
+# routed to different pods within the same window can still fire N
+# times. Fix that at the CALL SITE by skipping notify on cache hits
+# (see main.py _render_natal_for et al.) — that eliminates the vast
+# majority of duplicates. The in-memory dedup here is a per-instance
+# safety net, not a distributed guarantee.
 _LAST_FIRED: dict[str, float] = {}
-_DEDUP_WINDOW_SEC = 3.0
+_DEDUP_WINDOW_SEC = 300.0   # 5 min — covers refresh, back-nav, prefetch, retry
 
 
 def _config() -> Optional[tuple[str, str]]:
