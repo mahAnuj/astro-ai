@@ -7,7 +7,10 @@
 {% set active_page = "rashifal" %}
 {% set breadcrumbs = [('Home', '/'), ('Rashifal', '/rashifal'), (rashi_en, '/rashifal/' + rashi_slug)] %}
 {% include "_breadcrumb_schema.html" %}
-{# Article schema for daily-fresh content — Google indexes this as news-like. #}
+{# Article schema for daily-fresh content — Google indexes this as news-like.
+   Speakable spec added so Google Assistant / Alexa can read the reading
+   body aloud when a user asks "what is my Aries horoscope today". The
+   .speakable-body class is stamped on the main reading section below. #}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -21,6 +24,10 @@
   "dateModified": "{{ today_date }}",
   "inLanguage": "{{ lang }}",
   "articleSection": "Rashifal",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": [".speakable-body"]
+  },
   "author":    {"@type": "Organization", "name": "Bhagya Editorial", "url": "{{ site_url }}/about"},
   "publisher": {"@type": "Organization", "name": "Shubh Bhagya", "url": "{{ site_url }}/",
                 "logo": {"@type": "ImageObject", "url": "{{ site_url }}/static/icons/icon-512.png", "width": 512, "height": 512}}
@@ -46,9 +53,11 @@
     <p class="text-sm text-stone-600">Element: {{ element | capitalize }} · Quality: {{ quality }} · Ruling planet (Swami): {{ lord }}</p>
   </header>
 
-  {# READING #}
+  {# READING — .speakable-body is targeted by the SpeakableSpecification
+     in the Article JSON-LD above, so Google Assistant / Alexa can read
+     the reading aloud when users ask "what is my Aries horoscope today". #}
   <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-7">
-    <div class="text-base text-stone-800 leading-relaxed space-y-4 whitespace-pre-line">
+    <div class="speakable-body text-base text-stone-800 leading-relaxed space-y-4 whitespace-pre-line">
 {{ reading_body }}
     </div>
     <div class="pt-4 mt-4 border-t border-stone-100 flex flex-wrap items-center gap-3 justify-between text-sm no-print">
