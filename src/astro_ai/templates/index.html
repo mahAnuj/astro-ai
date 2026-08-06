@@ -59,17 +59,33 @@
       </span>
       <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl text-stone-900 leading-tight mb-4">Your Janma Kundali,<br><span class="text-astro-700">simply explained.</span></h1>
 
-      {# Trust bar (SEO audit #134) — real counts only. Any pill with a
-         zero count is silently dropped so we never render '0 users' as
-         social proof. All fields backed by users.py / subscribers.py. #}
+      {# Trust bar — real counts only. Each pill has a min-count threshold
+         (set server-side via TRUST_MIN_* env vars, defaults in main.py);
+         pills below their threshold are hidden entirely because "1
+         registered reader" is worse social proof than no pill at all.
+         Kundlis + Asks come from the GCS events log (last 30d — reasonable
+         proxy for "till now" while numbers are early; upgrade to a
+         persistent lifetime counter when we outgrow the retention window). #}
       <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-600 mb-4">
-        {% if trust_users and trust_users > 0 %}
+        {% if trust_kundlis and trust_kundlis >= trust_kundlis_min %}
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          <strong class="text-stone-700">{{ "{:,}".format(trust_kundlis) }}</strong> Kundlis generated
+        </span>
+        {% endif %}
+        {% if trust_asks and trust_asks >= trust_asks_min %}
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          <strong class="text-stone-700">{{ "{:,}".format(trust_asks) }}</strong> questions answered
+        </span>
+        {% endif %}
+        {% if trust_users and trust_users >= trust_users_min %}
         <span class="inline-flex items-center gap-1">
           <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5.13a4 4 0 11-8 0 4 4 0 018 0zm6 3a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           <strong class="text-stone-700">{{ "{:,}".format(trust_users) }}</strong> registered readers
         </span>
         {% endif %}
-        {% if trust_subscribers and trust_subscribers > 0 %}
+        {% if trust_subscribers and trust_subscribers >= trust_subscribers_min %}
         <span class="inline-flex items-center gap-1">
           <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
           <strong class="text-stone-700">{{ "{:,}".format(trust_subscribers) }}</strong> daily Rashifal subscribers
