@@ -1,85 +1,133 @@
 {% extends "base.html" %}
 
 {% block title %}Terms of Service — Shubh Bhagya{% endblock %}
-{% block meta_description %}Terms for using Shubh Bhagya — free Vedic astrology tool with honest disclaimers about AI-generated readings, astrology as guidance not prediction, and no medical/legal/financial substitute.{% endblock %}
+{% block meta_description %}Terms for using Shubh Bhagya — free Vedic astrology tool. Honest astrology-as-guidance disclaimer, AI-generated content disclaimer, and your responsibilities as a user.{% endblock %}
 
 {% block content %}
 {% include "_nav.html" %}
 
-<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
 
   <header>
-    <div class="text-xs uppercase tracking-wider font-semibold text-astro-700 mb-1">Trust &amp; transparency</div>
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">Terms of Service</h1>
-    <p class="text-sm text-stone-600">Last updated: {{ current_year() }}-08-04. Written to be read, not skipped.</p>
+    <p class="text-sm text-stone-600">Last updated: {{ current_year() }}-08-06</p>
   </header>
 
-  <section class="prose prose-sm sm:prose-base max-w-none text-stone-800 leading-relaxed">
+  {# Short version — the "if you only read one thing" summary. #}
+  <section class="rounded-2xl border-2 border-amber-300 bg-amber-50/50 p-5 sm:p-7">
+    <h2 class="font-display text-lg sm:text-xl text-amber-900 mb-2">The short version</h2>
+    <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+      Shubh Bhagya is a <strong>free tool that generates AI-assisted Vedic astrology readings from your birth details</strong>. Treat the output as material for self-reflection — not as fact, not as fate, and not as a substitute for medical, legal, financial, or professional astrological advice. If you rely on it to make important life decisions, that's your call and your risk. The tool is provided as-is, without warranty; use at your own discretion.
+    </p>
+  </section>
 
-    <div class="rounded-2xl border-2 border-amber-300 bg-amber-50/50 p-5 sm:p-6 not-prose">
-      <div class="font-display text-lg text-amber-900 mb-1">The short version</div>
-      <p class="text-sm text-stone-800 leading-relaxed">
-        Shubh Bhagya is a <strong>free tool that generates AI-assisted Vedic astrology readings from your birth details</strong>. Treat the output as material for self-reflection, not as fact, not as fate, and not as a substitute for medical, legal, financial, or professional astrological advice. If you rely on it to make important life decisions, that's your call and your risk. We provide the tool without warranty; use at your own discretion.
+  {# What Shubh Bhagya is — short, sets scope. #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-3">What Shubh Bhagya is</h2>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6">
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        Shubh Bhagya (shubhagya.com) is a free web tool that computes Vedic (sidereal Lahiri) birth charts using standard astronomical libraries, and generates natural-language readings using AI language models applied to classical Jyotish rules. Built and operated by an individual based in India.
       </p>
     </div>
-
-    <h2>1. What Shubh Bhagya is</h2>
-    <p>Shubh Bhagya (shubhagya.com) is a free web tool that computes Vedic (sidereal Lahiri) birth charts using the Swiss Ephemeris library and generates natural-language readings using third-party large language models (LLMs) applied to the classical Jyotish rules encoded in our software. It's built and operated by an individual (not an incorporated company), currently based in India.</p>
-
-    <h2>2. Astrology disclaimer</h2>
-    <p>Astrology in the classical Vedic tradition is treated as a lens for self-understanding and timing, not as a deterministic prediction of future events. The readings you generate on Shubh Bhagya reflect that same philosophy — they describe tendencies, potentials, and periods, not fixed outcomes. Even the most classical astrologer will tell you that free will and karma-in-motion always modulate what a chart shows.</p>
-    <p>Specifically, do NOT use Shubh Bhagya as a source for:</p>
-    <ul>
-      <li><strong>Medical decisions</strong> — the "Health" section of any reading is not a diagnosis. Consult a licensed physician.</li>
-      <li><strong>Legal decisions</strong> — consult a licensed lawyer.</li>
-      <li><strong>Financial or investment decisions</strong> — consult a SEBI-registered advisor (India) or your local licensed equivalent.</li>
-      <li><strong>Marriage-go / no-go verdicts</strong> — Ashtakoot Guna Milan is a starting-point filter, not the final answer. A trained astrologer looking at both full charts + the 7th house lord + Venus + Upapada + Dashas is a different-quality reading than any automated tool.</li>
-      <li><strong>Predictions about death, terminal illness, or similar high-stakes outcomes</strong> — the /ask tool refuses these questions, and classical astrology traditionally does not answer them without extreme caution.</li>
-    </ul>
-
-    <h2>3. AI-generated content disclaimer</h2>
-    <p>Chart-reading narratives (the natural-language sections on /kundli, /matching, /numerology, /ask, etc.) are produced by AI language models operating on your chart's computed placements. AI language models can and do produce plausible-sounding text that is inaccurate or generic. A trained human astrologer's intuition catches patterns that AI cannot — as one of our advisors put it, AI has "no connection with paramatma." We disclose this on the /ask page itself and repeat it here.</p>
-    <p>The underlying <strong>chart computations</strong> (planetary positions, dashas, yogas, Manglik detection, Sade Sati phase, Ashtakoot scores, Kaal Sarp geometry, etc.) are deterministic and sourced from the Swiss Ephemeris — these are as accurate as the astronomical algorithms allow (typically arc-second precision). The <strong>narrative interpretation</strong> layer that turns those computations into English/Hindi prose is AI-assisted and should be read with that in mind.</p>
-
-    <h2>4. Free use, no warranty</h2>
-    <p>Shubh Bhagya is free to use. Because it's free and provided as-is, we make no warranty about accuracy, availability, or fitness for any specific purpose. If the site is down, if a reading contains an error, if a Dasha date is off, if a Muhurat table doesn't match your local pandit's calculation — we'll do our best to fix it, but we don't promise to. You accept this as a condition of using the tool.</p>
-    <p>Specifically we make NO warranty that:</p>
-    <ul>
-      <li>The site will be available at all times</li>
-      <li>Readings will be free of errors, omissions, or contradictions</li>
-      <li>Dates or timings will match any specific school of classical practice</li>
-      <li>The AI-generated narrative will be culturally appropriate for your specific tradition</li>
-      <li>Your specific classical astrologer will agree with our computations</li>
-    </ul>
-
-    <h2>5. Your responsibilities</h2>
-    <ul>
-      <li><strong>Accurate birth data:</strong> the reading is only as good as the birth details you enter. If you don't know your exact birth time, the reading will be less reliable — especially the Lagna, Navamsha, and Dasha timing.</li>
-      <li><strong>Don't misuse /ask:</strong> the free 3-questions-per-day quota is per-cookie. Please don't abuse it via automated scripts or by clearing cookies to bypass the limit — every extra question we serve costs us something on the LLM providers' side, and abuse forces us to tighten the limit for everyone.</li>
-      <li><strong>Don't scrape:</strong> please don't scrape /rashifal, /panchang archives, or any other page programmatically. Use the site as a human.</li>
-      <li><strong>Don't pass off our content as yours:</strong> the article library (/learn) is written by us with classical citations. If you quote from it elsewhere, credit "Shubh Bhagya" with a link back.</li>
-      <li><strong>Adult use:</strong> the site is not directed at children under 18. Please don't create an account or generate readings for a child under 18 without a parent's involvement.</li>
-    </ul>
-
-    <h2>6. Intellectual property</h2>
-    <p>Site design, code, article text, chart-rendering logic, and copywriting are ours. Classical Jyotish teachings, verses, and standard rules are the shared inheritance of the tradition and not owned by anyone. Third-party libraries (Swiss Ephemeris — AGPL; Tailwind, HTMX, various — MIT/BSD) are used per their licenses.</p>
-
-    <h2>7. Changes to the service</h2>
-    <p>We add, change, and occasionally remove features. If we deprecate something you rely on, we'll try to give warning on the affected page. If we change these Terms materially, the "Last updated" date at the top changes and — for signed-in users — a notice surfaces on /account. Immaterial edits (typos, clarifications) happen silently.</p>
-
-    <h2>8. Termination</h2>
-    <p>You can stop using Shubh Bhagya any time by simply not visiting the site. You can delete your data (see our <a href="/privacy">Privacy Policy</a>). We may terminate access for users who abuse the /ask quota, scrape the site, or otherwise misuse the tool in ways that harm other users or the service's viability — this is at our discretion and rare.</p>
-
-    <h2>9. Governing law</h2>
-    <p>These Terms are governed by the laws of India. Any dispute goes to the courts of Ghaziabad, Uttar Pradesh, unless we mutually agree to arbitration first — which we'd prefer, honestly.</p>
-
-    <h2>10. Contact</h2>
-    <p>Questions, disputes, or concerns: <a href="mailto:{{ contact_email or 'mahajananuj07@gmail.com' }}">{{ contact_email or 'mahajananuj07@gmail.com' }}</a>. See also our <a href="/privacy">Privacy Policy</a>, <a href="/about">About page</a>, and the <a href="/learn">article library</a> for how we source our classical claims.</p>
-
-    <hr>
-
-    <p class="text-xs text-stone-600 italic">These Terms are written to be readable and reflect what we actually mean. They are not a defensive maximalist template. If you're a lawyer reviewing this on behalf of a user or regulator and something reads ambiguously, please write to us at the address above — we'll clarify or amend.</p>
   </section>
+
+  {# Astrology disclaimer — the most important part. #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-3">Astrology as guidance, not prediction</h2>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        Classical Vedic astrology is a lens for self-understanding and timing — not a deterministic prediction of future events. Readings on Shubh Bhagya describe tendencies, potentials, and periods, not fixed outcomes. Even the most classical astrologer will tell you that free will and karma-in-motion modulate what any chart shows.
+      </p>
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed font-semibold">
+        Do not use Shubh Bhagya as a substitute for:
+      </p>
+      <ul class="space-y-1.5 text-sm sm:text-base text-stone-800">
+        <li>&bull; <strong>Medical decisions</strong> — the health section of a reading is not a diagnosis. Consult a licensed physician.</li>
+        <li>&bull; <strong>Legal decisions</strong> — consult a licensed lawyer.</li>
+        <li>&bull; <strong>Financial decisions</strong> — consult a registered financial advisor.</li>
+        <li>&bull; <strong>Marriage go/no-go verdicts</strong> — Ashtakoot matching is a starting-point filter, not a final answer. A trained astrologer looking at both full charts is a different-quality reading than any automated tool.</li>
+        <li>&bull; <strong>High-stakes predictions</strong> — questions about death, terminal illness, or similar are refused by the Ask tool by design.</li>
+      </ul>
+    </div>
+  </section>
+
+  {# AI-generated content disclaimer. #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-3">AI-generated content</h2>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        The natural-language sections of readings (on Kundli, Matching, Numerology, Ask, etc.) are produced by AI language models operating on your chart's computed placements. AI can produce plausible-sounding text that is sometimes inaccurate or generic. A trained human astrologer's intuition catches patterns AI cannot.
+      </p>
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        The underlying <strong>chart computations</strong> (planetary positions, dashas, yogas, Manglik detection, Sade Sati phase, matching scores, etc.) are deterministic and astronomically precise. The <strong>narrative interpretation layer</strong> that turns those numbers into prose is AI-assisted and should be read with that in mind.
+      </p>
+    </div>
+  </section>
+
+  {# Free use + no warranty. #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-3">Free use, no warranty</h2>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        Shubh Bhagya is free. Because it's free and provided as-is, we make no warranty about accuracy, availability, or fitness for any specific purpose. Site down? Reading contains an error? Dasha date off? Muhurat table doesn't match your local pandit's calculation? We'll do our best to fix it, but we don't promise to. You accept this as a condition of using the tool.
+      </p>
+    </div>
+  </section>
+
+  {# Your responsibilities. #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-3">Your responsibilities</h2>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6">
+      <ul class="space-y-3 text-sm sm:text-base text-stone-800">
+        <li><strong>Accurate birth data.</strong> Readings are only as good as the birth details you enter. If your birth time is uncertain, the reading will be too — especially Lagna, Navamsha, and Dasha timing.</li>
+        <li><strong>Fair use.</strong> Please don't script-abuse the free daily Ask quota by clearing cookies to bypass the limit, and please don't scrape the site programmatically. Use it as a human.</li>
+        <li><strong>Credit if quoting.</strong> If you quote from our article library elsewhere, please credit "Shubh Bhagya" with a link back.</li>
+        <li><strong>Adult use.</strong> Not directed at children under 18. Please don't create an account or generate readings for a child under 18 without a parent's involvement.</li>
+      </ul>
+    </div>
+  </section>
+
+  {# IP + termination + governing law — compact three-card row. #}
+  <section class="space-y-3">
+    <div class="bg-white border border-stone-200 rounded-xl p-5">
+      <h3 class="font-semibold text-stone-900 mb-1.5">Intellectual property</h3>
+      <p class="text-sm text-stone-800 leading-relaxed">
+        Site design, code, article text, and copywriting are ours. Classical Jyotish teachings, verses, and standard rules are the shared inheritance of the tradition and not owned by anyone.
+      </p>
+    </div>
+    <div class="bg-white border border-stone-200 rounded-xl p-5">
+      <h3 class="font-semibold text-stone-900 mb-1.5">Changes to the service</h3>
+      <p class="text-sm text-stone-800 leading-relaxed">
+        We add, change, and occasionally remove features. If we deprecate something you rely on, we'll warn on the affected page. If we materially change these Terms, the "Last updated" date at the top changes and — for signed-in users — a notice surfaces on <a href="/account" class="text-astro-700 hover:underline">/account</a>. Minor edits happen silently.
+      </p>
+    </div>
+    <div class="bg-white border border-stone-200 rounded-xl p-5">
+      <h3 class="font-semibold text-stone-900 mb-1.5">Termination</h3>
+      <p class="text-sm text-stone-800 leading-relaxed">
+        You can stop using Shubh Bhagya any time by simply not visiting the site. You can delete your data (see our <a href="/privacy" class="text-astro-700 hover:underline">Privacy Policy</a>). We may terminate access for users who abuse the tool in ways that harm other users or the service.
+      </p>
+    </div>
+    <div class="bg-white border border-stone-200 rounded-xl p-5">
+      <h3 class="font-semibold text-stone-900 mb-1.5">Governing law</h3>
+      <p class="text-sm text-stone-800 leading-relaxed">
+        These Terms are governed by the laws of India. Any dispute goes to the courts of Ghaziabad, Uttar Pradesh, unless we mutually agree to arbitration first.
+      </p>
+    </div>
+  </section>
+
+  {# Contact. #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-3">Contact</h2>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6">
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        Questions, disputes, or concerns: <a href="mailto:{{ contact_email or 'mahajananuj07@gmail.com' }}" class="text-astro-700 hover:underline">{{ contact_email or 'mahajananuj07@gmail.com' }}</a>. See also our <a href="/privacy" class="text-astro-700 hover:underline">Privacy Policy</a> and <a href="/about" class="text-astro-700 hover:underline">About page</a>.
+      </p>
+    </div>
+  </section>
+
+  <p class="text-xs text-stone-600 italic text-center">
+    Written to be readable and honest. If anything reads ambiguously, please write to us and we'll clarify.
+  </p>
 
 </main>
 {% endblock %}
