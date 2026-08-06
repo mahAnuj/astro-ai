@@ -1,100 +1,148 @@
 {% extends "base.html" %}
 
 {% block title %}Privacy Policy — Shubh Bhagya{% endblock %}
-{% block meta_description %}What data Shubh Bhagya collects, why, and your rights. Honest short-form privacy policy — no dark patterns, no data sold, no third-party ads.{% endblock %}
+{% block meta_description %}Shubh Bhagya's privacy policy — what data we collect, why, how long we keep it, and how to delete it. No selling data, no ads, no surprises.{% endblock %}
 
 {% block content %}
 {% include "_nav.html" %}
 
-<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+<main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
 
   <header>
-    <div class="text-xs uppercase tracking-wider font-semibold text-astro-700 mb-1">Trust &amp; transparency</div>
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">Privacy Policy</h1>
-    <p class="text-sm text-stone-600">Last updated: {{ current_year() }}-08-04. Written by a person, not a boilerplate generator.</p>
+    <p class="text-sm text-stone-600">Last updated: {{ current_year() }}-08-06</p>
   </header>
 
-  <section class="prose prose-sm sm:prose-base max-w-none text-stone-800 leading-relaxed">
+  {# The short version — bold summary, sets expectations before the detail. #}
+  <section class="rounded-2xl border-2 border-astro-300 bg-astro-50/50 p-5 sm:p-7">
+    <h2 class="font-display text-lg sm:text-xl text-astro-900 mb-2">The short version</h2>
+    <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+      We keep your birth details so we can compute your chart. We keep your email only if you sign in with Google. We use standard third-party services for analytics, hosting, and AI-generated readings. <strong>We don't sell your data, we don't run ads, and we don't email you unless you subscribe.</strong> You can delete your data anytime by writing to us.
+    </p>
+  </section>
 
-    <div class="rounded-2xl border-2 border-astro-300 bg-astro-50/50 p-5 sm:p-6 not-prose">
-      <div class="font-display text-lg text-astro-900 mb-1">The short version</div>
-      <p class="text-sm text-stone-800 leading-relaxed">
-        We keep your birth details to compute your chart. We keep your email if you sign in with Google. We use Google Analytics + Microsoft Clarity to see anonymous usage patterns. We use free-tier LLM providers (Groq, Cerebras, Together, OpenAI) to generate readings — your birth details and question text are sent to them per query. <strong>We don't sell anything, we don't run ads, we don't email you unless you subscribe.</strong> You can delete your data any time by contacting us.
+  {# What we collect — clean card grid, no <dl>, no prose wrapper conflicts. #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-4">What we collect and why</h2>
+    <div class="space-y-3">
+
+      <div class="bg-white border border-stone-200 rounded-xl p-4 sm:p-5">
+        <div class="font-semibold text-stone-900 mb-1">Birth details (name, date, time, place)</div>
+        <p class="text-sm text-stone-800 leading-relaxed">
+          Required to compute your Vedic birth chart. Stored in a signed browser cookie so you don't re-enter them each visit. If you sign in, they persist across your devices. Clear them from <a href="/account" class="text-astro-700 hover:underline">/account</a> or by clearing your browser cookies.
+        </p>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded-xl p-4 sm:p-5">
+        <div class="font-semibold text-stone-900 mb-1">Email + name (only if you sign in)</div>
+        <p class="text-sm text-stone-800 leading-relaxed">
+          Used only to save your charts + reading history across devices. Google handles authentication; we never see your password. We request only your basic profile — no access to Gmail, Calendar, Drive, or Contacts.
+        </p>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded-xl p-4 sm:p-5">
+        <div class="font-semibold text-stone-900 mb-1">Questions you ask</div>
+        <p class="text-sm text-stone-800 leading-relaxed">
+          When you use the Ask feature, your question is sent (with your chart data) to an AI language-model provider to generate an answer. Cached briefly on our server so re-asking the same question is instant. Never used to train any AI model.
+        </p>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded-xl p-4 sm:p-5">
+        <div class="font-semibold text-stone-900 mb-1">Anonymous usage patterns</div>
+        <p class="text-sm text-stone-800 leading-relaxed">
+          We use standard third-party analytics to understand which features people actually use — page views, feature clicks, aggregate patterns. No birth details, no email, no question text is included. A tracker-blocking browser extension will opt you out; the site still works.
+        </p>
+      </div>
+
+      <div class="bg-white border border-stone-200 rounded-xl p-4 sm:p-5">
+        <div class="font-semibold text-stone-900 mb-1">Cookies</div>
+        <p class="text-sm text-stone-800 leading-relaxed">
+          One signed session cookie (your birth details, language preference, sign-in state). One small counter for the daily 3-free-questions Ask limit. A couple of analytics cookies set by our analytics provider. No advertising cookies. No cross-site tracking.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  {# Third parties — high-level, no naming ceremony. #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-4">Who we share data with</h2>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        To operate the site we rely on a small number of standard third-party services: <strong>cloud infrastructure</strong> (hosting + logs), <strong>AI language-model providers</strong> (chart-reading + Ask generation), <strong>Google Sign-In</strong> (if you sign in), and <strong>analytics</strong> (anonymous usage patterns). Each receives only what it needs; none are permitted to use your data to train models or serve you ads.
+      </p>
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        We <strong>do not sell your data</strong> to anyone. We <strong>do not run advertising</strong>. We <strong>do not share your personal details</strong> with astrologers, matrimonial services, or any other third party outside the operational vendors above.
       </p>
     </div>
-
-    <h2>What we collect and why</h2>
-    <dl class="space-y-4 not-prose">
-      <div class="bg-white border border-stone-200 rounded-lg p-4">
-        <dt class="font-semibold text-stone-900 mb-1">Birth details (name, date, time, place)</dt>
-        <dd class="text-sm text-stone-800">Required to compute your Vedic birth chart. Stored in an HMAC-signed browser cookie (24-hour rolling TTL) so you don't re-enter them on every visit. If you sign in with Google we also mirror them to server-side storage so they persist across devices. You can clear them via /account or by clearing your browser cookies.</dd>
-      </div>
-      <div class="bg-white border border-stone-200 rounded-lg p-4">
-        <dt class="font-semibold text-stone-900 mb-1">Google sign-in identity (email, name, Google user ID)</dt>
-        <dd class="text-sm text-stone-800">Only if you click "Sign in with Google". Used to persist your saved charts + reading history across devices. We don't have your Google password (Google handles auth). We don't request or receive Gmail contents, calendar, or drive access — just profile basics.</dd>
-      </div>
-      <div class="bg-white border border-stone-200 rounded-lg p-4">
-        <dt class="font-semibold text-stone-900 mb-1">Question text you type into /ask</dt>
-        <dd class="text-sm text-stone-800">Sent to one of our LLM providers (see next section) along with your chart data to generate an answer. Cached on our server for ~14 days so re-asking the same question doesn't re-charge the quota. Never used to train any model on our behalf.</dd>
-      </div>
-      <div class="bg-white border border-stone-200 rounded-lg p-4">
-        <dt class="font-semibold text-stone-900 mb-1">Anonymous usage analytics</dt>
-        <dd class="text-sm text-stone-800">Google Analytics 4 (GA4) and Microsoft Clarity track page views, feature clicks, and (Clarity only) session replays without personal data — no birth details, no email, no question text. Used to understand which features people actually use so we can improve them. You can opt out via your browser's Do Not Track setting or a tracker-blocking extension; the site works fine without either.</dd>
-      </div>
-      <div class="bg-white border border-stone-200 rounded-lg p-4">
-        <dt class="font-semibold text-stone-900 mb-1">Cookies</dt>
-        <dd class="text-sm text-stone-800">One HMAC-signed session cookie (birth details + language + Google sign-in state). One quota-tracking cookie for the daily 3-free-questions /ask limit. GA4 sets its own cookies (_ga, _gid). Clarity sets one too (_clck, _clsk). No advertising cookies. No cross-site tracking.</dd>
-      </div>
-    </dl>
-
-    <h2>Third parties we send data to</h2>
-
-    <p><strong>LLM providers (chart-reading generation):</strong> your birth chart summary + question text are sent per query to whichever of these has capacity available: Groq (groq.com), Cerebras (cerebras.ai), Together AI (together.xyz), Mistral (mistral.ai), or OpenAI (openai.com). Each request is stateless and none of these providers uses our data to train their models (per their API terms). Chart summaries include placements — they do NOT include your name.</p>
-
-    <p><strong>Google (sign-in + analytics):</strong> if you sign in, Google verifies your identity to us via OAuth. Google Analytics 4 receives anonymous page-view and event data.</p>
-
-    <p><strong>Microsoft Clarity (session replay):</strong> anonymized session recordings so we can see where users get stuck. Does NOT capture form input values (birth details typed into the Kundli form are masked before capture).</p>
-
-    <p><strong>Google Cloud (hosting):</strong> the app runs on Google Cloud Run in the Asia South 1 (Mumbai) region. Application logs (not personal data) are stored in Google Cloud Logging.</p>
-
-    <p>We do NOT share your data with any other party. We do NOT sell data. We do NOT run advertising.</p>
-
-    <h2>How long we keep data</h2>
-
-    <ul>
-      <li><strong>Browser cookies:</strong> 24 hours rolling (extended each visit).</li>
-      <li><strong>Signed-in user data on our servers:</strong> until you request deletion (see below).</li>
-      <li><strong>LLM response cache:</strong> ~14 days per unique (chart + question) pair.</li>
-      <li><strong>Application logs:</strong> 30 days on Google Cloud Logging (Google's default).</li>
-      <li><strong>Google Analytics data:</strong> retained per GA4's default (14 months) — we don't extend it.</li>
-    </ul>
-
-    <h2>Your rights (India DPDP Act 2023 + general good practice)</h2>
-
-    <ul>
-      <li><strong>See your data:</strong> visit /account when signed in — everything we've persisted about you is shown.</li>
-      <li><strong>Correct your data:</strong> re-enter birth details on /kundli to overwrite the stored copy.</li>
-      <li><strong>Delete your data:</strong> email {{ contact_email or 'mahajananuj07@gmail.com' }} with the subject "delete my Shubh Bhagya data" and we'll remove your record within 7 days. No questions asked.</li>
-      <li><strong>Withdraw sign-in consent:</strong> click "Sign out" in the nav; you can also revoke Shubh Bhagya's Google OAuth grant at <a href="https://myaccount.google.com/permissions" rel="noopener">myaccount.google.com/permissions</a>.</li>
-      <li><strong>Complain:</strong> for India users, the Data Protection Board of India is the recourse under the DPDP Act. For EU users, your local DPA.</li>
-    </ul>
-
-    <h2>Children's data</h2>
-    <p>Shubh Bhagya is not directed at children under 18. If a parent submits a child's birth details for a Kundli reading, that data is treated identically to adult data. Please don't have a child under 18 create an account.</p>
-
-    <h2>Security</h2>
-    <p>Session cookies are HMAC-signed with a server-side secret so they can't be tampered with client-side. All traffic is HTTPS. Google OAuth tokens are validated per Google's published public keys. We're a small operation — we take reasonable steps but can't guarantee absolute security against a determined attacker; you should treat your birth details the same way you'd treat any personal record you enter online.</p>
-
-    <h2>Changes to this policy</h2>
-    <p>If we materially change data practices, we'll update the "Last updated" date at the top and — for signed-in users — surface a notice on /account next time you visit. Immaterial fixes (typos, clarifications) will happen silently.</p>
-
-    <h2>Contact</h2>
-    <p>Questions or concerns? Email <a href="mailto:{{ contact_email or 'mahajananuj07@gmail.com' }}">{{ contact_email or 'mahajananuj07@gmail.com' }}</a>. Human replies, usually within 48 hours.</p>
-
-    <hr>
-
-    <p class="text-xs text-stone-600 italic">This policy is written to be readable and honest, not to satisfy any specific legal framework. It reflects our actual practice. If you're a lawyer reviewing this on behalf of a user or regulator and something reads ambiguously, please write to us at the address above — we'll clarify or amend.</p>
   </section>
+
+  {# Retention — plain list, no over-technical detail. #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-4">How long we keep it</h2>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6">
+      <ul class="space-y-2 text-sm sm:text-base text-stone-800">
+        <li>&bull; <strong>Browser cookies:</strong> extended on each visit; expire if you go inactive.</li>
+        <li>&bull; <strong>Signed-in account data:</strong> until you request deletion.</li>
+        <li>&bull; <strong>Cached AI-generated readings:</strong> a couple of weeks per unique chart+question combo.</li>
+        <li>&bull; <strong>Operational logs:</strong> a few weeks for debugging, then discarded.</li>
+        <li>&bull; <strong>Analytics data:</strong> the provider's default retention window.</li>
+      </ul>
+    </div>
+  </section>
+
+  {# Your rights — the important legal part. #}
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-4">Your rights</h2>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6">
+      <ul class="space-y-3 text-sm sm:text-base text-stone-800">
+        <li>
+          <strong>See your data.</strong> Visit <a href="/account" class="text-astro-700 hover:underline">/account</a> when signed in — everything we hold on you is shown.
+        </li>
+        <li>
+          <strong>Correct your data.</strong> Re-enter your birth details from the home page or Kundli page to overwrite what we have.
+        </li>
+        <li>
+          <strong>Delete your data.</strong> Email <a href="mailto:{{ contact_email or 'mahajananuj07@gmail.com' }}" class="text-astro-700 hover:underline">{{ contact_email or 'mahajananuj07@gmail.com' }}</a> with the subject "delete my Shubh Bhagya data" and we'll remove your record within 7 days. No questions asked.
+        </li>
+        <li>
+          <strong>Withdraw sign-in consent.</strong> Click "Sign out" in the nav. You can also revoke Shubh Bhagya's Google access at <a href="https://myaccount.google.com/permissions" rel="noopener" class="text-astro-700 hover:underline">myaccount.google.com/permissions</a>.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  {# Security + Children + Changes — compact, no visual weight competition. #}
+  <section class="grid sm:grid-cols-2 gap-3">
+    <div class="bg-white border border-stone-200 rounded-xl p-5">
+      <h3 class="font-semibold text-stone-900 mb-1.5">Security</h3>
+      <p class="text-sm text-stone-800 leading-relaxed">
+        All traffic runs over HTTPS. Session data is cryptographically signed so it can't be tampered with. We take reasonable industry-standard precautions; no online service can guarantee absolute security, so treat your birth details as you would any personal record online.
+      </p>
+    </div>
+    <div class="bg-white border border-stone-200 rounded-xl p-5">
+      <h3 class="font-semibold text-stone-900 mb-1.5">Children</h3>
+      <p class="text-sm text-stone-800 leading-relaxed">
+        Shubh Bhagya isn't directed at children under 18. If a parent submits a child's birth details for a Kundli, that data is treated the same as adult data. Please don't have a child under 18 create an account.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="font-display text-2xl text-astro-800 mb-3">Changes &amp; contact</h2>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        If we materially change this policy, we'll update the "Last updated" date at the top and — for signed-in users — surface a notice on <a href="/account" class="text-astro-700 hover:underline">/account</a>. Minor edits happen silently.
+      </p>
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        Questions, requests, or concerns: <a href="mailto:{{ contact_email or 'mahajananuj07@gmail.com' }}" class="text-astro-700 hover:underline">{{ contact_email or 'mahajananuj07@gmail.com' }}</a>. Human replies, usually within 48 hours.
+      </p>
+    </div>
+  </section>
+
+  <p class="text-xs text-stone-600 italic text-center">
+    Written to be readable and honest. If anything reads ambiguously, please write to us and we'll clarify.
+  </p>
 
 </main>
 {% endblock %}
