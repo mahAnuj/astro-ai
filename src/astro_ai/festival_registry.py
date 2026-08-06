@@ -34,6 +34,12 @@ pair can be mutually consistent and jointly wrong): Karva Chauth (Kartika
 Krishna Chaturthi) to Diwali (Kartika Amavasya) is 11 tithis, so ~10-11 days.
 Navratri (Shukla Pratipada) to Dussehra (Shukla Dashami) is 9 tithis, ~9 days.
 
+Two festivals genuinely share a Gregorian date in six places across these
+three years. Which of the pair leads is set by `Festival.priority` (lower
+wins), not by where the row sits in the source file — see `_in_priority_order`
+and Gate 5 of `scripts/verify_festivals.py`. It matters because the single-slot
+surfaces take the first entry only.
+
 `note_en` / `note_hi` ship in the daily rashifal email, the welcome email and
 the rashifal LLM prompt. Do not reword them casually.
 """
@@ -66,6 +72,23 @@ class Festival:
 
     The default is `"major"`, so a row that omits `tier` behaves exactly as
     every row did before the field existed.
+
+    `priority` decides which festival wins a date that two of them share.
+    Lower wins. It exists because that decision used to be carried ONLY by a
+    row's position in the `FESTIVALS` tuple below — invisible in a diff,
+    trivially destroyed by re-sorting the tuple or inserting a new row in the
+    wrong place, and load-bearing: `festivals.festival_for_date()` returns the
+    first entry for a date, and that single value goes out in the daily
+    rashifal email, the welcome email and the rashifal LLM prompt. Get it
+    wrong and the email announces Narak Chaturdashi on Diwali night, with
+    nothing anywhere failing. So the intent is now written on the row that
+    holds it, `FESTIVALS` is ordered FROM it (see `_in_priority_order`), and
+    `scripts/verify_festivals.py` Gate 5 asserts every shared date resolves to
+    the named winner.
+
+    Convention: 10 = the pan-Indian festival that must lead a shared date,
+    20 = the regional or secondary observance that shares it, 100 = default,
+    for the great majority of rows that share nothing and never contend.
     """
 
     slug: str
@@ -79,6 +102,7 @@ class Festival:
     significance: str       # what the day means — rendered on the /festivals hub
     observance: str         # what is actually done — rendered on the /festivals hub
     tier: str = "major"     # "major" (tabulated, verified) | "recurring" (computed from tithi)
+    priority: int = 100     # lower wins a shared date; 10 = leads, 20 = shares, 100 = never contends
 
 
 DATA_YEARS: tuple[int, ...] = (2026, 2027, 2028)
@@ -92,14 +116,16 @@ SOURCE_URL_BY_YEAR: dict[int, str] = {
 }
 
 
-# Calendar order by the 2026 date. Where two festivals share a date, the more
-# widely-observed / pan-Indian one is declared first, because `festivals.py`
-# resolves a shared date by declaration order and the single-slot surfaces (the
-# daily email, the rashifal prompt) take the first entry only.
+# Authoring order: calendar order by the 2026 date. This is the order to keep
+# the file readable in; it is NOT what resolves a shared date. That is `priority`
+# on the row, which `_in_priority_order()` below turns into the order of the
+# public `FESTIVALS` tuple that `festivals.py` indexes by date. Adding a row in
+# the wrong place here is a cosmetic mistake; getting `priority` wrong on a
+# shared date puts the wrong festival in the daily email.
 #
 # The `# verified …` comment on a row records where that row's dates came from.
 # Rows without one predate the convention and are covered by the module header.
-FESTIVALS: tuple[Festival, ...] = (
+_DECLARED: tuple[Festival, ...] = (
     Festival(
         slug="makar-sankranti",
         name_en="Makar Sankranti",
@@ -125,6 +151,9 @@ FESTIVALS: tuple[Festival, ...] = (
             "or sesame is traditional. No fast is prescribed; this is a feast day, and kite-flying "
             "is the north-western custom."
         ),
+        # Shares its date with Pongal in all three years — the same solar
+        # moment under two names. Leads, as the pan-Indian name.
+        priority=10,
     ),
     # verified 2026-08-07 · Drik Panchang, New Delhi — year calendar page and the
     # monthly calendar page, which print Pongal as "on Makara Sankranti day" for
@@ -157,6 +186,8 @@ FESTIVALS: tuple[Festival, ...] = (
             "season's fruit. A kolam is drawn at the threshold before dawn. Cattle are "
             "bathed, painted and garlanded on Mattu Pongal. It is a feast; no fast is kept."
         ),
+        # Behind Makar Sankranti on the date they always share.
+        priority=20,
     ),
     Festival(
         slug="vasant-panchami",
@@ -589,6 +620,8 @@ FESTIVALS: tuple[Festival, ...] = (
             "for as long as the murti stays, whether that is a day and a half, five days or ten. "
             "Visarjan closes it. Looking at the moon on Chaturthi night is traditionally avoided."
         ),
+        # Shares 2026-09-14 with Hartalika Teej. Leads, as the pan-Indian one.
+        priority=10,
     ),
     # verified 2026-08-07 · Drik Panchang, New Delhi — year calendar page and monthly
     # calendar page, both giving Bhadrapada Shukla Tritiya. Tithi confirmed
@@ -624,6 +657,9 @@ FESTIVALS: tuple[Festival, ...] = (
             "fast broken the next morning after the final puja. Mehndi, green bangles and "
             "green cloth are the day's mark."
         ),
+        # Behind Ganesh Chaturthi on 2026-09-14, the year the two tithis share
+        # a sunrise.
+        priority=20,
     ),
     # verified 2026-08-07 · Drik Panchang, New Delhi — year calendar page and monthly
     # calendar page, both "Ganesh Visarjan / Anant Chaturdashi", Bhadrapada Shukla
@@ -825,6 +861,9 @@ FESTIVALS: tuple[Festival, ...] = (
             "and light diyas at the threshold, at the tulsi and at every doorway, leaving one to "
             "burn through the night. Account books are opened afresh."
         ),
+        # Shares 2026-11-08 and 2028-10-17 with Narak Chaturdashi. Diwali leads
+        # on any night it is on; nothing outranks it in this file.
+        priority=10,
     ),
     # verified 2026-08-07 · Drik Panchang, New Delhi — year calendar page and monthly
     # calendar page. Both print "Lakshmi Puja / Narak Chaturdashi / Diwali" together on
@@ -862,6 +901,9 @@ FESTIVALS: tuple[Festival, ...] = (
             "facing south, the only lamp of the year set in that direction, and it is not "
             "moved. Food stays light; the house is finished for Diwali."
         ),
+        # Behind Diwali on 2026-11-08 and 2028-10-17, the years the pre-dawn
+        # Chaturdashi and the pradosh Amavasya land on the same Gregorian day.
+        priority=20,
     ),
     Festival(
         slug="govardhan-puja",
@@ -976,6 +1018,62 @@ FESTIVALS: tuple[Festival, ...] = (
 )
 
 
+def _in_priority_order(declared: tuple[Festival, ...]) -> tuple[Festival, ...]:
+    """`declared`, reordered so the lowest `priority` leads every shared date.
+
+    This is the function that makes `priority` load-bearing rather than
+    decorative. `festivals.py` builds `FESTIVALS_BY_DATE` by walking this
+    tuple in order and appending, so whichever of two same-date rows comes
+    first here is the one `festival_for_date()` returns and the one the daily
+    email prints. Before this existed that was decided by where a row happened
+    to sit in the source file, which no reviewer could see and no test held.
+
+    Everything outside a shared date keeps its authored position, so the file
+    still reads in calendar order: only the rows that actually contend move.
+    Each shared (year, date) group is resolved independently by taking the
+    slots its members already occupy and dealing them back out in
+    `(priority, authored position)` order — so a row that shares two different
+    dates with two different partners is placed consistently for both, and the
+    result is always a permutation of `declared`, never a drop or a duplicate.
+    The assertion at the end holds that last claim to account.
+
+    Ties are left alone: two rows on one date with equal `priority` fall back
+    to authored order. That is deliberately not an error here — Gate 5 in
+    `scripts/verify_festivals.py` is where an unresolved tie is caught, with a
+    name attached, rather than at import time in production.
+    """
+    authored = {f.slug: i for i, f in enumerate(declared)}
+    by_slug = {f.slug: f for f in declared}
+    slot_of = dict(authored)
+
+    groups: dict[tuple[int, str], list[str]] = {}
+    for fest in declared:
+        for year, iso in fest.dates.items():
+            groups.setdefault((year, iso), []).append(fest.slug)
+
+    for _key, members in sorted(groups.items()):
+        if len(members) < 2:
+            continue
+        slots = sorted(slot_of[slug] for slug in members)
+        ranked = sorted(members, key=lambda slug: (by_slug[slug].priority, authored[slug]))
+        for slot, slug in zip(slots, ranked):
+            slot_of[slug] = slot
+
+    ordered = tuple(sorted(declared, key=lambda f: slot_of[f.slug]))
+    assert len(set(slot_of.values())) == len(declared), (
+        "priority ordering did not produce a permutation — two festivals were "
+        "assigned the same slot, which would drop a row from FESTIVALS"
+    )
+    return ordered
+
+
+# The public tuple. Ordered by `priority` within any shared date and by the
+# authored (calendar) order everywhere else — see `_in_priority_order`. Import
+# this, not `_DECLARED`; `festivals.py` reads its shared-date precedence
+# straight off this order.
+FESTIVALS: tuple[Festival, ...] = _in_priority_order(_DECLARED)
+
+
 BY_SLUG: dict[str, Festival] = {f.slug: f for f in FESTIVALS}
 
 
@@ -1000,9 +1098,17 @@ def _add_months(d: date, months: int) -> date:
 def upcoming(today: date, months: int = 6) -> list[tuple[date, Festival]]:
     """Every (date, festival) falling in [today, today + `months` months].
 
-    Sorted ascending. Crosses year boundaries. Silently skips years we have no
-    dates for, and skips any unparseable ISO string rather than raising — the
-    hub should degrade to a shorter list, never to a 500.
+    Sorted ascending by date, then by `priority`, so a shared date leads with
+    the same festival here as `festivals.festival_for_date()` returns for the
+    email — the /festivals hub and the calendar grid are both built off this
+    list. The tie-break used to be the slug, which put Diwali ahead of Narak
+    Chaturdashi by the accident of D preceding N and would have silently
+    reversed for a differently-named pair. Slug remains only as a final,
+    deterministic tie-break between two rows of equal priority.
+
+    Crosses year boundaries. Silently skips years we have no dates for, and
+    skips any unparseable ISO string rather than raising — the hub should
+    degrade to a shorter list, never to a 500.
     """
     end = _add_months(today, months)
     out: list[tuple[date, Festival]] = []
@@ -1017,7 +1123,7 @@ def upcoming(today: date, months: int = 6) -> list[tuple[date, Festival]]:
                 continue
             if today <= d <= end:
                 out.append((d, fest))
-    out.sort(key=lambda pair: (pair[0], pair[1].slug))
+    out.sort(key=lambda pair: (pair[0], pair[1].priority, pair[1].slug))
     return out
 
 

@@ -11,7 +11,7 @@ Krishna Chaturthi to Kartika Amavasya, 11 tithis) makes 10-11 days the only
 possible answer. Nothing in the codebase could have noticed.
 
 This script is that missing check: one command, zero judgment, PASS/FAIL,
-exit 0 or 1. It runs four independent gates.
+exit 0 or 1. It runs five independent gates.
 
   Gate 1 - exact date match.  Every festival in `festival_registry.FESTIVALS`
       must appear in tests/festival_dates_expected.json with byte-identical
@@ -43,6 +43,21 @@ exit 0 or 1. It runs four independent gates.
       on the site, which no date gate can see. This gate proves the round trip.
       Shared dates are printed for information; they are legitimate, not a
       failure. Only an unreachable festival fails.
+
+  Gate 5 - ordering primacy on a shared date.  Gate 4 proves both festivals on
+      a shared date are reachable; it does not care which of them comes first.
+      Which one comes first is what the daily rashifal email, the welcome email
+      and the rashifal LLM prompt actually print, because they call
+      `festival_for_date()` and it returns entry zero. That choice used to rest
+      entirely on where a row sat in the `FESTIVALS` tuple — invisible in a
+      diff and destroyed by any re-sort or a row inserted in the wrong place,
+      with no test anywhere that would go red. `Festival.priority` now carries
+      it, and this gate holds it to a hard-coded table of expected winners
+      below: every shared date must be in the table, every table entry must
+      still be a shared date, the winner must have a strictly lower priority
+      than everything else on that date, and `festival_for_date()` must
+      actually return it. A new collision nobody has adjudicated fails here by
+      name rather than shipping a silent default.
 
 HOW TO ADD A YEAR
 -----------------
@@ -340,6 +355,141 @@ def gate_4_lookup_reachability() -> list[str]:
 
 
 # --------------------------------------------------------------------------
+# Gate 5 - ordering primacy on a shared date
+# --------------------------------------------------------------------------
+
+# Every Gregorian date in the shipped years that carries more than one
+# festival, with the winner named explicitly. Written out by hand, not derived
+# from the registry, so that a future edit which flips one of these resolutions
+# fails here with the pair named instead of quietly changing what the daily
+# email says. Adding a festival that lands on an occupied date will also fail
+# this gate until the collision is adjudicated and recorded here — which is the
+# point: a new shared date is a decision, not a detail.
+#
+# date -> (winning slug, every slug on that date, why the winner leads)
+EXPECTED_SHARED_DATES: dict[str, tuple[str, tuple[str, ...], str]] = {
+    "2026-01-14": (
+        "makar-sankranti", ("makar-sankranti", "pongal"),
+        "same solar moment under two names; the pan-Indian name leads",
+    ),
+    "2026-09-14": (
+        "ganesh-chaturthi", ("ganesh-chaturthi", "hartalika-teej"),
+        "Shukla Tritiya and Chaturthi share a sunrise in 2026; Ganesh Chaturthi "
+        "is pan-Indian, Hartalika Teej north and central",
+    ),
+    "2026-11-08": (
+        "diwali", ("diwali", "narak-chaturdashi"),
+        "pre-dawn Chaturdashi and pradosh Amavasya on one Gregorian day; "
+        "Diwali leads any night it falls on",
+    ),
+    "2027-01-15": (
+        "makar-sankranti", ("makar-sankranti", "pongal"),
+        "same solar moment under two names; the pan-Indian name leads",
+    ),
+    "2028-01-15": (
+        "makar-sankranti", ("makar-sankranti", "pongal"),
+        "same solar moment under two names; the pan-Indian name leads",
+    ),
+    "2028-10-17": (
+        "diwali", ("diwali", "narak-chaturdashi"),
+        "pre-dawn Chaturdashi and pradosh Amavasya on one Gregorian day; "
+        "Diwali leads any night it falls on",
+    ),
+}
+
+
+def gate_5_ordering_primacy() -> list[str]:
+    failures: list[str] = []
+    years = list(festival_registry.DATA_YEARS)
+    priority_of = {
+        f.slug: getattr(f, "priority", 100) for f in festival_registry.FESTIVALS
+    }
+
+    actual: dict[str, list[str]] = {}
+    for fest in festival_registry.FESTIVALS:
+        for year in years:
+            iso = fest.dates.get(year)
+            if iso:
+                actual.setdefault(iso, []).append(fest.slug)
+    actual = {iso: slugs for iso, slugs in actual.items() if len(slugs) > 1}
+
+    for iso in sorted(actual):
+        if iso not in EXPECTED_SHARED_DATES:
+            failures.append(
+                f"{iso}: {', '.join(actual[iso])} share this date, but it is not "
+                "in EXPECTED_SHARED_DATES — a new collision has appeared and "
+                "nobody has said which festival the daily email should lead with. "
+                "Set `priority` on both rows and add the date to the table."
+            )
+    for iso in sorted(EXPECTED_SHARED_DATES):
+        if iso not in actual:
+            failures.append(
+                f"{iso}: EXPECTED_SHARED_DATES names this a shared date but the "
+                "registry no longer has two festivals on it — a date moved. "
+                "Re-verify against the almanac before touching this table."
+            )
+
+    checked = 0
+    for iso in sorted(EXPECTED_SHARED_DATES):
+        want_winner, want_slugs, why = EXPECTED_SHARED_DATES[iso]
+        got_slugs = actual.get(iso)
+        if got_slugs is None:
+            continue
+        checked += 1
+
+        if sorted(got_slugs) != sorted(want_slugs):
+            failures.append(
+                f"{iso}: expected {sorted(want_slugs)} on this date, registry has "
+                f"{sorted(got_slugs)} — the pair itself changed, so the recorded "
+                "resolution no longer applies"
+            )
+            continue
+
+        # The winner must win on `priority`, strictly. A tie means the outcome is
+        # still being decided by tuple position, which is the thing this gate exists
+        # to stop being load-bearing.
+        winner_priority = priority_of[want_winner]
+        ties = [
+            s for s in got_slugs
+            if s != want_winner and priority_of[s] <= winner_priority
+        ]
+        if ties:
+            failures.append(
+                f"{iso}: {want_winner} (priority {winner_priority}) does not "
+                f"strictly outrank "
+                + ", ".join(f"{s} (priority {priority_of[s]})" for s in ties)
+                + " — the shared date is being resolved by declaration order "
+                "again, not by priority. Expected winner: "
+                f"{want_winner} — {why}"
+            )
+
+        entries = festivals.festivals_for_date(_parse(iso))
+        got_order = [e["slug"] for e in entries]
+        if not got_order:
+            failures.append(f"{iso}: festivals_for_date() returned nothing")
+            continue
+        if got_order[0] != want_winner:
+            failures.append(
+                f"{iso}: festivals_for_date() leads with {got_order[0]!r}, expected "
+                f"{want_winner!r} — the daily email, the welcome email and the "
+                f"rashifal prompt would all announce the wrong festival. {why}"
+            )
+        one = festivals.festival_for_date(_parse(iso))
+        if one is None or one["slug"] != want_winner:
+            failures.append(
+                f"{iso}: festival_for_date() returns {one and one['slug']!r}, "
+                f"expected {want_winner!r} — this is the exact value that goes "
+                "into the daily rashifal email"
+            )
+        print(f"  {iso}: {' > '.join(got_order)} "
+              f"(priorities {', '.join(str(priority_of[s]) for s in got_order)})")
+
+    print(f"  {checked} shared date(s) checked against a table of "
+          f"{len(EXPECTED_SHARED_DATES)}")
+    return failures
+
+
+# --------------------------------------------------------------------------
 
 def _registry_dates() -> dict[str, dict[int, str]]:
     return {f.slug: dict(f.dates) for f in festival_registry.FESTIVALS}
@@ -377,6 +527,8 @@ def main() -> int:
          lambda: gate_3_lunar_drift(expected, dates_by_source)),
         ("Gate 4 - lookup reachability (nothing dropped on a shared date)",
          gate_4_lookup_reachability),
+        ("Gate 5 - ordering primacy (the right festival leads a shared date)",
+         gate_5_ordering_primacy),
     ]
 
     all_failures: list[str] = []
