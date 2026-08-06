@@ -12,6 +12,28 @@ lookups O(1) per day and lets us cover specific year-specific quirks
 Tithi-based daily observances (Ekadashi, Pradosh, Purnima, Amavasya) are
 NOT here — they're computed from the day's tithi in shloks.py. This file
 is only for named-festival callouts.
+
+Reckoning conventions these dates assume:
+
+* Location and timezone: New Delhi, IST. Festival dates are location-sensitive
+  — the tithi boundary can fall on either side of local sunrise or moonrise,
+  so a different city can legitimately land on the adjacent day.
+* Month naming: purnimanta (North Indian). Note Diwali is amanta Ashwina
+  Amavasya, which is purnimanta Kartika Amavasya — same day, two names.
+* Observance window: several festivals are fixed by the tithi prevailing at a
+  particular window rather than at sunrise — pradosh (dusk) for Diwali,
+  nishita (midnight) for Maha Shivratri, madhyahna (midday) for Ram Navami and
+  Ganesh Chaturthi, aparahna (afternoon) for Dussehra, moonrise for Karva
+  Chauth. A naive "tithi at sunrise" rule will disagree with the almanac on
+  those rows and it is the naive rule that is wrong, not the date.
+* Regional divergence: some traditions genuinely observe a festival on an
+  adjacent day. For 2026, Drik gives Ram Navami as 26 March in the Smarta
+  reckoning while ISKCON observes 27 March. Both are correct within their
+  sampradaya; we ship the Smarta/Drik date.
+
+Before editing a date, verify against a published almanac AND a computed
+tithi — do not adjust from memory. Nine of the original 2026 rows were off by
+up to 21 days because they were entered without a source check.
 """
 
 from __future__ import annotations
@@ -20,9 +42,29 @@ from datetime import date
 
 
 # ─── 2026 festival calendar ─────────────────────────────────────────────────
-# Dates based on Drik Panchang for IST. Adjust if you trust a different
-# almanac. Add 2027 entries by November 2026 — Drik publishes next year's
-# tithi calendar around that time.
+# verified: 2026-08-06, two independent sources agreeing on all 17 rows —
+#   (A) drikpanchang.com Hindu calendar 2026, New Delhi (NCT), IST
+#       https://www.drikpanchang.com/calendars/hindu/hinducalendar.html?year=2026
+#   (B) Swiss Ephemeris tithi computation at Delhi sunrise, checked against
+#       each festival's own observance window (pradosh / nishita / madhyahna /
+#       aparahna / moonrise), not against sunrise alone
+#
+# This replaced an earlier table that claimed Drik provenance it did not have:
+# 9 of these 17 dates were wrong, by up to 21 days, and both sources above
+# independently condemned the same 9. Corrected rows: Ram Navami, Hanuman
+# Jayanti, Guru Purnima, Raksha Bandhan, Navratri, Dussehra, Karva Chauth,
+# Govardhan Puja, Tulsi Vivah.
+#
+# Cheap internal-consistency gate when editing — necessary but NOT sufficient,
+# a pair can be mutually consistent and jointly wrong: Karva Chauth (Kartika
+# Krishna Chaturthi) to Diwali (Kartika Amavasya) is 11 tithis, so ~10-11 days
+# (2026: Oct 29 -> Nov 8 = 10). Navratri (Shukla Pratipada) to Dussehra
+# (Shukla Dashami) is 9 tithis, so ~9 days (2026: Oct 11 -> Oct 20 = 9).
+# Always confirm against an external almanac as well.
+#
+# Purnimanta (North Indian) naming, IST. Keep keys in ascending date order.
+# Add 2027 entries by November 2026 — Drik publishes next year's tithi
+# calendar around that time.
 _FESTIVALS_2026: dict[str, dict] = {
     "2026-01-14": {
         "name_en": "Makar Sankranti",
@@ -48,25 +90,25 @@ _FESTIVALS_2026: dict[str, dict] = {
         "note_en": "Festival of colours — celebrate the victory of good over evil and the arrival of spring.",
         "note_hi": "रंगों का त्यौहार — बुराई पर अच्छाई की विजय और वसन्त के आगमन का उत्सव।",
     },
-    "2026-04-06": {
+    "2026-03-26": {
         "name_en": "Ram Navami",
         "name_hi": "राम नवमी",
         "note_en": "Birth of Lord Rama — read or listen to Ramcharitmanas, visit a Ram temple, fast in remembrance.",
         "note_hi": "श्री राम जी का जन्मोत्सव — रामचरितमानस पढ़ें या सुनें, राम मन्दिर के दर्शन करें, स्मरण में व्रत रखें।",
     },
-    "2026-04-23": {
+    "2026-04-02": {
         "name_en": "Hanuman Jayanti",
         "name_hi": "हनुमान जयन्ती",
         "note_en": "Birth of Hanuman ji. Recite Hanuman Chalisa, especially powerful on this day.",
         "note_hi": "हनुमान जी का जन्मोत्सव। हनुमान चालीसा का पाठ करें — इस दिन विशेष फलदायी।",
     },
-    "2026-07-09": {
+    "2026-07-29": {
         "name_en": "Guru Purnima",
         "name_hi": "गुरु पूर्णिमा",
         "note_en": "Pay reverence to your gurus — spiritual, scholastic, parental. The day Jupiter's energy is strongest.",
         "note_hi": "अपने गुरुओं को नमन करें — आध्यात्मिक, विद्या के, मातापिता। इस दिन गुरु ग्रह की ऊर्जा सर्वाधिक प्रबल।",
     },
-    "2026-08-09": {
+    "2026-08-28": {
         "name_en": "Raksha Bandhan",
         "name_hi": "रक्षा बन्धन",
         "note_en": "Sisters tie rakhi on brothers' wrists, exchange love and the promise of lifelong protection.",
@@ -84,19 +126,19 @@ _FESTIVALS_2026: dict[str, dict] = {
         "note_en": "Welcome Ganesh ji home. Begins 10 days of devotion ending in Visarjan.",
         "note_hi": "गणेश जी का स्वागत। 10 दिनों की भक्ति जो विसर्जन से समाप्त होती है।",
     },
-    "2026-10-09": {
+    "2026-10-11": {
         "name_en": "Navratri (begins)",
         "name_hi": "नवरात्रि (आरम्भ)",
         "note_en": "Nine nights of Devi worship — each night honours one form of the Goddess. Fast, chant, and dance.",
         "note_hi": "नौ रातें देवी आराधना की — हर रात्रि देवी के एक रूप का सम्मान। व्रत, जप, और गरबा।",
     },
-    "2026-10-18": {
+    "2026-10-20": {
         "name_en": "Dussehra (Vijayadashami)",
         "name_hi": "दशहरा",
         "note_en": "Victory of Rama over Ravana — start anything new today, it carries the blessing of dharma.",
         "note_hi": "रावण पर राम की विजय — आज कुछ भी नया आरम्भ करें, धर्म का आशीर्वाद साथ रहता है।",
     },
-    "2026-11-05": {
+    "2026-10-29": {
         "name_en": "Karva Chauth",
         "name_hi": "करवा चौथ",
         "note_en": "Married women fast for the long life of their husband. Sight the moon, then break the fast.",
@@ -108,7 +150,7 @@ _FESTIVALS_2026: dict[str, dict] = {
         "note_en": "Festival of lights — Lakshmi Puja in the evening welcomes prosperity. Clean the home, light diyas, set off no firecrackers indoors.",
         "note_hi": "दीपों का त्यौहार — सायंकाल लक्ष्मी पूजा से समृद्धि का स्वागत। घर साफ करें, दीये जलाएँ।",
     },
-    "2026-11-09": {
+    "2026-11-10": {
         "name_en": "Govardhan Puja",
         "name_hi": "गोवर्धन पूजा",
         "note_en": "The day Krishna lifted Mt Govardhan — honour cows, prepare annakut (mountain of food).",
@@ -120,7 +162,7 @@ _FESTIVALS_2026: dict[str, dict] = {
         "note_en": "Sisters apply tilak on brothers' foreheads, pray for their long life. Brothers gift in return.",
         "note_hi": "बहनें भाई के माथे पर तिलक लगाती हैं, उनकी दीर्घायु की प्रार्थना। भाई बदले में उपहार देते हैं।",
     },
-    "2026-11-25": {
+    "2026-11-21": {
         "name_en": "Tulsi Vivah",
         "name_hi": "तुलसी विवाह",
         "note_en": "Ceremonial marriage of Tulsi to Vishnu — marks the start of the Hindu wedding season.",
