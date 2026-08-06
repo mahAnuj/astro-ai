@@ -67,9 +67,15 @@
            against the pastel element-gradient. #}
         <div class="rashi-card-face rashi-card-back bg-gradient-to-br {{ gradient }} border-2 border-white shadow-md hover:shadow-xl transition-shadow rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center text-center">
           <div class="flex-1 flex items-center justify-center w-full min-h-0 mb-2">
+            {# No explicit width/height: the 12 silhouette PNGs have
+               different intrinsic aspects (Virgo is 673x751 tall;
+               Sagittarius is 817x751 wide) and a hardcoded 1:1 hint
+               forces a matching aspect box that clips the taller
+               figures at the top (Virgo's face). The parent flex
+               container reserves consistent layout space so removing
+               width/height won't regress CLS. #}
             <img src="/static/rashi/{{ slug }}.png"
                  alt="{{ en }} ({{ sa }}) zodiac silhouette"
-                 width="160" height="160"
                  loading="lazy" decoding="async"
                  class="max-h-32 sm:max-h-40 w-auto object-contain">
           </div>
@@ -103,18 +109,22 @@
     {% endfor %}
   </section>
 
-  {# SEO body — after grid, so users see cards first but Google sees content #}
-  <section class="prose prose-stone max-w-none pt-4">
-    <h2 class="font-display text-2xl text-astro-800">How Bhagya's Rashifal is different</h2>
-    <p>
-      Most free daily-horoscope sites reuse the same template across all 12 rashis with the sign name swapped in — you notice the moment you scroll past your own sign and see the same phrases repeated. Bhagya's Rashifal is generated fresh per rashi every morning, anchored on today's actual sky (weekday-lord, tithi, moon nakshatra, retrogrades, festival) so a Sunday reading feels different from a Wednesday and a Mars-ruled Aries reading feels different from a Venus-ruled Taurus on the same day.
-    </p>
-    <p>
-      Sidereal Lahiri ayanamsa (the classical Vedic reference), Swiss Ephemeris under the hood, honest tone — no fear-based upsell, no "urgent puja needed" nudges, no astrologer-chat funnel. Read your reading, take what serves you, close the tab.
-    </p>
-    <p>
-      Want a deeper reading based on your full birth chart, not just your Moon sign? <a href="/kundli" class="text-astro-700 hover:underline">Compute your free Janma Kundli</a> — that gives you dashas, yogas, doshas, and a substantive natal reading.
-    </p>
+  {# SEO body — after grid, so users see cards first but Google sees
+     content. Card design matches Privacy/Terms/numerology (Tailwind
+     Typography plugin is not loaded, so we don't use `prose`). #}
+  <section class="pt-4">
+    <h2 class="font-display text-2xl text-astro-800 mb-3">How Bhagya's Rashifal is different</h2>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        Most free daily-horoscope sites reuse the same template across all 12 rashis with the sign name swapped in &mdash; you notice the moment you scroll past your own sign and see the same phrases repeated. Bhagya's Rashifal is generated fresh per rashi every morning, anchored on today's actual sky (weekday-lord, tithi, moon nakshatra, retrogrades, festival) so a Sunday reading feels different from a Wednesday and a Mars-ruled Aries reading feels different from a Venus-ruled Taurus on the same day.
+      </p>
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        Sidereal Lahiri ayanamsa (the classical Vedic reference), Swiss Ephemeris under the hood, honest tone &mdash; no fear-based upsell, no "urgent puja needed" nudges, no astrologer-chat funnel. Read your reading, take what serves you, close the tab.
+      </p>
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        Want a deeper reading based on your full birth chart, not just your Moon sign? <a href="/kundli" class="text-astro-700 hover:underline">Compute your free Janma Kundli</a> &mdash; that gives you dashas, yogas, doshas, and a substantive natal reading.
+      </p>
+    </div>
   </section>
 
 </main>
