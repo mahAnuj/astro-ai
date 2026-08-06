@@ -13,6 +13,27 @@
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
 
+{# One mark per row on a day cell. Shape, not colour, carries the meaning
+   (WCAG 1.4.1): a named festival is a large solid disc, Purnima is an OPEN
+   ring (full moon), Amavasya is a SMALL SOLID disc (new/dark moon) and
+   Ekadashi is an upright bar — a fast day, deliberately not a moon shape, so
+   the ~24 a year read as a quieter class of mark. Decoded by the legend under
+   the calendar heading; every marked day is also named in text below its
+   month, so nothing here is glyph-only or hover-only. #}
+{% macro day_mark(fx) %}
+{%- if (fx.tier | default("major", true)) != "recurring" -%}
+<span class="block h-2 w-2 rounded-full bg-astro-700"></span>
+{%- elif fx.kind | default("") == "purnima" -%}
+<span class="block h-1.5 w-1.5 rounded-full border border-stone-500 bg-transparent"></span>
+{%- elif fx.kind | default("") == "amavasya" -%}
+<span class="block h-1.5 w-1.5 rounded-full bg-stone-500"></span>
+{%- elif fx.kind | default("") == "ekadashi" -%}
+<span class="block h-1.5 w-0.5 rounded-sm bg-stone-500"></span>
+{%- else -%}
+<span class="block h-1 w-1 rounded-full border border-stone-500"></span>
+{%- endif -%}
+{% endmacro %}
+
 <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
   <header class="text-center space-y-2">
@@ -26,10 +47,12 @@
        page. (QA #1.) #}
     {% if festivals %}
     <p class="text-stone-600">
-      The <strong>{{ festivals | length }}</strong> festivals in our verified calendar that fall
+      The <strong>{{ festival_count | default(festivals | length) }}</strong> festivals in our
+      verified calendar that fall
       between <strong>{{ window_start_pretty }}</strong> and <strong>{{ window_end_pretty }}</strong>
       &mdash; each with its date, the tithi rule that fixes it, what it means, and how it is
       observed. Dates are reckoned for New Delhi, IST and checked against {{ source_name }}.
+      Every Purnima, Amavasya and Ekadashi in the same window is marked on the calendar too.
     </p>
     {% else %}
     <p class="text-stone-600">
@@ -64,9 +87,27 @@
     <div class="space-y-1">
       <h2 id="calendar-heading" class="font-display text-2xl text-astro-800">Calendar view</h2>
       <p class="text-sm text-stone-600">
-        Underlined days carry a festival, and every one of them is named in the list under its
-        month. Pick either to jump straight to the full entry below.
+        A bold, solid-underlined day carries a named festival; a lighter, dotted day is a
+        recurring lunar observance. Every marked day is named in the list under its month
+        &mdash; pick either to jump straight to the full entry below.
       </p>
+      {# Legend. The marks are decodable here without hovering, tapping or
+         focusing anything, which is the point: the grid is the at-a-glance
+         view and it has to be readable at a glance. #}
+      <ul class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-600">
+        <li class="flex items-center gap-1.5">
+          <span class="block h-2 w-2 rounded-full bg-astro-700" aria-hidden="true"></span>Named festival
+        </li>
+        <li class="flex items-center gap-1.5">
+          <span class="block h-1.5 w-1.5 rounded-full border border-stone-500 bg-transparent" aria-hidden="true"></span>Purnima (full moon)
+        </li>
+        <li class="flex items-center gap-1.5">
+          <span class="block h-1.5 w-1.5 rounded-full bg-stone-500" aria-hidden="true"></span>Amavasya (new moon)
+        </li>
+        <li class="flex items-center gap-1.5">
+          <span class="block h-1.5 w-0.5 rounded-sm bg-stone-500" aria-hidden="true"></span>Ekadashi
+        </li>
+      </ul>
     </div>
 
     <div class="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -116,18 +157,13 @@
                         {% if cell.is_today %}ring-2 ring-emerald-600{% elif c.major %}ring-1 ring-astro-500{% endif %}
                         {% if cell.is_past %}opacity-50{% endif %}">
                 <span>{{ cell.day }}</span>
-                {# Shape cue, not colour alone (WCAG 1.4.1) — one dot per
-                   festival, so a two-festival day is visibly different from a
-                   one-festival day even in greyscale, and a major dot is
-                   larger and solid where a recurring one is small and hollow. #}
-                <span class="mt-0.5 flex gap-0.5" aria-hidden="true">
-                  {% for fx in cell.festivals %}
-                  {% if (fx.tier | default("major", true)) != "recurring" %}
-                  <span class="block h-1.5 w-1.5 rounded-full bg-astro-700"></span>
-                  {% else %}
-                  <span class="block h-1 w-1 rounded-full border border-stone-500"></span>
-                  {% endif %}
-                  {% endfor %}
+                {# Shape cue, not colour alone (WCAG 1.4.1) — one mark per
+                   entry, so a day that is both a festival and a Purnima shows
+                   both marks and loses neither, and the four mark shapes stay
+                   distinguishable in greyscale. Single row, max ~3 marks at
+                   ~8px each: it cannot widen a 44px cell. #}
+                <span class="mt-0.5 flex items-center gap-0.5" aria-hidden="true">
+                  {% for fx in cell.festivals %}{{ day_mark(fx) }}{% endfor %}
                 </span>
                 {# Supplementary only. The names are also always-visible in the
                    list below, so nothing here is hover-gated. Revealed on
@@ -167,6 +203,9 @@
           <li>
             <a href="#{{ f.slug }}" class="flex gap-2 rounded hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-astro-700 {% if cell.is_past %}opacity-60{% endif %}">
               <span class="w-5 shrink-0 text-right font-semibold tabular-nums text-stone-500">{{ cell.day }}</span>
+              {# Same mark as the grid cell, so the legend decodes this list
+                 too and the two views can never disagree about what a day is. #}
+              <span class="mt-1 shrink-0" aria-hidden="true">{{ day_mark(f) }}</span>
               <span class="underline underline-offset-2 {% if (f.tier | default('major', true)) != 'recurring' %}text-astro-800{% else %}text-stone-600 decoration-dotted{% endif %}">{{ f.name_en }}{% if f.name_hi %}
                 <span lang="hi" class="font-normal text-stone-500">{{ f.name_hi }}</span>{% endif %}</span>
             </a>
