@@ -139,35 +139,49 @@
   {% endif %}
   {% endif %}
 
-  {# SEO CONTENT — explainer #}
-  <section class="prose prose-stone max-w-none">
-    <h2 class="font-display text-2xl text-astro-800">What is Panchang?</h2>
-    <p>
-      Panchang (literally "five limbs") is the classical Vedic almanac. Five daily angas describe the character of the day astronomically and karmically:
-    </p>
-    <ul>
-      <li><strong>Vara (weekday)</strong> — Sunday=Sun, Monday=Moon, Tuesday=Mars, Wednesday=Mercury, Thursday=Jupiter, Friday=Venus, Saturday=Saturn. The day's lord shapes its overall tone.</li>
-      <li><strong>Tithi (lunar day)</strong> — the angular distance between Sun and Moon, divided into 30 parts. Shukla Paksha (1-15) is waxing, Krishna Paksha (16-30) is waning. Some tithis have specific classical characters (Ekadashi = fasting, Purnima = culmination, Amavasya = ancestral rites, Chaturthi = Ganesh energy).</li>
-      <li><strong>Nakshatra (lunar constellation)</strong> — the Moon moves through 27 nakshatras in ~27 days, so this is the fastest-changing sky signal and grounds today's emotional weather.</li>
-      <li><strong>Yoga</strong> — the Sun+Moon combination divided into 27 yoga windows. Vaidhriti and Vyatipata are the two most inauspicious yogas and are traditionally avoided for muhurta.</li>
-      <li><strong>Karana</strong> — half-tithi. Vishti (Bhadra) is the karana traditionally avoided for auspicious starts.</li>
-    </ul>
+  {# SEO CONTENT — explainer. Card pattern matches Privacy/Terms/
+     numerology/kundli/matching/rashifal (Tailwind Typography plugin is
+     not loaded, so `prose` classes silently render unstyled). #}
+  <section class="space-y-6">
+    <div>
+      <h2 class="font-display text-2xl text-astro-800 mb-3">What is Panchang?</h2>
+      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+          Panchang (literally "five limbs") is the classical Vedic almanac. Five daily angas describe the character of the day astronomically and karmically:
+        </p>
+        <ul class="list-disc pl-5 space-y-2 text-sm sm:text-base text-stone-800 leading-relaxed">
+          <li><strong>Vara (weekday)</strong> &mdash; Sunday=Sun, Monday=Moon, Tuesday=Mars, Wednesday=Mercury, Thursday=Jupiter, Friday=Venus, Saturday=Saturn. The day's lord shapes its overall tone.</li>
+          <li><strong>Tithi (lunar day)</strong> &mdash; the angular distance between Sun and Moon, divided into 30 parts. Shukla Paksha (1&ndash;15) is waxing, Krishna Paksha (16&ndash;30) is waning. Some tithis have specific classical characters (Ekadashi = fasting, Purnima = culmination, Amavasya = ancestral rites, Chaturthi = Ganesh energy).</li>
+          <li><strong>Nakshatra (lunar constellation)</strong> &mdash; the Moon moves through 27 nakshatras in ~27 days, so this is the fastest-changing sky signal and grounds today's emotional weather.</li>
+          <li><strong>Yoga</strong> &mdash; the Sun+Moon combination divided into 27 yoga windows. Vaidhriti and Vyatipata are the two most inauspicious yogas and are traditionally avoided for muhurta.</li>
+          <li><strong>Karana</strong> &mdash; half-tithi. Vishti (Bhadra) is the karana traditionally avoided for auspicious starts.</li>
+        </ul>
+      </div>
+    </div>
 
-    <h3 class="font-display text-xl text-astro-800 mt-6">Rahu Kaal, Abhijit Muhurta, Choghadiya</h3>
-    <p>
-      Beyond the five angas, classical Vedic timing includes sub-day windows:
-    </p>
-    <ul>
-      <li><strong>Rahu Kaal</strong> — a specific 1/8 slice of daylight considered inauspicious for beginnings. It shifts weekday-by-weekday and depends on your sunrise/sunset (which shifts by location). We compute it correctly for your city.</li>
-      <li><strong>Abhijit Muhurta</strong> — a ~48-minute window around solar noon, considered the most universally auspicious slot of the day. Perfect for signing important documents, starting a business call, or committing to any decision.</li>
-      <li><strong>Yamaganda / Gulikai</strong> — two more classical inauspicious windows on the same weekday-lord principle as Rahu Kaal (not shown above, deferred to a next release).</li>
-      <li><strong>Choghadiya</strong> — 8 equal daytime windows named Amrit / Shubh / Labh (auspicious), Rog / Kaal (avoid), Udveg / Chal (neutral). Which name each window gets rotates with weekday. Useful for picking a specific shop-open time or product-launch minute.</li>
-    </ul>
+    <div>
+      <h2 class="font-display text-2xl text-astro-800 mb-3">Rahu Kaal, Abhijit Muhurta, Choghadiya</h2>
+      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+          Beyond the five angas, classical Vedic timing includes sub-day windows:
+        </p>
+        <ul class="list-disc pl-5 space-y-2 text-sm sm:text-base text-stone-800 leading-relaxed">
+          <li><strong>Rahu Kaal</strong> &mdash; a specific 1/8 slice of daylight considered inauspicious for beginnings. It shifts weekday-by-weekday and depends on your sunrise/sunset (which shifts by location). We compute it correctly for your city.</li>
+          <li><strong>Abhijit Muhurta</strong> &mdash; a ~48-minute window around solar noon, considered the most universally auspicious slot of the day. Perfect for signing important documents, starting a business call, or committing to any decision.</li>
+          <li><strong>Yamaganda / Gulikai</strong> &mdash; two more classical inauspicious windows on the same weekday-lord principle as Rahu Kaal (not shown above, deferred to a next release).</li>
+          <li><strong>Choghadiya</strong> &mdash; 8 equal daytime windows named Amrit / Shubh / Labh (auspicious), Rog / Kaal (avoid), Udveg / Chal (neutral). Which name each window gets rotates with weekday. Useful for picking a specific shop-open time or product-launch minute.</li>
+        </ul>
+      </div>
+    </div>
 
-    <h3 class="font-display text-xl text-astro-800 mt-6">How Bhagya computes it</h3>
-    <p>
-      All calculations use <strong>Swiss Ephemeris</strong> on sidereal <strong>Lahiri (Chitrapaksha) ayanamsa</strong>, the standard Indian classical convention. Sunrise/sunset for your city are computed from the local latitude/longitude + timezone, not approximated. Rahu Kaal, Abhijit, and Choghadiya windows are derived from that local sunrise/sunset — they will not match tables that hardcode Mumbai-only or Delhi-only times.
-    </p>
+    <div>
+      <h2 class="font-display text-2xl text-astro-800 mb-3">How Bhagya computes it</h2>
+      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+          All calculations use <strong>Swiss Ephemeris</strong> on sidereal <strong>Lahiri (Chitrapaksha) ayanamsa</strong>, the standard Indian classical convention. Sunrise/sunset for your city are computed from the local latitude/longitude + timezone, not approximated. Rahu Kaal, Abhijit, and Choghadiya windows are derived from that local sunrise/sunset &mdash; they will not match tables that hardcode Mumbai-only or Delhi-only times.
+        </p>
+      </div>
+    </div>
   </section>
 
   {# CROSS-LINKS #}
