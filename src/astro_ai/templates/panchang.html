@@ -51,23 +51,32 @@
     </button>
   </form>
 
-  {# FESTIVAL CALLOUT — only when this date carries a named festival.
+  {# FESTIVAL CALLOUT — every named festival on this date, not just the first.
+     Two can genuinely share a day (Makar Sankranti + Pongal on 2026-01-14),
+     and this callout must agree with the /festivals hub about what day it is.
+     `festivals_on_date` is a list; empty renders nothing at all.
      Cross-links to /festivals (issue #132); there are no per-festival
      pages by design, long-form lives under /learn. #}
-  {% if festival %}
-  <section class="bg-white border border-astro-500 rounded-xl p-5 sm:p-6 space-y-2">
-    <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <h2 class="font-display text-xl text-astro-800">
-        {{ festival.name_en }}{% if festival.name_hi %}
-        <span lang="hi" class="font-normal text-base text-stone-600">{{ festival.name_hi }}</span>{% endif %}
-      </h2>
-      <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">
-        {% if is_today %}Today{% else %}On this day{% endif %}
-      </span>
+  {% if festivals_on_date %}
+  <section class="bg-white border border-astro-500 rounded-xl p-5 sm:p-6 space-y-4">
+    {% for festival in festivals_on_date %}
+    <div class="space-y-2">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 class="font-display text-xl text-astro-800">
+          {{ festival.name_en }}{% if festival.name_hi %}
+          <span lang="hi" class="font-normal text-base text-stone-600">{{ festival.name_hi }}</span>{% endif %}
+        </h2>
+        {% if loop.first %}
+        <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">
+          {% if is_today %}Today{% else %}On this day{% endif %}
+        </span>
+        {% endif %}
+      </div>
+      {% if festival.note_en %}
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">{{ festival.note_en }}</p>
+      {% endif %}
     </div>
-    {% if festival.note_en %}
-    <p class="text-sm sm:text-base text-stone-800 leading-relaxed">{{ festival.note_en }}</p>
-    {% endif %}
+    {% endfor %}
     <a href="/festivals" class="inline-block text-sm font-semibold text-astro-700 hover:underline">
       See the full festival calendar &rarr;
     </a>

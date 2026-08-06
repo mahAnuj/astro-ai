@@ -164,8 +164,11 @@
         </tr>
         {% endif %}
 
-        {#- FESTIVAL (if today is one) -#}
-        {% if festival %}
+        {#- FESTIVAL — every named festival today, not just the first. Shares
+            the shape and reasoning of the daily_rashifal.html callout: two
+            festivals can share a date, and `festivals` is a list ([] renders
+            nothing). -#}
+        {% if festivals %}
         <tr>
           <td style="padding:14px 28px 0 28px;">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#fef3c7;border-left:3px solid #d97706;border-radius:4px;">
@@ -174,12 +177,14 @@
                   <div style="font-size:11px;color:#92400e;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
                     🪔 {% if lang == 'hi' %}आज का पर्व{% else %}Today's Festival{% endif %}
                   </div>
-                  <div style="font-size:16px;font-weight:700;color:#1c1917;">
+                  {%- for festival in festivals %}
+                  <div style="font-size:16px;font-weight:700;color:#1c1917;{% if not loop.first %}margin-top:10px;{% endif %}">
                     {{ festival['name_' + lang] if ('name_' + lang) in festival else festival['name_en'] }}
                   </div>
                   <div style="font-size:13px;color:#57534e;margin-top:4px;line-height:1.5;">
                     {{ festival['note_' + lang] if ('note_' + lang) in festival else festival['note_en'] }}
                   </div>
+                  {%- endfor %}
                 </td>
               </tr>
             </table>
