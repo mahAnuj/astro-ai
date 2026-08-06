@@ -37,12 +37,21 @@
       observed &mdash; on one page.
     </p>
     {% endif %}
-  </header>
 
-  {# Provenance + reckoning convention, stated up front rather than buried
-     at the bottom — festival dates are the single most contested thing on
-     a page like this. #}
-  {% include "_festival_reckoning.html" %}
+    {# Provenance stays above the dates, because festival dates are the single
+       most contested thing on a page like this — but as one line, not as three
+       paragraphs of methodology standing between the reader and the date they
+       came for. The full block is rendered at the foot of the page and this
+       links down to it. #}
+    <p class="text-xs text-stone-600">
+      Dates:
+      <a href="{{ source_url }}" rel="noopener" class="underline underline-offset-2 hover:text-astro-900">{{ source_name }}</a>
+      <span class="text-stone-400">&middot;</span> New Delhi, IST
+      <span class="text-stone-400">&middot;</span> purnimanta reckoning
+      <span class="text-stone-400">&middot;</span>
+      <a href="#festival-reckoning" class="text-astro-700 underline underline-offset-2 hover:text-astro-900">how these are reckoned &darr;</a>
+    </p>
+  </header>
 
   {# MONTH-GRID CALENDAR — the at-a-glance view above the cards.
      Every festival name here is server-rendered text, not a JS tooltip
@@ -286,6 +295,12 @@
     </div>
   </section>
   {% endif %}
+
+  {# The full reckoning block, below the content people came for. Rendered
+     unconditionally and outside the `festivals` branches above, so the
+     "how these are reckoned" anchor in the header can never point at nothing
+     — including on the empty-window fallback. #}
+  {% include "_festival_reckoning.html" %}
 
   {# CROSS-LINKS #}
   <section>
