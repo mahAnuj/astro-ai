@@ -60,6 +60,17 @@ One line, newest at the bottom:
 HH:MM  <agent-role> [#issue]  <what just happened / what is next>
 ```
 
+**Never type the timestamp yourself — you do not have a clock and will guess wrong.**
+Let the shell stamp it, always via this exact form:
+
+```bash
+printf '%s  dev-lead #132  registry engineer returned; wiring route next\n' \
+  "$(date +%H:%M)" >> AGENT_STATUS.md
+```
+
+Use `>>` only. Never `>`, never Write, never Edit on this file — a single `>` destroys
+every prior line, including other agents' entries, and several agents append concurrently.
+
 Append when you: start, finish reading/design, dispatch a subagent, get one back, start
 writing files, commit, hit a blocker, or finish. Do not batch these — write each one as it
 happens. If a run dies mid-response (it has happened repeatedly here), this file is the
