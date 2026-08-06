@@ -961,6 +961,11 @@ async def festivals_page(request: Request) -> HTMLResponse:
                 "slug": fest.slug,
                 "name_en": fest.name_en,
                 "name_hi": fest.name_hi,
+                # "major" (the named festivals) vs "recurring" (Purnima /
+                # Amavasya / Ekadashi). getattr-with-default because the field
+                # is landing in the registry separately — this must render
+                # correctly both before and after it arrives.
+                "tier": getattr(fest, "tier", "major"),
                 "date_iso": fest_date.isoformat(),
                 "pretty_date": _pretty_date(fest_date.isoformat(), lang),
                 "weekday": fest_date.strftime("%A"),
@@ -984,11 +989,21 @@ async def festivals_page(request: Request) -> HTMLResponse:
     calendar_months = _fest_reg.month_grid(
         today, [(d, fest) for d, fest in entries if fest.slug in _rendered]
     )
+    _tier_by_slug = {f["slug"]: f["tier"] for f in festivals_ctx}
     for _block in calendar_months:
         _block["label"] = (
             f"{_HINDI_MONTHS[_block['month']]} {_block['year']}"
             if lang == "hi" else _block["label_en"]
         )
+        # month_grid deliberately returns only slug/name for each marked day.
+        # Carry the tier across so the grid can render the ~20 named festivals
+        # more strongly than the ~80 recurring lunar days that will join them.
+        for _week in _block["weeks"]:
+            for _cell in _week:
+                if not _cell:
+                    continue
+                for _fx in _cell["festivals"]:
+                    _fx["tier"] = _tier_by_slug.get(_fx["slug"], "major")
 
     # Source link for the reckoning block — current year where we have it,
     # otherwise any year we do, so a rollover past DATA_YEARS degrades to a
@@ -1003,6 +1018,7 @@ async def festivals_page(request: Request) -> HTMLResponse:
         request, "festivals_index.html",
         {
             "festivals": festivals_ctx,
+            "calendar_months": calendar_months,
             "window_start_pretty": _pretty_date(first_iso, lang),
             "window_end_pretty": _pretty_date(last_iso, lang),
             "today_iso": today_iso,
