@@ -3174,14 +3174,22 @@ async def admin_feedback(request: Request) -> HTMLResponse:
     )
 
 
-@app.get("/admin/usage", response_class=HTMLResponse, dependencies=[Depends(require_admin)])
-async def admin_usage(request: Request, days: int = 1) -> HTMLResponse:
-    """Observability page — recent LLM-call counts grouped by route + cache hit rate.
+@app.get("/admin", response_class=HTMLResponse, dependencies=[Depends(require_admin)])
+async def admin_dashboard(request: Request, days: int = 1) -> HTMLResponse:
+    """Admin landing dashboard — cross-cutting metrics from every subsystem.
+
+    Sections:
+      - Headline KPIs: Kundli / Ask / Matching / Errors counts for the window
+      - LLM usage: token spend, cache hit rate, per-route/model/provider (formerly its own page)
+      - Community: signed-in users, Rashifal subscribers, feedback count
+      - Recent activity mini-feed with links to the per-type deep-dive pages
+
+    Deep-dive pages: /admin/activity, /admin/subscribers, /admin/feedback.
 
     Protected by HTTP Basic Auth (username 'admin', password from
     ADMIN_PASSWORD env var). Browser shows the standard login prompt.
     """
-    from astro_ai import llm_stats
+    from astro_ai import llm_stats, feedback
     # Persistent (GCS) usage summary — survives Cloud Run cold starts and
     # deploys, unlike the SQLite version which lives in /tmp and resets on
     # every push. We supplement with cache_entries from SQLite (that count
@@ -3192,24 +3200,42 @@ async def admin_usage(request: Request, days: int = 1) -> HTMLResponse:
         summary["cache_entries"] = sqlite_summary.get("cache_entries", 0)
     except Exception:  # noqa: BLE001
         pass
-    # Persistent-user counts — separate from Rashifal email subscribers.
-    # These are people who signed in with Google (may or may not be subscribed
-    # to daily emails).
+    # Community counts. Users = Google sign-in persisted; subscribers = daily
+    # Rashifal email opt-in; feedback = feedback widget submissions.
     user_count = users.count()
     subscriber_count = subscribers.count()
+    feedback_count = feedback.count()
     # Per-model / per-route LLM call breakdown for the same window.
     llm_stats_summary = llm_stats.range_summary(days=days)
+    # Event counts per type (form_kundli / form_ask / form_matching / error) —
+    # backs the four headline KPI cards.
+    event_totals = events.counts_by_type(days=days)
+    # Recent-activity mini-feed: last N events across all types, newest first.
+    recent_events = events.recent(days=days, limit=10)
+    recent_errors = events.recent(types=["error"], days=days, limit=3)
     return templates.TemplateResponse(
-        request, "admin_usage.html",
+        request, "admin_dashboard.html",
         {
             "lang": _lang(request),
             "summary": summary,
             "days": days,
             "user_count": user_count,
             "subscriber_count": subscriber_count,
+            "feedback_count": feedback_count,
             "llm_stats": llm_stats_summary,
+            "event_totals": event_totals,
+            "recent_events": recent_events,
+            "recent_errors": recent_errors,
         },
     )
+
+
+@app.get("/admin/usage", include_in_schema=False)
+async def admin_usage_redirect(days: int = 1) -> RedirectResponse:
+    """Old URL — /admin/usage merged into the main /admin dashboard on
+    2026-08-06. Permanent redirect so bookmarks and any linked-to URLs
+    continue to work."""
+    return RedirectResponse(f"/admin?days={days}", status_code=301)
 
 
 @app.get("/admin/activity", response_class=HTMLResponse, dependencies=[Depends(require_admin)])
