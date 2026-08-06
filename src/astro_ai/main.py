@@ -147,7 +147,31 @@ from astro_ai.session import (
 
 
 def _lang(request: Request) -> str:
-    """Backwards-compat alias — read lang from the combined __session cookie."""
+    """Resolve reading language: `?lang=` query param wins, cookie is fallback.
+
+    `?lang=hi` used to be a silent no-op everywhere (QA finding on /festivals) —
+    this function only read the __session cookie, so a shared or bookmarked
+    Hindi link rendered in English. Honouring the param is safe here because:
+
+    - No route declares `lang` as a query parameter, so nothing is shadowed
+      (`/lang` takes it as a Form field, and POST bodies are untouched).
+    - No CDN-cached HTML route depends on _lang. The only `public, max-age`
+      response in the app is the cosmic-card SVG, which never calls this;
+      /panchang, /rashifal and /festivals are all `_no_cdn_cache`. Edge caches
+      key on the full URL including query string anyway, so `?lang=hi` and the
+      bare path cannot collide.
+    - `base.html` emits `<link rel=canonical>` from `request.url.path` only,
+      query string excluded, so `?lang=` variants self-canonicalise and add no
+      duplicate-content surface for crawlers.
+
+    Deliberately request-scoped: it does NOT write the cookie. `POST /lang` is
+    still the only thing that changes a stored preference, so a shared link
+    can't silently flip the recipient's saved language. An unsupported value
+    falls through to the cookie rather than forcing English.
+    """
+    requested = request.query_params.get("lang")
+    if requested in SUPPORTED_LANGS:
+        return requested
     return load_lang(request)
 
 
@@ -851,7 +875,10 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
             "moon_info": moon_info,
             # Keyed off target_date, not today — an archive URL for a festival
             # date must surface that date's festival (issue #132 cross-link).
-            "festival": festivals.festival_for_date(target_date),
+            # ALL festivals, not the first: this callout and the /festivals hub
+            # render the same day and must not disagree about it. 2026-01-14 is
+            # both Makar Sankranti and Pongal; the singular lookup showed one.
+            "festivals_on_date": festivals.festivals_for_date(target_date),
             "error": error,
             "lang": lang,
         },
@@ -2864,6 +2891,12 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
             neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
             transit = compute_transit_snapshot(neutral_chart)
             panchang_now = compute_panchang(neutral_chart)
+            # DELIBERATELY singular — see the note at the /panchang call site.
+            # llm._build_rashifal_day_signals takes `dict | None` and emits one
+            # "Today is X" sentence into an already-crowded signal block; a list
+            # would raise AttributeError there. festivals.festival_for_date()
+            # tie-breaks in registry order, which puts the pan-Indian festival
+            # first, so the one-slot prompt gets the right one.
             festival_now = festivals.festival_for_date(date.today())
             raw = generate_rashifal_for_rashi(
                 rashi_index=idx, transit=transit, today_iso=today_iso,
@@ -3044,7 +3077,12 @@ def _email_context(*, lang: str, city: str | None, request_cache: dict | None = 
         "today_pretty": today.strftime("%A, %d %B %Y"),
         "panchang": panchang,
         "shlok": shloks.shlok_for_date(today),
-        "festival": festivals.festival_for_date(today),
+        # ALL festivals, not the first. The email callout is a factual
+        # "what day is it" block with room to repeat, so dropping the second
+        # festival on a shared date (Makar Sankranti + Pongal, 2026-01-14) is
+        # plain data loss to the subscriber. Both email templates loop over
+        # this and render nothing when the list is empty.
+        "festivals": festivals.festivals_for_date(today),
         "trivia": trivia.trivia_for_date(today),
         "site_url": _site_url(),
     }
@@ -3083,6 +3121,10 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
                 transit=transit, today_iso=today_iso,
                 prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
                 panchang=compute_panchang(neutral_chart),
+                # Singular by design — the LLM prompt has one festival slot
+                # (llm.py takes `dict | None`). The welcome email's own
+                # festival CALLOUT does show all of them; this only shapes
+                # the generated prose.
                 festival=festivals.festival_for_date(date.today()),
             ),
         )
@@ -3172,6 +3214,10 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
                     transit=transit, today_iso=today_iso,
                     prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
                     panchang=compute_panchang(neutral_chart),
+                    # Singular by design — one festival slot in the prompt
+                    # (llm.py takes `dict | None`), and this is the daily
+                    # blast: a type error here fails the whole 7 AM send.
+                    # The email's festival callout renders all of them.
                     festival=festivals.festival_for_date(date.today()),
                 ),
             )

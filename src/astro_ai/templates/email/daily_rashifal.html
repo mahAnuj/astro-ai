@@ -25,7 +25,7 @@
       panchang         — DailyPanchang | None  (None → skip Panchang strip)
       rashifal_sections — list of (glyph, title, body) tuples
       shlok            — dict from shloks.shlok_for_date()
-      festival         — dict from festivals.festival_for_date() | None
+      festivals        — list of dicts from festivals.festivals_for_date(); [] if none
       trivia           — dict from trivia.trivia_for_date()
       site_url         — 'https://shubhagya.com'
       unsubscribe_url  — per-recipient HMAC-signed link
@@ -136,8 +136,12 @@
         </tr>
         {% endif %}
 
-        {#- FESTIVAL CALLOUT — only when today is a named festival. -#}
-        {% if festival %}
+        {#- FESTIVAL CALLOUT — every named festival today, not just the first.
+            `festivals` is a list; two can share a date (Makar Sankranti and
+            Pongal on 2026-01-14) and a subscriber told only about one has been
+            given wrong information about their own day. Empty list renders
+            nothing. The header stays singular-block; only name+note repeat. -#}
+        {% if festivals %}
         <tr>
           <td style="padding:14px 28px 0 28px;">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#fef3c7;border-left:3px solid #d97706;border-radius:4px;">
@@ -146,12 +150,14 @@
                   <div style="font-size:11px;color:#92400e;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">
                     🪔 {% if lang == 'hi' %}आज का पर्व{% else %}Today's Festival{% endif %}
                   </div>
-                  <div style="font-size:16px;font-weight:700;color:#1c1917;line-height:1.3;">
+                  {%- for festival in festivals %}
+                  <div style="font-size:16px;font-weight:700;color:#1c1917;line-height:1.3;{% if not loop.first %}margin-top:10px;{% endif %}">
                     {{ festival['name_' + lang] if ('name_' + lang) in festival else festival['name_en'] }}
                   </div>
                   <div style="font-size:13px;color:#57534e;margin-top:4px;line-height:1.5;">
                     {{ festival['note_' + lang] if ('note_' + lang) in festival else festival['note_en'] }}
                   </div>
+                  {%- endfor %}
                 </td>
               </tr>
             </table>
