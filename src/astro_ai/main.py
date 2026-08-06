@@ -3305,6 +3305,27 @@ async def admin_activity(request: Request, days: int = 7, limit: int = 200) -> H
     )
 
 
+@app.get("/admin/insights", response_class=HTMLResponse, dependencies=[Depends(require_admin)])
+async def admin_insights(request: Request, days: int = 30,
+                         refresh: int = 0) -> HTMLResponse:
+    """Audience-shape aggregates — who's actually using the site.
+
+    Runs `profiling.audience_summary(days)`, which reads from the existing
+    GCS events log (no new collection). Cached per-day at the profiling
+    layer, so repeated loads within an hour are cheap. `?refresh=1` forces
+    a re-aggregate — useful right after new features change the substrate.
+
+    See GitHub issue #140 for the dimension list and roadmap (Phase 1
+    covers cheap dims; rashi + intent-NLP land in later phases).
+    """
+    from astro_ai import profiling
+    summary = profiling.audience_summary(days=days, force_refresh=bool(refresh))
+    return templates.TemplateResponse(
+        request, "admin_insights.html",
+        {"lang": _lang(request), "days": days, "summary": summary},
+    )
+
+
 @app.get("/admin/subscribers", response_class=HTMLResponse, dependencies=[Depends(require_admin)])
 async def admin_subscribers(request: Request) -> HTMLResponse:
     """Full Rashifal-email subscriber list — auth-gated."""
