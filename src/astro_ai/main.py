@@ -690,6 +690,7 @@ async def sitemap() -> Response:
         ("/kundli",          "monthly", "0.8"),
         ("/dasha",           "monthly", "0.7"),
         ("/panchang",        "daily",   "0.8"),
+        ("/festivals",       "weekly",  "0.7"),
         ("/about",           "monthly", "0.5"),
         ("/privacy",         "yearly",  "0.3"),
         ("/terms",           "yearly",  "0.3"),
@@ -848,6 +849,9 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
             "next_day": next_day,
             "choghadiya": choghadiya_windows,
             "moon_info": moon_info,
+            # Keyed off target_date, not today — an archive URL for a festival
+            # date must surface that date's festival (issue #132 cross-link).
+            "festival": festivals.festival_for_date(target_date),
             "error": error,
             "lang": lang,
         },
@@ -925,6 +929,90 @@ async def panchang_archive(request: Request, date_str: str, city: str = "") -> H
             status_code=400,
         ))
     return _no_cdn_cache(_render_panchang(request, target, city))
+
+
+@app.get("/festivals", response_class=HTMLResponse)
+async def festivals_page(request: Request) -> HTMLResponse:
+    """Hindu festival calendar — the next six months, all on one page.
+
+    Everything renders inline (date, tithi rule, significance, observance)
+    rather than linking out to per-festival stubs: /learn already owns the
+    long-form festival articles, and a parallel page type would cannibalise
+    them. Only festivals that already have such an article get a link.
+
+    The "in N days" copy is date-derived, so this page must not sit in a CDN
+    cache overnight — same reason /panchang uses _no_cdn_cache.
+    """
+    from astro_ai import festival_registry as _fest_reg
+
+    lang = _lang(request)
+    today = date.today()
+    today_iso = today.isoformat()
+    entries = _fest_reg.upcoming(today)
+
+    festivals_ctx: list[dict] = []
+    for fest_date, fest in entries:
+        # One malformed registry row should cost us that row, not the page —
+        # but it gets logged, never silently dropped.
+        try:
+            article = _fest_reg.learn_article_for(fest)
+            days_away = (fest_date - today).days
+            festivals_ctx.append({
+                "slug": fest.slug,
+                "name_en": fest.name_en,
+                "name_hi": fest.name_hi,
+                "date_iso": fest_date.isoformat(),
+                "pretty_date": _pretty_date(fest_date.isoformat(), lang),
+                "weekday": fest_date.strftime("%A"),
+                "days_away": days_away,
+                "is_today": days_away == 0,
+                "note_en": fest.note_en,
+                "significance": fest.significance,
+                "observance": fest.observance,
+                "rule": fest.rule,
+                "observance_window": fest.observance_window,
+                "learn_url": f"/learn/{article.slug}/" if article else None,
+                "learn_title": article.title if article else None,
+            })
+        except Exception as err:
+            log.warning("festivals: skipping registry entry %r: %s", getattr(fest, "slug", "?"), err)
+
+    # Month-grid calendar shown above the cards. Fed the rows that actually
+    # made it into `festivals_ctx`, not the raw registry rows, so a skipped
+    # entry above can never leave a marked day with no card to link to.
+    _rendered = {f["slug"] for f in festivals_ctx}
+    calendar_months = _fest_reg.month_grid(
+        today, [(d, fest) for d, fest in entries if fest.slug in _rendered]
+    )
+    for _block in calendar_months:
+        _block["label"] = (
+            f"{_HINDI_MONTHS[_block['month']]} {_block['year']}"
+            if lang == "hi" else _block["label_en"]
+        )
+
+    # Source link for the reckoning block — current year where we have it,
+    # otherwise any year we do, so a rollover past DATA_YEARS degrades to a
+    # stale-but-valid citation instead of a broken link.
+    source_url = _fest_reg.SOURCE_URL_BY_YEAR.get(today.year) or next(
+        iter(_fest_reg.SOURCE_URL_BY_YEAR.values()), ""
+    )
+    first_iso = festivals_ctx[0]["date_iso"] if festivals_ctx else today_iso
+    last_iso = festivals_ctx[-1]["date_iso"] if festivals_ctx else today_iso
+
+    return _no_cdn_cache(templates.TemplateResponse(
+        request, "festivals_index.html",
+        {
+            "festivals": festivals_ctx,
+            "window_start_pretty": _pretty_date(first_iso, lang),
+            "window_end_pretty": _pretty_date(last_iso, lang),
+            "today_iso": today_iso,
+            "source_name": _fest_reg.SOURCE_NAME,
+            "source_url": source_url,
+            "data_years": list(_fest_reg.DATA_YEARS),
+            "verified_through": max(_fest_reg.DATA_YEARS),
+            "lang": lang,
+        },
+    ))
 
 
 @app.get("/about", response_class=HTMLResponse)
