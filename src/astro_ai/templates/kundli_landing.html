@@ -68,47 +68,65 @@
     </p>
   </form>
 
-  {# WHAT'S IN A JANMA KUNDLI — SEO content section #}
-  <section class="prose prose-stone max-w-none">
-    <h2 class="font-display text-2xl text-astro-800">What is a Janma Kundli?</h2>
-    <p>
-      A <strong>Janma Kundli</strong> — literally "birth chart" — is a snapshot of the sky at the exact moment and location of your birth. Vedic astrology reads it not as fortune-telling but as a diagnostic: the arrangement of the nine grahas (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu) across the twelve houses tells a classical astrologer where your natural strengths lie, what karmic patterns you'll navigate, and which life periods (dashas) will accelerate or slow certain areas of life.
-    </p>
-    <p>
-      The chart uses the <strong>sidereal Lahiri ayanamsa</strong>, the standard reference frame in Indian classical astrology. This is what makes Vedic astrology different from Western — the same birth date can put your Sun in a different sign because sidereal astrology accounts for the ~24° drift of the zodiac since the classical texts were written. Bhagya computes charts using Swiss Ephemeris, the same astronomical library serious astrologers use in their software.
-    </p>
+  {# WHAT'S IN A JANMA KUNDLI — SEO content section, card-styled to
+     match the site design (Tailwind Typography plugin is not loaded,
+     so we don't use `prose`). #}
+  <section class="space-y-8">
+    <div>
+      <h2 class="font-display text-2xl text-astro-800 mb-3">What is a Janma Kundli?</h2>
+      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+          A <strong>Janma Kundli</strong> &mdash; literally "birth chart" &mdash; is a snapshot of the sky at the exact moment and location of your birth. Vedic astrology reads it not as fortune-telling but as a diagnostic: the arrangement of the nine grahas (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu) across the twelve houses tells a classical astrologer where your natural strengths lie, what karmic patterns you'll navigate, and which life periods (dashas) will accelerate or slow certain areas of life.
+        </p>
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+          The chart uses the <strong>sidereal Lahiri ayanamsa</strong>, the standard reference frame in Indian classical astrology. This is what makes Vedic astrology different from Western &mdash; the same birth date can put your Sun in a different sign because sidereal astrology accounts for the ~24&deg; drift of the zodiac since the classical texts were written. Bhagya computes charts using Swiss Ephemeris, the same astronomical library serious astrologers use in their software.
+        </p>
+      </div>
+    </div>
 
-    <h3 class="font-display text-xl text-astro-800 mt-8">What your free Kundli reading includes</h3>
-    <ul>
-      <li><strong>Lagna (Ascendant)</strong> — your rising sign, the axis around which every house is measured.</li>
-      <li><strong>Rashi chart (D-1)</strong> — the primary chart, all 9 grahas placed in the 12 houses.</li>
-      <li><strong>Planetary positions in nakshatra + pada</strong> — the 27-nakshatra granularity that classical texts actually use.</li>
-      <li><strong>Vimshottari Mahadasha timeline</strong> — the 120-year planetary-period cycle showing which graha rules your current chapter and when the next one begins. <a href="/learn/vimshottari-dasha-explained/" class="text-astro-700 hover:underline">Full explainer →</a></li>
-      <li><strong>Manglik (Mangal) Dosh check</strong> — all classical cancellation rules applied, not just Mars in 1/4/7/8/12. <a href="/learn/manglik-dosh/" class="text-astro-700 hover:underline">What Manglik Dosh actually means →</a></li>
-      <li><strong>Sade Sati status</strong> — Saturn's 7.5-year transit around your natal Moon, with rising / peak / setting phase identification and dates. <a href="/learn/sade-sati/" class="text-astro-700 hover:underline">The honest Sade Sati guide →</a></li>
-      <li><strong>Kaal Sarp Dosh</strong> — strict BPHS binary rule (all 7 grahas one side of Rahu-Ketu axis), not the fear-based version. <a href="/learn/kaal-sarp-dosh/" class="text-astro-700 hover:underline">Why most Kaal Sarp claims are wrong →</a></li>
-      <li><strong>Classical yogas</strong> — Gaja Kesari, Panch Mahapurush, Dhana yogas, and others detected in your chart with their classical significations.</li>
-      <li><strong>A calm, honest reading</strong> — plain language, no fear-based predictions, no "urgent puja needed" upsell.</li>
-    </ul>
+    <div>
+      <h3 class="font-display text-xl text-astro-800 mb-3">What your free Kundli reading includes</h3>
+      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6">
+        <ul class="space-y-2.5 text-sm sm:text-base text-stone-800 leading-relaxed">
+          <li>&bull; <strong>Lagna (Ascendant)</strong> &mdash; your rising sign, the axis around which every house is measured.</li>
+          <li>&bull; <strong>Rashi chart (D-1)</strong> &mdash; the primary chart, all 9 grahas placed in the 12 houses.</li>
+          <li>&bull; <strong>Planetary positions in nakshatra + pada</strong> &mdash; the 27-nakshatra granularity that classical texts actually use.</li>
+          <li>&bull; <strong>Vimshottari Mahadasha timeline</strong> &mdash; the 120-year planetary-period cycle showing which graha rules your current chapter and when the next one begins. <a href="/learn/vimshottari-dasha-explained/" class="text-astro-700 hover:underline">Full explainer &rarr;</a></li>
+          <li>&bull; <strong>Manglik (Mangal) Dosh check</strong> &mdash; all classical cancellation rules applied, not just Mars in 1/4/7/8/12. <a href="/learn/manglik-dosh/" class="text-astro-700 hover:underline">What Manglik Dosh actually means &rarr;</a></li>
+          <li>&bull; <strong>Sade Sati status</strong> &mdash; Saturn's 7.5-year transit around your natal Moon, with rising / peak / setting phase identification and dates. <a href="/learn/sade-sati/" class="text-astro-700 hover:underline">The honest Sade Sati guide &rarr;</a></li>
+          <li>&bull; <strong>Kaal Sarp geometry</strong> &mdash; classical binary rule (all 7 grahas one side of Rahu-Ketu axis), honestly framed. <a href="/learn/kaal-sarp-dosh/" class="text-astro-700 hover:underline">Where Kaal Sarp actually comes from &rarr;</a></li>
+          <li>&bull; <strong>Classical yogas</strong> &mdash; Gaja Kesari, Panch Mahapurush, Dhana yogas, and others detected in your chart with their classical significations.</li>
+          <li>&bull; <strong>A calm, honest reading</strong> &mdash; plain language, no fear-based predictions, no "urgent puja needed" upsell.</li>
+        </ul>
+      </div>
+    </div>
 
-    <h3 class="font-display text-xl text-astro-800 mt-8">How Bhagya is different</h3>
-    <p>
-      Most free-Kundli sites are lead-gen funnels for astrologer chat services. The chart is a doorway — the goal is to hand you off to a paid consultant who will find something scary in your chart and prescribe an expensive gemstone or puja. That business model requires the reading to plant anxiety.
-    </p>
-    <p>
-      Bhagya's editorial rule is the opposite: <em>read the sky honestly, and let readers act on what they learn</em>. If your chart has a difficult Sade Sati transit, we'll name the challenge and explain the classical response — we won't manufacture a Kaal Sarp Dosh that isn't there. Every classical rule cited in your reading is sourced from BPHS, Phaladeepika, Jataka Parijata, or another canonical text. When the classical texts disagree, we say so.
-    </p>
+    <div>
+      <h3 class="font-display text-xl text-astro-800 mb-3">How Bhagya is different</h3>
+      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+          Most free-Kundli sites are lead-gen funnels for astrologer chat services. The chart is a doorway &mdash; the goal is to hand you off to a paid consultant who will find something scary in your chart and prescribe an expensive gemstone or puja. That business model requires the reading to plant anxiety.
+        </p>
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+          Bhagya's editorial rule is the opposite: <em>read the sky honestly, and let readers act on what they learn</em>. If your chart has a difficult Sade Sati transit, we'll name the challenge and explain the classical response &mdash; we won't manufacture a Kaal Sarp Dosh that isn't there. Every classical rule cited in your reading is sourced from BPHS, Phaladeepika, Jataka Parijata, or another canonical text. When the classical texts disagree, we say so.
+        </p>
+      </div>
+    </div>
 
-    <h3 class="font-display text-xl text-astro-800 mt-8">Do you need your exact birth time?</h3>
-    <p>
-      Yes. The Lagna (Ascendant) changes sign every ~2 hours, and moves ~1° every 4 minutes. A wrong Lagna changes every house cusp — planets get reassigned to different houses, and the interpretation shifts completely. If you don't know your birth time:
-    </p>
-    <ul>
-      <li>Check your birth certificate first — it's usually there.</li>
-      <li>Ask your parents or a close family member.</li>
-      <li>For a rough Moon-sign reading (Chandra Kundli) noon local time is a common convention, but the Ascendant will be unreliable.</li>
-      <li>A classical astrologer can do a <em>birth-time rectification</em> by matching known life events to chart transits — but that's beyond a free-tool scope.</li>
-    </ul>
+    <div>
+      <h3 class="font-display text-xl text-astro-800 mb-3">Do you need your exact birth time?</h3>
+      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+          Yes. The Lagna (Ascendant) changes sign every ~2 hours, and moves ~1&deg; every 4 minutes. A wrong Lagna changes every house cusp &mdash; planets get reassigned to different houses, and the interpretation shifts completely. If you don't know your birth time:
+        </p>
+        <ul class="space-y-2 text-sm sm:text-base text-stone-800 leading-relaxed">
+          <li>&bull; Check your birth certificate first &mdash; it's usually there.</li>
+          <li>&bull; Ask your parents or a close family member.</li>
+          <li>&bull; For a rough Moon-sign reading (Chandra Kundli) noon local time is a common convention, but the Ascendant will be unreliable.</li>
+          <li>&bull; A classical astrologer can do a <em>birth-time rectification</em> by matching known life events to chart transits &mdash; but that's beyond a free-tool scope.</li>
+        </ul>
+      </div>
+    </div>
   </section>
 
   {# WHY SIDEREAL section #}
