@@ -33,3 +33,6 @@ firebase-debug.log
 # Knowledge source PDFs — kept local only for copyright hygiene.
 # Extractions live in src/astro_ai/knowledge/*.md and vedic_reference.md.
 data/
+
+# Agent heartbeat log — see CLAUDE.md "Report status while you run"
+AGENT_STATUS.md

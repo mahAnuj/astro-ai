@@ -48,6 +48,34 @@ user's turns, only the prompt they were handed.
 
 ---
 
+## Report status while you run
+
+Background agents are opaque from the outside — the user sees "3 agents running" and
+nothing else. Every agent must leave a visible trail.
+
+**Append a line to `AGENT_STATUS.md` (repo root, gitignored) at every meaningful step.**
+One line, newest at the bottom:
+
+```
+HH:MM  <agent-role> [#issue]  <what just happened / what is next>
+```
+
+Append when you: start, finish reading/design, dispatch a subagent, get one back, start
+writing files, commit, hit a blocker, or finish. Do not batch these — write each one as it
+happens. If a run dies mid-response (it has happened repeatedly here), this file is the
+only record of how far it got.
+
+Dev-leads additionally: append a one-line roster whenever the set of live subagents
+changes, so the count the user sees maps to actual work:
+
+```
+HH:MM  dev-lead #132  live: architect(design), engineer-1(hub route)
+```
+
+Keep lines short. This is a heartbeat, not a report — the ship summary is separate.
+
+---
+
 ## Layout
 
 ```
