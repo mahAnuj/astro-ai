@@ -946,7 +946,7 @@ async def privacy_page(request: Request) -> HTMLResponse:
     boilerplate generator; reflects our actual data practices."""
     return templates.TemplateResponse(
         request, "privacy.html",
-        {"lang": _lang(request), "contact_email": "mahajananuj07@gmail.com"},
+        {"lang": _lang(request), "contact_email": "contact@shubhagya.com"},
     )
 
 
@@ -956,7 +956,7 @@ async def terms_page(request: Request) -> HTMLResponse:
     AI-generated-content disclaimer per Shyamasundara audit follow-up."""
     return templates.TemplateResponse(
         request, "terms.html",
-        {"lang": _lang(request), "contact_email": "mahajananuj07@gmail.com"},
+        {"lang": _lang(request), "contact_email": "contact@shubhagya.com"},
     )
 
 

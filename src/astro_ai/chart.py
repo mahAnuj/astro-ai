@@ -154,7 +154,7 @@ PLANETS: list[tuple[str, int]] = [
     ("Rahu", swe.TRUE_NODE),
 ]
 
-_GEOCODER = Nominatim(user_agent="astro-ai/0.0.1 (mahajananuj07@gmail.com)")
+_GEOCODER = Nominatim(user_agent="shubh-bhagya/1.0 (contact@shubhagya.com)")
 _TF = TimezoneFinder()
 
 # Configure Swiss Ephemeris for Vedic/sidereal mode with Lahiri ayanamsa.
