@@ -98,6 +98,9 @@
           {% if e.data.context and e.data.context != 'chart' %}
           <span class="uppercase text-astro-700 font-semibold">ctx={{ e.data.context }}</span>
           {% endif %}
+          {% if e.data.cache_hit %}
+          <span class="uppercase text-stone-500" title="Answer was served from cache; not a fresh LLM call">cache</span>
+          {% endif %}
           {% if e.email %}<span class="text-astro-600">{{ e.email }}</span>{% endif %}
           {% if e.data.model %}<span class="font-mono text-stone-600">{{ e.data.model | truncate(24, True) }}</span>{% endif %}
         </div>

@@ -3791,11 +3791,10 @@ async def ask_submit(
             except Exception:  # noqa: BLE001 — history is best-effort
                 log.warning("save_reading(ask) failed for %s", _signed_in.sub)
 
-    # Notify owner + record activity event ONLY on fresh generation.
-    # Cache-hit means the user re-asked an already-cached question; no
-    # new-Q&A event to notify about. The in-memory dedup window in
-    # notify.py was 3s (too tight — refresh at 5s re-fired) and doesn't
-    # survive Cloud Run multi-instance auto-scale anyway.
+    # Notify owner ONLY on fresh generation (cache-hit re-asks would spam
+    # Telegram). But RECORD the event either way — we want /admin/activity
+    # to show every question the user actually asked, including re-asks
+    # that were served from cache. The `cache_hit` flag distinguishes them.
     _u_ask = load_user(request)
     if not was_cached:
         notify.ask_submitted(
@@ -3803,22 +3802,23 @@ async def ask_submit(
             user_email=(_u_ask.email if _u_ask else ""),
             model=llm_providers.last_used_model(),
         )
-        events.record(
-            type="form_ask",
-            email=(_u_ask.email if _u_ask else ""),
-            data={
-                "question": question, "category": category, "lang": lang,
-                "model": llm_providers.last_used_model(),
-                # Answer body persisted (truncated to 4000 chars) so
-                # /admin/activity can spot-check Q&A quality across all
-                # Cloud Run instances — SQLite cache is per-instance +
-                # ephemeral, but events go to GCS. Truncation guards
-                # against a single runaway answer bloating the daily
-                # events blob; ~4KB × 5000 events/day = ~20MB max.
-                "answer": (answer_text or "")[:4000],
-                "context": context,
-            },
-        )
+    events.record(
+        type="form_ask",
+        email=(_u_ask.email if _u_ask else ""),
+        data={
+            "question": question, "category": category, "lang": lang,
+            "model": llm_providers.last_used_model(),
+            # Answer body persisted (truncated to 4000 chars) so
+            # /admin/activity can spot-check Q&A quality across all
+            # Cloud Run instances — SQLite cache is per-instance +
+            # ephemeral, but events go to GCS. Truncation guards
+            # against a single runaway answer bloating the daily
+            # events blob; ~4KB × 5000 events/day = ~20MB max.
+            "answer": (answer_text or "")[:4000],
+            "context": context,
+            "cache_hit": was_cached,
+        },
+    )
 
     # Redirect with the question + category (+ context) in the URL so
     # refresh doesn't re-submit, the user can bookmark / share the URL,
