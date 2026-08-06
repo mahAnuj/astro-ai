@@ -20,9 +20,9 @@ choice affects nothing here, but we keep it aligned with the rest of the code.
 TWO EDGE CASES, BOTH REAL
 -------------------------
 * **vriddhi** — a tithi long enough to span two consecutive sunrises, giving
-  two candidate days. We take the **first** (Smarta convention). Confirmed
-  correct for Purnima; see the KNOWN DISAGREEMENT below for Ekadashi, where it
-  is not.
+  two candidate days. Purnima and Amavasya take the **first**. Ekadashi takes
+  the **second**, under the classical *dashami-viddha* rule; see RESOLVED
+  DISAGREEMENT below for the evidence and for why it does not generalise.
 * **kshaya** — a tithi that begins after one sunrise and ends before the next,
   so **no** sunrise falls inside it at all. A naive sunrise scan does not
   mislabel these, it **silently drops them**: the list just comes out one row
@@ -58,19 +58,46 @@ checked agree exactly:
     2027-10-15 (sunrise reckoning). We compute 10-15, and `festival_registry`
     ships 10-14 for the moonrise festival. Both are correct.
 
-KNOWN DISAGREEMENT — vriddhi Ekadashi (2 of 2 checked)
-------------------------------------------------------
-We emit the FIRST day; Drik gives the SECOND, for both cases in range:
-    2026-05-26 → Drik: Padmini Ekadashi, 2026-05-27
-    2027-03-03 → Drik: Vijaya Ekadashi,  2027-03-04
-This is the classical dashami-viddha rule: an Ekadashi touched by Dashami is
-not "shuddha", so the fast moves to the following day — a rule that applies to
-Ekadashi specifically and NOT to Purnima or Amavasya, which is why the three
-vriddhi Purnimas above match on the first day. Ekadashi is therefore the one
-kind whose vriddhi handling here is believed wrong. It is left as-is rather
-than patched: changing it is a rule change, not a bug fix, and it needs the
-architect's call plus a wider sample than two dates. Both dates are computed
-correctly as *tithis*; only the choice of observance day is in question.
+RESOLVED DISAGREEMENT — vriddhi Ekadashi (2026-08-07)
+-----------------------------------------------------
+This module originally emitted the FIRST day of a vriddhi run for every target
+tithi, and the 2026-08-07 spot-check above found Drik giving the SECOND for the
+two vriddhi Ekadashis in DATA_YEARS range (2026-05-26 → Drik 2026-05-27 Padmini
+Ekadashi; 2027-03-03 → Drik 2027-03-04 Vijaya Ekadashi). Two data points were
+too thin to change a rule on, so the disagreement was recorded here rather than
+silently conformed to. It is kept on the record deliberately: a future reader
+should be able to see that this was investigated, not overlooked.
+
+The evidence was then widened to 2024-2032 (well past DATA_YEARS), which yields
+**five** vriddhi Ekadashis. Every one was read off the Drik year calendar, and
+all five fall on the SECOND day of the run:
+
+    run 2024-06-17/18 → Drik: Nirjala Ekadashi,    2024-06-18
+    run 2024-10-27/28 → Drik: Rama Ekadashi,       2024-10-28
+    run 2026-05-26/27 → Drik: Padmini Ekadashi,    2026-05-27
+    run 2027-03-03/04 → Drik: Vijaya Ekadashi,     2027-03-04
+    run 2029-10-17/18 → Drik: Papankusha Ekadashi, 2029-10-18
+
+Five for five, with nothing pointing the other way. The engine now takes the
+second day for a vriddhi Ekadashi (see pass 1 of `_observances_for_year`). This
+is the classical **dashami-viddha** rule: a tithi long enough to cover two
+sunrises must have begun shortly before the first of them, so Dashami is still
+running into that morning and "pierces" the Ekadashi. A pierced Ekadashi is not
+*shuddha* and is not fit for the fast, which moves to the following day.
+
+The rule is deliberately applied to Ekadashi ONLY. The same widened scan finds
+three vriddhi Purnimas and two vriddhi Amavasyas, and Drik prints each reachable
+one on the FIRST day — 2026-06-29, 2027-06-18 and 2028-12-01 Purnima, and
+2024-09-02 Somavati Amavasya. (The fifth, an ordinary Amavasya on 2025-12-19,
+carries no festival name and so does not appear on the Drik year calendar at
+all; it was not checked.) Purnima and Amavasya are reckoned by the tithi at
+sunrise with no viddha test, and must not be shifted. `verify_lunar_observances`
+Gate C asserts both halves of this by name.
+
+Note this is the *Smarta* fast day, which is what the Drik year calendar prints
+and what this site publishes. The Vaishnava (ISKCON) Ekadashi is reckoned
+separately and can fall a day later still; Drik lists it under a "Gauna" prefix
+where the two differ. We do not compute it.
 
 Do not import `shloks.TITHI_OBSERVANCES` or call `shloks.observance_for_tithi()`
 here. That dict is keyed 1..30 (shloks.py:110-114) while `_tithi_at` returns
@@ -204,13 +231,30 @@ def _observances_for_year(year: int) -> tuple[tuple[date, Observance], ...]:
 
     out: list[tuple[date, Observance]] = []
 
-    # Pass 1 — runs. Consecutive days sharing a tithi index are a vriddhi tithi;
-    # the run's FIRST day is the observance (Smarta convention).
-    for i, (day_i, idx) in enumerate(samples):
-        if i > 0 and samples[i - 1][1] == idx:
-            continue
+    # Pass 1 — runs. Consecutive days sharing a tithi index are a vriddhi tithi,
+    # giving two candidate days. Purnima and Amavasya take the run's FIRST day.
+    #
+    # Ekadashi (indices 10 and 25) takes the SECOND. That is the classical
+    # *dashami-viddha* rule: a vriddhi Ekadashi necessarily begins shortly
+    # before the first sunrise, so Dashami is still running into that morning
+    # and the day is "pierced" by it — not shuddha, and so not fit for the fast,
+    # which moves to the following day. The rule is specific to the Ekadashi
+    # fast and does NOT generalise to Purnima or Amavasya, which are reckoned by
+    # the tithi at sunrise alone and stay on the first day. See the module
+    # docstring for the Drik evidence on both halves of that claim.
+    i = 0
+    while i < len(samples):
+        idx = samples[i][1]
+        run_end = i
+        while run_end + 1 < len(samples) and samples[run_end + 1][1] == idx:
+            run_end += 1
         if idx in _TARGETS:
+            pick = i
+            if run_end > i:
+                pick = i + 1
+            day_i = samples[pick][0]
             out.append((day_i, _observance(day_i, idx)))
+        i = run_end + 1
 
     # Pass 2 — gaps. If the index jumps by more than one between consecutive
     # sunrises, the skipped tithi(s) began and ended entirely between them: a
