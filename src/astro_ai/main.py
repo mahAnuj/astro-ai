@@ -1032,19 +1032,83 @@ async def festivals_page(request: Request) -> HTMLResponse:
                 for _fx in _cell["festivals"]:
                     _fx["tier"] = _tier_by_slug.get(_fx["slug"], "major")
 
+    # The header sentence counts the *named* festivals and spans their dates.
+    # Both are read before the computed lunar days are merged in below, so
+    # adding ~25 Purnimas and Ekadashis cannot inflate "the N festivals in our
+    # verified calendar" — those are computed, not hand-verified.
+    festival_count = len(festivals_ctx)
+    first_iso = festivals_ctx[0]["date_iso"] if festivals_ctx else today_iso
+    last_iso = festivals_ctx[-1]["date_iso"] if festivals_ctx else today_iso
+
+    # Computed monthly lunar days (Purnima / Amavasya / Ekadashi) merged into
+    # the same two structures the named festivals use: one row in the card list
+    # and one entry on the matching grid cell. Both appends happen together so
+    # a failure part-way can never leave a marked day whose #slug anchor has no
+    # target. The whole thing is guarded — an ephemeris failure must degrade
+    # this page to festivals-only, never to a 500.
+    #
+    # Window is [today, today + 6 months], the same one `upcoming()` and
+    # `month_grid()` use, so the trailing partial month is not marked with
+    # lunar days that no festival row could ever match.
+    try:
+        from astro_ai.lunar_observances import observances_between as _obs_between
+
+        _cells_by_iso = {
+            _cell["date_iso"]: _cell
+            for _block in calendar_months
+            for _week in _block["weeks"]
+            for _cell in _week
+            if _cell and not _cell["is_past"]
+        }
+        for _obs_date, _obs in _obs_between(today, _fest_reg._add_months(today, 6)):
+            _cell = _cells_by_iso.get(_obs_date.isoformat())
+            if _cell is None:
+                continue
+            # slug is f"{kind}-{iso}" — the kind drives which glyph the grid
+            # draws (hollow moon / filled moon / fast mark).
+            _kind = _obs.slug.split("-", 1)[0]
+            _days_away = (_obs_date - today).days
+            _row = {
+                "slug": _obs.slug,
+                "name_en": _obs.name_en,
+                "name_hi": _obs.name_hi,
+                "tier": _obs.tier,
+                "kind": _kind,
+                "date_iso": _obs_date.isoformat(),
+                "pretty_date": _pretty_date(_obs_date.isoformat(), lang),
+                "weekday": _obs_date.strftime("%A"),
+                "days_away": _days_away,
+                "is_today": _days_away == 0,
+                "rule": _obs.rule,
+            }
+            # Appended, not prepended: on a day that is both a named festival
+            # and a lunar observance the festival must stay first, because the
+            # cell's href points at festivals[0] and that link has to reach the
+            # festival card.
+            _cell["festivals"].append({
+                "slug": _obs.slug,
+                "name_en": _obs.name_en,
+                "name_hi": _obs.name_hi,
+                "tier": _obs.tier,
+                "kind": _kind,
+            })
+            festivals_ctx.append(_row)
+        festivals_ctx.sort(key=lambda f: f["date_iso"])
+    except Exception as err:  # pragma: no cover - degrade to festivals-only
+        log.warning("festivals: lunar observances unavailable: %s", err)
+
     # Source link for the reckoning block — current year where we have it,
     # otherwise any year we do, so a rollover past DATA_YEARS degrades to a
     # stale-but-valid citation instead of a broken link.
     source_url = _fest_reg.SOURCE_URL_BY_YEAR.get(today.year) or next(
         iter(_fest_reg.SOURCE_URL_BY_YEAR.values()), ""
     )
-    first_iso = festivals_ctx[0]["date_iso"] if festivals_ctx else today_iso
-    last_iso = festivals_ctx[-1]["date_iso"] if festivals_ctx else today_iso
 
     return _no_cdn_cache(templates.TemplateResponse(
         request, "festivals_index.html",
         {
             "festivals": festivals_ctx,
+            "festival_count": festival_count,
             "calendar_months": calendar_months,
             "window_start_pretty": _pretty_date(first_iso, lang),
             "window_end_pretty": _pretty_date(last_iso, lang),
