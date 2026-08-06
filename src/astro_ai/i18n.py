@@ -20,7 +20,6 @@ from typing import Any, Final
 _EN: Final[dict[str, str]] = {
     # nav / common — labels chosen to match what readers actually search for
     # (matches AstroSage / Indian-astro convention).
-    "nav_print":           "Print",
     "nav_home":            "Home",
     "nav_today_link":      "Today's Horoscope",
     "nav_natal_link":      "Kundli",
@@ -399,7 +398,6 @@ _EN: Final[dict[str, str]] = {
 }
 
 _HI: Final[dict[str, str]] = {
-    "nav_print":           "प्रिंट करें",
     "nav_home":            "मुख्य पृष्ठ",
     "nav_today_link":      "आज का राशिफल",
     "nav_natal_link":      "कुंडली",

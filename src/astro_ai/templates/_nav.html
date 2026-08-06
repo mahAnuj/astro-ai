@@ -4,10 +4,9 @@
      active_page  — one of: 'home' | 'natal' | 'today' | 'rashifal' | 'dasha' |
                             'monthly' | 'yearly' | 'matching' | 'ask' | 'learn'
                     (used to bold the current page link)
-     show_print   — optional bool (defaults true).
 
    Layout — three zones on md+ (desktop):
-     [Logo]           [Kundli  Matching  Rashifal  Ask  Learn  More▾]           [Print | Lang]
+     [Logo]           [Kundli  Matching  Rashifal  Ask  Learn  More▾]           [Auth | Lang]
        LEFT (shrinkwrap)   CENTER (flex-1, justify-center)                        RIGHT (shrinkwrap)
 
    Matching + Ask are top-level because they're the highest-intent
@@ -20,7 +19,6 @@
    panel and the dropdown auto-expands as a labeled section. No nested
    tap-to-open dance.
 #}
-{% set show_print = show_print if show_print is defined else true %}
 {# Current signed-in user (may be None). Cheap — just cookie deserialisation. #}
 {% set current_user = load_current_user(request) %}
 <nav class="border-b border-stone-200/60 bg-cream/80 backdrop-blur sticky top-0 z-10 no-print">
@@ -143,7 +141,7 @@
       </div>
     </div>
 
-    {# RIGHT ZONE: utility actions (auth + print + language). #}
+    {# RIGHT ZONE: utility actions (auth + language). #}
     <div id="nav-utility"
          class="hidden md:flex flex-col md:flex-row md:items-center
                 gap-y-1 md:gap-y-0 md:gap-x-3 text-sm md:flex-shrink-0">
@@ -170,12 +168,6 @@
       </button>
       {% endif %}
 
-      {% if show_print %}
-      <button onclick="window.print()" type="button"
-              class="text-stone-600 hover:text-astro-700 text-left py-1 md:py-0"
-              aria-label="{{ t(lang, 'nav_print') }}"
-              title="{{ t(lang, 'nav_print') }}">{{ t(lang, 'nav_print') }}</button>
-      {% endif %}
       {% include "_lang_picker.html" %}
     </div>
   </div>
