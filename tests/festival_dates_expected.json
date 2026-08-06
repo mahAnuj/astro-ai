@@ -10,8 +10,9 @@
       "2028": "https://www.drikpanchang.com/calendars/hindu/hinducalendar.html?year=2028"
     },
     "source_secondary": "independent Swiss Ephemeris tithi computation (pyswisseph 2.10.03, Lahiri sidereal, Delhi 28.6139N 77.2090E), checked against each festival's own observance window rather than sunrise alone",
-    "verified_on": "2026-08-06",
-    "verified_by": "issue #132 Phase 3",
+    "verified_on": "2026-08-06 (original 17 festivals), 2026-08-07 (13 added)",
+    "verified_by": "issue #132 Phase 3 (17), issue #132 dataset expansion (13)",
+    "expansion_note": "The 13 festivals added on 2026-08-07 — pongal, ugadi-gudi-padwa, akshaya-tritiya, vat-savitri, ganga-dussehra, nag-panchami, onam, hartalika-teej, anant-chaturdashi, mahalaya-amavasya, sharad-purnima, narak-chaturdashi, chhath-puja — were sourced from scratch. Each date was read off TWO different Drik Panchang pages (the year calendar at source_urls, and the New Delhi monthly calendar at calendars/hindu/hinducalendar.html?geoname-id=1261481&month=M&year=Y) and then confirmed against an independent pyswisseph tithi computation at the festival's own observance window. This table was typed from those readings, not copied from festival_registry.py — Gate 1 comparing a file against a copy of itself would prove nothing.",
     "years": [2026, 2027, 2028],
     "years_note": "2029 exists in the upstream verified dataset but is deliberately not listed here — the registry ships DATA_YEARS = (2026, 2027, 2028) and the hub's rolling 6-month window cannot reach 2029.",
     "how_to_reverify": "Open the source_urls year page on drikpanchang.com (New Delhi), read each festival's date off the published calendar, and cross-check the tithi with an ephemeris against that festival's own observance_window (moonrise for Karva Chauth, pradosh for Diwali, nishita for Shivratri/Janmashtami, madhyahna for Ram Navami/Ganesh Chaturthi, aparahna for Dussehra/Bhai Dooj) — not against sunrise. Then run scripts/verify_festivals.py.",
@@ -32,6 +33,14 @@
       "rule": "solar - Sun enters Capricorn",
       "observance_window": "sunrise",
       "tithi_based": false,
+      "dates": {"2026": "2026-01-14", "2027": "2027-01-15", "2028": "2028-01-15"}
+    },
+    "pongal": {
+      "name_en": "Pongal (Thai Pongal)",
+      "rule": "solar - first day of Thai, the month opening at Makar Sankranti",
+      "observance_window": "sunrise",
+      "tithi_based": false,
+      "note": "Drik prints Pongal as 'on Makara Sankranti day' for all three years, so it shares Makar Sankranti's date exactly. This is the shared-date pair Gate 4 exists to prove.",
       "dates": {"2026": "2026-01-14", "2027": "2027-01-15", "2028": "2028-01-15"}
     },
     "vasant-panchami": {
@@ -55,6 +64,14 @@
       "tithi_based": true,
       "dates": {"2026": "2026-03-04", "2027": "2027-03-22", "2028": "2028-03-11"}
     },
+    "ugadi-gudi-padwa": {
+      "name_en": "Ugadi / Gudi Padwa",
+      "rule": "Chaitra Shukla Pratipada",
+      "observance_window": "sunrise, Pratipada prevailing",
+      "tithi_based": true,
+      "note": "Drik prints 'Nutan Varsh Prarambha / Ugadi / Gudi Padwa / Chaitra Navratri' together. In 2026 Pratipada begins after sunrise and runs through the day (Pratipada-vyapini convention).",
+      "dates": {"2026": "2026-03-19", "2027": "2027-04-07", "2028": "2028-03-27"}
+    },
     "ram-navami": {
       "name_en": "Ram Navami",
       "rule": "Chaitra Shukla Navami",
@@ -70,12 +87,51 @@
       "tithi_based": true,
       "dates": {"2026": "2026-04-02", "2027": "2027-04-20", "2028": "2028-04-09"}
     },
+    "akshaya-tritiya": {
+      "name_en": "Akshaya Tritiya",
+      "rule": "Vaishakha Shukla Tritiya",
+      "observance_window": "sunrise to madhyahna, Tritiya prevailing",
+      "tithi_based": true,
+      "note": "Drik splits Parashurama Jayanti (pradosh-vyapini Tritiya) from Akshaya Tritiya (the earlier one); in 2027 they land on consecutive days, 8 and 9 May. That split is the classical rule.",
+      "dates": {"2026": "2026-04-19", "2027": "2027-05-09", "2028": "2028-04-27"}
+    },
+    "vat-savitri": {
+      "name_en": "Vat Savitri Vrat",
+      "rule": "Jyeshtha Krishna Amavasya (purnimanta)",
+      "observance_window": "sunrise, Amavasya prevailing",
+      "tithi_based": true,
+      "note": "North Indian amavasya reckoning. Maharashtra/Gujarat/south keep the same vrat a fortnight later as Vat Purnima on Jyeshtha Purnima; both are correct within their tradition. This amavasya falls BEFORE 2026's Adhik Jyeshtha, hence the +19 day 2026->2027 shift.",
+      "dates": {"2026": "2026-05-16", "2027": "2027-06-04", "2028": "2028-05-24"}
+    },
+    "ganga-dussehra": {
+      "name_en": "Ganga Dussehra",
+      "rule": "Jyeshtha Shukla Dashami",
+      "observance_window": "madhyahna, Dashami prevailing",
+      "tithi_based": true,
+      "note": "Confirmed on Drik's dedicated Ganga Dussehra page as well as the two calendar pages, because 2026's Adhik Jyeshtha makes this the easiest row in the file to place a month wrong. Drik gives Monday, May 25, 2026 for New Delhi.",
+      "dates": {"2026": "2026-05-25", "2027": "2027-06-13", "2028": "2028-06-02"}
+    },
     "guru-purnima": {
       "name_en": "Guru Purnima",
       "rule": "Ashadha Purnima",
       "observance_window": "sunrise",
       "tithi_based": true,
       "dates": {"2026": "2026-07-29", "2027": "2027-07-18", "2028": "2028-07-06"}
+    },
+    "nag-panchami": {
+      "name_en": "Nag Panchami",
+      "rule": "Shravana Shukla Panchami",
+      "observance_window": "sunrise",
+      "tithi_based": true,
+      "dates": {"2026": "2026-08-17", "2027": "2027-08-06", "2028": "2028-07-26"}
+    },
+    "onam": {
+      "name_en": "Onam (Thiruvonam)",
+      "rule": "Thiruvonam nakshatra with Sun in Simha (Chingam, Malayalam solar month)",
+      "observance_window": "sunrise",
+      "tithi_based": false,
+      "note": "NOT tithi-based, so exempt from Gate 3. Drik prints the rule as 'Sun in Simha & Shravana Nakshatra'; confirmed with pyswisseph (Lahiri sidereal) that Moon is in Shravana and Sun in Simha on each date. A nakshatra-in-solar-month rule can move +17 days year over year (2026->2027) without an adhik maas being involved.",
+      "dates": {"2026": "2026-08-26", "2027": "2027-09-12", "2028": "2028-09-01"}
     },
     "raksha-bandhan": {
       "name_en": "Raksha Bandhan",
@@ -98,6 +154,30 @@
       "tithi_based": true,
       "dates": {"2026": "2026-09-14", "2027": "2027-09-04", "2028": "2028-08-23"}
     },
+    "hartalika-teej": {
+      "name_en": "Hartalika Teej",
+      "rule": "Bhadrapada Shukla Tritiya",
+      "observance_window": "pratah and pradosh, Tritiya prevailing",
+      "tithi_based": true,
+      "note": "SHARES Ganesh Chaturthi's date in 2026 (both 14 September) — read twice, on two Drik pages, because it is a shared date. Falls the day before in 2027 and 2028.",
+      "dates": {"2026": "2026-09-14", "2027": "2027-09-03", "2028": "2028-08-22"}
+    },
+    "anant-chaturdashi": {
+      "name_en": "Anant Chaturdashi",
+      "rule": "Bhadrapada Shukla Chaturdashi",
+      "observance_window": "madhyahna, Chaturdashi prevailing",
+      "tithi_based": true,
+      "note": "Drik prints it together with Ganesh Visarjan, which closes the ten-day utsav on the same tithi.",
+      "dates": {"2026": "2026-09-25", "2027": "2027-09-14", "2028": "2028-09-02"}
+    },
+    "mahalaya-amavasya": {
+      "name_en": "Mahalaya Amavasya (Sarva Pitru)",
+      "rule": "Ashwina Krishna Amavasya (purnimanta), closing Pitru Paksha",
+      "observance_window": "aparahna (kutup muhurat)",
+      "tithi_based": true,
+      "note": "Drik prints it as 'Sarva Pitru Amavasya'. Purnimanta naming is consistent with Drik's own 'Pitrupaksha Begins = Ashwina Krishna Pratipada'.",
+      "dates": {"2026": "2026-10-10", "2027": "2027-09-29", "2028": "2028-09-18"}
+    },
     "navratri": {
       "name_en": "Navratri (begins)",
       "rule": "Ashwina Shukla Pratipada",
@@ -111,6 +191,14 @@
       "observance_window": "aparahna",
       "tithi_based": true,
       "dates": {"2026": "2026-10-20", "2027": "2027-10-09", "2028": "2028-09-27"}
+    },
+    "sharad-purnima": {
+      "name_en": "Sharad Purnima (Kojagari)",
+      "rule": "Ashwina Purnima",
+      "observance_window": "moonrise to nishita",
+      "tithi_based": true,
+      "note": "Fixed by the Purnima prevailing at moonrise and through the night, so Drik lists a SEPARATE 'Ashwina Purnima' on the following day in 2026 and 2027 for the sunrise-reckoned snan-daan. Different windows, different rows; this is the night one.",
+      "dates": {"2026": "2026-10-25", "2027": "2027-10-14", "2028": "2028-10-02"}
     },
     "karva-chauth": {
       "name_en": "Karva Chauth",
@@ -126,6 +214,14 @@
       "tithi_based": true,
       "dates": {"2026": "2026-11-08", "2027": "2027-10-29", "2028": "2028-10-17"}
     },
+    "narak-chaturdashi": {
+      "name_en": "Narak Chaturdashi (Choti Diwali)",
+      "rule": "Kartika Krishna Chaturdashi (purnimanta)",
+      "observance_window": "pre-dawn, Chaturdashi prevailing at Chandrodaya (Abhyanga Snan)",
+      "tithi_based": true,
+      "note": "SHARES Diwali's date in 2026 (both 8 November) and again in 2028 (both 17 October); falls one day before Diwali in 2027 (28 vs 29 October). Fixed by the Chaturdashi prevailing before dawn, not at sunrise, which is why it can land on the same Gregorian date as Diwali. Read twice on two Drik pages — this collision is the load-bearing claim of the expansion.",
+      "dates": {"2026": "2026-11-08", "2027": "2027-10-28", "2028": "2028-10-17"}
+    },
     "govardhan-puja": {
       "name_en": "Govardhan Puja",
       "rule": "Kartika Shukla Pratipada",
@@ -140,6 +236,14 @@
       "tithi_based": true,
       "dates": {"2026": "2026-11-11", "2027": "2027-10-31", "2028": "2028-10-19"}
     },
+    "chhath-puja": {
+      "name_en": "Chhath Puja",
+      "rule": "Kartika Shukla Shashthi",
+      "observance_window": "sandhya arghya at sunset, then usha arghya at sunrise",
+      "tithi_based": true,
+      "note": "The date shipped is the Shashthi (sandhya arghya), day three of four; the usha arghya that ends the vrat is the following morning.",
+      "dates": {"2026": "2026-11-15", "2027": "2027-11-04", "2028": "2028-10-23"}
+    },
     "tulsi-vivah": {
       "name_en": "Tulsi Vivah",
       "rule": "Kartika Shukla Ekadashi/Dwadashi",
@@ -151,9 +255,34 @@
 
   "tithi_interval_invariants": [
     {
+      "a": "makar-sankranti", "b": "pongal", "tithis": 0, "min_days": 0, "max_days": 1,
+      "same_lunar_month": true,
+      "why": "Thai Pongal is the first day of Thai, the solar month that opens at Makar Sankranti — the same day, or the next when the sankranti moment falls after sunset. Both are solar, so this pair cannot drift apart at all."
+    },
+    {
+      "a": "ugadi-gudi-padwa", "b": "ram-navami", "tithis": 8, "min_days": 6, "max_days": 9,
+      "same_lunar_month": true,
+      "why": "Chaitra Shukla Pratipada -> Chaitra Shukla Navami, 8 tithis in the same bright fortnight. Ugadi opens the same nine days Ram Navami closes."
+    },
+    {
       "a": "ram-navami", "b": "hanuman-jayanti", "tithis": 6, "min_days": 4, "max_days": 8,
       "same_lunar_month": true,
       "why": "Chaitra Shukla Navami -> Chaitra Purnima, 6 tithis apart in the same bright fortnight."
+    },
+    {
+      "a": "hanuman-jayanti", "b": "akshaya-tritiya", "tithis": 18, "min_days": 15, "max_days": 20,
+      "same_lunar_month": false,
+      "why": "Chaitra Purnima -> Vaishakha Shukla Tritiya (purnimanta): 15 tithis of Vaishakha Krishna, then 3."
+    },
+    {
+      "a": "vat-savitri", "b": "ganga-dussehra", "tithis": 10, "min_days": 8, "max_days": 11,
+      "same_lunar_month": true,
+      "why": "Jyeshtha Krishna Amavasya -> Jyeshtha Shukla Dashami, 10 tithis inside the same purnimanta month. 2026's Adhik Jyeshtha makes this the pair most likely to be a month wrong, so it is checked explicitly."
+    },
+    {
+      "a": "nag-panchami", "b": "raksha-bandhan", "tithis": 10, "min_days": 9, "max_days": 12,
+      "same_lunar_month": true,
+      "why": "Shravana Shukla Panchami -> Shravana Purnima, 10 tithis in the same bright fortnight."
     },
     {
       "a": "raksha-bandhan", "b": "krishna-janmashtami", "tithis": 8, "min_days": 6, "max_days": 9,
@@ -166,9 +295,44 @@
       "why": "Bhadrapada Krishna Ashtami -> Bhadrapada Shukla Chaturthi, 11 tithis across the same purnimanta month."
     },
     {
+      "a": "raksha-bandhan", "b": "hartalika-teej", "tithis": 18, "min_days": 15, "max_days": 19,
+      "same_lunar_month": false,
+      "why": "Shravana Purnima -> Bhadrapada Shukla Tritiya (purnimanta): 15 tithis of Bhadrapada Krishna, then 3."
+    },
+    {
+      "a": "hartalika-teej", "b": "ganesh-chaturthi", "tithis": 1, "min_days": 0, "max_days": 1,
+      "same_lunar_month": true,
+      "why": "Bhadrapada Shukla Tritiya -> Bhadrapada Shukla Chaturthi, the next tithi. Hartalika is fixed at pratah/pradosh and Ganesh Chaturthi at madhyahna, so when the tithis run close the two land on the SAME Gregorian date — as they do in 2026. A gap of 0 is correct here, not a duplicate."
+    },
+    {
+      "a": "hartalika-teej", "b": "anant-chaturdashi", "tithis": 11, "min_days": 10, "max_days": 12,
+      "same_lunar_month": true,
+      "why": "Bhadrapada Shukla Tritiya -> Bhadrapada Shukla Chaturdashi, 11 tithis in the same bright fortnight."
+    },
+    {
+      "a": "anant-chaturdashi", "b": "mahalaya-amavasya", "tithis": 16, "min_days": 13, "max_days": 18,
+      "same_lunar_month": false,
+      "why": "Bhadrapada Shukla Chaturdashi -> Ashwina Krishna Amavasya (purnimanta): 1 tithi to Purnima, then the 15 of Pitru Paksha."
+    },
+    {
+      "a": "mahalaya-amavasya", "b": "navratri", "tithis": 1, "min_days": 1, "max_days": 2,
+      "same_lunar_month": true,
+      "why": "Ashwina Krishna Amavasya -> Ashwina Shukla Pratipada, the next tithi. Pitru Paksha ends and Navratri starts the following morning."
+    },
+    {
       "a": "navratri", "b": "dussehra", "tithis": 9, "min_days": 8, "max_days": 10,
       "same_lunar_month": true,
       "why": "Ashwina Shukla Pratipada -> Ashwina Shukla Dashami, the nine nights."
+    },
+    {
+      "a": "dussehra", "b": "sharad-purnima", "tithis": 5, "min_days": 4, "max_days": 6,
+      "same_lunar_month": true,
+      "why": "Ashwina Shukla Dashami -> Ashwina Purnima, 5 tithis in the same bright fortnight."
+    },
+    {
+      "a": "sharad-purnima", "b": "karva-chauth", "tithis": 4, "min_days": 3, "max_days": 6,
+      "same_lunar_month": false,
+      "why": "Ashwina Purnima -> Kartika Krishna Chaturthi (purnimanta), 4 tithis across the purnima boundary."
     },
     {
       "a": "dussehra", "b": "karva-chauth", "tithis": 9, "min_days": 8, "max_days": 11,
@@ -179,6 +343,16 @@
       "a": "karva-chauth", "b": "diwali", "tithis": 11, "min_days": 10, "max_days": 11,
       "same_lunar_month": true,
       "why": "Kartika Krishna Chaturthi -> Kartika Amavasya, 11 tithis. The 2026 bug had these 3 days apart."
+    },
+    {
+      "a": "karva-chauth", "b": "narak-chaturdashi", "tithis": 10, "min_days": 9, "max_days": 11,
+      "same_lunar_month": true,
+      "why": "Kartika Krishna Chaturthi -> Kartika Krishna Chaturdashi, 10 tithis in the same waning fortnight."
+    },
+    {
+      "a": "narak-chaturdashi", "b": "diwali", "tithis": 1, "min_days": 0, "max_days": 1,
+      "same_lunar_month": true,
+      "why": "Kartika Krishna Chaturdashi -> Kartika Amavasya, the next tithi. Narak Chaturdashi is fixed before dawn and Diwali at pradosh, so the two land on the SAME Gregorian date in some years (2026, 2028) and a day apart in others (2027). A gap of 0 is correct here."
     },
     {
       "a": "diwali", "b": "govardhan-puja", "tithis": 1, "min_days": 1, "max_days": 2,
@@ -194,6 +368,11 @@
       "a": "bhai-dooj", "b": "tulsi-vivah", "tithis": 10, "min_days": 9, "max_days": 12,
       "same_lunar_month": true,
       "why": "Kartika Shukla Dwitiya -> Kartika Shukla Ekadashi/Dwadashi."
+    },
+    {
+      "a": "diwali", "b": "chhath-puja", "tithis": 6, "min_days": 5, "max_days": 8,
+      "same_lunar_month": true,
+      "why": "Kartika Amavasya -> Kartika Shukla Shashthi, 6 tithis. Chhath's sandhya arghya is day three of the four-day vrat."
     }
   ],
 
