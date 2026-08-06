@@ -3738,6 +3738,14 @@ async def ask_submit(
             data={
                 "question": question, "category": category, "lang": lang,
                 "model": llm_providers.last_used_model(),
+                # Answer body persisted (truncated to 4000 chars) so
+                # /admin/activity can spot-check Q&A quality across all
+                # Cloud Run instances — SQLite cache is per-instance +
+                # ephemeral, but events go to GCS. Truncation guards
+                # against a single runaway answer bloating the daily
+                # events blob; ~4KB × 5000 events/day = ~20MB max.
+                "answer": (answer_text or "")[:4000],
+                "context": context,
             },
         )
 
