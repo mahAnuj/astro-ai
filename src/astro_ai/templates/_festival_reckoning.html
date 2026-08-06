@@ -1,14 +1,24 @@
 {# Shared "how we reckon festival dates" block.
 
-   Deliberately rendered as visible body copy rather than a tooltip or a
-   collapsed <details>: the whole point is that a reader (and a crawler)
-   can see which almanac, which city, and which month-naming convention
-   produced the dates without having to click. This is a credibility
-   asset, not a disclaimer — keep it short and calm.
+   Rendered as visible body copy, and NOT for SEO reasons: a collapsed
+   <details> would be indexed perfectly well — its content is in the DOM and
+   has carried no indexing penalty for years. (A tooltip built by JS on
+   interaction would be a real problem; <details> is not one. Do not repeat
+   the old claim in this comment that it was.) It stays open because this
+   block is the target of the "how these are reckoned" anchor at the top of
+   /festivals, and a reader who follows that link should land on the answer
+   rather than on something they have to click a second time.
+
+   The block now sits BELOW the calendar and the festival list. The
+   provenance a reader needs before the dates — almanac, city, reckoning —
+   is carried by the one-line summary near the top of festivals_index.html,
+   which links here. This is a credibility asset, not a disclaimer — keep it
+   short and calm.
 
    Expects: source_name, source_url, verified_through.
 #}
-<section class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3"
+<section id="festival-reckoning"
+         class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3 scroll-mt-4"
          aria-labelledby="festival-reckoning-heading">
   <h2 id="festival-reckoning-heading" class="text-xs uppercase font-semibold text-stone-600 tracking-wider">
     How these dates are reckoned
@@ -29,6 +39,17 @@
     pradosh, nishita, madhyahna, aparahna, or moonrise &mdash; rather than at sunrise, and
     regional and family traditions genuinely observe some of them a day either side. Where
     your family or local priest keeps a different day, that day is not wrong.
+  </p>
+  <p class="text-sm text-stone-800 leading-relaxed">
+    Where this calendar carries the recurring lunar days &mdash; Purnima, Amavasya and
+    Ekadashi &mdash; they are reckoned from the tithi prevailing at <strong>sunrise in New
+    Delhi</strong>. Where one tithi covers two sunrises (<em>vriddhi</em>) we take the first,
+    which is the Smarta reckoning; the Vaishnava (ISKCON) Ekadashi then falls the following
+    day, and legitimately so. Where a tithi begins and ends between two sunrises
+    (<em>kshaya</em>) we take the day it begins on. A festival fixed by a dusk or midnight
+    window can therefore fall the day <em>before</em> the Purnima or Amavasya it belongs to:
+    Diwali 2026 is listed here on 8 November, while the Kartika Amavasya reckoned at sunrise
+    is 9 November &mdash; Diwali is set by the pradosh (dusk) window, not by sunrise.
   </p>
   <p class="text-xs text-stone-600">
     Calendar verified through {{ verified_through }}.
