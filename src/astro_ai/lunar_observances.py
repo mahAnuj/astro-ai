@@ -94,6 +94,27 @@ all; it was not checked.) Purnima and Amavasya are reckoned by the tithi at
 sunrise with no viddha test, and must not be shifted. `verify_lunar_observances`
 Gate C asserts both halves of this by name.
 
+HOW THAT WENT WRONG ONCE — the viddha leak (2026-08-07)
+--------------------------------------------------------
+Recorded because it is the failure mode this rule invites, and because the
+second reader is likelier to repeat it than the first. When the second-day pick
+was first implemented, it was written as "a vriddhi run takes its second day"
+with no test on the tithi — the Ekadashi-only restriction lived in the prose
+above and in the comment on pass 1, but not in the code. Both Ekadashis came out
+right, so the two dates anyone would have spot-checked looked correct, while
+three Purnimas and the 2024 Somavati Amavasya were quietly emitted a day late.
+Nothing else caught it: the total stayed at 149, alternation and synodic gaps
+were untouched, slugs stayed unique, and Gates A, B and D all passed. Only Gate
+C, which asserts the day-of-run choice per kind against the Drik table, saw it —
+and it named the correct day, with a citation, for all seven affected cases.
+
+The fix was to make the restriction executable rather than documentary:
+`_VIDDHA_TITHIS = {10, 25}`, tested in the pick. The lesson worth carrying: a
+rule stated only in a comment is not a rule, and a day-choice bug is invisible
+to every count-based check there is. If this rule is ever widened, widen the
+Drik table in `verify_lunar_observances.DRIK_VRIDDHI` first and let the gate
+say so.
+
 Note this is the *Smarta* fast day, which is what the Drik year calendar prints
 and what this site publishes. The Vaishnava (ISKCON) Ekadashi is reckoned
 separately and can fall a day later still; Drik lists it under a "Gauna" prefix
@@ -184,6 +205,13 @@ _TARGETS: dict[int, tuple[str, str, str, str]] = {
 }
 
 
+# The only tithis the *dashami-viddha* second-day rule applies to: Shukla and
+# Krishna Ekadashi. Purnima (14) and Amavasya (29) are deliberately absent —
+# they are sunrise-reckoned and take the first day of a vriddhi run. Do not add
+# them here. See pass 1 of `_observances_for_year`.
+_VIDDHA_TITHIS = frozenset({10, 25})
+
+
 def _tithi_index_at_sunrise(day: date) -> int:
     """Tithi index 0-29 running at New Delhi sunrise on `day`."""
     sunrise, _sunset = _sunrise_sunset(day, _DELHI_LAT, _DELHI_LON, _DELHI_TZ)
@@ -234,14 +262,21 @@ def _observances_for_year(year: int) -> tuple[tuple[date, Observance], ...]:
     # Pass 1 — runs. Consecutive days sharing a tithi index are a vriddhi tithi,
     # giving two candidate days. Purnima and Amavasya take the run's FIRST day.
     #
-    # Ekadashi (indices 10 and 25) takes the SECOND. That is the classical
+    # Ekadashi — and ONLY Ekadashi — takes the SECOND. That is the classical
     # *dashami-viddha* rule: a vriddhi Ekadashi necessarily begins shortly
     # before the first sunrise, so Dashami is still running into that morning
     # and the day is "pierced" by it — not shuddha, and so not fit for the fast,
-    # which moves to the following day. The rule is specific to the Ekadashi
-    # fast and does NOT generalise to Purnima or Amavasya, which are reckoned by
-    # the tithi at sunrise alone and stay on the first day. See the module
-    # docstring for the Drik evidence on both halves of that claim.
+    # which moves to the following day.
+    #
+    # The `idx in _VIDDHA_TITHIS` guard is the whole rule and is NOT redundant.
+    # The viddha test is a property of the Ekadashi *fast*; it is not a general
+    # tie-break for vriddhi runs. Purnima and Amavasya have no fast to postpone
+    # and are reckoned by the tithi at sunrise alone, so they stay on the first
+    # day. Dropping the guard — applying the second-day pick to every target —
+    # is a real bug that has been shipped here once already: it silently moved
+    # three Purnimas and a Somavati Amavasya a day late while leaving every
+    # count and every Gate A invariant intact. `verify_lunar_observances` Gate C
+    # asserts both halves against Drik; see the module docstring for the table.
     i = 0
     while i < len(samples):
         idx = samples[i][1]
@@ -250,7 +285,7 @@ def _observances_for_year(year: int) -> tuple[tuple[date, Observance], ...]:
             run_end += 1
         if idx in _TARGETS:
             pick = i
-            if run_end > i:
+            if run_end > i and idx in _VIDDHA_TITHIS:
                 pick = i + 1
             day_i = samples[pick][0]
             out.append((day_i, _observance(day_i, idx)))
