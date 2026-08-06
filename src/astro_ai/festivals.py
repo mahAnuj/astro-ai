@@ -10,10 +10,17 @@ Gregorian date shifts each year, which is why the registry carries an explicit
 year-by-year mapping rather than a rule. Append a new year each November, when
 the Drikpanchang almanac releases the next year's dates.
 
-The shape — `FESTIVALS_BY_DATE[year][YYYY-MM-DD]` → festival info — keeps
-lookups O(1) per day and lets us cover year-specific quirks (e.g. some
+The shape — `FESTIVALS_BY_DATE[year][YYYY-MM-DD]` → LIST of festival info —
+keeps lookups O(1) per day and lets us cover year-specific quirks (e.g. some
 festivals fall twice in some years due to lunar shifts). Each entry carries
 `name_en` / `name_hi` / `note_en` / `note_hi` plus the registry `slug`.
+
+The value is a list because two festivals genuinely share a date — Makar
+Sankranti and Pongal, Ganesh Chaturthi and Hartalika Teej, Diwali and Narak
+Chaturdashi. A one-festival-per-date mapping silently dropped one of each
+pair. Use `festivals_for_date()` for anything that can show more than one
+(the /festivals hub, the /panchang callout); `festival_for_date()` stays for
+the single-slot surfaces — the daily email and the rashifal prompt.
 
 Tithi-based daily observances (Ekadashi, Pradosh, Purnima, Amavasya) are
 NOT here — they're computed from the day's tithi in shloks.py. This file
@@ -54,26 +61,76 @@ from astro_ai import festival_registry
 # Panchang plus an independent Swiss Ephemeris tithi computation. This module
 # only flattens that registry into the by-date lookup shape the emails and the
 # rashifal prompt expect.
-FESTIVALS_BY_DATE: dict[int, dict[str, dict]] = {}
+#
+# ORDER WITHIN A DATE: registry declaration order, i.e. the position of the
+# Festival record in `festival_registry.FESTIVALS`. That tuple is maintained in
+# calendar order by the earliest shipped year, so on a shared date the more
+# widely-observed / pan-Indian festival is the one declared first (Makar
+# Sankranti before Pongal, Ganesh Chaturthi before Hartalika Teej, Diwali
+# before Narak Chaturdashi). Building the index by iterating FESTIVALS in order
+# and appending makes that ordering explicit rather than an accident of dict
+# insertion, and it is total — the assertion below proves slugs are unique, so
+# no two entries can tie.
+FESTIVALS_BY_DATE: dict[int, dict[str, list[dict]]] = {}
 for _fest in festival_registry.FESTIVALS:
     for _year, _iso in _fest.dates.items():
-        FESTIVALS_BY_DATE.setdefault(_year, {})[_iso] = {
+        FESTIVALS_BY_DATE.setdefault(_year, {}).setdefault(_iso, []).append({
             "name_en": _fest.name_en,
             "name_hi": _fest.name_hi,
             "note_en": _fest.note_en,
             "note_hi": _fest.note_hi,
             "slug": _fest.slug,
-        }
+        })
 del _fest, _year, _iso
+
+# The ordering rule above is only deterministic and total if each festival is
+# declared exactly once — a duplicate slug would make "declaration order"
+# ambiguous for the pair and let one shadow the other. Two DIFFERENT festivals
+# sharing a date is legitimate and deliberately not asserted against.
+assert len({f.slug for f in festival_registry.FESTIVALS}) == len(
+    festival_registry.FESTIVALS
+), "festival_registry.FESTIVALS has duplicate slugs — ordering within a shared date would be ambiguous"
+for _year_table in FESTIVALS_BY_DATE.values():
+    for _iso, _entries in _year_table.items():
+        _slugs = [e["slug"] for e in _entries]
+        assert len(set(_slugs)) == len(_slugs), (
+            f"{_iso} lists the same festival twice: {_slugs}"
+        )
+del _year_table, _iso, _entries, _slugs
 
 
 def festival_for_date(d: date) -> dict | None:
-    """Look up the festival on `d`, if any. Returns the bilingual entry or None.
+    """Look up THE festival on `d`, if any. Returns the bilingual entry or None.
+
+    Single-slot surfaces only — the daily rashifal email, the welcome email and
+    the rashifal LLM prompt, which each have room for one callout. Anything
+    that can render more than one should call `festivals_for_date()`, because
+    on a shared date this returns only the first.
+
+    When a date carries several festivals the choice is deterministic, not an
+    accident of dict insertion: the winner is the one declared first in
+    `festival_registry.FESTIVALS`, which is maintained in calendar order and
+    puts the pan-Indian festival ahead of the regional one on the dates they
+    share (Makar Sankranti over Pongal, Ganesh Chaturthi over Hartalika Teej,
+    Diwali over Narak Chaturdashi).
 
     Falls back gracefully if we don't yet have entries for the year — just
     returns None so the email still sends, sans festival callout.
     """
+    entries = festivals_for_date(d)
+    return entries[0] if entries else None
+
+
+def festivals_for_date(d: date) -> list[dict]:
+    """Every festival on `d`, in registry declaration order. `[]` when none.
+
+    Two festivals genuinely share a date often enough that dropping the second
+    is data loss, so this — not `festival_for_date()` — is what the /festivals
+    hub and the /panchang callout should use.
+
+    Returns a fresh list; mutating it will not corrupt `FESTIVALS_BY_DATE`.
+    """
     year_table = FESTIVALS_BY_DATE.get(d.year)
     if year_table is None:
-        return None
-    return year_table.get(d.isoformat())
+        return []
+    return list(year_table.get(d.isoformat(), ()))
