@@ -114,7 +114,10 @@ src/astro_ai/
 - **`storage.py` cannot list by prefix.** Any "scan all blobs" design needs an explicit
   index blob instead.
 - **Festival dates reach users through email and the rashifal LLM prompt**, not through a
-  web page. `festival_for_date()` has no display surface on the site today.
+  web page — plus `/festivals` and the `/panchang` callout, which now render it.
+  `festival_for_date()` returns only the FIRST festival on a date; use
+  `festivals_for_date()` when a shared date must show all of them (Diwali and
+  Narak Chaturdashi both fall on 2026-11-08).
 - **`/learn` already contains per-festival and per-muhurat articles** (e.g.
   `karva-chauth-2026.html`, `diwali-muhurat-2026.html`). Do not create a parallel page type
   for the same queries — it cannibalizes pages that already rank. New long-form content
