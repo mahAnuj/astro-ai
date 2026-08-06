@@ -11,7 +11,7 @@ Krishna Chaturthi to Kartika Amavasya, 11 tithis) makes 10-11 days the only
 possible answer. Nothing in the codebase could have noticed.
 
 This script is that missing check: one command, zero judgment, PASS/FAIL,
-exit 0 or 1. It runs three independent gates.
+exit 0 or 1. It runs four independent gates.
 
   Gate 1 - exact date match.  Every festival in `festival_registry.FESTIVALS`
       must appear in tests/festival_dates_expected.json with byte-identical
@@ -33,6 +33,16 @@ exit 0 or 1. It runs three independent gates.
       table and the registry share the same typo; Gate 3 can, because it
       checks each source against astronomy rather than against the other.
       Gates 2 and 3 therefore run over BOTH sources independently.
+
+  Gate 4 - lookup reachability.  Every festival in the registry must come back
+      out of `festivals.festivals_for_date()` on its own date, for every
+      shipped year. The by-date index used to map one date to ONE festival, so
+      a second festival on the same day was silently dropped — Pongal behind
+      Makar Sankranti, Hartalika Teej behind Ganesh Chaturthi, Narak
+      Chaturdashi behind Diwali. The date was right in the registry and wrong
+      on the site, which no date gate can see. This gate proves the round trip.
+      Shared dates are printed for information; they are legitimate, not a
+      failure. Only an unreachable festival fails.
 
 HOW TO ADD A YEAR
 -----------------
@@ -66,6 +76,7 @@ EXPECTED_PATH = REPO_ROOT / "tests" / "festival_dates_expected.json"
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from astro_ai import festival_registry  # noqa: E402
+from astro_ai import festivals  # noqa: E402
 
 
 def _parse(iso: str) -> date:
@@ -266,6 +277,69 @@ def gate_3_lunar_drift(
 
 
 # --------------------------------------------------------------------------
+# Gate 4 - lookup reachability (nothing dropped on a shared date)
+# --------------------------------------------------------------------------
+
+def gate_4_lookup_reachability() -> list[str]:
+    failures: list[str] = []
+    years = list(festival_registry.DATA_YEARS)
+
+    shared: dict[date, list[str]] = {}
+    checked = 0
+    for fest in festival_registry.FESTIVALS:
+        for year in years:
+            iso = fest.dates.get(year)
+            if not iso:
+                failures.append(f"{fest.slug}: registry has no date for {year}")
+                continue
+            try:
+                d = _parse(iso)
+            except ValueError:
+                failures.append(f"{fest.slug} {year}: unparseable date {iso!r}")
+                continue
+            checked += 1
+            entries = festivals.festivals_for_date(d)
+            slugs = [e["slug"] for e in entries]
+            if fest.slug not in slugs:
+                failures.append(
+                    f"{fest.slug} {year} ({iso}): registry has this date but "
+                    f"festivals_for_date() returns {slugs or '[]'} — the festival is "
+                    "silently dropped from the emails and the hub"
+                )
+            if len(entries) > 1:
+                shared[d] = slugs
+
+    for d in sorted(shared):
+        print(f"  shared date {d.isoformat()}: {', '.join(shared[d])} "
+              f"(festival_for_date -> {shared[d][0]})")
+    if not shared:
+        print("  no shared dates in the current dataset")
+
+    # The single-slot accessor must agree with the list accessor's first entry,
+    # or the email would show a festival the hub does not lead with.
+    for fest in festival_registry.FESTIVALS:
+        for year in years:
+            iso = fest.dates.get(year)
+            if not iso:
+                continue
+            d = _parse(iso)
+            entries = festivals.festivals_for_date(d)
+            one = festivals.festival_for_date(d)
+            if not entries:
+                continue
+            if one is None or one["slug"] != entries[0]["slug"]:
+                failures.append(
+                    f"{iso}: festival_for_date() returns "
+                    f"{one and one['slug']!r}, festivals_for_date()[0] is "
+                    f"{entries[0]['slug']!r} — the two accessors disagree"
+                )
+
+    print(f"  {checked} festival-year lookup(s) round-tripped, "
+          f"{len(shared)} shared date(s)")
+    return failures
+
+
+# --------------------------------------------------------------------------
 
 def _registry_dates() -> dict[str, dict[int, str]]:
     return {f.slug: dict(f.dates) for f in festival_registry.FESTIVALS}
@@ -301,6 +375,8 @@ def main() -> int:
          lambda: gate_2_tithi_intervals(expected, dates_by_source)),
         ("Gate 3 - year-over-year lunar drift",
          lambda: gate_3_lunar_drift(expected, dates_by_source)),
+        ("Gate 4 - lookup reachability (nothing dropped on a shared date)",
+         gate_4_lookup_reachability),
     ]
 
     all_failures: list[str] = []
