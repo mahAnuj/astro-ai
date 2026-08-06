@@ -50,10 +50,27 @@ exit 0 or 1. It is deliberately structured like `scripts/verify_festivals.py`.
       (it never falls after the computed sunrise day), a sunrise festival must
       be 0, and `holi` must be -1 or 0.
 
-  Gate C - edge-case census.  Prints every vriddhi and kshaya occurrence in
-      range, re-deriving them from the sunrise samples independently of the
-      engine's own bookkeeping. Fails if either exceeds 8 per year — a spike
-      means the algorithm broke, not that astronomy changed.
+  Gate C - edge-case census, and the vriddhi day-choice rule.  Prints every
+      vriddhi and kshaya occurrence in range, re-deriving them from the sunrise
+      samples independently of the engine's own bookkeeping. Fails if either
+      exceeds 8 per year — a spike means the algorithm broke, not that astronomy
+      changed.
+
+      It then asserts which day of a vriddhi run the engine picks, because that
+      choice is a rule and not an accident, and getting it wrong shifts a fast
+      by a day while leaving every count and every structural invariant in Gate
+      A perfectly intact — i.e. it is invisible to every other gate here.
+
+      A vriddhi **Ekadashi** must be emitted on the SECOND day of the run
+      (*dashami-viddha*: the run necessarily begins shortly before the first
+      sunrise, so Dashami pierces that morning and the fast moves on). A vriddhi
+      **Purnima or Amavasya** must be emitted on the FIRST — the viddha test is
+      specific to the Ekadashi fast and must not leak. Both directions are
+      checked, against `DRIK_VRIDDHI` below: every vriddhi run over 2024-2032,
+      with the day drikpanchang.com actually prints, read off the year calendar
+      on 2026-08-07. The table reaches outside DATA_YEARS on purpose — the
+      2026-2028 span contains only two vriddhi Ekadashis, and two dates are not
+      enough to settle a rule on.
 
   Gate D - slug uniqueness and registry collisions.  Slugs are HTML ids and
       anchor targets on the /festivals hub, so a duplicate breaks anchors
@@ -84,6 +101,32 @@ from astro_ai import lunar_observances as lo  # noqa: E402
 YEARS = list(festival_registry.DATA_YEARS)
 SPAN_START = date(min(YEARS), 1, 1)
 SPAN_END = date(max(YEARS), 12, 31)
+
+# Every vriddhi run the engine finds over 2024-2032, with the day
+# drikpanchang.com prints for it — read off …/calendars/hindu/hinducalendar.html
+# ?year=YYYY on 2026-08-07. Entries are (first day of the run, kind, Drik's day,
+# the name Drik gives it).
+#
+# All five vriddhi Ekadashis land on the SECOND day of the run, and every
+# reachable vriddhi Purnima and Amavasya on the FIRST. That asymmetry is the
+# dashami-viddha rule and this table is the evidence for it; see the RESOLVED
+# DISAGREEMENT section of lunar_observances.py.
+#
+# One run is missing here and its absence is not an oversight: the vriddhi
+# Amavasya of 2025-12-19 carries no festival name, and Drik's year calendar
+# lists only named observances, so there was nothing to read. It is left out
+# rather than guessed at.
+DRIK_VRIDDHI: tuple[tuple[str, str, str, str], ...] = (
+    ("2024-06-17", "ekadashi", "2024-06-18", "Nirjala Ekadashi"),
+    ("2024-09-02", "amavasya", "2024-09-02", "Somavati Amavasya"),
+    ("2024-10-27", "ekadashi", "2024-10-28", "Rama Ekadashi"),
+    ("2026-05-26", "ekadashi", "2026-05-27", "Padmini Ekadashi"),
+    ("2026-06-29", "purnima", "2026-06-29", "Jyeshtha Purnima"),
+    ("2027-03-03", "ekadashi", "2027-03-04", "Vijaya Ekadashi"),
+    ("2027-06-18", "purnima", "2027-06-18", "Jyeshtha Purnima"),
+    ("2028-12-01", "purnima", "2028-12-01", "Margashirsha Purnima"),
+    ("2029-10-17", "ekadashi", "2029-10-18", "Papankusha Ekadashi"),
+)
 
 
 def _kind(slug: str) -> str:
@@ -274,6 +317,62 @@ def gate_b_registry_cross_check(rows: list[tuple[date, lo.Observance]]) -> list[
 # Gate C - edge-case census (vriddhi / kshaya), re-derived independently
 # --------------------------------------------------------------------------
 
+def _emitted_for_run(first: date, kind: str) -> date | None:
+    """Which day of the vriddhi run starting `first` the engine emitted `kind` on.
+
+    A run offers exactly two candidate days, `first` and `first + 1`, and two
+    observances of the same kind are never less than 13 days apart, so a hit on
+    either day is unambiguously this run's.
+    """
+    window = lo.observances_between(first - timedelta(days=1), first + timedelta(days=2))
+    hits = [d for d, o in window if _kind(o.slug) == kind and 0 <= (d - first).days <= 1]
+    return hits[0] if len(hits) == 1 else None
+
+
+def gate_c_drik_vriddhi() -> list[str]:
+    """Assert the day-of-run choice against the Drik table, both directions."""
+    failures: list[str] = []
+    for first_iso, kind, drik_iso, label in DRIK_VRIDDHI:
+        first = date.fromisoformat(first_iso)
+        expected = date.fromisoformat(drik_iso)
+        want_second = kind == "ekadashi"
+        rule = "dashami-viddha, SECOND day" if want_second else "FIRST day, no viddha test"
+        got = _emitted_for_run(first, kind)
+
+        if got is None:
+            failures.append(
+                f"vriddhi {kind} run starting {first_iso} ({label}): the engine emits "
+                f"no {kind} on {first_iso} or the day after, so the run itself is gone "
+                "— this is not a day-choice problem, check the sunrise scan first"
+            )
+            print(f"  FAIL {kind:<9} run {first_iso}  -> (nothing emitted)   "
+                  f"Drik {drik_iso}  {label}")
+            continue
+
+        ok = got == expected
+        print(f"  {'ok  ' if ok else 'FAIL'} {kind:<9} run {first_iso}  -> "
+              f"{got.isoformat()}   Drik {drik_iso}  {label} [{rule}]")
+        if ok:
+            continue
+        if want_second:
+            failures.append(
+                f"dashami-viddha REGRESSION: vriddhi Ekadashi run starting {first_iso} "
+                f"({label}) emitted on {got.isoformat()}, Drik prints {drik_iso}. A "
+                "vriddhi Ekadashi takes the SECOND day of the run — the run begins "
+                "shortly before the first sunrise, so Dashami pierces that morning."
+            )
+        else:
+            failures.append(
+                f"dashami-viddha LEAKED into {kind}: vriddhi run starting {first_iso} "
+                f"({label}) emitted on {got.isoformat()}, Drik prints {drik_iso}. The "
+                "viddha test is specific to the Ekadashi fast; Purnima and Amavasya "
+                "are reckoned at sunrise and take the FIRST day of the run."
+            )
+    print(f"  {len(DRIK_VRIDDHI)} vriddhi run(s) checked against drikpanchang.com "
+          "(2024-2032, wider than DATA_YEARS on purpose)")
+    return failures
+
+
 def gate_c_edge_cases() -> tuple[list[str], list[tuple[date, str, str]]]:
     failures: list[str] = []
     samples: list[tuple[date, int]] = []
@@ -302,14 +401,23 @@ def gate_c_edge_cases() -> tuple[list[str], list[tuple[date, str, str]]]:
     if not census:
         print("  no vriddhi or kshaya occurrences in range")
 
-    if any(k == "vriddhi" and n == "Ekadashi" for _d, n, k in census):
-        print("  NOTE: a vriddhi Ekadashi is emitted on the FIRST day, and the "
-              "2026-08-07 Drik")
-        print("        spot-check disagreed on both cases in range (dashami-viddha "
-              "moves the")
-        print("        fast to the second day). Open, deliberately unpatched — see "
-              "the KNOWN")
-        print("        DISAGREEMENT section of lunar_observances.py.")
+    # Day-of-run choice for every vriddhi in span, whether or not the Drik table
+    # below happens to cover it. Ekadashi second, everything else first.
+    for d0, name, kind in census:
+        if kind != "vriddhi":
+            continue
+        obs_kind = name.lower()
+        want = d0 + timedelta(days=1) if obs_kind == "ekadashi" else d0
+        got = _emitted_for_run(d0, obs_kind)
+        if got != want:
+            failures.append(
+                f"vriddhi {name} run starting {d0.isoformat()}: engine emits "
+                f"{got.isoformat() if got else '(nothing)'}, rule says "
+                f"{want.isoformat()} "
+                + ("(dashami-viddha — a vriddhi Ekadashi takes the SECOND day)"
+                   if obs_kind == "ekadashi"
+                   else "(FIRST day — the viddha test does not apply outside Ekadashi)")
+            )
 
     for year in YEARS:
         for kind in ("vriddhi", "kshaya"):
@@ -383,13 +491,15 @@ def main() -> int:
     def _gate_c() -> list[str]:
         failures, census = gate_c_edge_cases()
         census_holder.extend(census)
+        failures.extend(gate_c_drik_vriddhi())
         return failures
 
     gates = [
         ("Gate A - structural invariants", lambda: gate_a_structure(rows)),
         ("Gate B - cross-check against the hand-verified registry",
          lambda: gate_b_registry_cross_check(rows)),
-        ("Gate C - edge-case census (vriddhi / kshaya)", _gate_c),
+        ("Gate C - edge-case census (vriddhi / kshaya) and the vriddhi day-choice rule",
+         _gate_c),
         ("Gate D - slug uniqueness and registry date collisions",
          lambda: gate_d_slugs(rows)),
     ]
