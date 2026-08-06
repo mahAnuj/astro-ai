@@ -159,8 +159,34 @@
     var VISITS_KEY    = 'bhagya_visit_count';
     var DISMISSED_KEY = 'bhagya_subscribe_dismissed';
     var DONE_KEY      = 'bhagya_subscribe_done';
-    var SHOW_AT_VISITS = [3, 6];
+    var INTENT_KEY    = 'bhagya_rashifal_intent';
+    var SHOW_AT_VISITS = [2, 5];
     var MAX_DISMISSALS = 2;
+
+    // Intent detection — a user is "interested" once they've visited a page
+    // that signals they care about daily astrology content: Rashifal, a
+    // Kundli result, or any of the calculators. First-time visitors landing
+    // only on the homepage / /learn / /about never trigger this gate.
+    // Sticky: once set, stays set (visiting the homepage later doesn't
+    // reset it).
+    var INTENT_PATHS = [
+      /^\/rashifal(\/|$)/,
+      /^\/reading(\/|$)/,     // kundli result page
+      /^\/ask(\/|$)/,
+      /^\/matching(\/|$)/,
+      /^\/numerology(\/|$)/,
+      /^\/muhurat(\/|$)/,
+      /^\/panchang(\/|$)/,
+    ];
+    try {
+      var path = window.location.pathname || '';
+      for (var i = 0; i < INTENT_PATHS.length; i++) {
+        if (INTENT_PATHS[i].test(path)) {
+          localStorage.setItem(INTENT_KEY, '1');
+          break;
+        }
+      }
+    } catch (e) {}
 
     var backdrop = document.getElementById('subscribe-modal-backdrop');
     var defaultPanel = document.getElementById('subscribe-modal-default');
@@ -300,9 +326,12 @@
         });
     });
 
-    // Auto-show on visits 3/6 — but only if not already dismissed twice
-    // or successfully subscribed before. Manual CTAs above this check still
-    // work even when auto-show is suppressed.
+    // Auto-show gate — fires only for users who have shown intent (visited
+    // /rashifal, generated a Kundli, used a tool). First-time visitors who
+    // only land on the homepage / learn hub don't see the pop-up, which
+    // felt spammy when the whole site is about Rashifal + Kundli anyway.
+    // Manual CTAs (footer link, [data-subscribe-trigger]) still work
+    // regardless of this gate.
     //
     // Signed-in server-side check: if the user is already subscribed, don't
     // auto-prompt them. Handles the case where they subscribed on a
@@ -311,6 +340,7 @@
     if (_alreadySubscribedServerSide) return;
     try {
       if (localStorage.getItem(DONE_KEY) === '1') return;
+      if (localStorage.getItem(INTENT_KEY) !== '1') return;   // intent gate
       var visits = parseInt(localStorage.getItem(VISITS_KEY) || '0', 10) + 1;
       localStorage.setItem(VISITS_KEY, String(visits));
       var dismissed = parseInt(localStorage.getItem(DISMISSED_KEY) || '0', 10);
