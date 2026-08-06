@@ -462,20 +462,31 @@ async def _http_exception_handler(request: Request, exc: StarletteHTTPException)
     404 renders a friendly HTML page pointing users to the main features
     instead of FastAPI's default JSON error. All other 4xx/5xx are
     delegated to the generic error.html template so the response stays
-    branded and useful. `request` is required so base.html's globals
-    (site_url, lang, etc.) resolve correctly.
+    branded and useful.
+
+    CRITICAL: response headers from the raised exception MUST be preserved.
+    The classic case: HTTPException(401, headers={"WWW-Authenticate": "Basic ..."})
+    from require_admin. Without the header, browsers don't show the auth
+    prompt — the user just sees "Not authenticated" with no way to log in.
+    Bug reproduced on /admin 2026-08-06 after the initial 404 handler ship.
     """
     if exc.status_code == 404:
         return templates.TemplateResponse(
             request, "404.html", {}, status_code=404,
         )
     # 401/403/etc. — render the generic error page with the exception detail
-    return templates.TemplateResponse(
+    response = templates.TemplateResponse(
         request, "error.html",
         {"title": f"Error {exc.status_code}",
          "message": exc.detail if exc.detail else "An error occurred processing your request."},
         status_code=exc.status_code,
     )
+    # Preserve exception headers (e.g. WWW-Authenticate for 401) so the
+    # browser can respond appropriately (auth prompt, redirect, etc.).
+    if exc.headers:
+        for k, v in exc.headers.items():
+            response.headers[k] = v
+    return response
 
 
 @app.exception_handler(Exception)
