@@ -1,0 +1,205 @@
+{
+  "_meta": {
+    "purpose": "Expected festival dates for src/astro_ai/festival_registry.py. Machine copy of the verified dataset; the registry is a hand transcription of the same data. scripts/verify_festivals.py diffs the two so a transcription slip cannot ship.",
+    "source_name": "Drik Panchang",
+    "source_locale": "New Delhi (NCT), IST",
+    "reckoning": "purnimanta (North Indian) month naming. Diwali is purnimanta Kartika Amavasya = amanta Ashwina Amavasya — same night, two names.",
+    "source_urls": {
+      "2026": "https://www.drikpanchang.com/calendars/hindu/hinducalendar.html?year=2026",
+      "2027": "https://www.drikpanchang.com/calendars/hindu/hinducalendar.html?year=2027",
+      "2028": "https://www.drikpanchang.com/calendars/hindu/hinducalendar.html?year=2028"
+    },
+    "source_secondary": "independent Swiss Ephemeris tithi computation (pyswisseph 2.10.03, Lahiri sidereal, Delhi 28.6139N 77.2090E), checked against each festival's own observance window rather than sunrise alone",
+    "verified_on": "2026-08-06",
+    "verified_by": "issue #132 Phase 3",
+    "years": [2026, 2027, 2028],
+    "years_note": "2029 exists in the upstream verified dataset but is deliberately not listed here — the registry ships DATA_YEARS = (2026, 2027, 2028) and the hub's rolling 6-month window cannot reach 2029.",
+    "how_to_reverify": "Open the source_urls year page on drikpanchang.com (New Delhi), read each festival's date off the published calendar, and cross-check the tithi with an ephemeris against that festival's own observance_window (moonrise for Karva Chauth, pradosh for Diwali, nishita for Shivratri/Janmashtami, madhyahna for Ram Navami/Ganesh Chaturthi, aparahna for Dussehra/Bhai Dooj) — not against sunrise. Then run scripts/verify_festivals.py.",
+    "to_add_a_year": "Add the year to _meta.years, add its source URL to _meta.source_urls, add its adhik_maas windows (empty list if none), add the date to every festival's dates block, then add the same year to DATA_YEARS and every Festival.dates in festival_registry.py. Re-run scripts/verify_festivals.py — Gate 3 will refuse a whole-month error.",
+    "incident": "Nine of the seventeen 2026 dates previously shipped in festivals.py were wrong by up to 21 days (Karva Chauth was 2026-11-05, Diwali 2026-11-08 — only 3 days apart when the tithi count demands 10-11). They were entered from memory under a header claiming a source it did not have. This file plus scripts/verify_festivals.py is the gate that stops that recurring.",
+    "caveat": "Regional traditions legitimately observe some festivals on the adjacent day. Where the almanac splits (Ram Navami, Krishna Janmashtami) these are the Smarta / Drik dates.",
+    "adhik_maas": {
+      "_note": "Intercalary lunar months (a lunar month containing no solar sankranti). Gate 2 skips cross-month tithi-interval invariants whose window an adhik maas falls inside; Gate 3 expects a +17..+21 day year-over-year jump across one. Computed from Swiss Ephemeris, confirmed against Drik for 2026.",
+      "2026": [["2026-05-17", "2026-06-15", "Adhik Jyeshtha"]],
+      "2027": [],
+      "2028": []
+    }
+  },
+
+  "festivals": {
+    "makar-sankranti": {
+      "name_en": "Makar Sankranti",
+      "rule": "solar - Sun enters Capricorn",
+      "observance_window": "sunrise",
+      "tithi_based": false,
+      "dates": {"2026": "2026-01-14", "2027": "2027-01-15", "2028": "2028-01-15"}
+    },
+    "vasant-panchami": {
+      "name_en": "Vasant Panchami",
+      "rule": "Magha Shukla Panchami",
+      "observance_window": "madhyahna",
+      "tithi_based": true,
+      "dates": {"2026": "2026-01-23", "2027": "2027-02-11", "2028": "2028-01-31"}
+    },
+    "maha-shivratri": {
+      "name_en": "Maha Shivratri",
+      "rule": "Phalguna Krishna Chaturdashi",
+      "observance_window": "nishita (midnight)",
+      "tithi_based": true,
+      "dates": {"2026": "2026-02-15", "2027": "2027-03-06", "2028": "2028-02-23"}
+    },
+    "holi": {
+      "name_en": "Holi (Rangwali)",
+      "rule": "day AFTER Phalguna Purnima (Holika Dahan is Purnima)",
+      "observance_window": "full day",
+      "tithi_based": true,
+      "dates": {"2026": "2026-03-04", "2027": "2027-03-22", "2028": "2028-03-11"}
+    },
+    "ram-navami": {
+      "name_en": "Ram Navami",
+      "rule": "Chaitra Shukla Navami",
+      "observance_window": "madhyahna",
+      "tithi_based": true,
+      "note": "Smarta-tradition date. ISKCON may observe the following day (e.g. 2026-03-27). Drik flags 2028 explicitly as Smarta.",
+      "dates": {"2026": "2026-03-26", "2027": "2027-04-15", "2028": "2028-04-03"}
+    },
+    "hanuman-jayanti": {
+      "name_en": "Hanuman Jayanti",
+      "rule": "Chaitra Purnima",
+      "observance_window": "sunrise",
+      "tithi_based": true,
+      "dates": {"2026": "2026-04-02", "2027": "2027-04-20", "2028": "2028-04-09"}
+    },
+    "guru-purnima": {
+      "name_en": "Guru Purnima",
+      "rule": "Ashadha Purnima",
+      "observance_window": "sunrise",
+      "tithi_based": true,
+      "dates": {"2026": "2026-07-29", "2027": "2027-07-18", "2028": "2028-07-06"}
+    },
+    "raksha-bandhan": {
+      "name_en": "Raksha Bandhan",
+      "rule": "Shravana Purnima",
+      "observance_window": "aparahna, after bhadra ends",
+      "tithi_based": true,
+      "dates": {"2026": "2026-08-28", "2027": "2027-08-17", "2028": "2028-08-05"}
+    },
+    "krishna-janmashtami": {
+      "name_en": "Krishna Janmashtami",
+      "rule": "Bhadrapada Krishna Ashtami",
+      "observance_window": "nishita (midnight)",
+      "tithi_based": true,
+      "dates": {"2026": "2026-09-04", "2027": "2027-08-25", "2028": "2028-08-13"}
+    },
+    "ganesh-chaturthi": {
+      "name_en": "Ganesh Chaturthi",
+      "rule": "Bhadrapada Shukla Chaturthi",
+      "observance_window": "madhyahna",
+      "tithi_based": true,
+      "dates": {"2026": "2026-09-14", "2027": "2027-09-04", "2028": "2028-08-23"}
+    },
+    "navratri": {
+      "name_en": "Navratri (begins)",
+      "rule": "Ashwina Shukla Pratipada",
+      "observance_window": "sunrise",
+      "tithi_based": true,
+      "dates": {"2026": "2026-10-11", "2027": "2027-09-30", "2028": "2028-09-19"}
+    },
+    "dussehra": {
+      "name_en": "Dussehra (Vijayadashami)",
+      "rule": "Ashwina Shukla Dashami",
+      "observance_window": "aparahna",
+      "tithi_based": true,
+      "dates": {"2026": "2026-10-20", "2027": "2027-10-09", "2028": "2028-09-27"}
+    },
+    "karva-chauth": {
+      "name_en": "Karva Chauth",
+      "rule": "Kartika Krishna Chaturthi (purnimanta)",
+      "observance_window": "moonrise",
+      "tithi_based": true,
+      "dates": {"2026": "2026-10-29", "2027": "2027-10-18", "2028": "2028-10-07"}
+    },
+    "diwali": {
+      "name_en": "Diwali (Deepavali)",
+      "rule": "Kartika Amavasya (purnimanta) = Ashwina Amavasya (amanta)",
+      "observance_window": "pradosh (dusk), Lakshmi Puja",
+      "tithi_based": true,
+      "dates": {"2026": "2026-11-08", "2027": "2027-10-29", "2028": "2028-10-17"}
+    },
+    "govardhan-puja": {
+      "name_en": "Govardhan Puja",
+      "rule": "Kartika Shukla Pratipada",
+      "observance_window": "sunrise",
+      "tithi_based": true,
+      "dates": {"2026": "2026-11-10", "2027": "2027-10-30", "2028": "2028-10-18"}
+    },
+    "bhai-dooj": {
+      "name_en": "Bhai Dooj",
+      "rule": "Kartika Shukla Dwitiya",
+      "observance_window": "aparahna",
+      "tithi_based": true,
+      "dates": {"2026": "2026-11-11", "2027": "2027-10-31", "2028": "2028-10-19"}
+    },
+    "tulsi-vivah": {
+      "name_en": "Tulsi Vivah",
+      "rule": "Kartika Shukla Ekadashi/Dwadashi",
+      "observance_window": "pradosh",
+      "tithi_based": true,
+      "dates": {"2026": "2026-11-21", "2027": "2027-11-11", "2028": "2028-10-29"}
+    }
+  },
+
+  "tithi_interval_invariants": [
+    {
+      "a": "ram-navami", "b": "hanuman-jayanti", "tithis": 6, "min_days": 4, "max_days": 8,
+      "same_lunar_month": true,
+      "why": "Chaitra Shukla Navami -> Chaitra Purnima, 6 tithis apart in the same bright fortnight."
+    },
+    {
+      "a": "raksha-bandhan", "b": "krishna-janmashtami", "tithis": 8, "min_days": 6, "max_days": 9,
+      "same_lunar_month": false,
+      "why": "Shravana Purnima -> Bhadrapada Krishna Ashtami (purnimanta), 8 tithis."
+    },
+    {
+      "a": "krishna-janmashtami", "b": "ganesh-chaturthi", "tithis": 11, "min_days": 9, "max_days": 12,
+      "same_lunar_month": true,
+      "why": "Bhadrapada Krishna Ashtami -> Bhadrapada Shukla Chaturthi, 11 tithis across the same purnimanta month."
+    },
+    {
+      "a": "navratri", "b": "dussehra", "tithis": 9, "min_days": 8, "max_days": 10,
+      "same_lunar_month": true,
+      "why": "Ashwina Shukla Pratipada -> Ashwina Shukla Dashami, the nine nights."
+    },
+    {
+      "a": "dussehra", "b": "karva-chauth", "tithis": 9, "min_days": 8, "max_days": 11,
+      "same_lunar_month": false,
+      "why": "Ashwina Shukla Dashami -> Kartika Krishna Chaturthi (purnimanta), 5 tithis to Purnima then 4."
+    },
+    {
+      "a": "karva-chauth", "b": "diwali", "tithis": 11, "min_days": 10, "max_days": 11,
+      "same_lunar_month": true,
+      "why": "Kartika Krishna Chaturthi -> Kartika Amavasya, 11 tithis. The 2026 bug had these 3 days apart."
+    },
+    {
+      "a": "diwali", "b": "govardhan-puja", "tithis": 1, "min_days": 1, "max_days": 2,
+      "same_lunar_month": true,
+      "why": "Kartika Amavasya -> Kartika Shukla Pratipada, the next tithi."
+    },
+    {
+      "a": "govardhan-puja", "b": "bhai-dooj", "tithis": 1, "min_days": 1, "max_days": 2,
+      "same_lunar_month": true,
+      "why": "Kartika Shukla Pratipada -> Kartika Shukla Dwitiya, the next tithi."
+    },
+    {
+      "a": "bhai-dooj", "b": "tulsi-vivah", "tithis": 10, "min_days": 9, "max_days": 12,
+      "same_lunar_month": true,
+      "why": "Kartika Shukla Dwitiya -> Kartika Shukla Ekadashi/Dwadashi."
+    }
+  ],
+
+  "drift_bands": {
+    "_note": "Year-over-year movement of a tithi-based festival after normalising for Gregorian year length. A lunar year is ~11 days short of a solar one; a year in which an adhik maas intervenes runs ~19 days long instead.",
+    "normal": [-13, -9],
+    "adhik_maas": [17, 21]
+  }
+}
