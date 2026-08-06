@@ -20,15 +20,21 @@
     <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700">
       Upcoming Hindu Festivals
     </h1>
+    {# Claim only what the registry actually holds: a fixed, hand-verified set
+       of festivals, not "every" festival. The count and the window are read
+       off the same rows rendered below, so the sentence cannot drift from the
+       page. (QA #1.) #}
     {% if festivals %}
     <p class="text-stone-600">
-      Every major festival from <strong>{{ window_start_pretty }}</strong> to
-      <strong>{{ window_end_pretty }}</strong> &mdash; the date, why it is kept, and how it is
-      observed, on one page.
+      The <strong>{{ festivals | length }}</strong> festivals in our verified calendar that fall
+      between <strong>{{ window_start_pretty }}</strong> and <strong>{{ window_end_pretty }}</strong>
+      &mdash; each with its date, the tithi rule that fixes it, what it means, and how it is
+      observed. Dates are reckoned for New Delhi, IST and checked against {{ source_name }}.
     </p>
     {% else %}
     <p class="text-stone-600">
-      The date, meaning, and observance of every major Hindu festival, on one page.
+      Hindu festival dates, the tithi rule behind each one, what they mean, and how they are
+      observed &mdash; on one page.
     </p>
     {% endif %}
   </header>
@@ -38,11 +44,143 @@
      a page like this. #}
   {% include "_festival_reckoning.html" %}
 
+  {# MONTH-GRID CALENDAR — the at-a-glance view above the cards.
+     Every festival name here is server-rendered text, not a JS tooltip
+     payload: this page exists to rank, and the calendar must be as
+     crawlable as the card list. Each marked day is a real <a> to the
+     matching card's #slug below, so tap, click and keyboard Enter all
+     do the same thing and none of the information is hover-only. #}
+  {% if festivals and calendar_months %}
+  <section class="space-y-4" aria-labelledby="calendar-heading">
+    <div class="space-y-1">
+      <h2 id="calendar-heading" class="font-display text-2xl text-astro-800">Calendar view</h2>
+      <p class="text-sm text-stone-600">
+        Underlined days carry a festival, and every one of them is named in the list under its
+        month. Pick either to jump straight to the full entry below.
+      </p>
+    </div>
+
+    <div class="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {% for m in calendar_months %}
+      <section class="bg-white border border-stone-200 rounded-xl p-3 sm:p-4"
+               aria-labelledby="cal-{{ m.year }}-{{ '%02d' % m.month }}">
+
+        <h3 id="cal-{{ m.year }}-{{ '%02d' % m.month }}"
+            class="font-display text-lg text-astro-800 text-center mb-2">{{ m.label }}</h3>
+
+        {# Purely decorative: every day cell already carries its own full
+           date in the aria-label, so a screen reader gains nothing from
+           seven ambiguous single letters. #}
+        <div class="grid grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-wider text-stone-400"
+             aria-hidden="true">
+          {% for wd in ['S', 'M', 'T', 'W', 'T', 'F', 'S'] %}<div class="pb-1">{{ wd }}</div>{% endfor %}
+        </div>
+
+        {# role="group" rather than a half-implemented role="grid": the day
+           numbers are a visual index, and the authoritative, fully-labelled
+           version of this month is the list rendered directly beneath it. #}
+        <div class="grid grid-cols-7 gap-px text-center text-sm tabular-nums"
+             role="group" aria-label="{{ m.label }} — days">
+          {% for week in m.weeks %}
+            {% for cell in week %}
+              {% if not cell %}
+              <div aria-hidden="true"></div>
+
+              {% elif cell.festivals %}
+              {# A festival day. `festivals` is a list because two festivals
+                 can share one date — every entry is rendered (one dot each,
+                 every name in the label and tooltip); only the href has to
+                 pick one, and it picks the first. Both names stay reachable
+                 via the per-month list below. #}
+              {% set c = namespace(major=false) %}
+              {% for fx in cell.festivals %}{% if (fx.tier | default("major", true)) != "recurring" %}{% set c.major = true %}{% endif %}{% endfor %}
+              <a href="#{{ cell.festivals[0].slug }}"
+                 title="{{ cell.festivals | map(attribute='name_en') | join(' · ') }}"
+                 aria-label="{{ cell.festivals | map(attribute='name_en') | join(', ') }}, {{ cell.day }} {{ m.label }}{% if cell.is_today %} (today){% endif %} — see details"
+                 class="group relative flex min-h-[2.75rem] flex-col items-center justify-center rounded-md
+                        underline underline-offset-2 hover:bg-astro-100
+                        focus:outline-none focus-visible:ring-2 focus-visible:ring-astro-700
+                        {# Named festival: filled, bold, thick solid underline. Recurring
+                           lunar day: no fill, normal weight, thin dotted underline — so
+                           ~80 Ekadashis a year cannot visually bury ~20 real festivals. #}
+                        {% if c.major %}font-bold text-astro-900 bg-astro-50 decoration-2 decoration-astro-500{% else %}font-normal text-stone-700 decoration-dotted decoration-stone-400{% endif %}
+                        {% if cell.is_today %}ring-2 ring-emerald-600{% elif c.major %}ring-1 ring-astro-500{% endif %}
+                        {% if cell.is_past %}opacity-50{% endif %}">
+                <span>{{ cell.day }}</span>
+                {# Shape cue, not colour alone (WCAG 1.4.1) — one dot per
+                   festival, so a two-festival day is visibly different from a
+                   one-festival day even in greyscale, and a major dot is
+                   larger and solid where a recurring one is small and hollow. #}
+                <span class="mt-0.5 flex gap-0.5" aria-hidden="true">
+                  {% for fx in cell.festivals %}
+                  {% if (fx.tier | default("major", true)) != "recurring" %}
+                  <span class="block h-1.5 w-1.5 rounded-full bg-astro-700"></span>
+                  {% else %}
+                  <span class="block h-1 w-1 rounded-full border border-stone-500"></span>
+                  {% endif %}
+                  {% endfor %}
+                </span>
+                {# Supplementary only. The names are also always-visible in the
+                   list below, so nothing here is hover-gated. Revealed on
+                   keyboard focus as well as hover; column-aware alignment keeps
+                   the bubble inside the month card so it can never push the
+                   375px layout sideways. #}
+                <span class="pointer-events-none absolute bottom-full z-20 mb-1 hidden w-max max-w-[9rem]
+                             rounded-md bg-stone-900 px-2 py-1 text-[11px] font-normal normal-case leading-snug
+                             text-white shadow-lg group-hover:block group-focus:block
+                             {% if loop.index0 <= 1 %}left-0{% elif loop.index0 >= 5 %}right-0{% else %}left-1/2 -translate-x-1/2{% endif %}">
+                  {{ cell.festivals | map(attribute='name_en') | join(' · ') }}
+                </span>
+              </a>
+
+              {% elif cell.is_today %}
+              <div class="flex min-h-[2.75rem] items-center justify-center rounded-md font-bold text-emerald-800 ring-2 ring-emerald-600">
+                <span class="sr-only">Today, </span>{{ cell.day }}
+              </div>
+
+              {% else %}
+              <div class="flex min-h-[2.75rem] items-center justify-center {% if cell.is_past %}text-stone-300{% else %}text-stone-500{% endif %}">
+                {{ cell.day }}
+              </div>
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+        </div>
+
+        {# The month's festivals spelled out. This is what makes the grid
+           work on a touch screen, where there is no hover to reveal a
+           name, and it is the copy Google actually reads. #}
+        {% set ns = namespace(any=false) %}
+        {% for week in m.weeks %}{% for cell in week %}{% if cell and cell.festivals %}{% set ns.any = true %}{% endif %}{% endfor %}{% endfor %}
+        {% if ns.any %}
+        <ul class="mt-3 space-y-1 border-t border-stone-100 pt-3 text-xs">
+          {% for week in m.weeks %}{% for cell in week %}{% if cell %}{% for f in cell.festivals %}
+          <li>
+            <a href="#{{ f.slug }}" class="flex gap-2 rounded hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-astro-700 {% if cell.is_past %}opacity-60{% endif %}">
+              <span class="w-5 shrink-0 text-right font-semibold tabular-nums text-stone-500">{{ cell.day }}</span>
+              <span class="underline underline-offset-2 {% if (f.tier | default('major', true)) != 'recurring' %}text-astro-800{% else %}text-stone-600 decoration-dotted{% endif %}">{{ f.name_en }}{% if f.name_hi %}
+                <span lang="hi" class="font-normal text-stone-500">{{ f.name_hi }}</span>{% endif %}</span>
+            </a>
+          </li>
+          {% endfor %}{% endif %}{% endfor %}{% endfor %}
+        </ul>
+        {% endif %}
+
+      </section>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
   {% if festivals %}
   <section class="space-y-4">
     <h2 class="font-display text-2xl text-astro-800">The next six months</h2>
 
-    {% for f in festivals %}
+    {# Named festivals get the full card, exactly as before. Recurring lunar
+       days (Purnima / Amavasya / Ekadashi) are split out below so ~80 of them
+       a year cannot drown the ~20 festivals people actually came for. The
+       tier field may not exist yet — `default` keeps this correct either way. #}
+    {% for f in festivals %}{% if (f.tier | default("major", true)) != "recurring" %}
     <article id="{{ f.slug }}"
              class="bg-white rounded-xl p-5 sm:p-6 space-y-3 border {% if f.is_today %}border-astro-500{% else %}border-stone-200{% endif %}">
 
@@ -102,8 +240,37 @@
       {% endif %}
 
     </article>
-    {% endfor %}
+    {% endif %}{% endfor %}
   </section>
+
+  {# Compact grouping for the recurring lunar days. Each row still carries its
+     own slug id, so every anchor the calendar emits above still resolves. #}
+  {% set rec = namespace(any=false) %}
+  {% for f in festivals %}{% if (f.tier | default("major", true)) == "recurring" %}{% set rec.any = true %}{% endif %}{% endfor %}
+  {% if rec.any %}
+  <section class="space-y-4" aria-labelledby="recurring-heading">
+    <div class="space-y-1">
+      <h2 id="recurring-heading" class="font-display text-2xl text-astro-800">Purnima, Amavasya and Ekadashi</h2>
+      <p class="text-sm text-stone-600">
+        The recurring lunar observances in the same window. They fall every fortnight, so they
+        are listed rather than written up one by one.
+      </p>
+    </div>
+    <ul class="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+      {% for f in festivals %}{% if (f.tier | default("major", true)) == "recurring" %}
+      <li id="{{ f.slug }}" class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3 sm:px-5">
+        <span class="font-semibold text-sm text-astro-800">{{ f.name_en }}{% if f.name_hi %}
+          <span lang="hi" class="font-normal text-stone-600">{{ f.name_hi }}</span>{% endif %}</span>
+        <span class="text-sm text-stone-700">
+          <time datetime="{{ f.date_iso }}">{{ f.pretty_date }}</time>
+          <span class="text-stone-500">&middot;</span> {{ f.weekday }}
+        </span>
+        {% if f.rule %}<span class="w-full text-xs text-stone-600">{{ f.rule }}</span>{% endif %}
+      </li>
+      {% endif %}{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
   {% else %}
   {# Defensive: the data module always covers the current window, but a
      stale or out-of-range calendar must degrade to a readable page. #}
