@@ -1235,6 +1235,9 @@ async def _render_natal_for(request: Request, details: BirthDetails,
                 "name": details.name, "birth_date": details.birth_date,
                 "birth_time": details.birth_time, "birth_place": details.birth_place,
                 "lang": lang, "model": llm_providers.last_used_model(),
+                "rashi_lagna": chart.lagna_rashi,
+                "rashi_moon": next((p.rashi for p in chart.planets if p.name == "Moon"), ""),
+                "rashi_sun": next((p.rashi for p in chart.planets if p.name == "Sun"), ""),
             },
         )
 
