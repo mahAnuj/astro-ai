@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard — Shubh Bhagya{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block content %}
+{% set active_page = "" %}
+{% set active_tab = "dashboard" %}
+{% include "_nav.html" %}
+{% include "_admin_header.html" %}
+
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+
+  <header>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-1">Dashboard</h1>
+    <p class="text-sm text-stone-600">
+      Window: <a href="/admin?days=1" class="{% if days == 1 %}font-semibold text-astro-800{% else %}text-astro-600 hover:underline{% endif %}">today</a> ·
+      <a href="/admin?days=7" class="{% if days == 7 %}font-semibold text-astro-800{% else %}text-astro-600 hover:underline{% endif %}">7d</a> ·
+      <a href="/admin?days=30" class="{% if days == 30 %}font-semibold text-astro-800{% else %}text-astro-600 hover:underline{% endif %}">30d</a> ·
+      <a href="/admin?days=90" class="{% if days == 90 %}font-semibold text-astro-800{% else %}text-astro-600 hover:underline{% endif %}">90d</a>
+    </p>
+  </header>
+
+  {# ═══════════════════════════════════════════════════════════════
+     HEADLINE KPIs — 4 cards. Kundli / Ask / Matching / Errors.
+     Uses events.counts_by_type. Errors card goes rose when > 0.
+     ═══════════════════════════════════════════════════════════════ #}
+  <section class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <a href="/admin/activity?days={{ days }}#kundlis" class="block bg-white rounded-2xl border border-stone-200 p-4 hover:border-astro-400 hover:shadow-md transition">
+      <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Kundlis</div>
+      <div class="font-display text-3xl text-astro-700 tabular-nums">{{ event_totals.get('form_kundli', 0) }}</div>
+      <div class="text-xs text-stone-600 mt-1">generated in {{ days }}d</div>
+    </a>
+    <a href="/admin/activity?days={{ days }}#asks" class="block bg-white rounded-2xl border border-stone-200 p-4 hover:border-astro-400 hover:shadow-md transition">
+      <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Q&amp;A asked</div>
+      <div class="font-display text-3xl text-astro-700 tabular-nums">{{ event_totals.get('form_ask', 0) }}</div>
+      <div class="text-xs text-stone-600 mt-1">fresh questions</div>
+    </a>
+    <a href="/admin/activity?days={{ days }}#matches" class="block bg-white rounded-2xl border border-stone-200 p-4 hover:border-astro-400 hover:shadow-md transition">
+      <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Matches</div>
+      <div class="font-display text-3xl text-astro-700 tabular-nums">{{ event_totals.get('form_matching', 0) }}</div>
+      <div class="text-xs text-stone-600 mt-1">Kundli matching runs</div>
+    </a>
+    {% set _err_n = event_totals.get('error', 0) %}
+    <a href="/admin/activity?days={{ days }}#errors" class="block rounded-2xl border p-4 hover:shadow-md transition
+       {% if _err_n %}bg-rose-50 border-rose-300 hover:border-rose-500{% else %}bg-white border-stone-200 hover:border-astro-400{% endif %}">
+      <div class="text-xs font-semibold uppercase tracking-wider {% if _err_n %}text-rose-700{% else %}text-stone-600{% endif %} mb-1">Errors</div>
+      <div class="font-display text-3xl tabular-nums {% if _err_n %}text-rose-700{% else %}text-stone-700{% endif %}">{{ _err_n }}</div>
+      <div class="text-xs text-stone-600 mt-1">{% if _err_n %}needs attention{% else %}all clear{% endif %}</div>
+    </a>
+  </section>
+
+  {# ═══════════════════════════════════════════════════════════════
+     COMMUNITY — users / subscribers / feedback. Each links to its
+     deep-dive tab where applicable.
+     ═══════════════════════════════════════════════════════════════ #}
+  <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="bg-astro-50/50 border border-astro-200 rounded-2xl p-5">
+      <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Signed-in users</div>
+      <div class="font-display text-2xl text-astro-700 tabular-nums">{{ user_count }}</div>
+      <div class="text-xs text-stone-600 mt-1">Google Sign-In persisted (all-time)</div>
+    </div>
+    <a href="/admin/subscribers" class="block bg-emerald-50/50 border border-emerald-200 rounded-2xl p-5 hover:border-emerald-500 hover:shadow-md transition">
+      <div class="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-1">Rashifal subscribers</div>
+      <div class="font-display text-2xl text-emerald-700 tabular-nums">{{ subscriber_count }}</div>
+      <div class="text-xs text-stone-600 mt-1">Daily email opt-in (all-time) · see list →</div>
+    </a>
+    <a href="/admin/feedback" class="block bg-amber-50/50 border border-amber-200 rounded-2xl p-5 hover:border-amber-500 hover:shadow-md transition">
+      <div class="text-xs font-semibold uppercase tracking-wider text-amber-700 mb-1">Feedback entries</div>
+      <div class="font-display text-2xl text-amber-700 tabular-nums">{{ feedback_count }}</div>
+      <div class="text-xs text-stone-600 mt-1">All-time · see list →</div>
+    </a>
+  </section>
+
+  {# ═══════════════════════════════════════════════════════════════
+     RECENT ERRORS — surfaces top health signal above the fold.
+     Skipped entirely when no errors in window (avoids empty panel).
+     ═══════════════════════════════════════════════════════════════ #}
+  {% if recent_errors %}
+  <section class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-5 sm:p-6">
+    <div class="flex items-baseline justify-between mb-3">
+      <h2 class="font-display text-lg text-rose-800">Recent errors ({{ recent_errors | length }})</h2>
+      <a href="/admin/activity?days={{ days }}#errors" class="text-xs text-rose-700 hover:underline">See all →</a>
+    </div>
+    <ul class="space-y-2 text-sm">
+      {% for e in recent_errors %}
+      <li class="border-l-2 border-rose-400 pl-3">
+        <div class="text-xs text-rose-700 tabular-nums">{{ e.ts[:16] | replace('T', ' ') }} · {{ e.data.get('where', '?') }}</div>
+        <div class="text-stone-800 truncate">{{ e.data.get('message', '(no message)') | truncate(160, True) }}</div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {# ═══════════════════════════════════════════════════════════════
+     LLM USAGE — token spend + cache hit rate. Formerly its own
+     /admin/usage page; folded in here per user request 2026-08-06.
+     ═══════════════════════════════════════════════════════════════ #}
+  <section class="space-y-4">
+    <h2 class="font-display text-xl text-astro-800">LLM usage</h2>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-white rounded-2xl border border-stone-200 p-4">
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Total calls</div>
+        <div class="font-display text-2xl text-astro-700 tabular-nums">{{ summary.total_calls }}</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-stone-200 p-4">
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Cache hits</div>
+        <div class="font-display text-2xl text-emerald-700 tabular-nums">{{ summary.cache_hits }}
+          <span class="text-sm text-stone-600">({{ summary.hit_rate_pct }}%)</span>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl border border-stone-200 p-4">
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Cache misses</div>
+        <div class="font-display text-2xl text-rose-700 tabular-nums">{{ summary.cache_misses }}</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-stone-200 p-4">
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Avg miss latency</div>
+        <div class="font-display text-2xl text-stone-700 tabular-nums">{{ summary.avg_miss_latency_ms }}ms</div>
+      </div>
+    </div>
+
+    {# BY ROUTE #}
+    <div class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
+      <h3 class="font-display text-base text-stone-900 mb-3">By route</h3>
+      {% if summary.by_route %}
+      <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-xs font-semibold uppercase tracking-wider text-stone-600">
+          <tr class="border-b border-stone-200">
+            <th class="text-left py-2">Route</th>
+            <th class="text-right py-2">Calls</th>
+            <th class="text-right py-2">Hits</th>
+            <th class="text-right py-2">Hit rate</th>
+            <th class="text-right py-2">Input (est.)</th>
+            <th class="text-right py-2">Output (est.)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in summary.by_route %}
+          <tr class="border-b border-stone-100 last:border-0">
+            <td class="py-2 font-semibold text-stone-900">/{{ r.route }}</td>
+            <td class="py-2 text-right text-stone-800 tabular-nums">{{ r.calls }}</td>
+            <td class="py-2 text-right text-emerald-700 tabular-nums">{{ r.hits }}</td>
+            <td class="py-2 text-right text-stone-600 tabular-nums">{{ r.hit_rate_pct }}%</td>
+            <td class="py-2 text-right text-stone-600 tabular-nums">{{ r.input_tokens }}</td>
+            <td class="py-2 text-right text-stone-600 tabular-nums">{{ r.output_tokens }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      {% else %}
+      <p class="text-sm text-stone-600 italic">No calls in this window.</p>
+      {% endif %}
+    </div>
+
+    {# CACHE ENTRIES #}
+    <div class="bg-stone-50 border border-stone-200 rounded-2xl p-4 flex items-baseline gap-3">
+      <div class="font-display text-xl text-astro-700">{{ summary.cache_entries }}</div>
+      <div class="text-sm text-stone-600">cached responses currently in storage (per-instance SQLite; not shared across Cloud Run pods)</div>
+    </div>
+
+    {# LLM CALL BREAKDOWN — per-model + per-route + per-provider #}
+    <div class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
+      <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+        <h3 class="font-display text-base text-stone-900">Fresh LLM calls (cache misses)</h3>
+        <div class="text-xs text-stone-600 tabular-nums">
+          Total: <strong>{{ llm_stats.aggregate.total_calls }}</strong>
+          {% if llm_stats.aggregate.fallbacks %}
+            · Provider fallbacks: <strong class="text-amber-700">{{ llm_stats.aggregate.fallbacks }}</strong>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if llm_stats.aggregate.total_calls == 0 %}
+      <p class="text-sm text-stone-600 italic">No fresh LLM calls in this window — everything served from cache, or nothing generated yet.</p>
+      {% else %}
+      <div class="grid md:grid-cols-3 gap-6">
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2">By model</div>
+          <ul class="text-sm space-y-1.5">
+            {% for model, count in llm_stats.aggregate.by_model.items() %}
+            <li class="flex justify-between border-b border-stone-100 pb-1">
+              <span class="text-stone-700 truncate" title="{{ model }}">{{ model }}</span>
+              <span class="text-astro-700 font-semibold tabular-nums pl-2">{{ count }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2">By route</div>
+          <ul class="text-sm space-y-1.5">
+            {% for route, count in llm_stats.aggregate.by_route.items() %}
+            <li class="flex justify-between border-b border-stone-100 pb-1">
+              <span class="text-stone-700">{{ route }}</span>
+              <span class="text-astro-700 font-semibold tabular-nums pl-2">{{ count }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2">By provider</div>
+          <ul class="text-sm space-y-1.5">
+            {% for provider, count in llm_stats.aggregate.by_provider.items() %}
+            <li class="flex justify-between border-b border-stone-100 pb-1">
+              <span class="text-stone-700">{{ provider }}</span>
+              <span class="text-astro-700 font-semibold tabular-nums pl-2">{{ count }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      {% if llm_stats.days | length > 1 %}
+      <div class="mt-6">
+        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-2">Daily breakdown</div>
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-xs uppercase text-stone-600 border-b border-stone-200">
+              <th class="pb-1.5">Date</th>
+              <th class="pb-1.5 text-right">Calls</th>
+              <th class="pb-1.5 text-right">Fallbacks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for day in llm_stats.days %}
+            <tr class="border-b border-stone-100">
+              <td class="py-1 text-stone-700 tabular-nums">{{ day.date }}</td>
+              <td class="py-1 text-right text-astro-700 font-semibold tabular-nums">{{ day.total }}</td>
+              <td class="py-1 text-right tabular-nums {% if day.fallbacks %}text-amber-700 font-semibold{% else %}text-stone-500{% endif %}">{{ day.fallbacks }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      </div>
+      {% endif %}
+
+      <p class="text-xs text-stone-600 mt-4">
+        Cache hits don't count here — only fresh LLM calls that consumed provider quota.
+        Token counts are <em>estimates</em> from text length (~4 chars/token Latin, ~2.5 Devanagari).
+      </p>
+      {% endif %}
+    </div>
+  </section>
+
+  {# ═══════════════════════════════════════════════════════════════
+     RECENT ACTIVITY MINI-FEED — last N events across all types.
+     Links to /admin/activity for the full view.
+     ═══════════════════════════════════════════════════════════════ #}
+  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
+    <div class="flex items-baseline justify-between mb-3">
+      <h2 class="font-display text-xl text-astro-800">Recent activity</h2>
+      <a href="/admin/activity?days={{ days }}" class="text-xs text-astro-700 hover:underline">See all →</a>
+    </div>
+    {% if recent_events %}
+    <ul class="space-y-2 text-sm">
+      {% for e in recent_events %}
+      {% set _type_map = {'form_kundli': ('📜', 'Kundli', 'astro'), 'form_ask': ('❓', 'Q&A', 'astro'), 'form_matching': ('💍', 'Match', 'rose'), 'error': ('⚠', 'Error', 'rose')} %}
+      {% set _t = _type_map.get(e.type, ('•', e.type, 'stone')) %}
+      <li class="border-l-2 border-stone-200 pl-3">
+        <div class="text-xs text-stone-600 tabular-nums flex flex-wrap gap-x-2 items-baseline">
+          <span aria-hidden="true">{{ _t[0] }}</span>
+          <span class="font-semibold text-stone-800">{{ _t[1] }}</span>
+          <span>{{ e.ts[:16] | replace('T', ' ') }}</span>
+          {% if e.email %}<span class="text-astro-600">{{ e.email }}</span>{% endif %}
+        </div>
+        <div class="text-stone-800 mt-0.5 truncate">
+          {% if e.type == 'form_kundli' %}
+            {{ e.data.get('name') or '(anon)' }} · {{ e.data.get('birth_date') }} · {{ e.data.get('birth_place') }}
+          {% elif e.type == 'form_ask' %}
+            {{ (e.data.get('question') or '') | truncate(140, True) }}
+          {% elif e.type == 'form_matching' %}
+            {{ e.data.get('groom_name') or '?' }} × {{ e.data.get('bride_name') or '?' }} · {{ e.data.get('total_score') }}
+          {% elif e.type == 'error' %}
+            {{ e.data.get('where', '?') }} · {{ (e.data.get('message') or '') | truncate(140, True) }}
+          {% else %}
+            {{ e.data | tojson | truncate(140, True) }}
+          {% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-sm text-stone-600 italic">No events in this window.</p>
+    {% endif %}
+  </section>
+
+</main>
+{% endblock %}
