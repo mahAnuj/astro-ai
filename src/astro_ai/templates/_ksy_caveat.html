@@ -1,39 +1,27 @@
-{# Kaal Sarp Yoga classical-source caveat.
+{# Kaal Sarp Yoga classical-source caveat — compact by default.
 
    Rendered on:
-     - /kaal-sarp-check (form page, before submit) — via _dosha_form_ctx
+     - /kaal-sarp-check (form page, before submit) via _dosha_form_ctx
        show_ksy_caveat=True on the dosha_check_form.html template
-     - /kaal-sarp-check POST result page — inline in
+     - /kaal-sarp-check POST result page inline in
        kaal_sarp_check_result.html
 
-   Content sourced from independent classical-source research
-   (2026-08-04). Kaal Sarp Yoga does NOT appear in Brihat Parashara
-   Hora Shastra / Brihat Jataka / Saravali / Phaladeepika / Jataka
-   Parijata / Uttara Kalamrita. Its first verifiable Indian print
-   discussion is in The Astrological Magazine, late 1970s–early 1980s.
-   K.N. Rao publicly called it "one of the biggest frauds in astrology."
-   B.V. Raman added it as an APPENDIX to the 9th edition of his book,
-   because it had "become much feared" — his treatment was nuanced. #}
-<aside class="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-5 sm:p-6">
-  <div class="flex items-start gap-3">
-    <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center">
-      <svg class="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
-      </svg>
-    </div>
-    <div class="flex-1">
-      <h2 class="font-display text-lg sm:text-xl text-amber-900 mb-2">
-        {{ t(lang, 'ksy_caveat_heading') }}
-      </h2>
-      <p class="text-sm text-stone-800 leading-relaxed mb-2">
-        {{ t(lang, 'ksy_caveat_body_1') }}
-      </p>
-      <p class="text-sm text-stone-800 leading-relaxed mb-2">
-        {{ t(lang, 'ksy_caveat_body_2') }}
-      </p>
-      <p class="text-sm text-stone-800 leading-relaxed">
-        {{ t(lang, 'ksy_caveat_body_3') }}
-      </p>
-    </div>
+   Compact one-liner summary always visible; full disclosure collapsed
+   inside <details> so it doesn't push the form off-screen on mobile.
+   Full content: BPHS/Brihat Jataka/Saravali/Phaladeepika/Jataka
+   Parijata/Uttara Kalamrita don't contain it. First Indian print
+   discussion in The Astrological Magazine, late 1970s. K.N. Rao
+   dismissed it publicly; B.V. Raman appendix-only. #}
+<details class="rounded-xl border border-amber-300 bg-amber-50/60 px-4 py-3 group">
+  <summary class="cursor-pointer flex items-start gap-2 text-sm text-amber-900 leading-snug list-none">
+    <svg class="shrink-0 mt-0.5 w-4 h-4 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+    </svg>
+    <span class="flex-1"><strong>Note:</strong> Kaal Sarp is a 20th-century classification, not defined in the classical Sanskrit Jyotish texts. <span class="text-amber-800 underline underline-offset-2 group-open:hidden">Read full disclosure</span><span class="text-amber-800 underline underline-offset-2 hidden group-open:inline">Hide disclosure</span></span>
+  </summary>
+  <div class="mt-3 pl-6 space-y-2 text-sm text-stone-800 leading-relaxed">
+    <p>{{ t(lang, 'ksy_caveat_body_1') }}</p>
+    <p>{{ t(lang, 'ksy_caveat_body_2') }}</p>
+    <p>{{ t(lang, 'ksy_caveat_body_3') }}</p>
   </div>
-</aside>
+</details>
