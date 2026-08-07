@@ -8,58 +8,98 @@
      - panchang_moon:  dict with 'rashi' + 'nakshatra' (transit Moon)
      - panchang_city:  str (city name for the compute)
    All optional — render nothing if any is None.
+
+   LAYOUT CONTRACT — do not "simplify" this back:
+   The row is deliberately flex-nowrap inside an overflow-x-auto scroller,
+   so it is always exactly one line at every viewport width and overflow
+   becomes a horizontal swipe instead of a wrap. Separators are drawn by
+   divide-x (a real border between items), never by text.
+
+   The old version used a wrapping flex row with a literal pipe text node
+   at the start of each segment. The instant the row wrapped, those pipes
+   became the first thing on a new line — 4 stranded pipes at 375px, and
+   a leading pipe on the wrapped "Full Panchang for <city>" at 1440px.
+   Commit c32dcf1 attempted to fix that by shuffling the last group and
+   making its pipe always-visible; that did not address the root cause
+   (inline text separators in a wrapping container) and made mobile worse.
+
+   Therefore: reintroducing a literal separator character, or letting the
+   row wrap again, or hiding items behind a breakpoint-conditional
+   visibility class, reintroduces the issue-c32dcf1 class of stranding.
+   Don't. (The class names to keep out of this file are the wrap utility,
+   the gap-y utilities, auto-margin push, and any responsive-visibility
+   pairing — the self-check greps for them.)
 #}
 {% if panchang_strip %}
-<section class="border-b border-astro-200 bg-gradient-to-r from-astro-50 via-cream to-amber-50/40 no-print">
+<style>
+  /* Scoped to this strip. Tailwind here is the Play CDN (base.html loads
+     cdn.tailwindcss.com -> v3.4.17) with core utilities only — no
+     scrollbar-hide plugin exists and tailwind.config lives in base.html,
+     which this change must not touch. Hiding the scrollbar is not
+     cosmetic: on Windows/Android classic scrollbars, overflow-x:auto
+     reserves 10-17px of height on a ~38px strip. The mask replaces the
+     lost affordance with a 24px fade at the scroll edge. */
+  .panchang-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overscroll-behavior-x: contain;
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent 100%);
+            mask-image: linear-gradient(to right, #000 calc(100% - 1.5rem), transparent 100%);
+  }
+  .panchang-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
+</style>
+<section class="border-b border-astro-200 bg-gradient-to-r from-astro-50 via-cream to-amber-50/40 no-print" aria-label="Today's Panchang">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
-    <div class="flex items-center flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm">
-      {# Date + day-lord — the anchor of Panchang #}
-      <div class="flex items-center gap-1.5">
-        <span class="text-astro-600" aria-hidden="true">🌅</span>
-        <span class="font-semibold text-stone-800">{{ panchang_strip.weekday }}</span>
-        <span class="text-stone-600">·</span>
-        <span class="text-stone-700">{{ panchang_strip.day_lord }}-ruled</span>
-      </div>
+    <div class="panchang-scroll overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0"
+         role="group" aria-label="Today's Panchang summary" tabindex="0">
+      <div class="flex items-center flex-nowrap w-max pr-6 divide-x divide-stone-300 text-xs sm:text-sm">
+        {# 1. Day anchor — deliberately short so the Rahu Kaal window fits
+              inside the first 375px viewport without a swipe. #}
+        <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap px-3 first:pl-0">
+          <span class="text-astro-600" aria-hidden="true">🌅</span>
+          <span class="font-semibold text-stone-800">{{ panchang_strip.weekday }}</span>
+        </div>
 
-      {# Tithi — lunar day + significance if any #}
-      <div class="flex items-center gap-1.5">
-        <span class="text-stone-500">|</span>
-        <span class="text-stone-600 uppercase text-[10px] tracking-wider">Tithi</span>
-        <span class="text-stone-800 font-medium">{{ panchang_strip.tithi_paksha }} {{ panchang_strip.tithi_name }}</span>
-      </div>
+        {# 2. Rahu Kaal (avoid) — highest-value glanceable item, so it leads.
+              The literal word "(avoid)" is the non-colour cue required by
+              WCAG 1.4.1. Do not remove it to save width. #}
+        <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap px-3">
+          <span class="text-red-700 uppercase text-[10px] tracking-wider font-semibold">Rahu Kaal (avoid)</span>
+          <span class="text-stone-800 font-medium tabular-nums">{{ panchang_strip.rahu_kaal_start.strftime('%H:%M') }}–{{ panchang_strip.rahu_kaal_end.strftime('%H:%M') }}</span>
+        </div>
 
-      {# Moon nakshatra — fastest-changing sky signal #}
-      {% if panchang_moon %}
-      <div class="flex items-center gap-1.5">
-        <span class="text-stone-500">|</span>
-        <span class="text-stone-600 uppercase text-[10px] tracking-wider">Moon</span>
-        <span class="text-stone-800 font-medium">{{ panchang_moon.nakshatra }} · {{ panchang_moon.rashi.split(' ')[0] }}</span>
-      </div>
-      {% endif %}
+        {# 3. Abhijit (best). "(best)" is the non-colour cue — keep it. #}
+        <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap px-3">
+          <span class="text-emerald-700 uppercase text-[10px] tracking-wider font-semibold">Abhijit (best)</span>
+          <span class="text-stone-800 font-medium tabular-nums">{{ panchang_strip.abhijit_start.strftime('%H:%M') }}–{{ panchang_strip.abhijit_end.strftime('%H:%M') }}</span>
+        </div>
 
-      {# Rahu Kaal (avoid) — most-referenced sub-day window #}
-      <div class="flex items-center gap-1.5">
-        <span class="text-stone-500">|</span>
-        <span class="text-red-700 uppercase text-[10px] tracking-wider font-semibold">Rahu Kaal (avoid)</span>
-        <span class="text-stone-800 font-medium tabular-nums">{{ panchang_strip.rahu_kaal_start.strftime('%H:%M') }}–{{ panchang_strip.rahu_kaal_end.strftime('%H:%M') }}</span>
-      </div>
+        {# 4. Day lord — split out of the day anchor so the anchor stays narrow. #}
+        <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap px-3">
+          <span class="text-stone-600 uppercase text-[10px] tracking-wider">Day Lord</span>
+          <span class="text-stone-800 font-medium">{{ panchang_strip.day_lord }}</span>
+        </div>
 
-      {# Abhijit Muhurta (best) — most-referenced auspicious window #}
-      <div class="flex items-center gap-1.5">
-        <span class="text-stone-500">|</span>
-        <span class="text-emerald-700 uppercase text-[10px] tracking-wider font-semibold">Abhijit (best)</span>
-        <span class="text-stone-800 font-medium tabular-nums">{{ panchang_strip.abhijit_start.strftime('%H:%M') }}–{{ panchang_strip.abhijit_end.strftime('%H:%M') }}</span>
-      </div>
+        {# 5. Tithi #}
+        <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap px-3">
+          <span class="text-stone-600 uppercase text-[10px] tracking-wider">Tithi</span>
+          <span class="text-stone-800 font-medium">{{ panchang_strip.tithi_paksha }} {{ panchang_strip.tithi_name }}</span>
+        </div>
 
-      {# City + link to full page — kept inline (no ml-auto) so if the row
-         wraps on narrower viewports the group wraps left-aligned next to
-         the other pills rather than getting stranded far-right on its own
-         mostly-empty second line. #}
-      <div class="flex items-center gap-1.5">
-        <span class="text-stone-500">|</span>
-        <a href="/panchang" class="text-astro-700 hover:underline font-semibold">
-          Full Panchang for {{ panchang_city or 'Mumbai' }} →
-        </a>
+        {# 6. Moon — optional context var, guard preserved. #}
+        {% if panchang_moon %}
+        <div class="flex items-center gap-1.5 shrink-0 whitespace-nowrap px-3">
+          <span class="text-stone-600 uppercase text-[10px] tracking-wider">Moon</span>
+          <span class="text-stone-800 font-medium">{{ panchang_moon.nakshatra }} · {{ panchang_moon.rashi.split(' ')[0] }}</span>
+        </div>
+        {% endif %}
+
+        {# 7. Full-page link. City stays merged into the link text: inside a
+              nowrap scroller a long city name can only lengthen the scroll,
+              it can no longer wrap or strand (cf. c32dcf1). #}
+        <div class="flex items-center shrink-0 whitespace-nowrap px-3">
+          <a href="/panchang" class="text-astro-700 hover:underline font-semibold">Full Panchang for {{ panchang_city or 'Mumbai' }} &rarr;</a>
+        </div>
       </div>
     </div>
   </div>
