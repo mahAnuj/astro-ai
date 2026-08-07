@@ -139,34 +139,32 @@
     <p class="text-sm text-stone-600 mb-3">
       Classical sub-day divisions used for muhurta timing. <strong>Amrit / Shubh / Labh</strong> are auspicious; <strong>Rog / Kaal</strong> avoid; <strong>Udveg / Chal</strong> neutral.
     </p>
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm border border-stone-200 bg-white rounded-lg overflow-hidden">
-        <thead class="bg-stone-50 text-stone-600 text-xs uppercase tracking-wider">
-          <tr>
-            <th class="p-2 text-left">Window</th>
-            <th class="p-2 text-left">Name</th>
-            <th class="p-2 text-left">Auspiciousness</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for w in choghadiya %}
-          <tr class="border-t border-stone-100">
-            <td class="p-2 tabular-nums">{{ w.start }} – {{ w.end }}</td>
-            <td class="p-2 font-semibold">{{ w.name }}</td>
-            <td class="p-2">
-              {% set aus = w.auspiciousness %}
-              <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold
-                {% if aus == 'auspicious' %}bg-emerald-100 text-emerald-800
-                {% elif aus == 'avoid' %}bg-red-100 text-red-800
-                {% else %}bg-stone-100 text-stone-700{% endif %}">
-                {{ aus | capitalize }}
-              </span>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <table class="w-full text-sm border border-stone-200 bg-white rounded-lg overflow-hidden">
+      <thead class="bg-stone-50 text-stone-600 text-xs uppercase tracking-wider">
+        <tr>
+          <th class="p-2 text-left">Window</th>
+          <th class="p-2 text-left">Name</th>
+          <th class="p-2 text-left">Auspiciousness</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for w in choghadiya %}
+        <tr class="border-t border-stone-100">
+          <td class="p-2 tabular-nums">{{ w.start }} – {{ w.end }}</td>
+          <td class="p-2 font-semibold">{{ w.name }}</td>
+          <td class="p-2">
+            {% set aus = w.auspiciousness %}
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold
+              {% if aus == 'auspicious' %}bg-emerald-100 text-emerald-800
+              {% elif aus == 'avoid' %}bg-red-100 text-red-800
+              {% else %}bg-stone-100 text-stone-700{% endif %}">
+              {{ aus | capitalize }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </section>
   {% endif %}
   {% endif %}
