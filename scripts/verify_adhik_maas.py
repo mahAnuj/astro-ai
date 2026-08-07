@@ -79,28 +79,15 @@ structured like `scripts/verify_festivals.py` and
       in one direction only. That is a rule, not a tolerance, and the gate proves
       the vriddhi before allowing it — see the function's own docstring.
 
-KNOWN DEFECT THIS GATE ROUTES AROUND (and reports)
---------------------------------------------------
-`chart._jd_to_utc_datetime` (chart.py:2737) carries a rounded 60th second into
-`minutes` but never carries a 60th minute into `hours`, so it raises
-`ValueError: minute must be in 0..59` whenever a sunrise or sunset lands within
-half a second of the top of a minute. `adhik_maas._jd_to_utc` already carries
-both, which is why only the calls that route through `chart._sunrise_sunset` are
-affected.
-
-Blast radius over 2000-2100, New Delhi:
-  * `intercalary_months()` touches ~4 sunrises per century-year, so it trips on
-    one year only (2007, via 2007-05-16) and raises;
-  * `lunar_observances._observances_for_year()` touches ~390 sunrises a year, so
-    it trips on ~14 years — and `observances_between()` catches and degrades, so
-    those years come back **silently empty** rather than erroring.
-
-Both are pre-existing and neither is in scope for issue #141. Gates 4 and 5
-therefore treat *this one exception message* as a known defect: they print every
-year it costs as OUTPUT, and FAIL on any other exception, on more affected years
-than `MAX_KNOWN_DEFECT_YEARS`, or on the defect touching any year this gate's
-tables actually assert about. When chart.py is fixed the census simply gets
-wider and nothing here needs editing.
+NO DEFECT TOLERANCE — DO NOT RE-ADD ONE
+---------------------------------------
+While issue #141 was in flight, `chart._jd_to_utc_datetime` failed to carry a
+60th minute into hours and raised a `ValueError` on certain sunrises, so Gates 4
+and 5 whitelisted that one exception text and counted the years it cost instead
+of failing. Issue #147 fixed the carry, and the tolerance was then deliberately
+deleted: **every exception out of `intercalary_months()` is now a FAIL naming
+the year and the exception.** Do not reintroduce a whitelist — absorbing that
+class of break silently is precisely the blindness issue #141 existed to remove.
 
 HOW TO EXTEND
 -------------
@@ -209,11 +196,6 @@ ADHIK_SPACING_DAYS = (856, 1064)
 # break, so it FAILs rather than being reported.
 ADHIK_MONTH_BAND = (3, 10)
 
-# See the KNOWN DEFECT section of the module docstring. Matched on the message
-# because that is what pins it to this one bug rather than to "any ValueError".
-_DEFECT_MSG = "minute must be in 0..59"
-MAX_KNOWN_DEFECT_YEARS = 25
-
 # Diwali is the Kartika Amavasya, i.e. the new moon while the Sun is in sidereal
 # Tula (rashi 6) — the month is named for the rashi the Sun enters during it, and
 # Tula is followed by Vrischika, which opens Kartika. Gate 2 uses this to pick
@@ -236,10 +218,6 @@ def _anniversary(d: date, year: int) -> date:
         return date(year, d.month, d.day)
     except ValueError:
         return date(year, 2, 28)
-
-
-def _is_known_defect(exc: BaseException) -> bool:
-    return isinstance(exc, ValueError) and _DEFECT_MSG in str(exc)
 
 
 def _adhik_windows(year: int) -> list[am.IntercalaryMonth]:
@@ -557,23 +535,20 @@ def gate_3_expected_json(expected: dict) -> list[str]:
 # Gate 4 - structural invariants over the supported range
 # --------------------------------------------------------------------------
 
-def gate_4_structure() -> tuple[list[str], list[am.IntercalaryMonth], set[int]]:
+def gate_4_structure() -> tuple[list[str], list[am.IntercalaryMonth]]:
     failures: list[str] = []
     windows: set[tuple[date, date, str, str]] = set()
-    unreachable: dict[int, str] = {}
 
     for year in CENSUS_YEARS:
         try:
             months = am.intercalary_months(year)
         except Exception as exc:
-            if _is_known_defect(exc):
-                unreachable[year] = str(exc)
-                continue
             failures.append(
                 f"{year}: intercalary_months() raised {type(exc).__name__}: {exc} — "
-                "not the known chart._jd_to_utc_datetime rounding defect, so this is a "
-                "new break"
+                "the detector must answer for every year in the supported range. There "
+                "is no tolerated exception here; see the module docstring."
             )
+            print(f"  FAIL {year}  detector raised {type(exc).__name__}: {exc}")
             continue
         # A window overlapping two Gregorian years is returned by both, so the
         # census is a set, not a list.
@@ -592,25 +567,6 @@ def gate_4_structure() -> tuple[list[str], list[am.IntercalaryMonth], set[int]]:
               f"{m.name}")
     print(f"  {len(adhik)} adhik, {len(kshaya)} kshaya over "
           f"{CENSUS_YEARS.start}-{CENSUS_YEARS.stop - 1}  [census is OUTPUT, not a target]")
-
-    if unreachable:
-        print(f"  {len(unreachable)} year(s) unreachable via the known "
-              f"chart._jd_to_utc_datetime rounding defect ({_DEFECT_MSG}): "
-              + ", ".join(str(y) for y in sorted(unreachable)))
-    if len(unreachable) > MAX_KNOWN_DEFECT_YEARS:
-        failures.append(
-            f"{len(unreachable)} year(s) hit the known sunrise-rounding defect, more "
-            f"than MAX_KNOWN_DEFECT_YEARS={MAX_KNOWN_DEFECT_YEARS}. At that rate it is "
-            "no longer one unlucky rounding — something changed in the sunrise path."
-        )
-    asserted = set(DRIK_ADHIK) | {2026, 2027, 2028}
-    blocked = asserted & set(unreachable)
-    if blocked:
-        failures.append(
-            f"the sunrise-rounding defect now blocks {sorted(blocked)}, which this "
-            "gate's own tables make assertions about — Gates 1 and 3 can no longer be "
-            "trusted until chart._jd_to_utc_datetime carries a 60th minute into hours"
-        )
 
     if kshaya:
         failures.append(
@@ -656,14 +612,8 @@ def gate_4_structure() -> tuple[list[str], list[am.IntercalaryMonth], set[int]]:
             )
 
     lo_gap, hi_gap = ADHIK_SPACING_DAYS
-    spacing_checked = spacing_skipped = 0
+    spacing_checked = 0
     for m0, m1 in zip(adhik, adhik[1:]):
-        # A year the defect ate may have hidden a leap month between these two,
-        # which would make the gap look impossibly wide for reasons that have
-        # nothing to do with the detector.
-        if any(m0.start.year < y < m1.start.year for y in unreachable):
-            spacing_skipped += 1
-            continue
         gap = (m1.start - m0.start).days
         spacing_checked += 1
         if not (lo_gap <= gap <= hi_gap):
@@ -672,9 +622,8 @@ def gate_4_structure() -> tuple[list[str], list[am.IntercalaryMonth], set[int]]:
                 f"months, expected {lo_gap}-{hi_gap} (29-36 synodic months). Too small "
                 "means a month was double-counted; too large means one was missed."
             )
-    print(f"  {spacing_checked} consecutive-spacing check(s), {spacing_skipped} skipped "
-          "across a defect-blocked year")
-    return failures, adhik, set(unreachable)
+    print(f"  {spacing_checked} consecutive-spacing check(s)")
+    return failures, adhik
 
 
 # --------------------------------------------------------------------------
@@ -725,7 +674,7 @@ def gate_5_amavasya_alignment(adhik: list[am.IntercalaryMonth]) -> list[str]:
     sunrises. Both modules are correct. It is the only one over 2000-2100.
     """
     failures: list[str] = []
-    checked = skipped = vriddhi = 0
+    checked = vriddhi = 0
 
     for m in adhik:
         for want, label in (
@@ -733,12 +682,6 @@ def gate_5_amavasya_alignment(adhik: list[am.IntercalaryMonth]) -> list[str]:
             (m.end, "end"),
         ):
             rows = lo.observances_between(want - timedelta(days=3), want + timedelta(days=3))
-            if not rows:
-                # observances_between() catches per-year failures and degrades to
-                # an empty list — see the KNOWN DEFECT note. Silence here is that,
-                # not a missing Amavasya.
-                skipped += 1
-                continue
             amavasyas = [d for d, o in rows if o.slug.startswith("amavasya")]
             checked += 1
             if want in amavasyas:
@@ -780,8 +723,7 @@ def gate_5_amavasya_alignment(adhik: list[am.IntercalaryMonth]) -> list[str]:
                   f"Amavasya {nearest} ({off:+d}d)")
 
     print(f"  {checked} window edge(s) tied to a computed Amavasya "
-          f"({vriddhi} via the vriddhi rule), {skipped} skipped "
-          "(lunar_observances degraded to empty on a defect-blocked year)")
+          f"({vriddhi} via the vriddhi rule)")
     if checked == 0:
         failures.append(
             "no window edge could be checked at all — lunar_observances returned "
@@ -810,9 +752,8 @@ def main() -> int:
     state: dict[str, object] = {}
 
     def _gate_4() -> list[str]:
-        failures, adhik, unreachable = gate_4_structure()
+        failures, adhik = gate_4_structure()
         state["adhik"] = adhik
-        state["unreachable"] = unreachable
         return failures
 
     def _gate_5() -> list[str]:
