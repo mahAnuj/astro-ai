@@ -12,8 +12,8 @@ sources that agreed on every row:
       window — pradosh / nishita / madhyahna / aparahna / moonrise — rather
       than against sunrise alone
 
-The first seventeen festivals were verified on 2026-08-06. The thirteen added
-on 2026-08-07 (marked `# verified 2026-08-07` below) were sourced from scratch
+The first seventeen festivals were verified on 2026-08-06. Every row added
+since (marked with a `# verified …` comment below) was sourced from scratch
 against the same two sources, each Drik date read twice off two different
 pages — the year calendar and the New Delhi monthly calendar — so a single
 misread page cannot carry a date through. No date in this file is carried over
@@ -835,6 +835,45 @@ _DECLARED: tuple[Festival, ...] = (
             "Chauth katha and pass the karva — the clay pot — in the customary circle. After "
             "moonrise the moon is viewed through a sieve, arghya is offered, the husband's face is "
             "seen, and he gives the first sip of water."
+        ),
+    ),
+    # verified 2026-08-07 · Drik Panchang, New Delhi — year calendar page and monthly
+    # calendar page, both "Dhanteras", Kartika Krishna Trayodashi. Confirmed
+    # independently (pyswisseph) against the pradosh window rather than sunrise,
+    # which is the rule that actually places this day: in 2028 Trayodashi does not
+    # begin until 19:20 IST on 15 Oct, so sunrise that morning is still Dwadashi
+    # (Drik prints Govatsa Dwadashi there) and only the pradosh test puts Dhanteras
+    # on the 15th rather than the 16th — on the 16th Trayodashi has already ended
+    # at 15:50, before pradosh opens.
+    Festival(
+        slug="dhanteras",
+        name_en="Dhanteras (Dhantrayodashi)",
+        name_hi="धनतेरस (धनत्रयोदशी)",
+        note_en="First day of the Diwali sequence — Dhanvantari's day. Buy metal, light the yama deepam, and do Kubera-Lakshmi puja at pradosh.",
+        note_hi="दीपावली पर्व का प्रथम दिन — धन्वन्तरि जयन्ती। धातु खरीदें, यम दीपक जलाएँ, प्रदोष काल में कुबेर-लक्ष्मी पूजन करें।",
+        dates={2026: "2026-11-06", 2027: "2027-10-27", 2028: "2028-10-15"},
+        rule="Kartika Krishna Trayodashi (purnimanta)",
+        observance_window="pradosh (dusk)",
+        significance=(
+            "Dhanteras opens the five days of Diwali on the thirteenth tithi of Kartika's "
+            "waning fortnight. It is Dhanvantari Jayanti — the physician of the gods rose "
+            "from the churning of the ocean on this tithi carrying the pot of amrita — so "
+            "the day belongs as much to health as to wealth, and Ayurveda keeps it as its "
+            "own. The dhan of the name is Dhanvantari before it is money, though the "
+            "mercantile reading has long since become the popular one. Because the day is "
+            "fixed at pradosh rather than at sunrise, the almanac will sometimes place it on "
+            "a morning that still belongs to the previous tithi; that is the rule working "
+            "correctly, not a slip."
+        ),
+        observance=(
+            "Buying metal is the day's best-known custom — gold or silver if the household "
+            "can, otherwise brass, steel or simply a new vessel, which is the older and "
+            "entirely sufficient form. Lakshmi and Kubera are worshipped together in the "
+            "pradosh window at dusk, with Dhanvantari invoked for the health of the house. "
+            "Thirteen diyas are lit, and one is set outside the door facing south after "
+            "nightfall as the yama deepam, offered to Yama for protection against untimely "
+            "death — the one lamp in the year that is deliberately turned away from the "
+            "house. Clean and light the threshold; the rest of the sequence follows from here."
         ),
     ),
     Festival(
