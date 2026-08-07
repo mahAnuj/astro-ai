@@ -48,14 +48,18 @@
        last festival while later months are still shown. It is a search range,
        not a promise of one festival a month — a month with none says so on
        its own block. (QA #1.) #}
+    {# Two sentences were cut here rather than reworded (#132 page height): the
+       reckoning sentence ("New Delhi, IST … checked against Drik Panchang") is
+       repeated verbatim by the provenance line immediately below it, and the
+       "every Purnima, Amavasya and Ekadashi is marked too" sentence is what the
+       calendar legend eight lines down already shows. Neither claim is lost. #}
     {% if festivals %}
     <p class="text-stone-600">
       The <strong>{{ festival_count | default(festivals | length) }}</strong> festivals in our
-      verified calendar that fall
-      between <strong>{{ window_start_pretty }}</strong> and <strong>{{ window_end_pretty }}</strong>
+      verified calendar between
+      <strong>{{ window_start_pretty }}</strong> and <strong>{{ window_end_pretty }}</strong>
       &mdash; each with its date, the tithi rule that fixes it, what it means, and how it is
-      observed. Dates are reckoned for New Delhi, IST and checked against {{ source_name }}.
-      Every Purnima, Amavasya and Ekadashi in the same window is marked on the calendar too.
+      observed.
     </p>
     {% else %}
     <p class="text-stone-600">
@@ -89,10 +93,14 @@
   <section class="space-y-4" aria-labelledby="calendar-heading">
     <div class="space-y-1">
       <h2 id="calendar-heading" class="font-display text-2xl text-astro-800">Calendar view</h2>
+      {# The sentence describing bold-solid vs light-dotted days went with #132:
+         the legend directly below names all four marks, and the distinction is
+         self-evident the moment a grid is on screen. What stayed is the one
+         thing the legend cannot say — that the names under each month are
+         links. #}
       <p class="text-sm text-stone-600">
-        A bold, solid-underlined day carries a named festival; a lighter, dotted day is a
-        recurring lunar observance. Every marked day is named in the list under its month
-        &mdash; pick either to jump straight to the full entry below.
+        Every marked day is named in the list under its month &mdash; pick either to jump
+        straight to the full entry below.
       </p>
       {# Legend. The marks are decodable here without hovering, tapping or
          focusing anything, which is the point: the grid is the at-a-glance
