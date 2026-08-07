@@ -229,6 +229,26 @@ _HINDI_MONTHS: tuple[str, ...] = (
 )
 
 
+# Hindi weekday names — same reasoning as _HINDI_MONTHS above: strftime("%A")
+# gives us "Monday" natively and there is no locale-friendly way to get
+# "सोमवार" without an ICU dependency. Indexed by date.weekday(), so
+# Monday=0 .. Sunday=6.
+_HINDI_WEEKDAYS: tuple[str, ...] = (
+    "सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार",
+)
+
+
+def _pretty_weekday(d: date, lang: str = "en") -> str:
+    """Weekday name for visible page chrome. English → "Monday", Hindi → "सोमवार".
+
+    Companion to _pretty_date(): anywhere a date is localised, its weekday has
+    to be too, or ?lang=hi renders "17 अगस्त 2026 · Monday".
+    """
+    if lang == "hi":
+        return _HINDI_WEEKDAYS[d.weekday()]
+    return d.strftime("%A")
+
+
 def _pretty_date(iso_date: str, lang: str = "en") -> str:
     """Format an ISO date as human-friendly text for user-facing titles.
 
@@ -1000,10 +1020,19 @@ async def festivals_page(request: Request) -> HTMLResponse:
                 "tier": getattr(fest, "tier", "major"),
                 "date_iso": fest_date.isoformat(),
                 "pretty_date": _pretty_date(fest_date.isoformat(), lang),
-                "weekday": fest_date.strftime("%A"),
+                "weekday": _pretty_weekday(fest_date, lang),
                 "days_away": days_away,
                 "is_today": days_away == 0,
-                "note_en": fest.note_en,
+                # The registry carries note_hi for every festival and the daily
+                # email has been using it for months; the hub was passing only
+                # note_en, so ?lang=hi silently dropped Hindi copy that already
+                # existed (QA BUG-2). Resolved here rather than in the template
+                # so the template has one `note` to render, not a lang branch.
+                #
+                # significance and observance have NO Hindi in the registry at
+                # all, so they stay English on purpose. The page says so under
+                # the festival heading rather than mixing the two silently.
+                "note": fest.note_hi if lang == "hi" else fest.note_en,
                 "significance": fest.significance,
                 "observance": fest.observance,
                 "rule": fest.rule,
@@ -1088,7 +1117,7 @@ async def festivals_page(request: Request) -> HTMLResponse:
                 "kind": _kind,
                 "date_iso": _obs_date.isoformat(),
                 "pretty_date": _pretty_date(_obs_date.isoformat(), lang),
-                "weekday": _obs_date.strftime("%A"),
+                "weekday": _pretty_weekday(_obs_date, lang),
                 "days_away": _days_away,
                 "is_today": _days_away == 0,
                 "rule": _obs.rule,

@@ -53,13 +53,19 @@
        repeated verbatim by the provenance line immediately below it, and the
        "every Purnima, Amavasya and Ekadashi is marked too" sentence is what the
        calendar legend eight lines down already shows. Neither claim is lost. #}
-    {% if festivals %}
+    {# Branch on the NAMED-festival count, never on `festivals` (QA BUG-3).
+       `festivals` also carries the ~28 computed lunar observances merged in by
+       the route, so the two disagree the moment the window rolls past the last
+       hand-verified year: `festivals` is truthy, festival_count is 0, and this
+       header read "The 0 festivals in our verified calendar". #}
+    {% set n = festival_count | default(festivals | length) %}
+    {% if n %}
     <p class="text-stone-600">
-      The <strong>{{ festival_count | default(festivals | length) }}</strong> festivals in our
+      The <strong>{{ n }}</strong> festival{{ 's' if n != 1 }} in our
       verified calendar between
       <strong>{{ window_start_pretty }}</strong> and <strong>{{ window_end_pretty }}</strong>
-      &mdash; each with its date, the tithi rule that fixes it, what it means, and how it is
-      observed.
+      &mdash; {{ 'each with its' if n != 1 else 'with its' }} date, the tithi rule that fixes
+      it, what it means, and how it is observed.
     </p>
     {% else %}
     <p class="text-stone-600">
@@ -249,9 +255,23 @@
   </section>
   {% endif %}
 
-  {% if festivals %}
+  {# Named festivals only — see the BUG-3 note in the header. `festivals` also
+     holds the computed lunar observances, which get their own section below and
+     must not keep this one (or its "The next six months" heading) alive over an
+     empty festival list. #}
+  {% if n %}
   <section class="space-y-3">
     <h2 class="font-display text-2xl text-astro-800">The next six months</h2>
+
+    {# The registry has Hindi names and notes but no Hindi significance or
+       observance copy, so those two sections stay English on ?lang=hi. Stated,
+       not silently mixed. #}
+    {% if lang == "hi" %}
+    <p class="text-sm text-stone-600" lang="hi">
+      नाम, तिथि और परिचय हिन्दी में हैं। &ldquo;Significance&rdquo; और &ldquo;How it is
+      observed&rdquo; अभी केवल अंग्रेज़ी में उपलब्ध हैं।
+    </p>
+    {% endif %}
 
     {# Fragment navigation into a COLLAPSED card.
        Every marked day in the calendar above is an <a href="#slug"> and every
@@ -352,8 +372,11 @@
         </div>
         {% endif %}
 
-        {% if f.note_en %}
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed font-semibold">{{ f.note_en }}</p>
+        {# `note` is already resolved to the request language by the route — the
+           registry has note_hi for every festival, it was just never reaching
+           this page (QA BUG-2). #}
+        {% if f.note %}
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed font-semibold" {% if lang == "hi" %}lang="hi"{% endif %}>{{ f.note }}</p>
         {% endif %}
 
         {% if f.significance %}
@@ -384,9 +407,32 @@
     </details>
     {% endif %}{% endfor %}
   </section>
+  {% else %}
+  {# Defensive: the data module always covers the current window, but a
+     stale or out-of-range calendar must degrade to a readable page. Reached
+     when there are no NAMED festivals left in the window — which, once the
+     window rolls past the last verified year, happens while the computed lunar
+     observances below are still there (QA BUG-3). #}
+  <section>
+    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
+      <h2 class="font-display text-2xl text-astro-800">No festivals in this window</h2>
+      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        We don't have festival dates listed for the next six months yet. Our verified
+        calendar currently runs through {{ verified_through }}. In the meantime, check
+        today's tithi and muhurta on the <a href="/panchang" class="text-astro-700 underline underline-offset-2 hover:text-astro-900">daily Panchang</a>,
+        or read the festival guides in our <a href="/learn/" class="text-astro-700 underline underline-offset-2 hover:text-astro-900">Learning Hub</a>.
+      </p>
+    </div>
+  </section>
+  {% endif %}
 
   {# Compact grouping for the recurring lunar days. Each row still carries its
-     own slug id, so every anchor the calendar emits above still resolves. #}
+     own slug id, so every anchor the calendar emits above still resolves.
+
+     Deliberately OUTSIDE the named-festival branch above: these are computed,
+     not hand-verified, so they outlive the festival registry's data years. When
+     they do, the page shows the empty-window fallback AND still lists them,
+     instead of hiding them behind a festival count of zero. #}
   {% set rec = namespace(any=false) %}
   {% for f in festivals %}{% if (f.tier | default("major", true)) == "recurring" %}{% set rec.any = true %}{% endif %}{% endfor %}
   {% if rec.any %}
@@ -411,21 +457,6 @@
       </li>
       {% endif %}{% endfor %}
     </ul>
-  </section>
-  {% endif %}
-  {% else %}
-  {# Defensive: the data module always covers the current window, but a
-     stale or out-of-range calendar must degrade to a readable page. #}
-  <section>
-    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
-      <h2 class="font-display text-2xl text-astro-800">No festivals in this window</h2>
-      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
-        We don't have festival dates listed for the next six months yet. Our verified
-        calendar currently runs through {{ verified_through }}. In the meantime, check
-        today's tithi and muhurta on the <a href="/panchang" class="text-astro-700 underline underline-offset-2 hover:text-astro-900">daily Panchang</a>,
-        or read the festival guides in our <a href="/learn/" class="text-astro-700 underline underline-offset-2 hover:text-astro-900">Learning Hub</a>.
-      </p>
-    </div>
   </section>
   {% endif %}
 
