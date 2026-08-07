@@ -386,6 +386,12 @@ EXPECTED_SHARED_DATES: dict[str, tuple[str, tuple[str, ...], str]] = {
         "makar-sankranti", ("makar-sankranti", "pongal"),
         "same solar moment under two names; the pan-Indian name leads",
     ),
+    "2027-09-04": (
+        "ganesh-chaturthi", ("ganesh-chaturthi", "rishi-panchami"),
+        "Shukla Panchami begins at 12:30 IST, inside the same madhyahna that "
+        "Shukla Chaturthi still holds; Ganesh Chaturthi is pan-Indian and the "
+        "larger day by far, Rishi Panchami the vrat kept alongside it",
+    ),
     "2028-01-15": (
         "makar-sankranti", ("makar-sankranti", "pongal"),
         "same solar moment under two names; the pan-Indian name leads",

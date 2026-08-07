@@ -662,6 +662,51 @@ _DECLARED: tuple[Festival, ...] = (
         priority=20,
     ),
     # verified 2026-08-07 · Drik Panchang, New Delhi — year calendar page and monthly
+    # calendar page, both "Rishi Panchami", Bhadrapada Shukla Panchami. This is NOT
+    # Nag Panchami, which is Shravana Shukla Panchami a lunar month earlier and is a
+    # separate row above. Confirmed independently (pyswisseph) at the madhyahna
+    # window: Panchami holds midday on 2026-09-15 and 2028-08-24 outright, and in
+    # 2027 it begins at 12:30 IST on 4 Sep — inside that day's madhyahna (11:03 to
+    # 13:34) for 64 minutes, against only 15 minutes of madhyahna on 5 Sep before it
+    # ends at 11:20. Hence 4 Sep 2027, which is also Ganesh Chaturthi.
+    Festival(
+        slug="rishi-panchami",
+        name_en="Rishi Panchami",
+        name_hi="ऋषि पञ्चमी",
+        note_en="The Sapta Rishi vrat, kept two days after Ganesh Chaturthi — bathe, honour the seven sages, and eat only what the plough has not touched.",
+        note_hi="सप्तर्षि व्रत, गणेश चतुर्थी के दो दिन बाद — स्नान कर सप्त ऋषियों का पूजन करें और हल से न उपजा अन्न ही ग्रहण करें।",
+        dates={2026: "2026-09-15", 2027: "2027-09-04", 2028: "2028-08-24"},
+        rule="Bhadrapada Shukla Panchami",
+        observance_window="madhyahna",
+        significance=(
+            "Rishi Panchami falls on the fifth tithi of Bhadrapada's bright fortnight and "
+            "is given to the Sapta Rishi — Kashyapa, Atri, Bharadvaja, Vishvamitra, Gautama, "
+            "Jamadagni and Vasishtha — with Arundhati honoured alongside them. Note that it "
+            "is a different day from Nag Panchami, which is the Shravana Shukla Panchami a "
+            "lunar month earlier; the shared tithi number is the only thing the two have in "
+            "common. It is kept largely by women, classically as a prayaschitta vrat — an "
+            "act of purification for anything done inadvertently during the days of "
+            "menstruation, when the older codes set a woman apart from the household's "
+            "ritual work. Read plainly it is a day of gratitude to the rishis who carried "
+            "the knowledge, and its position two days after Ganesh Chaturthi puts it inside "
+            "the busiest week of the Bhadrapada calendar. In Nepal and among Nepali "
+            "communities it closes the Teej sequence that begins with Haritalika."
+        ),
+        observance=(
+            "The day opens with a ritual bath, traditionally using datiwan — the apamarga "
+            "twig — with earth, cowdung and til, taken at a river where one is within reach. "
+            "The Sapta Rishi are then worshipped at madhyahna on a clean square, with "
+            "arghya, dhoop, flowers and the Arundhati sahita Saptarishi mantra. The vrat's "
+            "distinguishing rule is the food: only what the plough has not turned, so no "
+            "grain sown with bullock or tractor — sama ke chawal, moraiyo, milk, fruit, "
+            "curd and vegetables that grow without tillage. One meal is taken, after the "
+            "puja, and the fast broken the same day."
+        ),
+        # Behind Ganesh Chaturthi on 2027-09-04, the year Shukla Chaturthi and
+        # Panchami both hold part of the same madhyahna.
+        priority=20,
+    ),
+    # verified 2026-08-07 · Drik Panchang, New Delhi — year calendar page and monthly
     # calendar page, both "Ganesh Visarjan / Anant Chaturdashi", Bhadrapada Shukla
     # Chaturdashi. Tithi confirmed independently (pyswisseph): Shukla Chaturdashi at
     # sunrise on all three dates.

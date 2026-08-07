@@ -162,6 +162,14 @@
       "note": "SHARES Ganesh Chaturthi's date in 2026 (both 14 September) — read twice, on two Drik pages, because it is a shared date. Falls the day before in 2027 and 2028.",
       "dates": {"2026": "2026-09-14", "2027": "2027-09-03", "2028": "2028-08-22"}
     },
+    "rishi-panchami": {
+      "name_en": "Rishi Panchami",
+      "rule": "Bhadrapada Shukla Panchami",
+      "observance_window": "madhyahna",
+      "tithi_based": true,
+      "note": "NOT Nag Panchami, which is Shravana Shukla Panchami a lunar month earlier and has its own row. Read off the Drik year calendar and the New Delhi monthly calendar, both printing 'Rishi Panchami' against Bhadrapada Shukla Panchami. In 2027 Panchami begins at 12:30 IST on 4 Sep, holding 64 minutes of that day's madhyahna against 15 minutes on 5 Sep, so it lands on Ganesh Chaturthi's date — a genuine shared date, recorded in Gate 5's table.",
+      "dates": {"2026": "2026-09-15", "2027": "2027-09-04", "2028": "2028-08-24"}
+    },
     "anant-chaturdashi": {
       "name_en": "Anant Chaturdashi",
       "rule": "Bhadrapada Shukla Chaturdashi",
@@ -311,6 +319,11 @@
       "a": "hartalika-teej", "b": "ganesh-chaturthi", "tithis": 1, "min_days": 0, "max_days": 1,
       "same_lunar_month": true,
       "why": "Bhadrapada Shukla Tritiya -> Bhadrapada Shukla Chaturthi, the next tithi. Hartalika is fixed at pratah/pradosh and Ganesh Chaturthi at madhyahna, so when the tithis run close the two land on the SAME Gregorian date — as they do in 2026. A gap of 0 is correct here, not a duplicate."
+    },
+    {
+      "a": "ganesh-chaturthi", "b": "rishi-panchami", "tithis": 1, "min_days": 0, "max_days": 1,
+      "same_lunar_month": true,
+      "why": "Bhadrapada Shukla Chaturthi -> Bhadrapada Shukla Panchami, the next tithi. Both are madhyahna-fixed, so when Panchami begins inside midday the two share a Gregorian date, as they do in 2027. A gap of 0 is correct here, not a duplicate."
     },
     {
       "a": "hartalika-teej", "b": "anant-chaturdashi", "tithis": 11, "min_days": 10, "max_days": 12,
