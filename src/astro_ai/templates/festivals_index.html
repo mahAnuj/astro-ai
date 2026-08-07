@@ -242,73 +242,138 @@
   {% endif %}
 
   {% if festivals %}
-  <section class="space-y-4">
+  <section class="space-y-3">
     <h2 class="font-display text-2xl text-astro-800">The next six months</h2>
 
-    {# Named festivals get the full card, exactly as before. Recurring lunar
-       days (Purnima / Amavasya / Ekadashi) are split out below so ~80 of them
-       a year cannot drown the ~20 festivals people actually came for. The
-       tier field may not exist yet — `default` keeps this correct either way. #}
+    {# Fragment navigation into a COLLAPSED card.
+       Every marked day in the calendar above is an <a href="#slug"> and every
+       card here is that slug's target, so a collapsed card must still answer
+       the tap. Three independent things make that hold, in order of how much
+       we trust them:
+
+       1. The id sits on the <details> itself and the <summary> carries the
+          name, date, weekday and days-away badge. So even in the worst case —
+          an engine that scrolls to the card and leaves it shut — the reader
+          lands on the festival they tapped, sees its date, and the card is
+          ringed by the :target rule below. Nothing is lost, it costs one tap.
+       2. Current engines run the HTML "ancestor details revealing" step on
+          fragment navigation and open the target themselves.
+       3. The CSS fallback below force-shows the panel of a :target card on
+          engines that don't. Both the modern (::details-content) and the
+          older (child display) shapes are covered; whichever the UA uses,
+          the other rule is an inert no-op.
+
+       This is why the card is <details> and not, say, a JS accordion: there is
+       no scenario here where the anchor stops resolving. #}
+    <style>
+      /* Belt and braces for (2) above — see the comment block in the template. */
+      details.festival-card:target > *:not(summary) { display: block; }
+      details.festival-card:target::details-content { content-visibility: visible; }
+      /* Landing mark: which card did that calendar day just send me to? */
+      details.festival-card:target { box-shadow: 0 0 0 2px #b45309; }
+      /* Same gap the reckoning block's scroll-mt-4 leaves, set once here
+         rather than as a utility repeated on all 24 cards. */
+      details.festival-card { scroll-margin-top: 1rem; }
+    </style>
+
+    {# Named festivals get the full card, exactly as before — but collapsed, so
+       24 of them at ~900px each cannot make this page 42 screens tall (#132).
+       Nothing is removed or shortened: significance, observance, the tithi rule
+       and the /learn link are all still server-rendered in the DOM, one tap
+       away, and still crawled. Only today's festival opens by default; there is
+       no viewport-conditional `open` in CSS or Tailwind, so rather than reach
+       for JS the page is collapsed on desktop too.
+
+       Recurring lunar days (Purnima / Amavasya / Ekadashi) are split out below
+       so ~80 of them a year cannot drown the ~20 festivals people actually came
+       for. The tier field may not exist yet — `default` keeps this correct
+       either way. #}
     {% for f in festivals %}{% if (f.tier | default("major", true)) != "recurring" %}
-    <article id="{{ f.slug }}"
-             class="bg-white rounded-xl p-5 sm:p-6 space-y-3 border {% if f.is_today %}border-astro-500{% else %}border-stone-200{% endif %}">
+    <details id="{{ f.slug }}"
+             class="festival-card group bg-white rounded-xl border {% if f.is_today %}border-astro-500{% else %}border-stone-200{% endif %}"
+             {% if f.is_today %}open{% endif %}>
 
-      <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 class="font-display text-xl text-astro-800">
-          {{ f.name_en }}{% if f.name_hi %}
-          <span lang="hi" class="font-normal text-base text-stone-600">{{ f.name_hi }}</span>{% endif %}
-        </h3>
-        <div class="text-sm text-stone-700">
-          <time datetime="{{ f.date_iso }}" class="font-semibold">{{ f.pretty_date }}</time>
-          <span class="text-stone-500">&middot;</span> {{ f.weekday }}
+      {# summary holds phrasing content plus ONE heading-content element, so the
+         h3 is wrapped in an <hgroup> with the date line as its <p>. That keeps
+         the festival name a real heading (this page is here to rank) without
+         putting a <div> inside a <summary>.
+
+         No <a> anywhere in here: the summary is itself the activation target,
+         and a link inside it would be both unreachable-by-click and, given the
+         calendar's own anchors, easy to turn into nested interactive content.
+         The /learn link lives in the panel. #}
+      {# No list-none / ::-webkit-details-marker utilities here: base.html already
+         strips the native marker from every summary site-wide, and repeating
+         those two classes 24 times on one page is ~1&nbsp;KB of nothing. #}
+      <summary class="flex cursor-pointer items-start gap-2.5 rounded-xl px-5 py-4 sm:px-6 hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-astro-700">
+        {# Text triangle rather than the repo's usual inline SVG chevron: this
+           marker is emitted 24 times on one page and the SVG costs ~6&nbsp;KB of
+           the byte budget #144 fought for. Same affordance, ~1/6th the weight. #}
+        <span class="mt-1.5 shrink-0 select-none text-xs text-stone-400 transition-transform group-open:rotate-90" aria-hidden="true">&#9656;</span>
+        <hgroup class="min-w-0 flex-1">
+          <h3 class="font-display text-xl text-astro-800">
+            {{ f.name_en }}{% if f.name_hi %}
+            <span lang="hi" class="font-normal text-base text-stone-600">{{ f.name_hi }}</span>{% endif %}
+          </h3>
+          <p class="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-stone-700">
+            <span>
+              <time datetime="{{ f.date_iso }}" class="font-semibold">{{ f.pretty_date }}</time>
+              <span class="text-stone-500">&middot;</span> {{ f.weekday }}
+            </span>
+            {% if f.is_today %}
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">Today</span>
+            {% elif f.days_away == 1 %}
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800">Tomorrow</span>
+            {% else %}
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-stone-100 text-stone-700">in {{ f.days_away }} days</span>
+            {% endif %}
+          </p>
+        </hgroup>
+      </summary>
+
+      <div class="space-y-3 border-t border-stone-100 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+
+        {% if f.rule or f.observance_window %}
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+          {% if f.rule %}
+          <span class="text-xs text-stone-600">{{ f.rule }}</span>
+          {% endif %}
+          {% if f.observance_window %}
+          <span class="text-xs text-stone-600">&middot; observance window: {{ f.observance_window }}</span>
+          {% endif %}
         </div>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2">
-        {% if f.is_today %}
-        <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">Today</span>
-        {% elif f.days_away == 1 %}
-        <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800">Tomorrow</span>
-        {% else %}
-        <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-stone-100 text-stone-700">in {{ f.days_away }} days</span>
         {% endif %}
-        {% if f.rule %}
-        <span class="text-xs text-stone-600">{{ f.rule }}</span>
+
+        {% if f.note_en %}
+        <p class="text-sm sm:text-base text-stone-800 leading-relaxed font-semibold">{{ f.note_en }}</p>
         {% endif %}
-        {% if f.observance_window %}
-        <span class="text-xs text-stone-600">&middot; observance window: {{ f.observance_window }}</span>
+
+        {% if f.significance %}
+        <div>
+          <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Significance</div>
+          <p class="text-sm sm:text-base text-stone-800 leading-relaxed">{{ f.significance }}</p>
+        </div>
         {% endif %}
+
+        {% if f.observance %}
+        <div>
+          <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">How it is observed</div>
+          <p class="text-sm sm:text-base text-stone-800 leading-relaxed">{{ f.observance }}</p>
+        </div>
+        {% endif %}
+
+        {# Only festivals that already have a /learn article get a link.
+           No article → render nothing at all, never a dead or stub link. #}
+        {% if f.learn_url %}
+        <p class="text-sm">
+          <a href="{{ f.learn_url }}" class="text-astro-700 font-semibold underline underline-offset-2 hover:text-astro-900">
+            Read the full guide{% if f.learn_title %}: {{ f.learn_title }}{% endif %} &rarr;
+          </a>
+        </p>
+        {% endif %}
+
       </div>
-
-      {% if f.note_en %}
-      <p class="text-sm sm:text-base text-stone-800 leading-relaxed font-semibold">{{ f.note_en }}</p>
-      {% endif %}
-
-      {% if f.significance %}
-      <div>
-        <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Significance</div>
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">{{ f.significance }}</p>
-      </div>
-      {% endif %}
-
-      {% if f.observance %}
-      <div>
-        <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">How it is observed</div>
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">{{ f.observance }}</p>
-      </div>
-      {% endif %}
-
-      {# Only festivals that already have a /learn article get a link.
-         No article → render nothing at all, never a dead or stub link. #}
-      {% if f.learn_url %}
-      <p class="text-sm">
-        <a href="{{ f.learn_url }}" class="text-astro-700 font-semibold underline underline-offset-2 hover:text-astro-900">
-          Read the full guide{% if f.learn_title %}: {{ f.learn_title }}{% endif %} &rarr;
-        </a>
-      </p>
-      {% endif %}
-
-    </article>
+    </details>
     {% endif %}{% endfor %}
   </section>
 
