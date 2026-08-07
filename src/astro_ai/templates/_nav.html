@@ -81,14 +81,20 @@
       {{ link("/kundli",   t(lang, 'nav_natal_link'),    'natal') }}
       {{ link("/matching", t(lang, 'nav_matching_link'), 'matching') }}
       {{ link("/rashifal", t(lang, 'nav_rashifal_link'), 'rashifal') }}
+      {{ link("/festivals", t(lang, 'nav_tool_festivals'), 'festivals') }}
       {{ link("/numerology", t(lang, 'nav_numerology_link'), 'numerology') }}
       {{ link("/ask",        t(lang, 'nav_ask_link'),        'ask') }}
       {{ link("/learn/",     t(lang, 'nav_learn_link'),      'learn') }}
 
       {# TOOLS dropdown — the free tools shipped in cycle 8. Numerology
          was promoted out of this dropdown to top-level nav (cycle 9) since
-         it draws a distinct audience (numerology-curious users). #}
-      {% set tools_pages = ['panchang','muhurat','festivals','manglik-check','sade-sati-check','kaal-sarp-check'] %}
+         it draws a distinct audience (numerology-curious users). Festival
+         Calendar was promoted the same way (issue #132): it is a
+         daily-return surface like Rashifal rather than a one-shot tool,
+         and a dropdown cost it both a click and its discoverability.
+         `festivals` stays out of tools_pages so the Tools trigger no
+         longer highlights on that page. #}
+      {% set tools_pages = ['panchang','muhurat','manglik-check','sade-sati-check','kaal-sarp-check'] %}
       {% set tools_active = active_page in tools_pages %}
       <div class="nav-dropdown md:relative" data-nav-dropdown>
         <button type="button"
@@ -107,7 +113,6 @@
                     pl-4 md:pl-0">
           {{ dlink("/panchang",        t(lang, 'nav_tool_panchang'),   'panchang') }}
           {{ dlink("/muhurat",         t(lang, 'nav_tool_muhurat'),    'muhurat') }}
-          {{ dlink("/festivals",       t(lang, 'nav_tool_festivals'),  'festivals') }}
           {{ dlink("/manglik-check",   t(lang, 'nav_tool_manglik'),    'manglik-check') }}
           {{ dlink("/sade-sati-check", t(lang, 'nav_tool_sade_sati'),  'sade-sati-check') }}
           {{ dlink("/kaal-sarp-check", t(lang, 'nav_tool_kaal_sarp'),  'kaal-sarp-check') }}
