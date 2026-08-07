@@ -42,9 +42,12 @@
       Upcoming Hindu Festivals
     </h1>
     {# Claim only what the registry actually holds: a fixed, hand-verified set
-       of festivals, not "every" festival. The count and the window are read
-       off the same rows rendered below, so the sentence cannot drift from the
-       page. (QA #1.) #}
+       of festivals, not "every" festival. The count is the named festivals
+       rendered below; the two dates are the window the calendar draws, so the
+       sentence spans exactly what is on screen rather than stopping at the
+       last festival while later months are still shown. It is a search range,
+       not a promise of one festival a month — a month with none says so on
+       its own block. (QA #1.) #}
     {% if festivals %}
     <p class="text-stone-600">
       The <strong>{{ festival_count | default(festivals | length) }}</strong> festivals in our
@@ -194,11 +197,27 @@
 
         {# The month's festivals spelled out. This is what makes the grid
            work on a touch screen, where there is no hover to reveal a
-           name, and it is the copy Google actually reads. #}
-        {% set ns = namespace(any=false) %}
-        {% for week in m.weeks %}{% for cell in week %}{% if cell and cell.festivals %}{% set ns.any = true %}{% endif %}{% endfor %}{% endfor %}
-        {% if ns.any %}
-        <ul class="mt-3 space-y-1 border-t border-stone-100 pt-3 text-xs">
+           name, and it is the copy Google actually reads.
+
+           A month can legitimately hold no named festival — December 2026
+           holds none — and the block is still drawn, because "nothing this
+           month" is an answer people come here for. `major` is tracked
+           separately from `any` so the note under such a month can say what
+           is true of it: the recurring lunar days are usually still there,
+           and the copy must not read "nothing" over a grid with marks on it. #}
+        {% set ns = namespace(any=false, major=false) %}
+        {% for week in m.weeks %}{% for cell in week %}{% if cell %}{% for f in cell.festivals %}{% set ns.any = true %}{% if (f.tier | default("major", true)) != "recurring" %}{% set ns.major = true %}{% endif %}{% endfor %}{% endif %}{% endfor %}{% endfor %}
+        {% if not ns.any %}
+        <p class="mt-3 border-t border-stone-100 pt-3 text-xs text-stone-500">
+          No festival or lunar observance falls in this month.
+        </p>
+        {% else %}
+        {% if not ns.major %}
+        <p class="mt-3 border-t border-stone-100 pt-3 text-xs text-stone-500">
+          No named festival this month &mdash; the recurring lunar days are listed below.
+        </p>
+        {% endif %}
+        <ul class="{% if ns.major %}mt-3 border-t border-stone-100 pt-3{% else %}mt-1{% endif %} space-y-1 text-xs">
           {% for week in m.weeks %}{% for cell in week %}{% if cell %}{% for f in cell.festivals %}
           <li>
             <a href="#{{ f.slug }}" class="flex gap-2 rounded hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-astro-700 {% if cell.is_past %}opacity-60{% endif %}">
