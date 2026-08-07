@@ -487,6 +487,16 @@ _DECLARED: tuple[Festival, ...] = (
     # verified 2026-08-07 · Drik Panchang, New Delhi — year calendar page and monthly
     # calendar page, both "Nag Panchami", Shravana Shukla Panchami. Tithi confirmed
     # independently (pyswisseph): Shukla Panchami at sunrise on all three dates.
+    #
+    # The Gujarat variant noted in `significance` is Drik's own: its Nag Panchami page
+    # gives a second "Nag Pancham date in Gujarat" — 2026-09-01, 2027-08-22 — with the
+    # text "In Gujarat Nag Panchami is observed 15 days later than that of most other
+    # states. According to new moon to new moon lunar calendar followed in Gujarat,
+    # Nag Panchami falls during Krishna Paksha Panchami of Shravana month." Confirmed
+    # independently (pyswisseph): 2027-08-22 is Krishna Panchami at sunrise. Drik
+    # prints it as the SAME festival on a regional date, not as a distinct observance,
+    # so it is stated here as a variation and deliberately does NOT get its own row —
+    # a second slug would duplicate this festival on the hub and in the emails.
     Festival(
         slug="nag-panchami",
         name_en="Nag Panchami",
@@ -505,7 +515,12 @@ _DECLARED: tuple[Festival, ...] = (
             "Kaal Sarp yoga and for Rahu-Ketu remedies, since the two nodes are the chhaya "
             "grahas classically figured as the head and tail of a serpent. In Braj the story "
             "kept is Krishna dancing on Kaliya, which the tradition reads as subduing rather "
-            "than destroying."
+            "than destroying. The date shown here is the Shravana Shukla Panchami kept "
+            "across most of the country. Gujarat follows the amanta reckoning and observes "
+            "Nag Pancham a fortnight later, on the Krishna Paksha Panchami of the same "
+            "Shravana month — the tithi the purnimanta calendars used elsewhere in this "
+            "hub name Bhadrapada Krishna Panchami. Both are the same festival on the "
+            "region's own day, and neither is the correction of the other."
         ),
         observance=(
             "Bathe early and offer milk, water, haldi, durva and lotus at an anthill, a Naga "

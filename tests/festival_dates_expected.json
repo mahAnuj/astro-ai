@@ -123,6 +123,7 @@
       "rule": "Shravana Shukla Panchami",
       "observance_window": "sunrise",
       "tithi_based": true,
+      "regional_variant": "Gujarat, on the amanta reckoning, keeps Nag Pancham a fortnight later on Shravana KRISHNA Panchami (purnimanta Bhadrapada Krishna Panchami) — Drik gives 2026-09-01 and 2027-08-22. That is the same festival on a regional date, so it is stated in the row's significance text and deliberately has no second slug; a duplicate row would double this festival on the hub and in the emails.",
       "dates": {"2026": "2026-08-17", "2027": "2027-08-06", "2028": "2028-07-26"}
     },
     "onam": {
