@@ -49,7 +49,17 @@
   .panchang-scroll::-webkit-scrollbar { display: none; width: 0; height: 0; }
 </style>
 <section class="border-b border-astro-200 bg-gradient-to-r from-astro-50 via-cream to-amber-50/40 no-print" aria-label="Today's Panchang">
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
+  {# max-w-7xl is load-bearing twice over — do not "harmonise" it down to
+     max-w-6xl. (a) It matches _nav.html:25 (max-w-7xl mx-auto px-4 sm:px-6),
+     the site header rendered immediately above this strip, so the two bands
+     line up. (b) The row's intrinsic width is ~1199px (7 items = 1175px of
+     content + the 24px pr-6 fade gutter). max-w-6xl leaves 1152 - 48 = 1104px
+     usable at EVERY viewport >= 1152px, so the row overflowed by 95px at
+     1280/1440/1920 alike and the fade mask sliced the "Full Panchang for
+     <city> →" CTA mid-word — permanently, since widening the window never
+     lifted the cap. max-w-7xl gives 1280 - 48 = 1232px, which fits the row
+     with headroom and keeps the CTA fully readable without a swipe. #}
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
     <div class="panchang-scroll overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0"
          role="group" aria-label="Today's Panchang summary" tabindex="0">
       <div class="flex items-center flex-nowrap w-max pr-6 divide-x divide-stone-300 text-xs sm:text-sm">
