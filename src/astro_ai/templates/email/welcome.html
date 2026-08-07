@@ -107,7 +107,21 @@
             </p>
           </td>
         </tr>
-        {% for glyph, title, body in rashifal_sections %}
+        {#- Sections are the same 4-tuples daily_rashifal.html consumes —
+            (glyph, title, teaser, body) — built once in main.py and shared by
+            both senders. Unpacking 3 here raised ValueError on every render
+            where the Rashifal actually generated, so the welcome email only
+            ever arrived when generation had FAILED (issue #145).
+
+            Mode split mirrors daily_rashifal.html for the same reason:
+              - DIGEST (all 12): teaser only + deep link. 12 full bodies on top
+                of the rest of this email overruns Gmail's ~102KB clip point,
+                which would cut the footer — and the unsubscribe link with it.
+              - SINGLE rashi: full body inline; the teaser is its opening
+                sentences, so showing both would just repeat them. -#}
+        {% set is_digest = rashifal_sections | length > 1 %}
+        {% for glyph, title, teaser, body in rashifal_sections %}
+        {% set rashi_slug = title.split('/')[0].strip().lower() %}
         <tr>
           <td style="padding:10px 28px 0 28px;">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;border-radius:6px;">
@@ -120,7 +134,17 @@
                     </tr>
                   </table>
                   <div style="font-size:14px;color:#44403c;line-height:1.55;margin-top:6px;">
-                    {{ body }}
+                    {{ teaser if is_digest else body }}
+                  </div>
+                  <div style="margin-top:10px;">
+                    <a href="{{ site_url }}/rashifal#{{ rashi_slug }}"
+                       style="font-size:13px;color:#6b21a8;font-weight:600;text-decoration:none;">
+                      {%- if is_digest %}
+                      {% if lang == 'hi' %}पूरा राशिफल पढ़ें{% else %}Read full reading{% endif %} &rarr;
+                      {%- else %}
+                      {% if lang == 'hi' %}Shubh Bhagya पर देखें{% else %}Read on Shubh Bhagya{% endif %} &rarr;
+                      {%- endif %}
+                    </a>
                   </div>
                 </td>
               </tr>
