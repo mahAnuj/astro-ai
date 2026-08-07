@@ -4,12 +4,18 @@
 {% block meta_description %}Free Vedic astrology online — Janma Kundli, daily Rashifal for all 12 rashis, today's Panchang, Numerology (Vedic + Chaldean with per-planet remedies), Vivah Muhurat + 4 other event dates, Kundli Matching, plus 3 free personal questions about your chart every day. Sidereal Lahiri, Swiss Ephemeris, no signup.{% endblock %}
 
 {% block content %}
-{# Panchang strip — always-on top-of-homepage masthead per user request.
+{% set active_page = "home" %}
+{% include "_nav.html" %}
+{# Panchang strip — the first thing under the site header on the homepage.
+   It was originally included ABOVE _nav.html ("top-of-homepage masthead"),
+   which pushed the logo and navigation off the top of the page and made the
+   homepage the only route whose header was not the first thing on screen.
+   The intent was prominence, not displacing the header, so it now sits
+   directly beneath the nav — still the first content a visitor sees.
+   Do not move it back above _nav.html.
    Cached daily (see _homepage_panchang_cached in main.py) so this
    costs nothing on repeat homepage loads. #}
 {% include "_panchang_strip.html" %}
-{% set active_page = "home" %}
-{% include "_nav.html" %}
 
 {# If the seeker arrived here because they clicked a feature without a saved chart, name what they were trying to reach. #}
 {% if needs_chart_for %}
