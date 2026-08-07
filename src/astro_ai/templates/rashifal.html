@@ -1,5 +1,14 @@
 {% extends "base.html" %}
 
+{# HOUSEKEEPING — this template is currently UNREFERENCED by any route.
+   /rashifal renders rashifal_grid.html and /rashifal/{rashi} renders
+   rashifal_single.html + _rashifal_card_content.html; nothing in the Python
+   or in any other template loads this file. It is kept (not deleted) as a
+   deliberate human decision, and the site-wide "no content auto-scrolls"
+   rule is still applied here so the rule stays grep-enforceable across the
+   whole template tree — a stray horizontal-scroll utility class here would
+   otherwise read as a live violation to anyone grepping for one. #}
+
 {% block title %}{{ t(lang, 'rashifal_title') }} — {{ today_pretty }} · All 12 Signs Free · Shubh Bhagya{% endblock %}
 {% block meta_description %}{% if lang == 'hi' %}आज का राशिफल — {{ today_pretty }}। मेष, वृषभ, मिथुन, कर्क, सिंह, कन्या, तुला, वृश्चिक, धनु, मकर, कुंभ, मीन — सभी 12 राशियों के लिए मुफ्त दैनिक भविष्यवाणी।{% else %}Today's Rashifal for {{ today_pretty }} — all 12 rashis (Mesh, Vrishabh, Mithun, Karka, Simha, Kanya, Tula, Vrishchik, Dhanu, Makar, Kumbh, Meena). Generated fresh daily. Free, no signup.{% endif %}{% endblock %}
 
@@ -70,13 +79,19 @@
     </p>
   </header>
 
-  <!-- JUMP TO STRIP — quick navigation to any rashi card. Horizontal scroll
-       on mobile so all 12 are reachable in one swipe. -->
+  <!-- JUMP TO STRIP — quick navigation to any rashi card. The strip WRAPS,
+       it never scrolls horizontally (site-wide rule: no content auto-scrolls).
+       All 12 pills stay reachable without a swipe: 4 rows at 320px, 3 rows at
+       375–414px, 2 rows at 768px, 1 row at >=1024px. The widest pill
+       ("Sagittarius", ~75px) fits the narrowest viewport, so nothing is ever
+       clipped. Separation is gap-only — there is deliberately no separator
+       glyph between pills, so no character can strand at the start of a
+       wrapped row. -->
   <nav aria-label="Jump to rashi" class="bg-white rounded-2xl border border-stone-200 p-3 sm:p-4">
     <div class="text-[11px] font-semibold uppercase tracking-wider text-stone-600 mb-2 px-1">
       {% if lang == 'hi' %}अपनी राशि चुनें{% else %}Jump to your rashi{% endif %}
     </div>
-    <div class="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+    <div class="flex flex-wrap gap-1.5">
       {% for glyph, title, teaser, body in sections %}
       <a href="#{{ slug(title) }}"
          class="flex flex-col items-center gap-0.5 px-3 py-2 rounded-lg
