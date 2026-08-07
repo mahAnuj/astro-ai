@@ -178,6 +178,14 @@
       "note": "Drik prints it together with Ganesh Visarjan, which closes the ten-day utsav on the same tithi.",
       "dates": {"2026": "2026-09-25", "2027": "2027-09-14", "2028": "2028-09-02"}
     },
+    "pitru-paksha": {
+      "name_en": "Pitru Paksha (begins)",
+      "rule": "Ashwina Krishna Pratipada (purnimanta), the tithi that opens the shraddha fortnight",
+      "observance_window": "aparahna (kutup muhurat)",
+      "tithi_based": true,
+      "note": "START DATE ONLY — the registry has one date per year and no duration concept, so this follows the navratri precedent ('Navratri (begins)'). Read off the Drik year calendar and the New Delhi monthly calendar, both printing 'Pitrupaksha Begins' against Ashwina Krishna Pratipada. The fortnight closes on Sarva Pitru Amavasya, which is the separate mahalaya-amavasya row 13-14 days later.",
+      "dates": {"2026": "2026-09-27", "2027": "2027-09-16", "2028": "2028-09-04"}
+    },
     "mahalaya-amavasya": {
       "name_en": "Mahalaya Amavasya (Sarva Pitru)",
       "rule": "Ashwina Krishna Amavasya (purnimanta), closing Pitru Paksha",
@@ -329,6 +337,16 @@
       "a": "hartalika-teej", "b": "anant-chaturdashi", "tithis": 11, "min_days": 10, "max_days": 12,
       "same_lunar_month": true,
       "why": "Bhadrapada Shukla Tritiya -> Bhadrapada Shukla Chaturdashi, 11 tithis in the same bright fortnight."
+    },
+    {
+      "a": "anant-chaturdashi", "b": "pitru-paksha", "tithis": 2, "min_days": 1, "max_days": 3,
+      "same_lunar_month": false,
+      "why": "Bhadrapada Shukla Chaturdashi -> Ashwina Krishna Pratipada (purnimanta): 1 tithi to the full moon, then 1. Pitru Paksha opens two days after Anant Chaturdashi in all three shipped years."
+    },
+    {
+      "a": "pitru-paksha", "b": "mahalaya-amavasya", "tithis": 14, "min_days": 12, "max_days": 15,
+      "same_lunar_month": true,
+      "why": "Ashwina Krishna Pratipada -> Ashwina Krishna Amavasya, the 14 tithis of the shraddha fortnight. This pair is the start and end of the same period, so a gap outside this band means one of the two rows is on the wrong day."
     },
     {
       "a": "anant-chaturdashi", "b": "mahalaya-amavasya", "tithis": 16, "min_days": 13, "max_days": 18,

@@ -88,7 +88,13 @@ class Festival:
 
     Convention: 10 = the pan-Indian festival that must lead a shared date,
     20 = the regional or secondary observance that shares it, 100 = default,
-    for the great majority of rows that share nothing and never contend.
+    for the great majority of rows that share nothing and never contend, and
+    200 = a row that marks the START OF A PERIOD rather than a day in its own
+    right (`pitru-paksha`). A period marker must never outrank a named
+    single-day observance it happens to land beside, so it sits below the
+    default deliberately rather than tying with it — a tie at 100 would be
+    resolved by authored position again, which is the thing `priority` exists
+    to stop.
     """
 
     slug: str
@@ -738,6 +744,65 @@ _DECLARED: tuple[Festival, ...] = (
             "kept, the same afternoon is the visarjan procession, the murti carried to water "
             "with Ganpati Bappa Morya, pudhchya varshi lavkar ya — come back soon next year."
         ),
+    ),
+    # verified 2026-08-07 · Drik Panchang, New Delhi — year calendar page and monthly
+    # calendar page, both "Pitrupaksha Begins", printed as Ashwina Krishna Pratipada
+    # (purnimanta). Tithi confirmed independently (pyswisseph): Krishna Pratipada at
+    # both sunrise and aparahna on all three dates.
+    #
+    # ONE ROW, THE START DATE ONLY — deliberate, decided at dev-lead level; do not
+    # "fix" this into a duration. `Festival.dates` holds one date per year and there
+    # is no duration concept in this module. Pitru Paksha runs sixteen days and
+    # crosses a Gregorian month boundary (late September into October in 2026), so a
+    # shaded multi-day band would have to render across two separate blocks of
+    # `month_grid` — materially harder than it looks, and the grid renderer only just
+    # stabilised. This follows the `navratri` precedent exactly, whose `name_en` is
+    # likewise "Navratri (begins)". A duration model is worth doing as a follow-up,
+    # together with migrating Navratri so the two do not diverge.
+    Festival(
+        slug="pitru-paksha",
+        name_en="Pitru Paksha (begins)",
+        name_hi="पितृ पक्ष (आरम्भ)",
+        note_en="The sixteen days of shraddha begin — offer tarpan to the ancestors on the tithi each of them died. No new beginnings until it closes.",
+        note_hi="सोलह दिवसीय श्राद्ध पक्ष आरम्भ — पितरों को उनकी तिथि पर तर्पण करें। इस अवधि में नया शुभ कार्य नहीं।",
+        dates={2026: "2026-09-27", 2027: "2027-09-16", 2028: "2028-09-04"},
+        # `rule` names this row's own tithi and nothing else. It deliberately does
+        # not spell out the full-moon day it follows: Gate B of
+        # verify_lunar_observances.py classifies a row by looking for the literal
+        # "Purnima" or "Amavasya" in this string, so naming the neighbouring
+        # Bhadrapada full moon here would make the gate demand this row sit ON that
+        # full moon. The relationship is described in `significance` instead.
+        rule="Ashwina Krishna Pratipada (purnimanta), the tithi that opens the shraddha fortnight",
+        observance_window="aparahna (kutup muhurat)",
+        significance=(
+            "Pitru Paksha is the fortnight the tradition gives back to the dead — sixteen "
+            "days from the tithi after Bhadrapada Purnima to the Ashwina Amavasya that "
+            "closes it. The almanac marks the opening on Ashwina Krishna Pratipada; the "
+            "Purnima immediately before it carries its own Purnima Shraddha, which is why "
+            "the period is often described as beginning a day earlier than the calendar "
+            "prints it. Each ancestor's rites are performed on the tithi corresponding to "
+            "the day they died, so within the fortnight a household's own dates matter more "
+            "than the fortnight's. The classical view is that the pitrs are near during "
+            "these days and that what is offered reaches them, which is why the tone is "
+            "obligation and remembrance rather than mourning. The last day, Sarva Pitru "
+            "Amavasya, gathers everyone left out — it has its own entry here. Note that "
+            "this hub marks the start date only; the observance runs the full fortnight."
+        ),
+        observance=(
+            "Tarpan with water, black sesame and kusha grass is offered facing south, in "
+            "the aparahna hours — the kutup muhurat around midday is the classical window — "
+            "on the tithi belonging to each ancestor. Pind daan of rice follows where the "
+            "family keeps it. Portions are set aside for the crow, the cow, the dog and the "
+            "fire before the household eats, and a brahmana or a guest is fed and given "
+            "cloth. Through the fortnight the customary restraint holds: no marriage, no "
+            "griha pravesh, no new vehicle or major purchase, no new venture begun. Onion, "
+            "garlic and non-vegetarian food are set aside; hair and nails are left uncut. "
+            "None of this is mourning — it is a debt being paid on time."
+        ),
+        # A period marker, not a day. It must never outrank a named single-day
+        # observance it lands beside, and in particular must not displace
+        # Sarva Pitru Amavasya, the fortnight's own closing day.
+        priority=200,
     ),
     # verified 2026-08-07 · Drik Panchang, New Delhi — year calendar page and monthly
     # calendar page, both "Sarva Pitru Amavasya", printed as Ashwina Krishna Amavasya
