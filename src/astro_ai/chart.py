@@ -2735,15 +2735,19 @@ def _sunrise_sunset(
 
 
 def _jd_to_utc_datetime(jd: float) -> datetime:
-    """Inverse of swe.julday — convert a Julian Day number to a tz-aware UTC datetime."""
+    """Inverse of swe.julday — convert a Julian Day number to a tz-aware UTC datetime.
+
+    Do NOT rewrite this component-wise (hours/minutes/seconds built separately). The
+    previous version did, and carried a rounded 60th second up into minutes but never a
+    60th minute up into hours — so any JD landing within half a second of a minute
+    boundary raised `ValueError: minute must be in 0..59`. That silently emptied
+    `lunar_observances` for 14 years between 2000 and 2100 (2035 among them) and made
+    `adhik_maas` miss the real Adhik Jyeshtha of 2007. Adding one datetime to a timedelta
+    carries seconds -> minutes -> hours -> days -> months -> years for free. Issue #147.
+    """
     y, m, d, hour_frac = swe.revjul(jd)
-    hours = int(hour_frac)
-    minutes = int((hour_frac - hours) * 60)
-    seconds = int(round(((hour_frac - hours) * 60 - minutes) * 60))
-    if seconds >= 60:
-        minutes += 1
-        seconds = 0
-    return datetime(int(y), int(m), int(d), hours, minutes, seconds, tzinfo=ZoneInfo("UTC"))
+    base = datetime(int(y), int(m), int(d), tzinfo=ZoneInfo("UTC"))
+    return base + timedelta(seconds=round(hour_frac * 3600))
 
 
 # ---------------------------------------------------------------------------
