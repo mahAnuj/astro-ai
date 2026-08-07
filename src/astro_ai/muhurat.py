@@ -26,6 +26,7 @@ from datetime import date, timedelta, datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from astro_ai.adhik_maas import adhik_maas_flag
 from astro_ai.chart import (
     Chart, compute_chart, compute_panchang, compute_transit_snapshot,
     compute_sade_sati_details, compute_dasha_state,
@@ -170,26 +171,26 @@ _ABUJHA_MUHURATS: dict[int, list[tuple[date, str, tuple[str, ...]]]] = {
 
 # ─── Per-event classical rule tables ──────────────────────────────────
 # ─── Adhik Maas (intercalary lunar month) — absolute blocker ─────────
-# Vedic lunisolar calendar adds an extra month every ~3 years to align
-# with the solar year. Adhik Maas = "extra month" = Malamas ("polluted
-# month"). No shubh karya during this window. Dates hardcoded from Drik
-# Panchang. Update annually. Applies to ALL events.
-_ADHIK_MAAS_RANGES: dict[int, list[tuple[date, date, str]]] = {
-    2026: [],  # No Adhik Maas
-    2027: [],  # No Adhik Maas
-    2028: [(date(2028, 5, 15), date(2028, 6, 13), "Adhik Jyeshtha")],
-    2029: [],
-    2030: [],
-    2031: [(date(2031, 8, 3),  date(2031, 9, 1),  "Adhik Bhadrapada")],
-}
+# The Vedic lunisolar calendar inserts an extra month roughly every 3 years
+# to keep the lunar year aligned with the solar one. Adhik Maas = "extra
+# month" = Malamas, the "polluted month": no shubh karya inside it. It is an
+# absolute blocker and applies to ALL events.
+#
+# Windows are COMPUTED from the ephemeris — see `astro_ai.adhik_maas`, which
+# flags any amanta lunar month containing no solar sankranti. The gate over it
+# is `scripts/verify_adhik_maas.py`; run that after any change here.
+#
+# WHY THIS IS NO LONGER A TABLE: a hand-typed year-to-windows dict used to sit
+# here, and its 2028 row was the real 2026 window with the year mistyped (same
+# month name, near-identical range). In production that suppressed every valid
+# muhurat in May-June 2028 as malamas, while the genuine Adhik Chaitra of
+# March-April 2029 raised no warning at all. A table with no computation over
+# it has nothing to disagree with — do not reintroduce one.
 
 
 def _adhik_maas_flag(d: date) -> tuple[bool, str]:
     """Return (is_adhik, name) if d falls within an Adhik Maas window."""
-    for start, end, name in _ADHIK_MAAS_RANGES.get(d.year, []):
-        if start <= d <= end:
-            return True, f"Adhik Maas ({name}) — no shubh karya during intercalary month"
-    return False, ""
+    return adhik_maas_flag(d)
 
 
 # ─── Amrit Siddhi Yoga — universal-auspicious BOOSTERS ───────────────
