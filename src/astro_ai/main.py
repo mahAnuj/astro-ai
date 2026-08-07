@@ -975,6 +975,11 @@ async def festivals_page(request: Request) -> HTMLResponse:
     lang = _lang(request)
     today = date.today()
     today_iso = today.isoformat()
+    # One window for the whole page: the cards, the grid and the lunar
+    # observances below are all cut to [today, _window_end], which ends on the
+    # last day of the sixth month ahead. Read it once here rather than letting
+    # each consumer recompute it.
+    _window_end = _fest_reg.window_end(today)
     entries = _fest_reg.upcoming(today)
 
     festivals_ctx: list[dict] = []
@@ -1032,13 +1037,20 @@ async def festivals_page(request: Request) -> HTMLResponse:
                 for _fx in _cell["festivals"]:
                     _fx["tier"] = _tier_by_slug.get(_fx["slug"], "major")
 
-    # The header sentence counts the *named* festivals and spans their dates.
-    # Both are read before the computed lunar days are merged in below, so
-    # adding ~25 Purnimas and Ekadashis cannot inflate "the N festivals in our
-    # verified calendar" — those are computed, not hand-verified.
+    # The header sentence counts the *named* festivals. The count is read here,
+    # before the computed lunar days are merged in below, so adding ~28
+    # Purnimas and Ekadashis cannot inflate "the N festivals in our verified
+    # calendar" — those are computed, not hand-verified.
+    #
+    # The dates it spans are the WINDOW's, not the first and last festival's.
+    # The window is what the calendar above draws and what every mark on it was
+    # selected by; quoting the festival dates instead made the header claim a
+    # narrower span than the page rendered (it stopped at 15 January while
+    # February was on screen). It states a search range, not coverage — some
+    # months inside it carry no named festival, and the grid says so.
     festival_count = len(festivals_ctx)
-    first_iso = festivals_ctx[0]["date_iso"] if festivals_ctx else today_iso
-    last_iso = festivals_ctx[-1]["date_iso"] if festivals_ctx else today_iso
+    first_iso = today_iso
+    last_iso = _window_end.isoformat()
 
     # Computed monthly lunar days (Purnima / Amavasya / Ekadashi) merged into
     # the same two structures the named festivals use: one row in the card list
@@ -1047,9 +1059,9 @@ async def festivals_page(request: Request) -> HTMLResponse:
     # target. The whole thing is guarded — an ephemeris failure must degrade
     # this page to festivals-only, never to a 500.
     #
-    # Window is [today, today + 6 months], the same one `upcoming()` and
-    # `month_grid()` use, so the trailing partial month is not marked with
-    # lunar days that no festival row could ever match.
+    # Window is `_window_end`, the same one `upcoming()` and `month_grid()`
+    # use, so the final month is marked to its end rather than trailing off
+    # mid-month a few days into a block the grid has already drawn whole.
     try:
         from astro_ai.lunar_observances import observances_between as _obs_between
 
@@ -1060,7 +1072,7 @@ async def festivals_page(request: Request) -> HTMLResponse:
             for _cell in _week
             if _cell and not _cell["is_past"]
         }
-        for _obs_date, _obs in _obs_between(today, _fest_reg._add_months(today, 6)):
+        for _obs_date, _obs in _obs_between(today, _window_end):
             _cell = _cells_by_iso.get(_obs_date.isoformat())
             if _cell is None:
                 continue

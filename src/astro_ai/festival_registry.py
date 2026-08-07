@@ -1095,8 +1095,28 @@ def _add_months(d: date, months: int) -> date:
     return date(year, month, min(d.day, last_day))
 
 
+def window_end(today: date, months: int = 6) -> date:
+    """Last day of the /festivals window — the END OF the final month.
+
+    The window has to end on a month boundary because `month_grid()` renders
+    whole months. A day-precise end (2026-08-07 + 6 → 2027-02-07) makes the
+    final block a month the entry window can only partly fill: February 2027
+    rendered with marks in its first week only, and Vasant Panchami on
+    2027-02-11 — four days past the edge — fell out of the page entirely while
+    its month was still drawn. Rounding up to 2027-02-28 makes the rendered
+    span and the entry window the same thing.
+
+    Everything that draws this window must go through here — the card list,
+    the grid, and the lunar observance range in the /festivals route — so the
+    three cannot disagree about where the page ends. That is also why this is
+    public and `_add_months` is not.
+    """
+    end = _add_months(today, months)
+    return date(end.year, end.month, calendar.monthrange(end.year, end.month)[1])
+
+
 def upcoming(today: date, months: int = 6) -> list[tuple[date, Festival]]:
-    """Every (date, festival) falling in [today, today + `months` months].
+    """Every (date, festival) falling in [today, end of the `months`th month].
 
     Sorted ascending by date, then by `priority`, so a shared date leads with
     the same festival here as `festivals.festival_for_date()` returns for the
@@ -1110,7 +1130,7 @@ def upcoming(today: date, months: int = 6) -> list[tuple[date, Festival]]:
     skips any unparseable ISO string rather than raising — the hub should
     degrade to a shorter list, never to a 500.
     """
-    end = _add_months(today, months)
+    end = window_end(today, months)
     out: list[tuple[date, Festival]] = []
     for fest in FESTIVALS:
         for year in DATA_YEARS:
@@ -1134,9 +1154,12 @@ def month_grid(
 ) -> list[dict]:
     """Month-by-month calendar scaffolding for the /festivals hub.
 
-    Covers every calendar month touched by [today, today + `months` months] —
-    so a 6-month window normally yields 7 blocks, the first and last of them
-    partly outside the window.
+    Covers every calendar month from `today`'s to the one `window_end()`
+    closes — a 6-month window yields 7 blocks, only the first of them partly
+    outside the window (the days before `today`). The last block is whole,
+    because the window is rounded up to its final day; a block that is drawn
+    whole but only fillable in part is how February 2027 came to render as a
+    near-empty grid.
 
     Built from `entries` (default: `upcoming(today, months)`) rather than from
     FESTIVALS directly, so the calendar and the card list below it are driven
@@ -1169,7 +1192,7 @@ def month_grid(
             "tier": fest.tier,
         })
 
-    end = _add_months(today, months)
+    end = window_end(today, months)
     cal = calendar.Calendar(firstweekday=6)  # 6 = Sunday
     out: list[dict] = []
     year, month = today.year, today.month
