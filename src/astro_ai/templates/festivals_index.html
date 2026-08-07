@@ -147,18 +147,22 @@
                  via the per-month list below. #}
               {% set c = namespace(major=false) %}
               {% for fx in cell.festivals %}{% if (fx.tier | default("major", true)) != "recurring" %}{% set c.major = true %}{% endif %}{% endfor %}
+              {#- Class list is written with `{%-` trim markers rather than as free
+                 multi-line text: this attribute is emitted once per marked day and
+                 the source indentation between class tokens was shipping ~150 bytes
+                 of nothing per cell. Each conditional branch carries its own leading
+                 space so the tokens still separate. (#144 page weight.)
+
+                 Named festival: filled, bold, thick solid underline. Recurring lunar
+                 day: no fill, normal weight, thin dotted underline — so ~80 Ekadashis
+                 a year cannot visually bury ~20 real festivals. -#}
               <a href="#{{ cell.festivals[0].slug }}"
                  title="{{ cell.festivals | map(attribute='name_en') | join(' · ') }}"
                  aria-label="{{ cell.festivals | map(attribute='name_en') | join(', ') }}, {{ cell.day }} {{ m.label }}{% if cell.is_today %} (today){% endif %} — see details"
-                 class="group relative flex min-h-[2.75rem] flex-col items-center justify-center rounded-md
-                        underline underline-offset-2 hover:bg-astro-100
-                        focus:outline-none focus-visible:ring-2 focus-visible:ring-astro-700
-                        {# Named festival: filled, bold, thick solid underline. Recurring
-                           lunar day: no fill, normal weight, thin dotted underline — so
-                           ~80 Ekadashis a year cannot visually bury ~20 real festivals. #}
-                        {% if c.major %}font-bold text-astro-900 bg-astro-50 decoration-2 decoration-astro-500{% else %}font-normal text-stone-700 decoration-dotted decoration-stone-400{% endif %}
-                        {% if cell.is_today %}ring-2 ring-emerald-600{% elif c.major %}ring-1 ring-astro-500{% endif %}
-                        {% if cell.is_past %}opacity-50{% endif %}">
+                 class="group relative flex min-h-[2.75rem] flex-col items-center justify-center rounded-md underline underline-offset-2 hover:bg-astro-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-astro-700
+                        {%- if c.major %} font-bold text-astro-900 bg-astro-50 decoration-2 decoration-astro-500{% else %} font-normal text-stone-700 decoration-dotted decoration-stone-400{% endif %}
+                        {%- if cell.is_today %} ring-2 ring-emerald-600{% elif c.major %} ring-1 ring-astro-500{% endif %}
+                        {%- if cell.is_past %} opacity-50{% endif %}">
                 <span>{{ cell.day }}</span>
                 {# Shape cue, not colour alone (WCAG 1.4.1) — one mark per
                    entry, so a day that is both a festival and a Purnima shows
@@ -173,10 +177,8 @@
                    keyboard focus as well as hover; column-aware alignment keeps
                    the bubble inside the month card so it can never push the
                    375px layout sideways. #}
-                <span class="pointer-events-none absolute bottom-full z-20 mb-1 hidden w-max max-w-[9rem]
-                             rounded-md bg-stone-900 px-2 py-1 text-[11px] font-normal normal-case leading-snug
-                             text-white shadow-lg group-hover:block group-focus:block
-                             {% if loop.index0 <= 1 %}left-0{% elif loop.index0 >= 5 %}right-0{% else %}left-1/2 -translate-x-1/2{% endif %}">
+                <span class="pointer-events-none absolute bottom-full z-20 mb-1 hidden w-max max-w-[9rem] rounded-md bg-stone-900 px-2 py-1 text-[11px] font-normal normal-case leading-snug text-white shadow-lg group-hover:block group-focus:block
+                             {%- if loop.index0 <= 1 %} left-0{% elif loop.index0 >= 5 %} right-0{% else %} left-1/2 -translate-x-1/2{% endif %}">
                   {{ cell.festivals | map(attribute='name_en') | join(' · ') }}
                 </span>
               </a>
