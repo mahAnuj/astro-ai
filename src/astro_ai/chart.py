@@ -492,6 +492,15 @@ class VedicFlags:
     # but often confused with it. Per knowledge/vedic_reference.md §2.5:
     ashtama_shani: bool = False        # Saturn in 8th from natal Moon (~2.5y)
     kantaka_shani: bool = False        # Saturn in 4th from natal Moon (~2.5y)
+    # THE carrier of everything Manglik. `manglik` and `manglik_reasons` above
+    # are convenience projections of this object, never independently computed:
+    #     manglik         == manglik_details.is_manglik
+    #     manglik_reasons == manglik_details.axis_reasons
+    # There is deliberately no `manglik_status` field — the status lives on
+    # `manglik_details.effective_status` and nowhere else, because a third copy
+    # of the same fact is exactly what issues #176/#165/#166 were about.
+    # scripts/verify_manglik_coherence.py enforces the invariants above.
+    manglik_details: "ManglikDetails | None" = None
 
 
 def compute_vedic_flags(natal: Chart, when: datetime | None = None) -> VedicFlags:
@@ -504,21 +513,16 @@ def compute_vedic_flags(natal: Chart, when: datetime | None = None) -> VedicFlag
         moment.hour + moment.minute / 60 + moment.second / 3600,
     )
 
-    mars = next(p for p in natal.planets if p.name == "Mars")
     moon = next(p for p in natal.planets if p.name == "Moon")
     moon_idx = _rashi_index(moon.rashi)
-    mars_idx = _rashi_index(mars.rashi)
 
-    # MANGAL DOSH — Mars in house 1, 2, 4, 7, 8, or 12 from Lagna OR Moon.
-    # Some traditions exclude 2nd; we include for the broadest definition.
-    # Cancellations (Mars in own/exalted sign, Jupiter aspect, etc.) are not
-    # yet computed — flag this in the LLM prompt so it adds the usual caveat.
-    manglik_reasons: list[str] = []
-    if mars.house in {1, 2, 4, 7, 8, 12}:
-        manglik_reasons.append(f"Mars in {_ordinal(mars.house)} house from Lagna")
-    mars_from_moon = ((mars_idx - moon_idx) % 12) + 1
-    if mars_from_moon in {1, 2, 4, 7, 8, 12}:
-        manglik_reasons.append(f"Mars in {_ordinal(mars_from_moon)} house from Moon")
+    # MANGAL DOSH — delegated wholesale to compute_manglik_details(), which is
+    # the only Manglik engine in this codebase. It checks all three classical
+    # axes (Lagna, Moon, Venus per §1.1) and applies the cancellation catalogue
+    # (§1.3); the inline two-axis, no-cancellation version that used to live
+    # here disagreed with it on 12.5% of charts and told seekers a different
+    # answer in the reading than /manglik-check showed them.
+    details = compute_manglik_details(natal)
 
     # SADE SATI — Saturn currently transiting 12th, 1st, or 2nd house from natal Moon.
     saturn_pos, _ = swe.calc_ut(julian_day, swe.SATURN, swe.FLG_SIDEREAL)
@@ -533,8 +537,9 @@ def compute_vedic_flags(natal: Chart, when: datetime | None = None) -> VedicFlag
         sade_sati_phase = "setting"
 
     return VedicFlags(
-        manglik=bool(manglik_reasons),
-        manglik_reasons=tuple(manglik_reasons),
+        manglik=details.is_manglik,
+        manglik_reasons=details.axis_reasons,
+        manglik_details=details,
         sade_sati=sade_sati_phase is not None,
         sade_sati_phase=sade_sati_phase,
         saturn_house_from_natal_moon=saturn_house_from_moon,
@@ -547,14 +552,87 @@ def compute_vedic_flags(natal: Chart, when: datetime | None = None) -> VedicFlag
     )
 
 
+# The one and only way a prompt is allowed to state a Manglik verdict.
+# EXACTLY ONE line in any assembled user message may start with this prefix —
+# format_flags_for_prompt() emits it, and nothing else may. In particular
+# format_manglik_for_prompt() supplies evidence and phrasing guidance only, and
+# asserts nothing. scripts/verify_manglik_coherence.py counts occurrences of
+# this prefix per assembled message and fails on anything other than one.
+MANGLIK_ASSERTION_PREFIX = "- Manglik (Mangal Dosh):"
+
+
 def format_flags_for_prompt(flags: VedicFlags) -> str:
-    """Plain-English flag block appended to the LLM user message."""
+    """Plain-English flag block appended to the LLM user message.
+
+    Carries the single Manglik assertion for the whole prompt — see
+    MANGLIK_ASSERTION_PREFIX. Wordings per knowledge/vedic_reference.md §1.4's
+    three rungs (cancelled / mitigated / present), which also ban the
+    colloquial "Angshik Manglik" label (§1.2, §1.3 F).
+    """
     lines = ["Vedic flags (deterministic, do not contradict):"]
-    if flags.manglik:
-        reasons = "; ".join(flags.manglik_reasons)
-        lines.append(f"- Manglik (Mangal Dosh): YES — {reasons}. Address this in the Relationships section.")
+    details = flags.manglik_details
+    # A hand-built VedicFlags may carry no details (the field is defaulted);
+    # treat that as "nothing to assert" rather than crashing a prompt.
+    status = details.effective_status if details is not None else "none"
+    axes = "; ".join(flags.manglik_reasons)
+    if status == "cancelled":
+        rules = "; ".join(
+            r.description for r in details.cancellations if r.effect == "cancels"
+        )
+        # compute_manglik_details only reaches "cancelled" when a §1.3 rule with
+        # effect="cancels" fired, so `rules` is non-empty on every computed chart.
+        # A hand-built ManglikDetails could break that, and "Cancelled by: ." is
+        # worse than no clause at all — so never emit the clause without content.
+        cause = (
+            f"Cancelled by: {rules}. " if rules
+            else "No specific cancellation reason is recorded for this chart. "
+        )
+        lines.append(
+            f"{MANGLIK_ASSERTION_PREFIX} PRESENT BUT CANCELLED — {axes}. "
+            f"{cause}Say the dosha is technically present but cancelled, "
+            "and that it should not be treated as an obstacle to marriage. Never call this "
+            'chart Manglik without the word "cancelled" in the same sentence. Do not say it '
+            'is uncancelled, partial, or "Angshik".'
+        )
+    elif status == "mitigated":
+        rules = "; ".join(
+            r.description for r in details.cancellations if r.effect == "mitigates"
+        )
+        # "mitigated" has two causes and only one of them names a rule: either a
+        # §1.3 mitigation fired, or compute_manglik_details capped a Venus-axis-only
+        # chart down from "present" with no rule involved. In the second case
+        # `rules` is empty and "Softened by: ." both dangles and contradicts the
+        # evidence block, which correctly reports that no classical rule applies.
+        if rules:
+            cause = f"Softened by: {rules}. "
+        elif details.venus_axis_only:
+            cause = (
+                "No classical cancellation or mitigation rule applies here — the reduction "
+                "comes from the axis: Mars is not in a Manglik house from the Lagna or from "
+                "the Moon, only from Venus. We treat a Venus-axis-only (Kuja-Shukra) chart "
+                "as a supplementary, marriage-specific indicator rather than a full Mangal "
+                "Dosha, so its weight is reduced. "
+            )
+        else:
+            cause = "No specific softening reason is recorded for this chart. "
+        lines.append(
+            f"{MANGLIK_ASSERTION_PREFIX} PRESENT BUT REDUCED — {axes}. "
+            f"{cause}Say the dosha is present and its effect is reduced. "
+            'Do NOT say it is cancelled or absent. Do not use the term "Angshik Manglik".'
+        )
+    elif status == "present":
+        lines.append(
+            f"{MANGLIK_ASSERTION_PREFIX} PRESENT, NOT CANCELLED — {axes}. "
+            "No classical cancellation or mitigation applies. Address this in the "
+            "Relationships section as something to be aware of, not as destiny. "
+            "Do not predict marital failure."
+        )
     else:
-        lines.append("- Manglik (Mangal Dosh): NO")
+        lines.append(
+            f"{MANGLIK_ASSERTION_PREFIX} NO — Mars is not in the 1st, 2nd, 4th, 7th, 8th "
+            "or 12th house from Lagna, from the Moon, or from Venus. Do not raise Mangal "
+            "Dosha in this reading at all."
+        )
     if flags.sade_sati:
         phase_text = {
             "rising": "rising phase (arohini) — Saturn transiting 12th from natal Moon",
@@ -650,11 +728,37 @@ class ManglikDetails:
     """
 
     is_manglik: bool
-    houses: tuple[int, ...]                 # all qualifying Mars houses (1/2/4/7/8/12 from Lagna or Moon)
+    houses: tuple[int, ...]                 # all qualifying Mars houses (1/2/4/7/8/12 from Lagna, Moon or Venus)
     primary_house: int                      # most-severe house (or 0 if not manglik)
     severity: str                           # "high" | "moderate" | "low" | "none"
     cancellations: tuple[ManglikRule, ...]  # all cancellation / mitigation rules that fired
     effective_status: str                   # "none" | "present" | "mitigated" | "cancelled"
+    # Appended last with defaults so positional construction keeps working.
+    # Human-readable reason per qualifying axis, in the order Lagna, Moon, Venus —
+    # e.g. ("Mars in 7th house from Lagna", "Mars in 4th house from Venus").
+    # Empty when the chart does not qualify on any axis.
+    axis_reasons: tuple[str, ...] = ()
+    # True when ONLY the Venus axis fired (pure Kuja-Shukra Manglik, the weaker
+    # marriage-specific indicator) — neither Lagna nor Moon qualified.
+    venus_axis_only: bool = False
+
+
+EFFECTIVELY_MANGLIK_STATUSES: frozenset[str] = frozenset({"present", "mitigated"})
+
+
+def is_effectively_manglik(status: str) -> bool:
+    """The single definition of "does this chart count as Manglik?".
+
+    Per knowledge/vedic_reference.md §1.3: "Each rule is tagged **cancels**
+    (dosha is fully nullified) or **mitigates** (effect is softened, not
+    removed)." Softened-not-removed still bites, so a `mitigated` chart is
+    still effectively Manglik and must be told so.
+
+    `present` and `mitigated` are True; `cancelled` and `none` are False.
+    Every "is this chart Manglik" test in the codebase goes through here —
+    do not re-test `effective_status` against string literals anywhere else.
+    """
+    return status in EFFECTIVELY_MANGLIK_STATUSES
 
 
 def _jupiter_aspects(jupiter_house: int, target_house: int) -> bool:
@@ -856,15 +960,20 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
     from_lagna: set[int] = set()
     from_moon:  set[int] = set()
     from_venus: set[int] = set()
+    axis_reasons: list[str] = []
     if mars.house in {1, 2, 4, 7, 8, 12}:
         from_lagna.add(mars.house)
+        axis_reasons.append(f"Mars in {_ordinal(mars.house)} house from Lagna")
     mars_from_moon = ((mars_idx - moon_idx) % 12) + 1
     if mars_from_moon in {1, 2, 4, 7, 8, 12}:
         from_moon.add(mars_from_moon)
+        axis_reasons.append(f"Mars in {_ordinal(mars_from_moon)} house from Moon")
     mars_from_venus = ((mars_idx - venus_idx) % 12) + 1
     if mars_from_venus in {1, 2, 4, 7, 8, 12}:
         from_venus.add(mars_from_venus)
+        axis_reasons.append(f"Mars in {_ordinal(mars_from_venus)} house from Venus")
     qualifying = from_lagna | from_moon | from_venus
+    venus_axis_only = not from_lagna and not from_moon and bool(from_venus)
 
     if not qualifying:
         return ManglikDetails(
@@ -901,7 +1010,7 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
     # 'mitigated' so users don't panic over what their offline kundali
     # rightly calls a non-Manglik chart. Also downgrade severity by one
     # notch so the number-badge on the UI reads accurately.
-    if not from_lagna and not from_moon and from_venus:
+    if venus_axis_only:
         if effective_status == "present":
             effective_status = "mitigated"
         if severity == "high":
@@ -916,6 +1025,8 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
         severity=severity,
         cancellations=cancellations,
         effective_status=effective_status,
+        axis_reasons=tuple(axis_reasons),
+        venus_axis_only=venus_axis_only,
     )
 
 
@@ -1308,6 +1419,29 @@ def topic_summaries_for_chart(
     selected: list[str] = []
 
     flags = compute_vedic_flags(chart)
+    # The gate here is the RAW flag (`flags.manglik`, i.e. effective_status is
+    # anything but "none"), deliberately not is_effectively_manglik() — a
+    # cancelled chart still gets the explainer, and that is the point.
+    #
+    # This list is not a "related reading" rail; it is the only chart-conditional
+    # article selection in the codebase. It feeds
+    # format_topic_summaries_for_prompt() -> the natal prompt's RELEVANT TOPIC
+    # SUMMARIES block, so what gets injected is the article's llm_summary. The
+    # /learn link the seeker eventually sees is downstream of that: the model
+    # emits /learn/<slug>/ and routes/deps.py::_linkify_learn labels it from the
+    # article's seo_title.
+    #
+    # For a CANCELLED chart the injected summary is exactly the text the model
+    # needs — it carries the cancellation catalogue and closes on "Effective
+    # status is per-chart: PRESENT / MITIGATED / CANCELLED", which is what lets
+    # the reading explain the green verdict instead of asserting it. Dropping it
+    # would make that reading worse, not safer. result.html gates its Manglik
+    # panel on the same raw flag, so narrowing here would render a verdict panel
+    # while refusing to link the article that explains it.
+    #
+    # The known residue is a LABELLING problem, not a selection one: _linkify_learn
+    # uses seo_title, so a cancelled chart gets an anchor reading "...How to Check,
+    # Remedies" beside a "Cancelled" panel. Tracked as a follow-up.
     if flags.manglik:
         selected.append("manglik-dosh")
     if flags.sade_sati:
@@ -1717,18 +1851,28 @@ def format_planet_nakshatras_for_prompt(chart: "Chart") -> str:
 def format_manglik_for_prompt(details: ManglikDetails) -> str:
     """Tiny LLM hint for the Relationships section — only inject when relevant.
 
-    Stays ~80-180 tokens. Tells the LLM the effective status and the
-    cancelling/mitigating reasons in plain language; sources are deliberately
-    omitted so the LLM can't echo them back as user-facing "per Phaladeepika"
-    jargon. Classical citations live in the structured UI panel.
+    Carries NO verdict. The single Manglik assertion for the prompt is emitted
+    by format_flags_for_prompt() (see MANGLIK_ASSERTION_PREFIX); this block only
+    supplies the severity grade, the cancelling/mitigating evidence and the
+    phrasing directives for the Relationships section. Stays ~80-180 tokens.
+    Sources are deliberately omitted so the LLM can't echo them back as
+    user-facing "per Phaladeepika" jargon. Classical citations live in the
+    structured UI panel.
     """
     if details.effective_status == "none":
         return ""
 
-    houses_str = ", ".join(_ordinal(h) for h in details.houses)
     lines = [
-        f"--- MANGLIK DETAIL ---",
-        f"Mathematical: YES — Mars in {houses_str} (severity: {details.severity}).",
+        "--- MANGLIK DETAIL (supporting evidence only) ---",
+        "The Manglik verdict is stated once in the Vedic flags block above — "
+        "do not restate a different one.",
+        # Severity reaches the LLM ONLY here. Without it an 8th-house 'high'
+        # dosha and a 2nd-house 'low' one read in the same register.
+        f"Severity: {details.severity} — graded from the qualifying houses "
+        "(7th/8th highest, 1st/4th/12th moderate, 2nd alone lowest), then reduced "
+        "one grade (never below low) when only the Venus axis qualifies. Match the "
+        "weight of your language to this grade: do not treat a low severity as an "
+        "emergency, nor a high one as trivial.",
     ]
 
     cancels = [r for r in details.cancellations if r.effect == "cancels"]
@@ -1743,9 +1887,21 @@ def format_manglik_for_prompt(details: ManglikDetails) -> str:
         for r in mitigates:
             lines.append(f"  • {r.description}")
     if not cancels and not mitigates:
-        lines.append("No classical cancellation or mitigation reasons apply to this chart.")
-
-    lines.append(f"Effective status: {details.effective_status.upper()}.")
+        # A Venus-axis-only chart is downgraded to "mitigated" with no rule behind
+        # it, so the bare "no reasons apply" line would contradict the flags block's
+        # "its effect is reduced". Name the actual cause of the reduction here —
+        # without restating the verdict, which this block never asserts.
+        if details.venus_axis_only:
+            lines.append(
+                "No classical cancellation or mitigation rule applies to this chart. Its "
+                "reduced weight comes from the axis alone: Mars qualifies only from Venus, "
+                "not from the Lagna or the Moon — a supplementary marriage-specific "
+                "indicator rather than a full Mangal Dosha."
+            )
+        else:
+            lines.append(
+                "No classical cancellation or mitigation reasons apply to this chart."
+            )
 
     if details.effective_status == "cancelled":
         lines.append(
@@ -1761,7 +1917,10 @@ def format_manglik_for_prompt(details: ManglikDetails) -> str:
     else:
         lines.append(
             "→ Mention the dosha honestly as 'something to be aware of', not as destiny. "
-            "Suggest the traditional remedy of matching with another Manglik partner. "
+            "The traditional remedy — a partner who also carries the dosha — classically "
+            "holds only when both carry it at comparable strength, so give it as that "
+            "condition and never as 'marry any Manglik'. Only this one chart is in scope, "
+            "so say comparability is settled by a compatibility check of both charts. "
             "Do NOT predict marital failure. Do NOT name classical texts."
         )
     return "\n".join(lines)
@@ -3437,15 +3596,12 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
     #     - mitigated : Manglik pattern but some (not all) cancellations, -3
     #     - present   : Manglik pattern, no cancellations applied, -8
     mangal = compute_manglik_details(chart)
-    # Detect Venus-axis-only (Kuja-Shukra) case for a friendlier driver
-    # note — many charts flagged 'mitigated' here are actually clean per
-    # the mainstream Lagna/Moon-only Manglik check.
-    v_only = (
-        mangal.is_manglik
-        and mangal.effective_status == "mitigated"
-        and mangal.primary_house == 12
-        and mangal.severity in ("low", "moderate")
-    )
+    # Venus-axis-only (Kuja-Shukra) gets a friendlier driver note — many charts
+    # flagged 'mitigated' here are actually clean per the mainstream
+    # Lagna/Moon-only Manglik check. This used to be inferred from a
+    # status/house/severity proxy; compute_manglik_details now carries the fact
+    # itself, so read it at source instead of guessing at it.
+    v_only = mangal.venus_axis_only
     if mangal.effective_status == "cancelled":
         _add(+5, "bs_manglik_cancelled")
     elif v_only:

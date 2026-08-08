@@ -504,7 +504,13 @@
       {% else %}
       <div>
         <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">{{ t(lang, 'manglik_cancel_label') }}</div>
-        <p class="text-base text-stone-700 leading-relaxed">No classical cancellation rules apply to this chart. The traditional remedy is to match with another Manglik partner (a partner who also has Mars in a Manglik house), which classically cancels the dosha mutually. Consult a knowledgeable astrologer before relying on remedies.</p>
+        {# Mutual Manglik-Manglik cancellation is conditional on comparable severity, and
+           this page holds only one chart — so it cannot be evaluated here. The band is
+           defined once, in matching.py: _SEVERITY_GRADING_SENTENCE and
+           _COMPARABILITY_BAND_SENTENCE. That is the source of truth; the sentences below
+           are the same rule in this page's shorter result-prose voice. If the band moves
+           there, move it here too. #}
+        <p class="text-base text-stone-700 leading-relaxed">No classical cancellation rules apply to this chart. Matching with another Manglik partner can still cancel the dosha mutually — but classical texts require the two partners to be of comparable severity, and they do not define the band, so Bhagya treats equal or adjacent grades as comparable and a low-versus-high pairing as not. That comparison needs both charts, so it is decided on the <a href="/matching" class="text-astro-600 hover:text-astro-700 underline">compatibility check</a>, not here. Consult a knowledgeable astrologer before relying on remedies.</p>
       </div>
       {% endif %}
 

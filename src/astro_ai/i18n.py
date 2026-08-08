@@ -120,14 +120,11 @@ _EN: Final[dict[str, str]] = {
     "manglik_severity_moderate": "Moderate severity",
     "manglik_severity_low":      "Low severity",
     "manglik_houses_label":"Qualifying placements",
-    "manglik_house_lagna": "Mars in {ord} house from Lagna",
-    "manglik_house_moon":  "Mars in {ord} house from Moon",
     "manglik_about_label": "What this means",
-    "manglik_about_high":  "Mars sitting in the 7th or 8th house from your Lagna or Moon is the most-discussed form of Manglik. Classically it suggests friction, restlessness, or assertive energy in marital matters, with the 7th house (partnership) and 8th house (spouse's longevity, transformation) being the most-cited concerns. The actual effect varies enormously with the rest of the chart.",
+    "manglik_about_high":  "Mars sitting in the 7th or 8th house — counted from your Lagna, your Moon or your Venus — is the most-discussed form of Manglik. Classically it suggests friction, restlessness, or assertive energy in marital matters, with the 7th house (partnership) and 8th house (spouse's longevity, transformation) being the most-cited concerns. The actual effect varies enormously with the rest of the chart.",
     "manglik_about_moderate":"Mars in the 1st, 4th, or 12th house is a moderate form of Manglik. The 1st affects personality and restlessness; the 4th affects home and inner peace; the 12th affects private life and expenses. Often less severe than 7th/8th placements but still worth noting.",
     "manglik_about_low":   "Mars in the 2nd house is the mildest form of Manglik, primarily affecting speech and family dynamics. Some traditions exclude 2nd-house Manglik entirely.",
     "manglik_cancel_label":"Possible cancellations",
-    "manglik_cancel_text": "Manglik dosha is classically considered cancelled or mitigated when: Mars is in its own sign (Aries or Scorpio) or exalted (Capricorn); the spouse is also Manglik (matching cancels); Jupiter aspects Mars; specific conjunctions or benefic aspects apply. These cancellations are not computed here — consult a knowledgeable astrologer to determine if any apply to this chart.",
 
     # Sade Sati explanatory panel
     "sade_sati_title":     "Sade Sati",
@@ -498,14 +495,11 @@ _HI: Final[dict[str, str]] = {
     "manglik_severity_moderate": "मध्यम प्रभाव",
     "manglik_severity_low":      "अल्प प्रभाव",
     "manglik_houses_label":"योग्य स्थितियाँ",
-    "manglik_house_lagna": "लग्न से {ord} भाव में मंगल",
-    "manglik_house_moon":  "चंद्र से {ord} भाव में मंगल",
     "manglik_about_label": "इसका अर्थ",
-    "manglik_about_high":  "लग्न या चंद्र से सप्तम अथवा अष्टम भाव में मंगल का होना मंगल दोष का सबसे चर्चित स्वरूप है। शास्त्रीय रूप से यह वैवाहिक मामलों में टकराव, अस्थिरता या तीव्र ऊर्जा का सूचक माना जाता है, जहाँ सप्तम (साझेदारी) और अष्टम (जीवनसाथी की आयु, परिवर्तन) सबसे चिंतनीय हैं। वास्तविक प्रभाव शेष कुंडली पर बहुत निर्भर करता है।",
+    "manglik_about_high":  "लग्न, चंद्र अथवा शुक्र से सप्तम अथवा अष्टम भाव में मंगल का होना मंगल दोष का सबसे चर्चित स्वरूप है। शास्त्रीय रूप से यह वैवाहिक मामलों में टकराव, अस्थिरता या तीव्र ऊर्जा का सूचक माना जाता है, जहाँ सप्तम (साझेदारी) और अष्टम (जीवनसाथी की आयु, परिवर्तन) सबसे चिंतनीय हैं। वास्तविक प्रभाव शेष कुंडली पर बहुत निर्भर करता है।",
     "manglik_about_moderate":"प्रथम, चतुर्थ अथवा द्वादश भाव में मंगल मंगल दोष का मध्यम स्वरूप है। प्रथम व्यक्तित्व व अस्थिरता को, चतुर्थ घर व मानसिक शांति को, और द्वादश निजी जीवन व व्यय को प्रभावित करता है। प्रायः सप्तम/अष्टम से कम गंभीर, परन्तु ध्यान देने योग्य।",
     "manglik_about_low":   "द्वितीय भाव में मंगल मंगल दोष का सबसे हल्का स्वरूप है, जो मुख्य रूप से वाणी और पारिवारिक गतिविधि को प्रभावित करता है। कुछ परंपराएँ द्वितीय-मंगल को मंगल दोष से बाहर भी रखती हैं।",
     "manglik_cancel_label":"संभावित निवारण",
-    "manglik_cancel_text": "शास्त्रीय रूप से मंगल दोष निम्न स्थितियों में निरस्त या न्यून माना जाता है: मंगल अपनी ही राशि (मेष या वृश्चिक) में अथवा उच्च (मकर) में हो; जीवनसाथी भी मंगली हो (मिलान से दोष कटता है); गुरु की दृष्टि मंगल पर हो; विशेष युतियाँ या शुभ ग्रहों की दृष्टि हो। ये निवारण यहाँ नहीं गणित किए गए — किसी विद्वान ज्योतिषी से परामर्श करना उचित।",
 
     # Sade Sati panel
     "sade_sati_title":     "साढ़े साती",
