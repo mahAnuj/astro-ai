@@ -9,17 +9,36 @@ what's still pending, and how new articles should cite them.
 
 ## Available source PDFs (all in `/data/`, gitignored)
 
+**All counts below are plain `pdftotext` (no `-layout`), re-measured 2026-08-08.** This
+matters: an earlier revision of this table mixed `-layout` and plain counts, which made its
+total meaningless. `-layout` reflows columns and yields ~30% fewer lines. Always state the
+flag alongside a count.
+
+The two OCR-blocked scans (`varahmihirHorasastram.pdf`, `Numerology.pdf`) have been
+**deleted from `data/`**. Nothing in the corpus now requires OCR.
+
 | # | File | Author | Text lines | Status | Priority |
 |---|------|--------|------------|--------|----------|
-| 1 | `Astrology For Beginners BVRaman_text.pdf` | BV Raman | 5,390 | ✅ **Fully extracted** | Done |
-| 2 | `vedic_astro_textbook.pdf` | P.V.R. Narasimha Rao | 16,724 | 🟡 **Partially cited** (Ch. 34 remedies) | HIGH — full extraction pending |
-| 3 | `book1-for-CD.pdf` | P.V.R. Narasimha Rao (Lessons Vol. I) | 7,757 | ❌ Not extracted | MEDIUM |
-| 4 | `Astrology-e-book-compressed.pdf` | Chennareddy Vasudev | 4,558 | ❌ Not extracted | LOW (introductory) |
-| 5 | `varahmihirHorasastram.pdf` | Varahamihira (~6th C) | **0 (scanned images)** | ⚠️ **Needs OCR** | HIGH but blocked |
+| 1 | `Astrology For Beginners BVRaman_text.pdf` | BV Raman | 15,409 | ✅ **Fully extracted** | Done |
+| 2 | `vedic_astro_textbook.pdf` | P.V.R. Narasimha Rao | 20,669 | 🟡 **Partially cited** (Ch. 34 remedies) | HIGH — full extraction pending |
+| 3 | `book1-for-CD.pdf` | P.V.R. Narasimha Rao (Lessons Vol. I) | 12,244 | ❌ Not extracted | MEDIUM |
+| 4 | `Astrology-e-book-compressed.pdf` | Chennareddy Vasudev | 5,220 | ❌ Not extracted | LOW (introductory) |
 | 6 | `Numerology-With Tantra, Ayurveda, and Astrology.pdf` | Harish Johari (Destiny Books / Inner Traditions, 1990) | 5,952 | 🟡 **Partially extracted** → `numerology.md` §1-§12 | MEDIUM |
 | 7 | `Numerology-You.pdf` | Jayant Kumar, *Numerology & You* (Educreation, ISBN 978-1-61813-620-6, 2016) | 1,110 | 🟡 **Sample copy only** — 43 pp; Ch. 1-2 extracted → `numerology.md` §2.5, §12.5-§12.9. Ch. 3-24 not in the sample | LOW (blocked by source) |
-| 8 | `Numerology.pdf` | Unidentified (Adobe Scan capture; no title/author metadata) | **0 (scanned images, 180 pp)** | ⚠️ **Needs OCR** — author unknown until OCR'd, so nothing from it is citable. **Permanently out of scope** (#178) | — |
 | 9 | `Numerology the Complete Guide, Volume 1-The Personality Reading.pdf` | Matthew Oliver Goodwin, *Numerology: The Complete Guide, Vol. 1 — The Personality Reading* (Newcastle Publishing, North Hollywood, 1981) | **28,171** | 🔴 **Not yet extracted** — added 2026-08-08. Largest numerology source we hold | **HIGH** (#191) |
+
+*(Numbers 5 and 8 are retired — the deleted scans. Row numbers are kept stable so older
+issue comments referencing "source 9" still resolve.)*
+
+### Kumar (source 7) declares its own school — use it
+
+Line 815 of the extraction opens a section titled **"Chaldean And Pythagorean System"**:
+
+> "In this book, Chaldean Numerology has been used to determine Alphabetical numbers."
+
+It also names the **Karmic Debt numbers (13, 14, 16, 19)** and **Master numbers (11, 22,
+33)** outright. Both are inside the 43-page sample, so both are citable. This bears
+directly on the numerology-table issues (#160/#163/#167) and on `_karmic_debt_flags`.
 
 ### Note on source 9 (Goodwin) — read this before citing it
 
@@ -39,12 +58,16 @@ So it can settle the Western-school questions (#161 Karmic Debt intermediates, #
 
 **This does not make our code "correct" — it makes #162 a properly sourced two-school divergence.** Both schools are now citable in-repo. Under the project's sourcing rule the defect is therefore the **silence**, not the value: the page must declare which school it follows. Citing a 1981 Californian Western text as the authority for a reading advertised as *Vedic* would be its own error — Goodwin evidences that our method is legitimate practice, not that it is the Vedic method.
 
-**Total text-searchable content available:** **~69,700 lines across 7 readable PDFs**
-(BV Raman 5,390 · Rao textbook 16,724 · Rao Lessons 7,757 · Vasudev 4,558 · Johari 5,952 ·
-Kumar 1,110 · Goodwin 28,171).
-**Blocked:** Varahamihira (48MB scanned images) requires OCR and is spike-gated (#178). `Numerology.pdf` (59MB scanned) is **permanently out of scope** — no title/author metadata, so even a flawless OCR would be uncitable.
+**Total text-searchable content available:** **88,775 lines across 7 PDFs**, all readable
+(Goodwin 28,171 · Rao textbook 20,669 · BV Raman 15,409 · Rao Lessons 12,244 · Johari 5,952 ·
+Vasudev 5,220 · Kumar 1,110).
 
-**Readable but unextracted (no OCR needed, ~44,000 lines):** Goodwin 28,171 · `vedic_astro_textbook.pdf` 16,724 remaining · Johari beyond §12. Tracked in #191 — mine these before considering any OCR.
+**Nothing is OCR-blocked any more.** The two scanned PDFs were deleted; #178 is now
+acquisition-only (finding a text-layer Varahamihira), not an OCR spike.
+
+**Unextracted, ~66,000 lines:** Goodwin 28,171 · Rao textbook (most of 20,669) · Rao
+Lessons 12,244 · Vasudev 5,220 · Johari beyond §12. Tracked in **#191** — this is the whole
+of the remaining corpus work, and it needs no tooling we do not already have.
 
 ### Known gaps in the numerology corpus
 
