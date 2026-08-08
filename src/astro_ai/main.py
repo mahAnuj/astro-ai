@@ -53,6 +53,40 @@ from astro_ai.matching import compute_guna_milan
 from astro_ai import providers as llm_providers
 from astro_ai.providers import AllProvidersExhausted
 
+# --- transitional (#154): re-exported for routes not yet extracted; pruned in the cleanup commit
+# These names now live in astro_ai.routes.*. Every route still defined below
+# references them unqualified, so they are imported back into this namespace
+# rather than rewritten at ~200 call sites — the split stays a pure move and
+# each subsequent extraction commit shrinks this list. Position matters: the
+# deps import must run before anything that reads the environment, because it
+# owns the load_dotenv() calls that used to sit at module scope here.
+from astro_ai.routes.deps import (
+    ASK_PROMPT_PATH,
+    DAILY_PROMPT_PATH,
+    DASHA_DEEP_DIVE_PROMPT_PATH,
+    MATCHING_PROMPT_PATH,
+    MONTHLY_PROMPT_PATH,
+    PROMPT_PATH,
+    RASHIFAL_PROMPT_PATH,
+    STATIC_DIR,
+    YEARLY_PROMPT_PATH,
+    _ask_cta_ctx,
+    _ask_quota_bump,
+    _ask_quota_remaining,
+    _HINDI_MONTHS,
+    _lang,
+    _no_cdn_cache,
+    _pretty_date,
+    _pretty_weekday,
+    _safe_redirect_target,
+    _save_collection_synced,
+    _site_url,
+    require_admin,
+    templates,
+)
+from astro_ai.routes.llm_support import _cached, _fire_error_alert, _llm_error_friendly
+# --- end transitional
+
 
 # Module-level logger used by the LLM-error handlers throughout this file
 # (log.exception "…LLM generation failed" — one such call per LLM route).
@@ -64,65 +98,6 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def _fire_error_alert(request, err: Exception, source: str) -> None:
-    """Send a Telegram alert with the low-level error details. Best-effort.
-
-    Called from every LLM error path so we get pinged the moment a user
-    hits a provider outage / rate limit / crash. Never raises — Telegram
-    alerts must not add failure modes to already-failed request paths.
-    """
-    try:
-        import traceback as _tb
-        _u = load_user(request) if request is not None else None
-        _user_email = _u.email if _u else ""
-        _path = request.url.path if request is not None else ""
-        _method = request.method if request is not None else ""
-        _tb_str = _tb.format_exc()
-        notify.error_seen(
-            source=source,
-            error_type=type(err).__name__,
-            error_message=str(err) or repr(err),
-            path=_path, method=_method,
-            user_email=_user_email,
-            traceback_str=_tb_str,
-        )
-        # Persistent record so /admin/activity can show error history.
-        events.record(
-            type="error",
-            email=_user_email,
-            data={
-                "source": source,
-                "error_type": type(err).__name__,
-                "error_message": (str(err) or repr(err))[:500],
-                "path": _path, "method": _method,
-                # Keep last ~1500 chars of traceback for post-hoc diagnosis.
-                "traceback": _tb_str[-1500:] if _tb_str else "",
-            },
-        )
-    except Exception:  # noqa: BLE001 — alert must never mask original error
-        log.debug("notify.error_seen fire failed (swallowed)", exc_info=True)
-
-
-def _llm_error_friendly(err: Exception) -> tuple[str, str]:
-    """Translate an internal LLM error into a user-friendly (title, message).
-
-    Rate-limit / high-demand errors get a distinct, retry-encouraging copy.
-    Any other error gets a generic apology — the raw exception class name and
-    message are NEVER exposed to the user (they leak internals and confuse
-    non-technical seekers). Full details are logged server-side for debugging.
-    """
-    if isinstance(err, AllProvidersExhausted):
-        return (
-            "High demand right now",
-            "🙏 Many seekers are asking questions at the same time. "
-            "Please try again in a couple of minutes — your input is safe "
-            "to re-submit exactly as you typed it.",
-        )
-    return (
-        "Something went wrong",
-        "We couldn't complete the reading this time. Please try again in "
-        "a moment — your input is safe to re-submit exactly as you typed it.",
-    )
 from astro_ai import cache, daily_cache, email_sender, events, feedback, festivals, learn_registry, notify, shloks, snapshots, storage, subscribers, trivia, trust_bar, users
 import time as _time
 from astro_ai.session import (
@@ -144,133 +119,6 @@ from astro_ai.session import (
     save_session_atomic,
     save_user,
 )
-
-
-def _lang(request: Request) -> str:
-    """Resolve reading language: `?lang=` query param wins, cookie is fallback.
-
-    `?lang=hi` used to be a silent no-op everywhere (QA finding on /festivals) —
-    this function only read the __session cookie, so a shared or bookmarked
-    Hindi link rendered in English. Honouring the param is safe here because:
-
-    - No route declares `lang` as a query parameter, so nothing is shadowed
-      (`/lang` takes it as a Form field, and POST bodies are untouched).
-    - No CDN-cached HTML route depends on _lang. The only `public, max-age`
-      response in the app is the cosmic-card SVG, which never calls this;
-      /panchang, /rashifal and /festivals are all `_no_cdn_cache`. Edge caches
-      key on the full URL including query string anyway, so `?lang=hi` and the
-      bare path cannot collide.
-    - `base.html` emits `<link rel=canonical>` from `request.url.path` only,
-      query string excluded, so `?lang=` variants self-canonicalise and add no
-      duplicate-content surface for crawlers.
-
-    Deliberately request-scoped: it does NOT write the cookie. `POST /lang` is
-    still the only thing that changes a stored preference, so a shared link
-    can't silently flip the recipient's saved language. An unsupported value
-    falls through to the cookie rather than forcing English.
-    """
-    requested = request.query_params.get("lang")
-    if requested in SUPPORTED_LANGS:
-        return requested
-    return load_lang(request)
-
-
-def _save_collection_synced(response: Response, collection: ChartCollection, request: Request) -> None:
-    """Save a ChartCollection to the cookie AND (if signed in) to users.json.
-
-    Wrapper around session.save_collection that ensures signed-in users'
-    chart state stays in sync across their devices. Anonymous users get
-    exactly the previous behaviour (cookie-only). Silent failure on
-    users.json write — cookie remains the source of truth for THIS
-    session either way.
-    """
-    save_collection(response, collection, request)
-    user = load_user(request)
-    if user is not None:
-        try:
-            users.save_charts(user.sub, collection)
-        except Exception as err:
-            import logging
-            logging.getLogger(__name__).warning(
-                "chart sync to users.json failed for %s: %s", user.email, err
-            )
-
-
-_basic_auth = HTTPBasic(realm="Bhagya admin")
-_ADMIN_DEV_FALLBACK = "bhagya-dev-only-CHANGE-ME"
-
-
-def require_admin(creds: HTTPBasicCredentials = Depends(_basic_auth)) -> None:
-    """HTTP Basic Auth gate for admin routes.
-
-    Username must be 'admin'; password comes from the ADMIN_PASSWORD env var.
-    If unset, falls back to a clearly-flagged dev placeholder so local
-    development still works — but the var MUST be set before any deploy.
-    `secrets.compare_digest` is used on both sides to dodge timing attacks.
-    """
-    expected_password = os.environ.get("ADMIN_PASSWORD", _ADMIN_DEV_FALLBACK)
-    ok_user = secrets.compare_digest(creds.username, "admin")
-    ok_pass = secrets.compare_digest(creds.password, expected_password)
-    if not (ok_user and ok_pass):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid admin credentials",
-            headers={"WWW-Authenticate": 'Basic realm="Bhagya admin"'},
-        )
-
-
-# Hindi month names for _pretty_date() — English strftime gives us "July"
-# etc. natively but there's no locale-friendly way to get "जुलाई" without
-# pulling in a full ICU dependency, so we spell it out. Month order is
-# Jan=1 .. Dec=12; index 0 is a placeholder to keep month numbers 1-indexed.
-_HINDI_MONTHS: tuple[str, ...] = (
-    "", "जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून",
-    "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर",
-)
-
-
-# Hindi weekday names — same reasoning as _HINDI_MONTHS above: strftime("%A")
-# gives us "Monday" natively and there is no locale-friendly way to get
-# "सोमवार" without an ICU dependency. Indexed by date.weekday(), so
-# Monday=0 .. Sunday=6.
-_HINDI_WEEKDAYS: tuple[str, ...] = (
-    "सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार",
-)
-
-
-def _pretty_weekday(d: date, lang: str = "en") -> str:
-    """Weekday name for visible page chrome. English → "Monday", Hindi → "सोमवार".
-
-    Companion to _pretty_date(): anywhere a date is localised, its weekday has
-    to be too, or ?lang=hi renders "17 अगस्त 2026 · Monday".
-    """
-    if lang == "hi":
-        return _HINDI_WEEKDAYS[d.weekday()]
-    return d.strftime("%A")
-
-
-def _pretty_date(iso_date: str, lang: str = "en") -> str:
-    """Format an ISO date as human-friendly text for user-facing titles.
-
-    ISO dates ('2026-07-31') in page titles kill click-through — external
-    SEO audit flagged this specifically. Use this helper anywhere a date
-    lands in a `<title>`, `<h1>`, or visible page chrome. Keep the raw ISO
-    form for machine-readable slots (`<time datetime="...">`, sitemap
-    lastmod, JSON-LD datePublished).
-
-    English → "31 July 2026" (drops weekday — daily-content pages don't need
-    the extra length; the current-day framing is already implied).
-    Hindi   → "31 जुलाई 2026" (Devanagari digits look wrong here — most Indian
-    UIs use Arabic numerals even in Hindi, matching AstroSage / mPanchang).
-    """
-    from datetime import date as _date
-    try:
-        d = _date.fromisoformat(iso_date)
-    except (TypeError, ValueError):
-        return iso_date  # last-resort — bad input should not break rendering
-    if lang == "hi":
-        return f"{d.day} {_HINDI_MONTHS[d.month]} {d.year}"
-    return d.strftime("%-d %B %Y")
 
 
 def _rashifal_teaser(body: str, sentences: int = 2) -> str:
@@ -376,72 +224,6 @@ def _shared_three_tier(
     storage.put(storage_key, text)
     return text
 
-
-def _cached(
-    cache_key: str,
-    *,
-    route: str,
-    lang: str,
-    ttl_days: int | None,
-    call_fn,
-) -> str:
-    """Cache-wrap an LLM call. Logs every attempt (hit or miss) for /admin/usage.
-
-    `call_fn` is a zero-arg callable that returns the LLM text. We do the
-    cache-check and the per-route logging here so every reading benefits from
-    the same observability surface without duplicating boilerplate.
-
-    Self-healing: if the cached text fails the same quality check that the
-    provider chain uses (e.g. missing '## Heading' markers), we treat it as
-    a miss and re-generate — silently cleaning up any garbage that snuck
-    into the cache before quality-gating was live.
-    """
-    hit = cache.get(cache_key)
-    if hit is not None:
-        ok, reason = llm_providers.passes_quality(hit, route)
-        if ok:
-            cache.log_call(route, lang, cache_hit=True)
-            return hit
-        log.warning(
-            "cache: dropping bad entry for route=%s (%s) — will regenerate",
-            route, reason,
-        )
-        # Fall through to regeneration; the fresh call will overwrite.
-    started = _time.time()
-    text = call_fn()
-    latency_ms = int((_time.time() - started) * 1000)
-    in_tok = cache.estimate_tokens(text) * 2  # input ≈ 2x output for our prompts (rough)
-    out_tok = cache.estimate_tokens(text)
-    cache.put(cache_key, text, route=route, ttl_days=ttl_days,
-              input_tokens=in_tok, output_tokens=out_tok)
-    cache.log_call(route, lang, cache_hit=False,
-                   input_tokens=in_tok, output_tokens=out_tok, latency_ms=latency_ms)
-    return text
-
-# override=True so .env edits actually take effect when uvicorn reloads —
-# otherwise the first-loaded values stick for the lifetime of the process
-# and editing .env feels silently broken.
-# Load order: .env (committed defaults) → .env.local (git-ignored local
-# overrides, e.g. dev secrets that shouldn't live in .env). .env.local wins
-# on any key it defines.
-load_dotenv(override=True)
-load_dotenv(".env.local", override=True)
-
-# Project layout: src/astro_ai/main.py → templates and production prompts live
-# alongside the code. The sibling `evals/` folder is the prompt-evaluation
-# sub-project (separate concern, not a runtime dependency).
-HERE = Path(__file__).resolve().parent
-TEMPLATES_DIR = HERE / "templates"
-PROMPTS_DIR = HERE / "prompts"
-STATIC_DIR = HERE / "static"
-PROMPT_PATH = PROMPTS_DIR / "natal.txt"
-DAILY_PROMPT_PATH = PROMPTS_DIR / "daily.txt"
-MONTHLY_PROMPT_PATH = PROMPTS_DIR / "monthly.txt"
-YEARLY_PROMPT_PATH = PROMPTS_DIR / "yearly.txt"
-MATCHING_PROMPT_PATH = PROMPTS_DIR / "matching.txt"
-RASHIFAL_PROMPT_PATH = PROMPTS_DIR / "rashifal_single.txt"
-DASHA_DEEP_DIVE_PROMPT_PATH = PROMPTS_DIR / "dasha_deep_dive.txt"
-ASK_PROMPT_PATH = PROMPTS_DIR / "ask.txt"
 
 app = FastAPI(title="astro-ai", version="0.0.1")
 
@@ -563,144 +345,6 @@ async def _unhandled_exception_handler(request: Request, exc: Exception) -> Resp
 # StaticFiles mounts must precede route definitions for the most specific
 # path to win, but FastAPI's router handles this correctly either way.
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-# Expose i18n to every template as `t(key, **kwargs)`. Templates pass the
-# current `lang` (also injected per-request) into the call.
-templates.env.globals["t"] = _i18n_translate
-# current_year used by nav labels like "Horoscope 2026" — auto-updates yearly.
-templates.env.globals["current_year"] = lambda: date.today().year
-# Astrology-term Devanagari lookups — templates call e.g.
-# {{ planet_name(p.name, lang) }} to render "गुरु" for Hindi users
-# and "Jupiter" for English. See i18n.py for the lookup tables.
-from .i18n import planet_name as _p_name, yoga_name as _y_name, kaal_sarp_variant_name as _ks_name
-templates.env.globals["planet_name"] = _p_name
-templates.env.globals["yoga_name"] = _y_name
-templates.env.globals["kaal_sarp_variant_name"] = _ks_name
-
-
-# slug → title lookup for the linkify filter (renders anchors with the
-# article's proper title instead of the raw slug URL).
-from .learn_registry import ARTICLES as _ARTICLES
-_ARTICLE_TITLE_BY_SLUG: dict[str, str] = {
-    a.slug: (a.seo_title.strip() or a.title.strip()) for a in _ARTICLES
-}
-
-
-def _linkify_learn(text: str) -> str:
-    """Convert plain "/learn/<slug>/" occurrences in LLM output into <a href> tags.
-
-    The natal / matching / ask LLM prompts instruct the model to emit cross-links
-    as bare slug paths (e.g. "For more, see our Vimshottari Dasha guide →
-    /learn/vimshottari-dasha-explained/"). This filter turns those into real
-    clickable anchors when the reading is rendered.
-
-    Anchor label is the article's title (via slug lookup) — much nicer to read
-    than the raw URL. Unknown slugs fall back to the URL as label so nothing
-    silently disappears.
-
-    Escapes HTML first (defence-in-depth against LLM injecting tags), then
-    substitutes the /learn/<slug>/ pattern with an anchor. Returns Markup so
-    Jinja does not re-escape the anchor.
-    """
-    import html as _html
-    import re as _re
-    from markupsafe import Markup
-
-    escaped = _html.escape(text or "")
-    # Only match well-formed slugs (lowercase letters, digits, hyphens).
-    pattern = _re.compile(r"/learn/([a-z0-9][a-z0-9-]*[a-z0-9])/")
-
-    def _replace(match):
-        slug = match.group(1)
-        title = _ARTICLE_TITLE_BY_SLUG.get(slug, f"/learn/{slug}/")
-        return (
-            f'<a href="/learn/{slug}/" '
-            f'class="text-astro-700 hover:text-astro-800 underline underline-offset-2">'
-            f'{_html.escape(title)}</a>'
-        )
-
-    return Markup(pattern.sub(_replace, escaped))
-
-
-templates.env.filters["linkify_learn"] = _linkify_learn
-
-
-def _site_url() -> str:
-    """Canonical site URL for SEO meta + email links.
-
-    Returned by the Jinja global `site_url` and used by sitemap.xml etc.
-    Defaults to the production custom domain; override per-environment with
-    BHAGYA_SITE_URL when running on a staging/preview deploy.
-    """
-    return os.environ.get("BHAGYA_SITE_URL", "").rstrip("/") or "https://shubhagya.com"
-
-
-# Expose site_url to every template so canonical/OG/JSON-LD tags can build
-# absolute URLs without each handler passing it in.
-templates.env.globals["site_url"] = _site_url()
-# GA4 measurement ID — base.html conditionally loads gtag.js when set.
-# Leave unset in local dev / preview so analytics don't pollute the prod
-# property with junk events.
-templates.env.globals["ga4_measurement_id"] = os.environ.get("GA4_MEASUREMENT_ID", "").strip()
-# Microsoft Clarity project ID — for session recordings + heatmaps. Free,
-# complements GA4. Loaded only when set (skip on dev / preview).
-templates.env.globals["clarity_project_id"] = os.environ.get("CLARITY_PROJECT_ID", "").strip()
-# Google Identity Services client ID — templates use this to render the
-# Sign-In button. Safe to expose publicly (it's the OAuth client ID, not the
-# secret). Empty in dev if unset; sign-in button hides itself in that case.
-templates.env.globals["google_client_id"] = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
-# Request-scoped current user helper — templates call {{ load_current_user(request) }}
-# at the top of _nav.html / _account_menu.html to decide what to render.
-# Fast: just deserialises the cookie.
-templates.env.globals["load_current_user"] = load_user
-
-
-def _is_subscribed(email: str | None) -> bool:
-    """Template helper — does this email have an active Rashifal subscription?
-
-    Used by the daily-Rashifal CTA on the homepage so signed-in subscribers
-    see a "you're subscribed" state instead of being nudged to subscribe
-    again. Empty/None email returns False.
-    """
-    if not email:
-        return False
-    return subscribers.find_by_email(email.strip().lower()) is not None
-
-
-templates.env.globals["is_subscribed"] = _is_subscribed
-
-
-def _user_age_bucket(request: Request) -> str:
-    """Derive the seeker's age bucket from their saved chart's birthdate.
-
-    Returns one of: 'under-18', '18-24', '25-34', '35-44', '45-54', '55+',
-    or '' when there's no saved chart yet. Sent to GA4 as a user property
-    so we can slice every event by age cohort — answers questions like
-    "do 25-34 users subscribe to daily Rashifal more often than 45-54?".
-
-    Privacy: we NEVER expose the raw birthdate to analytics — only the
-    bucket. The chart cookie itself is HMAC-signed and HttpOnly, the bucket
-    is computed server-side and the value sent is one of 6 broad ranges.
-    """
-    collection = load_collection(request)
-    if not collection.active:
-        return ""
-    try:
-        birth_year = int(collection.active.birth_date[:4])
-        age = date.today().year - birth_year
-    except (ValueError, TypeError):
-        return ""
-    if age < 18:  return "under-18"
-    if age < 25:  return "18-24"
-    if age < 35:  return "25-34"
-    if age < 45:  return "35-44"
-    if age < 55:  return "45-54"
-    return "55+"
-
-
-# Expose as a template function: {{ user_age_bucket(request) }} in any
-# template (Jinja's TemplateResponse provides `request` to all templates).
-templates.env.globals["user_age_bucket"] = _user_age_bucket
 
 
 @app.get("/sitemap.xml", include_in_schema=False)
@@ -3729,100 +3373,8 @@ async def ask_form(request: Request, q: str | None = None,
     )
 
 
-# Daily per-cookie quota. Tight at 3/day while we're on free LLM tiers —
-# one motivated user can't drain Groq/Cerebras's daily quota for everyone.
-# Bump this when we have paid LLM capacity or revenue covering the cost.
-_ASK_DAILY_LIMIT = 3
 _ASK_CATEGORIES = {"general", "career", "marriage", "money", "health",
                    "spiritual", "travel", "relationships"}
-
-
-def _is_localhost(request: Request) -> bool:
-    """True when the request is from the developer's own machine.
-
-    Used to bypass the /ask daily quota during local development so the dev
-    can exercise the feature freely without exhausting the production limit.
-    Covers IPv4 loopback, IPv6 loopback, and the "localhost" hostname.
-    """
-    client = request.client
-    if client is None:
-        return False
-    return client.host in {"127.0.0.1", "localhost", "::1"}
-
-
-def _no_cdn_cache(resp: Response) -> Response:
-    """Stamp response with headers that stop CDN edge caches from
-    snapshotting the page across deploys.
-
-    External re-audit caught /rashifal being served from a stale Fastly
-    snapshot even though the site had been deployed with fixes. Root
-    cause: Cloud Run sends `cache-control: private` by default which
-    SHOULD prevent shared-cache storage, but Fastly's default config
-    snapshots aggressively on non-cookie'd anonymous fetches. Stronger
-    directives fix that.
-
-    Applied only to pages whose content changes daily (Rashifal,
-    Panchang) — for evergreen /learn/ articles or static tool pages,
-    the default cache-control is fine and desirable.
-    """
-    resp.headers["Cache-Control"] = "private, no-cache, no-store, must-revalidate, max-age=0"
-    resp.headers["Pragma"] = "no-cache"
-    resp.headers["Expires"] = "0"
-    # CDN-specific opt-out signals (Fastly / Cloudflare / GCP CDN all
-    # honour at least one of these — belt-and-braces is cheap here).
-    resp.headers["CDN-Cache-Control"] = "no-store"
-    resp.headers["Surrogate-Control"] = "no-store"
-    return resp
-
-
-def _ask_cta_ctx(request: Request, hint: str = "about your chart") -> dict:
-    """Build the context dict for the shared _ask_cta.html partial.
-
-    Any result page that wants to show the 'Ask 3 free questions' CTA
-    just merges this into its TemplateResponse context. Handles:
-      - Detecting a saved chart (has_saved_chart)
-      - Reading today's remaining quota
-      - Passing the per-page phrasing hint ('about your chart' vs
-        'about your numerology' vs 'about your Kundli match')
-    """
-    try:
-        has_saved_chart = load_collection(request).active is not None
-    except Exception:
-        has_saved_chart = False
-    return {
-        "has_saved_chart": has_saved_chart,
-        "ask_remaining": _ask_quota_remaining(request),
-        "ask_context_hint": hint,
-    }
-
-
-def _ask_quota_remaining(request: Request) -> int:
-    """Read today's remaining ask count from the session cookie.
-
-    Localhost bypasses the quota entirely — returns a large sentinel so
-    the UI shows plenty of remaining questions during local development.
-    """
-    if _is_localhost(request):
-        return 9999
-    stored_date, used = load_ask_usage(request)
-    today = date.today().isoformat()
-    if stored_date != today:
-        return _ASK_DAILY_LIMIT
-    return max(0, _ASK_DAILY_LIMIT - used)
-
-
-def _ask_quota_bump(request: Request, response: Response) -> None:
-    """Increment today's count on the response cookie.
-
-    Localhost skips the increment so local dev exercises the feature
-    without touching production-shaped state.
-    """
-    if _is_localhost(request):
-        return
-    stored_date, used = load_ask_usage(request)
-    today = date.today().isoformat()
-    new_count = (used + 1) if stored_date == today else 1
-    save_ask_usage(response, request, today, new_count)
 
 
 def _ask_cache_key(saved, question: str, category: str, lang: str,
@@ -4284,11 +3836,6 @@ async def reset() -> RedirectResponse:
     response = RedirectResponse("/", status_code=303)
     clear_collection(response)
     return response
-
-
-def _safe_redirect_target(candidate: str) -> str:
-    """Allow only same-origin paths in `next=` redirects (open-redirect guard)."""
-    return candidate if candidate.startswith("/") and not candidate.startswith("//") else "/"
 
 
 def cli() -> None:
