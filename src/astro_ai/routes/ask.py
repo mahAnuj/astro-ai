@@ -1,0 +1,355 @@
+"""/ask — free-form Q&A answered against the seeker's own chart (issue #154).
+
+Owns:
+    GET  /ask  the question form, re-rendering a cached answer when q/c are set
+    POST /ask  validate → quota-check → generate → cache → 303 back to the GET
+
+plus the ask-only helpers ``_ASK_CATEGORIES``, ``_ask_cache_key`` and
+``_ask_lookup``. The daily-quota helpers and ``_ask_cta_ctx`` live in
+``astro_ai.routes.deps`` because other routes share them.
+
+Moved verbatim; only the decorator prefix changed (``@app.`` → ``@router.``).
+Absolute imports only.
+"""
+
+from __future__ import annotations
+
+import logging
+import os
+
+from fastapi import APIRouter, Form, Request, Response
+from fastapi.responses import HTMLResponse, RedirectResponse
+
+from astro_ai import cache, events, notify, users
+from astro_ai import providers as llm_providers
+from astro_ai.chart import (
+    ChartError,
+    compute_chart,
+    compute_dasha_state,
+    compute_vedic_flags,
+)
+from astro_ai.llm import generate_ask_answer
+from astro_ai.providers import AllProvidersExhausted
+from astro_ai.routes.deps import (
+    ASK_PROMPT_PATH,
+    _ask_quota_bump,
+    _ask_quota_remaining,
+    _lang,
+    templates,
+)
+from astro_ai.routes.llm_support import _cached, _fire_error_alert, _llm_error_friendly
+from astro_ai.session import load_collection, load_last_matching, load_user
+
+log = logging.getLogger(__name__)
+
+router = APIRouter()
+
+
+@router.get("/ask", response_class=HTMLResponse)
+async def ask_form(request: Request, q: str | None = None,
+                   c: str | None = None, ctx: str | None = None) -> HTMLResponse:
+    """Free-form Q&A about the seeker's chart.
+
+    GET shows the question form. If `q` and `c` are present (after a POST
+    redirect or cache-hit re-visit), the answer is rendered alongside the
+    form so the user can ask follow-ups.
+
+    `ctx` selects the context type — "chart" (default) or "numerology".
+    Preserved as a hidden form field so "Ask another" from within a
+    numerology-context session stays in numerology-context.
+    """
+    saved = load_collection(request).active
+    if saved is None:
+        return RedirectResponse("/?needs_chart=ask", status_code=303)
+    lang = _lang(request)
+    context = ctx if ctx in ("chart", "numerology", "matching") else "chart"
+    answer = None
+    if q:
+        # Render a previously-asked question by re-running the cached lookup.
+        # POST handler stores the (question, category) and we look it up.
+        answer = _ask_lookup(saved, q, c or "general", lang, context=context)
+    return templates.TemplateResponse(
+        request, "ask.html",
+        {
+            "lang": lang,
+            "active_chart": saved,
+            "current_question": q or "",
+            "current_category": c or "general",
+            "current_context": context,
+            "answer": answer,
+            "remaining_today": _ask_quota_remaining(request),
+        },
+    )
+
+
+_ASK_CATEGORIES = {"general", "career", "marriage", "money", "health",
+                   "spiritual", "travel", "relationships"}
+
+
+def _ask_cache_key(saved, question: str, category: str, lang: str,
+                    context: str = "chart") -> str:
+    """Stable cache key for an (chart, question, category, context) tuple.
+
+    `context` (chart|numerology) is baked in so the same question asked
+    with a different context source doesn't collide — a numerology-
+    context answer references the numbers, a chart-context answer
+    doesn't; they are legitimately different responses.
+    """
+    chart_fp = cache.fingerprint_chart(
+        saved.birth_date, saved.birth_time, saved.birth_place
+    )
+    prompt_fp = cache.fingerprint_prompt(ASK_PROMPT_PATH)
+    # Python's hash() is randomised per-process; use a stable hash so the
+    # cache key survives container restarts.
+    import hashlib
+    q_fp = hashlib.sha1(question.strip().encode("utf-8")).hexdigest()[:16]
+    base = f"ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}"
+    return base if context == "chart" else f"{base}:ctx={context}"
+
+
+def _ask_lookup(saved, question: str, category: str, lang: str,
+                context: str = "chart") -> str | None:
+    """Look up an already-cached answer without burning a fresh LLM call."""
+    return cache.get(_ask_cache_key(saved, question, category, lang, context=context))
+
+
+@router.post("/ask")
+async def ask_submit(
+    request: Request,
+    question: str = Form(""),
+    category: str = Form("general"),
+    context: str = Form("chart"),
+) -> Response:
+    """Submit a question. PRG-style: validate → generate → cache → 303 to GET.
+
+    `context` is one of:
+      - "chart" (default): natal chart + current dasha + flags only
+      - "numerology": also pass the seeker's numerology reading, computed
+        from the saved chart's own name+birth_date so no extra data
+        collection is required. Enables numerology-flavoured follow-ups
+        from /numerology to be answered against BOTH the numbers and
+        the chart.
+      - "matching": also pass the "other partner" chart from the user's
+        most recent /matching submission (stored in the session cookie).
+        Enables follow-ups like "is this a good career-alignment match?"
+        that need BOTH charts. If the seeker's saved chart matches one
+        of the two matching parties, the OTHER party is passed; else
+        the groom chart is passed as the partner by default.
+    """
+    saved = load_collection(request).active
+    if saved is None:
+        return RedirectResponse("/?needs_chart=ask", status_code=303)
+    lang = _lang(request)
+    if context not in ("chart", "numerology", "matching"):
+        context = "chart"
+    question = (question or "").strip()
+    if not question or len(question) < 5:
+        return templates.TemplateResponse(
+            request, "ask.html",
+            {
+                "lang": lang,
+                "active_chart": saved,
+                "current_question": question,
+                "current_category": category,
+                "answer": None,
+                "error": "Please write a question of at least a few words.",
+                "remaining_today": _ask_quota_remaining(request),
+            },
+            status_code=400,
+        )
+    if len(question) > 600:
+        return templates.TemplateResponse(
+            request, "ask.html",
+            {
+                "lang": lang, "active_chart": saved,
+                "current_question": question[:600], "current_category": category,
+                "answer": None,
+                "error": "Question is too long (max 600 characters).",
+                "remaining_today": _ask_quota_remaining(request),
+            },
+            status_code=400,
+        )
+    if category not in _ASK_CATEGORIES:
+        category = "general"
+    if _ask_quota_remaining(request) <= 0:
+        return templates.TemplateResponse(
+            request, "ask.html",
+            {
+                "lang": lang, "active_chart": saved,
+                "current_question": question, "current_category": category,
+                "answer": None,
+                "error": "You've used today's question quota. Come back tomorrow.",
+                "remaining_today": 0,
+            },
+            status_code=429,
+        )
+
+    if not os.environ.get("OPENAI_API_KEY"):
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "API key not configured",
+             "message": "Add OPENAI_API_KEY (or set BHAGYA_LLM_PROVIDERS) before asking."},
+            status_code=503,
+        )
+
+    # Cache key includes question fingerprint so re-asking the same question
+    # serves instantly from cache. Counts against quota only on first ask.
+    try:
+        chart = compute_chart(saved.birth_date, saved.birth_time, saved.birth_place)
+    except ChartError as err:
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Couldn't compute the chart", "message": str(err)},
+            status_code=400,
+        )
+    dasha = compute_dasha_state(chart)
+    flags = compute_vedic_flags(chart)
+
+    # Numerology context: compute the reading from the saved chart's own
+    # name + birth_date so users asking follow-ups from /numerology get
+    # answers that reference BOTH their numbers and their chart. No
+    # extra data collection needed. birth_date on the saved record is
+    # already a str (session.ChartRecord). Silently skipped if reading
+    # fails — we still answer chart-only rather than error the user out.
+    numerology_reading = None
+    if context == "numerology":
+        try:
+            from astro_ai.numerology import compute as _num_compute
+            numerology_reading = _num_compute(
+                saved.name or "Seeker",
+                saved.birth_date,
+                system="chaldean",
+            )
+        except Exception:
+            log.debug("numerology context load failed for /ask", exc_info=True)
+
+    # Matching context: recover the partner chart from the last-matching
+    # cookie set by POST /matching. If the seeker's saved chart matches
+    # one of the two matching parties (by name + DOB), the OTHER party
+    # is treated as the partner; else default to the groom.
+    partner_chart = None
+    partner_label = "partner"
+    if context == "matching":
+        last = load_last_matching(request)
+        if last is None:
+            # No recent matching to draw from; downgrade to chart-only.
+            context = "chart"
+        else:
+            def _same(saved_c, name: str, dob: str) -> bool:
+                return (saved_c.birth_date == dob
+                        and (saved_c.name or "").strip().lower() == (name or "").strip().lower())
+            seeker_is_groom = _same(saved, last.groom_name, last.groom_birth_date)
+            seeker_is_bride = _same(saved, last.bride_name, last.bride_birth_date)
+            if seeker_is_groom or not seeker_is_bride:
+                # Seeker identifies with groom (or default): partner = bride
+                p_name = last.bride_name or "Bride"
+                p_dob, p_time, p_place = (last.bride_birth_date,
+                                          last.bride_birth_time,
+                                          last.bride_birth_place)
+                partner_label = "partner (bride from your Kundli match)"
+            else:
+                # Seeker identifies with bride: partner = groom
+                p_name = last.groom_name or "Groom"
+                p_dob, p_time, p_place = (last.groom_birth_date,
+                                          last.groom_birth_time,
+                                          last.groom_birth_place)
+                partner_label = "partner (groom from your Kundli match)"
+            try:
+                partner_chart = compute_chart(p_dob, p_time, p_place)
+            except Exception:
+                log.debug("partner chart compute failed for /ask matching context", exc_info=True)
+                partner_chart = None
+                context = "chart"
+
+    # Cache key includes context so the same question asked from
+    # /numerology (with numerology context) does not collide with the
+    # same question asked from /kundli (chart-only).
+    cache_key = _ask_cache_key(saved, question, category, lang, context=context)
+    was_cached = cache.get(cache_key) is not None
+    try:
+        answer_text = _cached(
+            cache_key=cache_key,
+            route="ask",
+            lang=lang,
+            ttl_days=None,
+            call_fn=lambda: generate_ask_answer(
+                chart=chart, dasha=dasha, flags=flags,
+                question=question, category=category,
+                prompt_path=ASK_PROMPT_PATH, lang=lang,
+                numerology_reading=numerology_reading,
+                partner_chart=partner_chart,
+                partner_label=partner_label,
+            ),
+        )
+    except Exception as err:
+        log.exception("ask LLM generation failed")
+        _fire_error_alert(request, err, "ask")
+        _title, _msg = _llm_error_friendly(err)
+        return templates.TemplateResponse(
+            request, "error.html",
+            {"title": _title, "message": _msg},
+            status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
+        )
+
+    # Save the Ask answer to the signed-in user's reading history so they can
+    # revisit past questions from /account. Best-effort — never fails the
+    # redirect. Only saves fresh generations (not cache hits) to avoid dupes.
+    if not was_cached:
+        _signed_in = load_user(request)
+        if _signed_in and _signed_in.sub and answer_text:
+            try:
+                users.save_reading(
+                    sub=_signed_in.sub,
+                    kind="ask",
+                    chart_id=saved.id,
+                    title=question[:80] + ("…" if len(question) > 80 else ""),
+                    body=answer_text,
+                    meta={"question": question, "category": category},
+                )
+            except Exception:  # noqa: BLE001 — history is best-effort
+                log.warning("save_reading(ask) failed for %s", _signed_in.sub)
+
+    # Notify owner ONLY on fresh generation (cache-hit re-asks would spam
+    # Telegram). But RECORD the event either way — we want /admin/activity
+    # to show every question the user actually asked, including re-asks
+    # that were served from cache. The `cache_hit` flag distinguishes them.
+    _u_ask = load_user(request)
+    if not was_cached:
+        notify.ask_submitted(
+            question=question, category=category, lang=lang,
+            user_email=(_u_ask.email if _u_ask else ""),
+            model=llm_providers.last_used_model(),
+        )
+    events.record(
+        type="form_ask",
+        email=(_u_ask.email if _u_ask else ""),
+        data={
+            "question": question, "category": category, "lang": lang,
+            "model": llm_providers.last_used_model(),
+            # Answer body persisted (truncated to 4000 chars) so
+            # /admin/activity can spot-check Q&A quality across all
+            # Cloud Run instances — SQLite cache is per-instance +
+            # ephemeral, but events go to GCS. Truncation guards
+            # against a single runaway answer bloating the daily
+            # events blob; ~4KB × 5000 events/day = ~20MB max.
+            "answer": (answer_text or "")[:4000],
+            "context": context,
+            "cache_hit": was_cached,
+        },
+    )
+
+    # Redirect with the question + category (+ context) in the URL so
+    # refresh doesn't re-submit, the user can bookmark / share the URL,
+    # back/forward work naturally, and a follow-up "Ask another" from
+    # the same context stays in the same context. Only bump the quota
+    # on a fresh generation.
+    from urllib.parse import urlencode
+    _redirect_params = {"q": question, "c": category}
+    if context != "chart":
+        _redirect_params["ctx"] = context
+    response = RedirectResponse(
+        f"/ask?{urlencode(_redirect_params)}", status_code=303
+    )
+    if not was_cached:
+        _ask_quota_bump(request, response)
+    return response
