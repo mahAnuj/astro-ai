@@ -35,10 +35,42 @@ agent's beat.
 2. **`src/astro_ai/knowledge/SOURCES.md`** — provenance ledger: which book each extraction
    came from, what is still unextracted. Read it before claiming the corpus lacks something;
    it may be listed as pending.
-3. **The source books in `data/`** — 7 PDFs including Varahamihira's *Hora Sastra*,
-   B.V. Raman, and three numerology texts. `pdftotext` is available. **`data/` is
-   gitignored for copyright hygiene — never copy substantial text out of it into the repo.**
-   Cite the tradition and the work; do not paste pages.
+3. **The source books in `data/`** — **all seven are readable.** The two OCR-blocked
+   scans have been deleted; there is no unreadable source left. Counts are plain
+   `pdftotext` (no `-layout`), measured 2026-08-08 — **always say which flag you used**,
+   since `-layout` gives ~30% fewer lines and past docs mixed the two:
+
+   | PDF | Lines | Use |
+   |---|---|---|
+   | `Numerology the Complete Guide…` (Goodwin, 1981) | 28,171 | ✅ largest numerology source — **Western/Pythagorean, not Vedic** |
+   | `vedic_astro_textbook.pdf` (P.V.R. Narasimha Rao) | 20,669 | ✅ richest astrology source; largely unextracted |
+   | `Astrology For Beginners BVRaman_text.pdf` | 15,409 | ✅ fully extracted |
+   | `book1-for-CD.pdf` (Rao, Lessons Vol. I) | 12,244 | ✅ not extracted |
+   | `Numerology-With Tantra…` (Johari) | 5,952 | ✅ primary *Vedic* numerology authority |
+   | `Astrology-e-book-compressed.pdf` (Vasudev) | 5,220 | ✅ introductory/philosophical |
+   | `Numerology-You.pdf` (Jayant Kumar) | 1,110 | ✅ 43-page sample only |
+
+   **88,775 lines total.** Extraction backlog is #191; #178 is now acquisition-only.
+
+   **Goodwin is Western, not Vedic.** It can settle Western-school questions and evidence
+   that a method is legitimate practice — it cannot establish that a method is *the Vedic
+   method*. Citing it as authority for a reading advertised as Vedic is its own error.
+   See `SOURCES.md` §"Note on source 9".
+
+   **`data/` is gitignored for copyright hygiene — never copy substantial text out of it
+   into the repo.** Cite the tradition, the work, and the chapter; do not paste pages.
+
+   **Known absences, re-measured across all 88,775 lines — do not re-search:** `Vashya`
+   **0**, `Lo Shu` **0**, `Ashtakoot` **0**. `Yoni` returns 3 hits but **all three are
+   false positives** — Vasudev's rebirth passage using *yoni* as "womb/birth-class"
+   (lines 4237, 4240, 4985), not the Yoni Kuta of matching. Rudraksha hits carry no mukhi
+   mapping. The Ashtakoota matching tables are **not** in any source we hold. Report that
+   as an absence; do not reconstruct them from memory.
+
+   **Newly confirmed present** (earlier notes wrongly implied otherwise): `Numerology-You.pdf`
+   line 815 has a "Chaldean And Pythagorean System" section stating the book uses
+   **Chaldean** alphabet values, and names Karmic Debt numbers (13, 14, 16, 19) and Master
+   numbers (11, 22, 33) explicitly. Cite it for the numerology-table questions.
 4. **A published almanac** for any date-bearing claim — Drik Panchang is what this repo
    has used and what its gates assert against.
 
