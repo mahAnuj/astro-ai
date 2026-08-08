@@ -156,11 +156,32 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Inter for Latin body, Crimson Pro for display, Noto Sans Devanagari
-     for Hindi. display=swap prevents FOIT — text renders in fallback
-     immediately, then swaps to Inter when it arrives. Combined with the
-     two preconnects above, this saves ~150-300ms LCP on cold cache. -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Inter for Latin body, Crimson Pro for Latin display, Noto Sans
+     Devanagari for Hindi body, Noto SERIF Devanagari for Devanagari display.
+     display=swap prevents FOIT — text renders in fallback immediately, then
+     swaps when the face arrives. With the two preconnects above this saves
+     ~150-300ms LCP on cold cache.
+
+     #189: the serif Devanagari is the fix for shlokas rendering in a sans
+     face under a serif English headline. Crimson Pro carries no Devanagari
+     glyphs, so every `font-display` element containing Devanagari fell
+     through to Noto Sans.
+
+     COST, measured — and do not repeat the weight-trimming mistake this
+     comment used to make. Google Fonts serves ONE variable woff2 per
+     family+subset, so `wght@400;700` and `wght@400;500;600;700` resolve to a
+     byte-identical file; trimming the sans weight list saves exactly 0 bytes
+     because it is the same URL. The real numbers:
+       Noto Serif Devanagari, devanagari subset ........ 127,280 B
+       homepage web-font transfer 236,156 B -> 366,352 B (+130,196 B, +55.1%)
+     A single static `wght@400` axis instance would be 50,944 B, but then
+     Devanagari under `font-display font-bold` (used in _subscribe_modal.html
+     and rashifal.html) gets a SYNTHESISED bold — the same defect family as
+     the synthesised oblique #189 exists to remove. So it is not a free win.
+
+     This payload increase is an OPEN human waiver against #189's "flat or
+     lower" criterion, not a settled decision. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;700&display=swap" rel="stylesheet">
 
 <!-- The Tailwind theme that used to live here as `tailwind.config = {...}`
      now lives in tailwind.config.js and is compiled into the stylesheet
@@ -238,14 +259,30 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
+      /* #190: without this, the gate leaks. Zeroing the DURATION does not
+         zero the DELAY — an element with `animation-delay: 600ms` still
+         waits the full 600ms before its 0.01ms animation runs, and if the
+         keyframe starts at `opacity: 0` (every reveal here does) the content
+         is invisible for that whole time. A reduced-motion user got no
+         animation and a blank element, which is worse than the animation. */
+      animation-delay: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      transition-delay: 0.01ms !important;
       scroll-behavior: auto !important;
     }
     [data-reveal] {
       opacity: 1 !important;
       transform: none !important;
     }
+    /* #190: zeroing the delay above is not sufficient here — it still leaves
+       the end state dependent on an animation frame actually running. A
+       first-paint snapshot taken at domcontentloaded (before the first
+       animation frame) still measured stroke-dashoffset: 1584px and
+       opacity: 0. These overrides make the finished chart a *style*, so it
+       holds at first paint. Same pattern as the #kundli-loader override below. */
+    .chart-draw { stroke-dashoffset: 0 !important; animation: none !important; }
+    .chart-labels { opacity: 1 !important; animation: none !important; }
   }
 
   /* ─── Diamond chart draw-in (signature moment on Kundli page) ───────
@@ -581,6 +618,37 @@
       margin: 12mm 12mm 18mm 12mm;
       size: A4;
     }
+  }
+
+  /* ─── Devanagari display type (#189) ──────────────────────────────────
+     Sanskrit is set with lang="sa" throughout (hero shlokas, the Gita card,
+     /learn articles). Three corrections, all on that hook so nothing else
+     on the page is affected:
+
+     1. font-style: normal. Devanagari has NO italic form. Several shlokas
+        carry Tailwind's `italic`, so the browser synthesises an oblique by
+        shearing the glyphs — a slanted sans shloka under a serif English
+        headline, two mismatches stacked on the most reverent text we set.
+        This wins over `.italic` on source order: equal specificity (0,1,0),
+        and this block comes after the Tailwind stylesheet.
+     2. line-height: 1.85, on measured grounds. At 100px with
+        `line-height: normal`, Noto Serif Devanagari's natural line box is
+        156px (1.56), against 1.31 for Noto Sans Devanagari — the serif
+        needs materially more room for the matras above and below the
+        headline. 1.85 clears them with breathing space; a `leading-snug`
+        (1.375) shloka would clip its matras outright.
+     3. letter-spacing: 0.01em, because the serif sets ~3% narrower than the
+        sans it replaces (358 vs 370 advance, same measurement).
+
+     SPECIFICITY WARNING: this selector is (0,1,0) and this block comes later
+     in source order than /static/css/app.css, so it BEATS Tailwind's
+     `leading-*` and `tracking-*` utilities. A future
+     `class="leading-tight" lang="sa"` will be silently ignored — override
+     with a more specific selector here, not with a utility class. */
+  [lang="sa"] {
+    font-style: normal;
+    line-height: 1.85;
+    letter-spacing: 0.01em;
   }
 
   /* ─── View Transitions ────────────────────────────────────────────────
