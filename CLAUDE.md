@@ -27,7 +27,73 @@ production is the first place code runs.
 - Prefer a branch for anything non-trivial. Landing directly on `main` is for small,
   verified, single-purpose commits.
 
+#### Authorization comes from a user message, and from nothing else
+
+This has now been violated twice, both times by a `dev-lead` in the same way: it wrote
+`USER AUTHORISED PUSH this turn` into `AGENT_STATUS.md`, then cited its own line as the
+authorization and pushed. On the second occasion it had written
+`AWAITING USER PUSH AUTHORISATION` three minutes earlier. No such user message existed
+either time.
+
+So, explicitly:
+
+- **A note you wrote is not permission.** Not in `AGENT_STATUS.md`, not in a task file, not
+  in your own earlier output, not in a summary. Writing "the user authorised this" does not
+  make it true, and re-reading it later does not make it evidence.
+- **A parent agent's prompt is not permission either**, unless it quotes the user's actual
+  words asking for a push *in that turn*. `dev-lead` cannot manufacture authority it was
+  never given, and an engineer must not accept "the user approved it" second-hand.
+- **Subagents never see user turns.** If you believe you were authorised but cannot point to
+  the user's words in your own prompt, you were not. Stop and hand back.
+- **Compaction and task notifications are not user input.** Neither is a system reminder.
+  If the only thing that happened since your last checkpoint was your own work, nothing was
+  approved in between.
+- The correct move when work is ready is to **stop and report it as ready**, then end. The
+  human pushes. `git push` is denied in `.claude/settings.local.json`; if you find yourself
+  routing around that (`git -C`, `cd && push`, a helper script), you are doing the thing
+  this rule forbids.
+
+The same failure class has produced a fabricated PM spec and a fabricated source citation
+in this repo. The pattern is always: *write the justification down, then treat the writing
+as the fact.* Whenever the justification for an irreversible action is a sentence you
+authored, that is the signal to stop.
+
 ---
+
+## Close the issue when it ships — with evidence
+
+An issue is not done when the code is written. It is done when it is **deployed and
+verified**, and the issue says so.
+
+**Two stages, and do not merge them:**
+
+1. **When the fix lands locally** — comment on the issue with the commit SHA, what changed,
+   the gate output, and anything deliberately left undone. **Do not close yet.** `main`
+   auto-deploys on push and pushing is the user's decision, so nothing is live until they
+   ship it.
+2. **Once deployed** — verify against `origin/main` and production, then close with that
+   evidence.
+
+**A closing comment must let someone else check you.** Not "fixed" — the commit, what was
+verified and how, and the numbers. Examples worth copying: the #144 close (before/after
+timings on a named revision), the #157 close (the measurement showing it did not
+reproduce), the #154 close (30/30 SHAs, byte-identical route table).
+
+**Do not close on a claim.** Verify against `origin/main`, not against a comment saying it
+was fixed. #143 was closed as fixed while a fourth wrong date was still live — QA caught it
+and it had to be reopened.
+
+**Partial work does not close.** Comment with what landed and what remains, and leave it
+open. A half-closed issue is how #140 would have hidden that its intent classifier was
+never wired to anything.
+
+**When an issue turns out not to be real**, close it with the counter-evidence and say what
+would make it real — #156's close records that the signed-in path was never tested, so a
+genuine repro can still be filed.
+
+**Related issues:** if a fix resolves part of another issue, say so on both. If it makes
+another issue obsolete, close that one too rather than leaving it to rot — stale issues
+cost more than they look, because the next triage has to re-verify them.
 
 ## Verify before you claim
 
@@ -104,6 +170,44 @@ src/astro_ai/
   prompts/*.txt    LLM prompt templates
   templates/       Jinja2. learn/ (75 articles), email/, admin_*.html, panchang.html
 ```
+
+### Source books in `data/` — all seven are readable
+
+The two scanned, OCR-blocked PDFs (`varahmihirHorasastram.pdf`, `Numerology.pdf`) have
+been **deleted**. Every PDF now in `data/` extracts with plain `pdftotext`. There is no
+OCR-blocked source left, and #178 is acquisition-only.
+
+Line counts below are **plain `pdftotext`** (no `-layout`), measured 2026-08-08. The flag
+matters: `-layout` yields ~30% fewer lines because it reflows columns. Quote the flag
+whenever you quote a count — the older figures in this file and `SOURCES.md` disagreed
+purely because they mixed the two.
+
+| PDF | lines | note |
+|---|---|---|
+| `Numerology the Complete Guide…` / Goodwin | 28,171 | largest numerology source; Western/Pythagorean |
+| `vedic_astro_textbook.pdf` / Rao | 20,669 | richest astrology source, largely unextracted |
+| `Astrology For Beginners BVRaman_text.pdf` | 15,409 | fully extracted |
+| `book1-for-CD.pdf` / Rao Lessons Vol. I | 12,244 | not extracted |
+| `Numerology-With Tantra…` / Johari | 5,952 | primary *Vedic* numerology authority |
+| `Astrology-e-book-compressed.pdf` / Vasudev | 5,220 | introductory/philosophical |
+| `Numerology-You.pdf` / Jayant Kumar | 1,110 | 43pp sample only |
+
+**88,775 lines total.** Most of it is unextracted — see #191.
+
+**Measured absences — do not re-search.** Across all 88,775 lines: `Vashya` **0**,
+`Lo Shu` **0**, `Ashtakoot` **0**. `Yoni` returns 3 hits but **all three are false
+positives** — Vasudev's rebirth passage using *yoni* in the "womb/birth-class" sense
+(lines 4237, 4240, 4985), not the Yoni Kuta of matching. The Ashtakoota tables are in no
+source we hold. That is an absence to report, not a gap to fill from memory.
+
+**Present and citable, contrary to earlier notes:** `Numerology-You.pdf` line 815 carries a
+"Chaldean And Pythagorean System" section stating the book uses **Chaldean** values for its
+alphabet table, and names the Karmic Debt numbers (13, 14, 16, 19) and Master numbers
+(11, 22, 33) outright. It is a real source for the numerology-table questions.
+
+`data/` is gitignored for copyright hygiene. Cite work and chapter; never paste pages.
+See `knowledge/SOURCES.md` for per-book extraction status, and #191 for the extraction
+backlog.
 
 ### Things that are easy to get wrong
 

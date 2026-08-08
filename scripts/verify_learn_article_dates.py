@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify hardcoded festival dates in /learn articles against the registry.
+"""Verify hardcoded festival dates in /learn articles against the repo's own sources.
 
 WHY THIS EXISTS
 ---------------
@@ -19,16 +19,15 @@ prose.
 Rendering 75 static articles off the registry is a much larger change than the
 bug warranted. This script is the cheap version of the same guarantee: the
 articles may keep hardcoding dates, but a hardcoded date that contradicts the
-registry fails a check.
+repo fails a check.
 
-  Gate 1 - article date vs registry date.  Every "Month D, YYYY" in a learn
-      article that can be CONFIDENTLY tied to a festival slug must equal that
-      festival's registry date for that year. Confidently means: exactly one
-      festival name appears on the same line as the date, and the year is one
-      the registry covers. Anything else is reported as UNCHECKED, not passed
-      and not failed — see the coverage section, which prints every unchecked
-      claim with the reason. Silent coverage is how #143 survived; an
-      unchecked date is a fact about this gate, not about the article.
+  Gate 1 - article date vs its source.  Every "Month D, YYYY" in a learn
+      article that can be CONFIDENTLY tied to a SOURCE (see below) must equal
+      what that source says for that year. Anything that cannot be tied to a
+      source is reported as UNCHECKED, not passed and not failed — see the
+      coverage section, which prints every unchecked claim with the reason.
+      Silent coverage is how #143 survived; an unchecked date is a fact about
+      this gate, not about the article.
 
   Gate 2 - weekday name vs the date it labels.  A claim written
       "Tuesday, Nov 10, 2026" must actually fall on a Tuesday. This runs on
@@ -36,6 +35,49 @@ registry fails a check.
       needs no festival at all — just the calendar. It is the check that would
       have caught a date edit that forgot to move the day name with it, which
       is the exact mistake the #143 fix had to avoid making.
+
+  Gate 3 - attribution completeness in muhurat/festival articles.  In a
+      STRICT article (see below), a date this gate cannot attribute is a FAIL,
+      not an UNCHECKED. A page whose entire subject is "here are the dates" has
+      no business carrying a date that no source in this repo can confirm. In
+      every other article the same claim stays UNCHECKED and does not affect the
+      exit code, because a date in a prose explainer is usually an illustration,
+      not a claim about the calendar.
+
+TWO KINDS OF SOURCE
+-------------------
+A `Source` answers one question: "what date is <name> in <year>?".
+
+  `RegistrySource` - a `festival_registry` row. Hand-typed, Drik-verified,
+      three years of coverage.
+  `ComputedSource` - a callable that COMPUTES the date from the ephemeris:
+      `muhurat._ABUJHA_RULES` via `muhurat._abujha_days` (Akshaya Tritiya,
+      Basant Panchami, Bhadli Navami, Devuthani Ekadashi, and Tulsi Vivah as
+      Devuthani + 1, exactly as `_abujha_days` derives it), and
+      `sankranti.sankranti_date` for the Dhanu / Makar / Meena / Mesha
+      sankrantis.
+
+Every computed source is code the repo ALREADY SHIPS and already renders to
+users. No almanac fact is typed into this file: the only literal dates below
+are the six sankranti anchors in `_SANKRANTI_ANCHORS`, which are assertions
+ABOUT the computation, not inputs to it, and which fail the run if they stop
+holding.
+
+Where a phrase is known to both kinds, the REGISTRY WINS — it is the source of
+truth, and the computed value is instead used to check it (preflight B).
+
+COMPUTED SOURCES ARE THE OPPOSITE OF A SUPPRESSION LIST
+-------------------------------------------------------
+Read that section below first; this paragraph exists so nobody mistakes the
+one for the other. A suppression list REMOVES claims from the gate's reach:
+after adding to it, a wrong date passes. A computed source ADDS claims to the
+gate's reach: "Bhadli Navami — Monday, Jul 12, 2027" was UNCHECKED before,
+because the registry has no Bhadli Navami row, and is now compared against
+`lunar_dates.shukla_tithi_date(2027, "Ashadha", 9)` — a wrong date there is a
+FAIL that did not exist before. The direction of every source added here must
+be that one. If a "source" you are about to add would make a currently-failing
+claim stop failing, it is a suppression list wearing a different hat, and the
+answer is no.
 
 NO SUPPRESSION LIST
 -------------------
@@ -46,12 +88,75 @@ a mismatch is a FAIL naming the file, the line and both dates. If this script
 exits 1 on a date nobody has fixed yet, that is the script working — fix the
 date or the registry, do not teach the gate to look away.
 
+There is also no opt-in list of strict articles, for the same reason a
+suppression list is banned: a list is a thing you forget to update. Strictness
+is DERIVED from the filename (`strict_articles`), so a future
+`sharad-purnima-2027.html` enters strict mode the day it is created.
+
 SCOPE
 -----
-Only dates of the form "Month D, YYYY" (with an optional leading weekday) are
-recognised. Date ranges ("Nov 20-25"), bare months, and tithi names carry no
-year and are not claims this gate can check. Association is line-local: a
-festival named on a different line than its date is not associated, by design.
+Two written forms are recognised, both with an optional leading weekday:
+"Month D, YYYY" ("Tuesday, Nov 10, 2026") and "D Month YYYY"
+("Friday, 20 Nov 2026"). Both produce identical claims, so every gate treats
+them the same.
+
+The second form is not a convenience. Only the first was recognised at first,
+and `griha-pravesh-muhurat-2026-2027.html` — a STRICT article — was written
+entirely in the second, so all ~21 of its dates were invisible: the gate
+reported it as "0 unattributed of 0" and passed a file it had never read. An
+article must not be able to evade this gate by choosing a prose style, because
+a gate that reports success on what it never examined is the exact defect it
+exists to prevent. Any further form found in an article belongs here too.
+
+A YEARLESS DATE IS REPORTED, NOT HIDDEN
+---------------------------------------
+Both forms above require a 4-digit year, because a date with no year cannot be
+compared to anything. An article about a single year, though, naturally stops
+repeating it: `vivah-muhurat-2027.html` says "Chaturmas opens two days later, on
+Jul 14". Five such strings sat in that file while the coverage report called it
+"0 unattributed of 20" — invisible to all three gates, which is the same shape
+as #143 whatever the values happen to be.
+
+So `_BARE_DATE_RE` (separate from `_DATE_RE`, which still defines what a claim
+is) finds date-SHAPED strings, and Coverage prints every one the gate did not
+turn into a claim, with the reason. Two kinds stay unchecked and are LISTED
+rather than assumed away:
+
+  ranges  - "Nov 20-25", "20-25 Nov", "17 May-15 Jun". A range names no single
+            day; it has always been out of scope and still is. The gate now
+            says so per occurrence instead of silently skipping it.
+  bare dates with no year obtainable - "the sequence skips Nov 7 and Nov 9 this
+            year" in a block that never states a year. Nothing can be inferred,
+            so nothing is.
+
+In a STRICT article only, a bare single "Month D" may INHERIT a year: from the
+one distinct year of the full claims on its own line, else from the one distinct
+year in its block, else not at all. Two or more distinct years in the winning
+scope decline, as ambiguity always does here. Ranges never inherit. Non-strict
+articles never inherit, because inventing claims across 71 unaudited explainers
+would report failures on prose that never claimed a date.
+
+An inherited claim is a real claim: same attribution, same Gate 1, same Gate 2.
+It is marked `year_source="inherited"` and counted separately so it is never
+read as something the article spelled out, and it may only ADD checks — see
+`_attribute` for the guard that stops a bare date from taking a festival name
+that a written-out date on the same line is already using. Gate 3 does not fail
+an inherited date it cannot attribute: the article never wrote a year there, so
+a decline is a fact about the gate's reach, and every one of them is listed in
+Coverage.
+
+Association is scoped, in exactly two conservative tiers:
+
+  line  - exactly one distinct source named on the same line as the date.
+  block - zero sources on the line, and exactly one distinct source in the
+          BLOCK (the maximal run of consecutive non-blank lines around it).
+          This exists because an article that opens a <ul> with the festival
+          name and puts the date on the next <li> was previously unreachable.
+
+There is no third tier and there never should be: a wrong attribution is worse
+than no attribution, because it turns a real check into a fabricated one. Both
+tiers additionally DECLINE when the winning scope carries two or more dates of
+the same year — one festival name cannot say which of them it labels.
 
 Usage:  uv run python scripts/verify_learn_article_dates.py
 """
@@ -61,20 +166,179 @@ from __future__ import annotations
 import html
 import re
 import sys
+from collections import Counter
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from typing import Callable
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LEARN_DIR = REPO_ROOT / "src" / "astro_ai" / "templates" / "learn"
 
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from astro_ai import festival_registry  # noqa: E402
+from astro_ai import festival_registry, muhurat, sankranti  # noqa: E402
 
 
 # --------------------------------------------------------------------------
-# Festival name -> slug
+# Sources - the two things that can answer "what date is X in year Y?"
+# --------------------------------------------------------------------------
+
+class Source:
+    """Something that can resolve a named observance to a date in a year.
+
+    Identity is `key`, so the same source reached through two different
+    spellings ("Chhoti Diwali", "Naraka Chaturdashi") counts once when a scope
+    is checked for ambiguity.
+    """
+
+    kind = "source"
+
+    def __init__(self, key: str, label: str) -> None:
+        self.key = key
+        self.label = label
+
+    def date_for(self, year: int) -> date | None:  # pragma: no cover - abstract
+        raise NotImplementedError
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, Source) and other.key == self.key
+
+    def __hash__(self) -> int:
+        return hash(self.key)
+
+    def __repr__(self) -> str:
+        return f"<{self.kind} {self.key}>"
+
+
+class RegistrySource(Source):
+    """A `festival_registry` row — the source of truth, and it wins ties."""
+
+    kind = "registry"
+
+    def __init__(self, slug: str) -> None:
+        self.fest = _BY_SLUG[slug]
+        super().__init__(f"registry:{slug}", self.fest.name_en)
+
+    def date_for(self, year: int) -> date | None:
+        iso = self.fest.dates.get(year)
+        return date.fromisoformat(iso) if iso else None
+
+
+class ComputedSource(Source):
+    """A date computed from the ephemeris by code this repo already ships.
+
+    `resolve` must return None rather than raise for a year it cannot answer;
+    the preflight then reports that as a failure instead of the run dying.
+    """
+
+    kind = "computed"
+
+    def __init__(self, name: str, resolve: Callable[[int], date | None]) -> None:
+        self._resolve = resolve
+        super().__init__(f"computed:{name.lower().replace(' ', '-')}", name)
+
+    def date_for(self, year: int) -> date | None:
+        try:
+            return self._resolve(year)
+        except Exception:
+            return None
+
+
+_BY_SLUG = {f.slug: f for f in festival_registry.FESTIVALS}
+
+
+# --------------------------------------------------------------------------
+# Computed sources - built from repo code, no dates typed here
+# --------------------------------------------------------------------------
+
+def _abujha_resolver(name: str) -> Callable[[int], date | None]:
+    """Look `name` up in `muhurat._abujha_days(year)`.
+
+    That function owns the month/tithi/reckoning per rule and owns the
+    Tulsi Vivah = Devuthani + 1 derivation, so this reads its answer rather
+    than restating any part of it.
+    """
+    def resolve(year: int) -> date | None:
+        for day, entries in muhurat._abujha_days(year).items():
+            if any(entry_name == name for entry_name, _events in entries):
+                return day
+        return None
+    return resolve
+
+
+def _sankranti_resolver(rashi: str) -> Callable[[int], date | None]:
+    def resolve(year: int) -> date | None:
+        return sankranti.sankranti_date(year, rashi)
+    return resolve
+
+
+# Rashis whose sankranti the articles actually name — the Kharmas boundaries
+# (Dhanu opens Dhanurmas, Makar closes it, Meena opens Meenmas, Mesha closes
+# it). Adding the other eight would cost nothing but claims nothing either.
+_SANKRANTI_RASHIS: tuple[str, ...] = ("Dhanu", "Makara", "Meena", "Mesha")
+
+
+def computed_sources() -> dict[str, ComputedSource]:
+    """Phrase -> ComputedSource, derived entirely from repo code.
+
+    `muhurat._ABUJHA_RULES` supplies its own four names; Tulsi Vivah is added
+    because `muhurat._abujha_days` derives it from Devuthani + 1 and therefore
+    already answers for it. `sankranti` supplies the four sankranti names plus
+    the spellings in `sankranti._ALIASES` ("Makar" alongside "Makara"), so that
+    the spelling the articles and the registry use is the spelling looked up.
+    """
+    sources: dict[str, ComputedSource] = {}
+
+    abujha_names = [name for name, *_rest in muhurat._ABUJHA_RULES]
+    abujha_names.append("Tulsi Vivah")
+    for name in abujha_names:
+        sources[name.lower()] = ComputedSource(name, _abujha_resolver(name))
+
+    for rashi in _SANKRANTI_RASHIS:
+        src = ComputedSource(f"{rashi} Sankranti", _sankranti_resolver(rashi))
+        sources[f"{rashi} Sankranti".lower()] = src
+        # `sankranti._ALIASES` is imported deliberately, same precedent as
+        # `sankranti.py` importing `adhik_maas._sun_rashi`: the alias table is
+        # the repo's own record of which spellings are in circulation, and
+        # retyping "makar" here would be a second copy to drift.
+        for alias, canonical in sankranti._ALIASES.items():
+            if canonical == rashi:
+                sources[f"{alias} sankranti"] = src
+
+    return sources
+
+
+# --------------------------------------------------------------------------
+# Sankranti anchors - assertions ABOUT the computation, not inputs to it
+# --------------------------------------------------------------------------
+
+# Published almanac readings for six sankranti observance dates. They live in
+# `sankranti.py`'s docstring as prose, where nothing executes them: if someone
+# changes that module's sunset convention, the docstring goes stale silently
+# and every sankranti date in every article moves with it. Asserting them here
+# makes that change loud.
+#
+# The three Makar dates are independently corroborated INSIDE this repo by
+# `festival_registry`'s makar-sankranti and pongal rows (both Drik-verified,
+# festival_registry.py:141 and :174) — preflight B compares those rows against
+# the same computation, so Makar is checked twice by two different paths.
+#
+# Dhanu 2026, Meena 2027 and Mesha 2027 have no registry row and are the ones
+# these literals exist for: Drik Panchang, New Delhi (geoname-id 1261481),
+# read 2026-08-08, per `sankranti.py`'s VALIDATION section (b).
+_SANKRANTI_ANCHORS: tuple[tuple[int, str, str], ...] = (
+    (2026, "Makara", "2026-01-14"),   # also registry-verified
+    (2027, "Makara", "2027-01-15"),   # also registry-verified
+    (2028, "Makara", "2028-01-15"),   # also registry-verified
+    (2026, "Dhanu",  "2026-12-16"),   # Drik, New Delhi, read 2026-08-08
+    (2027, "Meena",  "2027-03-15"),   # Drik, New Delhi, read 2026-08-08
+    (2027, "Mesha",  "2027-04-14"),   # Drik, New Delhi, read 2026-08-08
+)
+
+
+# --------------------------------------------------------------------------
+# Festival name -> Source
 # --------------------------------------------------------------------------
 
 # Spellings the articles use that the registry's `name_en` does not produce on
@@ -100,7 +364,7 @@ HAND_ALIASES: dict[str, str] = {
 _NOT_A_NAME = {"begins"}
 
 
-def festival_phrases() -> dict[str, str]:
+def registry_phrases() -> dict[str, str]:
     """Lowercased name phrase -> festival slug.
 
     Derived from the registry first — `name_en` plus each of its
@@ -123,8 +387,36 @@ def festival_phrases() -> dict[str, str]:
     return phrases
 
 
-PHRASES = festival_phrases()
-_KNOWN_SLUGS = {f.slug for f in festival_registry.FESTIVALS}
+def build_sources() -> tuple[dict[str, Source], list[tuple[str, RegistrySource, ComputedSource]]]:
+    """The one phrase -> Source map, plus the phrases both kinds claim.
+
+    Registry precedence: a phrase known to both resolves to the RegistrySource.
+    The displaced ComputedSource is not discarded — it is returned as an
+    overlap so the preflight can require the two to agree, which is how the
+    computation gets checked against the hand-verified rows.
+    """
+    sources: dict[str, Source] = {}
+    overlaps: list[tuple[str, RegistrySource, ComputedSource]] = []
+
+    computed = computed_sources()
+    for phrase, csrc in computed.items():
+        sources[phrase] = csrc
+
+    for phrase, slug in registry_phrases().items():
+        if slug not in _BY_SLUG:
+            continue  # reported by the preflight below, not silently dropped
+        rsrc = RegistrySource(slug)
+        prior = sources.get(phrase)
+        if isinstance(prior, ComputedSource):
+            overlaps.append((phrase, rsrc, prior))
+        sources[phrase] = rsrc
+
+    return sources, overlaps
+
+
+SOURCES, OVERLAPS = build_sources()
+
+_KNOWN_SLUGS = set(_BY_SLUG)
 _UNKNOWN_ALIASES = sorted(set(HAND_ALIASES.values()) - _KNOWN_SLUGS)
 
 # Longest phrase first so "Chhoti Diwali" is consumed before the "Diwali"
@@ -132,7 +424,7 @@ _UNKNOWN_ALIASES = sorted(set(HAND_ALIASES.values()) - _KNOWN_SLUGS)
 _PHRASE_RE = re.compile(
     "|".join(
         rf"\b{re.escape(p)}\b"
-        for p in sorted(PHRASES, key=len, reverse=True)
+        for p in sorted(SOURCES, key=len, reverse=True)
     ),
     re.IGNORECASE,
 )
@@ -154,15 +446,196 @@ _WEEKDAYS = (
 )
 
 _MONTH_RE = "|".join(sorted(_MONTHS, key=len, reverse=True))
+_ORDINAL = r"(?:st|nd|rd|th)?"
+
+# One regex with two alternatives, never two passes: `finditer` yields
+# non-overlapping matches, so a date cannot be counted once per form and
+# inflate the coverage denominator. "Month D" is tried first as the more
+# specific form.
+#
+# Both alternatives require a real name from `_MONTHS` fenced by `\b`, so
+# "15 minutes 2027" cannot match (no month) and "15 Maybe 2027" cannot either
+# (the `\b` after the month rejects "May" inside "Maybe"). The year is factored
+# out of the alternation, which is why only month/day need per-form names.
+#
+# The lookbehind on the "D Month" form rejects a day glued to punctuation:
+# "20-25 Nov 2026" (a range — out of scope, same as "Nov 20-25, 2026"),
+# "v1.2 Nov 2026", "10:25 Nov 2026". A preceding digit is already impossible
+# because of the `\b`, so "2026 Nov" cannot yield a day of "26".
 _DATE_RE = re.compile(
     rf"(?:(?P<weekday>{'|'.join(_WEEKDAYS)}),\s*)?"
-    rf"\b(?P<month>{_MONTH_RE})\s+(?P<day>\d{{1,2}})(?:st|nd|rd|th)?,?\s+"
-    rf"(?P<year>\d{{4}})\b",
+    rf"(?:"
+    rf"\b(?P<month_a>{_MONTH_RE})\b\s+(?P<day_a>\d{{1,2}}){_ORDINAL}"
+    rf"|"
+    rf"(?<![\d./:\-–—])\b(?P<day_b>\d{{1,2}}){_ORDINAL}"
+    rf"\s+(?P<month_b>{_MONTH_RE})\b"
+    rf")"
+    rf",?\s+(?P<year>\d{{4}})\b",
     re.IGNORECASE,
 )
 
+
+def _month_day(m: re.Match[str]) -> tuple[int, int]:
+    """(month number, day number) from whichever date form matched.
+
+    Works for `_DATE_RE` and for the single-date forms of `_BARE_DATE_RE`,
+    which use the same group names on purpose.
+    """
+    month = m.group("month_a") or m.group("month_b")
+    day = m.group("day_a") or m.group("day_b")
+    return _MONTHS[month.lower()], int(day)
+
+
+# The blind spot `_DATE_RE` leaves, made visible instead of assumed away.
+#
+# `_DATE_RE` requires a 4-digit year on every match, which is right for a claim:
+# a date with no year cannot be compared to anything. But an article about one
+# year naturally drops the year on the second mention — "Chaturmas opens two
+# days later, on Jul 14" — and every such string was invisible to all three
+# gates while the coverage report called that file "0 unattributed of 20". A
+# dated string no gate reads is the exact shape of #143, so it is now counted
+# and listed even where it cannot be checked.
+#
+# This is a SEPARATE regex on purpose. Loosening `_DATE_RE` would change what
+# counts as a claim in all 75 articles at once; this one only feeds the report
+# and the strict-article year inheritance below.
+#
+# Range alternatives come first so "Jan 19-20" is seen whole rather than as
+# "Jan 19", and so a cross-month range ("17 May-15 Jun 2026") is not reported as
+# the bare date "17 May". Ranges remain out of scope either way — the point is
+# that "out of scope" is now printed rather than silent.
+#
+# `(?!\d)` on the single "Month D" form is what keeps "Jan 2027" from reading as
+# "Jan 20"; `_DATE_RE` does not need it because a 4-digit year must follow there.
+_BARE_DATE_RE = re.compile(
+    rf"(?:(?P<weekday>{'|'.join(_WEEKDAYS)}),\s*)?"
+    rf"(?:"
+    rf"(?P<range_a>\b(?:{_MONTH_RE})\b\s+\d{{1,2}}{_ORDINAL}"
+    rf"\s*[-–—]\s*\b(?:{_MONTH_RE})\b\s+\d{{1,2}}{_ORDINAL})"
+    rf"|"
+    rf"(?P<range_b>(?<![\d./:\-–—])\b\d{{1,2}}{_ORDINAL}\s+(?:{_MONTH_RE})\b"
+    rf"\s*[-–—]\s*\d{{1,2}}{_ORDINAL}\s+(?:{_MONTH_RE})\b)"
+    rf"|"
+    rf"(?P<range_c>\b(?:{_MONTH_RE})\b\s+\d{{1,2}}{_ORDINAL}"
+    rf"\s*[-–—]\s*\d{{1,2}}{_ORDINAL})"
+    rf"|"
+    rf"(?P<range_d>(?<![\d./:\-–—])\b\d{{1,2}}{_ORDINAL}"
+    rf"\s*[-–—]\s*\d{{1,2}}{_ORDINAL}\s+(?:{_MONTH_RE})\b)"
+    rf"|"
+    rf"\b(?P<month_a>{_MONTH_RE})\b\s+(?P<day_a>\d{{1,2}}){_ORDINAL}(?!\d)"
+    rf"|"
+    rf"(?<![\d./:\-–—])\b(?P<day_b>\d{{1,2}}){_ORDINAL}"
+    rf"\s+(?P<month_b>{_MONTH_RE})\b"
+    rf")",
+    re.IGNORECASE,
+)
+
+_RANGE_GROUPS = ("range_a", "range_b", "range_c", "range_d")
+
+RANGE_REASON = (
+    "date range — ranges name no single day and have always been out of this "
+    "gate's scope, exactly as 'Nov 20-25, 2026' is"
+)
+NON_STRICT_REASON = (
+    "no year — a bare date inherits one only in a muhurat/festival article"
+)
+
+
+def _is_range(m: re.Match[str]) -> bool:
+    return any(m.group(g) for g in _RANGE_GROUPS)
+
+
+def _unclaimed_dates(text: str) -> list[re.Match[str]]:
+    """Date-shaped strings in `text` that `_DATE_RE` did not read as claims.
+
+    Anything overlapping a real claim is dropped, so the "Jul 12" inside
+    "Monday, Jul 12, 2027" is not reported as an unchecked bare date.
+    """
+    claimed = [(m.start(), m.end()) for m in _DATE_RE.finditer(text)]
+    return [
+        m for m in _BARE_DATE_RE.finditer(text)
+        if not any(m.start() < end and start < m.end() for start, end in claimed)
+    ]
+
+
+def _inherit_year(
+    line_years: Counter[int], blk_years: Counter[int]
+) -> tuple[int | None, str]:
+    """The year a bare date may borrow from its scope, or None and why not.
+
+    Precedence is line, then block, and nothing looser. Two or more distinct
+    years in the winning scope DECLINE rather than pick — same principle as the
+    attribution tiers, where ambiguity is always a decline.
+    """
+    for scope, years in (("this line", line_years), ("its block", blk_years)):
+        distinct = sorted(set(years))
+        if len(distinct) == 1:
+            return distinct[0], ""
+        if len(distinct) > 1:
+            return None, (
+                f"no year of its own, and {scope} carries dates in "
+                + ", ".join(str(y) for y in distinct)
+                + " — ambiguous, so no year was inherited"
+            )
+    return None, "no year on this line or in its block"
+
+
+@dataclass(frozen=True)
+class Unclaimed:
+    """A date-shaped string this gate did NOT turn into a claim, and why."""
+
+    path: Path
+    line_no: int
+    raw: str
+    reason: str
+
+    @property
+    def where(self) -> str:
+        return f"{self.path.name}:{self.line_no}"
+
+
 _JINJA_RE = re.compile(r"\{[%{#].*?[%}#]\}", re.DOTALL)
 _TAG_RE = re.compile(r"<[^>]*>")
+
+# Comment delimiters that may span lines. `plain_text` is line-scoped and
+# `_TAG_RE` only eats a `<...>` that closes on the same line, so the MIDDLE
+# lines of a multi-line comment would otherwise arrive as prose — and the
+# provenance comments in these articles are full of dates. That reads a
+# comment's working as an article's claim. `_visible` closes the hole.
+_COMMENT_SPANS: tuple[tuple[str, str], ...] = (("{#", "#}"), ("<!--", "-->"))
+
+
+def _visible(line: str, open_span: int | None) -> tuple[str, int | None]:
+    """Strip comment spans, carrying an unterminated one across lines.
+
+    `open_span` is the index into `_COMMENT_SPANS` of a comment still open from
+    an earlier line, or None. Returns the part of `line` a reader would see and
+    the state to pass to the next line.
+    """
+    out: list[str] = []
+    i = 0
+    while i < len(line):
+        if open_span is not None:
+            closer = _COMMENT_SPANS[open_span][1]
+            end = line.find(closer, i)
+            if end == -1:
+                break
+            i = end + len(closer)
+            open_span = None
+            continue
+        starts = [
+            (line.find(opener, i), idx)
+            for idx, (opener, _closer) in enumerate(_COMMENT_SPANS)
+            if line.find(opener, i) != -1
+        ]
+        if not starts:
+            out.append(line[i:])
+            break
+        start, idx = min(starts)
+        out.append(line[i:start])
+        i = start + len(_COMMENT_SPANS[idx][0])
+        open_span = idx
+    return " ".join(out), open_span
 
 
 def plain_text(line: str) -> str:
@@ -181,61 +654,142 @@ def plain_text(line: str) -> str:
 class Claim:
     path: Path
     line_no: int
-    text: str          # the whole plain-text line the claim sits on
-    raw: str           # the matched date string as written
+    text: str            # the whole plain-text line the claim sits on
+    raw: str             # the matched date string as written
     weekday: str | None
-    day: date | None   # None when the written date is not a real calendar day
-    slug: str | None   # festival the claim was attributed to, if exactly one
-    reason: str        # why it is unchecked; "" when checked
+    day: date | None     # None when the written date is not a real calendar day
+    source: Source | None  # what the claim was attributed to, if anything
+    scope: str           # "line" | "block" | "" when unattributed
+    reason: str          # why it is unchecked; "" when checked
+    # "explicit" when the year was written next to the date, "inherited" when a
+    # bare "Month D" in a strict article borrowed it from its scope. Kept so an
+    # inherited claim is never counted or reported as something the article
+    # actually spelled out.
+    year_source: str = "explicit"
 
     @property
     def where(self) -> str:
         return f"{self.path.name}:{self.line_no}"
 
 
-def slugs_on_line(text: str) -> list[str]:
-    """Distinct festival slugs named on this line, longest name winning."""
-    found: list[str] = []
+def sources_in(text: str) -> list[Source]:
+    """Distinct sources named in `text`, longest name winning."""
+    found: list[Source] = []
     for m in _PHRASE_RE.finditer(text):
-        slug = PHRASES[m.group(0).lower()]
-        if slug not in found:
-            found.append(slug)
+        src = SOURCES[m.group(0).lower()]
+        if src not in found:
+            found.append(src)
     return found
 
 
-def collect_claims() -> tuple[list[Claim], int]:
+def _years_in(text: str) -> list[int]:
+    return [int(m.group("year")) for m in _DATE_RE.finditer(text)]
+
+
+def collect_claims() -> tuple[list[Claim], list[Unclaimed], int]:
     claims: list[Claim] = []
+    unclaimed: list[Unclaimed] = []
     articles = sorted(LEARN_DIR.glob("*.html"))
     for path in articles:
-        for line_no, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-            text = plain_text(line)
+        raw_lines = path.read_text(encoding="utf-8").splitlines()
+
+        # Pass 1: reader-visible text per line, with multi-line comments
+        # suppressed, and the block each line belongs to. A block is a maximal
+        # run of consecutive non-blank lines — the article's own paragraph /
+        # list-item grouping, which is what "the surrounding text" means to a
+        # reader.
+        texts: list[str] = []
+        block_of: list[int] = []
+        open_span: int | None = None
+        block = 0
+        for raw in raw_lines:
+            if not raw.strip():
+                block += 1
+                texts.append("")
+                block_of.append(-1)
+                continue
+            visible, open_span = _visible(raw, open_span)
+            texts.append(plain_text(visible))
+            block_of.append(block)
+
+        # Pass 2: per-block source sets and per-block year counts.
+        block_sources: dict[int, list[Source]] = {}
+        block_years: dict[int, Counter[int]] = {}
+        for text, blk in zip(texts, block_of):
+            if blk < 0 or not text:
+                continue
+            known = block_sources.setdefault(blk, [])
+            for src in sources_in(text):
+                if src not in known:
+                    known.append(src)
+            block_years.setdefault(blk, Counter()).update(_years_in(text))
+
+        # Pass 2b: date-shaped strings `_DATE_RE` did not read, and the year (if
+        # any) each may borrow. Resolved before pass 3 so that the same-year
+        # guard there can see every inherited date in a scope, not just the ones
+        # earlier on the line.
+        strict = is_strict(path)
+        bare: dict[int, list[tuple[re.Match[str], int | None, str]]] = {}
+        line_inh_years: dict[int, Counter[int]] = {}
+        blk_inh_years: dict[int, Counter[int]] = {}
+        for line_no, (text, blk) in enumerate(zip(texts, block_of), 1):
             if not text:
                 continue
-            for m in _DATE_RE.finditer(text):
-                year = int(m.group("year"))
-                month = _MONTHS[m.group("month").lower()]
+            for m in _unclaimed_dates(text):
+                if _is_range(m):
+                    year, why = None, RANGE_REASON
+                elif not strict:
+                    # 71 articles nobody has audited: inventing claims there
+                    # would report failures on prose that never claimed a date.
+                    year, why = None, NON_STRICT_REASON
+                else:
+                    year, why = _inherit_year(
+                        Counter(_years_in(text)),
+                        block_years.get(blk, Counter()),
+                    )
+                bare.setdefault(line_no, []).append((m, year, why))
+                if year is not None:
+                    line_inh_years.setdefault(line_no, Counter())[year] += 1
+                    blk_inh_years.setdefault(blk, Counter())[year] += 1
+
+        # Pass 3: the claims themselves.
+        for line_no, (text, blk) in enumerate(zip(texts, block_of), 1):
+            if not text:
+                continue
+            line_sources = sources_in(text)
+            line_years = Counter(_years_in(text))
+
+            # Explicit claims first, then the bare dates that inherited a year.
+            # Both go through the same attribution and produce the same `Claim`,
+            # which is the point: an inherited claim is checked by every gate a
+            # written-out one is.
+            dated: list[tuple[re.Match[str], int, bool]] = [
+                (m, int(m.group("year")), False) for m in _DATE_RE.finditer(text)
+            ]
+            dated += [
+                (m, year, True)
+                for m, year, _why in bare.get(line_no, [])
+                if year is not None
+            ]
+
+            for m, year, inherited in dated:
+                month, day_num = _month_day(m)
                 try:
-                    day = date(year, month, int(m.group("day")))
+                    day = date(year, month, day_num)
                 except ValueError:
                     day = None
 
-                slugs = slugs_on_line(text)
-                slug: str | None = None
-                reason = ""
-                if day is None:
-                    reason = "not a real calendar date"
-                elif year not in festival_registry.DATA_YEARS:
-                    reason = (
-                        f"year {year} is outside registry coverage "
-                        f"{min(festival_registry.DATA_YEARS)}-"
-                        f"{max(festival_registry.DATA_YEARS)}"
-                    )
-                elif not slugs:
-                    reason = "no registry festival named on this line"
-                elif len(slugs) > 1:
-                    reason = "ambiguous — " + ", ".join(slugs) + " all named on this line"
-                else:
-                    slug = slugs[0]
+                source, scope, reason = _attribute(
+                    year=year,
+                    day=day,
+                    line_sources=line_sources,
+                    line_years=line_years,
+                    blk_sources=block_sources.get(blk, []),
+                    blk_years=block_years.get(blk, Counter()),
+                    line_inh_years=line_inh_years.get(line_no, Counter()),
+                    blk_inh_years=blk_inh_years.get(blk, Counter()),
+                    inherited=inherited,
+                )
 
                 weekday = m.group("weekday")
                 claims.append(
@@ -246,45 +800,237 @@ def collect_claims() -> tuple[list[Claim], int]:
                         raw=m.group(0),
                         weekday=weekday.capitalize() if weekday else None,
                         day=day,
-                        slug=slug,
+                        source=source,
+                        scope=scope,
                         reason=reason,
+                        year_source="inherited" if inherited else "explicit",
                     )
                 )
-    return claims, len(articles)
+
+            for m, year, why in bare.get(line_no, []):
+                if year is None:
+                    unclaimed.append(
+                        Unclaimed(path=path, line_no=line_no, raw=m.group(0),
+                                  reason=why)
+                    )
+    return claims, unclaimed, len(articles)
+
+
+def _attribute(
+    *,
+    year: int,
+    day: date | None,
+    line_sources: list[Source],
+    line_years: Counter[int],
+    blk_sources: list[Source],
+    blk_years: Counter[int],
+    line_inh_years: Counter[int],
+    blk_inh_years: Counter[int],
+    inherited: bool,
+) -> tuple[Source | None, str, str]:
+    """Attribute one date to at most one source. Declines rather than guesses.
+
+    Tier order is line, then block, and there is no third tier. The same-year
+    guard applies to whichever scope won: one festival name in a scope holding
+    two dates of that year says nothing about which of them it labels, and a
+    coin flip there would manufacture a check out of nothing.
+
+    An INHERITED date (a bare "Month D" that borrowed its year) counts the other
+    inherited dates in scope towards that guard as well, so it attributes only
+    when it is the single date of its year there. An explicit claim's tally is
+    untouched — inheritance may only ADD checks, never take one away, and
+    "Bhadli Navami — Monday, Jul 12, 2027 (... Chaturmas opens two days later,
+    on Jul 14)" is why the guard has to bite here: the line names one festival,
+    the bare Jul 14 is a different observance entirely, and handing it that name
+    would fabricate a Gate 1 failure against a date that is correct.
+    """
+    if day is None:
+        return None, "", "not a real calendar date"
+    if year not in festival_registry.DATA_YEARS:
+        return None, "", (
+            f"year {year} is outside registry coverage "
+            f"{min(festival_registry.DATA_YEARS)}-"
+            f"{max(festival_registry.DATA_YEARS)}"
+        )
+
+    if len(line_sources) == 1:
+        source, scope, same_year = line_sources[0], "line", line_years[year]
+        if inherited:
+            same_year += line_inh_years[year]
+    elif len(line_sources) > 1:
+        return None, "", (
+            "ambiguous — " + ", ".join(s.label for s in line_sources)
+            + " all named on this line"
+        )
+    elif len(blk_sources) == 1:
+        source, scope, same_year = blk_sources[0], "block", blk_years[year]
+        if inherited:
+            same_year += blk_inh_years[year]
+    elif len(blk_sources) > 1:
+        return None, "", (
+            "no festival named on this line, and the surrounding block names "
+            + str(len(blk_sources)) + " (" + ", ".join(s.label for s in blk_sources) + ")"
+        )
+    else:
+        return None, "", "no known festival named on this line or in its block"
+
+    if same_year >= 2:
+        return None, "", (
+            f"ambiguous — {same_year} dates in {year} but only one festival "
+            f"named in scope ({scope})"
+            + (" — an inherited year may not take a name another date is using"
+               if inherited else "")
+        )
+    return source, scope, ""
 
 
 # --------------------------------------------------------------------------
-# Gate 1 - article date vs registry date
+# Strict articles - derived from the filename, never listed
 # --------------------------------------------------------------------------
 
-def gate_1_registry_agreement(claims: list[Claim]) -> list[str]:
+# A page whose own title is a muhurat, a festival, or a named registry festival
+# is a page whose subject IS the dates. `festivals` covers the plural form.
+_STRICT_TOKENS = {"muhurat", "festival", "festivals"}
+
+
+def _contains_run(tokens: list[str], run: tuple[str, ...]) -> bool:
+    return any(
+        tuple(tokens[i:i + len(run)]) == run
+        for i in range(len(tokens) - len(run) + 1)
+    )
+
+
+def strict_articles() -> list[Path]:
+    """Every strict article on disk, whether or not it carries a dated claim.
+
+    Enumerated from the directory rather than from the claims, so a strict
+    article that currently has NO recognised date still appears in the coverage
+    report as "0 of 0" instead of vanishing — a strict article silently
+    dropping out of the report is the shape of regression this gate exists to
+    make loud.
+    """
+    return sorted((p for p in LEARN_DIR.glob("*.html") if is_strict(p)),
+                  key=lambda p: p.name)
+
+
+def is_strict(path: Path) -> bool:
+    """True if `path` is a muhurat/festival article, from its filename alone.
+
+    Derived, never listed — see the docstring. `karva-chauth-2026.html` is
+    strict because `karva-chauth` is a registry slug and its tokens appear
+    contiguously in the stem; a future `sharad-purnima-2027.html` becomes
+    strict on the day it is created, with nothing to remember to update.
+    """
+    tokens = path.stem.split("-")
+    if _STRICT_TOKENS & set(tokens):
+        return True
+    return any(
+        _contains_run(tokens, tuple(slug.split("-")))
+        for slug in _KNOWN_SLUGS
+    )
+
+
+# --------------------------------------------------------------------------
+# Preflight - the gate's own inputs, checked before any article is read
+# --------------------------------------------------------------------------
+
+def preflight() -> list[str]:
+    """Problems with this script's sources. Any one of them stops the run.
+
+    A gate whose sources are broken cannot report anything trustworthy about
+    the articles, so these are checked first and reported separately from the
+    article gates.
+    """
+    problems: list[str] = []
+
+    if _UNKNOWN_ALIASES:
+        problems.append(
+            "HAND_ALIASES points at slug(s) the registry does not have: "
+            + ", ".join(_UNKNOWN_ALIASES)
+            + " — the alias table has drifted from the registry."
+        )
+
+    # A - every computed source answers for every covered year. A source that
+    # returns None is not a check, it is a silent gap.
+    computed = sorted(
+        {s for s in SOURCES.values() if isinstance(s, ComputedSource)}
+        | {c for _phrase, _r, c in OVERLAPS},
+        key=lambda s: s.key,
+    )
+    for src in computed:
+        for year in festival_registry.DATA_YEARS:
+            if src.date_for(year) is None:
+                problems.append(
+                    f"computed source {src.label!r} resolves no date for {year} "
+                    "— it cannot check anything in that year"
+                )
+
+    # B - where both kinds know a phrase, they must agree. The registry rows
+    # are hand-typed and Drik-verified; the computation is independent of them.
+    # A disagreement means one of the two is wrong and neither can be trusted
+    # until it is resolved.
+    for phrase, rsrc, csrc in sorted(OVERLAPS, key=lambda o: o[0]):
+        for year in festival_registry.DATA_YEARS:
+            want, got = rsrc.date_for(year), csrc.date_for(year)
+            if want != got:
+                problems.append(
+                    f"{phrase!r} {year}: registry {rsrc.label} says {want}, "
+                    f"computed {csrc.label} says {got} — the registry row and "
+                    "the ephemeris disagree"
+                )
+
+    # C - the six published sankranti anchors. See _SANKRANTI_ANCHORS.
+    for year, rashi, expected in _SANKRANTI_ANCHORS:
+        got = sankranti.sankranti_date(year, rashi)
+        if got is None or got.isoformat() != expected:
+            problems.append(
+                f"sankranti anchor {rashi} {year}: expected {expected}, "
+                f"got {got} — sankranti.py no longer reproduces a published "
+                "almanac date it is documented as reproducing"
+            )
+
+    return problems
+
+
+# --------------------------------------------------------------------------
+# Gate 1 - article date vs its source
+# --------------------------------------------------------------------------
+
+def gate_1_source_agreement(claims: list[Claim]) -> list[str]:
     failures: list[str] = []
-    by_slug = {f.slug: f for f in festival_registry.FESTIVALS}
 
     checked = 0
+    by_kind: Counter[str] = Counter()
     for claim in claims:
-        if claim.slug is None or claim.day is None:
+        if claim.source is None or claim.day is None:
             continue
-        fest = by_slug[claim.slug]
-        want_iso = fest.dates.get(claim.day.year)
-        if want_iso is None:
+        src = claim.source
+        want = src.date_for(claim.day.year)
+        if want is None:
             failures.append(
-                f"{claim.where}: {fest.name_en} claimed on {claim.day.isoformat()} but "
-                f"the registry has no {claim.day.year} date for {fest.slug}"
+                f"{claim.where}: {src.label} claimed on {claim.day.isoformat()} but "
+                f"the {src.kind} source has no {claim.day.year} date for {src.key}"
             )
             continue
         checked += 1
-        want = date.fromisoformat(want_iso)
+        by_kind[src.kind] += 1
         if claim.day != want:
             delta = (claim.day - want).days
+            fix = (
+                "Registry is the source of truth; fix the article, or verify the "
+                "date against the almanac and fix both."
+                if src.kind == "registry" else
+                "The computed value comes from the same engine the site renders "
+                "from; fix the article, or if the engine is wrong fix that first."
+            )
             failures.append(
-                f"{claim.where}: {fest.name_en} — article says {claim.raw!r} "
-                f"({claim.day.isoformat()}), registry says {want_iso} "
-                f"({delta:+d} days). Registry is the source of truth; fix the article, "
-                f"or verify the date against the almanac and fix both."
+                f"{claim.where}: {src.label} — article says {claim.raw!r} "
+                f"({claim.day.isoformat()}), {src.kind} says {want.isoformat()} "
+                f"({delta:+d} days). {fix}"
             )
 
-    print(f"  {checked} date claim(s) attributed to a registry festival and compared")
+    print(f"  {checked} date claim(s) attributed and compared "
+          f"({by_kind['registry']} registry, {by_kind['computed']} computed)")
     return failures
 
 
@@ -315,44 +1061,153 @@ def gate_2_weekday_agreement(claims: list[Claim]) -> list[str]:
 
 
 # --------------------------------------------------------------------------
+# Gate 3 - attribution completeness in muhurat/festival articles
+# --------------------------------------------------------------------------
+
+def gate_3_strict_attribution(claims: list[Claim]) -> list[str]:
+    """Every date in a muhurat/festival article must be attributable.
+
+    Elsewhere an unattributable date is UNCHECKED and costs nothing. Here it is
+    a FAIL, because the article exists to state dates: a date on such a page
+    that no source in this repo can confirm is either mis-worded (name the
+    festival on the line) or is a claim nobody can verify, and #143 was exactly
+    the second kind.
+    """
+    failures: list[str] = []
+    strict = strict_articles()
+    n_claims = 0
+    n_inherited = 0
+    for claim in claims:
+        if not is_strict(claim.path):
+            continue
+        if claim.year_source == "inherited":
+            # An inherited-year date is a bonus check, not part of this gate's
+            # population: the article never wrote a year there, so a decline
+            # says the gate could not reach it, not that the prose is wrong.
+            # It is still compared by Gate 1 whenever it does attribute, and
+            # every declined one is listed in Coverage rather than dropped.
+            n_inherited += 1
+            continue
+        n_claims += 1
+        if claim.source is not None:
+            continue
+        failures.append(
+            f"{claim.where}: {claim.raw!r} cannot be attributed to any source "
+            f"— {claim.reason}. This is a muhurat/festival article, so an "
+            "unverifiable date is a failure: name the festival on the line, or "
+            "drop the date."
+        )
+    print(f"  {n_claims} date claim(s) across {len(strict)} strict article(s)"
+          + (f", plus {n_inherited} inherited-year date(s) not required to attribute"
+             if n_inherited else ""))
+    return failures
+
+
+# --------------------------------------------------------------------------
 # Coverage - what this gate could not check, and why
 # --------------------------------------------------------------------------
 
-def print_coverage(claims: list[Claim], n_articles: int) -> None:
-    checked = [c for c in claims if c.slug is not None]
-    unchecked = [c for c in claims if c.slug is None]
+def print_coverage(
+    claims: list[Claim], unclaimed: list[Unclaimed], n_articles: int
+) -> None:
+    explicit = [c for c in claims if c.year_source == "explicit"]
+    inherited = [c for c in claims if c.year_source == "inherited"]
+    checked = [c for c in explicit if c.source is not None]
+    unchecked = [c for c in explicit if c.source is None]
+    pct = (100.0 * len(checked) / len(explicit)) if explicit else 0.0
 
-    print(f"  {n_articles} article(s) scanned, {len(claims)} dated claim(s) found")
-    print(f"  {len(checked)} checked against the registry, {len(unchecked)} unchecked")
+    by_scope = Counter(c.scope for c in checked)
+    print(f"  {n_articles} article(s) scanned, {len(explicit)} dated claim(s) found")
+    print(f"  {len(checked)} checked ({pct:.0f}%), {len(unchecked)} unchecked")
+    print(f"  attribution scope: {by_scope['line']} line, {by_scope['block']} block")
     for claim in unchecked:
-        print(f"    UNCHECKED {claim.where}: {claim.raw!r} — {claim.reason}")
+        tag = "strict" if is_strict(claim.path) else "non-strict"
+        print(f"    UNCHECKED {claim.where}: {claim.raw!r} — {claim.reason} ({tag})")
     if not unchecked:
-        print("    every dated claim was attributed to a festival")
+        print("    every dated claim was attributed to a source")
+
+    # Bare dates that borrowed a year. Printed apart from the claims above so an
+    # inherited year is never mistaken for one the article wrote down.
+    inh_checked = [c for c in inherited if c.source is not None]
+    print(f"  {len(inherited)} bare date(s) inherited a year from their scope, "
+          f"{len(inh_checked)} of them attributed and compared")
+    for claim in inherited:
+        shown = claim.day.isoformat() if claim.day else "not a real date"
+        if claim.source is None:
+            print(f"    INHERITED {claim.where}: {claim.raw!r} -> {shown} — "
+                  f"unattributed: {claim.reason}")
+        else:
+            print(f"    INHERITED {claim.where}: {claim.raw!r} -> {shown} — "
+                  f"{claim.source.label} ({claim.scope})")
+
+    # Change 1: the strings this gate does NOT defend, counted and named. The
+    # point of printing them is that a future editor can see the hole in one
+    # line instead of discovering it the way #143 was discovered.
+    print(f"  {len(unclaimed)} date-shaped string(s) carried no usable year and "
+          "were not checked:")
+    for item in unclaimed:
+        tag = "strict" if is_strict(item.path) else "non-strict"
+        print(f"    NO-YEAR {item.where}: {item.raw!r} — {item.reason} ({tag})")
+    if not unclaimed:
+        print("    every date-shaped string in every article was read as a claim")
+
+    # Per-strict-article unchecked counts, so a regression in the articles that
+    # matter most is one line rather than a diff of the list above.
+    strict_paths = strict_articles()
+    print("  strict article(s), unattributed count:")
+    if not strict_paths:
+        print("    (none — no article filename names a muhurat or a registry festival)")
+    for path in strict_paths:
+        n_bad = sum(1 for c in explicit if c.path == path and c.source is None)
+        n_all = sum(1 for c in explicit if c.path == path)
+        n_inh = sum(1 for c in inherited if c.path == path)
+        n_no_year = sum(1 for u in unclaimed if u.path == path)
+        print(f"    {path.name}: {n_bad} unattributed of {n_all}"
+              f", {n_inh} inherited, {n_no_year} unchecked no-year string(s)")
 
 
 # --------------------------------------------------------------------------
 
 def main() -> int:
+    strict_names = [p.name for p in strict_articles()]
+    n_computed = len({s for s in SOURCES.values() if isinstance(s, ComputedSource)})
+    n_registry = len({s for s in SOURCES.values() if isinstance(s, RegistrySource)})
+
     print("Learn article date verification")
     print(f"  articles : {LEARN_DIR.relative_to(REPO_ROOT)}/*.html")
     print("  registry : src/astro_ai/festival_registry.py")
+    print("  computed : muhurat._ABUJHA_RULES (+ Tulsi Vivah), sankranti.sankranti_date")
     print(f"  years    : {', '.join(str(y) for y in festival_registry.DATA_YEARS)}")
-    print(f"  names    : {len(PHRASES)} festival name(s)/alias(es) recognised")
+    print(f"  sources  : {n_registry} registry + {n_computed} computed, "
+          f"reached by {len(SOURCES)} name(s)/alias(es)")
+    print(f"  strict   : {len(strict_names)} article(s) — {', '.join(strict_names)}")
     print()
 
-    if _UNKNOWN_ALIASES:
-        print("HAND_ALIASES points at slug(s) the registry does not have: "
-              + ", ".join(_UNKNOWN_ALIASES))
-        print("FAIL — the alias table has drifted from the registry.")
+    print("Preflight - this script's own sources")
+    problems = preflight()
+    for line in problems:
+        print(f"  FAIL: {line}")
+    if problems:
+        print(f"  -> FAIL ({len(problems)} problem(s))")
+        print()
+        print("FAIL — the gate's sources are broken; no article was checked. "
+              "Fix the source disagreement first.")
         return 1
+    print(f"  {len(OVERLAPS)} phrase(s) known to both kinds agree with the registry "
+          f"in all {len(festival_registry.DATA_YEARS)} year(s)")
+    print(f"  {len(_SANKRANTI_ANCHORS)} published sankranti anchor(s) reproduced")
+    print("  -> PASS")
+    print()
 
-    claims, n_articles = collect_claims()
+    claims, unclaimed, n_articles = collect_claims()
 
     gates = [
-        ("Gate 1 - article date vs registry date",
-         lambda: gate_1_registry_agreement(claims)),
+        ("Gate 1 - article date vs its source (registry or computed)",
+         lambda: gate_1_source_agreement(claims)),
         ("Gate 2 - weekday name vs the date it labels",
          lambda: gate_2_weekday_agreement(claims)),
+        ("Gate 3 - attribution completeness in muhurat/festival articles",
+         lambda: gate_3_strict_attribution(claims)),
     ]
 
     all_failures: list[str] = []
@@ -368,7 +1223,7 @@ def main() -> int:
         all_failures.extend(failures)
 
     print("Coverage")
-    print_coverage(claims, n_articles)
+    print_coverage(claims, unclaimed, n_articles)
     print()
 
     print("Summary")
