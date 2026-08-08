@@ -162,8 +162,17 @@ def forever(key: str, fn: Callable[[], T]) -> T:
 
 
 def clear() -> None:
-    """Drop everything. For probes and tests."""
+    """Drop everything. For probes and tests.
+
+    _INFLIGHT is reset too. In production a stale marker cannot survive —
+    _refresh_worker always discards it in a finally. But a probe that fills
+    the cache, calls clear(), and re-measures would otherwise find the marker
+    still set, and get_or_refresh would skip the refresh it was trying to
+    measure. That silently under-reports backend reads: it already produced a
+    wrong measurement (6 reads instead of 32) during QA of issue #144.
+    """
     with _LOCK:
         _CACHE.clear()
         _KEY_LOCKS.clear()
         _RETRY_AFTER.clear()
+        _INFLIGHT.clear()
