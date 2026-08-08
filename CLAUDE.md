@@ -113,6 +113,18 @@ src/astro_ai/
   own aggregates — raw events are gone after 30 days.
 - **`storage.py` cannot list by prefix.** Any "scan all blobs" design needs an explicit
   index blob instead.
+- **The GCS bucket is in the US; Cloud Run runs in `asia-south1`. This is deliberate and
+  cannot be changed** — the GCS free tier is only available in US regions, and this project
+  stays on free tiers. So every bucket round-trip pays cross-continent latency.
+
+  **Never do per-request GCS reads on a hot path.** This is not a style preference: issue
+  #144 was a ~13-second homepage caused by ~30 sequential bucket round-trips per render.
+  The fix took it to under 1s by removing them (32 GCS ops → 0), not by moving anything.
+  Cache in-process (`hot_cache`, TTL + stale-while-revalidate), memoise, and batch or
+  parallelise anything unavoidable.
+
+  Do not propose relocating the bucket — it has been considered and the free tier rules
+  it out.
 - **Festival dates reach users through email and the rashifal LLM prompt**, not through a
   web page — plus `/festivals` and the `/panchang` callout, which now render it.
   `festival_for_date()` returns only the FIRST festival on a date; use
