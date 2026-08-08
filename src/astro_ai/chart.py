@@ -2569,6 +2569,71 @@ _TITHI_SIGNIFICANCE: dict[str, str] = {
 }
 
 
+# ─── Nitya Yoga — the 4th anga ───────────────────────────────────────
+# The 27 Nitya ("daily") Yogas of the classical almanac. NOT the natal-chart
+# yogas in `compute_yogas` above (Gaja-Kesari, Ruchaka, ...) — a completely
+# different concept that happens to share the word.
+#
+# Formula: (Sun_longitude + Moon_longitude) mod 360, divided into 27 equal
+# parts of 13°20'. Per the classical muhurta tradition (Muhurta Chintamani),
+# Vyatipata (17th) and Vaidhriti (27th) are hard exclusions for shubh karya.
+# muhurat.py carries its own copy of this list for its blocker check; the
+# two must stay in the same ORDER (spelling variants are cosmetic).
+_NITYA_YOGA_NAMES: tuple[str, ...] = (
+    "Vishkambha", "Priti",   "Ayushman", "Saubhagya", "Shobhana",
+    "Atiganda",   "Sukarma", "Dhriti",   "Shula",     "Ganda",
+    "Vriddhi",    "Dhruva",  "Vyaghata", "Harshana",  "Vajra",
+    "Siddhi",     "Vyatipata", "Variyana", "Parigha", "Shiva",
+    "Siddha",     "Sadhya",  "Shubha",   "Shukla",    "Brahma",
+    "Indra",      "Vaidhriti",
+)
+
+# Short character notes for the yogas the classical tradition singles out.
+# Empty/absent = ordinary yoga, no special guidance. Deliberately terse so
+# the UI card and the LLM prompt stay readable.
+_NITYA_YOGA_SIGNIFICANCE: dict[str, str] = {
+    "Vyatipata": "classically inauspicious — avoid new undertakings",
+    "Vaidhriti": "classically inauspicious — avoid new undertakings",
+    "Siddhi":    "favourable for accomplishment and completion",
+    "Amrita":    "nectar-like; broadly favourable",
+    "Ayushman":  "longevity and vitality themes",
+    "Saubhagya": "good fortune, favourable for auspicious work",
+    "Shubha":    "broadly auspicious",
+    "Harshana":  "joy, celebration, favourable news",
+}
+
+
+# ─── Karana — the 5th anga ───────────────────────────────────────────
+# A karana is half a tithi (6° of Sun–Moon elongation), so there are 60 in a
+# lunar month. Indexing (matching Drik Panchang / classical almanac order):
+#   index 0        → Kimstughna, FIXED — first half of Shukla Pratipada
+#   index 1..56    → the 7 movable karanas repeating 8 times
+#   index 57,58,59 → Shakuni, Chatushpada, Naga — FIXED, the month's last
+#                    three halves (2nd half of Krishna Chaturdashi and both
+#                    halves of Amavasya)
+# Vishti (also called Bhadra) is the movable karana universally avoided for
+# shubh karya in the classical muhurta tradition.
+_MOVABLE_KARANA_NAMES: tuple[str, ...] = (
+    "Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanij", "Vishti",
+)
+_FIXED_TAIL_KARANA_NAMES: tuple[str, ...] = ("Shakuni", "Chatushpada", "Naga")
+_FIRST_KARANA_NAME = "Kimstughna"
+
+_KARANA_SIGNIFICANCE: dict[str, str] = {
+    "Vishti":      "Bhadra — traditionally avoided for auspicious beginnings",
+    "Shakuni":     "fixed karana; suited to remedial and medicinal work",
+    "Chatushpada": "fixed karana; cattle, land and ancestral rites",
+    "Naga":        "fixed karana; ancestral and propitiatory rites",
+    "Kimstughna":  "fixed karana; favourable for auspicious beginnings",
+    "Bava":        "favourable for stable, long-lasting undertakings",
+    "Balava":      "favourable for learning and devotional work",
+    "Kaulava":     "favourable for friendship and alliances",
+    "Taitila":     "favourable for trade and negotiation",
+    "Gara":        "favourable for agriculture and building",
+    "Vanij":       "favourable for commerce and transactions",
+}
+
+
 @dataclass(frozen=True)
 class DailyPanchang:
     """Today's Muhurta data — what to do (and not do), plus the day's favourable color.
@@ -2591,6 +2656,12 @@ class DailyPanchang:
     tithi_name: str           # e.g. "Ekadashi" — universal
     tithi_paksha: str         # "Shukla" (bright/waxing) or "Krishna" (dark/waning) — universal
     tithi_significance: str   # classical character note; "" if ordinary tithi — universal
+    yoga_index: int           # 0..26 Nitya Yoga at sunrise — universal
+    yoga_name: str            # e.g. "Siddhi" — universal
+    yoga_significance: str    # classical note; "" if ordinary yoga — universal
+    karana_index: int         # 0..59 half-tithi at sunrise — universal
+    karana_name: str          # e.g. "Vishti" — universal
+    karana_significance: str  # classical note; "" if ordinary karana — universal
     sunrise: datetime         # local time at natal birthplace — LOCATION-DEPENDENT
     sunset: datetime          # local time at natal birthplace — LOCATION-DEPENDENT
     rahu_kaal_start: datetime # LOCATION-DEPENDENT
@@ -2625,6 +2696,45 @@ def _tithi_at(julian_day: float) -> tuple[int, str, str, str]:
     paksha = "Shukla" if idx < 15 else "Krishna"
     significance = _TITHI_SIGNIFICANCE.get(name, "")
     return idx, name, paksha, significance
+
+
+def _nitya_yoga_at(julian_day: float) -> tuple[int, str, str]:
+    """(index 0-26, name, significance) of the Nitya Yoga at the given Julian Day.
+
+    Formula: yoga = (Sun_longitude + Moon_longitude) mod 360, divided by
+    360/27 = 13°20'. Sidereal Lahiri — unlike tithi, the yoga is NOT invariant
+    under ayanamsa choice (the two ayanamsa shifts add rather than cancel), so
+    the sidereal convention shared with the rest of the almanac is load-bearing.
+    """
+    sun_pos, _ = swe.calc_ut(julian_day, swe.SUN, swe.FLG_SIDEREAL)
+    moon_pos, _ = swe.calc_ut(julian_day, swe.MOON, swe.FLG_SIDEREAL)
+    combined = (float(sun_pos[0]) + float(moon_pos[0])) % 360.0
+    idx = int(combined / (360.0 / 27.0)) % 27
+    name = _NITYA_YOGA_NAMES[idx]
+    return idx, name, _NITYA_YOGA_SIGNIFICANCE.get(name, "")
+
+
+def _karana_at(julian_day: float) -> tuple[int, str, str]:
+    """(index 0-59, name, significance) of the karana at the given Julian Day.
+
+    A karana is half a tithi: ((Moon - Sun) mod 360) / 6. The index therefore
+    always satisfies `karana_index // 2 == tithi_index` at the same instant.
+
+    Index 0 is Kimstughna (fixed, first half of Shukla Pratipada); 1..56 cycle
+    the 7 movable karanas eight times; 57/58/59 are the fixed Shakuni,
+    Chatushpada and Naga closing the lunar month.
+    """
+    sun_pos, _ = swe.calc_ut(julian_day, swe.SUN, swe.FLG_SIDEREAL)
+    moon_pos, _ = swe.calc_ut(julian_day, swe.MOON, swe.FLG_SIDEREAL)
+    diff = (float(moon_pos[0]) - float(sun_pos[0])) % 360.0
+    idx = int(diff / 6.0) % 60
+    if idx == 0:
+        name = _FIRST_KARANA_NAME
+    elif idx >= 57:
+        name = _FIXED_TAIL_KARANA_NAMES[idx - 57]
+    else:
+        name = _MOVABLE_KARANA_NAMES[(idx - 1) % 7]
+    return idx, name, _KARANA_SIGNIFICANCE.get(name, "")
 
 
 def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchang:
@@ -2664,6 +2774,9 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
         sunrise_ut.hour + sunrise_ut.minute / 60 + sunrise_ut.second / 3600,
     )
     tithi_idx, tithi_name, tithi_paksha, tithi_sig = _tithi_at(sunrise_jd)
+    # Yoga and karana share the sunrise convention — issue #142.
+    yoga_idx, yoga_name, yoga_sig = _nitya_yoga_at(sunrise_jd)
+    karana_idx, karana_name, karana_sig = _karana_at(sunrise_jd)
 
     # Rahu Kaal: which 1/8 segment of the daylight period?
     day_seconds = (sunset - sunrise).total_seconds()
@@ -2685,6 +2798,12 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
         tithi_name=tithi_name,
         tithi_paksha=tithi_paksha,
         tithi_significance=tithi_sig,
+        yoga_index=yoga_idx,
+        yoga_name=yoga_name,
+        yoga_significance=yoga_sig,
+        karana_index=karana_idx,
+        karana_name=karana_name,
+        karana_significance=karana_sig,
         sunrise=sunrise,
         sunset=sunset,
         rahu_kaal_start=rk_start,
@@ -2701,10 +2820,18 @@ def format_panchang_for_prompt(panchang: DailyPanchang) -> str:
     tithi_line = f"- Tithi: {panchang.tithi_paksha} {panchang.tithi_name}"
     if panchang.tithi_significance:
         tithi_line += f" — {panchang.tithi_significance}"
+    yoga_line = f"- Yoga (Nitya Yoga): {panchang.yoga_name}"
+    if panchang.yoga_significance:
+        yoga_line += f" — {panchang.yoga_significance}"
+    karana_line = f"- Karana: {panchang.karana_name}"
+    if panchang.karana_significance:
+        karana_line += f" — {panchang.karana_significance}"
     return (
         "Today's Panchang (computed for the seeker's natal birthplace):\n"
         f"- Day: {panchang.weekday}, ruled by {panchang.day_lord}\n"
         f"{tithi_line}\n"
+        f"{yoga_line}\n"
+        f"{karana_line}\n"
         f"- Favourable color: {panchang.day_color}\n"
         f"- Sunrise: {panchang.sunrise.strftime('%H:%M')} local\n"
         f"- Sunset: {panchang.sunset.strftime('%H:%M')} local\n"
