@@ -351,37 +351,30 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 # Extracted route modules are spliced in AT THE POSITION THEY USED TO OCCUPY,
 # so `app.routes` keeps the exact registration order it had pre-split.
 #
-# Why `.routes.extend(...)` and not `app.include_router(...)`: as of FastAPI
-# 0.138 (locked version) `include_router` no longer copies the routes — it
-# appends a single lazy `_IncludedRouter` marker and resolves the real routes
-# at match time. That works at runtime, but it means `app.routes` is no longer
-# the flat route table: `scripts/route_inventory.py`, `app.url_path_for`, and
-# anything else that introspects `app.routes` would see 3 routes vanish behind
-# an opaque placeholder — exactly the visibility this refactor must not lose.
-# Extending the list keeps the table flat and the order byte-identical.
-#
-# Known difference from the pre-0.138 `include_router`: it used to rebuild each
-# route with the app's `dependency_overrides_provider`. Spliced routes keep
-# `None`, so `app.dependency_overrides` (a TestClient-only feature; this repo
-# has no test suite) would not reach them. Nothing at runtime depends on it.
+# Registration uses `app.include_router(...)`. As of FastAPI 0.138 (the locked
+# version) that no longer copies routes into `app.routes` — it appends a lazy
+# `_IncludedRouter` marker and resolves the real routes at match time. So
+# `app.routes` is not the flat route table any more: tooling that introspects
+# it (`scripts/route_inventory.py`, the #154 check harness) must walk
+# `fastapi.routing.iter_route_contexts(app.routes)` instead.
 from astro_ai.routes import seo as _seo_routes
-app.router.routes.extend(_seo_routes.router.routes)
+app.include_router(_seo_routes.router)
 
 
 from astro_ai.routes import panchang as _panchang_routes
-app.router.routes.extend(_panchang_routes.router.routes)
+app.include_router(_panchang_routes.router)
 
 
 from astro_ai.routes import festivals as _festivals_routes
-app.router.routes.extend(_festivals_routes.router.routes)
+app.include_router(_festivals_routes.router)
 
 
 from astro_ai.routes import pages as _pages_routes
-app.router.routes.extend(_pages_routes.router.routes)
+app.include_router(_pages_routes.router)
 
 
 from astro_ai.routes import home as _home_routes
-app.router.routes.extend(_home_routes.router.routes)
+app.include_router(_home_routes.router)
 # Re-exported, not redefined: scripts/perf_homepage.py --stages reaches into
 # astro_ai.main for `templates`, `_HOMEPAGE_PANCHANG_CACHE` and
 # `_homepage_panchang_cached`, and degrades to "n/a (not in this tree)" —
@@ -391,11 +384,11 @@ from astro_ai.routes.home import _HOMEPAGE_PANCHANG_CACHE, _homepage_panchang_ca
 
 
 from astro_ai.routes import kundli as _kundli_routes
-app.router.routes.extend(_kundli_routes.router.routes)
+app.include_router(_kundli_routes.router)
 
 
 from astro_ai.routes import dosha as _dosha_routes
-app.router.routes.extend(_dosha_routes.router.routes)
+app.include_router(_dosha_routes.router)
 
 
 @app.get("/muhurat/{event_slug}", response_class=HTMLResponse)
