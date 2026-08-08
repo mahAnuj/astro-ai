@@ -29,6 +29,41 @@ production is the first place code runs.
 
 ---
 
+## Close the issue when it ships — with evidence
+
+An issue is not done when the code is written. It is done when it is **deployed and
+verified**, and the issue says so.
+
+**Two stages, and do not merge them:**
+
+1. **When the fix lands locally** — comment on the issue with the commit SHA, what changed,
+   the gate output, and anything deliberately left undone. **Do not close yet.** `main`
+   auto-deploys on push and pushing is the user's decision, so nothing is live until they
+   ship it.
+2. **Once deployed** — verify against `origin/main` and production, then close with that
+   evidence.
+
+**A closing comment must let someone else check you.** Not "fixed" — the commit, what was
+verified and how, and the numbers. Examples worth copying: the #144 close (before/after
+timings on a named revision), the #157 close (the measurement showing it did not
+reproduce), the #154 close (30/30 SHAs, byte-identical route table).
+
+**Do not close on a claim.** Verify against `origin/main`, not against a comment saying it
+was fixed. #143 was closed as fixed while a fourth wrong date was still live — QA caught it
+and it had to be reopened.
+
+**Partial work does not close.** Comment with what landed and what remains, and leave it
+open. A half-closed issue is how #140 would have hidden that its intent classifier was
+never wired to anything.
+
+**When an issue turns out not to be real**, close it with the counter-evidence and say what
+would make it real — #156's close records that the signed-in path was never tested, so a
+genuine repro can still be filed.
+
+**Related issues:** if a fix resolves part of another issue, say so on both. If it makes
+another issue obsolete, close that one too rather than leaving it to rot — stale issues
+cost more than they look, because the next triage has to re-verify them.
+
 ## Verify before you claim
 
 This repo has burned real user-facing time on confident-but-wrong claims. Two rules:
