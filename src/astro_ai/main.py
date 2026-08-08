@@ -1,124 +1,58 @@
-"""FastAPI app — form, natal reading, today's transits, cookie-persisted seeker."""
+"""FastAPI app assembly — the application object and nothing that answers a request.
+
+Owns: the FastAPI instance, the X-Forwarded-Host rewrite middleware, the two
+exception handlers, the /static mount, and the router registration below. Every
+route lives in astro_ai.routes.* as of issue #154.
+"""
 
 from __future__ import annotations
 
-import os
-import secrets
-from datetime import date
-from pathlib import Path
+import logging
 
 import uvicorn
-from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, Form, HTTPException, Request, Response, status
+from fastapi import FastAPI, Request, Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
-from astro_ai.chart import (
-    compute_bhagya_score,
-    ChartError,
-    compute_chart,
-    compute_dasha_state,
-    compute_gochar_impacts,
-    compute_kaal_sarp,
-    compute_life_chapters,
-    compute_dashamsa_chart,
-    compute_manglik_details,
-    compute_navamsha_chart,
-    compute_panchang,
-    compute_sade_sati_details,
-    compute_transit_events,
-    compute_transit_snapshot,
-    compute_varshaphala,
-    compute_vedic_flags,
-    compute_yogas,
-    symbol_for_rashi_label,
-)
-from astro_ai.i18n import translate as _i18n_translate
-from astro_ai.llm import (
-    BirthDetails,
-    generate_ask_answer,
-    generate_daily_reading,
-    generate_dasha_deep_dive,
-    generate_matching_narrative,
-    generate_outlook_reading,
-    generate_rashifal,
-    generate_reading,
-    parse_intro_and_sections,
-    parse_sectioned_reading,
-)
-from astro_ai.matching import compute_guna_milan
-from astro_ai import providers as llm_providers
-from astro_ai.providers import AllProvidersExhausted
+from astro_ai.routes.deps import STATIC_DIR, templates
+from astro_ai.routes.llm_support import _fire_error_alert
 
-# --- transitional (#154): re-exported for routes not yet extracted; pruned in the cleanup commit
-# These names now live in astro_ai.routes.*. Every route still defined below
-# references them unqualified, so they are imported back into this namespace
-# rather than rewritten at ~200 call sites — the split stays a pure move and
-# each subsequent extraction commit shrinks this list. Position matters: the
-# deps import must run before anything that reads the environment, because it
-# owns the load_dotenv() calls that used to sit at module scope here.
-from astro_ai.routes.deps import (
-    ASK_PROMPT_PATH,
-    DAILY_PROMPT_PATH,
-    DASHA_DEEP_DIVE_PROMPT_PATH,
-    MATCHING_PROMPT_PATH,
-    MONTHLY_PROMPT_PATH,
-    PROMPT_PATH,
-    RASHIFAL_PROMPT_PATH,
-    STATIC_DIR,
-    YEARLY_PROMPT_PATH,
-    _ask_cta_ctx,
-    _ask_quota_bump,
-    _ask_quota_remaining,
-    _HINDI_MONTHS,
-    _lang,
-    _no_cdn_cache,
-    _pretty_date,
-    _pretty_weekday,
-    _safe_redirect_target,
-    _save_collection_synced,
-    _site_url,
-    require_admin,
-    templates,
-)
-from astro_ai.routes.llm_support import _cached, _fire_error_alert, _llm_error_friendly
-# --- end transitional
+# Route modules, imported as one block (#154). The app.include_router() calls
+# stay further down in their original relative order — that order IS the route
+# registration order, so it is deliberately not sorted or grouped here.
+from astro_ai.routes import seo as _seo_routes
+from astro_ai.routes import panchang as _panchang_routes
+from astro_ai.routes import festivals as _festivals_routes
+from astro_ai.routes import pages as _pages_routes
+from astro_ai.routes import home as _home_routes
+from astro_ai.routes import kundli as _kundli_routes
+from astro_ai.routes import dosha as _dosha_routes
+from astro_ai.routes import muhurat as _muhurat_routes
+from astro_ai.routes import numerology as _numerology_routes
+from astro_ai.routes import kundli_card as _kundli_card_routes
+from astro_ai.routes import today as _today_routes
+from astro_ai.routes import account as _account_routes
+from astro_ai.routes import outlook as _outlook_routes
+from astro_ai.routes import rashifal as _rashifal_routes
+from astro_ai.routes import subscribe as _subscribe_routes
+from astro_ai.routes import feedback as _feedback_routes
+from astro_ai.routes import learn as _learn_routes
+from astro_ai.routes import admin as _admin_routes
+from astro_ai.routes import dasha as _dasha_routes
+from astro_ai.routes import ask as _ask_routes
+from astro_ai.routes import matching as _matching_routes
+from astro_ai.routes import charts as _charts_routes
+# Re-exported, not redefined: scripts/perf_homepage.py --stages reaches into
+# astro_ai.main for `templates`, `_HOMEPAGE_PANCHANG_CACHE` and
+# `_homepage_panchang_cached`, and degrades to "n/a (not in this tree)" —
+# which reads like a pass — if they disappear. These names bind to the SAME
+# objects routes/home.py uses; there is exactly one cache dict in the process.
+from astro_ai.routes.home import _HOMEPAGE_PANCHANG_CACHE, _homepage_panchang_cached  # noqa: F401
 
 
-# Module-level logger used by the LLM-error handlers throughout this file
-# (log.exception "…LLM generation failed" — one such call per LLM route).
-# Before this existed, every one of those error paths crashed with
-# NameError, converting a graceful "LLM temporarily unavailable" page into
-# a bare 500. Any new error-path code in this module should use this
-# logger, not an ad-hoc import.
-import logging
+# Module-level logger. The unhandled-exception handler below is the last
+# safety net in the process, so it must never itself raise NameError on `log`.
 log = logging.getLogger(__name__)
-
-
-from astro_ai import cache, daily_cache, email_sender, events, feedback, festivals, learn_registry, notify, shloks, snapshots, storage, subscribers, trivia, trust_bar, users
-import time as _time
-from astro_ai.session import (
-    SUPPORTED_LANGS,
-    ChartCollection,
-    SavedMatching,
-    SessionUser,
-    clear_collection,
-    clear_user,
-    load_ask_usage,
-    load_collection,
-    load_lang,
-    load_last_matching,
-    load_user,
-    save_ask_usage,
-    save_collection,
-    save_lang,
-    save_last_matching,
-    save_session_atomic,
-    save_user,
-)
 
 
 app = FastAPI(title="astro-ai", version="0.0.1")
@@ -253,97 +187,27 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 # `app.routes` is not the flat route table any more: tooling that introspects
 # it (`scripts/route_inventory.py`, the #154 check harness) must walk
 # `fastapi.routing.iter_route_contexts(app.routes)` instead.
-from astro_ai.routes import seo as _seo_routes
 app.include_router(_seo_routes.router)
-
-
-from astro_ai.routes import panchang as _panchang_routes
 app.include_router(_panchang_routes.router)
-
-
-from astro_ai.routes import festivals as _festivals_routes
 app.include_router(_festivals_routes.router)
-
-
-from astro_ai.routes import pages as _pages_routes
 app.include_router(_pages_routes.router)
-
-
-from astro_ai.routes import home as _home_routes
 app.include_router(_home_routes.router)
-# Re-exported, not redefined: scripts/perf_homepage.py --stages reaches into
-# astro_ai.main for `templates`, `_HOMEPAGE_PANCHANG_CACHE` and
-# `_homepage_panchang_cached`, and degrades to "n/a (not in this tree)" —
-# which reads like a pass — if they disappear. These names bind to the SAME
-# objects routes/home.py uses; there is exactly one cache dict in the process.
-from astro_ai.routes.home import _HOMEPAGE_PANCHANG_CACHE, _homepage_panchang_cached
-
-
-from astro_ai.routes import kundli as _kundli_routes
 app.include_router(_kundli_routes.router)
-
-
-from astro_ai.routes import dosha as _dosha_routes
 app.include_router(_dosha_routes.router)
-
-
-from astro_ai.routes import muhurat as _muhurat_routes
 app.include_router(_muhurat_routes.router)
-
-
-from astro_ai.routes import numerology as _numerology_routes
 app.include_router(_numerology_routes.router)
-
-
-from astro_ai.routes import kundli_card as _kundli_card_routes
 app.include_router(_kundli_card_routes.router)
-
-
-from astro_ai.routes import today as _today_routes
 app.include_router(_today_routes.router)
-
-
-from astro_ai.routes import account as _account_routes
 app.include_router(_account_routes.router)
-
-
-from astro_ai.routes import outlook as _outlook_routes
 app.include_router(_outlook_routes.router)
-
-
-from astro_ai.routes import rashifal as _rashifal_routes
 app.include_router(_rashifal_routes.router)
-
-
-from astro_ai.routes import subscribe as _subscribe_routes
 app.include_router(_subscribe_routes.router)
-
-
-from astro_ai.routes import feedback as _feedback_routes
 app.include_router(_feedback_routes.router)
-
-
-from astro_ai.routes import learn as _learn_routes
 app.include_router(_learn_routes.router)
-
-
-from astro_ai.routes import admin as _admin_routes
 app.include_router(_admin_routes.router)
-
-
-from astro_ai.routes import dasha as _dasha_routes
 app.include_router(_dasha_routes.router)
-
-
-from astro_ai.routes import ask as _ask_routes
 app.include_router(_ask_routes.router)
-
-
-from astro_ai.routes import matching as _matching_routes
 app.include_router(_matching_routes.router)
-
-
-from astro_ai.routes import charts as _charts_routes
 app.include_router(_charts_routes.router)
 
 
