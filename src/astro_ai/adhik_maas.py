@@ -146,6 +146,33 @@ _UTC = ZoneInfo("UTC")
 
 
 @dataclass(frozen=True)
+class LunarMonth:
+    """One amanta lunar month, as an inclusive civil-date window.
+
+    `start` and `end` use exactly the same sunrise-reckoned convention as
+    `IntercalaryMonth` — `start` is the first day whose New Delhi sunrise follows
+    the opening new-moon instant, `end` is the day before the first day whose
+    sunrise follows the closing one. Windows are 29 or 30 days inclusive; a
+    31-day one is the civil-date-inclusive mistake the module docstring warns
+    about.
+
+    `name` is the **nija** month name with no prefix (``"Jyeshtha"``), for every
+    kind — an adhik month carries the name of the following nija month, and
+    callers render ``f"Adhik {name}"`` themselves.
+
+    `kind` is ``"nija"`` (one sankranti — an ordinary month), ``"adhik"`` (none)
+    or ``"kshaya"`` (two). These are three distinct phenomena and must not be
+    collapsed: only "adhik" is malamas, and "kshaya" means the name is *deleted*
+    from that year's reckoning.
+    """
+
+    start: date
+    end: date
+    name: str
+    kind: str
+
+
+@dataclass(frozen=True)
 class IntercalaryMonth:
     """One leap or deleted lunar month, as an inclusive civil-date window.
 
@@ -254,11 +281,24 @@ def _first_sunrise_day_after(instant_jd: float) -> date:
 
 
 @lru_cache(maxsize=8)
-def intercalary_months(year: int) -> tuple[IntercalaryMonth, ...]:
-    """Every adhik or kshaya month overlapping the Gregorian `year`.
+def lunar_months(year: int) -> tuple[LunarMonth, ...]:
+    """Every amanta lunar month overlapping the Gregorian `year`, ascending.
+
+    Ordinary ("nija") months included, which is the only thing that distinguishes
+    this from `intercalary_months` — that function is now a filter over this one.
 
     The scan runs 1 Oct of `year-1` to 1 Mar of `year+1` so that both bounding new
     moons of every month touching `year` are inside it, with slack.
+
+    CONSUMER: `astro_ai.lunar_dates.nija_month()` resolves "the nija Ashadha of
+    2027" against this, which is how Devshayani Ekadashi and the abujha muhurats
+    in `muhurat.py` land in the right lunar month in an Adhik Maas year. That
+    consumer depends on the `kind` field being exact, not merely on the windows
+    being right — see the `kind` note on `LunarMonth`.
+
+    GATE: `scripts/verify_adhik_maas.py` (5 gates) covers this function through
+    `intercalary_months`, and `scripts/verify_muhurat_tables.py` covers the nija
+    months this one additionally emits. Run both after any change here.
     """
     if year not in SUPPORTED_YEARS:
         raise ValueError(f"year {year} outside SUPPORTED_YEARS {SUPPORTED_YEARS}")
@@ -268,13 +308,16 @@ def intercalary_months(year: int) -> tuple[IntercalaryMonth, ...]:
     moons = _new_moon_instants(jd_start, jd_end)
 
     jan1, dec31 = date(year, 1, 1), date(year, 12, 31)
-    found: list[IntercalaryMonth] = []
+    found: list[LunarMonth] = []
     for a, b in zip(moons, moons[1:]):
         ra, rb = _sun_rashi(a), _sun_rashi(b)
         step = (rb - ra) % 12
-        if step == 1:
-            continue  # ordinary month: exactly one sankranti inside it
-        kind = "adhik" if step == 0 else "kshaya" if step == 2 else None
+        kind = (
+            "nija" if step == 1
+            else "adhik" if step == 0
+            else "kshaya" if step == 2
+            else None
+        )
         if kind is None:  # pragma: no cover — astronomically impossible
             continue
         start = _first_sunrise_day_after(a)
@@ -284,10 +327,29 @@ def intercalary_months(year: int) -> tuple[IntercalaryMonth, ...]:
         name = _MONTH_NAMES[(ra + 1) % 12]
         # Filter on OVERLAP, not on `start.year == year`. An adhik maas can straddle
         # 31 Dec, and a start-year test would make it invisible from the year that
-        # holds its tail — which is the year whose muhurats it suppresses.
+        # holds its tail — which is the year whose muhurats it suppresses. Nija
+        # months need the same treatment for the same reason: Pausha and Magha
+        # routinely straddle 1 Jan, and `lunar_dates` must find Magha from the year
+        # its shukla paksha falls in.
         if end >= jan1 and start <= dec31:
-            found.append(IntercalaryMonth(start=start, end=end, name=name, kind=kind))
+            found.append(LunarMonth(start=start, end=end, name=name, kind=kind))
     return tuple(found)
+
+
+def intercalary_months(year: int) -> tuple[IntercalaryMonth, ...]:
+    """Every adhik or kshaya month overlapping the Gregorian `year`.
+
+    A filter over `lunar_months`, which holds the enumeration. Output is
+    unchanged from when this function owned the loop itself — `lunar_months`
+    keeps the same scan window, the same rashi-step classification and the same
+    overlap filter, and only additionally emits `kind == "nija"`, which is
+    dropped here.
+    """
+    return tuple(
+        IntercalaryMonth(start=m.start, end=m.end, name=m.name, kind=m.kind)
+        for m in lunar_months(year)
+        if m.kind != "nija"
+    )
 
 
 def adhik_maas_for_date(d: date) -> IntercalaryMonth | None:

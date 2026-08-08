@@ -23,9 +23,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, timedelta, datetime
+from functools import lru_cache
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from astro_ai import lunar_dates
 from astro_ai.adhik_maas import adhik_maas_flag
 from astro_ai.chart import (
     Chart, compute_chart, compute_panchang, compute_transit_snapshot,
@@ -137,36 +139,149 @@ class MuhuratCandidate:
     choghadiya: tuple[dict, ...] = ()   # 8 day-windows with name/start/end/auspiciousness
 
 
-# ─── Chaturmas date ranges (Devshayani → Devuthani Ekadashi) ─────────
-# Vishnu-sleeping period, traditionally weddings-restricted. Dates vary
-# yearly by lunar calendar. Update annually from Drik Panchang.
-_CHATURMAS_RANGES: dict[int, tuple[date, date]] = {
-    2026: (date(2026, 7, 15), date(2026, 11, 11)),
-    2027: (date(2027, 7,  5), date(2027, 11,  1)),
-    2028: (date(2028, 7, 23), date(2028, 11, 19)),
-}
+# ─── Chaturmas (Devshayani Ekadashi → Devuthani Ekadashi) ────────────
+# Vishnu's four-month sleep, traditionally weddings-restricted. The window
+# runs from Ashadha Shukla Ekadashi to Kartika Shukla Ekadashi — four lunar
+# months, ~118 civil days, or ~147 in a year whose Adhik Maas falls inside it.
+#
+# Both boundaries are COMPUTED from the ephemeris via
+# `lunar_dates.shukla_tithi_date`, which resolves the tithi over
+# `adhik_maas.lunar_months()` and so cannot be fooled by an intercalary month.
+# The gate over it is `scripts/verify_muhurat_tables.py`; run that after any
+# change here.
+#
+# WHY THIS IS NO LONGER A TABLE: a hand-typed `_CHATURMAS_RANGES` year->window
+# dict used to sit here, covering 2026-2028 only, and ALL THREE of its rows
+# disagreed with the almanac (drikpanchang.com, New Delhi, fetched 2026-08-07):
+#
+#     shipped 2026 Jul 15 - Nov 11   real 2026-07-25 .. 2026-11-20
+#     shipped 2027 Jul  5 - Nov  1   real 2027-07-14 .. 2027-11-10
+#     shipped 2028 Jul 23 - Nov 19   real 2028-07-02 .. 2028-10-27
+#
+# The 2028 row was 21 days out at both ends — it restricted three weeks of
+# genuinely clear late-November dates while passing the whole first half of
+# July as unrestricted. From 2029 on the dict had no row at all and a fixed
+# Jul 15 - Nov 15 fallback took over, which is not a lunar window in any year
+# and structurally cannot express the ~147-day adhik-maas case.
+#
+# NOTE FOR ANYONE READING ISSUE #146: the issue's own body quotes the 2027 and
+# 2028 rows above back as "the real windows" (2027 Jul 5-Nov 1, 2028 Jul 23-
+# Nov 19). Those are the WRONG table's own values, not almanac values. Drik
+# gives Jul 14-Nov 9 and Jul 2-Oct 27. Restoring the issue's numbers trips
+# Gate 1 of verify_muhurat_tables.py, which is exactly what it is there for.
+# A table with no computation over it has nothing to disagree with.
+
+
+@lru_cache(maxsize=8)
+def _chaturmas_window(year: int) -> tuple[date, date] | None:
+    """(Devshayani, Devuthani) Ekadashi for `year`, or None if either is missing.
+
+    Cached at YEAR granularity because `find_candidates` calls `_in_chaturmas`
+    once per candidate day and a scan runs up to 365 of them; uncached, each
+    call would re-enumerate a year of lunar months.
+    """
+    start = lunar_dates.shukla_tithi_date(year, "Ashadha", 11)
+    end = lunar_dates.shukla_tithi_date(year, "Kartika", 11)
+    if start is None or end is None:
+        return None
+    return (start, end)
 
 
 # ─── Abujha Muhurats (self-auspicious days) ──────────────────────────
-# Classical "swayam-siddha" days that override normal Panchang scoring.
-# See top-of-file docstring in previous version for full details.
-_ABUJHA_MUHURATS: dict[int, list[tuple[date, str, tuple[str, ...]]]] = {
-    2026: [
-        (date(2026, 4, 30), "Akshaya Tritiya",        ("vivah", "griha_pravesh", "business")),
-        (date(2026, 6, 24), "Bhadli Navami",          ("vivah",)),
-        # Devuthani Ekadashi 2026 = Kartik Shukla Ekadashi = 11 days after
-        # Diwali Amavasya (Nov 8, 2026). Previously wrong at Nov 12.
-        (date(2026, 11, 19), "Devuthani Ekadashi",    ("vivah", "griha_pravesh", "business")),
-        (date(2026, 11, 20), "Tulsi Vivah",           ("vivah",)),
-    ],
-    2027: [
-        (date(2027, 1, 23), "Basant Panchami",        ("vivah", "griha_pravesh", "vidyarambh", "business")),
-        (date(2027, 5, 19), "Akshaya Tritiya",        ("vivah", "griha_pravesh", "business")),
-        (date(2027, 6, 13), "Bhadli Navami",          ("vivah",)),
-        (date(2027, 10, 31), "Devuthani Ekadashi",    ("vivah", "griha_pravesh", "business")),
-        (date(2027, 11, 1),  "Tulsi Vivah",           ("vivah",)),
-    ],
-}
+# Classical "swayam-siddha" / "abujha" days — universally auspicious without
+# reference to the day's Panchang, so they override normal scoring.
+#
+# WHAT IS COMPUTED AND WHAT IS POLICY: the DATES below are computed from the
+# ephemeris (lunar month + shukla tithi, via `lunar_dates.shukla_tithi_date`).
+# The names, the event types each day applies to, and the choice of which days
+# count as abujha at all are human policy and stay hand-written here.
+#
+# WHY THE DATES ARE NO LONGER A TABLE: a hand-typed `_ABUJHA_MUHURATS` dict
+# used to sit here with 9 rows across 2026-2027, and ALL NINE disagreed with
+# drikpanchang.com (New Delhi, fetched 2026-08-07):
+#
+#     Akshaya Tritiya 2026    shipped 2026-04-30   real 2026-04-19
+#     Bhadli Navami 2026      shipped 2026-06-24   real ~2026-07-23 (a whole
+#                                                  lunar month off)
+#     Devuthani Ekadashi 2026 shipped 2026-11-19   real 2026-11-20
+#     Tulsi Vivah 2026        shipped 2026-11-20   real 2026-11-21
+#     Basant Panchami 2026    row missing entirely real 2026-01-23
+#     Basant Panchami 2027    shipped 2027-01-23   real 2027-02-11
+#     Akshaya Tritiya 2027    shipped 2027-05-19   real 2027-05-09
+#     Bhadli Navami 2027      shipped 2027-06-13   real ~2027-07-12
+#     Devuthani Ekadashi 2027 shipped 2027-10-31   real 2027-11-10
+#     Tulsi Vivah 2027        shipped 2027-11-01   real 2027-11-11
+#
+# The 2027 Basant Panchami row is the 2026 date filed under a 2027 key — the
+# same mistyped-year signature as issue #141's Adhik Maas table. And from 2028
+# on the dict simply had no rows, so `.get(d.year, [])` returned [] and every
+# abujha day silently ceased to exist: a 2028 wedding scan showed no Akshaya
+# Tritiya at all.
+#
+# TWO RECKONINGS, AND THE SPLIT MATTERS. A tithi does not fill a civil day, so
+# the almanac must say which instant fixes the observance:
+#   * "sunrise"   — the tithi running at local sunrise. Correct for the
+#                   Ekadashi fasts (Devuthani, and Bhadli Navami by the same
+#                   convention).
+#   * "madhyahna" — the tithi running at the OPENING of madhyahna (midday).
+#                   Correct for Akshaya Tritiya and Basant Panchami, which are
+#                   madhyahna-vyapini; `festival_registry`'s observance_window
+#                   field records this independently.
+# Reckoning the midday observances at sunrise moves them by a day in roughly
+# one year in three — it gets Akshaya Tritiya 2026 wrong (returns 04-20 for
+# Drik's 04-19). See `lunar_dates`' module docstring, which works the two
+# discriminating Akshaya Tritiya years through in full.
+#
+# BHADLI NAVAMI SHIPS UNVERIFIED, AND SAYS SO. The rule (Ashadha Shukla Navami)
+# is well attested, but no published almanac date was obtainable on 2026-08-07:
+# drikpanchang's New Delhi Hindu calendar does not carry Bhadli / Bhadali /
+# Kandarpa Navami in any year fetched (2015, 2026-2029) and its festival URLs
+# 404. It is a regional Gujarati/Rajasthani observance. No date was invented to
+# fill the gap. Gate 1 of verify_muhurat_tables.py therefore carries NO Bhadli
+# Navami row, and the ONLY assertion made about it anywhere is Gate 2's
+# structural one: it falls in the same nija Ashadha as the verified Devshayani
+# and 1-3 days before it. If a citable source turns up, add it to Gate 1.
+#
+# (name, nija lunar month, shukla tithi, reckoning, event types)
+_ABUJHA_RULES: tuple[tuple[str, str, int, str, tuple[str, ...]], ...] = (
+    ("Akshaya Tritiya",    "Vaishakha", 3,  "madhyahna", ("vivah", "griha_pravesh", "business")),
+    ("Basant Panchami",    "Magha",     5,  "madhyahna", ("vivah", "griha_pravesh", "vidyarambh", "business")),
+    ("Bhadli Navami",      "Ashadha",   9,  "sunrise",   ("vivah",)),
+    ("Devuthani Ekadashi", "Kartika",   11, "sunrise",   ("vivah", "griha_pravesh", "business")),
+)
+
+
+@lru_cache(maxsize=8)
+def _abujha_days(year: int) -> dict[date, tuple[tuple[str, tuple[str, ...]], ...]]:
+    """Abujha days in `year` -> ((name, event_types), ...) in rule order.
+
+    A rule that does not resolve (kshaya month, i.e. that month name is deleted
+    from the year's reckoning) is skipped rather than guessed at.
+
+    TULSI VIVAH IS DERIVED AS DEVUTHANI + 1, NOT COMPUTED INDEPENDENTLY. Drik
+    places it the day after Devuthani Ekadashi in 5 of 5 verified years (2015,
+    2026-2029), including 2026 where the Ekadashi is a kshaya tithi. It is
+    reckoned at pradosh (twilight) while `lunar_dates` samples sunrise and
+    madhyahna only, so computing it independently could disagree with the
+    Ekadashi it is tied to by a day, for no gain in accuracy.
+
+    Cached at YEAR granularity — same reason as `_chaturmas_window`: a 365-day
+    scan calls `_abujha_for` once per candidate day.
+    """
+    days: dict[date, list[tuple[str, tuple[str, ...]]]] = {}
+    devuthani: date | None = None
+    for name, month, tithi, reckoning, event_types in _ABUJHA_RULES:
+        d = lunar_dates.shukla_tithi_date(year, month, tithi, reckoning)
+        if d is None:
+            continue
+        if name == "Devuthani Ekadashi":
+            devuthani = d
+        days.setdefault(d, []).append((name, event_types))
+    if devuthani is not None:
+        days.setdefault(devuthani + timedelta(days=1), []).append(
+            ("Tulsi Vivah", ("vivah",))
+        )
+    return {d: tuple(entries) for d, entries in days.items()}
 
 
 # ─── Per-event classical rule tables ──────────────────────────────────
@@ -564,19 +679,43 @@ EVENT_RULES: dict[str, dict[str, Any]] = {
 
 
 def _abujha_for(d: date, event_type: str) -> str:
-    """Return the Abujha Muhurat name if this date is one for this event, else ''."""
-    for entry_date, name, event_types in _ABUJHA_MUHURATS.get(d.year, []):
-        if entry_date == d and event_type in event_types:
-            return name
-    return ""
+    """Return the Abujha Muhurat name if this date is one for this event, else ''.
+
+    First match wins when two abujha days coincide, in `_ABUJHA_RULES` order.
+    Degrades to "" rather than raising — see `_in_chaturmas` for why.
+    """
+    try:
+        for name, event_types in _abujha_days(d.year).get(d, ()):
+            if event_type in event_types:
+                return name
+        return ""
+    except Exception:
+        return ""
 
 
 def _in_chaturmas(d: date) -> bool:
-    """True if date falls within Chaturmas restriction window."""
-    rng = _CHATURMAS_RANGES.get(d.year)
-    if rng is None:
-        return date(d.year, 7, 15) <= d <= date(d.year, 11, 15)
-    return rng[0] <= d <= rng[1]
+    """True if `d` falls in the Chaturmas restriction window (Devshayani ..
+    Devuthani Ekadashi, end-exclusive — Devuthani itself ends the restriction).
+
+    DEGRADES PERMISSIVELY, AND THAT IS DELIBERATE. This is called inside
+    `find_candidates`' per-day `try:` (~muhurat.py:1218) whose `except
+    Exception: continue` (~:1239) drops the ENTIRE day from the results. So an
+    exception raised here would not surface as an error — it would silently
+    delete every affected date from the user's muhurat list, which is both
+    invisible and destructive. Returning False instead loses one restriction
+    flag on a day that still gets scored and shown.
+
+    Loudness belongs in `scripts/verify_muhurat_tables.py`, which asserts the
+    window resolves for every year 2000-2100, not in a runtime fallback. There
+    is deliberately NO fixed Jul 15 - Nov 15 fallback any more: it was wrong in
+    every year and structurally could not express the ~147-day window of a year
+    with an Adhik Maas inside Chaturmas.
+    """
+    try:
+        w = _chaturmas_window(d.year)
+        return w is not None and w[0] <= d < w[1]
+    except Exception:
+        return False
 
 
 # ─── Kharmas / Malmas (Sun-in-inauspicious-rashi) ────────────────────
