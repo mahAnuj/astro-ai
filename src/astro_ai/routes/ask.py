@@ -54,9 +54,9 @@ async def ask_form(request: Request, q: str | None = None,
     redirect or cache-hit re-visit), the answer is rendered alongside the
     form so the user can ask follow-ups.
 
-    `ctx` selects the context type — "chart" (default) or "numerology".
-    Preserved as a hidden form field so "Ask another" from within a
-    numerology-context session stays in numerology-context.
+    `ctx` selects the context type — "chart" (default), "numerology" or
+    "matching". Preserved as a hidden form field so "Ask another" from
+    within a numerology-context session stays in numerology-context.
     """
     saved = load_collection(request).active
     if saved is None:
@@ -67,7 +67,15 @@ async def ask_form(request: Request, q: str | None = None,
     if q:
         # Render a previously-asked question by re-running the cached lookup.
         # POST handler stores the (question, category) and we look it up.
-        answer = _ask_lookup(saved, q, c or "general", lang, context=context)
+        # The partner must be resolved here too: for ctx=matching the partner
+        # fingerprint and the *effective* context are both part of the cache
+        # key, so GET has to repeat exactly what POST did or it would look up
+        # a key POST never wrote and the answer would never re-render (#181).
+        _p_chart, _p_label, partner_fp, effective_ctx = _resolve_matching_partner(
+            request, saved, context
+        )
+        answer = _ask_lookup(saved, q, c or "general", lang,
+                             context=effective_ctx, partner_fp=partner_fp)
     return templates.TemplateResponse(
         request, "ask.html",
         {
@@ -87,13 +95,29 @@ _ASK_CATEGORIES = {"general", "career", "marriage", "money", "health",
 
 
 def _ask_cache_key(saved, question: str, category: str, lang: str,
-                    context: str = "chart") -> str:
-    """Stable cache key for an (chart, question, category, context) tuple.
+                    context: str = "chart", partner_fp: str | None = None) -> str:
+    """Stable cache key for a (chart, question, category, context, partner) tuple.
 
-    `context` (chart|numerology) is baked in so the same question asked
-    with a different context source doesn't collide — a numerology-
-    context answer references the numbers, a chart-context answer
-    doesn't; they are legitimately different responses.
+    `context` is one of chart|numerology|matching and is baked in so the
+    same question asked with a different context source doesn't collide —
+    a numerology-context answer references the numbers, a chart-context
+    answer doesn't; they are legitimately different responses.
+
+    `partner_fp` is the fingerprint of the OTHER party's birth details and
+    is included **only** for context="matching". Without it, asking "are we
+    compatible?" after matching against partner A and then again after
+    matching against partner B returned A's answer — a compatibility reading
+    about the wrong person, served silently (issue #181). Do not remove it:
+    the seeker's own chart fingerprint is not enough to identify a
+    two-chart reading. The other contexts derive purely from the seeker's
+    saved chart, which `chart_fp` already covers.
+
+    Key shapes (chart / numerology are byte-identical to pre-#181 so their
+    existing cache entries stay valid):
+
+        chart       ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}
+        numerology  …:ctx=numerology
+        matching    …:ctx=matching:partner={partner_fp}
     """
     chart_fp = cache.fingerprint_chart(
         saved.birth_date, saved.birth_time, saved.birth_place
@@ -104,13 +128,74 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
     import hashlib
     q_fp = hashlib.sha1(question.strip().encode("utf-8")).hexdigest()[:16]
     base = f"ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}"
-    return base if context == "chart" else f"{base}:ctx={context}"
+    if context == "chart":
+        return base
+    key = f"{base}:ctx={context}"
+    if context == "matching" and partner_fp:
+        key = f"{key}:partner={partner_fp}"
+    return key
+
+
+def _resolve_matching_partner(request: Request, saved, context: str):
+    """Resolve the ctx=matching partner from the last-matching cookie.
+
+    Returns ``(partner_chart, partner_label, partner_fp, effective_context)``.
+
+    Shared by GET and POST /ask deliberately. Both the partner fingerprint
+    and the *effective* context (which downgrades "matching" → "chart" when
+    there is no matching cookie, or when the partner chart won't compute)
+    are part of the cache key, so if the two handlers derived them
+    independently the PRG redirect would read a key the POST never wrote and
+    the answer would stop rendering. One resolver, one answer (issue #181).
+
+    Partner identification is unchanged: if the seeker's saved chart is the
+    groom (name + DOB), the partner is the bride; if the seeker is the bride,
+    the partner is the groom; otherwise — including a curious third party —
+    the bride is the partner by default.
+    """
+    if context != "matching":
+        return None, "partner", None, context
+
+    last = load_last_matching(request)
+    if last is None:
+        # No recent matching to draw from; downgrade to chart-only.
+        return None, "partner", None, "chart"
+
+    def _same(saved_c, name: str, dob: str) -> bool:
+        return (saved_c.birth_date == dob
+                and (saved_c.name or "").strip().lower() == (name or "").strip().lower())
+
+    seeker_is_groom = _same(saved, last.groom_name, last.groom_birth_date)
+    seeker_is_bride = _same(saved, last.bride_name, last.bride_birth_date)
+    if seeker_is_groom or not seeker_is_bride:
+        # Seeker identifies with groom (or default): partner = bride
+        p_name = last.bride_name or "Bride"
+        p_dob, p_time, p_place = (last.bride_birth_date,
+                                  last.bride_birth_time,
+                                  last.bride_birth_place)
+        partner_label = "partner (bride from your Kundli match)"
+    else:
+        # Seeker identifies with bride: partner = groom
+        p_name = last.groom_name or "Groom"
+        p_dob, p_time, p_place = (last.groom_birth_date,
+                                  last.groom_birth_time,
+                                  last.groom_birth_place)
+        partner_label = "partner (groom from your Kundli match)"
+
+    partner_fp = cache.fingerprint_chart(p_dob, p_time, p_place)
+    try:
+        partner_chart = compute_chart(p_dob, p_time, p_place)
+    except Exception:
+        log.debug("partner chart compute failed for /ask matching context", exc_info=True)
+        return None, partner_label, None, "chart"
+    return partner_chart, partner_label, partner_fp, "matching"
 
 
 def _ask_lookup(saved, question: str, category: str, lang: str,
-                context: str = "chart") -> str | None:
+                context: str = "chart", partner_fp: str | None = None) -> str | None:
     """Look up an already-cached answer without burning a fresh LLM call."""
-    return cache.get(_ask_cache_key(saved, question, category, lang, context=context))
+    return cache.get(_ask_cache_key(saved, question, category, lang,
+                                    context=context, partner_fp=partner_fp))
 
 
 @router.post("/ask")
@@ -224,47 +309,22 @@ async def ask_submit(
             log.debug("numerology context load failed for /ask", exc_info=True)
 
     # Matching context: recover the partner chart from the last-matching
-    # cookie set by POST /matching. If the seeker's saved chart matches
-    # one of the two matching parties (by name + DOB), the OTHER party
-    # is treated as the partner; else default to the groom.
-    partner_chart = None
-    partner_label = "partner"
-    if context == "matching":
-        last = load_last_matching(request)
-        if last is None:
-            # No recent matching to draw from; downgrade to chart-only.
-            context = "chart"
-        else:
-            def _same(saved_c, name: str, dob: str) -> bool:
-                return (saved_c.birth_date == dob
-                        and (saved_c.name or "").strip().lower() == (name or "").strip().lower())
-            seeker_is_groom = _same(saved, last.groom_name, last.groom_birth_date)
-            seeker_is_bride = _same(saved, last.bride_name, last.bride_birth_date)
-            if seeker_is_groom or not seeker_is_bride:
-                # Seeker identifies with groom (or default): partner = bride
-                p_name = last.bride_name or "Bride"
-                p_dob, p_time, p_place = (last.bride_birth_date,
-                                          last.bride_birth_time,
-                                          last.bride_birth_place)
-                partner_label = "partner (bride from your Kundli match)"
-            else:
-                # Seeker identifies with bride: partner = groom
-                p_name = last.groom_name or "Groom"
-                p_dob, p_time, p_place = (last.groom_birth_date,
-                                          last.groom_birth_time,
-                                          last.groom_birth_place)
-                partner_label = "partner (groom from your Kundli match)"
-            try:
-                partner_chart = compute_chart(p_dob, p_time, p_place)
-            except Exception:
-                log.debug("partner chart compute failed for /ask matching context", exc_info=True)
-                partner_chart = None
-                context = "chart"
+    # cookie set by POST /matching. Shared with the GET handler so both
+    # derive the same partner and the same effective context — see
+    # _resolve_matching_partner. `context` may come back downgraded to
+    # "chart" when there is no matching cookie or the partner chart won't
+    # compute; the redirect below then drops `ctx` to match.
+    partner_chart, partner_label, partner_fp, context = _resolve_matching_partner(
+        request, saved, context
+    )
 
     # Cache key includes context so the same question asked from
     # /numerology (with numerology context) does not collide with the
-    # same question asked from /kundli (chart-only).
-    cache_key = _ask_cache_key(saved, question, category, lang, context=context)
+    # same question asked from /kundli (chart-only) — and, for matching,
+    # the partner fingerprint so two different partners get two different
+    # answers instead of the first partner's (issue #181).
+    cache_key = _ask_cache_key(saved, question, category, lang,
+                               context=context, partner_fp=partner_fp)
     was_cached = cache.get(cache_key) is not None
     try:
         answer_text = _cached(
