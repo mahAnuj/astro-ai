@@ -123,7 +123,7 @@ def _llm_error_friendly(err: Exception) -> tuple[str, str]:
         "We couldn't complete the reading this time. Please try again in "
         "a moment — your input is safe to re-submit exactly as you typed it.",
     )
-from astro_ai import cache, daily_cache, email_sender, events, feedback, festivals, learn_registry, notify, shloks, snapshots, storage, subscribers, trivia, users
+from astro_ai import cache, daily_cache, email_sender, events, feedback, festivals, learn_registry, notify, shloks, snapshots, storage, subscribers, trivia, trust_bar, users
 import time as _time
 from astro_ai.session import (
     SUPPORTED_LANGS,
@@ -1197,48 +1197,26 @@ async def terms_page(request: Request) -> HTMLResponse:
 
 
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request, needs_chart: str | None = None) -> HTMLResponse:
+def index(request: Request, needs_chart: str | None = None) -> HTMLResponse:
     """Form for new visitors, chart-list + form for returning seekers.
 
     `?needs_chart=<feature>` is set when other routes redirect here because
     no saved chart exists yet. We surface a brief banner naming the feature
     the seeker tried to reach, so the redirect isn't silent.
+
+    Deliberately a plain `def`, not `async def` (issue #144): the body does
+    blocking I/O and contains no `await`, so Starlette runs it in a worker
+    thread instead of on the single event loop this container has. As an
+    `async def` one slow homepage stalled every other request on the
+    instance — a static `GET /sw.js` was measured at 55s behind it.
     """
     collection = load_collection(request)
-    # Trust bar counts (SEO audit #134) — real numbers only. Never fake,
-    # never round up. Each pill has a MIN THRESHOLD (env-overrideable);
-    # below the threshold the pill is hidden — "1 registered reader"
-    # looks weaker than no pill at all. Turn a pill on by lowering its
-    # env threshold once real traffic accumulates.
-    #
-    # Defaults picked so the site DOES NOT show any pill until numbers
-    # are meaningfully impressive (2026-08-06 user request).
-    _TRUST_MIN = {
-        "users":       int(os.environ.get("TRUST_MIN_USERS",       "500")),
-        "subscribers": int(os.environ.get("TRUST_MIN_SUBSCRIBERS", "100")),
-        "kundlis":     int(os.environ.get("TRUST_MIN_KUNDLIS",     "500")),
-        "asks":        int(os.environ.get("TRUST_MIN_ASKS",        "500")),
-    }
-    try:
-        _users_ct = users.count()
-    except Exception:
-        _users_ct = 0
-    try:
-        _subs_ct = subscribers.count()
-    except Exception:
-        _subs_ct = 0
-    # Kundli + Ask lifetime-ish counts from the GCS events log. We
-    # aggregate across the full retention window (30 days) which is
-    # a reasonable proxy for "till now" while numbers are early. When
-    # traffic warrants a true lifetime counter, add a persistent
-    # counters.py module — for now retention-window totals suffice.
-    try:
-        _totals = events.counts_by_type(days=events.EVENT_RETENTION_DAYS)
-        _kundlis_ct = _totals.get("form_kundli", 0)
-        _asks_ct = _totals.get("form_ask", 0)
-    except Exception:
-        _kundlis_ct = 0
-        _asks_ct = 0
+    # Trust-bar counts + thresholds live in astro_ai.trust_bar. The counts are
+    # cached per process (stale-while-revalidate), so this call makes zero GCS
+    # requests in steady state and never blocks; see that module for why zeros
+    # are the safe default.
+    _trust = trust_bar.counts()
+    _trust_min = trust_bar.minimums()
     # Panchang strip for the homepage masthead (user's request — always
     # visible without click-away). Cached daily per city via
     # _homepage_panchang_cached — after first computation for a given
@@ -1281,14 +1259,14 @@ async def index(request: Request, needs_chart: str | None = None) -> HTMLRespons
             # so a pill only renders when count >= min. Simpler than passing
             # a pre-gated bool because the template can format the number
             # with commas and pluralization directly.
-            "trust_users": _users_ct,
-            "trust_users_min": _TRUST_MIN["users"],
-            "trust_subscribers": _subs_ct,
-            "trust_subscribers_min": _TRUST_MIN["subscribers"],
-            "trust_kundlis": _kundlis_ct,
-            "trust_kundlis_min": _TRUST_MIN["kundlis"],
-            "trust_asks": _asks_ct,
-            "trust_asks_min": _TRUST_MIN["asks"],
+            "trust_users": _trust["users"],
+            "trust_users_min": _trust_min["users"],
+            "trust_subscribers": _trust["subscribers"],
+            "trust_subscribers_min": _trust_min["subscribers"],
+            "trust_kundlis": _trust["kundlis"],
+            "trust_kundlis_min": _trust_min["kundlis"],
+            "trust_asks": _trust["asks"],
+            "trust_asks_min": _trust_min["asks"],
             "panchang_strip": _panchang_strip,
             "panchang_moon": _panchang_moon,
             "panchang_city": _panchang_city.split(",")[0] if _panchang_city else "",

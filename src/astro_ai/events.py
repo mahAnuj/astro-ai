@@ -38,17 +38,31 @@ from __future__ import annotations
 import json
 import logging
 import os
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-from astro_ai import storage
+from astro_ai import hot_cache, storage
 
 log = logging.getLogger(__name__)
 
 EVENT_RETENTION_DAYS = 30
 _MAX_EVENTS_PER_DAY = 5000  # safety cap so a bug can't blow up storage
 _LOCAL_FALLBACK_DIR = Path(os.environ.get("BHAGYA_EVENTS_FALLBACK_DIR", "/tmp/bhagya_events"))
+
+_TODAY_TTL_S = 60.0
+"""Today's blob is still being appended to, so it can only be memoised briefly."""
+
+_ABSENT_TTL_S = 300.0
+"""How long we remember that an elapsed day has *no* blob. Not forever: a
+backfill can create one after the fact."""
+
+_READ_WORKERS = 8
+"""Parallel GCS reads for the cold fill. Safe only because storage._client()
+now shares a single google-cloud-storage client (and its connection pool)
+across the process — 8 threads each building their own client would be worse."""
 
 
 def _now_iso() -> str:
@@ -63,7 +77,33 @@ def _local_path(day: date) -> Path:
     return _LOCAL_FALLBACK_DIR / f"{day.isoformat()}.json"
 
 
-def _read_day(day: date) -> dict[str, Any] | None:
+class _AbsentDay(Exception):
+    """Internal signal: the day has no blob. Keeps `hot_cache.forever` from
+    pinning a `None` for the lifetime of the process."""
+
+
+_GEN_LOCK = threading.Lock()
+_TODAY_GEN = 0
+
+
+def _today_gen() -> int:
+    with _GEN_LOCK:
+        return _TODAY_GEN
+
+
+def _bump_today_gen() -> None:
+    """Invalidate the memoised copy of today's blob.
+
+    `hot_cache` has no per-key delete, so today's cache key carries a
+    generation counter and we simply move to the next one; the abandoned entry
+    expires on its own within `_TODAY_TTL_S`.
+    """
+    global _TODAY_GEN
+    with _GEN_LOCK:
+        _TODAY_GEN += 1
+
+
+def _fetch_day(day: date) -> dict[str, Any] | None:
     data = storage.get_json(_key_for(day))
     if data is not None:
         return data
@@ -73,6 +113,40 @@ def _read_day(day: date) -> dict[str, Any] | None:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
+        return None
+
+
+def _read_day(day: date) -> dict[str, Any] | None:
+    """Memoised `_fetch_day`. Same return value, far fewer round trips.
+
+    An elapsed day's blob never changes again, so once seen it is pinned for
+    the lifetime of the process. Today's is re-read every `_TODAY_TTL_S`
+    (and immediately after a `record()`). A future day — which shouldn't
+    happen — is never cached.
+    """
+    today = date.today()
+    if day > today:
+        return _fetch_day(day)
+
+    key = f"events:day:{day.isoformat()}"
+    if day == today:
+        return hot_cache.get_or_compute(
+            f"{key}#{_today_gen()}", _TODAY_TTL_S, lambda: _fetch_day(day)
+        )
+
+    def _pin() -> dict[str, Any]:
+        # Only reached when the day is not already pinned. The inner probe
+        # bounds how often a still-missing day is re-read from storage.
+        blob = hot_cache.get_or_compute(
+            f"{key}:probe", _ABSENT_TTL_S, lambda: _fetch_day(day)
+        )
+        if blob is None:
+            raise _AbsentDay
+        return blob
+
+    try:
+        return hot_cache.forever(key, _pin)
+    except _AbsentDay:
         return None
 
 
@@ -98,6 +172,11 @@ def record(*, type: str, email: str = "", data: dict | None = None) -> None:
 
     result = storage.update_json(_key_for(today), _mut, default=None)
     if result is not None:
+        # Drop the memoised copy of today so /admin/activity and the
+        # audience-insights view see this event on the very next read.
+        # Residual staleness: other Cloud Run instances keep their own copy
+        # for up to _TODAY_TTL_S. Acceptable for an admin-only view.
+        _bump_today_gen()
         return
     # Local fallback (non-atomic; fine for dev / preview).
     try:
@@ -109,6 +188,7 @@ def record(*, type: str, email: str = "", data: dict | None = None) -> None:
             current = None
         new_data = _mut(current)
         path.write_text(json.dumps(new_data, ensure_ascii=False), encoding="utf-8")
+        _bump_today_gen()
     except Exception as err:  # noqa: BLE001 — events are best-effort
         log.debug("events.record local fallback failed: %s", err)
 
@@ -141,11 +221,16 @@ def recent(*, types: Iterable[str] | None = None, limit: int = 100,
 def counts_by_type(*, days: int = 7) -> dict[str, int]:
     """Total event counts per type across the last `days` days."""
     days = max(1, min(days, EVENT_RETENTION_DAYS))
-    totals: dict[str, int] = {}
     today = date.today()
-    for i in range(days):
-        d = today - timedelta(days=i)
-        blob = _read_day(d)
+    wanted_days = [today - timedelta(days=i) for i in range(days)]
+
+    # Cold fill is I/O-bound on cross-region GCS round trips, so fan out.
+    # Aggregation stays on this thread — `totals` is never touched by a worker.
+    with ThreadPoolExecutor(max_workers=_READ_WORKERS) as pool:
+        blobs = list(pool.map(_read_day, wanted_days))
+
+    totals: dict[str, int] = {}
+    for blob in blobs:
         if blob is None:
             continue
         for evt in blob.get("events", []):
