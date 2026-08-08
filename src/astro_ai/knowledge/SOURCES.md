@@ -3,7 +3,7 @@
 Living document tracking what's been extracted from each source PDF,
 what's still pending, and how new articles should cite them.
 
-**Last updated:** 2026-07-23
+**Last updated:** 2026-08-08
 
 ---
 
@@ -16,9 +16,35 @@ what's still pending, and how new articles should cite them.
 | 3 | `book1-for-CD.pdf` | P.V.R. Narasimha Rao (Lessons Vol. I) | 7,757 | ❌ Not extracted | MEDIUM |
 | 4 | `Astrology-e-book-compressed.pdf` | Chennareddy Vasudev | 4,558 | ❌ Not extracted | LOW (introductory) |
 | 5 | `varahmihirHorasastram.pdf` | Varahamihira (~6th C) | **0 (scanned images)** | ⚠️ **Needs OCR** | HIGH but blocked |
+| 6 | `Numerology-With Tantra, Ayurveda, and Astrology.pdf` | Harish Johari (Destiny Books / Inner Traditions, 1990) | 5,952 | 🟡 **Partially extracted** → `numerology.md` §1-§12 | MEDIUM |
+| 7 | `Numerology-You.pdf` | Jayant Kumar, *Numerology & You* (Educreation, ISBN 978-1-61813-620-6, 2016) | 1,110 | 🟡 **Sample copy only** — 43 pp; Ch. 1-2 extracted → `numerology.md` §2.5, §12.5-§12.9. Ch. 3-24 not in the sample | LOW (blocked by source) |
+| 8 | `Numerology.pdf` | Unidentified (Adobe Scan capture; no title/author metadata) | **0 (scanned images, 180 pp)** | ⚠️ **Needs OCR** — author unknown until OCR'd, so nothing from it is citable | LOW |
 
-**Total text-searchable content available:** ~34,400 lines across 4 PDFs.
-**Blocked:** Varahamihira (48MB scanned images — requires OCR pipeline).
+**Total text-searchable content available:** ~41,500 lines across 6 PDFs.
+**Blocked:** Varahamihira (48MB scanned images) and `Numerology.pdf` (59MB scanned images) — both require an OCR pipeline.
+
+### Known gaps in the numerology corpus
+
+Recorded during the 2026-08-08 `astro-auditor` pass over `numerology.py`, so the next
+audit does not re-derive them:
+
+- **Lo Shu 3×3 grid** — implemented in `numerology.py` and rendered on `/numerology`,
+  but absent from both numerology books above. `numerology.md` §13.2 flags it as
+  Chinese-tradition material needing a Feng Shui source; §13.3 assigns Cheiro to
+  *compound numbers*, not to Lo Shu. Cheiro's *Book of Numbers* is **not in `data/`**
+  and has not been read. See issue #172.
+- **Per-number Rudraksha mukhi mapping** (`numerology.md` §11, Rudraksha column) — does
+  not trace to Johari: `grep -i rudraksha` over the Johari extraction returns 2
+  incidental prose mentions and no per-number table. Source unlocated. See issue #173.
+- **Life Path reduction method** — `numerology.md` §2.2 documents "sum all digits of
+  DOB" and Johari states it verbatim ("The single whole number obtained from the
+  addition of the date, month, and year of birth", ch. "Destiny Number"). The
+  reduce-components-separately method that `numerology.py` implements is real modern
+  practice but is **not sourced anywhere in this repo**. See issue #162.
+- **Symmetry of the §7 compatibility pairs** — §7 lists several pairs (1↔8, 5↔6, 3↔5)
+  as friendly under one number's row and as enemies under the other's. Needs a pass
+  against Johari's per-pair sections before any code table is regenerated from it.
+  See issue #163.
 
 ---
 

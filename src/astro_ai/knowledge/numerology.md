@@ -25,6 +25,7 @@ Vedic-integrated numerology assigns each of the nine single-digit numbers to a g
 ### 2.2 Destiny Number (Bhagyank)
 
 **Calculation:** sum all digits of DOB (day + month + year, all digits added). Born May 12, 1934 → 5+1+2+1+9+3+4 = 25 → 2+5 = 7. The intermediate `25` also has effect — both digits (2 and 5) contribute secondary traits, but the reduced 7 is dominant.
+**Pinpoint:** Johari, ch. 2, section "Destiny Number" — "the single whole number obtained from the addition of the date, month, and year of birth", with this exact worked example (the author's own birthdate). Verified against the PDF 2026-08-08. Note this is *not* the reduce-month/day/year-separately method used in modern Western practice; `numerology.py` currently implements the latter (issue #162).
 **Meaning:** what the world thinks of you; karma-driven; reflects samskaras from past lives. **Cannot be changed** — no external intervention modifies destiny.
 **Active period:** peak from age 35–40 onward.
 
@@ -292,6 +293,8 @@ The standard Chaldean table is used (numerology.py already implements this). Joh
 ## §5 Compound numbers 10 – 31 (birthdate influence)
 
 Compound numbers are the *unreduced* birthdates from 10 to 31. They modify the psychic number they reduce to. Johari treats the ten's-digit as the "series" indicator — a 12 (in the 1-series) behaves differently from a 21 (in the 2-series) even though both reduce to 3.
+
+**Pinpoint / scope warning:** Johari, ch. "The Compound Numbers", opening paragraph — the compound numbers "apply to the psychic numbers of those who were born on that date", i.e. the **day of the month, 10–31**, and are explicitly *not* defined for anything else. They are **not** a name-total interpretation, and there are no rows above 31. Verified against the PDF 2026-08-08. `numerology.py` currently applies this table to the Chaldean *name* total over a 10–52 range, and the interpretation strings it carries are Cheiro's rather than Johari's (see §13.3, and issue #160).
 
 | # | Reduces to | Ruled by (compound flavor) | Character summary (Johari) |
 |---|---|---|---|
