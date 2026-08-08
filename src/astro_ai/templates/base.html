@@ -130,8 +130,15 @@
   });
 </script>
 
-<!-- Tailwind Play CDN — no build step. Fine for MVP; bake into a build pipeline before production scale. -->
-<script src="https://cdn.tailwindcss.com"></script>
+<!-- Tailwind, built ahead of time by `npm run build:css` (config in
+     tailwind.config.js, input in assets/tailwind.css, output committed).
+     This replaced the Play CDN, which shipped a ~400KB compiler and rebuilt
+     the entire stylesheet in the browser on every page load — a blocking
+     script plus a flash of unstyled content on every navigation. The built
+     file is ~80KB, cacheable, and parses as plain CSS.
+     Loaded BEFORE the <style> block below so the hand-written rules there
+     continue to win the cascade. -->
+<link rel="stylesheet" href="/static/css/app.css">
 
 <!-- HTMX for hx-boost (AJAX nav) + loading indicators. -->
 <!-- responseHandling: swap response body for ALL status codes (including 4xx/5xx
@@ -148,71 +155,12 @@
      two preconnects above, this saves ~150-300ms LCP on cold cache. -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        fontFamily: {
-          // Inter for Latin, Noto Sans Devanagari as a graceful fallback for Hindi text.
-          sans: ['Inter', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-          display: ['"Crimson Pro"', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
-        },
-        colors: {
-          cream: '#faf7f2',
-          astro: {
-            50:  '#f6f1fb',
-            100: '#ece1f6',
-            500: '#8b5cf6',
-            600: '#7c3aed',
-            700: '#6b21a8',
-            800: '#581c87',
-            900: '#3b0764',
-          },
-        },
-        // ─── Motion vocabulary ────────────────────────────────────────
-        // Consistent durations + easings across the whole site. Every
-        // animation the templates use should reach for one of these
-        // rather than inventing its own keyframes. The gate below
-        // (@media prefers-reduced-motion) neutralises all of them for
-        // motion-sensitive users.
-        keyframes: {
-          revealUp: {
-            '0%':   { opacity: '0', transform: 'translateY(8px)' },
-            '100%': { opacity: '1', transform: 'translateY(0)' },
-          },
-          breathe: {
-            '0%, 100%': { transform: 'scale(1)' },
-            '50%':      { transform: 'scale(1.025)' },
-          },
-          flicker: {
-            '0%, 100%': { opacity: '1' },
-            '50%':      { opacity: '0.85' },
-          },
-          drawIn: {
-            '0%':   { strokeDashoffset: '100%' },
-            '100%': { strokeDashoffset: '0' },
-          },
-          spinSlow: {
-            'from': { transform: 'rotate(0deg)' },
-            'to':   { transform: 'rotate(360deg)' },
-          },
-          shimmer: {
-            '0%':   { backgroundPosition: '-200% 0' },
-            '100%': { backgroundPosition: '200% 0' },
-          },
-        },
-        animation: {
-          'reveal-up': 'revealUp 400ms ease-out forwards',
-          'breathe':   'breathe 3s ease-in-out infinite',
-          'flicker':   'flicker 1.4s ease-in-out infinite',
-          'draw-in':   'drawIn 1.2s ease-out forwards',
-          'spin-slow': 'spinSlow 20s linear infinite',
-          'shimmer':   'shimmer 2s ease-in-out infinite',
-        },
-      },
-    },
-  };
-</script>
+<!-- The Tailwind theme that used to live here as `tailwind.config = {...}`
+     now lives in tailwind.config.js and is compiled into the stylesheet
+     linked above. It is the same theme, plus the astro-200/300/400 stops
+     that #186 found missing. Edit tailwind.config.js and re-run
+     `npm run build:css`; scripts/verify_css_build.py fails if the
+     committed CSS is stale. -->
 
 <style>
   /* ─── DESIGN SYSTEM CANONICALS (Cycle 7 consolidation) ─────────────

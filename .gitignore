@@ -43,3 +43,6 @@ AGENT_STATUS.md
 .local/
 .serena/
 QA_LOG.md
+
+# Node is a build-only dependency (Tailwind CSS build). Never shipped.
+node_modules/
