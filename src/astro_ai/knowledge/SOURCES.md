@@ -127,8 +127,9 @@ The most systematically-organised source. 407+ numbered sections.
 
 ## Rao Lessons Vol. I (`book1-for-CD.pdf`) — likely coverage
 
-Rao's teaching material, 7,757 lines. Companion to the textbook.
-Likely reinforces the same material with worked chart examples.
+Rao's teaching material, 12,244 lines (plain `pdftotext`). Companion to
+the textbook. Likely reinforces the same material with worked chart
+examples.
 
 **Extraction approach:** cross-reference with the main textbook.
 If Lessons Vol. I provides clearer worked-example versions of textbook
@@ -138,7 +139,8 @@ chapters, cite the lesson-version for teaching-oriented articles.
 
 ## Chennareddy Vasudev e-book (`Astrology-e-book-compressed.pdf`)
 
-Introductory text, 4,558 lines, 2019 publication. Likely covers
+Introductory text, 5,220 lines (plain `pdftotext`), 2019 publication.
+Likely covers
 origins, purpose, philosophical framing of astrology. Useful for
 philosophical/introductory articles but not the primary source for
 technical extraction.
@@ -149,23 +151,14 @@ Not a primary extraction priority.
 
 ---
 
-## Varahamihira Hora Sastra — OCR pipeline needed
+## Varahamihira Hora Sastra — not in the corpus
 
-**Blocked:** The PDF is scanned page images with no OCR layer.
-`pdftotext` produces 0 lines. To extract, we need:
-
-1. **`tesseract`** OCR pipeline: `pdftoppm` → PNG per page → `tesseract`
-   per page → concatenate. Estimated 500-1000 pages, ~2-4 hours OCR
-   compute time.
-2. **Or: cloud OCR** — Google Cloud Vision or AWS Textract, better
-   accuracy on Sanskrit but requires uploading to cloud (which we've
-   deliberately not done for the PDFs).
-3. **Or: find a text-version PDF** — many classical texts have been
-   re-published with OCR'd text layers by sanskrit-e-text projects.
-   sanskritdocuments.org sometimes has cleaner versions.
-
-**Recommendation:** try `tesseract` first (free, local, no upload
-required). If accuracy is poor, upgrade to Google Cloud Vision.
+**Not held.** `varahmihirHorasastram.pdf` was a scan with no text layer
+and has been **deleted from `data/`**. There is no OCR work to plan here:
+nothing in the corpus requires OCR, and #178 is acquisition-only — the
+task is finding a Varahamihira edition that already carries a text layer,
+not building an OCR pipeline for one we no longer have. Do not propose
+`tesseract` or a cloud-OCR spike for this book.
 
 **Meanwhile:** Varahamihira is heavily quoted in every other classical
 source. Rao's textbook cites him. BV Raman cites him. So we get
@@ -187,15 +180,27 @@ inline like the existing pattern:
   proximate sources but the rule itself is from BPHS/Phala)
 - `[Vasudev, Origin & Purpose of Astrology, p. 42]`
 
-Never cite Varahamihira directly until OCR extraction is done.
+Never cite Varahamihira directly — we do not hold the text (see above).
+Cite the proximate source that quotes him instead.
 
 ---
 
 ## Extraction workflow
 
-Same pattern that worked for BV Raman:
+Same pattern that worked for BV Raman.
 
-1. `pdftotext -layout <file>.pdf /tmp/bhagya-pdfs/<name>.txt`
+**Quote the flag with every line number.** Plain `pdftotext` and
+`pdftotext -layout` produce different line counts for the same PDF —
+`-layout` reflows columns and yields roughly 30% fewer lines. Every count
+and every citation range in this file and in `knowledge/*.md` is **plain
+`pdftotext`** (no `-layout`), measured 2026-08-08. A range extracted under
+`-layout` will not resolve against them. Earlier versions of this file
+mixed the two, which is the only reason its figures disagreed with
+`CLAUDE.md`.
+
+1. `pdftotext <file>.pdf /tmp/bhagya-pdfs/<name>.txt` — no `-layout`, so
+   the line numbers match the counts above. Use `-layout` only for an
+   ad-hoc look at a table, never for a range you intend to cite.
 2. Survey structure with `grep -n "^Chapter\|^\s*[0-9]\+\.[0-9]"`
 3. Read relevant sections with `sed -n '<start>,<end>p'`
 4. Write MD in `knowledge/` matching the citation style above
