@@ -416,37 +416,8 @@ from astro_ai.routes import festivals as _festivals_routes
 app.router.routes.extend(_festivals_routes.router.routes)
 
 
-@app.get("/about", response_class=HTMLResponse)
-async def about_page(request: Request) -> HTMLResponse:
-    """About page — editorial principles, classical sources, team.
-
-    E-E-A-T signal for Google (SEO audit #125): named entity behind the
-    content, cited classical sources, contact-visible. Linked from the
-    footer of every page via _nav.html.
-    """
-    return templates.TemplateResponse(
-        request, "about.html", {"lang": _lang(request)},
-    )
-
-
-@app.get("/privacy", response_class=HTMLResponse)
-async def privacy_page(request: Request) -> HTMLResponse:
-    """Honest short-form Privacy Policy. Written by a person, not a
-    boilerplate generator; reflects our actual data practices."""
-    return templates.TemplateResponse(
-        request, "privacy.html",
-        {"lang": _lang(request), "contact_email": "contact@shubhagya.com"},
-    )
-
-
-@app.get("/terms", response_class=HTMLResponse)
-async def terms_page(request: Request) -> HTMLResponse:
-    """Honest short-form Terms of Service. Includes astrology-disclaimer +
-    AI-generated-content disclaimer per Shyamasundara audit follow-up."""
-    return templates.TemplateResponse(
-        request, "terms.html",
-        {"lang": _lang(request), "contact_email": "contact@shubhagya.com"},
-    )
+from astro_ai.routes import pages as _pages_routes
+app.router.routes.extend(_pages_routes.router.routes)
 
 
 @app.get("/", response_class=HTMLResponse)
