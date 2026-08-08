@@ -4,7 +4,7 @@
 
 <div class="callout callout-insight">
   <div class="callout-label">In short</div>
-  <p>A Vivah Muhurat (wedding muhurat) is not just a "good day" from a calendar — it's a specific window where six classical criteria align: Guru (Jupiter) and Shukra (Venus) both visible above the horizon (not combust), no Malamas month, no Chaturmas, favourable nakshatra + tithi, no Panchak, and no Rahu Kaal within the ceremony hour. This guide walks the classical rules for 2027 wedding dates, seasonal patterns, and how personal chart-matching intersects with the calendar. For personalised date selection matching your specific chart, use our upcoming <a href="/muhurat">Muhurat Finder tool</a>.</p>
+  <p>A Vivah Muhurat (wedding muhurat) is not just a "good day" from a calendar — it's a specific window where eight classical criteria align: Guru (Jupiter) and Shukra (Venus) both visible above the horizon and uncombust, no Adhik Maas (Malamas), no Kharmas, no Chaturmas, a favourable nakshatra, a favourable tithi clear of Dagdha yoga, no Panchak, and no eclipse within a day either side. This guide walks the classical rules for 2027 wedding dates, seasonal patterns, and how personal chart-matching intersects with the calendar. For personalised date selection matching your specific chart, use our free <a href="/muhurat/vivah">Vivah Muhurat Finder</a>.</p>
 </div>
 
 <h2>What makes a Vivah Muhurat "auspicious"</h2>
@@ -13,21 +13,51 @@
 
 <h3>1. Guru + Shukra visibility (both above the horizon, not combust)</h3>
 
-<p>Jupiter and Venus are the two karakas of marriage (Jupiter = husband, Venus = wife). Both must be visible in the sky — not combust (within ~11° of the Sun) and above the horizon during the day. When either is combust, marriages are traditionally postponed to a period when they emerge.</p>
+<p>Jupiter and Venus are the two karakas of marriage (Jupiter = husband, Venus = wife). Both must be visible in the sky — not combust (within 11° of the Sun for Guru, 10° for Shukra, per the BPHS orbs our finder applies) and above the horizon during the day. When either is combust, marriages are traditionally postponed to a period when they emerge.</p>
 
-<p>For 2027, key Guru + Shukra visibility windows: mid-Jan to Feb, mid-Apr to mid-Jul, and mid-Nov onwards. Late-summer combustion of both occurs and blackout follows.</p>
+{# muhurat._combustion_flags(compute_chart("2027-01-01","12:00","Delhi"), midday IST) day-by-day scan of 2027, run 2026-08-08 — Venus orb 10° (_COMBUST_ORB_VENUS): combust 2027-07-07 through 2027-09-17 #}
+<p>Through 2027 both karakas stay visible for the whole of the winter and spring seasons. On the orbs above, Shukra (Venus) goes combust in early July 2027 — about a week before Chaturmas opens — and does not clear until the third week of September. Traditions using a wider or narrower orb will place that first day a little earlier or later, so treat the onset as a week, not as a single fixed date.</p>
+
+{# same scan, Jupiter orb 11° (_COMBUST_ORB_JUPITER): combust 2027-08-17 through 2027-09-14 #}
+<p>Guru (Jupiter) is combust for about four weeks from mid-August 2027, entirely inside the Chaturmas restriction. So in 2027 the combustion blackout costs the calendar nothing that Chaturmas had not already closed.</p>
 
 <h3>2. No Malamas month (Adhik Maas)</h3>
 
-<p>The lunisolar Vedic calendar adds an extra month every ~3 years to reconcile with the solar year. This extra month is called Adhik Maas or Malamas — no auspicious ceremonies including weddings. Verify with Drik Panchang for 2027 Adhik Maas dates.</p>
+<p>The lunisolar Vedic calendar adds an extra month every ~3 years to reconcile with the solar year. This extra month is called Adhik Maas or Malamas — no auspicious ceremonies including weddings are performed inside it.</p>
+
+{# adhik_maas.intercalary_months(2027) == () ; (2026) -> Adhik Jyeshtha 2026-05-17..2026-06-15 ; (2029) -> Adhik Chaitra 2029-03-16..2029-04-13 — engine, run 2026-08-08 #}
+<p><strong>There is no Adhik Maas in 2027.</strong> The intercalary month before it was Adhik Jyeshtha in 2026, and the next one is Adhik Chaitra in 2029 — so nothing in the 2027 wedding calendar is blocked by this rule, and any 2027 date list that shows a Malamas blackout has it wrong.</p>
 
 <h3>3. No Kharmas (Sun in Sagittarius or Pisces)</h3>
 
-<p>When the Sun transits Sagittarius (Dhanurmas, roughly mid-December to mid-January) or Pisces (Meenmas, roughly mid-March to mid-April), classical North Indian tradition halts weddings entirely. This is the "Kharmas" period — the Sun's Guru-sanchara (transit through Jupiter's own signs) is considered a time for teachership and introspection, not for householder ceremonies. Weddings resume the day after Makar Sankranti (~Jan 14) and the day after the Sun exits Pisces (~Apr 14). This rule is often forgotten in modern date-picker tools but is a hard classical blocker.</p>
+<p>When the Sun transits Sagittarius (Dhanurmas) or Pisces (Meenmas), classical North Indian tradition halts weddings entirely. This is the "Kharmas" period — the Sun's Guru-sanchara (transit through Jupiter's own signs) is considered a time for teachership and introspection, not for householder ceremonies. This rule is often forgotten in modern date-picker tools but is a hard classical blocker.</p>
+
+<p>A rashi boundary falls at an instant, not at midnight, so a page has to say which moment it reads. <strong>This page — and our Muhurat Finder — takes the Sun's sidereal rashi at midday, New Delhi.</strong> A day whose ingress lands in the afternoon therefore still counts as the old month all through. On that convention, 2027 runs:</p>
+
+<ul>
+  {# festival_registry makar-sankranti 2027 = 2027-01-15; sankranti.sankranti_instant(2027,"Makara") -> 2027-01-14 21:10 IST, i.e. after sunset, so observed the next day #}
+  <li><strong>Makar Sankranti</strong> — Friday, Jan 15, 2027. Winter Kharmas ends: the Sun's ingress into Capricorn falls at 21:10 IST the previous evening, so the 15th is the first day of the year clear of Kharmas.</li>
+  {# sankranti.sankranti_instant(2027,"Meena") -> 2027-03-15 07:00 IST; drikpanchang.com/calendars/hindu/hinducalendar.html?year=2027&geoname-id=1261481&month=3 read 2026-08-08: "Meena Sankranti, March 15, 2027, Monday" #}
+  <li><strong>Meena Sankranti</strong> — Monday, Mar 15, 2027. Meenmas opens: the Sun enters Pisces at 07:00 IST, before midday, so the 15th itself is already restricted.</li>
+  {# sankranti.sankranti_instant(2027,"Mesha") -> 2027-04-14 15:28 IST; drikpanchang.com/calendars/hindu/hinducalendar.html?year=2027&geoname-id=1261481&month=4 read 2026-08-08: "Mesha Sankranti, April 14, 2027, Wednesday" #}
+  <li><strong>Mesha Sankranti</strong> — Wednesday, Apr 14, 2027. Meenmas ends: the ingress into Aries is at 15:28 IST, after the midday reading, so the 14th still counts as Meenmas and the season reopens on the 15th.</li>
+</ul>
+
+{# muhurat.find_candidates("vivah","Delhi",date(2027,4,12),10) run 2026-08-08 -> 12-14 Apr avoid (Meenmas), 15 Apr avoid (Ashlesha), 16 Apr excellent #}
+<p>Our own Muhurat Finder shows the same edge at Mesha Sankranti, Apr 14, 2027: it rejects that day for Meenmas, drops the Kharmas block from the 15th, and rates the 16th the first excellent wedding day of the spring season. Traditions that reckon from the ingress instant itself, rather than from a fixed sampling time, treat the hours after the transit as already clear — a convention difference, not an error on either side.</p>
 
 <h3>4. Chaturmas restriction (mid-Jul to mid-Nov)</h3>
 
-<p>The four months from Dev Shayani Ekadashi to Dev Uthani Ekadashi (Vishnu's sleeping period) are traditionally weddings-restricted. Modern practice varies — many regional traditions permit weddings during Chaturmas with specific compensating rituals, but classical tradition prescribes waiting until Dev Uthani (mid-November).</p>
+<p>The four months from Devshayani Ekadashi to Devuthani Ekadashi (Vishnu's sleeping period) are traditionally weddings-restricted. Modern practice varies — many regional traditions permit weddings during Chaturmas with specific compensating rituals, but classical tradition prescribes waiting until Vishnu wakes in mid-November.</p>
+
+<p>The 2027 window is 119 days:</p>
+
+<ul>
+  {# festival_registry devshayani-ekadashi 2027 = 2027-07-14; lunar_dates.shukla_tithi_date(2027,"Ashadha",11) -> 2027-07-14; verify_muhurat_tables.DRIK_MUHURAT[2027]["devshayani"] (drikpanchang New Delhi, read 2026-08-07) #}
+  <li><strong>Devshayani Ekadashi</strong> — Wednesday, Jul 14, 2027 — Chaturmas opens.</li>
+  {# festival_registry devuthani-ekadashi 2027 = 2027-11-10; lunar_dates.shukla_tithi_date(2027,"Kartika",11) -> 2027-11-10; verify_muhurat_tables.DRIK_MUHURAT[2027]["devutthana"] (drikpanchang New Delhi, read 2026-08-07) #}
+  <li><strong>Devuthani Ekadashi</strong> — Wednesday, Nov 10, 2027 — Chaturmas closes.</li>
+</ul>
 
 <h3>5. Favourable nakshatras</h3>
 
@@ -52,24 +82,52 @@
 <p>Certain "swayam-siddha" (self-perfected) days are traditionally treated as universally auspicious for weddings regardless of tithi/nakshatra/weekday — no muhurat calculation needed. For 2027:</p>
 
 <ul>
+  {# festival_registry vasant-panchami 2027 = 2027-02-11 (madhyahna); verify_muhurat_tables.DRIK_MUHURAT[2027]["vasant_panchami"] (drikpanchang New Delhi, read 2026-08-07) #}
   <li><strong>Basant Panchami</strong> — Thursday, Feb 11, 2027 (Magha Shukla Panchami, Saraswati Puja day)</li>
+  {# festival_registry akshaya-tritiya 2027 = 2027-05-09 (madhyahna); verify_muhurat_tables.DRIK_MUHURAT[2027]["akshaya_tritiya"] (drikpanchang New Delhi, read 2026-08-07) #}
   <li><strong>Akshaya Tritiya</strong> — Sunday, May 9, 2027 (Vaishakha Shukla Tritiya, "eternal" day)</li>
-  <li><strong>Bhadli Navami</strong> — Monday, Jul 12, 2027 (Ashadha Shukla Navami; regionally significant in Rajasthan/MP, and the last wedding day before Chaturmas closes the season two days later)</li>
-  <li><strong>Devuthani Ekadashi</strong> — Wednesday, Nov 10, 2027 (Kartik Shukla Ekadashi, Vishnu awakens from Chaturmas)</li>
+  {# lunar_dates.shukla_tithi_date(2027,"Ashadha",9,"sunrise") -> 2027-07-12 — COMPUTED ONLY, no published almanac date obtainable; see muhurat.py "BHADLI NAVAMI SHIPS UNVERIFIED" note #}
+  <li><strong>Bhadli Navami</strong> — Monday, Jul 12, 2027 (Ashadha Shukla Navami; kept in Gujarat, Rajasthan and MP, and the last wedding day of the summer — Chaturmas opens two days later, on Jul 14)</li>
+  {# festival_registry devuthani-ekadashi 2027 = 2027-11-10; verify_muhurat_tables.DRIK_MUHURAT[2027]["devutthana"] (drikpanchang New Delhi, read 2026-08-07) #}
+  <li><strong>Devuthani Ekadashi</strong> — Wednesday, Nov 10, 2027 (Kartika Shukla Ekadashi, Vishnu awakens from Chaturmas)</li>
+  {# festival_registry tulsi-vivah 2027 = 2027-11-11; verify_muhurat_tables.DRIK_MUHURAT[2027]["tulsi_vivah"] (drikpanchang New Delhi, read 2026-08-07) #}
   <li><strong>Tulsi Vivah</strong> — Thursday, Nov 11, 2027 (ceremonial marriage of Tulsi to Shaligram; extremely auspicious)</li>
 </ul>
+
+<p>One honest caveat on Bhadli Navami: we compute that date from its tithi rule rather than reading it off a published almanac. It is a regional Gujarati/Rajasthani observance, and Drik Panchang's New Delhi calendar carries no Bhadli (also Bhadali, Kandarpa) Navami in any year we have fetched — so treat Jul 12 as our computation and not as an almanac-confirmed date, and check it with your family priest before you build a wedding around it. Every other date on this page is confirmed against a published almanac.</p>
 
 <h2>Seasonal wedding patterns in 2027</h2>
 
 <p>Given the rules above, 2027 wedding dates cluster in specific windows:</p>
 
 <ul>
-  <li><strong>Mid-January to February 2027</strong> — winter window after Makar Sankranti (~Jan 14) ends Kharmas. First auspicious dates typically around Jan 19-20 (after Kharmas + Panchak clear).</li>
-  <li><strong>Mid-April to mid-July 2027</strong> — spring/summer window after Meenmas ends (~Apr 14), running to Bhadli Navami. Most popular season in North India.</li>
-  <li><strong>Mid-November to mid-December 2027</strong> — post-Chaturmas resumption from Devuthani Ekadashi through mid-December, when the Sun enters Sagittarius (Dec 16) and Kharmas closes the year.</li>
+  {# muhurat.find_candidates("vivah","Delhi",date(2027,1,13),14) run 2026-08-08 -> 13-15 Jan Panchak, 16 Jan Ashtami, 17-18 Jan avoid-nakshatra, 19 Jan acceptable, 20 Jan excellent #}
+  <li><strong>Winter window, mid-January into February</strong> — Kharmas ends at Makar Sankranti, Friday, Jan 15, 2027, but Panchak runs through that day and the next few carry avoid tithis and nakshatras, so our finder's first usable dates are Jan 19-20.</li>
+  {# sankranti.sankranti_instant(2027,"Mesha") -> 2027-04-14 15:28 IST; combustion scan above: Venus combust from 2027-07-07 #}
+  <li><strong>Spring and summer window, mid-April to early July</strong> — opens the day after Mesha Sankranti on Apr 14, 2027 and closes in the first week of July, when Shukra goes combust a week ahead of Chaturmas. Most popular season in North India.</li>
+  {# festival_registry devuthani-ekadashi 2027 = 2027-11-10 #}
+  <li><strong>Post-Chaturmas window, mid-November to mid-December</strong> — reopens at Devuthani Ekadashi, Wednesday, Nov 10, 2027, and runs until the Sun reaches Sagittarius.</li>
+  {# sankranti.sankranti_instant(2027,"Dhanu") -> 2027-12-16 16:38 IST; drikpanchang.com/calendars/hindu/hinducalendar.html?year=2027&geoname-id=1261481&month=12 read 2026-08-08: "Dhanu Sankranti, December 16, 2027, Thursday"; find_candidates("vivah","Delhi",date(2027,12,15),5) -> 16 Dec excellent, Kharmas from 17 Dec #}
+  <li><strong>Dhanu Sankranti</strong> — Thursday, Dec 16, 2027. The Sun reaches Sagittarius at 16:38 IST, so on this page's midday convention the 16th is still a wedding day — our finder rates it excellent — and Kharmas closes the year from the 17th onwards.</li>
 </ul>
 
-<p>Blackout windows: Adhik Maas (verify dates), <strong>Kharmas (Jan 1-14 and Mar 15-Apr 14, 2027)</strong>, Chaturmas from Devshayani Ekadashi to Devuthani Ekadashi (mid-July to mid-November), and dates immediately around solar/lunar eclipses.</p>
+<p>Blackout windows in 2027, one at a time:</p>
+
+<ul>
+  {# adhik_maas.intercalary_months(2027) == () — engine, run 2026-08-08 #}
+  <li><strong>Adhik Maas</strong> — none this year. There is no Malamas blackout anywhere in 2027.</li>
+  {# sankranti.sankranti_instant(2026,"Dhanu") -> 2026-12-16 10:25 IST — the Dhanurmas that runs into 2027 opened here #}
+  <li><strong>Kharmas (Dhanurmas)</strong> — the year opens inside it. This window began at Dhanu Sankranti, Dec 16, 2026, when the Sun entered Sagittarius, and carries through the first fortnight of January.</li>
+  {# festival_registry makar-sankranti 2027 = 2027-01-15 — the day the Dhanurmas block clears #}
+  <li><strong>Makar Sankranti</strong> — Friday, Jan 15, 2027 — the Dhanurmas blackout covers Jan 1-14 and lifts on this day.</li>
+  {# sankranti.sankranti_instant(2027,"Meena") -> 2027-03-15 07:00 IST; sankranti_instant(2027,"Mesha") -> 2027-04-14 15:28 IST #}
+  <li><strong>Kharmas (Meenmas)</strong> — the Sun's whole passage through Pisces, from Mar 15 until Mesha Sankranti on Apr 14, 2027.</li>
+  {# festival_registry devshayani-ekadashi 2027 = 2027-07-14 #}
+  <li><strong>Chaturmas opens at Devshayani Ekadashi</strong> — Wednesday, Jul 14, 2027.</li>
+  {# festival_registry devuthani-ekadashi 2027 = 2027-11-10 #}
+  <li><strong>Chaturmas closes at Devuthani Ekadashi</strong> — Wednesday, Nov 10, 2027.</li>
+  <li><strong>Eclipses</strong> — the eclipse day itself plus the day either side of it, for each eclipse of the year.</li>
+</ul>
 
 <h2>Personal chart considerations beyond the calendar</h2>
 
@@ -92,7 +150,7 @@
 
 <div class="callout callout-classic">
   <div class="callout-label">On specific 2027 dates</div>
-  <p>Rather than list arbitrary dates here (which age quickly), we're building a dedicated <strong>Muhurat Finder tool</strong> (Issue #108 in our roadmap) that will produce personalised date recommendations for your specific chart within any date range. In the meantime, verify muhurat dates via <a href="https://www.drikpanchang.com" rel="noopener">Drik Panchang</a> or a qualified family priest, and use our <a href="/matching">Kundali Matching tool</a> for compatibility checks with your partner.</p>
+  <p>The days named on this page are the fixed points of the year — the sankrantis, the two Ekadashis and the abujha days — and they are the same for everybody. For a full date list across any range you choose, our free <a href="/muhurat/vivah">Vivah Muhurat Finder</a> applies the eight rules above day by day for your city, and will score each date against both partners' charts if you give it two birth details. Cross-check anything that matters against <a href="https://www.drikpanchang.com" rel="noopener">Drik Panchang</a> or a qualified family priest, and use our <a href="/matching">Kundali Matching tool</a> for compatibility with your partner.</p>
 </div>
 
 <h2>Common mistakes when choosing a Vivah Muhurat</h2>

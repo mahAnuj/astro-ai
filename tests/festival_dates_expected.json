@@ -10,10 +10,12 @@
       "2028": "https://www.drikpanchang.com/calendars/hindu/hinducalendar.html?year=2028"
     },
     "source_secondary": "independent Swiss Ephemeris tithi computation (pyswisseph 2.10.03, Lahiri sidereal, Delhi 28.6139N 77.2090E), checked against each festival's own observance window rather than sunrise alone",
-    "verified_on": "2026-08-06 (original 17 festivals), 2026-08-07 (13 added, then a further 3)",
+    "verified_on": "2026-08-06 (original 17 festivals), 2026-08-07 (13 added, then a further 3), 2026-08-08 (devshayani-ekadashi, devuthani-ekadashi — see ekadashi_note)",
     "verified_by": "issue #132 Phase 3 (17), issue #132 dataset expansion (13), issue #132 DATA3 (dhanteras, rishi-panchami, pitru-paksha)",
     "expansion_note": "The 13 festivals added on 2026-08-07 — pongal, ugadi-gudi-padwa, akshaya-tritiya, vat-savitri, ganga-dussehra, nag-panchami, onam, hartalika-teej, anant-chaturdashi, mahalaya-amavasya, sharad-purnima, narak-chaturdashi, chhath-puja — were sourced from scratch. Each date was read off TWO different Drik Panchang pages (the year calendar at source_urls, and the New Delhi monthly calendar at calendars/hindu/hinducalendar.html?geoname-id=1261481&month=M&year=Y) and then confirmed against an independent pyswisseph tithi computation at the festival's own observance window. This table was typed from those readings, not copied from festival_registry.py — Gate 1 comparing a file against a copy of itself would prove nothing.",
     "data3_note": "dhanteras, rishi-panchami and pitru-paksha were added on 2026-08-07 to the same standard: each date read off the Drik year calendar AND the New Delhi monthly calendar, then confirmed against an independent pyswisseph tithi computation at the festival's OWN window — pradosh for Dhanteras, madhyahna for Rishi Panchami, aparahna for Pitru Paksha. Two of the three could not have been placed from sunrise alone: Dhanteras 2028-10-15 is Dwadashi at sunrise and only becomes Trayodashi at 19:20 IST, and Rishi Panchami 2027-09-04 is Chaturthi at sunrise with Panchami beginning at 12:30 inside madhyahna. Lohri was requested alongside these and is NOT in this table: Drik does not publish it at all, and the two defensible derivations disagree (eve-of-Maghi against our own verified Makar Sankranti gives 2027-01-14, while most published listings give 2027-01-13 because they place Makar Sankranti on 14 January). An unverifiable date is a gap, not a guess.",
+    "ekadashi_note": "devshayani-ekadashi and devuthani-ekadashi were added on 2026-08-08. PROVENANCE, in the order it was actually established: (1) the dates were GENERATED, not typed — lunar_dates.shukla_tithi_date(y, 'Ashadha', 11) and (y, 'Kartika', 11) for 2026/2027/2028; (2) the Drik Panchang New Delhi MONTHLY calendars (geoname-id 1261481) for July 2026/2027/2028 and November 2026, November 2027, October 2028 were then read on 2026-08-08 and agreed on all six, with the lunar labels 'Ashadha, Shukla Ekadashi' and 'Kartika, Shukla Ekadashi' printed against 'Devshayani Ekadashi' and 'Devutthana / Prabodhini Ekadashi' respectively, and no 'Adhika' on any row of those months; (3) the six dates in THIS file were typed from that Drik reading, not copied out of festival_registry.py, so Gate 1 is comparing two independent transcriptions rather than a file against a copy of itself. The same six dates are also DRIK_MUHURAT's devshayani/devutthana rows in scripts/verify_muhurat_tables.py, read a day earlier on 2026-08-07, which makes this a second reading of the almanac rather than a re-use of the first. Two tithi_interval_invariants below tie both rows to festivals that were verified independently and earlier: Guru Purnima is Devshayani + 4 tithis (exactly 4 civil days in all three years) and Tulsi Vivah is Devuthani + 1 tithi (exactly 1 civil day in all three years).",
+    "bhadli_navami_note": "Bhadli (Bhadali / Kandarpa) Navami — Ashadha Shukla Navami, the last abujha muhurat before Chaturmas closes — was considered alongside these two and DELIBERATELY EXCLUDED. No published almanac date could be obtained: Drik's New Delhi Hindu calendar does not carry it in any year fetched (2015, 2026-2029) and its festival URLs 404, as scripts/verify_muhurat_tables.py records at length. It is a regional Gujarati/Rajasthani observance. The classical rule is well attested and the date is computable, but a computed date with no published source to check it against is exactly the kind of row that put nine wrong dates into _FESTIVALS_2026, so no date was invented to fill the gap. If a citable source turns up, add the row here and in the registry with the source and read date recorded.",
     "years": [2026, 2027, 2028],
     "years_note": "2029 exists in the upstream verified dataset but is deliberately not listed here — the registry ships DATA_YEARS = (2026, 2027, 2028) and the hub's rolling 6-month window cannot reach 2029.",
     "how_to_reverify": "Open the source_urls year page on drikpanchang.com (New Delhi), read each festival's date off the published calendar, and cross-check the tithi with an ephemeris against that festival's own observance_window (moonrise for Karva Chauth, pradosh for Diwali, nishita for Shivratri/Janmashtami, madhyahna for Ram Navami/Ganesh Chaturthi, aparahna for Dussehra/Bhai Dooj) — not against sunrise. Then run scripts/verify_festivals.py.",
@@ -111,6 +113,14 @@
       "tithi_based": true,
       "note": "Confirmed on Drik's dedicated Ganga Dussehra page as well as the two calendar pages, because 2026's Adhik Jyeshtha makes this the easiest row in the file to place a month wrong. Drik gives Monday, May 25, 2026 for New Delhi.",
       "dates": {"2026": "2026-05-25", "2027": "2027-06-13", "2028": "2028-06-02"}
+    },
+    "devshayani-ekadashi": {
+      "name_en": "Devshayani Ekadashi",
+      "rule": "Ashadha Shukla Ekadashi",
+      "observance_window": "sunrise",
+      "tithi_based": true,
+      "note": "Typed from the Drik Panchang New Delhi MONTHLY calendars for July 2026, July 2027 and July 2028 (geoname-id 1261481), read 2026-08-08 — 'Devshayani Ekadashi' against the label 'Ashadha, Shukla Ekadashi'. Not copied from festival_registry.py. The label is what fixes the lunation: 2026 carries an Adhik Jyeshtha, and no July row in any of the three years is marked 'Adhika'.",
+      "dates": {"2026": "2026-07-25", "2027": "2027-07-14", "2028": "2028-07-02"}
     },
     "guru-purnima": {
       "name_en": "Guru Purnima",
@@ -270,6 +280,14 @@
       "note": "The date shipped is the Shashthi (sandhya arghya), day three of four; the usha arghya that ends the vrat is the following morning.",
       "dates": {"2026": "2026-11-15", "2027": "2027-11-04", "2028": "2028-10-23"}
     },
+    "devuthani-ekadashi": {
+      "name_en": "Devuthani Ekadashi (Prabodhini)",
+      "rule": "Kartika Shukla Ekadashi",
+      "observance_window": "sunrise",
+      "tithi_based": true,
+      "note": "Typed from the Drik Panchang New Delhi MONTHLY calendars for November 2026, November 2027 and October 2028 (geoname-id 1261481), read 2026-08-08 — 'Devutthana Ekadashi' / 'Prabodhini Ekadashi' against the label 'Kartika, Shukla Ekadashi'. Not copied from festival_registry.py. Tulsi Vivah is the next tithi and sits one day later on each of the same three pages, which is the invariant recorded below.",
+      "dates": {"2026": "2026-11-20", "2027": "2027-11-10", "2028": "2028-10-28"}
+    },
     "tulsi-vivah": {
       "name_en": "Tulsi Vivah",
       "rule": "Kartika Shukla Ekadashi/Dwadashi",
@@ -304,6 +322,11 @@
       "a": "vat-savitri", "b": "ganga-dussehra", "tithis": 10, "min_days": 8, "max_days": 11,
       "same_lunar_month": true,
       "why": "Jyeshtha Krishna Amavasya -> Jyeshtha Shukla Dashami, 10 tithis inside the same purnimanta month. 2026's Adhik Jyeshtha makes this the pair most likely to be a month wrong, so it is checked explicitly."
+    },
+    {
+      "a": "devshayani-ekadashi", "b": "guru-purnima", "tithis": 4, "min_days": 3, "max_days": 5,
+      "same_lunar_month": true,
+      "why": "Ashadha Shukla Ekadashi -> Ashadha Purnima, 4 tithis in the same bright fortnight. Guru Purnima was Drik-verified independently, so this is what ties the new Devshayani row arithmetically to an already-checked one: the gap is exactly 4 days in all three shipped years."
     },
     {
       "a": "nag-panchami", "b": "raksha-bandhan", "tithis": 10, "min_days": 9, "max_days": 12,
@@ -419,6 +442,11 @@
       "a": "bhai-dooj", "b": "tulsi-vivah", "tithis": 10, "min_days": 9, "max_days": 12,
       "same_lunar_month": true,
       "why": "Kartika Shukla Dwitiya -> Kartika Shukla Ekadashi/Dwadashi."
+    },
+    {
+      "a": "devuthani-ekadashi", "b": "tulsi-vivah", "tithis": 1, "min_days": 1, "max_days": 2,
+      "same_lunar_month": true,
+      "why": "Kartika Shukla Ekadashi -> Kartika Shukla Dwadashi, the next tithi. Tulsi Vivah was Drik-verified independently and is Devuthani + 1 day in all three shipped years — Vishnu wakes, and the season's first wedding is performed the following day. This is what ties the new Devuthani row arithmetically to an already-checked one."
     },
     {
       "a": "diwali", "b": "chhath-puja", "tithis": 6, "min_days": 5, "max_days": 8,

@@ -459,6 +459,59 @@ _DECLARED: tuple[Festival, ...] = (
             "abstaining."
         ),
     ),
+    # verified 2026-08-08 · computed FIRST, not typed:
+    # `lunar_dates.shukla_tithi_date(y, "Ashadha", 11)` for y in 2026/2027/2028
+    # returns 2026-07-25, 2027-07-14, 2028-07-02.
+    # Drik Panchang, New Delhi (geoname-id 1261481), monthly calendar pages for
+    # July 2026, July 2027 and July 2028, read 2026-08-08: "Devshayani Ekadashi"
+    # printed against the label `Ashadha, Shukla Ekadashi` on exactly those three
+    # dates. The label is the load-bearing part — it proves the row is this
+    # lunation and not a same-named neighbour, which matters in 2026 because that
+    # year carries an Adhik Jyeshtha (Padmini Ekadashi, 2026-05-27); no July row
+    # in any of the three years carries `Adhika`. The same three dates are the
+    # `devshayani` rows of `DRIK_MUHURAT` in scripts/verify_muhurat_tables.py,
+    # read 2026-08-07, so this is a second reading a day apart, not a copy.
+    # Corroboration that owes nothing to either source: Guru Purnima is Ashadha
+    # Purnima, 4 tithis after Ashadha Shukla Ekadashi, and its already-Drik-
+    # verified dates in the row below are 2026-07-29 / 2027-07-18 / 2028-07-06 —
+    # exactly 4 civil days after these in all three years. Checked against that
+    # row, not assumed.
+    Festival(
+        slug="devshayani-ekadashi",
+        name_en="Devshayani Ekadashi",
+        name_hi="देवशयनी एकादशी",
+        note_en="Vishnu enters four months of yogic sleep — Chaturmas begins, and weddings and housewarmings pause until Kartika.",
+        note_hi="विष्णु चार मास की योगनिद्रा में — चातुर्मास आरम्भ; विवाह और गृहप्रवेश कार्तिक तक स्थगित।",
+        dates={2026: "2026-07-25", 2027: "2027-07-14", 2028: "2028-07-02"},
+        rule="Ashadha Shukla Ekadashi",
+        observance_window="sunrise",
+        significance=(
+            "On the eleventh tithi of Ashadha's bright fortnight Vishnu is held to enter "
+            "yoganidra, the yogic sleep on Shesha in the ocean of milk, and to remain there "
+            "four lunar months until Devuthani Ekadashi in Kartika. Those months are "
+            "Chaturmas, and the tradition keeps them as a closed season: vivah, griha "
+            "pravesh, mundan and the other samskaras are set aside until Vishnu wakes, which "
+            "is why the muhurat calendar goes quiet from today. The timing is monsoon "
+            "timing — rivers ran high and roads were impassable, so monastics kept the "
+            "chaturmasya vrata and stayed in one place to study rather than wander, and "
+            "householders were asked to turn the same months inward, to vrata and paath "
+            "instead of new undertakings. The day is also called Padma Ekadashi and Hari "
+            "Shayani Ekadashi. It is not an inauspicious day; it opens a season that asks "
+            "for depth rather than expansion."
+        ),
+        observance=(
+            "Keep the Ekadashi fast if your health allows — no grains, no rice, no beans; "
+            "fruit, milk and phalahar through the day, or a single satvik meal at noon for "
+            "those who cannot fast fully. Bathe early and offer Vishnu yellow flowers, "
+            "tulsi, panchamrit and a ghee lamp; the tulsi leaves are traditionally picked "
+            "the day before, since they are not plucked on Ekadashi itself. The Vishnu "
+            "Sahasranama, or the paath your own tradition keeps, is the reading for the day. "
+            "Most households also take a Chaturmas sankalp now — one food, one habit or one "
+            "indulgence given up for the four months — which is the part of the day that "
+            "does the actual work. Break the fast the next morning inside the Dwadashi "
+            "parana window."
+        ),
+    ),
     Festival(
         slug="guru-purnima",
         name_en="Guru Purnima",
@@ -1152,6 +1205,54 @@ _DECLARED: tuple[Festival, ...] = (
             "usha arghya at sunrise the next morning ends the fast. The prasad is cooked on "
             "a mud stove without salt or onion, and the cleanliness of its preparation is "
             "held to weigh as much as the fast itself."
+        ),
+    ),
+    # verified 2026-08-08 · computed FIRST, not typed:
+    # `lunar_dates.shukla_tithi_date(y, "Kartika", 11)` for y in 2026/2027/2028
+    # returns 2026-11-20, 2027-11-10, 2028-10-28.
+    # Drik Panchang, New Delhi (geoname-id 1261481), monthly calendar pages for
+    # November 2026, November 2027 and October 2028, read 2026-08-08:
+    # "Devutthana Ekadashi" (Prabodhini Ekadashi) printed against the label
+    # `Kartika, Shukla Ekadashi` on exactly those three dates, with no `Adhika`
+    # on any row of those months. The same three dates are the `devutthana` rows
+    # of `DRIK_MUHURAT` in scripts/verify_muhurat_tables.py, read 2026-08-07 —
+    # a second reading a day apart, not a copy of the first.
+    # Corroboration that owes nothing to either source: Tulsi Vivah is the next
+    # tithi (Kartika Shukla Dwadashi) and is already Drik-verified in the row
+    # below at 2026-11-21 / 2027-11-11 / 2028-10-29 — exactly one civil day after
+    # these in all three years. Checked against that row, not assumed.
+    Festival(
+        slug="devuthani-ekadashi",
+        name_en="Devuthani Ekadashi (Prabodhini)",
+        name_hi="देवउठनी एकादशी",
+        note_en="Vishnu wakes and Chaturmas ends — the wedding season reopens on an abujha muhurat, auspicious the whole day through.",
+        note_hi="विष्णु का जागरण, चातुर्मास समाप्त — विवाह ऋतु पुनः आरम्भ; अबूझ मुहूर्त, पूरा दिन शुभ।",
+        dates={2026: "2026-11-20", 2027: "2027-11-10", 2028: "2028-10-28"},
+        rule="Kartika Shukla Ekadashi",
+        observance_window="sunrise",
+        significance=(
+            "Devuthani Ekadashi — Prabodhini or Devutthana in the almanacs — falls on the "
+            "eleventh tithi of Kartika's bright fortnight, the day Vishnu is held to wake "
+            "from the four months of yoganidra that began at Devshayani. Chaturmas ends "
+            "here, and with it the pause on samskaras: the muhurat calendar reopens, and "
+            "Tulsi Vivah the following day performs the season's first wedding. It is one "
+            "of the handful of abujha, or swayamsiddha, muhurats — days held auspicious in "
+            "their entirety, on which a marriage, a griha pravesh or a new venture needs no "
+            "muhurat looked up at all, which is why so much is undertaken on it. The name "
+            "is prabodhana, an awakening, and the tradition reads it in both directions: "
+            "the deity is roused, and so is the household that has kept four months of "
+            "restraint."
+        ),
+        observance=(
+            "Keep the Ekadashi fast — no grains or beans, phalahar through the day, and "
+            "parana the next morning inside the Dwadashi window. At pradosh the courtyard "
+            "is washed and Vishnu's footprints drawn in rangoli, a small mandap of sugarcane "
+            "is raised over the tulsi pot, and the family wakes the deity by name with "
+            "conch, bell and clapping. What is offered is the season's first produce — "
+            "sugarcane, singhada, ber, amla and the new radish — and lamps are lit at the "
+            "tulsi, the threshold and the water. Any Chaturmas vow taken at Devshayani is "
+            "released today, and what was given up for the four months is traditionally "
+            "given away rather than simply resumed."
         ),
     ),
     Festival(

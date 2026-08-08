@@ -4,7 +4,7 @@
 
 <div class="callout callout-insight">
   <div class="callout-label">In short</div>
-  <p>Griha Pravesh (house-warming) is the classical ceremony marking your entry into a new home. Beyond the calendar date, the ritual involves specific muhurats within the day, blessings from a priest, and specific offerings. Classical rules for 2026-27 auspicious dates cluster around Nov 2026 (post-Diwali) through May 2027 (pre-Chaturmas). This guide walks the seven classical criteria for an auspicious Griha Pravesh, personal factors on top of the calendar, and honest guidance on modern practical constraints.</p>
+  <p>Griha Pravesh (house-warming) is the classical ceremony marking your entry into a new home. Beyond the calendar date, the ritual involves specific muhurats within the day, blessings from a priest, and specific offerings. Auspicious dates for 2026-27 run from late November 2026, when Chaturmas closes, through to the start of the next Chaturmas in mid-July 2027 — broken by two Kharmas gaps in winter and in spring. This guide walks the nine classical criteria for an auspicious Griha Pravesh, personal factors on top of the calendar, and honest guidance on modern practical constraints.</p>
 </div>
 
 <h2>Three types of Griha Pravesh</h2>
@@ -24,7 +24,7 @@
   <li><strong>Favourable moon nakshatra</strong> — Rohini, Mrigashira, Uttara Phalguni, Hasta, Chitra, Anuradha, Uttara Ashadha, Revati are most auspicious; avoid Bharani, Krittika, Ardra, Ashlesha</li>
   <li><strong>Favourable tithi</strong> — 2, 3, 5, 7, 10, 11, 13 preferred; avoid 4, 8, 9, 14, 15 (Purnima/Amavasya) in most traditions</li>
   <li><strong>No Chaturmas restriction</strong> — traditional practice avoids the Vishnu-sleeping period (mid-Jul to mid-Nov); modern flexibility varies</li>
-  <li><strong>No Kharmas</strong> — Sun in Sagittarius (Dhanurmas, ~Dec 15 to Jan 14) or Sun in Pisces (Meenmas, ~Mar 14 to Apr 14) halts all shubh karya including housewarming. Wait for Sun to move into Capricorn or Aries respectively.</li>
+  <li><strong>No Kharmas</strong> — Sun in Sagittarius (Dhanurmas, roughly mid-December to mid-January) or Sun in Pisces (Meenmas, roughly mid-March to mid-April) halts all shubh karya including housewarming. Wait for the Sun to move into Capricorn or Aries respectively. The exact turning days shift each year with the sankrantis — the 2026-27 ones are listed below.</li>
   <li><strong>No Dagdha yoga</strong> — burnt tithi-weekday pairings per Muhurta Chintamani: Sunday+Dwadashi, Monday+Ekadashi, Tuesday+Panchami, Wednesday+Tritiya, Thursday+Shashti, Friday+Ashtami, Saturday+Navami. The day is "burnt" and unfit for shubh karya.</li>
   <li><strong>No eclipse (solar or lunar)</strong> — including the days immediately before and after</li>
   <li><strong>No Panchak days</strong> — five-day nakshatra window (Dhanishta latter half through Revati)</li>
@@ -46,17 +46,89 @@
 
 <h2>2026-2027 auspicious windows</h2>
 
-<p>Given the seven rules, Griha Pravesh dates cluster in:</p>
+<p>Given the nine rules, Griha Pravesh dates cluster in four stretches. The dates below are computed by this site's own muhurat engine for Delhi and cross-checked against Drik Panchang; sankranti times are IST. A window being open does not make every day inside it auspicious — each date still has to clear nakshatra, tithi, weekday, Panchak and Dagdha on its own.</p>
+
+<h3>Late November 2026 — the season opens</h3>
 
 <ul>
-  <li><strong>Late-Nov 2026 (post-Devuthani + post-Panchak)</strong> — Devuthani Ekadashi (Nov 19, 2026) opens the wedding/housewarming season, but Panchak follows Nov 20-25 — first clean window starts ~Nov 26. Book priests early for the Nov-Dec rush.</li>
-  <li><strong>Dec 2026 (before Dec 15)</strong> — clean window until Sun enters Sagittarius (~Dec 15) and Kharmas begins</li>
-  <li><strong>Mid-Jan to Feb 2027</strong> — winter window after Makar Sankranti (~Jan 14) ends Kharmas</li>
-  <li><strong>Mid-Apr to Jun 2027</strong> — spring/summer window after Meenmas ends (~Apr 14)</li>
-  <li><strong>Post-Devuthani 2027 (Oct 31 onwards)</strong> — next annual peak</li>
+  {# lunar_dates.shukla_tithi_date(2026, "Kartika", 11) -> date(2026, 11, 20); find_candidates("griha_pravesh", "Delhi", date(2026,11,15), 14) -> 2026-11-20 Friday, rating "excellent", Uttara Bhadrapada, flag abujha_muhurat #}
+  <li><strong>Devuthani Ekadashi — Friday, 20 Nov 2026</strong> — Vishnu wakes, Chaturmas ends, and the housewarming season opens. Our finder rates it excellent.</li>
+  {# find_candidates("griha_pravesh", "Delhi", date(2026,11,15), 14) -> 2026-11-17 Dhanishta, rating "avoid", flag panchak (first Panchak day of the run) #}
+  {# find_candidates("griha_pravesh", "Delhi", date(2026,11,15), 14) -> 2026-11-21 Revati, rating "avoid", flag panchak (last Panchak day); 2026-11-18 Shatabhisha and 2026-11-19 Purva Bhadrapada also flagged panchak #}
+  {# festival registry, Tulsi Vivah 2026 = 2026-11-21 (verified); muhurat._abujha_days(2026)[date(2026,11,21)] -> (("Tulsi Vivah", ("vivah",)),) — Devuthani + 1, so the run's last day is Tulsi Vivah #}
+  <li><strong>Panchak</strong> runs 17–21 Nov 2026. It opens when the Moon reaches Dhanishta and holds until the Moon leaves Revati on its last day — <strong>Tulsi Vivah, Saturday, 21 Nov 2026</strong>.</li>
+  {# find_candidates("griha_pravesh", "Delhi", date(2026,11,15), 14) -> 2026-11-25 Wednesday, rating "excellent", Rohini, Krishna Pratipada, Sarvartha Siddhi Yoga #}
+  <li>The first ordinary clean date lands in the last week of November 2026 — a Wednesday under Rohini nakshatra with Sarvartha Siddhi Yoga, rated excellent.</li>
+  {# find_candidates("griha_pravesh", "Delhi", date(2026,11,15), 14) -> 2026-11-26 Thursday, rating "excellent", Mrigashira, Krishna Dwitiya #}
+  <li>The second is the Thursday immediately behind it — Mrigashira nakshatra, Krishna Dwitiya: also excellent. Run the finder linked below for the exact days in your city.</li>
 </ul>
 
-<p>Blackout: Chaturmas (mid-Jul to mid-Nov 2027), Adhik Maas dates (verify with Panchang), <strong>Kharmas (Dec 15 2026 - Jan 14 2027 and Mar 14 - Apr 14 2027)</strong>, and eclipse windows.</p>
+<p>Notice that Devuthani sits <em>inside</em> that Panchak run and is still the strongest date of the month. That is not an oversight. Devuthani Ekadashi is an <strong>abujha</strong> (self-auspicious, "no reckoning needed") muhurat — one of the swayam-siddha days that classical tradition treats as auspicious in its own right, without a tithi-nakshatra calculation and without being cancelled by Panchak. Do not "correct" this by pushing the ceremony past Panchak: the abujha status is the override, and it is why families across North India begin the season on that day. The ordinary rules resume immediately after, which is why the next clean dates only appear once Revati has passed.</p>
+
+<h3>December 2026 — until Kharmas closes it</h3>
+
+<ul>
+  {# Drik Panchang, Dhanu Sankranti 2026 = 2026-12-16, ingress 10:25 IST (read 2026-08-08); muhurat._kharmas_flag first returns True on 2026-12-16, so 2026-12-15 is the last Kharmas-free day #}
+  <li>The Kharmas-free stretch runs to the eve of Dhanu Sankranti: the last Kharmas-free day is the one before the Sun's ingress on 16 Dec 2026. Kharmas-free is not the same as bookable — that final day falls inside a Panchak run, so the last genuinely auspicious dates sit earlier in the month. Run the finder rather than assuming the eve of the sankranti is available.</li>
+  {# Drik Panchang, Dhanu Sankranti 2026 = 2026-12-16, ingress 10:25 IST (read 2026-08-08); muhurat._kharmas_flag(date(2026,12,16)) -> (True, "Dhanurmas (Sun in Sagittarius) — Kharmas restriction") #}
+  <li><strong>Dhanu Sankranti — Wednesday, 16 Dec 2026</strong> — the Sun enters Sagittarius at 10:25 IST and Dhanurmas Kharmas begins. Book priests early for the November-December rush, because nothing shubh happens after this until winter.</li>
+</ul>
+
+<h3>Mid-January to February 2027 — the winter window</h3>
+
+<ul>
+  {# festival registry, Makar Sankranti 2027 = 2027-01-15 (verified); muhurat._kharmas_flag: date(2027,1,14) -> True, date(2027,1,15) -> False #}
+  {# find_candidates("griha_pravesh", "Delhi", date(2027,1,13), 10) -> 2027-01-15 "avoid" (panchak, Revati); 2027-01-16 "avoid" (avoid_tithi); 2027-01-17 and 2027-01-18 "avoid" (avoid_nakshatra); 2027-01-19 Tuesday "acceptable" (Rohini, avoid_weekday); 2027-01-20 Wednesday "excellent" (Mrigashira, sarvartha_siddhi) #}
+  <li><strong>Makar Sankranti — Friday, 15 Jan 2027</strong> — the Sun enters Capricorn, the winter Kharmas lifts, and the day before it is the last restricted one. Lifting Kharmas is not the same as being bookable, though: the sankranti falls under Revati inside a Panchak run, and the days straight after it carry avoid tithis and nakshatras. The finder's first usable dates come the following week, 19-20 Jan 2027 — Rohini, then Mrigashira with Sarvartha Siddhi Yoga.</li>
+</ul>
+
+<p>From there the winter window runs through February 2027, and it is the easiest season of the year to book — no Chaturmas, no Kharmas, and the wedding rush has not yet peaked.</p>
+
+<h3>Mid-April to June 2027 — the spring window</h3>
+
+<ul>
+  {# Drik Panchang, Meena Sankranti 2027 = 2027-03-15, ingress 07:00 IST (read 2026-08-08); muhurat._kharmas_flag first returns True on 2027-03-15 #}
+  <li><strong>Meena Sankranti — Monday, 15 Mar 2027</strong> — the Sun enters Pisces at 07:00 IST, Meenmas Kharmas begins, and the winter window shuts.</li>
+  {# Drik Panchang, Mesha Sankranti 2027 = 2027-04-14, ingress 15:28 IST (read 2026-08-08); muhurat._kharmas_flag(date(2027,4,14)) -> (True, "Meenmas ...") because the sample is taken at midday, before the 15:28 ingress #}
+  <li><strong>Mesha Sankranti — Wednesday, 14 Apr 2027</strong> — the Sun enters Aries, but only at 15:28 IST. See the convention note below before you treat this as a usable date.</li>
+  {# find_candidates("griha_pravesh", "Delhi", date(2027,4,11), 6) -> 2027-04-14 "avoid" (kharmas); 2027-04-15 "avoid" (avoid_nakshatra, Ashlesha) — Kharmas gone, nakshatra still blocking; festival registry, Ram Navami 2027 = 2027-04-15 (verified, Chaitra Shukla Navami) #}
+  <li>The first day free of Kharmas is <strong>Thursday, 15 Apr 2027</strong>, which is Ram Navami — though Ashlesha nakshatra still rules that day out for Griha Pravesh on criterion 2.</li>
+  {# find_candidates("griha_pravesh", "Delhi", date(2027,4,14), 8) -> 2027-04-19 Monday, rating "excellent", Hasta, Shukla Trayodashi #}
+  <li>The first date the finder rates excellent falls in the third week of April 2027 — Hasta nakshatra, Shukla Trayodashi, on a Monday.</li>
+</ul>
+
+<p><strong>Which convention this page uses.</strong> The Sun crosses into Aries after midday on Mesha Sankranti. Our muhurat finder samples the Sun's sign at midday of each date, so it reads that whole day as still Meenmas and clears the restriction from the following day. A panchang that fixes the sankranti at the instant of ingress will call that same afternoon clear; one that fixes it by the next sunrise agrees with us. All three are defensible readings of the same event, and this page follows the midday-sampling convention throughout, because that is what the finder linked below actually applies. If your family priest reckons by the ingress instant, expect a one-day difference on exactly these turn days — and follow your priest.</p>
+
+<h3>November 2027 — the next annual peak</h3>
+
+<ul>
+  {# lunar_dates.shukla_tithi_date(2027, "Kartika", 11) -> date(2027, 11, 10); find_candidates("griha_pravesh", "Delhi", date(2027,11,8), 4) -> 2027-11-10 Wednesday, rating "excellent", Uttara Bhadrapada, flag abujha_muhurat #}
+  <li><strong>Devuthani Ekadashi — Wednesday, 10 Nov 2027</strong> — Chaturmas closes again and the cycle restarts. Abujha, as in the previous year, and again inside a Panchak run.</li>
+</ul>
+
+<h2>Blackout periods to plan around</h2>
+
+<ul>
+  {# lunar_dates.shukla_tithi_date(2027, "Ashadha", 11) -> date(2027, 7, 14); muhurat._in_chaturmas: date(2027,7,13) -> False, date(2027,7,14) -> True #}
+  <li><strong>Devshayani Ekadashi — 14 Jul 2027</strong> opens Chaturmas, Vishnu's four-month sleep, and the spring window ends here.</li>
+  {# lunar_dates.shukla_tithi_date(2027, "Kartika", 11) -> date(2027, 11, 10); muhurat._in_chaturmas: date(2027,11,9) -> True, date(2027,11,10) -> False — restriction is end-exclusive #}
+  <li><strong>Devuthani Ekadashi — 10 Nov 2027</strong> closes Chaturmas. The restriction is end-exclusive, so the day before is the last restricted one and Devuthani itself is clear.</li>
+  {# Drik Panchang, Dhanu Sankranti 2026 = 2026-12-16, ingress 10:25 IST (read 2026-08-08) #}
+  <li><strong>Dhanu Sankranti — 16 Dec 2026</strong> starts the winter Kharmas.</li>
+  {# festival registry, Makar Sankranti 2027 = 2027-01-15 (verified); muhurat._kharmas_flag(date(2027,1,15)) -> (False, "") #}
+  {# find_candidates("griha_pravesh", "Delhi", date(2027,1,13), 10) -> 2027-01-15 "avoid" (panchak, Revati); first non-avoid days are 2027-01-19 "acceptable" and 2027-01-20 "excellent" #}
+  <li><strong>Makar Sankranti — 15 Jan 2027</strong> ends the winter Kharmas. The restriction is gone on the day itself, but Panchak covers it, so the season opens a few days later rather than on the sankranti.</li>
+  {# Drik Panchang, Meena Sankranti 2027 = 2027-03-15, ingress 07:00 IST (read 2026-08-08) #}
+  <li><strong>Meena Sankranti — 15 Mar 2027</strong> starts the spring Kharmas (Meenmas).</li>
+  {# Drik Panchang, Mesha Sankranti 2027 = 2027-04-14, ingress 15:28 IST (read 2026-08-08); midday sampling keeps this day restricted #}
+  <li><strong>Mesha Sankranti — 14 Apr 2027</strong> ends Meenmas at 15:28 IST, but under the midday convention above the day itself still counts as restricted.</li>
+  {# adhik_maas.intercalary_months(2027) -> () — no intercalary month in that year at all #}
+  <li><strong>Adhik Maas</strong> — there is none in 2027. The lunisolar calendar inserts one roughly every third year, and 2027 is not one of them, so no Malamas blackout applies to any of the windows above.</li>
+  {# adhik_maas.intercalary_months(2026) -> (IntercalaryMonth(start=date(2026,5,17), end=date(2026,6,15), name="Jyeshtha", kind="adhik"),) #}
+  {# adhik_maas.intercalary_months(2026) -> IntercalaryMonth(..., end=date(2026,6,15), ...) #}
+  <li><strong>Adhik Jyeshtha 2026</strong> — the one intercalary month in this pair of years ran 17 May–15 Jun 2026. It is behind us, but still worth knowing if you are dating a ceremony retrospectively.</li>
+  <li><strong>Eclipse windows</strong> — plus the day either side. Our finder flags these automatically; a printed calendar may not.</li>
+</ul>
 
 <div class="callout callout-classic">
   <div class="callout-label">Personalised dates for your chart</div>
@@ -80,7 +152,7 @@
 <ul>
   <li><strong>Choosing the developer's handover date without astrological check</strong> — the most common modern error</li>
   <li><strong>Doing Griha Pravesh during Chaturmas</strong> without a compensating ritual</li>
-  <li><strong>Missing Panchak</strong> — even if all other rules align, Panchak nullifies</li>
+  <li><strong>Missing Panchak</strong> — even if all other rules align, Panchak nullifies an ordinary date (an abujha day such as Devuthani Ekadashi is the standing exception)</li>
   <li><strong>Doing it on an eclipse-adjacent day</strong></li>
   <li><strong>Not doing personal chart check</strong> — universally-good date can be personally difficult</li>
 </ul>
