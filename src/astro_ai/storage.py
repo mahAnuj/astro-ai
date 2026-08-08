@@ -26,11 +26,20 @@ from __future__ import annotations
 import json
 import logging
 import os
+import threading
 from typing import Any
 
 log = logging.getLogger(__name__)
 
 _BUCKET_ENV = "BHAGYA_STORAGE_BUCKET"
+
+# One client per process. A fresh storage.Client() re-runs credential
+# discovery, refetches a metadata-server token and builds a new
+# AuthorizedSession — so every read paid a full TCP + TLS handshake to a US
+# bucket from asia-south1. The client's connection pool is safe for
+# concurrent reads, so sharing it is what makes keep-alive actually happen.
+_CLIENT = None
+_CLIENT_LOCK = threading.Lock()
 
 
 def _bucket_name() -> str | None:
@@ -38,14 +47,34 @@ def _bucket_name() -> str | None:
     return name.strip() if name else None
 
 
+def reset_client() -> None:
+    """Drop the cached client so the next call rebuilds it.
+
+    Test seam, and a recovery path if a client ever gets poisoned.
+    """
+    global _CLIENT
+    with _CLIENT_LOCK:
+        _CLIENT = None
+
+
 def _client():
     """Lazy-import google-cloud-storage so it's truly optional at runtime."""
-    try:
-        from google.cloud import storage  # type: ignore[attr-defined]
-        return storage.Client()
-    except Exception as err:
-        log.warning("storage: GCS unavailable (%s); falling back to local cache", err)
-        return None
+    global _CLIENT
+    if _CLIENT is not None:
+        return _CLIENT
+    with _CLIENT_LOCK:
+        if _CLIENT is not None:
+            return _CLIENT
+        try:
+            from google.cloud import storage  # type: ignore[attr-defined]
+            # Only successes are cached: caching a None from a transient
+            # credential blip at startup would leave storage dead for the
+            # whole life of the instance.
+            _CLIENT = storage.Client()
+            return _CLIENT
+        except Exception as err:
+            log.warning("storage: GCS unavailable (%s); falling back to local cache", err)
+            return None
 
 
 def _blob(key: str):
@@ -65,10 +94,19 @@ def get(key: str) -> str | None:
     if blob is None:
         return None
     try:
-        if not blob.exists():
-            return None
+        from google.api_core import exceptions as gapi_exc  # type: ignore
+        not_found = gapi_exc.NotFound
+    except Exception:
+        not_found = ()
+    try:
+        # No exists() pre-check: that doubled the round trips per read. A
+        # miss surfaces as 404 on the download instead.
         return blob.download_as_text()
+    except not_found:
+        return None
     except Exception as err:
+        if getattr(err, "code", None) == 404:
+            return None
         log.warning("storage.get(%s) failed: %s", key, err)
         return None
 
