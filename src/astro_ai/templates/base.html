@@ -130,14 +130,28 @@
   });
 </script>
 
-<!-- Tailwind Play CDN — no build step. Fine for MVP; bake into a build pipeline before production scale. -->
-<script src="https://cdn.tailwindcss.com"></script>
+<!-- Tailwind, built ahead of time by `npm run build:css` (config in
+     tailwind.config.js, input in assets/tailwind.css, output committed).
+     This replaced the Play CDN, which shipped a ~400KB compiler and rebuilt
+     the entire stylesheet in the browser on every page load — a blocking
+     script plus a flash of unstyled content on every navigation. The built
+     file is ~80KB, cacheable, and parses as plain CSS.
+     Loaded BEFORE the <style> block below so the hand-written rules there
+     continue to win the cascade. -->
+<link rel="stylesheet" href="/static/css/app.css">
 
 <!-- HTMX for hx-boost (AJAX nav) + loading indicators. -->
 <!-- responseHandling: swap response body for ALL status codes (including 4xx/5xx
      error pages we render server-side), so error responses become visible
      instead of silently dropped. -->
-<meta name="htmx-config" content='{"responseHandling": [{"code": ".*", "swap": true}]}'>
+<!-- globalViewTransitions routes every boosted navigation through the View
+     Transitions API, so page-to-page moves cross-fade instead of snapping.
+     This is the single biggest "feels like an app" lever on a server-rendered
+     site, and it degrades to today's instant swap on browsers without the API
+     (Firefox) — htmx feature-detects document.startViewTransition. The CSS
+     that shapes the animation, and disables it under prefers-reduced-motion,
+     is in the <style> block below. -->
+<meta name="htmx-config" content='{"responseHandling": [{"code": ".*", "swap": true}], "globalViewTransitions": true}'>
 <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -148,71 +162,12 @@
      two preconnects above, this saves ~150-300ms LCP on cold cache. -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        fontFamily: {
-          // Inter for Latin, Noto Sans Devanagari as a graceful fallback for Hindi text.
-          sans: ['Inter', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-          display: ['"Crimson Pro"', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
-        },
-        colors: {
-          cream: '#faf7f2',
-          astro: {
-            50:  '#f6f1fb',
-            100: '#ece1f6',
-            500: '#8b5cf6',
-            600: '#7c3aed',
-            700: '#6b21a8',
-            800: '#581c87',
-            900: '#3b0764',
-          },
-        },
-        // ─── Motion vocabulary ────────────────────────────────────────
-        // Consistent durations + easings across the whole site. Every
-        // animation the templates use should reach for one of these
-        // rather than inventing its own keyframes. The gate below
-        // (@media prefers-reduced-motion) neutralises all of them for
-        // motion-sensitive users.
-        keyframes: {
-          revealUp: {
-            '0%':   { opacity: '0', transform: 'translateY(8px)' },
-            '100%': { opacity: '1', transform: 'translateY(0)' },
-          },
-          breathe: {
-            '0%, 100%': { transform: 'scale(1)' },
-            '50%':      { transform: 'scale(1.025)' },
-          },
-          flicker: {
-            '0%, 100%': { opacity: '1' },
-            '50%':      { opacity: '0.85' },
-          },
-          drawIn: {
-            '0%':   { strokeDashoffset: '100%' },
-            '100%': { strokeDashoffset: '0' },
-          },
-          spinSlow: {
-            'from': { transform: 'rotate(0deg)' },
-            'to':   { transform: 'rotate(360deg)' },
-          },
-          shimmer: {
-            '0%':   { backgroundPosition: '-200% 0' },
-            '100%': { backgroundPosition: '200% 0' },
-          },
-        },
-        animation: {
-          'reveal-up': 'revealUp 400ms ease-out forwards',
-          'breathe':   'breathe 3s ease-in-out infinite',
-          'flicker':   'flicker 1.4s ease-in-out infinite',
-          'draw-in':   'drawIn 1.2s ease-out forwards',
-          'spin-slow': 'spinSlow 20s linear infinite',
-          'shimmer':   'shimmer 2s ease-in-out infinite',
-        },
-      },
-    },
-  };
-</script>
+<!-- The Tailwind theme that used to live here as `tailwind.config = {...}`
+     now lives in tailwind.config.js and is compiled into the stylesheet
+     linked above. It is the same theme, plus the astro-200/300/400 stops
+     that #186 found missing. Edit tailwind.config.js and re-run
+     `npm run build:css`; scripts/verify_css_build.py fails if the
+     committed CSS is stale. -->
 
 <style>
   /* ─── DESIGN SYSTEM CANONICALS (Cycle 7 consolidation) ─────────────
@@ -627,6 +582,92 @@
       size: A4;
     }
   }
+
+  /* ─── View Transitions ────────────────────────────────────────────────
+     Makes page-to-page navigation cross-fade rather than snap, which is
+     most of what separates a multi-page site from an app on mobile.
+
+     Two paths, because this site navigates two ways:
+       1. hx-boost intercepts most in-site links. htmx drives the transition
+          itself once globalViewTransitions is set (see the htmx-config meta
+          in <head>).
+       2. Anything htmx does not intercept — the first load, a form POST
+          that returns a new document, an external entry — is a real
+          cross-document navigation, handled by @view-transition below.
+     Browsers without the API (Firefox today) simply navigate as before;
+     nothing here is load-bearing. */
+  @view-transition { navigation: auto; }
+
+  ::view-transition-old(root) {
+    animation: bhagya-vt-out 90ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  ::view-transition-new(root) {
+    animation: bhagya-vt-in 180ms cubic-bezier(0, 0, 0.2, 1) both;
+  }
+  @keyframes bhagya-vt-out { to { opacity: 0; } }
+  @keyframes bhagya-vt-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* The sticky nav is the one element that must NOT slide with the page —
+     letting it animate reads as the whole chrome lurching on every tap.
+     Selector is nav.sticky, not header: _nav.html renders a <nav>, and this
+     site has no <header> element at all. */
+  nav.sticky { view-transition-name: bhagya-nav; }
+  ::view-transition-old(bhagya-nav),
+  ::view-transition-new(bhagya-nav) { animation: none; mix-blend-mode: normal; }
+
+  /* Same gate the rest of the motion vocabulary uses. A view transition with
+     no animation is an instant swap, which is exactly what we want here. */
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) { animation: none !important; }
+  }
+
+  /* ─── Safe-area insets ────────────────────────────────────────────────
+     <meta viewport> already sets viewport-fit=cover so the page paints edge
+     to edge on notched phones. That is only half the job: without the insets
+     below, the sticky header slides under the status bar / Dynamic Island and
+     the footer sits beneath the home indicator. env() resolves to 0px on
+     every device without a cutout, so this costs nothing elsewhere.
+
+     Matters more now than it did: the PWA manifest declares display
+     "standalone", so an installed Shubh Bhagya has no browser chrome of its
+     own to absorb the inset. */
+  body {
+    padding-left:  env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  nav.sticky {
+    padding-top: env(safe-area-inset-top);
+  }
+  footer {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+  }
+
+  /* ─── Touch ergonomics ────────────────────────────────────────────────
+     Pointer-coarse only, so desktop density is untouched. 44px is the
+     WCAG 2.2 / iOS HIG minimum for a comfortable tap target; several nav
+     and footer links render well under that at mobile type sizes. */
+  @media (pointer: coarse) {
+    nav a, footer a, .no-print a[href] {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+    button, [role="button"], input[type="submit"], summary {
+      min-height: 44px;
+    }
+    /* Stop iOS zooming the page when a field is focused — it fires whenever
+       the computed font-size is under 16px, and several inputs use text-sm. */
+    input, select, textarea { font-size: max(16px, 1em); }
+  }
+
+  /* Momentum scrolling for any horizontally-scrollable strip (the panchang
+     strip, wide tables), and no rubber-banding of the whole document. */
+  .overflow-x-auto { -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
 </style>
 </head>
 

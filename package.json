@@ -1,0 +1,13 @@
+{
+  "name": "shubh-bhagya-css",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build-time Tailwind for Shubh Bhagya. Node is a BUILD-ONLY dependency — the Cloud Run image is Python-only and never sees this package.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./assets/tailwind.css -o ./src/astro_ai/static/css/app.css --minify",
+    "watch:css": "tailwindcss -i ./assets/tailwind.css -o ./src/astro_ai/static/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}
