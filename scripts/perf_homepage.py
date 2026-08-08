@@ -388,6 +388,15 @@ def main(argv: list[str] | None = None) -> int:
               f"SIM_OP_S={SIM_OP_S:.2f}s  SIM_PRESENT={_present_patterns() or 'none'}")
         _install_stub()
 
+    # Provenance banner. This script inserts its OWN repo's src/ on sys.path,
+    # so invoking it BY PATH from a different worktree silently measures this
+    # tree, not the one you cd'd into — which quietly turns a before/after
+    # comparison into after/after. Printing the resolved module file makes that
+    # mistake visible instead of silent. Copy the script into the tree you want
+    # to measure, or check this line before trusting a number.
+    import astro_ai
+    print(f"measuring: {astro_ai.__file__}")
+
     client = _client_for_app()
     _reset_counts()
     latencies = _time_requests(client, max(1, args.requests), simulated=not args.real)
