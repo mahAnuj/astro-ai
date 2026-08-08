@@ -19,13 +19,13 @@ That string is what gets handed to the LLM as user-message context.
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
 from datetime import date as date_, datetime, time, timedelta
+from functools import lru_cache
 from zoneinfo import ZoneInfo
 
 import swisseph as swe
-from geopy.geocoders import Nominatim
-from timezonefinder import TimezoneFinder
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -154,8 +154,43 @@ PLANETS: list[tuple[str, int]] = [
     ("Rahu", swe.TRUE_NODE),
 ]
 
-_GEOCODER = Nominatim(user_agent="shubh-bhagya/1.0 (contact@shubhagya.com)")
-_TF = TimezoneFinder()
+# geopy and timezonefinder are imported lazily. timezonefinder pulls in the h3
+# native extension plus numpy, which costs ~5.5s of first-touch disk I/O on a
+# cold Cloud Run container whose image layers stream on demand. Only geocoding
+# needs them, so routes that never geocode should never pay for them. The
+# singletons are also expensive to construct (TimezoneFinder ~0.2s), hence the
+# memoisation into module globals.
+_GEOCODER = None
+_TF = None
+_GEO_LOCK = threading.Lock()
+
+
+def _geocoder():
+    """Nominatim client, constructed on first use."""
+    global _GEOCODER
+    if _GEOCODER is None:
+        with _GEO_LOCK:
+            if _GEOCODER is None:
+                from geopy.geocoders import Nominatim
+
+                # user_agent identifies us to Nominatim — do not change it
+                # casually; unrecognised agents get rate-limited.
+                _GEOCODER = Nominatim(
+                    user_agent="shubh-bhagya/1.0 (contact@shubhagya.com)"
+                )
+    return _GEOCODER
+
+
+def _tf():
+    """TimezoneFinder instance, constructed on first use."""
+    global _TF
+    if _TF is None:
+        with _GEO_LOCK:
+            if _TF is None:
+                from timezonefinder import TimezoneFinder
+
+                _TF = TimezoneFinder()
+    return _TF
 
 # Configure Swiss Ephemeris for Vedic/sidereal mode with Lahiri ayanamsa.
 # This is process-global state — set once at module import.
@@ -323,13 +358,19 @@ class ChartError(ValueError):
 # ---------------------------------------------------------------------------
 
 
+@lru_cache(maxsize=512)
 def geocode_place(place: str) -> tuple[float, float, str]:
     """Resolve a free-text place into (lat, lon, tz_name).
 
     Uses Nominatim (OpenStreetMap, free). Raises ChartError on miss.
+
+    Cached on the exact input string — no normalisation, so two spellings of
+    the same city are two entries. lru_cache does not memoise a call that
+    raises, which is what we want here: a transient Nominatim outage must not
+    turn into a permanently cached failure for that place.
     """
     try:
-        location = _GEOCODER.geocode(place, timeout=10)
+        location = _geocoder().geocode(place, timeout=10)
     except Exception as err:
         raise ChartError(f"Geocoding failed for {place!r}: {err}") from err
     if location is None:
@@ -338,7 +379,7 @@ def geocode_place(place: str) -> tuple[float, float, str]:
             "'Mumbai, India' or 'Brooklyn, New York, USA'."
         )
     lat, lon = float(location.latitude), float(location.longitude)
-    tz = _TF.timezone_at(lat=lat, lng=lon)
+    tz = _tf().timezone_at(lat=lat, lng=lon)
     if tz is None:
         raise ChartError(
             f"Found {place!r} at ({lat:.3f}, {lon:.3f}) but couldn't determine "
