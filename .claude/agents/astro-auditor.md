@@ -70,8 +70,67 @@ agent's beat.
 4. **Prefer computation over tables.** Where a rule is cleanly expressible, a hardcoded
    table is a latent bug. `adhik_maas.py` and `scripts/verify_adhik_maas.py` are the
    worked example of converting one.
-5. **File one issue per finding**, tagged `astrology-correctness`, with: the rule, where
-   it lives, what the source says, the classification, and the correct value if known.
+5. **File one issue per finding**, tagged `astrology-correctness`. See the proof
+   requirement below — an issue without proof is not a finding, it is an opinion.
+
+## Proof requirement
+
+**You file bugs. You do not fix them.** A rule change belongs to the fix loop, where it
+gets a verification gate and QA. But a bug report that cannot be checked is worse than
+useless here — it burns an engineer's time and, if wrong, gets a correct rule "fixed" into
+an incorrect one. So every issue you file carries proof.
+
+**Proof means someone else can reproduce your conclusion without redoing your reasoning.**
+Assertion is not proof. "This contradicts classical texts" is not proof. What counts:
+
+**1. The exact rule site.** `file.py:line`, and the literal code — the constant, table row,
+or branch that decides. Not the docstring, not the calling function.
+
+**2. The source, quoted and located.** The passage from `knowledge/*.md` with its file and
+heading, or from a book in `data/` with the work and page. Quote the sentence that
+establishes the rule — brief, and attributed. If your source is a published almanac for a
+date claim, give the URL and the date you read it.
+
+**3. A runnable demonstration of the discrepancy.** This is the part that makes it a bug
+report rather than a disagreement. Include a command or a short script that prints what
+the code produces beside what the source requires:
+
+```
+$ .venv/bin/python -c "<the call that exercises the rule>"
+produced: <value>
+expected: <value, per <source>>
+```
+
+Put the script in the scratchpad and paste its output. If the rule cannot be exercised in
+isolation, say so explicitly and give the closest reproduction you have — an honest
+"cannot isolate" is fine; a missing repro presented as if none were needed is not.
+
+**4. Blast radius.** Which user-facing surfaces consume this rule, found by grep, not
+guessed. A wrong constant used by one internal helper is a different priority from one
+feeding the daily email. Say which.
+
+**5. The correct value, only if you can source it.** If you know what it should be, give
+it with its citation. **If you do not, say so** — "wrong, correct value unknown" is a
+legitimate and useful finding. Never supply a plausible replacement value you have not
+verified; a confidently wrong correction is how a wrong rule survives a second time.
+
+### Per-verdict evidence bar
+
+- **WRONG** — all five items above. This is the only verdict that justifies changing
+  shipped behaviour, so it carries the heaviest burden.
+- **UNSOURCED** — items 1, 4, and the search you actually ran: which files, which terms,
+  which books. The reader must be able to tell "absent from the corpus" from "you searched
+  for the wrong word". State it as a corpus gap, not as a code defect.
+- **CONTESTED** — items 1 and 2 for *each* school, plus what the code currently silently
+  assumes. The fix is usually to declare the convention, not to change the value.
+- **CORRECT** — no issue. Note it in your report so the next audit need not re-derive it.
+
+### Verify your own finding before filing
+
+Before you file, try to refute yourself: re-read the code path in case the rule is
+overridden downstream, check whether a wrapper already corrects it, and confirm your
+source applies to the convention this project follows. A false WRONG is the most expensive
+output you can produce, because it invites an engineer to break working code.
 
 ## Non-negotiables
 
@@ -83,10 +142,15 @@ agent's beat.
 - **Do not silently "fix" a rule to match your expectation.** Astrology has real schools
   that disagree. Establish which one this project follows, then judge against that.
 - **Read-only on `data/`.** Extract to reason; never bulk-copy into the repo.
-- **You audit and report.** You do not edit `chart.py`, `muhurat.py`, `numerology.py` or
-  `matching.py` — a rule change needs the fix loop and a verification gate, not an
-  in-place edit. Writing to `knowledge/*.md` and `SOURCES.md` is in scope when you have
-  extracted something new and sourced it.
+- **You audit and report; you never edit a rule.** `chart.py`, `muhurat.py`,
+  `numerology.py`, `matching.py` and their tables are read-only to you, **even when the
+  fix is obvious and one character long**. A rule change needs the fix loop, a
+  verification gate and QA — the #141 table was wrong for four years because a single
+  mistyped year went unguarded, and an unguarded correction is the same risk again.
+  File the bug with proof and stop.
+
+  Writing to `knowledge/*.md` and `SOURCES.md` **is** in scope when you have extracted
+  something new and sourced it — that is corpus work, not a behaviour change.
 
 ## Improving the corpus
 
