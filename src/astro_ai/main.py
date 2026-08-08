@@ -323,36 +323,8 @@ from astro_ai.routes import feedback as _feedback_routes
 app.include_router(_feedback_routes.router)
 
 
-@app.get("/learn/", response_class=HTMLResponse)
-async def learn_index(request: Request) -> HTMLResponse:
-    """Hub page listing every learning article. Public, indexable, no auth."""
-    return templates.TemplateResponse(
-        request,
-        "learn_index.html",
-        {
-            "lang": _lang(request),
-            "articles": learn_registry.all_articles(),
-        },
-    )
-
-
-@app.get("/learn/{slug}/", response_class=HTMLResponse)
-async def learn_article(request: Request, slug: str) -> HTMLResponse:
-    """Render one learning article. Each article is a hand-written Jinja
-    template at templates/learn/<slug>.html that extends learn_article_base.
-    Registry holds metadata (title, summary, FAQs, related links)."""
-    article = learn_registry.get_article(slug)
-    if article is None:
-        raise HTTPException(status_code=404)
-    return templates.TemplateResponse(
-        request,
-        f"learn/{slug}.html",
-        {
-            "lang": _lang(request),
-            "article": article,
-            "related": learn_registry.related_articles(slug),
-        },
-    )
+from astro_ai.routes import learn as _learn_routes
+app.include_router(_learn_routes.router)
 
 
 @app.get("/admin/feedback", response_class=HTMLResponse,
