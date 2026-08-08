@@ -105,7 +105,7 @@
     <h3 class="font-display text-xl text-astro-800 mb-3">The 5 numbers we compute (and where they come from)</h3>
     <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6">
       <ul class="space-y-2.5 text-sm sm:text-base text-stone-800 leading-relaxed">
-        <li>&bull; <strong>Life Path Number</strong> &mdash; birth-date reduction. Origin: L. Dow Balliett / Juno Jordan, USA, ~1908-1940s.</li>
+        <li>&bull; <strong>Life Path Number</strong> &mdash; all the digits of your birth date added together, then reduced; your reading spells out that convention and why this page uses it. Origin: L. Dow Balliett / Juno Jordan, USA, ~1908-1940s.</li>
         <li>&bull; <strong>Destiny / Expression Number</strong> &mdash; English-letter name reduction. Origin: same Balliett/Jordan lineage.</li>
         <li>&bull; <strong>Soul Urge Number</strong> &mdash; from name vowels. Origin: 20th-c. Western numerology.</li>
         <li>&bull; <strong>Personality Number</strong> &mdash; from name consonants. Origin: 20th-c. Western numerology.</li>
@@ -216,6 +216,29 @@
     {{ t(lang, 'num_reflective_header') }}
   </p>
 
+  {# Conventions declaration (#179). Numerology has more than one live
+     reduction convention and they disagree: measured over every birth date
+     from 1930-2025, the all-digits Life Path and the reduce-parts-then-sum
+     Life Path differ for 12.8% of dates (4,492 of 35,064), and the
+     disagreement is always master-vs-base — a digit sum is congruent to its
+     value mod 9 and 11/22/33 ≡ 2/4/6, so no other divergence is possible.
+     §8's "let the user pick a convention" toggle was deliberately not
+     shipped; the reason for not shipping it belongs in front of the reader,
+     not only in a commit message, so it is the last bullet here. #}
+  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
+    <h2 class="font-display text-lg text-astro-800 mb-2">Conventions used in this reading</h2>
+    <p class="text-sm text-stone-700 leading-relaxed mb-3">
+      Numerology has more than one live convention for these calculations, and they give different answers. Here is what this page uses &mdash; the same way it names Chaldean and Pythagorean for letters.
+    </p>
+    <ul class="space-y-2.5 text-sm text-stone-800 leading-relaxed">
+      <li>&bull; <strong>Life Path</strong> &mdash; every digit of the birth date added together, then reduced (12 May 1934 &rarr; 5+1+2+1+9+3+4 = 25 &rarr; 7). This is the convention in the Vedic source material this site works from. Much modern Western numerology instead reduces the month, day and year separately and adds those three; the two methods part company for roughly one birth date in eight, always over whether the answer stays a master number or settles on its base. Where the final total lands on 11, 22 or 33, it is kept.</li>
+      <li>&bull; <strong>Birthday Number</strong> &mdash; reduced all the way to 1&ndash;9. Born on the 11th is a 2, born on the 22nd is a 4; in this tradition 11 and 22 are read as shades of 2 and 4, not as numbers of their own.</li>
+      <li>&bull; <strong>Personal Year</strong> &mdash; reduced all the way to 1&ndash;9. The cycle has nine steps, which is why the panel further down counts to nine.</li>
+      <li>&bull; <strong>Expression, Heart Desire, Personality and Name Number</strong> &mdash; 11, 22 and 33 are kept unreduced here, because these come from the Chaldean and Pythagorean letter-value systems, in which the master numbers are part of the framework.</li>
+      <li>&bull; <strong>There is no setting to switch these.</strong> One convention is applied to everyone and named here. A toggle would ask you to choose between schools you have no basis to choose between, and would leave the page unable to say what its own numbers mean.</li>
+    </ul>
+  </section>
+
   {# Primary numbers — Life Path + Birthday + 3 name-derived numbers from
      the modern Western (Balliett/Jordan/Cheiro) framework. Subtitles show
      the Sanskrit-neologism labels (Bhagyank, Mulank, Namank) used in
@@ -223,8 +246,8 @@
      classical shastra terms. #}
   <section class="grid gap-4">
     {% for num, label, meaning, subtitle in [
-      (reading.life_path,   'Life Path Number',   reading.life_path_meaning,   'Also called Bhagyank in Hindi numerology books (a modern coinage, not classical). Main life theme, from birth-date reduction.'),
-      (reading.birthday,    'Birthday Number',    reading.birthday_meaning,    'Also called Mulank in Hindi numerology books (modern coinage). Self-image, said to dominate to about age 40.'),
+      (reading.life_path,   'Life Path Number',   reading.life_path_meaning,   'Also called Bhagyank in Hindi numerology books (a modern coinage, not classical). Main life theme, from all digits of your birth date added, then reduced — see the conventions note above.'),
+      (reading.birthday,    'Birthday Number',    reading.birthday_meaning,    'Also called Mulank in Hindi numerology books (modern coinage). Self-image, said to dominate to about age 40. Reduced to 1-9.'),
       (reading.destiny,     'Expression Number',  reading.destiny_meaning,     'Also called Namank (modern coinage). Your natural role, from full-name letter sum.'),
       (reading.soul_urge,   'Heart Desire',       reading.soul_urge_meaning,   'From name vowels — what you inwardly want. Modern Western framework.'),
       (reading.personality, 'Personality Number', reading.personality_meaning, 'From name consonants — how others perceive you. Modern Western framework.'),
@@ -503,7 +526,7 @@
       <span class="text-sm text-stone-600">of the 9-year cycle</span>
     </div>
     <p class="text-sm text-stone-700 leading-relaxed">{{ reading.personal_year_theme }}</p>
-    <p class="text-xs text-stone-600 mt-3 italic">Kumar's formula: birth-month digits + birth-day digits + target-year digits, reduced. Cycles 1-9 across your life; each year sets the year's theme.</p>
+    <p class="text-xs text-stone-600 mt-3 italic">Kumar's formula: birth-month digits + birth-day digits + target-year digits, reduced all the way to 1-9. Cycles 1-9 across your life; each year sets the year's theme.</p>
   </section>
   {% endif %}
 

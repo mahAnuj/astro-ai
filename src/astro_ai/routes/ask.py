@@ -112,12 +112,17 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
     two-chart reading. The other contexts derive purely from the seeker's
     saved chart, which `chart_fp` already covers.
 
-    Key shapes (chart / numerology are byte-identical to pre-#181 so their
-    existing cache entries stay valid):
+    Key shapes:
 
         chart       ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}
-        numerology  …:ctx=numerology
+        numerology  …:ctx=numerology:numrules={NUMEROLOGY_RULES_VERSION}
         matching    …:ctx=matching:partner={partner_fp}
+
+    Numerology diverged from its pre-#181 shape on purpose: the reduction
+    rules changed (#162/#164/#169), so answers cached under the old rules
+    name a Life Path that /numerology no longer computes, and the rules
+    version must invalidate them. Chart and matching are still
+    byte-identical to pre-#181, so their existing cache entries stay valid.
     """
     chart_fp = cache.fingerprint_chart(
         saved.birth_date, saved.birth_time, saved.birth_place
@@ -126,11 +131,20 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
     # Python's hash() is randomised per-process; use a stable hash so the
     # cache key survives container restarts.
     import hashlib
+    from astro_ai.numerology import NUMEROLOGY_RULES_VERSION
     q_fp = hashlib.sha1(question.strip().encode("utf-8")).hexdigest()[:16]
     base = f"ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}"
     if context == "chart":
         return base
     key = f"{base}:ctx={context}"
+    if context == "numerology":
+        # The numerology reading is regenerated per request from the saved
+        # chart, but the ANSWER is cached — and prompt_fp fingerprints only
+        # the prompt file, not the computation. Without this component, a
+        # rules change (#162/#164/#169) leaves LLM prose naming the old Life
+        # Path in the cache while /numerology renders the new one, for ~13.5%
+        # of birth dates. Bump NUMEROLOGY_RULES_VERSION on any rule change.
+        key = f"{key}:numrules={NUMEROLOGY_RULES_VERSION}"
     if context == "matching" and partner_fp:
         key = f"{key}:partner={partner_fp}"
     return key
