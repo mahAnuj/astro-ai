@@ -105,6 +105,30 @@ src/astro_ai/
   templates/       Jinja2. learn/ (75 articles), email/, admin_*.html, panchang.html
 ```
 
+### Source books in `data/` — only four of seven are readable
+
+`pdftotext` works on four; two return **zero lines** (scanned images, no OCR layer, no OCR
+tooling installed). Do not burn time trying to read them:
+
+| readable | zero lines |
+|---|---|
+| `vedic_astro_textbook.pdf` (20,669 — richest, largely unextracted) | `varahmihirHorasastram.pdf` |
+| `Astrology For Beginners BVRaman_text.pdf` (15,409) | `Numerology.pdf` |
+| `Numerology-With Tantra…` / Johari (5,952) | |
+| `Numerology-You.pdf` (1,110 — 43pp sample) | |
+
+`Numerology.pdf` is an Adobe Scan capture with **no title or author metadata**, so even
+OCR'd it would be uncitable — it is permanently out of scope (#178). Varahamihira is the
+only OCR candidate with a real claim, and it is spike-gated.
+
+**Measured absences — do not re-search:** across all ~37,000 readable lines, `Yoni`, `Vashya`
+and `Lo Shu` each return **0 hits**. The Ashtakoota matching tables are not in any readable
+source here. That is an absence to report, not a gap to fill from memory.
+
+`data/` is gitignored for copyright hygiene. Cite work and chapter; never paste pages.
+See `knowledge/SOURCES.md` for per-book extraction status, and #191 for mining the readable
+ones before considering any OCR.
+
 ### Things that are easy to get wrong
 
 - **`main.py` is huge and concurrently edited.** Re-read the region immediately before

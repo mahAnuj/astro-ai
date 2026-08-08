@@ -35,10 +35,31 @@ agent's beat.
 2. **`src/astro_ai/knowledge/SOURCES.md`** — provenance ledger: which book each extraction
    came from, what is still unextracted. Read it before claiming the corpus lacks something;
    it may be listed as pending.
-3. **The source books in `data/`** — 7 PDFs including Varahamihira's *Hora Sastra*,
-   B.V. Raman, and three numerology texts. `pdftotext` is available. **`data/` is
-   gitignored for copyright hygiene — never copy substantial text out of it into the repo.**
-   Cite the tradition and the work; do not paste pages.
+3. **The source books in `data/`** — but **only four of the seven are readable.**
+   Measured, not assumed:
+
+   | PDF | Extractable lines | Use |
+   |---|---|---|
+   | `vedic_astro_textbook.pdf` (P.V.R. Narasimha Rao) | 20,669 | ✅ richest astrology source; largely unextracted |
+   | `Astrology For Beginners BVRaman_text.pdf` | 15,409 | ✅ |
+   | `Numerology-With Tantra…` (Johari) | 5,952 | ✅ primary numerology authority |
+   | `Numerology-You.pdf` (Jayant Kumar) | 1,110 | ✅ 43-page sample only |
+   | `varahmihirHorasastram.pdf` | **0** | ❌ scanned images, no OCR layer |
+   | `Numerology.pdf` | **0** | ❌ scanned; **and no title/author metadata, so even OCR'd it would be uncitable** |
+
+   **Do not spend time trying to read the two zero-line PDFs.** `pdftotext` returns
+   nothing on them; no OCR tooling is installed. If a rule traces only to one of those,
+   the verdict is **UNSOURCED** — say the source exists but is unreadable, and name which.
+   Tracked in #178 (Varahamihira, spike-gated) and #191 (extract the readable ones first).
+
+   **`data/` is gitignored for copyright hygiene — never copy substantial text out of it
+   into the repo.** Cite the tradition, the work, and the chapter; do not paste pages.
+
+   **Known absences, already measured — do not re-search for these:** across all ~37,000
+   readable lines, `Yoni` returns 0 hits, `Vashya` 0, `Lo Shu` 0. The three `Ashtakoot`/
+   `Kuta` hits are false positives (`Mukutaamsa`, `Makuta Yoga`), and the Rudraksha hits
+   carry no mukhi mapping. The Ashtakoota matching tables are **not** in any readable
+   source here. Report that as an absence; do not reconstruct them from memory.
 4. **A published almanac** for any date-bearing claim — Drik Panchang is what this repo
    has used and what its gates assert against.
 
