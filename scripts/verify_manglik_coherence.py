@@ -216,7 +216,10 @@ Usage:  uv run python scripts/verify_manglik_coherence.py
 
 from __future__ import annotations
 
+import contextlib
+import dataclasses
 import hashlib
+import io
 import itertools
 import re
 import sys
@@ -1776,7 +1779,221 @@ def gate_5_cache_key_moved() -> list[str]:
 
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Bite test (--self-test) — prove these gates can actually fail
+# ---------------------------------------------------------------------------
+#
+# Five green gates are evidence only if red is reachable. Each corruption below
+# patches one of the actually-shipped bugs back into the real module the
+# production path resolves through, runs the gate meant to catch it, and
+# requires a non-empty failure list. A corruption that leaves its gate green is
+# itself a failure: it means the gate asserts nothing about that bug.
+#
+# The patch target is the module attribute the *production* code looks up at
+# call time, never this script's own imported name:
+#   - compute_vedic_flags()      resolves chart.compute_manglik_details
+#   - mangal_dosh_verdict()      resolves matching._severity_comparable
+#   - _format_seeker_message()   resolves llm.format_manglik_for_prompt
+#     (llm.py imports that name into its own namespace, so patching chart.*
+#      would leave the real prompt path untouched and the test would pass
+#      vacuously — the exact failure mode this whole file exists to prevent)
+
+
+@contextlib.contextmanager
+def _venus_axis_dropped() -> Iterator[None]:
+    """#176: the pre-fix 2-axis engine — Lagna and Moon only, Venus ignored."""
+    from astro_ai import chart as chart_mod
+
+    real = chart_mod.compute_manglik_details
+
+    def patched(chart: Chart) -> ManglikDetails:
+        details = real(chart)
+        if details.venus_axis_only:
+            return dataclasses.replace(
+                details,
+                is_manglik=False,
+                houses=(),
+                primary_house=0,
+                severity="none",
+                effective_status="none",
+                axis_reasons=(),
+                venus_axis_only=False,
+            )
+        return details
+
+    chart_mod.compute_manglik_details = patched
+    try:
+        yield
+    finally:
+        chart_mod.compute_manglik_details = real
+
+
+@contextlib.contextmanager
+def _comparability_ignored() -> Iterator[None]:
+    """#166: mutual cancellation with the comparable-severity check removed."""
+    from astro_ai import matching as matching_mod
+
+    real = matching_mod._severity_comparable
+    matching_mod._severity_comparable = lambda a, b: True
+    try:
+        yield
+    finally:
+        matching_mod._severity_comparable = real
+
+
+@contextlib.contextmanager
+def _branch_table_flipped() -> Iterator[None]:
+    """#165: the badge claims compatible where the note says it cannot cancel."""
+    from astro_ai import matching as matching_mod
+
+    real = dict(matching_mod._BRANCH_COMPATIBLE)
+    matching_mod._BRANCH_COMPATIBLE["both_incomparable"] = True
+    try:
+        yield
+    finally:
+        matching_mod._BRANCH_COMPATIBLE.clear()
+        matching_mod._BRANCH_COMPATIBLE.update(real)
+
+
+@contextlib.contextmanager
+def _double_assertion_restored() -> Iterator[None]:
+    """#176: the pre-fix prompt carried a second, contradicting Manglik line."""
+    from astro_ai import llm as llm_mod
+
+    real = llm_mod.format_manglik_for_prompt
+
+    def patched(details: ManglikDetails) -> str:
+        return f"{real(details)}\n{MANGLIK_ASSERTION_PREFIX} Mathematical: yes."
+
+    llm_mod.format_manglik_for_prompt = patched
+    try:
+        yield
+    finally:
+        llm_mod.format_manglik_for_prompt = real
+
+
+@contextlib.contextmanager
+def _cache_version_cleared() -> Iterator[None]:
+    """The fix ships, every cached natal reading keeps serving the old answer."""
+    real = cache.PROMPT_LOGIC_VERSION
+    cache.PROMPT_LOGIC_VERSION = ""
+    try:
+        yield
+    finally:
+        cache.PROMPT_LOGIC_VERSION = real
+
+
+# (label, corruption, gate-title prefixes that MUST redden)
+_CORRUPTIONS: list[tuple[str, object, tuple[str, ...]]] = [
+    ("#176  engine split — Venus axis dropped from compute_manglik_details",
+     _venus_axis_dropped, ("Gate 1",)),
+    ("#166  comparability ignored — _severity_comparable() always True",
+     _comparability_ignored, ("Gate 4",)),
+    ("#165  branch table flipped — both_incomparable marked compatible",
+     _branch_table_flipped, ("Gate 4",)),
+    ("#176  prompt regression — a second Manglik assertion line restored",
+     _double_assertion_restored, ("Gate 2",)),
+    ("cache  PROMPT_LOGIC_VERSION cleared — fix ships, cache serves the old read",
+     _cache_version_cleared, ("Gate 5",)),
+]
+
+
+def _run_gates_quietly(
+    gates: list[tuple[str, object]], only: tuple[str, ...] | None = None
+) -> dict[str, int]:
+    """Run gates with their output suppressed; return {title: failure count}."""
+    out: dict[str, int] = {}
+    sink = io.StringIO()
+    for title, run in gates:
+        if only and not any(title.startswith(p) for p in only):
+            continue
+        with contextlib.redirect_stdout(sink):
+            try:
+                failures = run()
+            except Exception as err:
+                failures = [f"gate raised {type(err).__name__}: {err}"]
+        out[title] = len(failures)
+    return out
+
+
+def self_test() -> int:
+    """Corrupt the code on purpose; require the gates to notice."""
+    print("Manglik coherence — BITE TEST (--self-test)")
+    print("  Each corruption puts a real, previously-shipped bug back into the")
+    print("  module the production path resolves through, then requires the")
+    print("  matching gate to FAIL. A gate that stays green is a broken gate.")
+    print()
+
+    gates = _build_gates(_combinations())
+
+    print("Baseline — uncorrupted tree must be fully green")
+    baseline = _run_gates_quietly(gates)
+    dirty = {t: n for t, n in baseline.items() if n}
+    if dirty:
+        for title, n in dirty.items():
+            print(f"  FAIL {title} — {n} problem(s) before any corruption")
+        print()
+        print("FAIL — the tree is already red, so no corruption below proves "
+              "anything. Fix the gate failures first, then re-run --self-test.")
+        return 1
+    print(f"  ok   all {len(baseline)} gate(s) green")
+    print()
+
+    problems: list[str] = []
+    for label, corruption, must_fail in _CORRUPTIONS:
+        print(label)
+        with corruption():  # type: ignore[operator]
+            results = _run_gates_quietly(gates, only=must_fail)
+        for title, n in sorted(results.items()):
+            if n:
+                print(f"  ok   {title} reddened ({n} problem(s))")
+            else:
+                print(f"  FAIL {title} stayed GREEN under this corruption")
+                problems.append(f"{label}: {title} did not detect the bug")
+        if not results:
+            print("  FAIL no gate matched the required prefixes "
+                  f"{must_fail!r} — the corruption ran against nothing")
+            problems.append(f"{label}: matched no gate")
+        print()
+
+    print("Restoration — every patch must have been undone")
+    restored = _run_gates_quietly(gates)
+    leaked = {t: n for t, n in restored.items() if n}
+    if leaked:
+        for title, n in leaked.items():
+            print(f"  FAIL {title} still red after restore ({n} problem(s))")
+            problems.append(f"restore leaked into {title}")
+    else:
+        print(f"  ok   all {len(restored)} gate(s) green again")
+    print()
+
+    if problems:
+        print(f"FAIL — {len(problems)} problem(s):")
+        for p in problems:
+            print(f"  - {p}")
+        return 1
+    print(f"PASS — {len(_CORRUPTIONS)} corruption(s), every one caught, "
+          "every patch cleanly restored")
+    return 0
+
+
+def _build_gates(combos: list[tuple[str, str, str, str]]) -> list[tuple[str, object]]:
+    """The gate roster, shared by the real run and the bite test."""
+    return [
+        ("Gate 1 - one Manglik engine (#176)", gate_1_one_engine),
+        ("Gate 2 - exactly one Manglik assertion per prompt (#176)",
+         gate_2_single_assertion),
+        ("Gate 3 - badge and note never contradict (#165)",
+         lambda: gate_3_badge_and_note_agree(combos)),
+        ("Gate 4 - no cancellation across a low/high gap (#166)",
+         lambda: gate_4_no_low_high_cancellation(combos)),
+        ("Gate 5 - the prompt cache key actually moved", gate_5_cache_key_moved),
+    ]
+
+
 def main() -> int:
+    if "--self-test" in sys.argv[1:]:
+        return self_test()
     print("Manglik coherence verification — issues #176 + #165 + #166")
     print("  engines   : src/astro_ai/chart.py compute_vedic_flags() / "
           "compute_manglik_details()")
@@ -1791,16 +2008,7 @@ def main() -> int:
 
     combos = _combinations()
 
-    gates = [
-        ("Gate 1 - one Manglik engine (#176)", gate_1_one_engine),
-        ("Gate 2 - exactly one Manglik assertion per prompt (#176)",
-         gate_2_single_assertion),
-        ("Gate 3 - badge and note never contradict (#165)",
-         lambda: gate_3_badge_and_note_agree(combos)),
-        ("Gate 4 - no cancellation across a low/high gap (#166)",
-         lambda: gate_4_no_low_high_cancellation(combos)),
-        ("Gate 5 - the prompt cache key actually moved", gate_5_cache_key_moved),
-    ]
+    gates = _build_gates(combos)
 
     all_failures: list[str] = []
     results: list[tuple[str, int]] = []
