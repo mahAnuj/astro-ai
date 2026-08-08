@@ -319,61 +319,8 @@ from astro_ai.routes import subscribe as _subscribe_routes
 app.include_router(_subscribe_routes.router)
 
 
-@app.post("/feedback")
-async def submit_feedback(
-    request: Request,
-    type: str = Form("other"),
-    message: str = Form(""),
-    email: str = Form(""),
-    page: str = Form(""),
-) -> JSONResponse:
-    """Persist a feedback entry to GCS + notify admin via email.
-
-    Called from the floating feedback widget via fetch(). Returns JSON
-    `{ok: true}` on success or `{ok: false, error: ...}` for inline
-    error display in the modal.
-    """
-    user_agent = request.headers.get("user-agent", "")
-    ok, msg, entry = feedback.add(
-        type=type, message=message, email=email,
-        page=page, user_agent=user_agent,
-    )
-    if not ok:
-        return JSONResponse({"ok": False, "error": msg}, status_code=400)
-
-    # Telegram alert for the owner — feedback should never sit unread.
-    try:
-        notify.feedback_submitted(
-            type=entry["type"] if entry else type,
-            message=entry["message"] if entry else message,
-            page=entry.get("page", "") if entry else page,
-            email=entry.get("email", "") if entry else email,
-        )
-    except Exception:
-        pass
-
-    # Notify admin via email so feedback doesn't sit unread in a GCS file.
-    # Best-effort — failure to email shouldn't fail the user's submit.
-    try:
-        admin_to = os.environ.get("BHAGYA_EMAIL_FROM", "").strip()
-        if admin_to and entry:
-            label = {"problem": "🐛 Problem", "feature": "✨ Feature request",
-                     "other": "💬 Feedback"}.get(entry["type"], "Feedback")
-            html = (
-                f"<p><strong>{label}</strong> via {entry['page'] or 'unknown page'}</p>"
-                f"<blockquote style='border-left:3px solid #6b21a8;padding:8px 12px;"
-                f"margin:8px 0;background:#faf7f2;'>{entry['message']}</blockquote>"
-                f"<p style='font-size:12px;color:#78716c;'>"
-                f"From: {entry['email'] or '(anonymous)'}<br>"
-                f"At: {entry['ts']}<br>"
-                f"ID: <code>{entry['id']}</code></p>"
-            )
-            email_sender.send(admin_to, subject=f"[Shubh Bhagya feedback] {label}", html=html)
-    except Exception as err:
-        import logging
-        logging.getLogger(__name__).warning("admin feedback notification failed: %s", err)
-
-    return JSONResponse({"ok": True})
+from astro_ai.routes import feedback as _feedback_routes
+app.include_router(_feedback_routes.router)
 
 
 @app.get("/learn/", response_class=HTMLResponse)
