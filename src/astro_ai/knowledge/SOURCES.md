@@ -18,10 +18,33 @@ what's still pending, and how new articles should cite them.
 | 5 | `varahmihirHorasastram.pdf` | Varahamihira (~6th C) | **0 (scanned images)** | ⚠️ **Needs OCR** | HIGH but blocked |
 | 6 | `Numerology-With Tantra, Ayurveda, and Astrology.pdf` | Harish Johari (Destiny Books / Inner Traditions, 1990) | 5,952 | 🟡 **Partially extracted** → `numerology.md` §1-§12 | MEDIUM |
 | 7 | `Numerology-You.pdf` | Jayant Kumar, *Numerology & You* (Educreation, ISBN 978-1-61813-620-6, 2016) | 1,110 | 🟡 **Sample copy only** — 43 pp; Ch. 1-2 extracted → `numerology.md` §2.5, §12.5-§12.9. Ch. 3-24 not in the sample | LOW (blocked by source) |
-| 8 | `Numerology.pdf` | Unidentified (Adobe Scan capture; no title/author metadata) | **0 (scanned images, 180 pp)** | ⚠️ **Needs OCR** — author unknown until OCR'd, so nothing from it is citable | LOW |
+| 8 | `Numerology.pdf` | Unidentified (Adobe Scan capture; no title/author metadata) | **0 (scanned images, 180 pp)** | ⚠️ **Needs OCR** — author unknown until OCR'd, so nothing from it is citable. **Permanently out of scope** (#178) | — |
+| 9 | `Numerology the Complete Guide, Volume 1-The Personality Reading.pdf` | Matthew Oliver Goodwin, *Numerology: The Complete Guide, Vol. 1 — The Personality Reading* (Newcastle Publishing, North Hollywood, 1981) | **28,171** | 🔴 **Not yet extracted** — added 2026-08-08. Largest numerology source we hold | **HIGH** (#191) |
 
-**Total text-searchable content available:** ~41,500 lines across 6 PDFs.
-**Blocked:** Varahamihira (48MB scanned images) and `Numerology.pdf` (59MB scanned images) — both require an OCR pipeline.
+### Note on source 9 (Goodwin) — read this before citing it
+
+**It is Western/Pythagorean, not Vedic.** Measured hit counts across its 28,171 lines:
+
+| present | absent |
+|---|---|
+| Life Path 387 · Expression 482 · Soul Urge 241 · Master Number 105 · Karmic Debt 102 | Chaldean **0** · Pythagorean **0** · Lo Shu **0** · Rudraksha **0** · Personal Year **0** · compound number **0** |
+
+So it can settle the Western-school questions (#161 Karmic Debt intermediates, #164/#169/#179 master-number policy) and **nothing** about Lo Shu (#172), Rudraksha (#173), or Johari's compound-number table (#160).
+
+**Its decisive contribution is #162.** Goodwin, line 1989 of the extraction, states the reduction rule verbatim:
+
+> "Always add the numbers after separately determining the number representing the month, day and year. If you add them all…"
+
+— followed by a worked example (March = 3; 12 = 1+2 = 3; 1940 = 1+9+4+0). **That is exactly the method `numerology.py` implements**, which Johari contradicts (§2.2, sum all digits).
+
+**This does not make our code "correct" — it makes #162 a properly sourced two-school divergence.** Both schools are now citable in-repo. Under the project's sourcing rule the defect is therefore the **silence**, not the value: the page must declare which school it follows. Citing a 1981 Californian Western text as the authority for a reading advertised as *Vedic* would be its own error — Goodwin evidences that our method is legitimate practice, not that it is the Vedic method.
+
+**Total text-searchable content available:** **~69,700 lines across 7 readable PDFs**
+(BV Raman 5,390 · Rao textbook 16,724 · Rao Lessons 7,757 · Vasudev 4,558 · Johari 5,952 ·
+Kumar 1,110 · Goodwin 28,171).
+**Blocked:** Varahamihira (48MB scanned images) requires OCR and is spike-gated (#178). `Numerology.pdf` (59MB scanned) is **permanently out of scope** — no title/author metadata, so even a flawless OCR would be uncitable.
+
+**Readable but unextracted (no OCR needed, ~44,000 lines):** Goodwin 28,171 · `vedic_astro_textbook.pdf` 16,724 remaining · Johari beyond §12. Tracked in #191 — mine these before considering any OCR.
 
 ### Known gaps in the numerology corpus
 
