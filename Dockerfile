@@ -26,8 +26,17 @@ WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
 
+# Ship .pyc alongside the .py in the venv. uv doesn't compile bytecode by
+# default, so without this every cold container re-compiles ~2000 modules
+# from source on first import — pure cold-start latency on Cloud Run, where
+# container layers are streamed lazily.
+ENV UV_COMPILE_BYTECODE=1
+
 # Install runtime deps + the package, frozen to uv.lock; skip dev deps.
 RUN uv sync --frozen --no-dev
+
+# Same treatment for our own package (uv's flag only covers what it installs).
+RUN /app/.venv/bin/python -m compileall -q /app/src
 
 # Cloud Run injects $PORT (defaults to 8080); listen on it.
 ENV PORT=8080
@@ -40,7 +49,9 @@ ENV BHAGYA_CACHE_DB=/tmp/bhagya.db
 
 EXPOSE 8080
 
-# uvicorn launched via uv so it finds the in-venv interpreter.
+# uvicorn invoked straight from the venv. `uv run` would re-resolve the
+# environment on every container start before exec'ing the same binary;
+# calling it directly skips that. sh -c stays because ${PORT} needs expanding.
 #
 # --proxy-headers + --forwarded-allow-ips="*" tells uvicorn to trust
 # X-Forwarded-Host / X-Forwarded-Proto set by the reverse proxy in
@@ -51,4 +62,4 @@ EXPOSE 8080
 # which Google Search Console flags as "Redirect error" and stops
 # indexing those pages. `*` is safe here: the app is only reachable
 # via the trusted proxy, no direct client can spoof headers.
-CMD ["sh", "-c", "uv run uvicorn astro_ai.main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips=*"]
+CMD ["sh", "-c", "/app/.venv/bin/uvicorn astro_ai.main:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips=*"]
