@@ -182,8 +182,13 @@ def _resolve_matching_partner(request: Request, saved, context: str):
                                   last.groom_birth_place)
         partner_label = "partner (groom from your Kundli match)"
 
-    partner_fp = cache.fingerprint_chart(p_dob, p_time, p_place)
+    # The fingerprint call belongs INSIDE this guard: it is partner-derived
+    # work too, and a malformed cookie record (a null birth_place, say) makes
+    # it raise before compute_chart is ever reached. A bad partner record must
+    # downgrade to chart-only, never 500 the seeker. Leaving it outside is
+    # exactly the regression the #181 refactor introduced.
     try:
+        partner_fp = cache.fingerprint_chart(p_dob, p_time, p_place)
         partner_chart = compute_chart(p_dob, p_time, p_place)
     except Exception:
         log.debug("partner chart compute failed for /ask matching context", exc_info=True)
