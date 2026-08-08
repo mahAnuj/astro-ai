@@ -36,3 +36,10 @@ data/
 
 # Agent heartbeat log — see CLAUDE.md "Report status while you run"
 AGENT_STATUS.md
+
+# Local agent/tooling state — never belongs in a deploy.
+# These sat untracked-but-not-ignored for a long time, one `git add -A`
+# away from shipping to production. See CLAUDE.md.
+.local/
+.serena/
+QA_LOG.md
