@@ -54,7 +54,13 @@ module.exports = {
       fontFamily: {
         // Inter for Latin, Noto Sans Devanagari as a graceful fallback for Hindi text.
         sans: ['Inter', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['"Crimson Pro"', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
+        // #189: the Devanagari fallback here is the SERIF face, not the sans
+        // one. Crimson Pro has no Devanagari glyphs, so this second entry is
+        // what actually renders every shloka on the site. It used to be
+        // "Noto Sans Devanagari", which put a sans shloka directly above a
+        // serif English headline — the one place the type system contradicted
+        // itself, on the most culturally-loaded text we set.
+        display: ['"Crimson Pro"', '"Noto Serif Devanagari"', 'ui-serif', 'Georgia', 'serif'],
       },
       colors: {
         cream: '#faf7f2',
