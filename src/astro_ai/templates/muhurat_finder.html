@@ -13,7 +13,7 @@
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
 
-<main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
+<main class="{% if candidates %}max-w-5xl{% else %}max-w-4xl{% endif %} mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
   <header class="text-center">
     <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700 mb-3">Muhurat Finder</h1>
@@ -144,6 +144,37 @@
   {% if candidates %}
   {% set good_candidates = candidates | rejectattr('rating', 'equalto', 'avoid') | list %}
   {% set avoid_candidates = candidates | selectattr('rating', 'equalto', 'avoid') | list %}
+  <style>
+    /* Muhurat results table -> one card per candidate date below lg (1024px).
+       Rule: no content auto-scrolls. This table's min-content width is
+       696px (7 cols) to 851px (9 cols with personal + couple matching),
+       so it cannot fit a phone and must reflow. Separation is CSS only
+       (card border + grid gap) — there is no separator glyph that could
+       strand at the visual start of a wrapped row. */
+    @media (max-width: 1023.98px) {
+      .mu-cards thead { display: none; }
+      .mu-cards, .mu-cards tbody { display: block; }
+      .mu-cards tbody tr {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem 1rem;
+        border: 1px solid #e7e5e4;        /* stone-200 */
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+        margin-bottom: 0.625rem;
+      }
+      .mu-cards tbody td { display: block; padding: 0; border: 0; }
+      .mu-cards tbody td[data-span] { grid-column: 1 / -1; }
+      .mu-cards tbody td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 10px; line-height: 1.2; font-weight: 600;
+        letter-spacing: 0.06em; text-transform: uppercase;
+        color: #78716c;                   /* stone-500 */
+        margin-bottom: 0.125rem;
+      }
+    }
+  </style>
   <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
     <div class="flex items-start justify-between gap-3 flex-wrap mb-2">
       <h2 class="font-display text-xl text-astro-700">{{ event_label or 'Muhurat' }} candidates for {{ city }}</h2>
@@ -185,104 +216,102 @@
       No auspicious dates found in this window — every day was classically excluded (usually by Chaturmas, Kharmas, Panchak, Dagdha, or eclipse rules). Try a longer range or move the start date past the next classical restriction period. Details in the "restricted dates" section below.
     </div>
     {% else %}
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="text-left text-xs uppercase text-stone-600 border-b border-stone-200">
-            <th class="pb-1.5 pr-3">Date</th>
-            <th class="pb-1.5 pr-3">Day</th>
-            <th class="pb-1.5 pr-3">Tithi</th>
-            <th class="pb-1.5 pr-3">Nakshatra</th>
-            <th class="pb-1.5 pr-3">Rating</th>
-            {% if personal_active %}<th class="pb-1.5 pr-3">Personal</th>{% endif %}
-            {% if couple_active %}<th class="pb-1.5 pr-3">Couple</th>{% endif %}
-            <th class="pb-1.5 pr-3">Windows</th>
-            <th class="pb-1.5">Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for c in good_candidates %}
-          {% set colors = {'excellent': 'emerald', 'good': 'emerald', 'acceptable': 'amber', 'caution': 'amber'} %}
-          {% set color = colors.get(c.rating, 'stone') %}
-          {% set personal_colors = {'excellent': 'emerald', 'good': 'emerald', 'ok': 'stone', 'avoid': 'rose', 'strong': 'emerald', 'neutral': 'stone', 'weak': 'rose'} %}
-          <tr class="border-b border-stone-100 align-top">
-            <td class="py-2 pr-3 tabular-nums whitespace-nowrap font-medium">{{ c.d.strftime('%b %d, %Y') }}</td>
-            <td class="py-2 pr-3">{{ c.weekday[:3] }}</td>
-            <td class="py-2 pr-3">{{ c.tithi }}<span class="text-xs text-stone-500 ml-1">{{ c.tithi_paksha }}</span></td>
-            <td class="py-2 pr-3 text-xs">
-              {{ c.nakshatra }}
-              {% if c.nitya_yoga %}<div class="text-[10px] text-stone-500 mt-0.5">Yoga: {{ c.nitya_yoga }}</div>{% endif %}
-            </td>
-            <td class="py-2 pr-3">
-              <div class="flex flex-col gap-1">
-                <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-{{ color }}-100 text-{{ color }}-800 capitalize">{{ c.rating }}</span>
-                {% if c.boosters %}
-                <span class="inline-block px-1.5 py-0.5 text-[10px] rounded bg-emerald-100 text-emerald-800" title="{{ ' + '.join(c.boosters) }}">★ boost</span>
-                {% endif %}
-              </div>
-            </td>
-            {% if personal_active %}
-            <td class="py-2 pr-3 text-xs">
-              {% if c.personal %}
-              {% set tcolor = personal_colors.get(c.personal.tara_bala, 'stone') %}
-              {% set ccolor = personal_colors.get(c.personal.chandra_bala, 'stone') %}
-              <div class="flex flex-col gap-1">
-                <span class="inline-block px-1.5 py-0.5 rounded bg-{{ tcolor }}-100 text-{{ tcolor }}-800" title="Tara Bala position {{ c.personal.tara_position }}">
-                  Tara: {{ c.personal.tara_bala_name }}
-                </span>
-                <span class="inline-block px-1.5 py-0.5 rounded bg-{{ ccolor }}-100 text-{{ ccolor }}-800" title="Moon in house {{ c.personal.chandra_house }} from your natal Moon">
-                  Chandra: {{ c.personal.chandra_bala }}
-                </span>
-              </div>
-              {% else %}<span class="text-stone-500">—</span>{% endif %}
-            </td>
-            {% endif %}
-            {% if couple_active %}
-            <td class="py-2 pr-3 text-xs">
-              {% if c.couple %}
-              {% set couple_colors = {'excellent-for-both': 'emerald', 'good-for-both': 'emerald', 'mixed': 'amber', 'avoid': 'rose'} %}
-              {% set vcolor = couple_colors.get(c.couple.combined_verdict, 'stone') %}
-              <div class="flex flex-col gap-1">
-                <span class="inline-block px-1.5 py-0.5 rounded bg-{{ vcolor }}-100 text-{{ vcolor }}-800 font-semibold" title="Combined bride+groom verdict">
-                  {{ c.couple.combined_verdict.replace('-', ' ') }}
-                </span>
-                <div class="text-[10px] text-stone-600 leading-tight" title="Bride: Tara / Chandra / Manglik">
-                  Bride: {{ c.couple.bride.tara_bala_name }} · Ch:{{ c.couple.bride.chandra_bala }}
-                </div>
-                <div class="text-[10px] text-stone-600 leading-tight" title="Groom: Tara / Chandra / Manglik">
-                  Groom: {{ c.couple.groom.tara_bala_name }} · Ch:{{ c.couple.groom.chandra_bala }}
-                </div>
-              </div>
-              {% else %}<span class="text-stone-500">—</span>{% endif %}
-            </td>
-            {% endif %}
-            <td class="py-2 pr-3 text-[11px] text-stone-600 tabular-nums whitespace-nowrap">
-              <div title="Best 48-min window of the day"><span class="text-emerald-700">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
-              <div title="Rahu Kaal — avoid for launches"><span class="text-rose-600">✗</span> Rahu Kaal {{ c.rahu_kaal }}</div>
-              {% if c.bhadra_window %}<div class="text-rose-600 text-[10px]" title="Vishti/Bhadra karana active">✗ Bhadra active</div>{% endif %}
-              {% if c.choghadiya %}
-              <details class="mt-1">
-                <summary class="cursor-pointer text-astro-700 text-[10px] font-semibold">Choghadiya ▼</summary>
-                <div class="mt-1 space-y-0.5 min-w-[180px]">
-                  {% for w in c.choghadiya %}
-                  {% set ch_colors = {'best': 'emerald-100 text-emerald-800', 'good': 'emerald-50 text-emerald-700', 'neutral': 'stone-50 text-stone-600', 'avoid': 'rose-50 text-rose-700'} %}
-                  {% set ch_class = ch_colors.get(w.auspiciousness, 'stone-50 text-stone-600') %}
-                  <div class="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-{{ ch_class }}">
-                    <span class="font-semibold w-12">{{ w.name }}</span>
-                    <span class="text-[10px] opacity-70">{{ w.start }}-{{ w.end }}</span>
-                  </div>
-                  {% endfor %}
-                </div>
-              </details>
-              {% if c.bhadra_window %}<div class="text-[10px] text-rose-700 mt-1 whitespace-normal max-w-[220px] leading-tight">{{ c.bhadra_window }}</div>{% endif %}
+    <table class="w-full text-sm mu-cards">
+      <thead>
+        <tr class="text-left text-xs uppercase text-stone-600 border-b border-stone-200">
+          <th class="pb-1.5 pr-3">Date</th>
+          <th class="pb-1.5 pr-3">Day</th>
+          <th class="pb-1.5 pr-3">Tithi</th>
+          <th class="pb-1.5 pr-3">Nakshatra</th>
+          <th class="pb-1.5 pr-3">Rating</th>
+          {% if personal_active %}<th class="pb-1.5 pr-3">Personal</th>{% endif %}
+          {% if couple_active %}<th class="pb-1.5 pr-3">Couple</th>{% endif %}
+          <th class="pb-1.5 pr-3">Windows</th>
+          <th class="pb-1.5">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in good_candidates %}
+        {% set colors = {'excellent': 'emerald', 'good': 'emerald', 'acceptable': 'amber', 'caution': 'amber'} %}
+        {% set color = colors.get(c.rating, 'stone') %}
+        {% set personal_colors = {'excellent': 'emerald', 'good': 'emerald', 'ok': 'stone', 'avoid': 'rose', 'strong': 'emerald', 'neutral': 'stone', 'weak': 'rose'} %}
+        <tr class="border-b border-stone-100 align-top">
+          <td data-label="Date" class="py-2 pr-3 tabular-nums whitespace-nowrap font-medium">{{ c.d.strftime('%b %d, %Y') }}</td>
+          <td data-label="Day" class="py-2 pr-3">{{ c.weekday[:3] }}</td>
+          <td data-label="Tithi" class="py-2 pr-3">{{ c.tithi }}<span class="text-xs text-stone-500 ml-1">{{ c.tithi_paksha }}</span></td>
+          <td data-label="Nakshatra" class="py-2 pr-3 text-xs">
+            {{ c.nakshatra }}
+            {% if c.nitya_yoga %}<div class="text-[10px] text-stone-500 mt-0.5">Yoga: {{ c.nitya_yoga }}</div>{% endif %}
+          </td>
+          <td data-label="Rating" class="py-2 pr-3">
+            <div class="flex flex-col gap-1">
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-{{ color }}-100 text-{{ color }}-800 capitalize">{{ c.rating }}</span>
+              {% if c.boosters %}
+              <span class="inline-block px-1.5 py-0.5 text-[10px] rounded bg-emerald-100 text-emerald-800" title="{{ ' + '.join(c.boosters) }}">★ boost</span>
               {% endif %}
-            </td>
-            <td class="py-2 text-xs text-stone-600">{{ c.reason }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+            </div>
+          </td>
+          {% if personal_active %}
+          <td data-label="Personal" class="py-2 pr-3 text-xs">
+            {% if c.personal %}
+            {% set tcolor = personal_colors.get(c.personal.tara_bala, 'stone') %}
+            {% set ccolor = personal_colors.get(c.personal.chandra_bala, 'stone') %}
+            <div class="flex flex-col gap-1">
+              <span class="inline-block px-1.5 py-0.5 rounded bg-{{ tcolor }}-100 text-{{ tcolor }}-800" title="Tara Bala position {{ c.personal.tara_position }}">
+                Tara: {{ c.personal.tara_bala_name }}
+              </span>
+              <span class="inline-block px-1.5 py-0.5 rounded bg-{{ ccolor }}-100 text-{{ ccolor }}-800" title="Moon in house {{ c.personal.chandra_house }} from your natal Moon">
+                Chandra: {{ c.personal.chandra_bala }}
+              </span>
+            </div>
+            {% else %}<span class="text-stone-500">—</span>{% endif %}
+          </td>
+          {% endif %}
+          {% if couple_active %}
+          <td data-label="Couple" class="py-2 pr-3 text-xs">
+            {% if c.couple %}
+            {% set couple_colors = {'excellent-for-both': 'emerald', 'good-for-both': 'emerald', 'mixed': 'amber', 'avoid': 'rose'} %}
+            {% set vcolor = couple_colors.get(c.couple.combined_verdict, 'stone') %}
+            <div class="flex flex-col gap-1">
+              <span class="inline-block px-1.5 py-0.5 rounded bg-{{ vcolor }}-100 text-{{ vcolor }}-800 font-semibold" title="Combined bride+groom verdict">
+                {{ c.couple.combined_verdict.replace('-', ' ') }}
+              </span>
+              <div class="text-[10px] text-stone-600 leading-tight" title="Bride: Tara / Chandra / Manglik">
+                Bride: {{ c.couple.bride.tara_bala_name }} · Ch:{{ c.couple.bride.chandra_bala }}
+              </div>
+              <div class="text-[10px] text-stone-600 leading-tight" title="Groom: Tara / Chandra / Manglik">
+                Groom: {{ c.couple.groom.tara_bala_name }} · Ch:{{ c.couple.groom.chandra_bala }}
+              </div>
+            </div>
+            {% else %}<span class="text-stone-500">—</span>{% endif %}
+          </td>
+          {% endif %}
+          <td data-label="Windows" data-span class="py-2 pr-3 text-[11px] text-stone-600 tabular-nums whitespace-nowrap">
+            <div title="Best 48-min window of the day"><span class="text-emerald-700">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
+            <div title="Rahu Kaal — avoid for launches"><span class="text-rose-600">✗</span> Rahu Kaal {{ c.rahu_kaal }}</div>
+            {% if c.bhadra_window %}<div class="text-rose-600 text-[10px]" title="Vishti/Bhadra karana active">✗ Bhadra active</div>{% endif %}
+            {% if c.choghadiya %}
+            <details class="mt-1">
+              <summary class="cursor-pointer text-astro-700 text-[10px] font-semibold">Choghadiya ▼</summary>
+              <div class="mt-1 space-y-0.5">
+                {% for w in c.choghadiya %}
+                {% set ch_colors = {'best': 'emerald-100 text-emerald-800', 'good': 'emerald-50 text-emerald-700', 'neutral': 'stone-50 text-stone-600', 'avoid': 'rose-50 text-rose-700'} %}
+                {% set ch_class = ch_colors.get(w.auspiciousness, 'stone-50 text-stone-600') %}
+                <div class="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-{{ ch_class }}">
+                  <span class="font-semibold w-12">{{ w.name }}</span>
+                  <span class="text-[10px] opacity-70">{{ w.start }}-{{ w.end }}</span>
+                </div>
+                {% endfor %}
+              </div>
+            </details>
+            {% if c.bhadra_window %}<div class="text-[10px] text-rose-700 mt-1 whitespace-normal max-w-[220px] leading-tight">{{ c.bhadra_window }}</div>{% endif %}
+            {% endif %}
+          </td>
+          <td data-label="Notes" data-span class="py-2 text-xs text-stone-600">{{ c.reason }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
     <p class="text-xs text-stone-600 mt-2 italic">
       <span class="text-emerald-700">✓</span> Abhijit Muhurta = best 48-minute window of each day (~solar noon). <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious 90-minute window, avoid for launches. Yoga = Nitya Yoga; Vaidhriti/Vyatipata days are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present (universal auspiciousness).
     </p>
@@ -293,7 +322,7 @@
       <summary class="cursor-pointer text-sm font-semibold text-stone-700 hover:text-astro-700">
         Show {{ avoid_candidates | length }} restricted dates &amp; why
       </summary>
-      <div class="mt-3 overflow-x-auto">
+      <div class="mt-3">
         <table class="w-full text-xs">
           <thead>
             <tr class="text-left uppercase text-stone-600 border-b border-stone-200">
