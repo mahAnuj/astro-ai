@@ -1,0 +1,7 @@
+/* Tailwind input file. Built to src/astro_ai/static/css/app.css by
+   `npm run build:css`. The built file IS committed — see tailwind.config.js
+   for why the container never runs this build. */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
