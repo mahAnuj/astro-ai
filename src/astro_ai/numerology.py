@@ -9,13 +9,36 @@ Design:
 - Two systems: Chaldean (traditional, more accurate per numerology tradition)
   + Pythagorean (Western simpler mapping).
 - 5 numbers computed:
-    Life Path       — from full birth date (reduced to 1-9 or master 11/22/33)
+    Life Path       — sum of ALL birth-date digits, reduced to 1-9 or master
+                      11/22/33 (Johari method; see _life_path)
     Destiny         — from all letters of full name
     Soul Urge       — from vowels of full name
     Personality     — from consonants of full name
     Name Number     — Chaldean-sum of full name (used for "lucky name" analysis)
 - Interpretation strings hand-written honestly — no scam claims, no lucky-name
   upsell, no "wear this gem for your number" pitch.
+
+Reduction policy:
+    `_reduce` takes a keyword-only `preserve_masters` with no default, because
+    the four call sites in this module do not agree. Whether 11/22/33 survive
+    is a per-number editorial decision, not a module-wide constant (#162, #164,
+    #169, #179):
+
+      _personal_year    preserve_masters=False   -> 1-9 only (§12.8; the panel
+                                                   captions itself "Cycles 1-9")
+      _birthday_number  preserve_masters=False   -> 1-9 only (§2.1; Johari's
+                                                   own birthday lists file 11
+                                                   under 2 and 22 under 4)
+      _sum_letters      preserve_masters=True    -> Destiny / Soul Urge /
+                                                   Personality / Name Number
+      _life_path        preserve_masters=True    -> masters kept on the final
+                                                   all-digits total
+
+    Consequence: `_PERSONAL_YEAR_THEME` and `_BIRTHDAY_MEANING` carry keys 1-9
+    only. `_LIFE_PATH`, `_DESTINY`, `_SOUL_URGE`, `_PERSONALITY`, `_NAME_NUMBER`
+    and `_REMEDIES` still need their 11/22/33 rows — those remain reachable.
+    `scripts/verify_numerology_reduction.py` is the executable check that the
+    table keys and the policy above still agree; run it after touching either.
 
 Editorial:
 - Always defer back to /kundli for depth
@@ -48,6 +71,18 @@ _CHALDEAN = {
 _PYTHAGOREAN = {chr(ord("A") + i): ((i % 9) + 1) for i in range(26)}
 
 _VOWELS = set("AEIOU")
+
+# ─── Rules version ────────────────────────────────────────────────────
+# Baked into the ask-cache key for ctx=numerology. LLM prose is written
+# against whatever the numbers were at generation time, so a cached answer
+# from before a rule change describes a reading we no longer compute —
+# bumping this makes those entries unreachable instead of silently served.
+#
+# v1 → v2: reduction policy made explicit per call site, and Life Path
+# switched from the reduce-parts-then-sum method to Johari's all-digits
+# method (issues #162, #164, #169, #179). ~13.5% of birth dates change
+# Life Path, so v1 prose can contradict v2 numbers.
+NUMEROLOGY_RULES_VERSION = "2"
 
 
 @dataclass(frozen=True)
@@ -425,6 +460,16 @@ def compute_numerology_bhagya_score(reading: NumerologyReading, lang: str = "en"
 
     # Personal Year — the ONLY annually-shifting signal in this score.
     # Dynamic years (1, 3, 5, 9) boost; grinding years (4, 7, 8) reduce.
+    # py is now guaranteed 1-9 (#169), so a py of 11/22/33 can no longer slip
+    # past all three branches — that was the silent dropout, and it cost the
+    # score its only time-varying term for 9.58% of birth dates (2,555 of the
+    # 26,664 dates from 1940-01-01 to 2012-12-31, scored against target year
+    # 2026 under the old master-preserving reduction; re-measured 2026-08-09).
+    # The branches still do not cover every value: py == 2 matches none of
+    # them and is deliberately unscored as a neutral year — that is 10.68% of
+    # dates (2,379 of the 22,280 from 1950-01-01 to 2010-12-31, target year
+    # 2026, measured 2026-08-09). Adding a py == 2 branch would move the
+    # Bhagya score and so belongs with #161, not here.
     py = int(reading.personal_year)
     if py in (1, 3, 5, 9):
         _add(+3, "nbs_py_dynamic", py=py)
@@ -600,9 +645,11 @@ _BIRTHDAY_MEANING = {
     7: "Self-image: seeker, mystic. You see yourself as someone who looks past surfaces — spiritually curious, intuitively wired. Grounding is a lifelong practice.",
     8: "Self-image: builder-through-struggle. You see yourself as someone who earns everything the hard way. Late-blooming success is your typical pattern.",
     9: "Self-image: warrior, humanitarian. You see yourself as a fighter for justice — competitive, perfectionist, fiery. Anger management matters.",
-    11: "Master 11 self-image: intuitive leader. Extra sensitivity + spiritual openness; can become a teacher or channel. Nervous-system care is essential.",
-    22: "Master 22 self-image: architect at scale. Not casual big — genuinely capable of building lasting institutions. Requires discipline to match the potential.",
-    33: "Master 33 self-image: healer-teacher. Rare vibration; the drive is service to those suffering. Emotional exhaustion is the shadow.",
+    # No 11/22/33 rows: _birthday_number reduces fully to 1-9 (knowledge/
+    # numerology.md §2.1, issue #164), so those keys were unreachable. Do not
+    # re-add them — an unreachable interpretation row is how #146's abujha
+    # table rotted. #164 §5 suggests surfacing "born on an 11/22 day" as a
+    # compound-number annotation instead; deliberately NOT done here.
 }
 
 
@@ -1171,7 +1218,9 @@ def _get_compound_meaning(n: int) -> str:
 # ─── Personal Year (Kumar Ch.1) ──────────────────────────────────────
 # Personal Year Number = birth-month + birth-day + Universal Year (all
 # digits of the current/target year, reduced). Reveals the theme of that
-# year for the person. Cycles 1-9 (master numbers preserved).
+# year for the person. Cycles 1-9. Fully reduced — never 11/22/33, per
+# knowledge/numerology.md §12.8 and the page's own "Cycles 1-9" caption
+# (issue #169).
 _PERSONAL_YEAR_THEME = {
     1: "Year 1 — Beginnings. New ventures, new self-image, planting seeds. Slow-start progress; year to sow.",
     2: "Year 2 — Partnership. Cooperation, relationships, patience, waiting for what was sown to sprout.",
@@ -1182,9 +1231,12 @@ _PERSONAL_YEAR_THEME = {
     7: "Year 7 — Reflection. Solitude, study, spiritual work; not the year to push external goals.",
     8: "Year 8 — Harvest. Material achievement, business success, recognition; effort of prior years pays.",
     9: "Year 9 — Completion. Endings, letting go, humanitarian work; clearing space for the next 1-year cycle.",
-    11: "Year 11 — Illumination (master). Spiritual insight peaks; inspirational leadership possible.",
-    22: "Year 22 — Master builder year. Rare — capable of building lasting institutions this year.",
-    33: "Year 33 — Master teacher year. Service to those suffering; deep healing capacity.",
+    # No 11/22/33 rows: _personal_year reduces fully to 1-9 (knowledge/
+    # numerology.md §12.8, issue #169), so those keys were unreachable. Do not
+    # re-add them — an unreachable interpretation row is how #146's abujha
+    # table rotted. If a master-year reading is ever wanted, it needs a
+    # decision on the caption and on the score's branches first, not a
+    # silently restored row.
 }
 
 
@@ -1192,7 +1244,18 @@ def _personal_year(birth_date: str, target_year: int) -> int:
     """Compute Personal Year Number for a given target year (Kumar Ch.1).
 
     Formula: (birth month digits sum) + (birth day digits sum) +
-             (target year digits sum), then reduce.
+             (target year digits sum), then reduce fully to 1-9.
+
+    Masters are NOT preserved: the corpus gives the personal year cycle a
+    range of 1-9 (§12.8), and the panel that renders this captions itself
+    "Cycles 1-9" — so an 11 or 22 escaping into it labels a row the caption
+    says cannot exist, and matches no branch of the scoring term (#169).
+
+    Note on the variant used here: Kumar writes the formula with the literal
+    month and day, `int(mo) + int(d) + year`, where this code sums their
+    digits. Digit-summing preserves value mod 9, so under full reduction the
+    two forms always give the same answer — an equivalence that holds only
+    because masters are dropped. Preserve them and the forms diverge.
     """
     m = re.match(r"(\d{4})-(\d{2})-(\d{2})", birth_date or "")
     if not m:
@@ -1201,7 +1264,7 @@ def _personal_year(birth_date: str, target_year: int) -> int:
     month_sum = sum(int(x) for x in mo)
     day_sum = sum(int(x) for x in d)
     year_sum = sum(int(x) for x in str(target_year))
-    return _reduce(month_sum + day_sum + year_sum)
+    return _reduce(month_sum + day_sum + year_sum, preserve_masters=False)
 
 
 def _karmic_debt_flags(birth_date: str, name: str, table: dict) -> tuple[int, ...]:
@@ -1219,6 +1282,12 @@ def _karmic_debt_flags(birth_date: str, name: str, table: dict) -> tuple[int, ..
             s = sum(int(x) for x in chunk)
             if s in _KARMIC_DEBT_NUMBERS:
                 flags.add(s)
+        # NOTE (#162 -> #161): this expression matches neither _life_path's
+        # intermediate (now the sum of ALL DOB digits) nor the old one. It already
+        # matched neither before this change — that is issue #161 defect (c),
+        # which owns the reconciliation. Deliberately left alone here so this
+        # bundle's Bhagya-score movement stays measurable to the Life Path and
+        # Personal Year terms only. Do not "fix" it in passing.
         total_raw = int(y[0]) + int(y[1]) + int(y[2]) + int(y[3]) + int(mo) + int(d)
         if total_raw in _KARMIC_DEBT_NUMBERS:
             flags.add(total_raw)
@@ -1236,12 +1305,23 @@ def _karmic_debt_flags(birth_date: str, name: str, table: dict) -> tuple[int, ..
 
 
 def _birthday_number(birth_date: str) -> int:
-    """Reduce day-of-month to 1-9 (Kumar Birthday / Johari Psychic / Mulank)."""
+    """Reduce day-of-month to 1-9 (Kumar Birthday / Johari Psychic / Mulank).
+
+    Masters are NOT preserved. The corpus states the range as 1-9 outright
+    (§2.1), and Johari ch.2 defines it as "obtained by making a simple whole
+    number of the date of birth" (plain `pdftotext` lines 273-275) — a simple
+    whole number, with no master exception attached.
+
+    So days 11, 22 and 29 give 2, 4 and 2. That matches §4's own birthday
+    lists, which file 11 and 29 under psychic number 2 and 22 under 4; keeping
+    the masters here produced numbers that appear in no list on the page and
+    had nothing to render against (#164).
+    """
     m = re.match(r"(\d{4})-(\d{2})-(\d{2})", birth_date or "")
     if not m:
         return 0
     _, _, d = m.groups()
-    return _reduce(int(d))
+    return _reduce(int(d), preserve_masters=False)
 
 
 def _clean_name(name: str) -> str:
@@ -1259,31 +1339,80 @@ def _clean_name(name: str) -> str:
     return re.sub(r"[^A-Z]", "", ascii_only.upper())
 
 
-def _reduce(n: int) -> int:
-    """Reduce to single digit (1-9) preserving master numbers 11, 22, 33."""
-    while n > 9 and n not in (11, 22, 33):
+def _reduce(n: int, *, preserve_masters: bool) -> int:
+    """Reduce to a single digit, optionally stopping at 11, 22 or 33.
+
+    `preserve_masters` is keyword-only and has NO default on purpose. The four
+    call sites in this module do not agree: personal year and birthday number
+    must land in 1-9 (their own tables and captions say so), letter-value
+    numbers keep the masters, and Life Path keeps them only on the final
+    total. A default would silently hand the next call site whatever policy
+    happened to be written here — which is exactly the defect issues #162,
+    #164, #169 and #179 are about. Making it explicit forces the choice to be
+    made and named at each site.
+    """
+    while n > 9 and not (preserve_masters and n in (11, 22, 33)):
         n = sum(int(d) for d in str(n))
     return n
 
 
 def _sum_letters(letters: str, table: dict[str, int]) -> int:
-    """Sum letter values, then reduce."""
+    """Sum letter values, then reduce — master numbers KEPT.
+
+    These are Chaldean/Pythagorean letter-value numbers (Destiny, Soul Urge,
+    Personality, Name), where 11/22/33 are part of the framework rather than
+    an unreduced intermediate, so they survive the reduction. The page states
+    this convention so the reader knows which one produced their number.
+
+    §8's suggested "let the user choose whether to keep master numbers" toggle
+    is deliberately NOT shipped (#179): a reader has no basis on which to pick
+    a reduction convention, and offering the choice makes the site look
+    uncertain about its own method. One convention, applied to everyone, named
+    on the page. `preserve_masters` still exists as a parameter so adding a
+    toggle later stays a call-site change rather than a rewrite.
+    """
     total = sum(table.get(c, 0) for c in letters)
-    return _reduce(total) if total else 0
+    return _reduce(total, preserve_masters=True) if total else 0
 
 
 def _life_path(birth_date: str) -> int:
-    """Life Path = reduced sum of all digits in YYYY-MM-DD."""
+    """Life Path = sum of every digit in YYYYMMDD, reduced, masters kept.
+
+    What the body does: take all eight digits of the date, add them, reduce
+    to 1-9 unless the total settles on 11, 22 or 33. Previously the docstring
+    said "sum of all digits" while the body reduced year, month and day
+    separately and then summed those — the two are different methods, and
+    that mismatch is half of #162.
+
+    Source: Johari, *Numerology: With Tantra, Ayurveda, and Astrology*, ch.2
+    "Destiny Number" — "The single whole number obtained from the addition of
+    the date, month, and year of birth is called the destiny number" (plain
+    `pdftotext` lines 299-300), with the worked example
+    `5 + 1 + 2 + 1 + 9 + 3 + 4 = 25 = 7` at line 302, i.e. 1934-05-12 → 7.
+
+    The tension, recorded rather than smoothed over: Goodwin, *Numerology:
+    The Complete Guide, Vol. 1*, ch.3 "The Life Path" (lines 1861-1865, 1989-1991)
+    teaches the reduce-parts-then-sum method we are leaving, and annotates the
+    all-digits result "Incorrect. The master number has been lost."
+    (lines 2026-2028). So the old code was legitimate mainstream *Western*
+    practice, and by Goodwin's own lights the method we now use is wrong.
+    This is a Vedic site, so it follows the Vedic corpus; Goodwin is cited
+    here only as evidence that the previous behaviour was not a bug of
+    ignorance.
+
+    Masters ARE kept on the final total, so 1990-01-11 sums to 22 and stays
+    22 (the old method gave 4).
+
+    Scope of the change: a digit sum is congruent to its value mod 9, and
+    11/22/33 ≡ 2/4/6, so the two methods can only ever differ by master-vs-
+    base — never by which base number you land on. Profiles, remedies and
+    compatibility verdicts key off the base number and are therefore
+    unaffected.
+    """
     digits = re.sub(r"[^0-9]", "", birth_date or "")
     if not digits:
         return 0
-    # Classical approach: reduce day, month, year separately, then sum.
-    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", birth_date or "")
-    if m:
-        y, mo, d = m.groups()
-        return _reduce(_reduce(int(y)) + _reduce(int(mo)) + _reduce(int(d)))
-    # Fallback: sum all digits
-    return _reduce(sum(int(d) for d in digits))
+    return _reduce(sum(int(d) for d in digits), preserve_masters=True)
 
 
 def compute(name: str, birth_date: str, system: str = "chaldean",

@@ -21,13 +21,25 @@ Vedic-integrated numerology assigns each of the nine single-digit numbers to a g
 **Active period:** from birth throughout life; **most dominant up to age 35–40**, after which Destiny Number takes over. Never entirely loses influence.
 **Modifiable by:** name change, education, initiation, marriage.
 **Boundary caveat per Johari (footnote 2):** in Hindu tradition, the date changes ~1–2 hours before sunrise. A person born at 2 AM the "night of the 12th" per modern midnight convention is astrologically still a 3, not a 4. Numerologist should compare tendencies with both to disambiguate.
+**Pinpoint:** Johari, ch. 2, section "Psychic Number" — "The psychic number is obtained by making a simple whole number of the date of birth", followed by the author's own example (born on the 12th, 1+2 = 3). Plain `pdftotext` lines 273–275. Verified against the PDF 2026-08-08.
+
+**Implemented as of #164:** `_birthday_number()` reduces the day of month **fully to 1–9** — `preserve_masters=False`. Masters are not kept here because this section fixes the range at 1–9 and §4 files every day of the month under a single-digit number. Days 11, 22 and 29 therefore return **2, 4 and 2**, which is exactly what §4's birthday lists say (11 and 29 under Number 2; 22 under Number 4) and what §5's compound table says (11 → 2, 22 → 4). The compound-number flavour of an 11th or 22nd birth is not lost — it lives in §5 as a separate layer on top of the reduced psychic number, which is where Johari puts it.
 
 ### 2.2 Destiny Number (Bhagyank)
 
 **Calculation:** sum all digits of DOB (day + month + year, all digits added). Born May 12, 1934 → 5+1+2+1+9+3+4 = 25 → 2+5 = 7. The intermediate `25` also has effect — both digits (2 and 5) contribute secondary traits, but the reduced 7 is dominant.
-**Pinpoint:** Johari, ch. 2, section "Destiny Number" — "the single whole number obtained from the addition of the date, month, and year of birth", with this exact worked example (the author's own birthdate). Verified against the PDF 2026-08-08. Note this is *not* the reduce-month/day/year-separately method used in modern Western practice; `numerology.py` currently implements the latter (issue #162).
+**Pinpoint:** Johari, ch. 2, section "Destiny Number" — "The single whole number obtained from the addition of the date, month, and year of birth is called the destiny number", with this exact worked example (the author's own birthdate). Plain `pdftotext` lines 299–300, worked example line 302. Verified against the PDF 2026-08-08. Note this is *not* the reduce-month/day/year-separately method used in modern Western practice.
+
 **Meaning:** what the world thinks of you; karma-driven; reflects samskaras from past lives. **Cannot be changed** — no external intervention modifies destiny.
 **Active period:** peak from age 35–40 onward.
+
+**Implemented as of #162:** `_life_path()` sums **every digit of the DOB** per this section, and keeps 11/22/33 **on the final total only** — `preserve_masters=True`. So 1990-01-11 sums to 22 and stays 22.
+
+The method this replaced — reduce year, month and day separately, then sum those — was not a bug of ignorance. It is mainstream *Western* practice, taught explicitly: Goodwin, *Numerology: The Complete Guide, Vol. 1*, ch.3 "The Life Path", section "Calculation" (plain `pdftotext` lines 1861–1865) instructs the reader to "determine each separately"; the warning at lines 1989–1991 says that adding all at once means "you may end up with a master number that doesn't apply or lose a master number that should apply"; and the worked counter-example for March 12 1940 is annotated **"Incorrect. The master number has been lost."** (lines 2026–2028). Read straight, Goodwin calls the method this site now uses wrong.
+
+That tension is recorded rather than smoothed over. This is a Vedic site, so it follows the Vedic source (Johari) over the Western one where they conflict. **Goodwin is cited here only as evidence that the previous behaviour was legitimate practice in its own school — never as authority for a Vedic reading.**
+
+**Scope of the divergence:** the two methods can differ *only* by master-vs-base, never by which base number you land on. A digit sum is congruent to its value mod 9, and 11/22/33 ≡ 2/4/6, so both totals always agree mod 9. Measured across all 47,847 dates from 1900-01-01 to 2030-12-31: zero mismatches of the reduced base. What does change is the displayed number: over 1940–2012, 3,598 of 26,664 dates (**~13.5%**) differ, in both directions — 2,715 gain a master they did not previously show, 883 lose one. Everything keyed off the base number — per-number profiles (§4), compatibility (§7), remedies (§11) — is unaffected.
 
 ### 2.3 Name Number (Namank)
 
@@ -391,7 +403,22 @@ Johari does **not** use the Western "master numbers" concept where 11/22/33 rema
 - **22** discussed under 4 — extra scale/intensity for building-organizing work, but still functionally a 4
 - **33** discussed only in passing as "exalted 6" — Venus-magnified expression
 
-**Practical implication for the calculator:** Johari-mode does NOT preserve master numbers as separate categories — always reduces. The Chaldean/Western modes may preserve them. UI should let user choose.
+**Practical implication for the calculator:** Johari-mode does NOT preserve master numbers as separate categories — always reduces. The Chaldean/Western modes may preserve them. UI should let user choose — **not shipped; see the decision below.**
+
+### Decision on the §8 user choice (issue #179)
+
+The "let the user choose" recommendation above is **not implemented and is not planned.** One reduction convention is applied to everyone and declared on the page. This is the policy as it ships in `numerology.py`:
+
+| Function | Number it produces | `preserve_masters` | Why |
+|---|---|---|---|
+| `_life_path` | Life Path / Destiny (Bhagyank) | `True` | All-digits Johari method per §2.2; masters kept on the **final total only** (#162) |
+| `_birthday_number` | Birthday / Psychic (Mulank) | `False` | §2.1 fixes the range at 1–9 and §4's birthday lists are single-digit (#164) |
+| `_personal_year` | Personal Year | `False` | §12.8 and §9 both give the cycle a range of 1–9 (#169) |
+| `_sum_letters` | Expression / Personality / Heart Desire / Name (Namank) | `True` | Chaldean/Pythagorean letter-value numbers, where 11/22/33 are part of the framework rather than an unreduced intermediate (#179) |
+
+**Why no toggle.** A reader has no basis on which to pick a reduction convention — the choice is only meaningful to someone who already knows both traditions well enough not to need the calculator, and offering it makes the site look uncertain about its own method. One convention, applied to everyone and named on the page, beats a switch nobody can evaluate. The cost of reversing this is small: `_reduce()`'s `preserve_masters` parameter is keyword-only with **no default**, so every call site has to name its own policy, and adding a toggle later stays a call-site change rather than a rewrite.
+
+**Honest flag — keeping masters on Life Path departs from §8.** §8 says Johari-mode always reduces; a strict reading of the corpus would drop 11/22/33 on the Life Path too, since Johari treats 11 as a 2 and 22 as a 4. Keeping them is a **deliberate product call, not a reading of Johari**: master numbers are what readers arrive expecting from every other numerology site, and silently dropping them on the site's headline number would read as a bug rather than as a tradition. The departure is confined to Life Path and the name-derived numbers — §2.1's Psychic and §12.8's Personal Year follow §8 exactly. Recorded here so the next audit finds a decision rather than a contradiction, and can reopen it as a decision if it disagrees.
 
 ## §9 Personal Year cycle (Projecting Into the Future)
 
@@ -546,6 +573,10 @@ Kumar formalises the classical **Karmic Debt Numbers** as a discrete category �
 - Johari: 5 + 12 + 26 + (May 12 2026 = Tuesday = 9) = 52 → 5+2 = 7 → **Personal Year 7**
 
 **Recommended:** show Kumar's method by default (simpler, more common), offer Johari's method as an optional "Vedic mode". Note the different results and let user choose.
+
+**Implemented as of #169:** `_personal_year()` ships Kumar's method — birth month + birth day + target year — and reduces **fully to 1–9** (`preserve_masters=False`). Masters are not preserved because both formulas above are stated with a range of 1–9, and the panel that renders this captions itself "Cycles 1–9"; an 11 or 22 escaping into it would label a row the range says cannot exist. Any 11/22/33 row in `_PERSONAL_YEAR_THEME` is therefore unreachable — `_personal_year()` cannot return those values — and is dead code dropped under #169.
+
+**Formula variant, and why it is not a divergence:** the code sums the *digits* of the month, day and target year, where Kumar writes the literal `month + day + year`. Under full reduction the two are provably identical, since a digit sum is congruent to its value mod 9. Measured across all 18,972 (month, day-of-month, target-year 2000–2050) combinations: zero disagreements. Preserve masters and they *do* diverge — 2,476 of the same 18,972 combinations — which is a second, independent reason the reduction here goes all the way to 1–9.
 
 **9-year epicycle** (Kumar Ch.1): Life unfolds in 9-year cycles. Year 1 = new beginning, Year 9 = completion. Full cycle should be viewed together for arc.
 
