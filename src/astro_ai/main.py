@@ -343,48 +343,8 @@ from astro_ai.routes import matching as _matching_routes
 app.include_router(_matching_routes.router)
 
 
-@app.post("/switch")
-async def switch(
-    request: Request,
-    chart_id: str = Form(...),
-    next: str = Form(default="/"),
-) -> RedirectResponse:
-    """Activate the named saved chart, then redirect to `next` (default home)."""
-    collection = load_collection(request).set_active(chart_id)
-    response = RedirectResponse(_safe_redirect_target(next), status_code=303)
-    _save_collection_synced(response, collection, request)
-    return response
-
-
-@app.post("/delete-chart")
-async def delete_chart(
-    request: Request,
-    chart_id: str = Form(...),
-) -> RedirectResponse:
-    """Remove a saved chart; if it was active, activate whatever remains first."""
-    collection = load_collection(request).remove(chart_id)
-    response = RedirectResponse("/", status_code=303)
-    if not collection.charts:
-        clear_collection(response)
-        # Also clear the persisted charts for signed-in users so their
-        # cross-device state stays consistent with what they see here.
-        user = load_user(request)
-        if user is not None:
-            try:
-                users.save_charts(user.sub, collection)  # empty collection
-            except Exception:
-                pass
-    else:
-        _save_collection_synced(response, collection, request)
-    return response
-
-
-@app.post("/reset")
-async def reset() -> RedirectResponse:
-    """Wipe all saved charts — fresh-start button on the welcome-back panel."""
-    response = RedirectResponse("/", status_code=303)
-    clear_collection(response)
-    return response
+from astro_ai.routes import charts as _charts_routes
+app.include_router(_charts_routes.router)
 
 
 def cli() -> None:
