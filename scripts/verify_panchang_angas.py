@@ -1,0 +1,588 @@
+#!/usr/bin/env python3
+"""Verify the computed Nitya Yoga and Karana — the 4th and 5th angas.
+
+WHY THIS EXISTS
+---------------
+Issue #142: `/panchang`'s meta description and its `SoftwareApplication`
+JSON-LD both advertised "yoga, karana" to searchers and to Google, while
+`DailyPanchang` carried neither and the page only *explained what they are*.
+Rendering them makes the claim true — but only if the values are right, and
+both are shapes that fail silently:
+
+  * **Nitya Yoga** is `(Sun + Moon)`, not `(Moon - Sun)`. Get the sign wrong
+    and every value is still a plausible-looking yoga name. It is also the one
+    anga that is NOT ayanamsa-invariant — the two shifts add rather than
+    cancel — so a tropical slip moves it by ~2 places all year and never
+    looks obviously broken.
+  * **Karana** has a fixed/movable structure that an off-by-one destroys
+    invisibly. Kimstughna is the FIRST half of Shukla Pratipada (index 0) and
+    Shakuni / Chatushpada / Naga are the month's LAST three halves (57/58/59);
+    indices 1..56 cycle the 7 movable karanas eight times. Shift that by one
+    and Vishti (Bhadra) — the karana the whole muhurta tradition exists to
+    avoid — lands on the wrong day, on a page that claims authority.
+
+Neither error is visible in a diff, and neither is visible from inside the
+implementation. So this gate checks the computation against a REAL PUBLISHED
+ALMANAC and against arithmetic that owes the implementation nothing.
+
+One command, zero judgment, PASS/FAIL, exit 0 or 1. Deliberately structured
+like `scripts/verify_adhik_maas.py` and `scripts/verify_festivals.py`.
+
+  Gate 1 - the verified almanac table.  Nine drikpanchang.com New Delhi day
+      pages, each fetched and transcribed by hand, each with its source URL
+      recorded next to the values. `compute_panchang()` must reproduce the
+      yoga, the karana AND the tithi running at that day's sunrise. The nine
+      are chosen to cover the structure, not to be convenient: all four fixed
+      karanas (Kimstughna 2026-10-11, Shakuni 2026-11-08, Naga 2026-03-19 and
+      2026-11-09), Vishti/Bhadra (2026-05-20), the first and last yoga of the
+      27 (Vaidhriti 2026-10-11), and both pakshas.
+
+      The computed sunrise is checked against Drik's printed sunrise too. The
+      whole convention is "the anga running at LOCAL SUNRISE", so if the
+      sunrise itself drifts the anga comparison stops meaning anything —
+      2026-03-19 has Naga ending only 26 minutes after sunrise, and that day
+      is in the table precisely because it is tight.
+
+  Gate 2 - structural invariants over a two-year census.  Every day of
+      2026-2027 at New Delhi sunrise. Yoga index in 0..26 and karana index in
+      0..59; both names must equal what the index says they should be, where
+      "should" is re-derived here from the classical rule rather than imported
+      from `chart.py` — an independent second derivation, same reason
+      `verify_adhik_maas.py` Gate 3 reads the JSON instead of the detector.
+      Vishti must never appear at 0, 57, 58 or 59, and no fixed karana may
+      appear anywhere else; `karana_index // 2 == tithi_index` must hold at
+      every single sample, because a karana IS half a tithi and the two are
+      computed from the same elongation.
+
+  Gate 3 - rate and coverage.  Pure arithmetic against the synodic month,
+      independent of both Drik and the implementation's naming. The Sun+Moon
+      combined motion is 12.7-16.4 deg/day against a 13deg20' yoga, so the
+      yoga index advances 0, 1 or 2 per day and averages ~1.06; the Moon-Sun
+      elongation is 10.7-14.5 deg/day against a 6deg karana, so the karana
+      index advances 1, 2 or 3 per day and averages ~2.03. A sign error, a
+      wrong divisor or a wrong ayanamsa all break these bands. Coverage is
+      asserted too: over two years every one of the 27 yogas and every one of
+      the 60 karana indices must actually occur, which is what proves the
+      fixed-karana branches are reachable at all rather than merely correct
+      in principle.
+
+HOW TO EXTEND THE ALMANAC TABLE
+-------------------------------
+Open the URL recorded next to any row, read the Yoga and Karana blocks, and
+take the entry running at the printed sunrise (the FIRST entry of the day
+unless its end time precedes sunrise). Record Drik's own spelling in
+`drik_yoga` / `drik_karana` — the alias map below does the normalising in the
+open, so nobody has to wonder whether a value was quietly massaged to fit.
+
+**Do not derive an expected value from this codebase.** A gate whose expected
+values came from the implementation it is testing proves only that the code
+is self-consistent, which is exactly the blindness issue #142 was filed
+about. If you cannot reach an almanac, leave the table alone.
+
+Usage:  uv run python scripts/verify_panchang_angas.py
+"""
+
+from __future__ import annotations
+
+import sys
+from datetime import date, datetime, timedelta
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT / "src"))
+
+from astro_ai.chart import compute_chart, compute_panchang  # noqa: E402
+
+# The almanac's locale. Drik's day pages default to New Delhi, and every row in
+# ALMANAC below was read off a New Delhi page, so the census uses the same city
+# — a Mumbai sunrise is ~10 minutes later and would change boundary days.
+CITY = "New Delhi, India"
+
+# drikpanchang.com prints day pages at this URL with a DD/MM/YYYY date. Recorded
+# as a template so each row below can carry its own exact source link without 9
+# near-identical strings.
+DRIK_URL = "https://www.drikpanchang.com/panchang/day-panchang.html?date={dd}/{mm}/{yyyy}"
+
+# Drik's transliterations differ from ours in a handful of places. Mapping them
+# here, in the open, is deliberate: the alternative is silently editing the
+# transcribed values to match the code, which would hide a real disagreement.
+DRIK_ALIASES: dict[str, str] = {
+    "Ayushmana":  "Ayushman",
+    "Garaja":     "Gara",
+    "Vanija":     "Vanij",
+    "Nagava":     "Naga",
+    "Kinstughna": "Kimstughna",
+    "Chatushpad": "Chatushpada",
+    "Variyan":    "Variyana",
+    "Aindra":     "Indra",
+}
+
+# Nine New Delhi day pages from drikpanchang.com, all fetched 2026-08-07.
+# Fields: (iso date, drik sunrise HH:MM or None, drik yoga, drik karana,
+#          drik tithi as "<Paksha> <Name>", why this date is in the table)
+# The yoga/karana recorded is the one RUNNING AT SUNRISE, which is the first
+# entry Drik lists for the day unless that entry's end time precedes sunrise.
+ALMANAC: tuple[tuple[str, str | None, str, str, str, str], ...] = (
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=15/01/2026
+    #   Tithi  "Dwadashi upto 08:16 PM" (Krishna)
+    #   Yoga   "Vriddhi upto 08:38 PM"
+    #   Karana "Taitila upto 08:16 PM" then "Garaja"
+    ("2026-01-15", None, "Vriddhi", "Taitila", "Krishna Dwadashi",
+     "ordinary movable karana mid-Krishna-paksha; the baseline case"),
+
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=18/02/2026
+    #   Sunrise 06:57 AM
+    #   Tithi  "Pratipada upto 04:57 PM" (Shukla)
+    #   Yoga   "Shiva upto 10:45 PM"
+    #   Karana "Bava upto 04:57 PM" then "Balava upto 04:31 AM, Feb 19"
+    ("2026-02-18", "06:57", "Shiva", "Bava", "Shukla Pratipada",
+     "karana index 1 — the first MOVABLE karana, immediately after Kimstughna"),
+
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=19/03/2026
+    #   Sunrise 06:26 AM
+    #   Tithi  "Amavasya upto 06:52 AM"
+    #   Yoga   "Shukla upto 01:17 AM, Mar 20" then "Brahma"
+    #   Karana "Nagava upto 06:52 AM" then "Kinstughna upto 05:55 PM" then "Bava"
+    ("2026-03-19", "06:26", "Shukla", "Naga", "Krishna Amavasya",
+     "karana index 59 with only 26 min to spare — the tightest sunrise boundary here"),
+
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=20/05/2026
+    #   Sunrise 05:28 AM
+    #   Tithi  "Chaturthi upto 11:06 AM" (Shukla)
+    #   Yoga   "Shula upto 02:10 PM" then "Ganda"
+    #   Karana "Vishti upto 11:06 AM" then "Bava upto 09:42 PM" then "Balava"
+    ("2026-05-20", "05:28", "Shula", "Vishti", "Shukla Chaturthi",
+     "VISHTI / BHADRA — the karana the muhurta tradition exists to avoid"),
+
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=01/08/2026
+    #   Sunrise 05:42 AM
+    #   Tithi  "Tritiya upto 11:07 PM" (Krishna)
+    #   Yoga   "Shobhana upto 11:23 PM" then "Atiganda"
+    #   Karana "Vanija upto 10:52 AM" then "Vishti upto 11:07 PM"
+    ("2026-08-01", "05:42", "Shobhana", "Vanij", "Krishna Tritiya",
+     "movable karana in the 5th of the 8 cycles — catches a cycle-length slip"),
+
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=25/09/2026
+    #   Sunrise 06:11 AM
+    #   Tithi  "Chaturdashi upto 11:06 PM" (Shukla)
+    #   Yoga   "Shula upto 02:51 PM"   (the listed "Ravi Yoga" is a booster, not a nitya yoga)
+    #   Karana "Garaja upto 11:17 AM" then "Vanija upto 11:06 PM"
+    ("2026-09-25", "06:11", "Shula", "Gara", "Shukla Chaturdashi",
+     "first half of its tithi, where the other rows are mostly second halves"),
+
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=11/10/2026
+    #   Sunrise 06:19 AM
+    #   Tithi  "Pratipada upto 09:30 PM" (Shukla)
+    #   Yoga   "Vaidhriti upto 09:05 PM" then "Vishkambha"
+    #   Karana "Kinstughna upto 09:21 AM" then "Bava upto 09:30 PM"
+    ("2026-10-11", "06:19", "Vaidhriti", "Kimstughna", "Shukla Pratipada",
+     "KIMSTUGHNA at index 0 AND Vaidhriti, the 27th yoga — both list ends at once"),
+
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=08/11/2026
+    #   Sunrise 06:38 AM
+    #   Tithi  "Chaturdashi upto 11:27 AM" (Krishna)
+    #   Yoga   "Ayushmana upto 03:03 AM, Nov 09" then "Saubhagya"
+    #   Karana "Shakuni upto 11:27 AM" then "Chatushpada upto 11:56 PM" then "Nagava"
+    ("2026-11-08", "06:38", "Ayushman", "Shakuni", "Krishna Chaturdashi",
+     "SHAKUNI at index 57 — the first of the three closing fixed karanas"),
+
+    # https://www.drikpanchang.com/panchang/day-panchang.html?date=09/11/2026
+    #   Sunrise 06:39 AM
+    #   Tithi  "Amavasya upto 12:31 PM"
+    #   Yoga   "Saubhagya upto 02:57 AM, Nov 10" then "Shobhana"
+    #   Karana "Nagava upto 12:31 PM" then "Kinstughna upto 01:12 AM, Nov 10"
+    ("2026-11-09", "06:39", "Saubhagya", "Naga", "Krishna Amavasya",
+     "NAGA at index 59, the last half-tithi of the lunar month"),
+)
+
+# Drik rounds to the minute and its rise convention need not match Swiss
+# Ephemeris' defaults exactly. 4 minutes is generous enough for refraction and
+# disc-edge differences and far tighter than any anga boundary in the table
+# (the tightest, 2026-03-19, has 26 minutes of headroom).
+SUNRISE_TOLERANCE_MIN = 4
+
+# Gate 2/3 census. Two years is ~24.7 lunar months — enough for every one of
+# the 60 karana indices to be sampled at some sunrise, which is what makes the
+# coverage assertion in Gate 3 meaningful rather than aspirational.
+CENSUS_START = date(2026, 1, 1)
+CENSUS_END = date(2027, 12, 31)
+
+# --- The classical rule, re-derived here so Gate 2 is a SECOND derivation ---
+# Deliberately not imported from astro_ai.chart. If these are ever "shared" to
+# remove the duplication, Gate 2 stops testing anything.
+EXPECTED_YOGA_NAMES: tuple[str, ...] = (
+    "Vishkambha", "Priti", "Ayushman", "Saubhagya", "Shobhana", "Atiganda",
+    "Sukarma", "Dhriti", "Shula", "Ganda", "Vriddhi", "Dhruva", "Vyaghata",
+    "Harshana", "Vajra", "Siddhi", "Vyatipata", "Variyana", "Parigha",
+    "Shiva", "Siddha", "Sadhya", "Shubha", "Shukla", "Brahma", "Indra",
+    "Vaidhriti",
+)
+FIXED_KARANA_SLOTS: dict[int, str] = {
+    0: "Kimstughna", 57: "Shakuni", 58: "Chatushpada", 59: "Naga",
+}
+MOVABLE_CYCLE: tuple[str, ...] = (
+    "Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanij", "Vishti",
+)
+
+
+def expected_karana_name(idx: int) -> str:
+    """The 60-karana sequence, written out from the classical rule.
+
+    Index 0 is Kimstughna (first half of Shukla Pratipada); 1..56 are the 7
+    movable karanas repeated 8 times; 57/58/59 are Shakuni, Chatushpada and
+    Naga, the last three half-tithis of the lunar month.
+    """
+    if idx in FIXED_KARANA_SLOTS:
+        return FIXED_KARANA_SLOTS[idx]
+    return MOVABLE_CYCLE[(idx - 1) % 7]
+
+
+# Sidereal periods, days. The yoga is a SUM of two longitudes so it needs both
+# separately; the karana is a DIFFERENCE, which is exactly what the synodic
+# month already is. Getting these two compositions the right way round is the
+# whole point of Gate 3 — the first draft of this file used the synodic month
+# for the yoga as well and the gate caught it immediately.
+SIDEREAL_MONTH_DAYS = 27.321662
+SIDEREAL_YEAR_DAYS = 365.256363
+SYNODIC_MONTH_DAYS = 29.530588
+
+# Yoga: (Sun + Moon), so the rate is the SUM of the two sidereal rates,
+# 0.986 + 13.176 = 14.162 deg/day, against a 360/27 = 13deg20' yoga -> ~1.062
+# per day. Lunar anomaly swings the instantaneous rate over 12.7-16.4 deg/day,
+# i.e. 0.95-1.23 yogas, so the daily index advance is 0, 1 or 2 and nothing else.
+YOGA_STEPS = {0, 1, 2}
+YOGA_MEAN_RATE = (
+    (360.0 / SIDEREAL_MONTH_DAYS + 360.0 / SIDEREAL_YEAR_DAYS) / (360.0 / 27.0)
+)
+
+# Karana: (Moon - Sun), so the rate is the synodic rate, 12.191 deg/day, against
+# a 6 deg karana -> ~2.032 per day. The elongation runs 10.7-14.5 deg/day with
+# anomaly, i.e. 1.79-2.41, so the daily index advance is 1, 2 or 3.
+KARANA_STEPS = {1, 2, 3}
+KARANA_MEAN_RATE = (360.0 / SYNODIC_MONTH_DAYS) / 6.0
+
+# Mean daily rates are averaged over 730 samples, so they converge tightly; 2%
+# is loose enough for the finite window and far tighter than any real error
+# (a wrong divisor or a sign flip moves these by tens of percent).
+RATE_TOLERANCE = 0.02
+
+
+def _panchang_for(chart, day: date):
+    """DailyPanchang for `day` at CITY, anchored at local noon like the route does."""
+    tz = ZoneInfo(chart.birth_tz)
+    return compute_panchang(
+        chart, when=datetime(day.year, day.month, day.day, 12, 0, tzinfo=tz)
+    )
+
+
+def _drik(name: str) -> str:
+    """Drik's spelling normalised to ours, via the visible alias map."""
+    return DRIK_ALIASES.get(name, name)
+
+
+# --------------------------------------------------------------------------
+# Gate 1 - the verified almanac table
+# --------------------------------------------------------------------------
+
+def gate_1_almanac(chart) -> list[str]:
+    failures: list[str] = []
+
+    for iso, drik_sunrise, d_yoga, d_karana, d_tithi, why in ALMANAC:
+        day = date.fromisoformat(iso)
+        want_yoga = _drik(d_yoga)
+        want_karana = _drik(d_karana)
+        try:
+            p = _panchang_for(chart, day)
+        except Exception as exc:
+            failures.append(
+                f"{iso}: compute_panchang() raised {type(exc).__name__}: {exc} — "
+                "this date is asserted by the almanac table, so the computation "
+                "cannot be allowed to fail on it"
+            )
+            print(f"  FAIL {iso}  compute_panchang raised {type(exc).__name__}: {exc}")
+            continue
+
+        got_tithi = f"{p.tithi_paksha} {p.tithi_name}"
+        ok_yoga = p.yoga_name == want_yoga
+        ok_karana = p.karana_name == want_karana
+        ok_tithi = got_tithi == d_tithi
+
+        sunrise_note = ""
+        ok_sunrise = True
+        if drik_sunrise:
+            want_h, want_m = (int(x) for x in drik_sunrise.split(":"))
+            got_min = p.sunrise.hour * 60 + p.sunrise.minute
+            off = got_min - (want_h * 60 + want_m)
+            ok_sunrise = abs(off) <= SUNRISE_TOLERANCE_MIN
+            sunrise_note = (f"  sunrise drik {drik_sunrise} got "
+                            f"{p.sunrise.strftime('%H:%M')} ({off:+d}m)")
+
+        ok = ok_yoga and ok_karana and ok_tithi and ok_sunrise
+        print(f"  {'ok  ' if ok else 'FAIL'} {iso}  "
+              f"yoga drik {want_yoga:<11} got {p.yoga_name:<11}(#{p.yoga_index:>2})  "
+              f"karana drik {want_karana:<11} got {p.karana_name:<11}(#{p.karana_index:>2})  "
+              f"tithi {got_tithi}{sunrise_note}")
+        print(f"       {why}")
+
+        if not ok_sunrise:
+            failures.append(
+                f"{iso}: computed sunrise {p.sunrise.strftime('%H:%M')} vs Drik's "
+                f"{drik_sunrise} — more than {SUNRISE_TOLERANCE_MIN} min apart. Every "
+                "anga in this table is the one running AT SUNRISE, so a sunrise that "
+                "has moved makes the yoga and karana comparisons below meaningless. "
+                "Fix the sunrise before reading anything else on this row."
+            )
+        if not ok_yoga:
+            failures.append(
+                f"{iso}: drikpanchang gives yoga {want_yoga}, we compute "
+                f"{p.yoga_name} (index {p.yoga_index}). Nitya yoga is "
+                "(Sun + Moon) sidereal / 13deg20' — check the SIGN (it is a sum, not "
+                "the tithi's difference), the ayanamsa (this anga is NOT "
+                "ayanamsa-invariant), and the order of _NITYA_YOGA_NAMES."
+            )
+        if not ok_karana:
+            failures.append(
+                f"{iso}: drikpanchang gives karana {want_karana}, we compute "
+                f"{p.karana_name} (index {p.karana_index}). Index 0 is Kimstughna, "
+                "1..56 cycle the 7 movable karanas, 57/58/59 are Shakuni / "
+                "Chatushpada / Naga. An off-by-one in either branch puts Vishti "
+                "(Bhadra) on the wrong day."
+            )
+        if not ok_tithi:
+            failures.append(
+                f"{iso}: drikpanchang gives tithi {d_tithi}, we compute {got_tithi}. "
+                "The tithi is checked alongside the karana on purpose — a karana is "
+                "half a tithi, so if the tithi has moved the karana was never going "
+                "to be right, and this says which of the two broke."
+            )
+
+    print(f"  {len(ALMANAC)} day(s) checked against drikpanchang.com "
+          f"({CITY}), each with its source URL recorded above the row")
+    return failures
+
+
+# --------------------------------------------------------------------------
+# Gate 2 - structural invariants over a two-year census
+# --------------------------------------------------------------------------
+
+def gate_2_structure(census: list[tuple[date, object]]) -> list[str]:
+    failures: list[str] = []
+    yoga_seen: set[int] = set()
+    karana_seen: set[int] = set()
+
+    for day, p in census:
+        yoga_seen.add(p.yoga_index)
+        karana_seen.add(p.karana_index)
+
+        if not 0 <= p.yoga_index <= 26:
+            failures.append(
+                f"{day}: yoga_index {p.yoga_index} outside 0..26 — there are exactly "
+                "27 nitya yogas"
+            )
+            continue
+        if not 0 <= p.karana_index <= 59:
+            failures.append(
+                f"{day}: karana_index {p.karana_index} outside 0..59 — there are "
+                "exactly 60 karanas in a lunar month"
+            )
+            continue
+
+        want_yoga = EXPECTED_YOGA_NAMES[p.yoga_index]
+        if p.yoga_name != want_yoga:
+            failures.append(
+                f"{day}: yoga index {p.yoga_index} is named {p.yoga_name!r}, but the "
+                f"classical order puts {want_yoga!r} there"
+            )
+
+        want_karana = expected_karana_name(p.karana_index)
+        if p.karana_name != want_karana:
+            failures.append(
+                f"{day}: karana index {p.karana_index} is named {p.karana_name!r}, "
+                f"but the classical order puts {want_karana!r} there"
+            )
+
+        if p.karana_index in FIXED_KARANA_SLOTS and p.karana_name == "Vishti":
+            failures.append(
+                f"{day}: Vishti at karana index {p.karana_index}, which belongs to the "
+                f"FIXED karana {FIXED_KARANA_SLOTS[p.karana_index]}. This is the "
+                "off-by-one issue #142 warned about, and it puts Bhadra — the one "
+                "karana every muhurta rule avoids — on a day it does not fall on."
+            )
+        if p.karana_name in FIXED_KARANA_SLOTS.values():
+            slot = next(i for i, n in FIXED_KARANA_SLOTS.items()
+                        if n == p.karana_name)
+            if p.karana_index != slot:
+                failures.append(
+                    f"{day}: fixed karana {p.karana_name} at index {p.karana_index}; "
+                    f"it only ever sits at {slot}. Kimstughna is the first half of "
+                    "Shukla Pratipada and the other three close the lunar month — "
+                    "they cannot float."
+                )
+
+        if p.karana_index // 2 != p.tithi_index:
+            failures.append(
+                f"{day}: karana_index {p.karana_index} // 2 = {p.karana_index // 2} "
+                f"but tithi_index is {p.tithi_index}. A karana IS half a tithi and "
+                "both are read off the same Sun-Moon elongation at the same instant, "
+                "so these can only disagree if one of them is computed from a "
+                "different moment or a different formula."
+            )
+
+    print(f"  {len(census)} sunrise(s) sampled, {CENSUS_START}..{CENSUS_END} at {CITY}")
+    print(f"  {len(yoga_seen)}/27 distinct yogas and {len(karana_seen)}/60 distinct "
+          "karana indices observed  [coverage is asserted in Gate 3]")
+    if not census:
+        failures.append(
+            "the census is empty — this gate proved nothing rather than passing"
+        )
+    return failures
+
+
+# --------------------------------------------------------------------------
+# Gate 3 - rate and coverage (arithmetic, independent of Drik and of naming)
+# --------------------------------------------------------------------------
+
+def gate_3_rate_and_coverage(census: list[tuple[date, object]]) -> list[str]:
+    failures: list[str] = []
+
+    yoga_steps: list[int] = []
+    karana_steps: list[int] = []
+    for (d0, p0), (d1, p1) in zip(census, census[1:]):
+        if (d1 - d0).days != 1:
+            continue
+        y_step = (p1.yoga_index - p0.yoga_index) % 27
+        k_step = (p1.karana_index - p0.karana_index) % 60
+        yoga_steps.append(y_step)
+        karana_steps.append(k_step)
+        if y_step not in YOGA_STEPS:
+            failures.append(
+                f"{d0} -> {d1}: yoga index jumped {y_step} in one day "
+                f"({p0.yoga_index} -> {p1.yoga_index}); Sun+Moon combined motion "
+                f"allows only {sorted(YOGA_STEPS)}. A jump outside that band is a "
+                "formula error, not astronomy."
+            )
+        if k_step not in KARANA_STEPS:
+            failures.append(
+                f"{d0} -> {d1}: karana index jumped {k_step} in one day "
+                f"({p0.karana_index} -> {p1.karana_index}); the Moon-Sun elongation "
+                f"allows only {sorted(KARANA_STEPS)}."
+            )
+
+    for label, steps, want, tol in (
+        ("yoga", yoga_steps, YOGA_MEAN_RATE, RATE_TOLERANCE),
+        ("karana", karana_steps, KARANA_MEAN_RATE, RATE_TOLERANCE),
+    ):
+        if not steps:
+            failures.append(f"{label}: no consecutive-day pairs to measure a rate over")
+            continue
+        got = sum(steps) / len(steps)
+        ok = abs(got - want) <= tol
+        print(f"  {'ok  ' if ok else 'FAIL'} {label:<7} mean {got:.4f}/day, "
+              f"synodic arithmetic says {want:.4f} (tolerance {tol}), "
+              f"steps observed {sorted(set(steps))}")
+        if not ok:
+            failures.append(
+                f"{label} advances {got:.4f} indices/day over {len(steps)} days; the "
+                f"synodic month gives {want:.4f}. This gate owes nothing to Drik or to "
+                "the naming tables — a wrong divisor, a sign flip or a tropical/"
+                "sidereal mix-up all land here."
+            )
+
+    yoga_seen = {p.yoga_index for _, p in census}
+    karana_seen = {p.karana_index for _, p in census}
+    missing_yoga = sorted(set(range(27)) - yoga_seen)
+    missing_karana = sorted(set(range(60)) - karana_seen)
+    print(f"  {'ok  ' if not missing_yoga else 'FAIL'} coverage yoga   "
+          f"{len(yoga_seen)}/27")
+    print(f"  {'ok  ' if not missing_karana else 'FAIL'} coverage karana "
+          f"{len(karana_seen)}/60")
+    if missing_yoga:
+        failures.append(
+            f"yogas never observed over {CENSUS_START}..{CENSUS_END}: "
+            f"{[EXPECTED_YOGA_NAMES[i] for i in missing_yoga]}. All 27 occur roughly "
+            "monthly, so an unreachable one means the index is not spanning its range."
+        )
+    if missing_karana:
+        failures.append(
+            f"karana indices never observed over {CENSUS_START}..{CENSUS_END}: "
+            f"{missing_karana}. Every index is reached at some sunrise within two "
+            "years; an unreachable one means a branch — most likely one of the four "
+            "fixed karanas — is dead code that Gate 2 can never exercise."
+        )
+    return failures
+
+
+# --------------------------------------------------------------------------
+
+def main() -> int:
+    print("Panchang anga verification — Nitya Yoga + Karana (issue #142)")
+    print("  computation : src/astro_ai/chart.py compute_panchang()")
+    print(f"  locale      : {CITY}, values taken at LOCAL SUNRISE")
+    print(f"  almanac     : drikpanchang.com day pages, fetched 2026-08-07, "
+          f"{len(ALMANAC)} dates (URLs in ALMANAC)")
+    print(f"  census      : {CENSUS_START}..{CENSUS_END}")
+    print()
+
+    try:
+        chart = compute_chart("2000-01-01", "12:00", CITY)
+    except Exception as exc:
+        print(f"FAIL — could not build a chart for {CITY}: "
+              f"{type(exc).__name__}: {exc}")
+        return 1
+
+    census: list[tuple[date, object]] = []
+    day = CENSUS_START
+    census_errors: list[str] = []
+    while day <= CENSUS_END:
+        try:
+            census.append((day, _panchang_for(chart, day)))
+        except Exception as exc:
+            census_errors.append(f"{day}: {type(exc).__name__}: {exc}")
+        day += timedelta(days=1)
+
+    gates = [
+        ("Gate 1 - the verified almanac table (drikpanchang.com, New Delhi)",
+         lambda: gate_1_almanac(chart)),
+        ("Gate 2 - structural invariants over a two-year census",
+         lambda: gate_2_structure(census)),
+        ("Gate 3 - rate and coverage (synodic arithmetic, no almanac)",
+         lambda: gate_3_rate_and_coverage(census)),
+    ]
+
+    all_failures: list[str] = list(census_errors)
+    if census_errors:
+        print(f"Census build raised on {len(census_errors)} day(s) — every day in "
+              "range must compute:")
+        for line in census_errors[:10]:
+            print(f"  FAIL: {line}")
+        print()
+
+    results: list[tuple[str, int]] = []
+    for title, run in gates:
+        print(title)
+        failures = run()
+        for line in failures[:20]:
+            print(f"  FAIL: {line}")
+        if len(failures) > 20:
+            print(f"  ... and {len(failures) - 20} more")
+        print(f"  -> {'PASS' if not failures else f'FAIL ({len(failures)} problem(s))'}")
+        print()
+        results.append((title, len(failures)))
+        all_failures.extend(failures)
+
+    print("Summary")
+    for title, n in results:
+        print(f"  {'PASS' if n == 0 else f'FAIL ({n})':<9} {title}")
+    print()
+    if all_failures:
+        print(f"FAIL — {len(all_failures)} problem(s). Do not adjust the computation "
+              "to silence a gate, and never re-derive an expected value from this "
+              "codebase — read the almanac page whose URL is recorded next to the row.")
+        return 1
+    print("PASS")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

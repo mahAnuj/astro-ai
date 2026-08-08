@@ -103,6 +103,16 @@
       {% if p.tithi_significance %}<div class="text-xs text-stone-600">{{ p.tithi_significance }}</div>{% endif %}
     </div>
     <div class="bg-white border border-stone-200 rounded-xl p-4">
+      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Yoga</div>
+      <div class="text-lg font-display text-astro-800">{{ p.yoga_name }}</div>
+      <div class="text-xs text-stone-600">{% if p.yoga_significance %}{{ p.yoga_significance }}{% else %}Nitya Yoga {{ p.yoga_index + 1 }} of 27, at sunrise{% endif %}</div>
+    </div>
+    <div class="bg-white border border-stone-200 rounded-xl p-4">
+      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Karana</div>
+      <div class="text-lg font-display text-astro-800">{{ p.karana_name }}</div>
+      <div class="text-xs text-stone-600">{% if p.karana_significance %}{{ p.karana_significance }}{% else %}Half-tithi {{ p.karana_index + 1 }} of 60, at sunrise{% endif %}</div>
+    </div>
+    <div class="bg-white border border-stone-200 rounded-xl p-4">
       <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Sunrise / Sunset</div>
       <div class="text-lg font-display text-astro-800 tabular-nums">
         {{ p.sunrise.strftime('%H:%M') }} — {{ p.sunset.strftime('%H:%M') }}
