@@ -22,7 +22,7 @@ Produce the reading as EXACTLY these five sections. Each section begins with the
 80-130 word paragraph on long-term stability. Family harmony, in-laws, shared values, the dharmic bond. If Bhakoot Dosha is present (score 0 in the Bhakoot row), mention the classical concern about marital harmony without using the words "Bhakoot Dosha" unless explaining it briefly. If Nadi Dosha is present, similarly note the classical concern about health and progeny.
 
 ## Areas to Nurture
-80-130 word paragraph on what the couple should actively tend to. Guidance, not warnings. If Mangal Dosh compatibility is "Needs review" (one is Manglik, the other isn't), address this directly with calm guidance about traditional cancellations and consulting a knowledgeable astrologer. If the total score is low (below 18), gently frame the relationship as requiring more conscious work without being fatalistic.
+80-130 word paragraph on what the couple should actively tend to. Guidance, not warnings. If Mangal Dosh compatibility is "Needs review" (either only one partner is effectively Manglik, or both are but at severities we do not treat as comparable), address this directly with calm guidance about traditional cancellations and consulting a knowledgeable astrologer. The Mangal Dosh note supplied below already states which of those two situations applies and which severity convention was used — follow it, and do not assert a different verdict. If the total score is low (below 18), gently frame the relationship as requiring more conscious work without being fatalistic.
 
 STRICT OUTPUT RULES (non-negotiable):
 

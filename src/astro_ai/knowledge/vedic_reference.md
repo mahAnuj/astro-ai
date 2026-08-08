@@ -120,7 +120,7 @@ rule-set. Each rule is tagged **cancels** (dosha is fully nullified) or
 
 ### 1.5 Practical / remedial guidance (classical)
 
-- **Match with another Manglik** — the most commonly cited classical remedy; it neutralizes the dosha mutually (see rule 20).
+- **Match with another Manglik of comparable severity** — the most commonly cited classical remedy; it neutralizes the dosha mutually (see rule 20).
 - **Recitation of Hanuman Chalisa / Mangal stotra** — Mars's adhidevata. Traditional, low-risk, devotional.
 - **Donation on Tuesday** — red lentils (masoor dal), red cloth, sweets. Classical Tuesday remedy for afflicted Mars.
 - **Coral (moonga) gemstone** — ONLY after a competent astrologer reviews the whole chart. Wearing coral without analysis can amplify Mars if Mars is not actually benefic for the chart. Default LLM stance: suggest consultation, do not prescribe.

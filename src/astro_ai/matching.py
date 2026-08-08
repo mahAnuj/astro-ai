@@ -19,9 +19,11 @@ Verdicts (broadly accepted):
     18-23  Avara     (acceptable, with caveats)
     < 18   Not recommended
 
-Mangal Dosh compatibility is reported separately — both Manglik or both
-non-Manglik is considered favourable; one of each is the classic dosha
-that requires careful evaluation of cancellations (not computed here).
+Mangal Dosh compatibility is reported separately. Both non-Manglik is
+favourable; both Manglik is favourable ONLY when the two severities are
+comparable (see _severity_comparable) — a low against a high does not
+mutually cancel. One of each is the classic dosha that requires careful
+evaluation of cancellations.
 
 References: Brihat Parashara Hora Shastra; Muhurta Chintamani; modern
 syntheses (Kapiel Raaj, B.V. Raman). This implementation uses the most
@@ -38,8 +40,6 @@ from astro_ai.chart import (
     NAKSHATRAS,
     RASHI_LORDS,
     RASHIS,
-    VedicFlags,
-    compute_vedic_flags,
 )
 
 
@@ -235,21 +235,15 @@ def compute_guna_milan(groom: Chart, bride: Chart) -> GunaMilan:
     from astro_ai.chart import compute_manglik_details
     g_manglik = compute_manglik_details(groom)
     b_manglik = compute_manglik_details(bride)
-    # After cancellations, treat "cancelled" as effectively-not-Manglik for
-    # matching purposes. "mitigated" is a middle ground — count as Manglik
-    # since some concerns remain but note the mitigation.
-    g_effective_manglik = g_manglik.effective_status == "present"
-    b_effective_manglik = b_manglik.effective_status == "present"
-    mangal_compatible = (g_effective_manglik == b_effective_manglik)
-    mangal_note = _mangal_dosh_note_v2(g_manglik, b_manglik)
+    mangal = mangal_dosh_verdict(g_manglik, b_manglik)
 
     verdict, label = _overall_verdict(total)
     return GunaMilan(
         kootas=kootas,
         total_awarded=total,
         total_max=36,
-        mangal_dosh_compatible=mangal_compatible,
-        mangal_dosh_note=mangal_note,
+        mangal_dosh_compatible=mangal.compatible,
+        mangal_dosh_note=mangal.note,
         overall_verdict=verdict,
         overall_verdict_label=label,
     )
@@ -266,38 +260,106 @@ def _overall_verdict(total: float) -> tuple[str, str]:
     return "Not recommended", "Below recommended threshold"
 
 
-def _mangal_dosh_note(g: VedicFlags, b: VedicFlags) -> str:
-    """Legacy note using raw VedicFlags (kept for backward-compat callers).
+_SEVERITY_RANK: dict[str, int] = {"low": 0, "moderate": 1, "high": 2}
 
-    New callers should use _mangal_dosh_note_v2 which applies cancellation
-    rules via compute_manglik_details().
+
+def _severity_comparable(a: str, b: str) -> bool:
+    """Are two Manglik severities "comparable" for the mutual-cancellation rule?
+
+    knowledge/vedic_reference.md §1.3 table E rule 20, verbatim:
+    "Both partners are Manglik of comparable severity | cancels for the
+    marriage match".
+
+    The corpus gives no band. It says "comparable" and stops — no classical
+    source we hold defines how far apart two Manglik charts may sit and still
+    cancel each other. Our own three-notch ladder (low < moderate < high) is a
+    Bhagya construct, graded from the qualifying Mars house; the texts do not
+    grade Manglik that way at all. So on that ladder `low` versus `high` is the
+    only pair unambiguously outside any reading of "comparable" — excluding it
+    invents nothing. Treating equal or adjacent grades as comparable
+    (low↔moderate, moderate↔high) IS a Bhagya convention, chosen over
+    exact-match-only because exact-match-only would deny mutual cancellation to
+    most genuinely matched Manglik pairs purely on the strength of buckets we
+    invented — over-firing in the harmful direction, i.e. telling couples they
+    are incompatible. The convention is disclosed to the user in the note.
+
+    Total over any input: unknown or "none" severities return True rather than
+    raising. Those are unreachable from the both-effectively-Manglik branch
+    (a Manglik chart always carries low/moderate/high), but this must not be
+    the function that explodes on a status the engine grows later.
     """
-    if g.manglik and b.manglik:
-        return (
-            "Both partners are Manglik. Traditionally this is favourable — the dosha "
-            "cancels through matching, so marital concerns from Mars are mitigated."
-        )
-    if not g.manglik and not b.manglik:
-        return "Neither partner is Manglik. No Mangal Dosh concerns indicated."
-    manglik_side = "groom" if g.manglik else "bride"
-    return (
-        f"Only the {manglik_side} is Manglik. Classically this is the "
-        "configuration that requires careful evaluation. Cancellations may apply "
-        "(Mars in own/exalted sign, Jupiter aspect, certain conjunctions); these "
-        "are not computed here. Consult a knowledgeable astrologer before deciding."
-    )
+    if a not in _SEVERITY_RANK or b not in _SEVERITY_RANK:
+        return True
+    return abs(_SEVERITY_RANK[a] - _SEVERITY_RANK[b]) <= 1
 
 
-def _mangal_dosh_note_v2(g_m, b_m) -> str:
-    """Manglik matching note using per-partner effective_status.
+@dataclass(frozen=True)
+class MangalVerdict:
+    """Badge + prose for Mangal Dosh, decided together so they cannot disagree.
 
-    Accepts ManglikDetails (from compute_manglik_details). Uses effective_status
-    which has cancellation rules already applied — so a cancelled Manglik is
-    treated as effectively not-Manglik for matching. Removes the old
-    misleading "cancellations may apply, not computed here" caveat.
+    Issue #165: the badge and the note used to be computed independently from
+    two different definitions of "effectively Manglik", so the page could show
+    a red badge above prose saying the dosha cancels. Both now come from one
+    call to mangal_dosh_verdict().
     """
-    g_effective = g_m.effective_status  # "none" | "cancelled" | "mitigated" | "present"
-    b_effective = b_m.effective_status
+
+    compatible: bool
+    branch: str
+    note: str
+
+
+_BRANCH_COMPATIBLE: dict[str, bool] = {
+    "neither": True,
+    "both_comparable": True,
+    "both_incomparable": False,
+    "one_sided": False,
+}
+
+# CLAUDE.md: state which convention a page uses rather than implying a single
+# universal answer. Two separate facts, so two separate constants — every branch
+# that mentions severity needs the grading rule, but only the branches that
+# actually discuss mutual cancellation may mention the comparability band.
+#
+# How severity is graded. Must keep describing what compute_manglik_details()
+# in chart.py actually does: grade on the UNION of qualifying houses across the
+# Lagna, Moon and Venus axes, then drop one notch when only the Venus axis
+# qualified. Defined once, referenced by all three Manglik branches — two copies
+# of one fact is the class of bug this module was fixed to remove.
+_SEVERITY_GRADING_SENTENCE = (
+    "Severity here is graded from the houses Mars occupies counted from the "
+    "Lagna, the Moon and Venus: 7th or 8th is high, 1st, 4th or 12th moderate, "
+    "2nd alone low — and one grade lower when only the Venus-axis count "
+    "qualifies."
+)
+
+# Where Bhagya draws the "comparable severity" band. Only meaningful when both
+# partners are Manglik and mutual cancellation is on the table, so it is NOT
+# appended to the one-sided note.
+_COMPARABILITY_BAND_SENTENCE = (
+    "Classical texts require 'comparable "
+    "severity' for this mutual cancellation but do not define the band — Bhagya "
+    "treats equal or adjacent grades as comparable, and a low-versus-high "
+    "pairing as not comparable."
+)
+
+# Composed, not a third variant: both both-Manglik notes need both facts in this
+# order, and composing here keeps that order defined once too.
+_SEVERITY_CONVENTION_SENTENCE = (
+    _SEVERITY_GRADING_SENTENCE + " " + _COMPARABILITY_BAND_SENTENCE
+)
+
+
+def mangal_dosh_verdict(g, b) -> MangalVerdict:
+    """The single place the Mangal Dosh badge and note are decided.
+
+    Accepts two ManglikDetails (from compute_manglik_details). "Does this chart
+    count as Manglik?" is answered only by chart.is_effectively_manglik() — no
+    effective_status literal lives here, because that duplication was the bug.
+    """
+    from astro_ai.chart import is_effectively_manglik
+
+    g_effective = g.effective_status  # "none" | "cancelled" | "mitigated" | "present"
+    b_effective = b.effective_status
 
     def _label(status: str) -> str:
         return {
@@ -310,31 +372,52 @@ def _mangal_dosh_note_v2(g_m, b_m) -> str:
     g_lbl = _label(g_effective)
     b_lbl = _label(b_effective)
 
-    # Reduce both to a simple present/absent for match-logic.
-    g_present = g_effective in ("present", "mitigated")
-    b_present = b_effective in ("present", "mitigated")
+    g_present = is_effectively_manglik(g_effective)
+    b_present = is_effectively_manglik(b_effective)
 
     if not g_present and not b_present:
+        branch = "neither"
         if g_effective == "cancelled" or b_effective == "cancelled":
-            return (
+            note = (
                 f"Groom: {g_lbl}. Bride: {b_lbl}. Both effectively clear after "
                 "classical cancellations. No Mangal Dosh concerns for the match."
             )
-        return "Neither partner is Manglik. No Mangal Dosh concerns indicated."
-    if g_present and b_present:
-        return (
-            f"Groom: {g_lbl}. Bride: {b_lbl}. Both effectively Manglik — the "
-            "dosha cancels through matching per classical tradition. Mars-related "
-            "marital concerns are mitigated by the symmetry."
+        else:
+            note = "Neither partner is Manglik. No Mangal Dosh concerns indicated."
+    elif g_present and b_present:
+        if _severity_comparable(g.severity, b.severity):
+            branch = "both_comparable"
+            note = (
+                f"Groom: {g_lbl}. Bride: {b_lbl}. Both effectively Manglik — the "
+                "dosha cancels through matching per classical tradition. Mars-related "
+                "marital concerns are mitigated by the symmetry. "
+                + _SEVERITY_CONVENTION_SENTENCE
+            )
+        else:
+            branch = "both_incomparable"
+            note = (
+                f"Groom: {g_lbl}. Bride: {b_lbl}. Both are effectively Manglik, but "
+                f"at different strengths ({g.severity} versus {b.severity}). The "
+                "classical mutual-cancellation rule applies to partners of comparable "
+                "severity, so we do not apply it here — this pairing still needs "
+                "careful evaluation. " + _SEVERITY_CONVENTION_SENTENCE
+            )
+    else:
+        branch = "one_sided"
+        manglik_side = "groom" if g_present else "bride"
+        other_side = "bride" if g_present else "groom"
+        other_note = g_lbl if manglik_side == "bride" else b_lbl
+        note = (
+            f"Only the {manglik_side} is effectively Manglik (the {other_side} is {other_note}). "
+            "Classically the configuration requiring careful evaluation. Look at the "
+            "severity grade and consult before deciding — this is the case where "
+            "matching may need extra remediation. " + _SEVERITY_GRADING_SENTENCE
         )
-    manglik_side = "groom" if g_present else "bride"
-    other_side = "bride" if g_present else "groom"
-    other_note = g_lbl if manglik_side == "bride" else b_lbl
-    return (
-        f"Only the {manglik_side} is effectively Manglik (the {other_side} is {other_note}). "
-        "Classically the configuration requiring careful evaluation. Look at severity "
-        "(7th/8th house Mars is more serious than 1st/4th/12th) and consult before "
-        "deciding — this is the case where matching may need extra remediation."
+
+    return MangalVerdict(
+        compatible=_BRANCH_COMPATIBLE[branch],
+        branch=branch,
+        note=note,
     )
 
 

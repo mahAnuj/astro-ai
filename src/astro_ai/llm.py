@@ -14,7 +14,7 @@ import logging
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from astro_ai import providers
@@ -114,12 +114,22 @@ def _format_seeker_message(
 ) -> str:
     """Render birth details + chart + flags + life chapters into the user message.
 
-    Conditional Manglik block: only emitted when the chart actually triggers
-    the dosha — keeps the per-call prompt small for the ~70% of charts that
-    aren't Manglik, while giving classical citations to the LLM when it matters.
+    Conditional Manglik block: the verdict is asserted exactly once, in the
+    flags block; this block only adds supporting evidence (axes, cancellations,
+    classical citations) and only when the chart actually triggers the dosha —
+    keeping the per-call prompt small for the ~70% of charts that aren't Manglik.
     """
     name_line = f"Name: {details.name}" if details.name.strip() else "Name: (not provided)"
-    manglik_block = format_manglik_for_prompt(compute_manglik_details(chart))
+    # Reuse the details the flags were derived from so the two blocks can never
+    # disagree. A hand-built VedicFlags may carry none (the field defaults), so
+    # compute them once here and rebind `flags` to a copy carrying them: the
+    # assertion in format_flags_for_prompt() below then reads the same object as
+    # the evidence block, instead of seeing None and asserting "NO" over an
+    # evidence block describing a real dosha. `replace` returns a new instance —
+    # the caller's frozen VedicFlags is not mutated.
+    if flags.manglik_details is None:
+        flags = replace(flags, manglik_details=compute_manglik_details(chart))
+    manglik_block = format_manglik_for_prompt(flags.manglik_details)
     yogas_block = format_yogas_for_prompt(compute_yogas(chart), chart=chart)
     # New chart-specific structured blocks (Issues #60 + #61 + #59) —
     # house-lord placements + planet dignity + nakshatra placements.

@@ -12,7 +12,12 @@ Two jobs in one module so we don't end up with two SQLite files:
    can see WHICH features are eating tokens and tune accordingly.
 
 Storage: a single SQLite database file (default `bhagya.db` in the working
-directory; override with the `BHAGYA_CACHE_DB` env var). Two tables:
+directory; override with the `BHAGYA_CACHE_DB` env var). On Cloud Run the
+Dockerfile sets `BHAGYA_CACHE_DB=/tmp/bhagya.db` — per-instance tmpfs, and
+`deploy.sh` runs `--min-instances 0`, so in production there is no cache to
+purge and no way to reach one (no exec, no volume, up to 5 instances, wiped
+on cold start). Key versioning via `PROMPT_LOGIC_VERSION` is therefore the
+only remote invalidation mechanism. Two tables:
 
     llm_cache  (cache_key PK, text, created_at, expires_at, route, tokens)
     llm_calls  (id PK, timestamp, route, lang, cache_hit, tokens, latency_ms)
@@ -100,14 +105,36 @@ def fingerprint_chart(birth_date: str, birth_time: str, birth_place: str) -> str
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 
-def fingerprint_prompt(prompt_path: Path) -> str:
-    """8-char hash of prompt file content. Edit the prompt → cache invalidates.
+# Manual invalidation lever. This token is prefixed onto every value
+# `fingerprint_prompt` returns, and that value is part of every cache key.
+#
+# The hash below covers the prompt TEMPLATE FILE only. Changes to the Python
+# code that assembles the user message sent alongside that template are
+# invisible to it — `chart.format_flags_for_prompt`,
+# `chart.format_manglik_for_prompt`, `matching.mangal_dosh_verdict`, any
+# `llm.py` `_format_*_message`. Bump this string in the same commit as any
+# such change.
+#
+# Introduced by the #176/#165/#166 Manglik bundle: those fixes rewrite the
+# assembled user message without touching a prompt file, and natal/matching
+# entries are written with `ttl_days=None`, so without a bump the corrected
+# prompt text would have kept serving the old, wrong readings forever.
+PROMPT_LOGIC_VERSION = "v1"
 
-    Without this, a prompt rewrite would silently keep serving the OLD reading
-    for cached entries forever. Including the hash in every cache key forces a
-    regeneration the moment the prompt file changes.
+
+def fingerprint_prompt(prompt_path: Path) -> str:
+    """Cache-key fingerprint for a prompt template: version token + 8-char hash.
+
+    The hash is over the prompt template FILE, so editing the template
+    invalidates every key built from it. It does NOT cover the Python code
+    that builds the user message handed to the model alongside the template —
+    that code can change freely without moving this value.
+    `PROMPT_LOGIC_VERSION` is the manual lever for that case; bump it whenever
+    message-assembly logic changes.
+
+    Returns 10 chars, not 8 — `PROMPT_LOGIC_VERSION` is prefixed.
     """
-    return hashlib.sha256(prompt_path.read_bytes()).hexdigest()[:8]
+    return f"{PROMPT_LOGIC_VERSION}{hashlib.sha256(prompt_path.read_bytes()).hexdigest()[:8]}"
 
 
 # ---------------------------------------------------------------------------

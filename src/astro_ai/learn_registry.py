@@ -309,7 +309,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Own signs: Aries, Scorpio. Exalted: Capricorn (deepest 28°). Debilitated: Cancer (deepest 28°)\n'
             '• Mulatrikona: Aries 0-12°. Digbala in 10th house (shared with Sun)\n'
             '• Friends: Sun, Moon, Jupiter. Enemies: Mercury. Neutral: Venus, Saturn\n'
-            '• Manglik Dosha: Mars in houses 1/4/7/8/12 from Lagna (marriage caveat)\n'
+            '• Manglik Dosha: Mars in houses 1/2/4/7/8/12 counted from Lagna, Moon AND Venus — any one frame qualifying is enough (marriage caveat)\n'
             '• Strong Mars: courage, victory, real estate, athletic ability\n'
             '• Weak Mars: accidents, conflict, blood-related health, sibling stress\n'
             '• Safe remedies: Tuesday fasting, Hanuman Chalisa daily, red-item Tuesday charity, red-coral only with consultation'
@@ -555,7 +555,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What is Nadi Dosha and why does it matter?",
-                "a": "Nadi is the 8-point factor and by classical rules the single most-weighted koota. If both partners have the same Nadi (Adi, Madhya, or Antya — derived from birth Nakshatra), Nadi Dosha is said to form, classically indicating risk to progeny (fertility issues, health of children). This is why many high-scoring matches get rejected — even a 30/36 overall score with Nadi Dosha is considered problematic. Cancellations exist (same Rashi + same Nakshatra + different Pada; both partners Manglik; etc.), but the concern is taken seriously.",
+                "a": "Nadi is the 8-point factor and by classical rules the single most-weighted koota. If both partners have the same Nadi (Adi, Madhya, or Antya — derived from birth Nakshatra), Nadi Dosha is said to form, classically indicating risk to progeny (fertility issues, health of children). This is why many high-scoring matches get rejected — even a 30/36 overall score with Nadi Dosha is considered problematic. Cancellations exist (same Rashi + same Nakshatra + different Pada; both partners Manglik of comparable severity; etc.), but the concern is taken seriously.",
             },
             {
                 "q": "How can I get an accurate Kundli matching for my chart?",
@@ -803,7 +803,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {
                 "q": "Is Manglik Dosh real, or is it just superstition?",
-                "a": "It's a real concept in Vedic astrology — Mars in the 1st, 2nd, 4th, 7th, 8th, or 12th houses is documented in classical compilations. Whether its effects play out depends heavily on Mars's strength, conjunctions, and aspects in your specific chart. Many seemingly Manglik people live happily married lives because of cancellation rules most online calculators ignore.",
+                "a": "It's a real concept in Vedic astrology — Mars in the 1st, 2nd, 4th, 7th, 8th, or 12th house, counted from Lagna, Moon, or Venus, is documented in classical compilations. Whether its effects play out depends heavily on Mars's strength, conjunctions, and aspects in your specific chart. Many seemingly Manglik people live happily married lives because of cancellation rules most online calculators ignore.",
             },
             {
                 "q": "Does Cancer or Leo rising exclude me from Manglik?",
@@ -811,7 +811,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Can a Manglik person marry a non-Manglik?",
-                "a": "Classical texts strongly recommend Manglik-with-Manglik matches because the two charts cancel each other out. But cancellation can also happen via other placements — Mars in own sign or exalted, Jupiter aspecting or conjunct Mars, the Cancer/Leo Lagna Yogakaraka exclusion, or Mars combust the Sun. A proper Kundli matching analysis matters more than the simple Manglik label.",
+                "a": "Yes — and the classical objection is narrower than it is usually made to sound. Tradition does favour Manglik-with-Manglik matches, but the rule asks for two doshas of comparable severity: it is the symmetry that cancels, so a mildly Manglik chart set against a severely Manglik one is not the pairing the tradition is describing. Tradition also stops at the word comparable and never says how far apart is too far, so we draw that line ourselves and name it as ours rather than dress it as scripture — Shubh Bhagya grades Manglik as low, moderate or high from the houses Mars occupies, treats equal or adjacent grades as comparable, and will not cancel a low against a high. Cancellation can also arrive by routes that need only your own chart — Mars in own sign or exalted, Jupiter aspecting or conjunct Mars, the Cancer/Leo Lagna Yogakaraka exclusion, or Mars combust the Sun. A proper Kundli matching analysis matters more than the simple Manglik label.",
             },
             {
                 "q": "How can I check Manglik Dosh in my own chart?",
@@ -819,7 +819,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the most effective Manglik Dosh remedies?",
-                "a": "Classical remedies focus on Mars pacification: fasting on Tuesdays, reciting the Mangal mantra or Hanuman Chalisa, donating red lentils or copper, wearing red coral (only after a chart consultation — never blindly). For marriage matching specifically, the classical recommendation is to match with another Manglik partner, which mutually cancels the dosha.",
+                "a": "Classical remedies focus on Mars pacification: fasting on Tuesdays, reciting the Mangal mantra or Hanuman Chalisa, donating red lentils or copper, wearing red coral (only after a chart consultation — never blindly). For marriage matching specifically, the classical recommendation is to match with another Manglik partner of comparable severity, which mutually cancels the dosha — the cancellation rests on the two charts being similarly afflicted, not merely on both carrying the label. Tradition asks for comparability without setting a threshold, so we set one and say it is ours: we treat equal or adjacent severity grades as comparable and do not cancel a low against a high.",
             },
             {
                 "q": "Does Manglik Dosh weaken with age?",
@@ -828,9 +828,10 @@ ARTICLES: tuple[Article, ...] = (
         ),
         llm_summary=(
             "Keypoints:\n"
-            "• Mars in the 1st, 4th, 7th, 8th, or 12th house from Lagna = Manglik (also checked from Moon in some traditions)\n"
+            "• Mars in the 1st, 2nd, 4th, 7th, 8th, or 12th house = Manglik — counted from ALL THREE of Lagna, Moon and Venus (any one frame qualifying is enough)\n"
             "• Classically linked to marriage delay or spouse conflict — NOT to marriage denial\n"
-            "• Cancellations (any ONE cancels): Jupiter aspect on Mars, mutual-Manglik partnership, Mars in own/exalted sign, Cancer/Leo Ascendant exemption, Mars in same house from both charts\n"
+            "• Cancellations (any ONE cancels): Jupiter aspect on Mars, mutual-Manglik partnership where both partners are Manglik of comparable severity, Mars in own/exalted sign, Cancer/Leo Ascendant exemption, Mars in same house from both charts\n"
+            "• 'Comparable severity' is the classical requirement; the texts set no band, so Bhagya's own convention (state it as ours, not scripture) is that equal or adjacent grades on low/moderate/high are comparable and a low does NOT cancel a high\n"
             "• Popular Manglik readings routinely ignore cancellations — always check\n"
             "• 'Weakens after age 28' is folk tradition, NOT classical scripture (not in BPHS, Phaladeepika, Mansagari, Jataka Parijata)\n"
             "• Effective status is per-chart: PRESENT / MITIGATED / CANCELLED"
@@ -1088,7 +1089,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Do Mars remedies remove Manglik Dosh?",
-                "a": "They mitigate the difficult expressions of Manglik, but don't literally remove the astrological pattern. First check whether your Manglik is genuine or cancelled — many so-called Manglik charts have classical cancellations most calculators ignore (Cancer/Leo Ascendant, Mars in own sign or exalted, Jupiter aspect, Mars combust). See our Manglik Dosh article. If Manglik is genuinely present, the classical remedies are: weekly Hanuman Chalisa, matching with another Manglik partner (mutual cancellation), Tuesday fasting, donating red items on Tuesdays. Expensive 'Mangal nivaran' packages are selling anxiety, not tradition.",
+                "a": "They mitigate the difficult expressions of Manglik, but don't literally remove the astrological pattern. First check whether your Manglik is genuine or cancelled — many so-called Manglik charts have classical cancellations most calculators ignore (Cancer/Leo Ascendant, Mars in own sign or exalted, Jupiter aspect, Mars combust). See our Manglik Dosh article. If Manglik is genuinely present, the classical remedies are: weekly Hanuman Chalisa, matching with another Manglik partner of comparable severity (mutual cancellation — the rule turns on the two doshas being similarly strong, not merely both present), Tuesday fasting, donating red items on Tuesdays. Expensive 'Mangal nivaran' packages are selling anxiety, not tradition.",
             },
             {
                 "q": "Why does my Mars keep causing anger issues?",
@@ -1171,7 +1172,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Manglik Dosh really block marriage?",
-                "a": "Not automatically. Manglik Dosh is present when Mars is in the 1st, 2nd, 4th, 7th, 8th, or 12th house — but classical texts include several cancellation conditions most calculators ignore: Cancer or Leo Ascendant (Mars is Yogakaraka), Mars in own sign (Aries/Scorpio) or exalted (Capricorn), Jupiter aspecting or conjunct Mars, Mars combust, and mutual Manglik matching. See our dedicated Manglik Dosh article for complete details. Uncancelled Manglik tends to delay marriage but does NOT mean unmarriageable.",
+                "a": "Not automatically. Manglik Dosh is present when Mars is in the 1st, 2nd, 4th, 7th, 8th, or 12th house counted from Lagna, Moon, or Venus — but classical texts include several cancellation conditions most calculators ignore: Cancer or Leo Ascendant (Mars is Yogakaraka), Mars in own sign (Aries/Scorpio) or exalted (Capricorn), Jupiter aspecting or conjunct Mars, Mars combust, and mutual Manglik matching where both partners are Manglik of comparable severity. See our dedicated Manglik Dosh article for complete details. Uncancelled Manglik tends to delay marriage but does NOT mean unmarriageable.",
             },
             {
                 "q": "How does the current Dasha affect marriage timing?",
@@ -1179,7 +1180,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Should I do expensive puja for marriage delay?",
-                "a": "Almost never. Any priest asking for tens of thousands of rupees for a 'marriage nivaran puja' is selling anxiety, not tradition. Genuine classical remedies are simple: Venus/Jupiter mantras, appropriate weekday fasting (Friday for Venus, Thursday for Jupiter), offering appropriate coloured flowers, worship of Shiva-Parvati as archetypal marriage. If Manglik-specific, matching with another Manglik partner is the classical solution — not a puja. Gemstones should never be worn without proper chart consultation.",
+                "a": "Almost never. Any priest asking for tens of thousands of rupees for a 'marriage nivaran puja' is selling anxiety, not tradition. Genuine classical remedies are simple: Venus/Jupiter mantras, appropriate weekday fasting (Friday for Venus, Thursday for Jupiter), offering appropriate coloured flowers, worship of Shiva-Parvati as archetypal marriage. If Manglik-specific, matching with another Manglik partner of comparable severity is the classical solution — not a puja; the cancellation rests on the two doshas being similarly strong, not merely on both partners carrying the label. Gemstones should never be worn without proper chart consultation.",
             },
             {
                 "q": "What is Navamsha (D-9) and why does it matter for marriage?",
@@ -2668,7 +2669,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Mars in 7th house always cause Manglik dosha?",
-                "a": "Mars in the 7th is one of the six Manglik-triggering houses (1, 2, 4, 7, 8, 12), but 'Manglik' does not equal 'bad marriage'. Cancellation rules apply and are often ignored by simple online calculators — Cancer or Leo Ascendant excludes Mars from Manglik reading regardless of placement (Mars becomes Yogakaraka), Mars in own sign (Aries, Scorpio) or exalted (Capricorn) softens the dosha significantly, Jupiter aspecting or conjunct Mars cancels much of it, and Manglik-with-Manglik matching classically cancels the dosha between partners. Read our full Manglik Dosh guide for the complete cancellation logic — the label without the cancellation check is over-diagnosed.",
+                "a": "Mars in the 7th is one of the six Manglik-triggering houses (1, 2, 4, 7, 8, 12), but 'Manglik' does not equal 'bad marriage'. Cancellation rules apply and are often ignored by simple online calculators — Cancer or Leo Ascendant excludes Mars from Manglik reading regardless of placement (Mars becomes Yogakaraka), Mars in own sign (Aries, Scorpio) or exalted (Capricorn) softens the dosha significantly, Jupiter aspecting or conjunct Mars cancels much of it, and Manglik-with-Manglik matching classically cancels the dosha between partners when the two doshas are of comparable severity — it is the symmetry that cancels, and the tradition asks for comparability without fixing a threshold, so Shubh Bhagya sets one and names it as ours rather than as scripture: equal or adjacent grades on low, moderate and high count as comparable, and a low does not cancel a high. Read our full Manglik Dosh guide for the complete cancellation logic — the label without the cancellation check is over-diagnosed.",
             },
             {
                 "q": "What if I have two or more planets in the 7th house?",
@@ -2914,10 +2915,10 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "Is Kumbh Vivah remedy legitimate?", "a": "Classical tradition prescribes it for severe uncancelled Manglik before marriage — marriage to a clay pot (kumbh) or peepal tree that 'consumes' the first Manglik-marriage karma. Cost ₹2K-10K from legitimate priests. Not universally accepted by modern astrologers; some question efficacy. Often more valuable as psychological closure than ritual mechanic."},
             {"q": "Do I need to check Manglik cancellation before doing remedies?", "a": "YES — this is the most important first step. Use our /manglik-check tool which explicitly applies classical cancellation rules (Cancer/Leo Lagna Yogakaraka, Jupiter aspect, own-sign Mars, etc.). Most 'Manglik' charts are actually cancelled and need no remedy at all."},
             {"q": "Can red coral (Moonga) cancel Manglik?", "a": "Red Coral is Mars's classical gemstone but can backfire when Mars is a functional malefic for your Ascendant. NEVER wear coral without proper chart analysis. Hanuman worship + Tuesday practices are safe universal remedies that don't need chart verification."},
-            {"q": "What if I'm Manglik and my partner is not?", "a": "Classical tradition strongly recommends Manglik-Manglik matching (the two doshas cancel each other). If mismatch: soften with Hanuman practices + Vishnu worship + Kumbh Vivah before marriage. Also: many 'mismatch' cases are actually cancelled Manglik in one or both charts — verify with our /manglik-check tool first."},
+            {"q": "What if I'm Manglik and my partner is not?", "a": "Classical tradition recommends Manglik-Manglik matching, with one condition that most retellings drop: the two doshas must be of comparable severity, because it is the symmetry between the charts that cancels them. Tradition asks for comparability but never says how wide a gap is too wide, so we set that band ourselves and call it ours rather than scripture — equal or adjacent grades on low/moderate/high count as comparable, and a low does not cancel a high. If mismatch: soften with Hanuman practices + Vishnu worship + Kumbh Vivah before marriage. Also: many 'mismatch' cases are actually cancelled Manglik in one or both charts — verify with our /manglik-check tool first."},
         ),
         llm_summary=(
-            'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 from Lagna OR Moon\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching)\n• 7 classical remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) Vishnu Sahasranama + Ekadashi vrat, (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (toor daal/arhar — Mars classical grain, plus red masoor folk offering, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS), (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
+            'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 counted from ALL THREE of Lagna, Moon and Venus (any one frame qualifying is enough)\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching a partner of comparable Manglik severity)\n• 7 classical remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) Vishnu Sahasranama + Ekadashi vrat, (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (toor daal/arhar — Mars classical grain, plus red masoor folk offering, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS), (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels ONLY when both partners are Manglik of comparable severity — Bhagya convention, stated as ours not scripture: equal or adjacent grades on low/moderate/high are comparable, a low does not cancel a high), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
