@@ -495,19 +495,31 @@
   </div>
 </section>
 
-<!-- FEATURES — 7-card grid, every link goes to a live page -------------- -->
+<!-- FEATURES — one card per reading, every link goes to a live page ------ -->
+{# Deliberately no card count here, in the heading, or on the macro below.
+   Three separate places used to carry one and all three disagreed with each
+   other AND with the nine cards actually rendered: the section comment said
+   seven, the H2 said six, the macro comment said six. A count written beside
+   a list you then append to is wrong the first time someone adds a card, and
+   nothing breaks to tell you. Same defect shape as the hardcoded /learn
+   article count that #188 replaced with a registry read.
+
+   This is a Jinja comment, not an HTML one, on purpose: an HTML comment here
+   would ship to every visitor on every homepage render, and would put the
+   stale strings it describes back into the served markup. #}
+
 <section class="border-t border-stone-200/70 bg-white/60">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
     <!-- Decorative strip of all 12 rashi glyphs — visual anchor before the cards. -->
     <div class="flex justify-center gap-3 sm:gap-5 text-2xl sm:text-3xl text-astro-600/70 mb-6 flex-wrap" aria-hidden="true">
       <span>♈</span><span>♉</span><span>♊</span><span>♋</span><span>♌</span><span>♍</span><span>♎</span><span>♏</span><span>♐</span><span>♑</span><span>♒</span><span>♓</span>
     </div>
-    <h2 class="font-display text-3xl sm:text-4xl text-center text-stone-900 mb-3">Six readings, one chart</h2>
+    <h2 class="font-display text-3xl sm:text-4xl text-center text-stone-900 mb-3">Every reading, one chart</h2>
     <p class="text-center text-stone-600 max-w-2xl mx-auto mb-12">
-      Enter your birth details once &mdash; every reading below works off the same chart. No signup needed.
+      Enter your birth details once &mdash; they all work off the same chart. No signup needed.
     </p>
 
-    {# Reusable feature-card macro to keep the 6 cards consistent. #}
+    {# Reusable feature-card macro to keep the cards consistent. #}
     {% macro feature_card(href, icon_svg, title, body) %}
     <a href="{{ href }}"
        class="group bg-white rounded-2xl border border-stone-200 p-6 shadow-sm
