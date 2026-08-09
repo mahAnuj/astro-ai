@@ -59,10 +59,10 @@
         <p class="text-xs text-stone-600 mt-1.5 italic">Salutations to all nine grahas &mdash; Navagraha Stotra</p>
       </div>
 
-      <span class="inline-block text-xs font-semibold tracking-wider text-astro-700 uppercase bg-astro-100 px-3 py-1 rounded-full mb-4">
+      <span class="inline-block text-xs font-semibold tracking-wider text-astro-700 uppercase bg-astro-100 px-3 py-1 rounded-full mb-3 sm:mb-4">
         Free &middot; Instant &middot; No signup needed
       </span>
-      <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl text-stone-900 leading-tight mb-4">Your Janma Kundali,<br><span class="text-astro-700">simply explained.</span></h1>
+      <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl text-stone-900 leading-tight mb-3 sm:mb-4">Your Janma Kundali,<br><span class="text-astro-700">simply explained.</span></h1>
 
       {# Trust bar — real counts only. Each pill has a min-count threshold
          (set server-side via TRUST_MIN_* env vars, defaults in main.py);
@@ -71,7 +71,14 @@
          Kundlis + Asks come from the GCS events log (last 30d — reasonable
          proxy for "till now" while numbers are early; upgrade to a
          persistent lifetime counter when we outgrow the retention window). #}
-      <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-600 mb-4">
+      {# Mobile spacing (#188): the three provenance chips wrap to two lines at 390px
+         (measured: 440px of chips + 32px of gaps against a 358px column — no ordering
+         avoids it), which adds 20px and pushes the hero CTA from y=1069 to y=1089.
+         The CTA is already 273px below the 844px fold and #190's ship rule is that
+         nothing may push it further. These four mobile-only margin reductions give
+         back 18px, netting +2px. All are sm:-restored, so desktop is unchanged — the
+         row measures 16px tall at 1280px both before and after. #}
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-0.5 sm:gap-y-1 text-xs text-stone-600 mb-3 sm:mb-4">
         {% if trust_kundlis and trust_kundlis >= trust_kundlis_min %}
         <span class="inline-flex items-center gap-1">
           <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
@@ -96,13 +103,41 @@
           <strong class="text-stone-700">{{ "{:,}".format(trust_subscribers) }}</strong> daily Rashifal subscribers
         </span>
         {% endif %}
+        {# Provenance chips (#188). They fill the slot that renders when the four gated
+           count-pills above are below threshold — all four, today. Same visual treatment
+           as the pills on purpose: when a real count crosses its threshold it joins the
+           row and pushes a chip out. The row holds three; it does not need to be
+           all-counts or all-provenance.
+
+           The wording is deliberate. "Cited to classical sources" describes the working
+           agreement (every astrological claim traces to knowledge/*.md). It is NOT
+           "every claim sourced" — #178 is an open blocker recording that Ashtakoota,
+           Lo Shu and Rudraksha rules have no source in the repo, so a total-coverage
+           claim in the hero would be contradicted by our own issue tracker. Do not
+           "tighten" this line.
+
+           The article count comes from learn_registry via a Jinja global (routes/deps.py)
+           and is never typed in. A hardcoded 75 is silently wrong the day article 76
+           ships and nothing breaks to tell you. #}
         <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          <a href="/about" class="hover:text-astro-700">Since 2026 &middot; classical-source cited</a>
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+          Swiss Ephemeris chart math
+        </span>
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <a href="/learn/" class="hover:text-astro-700"><strong class="text-stone-700">{{ learn_article_count }}</strong> explainers</a>
+        </span>
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+          {# The /about link rides on this chip because the fallback line it replaced
+             (`Since 2026 · classical-source cited`) carried the hero's only link to
+             /about, and dropping it was an internal-link change nobody asked for.
+             Wording is unchanged and must stay unchanged — see the note above. #}
+          <a href="/about" class="hover:text-astro-700">Cited to classical sources</a>
         </span>
       </div>
 
-      <p class="text-lg text-stone-600 leading-relaxed mb-6">
+      <p class="text-lg text-stone-600 leading-relaxed mb-5 sm:mb-6">
         Free Janma Kundali, daily horoscope, monthly &amp; yearly readings, Dasha periods,
         and Kundli matching for marriage &mdash; with the same chart math professional
         astrologers use.
@@ -370,6 +405,96 @@
 </section>
 
 
+<!-- DON'T FEAR YOUR KUNDALI — reframes Manglik / Sade Sati / Kal Sarpa anxieties -->
+<section class="border-t border-stone-200/70 bg-gradient-to-br from-astro-50/60 via-cream to-amber-50/30">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center">
+
+    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-2">For those who hesitate</div>
+    <h2 class="font-display text-3xl sm:text-4xl text-stone-900 mb-5">Don&rsquo;t fear your Kundali</h2>
+
+    <p class="text-stone-600 mb-8 max-w-2xl mx-auto">Three things people are afraid to look up.</p>
+
+    {# Worry-spine (#187). A restructure of the 60-word paragraph that used to sit
+       here — every reframe below is lifted from copy we already publish (this
+       paragraph, plus the three /learn articles it links to), so no new
+       astrological claim enters the page. Zero JS.
+
+       The spine is one absolutely-positioned 1px rule; each dot's `ring-4
+       ring-cream` punches a hole in it, and that is the only reason the line does
+       not run visibly through the dots. Do not drop the ring.
+
+       The hrefs carry a trailing slash on purpose: /learn/<slug> answers 307 and
+       redirects to /learn/<slug>/, so the bare form costs the visitor a hop. #}
+    <div class="relative max-w-2xl mx-auto text-left pl-8 mb-8">
+      <div class="absolute left-[7px] top-2 bottom-2 w-px bg-astro-200" aria-hidden="true"></div>
+
+      <div class="relative mb-6 last:mb-0">
+        <span class="absolute -left-8 top-1.5 w-3.5 h-3.5 rounded-full bg-astro-500 ring-4 ring-cream" aria-hidden="true"></span>
+        <a href="/learn/sade-sati/" class="group block">
+          <h3 class="font-display text-xl text-stone-900 group-hover:text-astro-700 transition-colors">
+            <span class="text-astro-600" aria-hidden="true">&#9796;</span> Sade Sati
+          </h3>
+          <p class="text-stone-700 leading-relaxed mt-1">
+            <span class="italic text-stone-600">&ldquo;Seven and a half bad years.&rdquo;</span>
+            It&rsquo;s a transit, not a curse &mdash; a structured course in maturity, and most lives are better on the other side of it.
+          </p>
+        </a>
+      </div>
+
+      <div class="relative mb-6 last:mb-0">
+        <span class="absolute -left-8 top-1.5 w-3.5 h-3.5 rounded-full bg-astro-500 ring-4 ring-cream" aria-hidden="true"></span>
+        <a href="/learn/manglik-dosh/" class="group block">
+          <h3 class="font-display text-xl text-stone-900 group-hover:text-astro-700 transition-colors">
+            <span class="text-astro-600" aria-hidden="true">&#9794;</span> Manglik dosha
+          </h3>
+          <p class="text-stone-700 leading-relaxed mt-1">
+            <span class="italic text-stone-600">&ldquo;It will ruin the marriage.&rdquo;</span>
+            Classical texts list over a dozen cancellation rules &mdash; a lot of people labelled Manglik actually aren&rsquo;t.
+          </p>
+        </a>
+      </div>
+
+      <div class="relative mb-6 last:mb-0">
+        <span class="absolute -left-8 top-1.5 w-3.5 h-3.5 rounded-full bg-astro-500 ring-4 ring-cream" aria-hidden="true"></span>
+        <a href="/learn/kaal-sarp-dosh/" class="group block">
+          <h3 class="font-display text-xl text-stone-900 group-hover:text-astro-700 transition-colors">
+            <span class="text-astro-600" aria-hidden="true">&#9738;</span> Kaal Sarp
+          </h3>
+          <p class="text-stone-700 leading-relaxed mt-1">
+            <span class="italic text-stone-600">&ldquo;Every planet trapped.&rdquo;</span>
+            One of the most over-diagnosed conditions in modern astrology &mdash; a structure for understanding a pattern, not a sentence to fear.
+          </p>
+        </a>
+      </div>
+    </div>
+
+    <!-- Shloka card — Gita 18.66, the perfect verse for this message -->
+    <div class="bg-white/70 backdrop-blur rounded-2xl border border-astro-100 p-6 sm:p-8 mb-8 max-w-2xl mx-auto">
+      <p class="font-display text-lg sm:text-xl text-astro-800 mb-3" lang="sa">
+        सर्वधर्मान्परित्यज्य मामेकं शरणं व्रज।<br>
+        अहं त्वा सर्वपापेभ्यो मोक्षयिष्यामि <span class="text-rose-700">मा शुचः</span>॥
+      </p>
+      <p class="text-xs text-stone-500 italic mb-2">Bhagavad Gita 18.66 &mdash; Krishna's final teaching</p>
+      <p class="text-sm text-stone-700 leading-relaxed">
+        &ldquo;Take refuge in the Divine. I will free you from all that weighs you down &mdash;
+        <strong>do not fear, do not grieve</strong>.&rdquo;
+      </p>
+      <p class="text-sm text-stone-600 mt-3 leading-relaxed">
+        No chart, no dosha, no transit is above devotion. Recite the name of your chosen deity
+        with sincerity and even Saturn lightens his hand.
+      </p>
+    </div>
+
+    <a href="#kundli-form" class="inline-flex items-center gap-2 px-6 py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors">
+      See your free Kundli
+      <svg aria-hidden="true" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+      </svg>
+    </a>
+
+  </div>
+</section>
+
 <!-- FEATURES — 7-card grid, every link goes to a live page -------------- -->
 <section class="border-t border-stone-200/70 bg-white/60">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
@@ -446,48 +571,6 @@
         "3 free personal questions per day about your chart — marriage timing, career direction, when a specific transit lands. Real answers from your actual Kundli, not generic horoscope advice.") }}
 
     </div>
-  </div>
-</section>
-
-<!-- DON'T FEAR YOUR KUNDALI — reframes Manglik / Sade Sati / Kal Sarpa anxieties -->
-<section class="border-t border-stone-200/70 bg-gradient-to-br from-astro-50/60 via-cream to-amber-50/30">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center">
-
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-2">For those who hesitate</div>
-    <h2 class="font-display text-3xl sm:text-4xl text-stone-900 mb-5">Don&rsquo;t fear your Kundali</h2>
-
-    <p class="text-stone-700 leading-relaxed mb-8 max-w-2xl mx-auto text-base sm:text-[1.05rem]">
-      Many people avoid checking their birth chart because they&rsquo;ve heard scary things about
-      <strong>Sade Sati</strong>, <strong>Manglik dosha</strong>, or <strong>Kal Sarpa yoga</strong>.
-      But these are not curses. They are periods and patterns with constructive meaning &mdash;
-      Sade Sati builds maturity, Manglik shapes assertive energy, every dosha has classical remedies.
-      Shubh Bhagya explains each in plain language so you <em>understand</em> instead of worry.
-    </p>
-
-    <!-- Shloka card — Gita 18.66, the perfect verse for this message -->
-    <div class="bg-white/70 backdrop-blur rounded-2xl border border-astro-100 p-6 sm:p-8 mb-8 max-w-2xl mx-auto">
-      <p class="font-display text-lg sm:text-xl text-astro-800 mb-3" lang="sa">
-        सर्वधर्मान्परित्यज्य मामेकं शरणं व्रज।<br>
-        अहं त्वा सर्वपापेभ्यो मोक्षयिष्यामि <span class="text-rose-700">मा शुचः</span>॥
-      </p>
-      <p class="text-xs text-stone-500 italic mb-2">Bhagavad Gita 18.66 &mdash; Krishna's final teaching</p>
-      <p class="text-sm text-stone-700 leading-relaxed">
-        &ldquo;Take refuge in the Divine. I will free you from all that weighs you down &mdash;
-        <strong>do not fear, do not grieve</strong>.&rdquo;
-      </p>
-      <p class="text-sm text-stone-600 mt-3 leading-relaxed">
-        No chart, no dosha, no transit is above devotion. Recite the name of your chosen deity
-        with sincerity and even Saturn lightens his hand.
-      </p>
-    </div>
-
-    <a href="#kundli-form" class="inline-flex items-center gap-2 px-6 py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors">
-      See your free Kundli
-      <svg aria-hidden="true" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-      </svg>
-    </a>
-
   </div>
 </section>
 
