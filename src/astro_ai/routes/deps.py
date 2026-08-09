@@ -115,6 +115,14 @@ _ARTICLE_TITLE_BY_SLUG: dict[str, str] = {
     a.slug: (a.seo_title.strip() or a.title.strip()) for a in _ARTICLES
 }
 
+# Rendered in the homepage trust row (#188). Computed here rather than typed into
+# the template because a hardcoded "75" is silently wrong the day article 76 ships
+# and nothing breaks to tell you — the same shape of defect as the _FESTIVALS_2026
+# dates. A plain int, not a lambda like `current_year`: ARTICLES is a tuple literal
+# built at import and cannot change within a process, so there is nothing to
+# re-evaluate. Cost is len() on an in-process tuple — no I/O, safe on the hot path.
+templates.env.globals["learn_article_count"] = len(_ARTICLES)
+
 
 def _linkify_learn(text: str) -> str:
     """Convert plain "/learn/<slug>/" occurrences in LLM output into <a href> tags.
