@@ -59,10 +59,10 @@
         <p class="text-xs text-stone-600 mt-1.5 italic">Salutations to all nine grahas &mdash; Navagraha Stotra</p>
       </div>
 
-      <span class="inline-block text-xs font-semibold tracking-wider text-astro-700 uppercase bg-astro-100 px-3 py-1 rounded-full mb-4">
+      <span class="inline-block text-xs font-semibold tracking-wider text-astro-700 uppercase bg-astro-100 px-3 py-1 rounded-full mb-3 sm:mb-4">
         Free &middot; Instant &middot; No signup needed
       </span>
-      <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl text-stone-900 leading-tight mb-4">Your Janma Kundali,<br><span class="text-astro-700">simply explained.</span></h1>
+      <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl text-stone-900 leading-tight mb-3 sm:mb-4">Your Janma Kundali,<br><span class="text-astro-700">simply explained.</span></h1>
 
       {# Trust bar — real counts only. Each pill has a min-count threshold
          (set server-side via TRUST_MIN_* env vars, defaults in main.py);
@@ -71,7 +71,14 @@
          Kundlis + Asks come from the GCS events log (last 30d — reasonable
          proxy for "till now" while numbers are early; upgrade to a
          persistent lifetime counter when we outgrow the retention window). #}
-      <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-600 mb-4">
+      {# Mobile spacing (#188): the three provenance chips wrap to two lines at 390px
+         (measured: 440px of chips + 32px of gaps against a 358px column — no ordering
+         avoids it), which adds 20px and pushes the hero CTA from y=1069 to y=1089.
+         The CTA is already 273px below the 844px fold and #190's ship rule is that
+         nothing may push it further. These four mobile-only margin reductions give
+         back 18px, netting +2px. All are sm:-restored, so desktop is unchanged — the
+         row measures 16px tall at 1280px both before and after. #}
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-0.5 sm:gap-y-1 text-xs text-stone-600 mb-3 sm:mb-4">
         {% if trust_kundlis and trust_kundlis >= trust_kundlis_min %}
         <span class="inline-flex items-center gap-1">
           <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
@@ -96,13 +103,37 @@
           <strong class="text-stone-700">{{ "{:,}".format(trust_subscribers) }}</strong> daily Rashifal subscribers
         </span>
         {% endif %}
+        {# Provenance chips (#188). They fill the slot that renders when the four gated
+           count-pills above are below threshold — all four, today. Same visual treatment
+           as the pills on purpose: when a real count crosses its threshold it joins the
+           row and pushes a chip out. The row holds three; it does not need to be
+           all-counts or all-provenance.
+
+           The wording is deliberate. "Cited to classical sources" describes the working
+           agreement (every astrological claim traces to knowledge/*.md). It is NOT
+           "every claim sourced" — #178 is an open blocker recording that Ashtakoota,
+           Lo Shu and Rudraksha rules have no source in the repo, so a total-coverage
+           claim in the hero would be contradicted by our own issue tracker. Do not
+           "tighten" this line.
+
+           The article count comes from learn_registry via a Jinja global (routes/deps.py)
+           and is never typed in. A hardcoded 75 is silently wrong the day article 76
+           ships and nothing breaks to tell you. #}
         <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          <a href="/about" class="hover:text-astro-700">Since 2026 &middot; classical-source cited</a>
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+          Swiss Ephemeris chart math
+        </span>
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <a href="/learn/" class="hover:text-astro-700"><strong class="text-stone-700">{{ learn_article_count }}</strong> explainers</a>
+        </span>
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+          Cited to classical sources
         </span>
       </div>
 
-      <p class="text-lg text-stone-600 leading-relaxed mb-6">
+      <p class="text-lg text-stone-600 leading-relaxed mb-5 sm:mb-6">
         Free Janma Kundali, daily horoscope, monthly &amp; yearly readings, Dasha periods,
         and Kundli matching for marriage &mdash; with the same chart math professional
         astrologers use.
