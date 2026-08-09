@@ -408,13 +408,61 @@
     <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-2">For those who hesitate</div>
     <h2 class="font-display text-3xl sm:text-4xl text-stone-900 mb-5">Don&rsquo;t fear your Kundali</h2>
 
-    <p class="text-stone-700 leading-relaxed mb-8 max-w-2xl mx-auto text-base sm:text-[1.05rem]">
-      Many people avoid checking their birth chart because they&rsquo;ve heard scary things about
-      <strong>Sade Sati</strong>, <strong>Manglik dosha</strong>, or <strong>Kal Sarpa yoga</strong>.
-      But these are not curses. They are periods and patterns with constructive meaning &mdash;
-      Sade Sati builds maturity, Manglik shapes assertive energy, every dosha has classical remedies.
-      Shubh Bhagya explains each in plain language so you <em>understand</em> instead of worry.
-    </p>
+    <p class="text-stone-600 mb-8 max-w-2xl mx-auto">Three things people are afraid to look up.</p>
+
+    {# Worry-spine (#187). A restructure of the 60-word paragraph that used to sit
+       here — every reframe below is lifted from copy we already publish (this
+       paragraph, plus the three /learn articles it links to), so no new
+       astrological claim enters the page. Zero JS.
+
+       The spine is one absolutely-positioned 1px rule; each dot's `ring-4
+       ring-cream` punches a hole in it, and that is the only reason the line does
+       not run visibly through the dots. Do not drop the ring.
+
+       The hrefs carry a trailing slash on purpose: /learn/<slug> answers 307 and
+       redirects to /learn/<slug>/, so the bare form costs the visitor a hop. #}
+    <div class="relative max-w-2xl mx-auto text-left pl-8 mb-8">
+      <div class="absolute left-[7px] top-2 bottom-2 w-px bg-astro-200" aria-hidden="true"></div>
+
+      <div class="relative mb-6 last:mb-0">
+        <span class="absolute -left-8 top-1.5 w-3.5 h-3.5 rounded-full bg-astro-500 ring-4 ring-cream" aria-hidden="true"></span>
+        <a href="/learn/sade-sati/" class="group block">
+          <h3 class="font-display text-xl text-stone-900 group-hover:text-astro-700 transition-colors">
+            <span class="text-astro-600" aria-hidden="true">&#9796;</span> Sade Sati
+          </h3>
+          <p class="text-stone-700 leading-relaxed mt-1">
+            <span class="italic text-stone-600">&ldquo;Seven and a half bad years.&rdquo;</span>
+            It&rsquo;s a transit, not a curse &mdash; a structured course in maturity, and most lives are better on the other side of it.
+          </p>
+        </a>
+      </div>
+
+      <div class="relative mb-6 last:mb-0">
+        <span class="absolute -left-8 top-1.5 w-3.5 h-3.5 rounded-full bg-astro-500 ring-4 ring-cream" aria-hidden="true"></span>
+        <a href="/learn/manglik-dosh/" class="group block">
+          <h3 class="font-display text-xl text-stone-900 group-hover:text-astro-700 transition-colors">
+            <span class="text-astro-600" aria-hidden="true">&#9794;</span> Manglik dosha
+          </h3>
+          <p class="text-stone-700 leading-relaxed mt-1">
+            <span class="italic text-stone-600">&ldquo;It will ruin the marriage.&rdquo;</span>
+            Classical texts list over a dozen cancellation rules &mdash; a lot of people labelled Manglik actually aren&rsquo;t.
+          </p>
+        </a>
+      </div>
+
+      <div class="relative mb-6 last:mb-0">
+        <span class="absolute -left-8 top-1.5 w-3.5 h-3.5 rounded-full bg-astro-500 ring-4 ring-cream" aria-hidden="true"></span>
+        <a href="/learn/kaal-sarp-dosh/" class="group block">
+          <h3 class="font-display text-xl text-stone-900 group-hover:text-astro-700 transition-colors">
+            <span class="text-astro-600" aria-hidden="true">&#9738;</span> Kaal Sarp
+          </h3>
+          <p class="text-stone-700 leading-relaxed mt-1">
+            <span class="italic text-stone-600">&ldquo;Every planet trapped.&rdquo;</span>
+            One of the most over-diagnosed conditions in modern astrology &mdash; a structure for understanding a pattern, not a sentence to fear.
+          </p>
+        </a>
+      </div>
+    </div>
 
     <!-- Shloka card — Gita 18.66, the perfect verse for this message -->
     <div class="bg-white/70 backdrop-blur rounded-2xl border border-astro-100 p-6 sm:p-8 mb-8 max-w-2xl mx-auto">
