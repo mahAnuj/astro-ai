@@ -47,7 +47,30 @@
 
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-20 grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-10 lg:gap-16 items-center">
     <!-- LEFT — value prop -->
-    <div>
+    {# Form-first on mobile (#195). `order-2` on this column and `order-1` on the form
+       column flip the visual order below `md`, which is exactly where `md:grid-cols-2`
+       above turns this into two columns — so the rule reads "single column => form
+       first; two columns => untouched". Both are `md:order-none`, so 1280px is
+       byte-for-byte the layout it was: prose left, form right.
+
+       This is the only lever that reached the 667px fold. The two commits before it
+       (spacing/typography reclaim, then hiding the form sub-line) took the CTA bottom
+       on 375×667 from 1119 to 996 to 956, and stalled there — still 289px short. This
+       reorder is worth a measured -333px and lands the CTA bottom at 623, 44px above
+       the fold. Measure it with scripts/measure_cta_fold.py, not by eye.
+
+       DOM order is deliberately unchanged: the <h1> is still the first heading in
+       source, ahead of the form's <h2>, so the document outline and every crawler
+       still read value-prop-then-form. CSS `order` moves pixels, not nodes.
+
+       The cost, accepted knowingly: tab order follows DOM, not `order`, so on mobile
+       the two provenance-chip links (/learn/, /about) are focused BEFORE the form
+       fields while appearing BELOW the form. That is WCAG 2.4.3 (Focus Order). It was
+       measured with a keyboard sweep, not assumed — those two links are the entire
+       mismatch, nothing became unreachable, and the CTA is still tab-reachable.
+
+       Reverting is this one commit. #}
+    <div class="order-2 md:order-none">
       {# Navagraha Stotra invocation (Issue #75) — hidden on mobile so the
          above-fold on 375×667 shows the value prop + form / mini-chart
          first. Desktop keeps the shloka since there's viewport room. #}
@@ -214,7 +237,8 @@
     </div>
 
     <!-- RIGHT — chart list if cookie present, else form -->
-    <div>
+    {# order-1 below md: see the note on the left column (#195). #}
+    <div class="order-1 md:order-none">
     {# Rashifal quick-link card — only shows for users WITHOUT a saved chart.
        If they have a chart, the 'Today's Horoscope' button in the chart
        list below is a strictly better version (full-chart daily reading
