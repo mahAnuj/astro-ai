@@ -54,6 +54,20 @@ module.exports = {
       fontFamily: {
         // Inter for Latin, Noto Sans Devanagari as a graceful fallback for Hindi text.
         sans: ['Inter', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // #189: the Devanagari fallback here stays the SANS face, and the
+        // serif Devanagari is applied by the [lang="sa"] rule in base.html
+        // instead. Crimson Pro carries no Devanagari glyphs, so this second
+        // entry is what renders any Devanagari inside a `font-display`
+        // element — including the Hindi-toggle headings in
+        // _subscribe_modal.html and rashifal.html, which are `font-bold`.
+        //
+        // Putting "Noto Serif Devanagari" here (the first shape of the #189
+        // fix) worked visually but forced us to load the serif's 700 weight
+        // for those headings, tripling its cost — 127,280 B variable against
+        // 51,048 B for a static 400. Shlokas are the only Devanagari that
+        // needs a serif and they are never bold, so the narrower hook is
+        // both cheaper and more accurate. Full reasoning at the font <link>
+        // in base.html.
         display: ['"Crimson Pro"', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
       },
       colors: {

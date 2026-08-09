@@ -52,7 +52,7 @@
          above-fold on 375×667 shows the value prop + form / mini-chart
          first. Desktop keeps the shloka since there's viewport room. #}
       <div class="hidden sm:block mb-5">
-        <p class="font-display text-base sm:text-lg text-astro-700 italic leading-snug" lang="sa">
+        <p class="font-display text-base sm:text-lg text-astro-700" lang="sa">
           नमः सूर्याय चन्द्राय मङ्गलाय बुधाय च।<br>
           गुरु शुक्र शनिभ्यश्च राहवे केतवे नमः॥
         </p>
@@ -116,7 +116,19 @@
          Hidden on mobile: the SVG eats ~320px of vertical space,
          pushing the form below the fold on 375×667. Form is the
          highest-intent element — mobile viewers get the form
-         immediately after the headline instead of after decoration. #}
+         immediately after the headline instead of after decoration.
+
+         #190 tried to bring it to mobile beside the subhead and it was
+         reverted, because the measurement said no. Headless Chromium at a
+         true 390×844 signed-out viewport: the primary CTA's bottom sits at
+         y=1117 on baseline 013a4bc and y=1205 with the mobile chart. The
+         fold is 844, so the CTA is already 273px below it before any
+         change, and the chart adds a further 88px. That cost is NOT the
+         chart's own 112px — it is the subhead reflowing from 358px to
+         230px wide, 6 lines to 9. The smallest variant measured
+         (float:right at 88px) still cost +30px. #190's own ship rule is
+         "if the chart cannot fit without pushing the CTA down, it does not
+         ship — the form outranks the flourish", so it did not ship. #}
       <div class="hidden md:block mt-2 max-w-xs">
         <div class="bg-white rounded-2xl border border-stone-200 shadow-md p-3.5">
           <svg viewBox="0 0 400 400" class="w-full block" xmlns="http://www.w3.org/2000/svg" aria-label="Sample Janma Kundali preview">
@@ -454,7 +466,7 @@
 
     <!-- Shloka card — Gita 18.66, the perfect verse for this message -->
     <div class="bg-white/70 backdrop-blur rounded-2xl border border-astro-100 p-6 sm:p-8 mb-8 max-w-2xl mx-auto">
-      <p class="font-display text-lg sm:text-xl text-astro-800 italic leading-relaxed mb-3" lang="sa">
+      <p class="font-display text-lg sm:text-xl text-astro-800 mb-3" lang="sa">
         सर्वधर्मान्परित्यज्य मामेकं शरणं व्रज।<br>
         अहं त्वा सर्वपापेभ्यो मोक्षयिष्यामि <span class="text-rose-700">मा शुचः</span>॥
       </p>
