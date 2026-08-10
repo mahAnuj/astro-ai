@@ -255,6 +255,15 @@ def _format_numerology_for_prompt(reading) -> str:
     reasoning is still primary. This just lets it cross-reference when
     a user asks a numerology-flavoured follow-up.
     """
+    # The name-derived numbers follow the reading's own letter table (#167),
+    # so the label must come from the reading rather than being pinned.
+    system_label = {"chaldean": "Chaldean", "pythagorean": "Pythagorean"}.get(
+        str(getattr(reading, "system", "") or "").lower()
+    )
+    name_number_line = (
+        f"Name Number ({system_label}): {reading.name_number}"
+        if system_label else f"Name Number: {reading.name_number}"
+    )
     parts = [
         f"Life Path: {reading.life_path} ({reading.life_path_meaning[:80]}…)"
         if reading.life_path_meaning else f"Life Path: {reading.life_path}",
@@ -262,7 +271,7 @@ def _format_numerology_for_prompt(reading) -> str:
         f"Destiny (Expression): {reading.destiny}",
         f"Soul Urge: {reading.soul_urge}",
         f"Personality: {reading.personality}",
-        f"Name Number (Chaldean): {reading.name_number}",
+        name_number_line,
         f"Personal Year: {reading.personal_year}",
     ]
     if reading.karmic_debt_numbers:
