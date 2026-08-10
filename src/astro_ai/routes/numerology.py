@@ -76,6 +76,27 @@ async def numerology_calculate(
             },
             status_code=400,
         )
+    # A name with no Latin letters cannot be scored, so refuse it rather than
+    # render four zeros (#168). Both letter tables are defined over the 26
+    # Latin letters only; no source in knowledge/*.md gives a Devanagari (or
+    # any other script) letter-to-number mapping, so there is no correct
+    # number to compute. Transliterating silently would be worse than
+    # refusing — different romanisations of the same Hindi name reduce to
+    # different numbers, so we would be presenting an arbitrary pick as fact.
+    # Reuses _clean_name so this test can never drift from the cleaning the
+    # calculation itself does; the length-2 floor mirrors the check above.
+    if len(_num._clean_name(name)) < 2:
+        return templates.TemplateResponse(
+            request, "numerology.html",
+            {
+                "page_title": "Free Numerology Calculator",
+                "page_meta": "Free numerology calculator with Chaldean + Pythagorean systems.",
+                "reading": None,
+                "error": "Please enter your name in English letters — the Chaldean and Pythagorean letter values are defined over the Latin alphabet, so a name written in Devanagari or another script can't be scored.",
+                "lang": _lang(request),
+            },
+            status_code=400,
+        )
     if system not in ("chaldean", "pythagorean"):
         system = "chaldean"
     try:
@@ -107,7 +128,10 @@ async def numerology_calculate(
         request, "numerology.html",
         {
             "page_title": f"Numerology Reading for {reading.name} — Life Path {reading.life_path}",
-            "page_meta": f"Free numerology reading for {reading.name}: Life Path {reading.life_path}, Destiny {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}, Name Number {reading.name_number}. Character profile, life challenges, career fields, best partners, traditional per-number practices, and the Chinese Lo Shu birth-number matrix. Framework is modern Western (Chaldean/Pythagorean) + ancient Chinese, not classical Vedic Jyotish.",
+            # Destiny and Name Number are the same quantity (#167 — name_number
+            # is an alias of destiny), so print it once under both labels
+            # rather than twice with the same value.
+            "page_meta": f"Free numerology reading for {reading.name}: Life Path {reading.life_path}, Destiny/Name Number {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}. Character profile, life challenges, career fields, best partners, traditional per-number practices, and the Chinese Lo Shu birth-number matrix. Framework is modern Western (Chaldean/Pythagorean) + ancient Chinese, not classical Vedic Jyotish.",
             "reading": reading,
             "num_bhagya_score": _num_bhagya(reading, lang=_lang(request)),
             "error": None,
@@ -149,6 +173,24 @@ async def numerology_compat_compute(
              "page_meta": "Free numerology compatibility check.",
              "compat": None,
              "error": "Please enter both names (at least 2 characters each).",
+             "lang": _lang(request)},
+            status_code=400,
+        )
+    # Same unscoreable-name guard as POST /numerology (#168) — either side
+    # being non-Latin silently zeroes the destiny component of the score, so
+    # name the offending side instead of scoring around it.
+    _unscoreable = [
+        label for label, value in (("the first name", name_a), ("the second name", name_b))
+        if len(_num._clean_name(value)) < 2
+    ]
+    if _unscoreable:
+        _which = "both names" if len(_unscoreable) == 2 else _unscoreable[0]
+        return templates.TemplateResponse(
+            request, "numerology_compat.html",
+            {"page_title": "Numerology Compatibility",
+             "page_meta": "Free numerology compatibility check.",
+             "compat": None,
+             "error": f"Please enter {_which} in English letters — the Chaldean and Pythagorean letter values are defined over the Latin alphabet, so a name written in Devanagari or another script can't be scored.",
              "lang": _lang(request)},
             status_code=400,
         )
