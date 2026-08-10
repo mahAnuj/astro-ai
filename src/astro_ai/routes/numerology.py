@@ -128,7 +128,10 @@ async def numerology_calculate(
         request, "numerology.html",
         {
             "page_title": f"Numerology Reading for {reading.name} — Life Path {reading.life_path}",
-            "page_meta": f"Free numerology reading for {reading.name}: Life Path {reading.life_path}, Destiny {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}, Name Number {reading.name_number}. Character profile, life challenges, career fields, best partners, traditional per-number practices, and the Chinese Lo Shu birth-number matrix. Framework is modern Western (Chaldean/Pythagorean) + ancient Chinese, not classical Vedic Jyotish.",
+            # Destiny and Name Number are the same quantity (#167 — name_number
+            # is an alias of destiny), so print it once under both labels
+            # rather than twice with the same value.
+            "page_meta": f"Free numerology reading for {reading.name}: Life Path {reading.life_path}, Destiny/Name Number {reading.destiny}, Soul Urge {reading.soul_urge}, Personality {reading.personality}. Character profile, life challenges, career fields, best partners, traditional per-number practices, and the Chinese Lo Shu birth-number matrix. Framework is modern Western (Chaldean/Pythagorean) + ancient Chinese, not classical Vedic Jyotish.",
             "reading": reading,
             "num_bhagya_score": _num_bhagya(reading, lang=_lang(request)),
             "error": None,

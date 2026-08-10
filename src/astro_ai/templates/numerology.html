@@ -109,7 +109,7 @@
         <li>&bull; <strong>Destiny / Expression Number</strong> &mdash; English-letter name reduction. Origin: same Balliett/Jordan lineage.</li>
         <li>&bull; <strong>Soul Urge Number</strong> &mdash; from name vowels. Origin: 20th-c. Western numerology.</li>
         <li>&bull; <strong>Personality Number</strong> &mdash; from name consonants. Origin: 20th-c. Western numerology.</li>
-        <li>&bull; <strong>Name Number</strong> &mdash; Chaldean total of your name letters. Origin: Cheiro (William John Warner, 1866-1936); tables in wide Indian circulation trace to him.</li>
+        <li>&bull; <strong>Name Number</strong> &mdash; the total of your name letters on whichever letter table you pick above, then reduced; it is the same quantity as the Destiny/Expression number, under the name Indian numerology uses for it. Origin of the Chaldean table: Cheiro (William John Warner, 1866-1936); the tables in wide Indian circulation trace to him.</li>
       </ul>
     </div>
   </section>
@@ -268,15 +268,27 @@
      Classical birth-number matrix. Each cell shows a digit + how many
      times it appeared in the user's DOB. Fully-present or fully-absent
      rows/cols/diagonals form 'arrows' with named classical
-     interpretations. Sourced from Cheiro's Book of Numbers per
-     knowledge/numerology.md §13.3. #}
+     interpretations.
+
+     NO SOURCE IN data/ COVERS THIS GRID — do not add a book citation.
+     This block used to credit Cheiro's Book of Numbers "per §13.3".
+     That was a misreading: §13.3 assigns Cheiro to the extended
+     COMPOUND numbers and Feng Shui texts to the Lo Shu grid, and §13.2
+     lists Lo Shu under "still missing from both books". Re-measured
+     2026-08-10 with `pdftotext -layout`: 'lo shu' / 'loshu' / 'lo-shu'
+     return 0 hits in the Cheiro PDF (8,389 lines) and 0 across all
+     thirteen PDFs in data/ (77,119 lines). The lone 'magic square' hit
+     is Johari's 9x9 Vedic Square, a different object.
+
+     So the copy names the tradition only. If a real Lo Shu source is
+     ever acquired, cite it here then — not before. #}
   {% if reading.lo_shu %}
   {% set _grid = reading.lo_shu %}
   <section class="bg-white rounded-2xl border border-astro-200 p-5 sm:p-6 shadow-sm">
     <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Lo Shu Birth-Number Matrix</div>
     <h2 class="font-display text-2xl text-astro-800 mb-2">Your 3×3 Number Grid</h2>
     <p class="text-sm text-stone-600 mb-4">
-      Classical 3×3 matrix from your DOB digits ({{ _grid.dob_digits }}). Cells show how many times each digit appears in your birth date. Missing digits point to life lessons; repeated digits mark natural strengths. <span class="italic">Per Cheiro's <em>Book of Numbers</em>.</span>
+      Classical 3×3 matrix from your DOB digits ({{ _grid.dob_digits }}). Cells show how many times each digit appears in your birth date. Missing digits point to life lessons; repeated digits mark natural strengths. <span class="italic">This grid belongs to the Chinese Lo Shu tradition, not to Vedic Jyotish.</span>
     </p>
 
     {# The 3×3 grid — classical Lo Shu magic-square layout 4-9-2 / 3-5-7 / 8-1-6.
@@ -535,13 +547,27 @@
      were conflated here until #160). Attribution detail and the Cheiro
      line numbers live in numerology.py's _COMPOUND_NUMBER_MEANING header
      and corpus §5. Per CLAUDE.md, user-facing copy names the tradition
-     rather than the book, so the caption below must stay author-free. #}
+     rather than the book, so the caption below must stay author-free.
+
+     The caption is system-conditional, and must stay that way. Cheiro's
+     10-52 series is defined over HIS OWN (Chaldean) letter values, so
+     `compute()` builds name_compound from _CHALDEAN unconditionally —
+     deliberately. A "Pythagorean compound number" would be a system no
+     source in data/ describes, so we do not compute one.
+
+     Consequence: since #167 made name_number follow the user's selected
+     table, the compound reduces to the displayed Name Number only in
+     Chaldean mode. Measured over 1716 readings: Chaldean 0 mismatches
+     (under this page's stated master-preserving reduction, see the
+     conventions list above), Pythagorean 1566. So the "alongside the
+     reduced Name Number" claim is stated ONLY on the Chaldean branch.
+     Do not collapse these two branches back into one sentence. #}
   {% if reading.name_compound and reading.name_compound_meaning %}
   <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
     <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Name Compound Number</div>
     <h2 class="font-display text-lg text-astro-800 mb-2">Compound {{ reading.name_compound }}</h2>
     <p class="text-sm text-stone-700 leading-relaxed">{{ reading.name_compound_meaning }}</p>
-    <p class="text-xs text-stone-600 mt-2 italic">In the compound-number tradition, the unreduced total of a name (10&ndash;52) carries a secondary vibration alongside the reduced Name Number ({{ reading.name_number }}). The single number describes how you appear to others; the compound number describes the hidden forces working behind the name. The series stops at 52, one for each week of the year.</p>
+    <p class="text-xs text-stone-600 mt-2 italic">{% if reading.system == 'pythagorean' %}In the compound-number tradition, the unreduced total of a name (10&ndash;52) carries a secondary vibration of its own. That tradition defines its series over the Chaldean letter values, so this compound is read on those values &mdash; it stands alongside your Pythagorean Name Number ({{ reading.name_number }}) rather than reducing to it.{% else %}In the compound-number tradition, the unreduced total of a name (10&ndash;52) carries a secondary vibration alongside the reduced Name Number ({{ reading.name_number }}).{% endif %} The single number describes how you appear to others; the compound number describes the hidden forces working behind the name. The series stops at 52, one for each week of the year.</p>
   </section>
   {% endif %}
 
