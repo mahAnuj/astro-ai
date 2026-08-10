@@ -188,7 +188,15 @@
       <form method="post" action="/reading" id="kundli-form"
             class="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-astro-900/5 p-5 sm:p-8 scroll-mt-20">
         <h2 class="font-display text-xl sm:text-2xl text-astro-700 mb-1">Start with your birth details</h2>
-        <p class="hidden sm:block text-sm text-stone-600 mb-5">All four fields take a few seconds.</p>
+        {# `sr-only` below sm, not `hidden` (#195). Both free the same ~40px of
+           vertical space, but `hidden` computes to display:none, which drops the
+           node out of the accessibility tree — independent QA confirmed a mobile
+           screen-reader user stopped receiving this sentence entirely, while the
+           commit that introduced it claimed it merely stopped being painted.
+           `sr-only` positions it out of view without removing it from the tree, so
+           it costs no layout height and AT keeps it. Verified: CTA bottom still 623
+           at 375x667. #}
+        <p class="sr-only sm:not-sr-only text-sm text-stone-600 sm:mb-5">All four fields take a few seconds.</p>
 
         <div class="space-y-3 sm:space-y-4">
           <label class="block">
