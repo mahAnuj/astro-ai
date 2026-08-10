@@ -530,13 +530,18 @@
   </section>
   {% endif %}
 
-  {# Compound number — Johari §5 attaches meaning to the unreduced name total. #}
+  {# Compound number — the unreduced name total, read against CHEIRO's
+     compound series 10-52 (NOT Johari's 10-31 birthdate series; the two
+     were conflated here until #160). Attribution detail and the Cheiro
+     line numbers live in numerology.py's _COMPOUND_NUMBER_MEANING header
+     and corpus §5. Per CLAUDE.md, user-facing copy names the tradition
+     rather than the book, so the caption below must stay author-free. #}
   {% if reading.name_compound and reading.name_compound_meaning %}
   <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
     <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Name Compound Number</div>
     <h2 class="font-display text-lg text-astro-800 mb-2">Compound {{ reading.name_compound }}</h2>
     <p class="text-sm text-stone-700 leading-relaxed">{{ reading.name_compound_meaning }}</p>
-    <p class="text-xs text-stone-600 mt-2 italic">Per Johari §5: unreduced name totals 10-52 carry secondary vibrations alongside the reduced Name Number ({{ reading.name_number }}).</p>
+    <p class="text-xs text-stone-600 mt-2 italic">In the compound-number tradition, the unreduced total of a name (10&ndash;52) carries a secondary vibration alongside the reduced Name Number ({{ reading.name_number }}). The single number describes how you appear to others; the compound number describes the hidden forces working behind the name. The series stops at 52, one for each week of the year.</p>
   </section>
   {% endif %}
 
