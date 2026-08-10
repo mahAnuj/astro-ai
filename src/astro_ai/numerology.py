@@ -157,7 +157,15 @@ class NumerologyReading:
     destiny: int               # Expression — sum Chaldean values of full name
     soul_urge: int             # Heart Desire — sum of vowels only
     personality: int           # Personality — sum of consonants only
-    name_number: int           # Legacy alias — same as destiny; kept for backward compat
+    # Alias of `destiny`, always equal to it, kept only so existing templates
+    # and LLM prompts that read `name_number` keep working. Corpus §2.5.1's
+    # terminology bridge maps "Expression / Destiny Number" and "Name (Namank)"
+    # to the SAME quantity — one number, two vocabularies. No source in this
+    # repo describes a second, differently-computed name total, so this must
+    # never be recomputed on its own table (#167: it was pinned to Chaldean
+    # while `destiny` honoured the user's system, printing two name numbers
+    # for one name in Pythagorean mode).
+    name_number: int
 
     life_path_meaning: str
     destiny_meaning: str
@@ -181,7 +189,8 @@ class NumerologyReading:
     # intermediate Core Number calculation is a soul-work indicator.
     karmic_debt_numbers: tuple[int, ...] = ()
 
-    # Compound number of the name (before reduction) — Johari §5
+    # Compound number of the name (before reduction) — Cheiro's 10-52
+    # name series, not Johari's 10-31 birthdate series (#160).
     name_compound: int = 0
     name_compound_meaning: str = ""
 
@@ -388,9 +397,22 @@ class NumBhagyaScore:
         return self.drivers[:3]
 
 
-# Life-Path-to-Destiny friend-pair map (per Johari §7). Same as the
-# friend-pair used by compute_compatibility() but re-declared here to
-# avoid coupling this score to that helper's private module vars.
+# Life-Path-to-Destiny pair map (per Johari §7). Keys are ASCENDING tuples;
+# the lookup below normalises with (min, max), so a descending tuple written
+# here can never match anything.
+#
+# These are NOT the same tables compute_compatibility() uses (#163). That
+# claim used to sit here and it was false: measured over all 45 unordered
+# pairs of 1-9, this map and _pair_verdict() return DIFFERENT verdicts on 23
+# of them. The disagreement is deliberately left unresolved, because it is
+# not resolvable by picking a winner per pair — Johari's §7 system is
+# DIRECTIONAL. The book gives one passage for "Number 1 and Number 8" and a
+# separate one for "Number 8 and Number 1", and they can reach opposite
+# conclusions; likewise L2967 "Number 3s are neutral toward 4s, though 4s are
+# enemies of 3s." A symmetric table cannot express an asymmetric source, so
+# neither of these two tables is derivable from the other, and hand-picking a
+# verdict per pair would be inventing a source position that does not exist.
+# Resolving this needs a directional model, which is out of scope here.
 _LP_DESTINY_FRIENDS: set[tuple[int, int]] = {
     (1, 1), (1, 3), (1, 5), (1, 9),
     (2, 2), (2, 7), (2, 9),
@@ -402,8 +424,24 @@ _LP_DESTINY_FRIENDS: set[tuple[int, int]] = {
     (8, 8),
     (9, 9),
 }
+# (4, 3) and (7, 3) were DELETED here, not rewritten ascending (#163).
+# Both were dead rows — descending, so never matched. #163 proposed flipping
+# them to (3, 4) and (3, 7), which would have ACTIVATED two enemy verdicts
+# Johari denies:
+#   L2967 "Number 3s are neutral toward 4s, though 4s are enemies of 3s."
+#         — the asymmetry is stated outright; there is no symmetric verdict
+#           for 3-4 to write, so ascending (3, 4) would assert one the book
+#           does not make.
+#   L2484 (§ "Number 3 and Number 7") "…both are interested in reforms, both
+#         are writers. As friends and business partners they can be very
+#         helpful to each other."
+#   L4455 (§ "Number 7 and Number 3") "They are mutually beneficial in a
+#         friendship or business partnership."
+#         — 3-7 is friendly in BOTH directions, so (3, 7) as an enemy would
+#           be flatly contrary to the source.
+# Line numbers index the Johari extraction taken with `pdftotext -layout`.
 _LP_DESTINY_ENEMIES: set[tuple[int, int]] = {
-    (1, 8), (2, 5), (3, 5), (4, 3), (4, 5), (6, 7), (6, 8), (7, 3), (7, 8), (8, 9),
+    (1, 8), (2, 5), (3, 5), (4, 5), (6, 7), (6, 8), (7, 8), (8, 9),
 }
 
 
@@ -478,8 +516,20 @@ def compute_numerology_bhagya_score(reading: NumerologyReading, lang: str = "en"
     elif py == 6:
         _add(+2, "nbs_py_harmony")
 
-    # Compound Name number in Johari's most-fortunate 4-tier compounds
-    # (10, 19, 23, 27, 28, 37, 46, 49): +2. The exalted 1s per §5.
+    # Compound Name number tiers. UNVERIFIED ATTRIBUTION — this comment
+    # used to credit "Johari's most-fortunate compounds ... the exalted
+    # 1s per §5", which cannot be right: 37, 43, 46 and 49 are outside
+    # Johari's 10-31 birthdate range entirely. Nor is the list Cheiro's,
+    # though the meanings table now is (#160): Cheiro calls 28 "not a
+    # fortunate number" (-layout 3668-3669) and 31 — which 49 aliases to
+    # — "not a fortunate number from a worldly or material standpoint"
+    # (3695-3696), yet both sit in the favourable tier; and he calls 13
+    # "not unfortunate as is generally supposed" (3501-3502) and 14
+    # "fortunate for dealings with money" (3516-3518), yet both sit in
+    # the challenged tier.
+    # Values deliberately LEFT AS-IS: retiering moves every user's
+    # headline 0-100 score, which is a product decision, not an
+    # attribution fix. Filed as a follow-up rather than changed here.
     if reading.name_compound in (10, 19, 23, 27, 28, 37, 46, 49):
         _add(+2, "nbs_compound_good", n=reading.name_compound)
     elif reading.name_compound in (13, 14, 16, 26, 43):
@@ -945,8 +995,13 @@ _PROFILES: dict[int, LifePathProfile] = {
         career_fields=("Interior design", "Fashion / cosmetics / beauty industry", "Arts / entertainment",
                        "Jewellery / luxury goods", "Hospitality / hotel management", "Relationship counselling",
                        "Wedding planning", "Perfumery"),
+        # 5 is deliberately NOT added to best_partners: Johari calls 5 and 6
+        # "mutual friends" (L3514/L3958, `pdftotext -layout`) but gives no
+        # cut-off for ranking a best-partners list, and §7's friendly line for
+        # 6 omits 5 — so promoting it would be our judgement, not the source's.
         best_partners=(4, 8, 9, 3),
-        worst_partners=(5, 7),  # 5=both moody, 7=introversion clash
+        worst_partners=(7,),  # 7=introversion clash. 5 removed (#196): Johari
+                              # L3514/L3958 call 5 and 6 mutual friends.
         peak_period="Steady arc — Venus never has a single peak, but 40s often bring the material rewards of earlier relationship-building",
         strong_months="Apr 20 – May 20; Sep 23 – Oct 22 (Sun-in-Taurus/Libra — Venus's own signs)",
         weak_months="Aug 23 – Sep 22 (Sun-in-Virgo where Venus debilitates)",
@@ -1046,13 +1101,24 @@ _FRIEND_PAIRS: set[frozenset[int]] = {
     frozenset({1, 8}), frozenset({3, 8}), frozenset({5, 8}),
     frozenset({1, 9}), frozenset({1, 5}),
 }
+# NOTE (#196): 5-6 was listed here AND in _FRIEND_PAIRS above. Because
+# _pair_verdict() tests friends first, the enemy entry was unreachable, but
+# the two tables still asserted opposite things about the same pair. Johari
+# settles it as friend in BOTH directions, so the enemy entry is removed:
+#   L3514 "Numbers 5 and 6 are mutual friends. Sixes are slow, and 5s are quick."
+#   L3958 "Numbers 6 and 5 are mutual friends. Fives help 6s with psychological
+#          problems…"
+# Line numbers are into the Johari extraction taken with `pdftotext -layout`
+# (the flag matters — plain pdftotext numbers them differently).
+# The duplicate frozenset({5, 2}) literal was also dropped; it deduped against
+# frozenset({2, 5}), so 18 written entries silently became a set of 17.
 _ENEMY_PAIRS: set[frozenset[int]] = {
     frozenset({1, 6}),  # deceptive friendship
     frozenset({2, 3}), frozenset({2, 5}),
     frozenset({3, 5}),
     frozenset({4, 3}), frozenset({4, 5}), frozenset({4, 9}),
-    frozenset({5, 2}), frozenset({5, 7}),
-    frozenset({6, 5}), frozenset({6, 7}),
+    frozenset({5, 7}),
+    frozenset({6, 7}),
     frozenset({7, 4}), frozenset({7, 7}), frozenset({7, 8}),
     frozenset({8, 8}), frozenset({8, 9}),
     frozenset({9, 5}), frozenset({9, 9}),
@@ -1179,34 +1245,148 @@ def _get_profile(n: int) -> LifePathProfile | None:
     return _PROFILES.get(n)
 
 
-# ─── Compound numbers 10-31 (Johari §5) ──────────────────────────────
-# Kumar (Ch.1) explicitly calls out 13, 14, 16, 19 as Karmic Debt Numbers.
-# Johari treats each compound number as having its own vibration in
-# addition to the reduced base. Sample of most-cited:
+# ─── Compound numbers 10-52 (CHEIRO, *Book of Numbers*) ──────────────
+# ATTRIBUTION CORRECTION (issue #160). This table was headed "Johari §5"
+# and the template credited Johari. It is not Johari's — it is Cheiro's,
+# and the two systems must not be conflated again:
+#
+#   Johari's compound numbers are BIRTHDATE-scoped, 10-31 only. His
+#   chapter opens "All compound numbers discussed here apply to the
+#   psychic numbers of those who were born on that date" (Johari
+#   -layout lines 5673-5674). A name total is not a birth date, and he
+#   has no rows above 31 because months end at 31.
+#
+#   Cheiro's compound numbers are NAME-and-date scoped, 10-52. He
+#   applies them to names repeatedly and explicitly: "The compound
+#   number of 10 made by his name" (line 7246), "the compound number of
+#   the name, 16" (line 6906), "the compound Number 15" of a name
+#   (lines 6987-6993), "The compound number of President Roosevelt's
+#   name, which works out to a 22" (line 7595). His worked example for
+#   Austen Chamberlain sums the letters of the name to 32 and reads
+#   BOTH the single and the compound number off it (lines 3243-3277).
+#
+# The engine implements CHEIRO. The lower bound is his ("All numbers
+# from 10 up become in symbolism 'double' or 'compound' numbers", line
+# 3447); so is the upper bound, and he gives the reason — "compound
+# numbers up to that mysterious number of 52" (line 3463), closing with
+# "We have now completed the 52 numbers which represent the 52 weeks of
+# our year" (lines 3757-3758). The 10-52 clamp in compute() is
+# therefore sourced, not arbitrary.
+#
+# The decisive row is 28: Cheiro calls it "full of contradictions...
+# loss through trust in others, opposition and competition in trade,
+# danger of loss through law" (lines 3660-3669), whereas Johari's 28 is
+# the opposite — "the number 28 is ruled by the Sun, a lucky number that
+# brings success" (Johari -layout 6034-6035). The text here has always
+# been Cheiro's.
+#
+# Every string below is Cheiro's own reading, condensed, with the line
+# it came from. Line numbers index the Cheiro extraction taken with
+# `pdftotext -layout` — THE FLAG MATTERS, plain `pdftotext` renumbers
+# everything. Source PDF: data/numerology/2015.70770.Cheiros-Book-Of-
+# Numbers_text.pdf; main table at lines 3483-3755, cross-checked against
+# his repeat quotations in the biography chapters (lines 6742-7600).
+#
+# Do NOT re-add "KARMIC DEBT" to 13/14/16/19. That is Kumar's category
+# (corpus §12.5) and it was a second mixed attribution here; Kumar's
+# Karmic Debt logic lives in `_karmic_debt_flags` / `_KARMIC_DEBT_NUMBERS`
+# where it belongs. Cheiro's 19 in particular is "regarded as fortunate
+# and extremely favourable" (line 3586) — the opposite of a debt.
+#
+# Rows Cheiro gives only as cross-references ("34 Has the same meaning
+# as the number 25") are resolved via _COMPOUND_ALIAS below rather than
+# duplicated, so the two cannot drift apart.
 _COMPOUND_NUMBER_MEANING: dict[int, str] = {
-    10: "Wheel of Fortune — honor, faith, self-confidence; rise + fall + rise cycle.",
-    11: "Silent lion (master) — trials by treachery, hidden dangers; requires spiritual discipline to convert to fortune.",
-    12: "The Sacrifice — often victim of others' schemes; use suffering as teacher.",
-    13: "KARMIC DEBT — Warning against selfishness/misuse of power. Not 'unlucky' per se; requires ethical vigilance. Meditate on gemstone; practise ahimsa.",
-    14: "KARMIC DEBT — Warning against over-indulgence in freedom. Balance is the teacher; extreme mercurial swings.",
-    15: "The Magician — powerful for material gain but slightly self-serving; occult undertones.",
-    16: "KARMIC DEBT — Rise-and-fall cycle (Sun-Venus conflict). Watch for accidents from height/water/travel. 'Fallen tower' vibration.",
-    17: "Star of the Magi (Sun+Ketu) — real spiritual understanding through inner conflict; leaves mark on history after death.",
-    18: "Materialism destroys spiritual side — beware of quarrels and sudden loss.",
-    19: "KARMIC DEBT — Sun and success but risk of self-glorification. Called 'Prince of Heaven' if handled well.",
-    20: "The Judgement — awakening, powerful upheaval; call to greater purpose.",
-    21: "Universe / Crown of the Magi — universally auspicious for creative-life natives.",
-    22: "Master builder-like — scale and karmic weight; potent for architects, reformers, movement-organisers.",
-    23: "The Royal Star of the Lion — auspicious for success in high positions.",
-    24: "Fortune-loved — great friendships, generous partners, likely to marry above station.",
-    25: "Moon+Mercury tension — artistic but late-blooming; self-condemning tendency; avoid risky ventures.",
-    26: "Warning of severe reversal from partnerships. Marriage-partner selection critical (avoid 4/8/9; select 1/3/6).",
-    27: "The Sceptre — power through wisdom; auspicious for command roles.",
-    28: "Rise-and-loss cycle. Great potential but loses through others' promises; caution with contracts.",
-    29: "Trials by loved ones; deception; test of faith through relationships.",
-    30: "The Contemplative — thoughtful; success comes late; strong intellectual/spiritual gifts.",
-    31: "Self-contained genius; often solitary; unusual creative output.",
+    # Cheiro 3484-3491
+    10: "The Wheel of Fortune — honour, faith and self-confidence, and a cycle of rise and fall. Your name becomes known for good or ill according to your own desires; fortunate in the sense that your plans are likely to be carried out.",
+    # Cheiro 3492-3496 (symbols confirmed again at 7280-7283)
+    11: "An ominous number to occultists — the Clenched Hand and the Muzzled Lion. Warning of hidden dangers, trial, and treachery from others; great difficulties to contend against.",
+    # Cheiro 3497-3500 (label confirmed at 6901)
+    12: "The Sacrifice, or the Victim — suffering and anxiety of mind. It foreshadows being sacrificed for the plans or intrigues of other people.",
+    # Cheiro 3501-3513
+    13: "Change of plans and of place, and not unfortunate as is generally supposed — the ancient writings say 'He who understands the number 13 will be given power and dominion'. Symbolised by the reaping skeleton: a number of upheaval, and of power that wreaks destruction on itself if wrongly used. A warning of the unknown and unexpected.",
+    # Cheiro 3514-3525
+    14: "Movement, and the combination of people and things. Fortunate for dealings with money, speculation and changes in business, but with a strong element of risk and danger throughout — usually arising from the actions and foolhardiness of others. Also warns of danger from natural forces: tempest, water and fire.",
+    # Cheiro 3526-3548 (label confirmed at 6987)
+    15: "A number of occult significance, of magic and mystery — those it represents will use every art they can to carry out their purpose. Associated with good talkers, eloquence, gifts of music and art, a dramatic personality and strong personal magnetism. Fortunate for obtaining money, gifts and favours from others.",
+    # Cheiro 3549-3558 (label confirmed at 6906-6912)
+    16: "The Shattered Citadel — a tower struck by lightning, from which a man falls with a crown on his head. It gives warning of some strange fatality awaiting one, of accidents, and of the defeat of one's plans; a sign to note carefully and make plans in advance against.",
+    # Cheiro 3559-3567
+    17: "A highly spiritual number — the eight-pointed Star of Venus, the symbol of Peace and Love, also called the Star of the Magi. It marks one who has risen superior to the trials and difficulties of his life. A number of immortality: the person's name lives after him.",
+    # Cheiro 3568-3585
+    18: "Materialism striving to destroy the spiritual side of the nature. It associates a person with bitter quarrels, even family ones, and with upheavals and revolutions — in some cases making money or position through them. A warning of treachery and deception by others, and of danger from the elements.",
+    # Cheiro 3586-3591
+    19: "Regarded as fortunate and extremely favourable — symbolised as the Sun, and called the Prince of Heaven. It promises happiness, success, esteem and honour, and success in one's plans for the future.",
+    # Cheiro 3592-3604
+    20: "The Awakening, also called the Judgement — the awakening of new purpose, new plans and new ambitions, and the call to action for some great cause or duty. It is not a material number, and so is a doubtful one as far as worldly success goes; it denotes delays and hindrances that are only conquered by developing the spiritual side of the nature.",
+    # Cheiro 3605-3612
+    21: "The Universe, also called the Crown of the Magi — advancement, honours, elevation in life and general success. It means victory after a long fight, for the Crown of the Magi is only gained after long initiation and tests of determination.",
+    # Cheiro 3613-3622 (label confirmed at 3220 and 7595-7600)
+    22: "A warning number of illusion and delusion — a good man blinded by the folly of others, carrying a knapsack full of errors and offering no defence against the tiger attacking him. A good person living in a fool's paradise; a dreamer of dreams who wakes only when surrounded by danger, and who judges falsely under the influence of others.",
+    # Cheiro 3623-3628
+    23: "The Royal Star of the Lion — a promise of success, of help from superiors, and of protection from those in high places. A most fortunate number.",
+    # Cheiro 3630-3637 (label confirmed by the worked example at 3265-3268)
+    24: "A fortunate number: it promises the assistance and association of people of rank and position with your plans, and denotes gain through love and through the opposite sex.",
+    # Cheiro 3638-3643
+    25: "Strength gained through experience, and benefit obtained by observing people and things. Not deemed exactly lucky, because its success comes through strife and trials in the earlier life — but favourable where the future is concerned.",
+    # Cheiro 3644-3649
+    26: "Full of the gravest warnings for the future. It foreshadows disasters brought about by association with others, and ruin through bad speculations, partnerships, unions and bad advice.",
+    # Cheiro 3651-3659
+    27: "The Sceptre — a promise of authority, power and command. It indicates that reward will come from the productive intellect, and that the creative faculties have sown good seeds that will reap a harvest. Those who carry this number should carry out their own ideas and plans.",
+    # Cheiro 3660-3669 — the row that proves the table is Cheiro's, not Johari's
+    28: "A number full of contradictions. It indicates a person of great promise and possibility who is likely to see it all taken away unless he provides carefully for the future — loss through trust in others, opposition and competition in trade, danger of loss through law, and the likelihood of having to begin life's road over and over again.",
+    # Cheiro 3670-3674
+    29: "Uncertainties, treachery and deception by others. It foreshadows trials and tribulation, unexpected dangers, unreliable friends, and grief and deception caused by the opposite sex.",
+    # Cheiro 3675-3691 (cross-checked via the '40' quotation at 6735-6742)
+    30: "Thoughtful deduction, retrospection, and mental superiority over one's fellows. Belonging so completely to the mental plane, such people are likely to set material things aside — not because they have to, but because they wish to. Neither fortunate nor unfortunate: it can be all-powerful, but is just as often indifferent, according to the will of the person.",
+    # Cheiro 3693-3696
+    31: "Much like the 30, except that the person is even more self-contained, lonely and isolated from his fellows. Not a fortunate number from a worldly or material standpoint.",
+    # Cheiro 3697-3705
+    32: "A magical power like the single 5, or the compound 14 and 23. Usually associated with combinations of people or of nations. Fortunate if the person holds to his own judgement and opinions; if he does not, his plans are likely to be wrecked by the stubbornness and stupidity of others.",
+    # Cheiro 3717-3721
+    37: "A number with a distinct potency of its own — good and fortunate friendships in love and in dealings with the opposite sex, and equally good for partnerships of all kinds.",
+    # Cheiro 3736-3740
+    43: "An unfortunate number, symbolised by the signs of revolution, upheaval, strife and failure. Not fortunate when it comes out in calculations relating to future events.",
+    # Cheiro 3749-3754. The numeral itself was lost by the OCR; the row
+    # sits between "50 same meaning as 32" (3748) and "52 same meaning
+    # as 43" (3755) in a strictly ascending, complete list, so 51 is the
+    # only slot it can occupy. Text itself reads cleanly.
+    51: "A very powerful potency of its own. It represents the nature of the warrior and promises sudden advancement in whatever is undertaken — especially favourable for those in military or naval life, and for leaders in any cause. At the same time it threatens enemies, danger, and the likelihood of assassination.",
 }
+
+# Cheiro gives these rows only as cross-references to an earlier number
+# — "33. This number has no potency of its own, and consequently has the
+# same meaning as the 24" (3706-3709). Resolved rather than duplicated so
+# the wording cannot drift. Each line below is the line the alias is
+# stated on.
+_COMPOUND_ALIAS: dict[int, int] = {
+    33: 24,  # Cheiro 3706-3709
+    34: 25,  # Cheiro 3710-3712
+    35: 26,  # Cheiro 3713-3714
+    36: 27,  # Cheiro 3715-3716
+    38: 29,  # Cheiro 3722-3723
+    39: 30,  # Cheiro 3724-3725 (numeral dropped by OCR; bracketed by 38
+             # and 40, and the row itself names its target as "the number
+             # 30, which is the next to it in its own series" — n-9 = 30
+             # gives n = 39, so the row is self-confirming)
+    40: 31,  # Cheiro 3726-3729
+    41: 32,  # Cheiro 3730-3733
+    42: 24,  # Cheiro 3734-3735
+    44: 26,  # Cheiro 3742
+    45: 27,  # Cheiro 3743
+    46: 37,  # Cheiro 3744
+    47: 29,  # Cheiro 3745
+    48: 30,  # Cheiro 3746
+    49: 31,  # Cheiro 3747
+    50: 32,  # Cheiro 3748
+    52: 43,  # Cheiro 3755
+}
+
+# Materialise the aliases so the table is a complete 10-52 map.
+for _alias, _base in _COMPOUND_ALIAS.items():
+    _COMPOUND_NUMBER_MEANING[_alias] = _COMPOUND_NUMBER_MEANING[_base]
+del _alias, _base
+
 _KARMIC_DEBT_NUMBERS = {13, 14, 16, 19}
 
 
@@ -1270,37 +1450,52 @@ def _personal_year(birth_date: str, target_year: int) -> int:
 def _karmic_debt_flags(birth_date: str, name: str, table: dict) -> tuple[int, ...]:
     """Detect Karmic Debt Numbers per Kumar Ch.1.
 
-    Karmic Debt = presence of 13, 14, 16, or 19 in any intermediate
-    Core Number sum (before final reduction).
+    Karmic Debt = 13, 14, 16 or 19 appearing as an intermediate sum during the
+    calculation of ANY of the five Core Numbers, before final reduction to 1-9
+    (knowledge/numerology.md §12.5, detection rule; Kumar Ch.1: "Karmic Debt
+    number can come in any of your CORE NUMBER (Life Path, Birthday,
+    Expression, Personality, and Heart Desire)").
+
+    The five intermediates tested, one per Core Number, with the inputs
+    §2.5.3's calculation table gives for each:
+
+      Life Path    — the pre-reduction Life-Path sum. Shared with `_life_path()`
+                     via `_life_path_intermediate()` so exactly one expression
+                     forms it; the old local `total_raw` agreed with nothing
+                     (issue #161 defect (c)).
+      Birthday     — the day of the month, UNREDUCED. §2.5.3 gives the Birthday
+                     Number's input as "birth date (day of month only)", so a
+                     day of 13/14/16/19 is itself the intermediate. The old code
+                     digit-summed the day, which caps at 11 for any two-digit
+                     day and so could never fire (defect (a)).
+      Expression   — letter values of every letter
+      Personality  — letter values of the consonants. Never tested before
+                     (defect (b)); derived exactly as `compute()` derives its
+                     consonant string.
+      Heart Desire — letter values of the vowels
+
+    Year and month digit-sums are deliberately NOT tested — they are not Core
+    Number intermediates and §12.5 gives them no basis.
+
+    Letter table: §12.5 is silent on the Chaldean/Pythagorean choice, so the
+    three name intermediates use the caller's selected system, consistent with
+    how destiny/personality/heart-desire are themselves computed. Flagged, not
+    resolved: the 13/14/16/19 category is Chaldean in origin.
     """
     flags: set[int] = set()
-    # Intermediate sums during Life Path computation
     m = re.match(r"(\d{4})-(\d{2})-(\d{2})", birth_date or "")
     if m:
-        y, mo, d = m.groups()
-        for chunk in (y, mo, d):
-            s = sum(int(x) for x in chunk)
-            if s in _KARMIC_DEBT_NUMBERS:
-                flags.add(s)
-        # NOTE (#162 -> #161): this expression matches neither _life_path's
-        # intermediate (now the sum of ALL DOB digits) nor the old one. It already
-        # matched neither before this change — that is issue #161 defect (c),
-        # which owns the reconciliation. Deliberately left alone here so this
-        # bundle's Bhagya-score movement stays measurable to the Life Path and
-        # Personal Year terms only. Do not "fix" it in passing.
-        total_raw = int(y[0]) + int(y[1]) + int(y[2]) + int(y[3]) + int(mo) + int(d)
-        if total_raw in _KARMIC_DEBT_NUMBERS:
-            flags.add(total_raw)
-    # Intermediate name sum
+        _, _, d = m.groups()
+        for date_sum in (_life_path_intermediate(birth_date), int(d)):
+            if date_sum in _KARMIC_DEBT_NUMBERS:
+                flags.add(date_sum)
     letters = _clean_name(name)
-    name_sum_raw = sum(table.get(c, 0) for c in letters)
-    if name_sum_raw in _KARMIC_DEBT_NUMBERS:
-        flags.add(name_sum_raw)
-    # Vowels-only raw
     vowels = "".join(c for c in letters if c in _VOWELS)
-    v_sum = sum(table.get(c, 0) for c in vowels)
-    if v_sum in _KARMIC_DEBT_NUMBERS:
-        flags.add(v_sum)
+    consonants = "".join(c for c in letters if c not in _VOWELS)
+    for chars in (letters, consonants, vowels):
+        name_sum = sum(table.get(c, 0) for c in chars)
+        if name_sum in _KARMIC_DEBT_NUMBERS:
+            flags.add(name_sum)
     return tuple(sorted(flags))
 
 
@@ -1409,10 +1604,23 @@ def _life_path(birth_date: str) -> int:
     compatibility verdicts key off the base number and are therefore
     unaffected.
     """
-    digits = re.sub(r"[^0-9]", "", birth_date or "")
-    if not digits:
+    total = _life_path_intermediate(birth_date)
+    if not total:
         return 0
-    return _reduce(sum(int(d) for d in digits), preserve_masters=True)
+    return _reduce(total, preserve_masters=True)
+
+
+def _life_path_intermediate(birth_date: str) -> int:
+    """The Life-Path sum BEFORE reduction — sum of every digit in YYYYMMDD.
+
+    Split out of `_life_path()` so the reduced Life Path and the Karmic Debt
+    detector read the same number. They previously used two different
+    expressions and disagreed (issue #161 defect (c)); this is the only place
+    the Life-Path sum is formed. Same source as `_life_path()` above (Johari
+    ch.2, "Destiny Number").
+    """
+    digits = re.sub(r"[^0-9]", "", birth_date or "")
+    return sum(int(d) for d in digits)
 
 
 def compute(name: str, birth_date: str, system: str = "chaldean",
@@ -1436,7 +1644,6 @@ def compute(name: str, birth_date: str, system: str = "chaldean",
     d = _sum_letters(letters, table)
     su = _sum_letters(vowels, table)
     p = _sum_letters(consonants, table)
-    nn = _sum_letters(letters, _CHALDEAN)  # Name number is always Chaldean by tradition
 
     # Personal Year for the target year (default: current year)
     ty = target_year if target_year is not None else _date.today().year
@@ -1445,7 +1652,15 @@ def compute(name: str, birth_date: str, system: str = "chaldean",
     # Karmic Debt flags across all intermediate sums
     karmic = _karmic_debt_flags(birth_date, name, table)
 
-    # Compound name number (before reduction) — Johari §5
+    # Compound name number (before reduction) — CHEIRO, not Johari (#160).
+    # Cheiro reads compound numbers off a NAME total, e.g. "the compound
+    # number of the name, 16" (Cheiro -layout line 6906) and the Austen
+    # Chamberlain worked example at lines 3243-3277. The 10-52 clamp is
+    # his series bound, not an arbitrary cut: "compound numbers up to
+    # that mysterious number of 52" (3463), "the 52 numbers which
+    # represent the 52 weeks of our year" (3757-3758). Johari's compound
+    # numbers are a different thing — birthdate-scoped, 10-31 — and are
+    # NOT implemented here. See _COMPOUND_NUMBER_MEANING and corpus §5.
     name_raw = sum(_CHALDEAN.get(c, 0) for c in letters)
     name_compound = name_raw if 10 <= name_raw <= 52 else 0
     name_compound_meaning = _get_compound_meaning(name_compound)
@@ -1462,12 +1677,12 @@ def compute(name: str, birth_date: str, system: str = "chaldean",
         destiny=d,
         soul_urge=su,
         personality=p,
-        name_number=nn,
+        name_number=d,
         life_path_meaning=_get(_LIFE_PATH, lp),
         destiny_meaning=_get(_DESTINY, d),
         soul_urge_meaning=_get(_SOUL_URGE, su),
         personality_meaning=_get(_PERSONALITY, p),
-        name_number_meaning=_get(_NAME_NUMBER, nn),
+        name_number_meaning=_get(_NAME_NUMBER, d),
         birthday_meaning=_get(_BIRTHDAY_MEANING, bd),
         life_path_profile=_get_profile(lp),
         life_path_remedy=_get_remedy(lp),

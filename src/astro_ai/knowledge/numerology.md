@@ -308,6 +308,45 @@ Compound numbers are the *unreduced* birthdates from 10 to 31. They modify the p
 
 **Pinpoint / scope warning:** Johari, ch. "The Compound Numbers", opening paragraph — the compound numbers "apply to the psychic numbers of those who were born on that date", i.e. the **day of the month, 10–31**, and are explicitly *not* defined for anything else. They are **not** a name-total interpretation, and there are no rows above 31. Verified against the PDF 2026-08-08. `numerology.py` currently applies this table to the Chaldean *name* total over a 10–52 range, and the interpretation strings it carries are Cheiro's rather than Johari's (see §13.3, and issue #160).
 
+**Scope quote, now cited to the line (issue #163).** Johari, ch. "The Compound Numbers" (chapter heading at line 5668), **lines 5673–5674**: "…those born after the ninth day of any month. All compound numbers discussed here apply to the psychic numbers of those who were born on that date." He restates the range at **line 5677**: "…people born on dates from 10 to 31…". Line numbers are into a `pdftotext -layout` extraction of Johari — **the `-layout` flag matters**, plain `pdftotext` renumbers everything. This settles the scope: the compound number is the **unreduced day of the month, 10–31**, and nothing else. The pre-fix code applied this table to a Chaldean *name* total spanning 10–52; that had **no basis in this source** — rows 32–52 do not exist in it, and a name total is not a birth date.
+
+### 5.1 Two different compound systems — Johari's and Cheiro's (issue #160)
+
+The note above is correct **about Johari** and stands unchanged. What it could not know is that the engine was never implementing Johari here at all. `data/numerology/2015.70770.Cheiros-Book-Of-Numbers_text.pdf` (Cheiro, *Book of Numbers*) was added to the repo after that note was written, and it resolves the question: the strings in `_COMPOUND_NUMBER_MEANING` are **Cheiro's**, and Cheiro's system is legitimately name-scoped and legitimately runs to 52.
+
+**These are two distinct systems and must never be conflated again:**
+
+| | Johari | Cheiro |
+|---|---|---|
+| Input | unreduced **day of the month** | unreduced **name total** (and dates, added together) |
+| Range | **10–31** (months end at 31) | **10–52** (52 weeks in a year) |
+| Framing | planetary rulers, exalted numbers, psychic-number modifier | Tarot-derived symbolism; the "hidden forces" behind the name |
+| Implemented? | **No** — still unimplemented, see below | **Yes** — this is what `/numerology` renders |
+
+Line numbers below index a `pdftotext -layout` extraction of the Cheiro PDF. **The `-layout` flag matters** — plain `pdftotext` renumbers everything. Extraction reproduced and verified byte-identical 2026-08-10.
+
+**Cheiro applies compound numbers to names, explicitly and repeatedly:**
+- Line 7246: "The compound number of 10 made by his name…"
+- Line 6906: "Now, turning to the compound number of the name, 16…"
+- Lines 6987–6993: "…the compound Number 15, as set out on page 81…" / "…which the compound number of a name always denotes".
+- Line 7595: "The compound number of President Roosevelt's name, which works out to a 22…"
+- Lines 3243–3277: the Austen Chamberlain worked example sums the letters of the name to **32 = 5**, then reads both numbers off it — "Both the single numbers and the compound numbers in this name are singularly fortunate… The compound number 24 is also favourable."
+
+**Cheiro's range bounds are stated, not assumed:**
+- Lower, line 3447: "All numbers from 10 up become in symbolism 'double' or 'compound' numbers."
+- Upper, line 3463: "Distinct symbolism has been given to the 'compound' numbers up to that mysterious number of 52."
+- Closing, lines 3757–3758: "We have now completed the 52 numbers which represent the 52 weeks of our year; for all practical purposes there is no necessity to proceed further."
+
+So **the 10–52 clamp in `compute()` is sourced.** Issue #160 called it "arbitrary… not a rule in any source"; that was true of the sources available when it was filed, and is not true now.
+
+**The decisive row is 28**, which is why the mix-up was detectable at all. Cheiro, lines 3660–3669: "This number is full of contradictions… loss through trust in others, opposition and competition in trade, danger of loss through law." Johari's 28 (lines 6034–6035 and 6044, and the table above) is the **opposite**: "the number 28 is ruled by the Sun, a lucky number that brings success" … "They leave their marks on history." The page was printing Cheiro's reading under Johari's name.
+
+**Also corrected in the same pass:** rows 13/14/16/19 opened with "KARMIC DEBT —", which is **Kumar's** category (§12.5), not Cheiro's compound reading — a second mixed attribution, and a directly contradictory one, since Cheiro's 19 is "regarded as fortunate and extremely favourable… the Prince of Heaven" (line 3586). Kumar's Karmic Debt logic is unaffected and still lives in `_karmic_debt_flags` / `_KARMIC_DEBT_NUMBERS`.
+
+**Cheiro's 32–52 rows are mostly cross-references**, e.g. line 3710: "34 Has the same meaning as the number 25, which is the next to it in its own series of 'compound' numbers." The code stores these as aliases (`_COMPOUND_ALIAS`) rather than duplicating text. Numbers with their own text above 31: **32** (3697), **37** (3717), **43** (3736), **51** (3749).
+
+**Still unimplemented — do not mistake this for done:** Johari's *birthdate* compound reading (the 10–31 table above) is a genuine, separate, unbuilt feature. Correcting the attribution of the Cheiro table does not deliver it. If it is built, it must be surfaced as a **distinct** panel keyed on the day of the month, never merged into the name-compound panel.
+
 | # | Reduces to | Ruled by (compound flavor) | Character summary (Johari) |
 |---|---|---|---|
 | 10 | 1 | Sun + 0 (Anant) | Success after hard struggle; zero brings hidden enemies. Independent life needed |
@@ -368,7 +407,7 @@ Johari provides a full "Number X and Number Y" section for every pair (see book 
 - 3 ↔ 1, 3, 6, 9 — Jupiter's expansion
 - 4 ↔ 1, 6, 8 — Rahu's affinity for opposite-support
 - 5 ↔ 1, 3, 5, 6 — Mercury's mercurial harmony
-- 6 ↔ 3, 4, 6, 8, 9 — Venus's universal-friend nature
+- 6 ↔ 3, 4, 5, 6, 8, 9 — Venus's universal-friend nature (**5 corrected — see the 6↔5 note under Enemy pairings**)
 - 7 ↔ 1, 2, 3, 9 — Ketu's spiritual alliances
 - 8 ↔ 1, 3, 5, 6 — Saturn's slow-friend
 - 9 ↔ 1, 3, 6 — Mars's warrior-alliances
@@ -376,13 +415,106 @@ Johari provides a full "Number X and Number Y" section for every pair (see book 
 ### Enemy pairings (activate growth through friction)
 - 1 ↔ 5 (both destabilise), 6 (deceptive friendship), 8 (Saturn drags Sun)
 - 2 ↔ 3 (advisers not partners), 5 (Moon-Mercury enmity)
-- 3 ↔ 5 (both distracted), 7 (Jupiter-Ketu tension)
-- 4 ↔ 3 (Rahu-Jupiter friction), 5 (both restless), 9 (Rahu-Mars war)
+- 3 ↔ 5 (both distracted), 7 (Jupiter-Ketu tension — **DISPUTED, see note below; retained, not deleted**)
+- 4 ↔ 3 (Rahu-Jupiter friction — **DISPUTED as a symmetric verdict, see note below**), 5 (both restless), 9 (Rahu-Mars war)
 - 5 ↔ 2, 7, 8 (weakening)
-- 6 ↔ 1 (only survives short-term), 5 (moody together), 7 (introvert-extrovert)
+- 6 ↔ 1 (only survives short-term), 7 (introvert-extrovert)
 - 7 ↔ 4 (mutual attraction with instability), 7 (troublesome with self), 8 (Ketu-Saturn)
 - 8 ↔ 4 (both bring difficulty), 8 (double Saturn), 9 (Mars-Saturn war)
 - 9 ↔ 5 (both restless), 7 (both spiritual-doubting), 9 (double Mars)
+
+#### Correction: 6 ↔ 5 is a FRIEND pair, not an enemy pair (issue #163)
+
+This corpus previously listed `5` under 6's enemies, glossed as the two being moody in
+each other's company. Johari says the opposite, **in both directions**, in the two
+per-pair prose sections that cover it.
+
+All line numbers below are into a `pdftotext -layout` extraction of Johari,
+*Numerology: With Tantra, Ayurveda, and Astrology* — **the `-layout` flag matters**;
+plain `pdftotext` renumbers everything by roughly a third, so a line number quoted
+without the flag is not checkable.
+
+- §"Number 5 and Number 6", **line 3514**: "Numbers 5 and 6 are mutual friends. Sixes are
+  slow, and 5s are quick."
+- Same section, **line 3516**: "Sixes are beneficial for 5s in friendship, business
+  partnership, and marriage."
+- §"Number 6 and Number 5", **line 3958**: "Numbers 6 and 5 are mutual friends. Fives help
+  6s with psychological problems…"
+- Same section, **lines 3965–3966**: 6s "can enter into business partnerships with 5s and
+  select number 5 for important business appointments or for residential numbers."
+
+The friendship is stated from both sides, and both sides extend it to business
+partnership. The old enemy entry and its gloss were not in the source and have been
+removed; `5` has been added to 6's friendly row.
+
+One directional caveat the source does state, and which a symmetric table cannot carry
+(**line 3964**): "Marriage between a number 6 woman and a number 5 man is not ideal, but
+the reverse combination is very good." That is a gendered, directional qualifier on the
+*marriage* reading only — it does not make the pair an enemy pair, and it is recorded
+here rather than encoded.
+
+#### Disputed: 3 ↔ 7 — retained above, but the book's relational prose contradicts it
+
+The `(Jupiter-Ketu tension)` gloss traces to Johari's *planetary* sentence, **lines
+2477–2478**: "Number 7 is ruled by Ketu, an unfriendly planet to Jupiter, but Jupiter has
+a neutral attitude toward Ketu." Johari's relational prose then overrides that planetary
+framing within the same section:
+
+- §"Number 3 and Number 7", **lines 2484–2485**: "…both are interested in reforms, both
+  are writers. As friends and business partners they can be very helpful to each other."
+- §"Number 7 and Number 3", **line 4455**: "They are mutually beneficial in a friendship
+  or business partnership."
+
+So on the relational reading the book supports a *friend* verdict for 3↔7 — which is the
+verdict `_FRIEND_PAIRS` in `numerology.py` already carries. **Treat the friend verdict as
+the one the source supports.** The enemy-list entry is deliberately **not deleted**,
+because the planetary rationale is genuinely in the source too; this is a real tension
+inside Johari, not a transcription error, and removing one half would hide it.
+
+#### Disputed: 4 ↔ 3 — the source states the asymmetry outright
+
+**Line 2967**, §"Number 4 and Number 3": "Number 3s are neutral toward 4s, though 4s are
+enemies of 3s."
+
+One sentence, two different verdicts depending on direction — so *neither* a symmetric
+"enemy" nor a symmetric "friend" entry is faithful to it. The same section continues
+(**lines 2971–2972**) that "4s are benefited by this friendship, business partnerships,
+etc. Number 4 women can select number 3 men for marriage, but the reverse is not true" —
+directional again. Left in place and marked disputed; the subsection below says why it
+cannot be resolved inside a symmetric table.
+
+### Why the remaining pair disagreements are NOT resolved (directionality)
+
+Issue #163 records 23 of 45 pairs on which the two compatibility tables disagree. Only
+6↔5 is corrected above. The rest are left open for a sourcing reason, not an effort one:
+
+1. **Johari's pair system is directional, not symmetric.** The reading instruction for his
+   summary chart says so outright (**lines 5663–5665**): "…find your own psychic number on
+   the far left vertical column, then the psychic number of the person with whom you wish
+   to relate at the top horizontal column." A row-versus-column lookup is a directed 9×9
+   grid — 81 cells — not a 45-pair symmetric set. The prose bears this out: 6↔5, 3↔7 and
+   4↔3 above each carry a verdict that shifts by direction or by gender.
+2. **Both summary grids are images whose bodies do not extract.** The headings survive —
+   "Summary of Interaction Between Numbers" at **line 5658** and "Relationships and
+   Characteristics of Numbers" at **line 6360** — but the cells under each come out blank
+   in the `-layout` extraction. The authoritative tabular verdicts are simply not readable
+   from this source.
+3. **All 81 per-pair prose sections DO extract.** Verified: every `Number X and Number Y`
+   heading for X,Y ∈ 1–9 is present in the `-layout` extraction (7 of them prefixed by a
+   form-feed page-break character, which is why a naive line-anchored grep finds only 74),
+   each followed by its prose.
+
+Therefore: **a symmetric 45-pair table is not derivable from this source.** Reconciling
+the 23 disagreements honestly means reading all 81 directed sections and modelling the
+result as a directional 9×9 grid — a change to the data model, and **deliberately out of
+scope** here. Until that happens the disagreements stay recorded and unresolved rather
+than being settled by picking a side.
+
+**Do not fill any of these cells from general numerology knowledge.** Anything not quoted
+above with a line number was not read out of the book. `data/numerology/AnkitNotes/*.pdf`
+(unattributed practitioner notes, drivers 1–5 only), the `chaldean-numerology-…-2888.pdf`
+internet compilation, and Goodwin's Western/Pythagorean *Complete Guide* are **not**
+acceptable sources for a Vedic pair verdict.
 
 ### Neutral pairings (inert, no strong help/harm)
 - Most pairings not listed above are treated as neutral by Johari — some cooperation possible with effort.
