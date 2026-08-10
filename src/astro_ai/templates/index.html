@@ -45,176 +45,10 @@
   <div class="absolute -top-24 -right-24 -z-10 w-96 h-96 rounded-full bg-astro-200/30 blur-3xl"></div>
   <div class="absolute -bottom-24 -left-24 -z-10 w-96 h-96 rounded-full bg-amber-200/30 blur-3xl"></div>
 
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-20 grid md:grid-cols-2 gap-6 md:gap-10 lg:gap-16 items-center">
-    <!-- LEFT — value prop -->
-    <div>
-      {# Navagraha Stotra invocation (Issue #75) — hidden on mobile so the
-         above-fold on 375×667 shows the value prop + form / mini-chart
-         first. Desktop keeps the shloka since there's viewport room. #}
-      <div class="hidden sm:block mb-5">
-        <p class="font-display text-base sm:text-lg text-astro-700" lang="sa">
-          नमः सूर्याय चन्द्राय मङ्गलाय बुधाय च।<br>
-          गुरु शुक्र शनिभ्यश्च राहवे केतवे नमः॥
-        </p>
-        <p class="text-xs text-stone-600 mt-1.5 italic">Salutations to all nine grahas &mdash; Navagraha Stotra</p>
-      </div>
-
-      <span class="inline-block text-xs font-semibold tracking-wider text-astro-700 uppercase bg-astro-100 px-3 py-1 rounded-full mb-3 sm:mb-4">
-        Free &middot; Instant &middot; No signup needed
-      </span>
-      <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl text-stone-900 leading-tight mb-3 sm:mb-4">Your Janma Kundali,<br><span class="text-astro-700">simply explained.</span></h1>
-
-      {# Trust bar — real counts only. Each pill has a min-count threshold
-         (set server-side via TRUST_MIN_* env vars, defaults in main.py);
-         pills below their threshold are hidden entirely because "1
-         registered reader" is worse social proof than no pill at all.
-         Kundlis + Asks come from the GCS events log (last 30d — reasonable
-         proxy for "till now" while numbers are early; upgrade to a
-         persistent lifetime counter when we outgrow the retention window). #}
-      {# Mobile spacing (#188): the three provenance chips wrap to two lines at 390px
-         (measured: 440px of chips + 32px of gaps against a 358px column — no ordering
-         avoids it), which adds 20px and pushes the hero CTA from y=1069 to y=1089.
-         The CTA is already 273px below the 844px fold and #190's ship rule is that
-         nothing may push it further. These four mobile-only margin reductions give
-         back 18px, netting +2px. All are sm:-restored, so desktop is unchanged — the
-         row measures 16px tall at 1280px both before and after. #}
-      <div class="flex flex-wrap items-center gap-x-4 gap-y-0.5 sm:gap-y-1 text-xs text-stone-600 mb-3 sm:mb-4">
-        {% if trust_kundlis and trust_kundlis >= trust_kundlis_min %}
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-          <strong class="text-stone-700">{{ "{:,}".format(trust_kundlis) }}</strong> Kundlis generated
-        </span>
-        {% endif %}
-        {% if trust_asks and trust_asks >= trust_asks_min %}
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-          <strong class="text-stone-700">{{ "{:,}".format(trust_asks) }}</strong> questions answered
-        </span>
-        {% endif %}
-        {% if trust_users and trust_users >= trust_users_min %}
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5.13a4 4 0 11-8 0 4 4 0 018 0zm6 3a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          <strong class="text-stone-700">{{ "{:,}".format(trust_users) }}</strong> registered readers
-        </span>
-        {% endif %}
-        {% if trust_subscribers and trust_subscribers >= trust_subscribers_min %}
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-          <strong class="text-stone-700">{{ "{:,}".format(trust_subscribers) }}</strong> daily Rashifal subscribers
-        </span>
-        {% endif %}
-        {# Provenance chips (#188). They fill the slot that renders when the four gated
-           count-pills above are below threshold — all four, today. Same visual treatment
-           as the pills on purpose: when a real count crosses its threshold it joins the
-           row and pushes a chip out. The row holds three; it does not need to be
-           all-counts or all-provenance.
-
-           The wording is deliberate. "Cited to classical sources" describes the working
-           agreement (every astrological claim traces to knowledge/*.md). It is NOT
-           "every claim sourced" — #178 is an open blocker recording that Ashtakoota,
-           Lo Shu and Rudraksha rules have no source in the repo, so a total-coverage
-           claim in the hero would be contradicted by our own issue tracker. Do not
-           "tighten" this line.
-
-           The article count comes from learn_registry via a Jinja global (routes/deps.py)
-           and is never typed in. A hardcoded 75 is silently wrong the day article 76
-           ships and nothing breaks to tell you. #}
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
-          Swiss Ephemeris chart math
-        </span>
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-          <a href="/learn/" class="hover:text-astro-700"><strong class="text-stone-700">{{ learn_article_count }}</strong> explainers</a>
-        </span>
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
-          {# The /about link rides on this chip because the fallback line it replaced
-             (`Since 2026 · classical-source cited`) carried the hero's only link to
-             /about, and dropping it was an internal-link change nobody asked for.
-             Wording is unchanged and must stay unchanged — see the note above. #}
-          <a href="/about" class="hover:text-astro-700">Cited to classical sources</a>
-        </span>
-      </div>
-
-      <p class="text-lg text-stone-600 leading-relaxed mb-5 sm:mb-6">
-        Free Janma Kundali, daily horoscope, monthly &amp; yearly readings, Dasha periods,
-        and Kundli matching for marriage &mdash; with the same chart math professional
-        astrologers use.
-      </p>
-      {# SAMPLE KUNDLI PREVIEW (Issue #76) — replaces the 3-checkmark
-         bullet list. A visual preview of the outcome (Vedic is a visual
-         tradition; showing beats telling). Uses the same .chart-draw
-         line-drawing animation as the /kundli page, creating a
-         consistent visual signature across landing → generated chart.
-
-         Hidden on mobile: the SVG eats ~320px of vertical space,
-         pushing the form below the fold on 375×667. Form is the
-         highest-intent element — mobile viewers get the form
-         immediately after the headline instead of after decoration.
-
-         #190 tried to bring it to mobile beside the subhead and it was
-         reverted, because the measurement said no. Headless Chromium at a
-         true 390×844 signed-out viewport: the primary CTA's bottom sits at
-         y=1117 on baseline 013a4bc and y=1205 with the mobile chart. The
-         fold is 844, so the CTA is already 273px below it before any
-         change, and the chart adds a further 88px. That cost is NOT the
-         chart's own 112px — it is the subhead reflowing from 358px to
-         230px wide, 6 lines to 9. The smallest variant measured
-         (float:right at 88px) still cost +30px. #190's own ship rule is
-         "if the chart cannot fit without pushing the CTA down, it does not
-         ship — the form outranks the flourish", so it did not ship. #}
-      <div class="hidden md:block mt-2 max-w-xs">
-        <div class="bg-white rounded-2xl border border-stone-200 shadow-md p-3.5">
-          <svg viewBox="0 0 400 400" class="w-full block" xmlns="http://www.w3.org/2000/svg" aria-label="Sample Janma Kundali preview">
-            {# Outer border #}
-            <rect x="2" y="2" width="396" height="396" fill="white" stroke="#6b21a8" stroke-width="2"
-                  class="chart-draw" style="--dash: 1584; animation-delay: 200ms"/>
-            {# Diamond outline — 4 sides #}
-            <line x1="200" y1="2"   x2="398" y2="200" stroke="#6b21a8" stroke-width="2"
-                  class="chart-draw" style="--dash: 280; animation-delay: 400ms"/>
-            <line x1="398" y1="200" x2="200" y2="398" stroke="#6b21a8" stroke-width="2"
-                  class="chart-draw" style="--dash: 280; animation-delay: 520ms"/>
-            <line x1="200" y1="398" x2="2"   y2="200" stroke="#6b21a8" stroke-width="2"
-                  class="chart-draw" style="--dash: 280; animation-delay: 640ms"/>
-            <line x1="2"   y1="200" x2="200" y2="2"   stroke="#6b21a8" stroke-width="2"
-                  class="chart-draw" style="--dash: 280; animation-delay: 760ms"/>
-            {# Two diagonals #}
-            <line x1="2"   y1="2"   x2="398" y2="398" stroke="#6b21a8" stroke-width="2"
-                  class="chart-draw" style="--dash: 560; animation-delay: 920ms"/>
-            <line x1="398" y1="2"   x2="2"   y2="398" stroke="#6b21a8" stroke-width="2"
-                  class="chart-draw" style="--dash: 560; animation-delay: 1050ms"/>
-            {# Sample house numbers 1-12 in North-Indian arrangement.
-               These are STATIC placeholders — real chart uses per-user
-               computed positions. Numbers fade in after strokes complete. #}
-            <g class="chart-labels">
-              <text x="200" y="88"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">1</text>
-              <text x="110" y="80"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">2</text>
-              <text x="80"  y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">3</text>
-              <text x="112" y="205" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">4</text>
-              <text x="80"  y="295" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">5</text>
-              <text x="110" y="325" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">6</text>
-              <text x="200" y="320" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">7</text>
-              <text x="290" y="325" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">8</text>
-              <text x="320" y="295" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">9</text>
-              <text x="288" y="205" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">10</text>
-              <text x="320" y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">11</text>
-              <text x="290" y="80"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">12</text>
-              {# One sample planet glyph to hint at what a real chart shows #}
-              <text x="200" y="115" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">La</text>
-              <text x="112" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">Mo</text>
-              <text x="288" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">Su</text>
-            </g>
-          </svg>
-        </div>
-        <p class="text-center text-xs text-stone-600 italic mt-2.5">
-          Sample chart &mdash; yours will use your actual birth data
-        </p>
-      </div>
-    </div>
-
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-20 grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-10 lg:gap-16 items-center">
     <!-- RIGHT — chart list if cookie present, else form -->
-    <div>
+    {# md:order-2 — see the note on the left column (#195). #}
+    <div class="md:order-2">
     {# Rashifal quick-link card — only shows for users WITHOUT a saved chart.
        If they have a chart, the 'Today's Horoscope' button in the chart
        list below is a strictly better version (full-chart daily reading
@@ -352,35 +186,43 @@
       </div>
     {% else %}
       <form method="post" action="/reading" id="kundli-form"
-            class="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-astro-900/5 p-6 sm:p-8 scroll-mt-20">
-        <h2 class="font-display text-2xl text-astro-700 mb-1">Start with your birth details</h2>
-        <p class="text-sm text-stone-600 mb-5">All four fields take a few seconds.</p>
+            class="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-astro-900/5 p-5 sm:p-8 scroll-mt-20">
+        <h2 class="font-display text-xl sm:text-2xl text-astro-700 mb-1">Start with your birth details</h2>
+        {# `sr-only` below sm, not `hidden` (#195). Both free the same ~40px of
+           vertical space, but `hidden` computes to display:none, which drops the
+           node out of the accessibility tree — independent QA confirmed a mobile
+           screen-reader user stopped receiving this sentence entirely, while the
+           commit that introduced it claimed it merely stopped being painted.
+           `sr-only` positions it out of view without removing it from the tree, so
+           it costs no layout height and AT keeps it. Verified: CTA bottom still 623
+           at 375x667. #}
+        <p class="sr-only sm:not-sr-only text-sm text-stone-600 sm:mb-5">All four fields take a few seconds.</p>
 
-        <div class="space-y-4">
+        <div class="space-y-3 sm:space-y-4">
           <label class="block">
-            <span class="text-sm font-semibold text-stone-700">Name <span class="text-stone-500 font-normal">(optional)</span></span>
+            <span class="block leading-5 sm:leading-6 text-sm font-semibold text-stone-700">Name <span class="text-stone-500 font-normal">(optional)</span></span>
             <input type="text" name="name" placeholder="e.g. Priya" autofocus autocomplete="name"
-                   class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
           </label>
           <label class="block">
-            <span class="text-sm font-semibold text-stone-700">Birth date</span>
+            <span class="block leading-5 sm:leading-6 text-sm font-semibold text-stone-700">Birth date</span>
             <input type="date" name="birth_date" required autocomplete="bday"
-                   class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
           </label>
           <label class="block">
-            <span class="text-sm font-semibold text-stone-700">Birth time <span class="text-stone-500 font-normal">(24-hour, local)</span></span>
+            <span class="block leading-5 sm:leading-6 text-sm font-semibold text-stone-700">Birth time <span class="text-stone-500 font-normal">(24-hour, local)</span></span>
             <input type="time" name="birth_time" required
-                   class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
           </label>
           <label class="block">
-            <span class="text-sm font-semibold text-stone-700">Birth place <span class="text-stone-500 font-normal">(city, country)</span></span>
+            <span class="block leading-5 sm:leading-6 text-sm font-semibold text-stone-700">Birth place <span class="text-stone-500 font-normal">(city, country)</span></span>
             <input type="text" name="birth_place" placeholder="e.g. Mumbai, India" required autocomplete="address-level2"
-                   class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
           </label>
         </div>
 
         <button type="submit"
-                class="mt-6 w-full py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors disabled:bg-stone-400 disabled:cursor-wait">
+                class="mt-4 sm:mt-6 w-full py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors disabled:bg-stone-400 disabled:cursor-wait">
           <span class="htmx-default">Get my free Kundli instantly &rarr;</span>
           <span class="htmx-indicator">
             <svg aria-hidden="true" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -392,6 +234,224 @@
         </button>
       </form>
     {% endif %}
+    </div>
+
+    <!-- LEFT — value prop -->
+    {# Form-first on mobile (#195). THE FORM COLUMN COMES FIRST IN THE SOURCE, just
+       above this block — that ordering is load-bearing, not incidental. Below `md`
+       there is one column, so DOM order IS the visual order and the form leads.
+       `md:order-1` here and `md:order-2` on the form restore prose-left / form-right
+       at `md` and up, where `md:grid-cols-2` makes two columns. Verified at 1280:
+       h1 at x=88 y=333, form at x=672 y=277 — identical to the pre-#195 layout.
+
+       This reorder is the only lever that reached the 667px fold. The two commits
+       before it (spacing/typography reclaim, then hiding the form sub-line) took the
+       CTA bottom on 375×667 from 1119 to 996 to 956 and stalled there, still 289px
+       short. Form-first lands it at 623 — 44px above the fold. Measure with
+       scripts/measure_cta_fold.py, not by eye.
+
+       WHY THE SOURCE ORDER, AND NOT CSS `order` ALONE
+       The first version of this did it purely with `order-1`/`order-2` and left the
+       DOM as prose-then-form. That looked identical and was wrong: tab order follows
+       the DOM, not `order`. On mobile the two provenance-chip links were focused
+       BEFORE the form fields while rendering BELOW them, so a keyboard user tabbed
+       past the form, into content beneath it, then back up into the form — one
+       backward transition of -532px, WCAG 2.4.3 (Focus Order). Moving the nodes
+       instead of only their painted position makes visual, DOM and focus order agree
+       below `md`: the same sweep now reports zero backward transitions there.
+
+       (An earlier version of this note and of the commit message said "five backward
+       jumps". That was a counting artefact — the sweep compared each stop against a
+       running maximum rather than against the previous stop, so one real reversal was
+       reported five times. Independent QA measured one. The defect was real; the
+       number was not.)
+
+       If you reorder anything in this hero again, re-run the keyboard sweep, at BOTH
+       breakpoints. A pure `order-*` change cannot be validated by looking at it, and
+       neither can this one.
+
+       THE TWO ACCEPTED COSTS
+       1. DESKTOP FOCUS ORDER. One DOM order has to serve two visual layouts, so
+          whichever breakpoint does not match the source eats the mismatch. It is now
+          desktop's turn: from `md` up the form is painted right but comes first in
+          source, so a keyboard user tabs the whole right-hand form before either
+          left-column link, then jumps back up 313px. `main` was not clean here either
+          (a 53px step across the column boundary), but its order did not reverse the
+          columns and this one does. This is the deliberate trade — mobile is the
+          primary platform — not an oversight. Shrinking the prose enough to avoid the
+          reorder entirely was measured and falls ~289px short.
+       2. HEADING ORDER. The form's <h2> ("Start with your birth details") now precedes
+       the page <h1> in source. On mobile that matches what a reader sees; on desktop
+       it does not.
+       It is an outline oddity rather than a WCAG failure — no criterion requires the
+       h1 to come first — and it was taken deliberately in exchange for removing a
+       real focus-order violation on the primary platform. The alternative, demoting
+       that <h2> to a <p>, would strip a heading landmark screen-reader users navigate
+       by, which is a worse trade. #}
+    <div class="md:order-1">
+      {# Navagraha Stotra invocation (Issue #75) — hidden on mobile so the
+         above-fold on 375×667 shows the value prop + form / mini-chart
+         first. Desktop keeps the shloka since there's viewport room. #}
+      <div class="hidden sm:block mb-5">
+        <p class="font-display text-base sm:text-lg text-astro-700" lang="sa">
+          नमः सूर्याय चन्द्राय मङ्गलाय बुधाय च।<br>
+          गुरु शुक्र शनिभ्यश्च राहवे केतवे नमः॥
+        </p>
+        <p class="text-xs text-stone-600 mt-1.5 italic">Salutations to all nine grahas &mdash; Navagraha Stotra</p>
+      </div>
+
+      <span class="inline-block text-xs font-semibold tracking-wider text-astro-700 uppercase bg-astro-100 px-3 py-1 rounded-full mb-2 sm:mb-4">
+        Free &middot; Instant &middot; No signup needed
+      </span>
+      <h1 class="font-display text-3xl sm:text-5xl lg:text-6xl text-stone-900 leading-tight mb-2 sm:mb-4">Your Janma Kundali,<br><span class="text-astro-700">simply explained.</span></h1>
+
+      {# Trust bar — real counts only. Each pill has a min-count threshold
+         (set server-side via TRUST_MIN_* env vars, defaults in main.py);
+         pills below their threshold are hidden entirely because "1
+         registered reader" is worse social proof than no pill at all.
+         Kundlis + Asks come from the GCS events log (last 30d — reasonable
+         proxy for "till now" while numbers are early; upgrade to a
+         persistent lifetime counter when we outgrow the retention window). #}
+      {# Mobile spacing (#188): the three provenance chips wrap to two lines at 390px
+         (measured: 440px of chips + 32px of gaps against a 358px column — no ordering
+         avoids it), which adds 20px and pushes the hero CTA from y=1069 to y=1089.
+         The CTA is already 273px below the 844px fold and #190's ship rule is that
+         nothing may push it further. These four mobile-only margin reductions give
+         back 18px, netting +2px. All are sm:-restored, so desktop is unchanged — the
+         row measures 16px tall at 1280px both before and after. #}
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-0.5 sm:gap-y-1 text-xs text-stone-600 mb-2 sm:mb-4">
+        {% if trust_kundlis and trust_kundlis >= trust_kundlis_min %}
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          <strong class="text-stone-700">{{ "{:,}".format(trust_kundlis) }}</strong> Kundlis generated
+        </span>
+        {% endif %}
+        {% if trust_asks and trust_asks >= trust_asks_min %}
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          <strong class="text-stone-700">{{ "{:,}".format(trust_asks) }}</strong> questions answered
+        </span>
+        {% endif %}
+        {% if trust_users and trust_users >= trust_users_min %}
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5.13a4 4 0 11-8 0 4 4 0 018 0zm6 3a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <strong class="text-stone-700">{{ "{:,}".format(trust_users) }}</strong> registered readers
+        </span>
+        {% endif %}
+        {% if trust_subscribers and trust_subscribers >= trust_subscribers_min %}
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <strong class="text-stone-700">{{ "{:,}".format(trust_subscribers) }}</strong> daily Rashifal subscribers
+        </span>
+        {% endif %}
+        {# Provenance chips (#188). They fill the slot that renders when the four gated
+           count-pills above are below threshold — all four, today. Same visual treatment
+           as the pills on purpose: when a real count crosses its threshold it joins the
+           row and pushes a chip out. The row holds three; it does not need to be
+           all-counts or all-provenance.
+
+           The wording is deliberate. "Cited to classical sources" describes the working
+           agreement (every astrological claim traces to knowledge/*.md). It is NOT
+           "every claim sourced" — #178 is an open blocker recording that Ashtakoota,
+           Lo Shu and Rudraksha rules have no source in the repo, so a total-coverage
+           claim in the hero would be contradicted by our own issue tracker. Do not
+           "tighten" this line.
+
+           The article count comes from learn_registry via a Jinja global (routes/deps.py)
+           and is never typed in. A hardcoded 75 is silently wrong the day article 76
+           ships and nothing breaks to tell you. #}
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+          Swiss Ephemeris chart math
+        </span>
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <a href="/learn/" class="hover:text-astro-700"><strong class="text-stone-700">{{ learn_article_count }}</strong> explainers</a>
+        </span>
+        <span class="inline-flex items-center gap-1">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+          {# The /about link rides on this chip because the fallback line it replaced
+             (`Since 2026 · classical-source cited`) carried the hero's only link to
+             /about, and dropping it was an internal-link change nobody asked for.
+             Wording is unchanged and must stay unchanged — see the note above. #}
+          <a href="/about" class="hover:text-astro-700">Cited to classical sources</a>
+        </span>
+      </div>
+
+      <p class="text-lg text-stone-600 leading-relaxed mb-3 sm:mb-6">
+        Free Janma Kundali, daily horoscope, monthly &amp; yearly readings, Dasha periods,
+        and Kundli matching for marriage &mdash; with the same chart math professional
+        astrologers use.
+      </p>
+      {# SAMPLE KUNDLI PREVIEW (Issue #76) — replaces the 3-checkmark
+         bullet list. A visual preview of the outcome (Vedic is a visual
+         tradition; showing beats telling). Uses the same .chart-draw
+         line-drawing animation as the /kundli page, creating a
+         consistent visual signature across landing → generated chart.
+
+         Hidden on mobile: the SVG eats ~320px of vertical space,
+         pushing the form below the fold on 375×667. Form is the
+         highest-intent element — mobile viewers get the form
+         immediately after the headline instead of after decoration.
+
+         #190 tried to bring it to mobile beside the subhead and it was
+         reverted, because the measurement said no. Headless Chromium at a
+         true 390×844 signed-out viewport: the primary CTA's bottom sits at
+         y=1117 on baseline 013a4bc and y=1205 with the mobile chart. The
+         fold is 844, so the CTA is already 273px below it before any
+         change, and the chart adds a further 88px. That cost is NOT the
+         chart's own 112px — it is the subhead reflowing from 358px to
+         230px wide, 6 lines to 9. The smallest variant measured
+         (float:right at 88px) still cost +30px. #190's own ship rule is
+         "if the chart cannot fit without pushing the CTA down, it does not
+         ship — the form outranks the flourish", so it did not ship. #}
+      <div class="hidden md:block mt-2 max-w-xs">
+        <div class="bg-white rounded-2xl border border-stone-200 shadow-md p-3.5">
+          <svg viewBox="0 0 400 400" class="w-full block" xmlns="http://www.w3.org/2000/svg" aria-label="Sample Janma Kundali preview">
+            {# Outer border #}
+            <rect x="2" y="2" width="396" height="396" fill="white" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 1584; animation-delay: 200ms"/>
+            {# Diamond outline — 4 sides #}
+            <line x1="200" y1="2"   x2="398" y2="200" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 280; animation-delay: 400ms"/>
+            <line x1="398" y1="200" x2="200" y2="398" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 280; animation-delay: 520ms"/>
+            <line x1="200" y1="398" x2="2"   y2="200" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 280; animation-delay: 640ms"/>
+            <line x1="2"   y1="200" x2="200" y2="2"   stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 280; animation-delay: 760ms"/>
+            {# Two diagonals #}
+            <line x1="2"   y1="2"   x2="398" y2="398" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 560; animation-delay: 920ms"/>
+            <line x1="398" y1="2"   x2="2"   y2="398" stroke="#6b21a8" stroke-width="2"
+                  class="chart-draw" style="--dash: 560; animation-delay: 1050ms"/>
+            {# Sample house numbers 1-12 in North-Indian arrangement.
+               These are STATIC placeholders — real chart uses per-user
+               computed positions. Numbers fade in after strokes complete. #}
+            <g class="chart-labels">
+              <text x="200" y="88"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">1</text>
+              <text x="110" y="80"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">2</text>
+              <text x="80"  y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">3</text>
+              <text x="112" y="205" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">4</text>
+              <text x="80"  y="295" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">5</text>
+              <text x="110" y="325" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">6</text>
+              <text x="200" y="320" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">7</text>
+              <text x="290" y="325" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">8</text>
+              <text x="320" y="295" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">9</text>
+              <text x="288" y="205" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">10</text>
+              <text x="320" y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">11</text>
+              <text x="290" y="80"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">12</text>
+              {# One sample planet glyph to hint at what a real chart shows #}
+              <text x="200" y="115" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">La</text>
+              <text x="112" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">Mo</text>
+              <text x="288" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">Su</text>
+            </g>
+          </svg>
+        </div>
+        <p class="text-center text-xs text-stone-600 italic mt-2.5">
+          Sample chart &mdash; yours will use your actual birth data
+        </p>
+      </div>
     </div>
   </div>
 
