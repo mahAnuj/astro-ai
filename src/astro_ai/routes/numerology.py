@@ -102,6 +102,18 @@ async def numerology_calculate(
     # which is the right outcome, since Chaldean was already the default.
     try:
         reading = _num.compute(name=name, birth_date=birth_date)
+    except ValueError as err:
+        # A rejected birth date (#199) — the seeker's input is wrong, not our
+        # code. Show them the message and do NOT page anyone: an impossible
+        # date arriving from a scripted or stale request is expected traffic,
+        # and alerting on it would train us to ignore the alert.
+        return templates.TemplateResponse(
+            request, "numerology.html",
+            {"page_title": "Free Numerology Calculator",
+             "page_meta": "Free numerology calculator using the Chaldean (Cheiro) system.",
+             "reading": None, "error": str(err), "lang": _lang(request)},
+            status_code=400,
+        )
     except Exception as err:  # noqa: BLE001
         _fire_error_alert(request, err, "numerology:compute")
         return templates.TemplateResponse(
@@ -199,6 +211,16 @@ async def numerology_compat_compute(
         context = "general"
     try:
         compat = _num.compute_compatibility(name_a, birth_date_a, name_b, birth_date_b, context=context)
+    except ValueError as err:
+        # Rejected birth date on either person (#199). Seeker error, not ours —
+        # render the message, don't alert. See the note on the reading route.
+        return templates.TemplateResponse(
+            request, "numerology_compat.html",
+            {"page_title": "Numerology Compatibility",
+             "page_meta": "Free numerology compatibility check.",
+             "compat": None, "error": str(err), "lang": _lang(request)},
+            status_code=400,
+        )
     except Exception as err:  # noqa: BLE001
         _fire_error_alert(request, err, "numerology:compat")
         return templates.TemplateResponse(
