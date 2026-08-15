@@ -3053,6 +3053,31 @@ ARTICLES: tuple[Article, ...] = (
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
+    # ─── Numerology ──────────────────────────────────────────────────────
+    # The first non-Vedic article in /learn (#203). It carries its own
+    # category rather than joining "Concepts" precisely so that the split is
+    # visible: everything else here is Jyotish from the Sanskrit sources, and
+    # this is a modern Western system. The article opens by saying so.
+    Article(
+        slug="name-numerology-explained",
+        title="Name Numerology: Which Name Actually Counts",
+        summary="In name numerology the name that counts is the one people actually call you \u2014 not the one on your documents. How the birth number and name number divide the work, why spelling changes the answer, and the confidence check for when the two agree.",
+        seo_title="Name Numerology: Which Name Actually Counts",
+        seo_description="The name that counts is the one people call you, not the one on your documents. Chaldean name numerology explained honestly \u2014 including what it cannot do.",
+        category="Numerology",
+        hero_image="/static/learn/name-numerology-explained/hero.svg",
+        read_time="7 min",
+        last_updated="2026-08",
+        related=(),
+        faqs=(
+            {"q": "Which name should I use for numerology \u2014 my full legal name or my nickname?", "a": "The name you are most known by. In this tradition it is the most-used given name and surname together that produce the key number, and where the surname is more in evidence than the given name, the surname is taken. Your passport is not the test; what people say when they talk about you is."},
+            {"q": "Can I have two name numbers?", "a": "Yes, and legitimately. Someone always addressed formally at work should compute that name and read it against their professional life, while using the name they are called at home for private matters. The two govern different rooms of the same life and are not in competition."},
+            {"q": "Does spelling change my name number?", "a": "Yes. Every letter carries a value, so a different spelling gives a different number. This matters especially for Indian names written in English, where transliteration is unsettled: Sanjay and Sanjai, Shubh and Subh, Lakshmi and Laxmi are different numbers. Score the spelling you actually write."},
+            {"q": "What does it mean if my name number and birth number are the same?", "a": "It is a confidence check on your input, not a promise about your life. The birth number is fixed and reliable while the name is the part a reading can get wrong, so agreement between them indicates you have picked the right name to read. Names that do not agree are entirely ordinary."},
+            {"q": "Is numerology part of Vedic astrology?", "a": "No. Numerology as practised with English letters is a modern Western tradition. The foundational Sanskrit Jyotish texts \u2014 Brihat Parashara Hora Shastra, Brihat Jataka, Saravali, Phaladeepika \u2014 do not describe birth-date reduction or English-alphabet name numerology. It can be read alongside a Kundli, but it is not a second opinion on one."},
+        ),
+        qa_status="unaudited",
+    ),
 )
 
 
