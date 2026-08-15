@@ -15,7 +15,9 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from astro_ai import providers
 
@@ -83,6 +85,42 @@ class BirthDetails:
     birth_date: str  # ISO YYYY-MM-DD
     birth_time: str  # HH:MM (24h, local)
     birth_place: str  # free-text city/country
+
+
+_READING_TZ = ZoneInfo("Asia/Kolkata")
+
+
+def today_anchor() -> str:
+    """The line that tells the model what day it is. Put it in EVERY prompt.
+
+    #192: this was in exactly one prompt builder — the per-rashi rashifal
+    block — and absent from the other six. With a natal chart, a
+    "CURRENT TRANSITS" section and a list of transit events but no statement
+    of the date, the model falls back on its training prior and writes the
+    reading for whatever year that prior lands in. `/yearly` was worst hit:
+    a forward-looking twelve-month outlook anchored to a year already past.
+    `_format_daily_message` even labelled sections "TODAY'S TRANSITS" while
+    never saying what today was.
+
+    The instruction is explicit rather than a bare date because a date alone
+    is easy for a model to read as data rather than as the present moment;
+    it needs telling that this supersedes what it thinks it knows.
+
+    TIMEZONE: Asia/Kolkata, deliberately. The audience is Indian and the
+    reading's "today" should be their today. `date.today()` would follow the
+    server, which is UTC on Cloud Run — so for the ~5.5 hours between 18:30
+    and midnight UTC it names yesterday from a Delhi reader's point of view.
+    Every almanac module here (adhik_maas, lunar_observances, sankranti,
+    lunar_dates) already uses Asia/Kolkata for exactly this reason; this
+    matches them.
+    """
+    now = datetime.now(_READING_TZ)
+    return (
+        f"Today's date: {now.date().isoformat()} ({now.strftime('%A')}). "
+        f"Treat this as the present moment. Do not rely on your training "
+        f"cutoff to decide what year it is — this date is authoritative, and "
+        f"any year you infer from your own priors is wrong."
+    )
 
 
 def generate_reading(
@@ -167,6 +205,7 @@ def _format_seeker_message(
     if topic_summaries_block:
         optional_blocks += f"\n\n{topic_summaries_block}"
     return (
+        f"{today_anchor()}\n"
         f"{name_line}\n"
         f"Birth date: {details.birth_date}\n"
         f"Birth time: {details.birth_time} (local time)\n"
@@ -226,6 +265,7 @@ def _format_outlook_message(
             f"house {g.house_from_moon} from natal Moon. Favourability: {g.favorability}."
         )
     return (
+        f"{today_anchor()}\n"
         f"{name_line}\n"
         f"Birth date: {details.birth_date}\n"
         f"Birth time: {details.birth_time} (local time)\n"
@@ -329,6 +369,7 @@ def generate_ask_answer(
         )
 
     user_message = (
+        f"{today_anchor()}\n\n"
         f"--- SEEKER'S NATAL CHART ---\n{chart_block}\n\n"
         f"--- CURRENT DASHA ---\n{dasha_block}\n\n"
         f"{('--- VEDIC FLAGS ---' + chr(10) + flags_block + chr(10) + chr(10)) if flags_block else ''}"
@@ -357,6 +398,7 @@ def generate_dasha_deep_dive(
     "Saturn = discipline" boilerplate. Includes timeline + remedies.
     """
     user_message = (
+        f"{today_anchor()}\n\n"
         f"--- SEEKER'S NATAL CHART ---\n"
         f"{format_for_prompt(chart)}\n"
         f"\n"
@@ -421,7 +463,20 @@ def _build_rashifal_day_signals(
     retrogrades = [p.name for p in transit.planets
                     if p.retrograde and p.name not in ("Rahu", "Ketu")]
 
-    signals: list[str] = [f"Today's date: {today_iso}"]
+    # Uses the CALLER'S today_iso, not today_anchor(), on purpose (#192). The
+    # transits and panchang in this same block were computed for that exact
+    # date, so the prompt must name it or the reading would describe one day's
+    # sky under another day's heading. today_anchor() derives its own date and
+    # would desync here — it is for the builders that had no date at all.
+    #
+    # The instruction half is shared with today_anchor() because a bare date
+    # reads as data; the model needs telling it supersedes its training prior.
+    signals: list[str] = [
+        f"Today's date: {today_iso}. Treat this as the present moment. "
+        f"Do not rely on your training cutoff to decide what year it is — "
+        f"this date is authoritative, and any year you infer from your own "
+        f"priors is wrong."
+    ]
     if panchang:
         signals.append(
             f"Weekday: {panchang.weekday} — ruled by {panchang.day_lord}. "
@@ -667,6 +722,7 @@ def _format_matching_message(
         koota_lines.append(f"- {k.name}: {k.awarded}/{k.max_points} — {k.note}")
 
     return (
+        f"{today_anchor()}\n"
         f"{g_block}\n"
         f"{b_block}\n"
         f"--- KUNDALI MATCHING RESULT ---\n"
@@ -759,6 +815,7 @@ def _format_daily_message(
     """Compose the user-message block: seeker, natal, transits, flags, Panchang."""
     name_line = f"Name: {details.name}" if details.name.strip() else "Name: (not provided)"
     return (
+        f"{today_anchor()}\n"
         f"{name_line}\n"
         f"Birth date: {details.birth_date}\n"
         f"Birth time: {details.birth_time} (local time)\n"
