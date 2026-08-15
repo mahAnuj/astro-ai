@@ -257,7 +257,7 @@ def _format_numerology_for_prompt(reading) -> str:
     """
     # The name-derived numbers follow the reading's own letter table (#167),
     # so the label must come from the reading rather than being pinned.
-    system_label = {"chaldean": "Chaldean", "pythagorean": "Pythagorean"}.get(
+    system_label = {"chaldean": "Chaldean"}.get(
         str(getattr(reading, "system", "") or "").lower()
     )
     name_number_line = (
@@ -276,7 +276,7 @@ def _format_numerology_for_prompt(reading) -> str:
     ]
     if reading.karmic_debt_numbers:
         parts.append(f"Karmic Debt numbers present: {', '.join(str(k) for k in reading.karmic_debt_numbers)}")
-    parts.append("Framework note: these are modern-Western (Chaldean/Pythagorean) constructs, not classical Vedic Jyotish.")
+    parts.append("Framework note: these are modern-Western (Chaldean) constructs, not classical Vedic Jyotish.")
     return "\n".join(parts)
 
 
@@ -319,7 +319,7 @@ def generate_ask_answer(
     optional_blocks = ""
     if numerology_reading is not None:
         optional_blocks += (
-            f"--- SEEKER'S NUMEROLOGY (modern Chaldean/Pythagorean, NOT classical Jyotish — cross-reference only) ---\n"
+            f"--- SEEKER'S NUMEROLOGY (modern Chaldean, NOT classical Jyotish — cross-reference only) ---\n"
             f"{_format_numerology_for_prompt(numerology_reading)}\n\n"
         )
     if partner_chart is not None:

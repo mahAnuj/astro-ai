@@ -322,7 +322,6 @@ async def ask_submit(
             numerology_reading = _num_compute(
                 saved.name or "Seeker",
                 saved.birth_date,
-                system="chaldean",
             )
         except Exception:
             log.debug("numerology context load failed for /ask", exc_info=True)
