@@ -133,7 +133,17 @@ The standard Chaldean table is used (numerology.py already implements this). Joh
 | 8 | F, P |
 | 9 | — (no letter maps to 9 in Chaldean; treated as spiritual/complete) |
 
+**Primary source — Cheiro, Ch. XII ("The Occult Symbolism of 'Compound' Numbers"), printed p.70.** Cheiro sets out this alphabet in full and gives the reason no letter maps to 9 in his own words: there is no 9 in the alphabet because "the number 9 represents the 9-lettered name of God, and for this reason no single letter was ascribed to it." The table above was compared letter-by-letter against `numerology.py`'s `_CHALDEAN`: **26/26, no mismatches.**
+
+> **Extraction warning.** Cheiro's scan is OCR'd and its text layer **silently drops A–M from this table**, leaving only N–Z, and renders `Y = 1` as `Y = I`. Nothing in the extraction signals the loss. Read this page as an image (`pdftoppm -f 71 -l 71 -r 200 -png`), never from the text layer. The same caution applies to every numeral in that book.
+
 **Divergence from Pythagorean:** Pythagorean assigns 1 to A, J, S (and value 9 exists) — a totally different mapping. Johari uses Chaldean only.
+
+**Chaldean is the site's only letter table (#202).** A Pythagorean mode was offered until August 2026 and was removed. The reason was sourcing, not popularity: across all 13 books in `data/` (107,809 extracted lines) the word "Pythagorean" appears 12 times and **every one is a passing contrast mention — the table itself appears in none of them.** Goodwin's 28,171-line *Complete Guide*, our one Western numerology book, never names the system at all. The implementation had been a generated formula (`A=1..Z=26 mod 9`) traceable to nothing, which is the same defect class as #172's Lo Shu citation.
+
+Note that popularity ran the other way: Kumar states "Pythagorean system is more popular especially in West but Chaldean Numerology is older." The case for dropping it rests on (a) our audience being Indian, where the Cheiro-derived Chaldean tables dominate, and (b) our inability to source the alternative — not on usage, which we have never measured.
+
+Two shipped bugs came directly from having two tables that could disagree about the same name: #167, and the compound-number caption that needed three QA rounds to settle. With one table, `name_number` is `_reduce()` of the same integer `name_compound` is, so they cannot diverge — verified 0 exceptions over 864 readings. **Do not reintroduce a second system without a sourced table.**
 
 ### 3.3 Planet correspondences per number (favourable elements)
 
@@ -546,7 +556,7 @@ The "let the user choose" recommendation above is **not implemented and is not p
 | `_life_path` | Life Path / Destiny (Bhagyank) | `True` | All-digits Johari method per §2.2; masters kept on the **final total only** (#162) |
 | `_birthday_number` | Birthday / Psychic (Mulank) | `False` | §2.1 fixes the range at 1–9 and §4's birthday lists are single-digit (#164) |
 | `_personal_year` | Personal Year | `False` | §12.8 and §9 both give the cycle a range of 1–9 (#169) |
-| `_sum_letters` | Expression / Personality / Heart Desire / Name (Namank) | `True` | Chaldean/Pythagorean letter-value numbers, where 11/22/33 are part of the framework rather than an unreduced intermediate (#179) |
+| `_sum_letters` | Expression / Personality / Heart Desire / Name (Namank) | `True` | Chaldean letter-value numbers, where 11/22/33 are part of the framework rather than an unreduced intermediate (#179) |
 
 **Why no toggle.** A reader has no basis on which to pick a reduction convention — the choice is only meaningful to someone who already knows both traditions well enough not to need the calculator, and offering it makes the site look uncertain about its own method. One convention, applied to everyone and named on the page, beats a switch nobody can evaluate. The cost of reversing this is small: `_reduce()`'s `preserve_masters` parameter is keyword-only with **no default**, so every call site has to name its own policy, and adding a toggle later stays a call-site change rather than a rewrite.
 

@@ -7,8 +7,8 @@
 {% set active_page = "numerology" %}
 {% set breadcrumbs = [('Home', '/'), ('Numerology', '/numerology')] %}
 {% include "_breadcrumb_schema.html" %}
-{% set tool_name = "Numerology Calculator (Chaldean + Pythagorean + Lo Shu)" %}
-{% set tool_desc = "Free numerology calculator — Chaldean (Cheiro), Pythagorean, and Lo Shu grid. Honest about tradition: these are 19th-20th century Western and ancient Chinese systems, not classical Vedic Jyotish." %}
+{% set tool_name = "Numerology Calculator (Chaldean + Lo Shu)" %}
+{% set tool_desc = "Free numerology calculator — Chaldean (Cheiro) and the Lo Shu grid. Honest about tradition: these are 19th-20th century Western and ancient Chinese systems, not classical Vedic Jyotish." %}
 {% set tool_url = "/numerology" %}
 {% include "_tool_seo.html" %}
 {% include "_nav.html" %}
@@ -39,7 +39,7 @@
   <header class="text-center">
     <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700 mb-3">Free Numerology Calculator</h1>
     <p class="text-base sm:text-lg text-stone-600 max-w-xl mx-auto leading-relaxed">
-      Chaldean (Cheiro), Pythagorean, and Lo Shu grid calculators — Life Path, Birthday, Destiny/Expression, Soul Urge, Personality numbers plus Personal Year forecast, Karmic Debt flags, per-number remedies (gemstone, colour, deity, mantra), and the 3×3 Lo Shu birth-number matrix. Free, no sign-up. See caveat above about tradition.
+      Chaldean (Cheiro) and Lo Shu grid calculators — Life Path, Birthday, Destiny/Expression, Soul Urge, Personality numbers plus Personal Year forecast, Karmic Debt flags, per-number remedies (gemstone, colour, deity, mantra), and the 3×3 Lo Shu birth-number matrix. Free, no sign-up. See caveat above about tradition.
     </p>
   </header>
 
@@ -59,28 +59,15 @@
         <input type="date" name="birth_date" id="birth_date" required autocomplete="bday"
                class="w-full border border-stone-300 rounded-md px-3 py-3 text-base focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
       </div>
-      <div>
-        <label class="block text-sm font-medium text-stone-700 mb-1">Number system</label>
-        <p class="text-xs text-stone-600 mb-2 leading-relaxed">
-          Two ways to map letters to numbers. Chaldean is the one Cheiro popularised in India — most Indian-numerology writing uses it. If unsure, keep the default.
-        </p>
-        <div class="flex gap-3">
-          <label class="flex-1 relative cursor-pointer">
-            <input type="radio" name="system" value="chaldean" checked class="peer sr-only">
-            <div class="p-3 border-2 border-stone-200 rounded-lg peer-checked:border-astro-500 peer-checked:bg-astro-50 text-center">
-              <div class="font-semibold text-stone-900">Chaldean</div>
-              <div class="text-xs text-stone-600 mt-0.5">Cheiro's method &middot; recommended</div>
-            </div>
-          </label>
-          <label class="flex-1 relative cursor-pointer">
-            <input type="radio" name="system" value="pythagorean" class="peer sr-only">
-            <div class="p-3 border-2 border-stone-200 rounded-lg peer-checked:border-astro-500 peer-checked:bg-astro-50 text-center">
-              <div class="font-semibold text-stone-900">Pythagorean</div>
-              <div class="text-xs text-stone-600 mt-0.5">Balliett/Jordan &middot; US 20th c.</div>
-            </div>
-          </label>
-        </div>
-      </div>
+      {# The Chaldean/Pythagorean radio pair stood here until #202. It was
+         removed rather than defaulted because the Pythagorean letter table
+         had no source in the corpus — 0 occurrences across 13 books and
+         107,809 extracted lines, against Cheiro's own page verifying the
+         Chaldean table 26/26. Offering a choice implied both were equally
+         grounded, and they were not. It was also the mechanism behind two
+         shipped bugs (#167, and the compound caption that needed three QA
+         rounds), because two tables could disagree about the same name.
+         Do not restore a system selector without a sourced second table. #}
       <button type="submit" class="w-full bg-astro-700 hover:bg-astro-800 text-white text-base font-semibold py-3 rounded-lg transition-colors">
         Calculate my numbers →
       </button>
@@ -92,7 +79,7 @@
     <h2 class="font-display text-2xl text-astro-800 mb-4">What numerology reads (and doesn't)</h2>
     <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3 mb-4">
       <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
-        Numerology reads your <strong>name + birth date</strong> through a modern Western (Cheiro / Pythagorean) or ancient Chinese (Lo Shu) framework. Vedic astrology reads your <strong>full birth chart</strong> from a completely different tradition. These are separate systems, not two views of the same underlying method &mdash; sometimes their readings coincidentally align, sometimes they don't.
+        Numerology reads your <strong>name + birth date</strong> through a modern Western (Cheiro) or ancient Chinese (Lo Shu) framework. Vedic astrology reads your <strong>full birth chart</strong> from a completely different tradition. These are separate systems, not two views of the same underlying method &mdash; sometimes their readings coincidentally align, sometimes they don't.
       </p>
       <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
         Numerology cannot predict marriage timing, career changes, or specific life events &mdash; those need chart-based Jyotish analysis. What numerology can offer: a compact prompt for self-reflection on your inner drive, external personality, and how you see your own life theme. Treat it as a mirror, not an oracle.
@@ -109,7 +96,7 @@
         <li>&bull; <strong>Destiny / Expression Number</strong> &mdash; English-letter name reduction. Origin: same Balliett/Jordan lineage.</li>
         <li>&bull; <strong>Soul Urge Number</strong> &mdash; from name vowels. Origin: 20th-c. Western numerology.</li>
         <li>&bull; <strong>Personality Number</strong> &mdash; from name consonants. Origin: 20th-c. Western numerology.</li>
-        <li>&bull; <strong>Name Number</strong> &mdash; the total of your name letters on whichever letter table you pick above, then reduced; it is the same quantity as the Destiny/Expression number, under the name Indian numerology uses for it. Origin of the Chaldean table: Cheiro (William John Warner, 1866-1936); the tables in wide Indian circulation trace to him.</li>
+        <li>&bull; <strong>Name Number</strong> &mdash; the total of your name letters on the Chaldean table, then reduced; it is the same quantity as the Destiny/Expression number, under the name Indian numerology uses for it. Origin of the Chaldean table: Cheiro (William John Warner, 1866-1936); the tables in wide Indian circulation trace to him.</li>
       </ul>
     </div>
   </section>
@@ -228,13 +215,13 @@
   <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
     <h2 class="font-display text-lg text-astro-800 mb-2">Conventions used in this reading</h2>
     <p class="text-sm text-stone-700 leading-relaxed mb-3">
-      Numerology has more than one live convention for these calculations, and they give different answers. Here is what this page uses &mdash; the same way it names Chaldean and Pythagorean for letters.
+      Numerology has more than one live convention for these calculations, and they give different answers. Here is what this page uses &mdash; the same way it names Chaldean for letters.
     </p>
     <ul class="space-y-2.5 text-sm text-stone-800 leading-relaxed">
       <li>&bull; <strong>Life Path</strong> &mdash; every digit of the birth date added together, then reduced (12 May 1934 &rarr; 5+1+2+1+9+3+4 = 25 &rarr; 7). This is the convention in the Vedic source material this site works from. Much modern Western numerology instead reduces the month, day and year separately and adds those three; the two methods part company for roughly one birth date in eight, always over whether the answer stays a master number or settles on its base. Where the final total lands on 11, 22 or 33, it is kept.</li>
       <li>&bull; <strong>Birthday Number</strong> &mdash; reduced all the way to 1&ndash;9. Born on the 11th is a 2, born on the 22nd is a 4; in this tradition 11 and 22 are read as shades of 2 and 4, not as numbers of their own.</li>
       <li>&bull; <strong>Personal Year</strong> &mdash; reduced all the way to 1&ndash;9. The cycle has nine steps, which is why the panel further down counts to nine.</li>
-      <li>&bull; <strong>Expression, Heart Desire, Personality and Name Number</strong> &mdash; 11, 22 and 33 are kept unreduced here, because these come from the Chaldean and Pythagorean letter-value systems, in which the master numbers are part of the framework.</li>
+      <li>&bull; <strong>Expression, Heart Desire, Personality and Name Number</strong> &mdash; 11, 22 and 33 are kept unreduced here, because these come from the Chaldean letter-value system, in which the master numbers are part of the framework.</li>
       <li>&bull; <strong>There is no setting to switch these.</strong> One convention is applied to everyone and named here. A toggle would ask you to choose between schools you have no basis to choose between, and would leave the page unable to say what its own numbers mean.</li>
     </ul>
   </section>
@@ -549,30 +536,33 @@
      and corpus §5. Per CLAUDE.md, user-facing copy names the tradition
      rather than the book, so the caption below must stay author-free.
 
-     The caption is FACT-conditional, not system-conditional. Cheiro's
-     10-52 series is defined over HIS OWN (Chaldean) letter values, so
-     `compute()` builds name_compound from _CHALDEAN unconditionally —
-     deliberately. A "Pythagorean compound number" would be a system no
-     source in data/ describes, so we do not compute one. Do not change
-     that; the fix for both bugs below lives here in the template.
+     The caption is FACT-conditional, not system-conditional, and it stays
+     that way even though the fact is now constant. Cheiro's 10-52 series
+     is defined over HIS OWN (Chaldean) letter values, so `compute()` builds
+     name_compound from _CHALDEAN.
 
-     Since #167 made name_number follow the user's selected table, the two
-     numbers no longer stand in one fixed relationship, and BOTH directions
-     occur. Measured over 1441 Pythagorean readings: 1305 (90.6%) where the
-     compound does NOT reduce to the displayed Name Number, and 136 (9.4%)
-     where it DOES — the reductions coincide by chance, roughly 1 in 9.
-     In Chaldean mode it always reduces (0 exceptions over the same sample),
-     because name_number is _reduce() of the very integer name_compound is.
+     SINCE #202 THERE IS ONLY ONE LETTER TABLE, so name_number is _reduce()
+     of the very integer name_compound is, and the compound always reduces
+     to it: measured 0 exceptions over 864 readings. The `else` branch below
+     is therefore currently unreachable. It is kept deliberately as a guard,
+     not left behind by accident — if a second table is ever sourced and
+     reintroduced, or the reduction convention changes, this caption keeps
+     telling the truth instead of silently asserting a relationship that no
+     longer holds.
 
-     Keying the caption on `reading.system` therefore cannot be right in
-     either direction. The first version asserted reduction unconditionally
-     and was false in Pythagorean mode; the second (#167 follow-up) denied
-     reduction on the whole Pythagorean branch and was false for that 9.4%
-     — QA found "Amit Iyer" rendering "Compound 19 … rather than reducing
-     to it" beside Name Number 1, and 19 → 10 → 1. So the branch below
-     tests the computed fact: it states the relationship only where it
-     actually holds, and otherwise says nothing about reduction in either
-     direction. Do not restore a `reading.system` test here.
+     The history is worth keeping, because this sentence was wrong twice in
+     opposite directions. While a Pythagorean mode existed, the two numbers
+     stood in no fixed relationship: over 1441 readings in that mode, 1305
+     (90.6%) did NOT reduce to the displayed Name Number and 136 (9.4%) did,
+     coinciding by chance. The first version asserted reduction
+     unconditionally and was false in the 90.6%; the #167 follow-up denied
+     reduction across the whole mode and was false for the 9.4% — QA caught
+     "Amit Iyer" rendering "Compound 19 … rather than reducing to it" beside
+     Name Number 1, when 19 → 10 → 1.
+
+     The lesson that outlives the Pythagorean mode: test the computed fact,
+     never a mode flag standing in for it. Do not restore a `reading.system`
+     test here.
 
      _compound_reduced mirrors _reduce(preserve_masters=True): 11/22/33 are
      kept whole (this page states that convention to the reader above), and
