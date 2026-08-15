@@ -219,10 +219,30 @@ class NumerologyReading:
 
     # Lo Shu 3×3 birth-number matrix — user's DOB digits plotted on the
     # classical magic-square grid. Reveals present/absent number patterns
-    # ('arrows') for a real-numerologist-style visual reading. Sourced
-    # from Cheiro's Book of Numbers per knowledge/numerology.md §13.3
-    # (this is outside Johari + Kumar's Chaldean/Vedic scope).
+    # ('arrows') for a real-numerologist-style visual reading.
+    #
+    # NOT sourced to Cheiro, despite what this comment said until #172.
+    # Cheiro's Book of Numbers contains ZERO occurrences of "Lo Shu",
+    # "magic square" or "Feng Shui" — measured across all 194 pages, and
+    # again across all 13 books in data/ (0 hits in 107,809 lines). The
+    # grid is genuinely Chinese and outside every source we hold. #172
+    # tracks either sourcing it or removing it; until then nothing may
+    # present it as Cheiro's.
     lo_shu: "LoShuGrid | None" = None
+
+    # Cheiro's confidence signal (#203). When the Name number agrees with the
+    # Birth number, "one can be absolutely certain that no mistake is being
+    # made" about WHICH NAME to read (Ch. XV, knowledge/numerology.md §14.2).
+    #
+    # Read carefully: this is evidence you typed the right name, NOT a claim
+    # that your life goes well. Cheiro's whole point is that the birth number
+    # is fixed and reliable while the name is the uncertain input — so
+    # agreement between them validates the input, nothing more. Any copy that
+    # turns this into a fortune claim has misread the source.
+    #
+    # Disagreement is not a negative verdict and must never be rendered as
+    # one; it simply withholds the confirmation.
+    name_birth_accord: bool = False
 
 
 # ─── Lo Shu (birth-number matrix) — Cheiro / Chinese classical ────────
@@ -1522,6 +1542,27 @@ def _karmic_debt_flags(birth_date: str, name: str, table: dict) -> tuple[int, ..
     return tuple(sorted(flags))
 
 
+def _same_degree(a: int, b: int) -> bool:
+    """True when two numbers are the same number, or the same in another degree.
+
+    Cheiro's accord test is "the same number, or any degree of the same
+    number" (Ch. XV; knowledge/numerology.md §14.2). "Degree" is the reason
+    this is not `a == b`: the name-derived numbers keep 11/22/33 unreduced
+    (§8) while the Birth number is always 1-9, so the two sides can express
+    one number at different depths — 11 and 2 are one number, as are 22 and
+    4, 33 and 6.
+
+    Reduces both sides to a single digit before comparing, so it stays
+    correct if either side ever carries an unreduced total.
+    """
+    def _to_digit(n: int) -> int:
+        while n > 9:
+            n = sum(int(c) for c in str(n))
+        return n
+
+    return _to_digit(a) == _to_digit(b)
+
+
 def _birthday_number(birth_date: str) -> int:
     """Reduce day-of-month to 1-9 (Kumar Birthday / Johari Psychic / Mulank).
 
@@ -1721,4 +1762,12 @@ def compute(name: str, birth_date: str,
         name_compound=name_compound,
         name_compound_meaning=name_compound_meaning,
         lo_shu=compute_lo_shu_grid(birth_date),
+        # Cheiro allows "the same number, OR ANY DEGREE of the same number".
+        # Plain equality is not enough: this page keeps 11/22/33 unreduced on
+        # the name side (§8), while the Birth number is always 1-9. So a name
+        # of 11 against a birthday of 2 is the same number in another degree
+        # and must count as accord — equality alone would silently deny it,
+        # and it is the most common way the two can agree here.
+        # The 0 guard keeps an unscoreable name from reading as agreement.
+        name_birth_accord=bool(d and bd and _same_degree(d, bd)),
     )
