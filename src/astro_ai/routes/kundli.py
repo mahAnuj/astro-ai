@@ -311,6 +311,36 @@ async def _render_natal_for(request: Request, details: BirthDetails,
 _EMAIL_KUNDLI_LAST_SENT: dict[str, float] = {}
 _EMAIL_KUNDLI_MIN_INTERVAL_SEC = 60.0  # user can email themselves at most once per minute
 
+# Sweep threshold for the two rate-limit dicts below (#182). Both grew without
+# bound for the lifetime of a Cloud Run instance; the snapshot one is keyed by
+# user sub OR CLIENT IP, so every distinct anonymous visitor left a permanent
+# entry. A slow leak, worst on exactly the long-lived warm instances we want.
+#
+# NOT the `clear()` that routes/home.py uses for _HOMEPAGE_PANCHANG_CACHE.
+# That is right for a cache — dropping a cached value costs a recompute — and
+# WRONG for a rate limiter, where wiping the dict hands every currently
+# limited caller an immediate reset. Someone at their daily snapshot cap would
+# only need to wait for an unrelated visitor to push the dict past the
+# threshold. These sweeps therefore drop entries by AGE, so live limits
+# survive and only expired ones go.
+_RATE_DICT_SWEEP_AT = 500
+
+
+def _sweep_expired(store: dict, is_expired) -> None:
+    """Drop expired keys from a module-level rate-limit dict.
+
+    Materialises the key list before mutating: these dicts are shared across
+    worker threads, and iterating one while another request writes to it
+    raises "dictionary changed size during iteration". Individual dict
+    operations are atomic under the GIL, so a snapshot of the keys plus
+    per-key deletes is safe without a lock. A key written during the sweep
+    is simply missed and swept next time — it is fresh, so that is correct.
+    """
+    for key in list(store.keys()):
+        value = store.get(key)
+        if value is not None and is_expired(value):
+            store.pop(key, None)
+
 
 @router.post("/email/kundli-reading")
 async def email_kundli_reading(request: Request) -> JSONResponse:
@@ -371,6 +401,12 @@ async def email_kundli_reading(request: Request) -> JSONResponse:
     )
     ok = email_sender.send(user.email, subject=subject, html=html)
     if ok:
+        # An entry older than the interval can no longer rate-limit anyone —
+        # the next check subtracts and passes regardless — so it is garbage
+        # (#182). Swept on write, the only place this dict grows.
+        if len(_EMAIL_KUNDLI_LAST_SENT) > _RATE_DICT_SWEEP_AT:
+            cutoff = now - _EMAIL_KUNDLI_MIN_INTERVAL_SEC
+            _sweep_expired(_EMAIL_KUNDLI_LAST_SENT, lambda ts: ts < cutoff)
         _EMAIL_KUNDLI_LAST_SENT[user.sub] = now
         return JSONResponse({"ok": True, "email": user.email})
     # Brevo failed — infra issue worth an alert (rate limit, key rotation,
@@ -392,6 +428,14 @@ def _snapshot_rate_ok(key: str) -> bool:
     import time as _t
     now = _t.time()
     day_ago = now - 86400
+    # A key whose every hit is older than the 24h window can never affect a
+    # decision again, so it is pure garbage (#182). Swept here rather than on
+    # a timer because this is the only place the dict is written.
+    if len(_SNAPSHOT_CREATED_TODAY) > _RATE_DICT_SWEEP_AT:
+        _sweep_expired(
+            _SNAPSHOT_CREATED_TODAY,
+            lambda hits: not any(t > day_ago for t in hits),
+        )
     hits = [t for t in _SNAPSHOT_CREATED_TODAY.get(key, []) if t > day_ago]
     if len(hits) >= _SNAPSHOT_DAILY_CAP:
         _SNAPSHOT_CREATED_TODAY[key] = hits
