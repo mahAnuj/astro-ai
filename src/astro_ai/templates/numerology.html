@@ -584,6 +584,33 @@
      kept whole (this page states that convention to the reader above), and
      two digit-sum passes are needed because compounds 19/28/29/37/38/39/46/
      47/48/49 sum to a 2-digit intermediate. #}
+  {# Name↔Birth accord (#203). Cheiro's confidence signal, and it is a signal
+     about the INPUT, not about the person's fortune: when the two numbers
+     agree "one can be absolutely certain that no mistake is being made" about
+     which name to read (Ch. XV; knowledge/numerology.md §14.2).
+
+     Two rules for anyone editing this copy:
+       1. Agreement says the NAME is the right one to score. It does not say
+          life goes well. The birth number is fixed and reliable, the name is
+          the uncertain input, so agreement validates the input and nothing
+          more.
+       2. Disagreement is NOT a negative verdict and must never read as one.
+          It withholds a confirmation; it does not deliver a warning. The
+          block below therefore only renders on agreement — there is nothing
+          truthful and useful to say in the other case that is not just
+          filling space with worry. #}
+  {% if reading.name_birth_accord %}
+  <section class="bg-emerald-50/50 border border-emerald-200 rounded-2xl p-5 sm:p-6">
+    <div class="text-xs font-semibold uppercase tracking-wider text-emerald-800 mb-1">Name and birth agree</div>
+    <h2 class="font-display text-lg text-stone-900 mb-2">Your Name Number matches your Birthday Number</h2>
+    <p class="text-sm text-stone-700 leading-relaxed">
+      Both come to <strong>{{ reading.birthday }}</strong>{% if reading.name_number != reading.birthday %} &mdash; your name totals {{ reading.name_number }}, which is the same number in a higher degree{% endif %}. In this tradition that agreement is read as confirmation that you have entered the name that actually carries your number, since the birth date is fixed while the name is the part a reading can get wrong.
+    </p>
+    <p class="text-xs text-stone-600 mt-2 leading-relaxed">
+      It says the name is the right one to read &mdash; not that life runs smoothly. Names that don't match are entirely ordinary; they simply don't offer this particular cross-check.
+    </p>
+  </section>
+  {% endif %}
   {% if reading.name_compound and reading.name_compound_meaning %}
   {% set _compound_digit_sum = (reading.name_compound // 10) + (reading.name_compound % 10) %}
   {% set _compound_reduced = reading.name_compound if reading.name_compound in (11, 22, 33)
