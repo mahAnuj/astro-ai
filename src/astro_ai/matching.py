@@ -508,6 +508,37 @@ def _graha_maitri(g_idx: int, b_idx: int) -> KootaScore:
 
 
 def _graha_maitri_score(a: str, b: str, lord_a: str, lord_b: str) -> tuple[float, str]:
+    """Score the Moon-lord friendship pair, 0-5.
+
+    THE LADDER MUST STAY MONOTONIC (#174). Ordered by the quality of the two
+    relationships, the six rows are:
+
+        friend + friend    5.0
+        friend + neutral   4.0
+        neutral + neutral  3.0
+        friend + enemy     1.0
+        neutral + enemy    0.5
+        enemy + enemy      0.0
+
+    Until #174 the last two were transposed — friend+enemy scored 0.5 and
+    neutral+enemy 1.0. Holding one side fixed at "enemy" and upgrading the
+    other from neutral to friend therefore made the couple's score go DOWN,
+    which no reading of any school supports. It was the only inversion in the
+    table, which is what marks it as two adjacent rows swapped rather than a
+    deliberate choice.
+
+    The justification for the fix is internal, not textual, and that
+    distinction matters: **no source we hold adjudicates these six values.**
+    The corpus has no Graha Maitri scoring table — measured, not assumed —
+    and #177 tracks that absence for the whole 36-point engine. What is being
+    corrected here is a self-contradiction, which is wrong under every school
+    at once. If a sourced table ever arrives and disagrees with these numbers,
+    it supersedes this function; the ordering constraint is the part that
+    should survive.
+
+    31% of the 144 rashi pairs (44) land on the two corrected rows, so this
+    moves real scores — do not treat it as cosmetic.
+    """
     pair = {a, b}
     if pair == {"friend"}:
         return 5.0, f"Lords {lord_a} & {lord_b} are mutual friends — full match"
@@ -515,10 +546,10 @@ def _graha_maitri_score(a: str, b: str, lord_a: str, lord_b: str) -> tuple[float
         return 4.0, f"Lords {lord_a} & {lord_b}: one friend / one neutral"
     if pair == {"neutral"}:
         return 3.0, f"Lords {lord_a} & {lord_b} are mutually neutral"
-    if "neutral" in pair and "enemy" in pair:
-        return 1.0, f"Lords {lord_a} & {lord_b}: one neutral / one enemy"
     if "friend" in pair and "enemy" in pair:
-        return 0.5, f"Lords {lord_a} & {lord_b}: mixed friend / enemy"
+        return 1.0, f"Lords {lord_a} & {lord_b}: mixed friend / enemy"
+    if "neutral" in pair and "enemy" in pair:
+        return 0.5, f"Lords {lord_a} & {lord_b}: one neutral / one enemy"
     return 0.0, f"Lords {lord_a} & {lord_b} are mutual enemies"
 
 
