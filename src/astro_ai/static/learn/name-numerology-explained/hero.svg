@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Name numerology: one name, several forms, one number.
+     Three name-plates of decreasing formality (full name, common name, pet
+     name) converge on a single numeral. The article's whole argument is that
+     the middle one — the name people actually use — is the one that counts,
+     so it is the plate drawn in full colour while the other two sit faded. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Three forms of a name converging on one number">
+  <defs>
+    <radialGradient id="aura-nn" cx="0.5" cy="0.5" r="0.7">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.85"/>
+      <stop offset="60%" stop-color="#f0e7fb" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <circle cx="160" cy="160" r="150" fill="url(#aura-nn)"/>
+
+  <!-- the three name-plates -->
+  <g stroke-linecap="round">
+    <!-- full/formal name — faded -->
+    <rect x="34" y="58" width="150" height="34" rx="17" fill="#ffffff" stroke="#d6d3d1" stroke-width="2" opacity="0.55"/>
+    <line x1="52" y1="75" x2="150" y2="75" stroke="#a8a29e" stroke-width="4" opacity="0.55"/>
+
+    <!-- the name in daily use — full colour, the one that counts -->
+    <rect x="34" y="140" width="182" height="40" rx="20" fill="#ffffff" stroke="#8b5cf6" stroke-width="3"/>
+    <line x1="54" y1="160" x2="150" y2="160" stroke="#7c3aed" stroke-width="5"/>
+    <line x1="160" y1="160" x2="196" y2="160" stroke="#a78bfa" stroke-width="5"/>
+
+    <!-- pet/private name — faded -->
+    <rect x="34" y="228" width="110" height="34" rx="17" fill="#ffffff" stroke="#d6d3d1" stroke-width="2" opacity="0.55"/>
+    <line x1="52" y1="245" x2="120" y2="245" stroke="#a8a29e" stroke-width="4" opacity="0.55"/>
+  </g>
+
+  <!-- convergence lines into the number -->
+  <g fill="none" stroke="#c4b5fd" stroke-width="2" stroke-linecap="round">
+    <path d="M184 75 C 224 75, 236 130, 244 150" opacity="0.5"/>
+    <path d="M216 160 C 230 160, 236 160, 242 160"/>
+    <path d="M144 245 C 214 245, 236 190, 244 170" opacity="0.5"/>
+  </g>
+
+  <!-- the resulting single number -->
+  <circle cx="266" cy="160" r="34" fill="#f6f1fb" stroke="#8b5cf6" stroke-width="3"/>
+  <text x="266" y="174" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="38" fill="#6b21a8">7</text>
+</svg>
