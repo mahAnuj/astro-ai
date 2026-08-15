@@ -304,16 +304,34 @@ def _format_numerology_for_prompt(reading) -> str:
         f"Name Number ({system_label}): {reading.name_number}"
         if system_label else f"Name Number: {reading.name_number}"
     )
+    # The date-derived numbers are always valid. The name-derived four are
+    # only valid if the name could be scored at all (#197) — for a saved
+    # chart whose name is in Devanagari or any non-Latin script they are all
+    # 0, and 0 is not a result, it is the absence of one. /ask takes the name
+    # off the saved chart rather than a form, so unlike /numerology it can
+    # reach that state, and it used to hand those zeros to the model as fact.
     parts = [
         f"Life Path: {reading.life_path} ({reading.life_path_meaning[:80]}…)"
         if reading.life_path_meaning else f"Life Path: {reading.life_path}",
         f"Birthday: {reading.birthday}",
-        f"Destiny (Expression): {reading.destiny}",
-        f"Soul Urge: {reading.soul_urge}",
-        f"Personality: {reading.personality}",
-        name_number_line,
-        f"Personal Year: {reading.personal_year}",
     ]
+    if getattr(reading, "name_scoreable", True):
+        parts += [
+            f"Destiny (Expression): {reading.destiny}",
+            f"Soul Urge: {reading.soul_urge}",
+            f"Personality: {reading.personality}",
+            name_number_line,
+        ]
+    else:
+        parts.append(
+            "Name-derived numbers (Destiny, Soul Urge, Personality, Name "
+            "Number): NOT AVAILABLE — the saved name is not written in the "
+            "Latin alphabet, and these letter values are defined only over "
+            "A-Z. Do not invent them, do not transliterate the name to "
+            "produce them, and do not treat their absence as a result. The "
+            "date-derived numbers above are unaffected and can be used."
+        )
+    parts.append(f"Personal Year: {reading.personal_year}")
     if reading.karmic_debt_numbers:
         parts.append(f"Karmic Debt numbers present: {', '.join(str(k) for k in reading.karmic_debt_numbers)}")
     parts.append("Framework note: these are modern-Western (Chaldean) constructs, not classical Vedic Jyotish.")

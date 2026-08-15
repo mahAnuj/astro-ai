@@ -244,6 +244,21 @@ class NumerologyReading:
     # one; it simply withholds the confirmation.
     name_birth_accord: bool = False
 
+    # False when the name carried too few Latin letters to score (#197).
+    #
+    # The four name-derived numbers — destiny, soul_urge, personality,
+    # name_number — are then all 0, and 0 is not a numerology result: it is
+    # the absence of one. The date-derived numbers (life_path, birthday,
+    # personal_year, lo_shu) remain perfectly valid, which is why the reading
+    # is still returned rather than refused. Only the name half is missing.
+    #
+    # /numerology and /numerology/compatibility refuse such a name outright
+    # (#168) so a form user never reaches this state. /ask does not: it takes
+    # the name off the SAVED CHART, which may well be in Devanagari, and fed
+    # those four zeros to the LLM as fact. Anything consuming a reading must
+    # check this flag before presenting a name-derived number.
+    name_scoreable: bool = True
+
 
 # ─── Lo Shu (birth-number matrix) — Cheiro / Chinese classical ────────
 # The 3×3 grid used by traditional numerologists to visualise a person's
@@ -1822,4 +1837,8 @@ def compute(name: str, birth_date: str,
         # and it is the most common way the two can agree here.
         # The 0 guard keeps an unscoreable name from reading as agreement.
         name_birth_accord=bool(d and bd and _same_degree(d, bd)),
+        # Same threshold the /numerology routes use to refuse a name (#168),
+        # read from the same _clean_name output the sums were built from, so
+        # the flag cannot disagree with the numbers it describes.
+        name_scoreable=len(letters) >= 2,
     )
