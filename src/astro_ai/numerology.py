@@ -48,7 +48,17 @@ Reduction policy:
 Editorial:
 - Always defer back to /kundli for depth
 - Never predict specific outcomes
-- Never recommend name changes based on numerology
+- Never recommend name changes based on numerology ALONE (#112's wording, and
+  its reason: "huge scam vector"). This line previously read "based on
+  numerology" with no qualifier, which is a stricter rule than the spec asks
+  for and stricter than numerology.html's own footer, which kept "alone".
+  The two disagreed, and the absolute reading was treated as settled policy
+  in design work until the drift was caught (#203).
+  What the guard actually forbids is a standalone numerological push toward
+  changing a name — the scam pattern. It does not forbid explaining a sourced
+  rule about which name a reading uses, nor a suggestion resting on concrete
+  cited rules and cross-referenced with the chart. Sourced only, no upsell,
+  no fear framing.
 """
 
 from __future__ import annotations
