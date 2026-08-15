@@ -247,14 +247,17 @@
      the Sanskrit-neologism labels (Bhagyank, Mulank, Namank) used in
      Hindi-language numerology books, but flag them as modern coinages, not
      classical shastra terms. #}
-  <section class="grid gap-4">
-    {% for num, label, meaning, subtitle in [
-      (reading.life_path,   'Life Path Number',   reading.life_path_meaning,   'Also called Bhagyank in Hindi numerology books (a modern coinage, not classical). Main life theme, from all digits of your birth date added, then reduced — see the conventions note above.'),
-      (reading.birthday,    'Birthday Number',    reading.birthday_meaning,    'Also called Mulank in Hindi numerology books (modern coinage). Self-image, said to dominate to about age 40. Reduced to 1-9.'),
-      (reading.destiny,     'Expression Number',  reading.destiny_meaning,     'Also called Namank (modern coinage). Your natural role, from full-name letter sum.'),
-      (reading.soul_urge,   'Heart Desire',       reading.soul_urge_meaning,   'From name vowels — what you inwardly want. Modern Western framework.'),
-      (reading.personality, 'Personality Number', reading.personality_meaning, 'From name consonants — how others perceive you. Modern Western framework.'),
-    ] %}
+  {# Grouped by INPUT, not rendered as five siblings (#203). Two of these come
+     from the birth date and three from the name, and until this split nothing
+     on the page said so — they sat in one flat grid, which left the name
+     looking like one number among five rather than the single variable the
+     reader actually controls. Three of the five, plus the Name Compound and
+     the Name Number, all derive from the same string in the form field.
+
+     The practical consequence is the reason for the split: the birth date is
+     fixed, so those numbers cannot be got wrong. The name can, and a
+     different spelling or a fuller form changes three cards at once. #}
+  {% macro number_card(num, label, meaning, subtitle) %}
     <article class="bg-white rounded-2xl border-2 border-astro-100 p-5 sm:p-6 flex gap-4">
       <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-astro-50 border-2 border-astro-300 flex items-center justify-center">
         <span class="font-display text-3xl sm:text-4xl text-astro-700 tabular-nums">{{ num }}</span>
@@ -265,6 +268,25 @@
         <p class="text-sm text-stone-700 leading-relaxed">{{ meaning }}</p>
       </div>
     </article>
+  {% endmacro %}
+
+  <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">From your birth date</div>
+  <section class="grid gap-4">
+    {{ number_card(reading.life_path, 'Life Path Number', reading.life_path_meaning, 'Also called Bhagyank in Hindi numerology books (a modern coinage, not classical). Main life theme, from all digits of your birth date added, then reduced — see the conventions note above.') }}
+    {{ number_card(reading.birthday, 'Birthday Number', reading.birthday_meaning, 'Also called Mulank in Hindi numerology books (modern coinage). Self-image, said to dominate to about age 40. Reduced to 1-9.') }}
+  </section>
+
+  <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mt-8 mb-1">From your name</div>
+  <p class="text-xs text-stone-600 mb-2 leading-relaxed">
+    All three come from the same letters &mdash; <strong>{{ reading.name }}</strong> &mdash; read three ways: the whole name, its vowels, its consonants. Spelling counts: Sanjay and Sanjai, or a fuller form of the name you gave, would change all three.
+  </p>
+  <section class="grid gap-4">
+    {% for num, label, meaning, subtitle in [
+      (reading.destiny,     'Expression Number',  reading.destiny_meaning,     'Also called Namank (modern coinage). Your natural role, from full-name letter sum.'),
+      (reading.soul_urge,   'Heart Desire',       reading.soul_urge_meaning,   'From name vowels — what you inwardly want. Modern Western framework.'),
+      (reading.personality, 'Personality Number', reading.personality_meaning, 'From name consonants — how others perceive you. Modern Western framework.'),
+    ] %}
+    {{ number_card(num, label, meaning, subtitle) }}
     {% endfor %}
   </section>
   {# ─── LO SHU 3×3 GRID ─────────────────────────────────────────────
