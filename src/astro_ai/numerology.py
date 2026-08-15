@@ -1542,6 +1542,51 @@ def _karmic_debt_flags(birth_date: str, name: str, table: dict) -> tuple[int, ..
     return tuple(sorted(flags))
 
 
+_ISO_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def validate_birth_date(birth_date: str) -> str:
+    """Return the date unchanged if it is a real calendar date, else raise.
+
+    #199. Every number on this page is built by stripping non-digits from
+    this string and summing what is left, so a malformed value does not fail
+    — it produces a confident reading of nonsense:
+
+        "not-a-date"       -> life_path 0   (no digits at all)
+        "2024-02-30"       -> life_path 4   (a day that does not exist)
+        "9999-99-99"       -> life_path 9   (month 99, day 99)
+        "1990-05-12T10:00" -> life_path 1   (the TIME digits joined the sum;
+                                             the real answer for that date is 9)
+
+    Same silent-wrong-answer class as #168, where a Devanagari name scored
+    four zeros. The form uses `<input type="date">`, so a browser will not
+    submit these — but a scripted post, a stale bookmark or a hand-built
+    request will, and it gets a reading indistinguishable from a real one.
+
+    The regex runs BEFORE `date.fromisoformat` deliberately: from Python 3.11
+    that function accepts full ISO-8601 datetimes, so it would happily parse
+    "1990-05-12T10:00" and hand back a date, leaving the time digits to be
+    swept into the sums downstream. The regex pins the input to exactly
+    YYYY-MM-DD; fromisoformat then rejects impossible days like 02-30.
+
+    Raises ValueError with a message written for a person, since the route
+    renders it directly.
+    """
+    s = (birth_date or "").strip()
+    if not _ISO_DATE_RE.fullmatch(s):
+        raise ValueError(
+            "Please give the birth date as YYYY-MM-DD — for example 1990-06-11."
+        )
+    try:
+        from datetime import date as _d
+        _d.fromisoformat(s)
+    except ValueError:
+        raise ValueError(
+            f"{s} is not a real date. Please check the day and month."
+        ) from None
+    return s
+
+
 def _same_degree(a: int, b: int) -> bool:
     """True when two numbers are the same number, or the same in another degree.
 
@@ -1703,6 +1748,13 @@ def compute(name: str, birth_date: str,
     """
     from datetime import date as _date
     table = _CHALDEAN
+
+    # Refuse an impossible date rather than reduce it to a confident number
+    # (#199). Guarded here, not in the route, so every caller is covered —
+    # /numerology, /numerology/compatibility and the /ask numerology context
+    # all reach this function, and only the first of those had any date
+    # handling of its own.
+    birth_date = validate_birth_date(birth_date)
 
     letters = _clean_name(name)
     vowels = "".join(c for c in letters if c in _VOWELS)
