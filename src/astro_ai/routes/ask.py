@@ -31,12 +31,14 @@ from astro_ai.chart import (
 from astro_ai.llm import generate_ask_answer
 from astro_ai.providers import AllProvidersExhausted
 from astro_ai.routes.deps import (
+    ASK_OVERLAY_PATHS,
     ASK_PROMPT_PATH,
     _ask_quota_bump,
     _ask_quota_remaining,
     _lang,
     templates,
 )
+from astro_ai.matching import MATCHING_RULES_VERSION, compute_guna_milan
 from astro_ai.routes.llm_support import _cached, _fire_error_alert, _llm_error_friendly
 from astro_ai.session import load_collection, load_last_matching, load_user
 
@@ -116,18 +118,35 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
 
         chart       ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}
         numerology  …:ctx=numerology:numrules={NUMEROLOGY_RULES_VERSION}
-        matching    …:ctx=matching:partner={partner_fp}
+        matching    …:ctx=matching:partner={partner_fp}:matchrules={MATCHING_RULES_VERSION}
+
+    where `prompt_fp` additionally carries the overlay's fingerprint for the
+    two contexts that have one.
 
     Numerology diverged from its pre-#181 shape on purpose: the reduction
     rules changed (#162/#164/#169), so answers cached under the old rules
     name a Life Path that /numerology no longer computes, and the rules
-    version must invalidate them. Chart and matching are still
-    byte-identical to pre-#181, so their existing cache entries stay valid.
+    version must invalidate them.
+
+    This docstring used to end "Chart and matching are still byte-identical to
+    pre-#181, so their existing cache entries stay valid." That was true when
+    written and is not any more, which is the whole reason `matchrules` now
+    exists: the Ashtakoota scoring reaches the prompt, and the Muhurta
+    Chintamani pass moved several kootas — some by whole verdict bands. A note
+    describing a property the code no longer has is the drift this repo keeps
+    paying for, so it is corrected here rather than left standing.
     """
     chart_fp = cache.fingerprint_chart(
         saved.birth_date, saved.birth_time, saved.birth_place
     )
     prompt_fp = cache.fingerprint_prompt(ASK_PROMPT_PATH)
+    # The overlay is part of the system prompt, so it must be part of the key.
+    # Without this, editing ask_matching.txt or ask_numerology.txt would leave
+    # every answer written under the old overlay sitting in the cache —
+    # `prompt_fp` only fingerprints ask.txt.
+    _overlay = _ask_overlay_path(context)
+    if _overlay is not None:
+        prompt_fp = f"{prompt_fp}+{cache.fingerprint_prompt(_overlay)}"
     # Python's hash() is randomised per-process; use a stable hash so the
     # cache key survives container restarts.
     import hashlib
@@ -146,8 +165,24 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
         # of birth dates. Bump NUMEROLOGY_RULES_VERSION on any rule change.
         key = f"{key}:numrules={NUMEROLOGY_RULES_VERSION}"
     if context == "matching" and partner_fp:
-        key = f"{key}:partner={partner_fp}"
+        # matchrules for exactly the reason numrules exists above. The Ashtakoota
+        # scoring now reaches the prompt, and `prompt_fp` fingerprints only the
+        # prompt FILE — so a koota rule change would otherwise leave prose in the
+        # cache quoting a total /matching no longer computes. The Muhurta
+        # Chintamani pass moved several kootas, some by whole verdict bands.
+        key = f"{key}:partner={partner_fp}:matchrules={MATCHING_RULES_VERSION}"
     return key
+
+
+def _ask_overlay_path(context: str):
+    """The per-context system-prompt overlay, or None for plain chart asks.
+
+    ONE resolver, used by both `_ask_cache_key` and the generation call. If
+    those derived the overlay independently they could disagree, and the answer
+    would be generated under one system prompt but cached under another's
+    fingerprint — exactly the split-derivation bug #181 was about.
+    """
+    return ASK_OVERLAY_PATHS.get(context)
 
 
 def _resolve_matching_partner(request: Request, saved, context: str):
@@ -332,9 +367,41 @@ async def ask_submit(
     # _resolve_matching_partner. `context` may come back downgraded to
     # "chart" when there is no matching cookie or the partner chart won't
     # compute; the redirect below then drops `ctx` to match.
+    # Recomputed rather than persisted, deliberately. The result serialises to
+    # ~3.6KB against a ~4KB budget for ALL cookies on the domain, and stashing
+    # it in GCS would put a cross-continent read on a hot path (CLAUDE.md, #144).
+    # Recomputing costs ~0.016ms — a quarter of the partner `compute_chart` this
+    # handler already pays — and, more importantly, it cannot go stale: the Ask
+    # answer and the /matching page always derive from the same birth details,
+    # so they can never quote different totals for the same couple.
     partner_chart, partner_label, partner_fp, context = _resolve_matching_partner(
         request, saved, context
     )
+
+    # The seeker's own chart is `chart`; the partner's is `partner_chart`. Which
+    # of the two is the groom is NOT knowable here — `_resolve_matching_partner`
+    # deliberately defaults a curious third party to "partner = bride" — so the
+    # groom/bride order is recovered from the matching record rather than
+    # assumed. That order matters: Varna and Gana are scored directionally, so
+    # passing the pair the wrong way round would quote a total the /matching
+    # page never showed.
+    guna_milan = None
+    if context == "matching" and partner_chart is not None:
+        try:
+            last = load_last_matching(request)
+            seeker_is_bride = bool(last) and (
+                (saved.name or "").strip().lower()
+                == (last.bride_name or "").strip().lower()
+                and saved.birth_date == last.bride_birth_date
+            )
+            pair = ((partner_chart, chart) if seeker_is_bride
+                    else (chart, partner_chart))
+            guna_milan = compute_guna_milan(*pair)
+        except Exception:
+            # Never fail an answer over the compatibility block; the two natal
+            # charts alone still make a usable matching answer.
+            log.debug("guna milan compute failed for /ask matching context",
+                      exc_info=True)
 
     # Cache key includes context so the same question asked from
     # /numerology (with numerology context) does not collide with the
@@ -353,10 +420,12 @@ async def ask_submit(
             call_fn=lambda: generate_ask_answer(
                 chart=chart, dasha=dasha, flags=flags,
                 question=question, category=category,
-                prompt_path=ASK_PROMPT_PATH, lang=lang,
+                prompt_path=ASK_PROMPT_PATH,
+                overlay_path=_ask_overlay_path(context), lang=lang,
                 numerology_reading=numerology_reading,
                 partner_chart=partner_chart,
                 partner_label=partner_label,
+                guna_milan=guna_milan,
             ),
         )
     except Exception as err:

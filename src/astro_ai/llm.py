@@ -71,9 +71,20 @@ _LANG_SUFFIX: dict[str, str] = {
 }
 
 
-def _system_prompt(prompt_path: Path, lang: str) -> str:
-    """Load the file prompt and tack the language suffix on the end."""
+def _system_prompt(prompt_path: Path, lang: str, overlay_path: Path | None = None) -> str:
+    """Load the file prompt, append an optional overlay, then the language suffix.
+
+    `overlay_path` carries context-specific rules (see `ASK_OVERLAY_PATHS`) and
+    is appended rather than substituted, so the shared voice/honesty/safety
+    rules in the base prompt keep applying and live in only one file.
+
+    The language suffix stays LAST. It instructs the model which language to
+    answer in, and an overlay landing after it would bury that instruction in
+    the middle of the system prompt.
+    """
     base = prompt_path.read_text(encoding="utf-8")
+    if overlay_path is not None:
+        base += "\n" + overlay_path.read_text(encoding="utf-8")
     return base + _LANG_SUFFIX.get(lang, "")
 
 
@@ -343,6 +354,56 @@ def _format_partner_chart_for_prompt(partner_chart) -> str:
     return format_for_prompt(partner_chart)
 
 
+def format_guna_milan_for_prompt(guna) -> str:
+    """Render a computed GunaMilan for the /ask matching block.
+
+    Why this exists: `/matching` computed a full Ashtakoota analysis, showed it
+    to the user, and then threw it away the moment they clicked Ask. The LLM
+    received two raw charts and re-derived compatibility from planets alone,
+    with none of the sourced koota scoring behind it — so the page and the
+    answer could disagree about the same couple.
+
+    The dosha objects are rendered with their parihāras BECAUSE the arithmetic
+    is counter-intuitive and the model will otherwise "helpfully" correct it: a
+    cancelled Bhakoot still scores 0, and no mitigation ever adds points. Both
+    facts are stated inline so the prose cannot contradict the page.
+    """
+    lines = [
+        f"Total: {guna.total_awarded:g} / {guna.total_max} — "
+        f"{guna.overall_verdict_label}",
+        "Koota breakdown:",
+    ]
+    lines += [f"  - {k.name} ({k.sanskrit}): {k.awarded:g}/{k.max_points} — {k.note}"
+              for k in guna.kootas]
+    lines.append(
+        f"Mangal Dosh: {'compatible' if guna.mangal_dosh_compatible else 'needs review'}"
+        f" — {guna.mangal_dosh_note}"
+    )
+
+    bd = guna.bhakoot_dosha
+    if bd.present:
+        lines.append(f"Bhakoot dosha: {bd.name} — "
+                     f"{'cancelled' if bd.cancelled else 'NOT cancelled'}")
+        lines += [f"  parihara applying: {p}" for p in bd.pariharas]
+        lines += [f"  not evaluated: {u}" for u in bd.unevaluated]
+        if bd.cancelled:
+            lines.append("  NOTE: a cancellation removes the dosha but does NOT add "
+                         "points. The Bhakoot score above is already final.")
+        if not bd.nadi_shuddha:
+            lines.append("  NOTE: the tradition requires clean Nadi regardless of any "
+                         "Bhakoot cancellation, and Nadi is not clean here.")
+
+    nd = guna.nadi_dosha
+    if nd.present:
+        sev = "gravest form" if nd.grave else ("reduced" if nd.alpa else "present")
+        lines.append(f"Nadi dosha: {nd.nadi} Nadi — {sev}")
+        lines += [f"  mitigation: {m}" for m in nd.mitigations]
+        lines.append("  NOTE: Nadi has NO cancelling conditions in this tradition and "
+                     "gains no points from any mitigation.")
+
+    return "\n".join(lines)
+
+
 def generate_ask_answer(
     chart: Chart,
     dasha: DashaState | None,
@@ -354,6 +415,8 @@ def generate_ask_answer(
     numerology_reading=None,
     partner_chart: Chart | None = None,
     partner_label: str = "partner",
+    guna_milan=None,
+    overlay_path: Path | None = None,
 ) -> str:
     """Personalised free-form Q&A grounded in the seeker's chart.
 
@@ -385,6 +448,12 @@ def generate_ask_answer(
             f"--- {partner_label.upper()}'S NATAL CHART ---\n"
             f"{_format_partner_chart_for_prompt(partner_chart)}\n\n"
         )
+    if guna_milan is not None:
+        optional_blocks += (
+            f"--- ASHTAKOOTA COMPATIBILITY (already computed — quote these numbers, "
+            f"do NOT recompute or estimate them) ---\n"
+            f"{format_guna_milan_for_prompt(guna_milan)}\n\n"
+        )
 
     user_message = (
         f"{today_anchor()}\n\n"
@@ -397,7 +466,7 @@ def generate_ask_answer(
         f"Question: {question.strip()}\n"
     )
     content = providers.chat(messages=[
-        {"role": "system", "content": _system_prompt(prompt_path, lang)},
+        {"role": "system", "content": _system_prompt(prompt_path, lang, overlay_path)},
         {"role": "user", "content": user_message},
     ], route="ask")
     return content.strip()

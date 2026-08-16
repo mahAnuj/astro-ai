@@ -48,6 +48,26 @@ from astro_ai.chart import (
 # ---------------------------------------------------------------------------
 
 # Each Nakshatra's gana — temperament class.
+MATCHING_RULES_VERSION = "2"
+"""Bumped whenever a koota's SCORING changes, to invalidate cached LLM prose.
+
+Exactly parallel to `numerology.NUMEROLOGY_RULES_VERSION`, and for the reason
+that module learned the hard way: `/ask` caches the ANSWER, and its cache key
+fingerprints the prompt FILE, not the computation behind it. So a scoring change
+here leaves cached prose quoting a total that `/matching` no longer computes.
+
+Version 2 covers the Muhurta Chintamani pass: the Graha Maitri ladder's bottom
+two rungs, the Gana table becoming directional, Bhakoot cancellations no longer
+restoring points, both Nadi restorations being removed, and the Vashya half-sign
+splits. Together those move a large fraction of pairs, several by whole verdict
+bands.
+
+`_ask_cache_key`'s docstring used to say matching was "byte-identical to
+pre-#181, so their existing cache entries stay valid". That was true when
+written and is not any more — which is precisely why the version now exists
+rather than the claim.
+"""
+
 _NAKSHATRA_GANA: Final[dict[str, str]] = {
     "Ashwini": "Deva", "Bharani": "Manushya", "Krittika": "Rakshasa",
     "Rohini": "Manushya", "Mrigashira": "Deva", "Ardra": "Manushya",
