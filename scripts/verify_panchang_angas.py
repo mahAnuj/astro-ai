@@ -584,6 +584,100 @@ def gate_4_muhurat_agrees(chart) -> list[str]:
     return failures
 
 
+def gate_5_single_pada_impl() -> list[str]:
+    """One pada implementation, and nobody recomputes it (#209 QA follow-up).
+
+    Three copies of this arithmetic existed — `chart._pada_of`,
+    `matching._moon_pada` and `muhurat._child_moon_pada`. They agreed on every
+    real chart, which is exactly why the fork survived: agreement by luck
+    reads identical to agreement by design.
+
+    It was not harmless. All three used
+    `int((abs_long % (360/27)) / (360/108)) + 1`, which is wrong at every exact
+    10-degree multiple (20.0 gives pada 2 where 3 is correct). When #209 fixed
+    the boundary it fixed ONE copy. muhurat's copy additionally carried a
+    `min(pada, 4)` clamp that hid the out-of-range symptom while still
+    shipping the wrong pada.
+
+    This gate fails if a caller reintroduces its own arithmetic, and if the
+    three ever disagree on a real chart.
+    """
+    import ast
+    import inspect
+    import textwrap
+    from datetime import date, timedelta
+    from astro_ai import matching as _m, muhurat as _mu
+    from astro_ai.chart import compute_chart, _pada_of
+
+    failures: list[str] = []
+
+    # 1. no caller may recompute the pada itself
+    # Inspect the EXECUTABLE body only. A first version string-matched the
+    # whole source and failed on the docstrings, which quote the old formula
+    # in order to explain why it was removed — a gate that punishes
+    # documenting the bug it guards would get the documentation deleted.
+    for label, fn in (("matching._moon_pada", _m._moon_pada),
+                      ("muhurat._child_moon_pada", _mu._child_moon_pada)):
+        tree = ast.parse(textwrap.dedent(inspect.getsource(fn)))
+        func = tree.body[0]
+        stmts = list(func.body)
+        if (stmts and isinstance(stmts[0], ast.Expr)
+                and isinstance(stmts[0].value, ast.Constant)
+                and isinstance(stmts[0].value.value, str)):
+            stmts = stmts[1:]          # drop the docstring
+        # Assert the INVARIANT, not a list of spellings. A first version
+        # string-matched markers like "360 / 27" and was defeated by a
+        # bite-test that wrote "360.0 / 27.0" — the very form the original
+        # fork used. These functions are field reads; any arithmetic in them
+        # is a recomputation by definition, whatever it looks like.
+        arithmetic = [
+            ast.unparse(node) for node in ast.walk(ast.Module(body=stmts, type_ignores=[]))
+            if isinstance(node, ast.BinOp)
+            and isinstance(node.op, (ast.Div, ast.Mult, ast.Mod, ast.FloorDiv))
+        ]
+        for expr in arithmetic:
+            failures.append(
+                f"{label} recomputes the pada — arithmetic {expr!r} in its "
+                f"body. Read PlanetPosition.pada instead."
+            )
+        reads_field = any(
+            isinstance(node, ast.Attribute) and node.attr == "pada"
+            for node in ast.walk(ast.Module(body=stmts, type_ignores=[]))
+        )
+        if not reads_field:
+            failures.append(f"{label} never reads .pada — is it still delegating?")
+
+    # 2. the boundary the fork got wrong
+    for deg, want in ((10.0, 4), (20.0, 3), (30.0, 2), (40.0, 1)):
+        got = _pada_of(deg)
+        if got != want:
+            failures.append(f"_pada_of({deg}) = {got}, expected {want}")
+
+    # 3. all three agree on real charts, and stay in range
+    d = date(1970, 1, 1)
+    checked = 0
+    while d < date(2005, 1, 1):
+        try:
+            c = compute_chart(d.isoformat(), "10:30", CITY)
+            moon = next(p for p in c.planets if p.name == "Moon")
+            a = _m._moon_pada(moon)
+            _nak, b = _mu._child_moon_pada(c)
+            checked += 1
+            if not (a == b == moon.pada):
+                failures.append(
+                    f"{d}: pada disagrees — matching={a} muhurat={b} "
+                    f"PlanetPosition={moon.pada}"
+                )
+            if not 1 <= moon.pada <= 4:
+                failures.append(f"{d}: pada {moon.pada} out of range 1-4")
+        except Exception as exc:  # noqa: BLE001
+            failures.append(f"{d}: {type(exc).__name__}: {exc}")
+        d += timedelta(days=97)
+    if checked < 50:
+        failures.append(f"only {checked} charts exercised — gate is too thin to trust")
+    return failures
+
+
 def main() -> int:
     print("Panchang anga verification — Nitya Yoga + Karana (issue #142)")
     print("  computation : src/astro_ai/chart.py compute_panchang()")
@@ -619,6 +713,8 @@ def main() -> int:
          lambda: gate_3_rate_and_coverage(census)),
         ("Gate 4 - the Muhurat Finder reads the same angas (#148)",
          lambda: gate_4_muhurat_agrees(chart)),
+        ("Gate 5 - one pada implementation, no recomputation (#209)",
+         gate_5_single_pada_impl),
     ]
 
     all_failures: list[str] = list(census_errors)

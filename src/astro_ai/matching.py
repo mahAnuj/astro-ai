@@ -615,17 +615,21 @@ def _bhakoot(g_idx: int, b_idx: int) -> KootaScore:
 
 
 def _moon_pada(moon) -> int:
-    """Return the Moon's pada within its nakshatra (1..4).
+    """The Moon's pada within its nakshatra (1-4).
 
-    Each nakshatra is 13°20' = 13.3333° wide, split into 4 padas of 3°20' each.
-    We need the Moon's absolute sidereal longitude modulo nakshatra-span.
-    Uses moon.longitude (position within rashi) + rashi index for absolute.
+    Reads the field rather than recomputing it. `PlanetPosition.pada` is
+    populated at construction by `chart._pada_of`, so every consumer sees one
+    number from one implementation.
+
+    This function used to carry its own copy of the arithmetic, in the form
+    `int((abs_long % (360/27)) / (360/108)) + 1`. That form is wrong at every
+    exact 10-degree multiple — 20.0 gives pada 2 where 3 is correct — and the
+    same copy existed in `muhurat._child_moon_pada`, where a `min(pada, 4)`
+    clamp hid the symptom without fixing the cause. Three copies of one fact,
+    which is exactly what #176/#165/#166 were about, and the boundary fix in
+    #209 landed in only one of them.
     """
-    abs_long = RASHIS.index(moon.rashi) * 30.0 + moon.longitude
-    nak_span = 360.0 / 27.0
-    pada_span = nak_span / 4.0
-    pos_in_nak = abs_long % nak_span
-    return int(pos_in_nak / pada_span) + 1
+    return moon.pada
 
 
 def _nadi(g_moon, b_moon, g_nak: str, b_nak: str, g_rashi_idx: int, b_rashi_idx: int) -> KootaScore:
