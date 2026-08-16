@@ -13,6 +13,30 @@
     <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-2">
       Ask Shubh Bhagya
     </div>
+    {# The heading and blurb are context-specific. A matching seeker is asking
+       about TWO people and both charts are used, so "about your chart" and a
+       single name were simply wrong — and actively confusing next to a match
+       they had just run. `current_context` here is the EFFECTIVE context, so
+       if the matching cookie expired this correctly falls back to the
+       chart-only wording rather than promising a two-chart answer. #}
+    {% if current_context == 'matching' %}
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
+      Ask anything about your match
+    </h1>
+    <p class="text-stone-600 max-w-xl mx-auto">
+      Your question gets answered using <strong>both birth charts</strong> and your
+      Guna Milan result &mdash; the koota scores, Mangal Dosh, and any doshas found.
+      Honest, specific, no generic platitudes.
+    </p>
+    {% elif current_context == 'numerology' %}
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
+      Ask anything about your numbers
+    </h1>
+    <p class="text-stone-600 max-w-xl mx-auto">
+      Your question gets answered using your numerology reading alongside your birth
+      chart. Honest, specific, no generic platitudes.
+    </p>
+    {% else %}
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
       Ask anything about your chart
     </h1>
@@ -20,14 +44,19 @@
       Your question gets answered using your actual birth chart &mdash; placements,
       current Dasha, and Vedic flags. Honest, specific, no generic platitudes.
     </p>
+    {% endif %}
     {% if active_chart %}
     <p class="text-xs text-stone-600 mt-2">
+      {% if current_context == 'matching' and matching_names %}
+      Asking about: <strong>{{ matching_names }}</strong>
+      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-astro-50 border border-astro-200 text-astro-800 font-semibold text-[10px] uppercase tracking-wider">Kundli matching</span>
+      &middot; <a href="/matching" class="text-astro-600 hover:text-astro-700 underline">new match</a>
+      {% else %}
       Asking for: <strong>{{ active_chart.display_name() }}</strong>
       &middot; <a href="/" class="text-astro-600 hover:text-astro-700 underline">switch chart</a>
       {% if current_context == 'numerology' %}
       &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-astro-50 border border-astro-200 text-astro-800 font-semibold text-[10px] uppercase tracking-wider">Numerology context</span>
-      {% elif current_context == 'matching' %}
-      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-astro-50 border border-astro-200 text-astro-800 font-semibold text-[10px] uppercase tracking-wider">Matching context</span>
+      {% endif %}
       {% endif %}
     </p>
     {% endif %}
