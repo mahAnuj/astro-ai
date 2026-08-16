@@ -65,17 +65,35 @@ async def ask_form(request: Request, q: str | None = None,
         return RedirectResponse("/?needs_chart=ask", status_code=303)
     lang = _lang(request)
     context = ctx if ctx in ("chart", "numerology", "matching") else "chart"
+    # Resolved unconditionally, not just when `q` is set, because the header
+    # needs it too. `context` is what the caller ASKED for; `effective_ctx` is
+    # what can actually be honoured — `_resolve_matching_partner` downgrades to
+    # "chart" when the matching cookie is gone or the partner chart will not
+    # compute. The template must render the downgraded one, or a seeker whose
+    # cookie expired sees a "Matching context" badge over an answer that used
+    # only their own chart.
+    _p_chart, _p_label, partner_fp, effective_ctx = _resolve_matching_partner(
+        request, saved, context
+    )
+
+    # Both names, for the header. Only meaningful once the partner actually
+    # resolved, which is why it hangs off effective_ctx rather than context.
+    matching_names = None
+    if effective_ctx == "matching":
+        last = load_last_matching(request)
+        if last is not None:
+            g = (last.groom_name or "").strip() or "Groom"
+            b = (last.bride_name or "").strip() or "Bride"
+            matching_names = f"{g} & {b}"
+
     answer = None
     if q:
         # Render a previously-asked question by re-running the cached lookup.
         # POST handler stores the (question, category) and we look it up.
-        # The partner must be resolved here too: for ctx=matching the partner
-        # fingerprint and the *effective* context are both part of the cache
-        # key, so GET has to repeat exactly what POST did or it would look up
-        # a key POST never wrote and the answer would never re-render (#181).
-        _p_chart, _p_label, partner_fp, effective_ctx = _resolve_matching_partner(
-            request, saved, context
-        )
+        # The partner fingerprint and the *effective* context are both part of
+        # the cache key, so GET has to repeat exactly what POST did or it would
+        # look up a key POST never wrote and the answer would never re-render
+        # (#181) — hence one resolver call shared by header and lookup.
         answer = _ask_lookup(saved, q, c or "general", lang,
                              context=effective_ctx, partner_fp=partner_fp)
     return templates.TemplateResponse(
@@ -85,7 +103,9 @@ async def ask_form(request: Request, q: str | None = None,
             "active_chart": saved,
             "current_question": q or "",
             "current_category": c or "general",
-            "current_context": context,
+            # The EFFECTIVE context, not the requested one — see above.
+            "current_context": effective_ctx,
+            "matching_names": matching_names,
             "answer": answer,
             "remaining_today": _ask_quota_remaining(request),
         },
