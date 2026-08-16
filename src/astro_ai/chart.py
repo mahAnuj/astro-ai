@@ -2898,6 +2898,27 @@ def _tithi_at(julian_day: float) -> tuple[int, str, str, str]:
     return idx, name, paksha, significance
 
 
+def julian_day_utc(when: datetime) -> float:
+    """Julian Day for an instant, normalised to UTC.
+
+    Exists so callers outside this module can reach the anga functions below,
+    which all take a Julian Day (#148). `muhurat.py` previously could not, so
+    it grew its own copies of the nitya-yoga and karana maths instead — two
+    implementations of the same astrology with no computation over both that
+    would notice if they drifted.
+
+    Naive datetimes are treated as UTC, matching `compute_transit_snapshot`.
+    """
+    moment = when if when.tzinfo else when.replace(tzinfo=ZoneInfo("UTC"))
+    moment = moment.astimezone(ZoneInfo("UTC"))
+    return swe.julday(
+        moment.year,
+        moment.month,
+        moment.day,
+        moment.hour + moment.minute / 60 + moment.second / 3600,
+    )
+
+
 def _nitya_yoga_at(julian_day: float) -> tuple[int, str, str]:
     """(index 0-26, name, significance) of the Nitya Yoga at the given Julian Day.
 
