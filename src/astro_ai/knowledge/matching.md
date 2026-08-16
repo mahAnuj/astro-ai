@@ -90,10 +90,40 @@ is the closer of the two to this text.
 Count bride's nakshatra → groom's, and groom's → bride's; divide each by 9;
 remainders **3, 5, 7 are inauspicious**, the rest auspicious; auspicious scores 3.
 
-## vv.25–26 — Yoni [TIKA]
+## vv.25–26 — Yoni [IMG] — **verified, no change needed**
 
-Yoni assignments per nakshatra, with योनिमैत्री scoring **(४) गुण**. The animal
-list is present and legible; the enemy-pair grid is **[UNREAD]**.
+Both halves check out exactly. This is the one koota that needed nothing.
+
+**Assignments: 27/27 match.** The tika lists 14 yonis across 28 nakshatras —
+it includes **Abhijit** (paired with Uttara Ashadha as नेवला/Mongoose), which
+our 27-nakshatra scheme does not carry. Excluding Abhijit, every one of our 27
+agrees:
+
+Horse अश्व — Ashwini, Shatabhisha · Buffalo महिष — Swati, Hasta ·
+Lion सिंह — Dhanishtha, P.Bhadrapada · Elephant हाथी — Bharani, Revati ·
+Sheep मेढा — Pushya, Krittika · Monkey वानर — Shravana, P.Ashadha ·
+Mongoose नेवला — U.Ashadha (+ Abhijit) · Serpent सर्प — Rohini, Mrigashira ·
+Deer हरिण — Jyeshtha, Anuradha · Dog कुत्ता — Mula, Ardra ·
+Cat बिल्ली — Punarvasu, Ashlesha · Rat चूहा — Magha, P.Phalguni ·
+Tiger व्याघ्र — Vishakha, Chitra · Cow गौ — U.Phalguni, U.Bhadrapada
+
+**Enemy pairs: 7/7 match**, set-identical to `_YONI_ENEMIES`:
+
+> इनका वैर — गौ व्याघ्रका। गज सिंह। घोड़ा भैंसा। कुत्ता मृग। नेवला सर्प।
+> वानर मेंढा। बिल्ली चूहा **इत्यादि लोकव्यवहारमें जानना**
+
+Cow/Tiger, Elephant/Lion, Horse/Buffalo, Dog/Deer, Mongoose/Serpent,
+Monkey/Sheep, Cat/Rat.
+
+**Tiers.** एक योनि → उत्तम, सम योनि → सामान्य, योनिवैर → अशुभ, and योनिमैत्री
+scores **(४)**. Our 4 / 2 / 0 matches that shape; the top and bottom are the
+text's, but **the middle 2 is our interpolation** — the tika grades the middle
+tier qualitatively (सामान्य) and never numbers it.
+
+**Note the closing इत्यादि — "and so on, known from common practice."** The
+same move as Vashya v.23. This text repeatedly gives anchors and then hands the
+remainder to convention, which is a property of the source worth remembering
+before treating any of its lists as exhaustive.
 
 ## vv.27–28 — Graha Maitri [IMG] — **implemented**
 
