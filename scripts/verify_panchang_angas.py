@@ -515,6 +515,75 @@ def gate_3_rate_and_coverage(census: list[tuple[date, object]]) -> list[str]:
 
 # --------------------------------------------------------------------------
 
+def gate_4_muhurat_agrees(chart) -> list[str]:
+    """The Muhurat Finder must read the same angas /panchang renders (#148).
+
+    `muhurat.py` used to carry its own nitya-yoga and karana implementations —
+    a second copy of the same astrology, with its own spellings
+    ("Variyan"/"Aindra"/"Chatushpad" against chart.py's
+    "Variyana"/"Indra"/"Chatushpada"), and nothing computing over both. They
+    agreed only because the sequence order happened to match. That is the same
+    shape as #141 and #146: an authoritative-looking value, consumed by a
+    shipped feature, with no computation that would disagree if it drifted.
+
+    #148 collapsed muhurat onto chart.py. This gate is what stops it forking
+    again — it fails the moment the Muhurat Finder's blocker path stops
+    matching the almanac users read.
+
+    Checks both blocker inputs, since those are what actually gate a muhurat:
+    the nitya-yoga NAME (Vyatipata/Vaidhriti block) and Bhadra detection
+    (Vishti). A spelling drift in either would silently stop a blocker firing.
+    """
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+    from astro_ai import muhurat as _m
+    from astro_ai.chart import _nitya_yoga_at, _karana_at, julian_day_utc
+
+    failures: list[str] = []
+    base = datetime(2026, 1, 1, 6, 0, tzinfo=ZoneInfo("UTC"))
+    yoga_seen: set[str] = set()
+    karana_seen: set[str] = set()
+
+    for i in range(400):
+        when = base + timedelta(hours=i * 7)
+        jd = julian_day_utc(when)
+        _yi, chart_yoga, _ = _nitya_yoga_at(jd)
+        _ki, chart_karana, _ = _karana_at(jd)
+        muhurat_yoga, blocks = _m._nitya_yoga_flag(chart, when)
+        muhurat_bhadra = _m._bhadra_active_at(chart, when)
+        yoga_seen.add(chart_yoga)
+        karana_seen.add(chart_karana)
+
+        if muhurat_yoga != chart_yoga:
+            failures.append(
+                f"{when:%Y-%m-%d %H:%M}Z nitya yoga: muhurat says "
+                f"{muhurat_yoga!r}, chart.py says {chart_yoga!r}"
+            )
+        if blocks != (chart_yoga in {"Vyatipata", "Vaidhriti"}):
+            failures.append(
+                f"{when:%Y-%m-%d %H:%M}Z blocking flag disagrees with the "
+                f"name it was derived from ({chart_yoga!r} -> {blocks})"
+            )
+        if muhurat_bhadra != (chart_karana == "Vishti"):
+            failures.append(
+                f"{when:%Y-%m-%d %H:%M}Z Bhadra: muhurat says {muhurat_bhadra}, "
+                f"chart.py karana is {chart_karana!r}"
+            )
+
+    # A gate that never sees a blocker fire proves nothing about blockers.
+    if not {"Vyatipata", "Vaidhriti"} & yoga_seen:
+        failures.append(
+            "sample window contained no blocking nitya yoga — the blocker "
+            "comparison above was never exercised; widen the window"
+        )
+    if "Vishti" not in karana_seen:
+        failures.append(
+            "sample window contained no Vishti — Bhadra detection was never "
+            "exercised; widen the window"
+        )
+    return failures
+
+
 def main() -> int:
     print("Panchang anga verification — Nitya Yoga + Karana (issue #142)")
     print("  computation : src/astro_ai/chart.py compute_panchang()")
@@ -548,6 +617,8 @@ def main() -> int:
          lambda: gate_2_structure(census)),
         ("Gate 3 - rate and coverage (synodic arithmetic, no almanac)",
          lambda: gate_3_rate_and_coverage(census)),
+        ("Gate 4 - the Muhurat Finder reads the same angas (#148)",
+         lambda: gate_4_muhurat_agrees(chart)),
     ]
 
     all_failures: list[str] = list(census_errors)
