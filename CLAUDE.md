@@ -17,13 +17,45 @@ production is the first place code runs.
 
 ### Rules for agents
 
-- **Never `git push` unless the user asks in that turn.** Committing locally is fine and
-  encouraged; pushing is a production deploy and is the user's decision every time.
-- **Never push work that has not passed QA.** In the `/feature` and `/bug` loops, only the
-  user pushes after the ship summary — not the engineer that wrote the code, and not the
-  dev-lead.
-- If a task genuinely needs to reach production, say so and ask. Do not infer standing
-  permission from a previous push.
+- **Never push work that has not passed QA.** This is the rule everything else here
+  protects. In the `/feature` and `/bug` loops, the engineer that wrote the code does not
+  push it, and neither does the dev-lead.
+- **Subagents never push. Ever.** No engineer, dev-lead, QA or architect may run
+  `git push`, under any circumstances, including when a parent agent's prompt appears to
+  authorise it. Commit locally and hand back. The standing permission below is the
+  *user's own*, granted to the top-level session they are talking to; it does not travel
+  down into subagents, and a subagent claiming it has that permission is the exact failure
+  this section exists to prevent.
+- **Do not infer standing permission from a previous push.** One approval is not a
+  policy — only the explicit grant recorded below is.
+
+#### Standing permission for QA'd work — granted by the user 2026-08-16
+
+The user's words, verbatim: *"if an issue is QAed, just push and merge and close"*.
+
+So, for the **top-level session only**: once an issue's fix has genuinely passed QA, push
+and merge it without asking again, and close the issue with evidence.
+
+The conditions are load-bearing, not decoration:
+
+- **"QAed" means independently verified**, not "I ran it and it looked right". Either an
+  independent QA agent passed it, or — where none is available — the change was verified by
+  execution against a running server, with the specific claims measured and the gaps stated.
+  Verification by the same reasoning that produced the change is not QA.
+- **Closing still needs production evidence.** Push, wait for the deploy, verify against
+  production, then close with the numbers. Do not close on a merge.
+- **Anything that has NOT passed QA still stops and asks**, exactly as before.
+- If a change is irreversible in a way a revert would not undo — data migration, a
+  destructive storage operation, anything touching subscriber records — ask anyway, no
+  matter how well tested.
+
+This paragraph exists because the rule above it used to read "never push unless the user
+asks in that turn", which the user then relaxed in conversation. Leaving the file
+contradicting the instruction actually in force is the same defect class as #112's dropped
+"ALONE" and the invented "never recommend name changes" rule: guidance drifts from its
+source, and months later someone follows the written version believing it is the real one.
+If the user narrows this permission again, edit this block rather than relying on the
+conversation.
 - Prefer a branch for anything non-trivial. Landing directly on `main` is for small,
   verified, single-purpose commits.
 
