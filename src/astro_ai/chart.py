@@ -212,6 +212,17 @@ class PlanetPosition:
     longitude: float    # sidereal degrees within the sign (0..30)
     nakshatra: str      # 27-fold lunar mansion based on absolute longitude
     retrograde: bool    # vakri — Sun/Moon never; Rahu/Ketu always (Vedic convention)
+    # Quarter of the nakshatra, 1-4 (#209). Each nakshatra spans 13 deg 20',
+    # divided into four padas of 3 deg 20'. Added because /kundli's landing
+    # copy, its meta description and its JSON-LD all advertised "planetary
+    # positions in nakshatra padas" while nothing computed one — the field
+    # did not exist. Implemented rather than deleting the claim: the
+    # arithmetic is one division and the pada is what maps a planet into the
+    # Navamsha, so it is genuinely useful rather than decorative.
+    #
+    # Defaulted so the four existing construction sites keep working, but
+    # every one of them now passes it explicitly.
+    pada: int = 0
 
 
 @dataclass(frozen=True)
@@ -1173,7 +1184,20 @@ def _moon_yogas(chart: Chart) -> list[YogaResult]:
     """Sunaphaa, Anaphaa, Duradhara, Kemadruma, Chandra-Mangala, Gaja-Kesari."""
     out: list[YogaResult] = []
     moon = next(p for p in chart.planets if p.name == "Moon")
-    others = [p for p in chart.planets if p.name not in {"Moon", "Sun", "Rahu", "Ketu"}]
+    # "Planets other than the Sun" — the nodes are NOT excluded (#208).
+    #
+    # Rao §§11.3.1-11.3.4 and both corpus files define Sunapha/Anapha/
+    # Duradhara/Kemadruma over "planets other than Sun", with no node
+    # exclusion. Dropping Rahu and Ketu changed the yoga set on 23.8% of
+    # charts, and on 0.8% it declared KEMADRUMA — an inauspicious yoga of
+    # isolation and poverty — where the source gives a positive one, because
+    # the only planet flanking the Moon was a node that had been filtered out.
+    #
+    # Some schools do exclude the nodes here, so this is a genuine divergence
+    # rather than a slip. It resolves to the corpus, as everything else on
+    # this site does; if that is ever revisited it should be a sourced
+    # decision recorded here, not a silent filter.
+    others = [p for p in chart.planets if p.name not in {"Moon", "Sun"}]
 
     in_2nd = any(_house_from_planet(p.house, moon.house) == 2 for p in others)
     in_12th = any(_house_from_planet(p.house, moon.house) == 12 for p in others)
@@ -1204,7 +1228,14 @@ def _moon_yogas(chart: Chart) -> list[YogaResult]:
     kendras_occupied = any(p.house in _KENDRA_HOUSES for p in chart.planets if p.name not in {"Moon"})
     if not in_2nd and not in_12th and not in_same and not kendras_occupied:
         out.append(YogaResult(
-            slug="kemadruma_yoga", name="Kemadruma Yoga", category="moon",
+            # category "challenge", not "moon" (#208 follow-up). Kemadruma is
+            # an INAUSPICIOUS yoga — an isolated, unsupported Moon — and
+            # sharing a category with Sunapha/Anapha/Duradhara meant it
+            # rendered under a green "Strengths" badge captioned "Strengths
+            # around your mind and emotional life", and scored +5 in the
+            # Bhagya Score alongside them. The one yoga on this page a reader
+            # should pause over was being presented as a gift.
+            slug="kemadruma_yoga", name="Kemadruma Yoga", category="challenge",
             effect="Lonely / unsupported Moon; emotional fragility — verify cancellations before alarm",
             source="Brihat Parashara Hora Shastra",
         ))
@@ -1277,18 +1308,45 @@ def _other_yogas(chart: Chart) -> list[YogaResult]:
         ))
 
     # Trilochana: Sun, Moon, Mars in mutual trines (4 signs apart from each other)
+    # 4 and 8 only — NOT 0 (#210). `vedic_reference.md` §4.5 defines this as
+    # "mutual trines (4 signs apart)", and Rao Ch. 11 the same. Accepting 0
+    # meant a conjunction counted as a trine, so all three in ONE house
+    # satisfied a rule that asks for them spread across three. Measured on a
+    # chart sweep: declared on 6.15% of charts against 0.88% correct — a 7x
+    # over-detection of a yoga promising wealth and long life.
     diffs = sorted({(sun.house - mars.house) % 12, (moon.house - mars.house) % 12,
                     (sun.house - moon.house) % 12})
-    if all(d in {0, 4, 8} for d in diffs):
+    if all(d in {4, 8} for d in diffs):
         out.append(YogaResult(
             slug="trilochana_yoga", name="Trilochana Yoga", category="other",
             effect="Wealthy, intelligent, long-lived, victorious",
             source="Classical Vedic tradition",
         ))
 
-    # Amala: only natural benefics in 10th from Lagna
-    in_10th_lagna = [p for p in chart.planets if p.house == 10 and p.name not in {"Rahu", "Ketu"}]
-    if in_10th_lagna and all(p.name in _NATURAL_BENEFICS for p in in_10th_lagna):
+    # Amala: only natural benefics in the 10th from Lagna OR FROM THE MOON.
+    #
+    # The "or Moon" limb was missing until #207 — Rao Ch. 11 gives it as "in
+    # the 10th house from lagna or Moon", and yogas.md §6.3 and
+    # vedic_reference.md §4.5 agree. Checking Lagna alone missed the yoga on
+    # 10.5% of charts.
+    #
+    # The node exclusion is also gone. Amala asks that the 10th hold ONLY
+    # benefics; Rahu and Ketu are not benefics, so skipping them turned a
+    # chart with Rahu plus a benefic in the 10th into a qualifying one —
+    # wrongly declared on 2.3%. A node in the house now fails the test, which
+    # is what "only benefics" means.
+    moon_house = next((p.house for p in chart.planets if p.name == "Moon"), None)
+
+    def _tenth_from(house: int) -> int:
+        """The 10th house counted from `house`, 1-indexed and wrapping."""
+        return ((house - 1 + 9) % 12) + 1
+
+    def _amala_from(house: int) -> bool:
+        occupants = [p for p in chart.planets if p.house == _tenth_from(house)]
+        return bool(occupants) and all(p.name in _NATURAL_BENEFICS for p in occupants)
+
+    amala = _amala_from(1) or (moon_house is not None and _amala_from(moon_house))
+    if amala:
         out.append(YogaResult(
             slug="amala_yoga", name="Amala Yoga", category="other",
             effect="Ever-lasting fame, royal respect, virtue — clean reputation through career",
@@ -1797,12 +1855,25 @@ def format_aspects_for_prompt(chart: "Chart") -> str:
     infer it if needed. Special aspects are what classically add colour
     to marriage / career / partnership readings.
     """
+    # ONLY Mars, Jupiter and Saturn have special aspects (#205).
+    #
+    # Rahu and Ketu carried (5, 9) here until the Kundli correctness audit.
+    # `knowledge/aspects.md:74` says the opposite in as many words:
+    # "Everything else (Sun, Moon, Mercury, Venus, Rahu, Ketu) has *only* the
+    # 7th house aspect", and Rao §10.2 and Raman Ch. II both close the list at
+    # Mars/Jupiter/Saturn. `_jupiter_aspects()` further down this same file
+    # already got it right, so the file contradicted itself.
+    #
+    # The cost was not subtle: every single Kundli reading received two
+    # fabricated "CLASSICAL ASPECTS" lines asserting node aspects the
+    # tradition does not give them. Some schools do assign nodes a 5/9
+    # drishti, so this is a real divergence rather than a typo — but the
+    # corpus this site cites is unambiguous, and a claim we cannot trace is
+    # one we do not make.
     _special: dict[str, tuple[int, ...]] = {
         "Mars":    (4, 8),
         "Jupiter": (5, 9),
         "Saturn":  (3, 10),
-        "Rahu":    (5, 9),
-        "Ketu":    (5, 9),
     }
     _archetype: dict[str, str] = {
         "Mars":    "Mars energy — pushes / disrupts / activates",
@@ -1844,7 +1915,12 @@ def format_planet_nakshatras_for_prompt(chart: "Chart") -> str:
             continue
         archetype = _NAKSHATRA_ARCHETYPE_SHORT.get(p.nakshatra, "")
         note = f" — {archetype}" if archetype else ""
-        lines.append(f"  {p.name} in {p.nakshatra}{note}")
+        # Pada included since #209. The landing page has always advertised
+        # "positions in nakshatra padas"; until the pada was computed there
+        # was nothing to advertise. It is also the quarter that selects the
+        # Navamsha sign, so it is the useful half of the placement.
+        pada = f" pada {p.pada}" if p.pada else ""
+        lines.append(f"  {p.name} in {p.nakshatra}{pada}{note}")
     return "\n".join(lines)
 
 
@@ -2244,8 +2320,25 @@ def compute_dasha_state(natal: Chart, when: datetime | None = None) -> DashaStat
     active_idx = periods.index(active_maha)
     next_maha = periods[active_idx + 1] if active_idx + 1 < len(periods) else None
 
-    # Sub-divide active Maha into Antardashas.
-    antardashas = _build_antardashas(active_maha)
+    # Sub-divide active Maha into Antardashas. The birth Mahadasha — and only
+    # it — is subdivided over its FULL nominal duration rather than the
+    # remaining balance, per Rao §16.3 (#204); see _build_antardashas. Its
+    # notional start sits before birth, so the sub-periods already finished by
+    # the time the person was born are dropped: they are real in the scheme
+    # and simply not part of this life.
+    if active_idx == 0:
+        antardashas = [
+            p for p in _build_antardashas(
+                active_maha,
+                full_years=first_lord_years,
+                nominal_start=birth_date - timedelta(
+                    days=consumed_at_birth_years * _DAYS_PER_YEAR
+                ),
+            )
+            if p.end > active_maha.start
+        ]
+    else:
+        antardashas = _build_antardashas(active_maha)
     active_antar = next((p for p in antardashas if p.start <= moment <= p.end), antardashas[0])
     active_antar_idx = antardashas.index(active_antar)
     upcoming = tuple(antardashas[active_antar_idx + 1 :])
@@ -2258,18 +2351,46 @@ def compute_dasha_state(natal: Chart, when: datetime | None = None) -> DashaStat
     )
 
 
-def _build_antardashas(maha: DashaPeriod) -> list[DashaPeriod]:
-    """9 sub-periods within `maha`, starting with the Maha lord, weighted by Vimshottari years."""
+def _build_antardashas(
+    maha: DashaPeriod,
+    *,
+    full_years: float | None = None,
+    nominal_start: "date | None" = None,
+) -> list[DashaPeriod]:
+    """9 sub-periods within `maha`, starting with the Maha lord, weighted by Vimshottari years.
+
+    `full_years` / `nominal_start` exist for the BIRTH Mahadasha (#204), the
+    only one a person enters part-way through. Rao is explicit (§16.3):
+
+        "In the case of the first dasa, we don't divide the remainder at birth
+         ... Instead, we divide the complete duration of the first dasa ...
+         So a few antardasas may be over before birth and only a few
+         antardasas may be left at birth."
+
+    Until this fix the birth Mahadasha's `years` (the REMAINING balance) and
+    `start` (the birth date) were used, which squeezed all nine antardashas
+    into the leftover span. Someone with 2.2 years of a 7-year Mars dasha left
+    got nine antardashas crammed into 2.2 years instead of the correct few
+    survivors of a 7-year subdivision — wrong dates for everyone still in
+    their birth Mahadasha, and usually the wrong lord as well.
+
+    Passing both makes the subdivision run over the whole nominal dasha,
+    anchored where it notionally began (before birth). The caller then drops
+    the sub-periods that were already over at birth.
+    """
+    span_years = maha.years if full_years is None else full_years
+    cursor = maha.start if nominal_start is None else nominal_start
+    nominal_end = cursor + timedelta(days=span_years * _DAYS_PER_YEAR)
+
     start_idx = _VIM_ORDER.index(maha.lord)
     out: list[DashaPeriod] = []
-    cursor = maha.start
     for i in range(9):
         sub_lord = _VIM_ORDER[(start_idx + i) % 9]
-        sub_years = (maha.years * _VIM_YEARS[sub_lord]) / 120.0
+        sub_years = (span_years * _VIM_YEARS[sub_lord]) / 120.0
         new_end = cursor + timedelta(days=sub_years * _DAYS_PER_YEAR)
-        # Clamp last sub-period to exact Maha end to avoid float drift.
+        # Clamp the last sub-period to the exact span end to avoid float drift.
         if i == 8:
-            new_end = maha.end
+            new_end = maha.end if full_years is None else nominal_end
         out.append(DashaPeriod(sub_lord, cursor, new_end, sub_years))
         cursor = new_end
     return out
@@ -2919,6 +3040,16 @@ def julian_day_utc(when: datetime) -> float:
     )
 
 
+def _pada_of(long_abs: float) -> int:
+    """Quarter of the nakshatra a longitude falls in, 1-4 (#209).
+
+    A nakshatra spans 360/27 = 13 deg 20'; a pada is a quarter of that,
+    3 deg 20'. Equivalent to 360/108 of the zodiac, which is why the pada is
+    exactly the Navamsha division — the same 108 slices, counted differently.
+    """
+    return int((long_abs % (360 / 27)) // (360 / 108)) + 1
+
+
 def _nitya_yoga_at(julian_day: float) -> tuple[int, str, str]:
     """(index 0-26, name, significance) of the Nitya Yoga at the given Julian Day.
 
@@ -3173,6 +3304,7 @@ def _compute_planet_positions(julian_day: float, lagna_sign_idx: int) -> list[Pl
                 house=house,
                 longitude=long_abs - sign_idx * 30,
                 nakshatra=NAKSHATRAS[int(long_abs // (360 / 27))],
+                pada=_pada_of(long_abs),
                 retrograde=is_retro,
             )
         )
@@ -3189,6 +3321,7 @@ def _compute_planet_positions(julian_day: float, lagna_sign_idx: int) -> list[Pl
             house=((ketu_sign_idx - lagna_sign_idx) % 12) + 1,
             longitude=ketu_long_abs - ketu_sign_idx * 30,
             nakshatra=NAKSHATRAS[int(ketu_long_abs // (360 / 27))],
+            pada=_pada_of(ketu_long_abs),
             retrograde=True,
         )
     )
@@ -3251,6 +3384,7 @@ def compute_navamsha_chart(chart: Chart) -> Chart:
             house=d9_house,
             longitude=d9_long,
             nakshatra=p.nakshatra,
+            pada=p.pada,
             retrograde=p.retrograde,
         ))
 
@@ -3328,6 +3462,7 @@ def compute_dashamsa_chart(chart: Chart) -> Chart:
             house=d10_house,
             longitude=d10_long,
             nakshatra=p.nakshatra,
+            pada=p.pada,
             retrograde=p.retrograde,
         ))
 
@@ -3602,9 +3737,15 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
 
     # ─── Yogas: auspicious classical combinations ──────────────────
     yogas = compute_yogas(chart)
-    if yogas:
-        n_yogas = min(len(yogas), 3)   # cap so a single feature doesn't dominate
-        yoga_names = _y_joined([y.name for y in yogas[:n_yogas]], lang)
+    # Only AUSPICIOUS yogas boost the score (#208 follow-up). This used to be
+    # `if yogas:` over the whole list, so Kemadruma — a yoga of isolation —
+    # added +5 exactly as Gaja-Kesari does. The "challenge" category exists to
+    # keep that distinction; anything filed under it is not a strength and
+    # must never be scored as one.
+    auspicious = [y for y in yogas if y.category != "challenge"]
+    if auspicious:
+        n_yogas = min(len(auspicious), 3)   # cap so a single feature doesn't dominate
+        yoga_names = _y_joined([y.name for y in auspicious[:n_yogas]], lang)
         _add(+5 * n_yogas, "bs_yogas_active", n=n_yogas,
              plural=("s" if n_yogas > 1 and lang == "en" else ""), names=yoga_names)
 
