@@ -357,6 +357,130 @@ without a mapping from this tradition.
 
 ---
 
+---
+
+## The वर्णादिगुणचक्राणि tables (pp. 85–86) — transcribed, NOT adopted
+
+Pages 85–86 carry a set of reference *charts* the earlier passes missed entirely.
+The djvu OCR renders them as noise, so neither reading the text nor
+`corpus_search.py` could ever have surfaced them; they are only visible in the
+page images (`n96`, `n97`).
+
+They matter because they answer questions this file previously recorded as
+unanswerable. **They are transcribed here and deliberately NOT implemented** —
+see the reliability section at the end, which is the whole point.
+
+### ताराचक्रम् (9×9) — CONFIRMS our Tara
+
+Graded **3 / १॥ / ०**: both taras favourable 3, one favourable 1½, neither 0.
+Rows and columns 3, 5, 7 are the afflicted ones. **`_tara` matches this cell for
+cell.** Our 0.0 branch is unreachable in practice because the two counts are
+arithmetically linked (if one is 3/5/7 the other cannot be), but the logic is
+right and the table enumerates all 81 cells for completeness.
+
+Incidental but load-bearing: **१॥ = 1½ proves ॥ = ½**, the traditional Devanagari
+half mark. That is what licenses reading ॥ as ½ in the Vashya table below.
+
+### गणगुणाः (3×3) — CONTRADICTS the prose gloss
+
+Columns वर (groom), rows कन्या (bride):
+
+| bride ↓ groom → | देव | मनुष्य | राक्षस |
+|---|---|---|---|
+| **देव** | 6 | **5** | 0 |
+| **मनुष्य** | 5 | 6 | 0 |
+| **राक्षस** | 2 | 0 | 6 |
+
+`_gana` ships bride-Deva + groom-Manushya = **4**, taken from the prose gloss
+(कन्या देव वर मनुष्यमें ४ गुण). **The table says 5.** The prose and the table
+disagree inside the same edition, and both readings are internally coherent:
+
+- *For the table:* its other eight cells all match the prose, and the prose's own
+  general clause देव मनुष्यमें ५ sits awkwardly with its later ४.
+- *For the prose:* "general rule, then directional exception" is exactly the
+  structure v.22 uses for Varna, and a 3×3 summary chart is precisely where a
+  compiler would flatten an exception away.
+
+**Unresolved. Code unchanged, still following the prose.** Resolving it needs a
+second edition to collate against, not more staring at this one.
+
+### वश्यगुण (5×5) — a real matrix, and it refutes an earlier claim here
+
+| bride ↓ groom → | चतुष्पद | मनुष्य | जलचर | वनचर | कीट |
+|---|---|---|---|---|---|
+| **चतुष्पद** | 2 | ½ | 1 | 0 | 2 |
+| **मनुष्य** | ½ | 2 | 0 | 0 | 0 |
+| **जलचर** | 1 | 0 | 2 | 2 | 2 |
+| **वनचर** | 0 | 0 | 2 | 2 | 0 |
+| **कीट** | 1 | 0 | 1 | 0 | 2 |
+
+Diagonal verified 2 in all five cells, which fixes the column order. Columns 1–4
+were read twice at different crops and agree.
+
+**This overturns what the #175 section above says.** That section claims no
+canonical 5×5 matrix exists and that adopting one means picking a vendor's
+variant. **Wrong** — one exists, in the same text as the rest of this engine, and
+it was missed because the OCR destroys tables. The #175 issue comment carries the
+same error and needs correcting.
+
+It also shows our `_VASHYA_FRIENDLY` is wrong in kind, not just unsourced: we
+score Manava/Jalachara as *friendly* 1.0 where this table says **0** — consistent
+with the wider tradition treating a food relationship as undesirable rather than
+as control.
+
+Note the apparent conflict with v.23, which says जलचर rashis are वश्य to
+मनुष्य rashis. It is not a conflict: being *food* is a vashya relation but an
+inauspicious one, so the classification and the score point opposite ways.
+
+### योनिगुणाः (14×14) — transcribed, and it does not survive its own checks
+
+Order: अश्व, गज, मेष, सर्प, श्वान, मार्जार, मूषक, गो, भैंस, व्याघ्र, हरिण,
+वानर, नकुल, सिंह. Values 0–4. Full transcription:
+
+```
+Horse     4 2 2 3 2 2 2 1 0 1 3 3 2 1
+Elephant  2 4 3 3 2 2 2 2 3 1 2 2 2 0
+Sheep     2 3 4 2 1 2 1 3 3 1 2 0 3 1
+Serpent   3 3 2 4 2 1 1 1 1 2 2 2 0 2
+Dog       2 2 1 2 4 2 1 2 2 1 0 2 1 1
+Cat       2 2 2 3 2 4 0 2 2 2 3 3 2 2
+Rat       2 2 1 1 1 0 4 2 2 2 2 2 2 1
+Cow       1 2 3 2 3 2 2 4 3 0 3 2 2 1
+Buffalo   0 2 3 2 2 2 2 3 4 1 2 3 2 2
+Tiger     1 2 1 1 1 1 2 1 1 4 1 1 2 2
+Deer      3 3 2 2 0 3 2 3 2 1 4 2 2 2
+Monkey    3 3 0 2 2 3 2 2 1 1 2 4 3 2
+Mongoose  2 3 3 0 1 2 1 2 2 2 2 3 4 2
+Lion      1 0 1 2 1 1 0 0 3 2 1 2 2 4
+```
+
+What passes: diagonal is 4 in all 14 cells; all values in 0–4; **six of the seven
+prose enemy pairs are 0 in both directions**, which is a strong independent
+confirmation that the axis order and the reading are basically right.
+
+What fails: **19 of 91 unordered pairs are asymmetric**, and the seventh enemy
+pair is inconsistent — Cow×Tiger is 0 but Tiger×Cow is 1, though the prose names
+गौ/व्याघ्र as mutual enemies. Rows 7–12 were re-read at higher magnification and
+came back identical, so **these asymmetries are in the printed table, not in the
+transcription.** There are also two zeros outside the enemy list (Cow/Lion,
+Lion/Rat) that no prose rule accounts for.
+
+## Why none of the three tables is implemented
+
+Because the cross-checking worked. A 196-cell matrix with 19 unexplained internal
+asymmetries, one self-contradiction against its own prose, and no second edition
+to collate against is **not** a sounder basis than the documented 4/2/0
+simplification it would replace. Adopting it would be exactly the move this file
+warns against elsewhere — trading a disclosed approximation for an unvalidated
+transcription, and calling the result "sourced".
+
+The same logic applies to Gana (prose vs table, unresolved) and, more marginally,
+to Vashya, whose two asymmetric cells both sit in the one column read only once.
+
+**What would unblock this:** a second printed edition or manuscript of Muhurta
+Chintamani to collate the tables against. That is a book-acquisition task, not a
+reasoning task. Until then the transcriptions live here as evidence, not as code.
+
 ## Still unsourced after this pass
 
 - The Yoni enemy-pair grid (vv.25–26 hold it; **[UNREAD]**).
