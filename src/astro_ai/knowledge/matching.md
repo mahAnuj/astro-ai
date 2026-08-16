@@ -122,20 +122,49 @@ The same page carries the **naisargika maitri** table (Sun's friends are Mars,
 Jupiter, Moon; Moon has **no enemies**; etc.). Spot-checked against
 `_PLANET_FRIENDS` — consistent.
 
-## vv.29–30 — Gana [TIKA] — **discrepancy, not yet fixed**
+## vv.29–30 — Gana [IMG] — **implemented**
 
-> इस कूटमें गणसाम्यमें ६ गुण, देव मनुष्यमें ५, **देव राक्षस एवं मनुष्य राक्षसमें
-> गुण (०)**, कन्या राक्षसी वर देवमें २, कन्या देव वर मनुष्यमें ४ गुण
+**The 27 gana assignments (v.29) are verified 27/27 against our table.**
 
-Two problems with our implementation, both recorded rather than acted on:
+- राक्षस: Magha, Ashlesha, Dhanishtha, Jyeshtha, Mula, Shatabhisha, Krittika,
+  Chitra, Vishakha
+- मनुष्य: the three Purvas, the three Uttaras, Rohini, Bharani, Ardra
+- देव: Anuradha, Punarvasu, Mrigashira, Shravana, Revati, Swati, Ashwini,
+  Pushya, Hasta
 
-1. We score **Manushya/Rakshasa = 1.0**; the text says **0**.
-2. The text's Gana scoring is **direction-dependent** (bride Rakshasi + groom
-   Deva ≠ bride Deva + groom Manushya). We compare unordered sets, so we cannot
-   express it at all.
+**The scoring (v.30) was wrong, and wrong in kind as well as in value:**
 
-Read at [TIKA] confidence only. Both need a full-resolution pass before any code
-moves — the numerals here are exactly the kind that OCR loses.
+> इस कूटमें गणसाम्यमें **६** गुण, देव मनुष्य में **५**, देव राक्षस एवं मनुष्य
+> राक्षसमें गुण **(०)** है, कन्या राक्षसी वर देवमें **२**, कन्या देव वर
+> मनुष्यमें **४** गुण
+
+Read as unordered pairs this sentence contradicts itself — Deva/Rakshasa cannot
+be both 0 and 2. Read **directionally** it is consistent, and that is the only
+consistent reading available. It is also the structure the Varna rule already
+uses (वर्णाधिक वर होनेमें गुण मिलता है — groom higher scores, bride higher does
+not), and the prose above the table corroborates the asymmetry outright: वर
+राक्षस + कन्या मनुष्य gives वैर, while वर मनुष्य + कन्या राक्षस gives वरकी
+मृत्यु — one unordered pair, two different verdicts.
+
+| groom | bride | points | |
+|---|---|---|---|
+| same | same | 6 | गणसाम्य |
+| Deva | Manushya | 5 | the general देव-मनुष्य row |
+| Manushya | Deva | **4** | कन्या देव वर मनुष्य — exception to it |
+| Deva | Rakshasa | **2** | कन्या राक्षसी वर देव — exception |
+| Rakshasa | Deva | 0 | the general देव-राक्षस row |
+| Manushya | Rakshasa | **0** | stated flatly, no exception either way |
+| Rakshasa | Manushya | **0** | |
+
+Two changes. **Manushya/Rakshasa was 1.0 and is now 0** — that value had no
+source. And **the koota is direction-dependent at all**, which the previous set
+comparison could not express. **324 of the 729 nakshatra pairs are rescored**,
+and 324 are now order-sensitive.
+
+Consequence worth stating plainly: swapping which chart is the groom's now
+changes the score. That is correct per the text, but it means a UI that lets
+users enter the two charts in either order is making an astrological claim by
+field placement.
 
 ## v.31 — Bhakoot [TIKA]
 
