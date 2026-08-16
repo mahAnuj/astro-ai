@@ -956,13 +956,12 @@ def _child_moon_pada(chart: Chart) -> tuple[str, int]:
     moon = next((p for p in chart.planets if p.name == "Moon"), None)
     if not moon:
         return "", 0
-    from astro_ai.chart import _rashi_index as _ri
-    abs_long = _ri(moon.rashi) * 30.0 + moon.longitude
-    nak_span = 360.0 / 27.0
-    pada_span = nak_span / 4.0
-    pos_in_nak = abs_long % nak_span
-    pada = int(pos_in_nak / pada_span) + 1
-    return moon.nakshatra, min(pada, 4)
+    # Reads the field rather than recomputing it — see the note on
+    # matching._moon_pada. The copy that used to live here also carried a
+    # `min(pada, 4)` clamp, which capped the out-of-range value the buggy
+    # arithmetic could produce instead of correcting it: the symptom was
+    # hidden and the wrong pada still shipped for every 10-degree boundary.
+    return moon.nakshatra, moon.pada
 
 
 def _dagdha_flag(weekday: str, tithi: str) -> tuple[bool, str]:
