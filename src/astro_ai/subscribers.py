@@ -71,6 +71,15 @@ RASHI_SLUGS: frozenset[str] = frozenset({
 })
 
 
+# The two ways subscribe() can fail, named so callers can tell them apart
+# without matching on free text (#183). The distinction matters: a bad email
+# is the user's to fix and must NOT page anyone, while a storage failure is
+# ours and must. Comparing against these constants means renaming the wording
+# cannot silently turn an alert off.
+INVALID_EMAIL_MSG = "Please enter a valid email address."
+STORAGE_FAILURE_MSG = "Couldn't save your subscription right now. Please try again later."
+
+
 def subscribe(email: str, lang: str = "en", city: str = "",
               rashi: str = "all") -> tuple[bool, bool, str]:
     """Add a subscriber. Returns (ok, is_new, message).
@@ -92,7 +101,7 @@ def subscribe(email: str, lang: str = "en", city: str = "",
     """
     email = _normalize(email)
     if not _EMAIL_RE.match(email):
-        return False, False, "Please enter a valid email address."
+        return False, False, INVALID_EMAIL_MSG
     if lang not in {"en", "hi"}:
         lang = "en"
     city = (city or "").strip()[:80]
@@ -125,7 +134,7 @@ def subscribe(email: str, lang: str = "en", city: str = "",
 
     result = storage.update_json(SUBSCRIBERS_KEY, _add, default={"subscribers": []})
     if result is None:
-        return False, False, "Couldn't save your subscription right now. Please try again later."
+        return False, False, STORAGE_FAILURE_MSG
     return True, state["was_new"], "Subscribed."
 
 

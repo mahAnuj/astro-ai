@@ -103,6 +103,10 @@ async def matching_result(
     # to gate owner-notify + activity event to fresh generations only.
     # Defaults to False (no LLM = no cache = fresh POST worth notifying).
     was_cached = False
+    # Set by the call_fn closure below when the LLM is actually invoked (#183).
+    # Declared out here so the except handler can read it even if the failure
+    # happened before the closure was built.
+    llm_invoked = [False]
     if os.environ.get("OPENAI_API_KEY"):
         try:
             g_fp = cache.fingerprint_chart(g_birth_date, g_birth_time, g_birth_place)
@@ -111,11 +115,22 @@ async def matching_result(
             pair_key = ":".join(sorted([g_fp, b_fp]))
             prompt_fp = cache.fingerprint_prompt(MATCHING_PROMPT_PATH)
             cache_key = f"matching:{pair_key}:{lang}:{prompt_fp}"
-            # Detect cache hit BEFORE _cached() so downstream notify can skip.
-            was_cached = cache.get(cache_key) is not None
-            narrative_text = _cached(
-                cache_key, route="matching", lang=lang, ttl_days=None,
-                call_fn=lambda: generate_matching_narrative(
+            # Record whether the LLM was ACTUALLY invoked, rather than
+            # pre-checking the cache (#183). The old line was
+            #     was_cached = cache.get(cache_key) is not None
+            # evaluated before _cached(), and `_cached` is self-healing: a
+            # cached entry that fails the quality check is dropped and
+            # REGENERATED. So cache.get() could return non-None, the LLM be
+            # called anyway, and that call raise — leaving was_cached True and
+            # silently skipping both owner-notify and the form_matching event
+            # for what was, from the user's side, a fresh match.
+            #
+            # A one-element list rather than a plain name because the closure
+            # has to write to it and this is a module-level async handler, not
+            # a nested function where `nonlocal` would apply.
+            def _generate() -> str:
+                llm_invoked[0] = True
+                return generate_matching_narrative(
                     groom_name=g_name.strip(),
                     bride_name=b_name.strip(),
                     groom_chart=groom_chart,
@@ -123,8 +138,13 @@ async def matching_result(
                     guna=guna,
                     prompt_path=MATCHING_PROMPT_PATH,
                     lang=lang,
-                ),
+                )
+
+            narrative_text = _cached(
+                cache_key, route="matching", lang=lang, ttl_days=None,
+                call_fn=_generate,
             )
+            was_cached = not llm_invoked[0]
             narrative_sections = parse_sectioned_reading(narrative_text)
         except Exception as err:
             # Best-effort soft-fail: user still sees scores + table. But we
@@ -132,6 +152,12 @@ async def matching_result(
             log.exception("matching narrative LLM failed (scores still returned)")
             _fire_error_alert(request, err, "matching:narrative")
             narrative_sections = []  # surface as no-narrative; scores still render
+            # If the failure happened while generating, this was a fresh match
+            # from the user's side and must still notify (#183). If it failed
+            # before the LLM was reached, llm_invoked stays False and this
+            # correctly reports "not cached" — the pre-#183 default for a
+            # request that never got as far as the cache.
+            was_cached = not llm_invoked[0]
 
     # Fire notify + activity event ONLY on fresh matching. A cache hit
     # means the same pair was matched before in this window — the user
