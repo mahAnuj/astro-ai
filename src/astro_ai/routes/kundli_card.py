@@ -16,6 +16,8 @@ Moved verbatim from ``main.py``; only the decorator prefix changed
 from __future__ import annotations
 
 import logging
+import re
+from urllib.parse import quote
 
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
@@ -34,6 +36,47 @@ from astro_ai.session import load_collection
 log = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# Everything outside this set is dropped from the ASCII filename (#180).
+_FILENAME_UNSAFE = re.compile(r"[^A-Za-z0-9 ._-]")
+_FILENAME_MAX = 60
+
+
+def _card_content_disposition(name: str) -> str:
+    """Build a safe `Content-Disposition` for the cosmic card (#180).
+
+    The chart name is whatever the seeker typed, and it used to be
+    interpolated raw:
+
+        f'inline; filename="cosmic-card-{details.name or "kundli"}.svg"'
+
+    Two problems, one of which the issue under-called. A name containing a
+    double quote terminates the quoted string early and silently corrupts the
+    header — `Anuj"; evil=1` yields
+    `filename="cosmic-card-Anuj"; evil=1.svg"`, i.e. an attacker-chosen
+    parameter. And a name containing CR/LF is a response-splitting attempt:
+    #180 supposed "Starlette will most likely reject it", but constructing a
+    Response with a CRLF-bearing header value **succeeds**. Nothing upstream
+    was protecting us.
+
+    Emits both forms per RFC 6266:
+
+    - `filename=` — ASCII only, unsafe characters removed, length capped. This
+      is what old clients use, and it is the one that must be unbreakable.
+    - `filename*=UTF-8''…` — percent-encoded, so a Devanagari or accented name
+      survives intact in modern browsers. Percent-encoding also makes CR/LF
+      structurally impossible here: they encode to %0D%0A.
+
+    Clients that understand `filename*` prefer it, so the sanitised ASCII form
+    is a fallback rather than a downgrade for most users.
+    """
+    raw = (name or "").strip()
+    ascii_part = _FILENAME_UNSAFE.sub("", raw)[:_FILENAME_MAX].strip() or "kundli"
+    utf8_part = quote(f"cosmic-card-{raw[:_FILENAME_MAX] or 'kundli'}.svg", safe="")
+    return (
+        f'inline; filename="cosmic-card-{ascii_part}.svg"; '
+        f"filename*=UTF-8''{utf8_part}"
+    )
 
 
 @router.get("/kundli/card")
@@ -82,6 +125,6 @@ async def kundli_cosmic_card(request: Request) -> Response:
         media_type="image/svg+xml",
         headers={
             "Cache-Control": "public, max-age=3600",
-            "Content-Disposition": f'inline; filename="cosmic-card-{details.name or "kundli"}.svg"',
+            "Content-Disposition": _card_content_disposition(details.name),
         },
     )
