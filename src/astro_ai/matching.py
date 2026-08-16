@@ -180,6 +180,14 @@ class KootaScore:
     max_points: int
     awarded: float
     note: str
+    # True when points were RESTORED by a classical cancellation rather than
+    # earned by the koota's own test (#170). Cancelling a dosha and awarding
+    # the koota its full points are two different operations: the first is a
+    # judgement laid on top of the 36-point table, the second changes the
+    # total — and the total is what drives the Uttam/Madhyam/Avara band and
+    # the headline number. Doing the second silently is the defect #170
+    # reports; this flag exists so the page can say so.
+    cancellation_applied: bool = False
 
 
 @dataclass(frozen=True)
@@ -592,15 +600,20 @@ def _bhakoot(g_idx: int, b_idx: int) -> KootaScore:
             if g_lord == b_lord:
                 return KootaScore(
                     name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=7.0,
+                    cancellation_applied=True,
                     note=f"Bhakoot dosha ({sorted(bad)}) cancelled — both rashis ruled by "
-                         f"{g_lord}. Same rashi lord dissolves the classical dosha.",
+                         f"{g_lord}. Same rashi lord dissolves the classical dosha. "
+                         f"All 7 points are restored, which raises the total.",
                 )
             if _planet_relationship(g_lord, b_lord) == "friend":
                 return KootaScore(
                     name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=7.0,
+                    cancellation_applied=True,
                     note=f"Bhakoot dosha ({sorted(bad)}) cancelled — rashi lords "
-                         f"{g_lord} and {b_lord} are Naisargika friends. Classical "
-                         "cancellation per Muhurta Chintamani.",
+                         f"{g_lord} and {b_lord} are Naisargika friends. All 7 points "
+                         f"are restored, which raises the total. NOTE: this "
+                         f"cancellation is widely practised but we cannot trace it to "
+                         f"a source in the corpus (#170).",
                 )
             return KootaScore(
                 name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=0.0,
@@ -632,6 +645,34 @@ def _moon_pada(moon) -> int:
     return moon.pada
 
 
+_NADI_NAMES: Final[tuple[str, ...]] = ("Vata", "Pitta", "Sleshma")
+
+
+def _pada_nadi(nak_index: int, pada: int) -> str:
+    """Nadi of a single pada, per Raman's pada table (#170).
+
+    Raman gives Nadi at NAKSHATRA level first, then: "If Nadikuta is not
+    present on the basis of the Nakshatras, then the same may be reckoned
+    taking into account the Nakshatra Padas", with a printed table whose rule
+    he states as "Beginning from Aswini 1, the counting should be done
+    forwards and backwards in threes".
+
+    So the 108 padas run Vata/Pitta/Sleshma, then reverse, then forward
+    again — a boustrophedon in groups of three. Derived here and checked
+    against all 15 cells he prints (Aswini 1-4, Bharani 1-4, Krittika 1-4,
+    Rohini 1-3): 15/15.
+
+    WHY THIS MATTERS. The code used to treat "same nakshatra, different pada"
+    as automatic cancellation and award the full 8. Under Raman's own table
+    that is wrong for 72 of the 324 such combinations (22%) — Aswini padas 3
+    and 4 are different padas but BOTH Sleshma, so the dosha stands. The
+    fallback he describes is a re-reckoning, not an amnesty.
+    """
+    p = nak_index * 4 + pada          # 1..108, absolute
+    group, pos = (p - 1) // 3, (p - 1) % 3
+    return _NADI_NAMES[pos if group % 2 == 0 else 2 - pos]
+
+
 def _nadi(g_moon, b_moon, g_nak: str, b_nak: str, g_rashi_idx: int, b_rashi_idx: int) -> KootaScore:
     """Nadi koota with classical cancellation rules.
 
@@ -654,11 +695,20 @@ def _nadi(g_moon, b_moon, g_nak: str, b_nak: str, g_rashi_idx: int, b_rashi_idx:
     if g_nak == b_nak:
         g_pada = _moon_pada(g_moon)
         b_pada = _moon_pada(b_moon)
-        if g_pada != b_pada:
+        # Re-reckon at PADA level rather than assuming a different pada means
+        # a different nadi (#170). It does not: 22% of same-nakshatra
+        # different-pada combinations land on the same nadi under Raman's
+        # table, and for those the dosha stands.
+        g_pn = _pada_nadi(NAKSHATRAS.index(g_nak), g_pada)
+        b_pn = _pada_nadi(NAKSHATRAS.index(b_nak), b_pada)
+        if g_pada != b_pada and g_pn != b_pn:
             return KootaScore(
                 name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=8.0,
-                note=f"Same nadi ({g_n}) BUT same nakshatra with different padas "
-                     f"({g_pada} vs {b_pada}) — Nadi Dosh cancelled per classical rule.",
+                cancellation_applied=True,
+                note=f"Same nadi ({g_n}) at nakshatra level, but re-reckoned by pada "
+                     f"the two differ ({g_pn} vs {b_pn}, padas {g_pada} and {b_pada}) "
+                     f"— Nadi Dosh does not apply. This restores all 8 points and "
+                     f"raises the total.",
             )
     if g_rashi_idx == b_rashi_idx and g_nak != b_nak:
         return KootaScore(
