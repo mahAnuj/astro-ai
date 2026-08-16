@@ -177,6 +177,21 @@ def _corpus() -> dict[str, str]:
         raise SystemExit(2)
 
     out: dict[str, str] = {}
+
+    # Plain-text sources are read as-is. archive.org publishes its OCR as a
+    # `_djvu.txt` beside each scan, and for image-only PDFs that text is the
+    # ONLY usable form — Raman's Muhurtha extracts to 0 lines as a PDF but
+    # 9,158 lines as djvu text. Taking the .txt is not a shortcut; it is the
+    # same OCR the PDF's text layer would have carried if it had one.
+    for txt in sorted(DATA_DIR.rglob("*.txt")):
+        if _is_excluded(txt):
+            continue
+        try:
+            out[txt.name] = txt.read_text(encoding="utf-8", errors="replace")
+        except Exception as exc:  # noqa: BLE001
+            print(f"FAIL: could not read {txt.name}: {exc}", file=sys.stderr)
+            raise SystemExit(2) from None
+
     for pdf in sorted(DATA_DIR.rglob("*.pdf")):
         if _is_excluded(pdf):
             continue

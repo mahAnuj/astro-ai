@@ -226,11 +226,40 @@ purely because they mixed the two.
 
 **88,775 lines total.** Most of it is unextracted — see #191.
 
-**Measured absences — do not re-search.** Across all 88,775 lines: `Vashya` **0**,
-`Lo Shu` **0**, `Ashtakoot` **0**. `Yoni` returns 3 hits but **all three are false
-positives** — Vasudev's rebirth passage using *yoni* in the "womb/birth-class" sense
-(lines 4237, 4240, 4985), not the Yoni Kuta of matching. The Ashtakoota tables are in no
-source we hold. That is an absence to report, not a gap to fill from memory.
+**Measured absences — SUPERSEDED 2026-08-16, and the correction matters more than the
+note did.** This block used to record `Vashya` **0**, `Lo Shu` **0**, `Ashtakoot` **0**
+and `Yoni` as three false positives, marked "do not re-search". Adding
+`data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt` (B.V. Raman,
+*Muhurtha or Electional Astrology*, 1948, out of copyright) falsified three of those:
+
+| term | old | now |
+|---|---|---|
+| `Vashya` | 0 | **2** — "Vasya Kuta" §8, with the Aries/Leo pairings |
+| `Graha Maitri` | 0 | **5** — named, with its cancellation rules |
+| `Yoni` | 3 false positives | **12** — the 27-nakshatra animal table and hostile pairs |
+| `Nadi` | — | **32** |
+| `Gana` | — | **6** |
+
+Still absent, verified across all 85,979 lines: `Bhakoot` **0**, `Guna Milan` **0**,
+`Lo Shu` **0**.
+
+**Two lessons, both paid for.** First, a "do not re-search" note is only true until the
+corpus changes, and nothing here re-checked it — the note outlived its evidence by two
+days. Re-run rather than trust it. Second, the same day this was corrected, a false
+POSITIVE was also found: `scripts/corpus_search.py` was counting `data/emails/sarbani.pdf`
+— our own outreach message — as a source book, so `Ashtakoot` briefly appeared present
+because we had written the word ourselves.
+
+**Use `scripts/corpus_search.py` rather than grep.** It expands transliterations
+(`vimshottari` finds `vimsottari`, 2 hits vs 134), excludes non-book directories, refuses
+to run on a partially-extracted corpus, and its `--absent` mode makes "unsourced" a
+checkable claim. Note what it proves: the TERM is absent, not the CONCEPT — `nitya yoga`
+matches nothing while `vyatipata` and `vaidhriti` are both in the books.
+
+**Raman's is the SOUTH INDIAN tradition** — 12 poruthams (Dina, Gana, Mahendra, Rajju,
+Sthree Dheergha …), not the North Indian 36-guna Ashtakoota our `matching.py` implements.
+The koota definitions largely overlap; the point weights do not. Cite it for what a koota
+*is*, not for what it *scores*, and never blend the two systems in one reading.
 
 **Present and citable, contrary to earlier notes:** `Numerology-You.pdf` line 815 carries a
 "Chaldean And Pythagorean System" section stating the book uses **Chaldean** values for its
