@@ -210,8 +210,29 @@ async def subscribe(request: Request,
     (skipped for re-subscribes). Welcome failure is logged but doesn't
     block the success response — the subscription itself already saved.
     """
-    ok, is_new, msg = subscribers.subscribe(email, lang, city, rashi)
+    # `request` is declared on this handler so it can alert like its siblings
+    # do — it previously went unused, which is why a storage failure here
+    # returned 400 to the user and produced no signal at all (#183).
+    try:
+        ok, is_new, msg = subscribers.subscribe(email, lang, city, rashi)
+    except Exception as err:  # noqa: BLE001
+        # subscribe() is not documented to raise, so if it does, something
+        # unmodelled broke and we want to hear about it rather than 500 silently.
+        _fire_error_alert(request, err, "subscribe")
+        return JSONResponse(
+            {"ok": False, "error": subscribers.STORAGE_FAILURE_MSG}, status_code=400
+        )
     if not ok:
+        # A bad email is the user's to fix and must not page anyone; a storage
+        # failure is ours and must. Compared against the named constant rather
+        # than the wording, so rewording the message cannot silently switch
+        # the alert off.
+        if msg == subscribers.STORAGE_FAILURE_MSG:
+            _fire_error_alert(
+                request,
+                RuntimeError(f"subscribers.subscribe could not persist: {msg}"),
+                "subscribe",
+            )
         return JSONResponse({"ok": False, "error": msg}, status_code=400)
     if is_new:
         try:
