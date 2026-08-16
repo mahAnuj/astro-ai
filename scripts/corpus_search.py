@@ -83,6 +83,36 @@ _RULES: tuple[tuple[str, str], ...] = (
 
 # Irregulars that no rule generates. Kept small and explicit on purpose: a
 # long hand-list rots, so anything expressible as a rule belongs above.
+# Devanagari equivalents. Without these the tool reports a FALSE ABSENT the
+# moment a Sanskrit source enters the corpus — which is exactly what happened
+# when Muhurta Chintamani was added: `bhakoot --absent` still printed "no
+# spelling matched" while भकूट sat in the file, because every variant it
+# generated was Latin. A false absent is the dangerous direction: it retires a
+# gap that is still open, or licenses inventing a rule that the corpus has.
+#
+# Stems, not inflected forms. Sanskrit compounds and case endings mean भकूट
+# appears as भकूटं, भकूटगुणाः, दुष्टभकूटपरिहारः — matching the stem catches all
+# of them, and the word-boundary rule below is deliberately NOT applied to
+# Devanagari, where compounding is the norm rather than the exception.
+_DEVANAGARI: dict[str, tuple[str, ...]] = {
+    "ashtakoota":   ("अष्टकूट",),
+    "koota":        ("कूट",),
+    "varna":        ("वर्ण",),
+    "vashya":       ("वश्य",),
+    "tara":         ("तारा",),
+    "yoni":         ("योनि",),
+    "graha maitri": ("ग्रहमैत्र", "मैत्री"),
+    "gana":         ("गण",),
+    "bhakoot":      ("भकूट",),
+    "nadi":         ("नाडी",),
+    "guna milan":   ("गुणमिलन", "गुण"),
+    "tithi":        ("तिथि",),
+    "nakshatra":    ("नक्षत्र",),
+    "muhurta":      ("मुहूर्त",),
+    "dasha":        ("दशा",),
+    "lagna":        ("लग्न",),
+}
+
 _EXPLICIT: dict[str, tuple[str, ...]] = {
     "dasha":        ("dasa", "dasa"),
     "antardasha":   ("antardasa", "antar dasa", "bhukti"),
@@ -131,6 +161,10 @@ def variants(term: str) -> list[str]:
         for extra in extras:
             if _is_word(extra, lowered):
                 out.add(key)
+
+    for key, deva in _DEVANAGARI.items():
+        if _is_word(key, base):
+            out.update(deva)
 
     # A trailing 'a' is dropped freely in these books (Chatushpada/Chatushpad).
     # Floor of 6 characters BEFORE dropping: shorter truncations are
@@ -241,10 +275,15 @@ def main() -> int:
     # Optional trailing "s" so plurals still count — the books write
     # "navamsas" and "dasamsas" freely, and excluding them lost 6 and 12 real
     # hits respectively when the boundary was first tightened.
-    _patterns = {
-        v: re.compile(rf"(?<![a-z]){re.escape(v)}s?(?![a-z])")
-        for v in spellings
-    }
+    def _pat(v: str) -> "re.Pattern[str]":
+        # Devanagari terms match as substrings: भकूट legitimately appears
+        # inside भकूटगुणाः and दुष्टभकूटपरिहारः, and requiring a boundary
+        # would miss every compound — which in Sanskrit is most of them.
+        if any(ord(ch) > 0x0900 for ch in v):
+            return re.compile(re.escape(v))
+        return re.compile(rf"(?<![a-z]){re.escape(v)}s?(?![a-z])")
+
+    _patterns = {v: _pat(v) for v in spellings}
     corpus = _corpus()
     total_lines = sum(t.count("\n") for t in corpus.values())
 
