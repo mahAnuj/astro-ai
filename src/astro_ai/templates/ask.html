@@ -49,16 +49,42 @@
     <p class="text-xs text-stone-600 mt-2">
       {% if current_context == 'matching' and matching_names %}
       Asking about: <strong>{{ matching_names }}</strong>
-      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-astro-50 border border-astro-200 text-astro-800 font-semibold text-[10px] uppercase tracking-wider">Kundli matching</span>
       &middot; <a href="/matching" class="text-astro-600 hover:text-astro-700 underline">new match</a>
       {% else %}
       Asking for: <strong>{{ active_chart.display_name() }}</strong>
       &middot; <a href="/" class="text-astro-600 hover:text-astro-700 underline">switch chart</a>
-      {% if current_context == 'numerology' %}
-      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-astro-50 border border-astro-200 text-astro-800 font-semibold text-[10px] uppercase tracking-wider">Numerology context</span>
-      {% endif %}
       {% endif %}
     </p>
+    {% endif %}
+
+    {# Context switcher. The context is a property of the QUESTION, not of how
+       the seeker happened to arrive, so it belongs to them to change — someone
+       who came from a match may well want a chart-only answer next, and
+       previously had no way to say so short of hand-editing the URL.
+
+       Shown only when a match actually resolves, so it never offers a context
+       that would silently downgrade. `q`/`c` ride along, which means: if the
+       same question was already answered in the other context it re-renders
+       from cache instantly, and otherwise the textarea arrives pre-filled and
+       the seeker chooses whether to spend a question. Switching never burns
+       quota by itself. #}
+    {% if matching_available and matching_names %}
+    {% set _qs = ('&q=' ~ (current_question | urlencode) ~ '&c=' ~ (current_category | urlencode)) if current_question else '' %}
+    <div class="mt-4 inline-flex flex-wrap items-center justify-center gap-1 p-1 rounded-xl bg-stone-100 border border-stone-200">
+      <span class="px-2 text-[11px] uppercase tracking-wider text-stone-500 font-semibold">Answer using</span>
+      <a href="/ask?ctx=matching{{ _qs }}"
+         class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                {% if current_context == 'matching' %}bg-white text-astro-800 shadow-sm border border-stone-200{% else %}text-stone-600 hover:text-astro-700{% endif %}"
+         {% if current_context == 'matching' %}aria-current="true"{% endif %}>
+        Both charts &mdash; {{ matching_names }}
+      </a>
+      <a href="/ask?ctx=chart{{ _qs }}"
+         class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                {% if current_context != 'matching' %}bg-white text-astro-800 shadow-sm border border-stone-200{% else %}text-stone-600 hover:text-astro-700{% endif %}"
+         {% if current_context != 'matching' %}aria-current="true"{% endif %}>
+        Just my chart &mdash; {{ active_chart.display_name() }}
+      </a>
+    </div>
     {% endif %}
   </header>
 

@@ -72,14 +72,30 @@ async def ask_form(request: Request, q: str | None = None,
     # compute. The template must render the downgraded one, or a seeker whose
     # cookie expired sees a "Matching context" badge over an answer that used
     # only their own chart.
-    _p_chart, _p_label, partner_fp, effective_ctx = _resolve_matching_partner(
-        request, saved, context
+    # PROBE with "matching" regardless of what was requested. Two things need
+    # the answer: this request's effective context, and whether the context
+    # SWITCHER can offer matching at all. A seeker sitting in chart context
+    # still needs to know a match is available to switch to, so availability
+    # cannot be derived from the requested context.
+    _p_chart, _p_label, _probe_fp, _probe_ctx = _resolve_matching_partner(
+        request, saved, "matching"
     )
+    matching_available = _probe_ctx == "matching"
 
-    # Both names, for the header. Only meaningful once the partner actually
-    # resolved, which is why it hangs off effective_ctx rather than context.
+    if context == "matching":
+        # Downgrade when the cookie is gone or the partner chart will not
+        # compute — the seeker must never see a two-chart claim over a
+        # one-chart answer.
+        effective_ctx = "matching" if matching_available else "chart"
+        partner_fp = _probe_fp if matching_available else None
+    else:
+        effective_ctx, partner_fp = context, None
+
+    # Both names, for the header and the switcher. Available whenever a match
+    # resolves, not only when we are currently IN matching context — the
+    # switcher labels its matching option with them.
     matching_names = None
-    if effective_ctx == "matching":
+    if matching_available:
         last = load_last_matching(request)
         if last is not None:
             g = (last.groom_name or "").strip() or "Groom"
@@ -106,6 +122,7 @@ async def ask_form(request: Request, q: str | None = None,
             # The EFFECTIVE context, not the requested one — see above.
             "current_context": effective_ctx,
             "matching_names": matching_names,
+            "matching_available": matching_available,
             "answer": answer,
             "remaining_today": _ask_quota_remaining(request),
         },
