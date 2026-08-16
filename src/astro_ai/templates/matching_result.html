@@ -198,6 +198,27 @@
           </td>
           <td class="py-3 pl-4 text-stone-600">{{ t(lang, verdict_key) }}</td>
         </tr>
+        {# Say so when the total includes restored points (#170). Cancelling a
+           dosha and awarding the koota its full points are two different
+           operations: the second changes the total, and the total is what
+           picks the verdict band. Doing that silently was the defect — a
+           couple could read a comfortable score without knowing it rests on a
+           cancellation rather than on the koota passing its own test. #}
+        {% set _cancelled = guna.kootas | selectattr("cancellation_applied") | list %}
+        {% if _cancelled %}
+        <tr>
+          <td colspan="4" class="pt-3 text-xs text-stone-600 leading-relaxed">
+            <strong>How this total was reached:</strong>
+            {{ _cancelled | map(attribute="name") | join(" and ") }}
+            scored full points through a classical <em>cancellation</em> rather than by
+            passing the koota's own test &mdash; worth
+            {{ "%.0f"|format(_cancelled | sum(attribute="awarded")) }} of the
+            {{ "%.1f"|format(guna.total_awarded) }} above. Astrologers differ on whether a
+            cancelled dosha should restore points or simply be noted, so a reader comparing
+            this against another calculator may see a different number for the same pair.
+          </td>
+        </tr>
+        {% endif %}
       </tbody>
     </table>
   </section>
