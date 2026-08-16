@@ -13,7 +13,7 @@ Measured on the real corpus (77,119 `-layout` lines, 2026-08-16):
 
     vimshottari      2      vimsottari    134
     navamsha         0      navamsa       275
-    dashamsa         0      dasamsa        74
+    dashamsa         0      dasamsa        62
     dasha            5      dasa         2179
 
 Every one of those left-hand numbers would have been read as a gap. During
@@ -148,6 +148,25 @@ def variants(term: str) -> list[str]:
     return sorted(out, key=len, reverse=True)
 
 
+# Directories under data/ that are NOT source books (#159 QA, BUG-1).
+#
+# `data/emails/sarbani.pdf` is our own outreach message to an astrologer. It
+# discusses "Ashtakoot cancellations" and "Manglik detection" because WE wrote
+# those words, and an unfiltered rglob over data/ made the tool cite our own
+# prose back to us as classical sourcing: `--absent "ashtakoota"` exited 1 on
+# two hits that are both ours, contradicting a measured absence CLAUDE.md
+# records as settled.
+#
+# That is the exact failure this module's docstring warns about — a false
+# SOURCED verdict, worse than a miss because it retires a real gap. A search
+# tool that quotes the project back to itself is not a source of truth.
+_EXCLUDED_DIRS = {"emails", "daily_cache"}
+
+
+def _is_excluded(pdf: Path) -> bool:
+    return any(part in _EXCLUDED_DIRS for part in pdf.relative_to(DATA_DIR).parts[:-1])
+
+
 def _corpus() -> dict[str, str]:
     """Extracted text per book. `-layout` preserves table columns."""
     if not DATA_DIR.is_dir():
@@ -159,16 +178,31 @@ def _corpus() -> dict[str, str]:
 
     out: dict[str, str] = {}
     for pdf in sorted(DATA_DIR.rglob("*.pdf")):
+        if _is_excluded(pdf):
+            continue
         try:
             res = subprocess.run(
                 ["pdftotext", "-layout", str(pdf), "-"],
                 capture_output=True, text=True, timeout=180,
             )
-            out[pdf.name] = res.stdout
         except Exception as exc:  # noqa: BLE001
-            print(f"  warning: could not extract {pdf.name}: {exc}", file=sys.stderr)
+            print(f"FAIL: could not extract {pdf.name}: {exc}", file=sys.stderr)
+            raise SystemExit(2) from None
+        # A book that fails to parse must NOT silently contribute "" — every
+        # ABSENT verdict rests on having actually read every book, and an
+        # empty string looks identical to a book that genuinely lacks the
+        # term. One real PDF in this corpus already emits "Syntax Error:
+        # Failed to parse XRef entry / try to reconstruct" during extraction,
+        # so this is one bad reconstruct away from producing a confident,
+        # wrong "unsourced" verdict.
+        if res.returncode != 0 or not res.stdout.strip():
+            print(f"FAIL: {pdf.name} extracted to {len(res.stdout)} bytes "
+                  f"(rc={res.returncode}). Refusing to search a partial corpus.",
+                  file=sys.stderr)
+            raise SystemExit(2)
+        out[pdf.name] = res.stdout
     if not out:
-        print("FAIL: no PDFs extracted.", file=sys.stderr)
+        print("FAIL: no source books found under data/.", file=sys.stderr)
         raise SystemExit(2)
     return out
 
@@ -203,6 +237,8 @@ def main() -> int:
     print(f"spellings : {len(spellings)} — {', '.join(spellings[:12])}"
           + (" …" if len(spellings) > 12 else ""))
     print(f"corpus    : {len(corpus)} books, {total_lines:,} lines (-layout)")
+    for name, text in sorted(corpus.items()):
+        print(f"            - {name[:58]:<58} {text.count(chr(10)):>6,} lines")
     print()
 
     grand = 0
@@ -247,8 +283,15 @@ def main() -> int:
             print(f"ABSENCE CLAIM IS FALSE — {grand} hit(s) across "
                   f"{len(per_variant)} spelling(s).")
             return 1
-        print(f"ABSENT — 0 hits for any of {len(spellings)} spellings "
-              f"across {total_lines:,} lines. Safe to report as unsourced.")
+        print(f"NO SPELLING MATCHED — 0 hits for any of {len(spellings)} "
+              f"spellings across {total_lines:,} lines.")
+        print()
+        print("  This proves the TERM is absent, not the CONCEPT. Before")
+        print("  reporting a rule as unsourced, check its constituent names:")
+        print("  'nitya yoga' matches nothing while vyatipata and vaidhriti —")
+        print("  the two yogas muhurat.py actually blocks on — are in the books;")
+        print("  'graha maitri' matches nothing while planetary friendship is")
+        print("  covered 170 times under 'naisargika' and 'friendship'.")
         return 0
 
     if not grand:

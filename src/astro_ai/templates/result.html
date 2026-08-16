@@ -538,13 +538,23 @@
        ('other',              'Other Classical Yogas',         'Other strengths active in your chart'),
        ('challenge',          'Combinations to be aware of',    'Classical combinations read as difficult rather than fortunate — the tradition treats these as areas needing attention, and most carry cancellations worth checking'),
   ] %}
+  {# The "Strengths" badge and the count must exclude challenge-category
+     yogas. Recategorising Kemadruma moved it into its own sub-heading but
+     left it inside a panel badged "Strengths", counted in "4 classical
+     combinations active", and closed by a line promising all of them "grant
+     specific gifts" — so a chart whose ONLY yoga is Kemadruma still rendered
+     "1 classical combination active / Strengths". The sub-heading changed;
+     the frame around it did not. #}
+  {% set _auspicious = yogas | rejectattr("category", "equalto", "challenge") | list %}
   <section data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
     <div class="px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
       <div>
         <h2 class="font-display text-xl text-emerald-700">Yogas in your chart</h2>
-        <p class="text-sm text-stone-600 mt-0.5">{{ yogas | length }} classical combination{{ '' if yogas | length == 1 else 's' }} active</p>
+        <p class="text-sm text-stone-600 mt-0.5">{{ _auspicious | length }} classical combination{{ '' if _auspicious | length == 1 else 's' }} active{% if _auspicious | length != yogas | length %}, plus {{ yogas | length - _auspicious | length }} to be aware of{% endif %}</p>
       </div>
+      {% if _auspicious %}
       <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded">Strengths</span>
+      {% endif %}
     </div>
     <div class="px-6 py-5 space-y-5">
       {% for cat_slug, cat_label, cat_desc in _yoga_groups %}
@@ -570,7 +580,8 @@
         {% endif %}
       {% endfor %}
       <p class="text-xs text-stone-600 italic border-t border-stone-100 pt-3">
-        Yogas are classical planetary combinations that grant specific gifts across life. Compiled from classical Vedic astrology texts including <em>Brihat Parashara Hora Shastra</em> and <em>Phaladeepika</em>.
+        Yogas are classical planetary combinations. Most grant specific gifts across life;
+        a few, shown separately above, are read as difficult rather than fortunate. Compiled from classical Vedic astrology texts including <em>Brihat Parashara Hora Shastra</em> and <em>Phaladeepika</em>.
       </p>
     </div>
   </section>

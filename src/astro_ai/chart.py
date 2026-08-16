@@ -1675,8 +1675,22 @@ def format_yogas_for_prompt(yogas: tuple[YogaResult, ...], chart: Chart | None =
         "each yoga's gift forward — use this to weave yoga names into the matching",
         "Life Stages chapter description (still without naming the planet itself).",
     ]
+    # Challenge-category yogas are flagged INLINE rather than filtered out
+    # (#208 QA). The block's preamble frames everything in it as a gift the
+    # model should weave into a Life Stages chapter — handing Kemadruma to it
+    # unmarked invited a reading of isolation as a blessing. Dropping it
+    # instead would be worse: the chart genuinely has it, and a reader asking
+    # about a hard period deserves the model to know.
+    if any(y.category == "challenge" for y in yogas):
+        lines.append(
+            "NOTE: lines marked [DIFFICULT] are NOT gifts. The tradition reads them "
+            "as areas needing attention, and most carry classical cancellations. "
+            "Mention them with that caveat and without alarm — never as a promise "
+            "of misfortune, and never woven in as a benefit."
+        )
     for y in yogas:
-        line = f"  • {y.name}: {y.effect}"
+        marker = " [DIFFICULT]" if y.category == "challenge" else ""
+        line = f"  • {y.name}{marker}: {y.effect}"
         if chart is not None:
             activators = yoga_activator_lords(y, chart)
             if activators:
@@ -2355,7 +2369,7 @@ def _build_antardashas(
     maha: DashaPeriod,
     *,
     full_years: float | None = None,
-    nominal_start: "date | None" = None,
+    nominal_start: "date_ | None" = None,
 ) -> list[DashaPeriod]:
     """9 sub-periods within `maha`, starting with the Maha lord, weighted by Vimshottari years.
 
@@ -3047,7 +3061,23 @@ def _pada_of(long_abs: float) -> int:
     3 deg 20'. Equivalent to 360/108 of the zodiac, which is why the pada is
     exactly the Navamsha division — the same 108 slices, counted differently.
     """
-    return int((long_abs % (360 / 27)) // (360 / 108)) + 1
+    # Scale to nakshatra-fractions FIRST, then take the quarter (#209 QA).
+    #
+    # The obvious form — `(long_abs % (360/27)) // (360/108)` — is wrong at
+    # every exact 10-degree multiple, which is every third pada boundary and
+    # exactly representable in binary. 360/27 = 13.333... and 360/108 =
+    # 3.3333...; at 10.0 the remainder computes as 9.999999999999998, which
+    # floors to pada 3 instead of 4. Measured against exact `Fraction`
+    # arithmetic over 36,000 points: 35 wrong, all at 10.0, 20.0, ... 350.0.
+    #
+    # The commit that introduced this function claimed 10.0 had been verified
+    # as a boundary. It had been printed and misread — the printed 3 was the
+    # bug, not the confirmation.
+    #
+    # This form divides before taking the fractional part, so the boundary
+    # lands on a value binary floating point represents exactly: 0 mismatches
+    # over the same 36,000 points.
+    return int((long_abs * 27 / 360 % 1) * 4) + 1
 
 
 def _nitya_yoga_at(julian_day: float) -> tuple[int, str, str]:
