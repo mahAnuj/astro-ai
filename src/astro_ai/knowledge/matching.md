@@ -193,7 +193,30 @@ v.33 adds two more, for different doshas:
 - an auspicious rashi-kuta (3rd, 11th…) → **planetary-enmity dosha** cancelled
 - राशीशोंकी प्रीति destroys shad-ashtaka and similar doshas
 
-This is the sourced basis **#170** was missing.
+This is the sourced basis **#170** was missing. **Implemented** as
+`_bhakoot_dosha`, with two deliberate constraints:
+
+1. **A parihāra never moves a koota score.** The text performs one operation —
+   षट्काष्टकदोष नहीं होता, the *dosha* does not occur — and assigns Bhakoot's
+   seven points separately in v.21 as भकूटमैत्री. Restoring the seven was
+   conflating two operations, and it moved **43 of the 72 dosha-carrying rashi
+   pairs (60%)** a whole verdict band upward. That is now 0.
+2. **Parihāra 3 is not evaluated.** सबल means *strong*, and there is no
+   planetary-strength model in the repo — no shadbala anywhere in `chart.py`.
+   Approximating "strong" would make the parihāra fire more often than the text
+   warrants, which is the over-cancellation #170 exists to stop. It is reported
+   as unevaluated on the result page so its silence is not read as its absence.
+
+`nadi_shuddha` rides on the result rather than folding into `cancelled`,
+because परन्तु नाडी सभीमें होनी चाहिये makes Nadi a precondition, not a
+parihāra.
+
+**Interpretive step, flagged.** Whether a cancelled dosha should also restore
+the koota's points is a genuine divergence in practice, and the text does not
+address it in so many words — it simply never awards them. We follow the text
+literally and disclose the choice on both `/matching` and the explainer, since
+a reader comparing us against a calculator that restores points will see a
+different number for the same couple.
 
 ## v.34 — नाडीकूटं तदपवादश्च, Nadi and its exceptions [TIKA]
 
