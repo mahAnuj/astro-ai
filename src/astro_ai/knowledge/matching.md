@@ -460,10 +460,27 @@ confirmation that the axis order and the reading are basically right.
 
 What fails: **19 of 91 unordered pairs are asymmetric**, and the seventh enemy
 pair is inconsistent — Cow×Tiger is 0 but Tiger×Cow is 1, though the prose names
-गौ/व्याघ्र as mutual enemies. Rows 7–12 were re-read at higher magnification and
-came back identical, so **these asymmetries are in the printed table, not in the
-transcription.** There are also two zeros outside the enemy list (Cow/Lion,
-Lion/Rat) that no prose rule accounts for.
+गौ/व्याघ्र as mutual enemies. There are also two zeros outside the enemy list
+(Cow/Lion, Lion/Rat) that no prose rule accounts for.
+
+**The asymmetries are in the printed table, not in the transcription — verified
+by a two-path read.** Re-reading the same rows the same way only confirms a
+prior, so the Lion column (which alone accounts for 5 of the 19) was instead
+read *vertically*, a different visual path from reading across a row:
+
+| | |
+|---|---|
+| Lion column read top-down | `1 0 1 2 1 2 1 1 2 2 2 2 2 4` |
+| same cells implied by the row-by-row transcription | `1 0 1 2 1 2 1 1 2 2 2 2 2 4` |
+| **mismatches** | **none — transcription confirmed** |
+
+Reading the same cells two different ways gives identical values. Those values
+then disagree with the *Lion row* in exactly five places (Cat, Rat, Cow,
+Buffalo, Deer), which is precisely the asymmetry set the symmetry check found.
+
+So the two facts are cleanly separated: **the reading is right, and the table is
+internally inconsistent.** Rows 7–12 were also re-read at higher magnification
+and came back identical.
 
 ## Why none of the three tables is implemented
 
