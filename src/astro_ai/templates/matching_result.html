@@ -219,7 +219,14 @@
     </div>
   {%- endmacro %}
   <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
-    <h2 class="font-display text-xl text-astro-700 mb-4">{{ t(lang, 'matching_charts_heading') if t(lang, 'matching_charts_heading') else 'Both charts' }}</h2>
+    {# The old form here was `t(...) if t(...) else 'Both charts'`, which could
+       never reach the fallback: translate() returns the KEY on a miss, and a
+       non-empty key is truthy. The key was in fact missing, so this heading
+       rendered the literal text "matching_charts_heading" to every visitor in
+       both languages. Do not reintroduce that guard anywhere — a missing key
+       is caught by the i18n completeness check, not by a fallback that cannot
+       fire. #}
+    <h2 class="font-display text-xl text-astro-700 mb-4">{{ t(lang, 'matching_charts_heading') }}</h2>
     <div class="grid sm:grid-cols-2 gap-5">
       <div>
         <div class="flex items-baseline justify-between mb-2">
