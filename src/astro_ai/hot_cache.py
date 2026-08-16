@@ -61,14 +61,73 @@ _INFLIGHT: set[str] = set()
 _RETRY_AFTER: dict[str, float] = {}
 
 
+def _drop_locked(key: str) -> None:
+    """Remove a key and its lock. Caller must hold `_LOCK`."""
+    _CACHE.pop(key, None)
+    _KEY_LOCKS.pop(key, None)
+
+
+def _evict_locked() -> None:
+    """Bring the cache back under MAX_ENTRIES, cheapest victims first (#158).
+
+    Eviction used to be plain FIFO over insertion order, which discarded
+    exactly the entries that cost the most to build. `forever()` entries
+    (`expires_at == inf`) hold elapsed, immutable event-days — the things
+    #144 introduced this cache to stop re-fetching from a US bucket on every
+    render — and being the oldest, FIFO evicted them FIRST. QA measured 59
+    pinned day-keys reduced to 0 by 550 churn keys, after which
+    `events.counts_by_type(days=30)` re-read 30 blobs: the precise cost #144
+    removed.
+
+    Three tiers, in order:
+
+      1. EXPIRED entries. Already dead — dropping them is free, and it is
+         usually enough, since the churn source is short-TTL keys.
+      2. Live entries with a finite TTL, SOONEST-EXPIRING first — not oldest
+         inserted. A 60s churn key is worth less than an hour-long one
+         precisely because it is about to die anyway, and insertion order
+         does not track that: QA's hour-long trust-bar probe was inserted
+         early and so died first under plain FIFO, which is the second
+         symptom #158 reports.
+      3. Pinned (`inf`) entries, oldest first — LAST RESORT.
+
+    Tier 3 exists rather than exempting pinned entries outright, which is
+    what #158 suggests. Exempting them makes the cap unenforceable the moment
+    pinned keys alone exceed it: today they are bounded by
+    EVENT_RETENTION_DAYS = 30, but that is a property of the current caller,
+    not of this module, and a cache that cannot honour its own maximum is a
+    worse defect than the one being fixed. Reaching tier 3 means pinned
+    entries alone have overflowed the cache, and dropping the oldest is then
+    the only way to stay bounded.
+    """
+    if len(_CACHE) <= MAX_ENTRIES:
+        return
+
+    now = time.monotonic()
+    for key in [k for k, e in _CACHE.items() if e.expires_at <= now]:
+        if len(_CACHE) <= MAX_ENTRIES:
+            return
+        _drop_locked(key)
+
+    finite = sorted(
+        ((e.expires_at, k) for k, e in _CACHE.items() if e.expires_at != math.inf),
+    )
+    for _expiry, key in finite:
+        if len(_CACHE) <= MAX_ENTRIES:
+            return
+        _drop_locked(key)
+
+    for key in list(_CACHE.keys()):
+        if len(_CACHE) <= MAX_ENTRIES:
+            return
+        _drop_locked(key)
+
+
 def _store(key: str, value: object, error: BaseException | None, ttl_s: float) -> None:
     expires_at = math.inf if ttl_s == math.inf else time.monotonic() + ttl_s
     with _LOCK:
         _CACHE[key] = _Entry(value, error, expires_at)
-        while len(_CACHE) > MAX_ENTRIES:
-            oldest = next(iter(_CACHE))
-            _CACHE.pop(oldest, None)
-            _KEY_LOCKS.pop(oldest, None)
+        _evict_locked()
 
 
 def _fresh(key: str) -> _Entry | None:
