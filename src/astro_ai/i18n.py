@@ -223,6 +223,13 @@ _EN: Final[dict[str, str]] = {
     "matching_bhakoot_uneval":      "Not evaluated",
     "matching_bhakoot_nopoints":
         "A cancellation removes the dosha. It does not add points to the score above.",
+    "matching_nadi":        "Nadi Dosh",
+    "matching_nadi_grave":  "Gravest form",
+    "matching_nadi_alpa":   "Reduced",
+    "matching_nadi_plain":  "Present",
+    "matching_nadi_mitig":  "What reduces it",
+    "matching_nadi_nocancel":
+        "Nadi has no cancelling conditions. It does not gain points from any mitigation.",
     "matching_breakdown":  "Koota-by-Koota breakdown",
     "matching_col_koota":  "Koota",
     "matching_col_max":    "Max",
@@ -605,6 +612,13 @@ _HI: Final[dict[str, str]] = {
     "matching_bhakoot_uneval":      "जाँच नहीं की गई",
     "matching_bhakoot_nopoints":
         "परिहार दोष को हटाता है। यह ऊपर दिए गए अंकों में वृद्धि नहीं करता।",
+    "matching_nadi":        "नाड़ी दोष",
+    "matching_nadi_grave":  "गंभीरतम रूप",
+    "matching_nadi_alpa":   "अल्प",
+    "matching_nadi_plain":  "विद्यमान",
+    "matching_nadi_mitig":  "जो इसे कम करता है",
+    "matching_nadi_nocancel":
+        "नाड़ी का कोई परिहार नहीं होता। किसी भी छूट से इसके अंक नहीं बढ़ते।",
     "matching_breakdown":  "कूट-वार विवरण",
     "matching_col_koota":  "कूट",
     "matching_col_max":    "अधिकतम",
