@@ -562,17 +562,60 @@ def _graha_maitri_score(a: str, b: str, lord_a: str, lord_b: str) -> tuple[float
     return 0.0, f"Lords {lord_a} & {lord_b} are mutual enemies"
 
 
+# Gana koota, 0-6. SOURCED: Muhurta Chintamani, Vivaha prakarana, Hindi tika
+# on v.30, read at full page-image resolution.
+#
+#   इस कूटमें गणसाम्यमें ६ गुण, देव मनुष्य में ५, देव राक्षस एवं मनुष्य
+#   राक्षसमें गुण (०) है, कन्या राक्षसी वर देवमें २, कन्या देव वर मनुष्यमें ४
+#
+# The tika states a general case and then two DIRECTIONAL exceptions, exactly
+# as the Varna rule does (वर्णाधिक वर होनेमें गुण मिलता है — the groom ranking
+# higher scores, the bride ranking higher does not). Read as unordered pairs
+# the sentence contradicts itself: Deva/Rakshasa cannot be both 0 and 2. Read
+# directionally it is consistent, and the consistent reading is the only one
+# available:
+#
+#   groom   bride      pts
+#   same    same        6    गणसाम्य
+#   Deva    Manushya    5    the general देव-मनुष्य row
+#   Manushya Deva       4    कन्या देव वर मनुष्य — the exception to it
+#   Deva    Rakshasa    2    कन्या राक्षसी वर देव — the exception
+#   Rakshasa Deva       0    the general देव-राक्षस row
+#   Manushya Rakshasa   0    stated flatly, no exception either way
+#   Rakshasa Manushya   0
+#
+# The prose above the table corroborates the asymmetry rather than the symmetry:
+# वर राक्षस + कन्या मनुष्य gives वैर, while वर मनुष्य + कन्या राक्षस gives
+# वरकी मृत्यु — the same unordered pair, two different verdicts.
+#
+# Two things changed here. Manushya/Rakshasa was 1.0 and is 0 — that value had
+# no source. And the koota is now direction-dependent at all, which a set
+# comparison could not express.
+_GANA_POINTS: Final[dict[tuple[str, str], float]] = {
+    ("Deva", "Manushya"): 5.0,
+    ("Manushya", "Deva"): 4.0,
+    ("Deva", "Rakshasa"): 2.0,
+    ("Rakshasa", "Deva"): 0.0,
+    ("Manushya", "Rakshasa"): 0.0,
+    ("Rakshasa", "Manushya"): 0.0,
+}
+
+
 def _gana(g_nak: str, b_nak: str) -> KootaScore:
+    """Score groom/bride gana temperament, 0-6. Order matters — see table."""
     g_g = _NAKSHATRA_GANA[g_nak]
     b_g = _NAKSHATRA_GANA[b_nak]
     if g_g == b_g:
         awarded, note = 6.0, f"Same gana ({g_g}) — full harmony"
-    elif {g_g, b_g} == {"Deva", "Manushya"}:
-        awarded, note = 5.0, f"Deva / Manushya — favourable"
-    elif {g_g, b_g} == {"Manushya", "Rakshasa"}:
-        awarded, note = 1.0, f"Manushya / Rakshasa — temperamental friction"
-    else:  # Deva / Rakshasa
-        awarded, note = 0.0, "Deva / Rakshasa — strongly opposed temperaments"
+    else:
+        awarded = _GANA_POINTS[(g_g, b_g)]
+        note = f"Groom {g_g} / bride {b_g}"
+        if awarded >= 4.0:
+            note += " — favourable"
+        elif awarded > 0.0:
+            note += " — tolerated, but the milder direction of this pair"
+        else:
+            note += " — opposed temperaments"
     return KootaScore(name="Gana", sanskrit="गण", max_points=6, awarded=awarded, note=note)
 
 
