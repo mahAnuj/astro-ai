@@ -97,6 +97,52 @@
         <p class="text-sm text-stone-700 leading-relaxed">{{ guna.mangal_dosh_note }}</p>
       </div>
     </div>
+
+    <!-- Bhakoot Dosh strip (#170). Shown only when a dosha is actually present.
+         The parihāras are disclosed here, next to an explicit statement that a
+         cancellation does NOT move the score — the conflation of those two was
+         the defect. Amber, not emerald, even when cancelled: the dosha existed. -->
+    {% if guna.bhakoot_dosha.present %}
+    {% set _bd = guna.bhakoot_dosha %}
+    <div class="px-6 sm:px-8 py-4 border-t {{ palette.border }} flex items-start gap-3
+                {% if _bd.cancelled %}bg-amber-50/40{% else %}bg-rose-50/40{% endif %}">
+      <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0
+                  {% if _bd.cancelled %}bg-amber-500{% else %}bg-rose-500{% endif %}"></div>
+      <div class="min-w-0">
+        <div class="text-xs font-semibold uppercase tracking-wider mb-0.5
+                    {% if _bd.cancelled %}text-amber-700{% else %}text-rose-700{% endif %}">
+          {{ t(lang, 'matching_bhakoot') }} &middot; {{ _bd.name }} &middot;
+          {% if _bd.cancelled %}{{ t(lang, 'matching_bhakoot_cancelled') }}
+          {% else %}{{ t(lang, 'matching_bhakoot_uncancelled') }}{% endif %}
+        </div>
+        <p class="text-sm text-stone-700 leading-relaxed">{{ _bd.note }}</p>
+
+        {% if _bd.pariharas %}
+        <div class="mt-2">
+          <div class="text-xs font-medium text-stone-500 mb-1">{{ t(lang, 'matching_bhakoot_applies') }}</div>
+          <ul class="text-sm text-stone-700 space-y-0.5">
+            {% for p in _bd.pariharas %}
+            <li class="flex gap-2"><span class="text-amber-600 flex-shrink-0">&check;</span><span>{{ p }}</span></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if _bd.unevaluated %}
+        <div class="mt-2">
+          <div class="text-xs font-medium text-stone-500 mb-1">{{ t(lang, 'matching_bhakoot_uneval') }}</div>
+          <ul class="text-xs text-stone-500 space-y-0.5">
+            {% for u in _bd.unevaluated %}
+            <li class="flex gap-2"><span class="flex-shrink-0">&ndash;</span><span>{{ u }}</span></li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <p class="mt-2 text-xs text-stone-500 italic">{{ t(lang, 'matching_bhakoot_nopoints') }}</p>
+      </div>
+    </div>
+    {% endif %}
   </section>
 
   <!-- CHART PAIR — mini kundlis side by side (Issue #84) ---------- -->

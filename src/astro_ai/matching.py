@@ -191,6 +191,40 @@ class KootaScore:
 
 
 @dataclass(frozen=True)
+class BhakootDosha:
+    """Bhakoot dosha and its parihāras, kept SEPARATE from the koota score.
+
+    This separation IS the fix for #170. Muhurta Chintamani vv.32-33 says that
+    when a parihāra holds, षट्काष्टकदोष नहीं होता — "the shadashtaka DOSHA does
+    not occur". It never says the seven gunas are awarded; v.21 assigns those
+    seven to भकूटमैत्री in a separate statement. So a parihāra is reported
+    alongside the koota score and is not permitted to move it.
+    """
+
+    present: bool
+    """Whether the Moon-rashi distance carries a classical Bhakoot dosha."""
+
+    name: str
+    """e.g. "Shadashtaka (6/8)"; empty when no dosha is present."""
+
+    pariharas: tuple[str, ...]
+    """Sourced parihāras that DO hold for this couple."""
+
+    unevaluated: tuple[str, ...]
+    """Parihāras we cannot test. Listed so silence is never read as absence."""
+
+    cancelled: bool
+    """True when at least one parihāra holds. Does NOT change any koota score."""
+
+    nadi_shuddha: bool
+    """Whether Nadi is clean. The text requires this regardless of any parihāra
+    (परन्तु नाडी सभीमें होनी चाहिये), so a cancelled Bhakoot with an afflicted
+    Nadi is NOT a clean chart."""
+
+    note: str
+
+
+@dataclass(frozen=True)
 class GunaMilan:
     """Full 8-koota Ashtakoot Guna Milan result + Mangal Dosh check + verdict."""
 
@@ -200,6 +234,8 @@ class GunaMilan:
 
     mangal_dosh_compatible: bool
     mangal_dosh_note: str
+
+    bhakoot_dosha: BhakootDosha
 
     overall_verdict: str        # "Uttam" / "Madhyam" / "Avara" / "Not recommended"
     overall_verdict_label: str  # human-readable: "Excellent compatibility (Uttam)" etc.
@@ -245,6 +281,11 @@ def compute_guna_milan(groom: Chart, bride: Chart) -> GunaMilan:
     b_manglik = compute_manglik_details(bride)
     mangal = mangal_dosh_verdict(g_manglik, b_manglik)
 
+    # Evaluated AFTER the kootas, because two of the parihāras are the Vashya
+    # and Tara results. Deliberately does not feed back into `total` — see
+    # `_bhakoot` and #170.
+    bhakoot_dosha = _bhakoot_dosha(g_rashi_idx, b_rashi_idx, kootas)
+
     verdict, label = _overall_verdict(total)
     return GunaMilan(
         kootas=kootas,
@@ -252,6 +293,7 @@ def compute_guna_milan(groom: Chart, bride: Chart) -> GunaMilan:
         total_max=36,
         mangal_dosh_compatible=mangal.compatible,
         mangal_dosh_note=mangal.note,
+        bhakoot_dosha=bhakoot_dosha,
         overall_verdict=verdict,
         overall_verdict_label=label,
     )
@@ -619,55 +661,135 @@ def _gana(g_nak: str, b_nak: str) -> KootaScore:
     return KootaScore(name="Gana", sanskrit="गण", max_points=6, awarded=awarded, note=note)
 
 
+_BHAKOOT_DOSHA_NAMES: Final[dict[frozenset[int], str]] = {
+    frozenset({6, 8}): "Shadashtaka (6/8)",
+    frozenset({5, 9}): "Nava-panchama (5/9)",
+    frozenset({2, 12}): "Dwirdwadasha (2/12)",
+}
+
+
+def _bhakoot_relation(g_idx: int, b_idx: int) -> tuple[int, int, str]:
+    """Moon-rashi distances both ways, plus the dosha name ("" if none)."""
+    d_g_to_b = ((b_idx - g_idx) % 12) + 1
+    d_b_to_g = ((g_idx - b_idx) % 12) + 1
+    name = _BHAKOOT_DOSHA_NAMES.get(frozenset({d_g_to_b, d_b_to_g}), "")
+    return d_g_to_b, d_b_to_g, name
+
+
 def _bhakoot(g_idx: int, b_idx: int) -> KootaScore:
-    """Bhakoot koota with classical cancellation rules.
+    """Bhakoot koota: 7, or 0 when the Moon-rashi distance is 6/8, 5/9 or 2/12.
 
-    Base rule: 0 points if Moon-rashi distance is 6-8, 5-9, or 2-12.
-    Otherwise full 7.
+    POINTS TABLE ONLY. A parihāra no longer restores points here — that is the
+    substance of #170, and the source agrees with the issue.
 
-    Classical cancellations (Muhurta Chintamani / BPHS §36) — if any of
-    these hold, Bhakoot Dosh is cancelled and the couple gets full 7 with
-    an explanatory note. Silently omitting these cancellations was flagging
-    many otherwise-compatible couples as incompatible.
-      - Same rashi lord (both rashis ruled by the same planet)
-      - Rashi lords are Naisargika friends
+    Cancelling a dosha and awarding a koota its points are two different
+    operations. The first is a judgement laid on top of the 36-point table; the
+    second changes the total, and the total drives both the headline number and
+    the Uttam/Madhyam/Avara band. Conflating them silently moved 43 of the 72
+    dosha-carrying rashi pairs (60%) a whole verdict band upward.
+
+    The classical text performs only the first operation. It says that when a
+    parihāra holds, the shadashtaka DOSHA does not occur; it never says the
+    seven gunas are awarded, and it assigns those seven to bhakoot-maitri in a
+    separate statement listing all eight weights. See `_bhakoot_dosha` for the
+    parihāras, which are reported alongside this score and cannot move it.
+
+    The removed code also carried a citation naming a specific work for the
+    cancellation, which #170 could not trace and which was not in fact its
+    source. Provenance now lives in knowledge/matching.md.
     """
-    distance_g_to_b = ((b_idx - g_idx) % 12) + 1
-    distance_b_to_g = ((g_idx - b_idx) % 12) + 1
-    dosha_pairs = ({6, 8}, {5, 9}, {2, 12})
-    pair_set = {distance_g_to_b, distance_b_to_g}
-    for bad in dosha_pairs:
-        if pair_set == bad:
-            # Check cancellations before failing.
-            g_lord = _RASHI_LORD[g_idx]
-            b_lord = _RASHI_LORD[b_idx]
-            if g_lord == b_lord:
-                return KootaScore(
-                    name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=7.0,
-                    cancellation_applied=True,
-                    note=f"Bhakoot dosha ({sorted(bad)}) cancelled — both rashis ruled by "
-                         f"{g_lord}. Same rashi lord dissolves the classical dosha. "
-                         f"All 7 points are restored, which raises the total.",
-                )
-            if _planet_relationship(g_lord, b_lord) == "friend":
-                return KootaScore(
-                    name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=7.0,
-                    cancellation_applied=True,
-                    note=f"Bhakoot dosha ({sorted(bad)}) cancelled — rashi lords "
-                         f"{g_lord} and {b_lord} are Naisargika friends. All 7 points "
-                         f"are restored, which raises the total. NOTE: this "
-                         f"cancellation is widely practised but we cannot trace it to "
-                         f"a source in the corpus (#170).",
-                )
-            return KootaScore(
-                name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=0.0,
-                note=f"Bhakoot dosha — distance {sorted(bad)} between Moon rashis is "
-                     "classically an obstacle. No cancellation available "
-                     f"(lords {g_lord} + {b_lord} not friendly).",
-            )
+    d_g_to_b, d_b_to_g, dosha = _bhakoot_relation(g_idx, b_idx)
+    if dosha:
+        return KootaScore(
+            name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=0.0,
+            note=f"Bhakoot dosha — the {dosha} distance between the Moon signs is "
+                 "classically an obstacle. Any cancellation is reported separately "
+                 "and does not change this score.",
+        )
     return KootaScore(
         name="Bhakoot", sanskrit="भकूट", max_points=7, awarded=7.0,
-        note=f"No bhakoot dosha (Moon-rashi distance {distance_g_to_b}/{distance_b_to_g})",
+        note=f"No bhakoot dosha (Moon-rashi distance {d_g_to_b}/{d_b_to_g})",
+    )
+
+
+# The five parihāras for shad-ashtaka dosha, per the classical electional
+# tradition (Muhurta Chintamani vv.32-33 — see knowledge/matching.md, and keep
+# book names out of the user-facing `note` per CLAUDE.md).
+#
+#   1. मित्रषट्काष्टक      the Moon-sign lords are friends
+#   2. एकाधिपत्य           one graha lords both signs (1&8 Mars, 2&7 Venus)
+#   3. सबलांशेश मैत्री     the STRONG navamsha lords are friendly
+#   4. राशिवश्यता          the Vashya relation holds
+#   5. तारादि              Tara shuddhi
+#
+# "इनमेंसे एकके होनेमें भी षट्काष्टकदोष नहीं होता" — ANY ONE suffices.
+# "परन्तु नाडी सभीमें होनी चाहिये" — but Nadi shuddhi is required regardless,
+# and is never cancelled by this list. That is why `nadi_shuddha` is carried on
+# the result rather than folded into `cancelled`.
+#
+# #3 is NOT evaluated. सबल means "strong", and we have no planetary-strength
+# model — no shadbala anywhere in chart.py. Approximating it would make the
+# parihāra fire more often than the text warrants, which is precisely the
+# over-cancellation #170 exists to stop. It is reported as unevaluated instead,
+# so its silence is never mistaken for its absence.
+_PARIHARA_UNEVALUATED: Final[tuple[str, ...]] = (
+    "Friendship of the strong Navamsha lords — not evaluated, as we do not "
+    "compute planetary strength",
+)
+
+
+def _bhakoot_dosha(g_idx: int, b_idx: int, kootas: tuple[KootaScore, ...]) -> BhakootDosha:
+    """Evaluate the Bhakoot dosha and its parihāras. Never changes a koota score."""
+    _d1, _d2, dosha = _bhakoot_relation(g_idx, b_idx)
+    by_name = {k.name: k for k in kootas}
+    nadi = by_name["Nadi"]
+    nadi_shuddha = nadi.awarded >= nadi.max_points
+
+    if not dosha:
+        return BhakootDosha(
+            present=False, name="", pariharas=(), unevaluated=(), cancelled=False,
+            nadi_shuddha=nadi_shuddha,
+            note="No Bhakoot dosha between the Moon signs.",
+        )
+
+    g_lord, b_lord = _RASHI_LORD[g_idx], _RASHI_LORD[b_idx]
+    applied: list[str] = []
+
+    if g_lord == b_lord:
+        applied.append(f"Both Moon signs are ruled by the same planet ({g_lord})")
+    elif (_planet_relationship(g_lord, b_lord) == "friend"
+          and _planet_relationship(b_lord, g_lord) == "friend"):
+        applied.append(f"The Moon-sign lords ({g_lord} and {b_lord}) are natural friends")
+
+    if by_name["Vashya"].awarded > 0:
+        applied.append("The Vashya relation holds between the Moon signs")
+    if by_name["Tara"].awarded > 0:
+        applied.append("Tara (birth-star) compatibility is clean")
+
+    cancelled = bool(applied)
+    if cancelled:
+        note = (
+            f"{dosha} Bhakoot dosha is present, but the classical tradition cancels it "
+            "when any one of five conditions holds. Here "
+            + (f"{len(applied)} of them apply" if len(applied) > 1 else "one applies")
+            + ". A cancellation removes the dosha; it does not add points to the "
+            "score above."
+        )
+        if not nadi_shuddha:
+            note += (
+                " Note that the tradition still requires Nadi to be clean regardless of "
+                "any cancellation, and it is not clean here."
+            )
+    else:
+        note = (
+            f"{dosha} Bhakoot dosha is present and none of the classical cancelling "
+            "conditions apply."
+        )
+
+    return BhakootDosha(
+        present=True, name=dosha, pariharas=tuple(applied),
+        unevaluated=_PARIHARA_UNEVALUATED, cancelled=cancelled,
+        nadi_shuddha=nadi_shuddha, note=note,
     )
 
 
