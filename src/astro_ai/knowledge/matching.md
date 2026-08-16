@@ -483,10 +483,26 @@ reasoning task. Until then the transcriptions live here as evidence, not as code
 
 ## Still unsourced after this pass
 
-- The Yoni enemy-pair grid (vv.25–26 hold it; **[UNREAD]**).
+Two entries that stood here have been resolved and are removed rather than left
+to rot — a stale "still open" list is how someone later re-does finished work, or
+worse, trusts a gap that has closed:
+
+- ~~The Yoni enemy-pair grid, [UNREAD]~~ — **read and verified 7/7.** See the
+  Yoni section above.
+- ~~Whether the partial Nadi restoration (4 of 8) has any basis~~ — **it had
+  none, and it is deleted.** There is no such restoration in `matching.py` any
+  more, so the question no longer applies.
+
+Genuinely still open:
+
 - The Bhakoot 6/8 and 2/12 point values as distinct from the verdicts.
-- Whether the partial Nadi restoration in `matching.py` (4 of 8) has any basis —
-  it does not come from here.
+- The Yoni middle tier (2 of 4) — the tika grades it qualitatively (सामान्य) and
+  never numbers it, and the 14×14 chart that would settle it fails its own
+  consistency checks (see above).
+- Bhakoot parihāra 3, सबलांशेश मैत्री — not evaluated, because there is no
+  planetary-strength model in the repo.
+- The pada-Nadi mapping in `_pada_nadi`, which is Raman's South Indian table
+  inside this North Indian engine. Tolerable only because it now moves no points.
 
 **Do not blend traditions.** This text is the North Indian 36-guna Ashtakoota.
 B. V. Raman's *Muhurtha* is South Indian and works in 12 poruthams; cite Raman
