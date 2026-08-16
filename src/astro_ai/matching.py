@@ -111,17 +111,57 @@ _RASHI_VARNA: Final[dict[int, str]] = {
 # Varna hierarchy: higher index = higher rank (for Varna koota match rule).
 _VARNA_RANK: Final[dict[str, int]] = {"Shudra": 1, "Vaishya": 2, "Kshatriya": 3, "Brahmin": 4}
 
-# Rashi → vashya classification (5 classes; simplified — half-sign nuances
-# of Sagittarius/Capricorn/Aquarius collapsed into majority class).
+# Rashi → vashya class. Ten signs carry one class; Sagittarius and Capricorn
+# change class MID-SIGN and are handled by `_RASHI_VASHYA_SPLIT` below (#175).
+#
+# Aquarius as Manava is deliberate and attested — Saravali's table and the
+# common published tables all place it there. Muhurta Chintamani v.23 names
+# only 3/6/7 as मनुष्यराशि and omits it, but that text also declines to finish
+# the classification at all (अन्य परस्पर वश्यावश्य मानुष व्यवहारसे जानना), so
+# its silence is not a contradiction. See knowledge/matching.md.
 _RASHI_VASHYA: Final[dict[int, str]] = {
     0: "Chatushpada", 1: "Chatushpada",       # Aries, Taurus
     2: "Manava", 5: "Manava", 6: "Manava", 10: "Manava",  # Gemini, Virgo, Libra, Aquarius
     3: "Jalachara", 11: "Jalachara",          # Cancer, Pisces
     4: "Vanachara",                            # Leo
     7: "Keeta",                                # Scorpio
-    8: "Manava",                               # Sagittarius (first-half human)
-    9: "Jalachara",                            # Capricorn (water-leaning)
 }
+
+# The two signs whose vashya class changes at 15°00' (#175). This is not a
+# subtlety invented by commentators — it follows the composite iconography of
+# the signs themselves, which is why the sources that mention it agree:
+#
+#   Sagittarius  centaur — human forequarters, equine hindquarters
+#   Capricorn    makara  — goat's head, fish's tail
+#
+# Attestation, all consistent and none contradicting: Saravali gives Capricorn
+# as 1st-half Quadruped / 2nd-half Jalachara; AstroMedha gives Capricorn the
+# same and Sagittarius as 1st-half human / latter-half quadruped;
+# freehoroscopesonline gives Sagittarius 1st-half Manava / 2nd-half Chatushpada
+# and Capricorn 1st-half Chatushpada. Muhurta Chintamani does not address
+# half-signs either way.
+#
+# Collapsing these to a whole-sign majority class was the first of the two
+# defects #175 reports. `PlanetPosition.longitude` already carries degrees
+# within the sign, so nothing had to be computed to honour it.
+_RASHI_VASHYA_SPLIT: Final[dict[int, tuple[str, str]]] = {
+    8: ("Manava", "Chatushpada"),      # Sagittarius
+    9: ("Chatushpada", "Jalachara"),   # Capricorn
+}
+
+
+def _vashya_class(rashi_idx: int, deg_in_sign: float) -> str:
+    """Vashya class of a Moon rashi, honouring the two mid-sign splits.
+
+    `deg_in_sign` is `PlanetPosition.longitude` — sidereal degrees within the
+    sign, 0..30. The boundary is inclusive-below: exactly 15°00' belongs to the
+    second half, matching how the rest of this codebase cuts pada and nakshatra
+    boundaries (#209).
+    """
+    split = _RASHI_VASHYA_SPLIT.get(rashi_idx)
+    if split is not None:
+        return split[0] if deg_in_sign < 15.0 else split[1]
+    return _RASHI_VASHYA[rashi_idx]
 
 # Friendly vashya pairs (other than identical). Score 2 same, 1 friendly,
 # 0.5 mutual food, 0 enmity. We use a simplified 3-level system.
@@ -290,7 +330,7 @@ def compute_guna_milan(groom: Chart, bride: Chart) -> GunaMilan:
 
     kootas = (
         _varna(g_rashi_idx, b_rashi_idx),
-        _vashya(g_rashi_idx, b_rashi_idx),
+        _vashya(g_rashi_idx, b_rashi_idx, g_moon.longitude, b_moon.longitude),
         _tara(g_nak, b_nak),
         _yoni(g_nak, b_nak),
         _graha_maitri(g_rashi_idx, b_rashi_idx),
@@ -520,9 +560,28 @@ def _varna(g_idx: int, b_idx: int) -> KootaScore:
     )
 
 
-def _vashya(g_idx: int, b_idx: int) -> KootaScore:
-    g_v = _RASHI_VASHYA[g_idx]
-    b_v = _RASHI_VASHYA[b_idx]
+def _vashya(g_idx: int, b_idx: int, g_deg: float = 0.0, b_deg: float = 0.0) -> KootaScore:
+    """Vashya koota, 0-2. `g_deg`/`b_deg` are degrees within the Moon's sign.
+
+    The degrees matter only for Sagittarius and Capricorn, which change vashya
+    class at 15° — see `_vashya_class`. They default to 0.0 so that a caller
+    passing only sign indices still gets the first-half class rather than a
+    TypeError; that default is a convenience for probes, and the real call site
+    in `compute_guna_milan` always passes the true degree.
+
+    The 1.0 middle tier is OURS, not a source's, and #175 is right that it is
+    unsourced — but it is not straightforwardly wrong either. The two classical
+    texts we hold are binary: Muhurta Chintamani v.23 awards (२) or nothing,
+    and Raman's Vasya Kuta says "the unit of agreement is 2". The published
+    tables that DO grade the middle are mutually inconsistent — Saravali and
+    freehoroscopesonline disagree on eight-plus of twenty-five cells, one using
+    0.5 and no 1.5, the other 1.5 and no 0.5. So there is no canonical graded
+    matrix to adopt, and collapsing to binary would require deciding which
+    pairs become 2 and which 0 — a decision no source we hold makes. Left as
+    is, and disclosed. See knowledge/matching.md.
+    """
+    g_v = _vashya_class(g_idx, g_deg)
+    b_v = _vashya_class(b_idx, b_deg)
     if g_v == b_v:
         awarded, note = 2.0, f"Same vashya ({g_v}) — full match"
     elif frozenset({g_v, b_v}) in _VASHYA_FRIENDLY:

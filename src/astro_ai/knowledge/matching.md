@@ -85,6 +85,62 @@ Raman's explicit pair list is not evidence that we are wrong — the two are
 filling the same acknowledged gap by different conventions. Our class-based shape
 is the closer of the two to this text.
 
+### #175, settled against four further sources
+
+v.23 alone speaks to only **44 of 144** pairs and defers the other 100 (69%).
+So it was checked against everything else obtainable.
+
+**The graded 5×5 matrix #175 asks for is not a single object.** Two sources
+publish a full grid and they disagree on eight-plus of twenty-five cells:
+
+| bride→groom | Saravali | freehoroscopesonline |
+|---|---|---|
+| Chatushpada→Manava | 0 | 1 |
+| Chatushpada→Jalachara | 0 | 1 |
+| Chatushpada→Vanachara | 0.5 | 1.5 |
+| Manava→Jalachara | 1 | 1.5 |
+| Manava→Vanachara | 0.5 | 0 |
+
+One uses 0.5 and never 1.5; the other 1.5 and never 0.5. AstroMedha and
+RashiRatanBhagya publish no grid at all — AstroMedha's page states outright that
+any 5×5 matrix "would be invented rather than extracted". **Adopting "the"
+matrix means picking one vendor's variant and calling it classical.** Both
+classical texts we hold are binary instead: MC v.23 gives (२) or nothing, and
+Raman's Vasya Kuta says "the unit of agreement is 2". Our 1.0 middle tier is
+therefore unsourced, as #175 says — but collapsing to binary would require
+deciding which pairs become 2 and which 0, which no source we hold does. Left in
+place and disclosed.
+
+**Aquarius as Manava is correct after all.** An earlier note here treated v.23's
+omission of it as a contradiction. It is not: Saravali, RashiRatanBhagya and
+freehoroscopesonline all place Aquarius in Manava exactly as we do, and v.23
+declines to finish the classification anyway. Its silence is not a denial.
+
+**The half-sign splits ARE convergent — implemented.** `_vashya_class` now cuts
+Sagittarius and Capricorn at 15°:
+
+| | Saravali | AstroMedha | freehoroscopes | MC |
+|---|---|---|---|---|
+| Capricorn 1st half | Quadruped | Quadruped | Quadruped | silent |
+| Capricorn 2nd half | Jalachara | water | — | silent |
+| Sagittarius 1st half | — | human | Manava | silent |
+| Sagittarius 2nd half | — | quadruped | Chatushpada | silent |
+
+Three agree on Capricorn, two on Sagittarius, **none contradict**. The splits
+track the composite iconography — Sagittarius the centaur (human fore, equine
+hind), Capricorn the makara (goat head, fish tail) — which is why the sources
+that mention it agree. `PlanetPosition.longitude` already carried the degree, so
+nothing needed computing. **32 of 144 sign-pairs now vary by degree.**
+
+**Directionality: left alone, deliberately.** MC v.23 is directional (वरकी
+राशिके वश्य कन्याकी राशि होनेमें (२) मिलते हैं, विपरीतमें नहीं) and Saravali's
+grid is explicitly bride-rows × groom-columns and asymmetric. So the classical
+form is directional and ours is symmetric. It was **not** changed, because the
+modern symmetrisation is a deliberate reading rather than an error: this koota
+was historically framed as the husband's control over the wife, and contemporary
+practice equalises it. That makes it a values decision for the product owner,
+not a correctness fix an agent should make unilaterally.
+
 ## v.24 — Tara [TIKA]
 
 Count bride's nakshatra → groom's, and groom's → bride's; divide each by 9;
