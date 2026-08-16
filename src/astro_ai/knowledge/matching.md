@@ -243,9 +243,31 @@ Severity and exceptions:
 - Shanti prescribed (Mrityunjaya japa, gold donation) — i.e. the text itself
   does not treat Nadi as absolutely disqualifying.
 
-The regional scoping matters for user-facing copy: per CLAUDE.md we state which
-convention a page uses rather than implying one universal answer. Our Nadi output
-currently implies a universal rule.
+**Implemented** as `_nadi_dosha`. `_nadi` is now the points table alone — 8 for
+different Nadis, 0 for the same, binary as classical Nadi is. Two restorations
+were removed:
+
+1. **Full 8 for same-nakshatra-different-pada.** The text addresses exactly this
+   case and does *not* cancel: दोष अल्प है, the dosha is SLIGHT. अल्प is a
+   gradation, not an absence. Now reported as a mitigation.
+2. **Partial 4 for same-rashi-different-nakshatra.** Unsourced before, and still
+   unsourced after reading the section end to end — there is no same-rashi clause
+   and no half-credit anywhere in it. Removed rather than rehomed, because there
+   was nothing to rehome it to. It carried a "BPHS matching tradition" label that
+   this reading does not support.
+
+**The regional and community exemptions are deliberately not auto-applied.** Both
+halves are genuine and sourced, and we apply neither. Birthplace is not the same
+thing as the reckoning a family follows, and inferring someone's community from
+their chart in order to discount an affliction is not something this calculator
+should do. They are disclosed as context the reader can apply.
+
+**Known tradition-blend, tracked.** The *concept* of a pada-level Nadi (चरणनाडी)
+and the "slight" grading are from this North Indian text; the 108-pada *mapping*
+in `_pada_nadi` is Raman's, which is South Indian. CLAUDE.md forbids blending the
+two in one reading, and this is a blend. It is tolerable only because it now moves
+no points — it decides the wording of a note. Do not promote it back into scoring
+without a mapping from this tradition.
 
 ---
 

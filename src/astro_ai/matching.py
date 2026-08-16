@@ -181,12 +181,12 @@ class KootaScore:
     awarded: float
     note: str
     # True when points were RESTORED by a classical cancellation rather than
-    # earned by the koota's own test (#170). Cancelling a dosha and awarding
-    # the koota its full points are two different operations: the first is a
-    # judgement laid on top of the 36-point table, the second changes the
-    # total — and the total is what drives the Uttam/Madhyam/Avara band and
-    # the headline number. Doing the second silently is the defect #170
-    # reports; this flag exists so the page can say so.
+    # RETIRED (#170). This flagged a koota whose points came from a dosha
+    # cancellation rather than from passing its own test, so the page could
+    # disclose it. Nothing sets it any more: cancellations and mitigations no
+    # longer touch any score, which is what the flag existed to warn about.
+    # Kept as a no-op field only so a stored or pickled KootaScore from before
+    # the change still constructs; remove once nothing old can reach it.
     cancellation_applied: bool = False
 
 
@@ -225,6 +225,32 @@ class BhakootDosha:
 
 
 @dataclass(frozen=True)
+class NadiDosha:
+    """Nadi dosha and its classical mitigations, kept SEPARATE from the score.
+
+    Same separation as `BhakootDosha`, and for the same reason (#170). The
+    difference is that Nadi has no parihāra list at all: the Bhakoot section
+    ends परन्तु नाडी सभीमें होनी चाहिये — Nadi must be clean regardless. What
+    the text offers instead is *gradation*, not cancellation.
+    """
+
+    present: bool
+    nadi: str
+    """The shared Nadi when afflicted; empty otherwise."""
+
+    grave: bool
+    """Both in Madhya Nadi — the text's gravest case (मृत्यु)."""
+
+    alpa: bool
+    """Nakshatra-Nadi collides but pada-Nadi does not. The text calls this
+    दोष अल्प — the dosha is SLIGHT, not absent."""
+
+    mitigations: tuple[str, ...]
+    unevaluated: tuple[str, ...]
+    note: str
+
+
+@dataclass(frozen=True)
 class GunaMilan:
     """Full 8-koota Ashtakoot Guna Milan result + Mangal Dosh check + verdict."""
 
@@ -236,6 +262,7 @@ class GunaMilan:
     mangal_dosh_note: str
 
     bhakoot_dosha: BhakootDosha
+    nadi_dosha: NadiDosha
 
     overall_verdict: str        # "Uttam" / "Madhyam" / "Avara" / "Not recommended"
     overall_verdict_label: str  # human-readable: "Excellent compatibility (Uttam)" etc.
@@ -269,7 +296,7 @@ def compute_guna_milan(groom: Chart, bride: Chart) -> GunaMilan:
         _graha_maitri(g_rashi_idx, b_rashi_idx),
         _gana(g_nak, b_nak),
         _bhakoot(g_rashi_idx, b_rashi_idx),
-        _nadi(g_moon, b_moon, g_nak, b_nak, g_rashi_idx, b_rashi_idx),
+        _nadi(g_nak, b_nak),
     )
     total = sum(k.awarded for k in kootas)
 
@@ -285,6 +312,7 @@ def compute_guna_milan(groom: Chart, bride: Chart) -> GunaMilan:
     # and Tara results. Deliberately does not feed back into `total` — see
     # `_bhakoot` and #170.
     bhakoot_dosha = _bhakoot_dosha(g_rashi_idx, b_rashi_idx, kootas)
+    nadi_dosha = _nadi_dosha(g_moon, b_moon, g_nak, b_nak)
 
     verdict, label = _overall_verdict(total)
     return GunaMilan(
@@ -294,6 +322,7 @@ def compute_guna_milan(groom: Chart, bride: Chart) -> GunaMilan:
         mangal_dosh_compatible=mangal.compatible,
         mangal_dosh_note=mangal.note,
         bhakoot_dosha=bhakoot_dosha,
+        nadi_dosha=nadi_dosha,
         overall_verdict=verdict,
         overall_verdict_label=label,
     )
@@ -839,16 +868,29 @@ def _pada_nadi(nak_index: int, pada: int) -> str:
     return _NADI_NAMES[pos if group % 2 == 0 else 2 - pos]
 
 
-def _nadi(g_moon, b_moon, g_nak: str, b_nak: str, g_rashi_idx: int, b_rashi_idx: int) -> KootaScore:
-    """Nadi koota with classical cancellation rules.
+def _nadi(g_nak: str, b_nak: str) -> KootaScore:
+    """Nadi koota: 8 for different Nadis, 0 for the same. POINTS TABLE ONLY.
 
-    Base rule: different nadis = 8 (favourable), same nadi = 0 (Nadi Dosh).
+    The restorations that used to live here are gone (#170). Two separate
+    defects, and the source refutes both:
 
-    Classical cancellations (BPHS matching tradition) — silently omitting
-    these was mislabelling many compatible couples as incompatible on the
-    hardest-weighted koota. Applied when same nadi:
-      - Same nakshatra + different pada → Nadi Dosh cancelled (full 8)
-      - Same rashi + different nakshatra → Nadi Dosh softened (partial 4)
+    **The full 8 for same-nakshatra-different-pada.** The text does address
+    this case, and it does not cancel the dosha. जहां नक्षत्र नाडी हुएमें
+    चरणनाडी न हो तहां दोष अल्प है — where the nakshatra-Nadi collides but the
+    pada-Nadi does not, the dosha is SLIGHT. अल्प is a gradation, not an
+    absence, so restoring all 8 points overstated what the text grants. It is
+    now reported as a mitigation by `_nadi_dosha`.
+
+    **The partial 4 for same-rashi-different-nakshatra.** Unsourced, and still
+    unsourced after reading the Nadi section end to end: the text has no
+    same-rashi clause and no half-credit anywhere. Classical Nadi is binary.
+    Removed rather than rehomed, because there is nothing to rehome it to. It
+    also carried a "BPHS matching tradition" provenance label that #170 could
+    not verify and that this reading does not support.
+
+    Unlike Bhakoot, Nadi has no parihāra list at all — the Bhakoot section ends
+    परन्तु नाडी सभीमें होनी चाहिये, Nadi must be clean regardless. What the
+    text offers here is gradation and shanti, never cancellation.
     """
     g_n = _NAKSHATRA_NADI[g_nak]
     b_n = _NAKSHATRA_NADI[b_nak]
@@ -857,34 +899,79 @@ def _nadi(g_moon, b_moon, g_nak: str, b_nak: str, g_rashi_idx: int, b_rashi_idx:
             name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=8.0,
             note=f"Different nadis ({g_n} / {b_n}) — favourable",
         )
-    # Same nadi — check cancellations.
-    if g_nak == b_nak:
-        g_pada = _moon_pada(g_moon)
-        b_pada = _moon_pada(b_moon)
-        # Re-reckon at PADA level rather than assuming a different pada means
-        # a different nadi (#170). It does not: 22% of same-nakshatra
-        # different-pada combinations land on the same nadi under Raman's
-        # table, and for those the dosha stands.
-        g_pn = _pada_nadi(NAKSHATRAS.index(g_nak), g_pada)
-        b_pn = _pada_nadi(NAKSHATRAS.index(b_nak), b_pada)
-        if g_pada != b_pada and g_pn != b_pn:
-            return KootaScore(
-                name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=8.0,
-                cancellation_applied=True,
-                note=f"Same nadi ({g_n}) at nakshatra level, but re-reckoned by pada "
-                     f"the two differ ({g_pn} vs {b_pn}, padas {g_pada} and {b_pada}) "
-                     f"— Nadi Dosh does not apply. This restores all 8 points and "
-                     f"raises the total.",
-            )
-    if g_rashi_idx == b_rashi_idx and g_nak != b_nak:
-        return KootaScore(
-            name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=4.0,
-            note=f"Same nadi ({g_n}) BUT same Moon rashi with different nakshatras — "
-                 "Nadi Dosh softened per classical practice. Partial credit.",
-        )
     return KootaScore(
         name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=0.0,
-        note=f"Same nadi ({g_n}) — Nadi Dosha. No classical cancellation applies "
-             "(different nakshatras + different rashis). Traditionally requires "
-             "consultation before proceeding.",
+        note=f"Same nadi ({g_n}) — Nadi Dosha. Any classical mitigation is reported "
+             "separately and does not change this score.",
+    )
+
+
+# Mitigations the text DOES grant for Nadi, none of which cancel it.
+#
+# Deliberately NOT auto-applied: मध्यनाडी छोड़के पार्श्वनाडियोंका दोष गोदावरीके
+# दक्षिण अथवा क्षत्रिय आदिकोंको नहीं — outside Madhya, the side-Nadi dosha is
+# waived south of the Godavari and for certain communities. Both halves are
+# real and sourced, and we apply neither. Birthplace is not the same thing as
+# the reckoning a family follows, and we will not infer someone's community
+# from their chart in order to discount an affliction. They are disclosed as
+# context a reader can apply themselves.
+_NADI_UNEVALUATED: Final[tuple[str, ...]] = (
+    "The tradition also scopes this dosha by region and community — outside the "
+    "Madhya Nadi it is waived in parts of the south, and for some communities. "
+    "We do not apply those exemptions automatically.",
+)
+
+
+def _nadi_dosha(g_moon, b_moon, g_nak: str, b_nak: str) -> NadiDosha:
+    """Grade the Nadi dosha. Never changes a koota score."""
+    g_n, b_n = _NAKSHATRA_NADI[g_nak], _NAKSHATRA_NADI[b_nak]
+    if g_n != b_n:
+        return NadiDosha(
+            present=False, nadi="", grave=False, alpa=False, mitigations=(),
+            unevaluated=(), note="The two Nadis differ — no Nadi dosha.",
+        )
+
+    grave = g_n == "Madhya"
+    mitigations: list[str] = []
+    alpa = False
+
+    if g_nak == b_nak:
+        g_pada, b_pada = _moon_pada(g_moon), _moon_pada(b_moon)
+        # NOTE ON PROVENANCE: the CONCEPT of a pada-level Nadi (चरणनाडी) and
+        # the "dosha is slight" grading are both from the same North Indian
+        # text as the rest of this engine. The 108-pada MAPPING in
+        # `_pada_nadi` is Raman's, which is South Indian. CLAUDE.md forbids
+        # blending the two systems in one reading, and this is a blend. It is
+        # tolerable only because it now moves no points — it decides the
+        # wording of a mitigation note. Tracked; do not promote it back into
+        # scoring without a mapping from this tradition.
+        if g_pada != b_pada:
+            g_pn = _pada_nadi(NAKSHATRAS.index(g_nak), g_pada)
+            b_pn = _pada_nadi(NAKSHATRAS.index(b_nak), b_pada)
+            if g_pn != b_pn:
+                alpa = True
+                mitigations.append(
+                    f"Both Moons share the {g_n} Nadi, but reckoned at pada level they "
+                    f"differ (padas {g_pada} and {b_pada}). The tradition calls the "
+                    "dosha slight in this case — reduced, not removed."
+                )
+
+    if grave:
+        note = (
+            f"Both Moons fall in the {g_n} Nadi, which the tradition treats as the "
+            "gravest form of this affliction rather than an ordinary one."
+        )
+    else:
+        note = f"Both Moons share the {g_n} Nadi — Nadi dosha is present."
+    if alpa:
+        note += " One mitigation applies, below."
+    note += (
+        " Nadi has no cancelling conditions in this tradition: it is required to be "
+        "clean regardless of how the other kootas score, and remedial measures rather "
+        "than cancellation are what the classical texts prescribe."
+    )
+
+    return NadiDosha(
+        present=True, nadi=g_n, grave=grave, alpa=alpa,
+        mitigations=tuple(mitigations), unevaluated=_NADI_UNEVALUATED, note=note,
     )
