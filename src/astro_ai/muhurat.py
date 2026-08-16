@@ -376,32 +376,32 @@ def _ravi_yoga_flag(weekday: str, nakshatra: str) -> str:
 # Positions:
 #   17 = Vyatipata — "great transgression"
 #   27 = Vaidhriti — "no support"
-_NITYA_YOGAS = (
-    "Vishkambha", "Priti", "Ayushman", "Saubhagya", "Shobhana",
-    "Atiganda", "Sukarma", "Dhriti", "Shula", "Ganda",
-    "Vriddhi", "Dhruva", "Vyaghata", "Harshana", "Vajra",
-    "Siddhi", "Vyatipata", "Variyan", "Parigha", "Shiva",
-    "Siddha", "Sadhya", "Shubha", "Shukla", "Brahma",
-    "Aindra", "Vaidhriti",
-)
+# The 27 nitya-yoga names used to be duplicated here, with two spellings that
+# differed from chart.py's — "Variyan"/"Aindra" against "Variyana"/"Indra"
+# (#148). Both are defensible transliterations, but two copies of the same
+# astrology with nothing computing over both is how #141 and #146 went wrong:
+# they agreed only because the sequence order happened to match, which is luck,
+# not a guarantee. chart.py's spellings win because /panchang is the almanac
+# users read and chart.py is where the anga functions live.
+#
+# The blocking set is safe to key on names because "Vyatipata" and "Vaidhriti"
+# were spelled identically in both copies — the divergence was elsewhere in
+# the tuple.
 _BLOCKING_NITYA_YOGAS = {"Vyatipata", "Vaidhriti"}
 
 
 def _nitya_yoga_flag(chart: Chart, when: datetime) -> tuple[str, bool]:
-    """Return (yoga_name, is_blocking). Uses transit snapshot."""
-    snap = compute_transit_snapshot(chart, when)
-    sun = next((p for p in snap.planets if p.name == "Sun"), None)
-    moon = next((p for p in snap.planets if p.name == "Moon"), None)
-    if not sun or not moon:
-        return "", False
+    """Return (yoga_name, is_blocking), delegating the maths to chart.py.
 
-    from astro_ai.chart import _rashi_index as _ri
-    sun_abs = _ri(sun.rashi) * 30.0 + sun.longitude
-    moon_abs = _ri(moon.rashi) * 30.0 + moon.longitude
-    combined = (sun_abs + moon_abs) % 360.0
-    span = 360.0 / 27.0
-    idx = int(combined / span) % 27
-    yoga_name = _NITYA_YOGAS[idx]
+    Reads the same `_nitya_yoga_at` that /panchang renders, so the Muhurat
+    Finder's blocker path and the almanac can no longer disagree about the
+    same instant (#148). `chart` is unused now that the computation needs
+    only the moment; it stays in the signature because callers pass it
+    positionally and the natal chart is what identifies whose muhurat this is.
+    """
+    from astro_ai.chart import _nitya_yoga_at, julian_day_utc
+
+    _idx, yoga_name, _sig = _nitya_yoga_at(julian_day_utc(when))
     return yoga_name, yoga_name in _BLOCKING_NITYA_YOGAS
 
 
@@ -807,35 +807,23 @@ _DAGDHA_TITHI_BY_DAY: dict[str, str] = {
 # Taitila, Gara, Vanij, Vishti) followed by 4 fixed karanas at month-end
 # (Shakuni, Chatushpad, Naga, Kimstughna). Vishti = "Bhadra" — universally
 # inauspicious for shubh karya. Active roughly half of every day.
-_MOVABLE_KARANAS = ("Bava", "Balava", "Kaulava", "Taitila", "Gara", "Vanij", "Vishti")
+# The movable-karana tuple lived here until #148; the names now come from
+# chart.py, which _karana_at() below delegates to. The note above stays
+# because _bhadra_active_at() still depends on knowing that Vishti is Bhadra.
 
 
 def _karana_at(chart: Chart, when: datetime) -> str:
-    """Return the karana name at the given instant.
+    """Return the karana name at the given instant, delegating to chart.py.
 
-    Formula: half-tithi index = ((moon_long - sun_long) mod 360) / 6.
-    Range 0..59. Indexes 0-55 cycle through 7 movable karanas (8 cycles).
-    Indexes 56-59 = 4 fixed karanas (Shakuni/Chatushpad/Naga/Kimstughna).
+    Had its own copy of the half-tithi maths until #148 — the same astrology
+    chart.py already computed for /panchang, with no computation over both
+    that would notice if they drifted. `chart` is unused now; kept in the
+    signature because callers pass it positionally.
     """
-    snap = compute_transit_snapshot(chart, when)
-    sun = next((p for p in snap.planets if p.name == "Sun"), None)
-    moon = next((p for p in snap.planets if p.name == "Moon"), None)
-    if not sun or not moon:
-        return ""
-    from astro_ai.chart import _rashi_index as _ri
-    sun_abs = _ri(sun.rashi) * 30.0 + sun.longitude
-    moon_abs = _ri(moon.rashi) * 30.0 + moon.longitude
-    half_tithi = int((((moon_abs - sun_abs) % 360.0) / 6.0)) % 60
-    # 0 = first Kimstughna (fixed) - actually classical order:
-    # index 0 = 1st half of Shukla Pratipada = Kimstughna (fixed)
-    # 1-56 = movable karanas cycling (7 each × 8 cycles)
-    # 57-59 = Shakuni, Chatushpad, Naga
-    # Simplified per Drik Panchang convention:
-    if half_tithi == 0:
-        return "Kimstughna"
-    if half_tithi >= 57:
-        return ("Shakuni", "Chatushpad", "Naga")[half_tithi - 57]
-    return _MOVABLE_KARANAS[(half_tithi - 1) % 7]
+    from astro_ai.chart import _karana_at as _chart_karana_at, julian_day_utc
+
+    _idx, name, _sig = _chart_karana_at(julian_day_utc(when))
+    return name
 
 
 def _bhadra_active_at(chart: Chart, when: datetime) -> bool:
