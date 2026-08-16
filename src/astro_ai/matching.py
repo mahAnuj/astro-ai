@@ -518,34 +518,35 @@ def _graha_maitri(g_idx: int, b_idx: int) -> KootaScore:
 def _graha_maitri_score(a: str, b: str, lord_a: str, lord_b: str) -> tuple[float, str]:
     """Score the Moon-lord friendship pair, 0-5.
 
-    THE LADDER MUST STAY MONOTONIC (#174). Ordered by the quality of the two
-    relationships, the six rows are:
+    SOURCED. Muhurta Chintamani, Vivaha prakarana, Hindi tika on vv. 27-28,
+    which states the whole ladder in one sentence:
 
-        friend + friend    5.0
-        friend + neutral   4.0
-        neutral + neutral  3.0
-        friend + enemy     1.0
-        neutral + enemy    0.5
-        enemy + enemy      0.0
+        मित्र तथा एकाधिपत्य   5.0   friend, or one planet lording both rashis
+        सम + मित्र            4.0   neutral + friend
+        सम + सम               3.0   neutral + neutral
+        मित्र + शत्रु         2.0   friend + enemy
+        सम + शत्रु            1.0   neutral + enemy
+        शत्रु + शत्रु         0.0   enemy + enemy
 
-    Until #174 the last two were transposed — friend+enemy scored 0.5 and
-    neutral+enemy 1.0. Holding one side fixed at "enemy" and upgrading the
-    other from neutral to friend therefore made the couple's score go DOWN,
-    which no reading of any school supports. It was the only inversion in the
-    table, which is what marks it as two adjacent rows swapped rather than a
-    deliberate choice.
+    एकाधिपत्य (both rashis owned by the same graha) needs no separate branch:
+    `_planet_relationship` already reports a planet as its own friend, so that
+    case reaches the 5.0 row on its own.
 
-    The justification for the fix is internal, not textual, and that
-    distinction matters: **no source we hold adjudicates these six values.**
-    The corpus has no Graha Maitri scoring table — measured, not assumed —
-    and #177 tracks that absence for the whole 36-point engine. What is being
-    corrected here is a self-contradiction, which is wrong under every school
-    at once. If a sourced table ever arrives and disagrees with these numbers,
-    it supersedes this function; the ordering constraint is the part that
-    should survive.
+    History, because the numbers moved twice. Before #174 the bottom two rows
+    were transposed (friend+enemy 0.5, neutral+enemy 1.0), so holding one side
+    at "enemy" and upgrading the other from neutral to friend made the score go
+    DOWN. #174 fixed the inversion but had to invent the magnitudes — it said
+    so, and said a sourced table would supersede it. This is that table, and it
+    keeps the ordering #174 argued for while replacing the guessed 1.0/0.5 with
+    the text's 2.0/1.0.
 
-    31% of the 144 rashi pairs (44) land on the two corrected rows, so this
-    moves real scores — do not treat it as cosmetic.
+    31% of the 144 rashi pairs (44) land on these two rows, so this moves real
+    scores — do not treat it as cosmetic.
+
+    The tika also adds a judgement we deliberately do NOT encode: शत्रु शत्रुका
+    मेल कहीं नहीं होता, मृत्युषट्काष्टक होता है — an enemy/enemy pairing is
+    called categorically unfit. That is a verdict, not a point value, and the
+    0.0 already carries it numerically.
     """
     pair = {a, b}
     if pair == {"friend"}:
@@ -555,9 +556,9 @@ def _graha_maitri_score(a: str, b: str, lord_a: str, lord_b: str) -> tuple[float
     if pair == {"neutral"}:
         return 3.0, f"Lords {lord_a} & {lord_b} are mutually neutral"
     if "friend" in pair and "enemy" in pair:
-        return 1.0, f"Lords {lord_a} & {lord_b}: mixed friend / enemy"
+        return 2.0, f"Lords {lord_a} & {lord_b}: mixed friend / enemy"
     if "neutral" in pair and "enemy" in pair:
-        return 0.5, f"Lords {lord_a} & {lord_b}: one neutral / one enemy"
+        return 1.0, f"Lords {lord_a} & {lord_b}: one neutral / one enemy"
     return 0.0, f"Lords {lord_a} & {lord_b} are mutual enemies"
 
 
