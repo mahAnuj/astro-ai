@@ -92,6 +92,24 @@ RASHIFAL_PROMPT_PATH = PROMPTS_DIR / "rashifal_single.txt"
 DASHA_DEEP_DIVE_PROMPT_PATH = PROMPTS_DIR / "dasha_deep_dive.txt"
 ASK_PROMPT_PATH = PROMPTS_DIR / "ask.txt"
 
+# Per-context OVERLAYS for /ask, appended to ask.txt rather than replacing it.
+#
+# Overlay, not replacement, on purpose. ask.txt is ~80 lines and nearly all of
+# it — voice, plain-language, honesty, safety, the cross-link rule — applies to
+# every ask regardless of where the seeker came from. Three standalone prompts
+# would triplicate those rules, and the next safety fix would land in one file
+# and silently not the other two. That is the guidance-drift failure CLAUDE.md
+# calls out by name, so the shared rules stay in exactly one place.
+#
+# Selected by `_ask_overlay_path`, which the cache key and the generation call
+# BOTH go through. If those two ever disagree about which overlay is in force,
+# the answer is generated under one prompt and cached under another's
+# fingerprint — the #181 failure class.
+ASK_OVERLAY_PATHS = {
+    "matching": PROMPTS_DIR / "ask_matching.txt",
+    "numerology": PROMPTS_DIR / "ask_numerology.txt",
+}
+
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 # Expose i18n to every template as `t(key, **kwargs)`. Templates pass the
