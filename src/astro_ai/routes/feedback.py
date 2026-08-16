@@ -51,8 +51,17 @@ async def submit_feedback(
             page=entry.get("page", "") if entry else page,
             email=entry.get("email", "") if entry else email,
         )
-    except Exception:
-        pass
+    except Exception as err:  # noqa: BLE001
+        # Log, do not swallow (#183). Still best-effort — the feedback is
+        # already saved and the user's submit must not fail because a notify
+        # channel is down. But a bare `pass` made a broken Telegram channel
+        # completely invisible: feedback would keep arriving in GCS with
+        # nobody being told, and the first symptom would be noticing months
+        # later that nothing had been read. The email block immediately below
+        # already logs its own failure; this now matches it.
+        logging.getLogger(__name__).warning(
+            "feedback Telegram notify failed (feedback itself was saved): %s", err
+        )
 
     # Notify admin via email so feedback doesn't sit unread in a GCS file.
     # Best-effort — failure to email shouldn't fail the user's submit.
