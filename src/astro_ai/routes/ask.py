@@ -65,42 +65,20 @@ async def ask_form(request: Request, q: str | None = None,
         return RedirectResponse("/?needs_chart=ask", status_code=303)
     lang = _lang(request)
     context = ctx if ctx in ("chart", "numerology", "matching") else "chart"
-    # Resolved unconditionally, not just when `q` is set, because the header
-    # needs it too. `context` is what the caller ASKED for; `effective_ctx` is
-    # what can actually be honoured — `_resolve_matching_partner` downgrades to
-    # "chart" when the matching cookie is gone or the partner chart will not
-    # compute. The template must render the downgraded one, or a seeker whose
-    # cookie expired sees a "Matching context" badge over an answer that used
-    # only their own chart.
-    # PROBE with "matching" regardless of what was requested. Two things need
-    # the answer: this request's effective context, and whether the context
-    # SWITCHER can offer matching at all. A seeker sitting in chart context
-    # still needs to know a match is available to switch to, so availability
-    # cannot be derived from the requested context.
-    _p_chart, _p_label, _probe_fp, _probe_ctx = _resolve_matching_partner(
-        request, saved, "matching"
-    )
-    matching_available = _probe_ctx == "matching"
+    # Availability, names and the cache key all come from the COOKIE alone —
+    # no chart computed, nothing geocoded. GET must stay cheap: it renders on
+    # every visit, including for a seeker who has asked nothing.
+    _last, matching_names, pair_fp = _matching_record(request)
+    matching_available = _last is not None
 
-    if context == "matching":
-        # Downgrade when the cookie is gone or the partner chart will not
-        # compute — the seeker must never see a two-chart claim over a
-        # one-chart answer.
-        effective_ctx = "matching" if matching_available else "chart"
-        partner_fp = _probe_fp if matching_available else None
-    else:
-        effective_ctx, partner_fp = context, None
-
-    # Both names, for the header and the switcher. Available whenever a match
-    # resolves, not only when we are currently IN matching context — the
-    # switcher labels its matching option with them.
-    matching_names = None
-    if matching_available:
-        last = load_last_matching(request)
-        if last is not None:
-            g = (last.groom_name or "").strip() or "Groom"
-            b = (last.bride_name or "").strip() or "Bride"
-            matching_names = f"{g} & {b}"
+    # A downgrade here is decided by the record's presence, not by whether the
+    # partner's chart happens to compute. Deciding it on compute success used to
+    # mean a transient geocoder outage changed the cache key, missed the entry,
+    # and silently blanked an answer the seeker had already paid a question for.
+    effective_ctx = ("matching" if (context == "matching" and matching_available)
+                     else ("chart" if context == "matching" else context))
+    if effective_ctx != "matching":
+        pair_fp = None
 
     answer = None
     if q:
@@ -111,7 +89,7 @@ async def ask_form(request: Request, q: str | None = None,
         # look up a key POST never wrote and the answer would never re-render
         # (#181) — hence one resolver call shared by header and lookup.
         answer = _ask_lookup(saved, q, c or "general", lang,
-                             context=effective_ctx, partner_fp=partner_fp)
+                             context=effective_ctx, pair_fp=pair_fp)
     return templates.TemplateResponse(
         request, "ask.html",
         {
@@ -134,7 +112,7 @@ _ASK_CATEGORIES = {"general", "career", "marriage", "money", "health",
 
 
 def _ask_cache_key(saved, question: str, category: str, lang: str,
-                    context: str = "chart", partner_fp: str | None = None) -> str:
+                    context: str = "chart", pair_fp: str | None = None) -> str:
     """Stable cache key for a (chart, question, category, context, partner) tuple.
 
     `context` is one of chart|numerology|matching and is baked in so the
@@ -142,20 +120,29 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
     a numerology-context answer references the numbers, a chart-context
     answer doesn't; they are legitimately different responses.
 
-    `partner_fp` is the fingerprint of the OTHER party's birth details and
-    is included **only** for context="matching". Without it, asking "are we
-    compatible?" after matching against partner A and then again after
-    matching against partner B returned A's answer — a compatibility reading
-    about the wrong person, served silently (issue #181). Do not remove it:
-    the seeker's own chart fingerprint is not enough to identify a
-    two-chart reading. The other contexts derive purely from the seeker's
-    saved chart, which `chart_fp` already covers.
+    `pair_fp` is an ORDERED fingerprint of the matched couple, groom first,
+    included **only** for context="matching". Two properties matter and both
+    were learned from bugs:
+
+    * WHO. Asking "are we compatible?" after matching partner A and then again
+      after matching partner B returned A's answer — a compatibility reading
+      about the wrong person, served silently (#181). The seeker's own chart
+      fingerprint cannot identify a two-chart reading.
+    * WHICH ROLE. This was a bare partner fingerprint until QA found that it
+      cannot distinguish "Anuj is the groom" from "Anuj is the bride". Varna
+      and Gana are scored directionally, so those two orders produce different
+      totals — measured 21.5 vs 20.5 on one couple — yet hit the same key, and
+      the cached prose for one direction was served over a page showing the
+      other. Ordering the fingerprint fixes it.
+
+    The other contexts derive purely from the seeker's saved chart, which
+    `chart_fp` already covers.
 
     Key shapes:
 
         chart       ask:{chart_fp}:{q_fp}:{category}:{prompt_fp}:{lang}
         numerology  …:ctx=numerology:numrules={NUMEROLOGY_RULES_VERSION}
-        matching    …:ctx=matching:partner={partner_fp}:matchrules={MATCHING_RULES_VERSION}
+        matching    …:ctx=matching:pair={groom_fp}~{bride_fp}:matchrules={MATCHING_RULES_VERSION}
 
     where `prompt_fp` additionally carries the overlay's fingerprint for the
     two contexts that have one.
@@ -201,13 +188,13 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
         # Path in the cache while /numerology renders the new one, for ~13.5%
         # of birth dates. Bump NUMEROLOGY_RULES_VERSION on any rule change.
         key = f"{key}:numrules={NUMEROLOGY_RULES_VERSION}"
-    if context == "matching" and partner_fp:
+    if context == "matching" and pair_fp:
         # matchrules for exactly the reason numrules exists above. The Ashtakoota
         # scoring now reaches the prompt, and `prompt_fp` fingerprints only the
         # prompt FILE — so a koota rule change would otherwise leave prose in the
         # cache quoting a total /matching no longer computes. The Muhurta
         # Chintamani pass moved several kootas, some by whole verdict bands.
-        key = f"{key}:partner={partner_fp}:matchrules={MATCHING_RULES_VERSION}"
+        key = f"{key}:pair={pair_fp}:matchrules={MATCHING_RULES_VERSION}"
     return key
 
 
@@ -220,6 +207,44 @@ def _ask_overlay_path(context: str):
     fingerprint — exactly the split-derivation bug #181 was about.
     """
     return ASK_OVERLAY_PATHS.get(context)
+
+
+def _matching_record(request):
+    """Cheap read of the last-matching cookie. NO chart computation, no network.
+
+    Returns ``(last, names, pair_fp)`` — the record, "Groom & Bride" for display,
+    and an ORDERED fingerprint of the pair. Any of them may be None.
+
+    Everything here is string work: `cache.fingerprint_chart` is a sha256 of
+    "date|time|place", so availability, the header names and the whole cache key
+    can be derived without geocoding or computing a single chart. That matters —
+    resolving the partner properly calls `compute_chart`, which geocodes through
+    Nominatim (rate-limited, 10s timeout), and doing that on every /ask render
+    put third-party network I/O on a page-render path. Same class as #144.
+
+    `pair_fp` is ORDERED, groom first. The previous key used only the partner's
+    fingerprint, which cannot distinguish "Anuj is the groom" from "Anuj is the
+    bride" — and since Varna and Gana are scored directionally, those two score
+    differently. Re-matching the same two people with roles swapped therefore hit
+    the same cache entry and served the other direction's total over the page.
+    That is #181's failure class on a new axis, so direction is now in the key.
+    """
+    last = load_last_matching(request)
+    if last is None:
+        return None, None, None
+    g = (last.groom_name or "").strip() or "Groom"
+    b = (last.bride_name or "").strip() or "Bride"
+    try:
+        pair_fp = "{}~{}".format(
+            cache.fingerprint_chart(last.groom_birth_date, last.groom_birth_time,
+                                    last.groom_birth_place),
+            cache.fingerprint_chart(last.bride_birth_date, last.bride_birth_time,
+                                    last.bride_birth_place),
+        )
+    except Exception:
+        log.debug("malformed last-matching record", exc_info=True)
+        return None, None, None
+    return last, f"{g} & {b}", pair_fp
 
 
 def _resolve_matching_partner(request: Request, saved, context: str):
@@ -283,10 +308,10 @@ def _resolve_matching_partner(request: Request, saved, context: str):
 
 
 def _ask_lookup(saved, question: str, category: str, lang: str,
-                context: str = "chart", partner_fp: str | None = None) -> str | None:
+                context: str = "chart", pair_fp: str | None = None) -> str | None:
     """Look up an already-cached answer without burning a fresh LLM call."""
     return cache.get(_ask_cache_key(saved, question, category, lang,
-                                    context=context, partner_fp=partner_fp))
+                                    context=context, pair_fp=pair_fp))
 
 
 @router.post("/ask")
@@ -318,6 +343,22 @@ async def ask_submit(
     lang = _lang(request)
     if context not in ("chart", "numerology", "matching"):
         context = "chart"
+
+    # Every error re-render below must carry the context forward. It did not:
+    # a 400 (too short / too long) or a 429 (quota) rebuilt the page WITHOUT
+    # current_context, so `{{ current_context or 'chart' }}` rendered "chart",
+    # the heading reverted to the single-chart wording and the switcher
+    # vanished. The seeker then retyped and submitted in chart context without
+    # ever being told the match had been dropped — and on the 429 path they had
+    # already spent the question. Harmless while this was cosmetic; it stopped
+    # being cosmetic once context started driving the heading and the prompt.
+    _last_err, _names_err, _ = _matching_record(request)
+    _err_ctx = context if (context != "matching" or _last_err is not None) else "chart"
+    _err_extra = {
+        "current_context": _err_ctx,
+        "matching_names": _names_err,
+        "matching_available": _last_err is not None,
+    }
     question = (question or "").strip()
     if not question or len(question) < 5:
         return templates.TemplateResponse(
@@ -330,6 +371,7 @@ async def ask_submit(
                 "answer": None,
                 "error": "Please write a question of at least a few words.",
                 "remaining_today": _ask_quota_remaining(request),
+                **_err_extra,
             },
             status_code=400,
         )
@@ -342,6 +384,7 @@ async def ask_submit(
                 "answer": None,
                 "error": "Question is too long (max 600 characters).",
                 "remaining_today": _ask_quota_remaining(request),
+                **_err_extra,
             },
             status_code=400,
         )
@@ -356,6 +399,7 @@ async def ask_submit(
                 "answer": None,
                 "error": "You've used today's question quota. Come back tomorrow.",
                 "remaining_today": 0,
+                **_err_extra,
             },
             status_code=429,
         )
@@ -399,44 +443,49 @@ async def ask_submit(
             log.debug("numerology context load failed for /ask", exc_info=True)
 
     # Matching context: recover the partner chart from the last-matching
-    # cookie set by POST /matching. Shared with the GET handler so both
-    # derive the same partner and the same effective context — see
-    # _resolve_matching_partner. `context` may come back downgraded to
-    # "chart" when there is no matching cookie or the partner chart won't
+    # cookie set by POST /matching. `context` may come back downgraded to
+    # "chart" when there is no matching cookie or the partner chart will not
     # compute; the redirect below then drops `ctx` to match.
-    # Recomputed rather than persisted, deliberately. The result serialises to
-    # ~3.6KB against a ~4KB budget for ALL cookies on the domain, and stashing
-    # it in GCS would put a cross-continent read on a hot path (CLAUDE.md, #144).
-    # Recomputing costs ~0.016ms — a quarter of the partner `compute_chart` this
-    # handler already pays — and, more importantly, it cannot go stale: the Ask
-    # answer and the /matching page always derive from the same birth details,
-    # so they can never quote different totals for the same couple.
-    partner_chart, partner_label, partner_fp, context = _resolve_matching_partner(
+    partner_chart, partner_label, _unused_fp, context = _resolve_matching_partner(
         request, saved, context
     )
 
-    # The seeker's own chart is `chart`; the partner's is `partner_chart`. Which
-    # of the two is the groom is NOT knowable here — `_resolve_matching_partner`
-    # deliberately defaults a curious third party to "partner = bride" — so the
-    # groom/bride order is recovered from the matching record rather than
-    # assumed. That order matters: Varna and Gana are scored directionally, so
-    # passing the pair the wrong way round would quote a total the /matching
-    # page never showed.
+    # The Guna Milan is computed from THE MATCHING RECORD — groom and bride as
+    # /matching scored them — never from the seeker's active chart.
+    #
+    # It used to be built as compute_guna_milan(seeker_chart, partner_chart),
+    # which is only correct when the seeker IS one of the matched pair. QA found
+    # two ways that fails, both silent and both producing a total no page ever
+    # showed, wrapped in a prompt instruction to quote it verbatim:
+    #
+    #   * a third party. Active chart Priya, match Anuj x Aastha: the page
+    #     scored 13/36 for Anuj x Aastha while the block sent 20.5/36 for
+    #     Priya x Aastha, under a header naming Anuj & Aastha.
+    #   * an anonymous match. Names are OPTIONAL on /matching, so the identity
+    #     test matched on an empty string, the seeker became her own partner,
+    #     and the block scored her against herself.
+    #
+    # Deriving from the record removes the identity guess entirely: the numbers
+    # now describe the couple the page named, whoever happens to be asking.
+    # Recomputed rather than persisted (~0.016ms) because the result serialises
+    # to ~3.6KB against a ~4KB cookie budget, and a GCS stash would put a
+    # cross-continent read on a hot path (CLAUDE.md, #144).
     guna_milan = None
-    if context == "matching" and partner_chart is not None:
+    guna_pair_label = None
+    if context == "matching":
         try:
-            last = load_last_matching(request)
-            seeker_is_bride = bool(last) and (
-                (saved.name or "").strip().lower()
-                == (last.bride_name or "").strip().lower()
-                and saved.birth_date == last.bride_birth_date
-            )
-            pair = ((partner_chart, chart) if seeker_is_bride
-                    else (chart, partner_chart))
-            guna_milan = compute_guna_milan(*pair)
+            last, guna_pair_label, _ = _matching_record(request)
+            if last is not None:
+                guna_milan = compute_guna_milan(
+                    compute_chart(last.groom_birth_date, last.groom_birth_time,
+                                  last.groom_birth_place),
+                    compute_chart(last.bride_birth_date, last.bride_birth_time,
+                                  last.bride_birth_place),
+                )
         except Exception:
             # Never fail an answer over the compatibility block; the two natal
             # charts alone still make a usable matching answer.
+            guna_milan = None
             log.debug("guna milan compute failed for /ask matching context",
                       exc_info=True)
 
@@ -445,8 +494,17 @@ async def ask_submit(
     # same question asked from /kundli (chart-only) — and, for matching,
     # the partner fingerprint so two different partners get two different
     # answers instead of the first partner's (issue #181).
+    # A failed Guna Milan must not poison the key. `_cached` stores with
+    # ttl_days=None (never expires), so one transient compute failure would
+    # otherwise cache a matching answer with NO Ashtakoota block under the
+    # full-fidelity key, and every later identical ask would be served that
+    # degraded answer forever. Marking the degraded generation separately means
+    # the next healthy request regenerates instead of inheriting the failure.
+    _post_pair_fp = _matching_record(request)[2] if context == "matching" else None
+    if context == "matching" and guna_milan is None and _post_pair_fp:
+        _post_pair_fp = f"{_post_pair_fp}:noguna"
     cache_key = _ask_cache_key(saved, question, category, lang,
-                               context=context, partner_fp=partner_fp)
+                               context=context, pair_fp=_post_pair_fp)
     was_cached = cache.get(cache_key) is not None
     try:
         answer_text = _cached(
@@ -463,6 +521,7 @@ async def ask_submit(
                 partner_chart=partner_chart,
                 partner_label=partner_label,
                 guna_milan=guna_milan,
+                guna_pair_label=guna_pair_label,
             ),
         )
     except Exception as err:

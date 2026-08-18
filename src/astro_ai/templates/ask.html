@@ -53,6 +53,9 @@
       {% else %}
       Asking for: <strong>{{ active_chart.display_name() }}</strong>
       &middot; <a href="/" class="text-astro-600 hover:text-astro-700 underline">switch chart</a>
+      {% if current_context == 'numerology' %}
+      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-astro-50 border border-astro-200 text-astro-800 font-semibold text-[10px] uppercase tracking-wider">Numerology context</span>
+      {% endif %}
       {% endif %}
     </p>
     {% endif %}
@@ -68,7 +71,7 @@
        from cache instantly, and otherwise the textarea arrives pre-filled and
        the seeker chooses whether to spend a question. Switching never burns
        quota by itself. #}
-    {% if matching_available and matching_names %}
+    {% if matching_available and matching_names and current_context in ['chart', 'matching'] %}
     {% set _qs = ('&q=' ~ (current_question | urlencode) ~ '&c=' ~ (current_category | urlencode)) if current_question else '' %}
     <div class="mt-4 inline-flex flex-wrap items-center justify-center gap-1 p-1 rounded-xl bg-stone-100 border border-stone-200">
       <span class="px-2 text-[11px] uppercase tracking-wider text-stone-500 font-semibold">Answer using</span>

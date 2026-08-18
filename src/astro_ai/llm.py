@@ -354,7 +354,7 @@ def _format_partner_chart_for_prompt(partner_chart) -> str:
     return format_for_prompt(partner_chart)
 
 
-def format_guna_milan_for_prompt(guna) -> str:
+def format_guna_milan_for_prompt(guna, pair_label: str | None = None) -> str:
     """Render a computed GunaMilan for the /ask matching block.
 
     Why this exists: `/matching` computed a full Ashtakoota analysis, showed it
@@ -368,7 +368,14 @@ def format_guna_milan_for_prompt(guna) -> str:
     cancelled Bhakoot still scores 0, and no mitigation ever adds points. Both
     facts are stated inline so the prose cannot contradict the page.
     """
-    lines = [
+    lines = []
+    if pair_label:
+        # Name the couple inside the block. The seeker is not necessarily one
+        # of them — they may have run a match for someone else — so an unlabelled
+        # table of numbers invites the model to attribute them to whoever is
+        # asking. Stating it removes the guess.
+        lines.append(f"This is the Guna Milan for {pair_label}.")
+    lines += [
         f"Total: {guna.total_awarded:g} / {guna.total_max} — "
         f"{guna.overall_verdict_label}",
         "Koota breakdown:",
@@ -416,6 +423,7 @@ def generate_ask_answer(
     partner_chart: Chart | None = None,
     partner_label: str = "partner",
     guna_milan=None,
+    guna_pair_label: str | None = None,
     overlay_path: Path | None = None,
 ) -> str:
     """Personalised free-form Q&A grounded in the seeker's chart.
@@ -452,7 +460,7 @@ def generate_ask_answer(
         optional_blocks += (
             f"--- ASHTAKOOTA COMPATIBILITY (already computed — quote these numbers, "
             f"do NOT recompute or estimate them) ---\n"
-            f"{format_guna_milan_for_prompt(guna_milan)}\n\n"
+            f"{format_guna_milan_for_prompt(guna_milan, guna_pair_label)}\n\n"
         )
 
     user_message = (
