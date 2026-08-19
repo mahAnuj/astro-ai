@@ -188,6 +188,13 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
         # Path in the cache while /numerology renders the new one, for ~13.5%
         # of birth dates. Bump NUMEROLOGY_RULES_VERSION on any rule change.
         key = f"{key}:numrules={NUMEROLOGY_RULES_VERSION}"
+    if context == "matching" and not pair_fp:
+        # Defensive: a matching key with no pair fingerprint would also carry no
+        # `matchrules`, and so would survive a koota scoring change — the exact
+        # hazard matchrules exists to prevent. Callers should never reach here
+        # (both handlers derive context and fingerprint from the same record),
+        # so treat it as chart rather than emitting a half-formed matching key.
+        return base
     if context == "matching" and pair_fp:
         # matchrules for exactly the reason numrules exists above. The Ashtakoota
         # scoring now reaches the prompt, and `prompt_fp` fingerprints only the
@@ -232,9 +239,15 @@ def _matching_record(request):
     last = load_last_matching(request)
     if last is None:
         return None, None, None
-    g = (last.groom_name or "").strip() or "Groom"
-    b = (last.bride_name or "").strip() or "Bride"
     try:
+        # Inside the try, not above it. These were outside, so a non-string
+        # name — a list or an int from a drifted session schema — raised
+        # AttributeError on `.strip()` and 500'd a page that runs this helper
+        # on EVERY render. The sibling function fifteen lines below carries a
+        # comment about exactly this mistake ("a bad partner record must
+        # downgrade to chart-only, never 500 the seeker"); this one repeated it.
+        g = (str(last.groom_name) if last.groom_name else "").strip() or "Groom"
+        b = (str(last.bride_name) if last.bride_name else "").strip() or "Bride"
         pair_fp = "{}~{}".format(
             cache.fingerprint_chart(last.groom_birth_date, last.groom_birth_time,
                                     last.groom_birth_place),
@@ -442,67 +455,82 @@ async def ask_submit(
         except Exception:
             log.debug("numerology context load failed for /ask", exc_info=True)
 
-    # Matching context: recover the partner chart from the last-matching
-    # cookie set by POST /matching. `context` may come back downgraded to
-    # "chart" when there is no matching cookie or the partner chart will not
-    # compute; the redirect below then drops `ctx` to match.
-    partner_chart, partner_label, _unused_fp, context = _resolve_matching_partner(
-        request, saved, context
-    )
-
-    # The Guna Milan is computed from THE MATCHING RECORD — groom and bride as
-    # /matching scored them — never from the seeker's active chart.
+    # Matching context. ONE derivation: the record is the single source of
+    # truth for whether matching is on, who the couple are, and what they score.
     #
-    # It used to be built as compute_guna_milan(seeker_chart, partner_chart),
-    # which is only correct when the seeker IS one of the matched pair. QA found
-    # two ways that fails, both silent and both producing a total no page ever
-    # showed, wrapped in a prompt instruction to quote it verbatim:
+    # This block previously had three: _resolve_matching_partner decided the
+    # context, _matching_record supplied the key, and the pair was computed
+    # separately. QA found two ways they disagreed, and both ended the same way
+    # — POST writing a cache entry under a key GET could never read, so the
+    # seeker landed on their own question typed back at them with no answer, no
+    # error, and one of three daily questions gone. The worst was a "degraded"
+    # :noguna key marker that only POST knew about: a transient geocode failure
+    # then produced a PERMANENT blank loop, because every retry hit the cached
+    # blank. That is #181's failure class, and the cure for a LOW severity
+    # ("might cache a degraded answer forever") had created a HIGH one.
     #
-    #   * a third party. Active chart Priya, match Anuj x Aastha: the page
-    #     scored 13/36 for Anuj x Aastha while the block sent 20.5/36 for
-    #     Priya x Aastha, under a header naming Anuj & Aastha.
-    #   * an anonymous match. Names are OPTIONAL on /matching, so the identity
-    #     test matched on an empty string, the seeker became her own partner,
-    #     and the block scored her against herself.
-    #
-    # Deriving from the record removes the identity guess entirely: the numbers
-    # now describe the couple the page named, whoever happens to be asking.
-    # Recomputed rather than persisted (~0.016ms) because the result serialises
-    # to ~3.6KB against a ~4KB cookie budget, and a GCS stash would put a
-    # cross-continent read on a hot path (CLAUDE.md, #144).
+    # So there is no degraded matching state any more. Either the whole match
+    # resolves — both charts, the Guna Milan — or the context falls back to
+    # plain chart, which is a state GET already renders correctly and can
+    # re-derive from the cookie alone. No marker, no split keyspace, nothing
+    # for the two handlers to disagree about.
+    partner_chart = None
+    partner_label = "partner"
     guna_milan = None
     guna_pair_label = None
     if context == "matching":
+        last, guna_pair_label, _ = _matching_record(request)
         try:
-            last, guna_pair_label, _ = _matching_record(request)
-            if last is not None:
-                guna_milan = compute_guna_milan(
-                    compute_chart(last.groom_birth_date, last.groom_birth_time,
-                                  last.groom_birth_place),
-                    compute_chart(last.bride_birth_date, last.bride_birth_time,
-                                  last.bride_birth_place),
-                )
-        except Exception:
-            # Never fail an answer over the compatibility block; the two natal
-            # charts alone still make a usable matching answer.
-            guna_milan = None
-            log.debug("guna milan compute failed for /ask matching context",
-                      exc_info=True)
+            if last is None:
+                raise ValueError("no usable matching record")
+            # Computed ONCE and reused. The previous shape computed four charts
+            # per POST — the seeker's and the partner's twice over — which was
+            # cheap in CPU (~0.07ms each) but added a third live geocode, and
+            # it was precisely that extra geocode that could fail on its own
+            # and trip the degraded path above.
+            groom_chart = compute_chart(last.groom_birth_date,
+                                        last.groom_birth_time,
+                                        last.groom_birth_place)
+            bride_chart = compute_chart(last.bride_birth_date,
+                                        last.bride_birth_time,
+                                        last.bride_birth_place)
+            guna_milan = compute_guna_milan(groom_chart, bride_chart)
 
-    # Cache key includes context so the same question asked from
-    # /numerology (with numerology context) does not collide with the
-    # same question asked from /kundli (chart-only) — and, for matching,
-    # the partner fingerprint so two different partners get two different
-    # answers instead of the first partner's (issue #181).
-    # A failed Guna Milan must not poison the key. `_cached` stores with
-    # ttl_days=None (never expires), so one transient compute failure would
-    # otherwise cache a matching answer with NO Ashtakoota block under the
-    # full-fidelity key, and every later identical ask would be served that
-    # degraded answer forever. Marking the degraded generation separately means
-    # the next healthy request regenerates instead of inheriting the failure.
+            # Which of the pair the seeker is decides whose chart is labelled
+            # "partner". When they are NEITHER — they ran the match for someone
+            # else — no partner block is sent at all. Labelling one of the pair
+            # as the seeker's partner asserts a relationship that does not
+            # exist, and QA measured the effect: the model was handed Aastha
+            # under a "PARTNER'S NATAL CHART" header plus a score belonging to
+            # Anuj & Aastha, an invitation to tell Priya her compatibility is
+            # 25/36. The named Guna Milan block still carries the real couple.
+            def _is(name, dob):
+                return (saved.birth_date == dob
+                        and (saved.name or "").strip().lower()
+                            == (name or "").strip().lower())
+            if _is(last.groom_name, last.groom_birth_date):
+                partner_chart = bride_chart
+                partner_label = "partner (bride from your Kundli match)"
+            elif _is(last.bride_name, last.bride_birth_date):
+                partner_chart = groom_chart
+                partner_label = "partner (groom from your Kundli match)"
+        except Exception:
+            # Anything unresolvable — missing record, bad place, geocoder down
+            # — downgrades the whole request to chart context. The redirect
+            # below drops `ctx` to match, so the page the seeker lands on and
+            # the key it reads agree.
+            log.debug("matching context unavailable for /ask; using chart",
+                      exc_info=True)
+            context = "chart"
+            partner_chart = None
+            partner_label = "partner"
+            guna_milan = None
+            guna_pair_label = None
+
+    # For matching, the key carries an ORDERED pair fingerprint (see
+    # _ask_cache_key). `context` is only ever "matching" here when that
+    # fingerprint exists, so the key can never be a matching key without one.
     _post_pair_fp = _matching_record(request)[2] if context == "matching" else None
-    if context == "matching" and guna_milan is None and _post_pair_fp:
-        _post_pair_fp = f"{_post_pair_fp}:noguna"
     cache_key = _ask_cache_key(saved, question, category, lang,
                                context=context, pair_fp=_post_pair_fp)
     was_cached = cache.get(cache_key) is not None
