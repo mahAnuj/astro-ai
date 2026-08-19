@@ -163,7 +163,7 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
     chart_fp = cache.fingerprint_chart(
         saved.birth_date, saved.birth_time, saved.birth_place
     )
-    prompt_fp = cache.fingerprint_prompt(ASK_PROMPT_PATH)
+    prompt_fp = _base_prompt_fp = cache.fingerprint_prompt(ASK_PROMPT_PATH)
     # The overlay is part of the system prompt, so it must be part of the key.
     # Without this, editing ask_matching.txt or ask_numerology.txt would leave
     # every answer written under the old overlay sitting in the cache —
@@ -189,12 +189,15 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
         # of birth dates. Bump NUMEROLOGY_RULES_VERSION on any rule change.
         key = f"{key}:numrules={NUMEROLOGY_RULES_VERSION}"
     if context == "matching" and not pair_fp:
+        # Rebuilt from the BASE prompt fingerprint. Returning `base` here left
+        # the matching overlay's fingerprint in the key, making this a third
+        # keyspace rather than the chart key the comment promised.
         # Defensive: a matching key with no pair fingerprint would also carry no
         # `matchrules`, and so would survive a koota scoring change — the exact
         # hazard matchrules exists to prevent. Callers should never reach here
         # (both handlers derive context and fingerprint from the same record),
         # so treat it as chart rather than emitting a half-formed matching key.
-        return base
+        return f"ask:{chart_fp}:{q_fp}:{category}:{_base_prompt_fp}:{lang}"
     if context == "matching" and pair_fp:
         # matchrules for exactly the reason numrules exists above. The Ashtakoota
         # scoring now reaches the prompt, and `prompt_fp` fingerprints only the
@@ -258,66 +261,6 @@ def _matching_record(request):
         log.debug("malformed last-matching record", exc_info=True)
         return None, None, None
     return last, f"{g} & {b}", pair_fp
-
-
-def _resolve_matching_partner(request: Request, saved, context: str):
-    """Resolve the ctx=matching partner from the last-matching cookie.
-
-    Returns ``(partner_chart, partner_label, partner_fp, effective_context)``.
-
-    Shared by GET and POST /ask deliberately. Both the partner fingerprint
-    and the *effective* context (which downgrades "matching" → "chart" when
-    there is no matching cookie, or when the partner chart won't compute)
-    are part of the cache key, so if the two handlers derived them
-    independently the PRG redirect would read a key the POST never wrote and
-    the answer would stop rendering. One resolver, one answer (issue #181).
-
-    Partner identification is unchanged: if the seeker's saved chart is the
-    groom (name + DOB), the partner is the bride; if the seeker is the bride,
-    the partner is the groom; otherwise — including a curious third party —
-    the bride is the partner by default.
-    """
-    if context != "matching":
-        return None, "partner", None, context
-
-    last = load_last_matching(request)
-    if last is None:
-        # No recent matching to draw from; downgrade to chart-only.
-        return None, "partner", None, "chart"
-
-    def _same(saved_c, name: str, dob: str) -> bool:
-        return (saved_c.birth_date == dob
-                and (saved_c.name or "").strip().lower() == (name or "").strip().lower())
-
-    seeker_is_groom = _same(saved, last.groom_name, last.groom_birth_date)
-    seeker_is_bride = _same(saved, last.bride_name, last.bride_birth_date)
-    if seeker_is_groom or not seeker_is_bride:
-        # Seeker identifies with groom (or default): partner = bride
-        p_name = last.bride_name or "Bride"
-        p_dob, p_time, p_place = (last.bride_birth_date,
-                                  last.bride_birth_time,
-                                  last.bride_birth_place)
-        partner_label = "partner (bride from your Kundli match)"
-    else:
-        # Seeker identifies with bride: partner = groom
-        p_name = last.groom_name or "Groom"
-        p_dob, p_time, p_place = (last.groom_birth_date,
-                                  last.groom_birth_time,
-                                  last.groom_birth_place)
-        partner_label = "partner (groom from your Kundli match)"
-
-    # The fingerprint call belongs INSIDE this guard: it is partner-derived
-    # work too, and a malformed cookie record (a null birth_place, say) makes
-    # it raise before compute_chart is ever reached. A bad partner record must
-    # downgrade to chart-only, never 500 the seeker. Leaving it outside is
-    # exactly the regression the #181 refactor introduced.
-    try:
-        partner_fp = cache.fingerprint_chart(p_dob, p_time, p_place)
-        partner_chart = compute_chart(p_dob, p_time, p_place)
-    except Exception:
-        log.debug("partner chart compute failed for /ask matching context", exc_info=True)
-        return None, partner_label, None, "chart"
-    return partner_chart, partner_label, partner_fp, "matching"
 
 
 def _ask_lookup(saved, question: str, category: str, lang: str,
@@ -504,10 +447,34 @@ async def ask_submit(
             # under a "PARTNER'S NATAL CHART" header plus a score belonging to
             # Anuj & Aastha, an invitation to tell Priya her compatibility is
             # 25/36. The named Guna Milan block still carries the real couple.
+            # Identity is by DATE OF BIRTH first, name only as a tie-breaker.
+            #
+            # This required an exact name+DOB match until QA measured what that
+            # costs: /matching labels both name fields "(optional)", so a
+            # seeker who left them blank — or typed "Anuj M." having saved
+            # "Anuj" — matched NEITHER party and lost their partner's chart
+            # entirely, while the page they came from promised "both birth
+            # charts". origin/main handled that case correctly, so requiring
+            # the name was a regression against live.
+            #
+            # Two different birth dates identify the pair on their own, which
+            # is the overwhelmingly common case. Names are consulted ONLY when
+            # both parties share a birth date, where the DOB genuinely cannot
+            # disambiguate; if the names are missing there too, neither matches
+            # and no partner block is sent, which is the safe outcome.
+            _same_dob = last.groom_birth_date == last.bride_birth_date
+
             def _is(name, dob):
-                return (saved.birth_date == dob
-                        and (saved.name or "").strip().lower()
-                            == (name or "").strip().lower())
+                if saved.birth_date != dob:
+                    return False
+                if not _same_dob:
+                    return True
+                # str() because a drifted session schema can hand us a non-string
+                # name, and .strip() on an int raises — the same mistake this
+                # commit's predecessor fixed one function up.
+                n = (str(name) if name else "").strip().lower()
+                mine = (saved.name or "").strip().lower()
+                return bool(n) and bool(mine) and n == mine
             if _is(last.groom_name, last.groom_birth_date):
                 partner_chart = bride_chart
                 partner_label = "partner (bride from your Kundli match)"
