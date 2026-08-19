@@ -11,7 +11,7 @@
 
   <header class="text-center">
     <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-2">
-      Ask Shubh Bhagya
+      {{ t(lang, 'ask_eyebrow') }}
     </div>
     {# The heading and blurb are context-specific. A matching seeker is asking
        about TWO people and both charts are used, so "about your chart" and a
@@ -21,40 +21,36 @@
        chart-only wording rather than promising a two-chart answer. #}
     {% if current_context == 'matching' %}
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
-      Ask anything about your match
+      {{ t(lang, 'ask_head_matching') }}
     </h1>
     <p class="text-stone-600 max-w-xl mx-auto">
-      Your question gets answered using <strong>both birth charts</strong> and your
-      Guna Milan result &mdash; the koota scores, Mangal Dosh, and any doshas found.
-      Honest, specific, no generic platitudes.
+      {{ t(lang, 'ask_blurb_matching') }}
     </p>
     {% elif current_context == 'numerology' %}
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
-      Ask anything about your numbers
+      {{ t(lang, 'ask_head_numerology') }}
     </h1>
     <p class="text-stone-600 max-w-xl mx-auto">
-      Your question gets answered using your numerology reading alongside your birth
-      chart. Honest, specific, no generic platitudes.
+      {{ t(lang, 'ask_blurb_numerology') }}
     </p>
     {% else %}
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
-      Ask anything about your chart
+      {{ t(lang, 'ask_head_chart') }}
     </h1>
     <p class="text-stone-600 max-w-xl mx-auto">
-      Your question gets answered using your actual birth chart &mdash; placements,
-      current Dasha, and Vedic flags. Honest, specific, no generic platitudes.
+      {{ t(lang, 'ask_blurb_chart') }}
     </p>
     {% endif %}
     {% if active_chart %}
     <p class="text-xs text-stone-600 mt-2">
       {% if current_context == 'matching' and matching_names %}
-      Asking about: <strong>{{ matching_names }}</strong>
-      &middot; <a href="/matching" class="text-astro-600 hover:text-astro-700 underline">new match</a>
+      {{ t(lang, 'ask_asking_about') }} <strong>{{ matching_names }}</strong>
+      &middot; <a href="/matching" class="text-astro-600 hover:text-astro-700 underline">{{ t(lang, 'ask_new_match') }}</a>
       {% else %}
-      Asking for: <strong>{{ active_chart.display_name() }}</strong>
-      &middot; <a href="/" class="text-astro-600 hover:text-astro-700 underline">switch chart</a>
+      {{ t(lang, 'ask_asking_for') }} <strong>{{ active_chart.display_name() }}</strong>
+      &middot; <a href="/" class="text-astro-600 hover:text-astro-700 underline">{{ t(lang, 'ask_switch_chart') }}</a>
       {% if current_context == 'numerology' %}
-      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-astro-50 border border-astro-200 text-astro-800 font-semibold text-[10px] uppercase tracking-wider">Numerology context</span>
+      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-astro-50 border border-astro-200 text-astro-800 font-semibold text-[10px] uppercase tracking-wider">{{ t(lang, 'ask_numerology_badge') }}</span>
       {% endif %}
       {% endif %}
     </p>
@@ -74,18 +70,18 @@
     {% if matching_available and matching_names and current_context in ['chart', 'matching'] %}
     {% set _qs = ('&q=' ~ (current_question | urlencode) ~ '&c=' ~ (current_category | urlencode)) if current_question else '' %}
     <div class="mt-4 inline-flex flex-wrap items-center justify-center gap-1 p-1 rounded-xl bg-stone-100 border border-stone-200">
-      <span class="px-2 text-[11px] uppercase tracking-wider text-stone-500 font-semibold">Answer using</span>
+      <span class="px-2 text-[11px] uppercase tracking-wider text-stone-500 font-semibold">{{ t(lang, 'ask_answer_using') }}</span>
       <a href="/ask?ctx=matching{{ _qs }}"
          class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
                 {% if current_context == 'matching' %}bg-white text-astro-800 shadow-sm border border-stone-200{% else %}text-stone-600 hover:text-astro-700{% endif %}"
          {% if current_context == 'matching' %}aria-current="true"{% endif %}>
-        Both charts &mdash; {{ matching_names }}
+        {{ t(lang, 'ask_opt_both_charts') }} &mdash; {{ matching_names }}
       </a>
       <a href="/ask?ctx=chart{{ _qs }}"
          class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
                 {% if current_context != 'matching' %}bg-white text-astro-800 shadow-sm border border-stone-200{% else %}text-stone-600 hover:text-astro-700{% endif %}"
          {% if current_context != 'matching' %}aria-current="true"{% endif %}>
-        Just my chart &mdash; {{ active_chart.display_name() }}
+        {{ t(lang, 'ask_opt_my_chart') }} &mdash; {{ active_chart.display_name() }}
       </a>
     </div>
     {% endif %}
