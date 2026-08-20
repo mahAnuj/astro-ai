@@ -19,6 +19,8 @@ That string is what gets handed to the LLM as user-message context.
 
 from __future__ import annotations
 
+from typing import Final
+
 import threading
 from dataclasses import dataclass
 from datetime import date as date_, datetime, time, timedelta
