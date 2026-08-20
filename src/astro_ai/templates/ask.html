@@ -19,7 +19,18 @@
        they had just run. `current_context` here is the EFFECTIVE context, so
        if the matching cookie expired this correctly falls back to the
        chart-only wording rather than promising a two-chart answer. #}
-    {% if current_context == 'matching' %}
+    {% if current_context == 'matching' and seeker_role == 'other' %}
+    {# The seeker ran this match for other people. Only their own chart is sent,
+       plus the couple's Guna Milan — so promising "both birth charts" here is
+       simply false, and offering a "Both charts" toggle offers something that
+       is not theirs. QA OBS-2. #}
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
+      {{ t(lang, 'ask_head_matching_third') }}
+    </h1>
+    <p class="text-stone-600 max-w-xl mx-auto">
+      {{ t(lang, 'ask_blurb_matching_third') }}
+    </p>
+    {% elif current_context == 'matching' %}
     <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
       {{ t(lang, 'ask_head_matching') }}
     </h1>
@@ -44,7 +55,8 @@
     {% if active_chart %}
     <p class="text-xs text-stone-600 mt-2">
       {% if current_context == 'matching' and matching_names %}
-      {{ t(lang, 'ask_asking_about') }} <strong>{{ matching_names }}</strong>
+      {% if seeker_role == 'other' %}{{ t(lang, 'ask_asking_about_their') }}{% else %}{{ t(lang, 'ask_asking_about') }}{% endif %}
+      <strong>{{ matching_names }}</strong>
       &middot; <a href="/matching" class="text-astro-600 hover:text-astro-700 underline">{{ t(lang, 'ask_new_match') }}</a>
       {% else %}
       {{ t(lang, 'ask_asking_for') }} <strong>{{ active_chart.display_name() }}</strong>
@@ -75,7 +87,7 @@
          class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
                 {% if current_context == 'matching' %}bg-white text-astro-800 shadow-sm border border-stone-200{% else %}text-stone-600 hover:text-astro-700{% endif %}"
          {% if current_context == 'matching' %}aria-current="true"{% endif %}>
-        {{ t(lang, 'ask_opt_both_charts') }} &mdash; {{ matching_names }}
+        {% if seeker_role == 'other' %}{{ t(lang, 'ask_opt_their_match') }}{% else %}{{ t(lang, 'ask_opt_both_charts') }}{% endif %} &mdash; {{ matching_names }}
       </a>
       <a href="/ask?ctx=chart{{ _qs }}"
          class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors

@@ -229,6 +229,13 @@ _EN: Final[dict[str, str]] = {
     "ask_blurb_chart":        "Your question gets answered using your actual birth chart — placements, current Dasha, and Vedic flags. Honest, specific, no generic platitudes.",
     "ask_blurb_matching":     "Your question gets answered using both birth charts and your Guna Milan result — the koota scores, Mangal Dosh, and any doshas found. Honest, specific, no generic platitudes.",
     "ask_blurb_numerology":   "Your question gets answered using your numerology reading alongside your birth chart. Honest, specific, no generic platitudes.",
+    # Third-party shape: the seeker ran the match for two other people, so only
+    # THEIR chart is sent, plus the couple's Guna Milan. The "both birth charts"
+    # copy above is wrong here and was live for a day (QA OBS-2).
+    "ask_head_matching_third":   "Ask anything about this match",
+    "ask_blurb_matching_third":  "You're asking about someone else's match. Your question gets answered using their Guna Milan result — the koota scores, Mangal Dosh, and any doshas found. Honest, specific, no generic platitudes.",
+    "ask_asking_about_their":    "Asking about the match for:",
+    "ask_opt_their_match":       "Their match",
     "ask_asking_for":         "Asking for:",
     "ask_asking_about":       "Asking about:",
     "ask_switch_chart":       "switch chart",
@@ -642,6 +649,10 @@ _HI: Final[dict[str, str]] = {
     "ask_blurb_chart":        "आपके प्रश्न का उत्तर आपकी वास्तविक जन्म कुंडली से दिया जाता है — ग्रह स्थिति, वर्तमान दशा और वैदिक संकेत। स्पष्ट और सटीक, सामान्य बातें नहीं।",
     "ask_blurb_matching":     "आपके प्रश्न का उत्तर दोनों जन्म कुंडलियों और आपके गुण मिलान से दिया जाता है — कूट अंक, मंगल दोष, और कोई भी दोष। स्पष्ट और सटीक, सामान्य बातें नहीं।",
     "ask_blurb_numerology":   "आपके प्रश्न का उत्तर आपके अंकशास्त्र विश्लेषण और जन्म कुंडली, दोनों के आधार पर दिया जाता है। स्पष्ट और सटीक, सामान्य बातें नहीं।",
+    "ask_head_matching_third":   "इस कुंडली मिलान के बारे में कुछ भी पूछें",
+    "ask_blurb_matching_third":  "आप किसी और के मिलान के बारे में पूछ रहे हैं। आपके प्रश्न का उत्तर उनके गुण मिलान के आधार पर दिया जाता है — कूट अंक, मंगल दोष, और कोई भी दोष। स्पष्ट और सटीक, सामान्य बातें नहीं।",
+    "ask_asking_about_their":    "किसके मिलान के बारे में:",
+    "ask_opt_their_match":       "उनका मिलान",
     "ask_asking_for":         "किसके लिए:",
     "ask_asking_about":       "किसके बारे में:",
     "ask_switch_chart":       "कुंडली बदलें",

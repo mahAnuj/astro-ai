@@ -103,6 +103,12 @@ async def ask_form(request: Request, q: str | None = None,
             "current_context": effective_ctx,
             "matching_names": matching_names,
             "matching_available": matching_available,
+            # The COPY needs this too, not just the cache key. For a third-party
+            # seeker the page promised "both birth charts" while exactly one was
+            # sent, and offered a "Both charts" toggle for a match that is not
+            # theirs. QA caught it as OBS-2; it shipped live in 3ae9dc1 because
+            # the prompt became role-aware and the copy did not.
+            "seeker_role": seeker_role,
             "answer": answer,
             "remaining_today": _ask_quota_remaining(request),
         },
@@ -171,6 +177,7 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
     # Without this, editing ask_matching.txt or ask_numerology.txt would leave
     # every answer written under the old overlay sitting in the cache —
     # `prompt_fp` only fingerprints ask.txt.
+    role = role or "other"          # see _ask_overlay_path — normalise once, here
     _overlay = _ask_overlay_path(context, role)
     if _overlay is not None:
         prompt_fp = f"{prompt_fp}+{cache.fingerprint_prompt(_overlay)}"
@@ -213,7 +220,7 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
         # "you and your partner" answer to someone who is neither — the two
         # states share a chart fingerprint, since fingerprint_chart hashes birth
         # details and not the name.
-        key = f"{key}:pair={pair_fp}:role={role or 'other'}:matchrules={MATCHING_RULES_VERSION}"
+        key = f"{key}:pair={pair_fp}:role={role}:matchrules={MATCHING_RULES_VERSION}"
     return key
 
 
@@ -274,7 +281,14 @@ def _ask_overlay_path(context: str, role: str | None = None):
     and as a side effect gives the two shapes distinct prompt fingerprints, so
     a seeker who changes role cannot read the other shape's cached answer.
     """
-    if context == "matching" and role == "other":
+    # Normalised, not compared loosely. This read `role == "other"` while
+    # _ask_cache_key wrote `role or "other"`, so a None role produced a key
+    # LABELLED role=other but fingerprinted with the PARTNER overlay — a fourth,
+    # self-inconsistent keyspace. Unreachable today (_seeker_role never returns
+    # None, and both handlers pass None only for non-matching contexts), but it
+    # is a trap for the next caller, and the fix is to make the two agree by
+    # construction rather than by both remembering to be careful.
+    if context == "matching" and (role or "other") == "other":
         return ASK_OVERLAY_PATHS["matching_third_party"]
     return ASK_OVERLAY_PATHS.get(context)
 
