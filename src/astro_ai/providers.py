@@ -256,13 +256,32 @@ class ProviderConfig:
 # the `{NAME}_MODEL` env var without a code change.
 PROVIDERS: dict[str, ProviderConfig] = {
     # Groq: default model + per-model chain variants. Groq's free-tier quotas
-    # are keyed PER MODEL (not per account), so listing multiple Groq models
-    # in BHAGYA_LLM_PROVIDERS gives Nx effective daily capacity from a single
-    # GROQ_API_KEY. Recommended chain:
-    #   BHAGYA_LLM_PROVIDERS=groq120,groq20,groq_qwen,groq_l33,groq8
-    # Random-shuffle balance (default) distributes load across all five.
-    # Quality tiers (rough): 120b ≈ l33 ≥ 20b ≈ qwen > 8b for narrative depth.
-    # See https://console.groq.com/docs/models for the current model list.
+    # are keyed PER MODEL, so listing several Groq MODELS in
+    # BHAGYA_LLM_PROVIDERS multiplies effective TPM from a single GROQ_API_KEY.
+    #
+    # VERIFIED against GET /openai/v1/models on 2026-08-20, because this table
+    # had gone stale and the staleness was invisible: production was running
+    # `groq120,groq_qwen,groq_l33,groq8` and TWO of those four models no longer
+    # exist. `_chain()` only skips a provider when its API KEY is missing, so a
+    # decommissioned model stays in the chain, is counted as a provider, fails
+    # at call time, and contributes nothing. The effect was a nominally
+    # four-provider chain delivering two models' worth of quota — which is what
+    # exhausted the daily rashifal job.
+    #
+    # Groq's whole catalogue is 13 models and most are not usable here: two
+    # Whisper (speech-to-text), two Orpheus (TTS), three safety classifiers
+    # (prompt-guard at 512-token context, and gpt-oss-safeguard), and
+    # allam-2-7b (Arabic, 4k context). What remains for narrative generation is
+    # the three below plus `groq/compound` and `groq/compound-mini`, which are
+    # AGENTIC models that can invoke tool use and web search — deliberately not
+    # added, because a model that browses can import outside claims into a
+    # chart-grounded reading. Try them behind a review before trusting them.
+    #
+    # Current recommended chain — three DISTINCT live models:
+    #   BHAGYA_LLM_PROVIDERS=groq120,groq20,groq_qwen
+    # Do NOT also list "groq": it resolves to the same model as groq120 and
+    # would share one TPM bucket while looking like extra capacity.
+    # Quality tiers (rough): 120b > qwen > 20b for narrative depth.
     "groq":       ProviderConfig("groq",       "https://api.groq.com/openai/v1",
                                   "openai/gpt-oss-120b",                       "GROQ_API_KEY"),
     "groq120":    ProviderConfig("groq120",    "https://api.groq.com/openai/v1",
@@ -271,12 +290,12 @@ PROVIDERS: dict[str, ProviderConfig] = {
                                   "openai/gpt-oss-20b",                        "GROQ_API_KEY"),
     "groq_qwen":  ProviderConfig("groq_qwen",  "https://api.groq.com/openai/v1",
                                   "qwen/qwen3.6-27b",                          "GROQ_API_KEY"),
-    # Deprecates 2026-08-16 — remove from chain before then. Kept while
-    # available because it's still high-quality free capacity.
-    "groq_l33":   ProviderConfig("groq_l33",   "https://api.groq.com/openai/v1",
-                                  "llama-3.3-70b-versatile",                   "GROQ_API_KEY"),
-    "groq8":      ProviderConfig("groq8",      "https://api.groq.com/openai/v1",
-                                  "llama-3.1-8b-instant",                      "GROQ_API_KEY"),
+    # REMOVED 2026-08-20, both confirmed 404 model_not_found:
+    #   groq_l33  llama-3.3-70b-versatile  (its own comment said "remove before
+    #             2026-08-16"; the date passed and it stayed in the chain)
+    #   groq8     llama-3.1-8b-instant
+    # Left as a note rather than deleted silently, so the next person adding a
+    # Groq entry checks the live model list first instead of trusting this file.
     "cerebras": ProviderConfig("cerebras", "https://api.cerebras.ai/v1",
                                 "llama3.3-70b",                              "CEREBRAS_API_KEY"),
     "together": ProviderConfig("together", "https://api.together.xyz/v1",
