@@ -1783,13 +1783,29 @@ _DEBILITATION_SIGN: dict[str, str] = {
 
 # Combustion orbs (asta), sourced from knowledge/grahas.md §12.
 #
-# ONE definition. Before #206 the repo carried three different answers for
-# Mercury alone: this file used a flat 8 degrees for every planet, muhurat.py
-# used 12, and knowledge/grahas.md and the /learn FAQ both said 14. A flat orb
-# is not a simplification of the classical rule — it is a different rule, and a
-# narrower one, so it under-reports: measured on random charts it misses a
-# genuinely combust planet on roughly a third of them, reporting it to the LLM
+# This is the DIGNITY-BLOCK definition. It is not yet the only one, and an
+# earlier version of this comment claimed it was — wrongly, so the correction
+# is worth keeping.
+#
+# What changed: the dignity block used a flat 8 degrees for every planet and
+# now uses these. Measured on 800 random charts, that changes the block on
+# 28.4% of them, strictly additive (471 COMBUST flags -> 730, none removed) —
+# a flat orb is not a simplification of the classical rule but a narrower
+# rule, so it under-reported, describing genuinely combust planets to the LLM
 # as "neutral".
+#
+# What did NOT change, and is still separate:
+#   muhurat.py:49    Mercury 12 deg, applied with <= (three planets only)
+#   chart.py ~931    Mars combust the Sun, 6 deg — a Manglik CANCELLATION test
+#   chart.py ~1180   Budha-Aditya weakening, 6 deg
+#
+# The last two are deliberately untouched: they are distinct classical rules
+# that happen to measure Sun-proximity, not this rule at a different orb, and
+# folding them in would silently move Manglik verdicts and yoga detection.
+# muhurat.py is a genuine duplicate of THIS rule and should adopt
+# combustion_orb(), but that changes muhurat ratings, so it needs its own
+# change. Counting honestly, #206 took the repo from three Sun-proximity
+# constants to four; it fixed the one that was wrong and named the rest.
 #
 # Retrograde variants are part of the classical rule, not a refinement: an
 # inferior planet moving retrograde is on the near side of the Sun and burns at
@@ -1844,7 +1860,7 @@ def format_planet_dignity_for_prompt(chart: "Chart") -> str:
     signs so are omitted here — their dignity theory is contested), report:
     - Sign + house
     - Dignity: EXALTED / OWN SIGN / DEBILITATED / neutral
-    - Combust flag if within ~8° of Sun
+    - Combust flag per COMBUSTION_ORBS (per-planet, retrograde-aware)
 
     Debilitation dramatically reverses a planet's expression; the LLM often
     misses this in output. Explicit flag prevents "Sun in Libra is
