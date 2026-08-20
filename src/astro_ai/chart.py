@@ -1789,10 +1789,13 @@ _DEBILITATION_SIGN: dict[str, str] = {
 #
 # What changed: the dignity block used a flat 8 degrees for every planet and
 # now uses these. Measured on 800 random charts, that changes the block on
-# 28.4% of them, strictly additive (471 COMBUST flags -> 730, none removed) —
+# ~29% of them (two independent 800-chart samples: 28.4% and 29.5%),
 # a flat orb is not a simplification of the classical rule but a narrower
 # rule, so it under-reported, describing genuinely combust planets to the LLM
-# as "neutral".
+# as "neutral". The change can only ADD flags, never remove one — every orb in
+# the table is >= 8.0 (the minimum is Venus-retrograde, at exactly 8.0), so
+# sep < 8.0 implies sep < new_orb for every planet. That is structural, not a
+# property of whichever sample happened to be measured.
 #
 # What did NOT change, and is still separate:
 #   muhurat.py:49    Mercury 12 deg, applied with <= (three planets only)

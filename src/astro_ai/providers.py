@@ -530,13 +530,28 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                 return text
             except RateLimitError as err:
                 last_err = err
-                wait = _retry_after_seconds(err)
+                # Parsing is defensive: this runs inside an exception handler,
+                # so anything it raises converts a recoverable 429 into a dead
+                # chain. Headers come from the provider, not from us.
+                try:
+                    wait = _retry_after_seconds(err)
+                except Exception:  # noqa: BLE001 — a bad header is not fatal
+                    log.debug("could not parse retry hint from %s", provider.name,
+                              exc_info=True)
+                    wait = None
                 # Retry THIS provider once, and only when it named a short wait
                 # we can still afford. `retried` makes it once per provider —
                 # without it a provider that keeps returning the same hint would
                 # spin until the budget drained, turning one slow call into ten.
+                # `0 < wait` is load-bearing, not decoration. A negative
+                # Retry-After — which a proxy or a clock-skewed server can
+                # send — made time.sleep() raise ValueError straight out of
+                # chat(), so the remaining providers were never tried, and
+                # `sleep_budget -= wait` ADDED to the budget, quietly breaking
+                # the ceiling documented above. NaN fails every comparison and
+                # falls through, which is also correct.
                 if (not retried and wait is not None
-                        and wait <= RETRY_AFTER_MAX_S and wait <= sleep_budget):
+                        and 0 < wait <= RETRY_AFTER_MAX_S and wait <= sleep_budget):
                     retried = True
                     sleep_budget -= wait
                     log.warning(
