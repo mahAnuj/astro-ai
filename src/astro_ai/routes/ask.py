@@ -383,10 +383,20 @@ async def ask_submit(
     # ever being told the match had been dropped — and on the 429 path they had
     # already spent the question. Harmless while this was cosmetic; it stopped
     # being cosmetic once context started driving the heading and the prompt.
+    #
+    # `seeker_role` is here for the SAME reason, and its absence was the same
+    # bug a second time: the role-aware copy landed in the same commit that
+    # forgot to pass the role to these four re-renders, so a third-party seeker
+    # who typed too short a question — or hit the quota, having already spent
+    # three — was shown "your match … using both birth charts" over a match
+    # that is not theirs. Anything the page branches on has to be in this dict.
+    # It is string comparison only, so it costs nothing on an error path.
     _last_err, _names_err, _ = _matching_record(request)
     _err_ctx = context if (context != "matching" or _last_err is not None) else "chart"
     _err_extra = {
         "current_context": _err_ctx,
+        "seeker_role": (_seeker_role(saved, _last_err)
+                        if _err_ctx == "matching" else None),
         "matching_names": _names_err,
         "matching_available": _last_err is not None,
     }
