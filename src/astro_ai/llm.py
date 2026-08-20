@@ -700,6 +700,12 @@ def _generate_rashifal_single(
     return content.strip()
 
 
+_RASHIFAL_CONCURRENCY = 2
+"""Concurrent per-rashi LLM calls. Bounded by TOKENS per minute, not requests —
+see the note inside generate_rashifal(). Raise this only alongside more TPM
+headroom, e.g. a multi-model BHAGYA_LLM_PROVIDERS chain."""
+
+
 def generate_rashifal(
     transit: TransitSnapshot,
     today_iso: str,
@@ -730,20 +736,36 @@ def generate_rashifal(
     day_signals_block = "\n".join(f"- {s}" for s in day_signals)
     transit_block = format_transit_for_prompt(transit)
 
-    # Capped-parallelism: 4 concurrent calls, so 12 calls run as ~3 waves of 4.
-    # Rationale: 12-wide parallelism can burst-hit free-tier RPM limits on
-    # individual providers (Groq/Cerebras cap ~30 RPM). Providers.chat() has
-    # cross-provider fallback, but the fallback only fires on 429 after the
-    # first attempt — if 12 calls all pick the same fast provider from the
-    # random shuffle in the same second, that provider's per-second budget
-    # is toast before fallback can help. 4-wide keeps peak RPS under any
-    # free-tier limit while still being ~3× faster than sequential.
+    # Capped-parallelism. The cap is set by TOKENS per minute, not requests.
     #
-    # Wall-clock: single call ~8-12s → 3 waves ~24-36s cold-cache. Warm-cache
-    # (99% of daily requests) skips this entirely via _shared_three_tier.
+    # It used to be 4, chosen against the wrong limit. The old rationale here
+    # reasoned about REQUESTS per minute ("Groq/Cerebras cap ~30 RPM"), and
+    # 4-wide is indeed safe for 30 RPM. But the binding constraint on this
+    # route is TPM: Groq's free tier allows 8,000 tokens per minute per model,
+    # and one rashifal call requests ~3,587. That is ~2.2 calls per minute of
+    # budget — so 4 concurrent calls are ~14,300 tokens in a burst, over the
+    # ceiling before the first one returns.
+    #
+    # Observed in production as AllProvidersExhausted on the daily send, with
+    # Groq replying "Limit 8000, Used 5009, Requested 3587 ... try again in
+    # 4.47s". The whole job is 12 x ~3,587 = ~43,000 tokens, i.e. five minutes
+    # of budget spent in about thirty seconds.
+    #
+    # Two changes fix that together, and neither is sufficient alone:
+    #   * this cap, now 2, matching the ~2.2 calls/min the budget allows;
+    #   * providers.chat() honouring the "try again in Ns" hint instead of
+    #     falling through the chain and giving up (see RETRY_AFTER_MAX_S).
+    # The real headroom, though, is configuration: Groq quotas are keyed PER
+    # MODEL, so listing the five Groq models in BHAGYA_LLM_PROVIDERS gives
+    # 5 x 8,000 TPM from one key. See the PROVIDERS table in providers.py.
+    #
+    # Wall-clock: single call ~8-12s → 6 waves ~50-70s cold-cache, up from
+    # ~24-36s. Acceptable: this runs in the nightly job, and warm-cache (99%
+    # of daily requests) skips it entirely via _shared_three_tier. A slower
+    # job that completes beats a faster one that raises.
     results: dict[int, str] = {}
     errors: dict[int, Exception] = {}
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=_RASHIFAL_CONCURRENCY) as pool:
         future_to_idx = {
             pool.submit(
                 _generate_rashifal_single,
