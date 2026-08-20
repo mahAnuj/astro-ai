@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import logging
 import re
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
@@ -666,12 +667,21 @@ def _generate_rashifal_single(
     transit_block: str,
     prompt_path: Path,
     lang: str,
+    pacer: "_StartPacer | None" = None,
 ) -> str:
     """Generate a single rashi's daily reading — one LLM call, ~200 tokens output.
 
     Called 12× in parallel by generate_rashifal(). Each call is independent so
     the model can't lazily reuse phrasing across element-groups.
+
+    `pacer` throttles the START of the call, not the call itself. It is None
+    for the on-demand single-rashi path (`generate_rashifal_for_rashi`), where
+    a user is waiting on one call and there is no burst to spread.
     """
+    if pacer is not None:
+        waited = pacer.wait()
+        if waited > 0:
+            _log.debug("rashifal pacer: waited %.1fs before %s", waited, anchor["en"])
     user_message = (
         f"RASHI TO WRITE FOR:\n"
         f"- Name: {anchor['en']} / {anchor['sa']}\n"
@@ -700,10 +710,62 @@ def _generate_rashifal_single(
     return content.strip()
 
 
+class _StartPacer:
+    """Enforces a minimum gap between LLM call STARTS, across threads.
+
+    Concurrency caps how many calls are in flight; this caps how fast they
+    begin. Those are different controls and a token-per-minute limit needs the
+    second one: two concurrent calls that each take 10s already respect a
+    2-wide cap while starting 12 calls in 60s, which is far too fast for an
+    8,000 TPM budget at ~3,587 tokens a call.
+
+    Reserves its slot under the lock and sleeps OUTSIDE it, so N waiting
+    threads queue up at N distinct times instead of all waking together — a
+    sleep inside the lock would serialise the whole pool behind one waiter.
+    Uses time.monotonic() so an NTP step cannot make a thread sleep for hours.
+    """
+
+    def __init__(self, min_interval_s: float) -> None:
+        self._interval = max(0.0, min_interval_s)
+        self._lock = threading.Lock()
+        self._next_at = 0.0
+
+    def wait(self) -> float:
+        """Block until this caller's slot. Returns the seconds actually slept."""
+        if self._interval <= 0:
+            return 0.0
+        with self._lock:
+            now = time.monotonic()
+            due = max(now, self._next_at)
+            self._next_at = due + self._interval
+        delay = due - time.monotonic()
+        if delay > 0:
+            time.sleep(delay)
+            return delay
+        return 0.0
+
+
 _RASHIFAL_CONCURRENCY = 2
-"""Concurrent per-rashi LLM calls. Bounded by TOKENS per minute, not requests —
-see the note inside generate_rashifal(). Raise this only alongside more TPM
-headroom, e.g. a multi-model BHAGYA_LLM_PROVIDERS chain."""
+"""Concurrent per-rashi LLM calls — how many may be IN FLIGHT at once."""
+
+_RASHIFAL_MIN_INTERVAL_S = 10.0
+"""Minimum seconds between per-rashi call STARTS. The other half of the TPM
+budget, and the half concurrency cannot express.
+
+The arithmetic, so the next person can re-derive it rather than trust it:
+one rashifal call reserves ~3,587 tokens, so the 12-rashi job costs ~43,000.
+Production runs four DISTINCT Groq models and Groq keys its free-tier quota per
+model, so the ceiling is 4 x 8,000 = 32,000 tokens per minute. The job therefore
+cannot complete in under 43,000/32,000 = ~81 seconds no matter how it is
+scheduled. At 10s between starts it spans ~120s, which clears that with margin.
+
+What this does NOT cover: the provider order is randomly shuffled per call, so
+an unlucky run can land several calls on the same model and exceed that model's
+individual 8,000. That case is caught by the retry-hint backoff in
+providers.chat() — the two mechanisms are complementary, and removing either
+re-opens the failure.
+
+Set to 0.0 to disable (tests, or a paid tier with real headroom)."""
 
 
 def generate_rashifal(
@@ -751,22 +813,13 @@ def generate_rashifal(
     # 4.47s". The whole job is 12 x ~3,587 = ~43,000 tokens, i.e. five minutes
     # of budget spent in about thirty seconds.
     #
-    # THE FIX IS THE MULTI-MODEL CHAIN. The two code changes help; neither is
-    # sufficient, and QA measured that an earlier version of this comment
-    # overstated them. Simulating Groq's budget (continuous refill, 3,587
-    # tokens/call, 12 calls) against a SINGLE-model chain, the job fails at
-    # concurrency 4 and still fails at concurrency 2 — because once the bucket
-    # is drained a full call's deficit is ~27s, well past RETRY_AFTER_MAX_S, so
-    # the retry never fires. Across five Groq models it completes either way.
-    #
-    # So, honestly ordered:
-    #   1. configuration — Groq quotas are keyed PER MODEL, so listing the
-    #      distinct Groq models in BHAGYA_LLM_PROVIDERS multiplies TPM from one
-    #      key. This is what actually makes the job survivable.
-    #   2. this cap, which spreads the burst instead of front-loading it;
-    #   3. providers.chat() honouring short "try again in Ns" hints, which
-    #      catches the first crossing of the ceiling rather than the sustained
-    #      overage.
+    # Two changes fix that together, and neither is sufficient alone:
+    #   * this cap, now 2, matching the ~2.2 calls/min the budget allows;
+    #   * providers.chat() honouring the "try again in Ns" hint instead of
+    #     falling through the chain and giving up (see RETRY_AFTER_MAX_S).
+    # The real headroom, though, is configuration: Groq quotas are keyed PER
+    # MODEL, so listing the five Groq models in BHAGYA_LLM_PROVIDERS gives
+    # 5 x 8,000 TPM from one key. See the PROVIDERS table in providers.py.
     #
     # Wall-clock: single call ~8-12s → 6 waves ~50-70s cold-cache, up from
     # ~24-36s. Acceptable: this runs in the nightly job, and warm-cache (99%
@@ -774,11 +827,13 @@ def generate_rashifal(
     # job that completes beats a faster one that raises.
     results: dict[int, str] = {}
     errors: dict[int, Exception] = {}
+    pacer = _StartPacer(_RASHIFAL_MIN_INTERVAL_S)
     with ThreadPoolExecutor(max_workers=_RASHIFAL_CONCURRENCY) as pool:
         future_to_idx = {
             pool.submit(
                 _generate_rashifal_single,
                 anchor, day_signals_block, transit_block, prompt_path, lang,
+                pacer,
             ): idx
             for idx, anchor in enumerate(_RASHI_ANCHORS)
         }
