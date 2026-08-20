@@ -45,6 +45,7 @@ import logging
 import os
 import random
 import re
+import time
 from contextvars import ContextVar
 from dataclasses import dataclass
 
@@ -369,6 +370,54 @@ def _ordered_for_request() -> list[ProviderConfig]:
     return shuffled
 
 
+# --- 429 back-off -----------------------------------------------------------
+#
+# Providers tell us how long to wait and we ignored it. Groq's 429 body carries
+# the wait in prose — "Please try again in 4.47s" — and standard HTTP carries it
+# in `Retry-After`. On a tokens-per-minute limit that wait is usually a few
+# seconds, because TPM refills continuously.
+#
+# The rashifal job is what exposed this: 12 per-rashi calls at ~3,587 tokens
+# each is ~43,000 tokens against an 8,000 TPM ceiling, so the chain exhausted
+# and the caller saw AllProvidersExhausted for a limit that cleared 4.5 seconds
+# later.
+#
+# Deliberately conservative — chat() runs on web request threads as well as in
+# the nightly job, so an unbounded sleep turns a rate limit into a timeout:
+#
+#   RETRY_AFTER_MAX_S     ignore a hint longer than this and fall through
+#                         immediately; the next provider beats waiting.
+#   RETRY_AFTER_BUDGET_S  total seconds any ONE chat() may sleep across the
+#                         whole chain, so slow providers cannot compound.
+RETRY_AFTER_MAX_S = 6.0
+RETRY_AFTER_BUDGET_S = 10.0
+
+_RETRY_PROSE = re.compile(r"try again in\s+([0-9]*\.?[0-9]+)\s*(ms|s\b|seconds?)", re.I)
+
+
+def _retry_after_seconds(err: Exception) -> float | None:
+    """Seconds the provider asked us to wait, or None if it did not say.
+
+    Standard `Retry-After` header first, then the prose in the error body —
+    Groq puts the number only in the message. Returns None rather than 0.0 when
+    absent, so a caller cannot read "no hint" as "retry immediately".
+    """
+    resp = getattr(err, "response", None)
+    hdrs = getattr(resp, "headers", None)
+    if hdrs:
+        raw = hdrs.get("retry-after") or hdrs.get("Retry-After")
+        if raw:
+            try:
+                return float(raw)
+            except (TypeError, ValueError):
+                pass  # HTTP-date form; the prose fallback usually carries it too
+    m = _RETRY_PROSE.search(str(err))
+    if not m:
+        return None
+    value = float(m.group(1))
+    return value / 1000.0 if m.group(2).lower() == "ms" else value
+
+
 def chat(messages: list[dict], *, route: str = "") -> str:
     """Send `messages` through the configured provider chain.
 
@@ -393,92 +442,125 @@ def chat(messages: list[dict], *, route: str = "") -> str:
         )
 
     last_err: Exception | None = None
+    sleep_budget = RETRY_AFTER_BUDGET_S
     for provider in order:
-        try:
-            raw_text = _call_one(provider, messages)
-            # Sanitize reasoning-model leakage BEFORE the quality gate so
-            # the heading-count check operates on the visible answer, not
-            # on the model's `<think>` scratchpad. Also prevents any
-            # downstream cache from storing the leaked chain-of-thought.
-            text = strip_reasoning_envelope(raw_text)
-            leaked_reasoning = (raw_text.strip() != text)
-            if leaked_reasoning:
-                log.warning(
-                    "provider %s (%s) leaked reasoning envelope for route=%s (raw=%d, cleaned=%d) — stripped",
-                    provider.name, provider.model(), route, len(raw_text), len(text),
-                )
-            # Quality gate — some models return 200 OK but semantically
-            # broken output (no headings, refusals, truncation). Fall
-            # through to the next model rather than caching garbage.
-            ok, reason = passes_quality(text, route)
-            if not ok:
-                log.warning(
-                    "provider %s returned bad output for route=%s (%s) — trying next",
-                    provider.name, route, reason,
-                )
-                last_err = RuntimeError(f"quality-fail: {provider.name} for {route}: {reason}")
-                continue
-            # Track which (provider, model) served this request. Downstream
-            # code (notify.kundli_generated etc.) reads via last_used_model().
-            _last_provider.set(provider.name)
-            _last_model.set(provider.model())
-            # Structured log line — Cloud Logging indexes JSON fields so you
-            # can filter/graph by provider+model in Log Explorer without any
-            # extra storage or dashboard code. Example query:
-            #   jsonPayload.event="llm_call" AND jsonPayload.provider="groq120"
-            log.info(
-                "llm_call",
-                extra={"json_fields": {
-                    "event": "llm_call",
-                    "provider": provider.name,
-                    "model": provider.model(),
-                    "route": route,
-                    "fallback_from": last_err is not None,
-                    "chars_out": len(text),
-                    "leaked_reasoning": leaked_reasoning,
-                }},
-            )
-            # Persistent per-day counter for /admin/usage. Best-effort;
-            # never propagates errors. Circular-import-safe via lazy import.
+        # ONE retry of THIS provider when it tells us how long to wait, before
+        # falling through. See _retry_after_seconds: a TPM limit clears in
+        # seconds, so advancing to the next provider throws away a request
+        # that a short sleep would have completed — and when the chain runs
+        # out the caller sees AllProvidersExhausted for a limit that had
+        # already cleared. Bounded by RETRY_AFTER_MAX_S per hint and
+        # RETRY_AFTER_BUDGET_S across the whole chain, because chat() runs on
+        # web request threads as well as in the nightly rashifal job.
+        retried = False
+        while True:
             try:
-                from astro_ai import llm_stats
-                llm_stats.record(
-                    provider=provider.name,
-                    model=provider.model(),
-                    route=route,
-                    fallback=(last_err is not None),
+                raw_text = _call_one(provider, messages)
+                # Sanitize reasoning-model leakage BEFORE the quality gate so
+                # the heading-count check operates on the visible answer, not
+                # on the model's `<think>` scratchpad. Also prevents any
+                # downstream cache from storing the leaked chain-of-thought.
+                text = strip_reasoning_envelope(raw_text)
+                leaked_reasoning = (raw_text.strip() != text)
+                if leaked_reasoning:
+                    log.warning(
+                        "provider %s (%s) leaked reasoning envelope for route=%s (raw=%d, cleaned=%d) — stripped",
+                        provider.name, provider.model(), route, len(raw_text), len(text),
+                    )
+                # Quality gate — some models return 200 OK but semantically
+                # broken output (no headings, refusals, truncation). Fall
+                # through to the next model rather than caching garbage.
+                ok, reason = passes_quality(text, route)
+                if not ok:
+                    log.warning(
+                        "provider %s returned bad output for route=%s (%s) — trying next",
+                        provider.name, route, reason,
+                    )
+                    last_err = RuntimeError(f"quality-fail: {provider.name} for {route}: {reason}")
+                    break
+                # Track which (provider, model) served this request. Downstream
+                # code (notify.kundli_generated etc.) reads via last_used_model().
+                _last_provider.set(provider.name)
+                _last_model.set(provider.model())
+                # Structured log line — Cloud Logging indexes JSON fields so you
+                # can filter/graph by provider+model in Log Explorer without any
+                # extra storage or dashboard code. Example query:
+                #   jsonPayload.event="llm_call" AND jsonPayload.provider="groq120"
+                log.info(
+                    "llm_call",
+                    extra={"json_fields": {
+                        "event": "llm_call",
+                        "provider": provider.name,
+                        "model": provider.model(),
+                        "route": route,
+                        "fallback_from": last_err is not None,
+                        "chars_out": len(text),
+                        "leaked_reasoning": leaked_reasoning,
+                    }},
                 )
-            except Exception:  # noqa: BLE001 — stats never break the reading
-                log.debug("llm_stats.record failed", exc_info=True)
-            # Editorial review log (opt-in via BHAGYA_LLM_REVIEW=1). Off in
-            # prod; on locally when eyeballing outputs. Best-effort — the
-            # module swallows all errors internally.
-            try:
-                from astro_ai import llm_review
-                llm_review.record(
-                    route=route,
-                    provider=provider.name,
-                    model=provider.model(),
-                    text=text,
-                    chars_raw=len(raw_text),
-                    leaked_reasoning=leaked_reasoning,
+                # Persistent per-day counter for /admin/usage. Best-effort;
+                # never propagates errors. Circular-import-safe via lazy import.
+                try:
+                    from astro_ai import llm_stats
+                    llm_stats.record(
+                        provider=provider.name,
+                        model=provider.model(),
+                        route=route,
+                        fallback=(last_err is not None),
+                    )
+                except Exception:  # noqa: BLE001 — stats never break the reading
+                    log.debug("llm_stats.record failed", exc_info=True)
+                # Editorial review log (opt-in via BHAGYA_LLM_REVIEW=1). Off in
+                # prod; on locally when eyeballing outputs. Best-effort — the
+                # module swallows all errors internally.
+                try:
+                    from astro_ai import llm_review
+                    llm_review.record(
+                        route=route,
+                        provider=provider.name,
+                        model=provider.model(),
+                        text=text,
+                        chars_raw=len(raw_text),
+                        leaked_reasoning=leaked_reasoning,
+                    )
+                except Exception:  # noqa: BLE001 — review log never breaks the call
+                    log.debug("llm_review.record failed", exc_info=True)
+                if last_err is not None:
+                    log.info("provider %s succeeded after upstream failures", provider.name)
+                return text
+            except RateLimitError as err:
+                last_err = err
+                wait = _retry_after_seconds(err)
+                # Retry THIS provider once, and only when it named a short wait
+                # we can still afford. `retried` makes it once per provider —
+                # without it a provider that keeps returning the same hint would
+                # spin until the budget drained, turning one slow call into ten.
+                if (not retried and wait is not None
+                        and wait <= RETRY_AFTER_MAX_S and wait <= sleep_budget):
+                    retried = True
+                    sleep_budget -= wait
+                    log.warning(
+                        "provider %s rate-limited (route=%s) — it asked for %.2fs; "
+                        "waiting and retrying it once (%.1fs of budget left)",
+                        provider.name, route, wait, sleep_budget,
+                    )
+                    time.sleep(wait)
+                    continue
+                log.warning(
+                    "provider %s rate-limited (%s) — trying next in chain%s",
+                    provider.name, err,
+                    "" if wait is None else f" (asked for {wait:.2f}s, not waiting)",
                 )
-            except Exception:  # noqa: BLE001 — review log never breaks the call
-                log.debug("llm_review.record failed", exc_info=True)
-            if last_err is not None:
-                log.info("provider %s succeeded after upstream failures", provider.name)
-            return text
-        except RateLimitError as err:
-            log.warning("provider %s rate-limited (%s) — trying next in chain", provider.name, err)
-            last_err = err
-        except (APIError, APIConnectionError, APITimeoutError) as err:
-            log.warning("provider %s API error (%s) — trying next in chain", provider.name, err)
-            last_err = err
-        except Exception as err:
-            # Defensive: don't let one provider's weird error kill the whole request.
-            log.warning("provider %s unexpected error (%s) — trying next in chain", provider.name, err)
-            last_err = err
-
+                break
+            except (APIError, APIConnectionError, APITimeoutError) as err:
+                log.warning("provider %s API error (%s) — trying next in chain", provider.name, err)
+                last_err = err
+                break
+            except Exception as err:
+                # Defensive: don't let one provider's weird error kill the whole request.
+                log.warning("provider %s unexpected error (%s) — trying next in chain", provider.name, err)
+                last_err = err
+                break
     raise AllProvidersExhausted(
         f"All {len(order)} provider(s) in chain failed. Last error: {last_err!r}"
     )
