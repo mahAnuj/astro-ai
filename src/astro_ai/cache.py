@@ -119,7 +119,15 @@ def fingerprint_chart(birth_date: str, birth_time: str, birth_place: str) -> str
 # assembled user message without touching a prompt file, and natal/matching
 # entries are written with `ttl_days=None`, so without a bump the corrected
 # prompt text would have kept serving the old, wrong readings forever.
-PROMPT_LOGIC_VERSION = "v1"
+# v2 (#206): combustion moved from a flat 8-degree orb to the per-planet orbs
+# in knowledge/grahas.md §12, which changes what
+# `chart.format_planet_dignity_for_prompt` emits on ~29% of charts — planets
+# previously described to the model as "neutral" are now flagged COMBUST.
+# That is message-assembly logic, invisible to `fingerprint_prompt`'s file
+# hash, so without this bump every cached natal reading would keep describing
+# a combust planet as neutral for as long as it lived. This is the lever the
+# docstring below exists for.
+PROMPT_LOGIC_VERSION = "v2"
 
 
 def fingerprint_prompt(prompt_path: Path) -> str:
