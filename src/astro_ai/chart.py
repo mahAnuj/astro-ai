@@ -1779,6 +1779,62 @@ _DEBILITATION_SIGN: dict[str, str] = {
 }
 
 
+# Combustion orbs (asta), sourced from knowledge/grahas.md §12.
+#
+# ONE definition. Before #206 the repo carried three different answers for
+# Mercury alone: this file used a flat 8 degrees for every planet, muhurat.py
+# used 12, and knowledge/grahas.md and the /learn FAQ both said 14. A flat orb
+# is not a simplification of the classical rule — it is a different rule, and a
+# narrower one, so it under-reports: measured on random charts it misses a
+# genuinely combust planet on roughly a third of them, reporting it to the LLM
+# as "neutral".
+#
+# Retrograde variants are part of the classical rule, not a refinement: an
+# inferior planet moving retrograde is on the near side of the Sun and burns at
+# a tighter orb. `PlanetPosition.retrograde` already carries what is needed.
+#
+# Rahu and Ketu are absent deliberately — they are shadow points, not bodies,
+# and cannot be burned by the Sun. Sun is absent because it cannot combust
+# itself.
+COMBUSTION_ORBS: Final[dict[str, tuple[float, float]]] = {
+    # planet:   (direct orb, retrograde orb)  — degrees from the Sun
+    "Moon":     (12.0, 12.0),
+    "Mars":     (17.0, 17.0),
+    "Mercury":  (14.0, 10.0),
+    "Jupiter":  (11.0, 11.0),
+    "Venus":    (10.0,  8.0),
+    "Saturn":   (15.0, 15.0),
+}
+
+
+def combustion_orb(planet_name: str, retrograde: bool) -> float | None:
+    """Orb in degrees within which `planet_name` is combust, or None.
+
+    None means the planet has no combustion rule — the Sun itself, and the
+    nodes. Callers must treat None as "not applicable", never as zero.
+    """
+    orbs = COMBUSTION_ORBS.get(planet_name)
+    if orbs is None:
+        return None
+    return orbs[1] if retrograde else orbs[0]
+
+
+def is_combust(planet, sun) -> tuple[bool, float]:
+    """(combust?, separation in degrees) for `planet` against `sun`.
+
+    Separation is the true angular distance, wrapping at 180 — a planet 359
+    degrees "ahead" of the Sun is one degree away, not 359.
+    """
+    orb = combustion_orb(planet.name, planet.retrograde)
+    sun_abs = _rashi_index(sun.rashi) * 30.0 + sun.longitude
+    p_abs = _rashi_index(planet.rashi) * 30.0 + planet.longitude
+    sep = abs(p_abs - sun_abs) % 360.0
+    sep = min(sep, 360.0 - sep)
+    if orb is None:
+        return False, sep
+    return sep < orb, sep
+
+
 def format_planet_dignity_for_prompt(chart: "Chart") -> str:
     """Planet dignity report (Issue #61).
 
@@ -1807,12 +1863,11 @@ def format_planet_dignity_for_prompt(chart: "Chart") -> str:
             dignities.append("EXALTED")
         if _DEBILITATION_SIGN.get(p.name) == english_rashi:
             dignities.append("DEBILITATED")
-        # Combust check: within ~8° of Sun (skip for Sun itself)
+        # Combust check — per-planet orbs from knowledge/grahas.md §12, with
+        # the classical retrograde variants. See COMBUSTION_ORBS (#206).
         if sun is not None and p.name != "Sun":
-            sun_abs = _rashi_index(sun.rashi) * 30.0 + sun.longitude
-            p_abs = _rashi_index(p.rashi) * 30.0 + p.longitude
-            sep = min(abs(p_abs - sun_abs), 360 - abs(p_abs - sun_abs))
-            if sep < 8.0:
+            combust, sep = is_combust(p, sun)
+            if combust:
                 dignities.append(f"COMBUST ({sep:.1f}° from Sun)")
         tag = " — ".join(dignities) if dignities else "neutral"
         lines.append(f"  {p.name} in {p.rashi} (house {p.house}) — {tag}")
