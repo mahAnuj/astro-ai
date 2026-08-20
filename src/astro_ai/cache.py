@@ -121,7 +121,7 @@ def fingerprint_chart(birth_date: str, birth_time: str, birth_place: str) -> str
 # prompt text would have kept serving the old, wrong readings forever.
 # v2 (#206): combustion moved from a flat 8-degree orb to the per-planet orbs
 # in knowledge/grahas.md §12, which changes what
-# `chart.format_planet_dignity_for_prompt` emits on 28.4% of charts — planets
+# `chart.format_planet_dignity_for_prompt` emits on ~29% of charts — planets
 # previously described to the model as "neutral" are now flagged COMBUST.
 # That is message-assembly logic, invisible to `fingerprint_prompt`'s file
 # hash, so without this bump every cached natal reading would keep describing

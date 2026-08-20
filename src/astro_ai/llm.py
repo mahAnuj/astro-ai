@@ -751,13 +751,22 @@ def generate_rashifal(
     # 4.47s". The whole job is 12 x ~3,587 = ~43,000 tokens, i.e. five minutes
     # of budget spent in about thirty seconds.
     #
-    # Two changes fix that together, and neither is sufficient alone:
-    #   * this cap, now 2, matching the ~2.2 calls/min the budget allows;
-    #   * providers.chat() honouring the "try again in Ns" hint instead of
-    #     falling through the chain and giving up (see RETRY_AFTER_MAX_S).
-    # The real headroom, though, is configuration: Groq quotas are keyed PER
-    # MODEL, so listing the five Groq models in BHAGYA_LLM_PROVIDERS gives
-    # 5 x 8,000 TPM from one key. See the PROVIDERS table in providers.py.
+    # THE FIX IS THE MULTI-MODEL CHAIN. The two code changes help; neither is
+    # sufficient, and QA measured that an earlier version of this comment
+    # overstated them. Simulating Groq's budget (continuous refill, 3,587
+    # tokens/call, 12 calls) against a SINGLE-model chain, the job fails at
+    # concurrency 4 and still fails at concurrency 2 — because once the bucket
+    # is drained a full call's deficit is ~27s, well past RETRY_AFTER_MAX_S, so
+    # the retry never fires. Across five Groq models it completes either way.
+    #
+    # So, honestly ordered:
+    #   1. configuration — Groq quotas are keyed PER MODEL, so listing the
+    #      distinct Groq models in BHAGYA_LLM_PROVIDERS multiplies TPM from one
+    #      key. This is what actually makes the job survivable.
+    #   2. this cap, which spreads the burst instead of front-loading it;
+    #   3. providers.chat() honouring short "try again in Ns" hints, which
+    #      catches the first crossing of the ceiling rather than the sustained
+    #      overage.
     #
     # Wall-clock: single call ~8-12s → 6 waves ~50-70s cold-cache, up from
     # ~24-36s. Acceptable: this runs in the nightly job, and warm-cache (99%
