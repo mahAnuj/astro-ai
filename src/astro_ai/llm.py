@@ -519,29 +519,29 @@ def generate_dasha_deep_dive(
 # body-image, Taurus with a sensory image, Gemini with a question, etc.
 _RASHI_ANCHORS: tuple[dict[str, str], ...] = (
     {"en": "Aries",       "sa": "Mesha",       "lord": "Mars",    "element": "Fire",  "quality": "Movable",
-     "opening_style": "Open with an active body image (a stance, a stride, a raised hand). Aries moves first — the sentence should move."},
+     "opening_style": "This sign's day usually turns on MOMENTUM — what they start, push, or lose patience with. Lead the glance line with that."},
     {"en": "Taurus",      "sa": "Vrishabha",   "lord": "Venus",   "element": "Earth", "quality": "Fixed",
-     "opening_style": "Open with a sensory image — a smell, a texture, a taste, a piece of music. Taurus lives in the body's five senses."},
+     "opening_style": "This sign's day usually turns on COMFORT AND MONEY — spending, saving, food, rest, pace. Lead the glance line with that."},
     {"en": "Gemini",      "sa": "Mithuna",     "lord": "Mercury", "element": "Air",   "quality": "Dual",
-     "opening_style": "Open with a question the reader is likely turning over today. Gemini thinks in questions."},
+     "opening_style": "This sign's day usually turns on CONVERSATIONS AND CHOICES — messages, options, information they are sorting. Lead with that."},
     {"en": "Cancer",      "sa": "Karka",       "lord": "Moon",    "element": "Water", "quality": "Movable",
-     "opening_style": "Open with a memory or a small home-image — a room, a person from earlier life, a familiar object. Cancer holds the past."},
+     "opening_style": "This sign's day usually turns on HOME AND FAMILY — who needs them, what the mood at home is. Lead the glance line with that."},
     {"en": "Leo",         "sa": "Simha",       "lord": "Sun",     "element": "Fire",  "quality": "Fixed",
-     "opening_style": "Open with a scene where the reader is being seen — a stage moment, a small audience, a photo, a compliment. Leo wants presence."},
+     "opening_style": "This sign's day usually turns on RECOGNITION — being seen, credit, pride, how they carry themselves. Lead with that."},
     {"en": "Virgo",       "sa": "Kanya",       "lord": "Mercury", "element": "Earth", "quality": "Dual",
-     "opening_style": "Open with a specific small thing that needs attention — a list item, an unfinished detail, a numbered step. Virgo notices."},
+     "opening_style": "This sign's day usually turns on DETAIL AND HEALTH — what needs sorting, fixing, or looking after. Lead with that."},
     {"en": "Libra",       "sa": "Tula",        "lord": "Venus",   "element": "Air",   "quality": "Movable",
-     "opening_style": "Open with a scene of two people — a conversation, a choice between options, a room where balance is required."},
+     "opening_style": "This sign's day usually turns on RELATIONSHIPS AND FAIRNESS — a person to balance, a decision between two goods. Lead with that."},
     {"en": "Scorpio",     "sa": "Vrishchika",  "lord": "Mars",    "element": "Water", "quality": "Fixed",
-     "opening_style": "Open with something hidden the reader knows but hasn't named — a suspicion, a private feeling, an undercurrent."},
+     "opening_style": "This sign's day usually turns on WHAT IS UNSAID — trust, privacy, something held back. Lead with that, plainly and without drama."},
     {"en": "Sagittarius", "sa": "Dhanu",       "lord": "Jupiter", "element": "Fire",  "quality": "Dual",
-     "opening_style": "Open with a horizon image — a road, a book, a travel plan, a distant idea calling for movement or study."},
+     "opening_style": "This sign's day usually turns on PLANS AND LEARNING — travel, study, belief, something opening up. Lead with that."},
     {"en": "Capricorn",   "sa": "Makara",      "lord": "Saturn",  "element": "Earth", "quality": "Movable",
-     "opening_style": "Open with a structure or a milestone — a schedule, a ladder, a target date, something being built. Capricorn thinks in stages."},
+     "opening_style": "This sign's day usually turns on WORK AND RESPONSIBILITY — what they are building, what they carry. Lead with that."},
     {"en": "Aquarius",    "sa": "Kumbha",      "lord": "Saturn",  "element": "Air",   "quality": "Fixed",
-     "opening_style": "Open with a group or a wider circle — a community, a cause, a shared interest, an outsider's angle on a familiar situation."},
+     "opening_style": "This sign's day usually turns on PEOPLE AND IDEAS — friends, groups, causes, being the different one. Lead with that."},
     {"en": "Pisces",      "sa": "Meena",       "lord": "Jupiter", "element": "Water", "quality": "Dual",
-     "opening_style": "Open with a dream, an intuition, a piece of music, a boundary that is dissolving. Pisces feels before it thinks."},
+     "opening_style": "This sign's day usually turns on FEELING AND REST — intuition, tiredness, boundaries, absorbing others' moods. Lead with that."},
 )
 
 
@@ -602,6 +602,38 @@ def _build_rashifal_day_signals(
         fname = festival.get(f"name_{lang}") or festival.get("name_en", "festival")
         fnote = festival.get(f"note_{lang}") or festival.get("note_en", "")
         signals.append(f"Today is {fname} — {fnote} Weave this in if it fits.")
+
+    # Real clock windows, so the reading does not have to invent them.
+    #
+    # Both are already computed on the panchang this function receives and were
+    # simply never forwarded — while the prompt instructed the model to "name a
+    # specific part of the day when signing is best" and to close with a time
+    # window. It could only do that by making a time up. An invented "after
+    # 4 pm" traces to nothing, which is exactly what this repo's sourcing rule
+    # exists to prevent.
+    #
+    # LOCATION IS STATED, NOT HIDDEN. The rashifal is one generic national
+    # reading and its panchang is computed for Mumbai (routes/subscribe.py
+    # builds a neutral Mumbai chart). Rahu Kaal shifts by tens of minutes
+    # across India, so these are handed over as an IST reference to be given
+    # approximately — never as an exact time for whoever is reading.
+    if panchang is not None:
+        rk_s = getattr(panchang, "rahu_kaal_start", None)
+        rk_e = getattr(panchang, "rahu_kaal_end", None)
+        ab_s = getattr(panchang, "abhijit_start", None)
+        ab_e = getattr(panchang, "abhijit_end", None)
+        if rk_s is not None and rk_e is not None:
+            signals.append(
+                f"Rahu Kaal today is roughly {rk_s.strftime('%-I:%M %p')} to "
+                f"{rk_e.strftime('%-I:%M %p')} IST (Mumbai reference). Classically "
+                "the window to avoid starting anything new. Give it approximately."
+            )
+        if ab_s is not None and ab_e is not None:
+            signals.append(
+                f"Abhijit Muhurat today is roughly {ab_s.strftime('%-I:%M %p')} to "
+                f"{ab_e.strftime('%-I:%M %p')} IST (Mumbai reference). Classically the "
+                "most auspicious window for starting or deciding. Give it approximately."
+            )
     return signals
 
 
