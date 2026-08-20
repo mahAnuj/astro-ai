@@ -77,6 +77,7 @@ async def ask_form(request: Request, q: str | None = None,
     # and silently blanked an answer the seeker had already paid a question for.
     effective_ctx = ("matching" if (context == "matching" and matching_available)
                      else ("chart" if context == "matching" else context))
+    seeker_role = _seeker_role(saved, _last) if effective_ctx == "matching" else None
     if effective_ctx != "matching":
         pair_fp = None
 
@@ -89,7 +90,8 @@ async def ask_form(request: Request, q: str | None = None,
         # look up a key POST never wrote and the answer would never re-render
         # (#181) — hence one resolver call shared by header and lookup.
         answer = _ask_lookup(saved, q, c or "general", lang,
-                             context=effective_ctx, pair_fp=pair_fp)
+                             context=effective_ctx, pair_fp=pair_fp,
+                             role=seeker_role)
     return templates.TemplateResponse(
         request, "ask.html",
         {
@@ -112,7 +114,8 @@ _ASK_CATEGORIES = {"general", "career", "marriage", "money", "health",
 
 
 def _ask_cache_key(saved, question: str, category: str, lang: str,
-                    context: str = "chart", pair_fp: str | None = None) -> str:
+                    context: str = "chart", pair_fp: str | None = None,
+                    role: str | None = None) -> str:
     """Stable cache key for a (chart, question, category, context, partner) tuple.
 
     `context` is one of chart|numerology|matching and is baked in so the
@@ -168,7 +171,7 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
     # Without this, editing ask_matching.txt or ask_numerology.txt would leave
     # every answer written under the old overlay sitting in the cache —
     # `prompt_fp` only fingerprints ask.txt.
-    _overlay = _ask_overlay_path(context)
+    _overlay = _ask_overlay_path(context, role)
     if _overlay is not None:
         prompt_fp = f"{prompt_fp}+{cache.fingerprint_prompt(_overlay)}"
     # Python's hash() is randomised per-process; use a stable hash so the
@@ -204,18 +207,75 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
         # prompt FILE — so a koota rule change would otherwise leave prose in the
         # cache quoting a total /matching no longer computes. The Muhurta
         # Chintamani pass moved several kootas, some by whole verdict bands.
-        key = f"{key}:pair={pair_fp}:matchrules={MATCHING_RULES_VERSION}"
+        # `role` is in the key because it changes the ANSWER: it decides whose
+        # chart is sent as the partner's, and whether a partner chart is sent at
+        # all. Without it, a same-DOB couple plus a rename could serve a
+        # "you and your partner" answer to someone who is neither — the two
+        # states share a chart fingerprint, since fingerprint_chart hashes birth
+        # details and not the name.
+        key = f"{key}:pair={pair_fp}:role={role or 'other'}:matchrules={MATCHING_RULES_VERSION}"
     return key
 
 
-def _ask_overlay_path(context: str):
+def _seeker_role(saved, last) -> str:
+    """Which of the matched pair the seeker is: "groom", "bride" or "other".
+
+    Cheap — string comparison only, no chart and no geocode — so BOTH handlers
+    can call it. That matters twice over: POST uses it to pick whose chart is
+    the partner's, and both use it as a cache-key component, so it must be
+    derivable without the expensive work POST does.
+
+    Identity is by DATE OF BIRTH first. Two differing birth dates identify the
+    pair on their own, which is the ordinary case, and /matching labels both
+    name fields "(optional)" — requiring a name there silently dropped the
+    partner's chart for anyone who left them blank or spelled them differently
+    from their saved chart. Names are consulted ONLY when both parties share a
+    birth date, where the DOB genuinely cannot disambiguate; if the names are
+    missing there too, neither matches and the seeker is treated as a third
+    party, which is the safe outcome.
+    """
+    if last is None:
+        return "other"
+    same_dob = last.groom_birth_date == last.bride_birth_date
+
+    def _is(name, dob) -> bool:
+        if saved.birth_date != dob:
+            return False
+        if not same_dob:
+            return True
+        # str() because a drifted session schema can hand us a non-string name
+        # and .strip() on an int raises. `saved.name` is left as-is: a
+        # non-string there already 500s the page in display_name() long before
+        # this runs, so coercing it here would only hide a louder bug.
+        n = (str(name) if name else "").strip().lower()
+        mine = (saved.name or "").strip().lower()
+        return bool(n) and bool(mine) and n == mine
+
+    if _is(last.groom_name, last.groom_birth_date):
+        return "groom"
+    if _is(last.bride_name, last.bride_birth_date):
+        return "bride"
+    return "other"
+
+
+def _ask_overlay_path(context: str, role: str | None = None):
     """The per-context system-prompt overlay, or None for plain chart asks.
 
     ONE resolver, used by both `_ask_cache_key` and the generation call. If
     those derived the overlay independently they could disagree, and the answer
     would be generated under one system prompt but cached under another's
     fingerprint — exactly the split-derivation bug #181 was about.
+
+    `role` splits the matching overlay in two. A single file previously carried
+    BOTH shapes — "if a second chart is present… / if only one is present…" —
+    and relied on the model noticing which applied. QA made the point precisely:
+    the code sent the right blocks, but the guarantee was instructional rather
+    than mechanical. Selecting a different file per shape makes it mechanical,
+    and as a side effect gives the two shapes distinct prompt fingerprints, so
+    a seeker who changes role cannot read the other shape's cached answer.
     """
+    if context == "matching" and role == "other":
+        return ASK_OVERLAY_PATHS["matching_third_party"]
     return ASK_OVERLAY_PATHS.get(context)
 
 
@@ -264,10 +324,11 @@ def _matching_record(request):
 
 
 def _ask_lookup(saved, question: str, category: str, lang: str,
-                context: str = "chart", pair_fp: str | None = None) -> str | None:
+                context: str = "chart", pair_fp: str | None = None,
+                role: str | None = None) -> str | None:
     """Look up an already-cached answer without burning a fresh LLM call."""
     return cache.get(_ask_cache_key(saved, question, category, lang,
-                                    context=context, pair_fp=pair_fp))
+                                    context=context, pair_fp=pair_fp, role=role))
 
 
 @router.post("/ask")
@@ -447,40 +508,17 @@ async def ask_submit(
             # under a "PARTNER'S NATAL CHART" header plus a score belonging to
             # Anuj & Aastha, an invitation to tell Priya her compatibility is
             # 25/36. The named Guna Milan block still carries the real couple.
-            # Identity is by DATE OF BIRTH first, name only as a tie-breaker.
-            #
-            # This required an exact name+DOB match until QA measured what that
-            # costs: /matching labels both name fields "(optional)", so a
-            # seeker who left them blank — or typed "Anuj M." having saved
-            # "Anuj" — matched NEITHER party and lost their partner's chart
-            # entirely, while the page they came from promised "both birth
-            # charts". origin/main handled that case correctly, so requiring
-            # the name was a regression against live.
-            #
-            # Two different birth dates identify the pair on their own, which
-            # is the overwhelmingly common case. Names are consulted ONLY when
-            # both parties share a birth date, where the DOB genuinely cannot
-            # disambiguate; if the names are missing there too, neither matches
-            # and no partner block is sent, which is the safe outcome.
-            _same_dob = last.groom_birth_date == last.bride_birth_date
-
-            def _is(name, dob):
-                if saved.birth_date != dob:
-                    return False
-                if not _same_dob:
-                    return True
-                # str() because a drifted session schema can hand us a non-string
-                # name, and .strip() on an int raises — the same mistake this
-                # commit's predecessor fixed one function up.
-                n = (str(name) if name else "").strip().lower()
-                mine = (saved.name or "").strip().lower()
-                return bool(n) and bool(mine) and n == mine
-            if _is(last.groom_name, last.groom_birth_date):
+            role = _seeker_role(saved, last)
+            if role == "groom":
                 partner_chart = bride_chart
                 partner_label = "partner (bride from your Kundli match)"
-            elif _is(last.bride_name, last.bride_birth_date):
+            elif role == "bride":
                 partner_chart = groom_chart
                 partner_label = "partner (groom from your Kundli match)"
+            # role == "other": the seeker ran this match for two other people.
+            # No partner block at all — labelling one of the couple as the
+            # seeker's partner asserts a relationship that does not exist. The
+            # third-party overlay tells the model how to handle that shape.
         except Exception:
             # Anything unresolvable — missing record, bad place, geocoder down
             # — downgrades the whole request to chart context. The redirect
@@ -497,9 +535,13 @@ async def ask_submit(
     # For matching, the key carries an ORDERED pair fingerprint (see
     # _ask_cache_key). `context` is only ever "matching" here when that
     # fingerprint exists, so the key can never be a matching key without one.
-    _post_pair_fp = _matching_record(request)[2] if context == "matching" else None
+    _post_last, _, _post_pair_fp = _matching_record(request)
+    _post_role = _seeker_role(saved, _post_last) if context == "matching" else None
+    if context != "matching":
+        _post_pair_fp = None
     cache_key = _ask_cache_key(saved, question, category, lang,
-                               context=context, pair_fp=_post_pair_fp)
+                               context=context, pair_fp=_post_pair_fp,
+                               role=_post_role)
     was_cached = cache.get(cache_key) is not None
     try:
         answer_text = _cached(
@@ -511,7 +553,7 @@ async def ask_submit(
                 chart=chart, dasha=dasha, flags=flags,
                 question=question, category=category,
                 prompt_path=ASK_PROMPT_PATH,
-                overlay_path=_ask_overlay_path(context), lang=lang,
+                overlay_path=_ask_overlay_path(context, _post_role), lang=lang,
                 numerology_reading=numerology_reading,
                 partner_chart=partner_chart,
                 partner_label=partner_label,

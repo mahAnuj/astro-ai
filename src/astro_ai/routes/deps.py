@@ -106,7 +106,12 @@ ASK_PROMPT_PATH = PROMPTS_DIR / "ask.txt"
 # the answer is generated under one prompt and cached under another's
 # fingerprint — the #181 failure class.
 ASK_OVERLAY_PATHS = {
+    # Two matching overlays, selected by whether the seeker is one of the pair.
+    # A single file carried both shapes and asked the model to pick; QA's point
+    # was that the code sent the right blocks but the guard was prose. Two files
+    # make it mechanical, and give the shapes distinct prompt fingerprints.
     "matching": PROMPTS_DIR / "ask_matching.txt",
+    "matching_third_party": PROMPTS_DIR / "ask_matching_third_party.txt",
     "numerology": PROMPTS_DIR / "ask_numerology.txt",
 }
 
