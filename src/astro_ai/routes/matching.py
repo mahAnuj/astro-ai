@@ -29,6 +29,7 @@ from astro_ai.matching import compute_guna_milan
 from astro_ai.routes.deps import (
     MATCHING_PROMPT_PATH,
     _ask_cta_ctx,
+    _seeker_role,
     _lang,
     templates,
 )
@@ -203,6 +204,21 @@ async def matching_result(
             },
             "groom_chart": groom_chart,
             "bride_chart": bride_chart,
+            # The CTA card must know whether the person running this match is
+            # IN it. A parent matching two children was told "Ask 3 free
+            # questions about YOUR match today … using both birth charts" —
+            # false on the most prominent surface there is, the card they see
+            # the moment the result renders. /ask was made role-aware first;
+            # this is the same defect on the page one step earlier.
+            "seeker_role": _seeker_role(
+                load_collection(request).active,
+                SavedMatching(
+                    groom_name=g_name.strip(), groom_birth_date=g_birth_date,
+                    groom_birth_time=g_birth_time, groom_birth_place=g_birth_place.strip(),
+                    bride_name=b_name.strip(), bride_birth_date=b_birth_date,
+                    bride_birth_time=b_birth_time, bride_birth_place=b_birth_place.strip(),
+                ),
+            ) if load_collection(request).active else None,
             **_ask_cta_ctx(request, hint="about your Kundli match"),
         },
     )

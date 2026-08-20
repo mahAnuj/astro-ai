@@ -376,6 +376,9 @@ _EN: Final[dict[str, str]] = {
     # below drops the placeholder entirely and says "your kundli" on a page
     # about two people. Dedicated keys sidestep that for the context where it
     # actually misleads.
+    # Third-party shape: the person running the match is not in it (QA BUG-2).
+    "ask_cta_head_matching_third": "Ask 3 free questions about this match today",
+    "ask_cta_body_matching_third": "Real answers about their compatibility — how the weak kootas actually play out, what a dosha means in practice, timing for the wedding. Not generic horoscope advice.",
     "ask_cta_head_matching":   "Ask 3 free questions about your match today",
     "ask_cta_body_matching":   "Real answers using both birth charts and your Guna Milan result — how the weak kootas actually play out, what a dosha means in practice, timing for the wedding. Not generic horoscope advice.",
     "ask_cta_body_no_chart":   "Generate your free Janma Kundli and you unlock 3 daily questions like \"When will I marry?\" or \"What's the best career for me?\" — answered from your actual chart, not a template.",
@@ -764,6 +767,8 @@ _HI: Final[dict[str, str]] = {
     "ask_cta_head_saved":      "आज अपनी कुंडली के बारे में 3 प्रश्न मुफ्त पूछें",
     "ask_cta_head_no_chart":   "कुंडली बनाकर 3 मुफ्त व्यक्तिगत प्रश्न पाएं",
     "ask_cta_body_saved":      "आपकी वास्तविक कुंडली से सटीक उत्तर — विवाह का समय, करियर की दिशा, विशेष गोचर कब आएंगे। सामान्य राशिफल जैसी सलाह नहीं।",
+    "ask_cta_head_matching_third": "आज इस कुंडली मिलान के बारे में 3 प्रश्न मुफ्त पूछें",
+    "ask_cta_body_matching_third": "उनकी अनुकूलता पर सटीक उत्तर — कमज़ोर कूट व्यवहार में क्या असर डालते हैं, किसी दोष का वास्तविक अर्थ क्या है, विवाह का शुभ समय। सामान्य राशिफल जैसी सलाह नहीं।",
     "ask_cta_head_matching":   "आज अपने कुंडली मिलान के बारे में 3 प्रश्न मुफ्त पूछें",
     "ask_cta_body_matching":   "दोनों कुंडलियों और आपके गुण मिलान के आधार पर सटीक उत्तर — कमज़ोर कूट व्यवहार में क्या असर डालते हैं, किसी दोष का वास्तविक अर्थ क्या है, विवाह का शुभ समय। सामान्य राशिफल जैसी सलाह नहीं।",
     "ask_cta_body_no_chart":   "अपनी मुफ्त जन्म कुंडली बनाएँ और रोज़ 3 प्रश्न पूछें — \"मेरा विवाह कब होगा?\" या \"मेरे लिए सबसे अच्छा करियर क्या है?\" — आपकी वास्तविक कुंडली से उत्तर, टेम्पलेट से नहीं।",
