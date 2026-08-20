@@ -47,11 +47,13 @@
          matters most, so that context gets its own strings. #}
       <h3 class="font-display text-lg sm:text-xl text-astro-800 mb-1">
         {% if not has_saved_chart %}{{ t(lang, 'ask_cta_head_no_chart') }}
+        {% elif _ctx == 'matching' and seeker_role == 'other' %}{{ t(lang, 'ask_cta_head_matching_third') }}
         {% elif _ctx == 'matching' %}{{ t(lang, 'ask_cta_head_matching') }}
         {% else %}{{ t(lang, 'ask_cta_head_saved', hint=_hint) }}{% endif %}
       </h3>
       <p class="text-sm text-stone-700 leading-relaxed mb-3">
         {% if not has_saved_chart %}{{ t(lang, 'ask_cta_body_no_chart') }}
+        {% elif _ctx == 'matching' and seeker_role == 'other' %}{{ t(lang, 'ask_cta_body_matching_third') }}
         {% elif _ctx == 'matching' %}{{ t(lang, 'ask_cta_body_matching') }}
         {% else %}{{ t(lang, 'ask_cta_body_saved') }}{% endif %}
       </p>

@@ -33,6 +33,7 @@ from astro_ai.providers import AllProvidersExhausted
 from astro_ai.routes.deps import (
     ASK_OVERLAY_PATHS,
     ASK_PROMPT_PATH,
+    _seeker_role,
     _ask_quota_bump,
     _ask_quota_remaining,
     _lang,
@@ -222,47 +223,6 @@ def _ask_cache_key(saved, question: str, category: str, lang: str,
         # details and not the name.
         key = f"{key}:pair={pair_fp}:role={role}:matchrules={MATCHING_RULES_VERSION}"
     return key
-
-
-def _seeker_role(saved, last) -> str:
-    """Which of the matched pair the seeker is: "groom", "bride" or "other".
-
-    Cheap — string comparison only, no chart and no geocode — so BOTH handlers
-    can call it. That matters twice over: POST uses it to pick whose chart is
-    the partner's, and both use it as a cache-key component, so it must be
-    derivable without the expensive work POST does.
-
-    Identity is by DATE OF BIRTH first. Two differing birth dates identify the
-    pair on their own, which is the ordinary case, and /matching labels both
-    name fields "(optional)" — requiring a name there silently dropped the
-    partner's chart for anyone who left them blank or spelled them differently
-    from their saved chart. Names are consulted ONLY when both parties share a
-    birth date, where the DOB genuinely cannot disambiguate; if the names are
-    missing there too, neither matches and the seeker is treated as a third
-    party, which is the safe outcome.
-    """
-    if last is None:
-        return "other"
-    same_dob = last.groom_birth_date == last.bride_birth_date
-
-    def _is(name, dob) -> bool:
-        if saved.birth_date != dob:
-            return False
-        if not same_dob:
-            return True
-        # str() because a drifted session schema can hand us a non-string name
-        # and .strip() on an int raises. `saved.name` is left as-is: a
-        # non-string there already 500s the page in display_name() long before
-        # this runs, so coercing it here would only hide a louder bug.
-        n = (str(name) if name else "").strip().lower()
-        mine = (saved.name or "").strip().lower()
-        return bool(n) and bool(mine) and n == mine
-
-    if _is(last.groom_name, last.groom_birth_date):
-        return "groom"
-    if _is(last.bride_name, last.bride_birth_date):
-        return "bride"
-    return "other"
 
 
 def _ask_overlay_path(context: str, role: str | None = None):
