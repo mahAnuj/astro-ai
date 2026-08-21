@@ -748,8 +748,22 @@ class _StartPacer:
 _RASHIFAL_CONCURRENCY = 2
 """Concurrent per-rashi LLM calls — how many may be IN FLIGHT at once."""
 
-_RASHIFAL_MIN_INTERVAL_S = 10.0
-"""Minimum seconds between per-rashi call STARTS. The other half of the TPM
+_RASHIFAL_MIN_INTERVAL_S = 0.0
+"""Minimum seconds between per-rashi call STARTS. DISABLED (0.0) — see below.
+
+DISABLED because reasoning_effort="low" removed the problem it was built for.
+Completion tokens dropped ~85% (gpt-oss-120b: 3,072 -> ~302), so the job no
+longer approaches the TPM ceiling that motivated spreading it out. Meanwhile
+pacing costs wall-clock against a 300s Cloud Run timeout, and QA measured the
+job at ~524s when calls were slow — the pacer makes a timeout MORE likely
+while no longer buying anything.
+
+Kept rather than deleted: _StartPacer is tested and correct, and if token
+pressure returns (more subscribers, a longer prompt, a smaller free tier) this
+is the lever. Set it back to ~10.0 and re-measure the job against the timeout
+before doing so.
+
+Original rationale below. The other half of the TPM
 budget, and the half concurrency cannot express.
 
 The arithmetic, so the next person can re-derive it rather than trust it:
