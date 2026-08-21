@@ -108,7 +108,10 @@ def _reading_text(labels: tuple[str, ...]) -> str:
     """A synthetic LLM reading in the `## Heading` form the prompt asks for."""
     blocks = []
     for label in labels:
-        body = " ".join(
+        # Paragraph-SEPARATED, not space-joined. Real generated bodies carry
+        # ~6 newlines (3-4 paragraphs); a fixture that is one flat line cannot
+        # detect the HTML newline collapse that Gate 5 exists to catch.
+        body = "\n\n".join(
             s.format(label=label)
             for s in (TEASER_SENTENCE_1, TEASER_SENTENCE_2, BODY_TAIL_SENTENCE)
         )
@@ -258,6 +261,50 @@ def gate_2_single_rashi_render() -> list[str]:
 
 
 # --------------------------------------------------------------------------
+# Gate 5 - the body's paragraph breaks survive into the email
+# --------------------------------------------------------------------------
+
+def gate_5_newlines_survive() -> list[str]:
+    """HTML collapses newlines. The reading's paragraphs must not collapse.
+
+    The web card gets this free from Tailwind's `whitespace-pre-line`. Email
+    has no stylesheet, so each template must declare it inline — and for three
+    weeks neither did, which would have shipped every single-rashi subscriber
+    one unbroken wall of text the moment the daily send started working again.
+
+    Asserts two independent things, because either alone is fakeable: the
+    newline is still THERE in the output, and the enclosing element actually
+    declares a white-space rule that renders it.
+    """
+    failures: list[str] = []
+    label = RASHI_LABELS[7]
+    sections = _sections_from_reading((label,))
+    body = sections[0][3]
+    if "\n\n" not in body:
+        return [f"fixture regression: body has no paragraph break ({body!r})"]
+
+    for name in TEMPLATE_NAMES:
+        html = _render(name, _context(lang="en", sections=sections))
+        has_rule = ("white-space:pre-line" in html) or ("white-space:pre-wrap" in html)
+        if not has_rule:
+            failures.append(
+                f"{name} [single]: no white-space:pre-line/pre-wrap anywhere in the "
+                "render — the reading's paragraph breaks will collapse into one block"
+            )
+        first = TEASER_SENTENCE_1.format(label=label)
+        tail = BODY_TAIL_SENTENCE.format(label=label)
+        if first in html and tail in html:
+            between = html[html.index(first) + len(first):html.index(tail)]
+            if "\n" not in between:
+                failures.append(
+                    f"{name} [single]: the paragraph break between the body's first and "
+                    "last sentence is gone from the rendered HTML"
+                )
+        print(f"  {name} [single]: white-space rule present: {has_rule}")
+    return failures
+
+
+# --------------------------------------------------------------------------
 # Gate 3 - empty sections (Rashifal generation failed) still renders
 # --------------------------------------------------------------------------
 
@@ -320,6 +367,7 @@ def main() -> int:
     gates = [
         ("Gate 1 - digest render, all 12 rashis, en + hi", gate_1_digest_render),
         ("Gate 2 - single-rashi render shows the full body", gate_2_single_rashi_render),
+        ("Gate 5 - body paragraph breaks survive the render", gate_5_newlines_survive),
         ("Gate 3 - empty sections (generation failed) still renders",
          gate_3_empty_sections_render),
         ("Gate 4 - wrong tuple arity is actually rejected", gate_4_arity_is_enforced),
