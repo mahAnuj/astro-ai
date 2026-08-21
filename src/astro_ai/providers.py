@@ -45,11 +45,12 @@ import logging
 import os
 import random
 import re
+import threading
 import time
 from contextvars import ContextVar
 from dataclasses import dataclass
 
-from openai import OpenAI
+from openai import BadRequestError, OpenAI
 from openai import APIError, APIConnectionError, APITimeoutError, RateLimitError
 
 log = logging.getLogger(__name__)
@@ -307,6 +308,14 @@ PROVIDERS: dict[str, ProviderConfig] = {
 }
 
 
+class EmptyCompletion(RuntimeError):
+    """A provider returned 200 with no visible text.
+
+    Its own error class so the chain can treat it as a provider failure and
+    move on, rather than the caller receiving "" and caching it as a reading.
+    """
+
+
 class NoProvidersConfigured(RuntimeError):
     """Raised when no usable provider is available — bad config, not a runtime issue."""
 
@@ -357,17 +366,88 @@ def _chain() -> list[ProviderConfig]:
     return [legacy] if legacy else []
 
 
+# Models that rejected `reasoning_effort` with a 400. Learned at runtime rather
+# than hardcoded, because a hardcoded model list is exactly what went stale and
+# broke production: two entries in PROVIDERS pointed at decommissioned models
+# for days, and a third was added after checking only that Groq LISTED it —
+# never that it could complete a reading. A capability probed from the API
+# cannot drift the way a list maintained by hand does.
+_NO_REASONING_EFFORT: set[str] = set()
+_NO_REASONING_LOCK = threading.Lock()
+
+
 def _call_one(provider: ProviderConfig, messages: list[dict]) -> str:
-    """Issue the chat completion to one provider; raise on any failure."""
+    """Issue the chat completion to one provider; raise on any failure.
+
+    Two behaviours here exist because of a production outage on 2026-08-21,
+    where the daily rashifal blast returned 503 and subscribers got no email.
+
+    REASONING BUDGET. Groq's gpt-oss models are reasoning models. Left
+    unbounded they can spend their entire completion budget on hidden
+    reasoning and return an EMPTY message — `finish_reason="length"`,
+    thousands of completion tokens, zero visible characters. Measured on the
+    live rashifal prompt, that is a coin flip per call, not a property of a
+    particular model: in one run gpt-oss-20b succeeded and gpt-oss-120b came
+    back empty, in another the reverse. That is why the failure looked
+    intermittent and survived several rounds of review.
+
+    `reasoning_effort="low"` fixes it decisively and is also the single
+    biggest token saving available: gpt-oss-20b went 1,978 -> 262 completion
+    tokens, gpt-oss-120b from an empty 3,072 to a clean 302, with MORE visible
+    text in both cases. Not every model accepts the parameter — qwen3.6-27b
+    returns a 400 — so support is probed once per model and remembered.
+
+    EMPTY IS AN ERROR, NOT AN ANSWER. This used to `return content or ""`, so
+    a truncated or reasoning-only response was indistinguishable from success.
+    A blank reading was cached for the day on /rashifal, and the 12-call email
+    job silently dropped signs while still reporting ok. Raising here is what
+    lets the fallback chain do its job.
+    """
     client = OpenAI(
         api_key=provider.api_key(),
         base_url=provider.api_base,  # OpenAI() accepts None to mean default
     )
-    response = client.chat.completions.create(
-        model=provider.model(),
-        messages=messages,
-    )
-    return response.choices[0].message.content or ""
+    model = provider.model()
+    kwargs: dict = {}
+    if model not in _NO_REASONING_EFFORT:
+        kwargs["reasoning_effort"] = "low"
+
+    try:
+        response = client.chat.completions.create(
+            model=model, messages=messages, **kwargs
+        )
+    except BadRequestError as err:
+        # Only retry for THIS parameter. Any other 400 is a real error and must
+        # propagate, or a malformed request would silently look like a
+        # capability gap and burn a second call every time.
+        if "reasoning_effort" not in str(err) or not kwargs:
+            raise
+        with _NO_REASONING_LOCK:
+            _NO_REASONING_EFFORT.add(model)
+        log.info("provider %s (%s) does not accept reasoning_effort — "
+                 "retrying without it and remembering", provider.name, model)
+        response = client.chat.completions.create(model=model, messages=messages)
+
+    choice = response.choices[0]
+    content = choice.message.content or ""
+    finish = getattr(choice, "finish_reason", None)
+
+    if not content.strip():
+        usage = getattr(response, "usage", None)
+        raise EmptyCompletion(
+            f"{provider.name} ({model}) returned no visible text "
+            f"(finish_reason={finish}, completion_tokens="
+            f"{getattr(usage, 'completion_tokens', '?')})"
+        )
+    if finish == "length":
+        # Content exists but was cut off mid-thought. Not raised: on some
+        # models this is the normal shape of a long-but-usable answer, and
+        # rejecting it outright would empty the chain. Logged so it is
+        # visible rather than silent — qwen3.6-27b does this routinely on the
+        # rashifal route, producing ~7x the requested length.
+        log.warning("provider %s (%s) truncated at the completion limit "
+                    "(%d chars kept)", provider.name, model, len(content))
+    return content
 
 
 def _ordered_for_request() -> list[ProviderConfig]:
