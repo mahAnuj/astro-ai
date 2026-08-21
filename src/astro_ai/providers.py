@@ -278,11 +278,30 @@ PROVIDERS: dict[str, ProviderConfig] = {
     # added, because a model that browses can import outside claims into a
     # chart-grounded reading. Try them behind a review before trusting them.
     #
-    # Current recommended chain — three DISTINCT live models:
-    #   BHAGYA_LLM_PROVIDERS=groq120,groq20,groq_qwen
+    # Current recommended chain — the two BOUNDABLE live models:
+    #   BHAGYA_LLM_PROVIDERS=groq120,groq20
     # Do NOT also list "groq": it resolves to the same model as groq120 and
     # would share one TPM bucket while looking like extra capacity.
-    # Quality tiers (rough): 120b > qwen > 20b for narrative depth.
+    #
+    # groq_qwen IS DELIBERATELY NOT IN THAT CHAIN, and the reason is measured,
+    # not aesthetic. qwen3.6-27b rejects `reasoning_effort` with a 400, so it
+    # is the one model here we cannot bound. Left unbounded it reasons until it
+    # hits its own completion limit, gets truncated mid-`<think>`, and the
+    # envelope stripper then cleans it to zero visible characters — a ~40s call
+    # that returns nothing and falls through to the next provider. Twelve of
+    # those per language is the whole of the overage:
+    #
+    #   full 2-language rashifal job, groq120,groq_qwen : 399s  (timeout 300s)
+    #   same job, groq120,groq20                        : 213s  (83s en + 130s hi)
+    #
+    # Measured 2026-08-22 against the live API, on the code in this file.
+    # Adding qwen back for its extra TPM bucket is a trade that LOSES: the
+    # bucket is worth less than the wall-clock its empty calls burn.
+    # Quality tiers (rough): 120b > qwen > 20b for narrative depth — which is
+    # why qwen looks attractive on paper. It is not usable here until either
+    # Groq accepts reasoning_effort for it or we set an explicit
+    # max_completion_tokens high enough for it to CLOSE the envelope (we set
+    # no completion cap at all today; the truncation is the model's own).
     "groq":       ProviderConfig("groq",       "https://api.groq.com/openai/v1",
                                   "openai/gpt-oss-120b",                       "GROQ_API_KEY"),
     "groq120":    ProviderConfig("groq120",    "https://api.groq.com/openai/v1",

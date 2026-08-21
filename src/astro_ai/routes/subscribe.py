@@ -393,6 +393,69 @@ async def unsubscribe(request: Request, email: str = "", token: str = "") -> HTM
     )
 
 
+@router.post("/admin/warm-rashifal", dependencies=[Depends(require_admin)])
+async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
+    """Generate and cache today's Rashifal for ONE language, ahead of the blast.
+
+    Exists because /admin/send-daily-rashifal generates BOTH languages inline —
+    24 LLM calls in a single HTTP request — and that stopped fitting in Cloud
+    Run's request timeout. The daily email failed every day from 2026-08-01 to
+    2026-08-21: twenty 504s at exactly 60.000s, then a 503 at 201.6s once the
+    timeout was raised to 300s. A measured run of the full job took 399s.
+
+    Splitting the work by language is what makes it fit: two warm requests of
+    12 calls each, then a blast that only reads cache. Each piece is well under
+    the timeout on its own, and none of it needs an always-on instance or a
+    background worker — both of which cost money this project does not spend.
+
+    Deliberately writes through the SAME cache keys the blast reads, so the
+    blast needs no knowledge of this endpoint. If warming fails or never runs,
+    the blast still generates inline exactly as before — this is an
+    optimisation, not a dependency.
+    """
+    if lang not in ("en", "hi"):
+        return JSONResponse({"ok": False, "error": f"unsupported lang: {lang}"}, status_code=400)
+
+    today_iso = date.today().isoformat()
+    prompt_fp = cache.fingerprint_prompt(RASHIFAL_PROMPT_PATH)
+    started = _time.time()
+    try:
+        neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+    except ChartError as err:
+        return JSONResponse({"ok": False, "error": f"Couldn't compute reference chart: {err}"}, status_code=500)
+    transit = compute_transit_snapshot(neutral_chart)
+
+    try:
+        text = _daily_rashifal_text(
+            lang=lang,
+            today_iso=today_iso,
+            cache_key=f"rashifal:{today_iso}:{lang}:{prompt_fp}",
+            storage_key=f"rashifal/{today_iso}-{lang}-{prompt_fp}.txt",
+            call_fn=lambda: generate_rashifal(
+                transit=transit, today_iso=today_iso,
+                prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
+                panchang=compute_panchang(neutral_chart),
+                festival=festivals.festival_for_date(date.today()),
+            ),
+        )
+    except AllProvidersExhausted as err:
+        _fire_error_alert(request, err, f"rashifal:warm:{lang}")
+        return JSONResponse({"ok": False, "lang": lang, "error": str(err)}, status_code=503)
+
+    sections = parse_sectioned_reading(text)
+    elapsed = round(_time.time() - started, 1)
+    log.info("warm-rashifal lang=%s sections=%d elapsed=%.1fs", lang, len(sections), elapsed)
+    # sections is the number the blast needs; anything under 12 means the blast
+    # will email a partial list, so surface it rather than reporting a bare ok.
+    return JSONResponse({
+        "ok": len(sections) == 12,
+        "lang": lang,
+        "sections": len(sections),
+        "chars": len(text),
+        "elapsed_s": elapsed,
+    })
+
+
 @router.post("/admin/send-daily-rashifal", dependencies=[Depends(require_admin)])
 async def send_daily_rashifal(request: Request) -> JSONResponse:
     """Send today's Rashifal email to every active subscriber.
