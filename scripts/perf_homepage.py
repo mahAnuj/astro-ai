@@ -281,17 +281,17 @@ def _run_stages(client) -> None:
     label, trust_fn = _trust_stage()
     _timed(label, trust_fn)
 
-    cache = getattr(app_main, "_HOMEPAGE_PANCHANG_CACHE", None)
-    panchang_fn = getattr(app_main, "_homepage_panchang_cached", None)
+    cache = getattr(app_main, "_PANCHANG_STRIP_CACHE", None)
+    panchang_fn = getattr(app_main, "panchang_strip_for_city", None)
     if callable(panchang_fn):
         if isinstance(cache, dict):
             cache.clear()
-            _timed("_homepage_panchang_cached (cold)",
+            _timed("panchang_strip_for_city (cold)",
                    lambda: panchang_fn("Mumbai, India"))
-        _timed("_homepage_panchang_cached (memo)",
+        _timed("panchang_strip_for_city (memo)",
                lambda: panchang_fn("Mumbai, India"))
     else:
-        print("  _homepage_panchang_cached           n/a (not in this tree)")
+        print("  panchang_strip_for_city             n/a (not in this tree)")
 
     # Capture the real template + context off a live request, then re-render it
     # in isolation. Rendering is pure CPU, so this is the floor `GET /` can hit.

@@ -31,6 +31,7 @@ from astro_ai.routes.deps import (
     _lang,
     _no_cdn_cache,
     _pretty_date,
+    panchang_strip_ctx,
     templates,
 )
 from astro_ai.routes.llm_support import _fire_error_alert, _llm_error_friendly
@@ -59,6 +60,10 @@ async def rashifal(request: Request) -> HTMLResponse:
             "lang": lang,
             "today_date": today_iso,
             "today_pretty": _pretty_date(today_iso, lang),
+            # The reading names Rahu Kaal and Abhijit but never clocks them,
+            # because one national text cannot. This is where the reader's own
+            # computed times come from. Cached per (day, city); no new compute.
+            **panchang_strip_ctx(request),
         },
     ))
 
@@ -220,6 +225,9 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         "today_pretty": _pretty_date(today_iso, lang),
         "permalink": f"/rashifal/{canonical_slug}",
         "lang": lang,
+        # See the grid route — the seeker's own Rahu Kaal / Abhijit, since the
+        # reading itself is forbidden from stating a clock time.
+        **panchang_strip_ctx(request),
     }
     template = "_rashifal_card_content.html" if is_htmx else "rashifal_single.html"
     # Only cache-harden the full-page render; the HTMX fragment is

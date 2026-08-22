@@ -9,6 +9,12 @@
 {% include "_breadcrumb_schema.html" %}
 {% include "_nav.html" %}
 
+{# The reading itself never states a clock time — it is one national text and
+   these windows shift by up to 79 minutes across Indian cities. This strip is
+   where the reader's OWN computed Rahu Kaal and Abhijit appear. Context comes
+   from deps.panchang_strip_ctx; nothing is recomputed per page. #}
+{% include "_panchang_strip.html" %}
+
 {# 12 rashi tiles — same order as classical (Mesha..Meena) with metadata
    for the card design (glyph, English + Sanskrit name, element, gradient
    color).  Element colors: fire=amber, earth=emerald, air=sky, water=teal. #}

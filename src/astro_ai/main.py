@@ -43,11 +43,13 @@ from astro_ai.routes import ask as _ask_routes
 from astro_ai.routes import matching as _matching_routes
 from astro_ai.routes import charts as _charts_routes
 # Re-exported, not redefined: scripts/perf_homepage.py --stages reaches into
-# astro_ai.main for `templates`, `_HOMEPAGE_PANCHANG_CACHE` and
-# `_homepage_panchang_cached`, and degrades to "n/a (not in this tree)" —
+# astro_ai.main for `templates`, `_PANCHANG_STRIP_CACHE` and
+# `panchang_strip_for_city`, and degrades to "n/a (not in this tree)" —
 # which reads like a pass — if they disappear. These names bind to the SAME
-# objects routes/home.py uses; there is exactly one cache dict in the process.
-from astro_ai.routes.home import _HOMEPAGE_PANCHANG_CACHE, _homepage_panchang_cached  # noqa: F401
+# objects the route modules use; there is exactly one cache dict in the process.
+# They moved from routes/home.py to routes/deps.py when the rashifal pages
+# became a second consumer of the same computed windows.
+from astro_ai.routes.deps import _PANCHANG_STRIP_CACHE, panchang_strip_for_city  # noqa: F401
 
 
 # Module-level logger. The unhandled-exception handler below is the last

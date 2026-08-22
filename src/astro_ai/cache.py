@@ -127,7 +127,13 @@ def fingerprint_chart(birth_date: str, birth_time: str, birth_place: str) -> str
 # hash, so without this bump every cached natal reading would keep describing
 # a combust planet as neutral for as long as it lived. This is the lever the
 # docstring below exists for.
-PROMPT_LOGIC_VERSION = "v2"
+# v3 (2026-08-22): _build_rashifal_day_signals now appends the Rahu Kaal /
+# Abhijit block from chart.format_day_windows_for_rashifal. The rashifal
+# prompt FILE changed too, so its own hash moves — but the signals change is
+# assembly logic and would be invisible on any route sharing this token.
+# Bumping is the cheap side of the trade: a cached reading that still invents
+# "after 4 pm" is exactly the output this change exists to stop shipping.
+PROMPT_LOGIC_VERSION = "v3"
 
 
 def fingerprint_prompt(prompt_path: Path) -> str:

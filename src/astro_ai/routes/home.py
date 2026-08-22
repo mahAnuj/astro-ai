@@ -3,8 +3,9 @@
 Owns:
     GET /   the homepage — form for new visitors, chart list for returning ones
 
-plus the homepage Panchang-strip day cache (``_HOMEPAGE_PANCHANG_CACHE`` /
-``_homepage_panchang_cached``), whose only consumer is ``index``.
+The Panchang-strip day cache used to live here. It is now
+``routes/deps.py:panchang_strip_for_city`` — the rashifal pages need the same
+windows, and one cache shared beats two that drift.
 
 This is the #144 hot path — 32 GCS reads → 0, ~19.9s → ~5ms. Four invariants
 this module exists to protect:
@@ -12,11 +13,13 @@ this module exists to protect:
 1. ``index`` is a plain ``def``, NOT ``async def``. It does blocking I/O and
    contains no ``await``, so Starlette runs it on the threadpool; as a
    coroutine one slow homepage stalled every other request on the instance.
-2. ``_HOMEPAGE_PANCHANG_CACHE`` is defined here and NOWHERE else. Two dicts
-   would mean the reader's stays empty forever and the strip recomputes on
-   every request while every GCS counter still reads zero — invisible to
-   ``scripts/perf_homepage.py``. ``main.py`` re-exports the name; that is a
-   binding to this same object, not a copy.
+2. The Panchang-strip day cache is defined in ONE place and nowhere else.
+   Two dicts would mean the reader's stays empty forever and the strip
+   recomputes on every request while every GCS counter still reads zero —
+   invisible to ``scripts/perf_homepage.py``. It moved to ``routes/deps.py``
+   as ``panchang_strip_for_city`` when the rashifal pages became a second
+   consumer; the invariant is unchanged, only its address. Import it, never
+   re-implement it.
 3. ``trust_bar`` is imported at MODULE level, never inside ``index``.
 4. This module must NOT import ``astro_ai.storage``, ``astro_ai.events``,
    ``astro_ai.users`` or ``astro_ai.subscribers``. ``index`` only ever reaches
@@ -38,50 +41,10 @@ from fastapi.responses import HTMLResponse
 
 from astro_ai import trust_bar
 from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot
-from astro_ai.routes.deps import _lang, _no_cdn_cache, templates
+from astro_ai.routes.deps import _lang, _no_cdn_cache, panchang_strip_for_city, templates
 from astro_ai.session import load_collection
 
 router = APIRouter()
-
-
-# In-process daily cache for the homepage Panchang strip. Keyed by
-# (today_iso, city_lower). First homepage load for a given (date, city)
-# pair runs the full compute chain (geocode + chart + panchang + transit
-# snapshot ≈ 200ms cold on first hit); every subsequent same-day load
-# on the same instance is a dict lookup.
-_HOMEPAGE_PANCHANG_CACHE: dict[tuple, tuple] = {}
-
-
-def _homepage_panchang_cached(city: str) -> tuple:
-    """Return (panchang, moon_info, city_display) — cached per day/city.
-
-    Uses date.today() implicitly so a new day naturally busts the cache.
-    Cache is per-process (Cloud Run instances rebuild once each per day),
-    which is fine — the compute is <200ms so cold-start latency is
-    negligible.
-    """
-    today = date.today().isoformat()
-    key = (today, (city or "").strip().lower())
-    if key in _HOMEPAGE_PANCHANG_CACHE:
-        return _HOMEPAGE_PANCHANG_CACHE[key]
-    resolved_city = city or "Mumbai, India"
-    try:
-        chart_for_loc = compute_chart("2000-01-01", "12:00", resolved_city)
-        p = compute_panchang(chart_for_loc)
-        transit = compute_transit_snapshot(chart_for_loc)
-        moon = next((pl for pl in transit.planets if pl.name == "Moon"), None)
-        moon_info = {"rashi": moon.rashi, "nakshatra": moon.nakshatra} if moon else None
-        display = resolved_city.split(",")[0]
-        result = (p, moon_info, display)
-    except Exception:
-        result = (None, None, "")
-    _HOMEPAGE_PANCHANG_CACHE[key] = result
-    # Prevent unbounded growth if many cities are queried across a day.
-    # After ~100 unique entries, drop everything older than today.
-    if len(_HOMEPAGE_PANCHANG_CACHE) > 100:
-        _HOMEPAGE_PANCHANG_CACHE.clear()
-        _HOMEPAGE_PANCHANG_CACHE[key] = result
-    return result
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -113,7 +76,7 @@ def index(request: Request, needs_chart: str | None = None) -> HTMLResponse:
     _city_pref = "Mumbai, India"
     if collection.active and collection.active.birth_place:
         _city_pref = collection.active.birth_place
-    _panchang_strip, _panchang_moon, _panchang_city = _homepage_panchang_cached(_city_pref)
+    _panchang_strip, _panchang_moon, _panchang_city = panchang_strip_for_city(_city_pref)
     # Signed-in / has-chart flow: compute the user's natal Moon rashi so
     # the homepage can show 'Welcome back — your Rashifal is ready' with
     # their sign name and a direct link to /rashifal/{slug}. Cheap once
