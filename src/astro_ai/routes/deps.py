@@ -23,6 +23,7 @@ Nothing in this package may import ``astro_ai.main``.
 
 from __future__ import annotations
 
+import logging
 import os
 import secrets
 from datetime import date
@@ -568,6 +569,18 @@ def panchang_strip_ctx(request) -> dict:
     }
 
 
+log = logging.getLogger(__name__)
+
+
+_STRIP_DEFAULT_CITY = "Mumbai, India"
+"""Fallback location for the Panchang strip.
+
+Also the location the shared rashifal is generated against, which is why it
+is the right fallback rather than an arbitrary one: a reader who lands on it
+sees the same city the reading was written for, labelled as such.
+"""
+
+
 def panchang_strip_for_city(city: str) -> tuple:
     """Return (panchang, moon_info, city_display) — cached per day/city.
 
@@ -584,20 +597,53 @@ def panchang_strip_for_city(city: str) -> tuple:
     negligible.
     """
     today = date.today().isoformat()
-    key = (today, (city or "").strip().lower())
+    resolved_city = (city or "").strip() or _STRIP_DEFAULT_CITY
+    # Key on the RESOLVED city, so "", "  " and None share the Mumbai entry
+    # instead of each opening a duplicate slot for identical data (#214).
+    key = (today, resolved_city.lower())
     if key in _PANCHANG_STRIP_CACHE:
         return _PANCHANG_STRIP_CACHE[key]
-    resolved_city = city or "Mumbai, India"
-    try:
-        chart_for_loc = compute_chart("2000-01-01", "12:00", resolved_city)
-        p = compute_panchang(chart_for_loc)
+
+    def _solve(place: str) -> tuple:
+        chart_for_loc = compute_chart("2000-01-01", "12:00", place)
+        pan = compute_panchang(chart_for_loc)
         transit = compute_transit_snapshot(chart_for_loc)
         moon = next((pl for pl in transit.planets if pl.name == "Moon"), None)
         moon_info = {"rashi": moon.rashi, "nakshatra": moon.nakshatra} if moon else None
-        display = resolved_city.split(",")[0]
-        result = (p, moon_info, display)
+        return (pan, moon_info, place.split(",")[0])
+
+    try:
+        result = _solve(resolved_city)
     except Exception:
-        result = (None, None, "")
+        # FALL BACK TO THE DEFAULT CITY, do not return None (#213).
+        #
+        # This used to yield (None, None, ""), and `_panchang_strip.html`
+        # opens with `{% if panchang_strip %}` — so the whole strip vanished.
+        # That was survivable while the strip was decoration. It stopped being
+        # survivable when the rashifal reading was changed to never state a
+        # clock time and to point at "the Abhijit window" instead: with the
+        # strip gone, the page tells the reader to act in a window and offers
+        # no way on Earth to know when it is.
+        #
+        # Mumbai is the honest fallback rather than a guess — it is the
+        # reference location the shared reading was generated against, and
+        # `panchang_city` displays it, so the reader sees WHICH city's times
+        # they are looking at rather than being told nothing.
+        #
+        # Geocoding is a live Nominatim call with a 10s timeout, so a
+        # transient upstream blip is enough to land here.
+        log.warning("panchang strip: %r did not resolve — falling back to %s",
+                    resolved_city, _STRIP_DEFAULT_CITY)
+        try:
+            result = _solve(_STRIP_DEFAULT_CITY)
+        except Exception:
+            # Default failed too: something is properly broken. Return the
+            # empty tuple rather than raising — a missing strip must never
+            # take the page down — but do NOT cache it for the day, so the
+            # next request retries instead of the page staying broken until
+            # midnight.
+            log.exception("panchang strip: default city failed too; strip suppressed")
+            return (None, None, "")
     _PANCHANG_STRIP_CACHE[key] = result
     # Prevent unbounded growth if many cities are queried across a day.
     # After ~100 unique entries, drop everything older than today.
