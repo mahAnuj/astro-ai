@@ -35,6 +35,12 @@
 </script>
 {% include "_nav.html" %}
 
+{# The reading itself never states a clock time — it is one national text and
+   these windows shift by up to 79 minutes across Indian cities. This strip is
+   where the reader's OWN computed Rahu Kaal and Abhijit appear. Context comes
+   from deps.panchang_strip_ctx; nothing is recomputed per page. #}
+{% include "_panchang_strip.html" %}
+
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
   {# HERO — glyph + name + pretty date #}

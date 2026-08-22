@@ -3300,6 +3300,68 @@ def format_panchang_for_prompt(panchang: DailyPanchang) -> str:
     )
 
 
+# Which part of the day each Rahu Kaal segment falls in. The SEGMENT ORDINAL
+# is universal — it depends only on the weekday (_RAHU_KAAL_SEGMENT above) —
+# so this description is true in Guwahati and in Mumbai alike. The CLOCK TIME
+# is not; see format_day_windows_for_rashifal below for why that matters.
+_RAHU_KAAL_BAND: dict[int, str] = {
+    1: "the first stretch after sunrise",
+    2: "early morning",
+    3: "mid-morning",
+    4: "late morning",
+    5: "early afternoon",
+    6: "mid-afternoon",
+    7: "late afternoon",
+    8: "the last stretch before sunset",
+}
+
+
+def format_day_windows_for_rashifal(panchang: DailyPanchang) -> str:
+    """Rahu Kaal / Abhijit for the SHARED rashifal — named, never clocked.
+
+    The rashifal is one text read nationally, generated from a single
+    reference chart. Rahu Kaal and Abhijit are derived from local sunrise and
+    sunset, so any clock time in that shared text is one city's time presented
+    to everyone. Measured for 2026-08-22 against compute_panchang:
+
+        Mumbai    Rahu Kaal 09:31-11:06   Abhijit 12:16-13:06
+        Kolkata             08:27-10:03           11:13-12:04
+        Guwahati            08:12-09:48           10:59-11:51
+
+    That is a 79-minute national spread, and Kolkata's and Guwahati's real
+    Abhijit windows do not overlap Mumbai's AT ALL. A reader in Guwahati told
+    to act at 12:30 would be acting a full 39 minutes after their Abhijit had
+    closed — precise-looking, confidently wrong, and worse than saying nothing
+    because the precision is what makes it credible.
+
+    So this block gives the model what IS universal: the segment ordinal (a
+    function of the weekday alone), the part of the day it falls in, and the
+    fact that Abhijit is centred on LOCAL solar noon wherever the reader is.
+    The real clock times still reach the reader — the email renders them from
+    the subscriber's own city and the web page from the seeker's own chart —
+    but they come from compute_panchang, not from the model.
+
+    Reuses the already-computed `panchang`; recomputes nothing.
+    """
+    segment = _RAHU_KAAL_SEGMENT[panchang.sunrise.weekday()]
+    band = _RAHU_KAAL_BAND[segment]
+    return (
+        f"Today's inauspicious and auspicious windows. Rahu Kaal falls in the "
+        f"{_ordinal(segment)} of the eight equal parts of daylight — {band} — "
+        f"and is the wrong time to begin anything, sign, or decide. Abhijit "
+        f"Muhurta is the ~48 minutes centred on LOCAL solar noon, and is the "
+        f"day's most favourable window for important action.\n"
+        f"CRITICAL: state NEITHER as a clock time. Both are computed from the "
+        f"reader's own sunrise and sunset, and this one reading is published to "
+        f"the whole country — across Indian cities these windows shift by up to "
+        f"79 minutes, enough that two readers' Abhijit windows do not overlap at "
+        f"all. Name them ('during Rahu Kaal', 'in the Abhijit window near "
+        f"midday') and let the page show each reader their own times. Do not "
+        f"invent any other hour, minute, or 'after 4 pm'-style cutoff either — "
+        f"you have no clock for this reader."
+    )
+
+
 def _sunrise_sunset(
     day: date_, lat: float, lon: float, tz: ZoneInfo
 ) -> tuple[datetime, datetime]:

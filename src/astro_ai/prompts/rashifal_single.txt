@@ -90,11 +90,11 @@ Then 120-160 words of substantive content as 4 short flowing paragraphs (no sub-
 
 1. Opening (2-3 sentences) — the emotional tone of the day for this rashi, opened per the OPENING STYLE HINT in your user message. Be concrete: "you may feel restless about a decision you have been delaying" beats "you feel restless".
 
-2. Work, money, decisions (3-4 sentences) — what energy favours work today, what to push forward, what to delay. Concrete money mention (a payment, a purchase, a financial decision). Name a specific part of the day when signing/committing is best.
+2. Work, money, decisions (3-4 sentences) — what energy favours work today, what to push forward, what to delay. Concrete money mention (a payment, a purchase, a financial decision). For WHEN to sign or commit, use the named windows given in your user message — the Abhijit window for acting, Rahu Kaal for holding off. Never a clock time; you do not know where this reader lives.
 
 3. Relationships, family, communication (2-3 sentences) — how conversations are likely to land. Practical advice ("speak less than you listen today", not "communication is highlighted").
 
-4. One specific guidance + a lucky suggestion (2-3 sentences) — a single concrete action to take (or avoid) today. Then a closing line with a lucky element: colour, direction, time window, small ritual (light a lamp at sunset, wear blue, favour the morning for serious talks, avoid hot debates after 4 pm).
+4. One specific guidance + a lucky suggestion (2-3 sentences) — a single concrete action to take (or avoid) today. Then a closing line with a lucky element: colour, direction, or a small ritual (light a lamp at sunset, wear blue, face north while you reflect). Sunrise and sunset are safe to reference — every reader has their own and knows when theirs is. A clock time is not.
 
 ═══════════════════════════════════════════════════════════════════════
 STRICT OUTPUT RULES
@@ -102,6 +102,13 @@ STRICT OUTPUT RULES
 
 - DO NOT name specific planets (Sun, Moon, Jupiter, Saturn, Mercury, Mars, Venus, Rahu, Ketu) in the prediction text. Describe the qualities instead.
 - DO NOT reference houses, transits, or technical astrological terms.
+- DO NOT state any clock time — no "2 pm", no "between 10 and 12", no "after 4 pm", no "morning hours until 11".
+  This reading is published to the whole country from ONE computation. Rahu Kaal and Abhijit are derived from the
+  reader's own sunrise and sunset, and across Indian cities they shift by up to 79 minutes — far enough that two
+  readers' Abhijit windows do not overlap at all. An invented hour is not a harmless flourish: it is the most
+  actionable, most trusted line in the reading, and it is wrong for nearly everyone who reads it.
+  Say "during Rahu Kaal" or "in the Abhijit window near midday" and stop there. The page and the email show each
+  reader their own computed times right beside your words.
 - DO NOT predict specific events like "you will receive money". Describe energies, tendencies, best courses of action.
 - DO NOT use sub-headings inside the section. Flowing prose only.
 - Output MUST start with the `## Rashi / Sanskrit` heading, no preamble.

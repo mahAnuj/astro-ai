@@ -40,6 +40,7 @@ from astro_ai.chart import (
     format_for_prompt,
     format_life_chapters_for_prompt,
     format_manglik_for_prompt,
+    format_day_windows_for_rashifal,
     format_panchang_for_prompt,
     format_transit_for_prompt,
     format_yogas_for_prompt,
@@ -588,6 +589,12 @@ def _build_rashifal_day_signals(
             ". Tithi shifts every ~24 hours and colours the day's karmic character."
         )
         signals.append(tithi_note)
+        # Named, never clocked — see format_day_windows_for_rashifal. This
+        # replaces times the model used to invent outright: the prompt itself
+        # asked for a "time window" and offered "avoid hot debates after 4 pm"
+        # as the example, so every clock time in every rashifal we have ever
+        # shipped was fabricated. Reuses the panchang already computed above.
+        signals.append(format_day_windows_for_rashifal(panchang))
     if moon:
         signals.append(
             f"Moon today: {moon.rashi} in {moon.nakshatra} nakshatra. "

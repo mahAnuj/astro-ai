@@ -33,6 +33,7 @@ from fastapi import Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
 
+from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot
 from astro_ai.i18n import translate as _i18n_translate
 
 # Deliberately copied UNPRUNED from main.py: several of these names are unused
@@ -529,3 +530,78 @@ def _ask_cta_ctx(request: Request, hint: str = "about your chart") -> dict:
         "ask_remaining": _ask_quota_remaining(request),
         "ask_context_hint": hint,
     }
+
+
+# In-process daily cache for the Panchang strip. Keyed by
+# (today_iso, city_lower). First homepage load for a given (date, city)
+# pair runs the full compute chain (geocode + chart + panchang + transit
+# snapshot ≈ 200ms cold on first hit); every subsequent same-day load
+# on the same instance is a dict lookup.
+_PANCHANG_STRIP_CACHE: dict[tuple, tuple] = {}
+
+
+def panchang_strip_ctx(request) -> dict:
+    """Template context for the Panchang strip, resolved for THIS seeker.
+
+    The strip's whole point on a rashifal page is that Rahu Kaal and Abhijit
+    are location-dependent: across Indian cities they shift by up to 79
+    minutes, and Kolkata's Abhijit window does not overlap Mumbai's at all.
+    The shared reading therefore names those windows without ever clocking
+    them (see chart.format_day_windows_for_rashifal); this is what puts the
+    reader's OWN times on the page beside the words.
+
+    Falls back to Mumbai when there is no saved chart — the same default the
+    homepage uses, and the same one the reading itself was generated against.
+    """
+    city = "Mumbai, India"
+    try:
+        collection = load_collection(request)
+        if collection.active and collection.active.birth_place:
+            city = collection.active.birth_place
+    except Exception:
+        pass
+    panchang, moon, display = panchang_strip_for_city(city)
+    return {
+        "panchang_strip": panchang,
+        "panchang_moon": moon,
+        "panchang_city": display,
+    }
+
+
+def panchang_strip_for_city(city: str) -> tuple:
+    """Return (panchang, moon_info, city_display) — cached per day/city.
+
+    Lives HERE, not in home.py, because it now has more than one consumer:
+    the homepage strip and the rashifal pages both need the reader's own
+    Rahu Kaal / Abhijit. It is the single place those windows are obtained
+    for a page — nothing may recompute sunrise, Rahu Kaal or Abhijit for
+    itself. compute_panchang has its own (date, coarse lat/lon, tz) cache
+    underneath, so two cities in the same 55km bucket also share one solve.
+
+    Uses date.today() implicitly so a new day naturally busts the cache.
+    Cache is per-process (Cloud Run instances rebuild once each per day),
+    which is fine — the compute is <200ms so cold-start latency is
+    negligible.
+    """
+    today = date.today().isoformat()
+    key = (today, (city or "").strip().lower())
+    if key in _PANCHANG_STRIP_CACHE:
+        return _PANCHANG_STRIP_CACHE[key]
+    resolved_city = city or "Mumbai, India"
+    try:
+        chart_for_loc = compute_chart("2000-01-01", "12:00", resolved_city)
+        p = compute_panchang(chart_for_loc)
+        transit = compute_transit_snapshot(chart_for_loc)
+        moon = next((pl for pl in transit.planets if pl.name == "Moon"), None)
+        moon_info = {"rashi": moon.rashi, "nakshatra": moon.nakshatra} if moon else None
+        display = resolved_city.split(",")[0]
+        result = (p, moon_info, display)
+    except Exception:
+        result = (None, None, "")
+    _PANCHANG_STRIP_CACHE[key] = result
+    # Prevent unbounded growth if many cities are queried across a day.
+    # After ~100 unique entries, drop everything older than today.
+    if len(_PANCHANG_STRIP_CACHE) > 100:
+        _PANCHANG_STRIP_CACHE.clear()
+        _PANCHANG_STRIP_CACHE[key] = result
+    return result
