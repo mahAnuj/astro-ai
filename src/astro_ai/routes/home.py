@@ -40,7 +40,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
 from astro_ai import trust_bar
-from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot
+from astro_ai.chart import compute_chart
 from astro_ai.routes.deps import _lang, _no_cdn_cache, panchang_strip_for_city, templates
 from astro_ai.session import load_collection
 
@@ -70,7 +70,7 @@ def index(request: Request, needs_chart: str | None = None) -> HTMLResponse:
     _trust_min = trust_bar.minimums()
     # Panchang strip for the homepage masthead (user's request — always
     # visible without click-away). Cached daily per city via
-    # _homepage_panchang_cached — after first computation for a given
+    # panchang_strip_for_city — after the first computation for a given
     # (date, city) pair the same instance serves subsequent homepage
     # loads with no LLM, no geocode, no swiss-ephemeris compute.
     _city_pref = "Mumbai, India"

@@ -2690,7 +2690,7 @@ class GocharImpact:
     house_from_lagna: int
     house_from_moon: int
     retrograde: bool
-    favorability: str  # "favorable" | "neutral" | "challenging"
+    favorability: str  # "favorable" | "challenging" — NO neutral; see below
 
 
 def compute_gochar_impacts(natal: Chart, when: datetime | None = None) -> list[GocharImpact]:
@@ -3373,8 +3373,15 @@ def format_panchang_for_prompt(panchang: DailyPanchang) -> str:
 
 # Which part of the day each Rahu Kaal segment falls in. The SEGMENT ORDINAL
 # is universal — it depends only on the weekday (_RAHU_KAAL_SEGMENT above) —
-# so this description is true in Guwahati and in Mumbai alike. The CLOCK TIME
-# is not; see format_day_windows_for_rashifal below for why that matters.
+# and the CLOCK TIME is not; see format_day_windows_for_rashifal below for why
+# that matters.
+#
+# The BAND is a gloss on the ordinal, and it holds on 6 of 7 weekdays across
+# Mumbai/Delhi/Guwahati. The exception is Wednesday's segment 5: 12:41-14:16
+# in Mumbai ("early afternoon") but 11:25-13:02 in Guwahati, which is mostly
+# late morning. An earlier version of this comment claimed it was "true in
+# Guwahati and in Mumbai alike" — 6/7 is not alike, and the whole point of
+# this module is not to overstate what survives a change of longitude.
 _RAHU_KAAL_BAND: dict[int, str] = {
     1: "the first stretch after sunrise",
     2: "early morning",
@@ -3387,7 +3394,7 @@ _RAHU_KAAL_BAND: dict[int, str] = {
 }
 
 
-def format_day_windows_for_rashifal(panchang: DailyPanchang) -> str:
+def format_day_windows_for_rashifal(panchang: DailyPanchang, lang: str = "en") -> str:
     """Rahu Kaal / Abhijit for the SHARED rashifal — named, never clocked.
 
     The rashifal is one text read nationally, generated from a single
@@ -3413,15 +3420,32 @@ def format_day_windows_for_rashifal(panchang: DailyPanchang) -> str:
     but they come from compute_panchang, not from the model.
 
     Reuses the already-computed `panchang`; recomputes nothing.
+
+    `lang` supplies the EXACT terms to use. Without it the block named both
+    windows in English only, and the Hindi readings improvised: 6 of 12 came
+    back defective — `**Rahu Kaal**` in Latin script inside Devanagari prose,
+    `रूह क़ाल` ("rooh" is *soul*, not Rahu), `रहुकाल` unspaced, and `अभिजीत`
+    in 9 of 9 occurrences while the strip directly above the text said
+    `अभिजित मुहूर्त`. Naming a term for the model without giving it the term
+    in the target language is asking it to transliterate, and it guesses.
+    The strings come from i18n so there is one spelling per language, the
+    same one the strip and the email already render.
     """
+    from astro_ai.i18n import translate  # local: i18n must not import chart
+
     segment = _RAHU_KAAL_SEGMENT[panchang.sunrise.weekday()]
     band = _RAHU_KAAL_BAND[segment]
+    rahu = translate(lang, "rahu_kaal")
+    abhijit = translate(lang, "abhijit_muhurta")
     return (
         f"Today's inauspicious and auspicious windows. Rahu Kaal falls in the "
         f"{_ordinal(segment)} of the eight equal parts of daylight — {band} — "
         f"and is the wrong time to begin anything, sign, or decide. Abhijit "
         f"Muhurta is the ~48 minutes centred on LOCAL solar noon, and is the "
         f"day's most favourable window for important action.\n"
+        f"Write these two names EXACTLY as: \"{rahu}\" and \"{abhijit}\". Do not "
+        f"transliterate them yourself, do not romanise them, and do not bold "
+        f"or otherwise mark them up.\n"
         f"CRITICAL: state NEITHER as a clock time. Both are computed from the "
         f"reader's own sunrise and sunset, and this one reading is published to "
         f"the whole country — across Indian cities these windows shift by up to "

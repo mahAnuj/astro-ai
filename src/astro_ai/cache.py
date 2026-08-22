@@ -127,12 +127,23 @@ def fingerprint_chart(birth_date: str, birth_time: str, birth_place: str) -> str
 # hash, so without this bump every cached natal reading would keep describing
 # a combust planet as neutral for as long as it lived. This is the lever the
 # docstring below exists for.
-# v3 (2026-08-22): _build_rashifal_day_signals now appends the Rahu Kaal /
-# Abhijit block from chart.format_day_windows_for_rashifal. The rashifal
-# prompt FILE changed too, so its own hash moves — but the signals change is
-# assembly logic and would be invisible on any route sharing this token.
-# Bumping is the cheap side of the trade: a cached reading that still invents
-# "after 4 pm" is exactly the output this change exists to stop shipping.
+# v3 (2026-08-22). The reason first written here was the rashifal day-signals
+# change, and that reason was wrong: rashifal caches through `daily_cache`,
+# keyed (namespace, slug-lang, date), which never consults this token — and
+# the blast path that IS fp-keyed was invalidated anyway when
+# rashifal_single.txt's own hash moved (a527cda8 -> 21090ec4).
+#
+# The bump is load-bearing for the GOCHAR fix instead. compute_gochar_impacts
+# now reads favourability from the natal Moon rather than the Lagna, and that
+# output reaches /outlook readings cached for THIRTY DAYS (outlook.py:150-155,
+# yearly bucket keyed %Y-%m, ttl=30). Without this token moving, every
+# existing monthly and yearly reading would keep serving the Lagna-keyed
+# verdict — including "Ashtama Shani: favorable" — for up to a month.
+#
+# Recorded rather than quietly corrected because the mistake is instructive:
+# the commit that needed the bump did not carry it, and the commit that
+# carried it did not need it. If gochar were ever reverted independently, the
+# stale-reading window would come back with no note explaining why.
 PROMPT_LOGIC_VERSION = "v3"
 
 

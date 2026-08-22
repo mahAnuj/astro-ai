@@ -102,6 +102,9 @@ STRICT OUTPUT RULES
 
 - DO NOT name specific planets (Sun, Moon, Jupiter, Saturn, Mercury, Mars, Venus, Rahu, Ketu) in the prediction text. Describe the qualities instead.
 - DO NOT reference houses, transits, or technical astrological terms.
+- DO NOT use markdown. No `**bold**`, no `*italics*`, no backticks, no headings inside the body.
+  The reading is rendered with `{{ reading_body }}` and `whitespace-pre-line` — there is no markdown
+  filter anywhere in the path, so every asterisk you write is an asterisk the reader sees on the page.
 - DO NOT state any clock time — no "2 pm", no "between 10 and 12", no "after 4 pm", no "morning hours until 11".
   This reading is published to the whole country from ONE computation. Rahu Kaal and Abhijit are derived from the
   reader's own sunrise and sunset, and across Indian cities they shift by up to 79 minutes — far enough that two
