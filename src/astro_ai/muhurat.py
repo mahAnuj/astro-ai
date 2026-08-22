@@ -30,6 +30,7 @@ from zoneinfo import ZoneInfo
 from astro_ai import lunar_dates
 from astro_ai.adhik_maas import adhik_maas_flag
 from astro_ai.chart import (
+    combustion_orb,
     Chart, compute_chart, compute_panchang, compute_transit_snapshot,
     compute_sade_sati_details, compute_dasha_state,
     ChartError, NAKSHATRAS, RASHIS,
@@ -43,10 +44,16 @@ from astro_ai.chart import (
 _PANCHAK_NAKSHATRAS = {"Dhanishta", "Shatabhisha", "Purva Bhadrapada",
                          "Uttara Bhadrapada", "Revati"}
 
-# Combustion orbs from BPHS — planet within these degrees of Sun = combust.
-_COMBUST_ORB_JUPITER = 11.0
-_COMBUST_ORB_VENUS   = 10.0
-_COMBUST_ORB_MERCURY = 12.0    # Mercury has widest orb (per BPHS)
+# Combustion orbs live in chart.COMBUSTION_ORBS, sourced to
+# knowledge/grahas.md §12. This module used to carry its own three constants
+# and they DISAGREED: Mercury 12.0 here against 14.0 there, and no retrograde
+# distinction at all, where the source gives Mercury 14 direct / 10 retrograde
+# and Venus 10 / 8. Jupiter and Venus happened to match on the direct value,
+# which is exactly why the Mercury gap survived — two of three agreeing reads
+# as a consistent table.
+#
+# The scoring below now calls chart.combustion_orb() so there is one sourced
+# answer per planet. Nothing is recomputed here.
 
 
 # ─── Personal-matching classical tables ──────────────────────────────
@@ -1144,10 +1151,16 @@ def _combustion_flags(chart: Chart, when: datetime) -> dict[str, bool]:
         d = abs(sun_abs - p_abs) % 360.0
         return min(d, 360.0 - d)
 
+    def _is_combust(planet) -> bool:
+        if not planet:
+            return False
+        orb = combustion_orb(planet.name, getattr(planet, "retrograde", False))
+        return orb is not None and _sep(planet) <= orb
+
     return {
-        "jupiter": _sep(jup) <= _COMBUST_ORB_JUPITER,
-        "venus":   _sep(ven) <= _COMBUST_ORB_VENUS,
-        "mercury": _sep(mer) <= _COMBUST_ORB_MERCURY,
+        "jupiter": _is_combust(jup),
+        "venus":   _is_combust(ven),
+        "mercury": _is_combust(mer),
     }
 
 
