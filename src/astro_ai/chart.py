@@ -1805,9 +1805,13 @@ _DEBILITATION_SIGN: dict[str, str] = {
 # The last two are deliberately untouched: they are distinct classical rules
 # that happen to measure Sun-proximity, not this rule at a different orb, and
 # folding them in would silently move Manglik verdicts and yoga detection.
-# muhurat.py is a genuine duplicate of THIS rule and should adopt
-# combustion_orb(), but that changes muhurat ratings, so it needs its own
-# change. Counting honestly, #206 took the repo from three Sun-proximity
+# muhurat.py WAS a genuine duplicate of THIS rule. It adopted combustion_orb()
+# in 39ae5bf and its three constants are gone, so the count is back to three
+# Sun-proximity rules, all deliberate and all distinct. That change did move
+# muhurat ratings, exactly as this note warned: measured over 365 days of 2026,
+# mercury flips on 24 days, venus on 3, jupiter on 0.
+#
+# Counting honestly at the time, #206 took the repo from three Sun-proximity
 # constants to four; it fixed the one that was wrong and named the rest.
 #
 # Retrograde variants are part of the classical rule, not a refinement: an
