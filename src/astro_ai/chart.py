@@ -2632,20 +2632,41 @@ def format_dasha_for_prompt(state: DashaState) -> str:
 # Classical favourability per (planet, house from Lagna). Houses 3/6/10/11
 # generally support malefics (Saturn especially); 5/9/2/11 favour benefics.
 # Anything not listed defaults to neutral.
+# Gochara results by house FROM THE NATAL MOON — B.V. Raman, "Astrology for
+# Beginners", Ch. XII "Transits or Gochara", benefic/malefic table (p.101).
+# Transcribed from `pdftotext -layout` of the copy in data/; the per-house
+# prose on pp.98-100 agrees with the table for all four planets here.
+#
+# FROM THE MOON, not the Lagna. Raman: "In predicting Gochara results the
+# Moon and the birth [rashi] ..." — the whole system is measured from the
+# Janma Rashi. This file already encoded that elsewhere and disagreed with
+# itself: Sade Sati is computed from the Moon at line ~543, and
+# knowledge/vedic_reference.md §2 and the Ashtama Shani note both define
+# themselves as "from natal Moon". Only this lookup used the Lagna.
+#
+# Only the four slow movers are listed because only they are computed here.
+# Raman backs that scope: "the transiting effects of the slow moving ones,
+# viz., Jupiter, Saturn and Rahu are universally held to be most powerful."
+# His full table (all nine, houses from the Moon) is recorded in
+# knowledge/vedic_reference.md §2A so the rest is not lost.
+#
+# Every house 1-12 is present for each planet. There is deliberately no
+# "neutral" default left reachable: the previous table listed 3-5 houses per
+# planet and silently called the other 7-9 neutral, which is not a claim
+# Raman makes anywhere — he classifies all twelve.
+_GOCHAR_BENEFIC_HOUSES: dict[str, frozenset[int]] = {
+    "Jupiter": frozenset({2, 5, 7, 9, 11}),
+    "Saturn":  frozenset({3, 6, 11}),
+    "Rahu":    frozenset({3, 6, 11}),
+    # Raman brackets Rahu and Ketu on one row of the table with one set of
+    # values; they are not given separate lists.
+    "Ketu":    frozenset({3, 6, 11}),
+}
+
 _GOCHAR_FAVOURABILITY: dict[tuple[str, int], str] = {
-    # Saturn — likes upachaya houses (3, 6, 10, 11)
-    ("Saturn", 3): "favorable", ("Saturn", 6): "favorable", ("Saturn", 11): "favorable",
-    ("Saturn", 4): "challenging", ("Saturn", 8): "challenging", ("Saturn", 12): "challenging",
-    # Jupiter — favours dharma + dhana houses
-    ("Jupiter", 1): "favorable", ("Jupiter", 2): "favorable", ("Jupiter", 5): "favorable",
-    ("Jupiter", 9): "favorable", ("Jupiter", 11): "favorable",
-    ("Jupiter", 6): "challenging", ("Jupiter", 8): "challenging", ("Jupiter", 12): "challenging",
-    # Rahu — broadly unpredictable; mark known patterns
-    ("Rahu", 3): "favorable", ("Rahu", 6): "favorable", ("Rahu", 11): "favorable",
-    ("Rahu", 1): "challenging", ("Rahu", 7): "challenging", ("Rahu", 8): "challenging",
-    # Ketu — similar but mirror
-    ("Ketu", 3): "favorable", ("Ketu", 9): "favorable", ("Ketu", 12): "favorable",
-    ("Ketu", 1): "challenging", ("Ketu", 7): "challenging", ("Ketu", 8): "challenging",
+    (planet, house): ("favorable" if house in benefic else "challenging")
+    for planet, benefic in _GOCHAR_BENEFIC_HOUSES.items()
+    for house in range(1, 13)
 }
 
 
@@ -2686,7 +2707,14 @@ def compute_gochar_impacts(natal: Chart, when: datetime | None = None) -> list[G
                 house_from_lagna=p.house,
                 house_from_moon=h_from_moon,
                 retrograde=p.retrograde,
-                favorability=_GOCHAR_FAVOURABILITY.get((name, p.house), "neutral"),
+                # h_from_moon, NOT p.house. p.house is the transit's house from
+            # the LAGNA; Gochara is measured from the natal Moon. Keying on
+            # the Lagna changed the verdict on 62.5% of gochar lines (300 of
+            # 480, over 120 random charts) — and the line handed to the model
+            # prints both houses and then this label, so a Saturn reported as
+            # "house 8 from natal Moon. Favourability: favorable" was telling
+            # people their Ashtama Shani was going well.
+            favorability=_GOCHAR_FAVOURABILITY[(name, h_from_moon)],
             )
         )
     return impacts

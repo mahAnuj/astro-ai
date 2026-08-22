@@ -177,6 +177,62 @@ if active.
 
 ---
 
+## 2A. Gochara — transit results by house from the natal Moon
+
+**Gochara is measured from the Janma Rashi (the natal Moon sign), never from
+the Lagna.** Raman states it directly: *"In predicting Gochara results the
+Moon and the birth [rashi]..."*. §2 (Sade Sati) and §2.4 (Ashtama Shani)
+above are both special cases of this same table — Saturn in the 12th/1st/2nd
+and Saturn in the 8th, counted from the Moon.
+
+Benefic and malefic houses, counted from the natal Moon:
+
+| Planet | Benefic houses | Malefic houses |
+|---|---|---|
+| Sun | 3, 6, 10, 11 | 1, 2, 4, 5, 7, 8, 9, 12 |
+| Moon | 1, 3, 6, 7, 10, 11 | 2, 4, 5, 8, 9, 12 |
+| Mars | 3, 6, 11 | 1, 2, 4, 5, 7, 8, 9, 10, 12 |
+| Mercury | 2, 4, 6, 8, 10, 11 | 1, 3, 5, 7, 9, 12 |
+| Jupiter | 2, 5, 7, 9, 11 | 1, 3, 4, 6, 8, 10, 12 |
+| Venus | 1, 2, 3, 4, 5, 8, 9, 11, 12 | 6, 7, 10 |
+| Saturn | 3, 6, 11 | 1, 2, 4, 5, 7, 8, 9, 10, 12 |
+| Rahu / Ketu | 3, 6, 11 | 1, 2, 4, 5, 7, 8, 9, 10, 12 |
+
+> Source: B.V. Raman, *Astrology for Beginners*, Ch. XII "Transits or
+> Gochara" — benefic/malefic table, p.101 (the copy in `data/`; line 5203+
+> under `pdftotext -layout`). The per-house prose on pp.98-100 was read
+> independently and agrees with the table for Jupiter, Saturn and Rahu/Ketu.
+> Rahu and Ketu share ONE row in Raman; he gives them no separate lists.
+>
+> Two OCR notes, both resolved by cross-reading the prose: Jupiter's malefic
+> row prints as `1, 3, 4, .p, 8, 10,12` — the artefact is `6`, confirmed
+> because benefic (2,5,7,9,11) plus malefic must cover all twelve, and the
+> prose gives 6) *"grief and misery"*. Saturn's 5th and 6th entries are
+> garbled mid-page; the table supplies both.
+
+**Every house is classified.** There is no "neutral" third category in Raman —
+each of the twelve is benefic or malefic for each planet. Code that lists only
+a handful of houses and defaults the rest to neutral is inventing a category
+the source does not have.
+
+**Scope note.** `chart.py:compute_gochar_impacts` evaluates only Saturn,
+Jupiter, Rahu and Ketu. Raman supports that emphasis: *"the transiting effects
+of the slow moving ones, viz., Jupiter, Saturn and Rahu are universally held
+to be most powerful. The triennial influence may be read from Saturn, the
+yearly influence from Jupiter..."*. The other five rows are recorded here so
+the source is not lost if the scope widens.
+
+**What this table does NOT cover.** Raman immediately adds two qualifiers we
+do not implement: *"There are exceptions under which certain planets said to
+produce malefic effect while transiting certain house, do not manifest
+anything unfavourable at all"* (Vedha/Ashtakavarga cancellation), and that
+Mars and the Sun act in the first 10° of a sign, Jupiter and Venus in the
+second 10°, while Rahu acts throughout. A bare house verdict is therefore the
+first approximation, not the finished judgement — say so rather than
+overstating certainty.
+
+---
+
 ## 3. Kaal Sarp Dosh
 
 ### 3.1 Definition
