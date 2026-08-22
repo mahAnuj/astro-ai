@@ -42,4 +42,14 @@
     </div>
     {% endfor %}
   </div>
+  {# Base rate, not reassurance. Raman classifies every one of the twelve
+     houses as benefic or malefic — there is no neutral category — and the
+     slow malefics are malefic in nine of them. So a correct table puts most
+     cards in the challenging column, and roughly one chart in three shows
+     all four. Without this line that reads as personal catastrophe rather
+     than as the arithmetic of the source. CLAUDE.md forbids fear framing;
+     stating the base rate is how this table complies without being bent. #}
+  <p class="px-6 pb-5 -mt-1 text-xs text-stone-500 leading-relaxed">
+    {{ t(lang, 'gochar_base_rate') }}
+  </p>
 </section>

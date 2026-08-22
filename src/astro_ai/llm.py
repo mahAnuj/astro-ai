@@ -270,7 +270,15 @@ def _format_outlook_message(
 ) -> str:
     """User-message block: seeker + natal + transits + flags + gochar + events."""
     name_line = f"Name: {details.name}" if details.name.strip() else "Name: (not provided)"
-    gochar_lines = ["Gochar impacts (slow movers, sign + house + favourability):"]
+    gochar_lines = [
+        "Gochar impacts (slow movers, sign + house + favourability). Favourability "
+        "is classical and measured FROM THE NATAL MOON. Note the base rate before "
+        "you weigh it: the slow planets are malefic in most positions by this "
+        "reckoning — Saturn, Rahu and Ketu in nine houses of twelve, Jupiter in "
+        "seven — so several 'challenging' lines is the ordinary shape of this "
+        "table and NOT a signal to write a dire reading. Weigh them, do not "
+        "simply tally them:"
+    ]
     for g in gochar_impacts:
         retro = " (retrograde)" if g.retrograde else ""
         gochar_lines.append(
@@ -594,7 +602,7 @@ def _build_rashifal_day_signals(
         # asked for a "time window" and offered "avoid hot debates after 4 pm"
         # as the example, so every clock time in every rashifal we have ever
         # shipped was fabricated. Reuses the panchang already computed above.
-        signals.append(format_day_windows_for_rashifal(panchang))
+        signals.append(format_day_windows_for_rashifal(panchang, lang))
     if moon:
         signals.append(
             f"Moon today: {moon.rashi} in {moon.nakshatra} nakshatra. "
@@ -714,7 +722,30 @@ def _generate_rashifal_single(
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
     ], route="rashifal_single")
-    return content.strip()
+    return _strip_inline_markdown(content.strip())
+
+
+_MD_BOLD = re.compile(r"(\*\*|__)(?=\S)(.+?)(?<=\S)\1", re.S)
+_MD_TICKS = re.compile(r"`+")
+
+
+def _strip_inline_markdown(text: str) -> str:
+    """Remove bold markers and backticks the model was told not to emit.
+
+    Belt and braces, and the braces are the load-bearing half. The prompt now
+    forbids markdown, but a prompt rule is a request: told not to, the model
+    still bolded a term in 1 of 4 Hindi generations. `reading_body` is
+    rendered as `{{ reading_body }}` under `whitespace-pre-line` with no
+    markdown filter anywhere in the path, so every surviving asterisk is an
+    asterisk on the page — and it landed on the Rahu Kaal / Abhijit terms
+    specifically, because those are the words the prompt tells it to
+    emphasise.
+
+    Deliberately narrow: unwraps `**bold**` / `__bold__` keeping the text,
+    and drops backticks. It does NOT touch single asterisks, which could be
+    legitimate punctuation, and does not attempt to parse markdown.
+    """
+    return _MD_TICKS.sub("", _MD_BOLD.sub(r"\2", text))
 
 
 class _StartPacer:

@@ -316,7 +316,7 @@ _EMAIL_KUNDLI_MIN_INTERVAL_SEC = 60.0  # user can email themselves at most once 
 # user sub OR CLIENT IP, so every distinct anonymous visitor left a permanent
 # entry. A slow leak, worst on exactly the long-lived warm instances we want.
 #
-# NOT the `clear()` that routes/home.py uses for _HOMEPAGE_PANCHANG_CACHE.
+# NOT the `clear()` that routes/deps.py uses for _PANCHANG_STRIP_CACHE.
 # That is right for a cache — dropping a cached value costs a recompute — and
 # WRONG for a rate limiter, where wiping the dict hands every currently
 # limited caller an immediate reset. Someone at their daily snapshot cap would

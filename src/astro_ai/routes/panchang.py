@@ -6,8 +6,8 @@ Owns:
 
 plus the shared ``_render_panchang`` renderer both routes delegate to.
 
-Deliberately does NOT own ``_HOMEPAGE_PANCHANG_CACHE`` /
-``_homepage_panchang_cached``: those belong to the homepage hot path (#144)
+Deliberately does NOT own ``_PANCHANG_STRIP_CACHE`` /
+``panchang_strip_for_city``: those live in routes/deps.py and belong to the homepage hot path (#144)
 and live in ``routes/home.py``. Nothing here reads them.
 
 Moved verbatim from ``main.py``; only the decorator prefix changed
