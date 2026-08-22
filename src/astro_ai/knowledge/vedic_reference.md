@@ -180,10 +180,27 @@ if active.
 ## 2A. Gochara — transit results by house from the natal Moon
 
 **Gochara is measured from the Janma Rashi (the natal Moon sign), never from
-the Lagna.** Raman states it directly: *"In predicting Gochara results the
-Moon and the birth [rashi]..."*. §2 (Sade Sati) and §2.4 (Ashtama Shani)
-above are both special cases of this same table — Saturn in the 12th/1st/2nd
-and Saturn in the 8th, counted from the Moon.
+the Lagna.** Raman, verbatim:
+
+> "The passage of planets through certain angular positions from the radical
+> Moon is technically termed Gochara."
+>
+> "The following results are produced by the different planets while
+> transiting the different signs from Janma Rasi (Radical Moon)."
+
+§2 (Sade Sati) and §2.4 (Ashtama Shani) above are both special cases of this
+same table — Saturn in the 12th/1st/2nd and Saturn in the 8th, counted from
+the Moon; Raman confirms the link himself ("*his transit in the 12th, the 1st
+and the 2nd from the radical Moon ... goes under the technical name of Sade
+Sati*").
+
+> **A correction worth keeping.** The first version of this section quoted a
+> different line as *"the Moon and the birth [rashi] play a prominent part"*.
+> The book says the birth **constellation**, and Raman uses "constellation"
+> for nakshatra throughout — the bracket converted a claim about the birth
+> star into one about the birth sign. The conclusion was right and the
+> evidence was tampered with, which is the harder failure to catch. The two
+> quotes above need no brackets.
 
 Benefic and malefic houses, counted from the natal Moon:
 
@@ -210,6 +227,15 @@ Benefic and malefic houses, counted from the natal Moon:
 > prose gives 6) *"grief and misery"*. Saturn's 5th and 6th entries are
 > garbled mid-page; the table supplies both.
 
+**Independently corroborated.** Narasimha Rao's `vedic_astro_textbook.pdf`
+carries the same table twice by a different route — §25.2 Tables 53-59 and
+§26.3 Table 63 — including the Rahu/Ketu row. That matters most for Ketu,
+where our code previously carried an invented value; it is now sourced twice
+rather than once. One wrinkle recorded so the next reader is not surprised:
+Rao's Table 58 marks Venus's 8th and 12th "Bad" while his own Table 63 lists
+both as auspicious. Raman and Rao-Table-63 agree; Table 58 is the outlier.
+This section follows Raman.
+
 **Every house is classified.** There is no "neutral" third category in Raman —
 each of the twelve is benefic or malefic for each planet. Code that lists only
 a handful of houses and defaults the rest to neutral is inventing a category
@@ -225,7 +251,12 @@ the source is not lost if the scope widens.
 **What this table does NOT cover.** Raman immediately adds two qualifiers we
 do not implement: *"There are exceptions under which certain planets said to
 produce malefic effect while transiting certain house, do not manifest
-anything unfavourable at all"* (Vedha/Ashtakavarga cancellation), and that
+anything unfavourable at all"* — he points at his own Ashtakavarga book for
+these, and does **not** use the word *Vedha* anywhere (0 occurrences in the
+whole text). The Vedha machinery, with its exception rules ("Sun and Saturn do
+not cause vedha on each other; Moon and Mercury do not cause vedha on each
+other"), is Narasimha Rao, `vedic_astro_textbook.pdf` §26.3 Table 63. An
+earlier draft of this section credited Vedha to Raman; it should not have. And
 Mars and the Sun act in the first 10° of a sign, Jupiter and Venus in the
 second 10°, while Rahu acts throughout. A bare house verdict is therefore the
 first approximation, not the finished judgement — say so rather than
