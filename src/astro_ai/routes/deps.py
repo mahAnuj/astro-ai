@@ -572,6 +572,9 @@ def panchang_strip_ctx(request) -> dict:
 log = logging.getLogger(__name__)
 
 
+_STRIP_CACHE_MAX = 100
+"""Entries kept in the strip day-cache before the oldest are evicted."""
+
 _STRIP_DEFAULT_CITY = "Mumbai, India"
 """Fallback location for the Panchang strip.
 
@@ -645,9 +648,20 @@ def panchang_strip_for_city(city: str) -> tuple:
             log.exception("panchang strip: default city failed too; strip suppressed")
             return (None, None, "")
     _PANCHANG_STRIP_CACHE[key] = result
-    # Prevent unbounded growth if many cities are queried across a day.
-    # After ~100 unique entries, drop everything older than today.
-    if len(_PANCHANG_STRIP_CACHE) > 100:
-        _PANCHANG_STRIP_CACHE.clear()
-        _PANCHANG_STRIP_CACHE[key] = result
+    # Bound growth if many cities are queried across a day (#214).
+    #
+    # This used to clear() the whole dict, which threw away the DEFAULT-city
+    # entry — the one backing every signed-out `/` and `/rashifal` — along
+    # with the long tail that tripped the limit. Measured: 106 entries in,
+    # 1 out. It also trips sooner than it used to, because the rashifal pages
+    # now feed signed-in cities into the same dict.
+    #
+    # Drop oldest-inserted instead (dicts preserve insertion order), and never
+    # evict the default: it is the hottest key in the process and the most
+    # expensive to lose.
+    if len(_PANCHANG_STRIP_CACHE) > _STRIP_CACHE_MAX:
+        default_key = (today, _STRIP_DEFAULT_CITY.lower())
+        for stale in [k for k in _PANCHANG_STRIP_CACHE
+                      if k not in (key, default_key)][:len(_PANCHANG_STRIP_CACHE) - _STRIP_CACHE_MAX]:
+            _PANCHANG_STRIP_CACHE.pop(stale, None)
     return result

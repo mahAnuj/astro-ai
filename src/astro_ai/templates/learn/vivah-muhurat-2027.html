@@ -13,12 +13,20 @@
 
 <h3>1. Guru + Shukra visibility (both above the horizon, not combust)</h3>
 
-<p>Jupiter and Venus are the two karakas of marriage (Jupiter = husband, Venus = wife). Both must be visible in the sky — not combust (within 11° of the Sun for Guru, 10° for Shukra, per the BPHS orbs our finder applies) and above the horizon during the day. When either is combust, marriages are traditionally postponed to a period when they emerge.</p>
+<p>Jupiter and Venus are the two karakas of marriage (Jupiter = husband, Venus = wife). Both must be visible in the sky — not combust (within 11° of the Sun for Guru, 10° for Shukra, per the classical orbs our finder applies) and above the horizon during the day. When either is combust, marriages are traditionally postponed to a period when they emerge.</p>
 
-{# muhurat._combustion_flags(compute_chart("2027-01-01","12:00","Delhi"), midday IST) day-by-day scan of 2027, run 2026-08-08 — Venus orb 10° (_COMBUST_ORB_VENUS): combust 2027-07-07 through 2027-09-17 #}
+{# muhurat._combustion_flags(compute_chart("2027-01-01","12:00","Delhi"), midday IST)
+   day-by-day scan of 2027 — Venus: combust 2027-07-07 through 2027-09-17.
+   First run 2026-08-08 against muhurat.py's own _COMBUST_ORB_VENUS = 10.0.
+   RE-VERIFIED 2026-08-22 after 39ae5bf deleted those constants and moved the
+   scan onto chart.COMBUSTION_ORBS (Venus 10 direct / 8 retrograde, sourced to
+   knowledge/grahas.md §12): window is byte-identical, because Venus is not
+   retrograde across this stretch. Re-run the scan, do not trust this line. #}
 <p>Through 2027 both karakas stay visible for the whole of the winter and spring seasons. On the orbs above, Shukra (Venus) goes combust in early July 2027 — about a week before Chaturmas opens — and does not clear until the third week of September. Traditions using a wider or narrower orb will place that first day a little earlier or later, so treat the onset as a week, not as a single fixed date.</p>
 
-{# same scan, Jupiter orb 11° (_COMBUST_ORB_JUPITER): combust 2027-08-17 through 2027-09-14 #}
+{# same scan, Jupiter: combust 2027-08-17 through 2027-09-14. Also re-verified
+   2026-08-22 against chart.COMBUSTION_ORBS and unchanged — Jupiter is 11° with
+   no retrograde variant, so the orb move could not touch it. #}
 <p>Guru (Jupiter) is combust for about four weeks from mid-August 2027, entirely inside the Chaturmas restriction. So in 2027 the combustion blackout costs the calendar nothing that Chaturmas had not already closed.</p>
 
 <h3>2. No Malamas month (Adhik Maas)</h3>
