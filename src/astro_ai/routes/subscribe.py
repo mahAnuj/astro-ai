@@ -541,11 +541,47 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
             failed += 1
             failures.append(sub["email"])
 
+    # `ok` must mean "subscribers got their email", not "the handler reached
+    # its last line". It used to be the literal True, so a blast that failed
+    # to deliver to EVERY subscriber still reported success — and this is the
+    # endpoint that silently failed for 21 consecutive days (2026-08-01 to
+    # 08-21) without anyone noticing. Cloud Run 504s never reach this code at
+    # all, so an external monitor is still needed for that case; this covers
+    # everything that DOES get here.
+    total = len(subscribers.list_subscribers())
+    delivered_none = total > 0 and sent == 0
+    ok = not delivered_none and failed == 0
+
+    if delivered_none:
+        _fire_error_alert(
+            request,
+            RuntimeError(f"daily rashifal reached 0 of {total} subscribers"),
+            "rashifal:blast:zero_delivered",
+        )
+    elif failed:
+        _fire_error_alert(
+            request,
+            RuntimeError(f"daily rashifal failed for {failed} of {total}: {failures[:5]}"),
+            "rashifal:blast:partial",
+        )
+    # A short language is worth knowing about even when every send succeeded:
+    # subscribers on that language quietly receive fewer than 12 rashis.
+    short = {lang: len(secs) for lang, secs in sections_by_lang.items() if len(secs) != 12}
+    if short:
+        _fire_error_alert(
+            request,
+            RuntimeError(f"daily rashifal sections incomplete: {short} (expected 12 each)"),
+            "rashifal:blast:short_sections",
+        )
+
+    log.info("daily rashifal: sent=%d failed=%d of %d subscribers, sections=%s",
+             sent, failed, total, {k: len(v) for k, v in sections_by_lang.items()})
     return JSONResponse({
-        "ok": True,
+        "ok": ok,
         "date": today_iso,
-        "total_subscribers": len(subscribers.list_subscribers()),
+        "total_subscribers": total,
         "sent": sent,
         "failed": failed,
+        "sections": {lang: len(secs) for lang, secs in sections_by_lang.items()},
         "failed_emails": failures[:20],  # cap so we don't return MB-sized lists
-    })
+    }, status_code=200 if ok else 500)

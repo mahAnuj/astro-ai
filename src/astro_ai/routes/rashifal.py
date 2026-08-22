@@ -25,6 +25,7 @@ from fastapi.responses import HTMLResponse
 from astro_ai import daily_cache, festivals
 from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot
 from astro_ai.llm import parse_sectioned_reading
+from astro_ai import providers as llm_providers
 from astro_ai.providers import AllProvidersExhausted
 from astro_ai.routes.deps import (
     RASHIFAL_PROMPT_PATH,
@@ -145,6 +146,23 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
     cache_key = f"{canonical_slug}-{lang}"
     cached = daily_cache.get("rashifal_single", cache_key, today_iso)
     reading_body: str | None = cached.get("body") if cached else None
+
+    # Re-gate what came out of the cache (#215). `_shared_three_tier` has done
+    # this on every GCS and SQLite hit for a long time; this path never did, so
+    # a blank or truncated body written once was served for the REST OF THE DAY
+    # with no healthy retry. Evidence it happened: the 2026-08-20 leo, libra and
+    # virgo fixtures all carry `body: ""`.
+    #
+    # This is the same failure shape as the outage fixed in ed5cb2c — an empty
+    # completion treated as a valid answer — one layer up. That fix stops new
+    # blanks being produced; it does nothing about a blank already on disk, and
+    # nothing about a degraded entry written by an older build.
+    if reading_body is not None:
+        ok, reason = llm_providers.passes_quality(reading_body, "rashifal_single")
+        if not ok:
+            log.warning("rashifal_single: discarding cached %s (%s) — regenerating",
+                        cache_key, reason)
+            reading_body = None
 
     if reading_body is None:
         # Generate. Wrap in the same try/except pattern the old route had
