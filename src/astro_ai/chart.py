@@ -2637,9 +2637,20 @@ def format_dasha_for_prompt(state: DashaState) -> str:
 # Transcribed from `pdftotext -layout` of the copy in data/; the per-house
 # prose on pp.98-100 agrees with the table for all four planets here.
 #
-# FROM THE MOON, not the Lagna. Raman: "In predicting Gochara results the
-# Moon and the birth [rashi] ..." — the whole system is measured from the
-# Janma Rashi. This file already encoded that elsewhere and disagreed with
+# FROM THE MOON, not the Lagna. Two verbatim lines from the same chapter, both
+# needing no editorial hand: "The passage of planets through certain angular
+# positions from the radical Moon is technically termed Gochara", and "The
+# following results are produced by the different planets while transiting the
+# different signs from Janma Rasi (Radical Moon)."
+#
+# An earlier draft of this comment quoted a THIRD line as "the Moon and the
+# birth [rashi] play a prominent part". The book says "the birth
+# CONSTELLATION", and Raman uses "constellation" for nakshatra throughout — so
+# the bracket quietly turned a statement about the birth star into one about
+# the birth sign. The doctrine was right and the evidence for it was doctored.
+# If a quotation needs a bracket to say what you want, find a better quotation.
+#
+# This file already encoded the from-the-Moon rule elsewhere and disagreed with
 # itself: Sade Sati is computed from the Moon at line ~543, and
 # knowledge/vedic_reference.md §2 and the Ashtama Shani note both define
 # themselves as "from natal Moon". Only this lookup used the Lagna.
@@ -2710,7 +2721,12 @@ def compute_gochar_impacts(natal: Chart, when: datetime | None = None) -> list[G
                 # h_from_moon, NOT p.house. p.house is the transit's house from
             # the LAGNA; Gochara is measured from the natal Moon. Keying on
             # the Lagna changed the verdict on 62.5% of gochar lines (300 of
-            # 480, over 120 random charts) — and the line handed to the model
+            # 480, over 120 random charts) AGAINST THE TABLE THEN IN FORCE —
+            # that is the "how much shipped output was wrong" number, stable
+            # at 61-66% across four seeds. Re-running the same experiment
+            # against the CORRECTED table below gives ~40%, because the two
+            # measure different things; do not read 62.5% as describing the
+            # current code. And the line handed to the model
             # prints both houses and then this label, so a Saturn reported as
             # "house 8 from natal Moon. Favourability: favorable" was telling
             # people their Ashtama Shani was going well.
@@ -2964,7 +2980,20 @@ _WEEKDAY_LORDS: dict[int, tuple[str, str, str, str]] = {
 }
 
 # 1-based 1/8 segment of the daylight (sunrise to sunset) when Rahu Kaal falls.
-# Classical Vedic assignment — varies by weekday.
+#
+# Source: B.V. Raman, "Muhurtha or Electional Astrology" (1948), glossary
+# entry "Rahu Kalam" — data/matching/raman-muhurtha-1948-electional-astrology
+# _djvu.txt, lines 7318-7356 (already plain text; no pdftotext involved).
+# Raman states it as clock times against a 6 a.m. sunrise, which makes each
+# eighth exactly 1h30m; reversing that gives the segment ordinals below.
+# Verified by execution, all 7/7 — e.g. Saturday's "9 a.m. to 10-30 a.m." is
+# segment 3, Sunday's "4-30 p.m. to 6 p.m." is segment 8.
+#
+# `scripts/corpus_search.py "rahu kala"` reports 0 hits and that is a FALSE
+# NEGATIVE: the glossary spells it "Rahu Kalam" and the OCR splits the entry
+# across three columns, so the expander never reaches it. Do not cite that
+# zero as evidence of absence — this is the second time a "measured absence"
+# in this repo turned out to be a search artefact.
 _RAHU_KAAL_SEGMENT: dict[int, int] = {
     0: 2,  # Monday    — 2nd part
     1: 7,  # Tuesday   — 7th part
@@ -3271,8 +3300,22 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
     rk_start = sunrise + timedelta(seconds=(rk_segment_idx - 1) * segment_seconds)
     rk_end = sunrise + timedelta(seconds=rk_segment_idx * segment_seconds)
 
-    # Abhijit Muhurta: 8th of the 15 daylight muhurtas — centered on solar noon,
-    # spanning roughly day_length/15 (~48 minutes on equinox days).
+    # Abhijit Muhurta: centred on LOCAL solar noon, spanning day_length/15
+    # (~48 minutes on equinox days).
+    #
+    # Centring on solar noon: Narasimha Rao, "Lessons Vol. I", Lesson #1 item
+    # 16 — "you use the muhurta of mid day (i.e. when Sun is at the highest
+    # point in the sky at a particular location) ... called Abhijit muhurta".
+    # The 15-muhurta division of daylight and the ~48-minute width: Raman,
+    # "Muhurtha" pp.31-32.
+    #
+    # UNSOURCED, and left in place only because it is arithmetically the same
+    # thing: the label "8th of the 15". Segments 7/15 to 8/15 of daylight do
+    # centre on midday, so the code is right either way — but no book we hold
+    # states that Abhijit IS the 8th diurnal muhurta, and Raman's own numbered
+    # list names his 8th "Vidhi" and treats "abhijit" as a separate name. The
+    # arithmetic is sourced; the ordinal label is not. Do not repeat it as
+    # though it were.
     midday = sunrise + timedelta(seconds=day_seconds / 2.0)
     abhijit_half = timedelta(seconds=(day_seconds / 15.0) / 2.0)
     result = DailyPanchang(
