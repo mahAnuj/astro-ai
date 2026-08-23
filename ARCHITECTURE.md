@@ -23,14 +23,15 @@ Server-rendered HTML with HTMX for partial updates. No SPA, no build step for JS
 
 Roughly 21,600 lines of Python across 30 modules, 68 routes in 25 route modules,
 54 top-level templates plus 76 `/learn` articles, 11 LLM prompt templates, 11 knowledge
-files (~6,200 lines) and 12 verification gates.
+files (~6,200 lines), 13 verification gates and a 24-test behaviour suite.
 
 Two things drive nearly every design decision in here, and they are worth internalising
 before you read anything else:
 
 1. **Everything runs on free tiers.** Not as a temporary measure — as a constraint.
-2. **There is no staging and no test suite.** A push to `main` deploys to production.
-   Production is the first place code runs.
+2. **There is no staging, and test coverage is narrow.** A push to `main` deploys to
+   production. Production is the first place code runs. The behaviour suite (§8) covers
+   request paths only; most of the app has no automated coverage at all.
 
 ---
 
@@ -290,7 +291,9 @@ that. Also verify your own tooling: a `pdftotext` invocation against a wrong pat
 
 Twelve `scripts/verify_*.py` gates. The discipline that makes them worth anything:
 
-**Prove a gate can fail before trusting that it passes.** Mutate the thing it guards,
+**Prove a gate can fail before trusting that it passes.** For the behaviour suite this
+is automated: `scripts/mutate_behaviour_suite.py` restores each original defect and
+asserts the suite goes red (currently 8/8). For everything else, do it by hand. Mutate the thing it guards,
 confirm it turns red with a specific message, restore. A gate that has never failed is
 not evidence. Several gates here were written with bugs — an optional regex group that
 matched empty and reported a false failure, an unscoped row match that read 44 tables
@@ -360,8 +363,10 @@ Dated, with the evidence. **Check here before proposing a change.**
   channels create` the assistant has been denied.
 - **All 15 Cloud Run env vars are plain values**, including `ADMIN_PASSWORD`,
   `ASTRO_AI_COOKIE_SECRET`, `BREVO_API_KEY` and a Telegram token. None in Secret Manager.
-- **No test suite.** `tests/` holds only fixtures. Verification is by execution against a
-  running server plus the twelve gates.
+- **Coverage is narrow.** A behaviour suite exists (`tests/`, run via `uv run pytest` or
+  `scripts/verify_behaviour.py`) but covers only request-path regressions — the cache
+  lifecycle, degraded pages and blast reporting where eleven defects landed across four
+  QA rounds. Everything else is verified by execution plus the thirteen gates.
 - **`verify_devanagari_serif`** needs Playwright, which is not installed; it fails
   identically on every tree and is not a signal.
 

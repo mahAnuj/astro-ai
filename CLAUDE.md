@@ -12,8 +12,9 @@ There is no `.github/workflows/` and no `cloudbuild.yaml` in this repo — the t
 configured GCP-side, so nothing in the working tree reveals it. Do not conclude "no CI"
 from the absence of those files.
 
-There is **no staging environment** and **no test suite**. A push is the deploy, and
-production is the first place code runs.
+There is **no staging environment**, and test coverage is **narrow** — a behaviour suite
+covers request paths only (`uv run pytest`), and most of the app has none. A push is the
+deploy, and production is the first place code runs.
 
 ### Rules for agents
 
@@ -329,10 +330,20 @@ Requires `.env` (copy `.env.example`). `OPENAI_API_KEY` is the only hard require
 `ASTRO_AI_API_BASE` repoints at any OpenAI-compatible provider. See README.md for the
 full environment-variable table.
 
-**There is no test suite.** `tests/` holds only `kundali-qa-fixtures.json`. So verify
-changes by actually exercising them: run the dev server and hit the route, or at minimum
-`python3 -c "import ast; ast.parse(open('<file>').read())"` plus an import check. Never
-report a change as working on the strength of the diff alone.
+**There is a behaviour suite, and it is small.** `uv run pytest` (or
+`scripts/verify_behaviour.py`, which joins the `verify_*` sweep). It covers request-path
+regressions only — cache lifecycle, degraded pages, blast outcome reporting — because
+that is where eleven defects landed across four QA rounds while the twelve data gates saw
+nothing. Every test is a defect that actually shipped.
+
+`scripts/mutate_behaviour_suite.py` re-breaks each of those defects and asserts the suite
+goes red. Run it after adding a test: it caught two tests that reimplemented the logic
+inside the test body and would have passed forever.
+
+It is NOT broad coverage. Most of the app has none. So still verify changes by exercising
+them: run the dev server and hit the route, or at minimum `python3 -c "import ast;
+ast.parse(...)"` plus an import check. Never report a change as working on the strength of
+the diff alone.
 
 ---
 

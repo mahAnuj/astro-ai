@@ -40,6 +40,17 @@ dependencies = [
 [project.scripts]
 astro-ai = "astro_ai.main:cli"
 
+# Dev-only. NOT in [project.dependencies], so the Docker build never resolves
+# it and the Cloud Run image stays as small as it is today.
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --tb=short"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
