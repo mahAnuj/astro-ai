@@ -518,7 +518,16 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     panchang_cache: dict = {}
     sent = failed = 0
     failures: list[str] = []
-    for sub in subscribers.list_subscribers():
+    # Capture the list ONCE. Calling list_subscribers() again for the count
+    # made `total` a different population from the one we sent to: a signup
+    # landing mid-run gave sent=0 with total=1, which read as "delivered to
+    # nobody" and returned 500 plus a false zero_delivered alert into the
+    # rashifal_cron_failures metric. The tell was sent=0 WITH failed=0, which
+    # is impossible for a genuine total failure. Capturing once also removes a
+    # second storage round-trip on this path and makes `total` in the JSON
+    # mean what any monitor reading it assumes: sent + failed == total.
+    subs = subscribers.list_subscribers()
+    for sub in subs:
         lang = sub.get("lang", "en")
         if lang not in sections_by_lang:
             lang = "en"
@@ -548,7 +557,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     # 08-21) without anyone noticing. Cloud Run 504s never reach this code at
     # all, so an external monitor is still needed for that case; this covers
     # everything that DOES get here.
-    total = len(subscribers.list_subscribers())
+    total = len(subs)
     delivered_none = total > 0 and sent == 0
     ok = not delivered_none and failed == 0
 

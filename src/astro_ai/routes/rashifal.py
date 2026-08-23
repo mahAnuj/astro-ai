@@ -17,9 +17,10 @@ from __future__ import annotations
 
 import logging
 import os
+import time as _time
 from datetime import date
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from astro_ai import daily_cache, festivals
@@ -38,6 +39,21 @@ from astro_ai.routes.deps import (
 from astro_ai.routes.llm_support import _fire_error_alert, _llm_error_friendly
 
 log = logging.getLogger(__name__)
+
+_REGEN_COOLDOWN_S = 300.0
+"""Seconds before retrying a rashi whose generation failed the quality gate."""
+
+_regen_failures: dict[str, float] = {}
+
+
+def _regen_blocked(cache_key: str) -> bool:
+    return _time.monotonic() - _regen_failures.get(cache_key, -_REGEN_COOLDOWN_S) < _REGEN_COOLDOWN_S
+
+
+def _regen_fail(cache_key: str) -> None:
+    _regen_failures[cache_key] = _time.monotonic()
+    if len(_regen_failures) > 64:                      # 12 rashis x 2 langs, with slack
+        _regen_failures.clear()
 
 router = APIRouter()
 
@@ -164,6 +180,19 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
                         cache_key, reason)
             reading_body = None
 
+    # Bound the retry. Discarding a bad entry is right; discarding it on every
+    # pageview and regenerating each time is one live LLM call per view, all
+    # day, per rashi — on the quota that caused a 21-day outage. So a rashi
+    # whose generation just failed the gate is left alone for a short while.
+    #
+    # This suppresses REGENERATION only. The reader still gets the friendly
+    # error path below and we still get the alert, so it cannot become the
+    # silent blank page a previous degraded-state marker produced — and it
+    # self-heals after the cooldown without anyone intervening.
+    if reading_body is None and _regen_blocked(cache_key):
+        log.warning("rashifal_single: %s failed generation recently — not retrying yet", cache_key)
+        raise HTTPException(status_code=503, detail="reading temporarily unavailable")
+
     if reading_body is None:
         # Generate. Wrap in the same try/except pattern the old route had
         # so an LLM failure returns a friendly-error response.
@@ -186,6 +215,27 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
             # Strip the '## Rashi / Sanskrit' heading line — we render our own.
             sections = parse_sectioned_reading(raw)
             reading_body = sections[0][1] if sections else raw
+            # NEVER STORE A VALUE THE READ GATE WILL REJECT.
+            #
+            # providers.chat gates `raw`; this stores sections[0][1]. When raw
+            # passes and the first section does not, the read gate above
+            # discards it, we regenerate, store the same failing value, and
+            # repeat — one live LLM call per pageview, all day, per rashi. The
+            # #215 fix would have traded a bounded content defect (a blank
+            # served all day, zero LLM calls) for an unbounded cost defect, on
+            # the quota that caused a 21-day outage.
+            #
+            # Triggered by the model emitting more than one `## ` heading, or a
+            # body landing in the narrow band between the raw and section
+            # lengths. _shared_three_tier cannot loop this way because it gates
+            # and stores the SAME value; this path did not.
+            ok, reason = llm_providers.passes_quality(reading_body, "rashifal_single")
+            if not ok:
+                _regen_fail(cache_key)
+                raise RuntimeError(
+                    f"generated body failed the quality gate ({reason}) — "
+                    f"raw was {len(raw)} chars, first section {len(reading_body)}"
+                )
             daily_cache.put("rashifal_single", cache_key, {
                 "body": reading_body,
                 "rashi_slug": canonical_slug,
