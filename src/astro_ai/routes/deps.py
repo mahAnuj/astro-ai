@@ -573,17 +573,39 @@ def panchang_strip_ctx(request) -> dict:
 log = logging.getLogger(__name__)
 
 
-_NEGATIVE_TTL_S = 60.0
-"""Seconds a failed or fallback-derived strip lookup is remembered before retrying.
+_FALLBACK_TTL_S = 60.0
+"""Seconds a fallback-derived (default-city) strip is served before re-solving.
 
-Neither extreme works. Cache a failure for the day and one blip pins a reader
-to the wrong city until midnight (#213's original complaint). Cache it not at
-all and every request pays the geocode timeout (BUG-1). A minute is long
-enough to protect the request path and short enough that a transient outage
-self-heals without anyone noticing.
+The two failure cases genuinely want different windows, and collapsing them
+into one was the mistake. If the fallback SUCCEEDED we have something correct
+and honestly labelled to show, so the only question is how soon to retry the
+reader's real city — a minute. If BOTH legs failed there is nothing to show,
+so retrying soon buys nothing and costs a blocking 10s geocode; that case
+takes the long window below.
 """
 
-_negative_cache: dict[tuple, float] = {}
+_TOTAL_FAILURE_TTL_S = 600.0
+"""Seconds a TOTAL geocode failure (both legs) is remembered before retrying.
+
+Ten minutes, not sixty seconds and not the whole day. Geocoding blocks for 10s
+(`chart.py` timeout) and `/rashifal` is an `async def` calling it inline, so a
+short TTL re-arms an event-loop stall every minute: roughly a 16% duty cycle at
+60s against ~1.7% at 600s. The old day-long cache had no duty cycle at all but
+cost a full day of missing strips for a five-minute outage. Ten minutes buys
+most of the first and keeps self-healing.
+"""
+
+_fallback_cache: dict[tuple, tuple] = {}
+"""key -> (result, monotonic_at). Holds BOTH degraded cases; the TTL applied on
+read depends on whether the result is usable."""
+
+
+def _remember_degraded(key: tuple, result: tuple) -> None:
+    """Record a degraded lookup, bounded like the two sibling caches."""
+    _fallback_cache[key] = (result, _time.monotonic())
+    if len(_fallback_cache) > _STRIP_CACHE_MAX:
+        _fallback_cache.clear()
+        _fallback_cache[key] = (result, _time.monotonic())
 
 _STRIP_CACHE_MAX = 100
 """Entries kept in the strip day-cache before the oldest are evicted."""
@@ -628,10 +650,20 @@ def panchang_strip_for_city(city: str) -> tuple:
         moon_info = {"rashi": moon.rashi, "nakshatra": moon.nakshatra} if moon else None
         return (pan, moon_info, place.split(",")[0])
 
-    if _time.monotonic() - _negative_cache.get(key, -_NEGATIVE_TTL_S) < _NEGATIVE_TTL_S:
-        # Recently failed or fell back. Don't pay the geocode timeout again on
-        # every request; serve a prior good entry if one exists, else no strip.
-        return _PANCHANG_STRIP_CACHE.get(key, (None, None, ""))
+    # Fallback-derived result from a recent failure: SERVE IT, don't re-solve.
+    # An earlier version marked the key and served nothing, which blanked the
+    # strip for 60s — the #213 defect the fallback exists to prevent, made
+    # intermittent instead of all-day. The reader keeps the Mumbai-labelled
+    # times until the window lets us retry their real city.
+    hit = _fallback_cache.get(key)
+    if hit is not None:
+        cached_result, at = hit
+        # TTL depends on WHICH failure this was, which is the whole point of
+        # the split: a usable fallback is retried soon, a total failure is not.
+        ttl = _FALLBACK_TTL_S if cached_result[0] is not None else _TOTAL_FAILURE_TTL_S
+        if _time.monotonic() - at < ttl:
+            return cached_result
+        del _fallback_cache[key]
 
     degraded = False
     try:
@@ -679,22 +711,36 @@ def panchang_strip_for_city(city: str) -> tuple:
             # index() is a sync def on the threadpool, so it saturates workers
             # — the #144 shape (a 13s homepage) reintroduced under a failure
             # mode rather than on a hot path.
-            _negative_cache[key] = _time.monotonic()
+            # BOTH legs failed, so there is nothing to serve and nothing to
+            # gain from retrying soon — the reader gets no strip either way.
+            # This gets the LONG window, because retrying it is pure cost:
+            # geocode blocks for 10s (chart.py:386) and /rashifal is an async
+            # def calling it inline, so a short TTL re-arms an event-loop
+            # stall every minute. Measured duty cycle at 60s: ~16% of wall
+            # clock with workers held. At 600s: ~1.7%, and it still self-heals
+            # within ten minutes rather than at midnight, which is what the
+            # old day-long cache cost.
+            _remember_degraded(key, (None, None, ""))
             return (None, None, "")
     if degraded:
         # Fallback-derived: right for the DEFAULT city, not the one asked for.
-        # Caching it under the requested key all day pins that reader to
-        # Mumbai after a single blip — measured today, a Guwahati reader would
-        # see an Abhijit 76 min off, not overlapping their real ~51-min window
-        # at all. Expire fast and re-try the city they actually asked for.
-        _negative_cache[key] = _time.monotonic()
+        # Day-caching it would pin that reader to Mumbai after a single blip —
+        # a Guwahati reader would see an Abhijit 76 min off, not overlapping
+        # their real ~51-minute window at all. So it goes in a SHORT-TTL cache:
+        # served for the window (so the strip never blanks), then re-solved.
+        _remember_degraded(key, result)
         return result
     _PANCHANG_STRIP_CACHE[key] = result
     # Bound growth if many cities are queried across a day (#214).
     #
     # This used to clear() the whole dict, which threw away the DEFAULT-city
     # entry — the one backing every signed-out `/` and `/rashifal` — along
-    # with the long tail that tripped the limit. Measured: 106 entries in,
+    # with the long tail that tripped the limit. Measured: clear() fired at
+    # entry 101 and left exactly 1 — the key being written. (Inserting all 106
+    # sequentially ends at 6, because five more arrive after the clear; the
+    # original note said "106 in, 1 out", which a reader reproduces as 6 and
+    # reasonably concludes the comment is wrong. State the mechanism, not a
+    # figure whose harness you did not describe.) The old behaviour was:
     # 1 out. It also trips sooner than it used to, because the rashifal pages
     # now feed signed-in cities into the same dict.
     #
@@ -706,7 +752,11 @@ def panchang_strip_for_city(city: str) -> tuple:
         # tuple(dict) snapshots in ONE C-level call that cannot be preempted.
         # A plain comprehension iterates the live dict from Python and raises
         # "dictionary changed size during iteration" under concurrency —
-        # measured 20,013 errors in 48,000 concurrent inserts, surfacing as a
+        # measured 20,013 errors in 48,000 concurrent inserts AT
+        # sys.setswitchinterval(1e-6) — the interval matters and the original
+        # note omitted it: at CPython's default the same harness yields single
+        # digits, so a reader checking this would think it fabricated. Under
+        # the same forcing an independent run measured 32,967. Surfaces as a
         # 500 on / and /rashifal. The clear() this replaced was a single C
         # call and could not raise, so this was a NEW failure mode.
         for stale in [k for k in tuple(_PANCHANG_STRIP_CACHE)
