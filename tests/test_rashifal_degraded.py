@@ -4,19 +4,13 @@ Three defects here, and the expensive ones were not "wrong output" — they were
 UNBOUNDED COST and a broken degraded page. Both are invisible to a happy-path
 check, which is exactly why they shipped.
 
-`daily_cache` writes real files, so this module redirects it to a tmp dir. It
-reads `BHAGYA_DAILY_CACHE_DIR` at import time, so the env var is set before the
-module is imported anywhere.
+`daily_cache` writes real files; the autouse `_isolate_daily_cache` fixture in
+conftest points it at a tmp dir for every test. Do not reintroduce the env-var
+version — it depended on this module sorting last.
 """
 from __future__ import annotations
 
-import os
-import tempfile
-
 import pytest
-
-_TMP = tempfile.mkdtemp(prefix="bhagya-tests-")
-os.environ["BHAGYA_DAILY_CACHE_DIR"] = _TMP
 
 
 @pytest.fixture

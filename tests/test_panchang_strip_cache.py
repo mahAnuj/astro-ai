@@ -12,6 +12,7 @@ them no way to know when it is.
 """
 from __future__ import annotations
 
+import ast
 import sys
 import threading
 from pathlib import Path
@@ -92,84 +93,83 @@ def test_fallback_is_not_day_cached(deps, failing_geocode):
     )
 
 
-def test_total_failure_gets_the_long_window(deps):
-    """The two failure cases want different retry windows, and merging them
-    was the mistake that produced both a blanked strip and a duty-cycle
-    regression.
+def test_total_failure_is_retried_less_often_than_a_usable_fallback(deps, monkeypatch):
+    """The two failure cases must keep DIFFERENT retry windows.
 
-    Usable fallback -> retry the reader's real city soon.
-    Nothing to serve -> retrying buys nothing and costs a blocking geocode.
+    Asserts the observable — what is served at a given age — rather than
+    recomputing the TTL selector inside the test. The previous version did the
+    latter, which made one line `assert X == X`: it had already asserted the
+    result was unusable, then re-derived the branch that follows from exactly
+    that. Both mutations of the real selector escaped it.
+
+    That was the third instance of this shape in a suite written to eliminate
+    it. A test that recomputes the thing it is checking is testing itself.
     """
-    real = deps.compute_chart
-    deps.compute_chart = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("all down"))
-    try:
-        deps.panchang_strip_for_city("Kolkata, India")
-    finally:
-        deps.compute_chart = real
+    solves = []
 
-    (result, _at), = deps._fallback_cache.values()
-    assert result[0] is None
-    ttl = deps._FALLBACK_TTL_S if result[0] is not None else deps._TOTAL_FAILURE_TTL_S
-    assert ttl == deps._TOTAL_FAILURE_TTL_S
-    assert deps._TOTAL_FAILURE_TTL_S > deps._FALLBACK_TTL_S, (
-        "a total failure must be retried LESS often than a usable fallback"
+    def counting_solve(d, t, place):
+        solves.append(place)
+        raise RuntimeError("down")
+
+    monkeypatch.setattr(deps, "compute_chart", counting_solve)
+    # Age every cached entry to sit BETWEEN the two windows: past the short one,
+    # inside the long one. A usable fallback must be re-solved; a total failure
+    # must still be served from cache.
+    between = (deps._FALLBACK_TTL_S + deps._TOTAL_FAILURE_TTL_S) / 2
+    assert deps._FALLBACK_TTL_S < between < deps._TOTAL_FAILURE_TTL_S, (
+        "the two windows are no longer distinct, so this test cannot discriminate"
     )
+    aged_at = deps._time.monotonic() - between
+    key = (deps.date.today().isoformat(), "kolkata, india")
+
+    # 1. Total failure: nothing to serve, so do NOT retry inside the long window.
+    deps._fallback_cache[key] = ((None, None, ""), aged_at)
+    solves.clear()
+    result = deps.panchang_strip_for_city("Kolkata, India")
+    assert solves == [], "a total failure was re-solved inside its own window"
+    assert result[0] is None
+
+    # 2. Usable fallback of the SAME age: past its shorter window, so retry.
+    deps._fallback_cache[key] = (("panchang", None, "Mumbai"), aged_at)
+    solves.clear()
+    deps.panchang_strip_for_city("Kolkata, India")
+    assert solves, "a stale fallback was served instead of retrying the real city"
 
 
-def test_expired_entry_under_concurrency_does_not_raise(deps):
-    """Defect (HIGH): `del _fallback_cache[key]` on the expiry path.
+def test_concurrent_access_raises_nothing(deps, monkeypatch):
+    """General concurrency smoke test — honestly named this time.
 
-    Nothing holds a lock between the read and the delete, so two threads
-    reaching the same expired entry both delete and the loser raises KeyError —
-    which escapes to the route and 500s `/` and `/rashifal`. The TTL boundary is
-    exactly when a herd converges on the key, so the race window coincides with
-    peak concurrency.
+    Its predecessor was called `test_expired_entry_under_concurrency_does_not
+    _raise` and claimed to cover the `del` KeyError race. Review measured it
+    with `del` compiled in: 0 escapes in 24,000 calls, three runs. It could not
+    fail on the defect it was named for, and cost ~2.5s a run to do so. The race
+    is covered deterministically by `test_no_unguarded_del_on_a_shared_dict`.
 
-    This calls the REAL function. An earlier version of this test copied the
-    get/pop logic into the test body, which meant it exercised a copy and would
-    have passed no matter what `deps.py` did — caught by mutation testing, which
-    is the entire argument for doing it.
+    This keeps the part that has value — many threads through the real function,
+    nothing escapes — without claiming to catch a specific race it cannot. It is
+    a tripwire for races NOT yet known, which is a real job, just a different one.
     """
+    monkeypatch.setattr(deps, "compute_chart",
+                        lambda d, t, place: (_ for _ in ()).throw(RuntimeError("down")))
     escapes: list[str] = []
-    real = deps.compute_chart
-    real_ttl = deps._TOTAL_FAILURE_TTL_S
-    deps.compute_chart = lambda d, t, place: (_ for _ in ()).throw(RuntimeError("down"))
-    # TTL of zero puts EVERY caller on the expiry line, which is where the race
-    # lives. With a real TTL the first thread writes a fresh entry and the rest
-    # return early, so the window almost never opens and the test passes
-    # whatever the code does — that is how a concurrency test lies.
-    deps._TOTAL_FAILURE_TTL_S = 0.0
     old_interval = sys.getswitchinterval()
     sys.setswitchinterval(1e-6)
-    key = (deps.date.today().isoformat(), "guwahati, india")
 
-    def planter():
-        # Keeps an entry present for callers to collide on. Needed IN ADDITION
-        # to the zero TTL: without it the first thread removes the entry and
-        # the rest find nothing, so two threads rarely hold the same key at
-        # once. Zero-TTL alone and planter-alone each let the bug through;
-        # only the pair reproduces it.
-        for _ in range(20_000):
-            deps._fallback_cache[key] = ((None, None, ""), -10_000.0)
-
-    def caller():
-        for _ in range(2000):
+    def caller(n: int):
+        for i in range(200):
             try:
-                deps.panchang_strip_for_city("Guwahati, India")
-            except Exception as err:  # noqa: BLE001 - the point is to catch anything
+                deps.panchang_strip_for_city(f"City{n % 3}, India")
+            except Exception as err:  # noqa: BLE001 - anything escaping is the failure
                 escapes.append(repr(err))
 
     try:
-        threads = ([threading.Thread(target=planter) for _ in range(4)]
-                   + [threading.Thread(target=caller) for _ in range(12)])
+        threads = [threading.Thread(target=caller, args=(i,)) for i in range(12)]
         for t in threads:
             t.start()
         for t in threads:
             t.join()
     finally:
         sys.setswitchinterval(old_interval)
-        deps.compute_chart = real
-        deps._TOTAL_FAILURE_TTL_S = real_ttl
 
     assert not escapes, f"{len(escapes)} exception(s) escaped the route: {escapes[:3]}"
 
@@ -239,34 +239,62 @@ def test_eviction_is_bounded_and_keeps_what_matters(deps, today_iso, monkeypatch
     assert default_key in deps._PANCHANG_STRIP_CACHE, "default-city entry was evicted"
 
 
-def test_no_unguarded_del_on_a_shared_cache():
-    """Static guard for the HIGH KeyError race.
+def _module_level_dicts(tree: ast.Module) -> set[str]:
+    """Names bound at module scope to a dict — the ones every thread shares."""
+    names: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and isinstance(node.value, ast.Dict):
+            names.update(t.id for t in node.targets if isinstance(t, ast.Name))
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            ann = ast.unparse(node.annotation) if node.annotation else ""
+            if "dict" in ann.lower():
+                names.add(node.target.id)
+    return names
 
-    The concurrency test above exercises the real function, but a race is
-    nondeterministic by definition: it reproduces reliably in a standalone
-    harness (319 KeyErrors) and not under pytest, and I could not close that
-    gap for less than it was worth. A test that catches a defect *sometimes*
-    is not a gate.
 
-    So this asserts the property rather than the symptom: no bare `del` on a
-    module-level cache dict that more than one thread can reach.
-    `.pop(k, None)` is idempotent and cannot lose a race; `del` raises
-    KeyError for the loser, which escapes to the route and 500s the page. The
-    eviction path in the same file already used `.pop` — the rule existed, it
-    just was not enforced anywhere.
+def test_no_unguarded_del_on_a_shared_dict():
+    """Static guard for the KeyError race, across the WHOLE package.
 
-    Deterministic, instant, and it fails on exactly the diff that caused the
-    bug. Delete it only when the shared dicts are behind a lock.
+    `.pop(k, None)` is idempotent; `del d[k]` raises KeyError for the loser of a
+    concurrent delete, which escapes to the route and 500s the page. The race is
+    nondeterministic — it reproduces in a standalone harness and not under
+    pytest — so this asserts the property instead of the symptom.
+
+    The first version of this was a regex over `deps.py` alone, and review found
+    FOUR ways past it: a different module (`del _regen_failures[k]` in
+    `rashifal.py`), a dict whose name lacks "cache", a space before the bracket,
+    and a multi-target `del a[0], b[k]`. Its docstring claimed to check module
+    -level cache dicts everywhere; it checked one spelling in one file.
+
+    An AST walk cannot be defeated by whitespace, naming or statement shape, and
+    it sees every module. Deleting a whole name (`del temp`, used at module
+    scope to drop import-time loop variables) is untouched — only subscripted
+    deletes on a module-level dict are flagged.
     """
-    import re
+    root = Path(__file__).resolve().parent.parent / "src" / "astro_ai"
+    offenders: list[str] = []
 
-    source = (Path(__file__).resolve().parent.parent
-              / "src/astro_ai/routes/deps.py").read_text()
-    offenders = re.findall(r"^\s*del\s+(_[A-Za-z_]*(?:CACHE|cache)[A-Za-z_]*)\[", source, re.M)
+    for path in sorted(root.rglob("*.py")):
+        tree = ast.parse(path.read_text())
+        shared = _module_level_dicts(tree)
+        if not shared:
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Delete):
+                continue
+            for target in node.targets:
+                if (isinstance(target, ast.Subscript)
+                        and isinstance(target.value, ast.Name)
+                        and target.value.id in shared):
+                    offenders.append(
+                        f"{path.relative_to(root.parent.parent)}:{node.lineno} "
+                        f"del {target.value.id}[...]"
+                    )
 
     assert not offenders, (
-        f"bare `del` on shared cache(s) {sorted(set(offenders))} — use .pop(key, None); "
-        "the loser of a concurrent delete raises KeyError into the route"
+        "bare `del` on a module-level dict — use .pop(key, None), because the "
+        "loser of a concurrent delete raises KeyError into the route:\n  "
+        + "\n  ".join(offenders)
     )
 
 

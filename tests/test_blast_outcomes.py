@@ -14,11 +14,6 @@ asserted against. If you add a case, stub it first.
 """
 from __future__ import annotations
 
-import base64
-import os
-import re
-from pathlib import Path
-
 import pytest
 
 SECTIONS = "\n\n".join(
@@ -37,16 +32,24 @@ def _subscriber(email: str = "a@example.test", **over) -> dict:
 
 @pytest.fixture
 def admin_headers():
-    pw = os.environ.get("ADMIN_PASSWORD")
-    if not pw:
-        env = Path(__file__).resolve().parent.parent / ".env"
-        if env.exists():
-            m = re.search(r"^ADMIN_PASSWORD=(.*)$", env.read_text(), re.M)
-            pw = m.group(1).strip().strip("\"'") if m else None
-    if not pw:
-        pytest.skip("ADMIN_PASSWORD not available")
-    token = base64.b64encode(f"admin:{pw}".encode()).decode()
-    return {"Authorization": f"Basic {token}"}
+    """Override the auth dependency instead of supplying a password.
+
+    This used to read ADMIN_PASSWORD from the environment or `.env` and
+    `pytest.skip` when neither had it. `.env` is gitignored, so on a fresh
+    clone all eight of these tests skipped, pytest exited 0, and
+    `verify_behaviour.py` printed PASS — a third of the suite silently absent
+    while the gate reported green. A test that skips itself into a pass is
+    worse than a missing test, because it looks like coverage.
+
+    Overriding the dependency makes them hermetic: no secret, no environment,
+    no skip. Auth itself is not what these tests are about.
+    """
+    from astro_ai.main import app
+    from astro_ai.routes.deps import require_admin
+
+    app.dependency_overrides[require_admin] = lambda: None
+    yield {}
+    app.dependency_overrides.pop(require_admin, None)
 
 
 @pytest.fixture
