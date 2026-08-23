@@ -342,7 +342,10 @@ results is severely compromised.
 
 > Source: B.V. Raman, *Muhurtha or Electional Astrology* (1948), Appendix
 > p.197 — `data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt`
-> lines 7183–7205 (already plain text; no `pdftotext` involved). The
+> lines 7183–7207 for the table and 7227–7228 for the footnote (already
+> plain text; no `pdftotext` involved). Saturn's 15° sits on 7207 and the
+> footnote 20 lines past the table — an earlier version cited 7183–7205,
+> which excluded both Saturn's orb and the sentence this note quotes. The
 > retrograde values are that page's footnote, verbatim: *"When Mercury and
 > Venus [are] retrograde the angle will be one degree less."*
 >

@@ -46,6 +46,35 @@ _REGEN_COOLDOWN_S = 300.0
 _regen_failures: dict[str, float] = {}
 
 
+def _reading_error_fragment(slug: str, is_rate: bool, msg: str) -> str:
+    """Card-shaped retry block for the HTMX flip-card path.
+
+    At module scope because TWO paths need it: a live generation failure, and
+    a cooldown-suppressed retry. The cooldown path used to
+    `raise HTTPException(503)`, which escapes the route before `is_htmx` is
+    consulted and renders the whole 81 KB error page — and base.html sets
+    `responseHandling: [{"code": ".*", "swap": true}]`, so htmx swaps that
+    entire document, <head> and duplicate script tags included, into a flip
+    card sized for a paragraph.
+    """
+    icon = "\U0001F549\uFE0F" if is_rate else "\u26A0\uFE0F"
+    head = "Still gathering today's sky\u2026" if is_rate else "Reading could not load"
+    return (
+        '<div class="h-full flex flex-col items-center justify-center text-center gap-3 p-4">'
+        f'  <div class="text-3xl" aria-hidden="true">{icon}</div>'
+        f'  <div class="text-sm font-semibold text-stone-800">{head}</div>'
+        f'  <div class="text-xs text-stone-600 leading-relaxed">{msg}</div>'
+        '  <div class="flex gap-2 pt-1">'
+        f'    <button type="button" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold" '
+        f'            hx-get="/rashifal/{slug}" hx-target="closest [data-card-front]" hx-swap="innerHTML" '
+        f'            hx-headers=\'{{"HX-Rashifal-Fragment": "1"}}\'>Try again</button>'
+        '    <span class="text-stone-300">\u00B7</span>'
+        f'    <a href="/rashifal/{slug}" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold">Open full page</a>'
+        '  </div>'
+        '</div>'
+    )
+
+
 def _regen_blocked(cache_key: str) -> bool:
     return _time.monotonic() - _regen_failures.get(cache_key, -_REGEN_COOLDOWN_S) < _REGEN_COOLDOWN_S
 
@@ -191,7 +220,22 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
     # self-heals after the cooldown without anyone intervening.
     if reading_body is None and _regen_blocked(cache_key):
         log.warning("rashifal_single: %s failed generation recently — not retrying yet", cache_key)
-        raise HTTPException(status_code=503, detail="reading temporarily unavailable")
+        # RETURN, do not raise. A raise escapes before `is_htmx` is consulted
+        # and htmx swaps a full document into the flip card. No alert here
+        # either: the generation that armed the cooldown already fired one,
+        # and re-alerting on every suppressed request is how an alert channel
+        # becomes noise nobody reads.
+        _cool_msg = "Still gathering today's sky. Try again in a few minutes."
+        if is_htmx:
+            return HTMLResponse(
+                _reading_error_fragment(canonical_slug, True, _cool_msg),
+                status_code=503,
+            )
+        return _no_cdn_cache(templates.TemplateResponse(
+            request, "error.html",
+            {"title": "Reading not ready yet", "message": _cool_msg},
+            status_code=503,
+        ))
 
     if reading_body is None:
         # Generate. Wrap in the same try/except pattern the old route had
