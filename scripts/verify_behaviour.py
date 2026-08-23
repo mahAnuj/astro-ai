@@ -17,6 +17,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+EXPECTED_TESTS = 24
+"""Minimum tests that must RUN. Lower it deliberately, never to make a run green."""
+
 
 def main() -> int:
     print("Behaviour suite (tests/) — request-path regressions")
@@ -45,17 +48,31 @@ def main() -> int:
     # Search the WHOLE of stdout for a "N skipped" count. Reading only the last
     # line looked right and was wrong: pytest's final line is the warnings-docs
     # URL, so this backstop silently passed the very probe written to test it.
-    skip_match = re.search(r"(\d+)\s+skipped", result.stdout)
-    skipped = bool(skip_match)
-    summary = skip_match.group(0) if skip_match else ""
+    muted = re.search(r"(\d+)\s+(skipped|xfailed|xpassed|deselected)", result.stdout)
+    summary = muted.group(0) if muted else ""
+
+    # And count what RAN. A skip at least prints itself; a test renamed out of
+    # `test_*`, or a whole file that stops being collected, prints nothing at
+    # all — the suite just gets quietly smaller and the gate stays green. That
+    # is the same disappearing-coverage failure the skip check was added for,
+    # one step further along.
+    passed = re.search(r"(\d+)\s+passed", result.stdout)
+    count = int(passed.group(1)) if passed else 0
 
     print()
-    if result.returncode == 0 and not skipped:
-        print("PASS")
+    if result.returncode == 0 and not muted and count >= EXPECTED_TESTS:
+        print(f"PASS ({count} tests)")
         return 0
-    if skipped:
-        print(f"FAIL — tests were SKIPPED: {summary}")
-        print("       A skip is not a pass. Make the test hermetic or delete it.")
+    if muted:
+        print(f"FAIL — tests did not run: {summary}")
+        print("       A skip or xfail is not a pass. Make the test hermetic, fix it,")
+        print("       or delete it — but do not let it report green while absent.")
+        return 1
+    if result.returncode == 0 and count < EXPECTED_TESTS:
+        print(f"FAIL — only {count} tests ran, expected at least {EXPECTED_TESTS}.")
+        print("       Coverage vanished silently: a test renamed out of `test_*`, a")
+        print("       file no longer collected, or a deletion. If the drop is")
+        print("       deliberate, lower EXPECTED_TESTS in this file ON PURPOSE.")
         return 1
     print("FAIL — do not tune a test to silence it. Each one is a defect that")
     print("       shipped; a red test means it is back.")
