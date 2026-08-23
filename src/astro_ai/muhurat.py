@@ -47,8 +47,8 @@ _PANCHAK_NAKSHATRAS = {"Dhanishta", "Shatabhisha", "Purva Bhadrapada",
 # Combustion orbs live in chart.COMBUSTION_ORBS, sourced to
 # knowledge/grahas.md §12. This module used to carry its own three constants
 # and they DISAGREED: Mercury 12.0 here against 14.0 there, and no retrograde
-# distinction at all, where the source gives Mercury 14 direct / 10 retrograde
-# and Venus 10 / 8. Jupiter and Venus happened to match on the direct value,
+# distinction at all, where the source gives Mercury 14 direct / 13 retrograde
+# and Venus 10 / 9. Jupiter and Venus happened to match on the direct value,
 # which is exactly why the Mercury gap survived — two of three agreeing reads
 # as a consistent table.
 #
@@ -1155,7 +1155,10 @@ def _combustion_flags(chart: Chart, when: datetime) -> dict[str, bool]:
         if not planet:
             return False
         orb = combustion_orb(planet.name, getattr(planet, "retrograde", False))
-        return orb is not None and _sep(planet) <= orb
+        # `<`, matching chart.is_combust. Measure-zero on continuous
+        # separations, but 39ae5bf's stated goal was ONE sourced answer per
+        # planet and a differing predicate leaves two.
+        return orb is not None and _sep(planet) < orb
 
     return {
         "jupiter": _is_combust(jup),

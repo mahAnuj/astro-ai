@@ -1793,14 +1793,16 @@ _DEBILITATION_SIGN: dict[str, str] = {
 # a flat orb is not a simplification of the classical rule but a narrower
 # rule, so it under-reported, describing genuinely combust planets to the LLM
 # as "neutral". The change can only ADD flags, never remove one — every orb in
-# the table is >= 8.0 (the minimum is Venus-retrograde, at exactly 8.0), so
-# sep < 8.0 implies sep < new_orb for every planet. That is structural, not a
-# property of whichever sample happened to be measured.
+# the table is >= 9.0 (the minimum is Venus-retrograde, at 9.0 since 0a1b6ee
+# corrected it from an invented 8.0), so sep < 8.0 implies sep < new_orb for
+# every planet. That is structural, not a property of whichever sample
+# happened to be measured.
 #
 # What did NOT change, and is still separate:
-#   muhurat.py:49    Mercury 12 deg, applied with <= (three planets only)
 #   chart.py ~931    Mars combust the Sun, 6 deg — a Manglik CANCELLATION test
 #   chart.py ~1180   Budha-Aditya weakening, 6 deg
+# (muhurat.py:49's Mercury 12 was on this list until 39ae5bf deleted it; both
+#  survivors are UNSOURCED — see #218.)
 #
 # The last two are deliberately untouched: they are distinct classical rules
 # that happen to measure Sun-proximity, not this rule at a different orb, and
@@ -1809,7 +1811,9 @@ _DEBILITATION_SIGN: dict[str, str] = {
 # in 39ae5bf and its three constants are gone, so the count is back to three
 # Sun-proximity rules, all deliberate and all distinct. That change did move
 # muhurat ratings, exactly as this note warned: measured over 365 days of 2026,
-# mercury flips on 24 days, venus on 3, jupiter on 0.
+# mercury flips on 24 days, venus on 3, jupiter on 0 — measured against the
+# retrograde orbs in force at the time, which 0a1b6ee then corrected. Against
+# the corrected orbs the 2026 figures are mercury 18 and venus 2.
 #
 # Counting honestly at the time, #206 took the repo from three Sun-proximity
 # constants to four; it fixed the one that was wrong and named the rest.
@@ -1832,7 +1836,10 @@ COMBUSTION_ORBS: Final[dict[str, tuple[float, float]]] = {
 }
 # Source: B.V. Raman, "Muhurtha or Electional Astrology" (1948), Appendix
 # p.197 — data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt
-# lines 7183-7205. Already plain text; no pdftotext involved.
+# lines 7183-7205 for the table AND 7227-7228 for the footnote. The footnote
+# sits 22 lines below the table, under an intervening entry; quoting only the
+# table range would send a reader past the sentence the retrograde orbs
+# entirely rest on. Already plain text; no pdftotext involved.
 #
 #     Planets, Combustion of : — Planets situated within
 #     distances mentioned below from the Sun become combust.*

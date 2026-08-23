@@ -26,6 +26,7 @@ from __future__ import annotations
 import logging
 import os
 import secrets
+import time as _time
 from datetime import date
 from pathlib import Path
 
@@ -572,6 +573,18 @@ def panchang_strip_ctx(request) -> dict:
 log = logging.getLogger(__name__)
 
 
+_NEGATIVE_TTL_S = 60.0
+"""Seconds a failed or fallback-derived strip lookup is remembered before retrying.
+
+Neither extreme works. Cache a failure for the day and one blip pins a reader
+to the wrong city until midnight (#213's original complaint). Cache it not at
+all and every request pays the geocode timeout (BUG-1). A minute is long
+enough to protect the request path and short enough that a transient outage
+self-heals without anyone noticing.
+"""
+
+_negative_cache: dict[tuple, float] = {}
+
 _STRIP_CACHE_MAX = 100
 """Entries kept in the strip day-cache before the oldest are evicted."""
 
@@ -615,9 +628,16 @@ def panchang_strip_for_city(city: str) -> tuple:
         moon_info = {"rashi": moon.rashi, "nakshatra": moon.nakshatra} if moon else None
         return (pan, moon_info, place.split(",")[0])
 
+    if _time.monotonic() - _negative_cache.get(key, -_NEGATIVE_TTL_S) < _NEGATIVE_TTL_S:
+        # Recently failed or fell back. Don't pay the geocode timeout again on
+        # every request; serve a prior good entry if one exists, else no strip.
+        return _PANCHANG_STRIP_CACHE.get(key, (None, None, ""))
+
+    degraded = False
     try:
         result = _solve(resolved_city)
     except Exception:
+        degraded = True
         # FALL BACK TO THE DEFAULT CITY, do not return None (#213).
         #
         # This used to yield (None, None, ""), and `_panchang_strip.html`
@@ -638,6 +658,12 @@ def panchang_strip_for_city(city: str) -> tuple:
         log.warning("panchang strip: %r did not resolve — falling back to %s",
                     resolved_city, _STRIP_DEFAULT_CITY)
         try:
+            if resolved_city == _STRIP_DEFAULT_CITY:
+                # The failing input WAS the default. Re-solving it calls the
+                # same geocode with the same argument and waits the same 10s
+                # to fail the same way — 20s per request on the signed-out
+                # homepage, i.e. every visitor without a saved chart.
+                raise
             result = _solve(_STRIP_DEFAULT_CITY)
         except Exception:
             # Default failed too: something is properly broken. Return the
@@ -646,7 +672,23 @@ def panchang_strip_for_city(city: str) -> tuple:
             # next request retries instead of the page staying broken until
             # midnight.
             log.exception("panchang strip: default city failed too; strip suppressed")
+            # Bounded negative cache. "Never cache" looked safer and was much
+            # worse: geocode_place's lru_cache does not memoise a raising call
+            # either, so NOTHING memoised and every request paid the timeout
+            # again. Baseline paid 10s once a day; this paid 20s forever. And
+            # index() is a sync def on the threadpool, so it saturates workers
+            # — the #144 shape (a 13s homepage) reintroduced under a failure
+            # mode rather than on a hot path.
+            _negative_cache[key] = _time.monotonic()
             return (None, None, "")
+    if degraded:
+        # Fallback-derived: right for the DEFAULT city, not the one asked for.
+        # Caching it under the requested key all day pins that reader to
+        # Mumbai after a single blip — measured today, a Guwahati reader would
+        # see an Abhijit 76 min off, not overlapping their real ~51-min window
+        # at all. Expire fast and re-try the city they actually asked for.
+        _negative_cache[key] = _time.monotonic()
+        return result
     _PANCHANG_STRIP_CACHE[key] = result
     # Bound growth if many cities are queried across a day (#214).
     #
@@ -661,7 +703,13 @@ def panchang_strip_for_city(city: str) -> tuple:
     # expensive to lose.
     if len(_PANCHANG_STRIP_CACHE) > _STRIP_CACHE_MAX:
         default_key = (today, _STRIP_DEFAULT_CITY.lower())
-        for stale in [k for k in _PANCHANG_STRIP_CACHE
+        # tuple(dict) snapshots in ONE C-level call that cannot be preempted.
+        # A plain comprehension iterates the live dict from Python and raises
+        # "dictionary changed size during iteration" under concurrency —
+        # measured 20,013 errors in 48,000 concurrent inserts, surfacing as a
+        # 500 on / and /rashifal. The clear() this replaced was a single C
+        # call and could not raise, so this was a NEW failure mode.
+        for stale in [k for k in tuple(_PANCHANG_STRIP_CACHE)
                       if k not in (key, default_key)][:len(_PANCHANG_STRIP_CACHE) - _STRIP_CACHE_MAX]:
             _PANCHANG_STRIP_CACHE.pop(stale, None)
     return result
