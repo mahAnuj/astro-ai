@@ -1825,11 +1825,45 @@ COMBUSTION_ORBS: Final[dict[str, tuple[float, float]]] = {
     # planet:   (direct orb, retrograde orb)  — degrees from the Sun
     "Moon":     (12.0, 12.0),
     "Mars":     (17.0, 17.0),
-    "Mercury":  (14.0, 10.0),
+    "Mercury":  (14.0, 13.0),
     "Jupiter":  (11.0, 11.0),
-    "Venus":    (10.0,  8.0),
+    "Venus":    (10.0,  9.0),
     "Saturn":   (15.0, 15.0),
 }
+# Source: B.V. Raman, "Muhurtha or Electional Astrology" (1948), Appendix
+# p.197 — data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt
+# lines 7183-7205. Already plain text; no pdftotext involved.
+#
+#     Planets, Combustion of : — Planets situated within
+#     distances mentioned below from the Sun become combust.*
+#     The Moon within 12°   Mars 17°   Mercury 14°*
+#     Jupiter 11°   Venus 10°*   Saturn 15°
+#
+#     * When Mercury and Venus [are] retrograde the angle will be
+#       one degree less.
+#
+# THE RETROGRADE VALUES USED TO BE 10 AND 8, AND THAT WAS INVENTED. The
+# footnote says ONE degree less, so Mercury is 13 and Venus is 9. The
+# asterisks bind to exactly those two rows and to the lead sentence, and
+# "one degree" is spelled out — there is no digit for OCR to corrupt.
+#
+# The direction was right and the magnitude was made up. Worse, the comment
+# that carried it asserted the retrograde rule was "part of the classical
+# rule, not a refinement" at a time when no source for it existed in the
+# repo at all — the justification was written first and the evidence looked
+# for later, which is the failure mode CLAUDE.md opens with.
+#
+# The six DIRECT orbs are correct and unchanged; every one matches p.197.
+#
+# On the deleted "(per BPHS)" attribution: BPHS is not in data/ and never
+# was, so that citation was never checkable. SOURCES.md licenses [BPHS] for
+# "universally cited" rules, which is how an uncheckable attribution reached
+# a code comment and a published article. Cite the page we actually hold.
+#
+# Note grahas.md §12 was written 2026-07-24 (372396a) "from Rao Ch. 3",
+# which contains no combustion material whatsoever. Raman's Muhurtha only
+# entered data/ around 2026-08-16. So §12 was unsourced when written and was
+# corroborated by luck three weeks later — on six numbers, not on eight.
 
 
 def combustion_orb(planet_name: str, retrograde: bool) -> float | None:

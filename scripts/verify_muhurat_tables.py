@@ -134,6 +134,8 @@ Usage:  uv run python scripts/verify_muhurat_tables.py
 from __future__ import annotations
 
 import sys
+import pathlib
+import re
 import time
 from datetime import date, timedelta
 from functools import lru_cache
@@ -848,7 +850,89 @@ GATE_TITLES = (
     "Gate 2 - coverage census (the gate that catches the original defect)",
     "Gate 3 - structural invariants (arithmetic, source-independent)",
     "Gate 4 - cross-module agreement (lunar_observances, festival_registry)",
+    "Gate 6 - combustion orbs match Raman Muhurtha p.197, footnote included",
 )
+
+
+def gate_6_combustion_orbs() -> list[str]:
+    """The combustion orbs must match the page they cite, footnote included.
+
+    Nothing guarded this table until 2026-08-23, which is how it carried
+    invented retrograde values (Mercury 10, Venus 8) for weeks under a "per
+    BPHS" attribution to a book that is not in `data/` and never has been.
+    The real source states them in a FOOTNOTE rather than in the table body,
+    and the footnote is exactly what a hurried transcription drops.
+
+    So this checks three things a wrong value has to survive all of:
+      1. code == knowledge/grahas.md §12, orb by orb
+      2. the cited source file still contains the table AND the footnote
+      3. the retrograde orbs are exactly one degree less than direct, for
+         Mercury and Venus only — which is what "one degree less" means and
+         what an invented number will not accidentally satisfy
+    """
+    failures: list[str] = []
+    root = pathlib.Path(__file__).resolve().parent.parent
+    sys.path.insert(0, str(root / "src"))
+    from astro_ai.chart import COMBUSTION_ORBS
+
+    # 1. Code vs the knowledge file.
+    full = (root / "src/astro_ai/knowledge/grahas.md").read_text()
+    # Scope to the combustion table. grahas.md has many tables keyed by planet
+    # name, and an unscoped row regex matched 44 of them.
+    marker = "**Classical combustion orbs:**"
+    if marker not in full:
+        return [f"grahas.md: {marker!r} not found — this gate has nothing to read"]
+    doc = full[full.index(marker):]
+    doc = doc[:doc.index("\n\n", doc.index("|"))] if "\n\n" in doc[doc.index("|"):] else doc
+    # Capture the whole cell and parse it, rather than pattern-matching the
+    # retrograde clause inline: an optional group followed by a greedy tail
+    # silently matches EMPTY and swallows the value it was meant to capture,
+    # which is how the first version of this gate reported a false failure.
+    rows = re.findall(r"\|\s*(Moon|Mars|Mercury|Jupiter|Venus|Saturn)\s*\|([^|]*)\|", doc)
+    if len(rows) != 6:
+        failures.append(f"grahas.md §12: parsed {len(rows)} orb rows, expected 6 — "
+                        "table shape changed, this gate is not reading it")
+    for planet, cell in rows:
+        nums = re.findall(r"(\d+(?:\.\d+)?)\s*°", cell)
+        if not nums:
+            failures.append(f"grahas.md §12: no orb found in the {planet} row ({cell.strip()!r})")
+            continue
+        retro = nums[1] if "retrograde" in cell and len(nums) > 1 else nums[0]
+        want = (float(nums[0]), float(retro))
+        got = COMBUSTION_ORBS.get(planet)
+        if got != want:
+            failures.append(f"{planet}: code {got}, grahas.md {want}")
+
+    # 2. The cited source must still say what we claim it says.
+    src = root / "data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt"
+    if not src.exists():
+        print(f"  SKIP source check: {src.name} not present (data/ is gitignored)")
+    else:
+        text = src.read_text(errors="ignore")
+        if "Planets, Combustion of" not in text:
+            failures.append("Raman Muhurtha: combustion table heading not found — "
+                            "the citation in grahas.md §12 points at nothing")
+        # OCR renders "are" as "ere"; match either rather than pinning the typo.
+        if not re.search(r"When Mercury and Venus\s+(?:are|ere)\s+retrograde the angle "
+                         r"will be\s+one degree less", text):
+            failures.append("Raman Muhurtha: the 'one degree less' footnote is gone — "
+                            "the retrograde orbs below rest entirely on it")
+
+    # 3. The footnote's arithmetic, stated as a rule.
+    for planet in ("Mercury", "Venus"):
+        direct, retro = COMBUSTION_ORBS[planet]
+        if abs((direct - retro) - 1.0) > 1e-9:
+            failures.append(f"{planet}: retrograde orb is {direct - retro:g}° less than "
+                            f"direct; the source says ONE degree less (expect {direct - 1:g})")
+    for planet in ("Moon", "Mars", "Jupiter", "Saturn"):
+        direct, retro = COMBUSTION_ORBS[planet]
+        if direct != retro:
+            failures.append(f"{planet}: has a retrograde variant ({retro}) but the "
+                            "footnote names only Mercury and Venus")
+
+    print(f"  checked {len(COMBUSTION_ORBS)} planets against grahas.md §12 and "
+          "Raman Muhurtha p.197")
+    return failures
 
 
 def run_gates(verbose: bool = True) -> list[tuple[str, int]]:
@@ -871,7 +955,10 @@ def run_gates(verbose: bool = True) -> list[tuple[str, int]]:
     def _g4() -> list[str]:
         return gate_4_cross_module(state.get("resolved") or {})  # type: ignore[arg-type]
 
-    for title, run in zip(GATE_TITLES, (_g1, _g2, _g3, _g4)):
+    def _g6() -> list[str]:
+        return gate_6_combustion_orbs()
+
+    for title, run in zip(GATE_TITLES, (_g1, _g2, _g3, _g4, _g6)):
         if verbose:
             print(title)
         failures = run()

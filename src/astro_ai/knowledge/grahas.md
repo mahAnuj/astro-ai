@@ -335,10 +335,30 @@ results is severely compromised.
 |--------|---------------------|
 | Moon | 12° of Sun |
 | Mars | 17° of Sun |
-| Mercury | 14° of Sun (10° if retrograde) |
+| Mercury | 14° of Sun (13° if retrograde) |
 | Jupiter | 11° of Sun |
-| Venus | 10° of Sun (8° if retrograde) |
+| Venus | 10° of Sun (9° if retrograde) |
 | Saturn | 15° of Sun |
+
+> Source: B.V. Raman, *Muhurtha or Electional Astrology* (1948), Appendix
+> p.197 — `data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt`
+> lines 7183–7205 (already plain text; no `pdftotext` involved). The
+> retrograde values are that page's footnote, verbatim: *"When Mercury and
+> Venus [are] retrograde the angle will be one degree less."*
+>
+> **Correction, 2026-08-23.** This table previously gave the retrograde orbs
+> as **10°** and **8°** and attributed the whole thing to BPHS. Both were
+> wrong. "One degree less" makes them 13° and 9°; BPHS is not in `data/` and
+> never has been, so that attribution was never checkable by anyone.
+>
+> The provenance is worth recording because it explains how. §12 was written
+> 2026-07-24 in `372396a`, described as consolidated "from Rao Ch. 3" — and
+> Rao's Ch. 3 contains no combustion material at all. Raman's *Muhurtha* did
+> not enter `data/` until around 2026-08-16. So this table was written
+> unsourced, then corroborated three weeks later by a book nobody had
+> consulted when writing it. It got six of eight numbers right by luck. The
+> two it got wrong were the two the source states in a footnote rather than
+> in the table body.
 
 **Interpretive rule:** a combust planet's karakas are suppressed
 during the periods governed by that planet. A combust Venus, for
