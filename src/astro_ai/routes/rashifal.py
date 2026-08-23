@@ -49,8 +49,9 @@ _regen_failures: dict[str, float] = {}
 def _reading_error_fragment(slug: str, is_rate: bool, msg: str) -> str:
     """Card-shaped retry block for the HTMX flip-card path.
 
-    At module scope because TWO paths need it: a live generation failure, and
-    a cooldown-suppressed retry. The cooldown path used to
+    Both error paths render through this: a live generation failure and a
+    cooldown-suppressed retry. `msg` is the BODY only — the heading comes from
+    `is_rate`, so passing a full sentence duplicates it on the card. The cooldown path used to
     `raise HTTPException(503)`, which escapes the route before `is_htmx` is
     consulted and renders the whole 81 KB error page — and base.html sets
     `responseHandling: [{"code": ".*", "swap": true}]`, so htmx swaps that
@@ -225,7 +226,9 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         # either: the generation that armed the cooldown already fired one,
         # and re-alerting on every suppressed request is how an alert channel
         # becomes noise nobody reads.
-        _cool_msg = "Still gathering today's sky. Try again in a few minutes."
+        # Body only — _reading_error_fragment supplies the heading from
+        # is_rate, so passing the full sentence printed it twice on the card.
+        _cool_msg = "Try again in a few minutes."
         if is_htmx:
             return HTMLResponse(
                 _reading_error_fragment(canonical_slug, True, _cool_msg),
@@ -233,7 +236,8 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
             )
         return _no_cdn_cache(templates.TemplateResponse(
             request, "error.html",
-            {"title": "Reading not ready yet", "message": _cool_msg},
+            {"title": "Reading not ready yet",
+             "message": "Still gathering today's sky. Try again in a few minutes."},
             status_code=503,
         ))
 
@@ -296,19 +300,9 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
                 # retry button that re-fires HTMX + a link to the full
                 # standalone page as a fallback.
                 is_rate = isinstance(err, AllProvidersExhausted)
-                fragment_html = (
-                    '<div class="h-full flex flex-col items-center justify-center text-center gap-3 p-4">'
-                    f'  <div class="text-3xl" aria-hidden="true">{"🕉️" if is_rate else "⚠️"}</div>'
-                    f'  <div class="text-sm font-semibold text-stone-800">{"Still gathering today\'s sky…" if is_rate else "Reading could not load"}</div>'
-                    f'  <div class="text-xs text-stone-600 leading-relaxed">{"Experiencing high traffic. Try again in a minute." if is_rate else _msg}</div>'
-                    '  <div class="flex gap-2 pt-1">'
-                    f'    <button type="button" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold" '
-                    f'            hx-get="/rashifal/{canonical_slug}" hx-target="closest [data-card-front]" hx-swap="innerHTML" '
-                    f'            hx-headers=\'{{"HX-Rashifal-Fragment": "1"}}\'>Try again</button>'
-                    '    <span class="text-stone-300">·</span>'
-                    f'    <a href="/rashifal/{canonical_slug}" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold">Open full page</a>'
-                    '  </div>'
-                    '</div>'
+                fragment_html = _reading_error_fragment(
+                    canonical_slug, is_rate,
+                    "Experiencing high traffic. Try again in a minute." if is_rate else _msg,
                 )
                 return HTMLResponse(
                     fragment_html,

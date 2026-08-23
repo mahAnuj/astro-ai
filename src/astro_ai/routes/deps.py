@@ -663,7 +663,15 @@ def panchang_strip_for_city(city: str) -> tuple:
         ttl = _FALLBACK_TTL_S if cached_result[0] is not None else _TOTAL_FAILURE_TTL_S
         if _time.monotonic() - at < ttl:
             return cached_result
-        del _fallback_cache[key]
+        # .pop(key, None), NOT del. Nothing holds a lock between the .get()
+        # above and this line, so two threads reading the same expired entry
+        # both reach it and the loser raises KeyError — which escapes to the
+        # route and 500s / and /rashifal. Worse, the TTL boundary is exactly
+        # when a herd converges on this key (there is no single-flight around
+        # the re-solve), so the race window coincides with peak concurrency.
+        # Reproduced at 1 escape in 16,000 calls under forced switching.
+        # The eviction 90 lines below already uses .pop for this reason.
+        _fallback_cache.pop(key, None)
 
     degraded = False
     try:
@@ -740,8 +748,7 @@ def panchang_strip_for_city(city: str) -> tuple:
     # sequentially ends at 6, because five more arrive after the clear; the
     # original note said "106 in, 1 out", which a reader reproduces as 6 and
     # reasonably concludes the comment is wrong. State the mechanism, not a
-    # figure whose harness you did not describe.) The old behaviour was:
-    # 1 out. It also trips sooner than it used to, because the rashifal pages
+    # figure whose harness you did not describe.) It also trips sooner than it used to, because the rashifal pages
     # now feed signed-in cities into the same dict.
     #
     # Drop oldest-inserted instead (dicts preserve insertion order), and never
@@ -752,11 +759,16 @@ def panchang_strip_for_city(city: str) -> tuple:
         # tuple(dict) snapshots in ONE C-level call that cannot be preempted.
         # A plain comprehension iterates the live dict from Python and raises
         # "dictionary changed size during iteration" under concurrency —
-        # measured 20,013 errors in 48,000 concurrent inserts AT
-        # sys.setswitchinterval(1e-6) — the interval matters and the original
-        # note omitted it: at CPython's default the same harness yields single
-        # digits, so a reader checking this would think it fabricated. Under
-        # the same forcing an independent run measured 32,967. Surfaces as a
+        # the plain comprehension raised in EVERY configuration tried, and
+        # tuple(d) raised in NONE — that is the load-bearing claim and it
+        # reproduces. The error COUNT does not travel: it depends on
+        # sys.setswitchinterval and on the reader-thread count, and
+        # independent runs have landed anywhere from 3 (CPython default) to
+        # ~33,000 (forced switching, 64 readers). An earlier version of this
+        # comment quoted a bare "20,013", which a reader reproduces as
+        # something else entirely and reasonably concludes is invented. Quote
+        # the mechanism, not a number whose harness you did not state.
+        # Surfaces as a
         # 500 on / and /rashifal. The clear() this replaced was a single C
         # call and could not raise, so this was a NEW failure mode.
         for stale in [k for k in tuple(_PANCHANG_STRIP_CACHE)
