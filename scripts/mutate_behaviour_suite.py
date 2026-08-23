@@ -19,8 +19,10 @@ from the concurrency one.
 
     uv run python scripts/mutate_behaviour_suite.py     # exit 1 if any escapes
 """
+import os
 import pathlib
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -74,6 +76,54 @@ MUTATIONS = [
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 
+def _die_cleanly(signum, _frame):
+    """Turn SIGTERM/SIGHUP into SystemExit so TemporaryDirectory unwinds.
+
+    `src/` is safe either way — the sandbox means the repo is never mutated —
+    but a killed run left a ~7.6 MB copy of src+tests in $TMPDIR each time.
+    Harmless and untidy; one line to stop.
+    """
+    raise SystemExit(f"terminated by signal {signum}")
+
+
+for _sig in (signal.SIGTERM, signal.SIGHUP):
+    signal.signal(_sig, _die_cleanly)
+
+# A mutation that changes NOTHING. It must report MISSED on every run.
+#
+# Without it this harness could not fail, and did not, for a whole commit:
+# `deps.py` calls `load_dotenv(override=True)`, which resolves `.env` by
+# walking up from the importing file. In a sandbox that is a tmpdir, so the
+# repo's `.env` was never found, no LLM provider registered, and five rashifal
+# tests failed BEFORE any mutation was applied. Every mutation then reported
+# CAUGHT — including a no-op — and "8/8 caught" measured nothing at all.
+#
+# Two fixes, and this row is the important one. Injecting the env stops the
+# sandbox being red; the control row proves it, every run, forever. A harness
+# whose whole purpose is "prove the gate can fail" must itself be provably
+# able to fail.
+_CONTROL = (
+    "CONTROL: a no-op edit — MUST report MISSED, or this harness is blind",
+    "src/astro_ai/routes/deps.py",
+    "def panchang_strip_for_city(city: str) -> tuple:",
+    "def panchang_strip_for_city(city: str) -> tuple:  # noqa: E501",
+    "_control",
+)
+
+
+def _sandbox_env() -> dict:
+    """Parent env plus the repo's .env, which the sandbox cannot discover."""
+    env = dict(os.environ)
+    dotenv = ROOT / ".env"
+    if dotenv.exists():
+        for line in dotenv.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                env.setdefault(k.strip(), v.strip().strip("\"'"))
+    return env
+
+
 def _run_in_sandbox(rel: str, old: str, new: str) -> tuple[bool, str]:
     """Apply one mutation to a COPY of the tree and run the suite there.
 
@@ -98,7 +148,7 @@ def _run_in_sandbox(rel: str, old: str, new: str) -> tuple[bool, str]:
         target.write_text(source.replace(old, new))
         result = subprocess.run(
             [sys.executable, "-m", "pytest", str(sandbox / "tests"), "-q", "--no-header"],
-            capture_output=True, text=True, cwd=sandbox,
+            capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
         )
         if result.returncode == 0:
             return False, "*** MISSED ***"
@@ -110,8 +160,14 @@ def _run_in_sandbox(rel: str, old: str, new: str) -> tuple[bool, str]:
 
 
 rows = []
-for label, rel, old, new, _test in MUTATIONS:
+control_ok = True
+for label, rel, old, new, _test in [_CONTROL] + list(MUTATIONS):
     ok, verdict = _run_in_sandbox(rel, old, new)
+    if _test == "_control":
+        # Inverted: for the control, MISSED is the pass.
+        control_ok = verdict == "*** MISSED ***"
+        rows.append((label, "OK (correctly missed)" if control_ok else f"BLIND ({verdict})"))
+        continue
     rows.append((label, verdict))
 
 print(f"{'mutation':<58} {'verdict'}")
@@ -122,6 +178,16 @@ for label, verdict in rows:
         bad += 1
     print(f"  {label:<56} {verdict}")
 print()
-print(f"{len(rows) - bad}/{len(rows)} mutations caught")
+# The control row never has the verdict "CAUGHT" — whether it passes
+# ("OK (correctly missed)") or fails ("BLIND (...)") — so it always adds
+# exactly 1 to `bad`. Subtract it once, unconditionally.
+real = len(rows) - 1
+caught = real - (bad - 1)
+print(f"{caught}/{real} mutations caught")
 print("repository untouched: mutations run in a temporary copy")
-sys.exit(1 if bad else 0)
+if not control_ok:
+    print()
+    print("CONTROL FAILED — the sandbox reports CAUGHT for an edit that changes")
+    print("nothing, so every verdict above is worthless. Fix the sandbox before")
+    print("believing any number this printed.")
+sys.exit(0 if control_ok and caught == real else 1)

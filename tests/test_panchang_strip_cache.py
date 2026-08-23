@@ -115,10 +115,26 @@ def test_total_failure_is_retried_less_often_than_a_usable_fallback(deps, monkey
     # Age every cached entry to sit BETWEEN the two windows: past the short one,
     # inside the long one. A usable fallback must be re-solved; a total failure
     # must still be served from cache.
-    between = (deps._FALLBACK_TTL_S + deps._TOTAL_FAILURE_TTL_S) / 2
-    assert deps._FALLBACK_TTL_S < between < deps._TOTAL_FAILURE_TTL_S, (
-        "the two windows are no longer distinct, so this test cannot discriminate"
+    # LITERAL bounds, not values derived from the constants under test.
+    #
+    # The first version computed its probe point as the midpoint of the two
+    # constants, so any change to them moved the probe with them and the test
+    # passed regardless: `else float('inf')`, a 600->86400 day-long cache (the
+    # very thing this docstring condemns), 60->0, and 600->61 all escaped it.
+    # A test whose inputs are derived from its subject cannot constrain it.
+    assert 30.0 <= deps._FALLBACK_TTL_S <= 120.0, (
+        f"fallback window {deps._FALLBACK_TTL_S}s is outside the range this test "
+        "was written for; re-derive the numbers, do not widen the assert"
     )
+    assert 300.0 <= deps._TOTAL_FAILURE_TTL_S <= 3600.0, (
+        f"total-failure window {deps._TOTAL_FAILURE_TTL_S}s is outside the intended "
+        "range — under 5min re-arms the event-loop stall, over an hour is the "
+        "day-long cache #213 removed"
+    )
+    assert deps._TOTAL_FAILURE_TTL_S >= 5 * deps._FALLBACK_TTL_S, (
+        "the two windows have collapsed together; the split is the whole point"
+    )
+    between = 180.0    # fixed: past the fallback window, inside the total-failure one
     aged_at = deps._time.monotonic() - between
     key = (deps.date.today().isoformat(), "kolkata, india")
 
@@ -134,6 +150,15 @@ def test_total_failure_is_retried_less_often_than_a_usable_fallback(deps, monkey
     solves.clear()
     deps.panchang_strip_for_city("Kolkata, India")
     assert solves, "a stale fallback was served instead of retrying the real city"
+
+    # 3. A total failure aged PAST its own window must be retried too —
+    # "retried less often" must not degrade into "never retried".
+    deps._fallback_cache[key] = (
+        (None, None, ""), deps._time.monotonic() - (deps._TOTAL_FAILURE_TTL_S + 10),
+    )
+    solves.clear()
+    deps.panchang_strip_for_city("Kolkata, India")
+    assert solves, "a total failure past its window was never retried — that is a cache, not a TTL"
 
 
 def test_concurrent_access_raises_nothing(deps, monkeypatch):
@@ -239,17 +264,64 @@ def test_eviction_is_bounded_and_keeps_what_matters(deps, today_iso, monkeypatch
     assert default_key in deps._PANCHANG_STRIP_CACHE, "default-city entry was evicted"
 
 
+_DICT_FACTORIES = {"dict", "defaultdict", "OrderedDict", "Counter"}
+
+
 def _module_level_dicts(tree: ast.Module) -> set[str]:
-    """Names bound at module scope to a dict — the ones every thread shares."""
+    """Names bound at module scope to a dict — the ones every thread shares.
+
+    Collects more spellings than a literal `{}`: review found `dict()`, a dict
+    comprehension, and an `AnnAssign` whose annotation says `MutableMapping`
+    all sliding past a literals-only version. Alias chains
+    (`_b = _a; del _b[k]`) and cross-module attribute deletes
+    (`del deps._cache[k]`) are still not caught and are not worth chasing —
+    recorded here so the next reader knows the boundary rather than assuming
+    there isn't one.
+    """
     names: set[str] = set()
+
+    def _is_dictish(value) -> bool:
+        if isinstance(value, (ast.Dict, ast.DictComp)):
+            return True
+        return (isinstance(value, ast.Call)
+                and isinstance(value.func, ast.Name)
+                and value.func.id in _DICT_FACTORIES)
+
     for node in tree.body:
-        if isinstance(node, ast.Assign) and isinstance(node.value, ast.Dict):
+        if isinstance(node, ast.Assign) and _is_dictish(node.value):
             names.update(t.id for t in node.targets if isinstance(t, ast.Name))
         elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
             ann = ast.unparse(node.annotation) if node.annotation else ""
-            if "dict" in ann.lower():
+            # The VALUE decides, not the annotation string: `_m: MutableMapping
+            # [str, int] = {}` is as shared as one annotated `dict`.
+            if _is_dictish(node.value) or "dict" in ann.lower() or "mapping" in ann.lower():
                 names.add(node.target.id)
     return names
+
+
+def _locally_bound(fn: ast.AST) -> set[str]:
+    """Names a function binds itself — parameters and local assignments.
+
+    A `del` on one of those cannot race anything: it is a local, however much
+    its name resembles a module-level dict. Without this the guard fails on
+    correct single-threaded code, and a gate that cries wolf gets deleted.
+    """
+    bound: set[str] = set()
+    args = getattr(fn, "args", None)
+    if args:
+        for group in (args.posonlyargs, args.args, args.kwonlyargs):
+            bound.update(a.arg for a in group)
+        for extra in (args.vararg, args.kwarg):
+            if extra:
+                bound.add(extra.arg)
+    for node in ast.walk(fn):
+        if isinstance(node, ast.Assign):
+            bound.update(t.id for t in node.targets if isinstance(t, ast.Name))
+        elif isinstance(node, (ast.AnnAssign, ast.AugAssign)) and isinstance(node.target, ast.Name):
+            bound.add(node.target.id)
+        elif isinstance(node, ast.For) and isinstance(node.target, ast.Name):
+            bound.add(node.target.id)
+    return bound
 
 
 def test_no_unguarded_del_on_a_shared_dict():
@@ -279,17 +351,25 @@ def test_no_unguarded_del_on_a_shared_dict():
         shared = _module_level_dicts(tree)
         if not shared:
             continue
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.Delete):
+        # Only deletes INSIDE a function can race — a module-scope `del` runs
+        # once at import, single-threaded, and is a legitimate way to drop a
+        # loop temporary.
+        for fn in ast.walk(tree):
+            if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
-            for target in node.targets:
-                if (isinstance(target, ast.Subscript)
-                        and isinstance(target.value, ast.Name)
-                        and target.value.id in shared):
-                    offenders.append(
-                        f"{path.relative_to(root.parent.parent)}:{node.lineno} "
-                        f"del {target.value.id}[...]"
-                    )
+            local = _locally_bound(fn)
+            for node in ast.walk(fn):
+                if not isinstance(node, ast.Delete):
+                    continue
+                for target in node.targets:
+                    if (isinstance(target, ast.Subscript)
+                            and isinstance(target.value, ast.Name)
+                            and target.value.id in shared
+                            and target.value.id not in local):
+                        offenders.append(
+                            f"{path.relative_to(root.parent.parent)}:{node.lineno} "
+                            f"del {target.value.id}[...]"
+                        )
 
     assert not offenders, (
         "bare `del` on a module-level dict — use .pop(key, None), because the "
