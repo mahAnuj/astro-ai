@@ -39,6 +39,27 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 
+@pytest.fixture(autouse=True)
+def _isolate_daily_cache(tmp_path, monkeypatch):
+    """Point `daily_cache` at a tmp dir for EVERY test, always.
+
+    This was previously an env var set at the top of one test module, which
+    worked only because that module sorts alphabetically last and nothing
+    earlier imported `daily_cache` at module scope. Adding a single module that
+    does import it caused the suite to overwrite the repo's real
+    `data/daily_cache/` with fixtures — including `{"body": ""}` — after which
+    a dev server served 503 from a test artefact.
+
+    An autouse fixture patching `_ROOT` directly has no ordering dependency at
+    all: it cannot be defeated by adding a module, renaming one, or importing
+    something earlier. A containment guarantee that rests on filename sort
+    order is not a guarantee.
+    """
+    from astro_ai import daily_cache
+
+    monkeypatch.setattr(daily_cache, "_ROOT", tmp_path / "daily_cache")
+
+
 @pytest.fixture
 def today_iso() -> str:
     return date.today().isoformat()

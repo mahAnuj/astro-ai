@@ -19,7 +19,11 @@ from the concurrency one.
 
     uv run python scripts/mutate_behaviour_suite.py     # exit 1 if any escapes
 """
-import pathlib, subprocess, sys
+import pathlib
+import shutil
+import subprocess
+import sys
+import tempfile
 
 MUTATIONS = [
     ("deps: del instead of pop (the HIGH KeyError race)",
@@ -67,27 +71,57 @@ MUTATIONS = [
      "test_total_delivery_failure_is_not_reported_as_success"),
 ]
 
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+
+def _run_in_sandbox(rel: str, old: str, new: str) -> tuple[bool, str]:
+    """Apply one mutation to a COPY of the tree and run the suite there.
+
+    The repository is never modified. An earlier version mutated `src/` in
+    place and restored in a `finally`, which covers Ctrl-C and subprocess death
+    but NOT a signal that does not raise: `kill -TERM` left the live-comprehension
+    defect — the one that 500s `/` and `/rashifal` — sitting on disk inside a
+    twenty-line comment block, where a casual `git diff` review skims past it.
+
+    A sandbox removes the failure mode rather than handling it. There is no
+    restore path to get wrong, and no signal that can beat it.
+    """
+    with tempfile.TemporaryDirectory(prefix="mutate-") as tmp:
+        sandbox = pathlib.Path(tmp) / "repo"
+        for sub in ("src", "tests"):
+            shutil.copytree(ROOT / sub, sandbox / sub,
+                            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        target = sandbox / rel
+        source = target.read_text()
+        if source.count(old) != 1:
+            return False, f"ANCHOR MISSED ({source.count(old)})"
+        target.write_text(source.replace(old, new))
+        result = subprocess.run(
+            [sys.executable, "-m", "pytest", str(sandbox / "tests"), "-q", "--no-header"],
+            capture_output=True, text=True, cwd=sandbox,
+        )
+        if result.returncode == 0:
+            return False, "*** MISSED ***"
+        # A non-zero exit from a collection error would look like a catch and
+        # be worth nothing, so require an actual assertion failure.
+        if "FAILED" not in result.stdout and "failed" not in result.stdout:
+            return False, f"NON-TEST FAILURE rc={result.returncode}"
+        return True, "CAUGHT"
+
+
 rows = []
-for label, rel, old, new, test in MUTATIONS:
-    p = pathlib.Path(rel)
-    original = p.read_text()
-    if original.count(old) != 1:
-        rows.append((label, test, f"ANCHOR MISSED ({original.count(old)})")); continue
-    p.write_text(original.replace(old, new))
-    try:
-        r = subprocess.run([sys.executable, "-m", "pytest", "tests/", "-q", "--no-header"],
-                           capture_output=True, text=True)
-        caught = r.returncode != 0
-    finally:
-        p.write_text(original)
-    rows.append((label, test, "CAUGHT" if caught else "*** MISSED ***"))
+for label, rel, old, new, _test in MUTATIONS:
+    ok, verdict = _run_in_sandbox(rel, old, new)
+    rows.append((label, verdict))
 
 print(f"{'mutation':<58} {'verdict'}")
 print("-" * 76)
 bad = 0
-for label, test, verdict in rows:
-    if verdict != "CAUGHT": bad += 1
+for label, verdict in rows:
+    if verdict != "CAUGHT":
+        bad += 1
     print(f"  {label:<56} {verdict}")
 print()
-print(f"{len(rows)-bad}/{len(rows)} mutations caught")
+print(f"{len(rows) - bad}/{len(rows)} mutations caught")
+print("repository untouched: mutations run in a temporary copy")
 sys.exit(1 if bad else 0)
