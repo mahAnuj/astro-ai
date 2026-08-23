@@ -185,6 +185,22 @@ Keep lines short. This is a heartbeat, not a report — the ship summary is sepa
 
 ---
 
+## Architecture and past decisions — read `ARCHITECTURE.md` before designing
+
+`ARCHITECTURE.md` holds the system's shape and the reasoning behind it: the deploy path
+and its 60-second Firebase ceiling, the five cache layers and what each cannot do, the
+free-tier constraints that drive most designs, the LLM provider chain and prompt rules,
+how the astrology and numerology are actually computed, and a **dated decision log with
+the measurements** — including proposals already rejected, so they are not re-litigated.
+
+It is deliberately NOT part of this file. This one is loaded into every session; that one
+is read on demand. Merging them would raise the cost of every task to help a few.
+
+**Update it in the same commit as the change it describes.** A decision log that lags
+reads as current and is not — the same drift this file warns about elsewhere.
+
+---
+
 ## Layout
 
 ```
