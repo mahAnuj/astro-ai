@@ -1793,7 +1793,8 @@ _DEBILITATION_SIGN: dict[str, str] = {
 # 34.2%, re-measured 2026-08-23 against the CORRECTED orbs). It read ~29%
 # (28.4% / 29.5%) under the pre-0a1b6ee retrograde orbs, and was left stale in
 # the same comment block whose next paragraph had just been re-measured.
-# a flat orb is not a simplification of the classical rule but a narrower
+#
+# A flat orb is not a simplification of the classical rule but a narrower
 # rule, so it under-reported, describing genuinely combust planets to the LLM
 # as "neutral". The change can only ADD flags, never remove one — every orb in
 # the table is >= 9.0 (the minimum is Venus-retrograde, at 9.0 since 0a1b6ee
@@ -1840,7 +1841,7 @@ COMBUSTION_ORBS: Final[dict[str, tuple[float, float]]] = {
 # Source: B.V. Raman, "Muhurtha or Electional Astrology" (1948), Appendix
 # p.197 — data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt
 # lines 7183-7207 for the table AND 7227-7228 for the footnote. The footnote
-# sits 22 lines below the table, under an intervening entry; quoting only the
+# sits 20 lines below the table, under an intervening entry; quoting only the
 # table range would send a reader past the sentence the retrograde orbs
 # entirely rest on. Already plain text; no pdftotext involved.
 #
