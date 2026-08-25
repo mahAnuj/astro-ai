@@ -44,6 +44,16 @@ repo fails a check.
       exit code, because a date in a prose explainer is usually an illustration,
       not a claim about the calendar.
 
+  Gate 4 - corroboration of bare dates in muhurat/festival articles.  A
+      date-shaped string with no year of its own ("Chaturmas opens two days
+      later, on Jul 14") is checked in a STRICT article too: either it
+      inherited a year and attributed, in which case Gate 1 owns it, or its
+      month and day must match one of the dates that article has already
+      verified. Neither held for `diwali-muhurat-2026.html:22`'s "until
+      Nov 10" — Govardhan Puja, the #143 date, in prose, in the article #143
+      was filed against — which is why this gate exists. See the section on
+      it below for why it cannot fabricate a failure.
+
 TWO KINDS OF SOURCE
 -------------------
 A `Source` answers one question: "what date is <name> in <year>?".
@@ -144,6 +154,40 @@ that a written-out date on the same line is already using. Gate 3 does not fail
 an inherited date it cannot attribute: the article never wrote a year there, so
 a decline is a fact about the gate's reach, and every one of them is listed in
 Coverage.
+
+A BARE DATE MUST CORROBORATE ONE THE ARTICLE ALREADY VERIFIED
+-------------------------------------------------------------
+Inheritance only reaches the bare dates whose scope names a single year and a
+single festival; `diwali-muhurat-2026.html:22`'s "until Nov 10" has neither, and
+sat UNCHECKED. The obvious-looking fix — let `_attribute` reach further — is the
+wrong one and is deliberately NOT taken: that bare "Nov 10" sits in a block
+about Amavasya and Chaturdashi, and `vivah-muhurat-2027.html:98`'s bare "Jul 14"
+sits on a line naming Bhadli Navami while being Devshayani Ekadashi. Widening
+attribution would hand each of them a name that belongs to a different
+observance and FABRICATE a Gate 1 failure against a date that is correct.
+
+Gate 4 asks a weaker question that cannot fabricate anything, because IT NEVER
+ASSIGNS A NAME. For each bare date in a strict article it compares only
+(month, day) against the set of (month, day) pairs that article's own explicit,
+attributed claims stand behind — claims Gate 1 already checks, so a wrong value
+in that set fails the run on its own. It cannot say "Bhadli Navami should be on
+X"; the only thing it can say is "this date-shaped string is not one of the
+dates this article already verified". There is no path from it to a Gate 1
+comparison, and no year is needed, so no new inheritance tier exists and bare
+dates stay out of `_attribute` entirely.
+
+Two holes stay open, and are stated here rather than left to read as coverage:
+
+  ranges  - still out of scope, as everywhere else in this file. A range names
+            no single day, so a range endpoint can be corrupted invisibly to
+            every gate here. Coverage prints this per run rather than implying
+            the strict articles are fully defended.
+  ordinals - "the 7th" carries no month, matches no regex here, and is
+            therefore invisible to Gate 4. That is the accepted residual, and
+            it is the shape of one of this gate's own remedies: rewriting a
+            date-shaped string that claims no festival date as an ordinal moves
+            it out of reach on purpose. The ordinal asserts less, but nothing
+            checks that it agrees with the date beside it.
 
 Association is scoped, in exactly two conservative tiers:
 
@@ -445,6 +489,14 @@ _WEEKDAYS = (
     "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
 )
 
+# Number -> the longest spelling `_MONTHS` carries, for report text only.
+# Inverted from `_MONTHS` rather than retyped so there is one month table here,
+# not two.
+_MONTH_NAME = {
+    num: name.capitalize()
+    for name, num in sorted(_MONTHS.items(), key=lambda kv: len(kv[0]))
+}
+
 _MONTH_RE = "|".join(sorted(_MONTHS, key=len, reverse=True))
 _ORDINAL = r"(?:st|nd|rd|th)?"
 
@@ -497,8 +549,9 @@ def _month_day(m: re.Match[str]) -> tuple[int, int]:
 # and listed even where it cannot be checked.
 #
 # This is a SEPARATE regex on purpose. Loosening `_DATE_RE` would change what
-# counts as a claim in all 75 articles at once; this one only feeds the report
-# and the strict-article year inheritance below.
+# counts as a claim in all 75 articles at once; this one feeds the report, the
+# strict-article year inheritance below, and Gate 4's corroboration check —
+# none of which can turn a string here into a named festival claim.
 #
 # Range alternatives come first so "Jan 19-20" is seen whole rather than as
 # "Jan 19", and so a cross-month range ("17 May-15 Jun 2026") is not reported as
@@ -578,6 +631,32 @@ def _inherit_year(
                 + " — ambiguous, so no year was inherited"
             )
     return None, "no year on this line or in its block"
+
+
+@dataclass(frozen=True)
+class BareDate:
+    """A date-shaped string in a STRICT article that wrote no year of its own.
+
+    Gate 4's population, and it is deliberately NOT a `Claim`: only the month
+    and day are kept, because corroboration compares (month, day) and needs no
+    year. That is what keeps these strings out of `_attribute` — see the
+    corroboration section of the header.
+
+    `became_claim` records that it inherited a year and went on through
+    attribution as a `Claim`; whether that claim ATTRIBUTED is read back off
+    the claims themselves, so the two can never disagree.
+    """
+
+    path: Path
+    line_no: int
+    raw: str
+    month: int
+    day_num: int
+    became_claim: bool
+
+    @property
+    def where(self) -> str:
+        return f"{self.path.name}:{self.line_no}"
 
 
 @dataclass(frozen=True)
@@ -686,9 +765,10 @@ def _years_in(text: str) -> list[int]:
     return [int(m.group("year")) for m in _DATE_RE.finditer(text)]
 
 
-def collect_claims() -> tuple[list[Claim], list[Unclaimed], int]:
+def collect_claims() -> tuple[list[Claim], list[Unclaimed], int, list[BareDate]]:
     claims: list[Claim] = []
     unclaimed: list[Unclaimed] = []
+    bare_dates: list[BareDate] = []
     articles = sorted(LEARN_DIR.glob("*.html"))
     for path in articles:
         raw_lines = path.read_text(encoding="utf-8").splitlines()
@@ -748,6 +828,16 @@ def collect_claims() -> tuple[list[Claim], list[Unclaimed], int]:
                         block_years.get(blk, Counter()),
                     )
                 bare.setdefault(line_no, []).append((m, year, why))
+                if strict and not _is_range(m):
+                    # Recorded whether or not it inherited a year: Gate 4's
+                    # population is every bare date on these pages, and the
+                    # ones that inherited are the ones clause (a) lets through.
+                    month, day_num = _month_day(m)
+                    bare_dates.append(BareDate(
+                        path=path, line_no=line_no, raw=m.group(0),
+                        month=month, day_num=day_num,
+                        became_claim=year is not None,
+                    ))
                 if year is not None:
                     line_inh_years.setdefault(line_no, Counter())[year] += 1
                     blk_inh_years.setdefault(blk, Counter())[year] += 1
@@ -813,7 +903,7 @@ def collect_claims() -> tuple[list[Claim], list[Unclaimed], int]:
                         Unclaimed(path=path, line_no=line_no, raw=m.group(0),
                                   reason=why)
                     )
-    return claims, unclaimed, len(articles)
+    return claims, unclaimed, len(articles), bare_dates
 
 
 def _attribute(
@@ -1104,11 +1194,107 @@ def gate_3_strict_attribution(claims: list[Claim]) -> list[str]:
 
 
 # --------------------------------------------------------------------------
+# Gate 4 - bare dates in muhurat/festival articles must corroborate
+# --------------------------------------------------------------------------
+
+def _verified_days(claims: list[Claim]) -> dict[Path, set[tuple[int, int]]]:
+    """Per article, the (month, day) pairs its own EXPLICIT claims stand behind.
+
+    Only attributed claims count, because those are the ones Gate 1 compares
+    against a source: a wrong value in here fails the run on its own, so
+    nothing corroborated against it can be quietly wrong. Inherited claims are
+    excluded — a date the article never spelled out is not something the
+    article vouched for, and letting one corroborate another bare date would
+    make two unverified strings agree and call that a check.
+
+    The year is dropped deliberately. It is what removes any need for a bare
+    date to obtain one, and therefore any need to put it through `_attribute`.
+    """
+    days: dict[Path, set[tuple[int, int]]] = {}
+    for claim in claims:
+        if claim.year_source != "explicit" or claim.source is None:
+            continue
+        if claim.day is None:
+            continue
+        days.setdefault(claim.path, set()).add((claim.day.month, claim.day.day))
+    return days
+
+
+def _attributed_inherited(claims: list[Claim]) -> set[tuple[Path, int, str]]:
+    """Bare dates that inherited a year AND attributed, keyed as written."""
+    return {
+        (c.path, c.line_no, c.raw)
+        for c in claims
+        if c.year_source == "inherited" and c.source is not None
+    }
+
+
+def _corroboration(
+    item: BareDate,
+    verified: dict[Path, set[tuple[int, int]]],
+    attributed: set[tuple[Path, int, str]],
+) -> str:
+    """One bare date's verdict: "attributed", "corroborated", or "" for neither.
+
+    Shared by Gate 4 and Coverage so what is printed cannot drift from what set
+    the exit code.
+    """
+    if item.became_claim and (item.path, item.line_no, item.raw) in attributed:
+        return "attributed"
+    if (item.month, item.day_num) in verified.get(item.path, set()):
+        return "corroborated"
+    return ""
+
+
+def _fmt_md(month: int, day_num: int) -> str:
+    return f"{_MONTH_NAME[month]} {day_num}"
+
+
+def gate_4_corroboration(claims: list[Claim], bare: list[BareDate]) -> list[str]:
+    """A bare date on a muhurat/festival page must agree with one of its own.
+
+    Gate 3 reaches only strings that wrote a year. `diwali-muhurat-2026.html:22`
+    said Shukla Pratipada runs "until Nov 10" — Govardhan Puja, the #143 date,
+    in the article #143 was filed against — and no gate read it, because the
+    line names no year and no single festival.
+
+    This gate never assigns a name, so it cannot manufacture a Gate 1 failure
+    the way a widened `_attribute` would; see the header. It asks only whether
+    the (month, day) is one the article has already put its name to.
+    """
+    failures: list[str] = []
+    verified = _verified_days(claims)
+    attributed = _attributed_inherited(claims)
+
+    counts: Counter[str] = Counter()
+    for item in bare:
+        verdict = _corroboration(item, verified, attributed)
+        counts[verdict] += 1
+        if verdict:
+            continue
+        known = sorted(verified.get(item.path, set()))
+        shown = ", ".join(_fmt_md(*md) for md in known) or "none"
+        failures.append(
+            f"{item.where}: {item.raw!r} is not one of the dates this article "
+            f"verifies ({shown}). Either name the source on the line and write "
+            "the year, so Gates 1-3 check it, or — if it is not a festival-date "
+            "claim — write it as a bare ordinal (\"the 7th\"), which asserts no "
+            "calendar date to be wrong about."
+        )
+
+    print(f"  {len(bare)} bare date(s) in {len(strict_articles())} strict "
+          f"article(s), {counts['corroborated']} corroborated, "
+          f"{counts['attributed']} attributed, {counts['']} uncorroborated")
+    return failures
+
+
+# --------------------------------------------------------------------------
 # Coverage - what this gate could not check, and why
 # --------------------------------------------------------------------------
 
 def print_coverage(
-    claims: list[Claim], unclaimed: list[Unclaimed], n_articles: int
+    claims: list[Claim], unclaimed: list[Unclaimed], n_articles: int,
+    bare: list[BareDate],
 ) -> None:
     explicit = [c for c in claims if c.year_source == "explicit"]
     inherited = [c for c in claims if c.year_source == "inherited"]
@@ -1150,6 +1336,28 @@ def print_coverage(
         print(f"    NO-YEAR {item.where}: {item.raw!r} — {item.reason} ({tag})")
     if not unclaimed:
         print("    every date-shaped string in every article was read as a claim")
+
+    # Gate 4's population, one line per occurrence and with its verdict, for
+    # the same reason the NO-YEAR list above is printed: a hole nobody can see
+    # reads as coverage.
+    verified = _verified_days(claims)
+    attributed = _attributed_inherited(claims)
+    print(f"  {len(bare)} bare date(s) in strict article(s) checked by Gate 4:")
+    for item in bare:
+        verdict = _corroboration(item, verified, attributed)
+        if verdict == "attributed":
+            detail = "inherited a year and attributed — compared by Gate 1"
+        elif verdict == "corroborated":
+            detail = (f"corroborated by this article's verified "
+                      f"{_fmt_md(item.month, item.day_num)}")
+        else:
+            detail = "UNCORROBORATED"
+        print(f"    BARE {item.where}: {item.raw!r} — {detail}")
+    if not bare:
+        print("    (none — no strict article carries a date without a year)")
+    print("    range endpoints remain UNDEFENDED: a range names no single day, "
+          "so either end of a 'Jan 19-20' can be corrupted and no gate here "
+          "will see it")
 
     # Per-strict-article unchecked counts, so a regression in the articles that
     # matter most is one line rather than a diff of the list above.
@@ -1199,7 +1407,7 @@ def main() -> int:
     print("  -> PASS")
     print()
 
-    claims, unclaimed, n_articles = collect_claims()
+    claims, unclaimed, n_articles, bare = collect_claims()
 
     gates = [
         ("Gate 1 - article date vs its source (registry or computed)",
@@ -1208,6 +1416,8 @@ def main() -> int:
          lambda: gate_2_weekday_agreement(claims)),
         ("Gate 3 - attribution completeness in muhurat/festival articles",
          lambda: gate_3_strict_attribution(claims)),
+        ("Gate 4 - bare dates in muhurat/festival articles must corroborate",
+         lambda: gate_4_corroboration(claims, bare)),
     ]
 
     all_failures: list[str] = []
@@ -1223,7 +1433,7 @@ def main() -> int:
         all_failures.extend(failures)
 
     print("Coverage")
-    print_coverage(claims, unclaimed, n_articles)
+    print_coverage(claims, unclaimed, n_articles, bare)
     print()
 
     print("Summary")
