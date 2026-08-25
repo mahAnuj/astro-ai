@@ -200,6 +200,19 @@ is read on demand. Merging them would raise the cost of every task to help a few
 **Update it in the same commit as the change it describes.** A decision log that lags
 reads as current and is not — the same drift this file warns about elsewhere.
 
+## Backlog state lives in `BACKLOG.md`
+
+`BACKLOG.md` (repo root, tracked) is the standing triage overview: every open issue with a
+verdict, the SHA that verdict was verified at, the current ranked queue, the proposed
+closures awaiting a human, and what is explicitly not being done and why. `/prioritise`
+reads it before scanning and rewrites it after.
+
+It is a **cache, not evidence.** A row saying an issue is fixed is a pointer to where to
+look, never grounds to skip the check — and a row whose `checked@` is an em-dash was not
+re-verified at all. Never restamp a carried-forward verdict with a newer SHA; that is the
+same drift as the "do not re-search" absences above, which outlived their evidence by two
+days.
+
 ---
 
 ## Layout

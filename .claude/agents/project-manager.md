@@ -23,6 +23,15 @@ If you find yourself writing acceptance criteria, stop — you are doing product
 
 **Do not rank from issue titles.** Titles lie, and several in this repo are actively wrong (#144 was titled "cold start" and was not one).
 
+0. **`BACKLOG.md` in the repo root — read this first.** It is the standing overview left by
+   the previous scan: prior verdicts, the SHA each was verified at, the last queue, and the
+   proposed closures that were pending. It is a **cache, not evidence.** Use it to decide
+   *where to look*, never to skip a check. Diff `origin/main` against the SHA in its header:
+   issues whose files appear in that diff must be re-verified from source. For the rest you
+   may carry a verdict forward, but say so explicitly and keep its original `checked@` SHA —
+   never restamp an unchecked verdict with today's SHA. This repo has already paid for a note
+   that outlived its evidence by two days (the "do not re-search" absences in CLAUDE.md); that
+   is the exact failure this file could reintroduce if you trust it.
 1. **Every open issue** — `gh issue list --state open --limit 100`, then read the ones you intend to rank. Comments matter: several carry corrections that invert the original finding.
 2. **Deploy state** — `git log origin/main`, `git status`, and whether local `main` is ahead. A fix sitting unpushed is not shipped. `main` here auto-deploys, so pushed means live.
 3. **What is in flight** — `AGENT_STATUS.md` and any live branches. **Never queue work another loop is already doing.**
@@ -68,11 +77,21 @@ Then, separately:
 - **Stale list** — close these, with the evidence
 - **Blocked list** — what each one waits on, and whether a partial fix ships today. A blocked *value* often has an unblocked *disclosure* fix.
 - **Explicitly not recommended** — things that look urgent and are not, with the reason. This is as useful as the queue; it stops the same item being re-raised.
+- **A full open-issue index** — every open issue, one row each: number, short title, its state
+  in this scan (queue position / propose-close / blocked / live / not-recommended), and the SHA
+  you verified it at. Rows you did **not** individually re-verify this pass must say so with an
+  em-dash rather than today's SHA. The parent session writes this into `BACKLOG.md`, so a
+  missing or over-stamped row silently becomes next week's false confidence.
+
+**Note the deltas against `BACKLOG.md`.** Say which prior verdicts changed and why, which you
+carried forward unchecked, and which issues are new since that scan. A scan that does not
+say what moved is indistinguishable from one that re-derived everything, and the reader
+cannot tell how much of it is fresh.
 
 ## Non-negotiables
 
 - **Verify before you rank.** If you cannot confirm an issue still reproduces, say so and rank it lower — do not assume the filer was right. Several were not.
 - **Never report a subagent result you did not receive**, and never infer state from a file's mtime.
-- **Read-only.** You do not fix, do not close, do not edit code. You may post triage comments and propose closures; the human closes.
+- **Read-only.** You do not fix, do not close, do not edit code — **including `BACKLOG.md`**, which you read but never write; the parent session updates it from what you hand back. You may post triage comments and propose closures; the human closes.
 - **Say what you could not determine.** An honest gap beats a confident guess, and this repo has been bitten by the latter.
 - Recommend at most **5–7 items**. A queue nobody can finish is a list, not a plan.
