@@ -96,6 +96,27 @@ count the user sees maps to actual work:
 HH:MM  dev-lead #132  live: architect(design), engineer-1(hub route)
 ```
 
+## Token budget — the free Groq tier is the ceiling
+
+The site runs on Groq's free tier. Quota is keyed **per model**: 8,000 TPM per model, and the
+daily rashifal path runs against a 200,000 TPD limit. The chain is `groq120,groq20`; `openai`
+sits at the end as a **paid-tier safety net**, so falling through to it is not free and is not
+a capacity plan.
+
+**Do not let work through the gate without the number.** If the change touches a prompt or adds an LLM call, the engineer's hand-back must carry tokens per call before and after, and QA must have checked it.
+
+**When it does not fit, the answer is a stated finding — never a silent spend.** The escape
+hatch is adding a model, because Groq's buckets are per-model, but that is a proposal for the
+human and the obvious candidates are already ruled out: `groq` resolves to the same model as
+`groq120` (one shared bucket wearing a disguise); `groq_qwen` cannot be bounded and its empty
+~40s calls took the 2-language rashifal job from 213s to 399s, past its 300s timeout;
+`groq/compound` is agentic and can browse, which would import outside claims into a
+chart-grounded reading. Verify any model actually exists before proposing it — `_chain()`
+skips a provider only when its *key* is missing, so a decommissioned model stays in the chain,
+counts as a provider, and contributes nothing. Two did exactly that in production.
+
+See CLAUDE.md's token-budget section for the full picture.
+
 ## What to hand back
 
 - What changed, file by file, and why

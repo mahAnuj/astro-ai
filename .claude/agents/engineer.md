@@ -79,6 +79,27 @@ up to 21 days — under a header claiming a provenance it did not have.
 Astrological claims must trace to `knowledge/*.md`. If you cannot source a rule you are
 writing, mark it unsourced in place rather than inventing a citation.
 
+## Token budget — the free Groq tier is the ceiling
+
+The site runs on Groq's free tier. Quota is keyed **per model**: 8,000 TPM per model, and the
+daily rashifal path runs against a 200,000 TPD limit. The chain is `groq120,groq20`; `openai`
+sits at the end as a **paid-tier safety net**, so falling through to it is not free and is not
+a capacity plan.
+
+**Measure it, do not estimate it.** If your change touches a prompt or adds a call, record tokens per call before and after as actual numbers. #212 exists because an 18.5%/call growth — about +10.5k tokens/day — went unnoticed until QA saw groq120 rate-limiting in the logs.
+
+**When it does not fit, the answer is a stated finding — never a silent spend.** The escape
+hatch is adding a model, because Groq's buckets are per-model, but that is a proposal for the
+human and the obvious candidates are already ruled out: `groq` resolves to the same model as
+`groq120` (one shared bucket wearing a disguise); `groq_qwen` cannot be bounded and its empty
+~40s calls took the 2-language rashifal job from 213s to 399s, past its 300s timeout;
+`groq/compound` is agentic and can browse, which would import outside claims into a
+chart-grounded reading. Verify any model actually exists before proposing it — `_chain()`
+skips a provider only when its *key* is missing, so a decommissioned model stays in the chain,
+counts as a provider, and contributes nothing. Two did exactly that in production.
+
+See CLAUDE.md's token-budget section for the full picture.
+
 ## Hand back
 
 - What changed, file by file, and why

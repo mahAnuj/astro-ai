@@ -226,6 +226,61 @@ see.
 does not exist in the tree** — the mechanism named as the backstop is not currently in place,
 so the rule rests entirely on the agents honouring it.
 
+## Token budget — the free Groq tier is the ceiling every role designs against
+
+The site runs on Groq's free tier. **Quota is keyed PER MODEL, not per key**: 8,000 TPM per
+model, and the daily rashifal path has been observed against a 200,000 TPD limit. The
+recommended chain is the two boundable live models:
+
+```
+BHAGYA_LLM_PROVIDERS=groq120,groq20
+```
+
+`openai` sits at the end of the chain as a **paid-tier safety net**. Falling through to it is
+not free, and it is not a capacity plan.
+
+**So every role owes the same answer before work lands: does this fit in the free tier, and
+what is the number?**
+
+- **`product-manager`** — a feature whose per-day token cost exceeds what the chain can serve
+  is not "expensive", it is **unbuildable as specified**. Say so in the spec.
+- **`architect`** — state tokens per call and per day against the ceiling they consume, and
+  design the prompt so the shared prefix precedes the per-request part; that is what makes
+  caching possible at all.
+- **`engineer`** — measure it, do not estimate it. Before and after, as numbers.
+- **`qa`** — an unmeasured token claim is a FAIL, same as an unmeasured latency claim.
+- **`dev-lead`** — do not let work through the gate without the number.
+
+### When it does not fit, say so — do not silently spend
+
+The escape hatch is to **add a model**, because Groq's buckets are per-model. But that is a
+proposal for the human, not a decision an agent takes, and the obvious candidates are already
+ruled out with measurements:
+
+- **Do not list `groq` alongside `groq120`.** They resolve to the same model, so they share one
+  TPM bucket while looking like extra capacity.
+- **`groq_qwen` is deliberately excluded.** It rejects `reasoning_effort` with a 400, so it
+  cannot be bounded; unbounded it truncates mid-`<think>` and the envelope stripper cleans it
+  to zero visible characters — a ~40s call returning nothing. Measured 2026-08-22: the full
+  2-language rashifal job ran **399s** with qwen in the chain (over the 300s timeout) versus
+  **213s** without. Its extra TPM bucket is worth less than the wall-clock its empty calls
+  burn.
+- **`groq/compound` and `compound-mini` are agentic** — they can invoke tool use and web
+  search. Deliberately not added: a model that browses can import outside claims into a
+  chart-grounded reading. Only behind review.
+- The rest of Groq's 13-model catalogue is Whisper, TTS, safety classifiers and a 4k-context
+  Arabic model — not usable for narrative generation.
+
+**Verify a model exists before adding it** (`GET /openai/v1/models`). `_chain()` skips a
+provider only when its API *key* is missing, so a decommissioned model stays in the chain, is
+counted as a provider, fails at call time and contributes nothing. Two models sat 404ing in
+production this way, and a nominally four-provider chain was delivering two models' worth of
+quota — which is what exhausted the daily job.
+
+**The correct output when the budget does not fit is a stated finding**: what it needs, what
+the chain can serve, and which model would have to be added. Never quietly widen the prompt
+and let the chain fall through.
+
 ## Backlog state lives in `BACKLOG.md`
 
 `BACKLOG.md` (repo root, tracked) is the standing triage overview: every open issue with a
