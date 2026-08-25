@@ -9,8 +9,16 @@ WHY THIS EXISTS
 could only see a suffix that is APPENDED to the term. Sanskrit a-stems do not
 append — they REPLACE the stem's final -a. `maudhyena` does not contain
 `maudhya` at all, which is why no relaxation of the trailing boundary could
-have fixed this and why the two fixes the issue proposed were both measured
-insufficient (1/5 and 4/5 of the forms).
+have fixed this through the search term itself.
+
+Measured through the real pipeline — `variants()` then `_pat()`, which is what
+`_hits()` below does — #217's first suggestion (an appended suffix set) reaches
+4 of the 5 inflected forms and its second (`(?![a-z]{4,})`) reaches all 5, by
+way of the truncated stem `maudhy` that `variants()` already emits. So the
+second one is not refuted on form count; it is rejected for what else it finds,
+and the measurement is recorded next to `_ENDINGS` in `corpus_search.py`. The
+figures once carried here (1/5 and 4/5) and in the #217 commit message (0/5 and
+3/5) do not reproduce and are superseded there.
 
 A false ABSENT is the dangerous direction: it retires a gap that is still
 open, or licenses inventing a rule the corpus already carries. But the
@@ -30,8 +38,10 @@ RULES FOR ANYONE EDITING THIS FILE
    `_pat()` for the real pattern and assert on hardcoded expectations. Two
    tests in this repo reimplemented their subject and would have passed
    forever.
-3. Run `--self-test` after editing. It restores the pre-#217 pattern and
-   asserts this gate goes red; a gate that has never failed is not evidence.
+3. Run `--self-test` after editing. It applies two mutants — the pre-#217
+   pattern, and the 6-character stem floor lowered on its own — and asserts
+   this gate goes red for each. A gate that has never failed is not evidence,
+   and a fixture that only fires when two things break at once guards neither.
 
 EXIT CODES
     0  PASS
@@ -52,10 +62,11 @@ import corpus_search as cs  # noqa: E402
 #
 # SYNTHETIC, not quotations. They are shaped like corpus lines so the gate
 # exercises the same path a search does (the search lowercases each line, then
-# tries every spelling), but nothing here is offered as a citation. The five
-# inflected forms are the ones #217 names; the declensions are the standard
-# a-stem endings (accusative -am, instrumental -ena, genitive -asya,
-# locative -e), not a choice this gate is free to make.
+# tries every spelling), but nothing here is offered as a citation. Four of
+# the five inflected forms carry endings #217 names (-am, -ena, -asya); the
+# locative -e is added because it is the shortest a-stem ending and so the one
+# most exposed to the boundary rules. All are standard declensions, not a
+# choice this gate is free to make.
 _MUST_MATCH: tuple[tuple[str, str], ...] = (
     ("maudhya", "Maudhyam of Venus is discussed in the next chapter."),
     ("maudhya", "results caused by maudhyena are held to be weak"),
@@ -72,8 +83,9 @@ _MUST_MATCH: tuple[tuple[str, str], ...] = (
     ("navamsa", "see the Navamsa-lagna for the same rule"),
 )
 
-# Each of these is a real false positive this tool has produced, or the
-# overcorrection that the obvious #217 fix would produce.
+# Each of these is a real false positive this tool has produced, the
+# overcorrection that the obvious #217 fix would produce, or — for the last
+# one — a false positive a single loosening of the pattern would produce.
 _MUST_NOT_MATCH: tuple[tuple[str, str, str], ...] = (
     ("vashya", "the amavasya tithi falls on the thirtieth",
      "'vasya' inside 'amavasya' — reported Vashya as sourced when it is not"),
@@ -84,6 +96,13 @@ _MUST_NOT_MATCH: tuple[tuple[str, str, str], ...] = (
     ("dasha", "he dashes the hopes of the native",
      "the ending set must stay a Sanskrit case set behind its 6-character "
      "floor — 'dash' plus an English-looking 'es' swallows ordinary prose"),
+    # The line above needs TWO mutations to fire (drop the floor AND add an
+    # English ending), so on its own it left the 6-character floor unguarded.
+    # This one bites on the floor alone: at a floor of 3, `bala` truncates to
+    # `bal`, and `bal` + the locative `-e` is the English word "bale".
+    ("bala", "the cart carried a single bale of hay",
+     "the 6-character floor alone keeps 'bal' + '-e' out of 'bale' — a "
+     "3-letter stem plus a Sanskrit case ending lands inside English prose"),
 )
 
 
@@ -141,7 +160,13 @@ def gate_3_structure() -> list[str]:
                         "sharing the stem")
 
     # Devanagari still matches as a substring: भकूट appears inside भकूटगुणाः,
-    # and requiring a boundary would miss every compound.
+    # and requiring a boundary would miss every compound. What this catches is
+    # the realistic mutation, a \b boundary — measured False on दुष्टभकूटपरिहारः
+    # and भकूटगुणाः. What it does NOT catch is deleting the Devanagari dispatch
+    # entirely: the Latin branch's (?<![a-z])/(?![a-z]) are both satisfied by
+    # Devanagari neighbours, so the two branches diverge only where Devanagari
+    # is glued to an ASCII letter (`bhakootभकूटdosha`), which no OCR of these
+    # books produces. That mutant survives, knowingly.
     deva = cs._pat("भकूट")
     ok = bool(deva.search("दुष्टभकूटपरिहारः"))
     print(f"    {'ok ' if ok else 'BAD'} devanagari matches inside a compound")
@@ -166,28 +191,57 @@ def run_gates(prefix: str = "") -> int:
     return total
 
 
+def _old_pat(v: str) -> "re.Pattern[str]":
+    """The pre-#217 pattern: an appended plural and nothing else."""
+    if any(ord(ch) > 0x0900 for ch in v):
+        return re.compile(re.escape(v))
+    return re.compile(rf"(?<![a-z]){re.escape(v)}s?(?![a-z])")
+
+
+def _floor3_pat(v: str) -> "re.Pattern[str]":
+    """`_pat` with ONLY the 6-character stem floor lowered to 3.
+
+    Everything else — the endings, both lookarounds, the Devanagari branch — is
+    left exactly as it ships. QA found the floor was the one load-bearing piece
+    no fixture guarded on its own: the `dasha`/"he dashes" line needs the floor
+    lowered AND an English ending added before it fires, so it could not fail
+    under a single mutation.
+    """
+    if any(ord(ch) > 0x0900 for ch in v):
+        return re.compile(re.escape(v))
+    body = rf"{re.escape(v)}s?"
+    if v.endswith("a") and len(v) >= 3:
+        body += "|" + re.escape(v[:-1]) + "(?:" + "|".join(cs._ENDINGS) + ")"
+    return re.compile(rf"(?<![a-z])(?:{body})(?![a-z])")
+
+
 def self_test() -> int:
-    """Restore the pre-#217 pattern and assert this gate goes red."""
-    print("SELF-TEST — reinstating the pre-#217 pattern; the gate must FAIL.")
+    """Mutate the pattern and assert this gate goes red for each mutant.
+
+    A gate that has never failed is not evidence, and a gate that fails only
+    when two things break at once leaves the second one unguarded.
+    """
+    mutants = (
+        ("the pre-#217 pattern", _old_pat),
+        ("the 6-character stem floor lowered to 3, alone", _floor3_pat),
+    )
     original = cs._pat
-
-    def _old_pat(v: str) -> "re.Pattern[str]":
-        if any(ord(ch) > 0x0900 for ch in v):
-            return re.compile(re.escape(v))
-        return re.compile(rf"(?<![a-z]){re.escape(v)}s?(?![a-z])")
-
-    cs._pat = _old_pat
-    try:
-        failures = run_gates(prefix="  ")
-    finally:
-        cs._pat = original
-
-    if not failures:
-        print("SELF-TEST FAILED — the old pattern passed every gate, so this "
-              "gate cannot detect the defect it was written for.")
-        return 1
-    print(f"SELF-TEST OK — {failures} failure(s) with the old pattern.")
-    return 0
+    bad = 0
+    for label, mutant in mutants:
+        print(f"SELF-TEST — {label}; the gate must FAIL.")
+        cs._pat = mutant
+        try:
+            failures = run_gates(prefix="  ")
+        finally:
+            cs._pat = original
+        if not failures:
+            print(f"SELF-TEST FAILED — {label} passed every gate, so this "
+                  "gate does not detect it.")
+            bad += 1
+        else:
+            print(f"SELF-TEST OK — {failures} failure(s) with {label}.")
+        print()
+    return 1 if bad else 0
 
 
 def main(argv: list[str]) -> int:
