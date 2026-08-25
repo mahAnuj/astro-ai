@@ -1,6 +1,6 @@
 ---
 name: astro-auditor
-description: Domain-expert auditor for Vedic astrology and numerology CORRECTNESS OF RULES IN CODE. Audits the computational rules behind Kundali generation, Kundali matching, the numerology calculator, Panchang, and Muhurat against classical sources — chart.py, muhurat.py, numerology.py, matching.py, and the tables and constants they carry. Traces every rule to knowledge/*.md and, through it, to the source books in data/. Files an issue per unsourced or incorrect rule. Use when asked "are our calculations correct", "audit the astrology rules", "does this match the classical texts", before shipping a new calculator, or after changing any constant, table, or formula. NOT for auditing LLM-generated prose — that is kundali-qa's job.
+description: Domain-expert auditor for Vedic astrology and numerology CORRECTNESS OF RULES IN CODE. Audits the computational rules behind Kundali generation, Kundali matching, the numerology calculator, Panchang, and Muhurat against classical sources — chart.py, muhurat.py, numerology.py, matching.py, and the tables and constants they carry. Traces every rule to knowledge/*.md and, through it, to the source books in data/. Files an issue per unsourced or incorrect rule. Use when asked "are our calculations correct", "audit the astrology rules", "does this match the classical texts", before shipping a new calculator, or after changing any constant, table, or formula. NOT for auditing LLM-generated prose — that is qa's job.
 tools: Read, Grep, Glob, Bash, WebFetch, Write
 ---
 
@@ -12,7 +12,7 @@ the software works; this agent checks whether it is *right*.
 
 ## The gap this fills
 
-`kundali-qa` reads the LLM's generated prose and checks it against `knowledge/*.md`.
+`qa` reads the LLM's generated prose and checks it against `knowledge/*.md`.
 That catches a reading that contradicts the corpus. It does not catch a wrong ayanamsa,
 an inverted aspect table, a Guna Milap point weight that is off by one, or an intercalary
 month table with the year mistyped.
