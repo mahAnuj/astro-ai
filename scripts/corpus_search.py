@@ -202,17 +202,43 @@ def variants(term: str) -> list[str]:
 # `maudhya`. That is #217: `maudhya --absent` printed a clean absence while
 # `Maudhyam` sits in Rao Vol. I.
 #
-# Measured against the five forms #217 names — Maudhyam, maudhyena,
-# maudhyasya, maudhye, maudhyam — before choosing this shape:
+# Measured 2026-08-25 against the five forms the gate fixtures carry — the
+# three endings #217 names (-am, -ena, -asya) plus the locative -e — through
+# the pipeline the tool actually uses, variants() then _pat(). The path is the
+# whole point: variants() already emits the truncated stem `maudhy`, so a
+# candidate can reach -ena and -e through that stem even though it cannot
+# reach them through `maudhya`. Scored on the base spelling alone, the middle
+# row reads 3/5 and looks refuted; scored the way the tool searches, it is not.
 #
-#     s?(?![a-z])            0/5   the pattern that shipped
-#     (?![a-z]{4,})          3/5   still blind to -ena and -e, because those
-#                                  are not suffixes of the term at all
-#     stem + ending set      5/5   and rejects the overcorrection maudhyamika
+#                          base only   via variants()
+#     s?(?![a-z])             0/5           0/5    the pattern that shipped
+#     suffix set, #217 (a)    2/5           4/5    -ena and -e are appended to
+#                                                  nothing, so they stay unseen
+#     (?![a-z]{4,}), #217 (b) 3/5           5/5    finds all five, via `maudhy`
+#     stem + ending set       5/5           5/5    and rejects maudhyamika
 #
-# (Triage measured the same three candidates on a slightly different form
-# list and got 1/5, 4/5, 5/5. The counts move with the fixture; the ordering
-# and the reason for it do not.)
+# So (b) is NOT refuted on form count. It is rejected on what ELSE it finds.
+# Over 92 terms on the one book then in data/ (vedic_astro_textbook.pdf,
+# 16,724 lines) it changes 16 terms' counts where this pattern changes none:
+#
+#     nadi        0 ->    1   "the northern direction (nadir – 4th house)"
+#     hora       45 ->   47   "prasna or horary astrology"
+#     bala       55 ->   60   "loss of status and balance"; "Balava", a karana
+#     dasha    1300 -> 1314   "Dasamsa Chart (D-10)"; "Dasami", a tithi
+#
+# `nadi` matching the English word "nadir" is a false SOURCED verdict on one
+# of the eight kootas — the direction this module's docstring calls the worse
+# error, and worse than the false negative #217 was filed about. Some of (b)'s
+# extra hits are genuine compounds (kendradi, nakshatramsa, vargottamamsa), so
+# the trade is not one-sided; the counts are corpus-dependent on 1 of 8 books
+# and would move with the rest. The asymmetry of the two errors does not move.
+#
+# (An earlier version of this comment recorded 3/5 for (b) with the reasoning
+# "still blind to -ena and -e", and the #217 commit message recorded 0/5 and
+# 3/5 as "both fixes the issue proposed". Neither reproduces: 0/5 is the
+# SHIPPED pattern, not a proposal, and 3/5 is a base-spelling measurement of a
+# tool that does not search that way. The 1/5 and 4/5 that triage handed down
+# do not reproduce either. Superseded by the table above.)
 #
 # The ending set is explicit and short on purpose. "Any one-to-four letters
 # may follow" re-opens the false-SOURCED direction the boundary was tightened
