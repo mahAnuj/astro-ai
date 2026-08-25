@@ -71,6 +71,23 @@ MUTATIONS = [
      "src/astro_ai/routes/subscribe.py",
      "    ok = not delivered_none and failed == 0", "    ok = True",
      "test_total_delivery_failure_is_not_reported_as_success"),
+
+    # #220. Narrowing the handler to a class the loop never raises is the same
+    # thing as having no handler, which is what the code did: one bad
+    # subscriber row escaped past both alerts and past the outcome JSON.
+    ("subscribe: per-subscriber raise escapes the loop again (#220)",
+     "src/astro_ai/routes/subscribe.py",
+     "        except Exception as exc:  # noqa: BLE001 — one bad row must not end the blast",
+     "        except SystemExit as exc:  # noqa: BLE001 — mutated: catches nothing raised here",
+     "test_a_raising_subscriber_does_not_abort_the_blast"),
+
+    # #222. Raw addresses back into the Telegram channel and into the
+    # /admin/activity error log GCS keeps for 30 days.
+    ("subscribe: raw subscriber addresses back into the alert (#222)",
+     "src/astro_ai/routes/subscribe.py",
+     "                         f\" (first: {_mask_email(failures[0])})\"),",
+     "                         f\": {failures[:5]}\"),",
+     "test_partial_alert_carries_no_raw_subscriber_address"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
