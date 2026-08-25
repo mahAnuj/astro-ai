@@ -200,6 +200,32 @@ is read on demand. Merging them would raise the cost of every task to help a few
 **Update it in the same commit as the change it describes.** A decision log that lags
 reads as current and is not — the same drift this file warns about elsewhere.
 
+## The agent team
+
+`.claude/agents/` holds seven roles. Which one to reach for:
+
+| Agent | Answers |
+|---|---|
+| `project-manager` | what should we work on next, across the whole backlog |
+| `product-manager` | what should this one thing be, and is it worth building |
+| `architect` | how should it be shaped, given the constraints and the decision log |
+| `dev-lead` | coordinates one issue end to end; dispatches the rest; commits locally |
+| `engineer` | writes it, exercises it, hands it back unpushed |
+| `qa` | independently verifies it by execution, and audits LLM prose |
+| `astro-auditor` | are the astrological and numerological RULES in the code correct |
+
+`dev-lead` is the coordinator for implementation work. **The engineer that wrote the code
+never verifies it and never pushes it** — `qa` is a separate dispatch with its own context,
+because verification by the same reasoning that produced the change is not verification.
+
+Every one of these files repeats the never-push rule, deliberately. A subagent reads only its
+own definition and its prompt, so a rule stated once centrally is a rule most of them never
+see.
+
+**Note:** this file says `git push` is denied in `.claude/settings.local.json`. **That file
+does not exist in the tree** — the mechanism named as the backstop is not currently in place,
+so the rule rests entirely on the agents honouring it.
+
 ## Backlog state lives in `BACKLOG.md`
 
 `BACKLOG.md` (repo root, tracked) is the standing triage overview: every open issue with a
