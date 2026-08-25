@@ -224,8 +224,9 @@ class NumerologyReading:
     # NOT sourced to Cheiro, despite what this comment said until #172.
     # Cheiro's Book of Numbers contains ZERO occurrences of "Lo Shu",
     # "magic square" or "Feng Shui" — measured across all 194 pages, and
-    # again across all 13 books in data/ (0 hits in 107,809 lines). The
-    # grid is genuinely Chinese and outside every source we hold. #172
+    # again across all 13 books in data/ (0 hits in 107,809 lines, plain
+    # `pdftotext`). The grid is genuinely Chinese and outside every
+    # source we hold. #172
     # tracks either sourcing it or removing it; until then nothing may
     # present it as Cheiro's.
     lo_shu: "LoShuGrid | None" = None
@@ -260,7 +261,7 @@ class NumerologyReading:
     name_scoreable: bool = True
 
 
-# ─── Lo Shu (birth-number matrix) — Cheiro / Chinese classical ────────
+# ─── Lo Shu (birth-number matrix) — unsourced; see note below ─────────
 # The 3×3 grid used by traditional numerologists to visualise a person's
 # birth-number pattern. Each cell holds the digit that sits there in the
 # Lo Shu magic square (rows + columns + diagonals all sum to 15):
@@ -270,15 +271,18 @@ class NumerologyReading:
 #     8 | 1 | 6
 #
 # For a person's chart we count how many times each of digits 1..9
-# appears in their DOB (zeros excluded per Cheiro). Cells with count > 0
-# are 'present'; missing digits are 'life lessons'. Fully-present or
-# fully-missing rows / columns / diagonals form the 8 classical
-# 'arrows' — named patterns with known character interpretations.
+# appears in their DOB (zeros are skipped — see compute_lo_shu_grid).
+# Cells with count > 0 are 'present'; missing digits are 'life lessons'.
+# Fully-present or fully-missing rows / columns / diagonals form the 8
+# classical 'arrows' — named patterns with known character
+# interpretations.
 #
-# Source: Cheiro (Count Louis Hamon), *Cheiro's Book of Numbers* (Singh,
-# Rakesh Publisher edition, 1926 original). Cross-referenced with
-# standard Indian numerology practice. Marked separately from Johari +
-# Kumar (see knowledge/numerology.md §13.3).
+# [UNSOURCED — widely cited, not in corpus]. The grid, the arrows, the
+# digit themes and the zeros rule are all in this class: no book in
+# data/ carries them. This block credited Cheiro until #172; it is not
+# his, and nothing may present it as his — knowledge/numerology.md §13.3
+# holds the measurement that settles it, and assigns Feng Shui texts,
+# not Cheiro, as the source class that would close the gap.
 
 @dataclass(frozen=True)
 class LoShuArrow:
@@ -317,7 +321,9 @@ LO_SHU_LAYOUT: tuple[tuple[int, ...], ...] = (
 )
 
 
-# Classical digit themes (per Cheiro + standard Vedic-numerology practice).
+# Digit themes and their planetary rulerships, as they circulate in modern
+# Indian practice — [UNSOURCED — widely cited, not in corpus], per the
+# sourcing note above.
 _DIGIT_MEANINGS: tuple[LoShuDigitMeaning, ...] = (
     LoShuDigitMeaning(
         digit=1, theme="Ego & self-expression", planet="Sun",
@@ -369,9 +375,10 @@ _DIGIT_MEANINGS: tuple[LoShuDigitMeaning, ...] = (
 
 # The 8 classical arrows — 3 rows + 3 columns + 2 diagonals. Each has a
 # 'present' interpretation (all 3 digits appear in the DOB) and a
-# 'missing' interpretation (all 3 digits absent). Names cross-referenced
-# from Cheiro + modern Indian-numerology practice (both use the same
-# vocabulary — inherited from a common Chinese/Chaldean source).
+# 'missing' interpretation (all 3 digits absent). The names and readings
+# are [UNSOURCED — widely cited, not in corpus]: they are not Cheiro's
+# (see the sourcing note on the grid above) and no other book in data/
+# carries them either.
 _LO_SHU_ARROW_DEFS: tuple[dict, ...] = (
     # Rows
     dict(digits=(4, 9, 2),
@@ -620,8 +627,10 @@ def compute_numerology_bhagya_score(reading: NumerologyReading, lang: str = "en"
 def compute_lo_shu_grid(birth_date_iso: str) -> LoShuGrid:
     """Compute the Lo Shu 3×3 grid from an ISO birth date (YYYY-MM-DD).
 
-    Zeros in the DOB are excluded per Cheiro's classical rule. Life Path
-    and Destiny numbers are NOT added — this is the pure DOB-only grid
+    Zeros in the DOB are excluded — the convention this code implements,
+    [UNSOURCED — widely cited, not in corpus] like the grid itself; see
+    the sourcing note in the Lo Shu section header. Life Path and Destiny
+    numbers are NOT added — this is the pure DOB-only grid
     (some modern traditions extend by adding these; Bhagya sticks with
     the classical version because it gives cleaner, more repeatable
     interpretations across sources).
