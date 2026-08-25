@@ -165,8 +165,13 @@ nearly free. Natural first user of #216's `[UNSOURCED — widely cited, not in c
 
 `scripts/verify_learn_article_dates.py` gained year inheritance in `fe3dfe0`. All four
 inherited claims decline attribution, and an unattributed inherited claim **does not fail
-Gate 3** — so the inheritance path adds zero checked claims. Repro in the issue: corrupt
-`vivah-muhurat-2027.html:90` `Jul 14` → `Jul 16`, script exits **0**.
+Gate 3** — so the inheritance path adds zero checked claims.
+
+**FIXED 2026-08-25 — Gate 4 landed (`129c1df`), QA-verified.** The issue's repro, with its
+line number corrected from `:90` to `:98`: corrupt `vivah-muhurat-2027.html:98`
+`Jul 14` → `Jul 16`. That exited **0** before Gate 4 and exits **1** after it. The paragraph
+above is kept as the historical statement of the defect, not a live claim — flagged by QA,
+because a present-tense description of a closed defect is the exact rot this file warns about.
 
 Wrong dates are this repo's most expensive recurring defect (`_FESTIVALS_2026` shipped 9 of
 17 wrong by up to 21 days; #143 closed while a fourth wrong date was live; the
@@ -358,15 +363,16 @@ individually re-verified in this pass** — treat its state as unknown, not as f
 Ten commits on `claude/github-issues-prioritize-n12fv3`, none pushed. `main` stayed at
 `4014f1e` (docs and tooling only, no app code) throughout.
 
-**Every QA pass so far has failed its commit on first submission.** That is the headline
-number, and it is the argument for the loop: none of these were visible in a diff.
+**All four items are QA-verified. Every one failed its first submission.** That is the
+headline number and the argument for the loop: none of the defects QA caught was visible in
+a diff, and two of them were introduced *by the fix* for the issue being worked.
 
 | Item | Commits | QA |
 |---|---|---|
 | **#220 + #222** blast aborts silently, leaks addresses | `d394179` → `7743471` | **PASS** (2nd) |
-| **#172** Cheiro attribution in code | `6960103` → `ee73ce1` | **PASS** (2nd); gate hardening `e75ac70` pending |
+| **#172** Cheiro attribution in code | `6960103` → `ee73ce1` → `e75ac70` | **PASS** (2nd); gate hardening also **PASS** |
 | **#217** corpus_search inflections | `77edd70` → `28a5443` | **PASS** (2nd) |
-| **#193** date gate checks nothing | `9901948` `62cd675` `129c1df` → `4a918a2` | pending (2nd) |
+| **#193** date gate checks nothing | `9901948` `62cd675` `129c1df` → `4a918a2` | **PASS** (2nd) |
 
 ### What QA caught that review would not have
 
