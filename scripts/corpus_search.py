@@ -53,6 +53,8 @@ EXIT CODES
 from __future__ import annotations
 
 import argparse
+import hashlib
+import os
 import re
 import shutil
 import subprocess
@@ -60,6 +62,15 @@ import sys
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
+# Extraction cache. Deliberately NOT under data/: `_corpus()` ingests every
+# *.txt it finds beneath DATA_DIR, so a cache written there would be read back
+# as a source book on the next run — double-counting every book and inflating
+# the line total that ABSENT verdicts are reported against. That is not
+# hypothetical: this tool has already counted `data/emails/sarbani.pdf`, our
+# own outreach message, as a source book, which made `Ashtakoot` briefly
+# appear present because we had written the word ourselves.
+CACHE_DIR = Path(__file__).resolve().parent.parent / ".corpus-cache"
 
 # ─── Transliteration rules, derived from what the corpus actually does ──
 #
@@ -201,8 +212,55 @@ def _is_excluded(pdf: Path) -> bool:
     return any(part in _EXCLUDED_DIRS for part in pdf.relative_to(DATA_DIR).parts[:-1])
 
 
-def _corpus() -> dict[str, str]:
-    """Extracted text per book. `-layout` preserves table columns."""
+_CACHE_HITS: list[str] = []
+_CACHE_MISSES: list[str] = []
+
+
+def _pdftotext_version() -> str:
+    """Identify the extractor, so a poppler upgrade invalidates the cache.
+
+    Different poppler versions reflow columns differently, and this corpus is
+    full of tables. A cache keyed only on the file would survive an upgrade and
+    silently serve text the current binary would not produce.
+    """
+    try:
+        res = subprocess.run(["pdftotext", "-v"], capture_output=True,
+                             text=True, timeout=10)
+        return (res.stdout + res.stderr).strip().splitlines()[0]
+    except Exception:  # noqa: BLE001
+        return "unknown"
+
+
+def _cache_key(pdf: Path, tool: str) -> str:
+    """Content identity for one extraction, without reading the PDF.
+
+    Keyed on (path, size, mtime, extractor, flags). Hashing 12 MB of PDF on
+    every run would give back much of what the cache saves; size+mtime is the
+    standard build-system trade and is enough here, where the books are
+    write-once.
+
+    The FLAGS are part of the key on purpose. `-layout` yields ~30% fewer lines
+    than plain `pdftotext` because it reflows columns, and this repo has already
+    had two line-count tables disagree purely because they mixed the two. A
+    cache that ignored the flag would make that confusion permanent.
+    """
+    st = pdf.stat()
+    raw = f"{pdf.resolve()}|{st.st_size}|{st.st_mtime_ns}|{tool}|-layout"
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def _corpus(use_cache: bool = True) -> dict[str, str]:
+    """Extracted text per book. `-layout` preserves table columns.
+
+    Extraction is cached per book under `.corpus-cache/`, because `pdftotext`
+    re-ran on every invocation and this tool is meant to be called repeatedly —
+    a QA sourcing pass checks many terms, and each one paid the full extraction
+    of every book again.
+
+    Only a SUCCESSFUL, non-empty extraction is ever cached. The refusal below
+    is what every ABSENT verdict rests on; caching a failure would convert a
+    loud "refusing to search a partial corpus" into a permanent silent one.
+    """
     if not DATA_DIR.is_dir():
         print(f"FAIL: {DATA_DIR} not found.", file=sys.stderr)
         raise SystemExit(2)
@@ -226,9 +284,24 @@ def _corpus() -> dict[str, str]:
             print(f"FAIL: could not read {txt.name}: {exc}", file=sys.stderr)
             raise SystemExit(2) from None
 
+    tool = _pdftotext_version() if use_cache else ""
     for pdf in sorted(DATA_DIR.rglob("*.pdf")):
         if _is_excluded(pdf):
             continue
+
+        cached = CACHE_DIR / f"{_cache_key(pdf, tool)}.txt" if use_cache else None
+        if cached is not None and cached.is_file():
+            try:
+                text = cached.read_text(encoding="utf-8")
+            except Exception:  # noqa: BLE001
+                text = ""
+            # An empty cache entry must never satisfy a lookup — see the
+            # refusal below. Treat it as a miss and re-extract.
+            if text.strip():
+                out[pdf.name] = text
+                _CACHE_HITS.append(pdf.name)
+                continue
+
         try:
             res = subprocess.run(
                 ["pdftotext", "-layout", str(pdf), "-"],
@@ -250,6 +323,19 @@ def _corpus() -> dict[str, str]:
                   file=sys.stderr)
             raise SystemExit(2)
         out[pdf.name] = res.stdout
+        _CACHE_MISSES.append(pdf.name)
+        if cached is not None:
+            # Write via a temp file in the same directory, then rename. A
+            # half-written cache entry that still passed the .strip() check
+            # above would be served as a complete book, and a truncated book is
+            # exactly how a false ABSENT verdict gets manufactured.
+            try:
+                CACHE_DIR.mkdir(exist_ok=True)
+                tmp = cached.with_suffix(f".{os.getpid()}.tmp")
+                tmp.write_text(res.stdout, encoding="utf-8")
+                tmp.replace(cached)
+            except Exception:  # noqa: BLE001
+                pass  # a cache that cannot be written must not break a search
     if not out:
         print("FAIL: no source books found under data/.", file=sys.stderr)
         raise SystemExit(2)
@@ -267,6 +353,8 @@ def main() -> int:
                     help="lines of context to print around each hit")
     ap.add_argument("--max-hits", type=int, default=8,
                     help="hits to print per book (default 8)")
+    ap.add_argument("--no-cache", action="store_true",
+                    help="re-extract every book instead of using .corpus-cache/")
     args = ap.parse_args()
 
     spellings = variants(args.term)
@@ -284,13 +372,21 @@ def main() -> int:
         return re.compile(rf"(?<![a-z]){re.escape(v)}s?(?![a-z])")
 
     _patterns = {v: _pat(v) for v in spellings}
-    corpus = _corpus()
+    corpus = _corpus(use_cache=not args.no_cache)
     total_lines = sum(t.count("\n") for t in corpus.values())
 
     print(f"term      : {args.term!r}")
     print(f"spellings : {len(spellings)} — {', '.join(spellings[:12])}"
           + (" …" if len(spellings) > 12 else ""))
     print(f"corpus    : {len(corpus)} books, {total_lines:,} lines (-layout)")
+    if _CACHE_HITS or _CACHE_MISSES:
+        # Say which books came from cache. An ABSENT verdict is only as good as
+        # the text behind it, and "cached" is a fact the reader needs in order
+        # to know what to re-check if they suspect the extraction.
+        print(f"pdf cache : {len(_CACHE_HITS)} cached, "
+              f"{len(_CACHE_MISSES)} extracted"
+              + (f" ({', '.join(n[:28] for n in _CACHE_MISSES)})"
+                 if _CACHE_MISSES else ""))
     for name, text in sorted(corpus.items()):
         print(f"            - {name[:58]:<58} {text.count(chr(10)):>6,} lines")
     print()

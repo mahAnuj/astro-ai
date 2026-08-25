@@ -46,3 +46,8 @@ QA_LOG.md
 
 # Node is a build-only dependency (Tailwind CSS build). Never shipped.
 node_modules/
+
+# corpus_search.py extraction cache — derived from data/, which is itself
+# ignored. Keyed on (path, size, mtime, pdftotext version, flags), so a
+# changed or re-extracted book invalidates its own entry.
+.corpus-cache/
