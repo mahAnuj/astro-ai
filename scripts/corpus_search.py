@@ -193,6 +193,65 @@ def variants(term: str) -> list[str]:
     return sorted(out, key=len, reverse=True)
 
 
+# ─── Case endings, and why relaxing the trailing boundary cannot find them ──
+#
+# Sanskrit a-stems inflect by REPLACING the stem's final -a, not by appending
+# to it: `maudhya` becomes `maudhyena`, `maudhyasya`. The search term is
+# therefore not a substring of its own inflected form, so NO relaxation of the
+# trailing boundary can ever reach those — `maudhyena` does not contain
+# `maudhya`. That is #217: `maudhya --absent` printed a clean absence while
+# `Maudhyam` sits in Rao Vol. I.
+#
+# Measured against the five forms #217 names — Maudhyam, maudhyena,
+# maudhyasya, maudhye, maudhyam — before choosing this shape:
+#
+#     s?(?![a-z])            0/5   the pattern that shipped
+#     (?![a-z]{4,})          3/5   still blind to -ena and -e, because those
+#                                  are not suffixes of the term at all
+#     stem + ending set      5/5   and rejects the overcorrection maudhyamika
+#
+# (Triage measured the same three candidates on a slightly different form
+# list and got 1/5, 4/5, 5/5. The counts move with the fixture; the ordering
+# and the reason for it do not.)
+#
+# The ending set is explicit and short on purpose. "Any one-to-four letters
+# may follow" re-opens the false-SOURCED direction the boundary was tightened
+# to close, and a false SOURCED verdict retires a gap that is still open.
+_ENDINGS: tuple[str, ...] = (
+    "asya", "ani", "ena", "aya", "am", "as", "ah", "at", "ay", "e",
+)
+
+
+def _pat(v: str) -> "re.Pattern[str]":
+    """The match pattern for one spelling.
+
+    Letters only on the boundaries: a term may legitimately sit against a
+    digit, hyphen or punctuation in these books ("Vimsottari-dasa", "7 kuta").
+    Optional trailing "s" so plurals still count — the books write "navamsas"
+    and "dasamsas" freely, and excluding them lost 6 and 12 real hits
+    respectively when the boundary was first tightened.
+    """
+    # Devanagari terms match as substrings: भकूट legitimately appears
+    # inside भकूटगुणाः and दुष्टभकूटपरिहारः, and requiring a boundary
+    # would miss every compound — which in Sanskrit is most of them.
+    if any(ord(ch) > 0x0900 for ch in v):
+        return re.compile(re.escape(v))
+
+    body = rf"{re.escape(v)}s?"
+    # Same 6-character floor as the trailing-'a' drop in variants(). Note what
+    # is NOT claimed: lowering it to 3 was measured against the present corpus
+    # and changed no count, so this floor guards a risk rather than a hit we
+    # have seen. Keep it anyway — a 3-letter stem plus a 2-letter ending is
+    # short enough to land inside English prose, and the wrong direction here
+    # is a false SOURCED verdict, which retires a gap that is still open.
+    if v.endswith("a") and len(v) >= 6:
+        body += "|" + re.escape(v[:-1]) + "(?:" + "|".join(_ENDINGS) + ")"
+    # The LEADING (?<![a-z]) governs the whole alternation, and it is the only
+    # thing keeping "vasya" out of "amavasya" and "washy" out of "wishy-washy".
+    # #217 is a trailing-side change; do not weaken this half.
+    return re.compile(rf"(?<![a-z])(?:{body})(?![a-z])")
+
+
 # Directories under data/ that are NOT source books (#159 QA, BUG-1).
 #
 # `data/emails/sarbani.pdf` is our own outreach message to an astrologer. It
@@ -358,19 +417,6 @@ def main() -> int:
     args = ap.parse_args()
 
     spellings = variants(args.term)
-    # Letters only on the boundaries: a term may legitimately sit against a
-    # digit, hyphen or punctuation in these books ("Vimsottari-dasa", "7 kuta").
-    # Optional trailing "s" so plurals still count — the books write
-    # "navamsas" and "dasamsas" freely, and excluding them lost 6 and 12 real
-    # hits respectively when the boundary was first tightened.
-    def _pat(v: str) -> "re.Pattern[str]":
-        # Devanagari terms match as substrings: भकूट legitimately appears
-        # inside भकूटगुणाः and दुष्टभकूटपरिहारः, and requiring a boundary
-        # would miss every compound — which in Sanskrit is most of them.
-        if any(ord(ch) > 0x0900 for ch in v):
-            return re.compile(re.escape(v))
-        return re.compile(rf"(?<![a-z]){re.escape(v)}s?(?![a-z])")
-
     _patterns = {v: _pat(v) for v in spellings}
     corpus = _corpus(use_cache=not args.no_cache)
     total_lines = sum(t.count("\n") for t in corpus.values())
