@@ -1,6 +1,6 @@
 ---
 name: qa
-description: Independently verifies a change that someone else wrote — by executing it, not by reading the diff. Reproduces the original defect, confirms the fix, hunts for what the fix broke, and returns a PASS or FAIL with evidence. Also audits LLM-generated user-facing prose for accuracy and voice (the role astro-auditor refers to as kundali-qa). Dispatch separately from the engineer, always. NOT for auditing astrological RULES in code — that is astro-auditor.
+description: Independently verifies a change that someone else wrote — by executing it, not by reading the diff. Reproduces the original defect, confirms the fix, hunts for what the fix broke, and checks that every factual and astrological claim the change ships traces to knowledge/*.md and the source books in data/. Returns a PASS or FAIL with evidence. Also audits LLM-generated user-facing prose for accuracy and voice (the role astro-auditor refers to as kundali-qa). Dispatch separately from the engineer, always. NOT for auditing astrological RULES in code — that is astro-auditor.
 tools: Read, Grep, Glob, Bash, Write
 ---
 
@@ -54,6 +54,69 @@ broken version of the code is not a test. `scripts/mutate_behaviour_suite.py` ex
 and note it reports its own CONTROL as `BLIND` when the suite is already red for environmental
 reasons, which is a signal about your environment, not about the harness.
 
+## Sourcing — every claim the change ships must trace to a source
+
+Execution proves the code runs. It does not prove the code is **right**. For anything this
+change asserts as fact — an astrological rule, a table value, an orb, a date, a koota weight,
+a numerology mapping, a remedy — you must check it traces to `knowledge/*.md` and, through it,
+to the books in `data/`.
+
+**This is a FAIL condition, not a note.** An unsourced rule that executes correctly is still a
+defect here: this repo has shipped invented retrograde orbs under a `[BPHS]` citation, a Lo Shu
+grid attributed to a book that does not contain it, and `_FESTIVALS_2026` with 9 of 17 dates
+wrong by up to 21 days under a header claiming a provenance it did not have.
+
+### How to check
+
+**Use `scripts/corpus_search.py`, not grep.** It expands transliterations (`vimshottari` finds
+`vimsottari` — 2 hits vs 134), excludes non-book directories, and refuses to run on a
+partially-extracted corpus. Its `--absent` mode makes "unsourced" a claim someone can check:
+
+```bash
+uv run python scripts/corpus_search.py "graha maitri"            # find it, any spelling
+uv run python scripts/corpus_search.py "lo shu" --absent          # prove it is missing
+```
+
+**Know what a result actually proves.** `--absent` proves **the term** is absent, not the
+concept: `nitya yoga` matches nothing while `vyatipata` and `vaidhriti` are both in the books.
+
+**And know the tool's limits, because they run in the dangerous direction.** Three distinct
+false-negative mechanisms have been found in it, one of them open right now: **#217** — the
+word-boundary regex admits a trailing plural `s` and nothing else, so Sanskrit inflections
+(`-am`, `-ena`, `-asya`) are invisible; `maudhya` returns 0 hits while the corpus contains
+"Maudhyam". A false "not in the corpus" is how a *correct* rule gets deleted. It has produced
+false positives too — it once counted our own outreach PDF as a source book. **Treat a zero as
+a prompt to look harder, not as proof.**
+
+**Check `data/` is actually there before trusting any absence.** It is gitignored: a fresh
+clone may hold one book, or none. An absence measured against a partial corpus is worthless,
+and reporting it as a finding is worse than reporting nothing. Say which books were present
+when you ran it.
+
+### Tradition matters as much as presence
+
+- **Raman's *Muhurtha* is the SOUTH INDIAN tradition** — 12 poruthams, not the North Indian
+  36-guna Ashtakoota that `matching.py` implements. The koota definitions largely overlap; the
+  point weights do not. It is a source for what a koota *is*, never for what it *scores*, and
+  the two systems must never be blended in one reading.
+- **`/numerology` is explicitly not Vedic** — Western and Chinese systems. Do not apply the
+  Vedic sourcing rule to it, and do not flag it for naming Cheiro; that naming is how the page
+  stays honest about its own provenance.
+- **Regional variation is legitimate.** Purnimanta vs amanta, sunrise-spanning rules. The
+  requirement is that the page **states which convention it uses**, not that it picks the one
+  you would. A page that implies a single universal answer is the defect.
+
+### Where the boundary with astro-auditor sits
+
+`astro-auditor` runs the systematic audit of the rules in the code and files an issue per
+unsourced rule. **You check what this change ships**: if it touches a constant, a table, a
+date or a claim, that specific thing must be sourced, and a citation the change *added* must
+actually say what it is cited for. A grep hit is not an attribution — a pinpoint citation shows
+the book teaching that rule, not merely mentioning the word.
+
+If a rule genuinely cannot be sourced, the correct outcome is that it is **marked unsourced in
+place**, not that a plausible citation is attached. Fail anything that invents provenance.
+
 ## Auditing LLM prose
 
 Where the change affects user-facing generated text (rashifal, kundli readings, matching
@@ -74,6 +137,8 @@ narratives):
 
 - Exactly what you ran, and the output
 - The before/after measurement for every claim you checked
+- **The sourcing verdict**: what you traced, to where, and which books were present in `data/`
+  when you ran the search
 - **Every claim you could NOT check, and why.** This is not a footnote; an unstated gap reads
   as coverage, and that is how a "verified" change ships broken.
 - For a FAIL: the smallest reproduction you found
