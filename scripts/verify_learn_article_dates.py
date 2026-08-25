@@ -49,10 +49,12 @@ repo fails a check.
       later, on Jul 14") is checked in a STRICT article too: either it
       inherited a year and attributed, in which case Gate 1 owns it, or its
       month and day must match one of the dates that article has already
-      verified. Neither held for `diwali-muhurat-2026.html:22`'s "until
-      Nov 10" — Govardhan Puja, the #143 date, in prose, in the article #143
-      was filed against — which is why this gate exists. See the section on
-      it below for why it cannot fabricate a failure.
+      verified. Before this gate, nothing reached
+      `diwali-muhurat-2026.html:22`'s "until Nov 10" — Govardhan Puja, the #143
+      date, in prose, in the article #143 was filed against — which is why it
+      exists; the second clause now corroborates that string against the same
+      article's own verified Nov 10. See the section on it below for why it
+      cannot fabricate a failure.
 
 TWO KINDS OF SOURCE
 -------------------
@@ -176,7 +178,7 @@ dates this article already verified". There is no path from it to a Gate 1
 comparison, and no year is needed, so no new inheritance tier exists and bare
 dates stay out of `_attribute` entirely.
 
-Two holes stay open, and are stated here rather than left to read as coverage:
+Three holes stay open, and are stated here rather than left to read as coverage:
 
   ranges  - still out of scope, as everywhere else in this file. A range names
             no single day, so a range endpoint can be corrupted invisibly to
@@ -186,8 +188,22 @@ Two holes stay open, and are stated here rather than left to read as coverage:
             therefore invisible to Gate 4. That is the accepted residual, and
             it is the shape of one of this gate's own remedies: rewriting a
             date-shaped string that claims no festival date as an ordinal moves
-            it out of reach on purpose. The ordinal asserts less, but nothing
-            checks that it agrees with the date beside it.
+            it out of reach on purpose. It does not assert LESS — "the 7th"
+            names the same day to a reader that "Nov 7" does — it only puts the
+            string beyond this gate, which is appropriate where there is no
+            festival-date claim and is an evasion where there is one.
+  right day, wrong observance - this gate checks SET MEMBERSHIP, not identity.
+            A bare date is corroborated by ANY day that article verified, so
+            prose naming the wrong observance for the date beside it passes
+            clean whenever that date happens to be some other verified day of
+            the same article. A page carrying a run of festivals a few days
+            apart — which every Diwali-week article does — therefore has dates
+            that corroborate each other's prose no matter which name the
+            sentence uses. This is inherent to never assigning a name: the
+            property that stops the gate fabricating a failure is the same one
+            that stops it seeing this. It is the price of the design, not a
+            defect in it, and still strictly more than the nothing these
+            strings had before.
 
 Association is scoped, in exactly two conservative tiers:
 
@@ -1276,10 +1292,12 @@ def gate_4_corroboration(claims: list[Claim], bare: list[BareDate]) -> list[str]
         shown = ", ".join(_fmt_md(*md) for md in known) or "none"
         failures.append(
             f"{item.where}: {item.raw!r} is not one of the dates this article "
-            f"verifies ({shown}). Either name the source on the line and write "
-            "the year, so Gates 1-3 check it, or — if it is not a festival-date "
-            "claim — write it as a bare ordinal (\"the 7th\"), which asserts no "
-            "calendar date to be wrong about."
+            f"verifies ({shown}). If it is a festival-date claim, name the "
+            "source on the line and write the year, so Gates 1-3 check it. If "
+            "it is not, a bare ordinal (\"the 7th\") is acceptable — but it "
+            "asserts the same day to a reader and only moves the string out of "
+            "this gate's reach, so it rewords a non-claim and never fixes a "
+            "wrong date."
         )
 
     print(f"  {len(bare)} bare date(s) in {len(strict_articles())} strict "

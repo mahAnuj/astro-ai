@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 """Mutation-test the learn-article date gate: corrupt a date, confirm it goes red.
 
-A gate that has never failed is not evidence, and this one is a live example:
-`scripts/verify_learn_article_dates.py` exits 0 today on two corruptions that
-change a date a reader would act on. Both are bare dates in prose that the gate
-classifies as "no usable year" and reports as UNCHECKED — including
-`diwali-muhurat-2026.html:22`'s `until Nov 10`, which is Govardhan Puja, the
-#143 date, unguarded in the very article #143 was filed against.
+A gate that has never failed is not evidence. Two of the four rows below were
+live escapes when this harness was written: `verify_learn_article_dates.py`
+exited 0 on corruptions that moved a date a reader would act on, because both
+are bare dates in prose that the gate then filed as "no usable year" —
+including `diwali-muhurat-2026.html:22`'s `until Nov 10`, which is Govardhan
+Puja, the #143 date, unguarded in the very article #143 was filed against.
+Gate 4 (#193) closed that hole, and those two rows catch like the others now.
 
     uv run python scripts/mutate_learn_article_dates.py   # exit 1 if any escapes
 
-THIS SCRIPT IS RED BY DESIGN until the corroborate-or-fail gate (#193 S3) lands.
-Two of the four rows below are the defect it will fix, so 2/4 caught is the
-CORRECT reading of the current tree, not a regression. When S3 lands, all four
-must be caught and this becomes a normal green gate.
+THE EXPECTED STATE IS 4/4. Every row below is a corruption the shipped gate
+catches today, so a miss is a REGRESSION in `verify_learn_article_dates.py` and
+never a known gap. 2/4 was the pre-Gate-4 reading and stopped being acceptable
+the day Gate 4 landed.
 
 It must not join the `verify_*` sweep — the `mutate_` prefix keeps it out of
 that glob, exactly as `mutate_behaviour_suite.py` stays out. It corrupts
@@ -39,8 +40,9 @@ VIVAH = "src/astro_ai/templates/learn/vivah-muhurat-2027.html"
 
 # (label, path, line_no, from_substring, to_substring, why it must fail)
 MUTATIONS = [
-    # The two escapes. Both move a date by two days in prose a reader plans
-    # around, and both sit in a string the gate currently files as UNCHECKED.
+    # The two former escapes. Both move a date by two days in prose a reader
+    # plans around, and both sit in a string that reached no gate at all until
+    # Gate 4 — they are the reason it exists, and the reason it must stay.
     ("vivah: Chaturmas opens two days later, on the WRONG day",
      VIVAH, 98, "on Jul 14", "on Jul 16",
      "Gate 4 — bare `Jul 14` must corroborate the Jul 14 2027 Devshayani claim"),
@@ -180,7 +182,11 @@ if not control_ok:
     print("before believing any number this printed.")
 if caught < real and control_ok and not drifted:
     print()
-    print("Expected on the current tree: 2/4, escaping rows 1 and 2. That is #193's")
-    print("defect, not a regression — bare dates in prose reach no gate. Both become")
-    print("catches when the corroborate-or-fail gate lands.")
+    print(f"REGRESSION — the expected result is {real}/{real}. The control passed and")
+    print("no article drifted, so the sandbox is sound and the gate itself has")
+    print("stopped catching something it caught. Each missed row above names, on")
+    print("its 'must be caught by' line, the gate that should have fired: go read")
+    print("that gate in scripts/verify_learn_article_dates.py.")
+    print("Do NOT read a miss as a known gap. 2/4 was the pre-Gate-4 state and has")
+    print("not been the expected reading since #193 landed.")
 sys.exit(0 if control_ok and not drifted and caught == real else 1)
