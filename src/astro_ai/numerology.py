@@ -223,12 +223,15 @@ class NumerologyReading:
     #
     # NOT sourced to Cheiro, despite what this comment said until #172.
     # Cheiro's Book of Numbers contains ZERO occurrences of "Lo Shu",
-    # "magic square" or "Feng Shui" — measured across all 194 pages, and
-    # again across all 13 books in data/ (0 hits in 107,809 lines, plain
-    # `pdftotext`). The grid is genuinely Chinese and outside every
-    # source we hold. #172
-    # tracks either sourcing it or removing it; until then nothing may
-    # present it as Cheiro's.
+    # "magic square" or "Feng Shui" — measured across all 194 pages. The
+    # corpus-wide check is recorded in templates/numerology.html:302-306:
+    # re-measured 2026-08-10 with `pdftotext -layout`, 'lo shu' / 'loshu'
+    # / 'lo-shu' return 0 hits in the Cheiro PDF (8,389 lines) and 0
+    # across all thirteen PDFs then in data/ (77,119 lines); the lone
+    # 'magic square' hit is Johari's 9x9 Vedic Square, a different
+    # object. The grid is genuinely Chinese and outside every source we
+    # hold. #172 tracks either sourcing it or removing it; until then
+    # nothing may present it as Cheiro's.
     lo_shu: "LoShuGrid | None" = None
 
     # Cheiro's confidence signal (#203). When the Name number agrees with the
@@ -630,10 +633,9 @@ def compute_lo_shu_grid(birth_date_iso: str) -> LoShuGrid:
     Zeros in the DOB are excluded — the convention this code implements,
     [UNSOURCED — widely cited, not in corpus] like the grid itself; see
     the sourcing note in the Lo Shu section header. Life Path and Destiny
-    numbers are NOT added — this is the pure DOB-only grid
-    (some modern traditions extend by adding these; Bhagya sticks with
-    the classical version because it gives cleaner, more repeatable
-    interpretations across sources).
+    numbers are NOT added either — this is the pure DOB-only grid. Some
+    modern traditions extend it by adding those two numbers; Bhagya does
+    not. Both choices are conventions we picked, not rules we can source.
     """
     digits_str = "".join(ch for ch in birth_date_iso if ch.isdigit() and ch != "0")
     counts = {n: 0 for n in range(1, 10)}
