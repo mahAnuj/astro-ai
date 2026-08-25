@@ -208,10 +208,10 @@ reads as current and is not — the same drift this file warns about elsewhere.
 |---|---|
 | `project-manager` | what should we work on next, across the whole backlog |
 | `product-manager` | what should this one thing be, and is it worth building |
-| `architect` | how should it be shaped, given the constraints and the decision log |
+| `architect` | how should it be shaped — KISS/YAGNI/DRY, free tier only, LLM and cache strategy — and what are the subtasks |
 | `dev-lead` | coordinates one issue end to end; dispatches the rest; commits locally |
 | `engineer` | writes it, exercises it, hands it back unpushed |
-| `qa` | independently verifies it by execution, and audits LLM prose |
+| `qa` | independently verifies it by execution, checks every claim traces to `knowledge/*.md` and `data/`, and audits LLM prose |
 | `astro-auditor` | are the astrological and numerological RULES in the code correct |
 
 `dev-lead` is the coordinator for implementation work. **The engineer that wrote the code
