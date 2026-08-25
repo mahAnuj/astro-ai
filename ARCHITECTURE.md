@@ -280,8 +280,12 @@ way:
 
 1. The corpus changed after a "do not re-search" note was written.
 2. OCR split an entry across columns (`Rahu Kalam` reported 0 hits while present on p.199).
-3. Its boundary regex rejects Sanskrit inflections (`maudhya` → 0 hits, `Maudhyam` present)
-   — `#217`.
+3. Its boundary regex rejected Sanskrit inflections (`maudhya` → 0 hits, `Maudhyam`
+   present) — `#217`, fixed 2026-08-25: a-stem endings REPLACE the stem's final `-a`, so no
+   trailing-boundary relaxation could reach `maudhyena`; `_pat()` now also tries
+   `stem + (am|as|ah|at|ani|ena|aya|asya|e|ay)`. Gated on fixtures by
+   `scripts/verify_corpus_search.py` — the book carrying `Maudhyam` is not in this `data/`,
+   so the real-corpus hit count remains unmeasured.
 
 A zero result proves the *term* is absent, not the *concept* — and sometimes not even
 that. Also verify your own tooling: a `pdftotext` invocation against a wrong path with
@@ -289,7 +293,9 @@ that. Also verify your own tooling: a `pdftotext` invocation against a wrong pat
 
 ### Verification gates
 
-Twelve `scripts/verify_*.py` gates. The discipline that makes them worth anything:
+Fourteen `scripts/verify_*.py` gates — count it with `ls scripts/verify_*.py` rather
+than trusting this number, which read "Twelve" while thirteen sat on disk. The
+discipline that makes them worth anything:
 
 **Prove a gate can fail before trusting that it passes.** For the behaviour suite this
 is automated: `scripts/mutate_behaviour_suite.py` restores each original defect and
