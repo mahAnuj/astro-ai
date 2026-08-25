@@ -238,7 +238,8 @@ def test_partial_alert_carries_no_raw_subscriber_address(client, admin_headers, 
     from astro_ai.routes import subscribe
 
     blast([_subscriber("good@x.test", city=""), _subscriber("kartik@gmail.test", city="")])
-    subscribe.email_sender.send = lambda email, **k: email != "kartik@gmail.test"
+    monkeypatch.setattr(subscribe.email_sender, "send",
+                        lambda email, **k: email != "kartik@gmail.test")
 
     messages: list[tuple[str, str]] = []
     monkeypatch.setattr(subscribe, "_fire_error_alert",
@@ -251,3 +252,99 @@ def test_partial_alert_carries_no_raw_subscriber_address(client, admin_headers, 
     assert "kartik@gmail.test" not in partial[0], f"raw address in alert: {partial[0]}"
     assert "1 of 2" in partial[0], partial[0]
     assert "ka***@gmail.test" in partial[0], partial[0]
+
+
+def test_masked_address_with_no_at_sign_reveals_nothing(client, admin_headers, blast, offline, monkeypatch):
+    """`_mask_email` masks the WHOLE value when there is no `@` to split on.
+
+    The two-character prefix is only safe because a domain follows it; with no
+    domain there is nothing to anchor on, so the value could be anything the
+    subscribers blob holds and none of it belongs in a Telegram channel or in
+    the `/admin/activity` error log GCS keeps for 30 days (#222). Stated in the
+    docstring since that fix, but ungated until QA mutated the branch to
+    `return email` and the whole suite still passed.
+    """
+    from astro_ai.routes import subscribe
+
+    blast([_subscriber("good@x.test", city=""), _subscriber("kartik-at-gmail.test", city="")])
+    monkeypatch.setattr(subscribe.email_sender, "send",
+                        lambda email, **k: email != "kartik-at-gmail.test")
+
+    messages: list[tuple[str, str]] = []
+    monkeypatch.setattr(subscribe, "_fire_error_alert",
+                        lambda request, err, source: messages.append((source, str(err))))
+
+    _post(client, admin_headers)
+
+    partial = [m for source, m in messages if source == "rashifal:blast:partial"]
+    assert partial, f"no partial alert fired: {messages}"
+    assert "kartik-at-gmail.test" not in partial[0], f"raw value in alert: {partial[0]}"
+    assert "kartik" not in partial[0], f"leading characters leaked: {partial[0]}"
+    assert "(first: ***)" in partial[0], partial[0]
+
+
+def test_a_non_string_email_does_not_cost_the_alert_or_the_outcome_json(
+        client, admin_headers, blast, offline, monkeypatch):
+    """A truthy non-string `email` must not take the endpoint down.
+
+    `email` is `sub.get("email", "")` — whatever the subscribers blob actually
+    holds. `12345` survives the loop (the #220 handler catches it) and then
+    reached `_mask_email` in the partial alert, which sits BELOW the loop and
+    outside that handler: AttributeError, no alert, no outcome JSON, an HTML
+    500. The loop's fix relocated #220's harm rather than removing it, so this
+    asserts the whole outcome — both good rows delivered, the alert fired, the
+    JSON returned — not just that the mask survives.
+    """
+    from astro_ai.routes import subscribe
+
+    sent = blast([
+        _subscriber("ok@x.test", city=""),
+        _subscriber(12345, city=""),
+        _subscriber("z@x.test", city=""),
+    ])
+
+    alerts: list[tuple[str, str]] = []
+    monkeypatch.setattr(subscribe, "_fire_error_alert",
+                        lambda request, err, source: alerts.append((source, str(err))))
+
+    code, body = _post(client, admin_headers)
+
+    assert sent == ["ok@x.test", "z@x.test"], f"a bad row cost a good one: {sent}"
+    assert (body["sent"], body["failed"]) == (2, 1), body
+    assert (code, body["ok"]) == (500, False), body
+    partial = [m for source, m in alerts if source == "rashifal:blast:partial"]
+    assert partial, f"the alert below the loop never fired: {alerts}"
+    assert "12345" not in partial[0], f"raw value in alert: {partial[0]}"
+
+
+def test_a_raising_alert_does_not_cost_the_outcome_json(
+        client, admin_headers, blast, offline, monkeypatch):
+    """Alerting is best-effort; reporting the outcome is not.
+
+    Every alert sits below the send loop and outside its handler, so a raise
+    there produces exactly the silence #220 is about — the blast happened and
+    nothing said so. `_fire_error_alert` swallows its own errors today, but the
+    guard has to hold regardless of what a future alert path does, which is why
+    this stubs a raising one rather than trusting that.
+    """
+    from astro_ai.routes import subscribe
+
+    sent = blast([_subscriber("good@x.test", city=""), _subscriber("bad@x.test", city="")])
+
+    def one_bad_send(email, **k):
+        sent.append(email)
+        return email != "bad@x.test"
+
+    monkeypatch.setattr(subscribe.email_sender, "send", one_bad_send)
+
+    def exploding_alert(request, err, source):
+        raise RuntimeError(f"telegram down ({source})")
+
+    monkeypatch.setattr(subscribe, "_fire_error_alert", exploding_alert)
+
+    code, body = _post(client, admin_headers)
+
+    assert sent == ["good@x.test", "bad@x.test"], sent
+    assert (body["sent"], body["failed"]) == (1, 1), body
+    assert (code, body["ok"]) == (500, False), body
+    assert body["total_subscribers"] == 2, body
