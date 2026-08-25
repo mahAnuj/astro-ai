@@ -1,7 +1,12 @@
 # BACKLOG.md — standing triage overview
 
 **Last full scan: 2026-08-25, against `origin/main` = `c14093c`.**
-Produced by `/prioritise` (the `project-manager` agent). 36 open issues at scan time.
+Produced by `/prioritise` (the `project-manager` agent), then QA-verified in the parent
+session — which overturned two of its six closure proposals. 36 open issues at scan time.
+
+**QA state at `c14093c`:** `uv run pytest` → **24 passed**; `scripts/mutate_behaviour_suite.py`
+→ **8/8 caught, CONTROL correctly MISSED**. See *QA baseline* below — a bare clone reports
+14 failures that are not defects.
 
 ## How to use and update this file
 
@@ -39,8 +44,38 @@ These are properties of the scanning checkout, not of the backlog. Any verdict m
 2. **`data/` holds 1 of the 8 books** (only `vedic_astro_textbook.pdf`). Corpus hit-count
    claims in #216–#219 and #191 were verified as *code* claims by reading, not as
    *corpus* claims by measurement.
-3. **No venv, no `swisseph`** → `pytest` and the `verify_*.py` gates could not be run.
-   Where an issue's evidence is a gate's output, the verdict says so.
+3. **No venv, no `swisseph`** → the scanning agent could not run `pytest` or the
+   `verify_*.py` gates. **The parent session has since run them — see below.**
+
+---
+
+## QA baseline — measured 2026-08-25 at `c14093c`
+
+| Command | Result |
+|---|---|
+| `uv run pytest` (env fixed) | **24 passed** |
+| `scripts/mutate_behaviour_suite.py` (env fixed) | **8/8 caught; CONTROL correctly MISSED** |
+| `uv run pytest` (bare clone) | **14 failed, 10 passed** — all environmental |
+
+**A bare clone in this sandbox reports 14 failures and none of them is a defect.** Two
+independent environmental causes, isolated by changing one variable at a time:
+
+1. **`nominatim.openstreetmap.org:443` is denied by the environment's network policy**
+   (403 on CONNECT, confirmed in the agent proxy's `recentRelayFailures`). Nine tests
+   reach it transitively — all eight in `test_blast_outcomes.py` plus
+   `test_panchang_strip_cache.py::test_fallback_keeps_the_strip_visible`. They fail with
+   `KeyError: 'sent'`, because the route correctly 500s with
+   `{"ok":false,"error":"Couldn't compute reference chart: Geocoding failed…"}`.
+2. **No `.env`, so `OPENAI_API_KEY` is unset.** The five `test_rashifal_degraded.py`
+   failures are all "Rashifal is temporarily unavailable — API key not configured".
+
+With the geocoder stubbed and a dummy key set, all 24 pass.
+
+**The mutation harness fails its own CONTROL under cause 1**, reporting `BLIND (CAUGHT)`
+and correctly declaring its own 8/8 worthless — because a suite that is already red reports
+every mutation as caught, including the no-op. Give it a working environment
+(`PYTEST_ADDOPTS` reaching the stub) and CONTROL returns to `OK (correctly missed)`. Worth
+knowing before anyone reads a `BLIND` verdict as a harness defect.
 
 ---
 
@@ -55,16 +90,22 @@ These are properties of the scanning checkout, not of the backlog. Any verdict m
 
 ---
 
-## Proposed closures (5 + 1 duplicate) — awaiting human
+## Proposed closures — **QA-verified, and two were overturned**
+
+Each row below was re-checked in the parent session against `origin/main` rather than
+relayed from the agent. Two of the six did not survive that check, which is the argument
+for doing it: a triage pass that only relays is a triage pass that launders.
+
+Closure evidence is posted on all six issues. **Nothing has been closed** — the human closes.
 
 | # | Verdict | Evidence | checked@ |
 |---|---|---|---|
 | **#171** Yoni koota article vs tool | **Fixed — close** | `learn/kundali-matching-ashtakoot-guna-milan.html:36` now states we do *not* use the 14×14 five-level grid and retracts the Raman attribution; `:38` discloses North/South divergence; contradicting worked examples gone; `matching.py::_yoni` still 4/2/0, which is now what the page says. #177 separately records Yoni verified 27/27 + 7/7 (`d387d9d`, `820a80f`). | c14093c |
-| **#159** RAG index | **Decision taken — close as "not doing"** | Its own 2026-08-16 comment defers RAG and ships the cheap half (`scripts/corpus_search.py`) with the motivating measurement (`vimshottari` 2 hits vs `vimsottari` 134). Live successor tracker is **#217**. | c14093c |
-| **#178** `[BLOCKER]` acquire Muhurtha + Lo Shu | **Scope empty — close** | Items 1–3 struck (scans deliberately deleted; CLAUDE.md: "#178 is acquisition-only"). 4a done — `data/matching/raman-muhurtha-1948-…txt` acquired, falsified three "absent" terms. 4b explicitly dropped as a bad trade. Item 5 absorbed by #191. The `[BLOCKER]` label distorts the whole backlog. *(4a rests on CLAUDE.md + #175/#177 quotations — `data/matching/` not in checkout.)* | c14093c `corpus-unverified` |
-| **#214** panchang strip cache hygiene | **Close, fold remnant into #184** | Items 1–2 fixed and deployed (`9e8acb1`, `9054f36`, `b7e1fc4`, rev `bhagya-00358-z6b`), gated by `tests/test_panchang_strip_cache.py`. Item 3 called "tidiness rather than a defect" by the filer. Remaining stale pointer (`hot_cache.py:17,44` → `main.py::_HOMEPAGE_PANCHANG_CACHE`; real symbol `routes/deps.py:542::_PANCHANG_STRIP_CACHE`) is already **#184 §1** verbatim. | c14093c |
+| **#159** RAG index | ❌ **OVERTURNED — do NOT close; re-scope in place** | The agent read the 2026-08-16 comment as a decision to drop RAG. It is not: it ends *"Keep this issue open, re-scoped: revisit RAG once the corpus grows."* Closing would discard a live condition and the two constraints attached to any future build (absence must come from exhaustive matching, never similarity; any table confirmed against the page image). The corpus-growth trigger has **partly** fired — CLAUDE.md records one of the two named sources acquired, ~5k lines rather than the doubling that comment anticipated. Retitle to the deferred form so the next pass stops re-litigating it from the title. | c14093c |
+| **#178** `[BLOCKER]` acquire Muhurtha + Lo Shu | ⚠️ **Scope reads empty — but the last item is UNVERIFIABLE from a clone** | Items 1–3 struck (owner confirmed in-thread that both scans were deleted); 4b explicitly dropped as a bad trade; 5 absorbed by #191. Item **4a** rests entirely on CLAUDE.md:262 naming `data/matching/raman-muhurtha-1948-…txt`. `data/` is gitignored and a fresh clone holds only `vedic_astro_textbook.pdf`, so `data/matching/` cannot be checked here — **and `knowledge/SOURCES.md` has no row for the book at all**, so the two registries that should agree disagree. Sole evidence is a sentence in CLAUDE.md, which is the pattern CLAUDE.md itself warns about. Confirm on the machine that has `data/`, add the SOURCES.md row, then close. **Drop `[BLOCKER]` from the title now either way** — it gates nothing. | c14093c `corpus-unverified` |
+| **#214** panchang strip cache hygiene | **Close, fold remnant into #184** | Items 1–2 fixed and deployed (`9e8acb1`, `9054f36`, `b7e1fc4`, rev `bhagya-00358-z6b`), gated by `tests/test_panchang_strip_cache.py`. Item 3 called "tidiness rather than a defect" by the filer. Remaining stale pointer (`hot_cache.py:17,44` → `main.py::_HOMEPAGE_PANCHANG_CACHE`; real symbol `routes/deps.py:542::_PANCHANG_STRIP_CACHE`) is already **#184 §1** verbatim. **Correction for #184:** it proposes repointing to `routes/home.py`, but a tree-wide grep finds the symbol `_HOMEPAGE_PANCHANG_CACHE` **only** in those two `hot_cache.py` comments — it exists nowhere else, so #184's target is dangling too. Repoint to `routes/deps.py:542::_PANCHANG_STRIP_CACHE`. | c14093c |
 | **#185** route-table guard as a gate | **Answer "no" and close** — see *Not recommended* | `scripts/route_inventory.py` exists; no `routes.expected.txt` anywhere. Issue itself says "Closing this as 'no' is a perfectly good outcome." | c14093c |
-| **#163** numerology pair disagreements | **Duplicate — merge into #201** | Determinate parts shipped in `cd0689e`; remaining scope *is* #201's title. Its stated premise ("a comment claims they are the same") is now **false** — `numerology.py:461-473` says the opposite. Close with the re-measurement in queue item 4. | c14093c |
+| **#163** numerology pair disagreements | **Duplicate — merge into #201** | Determinate parts shipped in `cd0689e`; remaining scope *is* #201's title. Its stated premise ("a comment claims they are the same") is now **false** — `numerology.py:461-473` says the opposite. **Re-measured independently** at `c14093c`: 23/45 disagreements, 5 friend↔enemy flips at (1,8) (6,8) (7,7) (8,8) (9,9), `8-8` enemy vs friend — the agent's numbers reproduce exactly. | c14093c |
 
 ---
 
@@ -72,7 +113,7 @@ These are properties of the scanning checkout, not of the backlog. Any verdict m
 
 | Pos | Issue | Size | Loop | Gate |
 |---|---|---|---|---|
-| 1 | **#220 + #222** daily blast aborts silently, and leaks subscriber addresses *(bundle)* | S | `/bug` | **Yes — does not exist today** |
+| 1 | **#220 + #222** daily blast aborts silently, and leaks subscriber addresses *(bundle)* — **assigned, labelled `bug`/`priority:high`** | S | `/bug` | **Yes — does not exist today** |
 | 2 | **#172** code still asserts the Cheiro attribution it disproved 40 lines earlier | XS | `/bug` | No (comment fix) |
 | 3 | **#193** date gate reports four claims and checks zero | S–M | `/bug` | **Yes — it *is* the gate** |
 | 4 | **#163 + #201** 23 of 45 pair verdicts contradict *(ship the disclosure now)* | S / M–L | `/bug` then `/feature` | Yes, for the model |
@@ -272,8 +313,8 @@ individually re-verified in this pass** — treat its state as unknown, not as f
 
 | # | Title (short) | State | checked@ |
 |---|---|---|---|
-| 222 | blast leaks subscriber emails to Telegram + /admin/activity | **Q1** | c14093c |
-| 220 | blast aborts mid-run, silently and unretryably | **Q1** | c14093c |
+| 222 | blast leaks subscriber emails to Telegram + /admin/activity | **Q1 — assigned** | c14093c |
+| 220 | blast aborts mid-run, silently and unretryably | **Q1 — assigned** | c14093c |
 | 219 | muhurat combustion: degree-orb vs days-from-heliacal | blocked (2 disclosures ship) | c14093c |
 | 218 | Budha-Aditya 6° and Manglik combust-Mars 6° unsourced | blocked (label + gate ship) | c14093c |
 | 217 | corpus_search word-boundary hides Sanskrit inflections | **Q5** | c14093c |
@@ -291,14 +332,14 @@ individually re-verified in this pass** — treat its state as unknown, not as f
 | 191 | extract ~22,000 readable lines from data/ | blocked — needs the `data/` machine | c14093c |
 | 185 | should the route-table guard become a gate? | **close as "no"** | c14093c |
 | 184 | post-#154 cleanup: stale doc pointers + dead code | live; absorbs #214's remnant | c14093c |
-| 178 | [BLOCKER] acquire Muhurtha + Lo Shu source | **close** — scope empty | c14093c |
+| 178 | [BLOCKER] acquire Muhurtha + Lo Shu source | **hold** — 4a unverifiable from a clone | c14093c |
 | 177 | no Ashtakoot Guna Milan material in corpus | live | — |
 | 175 | Vashya koota collapses the 5×5 matrix | live | — |
 | 173 | Rudraksha bead for Life Path 1 and 8 diverges from §11 | live | — |
 | 172 | Lo Shu cited as Cheiro in code, disproved 40 lines above | **Q2** | c14093c |
 | 171 | Yoni koota article vs tool | **close — fixed** | c14093c |
 | 163 | two compatibility tables disagree on 23 of 45 pairs | **close as dup** → #201 | c14093c |
-| 159 | [FEATURE] local RAG index | **close** — decided, successor #217 | c14093c |
+| 159 | [FEATURE] local RAG index | **keep open, re-scope** — closure overturned | c14093c |
 | 151 | knowledge/*.md has no Panchang-anga material | deferred — pair with #191 | c14093c |
 | 150 | /panchang omits Yamaganda, Gulikai, Brahma Muhurta, moon rise/set | **Q7** | c14093c |
 | 140 | [FEATURE] user profiling insights | live | — |
@@ -315,4 +356,20 @@ individually re-verified in this pass** — treat its state as unknown, not as f
 
 | Date | SHA | Open | Closures proposed | Queue head |
 |---|---|---|---|---|
-| 2026-08-25 | `c14093c` | 36 | #171, #159, #178, #214, #185, #163(dup) | #220 + #222 |
+| 2026-08-25 | `c14093c` | 36 | proposed 6; **QA overturned 2** → #171, #214, #185, #163(dup) stand; #159 keep-open; #178 hold | #220 + #222 (assigned) |
+
+### 2026-08-25 — what QA changed
+
+The scan proposed six closures. Re-checking each against the repo and the issue threads
+before posting the evidence overturned two:
+
+- **#159** — the thread's own recommendation is *keep open, re-scoped*. The agent read a
+  deferral as a decision to drop. Closing would have destroyed a live condition.
+- **#178** — scope really does read as empty, but its one surviving item is evidenced only
+  by a line in CLAUDE.md that cannot be checked from a clone, and `SOURCES.md` contradicts
+  it by omission.
+
+Both failures share a shape: **a verdict derived from a summary rather than from the
+source it summarises.** That is the same defect this file is built to resist, arriving
+through the process meant to prevent it. Relaying a triage agent is not triage — check the
+thread and the tree before acting on its conclusion.
