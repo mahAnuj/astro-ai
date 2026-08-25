@@ -1,6 +1,7 @@
 # BACKLOG.md — standing triage overview
 
 **Last full scan: 2026-08-25, against `origin/main` = `c14093c`.**
+**Execution round 1 in progress — see *Execution log* below. Branch head `4a918a2`.**
 Produced by `/prioritise` (the `project-manager` agent), then QA-verified in the parent
 session — which overturned two of its six closure proposals. 36 open issues at scan time.
 
@@ -351,6 +352,73 @@ individually re-verified in this pass** — treat its state as unknown, not as f
 | 114 | [FEATURE] WebGL birth-chart mandala | not recommended now | c14093c |
 
 ---
+
+## Execution log — round 1, 2026-08-25
+
+Ten commits on `claude/github-issues-prioritize-n12fv3`, none pushed. `main` stayed at
+`4014f1e` (docs and tooling only, no app code) throughout.
+
+**Every QA pass so far has failed its commit on first submission.** That is the headline
+number, and it is the argument for the loop: none of these were visible in a diff.
+
+| Item | Commits | QA |
+|---|---|---|
+| **#220 + #222** blast aborts silently, leaks addresses | `d394179` → `7743471` | **PASS** (2nd) |
+| **#172** Cheiro attribution in code | `6960103` → `ee73ce1` | **PASS** (2nd); gate hardening `e75ac70` pending |
+| **#217** corpus_search inflections | `77edd70` → `28a5443` | **PASS** (2nd) |
+| **#193** date gate checks nothing | `9901948` `62cd675` `129c1df` → `4a918a2` | pending (2nd) |
+
+### What QA caught that review would not have
+
+- **The blast fix reproduced #220's own harm one frame out.** `_mask_email` raised on a
+  truthy non-string email at the alert *below* the loop — no alert, no outcome JSON, exactly
+  the defect being fixed, relocated by the fix. Found by driving the real route, not reading.
+- **#172's fix attached a provenance label nobody measured** (`plain pdftotext` on a count
+  recorded for a different search), and left a docstring asserting `[UNSOURCED]` and
+  "repeatable across sources" in one paragraph.
+- **#172's new gate let the historical defect walk past.** Restoring the pre-#172 header and
+  trimming one denial held the mention count at 7; the gate printed "all denials" and exited
+  0. `!=` alone would not have caught it — it needed a denial-presence check.
+- **#217's justification was measured by a different code path than the tool uses.** The
+  rejected candidate scores 5/5 through `variants()` → `_pat()`, not the 3/5 recorded. The
+  real reason to reject it is that it flips `nadi` 0→1 on the English word "nadir" — a false
+  SOURCED verdict on the highest-weighted koota.
+- **#193's harness told a future reader to stand down.** Its "red by design" hint was
+  conditional on failure, so it only printed on the run where someone needed the truth: drop
+  Gate 4 and it says "That is #193's defect, not a regression."
+
+### The recurring defect class, three times in one session
+
+A justification that outlives its evidence — #172's Cheiro block, #217's measurement,
+#193's harness hint, plus `_mask_email`'s "no input can make it raise" docstring. This is
+the class `CLAUDE.md` is built around, and it is still the most common thing found here.
+
+### Filed, not fixed
+
+| Issue | What |
+|---|---|
+| [#223](https://github.com/mahAnuj/astro-ai/issues/223) | a non-dict subscribers row still aborts the blast, no alert — row-level version of #220 |
+| [#224](https://github.com/mahAnuj/astro-ai/issues/224) | `mutate_behaviour_suite.py` unusable on a fresh clone; fix is hermetic tests, not the harness |
+| [#225](https://github.com/mahAnuj/astro-ai/issues/225) | the short-sections alert guard is correct but ungated |
+
+Also posted: a correction on #217 (the 3/5 figure does not reproduce), evidence comments on
+the six proposed closures, and a QA note on #222 flagging that nobody has checked whether
+Cloud Scheduler logs a failed attempt's response body — if it does, `failed_emails` is a
+live third egress point.
+
+### Environment findings worth carrying forward
+
+- **A fresh clone reports 14 test failures that are not defects** — blocked outbound
+  geocoding (9) and no `.env` (5). Two separate agents each spent time rediscovering this
+  before doing any work. That is what #224 is for.
+- **`data/vedic_astro_textbook.pdf` is tracked**, contradicting CLAUDE.md's "`data/` is
+  gitignored". Pre-existing, already noted in #178's thread.
+- **Commit signing is configured but impossible**: `commit.gpgsign=true` points at a 0-byte
+  public key with no private key present, so every commit lands unsigned — including the two
+  already on `main`.
+- **Subagents cannot spawn subagents.** `dev-lead` returns a dispatch plan instead; the
+  parent session runs the engineer and QA legs. Subagents also cannot reach GitHub, so issue
+  text must be inlined into their briefs.
 
 ## Scan history
 
