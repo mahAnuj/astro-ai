@@ -159,7 +159,8 @@ class NumerologyRemedy:
     # `rudraksha` is NOT from §3/§4 — it is §11's per-number table, whose
     # Rudraksha column is itself unsourced: the Johari PDF has no per-number
     # mukhi table (#173), and the three books present in this checkout
-    # (3 of 7) return zero hits for rudraksha/mukha/bead/aksha/rosary. The
+    # (4 of the 8 registry entries, 38,197 -layout lines, Raman's Muhurtha
+    # included) return zero hits for rudraksha/mukha/bead/aksha/rosary. The
     # field stays because the remedy is useful, but the copy must not claim
     # a provenance we do not have — see the two #173 comments in _REMEDIES.
     rudraksha: str             # mukhi count + wearing note; e.g. "12-mukhi on red thread"

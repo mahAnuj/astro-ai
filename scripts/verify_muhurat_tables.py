@@ -879,9 +879,18 @@ def gate_6_combustion_orbs() -> list[str]:
     full = (root / "src/astro_ai/knowledge/grahas.md").read_text()
     # Scope to the combustion table. grahas.md has many tables keyed by planet
     # name, and an unscoped row regex matched 44 of them.
-    marker = "**Classical combustion orbs:**"
+    # Anchor on the TABLE HEADER, not on prose around it. This gate went red
+    # when 701ff75 restructured §12 and dropped the sentence
+    # "**Classical combustion orbs:**" it used to key on — the orb table itself
+    # was untouched and still correct, but the gate reported "nothing to read".
+    # A gate that breaks when a heading is reworded is a gate people learn to
+    # ignore. The column header IS the table, so it cannot drift away from the
+    # data while the data still exists.
+    marker = "| Planet | Combust when within |"
     if marker not in full:
-        return [f"grahas.md: {marker!r} not found — this gate has nothing to read"]
+        return [f"grahas.md: {marker!r} not found — this gate has nothing to read. "
+                "The combustion orb table moved or changed shape; re-point this "
+                "anchor at it rather than deleting the check."]
     doc = full[full.index(marker):]
     doc = doc[:doc.index("\n\n", doc.index("|"))] if "\n\n" in doc[doc.index("|"):] else doc
     # Capture the whole cell and parse it, rather than pattern-matching the
