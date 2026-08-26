@@ -112,6 +112,12 @@
       <div class="text-lg font-display text-astro-800">{{ p.karana_name }}</div>
       <div class="text-xs text-stone-600">{% if p.karana_significance %}{{ p.karana_significance }}{% else %}Half-tithi {{ p.karana_index + 1 }} of 60, at sunrise{% endif %}</div>
     </div>
+    {#- Rahu Kaal, Abhijit and Choghadiya are each a fixed fraction of the
+       sunrise-to-sunset period. At polar latitudes a date can hold no such
+       period — then p.daylight_ordinary is False and the arithmetic produces
+       windows that end before they start (Tromso 2026-05-17: Rahu Kaal
+       00:14—00:06). Disclose instead of rendering them. Issue #227. #}
+    {%- if p.daylight_ordinary %}
     <div class="bg-white border border-stone-200 rounded-xl p-4">
       <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Sunrise / Sunset</div>
       <div class="text-lg font-display text-astro-800 tabular-nums">
@@ -133,6 +139,19 @@
       </div>
       <div class="text-xs text-stone-600">Most auspicious ~48 min around solar noon</div>
     </div>
+    {%- else %}
+    <div class="sm:col-span-2 lg:col-span-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+      <div class="text-[11px] uppercase font-semibold text-amber-800 tracking-wider mb-1">No ordinary sunrise-to-sunset day</div>
+      <div class="text-lg font-display text-amber-900 tabular-nums">
+        Sunrise {{ p.sunrise.strftime('%d %b, %H:%M') }} · Sunset {{ p.sunset.strftime('%d %b, %H:%M') }}
+      </div>
+      <p class="text-xs text-amber-800 mt-2">
+        At {{ city_display }}'s latitude the Sun can stay above the horizon past midnight, so these two instants do not bound a daylight period inside {{ today_pretty }}.
+        <strong>Rahu Kaal, Abhijit Muhurat and Choghadiya are each a fixed fraction of the sunrise-to-sunset period</strong>, so on a date without one there is nothing to divide — they are left out rather than guessed.
+        The tithi, yoga and karana above come from Sun and Moon longitudes, not from the length of the day.
+      </p>
+    </div>
+    {%- endif %}
     {% if moon_info %}
     <div class="bg-white border border-stone-200 rounded-xl p-4">
       <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Moon Today</div>

@@ -250,8 +250,17 @@ it only gives the cache something to hit. Keep the shared blocks first in any ne
   Measured 2026-08-26 at Tromso (69.6492N/18.9553E, Europe/Oslo) for 2026-05-17: sunrise
   `01:14:09`, sunset `00:06:04`, daylength **−1.13 h**, Rahu Kaal `00:14:34..00:06:04`.
   Most days at that latitude render normally; this is a minority of them. It is reachable
-  because the city is free text with no allow-list, on more than one route. Pre-existing
-  and unfixed — **#227** owns it, and holds the per-route reach and the day counts.
+  because the city is free text with no allow-list, on more than one route.
+
+  `compute_panchang` now MARKS this shape rather than hiding it:
+  `DailyPanchang.daylight_ordinary` is False when sunset does not follow sunrise inside
+  the local date, and the four derived fields are then meaningless. Any surface that
+  PRESENTS a daylight-fraction window must check it. `/panchang` does, and discloses instead
+  (**#227**); `scripts/verify_panchang_angas.py` Gate 6 holds the flag to its consequence
+  in both directions, so dropping, inverting or narrowing it goes red. The other
+  consumers of those fields do not check it yet, and the raise shape is unchanged — the
+  route still degrades that to Mumbai. **#227** holds the per-route reach and the day
+  counts.
 
   Do not re-add a route list, a proportion, or a count of how often this note has been
   wrong. Four QA rounds have failed here, every one on a claim of that shape: `the only
