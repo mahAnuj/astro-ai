@@ -245,17 +245,20 @@ it only gives the cache something to hit. Keep the shared blocks first in any ne
   range: passing it on raises rather than returning a wrong value, so the return flag must
   be checked.
 - **Sunrise and sunset do it too, in the polar regime — and the derived windows then come
-  out reversed.** This bullet has twice understated the reach — first claiming the moon
-  fields were the *only* ones, then that the polar case was unreachable in production —
-  and was wrong both times. At high latitude `compute_panchang` either raises or returns
-  **successfully** with a negative daylength and windows that end before they start:
-  measured 2026-08-26 at Tromso (69.65N/18.96E) for 2026-05-17, sunrise `01:14:09`,
-  sunset `00:06:04`, daylength **−1.13 h**, Rahu Kaal `00:14:34..00:06:04`. It is
-  reachable because the city is free text with no allow-list, on more than one route; the
-  Delhi-hardcoded callers (`sankranti.py`, `lunar_observances.py`, `lunar_dates.py`,
-  `adhik_maas.py`) are the exception, not the rule. Pre-existing and unfixed — **#227**
-  owns it and holds the per-route reach and the day counts, which is where they stay:
-  enumerating the affected routes here is the part that went wrong twice.
+  out reversed.** At high latitude `compute_panchang` either raises, or returns
+  **successfully** with a negative daylength and windows that end before they start.
+  Measured 2026-08-26 at Tromso (69.6492N/18.9553E, Europe/Oslo) for 2026-05-17: sunrise
+  `01:14:09`, sunset `00:06:04`, daylength **−1.13 h**, Rahu Kaal `00:14:34..00:06:04`.
+  Most days at that latitude render normally; this is a minority of them. It is reachable
+  because the city is free text with no allow-list, on more than one route. Pre-existing
+  and unfixed — **#227** owns it, and holds the per-route reach and the day counts.
+
+  Do not re-add a route list, a proportion, or a count of how often this note has been
+  wrong. Four QA rounds have failed here, every one on a claim of that shape: `the only
+  fields`, `unreachable in production`, `the one route`, `twice`, `the exception not the
+  rule`. Each was falsifiable by one counterexample and none was tested by anything. What
+  belongs here is the mechanism and one dated instance; the counts live in #227, where
+  they can be checked against the code that produces them.
 - **`_PANCHANG_CACHE`'s 0.5° key rounding merges points up to ~3.4 min apart.** Measured
   2026-08-26 over 365 days of 2026 on each cell's SW–NE corner pair, where the annual
   sunrise maximum falls: sunrise differs by at most 3.37 min in the Srinagar cell (mean
