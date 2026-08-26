@@ -266,9 +266,50 @@ jobs:
 
           # Collect EVERY failure, not just the first: one 500 and forty 500s
           # are different problems and the list is the diagnosis.
-          awk '$1 != "200"' /tmp/sweep.tsv > /tmp/bad.tsv || true
+          awk '$1 != "200"' /tmp/sweep.tsv > /tmp/cand.tsv || true
+          cand=$(wc -l < /tmp/cand.tsv)
+
+          # CONFIRMATION PASS — serial, and with a longer budget.
+          #
+          # The parallel sweep cannot tell "this page is broken" from "this
+          # page was queued behind 199 others on a free-tier instance". Run 2
+          # (32965254213) reported 11 of 200 URLs as failures; every one was
+          # `000` at exactly 30.00s, i.e. the --max-time ceiling, never a 4xx
+          # or 5xx. Re-probed serially straight afterwards, all 11 returned
+          # 200 in ~1.0-1.7s, and all 11 also passed at -P 6 when swept ALONE.
+          # So the trigger is the cumulative load of the full 200-URL sweep
+          # against maxScale 5, not any property of those URLs.
+          #
+          # The in-probe retry does not catch this: it fires immediately and
+          # still under the same concurrent load, so a contention window loses
+          # both attempts. Only dropping the concurrency can separate the two,
+          # which is what this does.
+          #
+          # This CANNOT mask a genuinely broken page: a 404, a 500 or a real
+          # hang fails serially too, with 60s to prove it. What it removes is
+          # exactly one false signal — "slow because we caused the load".
+          : > /tmp/bad.tsv
+          if [ "$cand" -gt 0 ]; then
+            echo "re-probing $cand candidate(s) serially at --max-time 60"
+            while read -r _code _secs url; do
+              [ -n "${url:-}" ] || continue
+              out=$(curl -sL -o /dev/null --max-time 60 --max-redirs 5 \
+                         -w '%{http_code} %{time_total}' "$url" 2>/dev/null) || out=""
+              [ -n "$out" ] || out="000 0"
+              echo "  recheck: $out $url"
+              case "$out" in
+                200\ *) ;;
+                *) printf '%s %s\n' "$out" "$url" >> /tmp/bad.tsv ;;
+              esac
+            done < /tmp/cand.tsv
+          fi
           bad=$(wc -l < /tmp/bad.tsv)
-          echo "swept $swept/$n URLs · non-200: $bad"
+          cleared=$(( cand - bad ))
+
+          echo "swept $swept/$n URLs · sweep non-200: $cand · confirmed: $bad · cleared on recheck: $cleared"
+          if [ "$cleared" -gt 0 ]; then
+            echo "::warning::$cleared URL(s) failed the concurrent sweep but returned 200 serially — free-tier contention, not a broken page"
+          fi
           echo "SMOKE_STATUS=$bad-bad-of-$swept" >> "$GITHUB_ENV"
 
           # Slowest handful — NOT a gate, a free rolling record. #144 was a
@@ -277,7 +318,12 @@ jobs:
           {
             echo "### Smoke sweep"
             echo ""
-            echo "Swept **$swept / $n** sitemap URLs · non-200: **$bad**"
+            echo "Swept **$swept / $n** sitemap URLs · confirmed non-200: **$bad**"
+            if [ "$cleared" -gt 0 ]; then
+              echo ""
+              echo "_${cleared} URL(s) failed the concurrent sweep and returned 200 on a serial"
+              echo "recheck — free-tier contention from the sweep itself, not a broken page._"
+            fi
             echo ""
             if [ "$bad" -gt 0 ]; then
               echo "| code | secs | url |"; echo "|---|---|---|"
@@ -291,7 +337,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$bad" -gt 0 ]; then
-            echo "::error::$bad sitemap URL(s) did not return 200 — see the step summary"
+            echo "::error::$bad sitemap URL(s) did not return 200, confirmed serially — see the step summary"
             sed 's/^/  /' /tmp/bad.tsv
             exit 1
           fi
