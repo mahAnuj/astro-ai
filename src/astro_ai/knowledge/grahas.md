@@ -344,10 +344,20 @@ Corpus at the time of the **corrected** extraction — **4 books, 38,197
 | P.V.R. Narasimha Rao, *Lessons on Vedic Astrology*, Vol. I (`book1-for-CD.pdf`) | ✅ | 7,757 |
 | B.V. Raman, *Muhurtha or Electional Astrology* (1948) (`matching/raman-…_djvu.txt`) | ✅ | 9,158 |
 | Chennareddy Vasudev, *Astrology* (`Astrology-e-book-compressed.pdf`) | ✅ | 4,558 |
+| **B.V. Raman, *Astrology for Beginners* (`Astrology For Beginners BVRaman_text.pdf`)** | ❌ **absent** | 15,409 |
 | Johari, Goodwin, Jayant Kumar (numerology) | ❌ absent | — |
 
-**4 of 7 books present.** Every absence recorded below is an absence from those
-four. The first draft of this section was written against **three** — Raman's
+**4 of 8 books present** — run `scripts/fetch_corpus.py`, which is the registry
+and prints the live count (`4/8 usable`). Every absence recorded below is an
+absence from those four.
+
+**The fourth missing book is an ASTROLOGY book, and that matters here.** An
+earlier draft of this table omitted *Astrology for Beginners* entirely and
+said "4 of 7", which made the gap look like it was purely the numerology
+volumes. It is not: `SOURCES.md` row 1 marks that book **fully extracted** at
+15,409 lines, and it is by **B.V. Raman** — the author whose testimony §12.5's
+entire #219 argument rests on. So an absence measured here may well move when
+it is restored, and no reader should assume otherwise. The first draft of this section was written against **three** — Raman's
 *Muhurtha* arrived hours later — and two of its conclusions were falsified by
 that arrival. That is recorded in §12.9 rather than quietly overwritten.
 
@@ -453,7 +463,7 @@ nodes.
 *astangata*, which Rao spells correctly in his own textbook (§12.3).
 
 **Rao, *Lessons* Vol. I, Lesson #20** (printed pp. **83–84**, PDF page 50;
-lines **3036–3040**): *"Any planet with Su is combust. The combustion is not as
+lines **3036–3042**): *"Any planet with Su is combust. The combustion is not as
 bad when Su is debilitated in Li. Ju and Ma are friends of Su. So, it is not a
 big deal for them as Army commander (Ma) and Priest (Ju) are good with King
 (Su). But, for Ve it is very bad."* — combustion is modulated by the Sun's own
@@ -469,7 +479,7 @@ dasha-suppression rule, quoted in §12.1.
 **4725**): *"Combust planets loose its power. (Ex: Ve)"*
 
 **Rao, *Lessons* Vol. I, example chart** (printed pp. **157–158**, PDF page 87;
-lines **5487–5489**): *"Su will cause combustion of Ve. Here Su/Ve are extremely
+lines **5486–5488**): *"Su will cause combustion of Ve. Here Su/Ve are extremely
 close within couple of degrees."* — the **only** place in the corpus where
 combustion and a degree quantity co-occur. It is a description of one chart,
 not a rule, and it states no threshold; but see §12.4, where the first draft
@@ -787,9 +797,12 @@ how an unsourced table acquired a citation.
   Rao's own hedge. Prose treating a combust planet as disabling has no support
   in this corpus; §14's "never use 'combust' alone as a diagnosis" is the
   sourced position.
-- **Every absence above is measured against 4 of 7 books.** The three missing
-  are the numerology volumes, which is why no astrological absence here is
-  expected to move — but say "4 of 7" when quoting one.
+- **Every absence above is measured against 4 of 8 books.** The four missing
+  are the three numerology volumes PLUS B.V. Raman's *Astrology for
+  Beginners* (15,409 lines, fully
+  extracted per `SOURCES.md` row 1). The numerology three cannot move an
+  astrological absence; **the Raman can**, and by the same author §12.5 relies
+  on. Say "4 of 8" when quoting one, and name which four are missing.
 
 ### 12.8 Citation hygiene for this section
 
