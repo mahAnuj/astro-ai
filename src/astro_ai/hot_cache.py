@@ -14,7 +14,7 @@ globals, it dies with the container, and it is not shared between Cloud Run
 instances. That is acceptable here — `maxScale` is 5, so at most 5 instances
 may briefly disagree about a value that is already TTL-bounded. This mirrors
 the precedent already in the repo: `chart.py::_PANCHANG_CACHE` and
-`main.py::_HOMEPAGE_PANCHANG_CACHE`, both plain per-process dicts.
+`routes/deps.py::_PANCHANG_STRIP_CACHE`, both plain per-process dicts.
 
 Locking discipline: `_LOCK` is a bookkeeping lock only — it is never held
 across a call to `fn`. Deduplication of concurrent work is done with a
@@ -41,7 +41,7 @@ T = TypeVar("T")
 
 MAX_ENTRIES = 500
 """Hard cap on cached keys; oldest inserted are evicted first. Mirrors the
-bounded-growth guard on `_HOMEPAGE_PANCHANG_CACHE` in main.py."""
+bounded-growth guard on `_PANCHANG_STRIP_CACHE` in routes/deps.py."""
 
 ERROR_TTL_S = 5.0
 """How long a failure is remembered, for both the raise-through path and the
