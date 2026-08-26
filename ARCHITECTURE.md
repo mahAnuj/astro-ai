@@ -191,8 +191,15 @@ context-specific behaviour (`ask_matching`, `ask_matching_third_party`, `ask_num
 rather than being duplicated.
 
 The user message is assembled in Python — chart data, transits, panchang, day signals.
-About **97.6% of a rashifal call's prompt is byte-identical across the 12 rashis**;
-Groq's prefix caching is opportunistic (measured: 1 hit in 6), so it cannot be relied on.
+About **97.6% of a rashifal call's prompt is byte-identical across the 12 rashis** — but
+"identical" is not "cacheable". A prefix cache needs the shared bytes contiguous from
+position 0, and the per-rashi anchor used to lead the user message, so the 12 calls
+diverged 28 characters in: only **9,963 of 13,482 characters (73.9%) were a shared
+prefix**, with a 3,519-character unique tail. #212 moved the day signals and transit
+block ahead of the anchor: **12,800 of 13,310 characters (96.2%)**, unique tail 510.
+Measured 2026-08-26 over the wire, `/rashifal/aries`, en. This buys nothing on its own —
+Groq's prefix caching is opportunistic (measured: 1 hit in 6) and cannot be relied on —
+it only gives the cache something to hit. Keep the shared blocks first in any new prompt.
 
 ### Voice rules that are not negotiable
 
