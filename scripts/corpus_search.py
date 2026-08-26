@@ -39,6 +39,12 @@ the text layer without any marker — Cheiro's alphabet page drops A-M entirely
 and renders `Y = 1` as `Y = I`. Confirm any table against the rendered page
 image (`pdftoppm -f <page> -l <page> -r 200 -png`) before believing it.
 
+LINE NUMBERS ARE FOR CITING. A hit reported at N is the line `grep -n` and
+`sed -n 'Np'` give back on `pdftotext -layout <book> -`, because numbering
+counts newlines only. It did not always: `splitlines()` also breaks on the form
+feed pdftotext writes at every page boundary, so numbers drifted by ~1 per page
+(#226). See `_lines()`.
+
 USAGE
 
     python3 scripts/corpus_search.py "vimshottari"       # find it, any spelling
@@ -427,6 +433,57 @@ def _corpus(use_cache: bool = True) -> dict[str, str]:
     return out
 
 
+def _lines(text: str) -> list[str]:
+    """Split a book into lines FOR REPORTING — on "\n" only, never splitlines().
+
+    `str.splitlines()` also breaks on form feeds, and `pdftotext` emits one per
+    page: 515 of them in vedic_astro_textbook.pdf alone. Numbering that way
+    drifts by roughly one per page against `grep -n` and `sed -n 'Np'`, which is
+    what anyone re-checking a citation actually uses — this tool reported
+    "Six upagrahas called" at 1741 where `grep -n` says 1688, and
+    "Gulika rises at the middle" at 1813 against 1758 (#226). A pinpoint
+    citation that cannot be resolved again is the failure mode this whole tool
+    exists to prevent, arriving through the tool built to prevent it.
+
+    A form feed left sitting inside its line is harmless: matching never looks
+    at line numbers, so hit counts and --absent verdicts were never affected by
+    this and no absence verdict needs revisiting.
+    """
+    lines = text.split("\n")
+    # `split` yields a trailing "" where `splitlines` yields nothing, for text
+    # that ends in a newline. It cannot shift any line number — it is last —
+    # but it would print a phantom blank line in the -c context window, so drop
+    # it. Only the one: interior blank lines are real lines and are numbered.
+    if lines and lines[-1] == "":
+        lines.pop()
+    return lines
+
+
+def _scan(text: str, spellings: list[str],
+          patterns: dict[str, "re.Pattern[str]"],
+          ) -> tuple[list[str], list[tuple[int, str, str]]]:
+    """One book's hits as (line number, spelling, line), plus its lines.
+
+    Line numbers are 1-based over `_lines()`, so they agree with `grep -n` and
+    are resolvable with `sed -n 'Np'`. Kept out of `main()` so the gate can
+    assert on the numbering the tool actually reports rather than on a copy of
+    this loop — the #226 defect lived in exactly these three lines and no
+    fixture could reach them while they sat inside `main()`.
+    """
+    lines = _lines(text)
+    hits: list[tuple[int, str, str]] = []
+    for i, line in enumerate(lines):
+        low = line.lower()
+        for v in spellings:
+            # WORD boundaries, not substrings. Substring matching found
+            # "vasya" inside "amavasya" and "washy" inside "wishy-washy",
+            # reporting 13 hits for a term the corpus does not contain.
+            if patterns[v].search(low):
+                hits.append((i + 1, v, line))
+                break
+    return lines, hits
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -466,20 +523,11 @@ def main() -> int:
     grand = 0
     per_variant: dict[str, int] = {}
     for name, text in sorted(corpus.items()):
-        lines = text.splitlines()
-        hits: list[tuple[int, str, str]] = []
-        for i, line in enumerate(lines):
-            low = line.lower()
-            for v in spellings:
-                # WORD boundaries, not substrings. Substring matching found
-                # "vasya" inside "amavasya" and "washy" inside "wishy-washy",
-                # reporting 13 hits for a term the corpus does not contain.
-                if _patterns[v].search(low):
-                    hits.append((i + 1, v, line))
-                    per_variant[v] = per_variant.get(v, 0) + 1
-                    break
+        lines, hits = _scan(text, spellings, _patterns)
         if not hits:
             continue
+        for _, v, _line in hits:
+            per_variant[v] = per_variant.get(v, 0) + 1
         grand += len(hits)
         print(f"  {name}  —  {len(hits)} hit(s)")
         for ln, v, line in hits[:args.max_hits]:

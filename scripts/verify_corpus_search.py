@@ -29,19 +29,22 @@ as sourced when the corpus does not contain it.
 
 RULES FOR ANYONE EDITING THIS FILE
 ----------------------------------
-1. **This gate never reads the corpus.** `data/` currently holds 1 of the 8
-   source books, and the one carrying `Maudhyam` (`book1-for-CD.pdf`) is not
-   among them. A gate whose evidence is a book that may or may not be on the
-   disk passes for the wrong reason on most machines. Every string below is an
-   in-file fixture; `_corpus()` is never called.
+1. **This gate never reads the corpus.** `data/` is gitignored, so a checkout
+   holds whatever subset was fetched — 1 of the 8 source books when this file
+   was written, 3 as of 2026-08-26. A gate whose evidence is a book that may or
+   may not be on the disk passes for the wrong reason on most machines. Every
+   string below is an in-file fixture; `_corpus()` is never called. (The
+   measurements quoted in the fixture comments below ARE from the real books,
+   but only as the record of a defect, never as something this gate re-reads.)
 2. **Never re-implement the regex in the test body.** Ask `variants()` and
    `_pat()` for the real pattern and assert on hardcoded expectations. Two
    tests in this repo reimplemented their subject and would have passed
    forever.
-3. Run `--self-test` after editing. It applies two mutants — the pre-#217
-   pattern, and the 6-character stem floor lowered on its own — and asserts
-   this gate goes red for each. A gate that has never failed is not evidence,
-   and a fixture that only fires when two things break at once guards neither.
+3. Run `--self-test` after editing. It applies three mutants — the pre-#217
+   pattern, the 6-character stem floor lowered on its own, and the pre-#226
+   `splitlines()` numbering — and asserts this gate goes red for each. A gate
+   that has never failed is not evidence, and a fixture that only fires when
+   two things break at once guards neither.
 
 EXIT CODES
     0  PASS
@@ -49,8 +52,12 @@ EXIT CODES
 """
 from __future__ import annotations
 
+import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -104,6 +111,138 @@ _MUST_NOT_MATCH: tuple[tuple[str, str, str], ...] = (
      "the 6-character floor alone keeps 'bal' + '-e' out of 'bale' — a "
      "3-letter stem plus a Sanskrit case ending lands inside English prose"),
 )
+
+
+# ─── Form-feed fixture, for the line numbers a citation is checked with ──
+#
+# `pdftotext` emits a form feed (\x0c) at every page boundary — 515 of them in
+# vedic_astro_textbook.pdf, 122 in book1-for-CD.pdf. `str.splitlines()` treats
+# each one as a line break where `grep -n`, `sed -n 'Np'` and `wc -l` do not,
+# so a reported line number drifted by about one per page and could not be
+# resolved again (#226). Measured on the real books before the fix:
+#
+#     "Six upagrahas called"        reported 1741   grep -n 1688   +53
+#     "Gulika rises at the middle"  reported 1813   grep -n 1758   +55
+#     "Maudhyam" (book1-for-CD)     reported  334   grep -n  324   +10
+#
+# The fixture below is synthetic and shaped like those pages: two form feeds,
+# each opening a page-number line, with terms before, between and after them.
+# The expected numbers are hand-counted on "\n" and were cross-checked with
+# `grep -n` on this exact string; `_grep_oracle()` re-checks them on every run
+# where grep exists, so the hardcoding cannot rot silently.
+#
+# Terms are plain spellings on purpose (`upagraha`, `gulika` — no case ending,
+# no truncated stem). This gate is about NUMBERING, and terms that also depend
+# on the boundary regex would go red under the two pattern mutants as well,
+# which would blur which mutant this gate actually catches.
+_FF_FIXTURE = (
+    "Chapter 3 — the upagrahas and how they are computed\n"        # 1
+    "\n"                                                           # 2
+    "Six upagrahas called Kaala and Mrityu are counted in order.\n"  # 3
+    "\x0c                                                    45\n"  # 4
+    "Gulika rises at the middle of the part of Saturn.\n"          # 5
+    "\n"                                                           # 6
+    "\x0c                                                    46\n"  # 7
+    "The remaining upagrahas are set out in the next chapter.\n"    # 8
+)
+
+# term -> the line numbers `grep -n` reports for it in _FF_FIXTURE.
+_FF_EXPECTED: tuple[tuple[str, tuple[int, ...]], ...] = (
+    ("upagraha", (1, 3, 8)),
+    ("gulika", (5,)),
+)
+
+# The fixture ends in a newline, where `str.split("\n")` yields a trailing ""
+# that `splitlines()` does not. It cannot shift a number — it is last — but it
+# would print a phantom blank line in the -c context window, so `_lines()`
+# drops exactly one, and the fixture is 8 lines, not 9.
+_FF_LINE_COUNT = 8
+
+
+def _grep_oracle(term_line_substring: str) -> int | None:
+    """What `grep -n` reports for a line of the fixture, or None if no grep.
+
+    An external oracle, not a second implementation: the point of #226 is that
+    the tool must agree with the command someone verifying a citation will
+    actually type. Hardcoded expectations alone would drift the day the fixture
+    is edited; this catches that.
+    """
+    if not shutil.which("grep"):
+        return None
+    with tempfile.NamedTemporaryFile("w", suffix=".txt", encoding="utf-8",
+                                     delete=False) as fh:
+        fh.write(_FF_FIXTURE)
+        path = fh.name
+    try:
+        res = subprocess.run(["grep", "-n", "-F", term_line_substring, path],
+                             capture_output=True, text=True, timeout=10)
+        if res.returncode != 0 or not res.stdout.strip():
+            return None
+        return int(res.stdout.split(":", 1)[0])
+    finally:
+        os.unlink(path)
+
+
+def gate_4_line_numbers() -> list[str]:
+    """Reported line numbers must be resolvable with grep -n / sed (#226)."""
+    failures = []
+
+    # If someone "tidies" the form feeds out of the fixture, this gate would
+    # pass under the old splitlines() and guard nothing at all.
+    ff = _FF_FIXTURE.count("\x0c")
+    print(f"    {'ok ' if ff == 2 else 'BAD'} fixture still carries "
+          f"{ff} form feed(s)")
+    if ff != 2:
+        failures.append("the form feeds are gone from _FF_FIXTURE — without "
+                        "them this gate cannot see the #226 defect")
+
+    for term, expected in _FF_EXPECTED:
+        spellings = cs.variants(term)
+        patterns = {v: cs._pat(v) for v in spellings}
+        lines, hits = cs._scan(_FF_FIXTURE, spellings, patterns)
+        got = tuple(ln for ln, _, _ in hits)
+        ok = got == expected
+        print(f"    {'ok ' if ok else 'BAD'} {term:<10} lines {list(got)} "
+              f"(expected {list(expected)})")
+        if not ok:
+            failures.append(
+                f"{term!r} reported at {list(got)}, not {list(expected)} — "
+                "line numbers are counted on something other than '\\n', so a "
+                "citation taken from this tool cannot be resolved with "
+                "grep -n or sed (#226)")
+
+        # And the number must ADDRESS the line it claims, the way `sed -n 'Np'`
+        # would. A numbering that is uniformly wrong still fails above; this
+        # catches an off-by-one that happens to land on another matching line.
+        for ln, _v, line in hits:
+            if not (1 <= ln <= len(lines)) or lines[ln - 1] != line:
+                failures.append(f"{term!r}: line {ln} does not address the "
+                                f"reported text")
+
+    ok_count = len(cs._lines(_FF_FIXTURE)) == _FF_LINE_COUNT
+    print(f"    {'ok ' if ok_count else 'BAD'} fixture is "
+          f"{len(cs._lines(_FF_FIXTURE))} lines (expected {_FF_LINE_COUNT}, "
+          "no phantom trailing line)")
+    if not ok_count:
+        failures.append(
+            f"_lines() made {len(cs._lines(_FF_FIXTURE))} lines of a "
+            f"{_FF_LINE_COUNT}-line fixture — a trailing '' from split('\\n') "
+            "is a phantom line in the context window")
+
+    # The external oracle. Silent (returns None) where grep is unavailable;
+    # the hardcoded expectations above still run in that case.
+    oracle = _grep_oracle("Gulika rises at the middle")
+    if oracle is None:
+        print("    --  grep unavailable; hardcoded expectations only")
+    else:
+        ok_oracle = oracle == 5
+        print(f"    {'ok ' if ok_oracle else 'BAD'} grep -n agrees: "
+              f"'Gulika rises…' is line {oracle}")
+        if not ok_oracle:
+            failures.append(f"grep -n puts 'Gulika rises…' at {oracle}, but "
+                            "this gate expects 5 — the fixture was edited and "
+                            "the hardcoded numbers were not")
+    return failures
 
 
 def _hits(term: str, line: str) -> list[str]:
@@ -181,7 +320,9 @@ def run_gates(prefix: str = "") -> int:
     for title, fn in (("1  Sanskrit inflections match (#217)", gate_1_inflections),
                       ("2  historical false positives stay rejected",
                        gate_2_false_positives),
-                      ("3  pattern structure preserved", gate_3_structure)):
+                      ("3  pattern structure preserved", gate_3_structure),
+                      ("4  line numbers agree with grep -n (#226)",
+                       gate_4_line_numbers)):
         print(f"{prefix}Gate {title}")
         failures = fn()
         for f in failures:
@@ -215,6 +356,16 @@ def _floor3_pat(v: str) -> "re.Pattern[str]":
     return re.compile(rf"(?<![a-z])(?:{body})(?![a-z])")
 
 
+def _splitlines_lines(text: str) -> list[str]:
+    """`_lines` as it shipped before #226: `str.splitlines()`.
+
+    Which also breaks on the form feed `pdftotext` writes at every page
+    boundary, so every line number after page 1 drifts — up to +515 in
+    vedic_astro_textbook.pdf.
+    """
+    return text.splitlines()
+
+
 def self_test() -> int:
     """Mutate the pattern and assert this gate goes red for each mutant.
 
@@ -222,18 +373,20 @@ def self_test() -> int:
     when two things break at once leaves the second one unguarded.
     """
     mutants = (
-        ("the pre-#217 pattern", _old_pat),
-        ("the 6-character stem floor lowered to 3, alone", _floor3_pat),
+        ("_pat", "the pre-#217 pattern", _old_pat),
+        ("_pat", "the 6-character stem floor lowered to 3, alone", _floor3_pat),
+        ("_lines", "line numbering by splitlines(), the #226 defect",
+         _splitlines_lines),
     )
-    original = cs._pat
     bad = 0
-    for label, mutant in mutants:
+    for attr, label, mutant in mutants:
         print(f"SELF-TEST — {label}; the gate must FAIL.")
-        cs._pat = mutant
+        original = getattr(cs, attr)
+        setattr(cs, attr, mutant)
         try:
             failures = run_gates(prefix="  ")
         finally:
-            cs._pat = original
+            setattr(cs, attr, original)
         if not failures:
             print(f"SELF-TEST FAILED — {label} passed every gate, so this "
                   "gate does not detect it.")
