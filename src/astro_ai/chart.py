@@ -3194,13 +3194,13 @@ class DailyPanchang:
 #
 # Rounded to ~55km (0.5deg). This is NOT "a few seconds", which is what this
 # comment used to claim. Measured 2026-08-26 on each cell's SW-NE corner pair
-# (the worst of the six) over 365 days of 2026: sunrise differs by up to
-# 3.37 min in the Srinagar cell (mean 2.05, over 1 min on 296/365 days) and
-# 3.18 min in the Delhi cell (mean 2.04, 313/365) — no calendar-day flip in
-# either, but the MEAN alone exceeds the ~2min classical rounding this comment
-# used to say it sat well below. It matters because
-# scripts/verify_panchang_angas.py allows SUNRISE_TOLERANCE_MIN = 4, so the
-# cache can eat 84% of that gate's budget before the ephemeris does anything.
+# (where the annual sunrise maximum falls) over 365 days of 2026: sunrise
+# differs by up to 3.37 min in the Srinagar cell (mean 2.05, over 1 min on
+# 296/365 days) and 3.18 min in the Delhi cell (mean 2.04, 313/365) — no
+# calendar-day flip in either, but a 2 min MEAN is not seconds. For scale,
+# that 3.37 is 84% of scripts/verify_panchang_angas.py's
+# SUNRISE_TOLERANCE_MIN = 4; that gate builds one chart for one city, so it
+# cannot itself see cache error — the comparison is of magnitude only.
 # Moon rise/set deliberately does NOT come through here — compute_moon_rise_set
 # computes at the exact coordinates, because at 0.5deg the printed DATE flips.
 # Cache is bounded by the small number of cities in the subscriber base, so we
@@ -3436,11 +3436,11 @@ def compute_moon_rise_set(
 
     Computed at the EXACT birth coordinates, not `_PANCHANG_CACHE`'s 0.5° grid
     point — which is why it does not go through that cache. The moon lands near
-    midnight often enough that the grid offset flips the printed CALENDAR DAY:
-    Srinagar 2026-12-17 moonset is 17-Dec 00:00:42 at the true point and
-    18-Dec 00:59:21 at the grid point, 1498.65 apparent minutes apart, twice in
-    2026. Off the grid, that flip cannot happen. Sunrise/sunset do not need this
-    — measured across the same cell diagonals over 2026, they move at most
+    midnight often enough that the grid offset flips the printed CALENDAR DAY on
+    2 of 365 days in the Srinagar cell; the worst is 2026-12-17, moonset
+    17-Dec 00:00:42 at the true point vs 18-Dec 00:59:21 at the grid point. Off
+    the grid, that flip cannot happen. Sunrise/sunset do not need this
+    — measured across the same cell corner pairs over 2026, they move at most
     3.37 min (Srinagar) / 3.18 min (Delhi) and flip no calendar day at either.
     """
     tz, today = _local_day(natal, when)
