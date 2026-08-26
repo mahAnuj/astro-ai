@@ -1,0 +1,120 @@
+# Assert that the live site matches what we believe we shipped.
+#
+# WHY THIS EXISTS
+# Every `scripts/verify_*.py` gate in this repo checks the tree. None of them
+# checks production. Agents working this repo frequently cannot reach
+# shubhagya.com at all (sandbox network policy), so "verified" has meant
+# "verified against origin/main" and the last mile has been done by hand, or
+# not at all. This closes that gap: it runs on GitHub's runners, which have
+# open network, and it fails loudly.
+#
+# WHAT A GREEN RUN MEANS — read this before adding a check
+# It means "production satisfies these invariants right now". It does NOT mean
+# "the deploy you just pushed is live". There is no version marker on the site
+# (no /healthz, no K_REVISION exposed), so this workflow cannot tell which
+# revision answered. If a check would pass on the OLD revision too, a green run
+# proves nothing about the deploy.
+#
+# That is fine for invariants — "the Lo Shu grid is not attributed to Cheiro"
+# is worth asserting continuously, whoever deployed last. It is NOT fine if you
+# add a check meaning "my change went out". For that, expose the revision:
+# Cloud Run injects K_REVISION into every container, so a two-line /healthz
+# returning it would let this poll until the SHA it expects is serving. Until
+# that exists, do not write a check whose value depends on which revision
+# answered.
+#
+# The retry loop below waits for a deploy to settle. It is a convenience, not
+# a proof: it retries on a FAILED assertion, so it converts "not deployed yet"
+# into "eventually true". If the content never appears the job fails.
+
+name: verify-production
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 6 * * *'   # daily drift check; production can change without a push
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SITE: https://shubhagya.com
+    steps:
+      - name: Wait for the site to answer at all
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$SITE/" || true)
+            if [ "$code" = "200" ]; then echo "site up after ${i} tries"; exit 0; fi
+            echo "try $i: HTTP $code"; sleep 20
+          done
+          echo "::error::$SITE never returned 200 in ~10 min"; exit 1
+
+      - name: Fetch the pages once, so every check reads the same bytes
+        run: |
+          set -euo pipefail
+          curl -sS --max-time 30 "$SITE/numerology"                   -o /tmp/numerology.html
+          curl -sS --max-time 30 "$SITE/learn/diwali-muhurat-2026"    -o /tmp/diwali.html
+          curl -sS --max-time 30 "$SITE/panchang"                     -o /tmp/panchang.html
+          wc -c /tmp/numerology.html /tmp/diwali.html /tmp/panchang.html
+
+      # ---- #172 -----------------------------------------------------------
+      # The Lo Shu grid has no source in data/. Cheiro is legitimate elsewhere
+      # on this page (the Chaldean letter table) — only the grid attribution
+      # is the defect, so the check is deliberately narrow.
+      - name: "#172 no Cheiro-to-Lo-Shu attribution"
+        run: |
+          n=$(grep -ci 'cheiro[^.]\{0,80\}lo shu\|lo shu[^.]\{0,80\}cheiro' /tmp/numerology.html || true)
+          echo "attribution hits: $n (want 0)"
+          [ "$n" -eq 0 ] || { echo "::error::#172 regressed"; exit 1; }
+          grep -q 'Lo Shu' /tmp/numerology.html \
+            || { echo "::error::Lo Shu section missing — check is vacuous"; exit 1; }
+
+      # ---- #193 -----------------------------------------------------------
+      # Eight date-shaped strings became bare ordinals so Gate 4 can defend the
+      # rest. Nov 8 and Nov 10 must SURVIVE — they are what the gate corroborates
+      # against, and deleting them would silently gut it.
+      - name: "#193 diwali prose uses ordinals, keeps its verified dates"
+        run: |
+          set -euo pipefail
+          n7=$(grep -o 'Nov 7'  /tmp/diwali.html | wc -l)
+          n9=$(grep -o 'Nov 9'  /tmp/diwali.html | wc -l)
+          o7=$(grep -o 'the 7th' /tmp/diwali.html | wc -l)
+          n8=$(grep -o 'Nov 8'  /tmp/diwali.html | wc -l)
+          n10=$(grep -o 'Nov 10' /tmp/diwali.html | wc -l)
+          echo "Nov 7=$n7 (0)  Nov 9=$n9 (0)  the 7th=$o7 (>0)  Nov 8=$n8 (>0)  Nov 10=$n10 (>0)"
+          [ "$n7" -eq 0 ] && [ "$n9" -eq 0 ] && [ "$o7" -gt 0 ] \
+            && [ "$n8" -gt 0 ] && [ "$n10" -gt 0 ] \
+            || { echo "::error::#193 regressed"; exit 1; }
+
+      # ---- #227 -----------------------------------------------------------
+      # Open defect, asserted as a WATCH so it is visible rather than forgotten.
+      # /panchang renders reversed windows for polar cities. This does not fail
+      # the build — it annotates. Turn it into a failure when #227 is fixed.
+      - name: "#227 watch — polar city still renders reversed windows"
+        continue-on-error: true
+        run: |
+          curl -sS --max-time 30 "$SITE/panchang/2026-05-17?city=Tromso" -o /tmp/polar.html || true
+          if grep -qE '0[01]:[0-9]{2} — 00:0[0-9]' /tmp/polar.html; then
+            echo "::warning::#227 still reproduces on production (expected until fixed)"
+          else
+            echo "::notice::#227 no longer reproduces — close it and make this step fail-on-regression"
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Production verification"
+            echo ""
+            echo "Site: \`$SITE\` · commit \`${GITHUB_SHA:0:7}\`"
+            echo ""
+            echo "A green run means production satisfies these invariants **now**."
+            echo "It does not prove this commit is the revision serving —"
+            echo "see the header comment in this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"

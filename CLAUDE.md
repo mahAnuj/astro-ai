@@ -8,13 +8,23 @@ managed with `uv`.
 ## ⚠️ Pushing to `main` deploys to production
 
 **A push to `main` triggers a Cloud Build → Cloud Run deploy of the live site.**
-There is no `.github/workflows/` and no `cloudbuild.yaml` in this repo — the trigger is
-configured GCP-side, so nothing in the working tree reveals it. Do not conclude "no CI"
-from the absence of those files.
+There is no `cloudbuild.yaml` in this repo — the trigger is configured GCP-side, so
+nothing in the working tree reveals it. **`.github/workflows/verify-production.yml` is
+NOT that trigger**; it asserts against the already-deployed site and cannot deploy
+anything. Do not conclude "no CI" from the absence of a build config.
 
 There is **no staging environment**, and test coverage is **narrow** — a behaviour suite
 covers request paths only (`uv run pytest`), and most of the app has none. A push is the
 deploy, and production is the first place code runs.
+
+**The one check that runs against production** is `verify-production.yml`, on every push
+to `main`, daily, and on demand. It exists because every `scripts/verify_*.py` gate checks
+the *tree*, none checks the *site*, and agents working here frequently cannot reach
+`shubhagya.com` at all — so "verified" has meant "verified against `origin/main`" and the
+last mile was done by hand or not at all. Read its header before adding a check: a green
+run means production satisfies those invariants **now**, not that your commit is the
+revision serving. There is no version marker on the site, so it cannot tell which revision
+answered.
 
 ### Rules for agents
 
