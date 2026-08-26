@@ -20,7 +20,7 @@ The two OCR-blocked scans (`varahmihirHorasastram.pdf`, `Numerology.pdf`) have b
 | # | File | Author | Text lines | Status | Priority |
 |---|------|--------|------------|--------|----------|
 | 1 | `Astrology For Beginners BVRaman_text.pdf` | BV Raman | 15,409 | ✅ **Fully extracted** | Done |
-| 2 | `vedic_astro_textbook.pdf` | P.V.R. Narasimha Rao | 20,669 | 🟡 **Partially cited** (Ch. 34 remedies) | HIGH — full extraction pending |
+| 2 | `vedic_astro_textbook.pdf` | P.V.R. Narasimha Rao | 20,669 | 🟡 **Partially cited** (Ch. 34 remedies; **§4.3 Other Upagrahas / Table 10 → `vedic_reference.md` §28**, 2026-08-26) | HIGH — full extraction pending |
 | 3 | `book1-for-CD.pdf` | P.V.R. Narasimha Rao (Lessons Vol. I) | 12,244 | ❌ Not extracted | MEDIUM |
 | 4 | `Astrology-e-book-compressed.pdf` | Chennareddy Vasudev | 5,220 | ❌ Not extracted | LOW (introductory) |
 | 6 | `Numerology-With Tantra, Ayurveda, and Astrology.pdf` | Harish Johari (Destiny Books / Inner Traditions, 1990) | 5,952 | 🟡 **Partially extracted** → `numerology.md` §1-§12 | MEDIUM |
@@ -213,3 +213,27 @@ one giant file.
 ---
 
 *This document should be updated whenever a new extraction commits or when a source proves unusable.*
+
+
+---
+
+## Note on `corpus_search.py` line numbers (added 2026-08-26)
+
+`scripts/corpus_search.py` numbers lines with `str.splitlines()`, which splits on
+**form feeds** as well as newlines. `vedic_astro_textbook.pdf` alone contains 515 form
+feeds, so the tool's reported line numbers run ahead of `grep -n` / `sed -n` by roughly
+one per PDF page — measured +53 at line ~1688 and +55 sixty lines later.
+
+**A line number copied from `corpus_search` output cannot be located again with
+`sed -n 'Np'`.** When recording provenance, re-take the number with `grep -n` against the
+`.corpus-cache/` file, or cite the PDF page instead. Hit *counts* and `--absent` verdicts
+are unaffected; only the line numbers are.
+
+## Note on `data/` completeness in ephemeral environments (added 2026-08-26)
+
+`data/` is gitignored, so a fresh checkout or sandbox may hold **a subset** of the seven
+books. An audit run there produces absences that are absences *over that subset only*.
+Always state which books were present alongside any `--absent` result — `corpus_search`
+prints the list in its header, so paste it. The #150 ruling was made with **one** book
+present (`vedic_astro_textbook.pdf`), and two of its three verdicts are pending B.V.
+Raman's *Muhurtha or Electional Astrology* (1948) being restored to `data/`.
