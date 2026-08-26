@@ -2,30 +2,61 @@
 #
 # WHY THIS EXISTS
 # Every `scripts/verify_*.py` gate in this repo checks the tree. None of them
-# checks production. Agents working this repo frequently cannot reach
-# shubhagya.com at all (sandbox network policy), so "verified" has meant
-# "verified against origin/main" and the last mile has been done by hand, or
-# not at all. This closes that gap: it runs on GitHub's runners, which have
+# checks production. Agents working this repo often cannot reach
+# shubhagya.com at all (sandbox network policy — it varies by environment and
+# has changed mid-task), so "verified" has meant "verified against
+# origin/main" and the last mile has been done by hand, or not at all. This closes that gap: it runs on GitHub's runners, which have
 # open network, and it fails loudly.
 #
 # WHAT A GREEN RUN MEANS — read this before adding a check
-# It means "production satisfies these invariants right now". It does NOT mean
-# "the deploy you just pushed is live". There is no version marker on the site
-# (no /healthz, no K_REVISION exposed), so this workflow cannot tell which
-# revision answered. If a check would pass on the OLD revision too, a green run
-# proves nothing about the deploy.
+# It depends on which tier the "Wait for the deploy" step reports, and the
+# step prints which one ran. There are two, and the gap between them is the
+# whole point:
 #
-# That is fine for invariants — "the Lo Shu grid is not attributed to Cheiro"
-# is worth asserting continuously, whoever deployed last. It is NOT fine if you
-# add a check meaning "my change went out". For that, expose the revision:
-# Cloud Run injects K_REVISION into every container, so a two-line /healthz
-# returning it would let this poll until the SHA it expects is serving. Until
-# that exists, do not write a check whose value depends on which revision
-# answered.
+#   EXACT (only once BUILD_SHA is set on the Cloud Build trigger)
+#     /healthz returns a build_sha, we poll until it equals this commit, and a
+#     green run genuinely means THIS COMMIT is the revision serving.
 #
-# The retry loop below waits for a deploy to settle. It is a convenience, not
-# a proof: it retries on a FAILED assertion, so it converts "not deployed yet"
-# into "eventually true". If the content never appears the job fails.
+#   REVISION-CHANGED (what runs today — build_sha is null)
+#     /healthz returns K_REVISION, which Cloud Run injects on every deploy. We
+#     record it before the deploy lands and poll until it CHANGES. That proves
+#     *a* new revision is serving, not that it is this commit's — a concurrent
+#     push, a rollback or a console-side redeploy would satisfy it too.
+#
+# To upgrade to EXACT, the repo owner adds to the GCP-side Cloud Build trigger:
+#     --set-env-vars=BUILD_SHA=$COMMIT_SHA
+# Nothing in this repo can do it; the trigger is configured GCP-side and is not
+# in the tree. No code change is needed here when it happens — the step picks
+# the tier per poll from whether build_sha is null, so it upgrades itself.
+#
+# K_REVISION itself needs nothing: Cloud Run injects it into every container
+# automatically. /healthz lives in src/astro_ai/routes/health.py.
+#
+# Under EITHER tier the wait FAILS on timeout. It must never fall through to
+# the assertions having given up — a gate that tests the old revision and
+# passes is a gate that cannot fail, which is the failure mode this workflow
+# was written to remove. The three assertion steps do not retry: they read one
+# fetch of each page, so they are a snapshot of whatever the wait admitted.
+# The sweep retries a URL once, and only on a non-200 — see the comment there.
+#
+# Every curl carries --fail (or an explicit %{http_code} check) and -L. Without
+# them an HTTP error leaves a 0-byte file, and a 0-byte file silently satisfies
+# every "must be absent" assertion while failing every "must be present" one.
+# That defect was live in this file: /learn/diwali-muhurat-2026 without its
+# trailing slash 307s to 0 bytes.
+#
+# WHAT IS CHECKED
+# A smoke sweep over every URL in the production /sitemap.xml (~200), asserting
+# each returns 200, plus three narrow assertions (#172, #193, #227) on three
+# pages. The sweep is the breadth check and the assertions are the depth ones:
+# before the sweep existed a deploy could have 500'd the homepage and 75 of the
+# 76 /learn articles with this workflow still green.
+#
+# The daily `schedule` run deliberately does NOT wait for a deploy — nothing
+# was pushed, so no revision would ever change and it would time out every
+# night. It waits only for the site to answer, and its green means "production
+# satisfies these invariants right now", whoever deployed last. That is the
+# right meaning for a drift check.
 
 name: verify-production
 
@@ -42,12 +73,103 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30   # 12 min deploy wait + 10 min sweep cap + assertions
     env:
       SITE: https://shubhagya.com
     steps:
-      - name: Wait for the site to answer at all
+      # ---- deploy gate ----------------------------------------------------
+      # push / workflow_dispatch only. See the header for what each tier proves.
+      - name: Wait for the deploy
+        if: github.event_name != 'schedule'
         run: |
+          set -uo pipefail
+
+          # Baseline BEFORE the new revision can land. A 404 here is expected
+          # and informative on the first push that ships /healthz: the old
+          # revision has no such route, so "absent" is a value that any real
+          # revision differs from.
+          # `|| true` rather than `|| echo 000`: curl already emits its own
+          # `000` via -w on a connection failure, and echoing again produced
+          # "HTTP 000000" in the log.
+          probe() {
+            local c
+            c=$(curl -sS --max-time 20 -o /tmp/healthz.json \
+                     -w '%{http_code}' "$SITE/healthz" 2>/dev/null) || true
+            echo "${c:-000}"
+          }
+          # Only ever trust /tmp/healthz.json behind a 200 AND a successful
+          # parse. `jq -e` fails on null/false, so a 200 carrying a proxy error
+          # page yields empty here instead of the string "unknown" — which
+          # would have differed from the baseline and falsely reported a deploy.
+          read_rev() { jq -er '.revision' /tmp/healthz.json 2>/dev/null || echo ""; }
+
+          code=$(probe)
+          BASE_REV=""
+          if [ "$code" = "200" ]; then BASE_REV=$(read_rev); fi
+          [ -n "$BASE_REV" ] || BASE_REV="(absent: HTTP $code)"
+          echo "baseline revision: $BASE_REV"
+          echo "expecting commit:  $GITHUB_SHA"
+          LAST_TIER=unknown
+
+          # 48 tries x 15s = 12 min, inside the 20 min job timeout with room
+          # for the assertions.
+          for i in $(seq 1 48); do
+            code=$(probe)
+            if [ "$code" != "200" ]; then
+              echo "try $i: /healthz HTTP $code"; sleep 15; continue
+            fi
+            rev=$(read_rev)
+            if [ -z "$rev" ]; then
+              echo "try $i: /healthz returned 200 but no parseable .revision"; sleep 15; continue
+            fi
+            sha=$(jq -r '.build_sha // empty' /tmp/healthz.json 2>/dev/null || echo "")
+
+            if [ -n "$sha" ]; then
+              LAST_TIER=exact
+              # EXACT tier. Compare 7-char prefixes: Cloud Build's $COMMIT_SHA
+              # is full-length, but $SHORT_SHA is an equally likely thing for a
+              # trigger author to have used, and git's own abbreviation is 7.
+              if [ "${sha:0:7}" = "${GITHUB_SHA:0:7}" ]; then
+                echo "DEPLOY GATE: exact — build_sha ${sha:0:7} matches this commit (revision $rev), after ${i} tries"
+                echo "DEPLOY_GATE=exact" >> "$GITHUB_ENV"
+                echo "DEPLOY_REV=$rev"   >> "$GITHUB_ENV"
+                exit 0
+              fi
+              echo "try $i: serving build_sha ${sha:0:7}, want ${GITHUB_SHA:0:7} (revision $rev)"
+            else
+              LAST_TIER=revision-changed
+              # REVISION-CHANGED tier.
+              if [ "$rev" != "$BASE_REV" ]; then
+                echo "DEPLOY GATE: revision-changed — $BASE_REV -> $rev, after ${i} tries"
+                echo "::notice::Deploy gate ran in REVISION-CHANGED mode: a new revision ($rev) is serving, but this is NOT proof that commit ${GITHUB_SHA:0:7} is the one serving. To upgrade to exact proof, add --set-env-vars=BUILD_SHA=\$COMMIT_SHA to the Cloud Build trigger (GCP-side); no change to this repo is needed."
+                echo "DEPLOY_GATE=revision-changed" >> "$GITHUB_ENV"
+                echo "DEPLOY_REV=$rev"              >> "$GITHUB_ENV"
+                exit 0
+              fi
+              echo "try $i: still revision $rev (unchanged from baseline)"
+            fi
+            sleep 15
+          done
+
+          echo "DEPLOY_GATE=timeout" >> "$GITHUB_ENV"
+          # Report the reason for the tier that was actually polling. A timeout
+          # message naming the wrong cause sends the next reader to the wrong
+          # place, which is the whole defect class this file keeps tripping on.
+          case "$LAST_TIER" in
+            exact)
+              echo "::error::/healthz never reported build_sha ${GITHUB_SHA:0:7} within ~12 min (last seen: ${sha:0:7} on revision $rev). The deploy either failed, or the Cloud Build trigger is passing a different SHA. Failing rather than asserting against whatever is serving." ;;
+            revision-changed)
+              echo "::error::Revision never changed from $BASE_REV within ~12 min. Failing rather than asserting against the pre-deploy revision — a check that passes on the old code proves nothing. NOTE this tier has a known false failure: if the deploy completed before this job captured its baseline, the baseline WAS the new revision and nothing will ever change. Setting BUILD_SHA on the trigger removes that ambiguity." ;;
+            *)
+              echo "::error::$SITE/healthz never returned a parseable 200 within ~12 min (baseline $BASE_REV). Production may be down; not asserting." ;;
+          esac
+          exit 1
+
+      # ---- reachability only, for the nightly drift run --------------------
+      - name: Wait for the site to answer (scheduled drift run)
+        if: github.event_name == 'schedule'
+        run: |
+          echo "DEPLOY_GATE=not-a-deploy" >> "$GITHUB_ENV"
           for i in $(seq 1 30); do
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$SITE/" || true)
             if [ "$code" = "200" ]; then echo "site up after ${i} tries"; exit 0; fi
@@ -55,38 +177,199 @@ jobs:
           done
           echo "::error::$SITE never returned 200 in ~10 min"; exit 1
 
+      # ---- smoke sweep ----------------------------------------------------
+      # The three assertion steps below check three pages. Nothing checked that
+      # the other ~197 render at all, so a deploy could 500 the homepage and 75
+      # of the 76 /learn articles and this workflow would still go green.
+      #
+      # /sitemap.xml is the URL source because the app GENERATES it, so it
+      # cannot drift from the routes the way a hardcoded list here would. It
+      # deliberately omits the chart-specific pages that need a cookie
+      # (/today, /kundli, /monthly, /yearly, /dasha) and /admin/usage — see
+      # routes/seo.py. So this sweeps what is publicly reachable, which is
+      # exactly the set a crawler sees.
+      #
+      # continue-on-error, with the real failure deferred to "Smoke sweep gate"
+      # after the assertions: if the sweep fails we still want #172/#193/#227
+      # in the log, because "everything 500s" and "the Lo Shu attribution came
+      # back" want different responses and one must not hide the other.
+      - name: Smoke sweep — every URL in the production sitemap returns 200
+        id: smoke
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          code=$(curl -sSL --max-time 30 -o /tmp/sitemap.xml -w '%{http_code}' "$SITE/sitemap.xml") || code=000
+          if [ "$code" != "200" ]; then
+            echo "SMOKE_STATUS=sitemap-http-$code" >> "$GITHUB_ENV"
+            echo "::error::/sitemap.xml returned HTTP $code — cannot sweep"; exit 1
+          fi
+          sed -n 's:.*<loc>\([^<]*\)</loc>.*:\1:p' /tmp/sitemap.xml | sort -u > /tmp/urls.txt
+          n=$(wc -l < /tmp/urls.txt)
+          echo "sitemap URLs: $n"
+
+          # A FLOOR, not an expectation. Measured 200 on 2026-08-26. If a bug
+          # makes the sitemap emit 3 URLs, a sweep over 3 URLs passes and
+          # reports nothing wrong — that is the vacuous pass this guards. The
+          # number should only ever move UP as content pages are added; raise
+          # it deliberately, never lower it to make a red run green.
+          if [ "$n" -lt 150 ]; then
+            echo "SMOKE_STATUS=too-few-urls-$n" >> "$GITHUB_ENV"
+            echo "::error::sitemap listed only $n URLs (floor 150) — the sweep would be vacuous"; exit 1
+          fi
+
+          cat > /tmp/probe.sh <<'PROBE'
+          #!/bin/bash
+          # -L: several routes 307 to a trailing-slash canonical form, and a
+          # redirect to a working page is not a smoke failure. The recorded
+          # code is the FINAL one. No --fail here on purpose — this probe must
+          # REPORT the status, not abort on it.
+          url="$1"
+          try() { curl -sL -o /dev/null --max-time 30 --max-redirs 5 \
+                       -w '%{http_code} %{time_total}' "$url" 2>/dev/null; }
+          # Keep curl's own -w output on failure. An earlier version replaced it
+          # wholesale with "000 0", which threw away the elapsed time and made a
+          # 25s TIMEOUT indistinguishable from an instant connection refusal —
+          # 25 URLs were reported as broken when they were merely slow.
+          out=$(try); [ -n "$out" ] || out="000 0"
+          # One retry, and only on a non-200. Cloud Run cold starts on the free
+          # tier are real: measured 2026-08-26, one page took 28.9s cold and
+          # 1.0s warm. A single retry removes that flake without masking a page
+          # that is genuinely broken, which would fail twice.
+          case "$out" in
+            200\ *) ;;
+            *) out=$(try); [ -n "$out" ] || out="000 0" ;;
+          esac
+          printf '%s %s\n' "$out" "$url"
+          PROBE
+          chmod +x /tmp/probe.sh
+
+          # -P 6: bounded concurrency. This is the user's production site on
+          # Cloud Run, where cold starts are real; 200 parallel requests would
+          # be a load test, not a smoke test.
+          # Capped at 10 min so a hanging site fails the step rather than
+          # burning the whole job budget and being killed with no report.
+          # Measured 2026-08-26 over the real 200-URL sitemap: warm pages
+          # answer in ~1-1.6s, so the sweep runs well inside this; the cap is
+          # for the pathological case, not the normal one.
+          timeout 600 xargs -a /tmp/urls.txt -P 6 -I{} /tmp/probe.sh {} > /tmp/sweep.tsv
+          swept_rc=$?
+          swept=$(wc -l < /tmp/sweep.tsv)
+          if [ "$swept_rc" -eq 124 ]; then
+            echo "SMOKE_STATUS=timeout-after-$swept-of-$n" >> "$GITHUB_ENV"
+            echo "::error::sweep exceeded 10 min after $swept/$n URLs — failing, not skipping"; exit 1
+          fi
+
+          # Collect EVERY failure, not just the first: one 500 and forty 500s
+          # are different problems and the list is the diagnosis.
+          awk '$1 != "200"' /tmp/sweep.tsv > /tmp/bad.tsv || true
+          bad=$(wc -l < /tmp/bad.tsv)
+          echo "swept $swept/$n URLs · non-200: $bad"
+          echo "SMOKE_STATUS=$bad-bad-of-$swept" >> "$GITHUB_ENV"
+
+          # Slowest handful — NOT a gate, a free rolling record. #144 was a
+          # ~13s homepage; noticing the next one early costs nothing here.
+          sort -k2 -gr /tmp/sweep.tsv > /tmp/slow.tsv
+          {
+            echo "### Smoke sweep"
+            echo ""
+            echo "Swept **$swept / $n** sitemap URLs · non-200: **$bad**"
+            echo ""
+            if [ "$bad" -gt 0 ]; then
+              echo "| code | secs | url |"; echo "|---|---|---|"
+              head -40 /tmp/bad.tsv | awk '{printf "| %s | %s | %s |\n", $1, $2, $3}'
+              echo ""
+            fi
+            echo "<details><summary>Slowest 8</summary>"; echo ""
+            echo "| secs | code | url |"; echo "|---|---|---|"
+            head -8 /tmp/slow.tsv | awk '{printf "| %s | %s | %s |\n", $2, $1, $3}'
+            echo ""; echo "</details>"; echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$bad" -gt 0 ]; then
+            echo "::error::$bad sitemap URL(s) did not return 200 — see the step summary"
+            sed 's/^/  /' /tmp/bad.tsv
+            exit 1
+          fi
+          echo "all $swept sitemap URLs returned 200"
+
+      # Every curl here carries --fail -L. Without --fail an HTTP error writes a
+      # 0-byte file, and a 0-byte file satisfies every "must be absent" grep
+      # below while failing every "must be present" one. That is not
+      # hypothetical: /learn/diwali-muhurat-2026 (no trailing slash) 307s, so
+      # this step was silently handing the #193 checks an empty page.
+      # Measured 2026-08-26: no slash -> HTTP 307, 0 bytes; with slash and -L ->
+      # HTTP 200, 124231 bytes.
       - name: Fetch the pages once, so every check reads the same bytes
         run: |
           set -euo pipefail
-          curl -sS --max-time 30 "$SITE/numerology"                   -o /tmp/numerology.html
-          curl -sS --max-time 30 "$SITE/learn/diwali-muhurat-2026"    -o /tmp/diwali.html
-          curl -sS --max-time 30 "$SITE/panchang"                     -o /tmp/panchang.html
+          # POST, not GET: the Lo Shu grid renders only in a submitted result.
+          # Measured 2026-08-26 on GET /numerology, grid markers ("Number Grid",
+          # "Arrow of") = 0; on this POST = 3. A fixed birth date keeps the
+          # rendered output stable run to run.
+          curl -sSL --fail --max-time 45 -X POST "$SITE/numerology" \
+               -d 'name=CI Check' -d 'birth_date=1988-05-14'          -o /tmp/numerology.html
+          curl -sSL --fail --max-time 30 "$SITE/learn/diwali-muhurat-2026/" -o /tmp/diwali.html
+          curl -sSL --fail --max-time 30 "$SITE/panchang"             -o /tmp/panchang.html
           wc -c /tmp/numerology.html /tmp/diwali.html /tmp/panchang.html
 
       # ---- #172 -----------------------------------------------------------
       # The Lo Shu grid has no source in data/. Cheiro is legitimate elsewhere
-      # on this page (the Chaldean letter table) — only the grid attribution
-      # is the defect, so the check is deliberately narrow.
-      - name: "#172 no Cheiro-to-Lo-Shu attribution"
+      # on this page (the Chaldean letter table) — only ATTRIBUTION OF THE GRID
+      # to him is the defect, so the check is deliberately narrow.
+      #
+      # It is narrow in a way the first version was not. That version matched
+      # mere proximity (cheiro within 80 chars of "lo shu"), which hits the
+      # legitimate list-form sentence "the Chaldean (Cheiro) system plus the
+      # Chinese Lo Shu grid" — measured 2026-08-26 as 2 hits on a CORRECT
+      # production page, i.e. it would have failed the build on good content.
+      # This version requires a possessive or an attributive preposition.
+      # Measured on the same page: 0.
+      - name: "#172 the Lo Shu grid is not attributed to Cheiro"
         run: |
-          n=$(grep -ci 'cheiro[^.]\{0,80\}lo shu\|lo shu[^.]\{0,80\}cheiro' /tmp/numerology.html || true)
-          echo "attribution hits: $n (want 0)"
-          [ "$n" -eq 0 ] || { echo "::error::#172 regressed"; exit 1; }
-          grep -q 'Lo Shu' /tmp/numerology.html \
-            || { echo "::error::Lo Shu section missing — check is vacuous"; exit 1; }
+          set -uo pipefail
+          # Vacuity guard FIRST, before asserting anything about the content.
+          # The previous version's guard grepped for 'Lo Shu' and passed on 13
+          # mentions in the tool's own description while the grid itself was
+          # never rendered — the exact vacuous pass this file's header warns
+          # about, committed into this file.
+          m=$(grep -oiE 'Number Grid|Arrow of' /tmp/numerology.html | wc -l)
+          echo "rendered-grid markers: $m (want >0)"
+          [ "$m" -gt 0 ] \
+            || { echo "::error::the Lo Shu grid did not render — every check below would be vacuous"; exit 1; }
+
+          n=$(grep -ciE "cheiro'?s [^.]{0,30}(lo shu|grid)|(lo shu|grid)[^.]{0,30}(per|from|according to) cheiro" /tmp/numerology.html || true)
+          echo "grid-attributed-to-Cheiro: $n (want 0)"
+          [ "$n" -eq 0 ] || { echo "::error::#172 regressed — the grid is being attributed to Cheiro"; exit 1; }
+
+          # Positive guard: the correction #172 shipped was a disclosure
+          # sentence. If the whole section is dropped, the check above passes
+          # on absence; this makes that a failure.
+          d=$(grep -ci 'not to Vedic Jyotish' /tmp/numerology.html || true)
+          echo "disclosure sentence: $d (want >0)"
+          [ "$d" -gt 0 ] || { echo "::error::#172 disclosure sentence is gone"; exit 1; }
 
       # ---- #193 -----------------------------------------------------------
       # Eight date-shaped strings became bare ordinals so Gate 4 can defend the
       # rest. Nov 8 and Nov 10 must SURVIVE — they are what the gate corroborates
       # against, and deleting them would silently gut it.
+      # Measured against production 2026-08-26 with the trailing slash:
+      #   Nov 7 = 0, Nov 9 = 0, the 7th = 5, Nov 8 = 7, Nov 10 = 2.
       - name: "#193 diwali prose uses ordinals, keeps its verified dates"
         run: |
-          set -euo pipefail
-          n7=$(grep -o 'Nov 7'  /tmp/diwali.html | wc -l)
-          n9=$(grep -o 'Nov 9'  /tmp/diwali.html | wc -l)
-          o7=$(grep -o 'the 7th' /tmp/diwali.html | wc -l)
-          n8=$(grep -o 'Nov 8'  /tmp/diwali.html | wc -l)
-          n10=$(grep -o 'Nov 10' /tmp/diwali.html | wc -l)
+          # NOT `set -e` with pipefail. `grep -o` exits 1 when it finds nothing,
+          # and finding nothing is the PASSING state for n7/n9 — so under
+          # `set -euo pipefail` this step aborted at the first assignment,
+          # before printing a single line, precisely when the content was
+          # correct. Verified 2026-08-26 against the live page: exit 1, no
+          # output. That is the mirror image of the vacuous pass above, and
+          # just as useless. The `|| true` on each pipeline keeps a zero count
+          # a zero count; the assertion below is what decides pass or fail.
+          set -uo pipefail
+          n7=$(grep -o 'Nov 7'  /tmp/diwali.html | wc -l || true)
+          n9=$(grep -o 'Nov 9'  /tmp/diwali.html | wc -l || true)
+          o7=$(grep -o 'the 7th' /tmp/diwali.html | wc -l || true)
+          n8=$(grep -o 'Nov 8'  /tmp/diwali.html | wc -l || true)
+          n10=$(grep -o 'Nov 10' /tmp/diwali.html | wc -l || true)
           echo "Nov 7=$n7 (0)  Nov 9=$n9 (0)  the 7th=$o7 (>0)  Nov 8=$n8 (>0)  Nov 10=$n10 (>0)"
           [ "$n7" -eq 0 ] && [ "$n9" -eq 0 ] && [ "$o7" -gt 0 ] \
             && [ "$n8" -gt 0 ] && [ "$n10" -gt 0 ] \
@@ -99,12 +382,28 @@ jobs:
       - name: "#227 watch — polar city still renders reversed windows"
         continue-on-error: true
         run: |
-          curl -sS --max-time 30 "$SITE/panchang/2026-05-17?city=Tromso" -o /tmp/polar.html || true
+          # Without the status check a failed fetch leaves an empty file, the
+          # grep misses, and the step cheerfully reports the defect FIXED.
+          code=$(curl -sSL --max-time 30 "$SITE/panchang/2026-05-17?city=Tromso" \
+                      -o /tmp/polar.html -w '%{http_code}') || code=000
+          if [ "$code" != "200" ]; then
+            echo "::warning::could not fetch the polar page (HTTP $code) — #227 not evaluated"
+            exit 0
+          fi
           if grep -qE '0[01]:[0-9]{2} — 00:0[0-9]' /tmp/polar.html; then
             echo "::warning::#227 still reproduces on production (expected until fixed)"
           else
             echo "::notice::#227 no longer reproduces — close it and make this step fail-on-regression"
           fi
+
+      # Deferred failure from the sweep above. Placed after the assertions so
+      # their output is in the log either way; this is what actually reds the
+      # job, since the sweep itself is continue-on-error.
+      - name: Smoke sweep gate
+        if: steps.smoke.outcome != 'success'
+        run: |
+          echo "::error::Smoke sweep failed (${SMOKE_STATUS:-no status recorded}) — see the 'Smoke sweep' step and the summary."
+          exit 1
 
       - name: Summary
         if: always()
@@ -112,9 +411,30 @@ jobs:
           {
             echo "### Production verification"
             echo ""
-            echo "Site: \`$SITE\` · commit \`${GITHUB_SHA:0:7}\`"
+            echo "Site: \`$SITE\` · commit \`${GITHUB_SHA:0:7}\` · event \`${GITHUB_EVENT_NAME}\`"
             echo ""
-            echo "A green run means production satisfies these invariants **now**."
-            echo "It does not prove this commit is the revision serving —"
-            echo "see the header comment in this workflow."
+            case "${DEPLOY_GATE:-unknown}" in
+              exact)
+                echo "**Deploy gate: exact.** \`/healthz\` reported \`build_sha\` matching"
+                echo "\`${GITHUB_SHA:0:7}\` on revision \`${DEPLOY_REV:-?}\`, so a green run below means"
+                echo "**this commit is the revision serving**." ;;
+              revision-changed)
+                echo "**Deploy gate: revision-changed (weaker).** A new Cloud Run revision"
+                echo "(\`${DEPLOY_REV:-?}\`) is serving, but \`build_sha\` is null, so this run"
+                echo "**cannot prove that revision is this commit's** — only that *a* deploy landed."
+                echo ""
+                echo "Upgrade to exact proof by adding \`--set-env-vars=BUILD_SHA=\$COMMIT_SHA\` to the"
+                echo "GCP-side Cloud Build trigger. No change to this repo is required." ;;
+              not-a-deploy)
+                echo "**Deploy gate: skipped** — scheduled drift run, nothing was deployed."
+                echo "Green means production satisfies these invariants **now**, whoever deployed last." ;;
+              timeout)
+                echo "**Deploy gate: TIMED OUT.** No new revision appeared, so the assertions were"
+                echo "not run against a confirmed deploy. Treat this run as inconclusive, not green." ;;
+              *)
+                echo "**Deploy gate: did not report** (the wait step failed before recording a tier)." ;;
+            esac
+            echo ""
+            echo "Smoke sweep: \`${SMOKE_STATUS:-did not report}\` · assertion steps read a"
+            echo "single fetch of each page — see the workflow header."
           } >> "$GITHUB_STEP_SUMMARY"

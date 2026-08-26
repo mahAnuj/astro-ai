@@ -181,7 +181,11 @@ def _run_in_sandbox(rel: str, old: str, new: str) -> tuple[bool, str]:
     """
     with tempfile.TemporaryDirectory(prefix="mutate-") as tmp:
         sandbox = pathlib.Path(tmp) / "repo"
-        for sub in ("src", "tests"):
+        # `.github` because the suite now reads the verify-production workflow
+        # to check that its jq field reads still match what /healthz emits. A
+        # sandbox missing a file the suite reads makes EVERY mutation look
+        # CAUGHT — including the control, which is how this was noticed.
+        for sub in ("src", "tests", ".github"):
             shutil.copytree(ROOT / sub, sandbox / sub,
                             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         target = sandbox / rel
