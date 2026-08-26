@@ -246,7 +246,7 @@ is a subtle timing consideration for Vimshottari dasha analysis.
   [Rao §2.2.12]
 
 Used in Varna Kuta of Ashtakoot Guna Milan for marriage matching
-(see `vedic_reference.md §26.5`) — but Rao's mapping is one of
+(see `matching.md`, section "v.22 — Varna") — but Rao's mapping is one of
 several classical schemes; some texts assign differently.
 
 ---

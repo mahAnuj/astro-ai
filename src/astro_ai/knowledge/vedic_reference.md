@@ -1341,3 +1341,750 @@ reachable. Re-verify before quoting tool output as a citation.
 
 *Section 28 last updated: 2026-08-26. Books present in `data/` when written:
 `vedic_astro_textbook.pdf` only (1 of 7).*
+
+---
+
+## 29. The five angas of the Panchanga — tithi, vara, nakshatra, yoga, karana
+
+**Added 2026-08-26 for issue #151.** `/panchang` renders all five angas to
+users and the Muhurat Finder blocks on two of them, but nothing in this corpus
+stated what they are or how they are computed. This section is where any
+panchang claim gets checked. It follows §28's format deliberately.
+
+**Books present in `data/` when this was written: 4 of 7** —
+`vedic_astro_textbook.pdf`, `book1-for-CD.pdf`,
+`Astrology-e-book-compressed.pdf`, and — **arriving part-way through this
+extraction** — `matching/raman-muhurtha-1948-electional-astrology_djvu.txt`.
+Johari, Goodwin and Kumar are not present. Every absence recorded in §29.10 is
+an absence *against those four*, not against the tradition.
+
+**Read §29.9 before using the Raman file for anything.** It is OCR of a 1948
+scan, it is demonstrably lossy, `scripts/fetch_corpus.py` did not know about it
+at the time of writing (it still reported "3/7 usable"), and it is not yet in
+`SOURCES.md`. §29.1–§29.8 were written against the three PDFs alone and do not
+depend on it.
+
+### Sources for §29
+
+**Source A — P.V.R. Narasimha Rao, *Vedic Astrology: An Integrated
+Approach*** (`data/vedic_astro_textbook.pdf`). Everything in §29.1–§29.5 and
+§29.8 is from here.
+
+| Rao's section | Printed pp. | PDF pp. | `-layout` lines |
+|---|---|---|---|
+| §1.3.6 Table 2, Nakshatras | 11 | 23 | 557–591 |
+| §1.3.8 / §1.3.8.1 Tithis + **Table 3** | 12–14 | 24–26 | 603–696 |
+| §1.3.8.2 Lunar Months + **Table 4** | 14–15 | 26–27 | 699–751 |
+| §1.3.9 Yogas + **Table 5** | 15–17 | 27–29 | 753–805 |
+| §1.3.10 Karanas | 17 | 29 | 807–813 |
+| §1.3.11 Hora (weekday lords) | 17 | 29 | 815–832 |
+| §1.3.12 **Panchaanga** | 18 | 30 | 836–844 |
+| §1.3.13 Ayanamsa | 18 | 30 | 846–860 |
+| §26.8 Sarvatobhadra Chakra (tithi groups) | 357–361 | 369–373 | 12235–12341 |
+| §36.3 Basics of Muhurta + **Table 79** | 472–474 | 484–486 | 15944–16056 |
+
+**Source B — P.V.R. Narasimha Rao, *Lessons on Vedic Astrology, Vol. I***
+(`data/book1-for-CD.pdf`) — compiled lesson notes, two printed pages per PDF
+page. Used only in §29.6 and §29.7.
+
+| Lesson | Printed pp. | PDF p. | `-layout` lines | Topic |
+|---|---|---|---|---|
+| #5 | 17–22 | 17–19 | 644–830 | lunar calendar, paksha, amanta/suklanta, **the sunrise rule** |
+| #6 | 25–26 | 21 | 980–992 | anga ↔ tatwa (partial, self-contradicting) |
+| #13 | 61–62 | 39 | 2360–2364 | anga ↔ tatwa |
+| #22 | 97–99 | 57–58 | 3559–3668 | panchanga definition, anga ↔ tatwa, nakshatra table |
+
+**Source C — B.V. Raman, *Muhurtha or Electional Astrology*, 1st edn.,
+Raman Publications, Bangalore, 1948** —
+`data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt`, the
+archive.org `djvu.txt` OCR. **9,158 lines, 238,966 bytes, sha256
+`dfd15e4c…8aa0b1c`** — record the hash with any citation, because this is a
+loose text file rather than a PDF and nothing else pins which artefact you
+read. Used only in §29.9, where its limits are set out.
+
+| Raman's section | Printed pp. | Line numbers |
+|---|---|---|
+| Ch. II "General Hints" — the Panchanga and its five limbs | 11–15 | 651–815 |
+| Ch. III — Panchaka (five-source energy) | 20–21 | 961–1040 |
+| Ch. IV — Panchanga Suddhi, 1st of the 21 Mahadoshas | 29–30 | 1317–1367 |
+| "Electing a Time for Marriage" | 101–102 | 3690–3766 |
+| Glossary — "Thithies, Different kinds of" | — | 7403–7407 |
+| Index | — | 7598, 9082 |
+
+**Tables 3 and 5 were verified against the rendered page images**
+(`pdftoppm -f 24 -l 24` and `-f 28 -l 28`, `-r 150 -png`), not read from the
+text layer alone — `scripts/corpus_search.py`'s header warns that scanned
+tables drop rows silently. Both render complete: Table 3 has all 16 rows
+covering 30 tithis, Table 5 all 27 rows. The Lessons nakshatra table was
+likewise checked at PDF p. 58.
+
+**All line numbers here were taken with `grep -n` on `pdftotext -layout`
+output and read back with `sed -n 'Np'`. See §28.6 — `corpus_search.py`
+line numbers are NOT these numbers.**
+
+### 29.0 What "panchanga" means
+
+Rao, §1.3.12 (line 837):
+
+> "Panchaanga means 'one with 5 limbs'. Almanacs published in India with
+> planetary positions are traditionally called panchaangas. Along with the
+> planetary positions, they give the start and end times of tithi, vaara
+> (week day – Sunday, Monday etc), nakshatra, yoga and karana running on each
+> day. These five are the limbs of panchaanga."
+
+Restated in the muhurta chapter (line 15945): "Tithi, yoga, karana, weekday
+and nakshatra form the 5 limbs of 'panchaanga'." And its purpose, line 843:
+
+> "When we choose a muhurta (an auspicious time for starting a venture), we
+> should choose an auspicious tithi, vaara, nakshatra, yoga and karana."
+
+The *Lessons* give the same five (Lesson #22, lines 3642–3643) and add a gloss
+worth keeping: "The five panchangas are divisions of time to show the quality
+of time" (line 3562).
+
+**Convention this repo follows: sidereal (nirayana), Chitrapaksha/Lahiri.**
+Rao, §1.3.13 line 852: "We use the sidereal zodiac in Vedic astrology", and
+line 860: "We will use Chitrapaksha/Lahiri ayanamsa in this book". *Lessons*
+Lesson #5 line 821 names Chitrapaksha and Lahiri as the same ayanamsa and line
+827 names Raman's as 1.5° different — so the choice is a real fork and naming
+it is not decoration.
+
+### 29.1 Tithi — CONFIRMED
+
+**Definition** (Rao §1.3.8.1, line 606):
+
+> "In lunar calendar, one day stands for one tithi. Tithi or lunar day is a
+> period in which the difference between the longitudes of Moon and Sun
+> changes by exactly 12°."
+
+**The computation**, Rao's own four steps (lines 660–665), paraphrased in his
+order: take `(Moon − Sun)`, add 360° if negative; divide by 12° and keep the
+quotient; add 1; the result is 1..30 and indexes Table 3.
+
+**Paksha** (lines 646–650): a lunar month is 30 tithis in two fortnights.
+Sukla/Suddha paksha is waxing, Moon ahead of Sun by 0°–180°; Krishna/Bahula
+paksha is waning, Moon ahead by 180°–360°. So tithis 1–15 are Shukla and
+16–30 Krishna — exactly the split `/panchang` renders.
+
+**Table 3 — Names of Tithis** (printed p. 12, PDF p. 24, lines 608–633;
+verified against the page image). Rao gives a **lord per tithi**, which this
+repo does not currently carry anywhere:
+
+| Shukla | Krishna | Name (Rao's spellings) | Lord |
+|---|---|---|---|
+| 1st | 16th | Pratipat / Pratipada / Padyami | Sun |
+| 2nd | 17th | Dwitiya / Vidiya | Moon |
+| 3rd | 18th | Tritiya / Tadiya | Mars |
+| 4th | 19th | Chaturthi / Chaviti / Chauth | Mercury |
+| 5th | 20th | Panchami | Jupiter |
+| 6th | 21st | Shashti | Venus |
+| 7th | 22nd | Saptami | Saturn |
+| 8th | 23rd | Ashtami | Rahu |
+| 9th | 24th | Navami | Sun |
+| 10th | 25th | Dasami | Moon |
+| 11th | 26th | Ekadasi | Mars |
+| 12th | 27th | Dwadasi | Mercury |
+| 13th | 28th | Trayodasi | Jupiter |
+| 14th | 29th | Chaturdasi | Venus |
+| 15th | — | Paurnami / Paurnimasya / Poornima (Full Moon) | Saturn |
+| — | 30th | Amavasya (New Moon) | Rahu |
+
+**Naming convention** (lines 666–673): paksha first, then tithi name —
+"Krishna Saptami" is the 22nd tithi, "Sukla Saptami" the 7th.
+
+**Independently confirmed** by Raman, *Muhurtha*, Ch. II — but for the tithi
+alone use Rao's 12°, because Raman's OCR gives 13°. See §29.9 before citing.
+
+**Verified against the code.** Rao's Example 2 (lines 678–692): Moon 24°12'
+Ge, Sun 17°46' Sc → elongation 216.43° → 19th tithi → "Krishna Chaturthi".
+Running Rao's arithmetic through `chart.py`'s own `_TITHI_NAMES` reproduces
+`Krishna Chaturthi`, index 19 of 30. `_tithi_at()` implements exactly Rao's
+formula; its 30 names are Table 3's in Table 3's order.
+
+### 29.2 Vara — the weekday
+
+**Sourced:** the weekday lords, from Rao §1.3.11 (lines 822–825):
+
+> "The first hora of any day … is ruled by the lord of the weekday (Sun for
+> Sunday, Moon for Monday, Mars for Tuesday, Mercury for Wednesday, Jupiter
+> for Thursday, Venus for Friday and Saturn for Saturday)."
+
+That is the exact list `/panchang` prints under "Vara (weekday)". §28.1 uses
+the same seven for the eight-part division, from a different Rao section.
+
+**Also sourced:** vara is the **fiery/agni** limb — *Lessons* Lesson #13 line
+2362 ("Vara (agni, physical)") and Lesson #6 line 980 ("Weekday - Agni tatwa
+and represent physical vitality"), with Lesson #9 line 1621 adding "From
+Panchanga, the physical entity is seen by the vara or the weekday."
+
+**Per-weekday judgements ARE sourced — but only in Raman, and he contradicts
+himself between chapters.** See §29.9. Rao gives the lord and nothing more.
+
+**NOT sourced anywhere in the four books:** the day-lord *colour* the app
+renders. Nobody gives a palette.
+
+**Careful — Rao uses two different "days".** §1.3.11 (line 816): "Each day
+starts at sunrise and ends at next day's sunrise." §4.3 (line 1693, see §28):
+day = sunrise → sunset. Never cite "Rao's day" without the section.
+
+### 29.3 Nakshatra — see §27, which this does not repeat
+
+§27 already carries the 27 nakshatras with ranges, Vimshottari lords, deities,
+symbols, gana, guna, nadi and activity type. **Do not duplicate it here.** Two
+things §27 lacked that panchang work needs:
+
+1. **The nakshatra is the 3rd anga** — Rao §1.3.12 line 839, quoted in §29.0.
+   §27 never says so.
+2. **Rao's Table 2** (printed p. 11, PDF p. 23, lines 557–587) independently
+   confirms §27's **range** and **Vimshottari lord** columns for all 27 —
+   checked row by row, zero mismatches. Reproduced identically in *Lessons*
+   Lesson #22 (lines 3636–3668). That table is captioned "Source: Vedic
+   Astrology: An Integrated Approach by PVR Narasimha Rao" — legible on the
+   rendered page image (`pdftoppm -f 58 -l 58`) and present in **plain**
+   `pdftotext` output at line 5486, but line-broken out of the `-layout`
+   output, so `grep -n` on `-layout` will not find it.
+3. **28 nakshatras when the chakra needs them** — Rao line 590: "For the
+   purpose of some special charts like Kota Chakra and Sarvatobhadra Chakra,
+   we consider 28 nakshatras. The last quarter of Uttarashadha is known as
+   'Abhijit'. However, we consider 27 nakshatras for all other purposes."
+
+**A warning about Rao's DEITY column — do NOT source §27 to it.** Rao's
+Table 2 deities disagree with §27's for twelve consecutive nakshatras, and
+the disagreement is a clean one-row offset:
+
+| Nakshatra | Rao Table 2 (line) | §27.2 |
+|---|---|---|
+| Magha | Sun (570) | Pitris |
+| Purva Phalguni | Aryaman (571) | Bhaga |
+| Uttara Phalguni | Sun (572) | Aryaman |
+| Hasta | Viswakarma (573) | Savitar |
+| Chitra | Vaayu (574) | Vishvakarma |
+| Swati | Indra (575) | Vayu |
+| Vishakha | Mitra (576) | Indra & Agni |
+| Anuradha | Indra (577) | Mitra |
+| Jyeshtha | Nirriti (578) | Indra |
+| Mula | Varuna (579) | Nirriti |
+| Purva Ashadha | Viswadeva (580) | Apas |
+| Uttara Ashadha | Brahma (581) | Vishvedevas |
+| Shravana | Vishnu (582) | Vishnu — **back in step** |
+
+Rao's entry for nakshatra *N* is §27's entry for *N+1* across that whole
+stretch, and the two lists re-synchronise at Shravana — precisely where the
+28-nakshatra scheme inserts Abhijit, whose classical deity is Brahma and which
+is what Rao's Uttara Ashadha row carries. Rao's own line 590 says Abhijit sits
+in the last quarter of Uttarashadha. **This looks like a 28-row deity list
+fitted to 27 rows, but this corpus cannot prove which column is right** —
+neither book states the deities independently of Table 2. Verdict:
+**CONTESTED, unresolved.** Do not "fix" §27 to match Rao; 27 `/learn`
+nakshatra articles (`learn_registry.py`, e.g. Hasta/Savitar, Chitra/
+Vishvakarma) depend on §27's column, and changing it on the strength of a
+table that self-evidently drifts would be the #141 failure again. What would
+settle it: B.V. Raman, or any text giving the 28-nakshatra deity list in full.
+
+### 29.4 Yoga (the Nitya or Sun–Moon yoga) — CONFIRMED
+
+**Not** the natal-chart yogas of §4. Rao calls these **"Sun-Moon Yogas"**.
+
+**The computation** (Rao §1.3.9, lines 754–760):
+
+> "Add the longitudes of Sun and Moon. Remove 360º from the sum if it is
+> greater than 360º. Divide the sum by the length of one nakshatra (13°20' or
+> 800'). Ignore fractions and take the integer part. Add 1 to it and the
+> result is the index of the yoga running."
+
+Note it is a **sum**, not a difference — which is why the yoga, unlike the
+tithi, is *not* invariant under ayanamsa choice: the two shifts add instead of
+cancelling. §29.0's Lahiri statement is therefore load-bearing here and only
+here among the five angas.
+
+**Table 5 — Sun-Moon Yogas** (printed p. 16, PDF p. 28, lines 762–790;
+verified against the page image). Rao's spelling, then his gloss:
+
+| # | Yoga | Rao's meaning | # | Yoga | Rao's meaning |
+|---|---|---|---|---|---|
+| 1 | Vishkambha | Door bolt/supporting pillar | 15 | Vajra | Diamond (strong) |
+| 2 | Preeti | Love/affection | 16 | Siddhi | Accomplishment |
+| 3 | Aayushmaan | Long-lived | 17 | **Vyatipaata** | **Great fall** |
+| 4 | Saubhaagya | Long life of spouse (good fortune) | 18 | Variyan | Chief/best |
+| 5 | Sobhana | Splendid, bright | 19 | Parigha | Obstacle/hindrance |
+| 6 | Atiganda | Great danger | 20 | Shiva | Lord Shiva (purity) |
+| 7 | Sukarman | One with good deeds | 21 | Siddha | Accomplished/ready |
+| 8 | Dhriti | Firmness | 22 | Saadhya | Possible |
+| 9 | Shoola | Shiva's weapon of destruction (pain) | 23 | Subha | Auspicious |
+| 10 | Ganda | Danger | 24 | Sukla | White, bright |
+| 11 | Vriddhi | Growth | 25 | Brahma | Creator (good knowledge and purity) |
+| 12 | Dhruva | Fixed, constant | 26 | Indra | Ruler of gods |
+| 13 | Vyaaghaata | Great blow | 27 | **Vaidhriti** | **A class of gods** |
+| 14 | Harshana | Cheerful | | | |
+
+**Independently confirmed** by Raman, *Muhurtha*, Ch. II, lines 713–734 — the
+same 13°20' joint-motion definition and the same 27 names in the same order,
+from a second author. §29.9.
+
+**Verified against the code.** Rao's Example 3 (lines 793–801): Sun 23°50' Cp,
+Moon 17°20' Li → sum 131°10' → 10th → "Ganda yoga". `chart.py`'s
+`_NITYA_YOGA_NAMES` returns `Ganda` at that index. All 27 positions match
+Table 5 in order; four differ only in transliteration (`Priti`/Preeti,
+`Sukarma`/Sukarman, `Shula`/Shoola, `Variyana`/Variyan). `muhurat.py` keys its
+blocker set on `Vyatipata` and `Vaidhriti`, which are positions 17 and 27 in
+both. **The sequence and the indices are doubly sourced. The blocking is sourced
+only by Raman, and he condemns five yogas rather than two — see §29.9.**
+
+Also sourced, and useful: Rao's gloss for Vriddhi is "growth", and he uses it
+approvingly of his own writing muhurta (line 16152).
+
+### 29.5 Karana — CONFIRMED, structure and all
+
+Rao §1.3.10, lines 808–813, in full — this one short passage settles the whole
+structure:
+
+> "Each tithi is divided into 2 karanas. There are 11 karanas: (1) Bava, (2)
+> Balava, (3) Kaulava, (4) Taitula, (5) Garija, (6) Vanija, (7) Vishti, (8)
+> Sakuna, (9) Chatushpada, (10) Naga, and, (11) Kimstughna. The first 7
+> karanas repeat 8 times starting from the 2nd half of the first lunar day of
+> a month. The last 4 karanas come just once in a month, starting from the 2nd
+> half of the 29th lunar day and ending at the 1st half of the first lunar
+> day."
+
+Unpacked against a 0-based index over the 60 half-tithis of a lunar month:
+
+| Index | Half-tithi | Karana | Rao's words |
+|---|---|---|---|
+| 0 | 1st half of tithi 1 | Kimstughna | "…ending at the 1st half of the first lunar day" |
+| 1..56 | 2nd half of tithi 1 → 1st half of tithi 29 | Bava…Vishti ×8 | "repeat 8 times starting from the 2nd half of the first lunar day" (56 = 7 × 8) |
+| 57 | 2nd half of tithi 29 | Sakuna | "starting from the 2nd half of the 29th lunar day" |
+| 58, 59 | both halves of tithi 30 | Chatushpada, Naga | — |
+
+**Independently confirmed** by Raman, *Muhurtha*, Ch. II, lines 744–763 —
+same eleven names, same order, same "first seven … eight times … commencing
+with the second half of the first lunar day" and same "last four … with the
+second half of the 29th lunar day". Two authors, 60 years apart, identical.
+
+`chart.py`'s `_karana_at()` produces exactly this: index 0 → Kimstughna,
+1 → Bava, 57 → Shakuni, 58/59 → Chatushpada/Naga, with 1..56 cycling the seven
+movable names. **The indexing that `scripts/verify_panchang_angas.py` guards
+is Rao's, verbatim.**
+
+**What Rao does NOT say about karanas:** he gives no per-karana character
+except in passing — "Unfavorable sakuna karana was running at the time"
+(line 16105). He never calls Vishti inauspicious, and he never equates Vishti
+with Bhadra. Raman supplies part of what Rao omits, and disagrees with our
+table on two of the three karanas he characterises — §29.9.
+
+### 29.6 Which civil day a tithi belongs to — the sunrise rule
+
+This is the rule `/panchang` and `festivals.py` both depend on, and it is
+sourced. *Lessons* Lesson #5, lines 806–824:
+
+> "Look at the sunrise to determine a Tithi. Do not confuse the civil calendar
+> with lunar calendar. Its possible that a Tithi may span 2 civil days.
+> Sunrise time will be the guiding factor."
+
+and, on picking the festival day (line 824): "pick the civil day where, at the
+time of sunrise, the Tithi has already occurred."
+
+Three consequences the same passage states explicitly:
+
+- **A tithi can exceed 24 hours and span more than two civil days** (line
+  816). So "today's tithi" is a *choice of sampling instant*, not a fact.
+- **The tithi's start instant is the same worldwide** — it is a geocentric
+  Sun–Moon angle (lines 758–768: "If a particular Tithi started at a
+  particular time in India, it will start at the exact time here also");
+  geocentric coordinates are recommended (line 785). What differs by location
+  is only *which sunrise* it is caught at (lines 746–756).
+- Therefore the same tithi legitimately lands on **different civil dates in
+  different countries** — the passage works this through for India vs USA.
+
+`chart.py` samples all five angas at **local sunrise** (`compute_panchang`,
+"Tithi at local sunrise — the classical convention for 'today's tithi'"), and
+`DailyPanchang` documents tithi/paksha as location-independent. That comment is
+right about the *value* being geocentric and wrong-sounding about the *day*:
+the tithi VALUE is universal, but the tithi ATTRIBUTED TO A CALENDAR DAY is
+not, because the sunrise that selects it is local. The Lessons passage is the
+citation for both halves.
+
+**Purnimanta vs amanta is a real, sourced fork** (Lesson #5, lines 695–721):
+
+> "Within lunar calendar there are two types, AMANTA and SUKLANTA. … In
+> AMANTA, new months starts just after AMAVASYA. … IN SUKLANTA, month ends
+> with end of SUKLA PAKSHA, new month starts when SUN and MOON are exactly
+> opposite each other."
+
+with "Varahamihira and Jaimini spoke about Suklanta" (line 703), "AMANTA is
+more important for mundane matters" (line 717) and the full-moon reckoning
+"more important for spiritual matters" (lines 719–721). Rao's textbook Table 4
+(printed p. 15, lines 722–739) names the twelve months by the rasi of the
+Sun–Moon conjunction — i.e. **amanta**, without saying so. CLAUDE.md already
+requires a page to state which reckoning it uses; this is the source that
+makes that statable.
+
+**Adhika maasa is sourced twice** — textbook lines 741–751 (two Sun–Moon
+conjunctions in one rasi; "Nija" = real, "Adhika" = extra; "comes once in
+every 3 years") and *Lessons* lines 772–796, which puts it at "2 times in 5
+years". The two Rao texts give different frequencies; `adhik_maas.py` computes
+it rather than tabulating it, which is the right answer to that disagreement.
+
+### 29.7 What each anga is used for
+
+- **All five, together:** electional astrology. Rao line 843: choose an
+  auspicious tithi, vaara, nakshatra, yoga and karana. Table 79 (printed
+  pp. 473–474, lines 15966–16051) gives per-task tithi / weekday / lagna /
+  nakshatra lists for eight tasks (house construction, house entry, naming a
+  child, first rice, teaching the alphabet, sacred thread, **wedding**, idol
+  installation). Rao immediately qualifies it (line 16053): "These are merely
+  guidelines and not final recommendations", and line 16064: "Planetary
+  strength is more important than strictly following these thumbrules."
+- **Tithi:** also the base of the **Annual Tithi Pravesha** chart (*Lessons*
+  line 3564), and of the derived tithis Rao defines at lines 12332–12339 —
+  *karma tithi* (elongation × 10) and *dhana tithi* (× 2) for career and
+  wealth questions.
+- **Vara:** the physical/agni limb, above (§29.2).
+- **Nakshatra:** §27, plus muhurta use — "The nakshatra occupied by Moon at
+  the time of a muhurta should be a good tara with respect to janma nakshatra"
+  (line 15948).
+- **Yoga and karana:** Rao names them in his muhurta checklist (line 15946)
+  and reads them in worked examples: "Tithi is Saptami – an auspicious tithi.
+  Yoga is Vriddhi yoga (growth). Karana is Vanija" (lines 16152–16153).
+- **The elemental mapping**, agreed by three separate lesson notes (lines
+  2360–2364, 3568–3576, and partially 980/987): tithi = water, vara = fire,
+  nakshatra = air, yoga = ether/akasha, karana = earth. *(Lesson #6 line 989
+  lists the same five against the same five tatwas but explicitly declines to
+  pair them — "not in the same order, however" — so use the two lessons that
+  do pair them.)*
+
+### 29.8 Tithi groups — Nanda, Bhadra, Jaya, Rikta, Poorna
+
+Rao §26.8, printed p. 358, lines 12250–12254:
+
+| Group | Tithis |
+|---|---|
+| **Nanda** | 1, 6, 11, 16, 21, 26 |
+| **Bhadra** | 2, 7, 12, 17, 22, 27 |
+| **Jaya** | 3, 8, 13, 18, 23, 28 |
+| **Rikta** | 4, 9, 14, 19, 24, 29 |
+| **Poorna** | 5, 10, 15, 20, 30 |
+
+Rao introduces these for Sarvatobhadra vedha, not for muhurta, and **gives no
+qualitative gloss for any group.** But his own Table 79 is checkable against
+them, and the result is clean enough to record:
+
+> Union of the tithis Table 79 recommends across all eight tasks:
+> {2, 3, 5, 6, 7, 8, 10, 11, 12, 13, 15}.
+> Nanda → 6, 11 recommended. Bhadra → 2, 7, 12. Jaya → 3, 8, 13.
+> Poorna → 5, 10, 15. **Rikta → none.**
+
+So **no Rikta tithi (4, 9, 14) is recommended for any of Rao's eight tasks**,
+while every other group has members recommended. Taken alone that is a derived
+observation about one table, not a stated rule. Rao adds one tithi judgement in
+prose (line 16109): "Chaturdasi tithi (14th lunar day) is usually not
+considered auspicious" — Chaturdasi is Rikta, consistent.
+
+**Raman turns the derivation into a stated rule** (§29.9). Ch. II line 802:
+"The 4th, 8th, 12th and 14th lunar days both in the bright and the dark half
+are unsuitable for undertaking any auspicious work"; Panchanga Suddhi line
+1329 adds the 6th, Purnima and Amavasya; the marriage chapter (line 3729)
+rejects "Riktha Thithis" by name. **4, 9 and 14 are excluded by an explicit
+rule in a second author, not merely absent from Rao's table.**
+
+**This bears on `/panchang`.** `chart.py`'s `_TITHI_SIGNIFICANCE` renders
+Chaturthi (tithi 4, Rikta) as "Ganesh day — remove obstacles, start small
+things" — a favourable note for a tithi Rao's only muhurta table excludes from
+all eight tasks and Raman names outright as unsuitable for auspicious work.
+The Ganesh association is real and widely held, and a panchang character note
+is not the same claim as a muhurta rule — but the page currently says
+"start small things" on a day one source we hold says not to start things.
+That is the sharpest tension §29 found between shipped copy and the corpus.
+**Flagged, not corrected** — the resolution is probably to say both, not to
+delete either.
+
+### 29.9 B.V. Raman, *Muhurtha* (1948) — what it settles, and its limits
+
+This file appeared in `data/matching/` **while §29 was being written**, was
+briefly deleted and re-fetched by a parallel agent, and is an archive.org OCR
+of a 1948 scan. Three consequences, and they bind:
+
+1. **It is lossy in ways that change meaning.** Its tithi definition
+   (lines 670–672) OCRs as "the difference of the increment of longitude of the
+   Sun and the Moon amounts to **13°**". That is wrong, and it is the OCR
+   rather than Raman: his karana definition seventy lines later (lines
+   743–744) reads "the distance which should be the multiple of **G°** between
+   the Sun and Moon" — `G` is itself an OCR of `6` — and a karana is half a
+   tithi, so 6 × 2 = 12, which is Rao's figure. **Do not cite Raman for the
+   12°; cite Rao (§29.1).** The same page gives "(0) Vanija" for "(6) Vanija"
+   (line 746), and elsewhere the scan yields "India" for "Indra" (733),
+   "Biktha" for "Riktha" (3729), "Amita" for "Amrita" (1766) and "the 16th
+   (Atiganda)" (1344) where his own list numbers Atiganda 6th (line 726).
+   **Every digit in this file is suspect.**
+2. **No page images exist for it** — there is no PDF, so the §28 / §29
+   discipline of confirming a table against `pdftoppm` output *cannot be
+   applied*. Treat every list in it as provisional.
+3. **It is not in `SOURCES.md` and `fetch_corpus.py` does not know it.**
+   Until that is fixed, "4 of 7" is a claim only this section makes.
+
+With those caveats, it independently confirms and materially extends §29.
+
+**Confirms, from a second author, 60 years earlier:**
+
+- **The five limbs** (line 656): "The Panchanga consists of five limbs or
+  accessories, viz., Thithi (lunar day), Vara (week day), Nakshatra
+  (constellation), Yoga (a luni-solar day) and Karana (half a lunar day)" —
+  with a ranking Rao does not give (line 661): "by far the most important ones
+  are the lunar day, constellation and week day."
+- **The yoga definition and all 27 names in our order** (lines 713–734): "the
+  period during which the joint motion in longitude of the Sun and the Moon
+  amounts to 13° 20'", then Vishkambha … Vyatipata (17) … Vydhruti (27).
+  Position-for-position identical to Rao's Table 5 and to
+  `chart.py:_NITYA_YOGA_NAMES`.
+- **All 11 karanas in our order, and the whole fixed/movable structure**
+  (lines 744–763): "The first seven come by rotation eight times in a lunar
+  month, commencing with the second half of the first lunar day … The last four
+  are said to be permanent karanas and occur in order with the second half of
+  the 29th lunar day." Word for word the same rule as Rao §1.3.10.
+- **The five tithi groups** (glossary, lines 7403–7407): Nanda 1/6/11,
+  Bhadra 2/7/12, Jaya 3/8/13, Riktha 4/9/14, Poorna 5/10/15 — identical to
+  Rao §26.8 (§29.8). Used in the body too, e.g. line 1747 "Bhadra (2nd, 7th
+  and 12th lunar days)".
+
+**Extends — these were UNSOURCED before this file arrived:**
+
+- **The condemned yogas are real, and there are FIVE of them, not two.**
+  Panchanga Suddhi, lines 1343–1346:
+
+  > "Coming to the Yoga (vide page 12) the 16th (Atiganda) the 9th (Sula) 10th
+  > (Ganda) 17th (Vyathipatha) and 27th (Vaidhruti) have deleterious effects
+  > upon events which are started or commenced under them."
+
+  ("16th" is an OCR slip for 6th — Atiganda is 6th in his own list at line 726
+  and in Rao's Table 5.) For **marriage specifically** he rejects ten (lines
+  3757–3759): "Vyatipata, Dhruva, Mrityu, Ganda, Vajra, Sula, Vishkambha,
+  Atiganda, Vyaghata, and Parigha" — note "Mrityu" is **not** one of the 27,
+  so that list needs its own check before use.
+
+  So `muhurat.py:397 _BLOCKING_NITYA_YOGAS = {"Vyatipata", "Vaidhriti"}` is now
+  **sourced but narrower than its source**, and `panchang.html`'s "Vaidhriti
+  and Vyatipata are the two most inauspicious yogas" is **not what Raman
+  says** — he names five as deleterious and singles out none as "the two
+  most". Reported, not changed.
+- **Bhadra is a karana, and it is the one to reject.** Line 1351: "Bhadra is
+  unfit for any good work but is eminently suitable for violent and cruel
+  deeds." Line 3761: "Vishtikarana must invariably be discarded." Raman's own
+  **index** carries "Bhadra Karana 29, 39" (line 7598) and "Visti 13" (line
+  9082) — p. 29 is the Panchanga Suddhi page, p. 13 the karana list. His
+  karana list has no entry named Bhadra, and Visti is the only karana he
+  condemns. **The identification Vishti = Bhadra is therefore strongly implied
+  and still not stated in one sentence anywhere we hold.** That is a real
+  improvement on "unsourced", and it is not the same thing as sourced.
+- **Per-karana character** (lines 1349–1354): "Bava is auspicious for starting
+  works of permanent importance while Thaithula is propitious for marriage …
+  For getting mantras Sakini Karana is propitious." Against
+  `chart.py:_KARANA_SIGNIFICANCE`: **Bava matches** ("favourable for stable,
+  long-lasting undertakings"); **Taitila does not** — the code says "favourable
+  for trade and negotiation" where Raman says marriage; Shakuni is "remedial
+  and medicinal work" where Raman says mantras. The other eight have no
+  counterpart here.
+- **Tithis to avoid**, stated twice and not identically. Ch. II line 802: "The
+  4th, 8th, 12th and 14th lunar days both in the bright and the dark half are
+  unsuitable for undertaking any auspicious work." Panchanga Suddhi line 1329:
+  "the 4th, 6th, 8th, 12th and 14th, full and new moon days should be
+  avoided." The second adds the 6th, Purnima and Amavasya. For marriage (lines
+  3728–3732) he rejects the 11th of the dark half through New Moon, the Riktha
+  tithis, the 8th, 12th and 6th, and calls the 2nd, 3rd, 5th, 7th, 10th, 11th
+  and 13th of the bright half best — which is close to Rao's Table 79 list
+  (§29.8) and confirms the Rikta observation there from a stated rule rather
+  than a derived one.
+- **Weekday judgements.** Line 790: "Tuesday and Saturday should be invariably
+  avoided for all good and auspicious work." Line 1331: "Thursday and Friday
+  are held to be suitable for all work. Tuesday is to be generally avoided
+  except when it happens to be the 10th, 12th or 16th day of the child's
+  birth." For marriage (lines 3734–3746): Monday, Wednesday, Thursday, Friday
+  best; Sunday and Saturday middling; Tuesday invariably rejected. Note Ch. II
+  and the marriage chapter disagree about Saturday. This is the first sourced
+  per-weekday guidance in the corpus, and it is **CONTESTED within one book** —
+  which is exactly why the app should say which rule it applies.
+
+**Does NOT settle:**
+
+- **`dagdha` — still 0 hits, now across four books.** No "burnt" either. The
+  seven-row `_DAGDHA_TITHI_BY_DAY` remains unsourced, and its comment credits
+  "Muhurtha Chintamani", which is not a book we hold.
+- **`choghadiya` — still 0 across four books.**
+- **`_PANCHAK_NAKSHATRAS` — a false positive waiting to happen.** "Panchaka"
+  occurs 21 times in Raman, so a bare grep says "present". It is **a different
+  concept**: Ch. III lines 961–991 define Panchaka as a *number* — add the
+  lunar day, weekday, constellation and lagna indices, divide by 9, and read
+  the remainder (1 mrityu, 2 agni, 4 raja, 6 chora, 8 roga). It has nothing to
+  do with `muhurat.py`'s five nakshatras Dhanishta→Revati. **A non-zero hit
+  count proves the term present, not the concept** — the mirror of the
+  standing `SOURCES.md` warning, and this is the clearest instance of it in
+  the corpus.
+- **`kharmas` and `chaturmas`** — re-measured across all four books,
+  **0 hits** (3 and 5 spellings, 38,197 `-layout` lines).
+
+**Amrit Siddhi and Sarvartha Siddhi — the terms are absent, the CONCEPT is
+present, and that changes the verdict.** `corpus_search.py "amrit siddhi"
+--absent` and `"sarvartha siddhi" --absent` both return 0 across four books.
+But Raman's **Ch. VI, "On Certain Special Yogas"** (lines 1688–1773) is exactly
+this material under the name **Siddha Yoga** (line 1692): "When a certain week
+day coincides with a certain asterism and a certain thithi, it becomes
+specially auspicious for good work."
+
+- **Amrit Siddhi.** Line 1763: "Sunday to Saturday respectively coinciding with
+  the constellations Hasta, Sravana, Aswini, Anuradha, Pushya, Revati and
+  Rohini will give rise to Amita Siddha Yoga." ("Amita" is OCR for *Amrita*.)
+  Against `muhurat.py:323 _AMRIT_SIDDHI_YOGA`, **six of seven weekdays match
+  exactly**; **Monday does not** — the code has **Mrigashira**, Raman has
+  **Shravana**.
+
+  **Verdict: CONTESTED, not wrong.** Two reasons not to touch the code on this
+  alone. (a) The code credits *Muhurta Chintamani*, a different text, and
+  published almanacs commonly print Monday = Mrigashira, agreeing with the
+  code. (b) There is no page image for this file, so a single-word OCR
+  disagreement in a 1948 scan cannot be confirmed — though *Shravana* and
+  *Mrigasira* are not plausibly confusable, which is what makes this worth
+  chasing rather than dismissing. **What settles it:** the printed p. 40 of
+  Raman, or any second muhurta text. Until then the honest statement is that
+  our Monday entry has one source against it and no source for it.
+
+- **Sarvartha Siddhi.** Raman's per-weekday Siddha Yoga lists (lines
+  1699–1743) are a near-neighbour of `muhurat.py:340
+  _SARVARTHA_SIDDHI_YOGA` but are **not the same table**. Measured overlap
+  (code ∩ Raman / code size): Sunday 6/7, Thursday 4/5, Monday 3/5,
+  Wednesday 3/5, Tuesday 2/4, Friday 2/5, Saturday 2/3. Sunday is
+  near-identical — code has Ashwini where Raman has Shravana, the other six
+  agree — and the rest diverge widely.
+
+  **Two things follow, and the second matters more.** The code's table is
+  **not sourced by Raman** and stays UNSOURCED. And Raman's rule carries a
+  **tithi condition** on several weekdays (Sunday "coinciding with the 1st,
+  4th, 6th, 7th, or 12th lunar day"; Wednesday "coinciding with Bhadra and
+  Jaya"; Saturday "with lunar days Bhadra and Riktha") which
+  `_sarvartha_siddhi_flag()` does not implement at all — it keys on
+  `weekday|nakshatra` only. If our table ever *is* traced to a text that
+  states it Raman's way, the missing tithi leg is a defect, not a
+  simplification.
+
+### 29.10 Still NOT in this corpus — measured across 4 of 7 books
+
+Re-measured after the Raman file arrived, with
+`scripts/corpus_search.py <term> --absent` over **38,197 `-layout` lines,
+4 books**. Every one returned **0 hits across every spelling variant the tool
+generates**:
+
+| Term | Spellings | What depends on it | Verdict |
+|---|---|---|---|
+| `dagdha` | 3 | `muhurat.py:800 _DAGDHA_TITHI_BY_DAY` — all 7 rows | UNSOURCED; no "burnt" either |
+| `choghadiya` | 4 | `/panchang` Choghadiya block, Muhurat Finder Phase B | UNSOURCED |
+| `kharmas` | 3 | Muhurat Finder blocker | UNSOURCED |
+| `chaturmas` | 5 | Muhurat Finder blocker | UNSOURCED |
+| `amrit siddhi` | 5 | `muhurat.py:323` | **term absent, concept present — §29.9** |
+| `sarvartha siddhi` | 7 | `muhurat.py:340` | **term absent, concept present — §29.9** |
+
+Two terms that were 0 against three books are **no longer absent**:
+`bhadra karana` now returns 1 hit (Raman's index, line 7598), and `panchak`
+returns 21 — but see §29.9: Raman's *Panchaka* is a different concept from
+`_PANCHAK_NAKSHATRAS`, so the hit count is a false positive, not a source.
+
+**A zero proves the TERM is absent, not the CONCEPT, and a non-zero proves
+neither.** Both failure directions are now demonstrated inside this one
+section: Siddha Yoga (concept present under another name) and Panchaka
+(name present, different concept). The `SOURCES.md` warning should carry the
+second example as well as the first.
+
+What the four books *do* hold on this ground is Rao's Table 79 (§29.7),
+the tithi groups (§29.8) and Raman's Panchanga Suddhi (§29.9).
+
+**Still with no counterpart in any of the four:**
+
+1. **Most of `_TITHI_SIGNIFICANCE`.** Raman gives which tithis to *avoid*
+   (§29.9); nobody here gives the per-tithi *characters* the page prints —
+   "Ganesh day", "Nag/Saraswati themes", "Sun-themed", "Durga/Shakti themes",
+   "Devi themes", "Vijayadashami undertones". Ekadashi-as-fasting and
+   Amavasya-as-ancestral-rites are widely held but are not in these books.
+   The one that is arguably *contradicted* rather than merely unsourced is
+   Chaturthi — §29.8.
+2. **Eight of the eleven `_KARANA_SIGNIFICANCE` notes.** Raman covers Bava
+   (matches), Taitila (differs), Shakuni (differs) and Vishti (§29.9). Balava,
+   Kaulava, Gara, Vanij, Chatushpada, Naga and Kimstughna have no source in
+   any of the four.
+3. **Most of `_NITYA_YOGA_SIGNIFICANCE`.** Rao's Table 5 supplies one-word
+   glosses for all 27 (§29.4) and Raman condemns five (§29.9); neither
+   supports "favourable for accomplishment and completion" for Siddhi or
+   "joy, celebration, favourable news" for Harshana as *guidance*. Note the
+   dict also carries a key **"Amrita"**, which is not one of the 27 yoga names
+   in either source — it is dead, and if it was meant to be Amrita Siddhi
+   Yoga (§29.9) it is in the wrong table.
+4. **`_RAVI_YOGA_NAKSHATRAS`** — its own comment calls it a "simplified rule",
+   and nothing in these four books states it.
+
+**What would close the rest:** *Muhurta Chintamani*, which three separate code
+comments cite and which is **not in `data/`** in any form as of 2026-08-26; and
+a clean scan of Raman with page images, since the copy we now hold is OCR only.
+
+### 29.11 What must NOT be inferred
+
+- **"Bhadra" means two unrelated things in Rao.** It is tithi group 2 (2, 7,
+  12, 17, 22, 27 — §29.8, line 12251) and it is the word he glosses at line
+  12236 as "auspicious or well". It is **not** used by him for Vishti karana.
+  A future extractor who greps `bhadra` and finds line 12236 will read
+  "auspicious" and reach the exact opposite of what `muhurat.py` means.
+- **"Vyatipata" also means two unrelated things in Rao.** Yoga 17 (line 780)
+  *and* an upagraha computed as `360° − Dhuma` (§4.2, lines 1641, 1649).
+  `corpus_search.py "vyatipata"` returns **only the upagraha** — its four hits
+  are lines 1650/1678/1679/1680 in tool numbering, all §4.2. It **misses
+  Table 5 entirely**, because Rao spells the yoga "Vyatipaata" and that is not
+  among the six variants the tool expands. Anyone checking whether the nitya
+  yoga is sourced by running that one command will conclude, wrongly, that it
+  is not. Grep `-i vyatipaata` on the `-layout` text.
+- **"Yoga" in §29.4 is not "yoga" in §4.** Sun+Moon Nitya yogas vs natal
+  combinations. `chart.py` already carries this warning; it belongs in the
+  corpus too.
+- **Rao's Table 79 tithi lists are per-task, not a general auspicious-tithi
+  ranking**, and Rao himself downgrades them twice (lines 16053, 16064). Do
+  not turn §29.8's Rikta observation into a shipped blocker without a source
+  that states it as a rule.
+- **Do not source §27's nakshatra deities to Rao's Table 2** — §29.3.
+- **"Panchaka" in Raman is not our Panchak.** 21 hits, a different rule
+  entirely — §29.9. A grep that finds the word is not a source.
+- **"Bhadra" now means THREE things across the corpus.** Tithi group 2
+  (Rao line 12251, Raman line 7404); Rao's gloss "auspicious or well"
+  (line 12236); and Raman's condemned karana (line 1351, index line 7598).
+  Raman uses the first and the third **within four lines of each other** at
+  1742–1747 and 1351. Never resolve `bhadra` from a grep hit alone.
+- **Raman's "Siddha Yoga" is not `chart.py`'s yoga #21 "Siddha".** Different
+  object: #21 is a nitya yoga, Siddha Yoga is a weekday+nakshatra+tithi
+  coincidence (§29.9). Three unrelated things now share the stem in this
+  corpus, alongside Siddhi (#16).
+- **The tithi is ayanamsa-invariant; the yoga is not.** `(Moon − Sun)` cancels
+  the ayanamsa, `(Moon + Sun)` doubles it. A tropical slip is invisible in
+  tithi and karana and moves the yoga about two places all year.
+
+### 29.12 Verification already in place
+
+`scripts/verify_panchang_angas.py` checks the computed tithi, yoga and karana
+against transcribed **drikpanchang.com** New Delhi day pages, plus structural
+and coverage gates. §29 is the *other* half of that: the gate proves the
+computation reproduces a published almanac; this section proves the tables and
+the index conventions are Rao's — and, since §29.9, Raman's too. Neither
+substitutes for the other.
+
+**Nothing in §29 has changed any behaviour.** Where the extraction and the code
+disagree — Amrit Siddhi's Monday, Taitila's and Shakuni's characters, the count
+of blocking yogas, `panchang.html`'s "the two most inauspicious", the dead
+`"Amrita"` key, Sarvartha Siddhi's missing tithi leg — the finding is recorded
+here and filed, not applied. A rule change needs the fix loop, a verification
+gate and QA.
+
+---
+
+*Section 29 last updated: 2026-08-26. Books present in `data/` when written:
+`vedic_astro_textbook.pdf`, `book1-for-CD.pdf`,
+`Astrology-e-book-compressed.pdf`, and
+`matching/raman-muhurtha-1948-electional-astrology_djvu.txt`, which appeared
+mid-extraction and is OCR-only (4 of 7 — but `fetch_corpus.py` still reported
+3/7, and `SOURCES.md` does not list the Raman file at all; both need updating).
+Vasudev's e-book contains no
+panchang-anga material at all: over its 4,558 `-layout` lines, `tithi`,
+`vaara` and `lunar day` return zero, the only `karana` matches are the three
+inside *Antahkarana* (lines 523, 1191, 1244), and the only `panchang` hits are
+line 1399 ("preparing Panchangas") and line 2914 (a stotra name). It
+contributes nothing to §29 and should not be re-searched for it.*
