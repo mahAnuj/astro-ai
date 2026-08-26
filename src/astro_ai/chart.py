@@ -3181,6 +3181,14 @@ class DailyPanchang:
     karana_significance: str  # classical note; "" if ordinary karana — universal
     sunrise: datetime         # local time at natal birthplace — LOCATION-DEPENDENT
     sunset: datetime          # local time at natal birthplace — LOCATION-DEPENDENT
+    # Moonrise/moonset may carry a NEXT-DAY instant, or None. Successive
+    # moonrises are ~24h50m apart, so on 13 of 365 Delhi days in 2026 the day
+    # holds no moonrise of its own and the first one after midnight is on D+1;
+    # at polar latitudes the event can be absent for a week at a time. Both are
+    # correct — see _rise_or_set. Callers must render the date, not just the
+    # clock time, and must handle None.
+    moonrise: datetime | None # LOCATION-DEPENDENT
+    moonset: datetime | None  # LOCATION-DEPENDENT
     rahu_kaal_start: datetime # LOCATION-DEPENDENT
     rahu_kaal_end: datetime   # LOCATION-DEPENDENT
     abhijit_start: datetime   # LOCATION-DEPENDENT
@@ -3195,6 +3203,15 @@ class DailyPanchang:
 # Rounded to ~55km (0.5deg) — sunrise/sunset differ by seconds within that
 # radius, well below the ~2min classical rounding. Cache is bounded by the
 # small number of cities in the subscriber base, so we don't LRU-cap it.
+#
+# The moonrise/moonset instants inherit the same key, and the same rounding is
+# ≤1.15 min on the INSTANT (max over 730 Srinagar moon events in 2026, true
+# 34.0837/74.7973 vs grid 34.0/75.0; mean 0.84 min) — but twice that year it
+# flips the CALENDAR DAY, worst case 1498.65 apparent minutes on 2026-12-17,
+# where the true point's moonset is 17-Dec 00:00:42 and the grid point's is
+# 18-Dec 00:59:21. Both are correct for their own coordinates; the day label is
+# what the midnight anchor moves. So any gate over these fields must compare
+# full instants with a minute tolerance, NEVER printed dates.
 _PANCHANG_CACHE: dict[tuple, "DailyPanchang"] = {}
 
 
@@ -3330,6 +3347,11 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
     weekday = today.weekday()  # 0=Mon..6=Sun
     weekday_name, day_lord, day_color, day_color_hex = _WEEKDAY_LORDS[weekday]
     sunrise, sunset = _sunrise_sunset(today, natal.birth_lat, natal.birth_lon, tz)
+    # Either may be None (no moonrise/moonset on this date) or land on D+1.
+    moonrise = _rise_or_set(today, natal.birth_lat, natal.birth_lon, tz,
+                            swe.MOON, swe.CALC_RISE)
+    moonset = _rise_or_set(today, natal.birth_lat, natal.birth_lon, tz,
+                           swe.MOON, swe.CALC_SET)
 
     # Tithi at local sunrise — the classical convention for "today's tithi".
     sunrise_ut = sunrise.astimezone(ZoneInfo("UTC"))
@@ -3384,6 +3406,8 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
         karana_significance=karana_sig,
         sunrise=sunrise,
         sunset=sunset,
+        moonrise=moonrise,
+        moonset=moonset,
         rahu_kaal_start=rk_start,
         rahu_kaal_end=rk_end,
         abhijit_start=midday - abhijit_half,
@@ -3506,10 +3530,35 @@ def format_day_windows_for_rashifal(panchang: DailyPanchang, lang: str = "en") -
     )
 
 
-def _sunrise_sunset(
-    day: date_, lat: float, lon: float, tz: ZoneInfo
-) -> tuple[datetime, datetime]:
-    """Sunrise + sunset for `day` at (lat, lon), returned as tz-aware local datetimes."""
+def _rise_or_set(
+    day: date_, lat: float, lon: float, tz: ZoneInfo, body: int, calc_flag: int
+) -> datetime | None:
+    """First rise (or set) of `body` at (lat, lon) at or after LOCAL MIDNIGHT on `day`.
+
+    Returns a tz-aware local datetime, or None when the event does not occur.
+
+    ALWAYS CHECK THE RETURN FLAG — this is not defensive coding. When the event
+    does not occur, `swe.rise_trans` returns `ret == -2` with `tret[0] == 0.0`,
+    and JD 0.0 is 4713 BC, which is outside `datetime`'s range: passing it to
+    `_jd_to_utc_datetime` raises `ValueError: year -4713 is out of range`.
+    Measured at Tromso (69.65N, 18.96E, Europe/Oslo) with swe.MOON/CALC_RISE —
+    seven consecutive days with no moonrise at all:
+
+        2026-12-05  ret  0  jd 2461379.70  -> 05:54
+        2026-12-06  ret -2  jd 0.0         -> ValueError
+        ...  seven consecutive days ...
+        2026-12-12  ret -2  jd 0.0         -> ValueError
+        2026-12-13  ret  0  jd 2461388.02  -> 13:33
+
+    ANCHORED AT LOCAL MIDNIGHT, the convention the Sun call already used.
+    Successive moonrises are ~24h50m apart, so at ANY latitude some calendar
+    days contain no moonrise of their own and the first instant found falls on
+    D+1 — 13 of 365 days at Delhi (28.61N) in 2026, e.g. 04-Sep 23:23, then both
+    05-Sep and 06-Sep yielding 00:27 on 06-Sep. That next-day instant is CORRECT
+    and must not be "fixed"; only the calendar cut is arbitrary, and the caller
+    discloses it. The alternative anchor (sunrise) was measured and is worse: it
+    removes zero duplicates and puts a next-day label on 105 of 365 days.
+    """
     midnight_local = datetime.combine(day, time(0), tzinfo=tz)
     midnight_utc = midnight_local.astimezone(ZoneInfo("UTC"))
     start_jd = swe.julday(
@@ -3517,11 +3566,28 @@ def _sunrise_sunset(
         midnight_utc.hour + midnight_utc.minute / 60.0,
     )
     geopos = (lon, lat, 0.0)  # pyswisseph wants (lon, lat, elev) in that order
-    _, rise_arr = swe.rise_trans(start_jd, swe.SUN, swe.CALC_RISE, geopos)
-    _, set_arr = swe.rise_trans(start_jd, swe.SUN, swe.CALC_SET, geopos)
+    ret, tret = swe.rise_trans(start_jd, body, calc_flag, geopos)
+    if ret != 0 or not tret or tret[0] <= 0.0:
+        return None
+    return _jd_to_utc_datetime(tret[0]).astimezone(tz)
+
+
+def _sunrise_sunset(
+    day: date_, lat: float, lon: float, tz: ZoneInfo
+) -> tuple[datetime, datetime]:
+    """Sunrise + sunset for `day` at (lat, lon), returned as tz-aware local datetimes.
+
+    The annotation OVERSTATES: under polar night / midnight sun the Sun neither
+    rises nor sets and a member is None. That is not new breakage from the
+    delegation — the same input previously raised `ValueError: year -4713 is out
+    of range` from `_jd_to_utc_datetime` on the JD 0.0 sentinel. Both shapes are
+    unusable, so no caller changed. Every caller today is fixed to an Indian
+    city, so neither is reachable in production; making the polar Sun render
+    properly is separate work (#150).
+    """
     return (
-        _jd_to_utc_datetime(rise_arr[0]).astimezone(tz),
-        _jd_to_utc_datetime(set_arr[0]).astimezone(tz),
+        _rise_or_set(day, lat, lon, tz, swe.SUN, swe.CALC_RISE),
+        _rise_or_set(day, lat, lon, tz, swe.SUN, swe.CALC_SET),
     )
 
 
