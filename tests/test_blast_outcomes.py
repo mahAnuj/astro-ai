@@ -349,3 +349,158 @@ def test_a_raising_alert_does_not_cost_the_outcome_json(
     assert (body["sent"], body["failed"]) == (1, 1), body
     assert (code, body["ok"]) == (500, False), body
     assert body["total_subscribers"] == 2, body
+
+
+def test_a_row_that_is_not_a_dict_does_not_abort_the_blast(
+        client, admin_headers, blast, offline, monkeypatch):
+    """Defect #223: #220's guard protects a malformed FIELD, not a malformed ROW.
+
+    `sub.get("email", "")` sat OUTSIDE the per-subscriber `try`, so a row that
+    is not a dict — a bare string in the subscribers list — raised
+    AttributeError on `.get` itself, one frame further out than #220's handler
+    reaches. Same harm, same unretryability: HTTP 500 with an HTML error page,
+    no outcome JSON, neither alert (both sit below the loop), and no subscriber
+    after the bad row attempted, with Cloud Scheduler at
+    `--max-retry-attempts=0`.
+
+    Only reachable through a corrupted or hand-edited blob — `subscribers.py`'s
+    signup writer always writes a normalised dict — which is why the row is
+    counted as `failed` rather than given a shape of its own: it keeps
+    `sent + failed == total` true and surfaces through the partial alert that
+    already exists.
+    """
+    from astro_ai.routes import subscribe
+
+    sent = blast([
+        _subscriber("first@x.test", city=""),
+        "not-a-dict",                                  # bare string in the blob
+        _subscriber("mid@x.test", city=""),
+        None,                                          # and a null row
+        _subscriber("last@x.test", city=""),
+    ])
+
+    alerts: list[str] = []
+    monkeypatch.setattr(subscribe, "_fire_error_alert",
+                        lambda request, err, source: alerts.append(source))
+
+    code, body = _post(client, admin_headers)
+
+    assert sent == ["first@x.test", "mid@x.test", "last@x.test"], \
+        f"a non-dict row stopped the loop: {sent}"
+    assert (body["sent"], body["failed"]) == (3, 2), body
+    assert body["sent"] + body["failed"] == body["total_subscribers"], body
+    assert (code, body["ok"]) == (500, False), body
+    assert "rashifal:blast:partial" in alerts, \
+        f"a non-dict row must still reach the partial alert: {alerts}"
+
+
+def test_an_unreadable_subscriber_list_still_reports_an_outcome(
+        client, admin_headers, blast, offline, monkeypatch):
+    """`list_subscribers()` returning a non-list must not 500 with HTML (#223).
+
+    It is `data.get("subscribers", [])` off a JSON blob, so a corrupted blob
+    (`{"subscribers": null}`) hands back `None` — and both `for sub in subs`
+    and `len(subs)` raise on it, outside every handler. Same silence as the
+    non-dict row.
+
+    Reported as `ok: false`, NOT as an empty quiet day: sent=0/failed=0/total=0
+    with `ok: true` is what a genuine zero-subscriber morning looks like
+    (`test_zero_subscribers_is_not_a_failure`), so returning that here would
+    make an unreadable list indistinguishable from a normal one and register
+    healthy in the `rashifal_cron_failures` metric — the 21-day silence again.
+    """
+    from astro_ai.routes import subscribe
+
+    blast(lambda: None)
+
+    alerts: list[str] = []
+    monkeypatch.setattr(subscribe, "_fire_error_alert",
+                        lambda request, err, source: alerts.append(source))
+
+    code, body = _post(client, admin_headers)
+
+    assert (code, body["ok"]) == (500, False), body
+    assert (body["sent"], body["failed"], body["total_subscribers"]) == (0, 0, 0), body
+    assert "rashifal:blast:unreadable_list" in alerts, \
+        f"an unreadable subscriber list must alert, not pass as a quiet day: {alerts}"
+
+
+def test_a_raising_short_sections_alert_does_not_cost_the_outcome_json(
+        client, admin_headers, blast, offline, monkeypatch):
+    """The SECOND alert guard, gated separately from the first (#225).
+
+    The two alert blocks below the send loop are wrapped separately so one
+    failing alert cannot suppress the other — the concrete case being the first
+    #220 follow-up, where `_mask_email` raised at the partial alert and a single
+    shared guard would have swallowed the short-sections alert with it. But only
+    the first guard was gated: narrowing THIS one to a class the alert never
+    raises left all 37 tests green, because
+    `test_a_raising_alert_does_not_cost_the_outcome_json` drives a full
+    12-section reading, so `short` is empty and this branch never executes.
+
+    So: a short reading (3 sections, not 12) to enter the branch, an alert that
+    raises only for the short-sections source, and the partial alert recorded
+    normally to prove the outcome JSON and the other alert both survive.
+    """
+    from astro_ai.routes import subscribe
+
+    short_reading = "\n\n".join(
+        f"## {r}\n" + "A steady day for measured work. " * 40
+        for r in ("Aries / Mesha", "Taurus / Vrishabha", "Gemini / Mithuna")
+    )
+    monkeypatch.setattr(subscribe, "_daily_rashifal_text", lambda **k: short_reading)
+
+    sent = blast([_subscriber("good@x.test", city=""), _subscriber("bad@x.test", city="")])
+
+    def one_bad_send(email, **k):
+        sent.append(email)
+        return email != "bad@x.test"
+
+    monkeypatch.setattr(subscribe.email_sender, "send", one_bad_send)
+
+    alerts: list[str] = []
+
+    def alert(request, err, source):
+        alerts.append(source)
+        if source == "rashifal:blast:short_sections":
+            raise RuntimeError("telegram down")
+
+    monkeypatch.setattr(subscribe, "_fire_error_alert", alert)
+
+    code, body = _post(client, admin_headers)
+
+    assert alerts.count("rashifal:blast:short_sections") == 1, \
+        f"the short-sections branch never ran, so this gates nothing: {alerts}"
+    assert "rashifal:blast:partial" in alerts, \
+        f"the partial alert must fire independently of the short one: {alerts}"
+    assert sent == ["good@x.test", "bad@x.test"], sent
+    assert (body["sent"], body["failed"]) == (1, 1), body
+    assert (code, body["ok"]) == (500, False), body
+    assert body["sections"] == {"en": 3, "hi": 3}, body
+
+
+def test_a_bytes_email_does_not_cost_the_outcome_json(
+        client, admin_headers, blast, offline, monkeypatch):
+    """A non-string address in `failed_emails` must not break the encoder (#225).
+
+    `failures` carries whatever the blob held, and `JSONResponse` cannot encode
+    `bytes` — so the raise landed in the response construction itself, below the
+    loop and outside its handler: no outcome JSON, an HTML 500. Unreachable via
+    `json.loads` today (it cannot produce `bytes`), gated anyway because it is
+    the exact shape of #220 and #223 and costs one coercion.
+    """
+    from astro_ai.routes import subscribe
+
+    sent = blast([
+        _subscriber("ok@x.test", city=""),
+        _subscriber(b"bytes@x.test", city=""),
+        _subscriber("z@x.test", city=""),
+    ])
+    monkeypatch.setattr(subscribe, "_fire_error_alert", lambda request, err, source: None)
+
+    code, body = _post(client, admin_headers)
+
+    assert sent == ["ok@x.test", "z@x.test"], f"a bad row cost a good one: {sent}"
+    assert (body["sent"], body["failed"]) == (2, 1), body
+    assert (code, body["ok"]) == (500, False), body
+    assert all(isinstance(e, str) for e in body["failed_emails"]), body["failed_emails"]
