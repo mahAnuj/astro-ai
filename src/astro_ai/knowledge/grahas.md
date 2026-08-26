@@ -329,29 +329,29 @@ When a planet is within a certain arc of the Sun, it becomes
 "combust" (asta) — its light is drowned out, and its ability to give
 results is severely compromised.
 
-**Extended 2026-08-26 for issues #218 and #219** (part of #191). Everything
-below §12.1 is new. It exists because three Sun-proximity orbs are asserted in
-code and rendered to users, and only one of them had ever been traced to a
-book. The extraction was run against the corpus **as it stood on 2026-08-26**:
+**Extended 2026-08-26 for issues #218 and #219** (part of #191); **corrected
+the same day** after QA — see §12.9 for what was wrong and why, because two of
+the errors are reusable traps rather than typos. Everything below §12.1 is new.
+It exists because three Sun-proximity orbs are asserted in code and rendered to
+users, and only one of them had ever been traced to a book.
+
+Corpus at the time of the **corrected** extraction — **4 books, 38,197
+`-layout` lines**:
 
 | Book | In `data/`? | `-layout` lines |
 |---|---|---|
-| P.V.R. Narasimha Rao, *Vedic Astrology: An Integrated Approach* (`vedic_astro_textbook.pdf`) | ✅ present | 16,724 |
-| P.V.R. Narasimha Rao, *Lessons on Vedic Astrology*, Vol. I (`book1-for-CD.pdf`) | ✅ present | 7,757 |
-| Chennareddy Vasudev, *Astrology* (`Astrology-e-book-compressed.pdf`) | ✅ present | 4,558 |
-| B.V. Raman, *Muhurtha or Electional Astrology* (1948) | ❌ **absent** | — |
+| P.V.R. Narasimha Rao, *Vedic Astrology: An Integrated Approach* (`vedic_astro_textbook.pdf`) | ✅ | 16,724 |
+| P.V.R. Narasimha Rao, *Lessons on Vedic Astrology*, Vol. I (`book1-for-CD.pdf`) | ✅ | 7,757 |
+| B.V. Raman, *Muhurtha or Electional Astrology* (1948) (`matching/raman-…_djvu.txt`) | ✅ | 9,158 |
+| Chennareddy Vasudev, *Astrology* (`Astrology-e-book-compressed.pdf`) | ✅ | 4,558 |
 | Johari, Goodwin, Jayant Kumar (numerology) | ❌ absent | — |
 
-**Measured against 3 books / 29,039 `-layout` lines** (`vedic_astro_textbook`,
-`book1-for-CD`, `Astrology-e-book-compressed`). Raman's *Muhurtha* was restored
-to `data/` later the same day, taking the corpus to 4 — so **the absences below
-predate it and must be re-run**; see the note at the end of this section. For
-the live count run `scripts/fetch_corpus.py`, which is the registry. Every
-absence recorded here is an absence *from those three books only* and must
-be re-measured if Raman's *Muhurtha* returns to `data/` — it is the book that
-would most likely settle almost all of it.
+**4 of 7 books present.** Every absence recorded below is an absence from those
+four. The first draft of this section was written against **three** — Raman's
+*Muhurtha* arrived hours later — and two of its conclusions were falsified by
+that arrival. That is recorded in §12.9 rather than quietly overwritten.
 
-### 12.1 The orb table — currently UNVERIFIABLE IN THIS CHECKOUT
+### 12.1 The orb table — SOURCED AND VERIFIED
 
 | Planet | Combust when within |
 |--------|---------------------|
@@ -362,21 +362,28 @@ would most likely settle almost all of it.
 | Venus | 10° of Sun (9° if retrograde) |
 | Saturn | 15° of Sun |
 
-> Source of record: B.V. Raman, *Muhurtha or Electional Astrology* (1948),
-> Appendix p.197 — `data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt`
-> lines 7183–7207 for the table and 7227–7228 for the footnote (plain text; no
-> `pdftotext` involved). The retrograde values are that page's footnote,
-> verbatim: *"When Mercury and Venus [are] retrograde the angle will be one
-> degree less."*
+> **Source: B.V. Raman, *Muhurtha or Electional Astrology* (1948), Appendix,
+> printed p. 197** — `data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt`
+> (plain text; no `pdftotext` involved). The "APPENDIX" heading is at line
+> **7177** and the printed page number "197" at line **7180**. The table is
+> lines **7183–7207**; the footnote is lines **7227–7228**. Re-verified line by
+> line on 2026-08-26:
 >
-> **⚠️ That file is NOT in `data/` as of 2026-08-26.** `data/matching/` does not
-> exist; `data/` holds three PDFs and a `daily_cache/` directory. The citation
-> is left standing because it was taken from the file while it was present and
-> the 2026-08-23 correction below records the reading in detail — but **nobody
-> can re-verify this table today**, and no other book in the corpus corroborates
-> a single one of its eight numbers (see §12.4). Treat the table as *held on the
-> record of a source we no longer possess*. Restoring that file is the single
-> highest-value acquisition for this section.
+>     Planets, Combustion of : — Planets situated within
+>     distances mentioned below from the Sun become combust.*
+>     The Moon within 12°   Mars 17°   Mercury 14°*
+>     Jupiter 11°   Venus 10°*   Saturn 15°
+>
+>     * When Mercury and Venus [are] retrograde the angle will be
+>       one degree less.
+>
+> All **six** direct orbs match `chart.py:COMBUSTION_ORBS` exactly, and both
+> retrograde values are direct − 1, which is what the footnote says. (OCR note:
+> Venus's "10°" prints as `10 3` and "are" as `ere`; the numerals for the other
+> five are clean, and "one degree" is spelled out, so there is no digit for OCR
+> to have corrupted.) `scripts/verify_muhurat_tables.py` **Gate 6** asserts all
+> three of: code == this table, the source file still contains table *and*
+> footnote, and retrograde == direct − 1 for Mercury and Venus only.
 >
 > **Correction, 2026-08-23.** This table previously gave the retrograde orbs
 > as **10°** and **8°** and attributed the whole thing to BPHS. Both were
@@ -386,7 +393,7 @@ would most likely settle almost all of it.
 > The provenance is worth recording because it explains how. §12 was written
 > 2026-07-24 in `372396a`, described as consolidated "from Rao Ch. 3" — and
 > Rao's Ch. 3 contains no combustion material at all (**re-measured 2026-08-26
-> against the now-larger corpus; the finding still holds — see §12.6**). Raman's
+> against the larger corpus; the finding still holds — see §12.6**). Raman's
 > *Muhurtha* did not enter `data/` until around 2026-08-16. So this table was
 > written unsourced, then corroborated three weeks later by a book nobody had
 > consulted when writing it. It got six of eight numbers right by luck. The
@@ -398,24 +405,39 @@ during the periods governed by that planet. A combust Venus, for
 example, affects marriage themes; a combust Mercury affects
 communication and intellect.
 
-### 12.2 What the three books present actually say
+> **Source for the interpretive rule** — it stood unattributed here until
+> 2026-08-26. Rao, *Lessons on Vedic Astrology* Vol. I, Lesson #27 (printed
+> pp. **127–128**, PDF page 72; line **4494**): *"Ve is combusted by sun, when Ve dasa comes, its
+> not all that great."* That is exactly the dasha-suppression claim, stated for
+> Venus, by the same author. Nothing in the corpus generalises it to every
+> planet, so the generalisation remains the repo's own step — a small one, and
+> now a named one.
 
-All line numbers below were taken with `grep -n` on `pdftotext -layout` output
-and read back with `sed -n 'Np'` before being written here. See §12.7 before
-quoting a line number from any other source.
+### 12.2 What the four books actually say
 
-**Rao, *Lessons on Vedic Astrology* Vol. I, Lesson #2** (printed pp. 7–8, PDF
-page 11; lines **322–340**) — the fullest definition in the corpus. Note this
-is a two-column page; the passage is the right-hand column, so `-layout` lines
-alternate with unrelated left-column text:
+Every line number below was taken with `grep -n` on `pdftotext -layout` output
+(or, for Raman, on the plain-text file directly) and read back with
+`sed -n 'Np'`. Printed pages were resolved by **single-page re-extraction**
+(`pdftotext -f N -l N`) — see §12.8, and §12.9 for why the first draft's page
+numbers were all wrong by one.
+
+`book1-for-CD.pdf` is a **rotated two-page spread**: each PDF page carries two
+printed pages side by side, and `-layout` interleaves their lines. Printed
+pages for that book are therefore cited as the **spread** (e.g. "pp. 91–92"),
+because which column a line belongs to is not reliably recoverable from the
+`-layout` geometry — the column offsets differ page to page. The one exception
+is Lesson #30, where the two halves carry different lesson headers and the
+attribution is unambiguous.
+
+**Rao, *Lessons* Vol. I, Lesson #2** (printed pp. **5–6**, PDF page 11; lines
+**320–328**) — the fullest definition in the corpus:
 
 > "when Ve and Su are close, Ve loses its energy to Su. This is called
 > combustion. Ve gets combusted. This is called 'Maudhyam' Its called in
 > Sanskrit as 'Asta Gandha'. Any planet close to Su gets combust (burned). Ju
 > combustion is not bad. The most combustion to any planet happens to Ve."
-> (lines 322–328)
 
-and the exception (lines 334–340):
+and the exception (lines **334–340**):
 
 > "There is an exception to combustion. All planets close to Su get combust and
 > become weak except Ra, Ke since they do not have physical bodies. Instead,
@@ -427,23 +449,37 @@ points, not bodies"). The rationale is now sourced, and Rao adds a consequence
 the code does *not* model: the Sun itself is weakened by conjunction with the
 nodes.
 
-Note "Asta Gandha" is the compiler's transcription; the Sanskrit term is
+"Asta Gandha" is the compiler's transcription; the Sanskrit term is
 *astangata*, which Rao spells correctly in his own textbook (§12.3).
 
-**Rao, *Lessons* Vol. I, Lesson #20** (printed pp. 85–86, PDF page 50; line
-**3036**): *"Any planet with Su is combust. The combustion is not as bad when
-Su is debilitated in Li. Ju and Ma are friends of Su. So, it is not a big deal
-for them…"* — combustion is modulated by the Sun's own dignity and by
-natural friendship. Neither modulation is implemented anywhere in the repo.
+**Rao, *Lessons* Vol. I, Lesson #20** (printed pp. **83–84**, PDF page 50;
+lines **3036–3040**): *"Any planet with Su is combust. The combustion is not as
+bad when Su is debilitated in Li. Ju and Ma are friends of Su. So, it is not a
+big deal for them as Army commander (Ma) and Priest (Ju) are good with King
+(Su). But, for Ve it is very bad."* — combustion is modulated by the Sun's own
+dignity and by natural friendship. Neither modulation is implemented anywhere
+in the repo.
 
-**Rao, *Lessons* Vol. I, Lesson #30** (printed p. 137, PDF page 76; line
+**Rao, *Lessons* Vol. I, Lesson #27** (printed pp. **127–128**, PDF page 72; line
+**4494**):
+*"Ve is combusted by sun, when Ve dasa comes, its not all that great."* — the
+dasha-suppression rule, quoted in §12.1.
+
+**Rao, *Lessons* Vol. I, Lesson #30** (printed p. **136**, PDF page 76; line
 **4725**): *"Combust planets loose its power. (Ex: Ve)"*
 
-**Rao, *Lessons* Vol. I, Lesson #44** (printed p. 203, PDF page 109; lines
-**7075–7076**): *"…it is combust. Combustion is important but it is
+**Rao, *Lessons* Vol. I, example chart** (printed pp. **157–158**, PDF page 87;
+lines **5487–5489**): *"Su will cause combustion of Ve. Here Su/Ve are extremely
+close within couple of degrees."* — the **only** place in the corpus where
+combustion and a degree quantity co-occur. It is a description of one chart,
+not a rule, and it states no threshold; but see §12.4, where the first draft
+overstated the absence by forgetting it.
+
+**Rao, *Lessons* Vol. I, Lesson #44** (printed pp. **201–202**, PDF page 109;
+lines **7075–7076**): *"…it is combust. Combustion is important but it is
 overrated."*
 
-**Vasudev, *Astrology*** (printed p. 80, PDF page 80; line **2273**):
+**Vasudev, *Astrology*** (printed p. **79**, PDF page 80; line **2273**):
 combustion appears once, as item 8 of a ten-point chart-assessment checklist —
 *"Checking for combustion of planets."* It establishes that combustion is
 standard practice and contributes nothing quantitative.
@@ -455,9 +491,21 @@ two-planet yoga condition (line **5042**), a dusthana-lord condition (line
 **5172**), and twice in the Tajaka *ithasala* chapter (lines **13528**,
 **13595**).
 
+**Raman, *Muhurtha*** — exactly **8** lines match `combust` in 9,158: the
+Appendix orb table (**7183**, **7184**), the index entry (**7740**), and five
+*ceremony-level* applications set out in §12.5 (**2424**, **2511**, **2544**,
+**2596**, **5729**). Raman gives **no** general narrative account of what
+combustion does to a natal planet; his interest is entirely electional.
+
+**The complete hit list, so "exhaustive" is checkable.** `book1-for-CD.pdf`
+has **15** lines matching `combust|astangat|maudhy`: 322, 324, 326, 328, 334,
+336, 3036, 3327, 3331, 3337, 4494, 4725, 5487, 7075, 7076. Every one is
+accounted for above. Vasudev has 1. Raman has 8 (`combust` only). The Rao
+textbook's are listed in the preceding paragraph.
+
 ### 12.3 Budha-Aditya and the 6° orb — the orb is UNSOURCED (#218)
 
-**The rule site:** `chart.py:1175`
+**The rule site:** `chart.py`, in `_sun_yogas()` — the Budha-Aditya branch:
 
 ```python
 if abs(mercury.longitude - sun.longitude) < 6.0:
@@ -466,8 +514,8 @@ if abs(mercury.longitude - sun.longitude) < 6.0:
 
 **What IS now sourced.** Rao, *Vedic Astrology: An Integrated Approach*,
 **§11.2.4 "Budha-Aaditya Yoga (Nipuna Yoga)"** (heading at line **4229**,
-printed p. 114, PDF page 125; body lines **4231–4245**, printed p. 115, PDF
-page 126):
+printed p. **113**, PDF page 125; body lines **4231–4245**, printed p. **114**,
+PDF page 126):
 
 > "Note: If Mercury is too close to Sun, he is combust (asta or astangata).
 > Yogas formed by combust planets lose some of their power to do good. This
@@ -475,25 +523,24 @@ page 126):
 > it can give results if Mercury is not combust." (lines 4239–4242)
 
 So three things are sourced: the yoga's trigger (Sun and Mercury in one sign,
-lines 4233–4234), the name *Nipuna* — *"Nipuna means an expert"* (line 4237),
-confirming the label `chart.py` renders — and **the principle that combustion
-weakens this yoga**.
+lines **4233–4234**), the name *Nipuna* — *"Nipuna means an expert"* (line
+**4237**), confirming the label `chart.py` renders — and **the principle that
+combustion weakens this yoga**.
 
 **What is NOT sourced: the number 6.** Rao writes *"too close"* and gives no
-degree. **No degree orb for combustion appears anywhere in the 29,039 lines of
-the three books present** (§12.4). The 6° is the repo's own invention.
+degree. No source in the corpus states a Budha-Aditya orb. The 6° is the
+repo's own invention.
 
-**Worse, 6° is inconsistent with the repo's own definition of combust.** Rao's
-condition is literally the word *combust*, and this file's own table (§12.1)
-defines Mercury combust as **14°** direct / **13°** retrograde. `chart.py:1175`
-therefore applies a third, unsourced number to a rule whose only source defers
-to the very definition sitting in §12.1. Whatever else is true, the code cannot
-be following Rao here: at Mercury 9° from the Sun it prints an unweakened
-Budha-Aditya for a planet this file calls combust.
+**And 6° is inconsistent with the repo's own definition of combust.** Rao's
+condition is literally the word *combust*, and §12.1 — now verified against
+Raman p. 197 — defines Mercury combust as **14°** direct / **13°** retrograde.
+`chart.py` therefore applies a third number to a rule whose only source defers
+to the definition sitting in §12.1. Concretely: at Mercury 9° from the Sun the
+code prints an unweakened Budha-Aditya for a planet this file calls combust.
 
 **And the direction of the effect is genuinely CONTESTED — by the same
-author.** Rao, *Lessons* Vol. I, Lesson #21 (printed pp. 93–94, PDF page 54;
-lines **3327–3342**):
+author.** Rao, *Lessons* Vol. I, Lesson #21 (printed pp. **91–92**, PDF page
+54; lines **3327–3345**):
 
 > "With Me, it gives Budha-Aditya yoga (also called Vipuna Yoga) – the result is
 > that the person is very intelligent. Not too close, if too close, Me gets
@@ -511,76 +558,101 @@ different opinions on this".
 
 **Verdict for #218 (Budha-Aditya):** the weakening *principle* is **SOURCED**
 (Rao §11.2.4, line 4239) but **CONTESTED** (Rao via *Lessons* Lesson #21, line
-3337). The **6° orb is UNSOURCED** and is contradicted by §12.1's own 14°.
+3337). The **6° orb is UNSOURCED** and is inconsistent with §12.1's 14°.
 "Vipuna" in *Lessons* is a compilation typo for *Nipuna*; the code's spelling
 is the correct one.
 
-### 12.4 Mars combust as a Manglik cancellation — the orb is UNSOURCED (#218)
+### 12.4 Mars combust as a Manglik cancellation — UNSOURCED, and now positively counter-indicated (#218)
 
-**The rule site:** `chart.py:931`, which emits a `mars_combust` rule with
-`effect="cancels"` and `source="Classical matching practice"`:
+**The rule site:** `chart.py`, in the Manglik-rule builder, which emits a
+`mars_combust` rule with `effect="cancels"` and `source="Classical matching
+practice"`:
 
 ```python
 if sep < 6.0:
 ```
 
-**Searched and not found.** Manglik/Kuja dosha cancellation by combustion of
-Mars is **absent from all three books present**. `corpus_search.py` over
-29,039 `-layout` lines returns no combustion-and-Manglik passage, and the
-`Astrology-e-book-compressed.pdf`, `book1-for-CD.pdf`, `vedic_astro_textbook.pdf`
-hits for combustion are exhaustively listed in §12.2 — none of them concerns
-Kuja dosha. The `source="Classical matching practice"` string in the code is
-not a citation and must not be read as one.
+**The corpus now contains a dedicated Kuja-dosha antidote list, and Mars
+combustion is not in it.** Raman, *Muhurtha*, **"ANTIDOTES FOR KUJA DOSHA"**
+(heading line **3624**, printed p. **99**; the list runs to line **3674**, printed pp. 99–100). What Raman actually gives:
 
-**No degree orb for combustion exists in the corpus at all.** Measured
-2026-08-26 over all three books: searches for a *"within N degrees of the
-Sun"*-shaped statement return **zero**. The only "degrees from the Sun"
-material in the corpus is the tithi definition — Rao textbook lines **639–640**
-(*"12° greater than Sun's longitude"*), *Lessons* lines **669–681** — which is
-a different rule entirely. So the 6° here, the 6° in §12.3, and the eight
-numbers in §12.1 have **no corroboration in the books we currently hold**.
+- both partners Manglik → the dosha "gets cancelled" (line **3642**);
+- per-house sign exceptions — Mars in the 2nd produces dosha only outside
+  Gemini/Virgo, the 12th outside Taurus/Libra, the 4th outside Aries/Scorpio,
+  the 7th outside Capricorn/Cancer, the 8th outside Sagittarius/Pisces, and
+  *"In Aquarius and Leo, Mars produces no dosha whatsoever"* (lines
+  **3651–3671**);
+- *"The dosha is counteracted by the conjunction of Mars and Jupiter or Mars
+  and the Moon."* (lines **3672–3674**).
 
-**One passage bears on the rule's premise and cuts against it.** Rao, *Lessons*
-Vol. I, Lesson #21 (printed pp. 93–94, PDF page 54; lines **3327–3331**):
+**No combustion.** This is a purpose-built exception list from the same book
+that supplies §12.1's orb table, and the rule under audit is absent from it.
+That is materially stronger than the silence the first draft reported.
+
+Two further observations, both outside §12's remit but recorded because they
+were found here: Raman's antidote list also **differs from what `chart.py`
+implements** in ways nobody has reconciled — he gives Mars–Jupiter and
+Mars–Moon *conjunction* (not Jupiter's aspect), he does not give the Cancer/Leo
+lagna yogakaraka exclusion in these terms, and he gives per-house sign
+exceptions the code has no equivalent of. And he is dismissive of the whole
+doctrine: *"much importance need not be given to Kuja Dosham"* (line **3644**).
+
+**Vasudev is dismissive of exactly the compensation conditions the code
+implements.** Vasudev, *Astrology* (printed p. **91**, PDF page 92; lines
+**2613–2617**), discussing a pundit who applied *"various dictums given in
+texts for compensation conditions of Kuja dosham"*: *"But these rules were not
+given by maharshis and I found them not working well in many circumstances."*
+Vasudev discusses Kuja dosha at length — **18** lines match `kuja` — and never
+mentions combustion among the compensations.
+
+**The rule's usual rationale is contradicted.** Rao, *Lessons* Vol. I,
+Lesson #21 (printed pp. **91–92**, PDF page 54; lines **3327–3331**):
 
 > "Ma with Su is combust. But, it really doesn't matter since both are agni
 > planets and Ma is not effected. In fact, even for Ju it is not bad, but the
 > worst combustion is for Ve."
 
-The usual rationale for combust-Mars cancelling Manglik is that Mars is
-thereby weakened. The one source we hold that addresses Mars combustion
-specifically says Mars is **not affected**, because Mars and the Sun are both
-fire planets. That does not refute the cancellation rule — Rao is discussing
-natal strength, not Kuja dosha, and he never mentions Manglik in the passage —
-but it removes the premise the rule is usually justified by, and it must not be
-cited *for* the rule.
+The usual justification for combust-Mars cancelling Manglik is that Mars is
+thereby weakened. The only passage in the corpus on Mars combustion says Mars
+is **not affected**. That is not a refutation — Rao is discussing natal
+strength, not Kuja dosha, and never mentions Manglik — but it removes the
+premise, and it must not be cited *for* the rule.
 
-**Verdict for #218 (Manglik Mars):** the cancellation rule is **UNSOURCED** in
-this corpus; the **6° orb is UNSOURCED**; and the rule's usual rationale is
-**contradicted** by the only passage in the corpus on Mars combustion. Correct
-value unknown — do not substitute 17° from §12.1 on the strength of this
-section. B.V. Raman's *Muhurtha* would not settle this either; a Kuja-dosha
-source (Raman's *Hindu Predictive Astrology*, or BPHS) is what is needed, and
-we hold neither.
+**On degree orbs.** No source in the corpus states a combustion orb other than
+Raman's Appendix table (§12.1), and none states one for Manglik. The one place
+combustion and a degree quantity co-occur is *Lessons* line **5487**, *"Su/Ve
+are extremely close within couple of degrees"* — a description of a single
+example chart, with no threshold and no general claim. (The first draft said
+the tithi definition — Rao textbook lines **639–640**, *Lessons* **669–681** —
+was the *only* "degrees from the Sun" material in the corpus. That was false as
+written; line 5487 is the counter-example. The conclusion is unchanged: neither
+is an orb rule.)
+
+**Verdict for #218 (Manglik Mars):** the cancellation rule is **UNSOURCED** and
+**absent from the only dedicated Kuja-dosha antidote list in the corpus**; the
+**6° orb is UNSOURCED**; and the rule's usual rationale is contradicted by the
+only passage in the corpus on Mars combustion. Correct value unknown — do not
+substitute 17° from §12.1 on the strength of this section.
 
 ### 12.5 Muhurat combustion — degree-orb vs days-from-heliacal (#219)
 
-**The rule site:** `muhurat.py:1154–1162` computes combustion by calling
-`chart.combustion_orb()` — i.e. the §12.1 **degree orbs** — and
-`muhurat.py:1230–1237` turns three of those into hard verdicts:
+**The rule site:** `muhurat.py`'s `_combustion_flags()` computes combustion by
+calling `chart.combustion_orb()` — i.e. the §12.1 **degree orbs** — and
+`score_event()` turns three of those into terminal verdicts:
 
 ```python
 if rules["check_jupiter_combust"] and combust.get("jupiter"):
     return "avoid", "Guru (Jupiter) is combust — marriage/learning karaka not visible", ...
-if rules["check_venus_combust"] and combust.get("venus"):
-    return "avoid", "Shukra (Venus) is combust — marriage karaka not visible", ...
 ```
 
-`"avoid"` is a terminal return: a combust Jupiter alone condemns a wedding or
-Vidyarambh date regardless of every other factor.
+`"avoid"` is a terminal return. It is **one of about a dozen** such branches in
+`score_event()` (adhik maas, eclipse, nitya yoga, panchak, chaturmas, kharmas,
+dagdha, the three combustion checks, avoid-nakshatra, avoid-tithi) — they are
+unranked and any one of them condemns the date. Combustion is *a* veto, not the
+strongest one; there is no ordering to be strongest in.
 
 **The heliacal model is ABSENT from this corpus.** Measured 2026-08-26 with
-`scripts/corpus_search.py --absent` over all three books:
+`scripts/corpus_search.py --absent`:
 
 | Term | Spellings tried | Hits |
 |---|---|---|
@@ -592,143 +664,202 @@ Vidyarambh date regardless of every other factor.
 
 `maudhya` returns exactly **1** hit — *Lessons* line 324, the "Maudhyam" naming
 in §12.2 — which defines combustion as *closeness*, not as days from rising.
-`invisible` returns 5 hits in the Rao textbook, **all** in §7.4.5 "Visible Half
-and Invisible Half" (line **2972**) about zodiac hemispheres and at line
-**9974** about lagna/7th — none about planetary visibility near the Sun. Rao's
-*Lessons* uses *udaya* once (line **5067**), in the definition of Sirshodaya /
-Prishtodaya rashis.
+`invisible` returns 5 hits in the Rao textbook, **all** about zodiac hemispheres
+(§7.4.5, line **2972**) or lagna/7th (line **9974**) — none about planetary
+visibility near the Sun. Rao's *Lessons* uses *udaya* once (line **5067**), in
+the definition of Sirshodaya / Prishtodaya rashis.
 
-**So the corpus present supports neither model quantitatively, and offers
-nothing at all on the days-from-heliacal model.** Note the standard caution:
-a zero proves the **term** is absent, not the **concept**. But here the concept
-would have to appear under *some* name, and the one passage that does name
-combustion in Sanskrit (line 324) frames it as proximity.
+Standard caution applies: a zero proves the **term** absent, not the
+**concept**. But the two books that state combustion operationally both state
+it as an **arc**: Raman's Appendix gives degrees (§12.1) and *Lessons* line 320
+names it as closeness. Nothing in the corpus expresses combustion as days from
+heliacal rising or setting.
 
-**And the corpus's only wedding-muhurta criteria list omits combustion
-entirely.** Rao, *Vedic Astrology: An Integrated Approach*, **§36.3 "Basics of
+**Two independent muhurta authorities enumerate wedding criteria, and neither
+includes combustion.**
+
+*First,* Rao, *Vedic Astrology: An Integrated Approach*, **§36.3 "Basics of
 Muhurta"**, **Table 79 "Muhurta guidelines"** (heading line **15966**, printed
-p. 474, PDF page 485; Wedding row lines **16032–16040**, printed p. 475, PDF
-page 486). The Wedding row gives four columns and a comment:
+p. **473**, PDF page 485; Wedding row lines **16032–16040**, printed p. **474**,
+PDF page 486). The Wedding row gives tithis 2, 3, 5, 7, 10, 11, 12, 13, 15;
+weekdays Mon, Wed, Thu, Fri; lagna "Benefic planet owned"; comment "The 7th
+house should be clean"; and nakshatras Rohini, Mrigasira, Makha,
+Uttaraphalguni, Hasta, Swati, Anuradha, Moola, Uttarashadha, Uttarabhadra,
+Revati. **No combustion condition, and no visibility requirement.**
 
-- tithis 2, 3, 5, 7, 10, 11, 12, 13, 15
-- weekdays Mon, Wed, Thu, Fri
-- lagna: "Benefic planet owned"
-- comment: "The 7th house should be clean."
-- nakshatras: Rohini, Mrigasira, Makha, Uttaraphalguni, Hasta, Swati, Anuradha,
-  Moola, Uttarashadha, Uttarabhadra, Revati
+*Second,* Raman, *Muhurtha*, the marriage material — and this is the one that
+matters, because Raman is the book the orb table itself comes from and the book
+Rao defers to. His marriage asterism list (lines **3748–3750**) is
+**word-for-word the same set** as Rao's Table 79 row: *"The best asterisms are
+Rohini, Mrigasira, Makha, Uttara, Hasta, Swathi, Anuradha, Moola,
+Uttarashadha, Uttarabhadra and Revati."* Two independently-written wedding
+criteria lists agree on the nakshatras — and **neither mentions combustion**.
+Measured: **zero** `combust` matches anywhere in Raman lines **3400–4200**, the
+span covering Kuja dosha, marriage compatibility and the wedding rules through
+to CHAPTER X at line **3857**.
 
-**No Guru or Shukra combustion condition appears in it.** Neither does any
-visibility requirement.
+**And Raman demonstrably treats Guru/Shukra combustion as a live, per-ceremony
+switch — which he declines to throw for marriage.** All five of his
+applications:
 
-**This absence is weak evidence and must be reported as such.** Rao states the
-table is partial and defers the topic twice — line **16053**: *"A list of the
-common guidelines is given in Table 79. These are merely guidelines and not
+| Ceremony | Line | Printed p. | What he says |
+|---|---|---|---|
+| Seemantha | **2424** | 58 | *"even if Jupiter and Venus are combust, such a circumstance may be ignored"* — **waived** |
+| Annaprasana (first feeding) | **2511** | 60 | *"one should not mind even if Jupiter and Venus are combust"* — **waived** |
+| Chowlam (tonsure) | **2544** | 61 | performed *"when Jupiter and Venus are free from combustion"* — **required** |
+| Upanayana | **2596** | 64 | *"Wednesday must be rejected if Mercury is combust"* — **weekday-specific**, not a whole-day veto |
+| Pilgrimage | **5729** | — | *"Avoid the months when Jupiter is combust"* |
+| **Marriage** | — | — | **not mentioned at all** |
+
+This is the strongest available form of the argument. Raman is not silent on
+Guru/Shukra combustion out of inattention — he raises it five times, waives it
+twice by name, requires it once, and narrows it to a single weekday once. He
+simply never applies it to a wedding.
+
+Note the Upanayana line also partially answers a *different* rule:
+`muhurat.py`'s `check_mercury_combust`. Raman's version is narrower than the
+code's — it rejects **Wednesday** when Mercury is combust, rather than
+condemning the whole day, and it is stated for Upanayana rather than for
+starting a business.
+
+**Verdict for #219:** the degree-orb model is what the code uses and is the
+**only** model the corpus expresses; the days-from-heliacal model has **zero**
+support here. But the **application** of combustion as a wedding veto is
+**UNSOURCED and counter-indicated**: two independent muhurta sources enumerate
+wedding criteria without it, and the one that discusses Guru/Shukra combustion
+five times never applies it to marriage. The finding is not "which model" — it
+is that a terminal veto is being applied where the corpus's two wedding-criteria
+lists do not ask for one.
+
+**One caveat kept from the first draft.** Rao states his table is partial and
+defers the topic twice — line **16053**: *"These are merely guidelines and not
 final recommendations"*; line **16064**: *"Planetary strength is more important
 than strictly following these thumbrules"*; and line **16236**: *"For standard
 principles related to muhurtas, readers can refer to other books."* At line
 **15907** he names the book he defers to: *"Out of the modern books on muhurta
-in English language, the one by Dr. B.V. Raman is very good."* That is the
-same hand-off `vedic_reference.md` §28.4 found for Brahma Muhurta, and it
-points at the same missing volume.
+in English language, the one by Dr. B.V. Raman is very good."* That book is now
+in `data/`, and it is the second authority above — which is why the finding
+upgraded from weak to strong.
 
-**Verdict for #219:** **UNSOURCED, and the two models cannot be adjudicated
-from the corpus present.** What can be said:
-
-1. The **degree-orb** model is what the code uses, drawn from §12.1, whose
-   source file is no longer in `data/` (§12.1).
-2. The **days-from-heliacal** model has **zero** corpus support here — not
-   contradicted, simply absent, and the missing book is the one that would
-   carry it.
-3. The one enumerated wedding-muhurta rule set we hold **does not include a
-   combustion criterion**, while `muhurat.py` treats it as an absolute veto.
-   The disproportion between "hard `avoid`" and "no source" is the finding.
-4. Rao's *Lessons* line **326** — *"Ju combustion is not bad"* — and line
-   **3036** — *"Ju and Ma are friends of Su. So, it is not a big deal for
-   them"* — sit in direct tension with `check_jupiter_combust` being the
-   strongest single veto in the muhurat scorer. **This is not a refutation**:
-   Rao is grading natal planetary strength, not electing a wedding, and
-   Guru/Shukra *asta* as a marriage prohibition is a muhurta doctrine his
-   natal-chart passages are not addressing. It is recorded so that nobody
-   cites Rao *in support of* the veto, which the corpus does not permit.
-
-**What would settle it:** B.V. Raman, *Muhurtha or Electional Astrology*
-(1948) — the same volume §12.1's orb table came from, the one Rao defers to at
-line 15907, and the one `vedic_reference.md` §28.3 and §28.4 are also blocked
-on. Acquiring it unblocks four open corpus questions at once.
+Also recorded so nobody cites Rao *for* the veto: *Lessons* lines **326–328**
+(*"Ju combustion is not bad"*) and **3038–3040** (*"Ju and Ma are friends of
+Su. So, it is not a big deal for them"*) point the other way. **Not a
+refutation** — Rao is grading natal strength there, not electing a wedding.
 
 ### 12.6 The "Rao Ch. 3" note — RE-MEASURED 2026-08-26, still holds
 
 §12.1's provenance note says §12 was written "from Rao Ch. 3", which contains
 no combustion material. That was measured when `data/` held one book. It has
-been re-measured against all three:
+been re-measured:
 
 Rao, *Vedic Astrology: An Integrated Approach*, **Chapter 3 "Planets"** spans
-`-layout` lines **1172–1632** (§3.1 Introduction at 1172 through §3.5 Answers
-to Exercises at 1588, ending where §4.1 begins at 1633). A case-insensitive
+`-layout` lines **1171–1631** (chapter title `3. Planets` at line **1171**,
+ending where `4. Upagrahas` begins at line **1632**). A case-insensitive
 search of that range for `combust|astangat|asta|maudhy|burn` returns **zero
 hits**. §3.3 "Planetary Dignities" (line **1389**) and its Table 6 cover
 exaltation, debilitation, moolatrikona and ownership — and **not** combustion.
 
-**The note stands, and is now precise:** the chapter §12 was attributed to
-contains no combustion material, verified over the full chapter range. Do not
-delete the note; it is the record of how an unsourced table acquired a
-citation.
+**The note stands, and is now precise.** Do not delete it; it is the record of
+how an unsourced table acquired a citation.
 
 ### 12.7 What must NOT be inferred
 
-- **Do not read §12.1 as corroborated.** Three books, 29,039 lines, and not one
-  of its eight numbers appears in any of them. It rests entirely on a file that
-  is not in `data/` today.
-- **Do not promote 14°/13° into `chart.py:1175`.** §12.3 shows 6° is
+- **Do not promote 14°/13° into the Budha-Aditya branch.** §12.3 shows 6° is
   inconsistent with §12.1, but §12.1 is Raman's *combustion* orb, not a stated
-  Budha-Aditya orb, and Rao's *Lessons* records a school in which closeness
-  *strengthens* the yoga. Substituting one unsourced number for another
-  repeats #172. The honest state is "unsourced, correct value unknown".
+  Budha-Aditya orb, and *Lessons* records a school in which closeness
+  *strengthens* the yoga. Substituting one unsourced number for another repeats
+  #172. The honest state is "unsourced, correct value unknown".
+- **Do not substitute 17° into the Manglik branch** for the same reason.
 - **Do not cite Rao for the muhurat combustion veto.** Everything he says about
-  Jupiter and Mars combustion (lines 326, 3036, 3327) points the other way, and
-  he says nothing about electional Guru/Shukra *asta* at all.
+  Jupiter and Mars combustion (lines 326–328, 3038–3040, 3327) points the other
+  way, and he says nothing about electional Guru/Shukra *asta*.
+- **Do not read Raman's silence on wedding combustion as Raman's silence on
+  combustion.** He applies it to five other occasions (§12.5). The silence is
+  specific, which is what makes it evidence.
 - **Do not cite Rao's *Lessons* as equal in authority to his textbook.**
-  `book1-for-CD.pdf` is titled *"Compiled by The Students of Sri Jagannath
-  Center-Boston"* (title page, lines 1–13) and is a transcript of lectures. It
-  contains transcription artefacts — "Asta Gandha" for *astangata* (line 324),
-  "Vipuna" for *Nipuna* (line 3333) — and refers to the author in the third
-  person as "Narasimhaji" (line 3337). Where it and the textbook differ, the
-  textbook is the author's own word.
+  `book1-for-CD.pdf` is *"Compiled by The Students of Sri Jagannath
+  Center-Boston"* (title page, lines 1–13) — a lecture transcript. It carries
+  transcription artefacts ("Asta Gandha" for *astangata* at line 324, "Vipuna"
+  for *Nipuna* at line 3333) and refers to the author in the third person as
+  "Narasimhaji" (line 3337). Where it and the textbook differ, the textbook is
+  the author's own word.
 - **"Combustion is important but it is overrated"** (*Lessons* line 7075) is
-  Rao's own hedge. Prose that treats a combust planet as disabling has no
-  support in this corpus; §14's "never use 'combust' alone as a diagnosis" is
-  the sourced position.
-- **Every absence above is measured against the 3 books listed at the head of
-  this section — NOT against Raman's *Muhurtha*, which was restored to `data/`
-  on 2026-08-26 (`a391535`) after these searches ran.** That is the book this
-  section repeatedly names as the one that would settle the open questions, so
-  **the whole section needs re-running against it.** Confirmed already: it does
-  NOT contain Yamaganda or Brahma Muhurta (0 hits, 4 books), which falsifies
-  the expectation recorded in `vedic_reference.md` §28.3. Its combustion table
-  at lines 7183-7207 IS present and matches `chart.py`'s COMBUSTION_ORBS
-  exactly, so §12.1 is no longer 'held on the record of a source we no longer
-  possess'.
+  Rao's own hedge. Prose treating a combust planet as disabling has no support
+  in this corpus; §14's "never use 'combust' alone as a diagnosis" is the
+  sourced position.
+- **Every absence above is measured against 4 of 7 books.** The three missing
+  are the numerology volumes, which is why no astrological absence here is
+  expected to move — but say "4 of 7" when quoting one.
 
 ### 12.8 Citation hygiene for this section
 
-Every line number in §12.2–§12.6 was obtained with `grep -n` on
-`pdftotext -layout` output and read back with `sed -n 'Np'`. Do not copy line
-numbers out of `scripts/corpus_search.py` output: it numbers lines with
-`str.splitlines()`, which splits on form feeds as well as newlines, so its
-numbers run ahead of `grep -n` by roughly one per PDF page (issue #226; see
-`vedic_reference.md` §28.6). Printed page numbers were resolved by locating the
-page footer, which is the **last** line of each `-layout` page in all three
-books — verified per book rather than assumed.
+**Printed page numbers are in the running HEADER — the FIRST line of each
+`-layout` page — in all four books.** Resolve one by re-extracting the single
+page (`pdftotext -layout -f N -l N file.pdf -`) and reading its first line. Do
+**not** infer it from a contiguous `sed -n 'A,Bp'` range: the number that
+appears *after* a block of text is the header of the *next* page, and reading it
+as a footer puts every citation one page late. That is exactly how the first
+draft of this section got all ten of its printed pages wrong (§12.9).
 
-`book1-for-CD.pdf` is a **rotated, two-column** layout. Its `-layout` lines
-interleave the two columns, so a contiguous `sed -n 'A,Bp'` range spanning a
-quoted passage will contain unrelated text from the facing column. Quote the
-specific lines, not the range.
+**`book1-for-CD.pdf` is a rotated two-page spread.** Each PDF page holds two
+printed pages side by side and `-layout` interleaves their lines, so (a) a
+contiguous line range spanning a quoted passage will contain unrelated text
+from the facing column — quote specific lines, never ranges — and (b) the
+column-to-printed-page mapping is not reliably recoverable, because the column
+offsets vary from page to page. Cite the spread.
+
+**`scripts/corpus_search.py` line numbers are correct again.** The form-feed
+defect (#226) was fixed in `e59ecbf`. Measured on the shipped tool 2026-08-26:
+`overrated` → line **7076**, `grep -n` → line **7076**, 109 PDF pages into
+`book1-for-CD.pdf`, where the old defect would have shown roughly +108. Line
+numbers cited in documents written **before** `e59ecbf` may still be inflated;
+those written after are directly resolvable with `sed -n 'Np'`. `vedic_reference.md`
+§28.6 still describes the defect in the present tense and needs the same
+correction.
 
 Corpus line counts at extraction time, for re-verification:
 `vedic_astro_textbook.pdf` 16,724 `-layout` / 20,669 plain;
-`book1-for-CD.pdf` 7,757 / 12,244; `Astrology-e-book-compressed.pdf` 4,558 /
-5,220.
+`raman-…_djvu.txt` 9,158 (plain text, no extraction);
+`book1-for-CD.pdf` 7,757 / 12,244;
+`Astrology-e-book-compressed.pdf` 4,558 / 5,220. Total 38,197 `-layout`.
+
+**Gates that read this file:** `scripts/verify_muhurat_tables.py` (Gate 6 keys
+on the literal string `| Planet | Combust when within |` and the blank line
+that ends the table — do not reshape the §12.1 table) and
+`scripts/verify_corpus_search.py`. Run both after editing §12.
+
+### 12.9 What the first draft got wrong (2026-08-26)
+
+Kept because two of these are traps, not typos, and the next person will meet
+them.
+
+1. **All ten printed page numbers were one page late.** The method statement
+   claimed the page number was the *last* line of each `-layout` page,
+   "verified per book rather than assumed" — it was neither. The number is a
+   running **header**; a contiguous range makes the next page's header look
+   like a footer. Corrected by single-page re-extraction (§12.8). Every **PDF**
+   page number was right, which is what made the error survive a self-check.
+2. **A stale tooling warning, stated as current fact.** The section warned that
+   `corpus_search.py` line numbers run ahead of `grep -n`; that had been fixed
+   in `e59ecbf`, an *ancestor* of the commit making the claim.
+3. **"Exhaustively listed" was false.** Two of `book1`'s fifteen combustion
+   lines were omitted — and one of them, line **4494**, is the source for this
+   section's own standing "Interpretive rule". A sourcing audit missed the line
+   that sources its own rule.
+4. **Two conclusions were falsified by the corpus growing mid-audit.** The
+   first draft called §12.1 "unverifiable in this checkout" and predicted that
+   Raman's *Muhurtha* "would not settle" the Manglik question. Raman arrived
+   hours later: it verifies §12.1 exactly, and it contains a dedicated
+   Kuja-dosha antidote list. **Never assert the contents of a book you do not
+   have** — mark that class uncheckable instead. (The Manglik verdict was
+   strengthened, not overturned; the method was still wrong.)
+5. **An unranked veto was called "the strongest".** `score_event()` has about a
+   dozen equally terminal `return "avoid"` branches.
+6. **A gate was broken and not run.** The restructure deleted the string
+   `**Classical combustion orbs:**` that `verify_muhurat_tables.py` Gate 6 keyed
+   on; the gate early-returned, so its other two checks silently stopped running
+   too. Re-anchored in `a545712` on the table's column header. *Run every gate
+   that reads a file you edit, whether or not you touched code.*
 
 ---
 
