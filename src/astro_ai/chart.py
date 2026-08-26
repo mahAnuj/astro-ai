@@ -3181,14 +3181,6 @@ class DailyPanchang:
     karana_significance: str  # classical note; "" if ordinary karana — universal
     sunrise: datetime         # local time at natal birthplace — LOCATION-DEPENDENT
     sunset: datetime          # local time at natal birthplace — LOCATION-DEPENDENT
-    # Moonrise/moonset may carry a NEXT-DAY instant, or None. Successive
-    # moonrises are ~24h50m apart, so on 13 of 365 Delhi days in 2026 the day
-    # holds no moonrise of its own and the first one after midnight is on D+1;
-    # at polar latitudes the event can be absent for a week at a time. Both are
-    # correct — see _rise_or_set. Callers must render the date, not just the
-    # clock time, and must handle None.
-    moonrise: datetime | None # LOCATION-DEPENDENT
-    moonset: datetime | None  # LOCATION-DEPENDENT
     rahu_kaal_start: datetime # LOCATION-DEPENDENT
     rahu_kaal_end: datetime   # LOCATION-DEPENDENT
     abhijit_start: datetime   # LOCATION-DEPENDENT
@@ -3203,15 +3195,6 @@ class DailyPanchang:
 # Rounded to ~55km (0.5deg) — sunrise/sunset differ by seconds within that
 # radius, well below the ~2min classical rounding. Cache is bounded by the
 # small number of cities in the subscriber base, so we don't LRU-cap it.
-#
-# The moonrise/moonset instants inherit the same key, and the same rounding is
-# ≤1.15 min on the INSTANT (max over 730 Srinagar moon events in 2026, true
-# 34.0837/74.7973 vs grid 34.0/75.0; mean 0.84 min) — but twice that year it
-# flips the CALENDAR DAY, worst case 1498.65 apparent minutes on 2026-12-17,
-# where the true point's moonset is 17-Dec 00:00:42 and the grid point's is
-# 18-Dec 00:59:21. Both are correct for their own coordinates; the day label is
-# what the midnight anchor moves. So any gate over these fields must compare
-# full instants with a minute tolerance, NEVER printed dates.
 _PANCHANG_CACHE: dict[tuple, "DailyPanchang"] = {}
 
 
@@ -3318,6 +3301,19 @@ def _karana_at(julian_day: float) -> tuple[int, str, str]:
     return idx, name, _KARANA_SIGNIFICANCE.get(name, "")
 
 
+def _local_day(natal: Chart, when: datetime | None) -> tuple[ZoneInfo, date_]:
+    """(birthplace tz, local calendar date) for the anchor moment `when`.
+
+    A panchang day is the LOCAL calendar date at the birthplace, not the UTC
+    date and not the caller's date. Shared by `compute_panchang` and
+    `compute_moon_rise_set` so the two cannot drift: if they derived the day
+    differently, the moonrise returned for a date would belong to a different
+    day than the tithi returned for it.
+    """
+    tz = ZoneInfo(natal.birth_tz)
+    return tz, (when or datetime.now(tz)).astimezone(tz).date()
+
+
 def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchang:
     """Compute today's Panchang for the natal birthplace, cached per (date, city).
 
@@ -3329,9 +3325,7 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
     worldwide for a given date; location-dependent ones (sunrise, Rahu Kaal,
     Abhijit) genuinely vary by city. The in-process cache dedups per city.
     """
-    tz = ZoneInfo(natal.birth_tz)
-    moment = (when or datetime.now(tz)).astimezone(tz)
-    today = moment.date()
+    tz, today = _local_day(natal, when)
 
     # Cache key: date + coarse coords + tz. ~55km radius shares one entry.
     cache_key = (
@@ -3347,11 +3341,6 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
     weekday = today.weekday()  # 0=Mon..6=Sun
     weekday_name, day_lord, day_color, day_color_hex = _WEEKDAY_LORDS[weekday]
     sunrise, sunset = _sunrise_sunset(today, natal.birth_lat, natal.birth_lon, tz)
-    # Either may be None (no moonrise/moonset on this date) or land on D+1.
-    moonrise = _rise_or_set(today, natal.birth_lat, natal.birth_lon, tz,
-                            swe.MOON, swe.CALC_RISE)
-    moonset = _rise_or_set(today, natal.birth_lat, natal.birth_lon, tz,
-                           swe.MOON, swe.CALC_SET)
 
     # Tithi at local sunrise — the classical convention for "today's tithi".
     sunrise_ut = sunrise.astimezone(ZoneInfo("UTC"))
@@ -3406,8 +3395,6 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
         karana_significance=karana_sig,
         sunrise=sunrise,
         sunset=sunset,
-        moonrise=moonrise,
-        moonset=moonset,
         rahu_kaal_start=rk_start,
         rahu_kaal_end=rk_end,
         abhijit_start=midday - abhijit_half,
@@ -3415,6 +3402,44 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
     )
     _PANCHANG_CACHE[cache_key] = result
     return result
+
+
+def compute_moon_rise_set(
+    natal: Chart, when: datetime | None = None
+) -> tuple[datetime | None, datetime | None]:
+    """(moonrise, moonset) at the natal birthplace for the local day of `when`.
+
+    Either may carry a NEXT-DAY instant, or be None. Successive moonrises are
+    ~24h50m apart, so on 13 of 365 Delhi days in 2026 the day holds no moonrise
+    of its own and the first one after midnight is on D+1; at polar latitudes
+    the event can be absent for a week at a time. Both are correct — see
+    `_rise_or_set`. Callers must render the date, not just the clock time, and
+    must handle None.
+
+    Deliberately NOT a `DailyPanchang` field and deliberately uncached. The two
+    Swiss Ephemeris calls cost ~0.5 ms, which `compute_panchang`'s callers were
+    paying 90 times over on a muhurat search that reads neither value (#150).
+    Putting them behind a `with_lunar=` flag was rejected on correctness, not
+    cost: a search would have filled `_PANCHANG_CACHE` with lunar-less entries,
+    and a later `/panchang` hitting one would render "no moonrise today" —
+    indistinguishable from the genuine absence the None exists to express.
+
+    Computed at the EXACT birth coordinates, not `_PANCHANG_CACHE`'s 0.5° grid
+    point — which is why it does not go through that cache. The moon lands near
+    midnight often enough that the grid offset flips the printed CALENDAR DAY:
+    Srinagar 2026-12-17 moonset is 17-Dec 00:00:42 at the true point and
+    18-Dec 00:59:21 at the grid point, 1498.65 apparent minutes apart, twice in
+    2026. Off the grid, that flip cannot happen. Sunrise/sunset do not need this
+    — measured across the same cell diagonals over 2026, they move at most
+    3.37 min (Srinagar) / 3.18 min (Delhi) and flip no calendar day at either.
+    """
+    tz, today = _local_day(natal, when)
+    return (
+        _rise_or_set(today, natal.birth_lat, natal.birth_lon, tz,
+                     swe.MOON, swe.CALC_RISE),
+        _rise_or_set(today, natal.birth_lat, natal.birth_lon, tz,
+                     swe.MOON, swe.CALC_SET),
+    )
 
 
 def format_panchang_for_prompt(panchang: DailyPanchang) -> str:
