@@ -678,6 +678,160 @@ def gate_5_single_pada_impl() -> list[str]:
     return failures
 
 
+# --------------------------------------------------------------------------
+# Gate 6 - a date with no daylight span must be flagged, not divided (#227)
+# --------------------------------------------------------------------------
+
+# Tromso, as OpenStreetMap/Nominatim resolves the bare string "Tromso". The
+# exact point is not the claim — what matters is that it is north of the
+# Arctic Circle (66.56N), so some dates hold no ordinary sunrise-to-sunset
+# span at all. Coordinates are pinned here rather than geocoded because this
+# gate must run with no network: outbound geocoding is blocked in most
+# sandboxes, and a gate that cannot run is a gate that never fails.
+POLAR_CITY = "Tromso"
+POLAR_LAT, POLAR_LON, POLAR_TZ = 69.6492, 18.9553, "Europe/Oslo"
+POLAR_YEAR = 2026
+
+# Sub-second slack: the window bounds are float-second timedeltas off sunrise,
+# so the last Rahu Kaal segment can end a few microseconds past sunset.
+_SLACK = timedelta(seconds=1)
+
+
+def _polar_chart():
+    """A chart at Tromso with `geocode_place` stubbed — no network, by design."""
+    from astro_ai import chart as _chart_module
+    real = _chart_module.geocode_place
+    _chart_module.geocode_place = lambda place: (POLAR_LAT, POLAR_LON, POLAR_TZ)
+    try:
+        return compute_chart("2000-01-01", "12:00", POLAR_CITY)
+    finally:
+        _chart_module.geocode_place = real
+
+
+def _windows_are_wellformed(day: date, p) -> list[str]:
+    """Complaints about `p`'s daylight-derived windows, ignoring the flag.
+
+    Deliberately says nothing about how `daylight_ordinary` is DEFINED — it
+    checks the consequence instead. Restating the flag's own condition here
+    would make the gate a tautology that passes forever, which is the failure
+    `scripts/mutate_behaviour_suite.py` was written to catch.
+    """
+    bad: list[str] = []
+    if p.sunset <= p.sunrise:
+        bad.append(f"sunset {p.sunset:%d %H:%M:%S} is not after sunrise {p.sunrise:%d %H:%M:%S}")
+    if p.sunrise.date() != day or p.sunset.date() != day:
+        bad.append(f"sunrise/sunset fall outside {day} ({p.sunrise.date()} / {p.sunset.date()})")
+    for label, start, end in (
+        ("rahu kaal", p.rahu_kaal_start, p.rahu_kaal_end),
+        ("abhijit", p.abhijit_start, p.abhijit_end),
+    ):
+        if end <= start:
+            bad.append(f"{label} {start:%H:%M:%S}..{end:%H:%M:%S} ends before it starts")
+        if start < p.sunrise - _SLACK or end > p.sunset + _SLACK:
+            bad.append(f"{label} {start:%H:%M:%S}..{end:%H:%M:%S} escapes daylight")
+    return bad
+
+
+def gate_6_polar_daylight(census: list[tuple[date, object]]) -> list[str]:
+    """A date with no sunrise-to-sunset span must be FLAGGED, never divided (#227).
+
+    Rahu Kaal is a weekday-indexed eighth of daylight and Abhijit a fifteenth
+    of it (`knowledge/vedic_reference.md` §28); Choghadiya divides the same
+    span into eight. North of the Arctic Circle a calendar date can hold no
+    such span — `_rise_or_set` anchors at local midnight, so the first set it
+    finds can be the tail of the previous solar day and land BEFORE the rise.
+    The eighths and fifteenths are then negative and every window ends before
+    it starts.
+
+    That did not raise and did not degrade. `/panchang` took `?city=` as free
+    text and rendered it at 200 OK: Tromso 2026-05-17 showed "Sunrise/Sunset
+    01:14 — 00:06", "Rahu Kaal 00:14 — 00:06" and a choghadiya counting
+    downwards, with nothing on the page to say it was wrong. Measured
+    2026-08-26 over the 365 days of 2026 at Tromso: 117 raise before reaching
+    here (no rise or no set at all — a separate, LOUD path the route degrades),
+    5 reach here without an ordinary span (2026-05-16, 05-17, 07-26, 07-27,
+    07-28) and 243 are ordinary.
+
+    Those five dates are recorded as history, not as the assertion — an
+    ephemeris update may legitimately move them. What is asserted is the tie
+    between the flag and its consequence, in both directions:
+
+      * every day the flag calls ordinary must have well-formed windows, and
+      * every day it does not must have at least one malformed one.
+
+    So the gate goes red if the flag is dropped, inverted, hardcoded, or
+    narrowed to only half the shapes. The New Delhi census is included as the
+    control: a guard that flags a shipping locale is as broken as one that
+    misses Tromso.
+    """
+    failures: list[str] = []
+    try:
+        chart = _polar_chart()
+    except Exception as exc:  # noqa: BLE001
+        return [f"could not build the stubbed {POLAR_CITY} chart: "
+                f"{type(exc).__name__}: {exc}"]
+
+    flagged: list[date] = []
+    ordinary = 0
+    raised = 0
+    day = date(POLAR_YEAR, 1, 1)
+    while day.year == POLAR_YEAR:
+        try:
+            p = _panchang_for(chart, day)
+        except Exception:  # noqa: BLE001  — the loud path; #227 is the quiet one
+            raised += 1
+            day += timedelta(days=1)
+            continue
+        bad = _windows_are_wellformed(day, p)
+        if p.daylight_ordinary:
+            ordinary += 1
+            for line in bad:
+                failures.append(
+                    f"{POLAR_CITY} {day}: daylight_ordinary=True but {line} — "
+                    "the page will render this window as if it were real"
+                )
+        else:
+            flagged.append(day)
+            if not bad:
+                failures.append(
+                    f"{POLAR_CITY} {day}: daylight_ordinary=False on an ordinary "
+                    "day (sunrise..sunset and every window is well-formed) — "
+                    "the page will withhold windows it could have shown"
+                )
+        day += timedelta(days=1)
+
+    # A gate that never sees the defect proves nothing about the defect.
+    if not flagged:
+        failures.append(
+            f"no day in {POLAR_YEAR} at {POLAR_CITY} was flagged — either the "
+            "flag is hardcoded True or the coordinates stopped being polar; "
+            "either way the check above never ran"
+        )
+    if not ordinary:
+        failures.append(
+            f"every computable day in {POLAR_YEAR} at {POLAR_CITY} was flagged — "
+            "the flag is hardcoded False and disclosure would swallow the "
+            "243 days that are perfectly ordinary"
+        )
+
+    # Control: the shipping locale must be untouched by all of this.
+    for day, p in census:
+        bad = _windows_are_wellformed(day, p)
+        if bad:
+            failures.append(f"{CITY} {day}: {bad[0]}")
+        if not p.daylight_ordinary:
+            failures.append(
+                f"{CITY} {day}: daylight_ordinary=False at an Indian latitude — "
+                "the disclosure is firing where there is nothing to disclose"
+            )
+
+    print(f"  {POLAR_CITY} {POLAR_YEAR}: {raised} raised, {len(flagged)} flagged "
+          f"({', '.join(str(d) for d in flagged) or 'none'}), {ordinary} ordinary")
+    print(f"  {CITY}: {len(census)} census day(s), all ordinary and well-formed"
+          if not failures else f"  {CITY}: control had problems, see above")
+    return failures
+
+
 def main() -> int:
     print("Panchang anga verification — Nitya Yoga + Karana (issue #142)")
     print("  computation : src/astro_ai/chart.py compute_panchang()")
@@ -715,6 +869,8 @@ def main() -> int:
          lambda: gate_4_muhurat_agrees(chart)),
         ("Gate 5 - one pada implementation, no recomputation (#209)",
          gate_5_single_pada_impl),
+        ("Gate 6 - polar dates are flagged, not divided (#227)",
+         lambda: gate_6_polar_daylight(census)),
     ]
 
     all_failures: list[str] = list(census_errors)

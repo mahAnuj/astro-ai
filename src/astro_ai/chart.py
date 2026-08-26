@@ -3185,6 +3185,10 @@ class DailyPanchang:
     rahu_kaal_end: datetime   # LOCATION-DEPENDENT
     abhijit_start: datetime   # LOCATION-DEPENDENT
     abhijit_end: datetime     # LOCATION-DEPENDENT
+    # False when this date has no ordinary sunrise→sunset span at this
+    # latitude, so the four fields above are arithmetic on a span that does
+    # not exist and MUST NOT be presented. See compute_panchang. #227.
+    daylight_ordinary: bool = True
 
 
 # In-process cache keyed by (date, rounded lat, rounded lon, tz name). Two
@@ -3363,6 +3367,30 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
     yoga_idx, yoga_name, yoga_sig = _nitya_yoga_at(sunrise_jd)
     karana_idx, karana_name, karana_sig = _karana_at(sunrise_jd)
 
+    # Does this date HAVE an ordinary sunrise→sunset span? At high latitude it
+    # can not: `_rise_or_set` anchors at local midnight, so near the solstice
+    # the first set it finds is the tail of the PREVIOUS solar day and lands
+    # before the rise, and on other days both instants fall on D+1. Every
+    # window below is a fraction of daylight (`knowledge/vedic_reference.md`
+    # §28 — Rahu Kaal is a weekday-indexed eighth of it, Abhijit a fifteenth),
+    # so on such a date they are fractions of a span that does not exist:
+    # day_seconds goes negative and each window ends before it starts.
+    # Measured 2026-08-26 at Tromso (69.6492N/18.9553E, Europe/Oslo) over the
+    # 365 days of 2026: 117 raise before reaching here (no rise or no set at
+    # all), 4 arrive with sunset <= sunrise (2026-05-17 sunrise 01:14:09 /
+    # sunset 00:06:04, daylength −1.13h; 07-26, 07-27, 07-28) and 1 more
+    # (2026-05-16) with a sunset on D+1. Those 5 used to render a confident
+    # backwards table on `/panchang` — 200 OK, no error, no clue. Issue #227.
+    #
+    # The four derived fields are still POPULATED rather than set to None:
+    # `llm.py` formats them unconditionally for the daily-reading and rashifal
+    # prompts, so a None would convert this quiet render defect into a crash on
+    # the email path. Callers that PRESENT a daylight window must check this
+    # flag; `routes/panchang.py` does.
+    daylight_ordinary = (
+        sunset > sunrise and sunrise.date() == today and sunset.date() == today
+    )
+
     # Rahu Kaal: which 1/8 segment of the daylight period?
     day_seconds = (sunset - sunrise).total_seconds()
     segment_seconds = day_seconds / 8.0
@@ -3409,6 +3437,7 @@ def compute_panchang(natal: Chart, when: datetime | None = None) -> DailyPanchan
         rahu_kaal_end=rk_end,
         abhijit_start=midday - abhijit_half,
         abhijit_end=midday + abhijit_half,
+        daylight_ordinary=daylight_ordinary,
     )
     _PANCHANG_CACHE[cache_key] = result
     return result
@@ -3619,12 +3648,17 @@ def _sunrise_sunset(
     unusable, so no caller changed. BOTH SHAPES ARE REACHABLE IN PRODUCTION —
     this docstring used to say they were not. `/panchang` takes `?city=` as free
     text with no allow-list, so a polar city arrives here: at Tromso, 117 of 365
-    days in 2026 raise and the route degrades to Mumbai, but 4 render 200 OK with
-    `sunset <= sunrise` (2026-05-17 shows sunrise 01:14, sunset 00:06, Rahu Kaal
-    00:14–00:06 and a backwards choghadiya). It is the Delhi-hardcoded callers
-    (`sankranti.py`, `lunar_observances.py`, `lunar_dates.py`, `adhik_maas.py`)
-    that cannot reach it. Making the polar Sun render properly is separate
-    work (#227).
+    days in 2026 raise and the route degrades to Mumbai, but 4 used to render
+    200 OK with `sunset <= sunrise` (2026-05-17 showed sunrise 01:14, sunset
+    00:06, Rahu Kaal 00:14–00:06 and a backwards choghadiya). It is the
+    Delhi-hardcoded callers (`sankranti.py`, `lunar_observances.py`,
+    `lunar_dates.py`, `adhik_maas.py`) that cannot reach it.
+
+    The reversed shape is now DETECTED rather than rendered: `compute_panchang`
+    sets `DailyPanchang.daylight_ordinary = False` for it and `/panchang`
+    discloses instead of showing daylight-fraction windows (#227). The None /
+    raise shape is unchanged and still degrades the route to Mumbai — loud, and
+    still open.
     """
     return (
         _rise_or_set(day, lat, lon, tz, swe.SUN, swe.CALC_RISE),

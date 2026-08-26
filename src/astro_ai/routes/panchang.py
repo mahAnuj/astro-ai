@@ -76,10 +76,17 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
     choghadiya_windows = []
     moon_info = None
     if p and chart_for_loc:
-        try:
-            choghadiya_windows = _choghadiya(p.weekday, p.sunrise, p.sunset)
-        except Exception:
-            choghadiya_windows = []
+        # Choghadiya divides sunrise-to-sunset into 8. When the date has no
+        # ordinary daylight span (polar latitudes — see
+        # DailyPanchang.daylight_ordinary), that division is of a negative
+        # number and the 8 windows run BACKWARDS. Tromso 2026-05-17 rendered
+        # 01:14→01:05→00:57→… at 200 OK. Show nothing rather than that; the
+        # template says why. #227.
+        if p.daylight_ordinary:
+            try:
+                choghadiya_windows = _choghadiya(p.weekday, p.sunrise, p.sunset)
+            except Exception:
+                choghadiya_windows = []
         try:
             transit = compute_transit_snapshot(chart_for_loc, when=_target_moment(chart_for_loc))
             moon = next((pl for pl in transit.planets if pl.name == "Moon"), None)
