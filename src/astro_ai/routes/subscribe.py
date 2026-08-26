@@ -456,6 +456,36 @@ async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
     })
 
 
+def _mask_email(email: object) -> str:
+    """``kartik@gmail.com`` → ``ka***@gmail.com``. Never returns a full address.
+
+    Blast alerts get this, not the raw address (#222). ``_fire_error_alert``
+    puts its message into the Telegram channel AND into ``events.record``'s
+    ``error_message``, which ``/admin/activity`` renders and GCS retains for 30
+    days — so a raw address there is a subscriber list in a chat channel and a
+    month-long store. The alert's job is "how many failed"; enough of the
+    address to recognise a repeat offender is all it needs. Identifying data
+    stays in the app log, which is the right place for it.
+
+    Total by construction: no input can make it raise. It takes ``object``,
+    not ``str``, because its argument comes from the subscribers blob via
+    ``sub.get("email", "")`` — whatever is actually stored, not what the
+    signature wishes were stored. A truthy non-string (``12345``, a list) used
+    to reach ``.partition`` and raise AttributeError from the partial alert,
+    which sits below the send loop and outside its handler: no alert fired and
+    no outcome JSON returned. That is #220's harm exactly, so a masking helper
+    on an error path must not be able to cause it. Non-strings mask to ``***``
+    rather than ``str(email)`` — an unknown shape is not an address we can
+    safely quote into a 30-day store.
+    """
+    if not isinstance(email, str):
+        return "***"
+    local, _, domain = email.partition("@")
+    if not domain:
+        return "***"
+    return f"{local[:2]}***@{domain}"
+
+
 @router.post("/admin/send-daily-rashifal", dependencies=[Depends(require_admin)])
 async def send_daily_rashifal(request: Request) -> JSONResponse:
     """Send today's Rashifal email to every active subscriber.
@@ -528,27 +558,53 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     # mean what any monitor reading it assumes: sent + failed == total.
     subs = subscribers.list_subscribers()
     for sub in subs:
-        lang = sub.get("lang", "en")
-        if lang not in sections_by_lang:
-            lang = "en"
+        # Read `email` with .get() like every other field on these rows. It was
+        # subscripted directly at four sites, so a row missing it raised
+        # KeyError — and there was no handler nearer than the app-level one,
+        # so that single bad row took the whole blast down (#220).
+        email = sub.get("email", "")
+        send_err: Exception | None = None
+        try:
+            if not email:
+                raise ValueError("subscriber row has no email")
+            lang = sub.get("lang", "en")
+            if lang not in sections_by_lang:
+                lang = "en"
 
-        ctx = _email_context(lang=lang, city=sub.get("city", ""),
-                             request_cache=panchang_cache)
-        ctx["rashifal_sections"] = _filter_rashi_sections(
-            sections_by_lang[lang], sub.get("rashi", "all")
-        )
-        ctx["unsubscribe_url"] = (
-            f"{site_url}/unsubscribe?email={sub['email']}"
-            f"&token={subscribers.unsubscribe_token(sub['email'])}"
-        )
-        html = template.render(**ctx)
-        subject = "आज का राशिफल — Shubh Bhagya" if lang == "hi" else "Today's Rashifal — Shubh Bhagya"
-        ok = email_sender.send(sub["email"], subject=subject, html=html)
+            ctx = _email_context(lang=lang, city=sub.get("city", ""),
+                                 request_cache=panchang_cache)
+            ctx["rashifal_sections"] = _filter_rashi_sections(
+                sections_by_lang[lang], sub.get("rashi", "all")
+            )
+            ctx["unsubscribe_url"] = (
+                f"{site_url}/unsubscribe?email={email}"
+                f"&token={subscribers.unsubscribe_token(email)}"
+            )
+            html = template.render(**ctx)
+            subject = "आज का राशिफल — Shubh Bhagya" if lang == "hi" else "Today's Rashifal — Shubh Bhagya"
+            ok = email_sender.send(email, subject=subject, html=html)
+        except Exception as exc:  # noqa: BLE001 — one bad row must not end the blast
+            # A raise here escaped past BOTH alerts below and past the outcome
+            # JSON, so the blast aborted mid-run and reported nothing at all —
+            # unretryably, because Cloud Scheduler runs this job with
+            # --max-retry-attempts=0 (retries were double-generating and
+            # doubling spend). NOT email_sender.send, which already wraps its
+            # HTTP call and returns False; the raise sources are the context,
+            # token and render code around it. Counted exactly like a falsey
+            # send so the partial alert below covers it.
+            send_err = exc
+            ok = False
         if ok:
             sent += 1
         else:
             failed += 1
-            failures.append(sub["email"])
+            failures.append(email or "<no email>")
+            # The app log is now the ONLY place the full address appears — the
+            # partial alert below carries a count and a masked prefix (#222) —
+            # so log every failure, not just the raising ones. `exc_info` is
+            # the traceback on the raising path and None on a falsey send.
+            log.warning("daily rashifal: not delivered to %s",
+                        email or "<no email>", exc_info=send_err)
 
     # `ok` must mean "subscribers got their email", not "the handler reached
     # its last line". It used to be the literal True, so a blast that failed
@@ -561,27 +617,50 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     delivered_none = total > 0 and sent == 0
     ok = not delivered_none and failed == 0
 
-    if delivered_none:
-        _fire_error_alert(
-            request,
-            RuntimeError(f"daily rashifal reached 0 of {total} subscribers"),
-            "rashifal:blast:zero_delivered",
-        )
-    elif failed:
-        _fire_error_alert(
-            request,
-            RuntimeError(f"daily rashifal failed for {failed} of {total}: {failures[:5]}"),
-            "rashifal:blast:partial",
-        )
+    # Every alert below sits outside the per-subscriber handler, so anything
+    # that raises while BUILDING or firing one kills the response the loop
+    # just worked to protect: no alert, no outcome JSON, an HTML 500. That is
+    # #220's own harm relocated one block down, and it was reached — a truthy
+    # non-string `email` in the subscribers blob raised inside `_mask_email`.
+    # `_mask_email` is total now; these guards are the part that generalises,
+    # because the lesson of #220 is that the blast must not die silently and
+    # an alert that raises does precisely that. Guarded separately so one
+    # failing alert does not suppress the other.
+    try:
+        if delivered_none:
+            _fire_error_alert(
+                request,
+                RuntimeError(f"daily rashifal reached 0 of {total} subscribers"),
+                "rashifal:blast:zero_delivered",
+            )
+        elif failed:
+            # Count plus ONE masked prefix — this message reaches the Telegram
+            # channel and events.record's error_message, which /admin/activity
+            # renders and GCS keeps for 30 days. It used to interpolate
+            # `failures[:5]` raw, which put up to five subscriber addresses into
+            # both (#222). Full addresses stay in the app log, logged per failure
+            # in the loop above.
+            _fire_error_alert(
+                request,
+                RuntimeError(f"daily rashifal failed for {failed} of {total}"
+                             f" (first: {_mask_email(failures[0])})"),
+                "rashifal:blast:partial",
+            )
+    except Exception:  # noqa: BLE001 — alerting must never cost the outcome JSON
+        log.exception("daily rashifal: delivery alert failed; outcome still reported")
+
     # A short language is worth knowing about even when every send succeeded:
     # subscribers on that language quietly receive fewer than 12 rashis.
     short = {lang: len(secs) for lang, secs in sections_by_lang.items() if len(secs) != 12}
     if short:
-        _fire_error_alert(
-            request,
-            RuntimeError(f"daily rashifal sections incomplete: {short} (expected 12 each)"),
-            "rashifal:blast:short_sections",
-        )
+        try:
+            _fire_error_alert(
+                request,
+                RuntimeError(f"daily rashifal sections incomplete: {short} (expected 12 each)"),
+                "rashifal:blast:short_sections",
+            )
+        except Exception:  # noqa: BLE001 — same: the outcome JSON outranks the alert
+            log.exception("daily rashifal: short-sections alert failed; outcome still reported")
 
     log.info("daily rashifal: sent=%d failed=%d of %d subscribers, sections=%s",
              sent, failed, total, {k: len(v) for k, v in sections_by_lang.items()})
