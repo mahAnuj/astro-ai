@@ -432,6 +432,19 @@ Dated, with the evidence. **Check here before proposing a change.**
   `scripts/verify_behaviour.py`) but covers only request-path regressions — the cache
   lifecycle, degraded pages and blast reporting where eleven defects landed across four
   QA rounds. Everything else is verified by execution plus the thirteen gates.
+- **The suite is hermetic as of #224 — it needs no `.env` and no network.** It previously
+  needed both, and a bare `uv run pytest` on a clean checkout reported **14 failures that
+  were not defects**: nine tests reached Nominatim, and five hit the `OPENAI_API_KEY` gate.
+  Two autouse fixtures in `tests/conftest.py` close it — `_offline_geocode` patches
+  `chart.geocode_place`, the single outbound call on these paths, and `_dummy_api_key`
+  overrides the key for every test. The cut is deliberately narrow: charts, panchang and
+  transits are still really computed, so the assertions stay meaningful.
+  The lesson generalises. The suite's docstring had claimed "no network, no LLM, no GCS"
+  since it was written, but nothing *enforced* it — nine tests drifted across a rule that
+  was only prose, and the cost was paid by every agent that had to diagnose a red run
+  before being told to work around it. A guard that does not guard reads as an assurance.
+  Note also that `_dummy_api_key` overrides a REAL key rather than defaulting when unset,
+  so a developer with live credentials cannot have a forgotten stub spend paid quota.
 - **`verify_devanagari_serif`** needs Playwright, which is not installed; it fails
   identically on every tree and is not a signal.
 

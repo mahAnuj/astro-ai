@@ -17,7 +17,6 @@ import sys
 import threading
 from pathlib import Path
 
-
 def test_signed_out_outage_solves_once_not_twice(deps, failing_geocode):
     """A signed-out request already resolves to the default city, so falling
     back to the default re-runs the identical call that just failed.
@@ -67,6 +66,12 @@ def test_fallback_keeps_the_strip_visible(deps, failing_geocode):
     """Defect: a blip marked the key and served NOTHING for 60s — the exact
     #213 failure the fallback exists to prevent, made intermittent rather than
     all-day. The reader must keep seeing the default city's times, labelled.
+
+    Unlike its neighbours this one needs the Mumbai leg to SUCCEED —
+    `failing_geocode` hands non-failing places to the real `compute_chart` — so
+    it used to reach Nominatim (#224). conftest's autouse `_offline_geocode`
+    covers that now, and the panchang it asserts is visible is still really
+    computed.
     """
     failing_geocode(lambda place: "Mumbai" not in place)
 
