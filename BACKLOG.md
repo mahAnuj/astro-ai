@@ -237,8 +237,23 @@ PDF as a source book) — do not loosen the boundary far enough to reintroduce t
 
 9,466 → 11,215 ch ≈ 2,366 → 2,803 tok, × 24 calls/day ≈ **+10.5k input tokens/day** against
 groq120's 200k TPD. QA observed `groq120 rate-limited … TPD: Limit 200000` repeatedly; the
-chain fell through to groq20 and no user saw a failure. `prompts/` last modified at `e06c4e7`
-— the exact "after" tree #212 measured, so its numbers describe HEAD.
+chain fell through to groq20 and no user saw a failure.
+
+**CORRECTED 2026-08-26 — this paragraph previously said `prompts/` was last modified at
+`e06c4e7`, "the exact 'after' tree #212 measured, so its numbers describe HEAD". Wrong on
+both halves, and it cost an engineer a wrong conclusion.** #212 measured `3c02c71` vs
+**`0f6501c`** (the issue's own prose names `e06c4e7`, one commit later — that is where the
+error entered), and its "combined per call" is **system prompt + day-signals block only**,
+excluding the transit block and the per-rashi anchor. Rebuilt under the issue's own date:
+
+```
+3c02c71 2026-08-22:  sys=8710  day_signals= 756  sum= 9466   issue:  9,466  ✓
+0f6501c 2026-08-22:  sys=9634  day_signals=1581  sum=11215   issue: 11,215  ✓
+```
+
+**#212's figures reproduce to the character.** An engineer working from the line above
+measured a different pair (`348ab01` → HEAD), got 11,258 → 13,482, and reported the issue's
+absolutes as unreproducible. They are not. Do not close #212 saying they were.
 
 Position 6 because it is **silent** (silence is what let the previous failure run 21 days),
 but nothing is currently wrong for any user. Headroom, not breakage.
