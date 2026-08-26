@@ -191,8 +191,8 @@ context-specific behaviour (`ask_matching`, `ask_matching_third_party`, `ask_num
 rather than being duplicated.
 
 The user message is assembled in Python — chart data, transits, panchang, day signals.
-About **97.6% of a rashifal call's prompt is byte-identical across the 12 rashis** — but
-"identical" is not "cacheable". A prefix cache needs the shared bytes contiguous from
+Most of a rashifal call's prompt repeats across the 12 rashis, but "shared"
+is not "cacheable". A prefix cache needs the shared bytes contiguous from
 position 0, and the per-rashi anchor used to lead the user message, so the 12 calls
 diverged 28 characters in: only **9,963 of 13,482 characters (73.9%) were a shared
 prefix**, with a 3,519-character unique tail. #212 moved the day signals and transit
