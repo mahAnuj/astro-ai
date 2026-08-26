@@ -1622,9 +1622,14 @@ Do not "fix" §27 to match Rao. **Blast radius, measured rather than guessed:**
 (`ls learn/ | grep -c nakshatra`), `learn_registry.py` names **16** slugs (the
 extra, `vishakha-nakshatra`, is a pre-existing dangling `related` reference
 with no template). **Six of the 15 fall inside the disputed stretch** — Magha,
-Purva Phalguni, Uttara Phalguni, Hasta, Chitra, Swati — and two of those,
-Hasta/Savitar and Chitra/Vishvakarma, carry the deity in their title, summary
-and FAQ body. Changing §27 on the strength of a table that self-evidently
+Purva Phalguni, Uttara Phalguni, Hasta, Chitra, Swati — and **four of those
+name the deity in the article TITLE**: Purva Phalguni/Bhaga, Uttara
+Phalguni/Aryaman, Hasta/Savitar, Chitra/Vishvakarma. The other two title a
+gloss rather than the name (Magha "Royal Throne of the Ancestors", Swati "The
+Self-Going Wind"). **All six carry it in the summary AND in a dedicated FAQ
+question** ("Who is Vayu, the deity of Swati?"). An earlier draft said "two of
+those", which understated the blast radius of the very caution this paragraph
+exists to give — measured against `learn_registry.py`, not estimated. Changing §27 on the strength of a table that self-evidently
 drifts would be the #141 failure again. What would settle it: any text giving
 the 28-nakshatra deity list in full. We hold none.
 
@@ -1672,9 +1677,16 @@ from a second author. §29.9.
 Moon 17°20' Li → sum 131°10' → 10th → "Ganda yoga". `chart.py`'s
 `_NITYA_YOGA_NAMES` returns `Ganda` at that index. All 27 positions match Table 5
 **in order**; **12 of the 27 differ in spelling** from Rao and **9 from Raman**
-(exact string comparison — e.g. `Priti`/Preeti, `Ayushman`/Aayushmaan,
-`Shula`/Shoola, `Variyana`/Variyan, `Vaidhriti`/Vydhruti). Only **13** are
-byte-identical in all three. The transliterations are cosmetic; **the ordinal
+(e.g. `Priti`/Preeti, `Ayushman`/Aayushmaan, `Shula`/Shoola,
+`Variyana`/Variyan, `Vaidhriti`/Vydhruti). **The two counts are not measured
+the same way, and saying so matters.** The Rao figure of 12 IS an exact string
+comparison. The Raman figure of 9 is NOT: raw, Raman differs on **17**, because
+its OCR reads `Ayusliman`, `Sowbliagya`, `Soblmna`, `Sulrarma`, `Yriddlii`,
+`Dkruva`, `Yyaghata`, `Harsliana`, `Sadbya`, `SuMa`, `India`. Repairing those
+scanning artefacts before comparing gives 9 — defensible, since they are
+damage rather than transliteration, but it is a normalised comparison and an
+earlier draft described it as exact. Likewise **13** byte-identical in all
+three holds only after the repair; raw it is **9**. The transliterations are cosmetic; **the ordinal
 positions are what the code indexes and what is sourced.** `muhurat.py` keys its
 blocker set on `Vyatipata` and `Vaidhriti`, which are positions 17 and 27 in
 both. **The sequence and the indices are doubly sourced. The blocking is sourced
@@ -2142,8 +2154,9 @@ a clean scan of Raman with page images, since the copy we now hold is OCR only.
   not turn §29.8's Rikta observation into a shipped blocker without a source
   that states it as a rule.
 - **Do not source §27's nakshatra deities to Rao's Table 2** — §29.3.
-- **"Panchaka" in Raman is not our Panchak.** 21 hits, a different rule
-  entirely — §29.9. A grep that finds the word is not a source.
+- **"Panchaka" in Raman is not our Panchak.** 31 hits under the spelling
+  `panchaka` (0 under `panchak`), a different rule entirely — §29.9. A grep
+  that finds the word is not a source.
 - **"Bhadra" now means THREE things across the corpus.** Tithi group 2
   (Rao line 12251, Raman line 7404); Rao's gloss "auspicious or well"
   (line 12236); and Raman's condemned karana (line 1351, index line 7598).
