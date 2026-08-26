@@ -1351,18 +1351,35 @@ users and the Muhurat Finder blocks on two of them, but nothing in this corpus
 stated what they are or how they are computed. This section is where any
 panchang claim gets checked. It follows §28's format deliberately.
 
-**Books present in `data/` when this was written: 4 of 7** —
+**Books present in `data/` when this was written: 4 of 8** —
 `vedic_astro_textbook.pdf`, `book1-for-CD.pdf`,
 `Astrology-e-book-compressed.pdf`, and — **arriving part-way through this
 extraction** — `matching/raman-muhurtha-1948-electional-astrology_djvu.txt`.
 Johari, Goodwin and Kumar are not present. Every absence recorded in §29.10 is
 an absence *against those four*, not against the tradition.
 
+**Scope — read this before citing §29 as a discharge of #151.** §29 sources
+the **five angas themselves**: what each is, how each is computed, the
+enumerated lists, and the index conventions `chart.py` uses. Those are done,
+and four of the five are now doubly sourced. §29 does **not** source the
+**significance layer** the same pages render on top of them — most of
+`_TITHI_SIGNIFICANCE`, seven of eleven `_KARANA_SIGNIFICANCE` notes, most of
+`_NITYA_YOGA_SIGNIFICANCE`, `_DAGDHA_TITHI_BY_DAY`, Choghadiya,
+`_PANCHAK_NAKSHATRAS`, `_SARVARTHA_SIDDHI_YOGA` and `_RAVI_YOGA_NAKSHATRAS`
+remain unsourced or contested. §29.10 enumerates exactly what is still open.
+**Do not read §29 as covering more than the angas.**
+
 **Read §29.9 before using the Raman file for anything.** It is OCR of a 1948
-scan, it is demonstrably lossy, `scripts/fetch_corpus.py` did not know about it
-at the time of writing (it still reported "3/7 usable"), and it is not yet in
-`SOURCES.md`. §29.1–§29.8 were written against the three PDFs alone and do not
+scan and it is demonstrably lossy. It **is** properly registered — commit
+`a391535` added it to `scripts/fetch_corpus.py` (line 92) and to `SOURCES.md`
+(line 276) with hash verification, and `fetch_corpus.py` reports it
+`[VERIFIED]`. §29.1–§29.8 were written against the three PDFs alone and do not
 depend on it.
+
+**The registry counts EIGHT books, not seven.** `fetch_corpus.py` lists
+`Astrology For Beginners BVRaman_text.pdf` as an eighth entry, currently
+`[MISSING]`. Today it reports **`corpus completeness: 4/8 usable`**. Any
+"N of 7" phrasing elsewhere in this repo predates that entry.
 
 ### Sources for §29
 
@@ -1550,7 +1567,7 @@ things §27 lacked that panchang work needs:
 
 **A warning about Rao's DEITY column — do NOT source §27 to it.** Rao's
 Table 2 deities disagree with §27's for twelve consecutive nakshatras, and
-the disagreement is a clean one-row offset:
+the disagreement looks like a one-row offset — measured precisely below:
 
 | Nakshatra | Rao Table 2 (line) | §27.2 |
 |---|---|---|
@@ -1568,18 +1585,48 @@ the disagreement is a clean one-row offset:
 | Uttara Ashadha | Brahma (581) | Vishvedevas |
 | Shravana | Vishnu (582) | Vishnu — **back in step** |
 
-Rao's entry for nakshatra *N* is §27's entry for *N+1* across that whole
-stretch, and the two lists re-synchronise at Shravana — precisely where the
-28-nakshatra scheme inserts Abhijit, whose classical deity is Brahma and which
-is what Rao's Uttara Ashadha row carries. Rao's own line 590 says Abhijit sits
-in the last quarter of Uttarashadha. **This looks like a 28-row deity list
-fitted to 27 rows, but this corpus cannot prove which column is right** —
-neither book states the deities independently of Table 2. Verdict:
-**CONTESTED, unresolved.** Do not "fix" §27 to match Rao; 27 `/learn`
-nakshatra articles (`learn_registry.py`, e.g. Hasta/Savitar, Chitra/
-Vishvakarma) depend on §27's column, and changing it on the strength of a
-table that self-evidently drifts would be the #141 failure again. What would
-settle it: B.V. Raman, or any text giving the 28-nakshatra deity list in full.
+**What is measured**, at the resolution the table above supports. Twelve
+consecutive rows disagree (Magha 10 → Uttara Ashadha 21), and across the middle
+of that stretch Rao's entry for nakshatra *N* is §27's entry for *N + 1*:
+
+- **Name-identical shift, 7 rows** — N = 11, 13, 14, 16, 17, 18, 20
+  (Aryaman, Vishvakarma, Vayu, Mitra, Indra, Nirriti, Vishvedevas).
+- **Same deity, different epithet, 3 rows** — N = 12 (Rao "Sun" vs §27
+  "Savitar", which §27 itself glosses as "the Sun as inspirer"), N = 15
+  (Indra vs "Indra & Agni"), N = 19 (Varuna vs "Apas", both the cosmic
+  waters). Call these a shift only if you accept the equivalences.
+- **The two ends do not shift** — N = 10 (Magha: Rao "Sun", §27 "Pitris";
+  nothing shifts *in*) and N = 21 (Uttara Ashadha: Rao "Brahma", §27
+  "Vishvedevas", while §27's Shravana is "Vishnu"). The lists are back in step
+  from Shravana (22) onward.
+
+So the offset is **strong in the middle and unexplained at both ends**, which
+is worth stating precisely: a claim of "a clean one-row shift" would be an
+overstatement of what the two tables actually show.
+
+**What is NOT sourced, and was wrongly stated as fact in the first version of
+this section:** that the offset is explained by the 28-nakshatra scheme
+inserting Abhijit, "whose classical deity is Brahma". **Nothing in this corpus
+gives Abhijit a deity.** `scripts/corpus_search.py abhijit` → 7 hits across all
+four books (Lessons 242, 448, 5706; Raman 1161, 7478; Rao 590, 12246) and not
+one of them names a presiding deity for it. `[UNSOURCED — a hypothesis, not a
+finding]`: the Abhijit explanation is offered here only as the thing to test,
+because Rao's line 590 does put Abhijit in the last quarter of Uttarashadha and
+his Uttara Ashadha row does carry Brahma. That is a coincidence worth checking,
+not evidence.
+
+**Verdict: CONTESTED, unresolved — and it must stay unresolved from this
+corpus,** which nowhere states the deities independently of Rao's Table 2.
+Do not "fix" §27 to match Rao. **Blast radius, measured rather than guessed:**
+`src/astro_ai/templates/learn/` holds **15** per-nakshatra articles
+(`ls learn/ | grep -c nakshatra`), `learn_registry.py` names **16** slugs (the
+extra, `vishakha-nakshatra`, is a pre-existing dangling `related` reference
+with no template). **Six of the 15 fall inside the disputed stretch** — Magha,
+Purva Phalguni, Uttara Phalguni, Hasta, Chitra, Swati — and two of those,
+Hasta/Savitar and Chitra/Vishvakarma, carry the deity in their title, summary
+and FAQ body. Changing §27 on the strength of a table that self-evidently
+drifts would be the #141 failure again. What would settle it: any text giving
+the 28-nakshatra deity list in full. We hold none.
 
 ### 29.4 Yoga (the Nitya or Sun–Moon yoga) — CONFIRMED
 
@@ -1623,9 +1670,12 @@ from a second author. §29.9.
 
 **Verified against the code.** Rao's Example 3 (lines 793–801): Sun 23°50' Cp,
 Moon 17°20' Li → sum 131°10' → 10th → "Ganda yoga". `chart.py`'s
-`_NITYA_YOGA_NAMES` returns `Ganda` at that index. All 27 positions match
-Table 5 in order; four differ only in transliteration (`Priti`/Preeti,
-`Sukarma`/Sukarman, `Shula`/Shoola, `Variyana`/Variyan). `muhurat.py` keys its
+`_NITYA_YOGA_NAMES` returns `Ganda` at that index. All 27 positions match Table 5
+**in order**; **12 of the 27 differ in spelling** from Rao and **9 from Raman**
+(exact string comparison — e.g. `Priti`/Preeti, `Ayushman`/Aayushmaan,
+`Shula`/Shoola, `Variyana`/Variyan, `Vaidhriti`/Vydhruti). Only **13** are
+byte-identical in all three. The transliterations are cosmetic; **the ordinal
+positions are what the code indexes and what is sourced.** `muhurat.py` keys its
 blocker set on `Vyatipata` and `Vaidhriti`, which are positions 17 and 27 in
 both. **The sequence and the indices are doubly sourced. The blocking is sourced
 only by Raman, and he condemns five yogas rather than two — see §29.9.**
@@ -1799,9 +1849,10 @@ delete either.
 
 ### 29.9 B.V. Raman, *Muhurtha* (1948) — what it settles, and its limits
 
-This file appeared in `data/matching/` **while §29 was being written**, was
-briefly deleted and re-fetched by a parallel agent, and is an archive.org OCR
-of a 1948 scan. Three consequences, and they bind:
+This file appeared in `data/matching/` **while §29 was being written** (it was
+briefly absent and re-fetched mid-run, so the extraction below was taken from a
+hash-pinned snapshot). It is an archive.org OCR of a 1948 scan. Three
+consequences, and they bind:
 
 1. **It is lossy in ways that change meaning.** Its tithi definition
    (lines 670–672) OCRs as "the difference of the increment of longitude of the
@@ -1818,8 +1869,14 @@ of a 1948 scan. Three consequences, and they bind:
 2. **No page images exist for it** — there is no PDF, so the §28 / §29
    discipline of confirming a table against `pdftoppm` output *cannot be
    applied*. Treat every list in it as provisional.
-3. **It is not in `SOURCES.md` and `fetch_corpus.py` does not know it.**
-   Until that is fixed, "4 of 7" is a claim only this section makes.
+3. **It is registered, and this section originally said otherwise.** The first
+   version of §29 claimed `fetch_corpus.py` and `SOURCES.md` did not know the
+   file. That was measured before `a391535` landed and was **false by the time
+   §29 was committed**:
+   `git show 4c4394a:scripts/fetch_corpus.py | grep -n raman-muhurtha` → line
+   92, and the same grep on `SOURCES.md` → line 276. Recorded here rather than
+   quietly deleted, because "I measured it earlier" is exactly the drift this
+   file warns about elsewhere.
 
 With those caveats, it independently confirms and materially extends §29.
 
@@ -1905,18 +1962,28 @@ With those caveats, it independently confirms and materially extends §29.
 **Does NOT settle:**
 
 - **`dagdha` — still 0 hits, now across four books.** No "burnt" either. The
-  seven-row `_DAGDHA_TITHI_BY_DAY` remains unsourced, and its comment credits
+  seven-row `_DAGDHA_TITHI_BY_DAY` remains unsourced. (`burnt` returns 1 hit,
+  Rao line 9991, about cremation — unrelated.) Its comment credits
   "Muhurtha Chintamani", which is not a book we hold.
 - **`choghadiya` — still 0 across four books.**
-- **`_PANCHAK_NAKSHATRAS` — a false positive waiting to happen.** "Panchaka"
-  occurs 21 times in Raman, so a bare grep says "present". It is **a different
-  concept**: Ch. III lines 961–991 define Panchaka as a *number* — add the
-  lunar day, weekday, constellation and lagna indices, divide by 9, and read
+- **`_PANCHAK_NAKSHATRAS` — a false positive waiting to happen, and the exact
+  measurement matters.** Two commands, two opposite-looking answers:
+
+  ```
+  $ scripts/corpus_search.py panchak --absent
+  NO SPELLING MATCHED — 0 hits for any of 2 spellings across 38,197 lines.
+  $ scripts/corpus_search.py panchaka
+  raman-muhurtha-…_djvu.txt — 31 hit(s)      (all 31 in Raman; 0 elsewhere)
+  ```
+
+  The spelling `muhurat.py` uses (`panchak`) is **genuinely absent**; the
+  spelling Raman uses (`panchaka`) is everywhere in his Ch. III — and it is
+  **a different concept**. Lines 961–991 define Panchaka as a *number*: add
+  the lunar-day, weekday, constellation and lagna indices, divide by 9, read
   the remainder (1 mrityu, 2 agni, 4 raja, 6 chora, 8 roga). It has nothing to
-  do with `muhurat.py`'s five nakshatras Dhanishta→Revati. **A non-zero hit
-  count proves the term present, not the concept** — the mirror of the
-  standing `SOURCES.md` warning, and this is the clearest instance of it in
-  the corpus.
+  do with `muhurat.py`'s five nakshatras Dhanishta→Revati. **So the rule stays
+  UNSOURCED, and a hit count is not what makes it sourced or not** — 0 under
+  one spelling and 31 under another, with the 31 irrelevant.
 - **`kharmas` and `chaturmas`** — re-measured across all four books,
   **0 hits** (3 and 5 spellings, 38,197 `-layout` lines).
 
@@ -1935,15 +2002,33 @@ specially auspicious for good work."
   exactly**; **Monday does not** — the code has **Mrigashira**, Raman has
   **Shravana**.
 
-  **Verdict: CONTESTED, not wrong.** Two reasons not to touch the code on this
-  alone. (a) The code credits *Muhurta Chintamani*, a different text, and
-  published almanacs commonly print Monday = Mrigashira, agreeing with the
-  code. (b) There is no page image for this file, so a single-word OCR
-  disagreement in a 1948 scan cannot be confirmed — though *Shravana* and
-  *Mrigasira* are not plausibly confusable, which is what makes this worth
-  chasing rather than dismissing. **What settles it:** the printed p. 40 of
-  Raman, or any second muhurta text. Until then the honest statement is that
-  our Monday entry has one source against it and no source for it.
+  **Verdict: CONTESTED, not wrong** — and the grounds are sourced, not
+  appealed to.
+
+  (a) **Rao says to expect exactly this.** §36.1, printed p. 471, line 15905:
+  "The topic of muhurta has a lot of controversies. Different guidelines are
+  given in different classics and different conventions are in vogue in
+  different regions of India." The code credits *Muhurta Chintamani*; Raman is
+  a different classic. Raman himself demonstrates the regional half on the very
+  page we are reading from — the marriage chapter, printed p. 101, lines
+  3707–3712, contrasts what "a Tamilian would not mind" with the "strong
+  objection … taken by people living in Andhra and Karnataka."
+
+  (b) **There is no page image for this file**, so a single-word disagreement
+  in a 1948 OCR cannot be confirmed — though *Shravana* and *Mrigasira* are
+  not plausibly confusable, which is what makes this worth chasing rather than
+  dismissing.
+
+  **`[UNSOURCED — could not establish]`:** the tidiest explanation would be
+  that Raman (title page, lines 10 and 24: "Bangalore Venkata Raman" and an
+  imprint city of "Bangalore") records a southern recension while *Muhurta Chintamani* carries a northern one — the
+  same split `matching.md` already declares for Ashtakoota. **We cannot source
+  the second half of that**: *Muhurta Chintamani* is not in `data/` in any
+  form, so nothing here establishes its provenance. Do not write it as fact.
+
+  **What settles it:** the printed p. 40 of Raman, or *Muhurta Chintamani*
+  itself. Until then the honest statement is that our Monday entry has one
+  source against it and no source for it.
 
 - **Sarvartha Siddhi.** Raman's per-weekday Siddha Yoga lists (lines
   1699–1743) are a near-neighbour of `muhurat.py:340
@@ -1963,7 +2048,7 @@ specially auspicious for good work."
   states it Raman's way, the missing tithi leg is a defect, not a
   simplification.
 
-### 29.10 Still NOT in this corpus — measured across 4 of 7 books
+### 29.10 Still NOT in this corpus — measured across 4 of 8 registry entries
 
 Re-measured after the Raman file arrived, with
 `scripts/corpus_search.py <term> --absent` over **38,197 `-layout` lines,
@@ -1972,23 +2057,24 @@ generates**:
 
 | Term | Spellings | What depends on it | Verdict |
 |---|---|---|---|
-| `dagdha` | 3 | `muhurat.py:800 _DAGDHA_TITHI_BY_DAY` — all 7 rows | UNSOURCED; no "burnt" either |
+| `dagdha` | 3 | `muhurat.py:800 _DAGDHA_TITHI_BY_DAY` — all 7 rows | UNSOURCED |
 | `choghadiya` | 4 | `/panchang` Choghadiya block, Muhurat Finder Phase B | UNSOURCED |
 | `kharmas` | 3 | Muhurat Finder blocker | UNSOURCED |
 | `chaturmas` | 5 | Muhurat Finder blocker | UNSOURCED |
 | `amrit siddhi` | 5 | `muhurat.py:323` | **term absent, concept present — §29.9** |
 | `sarvartha siddhi` | 7 | `muhurat.py:340` | **term absent, concept present — §29.9** |
 
-Two terms that were 0 against three books are **no longer absent**:
-`bhadra karana` now returns 1 hit (Raman's index, line 7598), and `panchak`
-returns 21 — but see §29.9: Raman's *Panchaka* is a different concept from
-`_PANCHAK_NAKSHATRAS`, so the hit count is a false positive, not a source.
+**`panchak` is still 0** — it is in the table above precisely because it stays
+absent under the spelling the code uses. The *concept-shaped* hit is under
+`panchaka` (31, all Raman) and is a different rule entirely — §29.9. One term
+that was 0 against three books genuinely is **no longer absent**:
+`bhadra karana`, 1 hit, Raman's index line 7598.
 
 **A zero proves the TERM is absent, not the CONCEPT, and a non-zero proves
 neither.** Both failure directions are now demonstrated inside this one
-section: Siddha Yoga (concept present under another name) and Panchaka
-(name present, different concept). The `SOURCES.md` warning should carry the
-second example as well as the first.
+section: Siddha Yoga (concept present under another name, terms score 0) and
+Panchaka (a near-name scoring 31 for an unrelated rule). The `SOURCES.md`
+warning should carry the second example as well as the first.
 
 What the four books *do* hold on this ground is Rao's Table 79 (§29.7),
 the tithi groups (§29.8) and Raman's Panchanga Suddhi (§29.9).
@@ -2002,10 +2088,11 @@ the tithi groups (§29.8) and Raman's Panchanga Suddhi (§29.9).
    Amavasya-as-ancestral-rites are widely held but are not in these books.
    The one that is arguably *contradicted* rather than merely unsourced is
    Chaturthi — §29.8.
-2. **Eight of the eleven `_KARANA_SIGNIFICANCE` notes.** Raman covers Bava
-   (matches), Taitila (differs), Shakuni (differs) and Vishti (§29.9). Balava,
-   Kaulava, Gara, Vanij, Chatushpada, Naga and Kimstughna have no source in
-   any of the four.
+2. **Seven of the eleven `_KARANA_SIGNIFICANCE` notes.** Raman covers four —
+   Bava (matches), Taitila (differs), Shakuni (differs) and Vishti (§29.9).
+   The remaining seven are Balava,
+   Kaulava, Gara, Vanij, Chatushpada, Naga and Kimstughna, which have no
+   source in any of the four.
 3. **Most of `_NITYA_YOGA_SIGNIFICANCE`.** Rao's Table 5 supplies one-word
    glosses for all 27 (§29.4) and Raman condemns five (§29.9); neither
    supports "favourable for accomplishment and completion" for Siddhi or
@@ -2027,14 +2114,26 @@ a clean scan of Raman with page images, since the copy we now hold is OCR only.
   12236 as "auspicious or well". It is **not** used by him for Vishti karana.
   A future extractor who greps `bhadra` and finds line 12236 will read
   "auspicious" and reach the exact opposite of what `muhurat.py` means.
-- **"Vyatipata" also means two unrelated things in Rao.** Yoga 17 (line 780)
-  *and* an upagraha computed as `360° − Dhuma` (§4.2, lines 1641, 1649).
-  `corpus_search.py "vyatipata"` returns **only the upagraha** — its four hits
-  are lines 1650/1678/1679/1680 in tool numbering, all §4.2. It **misses
-  Table 5 entirely**, because Rao spells the yoga "Vyatipaata" and that is not
-  among the six variants the tool expands. Anyone checking whether the nitya
-  yoga is sourced by running that one command will conclude, wrongly, that it
-  is not. Grep `-i vyatipaata` on the `-layout` text.
+- **"Vyatipata" means two unrelated things in Rao** — nitya yoga 17 (line 780)
+  *and* an upagraha computed as `360° − Dhuma` (§4.2, lines 1641, 1649). Both
+  are in Table 5's book, and only one is what `muhurat.py` blocks on.
+
+  **A live `corpus_search.py` spelling gap sits on top of that**, and the exact
+  shape of it matters:
+
+  ```
+  $ scripts/corpus_search.py vyatipata     -> 7 hits: Rao 1650/1678/1679/1680
+                                              (ALL the upagraha, §4.2)
+                                              Raman 731/3758/9085
+  $ scripts/corpus_search.py vyatipaata    -> Rao 780 (Table 5) appears
+  ```
+
+  `vyatipata` **never surfaces Rao's Table 5**, because Rao spells it
+  *Vyatipaata* and that is not among the six variants the tool expands. The
+  search is only rescued by Raman line 731 — his 27-yoga list — which is a
+  book we did not hold until this session. **Before the Raman file arrived,
+  that one command returned the upagraha and nothing else.** Search both
+  spellings; the gap is worth its own issue.
 - **"Yoga" in §29.4 is not "yoga" in §4.** Sun+Moon Nitya yogas vs natal
   combinations. `chart.py` already carries this warning; it belongs in the
   corpus too.
@@ -2080,11 +2179,14 @@ gate and QA.
 `vedic_astro_textbook.pdf`, `book1-for-CD.pdf`,
 `Astrology-e-book-compressed.pdf`, and
 `matching/raman-muhurtha-1948-electional-astrology_djvu.txt`, which appeared
-mid-extraction and is OCR-only (4 of 7 — but `fetch_corpus.py` still reported
-3/7, and `SOURCES.md` does not list the Raman file at all; both need updating).
+mid-extraction and is OCR-only. `fetch_corpus.py` reports
+`corpus completeness: 4/8 usable`, all four `[VERIFIED]`; the eighth registry
+entry is `Astrology For Beginners BVRaman_text.pdf`, `[MISSING]`.
 Vasudev's e-book contains no
 panchang-anga material at all: over its 4,558 `-layout` lines, `tithi`,
-`vaara` and `lunar day` return zero, the only `karana` matches are the three
-inside *Antahkarana* (lines 523, 1191, 1244), and the only `panchang` hits are
+`vaara` and `lunar day` return zero and `corpus_search.py karana` scores it
+**0**; the 9 raw substring matches for `karana` are all inside *Antahkarana*
+or *Vyakarana* (lines 334, 523, 558, 1191, 1243, 1244, 2725, 3670, 3774) and
+none is the anga. The only `panchang` hits are
 line 1399 ("preparing Panchangas") and line 2914 (a stotra name). It
 contributes nothing to §29 and should not be re-searched for it.*
