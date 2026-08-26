@@ -3192,9 +3192,19 @@ class DailyPanchang:
 # per-request panchang_cache dict in the send loop already dedups within a
 # batch; this cache extends dedup across the whole process's lifetime.
 #
-# Rounded to ~55km (0.5deg) — sunrise/sunset differ by seconds within that
-# radius, well below the ~2min classical rounding. Cache is bounded by the
-# small number of cities in the subscriber base, so we don't LRU-cap it.
+# Rounded to ~55km (0.5deg). This is NOT "a few seconds", which is what this
+# comment used to claim. Measured 2026-08-26 on each cell's SW-NE corner pair
+# (the worst of the six) over 365 days of 2026: sunrise differs by up to
+# 3.37 min in the Srinagar cell (mean 2.05, over 1 min on 296/365 days) and
+# 3.18 min in the Delhi cell (mean 2.04, 313/365) — no calendar-day flip in
+# either, but the MEAN alone exceeds the ~2min classical rounding this comment
+# used to say it sat well below. It matters because
+# scripts/verify_panchang_angas.py allows SUNRISE_TOLERANCE_MIN = 4, so the
+# cache can eat 84% of that gate's budget before the ephemeris does anything.
+# Moon rise/set deliberately does NOT come through here — compute_moon_rise_set
+# computes at the exact coordinates, because at 0.5deg the printed DATE flips.
+# Cache is bounded by the small number of cities in the subscriber base, so we
+# don't LRU-cap it.
 _PANCHANG_CACHE: dict[tuple, "DailyPanchang"] = {}
 
 
@@ -3606,9 +3616,15 @@ def _sunrise_sunset(
     rises nor sets and a member is None. That is not new breakage from the
     delegation — the same input previously raised `ValueError: year -4713 is out
     of range` from `_jd_to_utc_datetime` on the JD 0.0 sentinel. Both shapes are
-    unusable, so no caller changed. Every caller today is fixed to an Indian
-    city, so neither is reachable in production; making the polar Sun render
-    properly is separate work (#150).
+    unusable, so no caller changed. BOTH SHAPES ARE REACHABLE IN PRODUCTION —
+    this docstring used to say they were not. `/panchang` takes `?city=` as free
+    text with no allow-list, so a polar city arrives here: at Tromso, 117 of 365
+    days in 2026 raise and the route degrades to Mumbai, but 4 render 200 OK with
+    `sunset <= sunrise` (2026-05-17 shows sunrise 01:14, sunset 00:06, Rahu Kaal
+    00:14–00:06 and a backwards choghadiya). It is the Delhi-hardcoded callers
+    (`sankranti.py`, `lunar_observances.py`, `lunar_dates.py`, `adhik_maas.py`)
+    that cannot reach it. Making the polar Sun render properly is separate
+    work (#227).
     """
     return (
         _rise_or_set(day, lat, lon, tz, swe.SUN, swe.CALC_RISE),
