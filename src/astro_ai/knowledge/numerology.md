@@ -682,8 +682,15 @@ Weekday-to-planet map (used in personal-year calc):
 The rest of §11 was compiled from Johari, but no per-number mukhi table has been
 traced to him: the Johari PDF returns only two incidental mentions of Rudraksha in
 running prose, neither a table, and it is absent from this checkout entirely.
-Searched the three books that ARE present (3 of 7: `vedic_astro_textbook.pdf`,
-`book1-for-CD.pdf`, `Astrology-e-book-compressed.pdf`, 29,039 `-layout` lines) with
+Searched every book present — **4 of the 8 registry entries in
+`scripts/fetch_corpus.py`, 38,197 `-layout` lines**: `vedic_astro_textbook.pdf`,
+`book1-for-CD.pdf`, `Astrology-e-book-compressed.pdf` and
+`matching/raman-muhurtha-1948-electional-astrology_djvu.txt` (B.V. Raman,
+*Muhurtha*, restored 2026-08-26). An earlier draft of this paragraph recorded
+"3 of 7 / 29,039 lines" — already stale when committed, because Raman landed
+three minutes earlier. Corrected, and re-verified against the larger corpus:
+Raman contains **no** Rudraksha mapping either, so the conclusion is stronger
+than first stated, not weaker. Searched with
 `scripts/corpus_search.py` on 2026-08-26 for `rudraksha`, `mukhi`, `mukha`, `bead`,
 `aksha`, `rosary` and `japa mala` — all absent under every spelling variant except
 two `mukhi` hits in `book1-for-CD.pdf` (lines 2495, 3247), both the deity name
