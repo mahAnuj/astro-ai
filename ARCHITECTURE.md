@@ -93,7 +93,7 @@ move to Cloud Monitoring.
 
 ```
 src/astro_ai/
-  chart.py         4,282  Swiss Ephemeris, panchang, dashas, gochar, combustion
+  chart.py         4,307  Swiss Ephemeris, panchang, dashas, gochar, combustion
   learn_registry.py 3,107  /learn article metadata
   numerology.py    1,844  Chaldean + Lo Shu calculators
   festival_registry.py 1,509
@@ -235,19 +235,35 @@ it only gives the cache something to hit. Keep the shared blocks first in any ne
 - **Rahu Kaal is the *n*th of eight equal daylight segments, by weekday.** The ordinal is
   universal; the clock time is not.
 - **Abhijit is centred on local solar noon**, width `day_length/15`.
-- **Moonrise and moonset are the only panchang fields that can be absent or land on the
-  NEXT day.** `_rise_or_set` anchors at local midnight, and successive moonrises are
-  ~24h50m apart, so on 13 of 365 Delhi days in 2026 the first moonrise after midnight
-  falls on D+1; at polar latitudes the event can be missing for a week (Tromso, seven
-  consecutive days from 2026-12-06). Both are correct — render the date, not just the
-  clock, and handle `None`. `swe.rise_trans` signals absence as `ret == -2` with
-  `tret[0] == 0.0`, and JD 0.0 is 4713 BC, outside `datetime`'s range: passing it on
-  raises rather than returning a wrong value, so the return flag must be checked.
-- **`_PANCHANG_CACHE`'s 0.5° key rounding is safe for instants but not for printed
-  dates.** Measured over 730 Srinagar moon events in 2026: ≤1.15 min on the instant, but
-  twice a year it flips the calendar day (worst case 2026-12-17, true point 17-Dec
-  00:00:42 vs grid point 18-Dec 00:59:21). Any gate over these fields must compare full
-  instants with a minute tolerance.
+- **Moonrise and moonset are absent or land on the NEXT day routinely, at any latitude** —
+  they are `compute_moon_rise_set(natal, when)`, not `DailyPanchang` fields. `_rise_or_set`
+  anchors at local midnight, and successive moonrises are ~24h50m apart, so on 13 of 365
+  Delhi days in 2026 the first moonrise after midnight falls on D+1; at polar latitudes the
+  event can be missing for a week (Tromso, seven consecutive days from 2026-12-06). Both are
+  correct — render the date, not just the clock, and handle `None`. `swe.rise_trans` signals
+  absence as `ret == -2` with `tret[0] == 0.0`, and JD 0.0 is 4713 BC, outside `datetime`'s
+  range: passing it on raises rather than returning a wrong value, so the return flag must
+  be checked.
+- **Sunrise and sunset do it too — but only in the polar regime, where the derived windows
+  also come out reversed.** This bullet used to claim the moon fields were the *only* ones;
+  they are not. Measured 2026-08-26 at Tromso (69.65N/18.96E, Europe/Oslo): sunset for
+  2026-05-16 lands at `00:06:04 on 05-17`, and `compute_panchang` for 2026-05-17 then
+  returns **successfully** with a daylength of **−1.13 h** and windows that end before they
+  start — Rahu Kaal `00:14:34..00:06:04`, Abhijit `00:42:22..00:37:50`. Across 2026 at that
+  site, 2 days carry a next-day Sun instant and 4 have `sunset <= sunrise`. This is
+  **pre-existing and unfixed** — identical before and after the moon work, and distinct from
+  the polar-Sun `None` that `_sunrise_sunset` documents. It is unreachable in production
+  (every caller is an Indian city) and is the reason the polar-Sun render is separate work.
+- **`_PANCHANG_CACHE`'s 0.5° key rounding merges points up to ~3.4 min apart.** Measured
+  2026-08-26 across each cell's diagonal corners over 365 days of 2026: sunrise differs by
+  at most 3.37 min in the Srinagar cell (mean 2.05, over 1 min on 296/365 days) and 3.18 min
+  in the Delhi cell, with **no calendar-day flip in either**. Note `chart.py`'s adjacent
+  comment still says "differ by seconds … well below the ~2min classical rounding", which
+  understates this by ~1.7×; the number here is the measured one. The rounding was *not*
+  safe for the moon — the same Srinagar diagonal put moonset 1498.65 apparent minutes apart
+  twice in 2026 (2026-12-17: `17-Dec 00:00:42` vs `18-Dec 00:59:21`), a printed-date flip.
+  That hazard is now gone rather than documented: `compute_moon_rise_set` computes at the
+  **exact** birth coordinates and does not go through this cache.
 - **Combustion orbs are per-planet, and Mercury/Venus tighten by exactly one degree when
   retrograde** (14→13, 10→9). A flat 8° orb under-reported on 30% of charts. The
   retrograde values were invented at 10 and 8 before being sourced properly.
@@ -371,7 +387,7 @@ Dated, with the evidence. **Check here before proposing a change.**
 | 2026-08-25 | Daily blast counts a raising subscriber row as a failure and continues | #220: the loop had no handler, both blast alerts sit below it, and scheduler retries are off — one bad row dropped every subscriber after it and reported nothing at all. The alerts and `_mask_email` are now guarded too: fixing only the loop moved the same silence one block down, where a non-string `email` from the subscribers blob raised inside the partial alert and again cost both the alert and the outcome JSON. The blast has no per-subscriber idempotency, so retries must **stay** off: a 500 plus retries is a duplicate-send generator (#222) |
 | 2026-08-25 | Blast alerts carry a count and a masked prefix, never raw addresses | #222: `failures[:5]` put up to five subscriber emails into the Telegram channel and into `events.record`, which `/admin/activity` renders and GCS keeps 30 days. Identifying data stays in the app log |
 | 2026-08-25 | Bare dates in strict `/learn` articles must corroborate a date the article already verified; attribution deliberately NOT widened | #193: `diwali-muhurat-2026.html:22` said Shukla Pratipada runs "until Nov 10" — Govardhan Puja, the #143 date, in the article #143 was filed against — and no gate read it. Gate 4 compares (month, day) only, against dates that article's own attributed claims stand behind, so it can name no festival and cannot fabricate a Gate 1 failure. 9 bare dates across 4 strict articles, 0 uncorroborated; `scripts/mutate_learn_article_dates.py` 2/4 → 4/4 caught |
-| 2026-08-26 | Moonrise/moonset anchored at LOCAL MIDNIGHT, not sunrise | #150: the midnight anchor puts a next-day instant on 13 of 365 Delhi days in 2026; anchoring at sunrise instead removes zero duplicates and labels 105 of 365. Absence is real too — `swe.rise_trans` returns `ret == -2`/`tret[0] == 0.0` for seven consecutive days at Tromso from 2026-12-06, and JD 0.0 raises out of `_jd_to_utc_datetime` rather than returning a wrong time. Cost measured in-process: +0.50 ms per cold `compute_panchang` (0.227 → 0.727 ms, median of 7×200), which is +46 ms on a 90-day `/muhurat` search (137 → 184 ms) — that search reads none of the two fields. 0 GCS ops, 0 tokens: `format_panchang_for_prompt` is byte-identical (sha256 96496b85…, 535 bytes) |
+| 2026-08-26 | Moonrise/moonset anchored at LOCAL MIDNIGHT, not sunrise — and computed by `compute_moon_rise_set`, not carried on `DailyPanchang` | #150: the midnight anchor puts a next-day instant on 13 of 365 Delhi days in 2026; anchoring at sunrise instead removes zero duplicates and labels 105 of 365. Absence is real too — `swe.rise_trans` returns `ret == -2`/`tret[0] == 0.0` for seven consecutive days at Tromso from 2026-12-06, and JD 0.0 raises out of `_jd_to_utc_datetime` rather than returning a wrong time. Carrying the two fields on `DailyPanchang` cost **+189.6%** per cold `compute_panchang` and **+39.5%** on a 90-day `/muhurat` search that reads neither. Splitting them out restores both. Measured 2026-08-26, three trees interleaved on one box, median-of-3 runs of median-of-7 (`65df985^` → `65df985` → this change): cold `compute_panchang` **0.2608 → 0.7553 → 0.2633 ms** (+0.96% of baseline); `find_candidates("vivah", "Delhi", 2026-09-01, days=90)` **139.1 → 194.1 → 140.3 ms** (+0.86%); `POST /muhurat` 90d Delhi cold **152.3 → 202.5 → 160.3 ms** (+5.25%). A `with_lunar=` flag was rejected on **correctness**, not cost: a search would fill `_PANCHANG_CACHE` with lunar-less entries and a later `/panchang` would render "no moonrise today", indistinguishable from the genuine absence `None` exists to express. Computing at the exact coordinates instead of the 0.5° grid point also removes the Srinagar calendar-flip hazard rather than documenting it. 0 GCS ops, 0 tokens: `format_panchang_for_prompt` is byte-identical (sha256 96496b85…, 535 bytes) |
 
 ### Rejected, with reasons — do not re-propose without new information
 
