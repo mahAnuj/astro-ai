@@ -534,6 +534,45 @@ result as a directional 9×9 grid — a change to the data model, and **delibera
 scope** here. Until that happens the disagreements stay recorded and unresolved rather
 than being settled by picking a side.
 
+#### Carve-out: FOUR of the 23 were resolvable after all (2026-08-26)
+
+The directionality argument above is sound, but it was applied wider than it reaches. It
+explains why a *symmetric* table cannot carry a *directional* verdict — so it only bites
+where a pair can actually hold two verdicts. Two classes cannot:
+
+- **Self-pairs.** Row 7 / column 7 is ONE cell. There is no "reverse combination", so no
+  directional disagreement is possible and a symmetric table carries the book's verdict
+  faithfully. The blanket never applied to these.
+- **Pairs whose two directions already agree**, leaving nothing to reconcile.
+
+Four pairs qualify, each corroborated by at least two INDEPENDENT sections of this file —
+§4's per-number chapters as well as §7 — rather than by a single summary row:
+
+| pair | verdict | corroboration |
+|---|---|---|
+| 7-7 | enemy | §4 №7 "strained with 4 …, **7 (troublesome with self)**" · §7 marriage-avoid "7+7" · §7 enemy row |
+| 8-8 | enemy | §4 №8 "**avoid 4, 8, 9** for marriage" · §4 №26 "avoid 4, 8, 9; select 1, 3, 6" · §7 "double Saturn" |
+| 9-9 | enemy | §4 №9 "best partners: 1, 3, 6; **avoid 5, 7, 9**" · §7 marriage-avoid "9+9" · §7 "double Mars" |
+| 6-8 | **friend** | §4 №8 "best with 1, 3, 5, 6 for romance" · §4 №26 "select 1, 3, 6" · §7 friendly rows BOTH ways |
+
+**Nothing anywhere in this file calls 7-7, 8-8 or 9-9 friendly**, which is what
+`_LP_DESTINY_FRIENDS` did until 2026-08-26. Corrected there; `_pair_verdict` already
+agreed with the corpus on all four.
+
+**1-8 is NOT resolved and must not be.** Johari's 1-row lists 8 as an enemy ("Saturn drags
+Sun"); his 8-row lists 1 as a friend. That is the genuine directional split this section
+describes, and it is the ONE remaining sign flip between the two code tables.
+
+**2-2 and 4-4 are NOT resolved either**, for the opposite reason: §7 lists them in neither
+row, and an *absence* from a summary is not a stated verdict. CLAUDE.md's rule governs — a
+zero proves the TERM absent, not the CONCEPT. `_LP_DESTINY_FRIENDS` calls both friendly;
+whether the book does is an open question for the per-pair prose, tracked in #163.
+
+**The general lesson, because it is the reason this sat unresolved:** a sourced argument
+for *why something cannot be determined* is itself a claim with a scope. Check what it
+covers before applying it. Here a correct argument about directional pairs was carried
+across all 23 disagreements, including cases where direction cannot exist.
+
 **Do not fill any of these cells from general numerology knowledge.** Anything not quoted
 above with a line number was not read out of the book. `data/numerology/AnkitNotes/*.pdf`
 (unattributed practitioner notes, drivers 1–5 only), the `chaldean-numerology-…-2888.pdf`

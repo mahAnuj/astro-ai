@@ -487,10 +487,9 @@ _LP_DESTINY_FRIENDS: set[tuple[int, int]] = {
     (3, 3), (3, 6), (3, 9),
     (4, 4), (4, 8),
     (5, 5), (5, 6),
-    (6, 6), (6, 9),
-    (7, 7),
-    (8, 8),
-    (9, 9),
+    (6, 6), (6, 8), (6, 9),
+    # (7, 7), (8, 8) and (9, 9) MOVED to _LP_DESTINY_ENEMIES below, and
+    # (6, 8) moved UP to here, on the sourcing set out above the enemies.
 }
 # (4, 3) and (7, 3) were DELETED here, not rewritten ascending (#163).
 # Both were dead rows — descending, so never matched. #163 proposed flipping
@@ -508,8 +507,50 @@ _LP_DESTINY_FRIENDS: set[tuple[int, int]] = {
 #         — 3-7 is friendly in BOTH directions, so (3, 7) as an enemy would
 #           be flatly contrary to the source.
 # Line numbers index the Johari extraction taken with `pdftotext -layout`.
+#
+# FOUR pairs WERE resolvable, contrary to the blanket above (#163).
+#
+# The directionality argument is sound but was applied wider than it reaches.
+# Johari's chart is read row=self, column=other (L5663-5665), so a pair can
+# carry two verdicts. That cannot happen when:
+#
+#   (a) the pair is a SELF-PAIR. Row 7 / column 7 is ONE cell. There is no
+#       "reverse combination", so no directional disagreement is possible and
+#       the symmetric table CAN carry the book's verdict faithfully.
+#   (b) both directions already AGREE, leaving nothing to reconcile.
+#
+# Each of the four below is corroborated in `knowledge/numerology.md` by at
+# least two INDEPENDENT sections — §4 (per-number chapters) as well as §7 —
+# not by a single summary row:
+#
+#   (7, 7) enemy   §4 Number 7 "strained with 4 …, 7 (troublesome with self)"
+#                  §7 marriage-avoid list "7+7"; §7 enemy row "7 ↔ … 7"
+#   (8, 8) enemy   §4 Number 8 "avoid 4, 8, 9 for marriage"
+#                  §4 Number 26 "avoid 4, 8, 9; select 1, 3, 6"
+#                  §7 enemy row "8 ↔ … 8 (double Saturn)"
+#   (9, 9) enemy   §4 Number 9 "best partners: 1, 3, 6; avoid 5, 7, 9"
+#                  §7 marriage-avoid list "9+9"; §7 enemy row "9 ↔ … 9"
+#   (6, 8) FRIEND  §4 Number 8 "best with 1, 3, 5, 6 for romance"
+#                  §4 Number 26 "select 1, 3, 6"
+#                  §7 friendly rows BOTH ways: "6 ↔ … 8" and "8 ↔ … 6";
+#                  neither enemy row contains the other. Case (b).
+#
+# NOTHING anywhere in the corpus calls 7-7, 8-8 or 9-9 friendly, which is what
+# this table used to do — so these were not close calls.
+#
+# (1, 8) STAYS an enemy and is NOT claimed as resolved: Johari's 1-row lists 8
+# as an enemy ("Saturn drags Sun") while his 8-row lists 1 as a friend. That is
+# a genuine directional split, the case the blanket above describes correctly.
+# It is left as-is rather than flipped; §7's marriage-avoid list and §4 Number 1
+# ("worst with … 8") both lean enemy, but picking a side is what §7 forbids.
+#
+# NOT changed, deliberately: (2, 2) and (4, 4) are friends here while §7 lists
+# them in NEITHER row. That is an ABSENCE from a summary, not a stated verdict,
+# and CLAUDE.md's rule applies — a zero proves the TERM absent, not the CONCEPT.
+# Recorded in #163 for the book check rather than acted on.
 _LP_DESTINY_ENEMIES: set[tuple[int, int]] = {
-    (1, 8), (2, 5), (3, 5), (4, 5), (6, 7), (6, 8), (7, 8), (8, 9),
+    (1, 8), (2, 5), (3, 5), (4, 5), (6, 7), (7, 7), (7, 8), (8, 8), (8, 9),
+    (9, 9),
 }
 
 
