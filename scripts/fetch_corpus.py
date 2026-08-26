@@ -89,6 +89,18 @@ BOOKS: tuple[Book, ...] = (
          "Numerology & You", 1_110, "owned",
          "Educreation, 2016. ISBN 978-1-61813-620-6. Our copy is a 43-page "
          "publisher sample, so its 1,110 lines are the SAMPLE, not the book."),
+    Book("matching/raman-muhurtha-1948-electional-astrology_djvu.txt", "B.V. Raman",
+         "Muhurtha or Electional Astrology (1948)", 9_158,
+         "https://archive.org/download/in.ernet.dli.2015.128092/"
+         "2015.128092.Muhurtha-Or-Electional-Astrology_djvu.txt",
+         "SOURCES.md records this 1948 edition as out of copyright; the copy is "
+         "the Digital Library of India scan on archive.org. THE HIGHEST-"
+         "CONSEQUENCE ENTRY HERE: chart.py:1841 cites its lines 7183-7207 for "
+         "every value in COMBUSTION_ORBS, and 7227-7228 for the footnote the "
+         "retrograde orbs rest on; chart.py:3033 cites its Rahu Kalam glossary "
+         "entry. It went missing from data/ and the table was briefly "
+         "unverifiable by anyone. Restored and re-verified 2026-08-26: line "
+         "7183 is the table, and all six orbs match what chart.py ships."),
     Book("Numerology the Complete Guide, Volume 1-The Personality Reading.pdf",
          "Matthew Oliver Goodwin",
          "Numerology: The Complete Guide, Vol. 1", 28_171, "owned",
@@ -98,12 +110,22 @@ BOOKS: tuple[Book, ...] = (
 
 
 def count_lines(pdf: Path) -> int | None:
-    """Plain `pdftotext` line count, or None if it cannot be read.
+    """Recorded line count for a source, or None if it cannot be read.
+
+    A `.txt` source is counted directly — it is already text, and running it
+    through `pdftotext` would fail. archive.org `_djvu.txt` files arrive this
+    way. Note they commonly use form feeds as page separators, so count `\n`
+    only, matching `grep -n` (that is #226 in this repo).
 
     No -layout, deliberately: SOURCES.md's counts are plain, and -layout reflows
     columns for ~30% fewer lines. Mixing the two made an earlier revision of that
     table meaningless, which is why the flag is stated wherever a count is.
     """
+    if pdf.suffix.lower() == ".txt":
+        try:
+            return pdf.read_text(encoding="utf-8", errors="replace").count("\n")
+        except OSError:
+            return None
     try:
         out = subprocess.run(["pdftotext", str(pdf), "-"],
                              capture_output=True, timeout=300)
@@ -141,8 +163,19 @@ def download(url: str, dest: Path) -> tuple[bool, str]:
             data = r.read()
     except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError) as e:
         return False, f"{type(e).__name__}: {e}"
-    if not data.startswith(b"%PDF"):
-        return False, f"not a PDF (got {len(data):,} bytes starting {data[:16]!r})"
+    # Sanity-check by TYPE, not by assuming PDF. A `.txt` source (archive.org
+    # `_djvu.txt`) is legitimate and has no magic bytes — an earlier version of
+    # this guard rejected the Raman restore for "not a PDF", which is exactly
+    # the kind of check that looks strict and is simply wrong.
+    if dest.suffix.lower() == ".pdf":
+        if not data.startswith(b"%PDF"):
+            return False, f"not a PDF (got {len(data):,} bytes starting {data[:16]!r})"
+    elif not data.strip():
+        return False, "empty response"
+    elif data.lstrip()[:1] == b"<":
+        # An HTML error page served with 200 — a redirect to a login or a
+        # "not found" page. It would otherwise be written as if it were text.
+        return False, f"looks like HTML, not text ({len(data):,} bytes)"
     try:
         fd, tmp = tempfile.mkstemp(dir=str(dest.parent), suffix=".part")
         with os.fdopen(fd, "wb") as fh:
@@ -195,6 +228,9 @@ def main() -> int:
     args = ap.parse_args()
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+    # Entries may name a subdirectory (data/matching/...), so create parents.
+    for _b in BOOKS:
+        (DATA_DIR / _b.filename).parent.mkdir(parents=True, exist_ok=True)
     bucket = None
     if args.from_bucket is not None:
         bucket = args.from_bucket or os.environ.get("BHAGYA_STORAGE_BUCKET", "")
