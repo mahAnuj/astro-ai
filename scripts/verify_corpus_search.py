@@ -30,8 +30,14 @@ as sourced when the corpus does not contain it.
 RULES FOR ANYONE EDITING THIS FILE
 ----------------------------------
 1. **This gate never reads the corpus.** `data/` is gitignored, so a checkout
-   holds whatever subset was fetched — 1 of the 8 source books when this file
-   was written, 3 as of 2026-08-26. A gate whose evidence is a book that may or
+   holds whatever subset was fetched. **Do not restate a count here.** Run
+   `uv run python scripts/fetch_corpus.py`, which enumerates the registry and
+   reports how many of them are on this disk; that tuple is the single source
+   of truth. This line previously carried "1 of the 8", which was never
+   derived from anything — traced to a bare assertion in `02f9c43` and copied
+   forward twice — and every registry said 7 at the time. It then went stale
+   again within a day when a fourth book landed. A number nobody can re-derive
+   is worse than no number, because it reads as confirmed. A gate whose evidence is a book that may or
    may not be on the disk passes for the wrong reason on most machines. Every
    string below is an in-file fixture; `_corpus()` is never called. (The
    measurements quoted in the fixture comments below ARE from the real books,
