@@ -342,8 +342,12 @@ book. The extraction was run against the corpus **as it stood on 2026-08-26**:
 | B.V. Raman, *Muhurtha or Electional Astrology* (1948) | ❌ **absent** | — |
 | Johari, Goodwin, Jayant Kumar (numerology) | ❌ absent | — |
 
-**3 of 7 books present, 29,039 `-layout` lines searched.** Every absence
-recorded in this section is an absence *from those three books only* and must
+**Measured against 3 books / 29,039 `-layout` lines** (`vedic_astro_textbook`,
+`book1-for-CD`, `Astrology-e-book-compressed`). Raman's *Muhurtha* was restored
+to `data/` later the same day, taking the corpus to 4 — so **the absences below
+predate it and must be re-run**; see the note at the end of this section. For
+the live count run `scripts/fetch_corpus.py`, which is the registry. Every
+absence recorded here is an absence *from those three books only* and must
 be re-measured if Raman's *Muhurtha* returns to `data/` — it is the book that
 would most likely settle almost all of it.
 
@@ -694,8 +698,16 @@ citation.
   Rao's own hedge. Prose that treats a combust planet as disabling has no
   support in this corpus; §14's "never use 'combust' alone as a diagnosis" is
   the sourced position.
-- **Every absence above is measured against 3 of 7 books.** Re-run the whole
-  section if Raman's *Muhurtha* is restored.
+- **Every absence above is measured against the 3 books listed at the head of
+  this section — NOT against Raman's *Muhurtha*, which was restored to `data/`
+  on 2026-08-26 (`a391535`) after these searches ran.** That is the book this
+  section repeatedly names as the one that would settle the open questions, so
+  **the whole section needs re-running against it.** Confirmed already: it does
+  NOT contain Yamaganda or Brahma Muhurta (0 hits, 4 books), which falsifies
+  the expectation recorded in `vedic_reference.md` §28.3. Its combustion table
+  at lines 7183-7207 IS present and matches `chart.py`'s COMBUSTION_ORBS
+  exactly, so §12.1 is no longer 'held on the record of a source we no longer
+  possess'.
 
 ### 12.8 Citation hygiene for this section
 

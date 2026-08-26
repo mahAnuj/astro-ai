@@ -53,7 +53,8 @@ These are properties of the scanning checkout, not of the backlog. Any verdict m
 1. **Production is unreachable** from the agent sandbox (`shubhagya.com:443` is
    policy-denied by the proxy). Every verdict is against `origin/main`, never the live
    site. Closing an issue still requires production evidence (CLAUDE.md).
-2. **`data/` holds 1 of the 8 books** (only `vedic_astro_textbook.pdf`). Corpus hit-count
+2. **`data/` holds 4 of the 8 registry entries** as of 2026-08-26 — run
+   `scripts/fetch_corpus.py` for the live count rather than trusting this line. Corpus hit-count
    claims in #216–#219 and #191 were verified as *code* claims by reading, not as
    *corpus* claims by measurement.
 3. **No venv, no `swisseph`** → the scanning agent could not run `pytest` or the
@@ -300,7 +301,7 @@ lying in the opposite direction.
 | **#218** Budha-Aditya 6°, Manglik combust-Mars 6° | A human ruling. Both move user-facing verdicts; Manglik reaches **email and LLM prompts**. `book1-for-CD.pdf:3337`: "There are different opinions on this." | **Two.** (a) Label both `UNSOURCED` in place — truthful today, costs nothing. (b) **Add the missing gate now**: `0a1b6ee` added Gate 6 to `verify_muhurat_tables.py` for the main table; these two constants have the same unguarded shape. `verify_manglik_coherence.py` checks cross-module *agreement*, not sourcing. |
 | **#219** muhurat combustion convention | A tradition ruling: degree-orb (current) vs Muhūrta Cintāmaṇi's days-from-heliacal, plus two unmodelled blocking states (*bālatva*, *vṛddhatva*). CLAUDE.md: regional variation is legitimate — so the requirement is to **state the convention**, not switch. | **Two disclosures.** State the convention on the finder; and **cite the `namkaran` waiver** at `muhurat.py:634-636` — found correct and uncited, with two sources. An uncited correct rule is one refactor from being "simplified" out. |
 | **#216** the `[BPHS]` blanket licence | Partly on **#217** (re-sourcing sweeps run through `corpus_search`). | **Yes — the marker.** Replacing `[BPHS]` with `[UNSOURCED — widely cited, not in corpus]` at `knowledge/SOURCES.md:178-180` is unblocked; only the per-use sweep waits. |
-| **#191** extract ~22,000 readable lines | Nothing technically — but **not from this checkout** (`data/` holds 1 of 8 books). | On the machine that has `data/`. |
+| **#191** extract ~22,000 readable lines | **Partly actionable here now** — `data/` holds 4 of 8 (run `scripts/fetch_corpus.py`); `book1-for-CD` and Vasudev are present and unextracted. Goodwin (28,171 lines, the largest) still absent. | Goodwin/Johari need the machine that has them. |
 | **#209** kundli landing claims | A human decision on wording. | **Rescope.** 2 of 3 claims resolved: padas now computed (`9d5f3a1`); "Swiss Ephemeris" **measured** to be a naming question, not correctness — Moshier worst case ~0.1″ against a 12,000″ pada, 120,000× margin. Only **moolatrikona** (advertised `about.html:162`, never computed) is a live false claim. Retitle to that alone or close and refile — the title is now wrong on two of three counts. |
 
 ---

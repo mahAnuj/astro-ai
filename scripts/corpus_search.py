@@ -236,8 +236,9 @@ def variants(term: str) -> list[str]:
 # of the eight kootas — the direction this module's docstring calls the worse
 # error, and worse than the false negative #217 was filed about. Some of (b)'s
 # extra hits are genuine compounds (kendradi, nakshatramsa, vargottamamsa), so
-# the trade is not one-sided; the counts are corpus-dependent on 1 of 8 books
-# and would move with the rest. The asymmetry of the two errors does not move.
+# the trade is not one-sided; the counts are corpus-dependent on the books
+# actually present (`scripts/fetch_corpus.py` is the registry and reports the
+# live count) and would move with the rest. The asymmetry of the two errors does not move.
 #
 # (An earlier version of this comment recorded 3/5 for (b) with the reasoning
 # "still blind to -ena and -e", and the #217 commit message recorded 0/5 and
