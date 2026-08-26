@@ -81,9 +81,10 @@ def offline(monkeypatch):
     `send_daily_rashifal` geocodes a neutral reference chart ("Mumbai, India")
     on every run, so stubbing generation and sending is not enough to keep a
     test off the network — conftest's "no network" rule notwithstanding. The
-    older tests in this file predate that and still reach Nominatim, which is
-    why a fresh clone with no outbound access reports them red without being
-    broken. New cases use this instead of adding to that pile.
+    older tests in this file predated that and reached Nominatim, so a fresh
+    clone with no outbound access reported eight of them red without anything
+    being broken (#224). They all take this fixture now; EVERY test that posts
+    to the route must, or it is back on the network.
 
     `compute_panchang` needs no stub: it is only called inside the `call_fn`
     lambda, which `_daily_rashifal_text` (stubbed) never invokes.
@@ -99,7 +100,7 @@ def _post(client, headers):
     return r.status_code, r.json()
 
 
-def test_healthy_send_reports_ok(client, admin_headers, blast):
+def test_healthy_send_reports_ok(client, admin_headers, blast, offline):
     sent = blast([_subscriber("a@x.test"), _subscriber("b@x.test")])
     code, body = _post(client, admin_headers)
 
@@ -108,7 +109,7 @@ def test_healthy_send_reports_ok(client, admin_headers, blast):
     assert sent == ["a@x.test", "b@x.test"]
 
 
-def test_total_delivery_failure_is_not_reported_as_success(client, admin_headers, blast):
+def test_total_delivery_failure_is_not_reported_as_success(client, admin_headers, blast, offline):
     """The defect: this returned 200 / ok:true while reaching nobody."""
     blast([_subscriber()], send_result=False)
     code, body = _post(client, admin_headers)
@@ -118,7 +119,7 @@ def test_total_delivery_failure_is_not_reported_as_success(client, admin_headers
     assert (body["sent"], body["failed"]) == (0, 1)
 
 
-def test_partial_failure_is_surfaced(client, admin_headers, blast):
+def test_partial_failure_is_surfaced(client, admin_headers, blast, offline):
     from astro_ai.routes import subscribe
 
     subs = [_subscriber("good@x.test"), _subscriber("bad@x.test")]
@@ -132,7 +133,7 @@ def test_partial_failure_is_surfaced(client, admin_headers, blast):
     assert "bad@x.test" in body["failed_emails"]
 
 
-def test_zero_subscribers_is_not_a_failure(client, admin_headers, blast):
+def test_zero_subscribers_is_not_a_failure(client, admin_headers, blast, offline):
     """An empty list is a legitimate quiet day, not an outage. Treating it as
     one would fire an alert and poison the cron-failure metric every time."""
     blast([])
@@ -142,7 +143,7 @@ def test_zero_subscribers_is_not_a_failure(client, admin_headers, blast):
     assert (body["sent"], body["failed"], body["total_subscribers"]) == (0, 0, 0)
 
 
-def test_signup_landing_mid_run_is_not_a_false_failure(client, admin_headers, blast):
+def test_signup_landing_mid_run_is_not_a_false_failure(client, admin_headers, blast, offline):
     """Defect: `list_subscribers()` was called twice — once to send, once to
     count — so `total` described a different population from the one we sent
     to. A signup arriving between the two gave sent=0 with total=1, which read
@@ -169,7 +170,7 @@ def test_signup_landing_mid_run_is_not_a_false_failure(client, admin_headers, bl
     ([_subscriber(), _subscriber("b@x.test")], False),
     ([], True),
 ])
-def test_sent_plus_failed_always_equals_total(client, admin_headers, blast, subs, send_ok):
+def test_sent_plus_failed_always_equals_total(client, admin_headers, blast, offline, subs, send_ok):
     """The invariant a monitor relies on. It only holds because the subscriber
     list is read once."""
     blast(subs, send_result=send_ok)

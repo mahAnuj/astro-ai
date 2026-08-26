@@ -60,6 +60,66 @@ def _isolate_daily_cache(tmp_path, monkeypatch):
     monkeypatch.setattr(daily_cache, "_ROOT", tmp_path / "daily_cache")
 
 
+@pytest.fixture(autouse=True)
+def _dummy_api_key(monkeypatch):
+    """Give EVERY test a placeholder `OPENAI_API_KEY`, overriding any real one.
+
+    Seven routes gate on `os.environ.get("OPENAI_API_KEY")` and render a 503
+    "API key not configured" page when it is unset. `.env` is gitignored, so on
+    a fresh clone five of the rashifal tests failed on that gate having never
+    reached the behaviour they exist to check (#224). The obvious fix — read
+    the real key, skip when absent — is the one this suite has already been
+    burned by: eight tests skipped themselves into a green run and
+    `verify_behaviour.py` printed PASS with a third of the suite absent.
+
+    Overriding unconditionally, rather than defaulting only when unset, is the
+    more important half. It means a developer or CI runner who DOES have a live
+    key in their environment cannot have a test spend real quota against it:
+    any test that forgets to stub `stub_llm` now fails on a bogus key instead
+    of quietly billing the paid-tier safety net. Per the module docstring above,
+    anything wanting a live provider belongs in a `scripts/verify_*.py` gate.
+
+    The value is never used to authenticate: every LLM call in this suite is
+    stubbed. It only has to be non-empty.
+    """
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key-not-a-real-credential")
+
+
+@pytest.fixture(autouse=True)
+def _offline_geocode(monkeypatch):
+    """Resolve every place locally, so NO test can reach Nominatim.
+
+    The module docstring above has said "no network" since this suite was
+    written, but nothing enforced it — it was a convention, and conventions do
+    not fail a build. Nine tests drifted across it and a fresh clone with no
+    outbound access reported them red without anything being broken (#224).
+    A guard that does not guard is worse than no guard, because the docstring
+    reads as an assurance.
+
+    `chart.geocode_place` is the single outbound call on these paths: it turns
+    free text into (lat, lon, tz) over Nominatim with a 10s timeout, and
+    `compute_chart` is that call plus pure local Swiss Ephemeris arithmetic.
+    So patching this ONE name is what makes the suite hermetic, and it is
+    deliberately the narrowest possible cut — charts, panchang, transits,
+    Rahu Kaal and Abhijit are all still really computed. Stubbing
+    `compute_chart` instead would have thrown that away and made several
+    assertions vacuous.
+
+    Patched on `chart`, where `compute_chart` looks it up in module globals at
+    call time. Every place resolves to the same coordinates; no test here
+    asserts on a specific location, and the ones that need a place to FAIL use
+    `failing_geocode`, which raises from `compute_chart` before reaching this.
+
+    Autouse and unconditional: an opt-in version is one a new test forgets,
+    which is precisely how the nine got in.
+    """
+    from astro_ai import chart
+
+    # Mumbai — the reference location the shared rashifal is generated against.
+    monkeypatch.setattr(chart, "geocode_place",
+                        lambda place: (19.0760, 72.8777, "Asia/Kolkata"))
+
+
 @pytest.fixture
 def today_iso() -> str:
     return date.today().isoformat()
