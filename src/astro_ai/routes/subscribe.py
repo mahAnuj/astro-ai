@@ -467,7 +467,10 @@ def _mask_email(email: object) -> str:
     address to recognise a repeat offender is all it needs. Identifying data
     stays in the app log, which is the right place for it.
 
-    Total by construction: no input can make it raise. It takes ``object``,
+    Total for anything the subscribers blob can hold: it cannot raise on a
+    value that arrives through ``json.loads``. (Not total for *every* object —
+    a ``str`` subclass overriding ``partition`` would raise — but the blob is
+    parsed JSON, which cannot produce one.) It takes ``object``,
     not ``str``, because its argument comes from the subscribers blob via
     ``sub.get("email", "")`` — whatever is actually stored, not what the
     signature wishes were stored. A truthy non-string (``12345``, a list) used
@@ -557,14 +560,33 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     # second storage round-trip on this path and makes `total` in the JSON
     # mean what any monitor reading it assumes: sent + failed == total.
     subs = subscribers.list_subscribers()
+    # `list_subscribers()` is `data.get("subscribers", [])` off a JSON blob, so
+    # a corrupted one (`{"subscribers": null}`) hands back a non-list — and both
+    # `for sub in subs` and `len(subs)` raise on that, outside every handler
+    # here: HTML 500, no outcome JSON, no alert (#223). Reported below as
+    # ok:false with its own alert rather than as an empty list, because
+    # sent=0/failed=0/total=0 with ok:true is what a genuine quiet day looks
+    # like, and an unreadable list must not be indistinguishable from one.
+    unreadable_list = not isinstance(subs, list)
+    if unreadable_list:
+        log.error("daily rashifal: subscriber list is %s, not a list", type(subs).__name__)
+        subs = []
     for sub in subs:
-        # Read `email` with .get() like every other field on these rows. It was
-        # subscripted directly at four sites, so a row missing it raised
-        # KeyError — and there was no handler nearer than the app-level one,
-        # so that single bad row took the whole blast down (#220).
-        email = sub.get("email", "")
         send_err: Exception | None = None
+        email = ""
         try:
+            # Read `email` with .get() like every other field on these rows. It
+            # was subscripted directly at four sites, so a row missing it raised
+            # KeyError — and there was no handler nearer than the app-level one,
+            # so that single bad row took the whole blast down (#220). The read
+            # is INSIDE the guard because #220's fix protected a malformed FIELD
+            # and not a malformed ROW: a row that is not a dict (a bare string
+            # in the blob) raises AttributeError on `.get` itself, one frame
+            # further out, with all of #220's harm (#223). Only reachable via a
+            # corrupted or hand-edited blob — the signup writer always writes a
+            # normalised dict — so it is counted as a failure like any other bad
+            # row rather than given a shape of its own.
+            email = sub.get("email", "")
             if not email:
                 raise ValueError("subscriber row has no email")
             lang = sub.get("lang", "en")
@@ -615,7 +637,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     # everything that DOES get here.
     total = len(subs)
     delivered_none = total > 0 and sent == 0
-    ok = not delivered_none and failed == 0
+    ok = not unreadable_list and not delivered_none and failed == 0
 
     # Every alert below sits outside the per-subscriber handler, so anything
     # that raises while BUILDING or firing one kills the response the loop
@@ -627,7 +649,14 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     # an alert that raises does precisely that. Guarded separately so one
     # failing alert does not suppress the other.
     try:
-        if delivered_none:
+        if unreadable_list:
+            _fire_error_alert(
+                request,
+                RuntimeError("daily rashifal: subscriber list unreadable"
+                             " (not a list) — nobody was attempted"),
+                "rashifal:blast:unreadable_list",
+            )
+        elif delivered_none:
             _fire_error_alert(
                 request,
                 RuntimeError(f"daily rashifal reached 0 of {total} subscribers"),
@@ -671,5 +700,13 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
         "sent": sent,
         "failed": failed,
         "sections": {lang: len(secs) for lang, secs in sections_by_lang.items()},
-        "failed_emails": failures[:20],  # cap so we don't return MB-sized lists
+        # Capped so we don't return MB-sized lists, and coerced because
+        # `failures` holds whatever the blob held: `bytes` is not JSON
+        # serializable, so the encoder raised HERE — below the loop, outside
+        # its handler, so no outcome JSON and an HTML 500, which is #220's harm
+        # again (#225). Coerced at this site and not at `failures.append` on
+        # purpose: `_mask_email` must keep receiving the raw value, or its
+        # non-string branch becomes unreachable from this route and the
+        # mutation row guarding it stops failing.
+        "failed_emails": [str(e) for e in failures[:20]],
     }, status_code=200 if ok else 500)

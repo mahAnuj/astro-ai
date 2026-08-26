@@ -69,7 +69,7 @@ MUTATIONS = [
 
     ("subscribe: ok is always True (the 21-day silence)",
      "src/astro_ai/routes/subscribe.py",
-     "    ok = not delivered_none and failed == 0", "    ok = True",
+     "    ok = not unreadable_list and not delivered_none and failed == 0", "    ok = True",
      "test_total_delivery_failure_is_not_reported_as_success"),
 
     # #220. Narrowing the handler to a class the loop never raises is the same
@@ -114,6 +114,41 @@ MUTATIONS = [
      "    except Exception:  # noqa: BLE001 — alerting must never cost the outcome JSON",
      "    except SystemExit:  # noqa: BLE001 — mutated: catches nothing the alerts raise",
      "test_a_raising_alert_does_not_cost_the_outcome_json"),
+
+    # #223. #220's guard covered a malformed FIELD; these two are the malformed
+    # ROW and the malformed LIST, one and two frames further out. Both raise
+    # outside every handler in the endpoint, so both reproduce #220's silence
+    # exactly: HTML 500, no outcome JSON, no alert, no retry.
+    ("subscribe: the row read moves back outside the guard (#223)",
+     "src/astro_ai/routes/subscribe.py",
+     "        send_err: Exception | None = None\n        email = \"\"\n        try:",
+     "        email = sub.get(\"email\", \"\")\n        send_err: Exception | None = None\n        try:",
+     "test_a_row_that_is_not_a_dict_does_not_abort_the_blast"),
+
+    ("subscribe: an unreadable subscriber list is iterated anyway (#223)",
+     "src/astro_ai/routes/subscribe.py",
+     "    unreadable_list = not isinstance(subs, list)",
+     "    unreadable_list = False",
+     "test_an_unreadable_subscriber_list_still_reports_an_outcome"),
+
+    # #225. The row above guards the FIRST alert block; this one guards the
+    # SECOND, which was ungated — mutating it alone left the whole suite green,
+    # because the only test that raised an alert drove a full 12-section
+    # reading and never entered the short-sections branch.
+    ("subscribe: a raising short-sections alert kills the outcome JSON",
+     "src/astro_ai/routes/subscribe.py",
+     "        except Exception:  # noqa: BLE001 — same: the outcome JSON outranks the alert",
+     "        except SystemExit:  # noqa: BLE001 — mutated: catches nothing the alert raises",
+     "test_a_raising_short_sections_alert_does_not_cost_the_outcome_json"),
+
+    # #225. The last raise still standing between the send loop and the
+    # response: `failures` carries whatever the blob held, and the JSON encoder
+    # cannot take `bytes`.
+    ("subscribe: a non-string address reaches the JSON encoder raw",
+     "src/astro_ai/routes/subscribe.py",
+     "        \"failed_emails\": [str(e) for e in failures[:20]],",
+     "        \"failed_emails\": failures[:20],",
+     "test_a_bytes_email_does_not_cost_the_outcome_json"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
