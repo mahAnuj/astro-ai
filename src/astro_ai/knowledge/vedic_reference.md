@@ -1119,3 +1119,225 @@ Classical Muhurta Chintamani groups nakshatras by suitable activity:
 ---
 
 *Nakshatra reference last updated: 2026-07-20*
+
+---
+
+## 28. The eight parts of the day — Gulika, Maandi, and the Yamaganda question
+
+**Added 2026-08-26 for issue #150.** This section exists so that any window the
+app renders from the eight-part division of daylight can be checked in the
+standard place rather than from a comment in `chart.py`.
+
+**Source for everything in §28.1:** P.V.R. Narasimha Rao, *Vedic Astrology: An
+Integrated Approach*, §4.3 "Other Upagrahas" (printed pp. 42–44). In this
+repo: `data/vedic_astro_textbook.pdf`, **PDF page 55** for Table 10.
+`pdftotext -layout` line numbers (the ones `grep -n` will find — see §28.6
+before quoting any other line number): §4.3 heading **1687**, upagraha list
+**1688–1691**, day/night boundary **1693–1695**, daytime rule and worked
+example **1707–1712**, Table 10 DAY **1714–1723**, Table 10 NIGHT
+**1724–1734**, night rule **1736–1741**, upagraha rising points **1754–1759**,
+footnote 9 **1783**.
+
+**Table 10 was verified against the rendered page image**
+(`pdftoppm -f 55 -l 55 -r 200 -png`), not read from the text layer alone —
+`scripts/corpus_search.py`'s own header warns that scanned tables lose rows
+silently, and the `-layout` text of this table has collapsed columns.
+
+### 28.1 What Rao states
+
+**The day/night boundary and the division** (line 1693):
+
+> "A day starts at the time of sunrise and ends at the time of sunset. A night
+> starts at the time of sunset and ends at the time of next day's sunrise."
+
+— and the length of whichever period the moment falls in is divided into
+**8 equal parts**.
+
+**The daytime rule** (lines 1707–1708):
+
+> "The first part is ruled by the lord of weekday and then we cover planets in
+> the order of weekdays. The part after the one ruled by Saturn is lord-less.
+> After that, Sun's part comes."
+
+So the daytime cycle is **eight** slots — `Sun, Moon, Mars, Mercury, Jupiter,
+Venus, Saturn, (lord-less)` — entered at the weekday lord. Nighttime starts
+instead at the **5th planet from** the weekday lord (line 1736); the night
+table is not reproduced here because none of the panchang windows below use it.
+
+**Table 10 — Rulers of the 8 parts of the DAY** (PDF p. 55, verified against
+the page image):
+
+| Weekday | 1st | 2nd | 3rd | 4th | 5th | 6th | 7th | 8th |
+|---|---|---|---|---|---|---|---|---|
+| Sun | Sun | Moon | Mars | Merc | Jup | Ven | **Sat** | — |
+| Mon | Moon | Mars | Merc | Jup | Ven | **Sat** | — | Sun |
+| Tue | Mars | Merc | Jup | Ven | **Sat** | — | Sun | Moon |
+| Wed | Merc | Jup | Ven | **Sat** | — | Sun | Moon | Mars |
+| Thu | Jup | Ven | **Sat** | — | Sun | Moon | Mars | Merc |
+| Fri | Ven | **Sat** | — | Sun | Moon | Mars | Merc | Jup |
+| Sat | **Sat** | — | Sun | Moon | Mars | Merc | Jup | Ven |
+
+("—" is Rao's lord-less slot.)
+
+**Where the upagrahas rise** (lines 1754–1759):
+
+> "(4) Yama Ghantaka rises at the middle of Jupiter's part. (5) Gulika rises at
+> the middle of Saturn's part. (6) Maandi rises at the beginning of Saturn's
+> part."
+
+**Nature** (lines 1689–1691): Kaala is "a malefic upagraha similar to Sun",
+Mrityu "a malefic upagraha similar to Mars", "Yamaghantaka is similar to
+Jupiter. Gulika and Maandi are similar to Saturn." Rao elsewhere treats Gulika
+as an afflicting point ("Situation of Gulika within 1º from lagna is also
+undesirable").
+
+**Rao records a dispute about the rising POINT** (footnote 9, line 1783):
+
+> "Some scholars suggest that Kaala rises at the beginning of Sun's part. The
+> same thing applies to others."
+
+This matters in our favour: the disputed thing is *where inside the part* the
+upagraha rises. **Which part it is** is not disputed, and a panchang window is
+the whole part.
+
+### 28.2 Gulika Kaal — CONFIRMED
+
+Gulika = **Saturn's part** of the eight. Read off Table 10:
+
+| Weekday | Gulika = Saturn's part |
+|---|---|
+| Sunday | 7th |
+| Monday | 6th |
+| Tuesday | 5th |
+| Wednesday | 4th |
+| Thursday | 3rd |
+| Friday | 2nd |
+| Saturday | 1st |
+
+**These ordinals do not depend on whether Rao's lord-less slot exists.** Proof,
+not observation: counting always starts at the weekday lord, which is one of
+the seven planets; Saturn is the *last* planet before the lord-less slot; so
+the count reaches Saturn before it can ever pass the blank. Formally, with the
+weekday lord at cycle index `s ∈ {0..6}` and Saturn at index 6, the ordinal is
+`1 + ((6 − s) mod 8) = 1 + ((6 − s) mod 7) = 7 − s` under both an 8-slot and a
+7-planet cycle. Verified for all seven weekdays.
+
+**The one inferential step, stated plainly.** Rao computes Gulika as a
+*longitude* — the lagna rising at the midpoint of Saturn's part — and never
+uses the phrase "Gulika Kaal". Identifying the panchang window with Saturn's
+part is an inference. It is signed off here because (a) Rao assigns both Gulika
+and Maandi to that same part, (b) his footnote 9 makes the *point* contested
+while leaving the *part* untouched, so the part is the more robust object, and
+(c) it is the same structural move already shipped for Rahu Kaal — a
+weekday-indexed eighth of daylight.
+
+**What is NOT sourced from Rao:** any specific prohibition ("do not sign", "do
+not travel"). Rao supports only that Gulika is Saturn-natured and afflicting.
+Copy must not attribute stronger guidance to him.
+
+### 28.3 Yamaganda — BLOCKED, do not code it
+
+`scripts/corpus_search.py "yamaganda" --absent` → **0 hits, 3 spellings**, over
+the 16,724 `-layout` lines of the one book present. Rao names the *upagraha*
+**Yamaghantaka**; "Yamaganda", the panchang window, does not appear.
+
+Two independent blockers:
+
+1. **The identification is unverified.** Yamaghantaka-the-upagraha is not
+   stated by Rao (or by anything else we hold) to be Yamaganda-the-window.
+2. **The ordinal is genuinely in dispute on exactly two weekdays.** Jupiter
+   sits at cycle index 4, *before* the lord-less slot, so the blank does shift
+   it — unlike Saturn:
+
+   | Weekday | Jupiter's part, Rao's 8-slot | Jupiter's part, 7-planet cycle |
+   |---|---|---|
+   | Sun–Thu | 5, 4, 3, 2, 1 | 5, 4, 3, 2, 1 (agree) |
+   | **Friday** | **8th** | **7th** |
+   | **Saturday** | **7th** | **6th** |
+
+   Five weekdays agree; Friday and Saturday differ by one full eighth of
+   daylight (~96 minutes at Delhi). That is ~104 days a year rendering an
+   adjacent, entirely plausible-looking time.
+
+**What would unblock it.** A named book in `data/` that gives Yamaganda for
+**Friday and Saturday**. A source silent on those two weekdays does not
+unblock. The obvious candidate is **B.V. Raman, *Muhurtha or Electional
+Astrology* (1948)** — the same glossary that already sources
+`_RAHU_KAAL_SEGMENT` and states these windows as clock times against a 6 a.m.
+sunrise. That file is **not present in `data/` as of 2026-08-26**.
+
+**The discriminating test**, at an idealised 06:00 sunrise / 18:00 sunset
+(1h30m parts):
+
+- Friday's Yamaganda is either **16:30–18:00** (Rao, part 8) or **15:00–16:30**
+  (7-planet, part 7).
+- Saturday's is either **15:00–16:30** (Rao, part 7) or **13:30–15:00**
+  (7-planet, part 6).
+
+Anything else means a third scheme and the whole table reopens.
+
+### 28.4 Brahma Muhurta — not in this corpus
+
+- `corpus_search.py "brahma muhurta" --absent` → **0 hits, 6 spellings**.
+- "muhurta" occurs 44 times in Rao, but **always meaning "an elected moment"**,
+  never as a unit of time. Rao defines *hora* as 1/24 of sunrise-to-sunrise
+  (line 816) and defines ghati/hora lagnas, but **nowhere defines a muhurta as
+  a duration, and nowhere divides day or night into 15**.
+- Rao explicitly hands this topic off (line 15907): "Out of the modern books on
+  muhurta in English language, the one by Dr. B.V. Raman is very good."
+
+**`[UNSOURCED — widely cited, not in corpus]`** — the standard definition, held
+here as a *claim to be checked*, not as a sourced rule: a muhurta is 1/15 of
+the night, and Brahma Muhurta is the **14th of the 15 nocturnal muhurtas** —
+i.e. **one** muhurta wide, beginning two muhurtas before sunrise and **ending
+one muhurta before sunrise**. Under the nominal 48-minute muhurta that is
+sunrise −96 min to sunrise −48 min.
+
+**Sourced fragments that do survive**, and can be reused when the rest is
+settled:
+
+- The night is **yesterday's sunset → today's sunrise** — Rao §4.3, line 1693,
+  quoted above. This is the correct boundary and it is properly sourced.
+- Dividing the *daylight* into 15 muhurtas is already sourced in this repo to
+  Raman, *Muhurtha*, pp. 31–32 (see the Abhijit comment in `chart.py`). That
+  establishes the **proportional** treatment of the unit; it does not establish
+  any ordinal.
+
+**Two errors to avoid when this is finally implemented:**
+
+1. **"The two muhurtas before sunrise" is not Brahma Muhurta.** Brahma Muhurta
+   ends one muhurta *before* sunrise; a window ending *at* sunrise is roughly
+   twice too wide. Measured at New Delhi: 40.3 min vs 80.6 min (2026-06-21),
+   47.6 vs 95.2 (2026-09-23), 54.9 vs 109.8 (2026-12-21).
+2. **Fixed vs proportional is a real but smaller divergence.** New Delhi start
+   times differ by 15.4 min (Jun solstice), 0.8 min (equinox) and 13.8 min
+   (Dec solstice); Srinagar reaches 19.1 min. Whichever is chosen, the page
+   must say which — this is a CONTESTED convention, and the defect would be
+   silence, not the value.
+
+### 28.5 What must NOT be inferred from Table 10
+
+- **The lord-less slot is not Rahu Kaal.** Tempting, and wrong: it coincides
+  with `_RAHU_KAAL_SEGMENT` on only 2 of 7 weekdays (Sunday and Wednesday).
+  Rao's eight-part cycle contains no Rahu at all.
+- **Rao uses two different definitions of "day".** §4.3 (this section):
+  sunrise → sunset. §1.3.11 Hora (line 816): sunrise → *next* sunrise. Never
+  cite "Rao's day" without the section.
+- **Gulika never collides with Rahu Kaal** on any weekday, so the two can be
+  shown side by side without a same-window clash.
+
+### 28.6 Citation hygiene — `corpus_search.py` line numbers are not `grep -n` line numbers
+
+`scripts/corpus_search.py` numbers lines with `str.splitlines()`, which splits
+on form feeds as well as newlines. This book contains **515** form feeds
+(page breaks), so the tool's line numbers run ahead of `grep -n` / `sed -n` by
+roughly one per PDF page — +53 at the upagraha list, +55 sixty lines later,
+and up to +515 at the end of the book. **A line number copied from
+`corpus_search` output cannot be located again with `sed -n 'Np'`.** Every line
+number in §28 was taken with `grep -n` on the cache file and is directly
+reachable. Re-verify before quoting tool output as a citation.
+
+---
+
+*Section 28 last updated: 2026-08-26. Books present in `data/` when written:
+`vedic_astro_textbook.pdf` only (1 of 7).*
