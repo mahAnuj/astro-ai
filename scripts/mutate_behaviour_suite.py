@@ -71,6 +71,49 @@ MUTATIONS = [
      "src/astro_ai/routes/subscribe.py",
      "    ok = not delivered_none and failed == 0", "    ok = True",
      "test_total_delivery_failure_is_not_reported_as_success"),
+
+    # #220. Narrowing the handler to a class the loop never raises is the same
+    # thing as having no handler, which is what the code did: one bad
+    # subscriber row escaped past both alerts and past the outcome JSON.
+    ("subscribe: per-subscriber raise escapes the loop again (#220)",
+     "src/astro_ai/routes/subscribe.py",
+     "        except Exception as exc:  # noqa: BLE001 — one bad row must not end the blast",
+     "        except SystemExit as exc:  # noqa: BLE001 — mutated: catches nothing raised here",
+     "test_a_raising_subscriber_does_not_abort_the_blast"),
+
+    # #222. Raw addresses back into the Telegram channel and into the
+    # /admin/activity error log GCS keeps for 30 days.
+    ("subscribe: raw subscriber addresses back into the alert (#222)",
+     "src/astro_ai/routes/subscribe.py",
+     "                         f\" (first: {_mask_email(failures[0])})\"),",
+     "                         f\": {failures[:5]}\"),",
+     "test_partial_alert_carries_no_raw_subscriber_address"),
+
+    # The three rows below came out of QA mutating this suite itself. Two guard
+    # the follow-up fix to #220 — a non-string `email` raised inside the
+    # partial alert, below the loop and outside its handler, so the loop's fix
+    # had relocated the silence rather than removed it. The third guards a
+    # behaviour that was already correct but ungated: QA reverted the no-`@`
+    # branch to `return email` and all ten tests still passed.
+    ("subscribe: _mask_email raises on a non-string email again",
+     "src/astro_ai/routes/subscribe.py",
+     "    if not isinstance(email, str):\n        return \"***\"",
+     "    if isinstance(email, str) and False:\n        return \"***\"",
+     "test_a_non_string_email_does_not_cost_the_alert_or_the_outcome_json"),
+
+    ("subscribe: _mask_email returns the raw value when there is no `@`",
+     "src/astro_ai/routes/subscribe.py",
+     "    local, _, domain = email.partition(\"@\")\n    if not domain:\n        return \"***\"",
+     "    local, _, domain = email.partition(\"@\")\n    if not domain:\n        return email",
+     "test_masked_address_with_no_at_sign_reveals_nothing"),
+
+    # Narrowing this handler to a class the alerts never raise is the same as
+    # deleting it — #220's silence, moved below the loop instead of inside it.
+    ("subscribe: a raising alert kills the outcome JSON again",
+     "src/astro_ai/routes/subscribe.py",
+     "    except Exception:  # noqa: BLE001 — alerting must never cost the outcome JSON",
+     "    except SystemExit:  # noqa: BLE001 — mutated: catches nothing the alerts raise",
+     "test_a_raising_alert_does_not_cost_the_outcome_json"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

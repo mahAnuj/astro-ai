@@ -280,8 +280,12 @@ way:
 
 1. The corpus changed after a "do not re-search" note was written.
 2. OCR split an entry across columns (`Rahu Kalam` reported 0 hits while present on p.199).
-3. Its boundary regex rejects Sanskrit inflections (`maudhya` → 0 hits, `Maudhyam` present)
-   — `#217`.
+3. Its boundary regex rejected Sanskrit inflections (`maudhya` → 0 hits, `Maudhyam`
+   present) — `#217`, fixed 2026-08-25: a-stem endings REPLACE the stem's final `-a`, so no
+   trailing-boundary relaxation could reach `maudhyena`; `_pat()` now also tries
+   `stem + (am|as|ah|at|ani|ena|aya|asya|e|ay)`. Gated on fixtures by
+   `scripts/verify_corpus_search.py` — the book carrying `Maudhyam` is not in this `data/`,
+   so the real-corpus hit count remains unmeasured.
 
 A zero result proves the *term* is absent, not the *concept* — and sometimes not even
 that. Also verify your own tooling: a `pdftotext` invocation against a wrong path with
@@ -289,7 +293,9 @@ that. Also verify your own tooling: a `pdftotext` invocation against a wrong pat
 
 ### Verification gates
 
-Twelve `scripts/verify_*.py` gates. The discipline that makes them worth anything:
+Fourteen `scripts/verify_*.py` gates — count it with `ls scripts/verify_*.py` rather
+than trusting this number, which read "Twelve" while thirteen sat on disk. The
+discipline that makes them worth anything:
 
 **Prove a gate can fail before trusting that it passes.** For the behaviour suite this
 is automated: `scripts/mutate_behaviour_suite.py` restores each original defect and
@@ -342,6 +348,9 @@ Dated, with the evidence. **Check here before proposing a change.**
 | 2026-08-23 | Scheduler retries off | retries double-generated and doubled LLM spend |
 | 2026-08-23 | Retrograde combustion = exactly one degree less | Raman *Muhurtha* p.197 footnote; 10/8 were invented |
 | 2026-08-23 | Negative caches are short-TTL, not permanent or absent | caching a failure all day pins a reader to the wrong city; not caching it costs the full timeout every request |
+| 2026-08-25 | Daily blast counts a raising subscriber row as a failure and continues | #220: the loop had no handler, both blast alerts sit below it, and scheduler retries are off — one bad row dropped every subscriber after it and reported nothing at all. The alerts and `_mask_email` are now guarded too: fixing only the loop moved the same silence one block down, where a non-string `email` from the subscribers blob raised inside the partial alert and again cost both the alert and the outcome JSON. The blast has no per-subscriber idempotency, so retries must **stay** off: a 500 plus retries is a duplicate-send generator (#222) |
+| 2026-08-25 | Blast alerts carry a count and a masked prefix, never raw addresses | #222: `failures[:5]` put up to five subscriber emails into the Telegram channel and into `events.record`, which `/admin/activity` renders and GCS keeps 30 days. Identifying data stays in the app log |
+| 2026-08-25 | Bare dates in strict `/learn` articles must corroborate a date the article already verified; attribution deliberately NOT widened | #193: `diwali-muhurat-2026.html:22` said Shukla Pratipada runs "until Nov 10" — Govardhan Puja, the #143 date, in the article #143 was filed against — and no gate read it. Gate 4 compares (month, day) only, against dates that article's own attributed claims stand behind, so it can name no festival and cannot fabricate a Gate 1 failure. 9 bare dates across 4 strict articles, 0 uncorroborated; `scripts/mutate_learn_article_dates.py` 2/4 → 4/4 caught |
 
 ### Rejected, with reasons — do not re-propose without new information
 
@@ -352,6 +361,16 @@ Dated, with the evidence. **Check here before proposing a change.**
   removed the token pressure it existed for, and it only cost wall-clock against the
   timeout. Code retained for if pressure returns.
 - **Showing book/author names to users** — explicitly not wanted; cite the tradition.
+- **Widening `_attribute` in `verify_learn_article_dates.py` to reach yearless dates**
+  (#193) — the escaping strings sit on lines naming a *different* observance:
+  `vivah-muhurat-2027.html:98`'s bare "Jul 14" is Devshayani Ekadashi on a line about
+  Bhadli Navami, and `:132`'s "Mar 15" is Meena Sankranti on a line naming Mesha
+  Sankranti. A wider tier hands each of them the wrong name and fabricates a Gate 1
+  failure against a date that is correct. Gate 4's corroboration check assigns no name,
+  which is why it is safe.
+- **A structural exemption for tithi-window endpoints** in the same gate — a suppression
+  list written as a regex, and evadable besides: put a clock time near a date and the
+  gate looks away from it.
 
 ---
 

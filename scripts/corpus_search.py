@@ -193,6 +193,91 @@ def variants(term: str) -> list[str]:
     return sorted(out, key=len, reverse=True)
 
 
+# ─── Case endings, and why relaxing the trailing boundary cannot find them ──
+#
+# Sanskrit a-stems inflect by REPLACING the stem's final -a, not by appending
+# to it: `maudhya` becomes `maudhyena`, `maudhyasya`. The search term is
+# therefore not a substring of its own inflected form, so NO relaxation of the
+# trailing boundary can ever reach those — `maudhyena` does not contain
+# `maudhya`. That is #217: `maudhya --absent` printed a clean absence while
+# `Maudhyam` sits in Rao Vol. I.
+#
+# Measured 2026-08-25 against the five forms the gate fixtures carry — the
+# three endings #217 names (-am, -ena, -asya) plus the locative -e — through
+# the pipeline the tool actually uses, variants() then _pat(). The path is the
+# whole point: variants() already emits the truncated stem `maudhy`, so a
+# candidate can reach -ena and -e through that stem even though it cannot
+# reach them through `maudhya`. Scored on the base spelling alone, the middle
+# row reads 3/5 and looks refuted; scored the way the tool searches, it is not.
+#
+#                          base only   via variants()
+#     s?(?![a-z])             0/5           0/5    the pattern that shipped
+#     suffix set, #217 (a)    2/5           4/5    -ena and -e are appended to
+#                                                  nothing, so they stay unseen
+#     (?![a-z]{4,}), #217 (b) 3/5           5/5    finds all five, via `maudhy`
+#     stem + ending set       5/5           5/5    and rejects maudhyamika
+#
+# So (b) is NOT refuted on form count. It is rejected on what ELSE it finds.
+# Over 92 terms on the one book then in data/ (vedic_astro_textbook.pdf,
+# 16,724 lines) it changes 16 terms' counts where this pattern changes none:
+#
+#     nadi        0 ->    1   "the northern direction (nadir – 4th house)"
+#     hora       45 ->   47   "prasna or horary astrology"
+#     bala       55 ->   60   "loss of status and balance"; "Balava", a karana
+#     dasha    1300 -> 1314   "Dasamsa Chart (D-10)"; "Dasami", a tithi
+#
+# `nadi` matching the English word "nadir" is a false SOURCED verdict on one
+# of the eight kootas — the direction this module's docstring calls the worse
+# error, and worse than the false negative #217 was filed about. Some of (b)'s
+# extra hits are genuine compounds (kendradi, nakshatramsa, vargottamamsa), so
+# the trade is not one-sided; the counts are corpus-dependent on 1 of 8 books
+# and would move with the rest. The asymmetry of the two errors does not move.
+#
+# (An earlier version of this comment recorded 3/5 for (b) with the reasoning
+# "still blind to -ena and -e", and the #217 commit message recorded 0/5 and
+# 3/5 as "both fixes the issue proposed". Neither reproduces: 0/5 is the
+# SHIPPED pattern, not a proposal, and 3/5 is a base-spelling measurement of a
+# tool that does not search that way. The 1/5 and 4/5 that triage handed down
+# do not reproduce either. Superseded by the table above.)
+#
+# The ending set is explicit and short on purpose. "Any one-to-four letters
+# may follow" re-opens the false-SOURCED direction the boundary was tightened
+# to close, and a false SOURCED verdict retires a gap that is still open.
+_ENDINGS: tuple[str, ...] = (
+    "asya", "ani", "ena", "aya", "am", "as", "ah", "at", "ay", "e",
+)
+
+
+def _pat(v: str) -> "re.Pattern[str]":
+    """The match pattern for one spelling.
+
+    Letters only on the boundaries: a term may legitimately sit against a
+    digit, hyphen or punctuation in these books ("Vimsottari-dasa", "7 kuta").
+    Optional trailing "s" so plurals still count — the books write "navamsas"
+    and "dasamsas" freely, and excluding them lost 6 and 12 real hits
+    respectively when the boundary was first tightened.
+    """
+    # Devanagari terms match as substrings: भकूट legitimately appears
+    # inside भकूटगुणाः and दुष्टभकूटपरिहारः, and requiring a boundary
+    # would miss every compound — which in Sanskrit is most of them.
+    if any(ord(ch) > 0x0900 for ch in v):
+        return re.compile(re.escape(v))
+
+    body = rf"{re.escape(v)}s?"
+    # Same 6-character floor as the trailing-'a' drop in variants(). Note what
+    # is NOT claimed: lowering it to 3 was measured against the present corpus
+    # and changed no count, so this floor guards a risk rather than a hit we
+    # have seen. Keep it anyway — a 3-letter stem plus a 2-letter ending is
+    # short enough to land inside English prose, and the wrong direction here
+    # is a false SOURCED verdict, which retires a gap that is still open.
+    if v.endswith("a") and len(v) >= 6:
+        body += "|" + re.escape(v[:-1]) + "(?:" + "|".join(_ENDINGS) + ")"
+    # The LEADING (?<![a-z]) governs the whole alternation, and it is the only
+    # thing keeping "vasya" out of "amavasya" and "washy" out of "wishy-washy".
+    # #217 is a trailing-side change; do not weaken this half.
+    return re.compile(rf"(?<![a-z])(?:{body})(?![a-z])")
+
+
 # Directories under data/ that are NOT source books (#159 QA, BUG-1).
 #
 # `data/emails/sarbani.pdf` is our own outreach message to an astrologer. It
@@ -358,19 +443,6 @@ def main() -> int:
     args = ap.parse_args()
 
     spellings = variants(args.term)
-    # Letters only on the boundaries: a term may legitimately sit against a
-    # digit, hyphen or punctuation in these books ("Vimsottari-dasa", "7 kuta").
-    # Optional trailing "s" so plurals still count — the books write
-    # "navamsas" and "dasamsas" freely, and excluding them lost 6 and 12 real
-    # hits respectively when the boundary was first tightened.
-    def _pat(v: str) -> "re.Pattern[str]":
-        # Devanagari terms match as substrings: भकूट legitimately appears
-        # inside भकूटगुणाः and दुष्टभकूटपरिहारः, and requiring a boundary
-        # would miss every compound — which in Sanskrit is most of them.
-        if any(ord(ch) > 0x0900 for ch in v):
-            return re.compile(re.escape(v))
-        return re.compile(rf"(?<![a-z]){re.escape(v)}s?(?![a-z])")
-
     _patterns = {v: _pat(v) for v in spellings}
     corpus = _corpus(use_cache=not args.no_cache)
     total_lines = sum(t.count("\n") for t in corpus.values())
