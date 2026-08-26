@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "env": {
+    "OPENAI_API_KEY": "sk-not-a-real-key-tests-stub-the-llm",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git merge-base:*)",
+      "Bash(git archive:*)",
+      "Bash(sed -n:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(md5sum:*)",
+      "Bash(sha256sum:*)",
+      "Bash(cmp:*)",
+      "Bash(diff:*)",
+      "Bash(uv run pytest:*)",
+      "Bash(uv run python scripts/verify_:*)",
+      "Bash(python3 -c \"import ast; ast.parse:*)"
+    ],
+    "deny": [
+      "Bash(gh repo delete:*)",
+      "Bash(rm -rf /:*)"
+    ]
+  }
+}
