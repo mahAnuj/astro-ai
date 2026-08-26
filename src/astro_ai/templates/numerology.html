@@ -515,9 +515,13 @@
       </summary>
       <div class="mt-3 space-y-3 text-sm">
         {% if rem.rudraksha %}
+        {# The per-number bead is tradition we cannot cite (#173) — knowledge/numerology.md
+           §11's Rudraksha column has no traced source, and this is a remedy people spend
+           money on. Say so here, once, rather than in all nine strings. #}
         <div class="p-3 bg-stone-50 rounded-lg">
           <div class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-1">Rudraksha</div>
           <div class="text-stone-800">{{ rem.rudraksha }}</div>
+          <p class="text-xs text-stone-600 mt-2 italic">Which bead suits which number varies between lineages, and we have not been able to trace this mapping to a classical text &mdash; treat it as tradition, not scripture. A costlier or rarer bead is not a more effective one, and the scarcest grades are the most often faked. Never spend more than you'd be happy to lose.</p>
         </div>
         {% endif %}
         {% if rem.yantra %}
