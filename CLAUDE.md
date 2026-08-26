@@ -324,72 +324,24 @@ src/astro_ai/
   templates/       Jinja2. learn/ (75 articles), email/, admin_*.html, panchang.html
 ```
 
-### Source books in `data/` — all seven are readable
+### Source books in `data/` — read `knowledge/SOURCES.md` before searching
 
-The two scanned, OCR-blocked PDFs (`varahmihirHorasastram.pdf`, `Numerology.pdf`) have
-been **deleted**. Every PDF now in `data/` extracts with plain `pdftotext`. There is no
-OCR-blocked source left, and #178 is acquisition-only.
+Seven readable PDFs, ~88,775 plain-`pdftotext` lines. The per-book table, extraction
+status, the measured absences and the traps live in `knowledge/SOURCES.md`.
 
-Line counts below are **plain `pdftotext`** (no `-layout`), measured 2026-08-08. The flag
-matters: `-layout` yields ~30% fewer lines because it reflows columns. Quote the flag
-whenever you quote a count — the older figures in this file and `SOURCES.md` disagreed
-purely because they mixed the two.
+Three rules bind anyone who touches the corpus, so they stay here:
 
-| PDF | lines | note |
-|---|---|---|
-| `Numerology the Complete Guide…` / Goodwin | 28,171 | largest numerology source; Western/Pythagorean |
-| `vedic_astro_textbook.pdf` / Rao | 20,669 | richest astrology source, largely unextracted |
-| `Astrology For Beginners BVRaman_text.pdf` | 15,409 | fully extracted |
-| `book1-for-CD.pdf` / Rao Lessons Vol. I | 12,244 | not extracted |
-| `Numerology-With Tantra…` / Johari | 5,952 | primary *Vedic* numerology authority |
-| `Astrology-e-book-compressed.pdf` / Vasudev | 5,220 | introductory/philosophical |
-| `Numerology-You.pdf` / Jayant Kumar | 1,110 | 43pp sample only |
+- **Use `scripts/corpus_search.py`, not grep.** It expands transliterations
+  (`vimshottari` finds `vimsottari` — 2 hits vs 134) and its `--absent` mode makes
+  "unsourced" a checkable claim rather than an assertion.
+- **A zero proves the TERM is absent, not the CONCEPT** — `nitya yoga` matches nothing
+  while `vyatipata` and `vaidhriti` are both in the books. It has produced false
+  negatives three times and a false positive once; `SOURCES.md` records each.
+- **`data/` is gitignored, so a fresh checkout may hold a subset — often one book of
+  seven.** An absence measured against a partial corpus is worthless. **Say which books
+  were present** whenever you report one.
 
-**88,775 lines total.** Most of it is unextracted — see #191.
-
-**Measured absences — SUPERSEDED 2026-08-16, and the correction matters more than the
-note did.** This block used to record `Vashya` **0**, `Lo Shu` **0**, `Ashtakoot` **0**
-and `Yoni` as three false positives, marked "do not re-search". Adding
-`data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt` (B.V. Raman,
-*Muhurtha or Electional Astrology*, 1948, out of copyright) falsified three of those:
-
-| term | old | now |
-|---|---|---|
-| `Vashya` | 0 | **2** — "Vasya Kuta" §8, with the Aries/Leo pairings |
-| `Graha Maitri` | 0 | **5** — named, with its cancellation rules |
-| `Yoni` | 3 false positives | **12** — the 27-nakshatra animal table and hostile pairs |
-| `Nadi` | — | **32** |
-| `Gana` | — | **6** |
-
-Still absent, verified across all 85,979 lines: `Bhakoot` **0**, `Guna Milan` **0**,
-`Lo Shu` **0**.
-
-**Two lessons, both paid for.** First, a "do not re-search" note is only true until the
-corpus changes, and nothing here re-checked it — the note outlived its evidence by two
-days. Re-run rather than trust it. Second, the same day this was corrected, a false
-POSITIVE was also found: `scripts/corpus_search.py` was counting `data/emails/sarbani.pdf`
-— our own outreach message — as a source book, so `Ashtakoot` briefly appeared present
-because we had written the word ourselves.
-
-**Use `scripts/corpus_search.py` rather than grep.** It expands transliterations
-(`vimshottari` finds `vimsottari`, 2 hits vs 134), excludes non-book directories, refuses
-to run on a partially-extracted corpus, and its `--absent` mode makes "unsourced" a
-checkable claim. Note what it proves: the TERM is absent, not the CONCEPT — `nitya yoga`
-matches nothing while `vyatipata` and `vaidhriti` are both in the books.
-
-**Raman's is the SOUTH INDIAN tradition** — 12 poruthams (Dina, Gana, Mahendra, Rajju,
-Sthree Dheergha …), not the North Indian 36-guna Ashtakoota our `matching.py` implements.
-The koota definitions largely overlap; the point weights do not. Cite it for what a koota
-*is*, not for what it *scores*, and never blend the two systems in one reading.
-
-**Present and citable, contrary to earlier notes:** `Numerology-You.pdf` line 815 carries a
-"Chaldean And Pythagorean System" section stating the book uses **Chaldean** values for its
-alphabet table, and names the Karmic Debt numbers (13, 14, 16, 19) and Master numbers
-(11, 22, 33) outright. It is a real source for the numerology-table questions.
-
-`data/` is gitignored for copyright hygiene. Cite work and chapter; never paste pages.
-See `knowledge/SOURCES.md` for per-book extraction status, and #191 for the extraction
-backlog.
+Cite work and chapter; never paste pages. `#191` is the extraction backlog.
 
 ### Things that are easy to get wrong
 
