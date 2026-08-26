@@ -155,7 +155,14 @@ class NumerologyRemedy:
     # ─── Classical Vedic remedies added in cycle 10 (per Johari §3 + §4) ──
     # These are the safe, behavioural remedies traditionally recommended
     # ALONGSIDE (not instead of) chart-consulted gemstones.
-    rudraksha: str             # mukhi count + wearing note; e.g. "1-mukhi (or 12-mukhi) on red thread"
+    #
+    # `rudraksha` is NOT from §3/§4 — it is §11's per-number table, whose
+    # Rudraksha column is itself unsourced: the Johari PDF has no per-number
+    # mukhi table (#173), and the three books present in this checkout
+    # (3 of 7) return zero hits for rudraksha/mukha/bead/aksha/rosary. The
+    # field stays because the remedy is useful, but the copy must not claim
+    # a provenance we do not have — see the two #173 comments in _REMEDIES.
+    rudraksha: str             # mukhi count + wearing note; e.g. "12-mukhi on red thread"
     yantra: str                # geometric symbol traditionally worshipped for this planet
     charity: str               # dan/donation — what to give, to whom, when
     sacred_plants: str         # trees/herbs sacred to this planet (grow, worship, or use)
@@ -829,7 +836,11 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         mantra="Om Hraam Hreem Hraum Sah Suryaya Namah",
         dosha="Pitta dominant",
         fasting_day="Sunday — single meal salt-free before sunset (traditional: chickpea bread + milk with dates + cardamom)",
-        rudraksha="1-mukhi (Ek-mukhi) — rarest and most powerful; 12-mukhi acceptable alternative. Wear on red thread on Sunday sunrise after chanting the Surya mantra 108 times.",
+        # 12-mukhi, not 1-mukhi (#173). This row used to lead with 1-mukhi
+        # as "rarest and most powerful" and demote §11's 12-mukhi to an
+        # alternative — a purchase recommendation we cannot source, pointing
+        # at the scarcest and most-counterfeited bead on the market.
+        rudraksha="12-mukhi (Baarah-mukhi) — traditionally worn for Surya. Wear on red thread Sunday sunrise after chanting the Surya mantra 108 times. 1-mukhi is also sold as the Sun bead; it is far scarcer and widely faked, and no source we hold ranks it above 12-mukhi.",
         yantra="Surya Yantra — engraved on copper or gold plate, installed facing east and worshipped at sunrise with red flowers and jaggery-water.",
         charity="Wheat, jaggery, copper vessels, red cloth, red sandalwood. Offer to father-figures, elder males, or Surya temples on Sunday morning.",
         sacred_plants="Bilva (bael), red hibiscus, sunflower, Arka (calotropis). Grow bilva at home; offer bilva leaves or red hibiscus to Surya at sunrise.",
@@ -941,7 +952,9 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         mantra="Om Praam Preem Praum Sah Shanaishcharaya Namah",
         dosha="Vata dominant",
         fasting_day="Saturday — sunset-only meal; moong-urad khichdi with rock salt",
-        rudraksha="7-mukhi (Sapt-mukhi) — sacred to Saptamatrika; 14-mukhi (Chaudah-mukhi) for accelerated Shani-remediation. Wear on black thread Saturday sunset.",
+        # 14-mukhi, not 7-mukhi (#173) — same divergence as Life Path 1, and
+        # resolved the same way: §11 is what the code follows.
+        rudraksha="14-mukhi (Chaudah-mukhi) — traditionally worn for Shani. Wear on black thread Saturday sunset. 7-mukhi is named for Saturn in some lineages too; we have no source ranking either above the other.",
         yantra="Shani Yantra — engraved on iron or panch-dhatu, worshipped Saturday facing west with mustard oil lamp and black sesame.",
         charity="Iron, mustard oil, black clothes, urad daal, black sesame, iron nails, blankets. Offer to poor, aged, disabled on Saturday. Feed crows daily.",
         sacred_plants="Shami (khejri) — most sacred to Shani; light mustard-oil lamp under it on Saturday. Peepal for shani parikrama; sesame plant.",

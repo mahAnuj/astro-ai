@@ -678,6 +678,26 @@ Weekday-to-planet map (used in personal-year calc):
 | 8 | Vata | 14-mukhi | Sat | Moong-urad khichdi with rocksalt (evening only) | 23,000 |
 | 9 | Pitta | 3-mukhi | Tue | Wheat bread + jaggery + milk | 10,000 |
 
+**The Rudraksha column is UNSOURCED — treat it as tradition, not authority (#173).**
+The rest of §11 was compiled from Johari, but no per-number mukhi table has been
+traced to him: the Johari PDF returns only two incidental mentions of Rudraksha in
+running prose, neither a table, and it is absent from this checkout entirely.
+Searched the three books that ARE present (3 of 7: `vedic_astro_textbook.pdf`,
+`book1-for-CD.pdf`, `Astrology-e-book-compressed.pdf`, 29,039 `-layout` lines) with
+`scripts/corpus_search.py` on 2026-08-26 for `rudraksha`, `mukhi`, `mukha`, `bead`,
+`aksha`, `rosary` and `japa mala` — all absent under every spelling variant except
+two `mukhi` hits in `book1-for-CD.pdf` (lines 2495, 3247), both the deity name
+Bagalamukhi and unrelated to beads. An absence measured on a partial corpus is not
+proof the rule is wrong; it means we cannot cite it, so nothing may present it as cited.
+
+The other columns are NOT tarred by this. Dosha and fasting-day agree with
+`numerology.py::_REMEDIES` for all 9 numbers, and no reader has contradicted them —
+they are unverified in this checkout (Johari absent), not disputed.
+
+`numerology.py` follows THIS table for the bead, so the two cannot drift apart
+silently: `tests/test_rudraksha_table.py` asserts all nine, parsing the row out of
+this file rather than restating it.
+
 **Panch-dhatu (5-metal alloy)** — combines gold, silver, copper, iron, zinc; used for Rahu/Ketu/Saturn planetary rings and idols where a single metal would be karmically incompatible.
 
 **Gem-powder (pishti) supplementation** — Ayurvedic tradition of ingesting powdered gems (Ruby → manikya pishti; Pearl → mukta pishti; Neelam → sapphire pishti) for chronic conditions. Johari cross-references his own *Healing Power of Gemstones* for full pharmacology.
