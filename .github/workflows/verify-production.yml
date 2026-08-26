@@ -14,11 +14,11 @@
 # whole point:
 #
 #   EXACT (only once BUILD_SHA is set on the Cloud Build trigger)
-#     /healthz returns a build_sha, we poll until it equals this commit, and a
+#     /health returns a build_sha, we poll until it equals this commit, and a
 #     green run genuinely means THIS COMMIT is the revision serving.
 #
 #   REVISION-CHANGED (what runs today — build_sha is null)
-#     /healthz returns K_REVISION, which Cloud Run injects on every deploy. We
+#     /health returns K_REVISION, which Cloud Run injects on every deploy. We
 #     record it before the deploy lands and poll until it CHANGES. That proves
 #     *a* new revision is serving, not that it is this commit's — a concurrent
 #     push, a rollback or a console-side redeploy would satisfy it too.
@@ -30,7 +30,12 @@
 # the tier per poll from whether build_sha is null, so it upgrades itself.
 #
 # K_REVISION itself needs nothing: Cloud Run injects it into every container
-# automatically. /healthz lives in src/astro_ai/routes/health.py.
+# automatically. /health lives in src/astro_ai/routes/health.py.
+#
+# The path is /health, not /healthz: Google infrastructure intercepts
+# /healthz in front of Cloud Run, so it never reaches the app and this gate
+# could never pass. That is what failed run 32957675512. See the comment
+# above the route in health.py for the measurement before changing it back.
 #
 # Under EITHER tier the wait FAILS on timeout. It must never fall through to
 # the assertions having given up — a gate that tests the old revision and
@@ -85,7 +90,7 @@ jobs:
           set -uo pipefail
 
           # Baseline BEFORE the new revision can land. A 404 here is expected
-          # and informative on the first push that ships /healthz: the old
+          # and informative on the first push that ships /health: the old
           # revision has no such route, so "absent" is a value that any real
           # revision differs from.
           # `|| true` rather than `|| echo 000`: curl already emits its own
@@ -93,15 +98,15 @@ jobs:
           # "HTTP 000000" in the log.
           probe() {
             local c
-            c=$(curl -sS --max-time 20 -o /tmp/healthz.json \
-                     -w '%{http_code}' "$SITE/healthz" 2>/dev/null) || true
+            c=$(curl -sS --max-time 20 -o /tmp/health.json \
+                     -w '%{http_code}' "$SITE/health" 2>/dev/null) || true
             echo "${c:-000}"
           }
-          # Only ever trust /tmp/healthz.json behind a 200 AND a successful
+          # Only ever trust /tmp/health.json behind a 200 AND a successful
           # parse. `jq -e` fails on null/false, so a 200 carrying a proxy error
           # page yields empty here instead of the string "unknown" — which
           # would have differed from the baseline and falsely reported a deploy.
-          read_rev() { jq -er '.revision' /tmp/healthz.json 2>/dev/null || echo ""; }
+          read_rev() { jq -er '.revision' /tmp/health.json 2>/dev/null || echo ""; }
 
           code=$(probe)
           BASE_REV=""
@@ -116,13 +121,13 @@ jobs:
           for i in $(seq 1 48); do
             code=$(probe)
             if [ "$code" != "200" ]; then
-              echo "try $i: /healthz HTTP $code"; sleep 15; continue
+              echo "try $i: /health HTTP $code"; sleep 15; continue
             fi
             rev=$(read_rev)
             if [ -z "$rev" ]; then
-              echo "try $i: /healthz returned 200 but no parseable .revision"; sleep 15; continue
+              echo "try $i: /health returned 200 but no parseable .revision"; sleep 15; continue
             fi
-            sha=$(jq -r '.build_sha // empty' /tmp/healthz.json 2>/dev/null || echo "")
+            sha=$(jq -r '.build_sha // empty' /tmp/health.json 2>/dev/null || echo "")
 
             if [ -n "$sha" ]; then
               LAST_TIER=exact
@@ -157,11 +162,11 @@ jobs:
           # place, which is the whole defect class this file keeps tripping on.
           case "$LAST_TIER" in
             exact)
-              echo "::error::/healthz never reported build_sha ${GITHUB_SHA:0:7} within ~12 min (last seen: ${sha:0:7} on revision $rev). The deploy either failed, or the Cloud Build trigger is passing a different SHA. Failing rather than asserting against whatever is serving." ;;
+              echo "::error::/health never reported build_sha ${GITHUB_SHA:0:7} within ~12 min (last seen: ${sha:0:7} on revision $rev). The deploy either failed, or the Cloud Build trigger is passing a different SHA. Failing rather than asserting against whatever is serving." ;;
             revision-changed)
               echo "::error::Revision never changed from $BASE_REV within ~12 min. Failing rather than asserting against the pre-deploy revision — a check that passes on the old code proves nothing. NOTE this tier has a known false failure: if the deploy completed before this job captured its baseline, the baseline WAS the new revision and nothing will ever change. Setting BUILD_SHA on the trigger removes that ambiguity." ;;
             *)
-              echo "::error::$SITE/healthz never returned a parseable 200 within ~12 min (baseline $BASE_REV). Production may be down; not asserting." ;;
+              echo "::error::$SITE/health never returned a parseable 200 within ~12 min (baseline $BASE_REV). Production may be down; not asserting." ;;
           esac
           exit 1
 
@@ -415,7 +420,7 @@ jobs:
             echo ""
             case "${DEPLOY_GATE:-unknown}" in
               exact)
-                echo "**Deploy gate: exact.** \`/healthz\` reported \`build_sha\` matching"
+                echo "**Deploy gate: exact.** \`/health\` reported \`build_sha\` matching"
                 echo "\`${GITHUB_SHA:0:7}\` on revision \`${DEPLOY_REV:-?}\`, so a green run below means"
                 echo "**this commit is the revision serving**." ;;
               revision-changed)
