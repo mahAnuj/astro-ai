@@ -1,13 +1,24 @@
 # BACKLOG.md — standing triage overview
 
 **Last full scan: 2026-08-25, against `origin/main` = `c14093c`.**
-**Execution round 1 in progress — see *Execution log* below. Branch head `4a918a2`.**
+**Execution round 2 closed out 2026-08-26 against `origin/main` = `9546e95`.**
 Produced by `/prioritise` (the `project-manager` agent), then QA-verified in the parent
 session — which overturned two of its six closure proposals. 36 open issues at scan time.
 
-**QA state at `c14093c`:** `uv run pytest` → **24 passed**; `scripts/mutate_behaviour_suite.py`
-→ **8/8 caught, CONTROL correctly MISSED**. See *QA baseline* below — a bare clone reports
-14 failures that are not defects.
+**QA state at `9546e95`:** `uv run pytest` → **37 passed** (bare clone, no `.env`, no
+network — #224 made the suite hermetic); `scripts/mutate_behaviour_suite.py` → **13/13
+caught, CONTROL correctly MISSED**. The *QA baseline* section below describes the old
+14-phantom-failure state and is superseded.
+
+**Closed in round 2 (2026-08-26):** #172, #193, #220, #222, #217, #214, #171, #224 — each with
+production or execution evidence on the issue. **Still open and re-verified, not carried:**
+#163 (23/45 disagreements, 5 sign flips, undisclosed), #185 (your decision), #227 (open,
+watched by the gate), #150 (partial).
+
+**A production gate now exists.** `.github/workflows/verify-production.yml` runs on every
+push to `main`, daily, and on demand: it waits for the deploy via `/health`, sweeps every
+sitemap URL, and asserts #172/#193/#227 against the live site. Read its header before
+trusting a green run — it says precisely what green does and does not prove.
 
 ## How to use and update this file
 
@@ -441,11 +452,82 @@ live third egress point.
   parent session runs the engineer and QA legs. Subagents also cannot reach GitHub, so issue
   text must be inlined into their briefs.
 
+## Execution log — round 2, 2026-08-26
+
+Closed with evidence: **#172, #193** (production-verified against revision
+`bhagya-00363-tbz`), **#220, #222** (execution + mutation; no safe production surface —
+triggering the blast sends real email), **#217** (gate `verify_corpus_search.py`, PASS),
+**#214** (last remnant fixed in `a7dd30b`), **#171** (see correction below), **#224**
+(both stated criteria met inside a network namespace).
+
+**#224 is worth reading as a method note.** Its criterion is "green with no `.env` and no
+network". A plain `uv run pytest` here is green — but this environment *can* reach nominatim
+and *does* have `OPENAI_API_KEY` set from `.claude/settings.json`, so that green proved
+nothing. Verified properly with `unshare -rn` and the key stripped: 37 passed, and the
+mutation harness reported CONTROL `OK (correctly missed)` at exit 0. **Check the
+preconditions of a gate before believing its result** — the same shape as the vacuous
+`/numerology` GET and the `set -euo pipefail` abort, both committed into
+`verify-production.yml` and both caught only by running them.
+
+### Two of my own findings this round were wrong, both the same way
+
+Both were caught by re-reading the source instead of re-running the command. Recording
+them because the shape recurs and this file exists to stop it.
+
+- **#171 — I reported it still reproduced. It did not.** I ran the "runnable
+  demonstration" from the issue body and reported 2 of 5 examples disagreeing. The code
+  output was correct; the **expected column was stale** — it quoted the article *as it read
+  when the issue was filed*, and the article had since been corrected to describe the
+  3-level rule the code applies. Re-verified properly by encoding the article's current
+  rule and comparing across all pairs: **729/729 agree**, and the two hostile lists match
+  7 for 7. This row in *Proposed closures* was right and my re-check was wrong.
+- **#163 — I reported the dead rows were "written ascending". They were deleted.** And the
+  code carries a sourced argument that flipping them (as the issue proposed, and as I
+  repeated) **would have been a defect**: Johari L2967 states 3↔4 asymmetrically and
+  L2484/L4455 make 3↔7 friendly in both directions, so an ascending `(3,7)` enemy row
+  would contradict the source outright.
+
+**The lesson, stated so it is checkable next time:** an assertion whose expected value is a
+**quotation** needs the quotation re-read, not just the command re-run. A demonstration
+that reproduces faithfully against a stale oracle is worse than no demonstration — it
+carries the authority of an execution trace.
+
+### #163's diagnosis is better in the code than in the issue
+
+The issue frames §7's asymmetry as an inconsistency to reconcile. The code's comment
+establishes it is the **source's actual model**: Johari gives separate directional passages
+for "1 and 8" and "8 and 1" which can disagree. A symmetric table cannot express an
+asymmetric source, so neither table is derivable from the other. **The remaining work is
+therefore not a table fix**: either a directional model, or — shippable now, independently —
+a user-facing disclosure that the two pages read the source two different ways. Nothing
+discloses it today (grepped both templates), and 5 pairs are outright sign flips: 1-8, 6-8,
+7-7, 8-8, 9-9.
+
+### The gate found a defect in itself, twice
+
+- Run 1 (`32957675512`) timed out on "Wait for the deploy" and **correctly skipped all seven
+  downstream steps** rather than asserting against an unconfirmed revision. Cause: `/healthz`
+  is intercepted by Google infrastructure ahead of Cloud Run and never reaches the app.
+  Fixed in `e1402fc` by moving the marker to `/health`.
+- Run 2 (`32965254213`) passed the deploy gate and all three assertions, then failed on
+  `11-bad-of-200`. **All 11 were false** — every one `000` at exactly 30.00s (the
+  `--max-time` ceiling), never a 4xx/5xx. Re-probed serially they returned 200 in 1.0-1.7s,
+  and passed at `-P 6` when swept alone. The sweep was reporting load it had itself created
+  against `maxScale 5`. Fixed in `9546e95`: candidates are now re-probed **serially** at
+  `--max-time 60` before the run fails, verified to still confirm genuine 404s and an
+  unresolvable host.
+
+**Neither was a production defect.** Both were the gate mis-reporting, which is the failure
+mode a gate must not have — and both were only visible because the gate ran end to end.
+
+---
+
 ## Scan history
 
 | Date | SHA | Open | Closures proposed | Queue head |
 |---|---|---|---|---|
 | 2026-08-25 | `c14093c` | 36 | proposed 6; **QA overturned 2** → #171, #214, #185, #163(dup) stand; #159 keep-open; #178 hold | #220 + #222 (assigned) |
+| 2026-08-26 | `9546e95` | 34 | round 2: closed 8 (#172 #193 #220 #222 #217 #214 #171 #224); #163 re-verified open; #185 awaits your call | #163 disclosure, then #150 |
 
 ### 2026-08-25 — what QA changed
 
