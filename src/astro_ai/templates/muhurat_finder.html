@@ -287,8 +287,23 @@
           </td>
           {% endif %}
           <td data-label="Windows" data-span class="py-2 pr-3 text-[11px] text-stone-600 tabular-nums whitespace-nowrap">
+            {#- Empty means "this date has no sunrise-to-sunset span", not
+               "not computed" — muhurat.py leaves all three window fields empty
+               on such a date because each is a fraction of that span (#228).
+               Say so on the row: "✓ Abhijit " with a blank after it reads as a
+               rendering bug, and the previous behaviour was worse still —
+               this cell printed "Abhijit 12:47-14:12" for Reykjavik
+               2026-06-25 under a title claiming a 48-minute window. It is 85
+               minutes: a fifteenth of a 21-hour span, not of a day. -#}
+            {% if c.abhijit_muhurta or c.rahu_kaal %}
             <div title="Best 48-min window of the day"><span class="text-emerald-700">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
             <div title="Rahu Kaal — avoid for launches"><span class="text-rose-600">✗</span> Rahu Kaal {{ c.rahu_kaal }}</div>
+            {%- else %}
+            <div class="text-amber-700 text-[10px] whitespace-normal max-w-[220px] leading-tight"
+                 title="Abhijit, Rahu Kaal and Choghadiya are each a fixed fraction of the sunrise-to-sunset period">
+              No sunrise-to-sunset span on this date — the sub-day windows are fractions of one, so none is shown.
+            </div>
+            {% endif %}
             {% if c.bhadra_window %}<div class="text-rose-600 text-[10px]" title="Vishti/Bhadra karana active">✗ Bhadra active</div>{% endif %}
             {% if c.choghadiya %}
             <details class="mt-1">
@@ -304,8 +319,14 @@
                 {% endfor %}
               </div>
             </details>
-            {% if c.bhadra_window %}<div class="text-[10px] text-rose-700 mt-1 whitespace-normal max-w-[220px] leading-tight">{{ c.bhadra_window }}</div>{% endif %}
             {% endif %}
+            {#- Bhadra's full text sat INSIDE the choghadiya branch above. That
+               was invisible while choghadiya was always 8 windows; now that it
+               is empty on a date with no daylight span (#228), nesting would
+               drop the Bhadra detail on exactly those dates. Bhadra is a
+               karana window — Sun and Moon longitudes, not daylength — so it
+               is unaffected and belongs outside. #}
+            {% if c.bhadra_window %}<div class="text-[10px] text-rose-700 mt-1 whitespace-normal max-w-[220px] leading-tight">{{ c.bhadra_window }}</div>{% endif %}
           </td>
           <td data-label="Notes" data-span class="py-2 text-xs text-stone-600">{{ c.reason }}</td>
         </tr>

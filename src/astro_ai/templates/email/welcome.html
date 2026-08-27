@@ -167,11 +167,19 @@
                   <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                     <tr><td style="font-size:12px;color:#44403c;padding:2px 0;line-height:1.5;">
                       <strong>{% if lang == 'hi' %}सूर्योदय{% else %}Sunrise{% endif %}</strong>
-                      {{ panchang.sunrise.strftime('%I:%M %p').lstrip('0') }}
+                      {{ panchang.sunrise.strftime('%I:%M %p' if panchang.daylight_ordinary else '%d %b, %I:%M %p').lstrip('0') }}
                       &nbsp;·&nbsp;
                       <strong>{% if lang == 'hi' %}सूर्यास्त{% else %}Sunset{% endif %}</strong>
-                      {{ panchang.sunset.strftime('%I:%M %p').lstrip('0') }}
+                      {{ panchang.sunset.strftime('%I:%M %p' if panchang.daylight_ordinary else '%d %b, %I:%M %p').lstrip('0') }}
                     </td></tr>
+                    {#- Same shape and same reasoning as the daily_rashifal.html
+                       panchang block — read the comment there. A date with no
+                       sunrise-to-sunset span has no eighth and no fifteenth of
+                       one, so the two rows are replaced by a single honest
+                       line (#227, #228). This is a subscriber's FIRST email,
+                       which is the worst possible place to open with two
+                       windows that end before they start. -#}
+                    {%- if panchang.daylight_ordinary %}
                     <tr><td style="font-size:12px;color:#44403c;padding:2px 0;line-height:1.5;">
                       <strong style="color:#b91c1c;">{% if lang == 'hi' %}राहु काल{% else %}Rahu Kaal{% endif %}</strong>
                       {{ panchang.rahu_kaal_start.strftime('%I:%M').lstrip('0') }}–{{ panchang.rahu_kaal_end.strftime('%I:%M %p').lstrip('0') }}
@@ -180,6 +188,12 @@
                       <strong style="color:#15803d;">{% if lang == 'hi' %}अभिजित मुहूर्त{% else %}Abhijit Muhurta{% endif %}</strong>
                       {{ panchang.abhijit_start.strftime('%I:%M').lstrip('0') }}–{{ panchang.abhijit_end.strftime('%I:%M %p').lstrip('0') }}
                     </td></tr>
+                    {%- else %}
+                    <tr><td style="font-size:12px;color:#44403c;padding:2px 0;line-height:1.5;">
+                      <strong style="color:#b45309;">{% if lang == 'hi' %}सूर्योदय–सूर्यास्त अवधि नहीं।{% else %}No sunrise-to-sunset day.{% endif %}</strong>
+                      {% if lang == 'hi' %}राहु काल और अभिजित मुहूर्त इसी अवधि के नियत भाग हैं, इसलिए आज इन्हें अनुमान से नहीं दिखाया गया।{% else %}Rahu Kaal and Abhijit Muhurta are each a fixed fraction of that period, so with none today they are left out rather than guessed.{% endif %}
+                    </td></tr>
+                    {%- endif %}
                   </table>
                 </td>
               </tr>

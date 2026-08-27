@@ -265,15 +265,26 @@ it only gives the cache something to hit. Keep the shared blocks first in any ne
   Most days at that latitude render normally; this is a minority of them. It is reachable
   because the city is free text with no allow-list, on more than one route.
 
+  "Polar" understates the condition, which is only that the two instants do not both fall
+  inside the local date. Reykjavik (64.1466N, *south* of the Arctic Circle) 2026-06-24:
+  sunrise `02:55:29`, sunset `00:04:32` on the FOLLOWING date, Rahu Kaal `13:30–16:08` —
+  a well-formed-looking afternoon window that is an eighth of a 21-hour span, with nothing
+  reversed for a reader to notice and nothing raised for a log to catch. Do not scope a
+  guard here to a latitude threshold or to the word polar.
+
   `compute_panchang` now MARKS this shape rather than hiding it:
   `DailyPanchang.daylight_ordinary` is False when sunset does not follow sunrise inside
   the local date, and the four derived fields are then meaningless. Any surface that
   PRESENTS a daylight-fraction window must check it. `/panchang` does, and discloses instead
   (**#227**); `scripts/verify_panchang_angas.py` Gate 6 holds the flag to its consequence
-  in both directions, so dropping, inverting or narrowing it goes red. The other
-  consumers of those fields do not check it yet, and the raise shape is unchanged — the
-  route still degrades that to Mumbai. **#227** holds the per-route reach and the day
-  counts.
+  in both directions, so dropping, inverting or narrowing it goes red. Every surface that
+  RENDERS those windows now checks it and discloses in its own idiom — a page-width card,
+  a strip item, one line in an email (**#228**). What still does not check it is
+  `chart.format_panchang_for_prompt`, which is not a surface: it writes the reversed times
+  into the daily-reading PROMPT, so they reach a reader only if the model repeats them.
+  (`format_day_windows_for_rashifal` is safe by construction — it names the windows and
+  states no clock time at all.) The raise shape is unchanged — the route still degrades
+  that to Mumbai. **#227** and **#228** hold the per-surface reach and the day counts.
 
   Do not re-add a route list, a proportion, or a count of how often this note has been
   wrong. Four QA rounds have failed here, every one on a claim of that shape: `the only
