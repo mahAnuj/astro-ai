@@ -159,6 +159,54 @@
       <div class="text-xs text-stone-600">{{ moon_info.nakshatra }} nakshatra</div>
     </div>
     {% endif %}
+    {#- Moonrise / moonset (#150). Two INDEPENDENT instants, never joined into
+       a span the way sunrise/sunset are: the moonset falling inside a calendar
+       date usually ends the PREVIOUS night's Moon, so it precedes that date's
+       moonrise on 187 of the 365 days of 2026 at Delhi. Rendering
+       "15:14 — 04:54" would read as a backwards window and be wrong the same
+       way #227's Rahu Kaal was.
+
+       Each instant carries its DATE when it is not this page's date: successive
+       moonrises are ~24h50m apart, so a date can hold none of its own and the
+       next falls after midnight — 13 of 365 Delhi days in 2026.
+
+       And either can be absent, which is the Moon's own polar case and is NOT
+       p.daylight_ordinary — that flag is about the Sun. Measured over 2026:
+       both absent on 166 of 365 days at Tromso and 88 at Reykjavik, 0 at Delhi
+       and Mumbai. Disclose it; never print a clock time for an event that did
+       not happen. #}
+    {%- if moon_times %}
+    {%- if moon_times.neither %}
+    <div class="sm:col-span-2 lg:col-span-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+      <div class="text-[11px] uppercase font-semibold text-amber-800 tracking-wider mb-1">No moonrise or moonset on this date</div>
+      <p class="text-xs text-amber-800 mt-2">
+        At {{ city_display }}'s latitude the Moon can stay above — or below — the horizon for a whole calendar day, and on {{ today_pretty }} it does: it neither rises nor sets here.
+        This happens far more often than the same thing for the Sun, because the Moon's path is tilted about 5° to the Sun's.
+        The Moon's rashi and nakshatra come from its longitude, not from its rising, so they are unaffected.
+      </p>
+    </div>
+    {%- else %}
+    <div class="bg-white border border-stone-200 rounded-xl p-4">
+      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Moonrise / Moonset</div>
+      <div class="text-lg font-display text-astro-800 tabular-nums">
+        {% if moon_times.rise %}Moonrise {{ moon_times.rise.strftime('%H:%M') }}{% if moon_times.rise_next_day %} <span class="text-xs text-stone-500">on {{ moon_times.rise.strftime('%d %b') }}</span>{% endif %}{% else %}<span class="text-base text-stone-600">No moonrise on this date</span>{% endif %}
+      </div>
+      <div class="text-lg font-display text-astro-800 tabular-nums">
+        {% if moon_times.set %}Moonset {{ moon_times.set.strftime('%H:%M') }}{% if moon_times.set_next_day %} <span class="text-xs text-stone-500">on {{ moon_times.set.strftime('%d %b') }}</span>{% endif %}{% else %}<span class="text-base text-stone-600">No moonset on this date</span>{% endif %}
+      </div>
+      <div class="text-xs text-stone-600 mt-1">Local time at {{ city_display }}</div>
+      {%- if moon_times.rise and moon_times.set and moon_times.set < moon_times.rise %}
+      <div class="text-xs text-stone-500 mt-1">The moonset falls before the moonrise because it closes the previous night's Moon — ordinary, not an error.</div>
+      {%- endif %}
+      {%- if moon_times.rise_next_day or moon_times.set_next_day %}
+      <div class="text-xs text-stone-500 mt-1">The Moon rises about 50 minutes later each day, so some dates hold none of their own and the next one falls after midnight — hence the date above.</div>
+      {%- endif %}
+      {%- if not moon_times.rise or not moon_times.set %}
+      <div class="text-xs text-stone-500 mt-1">At {{ city_display }}'s latitude the Moon can stay above — or below — the horizon past midnight, so one of the two events falls outside this date entirely.</div>
+      {%- endif %}
+    </div>
+    {%- endif %}
+    {%- endif %}
   </section>
 
   {# CHOGHADIYA — 8 sub-day windows #}

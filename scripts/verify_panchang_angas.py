@@ -92,7 +92,11 @@ from zoneinfo import ZoneInfo
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from astro_ai.chart import compute_chart, compute_panchang  # noqa: E402
+from astro_ai.chart import (  # noqa: E402
+    compute_chart,
+    compute_moon_rise_set,
+    compute_panchang,
+)
 
 # The almanac's locale. Drik's day pages default to New Delhi, and every row in
 # ALMANAC below was read off a New Delhi page, so the census uses the same city
@@ -697,15 +701,24 @@ POLAR_YEAR = 2026
 _SLACK = timedelta(seconds=1)
 
 
-def _polar_chart():
-    """A chart at Tromso with `geocode_place` stubbed — no network, by design."""
+def _stubbed_chart(place: str, lat: float, lon: float, tz: str):
+    """A chart at pinned coordinates with `geocode_place` stubbed.
+
+    No network, by design: outbound geocoding is blocked in most sandboxes, and
+    a gate that cannot run is a gate that never fails.
+    """
     from astro_ai import chart as _chart_module
     real = _chart_module.geocode_place
-    _chart_module.geocode_place = lambda place: (POLAR_LAT, POLAR_LON, POLAR_TZ)
+    _chart_module.geocode_place = lambda _place: (lat, lon, tz)
     try:
-        return compute_chart("2000-01-01", "12:00", POLAR_CITY)
+        return compute_chart("2000-01-01", "12:00", place)
     finally:
         _chart_module.geocode_place = real
+
+
+def _polar_chart():
+    """A chart at Tromso with `geocode_place` stubbed — no network, by design."""
+    return _stubbed_chart(POLAR_CITY, POLAR_LAT, POLAR_LON, POLAR_TZ)
 
 
 def _windows_are_wellformed(day: date, p) -> list[str]:
@@ -832,6 +845,202 @@ def gate_6_polar_daylight(census: list[tuple[date, object]]) -> list[str]:
     return failures
 
 
+# --------------------------------------------------------------------------
+# Gate 7 - moonrise/moonset are computable, bounded, and absent where they
+#          should be (#150)
+# --------------------------------------------------------------------------
+
+# Reykjavik, at 64.15N — SOUTH of the Arctic Circle, which is the point. The
+# Sun has an ordinary rise and set on most of its days, and the Moon does not:
+# the Moon's path is inclined ~5.1deg to the ecliptic, so it goes circumpolar
+# at latitudes where the Sun never does. Pinned, not geocoded, for the same
+# reason as POLAR_* above.
+SUBPOLAR_CITY = "Reykjavik"
+SUBPOLAR_LAT, SUBPOLAR_LON, SUBPOLAR_TZ = 64.1466, -21.9426, "Atlantic/Reykjavik"
+
+
+def _moon_for(chart, day: date):
+    """(moonrise, moonset) for `day`, anchored at local noon like the route."""
+    tz = ZoneInfo(chart.birth_tz)
+    return compute_moon_rise_set(
+        chart, when=datetime(day.year, day.month, day.day, 12, 0, tzinfo=tz)
+    )
+
+
+def _moon_census(chart, year: int) -> dict:
+    """Every day of `year`: what `compute_moon_rise_set` gave and where it fell."""
+    tz = ZoneInfo(chart.birth_tz)
+    out = {"raised": [], "outside": [], "moonless": [], "partial": [],
+           "next_day": [], "both_today": 0, "max_hours": 0.0, "max_at": None}
+    day = date(year, 1, 1)
+    while day.year == year:
+        try:
+            rise, set_ = _moon_for(chart, day)
+        except Exception as exc:  # noqa: BLE001
+            out["raised"].append((day, f"{type(exc).__name__}: {exc}"))
+            day += timedelta(days=1)
+            continue
+        if rise is None and set_ is None:
+            out["moonless"].append(day)
+        elif rise is None or set_ is None:
+            out["partial"].append(day)
+        midnight = datetime(day.year, day.month, day.day, tzinfo=tz)
+        for label, instant in (("moonrise", rise), ("moonset", set_)):
+            if instant is None:
+                continue
+            hours = (instant - midnight).total_seconds() / 3600.0
+            if hours > out["max_hours"]:
+                out["max_hours"], out["max_at"] = hours, (day, label, instant)
+            if not 0.0 <= hours < 48.0:
+                out["outside"].append((day, label, instant, hours))
+            elif instant.date() != day:
+                out["next_day"].append((day, label, instant))
+        if rise is not None and set_ is not None \
+                and rise.date() == day and set_.date() == day:
+            out["both_today"] += 1
+        day += timedelta(days=1)
+    return out
+
+
+def gate_7_moon_rise_set() -> list[str]:
+    """`compute_moon_rise_set` is REACHED, and every shape it returns is one
+    the page can render honestly (#150).
+
+    This function shipped with two comments about it and zero callers — the
+    #140 shape, where the code exists and nothing reaches it. `/panchang` calls
+    it now, and the three shapes it returns are all irregular by the standards
+    of the sunrise card next to it:
+
+      * a next-day instant. Successive moonrises are ~24h50m apart, so a
+        calendar date can hold none of its own and the first one after midnight
+        is on D+1 — 13 of 365 New Delhi days in 2026. The page prints the DATE
+        on those, and that is only sound if an instant is never further out
+        than D+1, which is what this gate pins.
+      * `None` for one of the two.
+      * `None` for both — the Moon's own polar case. It is NOT
+        `daylight_ordinary`, which is about the Sun (see its comment in
+        `chart.py`), and it fires far more often and far further south.
+
+    Asserted, in both directions, so a hardcoded answer goes red either way:
+
+      * nothing raises anywhere, at any of the three latitudes;
+      * every instant returned lies in [local midnight D, local midnight D+2),
+        because "not this date" must mean "tomorrow" for the label to be true;
+      * at New Delhi the Moon always rises AND always sets — absence must never
+        fire at an Indian latitude, the same control Gate 6 uses;
+      * at New Delhi the next-day case DOES occur, or the date-labelling branch
+        is dead code that nothing exercises;
+      * at both northern cities the moonless case DOES occur, or the disclosure
+        branch is unreachable and untested;
+      * the Moon's absence and the Sun's flag are INDEPENDENT — there is a date
+        with no ordinary daylight span and a real moonrise (Tromso 2026-05-16,
+        moonrise 00:36), and dates with ordinary daylight and no moon at all.
+        Deriving one flag from the other would collapse one of the two.
+
+    Counts measured 2026-08-27 over the 365 days of 2026 and printed below, not
+    asserted — an ephemeris update may legitimately move them: New Delhi 340
+    days with both instants inside the date and 25 instants on D+1 (13
+    moonrises, 12 moonsets), 0 moonless; Reykjavik 88 moonless; Tromso 166.
+    What is asserted is the shape.
+    """
+    failures: list[str] = []
+    try:
+        delhi = _stubbed_chart(CITY, 28.6139, 77.2090, "Asia/Kolkata")
+        tromso = _polar_chart()
+        reykjavik = _stubbed_chart(
+            SUBPOLAR_CITY, SUBPOLAR_LAT, SUBPOLAR_LON, SUBPOLAR_TZ)
+    except Exception as exc:  # noqa: BLE001
+        return [f"could not build the stubbed charts: {type(exc).__name__}: {exc}"]
+
+    censuses = {CITY: _moon_census(delhi, POLAR_YEAR),
+                POLAR_CITY: _moon_census(tromso, POLAR_YEAR),
+                SUBPOLAR_CITY: _moon_census(reykjavik, POLAR_YEAR)}
+
+    for name, c in censuses.items():
+        for day, exc in c["raised"][:5]:
+            failures.append(
+                f"{name} {day}: compute_moon_rise_set raised {exc} — absence is "
+                "signalled by None, so a raise means the return flag stopped "
+                "being checked and JD 0.0 reached datetime"
+            )
+        for day, label, instant, hours in c["outside"][:5]:
+            failures.append(
+                f"{name} {day}: {label} {instant:%Y-%m-%d %H:%M} is {hours:.2f}h "
+                "past local midnight — the page labels anything not on the page's "
+                "own date as the NEXT day, which that is not"
+            )
+
+    delhi_c = censuses[CITY]
+    for day in delhi_c["moonless"][:3]:
+        failures.append(
+            f"{CITY} {day}: no moonrise AND no moonset at an Indian latitude — "
+            "the page will show its polar disclosure where there is nothing to "
+            "disclose"
+        )
+    for day in delhi_c["partial"][:3]:
+        failures.append(
+            f"{CITY} {day}: only one of moonrise/moonset — not expected at this "
+            "latitude; the page will say the other does not happen"
+        )
+    if not delhi_c["next_day"]:
+        failures.append(
+            f"no day in {POLAR_YEAR} at {CITY} had an instant on D+1 — either the "
+            "midnight anchor was changed or the census stopped running; either "
+            "way the date-labelling branch on the page is now untested"
+        )
+
+    for name in (POLAR_CITY, SUBPOLAR_CITY):
+        if not censuses[name]["moonless"]:
+            failures.append(
+                f"no day in {POLAR_YEAR} at {name} was moonless — either "
+                "the coordinates stopped being northern or absence stopped being "
+                "reported, and the page's disclosure branch never runs"
+            )
+
+    # Independence from #227's SUN flag, both ways.
+    sun_flagged_with_a_moon = 0
+    ordinary_sun_no_moon = 0
+    day = date(POLAR_YEAR, 1, 1)
+    while day.year == POLAR_YEAR:
+        try:
+            p = _panchang_for(tromso, day)
+            rise, set_ = _moon_for(tromso, day)
+        except Exception:  # noqa: BLE001 — the loud path Gate 6 already counts
+            day += timedelta(days=1)
+            continue
+        if not p.daylight_ordinary and (rise is not None or set_ is not None):
+            sun_flagged_with_a_moon += 1
+        if p.daylight_ordinary and rise is None and set_ is None:
+            ordinary_sun_no_moon += 1
+        day += timedelta(days=1)
+    if not sun_flagged_with_a_moon:
+        failures.append(
+            f"{POLAR_CITY} {POLAR_YEAR}: every date with no ordinary daylight span "
+            "also had no moonrise and no moonset — the two flags have been tied "
+            "together, and the page will withhold a moonrise that exists "
+            "(2026-05-16 has one at 00:36)"
+        )
+    if not ordinary_sun_no_moon:
+        failures.append(
+            f"{POLAR_CITY} {POLAR_YEAR}: no date had ordinary daylight and no moon "
+            "at all — the Moon's absence has been made a consequence of the Sun's, "
+            "and the disclosure will never fire on the days that need it"
+        )
+
+    for name, c in censuses.items():
+        at = c["max_at"]
+        print(f"  {name} {POLAR_YEAR}: {c['both_today']} day(s) with both instants "
+              f"inside the date, {len(c['next_day'])} on D+1, "
+              f"{len(c['partial'])} with one absent, {len(c['moonless'])} with "
+              f"neither, {len(c['raised'])} raised; furthest instant "
+              f"{c['max_hours']:.2f}h past local midnight"
+              + (f" ({at[0]} {at[1]} {at[2]:%d %b %H:%M})" if at else ""))
+    print(f"  {POLAR_CITY}: {sun_flagged_with_a_moon} date(s) with no daylight span "
+          f"but a real moon instant, {ordinary_sun_no_moon} with ordinary daylight "
+          "and no moon — the two flags are independent")
+    return failures
+
+
 def main() -> int:
     print("Panchang anga verification — Nitya Yoga + Karana (issue #142)")
     print("  computation : src/astro_ai/chart.py compute_panchang()")
@@ -871,6 +1080,8 @@ def main() -> int:
          gate_5_single_pada_impl),
         ("Gate 6 - polar dates are flagged, not divided (#227)",
          lambda: gate_6_polar_daylight(census)),
+        ("Gate 7 - moonrise/moonset: reached, bounded, absent where it should be (#150)",
+         gate_7_moon_rise_set),
     ]
 
     all_failures: list[str] = list(census_errors)

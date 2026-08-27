@@ -25,7 +25,12 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
 from astro_ai import festivals
-from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot
+from astro_ai.chart import (
+    compute_chart,
+    compute_moon_rise_set,
+    compute_panchang,
+    compute_transit_snapshot,
+)
 from astro_ai.routes.deps import _lang, _no_cdn_cache, _pretty_date, templates
 from astro_ai.session import load_collection
 
@@ -75,6 +80,7 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
             chart_for_loc = None
     choghadiya_windows = []
     moon_info = None
+    moon_times = None
     if p and chart_for_loc:
         # Choghadiya divides sunrise-to-sunset into 8. When the date has no
         # ordinary daylight span (polar latitudes — see
@@ -94,6 +100,38 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
                 moon_info = {"rashi": moon.rashi, "nakshatra": moon.nakshatra}
         except Exception:
             moon_info = None
+        # Moonrise/moonset — `compute_moon_rise_set`, not a `DailyPanchang`
+        # field, because a `/muhurat` search computes 90 panchangs and reads
+        # neither (#150). Two shapes have to survive rendering, and neither is
+        # exotic:
+        #   * an instant on D+1 — successive moonrises are ~24h50m apart, so a
+        #     calendar day can hold none of its own. 13 of 365 Delhi days in
+        #     2026. The template prints the DATE on those, never a bare clock.
+        #   * None — the Moon neither rose nor set inside the local day. This
+        #     is the Moon's own version of #227's polar case and it fires far
+        #     more often than the Sun's, because the Moon's orbit is inclined
+        #     ~5.1deg to the ecliptic: measured over 2026, both instants are
+        #     absent on 166 of 365 days at Tromso and 88 at Reykjavik, against
+        #     5 sun-flagged days at Tromso. Delhi and Mumbai: 0.
+        # Deliberately NOT keyed off `p.daylight_ordinary` — that flag is about
+        # the Sun and says nothing about the Moon; Tromso 2026-05-16 has no
+        # ordinary daylight span AND a perfectly good moonrise at 00:36.
+        try:
+            m_rise, m_set = compute_moon_rise_set(
+                chart_for_loc, when=_target_moment(chart_for_loc))
+            moon_times = {
+                "rise": m_rise,
+                "set": m_set,
+                # An instant is on the target date or on D+1 — measured max
+                # 25.96h past local midnight across Delhi/Mumbai/Reykjavik/
+                # Tromso over 2026 — so "not today" means "tomorrow", and the
+                # template labels it with the date rather than guessing.
+                "rise_next_day": bool(m_rise) and m_rise.date() != target_date,
+                "set_next_day": bool(m_set) and m_set.date() != target_date,
+                "neither": m_rise is None and m_set is None,
+            }
+        except Exception:
+            moon_times = None
     lang = _lang(request)
     today_iso = date.today().isoformat()
     target_iso = target_date.isoformat()
@@ -117,6 +155,7 @@ def _render_panchang(request: Request, target_date, city: str = "") -> HTMLRespo
             "next_day": next_day,
             "choghadiya": choghadiya_windows,
             "moon_info": moon_info,
+            "moon_times": moon_times,
             # Keyed off target_date, not today — an archive URL for a festival
             # date must surface that date's festival (issue #132 cross-link).
             # ALL festivals, not the first: this callout and the /festivals hub
