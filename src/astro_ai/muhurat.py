@@ -137,13 +137,17 @@ class MuhuratCandidate:
     personal: PersonalMatch | None = None  # only set when a user chart is passed
     couple: CoupleMatch | None = None      # only set for Vivah when two charts provided
     # Sub-day windows already computed in Panchang — surface for planning.
-    rahu_kaal: str = ""       # "13:30–15:00"
-    abhijit_muhurta: str = "" # "11:48–12:36"
+    # All three of rahu_kaal / abhijit_muhurta / choghadiya are EMPTY on a date
+    # with no ordinary sunrise-to-sunset span, because each is a fraction of
+    # one — see `find_candidates` and `DailyPanchang.daylight_ordinary` (#228).
+    # Empty means "this date has no such window", never "not computed yet".
+    rahu_kaal: str = ""       # "13:30–15:00"; "" if no daylight span
+    abhijit_muhurta: str = "" # "11:48–12:36"; "" if no daylight span
     nitya_yoga: str = ""      # e.g. "Siddhi", "Vyatipata"
     boosters: tuple[str, ...] = ()  # Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga names
     # Phase B additions — sub-day precision
     bhadra_window: str = ""   # "" if Bhadra not present; else "Bhadra active 09:00-16:00..."
-    choghadiya: tuple[dict, ...] = ()   # 8 day-windows with name/start/end/auspiciousness
+    choghadiya: tuple[dict, ...] = ()   # 8 day-windows with name/start/end/auspiciousness; () if no daylight span
 
 
 # ─── Chaturmas (Devshayani Ekadashi → Devuthani Ekadashi) ────────────
@@ -1372,12 +1376,39 @@ def find_candidates(event_type: str, city: str, start: date,
             if ravi := _ravi_yoga_flag(p.weekday, nakshatra):
                 boosters_list.append(ravi)
             boosters = tuple(boosters_list)
-            # Sub-day windows for planning — format as "HH:MM-HH:MM"
-            rk_str = f"{p.rahu_kaal_start.strftime('%H:%M')}-{p.rahu_kaal_end.strftime('%H:%M')}"
-            ab_str = f"{p.abhijit_start.strftime('%H:%M')}-{p.abhijit_end.strftime('%H:%M')}"
+            # Sub-day windows for planning — format as "HH:MM-HH:MM".
+            #
+            # All three are fractions of the sunrise-to-sunset period: Rahu
+            # Kaal a weekday-indexed eighth of it and Abhijit a fifteenth
+            # (`knowledge/vedic_reference.md` §28), Choghadiya the same span
+            # cut into eight. `p.daylight_ordinary` is False on a date that
+            # holds no such period (chart.py, #227) and the arithmetic is then
+            # meaningless — Tromso 2026-05-17 produced rahu_kaal '00:14-00:06',
+            # abhijit '00:42-00:37' and a choghadiya counting DOWNWARDS from
+            # 01:14 to 00:06. The subtler shape is worse because it looks
+            # right: Reykjavik 2026-06-21 gave abhijit '12:47-14:11' — 84
+            # minutes, a fifteenth of a 21-hour span, rendered in a column
+            # whose own footnote calls Abhijit "the best 48-minute window".
+            # Reykjavik is south of the Arctic Circle and has 15 such dates in
+            # 2026, none of which raises.
+            #
+            # Left EMPTY rather than dropped from the search: the date is still
+            # a real candidate and its rating still holds — tithi, nakshatra
+            # and yoga come from Sun and Moon longitudes, not from the length
+            # of the day. Only the sub-day windows go. "" and () are the
+            # dataclass's own defaults and `muhurat_finder.html` says so on the
+            # row. #228.
+            if p.daylight_ordinary:
+                rk_str = f"{p.rahu_kaal_start.strftime('%H:%M')}-{p.rahu_kaal_end.strftime('%H:%M')}"
+                ab_str = f"{p.abhijit_start.strftime('%H:%M')}-{p.abhijit_end.strftime('%H:%M')}"
+            else:
+                rk_str = ab_str = ""
             # Phase B — Bhadra / Vishti karana window + Choghadiya table
             bhadra_window = _bhadra_window_for_day(base_chart, when)
-            choghadiya = tuple(_choghadiya_windows(p.weekday, p.sunrise, p.sunset))
+            choghadiya = (
+                tuple(_choghadiya_windows(p.weekday, p.sunrise, p.sunset))
+                if p.daylight_ordinary else ()
+            )
         except Exception:
             continue
 

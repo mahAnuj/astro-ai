@@ -149,6 +149,57 @@ MUTATIONS = [
      "        \"failed_emails\": [str(e) for e in failures[:20]],",
      "        \"failed_emails\": failures[:20],",
      "test_a_bytes_email_does_not_cost_the_outcome_json"),
+
+    # #228. `DailyPanchang.daylight_ordinary` (#227) only helps a surface that
+    # READS it, and five did not. Each row below restores one of them to the
+    # shipped behaviour: rendering an eighth or a fifteenth of a daylight span
+    # the date does not have. Two shapes, both real — Tromso 2026-05-17 came
+    # out reversed ("Rahu Kaal 00:14-00:06"), and Reykjavik 2026-06-24, south
+    # of the Arctic Circle, came out looking entirely ordinary ("13:30-16:08",
+    # an eighth of a 21-hour day ending on the next date). The tests use the
+    # second, because nothing about it raises, degrades or logs.
+    ("strip: Rahu Kaal item renders without checking the flag (#228)",
+     "src/astro_ai/templates/_panchang_strip.html",
+     "      {%- if panchang_strip.daylight_ordinary %}\n\n      <div class=\"flex items-center gap-1 min-w-0\">\n        <span class=\"text-red-700",
+     "      {%- if True %}\n\n      <div class=\"flex items-center gap-1 min-w-0\">\n        <span class=\"text-red-700",
+     "test_surface_hides_daylight_windows_when_there_is_no_daylight[homepage strip]"),
+
+    ("/today: the two window cards render without checking the flag (#228)",
+     "src/astro_ai/templates/today.html",
+     "      {%- if panchang.daylight_ordinary %}\n\n      <!-- Rahu Kaal",
+     "      {%- if True %}\n\n      <!-- Rahu Kaal",
+     "test_surface_hides_daylight_windows_when_there_is_no_daylight[/today panchang grid]"),
+
+    # The email rows are the ones that matter most: the blast computes panchang
+    # per subscriber city, so these arrive in an inbox with no page to refresh
+    # and no caveat anywhere near them.
+    ("daily rashifal email: window rows render without checking the flag (#228)",
+     "src/astro_ai/templates/email/daily_rashifal.html",
+     "                    {%- if panchang.daylight_ordinary %}",
+     "                    {%- if True %}",
+     "test_surface_hides_daylight_windows_when_there_is_no_daylight[daily rashifal email]"),
+
+    ("welcome email: window rows render without checking the flag (#228)",
+     "src/astro_ai/templates/email/welcome.html",
+     "                    {%- if panchang.daylight_ordinary %}",
+     "                    {%- if True %}",
+     "test_surface_hides_daylight_windows_when_there_is_no_daylight[welcome email]"),
+
+    ("muhurat: candidate windows computed without checking the flag (#228)",
+     "src/astro_ai/muhurat.py",
+     "            if p.daylight_ordinary:\n                rk_str =",
+     "            if True:\n                rk_str =",
+     "test_muhurat_candidate_fields_are_empty_not_reversed"),
+
+    # Not a leak — muhurat.py has already emptied the fields by then — but the
+    # row renders the bare label "Abhijit" with nothing after it, which reads
+    # as a rendering bug and tells the reader nothing. Silence is its own wrong
+    # answer here, so it has its own row.
+    ("muhurat finder: empty windows render as a bare label, unexplained (#228)",
+     "src/astro_ai/templates/muhurat_finder.html",
+     "            {% if c.abhijit_muhurta or c.rahu_kaal %}",
+     "            {% if True %}",
+     "test_surface_says_why_the_windows_are_missing[muhurat finder]"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

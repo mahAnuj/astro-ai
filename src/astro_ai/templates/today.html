@@ -68,6 +68,18 @@
 
     <!-- 2x2 grid -->
     <div class="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-stone-100">
+      {#- Rahu Kaal and Abhijit are fixed fractions of the sunrise-to-sunset
+         period, so a date with no such period has nothing to divide;
+         `panchang.daylight_ordinary` is False for exactly those dates
+         (chart.py, #227). This page computes for the NATAL BIRTHPLACE, so a
+         seeker born at a high latitude reaches it — and not only a polar one:
+         Reykjavik has 15 such dates in 2026 and never takes the loud degrade
+         path. On 2026-06-21 these two cards showed "12:47 – 14:11" under a
+         "best 48-minute window" heading (84 minutes, a fifteenth of a 21-hour
+         span) and a Rahu Kaal ending 00:05 on the following date. The colour
+         card stays: it comes from the weekday, not from the length of the
+         day. The solar-window card below turns into the disclosure. #228. -#}
+      {%- if panchang.daylight_ordinary %}
 
       <!-- Rahu Kaal — avoid -->
       <div class="px-5 py-4 flex items-start gap-3 border-b sm:border-b-0 border-stone-100 sm:border-b">
@@ -106,6 +118,7 @@
           <p class="text-sm text-stone-600 mt-1 leading-snug">Best time for important actions.</p>
         </div>
       </div>
+      {%- endif %}
 
       <!-- Today's colour -->
       <div class="px-5 py-4 flex items-start gap-3">
@@ -120,6 +133,7 @@
       </div>
 
       <!-- Sunrise & sunset -->
+      {%- if panchang.daylight_ordinary %}
       <div class="px-5 py-4 flex items-start gap-3">
         <div class="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
           <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -134,6 +148,27 @@
           <p class="text-sm text-stone-600 mt-1 leading-snug">Sunrise to sunset, your birthplace.</p>
         </div>
       </div>
+      {%- else %}
+      {#- Both instants are shown WITH their dates: it is the dates that carry
+         the whole point, and stripping them to %H:%M is what made "01:14 –
+         00:06" look like an ordinary row. -#}
+      <div class="px-5 py-4 flex items-start gap-3 sm:col-span-2 bg-amber-50">
+        <div class="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-amber-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+          </svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <h3 class="font-display text-base text-amber-900 mb-0.5">{% if lang == 'hi' %}सूर्योदय–सूर्यास्त अवधि नहीं{% else %}No sunrise-to-sunset day{% endif %}</h3>
+          <div class="font-display text-lg text-amber-900 tabular-nums leading-tight">
+            {{ panchang.sunrise.strftime('%d %b, %H:%M') }} <span class="text-amber-300">·</span> {{ panchang.sunset.strftime('%d %b, %H:%M') }}
+          </div>
+          <p class="text-sm text-amber-800 mt-1 leading-snug">
+            {% if lang == 'hi' %}आपके जन्मस्थान के अक्षांश पर सूर्य आधी रात के बाद भी क्षितिज से ऊपर रह सकता है, इसलिए ये दोनों क्षण आज के भीतर कोई दिन-अवधि नहीं बनाते। <strong>राहु काल और अभिजित मुहूर्त सूर्योदय से सूर्यास्त तक की अवधि के नियत भाग हैं</strong> — वह अवधि न होने पर इन्हें अनुमान से नहीं दिखाया गया।{% else %}At your birthplace's latitude the Sun can stay above the horizon past midnight, so these two instants do not bound a daylight period inside today. <strong>Rahu Kaal and Abhijit Muhurta are each a fixed fraction of the sunrise-to-sunset period</strong>, so on a day without one there is nothing to divide — they are left out rather than guessed.{% endif %}
+          </p>
+        </div>
+      </div>
+      {%- endif %}
 
     </div>
   </section>

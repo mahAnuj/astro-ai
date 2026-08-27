@@ -108,12 +108,35 @@
                     <tr>
                       <td style="font-size:12px;color:#44403c;padding:2px 0;line-height:1.5;">
                         <strong>{% if lang == 'hi' %}सूर्योदय{% else %}Sunrise{% endif %}</strong>
-                        {{ panchang.sunrise.strftime('%I:%M %p').lstrip('0') }}
+                        {{ panchang.sunrise.strftime('%I:%M %p' if panchang.daylight_ordinary else '%d %b, %I:%M %p').lstrip('0') }}
                         &nbsp;·&nbsp;
                         <strong>{% if lang == 'hi' %}सूर्यास्त{% else %}Sunset{% endif %}</strong>
-                        {{ panchang.sunset.strftime('%I:%M %p').lstrip('0') }}
+                        {{ panchang.sunset.strftime('%I:%M %p' if panchang.daylight_ordinary else '%d %b, %I:%M %p').lstrip('0') }}
                       </td>
                     </tr>
+                    {#- Rahu Kaal and Abhijit are fixed fractions of the
+                       sunrise-to-sunset period; `daylight_ordinary` is False
+                       on a date that has no such period (chart.py, #227), and
+                       the two rows below then carry an eighth and a fifteenth
+                       of a span that does not exist.
+
+                       This is the surface where that is worst. A subscriber
+                       gave a city at signup and the blast computes panchang
+                       per-city, so the wrong windows ARRIVE — not navigated
+                       to, not refreshable, with no caveat anywhere near them.
+                       And it is not a polar edge case: Reykjavik, a mainstream
+                       capital south of the Arctic Circle, has 15 such dates in
+                       2026 and none of them takes the loud degrade path.
+
+                       ONE replacement row, not a disclosure card: there is no
+                       room here for /panchang's explanation, and the failure
+                       mode of a long apology in an email is that it is skipped.
+                       Dropping the rows silently was rejected — the reader
+                       would read the gap as "nothing to avoid today". The
+                       sunrise/sunset row above keeps its times and gains their
+                       DATES, which is what makes the two instants legible.
+                       #228. -#}
+                    {%- if panchang.daylight_ordinary %}
                     <tr>
                       <td style="font-size:12px;color:#44403c;padding:2px 0;line-height:1.5;">
                         <strong style="color:#b91c1c;">{% if lang == 'hi' %}राहु काल{% else %}Rahu Kaal{% endif %}</strong>
@@ -128,6 +151,14 @@
                         <span style="color:#15803d;font-size:11px;">({% if lang == 'hi' %}शुभ{% else %}auspicious{% endif %})</span>
                       </td>
                     </tr>
+                    {%- else %}
+                    <tr>
+                      <td style="font-size:12px;color:#44403c;padding:2px 0;line-height:1.5;">
+                        <strong style="color:#b45309;">{% if lang == 'hi' %}सूर्योदय–सूर्यास्त अवधि नहीं।{% else %}No sunrise-to-sunset day.{% endif %}</strong>
+                        {% if lang == 'hi' %}राहु काल और अभिजित मुहूर्त इसी अवधि के नियत भाग हैं, इसलिए आज इन्हें अनुमान से नहीं दिखाया गया।{% else %}Rahu Kaal and Abhijit Muhurta are each a fixed fraction of that period, so with none today they are left out rather than guessed.{% endif %}
+                      </td>
+                    </tr>
+                    {%- endif %}
                   </table>
                 </td>
               </tr>

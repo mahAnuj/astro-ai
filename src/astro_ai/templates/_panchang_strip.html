@@ -77,11 +77,34 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3">
     <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm"
          role="group" aria-label="Today's Panchang summary">
+      {#- Rahu Kaal and Abhijit are fixed fractions of the sunrise-to-sunset
+         period, so a date holding no such period has nothing to divide.
+         `panchang_strip.daylight_ordinary` is False for exactly those dates
+         (chart.py, #227). It is NOT polar-only: Reykjavik, south of the
+         Arctic Circle, has 15 of them in 2026 and never once takes the loud
+         degrade-to-Mumbai path, so this strip rendered them silently — on
+         2026-06-21 "Abhijit (best) 12:47–14:11", 84 minutes under a label
+         the reader reads as ~48, and a Rahu Kaal ending at "00:05" that is
+         on the NEXT date. Tromso 2026-05-17 rendered "00:14–00:06". #228.
+         The two items are swapped for one honest one rather than dropped:
+         a silent gap where a time used to be is its own wrong answer, and
+         the "Full Panchang →" link at the end of the row carries the full
+         disclosure. Contract (3) above: the replacement value span is
+         deliberately WITHOUT whitespace-nowrap — it has no separator glyph
+         to strand and is long enough that forbidding a wrap is what would
+         push the row into overflow at 320px. -#}
+      {%- if panchang_strip.daylight_ordinary %}
 
       <div class="flex items-center gap-1 min-w-0">
         <span class="text-red-700 uppercase text-[10px] tracking-wider font-semibold whitespace-nowrap">{{ t(lang, 'strip_rahu_kaal') }}</span>
         <span class="text-stone-800 font-medium tabular-nums whitespace-nowrap">{{ panchang_strip.rahu_kaal_start.strftime('%H:%M') }}–{{ panchang_strip.rahu_kaal_end.strftime('%H:%M') }}</span>
       </div>
+      {%- else %}
+      <div class="flex items-center gap-1 min-w-0">
+        <span class="text-amber-800 uppercase text-[10px] tracking-wider font-semibold whitespace-nowrap">{% if lang == 'hi' %}सूर्योदय–सूर्यास्त अवधि नहीं{% else %}No sunrise-to-sunset day{% endif %}</span>
+        <span class="text-stone-800 font-medium">{% if lang == 'hi' %}राहु काल व अभिजित उपलब्ध नहीं{% else %}Rahu Kaal &amp; Abhijit unavailable{% endif %}</span>
+      </div>
+      {%- endif %}
 
       <div class="flex items-center gap-1 min-w-0">
         <span class="text-astro-600 whitespace-nowrap" aria-hidden="true">🌅</span>
@@ -89,11 +112,13 @@
         <span class="sr-only">{{ t(lang, 'strip_weekday_in') }}</span>
         <span class="text-stone-500">{{ panchang_city or 'Mumbai' }}</span>
       </div>
+      {%- if panchang_strip.daylight_ordinary %}
 
       <div class="flex items-center gap-1 min-w-0">
         <span class="text-emerald-700 uppercase text-[10px] tracking-wider font-semibold whitespace-nowrap">{{ t(lang, 'strip_abhijit') }}</span>
         <span class="text-stone-800 font-medium tabular-nums whitespace-nowrap">{{ panchang_strip.abhijit_start.strftime('%H:%M') }}–{{ panchang_strip.abhijit_end.strftime('%H:%M') }}</span>
       </div>
+      {%- endif %}
 
       <div class="flex items-center gap-1 min-w-0">
         <span class="text-stone-600 uppercase text-[10px] tracking-wider whitespace-nowrap">{{ t(lang, 'strip_tithi') }}</span>
