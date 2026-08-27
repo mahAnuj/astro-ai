@@ -158,19 +158,43 @@ _YOGA_SLUGS: frozenset[str] = frozenset({
 
 
 def _sweep():
-    """(slug, source) for every yoga and Manglik rule over a fixed chart sweep."""
+    """(slug, source) for every yoga and Manglik rule over a fixed chart sweep.
+
+    Stubs `geocode_place` ITSELF rather than relying on conftest's autouse
+    `_offline_geocode`. That fixture is function-scoped (it uses `monkeypatch`),
+    and this one is module-scoped, so pytest builds this sweep BEFORE the patch
+    is installed — 400 charts each calling out to nominatim. With no network
+    that is `OSError: Network is unreachable` on 6 tests.
+
+    Which broke more than these tests. `scripts/mutate_behaviour_suite.py`
+    copies src/ and tests/ into a sandbox and asks whether the suite goes red;
+    a suite that is ALREADY red reports every mutation as CAUGHT, including the
+    no-op CONTROL. The harness detected it and refused to be believed —
+    `CONTROL FAILED — the sandbox reports CAUGHT for an edit that changes
+    nothing` — so the repo's whole anti-vacuous-test mechanism was disabled by
+    a scope mismatch in one fixture. #224 made the suite hermetic; this file
+    reintroduced the hole through the one door #224's fixture cannot cover.
+    """
+    from unittest.mock import patch
+
     from astro_ai import chart as C
 
     rnd = random.Random(_SWEEP_SEED)
     seen: set[tuple[str, str]] = set()
-    for _ in range(_SWEEP_CHARTS):
-        d = date(1950 + rnd.randrange(76), rnd.randrange(1, 13), rnd.randrange(1, 29))
-        t = dtime(rnd.randrange(24), rnd.randrange(60))
-        ch = C.compute_chart(d, t, "Mumbai")
-        for y in C.compute_yogas(ch):
-            seen.add((y.slug, y.source))
-        for r in C.compute_manglik_details(ch).cancellations:
-            seen.add((r.slug, r.source))
+    # Three-tuple, matching `geocode_place`'s real signature and conftest's
+    # stub. A four-tuple here raises `ValueError: too many values to unpack`
+    # at chart.py:415 — same six tests red, different reason, and the harness
+    # would still have read BLIND.
+    with patch.object(C, "geocode_place",
+                      lambda place: (19.0760, 72.8777, "Asia/Kolkata")):
+        for _ in range(_SWEEP_CHARTS):
+            d = date(1950 + rnd.randrange(76), rnd.randrange(1, 13), rnd.randrange(1, 29))
+            t = dtime(rnd.randrange(24), rnd.randrange(60))
+            ch = C.compute_chart(d, t, "Mumbai")
+            for y in C.compute_yogas(ch):
+                seen.add((y.slug, y.source))
+            for r in C.compute_manglik_details(ch).cancellations:
+                seen.add((r.slug, r.source))
     return seen
 
 
