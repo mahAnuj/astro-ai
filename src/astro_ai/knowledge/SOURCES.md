@@ -3,7 +3,8 @@
 Living document tracking what's been extracted from each source PDF,
 what's still pending, and how new articles should cite them.
 
-**Last updated:** 2026-08-08
+**Last updated:** 2026-08-27 (#216 — the `[BPHS]` citation licence withdrawn;
+corpus-dependency audit appended at the end)
 
 ---
 
@@ -175,13 +176,43 @@ inline like the existing pattern:
 - `[BV Raman, Ch. II, p. 15]`
 - `[Rao, Vedic Astrology: An Integrated Approach, §3.2.5]`
 - `[Rao Lessons Vol. I, Lesson 12]`
-- `[BPHS] / [Phaladeepika]` — when the rule is universally cited and
-  attributed to the original classical text (Rao and Raman are the
-  proximate sources but the rule itself is from BPHS/Phala)
 - `[Vasudev, Origin & Purpose of Astrology, p. 42]`
 
 Never cite Varahamihira directly — we do not hold the text (see above).
 Cite the proximate source that quotes him instead.
+
+### The `[BPHS]` licence is withdrawn (2026-08-27, #216)
+
+This list used to carry a fifth entry:
+
+> `[BPHS] / [Phaladeepika]` — when the rule is universally cited and
+> attributed to the original classical text (Rao and Raman are the
+> proximate sources but the rule itself is from BPHS/Phala)
+
+It is gone, and the same rule now binds BPHS as binds Varahamihira: **cite the
+proximate source you actually read, never the ur-text you did not.**
+
+The licence was not theoretical. Twelve yoga rules in `chart.py` carried
+`source="Brihat Parashara Hora Shastra"` or `"BPHS / Phaladeepika"`, and
+`templates/result.html` renders that string to the reader as
+`Source: Brihat Parashara Hora Shastra` under every yoga card. BPHS is not in
+`data/`, is not one of the eight entries in `scripts/fetch_corpus.py`, and
+never was — so no reader and no agent could check any of them. Forty lines from
+one of those rules, the same file documented its orb as UNSOURCED. All twelve
+were re-audited on 2026-08-27 and resolve to **Rao Ch. 11**, which we hold;
+they now cite him by section.
+
+"Universally cited" is exactly the condition under which nobody checks. It is
+the same failure as the invented `[BPHS]` retrograde orbs (`chart.py`,
+`COMBUSTION_ORBS`) and the Cheiro Lo Shu attribution (#172): a real book's name
+attached to a claim it was never read for, which then reads as verified.
+
+**A citation is a promise that someone here opened the page.** If you did not,
+say which text you did open, or say the rule is unsourced.
+`scripts/verify_rule_citations.py` enforces this for `chart.py`'s rule labels:
+it fails on any book absent from the registry, unconditionally on BPHS, and —
+where the cited book is present in `data/` — checks that the cited section
+exists in its text.
 
 ---
 
@@ -314,3 +345,64 @@ alphabet table, and names the Karmic Debt numbers (13, 14, 16, 19) and Master nu
 See `knowledge/SOURCES.md` for per-book extraction status, and #191 for the extraction
 backlog.
 
+
+
+---
+
+## Which books our claims depend on, and which are not here (measured 2026-08-27)
+
+Added for #216. `data/` is gitignored, so this is a snapshot of one checkout —
+**re-run `uv run python scripts/fetch_corpus.py` before quoting any of it**, and
+say which books were present whenever you report an absence (CLAUDE.md).
+
+On this checkout the registry reported **4 of 8 usable**:
+
+| Present | Absent |
+|---|---|
+| Rao, *Vedic Astrology: An Integrated Approach* | Raman, *Astrology for Beginners* |
+| Rao, *Lessons on Vedic Astrology*, Vol. I | Johari, *Numerology* |
+| Vasudev, *Astrology* (e-book) | Kumar, *Numerology & You* (sample only) |
+| Raman, *Muhurtha or Electional Astrology* (1948) | Goodwin, *Numerology: The Complete Guide*, Vol. 1 |
+
+**BPHS is in neither column: it is not in the registry at all.** Nor are
+Phaladeepika, Jataka Parijata, Jataka Chandrika, Muhurtha Chintamani, Saravali,
+Brihat Jataka, Raman's *Three Hundred Important Combinations*, or Cheiro's
+*Book of Numbers* — all of which this repo's code or knowledge files cite by
+name. A book absent from the registry is worse than one marked `[MISSING]`:
+`fetch_corpus.py` at least tells you the second is gone.
+
+### The knowledge files rest on books that are not here
+
+Ten files in `knowledge/` besides this one. Counting only books the registry
+tracks, **six name a primary source that is currently `[MISSING]`**:
+
+| File | Primary source named | Status |
+|---|---|---|
+| `aspects.md` | Raman, *Astrology for Beginners* | `[MISSING]` |
+| `divisional_charts.md` | Raman, *Astrology for Beginners* | `[MISSING]` |
+| `grahas.md` | Raman, *Astrology for Beginners* (with Rao, present) | `[MISSING]` |
+| `houses.md` | Raman, *Astrology for Beginners* | `[MISSING]` |
+| `rashis.md` | Raman, *Astrology for Beginners* (with Rao, present) | `[MISSING]` |
+| `numerology.md` | Johari; Kumar; Goodwin | all `[MISSING]` |
+
+Widening to books the registry does not track at all, **nine of the ten** name
+at least one: BPHS in `aspects.md`, `divisional_charts.md`, `grahas.md`,
+`houses.md`, `rashis.md`, `vedic_reference.md` and `yogas.md`; Cheiro in
+`numerology.md`; Muhurta Chintamani in `matching.md`, whose stated path
+`data/matching/muhurta-chintamani-…_djvu.txt` is not on this checkout.
+`remedies.md` is the only file resolving entirely to a book we hold (Rao Ch. 34).
+
+### Shipped tables that rest on an absent book
+
+`chart.py`'s `_GOCHAR_BENEFIC_HOUSES` — the transit favourability the site
+renders — is sourced to **Raman, *Astrology for Beginners*, Ch. XII, p.101**,
+"transcribed from `pdftotext -layout` of the copy in `data/`". That copy is
+`[MISSING]` today, so the transcription cannot be re-checked here. This is not
+a claim that the table is wrong: `scripts/verify_gochar_table.py` passes, but
+it compares the code table against `knowledge/vedic_reference.md` — tree
+against tree. Neither reaches the book.
+
+**This is a finding, not a task.** Do not try to resolve it in a citation fix.
+What would resolve it is supplying the book (`--from-dir` / `--from-bucket`),
+after which the transcription can be verified against p.101 for the first time
+since it was written.

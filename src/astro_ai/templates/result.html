@@ -579,9 +579,23 @@
         </div>
         {% endif %}
       {% endfor %}
+      {# The provenance line. This used to read "Compiled from classical Vedic
+         astrology texts including Brihat Parashara Hora Shastra and
+         Phaladeepika", and every card above it said "Source: Brihat Parashara
+         Hora Shastra" — under rules nobody here could check, because neither
+         book is held (#216). The citation on each card now names the text we
+         do hold and read the rule in, and this paragraph says plainly what
+         that reference is and is not. Do not restore a book name here that
+         scripts/verify_rule_citations.py cannot resolve. #}
       <p class="text-xs text-stone-600 italic border-t border-stone-100 pt-3">
         Yogas are classical planetary combinations. Most grant specific gifts across life;
-        a few, shown separately above, are read as difficult rather than fortunate. Compiled from classical Vedic astrology texts including <em>Brihat Parashara Hora Shastra</em> and <em>Phaladeepika</em>.
+        a few, shown separately above, are read as difficult rather than fortunate.
+        The reference under each card is the text we read the rule in and checked it
+        against &mdash; P.V.R. Narasimha Rao's <em>Vedic Astrology: An Integrated
+        Approach</em>, Chapter 11 &mdash; not a claim about where the rule first appears.
+        These combinations are attributed across the classical compendia, and we do not
+        hold those texts, so we cite the book you can open rather than the one everyone
+        names. Where a detail is ours rather than the source's, the card says so.
       </p>
     </div>
   </section>
