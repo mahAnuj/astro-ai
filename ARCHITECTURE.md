@@ -281,7 +281,16 @@ it only gives the cache something to hit. Keep the shared blocks first in any ne
   RENDERS those windows now checks it and discloses in its own idiom — a page-width card,
   a strip item, one line in an email (**#228**). What still does not check it is
   `chart.format_panchang_for_prompt`, which is not a surface: it writes the reversed times
-  into the daily-reading PROMPT, so they reach a reader only if the model repeats them.
+  into the daily-reading PROMPT — and `prompts/daily.txt` REQUIRES the model to print
+  them, so they reach the reader as a matter of course, not by chance. Line 13: "name
+  today's **Rahu Kaal** window (exact times from Panchang)"; line 25 lists "**Rahu Kaal
+  time** (exact times)" among the required elements. An earlier draft of this bullet said
+  they "reach a reader only if the model repeats them", which framed mandated output as
+  contingent and under-sized the defect.
+  The consequence is worse than before #228, not better: `/today` now renders a card
+  saying the windows are "left out rather than guessed" while the reading directly beneath
+  it is instructed to state them. **The page contradicts itself**, and that contradiction
+  is new.
   (`format_day_windows_for_rashifal` is safe by construction — it names the windows and
   states no clock time at all.) The raise shape is unchanged — the route still degrades
   that to Mumbai. **#227** and **#228** hold the per-surface reach and the day counts.
