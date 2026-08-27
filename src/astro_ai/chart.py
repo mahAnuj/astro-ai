@@ -3455,6 +3455,16 @@ def compute_moon_rise_set(
     `_rise_or_set`. Callers must render the date, not just the clock time, and
     must handle None.
 
+    `routes/panchang.py` calls it (#150). It shipped with no caller at all —
+    two comments referred to it and nothing reached it, so the paragraph above
+    was advice to nobody and `/panchang` showed neither instant. Absence is not rare and is not only polar: BOTH are absent
+    on 166 of 365 days in 2026 at Tromso and 88 at Reykjavik (64.15N, south of
+    the Arctic Circle — the Moon's ~5.1deg orbital inclination takes it
+    circumpolar where the Sun never is). At New Delhi and Mumbai, zero. Do not
+    reach for `DailyPanchang.daylight_ordinary` for this: that flag is about the
+    Sun, and Tromso 2026-05-16 has no ordinary daylight span AND a moonrise at
+    00:36. `scripts/verify_panchang_angas.py` Gate 7 holds both apart.
+
     Deliberately NOT a `DailyPanchang` field and deliberately uncached. The two
     Swiss Ephemeris calls cost ~0.5 ms, which `compute_panchang`'s callers were
     paying 90 times over on a muhurat search that reads neither value (#150).
