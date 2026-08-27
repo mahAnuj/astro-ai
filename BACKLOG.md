@@ -1,19 +1,39 @@
 # BACKLOG.md — standing triage overview
 
 **Last full scan: 2026-08-25, against `origin/main` = `c14093c`.**
-**Execution round 2 closed out 2026-08-26 against `origin/main` = `9546e95`.**
+**Execution round 3 (the war room) closed out 2026-08-26 against `origin/main` = `b8e9936`.**
 Produced by `/prioritise` (the `project-manager` agent), then QA-verified in the parent
 session — which overturned two of its six closure proposals. 36 open issues at scan time.
 
-**QA state at `9546e95`:** `uv run pytest` → **37 passed** (bare clone, no `.env`, no
-network — #224 made the suite hermetic); `scripts/mutate_behaviour_suite.py` → **13/13
-caught, CONTROL correctly MISSED**. The *QA baseline* section below describes the old
-14-phantom-failure state and is superseded.
+**QA state at `b8e9936`:** `uv run pytest` → **53 passed** (bare clone, no `.env`, no
+network — #224 made the suite hermetic); `scripts/mutate_behaviour_suite.py` → **17/17
+caught, CONTROL correctly MISSED** (run under `unshare -rn`, so provably not blind);
+**13 of 15 `verify_*` gates green** — `verify_css_build` and `verify_devanagari_serif`
+need npm/playwright and fail identically at any parent. The *QA baseline* section below
+describes the old 14-phantom-failure state and is superseded.
 
-**Closed in round 2 (2026-08-26):** #172, #193, #220, #222, #217, #214, #171, #224 — each with
-production or execution evidence on the issue. **Still open and re-verified, not carried:**
-#163 (23/45 disagreements, 5 sign flips, undisclosed), #185 (your decision), #227 (open,
-watched by the gate), #150 (partial).
+**Corpus: 4 of 8 registry entries** (`scripts/fetch_corpus.py` is the registry and prints
+the live count). Do not restate a count anywhere else — run the tool. Still missing:
+Johari (blocks #163's remainder and #201), Goodwin (#191's largest item, 28,171 lines),
+Jayant Kumar, and B.V. Raman's *Astrology for Beginners* (15,409 lines, fully extracted
+per SOURCES.md row 1 — **an astrology book, so it can move an astrological absence**).
+
+**29 open at `b8e9936`** — counted from the API, not derived. **13 closed 2026-08-26**,
+each with evidence on the issue:
+
+| round | closed |
+|---|---|
+| 2 | #172, #193, #220, #222, #217, #214, #171, #224 |
+| 3 (war room) | #227, #173 (production-verified), #226, #223, #225 (QA-passed, no production surface) |
+
+**Filed this round:** #228 — four surfaces still render reversed polar windows, including
+**both email templates**. Split out of #227 rather than left implicit in a closed issue.
+
+**Still open and re-verified, not carried:** #163 (19/45 disagreements remain, 1 sign flip,
+undisclosed), #185 (your decision), #150 (partial — and `compute_moon_rise_set` has ZERO
+callers, so its moonrise half was written and never wired), #151 (angas discharged, the
+significance layer is not), #218/#219 (principle sourced, both 6° orbs still UNSOURCED
+deliberately).
 
 **A production gate now exists.** `.github/workflows/verify-production.yml` runs on every
 push to `main`, daily, and on demand: it waits for the deploy via `/health`, sweeps every
@@ -523,12 +543,77 @@ mode a gate must not have — and both were only visible because the gate ran en
 
 ---
 
+## Execution log — round 3 (the war room), 2026-08-26
+
+Six working agents (1 triage, 3 engineers partitioned BY FILE, 2 corpus extractors), six
+independent QA dispatches, 11 commits, all pushed as `6278a07..b8e9936` and deployed.
+
+**Partitioned by file, not by issue, deliberately.** #223 and #225 both live in
+`send_daily_rashifal`, so they were bundled — BACKLOG's own note that "separate PRs to
+this function will collide" applies. Five engineers would have contended in `main.py`.
+
+### The measured case against more parallelism
+
+The proposal was 5 engineers + 5 QA. What the run actually showed:
+
+- **Every one of the six QA passes failed its first submission.** Not one change was right
+  the first time.
+- **Three fix rounds introduced a defect of the class they were fixing.** `90ecc07`
+  corrected a normalised-comparison-described-as-raw on the Rao half and reproduced it on
+  the Raman half. `7ad54da` corrected measurements and turned an inherited off-by-one into
+  a positive false statement. My own edit left a fragment contradicting its own correction.
+- **A gate went red from a DIFFERENT commit** and only a full 15-gate sweep found it:
+  `701ff75` restructured `grahas.md` and dropped the string `verify_muhurat_tables.py`
+  anchored on. Re-anchored on the table's column header in `a545712`.
+
+The bottleneck was never hands. It was that work which looks done is not, and only
+independent execution tells you which. Adding engineers multiplies the re-work.
+
+### What the corpus work actually recovered
+
+`chart.py:1841` cited `data/matching/raman-muhurtha-1948-electional-astrology_djvu.txt`
+for every value in `COMBUSTION_ORBS` — **and that directory did not exist.** A shipped,
+user-facing table rested on a source nobody could check, and `fetch_corpus.py` did not
+list it, so the tooling concealed the gap.
+
+Restored from archive.org (`in.ernet.dli.2015.128092`). The citation resolves exactly —
+line 7183 is `Planets, Combustion of`, 7227 is the retrograde footnote — and all six orbs
+verify: Moon 12, Mars 17, Mercury 14, Jupiter 11, Venus 10, Saturn 15, with the footnote
+explaining why only Mercury and Venus carry a different retrograde value.
+
+**And it falsified a prediction the repo had been waiting on.** §28.3 named that book as
+the unblocker for Yamaganda. It is here, and Yamaganda is not in it — 0 hits across 4
+books, and by hand `Yama` appears only as the deity while the glossary carrying
+`Rahu Kalam` has no Yamaganda entry. #150 needs *Muhurta Chintamani* instead.
+
+### Findings worth carrying forward
+
+- **A hit is not a source.** `panchak` returns 31 hits under the spelling `panchaka` — all
+  Raman, and his *Panchaka* is a remainder-of-9 arithmetic rule unrelated to
+  `_PANCHAK_NAKSHATRAS`. The mirror of the documented "a zero proves the TERM absent, not
+  the CONCEPT", and it now has a worked example.
+- **#227 is not polar-only.** Reykjavik (64.15°N, south of the Arctic Circle) has 15
+  affected days a year and **zero** loud raises. `verify_panchang_angas.py` still says
+  "north of the Arctic Circle (66.56°N)".
+- **49 line-number citations in `knowledge/`: 39 suspect, 10 verified.** The suspect ones
+  cite books not in `data/`. The repo-wide re-resolution sweep has NOT been done.
+- **`corpus_search.py` misses Rao's spelling `Vyatipaata`**, and the hits it does return
+  for `vyatipata` in the textbook are a different object (the upagraha 360° − Dhuma). So
+  "is this yoga sourced?" answered with that one command gives the wrong answer. Same
+  class as #217, unfiled.
+- **The triage agent completed but its report never reached me.** Its status trail is in
+  `AGENT_STATUS.md`; its per-issue verdicts are lost. The zero-callers finding above came
+  from that trail and was re-verified by hand. A re-triage is still owed.
+
+---
+
 ## Scan history
 
 | Date | SHA | Open | Closures proposed | Queue head |
 |---|---|---|---|---|
 | 2026-08-25 | `c14093c` | 36 | proposed 6; **QA overturned 2** → #171, #214, #185, #163(dup) stand; #159 keep-open; #178 hold | #220 + #222 (assigned) |
 | 2026-08-26 | `9546e95` | 34 | round 2: closed 8 (#172 #193 #220 #222 #217 #214 #171 #224); #163 re-verified open; #185 awaits your call | #163 disclosure, then #150 |
+| 2026-08-26 | `b8e9936` | **29** | round 3 war room: closed 5 (#227 #173 #226 #223 #225), filed #228; 11 commits pushed; corpus 1→4 books | #228 (email surfaces), #150 moonrise wiring, re-triage |
 
 ### 2026-08-25 — what QA changed
 
