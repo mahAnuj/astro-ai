@@ -291,12 +291,23 @@
                "not computed" — muhurat.py leaves all three window fields empty
                on such a date because each is a fraction of that span (#228).
                Say so on the row: "✓ Abhijit " with a blank after it reads as a
-               rendering bug, and the previous behaviour was worse still —
-               this cell printed "Abhijit 12:47-14:12" for Reykjavik
-               2026-06-25 under a title claiming a 48-minute window. It is 85
-               minutes: a fifteenth of a 21-hour span, not of a day. -#}
+               rendering bug.
+
+               THE STRETCHED WINDOW IS A SEPARATE DEFECT AND daylight_ordinary
+               CANNOT COVER IT. This cell printed "Abhijit 12:47-14:12" for
+               Reykjavik 2026-06-25 under a title claiming 48 minutes — it is
+               85, a fifteenth of a 21-hour span. But that date, and 120 others
+               at Reykjavik in 2026, are daylight_ordinary=TRUE: the Sun rises
+               and sets normally, the arithmetic is correct Vedic practice, and
+               no flag applies. Measured across 2026 at Reykjavik: 121 ordinary
+               dates with Abhijit over 60 min (max 84.2 on 2026-06-14, a
+               21.04-hour day) and 119 under 36 min (min 16.6, around the
+               solstice). The defect was never the computation — it was the
+               hardcoded duration in the title, which is why the title now
+               states the FRACTION and gives the fixed figure only as the
+               12-hour-day case. Same for the legend below. -#}
             {% if c.abhijit_muhurta or c.rahu_kaal %}
-            <div title="Best 48-min window of the day"><span class="text-emerald-700">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
+            <div title="Abhijit Muhurta — the 8th of 15 equal parts of daylight, around solar noon. Its length follows the day: ~48 min on a 12-hour day, but 16 min to 84 min across a year at high latitude."><span class="text-emerald-700">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
             <div title="Rahu Kaal — avoid for launches"><span class="text-rose-600">✗</span> Rahu Kaal {{ c.rahu_kaal }}</div>
             {%- else %}
             <div class="text-amber-700 text-[10px] whitespace-normal max-w-[220px] leading-tight"
@@ -334,7 +345,7 @@
       </tbody>
     </table>
     <p class="text-xs text-stone-600 mt-2 italic">
-      <span class="text-emerald-700">✓</span> Abhijit Muhurta = best 48-minute window of each day (~solar noon). <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious 90-minute window, avoid for launches. Yoga = Nitya Yoga; Vaidhriti/Vyatipata days are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present (universal auspiciousness).
+      <span class="text-emerald-700">✓</span> Abhijit Muhurta = the most auspicious window, a fifteenth of daylight around solar noon. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Vaidhriti/Vyatipata days are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present (universal auspiciousness).
     </p>
     {% endif %}
 
