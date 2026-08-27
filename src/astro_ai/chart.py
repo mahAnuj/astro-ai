@@ -718,16 +718,22 @@ def house_profile(chart: Chart, house: int) -> HouseProfile:
 class ManglikRule:
     """One classical Mangal Dosha cancellation or mitigation that applies to this chart.
 
-    Carrying the source on each rule lets the LLM cite specific texts
-    (Jataka Parijata, Phaladeepika, …) instead of asserting cancellations
-    on its own authority — turning a generic "don't worry" into a defensible
-    statement the seeker can verify.
+    `source` is what result.html prints beside the rule, so the seeker can
+    check the claim rather than take the cancellation on our authority.
+
+    It does NOT reach the LLM. This docstring used to say it "lets the LLM
+    cite specific texts", which was never true of the shipped code:
+    format_manglik_for_prompt() sends `description` only and says in its own
+    docstring that sources are omitted so the model cannot echo them back as
+    "per Phaladeepika" jargon. The claim survived long enough to be believed
+    (#218) — a source string is a page string, and a wrong one is a wrong
+    page, not a wrong prompt.
     """
 
     slug: str          # stable id for code paths / tests
     description: str   # human-readable rule
     effect: str        # "cancels" | "mitigates"
-    source: str        # classical text it comes from
+    source: str        # citation shown to the reader; see the note above
 
 
 @dataclass(frozen=True)
@@ -924,6 +930,34 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
     # Combustion — Mars within 6° of Sun on absolute sidereal longitude
     # (not same-rashi only — a Mars at 29° Aries and Sun at 2° Taurus are 3°
     # apart across the rashi boundary; the old same-rashi check missed this).
+    #
+    # THIS RULE IS UNSOURCED, and the label now says so on the page (#218).
+    # It used to read source="Classical matching practice", which is not a
+    # citation — it is a phrase shaped like one, and it sat next to real book
+    # names in the same list, so a reader had no way to tell them apart.
+    #
+    # What the corpus actually holds (knowledge/grahas.md §12.4 has the full
+    # audit; books present 2026-08-27 were Rao's textbook, Rao's *Lessons*,
+    # Vasudev and Raman's *Muhurtha*):
+    #   - Raman, *Muhurtha*, "ANTIDOTES FOR KUJA DOSHA" is a purpose-built
+    #     exception list from the same book that supplies COMBUSTION_ORBS.
+    #     Mars combustion is not on it.
+    #   - Vasudev discusses Kuja dosha across 18 lines and never mentions it.
+    #   - The rule's usual rationale — combustion weakens Mars, so the dosha
+    #     lapses — is contradicted by the only passage in the corpus on Mars
+    #     combustion: Rao, *Lessons* #21, "Ma with Su is combust. But, it
+    #     really doesn't matter since both are agni planets and Ma is not
+    #     effected." That is NOT a refutation (he is grading natal strength,
+    #     not Kuja dosha) and he must NOT be cited FOR the rule — but it
+    #     removes the premise.
+    #   - The 6° is unsourced too. No book here states a Manglik orb, and
+    #     the only combustion orb we hold gives Mars 17° (COMBUSTION_ORBS).
+    #     Do NOT substitute 17 on the strength of that: this is a different
+    #     rule that happens to measure Sun-proximity, and swapping the number
+    #     would move live Manglik verdicts on no better authority.
+    #
+    # Left in force, honestly labelled. Deleting it silently changes whose
+    # dosha is cancelled; keeping it unlabelled was the defect.
     mars_abs = _rashi_index(mars.rashi) * 30.0 + mars.longitude
     sun_abs = _rashi_index(sun.rashi) * 30.0 + sun.longitude
     sep = abs(mars_abs - sun_abs) % 360.0
@@ -933,7 +967,7 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
             slug="mars_combust",
             description=f"Mars combust (within {sep:.1f}° of Sun)",
             effect="cancels",
-            source="Classical matching practice",
+            source="unsourced: absent from the classical Kuja-dosha antidote lists we hold",
         ))
 
     return tuple(rules)
@@ -1047,10 +1081,14 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
 # Yogas — classical planetary combinations
 #
 # Source: P.V.R. Narasimha Rao, "Vedic Astrology: An Integrated Approach",
-# Chapter 11 (data/vedic_astro_textbook.pdf), cross-checked with BPHS and
-# Phaladeepika. See knowledge/vedic_reference.md §4 for the full catalogue
-# and rule definitions — keep this code and that file in sync when adding
-# new yogas.
+# Chapter 11 (data/vedic_astro_textbook.pdf). See knowledge/vedic_reference.md
+# §4 for the full catalogue and rule definitions — keep this code and that
+# file in sync when adding new yogas.
+#
+# This used to end "cross-checked with BPHS and Phaladeepika". Neither book
+# is in `data/`, neither is one of the eight entries in fetch_corpus.py, and
+# no such cross-check could have happened here (#216). Rao is the whole
+# provenance, and he is enough: he states every one of these rules outright.
 #
 # Scope decision: we implement the high-signal trivially-computable yogas
 # (Pancha Mahapurusha, Sun/Moon yogas, Vipareeta Raja, Trilochana, Amala,
@@ -1066,8 +1104,15 @@ _NATURAL_BENEFICS: frozenset[str] = frozenset({"Jupiter", "Venus", "Mercury", "M
 _NATURAL_MALEFICS: frozenset[str] = frozenset({"Saturn", "Mars", "Sun", "Rahu", "Ketu"})
 
 # Own-sign + exaltation tables for Pancha Mahapurusha detection.
-# Sourced from BPHS, Chapter 3 (Planets). Capricorn for Sasa is Saturn's
-# moolatrikona; Cancer for Hamsa is Jupiter's exaltation sign.
+#
+# Verified sign-by-sign against Rao §§11.4.1-11.4.5 on 2026-08-27: Mars
+# "Ar, Sc or Cp", Mercury "Ge or Vi", Saturn "Cp, Aq or Li", Venus
+# "Ta, Li or Pi", Jupiter "Sg, Pi or Cn". All five match.
+#
+# The previous attribution — "BPHS, Chapter 3 (Planets)" — named a book not
+# in `data/` (#216), and its gloss was wrong besides: it called Capricorn
+# Saturn's moolatrikona, which is Aquarius. Capricorn is simply one of
+# Saturn's two own signs, as the inline notes below say.
 _PMP_QUALIFYING_SIGNS: dict[str, set[str]] = {
     "Mars":    {"Aries", "Scorpio", "Capricorn"},     # own (Ar, Sc) + exalted (Cp)
     "Mercury": {"Gemini", "Virgo"},                   # own (Ge) + own/exalted (Vi)
@@ -1102,8 +1147,12 @@ class YogaResult:
 
     `slug` is a stable id for tests / templates; `name` is human-readable;
     `category` groups yogas in the prompt block; `effect` is a 1-line
-    significations string the LLM can paraphrase; `source` is the classical
-    text or modern compilation it comes from.
+    significations string the LLM can paraphrase; `source` is the citation
+    result.html prints to the reader under "Source:".
+
+    `source` is NOT in the LLM prompt — format_yogas_for_prompt() omits it
+    deliberately so the model cannot echo a citation back as prose. It is a
+    page string only.
     """
 
     slug: str
@@ -1113,28 +1162,58 @@ class YogaResult:
     source: str
 
 
+# The book every yoga below is actually checked against, and the reason the
+# citations changed (#216, #218).
+#
+# These rules used to carry source="Brihat Parashara Hora Shastra" and
+# "BPHS / Phaladeepika", and result.html renders that verbatim as
+# "Source: Brihat Parashara Hora Shastra" on the chart page. BPHS is not in
+# `data/` and never was — it is not even one of the eight entries in
+# scripts/fetch_corpus.py — so not one of those twelve citations was
+# checkable by anybody, here or reading the site. A rule wearing a real
+# book's name is worse than an unlabelled one, because it tells the reader
+# not to check.
+#
+# Every yoga in this module was re-audited against the corpus on 2026-08-27
+# with scripts/corpus_search.py. Books present that day (4 of 8, per
+# scripts/fetch_corpus.py): Rao *Vedic Astrology: An Integrated Approach*,
+# Rao *Lessons* Vol. I, Vasudev *Astrology*, Raman *Muhurtha* (1948). All
+# twelve resolved to Rao's Ch. 11, whose definitions and "Results" lines are
+# what the `effect` strings here paraphrase — sections cited individually
+# below. That is a proximate source, not the ur-text, and naming it is the
+# point: it is the one a reader can open.
+#
+# SOURCES.md used to license a bare `[BPHS]` for "universally cited" rules.
+# That licence is what let an uncheckable attribution into shipped code, and
+# it has been withdrawn — see knowledge/SOURCES.md, "Citation convention".
+_RAO = "Rao, Vedic Astrology: An Integrated Approach"
+
+
 def _pancha_mahapurusha_yogas(chart: Chart) -> list[YogaResult]:
     """The 5 'Great Person' yogas — own/exalted graha in a kendra from Lagna.
 
     Skipped for Sun and Moon (these are luminaries, not the 5 non-luminary grahas).
     """
     out: list[YogaResult] = []
+    # The 4th element is Rao's section for that yoga (§11.4.1-11.4.5). Each
+    # gives the same "quadrant in own or exaltation sign" definition, and the
+    # sign sets in _PMP_QUALIFYING_SIGNS above match his sign-by-sign.
     names = {
-        "Mars":    ("ruchaka_yoga",  "Ruchaka Yoga",  "Fiery great-man: courage, leadership, victory, occult skill"),
-        "Mercury": ("bhadra_yoga",   "Bhadra Yoga",   "Earthy great-man: learning, eloquence, systematic mind, business"),
-        "Jupiter": ("hamsa_yoga",    "Hamsa Yoga",    "Ethery great-man: wisdom, dharma, respect, scholarly fame"),
-        "Venus":   ("malavya_yoga",  "Malavya Yoga",  "Watery great-man: beauty, luxury, art, marital happiness"),
-        "Saturn":  ("sasha_yoga",    "Sasha Yoga",    "Airy great-man: discipline, leadership of multitudes, charity"),
+        "Mars":    ("ruchaka_yoga",  "Ruchaka Yoga",  "Fiery great-man: courage, leadership, victory, occult skill", "11.4.1"),
+        "Mercury": ("bhadra_yoga",   "Bhadra Yoga",   "Earthy great-man: learning, eloquence, systematic mind, business", "11.4.2"),
+        "Jupiter": ("hamsa_yoga",    "Hamsa Yoga",    "Ethery great-man: wisdom, dharma, respect, scholarly fame", "11.4.5"),
+        "Venus":   ("malavya_yoga",  "Malavya Yoga",  "Watery great-man: beauty, luxury, art, marital happiness", "11.4.4"),
+        "Saturn":  ("sasha_yoga",    "Sasha Yoga",    "Airy great-man: discipline, leadership of multitudes, charity", "11.4.3"),
     }
     for p in chart.planets:
         if p.name not in _PMP_QUALIFYING_SIGNS:
             continue
         sign = _sign_name(p.rashi)
         if sign in _PMP_QUALIFYING_SIGNS[p.name] and p.house in _KENDRA_HOUSES:
-            slug, name, effect = names[p.name]
+            slug, name, effect, section = names[p.name]
             out.append(YogaResult(
                 slug=slug, name=name, category="pancha_mahapurusha",
-                effect=effect, source="BPHS / Phaladeepika",
+                effect=effect, source=f"{_RAO} §{section}",
             ))
     return out
 
@@ -1153,22 +1232,37 @@ def _sun_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="ubhayachara_yoga", name="Ubhayachara Yoga", category="sun",
             effect="All comforts, royal stature; planets flanking the Sun on both sides",
-            source="Brihat Parashara Hora Shastra",
+            source=f"{_RAO} §11.2.3",
         ))
     elif in_2nd:
         out.append(YogaResult(
             slug="vesi_yoga", name="Vesi Yoga", category="sun",
             effect="Balanced outlook, truthful, content",
-            source="Brihat Parashara Hora Shastra",
+            source=f"{_RAO} §11.2.1",
         ))
     elif in_12th:
         out.append(YogaResult(
             slug="vosi_yoga", name="Vosi Yoga", category="sun",
             effect="Skillful, charitable, famous, learned",
-            source="Brihat Parashara Hora Shastra",
+            source=f"{_RAO} §11.2.2",
         ))
 
     # Budha-Aditya: Sun + Mercury same sign. Combust if within ~6° → weakened.
+    #
+    # The yoga is Rao §11.2.4, and so is the PRINCIPLE that combustion weakens
+    # it — "Yogas formed by combust planets lose some of their power to do
+    # good". The NUMBER is not. Rao writes only "too close" and gives no
+    # degree; no book in the corpus states a Budha-Aditya orb, and this file's
+    # own COMBUSTION_ORBS calls Mercury combust at 14° direct / 13° retrograde
+    # — more than twice the 6° used here, so at Mercury 9° from the Sun this
+    # branch prints an unweakened yoga for a planet the same file calls
+    # combust. The direction is contested too — Rao's *Lessons* Lesson #21
+    # reports him holding that closeness HELPS, and flags "there are different
+    # opinions on this". knowledge/grahas.md §12.3 has the full audit (#218).
+    #
+    # So the disclosure rides on the label, and only when the 6° actually
+    # changed what the reader is told. Deleting the number instead would move
+    # yoga output; saying nothing would leave a reader unable to weigh it.
     mercury = next(p for p in chart.planets if p.name == "Mercury")
     if mercury.rashi == sun.rashi:
         combust_note = ""
@@ -1177,7 +1271,10 @@ def _sun_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="budha_aditya_yoga", name="Budha-Aditya Yoga (Nipuna)", category="sun",
             effect=f"Intelligence, skill, respect; bright mind{combust_note}",
-            source="Brihat Parashara Hora Shastra",
+            source=f"{_RAO} §11.2.4" + (
+                " — the 6° cut-off is ours, not his, and the weakening is contested"
+                if combust_note else ""
+            ),
         ))
     return out
 
@@ -1209,19 +1306,19 @@ def _moon_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="duradhara_yoga", name="Duradhara Yoga", category="moon",
             effect="Pleasures, charity, wealth, vehicles, good servants",
-            source="Brihat Parashara Hora Shastra",
+            source=f"{_RAO} §11.3.3",
         ))
     elif in_2nd:
         out.append(YogaResult(
             slug="sunaphaa_yoga", name="Sunaphaa Yoga", category="moon",
             effect="Royal stature; intelligence, wealth, fame, self-earned success",
-            source="Brihat Parashara Hora Shastra",
+            source=f"{_RAO} §11.3.1",
         ))
     elif in_12th:
         out.append(YogaResult(
             slug="anaphaa_yoga", name="Anaphaa Yoga", category="moon",
             effect="Good-looking, disease-free, reputed, comfortable",
-            source="Brihat Parashara Hora Shastra",
+            source=f"{_RAO} §11.3.2",
         ))
 
     # Kemadruma: NONE of 1st/2nd/12th from Moon AND no planets in kendras from Lagna.
@@ -1239,7 +1336,7 @@ def _moon_yogas(chart: Chart) -> list[YogaResult]:
             # should pause over was being presented as a gift.
             slug="kemadruma_yoga", name="Kemadruma Yoga", category="challenge",
             effect="Lonely / unsupported Moon; emotional fragility — verify cancellations before alarm",
-            source="Brihat Parashara Hora Shastra",
+            source=f"{_RAO} §11.3.4",
         ))
 
     # Chandra-Mangala: Moon and Mars conjunct
@@ -1248,12 +1345,19 @@ def _moon_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="chandra_mangala_yoga", name="Chandra-Mangala Yoga", category="moon",
             effect="Worldly-wise, materially successful; energetic relationship with money",
-            source="Brihat Parashara Hora Shastra",
+            source=f"{_RAO} §11.3.5",
         ))
 
     # Gaja-Kesari: Jupiter in kendra (1/4/7/10) FROM Moon (not from Lagna).
-    # Strict version requires Jupiter not debilitated/combust/in enemy sign — we
-    # apply the debilitation check (Jupiter in Capricorn) as a downgrade signal.
+    # Rao §11.6 gives THREE conditions — (1) Jupiter in a quadrant from Moon,
+    # (2) a benefic conjoins or aspects Jupiter, (3) Jupiter not debilitated,
+    # combust or in an enemy's house. We test (1), and use debilitation from
+    # (3) as a downgrade note rather than a disqualifier. So the label says
+    # "simplified": citing Rao flat for a rule looser than his would overstate
+    # what he supports. He himself records the looser reading — "Some authors
+    # consider Gaja-Kesari yoga to be present even when Jupiter is in a
+    # quadrant from lagna and not Moon" — so a relaxed form is within the
+    # tradition; it is just not the one his three conditions define.
     jupiter = next(p for p in chart.planets if p.name == "Jupiter")
     if _house_from_planet(jupiter.house, moon.house) in {1, 4, 7, 10}:
         debilitated = _sign_name(jupiter.rashi) == "Capricorn"
@@ -1261,7 +1365,7 @@ def _moon_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="gaja_kesari_yoga", name="Gaja-Kesari Yoga", category="moon",
             effect=f"Fame, wealth, intelligence, virtue, favor from authority{note}",
-            source="Brihat Parashara Hora Shastra",
+            source=f"{_RAO} §11.6 — simplified; his benefic-aspect condition is not applied",
         ))
     return out
 
@@ -1286,8 +1390,11 @@ def _vipareeta_raja_yogas(chart: Chart) -> list[YogaResult]:
         lord_planet = next((p for p in chart.planets if p.name == lord), None)
         if lord_planet and lord_planet.house == house:
             out.append(YogaResult(
+                # All three are in Rao §11.6 ("Other Popular Yogas"), one
+                # sentence each: 6th lord in the 6th, 8th in the 8th, 12th in
+                # the 12th. The effect strings above paraphrase his Results.
                 slug=slug, name=name, category="vipareeta_raja",
-                effect=effect, source="BPHS / Phaladeepika",
+                effect=effect, source=f"{_RAO} §11.6",
             ))
     return out
 
@@ -1803,10 +1910,14 @@ _DEBILITATION_SIGN: dict[str, str] = {
 # happened to be measured.
 #
 # What did NOT change, and is still separate:
-#   chart.py ~931    Mars combust the Sun, 6 deg — a Manglik CANCELLATION test
-#   chart.py ~1180   Budha-Aditya weakening, 6 deg
+#   _manglik_cancellations()  Mars combust the Sun, 6 deg — a Manglik
+#                             CANCELLATION test
+#   _sun_yogas()              Budha-Aditya weakening, 6 deg
 # (muhurat.py:49's Mercury 12 was on this list until 39ae5bf deleted it; both
-#  survivors are UNSOURCED — see #218.)
+#  survivors are UNSOURCED — see #218.) Both still are, and both now SAY so in
+#  the `source` string result.html prints, rather than only here where no
+#  reader can see it. The numbers are unchanged: labelling them was the fix,
+#  because replacing them would need an authority nobody has.
 #
 # The last two are deliberately untouched: they are distinct classical rules
 # that happen to measure Sun-proximity, not this rule at a different orb, and
@@ -1867,9 +1978,12 @@ COMBUSTION_ORBS: Final[dict[str, tuple[float, float]]] = {
 # The six DIRECT orbs are correct and unchanged; every one matches p.197.
 #
 # On the deleted "(per BPHS)" attribution: BPHS is not in data/ and never
-# was, so that citation was never checkable. SOURCES.md licenses [BPHS] for
-# "universally cited" rules, which is how an uncheckable attribution reached
-# a code comment and a published article. Cite the page we actually hold.
+# was, so that citation was never checkable. SOURCES.md used to license
+# [BPHS] for "universally cited" rules, which is how an uncheckable
+# attribution reached a code comment and a published article. That licence
+# has been withdrawn (#216) and twelve yoga rules that cited BPHS to the
+# reader now cite Rao Ch. 11; scripts/verify_rule_citations.py fails the
+# build if a new one names a book we do not hold. Cite the page we hold.
 #
 # Note grahas.md §12 was written 2026-07-24 (372396a) "from Rao Ch. 3",
 # which contains no combustion material whatsoever. Raman's Muhurtha only
