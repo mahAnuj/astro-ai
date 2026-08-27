@@ -138,7 +138,40 @@ def _module_strings(tree: ast.Module) -> dict[str, str]:
     return out
 
 
-def _label_variants(node: ast.AST, consts: dict[str, str]) -> list[str]:
+def _loop_bound_strings(fn: ast.AST) -> dict[str, list[str]]:
+    """Candidate values for names a `for` loop unpacks out of a literal table.
+
+    `_pancha_mahapurusha_yogas()` holds its five rules in a dict literal and
+    builds each label as `f"{_RAO} §{section}"`, where `section` is a loop
+    target. Statically that name has no single value, so `_label_variants` used
+    to yield the placeholder `<section>` — which does not start with `<` once
+    it is embedded in the f-string, so the guard missed it and NO SECTION CHECK
+    RAN for any of the five.
+
+    Rather than give up, over-approximate: every string literal in the function
+    that has the SHAPE of a section number is a candidate. The gate then checks
+    all five sections instead of none, and an over-approximation is the safe
+    direction — a candidate that is not really reachable can only cause a
+    spurious failure a human will notice, never a silent pass.
+    """
+    shaped = re.compile(r"^\d+(?:\.\d+)*$")
+    pool = sorted({n.value for n in ast.walk(fn)
+                   if isinstance(n, ast.Constant) and isinstance(n.value, str)
+                   and shaped.match(n.value)})
+    if not pool:
+        return {}
+    # Any name BOUND in the function, not just a `for` target. The real case
+    # binds by tuple-unpacking an assignment:
+    #     slug, name, effect, section = names[p.name]
+    # so a for-targets-only version resolved nothing and the hole stayed open.
+    # ast.Store covers both, and every other binding form.
+    targets = {n.id for n in ast.walk(fn)
+               if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store)}
+    return {name: pool for name in targets}
+
+
+def _label_variants(node: ast.AST, consts: dict[str, str],
+                    locals_: dict[str, list[str]] | None = None) -> list[str]:
     """Every string this `source=` expression can evaluate to.
 
     Returns a LIST, not one string: `budha_aditya_yoga` appends its unsourced-
@@ -150,17 +183,22 @@ def _label_variants(node: ast.AST, consts: dict[str, str]) -> list[str]:
     if isinstance(node, ast.Constant) and isinstance(node.value, str):
         return [node.value]
     if isinstance(node, ast.Name):
-        return [consts.get(node.id, f"<{node.id}>")]
+        if node.id in consts:
+            return [consts[node.id]]
+        if locals_ and node.id in locals_:
+            return list(locals_[node.id])
+        return [f"<{node.id}>"]
     if isinstance(node, ast.JoinedStr):
-        parts = [_label_variants(v, consts) for v in node.values]
+        parts = [_label_variants(v, consts, locals_) for v in node.values]
         return _product(parts)
     if isinstance(node, ast.FormattedValue):
-        return _label_variants(node.value, consts)
+        return _label_variants(node.value, consts, locals_)
     if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
-        return _product([_label_variants(node.left, consts),
-                         _label_variants(node.right, consts)])
+        return _product([_label_variants(node.left, consts, locals_),
+                         _label_variants(node.right, consts, locals_)])
     if isinstance(node, ast.IfExp):
-        return _label_variants(node.body, consts) + _label_variants(node.orelse, consts)
+        return (_label_variants(node.body, consts, locals_)
+                + _label_variants(node.orelse, consts, locals_))
     # A subscript, a call, anything computed at runtime: report it rather than
     # skip it. An unreadable label is an unchecked label.
     return [f"<unresolved:{type(node).__name__}>"]
@@ -179,20 +217,31 @@ def _citations(text: str) -> list[tuple[str, str]]:
     tree = ast.parse(text)
     consts = _module_strings(tree)
     found: list[tuple[str, str]] = []
-    for node in ast.walk(tree):
+    # Walk per enclosing function so loop-bound names can be resolved from the
+    # literal table beside them. Module-level calls get an empty local map.
+    scopes: list[tuple[ast.AST, dict[str, list[str]]]] = [(tree, {})]
+    for fn in ast.walk(tree):
+        if isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            scopes.append((fn, _loop_bound_strings(fn)))
+    seen_calls: set[int] = set()
+    for scope, locals_ in reversed(scopes):
+      for node in ast.walk(scope):
         if not isinstance(node, ast.Call):
+            continue
+        if id(node) in seen_calls:
             continue
         if not (isinstance(node.func, ast.Name) and node.func.id in _RULE_CTORS):
             continue
+        seen_calls.add(id(node))
         src = next((k for k in node.keywords if k.arg == "source"), None)
         slug = next((k for k in node.keywords if k.arg == "slug"), None)
         slug_txt = "?"
         if slug is not None:
-            slug_txt = "".join(_label_variants(slug.value, consts)[:1])
+            slug_txt = "".join(_label_variants(slug.value, consts, locals_)[:1])
         if src is None:
             found.append((slug_txt, "<MISSING source= kwarg>"))
             continue
-        for label in _label_variants(src.value, consts):
+        for label in _label_variants(src.value, consts, locals_):
             found.append((slug_txt, label))
     return found
 
@@ -256,8 +305,30 @@ def _problems(text: str, html: str) -> tuple[list[str], list[str]]:
     section_checks: dict[str, set[str]] = {}
 
     for slug, label in cites:
-        if label.startswith("<"):
-            fails.append(f"{slug}: source is not a readable string literal ({label})")
+        # ANYWHERE in the label, not just at the start. `_label_variants`
+        # substitutes an unresolvable name with a `<name>` placeholder, and a
+        # label built from a loop variable — `f"{_RAO} §{section}"` in
+        # `_pancha_mahapurusha_yogas()` — resolves to
+        #     'Rao, Vedic Astrology: An Integrated Approach §<section>'
+        # which does NOT start with `<`. So it slipped past this guard, then
+        # `_cited_title()` matched "Rao" and `_SECTION_RE` found no digits, so
+        # NO SECTION CHECK RAN — for all five Pancha Mahapurusha yogas. QA
+        # proved it: rewriting 11.4.1 -> 11.4.9 and 11.4.2 -> 77.7.7 left this
+        # gate PASS at exit 0 and all 11 tests green, while the page printed
+        # "Rao, Vedic Astrology: An Integrated Approach §77.7.7".
+        #
+        # That is the failure this file's own docstring forbids — "An
+        # unreadable label is an unchecked label" — and it printed "all
+        # resolvable" while doing it. A gate that cannot fail on a class it
+        # advertises catching is the #193 defect, committed into the fix for
+        # #216.
+        if "<" in label:
+            fails.append(
+                f"{slug}: source is not a readable string literal ({label}). "
+                "It is built at runtime, so no book or section in it can be "
+                "checked. Make the label a literal, or add an explicit "
+                "resolution for its construct here — do not leave it silent."
+            )
             continue
         for bad in _FORBIDDEN:
             if bad.lower() in label.lower():
