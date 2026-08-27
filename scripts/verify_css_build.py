@@ -74,13 +74,29 @@ def _fail(msg: str) -> str:
     return msg
 
 
+class ToolchainUnavailable(Exception):
+    """The Tailwind toolchain is missing, so freshness CANNOT be decided.
+
+    Distinct from a failure, and the distinction is load-bearing. This gate
+    exists to catch a class the stylesheet cannot signal any other way — a
+    utility used in a template with no matching rule in the committed CSS. It
+    caught nothing for a whole session because a missing `tailwindcss` binary
+    returned FAIL, identical in the output to genuine drift, so every reader
+    (human and agent) learned to attribute it away as environmental. Issue #229
+    is what slipped through: `lg:col-span-3` shipped to production with no rule.
+
+    So: no npx OR no tailwindcss -> exit 2, "COULD NOT VERIFY", matching
+    scripts/verify_devanagari_serif.py, which already gets this right. Exit 1
+    stays reserved for a stylesheet that really is stale.
+    """
+
+
 def gate_1_css_is_fresh() -> list[str]:
     """The committed stylesheet must equal a fresh build of current sources."""
     failures: list[str] = []
     npx = shutil.which("npx")
     if npx is None:
-        print("  SKIP no npx on PATH — cannot rebuild (run with Node to check)")
-        return failures
+        raise ToolchainUnavailable("no npx on PATH")
 
     if not BUILT_CSS.exists():
         return [_fail(f"{BUILT_CSS.relative_to(REPO_ROOT)} does not exist — "
@@ -93,7 +109,14 @@ def gate_1_css_is_fresh() -> list[str]:
             cwd=REPO_ROOT, capture_output=True, text=True,
         )
         if proc.returncode != 0:
-            return [_fail("tailwind build failed:\n" + (proc.stderr or proc.stdout))]
+            blurb = (proc.stderr or proc.stdout or "")
+            # "could not determine executable to run" is npx saying the package
+            # is not installed — absence, not drift. Anything else IS a real
+            # build failure and must still fail loudly.
+            if "could not determine executable" in blurb or "not found" in blurb.lower():
+                raise ToolchainUnavailable(
+                    "npx is present but tailwindcss is not installed:\n" + blurb.strip())
+            return [_fail("tailwind build failed:\n" + blurb)]
 
         fresh = out.read_bytes()
         committed = BUILT_CSS.read_bytes()
@@ -240,7 +263,13 @@ def main() -> int:
     results: list[tuple[str, bool]] = []
     for title, run in gates:
         print(title)
-        failures = run()
+        try:
+            failures = run()
+        except ToolchainUnavailable as exc:
+            print(f"  COULD NOT VERIFY: {exc}")
+            print("  -> SKIPPED (exit 2). This is NOT a pass — the check did not run.")
+            print()
+            return 2
         print(f"  -> {'PASS' if not failures else 'FAIL'}")
         print()
         results.append((title, not failures))
