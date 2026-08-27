@@ -22,9 +22,23 @@ to `main`, daily, and on demand. It exists because every `scripts/verify_*.py` g
 the *tree*, none checks the *site*, and agents working here frequently cannot reach
 `shubhagya.com` at all — so "verified" has meant "verified against `origin/main`" and the
 last mile was done by hand or not at all. Read its header before adding a check: a green
-run means production satisfies those invariants **now**, not that your commit is the
-revision serving. There is no version marker on the site, so it cannot tell which revision
-answered.
+run means production satisfies those invariants **now**, not necessarily that your commit
+is the revision serving.
+
+**That gap is now half closed.** `/health` (added 2026-08-26, `src/astro_ai/routes/health.py`)
+returns `{"ok", "revision", "build_sha"}` — `K_REVISION` and `BUILD_SHA` from the Cloud Run
+environment — so the workflow waits for a deploy instead of asserting against whatever is
+serving. Two tiers:
+
+- **exact** — `build_sha` matches the commit, so a green run proves *this commit* is live.
+  Requires `--update-env-vars=BUILD_SHA=$COMMIT_SHA` on the GCP-side Cloud Build trigger.
+  **Not set yet**, so this tier has never run.
+- **revision-changed** — `build_sha` is null, so a green run proves only that *a* new
+  revision landed, not which. This is the tier every run has used so far.
+
+Note the path is `/health`, **not** `/healthz`: `/healthz` is intercepted by Google
+infrastructure ahead of Cloud Run and never reaches the app. Measured 2026-08-26 and
+recorded above the route — do not "fix" it toward kubernetes convention.
 
 ### Rules for agents
 
