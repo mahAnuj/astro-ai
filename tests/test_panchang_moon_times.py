@@ -106,6 +106,28 @@ def test_an_ordinary_day_shows_both_instants_and_no_disclosure(client, at_city):
     assert DISCLOSURE not in html
     # The two instants must never be joined into one window the way
     # sunrise/sunset are: on this date that window would run backwards.
+    #
+    # Assert on the SPAN, not on one spelling of it. QA of 9710313 mutated the
+    # template to emit `Moonrise 15:14 &mdash; Moonset 04:54` — a LABELLED join,
+    # still a backwards window — and the bare-string form below passed it. The
+    # mutation was caught, but by the `Moonrise 15:14` assertion above rather
+    # than by the check written for this purpose, which is luck, not a guard.
+    # This strips the labels and the tags first, so any rendering that puts the
+    # two clocks either side of a dash fails regardless of what sits between.
+    stripped = re.sub(r"<[^>]+>", " ", html)
+    stripped = stripped.replace("&mdash;", "—").replace("&ndash;", "–")
+    # Labels FIRST, whitespace SECOND. Doing both in one alternation leaves a
+    # double space where a label was removed, so the single-spaced pattern below
+    # never matches — the first version of this guard did exactly that and
+    # missed every labelled join it was written to catch.
+    stripped = re.sub(r"Moonrise|Moonset", "", stripped)
+    stripped = re.sub(r"\s+", " ", stripped)
+    for dash in ("—", "–", "-"):
+        joined = f"{rise:%H:%M} {dash} {set_:%H:%M}"
+        assert joined not in stripped, (
+            f"the two instants were joined into {joined!r} — that is a backwards "
+            "window on this date, the #227 defect through a new field"
+        )
     assert f"{rise:%H:%M} — {set_:%H:%M}" not in html
 
 
