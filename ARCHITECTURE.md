@@ -37,7 +37,7 @@ trust the number.
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
 | knowledge files | 11 files, 8,021 lines | `cat src/astro_ai/knowledge/*.md \| wc -l` |
 | verification gates | 16 | `ls scripts/verify_*.py \| wc -l` |
-| behaviour suite | 99 tests | `uv run pytest -p no:warnings` |
+| behaviour suite | 100 tests | `uv run pytest -p no:warnings` |
 
 `routes/` holds 26 files; the three that declare no router are `__init__.py` and the leaf
 helpers `deps.py` and `llm_support.py`. Counting files rather than routers is what makes

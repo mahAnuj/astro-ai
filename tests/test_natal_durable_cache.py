@@ -442,15 +442,51 @@ def _marked_natal_body(n: int) -> str:
     )
 
 
-def _passes_lax_route_fails_natal() -> str:
-    """457 chars, ONE heading: rejected by `natal`, accepted by the laxer
-    unstructured routes (`rashifal_single` 300, `today` 400, `ask` 100).
+# `passes_quality` is TWO-DIMENSIONAL: a per-route character floor
+# (`_MIN_CHARS_BY_ROUTE`, natal 800) crossed with whether `## ` headings are
+# required at all (`_STRUCTURED_ROUTES` — natal yes, ≥2; `today`,
+# `rashifal_single` and `ask` no). A blob gated against the WRONG route is
+# therefore accepted on somebody else's floor, or with the heading check
+# skipped entirely.
+#
+# One fixture can only pin one corner of that grid, which is the mistake the
+# first version of this made — a 14-char blob fails every route and so reports
+# green whatever route is named. Two shapes, measured 2026-08-30 against every
+# route in `_MIN_CHARS_BY_ROUTE`:
+#
+#                            456 ch / 1 heading    686 ch / 2 headings
+#   natal      800, struct       reject               reject   <- must always
+#   outlook    500, struct       reject               ACCEPT
+#   matching   500, struct       reject               ACCEPT
+#   rashifal   200, struct       reject               ACCEPT
+#   dasha      300, struct       reject               ACCEPT
+#   today      400, unstruct     ACCEPT               ACCEPT
+#   rashifal_single 300, uns.    ACCEPT               ACCEPT
+#   ask        100, unstruct     ACCEPT               ACCEPT
+#
+# The 686/2 shape is the dangerous one and the one that closes every
+# wrong-route mutation on its own: a truncated but structurally plausible
+# natal reading — right heading count, wrong length — that only natal's own
+# floor rejects, and which would otherwise be cached forever as finished work.
+# The 456/1 shape is kept because it pins the other corner: it is the one that
+# fails the STRUCTURED routes on their heading requirement, so the two together
+# say which dimension a regression moved.
 
-    The point of the shape. `_MIN_CHARS_BY_ROUTE` and `_STRUCTURED_ROUTES`
-    differ per route, so a blob gated against the WRONG route is accepted on
-    somebody else's floor. A fixture that fails every route — the 14-char one
-    used above — cannot tell the difference and reports green either way.
-    """
+
+def _fails_only_natals_length_floor() -> str:
+    """686 chars, exactly 2 headings — rejected by `natal` (800) and accepted
+    by every other route in the table above."""
+    filler = "A steady month for measured work and patient effort. "
+    head, mid = "## Career\n", "\n\n## Family\n"
+    body = 686 - len(head) - len(mid)
+    pad = filler * (body // len(filler) + 2)
+    half = body // 2
+    return head + pad[:half] + mid + pad[:body - half]
+
+
+def _fails_natals_heading_and_length() -> str:
+    """456 chars, ONE heading — rejected by every structured route and by
+    natal's floor, accepted by the three unstructured ones."""
     return "## Today\n" + ("A steady day for measured work. " * 14)
 
 
@@ -514,26 +550,38 @@ def test_two_seekers_never_share_a_blob(stub_llm, fake_gcs, cold_start):
     )
 
 
-def test_the_blob_is_quality_gated_against_natals_own_thresholds(client, saved_chart,
-                                                                 stub_llm, fake_gcs,
-                                                                 cold_start):
-    """`passes_quality` takes a ROUTE, and the route decides both the length
-    floor (natal 800) and whether headings are required (natal: yes, ≥2).
+@pytest.mark.parametrize("build_bad, accepted_by", [
+    (_fails_only_natals_length_floor, ("outlook", "matching", "rashifal",
+                                       "dasha", "today", "rashifal_single", "ask")),
+    (_fails_natals_heading_and_length, ("today", "rashifal_single", "ask")),
+])
+def test_the_blob_is_quality_gated_against_natals_own_thresholds(
+        build_bad, accepted_by, client, saved_chart, stub_llm, fake_gcs, cold_start):
+    """`passes_quality` takes a ROUTE, and the route sets BOTH the length floor
+    and whether headings are required. Gate the blob against any other route
+    and a truncated body is accepted and served as a finished natal reading.
 
-    Gate the blob against any laxer route and a truncated or single-section
-    body is accepted and served as a complete natal reading. The existing
-    bad-blob test cannot see this: its 14-char fixture fails every route's
-    floor, so it passes whatever route is named.
+    Parametrised over both shapes in the table above rather than one, because
+    the two dimensions fail independently: the 686/2 body is what a
+    `rashifal`/`dasha`/`outlook`/`matching` mutation accepts, and it is the
+    only one of the two that closes all seven wrong-route mutations. Naming a
+    route set from a single fixture is how the coverage got described wrongly
+    the first time.
+
+    `accepted_by` is asserted exhaustively, so neither fixture can drift into
+    a fails-everywhere blob — which is exactly what the 14-char blob used
+    elsewhere in this file is, and why it cannot see this defect at all.
     """
     from astro_ai import providers as llm_providers
 
-    bad = _passes_lax_route_fails_natal()
-    # Assert the fixture actually discriminates, so it cannot rot into another
-    # fails-everywhere blob without this test going red first.
-    assert llm_providers.passes_quality(bad, "natal")[0] is False
-    assert llm_providers.passes_quality(bad, "rashifal_single")[0] is True, (
-        "fixture no longer distinguishes natal's gate from a laxer one"
+    bad = build_bad()
+    assert llm_providers.passes_quality(bad, "natal")[0] is False, (
+        "fixture is accepted by natal, so it tests nothing"
     )
+    for route in accepted_by:
+        assert llm_providers.passes_quality(bad, route)[0] is True, (
+            f"fixture no longer distinguishes natal's gate from {route}'s"
+        )
 
     calls = stub_llm(_natal_body)
     saved_chart()
@@ -547,8 +595,8 @@ def test_the_blob_is_quality_gated_against_natals_own_thresholds(client, saved_c
     page = client.get("/kundli")
     assert page.status_code == 200
     assert calls["n"] == 2, (
-        f"{calls['n']} generations; a body that only clears a laxer route's "
-        f"floor was accepted from the bucket as a finished natal reading"
+        f"{calls['n']} generations; a body that clears another route's gate "
+        f"but not natal's was accepted from the bucket as a finished reading"
     )
     assert llm_providers.passes_quality(fake_gcs["blobs"][key], "natal")[0], (
         "the regeneration did not heal the blob"
