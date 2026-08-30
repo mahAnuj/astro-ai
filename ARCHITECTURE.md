@@ -23,7 +23,7 @@ Server-rendered HTML with HTMX for partial updates. No SPA, no build step for JS
 
 Roughly 21,600 lines of Python across 30 modules, 68 routes in 25 route modules,
 54 top-level templates plus 76 `/learn` articles, 11 LLM prompt templates, 11 knowledge
-files (~6,200 lines), 13 verification gates and a 24-test behaviour suite.
+files (~6,200 lines), 13 verification gates and a 92-test behaviour suite.
 
 Two things drive nearly every design decision in here, and they are worth internalising
 before you read anything else:
@@ -123,7 +123,7 @@ This is the most misunderstood part of the system. Layers, outermost first:
 | `_PANCHANG_CACHE`, `_PANCHANG_STRIP_CACHE` | in-process dicts | no | panchang by (date, coarse lat/lon) and by (date, city) |
 | `daily_cache` | **file** on the instance | no | per-rashi readings, keyed `(namespace, slug-lang, date)` |
 | `cache` (SQLite) | `/tmp/bhagya.db`, **tmpfs** | no | per-chart LLM output, keyed by fingerprint |
-| `storage` (GCS) | bucket | **yes** | the only cross-instance layer |
+| `storage` (GCS) | bucket | **yes** | the only cross-instance layer; also the durable tier behind SQLite (below) |
 
 **Every layer except GCS is per-instance and dies with the container.** `minScale=0`
 means containers come and go constantly. If two requests must share a result, GCS is the
@@ -143,6 +143,42 @@ only thing that gets them there — this is why `/admin/warm-rashifal` works at 
   caused by ~30 sequential bucket round-trips per render. Fixed by removing them
   (32 GCS ops → 0), not by moving anything. The homepage is now ~1ms warm and there is a
   gate (`scripts/perf_homepage.py`) that measures it.
+
+### The durable tier — GCS behind SQLite, for the natal reading
+
+`routes/llm_support.py::_cached` takes an optional `durable_key`. When set, a SQLite miss
+consults GCS before calling the LLM, and a GCS hit warms SQLite:
+
+```
+SQLite hit                            → return                0 GCS ops
+SQLite miss → GCS hit → warm SQLite   → return                1 GCS GET
+both miss   → generate → write both                           1 GCS PUT
+```
+
+**Read order is the design, not an implementation detail.** SQLite first means a warm
+instance pays zero cross-continent round-trips — the `/kundli` render path must never
+acquire the shape that made #144 a 13-second homepage. `subscribe.py::_shared_three_tier`
+reads **GCS first** and is deliberately NOT merged with this: for content one warm job
+wrote for everybody, the bucket is the source of truth, whereas natal's key is immutable
+and content-addressed. One function would force one of the two orders to be wrong.
+
+It exists because "per-chart output gains nothing from GCS" was wrong. Natal is cached
+`ttl_days=None` into SQLite on `/tmp` tmpfs at `minScale=0`, so "never expires" meant
+regenerated once per instance, once per cold start and once per deploy — each a full
+~7,800-token natal call against an 8,000 TPM per-model bucket. GCS's value to a per-chart
+route is not sharing between users, it is **surviving the container**.
+
+What it does not do: it does not raise the ceiling. A chart nobody has asked for still
+costs full price and the site still serves on the order of 20–30 fresh natal readings a
+day. It removes waste only.
+
+Bounds: `durable_key` is passed explicitly by the caller, never inferred from
+`ttl_days is None` — that sentinel would sweep in `/ask`, whose key holds the seeker's
+free-text question, i.e. an unbounded keyspace against a 5,000 Class A ops/month
+allowance. A recent-miss dict (30s, swept by age) keeps a chart in neither tier from
+re-reading the bucket on every refresh; short-TTL per the 2026-08-23 rule below. A
+`PROMPT_LOGIC_VERSION` bump orphans every blob and orphans can never be listed or deleted
+— at ~5 KB a reading, 1,000 orphans ≈ 5 MB against a 5 GB free tier. Accepted.
 
 ### Cache keying for LLM output
 
@@ -440,6 +476,7 @@ Dated, with the evidence. **Check here before proposing a change.**
 | 2026-08-25 | Bare dates in strict `/learn` articles must corroborate a date the article already verified; attribution deliberately NOT widened | #193: `diwali-muhurat-2026.html:22` said Shukla Pratipada runs "until Nov 10" — Govardhan Puja, the #143 date, in the article #143 was filed against — and no gate read it. Gate 4 compares (month, day) only, against dates that article's own attributed claims stand behind, so it can name no festival and cannot fabricate a Gate 1 failure. 9 bare dates across 4 strict articles, 0 uncorroborated; `scripts/mutate_learn_article_dates.py` 2/4 → 4/4 caught |
 | 2026-08-26 | Moonrise/moonset anchored at LOCAL MIDNIGHT, not sunrise — and computed by `compute_moon_rise_set`, not carried on `DailyPanchang` | #150: the midnight anchor puts a next-day instant on 13 of 365 Delhi days in 2026; anchoring at sunrise instead removes zero duplicates and labels 105 of 365. Absence is real too — `swe.rise_trans` returns `ret == -2`/`tret[0] == 0.0` for seven consecutive days at Tromso from 2026-12-06, and JD 0.0 raises out of `_jd_to_utc_datetime` rather than returning a wrong time. Carrying the two fields on `DailyPanchang` cost **+189.6%** per cold `compute_panchang` and **+39.5%** on a 90-day `/muhurat` search that reads neither. Splitting them out restores both. Measured 2026-08-26, three trees interleaved on one box, median-of-3 runs of median-of-7 (`65df985^` → `65df985` → this change): cold `compute_panchang` **0.2608 → 0.7553 → 0.2633 ms** (+0.96% of baseline); `find_candidates("vivah", "Delhi", 2026-09-01, days=90)` **139.1 → 194.1 → 140.3 ms** (+0.86%); `POST /muhurat` 90d Delhi cold **152.3 → 202.5 → 160.3 ms**. That last pair looked like a **+5.25%** residual and is not one — at n=3 the run could not tell 5% from noise in either direction. Re-measured 2026-08-26 by an independent QA pass at **n=80 per tree** (8 alternating blocks × 10 reps): base median **155.3 ms** (min 145.3, p25 150.6, p75 163.1) vs head median **155.6 ms** (min 144.8, p25 151.2, p75 160.9) — pooled median **+0.16%**, median-of-block-medians **−0.23%**, P(base sample < head sample) = **0.499** where 0.50 is indistinguishable. Nor is there a mechanism for a residual: the extra `_rise_or_set` frame `_sunrise_sunset` delegates through is one Python call frame, orders of magnitude below the measurement floor of a 155 ms request. The `compute_panchang` and `find_candidates` figures above ARE real — removing those regressions is the point of this entry. A `with_lunar=` flag was rejected on **correctness**, not cost: a search would fill `_PANCHANG_CACHE` with lunar-less entries and a later `/panchang` would render "no moonrise today", indistinguishable from the genuine absence `None` exists to express. Computing at the exact coordinates instead of the 0.5° grid point also removes the Srinagar calendar-flip hazard rather than documenting it. 0 GCS ops, 0 tokens: `format_panchang_for_prompt` is byte-identical (sha256 96496b85…, 535 bytes) |
 | 2026-08-27 | Moonrise/moonset rendered on `/panchang`, as two separate instants with their dates, and absence disclosed on its OWN flag rather than `daylight_ordinary` | #150: the function had zero callers. Joining the pair into a `rise — set` span would render backwards on 187 of 365 Delhi days in 2026, which is #227's defect through a different field; a next-day instant needs its date on 13 of 365 Delhi days. Absence measured over 2026: 166/365 moonless days at Tromso, 88 at Reykjavik, 0 at Delhi and Mumbai — against 5 sun-flagged Tromso days, so reusing the Sun's flag would both withhold real moonrises (2026-05-16, 00:36) and miss 109 Tromso days that have ordinary daylight and no Moon. 0 tokens: `format_panchang_for_prompt` is byte-identical to HEAD (549 bytes, sha256 40a5dcb5…) because nothing was added to `DailyPanchang`. 0 GCS ops, 2 extra Swiss Ephemeris calls (~0.5 ms) on `/panchang` only. Regression proof: 365 rendered pages per city at Delhi, Mumbai, Reykjavik and Tromso, diffed before/after — **0 removed lines** in all four, every added line inside the new card |
+| 2026-08-30 | Natal readings get a durable GCS tier behind SQLite, keyed `llm/natal/{lang}/{prompt_fp}/{chart_fp}.txt` | The natal cache is written `ttl_days=None` into SQLite on `/tmp` tmpfs at `minScale=0`/`maxScale=5`, so "never expires" meant regenerated once per instance, once per cold start and once per deploy — each a full natal call, ~7,800 input tokens against an 8,000 TPM per-model bucket, i.e. roughly a whole model-minute per page view. `_shared_three_tier`'s docstring claim that per-chart routes "gain nothing" from GCS is why this went unfixed for so long; corrected in the same commit. SQLite is read FIRST and GCS only on a local miss, so a warm instance pays **0** GCS ops (asserted on a stubbed call counter in `tests/test_natal_durable_cache.py`, not on timing) — the two functions are deliberately not merged because `_shared_three_tier` must read GCS first and natal must not. GCS values are quality-gated before use, so a bad blob is a miss and the regeneration overwrites it. A 30s recent-miss dict (swept by age, #182) keeps an ungenerated chart from re-reading the bucket on every refresh. **0 new tokens per call and per day**: no prompt file and no message-assembly code is touched, so no `PROMPT_LOGIC_VERSION` bump — a bump would cost N ÷ 25 days of the site's whole daily natal budget to rebuild N readings. Measured effect, `tests/test_natal_durable_cache.py`: two `/kundli` renders with the SQLite cache wiped between them make **1** live LLM call, was 2. This removes waste; it does **not** raise the ceiling — an unseen chart still costs full price |
 
 
 ### Rejected, with reasons — do not re-propose without new information
