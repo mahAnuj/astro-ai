@@ -1413,7 +1413,7 @@ def _other_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="guru_mangala_yoga", name="Guru-Mangala Yoga", category="other",
             effect="Righteous energy; courage directed at dharmic action",
-            source="Classical Vedic tradition",
+            source=f"{_RAO} §11.6",
         ))
 
     # Trilochana: Sun, Moon, Mars in mutual trines (4 signs apart from each other)
@@ -1429,7 +1429,7 @@ def _other_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="trilochana_yoga", name="Trilochana Yoga", category="other",
             effect="Wealthy, intelligent, long-lived, victorious",
-            source="Classical Vedic tradition",
+            source=f"{_RAO} §11.6",
         ))
 
     # Amala: only natural benefics in the 10th from Lagna OR FROM THE MOON.
@@ -1459,7 +1459,7 @@ def _other_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="amala_yoga", name="Amala Yoga", category="other",
             effect="Ever-lasting fame, royal respect, virtue — clean reputation through career",
-            source="Classical Vedic tradition",
+            source=f"{_RAO} §11.6",
         ))
 
     # Vasumati: benefics in upachayas (3rd, 6th, 10th, 11th from Lagna)
@@ -1469,7 +1469,7 @@ def _other_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="vasumati_yoga", name="Vasumati Yoga", category="other",
             effect="Abundant wealth — benefics concentrated in growth-houses",
-            source="Classical Vedic tradition",
+            source=f"{_RAO} §11.6",
         ))
 
     # Adhi: natural benefics in 6th, 7th and 8th from Moon
@@ -1482,7 +1482,7 @@ def _other_yogas(chart: Chart) -> list[YogaResult]:
         out.append(YogaResult(
             slug="adhi_yoga", name="Adhi Yoga", category="other",
             effect="Leadership at scale — minister, army chief, or trusted authority",
-            source="Classical Vedic tradition",
+            source=f"{_RAO} §11.3.6",
         ))
     return out
 
@@ -4145,12 +4145,28 @@ class KaalSarpDetails:
 
 
 def compute_kaal_sarp(chart: Chart) -> KaalSarpDetails:
-    """Detect Kaal Sarp Dosh — strict binary per classical Vedic tradition.
+    """Detect Kaal Sarp Dosh — strict binary, and the binary is OURS, not theirs.
 
-    Classical sources (Brihat Parashara Hora Shastra, Phaladeepika, Saravali)
-    treat Kaal Sarp Dosh as BINARY: all 7 non-shadow planets fall on one
-    semicircle of the Rahu-Ketu axis, or they don't. No "partial" concept
-    exists in the classical texts.
+    An earlier version of this docstring read "strict binary per classical
+    Vedic tradition" and said "Classical sources (Brihat Parashara Hora
+    Shastra, Phaladeepika, Saravali) treat Kaal Sarp Dosh as BINARY... No
+    'partial' concept exists in the classical texts."
+
+    That contradicted the module comment 64 lines above it, which records --
+    with its print history -- that Kaal Sarp Yoga "does NOT appear in the
+    classical Sanskrit Jyotish canon -- not in Brihat Parashara Hora Shastra,
+    Brihat Jataka, Saravali, Phaladeepika, Jataka Parijata, or Uttara
+    Kalamrita", first surfacing in The Astrological Magazine around 1980.
+    Both cannot be true: a text that does not contain the concept cannot
+    treat it as binary. The comment above is the researched one, so this is
+    the sentence that was wrong -- and it was wrong in the direction that
+    lends a modern construct the authority of books nobody here can open.
+    None of the three named books is in `data/`; see #216.
+
+    The binary rule is still right, and the reasons below are the real ones:
+    there is no agreed threshold, a partial diagnosis manufactures anxiety,
+    and reputable practitioners do not make it. Those stand on their own.
+    They do not need, and never had, a classical citation.
 
     Modern practitioners have introduced "Anshik/Partial KSD" for near-axis
     cases, but (a) there's no agreed threshold across schools, (b) it

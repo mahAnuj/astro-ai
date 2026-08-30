@@ -110,11 +110,6 @@ _HONEST_DISCLOSURES: frozenset[str] = frozenset({
 })
 
 _VAGUE_ATTRIBUTIONS: dict[str, str] = {
-    "Classical Vedic tradition":
-        "Guru-Mangala, Trilochana, Amala, Vasumati, Adhi. Not audited by "
-        "#218 (which scoped the twelve BPHS labels). Guru-Mangala and Amala "
-        "are in fact Rao §11.6 and could be cited properly; the others are "
-        "unchecked. Open (#216).",
     "Classical compatibility practice":
         "venus_with_mars. Not a citation — the same shape of phrase as the "
         "'Classical matching practice' that #218 removed from mars_combust, "

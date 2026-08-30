@@ -240,23 +240,35 @@ def test_every_rule_says_something_about_where_it_came_from(swept):
 def test_every_yoga_label_is_either_a_citation_or_an_admission(swept):
     """A yoga label must name the book we read the rule in, or admit a gap.
 
-    "Classical Vedic tradition" does neither. It is not a citation and not an
-    admission — it is the same shape of phrase as the "Classical matching
-    practice" #218 removed from `mars_combust`. Five yogas still carry it
-    (Guru-Mangala, Trilochana, Amala, Vasumati, Adhi); they were outside
-    #218's scope, which was the twelve BPHS labels, and remain open on #216.
+    "Classical Vedic tradition" did neither. It was not a citation and not an
+    admission — the same shape of phrase as the "Classical matching practice"
+    #218 removed from `mars_combust`. Five yogas carried it, outside #218's
+    scope (the twelve BPHS labels).
 
-    Pinned by exact set, so the count cannot grow quietly. Trilochana is on
-    the list above but not below: the fixed seed does not produce it, and
-    padding the sweep until it did would trade a real assertion for a slow one.
+    ALL FIVE ARE NOW CITED TO RAO, so the expected set is empty. QA of 5843ad5
+    reported that the ledger understated the position — it said only
+    Guru-Mangala and Amala were in Rao "and the others are unchecked". All five
+    are there, and each definition was checked against the book, not assumed:
+
+        Guru-Mangala  §11.6    line 4661  "Jupiter and Mars together or in the
+                                           7th from each other" == delta 0 or 6
+        Amala         §11.6    line 4665  "only natural benefics in the 10th
+                                           from lagna or Moon"
+        Trilochana    §11.6    line 4843  "Sun, Moon and Mars in mutual trines"
+        Vasumati      §11.6    line 4923  "benefics occupy upachayas"
+        Adhi          §11.3.6  line 4318  "natural benefics in 6th, 7th and 8th
+                                           from Moon"
+
+    This assertion is now a REGRESSION GUARD, and the direction matters: an
+    empty set is the goal, and any reappearance means a new rule shipped a
+    phrase that names no book and admits no gap.
     """
     vague = sorted({slug for slug, src in swept
                     if src == "Classical Vedic tradition"})
-    assert vague == ["adhi_yoga", "amala_yoga", "guru_mangala_yoga",
-                     "vasumati_yoga"], (
-        f"the set of yogas carrying the un-audited 'Classical Vedic tradition' "
-        f"label changed: {vague}. Shrinking it is the #216 follow-up and welcome "
-        f"— update this list when you do. Growing it is the regression."
+    assert vague == [], (
+        f"a yoga is carrying the un-audited 'Classical Vedic tradition' label "
+        f"again: {vague}. It names no book and admits no gap. Cite the text the "
+        f"rule was read in, or say plainly that it is unsourced."
     )
 
 
