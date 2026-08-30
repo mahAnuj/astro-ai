@@ -450,6 +450,54 @@ jobs:
       # Deferred failure from the sweep above. Placed after the assertions so
       # their output is in the log either way; this is what actually reds the
       # job, since the sweep itself is continue-on-error.
+      # The rule/yoga source labels (#216, #218) are the hardest surface on
+      # this site to reach, and three of my attempts to check them produced a
+      # VACUOUS PASS before this step existed:
+      #   * POST /kundli            -> 405; the error page scores 0 "BPHS"
+      #   * POST /manglik-check     -> 200 but renders NO source label at all
+      #                                for a chart with no cancellations, so
+      #                                0 "BPHS" again, and again meaningless
+      #   * POST /reading with -X   -> 405; -X forces the method through the
+      #                                303, so it POSTs to a GET-only /kundli
+      # The labels only appear behind POST /reading -> 303 -> GET /kundli,
+      # which needs a COOKIE JAR (the chart lives in the session) and needs
+      # curl to be allowed to switch to GET on the 303 (so --data, never -X).
+      # Every one of those wrong attempts looked like a pass. Hence the
+      # vacuity guard first: no labels rendered is a FAILURE here, not a pass.
+      - name: "#216/#218 rule sources cite a book the repo holds"
+        run: |
+          set -uo pipefail
+          JAR=$(mktemp)
+          code=$(curl -sSL --max-time 150 -c "$JAR" -b "$JAR" \
+                   --data 'name=CI Check' --data 'birth_date=1957-09-07' \
+                   --data 'birth_time=01:05' --data 'birth_place=Mumbai' \
+                   "$SITE/reading" -o /tmp/kundli.html -w '%{http_code}') || code=000
+          rm -f "$JAR"
+          echo "POST /reading -> GET /kundli : HTTP $code, $(wc -c < /tmp/kundli.html) bytes"
+          [ "$code" = "200" ] || { echo "::error::could not reach the natal reading (HTTP $code)"; exit 1; }
+
+          # VACUITY GUARD FIRST. A page with no yoga at all makes every
+          # absence below true for the wrong reason.
+          n=$(grep -c 'yoga-source' /tmp/kundli.html || true)
+          echo "yoga source labels rendered: $n (want >0)"
+          [ "$n" -gt 0 ] || { echo "::error::no yoga source label rendered — every check below would be vacuous"; exit 1; }
+
+          # The books the repo does NOT hold, asserted against the LABELS only.
+          # Not the whole page: the Manglik panel carries an honest prose line
+          # naming Jataka Parijata and Phaladeepika as the texts Rao's rule-set
+          # compiles from, which is a disclosed gap (#216), not a false claim.
+          labels=$(grep -oE 'yoga-source[^>]*>Source: [^<]{0,120}' /tmp/kundli.html || true)
+          for book in "Brihat Parashara" "BPHS" "Phaladeepika" "Jataka Parijata"; do
+            hits=$(printf '%s' "$labels" | grep -ci "$book" || true)
+            echo "  label cites $book: $hits (want 0)"
+            [ "$hits" -eq 0 ] || { echo "::error::#216 regressed — a yoga source label cites $book, which is not in data/"; exit 1; }
+          done
+
+          # Positive: the labels name the book we DO hold, with a section.
+          rao=$(printf '%s' "$labels" | grep -cE 'Rao, Vedic Astrology: An Integrated Approach §[0-9]' || true)
+          echo "  labels citing Rao with a section: $rao (want >0)"
+          [ "$rao" -gt 0 ] || { echo "::error::#218 regressed — no label cites Rao with a section"; exit 1; }
+
       - name: Smoke sweep gate
         if: steps.smoke.outcome != 'success'
         run: |
