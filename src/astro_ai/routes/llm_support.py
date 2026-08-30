@@ -196,8 +196,16 @@ def _cached(
     Blobs are content-addressed (the key carries `PROMPT_LOGIC_VERSION` via
     `fingerprint_prompt`), so a stale read is impossible by construction and a
     version bump orphans every existing blob. Orphans can never be listed or
-    deleted — `storage.py` has no prefix listing — but at ~5 KB a reading,
-    1,000 orphans is ~5 MB against a 5 GB free tier. Accepted, not overlooked.
+    deleted — `storage.py` has no prefix listing — but a reading is small.
+    `prompts/natal.txt` mandates 920-1380 words; at 5.51 UTF-8 bytes/word
+    (measured on a real generated body, 661 B / 120 words) that is **5-7.6 KB
+    in English**, and Hindi measures 2.39x English across 325 matched
+    translation pairs in `i18n.py`, so **12-18 KB in Devanagari**. Take 15 KB:
+    1,000 orphans is ~15 MB against a 5 GB free tier, 0.3%. Accepted.
+    An English-only figure understates this by more than half, which is why
+    both languages are stated — and both were derived, not measured on a real
+    natal reading: there is none in the tree to measure and generating one
+    costs a model-minute.
     """
     hit = cache.get(cache_key)
     if hit is not None:

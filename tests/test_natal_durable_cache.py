@@ -260,3 +260,168 @@ def test_a_durable_hit_is_not_reported_as_a_fresh_generation(client, saved_chart
         f"{fired} — a durable-tier hit fired an owner notification and/or a "
         f"form_kundli event for a reading that was not generated"
     )
+
+
+# --- properties the tier ADVERTISES, each caught escaping under mutation -----
+#
+# Every test below was written because the property it checks survived a
+# mutation of the code that provides it: the suite was green with the property
+# removed. A green suite that survives the mutation is coverage that is not
+# there, whatever the count says.
+
+
+def test_the_blob_key_carries_the_prompt_version(client, saved_chart, stub_llm,
+                                                 fake_gcs, cold_start, monkeypatch):
+    """`_cached`'s "a stale read is impossible by construction" rests entirely
+    on `prompt_fp` — which carries `PROMPT_LOGIC_VERSION` — being in the blob
+    path. Drop it and a future bump keeps serving superseded-prompt readings
+    out of the bucket forever, invisibly, because nothing can list or diff
+    them. `lang` dropping was already caught; this is the same key's other
+    dimension.
+    """
+    from astro_ai import cache
+
+    calls = stub_llm(_natal_body)
+    saved_chart()
+    client.get("/kundli")
+    assert calls["n"] == 1
+    first = set(fake_gcs["blobs"])
+
+    # A prompt-logic bump is the manual invalidation lever; `fingerprint_prompt`
+    # reads the module global at call time, so this is the real mechanism.
+    monkeypatch.setattr(cache, "PROMPT_LOGIC_VERSION", "vTEST")
+    cold_start()
+    assert client.get("/kundli").status_code == 200
+
+    assert calls["n"] == 2, (
+        "a PROMPT_LOGIC_VERSION bump served the OLD reading out of the bucket; "
+        "the blob key is not versioned by the prompt"
+    )
+    new = set(fake_gcs["blobs"]) - first
+    assert len(new) == 1, f"expected a second, distinct blob; blobs={sorted(fake_gcs['blobs'])}"
+
+
+def test_a_durable_hit_warms_sqlite_so_the_next_view_is_free(client, saved_chart,
+                                                             stub_llm, fake_gcs,
+                                                             cold_start):
+    """The GCS hit must backfill SQLite, not just return.
+
+    Without the backfill every post-cold-start view of the same chart pays a
+    fresh cross-continent GET — the exact cost this tier advertises it removes,
+    and invisible to a warm-instance test that populated SQLite by GENERATING.
+    """
+    stub_llm(_natal_body)
+    saved_chart()
+    client.get("/kundli")          # populates both tiers via the generate path
+    cold_start()
+    client.get("/kundli")          # durable hit — must also warm SQLite
+
+    fake_gcs["counts"]["get"] = 0
+    for _ in range(3):
+        assert client.get("/kundli").status_code == 200
+
+    assert fake_gcs["counts"]["get"] == 0, (
+        f"{fake_gcs['counts']['get']} bucket reads after a durable hit; the hit "
+        f"did not warm SQLite, so every later view pays the round-trip again"
+    )
+
+
+def test_the_snapshot_path_shares_the_blob_with_the_render_path(client, saved_chart,
+                                                                stub_llm, fake_gcs,
+                                                                cold_start):
+    """`_cached` is called from TWO places in `kundli.py` and missing the
+    second is the easy mistake — the render path is the one anybody testing
+    this would drive.
+
+    Asserted in both directions, because passing `durable_key` at one site
+    gives a write the other never reads, or a read nothing ever writes.
+    """
+    from astro_ai.routes import kundli as kundli_routes
+
+    kundli_routes._SNAPSHOT_CREATED_TODAY.clear()
+    calls = stub_llm(_natal_body)
+    saved_chart()
+
+    # snapshot writes → render reads
+    assert client.post("/kundli/snapshot").status_code == 200
+    assert calls["n"] == 1, calls["n"]
+    cold_start()
+    assert client.get("/kundli").status_code == 200
+    assert calls["n"] == 1, (
+        f"{calls['n']} generations; the snapshot path did not persist the "
+        f"reading the render path then had to regenerate"
+    )
+
+    # render writes → snapshot reads
+    natal_blobs = {k: v for k, v in fake_gcs["blobs"].items() if k.startswith("llm/natal/")}
+    assert len(natal_blobs) == 1, sorted(natal_blobs)
+    cold_start()
+    assert client.post("/kundli/snapshot").status_code == 200
+    assert calls["n"] == 1, (
+        f"{calls['n']} generations; the snapshot path does not READ the durable "
+        f"tier the render path wrote"
+    )
+
+
+def test_a_durable_hit_is_logged_as_a_hit_with_no_tokens(client, saved_chart,
+                                                         stub_llm, fake_gcs,
+                                                         cold_start):
+    """No LLM call was made, so /admin/usage must not be told one was.
+
+    `_cached` estimates `in_tok`/`out_tok` from the returned text, so logging a
+    durable hit as a miss would attribute a full natal call's worth of
+    estimated tokens to a request that spent none — and the token numbers are
+    the instrument this whole change is measured with.
+    """
+    import sqlite3
+
+    from astro_ai import cache
+
+    stub_llm(_natal_body)
+    saved_chart()
+    client.get("/kundli")                       # the real generation: one miss
+    cold_start()                                # wipes llm_calls too
+    client.get("/kundli")                       # served from the bucket
+
+    conn = sqlite3.connect(str(cache.DB_PATH))
+    rows = conn.execute(
+        "SELECT cache_hit, input_tokens, output_tokens FROM llm_calls WHERE route='natal'"
+    ).fetchall()
+    conn.close()
+
+    assert rows, "no natal call was logged at all"
+    assert all(hit == 1 for hit, _, _ in rows), f"a durable hit was logged as a MISS: {rows}"
+    assert all(i == 0 and o == 0 for _, i, o in rows), (
+        f"a durable hit reported token spend that never happened: {rows}"
+    )
+
+
+def test_the_miss_cache_sweep_drops_by_age_not_wholesale(monkeypatch):
+    """#182's own comment forbids `clear()` here: a size-triggered wipe evicts
+    LIVE entries, which re-admits exactly the round-trips this dict removes —
+    and the eviction lands on whoever is unlucky, not on whoever is stale.
+
+    Driven through `_durable_get` rather than a private sweep helper so the
+    trigger condition is under test too.
+    """
+    import time as _t
+
+    from astro_ai import storage
+    from astro_ai.routes import llm_support
+
+    monkeypatch.setattr(storage, "get", lambda key: None)
+
+    now = _t.time()
+    stale = f"llm/natal/en/vX/stale.txt"
+    fresh = f"llm/natal/en/vX/fresh.txt"
+    for i in range(llm_support._DURABLE_MISS_SWEEP_AT + 1):
+        llm_support._DURABLE_MISSES[f"filler-{i}"] = now - 3600
+    llm_support._DURABLE_MISSES[stale] = now - 3600
+    llm_support._DURABLE_MISSES[fresh] = now          # live: still inside the TTL
+
+    llm_support._durable_get("llm/natal/en/vX/trigger.txt")   # over the threshold → sweep
+
+    assert fresh in llm_support._DURABLE_MISSES, (
+        "the sweep dropped a live entry; a wholesale clear() is not a sweep"
+    )
+    assert stale not in llm_support._DURABLE_MISSES, "the stale entry was not swept"

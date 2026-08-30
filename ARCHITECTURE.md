@@ -21,9 +21,20 @@ of "obvious improvements" are already there with a measurement explaining why no
 Vedic astrology web app at **shubhagya.com**. FastAPI + Jinja2, Python ≥3.12, `uv`.
 Server-rendered HTML with HTMX for partial updates. No SPA, no build step for JS.
 
-Roughly 21,600 lines of Python across 30 modules, 68 routes in 25 route modules,
-54 top-level templates plus 76 `/learn` articles, 11 LLM prompt templates, 11 knowledge
-files (~6,200 lines), 13 verification gates and a 92-test behaviour suite.
+Counted 2026-08-30, with the command beside each so the next reader can re-measure
+instead of inheriting: 28,489 lines of Python (`find src -name '*.py' | xargs cat | wc -l`)
+across 35 top-level modules (`ls src/astro_ai/*.py`); 64 route handlers
+(`grep -rhoE "^@router\.(get|post|put|delete|patch|head|options)\(" src/astro_ai/routes/*.py`)
+in the 23 modules of `routes/` that declare a router — the other three files there are
+`__init__.py` and the two leaf helpers `deps.py` and `llm_support.py`, which hold no
+routes; 54 top-level templates plus 76 `/learn` articles; 11 LLM prompt templates;
+11 knowledge files totalling 8,021 lines; 16 verification gates (`ls scripts/verify_*.py`)
+and a 97-test behaviour suite.
+
+Every number in that paragraph except the test count was stale — by up to 32% on the line
+count, and five of them sat unchanged beside a sixth that was being corrected. Numbers
+without their measuring command rot silently, which is why the commands are now in the
+sentence.
 
 Two things drive nearly every design decision in here, and they are worth internalising
 before you read anything else:
@@ -178,7 +189,15 @@ free-text question, i.e. an unbounded keyspace against a 5,000 Class A ops/month
 allowance. A recent-miss dict (30s, swept by age) keeps a chart in neither tier from
 re-reading the bucket on every refresh; short-TTL per the 2026-08-23 rule below. A
 `PROMPT_LOGIC_VERSION` bump orphans every blob and orphans can never be listed or deleted
-— at ~5 KB a reading, 1,000 orphans ≈ 5 MB against a 5 GB free tier. Accepted.
+— but a reading is small. `prompts/natal.txt` mandates 920–1380 words; at 5.51 UTF-8
+bytes/word (measured 2026-08-30 on a real generated body, 661 B / 120 words) that is
+**5–7.6 KB in English**, and Hindi measures **2.39× English** across 325 matched translation
+pairs in `i18n.py`, so **12–18 KB in Devanagari**. Taking 15 KB, 1,000 orphans ≈ 15 MB
+against a 5 GB free tier — 0.3%. Accepted. Both figures are DERIVED from the word mandate
+and those two ratios, not measured on a real natal reading: there is none in the tree and
+generating one costs a model-minute. An English-only figure understates the Hindi case by
+more than half, which is why both are stated — an earlier draft of this row said "~5 KB a
+reading" and silently meant English.
 
 ### Cache keying for LLM output
 
@@ -512,7 +531,7 @@ Dated, with the evidence. **Check here before proposing a change.**
 - **Coverage is narrow.** A behaviour suite exists (`tests/`, run via `uv run pytest` or
   `scripts/verify_behaviour.py`) but covers only request-path regressions — the cache
   lifecycle, degraded pages and blast reporting where eleven defects landed across four
-  QA rounds. Everything else is verified by execution plus the thirteen gates.
+  QA rounds. Everything else is verified by execution plus the sixteen gates.
 - **The suite is hermetic as of #224 — it needs no `.env` and no network.** It previously
   needed both, and a bare `uv run pytest` on a clean checkout reported **14 failures that
   were not defects**: nine tests reached Nominatim, and five hit the `OPENAI_API_KEY` gate.

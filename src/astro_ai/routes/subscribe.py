@@ -127,7 +127,11 @@ def _shared_three_tier(
 
     This used to say per-chart routes gain nothing from GCS "because the
     SQLite key is unique per user anyway", and that sentence is why the natal
-    reading spent two years being regenerated at ~7,800 input tokens a time.
+    reading was regenerated at ~7,800 input tokens a time on every cold start
+    until 2026-08-30. How long that lasted is not recorded anywhere in this
+    tree and is not stated here — an earlier draft of this paragraph guessed
+    at it, which is the same fabricate-then-cite defect the sentence it
+    replaces is an example of.
     GCS's value to a per-chart route is not sharing between users — it is
     SURVIVING THE CONTAINER. SQLite lives on `/tmp` tmpfs with min-instances 0,
     so a per-user key that never expires is still lost on every cold start and
