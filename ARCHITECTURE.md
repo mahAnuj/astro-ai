@@ -21,20 +21,27 @@ of "obvious improvements" are already there with a measurement explaining why no
 Vedic astrology web app at **shubhagya.com**. FastAPI + Jinja2, Python ≥3.12, `uv`.
 Server-rendered HTML with HTMX for partial updates. No SPA, no build step for JS.
 
-Counted 2026-08-30, with the command beside each so the next reader can re-measure
-instead of inheriting: 28,489 lines of Python (`find src -name '*.py' | xargs cat | wc -l`)
-across 35 top-level modules (`ls src/astro_ai/*.py`); 64 route handlers
-(`grep -rhoE "^@router\.(get|post|put|delete|patch|head|options)\(" src/astro_ai/routes/*.py`)
-in the 23 modules of `routes/` that declare a router — the other three files there are
-`__init__.py` and the two leaf helpers `deps.py` and `llm_support.py`, which hold no
-routes; 54 top-level templates plus 76 `/learn` articles; 11 LLM prompt templates;
-11 knowledge files totalling 8,021 lines; 16 verification gates (`ls scripts/verify_*.py`)
-and a 97-test behaviour suite.
+**Size, measured 2026-08-30.** Every row carries the command that produced it, because the
+prose version of this paragraph had six stale numbers at once — the line count was 32% low
+— and five of them sat unchanged beside a sixth being corrected. Re-run the command; do not
+trust the number.
 
-Every number in that paragraph except the test count was stale — by up to 32% on the line
-count, and five of them sat unchanged beside a sixth that was being corrected. Numbers
-without their measuring command rot silently, which is why the commands are now in the
-sentence.
+| | count | command |
+|---|---|---|
+| Python | 28,490 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
+| top-level modules | 35 | `ls src/astro_ai/*.py \| wc -l` |
+| route handlers | 64 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
+| modules declaring a router | 23 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
+| top-level templates | 54 | `ls src/astro_ai/templates/*.html \| wc -l` |
+| `/learn` articles | 76 | `ls src/astro_ai/templates/learn/*.html \| wc -l` |
+| LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
+| knowledge files | 11 files, 8,021 lines | `cat src/astro_ai/knowledge/*.md \| wc -l` |
+| verification gates | 16 | `ls scripts/verify_*.py \| wc -l` |
+| behaviour suite | 99 tests | `uv run pytest -p no:warnings` |
+
+`routes/` holds 26 files; the three that declare no router are `__init__.py` and the leaf
+helpers `deps.py` and `llm_support.py`. Counting files rather than routers is what makes
+"route modules" read 26 — say which you mean.
 
 Two things drive nearly every design decision in here, and they are worth internalising
 before you read anything else:
@@ -102,18 +109,21 @@ move to Cloud Monitoring.
 
 ## 3. Module map
 
+Line counts measured 2026-08-30 with `wc -l src/astro_ai/*.py | sort -rn`; four of the
+ten below were stale, so re-run it rather than citing these.
+
 ```
 src/astro_ai/
-  chart.py         4,307  Swiss Ephemeris, panchang, dashas, gochar, combustion
+  chart.py         4,497  Swiss Ephemeris, panchang, dashas, gochar, combustion
   learn_registry.py 3,107  /learn article metadata
-  numerology.py    1,844  Chaldean + Lo Shu calculators
+  numerology.py    1,910  Chaldean + Lo Shu calculators
   festival_registry.py 1,509
-  muhurat.py       1,444  electional scoring; shares angas with panchang
-  llm.py           1,068  prompt assembly, rashifal fan-out
+  muhurat.py       1,475  electional scoring; shares angas with panchang
+  llm.py           1,075  prompt assembly, rashifal fan-out
   matching.py      1,056  Ashtakoota 36-guna
   i18n.py            967  en/hi, symmetric key sets (enforced)
   providers.py       704  provider chain, quality gates, retry policy
-  routes/            25 modules, 68 routes
+  routes/            26 files — 23 declare a router, 64 handlers (see §1)
   knowledge/*.md     classical source material — the authority for astrological claims
   prompts/*.txt      11 LLM prompt templates
 ```
@@ -435,13 +445,16 @@ that. Also verify your own tooling: a `pdftotext` invocation against a wrong pat
 
 ### Verification gates
 
-Fourteen `scripts/verify_*.py` gates — count it with `ls scripts/verify_*.py` rather
-than trusting this number, which read "Twelve" while thirteen sat on disk. The
-discipline that makes them worth anything:
+Sixteen `scripts/verify_*.py` gates — count it with `ls scripts/verify_*.py` rather
+than trusting this number, which read "Twelve" while thirteen sat on disk and then
+"Fourteen" while sixteen did. Twice now the warning has outlived the number it warns
+about, inside its own sentence. The discipline that makes them worth anything:
 
 **Prove a gate can fail before trusting that it passes.** For the behaviour suite this
 is automated: `scripts/mutate_behaviour_suite.py` restores each original defect and
-asserts the suite goes red (currently 8/8). For everything else, do it by hand. Mutate the thing it guards,
+asserts the suite goes red (currently 23/23, with a CONTROL row that MUST report missed
+— a caught control means the sandbox was already red and every verdict in the run is
+void). For everything else, do it by hand. Mutate the thing it guards,
 confirm it turns red with a specific message, restore. A gate that has never failed is
 not evidence. Several gates here were written with bugs — an optional regex group that
 matched empty and reported a false failure, an unscoped row match that read 44 tables

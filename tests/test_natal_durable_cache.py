@@ -425,3 +425,131 @@ def test_the_miss_cache_sweep_drops_by_age_not_wholesale(monkeypatch):
         "the sweep dropped a live entry; a wholesale clear() is not a sweep"
     )
     assert stale not in llm_support._DURABLE_MISSES, "the stale entry was not swept"
+
+
+def _marked_natal_body(n: int) -> str:
+    """A valid natal reading carrying a per-generation marker in its prose.
+
+    The marker has to survive into the rendered HTML, so it is a bare
+    alphanumeric token: anything with punctuation risks being reshaped by the
+    section parser or `_linkify_learn` on the way to the page, and a test that
+    silently stops finding its own marker asserts nothing.
+    """
+    filler = f"The chart of seeker MARKERSEEKER{n} favours patient work. "
+    return (
+        f"## Personality\n" + filler * 10 + "\n\n"
+        f"## Career\n" + filler * 10 + "\n"
+    )
+
+
+def _passes_lax_route_fails_natal() -> str:
+    """457 chars, ONE heading: rejected by `natal`, accepted by the laxer
+    unstructured routes (`rashifal_single` 300, `today` 400, `ask` 100).
+
+    The point of the shape. `_MIN_CHARS_BY_ROUTE` and `_STRUCTURED_ROUTES`
+    differ per route, so a blob gated against the WRONG route is accepted on
+    somebody else's floor. A fixture that fails every route — the 14-char one
+    used above — cannot tell the difference and reports green either way.
+    """
+    return "## Today\n" + ("A steady day for measured work. " * 14)
+
+
+def test_two_seekers_never_share_a_blob(stub_llm, fake_gcs, cold_start):
+    """The worst thing this module could do: serve seeker B seeker A's reading.
+
+    The blob key must be namespaced by `chart_fp`. Drop it and every seeker in
+    a given (lang, prompt_fp) shares ONE blob, so the first reading generated
+    after a deploy is handed to everyone who follows — silently, because it is
+    a well-formed natal reading for the wrong birth chart.
+
+    Two TestClients rather than two charts in one collection: separate cookie
+    jars are what actually models two seekers, and it keeps the assertion
+    about whose reading reaches whose page rather than about collection
+    ordering.
+    """
+    from fastapi.testclient import TestClient
+
+    from astro_ai.main import app
+
+    calls = stub_llm(_marked_natal_body)
+    alice, bob = TestClient(app), TestClient(app)
+
+    def _submit(cl, birth_date):
+        r = cl.post("/reading", data={"name": "S", "birth_date": birth_date,
+                                      "birth_time": "14:35",
+                                      "birth_place": "Mumbai, India"},
+                    follow_redirects=False)
+        assert r.status_code == 303, r.status_code
+
+    _submit(alice, "1990-04-12")
+    _submit(bob, "1974-11-03")
+
+    a1 = alice.get("/kundli")
+    b1 = bob.get("/kundli")
+    assert (a1.status_code, b1.status_code) == (200, 200)
+    assert calls["n"] == 2, (
+        f"{calls['n']} generations for two different charts; the second seeker "
+        f"was served out of the first's cache entry"
+    )
+    assert "MARKERSEEKER1" in a1.text and "MARKERSEEKER2" not in a1.text
+    assert "MARKERSEEKER2" in b1.text and "MARKERSEEKER1" not in b1.text, (
+        "seeker B's page carries seeker A's reading"
+    )
+
+    natal = {k: v for k, v in fake_gcs["blobs"].items() if k.startswith("llm/natal/")}
+    assert len(natal) == 2, f"two charts must occupy two blobs; got {sorted(natal)}"
+    assert len(set(natal.values())) == 2, "two distinct charts wrote identical blob contents"
+
+    # The failure this exists for happens AFTER the container dies, when the
+    # durable tier is the only thing answering.
+    cold_start()
+    a2 = alice.get("/kundli")
+    b2 = bob.get("/kundli")
+    assert calls["n"] == 2, f"{calls['n']} generations; the durable tier did not serve both"
+    assert "MARKERSEEKER1" in a2.text and "MARKERSEEKER2" not in a2.text, (
+        "after a cold start, seeker A was served another seeker's reading from the bucket"
+    )
+    assert "MARKERSEEKER2" in b2.text and "MARKERSEEKER1" not in b2.text, (
+        "after a cold start, seeker B was served another seeker's reading from the bucket"
+    )
+
+
+def test_the_blob_is_quality_gated_against_natals_own_thresholds(client, saved_chart,
+                                                                 stub_llm, fake_gcs,
+                                                                 cold_start):
+    """`passes_quality` takes a ROUTE, and the route decides both the length
+    floor (natal 800) and whether headings are required (natal: yes, ≥2).
+
+    Gate the blob against any laxer route and a truncated or single-section
+    body is accepted and served as a complete natal reading. The existing
+    bad-blob test cannot see this: its 14-char fixture fails every route's
+    floor, so it passes whatever route is named.
+    """
+    from astro_ai import providers as llm_providers
+
+    bad = _passes_lax_route_fails_natal()
+    # Assert the fixture actually discriminates, so it cannot rot into another
+    # fails-everywhere blob without this test going red first.
+    assert llm_providers.passes_quality(bad, "natal")[0] is False
+    assert llm_providers.passes_quality(bad, "rashifal_single")[0] is True, (
+        "fixture no longer distinguishes natal's gate from a laxer one"
+    )
+
+    calls = stub_llm(_natal_body)
+    saved_chart()
+    client.get("/kundli")
+    assert calls["n"] == 1
+
+    key = next(k for k in fake_gcs["blobs"] if k.startswith("llm/natal/"))
+    fake_gcs["blobs"][key] = bad
+    cold_start()
+
+    page = client.get("/kundli")
+    assert page.status_code == 200
+    assert calls["n"] == 2, (
+        f"{calls['n']} generations; a body that only clears a laxer route's "
+        f"floor was accepted from the bucket as a finished natal reading"
+    )
+    assert llm_providers.passes_quality(fake_gcs["blobs"][key], "natal")[0], (
+        "the regeneration did not heal the blob"
+    )
