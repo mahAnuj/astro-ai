@@ -450,6 +450,12 @@ jobs:
       # Deferred failure from the sweep above. Placed after the assertions so
       # their output is in the log either way; this is what actually reds the
       # job, since the sweep itself is continue-on-error.
+      - name: Smoke sweep gate
+        if: steps.smoke.outcome != 'success'
+        run: |
+          echo "::error::Smoke sweep failed (${SMOKE_STATUS:-no status recorded}) — see the 'Smoke sweep' step and the summary."
+          exit 1
+
       # The rule/yoga source labels (#216, #218) are the hardest surface on
       # this site to reach, and three of my attempts to check them produced a
       # VACUOUS PASS before this step existed:
@@ -467,14 +473,39 @@ jobs:
       - name: "#216/#218 rule sources cite a book the repo holds"
         run: |
           set -uo pipefail
-          JAR=$(mktemp)
-          code=$(curl -sSL --max-time 150 -c "$JAR" -b "$JAR" \
-                   --data 'name=CI Check' --data 'birth_date=1957-09-07' \
-                   --data 'birth_time=01:05' --data 'birth_place=Mumbai' \
-                   "$SITE/reading" -o /tmp/kundli.html -w '%{http_code}') || code=000
-          rm -f "$JAR"
-          echo "POST /reading -> GET /kundli : HTTP $code, $(wc -c < /tmp/kundli.html) bytes"
-          [ "$code" = "200" ] || { echo "::error::could not reach the natal reading (HTTP $code)"; exit 1; }
+          # Three tries, 20s apart. /kundli computes a chart AND generates the
+          # reading, so it is the heaviest route on the site and it runs right
+          # after a 200-URL sweep. Measured 2026-08-30: three serial attempts
+          # gave 503, 503, 200 — the successful one took 15.2s, the failures
+          # 6.2s each.
+          code=000
+          for try in 1 2 3; do
+            JAR=$(mktemp)
+            code=$(curl -sSL --max-time 150 -c "$JAR" -b "$JAR" \
+                     --data 'name=CI Check' --data 'birth_date=1957-09-07' \
+                     --data 'birth_time=01:05' --data 'birth_place=Mumbai' \
+                     "$SITE/reading" -o /tmp/kundli.html -w '%{http_code}') || code=000
+            rm -f "$JAR"
+            echo "try $try: HTTP $code, $(wc -c < /tmp/kundli.html) bytes"
+            [ "$code" = "200" ] && break
+            sleep 20
+          done
+
+          # OVER QUOTA IS NOT A CITATION REGRESSION. `_render_natal_for` returns
+          # 503 with "High demand right now" when the LLM chain raises
+          # AllProvidersExhausted — i.e. the Groq free tier is spent. That says
+          # nothing about whether a label cites a book we hold, so failing #216
+          # on it would attribute a capacity problem to the wrong defect and
+          # train readers to ignore this step. Warn and skip, the way the #227
+          # watch step does. The 503 rate itself is tracked separately.
+          if [ "$code" != "200" ]; then
+            if grep -qi 'High demand right now' /tmp/kundli.html; then
+              echo "::warning::natal reading is over quota (503, AllProvidersExhausted) after 3 tries — #216/#218 NOT EVALUATED this run. This is a capacity finding, not a citation regression."
+              exit 0
+            fi
+            echo "::error::could not reach the natal reading (HTTP $code) and it is not the over-quota page"
+            exit 1
+          fi
 
           # VACUITY GUARD FIRST. A page with no yoga at all makes every
           # absence below true for the wrong reason.
@@ -497,12 +528,6 @@ jobs:
           rao=$(printf '%s' "$labels" | grep -cE 'Rao, Vedic Astrology: An Integrated Approach §[0-9]' || true)
           echo "  labels citing Rao with a section: $rao (want >0)"
           [ "$rao" -gt 0 ] || { echo "::error::#218 regressed — no label cites Rao with a section"; exit 1; }
-
-      - name: Smoke sweep gate
-        if: steps.smoke.outcome != 'success'
-        run: |
-          echo "::error::Smoke sweep failed (${SMOKE_STATUS:-no status recorded}) — see the 'Smoke sweep' step and the summary."
-          exit 1
 
       - name: Summary
         if: always()
