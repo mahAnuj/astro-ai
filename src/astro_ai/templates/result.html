@@ -12,7 +12,15 @@
    card of the sender's chart instead of a generic icon. Regular /kundli
    uses the default icon (personal cookie chart isn't relevant to link
    previews of the /kundli URL itself). #}
-{% if is_snapshot | default(false) %}{% block og_image %}{{ site_url }}/kundli/card{% endblock %}{% endif %}
+{# The Cosmic Card is 1080x1920, so it must override the inherited 1200x630 —
+   a wrong declared size makes crawlers lay out the wrong box before fetching.
+   NOTE: /kundli/card serves image/svg+xml, which OG crawlers reject; this
+   preview does not currently render on any major platform. Fixing it means
+   rasterising the card to PNG — tracked separately. #}
+{% if is_snapshot | default(false) %}{% block og_image %}{{ site_url }}/kundli/card{% endblock %}
+{% block og_image_width %}1080{% endblock %}
+{% block og_image_height %}1920{% endblock %}
+{% block og_image_alt %}Your Janma Kundli chart card from Shubh Bhagya{% endblock %}{% endif %}
 
 {% block content %}
 {# Pre-compute Lagna / Sun / Moon for summary chips. #}

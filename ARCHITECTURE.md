@@ -342,6 +342,7 @@ Dated, with the evidence. **Check here before proposing a change.**
 | 2026-08-23 | Scheduler retries off | retries double-generated and doubled LLM spend |
 | 2026-08-23 | Retrograde combustion = exactly one degree less | Raman *Muhurtha* p.197 footnote; 10/8 were invented |
 | 2026-08-23 | Negative caches are short-TTL, not permanent or absent | caching a failure all day pins a reader to the wrong city; not caching it costs the full timeout every request |
+| 2026-08-31 | `og:image` is a generated 1200x630 PNG, never SVG | og:image was a 512x512 icon and all 76 learn articles pointed at 320x320 SVG heroes; FB/LinkedIn/WhatsApp/X/Slack reject SVG outright, so every article previewed as a bare link |
 
 ### Rejected, with reasons — do not re-propose without new information
 
