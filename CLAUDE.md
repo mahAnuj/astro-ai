@@ -400,6 +400,31 @@ Requires `.env` (copy `.env.example`). `OPENAI_API_KEY` is the only hard require
 `ASTRO_AI_API_BASE` repoints at any OpenAI-compatible provider. See README.md for the
 full environment-variable table.
 
+### If you touch a Tailwind class, you must rebuild the CSS
+
+```bash
+npm ci             # NEVER `npm install` — see below
+npm run build:css  # writes src/astro_ai/static/css/app.css — COMMIT IT
+```
+
+`app.css` is a **committed build artefact**. The Dockerfile is Python-only and never runs
+Node, so a push ships whatever is in the commit. Change a class without rebuilding and the
+site ships markup whose rules do not exist — which is exactly what happened to
+`lg:col-span-3` (#229), used on `/panchang` while `app.css` had no `lg:col-span-*` rule at
+all, for eleven days across two commits.
+
+`.github/workflows/verify-build.yml` now catches this on every PR, and
+`scripts/verify_css_build.py` catches it locally. Note that gate exits **2** for "could not
+verify" when Node is missing — that is not a pass.
+
+**`npm ci`, never `npm install`.** Gate 1 byte-compares the committed file against a fresh
+build, and Tailwind writes its own version banner into the output. `package.json` pins an
+exact version for the same reason; an unpinned resolve turns the gate red with no change to
+the repo.
+
+The stylesheet is linked with a content hash (`?v=`) because `static/sw.js` caches
+`/static/` first-with-no-revalidation — see #253 for what that cost.
+
 **There is a behaviour suite, and it is small.** `uv run pytest` (or
 `scripts/verify_behaviour.py`, which joins the `verify_*` sweep). It covers request-path
 regressions only — cache lifecycle, degraded pages, blast outcome reporting — because

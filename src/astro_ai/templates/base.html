@@ -138,7 +138,12 @@
      file is ~80KB, cacheable, and parses as plain CSS.
      Loaded BEFORE the <style> block below so the hand-written rules there
      continue to win the cascade. -->
-<link rel="stylesheet" href="/static/css/app.css">
+<!-- ?v= is a CONTENT hash, not a version bump (#253). static/sw.js caches
+     /static/ first-with-no-revalidation, so a fixed URL meant rebuilt CSS was
+     never re-fetched by returning visitors — two rebuilds shipped that way.
+     The hash changes only when the bytes change, so a no-op redeploy does not
+     evict anyone's cache. -->
+<link rel="stylesheet" href="/static/css/app.css?v={{ asset_v('css/app.css') }}">
 
 <!-- HTMX for hx-boost (AJAX nav) + loading indicators. -->
 <!-- responseHandling: swap response body for ALL status codes (including 4xx/5xx
