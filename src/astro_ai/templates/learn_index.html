@@ -101,6 +101,10 @@
   </section>
 
   {% if articles %}
+  {# #239 left this block's purple at the old ramp on purpose: a stylesheet in
+     an inline <style> is invisible to a Tailwind palette swap, but the cards and
+     nav around these chips are still on the purple utilities, so a red chip on a
+     purple index is worse than a purple one. Moves with the screen. #}
   <style>
     .learn-cat-chip {
       background: #fff;
@@ -109,7 +113,9 @@
     }
     .learn-cat-chip:hover {
       color: #6b21a8;       /* astro-700 */
-      border-color: #c084fc; /* astro-300 */
+      /* purple-400. Labelled astro-300 for years, which is #c4b5fd — the
+         label was wrong, not the value. Corrected in place (#239). */
+      border-color: #c084fc;
     }
     .learn-cat-chip.is-active {
       background: #6b21a8;   /* astro-700 */

@@ -407,6 +407,13 @@
          ship — the form outranks the flourish", so it did not ship. #}
       <div class="hidden md:block mt-2 max-w-xs">
         <div class="bg-white rounded-2xl border border-stone-200 shadow-md p-3.5">
+          {# #239 left the hardcoded purple below at its old ramp value on purpose.
+             These hexes are invisible to Tailwind — they are SVG attributes and
+             inline styles, so a palette swap in the config cannot reach them — but
+             the same element sits beside purple utility classes that CAN be reached,
+             and recolouring one without the other ships a page that is half each
+             palette. They move with the screen that owns this file, in one motion.
+             Do not "tidy" them ahead of it; do not miss them when it lands. #}
           <svg viewBox="0 0 400 400" class="w-full block" xmlns="http://www.w3.org/2000/svg" aria-label="Sample Janma Kundali preview">
             {# Outer border #}
             <rect x="2" y="2" width="396" height="396" fill="white" stroke="#6b21a8" stroke-width="2"

@@ -171,7 +171,18 @@
     </div>
     <div data-chart-style-panel="north">
     {# Signature moment: strokes draw in sequence, labels fade in after.
-       Same animation as before; just repositioned. #}
+       Same animation as before; just repositioned.
+
+       #239 left the hardcoded purple below at its old ramp value on purpose.
+       These hexes are invisible to Tailwind — they are SVG attributes and
+       inline styles, so a palette swap in the config cannot reach them — but
+       the same element sits beside purple utility classes that CAN be reached,
+       and recolouring one without the other ships a page that is half each
+       palette. They move with the screen that owns this file, in one motion.
+       Do not "tidy" them ahead of it; do not miss them when it lands.
+       Three sites in this file: this diamond, the divisional-chart macro
+       below, and the reading-section left rule further down. The south-Indian
+       partial this page also includes carries the same colour. #}
     <svg viewBox="0 0 400 400" class="w-full max-w-lg mx-auto block" xmlns="http://www.w3.org/2000/svg" aria-label="{{ t(lang, 'lagna_kundali') }}">
       <rect x="2" y="2" width="396" height="396" fill="transparent" stroke="#6b21a8" stroke-width="2"
             class="chart-draw" style="--dash: 1584; animation-delay: 0ms"/>

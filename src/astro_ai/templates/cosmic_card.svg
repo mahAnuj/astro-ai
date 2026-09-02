@@ -2,8 +2,19 @@
    Rendered server-side per chart. Meant for Instagram Story format
    (9:16 aspect ratio). Set as og:image on /r/{id} snapshot pages.
 
-   Design language mirrors existing hero SVGs (astro-purple + cream
-   + gold) + North Indian diamond chart glyph pattern.
+   Recoloured to the redesign palette in #239. It used to mirror the
+   hero SVGs (astro-purple + cream + gold); it no longer does, and that
+   is deliberate — this is the image that represents the site when a
+   reading is shared, so it leads the migration rather than trailing it.
+   The hero SVGs move separately in #259.
+
+   Every colour below is a bhagya token from tailwind.config.js, EXCEPT
+   the amber ornament (cc_gold, and the #f59e0b/#78350f/#a16207 glyph
+   and caption text). That family already reads warm against the new
+   cream, and re-authoring a three-stop metallic gradient is art work,
+   not a token swap. Roles used here: cream/cream-2 page, ink headings,
+   sindoor glyphs on the light surface, saffron the accent. Gold is NOT
+   used — it is 2.20:1 on cream and this card has no night surface.
 
    Fonts: Crimson Pro for display, Noto Devanagari for Sanskrit.
    Falls back to system serif if fonts missing (SVG renderers on
@@ -11,14 +22,18 @@
 #}<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
   <defs>
+    {# bhagya cream -> warm wash -> cream-2. The top stop was #fefbf3, a
+       third near-cream two units off the token; folded rather than kept. #}
     <linearGradient id="cc_bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"  stop-color="#fefbf3"/>
+      <stop offset="0%"  stop-color="#FAF6EF"/>
       <stop offset="40%" stop-color="#fef3c7" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#f0e7fb"/>
+      <stop offset="100%" stop-color="#F1E7D8"/>
     </linearGradient>
+    {# saffron -> sindoor keeps the light-to-dark sweep the purple ramp had,
+       using two real tokens instead of inventing a darker sindoor stop. #}
     <linearGradient id="cc_diamond" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#E4913C"/>
+      <stop offset="100%" stop-color="#9E2B25"/>
     </linearGradient>
     <radialGradient id="cc_gold" cx="0.5" cy="0.5" r="0.5">
       <stop offset="0%" stop-color="#fef08a"/>
@@ -30,7 +45,7 @@
   <rect width="1080" height="1920" fill="url(#cc_bg)"/>
 
   {# Star field background #}
-  <g fill="#6b21a8" opacity="0.25">
+  <g fill="#9E2B25" opacity="0.25">
     <circle cx="80"   cy="200"  r="3"/>
     <circle cx="960"  cy="180"  r="3.5"/>
     <circle cx="200"  cy="400"  r="2"/>
@@ -45,13 +60,13 @@
   {# ─── TOP THIRD: name + title ─────────────────────────────── #}
   <g font-family="Crimson Pro, Georgia, serif" text-anchor="middle">
     <text x="540" y="220"
-          font-size="60" font-weight="700" fill="#4c1d95">
+          font-size="60" font-weight="700" fill="#17131A">
       {{ display_name or 'Janma Kundli' }}
     </text>
     {% if display_name %}
     <text x="540" y="300"
           font-family="Noto Serif Devanagari, Noto Sans Devanagari, serif"
-          font-size="52" font-weight="500" fill="#6b21a8">
+          font-size="52" font-weight="500" fill="#9E2B25">
       {# Devanagari: "janma kundali" #}जन्म कुण्डली
     </text>
     {% endif %}
@@ -74,7 +89,7 @@
     <line x1="500" y1="0" x2="0" y2="500"/>
   </g>
   {# House numbers 1-12 in traditional N-Indian positions #}
-  <g font-family="Crimson Pro, Georgia, serif" font-size="28" font-weight="700" fill="#6b21a8" text-anchor="middle" opacity="0.7">
+  <g font-family="Crimson Pro, Georgia, serif" font-size="28" font-weight="700" fill="#9E2B25" text-anchor="middle" opacity="0.7">
     <text x="540" y="700">1</text>
     <text x="380" y="700">12</text>
     <text x="330" y="810">11</text>
@@ -98,22 +113,22 @@
   {# ─── LOWER THIRD: three hero pills ─────────────────────────── #}
   <g font-family="Inter, Helvetica, sans-serif" text-anchor="middle">
     {# Pill 1: Lagna #}
-    <rect x="60" y="1400" width="300" height="150" rx="30" fill="white" stroke="#a855f7" stroke-width="2"/>
+    <rect x="60" y="1400" width="300" height="150" rx="30" fill="white" stroke="#E4913C" stroke-width="2"/>
     <text x="210" y="1445" font-size="20" font-weight="600" fill="#78350f" letter-spacing="2">LAGNA</text>
-    <text x="210" y="1495" font-size="34" font-weight="700" fill="#4c1d95">{{ chart.lagna_rashi.split(' ')[0] }}</text>
+    <text x="210" y="1495" font-size="34" font-weight="700" fill="#17131A">{{ chart.lagna_rashi.split(' ')[0] }}</text>
     <text x="210" y="1530" font-family="Crimson Pro, Georgia, serif" font-size="34" fill="#f59e0b">{{ lagna_glyph }}</text>
 
     {# Pill 2: Moon nakshatra #}
-    <rect x="390" y="1400" width="300" height="150" rx="30" fill="white" stroke="#a855f7" stroke-width="2"/>
+    <rect x="390" y="1400" width="300" height="150" rx="30" fill="white" stroke="#E4913C" stroke-width="2"/>
     <text x="540" y="1445" font-size="20" font-weight="600" fill="#78350f" letter-spacing="2">MOON</text>
-    <text x="540" y="1495" font-size="30" font-weight="700" fill="#4c1d95">{{ moon_nakshatra or 'Nakshatra' }}</text>
+    <text x="540" y="1495" font-size="30" font-weight="700" fill="#17131A">{{ moon_nakshatra or 'Nakshatra' }}</text>
     <text x="540" y="1530" font-family="Crimson Pro, Georgia, serif" font-size="34" fill="#f59e0b">{{ moon_glyph }}</text>
 
     {# Pill 3: Sun sign #}
     {% set sun = chart.planets|selectattr('name','equalto','Sun')|first %}
-    <rect x="720" y="1400" width="300" height="150" rx="30" fill="white" stroke="#a855f7" stroke-width="2"/>
+    <rect x="720" y="1400" width="300" height="150" rx="30" fill="white" stroke="#E4913C" stroke-width="2"/>
     <text x="870" y="1445" font-size="20" font-weight="600" fill="#78350f" letter-spacing="2">SUN</text>
-    <text x="870" y="1495" font-size="34" font-weight="700" fill="#4c1d95">{{ sun.rashi.split(' ')[0] if sun else '' }}</text>
+    <text x="870" y="1495" font-size="34" font-weight="700" fill="#17131A">{{ sun.rashi.split(' ')[0] if sun else '' }}</text>
     <text x="870" y="1530" font-family="Crimson Pro, Georgia, serif" font-size="34" fill="#f59e0b">{{ sun_glyph }}</text>
   </g>
 
@@ -136,7 +151,7 @@
 
   {# ─── FOOTER: brand ───────────────────────────────────────── #}
   <g text-anchor="middle">
-    <text x="540" y="1810" font-family="Crimson Pro, Georgia, serif" font-size="42" font-weight="600" fill="#6b21a8">
+    <text x="540" y="1810" font-family="Crimson Pro, Georgia, serif" font-size="42" font-weight="600" fill="#9E2B25">
       Shubh Bhagya
     </text>
     <text x="540" y="1860" font-family="Inter, sans-serif" font-size="24" font-weight="400" fill="#78350f">
