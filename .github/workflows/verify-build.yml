@@ -77,6 +77,23 @@ jobs:
       - name: Behaviour suite
         run: uv run python scripts/verify_behaviour.py
 
+      - name: Redesign tokens have not drifted
+        # #239. The emails, the cosmic card and the feedback notification hold
+        # the palette as literal hexes because Tailwind cannot reach any of
+        # them — no <style> survives an email client, and SVG attributes are
+        # not classes. Literal copies of a single source of truth drift, and
+        # nothing else in this workflow would notice. Needs neither Node nor a
+        # browser, so exit 2 here would mean the config itself is unreadable.
+        run: |
+          set -e
+          code=0
+          uv run python scripts/verify_redesign_tokens.py || code=$?
+          if [ "$code" = "2" ]; then
+            echo "::error::verify_redesign_tokens could not read the bhagya palette out of tailwind.config.js."
+            exit 1
+          fi
+          exit "$code"
+
       - name: Devanagari serif gate
         # Two halves. The static half reads the font <link> and needs nothing;
         # the browser half drives Chromium and reads the fonts the renderer

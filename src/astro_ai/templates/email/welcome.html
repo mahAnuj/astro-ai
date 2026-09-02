@@ -5,8 +5,12 @@
     Same email-safe constraints as daily_rashifal.html: table layout, inline
     styles, 600px max width, system-font fallback chain. No <style>, no JS.
 
+    Same redesign palette too (#239) — the role table and the measured
+    contrast ratios are in daily_rashifal.html's header; read them there
+    before changing a hex here.
+
     Sections (in order):
-      1. Branded purple header band
+      1. Branded night header band
       2. Namaste greeting + welcome headline
       3. "What to expect" expectations panel
       4. Today's Rashifal (all 12, embedded so first email has value)
@@ -28,15 +32,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{% if lang == 'hi' %}Shubh Bhagya में स्वागत है{% else %}Welcome to Shubh Bhagya{% endif %}</title>
 </head>
-<body style="margin:0;padding:0;background:#faf7f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans Devanagari',sans-serif;color:#1c1917;">
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;">
+<body style="margin:0;padding:0;background:#FAF6EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans Devanagari',sans-serif;color:#1c1917;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#FAF6EF;">
   <tr>
     <td align="center" style="padding:20px 12px;">
       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;background:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #e7e5e4;">
 
         {#- BRANDED HEADER BAND -#}
         <tr>
-          <td style="background:linear-gradient(135deg,#6b21a8 0%,#581c87 100%);background-color:#6b21a8;padding:22px 28px;">
+          <td style="background:#140F1C;padding:22px 28px;">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0">
               <tr>
                 <td style="vertical-align:middle;padding-right:12px;">
@@ -47,12 +51,12 @@
                       <line x1="5" y1="50" x2="95" y2="50"/>
                       <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
                     </g>
-                    <circle cx="50" cy="50" r="8" fill="#ffd764"/>
+                    <circle cx="50" cy="50" r="8" fill="#C8A44D"/>
                   </svg>
                 </td>
                 <td style="vertical-align:middle;">
                   <div style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;line-height:1.1;">Shubh Bhagya</div>
-                  <div style="font-size:12px;color:#e9d5ff;margin-top:2px;letter-spacing:0.5px;">
+                  <div style="font-size:12px;color:#F1E7D8;margin-top:2px;letter-spacing:0.5px;">
                     {% if lang == 'hi' %}आपका दैनिक वैदिक पञ्चांग{% else %}Your daily Vedic almanac{% endif %}
                   </div>
                 </td>
@@ -77,10 +81,10 @@
         {#- WHAT TO EXPECT -#}
         <tr>
           <td style="padding:18px 28px 0 28px;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#f0e7fb;border-radius:6px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#F1E7D8;border-radius:6px;">
               <tr>
                 <td style="padding:14px 16px;">
-                  <div style="font-size:11px;color:#6b21a8;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
+                  <div style="font-size:11px;color:#9E2B25;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">
                     {% if lang == 'hi' %}आप क्या उम्मीद कर सकते हैं{% else %}What to expect{% endif %}
                   </div>
                   <ul style="margin:0;padding-left:18px;font-size:13px;color:#44403c;line-height:1.7;">
@@ -124,12 +128,12 @@
         {% set rashi_slug = title.split('/')[0].strip().lower() %}
         <tr>
           <td style="padding:10px 28px 0 28px;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;border-radius:6px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#FAF6EF;border-radius:6px;">
               <tr>
                 <td style="padding:14px 16px;">
                   <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                     <tr>
-                      <td style="font-size:20px;color:#6b21a8;padding-right:8px;vertical-align:middle;">{{ glyph }}</td>
+                      <td style="font-size:20px;color:#9E2B25;padding-right:8px;vertical-align:middle;">{{ glyph }}</td>
                       <td style="font-size:15px;font-weight:600;color:#1c1917;vertical-align:middle;">{{ title }}</td>
                     </tr>
                   </table>
@@ -138,7 +142,7 @@
                   </div>
                   <div style="margin-top:10px;">
                     <a href="{{ site_url }}/rashifal#{{ rashi_slug }}"
-                       style="font-size:13px;color:#6b21a8;font-weight:600;text-decoration:none;">
+                       style="font-size:13px;color:#9E2B25;font-weight:600;text-decoration:none;">
                       {%- if is_digest %}
                       {% if lang == 'hi' %}पूरा राशिफल पढ़ें{% else %}Read full reading{% endif %} &rarr;
                       {%- else %}
@@ -158,10 +162,10 @@
         {% if panchang %}
         <tr>
           <td style="padding:18px 28px 0 28px;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;border-left:3px solid #6b21a8;border-radius:4px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#FAF6EF;border-left:3px solid #9E2B25;border-radius:4px;">
               <tr>
                 <td style="padding:12px 14px;">
-                  <div style="font-size:11px;color:#6b21a8;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+                  <div style="font-size:11px;color:#9E2B25;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
                     {% if lang == 'hi' %}आज का पंचांग{% else %}Today's Panchang{% endif %}
                   </div>
                   <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -260,10 +264,10 @@
         {% if trivia %}
         <tr>
           <td style="padding:18px 28px 0 28px;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#f0e7fb;border-radius:6px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#F1E7D8;border-radius:6px;">
               <tr>
                 <td style="padding:14px 16px;">
-                  <div style="font-size:11px;color:#6b21a8;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+                  <div style="font-size:11px;color:#9E2B25;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
                     ✨ {% if lang == 'hi' %}क्या आप जानते हैं?{% else %}Did You Know?{% endif %}
                   </div>
                   <div style="font-size:13px;color:#44403c;line-height:1.6;">
@@ -302,7 +306,7 @@
         {#- CTA -#}
         <tr>
           <td align="center" style="padding:24px 28px 24px 28px;">
-            <a href="{{ site_url }}" style="background:#6b21a8;color:#ffffff;text-decoration:none;padding:11px 24px;border-radius:6px;font-size:14px;font-weight:600;display:inline-block;">
+            <a href="{{ site_url }}" style="background:#E4913C;color:#17131A;text-decoration:none;padding:11px 24px;border-radius:6px;font-size:14px;font-weight:600;display:inline-block;">
               {% if lang == 'hi' %}अपनी पूरी कुंडली देखें →{% else %}Get your full Kundli →{% endif %}
             </a>
           </td>
@@ -310,7 +314,7 @@
 
         {#- FOOTER -#}
         <tr>
-          <td style="padding:20px 28px;border-top:1px solid #f5f5f4;background:#faf7f2;">
+          <td style="padding:20px 28px;border-top:1px solid #f5f5f4;background:#FAF6EF;">
             <div style="font-size:12px;color:#78716c;text-align:center;line-height:1.6;">
               {% if lang == 'hi' %}यह ईमेल आपको Shubh Bhagya की दैनिक राशिफल सदस्यता के लिए मिला है।{% else %}You're receiving this because you just subscribed to Shubh Bhagya's daily Rashifal.{% endif %}<br>
               <a href="{{ unsubscribe_url }}" style="color:#78716c;text-decoration:underline;">{% if lang == 'hi' %}सदस्यता समाप्त करें{% else %}Unsubscribe{% endif %}</a>

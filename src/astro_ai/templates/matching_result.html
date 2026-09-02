@@ -4,7 +4,12 @@
 {% block meta_description %}Your Kundali matching results — Ashtakoot Guna Milan score, dosha analysis, and a plain-language narrative explaining what the numbers mean for the relationship.{% endblock %}
 
 {% block content %}
-{# Pick a colour scheme based on verdict tier. #}
+{# Pick a colour scheme based on verdict tier.
+   #239 left the `hex` values here at their old purple/amber ramp on purpose.
+   Each one is the literal twin of the utility classes in the SAME dict entry —
+   Tailwind reaches those and cannot reach the hex — so changing one without the
+   other makes a single badge disagree with its own dot. They move together, with
+   the screen that owns this file. #}
 {% set verdict_palette = {
   "Uttam":           {"border": "border-emerald-300", "bg": "bg-emerald-50", "text": "text-emerald-800", "dot": "bg-emerald-500", "hex": "#10b981"},
   "Madhyam":         {"border": "border-astro-300",   "bg": "bg-astro-50",   "text": "text-astro-800",   "dot": "bg-astro-500",   "hex": "#a855f7"},

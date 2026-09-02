@@ -267,7 +267,14 @@
 </main>
 
 {# Shared prose styles for all article bodies. Inline so the design system
-   ships with the template, no external stylesheet to maintain. #}
+   ships with the template, no external stylesheet to maintain.
+
+   #239 left the purple in here (prose links, the insight callout, the pull
+   quote rule) at the old ramp on purpose, along with the logo dot in the CTA
+   banner above. None of it is reachable by a Tailwind palette swap, but the
+   banner it sits in is built from the purple utilities, so recolouring the
+   prose alone would leave one article half each palette. Moves with the
+   screen that owns this file. The 76 article hero SVGs are #259. #}
 <style>
   .article-prose h2 {
     font-family: 'Crimson Pro', serif;

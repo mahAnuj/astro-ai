@@ -4,6 +4,17 @@
    ascendant cell.  Uses the same 400x400 viewBox as the diamond variant
    so both charts occupy identical layout space and can be toggled
    in-place without reflowing surrounding content.
+
+   #239 left the hardcoded purple below at its old ramp value on purpose.
+   These hexes are invisible to Tailwind — they are SVG attributes and
+   inline styles, so a palette swap in the config cannot reach them — but
+   the same element sits beside purple utility classes that CAN be reached,
+   and recolouring one without the other ships a page that is half each
+   palette. They move with the screen that owns this file, in one motion.
+   Do not "tidy" them ahead of it; do not miss them when it lands.
+   This partial and the diamond in result.html are a toggle PAIR — whatever
+   moves one must move the other in the same commit, or the two chart styles
+   disagree inside one page.
 #}
 <svg viewBox="0 0 400 400" class="w-full max-w-lg mx-auto block"
      xmlns="http://www.w3.org/2000/svg" aria-label="{{ aria }}">
