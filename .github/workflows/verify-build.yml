@@ -59,6 +59,9 @@ jobs:
       - name: Sync Python env
         run: uv sync --group dev
 
+      - name: Install Chromium for the Devanagari gate
+        run: uv run playwright install --with-deps chromium
+
       - name: CSS build is fresh
         # Fails if the committed app.css differs from a fresh build, i.e. if
         # someone changed a class and did not re-run `npm run build:css`.
@@ -74,8 +77,25 @@ jobs:
       - name: Behaviour suite
         run: uv run python scripts/verify_behaviour.py
 
-      # NOT YET WIRED: scripts/verify_devanagari_serif.py. It drives a real
-      # browser via Playwright, which is not a dependency of this project yet,
-      # so it would return 2 here and — by the rule above — fail the run. It is
-      # added in #235 together with the dev dependency and a Chromium install
-      # step. Left named rather than silently omitted, so the gap is visible.
+      - name: Devanagari serif gate
+        # Two halves. The static half reads the font <link> and needs nothing;
+        # the browser half drives Chromium and reads the fonts the renderer
+        # actually painted, so it needs the app up AND network access to
+        # fonts.gstatic. Exit 2 means the browser could not reach the font
+        # host — honest on a locked-down machine, a broken runner here.
+        run: |
+          set -e
+          uv run astro-ai > /tmp/server.log 2>&1 &
+          for _ in $(seq 1 40); do
+            curl -sf http://127.0.0.1:8000/health >/dev/null && break
+            sleep 1
+          done
+          code=0
+          uv run python scripts/verify_devanagari_serif.py || code=$?
+          if [ "$code" = "2" ]; then
+            echo "::error::verify_devanagari_serif could not reach the font host from CI."
+            exit 1
+          fi
+          exit "$code"
+        env:
+          OPENAI_API_KEY: ci-placeholder-not-used

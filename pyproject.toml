@@ -45,6 +45,11 @@ astro-ai = "astro_ai.main:cli"
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    # Drives scripts/verify_devanagari_serif.py, which reads the fonts the
+    # browser ACTUALLY painted via CDP rather than trusting the CSS. Until it
+    # was added the gate returned 2 ("could not verify") before running a
+    # single check, so #189's regression guard had never once executed.
+    "playwright>=1.47",
 ]
 
 [tool.pytest.ini_options]
