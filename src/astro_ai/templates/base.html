@@ -216,7 +216,27 @@
      It is still ABOVE #189's "flat or lower" criterion, and that remains a
      deliberate waiver rather than a pass: the alternative is shipping
      Sanskrit in a sans face under a serif headline, which is the entire
-     defect. This is the cheapest correct shape, not a free one. -->
+     defect. This is the cheapest correct shape, not a free one.
+
+     REDESIGN (#233): tailwind.config.js defines the two redesign font
+     families, but this link deliberately does NOT request them yet. Nothing
+     renders in either face until #241 restyles the shell, and the payload here
+     is governed by a measured budget (MAX_FONT_BYTES = 285,000 in
+     scripts/verify_devanagari_serif.py, currently 268,820 — about 16 KB of
+     headroom). Adding two families to a render-blocking request without being
+     able to measure the result is how that budget gets spent by accident.
+     Add them in #241, in the same change that first uses them, and re-run the
+     gate. Until then those utilities fall through to Georgia by design.
+
+     Do not name the utilities literally in this comment. Tailwind's content
+     scanner reads raw text, comments included, so writing the class name here
+     generates its rule — an 80-byte declaration asking for a font the page
+     does not load, which is the exact state this note exists to prevent.
+     Measured 2026-09-02: it did, and this wording is the fix.
+
+     Noto Sans Devanagari at 400-700 is load-bearing and must survive the
+     redesign — see the #189 reasoning above and the static check in
+     verify_devanagari_serif.py, which fails if it stops being requested. -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400&display=swap" rel="stylesheet">
 
 <!-- The Tailwind theme that used to live here as `tailwind.config = {...}`

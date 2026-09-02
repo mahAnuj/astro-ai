@@ -69,9 +69,79 @@ module.exports = {
         // both cheaper and more accurate. Full reasoning at the font <link>
         // in base.html.
         display: ['"Crimson Pro"', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
+
+        // ─── Redesign stack (#233/#238) ───────────────────────────────
+        // Additive. Nothing uses these until #241 restyles the shell; the
+        // Inter/Crimson Pro entries above stay authoritative until the last
+        // screen migrates, so the site is never half-typeset.
+        //
+        // Marcellus and Manrope ship NO Devanagari subset, so both keep
+        // "Noto Sans Devanagari" as their second entry. That is not belt-and-
+        // braces — the handoff proposed Marcellus + Manrope + Tiro Devanagari
+        // Sanskrit and nothing else, which would have left every bold Hindi
+        // heading across 43 templates falling back to a system font at
+        // html[lang="hi"]{font-size:108%}. That is #189 returning, and
+        // scripts/verify_devanagari_serif.py now fails statically if the sans
+        // stops being requested at 400-700 (#235).
+        //
+        // Tiro Devanagari Sanskrit is deliberately absent here: it belongs to
+        // the [lang="sa"] rule in base.html, where Noto Serif Devanagari sits
+        // today, not to a utility class. Same reasoning as the #189 note above
+        // — a serif Devanagari in `display` would force loading its bold.
+        marcellus: ['Marcellus', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
+        manrope: ['Manrope', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
         cream: '#faf7f2',
+
+        // ─── Redesign palette (#233/#238) ─────────────────────────────
+        // Role-based, unlike the `astro` ramp below it: night is "the sky"
+        // (hero/nav/footer panels), parchment is the editorial page the
+        // reading sits on, saffron is action, gold is ornament ON NIGHT ONLY,
+        // sindoor is glyphs and citations on the light surfaces.
+        //
+        // Namespaced under `bhagya` rather than dropped in at the top level
+        // because `cream` already exists at #faf7f2 and the redesign's cream
+        // is #FAF6EF. Two near-identical names for two different values is how
+        // a migration ships a page that is half one palette and half the
+        // other. The old one keeps its name until nothing uses it.
+        //
+        // THREE VALUES DIFFER FROM THE HANDOFF, and the arithmetic is the
+        // reason (#236). WCAG AA needs 4.5:1 for normal text; the 3.0:1
+        // exemption wants >=24px, or >=18.66px bold, and none of these is
+        // close to either:
+        //
+        //   muted-2      #8A8175 -> #6F675E   was 3.56:1 on cream / 3.13:1 on
+        //                                     cream-2, at 50 uses of 9-14px.
+        //                                     Now 5.16 / 4.54.
+        //   placeholder  #A9A096 -> #71675D   was 2.39:1, at 20 uses of
+        //                                     10-15px. Now 5.13 / 4.52.
+        //
+        // The third correction is not a colour: the "myth line" on night moves
+        // from rgba(250,246,239,.45) to .48 (4.29:1 -> 4.71:1). It lives in
+        // whichever template renders that card, not here.
+        //
+        // The handoff's own README recommends #8A8175 as one of two safe
+        // colours on cream, which is how all three got through its review. Add
+        // each of these to DECLARED_PAIRS in scripts/verify_contrast.py as a
+        // screen starts using it — the gate reads the real hex out of this
+        // file and the built CSS, so declaring the pairing is all it needs.
+        bhagya: {
+          night:       '#140F1C',  // hero/nav/footer panels, primary button fill
+          ink:         '#17131A',  // headings, primary text on the light surfaces
+          'ink-soft':  '#4A4238',  // long-form body
+          muted:       '#6B6259',  // secondary copy
+          'muted-2':   '#6F675E',  // micro-labels, meta — CORRECTED from #8A8175
+          placeholder: '#71675D',  // input placeholder — CORRECTED from #A9A096
+          cream:       '#FAF6EF',  // page background
+          'cream-2':   '#F1E7D8',  // alternating band, subtle card fill
+          line:        '#E2D6C2',  // 1px dividers, hairline-grid gutters
+          'line-2':    '#EDE4D5',  // list row dividers
+          border:      '#DED4C2',  // input + card borders
+          saffron:     '#E4913C',  // primary accent, CTA fill
+          gold:        '#C8A44D',  // ornament — ON NIGHT ONLY, 2.20:1 on cream
+          sindoor:     '#9E2B25',  // glyphs, eyebrows, citations, links on light
+        },
         astro: {
           50:  '#f6f1fb',
           100: '#ece1f6',
