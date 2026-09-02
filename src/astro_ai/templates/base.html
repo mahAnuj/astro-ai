@@ -248,10 +248,24 @@
 
      TEXT COLOR ON bg-cream:
        text-stone-600 → informational meta (dates, categories, hints).
-                        Passes WCAG AA at ~4.6:1.
+                        Passes WCAG AA at ~7.14:1.
        text-stone-500 → decorative only (subtle disclaimers, italic
                         transliterations, dot separators). Never for
                         actionable or standalone-readable text.
+                        4.49:1 — just under the 4.5:1 AA needs, which is
+                        exactly why this rule exists.
+       Ratios are checked by scripts/verify_contrast.py, not by eye.
+       This block previously credited stone-600 with ~4.6:1, which is
+       stone-500's figure — the two were crossed, so the colour being
+       recommended was carrying the number belonging to the colour being
+       restricted. Understated, so nothing shipped unsafe, but a wrong
+       number in the design system's own source of truth.
+
+     PLACEHOLDER TEXT:
+       placeholder-stone-500 → 4.80:1 on white. stone-400 was used until
+                        2026-09-02 and is 2.52:1 — a plain AA failure in
+                        every form on the site. Placeholder text is text;
+                        it gets no large-text exemption.
 
      META TEXT SIZE:
        text-sm  → informational meta text (dates, categories, read
