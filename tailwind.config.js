@@ -174,39 +174,29 @@ module.exports = {
       // rather than inventing its own keyframes. The gate in base.html
       // (@media prefers-reduced-motion) neutralises all of them for
       // motion-sensitive users.
+      // Declared here means EMITTED only if a template uses the utility —
+      // Tailwind is JIT. `reveal-up`, `flicker`, `draw-in`, `spin-slow` and
+      // `shimmer` were declared and never used by any template, so none of the
+      // five ever reached app.css: `grep -c revealUp app.css` returned 0. A
+      // vocabulary nobody speaks is not a vocabulary, and `revealUp` was
+      // actively misleading — base.html defines a DIFFERENT animation of the
+      // same name (700ms, 32px, with scale) which is the only one that has
+      // ever rendered, so reading this file gave you the wrong values for the
+      // behaviour you were looking at. Removed 2026-09-02 (#240).
+      //
+      // Add one back when a template actually needs it, not before.
       keyframes: {
-        revealUp: {
-          '0%':   { opacity: '0', transform: 'translateY(8px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
         breathe: {
           '0%, 100%': { transform: 'scale(1)' },
           '50%':      { transform: 'scale(1.025)' },
         },
-        flicker: {
-          '0%, 100%': { opacity: '1' },
-          '50%':      { opacity: '0.85' },
-        },
-        drawIn: {
-          '0%':   { strokeDashoffset: '100%' },
-          '100%': { strokeDashoffset: '0' },
-        },
-        spinSlow: {
-          'from': { transform: 'rotate(0deg)' },
-          'to':   { transform: 'rotate(360deg)' },
-        },
-        shimmer: {
-          '0%':   { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
-        },
       },
       animation: {
-        'reveal-up': 'revealUp 400ms ease-out forwards',
-        'breathe':   'breathe 3s ease-in-out infinite',
-        'flicker':   'flicker 1.4s ease-in-out infinite',
-        'draw-in':   'drawIn 1.2s ease-out forwards',
-        'spin-slow': 'spinSlow 20s linear infinite',
-        'shimmer':   'shimmer 2s ease-in-out infinite',
+        // _nav.html:31, the logo. The only animation utility in use.
+        // base.html carries an identical `breathe` keyframe for
+        // #kundli-loader .caption, which is plain CSS rather than a utility —
+        // both are needed, and their values must not drift apart.
+        'breathe': 'breathe 3s ease-in-out infinite',
       },
     },
   },
