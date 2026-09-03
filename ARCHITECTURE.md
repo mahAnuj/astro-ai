@@ -487,6 +487,7 @@ Dated, with the evidence. **Check here before proposing a change.**
 
 | date | decision | why, measured |
 |---|---|---|
+| 2026-09-03 | The Latin BODY face swapped globally to Manrope, while `display` stays Crimson Pro and the redesign's Marcellus is applied PER-SCREEN | #242. The homepage could not render as designed without Marcellus loaded, and the font budget (`MAX_FONT_BYTES = 285,000` in `scripts/verify_devanagari_serif.py`) had ~16 KB of headroom against a measured 268,820 B — adding two families on top of Inter and Crimson Pro would have cost ~39 KB and blown it. Measured from Google Fonts on 2026-09-03, latin subset, the exact URLs `base.html` requests: **Inter (variable, wght@400;500;600;700) 48,256 B** out; **Manrope (same axis) 24,836 B** and **Marcellus (static — it has no weight axis) 14,552 B** in. Net **−8,868 B**, so the total falls rather than rises. `display` was deliberately NOT swapped in the same motion: Marcellus ships one weight, and 15 `font-display font-bold`/`font-semibold` elements in this tree would have got a SYNTHESISED bold — the defect family #189 exists to remove. Two of those 15 (`_subscribe_modal.html:37`, `rashifal.html:181`) render Devanagari under the Hindi toggle and resolve to Noto Sans Devanagari 700, which is real and already loaded, so "just drop the bold" would de-bold Hindi headings. Crimson Pro retires with the last un-migrated screen, returning a further ~48 KB. Both new stacks keep `"Noto Sans Devanagari"` as their second entry (#189/#235) |
 | — | GCS bucket stays in the US | free tier is US-only; relocation considered and rejected |
 | — | Whole Sign houses | classical Parashari standard |
 | — | No Pythagorean numerology mode | table appears in none of the books in `data/` |
@@ -558,8 +559,17 @@ Dated, with the evidence. **Check here before proposing a change.**
   before being told to work around it. A guard that does not guard reads as an assurance.
   Note also that `_dummy_api_key` overrides a REAL key rather than defaulting when unset,
   so a developer with live credentials cannot have a forgotten stub spend paid quota.
-- **`verify_devanagari_serif`** needs Playwright, which is not installed; it fails
-  identically on every tree and is not a signal.
+- **`verify_devanagari_serif` cannot complete in an agent container, but not for the
+  reason recorded here until 2026-09-03.** Playwright IS installed and the gate runs;
+  what fails is the network. Headless Chromium cannot reach `fonts.googleapis.com`
+  through the agent proxy — the tunnel closes mid-handshake (`ws_closed_mid_exchange`,
+  ~39 B received), with or without an explicit `proxy=` on the launch and with QUIC and
+  HTTP/2 disabled. The gate does the right thing with that: it exits **2**, COULD NOT
+  VERIFY, rather than reporting a pass. So it is not a false failure to work around —
+  it is a check that has to run in CI, where the network is real. Font PAYLOAD figures
+  can still be established out of band by fetching the css2 URL and summing the woff2
+  responses (that is where #242's numbers came from); which FACE painted a given node
+  cannot be, and needs the browser.
 
 ---
 

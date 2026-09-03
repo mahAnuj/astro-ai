@@ -160,8 +160,16 @@ MUTATIONS = [
     # second, because nothing about it raises, degrades or logs.
     ("strip: Rahu Kaal item renders without checking the flag (#228)",
      "src/astro_ai/templates/_panchang_strip.html",
-     "      {%- if panchang_strip.daylight_ordinary %}\n\n      <div class=\"flex items-center gap-1 min-w-0\">\n        <span class=\"text-red-700",
-     "      {%- if True %}\n\n      <div class=\"flex items-center gap-1 min-w-0\">\n        <span class=\"text-red-700",
+     # ANCHORED ON THE PRECEDING COMMENT, not on the markup after the `if`.
+     # There are TWO `{%- if panchang_strip.daylight_ordinary %}` blocks in
+     # this file (Rahu Kaal and Abhijit) and their opening divs are identical,
+     # so the original anchor could only tell them apart by the colour utility
+     # on the label. #242 recoloured that (text-red-700 -> a palette token) and
+     # the harness reported ANCHOR MISSED — silent coverage loss, not a
+     # failure, which is the shape of defect this whole file exists to prevent.
+     # The comment above the Rahu Kaal block is unique and carries no styling.
+     "push the row into overflow at 320px. -#}\n      {%- if panchang_strip.daylight_ordinary %}",
+     "push the row into overflow at 320px. -#}\n      {%- if True %}",
      "test_surface_hides_daylight_windows_when_there_is_no_daylight[homepage strip]"),
 
     ("/today: the two window cards render without checking the flag (#228)",
