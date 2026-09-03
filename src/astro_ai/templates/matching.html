@@ -12,8 +12,8 @@
 <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
   <header>
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">{{ t(lang, 'matching_title') }}</h1>
-    <p class="text-sm text-stone-600">{{ t(lang, 'matching_subtitle') }}</p>
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">{{ t(lang, 'matching_title') }}</h1>
+    <p class="text-sm text-bhagya-muted">{{ t(lang, 'matching_subtitle') }}</p>
   </header>
 
   {# Reusable macro: one side of the matching form with optional saved-chart dropdown.
@@ -22,13 +22,13 @@
   {% macro person_form(prefix, heading_key, placeholder_place, collection) %}
   {% set section = 'section-groom' if prefix == 'g_' else 'section-bride' %}
   <div class="space-y-4">
-    <h2 class="font-display text-xl text-astro-700">{{ t(lang, heading_key) }}</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-sindoor">{{ t(lang, heading_key) }}</h2>
 
     {% if collection and collection.charts %}
     <label class="block">
-      <span class="text-sm font-semibold text-stone-700">Pick from saved charts</span>
+      <span class="text-sm font-semibold text-bhagya-ink-soft">Pick from saved charts</span>
       <select onchange="autoFillFromSaved(this, '{{ prefix }}')"
-              class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg bg-white text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none cursor-pointer">
+              class="mt-1.5 w-full px-3 py-3 border border-bhagya-border rounded bg-white text-bhagya-ink focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none cursor-pointer">
         <option value="">— Enter manually below —</option>
         {% for c in collection.charts %}
         <option value="{{ c.id }}"
@@ -41,41 +41,41 @@
         {% endfor %}
       </select>
     </label>
-    <div class="text-xs text-stone-600 -mt-2">or fill in manually:</div>
+    <div class="text-xs text-bhagya-muted -mt-2">or fill in manually:</div>
     {% endif %}
 
     <label class="block">
-      <span class="text-sm font-semibold text-stone-700">Name <span class="text-stone-500 font-normal">(optional)</span></span>
+      <span class="text-sm font-semibold text-bhagya-ink-soft">Name <span class="text-bhagya-muted-2 font-normal">(optional)</span></span>
       <input type="text" name="{{ prefix }}name" id="{{ prefix }}name" autofocus autocomplete="{{ section }} name"
-             class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+             class="mt-1.5 w-full px-3 py-3 border border-bhagya-border rounded focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
     </label>
     <label class="block">
-      <span class="text-sm font-semibold text-stone-700">Birth date</span>
+      <span class="text-sm font-semibold text-bhagya-ink-soft">Birth date</span>
       <input type="date" name="{{ prefix }}birth_date" id="{{ prefix }}birth_date" required autocomplete="{{ section }} bday"
-             class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+             class="mt-1.5 w-full px-3 py-3 border border-bhagya-border rounded focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
     </label>
     <label class="block">
-      <span class="text-sm font-semibold text-stone-700">Birth time <span class="text-stone-500 font-normal">(24h local)</span></span>
+      <span class="text-sm font-semibold text-bhagya-ink-soft">Birth time <span class="text-bhagya-muted-2 font-normal">(24h local)</span></span>
       <input type="time" name="{{ prefix }}birth_time" id="{{ prefix }}birth_time" required
-             class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+             class="mt-1.5 w-full px-3 py-3 border border-bhagya-border rounded focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
     </label>
     <label class="block">
-      <span class="text-sm font-semibold text-stone-700">Birth place <span class="text-stone-500 font-normal">(city, country)</span></span>
+      <span class="text-sm font-semibold text-bhagya-ink-soft">Birth place <span class="text-bhagya-muted-2 font-normal">(city, country)</span></span>
       <input type="text" name="{{ prefix }}birth_place" id="{{ prefix }}birth_place" required placeholder="{{ placeholder_place }}" autocomplete="{{ section }} address-level2"
-             class="mt-1.5 w-full px-3 py-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+             class="mt-1.5 w-full px-3 py-3 border border-bhagya-border rounded focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
     </label>
   </div>
   {% endmacro %}
 
   <form method="post" action="/matching" id="matching-form"
-        class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+        class="bg-white border border-bhagya-line p-6 sm:p-8">
     {# UNION-VISUAL FORM (Issue #82) — two person-forms visually meet in
        the middle via distinct accent borders (astro-purple for groom,
        rose for bride) and a central heart connector on desktop. Also
        addresses part of Issue #72: clearer Person A / Person B grouping.
        On mobile the two cards stack; the heart appears between them. #}
     <div class="relative grid md:grid-cols-2 gap-6 md:gap-10">
-      <div class="rounded-xl border-2 border-astro-200 bg-astro-50/30 p-4 sm:p-5">
+      <div class="border-2 border-bhagya-line bg-bhagya-cream-2/30 p-4 sm:p-5">
         {{ person_form("g_", "matching_groom", "e.g. Mumbai, India", collection) }}
       </div>
 
@@ -84,18 +84,18 @@
          (below) is out of the visual flow. Without this, users on phones
          scroll from groom's Birth place field straight into bride's Name
          with no signal they've moved to a different person's chart. #}
-      <div class="md:hidden flex items-center justify-center gap-3 -my-2 text-stone-600">
-        <div class="flex-1 h-px bg-stone-300"></div>
+      <div class="md:hidden flex items-center justify-center gap-3 -my-2 text-bhagya-muted">
+        <div class="flex-1 h-px bg-bhagya-border"></div>
         <div class="flex items-center justify-center w-10 h-10 rounded-full bg-white border-2 border-amber-400 shadow"
              style="animation: breathe 3s ease-in-out infinite">
           <svg class="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
           </svg>
         </div>
-        <div class="flex-1 h-px bg-stone-300"></div>
+        <div class="flex-1 h-px bg-bhagya-border"></div>
       </div>
 
-      <div class="rounded-xl border-2 border-rose-200 bg-rose-50/30 p-4 sm:p-5">
+      <div class="border-2 border-rose-200 bg-rose-50/30 p-4 sm:p-5">
         {{ person_form("b_", "matching_bride", "e.g. Delhi, India",  collection) }}
       </div>
 
@@ -103,7 +103,7 @@
          the midpoint of the two-column grid. `animate-breathe` reuses the
          Tailwind keyframe already defined in base.html for the Om logo. #}
       <div class="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                  w-12 h-12 rounded-full bg-white border-2 border-amber-400 shadow-lg
+                  w-12 h-12 rounded-full bg-white border-2 border-amber-400
                   items-center justify-center pointer-events-none z-10"
            style="animation: breathe 3s ease-in-out infinite">
         <svg class="w-6 h-6 text-rose-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -114,7 +114,7 @@
 
     {# Desktop-inline submit (hidden on mobile since we duplicate as sticky) #}
     <button type="submit"
-            class="hidden md:block mt-6 w-full py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors disabled:bg-stone-400 disabled:cursor-wait">
+            class="hidden md:block mt-6 w-full py-3 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night font-semibold rounded transition-colors disabled:bg-bhagya-muted-2 disabled:cursor-wait">
       <span class="htmx-default">{{ t(lang, 'matching_submit') }} &rarr;</span>
       <span class="htmx-indicator">Computing&hellip;</span>
     </button>
@@ -125,7 +125,7 @@
        and reduces the scroll-to-check-progress friction. #}
     <div class="md:hidden mt-6">
       <button type="submit"
-              class="w-full py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors disabled:bg-stone-400 disabled:cursor-wait">
+              class="w-full py-3 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night font-semibold rounded transition-colors disabled:bg-bhagya-muted-2 disabled:cursor-wait">
         <span class="htmx-default">{{ t(lang, 'matching_submit') }} &rarr;</span>
         <span class="htmx-indicator">Computing&hellip;</span>
       </button>
@@ -135,11 +135,11 @@
   {# Sticky mobile CTA — mirrors the primary submit, appears fixed at
      bottom-of-viewport on mobile only. Uses form= attribute so the
      button submits the form above without needing to be nested inside it. #}
-  <div class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-cream/95 backdrop-blur border-t border-stone-200 p-3 no-print"
+  <div class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-bhagya-cream/95 backdrop-blur border-t border-bhagya-line p-3 no-print"
        id="matching-sticky-cta"
        style="display: none;">
     <button type="submit" form="matching-form"
-            class="w-full py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors shadow-lg">
+            class="w-full py-3 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night font-semibold rounded transition-colors">
       {{ t(lang, 'matching_submit') }} &rarr;
     </button>
   </div>
@@ -161,18 +161,18 @@
      Typography plugin is not loaded, so we don't use `prose`). #}
   <section class="mt-10 space-y-8">
     <div>
-      <h2 class="font-display text-2xl text-astro-800 mb-3">What is Ashtakoot Guna Milan?</h2>
-      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6">
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+      <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-3">What is Ashtakoot Guna Milan?</h2>
+      <div class="bg-white border border-bhagya-line p-5 sm:p-6">
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           <strong>Ashtakoot Guna Milan</strong> ("eight-fold merit matching") is the classical Vedic system for scoring the compatibility of two natal charts for marriage. Total possible: <strong>36 points</strong>, distributed across eight <em>kootas</em> (compatibility axes). A minimum threshold of <strong>18/36</strong> is the classical "acceptable" line; 24+/36 is considered strong; 30+/36 is rare and excellent. But the raw score alone is only half the picture &mdash; Bhakoot dosha, Nadi dosha, and Manglik status can override or be cancelled by other placements, and a good astrologer weighs the felt-life implications of each koota separately rather than just checking the total.
         </p>
       </div>
     </div>
 
     <div>
-      <h3 class="font-display text-xl text-astro-800 mb-3">The 8 kootas</h3>
-      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6">
-        <p class="mb-4 text-sm text-stone-700 leading-relaxed bg-amber-50/60 border border-amber-200 rounded-lg px-4 py-3">
+      <h3 class="font-marcellus text-xl text-bhagya-sindoor mb-3">The 8 kootas</h3>
+      <div class="bg-white border border-bhagya-line p-5 sm:p-6">
+        <p class="mb-4 text-sm text-bhagya-ink-soft leading-relaxed bg-amber-50/60 border border-amber-200 rounded px-4 py-3">
           <strong>Which chart goes in which side matters.</strong> Two of the eight kootas
           &mdash; Varna and Gana &mdash; are scored <em>directionally</em> in the classical
           tradition: the same two charts can score differently depending on which partner
@@ -181,7 +181,7 @@
           them changes the result, because the tradition gives the two directions
           different verdicts.
         </p>
-        <ul class="space-y-2.5 text-sm sm:text-base text-stone-800 leading-relaxed">
+        <ul class="space-y-2.5 text-sm sm:text-base text-bhagya-ink leading-relaxed">
           <li>&bull; <strong>Varna (1 point)</strong> &mdash; spiritual temperament comparison based on Moon-sign class (Brahmin/Kshatriya/Vaishya/Shudra). Bride's Varna should not exceed groom's.</li>
           <li>&bull; <strong>Vashya (2 points)</strong> &mdash; mutual attraction based on Moon-sign category (human/quadruped/aquatic/etc). Certain pairings hold natural sway over others.</li>
           <li>&bull; <strong>Tara (3 points)</strong> &mdash; nakshatra-star compatibility. Bhagya's tool credits position 8 (Ati-Mitra) as favourable per BPHS &mdash; most free tools mark it neutral, dropping a real classical positive.</li>
@@ -195,47 +195,47 @@
     </div>
 
     <div>
-      <h3 class="font-display text-xl text-astro-800 mb-3">Manglik matching &mdash; beyond the checkbox</h3>
-      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6">
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
-          Manglik (Mangal) Dosh is the classical concern about Mars-placement causing marital friction. Bhagya's matching applies the FULL classical evaluation, not just "Mars in 1st/4th/7th/8th/12th house from Lagna". We also check Mars from the Moon and Mars from Venus (the three-axis rule), and apply every classical cancellation &mdash; bride+groom both Manglik cancels the dosha; Mars in own or exalted sign cancels; Jupiter aspecting the 7th house cancels; Mars in Libra (fall) is not counted; and more. Read the full <a href="/learn/manglik-dosh/" class="text-astro-700 hover:underline">Manglik Dosh explainer</a> for the classical logic.
+      <h3 class="font-marcellus text-xl text-bhagya-sindoor mb-3">Manglik matching &mdash; beyond the checkbox</h3>
+      <div class="bg-white border border-bhagya-line p-5 sm:p-6">
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
+          Manglik (Mangal) Dosh is the classical concern about Mars-placement causing marital friction. Bhagya's matching applies the FULL classical evaluation, not just "Mars in 1st/4th/7th/8th/12th house from Lagna". We also check Mars from the Moon and Mars from Venus (the three-axis rule), and apply every classical cancellation &mdash; bride+groom both Manglik cancels the dosha; Mars in own or exalted sign cancels; Jupiter aspecting the 7th house cancels; Mars in Libra (fall) is not counted; and more. Read the full <a href="/learn/manglik-dosh/" class="text-bhagya-sindoor hover:underline">Manglik Dosh explainer</a> for the classical logic.
         </p>
       </div>
     </div>
 
     <div>
-      <h3 class="font-display text-xl text-astro-800 mb-3">Beyond Ashtakoot &mdash; what matching does NOT check</h3>
-      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+      <h3 class="font-marcellus text-xl text-bhagya-sindoor mb-3">Beyond Ashtakoot &mdash; what matching does NOT check</h3>
+      <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           A good astrologer doesn't stop at Guna Milan. The full classical evaluation also considers:
         </p>
-        <ul class="space-y-2 text-sm sm:text-base text-stone-800 leading-relaxed">
+        <ul class="space-y-2 text-sm sm:text-base text-bhagya-ink leading-relaxed">
           <li>&bull; 7th house of each chart (marriage house), its lord, and any planets there.</li>
           <li>&bull; Venus (Shukra) in both charts &mdash; natural karaka of love and marriage.</li>
           <li>&bull; Dashas active around any proposed marriage date &mdash; Venus/Jupiter Dashas favour marriage; Rahu/Ketu can bring unusual partnerships.</li>
           <li>&bull; Sade Sati and Ashtama Shani transits &mdash; Saturn's 7.5-year phases can strain any relationship.</li>
           <li>&bull; Bhava Bala (house strength) via Ashtakvarga &mdash; quantifies which houses can carry their significations.</li>
         </ul>
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
-          This is why we cross-link to <a href="/manglik-check" class="text-astro-700 hover:underline">Manglik Check</a> and <a href="/sade-sati-check" class="text-astro-700 hover:underline">Sade Sati Check</a> from the results page. Ashtakoot is the fast screening tool; a full compatibility review requires all these layers.
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
+          This is why we cross-link to <a href="/manglik-check" class="text-bhagya-sindoor hover:underline">Manglik Check</a> and <a href="/sade-sati-check" class="text-bhagya-sindoor hover:underline">Sade Sati Check</a> from the results page. Ashtakoot is the fast screening tool; a full compatibility review requires all these layers.
         </p>
       </div>
     </div>
 
     <div>
-      <h3 class="font-display text-xl text-astro-800 mb-3">Related reading</h3>
+      <h3 class="font-marcellus text-xl text-bhagya-sindoor mb-3">Related reading</h3>
       <div class="grid sm:grid-cols-2 gap-3">
-      <a href="/learn/kundali-matching-ashtakoot-guna-milan/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Full Ashtakoot Guna Milan article</div>
+      <a href="/learn/kundali-matching-ashtakoot-guna-milan/" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Full Ashtakoot Guna Milan article</div>
       </a>
-      <a href="/learn/manglik-dosh/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Manglik Dosh explainer</div>
+      <a href="/learn/manglik-dosh/" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Manglik Dosh explainer</div>
       </a>
-      <a href="/learn/marriage-timing-kundli/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Marriage timing in your Kundli</div>
+      <a href="/learn/marriage-timing-kundli/" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Marriage timing in your Kundli</div>
       </a>
-      <a href="/learn/marriage-delayed/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Delayed marriage &mdash; classical yogas</div>
+      <a href="/learn/marriage-delayed/" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Delayed marriage &mdash; classical yogas</div>
       </a>
       </div>
     </div>

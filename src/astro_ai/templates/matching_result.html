@@ -11,10 +11,10 @@
    other makes a single badge disagree with its own dot. They move together, with
    the screen that owns this file. #}
 {% set verdict_palette = {
-  "Uttam":           {"border": "border-emerald-300", "bg": "bg-emerald-50", "text": "text-emerald-800", "dot": "bg-emerald-500", "hex": "#10b981"},
-  "Madhyam":         {"border": "border-astro-300",   "bg": "bg-astro-50",   "text": "text-astro-800",   "dot": "bg-astro-500",   "hex": "#a855f7"},
-  "Avara":           {"border": "border-amber-300",   "bg": "bg-amber-50",   "text": "text-amber-800",   "dot": "bg-amber-500",   "hex": "#f59e0b"},
-  "Not recommended": {"border": "border-rose-300",    "bg": "bg-rose-50",    "text": "text-rose-800",    "dot": "bg-rose-500",    "hex": "#f43f5e"},
+  "Uttam":           {"border": "border-emerald-300",  "bg": "bg-bhagya-cream-2", "text": "text-emerald-800",    "dot": "bg-emerald-700",    "hex": "#065f46"},
+  "Madhyam":         {"border": "border-bhagya-gold",  "bg": "bg-bhagya-cream-2", "text": "text-bhagya-sindoor", "dot": "bg-bhagya-saffron", "hex": "#9E2B25"},
+  "Avara":           {"border": "border-amber-300",    "bg": "bg-bhagya-cream-2", "text": "text-amber-800",      "dot": "bg-amber-600",      "hex": "#92400e"},
+  "Not recommended": {"border": "border-rose-300",     "bg": "bg-bhagya-cream-2", "text": "text-rose-800",       "dot": "bg-rose-600",       "hex": "#9f1239"},
 } %}
 {% set palette = verdict_palette[guna.overall_verdict] %}
 {# Circumference of dial circle (2 * pi * r=80) = 502.65. Target offset =
@@ -30,10 +30,10 @@
 
   <!-- HEADER ------------------------------------------------------ -->
   <header>
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">{{ t(lang, 'matching_results') }}</h1>
-    <p class="text-sm text-stone-600 mb-3">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">{{ t(lang, 'matching_results') }}</h1>
+    <p class="text-sm text-bhagya-muted mb-3">
       {{ groom.name or t(lang, 'matching_groom') }}
-      <span class="text-stone-500">&times;</span>
+      <span class="text-bhagya-muted-2">&times;</span>
       {{ bride.name or t(lang, 'matching_bride') }}
     </p>
     {% with pdf_filename_hint = ((groom.name or 'Groom') + ' & ' + (bride.name or 'Bride') + ' Match') %}
@@ -42,7 +42,7 @@
   </header>
 
   <!-- SCORE HERO — animated dial (Issue #83) ---------------------- -->
-  <section class="bg-white rounded-2xl border {{ palette.border }} shadow-sm overflow-hidden">
+  <section class="bg-white border {{ palette.border }} overflow-hidden">
     <div class="{{ palette.bg }} px-6 sm:px-8 py-10 flex flex-col items-center">
 
       {# Radial dial — 200x200 SVG rotated -90° so 0% is at top.
@@ -66,21 +66,21 @@
           <div class="text-[10px] font-semibold uppercase tracking-wider {{ palette.text }} opacity-70 mb-0.5">
             {{ t(lang, 'matching_total') }}
           </div>
-          <div class="font-display text-5xl sm:text-6xl {{ palette.text }} tabular-nums leading-none score-dial-num"
+          <div class="font-marcellus text-5xl sm:text-6xl {{ palette.text }} tabular-nums leading-none score-dial-num"
                data-score-target="{{ guna.total_awarded }}"
                data-score-precision="1">0.0</div>
-          <div class="text-xs text-stone-600 mt-1">of {{ guna.total_max }} &middot; {{ guna.percent }}%</div>
+          <div class="text-xs text-bhagya-muted mt-1">of {{ guna.total_max }} &middot; {{ guna.percent }}%</div>
         </div>
       </div>
 
       {# Verdict pill below dial #}
-      <div class="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 {{ palette.border }} bg-white {{ palette.text }} font-semibold text-base shadow-sm">
+      <div class="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 {{ palette.border }} bg-white {{ palette.text }} font-semibold text-base">
         <span class="w-2.5 h-2.5 rounded-full {{ palette.dot }}"></span>
         {{ t(lang, verdict_key) }}
       </div>
 
       {# Scale legend #}
-      <div class="mt-4 text-xs text-stone-600 tracking-wide">
+      <div class="mt-4 text-xs text-bhagya-muted tracking-wide">
         0 &middot; 18 <span class="opacity-60">Avara</span> &middot;
         24 <span class="opacity-60">Madhyam</span> &middot;
         30 <span class="opacity-60">Uttam</span> &middot; 36
@@ -95,11 +95,11 @@
                   {% if guna.mangal_dosh_compatible %}bg-emerald-500{% else %}bg-rose-500{% endif %}"></div>
       <div>
         <div class="text-xs font-semibold uppercase tracking-wider mb-0.5
-                    {% if guna.mangal_dosh_compatible %}text-emerald-700{% else %}text-rose-700{% endif %}">
+                    {% if guna.mangal_dosh_compatible %}text-emerald-800{% else %}text-bhagya-sindoor{% endif %}">
           {{ t(lang, 'matching_mangal') }} &middot;
           {% if guna.mangal_dosh_compatible %}{{ t(lang, 'matching_mangal_compat') }}{% else %}{{ t(lang, 'matching_mangal_incompat') }}{% endif %}
         </div>
-        <p class="text-sm text-stone-700 leading-relaxed">{{ guna.mangal_dosh_note }}</p>
+        <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ guna.mangal_dosh_note }}</p>
       </div>
     </div>
 
@@ -115,17 +115,17 @@
                   {% if _bd.cancelled %}bg-amber-500{% else %}bg-rose-500{% endif %}"></div>
       <div class="min-w-0">
         <div class="text-xs font-semibold uppercase tracking-wider mb-0.5
-                    {% if _bd.cancelled %}text-amber-700{% else %}text-rose-700{% endif %}">
+                    {% if _bd.cancelled %}text-amber-800{% else %}text-bhagya-sindoor{% endif %}">
           {{ t(lang, 'matching_bhakoot') }} &middot; {{ _bd.name }} &middot;
           {% if _bd.cancelled %}{{ t(lang, 'matching_bhakoot_cancelled') }}
           {% else %}{{ t(lang, 'matching_bhakoot_uncancelled') }}{% endif %}
         </div>
-        <p class="text-sm text-stone-700 leading-relaxed">{{ _bd.note }}</p>
+        <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ _bd.note }}</p>
 
         {% if _bd.pariharas %}
         <div class="mt-2">
-          <div class="text-xs font-medium text-stone-500 mb-1">{{ t(lang, 'matching_bhakoot_applies') }}</div>
-          <ul class="text-sm text-stone-700 space-y-0.5">
+          <div class="text-xs font-medium text-bhagya-muted-2 mb-1">{{ t(lang, 'matching_bhakoot_applies') }}</div>
+          <ul class="text-sm text-bhagya-ink-soft space-y-0.5">
             {% for p in _bd.pariharas %}
             <li class="flex gap-2"><span class="text-amber-600 flex-shrink-0">&check;</span><span>{{ p }}</span></li>
             {% endfor %}
@@ -135,8 +135,8 @@
 
         {% if _bd.unevaluated %}
         <div class="mt-2">
-          <div class="text-xs font-medium text-stone-500 mb-1">{{ t(lang, 'matching_bhakoot_uneval') }}</div>
-          <ul class="text-xs text-stone-500 space-y-0.5">
+          <div class="text-xs font-medium text-bhagya-muted-2 mb-1">{{ t(lang, 'matching_bhakoot_uneval') }}</div>
+          <ul class="text-xs text-bhagya-muted-2 space-y-0.5">
             {% for u in _bd.unevaluated %}
             <li class="flex gap-2"><span class="flex-shrink-0">&ndash;</span><span>{{ u }}</span></li>
             {% endfor %}
@@ -144,7 +144,7 @@
         </div>
         {% endif %}
 
-        <p class="mt-2 text-xs text-stone-500 italic">{{ t(lang, 'matching_bhakoot_nopoints') }}</p>
+        <p class="mt-2 text-xs text-bhagya-muted-2 italic">{{ t(lang, 'matching_bhakoot_nopoints') }}</p>
       </div>
     </div>
     {% endif %}
@@ -160,18 +160,18 @@
                   {% if _nd.grave %}bg-rose-500{% else %}bg-amber-500{% endif %}"></div>
       <div class="min-w-0">
         <div class="text-xs font-semibold uppercase tracking-wider mb-0.5
-                    {% if _nd.grave %}text-rose-700{% else %}text-amber-700{% endif %}">
+                    {% if _nd.grave %}text-bhagya-sindoor{% else %}text-amber-800{% endif %}">
           {{ t(lang, 'matching_nadi') }} &middot; {{ _nd.nadi }} &middot;
           {% if _nd.grave %}{{ t(lang, 'matching_nadi_grave') }}
           {% elif _nd.alpa %}{{ t(lang, 'matching_nadi_alpa') }}
           {% else %}{{ t(lang, 'matching_nadi_plain') }}{% endif %}
         </div>
-        <p class="text-sm text-stone-700 leading-relaxed">{{ _nd.note }}</p>
+        <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ _nd.note }}</p>
 
         {% if _nd.mitigations %}
         <div class="mt-2">
-          <div class="text-xs font-medium text-stone-500 mb-1">{{ t(lang, 'matching_nadi_mitig') }}</div>
-          <ul class="text-sm text-stone-700 space-y-0.5">
+          <div class="text-xs font-medium text-bhagya-muted-2 mb-1">{{ t(lang, 'matching_nadi_mitig') }}</div>
+          <ul class="text-sm text-bhagya-ink-soft space-y-0.5">
             {% for m in _nd.mitigations %}
             <li class="flex gap-2"><span class="text-amber-600 flex-shrink-0">&check;</span><span>{{ m }}</span></li>
             {% endfor %}
@@ -180,14 +180,14 @@
         {% endif %}
 
         {% if _nd.unevaluated %}
-        <ul class="mt-2 text-xs text-stone-500 space-y-0.5">
+        <ul class="mt-2 text-xs text-bhagya-muted-2 space-y-0.5">
           {% for u in _nd.unevaluated %}
           <li class="flex gap-2"><span class="flex-shrink-0">&ndash;</span><span>{{ u }}</span></li>
           {% endfor %}
         </ul>
         {% endif %}
 
-        <p class="mt-2 text-xs text-stone-500 italic">{{ t(lang, 'matching_nadi_nocancel') }}</p>
+        <p class="mt-2 text-xs text-bhagya-muted-2 italic">{{ t(lang, 'matching_nadi_nocancel') }}</p>
       </div>
     </div>
     {% endif %}
@@ -200,7 +200,7 @@
      (astro-purple) from bride (rose) — matches the union-visual on the
      matching form. #}
   {% macro mini_chart(ch, tint_bg, tint_border, stroke, chart_label='') -%}
-    <div class="{{ tint_bg }} rounded-xl border {{ tint_border }} p-4">
+    <div class="{{ tint_bg }} border {{ tint_border }} p-4">
       <svg viewBox="0 0 400 400" class="w-full block" xmlns="http://www.w3.org/2000/svg"
            role="img" aria-label="{{ chart_label or 'Birth chart' }} — North Indian diamond format, Lagna in {{ ch.lagna_rashi }}">
         <rect x="2" y="2" width="396" height="396" fill="transparent" stroke="{{ stroke }}" stroke-width="2"/>
@@ -223,7 +223,7 @@
       </svg>
     </div>
   {%- endmacro %}
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+  <section class="bg-white border border-bhagya-line p-6 sm:p-8">
     {# The old form here was `t(...) if t(...) else 'Both charts'`, which could
        never reach the fallback: translate() returns the KEY on a miss, and a
        non-empty key is truthy. The key was in fact missing, so this heading
@@ -231,19 +231,19 @@
        both languages. Do not reintroduce that guard anywhere — a missing key
        is caught by the i18n completeness check, not by a fallback that cannot
        fire. #}
-    <h2 class="font-display text-xl text-astro-700 mb-4">{{ t(lang, 'matching_charts_heading') }}</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-4">{{ t(lang, 'matching_charts_heading') }}</h2>
     <div class="grid sm:grid-cols-2 gap-5">
       <div>
         <div class="flex items-baseline justify-between mb-2">
-          <div class="font-display text-astro-800">{{ groom.name or t(lang, 'matching_groom') }}</div>
-          <div class="text-xs text-stone-600">{{ groom_chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</div>
+          <div class="font-marcellus text-bhagya-sindoor">{{ groom.name or t(lang, 'matching_groom') }}</div>
+          <div class="text-xs text-bhagya-muted">{{ groom_chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</div>
         </div>
-        {{ mini_chart(groom_chart, 'bg-astro-50/40', 'border-astro-100', '#6b21a8', chart_label=(groom.name or t(lang, 'matching_groom')) + ' birth chart') }}
+        {{ mini_chart(groom_chart, 'bg-bhagya-cream-2', 'border-bhagya-line', '#6b21a8', chart_label=(groom.name or t(lang, 'matching_groom')) + ' birth chart') }}
       </div>
       <div>
         <div class="flex items-baseline justify-between mb-2">
-          <div class="font-display text-rose-800">{{ bride.name or t(lang, 'matching_bride') }}</div>
-          <div class="text-xs text-stone-600">{{ bride_chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</div>
+          <div class="font-marcellus text-rose-800">{{ bride.name or t(lang, 'matching_bride') }}</div>
+          <div class="text-xs text-bhagya-muted">{{ bride_chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</div>
         </div>
         {{ mini_chart(bride_chart, 'bg-rose-50/30', 'border-rose-100', '#be123c', chart_label=(bride.name or t(lang, 'matching_bride')) + ' birth chart') }}
       </div>
@@ -254,19 +254,19 @@
   <!-- NARRATIVE (LLM-generated compatibility reading) ------------- -->
   {% if sections %}
   {% for title, body in sections %}
-  <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
-    <h2 class="font-display text-xl text-astro-700 mb-3">{{ title }}</h2>
-    <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-base">{{ body | linkify_learn }}</p>
+  <article class="bg-white border border-bhagya-line p-6 sm:p-8">
+    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-3">{{ title }}</h2>
+    <p class="leading-relaxed text-bhagya-ink whitespace-pre-wrap text-base">{{ body | linkify_learn }}</p>
   </article>
   {% endfor %}
   {% endif %}
 
   <!-- KOOTA BREAKDOWN TABLE --------------------------------------- -->
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
-    <h2 class="font-display text-xl text-astro-700 mb-4">{{ t(lang, 'matching_breakdown') }}</h2>
+  <section class="bg-white border border-bhagya-line p-5 sm:p-6">
+    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-4">{{ t(lang, 'matching_breakdown') }}</h2>
     <table class="w-full text-sm">
       <thead>
-        <tr class="border-b border-stone-200 text-xs font-semibold uppercase tracking-wider text-stone-600">
+        <tr class="border-b border-bhagya-line text-xs font-semibold uppercase tracking-wider text-bhagya-muted">
           <th class="text-left py-2">{{ t(lang, 'matching_col_koota') }}</th>
           <th class="text-right py-2 w-16">{{ t(lang, 'matching_col_max') }}</th>
           <th class="text-right py-2 w-20">{{ t(lang, 'matching_col_score') }}</th>
@@ -276,28 +276,42 @@
       <tbody>
         {% for k in guna.kootas %}
         {% set pct = (k.awarded / k.max_points * 100) | round(0, "floor") | int %}
-        <tr class="border-b border-stone-100 last:border-0">
+        <tr class="border-b border-bhagya-line-2 last:border-0">
           <td class="py-3">
-            <div class="font-semibold text-stone-900">{{ k.name }}</div>
-            <div class="text-xs text-stone-500">{{ k.sanskrit }}</div>
+            <div class="font-semibold text-bhagya-ink">{{ k.name }}</div>
+            <div class="text-xs text-bhagya-muted-2">{{ k.sanskrit }}</div>
+            {# 8px proportional bar (#246). GOLD normally, SINDOOR at zero.
+               That colour change is the one detail this screen's issue asks
+               to protect, and it only works paired with the honest-note card
+               below — Bhakoot scoring zero is the single most misread number
+               in Ashtakoota, and a red bar with no explanation beside it is
+               the misreading, not the fix.
+
+               aria-hidden because the score is already in the next cell as
+               text; a screen reader gets the number, not a bar it cannot
+               measure. #}
+            <div class="mt-2 h-2 bg-bhagya-line overflow-hidden" aria-hidden="true">
+              <div class="h-full {% if k.awarded == 0 %}bg-bhagya-sindoor{% else %}bg-bhagya-gold{% endif %}"
+                   style="width: {{ pct }}%"></div>
+            </div>
           </td>
-          <td class="py-3 text-right text-stone-600 tabular-nums">{{ k.max_points }}</td>
+          <td class="py-3 text-right text-bhagya-muted tabular-nums">{{ k.max_points }}</td>
           <td class="py-3 text-right tabular-nums">
-            <span class="font-display text-lg
-                         {% if pct >= 75 %}text-emerald-700{% elif pct >= 33 %}text-stone-800{% else %}text-rose-700{% endif %}">
+            <span class="font-marcellus text-lg
+                         {% if pct >= 75 %}text-emerald-800{% elif pct >= 33 %}text-bhagya-ink{% else %}text-bhagya-sindoor{% endif %}">
               {{ "%.1f"|format(k.awarded) }}
             </span>
           </td>
-          <td class="py-3 pl-4 text-stone-700 leading-relaxed">{{ k.note }}</td>
+          <td class="py-3 pl-4 text-bhagya-ink-soft leading-relaxed">{{ k.note }}</td>
         </tr>
         {% endfor %}
-        <tr class="border-t-2 border-stone-300 font-semibold">
-          <td class="py-3 text-stone-900">{{ t(lang, 'matching_total') }}</td>
-          <td class="py-3 text-right text-stone-600 tabular-nums">{{ guna.total_max }}</td>
+        <tr class="border-t-2 border-bhagya-border font-semibold">
+          <td class="py-3 text-bhagya-ink">{{ t(lang, 'matching_total') }}</td>
+          <td class="py-3 text-right text-bhagya-muted tabular-nums">{{ guna.total_max }}</td>
           <td class="py-3 text-right">
-            <span class="font-display text-xl {{ palette.text }} tabular-nums">{{ "%.1f"|format(guna.total_awarded) }}</span>
+            <span class="font-marcellus text-xl {{ palette.text }} tabular-nums">{{ "%.1f"|format(guna.total_awarded) }}</span>
           </td>
-          <td class="py-3 pl-4 text-stone-600">{{ t(lang, verdict_key) }}</td>
+          <td class="py-3 pl-4 text-bhagya-muted">{{ t(lang, verdict_key) }}</td>
         </tr>
         {# #170. This used to announce that a dosha cancellation had ADDED points
            to the total. It no longer can: cancelling a dosha and awarding a koota
@@ -307,7 +321,7 @@
            difference is a choice about method, not a disagreement about the chart. #}
         {% if guna.bhakoot_dosha.present or guna.nadi_dosha.present %}
         <tr>
-          <td colspan="4" class="pt-3 text-xs text-stone-600 leading-relaxed">
+          <td colspan="4" class="pt-3 text-xs text-bhagya-muted leading-relaxed">
             <strong>How this total was reached:</strong> the
             {{ "%.1f"|format(guna.total_awarded) }} above is the points table alone.
             {% if guna.bhakoot_dosha.cancelled %}
@@ -331,24 +345,24 @@
      placed AFTER the score (so the score is seen first) but BEFORE
      the Ask CTA (so a user with concerns has an immediate follow-up
      path). Amber-toned to signal "read this" without being alarming. #}
-  <aside class="rounded-2xl border-2 border-amber-300 bg-amber-50/60 p-5 sm:p-6">
+  <aside class="border-2 border-amber-300 bg-amber-50/60 p-5 sm:p-6">
     <div class="flex items-start gap-3">
       <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center">
-        <svg class="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <svg class="w-5 h-5 text-amber-800" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.732 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
         </svg>
       </div>
       <div class="flex-1">
-        <h3 class="font-display text-lg sm:text-xl text-amber-900 mb-2">
+        <h3 class="font-marcellus text-lg sm:text-xl text-amber-900 mb-2">
           {{ t(lang, 'matching_caveat_heading') }}
         </h3>
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed mb-2">
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed mb-2">
           {{ t(lang, 'matching_caveat_body_1') }}
         </p>
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed mb-2">
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed mb-2">
           {{ t(lang, 'matching_caveat_body_2') }}
         </p>
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           {{ t(lang, 'matching_caveat_body_3') }}
         </p>
       </div>
@@ -365,7 +379,7 @@
   {% endwith %}
 
   <div class="text-center no-print">
-    <a href="/matching" class="inline-flex items-center gap-1 text-astro-600 hover:text-astro-700 font-semibold text-sm">
+    <a href="/matching" class="inline-flex items-center gap-1 text-bhagya-sindoor hover:text-bhagya-sindoor font-semibold text-sm">
       <span aria-hidden="true">&larr;</span> {{ t(lang, 'matching_back') }}
     </a>
   </div>
