@@ -98,8 +98,12 @@ def test_cooldown_card_does_not_repeat_itself(client, cache, stub_llm, today_iso
     client.get("/rashifal/aries")
 
     body = client.get("/rashifal/aries", headers={"HX-Rashifal-Fragment": "1"}).text
-    heading = re.search(r'font-semibold text-stone-800">([^<]*)<', body).group(1).strip()
-    message = re.search(r'text-stone-600 leading-relaxed">([^<]*)<', body).group(1).strip()
+    # Anchored on data attributes, not on colour classes. This test used to
+    # find the heading by `text-stone-800` and broke the moment #244 recoloured
+    # the card — a behaviour assertion about repeated copy should not care what
+    # shade the copy is.
+    heading = re.search(r'data-retry-head[^>]*>([^<]*)<', body).group(1).strip()
+    message = re.search(r'data-retry-body[^>]*>([^<]*)<', body).group(1).strip()
 
     stem = heading.rstrip("…").rstrip(".").strip()
     assert not message.startswith(stem), f"heading repeated in the body: {heading!r} / {message!r}"
