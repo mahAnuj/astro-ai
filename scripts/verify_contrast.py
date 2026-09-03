@@ -270,22 +270,44 @@ def gate_2_charter_is_honest(colours) -> list[str]:
     """
     fails = []
     text = BASE_HTML.read_text(encoding="utf-8")
-    claims = re.findall(
-        r"(text-[a-z]+-\d{2,3})[^\n]*\n?[^\n]*?Passes WCAG AA at ~?([0-9.]+):1",
-        text,
-    )
+
+    # Two claim shapes. The original one states a ratio on bg-cream implicitly,
+    # because that was the only page surface when it was written. The redesign
+    # block (#233) has three surfaces — cream, cream-2 and night — so its claims
+    # NAME the surface, and #242 extended this gate rather than letting the new
+    # half of the charter go unchecked. An unchecked charter is worse than none:
+    # it reads as authority.
+    claims = [
+        (util, stated, "bg-cream")
+        for util, stated in re.findall(
+            r"(text-[a-z]+-\d{2,3})[^\n]*\n?[^\n]*?Passes WCAG AA at ~?([0-9.]+):1",
+            text,
+        )
+    ] + [
+        (util, stated, surface)
+        for util, stated, surface in re.findall(
+            r"(text-bhagya-[a-z0-9-]+)[^\n]*\n?[^\n]*?"
+            r"Passes WCAG AA at ~?([0-9.]+):1 on (bg-[a-z0-9-]+)",
+            text,
+        )
+    ]
     if not claims:
         return ["base.html states no 'Passes WCAG AA at N:1' ratio — the charter "
                 "block moved or was reworded, and this gate now checks nothing."]
-    cream = colours.get("bg-cream")
-    for util, stated in claims:
+    if not any(u.startswith("text-bhagya-") for u, _s, _b in claims):
+        return ["base.html states no redesign-palette ratio — the REDESIGN "
+                "CANONICALS block moved or was reworded, and half the charter "
+                "is now unchecked."]
+    for util, stated, surface in claims:
         fg = colours.get(util)
+        cream = colours.get(surface)
         if fg is None or cream is None:
-            fails.append(f"charter cites {util} but it emits no rule in app.css")
+            fails.append(f"charter cites {util} on {surface} but one of them "
+                         "emits no rule in app.css")
             continue
         actual = contrast_ratio(fg, cream)
         if abs(actual - float(stated)) > 0.15:
-            fails.append(f"charter says {util} on bg-cream is ~{stated}:1; "
+            fails.append(f"charter says {util} on {surface} is ~{stated}:1; "
                          f"it is {actual:.2f}:1")
     return fails
 

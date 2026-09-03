@@ -306,6 +306,70 @@
                   times). Readable on mobile.
        text-xs  → badges, pills, chips, footer legal fine-print, and
                   imagery captions where compactness beats readability.
+
+     ══════════════════════════════════════════════════════════════════
+     REDESIGN CANONICALS (#233) — for screens that have migrated
+     ══════════════════════════════════════════════════════════════════
+     Everything above still governs the screens that have NOT migrated,
+     and both sets are live at once for the duration of the epic. Do not
+     mix them inside one screen.
+
+     TEXT COLOUR ON THE LIGHT SURFACES (bhagya-cream / cream-2 / white):
+       text-bhagya-ink      → headings and primary text.
+                              Passes WCAG AA at 17.03:1 on bg-bhagya-cream.
+       text-bhagya-ink-soft → long-form body copy.
+                              Passes WCAG AA at 9.16:1 on bg-bhagya-cream.
+       text-bhagya-muted    → secondary copy.
+                              Passes WCAG AA at 5.54:1 on bg-bhagya-cream.
+       text-bhagya-muted-2  → micro-labels, eyebrows, meta.
+                              Passes WCAG AA at 5.16:1 on bg-bhagya-cream.
+       text-bhagya-sindoor  → glyphs, citations and links on light.
+                              Passes WCAG AA at 6.90:1 on bg-bhagya-cream.
+       The cream-2 band is darker, so every figure above drops by roughly
+       0.6 there; muted-2 lands at 4.54:1, which is the tightest margin in
+       the palette. Nothing smaller or lighter than that on cream-2.
+
+     TEXT COLOUR ON NIGHT (bg-bhagya-night):
+       text-bhagya-cream    → primary text on the night panels.
+                              Passes WCAG AA at 17.49:1 on bg-bhagya-night.
+       text-bhagya-gold     → ornament, hairlines and micro-labels.
+                              Passes WCAG AA at 7.96:1 on bg-bhagya-night.
+       text-bhagya-saffron  → accents and eyebrows.
+                              Passes WCAG AA at 7.55:1 on bg-bhagya-night.
+
+     GOLD AND SAFFRON NEVER TOUCH A LIGHT SURFACE. gold is 2.20:1 on
+     cream and 1.93:1 on cream-2; saffron is 2.32 / 2.04. They are fills
+     and ornaments there, never text. The handoff's own README says so and
+     then broke its own rule twice; scripts/verify_contrast.py does not.
+
+     TRANSLUCENT TEXT — cream at a fractional opacity on night:
+       .48 is the FLOOR (4.71:1). The handoff specifies .45, which is
+       4.29:1 and fails. Above that: .55 → 5.83, .62 → 7.13, .66 → 7.93,
+       .72 → 9.29, .78 → 10.77, .8 → 11.33.
+       Every one of these must be listed in DECLARED_PAIRS in
+       scripts/verify_contrast.py. Gate 4 fails any that is not, because
+       a translucent colour nobody measured is how the 4.29:1 line got
+       through the handoff's review in the first place.
+
+     BORDER RADIUS — the redesign is square by default:
+       (none)       → sections, bands, cards, the hairline grids
+       rounded      → 4px: inputs and primary buttons
+       rounded-md   → 6px: the elevated form card, modal panels
+       rounded-full → pills, chips, the feedback FAB
+
+     SHADOWS — there is exactly ONE on the site: the homepage form card
+     (`0 30px 60px -20px rgba(0,0,0,.55)`). Everything else separates with
+     a border. A modal does not need one either; it sits on a scrim.
+
+     HAIRLINE GRIDS — a 1px gap over a bhagya-line grid, cells filled with
+     bhagya-cream. PADDING GOES ON THE CELLS. Put it on the grid element
+     and the gutter colour paints a thick frame round the whole block.
+
+     TYPE — font-marcellus for display on migrated screens, and NEVER with
+     font-bold: Marcellus ships one weight and the bold would be
+     synthesised. Body is the default sans (Manrope). font-display stays
+     Crimson Pro for un-migrated screens and for the four modal headings
+     here, which carry Devanagari and need a real 700.
      ────────────────────────────────────────────────────────────────── */
 
   /* HTMX loading state: swap "default" / "loading" copy inside any button while a request is in flight. */
@@ -625,23 +689,31 @@
      doesn't shimmy.
      Automatically applies to every primary CTA sitewide without
      touching individual templates. */
-  a.bg-astro-700,
-  button.bg-astro-700,
-  input[type="submit"].bg-astro-700 {
+  /* #261: the redesign's primary fill is bhagya-night, so every migrated
+     button silently lost the lift and the press dip until it was added
+     here. Both classes stay listed for the duration of the epic. */
+  a.bg-astro-700, a.bg-bhagya-night,
+  button.bg-astro-700, button.bg-bhagya-night,
+  input[type="submit"].bg-astro-700,
+  input[type="submit"].bg-bhagya-night {
     transition: transform 180ms ease-out,
                 box-shadow 180ms ease-out,
                 background-color 180ms ease-out;
   }
-  a.bg-astro-700:hover,
+  a.bg-astro-700:hover, a.bg-bhagya-night:hover,
   button.bg-astro-700:not(:disabled):hover,
-  input[type="submit"].bg-astro-700:not(:disabled):hover {
+  button.bg-bhagya-night:not(:disabled):hover,
+  input[type="submit"].bg-astro-700:not(:disabled):hover,
+  input[type="submit"].bg-bhagya-night:not(:disabled):hover {
     transform: translateY(-1px) scale(1.02);
     box-shadow: 0 10px 22px -8px rgba(20, 15, 28, 0.34),
                 0 4px 8px -4px rgba(0, 0, 0, 0.08);
   }
-  a.bg-astro-700:active,
+  a.bg-astro-700:active, a.bg-bhagya-night:active,
   button.bg-astro-700:not(:disabled):active,
-  input[type="submit"].bg-astro-700:not(:disabled):active {
+  button.bg-bhagya-night:not(:disabled):active,
+  input[type="submit"].bg-astro-700:not(:disabled):active,
+  input[type="submit"].bg-bhagya-night:not(:disabled):active {
     transform: translateY(0) scale(0.98);
     transition-duration: 80ms;
   }
@@ -836,15 +908,15 @@
 </style>
 </head>
 
-<body hx-boost="true" class="bg-cream text-stone-900 font-sans min-h-full antialiased">
+<body hx-boost="true" class="bg-bhagya-cream text-bhagya-ink font-sans min-h-full antialiased">
   {# Global navigation loader — a thin animated bar pinned at the top of
      the page. Visible during every htmx-boosted nav and form POST so the
      user sees their click registered immediately (some routes take 3-8s
      for the LLM call). Vanilla JS; pure-CSS animation. #}
   <div id="bhagya-loader" class="fixed top-0 left-0 right-0 z-50 h-1 pointer-events-none no-print">
     <div id="bhagya-loader-bar"
-         class="h-full bg-gradient-to-r from-astro-500 via-astro-600 to-astro-700
-                transition-all ease-out shadow-[0_0_8px_rgba(139,92,246,0.6)]"
+         class="h-full bg-gradient-to-r from-bhagya-gold via-bhagya-saffron to-bhagya-sindoor
+                transition-all ease-out shadow-[0_0_8px_rgba(228,145,60,0.6)]"
          style="width:0;opacity:0;transition-duration:300ms;"></div>
   </div>
   <script>
@@ -1098,14 +1170,14 @@
      iOS Safari needs static instructions because Apple doesn't surface the
      event. Banner self-dismisses on close and remembers the choice. #}
   <div id="pwa-install-banner" class="hidden fixed bottom-3 inset-x-3 sm:left-3 sm:right-auto sm:w-80
-                                       z-40 bg-white border border-stone-300 rounded-lg shadow-lg p-3 text-sm no-print">
+                                       z-40 bg-bhagya-cream border border-bhagya-border rounded-md p-3 text-sm no-print">
     <div class="flex items-start gap-3">
       <img src="/static/icons/icon-192.png" alt="" loading="lazy" decoding="async" class="w-10 h-10 rounded shrink-0">
       <div class="flex-1 min-w-0">
-        <div class="font-semibold text-stone-900">Install Shubh Bhagya</div>
-        <div id="pwa-install-msg" class="text-stone-600 text-xs mt-0.5"></div>
+        <div class="font-semibold text-bhagya-ink">Install Shubh Bhagya</div>
+        <div id="pwa-install-msg" class="text-bhagya-muted text-xs mt-0.5"></div>
       </div>
-      <button id="pwa-install-close" type="button" class="text-stone-500 hover:text-stone-700"
+      <button id="pwa-install-close" type="button" class="text-bhagya-muted-2 hover:text-bhagya-ink"
               aria-label="Dismiss install banner">
         <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
@@ -1113,7 +1185,7 @@
       </button>
     </div>
     <button id="pwa-install-action" type="button"
-            class="hidden mt-2 w-full bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium py-1.5 rounded">
+            class="hidden mt-2 w-full bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-sm font-medium py-1.5 rounded">
       Install
     </button>
   </div>
@@ -1192,32 +1264,32 @@
   {% if google_client_id %}
   <div id="google-signin-backdrop"
        data-modal-backdrop
-       class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 no-print"
+       class="hidden fixed inset-0 z-50 bg-bhagya-night/60 flex items-center justify-center p-4 no-print"
        role="dialog" aria-modal="true" aria-labelledby="google-signin-title">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative">
+    <div class="bg-bhagya-cream border border-bhagya-border rounded-md max-w-sm w-full p-6 relative">
       <button id="google-signin-close" type="button" aria-label="Close"
-              class="absolute top-3 right-3 text-stone-500 hover:text-stone-700 p-1">
+              class="absolute top-3 right-3 text-bhagya-muted-2 hover:text-bhagya-ink p-1">
         <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
         </svg>
       </button>
-      <h2 id="google-signin-title" class="font-display text-xl font-bold text-stone-900 mb-1.5">Sign in to Shubh Bhagya</h2>
-      <p class="text-sm text-stone-600 mb-3.5 leading-relaxed">Your account, on any device:</p>
-      <ul class="space-y-2 mb-4 text-sm text-stone-700">
+      <h2 id="google-signin-title" class="font-display text-xl font-bold text-bhagya-ink mb-1.5">Sign in to Shubh Bhagya</h2>
+      <p class="text-sm text-bhagya-muted mb-3.5 leading-relaxed">Your account, on any device:</p>
+      <ul class="space-y-2 mb-4 text-sm text-bhagya-ink-soft">
         <li class="flex items-start gap-2">
-          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <svg class="w-4 h-4 text-bhagya-sindoor flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
           <span>Keep your Kundli chart forever &mdash; on phone, laptop, wherever.</span>
         </li>
         <li class="flex items-start gap-2">
-          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <svg class="w-4 h-4 text-bhagya-sindoor flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
           <span>Save unlimited charts (family, friends, clients).</span>
         </li>
         <li class="flex items-start gap-2">
-          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <svg class="w-4 h-4 text-bhagya-sindoor flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
           <span>Revisit past readings &amp; Ask answers anytime.</span>
         </li>
         <li class="flex items-start gap-2">
-          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <svg class="w-4 h-4 text-bhagya-sindoor flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
           <span>No password to remember. Free.</span>
         </li>
       </ul>
@@ -1239,14 +1311,14 @@
          unchanged modal for 2-3 seconds while we verify + set the
          cookie + reload the page. #}
       <div id="google-signin-loading" class="hidden flex-col items-center gap-3 py-2">
-        <svg class="w-8 h-8 text-astro-700 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <svg class="w-8 h-8 text-bhagya-sindoor animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.25"/>
           <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
         </svg>
-        <p class="text-sm text-stone-600">Signing you in&hellip;</p>
+        <p class="text-sm text-bhagya-muted">Signing you in&hellip;</p>
       </div>
-      <p id="google-signin-error" class="hidden text-xs text-red-600 mt-3"></p>
-      <p class="text-xs text-stone-600 mt-4 leading-relaxed">
+      <p id="google-signin-error" class="hidden text-xs text-bhagya-sindoor mt-3"></p>
+      <p class="text-xs text-bhagya-muted mt-4 leading-relaxed">
         We only receive your email + name from Google. We never post on your behalf and never share your data.
       </p>
     </div>
