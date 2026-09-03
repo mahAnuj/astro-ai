@@ -420,23 +420,33 @@
     margin-top: 0.375rem;
   }
 
-  /* Fallback keyframe defs — Tailwind CDN emits these via the
-     inline config extend, but declare them here too so the animations
-     work even if Tailwind's utility CSS hasn't finished bootstrapping. */
-  @keyframes spinSlow {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
+  /* `breathe` is defined here AND in tailwind.config.js, with identical
+     values. Not redundancy to tidy away: this copy drives #kundli-loader
+     .caption below, which is plain CSS rather than a utility class, while the
+     config copy is what `animate-breathe` compiles to (_nav.html:31, the logo).
+     Deleting either breaks one of the two. If you edit one, edit both — the
+     values must not drift apart.
+
+     The stale note this comment replaces claimed these were fallbacks "in case
+     Tailwind's utility CSS hasn't finished bootstrapping", which stopped being
+     true when the Play CDN was removed; a pre-built stylesheet has no bootstrap
+     to lose. `spinSlow` was declared alongside it and is now deleted — nothing
+     referenced it once the #78 chart-cast replaced the rotating mandala. */
   @keyframes breathe {
     0%, 100% { transform: scale(1); }
     50%      { transform: scale(1.025); }
   }
 
-  /* ─── Kundli generation loader (mandala overlay) ────────────────────
+  /* ─── Kundli generation loader ──────────────────────────────────────
      Full-screen overlay shown during the /reading POST → /kundli
-     navigation. Rotating mandala SVG + caption. Only appears for
-     Kundli generation (see htmx event wiring below); other page
-     nav uses the existing top-bar loader. */
+     navigation. A drawn chart diamond (.chart-cast) + caption. Only
+     appears for Kundli generation (see htmx event wiring below); other
+     page nav uses the existing top-bar loader.
+
+     This said "rotating mandala SVG" until 2026-09-02, describing markup
+     #78 replaced with the chart-cast animation. The .mandala rules and
+     their spinSlow keyframe outlived the element they styled by that
+     whole period, matching nothing. */
   #kundli-loader {
     position: fixed;
     inset: 0;
@@ -455,16 +465,6 @@
   #kundli-loader.is-visible {
     display: flex;
     opacity: 1;
-  }
-  #kundli-loader .mandala {
-    width: 120px;
-    height: 120px;
-    color: #6b21a8;
-    animation: spinSlow 6s linear infinite;
-  }
-  #kundli-loader .mandala-inner {
-    animation: spinSlow 4s linear infinite reverse;
-    transform-origin: center;
   }
   #kundli-loader .caption {
     font-family: 'Crimson Pro', serif;
@@ -870,7 +870,7 @@
     })();
   </script>
 
-  {# Full-page mandala loader — shown during any LLM-backed generation
+  {# Full-page generation loader — shown during any LLM-backed generation
      that takes 3-8s. The overlay covers Kundli (POST /reading), Kundali
      matching (POST /matching), Ask (POST /ask), and Dasha deep-dive
      (POST /dasha/deep-dive). Caption text is set dynamically per path
