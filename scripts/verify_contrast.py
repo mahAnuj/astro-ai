@@ -20,7 +20,10 @@ change is exactly the kind of edit where nobody re-runs the arithmetic. So:
   Gate 1  every placeholder-* utility used in a template passes AA on the
           surfaces an input can have (white, cream)
   Gate 2  every ratio the base.html design charter states out loud is true
-  Gate 3  the declared text-on-surface pairs pass at their stated threshold
+  Gate 3  the declared text-on-surface pairs pass at their stated threshold,
+          with `/[.NN]` utilities composited onto their surface first
+  Gate 4  no template uses a translucent bhagya text utility that Gate 3 has
+          not been told about
 
 COLOURS COME FROM THE BUILT CSS, NOT FROM A TABLE HERE. `app.css` carries the
 rgb() each utility actually emits, which covers config colours and Tailwind's
@@ -104,6 +107,28 @@ DECLARED_PAIRS: tuple[tuple[str, tuple[str, ...], str], ...] = (
     ("text-bhagya-ink-soft", ("bg-bhagya-cream", "bg-bhagya-cream-2"), "dropdown items"),
     ("text-bhagya-sindoor",  ("bg-bhagya-cream", "bg-bhagya-cream-2"), "active dropdown item"),
     ("text-bhagya-ink",      ("bg-bhagya-cream", "bg-bhagya-cream-2"), "headings on the page"),
+
+    # Homepage (#242). The night hero and the two night bands put light text on
+    # bhagya-night; everything below them is on cream or the alternating cream-2.
+    ("text-bhagya-ink",      ("bg-white",), "input text in the form card"),
+    ("text-bhagya-ink-soft", ("bg-white",), "long-form body"),
+    ("text-bhagya-muted",    ("bg-bhagya-cream", "bg-bhagya-cream-2", "bg-white"), "secondary copy"),
+    ("text-bhagya-muted-2",  ("bg-bhagya-cream", "bg-bhagya-cream-2"), "micro-labels and meta"),
+    ("text-bhagya-sindoor",  ("bg-white",), "glyphs and eyebrows on white cells"),
+    ("placeholder-bhagya-placeholder", ("bg-white",), "form placeholders"),
+
+    # ALPHA ON NIGHT. `/[.NN]` is not a separate colour — it is bhagya-cream
+    # composited over whatever it sits on, and the composite is what a reader
+    # sees. Measured over night: .48 -> 4.71:1 (the handoff's own .45 is 4.29:1
+    # and fails), .55 -> 5.83, .62 -> 7.13, .66 -> 7.93, .72 -> 9.29, .8 -> 11.33.
+    ("text-bhagya-cream/[.48]", ("bg-bhagya-night",), "myth line on the worry cards"),
+    ("text-bhagya-cream/[.5]",  ("bg-bhagya-night",), "sample-chart caption"),
+    ("text-bhagya-cream/[.55]", ("bg-bhagya-night",), "section standfirst"),
+    ("text-bhagya-cream/[.62]", ("bg-bhagya-night",), "shloka translations"),
+    ("text-bhagya-cream/[.66]", ("bg-bhagya-night",), "hero lede"),
+    ("text-bhagya-cream/[.72]", ("bg-bhagya-night",), "truth line on the worry cards"),
+    ("text-bhagya-cream/[.78]", ("bg-bhagya-night",), "nav links and the language select (#241)"),
+    ("text-bhagya-cream/[.8]",  ("bg-bhagya-night",), "hero trust chips"),
 )
 
 # Permitted below AA, by the charter's own rule at base.html: "decorative only
@@ -265,21 +290,78 @@ def gate_2_charter_is_honest(colours) -> list[str]:
     return fails
 
 
+ALPHA_UTIL = re.compile(r"^(?P<base>[a-z-]+-bhagya-[a-z0-9-]+)/\[\.(?P<alpha>\d+)\]$")
+
+
+def composite(fg: tuple[int, int, int], alpha: float,
+              bg: tuple[int, int, int]) -> tuple[int, int, int]:
+    """Flatten a translucent foreground onto its surface.
+
+    WCAG measures what reaches the eye. `text-bhagya-cream/[.45]` is not cream —
+    it is cream mixed with whatever is behind it, and on night that mix is
+    #7c777b, which fails AA. Measuring the un-composited token instead reports
+    17.49:1 for a colour a reader experiences at 4.29:1, which is worse than not
+    checking at all: it is a gate that says PASS on the exact defect it exists
+    to catch. This is the arithmetic behind the handoff's .45 -> .48 correction.
+    """
+    return tuple(round(f * alpha + b * (1 - alpha)) for f, b in zip(fg, bg))  # type: ignore[return-value]
+
+
+def resolve(util: str, surface_rgb, colours):
+    """rgb for a utility, compositing `/[.NN]` variants over their surface.
+
+    Returns None when the base colour is unknown, so the caller can report a
+    missing rule rather than silently skipping the pair.
+    """
+    m = ALPHA_UTIL.match(util)
+    if not m:
+        return colours.get(util)
+    base = colours.get(m.group("base"))
+    if base is None or surface_rgb is None:
+        return None
+    return composite(base, float(f"0.{m.group('alpha')}"), surface_rgb)
+
+
 def gate_3_declared_pairs(colours) -> list[str]:
     fails = []
     for util, surfaces, role in DECLARED_PAIRS:
-        fg = colours.get(util)
-        if fg is None:
-            fails.append(f"{util} ({role}) emits no rule in app.css")
-            continue
         for surface in surfaces:
             bg = colours.get(surface)
             if bg is None:
                 fails.append(f"{surface} emits no rule in app.css")
                 continue
+            fg = resolve(util, bg, colours)
+            if fg is None:
+                fails.append(f"{util} ({role}) emits no rule in app.css")
+                continue
             ratio = contrast_ratio(fg, bg)
             if ratio < AA_NORMAL:
                 fails.append(f"{_fmt(util, surface, ratio)} — {role}")
+    return fails
+
+
+def gate_4_alpha_declared(colours) -> list[str]:
+    """Every translucent bhagya TEXT utility in a template must be declared.
+
+    Gate 3 only measures what DECLARED_PAIRS lists. Without this, adding
+    `/[.4]` to a template is invisible to the whole file — the utility emits a
+    rule, nothing references it here, and the gate stays green. That is how the
+    handoff shipped a 4.29:1 body line past its own review.
+    """
+    declared = {util for util, _s, _r in DECLARED_PAIRS}
+    used: dict[str, list[str]] = {}
+    for path in sorted(TEMPLATES.rglob("*.html")):
+        text = re.sub(r"<!--.*?-->", " ", path.read_text(encoding="utf-8"),
+                      flags=re.DOTALL)
+        text = re.sub(r"\{#.*?#\}", " ", text, flags=re.DOTALL)
+        for util in set(re.findall(r"\btext-bhagya-[a-z0-9-]+/\[\.\d+\]", text)):
+            used.setdefault(util, []).append(path.name)
+    fails = []
+    for util in sorted(used):
+        if util not in declared:
+            where = ", ".join(sorted(set(used[util])))
+            fails.append(f"{util} is used in {where} but is not in DECLARED_PAIRS "
+                         "— its composited ratio has never been measured")
     return fails
 
 
@@ -322,6 +404,7 @@ def main() -> int:
         ("Gate 1 - placeholder text meets AA on input surfaces", gate_1_placeholders),
         ("Gate 2 - the base.html charter states true ratios", gate_2_charter_is_honest),
         ("Gate 3 - declared text-on-surface pairs meet AA", gate_3_declared_pairs),
+        ("Gate 4 - every translucent text utility is declared", gate_4_alpha_declared),
     )
 
     all_failures: list[str] = []

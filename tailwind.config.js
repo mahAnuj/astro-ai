@@ -52,8 +52,26 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        // Inter for Latin, Noto Sans Devanagari as a graceful fallback for Hindi text.
-        sans: ['Inter', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // Manrope for Latin, Noto Sans Devanagari as a graceful fallback for Hindi text.
+        //
+        // #242 SWAPPED THE BODY FACE GLOBALLY, and the reason is arithmetic, not
+        // taste. The homepage needs Marcellus loaded, and the font budget
+        // (MAX_FONT_BYTES = 285,000 in scripts/verify_devanagari_serif.py) had
+        // ~16 KB of headroom against a measured 268,820 B. Adding Marcellus on
+        // top of Inter would have blown it. Measured from Google Fonts on
+        // 2026-09-03, latin subset, the exact URLs this repo requests:
+        //
+        //   Inter    (variable, wght@400;500;600;700) ....... 48,256 B
+        //   Manrope  (variable, wght@400;500;600;700) ....... 24,836 B
+        //   Marcellus (static 400 — it has no other weight) . 14,552 B
+        //
+        // So swapping Inter out pays for Marcellus with 8,868 B to spare, and
+        // the whole page drops to ~260 KB. Re-run the gate; do not re-derive
+        // these from memory.
+        //
+        // `display` below is deliberately NOT swapped in the same motion. See
+        // the note there.
+        sans: ['Manrope', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         // #189: the Devanagari fallback here stays the SANS face, and the
         // serif Devanagari is applied by the [lang="sa"] rule in base.html
         // instead. Crimson Pro carries no Devanagari glyphs, so this second
@@ -71,9 +89,23 @@ module.exports = {
         display: ['"Crimson Pro"', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
 
         // ─── Redesign stack (#233/#238) ───────────────────────────────
-        // Additive. Nothing uses these until #241 restyles the shell; the
-        // Inter/Crimson Pro entries above stay authoritative until the last
-        // screen migrates, so the site is never half-typeset.
+        // `marcellus` is the migrated screens' display face and is applied
+        // per-screen (#242 uses it on the homepage). `display` above stays
+        // Crimson Pro for the ~40 screens that have not migrated.
+        //
+        // WHY `display` IS NOT SWAPPED GLOBALLY THE WAY `sans` WAS.
+        // Marcellus ships ONE weight. Google Fonts serves no bold for it and
+        // never will. There are 15 `font-display font-bold` / `font-semibold`
+        // elements in this tree, and pointing `display` at Marcellus would
+        // synthesise bold at every one of them — the same defect family as the
+        // synthesised oblique #189 exists to remove. Two of those 15
+        // (_subscribe_modal.html:37 and rashifal.html:181) render DEVANAGARI
+        // under the Hindi toggle and are bold on purpose: they resolve to Noto
+        // Sans Devanagari 700, which is real and already loaded. So "just drop
+        // the bold" is not free either — it would de-bold Hindi headings.
+        //
+        // The migrated screens use Marcellus at its natural weight, which is
+        // what the design does. `display` retires when the last screen lands.
         //
         // Marcellus and Manrope ship NO Devanagari subset, so both keep
         // "Noto Sans Devanagari" as their second entry. That is not belt-and-
@@ -190,13 +222,24 @@ module.exports = {
           '0%, 100%': { transform: 'scale(1)' },
           '50%':      { transform: 'scale(1.025)' },
         },
+        // The handoff's `bhagyaGlow`, verbatim. Both stops are OPACITY, and
+        // 0%/100% carrying the same value is load-bearing: base.html's
+        // prefers-reduced-motion gate sets animation-duration to 0.01ms and
+        // iteration-count to 1, so a reduced-motion user lands on the 100%
+        // frame immediately. A keyframe that ended somewhere else would leave
+        // them staring at the end state of an animation they opted out of.
+        glow: {
+          '0%, 100%': { opacity: '0.55' },
+          '50%':      { opacity: '0.9' },
+        },
       },
       animation: {
-        // _nav.html:31, the logo. The only animation utility in use.
-        // base.html carries an identical `breathe` keyframe for
-        // #kundli-loader .caption, which is plain CSS rather than a utility —
-        // both are needed, and their values must not drift apart.
+        // _nav.html:31, the logo. base.html carries an identical `breathe`
+        // keyframe for #kundli-loader .caption, which is plain CSS rather than
+        // a utility — both are needed, and their values must not drift apart.
         'breathe': 'breathe 3s ease-in-out infinite',
+        // index.html, the hero's radial saffron glow (#242).
+        'glow': 'glow 9s ease-in-out infinite',
       },
     },
   },

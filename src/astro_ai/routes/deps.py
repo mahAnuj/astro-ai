@@ -514,6 +514,13 @@ def _no_cdn_cache(resp: Response) -> Response:
 # Bump this when we have paid LLM capacity or revenue covering the cost.
 _ASK_DAILY_LIMIT = 3
 
+# Exposed to templates so marketing copy quotes the real number (#242's trust
+# strip does). Same reasoning as learn_article_count above: a hardcoded "3" in
+# a template is silently wrong the day this constant moves, and nothing breaks
+# to say so. index.html still carries two prose "3 free" strings in sentences
+# that would need rewording anyway — those are not covered by this.
+templates.env.globals["ask_daily_limit"] = _ASK_DAILY_LIMIT
+
 
 def _ask_quota_remaining(request: Request) -> int:
     """Read today's remaining ask count from the session cookie.

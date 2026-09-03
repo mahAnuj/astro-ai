@@ -164,8 +164,9 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Inter for Latin body, Crimson Pro for Latin display, Noto Sans
-     Devanagari for Hindi body, Noto SERIF Devanagari for Devanagari display.
+<!-- Manrope for Latin body, Crimson Pro for Latin display (Marcellus on the
+     screens that have migrated), Noto Sans Devanagari for Hindi body, Noto
+     SERIF Devanagari for Devanagari display.
      display=swap prevents FOIT — text renders in fallback immediately, then
      swaps when the face arrives. With the two preconnects above this saves
      ~150-300ms LCP on cold cache.
@@ -221,15 +222,25 @@
      Sanskrit in a sans face under a serif headline, which is the entire
      defect. This is the cheapest correct shape, not a free one.
 
-     REDESIGN (#233): tailwind.config.js defines the two redesign font
-     families, but this link deliberately does NOT request them yet. Nothing
-     renders in either face until #241 restyles the shell, and the payload here
-     is governed by a measured budget (MAX_FONT_BYTES = 285,000 in
-     scripts/verify_devanagari_serif.py, currently 268,820 — about 16 KB of
-     headroom). Adding two families to a render-blocking request without being
-     able to measure the result is how that budget gets spent by accident.
-     Add them in #241, in the same change that first uses them, and re-run the
-     gate. Until then those utilities fall through to Georgia by design.
+     REDESIGN (#233/#242): both redesign families are now requested, and the
+     budget did not stretch to accommodate them — Inter was removed to pay for
+     them. That is the whole reason the body face changed in a homepage issue.
+     Measured from Google Fonts on 2026-09-03, latin subset, these exact URLs:
+
+       Inter     wght@400;500;600;700 (variable) ....... 48,256 B  REMOVED
+       Manrope   wght@400;500;600;700 (variable) ....... 24,836 B  added
+       Marcellus (no weight axis — it has only 400) .... 14,552 B  added
+
+     Net −8,868 B on the latin subset, so the total falls rather than rises.
+     MAX_FONT_BYTES = 285,000 in scripts/verify_devanagari_serif.py; the gate
+     prints the real figure, and that is the number to trust, not this one.
+
+     Crimson Pro STAYS, and that is deliberate rather than an oversight: it is
+     still the display face for every screen that has not migrated. It comes
+     out with the last of them, which is another ~48 KB back. The redesign
+     display face is applied per-screen until then — see the fontFamily note in
+     tailwind.config.js for why it cannot simply replace `display` today (it
+     has no bold, and 15 elements in this tree ask for one).
 
      Do not name the utilities literally in this comment. Tailwind's content
      scanner reads raw text, comments included, so writing the class name here
@@ -240,7 +251,7 @@
      Noto Sans Devanagari at 400-700 is load-bearing and must survive the
      redesign — see the #189 reasoning above and the static check in
      verify_devanagari_serif.py, which fails if it stops being requested. -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Marcellus&family=Crimson+Pro:wght@500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400&display=swap" rel="stylesheet">
 
 <!-- The Tailwind theme that used to live here as `tailwind.config = {...}`
      now lives in tailwind.config.js and is compiled into the stylesheet
