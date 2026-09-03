@@ -7,19 +7,19 @@
      `## Heading` line — just the flowing prose paragraphs), permalink
 #}
 <div class="text-left space-y-3 h-full flex flex-col">
-  <div class="flex items-baseline justify-between border-b border-stone-100 pb-2">
+  <div class="flex items-baseline justify-between border-b border-bhagya-line-2 pb-2">
     <div>
-      <div class="text-[10px] uppercase tracking-wider text-astro-700 font-semibold">Today</div>
-      <div class="font-display text-base text-stone-900 leading-tight">{{ rashi_en }} <span class="text-stone-500 font-normal">/ {{ rashi_sa }}</span></div>
+      <div class="text-[10px] uppercase tracking-wider text-bhagya-sindoor font-semibold">Today</div>
+      <div class="font-marcellus text-base text-bhagya-ink leading-tight">{{ rashi_en }} <span class="text-bhagya-muted-2 font-normal">/ {{ rashi_sa }}</span></div>
     </div>
-    <div class="text-2xl text-astro-700 leading-none" aria-hidden="true">{{ glyph }}</div>
+    <div class="text-2xl text-bhagya-sindoor leading-none" aria-hidden="true">{{ glyph }}</div>
   </div>
-  <div class="text-[13px] text-stone-700 leading-relaxed space-y-2 whitespace-pre-line flex-1 min-h-0 overflow-y-auto pr-1">
+  <div class="text-[13px] text-bhagya-ink-soft leading-relaxed space-y-2 whitespace-pre-line flex-1 min-h-0 overflow-y-auto pr-1">
 {{ reading_body }}
   </div>
-  <div class="pt-2 border-t border-stone-100 flex items-center justify-between text-xs shrink-0">
-    <a href="{{ permalink }}" target="_blank" rel="noopener" class="text-astro-700 hover:underline font-semibold">Open full page →</a>
+  <div class="pt-2 border-t border-bhagya-line-2 flex items-center justify-between text-xs shrink-0">
+    <a href="{{ permalink }}" target="_blank" rel="noopener" class="text-bhagya-sindoor hover:underline font-semibold">Open full page →</a>
     <a href="https://wa.me/?text={{ (rashi_en ~ ' Rashifal — ' ~ site_url ~ permalink) | urlencode }}"
-       target="_blank" rel="noopener" class="text-emerald-700 hover:underline">Share</a>
+       target="_blank" rel="noopener" class="text-emerald-800 hover:underline">Share</a>
   </div>
 </div>

@@ -57,20 +57,35 @@ def _reading_error_fragment(slug: str, is_rate: bool, msg: str) -> str:
     `responseHandling: [{"code": ".*", "swap": true}]`, so htmx swaps that
     entire document, <head> and duplicate script tags included, into a flip
     card sized for a paragraph.
+
+    #244: the classes here are Tailwind utilities built in PYTHON, so the
+    content scanner cannot see them and a template-only redesign leaves this
+    card in the old palette — the one card a reader sees when something has
+    already gone wrong. They are safelisted only by virtue of also appearing in
+    templates; if a token used here ever stops being used in markup, it stops
+    being emitted and this card loses that colour silently.
+
+    `data-retry-head` / `data-retry-body` exist for
+    tests/test_rashifal_degraded.py, which used to find the heading by its
+    COLOUR CLASS. #244's recolour broke it, and that is the wrong way round: a
+    behaviour test asserting "the heading is not repeated in the body" has no
+    business depending on which shade of grey the heading is. Same lesson as
+    the mutation anchor in scripts/mutate_behaviour_suite.py (b2c21fd) — anchor
+    on structure, never on presentation.
     """
     icon = "\U0001F549\uFE0F" if is_rate else "\u26A0\uFE0F"
     head = "Still gathering today's sky\u2026" if is_rate else "Reading could not load"
     return (
         '<div class="h-full flex flex-col items-center justify-center text-center gap-3 p-4">'
         f'  <div class="text-3xl" aria-hidden="true">{icon}</div>'
-        f'  <div class="text-sm font-semibold text-stone-800">{head}</div>'
-        f'  <div class="text-xs text-stone-600 leading-relaxed">{msg}</div>'
+        f'  <div data-retry-head class="text-sm font-semibold text-bhagya-ink">{head}</div>'
+        f'  <div data-retry-body class="text-xs text-bhagya-muted leading-relaxed">{msg}</div>'
         '  <div class="flex gap-2 pt-1">'
-        f'    <button type="button" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold" '
+        f'    <button type="button" class="text-xs text-bhagya-sindoor hover:text-bhagya-ink hover:underline font-semibold" '
         f'            hx-get="/rashifal/{slug}" hx-target="closest [data-card-front]" hx-swap="innerHTML" '
         f'            hx-headers=\'{{"HX-Rashifal-Fragment": "1"}}\'>Try again</button>'
-        '    <span class="text-stone-300">\u00B7</span>'
-        f'    <a href="/rashifal/{slug}" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold">Open full page</a>'
+        '    <span class="text-bhagya-border">\u00B7</span>'
+        f'    <a href="/rashifal/{slug}" class="text-xs text-bhagya-sindoor hover:text-bhagya-ink hover:underline font-semibold">Open full page</a>'
         '  </div>'
         '</div>'
     )
