@@ -754,6 +754,14 @@
        reads like a report title rather than continuing web body. */
     main > header { margin-bottom: 8mm !important; padding-bottom: 4mm !important; border-bottom: 2px solid #292524 !important; }
     main > header h1 { font-size: 24pt !important; margin-bottom: 4pt !important; }
+    /* #243 made result.html's header a bhagya-night identity band. `article,
+       section, .bg-white` above forces a white ground on cards, but <header>
+       matches none of those, so without this the cover page prints as a solid
+       dark rectangle — wasted ink and, worse, cream text on it goes invisible
+       the moment a printer honours the background and then does not. */
+    main > header { background: none !important; padding-left: 0 !important; padding-right: 0 !important; }
+    main > header, main > header * { color: #17131A !important; }
+    main > header [class*="bg-bhagya-night"] { background: none !important; }
     /* Major section boundaries — break BEFORE each h2-headed section
        when the previous section pushes it too far down. Uses `avoid`
        for the first section (header + score) and `auto` after so long

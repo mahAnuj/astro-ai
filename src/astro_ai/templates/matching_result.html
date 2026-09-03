@@ -213,11 +213,11 @@
         {% for c in ch.diamond_chart() %}
         <text x="{{ c.sign_x }}" y="{{ c.sign_y }}" text-anchor="middle"
               font-size="11" font-weight="700" fill="#a16207"
-              style="font-family: Inter, sans-serif">{{ c.sign_num }}</text>
+              style="font-family: Manrope, sans-serif">{{ c.sign_num }}</text>
         {% for p in c.planets %}
         <text x="{{ c.planet_cx }}" y="{{ c.planet_cy + loop.index0 * 13 }}" text-anchor="middle"
               font-size="10" font-weight="600" fill="#1c1917"
-              style="font-family: Inter, sans-serif">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}<tspan font-size="9" fill="#b45309">&nbsp;R</tspan>{% endif %}</text>
+              style="font-family: Manrope, sans-serif">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}<tspan font-size="9" fill="#b45309">&nbsp;R</tspan>{% endif %}</text>
         {% endfor %}
         {% endfor %}
       </svg>
