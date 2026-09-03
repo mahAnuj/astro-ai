@@ -65,14 +65,24 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CONFIG = REPO_ROOT / "tailwind.config.js"
 
-# Files that have migrated to the redesign palette AND that Tailwind cannot
-# reach. Extend as screens land — that is the point of the list.
+# Files that have migrated to the redesign palette and carry hexes Tailwind
+# cannot reach. Extend as screens land — that is the point of the list.
+#
+# #242 widened what "cannot reach" means. The first five entries are files
+# Tailwind cannot see AT ALL — an SVG, three emails, a Python string. index.html
+# is not like that: its utility classes are scanned normally and are held to the
+# palette by verify_contrast.py. What is unreachable is the 22 literal hexes
+# inside its two inline SVGs (the sample-chart preview and the rashifal
+# diamond), which are attribute values, not classes. Those are exactly the kind
+# of colour that gets left behind on a palette swap — #239 explicitly deferred
+# them to this issue — so the file is listed here to pin them.
 MIGRATED = (
     "src/astro_ai/templates/cosmic_card.svg",
     "src/astro_ai/templates/email/welcome.html",
     "src/astro_ai/templates/email/daily_rashifal.html",
     "src/astro_ai/templates/email/kundli_reading.html",
     "src/astro_ai/routes/feedback.py",
+    "src/astro_ai/templates/index.html",
 )
 
 # Hexes in the migrated files that are NOT bhagya tokens and are allowed to
