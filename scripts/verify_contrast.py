@@ -129,6 +129,15 @@ DECLARED_PAIRS: tuple[tuple[str, tuple[str, ...], str], ...] = (
     ("text-bhagya-cream/[.72]", ("bg-bhagya-night",), "truth line on the worry cards"),
     ("text-bhagya-cream/[.78]", ("bg-bhagya-night",), "nav links and the language select (#241)"),
     ("text-bhagya-cream/[.8]",  ("bg-bhagya-night",), "hero trust chips"),
+
+    # Kundli result (#243). The four SEMANTIC status colours are deliberately
+    # not brand tokens — good/steady/testing/deep is a scale, and the palette
+    # has no green or amber. They were all at the -700 stop, which is 4.48:1
+    # (emerald) and 4.10:1 (amber) on cream-2 — both AA failures at the sizes
+    # this page uses them. Moved to -800 and pinned here.
+    ("text-emerald-800", ("bg-bhagya-cream", "bg-bhagya-cream-2", "bg-white", "bg-emerald-100", "bg-emerald-50"), "positive status"),
+    ("text-amber-800",   ("bg-bhagya-cream", "bg-bhagya-cream-2", "bg-white", "bg-amber-100", "bg-amber-50"), "caution status"),
+    ("text-rose-800",    ("bg-bhagya-cream", "bg-bhagya-cream-2", "bg-white"), "warning status"),
 )
 
 # Permitted below AA, by the charter's own rule at base.html: "decorative only

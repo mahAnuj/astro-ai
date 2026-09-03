@@ -83,6 +83,8 @@ MIGRATED = (
     "src/astro_ai/templates/email/kundli_reading.html",
     "src/astro_ai/routes/feedback.py",
     "src/astro_ai/templates/index.html",
+    "src/astro_ai/templates/result.html",
+    "src/astro_ai/templates/_south_indian_chart.html",
 )
 
 # Hexes in the migrated files that are NOT bhagya tokens and are allowed to
@@ -118,6 +120,11 @@ LEGACY: dict[str, str] = {
     # Semantic status colours in the panchang strip. Not brand colours.
     "#b91c1c": "Rahu Kaal warning",
     "#15803d": "Abhijit Muhurta positive",
+    # #243, the two chart SVGs. The retrograde marker is a STATUS colour, not a
+    # brand one — the palette has no amber, and "R" beside a planet means
+    # retrograde, not "Shubh Bhagya". amber-800 rather than -700 because -700
+    # is 4.10:1 on cream-2 and fails AA at the 9px this renders at.
+    "#92400e": "amber-800 retrograde marker in the chart SVGs",
 }
 
 # The purple ramp. Still correct everywhere that has not migrated; never
@@ -128,7 +135,15 @@ ASTRO_RAMP = re.compile(
     re.I,
 )
 
-HEX = re.compile(r"#[0-9a-fA-F]{6}\b")
+# `(?<!&)` is the whole reason this is not a plain hex pattern. An HTML
+# NUMERIC CHARACTER REFERENCE looks exactly like one to a naive scanner:
+# `&#128172;` (the speech-balloon emoji, used as a bare glyph in result.html)
+# matches `#[0-9a-fA-F]{6}` on its first six digits, and the gate reported it as
+# an off-palette colour. That is worse than a missed check — the obvious way to
+# "fix" it is to add 128172 to LEGACY, which pollutes the allowlist with
+# something that was never a colour and teaches the next person that entries
+# there do not need to mean anything. A `#RRGGBB` is never preceded by `&`.
+HEX = re.compile(r"(?<!&)#[0-9a-fA-F]{6}\b")
 
 
 class ConfigUnavailable(RuntimeError):

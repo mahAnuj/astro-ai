@@ -19,21 +19,25 @@
 {% set _hint = ask_context_hint if ask_context_hint is defined else t(lang, 'ask_cta_hint_default') %}
 {% set _ctx = ask_context_type if ask_context_type is defined else '' %}
 
-<aside class="rounded-2xl border-2 border-astro-300 bg-gradient-to-br from-astro-50 to-white shadow-md p-5 sm:p-6 no-print"
+{# #243: cream-2 panel with a hairline, not a tinted gradient card. This
+   partial is included from result.html, matching_result.html, numerology.html
+   and ask.html, and all four sit on a light page, so it needs no night
+   variant the way _pdf_download_button.html does. #}
+<aside class="border border-bhagya-line bg-bhagya-cream-2 p-5 sm:p-6 no-print"
        data-ask-cta>
   <div class="flex items-start gap-4">
-    <div class="shrink-0 w-11 h-11 rounded-full bg-astro-100 border border-astro-200 flex items-center justify-center">
-      <svg class="w-6 h-6 text-astro-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <div class="shrink-0 w-11 h-11 rounded-full bg-bhagya-cream border border-bhagya-border flex items-center justify-center">
+      <svg class="w-6 h-6 text-bhagya-sindoor" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
       </svg>
     </div>
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 mb-1 flex-wrap">
-        <span class="text-[11px] uppercase tracking-wider font-semibold text-astro-700 bg-astro-100 px-2 py-0.5 rounded-full">
+        <span class="text-[11px] uppercase tracking-[0.14em] font-bold text-bhagya-sindoor bg-bhagya-cream border border-bhagya-border px-2 py-0.5 rounded-full">
           {{ t(lang, 'ask_cta_free') }}
         </span>
         {% if _remaining and _remaining < 3 %}
-        <span class="text-[11px] text-stone-600">
+        <span class="text-[11px] text-bhagya-muted">
           {{ t(lang, 'ask_cta_remaining_one') if _remaining == 1 else t(lang, 'ask_cta_remaining', n=_remaining) }}
         </span>
         {% endif %}
@@ -45,20 +49,20 @@
          also let the body promise answers "from your actual chart" on a page
          about a pair. Both are wrong in the one context where the difference
          matters most, so that context gets its own strings. #}
-      <h3 class="font-display text-lg sm:text-xl text-astro-800 mb-1">
+      <h3 class="font-marcellus text-lg sm:text-xl text-bhagya-ink mb-1">
         {% if not has_saved_chart %}{{ t(lang, 'ask_cta_head_no_chart') }}
         {% elif _ctx == 'matching' and seeker_role == 'other' %}{{ t(lang, 'ask_cta_head_matching_third') }}
         {% elif _ctx == 'matching' %}{{ t(lang, 'ask_cta_head_matching') }}
         {% else %}{{ t(lang, 'ask_cta_head_saved', hint=_hint) }}{% endif %}
       </h3>
-      <p class="text-sm text-stone-700 leading-relaxed mb-3">
+      <p class="text-sm text-bhagya-ink-soft leading-relaxed mb-3">
         {% if not has_saved_chart %}{{ t(lang, 'ask_cta_body_no_chart') }}
         {% elif _ctx == 'matching' and seeker_role == 'other' %}{{ t(lang, 'ask_cta_body_matching_third') }}
         {% elif _ctx == 'matching' %}{{ t(lang, 'ask_cta_body_matching') }}
         {% else %}{{ t(lang, 'ask_cta_body_saved') }}{% endif %}
       </p>
       <a href="{% if has_saved_chart %}/ask{% if _ctx %}?ctx={{ _ctx }}{% endif %}{% else %}/{% endif %}"
-         class="inline-flex items-center gap-1.5 bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+         class="inline-flex items-center gap-1.5 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-sm font-semibold px-4 py-2 rounded transition-colors">
         {{ t(lang, 'ask_cta_button_saved') if has_saved_chart else t(lang, 'ask_cta_button_no_chart') }}
       </a>
     </div>
