@@ -91,6 +91,19 @@ DECLARED_PAIRS: tuple[tuple[str, tuple[str, ...], str], ...] = (
     ("text-astro-700", ("bg-cream", "bg-white"), "links and accents"),
     ("text-astro-800", ("bg-cream", "bg-white"), "emphasis"),
     ("text-white",     ("bg-astro-700", "bg-astro-800"), "text on primary fills"),
+
+    # Redesign shell (#241). The nav and footer are night panels, so these are
+    # the light-on-dark pairs — the opposite direction to everything above.
+    # `gold` appears here and NOWHERE against a cream surface: it is 2.20:1 on
+    # cream, which is the one contrast bug the handoff caught itself.
+    ("text-bhagya-cream",   ("bg-bhagya-night",), "nav and footer text"),
+    ("text-bhagya-saffron", ("bg-bhagya-night",), "logo, active nav, hover"),
+    ("text-bhagya-gold",    ("bg-bhagya-night",), "ornament — night only"),
+    # Dropdown panels fall onto the page, so they are a light surface even
+    # though the bar they hang from is night.
+    ("text-bhagya-ink-soft", ("bg-bhagya-cream", "bg-bhagya-cream-2"), "dropdown items"),
+    ("text-bhagya-sindoor",  ("bg-bhagya-cream", "bg-bhagya-cream-2"), "active dropdown item"),
+    ("text-bhagya-ink",      ("bg-bhagya-cream", "bg-bhagya-cream-2"), "headings on the page"),
 )
 
 # Permitted below AA, by the charter's own rule at base.html: "decorative only
@@ -143,6 +156,35 @@ def emitted_colours(css: str) -> dict[str, tuple[int, int, int]]:
     )
     for m in pattern.finditer(css):
         out[m.group(1)] = (int(m.group(2)), int(m.group(3)), int(m.group(4)))
+    return out
+
+
+def config_bhagya_colours() -> dict[str, tuple[int, int, int]]:
+    """`bhagya-*` utilities resolved from tailwind.config.js, not the built CSS.
+
+    Tailwind is JIT: a token no template uses yet emits no rule, so reading
+    app.css alone cannot check a colour until a screen adopts it. That would
+    make this gate arrive one commit too late every time — the palette is
+    decided in #238, and the screens that spend it land much later.
+
+    Reading the config instead means a bad token fails the moment it is
+    declared. The built CSS stays authoritative for everything Tailwind DOES
+    emit; this only fills the gap for tokens that are declared and not yet
+    spent.
+    """
+    out: dict[str, tuple[int, int, int]] = {}
+    try:
+        text = (REPO_ROOT / "tailwind.config.js").read_text(encoding="utf-8")
+    except OSError:
+        return out
+    m = re.search(r"bhagya:\s*\{(.*?)\n\s*\},", text, re.S)
+    if not m:
+        return out
+    for name, value in re.findall(r"([\w'-]+):\s*'#([0-9a-fA-F]{6})'", m.group(1)):
+        rgb = tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+        key = name.strip("'\"")
+        for prefix in ("text", "bg", "border"):
+            out.setdefault(f"{prefix}-bhagya-{key}", rgb)  # type: ignore[arg-type]
     return out
 
 
@@ -265,6 +307,10 @@ def main() -> int:
         return 2
 
     colours = emitted_colours(BUILT_CSS.read_text(encoding="utf-8"))
+    # Config values fill in only where the built CSS has nothing — emitted
+    # rules win, so this can never mask what actually ships.
+    for util, rgb in config_bhagya_colours().items():
+        colours.setdefault(util, rgb)
     if "bg-cream" not in colours:
         print("COULD NOT VERIFY: app.css parsed but yielded no bg-cream rule.")
         print("-> SKIPPED (exit 2). This is NOT a pass — the check did not run.")

@@ -3,13 +3,20 @@
    later by adding <option> rows; no JS framework needed. #}
 <form method="post" action="/lang" class="inline-flex items-center">
   <input type="hidden" name="next" value="{{ request.url.path }}">
+  {# #241: this control sits INSIDE the night nav bar, so it is styled
+     light-on-dark rather than as a page-level input. The <option> rows are
+     painted by the OS, not by us — every browser draws them on its own
+     surface — so they are deliberately left alone and only the closed
+     control is themed. #}
   <select name="lang" onchange="this.form.submit()"
-          class="bg-white border border-stone-300 rounded-md px-2 py-1 text-xs text-stone-700
-                 hover:border-astro-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500
+          class="bg-transparent border border-bhagya-gold/40 rounded-md px-2 py-1 text-xs
+                 text-bhagya-cream/[.78]
+                 hover:border-bhagya-saffron focus:ring-2 focus:ring-bhagya-saffron
+                 focus:border-bhagya-saffron
                  focus:outline-none cursor-pointer transition-colors"
           aria-label="Language">
-    <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
-    <option value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी (Hindi)</option>
+    <option class="text-bhagya-ink" value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+    <option class="text-bhagya-ink" value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी (Hindi)</option>
   </select>
-  <noscript><button type="submit" class="ml-1 text-xs text-stone-600 underline">Apply</button></noscript>
+  <noscript><button type="submit" class="ml-1 text-xs text-bhagya-cream/[.62] underline">Apply</button></noscript>
 </form>

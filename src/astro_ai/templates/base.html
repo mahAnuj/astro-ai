@@ -69,7 +69,10 @@
 <link rel="manifest" href="/static/manifest.webmanifest">
 <!-- theme-color tints the Android Chrome address bar and PWA status bar
      to match the nav's astro-700 backdrop. -->
-<meta name="theme-color" content="#6b21a8">
+<!-- #140F1C is bhagya.night, the nav/footer panel colour (#241). Kept in
+     step with static/manifest.webmanifest, which sets the same value for the
+     installed PWA; the two disagreeing is a visible seam on Android. -->
+<meta name="theme-color" content="#140F1C">
 
 <!-- iOS Safari: PWA install via "Add to Home Screen" needs separate hints
      because Safari ignores most of the manifest. apple-mobile-web-app-capable
@@ -394,7 +397,7 @@
   }
   .shadow-sm:not(.no-lift):hover {
     transform: translateY(-2px);
-    box-shadow: 0 14px 28px -12px rgba(93, 62, 180, 0.18),
+    box-shadow: 0 14px 28px -12px rgba(20, 15, 28, 0.16),
                 0 6px 12px -6px rgba(0, 0, 0, 0.06);
   }
 
@@ -451,7 +454,7 @@
     position: fixed;
     inset: 0;
     z-index: 60;
-    background: rgba(254, 250, 240, 0.94);
+    background: rgba(250, 246, 239, 0.94);
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
     display: none;
@@ -469,7 +472,7 @@
   #kundli-loader .caption {
     font-family: 'Crimson Pro', serif;
     font-size: 1.1rem;
-    color: #6b21a8;
+    color: #9E2B25;
     font-style: italic;
     animation: breathe 2s ease-in-out infinite;
   }
@@ -481,8 +484,8 @@
   #kundli-loader .chart-cast {
     width: 180px;
     height: 180px;
-    color: #6b21a8;
-    filter: drop-shadow(0 0 20px rgba(107, 33, 168, 0.15));
+    color: #9E2B25;
+    filter: drop-shadow(0 0 20px rgba(158, 43, 37, 0.15));
   }
   #kundli-loader .chart-cast .cast-line {
     fill: none;
@@ -495,7 +498,7 @@
     animation: castDraw 1.4s ease-out forwards;
   }
   #kundli-loader .chart-cast .cast-glyph {
-    fill: #f59e0b;
+    fill: #E4913C;
     opacity: 0;
     animation: castGlyphIn 500ms ease-out 1.3s forwards;
   }
@@ -622,7 +625,7 @@
   button.bg-astro-700:not(:disabled):hover,
   input[type="submit"].bg-astro-700:not(:disabled):hover {
     transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 10px 22px -8px rgba(93, 62, 180, 0.42),
+    box-shadow: 0 10px 22px -8px rgba(20, 15, 28, 0.34),
                 0 4px 8px -4px rgba(0, 0, 0, 0.08);
   }
   a.bg-astro-700:active,
@@ -903,7 +906,7 @@
       <circle cx="100" cy="100" r="14" class="cast-glyph"/>
       <text x="100" y="110" text-anchor="middle" class="cast-glyph"
             font-family="Crimson Pro, Georgia, serif"
-            font-size="24" font-weight="700" fill="#3b0764"
+            font-size="24" font-weight="700" fill="#17131A"
             style="transform-origin: 100px 100px">ॐ</text>
     </svg>
     <div class="caption" id="kundli-loader-caption">Casting your chart&hellip;</div>
@@ -965,14 +968,14 @@
      keyword density, E-E-A-T trust signals) and consistent UX. Each route
      can opt out by overriding the `footer` block with empty content. #}
   {% block footer %}
-  <footer class="border-t border-stone-200/70 bg-cream/40 no-print mt-12">
+  <footer class="border-t border-bhagya-gold/25 bg-bhagya-night no-print mt-12">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <div class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
 
         {# Brand + description — keyword-rich paragraph reinforces what
            the site is about on every page. #}
         <div class="md:col-span-4">
-          <div class="flex items-center gap-2 mb-3 text-astro-700">
+          <div class="flex items-center gap-2 mb-3 text-bhagya-saffron">
             <svg viewBox="0 0 100 100" class="w-7 h-7 shrink-0" aria-hidden="true">
               <g fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="miter">
                 <polygon points="50,5 95,50 50,95 5,50"/>
@@ -984,7 +987,7 @@
             </svg>
             <span class="font-display text-lg font-bold">Shubh Bhagya</span>
           </div>
-          <p class="text-sm text-stone-600 leading-relaxed">
+          <p class="text-sm text-bhagya-cream/[.62] leading-relaxed">
             Free instant Vedic astrology online &mdash; your Janma Kundli,
             today's Rashifal for all 12 rashis, Dasha periods, Manglik &amp;
             Sade Sati analysis, and Kundali matching for marriage. Accurate
@@ -995,16 +998,16 @@
         {# Internal links to every main reading page. Crawlers and users
            both win — site-wide navigation discoverable from any URL. #}
         <div class="md:col-span-2">
-          <h3 class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-3">Readings</h3>
+          <h3 class="text-xs uppercase font-semibold text-bhagya-cream/[.62] tracking-wider mb-3">Readings</h3>
           <ul class="space-y-2 text-sm">
-            <li><a href="/"         class="text-stone-700 hover:text-astro-700">Free Janma Kundli</a></li>
-            <li><a href="/rashifal" class="text-stone-700 hover:text-astro-700">Daily Rashifal</a></li>
-            <li><a href="/today"    class="text-stone-700 hover:text-astro-700">Today's Horoscope</a></li>
-            <li><a href="/monthly"  class="text-stone-700 hover:text-astro-700">Monthly Horoscope</a></li>
-            <li><a href="/yearly"   class="text-stone-700 hover:text-astro-700">Horoscope {{ current_year() }}</a></li>
-            <li><a href="/dasha"    class="text-stone-700 hover:text-astro-700">Vimshottari Dasha</a></li>
-            <li><a href="/matching" class="text-stone-700 hover:text-astro-700">Kundli Matching</a></li>
-            <li class="pt-2 mt-2 border-t border-stone-100"><a href="/learn/" class="text-stone-700 hover:text-astro-700 font-semibold">Learning Hub &rarr;</a></li>
+            <li><a href="/"         class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Free Janma Kundli</a></li>
+            <li><a href="/rashifal" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Daily Rashifal</a></li>
+            <li><a href="/today"    class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Today's Horoscope</a></li>
+            <li><a href="/monthly"  class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Monthly Horoscope</a></li>
+            <li><a href="/yearly"   class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Horoscope {{ current_year() }}</a></li>
+            <li><a href="/dasha"    class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Vimshottari Dasha</a></li>
+            <li><a href="/matching" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Kundli Matching</a></li>
+            <li class="pt-2 mt-2 border-t border-bhagya-gold/20"><a href="/learn/" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron font-semibold">Learning Hub &rarr;</a></li>
           </ul>
         </div>
 
@@ -1012,42 +1015,42 @@
            Adds site-wide SEO surface for the standalone tool pages
            + gives users a persistent way to discover them from any page. #}
         <div class="md:col-span-2">
-          <h3 class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-3">Free Tools</h3>
+          <h3 class="text-xs uppercase font-semibold text-bhagya-cream/[.62] tracking-wider mb-3">Free Tools</h3>
           <ul class="space-y-2 text-sm">
-            <li><a href="/panchang"        class="text-stone-700 hover:text-astro-700">Panchang Today</a></li>
-            <li><a href="/muhurat"         class="text-stone-700 hover:text-astro-700">Muhurat Finder</a></li>
-            <li><a href="/festivals"       class="text-stone-700 hover:text-astro-700">Festival Calendar</a></li>
-            <li><a href="/manglik-check"   class="text-stone-700 hover:text-astro-700">Manglik Dosh Check</a></li>
-            <li><a href="/sade-sati-check" class="text-stone-700 hover:text-astro-700">Sade Sati Report</a></li>
-            <li><a href="/kaal-sarp-check" class="text-stone-700 hover:text-astro-700">Kaal Sarp Check</a></li>
-            <li><a href="/numerology"      class="text-stone-700 hover:text-astro-700">Numerology</a></li>
+            <li><a href="/panchang"        class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Panchang Today</a></li>
+            <li><a href="/muhurat"         class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Muhurat Finder</a></li>
+            <li><a href="/festivals"       class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Festival Calendar</a></li>
+            <li><a href="/manglik-check"   class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Manglik Dosh Check</a></li>
+            <li><a href="/sade-sati-check" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Sade Sati Report</a></li>
+            <li><a href="/kaal-sarp-check" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Kaal Sarp Check</a></li>
+            <li><a href="/numerology"      class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Numerology</a></li>
           </ul>
         </div>
 
         {# Connect column — trust signals (real email), conversion CTA
            (subscribe), and a sitemap pointer for power users. #}
         <div class="md:col-span-2">
-          <h3 class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-3">Connect</h3>
+          <h3 class="text-xs uppercase font-semibold text-bhagya-cream/[.62] tracking-wider mb-3">Connect</h3>
           <ul class="space-y-2 text-sm">
-            <li><a href="/about" class="text-stone-700 hover:text-astro-700">About Bhagya</a></li>
-            <li><a href="mailto:contact@shubhagya.com" class="text-stone-700 hover:text-astro-700 break-all">contact@shubhagya.com</a></li>
+            <li><a href="/about" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">About Bhagya</a></li>
+            <li><a href="mailto:contact@shubhagya.com" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron break-all">contact@shubhagya.com</a></li>
             <li><button type="button" data-subscribe-trigger
-                        class="text-stone-700 hover:text-astro-700 underline-offset-2 hover:underline text-left">
+                        class="text-bhagya-cream/[.78] hover:text-bhagya-saffron underline-offset-2 hover:underline text-left">
                   Daily Rashifal email &rarr;
                 </button></li>
-            <li class="pt-2 mt-2 border-t border-stone-100">
-              <a href="/privacy" class="text-stone-700 hover:text-astro-700">Privacy Policy</a>
+            <li class="pt-2 mt-2 border-t border-bhagya-gold/20">
+              <a href="/privacy" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Privacy Policy</a>
             </li>
-            <li><a href="/terms" class="text-stone-700 hover:text-astro-700">Terms of Service</a></li>
-            <li><a href="/sitemap.xml" class="text-stone-700 hover:text-astro-700">Sitemap</a></li>
+            <li><a href="/terms" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Terms of Service</a></li>
+            <li><a href="/sitemap.xml" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Sitemap</a></li>
           </ul>
         </div>
 
         {# Trust bullets — repeat the core value-prop one more time at
            the bottom; reduces bounces on landing pages. #}
         <div class="md:col-span-2">
-          <h3 class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-3">Why us</h3>
-          <ul class="space-y-2 text-sm text-stone-700">
+          <h3 class="text-xs uppercase font-semibold text-bhagya-cream/[.62] tracking-wider mb-3">Why us</h3>
+          <ul class="space-y-2 text-sm text-bhagya-cream/[.78]">
             <li>&check; Free &amp; honest</li>
             <li>&check; No signup needed</li>
             <li>&check; No spam, ever</li>
@@ -1056,12 +1059,12 @@
         </div>
       </div>
 
-      <div class="border-t border-stone-200 mt-8 pt-6 text-center text-xs text-stone-600 leading-relaxed">
+      <div class="border-t border-bhagya-gold/20 mt-8 pt-6 text-center text-xs text-bhagya-cream/[.62] leading-relaxed">
         <p class="mb-2">
           Readings are interpretive and for personal reflection &mdash;
           not medical, legal, or financial advice.
         </p>
-        <p class="text-stone-600">
+        <p class="text-bhagya-cream/[.62]">
           &copy; {{ current_year() }} Shubh Bhagya &middot; Built with care in India.
         </p>
       </div>
