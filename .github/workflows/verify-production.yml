@@ -288,9 +288,31 @@ jobs:
           # This CANNOT mask a genuinely broken page: a 404, a 500 or a real
           # hang fails serially too, with 60s to prove it. What it removes is
           # exactly one false signal — "slow because we caused the load".
+          #
+          # SETTLE FIRST — added 2026-09-04, and it is the whole point.
+          # "Serial" was not enough on its own, because the recheck started the
+          # instant the sweep ended, while the queue it built was still
+          # draining. Run 23 (33864837062) is the proof, in its own log: the
+          # FIRST recheck, /rashifal/gemini, took 38.7s and still returned 200;
+          # the last, /terms, took 19.6s; and in between /sade-sati-check hit
+          # the 60s ceiling and was reported as the one confirmed failure. It
+          # answers 200 in 1.04-1.31s, five times running, measured immediately
+          # afterwards. Run 19 (33421037393) failed identically —
+          # `1-bad-of-200` — on ece5466, a commit that touched nothing but
+          # og:image, so this is the workflow measuring its own load, on every
+          # push, and not any commit's defect.
+          #
+          # A settle CANNOT hide a broken page. A 404 or a 500 answers in
+          # milliseconds and answers the same after any wait; a genuine hang
+          # burns 60s here and 60s again in the second pass below, 30s apart.
+          # What the wait removes is the one thing a wait can remove: queueing
+          # we caused ourselves.
           : > /tmp/bad.tsv
           if [ "$cand" -gt 0 ]; then
+            echo "letting the instance drain for 45s before re-probing (see comment)"
+            sleep 45
             echo "re-probing $cand candidate(s) serially at --max-time 60"
+            : > /tmp/still.tsv
             while read -r _code _secs url; do
               [ -n "${url:-}" ] || continue
               out=$(curl -sL -o /dev/null --max-time 60 --max-redirs 5 \
@@ -299,9 +321,28 @@ jobs:
               echo "  recheck: $out $url"
               case "$out" in
                 200\ *) ;;
-                *) printf '%s %s\n' "$out" "$url" >> /tmp/bad.tsv ;;
+                *) printf '%s\n' "$url" >> /tmp/still.tsv ;;
               esac
             done < /tmp/cand.tsv
+
+            # Second and FINAL pass, 30s later, for whatever is still not 200.
+            # Two serial failures 30s apart on a drained instance is a broken
+            # page, and it is reported as one.
+            if [ -s /tmp/still.tsv ]; then
+              echo "$(wc -l < /tmp/still.tsv) still failing — final serial pass after 30s"
+              sleep 30
+              while read -r url; do
+                [ -n "${url:-}" ] || continue
+                out=$(curl -sL -o /dev/null --max-time 60 --max-redirs 5 \
+                           -w '%{http_code} %{time_total}' "$url" 2>/dev/null) || out=""
+                [ -n "$out" ] || out="000 0"
+                echo "  final: $out $url"
+                case "$out" in
+                  200\ *) ;;
+                  *) printf '%s %s\n' "$out" "$url" >> /tmp/bad.tsv ;;
+                esac
+              done < /tmp/still.tsv
+            fi
           fi
           bad=$(wc -l < /tmp/bad.tsv)
           cleared=$(( cand - bad ))
