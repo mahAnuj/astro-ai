@@ -32,7 +32,7 @@
   <section class="bg-{{ status_color[0] }}-50 border-2 border-{{ status_color[0] }}-200 p-6 sm:p-8">
     <div class="flex items-start gap-4">
       <div class="text-4xl sm:text-5xl flex-shrink-0" aria-hidden="true">
-        {% if manglik.effective_status == 'none' %}✓{% elif manglik.effective_status == 'cancelled' %}✓{% elif manglik.effective_status == 'mitigated' %}◐{% else %}⚠{% endif %}
+        {% if manglik.effective_status == 'none' %}✓{% elif manglik.effective_status == 'cancelled' %}✓{% elif manglik.effective_status == 'mitigated' %}◐{% else %}⚠︎{% endif %}
       </div>
       <div class="min-w-0 flex-1">
         <h2 class="font-marcellus text-2xl sm:text-3xl text-{{ status_color[0] }}-800 mb-2">

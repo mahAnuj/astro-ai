@@ -34,12 +34,29 @@
 <nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-bhagya-night/[.96] backdrop-blur
             border-t border-bhagya-gold/25 grid grid-cols-5 pb-5 no-print"
      aria-label="Quick navigation">
+  {# Glyphs are text-presentation characters, deliberately.
+
+     The Aries glyph carries U+FE0E: U+2648-2653 are dual-presentation and a
+     browser may otherwise paint them as colour emoji, which is the handoff's
+     non-negotiable #2.
+
+     The Ask tab used U+2753 BLACK QUESTION MARK ORNAMENT. That one is
+     emoji-presentation by default and Unicode defines NO text variation
+     sequence for it, so unlike the zodiac glyphs a selector cannot pull it
+     back — it rendered as a full-colour emoji on iOS and Android and put
+     Apple's red on a night bar. It is now U+FF1F, the fullwidth question
+     mark: an ordinary text character that takes the page font and the tab's
+     own colour.
+
+     A Jinja comment cannot sit INSIDE the list literal below — `{#` mid-
+     expression is a TemplateSyntaxError, and it took down every page on the
+     site for one test run. Keep notes out here. #}
   {% set _tabs = [
     ('/kundli',   'Kundli',   'ॐ'),
-    ('/rashifal', 'Rashifal', '♈'),
+    ('/rashifal', 'Rashifal', '♈︎'),
     ('/panchang', 'Panchang', '☽'),
     ('/matching', 'Match',    '⚚'),
-    ('/ask',      'Ask',      '❓'),
+    ('/ask',      'Ask',      '？'),
   ] %}
   {% for href, label, glyph in _tabs %}
   {% set _on = _path == href or _path.startswith(href ~ '/') %}

@@ -46,18 +46,18 @@ RASHI_SHORT = ["Ari", "Tau", "Gem", "Can", "Leo", "Vir",
 # Unicode zodiac glyphs — universal visual shorthand for each rashi.
 # Same 12 symbols Western astrology uses; Vedic users recognise them too.
 RASHI_SYMBOLS: tuple[str, ...] = (
-    "♈",  # ♈ Aries
-    "♉",  # ♉ Taurus
-    "♊",  # ♊ Gemini
-    "♋",  # ♋ Cancer
-    "♌",  # ♌ Leo
-    "♍",  # ♍ Virgo
-    "♎",  # ♎ Libra
-    "♏",  # ♏ Scorpio
-    "♐",  # ♐ Sagittarius
-    "♑",  # ♑ Capricorn
-    "♒",  # ♒ Aquarius
-    "♓",  # ♓ Pisces
+    "♈︎",  # ♈︎ Aries
+    "♉︎",  # ♉︎ Taurus
+    "♊︎",  # ♊︎ Gemini
+    "♋︎",  # ♋︎ Cancer
+    "♌︎",  # ♌︎ Leo
+    "♍︎",  # ♍︎ Virgo
+    "♎︎",  # ♎︎ Libra
+    "♏︎",  # ♏︎ Scorpio
+    "♐︎",  # ♐︎ Sagittarius
+    "♑︎",  # ♑︎ Capricorn
+    "♒︎",  # ♒︎ Aquarius
+    "♓︎",  # ♓︎ Pisces
 )
 
 # Synonyms for fuzzy-matching section titles back to a rashi index.
