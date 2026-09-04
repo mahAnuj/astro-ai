@@ -11,9 +11,9 @@
       <stop offset="100%" stop-color="#f5f5f4" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="mghathrone" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="60%" stop-color="#6b21a8"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="60%" stop-color="#9E2B25"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="mghagold" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#fef3c7"/>
@@ -30,12 +30,12 @@
   <circle cx="160" cy="145" r="40" fill="none" stroke="#d97706" stroke-width="1.5" opacity="0.4"/>
 
   <!-- Ancestor spirit motifs (three subtle circles floating above) -->
-  <g fill="#7c3aed" opacity="0.35">
+  <g fill="#B03A22" opacity="0.35">
     <circle cx="105" cy="70" r="8"/>
     <circle cx="160" cy="55" r="10"/>
     <circle cx="215" cy="70" r="8"/>
   </g>
-  <g stroke="#7c3aed" stroke-width="1.5" fill="none" opacity="0.25">
+  <g stroke="#B03A22" stroke-width="1.5" fill="none" opacity="0.25">
     <path d="M 105 78 Q 105 90, 100 95"/>
     <path d="M 160 65 Q 160 80, 155 90"/>
     <path d="M 215 78 Q 215 90, 220 95"/>
@@ -56,21 +56,21 @@
   <circle cx="160" cy="112" r="4" fill="#fef9c3"/>
 
   <!-- Throne seat -->
-  <rect x="105" y="210" width="110" height="20" fill="#4c1d95"/>
+  <rect x="105" y="210" width="110" height="20" fill="#140F1C"/>
 
   <!-- Throne legs -->
-  <rect x="115" y="230" width="15" height="35" fill="#4c1d95"/>
-  <rect x="190" y="230" width="15" height="35" fill="#4c1d95"/>
+  <rect x="115" y="230" width="15" height="35" fill="#140F1C"/>
+  <rect x="190" y="230" width="15" height="35" fill="#140F1C"/>
 
   <!-- Gold-trim on seat -->
   <line x1="105" y1="212" x2="215" y2="212" stroke="url(#mghagold)" stroke-width="2"/>
   <line x1="105" y1="228" x2="215" y2="228" stroke="url(#mghagold)" stroke-width="2"/>
 
   <!-- Armrests -->
-  <rect x="100" y="200" width="15" height="30" fill="#6b21a8" rx="3"/>
-  <rect x="205" y="200" width="15" height="30" fill="#6b21a8" rx="3"/>
+  <rect x="100" y="200" width="15" height="30" fill="#9E2B25" rx="3"/>
+  <rect x="205" y="200" width="15" height="30" fill="#9E2B25" rx="3"/>
 
   <!-- Small "10" -->
   <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
-        font-weight="700" fill="#6b21a8" opacity="0.35">10</text>
+        font-weight="700" fill="#9E2B25" opacity="0.35">10</text>
 </svg>

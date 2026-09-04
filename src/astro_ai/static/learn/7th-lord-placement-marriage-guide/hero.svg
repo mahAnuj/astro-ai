@@ -6,13 +6,13 @@
      aria-label="7th lord placement across the 12 houses of a Kundli — the ruler of marriage tracked through each bhava">
   <defs>
     <radialGradient id="l7_aura" cx="0.5" cy="0.5" r="0.7">
-      <stop offset="0%" stop-color="#f0e7fb" stop-opacity="0.75"/>
-      <stop offset="70%" stop-color="#a855f7" stop-opacity="0.1"/>
+      <stop offset="0%" stop-color="#F1E7D8" stop-opacity="0.75"/>
+      <stop offset="70%" stop-color="#CB5A2E" stop-opacity="0.1"/>
       <stop offset="100%" stop-color="#fefbf3" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="l7_diamond" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="l7_arrow" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#fbbf24"/>
@@ -30,7 +30,7 @@
   <ellipse cx="160" cy="160" rx="140" ry="130" fill="url(#l7_aura)"/>
 
   <!-- Star field -->
-  <g fill="#6b21a8" opacity="0.28">
+  <g fill="#9E2B25" opacity="0.28">
     <circle cx="42" cy="45" r="1.5"/>
     <circle cx="280" cy="55" r="2"/>
     <circle cx="275" cy="275" r="1.5"/>
@@ -54,7 +54,7 @@
 
   <!-- House numbers 1-12 (compact) -->
   <g font-family="Inter, sans-serif" font-size="10" font-weight="600"
-     text-anchor="middle" fill="#6b21a8" opacity="0.75">
+     text-anchor="middle" fill="#9E2B25" opacity="0.75">
     <text x="160" y="80">1</text>
     <text x="93" y="80">12</text>
     <text x="82" y="115">11</text>

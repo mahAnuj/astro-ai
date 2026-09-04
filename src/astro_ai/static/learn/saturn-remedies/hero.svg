@@ -16,9 +16,9 @@
       <stop offset="100%" stop-color="#0f0d29"/>
     </linearGradient>
     <linearGradient id="sr_ring" x1="0" y1="0.5" x2="1" y2="0.5">
-      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.3"/>
-      <stop offset="50%" stop-color="#a855f7" stop-opacity="0.85"/>
-      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.3"/>
+      <stop offset="0%" stop-color="#B03A22" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#CB5A2E" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#B03A22" stop-opacity="0.3"/>
     </linearGradient>
     <linearGradient id="sr_flame" x1="0" y1="1" x2="0" y2="0">
       <stop offset="0%" stop-color="#f59e0b"/>
@@ -44,8 +44,8 @@
            stroke="url(#sr_ring)" stroke-width="3" transform="rotate(-18 160 120)" opacity="0.7"/>
 
   <!-- Subtle bands on planet -->
-  <ellipse cx="160" cy="115" rx="52" ry="4" fill="#a855f7" opacity="0.25"/>
-  <ellipse cx="160" cy="128" rx="53" ry="3" fill="#a855f7" opacity="0.2"/>
+  <ellipse cx="160" cy="115" rx="52" ry="4" fill="#CB5A2E" opacity="0.25"/>
+  <ellipse cx="160" cy="128" rx="53" ry="3" fill="#CB5A2E" opacity="0.2"/>
 
   <!-- Small stars nearby (Saturn's serious sky mood) -->
   <g fill="#fef9c3" opacity="0.7">
@@ -89,5 +89,5 @@
 
   <!-- Small "ॐ" (Om) at top -->
   <text x="160" y="42" text-anchor="middle" font-family="Noto Sans Devanagari, serif"
-        font-size="22" fill="#7c3aed" opacity="0.55">ॐ</text>
+        font-size="22" fill="#B03A22" opacity="0.55">ॐ</text>
 </svg>

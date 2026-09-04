@@ -17,7 +17,7 @@
   <circle cx="160" cy="160" r="80" fill="url(#dy_gold)" stroke="#78350f" stroke-width="3"/>
   <text x="160" y="180" font-family="Noto Sans Devanagari, serif" font-size="60" text-anchor="middle" fill="#78350f">श्री</text>
   <!-- 9 wealth points around -->
-  <g fill="#a855f7" opacity="0.85">
+  <g fill="#CB5A2E" opacity="0.85">
     <circle cx="160" cy="50" r="8"/>
     <circle cx="220" cy="80" r="8"/>
     <circle cx="260" cy="140" r="8"/>

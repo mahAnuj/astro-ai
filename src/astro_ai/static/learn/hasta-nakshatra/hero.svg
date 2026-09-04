@@ -11,9 +11,9 @@
       <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="hastapalm" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#c084fc"/>
-      <stop offset="60%" stop-color="#7c3aed"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#E4A96A"/>
+      <stop offset="60%" stop-color="#B03A22"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="hastalight" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.7"/>
@@ -72,5 +72,5 @@
 
   <!-- Small "13" -->
   <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
-        font-weight="700" fill="#6b21a8" opacity="0.35">13</text>
+        font-weight="700" fill="#9E2B25" opacity="0.35">13</text>
 </svg>

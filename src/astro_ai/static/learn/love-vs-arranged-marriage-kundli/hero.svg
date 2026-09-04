@@ -31,7 +31,7 @@
   <ellipse cx="160" cy="170" rx="150" ry="115" fill="url(#lva_aura)"/>
 
   <!-- Stars / sparkles -->
-  <g fill="#6b21a8" opacity="0.32">
+  <g fill="#9E2B25" opacity="0.32">
     <circle cx="42" cy="45" r="1.5"/>
     <circle cx="280" cy="55" r="2"/>
     <circle cx="45" cy="275" r="1.5"/>
