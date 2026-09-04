@@ -435,6 +435,22 @@ rewrites every `/learn/` mention in LLM prose site-wide), `routes/rashifal.py`'s
 htmx fragments, and hardcoded `font-family` / `fill` / `stroke` values in SVG
 attributes. Grep for those too.
 
+Three more shapes the #233 sweep only caught on the last pass, all of them
+invisible to a `class="…"` grep of the SOURCE:
+
+- **Inline `<style>` blocks.** `learn_index.html`'s category chips kept
+  `#6b21a8` through the whole epic — a palette swap never rewrites CSS. Both
+  files that carry one are now in `verify_redesign_tokens.py`'s `MIGRATED`, and
+  its `LEGACY_SCOPE` grants a newly-listed file **no** legacy hexes by default.
+- **Non-standard utility prefixes.** `decoration-astro-500`, `shadow-astro-900/5`
+  — a map keyed on `bg-|text-|border-` walks straight past them.
+- **Class names assembled at render time from a colour-FAMILY name**
+  (`bg-{{ color }}-100`). No `bhagya` token has numeric stops, so that shape can
+  only ever reach the neutral case as `stone`, and it renders a cool near-white
+  chip on a warm page. Put the whole class pair in the dict instead. Note that
+  `verify_css_build.py` Gate 2 reads quoted family names out of any nearby line,
+  comments included — so do not write `'neutral'` in a comment there.
+
 ### If you touch a Tailwind class, you must rebuild the CSS
 
 ```bash

@@ -85,6 +85,13 @@ MIGRATED = (
     "src/astro_ai/templates/index.html",
     "src/astro_ai/templates/result.html",
     "src/astro_ai/templates/_south_indian_chart.html",
+    # Both carry their palette inside an inline <style>, which is the same
+    # blind spot as an SVG attribute: Tailwind never rewrites it, so a swap
+    # leaves it behind. learn_index.html's category chips were exactly that —
+    # #239 deferred them on purpose, #250 moved the screen and not the block,
+    # and they stayed the last live purple on /learn until this listing.
+    "src/astro_ai/templates/learn_index.html",
+    "src/astro_ai/templates/muhurat_finder.html",
 )
 
 # Hexes in the migrated files that are NOT bhagya tokens and are allowed to
@@ -125,6 +132,31 @@ LEGACY: dict[str, str] = {
     # retrograde, not "Shubh Bhagya". amber-800 rather than -700 because -700
     # is 4.10:1 on cream-2 and fails AA at the 9px this renders at.
     "#92400e": "amber-800 retrograde marker in the chart SVGs",
+}
+
+# WHICH files each LEGACY hex is actually allowed in.
+#
+# LEGACY used to apply to every MIGRATED file at once, and that quietly got
+# weaker with each file added: listing learn_index.html and muhurat_finder.html
+# handed them the entire stone ramp, so putting stone-500 back into
+# muhurat_finder's inline <style> passed the gate. Measured, not assumed — that
+# exact mutation was run and MISSED before this scope existed.
+#
+# So the allowance is per file, and the default is NOTHING. A file added to
+# MIGRATED from here on gets no legacy hexes unless someone writes down which
+# ones and why. The eight below keep the blanket allowance they were admitted
+# under: they are emails, SVGs and a Python string whose stone neutrals and
+# amber status colours are genuinely still correct.
+_ALL_LEGACY = frozenset(k.lower() for k in LEGACY)
+LEGACY_SCOPE: dict[str, frozenset[str]] = {
+    "src/astro_ai/templates/cosmic_card.svg": _ALL_LEGACY,
+    "src/astro_ai/templates/email/welcome.html": _ALL_LEGACY,
+    "src/astro_ai/templates/email/daily_rashifal.html": _ALL_LEGACY,
+    "src/astro_ai/templates/email/kundli_reading.html": _ALL_LEGACY,
+    "src/astro_ai/routes/feedback.py": _ALL_LEGACY,
+    "src/astro_ai/templates/index.html": _ALL_LEGACY,
+    "src/astro_ai/templates/result.html": _ALL_LEGACY,
+    "src/astro_ai/templates/_south_indian_chart.html": _ALL_LEGACY,
 }
 
 # The purple ramp. Still correct everywhere that has not migrated; never
@@ -223,16 +255,18 @@ def gate_1_every_hex_is_a_token(tokens: dict[str, str]) -> list[str]:
         if not path.exists():
             failures.append(f"  FAIL {rel} does not exist — update MIGRATED")
             continue
+        allowed = LEGACY_SCOPE.get(rel, frozenset())
         for h, n, line in _hexes_in(path):
             counted += 1
-            if h in by_value or h in {k.lower() for k in LEGACY}:
+            if h in by_value or h in allowed:
                 continue
+            known = " (it IS on LEGACY, but not for this file)" if h in _ALL_LEGACY else ""
             failures.append(
                 f"  FAIL {rel}:{n} uses {h}, which is neither a bhagya token "
-                f"nor on the LEGACY list.\n"
+                f"nor allowed here{known}.\n"
                 f"       {line[:100]}\n"
                 f"       Either use a token from tailwind.config.js, or add it "
-                f"to LEGACY with the reason it is not one."
+                f"to LEGACY and name this file in LEGACY_SCOPE, with the reason."
             )
     if not failures:
         print(f"  ok   {counted} hex literal(s) across {len(MIGRATED)} file(s) "

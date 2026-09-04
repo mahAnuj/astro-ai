@@ -78,7 +78,7 @@
 <!-- PWA: manifest declares Shubh Bhagya as an installable web app. -->
 <link rel="manifest" href="/static/manifest.webmanifest">
 <!-- theme-color tints the Android Chrome address bar and PWA status bar
-     to match the nav's astro-700 backdrop. -->
+     to match the nav's backdrop. -->
 <!-- #140F1C is bhagya.night, the nav/footer panel colour (#241). Kept in
      step with static/manifest.webmanifest, which sets the same value for the
      installed PWA; the two disagreeing is a visible seam on Android. -->
@@ -272,6 +272,12 @@
 
 <style>
   /* ─── DESIGN SYSTEM CANONICALS (Cycle 7 consolidation) ─────────────
+     SUPERSEDED for colour by the REDESIGN CANONICALS block below (#233).
+     Kept because its ratios are measured and still true of the stone ramp,
+     and scripts/verify_contrast.py Gate 2 re-measures every figure stated
+     here — but no migrated template may reach for a stone or astro colour.
+     Its spacing, radius and size rules still stand.
+
      Ratified 2026-07-24 during the site-wide UI polish pass. All new
      templates must reach for these values first; deviations require a
      concrete visual reason (e.g. the diamond chart's svg wrapper keeps
@@ -714,38 +720,32 @@
   }
 
   /* ─── Primary CTA hover polish ──────────────────────────────────────
-     Any button/link/submit that uses the brand primary background
-     (bg-astro-700 — the canonical primary; darkens to bg-astro-800 on
-     hover) gets a subtle lift on hover — a 2% scale-up and a warm
-     violet shadow. On press, it dips back to 0.98 for tactile feedback.
-     GPU-only transforms; :disabled skipped so the loading/wait state
-     doesn't shimmy.
-     Automatically applies to every primary CTA sitewide without
-     touching individual templates. */
-  /* #261: the redesign's primary fill is bhagya-night, so every migrated
-     button silently lost the lift and the press dip until it was added
-     here. Both classes stay listed for the duration of the epic. */
-  a.bg-astro-700, a.bg-bhagya-night,
-  button.bg-astro-700, button.bg-bhagya-night,
-  input[type="submit"].bg-astro-700,
+     Any button/link/submit carrying the brand primary background
+     (bg-bhagya-night) gets a subtle lift on hover — a 2% scale-up and a
+     soft night shadow. On press it dips back to 0.98 for tactile
+     feedback. GPU-only transforms; :disabled skipped so the loading/wait
+     state doesn't shimmy. Applies to every primary CTA sitewide without
+     touching individual templates.
+     #261 added the bhagya-night selectors beside the old bg-astro-700
+     ones, because a migrated button otherwise silently lost the lift.
+     The astro halves are gone now that no template renders that class —
+     they were listed only for the duration of the epic. */
+  a.bg-bhagya-night,
+  button.bg-bhagya-night,
   input[type="submit"].bg-bhagya-night {
     transition: transform 180ms ease-out,
                 box-shadow 180ms ease-out,
                 background-color 180ms ease-out;
   }
-  a.bg-astro-700:hover, a.bg-bhagya-night:hover,
-  button.bg-astro-700:not(:disabled):hover,
+  a.bg-bhagya-night:hover,
   button.bg-bhagya-night:not(:disabled):hover,
-  input[type="submit"].bg-astro-700:not(:disabled):hover,
   input[type="submit"].bg-bhagya-night:not(:disabled):hover {
     transform: translateY(-1px) scale(1.02);
     box-shadow: 0 10px 22px -8px rgba(20, 15, 28, 0.34),
                 0 4px 8px -4px rgba(0, 0, 0, 0.08);
   }
-  a.bg-astro-700:active, a.bg-bhagya-night:active,
-  button.bg-astro-700:not(:disabled):active,
+  a.bg-bhagya-night:active,
   button.bg-bhagya-night:not(:disabled):active,
-  input[type="submit"].bg-astro-700:not(:disabled):active,
   input[type="submit"].bg-bhagya-night:not(:disabled):active {
     transform: translateY(0) scale(0.98);
     transition-duration: 80ms;

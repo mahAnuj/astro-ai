@@ -174,7 +174,7 @@
                  title="{{ cell.festivals | map(attribute='name_en') | join(' · ') }}"
                  aria-label="{{ cell.festivals | map(attribute='name_en') | join(', ') }}, {{ cell.day }} {{ m.label }}{% if cell.is_today %} (today){% endif %} — see details"
                  class="group relative flex min-h-[2.75rem] flex-col items-center justify-center rounded-md underline underline-offset-2 hover:bg-bhagya-cream-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-bhagya-sindoor
-                        {%- if c.major %} font-bold text-bhagya-ink bg-bhagya-cream-2 decoration-2 decoration-astro-500{% else %} font-normal text-bhagya-ink-soft decoration-dotted decoration-stone-400{% endif %}
+                        {%- if c.major %} font-bold text-bhagya-ink bg-bhagya-cream-2 decoration-2 decoration-bhagya-sindoor{% else %} font-normal text-bhagya-ink-soft decoration-dotted decoration-bhagya-muted{% endif %}
                         {%- if cell.is_today %} ring-2 ring-emerald-600{% elif c.major %} ring-1 ring-bhagya-saffron{% endif %}
                         {%- if cell.is_past %} opacity-50{% endif %}">
                 <span>{{ cell.day }}</span>

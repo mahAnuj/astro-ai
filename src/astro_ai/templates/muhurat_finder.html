@@ -158,7 +158,7 @@
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.5rem 1rem;
-        border: 1px solid #e7e5e4;        /* stone-200 */
+        border: 1px solid #E2D6C2;        /* bhagya.line */
         border-radius: 0.75rem;
         padding: 0.75rem;
         margin-bottom: 0.625rem;
@@ -170,7 +170,7 @@
         display: block;
         font-size: 10px; line-height: 1.2; font-weight: 600;
         letter-spacing: 0.06em; text-transform: uppercase;
-        color: #78716c;                   /* stone-500 */
+        color: #6B6259;                   /* bhagya.muted — 5.97:1 on white */
         margin-bottom: 0.125rem;
       }
     }
@@ -232,9 +232,16 @@
       </thead>
       <tbody>
         {% for c in good_candidates %}
-        {% set colors = {'excellent': 'emerald', 'good': 'emerald', 'acceptable': 'amber', 'caution': 'amber'} %}
-        {% set color = colors.get(c.rating, 'stone') %}
-        {% set personal_colors = {'excellent': 'emerald', 'good': 'emerald', 'ok': 'stone', 'avoid': 'rose', 'strong': 'emerald', 'neutral': 'stone', 'weak': 'rose'} %}
+        {#- These carry the WHOLE class pair, not a family name. The old
+            bg-VAR-100/text-VAR-800 shape needed every family to have -100/-800
+            stops, which forced the middle case onto stone — a cool near-white
+            that reads as a different page against cream. The redesign surface
+            it belongs on (bhagya-cream-2) has no numeric stops, so the
+            indirection had to go. The two middle keys below are common live
+            values, not just fallbacks. -#}
+        {% set colors = {'excellent': 'bg-emerald-100 text-emerald-800', 'good': 'bg-emerald-100 text-emerald-800', 'acceptable': 'bg-amber-100 text-amber-800', 'caution': 'bg-amber-100 text-amber-800'} %}
+        {% set color = colors.get(c.rating, 'bg-bhagya-cream-2 text-bhagya-ink-soft') %}
+        {% set personal_colors = {'excellent': 'bg-emerald-100 text-emerald-800', 'good': 'bg-emerald-100 text-emerald-800', 'ok': 'bg-bhagya-cream-2 text-bhagya-ink-soft', 'avoid': 'bg-rose-100 text-rose-800', 'strong': 'bg-emerald-100 text-emerald-800', 'neutral': 'bg-bhagya-cream-2 text-bhagya-ink-soft', 'weak': 'bg-rose-100 text-rose-800'} %}
         <tr class="border-b border-bhagya-line-2 align-top">
           <td data-label="Date" class="py-2 pr-3 tabular-nums whitespace-nowrap font-medium">{{ c.d.strftime('%b %d, %Y') }}</td>
           <td data-label="Day" class="py-2 pr-3">{{ c.weekday[:3] }}</td>
@@ -245,7 +252,7 @@
           </td>
           <td data-label="Rating" class="py-2 pr-3">
             <div class="flex flex-col gap-1">
-              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-{{ color }}-100 text-{{ color }}-800 capitalize">{{ c.rating }}</span>
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded {{ color }} capitalize">{{ c.rating }}</span>
               {% if c.boosters %}
               <span class="inline-block px-1.5 py-0.5 text-[10px] rounded bg-emerald-100 text-emerald-800" title="{{ ' + '.join(c.boosters) }}">★ boost</span>
               {% endif %}
@@ -254,13 +261,13 @@
           {% if personal_active %}
           <td data-label="Personal" class="py-2 pr-3 text-xs">
             {% if c.personal %}
-            {% set tcolor = personal_colors.get(c.personal.tara_bala, 'stone') %}
-            {% set ccolor = personal_colors.get(c.personal.chandra_bala, 'stone') %}
+            {% set tcolor = personal_colors.get(c.personal.tara_bala, 'bg-bhagya-cream-2 text-bhagya-ink-soft') %}
+            {% set ccolor = personal_colors.get(c.personal.chandra_bala, 'bg-bhagya-cream-2 text-bhagya-ink-soft') %}
             <div class="flex flex-col gap-1">
-              <span class="inline-block px-1.5 py-0.5 rounded bg-{{ tcolor }}-100 text-{{ tcolor }}-800" title="Tara Bala position {{ c.personal.tara_position }}">
+              <span class="inline-block px-1.5 py-0.5 rounded {{ tcolor }}" title="Tara Bala position {{ c.personal.tara_position }}">
                 Tara: {{ c.personal.tara_bala_name }}
               </span>
-              <span class="inline-block px-1.5 py-0.5 rounded bg-{{ ccolor }}-100 text-{{ ccolor }}-800" title="Moon in house {{ c.personal.chandra_house }} from your natal Moon">
+              <span class="inline-block px-1.5 py-0.5 rounded {{ ccolor }}" title="Moon in house {{ c.personal.chandra_house }} from your natal Moon">
                 Chandra: {{ c.personal.chandra_bala }}
               </span>
             </div>
@@ -270,10 +277,10 @@
           {% if couple_active %}
           <td data-label="Couple" class="py-2 pr-3 text-xs">
             {% if c.couple %}
-            {% set couple_colors = {'excellent-for-both': 'emerald', 'good-for-both': 'emerald', 'mixed': 'amber', 'avoid': 'rose'} %}
-            {% set vcolor = couple_colors.get(c.couple.combined_verdict, 'stone') %}
+            {% set couple_colors = {'excellent-for-both': 'bg-emerald-100 text-emerald-800', 'good-for-both': 'bg-emerald-100 text-emerald-800', 'mixed': 'bg-amber-100 text-amber-800', 'avoid': 'bg-rose-100 text-rose-800'} %}
+            {% set vcolor = couple_colors.get(c.couple.combined_verdict, 'bg-bhagya-cream-2 text-bhagya-ink-soft') %}
             <div class="flex flex-col gap-1">
-              <span class="inline-block px-1.5 py-0.5 rounded bg-{{ vcolor }}-100 text-{{ vcolor }}-800 font-semibold" title="Combined bride+groom verdict">
+              <span class="inline-block px-1.5 py-0.5 rounded {{ vcolor }} font-semibold" title="Combined bride+groom verdict">
                 {{ c.couple.combined_verdict.replace('-', ' ') }}
               </span>
               <div class="text-[10px] text-bhagya-muted leading-tight" title="Bride: Tara / Chandra / Manglik">
@@ -321,8 +328,8 @@
               <summary class="cursor-pointer text-bhagya-sindoor text-[10px] font-semibold">Choghadiya ▼</summary>
               <div class="mt-1 space-y-0.5">
                 {% for w in c.choghadiya %}
-                {% set ch_colors = {'best': 'emerald-100 text-emerald-800', 'good': 'emerald-50 text-emerald-800', 'neutral': 'stone-50 text-bhagya-muted', 'avoid': 'rose-50 text-bhagya-sindoor'} %}
-                {% set ch_class = ch_colors.get(w.auspiciousness, 'stone-50 text-bhagya-muted') %}
+                {% set ch_colors = {'best': 'emerald-100 text-emerald-800', 'good': 'emerald-50 text-emerald-800', 'neutral': 'bhagya-cream-2 text-bhagya-ink-soft', 'avoid': 'rose-50 text-bhagya-sindoor'} %}
+                {% set ch_class = ch_colors.get(w.auspiciousness, 'bhagya-cream-2 text-bhagya-ink-soft') %}
                 <div class="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-{{ ch_class }}">
                   <span class="font-semibold w-12">{{ w.name }}</span>
                   <span class="text-[10px] opacity-70">{{ w.start }}-{{ w.end }}</span>

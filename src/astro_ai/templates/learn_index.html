@@ -101,26 +101,25 @@
   </section>
 
   {% if articles %}
-  {# #239 left this block's purple at the old ramp on purpose: a stylesheet in
-     an inline <style> is invisible to a Tailwind palette swap, but the cards and
-     nav around these chips are still on the purple utilities, so a red chip on a
-     purple index is worse than a purple one. Moves with the screen. #}
+  {# #239 left this block's purple at the old ramp on purpose — an inline
+     <style> is invisible to a Tailwind palette swap, and a red chip on a
+     then-purple index would have been worse than a purple one. The index moved
+     in #250 and this did not, so it stayed the last live purple on /learn.
+     Moved now, with the ratios measured rather than assumed. #}
   <style>
     .learn-cat-chip {
       background: #fff;
-      color: #57534e;       /* stone-600 */
-      border-color: #e7e5e4; /* stone-200 */
+      color: #4A4238;        /* bhagya.ink-soft — 9.87:1 on white */
+      border-color: #E2D6C2; /* bhagya.line */
     }
     .learn-cat-chip:hover {
-      color: #6b21a8;       /* astro-700 */
-      /* purple-400. Labelled astro-300 for years, which is #c4b5fd — the
-         label was wrong, not the value. Corrected in place (#239). */
-      border-color: #c084fc;
+      color: #9E2B25;        /* bhagya.sindoor — 7.43:1 on white */
+      border-color: #E4913C; /* bhagya.saffron: a border, never text */
     }
     .learn-cat-chip.is-active {
-      background: #6b21a8;   /* astro-700 */
-      color: #fff;
-      border-color: #6b21a8;
+      background: #140F1C;   /* bhagya.night */
+      color: #FAF6EF;        /* bhagya.cream — 17.49:1 on night */
+      border-color: #140F1C;
     }
   </style>
   <script>

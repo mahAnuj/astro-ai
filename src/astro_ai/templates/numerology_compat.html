@@ -108,13 +108,19 @@
 
   {# Per-number breakdown #}
   <section class="grid sm:grid-cols-3 gap-3">
-    {% set v_colors = {'friend': 'emerald', 'neutral': 'stone', 'enemy': 'amber'} %}
+    {#- Whole class pairs, not family names. The middle verdict here is a live
+        value, not a fallback, and the redesign surface it belongs on
+        (bhagya-cream-2) has no numeric stops — so the old
+        bg-VAR-100/text-VAR-800 shape could only ever reach it as stone.
+        Do not reintroduce that shape: verify_css_build Gate 2 reads quoted
+        family names out of lines like this one. -#}
+    {% set v_colors = {'friend': 'bg-emerald-100 text-emerald-800', 'neutral': 'bg-bhagya-cream-2 text-bhagya-ink-soft', 'enemy': 'bg-amber-100 text-amber-800'} %}
     {% for label, a_num, b_num, verdict, note in [
       ('Life Path', compat.person_a_life_path, compat.person_b_life_path, compat.life_path_verdict, 'main life theme'),
       ('Birthday',  compat.person_a_birthday,  compat.person_b_birthday,  compat.birthday_verdict,  'self-image'),
       ('Destiny',   compat.person_a_destiny,   compat.person_b_destiny,   compat.destiny_verdict,   'outer role'),
     ] %}
-    {% set c = v_colors.get(verdict, 'stone') %}
+    {% set c = v_colors.get(verdict, 'bg-bhagya-cream-2 text-bhagya-ink-soft') %}
     <div class="bg-white border border-bhagya-line p-4">
       <div class="text-xs uppercase text-bhagya-muted font-semibold tracking-wider mb-2">{{ label }}</div>
       <div class="flex items-baseline gap-2 mb-2">
@@ -122,7 +128,7 @@
         <span class="text-bhagya-muted-2">↔</span>
         <span class="font-marcellus text-2xl text-bhagya-sindoor">{{ b_num }}</span>
       </div>
-      <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-{{ c }}-100 text-{{ c }}-800 capitalize">{{ verdict }}</span>
+      <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded {{ c }} capitalize">{{ verdict }}</span>
       <p class="text-[11px] text-bhagya-muted mt-1 italic">{{ note }}</p>
     </div>
     {% endfor %}
