@@ -92,6 +92,12 @@ MIGRATED = (
     # and they stayed the last live purple on /learn until this listing.
     "src/astro_ai/templates/learn_index.html",
     "src/astro_ai/templates/muhurat_finder.html",
+    # The third and largest inline <style>: the prose rules every one of the
+    # 76 article bodies renders through. #239 deferred its purple, #250 moved
+    # the CTA banner it was waiting on and left the block behind, so prose
+    # links shipped astro-700 site-wide — and four rules kept naming
+    # Crimson Pro after ea0725b retired it from the font request.
+    "src/astro_ai/templates/learn_article_base.html",
 )
 
 # Hexes in the migrated files that are NOT bhagya tokens and are allowed to
@@ -127,6 +133,11 @@ LEGACY: dict[str, str] = {
     # Semantic status colours in the panchang strip. Not brand colours.
     "#b91c1c": "Rahu Kaal warning",
     "#15803d": "Abhijit Muhurta positive",
+    # The two article-prose callouts. Status, not brand: `callout-warning`
+    # means "be careful", not "Shubh Bhagya". Scoped to
+    # learn_article_base.html only — see LEGACY_SCOPE.
+    "#fee2e2": "red-100 callout-warning fill",
+    "#dc2626": "red-600 callout-warning rule",
     # #243, the two chart SVGs. The retrograde marker is a STATUS colour, not a
     # brand one — the palette has no amber, and "R" beside a planet means
     # retrograde, not "Shubh Bhagya". amber-800 rather than -700 because -700
@@ -157,6 +168,18 @@ LEGACY_SCOPE: dict[str, frozenset[str]] = {
     "src/astro_ai/templates/index.html": _ALL_LEGACY,
     "src/astro_ai/templates/result.html": _ALL_LEGACY,
     "src/astro_ai/templates/_south_indian_chart.html": _ALL_LEGACY,
+    # The named exception the scope exists for: this file gets FIVE legacy
+    # hexes, not the whole list. They are the two semantic callouts in the
+    # article prose — tip and warning — which are status colours, not brand
+    # ones. Everything else in the block must be a bhagya token, and the
+    # stone ramp in particular is NOT allowed here.
+    "src/astro_ai/templates/learn_article_base.html": frozenset({
+        "#fef3c7",  # amber-100, callout-tip fill (and the shlok card)
+        "#fde68a",  # amber-200, shlok card border
+        "#d97706",  # amber-600, callout-tip rule
+        "#fee2e2",  # red-100, callout-warning fill
+        "#dc2626",  # red-600, callout-warning rule
+    }),
 }
 
 # The purple ramp. Still correct everywhere that has not migrated; never

@@ -275,25 +275,36 @@
    ships with the template, no external stylesheet to maintain.
 
    #239 left the purple in here (prose links, the insight callout, the pull
-   quote rule) at the old ramp on purpose, along with the logo dot in the CTA
-   banner above. None of it is reachable by a Tailwind palette swap, but the
-   banner it sits in is built from the purple utilities, so recolouring the
-   prose alone would leave one article half each palette. Moves with the
-   screen that owns this file. The 76 article hero SVGs are #259. #}
+   quote rule) at the old ramp on purpose: the CTA banner above was still on
+   the purple utilities, so recolouring the prose alone would have left one
+   article half each palette. The banner moved in #250 and this block did
+   not, so prose links stayed astro-700 on all 76 article bodies — and the
+   four `Crimson Pro` rules kept naming a face that ea0725b had retired,
+   falling back to a generic serif with nothing to signal it. Both fixed now,
+   and the file is in verify_redesign_tokens.py's MIGRATED so neither can
+   come back quietly. The 76 article hero SVGs are #259; the six shlok
+   mantras are #260 and are deliberately untouched here. #}
 <style>
   .article-prose h2 {
-    font-family: 'Crimson Pro', serif;
+    /* Marcellus at 400, explicitly. Browsers default h2/h3 to bold, and
+       Marcellus ships ONE weight — an unset weight here is a synthesised
+       bold, which is #189's defect. Crimson Pro used to live here and was
+       retired in ea0725b, so these four rules had been falling back to a
+       generic serif on all 76 articles ever since. */
+    font-family: Marcellus, 'Noto Serif Devanagari', serif;
+    font-weight: 400;
     font-size: 1.6rem;
-    color: #1c1917;
+    color: #17131A;
     margin-top: 2.2rem;
     margin-bottom: 0.8rem;
     line-height: 1.25;
   }
   .article-prose h2:first-child { margin-top: 0; }
   .article-prose h3 {
-    font-family: 'Crimson Pro', serif;
+    font-family: Marcellus, 'Noto Serif Devanagari', serif;
+    font-weight: 400;
     font-size: 1.25rem;
-    color: #292524;
+    color: #17131A;
     margin-top: 1.6rem;
     margin-bottom: 0.5rem;
   }
@@ -305,14 +316,14 @@
   .article-prose ul { list-style: disc; }
   .article-prose ol { list-style: decimal; }
   .article-prose li { margin-bottom: 0.4rem; padding-left: 0.2rem; }
-  .article-prose strong { color: #1c1917; font-weight: 600; }
+  .article-prose strong { color: #17131A; font-weight: 600; }
   .article-prose a {
-    color: #6b21a8;
+    color: #9E2B25;
     text-decoration: underline;
     text-underline-offset: 2px;
     text-decoration-thickness: 1px;
   }
-  .article-prose a:hover { color: #581c87; }
+  .article-prose a:hover { color: #140F1C; }
   /* Custom callouts — author uses these via <div class="callout callout-tip"> */
   .article-prose .callout {
     margin: 1.5rem 0;
@@ -333,15 +344,18 @@
     margin-bottom: 0.35rem;
     opacity: 0.85;
   }
-  /* Pull quote — large italic with purple accent */
+  /* Pull quote — gold rule, Marcellus at 400. NOT italic: Marcellus ships
+     no italic either, so font-style would synthesise an oblique. The gold
+     rule and the size mark it as a quote without one — the same call
+     86bd2be made on dasha.html's heading. */
   .article-prose .pullquote {
     margin: 2rem 0;
     padding: 1rem 0 1rem 1.5rem;
     border-left: 4px solid #C8A44D;
-    font-family: 'Crimson Pro', serif;
+    font-family: Marcellus, 'Noto Serif Devanagari', serif;
+    font-weight: 400;
     font-size: 1.25rem;
-    font-style: italic;
-    color: #44403c;
+    color: #4A4238;
     line-height: 1.55;
   }
   /* Shlok card — cream background with Devanagari. The Sanskrit line
@@ -363,7 +377,7 @@
   .article-prose .shlok .sanskrit {
     font-family: 'Noto Sans Devanagari', serif;
     font-size: 1.2rem;
-    color: #1c1917;
+    color: #17131A;
     font-weight: 600;
     line-height: 1.5;
     margin-bottom: 0.5rem;
@@ -374,7 +388,7 @@
   }
   .article-prose .shlok .meaning {
     font-size: 0.9rem;
-    color: #78716c;
+    color: #6B6259;
     font-style: italic;
   }
 </style>

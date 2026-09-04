@@ -48,7 +48,9 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-BASE_HTML = Path(__file__).resolve().parent.parent / "src/astro_ai/templates/base.html"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+BASE_HTML = REPO_ROOT / "src/astro_ai/templates/base.html"
+TEMPLATES = REPO_ROOT / "src/astro_ai/templates"
 
 # The Hindi UI needs a Devanagari SANS at every weight the templates use bold
 # at. This is the static half of the gate and it is the half that survives a
@@ -118,6 +120,78 @@ def check_font_link_statically() -> list[str]:
                 f"{missing}. A weight that is not loaded is synthesised by the "
                 "browser, which is what #189 looked like."
             )
+
+    fails.extend(check_hardcoded_faces_are_loaded(set(families)))
+    return fails
+
+
+# Families a template may name without the <link> requesting them: generic CSS
+# keywords, and system faces that are present because the OS has them. Anything
+# else must be a face we actually load.
+GENERIC_FAMILIES = {
+    "serif", "sans-serif", "monospace", "cursive", "fantasy", "system-ui",
+    "ui-serif", "ui-sans-serif", "ui-monospace", "ui-rounded",
+    "-apple-system", "blinkmacsystemfont", "segoe ui", "roboto", "helvetica",
+    "helvetica neue", "arial", "georgia", "times", "times new roman",
+    "courier", "courier new", "cambria", "consolas", "menlo", "monaco",
+    "noto color emoji", "apple color emoji", "segoe ui emoji", "inherit",
+}
+
+
+def check_hardcoded_faces_are_loaded(requested: set[str]) -> list[str]:
+    """Every font family hardcoded in a template must be one we load.
+
+    This exists because the same defect shipped twice inside one epic, and
+    neither time did anything fail:
+
+      #242 dropped Inter from the font <link>. Ten SVG labels across
+      result.html, _south_indian_chart.html and matching_result.html still
+      said `style="font-family: Inter, sans-serif"`, so they silently fell
+      back to a system sans.
+
+      ea0725b retired Crimson Pro. Six rules still named it — four in
+      learn_article_base.html's inline <style>, which every one of the 76
+      article bodies renders through, plus the loader caption and the Om
+      glyph in base.html. All six fell back to a generic serif.
+
+    A face in a `font-family:` declaration or an SVG `font-family=` attribute
+    is invisible to a Tailwind class audit and invisible to the browser probe
+    below unless that exact node happens to be sampled. It is only visible to
+    a check that reads the templates and compares them to the <link>.
+
+    Tailwind utilities are NOT checked here — those resolve through
+    tailwind.config.js, which is a different failure mode with its own gate.
+    """
+    fails: list[str] = []
+    loaded = {f.lower() for f in requested}
+
+    # `font-family: X, Y;` in CSS and `font-family="X, Y"` in SVG attributes.
+    decl = re.compile(r"""font-family\s*[:=]\s*["']?([^;"'}>]+)""", re.I)
+
+    for path in sorted(TEMPLATES.rglob("*.html")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        # Comments record the faces they replaced; a name in prose is not a
+        # declaration. Blank them first or the gate fails on its own history.
+        text = re.sub(r"\{#.*?#\}", "", text, flags=re.S)
+        text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+        text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+
+        for stack in decl.findall(text):
+            for raw in stack.split(","):
+                name = raw.strip().strip("\"'").strip()
+                if not name or name.startswith("{{") or name.startswith("var("):
+                    continue
+                low = name.lower()
+                if low in GENERIC_FAMILIES or low in loaded:
+                    continue
+                fails.append(
+                    f"{path.relative_to(REPO_ROOT)} hardcodes font-family "
+                    f"{name!r}, which the font <link> does not request. "
+                    f"Loaded: {sorted(requested)}. A named face that is not "
+                    f"loaded falls back silently — nothing errors, the text "
+                    f"just renders in something else. Either request it or "
+                    f"name a face we already load."
+                )
     return fails
 
 
