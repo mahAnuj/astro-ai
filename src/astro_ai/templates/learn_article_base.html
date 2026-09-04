@@ -19,7 +19,12 @@
    chars), else falls back to article.summary. Registry can override per
    article for tighter SERP snippets. #}
 {% block meta_description %}{{ article.seo_description or article.summary }}{% endblock %}
-{% block og_image %}{{ site_url }}{{ article.hero_image }}{% endblock %}
+{# og:image deliberately NOT article.hero_image. Those are 320x320 SVGs, and
+   Facebook, LinkedIn, WhatsApp, X and Slack all reject SVG as og:image — so
+   every one of these 76 articles previewed as a bare text link. Falling back
+   to the branded 1200x630 PNG makes the preview work; per-article PNG cards
+   (rendered like scripts/generate_og_card.py) are the better fix and are not
+   done yet. The SVG is still used as the on-page hero. #}
 
 {% block content %}
 {% set active_page = "learn" %}
