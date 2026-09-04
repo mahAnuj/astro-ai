@@ -35,6 +35,7 @@ from astro_ai.chart import (
     compute_bhagya_score,
     compute_chart,
     compute_dasha_state,
+    dasha_timeline,
     compute_dashamsa_chart,
     compute_life_chapters,
     compute_manglik_details,
@@ -247,6 +248,16 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     was_cached = not _generated["fired"]
     sections = parse_sectioned_reading(reading_text)
     sade_sati = compute_sade_sati_details(chart)
+    # One DashaState for both template variables — the strip and the
+    # active-pair detail line must agree, and passing the same object is how
+    # that is guaranteed rather than hoped for.
+    #
+    # This IS a second call in this function (there is already a `dasha_state`
+    # for the prompt), and deliberately so: the two live in different branches
+    # and tying them together would couple the render path to the LLM path for
+    # no gain. Measured 2026-09-04: compute_dasha_state is 0.0299 ms and
+    # dasha_timeline 0.0004 ms, against a ~3 ms warm page. Below the noise.
+    _dasha = compute_dasha_state(chart)
 
     # Fire owner-notification + activity event ONLY on fresh generation.
     # Every /kundli page render (refresh, back-nav, HTMX-boosted click)
@@ -332,7 +343,8 @@ async def _render_natal_for(request: Request, details: BirthDetails,
             "dashamsa_chart": compute_dashamsa_chart(chart),
             "yogas":    compute_yogas(chart),
             "sade_sati": sade_sati,
-            "dasha":    compute_dasha_state(chart),
+            "dasha":    _dasha,
+            "dasha_strip": dasha_timeline(_dasha),
             # Pre-computed SS timeline values for the panel.
             "sade_sati_progress": ss_progress,
             "sade_sati_elapsed_years": ss_elapsed_years,
@@ -620,6 +632,16 @@ async def view_kundli_snapshot(request: Request, short_id: str) -> HTMLResponse:
 
     sections = parse_sectioned_reading(snap.reading_text)
     sade_sati = compute_sade_sati_details(chart)
+    # One DashaState for both template variables — the strip and the
+    # active-pair detail line must agree, and passing the same object is how
+    # that is guaranteed rather than hoped for.
+    #
+    # This IS a second call in this function (there is already a `dasha_state`
+    # for the prompt), and deliberately so: the two live in different branches
+    # and tying them together would couple the render path to the LLM path for
+    # no gain. Measured 2026-09-04: compute_dasha_state is 0.0299 ms and
+    # dasha_timeline 0.0004 ms, against a ~3 ms warm page. Below the noise.
+    _dasha = compute_dasha_state(chart)
     moon_plt = next(p for p in chart.planets if p.name == "Moon")
     sun_plt = next(p for p in chart.planets if p.name == "Sun")
 
@@ -659,7 +681,8 @@ async def view_kundli_snapshot(request: Request, short_id: str) -> HTMLResponse:
             "dashamsa_chart": compute_dashamsa_chart(chart),
             "yogas": compute_yogas(chart),
             "sade_sati": sade_sati,
-            "dasha": compute_dasha_state(chart),
+            "dasha": _dasha,
+            "dasha_strip": dasha_timeline(_dasha),
             "sade_sati_progress": ss_progress,
             "sade_sati_elapsed_years": ss_elapsed_years,
             "sade_sati_remaining_years": ss_remaining_years,

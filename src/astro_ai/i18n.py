@@ -209,6 +209,13 @@ _EN: Final[dict[str, str]] = {
     "dasha_card_title":    "Current Dasha",
     "dasha_card_subtitle": "Your active Vimshottari period",
     "dasha_view_full":     "Full Dasha timeline →",
+    # Proportional Mahadasha strip. The legend labels and the segment states
+    # share one set of CSS classes, so these three describe fills that are
+    # actually rendered.
+    "dasha_now":           "Now",
+    "dasha_legend_past":   "Completed",
+    "dasha_legend_now":    "Current period",
+    "dasha_legend_future": "Still to come",
 
     # kundali matching form
     "matching_title":      "Kundali Matching",
@@ -645,6 +652,10 @@ _HI: Final[dict[str, str]] = {
     "dasha_card_title":    "वर्तमान दशा",
     "dasha_card_subtitle": "आपकी सक्रिय विंशोत्तरी अवधि",
     "dasha_view_full":     "पूर्ण दशा समय-रेखा →",
+    "dasha_now":           "अभी",
+    "dasha_legend_past":   "पूर्ण हो चुकी",
+    "dasha_legend_now":    "वर्तमान अवधि",
+    "dasha_legend_future": "आगे आने वाली",
 
     # kundali matching
     "matching_title":      "कुंडली मिलान",
