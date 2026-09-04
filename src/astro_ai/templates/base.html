@@ -561,10 +561,13 @@
     opacity: 1;
   }
   #kundli-loader .caption {
-    font-family: 'Crimson Pro', serif;
+    /* Marcellus, not Crimson Pro — ea0725b retired Crimson Pro from the font
+       request, so this rule had been resolving to a generic serif. And no
+       italic: Marcellus ships one weight and no italic, so font-style would
+       synthesise an oblique. The breathe animation carries the feel. */
+    font-family: Marcellus, 'Noto Serif Devanagari', serif;
     font-size: 1.1rem;
     color: #9E2B25;
-    font-style: italic;
     animation: breathe 2s ease-in-out infinite;
   }
 
@@ -848,13 +851,13 @@
      `class="leading-tight" lang="sa"` will be silently ignored — override
      with a more specific selector here, not with a utility class. */
   [lang="sa"] {
-    /* Crimson Pro FIRST, deliberately. It carries no Devanagari, so every
+    /* The LATIN serif FIRST, deliberately — Marcellus now, Crimson Pro
+       before ea0725b retired it. It carries no Devanagari, so every
        Devanagari glyph still falls through to Noto Serif Devanagari — but
        the Latin characters inside a shloka block (spacing, punctuation, the
-       stray transliteration) resolve to Crimson Pro, which is already
-       loaded. List the Devanagari serif first instead and the browser also
-       fetches ITS Latin subset: measured 11,908 B for glyphs we already
-       have. */
+       stray transliteration) resolve to a face that is already loaded. List
+       the Devanagari serif first instead and the browser also fetches ITS
+       Latin subset: measured 11,908 B for glyphs we already have. */
     font-family: Marcellus, "Noto Serif Devanagari", ui-serif, Georgia, serif;
     font-style: normal;
     line-height: 1.85;
@@ -1029,7 +1032,7 @@
       {# Central Om glyph — fades in after diamond lines complete #}
       <circle cx="100" cy="100" r="14" class="cast-glyph"/>
       <text x="100" y="110" text-anchor="middle" class="cast-glyph"
-            font-family="Crimson Pro, Georgia, serif"
+            font-family="'Noto Sans Devanagari', Marcellus, Georgia, serif"
             font-size="24" font-weight="700" fill="#17131A"
             style="transform-origin: 100px 100px">ॐ</text>
     </svg>
