@@ -673,9 +673,16 @@ def panchang_strip_for_city(city: str) -> tuple:
     underneath, so two cities in the same 55km bucket also share one solve.
 
     Uses date.today() implicitly so a new day naturally busts the cache.
-    Cache is per-process (Cloud Run instances rebuild once each per day),
-    which is fine — the compute is <200ms so cold-start latency is
-    negligible.
+    Cache is per-process (Cloud Run instances rebuild once each per day).
+
+    That last sentence used to end "which is fine — the compute is <200ms so
+    cold-start latency is negligible". Measured 2026-09-04, it is not: the
+    FIRST call in a process takes **1.09s**, a second call for a DIFFERENT
+    city 0.048s, and a repeat 0.000s. The gap is one-time global init the
+    strip merely happens to trigger first — TimezoneFinder() at 0.551s and a
+    live Nominatim geocode at 0.422s — not the panchang solve, which is
+    indeed ~50ms. `main._warm_process_globals` now pays it during startup;
+    the numbers and the rejected alternative are recorded there.
     """
     today = date.today().isoformat()
     resolved_city = (city or "").strip() or _STRIP_DEFAULT_CITY
