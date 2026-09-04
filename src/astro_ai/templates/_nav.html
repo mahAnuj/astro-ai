@@ -78,6 +78,12 @@
         </a>
       {%- endmacro %}
 
+      {# Seven links stacked one per row is seven rows of a phone menu for no
+         information. Two columns puts them in four. `md:contents` dissolves
+         this wrapper from 768px up, so the desktop flex row is unchanged —
+         the alternative, putting grid classes on #nav-menu itself, cannot
+         work: the hamburger script toggles `flex` on that element. #}
+      <div class="grid grid-cols-2 gap-x-4 md:contents">
       {{ link("/kundli",   t(lang, 'nav_natal_link'),    'natal') }}
       {{ link("/matching", t(lang, 'nav_matching_link'), 'matching') }}
       {{ link("/rashifal", t(lang, 'nav_rashifal_link'), 'rashifal') }}
@@ -85,6 +91,7 @@
       {{ link("/numerology", t(lang, 'nav_numerology_link'), 'numerology') }}
       {{ link("/ask",        t(lang, 'nav_ask_link'),        'ask') }}
       {{ link("/learn/",     t(lang, 'nav_learn_link'),      'learn') }}
+      </div>
 
       {# TOOLS dropdown — the free tools shipped in cycle 8. Numerology
          was promoted out of this dropdown to top-level nav (cycle 9) since
@@ -106,7 +113,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
-        <div class="nav-dropdown-menu flex flex-col gap-y-1 md:gap-y-0
+        <div data-collapsed="true"
+             class="nav-dropdown-menu flex flex-col gap-y-1 md:gap-y-0
                     md:hidden md:absolute md:top-full md:left-1/2 md:-translate-x-1/2 md:mt-2
                     md:w-56 md:bg-bhagya-cream md:rounded-md md:shadow-lg md:border md:border-bhagya-border
                     md:py-1 md:z-20
@@ -134,7 +142,8 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
-        <div class="nav-dropdown-menu flex flex-col gap-y-1 md:gap-y-0
+        <div data-collapsed="true"
+             class="nav-dropdown-menu flex flex-col gap-y-1 md:gap-y-0
                     md:hidden md:absolute md:top-full md:left-1/2 md:-translate-x-1/2 md:mt-2
                     md:w-52 md:bg-bhagya-cream md:rounded-md md:shadow-lg md:border md:border-bhagya-border
                     md:py-1 md:z-20
@@ -202,10 +211,30 @@
           iconOpen.classList.toggle('hidden');
           iconClose.classList.toggle('hidden');
         }
+        // Closing the hamburger re-collapses Tools and More, so reopening it
+        // is not stateful in a way nobody asked for: the menu always comes
+        // back the same height it went away at.
+        if (!willOpen) {
+          document.querySelectorAll('.nav-dropdown-menu').forEach(function (pnl) {
+            pnl.setAttribute('data-collapsed', 'true');
+            var t = pnl.parentElement && pnl.parentElement.querySelector('.nav-dropdown-trigger');
+            if (t) t.setAttribute('aria-expanded', 'false');
+            var c = pnl.parentElement && pnl.parentElement.querySelector('.nav-dropdown-chev');
+            if (c) c.style.transform = '';
+          });
+        }
       });
     }
 
-    // --- Readings dropdown (desktop only — mobile shows items inline) ---
+    // --- Tools / More groups. Collapsible on BOTH breakpoints now.
+    //
+    // They used to be desktop-only ("mobile shows items inline; no toggle"),
+    // which meant a phone rendered all nine sub-items flat and the menu ran
+    // to ~20 rows. Mobile toggles `data-collapsed`; desktop keeps the
+    // md:hidden / md:flex dance the CSS transition in base.html keys on.
+    // Two mechanisms, one trigger, and `aria-expanded` tracks both — it
+    // previously only tracked the desktop one, so on a phone the control
+    // told a screen reader it was collapsed while its contents were visible.
     var DESKTOP = '(min-width: 768px)';
     document.querySelectorAll('[data-nav-dropdown]').forEach(function (wrap) {
       var trigger = wrap.querySelector('.nav-dropdown-trigger');
@@ -228,9 +257,16 @@
       }
       function isOpen() { return !panel.classList.contains('md:hidden'); }
 
+      function mobileOpen()  { return panel.getAttribute('data-collapsed') !== 'true'; }
+      function mobileSet(openIt) {
+        panel.setAttribute('data-collapsed', openIt ? 'false' : 'true');
+        trigger.setAttribute('aria-expanded', openIt ? 'true' : 'false');
+        if (chev) chev.style.transform = openIt ? 'rotate(180deg)' : '';
+      }
+
       trigger.addEventListener('click', function (e) {
-        if (!isDesktop()) return;  // mobile shows items inline; no toggle
         e.stopPropagation();
+        if (!isDesktop()) { mobileSet(!mobileOpen()); return; }
         if (isOpen()) close(); else open();
       });
 
