@@ -50,9 +50,12 @@
       <div class="relative w-56 h-56 sm:w-64 sm:h-64">
         <svg viewBox="0 0 200 200" class="w-full h-full -rotate-90"
              aria-label="{{ t(lang, 'matching_total') }}: {{ guna.total_awarded }} of {{ guna.total_max }}">
-          {# Background arc — full circle, muted stone #}
+          {# Background arc — full circle. #E6DAC6 is the handoff's "past /
+             unfilled" tone (it names it for the spent dasha segments); it was
+             stone-200 #e7e5e4, a cool grey that read as a different page
+             against cream. #}
           <circle cx="100" cy="100" r="80" fill="none"
-                  stroke="#e7e5e4" stroke-width="14"/>
+                  stroke="#E6DAC6" stroke-width="14"/>
           {# Foreground arc — palette-driven, animates from empty to score #}
           <circle cx="100" cy="100" r="80" fill="none"
                   stroke="{{ palette.hex }}" stroke-width="14" stroke-linecap="round"
@@ -66,9 +69,7 @@
           <div class="text-[10px] font-semibold uppercase tracking-wider {{ palette.text }} opacity-70 mb-0.5">
             {{ t(lang, 'matching_total') }}
           </div>
-          <div class="font-marcellus text-5xl sm:text-6xl {{ palette.text }} tabular-nums leading-none score-dial-num"
-               data-score-target="{{ guna.total_awarded }}"
-               data-score-precision="1">0.0</div>
+          <div class="font-marcellus text-5xl sm:text-6xl {{ palette.text }} tabular-nums leading-none">{{ guna.total_awarded }}</div>
           <div class="text-xs text-bhagya-muted mt-1">of {{ guna.total_max }} &middot; {{ guna.percent }}%</div>
         </div>
       </div>
@@ -388,9 +389,10 @@
 
 {# ─── Score-dial animation (Issue #83) ────────────────────────────
    Dial arc reveal via CSS keyframe (uses inline --target-offset CSS var
-   set by the Jinja template above). Number count-up driven by tiny JS
-   IIFE that reads data-score-target + data-score-precision from the
-   center-number div. Both animations honour prefers-reduced-motion. #}
+   set by the Jinja template above), honouring prefers-reduced-motion.
+   The number COUNT-UP that used to sit here is gone — the redesign
+   handoff's motion section names "number count-ups" in its explicitly-avoided
+   list. Do not reinstate it. #}
 <style>
   @keyframes scoreDialFill {
     to { stroke-dashoffset: var(--target-offset); }
@@ -402,31 +404,11 @@
     .score-dial-fg { animation: none; stroke-dashoffset: var(--target-offset); }
   }
 </style>
-<script>
-  (function () {
-    var el = document.querySelector('.score-dial-num');
-    if (!el) return;
-    var target = parseFloat(el.dataset.scoreTarget) || 0;
-    var precision = parseInt(el.dataset.scorePrecision) || 1;
-
-    // Motion-safe: if user opted out, show the final number immediately.
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      el.textContent = target.toFixed(precision);
-      return;
-    }
-
-    var duration = 1400;        // matches the dial-fill duration
-    var start = performance.now();
-    function tick(now) {
-      var elapsed = now - start;
-      var t = Math.min(1, elapsed / duration);
-      // Ease-out cubic — matches the dial's ease-out for coherent motion
-      var eased = 1 - Math.pow(1 - t, 3);
-      el.textContent = (target * eased).toFixed(precision);
-      if (t < 1) requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  })();
-</script>
+{# The guna total used to count up from 0.0 over 1.4s in JS. Removed: the
+   handoff's motion section lists what it "explicitly avoided", and "number
+   count-ups" is on that list by name, beside parallax and rotating zodiac
+   wheels. The dial arc still fills (that IS specified) — only the numeral is
+   static now, which is also the honest presentation: a compatibility score is
+   a computed result, not a slot machine coming to rest on one. #}
 
 {% endblock %}

@@ -120,6 +120,18 @@ module.exports = {
         manrope: ['Manrope', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
+        // STAYS, and the reason is a gate, not inertia. Nothing renders
+        // `bg-cream` any more, so removing it looks like free hygiene — but
+        // scripts/verify_contrast.py resolves five legacy DECLARED_PAIRS rows
+        // (text-stone-600/800/900, text-astro-700/800) against `bg-cream`, and
+        // deleting the token made that gate exit 2, COULD NOT VERIFY. Tried
+        // 2026-09-04 and reverted.
+        //
+        // Those five rows now guard only rashifal.html, which is dead code
+        // (no route, no test, no reference — #262). So the token, the legacy
+        // rows and that file should retire in ONE change, not three: pulling
+        // the token alone silences a working gate to tidy a line of config.
+        // Tracked on #262. Use `bhagya.cream` for anything new.
         cream: '#faf7f2',
 
         // ─── Redesign palette (#233/#238) ─────────────────────────────
