@@ -335,7 +335,7 @@ src/astro_ai/
   llm.py           Provider-agnostic LLM calls (OpenAI-compatible)
   knowledge/*.md   Classical Vedic source texts — the authority for astrological claims
   prompts/*.txt    LLM prompt templates
-  templates/       Jinja2. learn/ (75 articles), email/, admin_*.html, panchang.html
+  templates/       Jinja2. learn/ (76 articles), email/, admin_*.html, panchang.html
 ```
 
 ### Source books in `data/` — read `knowledge/SOURCES.md` before searching
