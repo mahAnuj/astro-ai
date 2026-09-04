@@ -7,18 +7,18 @@
 {% set active_page = "learn" %}
 {% include "_nav.html" %}
 
-<main class="bg-cream">
+<main class="bg-bhagya-cream">
 
   <!-- HERO -->
-  <header class="border-b border-stone-200/70 bg-gradient-to-br from-astro-50 via-cream to-cream">
+  <header class="border-b border-bhagya-gold/25 bg-bhagya-night">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center">
-      <span class="text-[11px] font-semibold uppercase tracking-wider text-astro-700 bg-astro-100 px-2.5 py-1 rounded-full inline-block mb-3">
-        Learning Hub
+      <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-bhagya-gold inline-block mb-3">
+        Learning Hub &middot; {{ articles | length }} explainers
       </span>
-      <h1 class="font-display text-3xl sm:text-5xl text-stone-900 leading-tight mb-3">
+      <h1 class="font-marcellus text-3xl sm:text-5xl text-bhagya-cream leading-tight mb-3">
         Vedic Astrology, Clearly Explained
       </h1>
-      <p class="text-lg text-stone-600 max-w-2xl mx-auto leading-relaxed">
+      <p class="text-lg text-bhagya-cream/[.66] max-w-2xl mx-auto leading-relaxed">
         Doshas, planets, yogas, dasha periods, remedies — straightforward guides written by people who care about getting it right. Free, no signup.
       </p>
     </div>
@@ -33,15 +33,15 @@
     <div class="flex flex-col gap-4">
       {# Search bar #}
       <div class="relative">
-        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-500 pointer-events-none"
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-bhagya-muted-2 pointer-events-none"
              fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5" stroke-linecap="round"/>
         </svg>
         <input id="learn-search" type="search" autocomplete="off"
                placeholder="Search articles — try &quot;manglik&quot;, &quot;dasha&quot;, &quot;saturn&quot;..."
-               class="w-full pl-11 pr-11 py-3 bg-white border border-stone-300 rounded-full text-sm text-stone-900 placeholder-stone-500 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none shadow-sm">
+               class="w-full pl-11 pr-11 py-3 bg-white border border-bhagya-border rounded-full text-sm text-bhagya-ink placeholder-bhagya-placeholder focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
         <button id="learn-search-clear" type="button" aria-label="Clear search"
-                class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-700 p-1">
+                class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-bhagya-muted-2 hover:text-bhagya-ink p-1">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
@@ -66,35 +66,35 @@
   <!-- ARTICLE GRID -->
   <section class="max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-10 sm:pb-14">
     {% if not articles %}
-    <p class="text-center text-stone-600 italic">More articles coming soon.</p>
+    <p class="text-center text-bhagya-muted italic">More articles coming soon.</p>
     {% else %}
     <div id="learn-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {% for a in articles %}
       {# data-title / data-summary / data-cat power the client-side filter. #}
       <a href="/learn/{{ a.slug }}/"
-         class="learn-card group block bg-white border border-stone-200 rounded-2xl overflow-hidden hover:border-astro-300 hover:shadow-lg transition-all"
+         class="learn-card group block bg-white border border-bhagya-line overflow-hidden hover:border-bhagya-saffron hover:transition-all"
          data-cat="{{ a.category }}"
          data-title="{{ a.title | lower }}"
          data-summary="{{ a.summary | lower }}">
-        <div class="aspect-[16/10] bg-gradient-to-br from-astro-50 to-cream flex items-center justify-center p-6">
+        <div class="aspect-[16/10] bg-bhagya-cream-2 flex items-center justify-center p-6">
           <img src="{{ a.hero_image }}" alt="{{ a.title }} illustration" class="max-h-full max-w-full" loading="lazy">
         </div>
         <div class="p-5">
           <div class="flex items-center gap-2 mb-2">
-            <span class="text-[10px] font-semibold uppercase tracking-wider text-astro-700">{{ a.category }}</span>
-            <span class="text-[10px] text-stone-500">&middot;</span>
-            <span class="text-[10px] text-stone-600">{{ a.read_time }}</span>
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-bhagya-sindoor">{{ a.category }}</span>
+            <span class="text-[10px] text-bhagya-muted-2">&middot;</span>
+            <span class="text-[10px] text-bhagya-muted">{{ a.read_time }}</span>
           </div>
-          <h2 class="font-display text-lg text-stone-900 leading-snug mb-2 group-hover:text-astro-700">
+          <h2 class="font-marcellus text-lg text-bhagya-ink leading-snug mb-2 group-hover:text-bhagya-sindoor">
             {{ a.title }}
           </h2>
-          <p class="text-sm text-stone-600 leading-relaxed line-clamp-3">{{ a.summary }}</p>
+          <p class="text-sm text-bhagya-muted leading-relaxed line-clamp-3">{{ a.summary }}</p>
         </div>
       </a>
       {% endfor %}
     </div>
     {# Empty state — shown when search + category filter yields no matches. #}
-    <p id="learn-empty" class="hidden text-center text-stone-600 italic mt-10">
+    <p id="learn-empty" class="hidden text-center text-bhagya-muted italic mt-10">
       No articles match your search. Try a different keyword or category.
     </p>
     {% endif %}
@@ -176,12 +176,12 @@
 
   <!-- BOTTOM CTA -->
   <section class="max-w-3xl mx-auto px-4 sm:px-6 pb-14 text-center">
-    <div class="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8">
-      <h3 class="font-display text-xl text-stone-900 mb-2">Want it personalised to your own chart?</h3>
-      <p class="text-sm text-stone-600 mb-4">
+    <div class="bg-white border border-bhagya-line p-6 sm:p-8">
+      <h3 class="font-marcellus text-xl text-bhagya-ink mb-2">Want it personalised to your own chart?</h3>
+      <p class="text-sm text-bhagya-muted mb-4">
         Get your free Janma Kundli &mdash; every dosha, yoga, and dasha checked against your actual placements.
       </p>
-      <a href="/" class="inline-block bg-astro-700 hover:bg-astro-800 text-white font-semibold text-sm px-5 py-2 rounded-lg">
+      <a href="/" class="inline-block bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night font-semibold text-sm px-5 py-2 rounded">
         Get my free Kundli &rarr;
       </a>
     </div>
