@@ -196,7 +196,7 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
     if not os.environ.get("OPENAI_API_KEY"):
         msg = "Rashifal is temporarily unavailable — API key not configured."
         if is_htmx:
-            return HTMLResponse(f'<div class="text-sm text-stone-600 p-2">{msg}</div>', status_code=503)
+            return HTMLResponse(f'<div class="text-sm text-bhagya-muted p-2">{msg}</div>', status_code=503)
         return templates.TemplateResponse(
             request, "error.html",
             {"title": "API key not configured", "message": msg},
