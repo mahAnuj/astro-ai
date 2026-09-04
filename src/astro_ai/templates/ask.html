@@ -10,7 +10,7 @@
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
   <header class="text-center">
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-2">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-2">
       {{ t(lang, 'ask_eyebrow') }}
     </div>
     {# The heading and blurb are context-specific. A matching seeker is asking
@@ -24,45 +24,45 @@
        plus the couple's Guna Milan — so promising "both birth charts" here is
        simply false, and offering a "Both charts" toggle offers something that
        is not theirs. QA OBS-2. #}
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">
       {{ t(lang, 'ask_head_matching_third') }}
     </h1>
-    <p class="text-stone-600 max-w-xl mx-auto">
+    <p class="text-bhagya-muted max-w-xl mx-auto">
       {{ t(lang, 'ask_blurb_matching_third') }}
     </p>
     {% elif current_context == 'matching' %}
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">
       {{ t(lang, 'ask_head_matching') }}
     </h1>
-    <p class="text-stone-600 max-w-xl mx-auto">
+    <p class="text-bhagya-muted max-w-xl mx-auto">
       {{ t(lang, 'ask_blurb_matching') }}
     </p>
     {% elif current_context == 'numerology' %}
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">
       {{ t(lang, 'ask_head_numerology') }}
     </h1>
-    <p class="text-stone-600 max-w-xl mx-auto">
+    <p class="text-bhagya-muted max-w-xl mx-auto">
       {{ t(lang, 'ask_blurb_numerology') }}
     </p>
     {% else %}
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">
       {{ t(lang, 'ask_head_chart') }}
     </h1>
-    <p class="text-stone-600 max-w-xl mx-auto">
+    <p class="text-bhagya-muted max-w-xl mx-auto">
       {{ t(lang, 'ask_blurb_chart') }}
     </p>
     {% endif %}
     {% if active_chart %}
-    <p class="text-xs text-stone-600 mt-2">
+    <p class="text-xs text-bhagya-muted mt-2">
       {% if current_context == 'matching' and matching_names %}
       {% if seeker_role == 'other' %}{{ t(lang, 'ask_asking_about_their') }}{% else %}{{ t(lang, 'ask_asking_about') }}{% endif %}
       <strong>{{ matching_names }}</strong>
-      &middot; <a href="/matching" class="text-astro-600 hover:text-astro-700 underline">{{ t(lang, 'ask_new_match') }}</a>
+      &middot; <a href="/matching" class="text-bhagya-sindoor hover:text-bhagya-sindoor underline">{{ t(lang, 'ask_new_match') }}</a>
       {% else %}
       {{ t(lang, 'ask_asking_for') }} <strong>{{ active_chart.display_name() }}</strong>
-      &middot; <a href="/" class="text-astro-600 hover:text-astro-700 underline">{{ t(lang, 'ask_switch_chart') }}</a>
+      &middot; <a href="/" class="text-bhagya-sindoor hover:text-bhagya-sindoor underline">{{ t(lang, 'ask_switch_chart') }}</a>
       {% if current_context == 'numerology' %}
-      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-astro-50 border border-astro-200 text-astro-800 font-semibold text-[10px] uppercase tracking-wider">{{ t(lang, 'ask_numerology_badge') }}</span>
+      &middot; <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-bhagya-cream-2 border border-bhagya-line text-bhagya-sindoor font-semibold text-[10px] uppercase tracking-wider">{{ t(lang, 'ask_numerology_badge') }}</span>
       {% endif %}
       {% endif %}
     </p>
@@ -81,17 +81,17 @@
        quota by itself. #}
     {% if matching_available and matching_names and current_context in ['chart', 'matching'] %}
     {% set _qs = ('&q=' ~ (current_question | urlencode) ~ '&c=' ~ (current_category | urlencode)) if current_question else '' %}
-    <div class="mt-4 inline-flex flex-wrap items-center justify-center gap-1 p-1 rounded-xl bg-stone-100 border border-stone-200">
-      <span class="px-2 text-[11px] uppercase tracking-wider text-stone-500 font-semibold">{{ t(lang, 'ask_answer_using') }}</span>
+    <div class="mt-4 inline-flex flex-wrap items-center justify-center gap-1 p-1 bg-bhagya-cream-2 border border-bhagya-line">
+      <span class="px-2 text-[11px] uppercase tracking-wider text-bhagya-muted-2 font-semibold">{{ t(lang, 'ask_answer_using') }}</span>
       <a href="/ask?ctx=matching{{ _qs }}"
-         class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                {% if current_context == 'matching' %}bg-white text-astro-800 shadow-sm border border-stone-200{% else %}text-stone-600 hover:text-astro-700{% endif %}"
+         class="px-3 py-1.5 rounded text-xs font-semibold transition-colors
+                {% if current_context == 'matching' %}bg-white text-bhagya-sindoor border border-bhagya-line{% else %}text-bhagya-muted hover:text-bhagya-sindoor{% endif %}"
          {% if current_context == 'matching' %}aria-current="true"{% endif %}>
         {% if seeker_role == 'other' %}{{ t(lang, 'ask_opt_their_match') }}{% else %}{{ t(lang, 'ask_opt_both_charts') }}{% endif %} &mdash; {{ matching_names }}
       </a>
       <a href="/ask?ctx=chart{{ _qs }}"
-         class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
-                {% if current_context != 'matching' %}bg-white text-astro-800 shadow-sm border border-stone-200{% else %}text-stone-600 hover:text-astro-700{% endif %}"
+         class="px-3 py-1.5 rounded text-xs font-semibold transition-colors
+                {% if current_context != 'matching' %}bg-white text-bhagya-sindoor border border-bhagya-line{% else %}text-bhagya-muted hover:text-bhagya-sindoor{% endif %}"
          {% if current_context != 'matching' %}aria-current="true"{% endif %}>
         {{ t(lang, 'ask_opt_my_chart') }} &mdash; {{ active_chart.display_name() }}
       </a>
@@ -101,51 +101,51 @@
 
   <!-- ANSWER (if any) -->
   {% if answer %}
-  <article class="bg-white rounded-2xl border border-astro-200 shadow-sm p-6 sm:p-8">
+  <article class="bg-white border border-bhagya-line p-6 sm:p-8">
     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-      <div class="text-xs uppercase tracking-wider text-astro-700 font-semibold">
+      <div class="text-xs uppercase tracking-wider text-bhagya-sindoor font-semibold">
         Your question
         {% if current_category and current_category != 'general' %}
-        &middot; <span class="text-stone-600 normal-case font-normal">{{ current_category }}</span>
+        &middot; <span class="text-bhagya-muted normal-case font-normal">{{ current_category }}</span>
         {% endif %}
       </div>
-      <a href="/ask{% if current_context and current_context != 'chart' %}?ctx={{ current_context }}{% endif %}" class="text-xs text-astro-600 hover:text-astro-700 underline">Ask another</a>
+      <a href="/ask{% if current_context and current_context != 'chart' %}?ctx={{ current_context }}{% endif %}" class="text-xs text-bhagya-sindoor hover:text-bhagya-sindoor underline">Ask another</a>
     </div>
-    <p class="text-sm text-stone-700 italic border-l-2 border-astro-300 pl-3 mb-5">{{ current_question }}</p>
+    <p class="text-sm text-bhagya-ink-soft italic border-l-2 border-bhagya-border pl-3 mb-5">{{ current_question }}</p>
 
-    <div class="prose prose-sm sm:prose-base max-w-none text-stone-800 leading-relaxed whitespace-pre-wrap">{{ answer | linkify_learn }}</div>
+    <div class="prose prose-sm sm:prose-base max-w-none text-bhagya-ink leading-relaxed whitespace-pre-wrap">{{ answer | linkify_learn }}</div>
 
     {# Per-answer AI honesty note — Shyamasundara Dasa raised the
        "AI has no intuition, not connected to paramatma" point; rather
        than argue, disclose it plainly next to every answer where the
        user actually reads. Slightly softer stone tone so it doesn't
        overpower the reading itself. #}
-    <div class="mt-4 pt-3 border-t border-stone-200 flex items-start gap-2">
-      <svg class="shrink-0 mt-0.5 w-4 h-4 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+    <div class="mt-4 pt-3 border-t border-bhagya-line flex items-start gap-2">
+      <svg class="shrink-0 mt-0.5 w-4 h-4 text-bhagya-muted-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
       </svg>
-      <p class="text-xs text-stone-600 leading-relaxed">{{ t(lang, 'ask_ai_note_short') }}</p>
+      <p class="text-xs text-bhagya-muted leading-relaxed">{{ t(lang, 'ask_ai_note_short') }}</p>
     </div>
   </article>
   {% endif %}
 
   <!-- FORM -->
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+  <section class="bg-white border border-bhagya-line p-6 sm:p-8">
     {% if not answer %}
-    <h2 class="font-display text-xl text-stone-900 mb-1">What's on your mind?</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-1">What's on your mind?</h2>
     {% if remaining_today > 0 %}
     {# Positive framing (Issue #70): "Free · N per day" instead of scarcity-
        leading "You have N left today". Same info, less loss-aversion friction. #}
-    <p class="text-sm text-stone-600 mb-4">
+    <p class="text-sm text-bhagya-muted mb-4">
       Free &middot; up to <strong>3</strong> questions per day &middot; answers grounded in your chart.
     </p>
     {% else %}
-    <p class="text-sm text-stone-600 mb-4">
+    <p class="text-sm text-bhagya-muted mb-4">
       You've used today's free questions. Come back tomorrow &mdash; your chart's already saved.
     </p>
     {% endif %}
     {% else %}
-    <h2 class="font-display text-lg text-stone-900 mb-3">Ask another</h2>
+    <h2 class="font-marcellus text-lg text-bhagya-ink mb-3">Ask another</h2>
     {% endif %}
 
     {% if error %}
@@ -165,28 +165,28 @@
       <label for="question" class="sr-only">Your question about the chart</label>
       <textarea id="question" name="question" required rows="4" minlength="5" maxlength="600" autofocus
                 placeholder="e.g. What does Ketu in 11th house mean for my career? Or: when does my current Dasha end?"
-                class="w-full border border-stone-300 rounded-md px-3 py-3 text-base resize-y
-                       focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">{{ current_question if not answer else '' }}</textarea>
+                class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base resize-y
+                       focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">{{ current_question if not answer else '' }}</textarea>
 
       <button type="submit" {% if remaining_today <= 0 %}disabled{% endif %}
-              class="w-full bg-astro-700 hover:bg-astro-800 disabled:bg-stone-300 disabled:cursor-not-allowed
-                     text-white text-sm font-medium py-3 rounded-lg transition-colors">
+              class="w-full bg-bhagya-night hover:bg-bhagya-saffron disabled:bg-bhagya-muted-2 disabled:text-bhagya-cream disabled:cursor-not-allowed
+                     text-bhagya-cream text-sm font-medium py-3 rounded transition-colors">
         <span class="htmx-default">Get my answer &rarr;</span>
         <span class="htmx-indicator">Asking the stars&hellip;</span>
       </button>
 
       {# Secondary refinement — visually demoted, appears below the submit
          since it's optional (backend defaults to 'general' if not picked). #}
-      <div class="pt-2 border-t border-stone-100">
-        <div class="text-[11px] text-stone-600 mb-2 uppercase tracking-wider font-semibold">Focus area <span class="font-normal normal-case text-stone-500">(optional)</span></div>
+      <div class="pt-2 border-t border-bhagya-line-2">
+        <div class="text-[11px] text-bhagya-muted mb-2 uppercase tracking-wider font-semibold">Focus area <span class="font-normal normal-case text-bhagya-muted-2">(optional)</span></div>
         <div class="flex flex-wrap gap-1.5">
           {% for cat in ['general', 'career', 'marriage', 'money', 'health', 'spiritual', 'travel', 'relationships'] %}
           <label class="relative cursor-pointer">
             <input type="radio" name="category" value="{{ cat }}" class="peer sr-only"
                    {% if (current_category or 'general') == cat %}checked{% endif %}>
-            <div class="px-3.5 py-2 text-xs rounded-full border border-stone-200
-                        peer-checked:bg-astro-50 peer-checked:border-astro-500 peer-checked:text-astro-700
-                        peer-checked:font-semibold hover:border-astro-300 transition-colors capitalize">
+            <div class="px-3.5 py-2 text-xs rounded-full border border-bhagya-line
+                        peer-checked:bg-bhagya-cream-2 peer-checked:border-bhagya-saffron peer-checked:text-bhagya-sindoor
+                        peer-checked:font-semibold hover:border-bhagya-saffron transition-colors capitalize">
               {{ cat }}
             </div>
           </label>
@@ -198,7 +198,7 @@
 
   <!-- Honest note about limits — expanded to acknowledge AI-generation
        explicitly (per Shyamasundara Dasa audit reply, 2026-08-02). -->
-  <p class="text-xs text-stone-600 text-center max-w-xl mx-auto leading-relaxed">
+  <p class="text-xs text-bhagya-muted text-center max-w-xl mx-auto leading-relaxed">
     {{ t(lang, 'ask_ai_note_footer') }}
   </p>
 
