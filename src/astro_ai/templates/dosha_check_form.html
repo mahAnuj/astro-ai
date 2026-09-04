@@ -21,69 +21,69 @@
   {% endif %}
 
   <header class="text-center">
-    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700 mb-3">
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-sindoor mb-3">
       {{ page_title }}
     </h1>
-    <p class="text-base sm:text-lg text-stone-600 max-w-xl mx-auto leading-relaxed">
+    <p class="text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
       {{ page_lead }}
     </p>
   </header>
 
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+  <section class="bg-white border border-bhagya-line p-6 sm:p-8">
     {% if error %}
     <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
     {% endif %}
 
     <form method="post" action="{{ form_action }}" class="space-y-4">
       <div>
-        <label for="name" class="block text-sm font-medium text-stone-700 mb-1">Your name (optional)</label>
+        <label for="name" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Your name (optional)</label>
         <input type="text" name="name" id="name" value="{{ prefill.name if prefill else '' }}"
                autocomplete="name"
-               class="w-full border border-stone-300 rounded-md px-3 py-3 text-base
-                      focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+               class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base
+                      focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
       </div>
 
       <div class="grid sm:grid-cols-2 gap-4">
         <div>
-          <label for="birth_date" class="block text-sm font-medium text-stone-700 mb-1">Birth date</label>
+          <label for="birth_date" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Birth date</label>
           <input type="date" name="birth_date" id="birth_date" required
                  value="{{ prefill.birth_date if prefill else '' }}"
                  autocomplete="bday"
-                 class="w-full border border-stone-300 rounded-md px-3 py-3 text-base
-                        focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                 class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base
+                        focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
         </div>
         <div>
-          <label for="birth_time" class="block text-sm font-medium text-stone-700 mb-1">Birth time</label>
+          <label for="birth_time" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Birth time</label>
           <input type="time" name="birth_time" id="birth_time" required
                  value="{{ prefill.birth_time if prefill else '' }}"
-                 class="w-full border border-stone-300 rounded-md px-3 py-3 text-base
-                        focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                 class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base
+                        focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
         </div>
       </div>
 
       <div>
-        <label for="birth_place" class="block text-sm font-medium text-stone-700 mb-1">Birth city</label>
+        <label for="birth_place" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Birth city</label>
         <input type="text" name="birth_place" id="birth_place" required
                placeholder="e.g. Delhi, India"
                value="{{ prefill.birth_place if prefill else '' }}"
                autocomplete="address-level2"
-               class="w-full border border-stone-300 rounded-md px-3 py-3 text-base
-                      focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+               class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base
+                      focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
       </div>
 
       <button type="submit"
-              class="w-full bg-astro-700 hover:bg-astro-800 text-white text-base font-semibold py-3 rounded-lg transition-colors">
+              class="w-full bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-base font-semibold py-3 rounded transition-colors">
         {{ submit_label }}
       </button>
     </form>
 
-    <p class="text-xs text-stone-600 text-center mt-4">
+    <p class="text-xs text-bhagya-muted text-center mt-4">
       Free. No sign-up needed. Your birth details are stored in a cookie only on your device.
     </p>
   </section>
 
   {% if intro_body %}
-  <section class="prose prose-sm sm:prose-base max-w-none text-stone-800 leading-relaxed">
+  <section class="prose prose-sm sm:prose-base max-w-none text-bhagya-ink leading-relaxed">
     {{ intro_body | safe }}
   </section>
   {% endif %}

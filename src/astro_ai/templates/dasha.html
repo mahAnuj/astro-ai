@@ -11,31 +11,31 @@
 
   <!-- HEADER ------------------------------------------------------ -->
   <header>
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">{{ t(lang, 'dasha_title') }}</h1>
-    <p class="text-sm text-stone-600">{{ t(lang, 'dasha_subtitle') }}</p>
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">{{ t(lang, 'dasha_title') }}</h1>
+    <p class="text-sm text-bhagya-muted">{{ t(lang, 'dasha_subtitle') }}</p>
   </header>
 
   <!-- ACTIVE MAHA + ANTAR HERO ------------------------------------ -->
   <section class="grid sm:grid-cols-2 gap-4">
 
-    <div class="bg-white rounded-2xl border border-astro-300 shadow-sm p-6">
-      <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-2">{{ t(lang, 'dasha_active_maha') }}</div>
-      <div class="font-display text-4xl text-astro-700 mb-2">{{ dasha.mahadasha.lord }}</div>
-      <div class="text-sm text-stone-600">
+    <div class="bg-white border border-bhagya-border p-6">
+      <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-2">{{ t(lang, 'dasha_active_maha') }}</div>
+      <div class="font-marcellus text-4xl text-bhagya-sindoor mb-2">{{ dasha.mahadasha.lord }}</div>
+      <div class="text-sm text-bhagya-muted">
         {{ t(lang, 'dasha_period', start=dasha.mahadasha.start.isoformat(), end=dasha.mahadasha.end.isoformat()) }}
       </div>
-      <div class="text-xs text-stone-600 mt-1 tabular-nums">
+      <div class="text-xs text-bhagya-muted mt-1 tabular-nums">
         {{ "%.1f"|format(dasha.mahadasha.years) }} {{ t(lang, 'dasha_years_suffix') }}
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl border border-emerald-300 shadow-sm p-6">
-      <div class="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-2">{{ t(lang, 'dasha_active_antar') }}</div>
-      <div class="font-display text-4xl text-emerald-700 mb-2">{{ dasha.antardasha.lord }}</div>
-      <div class="text-sm text-stone-600">
+    <div class="bg-white border border-emerald-300 p-6">
+      <div class="text-xs font-semibold uppercase tracking-wider text-emerald-800 mb-2">{{ t(lang, 'dasha_active_antar') }}</div>
+      <div class="font-marcellus text-4xl text-emerald-800 mb-2">{{ dasha.antardasha.lord }}</div>
+      <div class="text-sm text-bhagya-muted">
         {{ t(lang, 'dasha_period', start=dasha.antardasha.start.isoformat(), end=dasha.antardasha.end.isoformat()) }}
       </div>
-      <div class="text-xs text-stone-600 mt-1 tabular-nums">
+      <div class="text-xs text-bhagya-muted mt-1 tabular-nums">
         {{ "%.2f"|format(dasha.antardasha.years) }} {{ t(lang, 'dasha_years_suffix') }}
       </div>
     </div>
@@ -43,32 +43,32 @@
   </section>
 
   <!-- DEEP-DIVE CTA — links to the per-(Maha,Antar) personalised reading. -->
-  <aside class="bg-astro-50 border border-astro-100 rounded-2xl p-6 sm:p-8 text-center no-print">
-    <div class="font-display text-xl font-bold text-astro-700 mb-2">
+  <aside class="bg-bhagya-cream-2 border border-bhagya-line p-6 sm:p-8 text-center no-print">
+    <div class="font-marcellus text-xl text-bhagya-sindoor mb-2">
       Want to understand THIS period for your chart?
     </div>
-    <p class="text-sm text-stone-600 max-w-xl mx-auto mb-4">
+    <p class="text-sm text-bhagya-muted max-w-xl mx-auto mb-4">
       A long-form reading of your {{ dasha.mahadasha.lord }} Mahadasha and {{ dasha.antardasha.lord }} Antardasha &mdash; grounded in where these planets sit in your own Kundli, with a forecast of what's next and remedies for this sub-period.
     </p>
     <a href="/dasha/deep-dive"
-       class="inline-block bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors">
+       class="inline-block bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-sm font-medium px-5 py-2 rounded transition-colors">
       Read the deep dive &rarr;
     </a>
   </aside>
 
   <!-- UPCOMING ANTARDASHAS IN CURRENT MAHA ------------------------ -->
   {% if dasha.upcoming_antardashas %}
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-5 sm:p-6">
-    <h2 class="font-display text-xl text-astro-700 mb-3">{{ t(lang, 'dasha_upcoming') }}</h2>
-    <ul class="divide-y divide-stone-100">
+  <section class="bg-white border border-bhagya-line p-5 sm:p-6">
+    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-3">{{ t(lang, 'dasha_upcoming') }}</h2>
+    <ul class="divide-y divide-bhagya-line-2">
       {% for p in dasha.upcoming_antardashas %}
       <li class="py-3 grid grid-cols-[1fr_auto] items-center gap-4">
         <div>
-          <span class="font-display text-lg text-stone-900">{{ p.lord }}</span>
-          <span class="text-sm text-stone-600 ml-2 tabular-nums">{{ "%.2f"|format(p.years) }} {{ t(lang, 'dasha_years_suffix') }}</span>
+          <span class="font-marcellus text-lg text-bhagya-ink">{{ p.lord }}</span>
+          <span class="text-sm text-bhagya-muted ml-2 tabular-nums">{{ "%.2f"|format(p.years) }} {{ t(lang, 'dasha_years_suffix') }}</span>
         </div>
-        <div class="text-sm text-stone-600 tabular-nums">
-          {{ p.start.isoformat() }} <span class="text-stone-300">→</span> {{ p.end.isoformat() }}
+        <div class="text-sm text-bhagya-muted tabular-nums">
+          {{ p.start.isoformat() }} <span class="text-bhagya-border">→</span> {{ p.end.isoformat() }}
         </div>
       </li>
       {% endfor %}
@@ -78,10 +78,10 @@
 
   <!-- NEXT MAHADASHA ---------------------------------------------- -->
   {% if dasha.next_mahadasha %}
-  <section class="bg-gradient-to-br from-astro-50 to-amber-50/40 border border-astro-100 rounded-2xl p-6">
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1.5">{{ t(lang, 'dasha_next_maha') }}</div>
-    <div class="font-display text-2xl text-astro-800 mb-1">{{ dasha.next_mahadasha.lord }}</div>
-    <div class="text-sm text-stone-600 tabular-nums">
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1.5">{{ t(lang, 'dasha_next_maha') }}</div>
+    <div class="font-marcellus text-2xl text-bhagya-sindoor mb-1">{{ dasha.next_mahadasha.lord }}</div>
+    <div class="text-sm text-bhagya-muted tabular-nums">
       {{ t(lang, 'dasha_period', start=dasha.next_mahadasha.start.isoformat(), end=dasha.next_mahadasha.end.isoformat()) }}
       &middot; {{ "%.0f"|format(dasha.next_mahadasha.years) }} {{ t(lang, 'dasha_years_suffix') }}
     </div>

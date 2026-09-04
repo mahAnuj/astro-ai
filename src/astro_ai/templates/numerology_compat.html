@@ -21,57 +21,57 @@
 
   {% if not compat %}
   <header class="text-center">
-    <div class="text-xs uppercase tracking-wider text-astro-600 font-semibold mb-2">
-      <a href="/numerology" class="hover:text-astro-700">Numerology</a> · Compatibility
+    <div class="text-xs uppercase tracking-wider text-bhagya-sindoor font-semibold mb-2">
+      <a href="/numerology" class="hover:text-bhagya-sindoor">Numerology</a> · Compatibility
     </div>
-    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700 mb-3">Numerology Compatibility Check</h1>
-    <p class="text-base sm:text-lg text-stone-600 max-w-xl mx-auto leading-relaxed">
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-sindoor mb-3">Numerology Compatibility Check</h1>
+    <p class="text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
       Two people's numbers compared per Johari's classical Vedic-integrated system. Life Path + Birthday + Destiny pair verdicts, plus a marriage-specific overlay if you're checking a potential match. Free, no sign-up.
     </p>
   </header>
 
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+  <section class="bg-white border border-bhagya-line p-6 sm:p-8">
     {% if error %}
     <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
     {% endif %}
     <form method="post" action="/numerology/compatibility" class="space-y-4">
       <div class="grid sm:grid-cols-2 gap-4">
-        <div class="space-y-3 p-4 bg-astro-50 rounded-lg border border-astro-200">
-          <div class="text-xs uppercase font-semibold text-astro-700 tracking-wider">Person 1</div>
+        <div class="space-y-3 p-4 bg-bhagya-cream-2 rounded border border-bhagya-line">
+          <div class="text-xs uppercase font-semibold text-bhagya-sindoor tracking-wider">Person 1</div>
           <input type="text" name="name_a" required autocomplete="name" placeholder="e.g. Priya"
-                 class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                 class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
           <input type="date" name="birth_date_a" required autocomplete="bday"
-                 class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                 class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
         </div>
-        <div class="space-y-3 p-4 bg-astro-50 rounded-lg border border-astro-200">
-          <div class="text-xs uppercase font-semibold text-astro-700 tracking-wider">Person 2</div>
+        <div class="space-y-3 p-4 bg-bhagya-cream-2 rounded border border-bhagya-line">
+          <div class="text-xs uppercase font-semibold text-bhagya-sindoor tracking-wider">Person 2</div>
           <input type="text" name="name_b" required placeholder="e.g. Priya"
-                 class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                 class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
           <input type="date" name="birth_date_b" required
-                 class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                 class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
         </div>
       </div>
       <div>
-        <label class="block text-sm font-medium text-stone-700 mb-2">Context</label>
+        <label class="block text-sm font-medium text-bhagya-ink-soft mb-2">Context</label>
         <div class="grid grid-cols-3 gap-2">
           {% for value, label, desc in [('general', 'General', 'Any relationship'), ('marriage', 'Marriage', 'Adds classical marriage rules'), ('business', 'Business', 'Partnership focus')] %}
           <label class="relative cursor-pointer">
             <input type="radio" name="context" value="{{ value }}" {% if value == 'general' %}checked{% endif %} class="peer sr-only">
-            <div class="p-3 border-2 border-stone-200 rounded-lg peer-checked:border-astro-500 peer-checked:bg-astro-50 text-center">
-              <div class="font-semibold text-sm text-stone-900">{{ label }}</div>
-              <div class="text-[10px] text-stone-600 mt-0.5">{{ desc }}</div>
+            <div class="p-3 border-2 border-bhagya-line rounded peer-checked:border-bhagya-saffron peer-checked:bg-bhagya-cream-2 text-center">
+              <div class="font-semibold text-sm text-bhagya-ink">{{ label }}</div>
+              <div class="text-[10px] text-bhagya-muted mt-0.5">{{ desc }}</div>
             </div>
           </label>
           {% endfor %}
         </div>
       </div>
-      <button type="submit" class="w-full bg-astro-700 hover:bg-astro-800 text-white text-base font-semibold py-3 rounded-lg transition-colors">
+      <button type="submit" class="w-full bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-base font-semibold py-3 rounded transition-colors">
         Check compatibility →
       </button>
     </form>
   </section>
 
-  <section class="prose prose-sm max-w-none text-stone-800">
+  <section class="prose prose-sm max-w-none text-bhagya-ink">
     <h2>What this checks</h2>
     <ul>
       <li><strong>Life Path pair</strong> — the main theme of each life; friend/enemy/neutral verdict</li>
@@ -85,20 +85,20 @@
   {% else %}
 
   <header>
-    <div class="text-xs uppercase tracking-wider text-astro-600 font-semibold mb-1">
-      <a href="/numerology" class="hover:text-astro-700">Numerology</a> · Compatibility
+    <div class="text-xs uppercase tracking-wider text-bhagya-sindoor font-semibold mb-1">
+      <a href="/numerology" class="hover:text-bhagya-sindoor">Numerology</a> · Compatibility
     </div>
-    <h1 class="font-display text-2xl sm:text-3xl text-astro-700 mb-2">
-      {{ compat.person_a_name }} <span class="text-stone-500 font-normal">×</span> {{ compat.person_b_name }}
+    <h1 class="font-marcellus text-2xl sm:text-3xl text-bhagya-sindoor mb-2">
+      {{ compat.person_a_name }} <span class="text-bhagya-muted-2 font-normal">×</span> {{ compat.person_b_name }}
     </h1>
-    <div class="text-sm text-stone-600">{{ context | capitalize }} compatibility check</div>
+    <div class="text-sm text-bhagya-muted">{{ context | capitalize }} compatibility check</div>
   </header>
 
   {# Overall score card #}
-  <section class="bg-gradient-to-br from-astro-50 to-stone-50 border-2 border-astro-200 rounded-2xl p-6 sm:p-8 text-center">
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-2">Compatibility score</div>
-    <div class="font-display text-6xl text-astro-800 tabular-nums mb-2">{{ compat.overall_score }}<span class="text-2xl text-stone-600">/100</span></div>
-    <p class="text-sm text-stone-700 max-w-xl mx-auto leading-relaxed">{{ compat.overall_summary }}</p>
+  <section class="bg-bhagya-cream-2 border-2 border-bhagya-line p-6 sm:p-8 text-center">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-2">Compatibility score</div>
+    <div class="font-marcellus text-6xl text-bhagya-sindoor tabular-nums mb-2">{{ compat.overall_score }}<span class="text-2xl text-bhagya-muted">/100</span></div>
+    <p class="text-sm text-bhagya-ink-soft max-w-xl mx-auto leading-relaxed">{{ compat.overall_summary }}</p>
     {% if compat.marriage_verdict == 'best' %}
     <div class="mt-4 inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">★ Classical marriage-favourable pair per Johari</div>
     {% elif compat.marriage_verdict == 'avoid' %}
@@ -115,15 +115,15 @@
       ('Destiny',   compat.person_a_destiny,   compat.person_b_destiny,   compat.destiny_verdict,   'outer role'),
     ] %}
     {% set c = v_colors.get(verdict, 'stone') %}
-    <div class="bg-white rounded-xl border border-stone-200 p-4">
-      <div class="text-xs uppercase text-stone-600 font-semibold tracking-wider mb-2">{{ label }}</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-xs uppercase text-bhagya-muted font-semibold tracking-wider mb-2">{{ label }}</div>
       <div class="flex items-baseline gap-2 mb-2">
-        <span class="font-display text-2xl text-astro-800">{{ a_num }}</span>
-        <span class="text-stone-500">↔</span>
-        <span class="font-display text-2xl text-astro-800">{{ b_num }}</span>
+        <span class="font-marcellus text-2xl text-bhagya-sindoor">{{ a_num }}</span>
+        <span class="text-bhagya-muted-2">↔</span>
+        <span class="font-marcellus text-2xl text-bhagya-sindoor">{{ b_num }}</span>
       </div>
       <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-{{ c }}-100 text-{{ c }}-800 capitalize">{{ verdict }}</span>
-      <p class="text-[11px] text-stone-600 mt-1 italic">{{ note }}</p>
+      <p class="text-[11px] text-bhagya-muted mt-1 italic">{{ note }}</p>
     </div>
     {% endfor %}
   </section>
@@ -133,29 +133,29 @@
      Birthday number always reduces. _pair_verdict() reads masters as their
      base, so the pairing above can show a 22 next to a verdict computed for
      4 — said here rather than left to look like an inconsistency. #}
-  <p class="text-[11px] text-stone-600 italic leading-relaxed">
-    Life Path uses the all-digits birth-date method, so it and Destiny can show 11, 22 or 33; the Birthday number always reduces to 1&ndash;9. Pair verdicts read 11/22/33 as 2/4/6, so a master number can legitimately sit beside a verdict computed for its base. Full conventions are on the <a href="/numerology" class="text-astro-700 hover:underline">numerology reading page</a>.
+  <p class="text-[11px] text-bhagya-muted italic leading-relaxed">
+    Life Path uses the all-digits birth-date method, so it and Destiny can show 11, 22 or 33; the Birthday number always reduces to 1&ndash;9. Pair verdicts read 11/22/33 as 2/4/6, so a master number can legitimately sit beside a verdict computed for its base. Full conventions are on the <a href="/numerology" class="text-bhagya-sindoor hover:underline">numerology reading page</a>.
   </p>
 
-  <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6">
-    <h3 class="font-display text-lg text-astro-800 mb-3">Related</h3>
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
+    <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-3">Related</h3>
     <div class="space-y-3">
-      <a href="/numerology" class="block p-3 bg-white rounded-lg border border-astro-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Individual numerology reading →</div>
-        <div class="text-xs text-stone-600">Full Life Path + Vedic remedies for one person</div>
+      <a href="/numerology" class="block p-3 bg-white rounded border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Individual numerology reading →</div>
+        <div class="text-xs text-bhagya-muted">Full Life Path + Vedic remedies for one person</div>
       </a>
-      <a href="/matching" class="block p-3 bg-white rounded-lg border border-astro-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Kundali Matching (Ashtakoot Guna Milan) →</div>
-        <div class="text-xs text-stone-600">Deeper compatibility via full birth charts for marriage decisions</div>
+      <a href="/matching" class="block p-3 bg-white rounded border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Kundali Matching (Ashtakoot Guna Milan) →</div>
+        <div class="text-xs text-bhagya-muted">Deeper compatibility via full birth charts for marriage decisions</div>
       </a>
-      <a href="/numerology/compatibility" class="block p-3 bg-white rounded-lg border border-astro-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Check another pair →</div>
-        <div class="text-xs text-stone-600">Family members, business partners, potential matches</div>
+      <a href="/numerology/compatibility" class="block p-3 bg-white rounded border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Check another pair →</div>
+        <div class="text-xs text-bhagya-muted">Family members, business partners, potential matches</div>
       </a>
     </div>
   </section>
 
-  <div class="text-xs text-stone-600">
+  <div class="text-xs text-bhagya-muted">
     <p><strong>Editorial note:</strong> Numerology compatibility gives one lens. For marriage decisions, use it alongside full-chart Kundali Matching (Ashtakoot Guna Milan) — the birth chart carries information numbers cannot access.</p>
   </div>
 
