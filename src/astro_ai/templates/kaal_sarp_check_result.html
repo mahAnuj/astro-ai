@@ -14,10 +14,10 @@
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
   <header>
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-1">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-1">
       Kaal Sarp geometry check {% if details.name %}for {{ details.name }}{% endif %}
     </h1>
-    <p class="text-sm text-stone-600">
+    <p class="text-sm text-bhagya-muted">
       {{ details.birth_date }} · {{ details.birth_time }} · {{ details.birth_place }}
     </p>
   </header>
@@ -32,32 +32,32 @@
   {# Neutral tone — was rose-alarm ("⚠ Kaal Sarp Dosh — Present"), now
      stone-neutral ("Kaal Sarp geometry — present"). No dosha/severe/
      affected language; describes the pattern rather than diagnosing. #}
-  <section class="bg-white border-2 border-stone-300 rounded-2xl p-6 sm:p-8">
-    <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Pattern detected</div>
-    <h2 class="font-display text-2xl sm:text-3xl text-stone-900 mb-2">{{ t(lang, 'ksy_present_heading') }}</h2>
-    <p class="text-sm text-stone-700 mb-4">{{ t(lang, 'ksy_present_subtitle') }}</p>
+  <section class="bg-white border-2 border-bhagya-border p-6 sm:p-8">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">Pattern detected</div>
+    <h2 class="font-marcellus text-2xl sm:text-3xl text-bhagya-ink mb-2">{{ t(lang, 'ksy_present_heading') }}</h2>
+    <p class="text-sm text-bhagya-ink-soft mb-4">{{ t(lang, 'ksy_present_subtitle') }}</p>
 
-    <p class="text-stone-800 leading-relaxed mb-4">
+    <p class="text-bhagya-ink leading-relaxed mb-4">
       All seven non-shadow planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn) sit on one side of the Rahu-Ketu axis in your chart. Rahu falls in your <strong>{{ kaal_sarp.rahu_house }}{% if kaal_sarp.rahu_house == 1 %}st{% elif kaal_sarp.rahu_house == 2 %}nd{% elif kaal_sarp.rahu_house == 3 %}rd{% else %}th{% endif %} house</strong>, Ketu in your <strong>{{ kaal_sarp.ketu_house }}th house</strong>.
     </p>
 
     {% if kaal_sarp.type_name %}
-    <div class="bg-stone-50 border border-stone-200 rounded-lg p-4">
-      <div class="text-xs uppercase tracking-wider text-stone-600 mb-1">Traditional Naga label</div>
-      <div class="font-display text-xl text-stone-900 mb-1">
+    <div class="bg-bhagya-cream-2 border border-bhagya-line rounded p-4">
+      <div class="text-xs uppercase tracking-wider text-bhagya-muted mb-1">Traditional Naga label</div>
+      <div class="font-marcellus text-xl text-bhagya-ink mb-1">
         {{ kaal_sarp_variant_name(kaal_sarp.type_name, lang) }}{% if lang == 'hi' %}
-        <span class="text-sm text-stone-600 font-normal">({{ kaal_sarp.type_name }})</span>{% endif %}
+        <span class="text-sm text-bhagya-muted font-normal">({{ kaal_sarp.type_name }})</span>{% endif %}
       </div>
-      <p class="text-sm text-stone-800 leading-relaxed mb-2">{{ kaal_sarp.type_meaning }}</p>
-      <p class="text-xs text-stone-600 italic leading-relaxed">{{ t(lang, 'ksy_variant_note') }}</p>
+      <p class="text-sm text-bhagya-ink leading-relaxed mb-2">{{ kaal_sarp.type_meaning }}</p>
+      <p class="text-xs text-bhagya-muted italic leading-relaxed">{{ t(lang, 'ksy_variant_note') }}</p>
     </div>
     {% endif %}
   </section>
   {% else %}
-  <section class="bg-white border-2 border-stone-300 rounded-2xl p-6 sm:p-8">
-    <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Pattern not detected</div>
-    <h2 class="font-display text-2xl sm:text-3xl text-stone-900 mb-2">{{ t(lang, 'ksy_absent_heading') }}</h2>
-    <p class="text-stone-800 leading-relaxed">
+  <section class="bg-white border-2 border-bhagya-border p-6 sm:p-8">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">Pattern not detected</div>
+    <h2 class="font-marcellus text-2xl sm:text-3xl text-bhagya-ink mb-2">{{ t(lang, 'ksy_absent_heading') }}</h2>
+    <p class="text-bhagya-ink leading-relaxed">
       {{ t(lang, 'ksy_absent_body') }} The seven non-shadow planets are distributed on both sides of the Rahu-Ketu axis — {{ kaal_sarp.planets_before_rahu | length }} on Rahu's side, {{ kaal_sarp.planets_after_ketu | length }} on Ketu's side.
     </p>
   </section>
@@ -65,26 +65,26 @@
 
   {# Corrected classical-basis note — was falsely attributing to BPHS +
      Phaladeepika; both do NOT contain Kaal Sarp. Now honest. #}
-  <div class="text-xs text-stone-600 leading-relaxed">
+  <div class="text-xs text-bhagya-muted leading-relaxed">
     <p><strong>Method:</strong> We detect the geometric pattern — all seven non-shadow planets on one semicircle of the Rahu-Ketu axis — via Swiss Ephemeris (pyswisseph) sidereal Lahiri positions. We do not diagnose "Partial/Anshik Kaal Sarp" because no agreed classical threshold exists and it generates unnecessary anxiety. As noted in the caveat above, Kaal Sarp Yoga itself is a 20th-century Indian classification, not a rule from the six classical Sanskrit texts we cite elsewhere on this site.</p>
   </div>
 
-  <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6">
-    <h3 class="font-display text-lg text-astro-800 mb-3">What actually matters for your Rahu-Ketu placement</h3>
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
+    <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-3">What actually matters for your Rahu-Ketu placement</h3>
     <div class="space-y-3">
-      <a href="/kundli" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 mb-0.5">Get your full free Janma Kundli reading →</div>
-        <div class="text-sm text-stone-600">See how Rahu and Ketu interact with their conjoined planets, the houses they occupy, and your current Dasha — this is what classical astrology actually judges.</div>
+      <a href="/kundli" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor mb-0.5">Get your full free Janma Kundli reading →</div>
+        <div class="text-sm text-bhagya-muted">See how Rahu and Ketu interact with their conjoined planets, the houses they occupy, and your current Dasha — this is what classical astrology actually judges.</div>
       </a>
-      <a href="/learn/kaal-sarp-dosh/" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 mb-0.5">Read the honest Kaal Sarp article →</div>
-        <div class="text-sm text-stone-600">Where it came from, what respected teachers say, and how to think about it without the fear-and-expensive-remedy sales pitch.</div>
+      <a href="/learn/kaal-sarp-dosh/" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor mb-0.5">Read the honest Kaal Sarp article →</div>
+        <div class="text-sm text-bhagya-muted">Where it came from, what respected teachers say, and how to think about it without the fear-and-expensive-remedy sales pitch.</div>
       </a>
     </div>
   </section>
 
   <div class="text-center">
-    <a href="/kaal-sarp-check" class="text-sm text-astro-600 hover:text-astro-700 underline">Check another chart</a>
+    <a href="/kaal-sarp-check" class="text-sm text-bhagya-sindoor hover:text-bhagya-sindoor underline">Check another chart</a>
   </div>
 
 </main>

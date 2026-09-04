@@ -11,30 +11,30 @@
 
   <!-- HEADER ─ name the period clearly + show timeline at a glance. -->
   <header>
-    <a href="/dasha" class="text-xs text-astro-600 hover:text-astro-700 inline-flex items-center gap-1">
+    <a href="/dasha" class="text-xs text-bhagya-sindoor hover:text-bhagya-sindoor inline-flex items-center gap-1">
       <span aria-hidden="true">&larr;</span> back to Dasha timeline
     </a>
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mt-3 mb-1">Active Period</div>
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 leading-tight">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mt-3 mb-1">Active Period</div>
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor leading-tight">
       {{ dasha.mahadasha.lord }} Mahadasha &middot; {{ dasha.antardasha.lord }} Antardasha
     </h1>
     {% if details.name %}
-    <p class="text-sm text-stone-600 mt-1">For {{ details.name }}</p>
+    <p class="text-sm text-bhagya-muted mt-1">For {{ details.name }}</p>
     {% endif %}
 
     <!-- Quick period stats -->
     <div class="grid sm:grid-cols-2 gap-3 mt-5">
-      <div class="bg-white border border-astro-200 rounded-2xl p-4">
-        <div class="text-xs uppercase tracking-wider text-astro-700 font-semibold mb-1">Mahadasha</div>
-        <div class="text-stone-900 font-semibold">{{ dasha.mahadasha.lord }}</div>
-        <div class="text-xs text-stone-600 tabular-nums">
+      <div class="bg-white border border-bhagya-line p-4">
+        <div class="text-xs uppercase tracking-wider text-bhagya-sindoor font-semibold mb-1">Mahadasha</div>
+        <div class="text-bhagya-ink font-semibold">{{ dasha.mahadasha.lord }}</div>
+        <div class="text-xs text-bhagya-muted tabular-nums">
           {{ dasha.mahadasha.start.isoformat() }} &rarr; {{ dasha.mahadasha.end.isoformat() }}
         </div>
       </div>
-      <div class="bg-white border border-emerald-200 rounded-2xl p-4">
-        <div class="text-xs uppercase tracking-wider text-emerald-700 font-semibold mb-1">Current Antardasha</div>
-        <div class="text-stone-900 font-semibold">{{ dasha.antardasha.lord }}</div>
-        <div class="text-xs text-stone-600 tabular-nums">
+      <div class="bg-white border border-emerald-200 p-4">
+        <div class="text-xs uppercase tracking-wider text-emerald-800 font-semibold mb-1">Current Antardasha</div>
+        <div class="text-bhagya-ink font-semibold">{{ dasha.antardasha.lord }}</div>
+        <div class="text-xs text-bhagya-muted tabular-nums">
           {{ dasha.antardasha.start.isoformat() }} &rarr; {{ dasha.antardasha.end.isoformat() }}
         </div>
       </div>
@@ -43,13 +43,13 @@
 
   <!-- LLM-GENERATED SECTIONS -->
   {% if not sections %}
-  <p class="text-stone-600 italic">No content generated yet. Please refresh in a few seconds.</p>
+  <p class="text-bhagya-muted italic">No content generated yet. Please refresh in a few seconds.</p>
   {% else %}
   <div class="space-y-6">
     {% for title, body in sections %}
-    <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
-      <h2 class="font-display text-xl text-astro-700 mb-3">{{ title }}</h2>
-      <div class="text-stone-700 leading-relaxed whitespace-pre-wrap text-[15px]">{{ body | linkify_learn }}</div>
+    <article class="bg-white border border-bhagya-line p-6 sm:p-8">
+      <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-3">{{ title }}</h2>
+      <div class="text-bhagya-ink-soft leading-relaxed whitespace-pre-wrap text-[15px]">{{ body | linkify_learn }}</div>
     </article>
     {% endfor %}
   </div>
@@ -57,13 +57,13 @@
 
   <!-- WHAT'S NEXT — peek at the upcoming antardashas as a teaser -->
   {% if dasha.upcoming_antardashas %}
-  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
-    <h2 class="font-display text-lg text-astro-700 mb-3">After this Antardasha</h2>
+  <section class="bg-white border border-bhagya-line p-5 sm:p-6">
+    <h2 class="font-marcellus text-lg text-bhagya-sindoor mb-3">After this Antardasha</h2>
     <ul class="space-y-2 text-sm">
       {% for p in dasha.upcoming_antardashas[:3] %}
-      <li class="flex justify-between items-baseline border-b border-stone-100 pb-2 last:border-b-0">
-        <span><strong class="text-stone-900">{{ p.lord }}</strong> Antardasha</span>
-        <span class="text-stone-600 tabular-nums text-xs">{{ p.start.isoformat() }} &rarr; {{ p.end.isoformat() }}</span>
+      <li class="flex justify-between items-baseline border-b border-bhagya-line-2 pb-2 last:border-b-0">
+        <span><strong class="text-bhagya-ink">{{ p.lord }}</strong> Antardasha</span>
+        <span class="text-bhagya-muted tabular-nums text-xs">{{ p.start.isoformat() }} &rarr; {{ p.end.isoformat() }}</span>
       </li>
       {% endfor %}
     </ul>
@@ -71,12 +71,12 @@
   {% endif %}
 
   <!-- CTA back to other readings -->
-  <aside class="bg-cream/60 border border-stone-200 rounded-2xl p-6 text-center no-print">
-    <p class="text-sm text-stone-600 mb-3">More from your chart:</p>
+  <aside class="bg-bhagya-cream/60 border border-bhagya-line p-6 text-center no-print">
+    <p class="text-sm text-bhagya-muted mb-3">More from your chart:</p>
     <div class="flex flex-wrap justify-center gap-2 text-sm">
-      <a href="/kundli" class="px-4 py-1.5 bg-white border border-stone-300 hover:border-astro-400 rounded-md text-stone-700 hover:text-astro-700">Full Kundli</a>
-      <a href="/today" class="px-4 py-1.5 bg-white border border-stone-300 hover:border-astro-400 rounded-md text-stone-700 hover:text-astro-700">Today's Reading</a>
-      <a href="/monthly" class="px-4 py-1.5 bg-white border border-stone-300 hover:border-astro-400 rounded-md text-stone-700 hover:text-astro-700">Monthly Outlook</a>
+      <a href="/kundli" class="px-4 py-1.5 bg-white border border-bhagya-border hover:border-bhagya-saffron rounded-md text-bhagya-ink-soft hover:text-bhagya-sindoor">Full Kundli</a>
+      <a href="/today" class="px-4 py-1.5 bg-white border border-bhagya-border hover:border-bhagya-saffron rounded-md text-bhagya-ink-soft hover:text-bhagya-sindoor">Today's Reading</a>
+      <a href="/monthly" class="px-4 py-1.5 bg-white border border-bhagya-border hover:border-bhagya-saffron rounded-md text-bhagya-ink-soft hover:text-bhagya-sindoor">Monthly Outlook</a>
     </div>
   </aside>
 
