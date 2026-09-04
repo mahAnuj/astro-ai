@@ -38,7 +38,7 @@
   </g>
 
   <!-- Purple inner ring accent -->
-  <circle cx="160" cy="160" r="42" fill="#6b21a8" opacity="0.85"/>
+  <circle cx="160" cy="160" r="42" fill="#9E2B25" opacity="0.85"/>
 
   <!-- Golden centre -->
   <circle cx="160" cy="160" r="30" fill="url(#pscentre)"/>
@@ -46,5 +46,5 @@
 
   <!-- Small "8" -->
   <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
-        font-weight="700" fill="#6b21a8" opacity="0.35">8</text>
+        font-weight="700" fill="#9E2B25" opacity="0.35">8</text>
 </svg>

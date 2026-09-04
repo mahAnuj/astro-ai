@@ -11,8 +11,8 @@
       <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="fs_pouch" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <radialGradient id="fs_coin" cx="0.5" cy="0.35" r="0.55">
       <stop offset="0%" stop-color="#fef9c3"/>
@@ -26,8 +26,8 @@
 
   <!-- Small kundali in top-left with 2nd + 11th houses highlighted -->
   <g transform="translate(80, 55)">
-    <rect x="-25" y="-22" width="50" height="42" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.55"/>
-    <polygon points="0,-22 25,0 0,22 -25,0" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.55"/>
+    <rect x="-25" y="-22" width="50" height="42" fill="none" stroke="#B03A22" stroke-width="1.2" opacity="0.55"/>
+    <polygon points="0,-22 25,0 0,22 -25,0" fill="none" stroke="#B03A22" stroke-width="1" opacity="0.55"/>
     <!-- 2nd house — upper right area -->
     <circle cx="-11" cy="-12" r="5" fill="#fbbf24" opacity="0.75"/>
     <text x="-11" y="-9" text-anchor="middle" font-family="serif" font-size="6" fill="#78350f" font-weight="700">2</text>
@@ -53,12 +53,12 @@
     <path d="M 130 173 Q 135 158, 145 165" stroke="#78350f" stroke-width="2.5" fill="none"/>
     <path d="M 175 165 Q 185 158, 190 173" stroke="#78350f" stroke-width="2.5" fill="none"/>
     <!-- Pouch pattern lines -->
-    <line x1="130" y1="205" x2="190" y2="205" stroke="#7c3aed" stroke-width="1" opacity="0.4"/>
-    <line x1="125" y1="220" x2="195" y2="220" stroke="#7c3aed" stroke-width="1" opacity="0.4"/>
+    <line x1="130" y1="205" x2="190" y2="205" stroke="#B03A22" stroke-width="1" opacity="0.4"/>
+    <line x1="125" y1="220" x2="195" y2="220" stroke="#B03A22" stroke-width="1" opacity="0.4"/>
   </g>
 
   <!-- Small hole/tear in the pouch showing coins slipping out -->
-  <ellipse cx="200" cy="230" rx="6" ry="4" fill="#4c1d95" opacity="0.9"/>
+  <ellipse cx="200" cy="230" rx="6" ry="4" fill="#140F1C" opacity="0.9"/>
 
   <!-- Coins falling out through the hole (right side) -->
   <g fill="url(#fs_coin)">
@@ -85,5 +85,5 @@
   </g>
 
   <!-- Ground line -->
-  <line x1="30" y1="285" x2="290" y2="285" stroke="#c084fc" stroke-width="1" opacity="0.4"/>
+  <line x1="30" y1="285" x2="290" y2="285" stroke="#E4A96A" stroke-width="1" opacity="0.4"/>
 </svg>

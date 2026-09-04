@@ -18,8 +18,8 @@
       <stop offset="100%" stop-color="#f59e0b"/>
     </linearGradient>
     <linearGradient id="tl6_house6" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#6b21a8" stop-opacity="0.55"/>
+      <stop offset="0%" stop-color="#CB5A2E" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#9E2B25" stop-opacity="0.55"/>
     </linearGradient>
     <linearGradient id="tl6_house10" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.35"/>
@@ -31,7 +31,7 @@
   <ellipse cx="160" cy="140" rx="150" ry="115" fill="url(#tl6_aura)"/>
 
   <!-- Kundali diamond (North-Indian) at centre -->
-  <g transform="translate(160, 160)" stroke="#6b21a8" fill="none">
+  <g transform="translate(160, 160)" stroke="#9E2B25" fill="none">
     <rect x="-100" y="-100" width="200" height="200" stroke-width="2"/>
     <polygon points="0,-100 100,0 0,100 -100,0" stroke-width="1.6"/>
     <line x1="-100" y1="-100" x2="100" y2="100" stroke-width="1.2" opacity="0.7"/>
@@ -47,7 +47,7 @@
   <!-- 6th house triangle (right-upper diamond wing) — highlighted -->
   <g transform="translate(160, 160)">
     <polygon points="100,0 50,-50 50,50" fill="url(#tl6_house6)"/>
-    <text x="70" y="5" text-anchor="middle" font-family="serif" font-size="17" fill="#4c1d95" font-weight="800">6</text>
+    <text x="70" y="5" text-anchor="middle" font-family="serif" font-size="17" fill="#140F1C" font-weight="800">6</text>
   </g>
 
   <!-- Arrow arc from 10 to 6 (the lord's journey) -->
@@ -67,15 +67,15 @@
   <!-- Service-through-struggle silhouette below (crossed tools: gavel + spanner shape) -->
   <g transform="translate(160, 260)" opacity="0.85">
     <!-- Gavel -->
-    <g stroke="#4c1d95" stroke-width="4" stroke-linecap="round" fill="none">
+    <g stroke="#140F1C" stroke-width="4" stroke-linecap="round" fill="none">
       <line x1="-30" y1="-15" x2="20" y2="15"/>
     </g>
-    <rect x="-40" y="-25" width="20" height="14" rx="2" fill="#4c1d95" transform="rotate(30 -30 -18)"/>
+    <rect x="-40" y="-25" width="20" height="14" rx="2" fill="#140F1C" transform="rotate(30 -30 -18)"/>
     <!-- Spanner-ish shape -->
-    <g stroke="#7c3aed" stroke-width="4" stroke-linecap="round" fill="none">
+    <g stroke="#B03A22" stroke-width="4" stroke-linecap="round" fill="none">
       <line x1="30" y1="-15" x2="-20" y2="15"/>
     </g>
-    <circle cx="30" cy="-15" r="5" fill="#7c3aed"/>
+    <circle cx="30" cy="-15" r="5" fill="#B03A22"/>
   </g>
 
   <!-- Base line -->

@@ -8,12 +8,12 @@
   <defs>
     <radialGradient id="alaura" cx="0.5" cy="0.5" r="0.6">
       <stop offset="0%" stop-color="#a7f3d0" stop-opacity="0.4"/>
-      <stop offset="55%" stop-color="#6b21a8" stop-opacity="0.25"/>
+      <stop offset="55%" stop-color="#9E2B25" stop-opacity="0.25"/>
       <stop offset="100%" stop-color="#312e81" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="alsnake" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#059669"/>
-      <stop offset="55%" stop-color="#6b21a8"/>
+      <stop offset="55%" stop-color="#9E2B25"/>
       <stop offset="100%" stop-color="#312e81"/>
     </linearGradient>
     <radialGradient id="aleye" cx="0.5" cy="0.5" r="0.5">
@@ -64,5 +64,5 @@
 
   <!-- Small "9" -->
   <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
-        font-weight="700" fill="#6b21a8" opacity="0.35">9</text>
+        font-weight="700" fill="#9E2B25" opacity="0.35">9</text>
 </svg>

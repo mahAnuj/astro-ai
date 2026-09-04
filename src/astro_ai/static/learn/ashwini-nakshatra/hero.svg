@@ -11,9 +11,9 @@
       <stop offset="100%" stop-color="#f5f5f4" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="horse" x1="0" y1="0" x2="0.8" y2="1">
-      <stop offset="0%" stop-color="#7c3aed"/>
-      <stop offset="60%" stop-color="#6b21a8"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#B03A22"/>
+      <stop offset="60%" stop-color="#9E2B25"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="sunray" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.15"/>
@@ -78,9 +78,9 @@
   <circle cx="199" cy="121" r="3" fill="#fbbf24"/>
 
   <!-- Nostril (small dark accent) -->
-  <ellipse cx="234" cy="140" rx="2.5" ry="1.5" fill="#4c1d95"/>
+  <ellipse cx="234" cy="140" rx="2.5" ry="1.5" fill="#140F1C"/>
 
   <!-- Small "1" — first nakshatra -->
   <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
-        font-weight="700" fill="#6b21a8" opacity="0.35">1</text>
+        font-weight="700" fill="#9E2B25" opacity="0.35">1</text>
 </svg>

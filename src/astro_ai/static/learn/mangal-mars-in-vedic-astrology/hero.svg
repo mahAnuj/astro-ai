@@ -19,7 +19,7 @@
   <circle cx="160" cy="160" r="150" fill="url(#aura-ma)"/>
 
   <!-- Stars -->
-  <g fill="#6b21a8" opacity="0.4">
+  <g fill="#9E2B25" opacity="0.4">
     <circle cx="45"  cy="60"  r="1.5"/>
     <circle cx="275" cy="80"  r="2"/>
     <circle cx="60"  cy="255" r="1.5"/>

@@ -7,8 +7,8 @@
      aria-label="Ardra nakshatra symbol — teardrop with a lightning bolt in a storm sky">
   <defs>
     <radialGradient id="ardrasky" cx="0.5" cy="0.4" r="0.75">
-      <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.55"/>
-      <stop offset="50%" stop-color="#6b21a8" stop-opacity="0.35"/>
+      <stop offset="0%" stop-color="#D98A45" stop-opacity="0.55"/>
+      <stop offset="50%" stop-color="#9E2B25" stop-opacity="0.35"/>
       <stop offset="100%" stop-color="#312e81" stop-opacity="0.15"/>
     </radialGradient>
     <linearGradient id="ardradrop" x1="0.5" y1="0" x2="0.5" y2="1">
@@ -37,7 +37,7 @@
         stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
 
   <!-- Faint cloud streaks -->
-  <g stroke="#7c3aed" stroke-width="2" opacity="0.3" fill="none" stroke-linecap="round">
+  <g stroke="#B03A22" stroke-width="2" opacity="0.3" fill="none" stroke-linecap="round">
     <path d="M 60 75 Q 90 68, 130 75"/>
     <path d="M 190 60 Q 220 55, 260 62"/>
     <path d="M 40 105 Q 80 100, 115 108"/>
@@ -56,5 +56,5 @@
 
   <!-- Small "6" -->
   <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
-        font-weight="700" fill="#6b21a8" opacity="0.35">6</text>
+        font-weight="700" fill="#9E2B25" opacity="0.35">6</text>
 </svg>

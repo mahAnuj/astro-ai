@@ -15,8 +15,8 @@
       <stop offset="100%" stop-color="#b45309"/>
     </linearGradient>
     <linearGradient id="mmt_center" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#7c3aed"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#B03A22"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <radialGradient id="mmt_glow" cx="0.5" cy="0.5" r="0.5">
       <stop offset="0%" stop-color="#fef08a" stop-opacity="0.9"/>
@@ -58,8 +58,8 @@
     <text x="266" y="148" fill="#9f1239">♂</text>
 
     <!-- 120deg: Rahu -->
-    <circle cx="266" cy="200" r="18" fill="#ede9fe" stroke="#4c1d95" stroke-width="1.5"/>
-    <text x="266" y="208" fill="#4c1d95">☊</text>
+    <circle cx="266" cy="200" r="18" fill="#FAF6EF" stroke="#140F1C" stroke-width="1.5"/>
+    <text x="266" y="208" fill="#140F1C">☊</text>
 
     <!-- 160deg: JUPITER (glowing — strongest for female charts) -->
     <circle cx="228" cy="260" r="24" fill="url(#mmt_glow)"/>
@@ -75,8 +75,8 @@
     <text x="92" y="268" fill="#166534">☿</text>
 
     <!-- 280deg: Ketu -->
-    <circle cx="54" cy="200" r="18" fill="#ede9fe" stroke="#4c1d95" stroke-width="1.5"/>
-    <text x="54" y="208" fill="#4c1d95">☋</text>
+    <circle cx="54" cy="200" r="18" fill="#FAF6EF" stroke="#140F1C" stroke-width="1.5"/>
+    <text x="54" y="208" fill="#140F1C">☋</text>
 
     <!-- 320deg: VENUS (glowing — strongest for male charts) -->
     <circle cx="54" cy="140" r="24" fill="url(#mmt_glow)"/>

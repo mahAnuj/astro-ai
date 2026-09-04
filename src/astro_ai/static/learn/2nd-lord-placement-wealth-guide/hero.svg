@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="2nd lord placement guide — where wealth is directed">
   <defs>
-    <linearGradient id="l2_diamond" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#4c1d95"/></linearGradient>
+    <linearGradient id="l2_diamond" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#CB5A2E"/><stop offset="100%" stop-color="#140F1C"/></linearGradient>
     <radialGradient id="l2_hilite" cx="0.5" cy="0.5" r="0.65"><stop offset="0%" stop-color="#fef08a"/><stop offset="100%" stop-color="#f59e0b" stop-opacity="0.35"/></radialGradient>
   </defs>
   <rect width="320" height="320" fill="#fefbf3" rx="24"/>

@@ -11,8 +11,8 @@
       <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="mt_diamond" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="mt_hour" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#f59e0b"/>
@@ -31,7 +31,7 @@
   <ellipse cx="160" cy="160" rx="140" ry="115" fill="url(#mt_aura)"/>
 
   <!-- Star field -->
-  <g fill="#6b21a8" opacity="0.32">
+  <g fill="#9E2B25" opacity="0.32">
     <circle cx="42" cy="45" r="1.5"/>
     <circle cx="280" cy="55" r="2"/>
     <circle cx="275" cy="275" r="1.5"/>
@@ -53,8 +53,8 @@
   </g>
 
   <!-- Connecting arc between the two charts -->
-  <path d="M 135 145 Q 160 130 185 145" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.5" stroke-dasharray="3,3"/>
-  <path d="M 135 145 Q 160 160 185 145" fill="none" stroke="#a855f7" stroke-width="1.5" opacity="0.5" stroke-dasharray="3,3"/>
+  <path d="M 135 145 Q 160 130 185 145" fill="none" stroke="#CB5A2E" stroke-width="1.5" opacity="0.5" stroke-dasharray="3,3"/>
+  <path d="M 135 145 Q 160 160 185 145" fill="none" stroke="#CB5A2E" stroke-width="1.5" opacity="0.5" stroke-dasharray="3,3"/>
 
   <!-- HOURGLASS in the centre (representing the timing window) -->
   <g fill="none" stroke="url(#mt_hour)" stroke-width="3" stroke-linejoin="round">
