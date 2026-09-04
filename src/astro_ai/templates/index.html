@@ -546,11 +546,14 @@
 
 
 <!-- TRUST STRIP — four facts, hairline-divided, on the alternating band ---- -->
-{# #242, from the handoff. It repeats "Swiss Ephemeris" and the explainer count
-   from the hero chips; the design frame does the same, and the repeat is the
-   point — the chips are provenance beside the headline, this is the receipt
-   under it. Do not "de-duplicate" by cutting the chips: the /learn/ and /about
-   links ride on them (#188), and this strip carries neither.
+{# #242, from the handoff. It repeats the explainer count from the hero chips;
+   the design frame does the same, and the repeat is the point — the chips are
+   provenance beside the headline, this is the receipt under it. Do not
+   "de-duplicate" by cutting the chips: the /learn/ and /about links ride on
+   them (#188), and this strip carries neither.
+
+   It USED to repeat "Swiss Ephemeris" too, which is precisely what #234 ruled
+   out for a headline cell. See the note on that cell below.
 
    Both numbers are read, never typed. learn_article_count comes from the
    article registry and ask_daily_limit from routes/deps.py:_ASK_DAILY_LIMIT —
@@ -565,7 +568,17 @@
     </div>
     {% endmacro %}
     {{ trust_cell(learn_article_count, "Explainers written") }}
-    {{ trust_cell("Swiss Ephemeris", "Chart math") }}
+    {#- NOT "Swiss Ephemeris". #234's standing constraint: the phrase may stay
+        in body copy (12 places, the user's decision) but must NOT be promoted
+        into a headline trust cell or the Kundli identity band — a badge is a
+        stronger assertion of provenance than the same words in a paragraph,
+        and BACKLOG.md:325's verdict behind it ("Moshier worst case ~0.1″") is
+        an assertion with no artifact, taken on a box that had no swisseph
+        installed. #242 lifted this cell from the handoff and reintroduced the
+        badge; caught on the pre-close production check.
+        "Sidereal Lahiri" is what the code actually sets, at chart.py:199
+        (`swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)`), and it is checkable. -#}
+    {{ trust_cell("Sidereal Lahiri", "Ayanamsha") }}
     {{ trust_cell(ask_daily_limit ~ " free", "Questions every day") }}
     {{ trust_cell("₹0", "No signup, no spam") }}
   </div>
