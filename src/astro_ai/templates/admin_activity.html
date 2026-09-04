@@ -12,7 +12,7 @@
 <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
   <header>
-    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">Activity &mdash; last {{ days }} day(s)</h1>
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-2">Activity &mdash; last {{ days }} day(s)</h1>
     <p class="text-sm text-bhagya-muted">
       Window:
       <a href="/admin/activity?days=1&amp;limit={{ limit }}" class="text-bhagya-sindoor hover:underline">1d</a> &middot;
@@ -47,7 +47,7 @@
 
   <!-- KUNDLIS -->
   <section class="bg-white border border-bhagya-line p-5 sm:p-6">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-4">Kundli submissions ({{ kundlis | length }})</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">Kundli submissions ({{ kundlis | length }})</h2>
     {% if not kundlis %}
     <p class="text-sm text-bhagya-muted italic">No Kundli forms in this window.</p>
     {% else %}
@@ -84,7 +84,7 @@
 
   <!-- ASKS -->
   <section class="bg-white border border-bhagya-line p-5 sm:p-6">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-4">Ask questions ({{ asks | length }})</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">Ask questions ({{ asks | length }})</h2>
     {% if not asks %}
     <p class="text-sm text-bhagya-muted italic">No Ask questions in this window.</p>
     {% else %}
@@ -128,7 +128,7 @@
 
   <!-- MATCHES -->
   <section class="bg-white border border-bhagya-line p-5 sm:p-6">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-4">Kundli matching ({{ matches | length }})</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">Kundli matching ({{ matches | length }})</h2>
     {% if not matches %}
     <p class="text-sm text-bhagya-muted italic">No matching submissions in this window.</p>
     {% else %}
@@ -161,7 +161,7 @@
 
   <!-- ERRORS -->
   <section class="bg-white border border-rose-200 p-5 sm:p-6">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-4">Errors ({{ errors | length }})</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">Errors ({{ errors | length }})</h2>
     {% if not errors %}
     <p class="text-sm text-emerald-800 italic">No errors in this window &mdash; nice.</p>
     {% else %}

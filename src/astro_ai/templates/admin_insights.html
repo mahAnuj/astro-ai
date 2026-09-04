@@ -23,7 +23,7 @@
 {% macro histogram(title, subtitle, items, empty_note='No data in this window.') %}
 <section class="bg-white border border-bhagya-line p-5 sm:p-6">
   <div class="mb-3">
-    <h2 class="font-marcellus text-lg text-bhagya-sindoor">{{ title }}</h2>
+    <h2 class="font-marcellus text-lg text-bhagya-ink">{{ title }}</h2>
     {% if subtitle %}<p class="text-xs text-bhagya-muted mt-0.5">{{ subtitle }}</p>{% endif %}
   </div>
   {% if not items %}
@@ -52,7 +52,7 @@
 <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
 
   <header class="space-y-2">
-    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor">Audience insights</h1>
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink">Audience insights</h1>
     <p class="text-sm text-bhagya-muted">
       Aggregate view of who's using the site &mdash; computed from the events
       log for the last {{ days }} days. No individual users named; no new

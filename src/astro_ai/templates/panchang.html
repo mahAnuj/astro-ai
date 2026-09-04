@@ -17,7 +17,7 @@
 
   <header class="text-center space-y-2">
     <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor">Panchang</div>
-    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-sindoor">
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink">
       {% if is_today %}Today's Panchang{% else %}Panchang{% endif %} — <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </h1>
     <p class="text-bhagya-muted">Computed for <strong>{{ city_display }}</strong> · sunrise + Rahu Kaal shift by location.</p>
@@ -62,7 +62,7 @@
     {% for festival in festivals_on_date %}
     <div class="space-y-2">
       <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 class="font-marcellus text-xl text-bhagya-sindoor">
+        <h2 class="font-marcellus text-xl text-bhagya-ink">
           {{ festival.name_en }}{% if festival.name_hi %}
           <span lang="hi" class="font-normal text-base text-bhagya-muted">{{ festival.name_hi }}</span>{% endif %}
         </h2>
@@ -212,7 +212,7 @@
   {# CHOGHADIYA — 8 sub-day windows #}
   {% if choghadiya %}
   <section>
-    <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-3">Choghadiya — 8 daytime windows</h2>
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">Choghadiya — 8 daytime windows</h2>
     <p class="text-sm text-bhagya-muted mb-3">
       Classical sub-day divisions used for muhurta timing. <strong>Amrit / Shubh / Labh</strong> are auspicious; <strong>Rog / Kaal</strong> avoid; <strong>Udveg / Chal</strong> neutral.
     </p>
@@ -251,7 +251,7 @@
      not loaded, so `prose` classes silently render unstyled). #}
   <section class="space-y-6">
     <div>
-      <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-3">What is Panchang?</h2>
+      <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">What is Panchang?</h2>
       <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
         <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           Panchang (literally "five limbs") is the classical Vedic almanac. Five daily angas describe the character of the day astronomically and karmically:
@@ -267,7 +267,7 @@
     </div>
 
     <div>
-      <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-3">Rahu Kaal, Abhijit Muhurta, Choghadiya</h2>
+      <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">Rahu Kaal, Abhijit Muhurta, Choghadiya</h2>
       <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
         <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           Beyond the five angas, classical Vedic timing includes sub-day windows:
@@ -282,7 +282,7 @@
     </div>
 
     <div>
-      <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-3">How Bhagya computes it</h2>
+      <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">How Bhagya computes it</h2>
       <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
         <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           All calculations use <strong>Swiss Ephemeris</strong> on sidereal <strong>Lahiri (Chitrapaksha) ayanamsa</strong>, the standard Indian classical convention. Sunrise/sunset for your city are computed from the local latitude/longitude + timezone, not approximated. Rahu Kaal, Abhijit, and Choghadiya windows are derived from that local sunrise/sunset &mdash; they will not match tables that hardcode Mumbai-only or Delhi-only times.
@@ -293,7 +293,7 @@
 
   {# CROSS-LINKS #}
   <section>
-    <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-4">Related</h2>
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-4">Related</h2>
     <div class="grid sm:grid-cols-2 gap-3">
       <a href="/muhurat" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
         <div class="font-semibold text-bhagya-sindoor text-sm">Muhurat Finder →</div>

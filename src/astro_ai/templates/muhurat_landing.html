@@ -23,7 +23,7 @@
     <div class="text-xs uppercase tracking-wider text-bhagya-sindoor font-semibold mb-2">
       <a href="/muhurat" class="hover:text-bhagya-sindoor">Muhurat Finder</a> · {{ event_label }}
     </div>
-    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-sindoor mb-3">{{ landing.hero_title }}</h1>
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink mb-3">{{ landing.hero_title }}</h1>
     <p class="text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
       {{ landing.hero_subtitle }}
     </p>
@@ -38,7 +38,7 @@
 
   {# ─── Embedded finder form (pre-selected to this event) ─── #}
   <section class="bg-white border border-bhagya-line p-6 sm:p-8">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-4">Find your auspicious dates</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">Find your auspicious dates</h2>
     <form method="post" action="/muhurat" class="space-y-4">
       <input type="hidden" name="event_type" value="{{ event_key }}">
       <div>
@@ -85,7 +85,7 @@
 
   {# ─── Classical rules summary ─── #}
   <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-3">Classical criteria checked</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-3">Classical criteria checked</h2>
     <ul class="space-y-1.5 text-sm text-bhagya-ink-soft">
       {% for rule in landing.rules_summary %}
       <li class="flex gap-2">
@@ -101,7 +101,7 @@
   <section class="grid sm:grid-cols-2 gap-4">
     {% if landing.related_articles %}
     <div class="bg-white border border-bhagya-line p-5">
-      <h3 class="font-marcellus text-base text-bhagya-sindoor mb-3">Related reading</h3>
+      <h3 class="font-marcellus text-base text-bhagya-ink mb-3">Related reading</h3>
       <div class="space-y-2">
         {% for href, label in landing.related_articles %}
         <a href="{{ href }}" class="block text-sm text-bhagya-sindoor hover:text-bhagya-ink underline underline-offset-2">{{ label }} →</a>
@@ -111,7 +111,7 @@
     {% endif %}
     {% if landing.related_tools %}
     <div class="bg-white border border-bhagya-line p-5">
-      <h3 class="font-marcellus text-base text-bhagya-sindoor mb-3">Related tools</h3>
+      <h3 class="font-marcellus text-base text-bhagya-ink mb-3">Related tools</h3>
       <div class="space-y-3">
         {% for href, name, desc in landing.related_tools %}
         <a href="{{ href }}" class="block p-3 bg-bhagya-cream-2 rounded border border-bhagya-line hover:border-bhagya-saffron transition-colors">

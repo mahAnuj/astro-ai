@@ -37,7 +37,7 @@
 
   {% if not reading %}
   <header class="text-center">
-    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-sindoor mb-3">Free Numerology Calculator</h1>
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink mb-3">Free Numerology Calculator</h1>
     <p class="text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
       Chaldean (Cheiro) and Lo Shu grid calculators — Life Path, Birthday, Destiny/Expression, Soul Urge, Personality numbers plus Personal Year forecast, Karmic Debt flags, per-number remedies (gemstone, colour, deity, mantra), and the 3×3 Lo Shu birth-number matrix. Free, no sign-up. See caveat above about tradition.
     </p>
@@ -92,7 +92,7 @@
   </section>
 
   <section>
-    <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-4">What numerology reads (and doesn't)</h2>
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-4">What numerology reads (and doesn't)</h2>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3 mb-4">
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         Numerology reads your <strong>name + birth date</strong> through a modern Western (Cheiro) or ancient Chinese (Lo Shu) framework. Vedic astrology reads your <strong>full birth chart</strong> from a completely different tradition. These are separate systems, not two views of the same underlying method &mdash; sometimes their readings coincidentally align, sometimes they don't.
@@ -105,7 +105,7 @@
       </p>
     </div>
 
-    <h3 class="font-marcellus text-xl text-bhagya-sindoor mb-3">The 5 numbers we compute (and where they come from)</h3>
+    <h3 class="font-marcellus text-xl text-bhagya-ink mb-3">The 5 numbers we compute (and where they come from)</h3>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6">
       <ul class="space-y-2.5 text-sm sm:text-base text-bhagya-ink leading-relaxed">
         <li>&bull; <strong>Life Path Number</strong> &mdash; all the digits of your birth date added together, then reduced; your reading spells out that convention and why this page uses it. Origin: L. Dow Balliett / Juno Jordan, USA, ~1908-1940s.</li>
@@ -120,7 +120,7 @@
   {% else %}
 
   <header>
-    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-1">Numerology Reading for {{ reading.name }}</h1>
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-1">Numerology Reading for {{ reading.name }}</h1>
     <p class="text-sm text-bhagya-muted mb-3">
       {{ reading.birth_date }} · {{ reading.system | capitalize }} system
     </p>
@@ -241,7 +241,7 @@
      shipped; the reason for not shipping it belongs in front of the reader,
      not only in a commit message, so it is the last bullet here. #}
   <section class="bg-white border border-bhagya-line p-5 sm:p-6">
-    <h2 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Conventions used in this reading</h2>
+    <h2 class="font-marcellus text-lg text-bhagya-ink mb-2">Conventions used in this reading</h2>
     <p class="text-sm text-bhagya-ink-soft leading-relaxed mb-3">
       Numerology has more than one live convention for these calculations, and they give different answers. Here is what this page uses &mdash; the same way it names Chaldean for letters.
     </p>
@@ -275,7 +275,7 @@
         <span class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor tabular-nums">{{ num }}</span>
       </div>
       <div class="min-w-0 flex-1">
-        <h2 class="font-marcellus text-lg text-bhagya-sindoor mb-0.5">{{ label }}</h2>
+        <h2 class="font-marcellus text-lg text-bhagya-ink mb-0.5">{{ label }}</h2>
         <div class="text-[11px] text-bhagya-muted mb-2 italic">{{ subtitle }}</div>
         <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ meaning }}</p>
       </div>
@@ -323,7 +323,7 @@
   {% set _grid = reading.lo_shu %}
   <section class="bg-white border border-bhagya-line p-5 sm:p-6">
     <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Lo Shu Birth-Number Matrix</div>
-    <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-2">Your 3×3 Number Grid</h2>
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-2">Your 3×3 Number Grid</h2>
     <p class="text-sm text-bhagya-muted mb-4">
       Classical 3×3 matrix from your DOB digits ({{ _grid.dob_digits }}). Cells show how many times each digit appears in your birth date. Missing digits point to life lessons; repeated digits mark natural strengths. <span class="italic">This grid belongs to the Chinese Lo Shu tradition, not to Vedic Jyotish.</span>
     </p>
@@ -427,7 +427,7 @@
   <section class="bg-white border-2 border-bhagya-line p-5 sm:p-7 space-y-5">
     <div>
       <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Your Life Path {{ prof.number }} in depth</div>
-      <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-3">Ruled by {{ prof.planet }} · {{ prof.planet_sanskrit }}</h2>
+      <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">Ruled by {{ prof.planet }} · {{ prof.planet_sanskrit }}</h2>
       <p class="text-bhagya-ink leading-relaxed">{{ prof.character }}</p>
     </div>
 
@@ -447,18 +447,18 @@
     </div>
 
     <div>
-      <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Life challenges — the honest read</h3>
+      <h3 class="font-marcellus text-lg text-bhagya-ink mb-2">Life challenges — the honest read</h3>
       <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ prof.life_challenges }}</p>
     </div>
 
     <div>
-      <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Health tendencies</h3>
+      <h3 class="font-marcellus text-lg text-bhagya-ink mb-2">Health tendencies</h3>
       <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ prof.health }}</p>
       <p class="text-xs text-bhagya-muted mt-2 italic">Not medical advice. If a health issue is active, consult a physician first — numerology reads karmic pattern, not disease.</p>
     </div>
 
     <div>
-      <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Career direction</h3>
+      <h3 class="font-marcellus text-lg text-bhagya-ink mb-2">Career direction</h3>
       <p class="text-sm text-bhagya-ink-soft leading-relaxed mb-3">{{ prof.career }}</p>
       <div class="flex flex-wrap gap-1.5">
         {% for f in prof.career_fields %}<span class="inline-block px-2 py-1 text-xs bg-bhagya-cream-2 text-bhagya-sindoor rounded border border-bhagya-line">{{ f }}</span>{% endfor %}
@@ -473,7 +473,7 @@
         </div>
       </div>
       <div class="p-4 bg-rose-50 rounded border border-rose-100">
-        <h3 class="text-xs font-semibold uppercase text-bhagya-sindoor mb-1.5">Challenging partner numbers</h3>
+        <h3 class="text-xs font-semibold uppercase text-bhagya-ink mb-1.5">Challenging partner numbers</h3>
         <div class="flex gap-1.5 flex-wrap">
           {% for p in prof.worst_partners %}<span class="w-8 h-8 flex items-center justify-center font-marcellus text-lg text-rose-800 bg-white rounded-full border border-rose-300">{{ p }}</span>{% endfor %}
         </div>
@@ -481,7 +481,7 @@
     </div>
 
     <div>
-      <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Timing patterns</h3>
+      <h3 class="font-marcellus text-lg text-bhagya-ink mb-2">Timing patterns</h3>
       <div class="grid sm:grid-cols-2 gap-3 text-sm">
         <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Peak career period</span><div class="text-bhagya-ink">{{ prof.peak_period }}</div></div>
         <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Best day of week</span><div class="text-bhagya-ink font-medium">{{ prof.best_day }}</div></div>
@@ -505,7 +505,7 @@
   {% set rem = reading.life_path_remedy %}
   <section class="bg-white border-2 border-bhagya-line p-5 sm:p-6">
     <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Vedic Remedies</div>
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-1">Your Life Path {{ reading.life_path }} is ruled by {{ rem.planet }} ({{ rem.planet_sanskrit }})</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-1">Your Life Path {{ reading.life_path }} is ruled by {{ rem.planet }} ({{ rem.planet_sanskrit }})</h2>
     <p class="text-xs text-bhagya-muted mb-4 italic">Per Johari's Vedic-integrated system. Practise consistency over intensity — remedies work by shifting your relationship with the planet's energy, not by magic.</p>
     <div class="grid sm:grid-cols-2 gap-3 text-sm">
       <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Best day</span><div class="text-bhagya-ink font-medium">{{ rem.day }}</div></div>
@@ -656,14 +656,14 @@
              else (_compound_digit_sum // 10) + (_compound_digit_sum % 10)) %}
   <section class="bg-white border border-bhagya-line p-5 sm:p-6">
     <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Name Compound Number</div>
-    <h2 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Compound {{ reading.name_compound }}</h2>
+    <h2 class="font-marcellus text-lg text-bhagya-ink mb-2">Compound {{ reading.name_compound }}</h2>
     <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ reading.name_compound_meaning }}</p>
     <p class="text-xs text-bhagya-muted mt-2 italic">{% if _compound_reduced == reading.name_number %}In the compound-number tradition, the unreduced total of a name (10&ndash;52) carries a secondary vibration alongside the reduced Name Number ({{ reading.name_number }}), which this compound reduces to.{% else %}In the compound-number tradition, the unreduced total of a name (10&ndash;52) carries a secondary vibration of its own. That tradition defines its series over the Chaldean letter values, so this compound is read on those values and stands alongside your Name Number ({{ reading.name_number }}).{% endif %} The two are read together, not one instead of the other: in this tradition the single numbers speak to the material side of life and the compounds to the inner side, so your compound colours the reading rather than overruling it &mdash; a difficult compound alongside a fortunate single is read very differently from the same compound alone. The rows read as images rather than adjectives because the symbolism was handed down in pictures. The series stops at 52, one for each week of the year.</p>
   </section>
   {% endif %}
 
   <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
-    <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-3">Compare with your Vedic chart</h3>
+    <h3 class="font-marcellus text-lg text-bhagya-ink mb-3">Compare with your Vedic chart</h3>
     <p class="text-sm text-bhagya-ink-soft mb-4 leading-relaxed">
       Numerology gave you a snapshot. Your Vedic Kundli gives you the depth — personality, career, marriage, life-stage predictions rooted in classical Jyotish. When both agree, the signal is stronger.
     </p>
