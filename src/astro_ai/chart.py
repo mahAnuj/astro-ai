@@ -2516,6 +2516,14 @@ class DashaState:
     antardasha: DashaPeriod
     upcoming_antardashas: tuple[DashaPeriod, ...]  # remaining Antardashas in this Maha
     next_mahadasha: DashaPeriod | None              # the Maha after the current one
+    # The whole Mahadasha sequence from birth forward, and where the active one
+    # sits in it. `compute_dasha_state` has always built this list to find the
+    # active period and then thrown it away; the redesign's proportional
+    # timeline needs the periods either side, so it is carried out rather than
+    # recomputed. No extra Swiss Ephemeris work and no extra arithmetic — the
+    # same objects that were already in memory.
+    sequence: tuple[DashaPeriod, ...] = ()
+    active_index: int = 0
 
 
 def compute_dasha_state(natal: Chart, when: datetime | None = None) -> DashaState:
@@ -2601,7 +2609,36 @@ def compute_dasha_state(natal: Chart, when: datetime | None = None) -> DashaStat
         antardasha=active_antar,
         upcoming_antardashas=upcoming,
         next_mahadasha=next_maha,
+        sequence=tuple(periods),
+        active_index=active_idx,
     )
+
+
+def dasha_timeline(state: DashaState, span: int = 6) -> tuple[DashaPeriod, ...]:
+    """A window of `span` Mahadashas centred on the active one.
+
+    The redesign renders the Vimshottari sequence as one horizontal strip whose
+    segments are proportional to each period's LENGTH — Ketu's 7 years next to
+    Venus's 20 — so the reader can see at a glance that they are in a long
+    period or a short one. That only reads if the window includes what came
+    before and what is coming.
+
+    Two periods back and the rest forward, because a chart is read facing
+    forward: the past is context, the future is the question. Clamped at both
+    ends, so a young chart (active period at index 0 or 1) still gets `span`
+    segments by taking more from the future, and a sequence shorter than
+    `span` returns whole.
+
+    Pure list arithmetic over what `compute_dasha_state` already built — no
+    ephemeris calls, no dates recomputed.
+    """
+    seq = state.sequence
+    if not seq:
+        return ()
+    if len(seq) <= span:
+        return seq
+    start = max(0, min(state.active_index - 2, len(seq) - span))
+    return seq[start:start + span]
 
 
 def _build_antardashas(

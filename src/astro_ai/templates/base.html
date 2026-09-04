@@ -597,6 +597,47 @@
   [data-snapshot-tile]:nth-child(3) { animation-delay: 120ms; }
   [data-snapshot-tile]:nth-child(4) { animation-delay: 180ms; }
 
+  /* ─── Vimshottari dasha strip (motion item 4) ────────────────────
+     Three states, and the LEGEND in _dasha_timeline.html reuses these
+     exact classes so it cannot describe fills the strip does not have
+     — the handoff records that mismatch as a defect it hit.
+
+     #E6DAC6 and #FBEBD6 are the handoff's own values for this one
+     component. They are not palette roles and get no bhagya token;
+     both are declared in verify_redesign_tokens.py's LEGACY.
+
+     The top rule is 3px on all three, not only on the current one.
+     The spec states 3px for current and leaves the others unstated;
+     mixing widths would shift each segment's content box by 2px and
+     make the baseline ragged. State is carried by the rule's COLOUR,
+     and the current segment is separately marked with a sindoor
+     "NOW" label — colour is never the only signal (WCAG 1.4.1). */
+  .dasha-seg--past   { background: #E6DAC6; border-top: 3px solid #DED4C2; }
+  .dasha-seg--now    { background: #FBEBD6; border-top: 3px solid #E4913C; }
+  .dasha-seg--future { background: #FAF6EF; border-top: 3px solid #C8A44D; }
+
+  /* Growing from the left via CLIP-PATH, not `transform: scaleX()`.
+     The handoff names scaleX, and for an empty bar the two are
+     identical — but these segments carry a lord name, a year range
+     and a label, and scaling the box horizontally squashes that text
+     from unreadable to normal over half a second. Clip-path reveals
+     the identical left-to-right wipe with the type at full width the
+     whole time. Substitution recorded rather than made silently.
+
+     Delays come from an inline style so the CURRENT segment can go
+     last regardless of where it sits — the handoff asks for that
+     specifically, "so the eye lands there", and nth-child cannot
+     express "whichever one is active". */
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes dashaGrow {
+      from { clip-path: inset(0 100% 0 0); }
+      to   { clip-path: inset(0 0 0 0); }
+    }
+    .dasha-seg:not(.dasha-seg--swatch) {
+      animation: dashaGrow 500ms cubic-bezier(.2, .7, .2, 1) both;
+    }
+  }
+
   /* ─── Chart-cast signature animation (Issue #78) ─────────────────
      Diamond kundali outline drawn line-by-line via stroke-dashoffset.
      Plays once per loader-show for ~1.5s, then holds. Signature moment

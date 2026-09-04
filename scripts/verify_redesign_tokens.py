@@ -130,6 +130,13 @@ LEGACY: dict[str, str] = {
     "#92400e": "amber-800 eyebrow on the amber panels",
     "#a16207": "yellow-700 caption on the cosmic card",
     "#78350f": "amber-900 caption and gold gradient outer stop",
+    # The Vimshottari dasha strip's two component fills, named by the handoff
+    # for this one component. Not palette roles — a spent period and the
+    # current one are states of a single widget, and minting two bhagya tokens
+    # for one strip would put them on a table that every other screen has to
+    # read past. Declared in base.html's .dasha-seg--* rules and nowhere else.
+    "#e6dac6": "spent Mahadasha segment fill (also the matching ring's track)",
+    "#fbebd6": "current Mahadasha segment fill",
     # Semantic status colours in the panchang strip. Not brand colours.
     "#b91c1c": "Rahu Kaal warning",
     "#15803d": "Abhijit Muhurta positive",
