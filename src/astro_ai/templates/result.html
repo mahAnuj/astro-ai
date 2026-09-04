@@ -156,7 +156,7 @@
        declared in scripts/verify_contrast.py. #}
     <div class="max-w-5xl mx-auto mt-8 grid grid-cols-2 lg:grid-cols-4 gap-px bg-bhagya-gold/25 border border-bhagya-gold/25">
       {% macro snapshot_tile(label, value, meta, glyph=None) %}
-      <div class="bg-bhagya-night px-4 py-4 sm:px-5 sm:py-5 min-w-0">
+      <div data-snapshot-tile class="bg-bhagya-night px-4 py-4 sm:px-5 sm:py-5 min-w-0">
         <div class="text-[10px] font-bold uppercase tracking-[0.16em] text-bhagya-gold mb-1.5">{{ label }}</div>
         <div class="font-marcellus text-xl sm:text-[29px] leading-tight text-bhagya-cream truncate">
           {%- if glyph %}<span aria-hidden="true" class="text-bhagya-saffron">{{ glyph }}</span> {% endif -%}

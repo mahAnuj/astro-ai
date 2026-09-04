@@ -1,0 +1,55 @@
+{# ─── MOBILE BOTTOM TAB BAR (#261, deferred out of #242) ──────────────────
+   Five destinations, sticky, mobile only. `md:hidden` because the top nav
+   already carries all of this from `md` up, and two navigations on one screen
+   is worse than none.
+
+   IT LIVES AT THE END OF <body>, NOT IN _nav.html, AND THAT IS LOAD-BEARING.
+   The first version sat at the bottom of _nav.html — which is included at the
+   TOP of every page — so its five links came early in the DOM while painting
+   at the bottom of the viewport. Tabbing out of them jumped backward into page
+   content: one −Npx reversal per language on mobile, measured, which is the
+   exact WCAG 2.4.3 violation #195 exists to prevent. Painted position and DOM
+   position have to agree, so the bar is last in the document.
+
+   That move cost it `active_page`, which is `{% set %}` inside each page's
+   content block and therefore invisible out here. The active tab is derived
+   from the request path instead — which is more robust anyway, since it cannot
+   drift from a variable a page forgets to set.
+
+   IT COSTS FOLD, AND THE FOLD IS GATED. A fixed bar does not move content, so
+   scripts/measure_cta_fold.py reports no change — it measures DOCUMENT
+   position. What the bar actually does is cover the bottom of the viewport.
+   Measured: 75px tall, so the homepage CTA's real clearance at 375x667 goes
+   from 129px to 86px. Re-measure with the browser, not with that harness, if
+   the padding here ever changes.
+
+   Z-ORDER. Two other fixed elements live at the bottom of the screen: the
+   feedback FAB and #matching-sticky-cta. Both are lifted clear on mobile
+   rather than left underneath — a submit button you cannot reach is a worse
+   defect than the one this bar fixes.
+
+   `aria-current="page"` rather than colour alone: the active tab is saffron,
+   and colour must never be the only signal (WCAG 1.4.1). #}
+{% set _path = request.url.path %}
+<nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-bhagya-night/[.96] backdrop-blur
+            border-t border-bhagya-gold/25 grid grid-cols-5 pb-5 no-print"
+     aria-label="Quick navigation">
+  {% set _tabs = [
+    ('/kundli',   'Kundli',   'ॐ'),
+    ('/rashifal', 'Rashifal', '♈'),
+    ('/panchang', 'Panchang', '☽'),
+    ('/matching', 'Match',    '⚚'),
+    ('/ask',      'Ask',      '❓'),
+  ] %}
+  {% for href, label, glyph in _tabs %}
+  {% set _on = _path == href or _path.startswith(href ~ '/') %}
+  <a href="{{ href }}"
+     class="flex flex-col items-center justify-center gap-1 min-h-[44px] py-2
+            {% if _on %}text-bhagya-saffron{% else %}text-bhagya-cream/[.62] hover:text-bhagya-saffron{% endif %}
+            transition-colors"
+     {% if _on %}aria-current="page"{% endif %}>
+    <span class="text-[19px] leading-none" aria-hidden="true">{{ glyph }}</span>
+    <span class="text-[10px] font-semibold tracking-[0.06em]">{{ label }}</span>
+  </a>
+  {% endfor %}
+</nav>

@@ -10,7 +10,7 @@
    Same visual style as the subscribe modal so the two feel like a set.
 -#}
 <button id="feedback-fab" type="button"
-        class="fixed bottom-4 right-4 z-30 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night
+        class="fixed bottom-24 md:bottom-4 right-4 z-30 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night
                border border-bhagya-gold/40 px-4 py-2.5 rounded-full flex items-center gap-2 text-sm font-medium
                transition-transform hover:scale-105 no-print"
         aria-label="{% if lang == 'hi' %}सुझाव दें{% else %}Send feedback{% endif %}">
@@ -35,7 +35,7 @@
 
     {#- DEFAULT state -#}
     <div id="feedback-default">
-      <h2 id="feedback-modal-title" class="font-display text-xl font-bold text-bhagya-ink mb-2">
+      <h2 id="feedback-modal-title" class="font-marcellus text-xl text-bhagya-ink mb-2">
         {% if lang == 'hi' %}हमें बताएं{% else %}Tell us anything{% endif %}
       </h2>
       <p class="text-sm text-bhagya-muted mb-4">
@@ -98,7 +98,7 @@
     {#- SUCCESS state -#}
     <div id="feedback-success" class="hidden text-center py-4">
       <div class="text-3xl mb-2">🙏</div>
-      <h2 class="font-display text-xl font-bold text-bhagya-ink mb-1">
+      <h2 class="font-marcellus text-xl text-bhagya-ink mb-1">
         {% if lang == 'hi' %}धन्यवाद!{% else %}Thank you!{% endif %}
       </h2>
       <p class="text-sm text-bhagya-muted">

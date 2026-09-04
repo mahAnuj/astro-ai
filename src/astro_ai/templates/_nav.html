@@ -21,7 +21,7 @@
 #}
 {# Current signed-in user (may be None). Cheap — just cookie deserialisation. #}
 {% set current_user = load_current_user(request) %}
-<nav class="border-b border-bhagya-gold/25 bg-bhagya-night/95 backdrop-blur sticky top-0 z-10 no-print">
+<nav aria-label="Main" class="border-b border-bhagya-gold/25 bg-bhagya-night/95 backdrop-blur sticky top-0 z-10 no-print">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center gap-y-2 md:gap-x-4">
 
     {# LEFT ZONE: logo + (mobile-only) hamburger toggle #}
@@ -37,7 +37,7 @@
           </g>
           <circle cx="50" cy="50" r="7" fill="#ffd764"/>
         </svg>
-        <span class="font-display text-2xl font-bold tracking-tight text-bhagya-cream">Shubh Bhagya</span>
+        <span class="font-marcellus text-2xl tracking-tight text-bhagya-cream">Shubh Bhagya</span>
       </a>
       <button id="nav-toggle" type="button"
               class="md:hidden inline-flex items-center justify-center p-2 -mr-2 text-bhagya-cream/80 hover:text-bhagya-saffron"
