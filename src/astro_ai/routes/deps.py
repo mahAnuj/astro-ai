@@ -251,7 +251,12 @@ def _linkify_learn(text: str) -> str:
         title = _ARTICLE_TITLE_BY_SLUG.get(slug, f"/learn/{slug}/")
         return (
             f'<a href="/learn/{slug}/" '
-            f'class="text-astro-700 hover:text-astro-800 underline underline-offset-2">'
+            # Built in Python, so Tailwind's scanner never sees it — these
+            # utilities are emitted only because templates use them too. This
+            # is `_linkify_learn`, which rewrites every /learn/<slug>/ mention
+            # inside LLM prose across the whole site, so a stale colour here
+            # shows up in the body of readings on every migrated screen at once.
+            f'class="text-bhagya-sindoor hover:text-bhagya-ink underline underline-offset-2">'
             f'{_html.escape(title)}</a>'
         )
 

@@ -21,14 +21,14 @@
      2026-08-04 lives in the expanded body: BPHS/Phaladeepika/etc.
      don't contain numerology; Cheiro/Balliett/Seton invented the
      modern Life Path framework; K.N. Rao dropped it. #}
-  <details class="rounded-xl border border-amber-300 bg-amber-50/60 px-4 py-3 group">
+  <details class="border border-amber-300 bg-amber-50/60 px-4 py-3 group">
     <summary class="cursor-pointer flex items-start gap-2 text-sm text-amber-900 leading-snug list-none">
-      <svg class="shrink-0 mt-0.5 w-4 h-4 text-amber-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+      <svg class="shrink-0 mt-0.5 w-4 h-4 text-amber-800" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
       </svg>
       <span class="flex-1"><strong>Note:</strong> Numerology is a modern Western tradition, not classical Vedic Jyotish. <span class="text-amber-800 underline underline-offset-2 group-open:hidden">Read full disclosure</span><span class="text-amber-800 underline underline-offset-2 hidden group-open:inline">Hide disclosure</span></span>
     </summary>
-    <div class="mt-3 pl-6 space-y-2 text-sm text-stone-800 leading-relaxed">
+    <div class="mt-3 pl-6 space-y-2 text-sm text-bhagya-ink leading-relaxed">
       <p>{{ t(lang, 'num_caveat_body_1') }}</p>
       <p>{{ t(lang, 'num_caveat_body_2') }}</p>
       <p>{{ t(lang, 'num_caveat_body_3') }}</p>
@@ -37,19 +37,19 @@
 
   {% if not reading %}
   <header class="text-center">
-    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700 mb-3">Free Numerology Calculator</h1>
-    <p class="text-base sm:text-lg text-stone-600 max-w-xl mx-auto leading-relaxed">
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-sindoor mb-3">Free Numerology Calculator</h1>
+    <p class="text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
       Chaldean (Cheiro) and Lo Shu grid calculators — Life Path, Birthday, Destiny/Expression, Soul Urge, Personality numbers plus Personal Year forecast, Karmic Debt flags, per-number remedies (gemstone, colour, deity, mantra), and the 3×3 Lo Shu birth-number matrix. Free, no sign-up. See caveat above about tradition.
     </p>
   </header>
 
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+  <section class="bg-white border border-bhagya-line p-6 sm:p-8">
     {% if error %}
     <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
     {% endif %}
     <form method="post" action="/numerology" class="space-y-4">
       <div>
-        <label for="name" class="block text-sm font-medium text-stone-700 mb-1">The name you are known by</label>
+        <label for="name" class="block text-sm font-medium text-bhagya-ink-soft mb-1">The name you are known by</label>
         {# #203: the name that governs is the one in actual use, not the one on
            documents. Sourced to Cheiro (knowledge/numerology.md §14.2), who is
            explicit that it is "the most used" name that gives the key number,
@@ -62,18 +62,18 @@
            y=885 — more than half the 212px that removing the system selector
            (#202) had just won back. The rule itself is one idea; the rest was
            elaboration, and it was not worth a fold's worth of scroll. #}
-        <p id="name-help" class="text-xs text-stone-600 mb-2 leading-relaxed">
+        <p id="name-help" class="text-xs text-bhagya-muted mb-2 leading-relaxed">
           The name people actually call you &mdash; not the one on your documents.
         </p>
         <input type="text" name="name" id="name" required autocomplete="name"
                aria-describedby="name-help"
                placeholder="e.g. Priya Sharma"
-               class="w-full border border-stone-300 rounded-md px-3 py-3 text-base focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+               class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
       </div>
       <div>
-        <label for="birth_date" class="block text-sm font-medium text-stone-700 mb-1">Birth date</label>
+        <label for="birth_date" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Birth date</label>
         <input type="date" name="birth_date" id="birth_date" required autocomplete="bday"
-               class="w-full border border-stone-300 rounded-md px-3 py-3 text-base focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+               class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
       </div>
       {# The Chaldean/Pythagorean radio pair stood here until #202. It was
          removed rather than defaulted because the Pythagorean letter table
@@ -84,30 +84,30 @@
          shipped bugs (#167, and the compound caption that needed three QA
          rounds), because two tables could disagree about the same name.
          Do not restore a system selector without a sourced second table. #}
-      <button type="submit" class="w-full bg-astro-700 hover:bg-astro-800 text-white text-base font-semibold py-3 rounded-lg transition-colors">
+      <button type="submit" class="w-full bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-base font-semibold py-3 rounded transition-colors">
         Calculate my numbers →
       </button>
     </form>
-    <p class="text-xs text-stone-600 text-center mt-4">Free. No sign-up needed.</p>
+    <p class="text-xs text-bhagya-muted text-center mt-4">Free. No sign-up needed.</p>
   </section>
 
   <section>
-    <h2 class="font-display text-2xl text-astro-800 mb-4">What numerology reads (and doesn't)</h2>
-    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3 mb-4">
-      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+    <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-4">What numerology reads (and doesn't)</h2>
+    <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3 mb-4">
+      <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         Numerology reads your <strong>name + birth date</strong> through a modern Western (Cheiro) or ancient Chinese (Lo Shu) framework. Vedic astrology reads your <strong>full birth chart</strong> from a completely different tradition. These are separate systems, not two views of the same underlying method &mdash; sometimes their readings coincidentally align, sometimes they don't.
       </p>
-      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+      <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         Numerology cannot predict marriage timing, career changes, or specific life events &mdash; those need chart-based Jyotish analysis. What numerology can offer: a compact prompt for self-reflection on your inner drive, external personality, and how you see your own life theme. Treat it as a mirror, not an oracle.
       </p>
-      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
-        For a genuinely Vedic reading, <a href="/" class="text-astro-700 hover:underline">generate your free Janma Kundli</a> &mdash; that's classical Jyotish from the actual Sanskrit sources this site cites.
+      <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
+        For a genuinely Vedic reading, <a href="/" class="text-bhagya-sindoor hover:underline">generate your free Janma Kundli</a> &mdash; that's classical Jyotish from the actual Sanskrit sources this site cites.
       </p>
     </div>
 
-    <h3 class="font-display text-xl text-astro-800 mb-3">The 5 numbers we compute (and where they come from)</h3>
-    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6">
-      <ul class="space-y-2.5 text-sm sm:text-base text-stone-800 leading-relaxed">
+    <h3 class="font-marcellus text-xl text-bhagya-sindoor mb-3">The 5 numbers we compute (and where they come from)</h3>
+    <div class="bg-white border border-bhagya-line p-5 sm:p-6">
+      <ul class="space-y-2.5 text-sm sm:text-base text-bhagya-ink leading-relaxed">
         <li>&bull; <strong>Life Path Number</strong> &mdash; all the digits of your birth date added together, then reduced; your reading spells out that convention and why this page uses it. Origin: L. Dow Balliett / Juno Jordan, USA, ~1908-1940s.</li>
         <li>&bull; <strong>Destiny / Expression Number</strong> &mdash; English-letter name reduction. Origin: same Balliett/Jordan lineage.</li>
         <li>&bull; <strong>Soul Urge Number</strong> &mdash; from name vowels. Origin: 20th-c. Western numerology.</li>
@@ -120,8 +120,8 @@
   {% else %}
 
   <header>
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-1">Numerology Reading for {{ reading.name }}</h1>
-    <p class="text-sm text-stone-600 mb-3">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-1">Numerology Reading for {{ reading.name }}</h1>
+    <p class="text-sm text-bhagya-muted mb-3">
       {{ reading.birth_date }} · {{ reading.system | capitalize }} system
     </p>
     {% with pdf_filename_hint = (reading.name or 'Numerology') + ' Numerology' %}
@@ -136,25 +136,37 @@
      /kundli — this one reflects the numerological character, that one
      reflects transit weather. #}
   {% if num_bhagya_score %}
-  {% set _nc = num_bhagya_score.label_class %}
-  <section class="bg-gradient-to-br from-{{ _nc }}-50 via-white to-astro-50 rounded-2xl border-2 border-{{ _nc }}-200 shadow-md p-5 sm:p-6">
+  {# Same treatment as result.html's dial (#243): the four-step semantic scale
+     (emerald strong / astro steady / amber testing / rose deep) drives the
+     LABEL only, and the container is a fixed cream panel. `astro` was the brand
+     purple standing in for "steady", so a migrated page rendered a purple dial
+     for exactly the middle bucket. Measured on bhagya-cream-2: emerald-800
+     6.28:1, sindoor 6.07, amber-800 5.79, rose-800 6.55.
+
+     numerology.py:492-498 still decides the buckets; this map is presentation,
+     and an unknown value falls back to ink rather than emitting a class name
+     that does not exist. #}
+  {% set _nc_text = {'emerald': 'text-emerald-800', 'astro': 'text-bhagya-sindoor',
+                     'amber': 'text-amber-800', 'rose': 'text-rose-800'}
+                    .get(num_bhagya_score.label_class, 'text-bhagya-ink') %}
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-5 sm:p-6">
     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-      <div class="shrink-0 relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-{{ _nc }}-100 via-white to-{{ _nc }}-50 border-4 border-{{ _nc }}-300 flex flex-col items-center justify-center shadow-lg">
-        <div class="text-[10px] uppercase tracking-wider text-{{ _nc }}-700 font-semibold">{{ t(lang, 'bhagya_label') }}</div>
-        <div class="font-display text-4xl sm:text-5xl text-{{ _nc }}-800 tabular-nums leading-none">{{ num_bhagya_score.value }}</div>
-        <div class="text-[10px] text-{{ _nc }}-700">{{ t(lang, 'bhagya_out_of') }}</div>
+      <div class="shrink-0 relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-bhagya-cream border border-bhagya-gold/60 flex flex-col items-center justify-center">
+        <div class="text-[10px] uppercase tracking-[0.16em] text-bhagya-muted-2 font-bold">{{ t(lang, 'bhagya_label') }}</div>
+        <div class="font-marcellus text-4xl sm:text-5xl {{ _nc_text }} tabular-nums leading-none">{{ num_bhagya_score.value }}</div>
+        <div class="text-[10px] text-bhagya-muted-2">{{ t(lang, 'bhagya_out_of') }}</div>
       </div>
       <div class="flex-1 min-w-0">
-        <div class="text-xs uppercase tracking-wider font-semibold text-{{ _nc }}-700 mb-1">{{ t(lang, 'num_bhagya_heading') }}</div>
-        <h2 class="font-display text-xl sm:text-2xl text-stone-900 leading-tight mb-2">{{ num_bhagya_score.label }}</h2>
-        <p class="text-sm text-stone-700 leading-relaxed">
+        <div class="text-xs uppercase tracking-[0.16em] font-bold {{ _nc_text }} mb-1">{{ t(lang, 'num_bhagya_heading') }}</div>
+        <h2 class="font-marcellus text-xl sm:text-2xl text-bhagya-ink leading-tight mb-2">{{ num_bhagya_score.label }}</h2>
+        <p class="text-sm text-bhagya-ink-soft leading-relaxed">
           {{ t(lang, 'num_bhagya_lede') | safe }}
         </p>
       </div>
     </div>
     {% if num_bhagya_score.top_drivers %}
-    <div class="mt-4 pt-4 border-t border-{{ _nc }}-200 space-y-2">
-      <div class="text-xs uppercase tracking-wider font-semibold text-stone-600 mb-2">{{ t(lang, 'bhagya_why') }}</div>
+    <div class="mt-4 pt-4 border-t border-bhagya-line space-y-2">
+      <div class="text-xs uppercase tracking-wider font-semibold text-bhagya-muted mb-2">{{ t(lang, 'bhagya_why') }}</div>
       {% for d in num_bhagya_score.top_drivers %}
       <div class="flex items-start gap-2 text-sm">
         {% if d.kind == 'boost' %}
@@ -162,12 +174,12 @@
         {% else %}
         <span class="shrink-0 mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">{{ d.weight }}</span>
         {% endif %}
-        <span class="text-stone-800 leading-snug">{{ d.note }}</span>
+        <span class="text-bhagya-ink leading-snug">{{ d.note }}</span>
       </div>
       {% endfor %}
       {% if num_bhagya_score.drivers | length > 3 %}
       <details class="mt-2 group">
-        <summary class="cursor-pointer text-xs text-stone-600 hover:text-astro-700">
+        <summary class="cursor-pointer text-xs text-bhagya-muted hover:text-bhagya-sindoor">
           {{ t(lang, 'bhagya_show_all', n=num_bhagya_score.drivers | length) }}
         </summary>
         <div class="mt-2 space-y-2">
@@ -178,7 +190,7 @@
             {% else %}
             <span class="shrink-0 mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">{{ d.weight }}</span>
             {% endif %}
-            <span class="text-stone-800 leading-snug">{{ d.note }}</span>
+            <span class="text-bhagya-ink leading-snug">{{ d.note }}</span>
           </div>
           {% endfor %}
         </div>
@@ -203,9 +215,9 @@
      Presence of 13/14/16/19 in any Core Number's intermediate calc
      is a soul-work indicator worth naming rather than burying. #}
   {% if reading.karmic_debt_numbers %}
-  <section class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 sm:p-6">
-    <h2 class="font-display text-lg text-amber-900 mb-2">Karmic Debt Numbers detected: {{ reading.karmic_debt_numbers | join(', ') }}</h2>
-    <p class="text-sm text-stone-800 leading-relaxed">
+  <section class="bg-amber-50 border-2 border-amber-200 p-5 sm:p-6">
+    <h2 class="font-marcellus text-lg text-amber-900 mb-2">Karmic Debt Numbers detected: {{ reading.karmic_debt_numbers | join(', ') }}</h2>
+    <p class="text-sm text-bhagya-ink leading-relaxed">
       In the modern Western numerology tradition (popularised by 20th-century American authors like Dan Millman and Hans Decoz — not from any classical Vedic text), the numbers 13, 14, 16, and 19 appearing in your Core Number intermediate sums are interpreted as themes for reflection. The framework suggests: 13 = ethical vigilance / avoid selfishness; 14 = master balance and freedom; 16 = beware pride and sudden reversals; 19 = handle power without self-glorification. Not "unlucky" and not scripturally binding — treat as prompts for self-reflection.
     </p>
   </section>
@@ -215,7 +227,7 @@
      doesn't read the descriptions as fate. Deliberately quiet visual
      (small italic stone text) so it doesn't compete with the score
      panel above; but it's there BEFORE the reading begins. #}
-  <p class="text-sm text-stone-700 italic leading-relaxed border-l-2 border-stone-300 pl-3">
+  <p class="text-sm text-bhagya-ink-soft italic leading-relaxed border-l-2 border-bhagya-border pl-3">
     {{ t(lang, 'num_reflective_header') }}
   </p>
 
@@ -228,12 +240,12 @@
      §8's "let the user pick a convention" toggle was deliberately not
      shipped; the reason for not shipping it belongs in front of the reader,
      not only in a commit message, so it is the last bullet here. #}
-  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
-    <h2 class="font-display text-lg text-astro-800 mb-2">Conventions used in this reading</h2>
-    <p class="text-sm text-stone-700 leading-relaxed mb-3">
+  <section class="bg-white border border-bhagya-line p-5 sm:p-6">
+    <h2 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Conventions used in this reading</h2>
+    <p class="text-sm text-bhagya-ink-soft leading-relaxed mb-3">
       Numerology has more than one live convention for these calculations, and they give different answers. Here is what this page uses &mdash; the same way it names Chaldean for letters.
     </p>
-    <ul class="space-y-2.5 text-sm text-stone-800 leading-relaxed">
+    <ul class="space-y-2.5 text-sm text-bhagya-ink leading-relaxed">
       <li>&bull; <strong>Life Path</strong> &mdash; every digit of the birth date added together, then reduced (12 May 1934 &rarr; 5+1+2+1+9+3+4 = 25 &rarr; 7). This is the convention in the Vedic source material this site works from. Much modern Western numerology instead reduces the month, day and year separately and adds those three; the two methods part company for roughly one birth date in eight, always over whether the answer stays a master number or settles on its base. Where the final total lands on 11, 22 or 33, it is kept.</li>
       <li>&bull; <strong>Birthday Number</strong> &mdash; reduced all the way to 1&ndash;9. Born on the 11th is a 2, born on the 22nd is a 4; in this tradition 11 and 22 are read as shades of 2 and 4, not as numbers of their own.</li>
       <li>&bull; <strong>Personal Year</strong> &mdash; reduced all the way to 1&ndash;9. The cycle has nine steps, which is why the panel further down counts to nine.</li>
@@ -258,26 +270,26 @@
      fixed, so those numbers cannot be got wrong. The name can, and a
      different spelling or a fuller form changes three cards at once. #}
   {% macro number_card(num, label, meaning, subtitle) %}
-    <article class="bg-white rounded-2xl border-2 border-astro-100 p-5 sm:p-6 flex gap-4">
-      <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-astro-50 border-2 border-astro-300 flex items-center justify-center">
-        <span class="font-display text-3xl sm:text-4xl text-astro-700 tabular-nums">{{ num }}</span>
+    <article class="bg-white border-2 border-bhagya-line p-5 sm:p-6 flex gap-4">
+      <div class="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-bhagya-cream-2 border-2 border-bhagya-border flex items-center justify-center">
+        <span class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor tabular-nums">{{ num }}</span>
       </div>
       <div class="min-w-0 flex-1">
-        <h2 class="font-display text-lg text-astro-800 mb-0.5">{{ label }}</h2>
-        <div class="text-[11px] text-stone-600 mb-2 italic">{{ subtitle }}</div>
-        <p class="text-sm text-stone-700 leading-relaxed">{{ meaning }}</p>
+        <h2 class="font-marcellus text-lg text-bhagya-sindoor mb-0.5">{{ label }}</h2>
+        <div class="text-[11px] text-bhagya-muted mb-2 italic">{{ subtitle }}</div>
+        <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ meaning }}</p>
       </div>
     </article>
   {% endmacro %}
 
-  <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mb-2">From your birth date</div>
+  <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted-2 mb-2">From your birth date</div>
   <section class="grid gap-4">
     {{ number_card(reading.life_path, 'Life Path Number', reading.life_path_meaning, 'Also called Bhagyank in Hindi numerology books (a modern coinage, not classical). Main life theme, from all digits of your birth date added, then reduced — see the conventions note above.') }}
     {{ number_card(reading.birthday, 'Birthday Number', reading.birthday_meaning, 'Also called Mulank in Hindi numerology books (modern coinage). Self-image, said to dominate to about age 40. Reduced to 1-9.') }}
   </section>
 
-  <div class="text-xs font-semibold uppercase tracking-wider text-stone-500 mt-8 mb-1">From your name</div>
-  <p class="text-xs text-stone-600 mb-2 leading-relaxed">
+  <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted-2 mt-8 mb-1">From your name</div>
+  <p class="text-xs text-bhagya-muted mb-2 leading-relaxed">
     All three come from the same letters &mdash; <strong>{{ reading.name }}</strong> &mdash; read three ways: the whole name, its vowels, its consonants. Spelling counts: Sanjay and Sanjai, or a fuller form of the name you gave, would change all three.
   </p>
   <section class="grid gap-4">
@@ -309,10 +321,10 @@
      ever acquired, cite it here then — not before. #}
   {% if reading.lo_shu %}
   {% set _grid = reading.lo_shu %}
-  <section class="bg-white rounded-2xl border border-astro-200 p-5 sm:p-6 shadow-sm">
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Lo Shu Birth-Number Matrix</div>
-    <h2 class="font-display text-2xl text-astro-800 mb-2">Your 3×3 Number Grid</h2>
-    <p class="text-sm text-stone-600 mb-4">
+  <section class="bg-white border border-bhagya-line p-5 sm:p-6">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Lo Shu Birth-Number Matrix</div>
+    <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-2">Your 3×3 Number Grid</h2>
+    <p class="text-sm text-bhagya-muted mb-4">
       Classical 3×3 matrix from your DOB digits ({{ _grid.dob_digits }}). Cells show how many times each digit appears in your birth date. Missing digits point to life lessons; repeated digits mark natural strengths. <span class="italic">This grid belongs to the Chinese Lo Shu tradition, not to Vedic Jyotish.</span>
     </p>
 
@@ -323,12 +335,12 @@
         {% for row_digits in [[4,9,2],[3,5,7],[8,1,6]] %}
         {% for digit in row_digits %}
         {% set count = _grid.counts[digit] %}
-        <div class="relative flex flex-col items-center justify-center rounded-lg border-2 {% if count > 0 %}bg-astro-50 border-astro-400{% else %}bg-stone-50 border-stone-200 border-dashed{% endif %} aspect-square">
-          <div class="font-display text-2xl sm:text-3xl {% if count > 0 %}text-astro-800 font-bold{% else %}text-stone-500{% endif %} leading-none">{{ digit }}</div>
+        <div class="relative flex flex-col items-center justify-center rounded border-2 {% if count > 0 %}bg-bhagya-cream-2 border-bhagya-saffron{% else %}bg-bhagya-cream-2 border-bhagya-line border-dashed{% endif %} aspect-square">
+          <div class="font-marcellus text-2xl sm:text-3xl {% if count > 0 %}text-bhagya-sindoor{% else %}text-bhagya-muted-2{% endif %} leading-none">{{ digit }}</div>
           {% if count > 0 %}
-          <div class="text-[10px] mt-1 px-1.5 py-0.5 rounded-full bg-astro-700 text-white font-semibold tabular-nums">×{{ count }}</div>
+          <div class="text-[10px] mt-1 px-1.5 py-0.5 rounded-full bg-bhagya-night text-bhagya-cream font-semibold tabular-nums">×{{ count }}</div>
           {% else %}
-          <div class="text-[9px] mt-1 text-stone-500 uppercase tracking-wider">Missing</div>
+          <div class="text-[9px] mt-1 text-bhagya-muted-2 uppercase tracking-wider">Missing</div>
           {% endif %}
         </div>
         {% endfor %}
@@ -339,15 +351,15 @@
     {# Present arrows — fully-filled rows / cols / diagonals = named strengths. #}
     {% if _grid.present_arrows %}
     <div class="mb-4">
-      <div class="text-xs uppercase tracking-wider font-semibold text-emerald-700 mb-2">Arrows present ({{ _grid.present_arrows | length }}) — natural strengths</div>
+      <div class="text-xs uppercase tracking-wider font-semibold text-emerald-800 mb-2">Arrows present ({{ _grid.present_arrows | length }}) — natural strengths</div>
       <div class="space-y-2">
         {% for arrow in _grid.present_arrows %}
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded">
           <div class="flex items-center gap-2 mb-1">
             <span class="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">{{ arrow.digits | join('-') }}</span>
             <span class="font-semibold text-sm text-emerald-900">{{ arrow.name }}</span>
           </div>
-          <div class="text-sm text-stone-700 leading-relaxed">{{ arrow.meaning }}</div>
+          <div class="text-sm text-bhagya-ink-soft leading-relaxed">{{ arrow.meaning }}</div>
         </div>
         {% endfor %}
       </div>
@@ -360,12 +372,12 @@
       <div class="text-xs uppercase tracking-wider font-semibold text-amber-800 mb-2">Arrows missing ({{ _grid.missing_arrows | length }}) — life lessons to work on</div>
       <div class="space-y-2">
         {% for arrow in _grid.missing_arrows %}
-        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded">
           <div class="flex items-center gap-2 mb-1">
             <span class="text-[10px] font-mono bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">{{ arrow.digits | join('-') }}</span>
             <span class="font-semibold text-sm text-amber-900">{{ arrow.name }}</span>
           </div>
-          <div class="text-sm text-stone-700 leading-relaxed">{{ arrow.meaning }}</div>
+          <div class="text-sm text-bhagya-ink-soft leading-relaxed">{{ arrow.meaning }}</div>
         </div>
         {% endfor %}
       </div>
@@ -373,31 +385,31 @@
     {% endif %}
 
     {% if not _grid.present_arrows and not _grid.missing_arrows %}
-    <div class="p-3 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-700">
+    <div class="p-3 bg-bhagya-cream-2 border border-bhagya-line rounded text-sm text-bhagya-ink-soft">
       No fully-present or fully-missing arrows in your grid. Your digit distribution is balanced across rows, columns, and diagonals — no single classical 'arrow' dominates, which itself indicates versatility.
     </div>
     {% endif %}
 
     {# Per-digit interpretation — expandable so it doesn't dominate. #}
     <details class="mt-4 group">
-      <summary class="cursor-pointer p-3 bg-astro-50 border border-astro-200 rounded-lg font-semibold text-sm text-astro-800 flex items-center justify-between hover:bg-astro-100 transition-colors">
+      <summary class="cursor-pointer p-3 bg-bhagya-cream-2 border border-bhagya-line rounded font-semibold text-sm text-bhagya-sindoor flex items-center justify-between hover:bg-bhagya-cream-2 transition-colors">
         <span>All 9 digit meanings (present + missing in your grid)</span>
-        <svg aria-hidden="true" class="w-4 h-4 text-astro-600 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        <svg aria-hidden="true" class="w-4 h-4 text-bhagya-sindoor transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
       </summary>
       <div class="mt-3 space-y-2 text-sm">
         {% for m in _grid.digit_meanings %}
         {% set c = _grid.counts[m.digit] %}
-        <div class="p-3 rounded-lg {% if c > 0 %}bg-astro-50 border border-astro-200{% else %}bg-stone-50 border border-stone-200{% endif %}">
+        <div class="p-3 rounded {% if c > 0 %}bg-bhagya-cream-2 border border-bhagya-line{% else %}bg-bhagya-cream-2 border border-bhagya-line{% endif %}">
           <div class="flex items-baseline gap-2 mb-1">
-            <span class="font-display text-lg font-bold {% if c > 0 %}text-astro-800{% else %}text-stone-600{% endif %}">{{ m.digit }}</span>
-            <span class="text-xs text-stone-600">·</span>
-            <span class="text-sm font-semibold text-stone-800">{{ m.theme }}</span>
-            <span class="text-[10px] text-stone-500">({{ m.planet }})</span>
-            <span class="ml-auto text-[10px] px-1.5 py-0.5 rounded-full {% if c > 0 %}bg-astro-700 text-white{% else %}bg-stone-300 text-stone-700{% endif %} font-semibold tabular-nums">
+            <span class="font-marcellus text-lg {% if c > 0 %}text-bhagya-sindoor{% else %}text-bhagya-muted{% endif %}">{{ m.digit }}</span>
+            <span class="text-xs text-bhagya-muted">·</span>
+            <span class="text-sm font-semibold text-bhagya-ink">{{ m.theme }}</span>
+            <span class="text-[10px] text-bhagya-muted-2">({{ m.planet }})</span>
+            <span class="ml-auto text-[10px] px-1.5 py-0.5 rounded-full {% if c > 0 %}bg-bhagya-night text-bhagya-cream{% else %}bg-bhagya-line text-bhagya-ink-soft{% endif %} font-semibold tabular-nums">
               {% if c > 0 %}×{{ c }} present{% else %}missing{% endif %}
             </span>
           </div>
-          <div class="text-xs text-stone-700 leading-relaxed">
+          <div class="text-xs text-bhagya-ink-soft leading-relaxed">
             {% if c > 0 %}{{ m.if_present }}{% else %}{{ m.if_missing }}{% endif %}
           </div>
         </div>
@@ -412,76 +424,76 @@
      compatibility, timing, life challenges). All from Johari §4. #}
   {% if reading.life_path_profile %}
   {% set prof = reading.life_path_profile %}
-  <section class="bg-white rounded-2xl border-2 border-astro-200 shadow-sm p-5 sm:p-7 space-y-5">
+  <section class="bg-white border-2 border-bhagya-line p-5 sm:p-7 space-y-5">
     <div>
-      <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Your Life Path {{ prof.number }} in depth</div>
-      <h2 class="font-display text-2xl text-astro-800 mb-3">Ruled by {{ prof.planet }} · {{ prof.planet_sanskrit }}</h2>
-      <p class="text-stone-800 leading-relaxed">{{ prof.character }}</p>
+      <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Your Life Path {{ prof.number }} in depth</div>
+      <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-3">Ruled by {{ prof.planet }} · {{ prof.planet_sanskrit }}</h2>
+      <p class="text-bhagya-ink leading-relaxed">{{ prof.character }}</p>
     </div>
 
     <div class="grid sm:grid-cols-2 gap-4">
-      <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
-        <h3 class="text-xs font-semibold uppercase text-emerald-700 mb-2">Your strengths</h3>
-        <ul class="space-y-1 text-sm text-stone-700">
+      <div class="p-4 bg-emerald-50 rounded border border-emerald-100">
+        <h3 class="text-xs font-semibold uppercase text-emerald-800 mb-2">Your strengths</h3>
+        <ul class="space-y-1 text-sm text-bhagya-ink-soft">
           {% for s in prof.strengths %}<li class="flex gap-1.5"><span class="text-emerald-600">✓</span><span>{{ s }}</span></li>{% endfor %}
         </ul>
       </div>
-      <div class="p-4 bg-amber-50 rounded-lg border border-amber-100">
+      <div class="p-4 bg-amber-50 rounded border border-amber-100">
         <h3 class="text-xs font-semibold uppercase text-amber-800 mb-2">What to watch out for</h3>
-        <ul class="space-y-1 text-sm text-stone-700">
+        <ul class="space-y-1 text-sm text-bhagya-ink-soft">
           {% for w in prof.weaknesses %}<li class="flex gap-1.5"><span class="text-amber-600">⚠</span><span>{{ w }}</span></li>{% endfor %}
         </ul>
       </div>
     </div>
 
     <div>
-      <h3 class="font-display text-lg text-astro-800 mb-2">Life challenges — the honest read</h3>
-      <p class="text-sm text-stone-700 leading-relaxed">{{ prof.life_challenges }}</p>
+      <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Life challenges — the honest read</h3>
+      <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ prof.life_challenges }}</p>
     </div>
 
     <div>
-      <h3 class="font-display text-lg text-astro-800 mb-2">Health tendencies</h3>
-      <p class="text-sm text-stone-700 leading-relaxed">{{ prof.health }}</p>
-      <p class="text-xs text-stone-600 mt-2 italic">Not medical advice. If a health issue is active, consult a physician first — numerology reads karmic pattern, not disease.</p>
+      <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Health tendencies</h3>
+      <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ prof.health }}</p>
+      <p class="text-xs text-bhagya-muted mt-2 italic">Not medical advice. If a health issue is active, consult a physician first — numerology reads karmic pattern, not disease.</p>
     </div>
 
     <div>
-      <h3 class="font-display text-lg text-astro-800 mb-2">Career direction</h3>
-      <p class="text-sm text-stone-700 leading-relaxed mb-3">{{ prof.career }}</p>
+      <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Career direction</h3>
+      <p class="text-sm text-bhagya-ink-soft leading-relaxed mb-3">{{ prof.career }}</p>
       <div class="flex flex-wrap gap-1.5">
-        {% for f in prof.career_fields %}<span class="inline-block px-2 py-1 text-xs bg-astro-50 text-astro-800 rounded border border-astro-200">{{ f }}</span>{% endfor %}
+        {% for f in prof.career_fields %}<span class="inline-block px-2 py-1 text-xs bg-bhagya-cream-2 text-bhagya-sindoor rounded border border-bhagya-line">{{ f }}</span>{% endfor %}
       </div>
     </div>
 
     <div class="grid sm:grid-cols-2 gap-4">
-      <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
-        <h3 class="text-xs font-semibold uppercase text-emerald-700 mb-1.5">Best partner numbers</h3>
+      <div class="p-4 bg-emerald-50 rounded border border-emerald-100">
+        <h3 class="text-xs font-semibold uppercase text-emerald-800 mb-1.5">Best partner numbers</h3>
         <div class="flex gap-1.5 flex-wrap">
-          {% for p in prof.best_partners %}<span class="w-8 h-8 flex items-center justify-center font-display text-lg font-semibold text-emerald-800 bg-white rounded-full border-2 border-emerald-300">{{ p }}</span>{% endfor %}
+          {% for p in prof.best_partners %}<span class="w-8 h-8 flex items-center justify-center font-marcellus text-lg text-emerald-800 bg-white rounded-full border border-emerald-300">{{ p }}</span>{% endfor %}
         </div>
       </div>
-      <div class="p-4 bg-rose-50 rounded-lg border border-rose-100">
-        <h3 class="text-xs font-semibold uppercase text-rose-700 mb-1.5">Challenging partner numbers</h3>
+      <div class="p-4 bg-rose-50 rounded border border-rose-100">
+        <h3 class="text-xs font-semibold uppercase text-bhagya-sindoor mb-1.5">Challenging partner numbers</h3>
         <div class="flex gap-1.5 flex-wrap">
-          {% for p in prof.worst_partners %}<span class="w-8 h-8 flex items-center justify-center font-display text-lg font-semibold text-rose-800 bg-white rounded-full border-2 border-rose-300">{{ p }}</span>{% endfor %}
+          {% for p in prof.worst_partners %}<span class="w-8 h-8 flex items-center justify-center font-marcellus text-lg text-rose-800 bg-white rounded-full border border-rose-300">{{ p }}</span>{% endfor %}
         </div>
       </div>
     </div>
 
     <div>
-      <h3 class="font-display text-lg text-astro-800 mb-2">Timing patterns</h3>
+      <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Timing patterns</h3>
       <div class="grid sm:grid-cols-2 gap-3 text-sm">
-        <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-600">Peak career period</span><div class="text-stone-800">{{ prof.peak_period }}</div></div>
-        <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-600">Best day of week</span><div class="text-stone-800 font-medium">{{ prof.best_day }}</div></div>
-        <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-100"><span class="text-xs uppercase text-emerald-700">Strong months</span><div class="text-stone-800">{{ prof.strong_months }}</div></div>
-        <div class="p-3 bg-amber-50 rounded-lg border border-amber-100"><span class="text-xs uppercase text-amber-800">Cautious months</span><div class="text-stone-800">{{ prof.weak_months }}</div></div>
-        <div class="p-3 bg-stone-50 rounded-lg sm:col-span-2">
-          <span class="text-xs uppercase text-stone-600">Auspicious dates for launches (any month)</span>
+        <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Peak career period</span><div class="text-bhagya-ink">{{ prof.peak_period }}</div></div>
+        <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Best day of week</span><div class="text-bhagya-ink font-medium">{{ prof.best_day }}</div></div>
+        <div class="p-3 bg-emerald-50 rounded border border-emerald-100"><span class="text-xs uppercase text-emerald-800">Strong months</span><div class="text-bhagya-ink">{{ prof.strong_months }}</div></div>
+        <div class="p-3 bg-amber-50 rounded border border-amber-100"><span class="text-xs uppercase text-amber-800">Cautious months</span><div class="text-bhagya-ink">{{ prof.weak_months }}</div></div>
+        <div class="p-3 bg-bhagya-cream-2 rounded sm:col-span-2">
+          <span class="text-xs uppercase text-bhagya-muted">Auspicious dates for launches (any month)</span>
           <div class="flex gap-1 flex-wrap mt-1">
-            {% for d in prof.good_dates %}<span class="w-7 h-7 flex items-center justify-center text-xs tabular-nums bg-white rounded border border-stone-300">{{ d }}</span>{% endfor %}
-            {% for d in prof.exalted_dates %}<span class="w-7 h-7 flex items-center justify-center text-xs tabular-nums bg-astro-100 text-astro-800 font-semibold rounded border-2 border-astro-500" title="Exalted — most fortunate">{{ d }}★</span>{% endfor %}
+            {% for d in prof.good_dates %}<span class="w-7 h-7 flex items-center justify-center text-xs tabular-nums bg-white rounded border border-bhagya-border">{{ d }}</span>{% endfor %}
+            {% for d in prof.exalted_dates %}<span class="w-7 h-7 flex items-center justify-center text-xs tabular-nums bg-bhagya-cream-2 text-bhagya-sindoor font-semibold rounded border-2 border-bhagya-saffron" title="Exalted — most fortunate">{{ d }}★</span>{% endfor %}
           </div>
-          {% if prof.exalted_dates %}<div class="text-xs text-stone-600 mt-1 italic">★ = exalted date per Johari (most fortunate birth-dates that reduce to your Life Path)</div>{% endif %}
+          {% if prof.exalted_dates %}<div class="text-xs text-bhagya-muted mt-1 italic">★ = exalted date per Johari (most fortunate birth-dates that reduce to your Life Path)</div>{% endif %}
         </div>
       </div>
     </div>
@@ -491,67 +503,67 @@
   {# Vedic remedies for Life Path — Johari's per-number planetary remedies. #}
   {% if reading.life_path_remedy %}
   {% set rem = reading.life_path_remedy %}
-  <section class="bg-white rounded-2xl border-2 border-astro-200 shadow-sm p-5 sm:p-6">
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Vedic Remedies</div>
-    <h2 class="font-display text-xl text-astro-800 mb-1">Your Life Path {{ reading.life_path }} is ruled by {{ rem.planet }} ({{ rem.planet_sanskrit }})</h2>
-    <p class="text-xs text-stone-600 mb-4 italic">Per Johari's Vedic-integrated system. Practise consistency over intensity — remedies work by shifting your relationship with the planet's energy, not by magic.</p>
+  <section class="bg-white border-2 border-bhagya-line p-5 sm:p-6">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Vedic Remedies</div>
+    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-1">Your Life Path {{ reading.life_path }} is ruled by {{ rem.planet }} ({{ rem.planet_sanskrit }})</h2>
+    <p class="text-xs text-bhagya-muted mb-4 italic">Per Johari's Vedic-integrated system. Practise consistency over intensity — remedies work by shifting your relationship with the planet's energy, not by magic.</p>
     <div class="grid sm:grid-cols-2 gap-3 text-sm">
-      <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-600">Best day</span><div class="text-stone-800 font-medium">{{ rem.day }}</div></div>
-      <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-600">Direction to face</span><div class="text-stone-800 font-medium">{{ rem.direction }}</div></div>
-      <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-600">Deity</span><div class="text-stone-800 font-medium">{{ rem.deity }}</div></div>
-      <div class="p-3 bg-stone-50 rounded-lg"><span class="text-xs uppercase text-stone-600">Ayurvedic dosha</span><div class="text-stone-800 font-medium">{{ rem.dosha }}</div></div>
-      <div class="p-3 bg-stone-50 rounded-lg sm:col-span-2"><span class="text-xs uppercase text-stone-600">Favourable colours</span><div class="text-stone-800 font-medium">{{ rem.colors }}</div></div>
-      <div class="p-3 bg-stone-50 rounded-lg sm:col-span-2"><span class="text-xs uppercase text-stone-600">Mantra (108 repetitions daily)</span><div class="text-stone-800 font-medium font-serif">{{ rem.mantra }}</div></div>
-      <div class="p-3 bg-stone-50 rounded-lg sm:col-span-2"><span class="text-xs uppercase text-stone-600">Fasting practice (optional)</span><div class="text-stone-800 text-sm">{{ rem.fasting_day }}</div></div>
+      <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Best day</span><div class="text-bhagya-ink font-medium">{{ rem.day }}</div></div>
+      <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Direction to face</span><div class="text-bhagya-ink font-medium">{{ rem.direction }}</div></div>
+      <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Deity</span><div class="text-bhagya-ink font-medium">{{ rem.deity }}</div></div>
+      <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Ayurvedic dosha</span><div class="text-bhagya-ink font-medium">{{ rem.dosha }}</div></div>
+      <div class="p-3 bg-bhagya-cream-2 rounded sm:col-span-2"><span class="text-xs uppercase text-bhagya-muted">Favourable colours</span><div class="text-bhagya-ink font-medium">{{ rem.colors }}</div></div>
+      <div class="p-3 bg-bhagya-cream-2 rounded sm:col-span-2"><span class="text-xs uppercase text-bhagya-muted">Mantra (108 repetitions daily)</span><div class="text-bhagya-ink font-medium font-serif">{{ rem.mantra }}</div></div>
+      <div class="p-3 bg-bhagya-cream-2 rounded sm:col-span-2"><span class="text-xs uppercase text-bhagya-muted">Fasting practice (optional)</span><div class="text-bhagya-ink text-sm">{{ rem.fasting_day }}</div></div>
     </div>
 
     {# Deeper classical remedies — Rudraksha / Yantra / Charity / Sacred plants / Puja.
        These sit inside a details/summary so the section defaults collapsed
        and doesn't dominate the page. Users who want depth expand it. #}
     <details class="mt-4 group">
-      <summary class="cursor-pointer p-3 bg-astro-50 border border-astro-200 rounded-lg font-semibold text-sm text-astro-800 flex items-center justify-between hover:bg-astro-100 transition-colors">
+      <summary class="cursor-pointer p-3 bg-bhagya-cream-2 border border-bhagya-line rounded font-semibold text-sm text-bhagya-sindoor flex items-center justify-between hover:bg-bhagya-cream-2 transition-colors">
         <span>Deeper Vedic remedies (Rudraksha, Yantra, Charity, Sacred plants, Puja)</span>
-        <svg aria-hidden="true" class="w-4 h-4 text-astro-600 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        <svg aria-hidden="true" class="w-4 h-4 text-bhagya-sindoor transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
       </summary>
       <div class="mt-3 space-y-3 text-sm">
         {% if rem.rudraksha %}
         {# The per-number bead is tradition we cannot cite (#173) — knowledge/numerology.md
            §11's Rudraksha column has no traced source, and this is a remedy people spend
            money on. Say so here, once, rather than in all nine strings. #}
-        <div class="p-3 bg-stone-50 rounded-lg">
-          <div class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-1">Rudraksha</div>
-          <div class="text-stone-800">{{ rem.rudraksha }}</div>
-          <p class="text-xs text-stone-600 mt-2 italic">Which bead suits which number varies between lineages, and we have not been able to trace this mapping to a classical text &mdash; treat it as tradition, not scripture. A costlier or rarer bead is not a more effective one, and the scarcest grades are the most often faked. Never spend more than you'd be happy to lose.</p>
+        <div class="p-3 bg-bhagya-cream-2 rounded">
+          <div class="text-xs uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Rudraksha</div>
+          <div class="text-bhagya-ink">{{ rem.rudraksha }}</div>
+          <p class="text-xs text-bhagya-muted mt-2 italic">Which bead suits which number varies between lineages, and we have not been able to trace this mapping to a classical text &mdash; treat it as tradition, not scripture. A costlier or rarer bead is not a more effective one, and the scarcest grades are the most often faked. Never spend more than you'd be happy to lose.</p>
         </div>
         {% endif %}
         {% if rem.yantra %}
-        <div class="p-3 bg-stone-50 rounded-lg">
-          <div class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-1">Yantra</div>
-          <div class="text-stone-800">{{ rem.yantra }}</div>
+        <div class="p-3 bg-bhagya-cream-2 rounded">
+          <div class="text-xs uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Yantra</div>
+          <div class="text-bhagya-ink">{{ rem.yantra }}</div>
         </div>
         {% endif %}
         {% if rem.charity %}
-        <div class="p-3 bg-stone-50 rounded-lg">
-          <div class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-1">Charity / Dan</div>
-          <div class="text-stone-800">{{ rem.charity }}</div>
+        <div class="p-3 bg-bhagya-cream-2 rounded">
+          <div class="text-xs uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Charity / Dan</div>
+          <div class="text-bhagya-ink">{{ rem.charity }}</div>
         </div>
         {% endif %}
         {% if rem.sacred_plants %}
-        <div class="p-3 bg-stone-50 rounded-lg">
-          <div class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-1">Sacred plants / trees</div>
-          <div class="text-stone-800">{{ rem.sacred_plants }}</div>
+        <div class="p-3 bg-bhagya-cream-2 rounded">
+          <div class="text-xs uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Sacred plants / trees</div>
+          <div class="text-bhagya-ink">{{ rem.sacred_plants }}</div>
         </div>
         {% endif %}
         {% if rem.puja %}
-        <div class="p-3 bg-stone-50 rounded-lg">
-          <div class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-1">Puja practice</div>
-          <div class="text-stone-800">{{ rem.puja }}</div>
+        <div class="p-3 bg-bhagya-cream-2 rounded">
+          <div class="text-xs uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Puja practice</div>
+          <div class="text-bhagya-ink">{{ rem.puja }}</div>
         </div>
         {% endif %}
       </div>
     </details>
 
-    <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900">
+    <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900">
       <div class="font-semibold mb-1">Gemstone: {{ rem.gemstone }}</div>
       <div>{{ rem.gemstone_caveat }}</div>
     </div>
@@ -560,14 +572,14 @@
 
   {# Personal Year forecast — Kumar Ch.1 formula. #}
   {% if reading.personal_year %}
-  <section class="bg-gradient-to-br from-astro-50 to-stone-50 rounded-2xl border border-astro-200 p-5 sm:p-6">
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Personal Year {{ reading.personal_year_target }}</div>
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-5 sm:p-6">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Personal Year {{ reading.personal_year_target }}</div>
     <div class="flex items-baseline gap-3 mb-2">
-      <span class="font-display text-5xl text-astro-800 tabular-nums">{{ reading.personal_year }}</span>
-      <span class="text-sm text-stone-600">of the 9-year cycle</span>
+      <span class="font-marcellus text-5xl text-bhagya-sindoor tabular-nums">{{ reading.personal_year }}</span>
+      <span class="text-sm text-bhagya-muted">of the 9-year cycle</span>
     </div>
-    <p class="text-sm text-stone-700 leading-relaxed">{{ reading.personal_year_theme }}</p>
-    <p class="text-xs text-stone-600 mt-3 italic">Kumar's formula: birth-month digits + birth-day digits + target-year digits, reduced all the way to 1-9. Cycles 1-9 across your life; each year sets the year's theme.</p>
+    <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ reading.personal_year_theme }}</p>
+    <p class="text-xs text-bhagya-muted mt-3 italic">Kumar's formula: birth-month digits + birth-day digits + target-year digits, reduced all the way to 1-9. Cycles 1-9 across your life; each year sets the year's theme.</p>
   </section>
   {% endif %}
 
@@ -626,13 +638,13 @@
           truthful and useful to say in the other case that is not just
           filling space with worry. #}
   {% if reading.name_birth_accord %}
-  <section class="bg-emerald-50/50 border border-emerald-200 rounded-2xl p-5 sm:p-6">
+  <section class="bg-emerald-50/50 border border-emerald-200 p-5 sm:p-6">
     <div class="text-xs font-semibold uppercase tracking-wider text-emerald-800 mb-1">Name and birth agree</div>
-    <h2 class="font-display text-lg text-stone-900 mb-2">Your Name Number matches your Birthday Number</h2>
-    <p class="text-sm text-stone-700 leading-relaxed">
+    <h2 class="font-marcellus text-lg text-bhagya-ink mb-2">Your Name Number matches your Birthday Number</h2>
+    <p class="text-sm text-bhagya-ink-soft leading-relaxed">
       Both come to <strong>{{ reading.birthday }}</strong>{% if reading.name_number != reading.birthday %} &mdash; your name totals {{ reading.name_number }}, which is the same number in a higher degree{% endif %}. In this tradition that agreement is read as confirmation that you have entered the name that actually carries your number, since the birth date is fixed while the name is the part a reading can get wrong.
     </p>
-    <p class="text-xs text-stone-600 mt-2 leading-relaxed">
+    <p class="text-xs text-bhagya-muted mt-2 leading-relaxed">
       It says the name is the right one to read &mdash; not that life runs smoothly. Names that don't match are entirely ordinary; they simply don't offer this particular cross-check.
     </p>
   </section>
@@ -642,37 +654,37 @@
   {% set _compound_reduced = reading.name_compound if reading.name_compound in (11, 22, 33)
        else (_compound_digit_sum if _compound_digit_sum < 10 or _compound_digit_sum in (11, 22, 33)
              else (_compound_digit_sum // 10) + (_compound_digit_sum % 10)) %}
-  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Name Compound Number</div>
-    <h2 class="font-display text-lg text-astro-800 mb-2">Compound {{ reading.name_compound }}</h2>
-    <p class="text-sm text-stone-700 leading-relaxed">{{ reading.name_compound_meaning }}</p>
-    <p class="text-xs text-stone-600 mt-2 italic">{% if _compound_reduced == reading.name_number %}In the compound-number tradition, the unreduced total of a name (10&ndash;52) carries a secondary vibration alongside the reduced Name Number ({{ reading.name_number }}), which this compound reduces to.{% else %}In the compound-number tradition, the unreduced total of a name (10&ndash;52) carries a secondary vibration of its own. That tradition defines its series over the Chaldean letter values, so this compound is read on those values and stands alongside your Name Number ({{ reading.name_number }}).{% endif %} The two are read together, not one instead of the other: in this tradition the single numbers speak to the material side of life and the compounds to the inner side, so your compound colours the reading rather than overruling it &mdash; a difficult compound alongside a fortunate single is read very differently from the same compound alone. The rows read as images rather than adjectives because the symbolism was handed down in pictures. The series stops at 52, one for each week of the year.</p>
+  <section class="bg-white border border-bhagya-line p-5 sm:p-6">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Name Compound Number</div>
+    <h2 class="font-marcellus text-lg text-bhagya-sindoor mb-2">Compound {{ reading.name_compound }}</h2>
+    <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ reading.name_compound_meaning }}</p>
+    <p class="text-xs text-bhagya-muted mt-2 italic">{% if _compound_reduced == reading.name_number %}In the compound-number tradition, the unreduced total of a name (10&ndash;52) carries a secondary vibration alongside the reduced Name Number ({{ reading.name_number }}), which this compound reduces to.{% else %}In the compound-number tradition, the unreduced total of a name (10&ndash;52) carries a secondary vibration of its own. That tradition defines its series over the Chaldean letter values, so this compound is read on those values and stands alongside your Name Number ({{ reading.name_number }}).{% endif %} The two are read together, not one instead of the other: in this tradition the single numbers speak to the material side of life and the compounds to the inner side, so your compound colours the reading rather than overruling it &mdash; a difficult compound alongside a fortunate single is read very differently from the same compound alone. The rows read as images rather than adjectives because the symbolism was handed down in pictures. The series stops at 52, one for each week of the year.</p>
   </section>
   {% endif %}
 
-  <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6">
-    <h3 class="font-display text-lg text-astro-800 mb-3">Compare with your Vedic chart</h3>
-    <p class="text-sm text-stone-700 mb-4 leading-relaxed">
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
+    <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-3">Compare with your Vedic chart</h3>
+    <p class="text-sm text-bhagya-ink-soft mb-4 leading-relaxed">
       Numerology gave you a snapshot. Your Vedic Kundli gives you the depth — personality, career, marriage, life-stage predictions rooted in classical Jyotish. When both agree, the signal is stronger.
     </p>
     <div class="space-y-3">
-      <a href="/" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 mb-0.5">Get your full free Janma Kundli →</div>
-        <div class="text-sm text-stone-600">Complete chart + LLM narrative + 7 life areas covered.</div>
+      <a href="/" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor mb-0.5">Get your full free Janma Kundli →</div>
+        <div class="text-sm text-bhagya-muted">Complete chart + LLM narrative + 7 life areas covered.</div>
       </a>
-      <a href="/numerology/compatibility" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 mb-0.5">Check compatibility with another person →</div>
-        <div class="text-sm text-stone-600">Two-person numerology pairing — marriage, business, or general relationship dynamic.</div>
+      <a href="/numerology/compatibility" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor mb-0.5">Check compatibility with another person →</div>
+        <div class="text-sm text-bhagya-muted">Two-person numerology pairing — marriage, business, or general relationship dynamic.</div>
       </a>
-      <a href="/numerology" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 mb-0.5">Try another name →</div>
-        <div class="text-sm text-stone-600">Family members, partners, colleagues.</div>
+      <a href="/numerology" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor mb-0.5">Try another name →</div>
+        <div class="text-sm text-bhagya-muted">Family members, partners, colleagues.</div>
       </a>
     </div>
   </section>
 
 
-  <div class="text-xs text-stone-600 leading-relaxed">
+  <div class="text-xs text-bhagya-muted leading-relaxed">
     <p><strong>Editorial note:</strong> Numerology is a complementary lens, not a replacement for chart-based Vedic reading. This calculator does not recommend name changes or wearing gems based on numerology alone — both practices can carry unintended consequences. Consult qualified guidance for any major life decision.</p>
   </div>
 

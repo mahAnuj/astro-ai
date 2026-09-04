@@ -368,7 +368,7 @@ _EN: Final[dict[str, str]] = {
     "bhagya_show_all":         "Show all {n} signals →",
     # Numerology-only Bhagya Score sits on /numerology
     "num_bhagya_heading":      "Your Numerology Bhagya Score",
-    "num_bhagya_lede":         "Character-level snapshot from your numbers. Shifts slowly (only the Personal Year updates annually). For daily transit weather, generate your <a href=\"/kundli\" class=\"text-astro-700 hover:underline font-semibold\">Janma Kundli Bhagya Score</a>.",
+    "num_bhagya_lede":         "Character-level snapshot from your numbers. Shifts slowly (only the Personal Year updates annually). For daily transit weather, generate your <a href=\"/kundli\" class=\"text-bhagya-sindoor hover:underline font-semibold\">Janma Kundli Bhagya Score</a>.",
 
     # ─── Ask CTA (_ask_cta.html) ────────────────────────────────────
     "ask_cta_free":            "Free · No signup",
@@ -772,7 +772,7 @@ _HI: Final[dict[str, str]] = {
     "bhagya_why":              "यह अंक क्यों",
     "bhagya_show_all":         "सभी {n} संकेत दिखाएँ →",
     "num_bhagya_heading":      "आपका अंकशास्त्र भाग्य स्कोर",
-    "num_bhagya_lede":         "आपकी संख्याओं से चरित्र-स्तरीय झलक। धीरे बदलती है (केवल व्यक्तिगत वर्ष सालाना बदलता है)। दैनिक गोचर के मौसम के लिए, अपनी <a href=\"/kundli\" class=\"text-astro-700 hover:underline font-semibold\">जन्म कुंडली भाग्य स्कोर</a> बनाएँ।",
+    "num_bhagya_lede":         "आपकी संख्याओं से चरित्र-स्तरीय झलक। धीरे बदलती है (केवल व्यक्तिगत वर्ष सालाना बदलता है)। दैनिक गोचर के मौसम के लिए, अपनी <a href=\"/kundli\" class=\"text-bhagya-sindoor hover:underline font-semibold\">जन्म कुंडली भाग्य स्कोर</a> बनाएँ।",
 
     # ─── Ask CTA ─────────────────────────────────────────────────────
     "ask_cta_free":            "मुफ्त · कोई साइनअप नहीं",
