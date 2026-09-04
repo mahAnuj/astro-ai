@@ -251,7 +251,7 @@
      Noto Sans Devanagari at 400-700 is load-bearing and must survive the
      redesign — see the #189 reasoning above and the static check in
      verify_devanagari_serif.py, which fails if it stops being requested. -->
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Marcellus&family=Crimson+Pro:wght@500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Marcellus&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400&display=swap" rel="stylesheet">
 
 <!-- The Tailwind theme that used to live here as `tailwind.config = {...}`
      now lives in tailwind.config.js and is compiled into the stylesheet
@@ -552,6 +552,29 @@
     animation: breathe 2s ease-in-out infinite;
   }
 
+  /* ─── Snapshot-tile stagger (#251) ───────────────────────────────
+     The four identity tiles on the Kundli result fade up 8px in a 60ms
+     stagger, first paint only. Four `nth-child` delays rather than a
+     JS observer, and no `both` fill on the start frame: the keyframe
+     begins at opacity 0, so if anything ever stops this running the
+     tiles must not be left invisible.
+
+     The reduced-motion gate below zeroes duration AND delay, and forces
+     iteration-count to 1, so a motion-sensitive reader lands on the 100%
+     frame — which is why 100% is the FULLY VISIBLE state. A keyframe
+     ending anywhere else strands them mid-animation for exactly the
+     people who opted out. */
+  @keyframes tileUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+  [data-snapshot-tile] {
+    animation: tileUp 420ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+  [data-snapshot-tile]:nth-child(2) { animation-delay:  60ms; }
+  [data-snapshot-tile]:nth-child(3) { animation-delay: 120ms; }
+  [data-snapshot-tile]:nth-child(4) { animation-delay: 180ms; }
+
   /* ─── Chart-cast signature animation (Issue #78) ─────────────────
      Diamond kundali outline drawn line-by-line via stroke-dashoffset.
      Plays once per loader-show for ~1.5s, then holds. Signature moment
@@ -822,7 +845,7 @@
        loaded. List the Devanagari serif first instead and the browser also
        fetches ITS Latin subset: measured 11,908 B for glyphs we already
        have. */
-    font-family: "Crimson Pro", "Noto Serif Devanagari", ui-serif, Georgia, serif;
+    font-family: Marcellus, "Noto Serif Devanagari", ui-serif, Georgia, serif;
     font-style: normal;
     line-height: 1.85;
     letter-spacing: 0.01em;
@@ -1076,7 +1099,7 @@
               </g>
               <circle cx="50" cy="50" r="7" fill="#ffd764"/>
             </svg>
-            <span class="font-display text-lg font-bold">Shubh Bhagya</span>
+            <span class="font-marcellus text-lg">Shubh Bhagya</span>
           </div>
           <p class="text-sm text-bhagya-cream/[.62] leading-relaxed">
             Free instant Vedic astrology online &mdash; your Janma Kundli,
@@ -1281,7 +1304,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
         </svg>
       </button>
-      <h2 id="google-signin-title" class="font-display text-xl font-bold text-bhagya-ink mb-1.5">Sign in to Shubh Bhagya</h2>
+      <h2 id="google-signin-title" class="font-marcellus text-xl text-bhagya-ink mb-1.5">Sign in to Shubh Bhagya</h2>
       <p class="text-sm text-bhagya-muted mb-3.5 leading-relaxed">Your account, on any device:</p>
       <ul class="space-y-2 mb-4 text-sm text-bhagya-ink-soft">
         <li class="flex items-start gap-2">
@@ -1428,5 +1451,6 @@
     })();
   </script>
   {% endif %}
+  {% include "_tab_bar.html" %}
 </body>
 </html>

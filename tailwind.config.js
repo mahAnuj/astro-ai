@@ -74,52 +74,48 @@ module.exports = {
         sans: ['Manrope', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         // #189: the Devanagari fallback here stays the SANS face, and the
         // serif Devanagari is applied by the [lang="sa"] rule in base.html
-        // instead. Crimson Pro carries no Devanagari glyphs, so this second
-        // entry is what renders any Devanagari inside a `font-display`
-        // element — including the Hindi-toggle headings in
-        // _subscribe_modal.html and rashifal.html, which are `font-bold`.
+        // instead. Marcellus carries no Devanagari glyphs, so this second entry
+        // is what renders any Devanagari inside a `font-display` element.
         //
         // Putting "Noto Serif Devanagari" here (the first shape of the #189
-        // fix) worked visually but forced us to load the serif's 700 weight
-        // for those headings, tripling its cost — 127,280 B variable against
-        // 51,048 B for a static 400. Shlokas are the only Devanagari that
-        // needs a serif and they are never bold, so the narrower hook is
-        // both cheaper and more accurate. Full reasoning at the font <link>
-        // in base.html.
-        display: ['"Crimson Pro"', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
+        // fix) worked visually but forced us to load the serif's 700 weight,
+        // tripling its cost — 127,280 B variable against 51,048 B for a static
+        // 400. Shlokas are the only Devanagari that needs a serif and they are
+        // never bold, so the narrower hook is both cheaper and more accurate.
+        display: ['Marcellus', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
 
         // ─── Redesign stack (#233/#238) ───────────────────────────────
-        // `marcellus` is the migrated screens' display face and is applied
-        // per-screen (#242 uses it on the homepage). `display` above stays
-        // Crimson Pro for the ~40 screens that have not migrated.
+        // `display` and `marcellus` now resolve to the same stack: every screen
+        // has migrated, so Crimson Pro was removed from the font request
+        // entirely (#261). Both keys stay because ~30 templates say
+        // `font-marcellus` and a handful still say `font-display`; collapsing
+        // them is a rename with no payload effect, and not worth a sweep.
         //
-        // WHY `display` IS NOT SWAPPED GLOBALLY THE WAY `sans` WAS.
-        // Marcellus ships ONE weight. Google Fonts serves no bold for it and
-        // never will. There are 15 `font-display font-bold` / `font-semibold`
-        // elements in this tree, and pointing `display` at Marcellus would
-        // synthesise bold at every one of them — the same defect family as the
-        // synthesised oblique #189 exists to remove. Two of those 15
-        // (_subscribe_modal.html:37 and rashifal.html:181) render DEVANAGARI
-        // under the Hindi toggle and are bold on purpose: they resolve to Noto
-        // Sans Devanagari 700, which is real and already loaded. So "just drop
-        // the bold" is not free either — it would de-bold Hindi headings.
-        //
-        // The migrated screens use Marcellus at its natural weight, which is
-        // what the design does. `display` retires when the last screen lands.
+        // NOTHING IN THIS TREE MAY PUT font-bold ON EITHER. Marcellus ships one
+        // weight and Google Fonts will never serve another, so a bold is
+        // SYNTHESISED — the same defect family as the synthesised oblique #189
+        // exists to remove. The seven elements that used to carry one (two
+        // wordmarks, four modal headings, the sign-in title) were unbolded when
+        // Crimson Pro left; two of those four modal headings render Devanagari
+        // under the Hindi toggle and now resolve to Noto Sans Devanagari 400,
+        // which is real, loaded, and regular.
         //
         // Marcellus and Manrope ship NO Devanagari subset, so both keep
         // "Noto Sans Devanagari" as their second entry. That is not belt-and-
         // braces — the handoff proposed Marcellus + Manrope + Tiro Devanagari
-        // Sanskrit and nothing else, which would have left every bold Hindi
-        // heading across 43 templates falling back to a system font at
+        // Sanskrit and nothing else, which would have left every Hindi heading
+        // in the tree falling back to a system font at
         // html[lang="hi"]{font-size:108%}. That is #189 returning, and
-        // scripts/verify_devanagari_serif.py now fails statically if the sans
-        // stops being requested at 400-700 (#235).
+        // scripts/verify_devanagari_serif.py fails statically if the sans stops
+        // being requested at 400-700 (#235).
         //
-        // Tiro Devanagari Sanskrit is deliberately absent here: it belongs to
-        // the [lang="sa"] rule in base.html, where Noto Serif Devanagari sits
-        // today, not to a utility class. Same reasoning as the #189 note above
-        // — a serif Devanagari in `display` would force loading its bold.
+        // TIRO DEVANAGARI SANSKRIT IS NOT USED, AND THE REASON IS MEASURED.
+        // The handoff specifies it for all Devanagari. Google Fonts serves its
+        // devanagari subset at 183,900 B against Noto Serif Devanagari's
+        // 50,952 B — 3.6x, +132,948 B — which takes the page from ~164 KB to
+        // ~297 KB against a 285,000 B budget. It does not fit, and the correct
+        // output when the budget does not fit is a stated finding rather than a
+        // quiet overspend. Measured 2026-09-03 from the css2 URLs directly.
         marcellus: ['Marcellus', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
         manrope: ['Manrope', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
