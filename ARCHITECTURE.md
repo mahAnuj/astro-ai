@@ -36,7 +36,7 @@ trust the number.
 | `/learn` articles | 76 | `ls src/astro_ai/templates/learn/*.html \| wc -l` |
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
 | knowledge files | 11 files, 8,021 lines | `cat src/astro_ai/knowledge/*.md \| wc -l` |
-| verification gates | 16 | `ls scripts/verify_*.py \| wc -l` |
+| verification gates | 18 | `ls scripts/verify_*.py \| wc -l` |
 | behaviour suite | 100 tests | `uv run pytest -p no:warnings` |
 
 `routes/` holds 26 files; the three that declare no router are `__init__.py` and the leaf
@@ -445,7 +445,7 @@ that. Also verify your own tooling: a `pdftotext` invocation against a wrong pat
 
 ### Verification gates
 
-Sixteen `scripts/verify_*.py` gates — count it with `ls scripts/verify_*.py` rather
+Eighteen `scripts/verify_*.py` gates — count it with `ls scripts/verify_*.py` rather
 than trusting this number, which read "Twelve" while thirteen sat on disk and then
 "Fourteen" while sixteen did. Twice now the warning has outlived the number it warns
 about, inside its own sentence. The discipline that makes them worth anything:
@@ -488,6 +488,10 @@ Dated, with the evidence. **Check here before proposing a change.**
 | date | decision | why, measured |
 |---|---|---|
 | 2026-09-03 | The Latin BODY face swapped globally to Manrope, while `display` stays Crimson Pro and the redesign's Marcellus is applied PER-SCREEN | #242. The homepage could not render as designed without Marcellus loaded, and the font budget (`MAX_FONT_BYTES = 285,000` in `scripts/verify_devanagari_serif.py`) had ~16 KB of headroom against a measured 268,820 B — adding two families on top of Inter and Crimson Pro would have cost ~39 KB and blown it. Measured from Google Fonts on 2026-09-03, latin subset, the exact URLs `base.html` requests: **Inter (variable, wght@400;500;600;700) 48,256 B** out; **Manrope (same axis) 24,836 B** and **Marcellus (static — it has no weight axis) 14,552 B** in. Net **−8,868 B**, so the total falls rather than rises. `display` was deliberately NOT swapped in the same motion: Marcellus ships one weight, and 15 `font-display font-bold`/`font-semibold` elements in this tree would have got a SYNTHESISED bold — the defect family #189 exists to remove. Two of those 15 (`_subscribe_modal.html:37`, `rashifal.html:181`) render Devanagari under the Hindi toggle and resolve to Noto Sans Devanagari 700, which is real and already loaded, so "just drop the bold" would de-bold Hindi headings. Crimson Pro retires with the last un-migrated screen, returning a further ~48 KB. Both new stacks keep `"Noto Sans Devanagari"` as their second entry (#189/#235) |
+| 2026-09-03 | **Crimson Pro retired; Marcellus + Manrope are the whole Latin stack** | #261. Measured from the live css2 URL the page requests: latin + devanagari now totals **248,836 B** against `MAX_FONT_BYTES = 285,000`, down from **268,820 B** before the epic — a smaller page having ADDED a family and removed two (Inter in #242, Crimson Pro here). Seven `font-display font-bold` elements moved to Marcellus unbolded; Marcellus ships one weight and Google Fonts will never serve another, so any bold on it is synthesised (#189's defect family). Two of those seven render Devanagari under the Hindi toggle and now resolve to Noto Sans Devanagari 400 — real, loaded, regular |
+| 2026-09-03 | **Tiro Devanagari Sanskrit rejected on payload** | #261. The handoff specifies it for all Devanagari. Its devanagari subset is **183,900 B** against Noto Serif Devanagari's **50,952 B** — 3.6x, **+132,948 B** — taking the page to ~297 KB against a 285,000 B budget. Does not fit. Recorded as a finding rather than a quiet overspend, per the token-budget rule in CLAUDE.md. Re-measure before re-proposing; do not re-derive from memory |
+| 2026-09-03 | **The mobile tab bar lives at the END of `<body>`, not in `_nav.html`** | #261. In `_nav.html` — included at the top of every page — its five links came early in the DOM while painting at the bottom of the viewport, producing one backward focus transition per language on mobile: the WCAG 2.4.3 violation #195 exists to prevent, measured by the keyboard sweep. Moved last in the document; the active tab derives from `request.url.path` because `active_page` is block-scoped and invisible there. Costs 75px of viewport, so the homepage CTA's real clearance at 375x667 is **86px** (129px without it) — `measure_cta_fold.py` reports NO change and is right to, because it measures document position, which a fixed element never moves |
+| 2026-09-03 | **Semantic status colours are not brand colours, and sit at the -800 stop** | #243/#245. good/steady/testing/deep and avoid/act are scales, and the 14-colour role palette has no green or amber. They stay on emerald/amber/rose — but at -800, because -700 is 4.48:1 (emerald) and 4.10:1 (amber) on cream-2 and fails AA at the sizes these render at. The handoff's own "Rahu Kaal in sindoor on a night block" is 2.53:1 — a fourth contrast failure in that document, after the three #236 corrected |
 | — | GCS bucket stays in the US | free tier is US-only; relocation considered and rejected |
 | — | Whole Sign houses | classical Parashari standard |
 | — | No Pythagorean numerology mode | table appears in none of the books in `data/` |
@@ -545,7 +549,7 @@ Dated, with the evidence. **Check here before proposing a change.**
 - **Coverage is narrow.** A behaviour suite exists (`tests/`, run via `uv run pytest` or
   `scripts/verify_behaviour.py`) but covers only request-path regressions — the cache
   lifecycle, degraded pages and blast reporting where eleven defects landed across four
-  QA rounds. Everything else is verified by execution plus the sixteen gates.
+  QA rounds. Everything else is verified by execution plus the eighteen gates.
 - **The suite is hermetic as of #224 — it needs no `.env` and no network.** It previously
   needed both, and a bare `uv run pytest` on a clean checkout reported **14 failures that
   were not defects**: nine tests reached Nominatim, and five hit the `OPENAI_API_KEY` gate.

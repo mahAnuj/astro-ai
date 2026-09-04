@@ -400,6 +400,41 @@ Requires `.env` (copy `.env.example`). `OPENAI_API_KEY` is the only hard require
 `ASTRO_AI_API_BASE` repoints at any OpenAI-compatible provider. See README.md for the
 full environment-variable table.
 
+### The palette: `bhagya`, not `astro`
+
+The redesign (#233) landed across every screen. `tailwind.config.js` holds the
+14-colour role palette under `theme.extend.colors.bhagya`, and `base.html`'s
+design charter — the REDESIGN CANONICALS block — is the written source of truth
+for which colour is allowed on which surface, with the measured ratio beside
+each. `scripts/verify_contrast.py` Gate 2 checks those stated numbers, so the
+charter cannot drift from reality the way the old one did.
+
+Five rules bite hardest, and all five were paid for:
+
+- **Gold and saffron never touch a light surface.** 2.20:1 and 2.32:1 on cream.
+  They are fills and ornaments there, never text.
+- **A translucent text utility must be declared** in `DECLARED_PAIRS`. Gate 3
+  composites `/[.NN]` onto its surface before measuring and Gate 4 fails any the
+  gate has not been told about — un-composited, `cream/[.45]` on night reports
+  17.49:1 for a colour a reader experiences at 4.29:1.
+- **Never `font-bold` on Marcellus.** It ships one weight; the bold is
+  synthesised. `font-display` and `font-marcellus` both resolve to it now.
+- **Hairline grids put padding on the CELLS**, never on the grid element.
+- **Semantic status colours are not brand colours** — emerald/amber/rose stay,
+  at the -800 stop, because -700 fails AA on cream-2.
+
+The `astro` ramp is still defined and still safelisted: `chart.py`,
+`numerology.py`, `muhurat.py` and three templates build class names at RENDER
+time from Python-side dicts, and the safelist is what keeps those panels from
+shipping colourless. Nothing in the templates references the ramp directly any
+more.
+
+**Tailwind classes exist outside templates**, and a class-level audit misses all
+of them: `i18n.py` translation strings, `routes/deps.py:_linkify_learn` (which
+rewrites every `/learn/` mention in LLM prose site-wide), `routes/rashifal.py`'s
+htmx fragments, and hardcoded `font-family` / `fill` / `stroke` values in SVG
+attributes. Grep for those too.
+
 ### If you touch a Tailwind class, you must rebuild the CSS
 
 ```bash
