@@ -30,7 +30,7 @@
 
   <!-- HEADER ------------------------------------------------------ -->
   <header>
-    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">{{ t(lang, 'matching_results') }}</h1>
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-2">{{ t(lang, 'matching_results') }}</h1>
     <p class="text-sm text-bhagya-muted mb-3">
       {{ groom.name or t(lang, 'matching_groom') }}
       <span class="text-bhagya-muted-2">&times;</span>
@@ -231,7 +231,7 @@
        both languages. Do not reintroduce that guard anywhere — a missing key
        is caught by the i18n completeness check, not by a fallback that cannot
        fire. #}
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-4">{{ t(lang, 'matching_charts_heading') }}</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">{{ t(lang, 'matching_charts_heading') }}</h2>
     <div class="grid sm:grid-cols-2 gap-5">
       <div>
         <div class="flex items-baseline justify-between mb-2">
@@ -255,7 +255,7 @@
   {% if sections %}
   {% for title, body in sections %}
   <article class="bg-white border border-bhagya-line p-6 sm:p-8">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-3">{{ title }}</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-3">{{ title }}</h2>
     <p class="leading-relaxed text-bhagya-ink whitespace-pre-wrap text-base">{{ body | linkify_learn }}</p>
   </article>
   {% endfor %}
@@ -263,7 +263,7 @@
 
   <!-- KOOTA BREAKDOWN TABLE --------------------------------------- -->
   <section class="bg-white border border-bhagya-line p-5 sm:p-6">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-4">{{ t(lang, 'matching_breakdown') }}</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">{{ t(lang, 'matching_breakdown') }}</h2>
     <table class="w-full text-sm">
       <thead>
         <tr class="border-b border-bhagya-line text-xs font-semibold uppercase tracking-wider text-bhagya-muted">

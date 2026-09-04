@@ -11,7 +11,7 @@
 
   <!-- HEADER ------------------------------------------------------ -->
   <header>
-    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">{{ t(lang, 'dasha_title') }}</h1>
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-2">{{ t(lang, 'dasha_title') }}</h1>
     <p class="text-sm text-bhagya-muted">{{ t(lang, 'dasha_subtitle') }}</p>
   </header>
 
@@ -59,7 +59,7 @@
   <!-- UPCOMING ANTARDASHAS IN CURRENT MAHA ------------------------ -->
   {% if dasha.upcoming_antardashas %}
   <section class="bg-white border border-bhagya-line p-5 sm:p-6">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-3">{{ t(lang, 'dasha_upcoming') }}</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-3">{{ t(lang, 'dasha_upcoming') }}</h2>
     <ul class="divide-y divide-bhagya-line-2">
       {% for p in dasha.upcoming_antardashas %}
       <li class="py-3 grid grid-cols-[1fr_auto] items-center gap-4">

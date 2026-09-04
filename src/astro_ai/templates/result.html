@@ -186,7 +186,7 @@
   <section class="bg-bhagya-cream-2 border border-bhagya-line p-5 sm:p-7">
     {# Title at top — hero chart deserves a proper heading, not a tiny caption. #}
     <div class="text-center mb-4 sm:mb-5">
-      <h2 class="font-marcellus text-2xl sm:text-3xl text-bhagya-sindoor">{{ t(lang, 'lagna_kundali') }}</h2>
+      <h2 class="font-marcellus text-2xl sm:text-3xl text-bhagya-ink">{{ t(lang, 'lagna_kundali') }}</h2>
       <p class="text-sm text-bhagya-muted mt-1">{{ chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</p>
     </div>
     {# Chart style toggle (SEO audit #130) — North Indian is default (matches
@@ -480,7 +480,7 @@
   <section class="bg-white border border-bhagya-line overflow-hidden">
     <div class="bg-bhagya-cream-2 px-6 py-4 border-b border-bhagya-line flex items-baseline justify-between gap-3">
       <div>
-        <h2 class="font-marcellus text-xl text-bhagya-sindoor">{{ t(lang, 'dasha_card_title') }}</h2>
+        <h2 class="font-marcellus text-xl text-bhagya-ink">{{ t(lang, 'dasha_card_title') }}</h2>
         <p class="text-sm text-bhagya-muted mt-0.5">{{ t(lang, 'dasha_card_subtitle') }}</p>
       </div>
       <a href="/dasha" class="text-sm text-bhagya-sindoor hover:text-bhagya-sindoor font-semibold whitespace-nowrap no-print">
@@ -784,7 +784,7 @@
   {% set _icon = _section_icons.get(_first_word, '⋄') %}
   <article data-reveal class="bg-white border border-bhagya-line p-6 sm:p-8"
            style="border-left: 3px solid #E4913C;">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-3 flex items-center gap-2.5">
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-3 flex items-center gap-2.5">
       <span aria-hidden="true" class="text-2xl leading-none opacity-70">{{ _icon }}</span>
       <span>{{ title }}</span>
     </h2>
@@ -796,7 +796,7 @@
   {# SNAPSHOT recipient CTA — replaces the return-triggers block for
      shared-view mode. Only real action: get their own reading. #}
   <section data-reveal class="bg-bhagya-cream-2 border border-bhagya-line p-6 sm:p-8 no-print text-center">
-    <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-2">Want your own free reading?</h2>
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-2">Want your own free reading?</h2>
     <p class="text-sm text-bhagya-ink-soft max-w-xl mx-auto mb-5 leading-relaxed">
       Enter your birth details and get a personalised Vedic Kundli reading like this one in seconds. Free, honest, chart-based — no upsell, no login required.
     </p>
@@ -821,7 +821,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
       </svg>
       <div>
-        <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-1">Come back tomorrow</h2>
+        <h2 class="font-marcellus text-xl text-bhagya-ink mb-1">Come back tomorrow</h2>
         <p class="text-sm text-bhagya-ink-soft leading-relaxed">
           {% if _rt_user %}
             Your reading is saved to your account. Add a bookmark for one-tap access.
@@ -1067,35 +1067,35 @@
 
   <!-- CONTINUE YOUR CHART ----------------------------------------- -->
   <section data-reveal class="bg-bhagya-cream-2 border border-bhagya-line p-6 sm:p-8 no-print">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-2">{{ t(lang, 'continue_chart') }}</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-2">{{ t(lang, 'continue_chart') }}</h2>
     <p class="text-bhagya-muted text-sm mb-5">{{ t(lang, 'continue_chart_desc') }}</p>
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
       <a href="/today" class="group bg-white p-4 border border-bhagya-line hover:border-bhagya-saffron hover:transition-all relative">
         <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#9728;</div>
-        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-sindoor">{{ t(lang, 'daily_horoscope') }} &rarr;</h3>
+        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-ink">{{ t(lang, 'daily_horoscope') }} &rarr;</h3>
         <p class="text-sm text-bhagya-muted leading-relaxed">{{ t(lang, 'daily_horoscope_desc') }}</p>
       </a>
 
       <a href="/ask" class="group bg-white p-4 border border-bhagya-line hover:border-bhagya-saffron hover:transition-all relative">
         <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#128172;</div>
-        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-sindoor">{% if lang == 'hi' %}प्रश्न पूछें{% else %}Ask a question{% endif %} &rarr;</h3>
+        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-ink">{% if lang == 'hi' %}प्रश्न पूछें{% else %}Ask a question{% endif %} &rarr;</h3>
         <p class="text-sm text-bhagya-muted leading-relaxed">{% if lang == 'hi' %}अपनी कुंडली पर आधारित कोई भी प्रश्न पूछें{% else %}Free-form Q&amp;A grounded in your chart{% endif %}</p>
       </a>
 
       <a href="/matching" class="group bg-white p-4 border border-bhagya-line hover:border-bhagya-saffron hover:transition-all relative">
         <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#10084;</div>
-        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-sindoor">{{ t(lang, 'kundali_matching') }} &rarr;</h3>
+        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-ink">{{ t(lang, 'kundali_matching') }} &rarr;</h3>
         <p class="text-sm text-bhagya-muted leading-relaxed">{{ t(lang, 'kundali_matching_desc') }}</p>
       </a>
 
       <a href="/dasha" class="group bg-white p-4 border border-bhagya-line hover:border-bhagya-saffron hover:transition-all relative">
         <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#9211;</div>
-        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-sindoor">{{ t(lang, 'dasha_periods') }} &rarr;</h3>
+        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-ink">{{ t(lang, 'dasha_periods') }} &rarr;</h3>
         <p class="text-sm text-bhagya-muted leading-relaxed">{{ t(lang, 'dasha_periods_desc') }}</p>
       </a>
     </div>

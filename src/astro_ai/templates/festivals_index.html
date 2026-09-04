@@ -38,7 +38,7 @@
 
   <header class="text-center space-y-2">
     <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor">Festival Calendar</div>
-    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-sindoor">
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink">
       Upcoming Hindu Festivals
     </h1>
     {# Claim only what the registry actually holds: a fixed, hand-verified set
@@ -98,7 +98,7 @@
   {% if festivals and calendar_months %}
   <section class="space-y-4" aria-labelledby="calendar-heading">
     <div class="space-y-1">
-      <h2 id="calendar-heading" class="font-marcellus text-2xl text-bhagya-sindoor">Calendar view</h2>
+      <h2 id="calendar-heading" class="font-marcellus text-2xl text-bhagya-ink">Calendar view</h2>
       {# The sentence describing bold-solid vs light-dotted days went with #132:
          the legend directly below names all four marks, and the distinction is
          self-evident the moment a grid is on screen. What stayed is the one
@@ -133,7 +133,7 @@
                aria-labelledby="cal-{{ m.year }}-{{ '%02d' % m.month }}">
 
         <h3 id="cal-{{ m.year }}-{{ '%02d' % m.month }}"
-            class="font-marcellus text-lg text-bhagya-sindoor text-center mb-2">{{ m.label }}</h3>
+            class="font-marcellus text-lg text-bhagya-ink text-center mb-2">{{ m.label }}</h3>
 
         {# Purely decorative: every day cell already carries its own full
            date in the aria-label, so a screen reader gains nothing from
@@ -261,7 +261,7 @@
      empty festival list. #}
   {% if n %}
   <section class="space-y-3">
-    <h2 class="font-marcellus text-2xl text-bhagya-sindoor">The next six months</h2>
+    <h2 class="font-marcellus text-2xl text-bhagya-ink">The next six months</h2>
 
     {# The registry has Hindi names and notes but no Hindi significance or
        observance copy, so those two sections stay English on ?lang=hi. Stated,
@@ -344,7 +344,7 @@
            the byte budget #144 fought for. Same affordance, ~1/6th the weight. #}
         <span class="mt-1.5 shrink-0 select-none text-xs text-bhagya-border transition-transform group-open:rotate-90" aria-hidden="true">&#9656;</span>
         <hgroup class="min-w-0 flex-1">
-          <h3 class="font-marcellus text-xl text-bhagya-sindoor">
+          <h3 class="font-marcellus text-xl text-bhagya-ink">
             {{ f.name_en }}{% if f.name_hi %}
             <span lang="hi" class="font-normal text-base text-bhagya-muted">{{ f.name_hi }}</span>{% endif %}
           </h3>
@@ -420,7 +420,7 @@
      observances below are still there (QA BUG-3). #}
   <section>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
-      <h2 class="font-marcellus text-2xl text-bhagya-sindoor">No festivals in this window</h2>
+      <h2 class="font-marcellus text-2xl text-bhagya-ink">No festivals in this window</h2>
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         We don't have festival dates listed for the next six months yet. Our verified
         calendar currently runs through {{ verified_through }}. In the meantime, check
@@ -443,7 +443,7 @@
   {% if rec.any %}
   <section class="space-y-4" aria-labelledby="recurring-heading">
     <div class="space-y-1">
-      <h2 id="recurring-heading" class="font-marcellus text-2xl text-bhagya-sindoor">Purnima, Amavasya and Ekadashi</h2>
+      <h2 id="recurring-heading" class="font-marcellus text-2xl text-bhagya-ink">Purnima, Amavasya and Ekadashi</h2>
       <p class="text-sm text-bhagya-muted">
         The recurring lunar observances in the same window. They fall every fortnight, so they
         are listed rather than written up one by one.
@@ -490,7 +490,7 @@
 
   {# CROSS-LINKS #}
   <section>
-    <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-4">Related</h2>
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-4">Related</h2>
     <div class="grid sm:grid-cols-2 gap-3">
       <a href="/panchang" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
         <div class="font-semibold text-bhagya-sindoor text-sm">Today's Panchang →</div>

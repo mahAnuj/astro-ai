@@ -12,7 +12,7 @@
 <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
   <header>
-    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">{{ t(lang, 'matching_title') }}</h1>
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-2">{{ t(lang, 'matching_title') }}</h1>
     <p class="text-sm text-bhagya-muted">{{ t(lang, 'matching_subtitle') }}</p>
   </header>
 
@@ -22,7 +22,7 @@
   {% macro person_form(prefix, heading_key, placeholder_place, collection) %}
   {% set section = 'section-groom' if prefix == 'g_' else 'section-bride' %}
   <div class="space-y-4">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor">{{ t(lang, heading_key) }}</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink">{{ t(lang, heading_key) }}</h2>
 
     {% if collection and collection.charts %}
     <label class="block">
@@ -161,7 +161,7 @@
      Typography plugin is not loaded, so we don't use `prose`). #}
   <section class="mt-10 space-y-8">
     <div>
-      <h2 class="font-marcellus text-2xl text-bhagya-sindoor mb-3">What is Ashtakoot Guna Milan?</h2>
+      <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">What is Ashtakoot Guna Milan?</h2>
       <div class="bg-white border border-bhagya-line p-5 sm:p-6">
         <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           <strong>Ashtakoot Guna Milan</strong> ("eight-fold merit matching") is the classical Vedic system for scoring the compatibility of two natal charts for marriage. Total possible: <strong>36 points</strong>, distributed across eight <em>kootas</em> (compatibility axes). A minimum threshold of <strong>18/36</strong> is the classical "acceptable" line; 24+/36 is considered strong; 30+/36 is rare and excellent. But the raw score alone is only half the picture &mdash; Bhakoot dosha, Nadi dosha, and Manglik status can override or be cancelled by other placements, and a good astrologer weighs the felt-life implications of each koota separately rather than just checking the total.
@@ -170,7 +170,7 @@
     </div>
 
     <div>
-      <h3 class="font-marcellus text-xl text-bhagya-sindoor mb-3">The 8 kootas</h3>
+      <h3 class="font-marcellus text-xl text-bhagya-ink mb-3">The 8 kootas</h3>
       <div class="bg-white border border-bhagya-line p-5 sm:p-6">
         <p class="mb-4 text-sm text-bhagya-ink-soft leading-relaxed bg-amber-50/60 border border-amber-200 rounded px-4 py-3">
           <strong>Which chart goes in which side matters.</strong> Two of the eight kootas
@@ -195,7 +195,7 @@
     </div>
 
     <div>
-      <h3 class="font-marcellus text-xl text-bhagya-sindoor mb-3">Manglik matching &mdash; beyond the checkbox</h3>
+      <h3 class="font-marcellus text-xl text-bhagya-ink mb-3">Manglik matching &mdash; beyond the checkbox</h3>
       <div class="bg-white border border-bhagya-line p-5 sm:p-6">
         <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           Manglik (Mangal) Dosh is the classical concern about Mars-placement causing marital friction. Bhagya's matching applies the FULL classical evaluation, not just "Mars in 1st/4th/7th/8th/12th house from Lagna". We also check Mars from the Moon and Mars from Venus (the three-axis rule), and apply every classical cancellation &mdash; bride+groom both Manglik cancels the dosha; Mars in own or exalted sign cancels; Jupiter aspecting the 7th house cancels; Mars in Libra (fall) is not counted; and more. Read the full <a href="/learn/manglik-dosh/" class="text-bhagya-sindoor hover:underline">Manglik Dosh explainer</a> for the classical logic.
@@ -204,7 +204,7 @@
     </div>
 
     <div>
-      <h3 class="font-marcellus text-xl text-bhagya-sindoor mb-3">Beyond Ashtakoot &mdash; what matching does NOT check</h3>
+      <h3 class="font-marcellus text-xl text-bhagya-ink mb-3">Beyond Ashtakoot &mdash; what matching does NOT check</h3>
       <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
         <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           A good astrologer doesn't stop at Guna Milan. The full classical evaluation also considers:
@@ -223,7 +223,7 @@
     </div>
 
     <div>
-      <h3 class="font-marcellus text-xl text-bhagya-sindoor mb-3">Related reading</h3>
+      <h3 class="font-marcellus text-xl text-bhagya-ink mb-3">Related reading</h3>
       <div class="grid sm:grid-cols-2 gap-3">
       <a href="/learn/kundali-matching-ashtakoot-guna-milan/" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
         <div class="font-semibold text-bhagya-sindoor text-sm">Full Ashtakoot Guna Milan article</div>

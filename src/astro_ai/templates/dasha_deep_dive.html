@@ -15,7 +15,7 @@
       <span aria-hidden="true">&larr;</span> back to Dasha timeline
     </a>
     <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mt-3 mb-1">Active Period</div>
-    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor leading-tight">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink leading-tight">
       {{ dasha.mahadasha.lord }} Mahadasha &middot; {{ dasha.antardasha.lord }} Antardasha
     </h1>
     {% if details.name %}
@@ -48,7 +48,7 @@
   <div class="space-y-6">
     {% for title, body in sections %}
     <article class="bg-white border border-bhagya-line p-6 sm:p-8">
-      <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-3">{{ title }}</h2>
+      <h2 class="font-marcellus text-xl text-bhagya-ink mb-3">{{ title }}</h2>
       <div class="text-bhagya-ink-soft leading-relaxed whitespace-pre-wrap text-[15px]">{{ body | linkify_learn }}</div>
     </article>
     {% endfor %}
@@ -58,7 +58,7 @@
   <!-- WHAT'S NEXT — peek at the upcoming antardashas as a teaser -->
   {% if dasha.upcoming_antardashas %}
   <section class="bg-white border border-bhagya-line p-5 sm:p-6">
-    <h2 class="font-marcellus text-lg text-bhagya-sindoor mb-3">After this Antardasha</h2>
+    <h2 class="font-marcellus text-lg text-bhagya-ink mb-3">After this Antardasha</h2>
     <ul class="space-y-2 text-sm">
       {% for p in dasha.upcoming_antardashas[:3] %}
       <li class="flex justify-between items-baseline border-b border-bhagya-line-2 pb-2 last:border-b-0">

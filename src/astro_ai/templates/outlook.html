@@ -16,7 +16,7 @@
     <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">
       {{ t(lang, 'window_label') }} &middot; {{ window_label }} &middot; {{ t(lang, 'computed_today') }} <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </div>
-    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-sindoor mb-2">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-2">
       {% if details.name %}{{ t(lang, title_key, name=details.name) }}{% else %}{{ t(lang, title_anon_key) }}{% endif %}
     </h1>
     <p class="text-sm text-bhagya-muted">{{ t(lang, subtitle_key) }}</p>
@@ -31,7 +31,7 @@
   {% if varshaphala %}
   <section class="bg-white border border-bhagya-line overflow-hidden">
     <div class="bg-bhagya-cream-2 px-6 py-4 border-b border-bhagya-line-2">
-      <h2 class="font-marcellus text-xl text-bhagya-sindoor">{{ t(lang, 'varshaphala_title') | safe }}</h2>
+      <h2 class="font-marcellus text-xl text-bhagya-ink">{{ t(lang, 'varshaphala_title') | safe }}</h2>
       <p class="text-sm text-bhagya-muted mt-0.5">{{ t(lang, 'varshaphala_subtitle') }}</p>
     </div>
     <div class="px-6 py-5 grid sm:grid-cols-2 gap-5">
@@ -69,7 +69,7 @@
     <details class="group">
       <summary class="cursor-pointer bg-bhagya-cream-2 px-6 py-4 border-b border-bhagya-line-2 group-open:border-b group-[:not([open])]:border-b-0 hover:bg-bhagya-cream-2/80 transition-colors flex items-baseline justify-between gap-3">
         <div>
-          <h2 class="font-marcellus text-xl text-bhagya-sindoor">
+          <h2 class="font-marcellus text-xl text-bhagya-ink">
             {{ t(lang, 'events_title') }}
             <span class="text-sm text-bhagya-muted font-sans font-normal ml-1">({{ events | length }})</span>
           </h2>
@@ -112,7 +112,7 @@
   {% if reading_sections %}
   {% for title, body in reading_sections %}
   <article class="bg-white border border-bhagya-line p-6 sm:p-8">
-    <h2 class="font-marcellus text-xl text-bhagya-sindoor mb-3">{{ title }}</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-3">{{ title }}</h2>
     <p class="leading-relaxed text-bhagya-ink whitespace-pre-wrap text-base">{{ body }}</p>
   </article>
   {% endfor %}

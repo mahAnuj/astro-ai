@@ -16,7 +16,7 @@
 <main class="{% if candidates %}max-w-5xl{% else %}max-w-4xl{% endif %} mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
   <header class="text-center">
-    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-sindoor mb-3">Muhurat Finder</h1>
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink mb-3">Muhurat Finder</h1>
     <p class="text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
       Personalised auspicious dates using classical Panchang rules — tithi, nakshatra, weekday, Panchak, Chaturmas, and karaka-planet combustion. 5 event types. Abujha Muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya) auto-detected. Free, no sign-up.
     </p>
@@ -177,7 +177,7 @@
   </style>
   <section class="bg-white border border-bhagya-line p-5 sm:p-6">
     <div class="flex items-start justify-between gap-3 flex-wrap mb-2">
-      <h2 class="font-marcellus text-xl text-bhagya-sindoor">{{ event_label or 'Muhurat' }} candidates for {{ city }}</h2>
+      <h2 class="font-marcellus text-xl text-bhagya-ink">{{ event_label or 'Muhurat' }} candidates for {{ city }}</h2>
       {% with pdf_filename_hint = ((event_label or 'Muhurat') + ' - ' + (city or 'Search')) %}
         {% include "_pdf_download_button.html" %}
       {% endwith %}
@@ -389,7 +389,7 @@
   {% endif %}
 
   <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
-    <h3 class="font-marcellus text-lg text-bhagya-sindoor mb-3">Related</h3>
+    <h3 class="font-marcellus text-lg text-bhagya-ink mb-3">Related</h3>
     <div class="space-y-3">
       <a href="/learn/vivah-muhurat-2027/" class="block p-3 bg-white rounded border border-bhagya-line hover:border-bhagya-saffron transition-colors">
         <div class="font-semibold text-bhagya-sindoor text-sm">Vivah Muhurat 2027 guide →</div>
