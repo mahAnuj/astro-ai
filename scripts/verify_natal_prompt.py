@@ -80,24 +80,32 @@ HEADINGS = (
 
 # --- Gate 3 ------------------------------------------------------------------
 
-# Measured 2026-09-05. The failing production request was 8,562 tokens against
-# an 8,000 ceiling: ~5,000 from an 18,095 B natal.txt and ~2,850 from the chart
-# data (of which ~1,205 was five RELEVANT TOPIC SUMMARIES). Holding the prompt
-# at 12,000 B puts it near ~3,300 tokens and leaves ~4,700 for chart data —
-# roughly 1.6x the largest chart payload observed, which is the headroom the
-# oversized-Manglik-plus-five-summaries case needs.
-MAX_BYTES = 12_000
-
-# Conservative chars-per-token for English instruction prose. Groq counted
-# 8,562 where a 4.0 divisor predicted ~7,053 on a comparable request — a 4.0
-# divisor UNDER-counts, and an under-counting budget check is worse than none.
-# 3.6 is the ratio that reconciles the two, and it is the number the runtime
-# size guard uses as well.
-CHARS_PER_TOKEN = 3.6
-
-# What the estimate must leave for the user message, against the 8,000 cap.
+# All four constants are MEASURED, by `scripts/measure_natal_request.py` over
+# the eight golden charts in tests/kundali-qa-fixtures.json, 2026-09-05. They
+# were guesses in the first version of this file and every one of them was
+# wrong — the guessed chars-per-token over-counted the prompt by 16%.
+#
+#   * The system prompt is 3,082 tok at 13,029 B — 4.23 B/tok for instruction
+#     prose. It is identical on every request; only the user message varies.
+#   * The largest chart payload across the eight fixtures is 3,687 tok
+#     (cancer-lagna-manglik-exempt: Manglik detail block plus topic summaries).
+#   * On the PRE-compression 18,095 B prompt that same chart assembled to
+#     8,019 tok — over the 8,000 ceiling before Groq adds anything of its own.
+#     That is the 413, reproduced from a fixture rather than inferred.
+#   * Production reported 8,562 for a chart we do not have. The 543 above our
+#     highest fixture is some mix of a larger chart and Groq's own accounting
+#     (chat-template scaffolding, plus whatever completion it reserves), and we
+#     cannot yet split it — hence a deliberately generous margin below.
 TPM_CEILING = 8_000
-RESERVE_FOR_CHART_DATA = 4_000
+BYTES_PER_TOKEN = 4.23
+MAX_BYTES = 13_200  # ~3,120 tok: a ratchet at today's size, not a target
+LARGEST_CHART_PAYLOAD = 3_687
+
+# What must be left over the worst measured chart once the prompt is counted.
+# 1,000 tok (12.5%) covers Groq's unmeasured accounting and charts bigger than
+# any fixture. It is the number to revisit once the completion reservation is
+# measured against the live API.
+MARGIN = 1_000
 
 # --- Gate 2 ------------------------------------------------------------------
 
@@ -461,23 +469,35 @@ def gate_2_rules(text: str) -> bool:
 
 
 def gate_3_budget(text: str) -> bool:
+    """The size check the 413 bought.
+
+    Byte-based on purpose: it must run with no dependencies, in any checkout,
+    as part of the `verify_*` sweep. `scripts/measure_natal_request.py` does
+    the real BPE count over real charts; this is the cheap ratchet that keeps
+    the prompt from drifting back up between measurements. If you change the
+    prompt's size materially, re-run the measurement and re-derive the
+    constants above rather than nudging MAX_BYTES.
+    """
     print("Gate 3 - the budget")
     size = len(text.encode("utf-8"))
-    tokens = round(len(text) / CHARS_PER_TOKEN)
-    budget = TPM_CEILING - RESERVE_FOR_CHART_DATA
-    print(f"  info  {size:,} B  ~{tokens:,} tok at {CHARS_PER_TOKEN} chars/tok")
-    print(f"  info  ceiling {TPM_CEILING:,} TPM, reserving {RESERVE_FOR_CHART_DATA:,} "
-          f"for chart data -> {budget:,} for the prompt")
+    tokens = round(size / BYTES_PER_TOKEN)
+    worst = tokens + LARGEST_CHART_PAYLOAD
+    print(f"  info  {size:,} B  ~{tokens:,} tok at {BYTES_PER_TOKEN} B/tok (measured)")
+    print(f"  info  + largest measured chart payload {LARGEST_CHART_PAYLOAD:,} tok "
+          f"= {worst:,} worst case")
+    print(f"  info  ceiling {TPM_CEILING:,} TPM per model, margin {MARGIN:,}")
     ok = True
     if size > MAX_BYTES:
         ok = False
         _fail(f"{size:,} B exceeds MAX_BYTES={MAX_BYTES:,}")
-        _fail("The 413 came from an 18,095 B prompt eating 64% of the request.")
-    if tokens > budget:
+        _fail("The 413 came from an 18,095 B prompt: 4,332 tok, 54% of the request.")
+    if worst > TPM_CEILING - MARGIN:
         ok = False
-        _fail(f"~{tokens:,} tok leaves under {RESERVE_FOR_CHART_DATA:,} for the chart")
+        _fail(f"worst case {worst:,} tok leaves under {MARGIN:,} of margin under "
+              f"the {TPM_CEILING:,} ceiling")
     if ok:
-        print(f"  ok    fits, {MAX_BYTES - size:,} B of headroom")
+        print(f"  ok    {MAX_BYTES - size:,} B of headroom, "
+              f"{TPM_CEILING - worst:,} tok under the ceiling")
     return ok
 
 

@@ -208,6 +208,62 @@ MUTATIONS = [
      "            {% if c.abhijit_muhurta or c.rahu_kaal %}",
      "            {% if True %}",
      "test_surface_says_why_the_windows_are_missing[muhurat finder]"),
+
+    # --- the natal 413 (/kundli down, "Limit 8000, Requested 8562") ---
+    #
+    # Two independent defects had to coincide, so each gets its own row. The
+    # first three re-break the size guard; the last two re-break the chain's
+    # handling of a 413.
+
+    ("natal: the prompt grows back past the TPM ceiling",
+     "src/astro_ai/prompts/natal.txt",
+     "LANGUAGE & STYLE — write for an Indian reader",
+     "PADDING " * 900 + "\nLANGUAGE & STYLE — write for an Indian reader",
+     "test_the_whole_request_fits_under_the_tpm_ceiling"),
+
+    ("natal: the size guard is bypassed (no token_budget passed)",
+     "src/astro_ai/llm.py",
+     "            details, chart, flags, life_chapters, dasha_state, token_budget=budget)},",
+     "            details, chart, flags, life_chapters, dasha_state)},",
+     "test_the_whole_request_fits_under_the_tpm_ceiling"),
+
+    # The failure this one guards is silent: everything still works, readings
+    # just quietly lose their /learn cross-links on every chart that is a few
+    # tokens over. Nobody files a bug for that.
+    ("natal: shedding drops the whole summaries block instead of one entry",
+     "src/astro_ai/llm.py",
+     "        block.text = block.shrink() if block.shrink is not None else \"\"",
+     "        block.text = \"\"",
+     "test_topic_summaries_are_trimmed_entry_by_entry_before_being_dropped"),
+
+    ("natal: a Manglik/yoga verdict block becomes sheddable",
+     "src/astro_ai/llm.py",
+     "        _OptionalBlock(\"manglik detail\", manglik_block, 0),",
+     "        _OptionalBlock(\"manglik detail\", manglik_block, 6),",
+     "test_an_impossible_budget_never_sheds_a_verdict_block"),
+
+    # The original bug, exactly: a 413 falls into the generic APIError branch
+    # and the chain burns a second identical call on a model with the same cap.
+    ("natal: a 413 is treated as transient again",
+     "src/astro_ai/providers.py",
+     "    if getattr(err, \"status_code\", None) == 413:\n        return True",
+     "    if False:\n        return True",
+     "test_a_413_is_recognised_as_structural"),
+
+    # The inverse, and just as bad: classifying ordinary 429s as unfixable
+    # stops the chain falling through and turns a recoverable blip into a
+    # dead page.
+    ("natal: an ordinary 429 is misread as a size failure",
+     "src/astro_ai/providers.py",
+     "    return \"request too large\" in text or \"too large for model\" in text",
+     "    return \"rate limit\" in text or \"too large for model\" in text",
+     "test_a_plain_rate_limit_is_not_mistaken_for_a_size_failure"),
+
+    ("natal: the token estimator under-counts again",
+     "src/astro_ai/providers.py",
+     "_BYTES_PER_TOKEN_DATA = 3.65",
+     "_BYTES_PER_TOKEN_DATA = 4.0",
+     "test_the_token_estimator_never_under_counts_a_real_request"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

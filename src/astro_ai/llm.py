@@ -14,6 +14,7 @@ import logging
 import re
 import threading
 import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
 from datetime import datetime
@@ -149,11 +150,117 @@ def generate_reading(
     """Sectioned natal reading. The 7th 'Life Stages' section uses life_chapters
     (the Mahadasha sequence framed as age windows) to ground age-based predictions.
     If `dasha_state` is passed, the current antardasha enriches the [NOW] chapter."""
+    # Pre-flight size guard. /kundli died in production with a Groq 413 —
+    # "Limit 8000, Requested 8562" — because nothing on this path knew how big
+    # the request had grown. Compressing natal.txt bought ~1,250 tok back, but
+    # compression alone just moves the cliff: the next chart with a long
+    # Manglik block and five topic summaries finds it again. So the budget is
+    # computed from the ACTUAL system prompt (it differs by language: 3,082 tok
+    # for en, 3,214 for hi) and the user message is built to fit inside what is
+    # left. See providers.RequestTooLarge and llm._shed_to_fit.
+    #
+    # KNOWN OVER-CONSERVATISM, measured 2026-09-05 and left in deliberately.
+    # For `hi` this trims one topic summary on 4 of the 8 golden charts, whose
+    # real assembled size is only ~6,700 tok against the 8,000 ceiling. Two
+    # safety factors stack: the estimator is pinned below the densest measured
+    # content so it can never under-count, and REQUEST_TOKEN_MARGIN adds
+    # another 1,000 on top. That margin is currently a GUESS at Groq's own
+    # accounting (chat-template scaffolding plus any reserved completion),
+    # because measuring it needs a live key this repo's containers do not have.
+    # `scripts/measure_natal_request.py --live` settles it in one command; once
+    # the real overhead is known, lower the margin rather than loosening the
+    # estimator — the estimator's floor is a correctness property, the margin
+    # is the tunable one.
+    system = _system_prompt(prompt_path, lang)
+    budget = (
+        providers.REQUEST_TOKEN_CEILING
+        - providers.REQUEST_TOKEN_MARGIN
+        - providers.estimate_prose_tokens(system)
+    )
     content = providers.chat(messages=[
-        {"role": "system", "content": _system_prompt(prompt_path, lang)},
-        {"role": "user", "content": _format_seeker_message(details, chart, flags, life_chapters, dasha_state)},
+        {"role": "system", "content": system},
+        {"role": "user", "content": _format_seeker_message(
+            details, chart, flags, life_chapters, dasha_state, token_budget=budget)},
     ], route="natal")
     return content.strip()
+
+
+@dataclass
+class _OptionalBlock:
+    """One sheddable part of the natal user message.
+
+    `rank` 0 means never shed. Higher ranks go first. `shrink`, where a block
+    has one, returns a smaller rendering of the same block (or "" when there
+    is nothing left to remove) and is tried before the block is dropped whole.
+    """
+
+    name: str
+    text: str
+    rank: int
+    shrink: Callable[[], str] | None = None
+
+
+def _shed_to_fit(
+    blocks: list[_OptionalBlock], token_budget: int, fixed_cost: int
+) -> list[_OptionalBlock]:
+    """Shrink, then drop, optional blocks worst-first until the message fits.
+
+    THE ORDER IS A DECISION, not an implementation detail, so it is written
+    down here rather than left implicit in the rank numbers:
+
+      5 topic summaries — biggest block (up to 4.9 kB) and the most optional.
+        The prompt already says "do not force a summary where it does not
+        fit". This one SHRINKS before it drops: the block is a header plus up
+        to five independent entries, so the least relevant entry goes first
+        and the reading keeps its remaining /learn cross-links. Dropping all
+        five to save fifty tokens is a bad trade and the shrinker exists to
+        avoid making it.
+      4 aspects, 3 nakshatras — colour. They shade how a section reads; no
+        verdict depends on them.
+      2 D-10, 1 D-9 — cross-checks. They only confirm or soften a conclusion
+        the D-1 already supports, so losing them costs nuance, not accuracy.
+      0 house lords, planet dignity, Manglik detail, yogas — NEVER shed.
+        The first two drive what the Career/Wealth/Relationships sections
+        actually say (#60, #61). The last two are rendered on the page as
+        panels: drop them from the prompt and the prose starts disagreeing
+        with the panel beside it, which is precisely the class of bug #176
+        was, and it would be far worse than a slightly thinner reading.
+
+    Shedding is a last resort and should be rare — the largest of the eight
+    golden charts assembles to 3,687 tok against a budget near 3,900. It logs
+    at WARNING when it fires, because a silent degradation nobody can see is
+    how a "why is my reading shorter than my friend's" bug goes unexplained
+    for months.
+    """
+    kept = list(blocks)
+    while True:
+        # +2 for the "\n\n" each block is joined with, so the estimate matches
+        # the string that actually gets sent.
+        n_bytes = fixed_cost + sum(
+            len(b.text.encode("utf-8")) + 2 for b in kept if b.text
+        )
+        tokens = providers.estimate_data_tokens_for_bytes(n_bytes)
+        if tokens <= token_budget:
+            return kept
+        candidates = [(b.rank, i) for i, b in enumerate(kept) if b.text and b.rank > 0]
+        if not candidates:
+            _log.error(
+                "natal request is ~%d tok against a %d budget with every optional "
+                "block already dropped — it cannot be made to fit here",
+                tokens, token_budget,
+            )
+            return kept
+        _, idx = max(candidates)
+        block = kept[idx]
+        before = len(block.text.encode("utf-8"))
+        block.text = block.shrink() if block.shrink is not None else ""
+        _log.warning(
+            "natal request ~%d tok over the %d budget — %s the %s block "
+            "(%d B -> %d B, shed rank %d)",
+            tokens - token_budget, token_budget,
+            "dropped" if not block.text else "trimmed", block.name,
+            before, len(block.text.encode("utf-8")), block.rank,
+        )
 
 
 def _format_seeker_message(
@@ -162,6 +269,7 @@ def _format_seeker_message(
     flags: VedicFlags,
     life_chapters: list[LifeChapter],
     dasha_state: "DashaState | None" = None,
+    token_budget: int | None = None,
 ) -> str:
     """Render birth details + chart + flags + life chapters into the user message.
 
@@ -195,28 +303,59 @@ def _format_seeker_message(
     # Cheap (~400 tokens for 3-5 summaries) and gives the LLM specific classical
     # depth PLUS cross-link destinations for the /learn/ articles.
     topic_summaries_block = ""
+    summaries: list = []
     if dasha_state is not None:
         summaries = topic_summaries_for_chart(chart, dasha_state, ARTICLES)
         topic_summaries_block = format_topic_summaries_for_prompt(summaries)
-    optional_blocks = ""
-    if house_lords_block:
-        optional_blocks += f"\n\n{house_lords_block}"
-    if dignity_block:
-        optional_blocks += f"\n\n{dignity_block}"
-    if nakshatras_block:
-        optional_blocks += f"\n\n{nakshatras_block}"
-    if aspects_block:
-        optional_blocks += f"\n\n{aspects_block}"
-    if navamsha_block:
-        optional_blocks += f"\n\n--- D-9 NAVAMSHA ---\n{navamsha_block}"
-    if dashamsa_block:
-        optional_blocks += f"\n\n--- D-10 DASHAMSA ---\n{dashamsa_block}"
-    if manglik_block:
-        optional_blocks += f"\n\n{manglik_block}"
-    if yogas_block:
-        optional_blocks += f"\n\n{yogas_block}"
-    if topic_summaries_block:
-        optional_blocks += f"\n\n{topic_summaries_block}"
+
+    n_summaries = len(summaries)
+
+    def _shrink_summaries() -> str:
+        """Re-render the block with one fewer entry; "" once none are left.
+
+        Trims from the END on purpose. `topic_summaries_for_chart` appends in
+        the documented priority order in its docstring — Manglik, then Sade
+        Sati, then the current Mahadasha's article, then placement-based, then
+        the Moon-nakshatra one, then filler — so the tail is the least relevant
+        and the filler entries go first.
+        """
+        nonlocal n_summaries
+        n_summaries -= 1
+        if n_summaries <= 0:
+            return ""
+        return format_topic_summaries_for_prompt(summaries[:n_summaries])
+    # (name, rendered text, shed rank) in OUTPUT order. Rank 0 is never shed;
+    # higher ranks go first when the request will not fit. See _shed_to_fit for
+    # why the order is what it is.
+    blocks = [
+        _OptionalBlock("house lords", house_lords_block, 0),
+        _OptionalBlock("planet dignity", dignity_block, 0),
+        _OptionalBlock("nakshatras", nakshatras_block, 3),
+        _OptionalBlock("aspects", aspects_block, 4),
+        _OptionalBlock("D-9 navamsha",
+                       f"--- D-9 NAVAMSHA ---\n{navamsha_block}" if navamsha_block else "", 1),
+        _OptionalBlock("D-10 dashamsa",
+                       f"--- D-10 DASHAMSA ---\n{dashamsa_block}" if dashamsa_block else "", 2),
+        _OptionalBlock("manglik detail", manglik_block, 0),
+        _OptionalBlock("yogas", yogas_block, 0),
+        _OptionalBlock("topic summaries", topic_summaries_block, 5, _shrink_summaries),
+    ]
+    if token_budget is not None:
+        # Everything that is NOT sheddable, measured once so the loop only has
+        # to price the optional blocks.
+        fixed = (
+            f"{today_anchor()}\n{name_line}\n"
+            f"Birth date: {details.birth_date}\n"
+            f"Birth time: {details.birth_time} (local time)\n"
+            f"Birth place: {details.birth_place}\n\n"
+            f"{format_for_prompt(chart)}\n\n"
+            f"{format_flags_for_prompt(flags)}\n\n"
+            f"{format_life_chapters_for_prompt(life_chapters, dasha_state.antardasha if dasha_state else None)}\n"
+        )
+        blocks = _shed_to_fit(
+            blocks, token_budget, fixed_cost=len(fixed.encode("utf-8"))
+        )
+    optional_blocks = "".join(f"\n\n{b.text}" for b in blocks if b.text)
     return (
         f"{today_anchor()}\n"
         f"{name_line}\n"
