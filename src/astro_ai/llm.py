@@ -155,8 +155,8 @@ def generate_reading(
     # the request had grown. Compressing natal.txt bought ~1,250 tok back, but
     # compression alone just moves the cliff: the next chart with a long
     # Manglik block and five topic summaries finds it again. So the budget is
-    # computed from the ACTUAL system prompt (it differs by language: 3,082 tok
-    # for en, 3,214 for hi) and the user message is built to fit inside what is
+    # computed from the ACTUAL system prompt (it differs by language: 3,108 tok
+    # for en, 3,240 for hi) and the user message is built to fit inside what is
     # left. See providers.RequestTooLarge and llm._shed_to_fit.
     #
     # KNOWN OVER-CONSERVATISM, measured 2026-09-05 and left in deliberately.
