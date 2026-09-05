@@ -85,7 +85,7 @@ HEADINGS = (
 # were guesses in the first version of this file and every one of them was
 # wrong — the guessed chars-per-token over-counted the prompt by 16%.
 #
-#   * The system prompt is 3,108 tok at 13,124 B — 4.22 B/tok for instruction
+#   * The system prompt is 3,111 tok at 13,135 B — 4.22 B/tok for instruction
 #     prose. It is identical on every request; only the user message varies.
 #   * The largest chart payload across the eight fixtures is 3,687 tok
 #     (cancer-lagna-manglik-exempt: Manglik detail block plus topic summaries).
@@ -519,13 +519,93 @@ def gate_3_budget(text: str) -> bool:
     return ok
 
 
+# Files that quote this prompt's size in prose, and must not drift from it.
+# Gate 4 reads the byte figures out of them and compares against reality.
+SIZE_CITERS = (
+    Path("ARCHITECTURE.md"),
+    Path("src") / "astro_ai" / "llm.py",
+    Path("scripts") / "verify_natal_prompt.py",
+)
+_SIZE_CITATION = re.compile(r"\b(\d{1,3},?\d{3}) B\b")
+# A line only counts as citing THIS prompt if it says so. Without this the gate
+# flags every unrelated byte figure in the same files — Marcellus at 14,552 B,
+# the homepage at 13,151 B — which is how a gate gets switched off.
+_ABOUT_THIS_PROMPT = ("natal.txt", "system prompt", "The system prompt")
+# The size that caused the 413. Quoted in several places as history and
+# deliberately frozen there.
+PRE_COMPRESSION_BYTES = 18_095
+
+
+def gate_4_no_stale_size_citations(text: str) -> bool:
+    """Prose that quotes this file's size must still be telling the truth.
+
+    This exists because the drift happened TWICE in one afternoon, both times
+    in the same way: an edit changed the prompt's size, updated some of the
+    numbers on the line it was already editing, and left a neighbour behind.
+    The first left a token saving of 1,250 beside a byte figure it had just
+    corrected; the second moved everything by 3 tokens by adding one word.
+    Both were caught by a human reading carefully, which is not a mechanism.
+
+    Only BYTE figures are checked, not token counts: bytes are free to compute
+    anywhere, whereas an honest token count needs tiktoken, which is a dev
+    dependency this gate must not require. In practice the two move together —
+    every drift so far has moved both — so the cheap check catches the case.
+
+    The pre-compression 18,095 B is deliberately outside the pattern's range:
+    it is a historical measurement of a file that no longer exists, and it is
+    supposed to stay exactly as it is.
+    """
+    print("Gate 4 - no stale size citations")
+    actual = len(text.encode("utf-8"))
+    ok, checked = True, 0
+    for rel in SIZE_CITERS:
+        path = REPO_ROOT / rel
+        if not path.exists():
+            continue
+        for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if not any(marker in line for marker in _ABOUT_THIS_PROMPT):
+                continue
+            cited = [int(c.replace(",", "")) for c in _SIZE_CITATION.findall(line)]
+            # The pre-compression size is a fixed historical fact about a file
+            # that no longer exists, and several lines narrate it on purpose
+            # ("natal.txt reached 18,095 B and took /kundli down"). Those must
+            # not be dragged forward — a line citing ONLY history is correct.
+            cited = [c for c in cited if c != PRE_COMPRESSION_BYTES]
+            if not cited:
+                continue
+            checked += 1
+            # At least one figure on the line must be the CURRENT size. A line
+            # may legitimately carry historical sizes alongside it — "18,095 B
+            # -> 13,135 B" is the whole point of the decision-log row — so the
+            # test is that the line has not lost touch with the present, not
+            # that every number on it is today's.
+            if actual not in cited:
+                ok = False
+                _fail(f"{rel}:{n} cites {cited} B for this prompt, none of them "
+                      f"the current {actual:,} B")
+                _fail(f"        {line.strip()[:96]}")
+    if not checked:
+        ok = False
+        _fail("no line in any of the SIZE_CITERS mentions this prompt's size, so "
+              "this gate is checking nothing — the citations moved or the markers "
+              "in _ABOUT_THIS_PROMPT went stale")
+    elif ok:
+        print(f"  ok    {checked} citation line(s), all current at {actual:,} B")
+    return ok
+
+
 def main() -> int:
     if not PROMPT.exists():
         print(f"FAIL: {PROMPT} does not exist")
         return 1
     text = PROMPT.read_text(encoding="utf-8")
     print(f"natal prompt gate - {PROMPT.relative_to(REPO_ROOT)}\n")
-    results = [gate_1_headings(text), gate_2_rules(text), gate_3_budget(text)]
+    results = [
+        gate_1_headings(text),
+        gate_2_rules(text),
+        gate_3_budget(text),
+        gate_4_no_stale_size_citations(text),
+    ]
     print()
     if all(results):
         print("PASS")

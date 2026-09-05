@@ -152,11 +152,11 @@ def generate_reading(
     If `dasha_state` is passed, the current antardasha enriches the [NOW] chapter."""
     # Pre-flight size guard. /kundli died in production with a Groq 413 —
     # "Limit 8000, Requested 8562" — because nothing on this path knew how big
-    # the request had grown. Compressing natal.txt bought ~1,250 tok back, but
+    # the request had grown. Compressing natal.txt bought 1,221 tok back, but
     # compression alone just moves the cliff: the next chart with a long
     # Manglik block and five topic summaries finds it again. So the budget is
-    # computed from the ACTUAL system prompt (it differs by language: 3,108 tok
-    # for en, 3,240 for hi) and the user message is built to fit inside what is
+    # computed from the ACTUAL system prompt (it differs by language: 3,111 tok
+    # for en, 3,243 for hi) and the user message is built to fit inside what is
     # left. See providers.RequestTooLarge and llm._shed_to_fit.
     #
     # KNOWN OVER-CONSERVATISM, measured 2026-09-05 and left in deliberately.
