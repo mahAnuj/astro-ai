@@ -664,10 +664,39 @@ def chat(messages: list[dict], *, route: str = "") -> str:
     # Hosts that have already rejected this request as too large. Same-host
     # providers share the per-request ceiling, so once one says 413 the rest
     # will too — see RequestTooLarge.
-    too_large_hosts: set[str] = set()
+    too_large_hosts: set[str | None] = set()
     too_large = False
+
+    def _note_too_large(err: Exception) -> bool:
+        """Record a 413 and mark its host unusable for this request.
+
+        Structural, not transient — see RequestTooLarge. Every other provider
+        on the same host shares the ceiling, so re-sending the same bytes to
+        them is a guaranteed second 413: a wasted round-trip that delays the
+        fallback to a provider that could actually serve it. Providers on OTHER
+        hosts are still tried, which is the whole point of keeping the chain
+        going — that is what lets the paid `openai` net catch an oversized
+        request.
+
+        Returns True when the error was a size failure and has been handled.
+        """
+        nonlocal too_large
+        if not _is_request_too_large(err):
+            return False
+        skipped = [p.name for p in order
+                   if p.api_base == provider.api_base and p is not provider]
+        too_large_hosts.add(provider.api_base)
+        too_large = True
+        log.error(
+            "provider %s rejected the request as TOO LARGE (route=%s): %s. This "
+            "is a size failure, not a rate limit — waiting cannot fix it.%s",
+            provider.name, route, err,
+            f" Skipping same-host provider(s): {', '.join(skipped)}." if skipped else "",
+        )
+        return True
+
     for provider in order:
-        if provider.base_url in too_large_hosts:
+        if provider.api_base in too_large_hosts:
             continue
         # ONE retry of THIS provider when it tells us how long to wait, before
         # falling through. See _retry_after_seconds: a TPM limit clears in
@@ -794,33 +823,20 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                 break
             except (APIError, APIConnectionError, APITimeoutError) as err:
                 last_err = err
-                if _is_request_too_large(err):
-                    # Structural, not transient — see RequestTooLarge. Every
-                    # other provider on the same host shares the ceiling, so
-                    # re-sending the same bytes to them is a guaranteed second
-                    # 413 that costs a round-trip and delays the fallback to a
-                    # provider that could actually serve it. Providers on other
-                    # hosts (the paid `openai` safety net) are still tried,
-                    # which is the whole point of keeping the chain going.
-                    skipped = [p.name for p in order
-                               if p.base_url == provider.base_url and p is not provider]
-                    too_large_hosts.add(provider.base_url)
-                    too_large = True
-                    log.error(
-                        "provider %s rejected the request as TOO LARGE (route=%s): %s. "
-                        "This is a size failure, not a rate limit — waiting cannot fix "
-                        "it.%s",
-                        provider.name, route, err,
-                        f" Skipping same-host provider(s): {', '.join(skipped)}."
-                        if skipped else "",
-                    )
+                if _note_too_large(err):
                     break
                 log.warning("provider %s API error (%s) — trying next in chain", provider.name, err)
                 break
             except Exception as err:
-                # Defensive: don't let one provider's weird error kill the whole request.
-                log.warning("provider %s unexpected error (%s) — trying next in chain", provider.name, err)
+                # Defensive: don't let one provider's weird error kill the whole
+                # request. The size check runs here too: a 413 is structural
+                # however it reaches us, and pinning the handling to one except
+                # clause makes it depend on which SDK class the provider's
+                # library happens to raise.
                 last_err = err
+                if _note_too_large(err):
+                    break
+                log.warning("provider %s unexpected error (%s) — trying next in chain", provider.name, err)
                 break
     if too_large:
         raise RequestTooLarge(

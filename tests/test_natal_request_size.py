@@ -98,6 +98,49 @@ def test_the_whole_request_fits_under_the_tpm_ceiling(lang):
     )
 
 
+def test_generate_reading_actually_applies_the_budget(monkeypatch):
+    """The wiring, not the mechanism.
+
+    Every other test here calls `_format_seeker_message` with a budget worked
+    out by hand, so all of them stay green if `generate_reading` stops passing
+    one — the guard is then dead code and the next oversized chart 413s exactly
+    as before. Found by `scripts/mutate_behaviour_suite.py`, which dropped the
+    `token_budget=budget` argument at the call site and watched the whole file
+    pass anyway.
+
+    So this one goes through the real entry point and captures what it would
+    have sent.
+    """
+    sent: dict = {}
+
+    def fake_chat(messages, route):
+        sent["messages"] = messages
+        return "## Personality & Character\nx"
+
+    monkeypatch.setattr(llm.providers, "chat", fake_chat)
+    # A ceiling low enough that the guard MUST shed something. If the budget
+    # is not being passed through, the message comes out whole.
+    monkeypatch.setattr(llm.providers, "REQUEST_TOKEN_CEILING", 5_000)
+
+    fx = _fixture(BIGGEST_CHART)
+    chart = compute_chart(fx["birth_date"], fx["birth_time"], fx["birth_place"])
+    llm.generate_reading(
+        llm.BirthDetails(fx.get("name", ""), fx["birth_date"],
+                         fx["birth_time"], fx["birth_place"]),
+        chart=chart,
+        flags=compute_vedic_flags(chart),
+        life_chapters=compute_life_chapters(chart),
+        prompt_path=PROMPT,
+        dasha_state=compute_dasha_state(chart),
+    )
+    user = sent["messages"][1]["content"]
+    assert user != _message(BIGGEST_CHART, budget=None), (
+        "generate_reading sent the full user message under a ceiling that "
+        "cannot fit it — the size guard is not wired to the request that "
+        "actually goes out"
+    )
+
+
 def test_the_guard_does_not_fire_on_an_ordinary_chart():
     """A guard that degrades every reading has not fixed anything.
 
@@ -221,6 +264,21 @@ def test_a_413_is_recognised_as_structural():
     assert providers._is_request_too_large(too_large)
 
 
+def test_a_413_is_caught_by_its_status_even_when_the_message_says_nothing():
+    """The status code has to be sufficient on its own.
+
+    Groq's 413 happens to spell out "Request too large", so a detector built
+    only on that string passes every test written from Groq's wording — and
+    `scripts/mutate_behaviour_suite.py` proved it, disabling the status-code
+    branch entirely without turning any test red. Another provider, or Groq
+    after a wording change, sends a 413 that the string test misses, and the
+    chain goes back to burning a second call on a model with the same cap.
+    """
+    terse = _FakeStatusError(413, "Payload Too Large")
+    assert providers._is_request_too_large(terse)
+    assert providers._is_request_too_large(_FakeStatusError(413, ""))
+
+
 def test_a_plain_rate_limit_is_not_mistaken_for_a_size_failure():
     """The distinction the outage turned on.
 
@@ -231,6 +289,52 @@ def test_a_plain_rate_limit_is_not_mistaken_for_a_size_failure():
     """
     ordinary = _FakeStatusError(429, "Rate limit reached for model, please retry")
     assert not providers._is_request_too_large(ordinary)
+
+
+def test_a_413_stops_the_chain_retrying_the_same_host(monkeypatch):
+    """The end-to-end behaviour, through `chat()` — not just the predicate.
+
+    Every other 413 test here calls `_is_request_too_large` directly, and all
+    of them passed while `chat()` raised `AttributeError: 'ProviderConfig'
+    object has no attribute 'base_url'` on the very first 413 — turning the
+    handling of a 413 into a 502. The field is `api_base`. Nothing caught it
+    until the route was exercised against a running server, so the gap gets a
+    test rather than a note.
+
+    Two providers on the same host and one on another. The 413 must stop the
+    same-host one being tried, must NOT stop the other host, and must surface
+    as RequestTooLarge.
+    """
+    calls: list[str] = []
+    groq = "https://api.groq.com/openai/v1"
+    chain = [
+        providers.ProviderConfig("groq120", groq, "openai/gpt-oss-120b", "GROQ_API_KEY"),
+        providers.ProviderConfig("groq20", groq, "openai/gpt-oss-20b", "GROQ_API_KEY"),
+        providers.ProviderConfig("openai", None, "gpt-4o-mini", "OPENAI_API_KEY"),
+    ]
+
+    def fake_call_one(provider, messages):
+        calls.append(provider.name)
+        if provider.api_base == groq:
+            raise _FakeStatusError(413, "Request too large for model")
+        raise _FakeStatusError(500, "some other host, some other failure")
+
+    monkeypatch.setattr(providers, "_ordered_for_request", lambda: chain)
+    monkeypatch.setattr(providers, "_call_one", fake_call_one)
+
+    with pytest.raises(providers.RequestTooLarge):
+        providers.chat(messages=[{"role": "user", "content": "x"}], route="natal")
+
+    assert "groq20" not in calls, (
+        f"the chain re-sent an oversized request to a second model on the same "
+        f"host after a 413 (calls: {calls}); it shares the 8,000 TPM cap and "
+        f"returns the same 413"
+    )
+    assert "openai" in calls, (
+        f"the chain stopped entirely on a 413 (calls: {calls}) — a provider on "
+        f"another host has a different ceiling and is exactly the fallback that "
+        f"should catch an oversized request"
+    )
 
 
 def test_request_too_large_still_renders_the_degraded_page():

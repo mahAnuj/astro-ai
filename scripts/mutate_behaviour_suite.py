@@ -225,7 +225,7 @@ MUTATIONS = [
      "src/astro_ai/llm.py",
      "            details, chart, flags, life_chapters, dasha_state, token_budget=budget)},",
      "            details, chart, flags, life_chapters, dasha_state)},",
-     "test_the_whole_request_fits_under_the_tpm_ceiling"),
+     "test_generate_reading_actually_applies_the_budget"),
 
     # The failure this one guards is silent: everything still works, readings
     # just quietly lose their /learn cross-links on every chart that is a few
@@ -248,7 +248,7 @@ MUTATIONS = [
      "src/astro_ai/providers.py",
      "    if getattr(err, \"status_code\", None) == 413:\n        return True",
      "    if False:\n        return True",
-     "test_a_413_is_recognised_as_structural"),
+     "test_a_413_is_caught_by_its_status_even_when_the_message_says_nothing"),
 
     # The inverse, and just as bad: classifying ordinary 429s as unfixable
     # stops the chain falling through and turns a recoverable blip into a
