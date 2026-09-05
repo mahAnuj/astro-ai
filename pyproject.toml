@@ -50,6 +50,7 @@ dev = [
     # was added the gate returned 2 ("could not verify") before running a
     # single check, so #189's regression guard had never once executed.
     "playwright>=1.47",
+    "tiktoken>=0.14.0",
 ]
 
 [tool.pytest.ini_options]
