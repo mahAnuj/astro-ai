@@ -254,6 +254,16 @@ def _shed_to_fit(
         block = kept[idx]
         before = len(block.text.encode("utf-8"))
         block.text = block.shrink() if block.shrink is not None else ""
+        if len(block.text.encode("utf-8")) >= before:
+            # A shrinker that does not shrink would loop here forever, on a web
+            # request thread. Nothing in the tree does that today; this is here
+            # so that adding a shrinker cannot hang the site.
+            _log.error(
+                "the %s shrinker returned %d B from %d B — dropping the block "
+                "instead of looping", block.name,
+                len(block.text.encode("utf-8")), before,
+            )
+            block.text = ""
         _log.warning(
             "natal request ~%d tok over the %d budget — %s the %s block "
             "(%d B -> %d B, shed rank %d)",
