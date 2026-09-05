@@ -85,7 +85,7 @@ HEADINGS = (
 # were guesses in the first version of this file and every one of them was
 # wrong — the guessed chars-per-token over-counted the prompt by 16%.
 #
-#   * The system prompt is 3,082 tok at 13,029 B — 4.23 B/tok for instruction
+#   * The system prompt is 3,108 tok at 13,124 B — 4.22 B/tok for instruction
 #     prose. It is identical on every request; only the user message varies.
 #   * The largest chart payload across the eight fixtures is 3,687 tok
 #     (cancer-lagna-manglik-exempt: Manglik detail block plus topic summaries).
@@ -196,12 +196,25 @@ RULES: tuple[Rule, ...] = (
         "The seeker does not know who Rao is. Book-and-chapter citations belong "
         "in the UI panel; CLAUDE.md states this as a content rule.",
         anchors=(r"BPHS", r"[Dd]o NOT (name|cite) classical|do NOT cite"),
+        # SCOPE, not just presence. The old prompt stated this twice — once in
+        # the Manglik block and once globally under the yogas allowance — and
+        # the first compression left only the Manglik copy, moving a global ban
+        # inside a conditionally-scoped bullet list. Both anchors above stayed
+        # green throughout, because they only ask whether the words are in the
+        # file. It now lives in STRICT OUTPUT RULES with the other global bans,
+        # and this window asserts that is where it stays.
+        scoped=((r"STRICT OUTPUT RULES(?:.|\n){0,900}", ("classical texts",)),),
     ),
     Rule(
         "sade-sati-named-with-phase",
         "Sade Sati is named on the page, so the prose must agree with the panel — "
         "including which of the three phases is running.",
-        anchors=(r"Sade Sati", r"phase"),
+        # "Sade Sati" and "phase" both also occur in the ALLOWED list further
+        # down, so a whole-file search for them stays green even if the Health
+        # section's instruction is deleted — the mutation harness reports that
+        # line as unanchored and QA restated it. This third anchor is the
+        # instruction's own distinctive words.
+        anchors=(r"Sade Sati", r"phase", r"not as something scary"),
     ),
     # --- Life Stages: the section that is hardest to keep honest ---
     Rule(
@@ -338,14 +351,19 @@ RULES: tuple[Rule, ...] = (
         # the substance, not just the block name: the 7th-house cross-check and
         # the kendra/trikona test are the rule. Without them "use the D-9 for
         # marriage" is an instruction with no method attached.
-        scoped=((r"(?:D-9|NAVAMSHA)(?:.|\n){0,900}", ("7th", "kendra")),),
+        # Anchored on the BLOCK DELIMITER, not on a bare "D-9" mention: the
+        # umbrella rule above the bullets names both divisional charts, so a
+        # first-match window opened on "D-9" starts in the wrong place and
+        # never reaches the method. (Caught by this gate when the umbrella
+        # was rewritten — which is the gate doing its job, brittly.)
+        scoped=((r"--- D-9 NAVAMSHA ---(?:.|\n){0,900}", ("7th", "kendra")),),
     ),
     Rule(
         "d10-dashamsa-scope",
         "#64. The D-10 is a career cross-check only, and the check is whether "
         "the 10th of D-10 carries a benefic or its lord sits in a kendra.",
         anchors=(r"D-10", r"DASHAMSA|Dashamsa", r"Career section|career section"),
-        scoped=((r"(?:D-10|DASHAMSA)(?:.|\n){0,700}", ("10th", "benefic")),),
+        scoped=((r"--- D-10 DASHAMSA ---(?:.|\n){0,700}", ("10th", "benefic")),),
     ),
     Rule(
         "divisional-charts-never-surface",

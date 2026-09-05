@@ -13,7 +13,7 @@ import time as _time
 
 from astro_ai import cache, events, notify, storage
 from astro_ai import providers as llm_providers
-from astro_ai.providers import AllProvidersExhausted
+from astro_ai.providers import AllProvidersExhausted, RequestTooLarge
 from astro_ai.session import load_user
 
 log = logging.getLogger(__name__)
@@ -65,7 +65,30 @@ def _llm_error_friendly(err: Exception) -> tuple[str, str]:
     Any other error gets a generic apology — the raw exception class name and
     message are NEVER exposed to the user (they leak internals and confuse
     non-technical seekers). Full details are logged server-side for debugging.
+
+    `RequestTooLarge` is checked FIRST because it subclasses
+    AllProvidersExhausted and would otherwise inherit the high-demand copy —
+    which tells the seeker to try again in a couple of minutes, advice that can
+    never work for them. A 413 means this particular chart assembled a request
+    bigger than the model's per-request ceiling; re-submitting it produces the
+    same request and the same refusal, at 3am as much as at peak. The change
+    that introduced this class argues a 413 and a 429 "need OPPOSITE
+    responses", and the user-facing layer is where that has to land or the
+    distinction stops at the log file. QA caught it stopping there.
+
+    The copy deliberately does not say "too large" — the seeker did nothing
+    wrong and there is no input for them to shorten. It should be rare: the
+    pre-flight guard in `llm._shed_to_fit` sheds optional blocks precisely so
+    this page is not reached.
     """
+    if isinstance(err, RequestTooLarge):
+        return (
+            "We couldn't prepare this chart",
+            "🙏 Something in this particular chart made the reading too big for "
+            "us to generate just now. This is on our side, not yours, and "
+            "re-submitting will not change it — we have been alerted and are "
+            "looking at it. Please do try again later today.",
+        )
     if isinstance(err, AllProvidersExhausted):
         return (
             "High demand right now",

@@ -206,40 +206,69 @@ def test_the_shed_order_is_summaries_then_colour_then_cross_checks():
     priority: all the topic summaries before any aspect/nakshatra colour, and
     all of those before the D-9 and D-10 cross-checks.
     """
+    # These must be the REAL block headers. Two of them were guessed the first
+    # time ("--- ASPECTS", "--- PLANET NAKSHATRAS") against actual headers of
+    # "--- CLASSICAL ASPECTS (special drishti ...)" and "--- PLANET NAKSHATRA
+    # PLACEMENTS (finer layer than sign)", so those two rungs never matched and
+    # the middle of the ordering went untested — swapping the nakshatra and D-9
+    # ranks inverted the declared order with the whole file still green.
+    MARKERS = (
+        ("summaries", "--- RELEVANT TOPIC SUMMARIES"),
+        ("aspects", "--- CLASSICAL ASPECTS"),
+        ("nakshatras", "--- PLANET NAKSHATRA PLACEMENTS"),
+        ("d10", "--- D-10 DASHAMSA ---"),
+        ("d9", "--- D-9 NAVAMSHA ---"),
+    )
+
     def present(budget: int) -> set[str]:
         msg = _message(BIGGEST_CHART, budget=budget)
-        return {
-            name
-            for name, marker in (
-                ("summaries", "RELEVANT TOPIC SUMMARIES"),
-                ("aspects", "--- ASPECTS"),
-                ("nakshatras", "--- PLANET NAKSHATRAS"),
-                ("d10", "--- D-10 DASHAMSA ---"),
-                ("d9", "--- D-9 NAVAMSHA ---"),
-            )
-            if marker in msg
-        }
+        return {name for name, marker in MARKERS if marker in msg}
 
-    whole = _message(BIGGEST_CHART, budget=None)
-    full = providers.estimate_data_tokens(whole)
-    # Ladder down. Each step must be a subset of the one above it — nothing
-    # comes BACK as the budget tightens — and summaries must be gone before
-    # the cross-checks are touched.
-    steps = [present(b) for b in (full, full - 400, full - 900, full - 1200, full - 1400)]
-    for tighter, looser in zip(steps[1:], steps):
-        assert tighter <= looser, f"{tighter} is not a subset of {looser}"
-    assert any("summaries" not in s for s in steps), (
-        "the budget ladder never got tight enough to drop the summaries, so the "
-        "ordering assertion below is vacuous — widen the ladder"
+    # Anti-vacuity: every marker must actually occur in an unshed message. A
+    # marker that never matches silently removes its rung from the assertions
+    # below, which is exactly how this test went half-blind.
+    whole_msg = _message(BIGGEST_CHART, budget=None)
+    unmatched = [name for name, marker in MARKERS if marker not in whole_msg]
+    assert not unmatched, (
+        f"{unmatched} never appear in an unshed message, so those rungs of the "
+        f"ordering are not being tested at all. Fix the markers, not this assert."
     )
-    # The load-bearing half: at any step where a cross-check is gone, the
-    # summaries must ALREADY be gone.
+
+    # Sheds worst-first, so this is the order things must DISAPPEAR in.
+    SHED_ORDER = ["summaries", "aspects", "nakshatras", "d10", "d9"]
+
+    full = providers.estimate_data_tokens(whole_msg)
+    steps = [present(full - n) for n in range(0, 2200, 50)]
+
+    for tighter, looser in zip(steps[1:], steps):
+        assert tighter <= looser, (
+            f"{sorted(looser - tighter)} came BACK as the budget tightened: "
+            f"{sorted(looser)} -> {sorted(tighter)}"
+        )
+
+    # The real assertion, over every rung: if a block is gone, everything the
+    # declared order sheds BEFORE it must be gone too. This is what catches an
+    # inverted rank, and it is checked pairwise rather than only at the ends —
+    # the previous version compared summaries against the cross-checks only, so
+    # swapping the nakshatra and D-9 ranks left it green.
     for step in steps:
-        if "d9" not in step or "d10" not in step:
-            assert "summaries" not in step, (
-                "a D-9/D-10 cross-check was shed while topic summaries were still "
-                "in the message — that inverts the declared shed order"
+        for i, later in enumerate(SHED_ORDER):
+            if later in step:  # survived, so everything shed earlier must be gone
+                continue
+            still_here = [e for e in SHED_ORDER[:i] if e in step]
+            assert not still_here, (
+                f"{later!r} was shed while {still_here} were still in the message. "
+                f"The declared order sheds {SHED_ORDER} — see _shed_to_fit, where "
+                f"the ranks are called 'a DECISION, not an implementation detail'."
             )
+
+    # Anti-vacuity for the ladder itself: it has to get tight enough to exercise
+    # every rung, or the loop above passes by never shedding anything.
+    reached = {name for name in SHED_ORDER if any(name not in s for s in steps)}
+    assert reached == set(SHED_ORDER), (
+        f"the budget ladder never shed {sorted(set(SHED_ORDER) - reached)}, so "
+        f"those rungs went untested — widen the ladder"
+    )
 
 
 # --------------------------------------------------------------------------
@@ -335,6 +364,31 @@ def test_a_413_stops_the_chain_retrying_the_same_host(monkeypatch):
         f"another host has a different ceiling and is exactly the fallback that "
         f"should catch an oversized request"
     )
+
+
+def test_a_413_does_not_tell_the_seeker_to_try_again_in_a_couple_of_minutes():
+    """The distinction has to survive to the page, not stop at the log.
+
+    `RequestTooLarge` subclasses `AllProvidersExhausted`, which is what keeps
+    the routes' existing handlers working — and it also meant it inherited the
+    high-demand copy: "please try again in a couple of minutes". For a 413 that
+    is advice that can never work; the same chart assembles the same oversized
+    request every time. Caught by QA, which pointed out the change's own
+    argument that 413 and 429 "need OPPOSITE responses" was not reflected
+    anywhere the seeker could see.
+    """
+    from astro_ai.routes.llm_support import _llm_error_friendly
+
+    too_large_title, too_large_msg = _llm_error_friendly(providers.RequestTooLarge("x"))
+    busy_title, busy_msg = _llm_error_friendly(providers.AllProvidersExhausted("x"))
+
+    assert too_large_title != busy_title
+    assert "couple of minutes" not in too_large_msg, (
+        "a 413 is being presented as transient congestion; re-submitting the "
+        "same chart produces the same refusal"
+    )
+    # And the generic path must still be reachable and distinct.
+    assert _llm_error_friendly(ValueError("x"))[0] not in (too_large_title, busy_title)
 
 
 def test_request_too_large_still_renders_the_degraded_page():
