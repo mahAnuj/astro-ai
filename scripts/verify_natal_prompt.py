@@ -525,6 +525,7 @@ SIZE_CITERS = (
     Path("ARCHITECTURE.md"),
     Path("src") / "astro_ai" / "llm.py",
     Path("scripts") / "verify_natal_prompt.py",
+    Path("scripts") / "eval_natal_prompt.py",
 )
 _SIZE_CITATION = re.compile(r"\b(\d{1,3},?\d{3}) B\b")
 # A line only counts as citing THIS prompt if it says so. Without this the gate
