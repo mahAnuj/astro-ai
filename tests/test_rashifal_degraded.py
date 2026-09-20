@@ -132,3 +132,60 @@ def test_blank_cached_reading_regenerates_once(client, cache, stub_llm, today_is
     assert first.status_code == 200 and second.status_code == 200
     assert calls["n"] == 1, "blank entry must regenerate exactly once, then cache"
     assert (cache.get("rashifal_single", "virgo-en", today_iso) or {}).get("body")
+
+
+# --------------------------------------------------------------------------
+# #124 — the rashi pages are the only ones published under /hi/, so their
+# English surface and their Hindi surface both need pinning
+# --------------------------------------------------------------------------
+
+def _stub_reading(lang: str) -> str:
+    body = ("आज का दिन आपके लिए शुभ रहेगा। " if lang == "hi"
+            else "A steady day for measured work. ") * 30
+    return "## Aries / Mesha\n" + body
+
+
+def test_rashi_page_english_surface_is_unchanged(client, cache, stub_llm, today_iso):
+    """The English rashi title and description must not move.
+
+    `scripts/verify_english_surface.py` covers these URLs for redirects, but
+    locally they 503 — the .env model is decommissioned — so it cannot see a
+    TITLE or META regression. #124 S3 edits exactly this template, to give the
+    Hindi page Devanagari chrome. That edit must not touch English.
+
+    This test can see it because it stubs the provider.
+    """
+    import re
+
+    stub_llm(lambda _n: _stub_reading("en"))
+    r = client.get("/rashifal/aries")
+
+    assert r.status_code == 200
+    title = re.search(r"<title>([^<]*)", r.text).group(1)
+    desc = re.search(r'name="description" content="([^"]*)', r.text).group(1)
+    assert "Rashifal" in title and "Daily Vedic Horoscope" in title, title
+    assert not any("ऀ" <= ch <= "ॿ" for ch in title), (
+        f"Devanagari leaked into the ENGLISH title: {title!r}"
+    )
+    assert not any("ऀ" <= ch <= "ॿ" for ch in desc), (
+        f"Devanagari leaked into the ENGLISH description: {desc!r}"
+    )
+
+
+def test_rashi_page_hindi_surface_is_actually_hindi(client, cache, stub_llm, today_iso):
+    """And the Hindi page's chrome must be Hindi.
+
+    Before #124 S3 the Hindi title read "Aries / Mesha Rashifal — 20 सितंबर
+    2026 · Daily Vedic Horoscope" — English but for the date. Publishing a
+    /hi/ URL whose title reads in English earns the duplicate-content risk
+    without earning the query it exists for.
+    """
+    import re
+
+    stub_llm(lambda _n: _stub_reading("hi"))
+    r = client.get("/rashifal/aries?lang=hi")
+
+    assert r.status_code == 200
+    title = re.search(r"<title>([^<]*)", r.text).group(1)
+    devanagari = sum(1 for ch in title if "ऀ" <= ch <= "ॿ")
+    assert devanagari >= 10, f"Hindi title is not in Devanagari: {title!r}"

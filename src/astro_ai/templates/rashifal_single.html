@@ -1,11 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}{{ rashi_en }} / {{ rashi_sa }} Rashifal — {{ today_pretty }} · Daily Vedic Horoscope{% endblock %}
-{% block meta_description %}{{ rashi_en }} ({{ rashi_sa }}) daily Rashifal for {{ today_pretty }} — a substantive Vedic Moon-sign reading anchored on today's actual sky (weekday-lord, tithi, moon nakshatra). Free, sidereal Lahiri.{% endblock %}
+{#- Localised forms of everything the route hands us in English (#124).
+    The route's ctx is language-neutral — `element` is "fire", `lord` is
+    "Mars" — so the page resolved them straight into English chrome while
+    `reading_body` came back in Hindi. Bound once here rather than at each
+    use so the <title>, <h1> and the JSON-LD cannot disagree about the name.
+
+    `rashi_hi` holds the ENGLISH name on the English page: t() falls back to
+    the _EN table, which is what makes the Hindi branches below degrade to
+    English rather than to a raw key if a name is ever missing. #}
+{% set rashi_hi = t(lang, 'rashi_name_' ~ rashi_slug) %}
+{% set rashi_element = t(lang, 'rashi_element_' ~ element | lower) %}
+{% set rashi_quality = t(lang, 'rashi_quality_' ~ quality | lower) %}
+{% set rashi_lord = planet_name(lord, lang) %}
+
+{% block title %}{{ t(lang, 'rashifal_single_title', rashi_en=rashi_en, rashi_sa=rashi_sa, rashi_hi=rashi_hi, date=today_pretty) }}{% endblock %}
+{% block meta_description %}{{ t(lang, 'rashifal_single_meta', rashi_en=rashi_en, rashi_sa=rashi_sa, rashi_hi=rashi_hi, date=today_pretty) }}{% endblock %}
 
 {% block content %}
 {% set active_page = "rashifal" %}
-{% set breadcrumbs = [('Home', '/'), ('Rashifal', '/rashifal'), (rashi_en, '/rashifal/' + rashi_slug)] %}
+{% set breadcrumbs = [(t(lang, 'nav_home'), '/'), (t(lang, 'nav_rashifal_link'), '/rashifal'), (rashi_hi if lang == 'hi' else rashi_en, '/rashifal/' + rashi_slug)] %}
 {% include "_breadcrumb_schema.html" %}
 {# Article schema for daily-fresh content — Google indexes this as news-like.
    Speakable spec added so Google Assistant / Alexa can read the reading
@@ -17,8 +31,8 @@
   "@type": "Article",
   "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ site_url }}/rashifal/{{ rashi_slug }}"},
   "url": "{{ site_url }}/rashifal/{{ rashi_slug }}",
-  "headline": {{ (rashi_en ~ ' Rashifal — ' ~ today_pretty) | tojson }},
-  "description": {{ ((rashi_en ~ ' (' ~ rashi_sa ~ ') daily Vedic horoscope for ' ~ today_pretty ~ ' — sidereal Lahiri.')) | tojson }},
+  "headline": {{ t(lang, 'rashifal_single_headline', rashi_en=rashi_en, rashi_hi=rashi_hi, date=today_pretty) | tojson }},
+  "description": {{ t(lang, 'rashifal_single_ld_desc', rashi_en=rashi_en, rashi_sa=rashi_sa, rashi_hi=rashi_hi, date=today_pretty) | tojson }},
   "image": {"@type": "ImageObject", "url": "{{ site_url }}/static/icons/icon-512.png", "width": 512, "height": 512},
   "datePublished": "{{ today_date }}",
   "dateModified": "{{ today_date }}",
@@ -46,17 +60,17 @@
   {# HERO — glyph + name + pretty date #}
   <header class="text-center space-y-3">
     <div class="text-xs uppercase tracking-wider text-astro-700 font-semibold">
-      <a href="/rashifal" class="hover:text-astro-700">Rashifal</a> · <time datetime="{{ today_date }}">{{ today_pretty }}</time>
+      <a href="/rashifal" class="hover:text-astro-700">{{ t(lang, 'nav_rashifal_link') }}</a> · <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </div>
     <img src="/static/rashi/{{ rashi_slug }}.png"
-         alt="{{ rashi_en }} ({{ rashi_sa }}) zodiac silhouette"
+         alt="{{ t(lang, 'rashifal_single_alt', rashi_en=rashi_en, rashi_sa=rashi_sa, rashi_hi=rashi_hi) }}"
          width="180" height="180"
          class="mx-auto h-32 sm:h-40 w-auto object-contain"
          decoding="async" fetchpriority="high">
     {# The tiny Unicode glyph {{ glyph }} is kept off the visible page
        here — the silhouette carries the visual identity. #}
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700">{{ rashi_en }} <span class="text-stone-500 font-normal">/</span> {{ rashi_sa }}</h1>
-    <p class="text-sm text-stone-600">Element: {{ element | capitalize }} · Quality: {{ quality }} · Ruling planet (Swami): {{ lord }}</p>
+    <h1 class="font-display text-3xl sm:text-4xl text-astro-700">{% if lang == 'hi' %}{{ rashi_hi }} <span class="text-stone-500 font-normal">/</span> {{ rashi_en }}{% else %}{{ rashi_en }} <span class="text-stone-500 font-normal">/</span> {{ rashi_sa }}{% endif %}</h1>
+    <p class="text-sm text-stone-600">{{ t(lang, 'rashifal_single_attrs', element=rashi_element, quality=rashi_quality, lord=rashi_lord) }}</p>
   </header>
 
   {# READING — .speakable-body is targeted by the SpeakableSpecification
@@ -67,26 +81,26 @@
 {{ reading_body }}
     </div>
     <div class="pt-4 mt-4 border-t border-stone-100 flex flex-wrap items-center gap-3 justify-between text-sm no-print">
-      <a href="/rashifal" class="text-astro-700 hover:underline">← All 12 rashis</a>
-      <a href="https://wa.me/?text={{ (rashi_en ~ ' Rashifal — ' ~ site_url ~ '/rashifal/' ~ rashi_slug) | urlencode }}"
+      <a href="/rashifal" class="text-astro-700 hover:underline">{{ t(lang, 'rashifal_all_12') }}</a>
+      <a href="https://wa.me/?text={{ t(lang, 'rashifal_single_share', rashi_en=rashi_en, rashi_hi=rashi_hi, url=site_url ~ '/rashifal/' ~ rashi_slug) | urlencode }}"
          target="_blank" rel="noopener"
          class="inline-flex items-center gap-1.5 text-emerald-700 hover:underline">
-        Share on WhatsApp
+        {{ t(lang, 'rashifal_share_whatsapp') }}
       </a>
     </div>
   </article>
 
   {# RELATED — cross-links to Kundli + Learn articles #}
   <section>
-    <h2 class="font-display text-xl text-astro-800 mb-3">Want a deeper reading?</h2>
+    <h2 class="font-display text-xl text-astro-800 mb-3">{{ t(lang, 'rashifal_deeper') }}</h2>
     <div class="grid sm:grid-cols-2 gap-3">
       <a href="/kundli" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Free Janma Kundli →</div>
-        <div class="text-xs text-stone-600 mt-1">Full birth chart with dashas, yogas, and personalised reading — beyond the Moon sign.</div>
+        <div class="font-semibold text-astro-800 text-sm">{{ t(lang, 'rashifal_kundli_cta') }}</div>
+        <div class="text-xs text-stone-600 mt-1">{{ t(lang, 'rashifal_kundli_desc') }}</div>
       </a>
       <a href="/panchang" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Today's Panchang →</div>
-        <div class="text-xs text-stone-600 mt-1">Tithi, nakshatra, Rahu Kaal, Abhijit, Choghadiya for your city.</div>
+        <div class="font-semibold text-astro-800 text-sm">{{ t(lang, 'rashifal_panchang_cta') }}</div>
+        <div class="text-xs text-stone-600 mt-1">{{ t(lang, 'rashifal_panchang_desc') }}</div>
       </a>
     </div>
   </section>
