@@ -196,6 +196,60 @@ _EN: Final[dict[str, str]] = {
     "rashifal_subtitle":   "Daily predictions for all 12 Moon signs — find your Janma Rashi below.",
     "rashifal_dont_know":  "Don't know your Moon sign? Generate your free Kundli — it tells you instantly.",
 
+    # Rashifal — the per-rashi standalone page (/rashifal/{rashi}), #124.
+    #
+    # Until this block existed the page was Hindi to a reader and English to a
+    # crawler: `<title>`, `<meta description>`, `<h1>` and the Article JSON-LD
+    # were hardcoded English while `reading_body` came back in Devanagari.
+    #
+    # The `{...}` fields are filled by the template. Every key takes the same
+    # bag (rashi_en / rashi_sa / rashi_hi / date / element / quality / lord /
+    # url) and ignores what it does not use, so the two tables can phrase the
+    # same fact in a different order without the call site changing.
+    "rashifal_single_title":    "{rashi_en} / {rashi_sa} Rashifal — {date} · Daily Vedic Horoscope",
+    "rashifal_single_meta":     "{rashi_en} ({rashi_sa}) daily Rashifal for {date} — a substantive Vedic Moon-sign reading anchored on today's actual sky (weekday-lord, tithi, moon nakshatra). Free, sidereal Lahiri.",
+    "rashifal_single_headline": "{rashi_en} Rashifal — {date}",
+    "rashifal_single_ld_desc":  "{rashi_en} ({rashi_sa}) daily Vedic horoscope for {date} — sidereal Lahiri.",
+    "rashifal_single_alt":      "{rashi_en} ({rashi_sa}) zodiac silhouette",
+    "rashifal_single_attrs":    "Element: {element} · Quality: {quality} · Ruling planet (Swami): {lord}",
+    "rashifal_single_share":    "{rashi_en} Rashifal — {url}",
+    "rashifal_all_12":          "← All 12 rashis",
+    "rashifal_share_whatsapp":  "Share on WhatsApp",
+    "rashifal_deeper":          "Want a deeper reading?",
+    "rashifal_kundli_cta":      "Free Janma Kundli →",
+    "rashifal_kundli_desc":     "Full birth chart with dashas, yogas, and personalised reading — beyond the Moon sign.",
+    "rashifal_panchang_cta":    "Today's Panchang →",
+    "rashifal_panchang_desc":   "Tithi, nakshatra, Rahu Kaal, Abhijit, Choghadiya for your city.",
+
+    # The 12 rashi names, keyed by the canonical slug. This is the SINGLE
+    # source for the Devanagari forms — _subscribe_modal.html used to carry
+    # its own inline copies and now reads them from here, so there is no
+    # second list to drift. (rashifal_grid.html and routes/rashifal.py hold
+    # per-rashi PRESENTATION tables — glyph, gradient, element — not names.)
+    "rashi_name_aries":         "Aries",
+    "rashi_name_taurus":        "Taurus",
+    "rashi_name_gemini":        "Gemini",
+    "rashi_name_cancer":        "Cancer",
+    "rashi_name_leo":           "Leo",
+    "rashi_name_virgo":         "Virgo",
+    "rashi_name_libra":         "Libra",
+    "rashi_name_scorpio":       "Scorpio",
+    "rashi_name_sagittarius":   "Sagittarius",
+    "rashi_name_capricorn":     "Capricorn",
+    "rashi_name_aquarius":      "Aquarius",
+    "rashi_name_pisces":        "Pisces",
+
+    # Element / quality vocabulary, keyed on the lowercased English values in
+    # routes/rashifal.py _RASHIFAL_UI_META so the template can look up whatever
+    # the route hands it.
+    "rashi_element_fire":       "Fire",
+    "rashi_element_earth":      "Earth",
+    "rashi_element_air":        "Air",
+    "rashi_element_water":      "Water",
+    "rashi_quality_movable":    "Movable",
+    "rashi_quality_fixed":      "Fixed",
+    "rashi_quality_dual":       "Dual",
+
     # Vimshottari Dasha
     "dasha_title":         "Vimshottari Dasha",
     "dasha_subtitle":      "The 120-year planetary-period system that defines your life's chapters",
@@ -631,6 +685,63 @@ _HI: Final[dict[str, str]] = {
     "rashifal_title":      "आज का राशिफल",
     "rashifal_subtitle":   "सभी 12 राशियों के लिए आज का भविष्यफल — अपनी जन्म राशि नीचे खोजें।",
     "rashifal_dont_know":  "अपनी जन्म राशि नहीं जानते? मुफ्त कुंडली बनाएँ — तुरंत पता चलेगा।",
+
+    # Rashifal — the per-rashi standalone page (/rashifal/{rashi}), #124.
+    #
+    # HARVESTED, not invented. Nobody on this change is a native Hindi
+    # speaker, so the wording is reused from Hindi already written in this
+    # repo by a human: "आज का राशिफल" / "भविष्यफल" / "जन्म राशि" from the
+    # keys just above, "व्हाट्सएप पर साझा करें" from templates/rashifal.html,
+    # "पूरा विश्लेषण" / "जन्म कुंडली" from templates/email/welcome.html,
+    # "राहु काल" / "अभिजित मुहूर्त" / "तिथि" / "नक्षत्र" from the panchang
+    # keys. Composed-from-parts, and so the first thing a Hindi reviewer
+    # should read: rashifal_deeper, rashifal_kundli_desc, the word "चौघड़िया"
+    # (no Devanagari form of Choghadiya existed anywhere in the repo), and the
+    # three labels in rashifal_single_attrs.
+    "rashifal_single_title":    "{rashi_hi} राशिफल आज — {date} · दैनिक वैदिक भविष्यफल",
+    "rashifal_single_meta":     "{rashi_hi} ({rashi_en}) राशि का आज का राशिफल, {date} — आज की वास्तविक ग्रह स्थिति पर आधारित विस्तृत वैदिक भविष्यफल: वार का स्वामी, तिथि और चंद्र नक्षत्र। पूरी तरह मुफ्त।",
+    "rashifal_single_headline": "{rashi_hi} राशिफल — {date}",
+    "rashifal_single_ld_desc":  "{rashi_hi} ({rashi_en}) राशि का आज का वैदिक राशिफल — {date}।",
+    "rashifal_single_alt":      "{rashi_hi} ({rashi_en}) राशि का चिह्न",
+    "rashifal_single_attrs":    "तत्व: {element} · स्वभाव: {quality} · स्वामी ग्रह: {lord}",
+    "rashifal_single_share":    "{rashi_hi} राशिफल — {url}",
+    "rashifal_all_12":          "← सभी 12 राशियाँ",
+    "rashifal_share_whatsapp":  "व्हाट्सएप पर साझा करें",
+    "rashifal_deeper":          "और विस्तृत पठन चाहते हैं?",
+    "rashifal_kundli_cta":      "मुफ्त जन्म कुंडली →",
+    "rashifal_kundli_desc":     "दशा, योग और व्यक्तिगत विश्लेषण सहित पूरी जन्म कुंडली — जन्म राशि से कहीं आगे।",
+    "rashifal_panchang_cta":    "आज का पंचांग →",
+    "rashifal_panchang_desc":   "आपके शहर के लिए तिथि, नक्षत्र, राहु काल, अभिजित मुहूर्त और चौघड़िया।",
+
+    # The 12 rashi names in Devanagari, as spelled in knowledge/rashis.md
+    # (§"The 12 rashis — appearance, character, body region"). That spelling
+    # is also the one _subscribe_modal.html shipped, so moving the modal onto
+    # this table leaves its rendered bytes untouched — note कुम्भ, not the
+    # कुंभ that the unreferenced templates/rashifal.html uses.
+    "rashi_name_aries":         "मेष",
+    "rashi_name_taurus":        "वृषभ",
+    "rashi_name_gemini":        "मिथुन",
+    "rashi_name_cancer":        "कर्क",
+    "rashi_name_leo":           "सिंह",
+    "rashi_name_virgo":         "कन्या",
+    "rashi_name_libra":         "तुला",
+    "rashi_name_scorpio":       "वृश्चिक",
+    "rashi_name_sagittarius":   "धनु",
+    "rashi_name_capricorn":     "मकर",
+    "rashi_name_aquarius":      "कुम्भ",
+    "rashi_name_pisces":        "मीन",
+
+    # Element / quality vocabulary — the same Devanagari the 12 cards on
+    # rashifal_grid.html already show (its 8th and 9th tuple fields), so the
+    # grid and the page a reader taps through to cannot disagree. Matches the
+    # Tattva and Chara/Sthira/Dwiswabhava tables in knowledge/rashis.md.
+    "rashi_element_fire":       "अग्नि",
+    "rashi_element_earth":      "पृथ्वी",
+    "rashi_element_air":        "वायु",
+    "rashi_element_water":      "जल",
+    "rashi_quality_movable":    "चर",
+    "rashi_quality_fixed":      "स्थिर",
+    "rashi_quality_dual":       "द्विस्वभाव",
 
     # Vimshottari Dasha
     "dasha_title":         "विंशोत्तरी दशा",

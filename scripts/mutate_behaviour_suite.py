@@ -67,6 +67,12 @@ MUTATIONS = [
      "    total = len(subs)", "    total = len(subscribers.list_subscribers())",
      "test_signup_landing_mid_run_is_not_a_false_failure"),
 
+    ("#124: Hindi rashi title falls back to English chrome",
+     "src/astro_ai/templates/rashifal_single.html",
+     "{% block title %}{{ t(lang, 'rashifal_single_title'",
+     "{% block title %}{{ t('en', 'rashifal_single_title'",
+     "test_rashi_page_hindi_surface_is_actually_hindi"),
+
     ("subscribe: ok is always True (the 21-day silence)",
      "src/astro_ai/routes/subscribe.py",
      "    ok = not unreadable_list and not delivered_none and failed == 0", "    ok = True",
