@@ -309,32 +309,92 @@ templates.env.globals["user_age_bucket"] = _user_age_bucket
 
 
 def _lang(request: Request) -> str:
-    """Resolve reading language: `?lang=` query param wins, cookie is fallback.
+    """Resolve reading language. Precedence: /hi path prefix → `?lang=` → cookie.
+
+    Every language-aware page in the app reads its language through this one
+    function (58 call sites across 19 modules), so the `/hi/{path}` prefix is
+    implemented here rather than 58 times: the `/hi` router sets
+    `request.state.forced_lang = "hi"` and awaits the existing English handler.
+
+    The prefix deliberately does NOT rewrite `scope["path"]`. A path-stripping
+    middleware was built and rejected: mutating the path makes
+    `request.url.path` return the English path inside the handler, so
+    `base.html`'s canonical would point /hi/rashifal at /rashifal — the exact
+    cross-language canonical #124 exists to remove. Reproduced by execution.
 
     `?lang=hi` used to be a silent no-op everywhere (QA finding on /festivals) —
     this function only read the __session cookie, so a shared or bookmarked
-    Hindi link rendered in English. Honouring the param is safe here because:
+    Hindi link rendered in English. Honouring the param is still safe, but only
+    two of the three original reasons survive:
 
-    - No route declares `lang` as a query parameter, so nothing is shadowed
-      (`/lang` takes it as a Form field, and POST bodies are untouched).
-    - No CDN-cached HTML route depends on _lang. The only `public, max-age`
-      response in the app is the cosmic-card SVG, which never calls this;
-      /panchang, /rashifal and /festivals are all `_no_cdn_cache`. Edge caches
-      key on the full URL including query string anyway, so `?lang=hi` and the
-      bare path cannot collide.
-    - `base.html` emits `<link rel=canonical>` from `request.url.path` only,
-      query string excluded, so `?lang=` variants self-canonicalise and add no
-      duplicate-content surface for crawlers.
+    - Nothing that calls _lang declares `lang` as a query parameter, so nothing
+      is shadowed. (`/lang` takes it as a Form field, and POST bodies are
+      untouched. `POST /admin/warm-rashifal` DOES take `lang` as a query param —
+      verified in the OpenAPI schema 2026-09-20, it is the only one — but it
+      reads the param directly and never calls _lang, so there is no conflict.
+      The earlier absolute "no route declares it" was simply wrong.) The `/hi`
+      routes declare `rashi` and a catch-all, never `lang`.
+    - No CDN-cached HTML route depends on _lang, and this is now load-bearing
+      rather than incidental: it is what stops a cookie-`hi` render being
+      snapshotted by a shared cache and served to a cookieless visitor sitting
+      at an English URL. `routes/kundli_card.py:127` (the cosmic-card SVG) is
+      still the ONLY `public, max-age` response in the app and it still does not
+      call _lang; /panchang, /rashifal and /festivals are all `_no_cdn_cache`.
+      Edge caches key on the full URL including query string anyway, so
+      `?lang=hi` and the bare path cannot collide. Keep it true.
+    - INVALIDATED — `base.html` emits `<link rel=canonical>` from
+      `request.url.path` only, which used to mean `?lang=` variants
+      self-canonicalise and add no duplicate-content surface. That reasoning
+      dies the moment a path has a published Hindi twin: `/rashifal?lang=hi`
+      renders Hindi prose while its canonical claims `/rashifal`, i.e. the
+      cross-language canonical the issue forbids. S8 fixes it by 301-ing
+      `?lang=hi` → `/hi/{path}` for paths in `hindi_pages.HINDI_PUBLISHED` ONLY.
+      Unpublished paths have no Hindi URL to redirect to, so `?lang=hi` keeps
+      working there exactly as it does today.
+
+    Cookie vs URL: the cookie still wins on English URLs (status quo), and
+    `/hi/*` forces Hindi regardless of cookie. "URL wins over cookie" — i.e.
+    an English URL forcing English over a `hi` cookie — was considered and
+    deliberately NOT built: `email/daily_rashifal.html:233,249` and
+    `email/welcome.html:140` deep-link Hindi subscribers to `/rashifal#{slug}`,
+    and templates carry 5 bare `href="/rashifal"` links plus `/rashifal#…` and
+    `/rashifal/{slug}` variants (counted 2026-09-20), so that change would land
+    every Hindi subscriber's daily email on an English page. Its only benefit
+    accrues to crawlers, which carry no cookie and so never hit the case.
 
     Deliberately request-scoped: it does NOT write the cookie. `POST /lang` is
     still the only thing that changes a stored preference, so a shared link
-    can't silently flip the recipient's saved language. An unsupported value
-    falls through to the cookie rather than forcing English.
+    can't silently flip the recipient's saved language. An unsupported value —
+    in `forced_lang` or in `?lang=` — falls through to the next source rather
+    than forcing English.
     """
+    # Set by the /hi router (routes/hindi.py), never by a client. Membership
+    # test, not a truthiness check: a junk forced_lang must fall through to the
+    # query param and cookie, not pin the page to a language that has no strings.
+    forced = getattr(request.state, "forced_lang", None)
+    if forced in SUPPORTED_LANGS:
+        return forced
     requested = request.query_params.get("lang")
     if requested in SUPPORTED_LANGS:
         return requested
     return load_lang(request)
+
+
+# The /hi allow-list, exposed to templates. Module-scope import is safe in both
+# directions: hindi_pages holds no astro_ai imports at module scope, and its
+# hreflang_alternates() pulls _site_url from THIS module lazily, inside the
+# function body, precisely so deps.py can import it here.
+#   - hreflang_alternates(path) → base.html's <link rel=alternate> tags (S6)
+#   - hindi_url(path) → /hi twin, or None when unpublished (S7 nav toggle;
+#     None is also the toggle's "hide me" signal)
+#   - english_url(path) → the way back from a /hi page (S7)
+# is_hindi_published() is deliberately NOT exposed: it is exactly
+# `hindi_url(path) is not None`, and one predicate is one fewer thing that can
+# disagree with the other.
+from astro_ai import hindi_pages
+templates.env.globals["hreflang_alternates"] = hindi_pages.hreflang_alternates
+templates.env.globals["hindi_url"] = hindi_pages.hindi_url
+templates.env.globals["english_url"] = hindi_pages.english_url
 
 
 def _save_collection_synced(response: Response, collection: ChartCollection, request: Request) -> None:
