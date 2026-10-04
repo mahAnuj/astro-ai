@@ -115,9 +115,22 @@ class _RewriteHostFromForwardedMiddleware:
 
 app.add_middleware(_RewriteHostFromForwardedMiddleware)
 # #124 S8 — 301 ?lang=hi onto /hi/{path} where a Hindi URL exists, so the
-# Hindi content has exactly one indexable URL. Added AFTER the host rewrite so
-# it sees the real Host; it only redirects, never renders, which is why a
-# middleware is safe here and was not for the /hi prefix itself.
+# Hindi content has exactly one indexable URL. It only redirects, never lets a
+# handler render with a mutated path, which is why a middleware is safe here
+# and was not for the /hi prefix itself.
+#
+# ORDERING, corrected: an earlier version of this comment claimed it was added
+# after the host rewrite "so it sees the real Host". That is backwards —
+# `add_middleware` inserts at index 0, so the LAST added is the OUTERMOST and
+# runs FIRST. Measured chain, outermost first: ServerError,
+# RedirectLangParam, _RewriteHostFromForwarded. So S8 sees the UN-rewritten
+# Host.
+#
+# That is harmless, and it was verified rather than assumed: S8 emits a
+# relative Location and never reads Host, so with
+# `X-Forwarded-Host: evil.example.com` the Location is still /hi/rashifal.
+# But the stated reason was false, which is the defect class this file's
+# neighbours keep being corrected for.
 app.add_middleware(_hindi_routes.RedirectLangParamMiddleware)
 
 

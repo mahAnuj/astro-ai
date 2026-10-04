@@ -58,26 +58,24 @@ def _fire_error_alert(request, err: Exception, source: str) -> None:
         log.debug("notify.error_seen fire failed (swallowed)", exc_info=True)
 
 
-def _llm_error_friendly(err: Exception) -> tuple[str, str]:
+def _llm_error_friendly(err: Exception, lang: str = "en") -> tuple[str, str]:
     """Translate an internal LLM error into a user-friendly (title, message).
 
     Rate-limit / high-demand errors get a distinct, retry-encouraging copy.
     Any other error gets a generic apology — the raw exception class name and
     message are NEVER exposed to the user (they leak internals and confuse
     non-technical seekers). Full details are logged server-side for debugging.
+
+    `lang` defaults to English so the three other callers (ask, dasha, kundli)
+    are unchanged until they pass it. It exists because an outage on a /hi/
+    URL rendered this English copy under a self-canonical, hi-IN-annotated
+    Hindi page (#124, QA 2026-10-04).
     """
+    from astro_ai.i18n import translate as t
+
     if isinstance(err, AllProvidersExhausted):
-        return (
-            "High demand right now",
-            "🙏 Many seekers are asking questions at the same time. "
-            "Please try again in a couple of minutes — your input is safe "
-            "to re-submit exactly as you typed it.",
-        )
-    return (
-        "Something went wrong",
-        "We couldn't complete the reading this time. Please try again in "
-        "a moment — your input is safe to re-submit exactly as you typed it.",
-    )
+        return t(lang, "llm_busy_title"), t(lang, "llm_busy_msg")
+    return t(lang, "llm_error_title"), t(lang, "llm_error_msg")
 
 
 def _cached(

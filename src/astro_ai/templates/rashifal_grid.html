@@ -6,7 +6,13 @@
 
 {% block content %}
 {% set active_page = "rashifal" %}
-{% set breadcrumbs = [('Home', '/'), ('Rashifal', '/rashifal')] %}
+{# Localised, and the terminal item is THIS page's url. Hardcoded, the Hindi
+   hub shipped a BreadcrumbList byte-identical to the English one — English
+   name, English URL — under a canonical pointing at the Hindi URL. The
+   single rashi page was fixed for exactly this and the hub was missed,
+   in the same commit that set lang_prefix two lines above (QA 2026-10-04). #}
+{% set breadcrumbs = [(t(lang, 'nav_home'), '/'),
+                      (t(lang, 'nav_rashifal_link'), lang_prefix ~ '/rashifal')] %}
 {% include "_breadcrumb_schema.html" %}
 {% include "_nav.html" %}
 

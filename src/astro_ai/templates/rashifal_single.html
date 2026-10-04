@@ -68,7 +68,7 @@
   {# HERO — glyph + name + pretty date #}
   <header class="text-center space-y-3">
     <div class="text-xs uppercase tracking-wider text-astro-700 font-semibold">
-      <a href="/rashifal" class="hover:text-astro-700">{{ t(lang, 'nav_rashifal_link') }}</a> · <time datetime="{{ today_date }}">{{ today_pretty }}</time>
+      <a href="{{ lang_prefix }}/rashifal" class="hover:text-astro-700">{{ t(lang, 'nav_rashifal_link') }}</a> · <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </div>
     <img src="/static/rashi/{{ rashi_slug }}.png"
          alt="{{ t(lang, 'rashifal_single_alt', rashi_en=rashi_en, rashi_sa=rashi_sa, rashi_hi=rashi_hi) }}"
@@ -89,7 +89,10 @@
 {{ reading_body }}
     </div>
     <div class="pt-4 mt-4 border-t border-stone-100 flex flex-wrap items-center gap-3 justify-between text-sm no-print">
-      <a href="/rashifal" class="text-astro-700 hover:underline">{{ t(lang, 'rashifal_all_12') }}</a>
+      {# lang_prefix: both of these carry Hindi LABELS, and both pointed at the
+         English hub — so "सभी 12 राशियाँ" landed a Hindi reader in English even
+         though /hi/rashifal exists. QA 2026-10-04. #}
+      <a href="{{ lang_prefix }}/rashifal" class="text-astro-700 hover:underline">{{ t(lang, 'rashifal_all_12') }}</a>
       <a href="https://wa.me/?text={{ t(lang, 'rashifal_single_share', rashi_en=rashi_en, rashi_hi=rashi_hi, url=site_url ~ self_path) | urlencode }}"
          target="_blank" rel="noopener"
          class="inline-flex items-center gap-1.5 text-emerald-700 hover:underline">

@@ -23,7 +23,7 @@ from datetime import date
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
-from astro_ai import daily_cache, festivals
+from astro_ai import daily_cache, festivals, hindi_pages
 from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot
 from astro_ai.llm import parse_sectioned_reading
 from astro_ai import providers as llm_providers
@@ -292,7 +292,7 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         except Exception as err:
             log.exception("rashifal single-rashi generation failed for %s", canonical_slug)
             _fire_error_alert(request, err, f"rashifal_single:{canonical_slug}")
-            _title, _msg = _llm_error_friendly(err)
+            _title, _msg = _llm_error_friendly(err, lang)
             if is_htmx:
                 # Fragment path — return a card-shaped retry block, not the
                 # generic 'safe to re-submit your input' message (there is
@@ -310,13 +310,27 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
                 )
             return templates.TemplateResponse(
                 request, "error.html",
-                {"title": _title, "message": _msg},
+                {"title": _title, "message": _msg, "lang": lang},
                 status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
             )
 
     # Common template context.
     from astro_ai.llm import _RASHI_ANCHORS
     anchor = _RASHI_ANCHORS[idx]
+    # The fragment's "open full page" link AND its WhatsApp share URL are both
+    # built from this (_rashifal_card_content.html). Hardcoded to
+    # /rashifal/{slug}, the Hindi card served from /hi/rashifal's tiles carried
+    # a Hindi reading whose two links both ejected the reader to English, and
+    # shared the English URL. The #124 change that made those tiles fetch
+    # Hindi is what created that path (QA 2026-10-04).
+    #
+    # hindi_url() rather than `lang == "hi"` alone: with a `hi` cookie the
+    # ENGLISH url renders Hindi too, and that page's permalink must stay
+    # English, because that is the URL it is published at.
+    permalink = f"/rashifal/{canonical_slug}"
+    if lang == "hi":
+        permalink = hindi_pages.hindi_url(permalink) or permalink
+
     ctx = {
         "rashi_slug": canonical_slug,
         "rashi_en": anchor["en"],
@@ -329,7 +343,7 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         "reading_body": reading_body,
         "today_date": today_iso,
         "today_pretty": _pretty_date(today_iso, lang),
-        "permalink": f"/rashifal/{canonical_slug}",
+        "permalink": permalink,
         "lang": lang,
         # See the grid route — the seeker's own Rahu Kaal / Abhijit, since the
         # reading itself is forbidden from stating a clock time.

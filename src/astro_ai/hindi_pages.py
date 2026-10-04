@@ -199,6 +199,17 @@ def hreflang_alternates(path: str, base_url: str | None = None) -> list[tuple[st
     from anything that must not drag FastAPI + dotenv in (gate scripts,
     tests) — ``deps`` calls ``load_dotenv(override=True)`` on import.
     """
+    # A mixed-case or otherwise non-canonical URL is a 200 page (the rashifal
+    # route lowercases its slug), and `_normalise` lowercases too — so
+    # /rashifal/ARIES was treated as published and got the full triple, whose
+    # three hrefs are all lowercase and therefore none of them is the URL
+    # being served. That is a one-sided annotation on an indexable page, the
+    # exact mechanism this docstring says makes Google discard hreflang
+    # SITE-WIDE. Emitting nothing is right: the page still carries its own
+    # canonical, and the lowercase pair keeps its honest annotations.
+    # Found by QA 2026-10-04; `main` emits nothing there, so #124 introduced it.
+    if path != _normalise(path):
+        return []
     english = english_url(path)
     if english not in _published():
         return []
