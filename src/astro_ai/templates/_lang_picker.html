@@ -1,58 +1,64 @@
-{# Language selector. Caller provides `lang` (current language code).
+{# Language control. Caller provides `lang` (the RESOLVED language).
 
-   TWO MODES, because a page with a published Hindi URL and a page without are
-   genuinely different situations (#124).
+   ONE mechanism, deliberately — this file has now been wrong twice in
+   opposite directions, and both failures came from the control navigating
+   without persisting, or persisting without navigating.
 
-   1. The page HAS a /hi twin -> real anchors between the two URLs.
-      Crawlable, shareable, and they actually work. This is also what makes
-      the hreflang annotations honest: Google is told the pair exists, and a
-      reader can reach both halves of it.
+   History, because it is the whole design rationale:
 
-   2. The page has NO Hindi version -> the cookie form, as before. There is no
-      second URL to link to, so a preference is the only thing a switch can
-      change, and it takes effect on the pages that do have Hindi.
+   v1 was a <select> posting `next = request.url.path`. On a /hi/ page that
+   posted /hi/rashifal back, and /hi/* forces Hindi regardless of cookie — so
+   choosing English wrote lang=en into __session, bounced the reader to
+   /hi/rashifal and re-rendered Hindi. A dead control that silently changed
+   stored state.
 
-   Mode 1 exists because mode 2 was BROKEN on /hi/ pages, not merely
-   suboptimal: the form posted `next = request.url.path`, i.e. /hi/rashifal,
-   and /hi/* forces Hindi regardless of cookie. So choosing "English" wrote
-   lang=en into __session, bounced the reader back to /hi/rashifal, and
-   re-rendered it in Hindi. The control did nothing visible while silently
-   changing the reader's saved language — measured by QA 2026-10-04. A dead
-   control that mutates stored state is worse than no control.
+   v2 (mine) replaced it with plain anchors between the two URLs. That fixed
+   the silent write and broke the control differently: with a saved `hi`
+   preference, /rashifal ALSO renders Hindi, so the "English" anchor pointed
+   at a URL that served Hindi. Dead again, on exactly the 13 pages where the
+   anchors appeared, and a functional regression against both main and v1 —
+   measured by QA 2026-10-04 across 4 pages x 3 cookie states.
+
+   So: a language switch has to do BOTH. It must write the preference (or the
+   reader gets English here and Hindi on the next page) and it must land on
+   the right URL (or the reader sits at a URL whose language it is not). That
+   is `POST /lang` with a per-language `next`, which is what this is.
+
+   Buttons, not anchors, and `aria-pressed`, not `aria-current`: this is a
+   preference toggle, not a pair of locations. v2 used aria-current and so
+   claimed the reader was on /hi/rashifal while they were on /rashifal
+   whenever the cookie disagreed with the path.
+
+   Crawlability is NOT lost by using a form: `base.html` emits the
+   en-IN/hi-IN/x-default triple on every page that has a twin, and that is
+   the mechanism Google actually consumes for alternates. The visible control
+   is for readers.
 #}
 {% set _hi = hindi_url(request.url.path) %}
 {% set _en = english_url(request.url.path) %}
-{% if _hi %}
-  {# Mode 1 — the pair exists, so link to it. aria-current marks the page we
-     are on; hreflang tells assistive tech and crawlers what the other side
-     is. rel=alternate matches the <link rel=alternate> pair in base.html. #}
-  <div class="inline-flex items-center gap-1 text-xs" role="group" aria-label="Language">
-    <a href="{{ _en }}" rel="alternate" hreflang="en-IN" lang="en"
-       {% if lang != 'hi' %}aria-current="page"{% endif %}
-       class="px-2 py-1 rounded-md border transition-colors
-              {% if lang != 'hi' %}bg-astro-50 border-astro-400 text-astro-800 font-medium
-              {% else %}bg-white border-stone-300 text-stone-700 hover:border-astro-400{% endif %}">English</a>
-    <a href="{{ _hi }}" rel="alternate" hreflang="hi-IN" lang="hi"
-       {% if lang == 'hi' %}aria-current="page"{% endif %}
-       class="px-2 py-1 rounded-md border transition-colors font-display
-              {% if lang == 'hi' %}bg-astro-50 border-astro-400 text-astro-800 font-medium
-              {% else %}bg-white border-stone-300 text-stone-700 hover:border-astro-400{% endif %}">हिन्दी</a>
-  </div>
-{% else %}
-  {# Mode 2 — no Hindi URL for this page, so this sets a preference. `next`
-     uses english_url() so that a page reached at /hi/<unpublished> (which
-     301s to English anyway) cannot post a /hi path back and strand the
-     reader in forced Hindi. #}
-  <form method="post" action="/lang" class="inline-flex items-center">
-    <input type="hidden" name="next" value="{{ _en }}">
-    <select name="lang" onchange="this.form.submit()"
-            class="bg-white border border-stone-300 rounded-md px-2 py-1 text-xs text-stone-700
-                   hover:border-astro-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500
-                   focus:outline-none cursor-pointer transition-colors"
-            aria-label="Language">
-      <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
-      <option value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी (Hindi)</option>
-    </select>
-    <noscript><button type="submit" class="ml-1 text-xs text-stone-600 underline">Apply</button></noscript>
-  </form>
-{% endif %}
+<form method="post" action="/lang" class="inline-flex items-center gap-1" role="group" aria-label="Language">
+  {# Each button carries its OWN next, so the destination matches the choice.
+     English goes to the English URL; Hindi goes to the /hi twin when one
+     exists and otherwise stays put, where the cookie alone gives it Hindi
+     chrome. `_en` rather than request.url.path for the English target: a
+     /hi/<unpublished> path 301s to English anyway, so posting the /hi form
+     of it back would strand the reader one redirect away from where they
+     asked to be. #}
+  <button type="submit" name="lang" value="en" lang="en"
+          {% if lang != 'hi' %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %}
+          formaction="/lang"
+          class="px-2 py-1 rounded-md border text-xs transition-colors
+                 {% if lang != 'hi' %}bg-astro-50 border-astro-400 text-astro-800 font-medium
+                 {% else %}bg-white border-stone-300 text-stone-700 hover:border-astro-400{% endif %}">English</button>
+  <button type="submit" name="lang" value="hi" lang="hi"
+          {% if lang == 'hi' %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %}
+          class="px-2 py-1 rounded-md border text-xs font-display transition-colors
+                 {% if lang == 'hi' %}bg-astro-50 border-astro-400 text-astro-800 font-medium
+                 {% else %}bg-white border-stone-300 text-stone-700 hover:border-astro-400{% endif %}">हिन्दी</button>
+  {# One hidden `next` per language, selected by which button was clicked, is
+     not expressible in plain HTML — a button's `value` is consumed by `name`.
+     So `next` is the ENGLISH url and the /lang handler re-derives the Hindi
+     twin from it when lang=hi. That keeps the single source of truth in
+     hindi_pages rather than duplicating the mapping into this template. #}
+  <input type="hidden" name="next" value="{{ _en }}">
+</form>

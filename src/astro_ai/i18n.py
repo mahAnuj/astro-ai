@@ -508,6 +508,15 @@ _EN: Final[dict[str, str]] = {
     "nbs_label_steady":        "Steady numerological base",
     "nbs_label_patience":      "Numerology signals ask for patience",
     "nbs_label_deep":          "Deep learning theme — remedies matter",
+    # Degraded-path copy. Reached when every provider in the chain is
+    # exhausted, which on a /hi/ URL used to render this English text under
+    # <html lang="en"> at a self-canonical, hi-IN-annotated Hindi URL (#124,
+    # QA 2026-10-04). The 503 keeps it out of the index, so the cost was to
+    # the reader, not to search.
+    "llm_busy_title":   "High demand right now",
+    "llm_busy_msg":     "\U0001F64F Many seekers are asking questions at the same time. Please try again in a couple of minutes — your input is safe to re-submit exactly as you typed it.",
+    "llm_error_title":  "Something went wrong",
+    "llm_error_msg":    "We couldn't complete the reading this time. Please try again in a moment — your input is safe to re-submit exactly as you typed it.",
 }
 
 _HI: Final[dict[str, str]] = {
@@ -947,6 +956,12 @@ _HI: Final[dict[str, str]] = {
     "nbs_label_steady":        "स्थिर अंकशास्त्रीय आधार",
     "nbs_label_patience":      "अंकशास्त्रीय संकेत धैर्य माँगते हैं",
     "nbs_label_deep":          "गहन शिक्षण विषय — उपायों का महत्व",
+    # See the _EN block for why these exist. COMPOSED, not harvested — a
+    # native reader should check them along with the six already flagged.
+    "llm_busy_title":   "अभी बहुत माँग है",
+    "llm_busy_msg":     "\U0001F64F इस समय बहुत से जिज्ञासु एक साथ प्रश्न पूछ रहे हैं। कृपया कुछ मिनट बाद फिर प्रयास करें — आपकी दी हुई जानकारी सुरक्षित है और वैसी ही दोबारा भेजी जा सकती है।",
+    "llm_error_title":  "कुछ त्रुटि हुई",
+    "llm_error_msg":    "इस बार पठन पूरा नहीं हो सका। कृपया थोड़ी देर बाद फिर प्रयास करें — आपकी दी हुई जानकारी सुरक्षित है और वैसी ही दोबारा भेजी जा सकती है।",
 }
 
 _TABLES: Final[dict[str, dict[str, str]]] = {"en": _EN, "hi": _HI}

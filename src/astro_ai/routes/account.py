@@ -44,8 +44,24 @@ async def set_lang(
     lang: str = Form(...),
     next: str = Form(default="/"),
 ) -> RedirectResponse:
-    """Switch reading language; persisted in the combined __session cookie."""
-    response = RedirectResponse(_safe_redirect_target(next), status_code=303)
+    """Switch reading language; persisted in the combined __session cookie.
+
+    `next` arrives as the ENGLISH url of the page the reader was on. When they
+    chose Hindi and that page has a published Hindi twin, land them on the
+    twin rather than on the English URL (#124).
+
+    Both halves are needed and each was shipped alone and broken: writing the
+    cookie without moving leaves the reader at a URL whose language it is not,
+    and moving without writing gives them Hindi here and English on the next
+    page. The twin lookup lives in `hindi_pages`, so the template does not
+    have to carry a second copy of the URL mapping.
+    """
+    target = _safe_redirect_target(next)
+    if lang == "hi":
+        from astro_ai import hindi_pages
+
+        target = hindi_pages.hindi_url(target) or target
+    response = RedirectResponse(target, status_code=303)
     save_lang(response, lang, request)
     return response
 

@@ -218,26 +218,70 @@ def test_english_page_keeps_its_own_identity(hindi_client):
         assert "/hi/" not in got, f"English page claims the Hindi URL: {got}"
 
 
-def test_language_switch_is_a_working_control(hindi_client):
-    """FAIL 3 — a dead control that mutated stored state.
+def _switch(client, page, to):
+    """Click the picker's `to` control on `page` and follow where it lands.
 
-    The picker posted `next = request.url.path`, i.e. /hi/rashifal, and
-    /hi/* forces Hindi regardless of cookie. Choosing English wrote lang=en
-    into __session, bounced back to /hi/rashifal and re-rendered Hindi: no
-    visible effect, and the reader's SAVED language silently changed.
-
-    Where a /hi twin exists the switch is now a pair of real anchors, which
-    is also acceptance item 4 of the issue.
+    Returns (location, resolved_lang). This helper exists because the previous
+    version of this test asserted the anchor's HREF and never followed it —
+    so it passed while the control was dead. QA 2026-10-04: "its name claims
+    a property it does not test."
     """
-    html = hindi_client.get("/hi/rashifal").text
-    pairs = dict((h, href) for href, h in
-                 re.findall(r'<a href="([^"]*)" rel="alternate" hreflang="([^"]*)"', html))
-    assert pairs.get("en-IN") == "/rashifal", f"no working English anchor: {pairs}"
-    assert pairs.get("hi-IN") == "/hi/rashifal", f"no working Hindi anchor: {pairs}"
+    html = client.get(page).text
+    nxt = re.search(r'name="next" value="([^"]*)"', html).group(1)
+    r = client.post("/lang", data={"lang": to, "next": nxt})
+    loc = r.headers["location"]
+    final = client.get(loc)
+    return loc, re.search(r'<html[^>]*lang="([^"]*)"', final.text).group(1)
 
-    # and following it must actually arrive in English
-    r = hindi_client.get(pairs["en-IN"])
-    assert re.search(r'<html[^>]*lang="en"', r.text), "the English anchor still renders Hindi"
+
+@pytest.mark.parametrize("start_lang", [None, "en", "hi"])
+@pytest.mark.parametrize("page", ["/rashifal", "/hi/rashifal", "/rashifal/aries"])
+def test_language_switch_works_from_every_starting_state(hindi_client, start_lang, page):
+    """FAIL 3, and the regression that replaced it.
+
+    v1 (a <select> posting request.url.path) wrote lang=en then bounced the
+    reader back to /hi/rashifal, which forces Hindi: dead control, and it
+    silently changed their saved language.
+
+    v2 (plain anchors, mine) fixed the silent write and broke it differently —
+    with a saved `hi` preference the ENGLISH url renders Hindi too, so the
+    "English" anchor pointed at a page that served Hindi. Dead again, on
+    exactly the 13 pages where the anchors appeared, and a functional
+    regression against both main and v1.
+
+    So the only assertion worth making is the end-to-end one: from any
+    starting state, asking for a language gets you that language. This is
+    parametrised over all three cookie states because v2 was correct in two
+    of them and broken in the third.
+    """
+    if start_lang:
+        hindi_client.post("/lang", data={"lang": start_lang, "next": "/panchang"})
+
+    _, got_en = _switch(hindi_client, page, "en")
+    assert got_en == "en", f"asked for English from {start_lang!r} on {page}, got {got_en}"
+
+    loc_hi, got_hi = _switch(hindi_client, page, "hi")
+    assert got_hi == "hi", f"asked for Hindi from {start_lang!r} on {page}, got {got_hi}"
+    assert loc_hi.startswith("/hi/"), (
+        f"Hindi was served at {loc_hi}, not at the published Hindi URL — the "
+        "reader ends up at a URL whose language it is not"
+    )
+
+
+def test_language_control_marks_state_not_location(hindi_client):
+    """FAIL 2 — aria-current said the reader was on /hi/rashifal while they
+    were on /rashifal, whenever a `hi` cookie disagreed with the path.
+
+    It is a preference toggle, so the correct semantic is aria-pressed on the
+    chosen option, not aria-current on a URL.
+    """
+    hindi_client.post("/lang", data={"lang": "hi", "next": "/panchang"})
+    html = hindi_client.get("/rashifal").text
+    assert 'aria-current' not in html.split("<footer")[0], (
+        "aria-current makes a location claim; this control sets a preference"
+    )
+    pressed = re.findall(r'value="(\w+)"[^>]*aria-pressed="true"', html)
+    assert pressed == ["hi"], f"aria-pressed should mark the active language, got {pressed}"
 
 
 def test_language_switch_falls_back_to_a_preference_without_a_twin(hindi_client):
@@ -323,3 +367,134 @@ def test_post_lang_is_not_redirected(hindi_client):
     r = hindi_client.post("/lang", data={"lang": "hi", "next": "/matching"})
     assert r.status_code == 303, f"POST /lang got {r.status_code}"
     assert "__session" in r.headers.get("set-cookie", ""), "the preference was not written"
+
+
+# --- QA round 2: the four defects found in the round-1 fixes ---------------
+
+def test_hindi_card_fragment_stays_in_hindi(hindi_client):
+    """QA F3. Making the hub tiles fetch Hindi CREATED this path, and the
+    fragment they swap in built both its "open full page" link and its
+    WhatsApp share text from a hardcoded /rashifal/{slug} permalink — so a
+    Hindi reading arrived wrapped in chrome whose two links ejected the
+    reader to English, and shared the English URL.
+
+    Round 1 verified this fix by measuring "prompt_lang=hi, 780 Devanagari
+    chars" — the BODY only. conftest's docstring opens by warning about
+    exactly that: measuring the thing that just improved rather than the
+    thing the code exists to do.
+    """
+    frag = hindi_client.get("/hi/rashifal/aries",
+                            headers={"HX-Rashifal-Fragment": "1"}).text
+    links = set(re.findall(r'href="((?:/hi)?/rashifal/[a-z]+)"', frag))
+    assert links == {"/hi/rashifal/aries"}, f"Hindi fragment links out to English: {links}"
+    share = re.search(r"wa\.me/\?text=([^\"]*)", frag)
+    assert share, "no share link in the fragment"
+    assert "%2Fhi%2Frashifal" in share.group(1) or "/hi/rashifal" in share.group(1), \
+        "the Hindi card shares the English URL"
+
+    en = hindi_client.get("/rashifal/aries", headers={"HX-Rashifal-Fragment": "1"}).text
+    assert set(re.findall(r'href="((?:/hi)?/rashifal/[a-z]+)"', en)) == {"/rashifal/aries"}, \
+        "the English fragment acquired Hindi links"
+
+
+def test_hindi_hub_breadcrumbs_are_hindi(hindi_client):
+    """QA F4. The single rashi page was fixed for exactly this and the hub was
+    missed — in the same commit that set `lang_prefix` two lines above the
+    hardcoded breadcrumb. /hi/rashifal shipped a BreadcrumbList byte-identical
+    to the English hub's, English name and English URL, under a canonical
+    pointing at the Hindi URL.
+    """
+    import json
+
+    for path, want_hi in (("/hi/rashifal", True), ("/rashifal", False)):
+        blobs = re.findall(r'<script type="application/ld\+json">(.*?)</script>',
+                           hindi_client.get(path).text, re.S)
+        crumbs = None
+        for b in blobs:
+            d = json.loads(b)          # must also PARSE
+            if d.get("@type") == "BreadcrumbList":
+                crumbs = [(i["name"], i["item"]) for i in d["itemListElement"]]
+        assert crumbs, f"no BreadcrumbList on {path}"
+        terminal_url = crumbs[-1][1]
+        assert ("/hi/" in terminal_url) is want_hi, f"{path} terminal crumb: {terminal_url}"
+        if want_hi:
+            assert any("ऀ" <= ch <= "ॿ" for ch in crumbs[-1][0]), \
+                f"Hindi hub breadcrumb name is English: {crumbs[-1][0]!r}"
+
+
+def test_hindi_labelled_links_stay_in_hindi(hindi_client):
+    """QA F5. Two visible anchors on the Hindi reading page carried Hindi
+    LABELS and pointed at the English hub, so "सभी 12 राशियाँ" landed a Hindi
+    reader in English even though /hi/rashifal exists.
+
+    The footer is excluded: it is entirely English by design, and its
+    "Daily Rashifal" link is correct.
+    """
+    html = hindi_client.get("/hi/rashifal/aries").text
+    body = html.split("<footer")[0]
+    for m in re.finditer(r'<a href="(/rashifal[^"]*)"[^>]*>(.*?)</a>', body, re.S):
+        label = re.sub(r"<[^>]+>", "", m.group(2)).strip()
+        assert not any("ऀ" <= ch <= "ॿ" for ch in label), (
+            f"Hindi label {label!r} points at the English URL {m.group(1)}"
+        )
+
+
+@pytest.mark.parametrize("path", ["/rashifal/ARIES", "/hi/rashifal/ARIES", "/rashifal/Aries"])
+def test_noncanonical_url_emits_no_hreflang(hindi_client, path):
+    """QA secondary 3, which QA judged worth fixing rather than noise.
+
+    `_normalise` lowercases, so a mixed-case URL was treated as published and
+    got the full triple — whose three hrefs are all lowercase, so NONE of them
+    is the URL being served. A one-sided annotation on an indexable 200 page
+    is the exact mechanism hreflang_alternates' own docstring says makes
+    Google discard hreflang site-wide, which would poison the 26 annotations
+    the whole issue rests on. `main` emits nothing there, so #124 introduced it.
+    """
+    r = hindi_client.get(path)
+    assert r.status_code == 200, f"{path} stopped serving"
+    assert _alternates(r.text) == [], f"{path} claims alternates that do not include itself"
+
+
+def test_degraded_hindi_page_is_in_hindi(hindi_client, monkeypatch):
+    """QA F9. With every provider exhausted, the Hindi URL served an English
+    error page under <html lang="en"> at a self-canonical, sitemapped,
+    hi-IN-annotated URL. The 503 keeps it out of the index, so the cost was
+    to the reader.
+    """
+    from astro_ai.providers import AllProvidersExhausted
+    import astro_ai.llm as llm
+
+    def boom(*a, **k):
+        raise AllProvidersExhausted("all providers down")
+
+    monkeypatch.setattr(llm.providers, "chat", boom)
+
+    hi = hindi_client.get("/hi/rashifal/aries")
+    assert hi.status_code == 503
+    assert re.search(r'<html[^>]*lang="hi"', hi.text), "the Hindi error page declares lang=en"
+    title = re.search(r"<title>([^<]*)", hi.text).group(1)
+    assert any("ऀ" <= ch <= "ॿ" for ch in title), f"English title on the Hindi page: {title!r}"
+
+    en = hindi_client.get("/rashifal/aries")
+    assert en.status_code == 503
+    en_title = re.search(r"<title>([^<]*)", en.text).group(1)
+    assert not any("ऀ" <= ch <= "ॿ" for ch in en_title), f"Devanagari leaked into English: {en_title!r}"
+
+
+def test_lang_prefix_is_keyed_on_path_not_language_alone(hindi_client):
+    """QA F7 — the condition `lang_prefix_for` exists for had zero coverage.
+
+    With a `hi` cookie, /rashifal/aries renders Hindi at an ENGLISH url, and
+    its links and structured data must stay English because that is the URL
+    it is published at. Keying the prefix on `lang == "hi"` alone reproduces
+    FAIL 4 completely, and escaped the entire suite until this test.
+    """
+    hindi_client.post("/lang", data={"lang": "hi", "next": "/panchang"})
+    html = hindi_client.get("/rashifal/aries").text
+
+    canonical = re.search(r'<link rel="canonical" href="([^"]*)', html).group(1)
+    assert canonical.endswith("/rashifal/aries") and "/hi/" not in canonical, canonical
+    for got in re.findall(r'"(?:@id|url)": "([^"]*rashifal[^"]*)"', html):
+        assert "/hi/" not in got, (
+            f"Hindi-by-cookie at an English URL claims the Hindi identity: {got}"
+        )

@@ -67,6 +67,30 @@ MUTATIONS = [
      "    total = len(subs)", "    total = len(subscribers.list_subscribers())",
      "test_signup_landing_mid_run_is_not_a_false_failure"),
 
+    ("#124: /lang stops routing Hindi to the published twin",
+     "src/astro_ai/routes/account.py",
+     "        target = hindi_pages.hindi_url(target) or target",
+     "        pass",
+     "test_language_switch_works_from_every_starting_state"),
+
+    ("#124: lang_prefix keyed on language alone, ignoring the path",
+     "src/astro_ai/routes/deps.py",
+     '    return "/hi" if path.startswith("/hi/") or path == "/hi" else ""',
+     '    return "/hi"',
+     "test_lang_prefix_is_keyed_on_path_not_language_alone"),
+
+    ("#124: Hindi card fragment links and shares the English URL",
+     "src/astro_ai/routes/rashifal.py",
+     '    if lang == "hi":\n        permalink = hindi_pages.hindi_url(permalink) or permalink\n',
+     "",
+     "test_hindi_card_fragment_stays_in_hindi"),
+
+    ("#124: non-canonical URLs regain a one-sided hreflang set",
+     "src/astro_ai/hindi_pages.py",
+     "    if path != _normalise(path):\n        return []\n",
+     "",
+     "test_noncanonical_url_emits_no_hreflang"),
+
     ("#124: open redirect — same-origin guard removed",
      "src/astro_ai/routes/hindi.py",
      '    if not target.startswith("/") or target.startswith("//"):\n        target = "/"\n',
