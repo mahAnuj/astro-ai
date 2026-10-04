@@ -21,7 +21,7 @@ ways, across three QA rounds:
       Devanagari.
   v4  v3 + hx-boost="false". Fixed the stale lang, and its english_url() call
       for `next` normalised the path, adding a second redirect hop to every
-      switch on the 76 /learn/ URLs.
+      switch on the 77 /learn/ URLs (76 articles + the hub, measured).
   v5  REVERTED to main's <select>, with only `next` changed. The <select> is
       immune to v3 entirely: `this.form.submit()` is programmatic and fires no
       submit event, so htmx never intercepts it. The button group was better in
@@ -42,7 +42,9 @@ So this gate asserts the two things only a browser can see, after a real
 click:
 
   0. The switch lands on the right URL — the /hi twin where one exists, the
-     same page where it does not. Checking language alone passed a tree whose
+     same page where it does not — in ONE redirect hop. The hop count is what
+     catches a `next` that has been normalised (lowercased, trailing slash
+     stripped), which is why a trailing-slash page is in the list below. Checking language alone passed a tree whose
      `next` was hardcoded to /about: right language, wrong page.
   1. `document.documentElement.lang` matches the language that was chosen.
      This is the attribute hx-boost leaves stale, and it drives both the
@@ -81,7 +83,16 @@ DEFAULT_BASE = "http://127.0.0.1:8000"
 # same template include and the same /lang round-trip.
 PUBLISHED = ["/rashifal"]
 # And pages without a twin, where the switch only sets a preference.
-UNPUBLISHED = ["/panchang", "/matching"]
+UNPUBLISHED = [
+    "/panchang",
+    "/matching",
+    # A TRAILING-SLASH url, deliberately. Without one the gate passed with the
+    # picker's `next` reverted to the normalising english_url() — /rashifal,
+    # /panchang and /matching are all identity under it, so the extra redirect
+    # hop on the 77 /learn/ URLs was invisible here. That was the fourth way
+    # this gate has been wrong (QA round 5, N1).
+    "/learn/",
+]
 
 HINDI_SCALE = 1.08   # base.html: html[lang="hi"] { font-size: 108%; }
 TOLERANCE = 0.01
@@ -175,12 +186,36 @@ def main() -> int:
             # destroyed". With hx-boost active there is no document navigation
             # at all, which is the defect — so fall back to networkidle rather
             # than requiring one.
+            # Count the redirect chain, not just where it ends. F3 was a
+            # NORMALISED `next` adding a second hop on every trailing-slash
+            # URL — the reader still arrived, so a landing-URL check could not
+            # see it. redirected_from walks the chain backwards.
+            hops = {"n": 0}
+
+            def _count(resp):
+                # SAME-ORIGIN only. The first version counted unpkg.com's own
+                # 301 for the htmx script, so every page looked like it took
+                # an extra hop and the healthy tree failed. An external CDN
+                # redirect is not part of the switch.
+                if 300 <= resp.status < 400 and resp.url.startswith(args.url):
+                    hops["n"] += 1
+
+            page.on("response", _count)
             try:
                 with page.expect_navigation(timeout=5000):
                     sel.select_option("hi")
             except Exception:
                 pass
             page.wait_for_load_state("networkidle")
+            page.remove_listener("response", _count)
+
+            # POST /lang -> 303 to the target is the one legitimate hop.
+            if hops["n"] > 1:
+                problems.append(
+                    f"{path}: the switch took {hops['n']} redirect hops, expected 1. "
+                    f"A normalised `next` (lowercased, trailing slash stripped) adds "
+                    f"one — see strip_hi_prefix."
+                )
 
             # WHERE it landed, not only what language it rendered. Without
             # this the gate passed with `next` hardcoded to /about: it read

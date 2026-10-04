@@ -275,7 +275,7 @@ def test_language_control_posts_a_non_normalised_next(hindi_client):
     The picker used `english_url()` for its `next`, which runs `_normalise`
     and so also lowercases and strips the trailing slash. So on
     /learn/karva-chauth-2026/ it posted /learn/karva-chauth-2026, and every
-    language switch on the 75 /learn/ articles plus /learn/ itself took TWO
+    language switch on the 76 /learn/ articles plus /learn/ itself took TWO
     redirect hops where main took one. The reader still arrived, so this is a
     minor regression — but it is a regression against main, on the site's
     largest page type, caused by a line this branch added.
@@ -498,13 +498,26 @@ def test_cooldown_degraded_page_is_localised(hindi_client, stub_llm, monkeypatch
     assert re.search(r'<html[^>]*lang="hi"', hi.text), "the cooled Hindi page declares lang=en"
     title = re.search(r"<title>([^<]*)", hi.text).group(1)
     assert any("ऀ" <= ch <= "ॿ" for ch in title), f"English title on the Hindi page: {title!r}"
-    # The BODY too, not only the title. QA mutated the message back to English
-    # while leaving the title Hindi and this test passed — half the fix could
-    # have come back silently (QA round 4, M3).
-    body = hi.text.split("<footer")[0]
-    heading = re.search(r"<h1[^>]*>(.*?)</h1>", body, re.S)
-    assert heading and any("ऀ" <= ch <= "ॿ" for ch in heading.group(1)), \
-        f"English <h1> on the Hindi cooled page: {heading.group(1)[:60] if heading else None!r}"
+    # The MESSAGE, which is a different string from the title.
+    #
+    # Two attempts at this assertion were hollow. The first checked only
+    # <title>. The second — written to fix that — checked <h1>, which
+    # error.html renders as `{{ title }}`: the very string the line above
+    # already asserts. So `{{ message }}` went uninspected through two rounds
+    # while a comment claimed otherwise, and QA reproduced it by reverting
+    # _HI["rashifal_not_ready_msg"] to English with the title left Hindi —
+    # 139 tests still passed (QA round 5).
+    #
+    # error.html:11-12 puts the message in a bg-rose-50 div, so that is what
+    # this reads. Anchored on the class rather than on document order because
+    # order is what made the <h1> version look right.
+    msg_div = re.search(r'<div class="bg-rose-50[^"]*"[^>]*>(.*?)</div>', hi.text, re.S)
+    assert msg_div, "could not find the error message block in error.html"
+    message = re.sub(r"<[^>]+>", "", msg_div.group(1)).strip()
+    assert any("ऀ" <= ch <= "ॿ" for ch in message), (
+        f"the Hindi cooled page's MESSAGE is English: {message[:80]!r}"
+    )
+    assert message != title, "the message and the title are the same string"
 
     rashifal._regen_failures.clear()
     hindi_client.get("/rashifal/aries")
@@ -659,3 +672,62 @@ def test_language_switch_falls_back_to_a_preference_without_a_twin(hindi_client)
 
 
 # --- the blind spot QA found in my own mutation testing --------------------
+
+
+# --- QA round 5, N4: three fixes that shipped with no guard at all ---------
+# QA verified each by execution and found them correct, then noted nothing
+# stops a sixth regression. These are those guards.
+
+def test_error_fragment_permalink_is_path_keyed(hindi_client, stub_llm):
+    """The error fragment's /hi prefix must follow the PATH, not the language.
+
+    Language-keyed, it disagreed with the success fragment 150 lines away: at
+    /rashifal/aries with a `hi` cookie the success card said /rashifal/aries
+    and the error card said /hi/rashifal/aries. One commit both fixed and
+    re-introduced that split; QA measured all four URL x cookie states.
+    """
+    from astro_ai.routes import rashifal
+
+    rashifal._regen_failures.clear()
+    stub_llm(lambda _n: "## Aries / Mesha\nToo short.\n\n## Taurus / Vrishabha\n" + "x" * 1200)
+    hindi_client.post("/lang", data={"lang": "hi", "next": "/panchang"})
+
+    # Hindi BY COOKIE at the ENGLISH url — the state that was wrong
+    hindi_client.get("/rashifal/aries")
+    frag = hindi_client.get("/rashifal/aries",
+                            headers={"HX-Rashifal-Fragment": "1"}).text
+    targets = set(re.findall(r'(?:hx-get|href)="((?:/hi)?/rashifal/[a-z]+)"', frag))
+    assert targets == {"/rashifal/aries"}, (
+        f"error fragment at the English URL points at {targets}; it must match "
+        "the URL it was fetched from, as the success fragment does"
+    )
+
+
+def test_unknown_rashi_404_is_localised(hindi_client):
+    """The fourth English-only degraded exit, and the only one that passed no
+    `lang` at all — it sat ABOVE `lang = _lang(request)`, so it could not have
+    been localised without hoisting that assignment.
+    """
+    hi = hindi_client.get("/hi/rashifal/notasign")
+    assert hi.status_code == 404
+    assert re.search(r'<html[^>]*lang="hi"', hi.text), "the Hindi 404 declares lang=en"
+    h1 = re.search(r"<h1[^>]*>(.*?)</h1>", hi.text, re.S)
+    assert h1 and any("ऀ" <= ch <= "ॿ" for ch in h1.group(1)), \
+        f"English heading on the Hindi 404: {h1.group(1)[:50] if h1 else None!r}"
+
+    en = hindi_client.get("/rashifal/notasign")
+    assert en.status_code == 404
+    en_h1 = re.search(r"<h1[^>]*>(.*?)</h1>", en.text, re.S).group(1)
+    assert not any("ऀ" <= ch <= "ॿ" for ch in en_h1), f"Devanagari leaked: {en_h1!r}"
+
+
+def test_hindi_404_does_not_send_readers_to_the_english_hub(hindi_client):
+    """QA round 5, N6. The Hindi message read "… /rashifal देखें।" — a Hindi
+    sentence directing the reader to the English hub, on a /hi/ page where
+    /hi/rashifal exists. Plain text rather than a link, so cosmetic, but wrong.
+    """
+    text = hindi_client.get("/hi/rashifal/notasign").text
+    msg = re.search(r'<div class="bg-rose-50[^"]*"[^>]*>(.*?)</div>', text, re.S)
+    assert msg, "could not find the message block"
+    body = re.sub(r"<[^>]+>", "", msg.group(1))
+    assert "/hi/rashifal" in body, f"the Hindi 404 points at the English hub: {body.strip()[:70]!r}"
