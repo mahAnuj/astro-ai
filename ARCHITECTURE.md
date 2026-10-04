@@ -97,10 +97,15 @@ src/astro_ai/
   learn_registry.py 3,107  /learn article metadata
   numerology.py    1,844  Chaldean + Lo Shu calculators
   festival_registry.py 1,509
-  muhurat.py       1,444  electional scoring; shares angas with panchang
-  llm.py           1,068  prompt assembly, rashifal fan-out
+  muhurat.py         1475  electional scoring; shares angas with panchang
+  llm.py         1075  prompt assembly, rashifal fan-out
   matching.py      1,056  Ashtakoota 36-guna
-  i18n.py           1116  en/hi, symmetric key sets (enforced)
+  i18n.py           1120  en/hi, symmetric key sets — enforced by
+                        tests/test_i18n_symmetry.py (added 2026-10-05; the
+                        word "enforced" was here for months with nothing
+                        behind it. translate() falls back to English, so a
+                        missing Hindi key renders ENGLISH on a Hindi page,
+                        silently — found by #124 QA)
   providers.py       704  provider chain, quality gates, retry policy
   routes/            25 modules, 68 routes
   knowledge/*.md     classical source material — the authority for astrological claims
@@ -420,11 +425,11 @@ Dated, with the evidence. **Check here before proposing a change.**
 | date | decision | why, measured |
 |---|---|---|
 | — | GCS bucket stays in the US | free tier is US-only; relocation considered and rejected |
-| 2026-10-04 | Hindi gets 13 URLs at `/hi/{path}`, not ~200 | with `?lang=hi` the rest of the site is 83-98% textually identical to English (only the chrome is translated): `/learn/` 0.978 similar / 1.8% Devanagari. Only `/rashifal` + the 12 rashi pages have genuinely Hindi primary content (prod `/rashifal/aries?lang=hi`: 74.3% Devanagari, 0.240 similarity). Publishing the rest would ship ~200 near-duplicates |
+| 2026-10-04 | Hindi gets 13 URLs at `/hi/{path}`, not ~200 | with `?lang=hi` the rest of the site is 83-98% textually identical to English (only the chrome is translated): `/learn/` ~0.97-0.98 similar / ~1.5-1.8% Devanagari (two independent measurements, differing by method and by that day's content; the conclusion is unaffected). Only `/rashifal` + the 12 rashi pages have genuinely Hindi primary content (prod `/rashifal/aries?lang=hi`: 74.3% Devanagari, 0.240 similarity). Publishing the rest would ship ~200 near-duplicates |
 | 2026-10-04 | `/hi` is a ROUTER, not a path-stripping middleware | rewriting `scope["path"]` makes `request.url.path` return the English path inside the handler, so `base.html` canonicalises `/hi/rashifal` onto `/rashifal` — the exact defect #124 removes. Built, reproduced, discarded |
 | 2026-10-04 | `?lang=hi` 301s to `/hi/{path}` for published paths only | otherwise the same Hindi content stays reachable under an English canonical. Unpublished paths keep `?lang=hi` working — there is no Hindi URL to send them to |
 | 2026-10-04 | unpublished pages emit NO hreflang, not a lone `en-IN` | a `hi-IN` pointing at a non-existent page makes Google discard hreflang site-wide, poisoning the 13 URLs that matter to decorate ~198 that do not |
-| 2026-10-04 | sitemap sweep cost: **TPM is the binding constraint, not TPD** | 12 cold Hindi generations per `verify-production` sweep at 3,341 tokens each (measured with `o200k_base`, the right family for `gpt-oss-120b/20b`; mean prompt 13,674 chars across the 12 rashis) = **40,092 input tokens/day, 20.0% of the 200k TPD** — fits. But the sweep issues them at `-P 6` with NO pacing (`_RASHIFAL_MIN_INTERVAL_S = 0.0`, and `rashifal.py` passes `pacer=None`), so a fully cold sweep is English 12 + Hindi 12 ≈ **78,600 input tokens in a few minutes** against 8,000 TPM per model / 16,000 for the `groq120,groq20` chain. It cannot fit under ~5 minutes however scheduled, so it will 429 down the chain toward the paid `openai` leg. **Pre-existing for the English 12; #124 doubles it.** Nothing pre-warms the `rashifal_single` namespace — the warm-rashifal jobs write only the combined key. Measured by QA 2026-10-04; actual 429 behaviour NOT measured (needs real Groq calls). Flagged for the human: the fix is either pacing the sweep or adding a model, and adding a model is not an agent's decision |
+| 2026-10-04 | sitemap sweep cost: **TPM is the binding constraint, not TPD** | 12 cold Hindi generations per `verify-production` sweep at 3,341 tokens each (measured with `o200k_base`, the right family for `gpt-oss-120b/20b`; mean prompt 13,674 chars across the 12 rashis) = **40,092 input tokens/day, 20.0% of the 200k TPD** — fits. But the sweep issues them at `-P 6` with NO pacing (`_RASHIFAL_MIN_INTERVAL_S = 0.0`, and the single-rashi path is never paced at all — an earlier version of this row said `rashifal.py` passes `pacer=None`, but `generate_rashifal_for_rashi` takes no `pacer` parameter; the conclusion was right and the mechanism invented, QA round 6), so a fully cold sweep is English 12 + Hindi 12 ≈ **78,600 input tokens in a few minutes** against 8,000 TPM per model / 16,000 for the `groq120,groq20` chain. It cannot fit under ~5 minutes however scheduled, so it will 429 down the chain toward the paid `openai` leg. **Pre-existing for the English 12; #124 doubles it.** Nothing pre-warms the `rashifal_single` namespace — the warm-rashifal jobs write only the combined key. Measured by QA 2026-10-04; actual 429 behaviour NOT measured (needs real Groq calls). Flagged for the human: the fix is either pacing the sweep or adding a model, and adding a model is not an agent's decision |
 | — | Whole Sign houses | classical Parashari standard |
 | — | No Pythagorean numerology mode | table appears in none of the books in `data/` |
 | 2026-07 | Homepage does zero GCS reads | #144: 32 ops → 0, ~13s → <1s |

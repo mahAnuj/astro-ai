@@ -99,7 +99,28 @@ async def hindi_unpublished(request: Request, path: str) -> RedirectResponse:
     # the English page, which is the defect this module exists to fix, just
     # reached via a slash. Redirect to the canonical /hi form instead.
     twin = hindi_pages.hindi_url(requested)
-    target = twin if twin is not None else hindi_pages.english_url(requested)
+    # strip_hi_prefix, NOT english_url, for the else-branch. english_url runs
+    # _normalise, which lowercases and strips the trailing slash — so
+    # /hi/learn/karva-chauth-2026/ redirected to /learn/karva-chauth-2026,
+    # which Starlette then 307'd back to the slashed form: two hops for all 77
+    # /learn/ URLs. The same normalisation defect as the picker's `next`, one
+    # layer over, and hindi_pages.strip_hi_prefix's own docstring forbids
+    # exactly this use of english_url (QA round 6, B-2).
+    #
+    # The twin lookup above still goes through hindi_url/english_url, which is
+    # correct: there the canonical form IS the point, and /hi/rashifal/ should
+    # land on /hi/rashifal.
+    #
+    # Handing the path through unchanged means the ENGLISH route's own slash
+    # convention decides, rather than this module guessing one. Measured, and
+    # the conventions genuinely differ: /learn/ is canonical WITH the slash
+    # (/learn 307s to /learn/) while /about is canonical WITHOUT it (/about/
+    # 307s to /about). english_url normalised every path to the no-slash form,
+    # which was right for /about and wrong for all 77 /learn/ URLs. A reader
+    # who types a slash a route does not use now pays exactly the one extra
+    # hop they would pay typing it on the English URL directly — pre-existing
+    # Starlette redirect_slashes behaviour, not something this adds.
+    target = twin if twin is not None else hindi_pages.strip_hi_prefix(requested)
     # SAME-ORIGIN GUARD — this is the fix for an open redirect, not a
     # belt-and-braces extra.
     #

@@ -532,6 +532,7 @@ _EN: Final[dict[str, str]] = {
     "rashifal_card_rate_msg":   "Experiencing high traffic. Try again in a minute.",
     "rashifal_unknown_title": "Unknown rashi",
     "rashifal_unknown_msg":   "That is not one of the 12 rashis. Try /rashifal to pick your Moon sign.",
+    "error_back_to_form": "Back to the form",
 }
 
 _HI: Final[dict[str, str]] = {
@@ -989,6 +990,7 @@ _HI: Final[dict[str, str]] = {
     "rashifal_card_rate_msg":   "इस समय बहुत अधिक माँग है। कृपया एक मिनट बाद फिर प्रयास करें।",
     "rashifal_unknown_title": "अज्ञात राशि",
     "rashifal_unknown_msg":   "यह 12 राशियों में से नहीं है। अपनी चंद्र राशि चुनने के लिए /hi/rashifal देखें।",
+    "error_back_to_form": "फ़ॉर्म पर वापस जाएँ",
 }
 
 _TABLES: Final[dict[str, dict[str, str]]] = {"en": _EN, "hi": _HI}

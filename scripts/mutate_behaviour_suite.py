@@ -67,6 +67,18 @@ MUTATIONS = [
      "    total = len(subs)", "    total = len(subscribers.list_subscribers())",
      "test_signup_landing_mid_run_is_not_a_false_failure"),
 
+    ("#124: /hi catch-all normalises the path again (the 2-hop /learn bug)",
+     "src/astro_ai/routes/hindi.py",
+     "target = twin if twin is not None else hindi_pages.strip_hi_prefix(requested)",
+     "target = twin if twin is not None else hindi_pages.english_url(requested)",
+     "test_hi_redirects_take_exactly_one_hop"),
+
+    ("#124: i18n symmetry — a Hindi key goes missing (silent English)",
+     "src/astro_ai/i18n.py",
+     '"nav_home":            "मुख्य पृष्ठ",',
+     '"nav_home_DISABLED":            "मुख्य पृष्ठ",',
+     "test_key_sets_are_identical"),
+
     ("#124: error fragment prefix back to language-keyed",
      "src/astro_ai/routes/rashifal.py",
      'prefix = "/hi" if (path or "").startswith("/hi/")',
