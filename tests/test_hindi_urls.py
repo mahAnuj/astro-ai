@@ -128,6 +128,39 @@ def test_unknown_rashi_fails_the_same_in_both_languages(hindi_client):
             == hindi_client.get("/rashifal/nonsense").status_code == 404)
 
 
+@pytest.mark.parametrize("start,hops,final", [
+    # /hi/<published> non-canonical -> the canonical /hi form, one hop
+    ("/hi/rashifal/", 1, "/hi/rashifal"),
+    ("/hi/RASHIFAL", 1, "/hi/rashifal"),
+    # /hi/<unpublished> -> the English path, UNCHANGED, one hop. These were
+    # two hops until QA round 6 B-2: the catch-all used english_url(), which
+    # strips the trailing slash, so /hi/learn/<slug>/ went to the unslashed
+    # form and Starlette 307'd it back. All 77 /learn/ URLs.
+    ("/hi/learn/karva-chauth-2026/", 1, "/learn/karva-chauth-2026/"),
+    ("/hi/learn/", 1, "/learn/"),
+    ("/hi/matching", 1, "/matching"),
+])
+def test_hi_redirects_take_exactly_one_hop(hindi_client, start, hops, final):
+    """Termination was not enough.
+
+    `test_hi_redirect_chains_terminate` asserts only "settles within 5 hops",
+    and its start list contained no path whose English form ends in a slash —
+    so a 2-hop redirect on the site's largest page type passed it. The same
+    gap was fixed in the browser gate by adding /learn/ and left open here
+    (QA round 6).
+    """
+    path, seen = start, []
+    for _ in range(5):
+        r = hindi_client.get(path)
+        if r.status_code not in (301, 302, 303, 307, 308):
+            break
+        path = r.headers["location"].replace("http://testserver", "")
+        seen.append(path)
+    assert r.status_code == 200, f"{start} settled on {r.status_code} at {path}"
+    assert len(seen) == hops, f"{start} took {len(seen)} hops ({seen}), expected {hops}"
+    assert path == final, f"{start} landed on {path!r}, expected {final!r}"
+
+
 def test_hi_redirect_chains_terminate(hindi_client):
     """A catch-all that redirects to a path it also matches is a loop, and a
     loop here takes out every Hindi URL at once."""
@@ -517,7 +550,20 @@ def test_cooldown_degraded_page_is_localised(hindi_client, stub_llm, monkeypatch
     assert any("ऀ" <= ch <= "ॿ" for ch in message), (
         f"the Hindi cooled page's MESSAGE is English: {message[:80]!r}"
     )
-    assert message != title, "the message and the title are the same string"
+    # Compare against the title AS RENDERED IN THE <h1>, not the <title>.
+    # error.html:3 is `{% block title %}{{ title }} — Shubh Bhagya{% endblock %}`,
+    # so the scraped <title> carries a suffix `{{ message }}` can never have —
+    # which made the first version of this line (`message != title`)
+    # TAUTOLOGICALLY TRUE. It could not catch the collapse it was named for,
+    # and its failure message asserted a condition it could not detect. Third
+    # hollow vector in this one test; QA round 6 bit it by setting
+    # rashifal_not_ready_msg to rashifal_not_ready_title and getting green.
+    h1 = re.search(r"<h1[^>]*>(.*?)</h1>", hi.text, re.S)
+    assert h1, "no <h1> on the error page"
+    rendered_title = re.sub(r"<[^>]+>", "", h1.group(1)).strip()
+    assert message != rendered_title, (
+        f"the message and the title are the same string: {message[:60]!r}"
+    )
 
     rashifal._regen_failures.clear()
     hindi_client.get("/rashifal/aries")
