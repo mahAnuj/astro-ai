@@ -67,6 +67,30 @@ MUTATIONS = [
      "    total = len(subs)", "    total = len(subscribers.list_subscribers())",
      "test_signup_landing_mid_run_is_not_a_false_failure"),
 
+    ("#124: open redirect — same-origin guard removed",
+     "src/astro_ai/routes/hindi.py",
+     '    if not target.startswith("/") or target.startswith("//"):\n        target = "/"\n',
+     "",
+     "test_hi_catchall_cannot_redirect_off_site"),
+
+    ("#124: Hindi hub tiles fetch English readings",
+     "src/astro_ai/templates/rashifal_grid.html",
+     'hx-get="{{ lang_prefix }}/rashifal/{{ slug }}"',
+     'hx-get="/rashifal/{{ slug }}"',
+     "test_hindi_hub_tiles_fetch_hindi_readings"),
+
+    ("#124: hreflang x-default points at the Hindi URL",
+     "src/astro_ai/hindi_pages.py",
+     "(_DEFAULT_TAG, en),",
+     "(_DEFAULT_TAG, hi),",
+     "test_hreflang_hrefs_point_at_the_right_urls"),
+
+    ("#124: hi-IN points at the English URL",
+     "src/astro_ai/hindi_pages.py",
+     "(_HI_TAG, hi),",
+     "(_HI_TAG, en),",
+     "test_hreflang_hrefs_point_at_the_right_urls"),
+
     ("#124: canonical reverts to the cross-language form",
      "src/astro_ai/templates/base.html",
      '<link rel="canonical" href="{{ site_url }}{{ request.url.path }}">',

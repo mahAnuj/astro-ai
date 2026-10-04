@@ -392,6 +392,33 @@ def _lang(request: Request) -> str:
 # `hindi_url(path) is not None`, and one predicate is one fewer thing that can
 # disagree with the other.
 from astro_ai import hindi_pages
+
+
+def _lang_prefix(lang: str, path: str) -> str:
+    """"/hi" when this page is being served as Hindi at a /hi URL, else "".
+
+    For building a page's own links — the rashi tiles' hx-get, the JSON-LD
+    @id, breadcrumbs, the WhatsApp share URL. Those all used to hardcode
+    /rashifal/{slug}, which on a Hindi page meant the tiles fetched English
+    readings and the structured data asserted the English URL as this page's
+    identity (QA 2026-10-04).
+
+    Conditioned on the PATH as well as the language, not language alone: with
+    a `hi` cookie, /rashifal (no prefix) renders Hindi and must keep linking
+    to unprefixed URLs, because that is the URL it is published at. Keying on
+    `lang == "hi"` alone would have rewritten those links to /hi/..., which
+    is a different published URL, from a page that is not it.
+
+    Returns "" for a Hindi page that has no /hi twin, since there is nothing
+    to prefix to — `hindi_url()` is the single source of that truth, so this
+    cannot drift from the allow-list or the hreflang tags.
+    """
+    if lang != "hi":
+        return ""
+    return "/hi" if path.startswith("/hi/") or path == "/hi" else ""
+
+
+templates.env.globals["lang_prefix_for"] = _lang_prefix
 templates.env.globals["hreflang_alternates"] = hindi_pages.hreflang_alternates
 templates.env.globals["hindi_url"] = hindi_pages.hindi_url
 templates.env.globals["english_url"] = hindi_pages.english_url

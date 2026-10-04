@@ -420,6 +420,11 @@ Dated, with the evidence. **Check here before proposing a change.**
 | date | decision | why, measured |
 |---|---|---|
 | — | GCS bucket stays in the US | free tier is US-only; relocation considered and rejected |
+| 2026-10-04 | Hindi gets 13 URLs at `/hi/{path}`, not ~200 | with `?lang=hi` the rest of the site is 83-98% textually identical to English (only the chrome is translated): `/learn/` 0.978 similar / 1.8% Devanagari. Only `/rashifal` + the 12 rashi pages have genuinely Hindi primary content (prod `/rashifal/aries?lang=hi`: 74.3% Devanagari, 0.240 similarity). Publishing the rest would ship ~200 near-duplicates |
+| 2026-10-04 | `/hi` is a ROUTER, not a path-stripping middleware | rewriting `scope["path"]` makes `request.url.path` return the English path inside the handler, so `base.html` canonicalises `/hi/rashifal` onto `/rashifal` — the exact defect #124 removes. Built, reproduced, discarded |
+| 2026-10-04 | `?lang=hi` 301s to `/hi/{path}` for published paths only | otherwise the same Hindi content stays reachable under an English canonical. Unpublished paths keep `?lang=hi` working — there is no Hindi URL to send them to |
+| 2026-10-04 | unpublished pages emit NO hreflang, not a lone `en-IN` | a `hi-IN` pointing at a non-existent page makes Google discard hreflang site-wide, poisoning the 13 URLs that matter to decorate ~198 that do not |
+| 2026-10-04 | sitemap sweep cost accepted, measured not estimated | the 13 new URLs add up to 12 cold Hindi generations per `verify-production` sweep at 13,682 prompt chars each (~3,420 tok) ≈ **41k input tokens/day, ~20.5% of the 200k TPD**. Nothing pre-warms the `rashifal_single` namespace, so these are lazy. Worst case only: a real visitor would have paid the same generation. Flagged for the human, not silently absorbed |
 | — | Whole Sign houses | classical Parashari standard |
 | — | No Pythagorean numerology mode | table appears in none of the books in `data/` |
 | 2026-07 | Homepage does zero GCS reads | #144: 32 ops → 0, ~13s → <1s |

@@ -1,3 +1,4 @@
+{% set lang_prefix = lang_prefix_for(lang, request.url.path) %}
 {% extends "base.html" %}
 
 {% block title %}{{ t(lang, 'rashifal_title') }} — {{ today_pretty }} · Pick your rashi · Shubh Bhagya{% endblock %}
@@ -61,7 +62,14 @@
               class="rashi-card-inner block w-full aspect-[4/5] relative text-left rounded-2xl focus:outline-none focus:ring-4 focus:ring-astro-500/40 rounded-2xl"
               data-flip-trigger
               aria-label="Reveal today's reading for {{ en }} / {{ sa }}"
-              hx-get="/rashifal/{{ slug }}"
+              hx-get="{{ lang_prefix }}/rashifal/{{ slug }}"
+              {# lang_prefix is "/hi" on a Hindi page. Without it every tile on
+                 /hi/rashifal fetched the ENGLISH fragment: /hi/* deliberately
+                 writes no cookie, so the fragment request carried no language
+                 signal at all and generation defaulted to en. A Hindi searcher
+                 landed on a fully Hindi page, tapped मेष, and got an English
+                 reading — on the flagship URL this issue exists to publish.
+                 Measured by QA 2026-10-04. #}
               hx-trigger="click once"
               hx-swap="innerHTML"
               hx-target="find [data-card-front]"

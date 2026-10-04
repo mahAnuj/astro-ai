@@ -9,6 +9,14 @@
     `rashi_hi` holds the ENGLISH name on the English page: t() falls back to
     the _EN table, which is what makes the Hindi branches below degrade to
     English rather than to a raw key if a name is ever missing. #}
+{% set lang_prefix = lang_prefix_for(lang, request.url.path) %}
+{# This page's OWN url, language included. Everything below must use it
+   rather than hardcoding /rashifal/{slug}: two pages asserting the same
+   Article @id with different inLanguage is the same cross-language
+   duplicate claim #124 removes from rel=canonical, and breadcrumb and
+   share links built on the English path route Hindi readers and crawlers
+   straight back out of the Hindi surface. QA 2026-10-04. #}
+{% set self_path = lang_prefix ~ '/rashifal/' ~ rashi_slug %}
 {% set rashi_hi = t(lang, 'rashi_name_' ~ rashi_slug) %}
 {% set rashi_element = t(lang, 'rashi_element_' ~ element | lower) %}
 {% set rashi_quality = t(lang, 'rashi_quality_' ~ quality | lower) %}
@@ -19,7 +27,7 @@
 
 {% block content %}
 {% set active_page = "rashifal" %}
-{% set breadcrumbs = [(t(lang, 'nav_home'), '/'), (t(lang, 'nav_rashifal_link'), '/rashifal'), (rashi_hi if lang == 'hi' else rashi_en, '/rashifal/' + rashi_slug)] %}
+{% set breadcrumbs = [(t(lang, 'nav_home'), '/'), (t(lang, 'nav_rashifal_link'), lang_prefix ~ '/rashifal'), (rashi_hi if lang == 'hi' else rashi_en, self_path)] %}
 {% include "_breadcrumb_schema.html" %}
 {# Article schema for daily-fresh content — Google indexes this as news-like.
    Speakable spec added so Google Assistant / Alexa can read the reading
@@ -29,8 +37,8 @@
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ site_url }}/rashifal/{{ rashi_slug }}"},
-  "url": "{{ site_url }}/rashifal/{{ rashi_slug }}",
+  "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ site_url }}{{ self_path }}"},
+  "url": "{{ site_url }}{{ self_path }}",
   "headline": {{ t(lang, 'rashifal_single_headline', rashi_en=rashi_en, rashi_hi=rashi_hi, date=today_pretty) | tojson }},
   "description": {{ t(lang, 'rashifal_single_ld_desc', rashi_en=rashi_en, rashi_sa=rashi_sa, rashi_hi=rashi_hi, date=today_pretty) | tojson }},
   "image": {"@type": "ImageObject", "url": "{{ site_url }}/static/icons/icon-512.png", "width": 512, "height": 512},
@@ -82,7 +90,7 @@
     </div>
     <div class="pt-4 mt-4 border-t border-stone-100 flex flex-wrap items-center gap-3 justify-between text-sm no-print">
       <a href="/rashifal" class="text-astro-700 hover:underline">{{ t(lang, 'rashifal_all_12') }}</a>
-      <a href="https://wa.me/?text={{ t(lang, 'rashifal_single_share', rashi_en=rashi_en, rashi_hi=rashi_hi, url=site_url ~ '/rashifal/' ~ rashi_slug) | urlencode }}"
+      <a href="https://wa.me/?text={{ t(lang, 'rashifal_single_share', rashi_en=rashi_en, rashi_hi=rashi_hi, url=site_url ~ self_path) | urlencode }}"
          target="_blank" rel="noopener"
          class="inline-flex items-center gap-1.5 text-emerald-700 hover:underline">
         {{ t(lang, 'rashifal_share_whatsapp') }}

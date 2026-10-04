@@ -114,6 +114,11 @@ class _RewriteHostFromForwardedMiddleware:
 
 
 app.add_middleware(_RewriteHostFromForwardedMiddleware)
+# #124 S8 — 301 ?lang=hi onto /hi/{path} where a Hindi URL exists, so the
+# Hindi content has exactly one indexable URL. Added AFTER the host rewrite so
+# it sees the real Host; it only redirects, never renders, which is why a
+# middleware is safe here and was not for the /hi prefix itself.
+app.add_middleware(_hindi_routes.RedirectLangParamMiddleware)
 
 
 @app.exception_handler(StarletteHTTPException)
