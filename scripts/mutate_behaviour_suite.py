@@ -31,7 +31,7 @@ MUTATIONS = [
     ("deps: del instead of pop (the HIGH KeyError race)",
      "src/astro_ai/routes/deps.py",
      "_fallback_cache.pop(key, None)", "del _fallback_cache[key]",
-     "test_expired_entry_under_concurrency_does_not_raise"),
+     "test_no_unguarded_del_on_a_shared_dict"),
 
     ("deps: live comprehension in eviction (dict changed size)",
      "src/astro_ai/routes/deps.py",
@@ -66,6 +66,24 @@ MUTATIONS = [
      "src/astro_ai/routes/subscribe.py",
      "    total = len(subs)", "    total = len(subscribers.list_subscribers())",
      "test_signup_landing_mid_run_is_not_a_false_failure"),
+
+    ("#124: error fragment prefix back to language-keyed",
+     "src/astro_ai/routes/rashifal.py",
+     'prefix = "/hi" if (path or "").startswith("/hi/")',
+     'prefix = "/hi" if lang == "hi"',
+     "test_error_fragment_permalink_is_path_keyed"),
+
+    ("#124: unknown-rashi 404 reverts to English",
+     "src/astro_ai/routes/rashifal.py",
+     '{"title": t(lang, "rashifal_unknown_title"),',
+     '{"title": "Unknown rashi",',
+     "test_unknown_rashi_404_is_localised"),
+
+    ("#124: Hindi 404 directs the reader to the English hub",
+     "src/astro_ai/i18n.py",
+     "चुनने के लिए /hi/rashifal देखें",
+     "चुनने के लिए /rashifal देखें",
+     "test_hindi_404_does_not_send_readers_to_the_english_hub"),
 
     ("#124: cooldown degraded page reverts to English",
      "src/astro_ai/routes/rashifal.py",
@@ -343,7 +361,7 @@ def _sandbox_env() -> dict:
     return env
 
 
-def _run_in_sandbox(rel: str, old: str, new: str) -> tuple[bool, str]:
+def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool, str]:
     """Apply one mutation to a COPY of the tree and run the suite there.
 
     The repository is never modified. An earlier version mutated `src/` in
@@ -364,6 +382,25 @@ def _run_in_sandbox(rel: str, old: str, new: str) -> tuple[bool, str]:
         for sub in ("src", "tests", ".github"):
             shutil.copytree(ROOT / sub, sandbox / sub,
                             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        # GUARD GONE — "the defect escaped" and "the test meant to catch it no
+        # longer exists" both used to print as MISSED, and the difference is
+        # enormous: one is a weak test, the other is no test at all.
+        #
+        # A slice-based edit silently deleted six tests, two of them the named
+        # guards for mutations registered here. This harness printed 35/38 and
+        # exited 1 — correctly red, but mute about the cause, so both times it
+        # took a manual hunt to discover the tests were simply gone.
+        # (QA round 5 specified this check.)
+        if test and test != "_control":
+            suite_src = "\n".join(
+                f.read_text() for f in (sandbox / "tests").rglob("test_*.py")
+            )
+            # Strip a parametrize id: entries are registered as
+            # `test_foo[homepage strip]`, and the def is just `test_foo`.
+            base = test.split("[", 1)[0]
+            if f"def {base}(" not in suite_src:
+                return False, f"GUARD GONE — no test named {base}"
+
         target = sandbox / rel
         source = target.read_text()
         if source.count(old) != 1:
@@ -385,7 +422,7 @@ def _run_in_sandbox(rel: str, old: str, new: str) -> tuple[bool, str]:
 rows = []
 control_ok = True
 for label, rel, old, new, _test in [_CONTROL] + list(MUTATIONS):
-    ok, verdict = _run_in_sandbox(rel, old, new)
+    ok, verdict = _run_in_sandbox(rel, old, new, _test)
     if _test == "_control":
         # Inverted: for the control, MISSED is the pass.
         control_ok = verdict == "*** MISSED ***"
