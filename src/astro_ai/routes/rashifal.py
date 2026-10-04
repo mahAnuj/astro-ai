@@ -24,6 +24,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
 from astro_ai import daily_cache, festivals, hindi_pages
+from astro_ai.i18n import translate as t
 from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot
 from astro_ai.llm import parse_sectioned_reading
 from astro_ai import providers as llm_providers
@@ -31,6 +32,7 @@ from astro_ai.providers import AllProvidersExhausted
 from astro_ai.routes.deps import (
     RASHIFAL_PROMPT_PATH,
     _lang,
+    _lang_prefix,
     _no_cdn_cache,
     _pretty_date,
     panchang_strip_ctx,
@@ -46,7 +48,8 @@ _REGEN_COOLDOWN_S = 300.0
 _regen_failures: dict[str, float] = {}
 
 
-def _reading_error_fragment(slug: str, is_rate: bool, msg: str) -> str:
+def _reading_error_fragment(slug: str, is_rate: bool, msg: str,
+                            lang: str = "en") -> str:
     """Card-shaped retry block for the HTMX flip-card path.
 
     Both error paths render through this: a live generation failure and a
@@ -58,8 +61,14 @@ def _reading_error_fragment(slug: str, is_rate: bool, msg: str) -> str:
     entire document, <head> and duplicate script tags included, into a flip
     card sized for a paragraph.
     """
+    # `lang` was added after QA found that the Hindi hub's tiles — which this
+    # branch's own fix pointed at /hi/ — rendered this card with English
+    # chrome whose "Try again" re-fetched the ENGLISH fragment. Pressing retry
+    # on a Hindi card therefore swapped in an English reading, and burnt an
+    # English generation the reader could not use (QA 2026-10-04).
+    prefix = "/hi" if lang == "hi" and hindi_pages.is_hindi_published(f"/rashifal/{slug}") else ""
     icon = "\U0001F549\uFE0F" if is_rate else "\u26A0\uFE0F"
-    head = "Still gathering today's sky\u2026" if is_rate else "Reading could not load"
+    head = t(lang, "rashifal_card_busy" if is_rate else "rashifal_card_failed")
     return (
         '<div class="h-full flex flex-col items-center justify-center text-center gap-3 p-4">'
         f'  <div class="text-3xl" aria-hidden="true">{icon}</div>'
@@ -67,10 +76,10 @@ def _reading_error_fragment(slug: str, is_rate: bool, msg: str) -> str:
         f'  <div class="text-xs text-stone-600 leading-relaxed">{msg}</div>'
         '  <div class="flex gap-2 pt-1">'
         f'    <button type="button" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold" '
-        f'            hx-get="/rashifal/{slug}" hx-target="closest [data-card-front]" hx-swap="innerHTML" '
-        f'            hx-headers=\'{{"HX-Rashifal-Fragment": "1"}}\'>Try again</button>'
+        f'            hx-get="{prefix}/rashifal/{slug}" hx-target="closest [data-card-front]" hx-swap="innerHTML" '
+        f'            hx-headers=\'{{"HX-Rashifal-Fragment": "1"}}\'>{t(lang, "rashifal_card_retry")}</button>'
         '    <span class="text-stone-300">\u00B7</span>'
-        f'    <a href="/rashifal/{slug}" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold">Open full page</a>'
+        f'    <a href="{prefix}/rashifal/{slug}" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold">{t(lang, "rashifal_card_open")}</a>'
         '  </div>'
         '</div>'
     )
@@ -184,7 +193,11 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
             return HTMLResponse(f'<div class="text-sm text-stone-600 p-2">{msg}</div>', status_code=503)
         return templates.TemplateResponse(
             request, "error.html",
-            {"title": "API key not configured", "message": msg},
+            # Deliberately NOT localised: this fires only when the operator
+            # has not configured a key, so the audience is the operator, and
+            # `msg` is operational English. `lang` is still passed so the
+            # document declares the language it is actually in.
+            {"title": "API key not configured", "message": msg, "lang": "en"},
             status_code=503,
         )
 
@@ -228,16 +241,22 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         # becomes noise nobody reads.
         # Body only — _reading_error_fragment supplies the heading from
         # is_rate, so passing the full sentence printed it twice on the card.
-        _cool_msg = "Try again in a few minutes."
+        _cool_msg = t(lang, "rashifal_card_cool_msg")
         if is_htmx:
             return HTMLResponse(
-                _reading_error_fragment(canonical_slug, True, _cool_msg),
+                _reading_error_fragment(canonical_slug, True, _cool_msg, lang),
                 status_code=503,
             )
         return _no_cdn_cache(templates.TemplateResponse(
             request, "error.html",
-            {"title": "Reading not ready yet",
-             "message": "Still gathering today's sky. Try again in a few minutes."},
+            # lang, like the generation-failure branch below. rashifal.py has
+            # THREE English-only degraded exits and QA round 2 fixed only one;
+            # this is the most reachable of the three, because
+            # _REGEN_COOLDOWN_S = 300 sends every request for this rashi+lang
+            # here for five minutes after a single gate failure (QA 2026-10-04).
+            {"title": t(lang, "rashifal_not_ready_title"),
+             "message": t(lang, "rashifal_not_ready_msg"),
+             "lang": lang},
             status_code=503,
         ))
 
@@ -302,7 +321,8 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
                 is_rate = isinstance(err, AllProvidersExhausted)
                 fragment_html = _reading_error_fragment(
                     canonical_slug, is_rate,
-                    "Experiencing high traffic. Try again in a minute." if is_rate else _msg,
+                    t(lang, "rashifal_card_rate_msg") if is_rate else _msg,
+                    lang,
                 )
                 return HTMLResponse(
                     fragment_html,
@@ -324,11 +344,18 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
     # shared the English URL. The #124 change that made those tiles fetch
     # Hindi is what created that path (QA 2026-10-04).
     #
-    # hindi_url() rather than `lang == "hi"` alone: with a `hi` cookie the
-    # ENGLISH url renders Hindi too, and that page's permalink must stay
-    # English, because that is the URL it is published at.
+    # Keyed on the PATH via _lang_prefix, not on `lang == "hi"` alone. With a
+    # `hi` cookie the ENGLISH url renders Hindi too, and that page's permalink
+    # must stay English because that is the URL it is published at.
+    #
+    # The comment here used to claim exactly this while the code below it did
+    # the opposite — so at /rashifal/aries with a `hi` cookie the fragment's
+    # permalink was /hi/rashifal/aries while the full page's self_path was
+    # /rashifal/aries, two parts of one page disagreeing about its own URL.
+    # Benign for readers, and the same split _lang_prefix's path condition
+    # exists to prevent (QA 2026-10-04).
     permalink = f"/rashifal/{canonical_slug}"
-    if lang == "hi":
+    if _lang_prefix(lang, request.url.path):
         permalink = hindi_pages.hindi_url(permalink) or permalink
 
     ctx = {

@@ -100,7 +100,7 @@ src/astro_ai/
   muhurat.py       1,444  electional scoring; shares angas with panchang
   llm.py           1,068  prompt assembly, rashifal fan-out
   matching.py      1,056  Ashtakoota 36-guna
-  i18n.py           1078  en/hi, symmetric key sets (enforced)
+  i18n.py           1116  en/hi, symmetric key sets (enforced)
   providers.py       704  provider chain, quality gates, retry policy
   routes/            25 modules, 68 routes
   knowledge/*.md     classical source material — the authority for astrological claims

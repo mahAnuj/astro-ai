@@ -498,3 +498,99 @@ def test_lang_prefix_is_keyed_on_path_not_language_alone(hindi_client):
         assert "/hi/" not in got, (
             f"Hindi-by-cookie at an English URL claims the Hindi identity: {got}"
         )
+
+
+# --- QA round 3 ------------------------------------------------------------
+# One of round 3's three defects (hx-boost eating the submit) is NOT here and
+# cannot be: TestClient posts the form server-side and cannot run htmx, which
+# is exactly why three rounds of server-side verification missed it.
+# scripts/verify_lang_switch_browser.py covers it in Chromium.
+
+def test_picker_form_opts_out_of_hx_boost(hindi_client):
+    """The one server-visible half of that defect: the attribute's presence.
+
+    This is a weak proxy for the real property and is here only so a careless
+    edit trips something in the fast suite. The behaviour — that
+    document.documentElement.lang and the 108% rule follow the control — is
+    only checkable in a browser, and the gate is the real guard.
+    """
+    html = hindi_client.get("/rashifal").text
+    form = re.search(r'<form[^>]*action="/lang"[^>]*>', html)
+    assert form, "the language form is gone"
+    assert 'hx-boost="false"' in form.group(0), (
+        "the picker form must opt out of hx-boost: boosting swaps the body and "
+        "leaves <html lang> stale, so the Hindi 108% rule never applies and a "
+        "screen reader keeps the English voice. See "
+        "scripts/verify_lang_switch_browser.py"
+    )
+
+
+def test_cooldown_degraded_page_is_localised(hindi_client, stub_llm, monkeypatch):
+    """QA round 3. rashifal.py has THREE English-only degraded exits and round
+    2 localised one. This is the most reachable of them: _REGEN_COOLDOWN_S is
+    300, so a single quality-gate failure sends every request for that
+    rashi+lang here for five minutes.
+    """
+    from astro_ai.routes import rashifal
+
+    rashifal._regen_failures.clear()
+    # raw passes the gate, the first section does not -> arms the cooldown
+    stub_llm(lambda _n: "## Aries / Mesha\nToo short.\n\n## Taurus / Vrishabha\n" + "x" * 1200)
+
+    hindi_client.get("/hi/rashifal/aries")          # arm
+    hi = hindi_client.get("/hi/rashifal/aries")     # cooled
+    assert hi.status_code == 503
+    assert re.search(r'<html[^>]*lang="hi"', hi.text), "the cooled Hindi page declares lang=en"
+    title = re.search(r"<title>([^<]*)", hi.text).group(1)
+    assert any("ऀ" <= ch <= "ॿ" for ch in title), f"English title on the Hindi page: {title!r}"
+
+    rashifal._regen_failures.clear()
+    hindi_client.get("/rashifal/aries")
+    en = hindi_client.get("/rashifal/aries")
+    en_title = re.search(r"<title>([^<]*)", en.text).group(1)
+    assert not any("ऀ" <= ch <= "ॿ" for ch in en_title), f"Devanagari leaked: {en_title!r}"
+
+
+def test_degraded_card_retry_stays_in_hindi(hindi_client, stub_llm):
+    """QA round 3, and it is round-1 F2 returning by another door.
+
+    `_reading_error_fragment` hardcoded /rashifal/{slug}, and this branch is
+    what pointed the Hindi hub's tiles at /hi/ — so a Hindi reader whose card
+    failed pressed "Try again", the retry fetched the ENGLISH fragment, and an
+    English reading was swapped into the Hindi hub. It also burns an English
+    generation the reader cannot use, on the path G1 says will 429.
+    """
+    from astro_ai.routes import rashifal
+
+    rashifal._regen_failures.clear()
+    stub_llm(lambda _n: "## Aries / Mesha\nToo short.\n\n## Taurus / Vrishabha\n" + "x" * 1200)
+
+    hindi_client.get("/hi/rashifal/taurus")
+    frag = hindi_client.get("/hi/rashifal/taurus",
+                            headers={"HX-Rashifal-Fragment": "1"}).text
+
+    retries = re.findall(r'hx-get="([^"]*)"', frag)
+    opens = re.findall(r'href="((?:/hi)?/rashifal/[a-z]+)"', frag)
+    assert retries and all(r.startswith("/hi/") for r in retries), \
+        f"the Hindi card retries into English: {retries}"
+    assert opens and all(o.startswith("/hi/") for o in opens), \
+        f"the Hindi card opens the English page: {opens}"
+    assert any("ऀ" <= ch <= "ॿ" for ch in frag), "the Hindi card has no Devanagari at all"
+
+
+def test_fragment_permalink_agrees_with_the_url_it_was_fetched_from(hindi_client, stub_llm, rashi_body):
+    """QA round 3, finding 3: the comment claimed a path-keyed condition while
+    the code was language-keyed, so at /rashifal/aries with a `hi` cookie the
+    fragment's permalink was /hi/rashifal/aries while the page's own self_path
+    was /rashifal/aries — two parts of one page disagreeing about its URL.
+    """
+    stub_llm(lambda _n: rashi_body(heading="Aries / Mesha"))
+    hindi_client.post("/lang", data={"lang": "hi", "next": "/panchang"})
+
+    frag = hindi_client.get("/rashifal/aries",
+                            headers={"HX-Rashifal-Fragment": "1"}).text
+    links = set(re.findall(r'href="((?:/hi)?/rashifal/[a-z]+)"', frag))
+    assert links == {"/rashifal/aries"}, (
+        f"fragment fetched at the ENGLISH url claims {links}; it must match the "
+        "URL it was fetched from, which is the one it is published at"
+    )

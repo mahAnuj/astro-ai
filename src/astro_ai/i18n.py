@@ -517,6 +517,19 @@ _EN: Final[dict[str, str]] = {
     "llm_busy_msg":     "\U0001F64F Many seekers are asking questions at the same time. Please try again in a couple of minutes — your input is safe to re-submit exactly as you typed it.",
     "llm_error_title":  "Something went wrong",
     "llm_error_msg":    "We couldn't complete the reading this time. Please try again in a moment — your input is safe to re-submit exactly as you typed it.",
+    # Degraded rashifal copy — the cooldown page and the flip-card retry block.
+    # These exist because rashifal.py has THREE English-only degraded exits
+    # and QA round 2 localised only one; the Hindi hub's tiles, which #124
+    # pointed at /hi/, rendered the card in English and retried into English
+    # (QA 2026-10-04).
+    "rashifal_not_ready_title": "Reading not ready yet",
+    "rashifal_not_ready_msg":   "Still gathering today's sky. Try again in a few minutes.",
+    "rashifal_card_busy":       "Still gathering today's sky\u2026",
+    "rashifal_card_failed":     "Reading could not load",
+    "rashifal_card_retry":      "Try again",
+    "rashifal_card_open":       "Open full page",
+    "rashifal_card_cool_msg":   "Try again in a few minutes.",
+    "rashifal_card_rate_msg":   "Experiencing high traffic. Try again in a minute.",
 }
 
 _HI: Final[dict[str, str]] = {
@@ -962,6 +975,16 @@ _HI: Final[dict[str, str]] = {
     "llm_busy_msg":     "\U0001F64F इस समय बहुत से जिज्ञासु एक साथ प्रश्न पूछ रहे हैं। कृपया कुछ मिनट बाद फिर प्रयास करें — आपकी दी हुई जानकारी सुरक्षित है और वैसी ही दोबारा भेजी जा सकती है।",
     "llm_error_title":  "कुछ त्रुटि हुई",
     "llm_error_msg":    "इस बार पठन पूरा नहीं हो सका। कृपया थोड़ी देर बाद फिर प्रयास करें — आपकी दी हुई जानकारी सुरक्षित है और वैसी ही दोबारा भेजी जा सकती है।",
+    # See the _EN block. COMPOSED, not harvested — add these to the list a
+    # native reader should check.
+    "rashifal_not_ready_title": "पठन अभी तैयार नहीं है",
+    "rashifal_not_ready_msg":   "आज का आकाश अभी पढ़ा जा रहा है। कृपया कुछ मिनट बाद फिर प्रयास करें।",
+    "rashifal_card_busy":       "आज का आकाश पढ़ा जा रहा है\u2026",
+    "rashifal_card_failed":     "पठन लोड नहीं हो सका",
+    "rashifal_card_retry":      "फिर प्रयास करें",
+    "rashifal_card_open":       "पूरा पृष्ठ खोलें",
+    "rashifal_card_cool_msg":   "कृपया कुछ मिनट बाद फिर प्रयास करें।",
+    "rashifal_card_rate_msg":   "इस समय बहुत अधिक माँग है। कृपया एक मिनट बाद फिर प्रयास करें।",
 }
 
 _TABLES: Final[dict[str, dict[str, str]]] = {"en": _EN, "hi": _HI}
