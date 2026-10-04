@@ -19,7 +19,17 @@ ways, across three QA rounds:
       <html lang> untouched. `html[lang="hi"] { font-size: 108% }` therefore
       never applied and a screen reader kept the English voice while reading
       Devanagari.
-  v4  v3 + hx-boost="false" on the form. What this gate pins.
+  v4  v3 + hx-boost="false". Fixed the stale lang, and its english_url() call
+      for `next` normalised the path, adding a second redirect hop to every
+      switch on the 76 /learn/ URLs.
+  v5  REVERTED to main's <select>, with only `next` changed. The <select> is
+      immune to v3 entirely: `this.form.submit()` is programmatic and fires no
+      submit event, so htmx never intercepts it. The button group was better in
+      real ways and should return as its own change — see the note in
+      _lang_picker.html.
+
+This gate pins v5, and keeps the hx-boost check live because the button group
+is expected back.
 
 Every one of those was verified by the method that could not see the next
 failure. v1 and v2 by reading; v3 by `TestClient`, which posts the form
@@ -31,6 +41,9 @@ browser, and the whole verification apparatus is server-side."
 So this gate asserts the two things only a browser can see, after a real
 click:
 
+  0. The switch lands on the right URL — the /hi twin where one exists, the
+     same page where it does not. Checking language alone passed a tree whose
+     `next` was hardcoded to /about: right language, wrong page.
   1. `document.documentElement.lang` matches the language that was chosen.
      This is the attribute hx-boost leaves stale, and it drives both the
      typography rule and the voice a screen reader uses.
@@ -89,7 +102,14 @@ def main() -> int:
     except ImportError:
         print("COULD NOT VERIFY: playwright is not installed.")
         print("  pip install playwright && playwright install chromium")
-        return 0
+        # EXIT 2, not 0. playwright is in no dependency group in
+        # pyproject.toml, so `uv sync` produces an environment without it —
+        # which means returning 0 here made this gate a silent PASS for
+        # everyone who is not running it from a hand-built venv. That is the
+        # eight-tests-skipped-themselves-green pattern, re-shipped inside the
+        # file written to prevent it (QA 2026-10-04).
+        # verify_devanagari_serif.py returns 2 for the same reason; matching it.
+        return 2
 
     print("Language switch, in a browser (#124) — <html lang> and the 108% rule\n")
     problems: list[str] = []
@@ -111,32 +131,71 @@ def main() -> int:
                 ctx.close()
                 continue
 
+            # htmx comes from a third party (base.html: unpkg.com), and this
+            # gate's entire subject is what htmx DOES to the submit. With htmx
+            # unreachable — a blocked CDN, an unpkg outage, a sandboxed runner,
+            # a CSP change — the form does a native POST, <html lang> updates,
+            # and this gate PASSED a tree that was broken for every real user.
+            # Measured both ways (QA 2026-10-04): htmx reachable -> FAIL 6
+            # problems; htmx unreachable -> PASS. So the precondition is now
+            # asserted, not assumed.
+            if not page.evaluate("typeof window.htmx !== 'undefined'"):
+                problems.append(
+                    f"{path}: htmx did not load, so hx-boost is inert and this "
+                    f"gate cannot observe what it exists to check. Not a PASS — "
+                    f"check network access to unpkg.com."
+                )
+                ctx.close()
+                continue
+
             base_size = page.evaluate(
                 "parseFloat(getComputedStyle(document.documentElement).fontSize)")
             base_lang = page.evaluate("document.documentElement.lang")
             if base_lang != "en":
                 problems.append(f"{path}: fresh load is lang={base_lang!r}, expected en")
 
-            # --- accessibility surface: named, and reachable by keyboard
-            for value in ("en", "hi"):
-                btn = page.locator(f'button[name="lang"][value="{value}"]:visible').first
-                if btn.count() == 0:
-                    problems.append(f"{path}: no {value} control rendered")
-                    continue
-                name = btn.evaluate("el => el.textContent.trim()")
-                if not name:
-                    problems.append(f"{path}: the {value} control has no accessible name")
-                if btn.evaluate("el => el.disabled || el.tabIndex < 0"):
-                    problems.append(f"{path}: the {value} control is not keyboard-reachable")
-
-            # --- CLICK Hindi, like a reader, and look at what the document became
-            hi_btn = page.locator('button[name="lang"][value="hi"]:visible').first
-            if hi_btn.count() == 0:
-                problems.append(f"{path}: no VISIBLE Hindi control to click")
+            # --- accessibility surface
+            sel = page.locator('select[name="lang"]:visible').first
+            if sel.count() == 0:
+                problems.append(f"{path}: no visible language control rendered")
                 ctx.close()
                 continue
-            hi_btn.click()
+            if not sel.evaluate("el => el.getAttribute('aria-label') || el.labels.length"):
+                problems.append(f"{path}: the language control has no accessible name")
+            if sel.evaluate("el => el.disabled || el.tabIndex < 0"):
+                problems.append(f"{path}: the language control is not keyboard-reachable")
+            opts = sel.evaluate("el => Array.from(el.options).map(o => o.value)")
+            if sorted(opts) != ["en", "hi"]:
+                problems.append(f"{path}: options are {opts}, expected en and hi")
+
+            # --- CLICK Hindi, like a reader, and look at what the document became
+            # expect_navigation, not a bare select_option: `onchange` fires
+            # this.form.submit() synchronously, so the very next evaluate()
+            # races the navigation and dies with "Execution context was
+            # destroyed". With hx-boost active there is no document navigation
+            # at all, which is the defect — so fall back to networkidle rather
+            # than requiring one.
+            try:
+                with page.expect_navigation(timeout=5000):
+                    sel.select_option("hi")
+            except Exception:
+                pass
             page.wait_for_load_state("networkidle")
+
+            # WHERE it landed, not only what language it rendered. Without
+            # this the gate passed with `next` hardcoded to /about: it read
+            # lang="hi" and 17.28px on the wrong page and called it green.
+            # QA found the same hole from the other side — removing the twin
+            # redirect from POST /lang also passed. A language control that
+            # teleports the reader is not working.
+            landed = page.url.replace(args.url, "")
+            expected_landing = (path if path in UNPUBLISHED
+                                else "/hi" + path.rstrip("/"))
+            if landed.split("?")[0].rstrip("/") != expected_landing.rstrip("/"):
+                problems.append(
+                    f"{path}: choosing Hindi landed on {landed!r}, expected "
+                    f"{expected_landing!r}"
+                )
 
             lang_after = page.evaluate("document.documentElement.lang")
             size_after = page.evaluate(
@@ -159,10 +218,21 @@ def main() -> int:
                 )
 
             # --- and back, which is the direction v1 and v2 both broke
-            page.locator('button[name="lang"][value="en"]:visible').first.click()
+            back = page.locator('select[name="lang"]:visible').first
+            try:
+                with page.expect_navigation(timeout=5000):
+                    back.select_option("en")
+            except Exception:
+                pass
             page.wait_for_load_state("networkidle")
             if page.evaluate("document.documentElement.lang") != "en":
                 problems.append(f"{path}: could not get back to English from Hindi")
+            back_landed = page.url.replace(args.url, "").split("?")[0]
+            if back_landed.rstrip("/") != path.rstrip("/"):
+                problems.append(
+                    f"{path}: returning to English landed on {back_landed!r}, "
+                    f"not back at {path!r}"
+                )
 
             print(f"  {path:<22} en {base_size:g}px -> hi {size_after:g}px  "
                   f"lang {base_lang} -> {lang_after} -> "

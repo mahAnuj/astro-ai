@@ -422,6 +422,9 @@ templates.env.globals["lang_prefix_for"] = _lang_prefix
 templates.env.globals["hreflang_alternates"] = hindi_pages.hreflang_alternates
 templates.env.globals["hindi_url"] = hindi_pages.hindi_url
 templates.env.globals["english_url"] = hindi_pages.english_url
+# Non-normalising, for round-tripping the URL a reader is standing on —
+# see strip_hi_prefix's docstring for why english_url is wrong there.
+templates.env.globals["strip_hi_prefix"] = hindi_pages.strip_hi_prefix
 
 
 def _save_collection_synced(response: Response, collection: ChartCollection, request: Request) -> None:

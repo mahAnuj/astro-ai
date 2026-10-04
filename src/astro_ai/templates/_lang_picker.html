@@ -1,91 +1,53 @@
-{# Language control. Caller provides `lang` (the RESOLVED language).
+{# Language selector — native HTML <select> that auto-submits on change.
+   Caller provides `lang` (current language code). Scales to more languages
+   later by adding <option> rows; no JS framework needed.
 
-   ONE mechanism, deliberately — this file has now been wrong twice in
-   opposite directions, and both failures came from the control navigating
-   without persisting, or persisting without navigating.
+   THIS IS DELIBERATELY STILL main's <select>, NOT a button group (#124).
 
-   History, because it is the whole design rationale:
+   A button-group rewrite was built on this branch and reverted. The history
+   is worth keeping, because the next person to improve this file will
+   otherwise repeat it — four QA rounds found four defects, each introduced by
+   the previous round's fix:
 
-   v1 was a <select> posting `next = request.url.path`. On a /hi/ page that
-   posted /hi/rashifal back, and /hi/* forces Hindi regardless of cookie — so
-   choosing English wrote lang=en into __session, bounced the reader to
-   /hi/rashifal and re-rendered Hindi. A dead control that silently changed
-   stored state.
+     v1  posted `next = request.url.path`. On a /hi/ page that is
+         /hi/rashifal, which forces Hindi, so choosing English wrote lang=en
+         and re-rendered Hindi: a dead control that silently changed the
+         reader's saved language.
+     v2  real anchors between the two URLs. With a saved `hi` preference the
+         ENGLISH url renders Hindi too, so the "English" anchor pointed at a
+         page serving Hindi. Dead again, and a regression against main.
+     v3  POST /lang with buttons. Correct server-side — and broken in a
+         browser: base.html sets hx-boost="true" on <body>, and a
+         user-clicked submit DOES fire a submit event, so htmx intercepted it,
+         swapped the body and left <html lang> stale. The 108% Devanagari rule
+         never applied and a screen reader kept the English voice.
+     v4  v3 + hx-boost="false". Fixed that, and the `english_url()` call it
+         used for `next` normalised the path, adding a second redirect hop to
+         every switch on the 76 /learn/ URLs.
 
-   v2 (mine) replaced it with plain anchors between the two URLs. That fixed
-   the silent write and broke the control differently: with a saved `hi`
-   preference, /rashifal ALSO renders Hindi, so the "English" anchor pointed
-   at a URL that served Hindi. Dead again, on exactly the 13 pages where the
-   anchors appeared, and a functional regression against both main and v1 —
-   measured by QA 2026-10-04 across 4 pages x 3 cookie states.
+   So the ONLY change from main here is the `next` value, which is the one
+   thing /hi/ actually requires: post the page's English path, and let
+   `POST /lang` send the reader to the Hindi twin when they ask for Hindi.
+   The <select> is kept BECAUSE it is immune to v3 — `this.form.submit()` is
+   programmatic and fires no submit event, so htmx never sees it.
 
-   So: a language switch has to do BOTH. It must write the preference (or the
-   reader gets English here and Hindi on the next page) and it must land on
-   the right URL (or the reader sits at a URL whose language it is not). That
-   is `POST /lang` with a per-language `next`, which is what this is.
-
-   Buttons, not anchors, and `aria-pressed`, not `aria-current`: this is a
-   preference toggle, not a pair of locations. v2 used aria-current and so
-   claimed the reader was on /hi/rashifal while they were on /rashifal
-   whenever the cookie disagreed with the path.
-
-   Crawlability is NOT lost by using a form: `base.html` emits the
-   en-IN/hi-IN/x-default triple on every page that has a twin, and that is
-   the mechanism Google actually consumes for alternates. The visible control
-   is for readers.
-
-   The switch is rendered on EVERY page, including those with no Hindi twin —
-   there it sets a preference that takes effect on the 13 that do. Nothing
-   hides it any more; `hindi_url()`'s docstring still describes a hide
-   behaviour this file dropped, and a `_hi` binding that nothing read was
-   removed here (QA 2026-10-04).
+   The button group was better in real ways (aria-pressed, works with JS off,
+   no `<noscript>` needed) and should come back — as its own change, with the
+   browser gate green and a mobile-reachability fix, not bundled into a
+   URL-structure issue. That is #124's QA recommendation, and it fired on this
+   file's fifth defect in four rounds.
 #}
-{% set _en = english_url(request.url.path) %}
-{# hx-boost="false" IS LOAD-BEARING — do not remove it as redundant.
-
-   `base.html` sets hx-boost="true" on <body> and
-   `html[lang="hi"] { font-size: 108% }` in its CSS. htmx boosting swaps the
-   BODY and leaves the <html> element alone, so a boosted language switch
-   updates the content and not `document.documentElement.lang` — the 108%
-   rule never applies and a screen reader keeps the English voice while
-   reading Devanagari, until the reader happens to do a hard navigation.
-
-   This did not affect the old <select onchange="this.form.submit()">,
-   because a programmatic form.submit() fires NO submit event and htmx never
-   saw it. Turning the control into real buttons is what exposed it: a
-   user-clicked submit DOES fire the event, htmx intercepts, and the
-   attribute is the only thing that opts back out.
-
-   Measured in Chromium, 9 switches (QA 2026-10-04): without it 6/9 left
-   lang="en" and the root font-size at 16px instead of 17.28px; with it
-   0/9 stale. Causation isolated by toggling this one attribute.
-#}
-<form method="post" action="/lang" hx-boost="false"
-      class="inline-flex items-center gap-1" role="group" aria-label="Language">
-  {# There is ONE shared `next`, holding the ENGLISH url, and `/lang` derives
-     the Hindi twin from it when lang=hi — see the note by the input below.
-     An earlier version of this comment claimed each button carried its own
-     `next`, which contradicted the note twenty lines down in the same file
-     (QA 2026-10-04).
-
-     `_en` rather than request.url.path: a /hi/<unpublished> path 301s to
-     English anyway, so posting the /hi form of it back would strand the
-     reader one redirect away from where they asked to be. #}
-  <button type="submit" name="lang" value="en" lang="en"
-          {% if lang != 'hi' %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %}
-          formaction="/lang"
-          class="px-2 py-1 rounded-md border text-xs transition-colors
-                 {% if lang != 'hi' %}bg-astro-50 border-astro-400 text-astro-800 font-medium
-                 {% else %}bg-white border-stone-300 text-stone-700 hover:border-astro-400{% endif %}">English</button>
-  <button type="submit" name="lang" value="hi" lang="hi"
-          {% if lang == 'hi' %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %}
-          class="px-2 py-1 rounded-md border text-xs font-display transition-colors
-                 {% if lang == 'hi' %}bg-astro-50 border-astro-400 text-astro-800 font-medium
-                 {% else %}bg-white border-stone-300 text-stone-700 hover:border-astro-400{% endif %}">हिन्दी</button>
-  {# One hidden `next` per language, selected by which button was clicked, is
-     not expressible in plain HTML — a button's `value` is consumed by `name`.
-     So `next` is the ENGLISH url and the /lang handler re-derives the Hindi
-     twin from it when lang=hi. That keeps the single source of truth in
-     hindi_pages rather than duplicating the mapping into this template. #}
-  <input type="hidden" name="next" value="{{ _en }}">
+<form method="post" action="/lang" class="inline-flex items-center">
+  {# strip_hi_prefix, not english_url: the latter also lowercases and strips
+     the trailing slash, which is v4's extra redirect hop. #}
+  <input type="hidden" name="next" value="{{ strip_hi_prefix(request.url.path) }}">
+  <select name="lang" onchange="this.form.submit()"
+          class="bg-white border border-stone-300 rounded-md px-2 py-1 text-xs text-stone-700
+                 hover:border-astro-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500
+                 focus:outline-none cursor-pointer transition-colors"
+          aria-label="Language">
+    <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+    <option value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी (Hindi)</option>
+  </select>
+  <noscript><button type="submit" class="ml-1 text-xs text-stone-600 underline">Apply</button></noscript>
 </form>

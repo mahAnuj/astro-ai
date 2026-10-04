@@ -49,7 +49,7 @@ _regen_failures: dict[str, float] = {}
 
 
 def _reading_error_fragment(slug: str, is_rate: bool, msg: str,
-                            lang: str = "en") -> str:
+                            lang: str = "en", path: str = "") -> str:
     """Card-shaped retry block for the HTMX flip-card path.
 
     Both error paths render through this: a live generation failure and a
@@ -66,7 +66,14 @@ def _reading_error_fragment(slug: str, is_rate: bool, msg: str,
     # chrome whose "Try again" re-fetched the ENGLISH fragment. Pressing retry
     # on a Hindi card therefore swapped in an English reading, and burnt an
     # English generation the reader could not use (QA 2026-10-04).
-    prefix = "/hi" if lang == "hi" and hindi_pages.is_hindi_published(f"/rashifal/{slug}") else ""
+    # Path-keyed, matching the success fragment's permalink. This was
+    # language-keyed while the permalink 150 lines below was path-keyed, so one
+    # commit both fixed and re-introduced the split it was fixing: at
+    # /rashifal/aries with a `hi` cookie the success fragment said
+    # /rashifal/aries and the error fragment said /hi/rashifal/aries
+    # (QA 2026-10-04). `path` is threaded in rather than read from a request,
+    # because this builder has no request.
+    prefix = "/hi" if (path or "").startswith("/hi/") and hindi_pages.is_hindi_published(f"/rashifal/{slug}") else ""
     icon = "\U0001F549\uFE0F" if is_rate else "\u26A0\uFE0F"
     head = t(lang, "rashifal_card_busy" if is_rate else "rashifal_card_failed")
     return (
@@ -168,17 +175,28 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         generate_rashifal_for_rashi,
     )
     slug = (rashi or "").strip().lower()
+    # Resolved BEFORE the unknown-rashi return below, which needs it to
+    # localise its 404 — that exit sat above this assignment and so could
+    # only ever render English (QA 2026-10-04).
+    lang = _lang(request)
+
     idx = RASHI_SLUG_TO_INDEX.get(slug)
     if idx is None:
         return templates.TemplateResponse(
             request, "error.html",
-            {"title": "Unknown rashi",
-             "message": f"'{rashi}' is not one of the 12 rashis. Try /rashifal to pick your Moon sign."},
+            # The fourth English-only exit, and the only one that passed no
+            # lang at all — so /hi/rashifal/<non-rashi> rendered a fully
+            # English document under <html lang="en"> at a /hi/ URL. 404, so
+            # not indexable, and `main` had no such URL; the harm is to a
+            # reader who mistyped (QA 2026-10-04).
+            {"title": t(lang, "rashifal_unknown_title"),
+             "message": t(lang, "rashifal_unknown_msg"),
+             "lang": lang,
+             },
             status_code=404,
         )
     canonical_slug = RASHI_CANONICAL_SLUGS[idx]
     ui = _RASHIFAL_UI_META[canonical_slug]
-    lang = _lang(request)
     today_iso = date.today().isoformat()
     # `hx-boost=true` on <body> means EVERY internal link sends HX-Request,
     # so we can't use the generic HX-Request header to decide fragment vs
@@ -244,7 +262,8 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         _cool_msg = t(lang, "rashifal_card_cool_msg")
         if is_htmx:
             return HTMLResponse(
-                _reading_error_fragment(canonical_slug, True, _cool_msg, lang),
+                _reading_error_fragment(canonical_slug, True, _cool_msg, lang,
+                                        request.url.path),
                 status_code=503,
             )
         return _no_cdn_cache(templates.TemplateResponse(
@@ -322,7 +341,7 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
                 fragment_html = _reading_error_fragment(
                     canonical_slug, is_rate,
                     t(lang, "rashifal_card_rate_msg") if is_rate else _msg,
-                    lang,
+                    lang, request.url.path,
                 )
                 return HTMLResponse(
                     fragment_html,

@@ -52,7 +52,7 @@ MUTATIONS = [
 
     ("rashifal: cooldown raises instead of returning (81KB into the card)",
      "src/astro_ai/routes/rashifal.py",
-     "        if is_htmx:\n            return HTMLResponse(\n                _reading_error_fragment(canonical_slug, True, _cool_msg, lang),\n                status_code=503,\n            )",
+     "        if is_htmx:\n            return HTMLResponse(\n                _reading_error_fragment(canonical_slug, True, _cool_msg, lang,\n                                        request.url.path),\n                status_code=503,\n            )",
      "        if is_htmx:\n            raise HTTPException(status_code=503, detail='x')",
      "test_cooldown_returns_a_card_not_a_document"),
 
@@ -79,11 +79,11 @@ MUTATIONS = [
      'hx-get="/rashifal/{slug}"',
      "test_degraded_card_retry_stays_in_hindi"),
 
-    ("#124: picker form stops opting out of hx-boost",
+    ("#124: picker next reverts to the normalising english_url",
      "src/astro_ai/templates/_lang_picker.html",
-     '<form method="post" action="/lang" hx-boost="false"',
-     '<form method="post" action="/lang"',
-     "test_picker_form_opts_out_of_hx_boost"),
+     "{{ strip_hi_prefix(request.url.path) }}",
+     "{{ english_url(request.url.path) }}",
+     "test_language_control_posts_a_non_normalised_next"),
 
     ("#124: /lang stops routing Hindi to the published twin",
      "src/astro_ai/routes/account.py",
