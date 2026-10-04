@@ -67,6 +67,24 @@ MUTATIONS = [
      "    total = len(subs)", "    total = len(subscribers.list_subscribers())",
      "test_signup_landing_mid_run_is_not_a_false_failure"),
 
+    ("#124: canonical reverts to the cross-language form",
+     "src/astro_ai/templates/base.html",
+     '<link rel="canonical" href="{{ site_url }}{{ request.url.path }}">',
+     '<link rel="canonical" href="{{ site_url }}{{ english_url(request.url.path) }}">',
+     "test_hindi_url_is_self_canonical"),
+
+    ("#124: hreflang leaks onto pages with no Hindi twin",
+     "src/astro_ai/templates/base.html",
+     "hreflang_alternates(request.url.path)",
+     "hreflang_alternates('/rashifal')",
+     "test_unpublished_pages_emit_no_hreflang"),
+
+    ("#124: /hi stops forcing Hindi",
+     "src/astro_ai/routes/hindi.py",
+     '    request.state.forced_lang = "hi"',
+     "    pass",
+     "test_hi_prefix_actually_serves_hindi"),
+
     ("#124: Hindi rashi title falls back to English chrome",
      "src/astro_ai/templates/rashifal_single.html",
      "{% block title %}{{ t(lang, 'rashifal_single_title'",

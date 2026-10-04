@@ -11,6 +11,16 @@
    (/r/{id}) use "noindex, nofollow" because they contain PII and expire. #}
 <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
 <link rel="canonical" href="{{ site_url }}{{ request.url.path }}">
+{# hreflang — emitted ONLY for the 13 pages with a real Hindi version (#124).
+   The English URL and its /hi/ twin render the SAME three tags: Google
+   validates reciprocity by comparing the two pages' annotation sets, so they
+   have to agree. Pages with no Hindi twin get nothing at all — a hi-IN
+   annotation pointing at a page that does not exist makes Google discard
+   hreflang site-wide, which would poison the 13 URLs that matter in order to
+   decorate ~198 that do not. See hindi_pages.hreflang_alternates. #}
+{%- for hreflang, href in hreflang_alternates(request.url.path) %}
+<link rel="alternate" hreflang="{{ hreflang }}" href="{{ href }}">
+{%- endfor %}
 
 {# Open Graph — controls how the page renders when shared on WhatsApp,
    FB, LinkedIn etc. Readings pages override the og_image block with
