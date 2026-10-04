@@ -66,8 +66,9 @@ def _llm_error_friendly(err: Exception, lang: str = "en") -> tuple[str, str]:
     message are NEVER exposed to the user (they leak internals and confuse
     non-technical seekers). Full details are logged server-side for debugging.
 
-    `lang` defaults to English so the three other callers (ask, dasha, kundli)
-    are unchanged until they pass it. It exists because an outage on a /hi/
+    `lang` defaults to English so the six other callers (ask, dasha, kundli,
+    today, outlook, subscribe) are unchanged until they pass it. An earlier
+    version of this sentence said three and named three; QA counted six. It exists because an outage on a /hi/
     URL rendered this English copy under a self-canonical, hi-IN-annotated
     Hindi page (#124, QA 2026-10-04).
     """

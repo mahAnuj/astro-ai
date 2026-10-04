@@ -33,17 +33,44 @@
    en-IN/hi-IN/x-default triple on every page that has a twin, and that is
    the mechanism Google actually consumes for alternates. The visible control
    is for readers.
+
+   The switch is rendered on EVERY page, including those with no Hindi twin —
+   there it sets a preference that takes effect on the 13 that do. Nothing
+   hides it any more; `hindi_url()`'s docstring still describes a hide
+   behaviour this file dropped, and a `_hi` binding that nothing read was
+   removed here (QA 2026-10-04).
 #}
-{% set _hi = hindi_url(request.url.path) %}
 {% set _en = english_url(request.url.path) %}
-<form method="post" action="/lang" class="inline-flex items-center gap-1" role="group" aria-label="Language">
-  {# Each button carries its OWN next, so the destination matches the choice.
-     English goes to the English URL; Hindi goes to the /hi twin when one
-     exists and otherwise stays put, where the cookie alone gives it Hindi
-     chrome. `_en` rather than request.url.path for the English target: a
-     /hi/<unpublished> path 301s to English anyway, so posting the /hi form
-     of it back would strand the reader one redirect away from where they
-     asked to be. #}
+{# hx-boost="false" IS LOAD-BEARING — do not remove it as redundant.
+
+   `base.html` sets hx-boost="true" on <body> and
+   `html[lang="hi"] { font-size: 108% }` in its CSS. htmx boosting swaps the
+   BODY and leaves the <html> element alone, so a boosted language switch
+   updates the content and not `document.documentElement.lang` — the 108%
+   rule never applies and a screen reader keeps the English voice while
+   reading Devanagari, until the reader happens to do a hard navigation.
+
+   This did not affect the old <select onchange="this.form.submit()">,
+   because a programmatic form.submit() fires NO submit event and htmx never
+   saw it. Turning the control into real buttons is what exposed it: a
+   user-clicked submit DOES fire the event, htmx intercepts, and the
+   attribute is the only thing that opts back out.
+
+   Measured in Chromium, 9 switches (QA 2026-10-04): without it 6/9 left
+   lang="en" and the root font-size at 16px instead of 17.28px; with it
+   0/9 stale. Causation isolated by toggling this one attribute.
+#}
+<form method="post" action="/lang" hx-boost="false"
+      class="inline-flex items-center gap-1" role="group" aria-label="Language">
+  {# There is ONE shared `next`, holding the ENGLISH url, and `/lang` derives
+     the Hindi twin from it when lang=hi — see the note by the input below.
+     An earlier version of this comment claimed each button carried its own
+     `next`, which contradicted the note twenty lines down in the same file
+     (QA 2026-10-04).
+
+     `_en` rather than request.url.path: a /hi/<unpublished> path 301s to
+     English anyway, so posting the /hi form of it back would strand the
+     reader one redirect away from where they asked to be. #}
   <button type="submit" name="lang" value="en" lang="en"
           {% if lang != 'hi' %}aria-pressed="true"{% else %}aria-pressed="false"{% endif %}
           formaction="/lang"

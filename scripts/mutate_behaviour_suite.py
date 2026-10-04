@@ -52,7 +52,7 @@ MUTATIONS = [
 
     ("rashifal: cooldown raises instead of returning (81KB into the card)",
      "src/astro_ai/routes/rashifal.py",
-     "        if is_htmx:\n            return HTMLResponse(\n                _reading_error_fragment(canonical_slug, True, _cool_msg),\n                status_code=503,\n            )",
+     "        if is_htmx:\n            return HTMLResponse(\n                _reading_error_fragment(canonical_slug, True, _cool_msg, lang),\n                status_code=503,\n            )",
      "        if is_htmx:\n            raise HTTPException(status_code=503, detail='x')",
      "test_cooldown_returns_a_card_not_a_document"),
 
@@ -66,6 +66,24 @@ MUTATIONS = [
      "src/astro_ai/routes/subscribe.py",
      "    total = len(subs)", "    total = len(subscribers.list_subscribers())",
      "test_signup_landing_mid_run_is_not_a_false_failure"),
+
+    ("#124: cooldown degraded page reverts to English",
+     "src/astro_ai/routes/rashifal.py",
+     '{"title": t(lang, "rashifal_not_ready_title"),',
+     '{"title": "Reading not ready yet",',
+     "test_cooldown_degraded_page_is_localised"),
+
+    ("#124: degraded card retry fetches the English fragment",
+     "src/astro_ai/routes/rashifal.py",
+     'hx-get="{prefix}/rashifal/{slug}"',
+     'hx-get="/rashifal/{slug}"',
+     "test_degraded_card_retry_stays_in_hindi"),
+
+    ("#124: picker form stops opting out of hx-boost",
+     "src/astro_ai/templates/_lang_picker.html",
+     '<form method="post" action="/lang" hx-boost="false"',
+     '<form method="post" action="/lang"',
+     "test_picker_form_opts_out_of_hx_boost"),
 
     ("#124: /lang stops routing Hindi to the published twin",
      "src/astro_ai/routes/account.py",
@@ -81,7 +99,7 @@ MUTATIONS = [
 
     ("#124: Hindi card fragment links and shares the English URL",
      "src/astro_ai/routes/rashifal.py",
-     '    if lang == "hi":\n        permalink = hindi_pages.hindi_url(permalink) or permalink\n',
+     '    if _lang_prefix(lang, request.url.path):\n        permalink = hindi_pages.hindi_url(permalink) or permalink\n',
      "",
      "test_hindi_card_fragment_stays_in_hindi"),
 
