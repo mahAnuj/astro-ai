@@ -161,6 +161,27 @@ def english_url(path: str) -> str:
     return path
 
 
+def strip_hi_prefix(path: str) -> str:
+    """Remove a leading ``/hi``, changing NOTHING else.
+
+    Deliberately not ``english_url()``, which runs ``_normalise`` and so also
+    lowercases and strips the trailing slash. The language picker posts this
+    as its ``next``, and using the normalising version turned
+    ``/learn/karva-chauth-2026/`` into ``/learn/karva-chauth-2026`` — so every
+    language switch on the 75 ``/learn/`` articles and ``/learn/`` itself took
+    TWO redirect hops where ``main`` took one (QA 2026-10-04).
+
+    ``english_url()`` is still correct for the allow-list lookups it was
+    written for, where a canonical form is the point. It is wrong for
+    round-tripping a URL the reader is standing on.
+    """
+    if path == _HI_PREFIX:
+        return "/"
+    if path.startswith(_HI_PREFIX + "/"):
+        return path[len(_HI_PREFIX):]
+    return path
+
+
 def is_hindi_published(path: str) -> bool:
     """True if this page has a real Hindi version. Accepts either variant."""
     return english_url(path) in _published()

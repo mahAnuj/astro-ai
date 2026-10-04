@@ -268,108 +268,53 @@ def test_language_switch_works_from_every_starting_state(hindi_client, start_lan
     )
 
 
-def test_language_control_marks_state_not_location(hindi_client):
-    """FAIL 2 — aria-current said the reader was on /hi/rashifal while they
-    were on /rashifal, whenever a `hi` cookie disagreed with the path.
+def test_language_control_posts_a_non_normalised_next(hindi_client):
+    """QA round 4, F3 — the fifth defect in this file in four rounds, and the
+    reason the button-group rewrite was reverted out of this branch.
 
-    It is a preference toggle, so the correct semantic is aria-pressed on the
-    chosen option, not aria-current on a URL.
+    The picker used `english_url()` for its `next`, which runs `_normalise`
+    and so also lowercases and strips the trailing slash. So on
+    /learn/karva-chauth-2026/ it posted /learn/karva-chauth-2026, and every
+    language switch on the 75 /learn/ articles plus /learn/ itself took TWO
+    redirect hops where main took one. The reader still arrived, so this is a
+    minor regression — but it is a regression against main, on the site's
+    largest page type, caused by a line this branch added.
+
+    `strip_hi_prefix` removes the prefix and changes nothing else.
     """
-    hindi_client.post("/lang", data={"lang": "hi", "next": "/panchang"})
-    html = hindi_client.get("/rashifal").text
-    assert 'aria-current' not in html.split("<footer")[0], (
-        "aria-current makes a location claim; this control sets a preference"
-    )
-    pressed = re.findall(r'value="(\w+)"[^>]*aria-pressed="true"', html)
-    assert pressed == ["hi"], f"aria-pressed should mark the active language, got {pressed}"
-
-
-def test_language_switch_falls_back_to_a_preference_without_a_twin(hindi_client):
-    """A page with no Hindi URL has nothing to link to, so the cookie form
-    stays — but its `next` must not be a /hi path, or it strands the reader."""
-    html = hindi_client.get("/matching").text
-    assert 'action="/lang"' in html, "the preference form vanished from a page with no twin"
-    nxt = re.search(r'name="next" value="([^"]*)"', html).group(1)
-    assert not nxt.startswith("/hi"), f"preference form posts a forced-Hindi path: {nxt}"
-
-
-# --- the blind spot QA found in my own mutation testing --------------------
-
-def test_hreflang_hrefs_point_at_the_right_urls(hindi_client):
-    """QA's M7: my tests asserted the hreflang CODES and their reciprocity,
-    but never the HREFS. So a mutation making hi-IN point at the ENGLISH URL
-    — which destroys the annotation's entire purpose — was MISSED. Codes
-    matching is not the property that matters.
-    """
-    for en_path, hi_path in [("/rashifal", "/hi/rashifal"),
-                             ("/rashifal/aries", "/hi/rashifal/aries")]:
-        got = dict((h, href) for h, href in
-                   re.findall(r'hreflang="([^"]*)" href="([^"]*)"',
-                              hindi_client.get(en_path).text))
-        # EXACT comparison, not endswith. endswith was the first version and
-        # it could not see x-default being pointed at the Hindi URL, because
-        # "https://host/hi/rashifal".endswith("/rashifal") is True. A test
-        # that cannot distinguish a path from its own /hi/ prefix is no test
-        # of this property at all.
-        base = got["en-IN"].rsplit(en_path, 1)[0]
-        assert got["en-IN"] == base + en_path, f"en-IN -> {got['en-IN']}"
-        assert got["hi-IN"] == base + hi_path, f"hi-IN -> {got['hi-IN']}"
-        assert got["x-default"] == base + en_path, (
-            f"x-default -> {got['x-default']}; it must point at the ENGLISH URL "
-            f"({base + en_path}), which is what a reader whose locale matches "
-            "neither tag should be served"
+    for path in ("/learn/karva-chauth-2026/", "/learn/", "/panchang"):
+        html = hindi_client.get(path).text
+        nxt = re.search(r'name="next" value="([^"]*)"', html).group(1)
+        assert nxt == path, (
+            f"{path} posts next={nxt!r}; it must round-trip the path exactly, "
+            "or the switch costs an extra redirect hop"
         )
-        assert got["hi-IN"] != got["en-IN"], "hi-IN and en-IN point at the same URL"
 
 
-# --- S8: ?lang=hi must not remain a second URL for the same Hindi content ---
+def test_language_control_is_a_labelled_select(hindi_client):
+    """The control is deliberately main's <select>, not a button group.
 
-@pytest.mark.parametrize("path,target", [
-    ("/rashifal?lang=hi", "/hi/rashifal"),
-    ("/rashifal/aries?lang=hi", "/hi/rashifal/aries"),
-])
-def test_lang_param_redirects_to_the_hindi_url(hindi_client, path, target):
-    """The other half of the original defect, live until S8.
+    The button group is immune to nothing: as a user-clicked submit it fires a
+    submit event, which hx-boost intercepts, leaving <html lang> stale — four
+    QA rounds, four defects in this file. `this.form.submit()` is programmatic
+    and fires no submit event, so the <select> cannot hit that class at all.
 
-    /hi/... being self-canonical does not help while the same Hindi content is
-    still served at /rashifal?lang=hi under canonical=/rashifal — and those
-    links are in the wild, because ?lang=hi was the ONLY way to get Hindi
-    before this branch.
+    If this test is failing because you reintroduced the button group, that is
+    fine — but it needs hx-boost="false" AND
+    scripts/verify_lang_switch_browser.py green, which is the check this issue
+    lacked for three rounds. See the note at the top of _lang_picker.html.
     """
-    r = hindi_client.get(path)
-    assert r.status_code == 301, f"{path} still renders Hindi at an English canonical"
-    assert r.headers["location"] == target
+    html = hindi_client.get("/rashifal").text
+    form = re.search(r'<form[^>]*action="/lang"[^>]*>.*?</form>', html, re.S)
+    assert form, "the language form is gone"
+    block = form.group(0)
+    assert "<select" in block and 'name="lang"' in block, (
+        "the control is no longer a <select>; see this test's docstring before "
+        "changing it"
+    )
+    assert 'aria-label="Language"' in block or "<label" in block,         "the control has no accessible name"
+    assert 'value="en"' in block and 'value="hi"' in block
 
-
-@pytest.mark.parametrize("path", ["/matching?lang=hi", "/panchang?lang=hi", "/learn/?lang=hi"])
-def test_lang_param_still_works_where_there_is_no_hindi_url(hindi_client, path):
-    """Unpublished pages have no /hi twin to redirect to, so ?lang=hi must
-    keep doing exactly what it does today. Redirecting them to English would
-    take Hindi chrome away from readers who asked for it."""
-    r = hindi_client.get(path)
-    assert r.status_code == 200, f"{path} was redirected; it has no Hindi URL to redirect to"
-    assert re.search(r'<html[^>]*lang="hi"', r.text), f"{path} stopped honouring ?lang=hi"
-
-
-def test_lang_param_redirect_preserves_other_query_params(hindi_client):
-    """A redirect that silently drops state is worse than no redirect."""
-    r = hindi_client.get("/rashifal?lang=hi&utm_source=wa&ref=x")
-    assert r.status_code == 301
-    loc = r.headers["location"]
-    assert loc.startswith("/hi/rashifal?"), loc
-    assert "utm_source=wa" in loc and "ref=x" in loc, f"params dropped: {loc}"
-    assert "lang=" not in loc, f"lang survived the redirect and will loop: {loc}"
-
-
-def test_post_lang_is_not_redirected(hindi_client):
-    """`POST /lang` carries `lang` as a FORM field. Redirecting a POST drops
-    the body, so the preference would silently never be saved."""
-    r = hindi_client.post("/lang", data={"lang": "hi", "next": "/matching"})
-    assert r.status_code == 303, f"POST /lang got {r.status_code}"
-    assert "__session" in r.headers.get("set-cookie", ""), "the preference was not written"
-
-
-# --- QA round 2: the four defects found in the round-1 fixes ---------------
 
 def test_hindi_card_fragment_stays_in_hindi(hindi_client):
     """QA F3. Making the hub tiles fetch Hindi CREATED this path, and the
@@ -506,23 +451,33 @@ def test_lang_prefix_is_keyed_on_path_not_language_alone(hindi_client):
 # is exactly why three rounds of server-side verification missed it.
 # scripts/verify_lang_switch_browser.py covers it in Chromium.
 
-def test_picker_form_opts_out_of_hx_boost(hindi_client):
-    """The one server-visible half of that defect: the attribute's presence.
+def test_select_control_is_immune_to_hx_boost(hindi_client):
+    """QA round 3 found that a button-group picker is intercepted by hx-boost,
+    which swaps the body and leaves <html lang> stale — so the Hindi 108% rule
+    never applied and a screen reader kept the English voice.
 
-    This is a weak proxy for the real property and is here only so a careless
-    edit trips something in the fast suite. The behaviour — that
-    document.documentElement.lang and the 108% rule follow the control — is
-    only checkable in a browser, and the gate is the real guard.
+    The control is a <select> with onchange="this.form.submit()". A
+    PROGRAMMATIC submit fires no submit event, so htmx never sees it and the
+    browser does a full navigation. That immunity is a property of the markup,
+    so it is worth pinning: either the control stays programmatic, or it needs
+    an explicit hx-boost="false".
+
+    The behaviour itself — that document.documentElement.lang and the computed
+    root font-size follow the control — is only checkable in a browser, and
+    scripts/verify_lang_switch_browser.py is the real guard. This is the cheap
+    structural half.
     """
     html = hindi_client.get("/rashifal").text
-    form = re.search(r'<form[^>]*action="/lang"[^>]*>', html)
-    assert form, "the language form is gone"
-    assert 'hx-boost="false"' in form.group(0), (
-        "the picker form must opt out of hx-boost: boosting swaps the body and "
-        "leaves <html lang> stale, so the Hindi 108% rule never applies and a "
-        "screen reader keeps the English voice. See "
-        "scripts/verify_lang_switch_browser.py"
+    form = re.search(r'<form[^>]*action="/lang"[^>]*>.*?</form>', html, re.S).group(0)
+    programmatic = "this.form.submit()" in form
+    opted_out = 'hx-boost="false"' in form
+    assert programmatic or opted_out, (
+        "the language control is neither programmatic-submit nor opted out of "
+        "hx-boost, so htmx will intercept it and <html lang> will go stale. "
+        "See scripts/verify_lang_switch_browser.py"
     )
+    if not programmatic:
+        assert opted_out, "a clicked submit must carry hx-boost=\"false\""
 
 
 def test_cooldown_degraded_page_is_localised(hindi_client, stub_llm, monkeypatch):
@@ -543,6 +498,13 @@ def test_cooldown_degraded_page_is_localised(hindi_client, stub_llm, monkeypatch
     assert re.search(r'<html[^>]*lang="hi"', hi.text), "the cooled Hindi page declares lang=en"
     title = re.search(r"<title>([^<]*)", hi.text).group(1)
     assert any("ऀ" <= ch <= "ॿ" for ch in title), f"English title on the Hindi page: {title!r}"
+    # The BODY too, not only the title. QA mutated the message back to English
+    # while leaving the title Hindi and this test passed — half the fix could
+    # have come back silently (QA round 4, M3).
+    body = hi.text.split("<footer")[0]
+    heading = re.search(r"<h1[^>]*>(.*?)</h1>", body, re.S)
+    assert heading and any("ऀ" <= ch <= "ॿ" for ch in heading.group(1)), \
+        f"English <h1> on the Hindi cooled page: {heading.group(1)[:60] if heading else None!r}"
 
     rashifal._regen_failures.clear()
     hindi_client.get("/rashifal/aries")
@@ -575,7 +537,14 @@ def test_degraded_card_retry_stays_in_hindi(hindi_client, stub_llm):
         f"the Hindi card retries into English: {retries}"
     assert opens and all(o.startswith("/hi/") for o in opens), \
         f"the Hindi card opens the English page: {opens}"
-    assert any("ऀ" <= ch <= "ॿ" for ch in frag), "the Hindi card has no Devanagari at all"
+    # The LABELS, not just "some Devanagari somewhere" — that was satisfied by
+    # the heading alone, so QA could revert both button labels to English and
+    # this test still passed (QA round 4, M6).
+    for label in re.findall(r">([^<>]*(?:again|प्रयास|page|पृष्ठ)[^<>]*)<", frag):
+        assert any("ऀ" <= ch <= "ॿ" for ch in label), \
+            f"English control label in the Hindi card: {label.strip()!r}"
+    assert "Try again" not in frag and "Open full page" not in frag, \
+        "English button text survives in the Hindi card"
 
 
 def test_fragment_permalink_agrees_with_the_url_it_was_fetched_from(hindi_client, stub_llm, rashi_body):
@@ -594,3 +563,99 @@ def test_fragment_permalink_agrees_with_the_url_it_was_fetched_from(hindi_client
         f"fragment fetched at the ENGLISH url claims {links}; it must match the "
         "URL it was fetched from, which is the one it is published at"
     )
+
+
+# --------------------------------------------------------------------------
+# RESTORED. A slice-based edit while reverting the button-group picker deleted
+# these six along with the two it meant to remove, and the suite went green
+# because a deleted test cannot fail — the count dropped 138 -> 130 and I read
+# that as the intended -2. They guard S8's ?lang=hi redirects and the hreflang
+# HREFS, i.e. defects found in rounds 1 through 3 (QA round 4).
+# --------------------------------------------------------------------------
+
+def test_hreflang_hrefs_point_at_the_right_urls(hindi_client):
+    """QA's M7: my tests asserted the hreflang CODES and their reciprocity,
+    but never the HREFS. So a mutation making hi-IN point at the ENGLISH URL
+    — which destroys the annotation's entire purpose — was MISSED. Codes
+    matching is not the property that matters.
+    """
+    for en_path, hi_path in [("/rashifal", "/hi/rashifal"),
+                             ("/rashifal/aries", "/hi/rashifal/aries")]:
+        got = dict((h, href) for h, href in
+                   re.findall(r'hreflang="([^"]*)" href="([^"]*)"',
+                              hindi_client.get(en_path).text))
+        # EXACT comparison, not endswith. endswith was the first version and
+        # it could not see x-default being pointed at the Hindi URL, because
+        # "https://host/hi/rashifal".endswith("/rashifal") is True. A test
+        # that cannot distinguish a path from its own /hi/ prefix is no test
+        # of this property at all.
+        base = got["en-IN"].rsplit(en_path, 1)[0]
+        assert got["en-IN"] == base + en_path, f"en-IN -> {got['en-IN']}"
+        assert got["hi-IN"] == base + hi_path, f"hi-IN -> {got['hi-IN']}"
+        assert got["x-default"] == base + en_path, (
+            f"x-default -> {got['x-default']}; it must point at the ENGLISH URL "
+            f"({base + en_path}), which is what a reader whose locale matches "
+            "neither tag should be served"
+        )
+        assert got["hi-IN"] != got["en-IN"], "hi-IN and en-IN point at the same URL"
+
+
+# --- S8: ?lang=hi must not remain a second URL for the same Hindi content ---
+
+
+@pytest.mark.parametrize("path,target", [
+    ("/rashifal?lang=hi", "/hi/rashifal"),
+    ("/rashifal/aries?lang=hi", "/hi/rashifal/aries"),
+])
+def test_lang_param_redirects_to_the_hindi_url(hindi_client, path, target):
+    """The other half of the original defect, live until S8.
+
+    /hi/... being self-canonical does not help while the same Hindi content is
+    still served at /rashifal?lang=hi under canonical=/rashifal — and those
+    links are in the wild, because ?lang=hi was the ONLY way to get Hindi
+    before this branch.
+    """
+    r = hindi_client.get(path)
+    assert r.status_code == 301, f"{path} still renders Hindi at an English canonical"
+    assert r.headers["location"] == target
+
+@pytest.mark.parametrize("path", ["/matching?lang=hi", "/panchang?lang=hi", "/learn/?lang=hi"])
+def test_lang_param_still_works_where_there_is_no_hindi_url(hindi_client, path):
+    """Unpublished pages have no /hi twin to redirect to, so ?lang=hi must
+    keep doing exactly what it does today. Redirecting them to English would
+    take Hindi chrome away from readers who asked for it."""
+    r = hindi_client.get(path)
+    assert r.status_code == 200, f"{path} was redirected; it has no Hindi URL to redirect to"
+    assert re.search(r'<html[^>]*lang="hi"', r.text), f"{path} stopped honouring ?lang=hi"
+
+def test_lang_param_redirect_preserves_other_query_params(hindi_client):
+    """A redirect that silently drops state is worse than no redirect."""
+    r = hindi_client.get("/rashifal?lang=hi&utm_source=wa&ref=x")
+    assert r.status_code == 301
+    loc = r.headers["location"]
+    assert loc.startswith("/hi/rashifal?"), loc
+    assert "utm_source=wa" in loc and "ref=x" in loc, f"params dropped: {loc}"
+    assert "lang=" not in loc, f"lang survived the redirect and will loop: {loc}"
+
+
+def test_post_lang_is_not_redirected(hindi_client):
+    """`POST /lang` carries `lang` as a FORM field. Redirecting a POST drops
+    the body, so the preference would silently never be saved."""
+    r = hindi_client.post("/lang", data={"lang": "hi", "next": "/matching"})
+    assert r.status_code == 303, f"POST /lang got {r.status_code}"
+    assert "__session" in r.headers.get("set-cookie", ""), "the preference was not written"
+
+
+# --- QA round 2: the four defects found in the round-1 fixes ---------------
+
+
+def test_language_switch_falls_back_to_a_preference_without_a_twin(hindi_client):
+    """A page with no Hindi URL has nothing to link to, so the cookie form
+    stays — but its `next` must not be a /hi path, or it strands the reader."""
+    html = hindi_client.get("/matching").text
+    assert 'action="/lang"' in html, "the preference form vanished from a page with no twin"
+    nxt = re.search(r'name="next" value="([^"]*)"', html).group(1)
+    assert not nxt.startswith("/hi"), f"preference form posts a forced-Hindi path: {nxt}"
+
+
+# --- the blind spot QA found in my own mutation testing --------------------
