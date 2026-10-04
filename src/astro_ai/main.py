@@ -34,6 +34,7 @@ from astro_ai.routes import today as _today_routes
 from astro_ai.routes import account as _account_routes
 from astro_ai.routes import outlook as _outlook_routes
 from astro_ai.routes import rashifal as _rashifal_routes
+from astro_ai.routes import hindi as _hindi_routes
 from astro_ai.routes import subscribe as _subscribe_routes
 from astro_ai.routes import feedback as _feedback_routes
 from astro_ai.routes import learn as _learn_routes
@@ -206,6 +207,8 @@ app.include_router(_today_routes.router)
 app.include_router(_account_routes.router)
 app.include_router(_outlook_routes.router)
 app.include_router(_rashifal_routes.router)
+# /hi/{path} — after rashifal, whose handlers it awaits (#124)
+app.include_router(_hindi_routes.router)
 app.include_router(_subscribe_routes.router)
 app.include_router(_feedback_routes.router)
 app.include_router(_learn_routes.router)

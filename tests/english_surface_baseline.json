@@ -158,7 +158,7 @@
     "/rashifal": {
       "canonical": "https://shubhagya.com/rashifal",
       "final_path": "/rashifal",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Today's Rashifal for {DATE} — pick your Moon sign to reveal a substantive daily reading. All 12 rashis, generated fresh, free.",
       "status": 200,
@@ -167,7 +167,7 @@
     "/rashifal/aquarius": {
       "canonical": "https://shubhagya.com/rashifal/aquarius",
       "final_path": "/rashifal/aquarius",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -176,7 +176,7 @@
     "/rashifal/aries": {
       "canonical": "https://shubhagya.com/rashifal/aries",
       "final_path": "/rashifal/aries",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -185,7 +185,7 @@
     "/rashifal/cancer": {
       "canonical": "https://shubhagya.com/rashifal/cancer",
       "final_path": "/rashifal/cancer",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -194,7 +194,7 @@
     "/rashifal/capricorn": {
       "canonical": "https://shubhagya.com/rashifal/capricorn",
       "final_path": "/rashifal/capricorn",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -203,7 +203,7 @@
     "/rashifal/gemini": {
       "canonical": "https://shubhagya.com/rashifal/gemini",
       "final_path": "/rashifal/gemini",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -212,7 +212,7 @@
     "/rashifal/leo": {
       "canonical": "https://shubhagya.com/rashifal/leo",
       "final_path": "/rashifal/leo",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -221,7 +221,7 @@
     "/rashifal/libra": {
       "canonical": "https://shubhagya.com/rashifal/libra",
       "final_path": "/rashifal/libra",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -230,7 +230,7 @@
     "/rashifal/pisces": {
       "canonical": "https://shubhagya.com/rashifal/pisces",
       "final_path": "/rashifal/pisces",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -239,7 +239,7 @@
     "/rashifal/sagittarius": {
       "canonical": "https://shubhagya.com/rashifal/sagittarius",
       "final_path": "/rashifal/sagittarius",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -248,7 +248,7 @@
     "/rashifal/scorpio": {
       "canonical": "https://shubhagya.com/rashifal/scorpio",
       "final_path": "/rashifal/scorpio",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -257,7 +257,7 @@
     "/rashifal/taurus": {
       "canonical": "https://shubhagya.com/rashifal/taurus",
       "final_path": "/rashifal/taurus",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -266,7 +266,7 @@
     "/rashifal/virgo": {
       "canonical": "https://shubhagya.com/rashifal/virgo",
       "final_path": "/rashifal/virgo",
-      "hreflang_count": 0,
+      "hreflang_count": 3,
       "html_lang": "en",
       "meta_description": "Free instant Vedic astrology by Shubh Bhagya — get your Janma Kundli online, today's Rashifal for all 12 rashis, Dasha periods, Manglik & Sade Sati checks, and Kundali matching for marriage. No signup, no spam.",
       "status": 503,
@@ -290,5 +290,6 @@
       "status": 200,
       "title": "Terms of Service — Shubh Bhagya"
     }
-  }
+  },
+  "_hreflang_note": "hreflang_count went 0 -> 3 on /rashifal and the 12 rashi URLs in #124. INTENDED: hreflang must be reciprocal, so the ENGLISH page carries the same en-IN/hi-IN/x-default set as its /hi/ twin; a one-sided annotation makes Google discard hreflang site-wide. Applied surgically rather than by --capture, because a live re-capture also recorded /rashifal/aries as 200 off a warm cache and a working provider, which this file's own header forbids: the rashi URLs must record 503 locally or the baseline stops being reproducible on a clean tree."
 }
