@@ -1,15 +1,58 @@
-{# Language selector — native HTML <select> that auto-submits on change.
-   Caller provides `lang` (current language code). Scales to more languages
-   later by adding <option> rows; no JS framework needed. #}
-<form method="post" action="/lang" class="inline-flex items-center">
-  <input type="hidden" name="next" value="{{ request.url.path }}">
-  <select name="lang" onchange="this.form.submit()"
-          class="bg-white border border-stone-300 rounded-md px-2 py-1 text-xs text-stone-700
-                 hover:border-astro-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500
-                 focus:outline-none cursor-pointer transition-colors"
-          aria-label="Language">
-    <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
-    <option value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी (Hindi)</option>
-  </select>
-  <noscript><button type="submit" class="ml-1 text-xs text-stone-600 underline">Apply</button></noscript>
-</form>
+{# Language selector. Caller provides `lang` (current language code).
+
+   TWO MODES, because a page with a published Hindi URL and a page without are
+   genuinely different situations (#124).
+
+   1. The page HAS a /hi twin -> real anchors between the two URLs.
+      Crawlable, shareable, and they actually work. This is also what makes
+      the hreflang annotations honest: Google is told the pair exists, and a
+      reader can reach both halves of it.
+
+   2. The page has NO Hindi version -> the cookie form, as before. There is no
+      second URL to link to, so a preference is the only thing a switch can
+      change, and it takes effect on the pages that do have Hindi.
+
+   Mode 1 exists because mode 2 was BROKEN on /hi/ pages, not merely
+   suboptimal: the form posted `next = request.url.path`, i.e. /hi/rashifal,
+   and /hi/* forces Hindi regardless of cookie. So choosing "English" wrote
+   lang=en into __session, bounced the reader back to /hi/rashifal, and
+   re-rendered it in Hindi. The control did nothing visible while silently
+   changing the reader's saved language — measured by QA 2026-10-04. A dead
+   control that mutates stored state is worse than no control.
+#}
+{% set _hi = hindi_url(request.url.path) %}
+{% set _en = english_url(request.url.path) %}
+{% if _hi %}
+  {# Mode 1 — the pair exists, so link to it. aria-current marks the page we
+     are on; hreflang tells assistive tech and crawlers what the other side
+     is. rel=alternate matches the <link rel=alternate> pair in base.html. #}
+  <div class="inline-flex items-center gap-1 text-xs" role="group" aria-label="Language">
+    <a href="{{ _en }}" rel="alternate" hreflang="en-IN" lang="en"
+       {% if lang != 'hi' %}aria-current="page"{% endif %}
+       class="px-2 py-1 rounded-md border transition-colors
+              {% if lang != 'hi' %}bg-astro-50 border-astro-400 text-astro-800 font-medium
+              {% else %}bg-white border-stone-300 text-stone-700 hover:border-astro-400{% endif %}">English</a>
+    <a href="{{ _hi }}" rel="alternate" hreflang="hi-IN" lang="hi"
+       {% if lang == 'hi' %}aria-current="page"{% endif %}
+       class="px-2 py-1 rounded-md border transition-colors font-display
+              {% if lang == 'hi' %}bg-astro-50 border-astro-400 text-astro-800 font-medium
+              {% else %}bg-white border-stone-300 text-stone-700 hover:border-astro-400{% endif %}">हिन्दी</a>
+  </div>
+{% else %}
+  {# Mode 2 — no Hindi URL for this page, so this sets a preference. `next`
+     uses english_url() so that a page reached at /hi/<unpublished> (which
+     301s to English anyway) cannot post a /hi path back and strand the
+     reader in forced Hindi. #}
+  <form method="post" action="/lang" class="inline-flex items-center">
+    <input type="hidden" name="next" value="{{ _en }}">
+    <select name="lang" onchange="this.form.submit()"
+            class="bg-white border border-stone-300 rounded-md px-2 py-1 text-xs text-stone-700
+                   hover:border-astro-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500
+                   focus:outline-none cursor-pointer transition-colors"
+            aria-label="Language">
+      <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+      <option value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी (Hindi)</option>
+    </select>
+    <noscript><button type="submit" class="ml-1 text-xs text-stone-600 underline">Apply</button></noscript>
+  </form>
+{% endif %}

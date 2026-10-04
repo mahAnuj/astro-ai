@@ -99,6 +99,86 @@ async def hindi_unpublished(request: Request, path: str) -> RedirectResponse:
     # the English page, which is the defect this module exists to fix, just
     # reached via a slash. Redirect to the canonical /hi form instead.
     twin = hindi_pages.hindi_url(requested)
-    if twin is not None:
-        return RedirectResponse(twin, status_code=301)
-    return RedirectResponse(hindi_pages.english_url(requested), status_code=301)
+    target = twin if twin is not None else hindi_pages.english_url(requested)
+    # SAME-ORIGIN GUARD — this is the fix for an open redirect, not a
+    # belt-and-braces extra.
+    #
+    # `{path:path}` captures everything after /hi/, so /hi//evil.example.com
+    # arrives as path="/evil.example.com". `english_url()` strips the "/hi"
+    # prefix and returns "//evil.example.com" — and "//host" in a Location
+    # header is a PROTOCOL-RELATIVE URL, so the browser fetches
+    # http://evil.example.com. Verified: before this guard,
+    # /hi//evil.example.com/pwn returned 301 -> //evil.example.com/pwn, and
+    # on production that is a cacheable redirect off shubhagya.com to an
+    # arbitrary host. Found by QA 2026-10-04; both paths 404 before this
+    # branch, so the branch introduced it.
+    #
+    # Fixing it HERE and not in `_normalise`: that function collapses only
+    # leading slashes, so it never saw this path's inner "//" — and making it
+    # collapse them would quietly reclassify "//rashifal" as the published
+    # "/rashifal". Measured both before choosing. The check belongs where the
+    # user-controlled string meets the Location header.
+    #
+    # `deps._safe_redirect_target` is this same guard for `next=` params. It
+    # is reimplemented rather than imported: importing `deps` would pull
+    # FastAPI + dotenv (it calls `load_dotenv` at import) into a module that
+    # `hindi_pages` is deliberately kept independent of.
+    if not target.startswith("/") or target.startswith("//"):
+        target = "/"
+    return RedirectResponse(target, status_code=301)
+
+
+class RedirectLangParamMiddleware:
+    """301 `?lang=hi` to `/hi/{path}` where a Hindi URL exists — #124 S8.
+
+    The last half of the original defect. `/hi/...` being self-canonical does
+    not help while the SAME Hindi content is still reachable at
+    `/rashifal?lang=hi`, which renders `html lang="hi"` under
+    `canonical=/rashifal`. That is the cross-language canonical this issue
+    exists to remove, and `?lang=hi` links are already in the wild — they were
+    the only way to get Hindi before this branch.
+
+    This is a middleware where the /hi prefix deliberately is not, and the
+    distinction is load-bearing: this one only ever REDIRECTS. It never lets a
+    handler render with a mutated path, so it cannot produce the wrong
+    canonical — which is precisely why the path-stripping middleware was
+    rejected (see the module docstring).
+
+    Narrow on purpose:
+
+    * GET only. `POST /lang` carries `lang` as a FORM field and
+      `POST /admin/warm-rashifal` takes it as a query param it reads directly;
+      redirecting either would drop the body or the admin's intent.
+    * Published paths only. `/matching?lang=hi` keeps working exactly as it
+      does today, because there is no `/hi/matching` to send it to — the
+      allow-list is the single source of that truth.
+    * Other query parameters are preserved. Dropping them would break
+      `/panchang?date=…&lang=hi`-shaped links, and a redirect that silently
+      loses state is worse than no redirect.
+    """
+
+    def __init__(self, app) -> None:
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http" or scope.get("method") != "GET":
+            return await self.app(scope, receive, send)
+
+        from urllib.parse import parse_qsl, urlencode
+
+        raw = scope.get("query_string", b"").decode("latin-1")
+        if "lang=hi" not in raw:
+            return await self.app(scope, receive, send)
+
+        params = parse_qsl(raw, keep_blank_values=True)
+        if not any(k == "lang" and v == "hi" for k, v in params):
+            return await self.app(scope, receive, send)
+
+        twin = hindi_pages.hindi_url(scope.get("path", "/"))
+        if twin is None:
+            return await self.app(scope, receive, send)
+
+        kept = urlencode([(k, v) for k, v in params if k != "lang"])
+        target = f"{twin}?{kept}" if kept else twin
+        response = RedirectResponse(target, status_code=301)
+        return await response(scope, receive, send)
