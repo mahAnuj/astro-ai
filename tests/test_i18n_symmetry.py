@@ -112,3 +112,97 @@ def test_hindi_strings_invent_no_placeholder_the_callers_do_not_pass():
         "DECLARED with the file and line. If not, the reader sees a literal "
         "brace:\n" + "\n".join(f"  {k}: {v}" for k, v in bad[:8])
     )
+
+
+def test_no_translation_key_is_defined_but_unused():
+    """An orphaned key means a call site was LOST, and nothing else notices.
+
+    A merge resolution dropped four `t(lang, …)` call sites from
+    `rashifal_single.html` while leaving their key pairs defined. The result:
+    an `alt` attribute, the Article JSON-LD `description`, and two visible
+    card bodies all reverted to English on a page whose `<html lang>` says
+    Hindi — and the whole suite stayed green, because key-set symmetry was
+    still perfect and no test asserted that the keys are USED.
+
+    That is the shape to guard. Symmetry says the translation exists;
+    this says something still renders it.
+
+    Keys legitimately referenced only from Python are listed below. Anything
+    else unreferenced is either a lost call site or dead weight — both worth
+    a failure.
+    """
+    import pathlib
+    import re
+
+    root = pathlib.Path(__file__).resolve().parent.parent / "src" / "astro_ai"
+    haystack = "\n".join(
+        f.read_text(errors="ignore")
+        for pat in ("templates/**/*.html", "routes/*.py", "*.py")
+        for f in root.glob(pat)
+        if f.name != "i18n.py"
+    )
+
+    # Keys built by concatenation — `t(lang, 'rashi_name_' ~ rashi_slug)` —
+    # so the literal never appears. Matched by prefix instead.
+    DYNAMIC_PREFIXES = (
+        "rashi_name_", "rashi_element_", "rashi_quality_",
+        "planet_", "yoga_", "ks_", "nak_", "tithi_", "karana_",
+        "bs_", "num_", "dasha_", "gochar_", "festival_", "muhurat_",
+        "manglik_", "sade_", "dosha_", "learn_", "nav_", "cta_",
+    )
+
+    # PRE-EXISTING debt, measured against origin/main at the #124 merge:
+    # all 34 are orphaned there too, and the merge adds none. Pinned rather
+    # than cleaned, because deleting 34 keys is a separate change with its own
+    # risk — but the SET may not grow. A new entry here means a call site was
+    # lost, which is the defect this test exists for.
+    KNOWN_ORPHANS = {
+        "abhijit_desc",
+        "back_form",
+        "badge_soon",
+        "colour_caption",
+        "computed_chart",
+        "error_chart",
+        "error_key_missing",
+        "error_reading",
+        "ksy_caveat_heading",
+        "marriage_in_house",
+        "marriage_lord",
+        "marriage_manglik_note",
+        "marriage_no_occupants",
+        "marriage_occupants",
+        "marriage_seventh",
+        "marriage_seventh_sign",
+        "marriage_subtitle",
+        "marriage_title",
+        "marriage_venus",
+        "matching_out_of",
+        "matching_verdict",
+        "new_reading",
+        "rahu_kaal_desc",
+        "solar_window_desc",
+        "wealth_dhana",
+        "wealth_dhana_desc",
+        "wealth_jupiter",
+        "wealth_labha",
+        "wealth_labha_desc",
+        "wealth_no_planets",
+        "wealth_planets_label",
+        "wealth_subtitle",
+        "wealth_title",
+        "your_reading",
+    }
+
+    orphans = sorted(
+        k for k in _EN
+        if f"'{k}'" not in haystack
+        and f'"{k}"' not in haystack
+        and not k.startswith(DYNAMIC_PREFIXES)
+        and k not in KNOWN_ORPHANS
+    )
+    assert not orphans, (
+        f"{len(orphans)} translation key(s) are defined in both tables and "
+        f"referenced nowhere. Each is most likely a LOST call site — the page "
+        f"has reverted to an English literal while the translation sits "
+        f"unused:\n" + "\n".join(f"  {k}" for k in orphans[:12])
+    )
