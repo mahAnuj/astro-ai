@@ -65,6 +65,15 @@ async def submit_feedback(
 
     # Notify admin via email so feedback doesn't sit unread in a GCS file.
     # Best-effort — failure to email shouldn't fail the user's submit.
+    #
+    # The hexes below are redesign tokens (#239): sindoor #9E2B25 rule, cream
+    # #FAF6EF fill, muted #6B6259 meta. Moved with the three email templates
+    # rather than with the shell, which is where #238's commit message put it:
+    # this is an EMAIL body, not browser chrome, so the "half-migrated chrome a
+    # user would see" reasoning that deferred meta theme-color and the
+    # webmanifest does not apply to it. Migrating it alongside the other four
+    # emails is what keeps them consistent. Tailwind never sees this string, so
+    # nothing will flag it if the tokens move — grep here too.
     try:
         admin_to = os.environ.get("BHAGYA_EMAIL_FROM", "").strip()
         if admin_to and entry:
@@ -72,9 +81,9 @@ async def submit_feedback(
                      "other": "💬 Feedback"}.get(entry["type"], "Feedback")
             html = (
                 f"<p><strong>{label}</strong> via {entry['page'] or 'unknown page'}</p>"
-                f"<blockquote style='border-left:3px solid #6b21a8;padding:8px 12px;"
-                f"margin:8px 0;background:#faf7f2;'>{entry['message']}</blockquote>"
-                f"<p style='font-size:12px;color:#78716c;'>"
+                f"<blockquote style='border-left:3px solid #9E2B25;padding:8px 12px;"
+                f"margin:8px 0;background:#FAF6EF;'>{entry['message']}</blockquote>"
+                f"<p style='font-size:12px;color:#6B6259;'>"
                 f"From: {entry['email'] or '(anonymous)'}<br>"
                 f"At: {entry['ts']}<br>"
                 f"ID: <code>{entry['id']}</code></p>"

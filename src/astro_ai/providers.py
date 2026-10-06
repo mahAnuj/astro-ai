@@ -347,6 +347,106 @@ class AllProvidersExhausted(RuntimeError):
     """
 
 
+class RequestTooLarge(AllProvidersExhausted):
+    """The request itself is bigger than a provider's per-request ceiling.
+
+    Kept distinct from a plain exhaustion because the two need OPPOSITE
+    responses and were being conflated. A 429 is transient: wait, retry, try
+    another model, and the same request eventually goes through. A 413 is
+    structural — the request cannot fit, so waiting changes nothing and the
+    next model on the same host with the same cap returns the same error.
+
+    This is not hypothetical. `/kundli` failed in production with
+
+        Error code: 413 - Request too large for model 'openai/gpt-oss-120b'
+        ... tokens per minute (TPM): Limit 8000, Requested 8562
+
+    and Groq sends it with `"code": "rate_limit_exceeded"`, which is what made
+    it look transient. The openai SDK has no 413 subclass, so it arrived as a
+    generic `APIStatusError`, landed in the `except APIError` branch, and the
+    chain burned a second identical call on `groq20` — which shares the same
+    8,000 TPM cap and returned the same 413.
+
+    Subclasses AllProvidersExhausted so existing `except` clauses in the routes
+    keep working and keep rendering the degraded page.
+    """
+
+
+def _is_request_too_large(err: Exception) -> bool:
+    """Is this the structural 413, as opposed to a transient rate limit?
+
+    Matches on the HTTP status first, because that is the one part of the
+    response that is not free text. The string check is a fallback for
+    providers that signal an oversized request some other way; it is
+    deliberately narrow ("request too large" / "too large for model") so that
+    an ordinary 429 mentioning "rate limit" does not match.
+    """
+    if getattr(err, "status_code", None) == 413:
+        return True
+    text = str(err).lower()
+    return "request too large" in text or "too large for model" in text
+
+
+# Groq's free tier is 8,000 TPM PER MODEL, and it counts the request against
+# that same bucket — so a single request above the cap can never succeed, at
+# any traffic level, on any free-tier model in the chain.
+#
+# The pre-flight budget is the ceiling minus a margin for what we cannot
+# measure from here: the chat-template scaffolding Groq wraps the messages in,
+# and whatever completion it reserves. Measured 2026-09-05, the largest fixture
+# request assembled to 8,019 tok by our count while production reported 8,562
+# for a real chart — so that unmeasured remainder is worth ~500 tok and the
+# margin is set generously above it.
+REQUEST_TOKEN_CEILING = int(os.environ.get("BHAGYA_REQUEST_TOKEN_CEILING", "8000"))
+REQUEST_TOKEN_MARGIN = int(os.environ.get("BHAGYA_REQUEST_TOKEN_MARGIN", "1000"))
+
+# Bytes per token, for pre-flight estimates ONLY. Measured with tiktoken
+# o200k_base over the eight golden charts (scripts/measure_natal_request.py),
+# 2026-09-05.
+#
+# TWO constants, because the halves of a request have genuinely different
+# densities and one number cannot serve both:
+#
+#   instruction prose   4.227 B/tok (en system prompt), 4.295 (hi)
+#   chart-data blocks   3.697 to 3.778 across the eight fixtures
+#
+# Each is set just below the measured FLOOR for its own kind — not below the
+# average — so each rounds slightly high without the error compounding. The
+# floor matters: 3.7 looks like a safe data constant against a 3.70-3.78 range
+# and is not, because `strong-gajakesari` sits at 3.6970 and gets under-counted
+# by two tokens. `tests/test_natal_request_size.py` asserts the no-under-count
+# property against tiktoken over all eight charts, which is how that was found.
+# A single 3.9 constant — the
+# whole-request average — was tried and rejected: it priced the Hindi system
+# prompt at 3,540 against a real 3,214, and the 326 tok of phantom cost made
+# the guard shed the entire topic-summaries block (4.6 kB) on four of eight
+# charts to save ~50 tokens they did not need. A guard should be conservative
+# in its MARGIN, where the conservatism is visible and tunable, not in an
+# estimate that silently degrades output.
+#
+# `cache.estimate_tokens` is not reused here: at 4.0 B/tok it under-counted
+# these same requests by ~3%, and a guard that under-counts waves through
+# exactly the request it exists to stop. It stays as it is for the
+# /admin/usage counters, which are stats rather than a safety check.
+_BYTES_PER_TOKEN_PROSE = 4.2
+_BYTES_PER_TOKEN_DATA = 3.65
+
+
+def estimate_prose_tokens(text: str) -> int:
+    """Token estimate for instruction prose — prompt templates, overlays."""
+    return -(-len(text.encode("utf-8")) * 100 // int(_BYTES_PER_TOKEN_PROSE * 100))
+
+
+def estimate_data_tokens_for_bytes(n_bytes: int) -> int:
+    """Token estimate for assembled chart data, from a UTF-8 byte count."""
+    return -(-n_bytes * 100 // int(_BYTES_PER_TOKEN_DATA * 100))
+
+
+def estimate_data_tokens(text: str) -> int:
+    """Token estimate for assembled chart data — the user message."""
+    return estimate_data_tokens_for_bytes(len(text.encode("utf-8")))
+
+
 def _legacy_provider() -> ProviderConfig | None:
     """Build a one-element chain from the old single-provider env vars.
 
@@ -561,7 +661,43 @@ def chat(messages: list[dict], *, route: str = "") -> str:
 
     last_err: Exception | None = None
     sleep_budget = RETRY_AFTER_BUDGET_S
+    # Hosts that have already rejected this request as too large. Same-host
+    # providers share the per-request ceiling, so once one says 413 the rest
+    # will too — see RequestTooLarge.
+    too_large_hosts: set[str | None] = set()
+    too_large = False
+
+    def _note_too_large(err: Exception) -> bool:
+        """Record a 413 and mark its host unusable for this request.
+
+        Structural, not transient — see RequestTooLarge. Every other provider
+        on the same host shares the ceiling, so re-sending the same bytes to
+        them is a guaranteed second 413: a wasted round-trip that delays the
+        fallback to a provider that could actually serve it. Providers on OTHER
+        hosts are still tried, which is the whole point of keeping the chain
+        going — that is what lets the paid `openai` net catch an oversized
+        request.
+
+        Returns True when the error was a size failure and has been handled.
+        """
+        nonlocal too_large
+        if not _is_request_too_large(err):
+            return False
+        skipped = [p.name for p in order
+                   if p.api_base == provider.api_base and p is not provider]
+        too_large_hosts.add(provider.api_base)
+        too_large = True
+        log.error(
+            "provider %s rejected the request as TOO LARGE (route=%s): %s. This "
+            "is a size failure, not a rate limit — waiting cannot fix it.%s",
+            provider.name, route, err,
+            f" Skipping same-host provider(s): {', '.join(skipped)}." if skipped else "",
+        )
+        return True
+
     for provider in order:
+        if provider.api_base in too_large_hosts:
+            continue
         # ONE retry of THIS provider when it tells us how long to wait, before
         # falling through. See _retry_after_seconds: a TPM limit clears in
         # seconds, so advancing to the next provider throws away a request
@@ -686,14 +822,29 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                 )
                 break
             except (APIError, APIConnectionError, APITimeoutError) as err:
-                log.warning("provider %s API error (%s) — trying next in chain", provider.name, err)
                 last_err = err
+                if _note_too_large(err):
+                    break
+                log.warning("provider %s API error (%s) — trying next in chain", provider.name, err)
                 break
             except Exception as err:
-                # Defensive: don't let one provider's weird error kill the whole request.
-                log.warning("provider %s unexpected error (%s) — trying next in chain", provider.name, err)
+                # Defensive: don't let one provider's weird error kill the whole
+                # request. The size check runs here too: a 413 is structural
+                # however it reaches us, and pinning the handling to one except
+                # clause makes it depend on which SDK class the provider's
+                # library happens to raise.
                 last_err = err
+                if _note_too_large(err):
+                    break
+                log.warning("provider %s unexpected error (%s) — trying next in chain", provider.name, err)
                 break
+    if too_large:
+        raise RequestTooLarge(
+            f"The request is larger than the per-request ceiling of every provider "
+            f"in the chain that accepted it for inspection. Retrying will not help; "
+            f"the request has to get smaller, or a provider without that ceiling has "
+            f"to be in the chain. Last error: {last_err!r}"
+        )
     raise AllProvidersExhausted(
         f"All {len(order)} provider(s) in chain failed. Last error: {last_err!r}"
     )

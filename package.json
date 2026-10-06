@@ -8,6 +8,6 @@
     "watch:css": "tailwindcss -i ./assets/tailwind.css -o ./src/astro_ai/static/css/app.css --watch"
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "3.4.19"
   }
 }

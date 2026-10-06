@@ -12,11 +12,11 @@
 -#}
 <div id="subscribe-modal-backdrop"
      data-modal-backdrop
-     class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 no-print"
+     class="hidden fixed inset-0 z-50 bg-bhagya-night/60 flex items-center justify-center p-4 no-print"
      role="dialog" aria-modal="true" aria-labelledby="subscribe-modal-title">
-  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+  <div class="bg-bhagya-cream border border-bhagya-border rounded-md max-w-md w-full p-6 relative">
     <button id="subscribe-modal-close" type="button" aria-label="Close"
-            class="absolute top-3 right-3 text-stone-500 hover:text-stone-700 p-1">
+            class="absolute top-3 right-3 text-bhagya-muted-2 hover:text-bhagya-ink p-1">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
       </svg>
@@ -25,34 +25,34 @@
     {#- Default state -#}
     <div id="subscribe-modal-default">
       <div class="flex items-center gap-3 mb-3">
-        <svg viewBox="0 0 100 100" class="w-9 h-9 text-astro-700 shrink-0" aria-hidden="true">
+        <svg viewBox="0 0 100 100" class="w-9 h-9 text-bhagya-sindoor shrink-0" aria-hidden="true">
           <g fill="none" stroke="currentColor" stroke-width="6">
             <polygon points="50,5 95,50 50,95 5,50"/>
             <line x1="50" y1="5" x2="50" y2="95"/>
             <line x1="5" y1="50" x2="95" y2="50"/>
             <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
           </g>
-          <circle cx="50" cy="50" r="7" fill="#ffd764"/>
+          <circle cx="50" cy="50" r="7" fill="#E4913C"/>
         </svg>
-        <h2 id="subscribe-modal-title" class="font-display text-xl font-bold text-stone-900">
+        <h2 id="subscribe-modal-title" class="font-marcellus text-xl text-bhagya-ink">
           {% if lang == 'hi' %}रोज़ का राशिफल अपने इनबॉक्स में{% else %}Today's Rashifal in your inbox{% endif %}
         </h2>
       </div>
-      <p class="text-sm text-stone-600 leading-relaxed mb-4">
+      <p class="text-sm text-bhagya-muted leading-relaxed mb-4">
         {% if lang == 'hi' %}हर सुबह सभी 12 राशियों का राशिफल। एक भी ईमेल, मुफ्त, कभी भी बंद कर सकते हैं।{% else %}A single morning email with today's reading for all 12 rashis. Free, opt out anytime.{% endif %}
       </p>
 
       <form id="subscribe-modal-form" class="flex flex-col gap-3">
         <input type="email" name="email" required autocomplete="email"
                placeholder="{% if lang == 'hi' %}आपका ईमेल{% else %}your@email.com{% endif %}"
-               class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm
-                      focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+               class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm
+                      focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
 
         {# "Welcome back" banner — appears when /subscribe/lookup finds an
            existing subscription. Prevents the silent-reset bug where a
            returning user's rashi/lang would revert to defaults. #}
         <div id="subscribe-welcome-back"
-             class="hidden bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-md px-3 py-2">
+             class="hidden bg-bhagya-cream-2 border border-bhagya-line text-emerald-800 text-xs rounded-md px-3 py-2">
           {% if lang == 'hi' %}स्वागत है! हमने आपकी मौजूदा पसंद लोड की है — बदलाव करके सहेजें।{% else %}Welcome back — loaded your existing preferences. Change any field and Subscribe to update.{% endif %}
         </div>
 
@@ -62,43 +62,35 @@
         <div>
           <input type="text" name="city" autocomplete="address-level2"
                  placeholder="{% if lang == 'hi' %}आपका शहर (वैकल्पिक){% else %}Your city (optional){% endif %}"
-                 class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm
-                        focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
-          <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+                 class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm
+                        focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
+          <p class="text-xs text-bhagya-muted mt-1 leading-relaxed">
             {% if lang == 'hi' %}हम आपके शहर का सूर्योदय, राहु काल और अभिजित मुहूर्त ईमेल में जोड़ेंगे।{% else %}We'll add your local sunrise, Rahu Kaal &amp; Abhijit Muhurta to the email.{% endif %}
           </p>
         </div>
 
         {# Optional rashi selector — readers who know their Janma Rashi
            can opt into a focused single-rashi email instead of the full
-           12-card reading. Defaults to "all".
-
-           The Devanagari names come from i18n.py's `rashi_name_*` keys, not
-           from twelve literals here: they were a third copy of the same list
-           (the others are rashifal_grid.html and routes/rashifal.py), and the
-           two that already existed had drifted — this file shipped कुम्भ while
-           templates/rashifal.html had कुंभ. The English half stays inline
-           because "Aries / Mesha" pairs the Sanskrit name, which the table
-           does not carry. #}
+           12-card reading. Defaults to "all". #}
         <div>
           <select name="rashi"
-                  class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm bg-white
-                         focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                  class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm bg-white
+                         focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <option value="all">{% if lang == 'hi' %}सभी 12 राशियाँ भेजें (डिफ़ॉल्ट){% else %}Send all 12 rashis (default){% endif %}</option>
-            <option value="aries">♈ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_aries') }} (Aries){% else %}Aries / Mesha{% endif %}</option>
-            <option value="taurus">♉ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_taurus') }} (Taurus){% else %}Taurus / Vrishabha{% endif %}</option>
-            <option value="gemini">♊ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_gemini') }} (Gemini){% else %}Gemini / Mithuna{% endif %}</option>
-            <option value="cancer">♋ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_cancer') }} (Cancer){% else %}Cancer / Karka{% endif %}</option>
-            <option value="leo">♌ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_leo') }} (Leo){% else %}Leo / Simha{% endif %}</option>
-            <option value="virgo">♍ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_virgo') }} (Virgo){% else %}Virgo / Kanya{% endif %}</option>
-            <option value="libra">♎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_libra') }} (Libra){% else %}Libra / Tula{% endif %}</option>
-            <option value="scorpio">♏ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_scorpio') }} (Scorpio){% else %}Scorpio / Vrishchika{% endif %}</option>
-            <option value="sagittarius">♐ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_sagittarius') }} (Sagittarius){% else %}Sagittarius / Dhanu{% endif %}</option>
-            <option value="capricorn">♑ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_capricorn') }} (Capricorn){% else %}Capricorn / Makara{% endif %}</option>
-            <option value="aquarius">♒ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_aquarius') }} (Aquarius){% else %}Aquarius / Kumbha{% endif %}</option>
-            <option value="pisces">♓ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_pisces') }} (Pisces){% else %}Pisces / Meena{% endif %}</option>
+            <option value="aries">♈︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_aries') }} (Aries){% else %}Aries / Mesha{% endif %}</option>
+            <option value="taurus">♉︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_taurus') }} (Taurus){% else %}Taurus / Vrishabha{% endif %}</option>
+            <option value="gemini">♊︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_gemini') }} (Gemini){% else %}Gemini / Mithuna{% endif %}</option>
+            <option value="cancer">♋︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_cancer') }} (Cancer){% else %}Cancer / Karka{% endif %}</option>
+            <option value="leo">♌︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_leo') }} (Leo){% else %}Leo / Simha{% endif %}</option>
+            <option value="virgo">♍︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_virgo') }} (Virgo){% else %}Virgo / Kanya{% endif %}</option>
+            <option value="libra">♎︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_libra') }} (Libra){% else %}Libra / Tula{% endif %}</option>
+            <option value="scorpio">♏︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_scorpio') }} (Scorpio){% else %}Scorpio / Vrishchika{% endif %}</option>
+            <option value="sagittarius">♐︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_sagittarius') }} (Sagittarius){% else %}Sagittarius / Dhanu{% endif %}</option>
+            <option value="capricorn">♑︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_capricorn') }} (Capricorn){% else %}Capricorn / Makara{% endif %}</option>
+            <option value="aquarius">♒︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_aquarius') }} (Aquarius){% else %}Aquarius / Kumbha{% endif %}</option>
+            <option value="pisces">♓︎ {% if lang == 'hi' %}{{ t(lang, 'rashi_name_pisces') }} (Pisces){% else %}Pisces / Meena{% endif %}</option>
           </select>
-          <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+          <p class="text-xs text-bhagya-muted mt-1 leading-relaxed">
             {% if lang == 'hi' %}अपनी जन्म राशि चुनें तो ईमेल छोटा और केंद्रित मिलेगा।{% else %}Pick your Janma Rashi for a shorter, focused email.{% endif %}
           </p>
         </div>
@@ -107,25 +99,25 @@
            lets subscribers override (e.g. browse in English, prefer email
            in Hindi). Chip-style radio buttons for tap-friendly mobile. #}
         <div>
-          <div class="text-xs text-stone-600 mb-1.5">
+          <div class="text-xs text-bhagya-muted mb-1.5">
             {% if lang == 'hi' %}ईमेल किस भाषा में?{% else %}Email language{% endif %}
           </div>
           <div class="flex gap-2">
             <label class="flex-1 relative cursor-pointer">
               <input type="radio" name="lang" value="en" class="peer sr-only"
                      {% if lang != 'hi' %}checked{% endif %}>
-              <div class="text-center py-1.5 px-3 text-sm rounded-md border border-stone-300
-                          peer-checked:bg-astro-50 peer-checked:border-astro-500 peer-checked:text-astro-700
-                          peer-checked:font-semibold hover:border-astro-300 transition-colors">
+              <div class="text-center py-1.5 px-3 text-sm rounded-md border border-bhagya-border
+                          peer-checked:bg-bhagya-cream-2 peer-checked:border-bhagya-saffron peer-checked:text-bhagya-sindoor
+                          peer-checked:font-semibold hover:border-bhagya-saffron transition-colors">
                 English
               </div>
             </label>
             <label class="flex-1 relative cursor-pointer">
               <input type="radio" name="lang" value="hi" class="peer sr-only"
                      {% if lang == 'hi' %}checked{% endif %}>
-              <div class="text-center py-1.5 px-3 text-sm rounded-md border border-stone-300
-                          peer-checked:bg-astro-50 peer-checked:border-astro-500 peer-checked:text-astro-700
-                          peer-checked:font-semibold hover:border-astro-300 transition-colors">
+              <div class="text-center py-1.5 px-3 text-sm rounded-md border border-bhagya-border
+                          peer-checked:bg-bhagya-cream-2 peer-checked:border-bhagya-saffron peer-checked:text-bhagya-sindoor
+                          peer-checked:font-semibold hover:border-bhagya-saffron transition-colors">
                 हिन्दी
               </div>
             </label>
@@ -133,25 +125,25 @@
         </div>
 
         <button type="submit"
-                class="bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium py-2 rounded-lg transition-colors">
+                class="bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-sm font-medium py-2 rounded-lg transition-colors">
           <span class="subscribe-default-text">{% if lang == 'hi' %}सदस्यता लें{% else %}Subscribe{% endif %}</span>
           <span class="subscribe-loading-text hidden">…</span>
         </button>
         <button type="button" id="subscribe-modal-later"
-                class="text-xs text-stone-600 hover:text-stone-700">
+                class="text-xs text-bhagya-muted hover:text-bhagya-ink">
           {% if lang == 'hi' %}बाद में{% else %}Maybe later{% endif %}
         </button>
-        <div id="subscribe-modal-error" class="hidden text-xs text-red-600 mt-1"></div>
+        <div id="subscribe-modal-error" class="hidden text-xs text-bhagya-sindoor mt-1"></div>
       </form>
     </div>
 
     {#- Success state -#}
     <div id="subscribe-modal-success" class="hidden text-center py-4">
       <div class="text-3xl mb-2">🪔</div>
-      <h2 class="font-display text-xl font-bold text-stone-900 mb-1">
+      <h2 class="font-marcellus text-xl text-bhagya-ink mb-1">
         {% if lang == 'hi' %}धन्यवाद!{% else %}You're in.{% endif %}
       </h2>
-      <p class="text-sm text-stone-600">
+      <p class="text-sm text-bhagya-muted">
         {% if lang == 'hi' %}कल सुबह आपको पहला राशिफल मिलेगा।{% else %}Your first Rashifal arrives tomorrow morning.{% endif %}
       </p>
     </div>

@@ -4,34 +4,45 @@
    ascendant cell.  Uses the same 400x400 viewBox as the diamond variant
    so both charts occupy identical layout space and can be toggled
    in-place without reflowing surrounding content.
+
+   #239 left the hardcoded purple below at its old ramp value on purpose.
+   These hexes are invisible to Tailwind — they are SVG attributes and
+   inline styles, so a palette swap in the config cannot reach them — but
+   the same element sits beside purple utility classes that CAN be reached,
+   and recolouring one without the other ships a page that is half each
+   palette. They move with the screen that owns this file, in one motion.
+   Do not "tidy" them ahead of it; do not miss them when it lands.
+   This partial and the diamond in result.html are a toggle PAIR — whatever
+   moves one must move the other in the same commit, or the two chart styles
+   disagree inside one page.
 #}
 <svg viewBox="0 0 400 400" class="w-full max-w-lg mx-auto block"
      xmlns="http://www.w3.org/2000/svg" aria-label="{{ aria }}">
   {# Outer border #}
   <rect x="2" y="2" width="396" height="396" fill="transparent"
-        stroke="#6b21a8" stroke-width="2"
+        stroke="#9E2B25" stroke-width="2"
         class="chart-draw" style="--dash: 1584; animation-delay: 0ms"/>
 
   {# 3 vertical lines at x=100, 200, 300 — divide into 4 columns #}
-  <line x1="100" y1="2"   x2="100" y2="398" stroke="#6b21a8" stroke-width="2"
+  <line x1="100" y1="2"   x2="100" y2="398" stroke="#9E2B25" stroke-width="2"
         class="chart-draw" style="--dash: 396; animation-delay: 200ms"/>
-  <line x1="200" y1="2"   x2="200" y2="398" stroke="#6b21a8" stroke-width="2"
+  <line x1="200" y1="2"   x2="200" y2="398" stroke="#9E2B25" stroke-width="2"
         class="chart-draw" style="--dash: 396; animation-delay: 320ms"/>
-  <line x1="300" y1="2"   x2="300" y2="398" stroke="#6b21a8" stroke-width="2"
+  <line x1="300" y1="2"   x2="300" y2="398" stroke="#9E2B25" stroke-width="2"
         class="chart-draw" style="--dash: 396; animation-delay: 440ms"/>
 
   {# 3 horizontal lines at y=100, 200, 300 #}
-  <line x1="2"   y1="100" x2="398" y2="100" stroke="#6b21a8" stroke-width="2"
+  <line x1="2"   y1="100" x2="398" y2="100" stroke="#9E2B25" stroke-width="2"
         class="chart-draw" style="--dash: 396; animation-delay: 560ms"/>
-  <line x1="2"   y1="200" x2="398" y2="200" stroke="#6b21a8" stroke-width="2"
+  <line x1="2"   y1="200" x2="398" y2="200" stroke="#9E2B25" stroke-width="2"
         class="chart-draw" style="--dash: 396; animation-delay: 680ms"/>
-  <line x1="2"   y1="300" x2="398" y2="300" stroke="#6b21a8" stroke-width="2"
+  <line x1="2"   y1="300" x2="398" y2="300" stroke="#9E2B25" stroke-width="2"
         class="chart-draw" style="--dash: 396; animation-delay: 800ms"/>
 
   {# Erase the internal-lines of the middle 2x2 by overlaying a solid
      rectangle in the site's cream background. This is the classical
      empty area used for birth-detail annotations. #}
-  <rect x="102" y="102" width="196" height="196" fill="#f5f5f0" stroke="none"/>
+  <rect x="102" y="102" width="196" height="196" fill="#FAF6EF" stroke="none"/>
 
   {# 12 border cells — each 100x100 sq. positions computed from col/row.
      Cell contents: house number (small), rashi label (short), planets. #}
@@ -42,22 +53,22 @@
       {# Lagna highlight — subtle background tint on the ascendant cell #}
       {% if c.is_lagna %}
       <rect x="{{ cx + 3 }}" y="{{ cy + 3 }}" width="94" height="94"
-            fill="#f3e8ff" stroke="none" rx="4"/>
+            fill="#F1E7D8" stroke="none" rx="4"/>
       {% endif %}
       {# House number top-left of the cell #}
       <text x="{{ cx + 8 }}" y="{{ cy + 16 }}" font-size="11"
-            font-weight="700" fill="#a16207" style="font-family: Inter, sans-serif">{{ c.house }}</text>
+            font-weight="700" fill="#6F675E" style="font-family: Manrope, sans-serif">{{ c.house }}</text>
       {# Rashi 3-letter abbrev top-right #}
       <text x="{{ cx + 92 }}" y="{{ cy + 16 }}" text-anchor="end"
-            font-size="10" font-weight="600" fill="#78716c" style="font-family: Inter, sans-serif">{{ c.rashi_short }}</text>
+            font-size="10" font-weight="600" fill="#6F675E" style="font-family: Manrope, sans-serif">{{ c.rashi_short }}</text>
       {# Planet stack — centered in cell #}
       {% for p in c.planets %}
       <text x="{{ cx + 50 }}" y="{{ cy + 42 + loop.index0 * 13 }}" text-anchor="middle"
-            font-size="11" font-weight="600" fill="#1c1917" style="font-family: Inter, sans-serif">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}<tspan font-size="9" fill="#b45309">&nbsp;R</tspan>{% endif %}</text>
+            font-size="11" font-weight="600" fill="#17131A" style="font-family: Manrope, sans-serif">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}<tspan font-size="9" fill="#92400e">&nbsp;R</tspan>{% endif %}</text>
       {% endfor %}
       {% if c.is_lagna %}
       <text x="{{ cx + 50 }}" y="{{ cy + 92 }}" text-anchor="middle"
-            font-size="9" font-weight="700" fill="#6b21a8" style="font-family: Inter, sans-serif">LAGNA</text>
+            font-size="9" font-weight="700" fill="#9E2B25" style="font-family: Manrope, sans-serif">LAGNA</text>
       {% endif %}
     {% endfor %}
   </g>

@@ -1,13 +1,13 @@
 {
-  "name": "Shubh Bhagya — Vedic Astrology",
+  "name": "Shubh Bhagya \u2014 Vedic Astrology",
   "short_name": "Shubh Bhagya",
-  "description": "Free Vedic astrology — Kundli, Rashifal, Dasha, and life readings rooted in classical Parashari tradition.",
+  "description": "Free Vedic astrology \u2014 Kundli, Rashifal, Dasha, and life readings rooted in classical Parashari tradition.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#faf7f2",
-  "theme_color": "#6b21a8",
+  "background_color": "#FAF6EF",
+  "theme_color": "#140F1C",
   "lang": "en",
   "icons": [
     {
@@ -29,5 +29,8 @@
       "purpose": "maskable"
     }
   ],
-  "categories": ["lifestyle", "education"]
+  "categories": [
+    "lifestyle",
+    "education"
+  ]
 }

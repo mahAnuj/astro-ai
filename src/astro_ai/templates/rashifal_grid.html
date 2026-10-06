@@ -22,50 +22,64 @@
    from deps.panchang_strip_ctx; nothing is recomputed per page. #}
 {% include "_panchang_strip.html" %}
 
-{# 12 rashi tiles — same order as classical (Mesha..Meena) with metadata
-   for the card design (glyph, English + Sanskrit name, element, gradient
-   color).  Element colors: fire=amber, earth=emerald, air=sky, water=teal. #}
+{# 12 rashi tiles — same order as classical (Mesha..Meena) with metadata for
+   the card design (glyph, English + Sanskrit name, element, and the Hindi
+   element + quality).
+
+   #244 removed two columns: a `from-x-100 to-y-200` gradient and a matching
+   glyph colour, one pair per element. They painted the card backs, and the
+   redesign's card grid has a single ground with 1px hairline gutters instead.
+   The element itself is unchanged and still renders as the text label on every
+   card — which was always the only version a screen reader received. #}
 {% set _rashis = [
-  ('aries',       'Aries',       'Mesha',       '♈', 'fire',  'from-amber-100 to-orange-200',   'text-orange-700',  'अग्नि', 'चर'),
-  ('taurus',      'Taurus',      'Vrishabha',   '♉', 'earth', 'from-emerald-100 to-green-200',  'text-emerald-700', 'पृथ्वी','स्थिर'),
-  ('gemini',      'Gemini',      'Mithuna',     '♊', 'air',   'from-sky-100 to-blue-200',       'text-sky-700',     'वायु','द्विस्वभाव'),
-  ('cancer',      'Cancer',      'Karka',       '♋', 'water', 'from-teal-100 to-cyan-200',      'text-teal-700',    'जल','चर'),
-  ('leo',         'Leo',         'Simha',       '♌', 'fire',  'from-amber-100 to-orange-200',   'text-orange-700',  'अग्नि','स्थिर'),
-  ('virgo',       'Virgo',       'Kanya',       '♍', 'earth', 'from-emerald-100 to-green-200',  'text-emerald-700', 'पृथ्वी','द्विस्वभाव'),
-  ('libra',       'Libra',       'Tula',        '♎', 'air',   'from-sky-100 to-blue-200',       'text-sky-700',     'वायु','चर'),
-  ('scorpio',     'Scorpio',     'Vrishchika',  '♏', 'water', 'from-teal-100 to-cyan-200',      'text-teal-700',    'जल','स्थिर'),
-  ('sagittarius', 'Sagittarius', 'Dhanu',       '♐', 'fire',  'from-amber-100 to-orange-200',   'text-orange-700',  'अग्नि','द्विस्वभाव'),
-  ('capricorn',   'Capricorn',   'Makara',      '♑', 'earth', 'from-emerald-100 to-green-200',  'text-emerald-700', 'पृथ्वी','चर'),
-  ('aquarius',    'Aquarius',    'Kumbha',      '♒', 'air',   'from-sky-100 to-blue-200',       'text-sky-700',     'वायु','स्थिर'),
-  ('pisces',      'Pisces',      'Meena',       '♓', 'water', 'from-teal-100 to-cyan-200',      'text-teal-700',    'जल','द्विस्वभाव'),
+  ('aries',       'Aries',       'Mesha',       '♈︎', 'fire',  'अग्नि', 'चर'),
+  ('taurus',      'Taurus',      'Vrishabha',   '♉︎', 'earth', 'पृथ्वी','स्थिर'),
+  ('gemini',      'Gemini',      'Mithuna',     '♊︎', 'air',     'वायु','द्विस्वभाव'),
+  ('cancer',      'Cancer',      'Karka',       '♋︎', 'water',    'जल','चर'),
+  ('leo',         'Leo',         'Simha',       '♌︎', 'fire',  'अग्नि','स्थिर'),
+  ('virgo',       'Virgo',       'Kanya',       '♍︎', 'earth', 'पृथ्वी','द्विस्वभाव'),
+  ('libra',       'Libra',       'Tula',        '♎︎', 'air',     'वायु','चर'),
+  ('scorpio',     'Scorpio',     'Vrishchika',  '♏︎', 'water',    'जल','स्थिर'),
+  ('sagittarius', 'Sagittarius', 'Dhanu',       '♐︎', 'fire',  'अग्नि','द्विस्वभाव'),
+  ('capricorn',   'Capricorn',   'Makara',      '♑︎', 'earth', 'पृथ्वी','चर'),
+  ('aquarius',    'Aquarius',    'Kumbha',      '♒︎', 'air',     'वायु','स्थिर'),
+  ('pisces',      'Pisces',      'Meena',       '♓︎', 'water',    'जल','द्विस्वभाव'),
 ] %}
 
 <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
   {# HEADER #}
   <header class="text-center space-y-2">
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor">
       <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </div>
-    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700">{{ t(lang, 'rashifal_title') }}</h1>
-    <p class="text-base sm:text-lg text-stone-600 max-w-2xl mx-auto">
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink">{{ t(lang, 'rashifal_title') }}</h1>
+    <p class="text-base sm:text-lg text-bhagya-muted max-w-2xl mx-auto">
       {% if lang == 'hi' %}
         अपनी राशि पर क्लिक करें और आज के लिए पढ़ाई देखें। सभी 12 राशियों के लिए मुफ्त, कोई साइनअप नहीं।
       {% else %}
         Tap your Moon sign to reveal today's reading. Written fresh every morning, free, no signup.
       {% endif %}
     </p>
-    <p class="text-sm text-stone-600">
-      <a href="/" class="text-astro-600 hover:text-astro-700 underline">{{ t(lang, 'rashifal_dont_know') }}</a>
+    <p class="text-sm text-bhagya-muted">
+      <a href="/" class="text-bhagya-sindoor hover:text-bhagya-ink underline">{{ t(lang, 'rashifal_dont_know') }}</a>
     </p>
   </header>
 
   {# CARD GRID — 12 flip cards, 4-col desktop / 3-col tablet / 2-col mobile #}
-  <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-    {% for slug, en, sa, glyph, element, gradient, glyph_color, hi_element, hi_quality in _rashis %}
+  {# HAIRLINE GRID (#244). `gap-px` over a bhagya-line ground; every cell
+     supplies its own bhagya-cream fill and its own padding. PADDING MUST NOT
+     MOVE TO THE GRID — the gutters are this element's background showing
+     through, and padding here paints a thick frame round all twelve.
+
+     The per-element pastel gradients are gone with it. They encoded
+     fire/earth/air/water, and that is still on the card as the text label two
+     lines below, which is also the only version a screen reader ever had. #}
+  <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-px bg-bhagya-line border border-bhagya-line">
+    {% for slug, en, sa, glyph, element, hi_element, hi_quality in _rashis %}
     <div class="rashi-card" data-rashi="{{ slug }}">
       <button type="button"
-              class="rashi-card-inner block w-full aspect-[4/5] relative text-left rounded-2xl focus:outline-none focus:ring-4 focus:ring-astro-500/40 rounded-2xl"
+              class="rashi-card-inner block w-full aspect-[4/5] relative text-left focus:outline-none focus:ring-4 focus:ring-bhagya-saffron/40"
               data-flip-trigger
               aria-label="Reveal today's reading for {{ en }} / {{ sa }}"
               hx-get="{{ lang_prefix }}/rashifal/{{ slug }}"
@@ -85,7 +99,7 @@
            Silhouette source: /static/rashi/{slug}.png (transparent-BG,
            black ink) sliced from a free-download composite. Pops nicely
            against the pastel element-gradient. #}
-        <div class="rashi-card-face rashi-card-back bg-gradient-to-br {{ gradient }} border-2 border-white shadow-md hover:shadow-xl transition-shadow rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center text-center">
+        <div class="rashi-card-face rashi-card-back bg-bhagya-cream p-4 sm:p-5 flex flex-col items-center justify-center text-center">
           <div class="flex-1 flex items-center justify-center w-full min-h-0 mb-2">
             {# No explicit width/height: the 12 silhouette PNGs have
                different intrinsic aspects (Virgo is 673x751 tall;
@@ -99,12 +113,12 @@
                  loading="lazy" decoding="async"
                  class="max-h-32 sm:max-h-40 w-auto object-contain">
           </div>
-          <div class="font-display text-lg sm:text-xl text-stone-900">{{ en }}</div>
-          <div class="text-xs text-stone-600 mt-0.5 italic">{{ sa }}</div>
-          <div class="mt-2 text-[10px] uppercase tracking-wider font-semibold text-stone-600">
+          <div class="font-marcellus text-lg sm:text-xl text-bhagya-ink">{{ en }}</div>
+          <div class="text-xs text-bhagya-muted mt-0.5 italic">{{ sa }}</div>
+          <div class="mt-2 text-[10px] uppercase tracking-[0.14em] font-bold text-bhagya-muted-2">
             {% if lang == 'hi' %}{{ hi_element }} · {{ hi_quality }}{% else %}{{ element | capitalize }}{% endif %}
           </div>
-          <div class="pt-2 text-[11px] font-semibold text-astro-700">
+          <div class="pt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-bhagya-sindoor">
             {% if lang == 'hi' %}क्लिक करें →{% else %}Tap to reveal →{% endif %}
           </div>
         </div>
@@ -113,9 +127,9 @@
            HTMX swaps its innerHTML with the fragment returned from
            /rashifal/{slug}. Includes a spinner as the initial state so
            the card looks alive between click and fetch-complete. #}
-        <div class="rashi-card-face rashi-card-front bg-white border-2 border-white shadow-xl rounded-2xl p-4 sm:p-5 overflow-y-auto">
+        <div class="rashi-card-face rashi-card-front bg-white p-4 sm:p-5 overflow-y-auto">
           <div data-card-front class="h-full flex items-center justify-center">
-            <div class="flex flex-col items-center gap-2 text-stone-500">
+            <div class="flex flex-col items-center gap-2 text-bhagya-muted-2">
               <svg aria-hidden="true" class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle>
                 <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
@@ -133,16 +147,16 @@
      content. Card design matches Privacy/Terms/numerology (Tailwind
      Typography plugin is not loaded, so we don't use `prose`). #}
   <section class="pt-4">
-    <h2 class="font-display text-2xl text-astro-800 mb-3">How Bhagya's Rashifal is different</h2>
-    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
-      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">How Bhagya's Rashifal is different</h2>
+    <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
+      <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         Most free daily-horoscope sites reuse the same template across all 12 rashis with the sign name swapped in &mdash; you notice the moment you scroll past your own sign and see the same phrases repeated. Bhagya's Rashifal is generated fresh per rashi every morning, anchored on today's actual sky (weekday-lord, tithi, moon nakshatra, retrogrades, festival) so a Sunday reading feels different from a Wednesday and a Mars-ruled Aries reading feels different from a Venus-ruled Taurus on the same day.
       </p>
-      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+      <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         Sidereal Lahiri ayanamsa (the classical Vedic reference), Swiss Ephemeris under the hood, honest tone &mdash; no fear-based upsell, no "urgent puja needed" nudges, no astrologer-chat funnel. Read your reading, take what serves you, close the tab.
       </p>
-      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
-        Want a deeper reading based on your full birth chart, not just your Moon sign? <a href="/kundli" class="text-astro-700 hover:underline">Compute your free Janma Kundli</a> &mdash; that gives you dashas, yogas, doshas, and a substantive natal reading.
+      <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
+        Want a deeper reading based on your full birth chart, not just your Moon sign? <a href="/kundli" class="text-bhagya-sindoor hover:underline">Compute your free Janma Kundli</a> &mdash; that gives you dashas, yogas, doshas, and a substantive natal reading.
       </p>
     </div>
   </section>

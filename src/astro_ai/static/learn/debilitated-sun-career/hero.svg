@@ -18,8 +18,8 @@
       <stop offset="100%" stop-color="#78350f" stop-opacity="0.55"/>
     </radialGradient>
     <linearGradient id="ds_scale" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
   </defs>
 
@@ -37,14 +37,14 @@
   <!-- Beam -->
   <line x1="60" y1="115" x2="260" y2="115" stroke="url(#ds_scale)" stroke-width="4" stroke-linecap="round"/>
   <!-- Fulcrum knot -->
-  <circle cx="160" cy="115" r="6" fill="#4c1d95"/>
+  <circle cx="160" cy="115" r="6" fill="#140F1C"/>
 
   <!-- Left chains -->
-  <line x1="80" y1="115" x2="65" y2="165" stroke="#4c1d95" stroke-width="1.5" opacity="0.75"/>
-  <line x1="80" y1="115" x2="95" y2="165" stroke="#4c1d95" stroke-width="1.5" opacity="0.75"/>
+  <line x1="80" y1="115" x2="65" y2="165" stroke="#140F1C" stroke-width="1.5" opacity="0.75"/>
+  <line x1="80" y1="115" x2="95" y2="165" stroke="#140F1C" stroke-width="1.5" opacity="0.75"/>
   <!-- Right chains -->
-  <line x1="240" y1="115" x2="225" y2="170" stroke="#4c1d95" stroke-width="1.5" opacity="0.75"/>
-  <line x1="240" y1="115" x2="255" y2="170" stroke="#4c1d95" stroke-width="1.5" opacity="0.75"/>
+  <line x1="240" y1="115" x2="225" y2="170" stroke="#140F1C" stroke-width="1.5" opacity="0.75"/>
+  <line x1="240" y1="115" x2="255" y2="170" stroke="#140F1C" stroke-width="1.5" opacity="0.75"/>
 
   <!-- Left pan (heavier, holding the dimmed Sun) -->
   <ellipse cx="80" cy="170" rx="40" ry="8" fill="url(#ds_scale)" opacity="0.9"/>
@@ -73,8 +73,8 @@
 
   <!-- Small Venus symbol / counterweight -->
   <g transform="translate(240, 160)">
-    <circle r="9" fill="#fef3c7" stroke="#a855f7" stroke-width="1.5"/>
-    <path d="M 0 9 L 0 16 M -4 12 L 4 12" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
+    <circle r="9" fill="#fef3c7" stroke="#CB5A2E" stroke-width="1.5"/>
+    <path d="M 0 9 L 0 16 M -4 12 L 4 12" stroke="#140F1C" stroke-width="1.5" fill="none"/>
   </g>
 
   <!-- Gold accent dots -->

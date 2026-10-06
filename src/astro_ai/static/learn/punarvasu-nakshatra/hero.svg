@@ -12,9 +12,9 @@
       <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="pvhome" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="60%" stop-color="#7c3aed"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="60%" stop-color="#B03A22"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="pvarrow" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#f59e0b"/>
@@ -38,12 +38,12 @@
         fill="#fef3c7"/>
 
   <!-- Roof accent -->
-  <path d="M 160 108 L 100 158 L 220 158 Z" fill="#6b21a8" opacity="0.85"/>
+  <path d="M 160 108 L 100 158 L 220 158 Z" fill="#9E2B25" opacity="0.85"/>
 
   <!-- Quiver on side -->
   <g transform="translate(238, 100)">
     <path d="M 0 0 Q -8 6, -6 14 L 4 60 Q 8 66, 14 62 L 22 8 Q 22 0, 14 -2 Z"
-          fill="#4c1d95"/>
+          fill="#140F1C"/>
     <!-- Arrow shafts poking out -->
     <line x1="4" y1="-8" x2="10" y2="-38" stroke="url(#pvarrow)" stroke-width="3" stroke-linecap="round"/>
     <line x1="10" y1="-8" x2="18" y2="-42" stroke="url(#pvarrow)" stroke-width="3" stroke-linecap="round"/>
@@ -56,5 +56,5 @@
 
   <!-- Small "7" -->
   <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
-        font-weight="700" fill="#6b21a8" opacity="0.35">7</text>
+        font-weight="700" fill="#9E2B25" opacity="0.35">7</text>
 </svg>

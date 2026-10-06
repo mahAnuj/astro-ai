@@ -7,8 +7,40 @@
       - 600px max width — de-facto standard
       - No external CSS, no JS
 
+    PALETTE (#239). Recoloured to the redesign tokens, which live in
+    tailwind.config.js under theme.extend.colors.bhagya. The hexes are
+    repeated literally here because they have to be — email clients strip
+    <style>, so there is no stylesheet to reach them, and Tailwind never
+    sees this file. That means the tokens and these literals can drift; if
+    you change one, change the other. Roles used, and where:
+
+      night   #140F1C  header band
+      gold    #C8A44D  the logo's centre dot — gold is permitted ON NIGHT
+                       ONLY (2.20:1 on cream), and the header is the only
+                       night surface in the email
+      cream   #FAF6EF  page + card fills + footer  (was #faf7f2)
+      cream-2 #F1E7D8  header tagline, and the "did you know" panel
+                       (was #f0e7fb, a near-duplicate of astro-50)
+      sindoor #9E2B25  eyebrows, rashi glyphs, links, the panchang rule
+      saffron #E4913C  the CTA fill, with ink #17131A text on it
+
+    The amber family (#fef3c7 / #92400e / #fde68a) on the shlok and
+    festival panels is deliberately untouched: it already reads warm
+    against the new cream, and it is not one of the redesign tokens.
+
+    Measured, since nothing checks inline email hexes automatically —
+    scripts/verify_contrast.py reads Tailwind utilities out of the built
+    CSS and cannot see this file:
+
+      cream-2 on night     15.39:1     gold dot on night     7.96:1
+      sindoor on cream      6.90:1     sindoor on white      7.43:1
+      ink on saffron        7.35:1     white on night       18.84:1
+
+    Note white on saffron is 2.50:1, which is why the CTA carries ink
+    text rather than the white it used to have on purple.
+
     Sections (in render order):
-      1. Branded purple header band (logo + tagline)
+      1. Branded night header band (logo + tagline)
       2. Date + Panchang strip (sunrise / Rahu Kaal / Abhijit) — ONLY if
          we have Panchang for the subscriber's city
       3. Festival callout — ONLY if today is a named festival or tithi-based observance
@@ -42,15 +74,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{% if lang == 'hi' %}आज का राशिफल — Shubh Bhagya{% else %}Today's Rashifal — Shubh Bhagya{% endif %}</title>
 </head>
-<body style="margin:0;padding:0;background:#faf7f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans Devanagari',sans-serif;color:#1c1917;">
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;">
+<body style="margin:0;padding:0;background:#FAF6EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans Devanagari',sans-serif;color:#1c1917;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#FAF6EF;">
   <tr>
     <td align="center" style="padding:20px 12px;">
       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;background:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #e7e5e4;">
 
-        {#- BRANDED HEADER BAND ─ purple background, larger logo + tagline -#}
+        {#- BRANDED HEADER BAND ─ night background, larger logo + tagline -#}
         <tr>
-          <td style="background:linear-gradient(135deg,#6b21a8 0%,#581c87 100%);background-color:#6b21a8;padding:22px 28px;">
+          <td style="background:#140F1C;padding:22px 28px;">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0">
               <tr>
                 <td style="vertical-align:middle;padding-right:12px;">
@@ -61,12 +93,12 @@
                       <line x1="5" y1="50" x2="95" y2="50"/>
                       <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
                     </g>
-                    <circle cx="50" cy="50" r="8" fill="#ffd764"/>
+                    <circle cx="50" cy="50" r="8" fill="#C8A44D"/>
                   </svg>
                 </td>
                 <td style="vertical-align:middle;">
                   <div style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;line-height:1.1;">Shubh Bhagya</div>
-                  <div style="font-size:12px;color:#e9d5ff;margin-top:2px;letter-spacing:0.5px;">
+                  <div style="font-size:12px;color:#F1E7D8;margin-top:2px;letter-spacing:0.5px;">
                     {% if lang == 'hi' %}आपका दैनिक वैदिक पञ्चांग{% else %}Your daily Vedic almanac{% endif %}
                   </div>
                 </td>
@@ -78,7 +110,7 @@
         {#- DATE + greeting -#}
         <tr>
           <td style="padding:22px 28px 4px 28px;">
-            <div style="font-size:11px;color:#9c7bc4;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;">
+            <div style="font-size:11px;color:#9E2B25;text-transform:uppercase;letter-spacing:1.5px;font-weight:600;">
               {{ today_pretty }}
             </div>
             <h1 style="margin:8px 0 0 0;font-size:22px;font-weight:700;color:#1c1917;">
@@ -98,10 +130,10 @@
         {% if panchang %}
         <tr>
           <td style="padding:18px 28px 0 28px;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;border-left:3px solid #6b21a8;border-radius:4px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#FAF6EF;border-left:3px solid #9E2B25;border-radius:4px;">
               <tr>
                 <td style="padding:12px 14px;">
-                  <div style="font-size:11px;color:#6b21a8;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+                  <div style="font-size:11px;color:#9E2B25;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
                     {% if lang == 'hi' %}आज का पंचांग{% else %}Today's Panchang{% endif %}
                   </div>
                   <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -213,13 +245,13 @@
         {% set rashi_slug = title.split('/')[0].strip().lower() %}
         <tr>
           <td style="padding:10px 28px 0 28px;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;border-radius:6px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#FAF6EF;border-radius:6px;">
               <tr>
                 <td style="padding:14px 16px;">
                   {#- Header row: glyph + rashi name -#}
                   <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                     <tr>
-                      <td style="font-size:20px;color:#6b21a8;padding-right:8px;vertical-align:middle;width:28px;">{{ glyph }}</td>
+                      <td style="font-size:20px;color:#9E2B25;padding-right:8px;vertical-align:middle;width:28px;">{{ glyph }}</td>
                       <td style="font-size:15px;font-weight:600;color:#1c1917;vertical-align:middle;">{{ title }}</td>
                     </tr>
                   </table>
@@ -231,7 +263,7 @@
                   </div>
                   <div style="margin-top:10px;">
                     <a href="{{ site_url }}/rashifal#{{ rashi_slug }}"
-                       style="font-size:13px;color:#6b21a8;font-weight:600;text-decoration:none;">
+                       style="font-size:13px;color:#9E2B25;font-weight:600;text-decoration:none;">
                       {% if lang == 'hi' %}पूरा राशिफल पढ़ें{% else %}Read full reading{% endif %} &rarr;
                     </a>
                   </div>
@@ -247,7 +279,7 @@
                   </div>
                   <div style="margin-top:12px;">
                     <a href="{{ site_url }}/rashifal#{{ rashi_slug }}"
-                       style="font-size:12px;color:#6b21a8;text-decoration:underline;">
+                       style="font-size:12px;color:#9E2B25;text-decoration:underline;">
                       {% if lang == 'hi' %}Shubh Bhagya पर देखें{% else %}Read on Shubh Bhagya{% endif %} &rarr;
                     </a>
                   </div>
@@ -259,7 +291,8 @@
         </tr>
         {% endfor %}
 
-        {#- SHLOK OF THE DAY — gold-accented, one per day of week (graha shlok). -#}
+        {#- SHLOK OF THE DAY — amber-accented, one per day of week (graha shlok).
+            Amber, not the redesign's `gold` token: gold is night-only. -#}
         {% if shlok %}
         <tr>
           <td style="padding:24px 28px 0 28px;">
@@ -289,10 +322,10 @@
         {% if trivia %}
         <tr>
           <td style="padding:18px 28px 0 28px;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#f0e7fb;border-radius:6px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#F1E7D8;border-radius:6px;">
               <tr>
                 <td style="padding:14px 16px;">
-                  <div style="font-size:11px;color:#6b21a8;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
+                  <div style="font-size:11px;color:#9E2B25;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">
                     ✨ {% if lang == 'hi' %}क्या आप जानते हैं?{% else %}Did You Know?{% endif %}
                   </div>
                   <div style="font-size:13px;color:#44403c;line-height:1.6;">
@@ -308,7 +341,7 @@
         {#- CTA back to Shubh Bhagya -#}
         <tr>
           <td align="center" style="padding:28px 28px 24px 28px;">
-            <a href="{{ site_url }}" style="background:#6b21a8;color:#ffffff;text-decoration:none;padding:11px 24px;border-radius:6px;font-size:14px;font-weight:600;display:inline-block;">
+            <a href="{{ site_url }}" style="background:#E4913C;color:#17131A;text-decoration:none;padding:11px 24px;border-radius:6px;font-size:14px;font-weight:600;display:inline-block;">
               {% if lang == 'hi' %}अपनी पूरी कुंडली देखें →{% else %}Get your full Kundli on Shubh Bhagya →{% endif %}
             </a>
           </td>
@@ -316,7 +349,7 @@
 
         {#- FOOTER -#}
         <tr>
-          <td style="padding:20px 28px;border-top:1px solid #f5f5f4;background:#faf7f2;">
+          <td style="padding:20px 28px;border-top:1px solid #f5f5f4;background:#FAF6EF;">
             <div style="font-size:12px;color:#78716c;text-align:center;line-height:1.6;">
               {% if lang == 'hi' %}यह ईमेल आपको Shubh Bhagya की दैनिक राशिफल सदस्यता के लिए मिला है।{% else %}You're receiving this because you subscribed to Shubh Bhagya's daily Rashifal.{% endif %}<br>
               <a href="{{ unsubscribe_url }}" style="color:#78716c;text-decoration:underline;">{% if lang == 'hi' %}सदस्यता समाप्त करें{% else %}Unsubscribe{% endif %}</a>

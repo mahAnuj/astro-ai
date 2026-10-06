@@ -16,23 +16,23 @@
 <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
   <header class="text-center space-y-2">
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700">Panchang</div>
-    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor">Panchang</div>
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink">
       {% if is_today %}Today's Panchang{% else %}Panchang{% endif %} — <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </h1>
-    <p class="text-stone-600">Computed for <strong>{{ city_display }}</strong> · sunrise + Rahu Kaal shift by location.</p>
+    <p class="text-bhagya-muted">Computed for <strong>{{ city_display }}</strong> · sunrise + Rahu Kaal shift by location.</p>
     {# Prev / next day navigation — indexable so Google can crawl the
        rolling window without needing every URL in sitemap. #}
     <nav class="flex items-center justify-center gap-3 text-sm pt-2 no-print" aria-label="Day navigation">
-      <a href="/panchang/{{ prev_day }}" class="text-astro-700 hover:underline" rel="prev">
+      <a href="/panchang/{{ prev_day }}" class="text-bhagya-sindoor hover:underline" rel="prev">
         &larr; Previous day
       </a>
       {% if not is_today %}
-      <span class="text-stone-300">·</span>
-      <a href="/panchang" class="text-astro-700 hover:underline font-semibold">Jump to today</a>
+      <span class="text-bhagya-border">·</span>
+      <a href="/panchang" class="text-bhagya-sindoor hover:underline font-semibold">Jump to today</a>
       {% endif %}
-      <span class="text-stone-300">·</span>
-      <a href="/panchang/{{ next_day }}" class="text-astro-700 hover:underline" rel="next">
+      <span class="text-bhagya-border">·</span>
+      <a href="/panchang/{{ next_day }}" class="text-bhagya-sindoor hover:underline" rel="next">
         Next day &rarr;
       </a>
     </nav>
@@ -40,13 +40,13 @@
 
   {# City picker — inline mini-form. Defaults to Mumbai; users can pick
      any city on demand. If they have a saved Kundli chart, we prefill. #}
-  <form method="get" action="/panchang" class="flex items-end gap-2 justify-center flex-wrap bg-white border border-stone-200 rounded-xl p-3 sm:p-4 no-print">
+  <form method="get" action="/panchang" class="flex items-end gap-2 justify-center flex-wrap bg-white border border-bhagya-line p-3 sm:p-4 no-print">
     <label class="flex-1 max-w-sm">
-      <span class="block text-xs text-stone-600 mb-1">Change city</span>
+      <span class="block text-xs text-bhagya-muted mb-1">Change city</span>
       <input type="text" name="city" value="{{ city }}" placeholder="e.g. Mumbai, India"
-             class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+             class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
     </label>
-    <button type="submit" class="bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold px-4 py-2 rounded-md transition-colors">
+    <button type="submit" class="bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-sm font-semibold px-4 py-2 rounded-md transition-colors">
       Update
     </button>
   </form>
@@ -58,13 +58,13 @@
      Cross-links to /festivals (issue #132); there are no per-festival
      pages by design, long-form lives under /learn. #}
   {% if festivals_on_date %}
-  <section class="bg-white border border-astro-500 rounded-xl p-5 sm:p-6 space-y-4">
+  <section class="bg-white border border-bhagya-saffron p-5 sm:p-6 space-y-4">
     {% for festival in festivals_on_date %}
     <div class="space-y-2">
       <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h2 class="font-display text-xl text-astro-800">
+        <h2 class="font-marcellus text-xl text-bhagya-ink">
           {{ festival.name_en }}{% if festival.name_hi %}
-          <span lang="hi" class="font-normal text-base text-stone-600">{{ festival.name_hi }}</span>{% endif %}
+          <span lang="hi" class="font-normal text-base text-bhagya-muted">{{ festival.name_hi }}</span>{% endif %}
         </h2>
         {% if loop.first %}
         <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">
@@ -73,18 +73,18 @@
         {% endif %}
       </div>
       {% if festival.note_en %}
-      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">{{ festival.note_en }}</p>
+      <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">{{ festival.note_en }}</p>
       {% endif %}
     </div>
     {% endfor %}
-    <a href="/festivals" class="inline-block text-sm font-semibold text-astro-700 hover:underline">
+    <a href="/festivals" class="inline-block text-sm font-semibold text-bhagya-sindoor hover:underline">
       See the full festival calendar &rarr;
     </a>
   </section>
   {% endif %}
 
   {% if error %}
-  <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+  <div class="p-4 bg-amber-50 border border-amber-200 rounded text-sm text-amber-800">
     Couldn't geocode "{{ city }}" — showing Panchang for Mumbai instead. Try a different spelling or add the country name (e.g. "Delhi, India").
   </div>
   {% endif %}
@@ -92,25 +92,25 @@
   {% if p %}
   {# THE 5 ANGAS — the classical Panchang breakdown #}
   <section class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Day &amp; Lord</div>
-      <div class="text-lg font-display text-astro-800">{{ p.weekday }}</div>
-      <div class="text-xs text-stone-600">Ruled by <strong>{{ p.day_lord }}</strong>. Favourable color: {{ p.day_color }}</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Day &amp; Lord</div>
+      <div class="text-lg font-marcellus text-bhagya-sindoor">{{ p.weekday }}</div>
+      <div class="text-xs text-bhagya-muted">Ruled by <strong>{{ p.day_lord }}</strong>. Favourable color: {{ p.day_color }}</div>
     </div>
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Tithi</div>
-      <div class="text-lg font-display text-astro-800">{{ p.tithi_paksha }} {{ p.tithi_name }}</div>
-      {% if p.tithi_significance %}<div class="text-xs text-stone-600">{{ p.tithi_significance }}</div>{% endif %}
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Tithi</div>
+      <div class="text-lg font-marcellus text-bhagya-sindoor">{{ p.tithi_paksha }} {{ p.tithi_name }}</div>
+      {% if p.tithi_significance %}<div class="text-xs text-bhagya-muted">{{ p.tithi_significance }}</div>{% endif %}
     </div>
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Yoga</div>
-      <div class="text-lg font-display text-astro-800">{{ p.yoga_name }}</div>
-      <div class="text-xs text-stone-600">{% if p.yoga_significance %}{{ p.yoga_significance }}{% else %}Nitya Yoga {{ p.yoga_index + 1 }} of 27, at sunrise{% endif %}</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Yoga</div>
+      <div class="text-lg font-marcellus text-bhagya-sindoor">{{ p.yoga_name }}</div>
+      <div class="text-xs text-bhagya-muted">{% if p.yoga_significance %}{{ p.yoga_significance }}{% else %}Nitya Yoga {{ p.yoga_index + 1 }} of 27, at sunrise{% endif %}</div>
     </div>
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Karana</div>
-      <div class="text-lg font-display text-astro-800">{{ p.karana_name }}</div>
-      <div class="text-xs text-stone-600">{% if p.karana_significance %}{{ p.karana_significance }}{% else %}Half-tithi {{ p.karana_index + 1 }} of 60, at sunrise{% endif %}</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Karana</div>
+      <div class="text-lg font-marcellus text-bhagya-sindoor">{{ p.karana_name }}</div>
+      <div class="text-xs text-bhagya-muted">{% if p.karana_significance %}{{ p.karana_significance }}{% else %}Half-tithi {{ p.karana_index + 1 }} of 60, at sunrise{% endif %}</div>
     </div>
     {#- Rahu Kaal, Abhijit and Choghadiya are each a fixed fraction of the
        sunrise-to-sunset period. At polar latitudes a date can hold no such
@@ -118,31 +118,31 @@
        windows that end before they start (Tromso 2026-05-17: Rahu Kaal
        00:14—00:06). Disclose instead of rendering them. Issue #227. #}
     {%- if p.daylight_ordinary %}
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Sunrise / Sunset</div>
-      <div class="text-lg font-display text-astro-800 tabular-nums">
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Sunrise / Sunset</div>
+      <div class="text-lg font-marcellus text-bhagya-sindoor tabular-nums">
         {{ p.sunrise.strftime('%H:%M') }} — {{ p.sunset.strftime('%H:%M') }}
       </div>
-      <div class="text-xs text-stone-600">Local time at {{ city_display }}</div>
+      <div class="text-xs text-bhagya-muted">Local time at {{ city_display }}</div>
     </div>
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Rahu Kaal (avoid)</div>
-      <div class="text-lg font-display text-red-700 tabular-nums">
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Rahu Kaal (avoid)</div>
+      <div class="text-lg font-marcellus text-bhagya-sindoor tabular-nums">
         {{ p.rahu_kaal_start.strftime('%H:%M') }} — {{ p.rahu_kaal_end.strftime('%H:%M') }}
       </div>
-      <div class="text-xs text-stone-600">Inauspicious 1/8 of daylight</div>
+      <div class="text-xs text-bhagya-muted">Inauspicious 1/8 of daylight</div>
     </div>
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Abhijit Muhurat (best)</div>
-      <div class="text-lg font-display text-emerald-700 tabular-nums">
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Abhijit Muhurat (best)</div>
+      <div class="text-lg font-marcellus text-emerald-800 tabular-nums">
         {{ p.abhijit_start.strftime('%H:%M') }} — {{ p.abhijit_end.strftime('%H:%M') }}
       </div>
-      <div class="text-xs text-stone-600">Most auspicious ~48 min around solar noon</div>
+      <div class="text-xs text-bhagya-muted">Most auspicious ~48 min around solar noon</div>
     </div>
     {%- else %}
-    <div class="sm:col-span-2 lg:col-span-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+    <div class="sm:col-span-2 lg:col-span-3 bg-amber-50 border border-amber-200 p-4">
       <div class="text-[11px] uppercase font-semibold text-amber-800 tracking-wider mb-1">No ordinary sunrise-to-sunset day</div>
-      <div class="text-lg font-display text-amber-900 tabular-nums">
+      <div class="text-lg font-marcellus text-amber-900 tabular-nums">
         Sunrise {{ p.sunrise.strftime('%d %b, %H:%M') }} · Sunset {{ p.sunset.strftime('%d %b, %H:%M') }}
       </div>
       <p class="text-xs text-amber-800 mt-2">
@@ -153,10 +153,10 @@
     </div>
     {%- endif %}
     {% if moon_info %}
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Moon Today</div>
-      <div class="text-lg font-display text-astro-800">{{ moon_info.rashi }}</div>
-      <div class="text-xs text-stone-600">{{ moon_info.nakshatra }} nakshatra</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Moon Today</div>
+      <div class="text-lg font-marcellus text-bhagya-sindoor">{{ moon_info.rashi }}</div>
+      <div class="text-xs text-bhagya-muted">{{ moon_info.nakshatra }} nakshatra</div>
     </div>
     {% endif %}
     {#- Moonrise / moonset (#150). Two INDEPENDENT instants, never joined into
@@ -177,7 +177,7 @@
        not happen. #}
     {%- if moon_times %}
     {%- if moon_times.neither %}
-    <div class="sm:col-span-2 lg:col-span-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+    <div class="sm:col-span-2 lg:col-span-3 bg-amber-50 border border-amber-200 p-4">
       <div class="text-[11px] uppercase font-semibold text-amber-800 tracking-wider mb-1">No moonrise or moonset on this date</div>
       <p class="text-xs text-amber-800 mt-2">
         At {{ city_display }}'s latitude the Moon can stay above — or below — the horizon for a whole calendar day, and on {{ today_pretty }} it does: it neither rises nor sets here.
@@ -186,23 +186,23 @@
       </p>
     </div>
     {%- else %}
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Moonrise / Moonset</div>
-      <div class="text-lg font-display text-astro-800 tabular-nums">
-        {% if moon_times.rise %}Moonrise {{ moon_times.rise.strftime('%H:%M') }}{% if moon_times.rise_next_day %} <span class="text-xs text-stone-500">on {{ moon_times.rise.strftime('%d %b') }}</span>{% endif %}{% else %}<span class="text-base text-stone-600">No moonrise on this date</span>{% endif %}
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Moonrise / Moonset</div>
+      <div class="text-lg font-marcellus text-bhagya-sindoor tabular-nums">
+        {% if moon_times.rise %}Moonrise {{ moon_times.rise.strftime('%H:%M') }}{% if moon_times.rise_next_day %} <span class="text-xs text-bhagya-muted-2">on {{ moon_times.rise.strftime('%d %b') }}</span>{% endif %}{% else %}<span class="text-base text-bhagya-muted">No moonrise on this date</span>{% endif %}
       </div>
-      <div class="text-lg font-display text-astro-800 tabular-nums">
-        {% if moon_times.set %}Moonset {{ moon_times.set.strftime('%H:%M') }}{% if moon_times.set_next_day %} <span class="text-xs text-stone-500">on {{ moon_times.set.strftime('%d %b') }}</span>{% endif %}{% else %}<span class="text-base text-stone-600">No moonset on this date</span>{% endif %}
+      <div class="text-lg font-marcellus text-bhagya-sindoor tabular-nums">
+        {% if moon_times.set %}Moonset {{ moon_times.set.strftime('%H:%M') }}{% if moon_times.set_next_day %} <span class="text-xs text-bhagya-muted-2">on {{ moon_times.set.strftime('%d %b') }}</span>{% endif %}{% else %}<span class="text-base text-bhagya-muted">No moonset on this date</span>{% endif %}
       </div>
-      <div class="text-xs text-stone-600 mt-1">Local time at {{ city_display }}</div>
+      <div class="text-xs text-bhagya-muted mt-1">Local time at {{ city_display }}</div>
       {%- if moon_times.rise and moon_times.set and moon_times.set < moon_times.rise %}
-      <div class="text-xs text-stone-500 mt-1">The moonset falls before the moonrise because it closes the previous night's Moon — ordinary, not an error.</div>
+      <div class="text-xs text-bhagya-muted-2 mt-1">The moonset falls before the moonrise because it closes the previous night's Moon — ordinary, not an error.</div>
       {%- endif %}
       {%- if moon_times.rise_next_day or moon_times.set_next_day %}
-      <div class="text-xs text-stone-500 mt-1">The Moon rises about 50 minutes later each day, so some dates hold none of their own and the next one falls after midnight — hence the date above.</div>
+      <div class="text-xs text-bhagya-muted-2 mt-1">The Moon rises about 50 minutes later each day, so some dates hold none of their own and the next one falls after midnight — hence the date above.</div>
       {%- endif %}
       {%- if not moon_times.rise or not moon_times.set %}
-      <div class="text-xs text-stone-500 mt-1">At {{ city_display }}'s latitude the Moon can stay above — or below — the horizon past midnight, so one of the two events falls outside this date entirely.</div>
+      <div class="text-xs text-bhagya-muted-2 mt-1">At {{ city_display }}'s latitude the Moon can stay above — or below — the horizon past midnight, so one of the two events falls outside this date entirely.</div>
       {%- endif %}
     </div>
     {%- endif %}
@@ -212,12 +212,12 @@
   {# CHOGHADIYA — 8 sub-day windows #}
   {% if choghadiya %}
   <section>
-    <h2 class="font-display text-2xl text-astro-800 mb-3">Choghadiya — 8 daytime windows</h2>
-    <p class="text-sm text-stone-600 mb-3">
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">Choghadiya — 8 daytime windows</h2>
+    <p class="text-sm text-bhagya-muted mb-3">
       Classical sub-day divisions used for muhurta timing. <strong>Amrit / Shubh / Labh</strong> are auspicious; <strong>Rog / Kaal</strong> avoid; <strong>Udveg / Chal</strong> neutral.
     </p>
-    <table class="w-full text-sm border border-stone-200 bg-white rounded-lg overflow-hidden">
-      <thead class="bg-stone-50 text-stone-600 text-xs uppercase tracking-wider">
+    <table class="w-full text-sm border border-bhagya-line bg-white rounded overflow-hidden">
+      <thead class="bg-bhagya-cream-2 text-bhagya-muted text-xs uppercase tracking-wider">
         <tr>
           <th class="p-2 text-left">Window</th>
           <th class="p-2 text-left">Name</th>
@@ -226,7 +226,7 @@
       </thead>
       <tbody>
         {% for w in choghadiya %}
-        <tr class="border-t border-stone-100">
+        <tr class="border-t border-bhagya-line-2">
           <td class="p-2 tabular-nums">{{ w.start }} – {{ w.end }}</td>
           <td class="p-2 font-semibold">{{ w.name }}</td>
           <td class="p-2">
@@ -234,7 +234,7 @@
             <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold
               {% if aus == 'auspicious' %}bg-emerald-100 text-emerald-800
               {% elif aus == 'avoid' %}bg-red-100 text-red-800
-              {% else %}bg-stone-100 text-stone-700{% endif %}">
+              {% else %}bg-bhagya-cream-2 text-bhagya-ink-soft{% endif %}">
               {{ aus | capitalize }}
             </span>
           </td>
@@ -251,12 +251,12 @@
      not loaded, so `prose` classes silently render unstyled). #}
   <section class="space-y-6">
     <div>
-      <h2 class="font-display text-2xl text-astro-800 mb-3">What is Panchang?</h2>
-      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+      <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">What is Panchang?</h2>
+      <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           Panchang (literally "five limbs") is the classical Vedic almanac. Five daily angas describe the character of the day astronomically and karmically:
         </p>
-        <ul class="list-disc pl-5 space-y-2 text-sm sm:text-base text-stone-800 leading-relaxed">
+        <ul class="list-disc pl-5 space-y-2 text-sm sm:text-base text-bhagya-ink leading-relaxed">
           <li><strong>Vara (weekday)</strong> &mdash; Sunday=Sun, Monday=Moon, Tuesday=Mars, Wednesday=Mercury, Thursday=Jupiter, Friday=Venus, Saturday=Saturn. The day's lord shapes its overall tone.</li>
           <li><strong>Tithi (lunar day)</strong> &mdash; the angular distance between Sun and Moon, divided into 30 parts. Shukla Paksha (1&ndash;15) is waxing, Krishna Paksha (16&ndash;30) is waning. Some tithis have specific classical characters (Ekadashi = fasting, Purnima = culmination, Amavasya = ancestral rites, Chaturthi = Ganesh energy).</li>
           <li><strong>Nakshatra (lunar constellation)</strong> &mdash; the Moon moves through 27 nakshatras in ~27 days, so this is the fastest-changing sky signal and grounds today's emotional weather.</li>
@@ -267,12 +267,12 @@
     </div>
 
     <div>
-      <h2 class="font-display text-2xl text-astro-800 mb-3">Rahu Kaal, Abhijit Muhurta, Choghadiya</h2>
-      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+      <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">Rahu Kaal, Abhijit Muhurta, Choghadiya</h2>
+      <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           Beyond the five angas, classical Vedic timing includes sub-day windows:
         </p>
-        <ul class="list-disc pl-5 space-y-2 text-sm sm:text-base text-stone-800 leading-relaxed">
+        <ul class="list-disc pl-5 space-y-2 text-sm sm:text-base text-bhagya-ink leading-relaxed">
           <li><strong>Rahu Kaal</strong> &mdash; a specific 1/8 slice of daylight considered inauspicious for beginnings. It shifts weekday-by-weekday and depends on your sunrise/sunset (which shifts by location). We compute it correctly for your city.</li>
           <li><strong>Abhijit Muhurta</strong> &mdash; a ~48-minute window around solar noon, considered the most universally auspicious slot of the day. Perfect for signing important documents, starting a business call, or committing to any decision.</li>
           <li><strong>Yamaganda / Gulikai</strong> &mdash; two more classical inauspicious windows on the same weekday-lord principle as Rahu Kaal (not shown above, deferred to a next release).</li>
@@ -282,9 +282,9 @@
     </div>
 
     <div>
-      <h2 class="font-display text-2xl text-astro-800 mb-3">How Bhagya computes it</h2>
-      <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+      <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">How Bhagya computes it</h2>
+      <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
           All calculations use <strong>Swiss Ephemeris</strong> on sidereal <strong>Lahiri (Chitrapaksha) ayanamsa</strong>, the standard Indian classical convention. Sunrise/sunset for your city are computed from the local latitude/longitude + timezone, not approximated. Rahu Kaal, Abhijit, and Choghadiya windows are derived from that local sunrise/sunset &mdash; they will not match tables that hardcode Mumbai-only or Delhi-only times.
         </p>
       </div>
@@ -293,19 +293,19 @@
 
   {# CROSS-LINKS #}
   <section>
-    <h2 class="font-display text-2xl text-astro-800 mb-4">Related</h2>
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-4">Related</h2>
     <div class="grid sm:grid-cols-2 gap-3">
-      <a href="/muhurat" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Muhurat Finder →</div>
-        <div class="text-xs text-stone-600 mt-1">Find auspicious dates for Vivah, Griha Pravesh, Namkaran, Vidyarambh, Business openings.</div>
+      <a href="/muhurat" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Muhurat Finder →</div>
+        <div class="text-xs text-bhagya-muted mt-1">Find auspicious dates for Vivah, Griha Pravesh, Namkaran, Vidyarambh, Business openings.</div>
       </a>
-      <a href="/rashifal" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Today's Rashifal →</div>
-        <div class="text-xs text-stone-600 mt-1">Daily reading for all 12 rashis, keyed off today's sky signals.</div>
+      <a href="/rashifal" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Today's Rashifal →</div>
+        <div class="text-xs text-bhagya-muted mt-1">Daily reading for all 12 rashis, keyed off today's sky signals.</div>
       </a>
-      <a href="/festivals" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Festival Calendar →</div>
-        <div class="text-xs text-stone-600 mt-1">Upcoming Hindu festival dates with the classical tithi rule behind each one.</div>
+      <a href="/festivals" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Festival Calendar →</div>
+        <div class="text-xs text-bhagya-muted mt-1">Upcoming Hindu festival dates with the classical tithi rule behind each one.</div>
       </a>
     </div>
   </section>

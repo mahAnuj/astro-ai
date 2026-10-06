@@ -1,0 +1,118 @@
+# Build-time gates. Runs against the TREE, before anything is deployed.
+#
+# This is the counterpart to verify-production.yml, which asserts against the
+# already-deployed site and therefore cannot catch anything until it is too
+# late. Everything here answers "is this commit internally consistent", which
+# is a question you want answered on the pull request.
+#
+# Why it exists (#237). `src/astro_ai/static/css/app.css` is a COMMITTED build
+# artefact. The Dockerfile is Python-only and never runs Node, and nothing in
+# CI built the CSS either — so a template could gain a Tailwind class whose
+# rule was never generated, and the site would ship markup with no styling for
+# it. That is exactly what happened: `lg:col-span-3` was used at
+# panchang.html:143,180 while app.css contained no `lg:col-span-*` rule at all,
+# and it sat that way for eleven days across two commits.
+#
+# scripts/verify_css_build.py could always have caught it. Nothing ran it.
+#
+# EXIT 2 IS A FAILURE HERE, and that is the point. The gates return 2 for
+# "COULD NOT VERIFY" — no npx, no Playwright, server unreachable. On a
+# developer machine that is an honest skip. On this runner, where the setup
+# steps below have just installed both, a 2 means the setup silently broke, and
+# treating it as a pass would recreate the blind spot this workflow exists to
+# close.
+
+name: verify-build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Node deps
+        # `npm ci` and never `npm install`. Gate 1 is a raw byte comparison and
+        # Tailwind embeds its version banner in the output, so an unpinned
+        # resolve would turn the gate red with no change to the repo.
+        run: npm ci
+
+      - name: Install Python deps
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Sync Python env
+        run: uv sync --group dev
+
+      - name: Install Chromium for the Devanagari gate
+        run: uv run playwright install --with-deps chromium
+
+      - name: CSS build is fresh
+        # Fails if the committed app.css differs from a fresh build, i.e. if
+        # someone changed a class and did not re-run `npm run build:css`.
+        run: |
+          set -e
+          uv run python scripts/verify_css_build.py || code=$?
+          if [ "${code:-0}" = "2" ]; then
+            echo "::error::verify_css_build could not run even though Node is installed — the setup broke."
+            exit 1
+          fi
+          exit "${code:-0}"
+
+      - name: Behaviour suite
+        run: uv run python scripts/verify_behaviour.py
+
+      - name: Redesign tokens have not drifted
+        # #239. The emails, the cosmic card and the feedback notification hold
+        # the palette as literal hexes because Tailwind cannot reach any of
+        # them — no <style> survives an email client, and SVG attributes are
+        # not classes. Literal copies of a single source of truth drift, and
+        # nothing else in this workflow would notice. Needs neither Node nor a
+        # browser, so exit 2 here would mean the config itself is unreadable.
+        run: |
+          set -e
+          code=0
+          uv run python scripts/verify_redesign_tokens.py || code=$?
+          if [ "$code" = "2" ]; then
+            echo "::error::verify_redesign_tokens could not read the bhagya palette out of tailwind.config.js."
+            exit 1
+          fi
+          exit "$code"
+
+      - name: Devanagari serif gate
+        # Two halves. The static half reads the font <link> and needs nothing;
+        # the browser half drives Chromium and reads the fonts the renderer
+        # actually painted, so it needs the app up AND network access to
+        # fonts.gstatic. Exit 2 means the browser could not reach the font
+        # host — honest on a locked-down machine, a broken runner here.
+        run: |
+          set -e
+          uv run astro-ai > /tmp/server.log 2>&1 &
+          for _ in $(seq 1 40); do
+            curl -sf http://127.0.0.1:8000/health >/dev/null && break
+            sleep 1
+          done
+          code=0
+          uv run python scripts/verify_devanagari_serif.py || code=$?
+          if [ "$code" = "2" ]; then
+            echo "::error::verify_devanagari_serif could not reach the font host from CI."
+            exit 1
+          fi
+          exit "$code"
+        env:
+          OPENAI_API_KEY: ci-placeholder-not-used

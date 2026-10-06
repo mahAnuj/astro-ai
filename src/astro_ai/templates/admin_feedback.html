@@ -14,36 +14,36 @@
 
 <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
   <header>
-    <h1 class="font-display text-3xl text-astro-700 mb-1">Feedback</h1>
-    <p class="text-sm text-stone-600">
+    <h1 class="font-marcellus text-3xl text-bhagya-ink mb-1">Feedback</h1>
+    <p class="text-sm text-bhagya-muted">
       Total entries: <strong>{{ entries | length }}</strong> &middot; most recent first
     </p>
   </header>
 
   {% if not entries %}
-  <p class="text-stone-600 italic">No feedback received yet.</p>
+  <p class="text-bhagya-muted italic">No feedback received yet.</p>
   {% else %}
   <div class="space-y-3">
     {% for e in entries %}
-    <article class="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5">
+    <article class="bg-white border border-bhagya-line p-4 sm:p-5">
       <div class="flex flex-wrap items-baseline gap-2 mb-2">
         <span class="text-xs font-semibold uppercase tracking-wider
-          {% if e.type == 'problem' %}text-red-700 bg-red-50
-          {% elif e.type == 'feature' %}text-emerald-700 bg-emerald-50
-          {% else %}text-stone-700 bg-stone-100{% endif %}
+          {% if e.type == 'problem' %}text-bhagya-sindoor bg-red-50
+          {% elif e.type == 'feature' %}text-emerald-800 bg-emerald-50
+          {% else %}text-bhagya-ink-soft bg-bhagya-cream-2{% endif %}
           px-2 py-0.5 rounded">
           {{ e.type }}
         </span>
-        <span class="text-xs text-stone-600">{{ e.ts }}</span>
-        {% if e.page %}<span class="text-xs text-stone-600">&middot; {{ e.page }}</span>{% endif %}
-        {% if e.email %}<span class="text-xs text-stone-700">&middot; <a href="mailto:{{ e.email }}" class="text-astro-600 hover:underline">{{ e.email }}</a></span>{% endif %}
-        <span class="text-[10px] text-stone-300 ml-auto font-mono">{{ e.id }}</span>
+        <span class="text-xs text-bhagya-muted">{{ e.ts }}</span>
+        {% if e.page %}<span class="text-xs text-bhagya-muted">&middot; {{ e.page }}</span>{% endif %}
+        {% if e.email %}<span class="text-xs text-bhagya-ink-soft">&middot; <a href="mailto:{{ e.email }}" class="text-bhagya-sindoor hover:underline">{{ e.email }}</a></span>{% endif %}
+        <span class="text-[10px] text-bhagya-border ml-auto font-mono">{{ e.id }}</span>
       </div>
-      <p class="text-sm text-stone-800 whitespace-pre-wrap leading-relaxed">{{ e.message }}</p>
+      <p class="text-sm text-bhagya-ink whitespace-pre-wrap leading-relaxed">{{ e.message }}</p>
       {% if e.ua %}
       <details class="mt-2">
-        <summary class="text-[10px] text-stone-500 cursor-pointer">user-agent</summary>
-        <p class="text-[10px] text-stone-500 mt-1 font-mono break-all">{{ e.ua }}</p>
+        <summary class="text-[10px] text-bhagya-muted-2 cursor-pointer">user-agent</summary>
+        <p class="text-[10px] text-bhagya-muted-2 mt-1 font-mono break-all">{{ e.ua }}</p>
       </details>
       {% endif %}
     </article>

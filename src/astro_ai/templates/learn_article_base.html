@@ -30,46 +30,46 @@
 {% set active_page = "learn" %}
 {% include "_nav.html" %}
 
-<main class="bg-cream">
+<main class="bg-bhagya-cream">
 
   {# HERO — gradient backdrop + title + hero illustration #}
-  <header class="border-b border-stone-200/70 bg-gradient-to-br from-astro-50 via-cream to-cream">
+  <header class="border-b border-bhagya-gold/25 bg-bhagya-night">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
 
       {# Breadcrumb #}
-      <nav class="text-sm text-stone-600 mb-4" aria-label="Breadcrumb">
-        <a href="/" class="hover:text-astro-700">Home</a>
-        <span class="mx-1 text-stone-300">/</span>
-        <a href="/learn/" class="hover:text-astro-700">Learn</a>
-        <span class="mx-1 text-stone-300">/</span>
-        <span class="text-stone-600">{{ article.category }}</span>
+      <nav class="text-sm text-bhagya-cream/[.66] mb-4" aria-label="Breadcrumb">
+        <a href="/" class="hover:text-bhagya-gold">Home</a>
+        <span class="mx-1 text-bhagya-border">/</span>
+        <a href="/learn/" class="hover:text-bhagya-gold">Learn</a>
+        <span class="mx-1 text-bhagya-border">/</span>
+        <span class="text-bhagya-cream/[.66]">{{ article.category }}</span>
       </nav>
 
       <div class="grid md:grid-cols-[1.6fr_1fr] gap-8 items-center">
         <div>
           <div class="inline-flex items-center gap-2 mb-3 flex-wrap">
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-astro-700 bg-astro-100 px-2.5 py-1 rounded-full">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-bhagya-gold bg-bhagya-night border border-bhagya-gold/30 px-2.5 py-1 rounded-full">
               {{ article.category }}
             </span>
-            <span class="text-sm text-stone-600">{{ article.read_time }} read</span>
+            <span class="text-sm text-bhagya-cream/[.66]">{{ article.read_time }} read</span>
             {# Visible "Last updated" date — E-E-A-T freshness signal.
                Uses <time> element with a machine-readable datetime that
                matches the JSON-LD Article schema. Google's helpful-content
                update rewards visible dates for evergreen content. #}
-            <span class="text-xs text-stone-500" aria-hidden="true">·</span>
-            <span class="text-sm text-stone-600">
-              By <a href="/about" rel="author" class="text-astro-700 hover:underline">Bhagya Editorial</a>
+            <span class="text-xs text-bhagya-cream/[.62]" aria-hidden="true">·</span>
+            <span class="text-sm text-bhagya-cream/[.66]">
+              By <a href="/about" rel="author" class="text-bhagya-gold hover:underline">Bhagya Editorial</a>
             </span>
-            <span class="text-xs text-stone-500" aria-hidden="true">·</span>
-            <span class="text-sm text-stone-600">
+            <span class="text-xs text-bhagya-cream/[.62]" aria-hidden="true">·</span>
+            <span class="text-sm text-bhagya-cream/[.66]">
               Updated
               <time datetime="{{ article.last_updated }}-01">{{ article.last_updated }}</time>
             </span>
           </div>
-          <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-stone-900 leading-tight mb-4">
+          <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-cream leading-tight mb-4">
             {{ article.title }}
           </h1>
-          <p class="text-base sm:text-lg text-stone-600 leading-relaxed">
+          <p class="text-base sm:text-lg text-bhagya-cream/[.66] leading-relaxed">
             {{ article.summary }}
           </p>
           {# WhatsApp share — big engagement lever in Indian audience.
@@ -102,7 +102,7 @@
      Assistant, Alexa) target this class when reading the article aloud. #}
   <article class="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14
                   article-prose speakable-body
-                  text-[16px] leading-[1.75] text-stone-800">
+                  text-[16px] leading-[1.75] text-bhagya-ink">
     {% block article_body %}{% endblock %}
   </article>
 
@@ -110,19 +110,19 @@
      results. Only renders if the registry includes FAQs. #}
   {% if article.faqs %}
   <section class="max-w-2xl mx-auto px-4 sm:px-6 pb-10">
-    <h2 class="font-display text-2xl text-stone-900 mb-5">Frequently asked</h2>
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-5">Frequently asked</h2>
     <div class="space-y-2">
       {% for faq in article.faqs %}
-      <details class="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+      <details class="group bg-white border border-bhagya-line overflow-hidden">
         <summary class="cursor-pointer p-4 sm:p-5 list-none flex items-center justify-between gap-4
-                        text-stone-900 font-semibold text-base hover:bg-stone-50">
+                        text-bhagya-ink font-semibold text-base hover:bg-bhagya-cream-2">
           <span>{{ faq.q }}</span>
-          <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0 text-astro-600 transition-transform group-open:rotate-180"
+          <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0 text-bhagya-sindoor transition-transform group-open:rotate-180"
                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
           </svg>
         </summary>
-        <div class="px-4 sm:px-5 pb-5 pt-1 text-stone-700 leading-relaxed">{{ faq.a }}</div>
+        <div class="px-4 sm:px-5 pb-5 pt-1 text-bhagya-ink-soft leading-relaxed">{{ faq.a }}</div>
       </details>
       {% endfor %}
     </div>
@@ -214,27 +214,27 @@
   {# CTA — compact two-action banner. Both buttons inline; total height
      is one info row + one button row. Funnels into Kundli first, then Ask. #}
   <section class="max-w-2xl mx-auto px-4 sm:px-6 pb-10">
-    <div class="bg-gradient-to-br from-astro-700 to-astro-800 text-white rounded-2xl p-4 sm:p-5">
+    <div class="bg-bhagya-night border border-bhagya-gold/30 text-bhagya-cream p-4 sm:p-5">
       <div class="flex items-center gap-3 mb-3">
-        <svg viewBox="0 0 100 100" class="w-7 h-7 shrink-0 text-white/90" aria-hidden="true">
+        <svg viewBox="0 0 100 100" class="w-7 h-7 shrink-0 text-bhagya-cream/90" aria-hidden="true">
           <g fill="none" stroke="currentColor" stroke-width="6">
             <polygon points="50,5 95,50 50,95 5,50"/>
             <line x1="50" y1="5" x2="50" y2="95"/>
             <line x1="5" y1="50" x2="95" y2="50"/>
             <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
           </g>
-          <circle cx="50" cy="50" r="7" fill="#ffd764"/>
+          <circle cx="50" cy="50" r="7" fill="#E4913C"/>
         </svg>
         <div class="min-w-0">
-          <div class="font-display font-bold text-base sm:text-lg leading-tight">See it in YOUR chart</div>
-          <div class="text-xs text-astro-200">Free Kundli &middot; then ask anything &middot; both instant</div>
+          <div class="font-marcellus text-base sm:text-lg leading-tight">See it in YOUR chart</div>
+          <div class="text-xs text-bhagya-cream/[.62]">Free Kundli &middot; then ask anything &middot; both instant</div>
         </div>
       </div>
       <div class="flex flex-col sm:flex-row gap-2">
-        <a href="/" class="flex-1 text-center bg-white text-astro-700 font-semibold text-sm px-3 py-2 rounded-lg hover:bg-astro-50 transition-colors">
+        <a href="/" class="flex-1 text-center bg-white text-bhagya-sindoor font-semibold text-sm px-3 py-2 rounded hover:bg-bhagya-cream-2 transition-colors">
           Get your free Kundli &rarr;
         </a>
-        <a href="/ask" class="flex-1 text-center bg-astro-900/50 hover:bg-astro-900/70 text-white font-semibold text-sm px-3 py-2 rounded-lg border border-white/20 transition-colors">
+        <a href="/ask" class="flex-1 text-center bg-bhagya-saffron hover:bg-bhagya-cream text-bhagya-night font-semibold text-sm px-3 py-2 rounded transition-colors">
           Ask Shubh Bhagya &rarr;
         </a>
       </div>
@@ -244,21 +244,21 @@
   {# RELATED articles — internal linking boosts both SEO and engagement. #}
   {% if related %}
   <section class="max-w-2xl mx-auto px-4 sm:px-6 pb-14">
-    <h2 class="font-display text-xl text-stone-900 mb-4">Related reading</h2>
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">Related reading</h2>
     {# Bordered-rows list — footer-nav treatment, not card grid. Full-row
        click target extends into the section's horizontal padding via negative
        margin. Chevron animates on hover as a subtle "goes somewhere" cue. #}
-    <div class="border-t border-stone-200">
+    <div class="border-t border-bhagya-line">
       {% for r in related %}
       <a href="/learn/{{ r.slug }}/"
-         class="group flex items-center justify-between gap-4 border-b border-stone-200
-                py-4 -mx-4 sm:-mx-6 px-4 sm:px-6 hover:bg-astro-50/40 transition-colors">
+         class="group flex items-center justify-between gap-4 border-b border-bhagya-line
+                py-4 -mx-4 sm:-mx-6 px-4 sm:px-6 hover:bg-bhagya-cream-2/40 transition-colors">
         <div class="min-w-0 flex-1">
-          <div class="text-[11px] font-semibold uppercase tracking-wider text-astro-700 mb-1">{{ r.category }}</div>
-          <h3 class="font-display text-base sm:text-lg text-stone-900 leading-snug
-                     group-hover:text-astro-700 transition-colors">{{ r.title }}</h3>
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">{{ r.category }}</div>
+          <h3 class="font-marcellus text-base sm:text-lg text-bhagya-ink leading-snug
+                     group-hover:text-bhagya-ink transition-colors">{{ r.title }}</h3>
         </div>
-        <svg class="w-5 h-5 text-stone-300 group-hover:text-astro-500
+        <svg class="w-5 h-5 text-bhagya-border group-hover:text-bhagya-saffron
                     group-hover:translate-x-0.5 transition-all flex-shrink-0"
              fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
@@ -272,21 +272,39 @@
 </main>
 
 {# Shared prose styles for all article bodies. Inline so the design system
-   ships with the template, no external stylesheet to maintain. #}
+   ships with the template, no external stylesheet to maintain.
+
+   #239 left the purple in here (prose links, the insight callout, the pull
+   quote rule) at the old ramp on purpose: the CTA banner above was still on
+   the purple utilities, so recolouring the prose alone would have left one
+   article half each palette. The banner moved in #250 and this block did
+   not, so prose links stayed astro-700 on all 76 article bodies — and the
+   four `Crimson Pro` rules kept naming a face that ea0725b had retired,
+   falling back to a generic serif with nothing to signal it. Both fixed now,
+   and the file is in verify_redesign_tokens.py's MIGRATED so neither can
+   come back quietly. The 76 article hero SVGs are #259; the six shlok
+   mantras are #260 and are deliberately untouched here. #}
 <style>
   .article-prose h2 {
-    font-family: 'Crimson Pro', serif;
+    /* Marcellus at 400, explicitly. Browsers default h2/h3 to bold, and
+       Marcellus ships ONE weight — an unset weight here is a synthesised
+       bold, which is #189's defect. Crimson Pro used to live here and was
+       retired in ea0725b, so these four rules had been falling back to a
+       generic serif on all 76 articles ever since. */
+    font-family: Marcellus, 'Noto Serif Devanagari', serif;
+    font-weight: 400;
     font-size: 1.6rem;
-    color: #1c1917;
+    color: #17131A;
     margin-top: 2.2rem;
     margin-bottom: 0.8rem;
     line-height: 1.25;
   }
   .article-prose h2:first-child { margin-top: 0; }
   .article-prose h3 {
-    font-family: 'Crimson Pro', serif;
+    font-family: Marcellus, 'Noto Serif Devanagari', serif;
+    font-weight: 400;
     font-size: 1.25rem;
-    color: #292524;
+    color: #17131A;
     margin-top: 1.6rem;
     margin-bottom: 0.5rem;
   }
@@ -298,14 +316,14 @@
   .article-prose ul { list-style: disc; }
   .article-prose ol { list-style: decimal; }
   .article-prose li { margin-bottom: 0.4rem; padding-left: 0.2rem; }
-  .article-prose strong { color: #1c1917; font-weight: 600; }
+  .article-prose strong { color: #17131A; font-weight: 600; }
   .article-prose a {
-    color: #6b21a8;
+    color: #9E2B25;
     text-decoration: underline;
     text-underline-offset: 2px;
     text-decoration-thickness: 1px;
   }
-  .article-prose a:hover { color: #581c87; }
+  .article-prose a:hover { color: #140F1C; }
   /* Custom callouts — author uses these via <div class="callout callout-tip"> */
   .article-prose .callout {
     margin: 1.5rem 0;
@@ -316,8 +334,8 @@
   .article-prose .callout p:last-child { margin-bottom: 0; }
   .article-prose .callout-tip      { background: #fef3c7; border-color: #d97706; }
   .article-prose .callout-warning  { background: #fee2e2; border-color: #dc2626; }
-  .article-prose .callout-insight  { background: #f0e7fb; border-color: #6b21a8; }
-  .article-prose .callout-classic  { background: #fafaf9; border-color: #78716c; }
+  .article-prose .callout-insight  { background: #F1E7D8; border-color: #C8A44D; }
+  .article-prose .callout-classic  { background: #FAF6EF; border-color: #DED4C2; }
   .article-prose .callout-label {
     font-size: 0.7rem;
     font-weight: 700;
@@ -326,15 +344,18 @@
     margin-bottom: 0.35rem;
     opacity: 0.85;
   }
-  /* Pull quote — large italic with purple accent */
+  /* Pull quote — gold rule, Marcellus at 400. NOT italic: Marcellus ships
+     no italic either, so font-style would synthesise an oblique. The gold
+     rule and the size mark it as a quote without one — the same call
+     86bd2be made on dasha.html's heading. */
   .article-prose .pullquote {
     margin: 2rem 0;
     padding: 1rem 0 1rem 1.5rem;
-    border-left: 4px solid #6b21a8;
-    font-family: 'Crimson Pro', serif;
+    border-left: 4px solid #C8A44D;
+    font-family: Marcellus, 'Noto Serif Devanagari', serif;
+    font-weight: 400;
     font-size: 1.25rem;
-    font-style: italic;
-    color: #44403c;
+    color: #4A4238;
     line-height: 1.55;
   }
   /* Shlok card — cream background with Devanagari. The Sanskrit line
@@ -356,7 +377,7 @@
   .article-prose .shlok .sanskrit {
     font-family: 'Noto Sans Devanagari', serif;
     font-size: 1.2rem;
-    color: #1c1917;
+    color: #17131A;
     font-weight: 600;
     line-height: 1.5;
     margin-bottom: 0.5rem;
@@ -367,7 +388,7 @@
   }
   .article-prose .shlok .meaning {
     font-size: 0.9rem;
-    color: #78716c;
+    color: #6B6259;
     font-style: italic;
   }
 </style>
@@ -378,18 +399,18 @@
    scroll on mobile only; dismissible with X. Not intrusive: only fires
    after real reading engagement, and the reader can dismiss it. #}
 <div id="learn-sticky-cta"
-     class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-astro-200 px-4 py-3 flex items-center gap-3 no-print"
+     class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-bhagya-line px-4 py-3 flex items-center gap-3 no-print"
      style="display: none; box-shadow: 0 -4px 20px rgba(107, 33, 168, 0.08);">
   <div class="flex-1 min-w-0">
-    <div class="text-xs font-semibold text-astro-700">Check your own chart</div>
-    <div class="text-[11px] text-stone-600 truncate">Free Janma Kundli · plain English + Hindi</div>
+    <div class="text-xs font-semibold text-bhagya-sindoor">Check your own chart</div>
+    <div class="text-[11px] text-bhagya-muted truncate">Free Janma Kundli · plain English + Hindi</div>
   </div>
   <a href="/"
-     class="flex-shrink-0 inline-flex items-center gap-1.5 bg-astro-700 text-white text-sm font-semibold px-4 py-2 rounded-lg">
+     class="flex-shrink-0 inline-flex items-center gap-1.5 bg-bhagya-night text-bhagya-cream text-sm font-semibold px-4 py-2 rounded">
     Free Kundli &rarr;
   </a>
   <button type="button" id="learn-sticky-close" aria-label="Dismiss"
-          class="flex-shrink-0 text-stone-500 hover:text-stone-700 p-1">
+          class="flex-shrink-0 text-bhagya-muted-2 hover:text-bhagya-ink p-1">
     <svg aria-hidden="true" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/></svg>
   </button>
 </div>

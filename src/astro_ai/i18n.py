@@ -263,6 +263,13 @@ _EN: Final[dict[str, str]] = {
     "dasha_card_title":    "Current Dasha",
     "dasha_card_subtitle": "Your active Vimshottari period",
     "dasha_view_full":     "Full Dasha timeline →",
+    # Proportional Mahadasha strip. The legend labels and the segment states
+    # share one set of CSS classes, so these three describe fills that are
+    # actually rendered.
+    "dasha_now":           "Now",
+    "dasha_legend_past":   "Completed",
+    "dasha_legend_now":    "Current period",
+    "dasha_legend_future": "Still to come",
 
     # kundali matching form
     "matching_title":      "Kundali Matching",
@@ -422,7 +429,7 @@ _EN: Final[dict[str, str]] = {
     "bhagya_show_all":         "Show all {n} signals →",
     # Numerology-only Bhagya Score sits on /numerology
     "num_bhagya_heading":      "Your Numerology Bhagya Score",
-    "num_bhagya_lede":         "Character-level snapshot from your numbers. Shifts slowly (only the Personal Year updates annually). For daily transit weather, generate your <a href=\"/kundli\" class=\"text-astro-700 hover:underline font-semibold\">Janma Kundli Bhagya Score</a>.",
+    "num_bhagya_lede":         "Character-level snapshot from your numbers. Shifts slowly (only the Personal Year updates annually). For daily transit weather, generate your <a href=\"/kundli\" class=\"text-bhagya-sindoor hover:underline font-semibold\">Janma Kundli Bhagya Score</a>.",
 
     # ─── Ask CTA (_ask_cta.html) ────────────────────────────────────
     "ask_cta_free":            "Free · No signup",
@@ -533,6 +540,11 @@ _EN: Final[dict[str, str]] = {
     "rashifal_unknown_title": "Unknown rashi",
     "rashifal_unknown_msg":   "That is not one of the 12 rashis. Try /rashifal to pick your Moon sign.",
     "error_back_to_form": "Back to the form",
+    # The 413 path, added on main while #124 was in flight. Localised here
+    # rather than left English, for the same reason as llm_busy_*: a /hi/ URL
+    # serving this page is a Hindi URL serving English.
+    "llm_too_large_title": "We couldn't prepare this chart",
+    "llm_too_large_msg":   "\U0001F64F Something in this particular chart made the reading too big for us to generate just now. This is on our side, not yours, and re-submitting will not change it — we have been alerted and are looking at it. Please do try again later today.",
 }
 
 _HI: Final[dict[str, str]] = {
@@ -781,6 +793,10 @@ _HI: Final[dict[str, str]] = {
     "dasha_card_title":    "वर्तमान दशा",
     "dasha_card_subtitle": "आपकी सक्रिय विंशोत्तरी अवधि",
     "dasha_view_full":     "पूर्ण दशा समय-रेखा →",
+    "dasha_now":           "अभी",
+    "dasha_legend_past":   "पूर्ण हो चुकी",
+    "dasha_legend_now":    "वर्तमान अवधि",
+    "dasha_legend_future": "आगे आने वाली",
 
     # kundali matching
     "matching_title":      "कुंडली मिलान",
@@ -908,7 +924,7 @@ _HI: Final[dict[str, str]] = {
     "bhagya_why":              "यह अंक क्यों",
     "bhagya_show_all":         "सभी {n} संकेत दिखाएँ →",
     "num_bhagya_heading":      "आपका अंकशास्त्र भाग्य स्कोर",
-    "num_bhagya_lede":         "आपकी संख्याओं से चरित्र-स्तरीय झलक। धीरे बदलती है (केवल व्यक्तिगत वर्ष सालाना बदलता है)। दैनिक गोचर के मौसम के लिए, अपनी <a href=\"/kundli\" class=\"text-astro-700 hover:underline font-semibold\">जन्म कुंडली भाग्य स्कोर</a> बनाएँ।",
+    "num_bhagya_lede":         "आपकी संख्याओं से चरित्र-स्तरीय झलक। धीरे बदलती है (केवल व्यक्तिगत वर्ष सालाना बदलता है)। दैनिक गोचर के मौसम के लिए, अपनी <a href=\"/kundli\" class=\"text-bhagya-sindoor hover:underline font-semibold\">जन्म कुंडली भाग्य स्कोर</a> बनाएँ।",
 
     # ─── Ask CTA ─────────────────────────────────────────────────────
     "ask_cta_free":            "मुफ्त · कोई साइनअप नहीं",
@@ -991,6 +1007,9 @@ _HI: Final[dict[str, str]] = {
     "rashifal_unknown_title": "अज्ञात राशि",
     "rashifal_unknown_msg":   "यह 12 राशियों में से नहीं है। अपनी चंद्र राशि चुनने के लिए /hi/rashifal देखें।",
     "error_back_to_form": "फ़ॉर्म पर वापस जाएँ",
+    # COMPOSED, not harvested — add to the list a native reader should check.
+    "llm_too_large_title": "हम यह कुंडली तैयार नहीं कर सके",
+    "llm_too_large_msg":   "\U0001F64F इस कुंडली में कुछ ऐसा है जिससे पठन इस समय हमारे लिए बहुत बड़ा हो गया। यह हमारी ओर की समस्या है, आपकी नहीं, और दोबारा भेजने से यह नहीं बदलेगी — हमें सूचना मिल चुकी है और हम इसे देख रहे हैं। कृपया आज कुछ समय बाद फिर प्रयास करें।",
 }
 
 _TABLES: Final[dict[str, dict[str, str]]] = {"en": _EN, "hi": _HI}

@@ -5,17 +5,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Rahu and Ketu nodal axis">
   <defs>
     <radialGradient id="cosmos" cx="0.5" cy="0.5" r="0.7">
-      <stop offset="0%" stop-color="#f0e7fb" stop-opacity="1"/>
-      <stop offset="60%" stop-color="#e9d5ff" stop-opacity="0.4"/>
+      <stop offset="0%" stop-color="#F1E7D8" stop-opacity="1"/>
+      <stop offset="60%" stop-color="#F1E7D8" stop-opacity="0.4"/>
       <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="rahu" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#581c87"/>
+      <stop offset="0%" stop-color="#17131A"/>
       <stop offset="100%" stop-color="#1c1917"/>
     </linearGradient>
     <linearGradient id="ketu" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#a78bfa"/>
-      <stop offset="100%" stop-color="#6b21a8"/>
+      <stop offset="0%" stop-color="#D98A45"/>
+      <stop offset="100%" stop-color="#9E2B25"/>
     </linearGradient>
   </defs>
 
@@ -36,7 +36,7 @@
   </g>
 
   <!-- The nodal axis: a thin diagonal line connecting Rahu and Ketu -->
-  <line x1="90" y1="220" x2="230" y2="100" stroke="#6b21a8" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.5"/>
+  <line x1="90" y1="220" x2="230" y2="100" stroke="#9E2B25" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.5"/>
 
   <!-- Rahu — dark, dense, eclipse-like circle (north node, "head") -->
   <circle cx="90" cy="220" r="42" fill="url(#rahu)"/>
@@ -59,8 +59,8 @@
   <!-- Devanagari labels -->
   <text x="90"  y="285" text-anchor="middle"
         font-family="'Noto Sans Devanagari', serif"
-        font-size="20" fill="#6b21a8" font-weight="600">राहु</text>
+        font-size="20" fill="#9E2B25" font-weight="600">राहु</text>
   <text x="230" y="60" text-anchor="middle"
         font-family="'Noto Sans Devanagari', serif"
-        font-size="20" fill="#6b21a8" font-weight="600">केतु</text>
+        font-size="20" fill="#9E2B25" font-weight="600">केतु</text>
 </svg>

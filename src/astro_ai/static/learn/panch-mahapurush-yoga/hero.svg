@@ -13,9 +13,9 @@
       <stop offset="100%" stop-color="#f5f5f4" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="pm_figure" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="60%" stop-color="#7c3aed"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="60%" stop-color="#B03A22"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="pm_gold" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#fbbf24"/>
@@ -93,9 +93,9 @@
   </g>
 
   <!-- Ground line -->
-  <line x1="35" y1="260" x2="285" y2="260" stroke="#c084fc" stroke-width="1" opacity="0.4"/>
+  <line x1="35" y1="260" x2="285" y2="260" stroke="#E4A96A" stroke-width="1" opacity="0.4"/>
 
   <!-- Small "5" indicating five persons -->
   <text x="30" y="46" font-family="Crimson Pro, serif" font-size="24"
-        font-weight="700" fill="#6b21a8" opacity="0.35">5</text>
+        font-weight="700" fill="#9E2B25" opacity="0.35">5</text>
 </svg>

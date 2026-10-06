@@ -22,7 +22,7 @@
 
   <circle cx="160" cy="160" r="150" fill="url(#aura-jp)"/>
 
-  <g fill="#6b21a8" opacity="0.35">
+  <g fill="#9E2B25" opacity="0.35">
     <circle cx="50"  cy="60"  r="1.5"/>
     <circle cx="270" cy="80"  r="2"/>
     <circle cx="60"  cy="255" r="1.5"/>

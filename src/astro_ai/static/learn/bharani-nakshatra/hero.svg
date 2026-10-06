@@ -7,9 +7,9 @@
      aria-label="Bharani nakshatra symbol — yoni chalice holding sacred flame">
   <defs>
     <linearGradient id="chalice" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="60%" stop-color="#7c3aed"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="60%" stop-color="#B03A22"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="flame" x1="0" y1="1" x2="0" y2="0">
       <stop offset="0%" stop-color="#f59e0b"/>
@@ -37,7 +37,7 @@
         fill="url(#chalice)"/>
 
   <!-- Base ring -->
-  <ellipse cx="160" cy="240" rx="55" ry="7" fill="#4c1d95" opacity="0.55"/>
+  <ellipse cx="160" cy="240" rx="55" ry="7" fill="#140F1C" opacity="0.55"/>
 
   <!-- Flame rising from within -->
   <path d="M 160 190
@@ -50,5 +50,5 @@
 
   <!-- Small "2" -->
   <text x="30" y="46" font-family="Crimson Pro, serif" font-size="26"
-        font-weight="700" fill="#6b21a8" opacity="0.35">2</text>
+        font-weight="700" fill="#9E2B25" opacity="0.35">2</text>
 </svg>

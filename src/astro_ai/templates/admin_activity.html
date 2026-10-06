@@ -12,49 +12,49 @@
 <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
   <header>
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">Activity &mdash; last {{ days }} day(s)</h1>
-    <p class="text-sm text-stone-600">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-2">Activity &mdash; last {{ days }} day(s)</h1>
+    <p class="text-sm text-bhagya-muted">
       Window:
-      <a href="/admin/activity?days=1&amp;limit={{ limit }}" class="text-astro-600 hover:underline">1d</a> &middot;
-      <a href="/admin/activity?days=7&amp;limit={{ limit }}" class="text-astro-600 hover:underline">7d</a> &middot;
-      <a href="/admin/activity?days=30&amp;limit={{ limit }}" class="text-astro-600 hover:underline">30d</a>
+      <a href="/admin/activity?days=1&amp;limit={{ limit }}" class="text-bhagya-sindoor hover:underline">1d</a> &middot;
+      <a href="/admin/activity?days=7&amp;limit={{ limit }}" class="text-bhagya-sindoor hover:underline">7d</a> &middot;
+      <a href="/admin/activity?days=30&amp;limit={{ limit }}" class="text-bhagya-sindoor hover:underline">30d</a>
       &nbsp;&middot;&nbsp; Limit:
-      <a href="/admin/activity?days={{ days }}&amp;limit=100" class="text-astro-600 hover:underline">100</a> &middot;
-      <a href="/admin/activity?days={{ days }}&amp;limit=200" class="text-astro-600 hover:underline">200</a> &middot;
-      <a href="/admin/activity?days={{ days }}&amp;limit=500" class="text-astro-600 hover:underline">500</a>
+      <a href="/admin/activity?days={{ days }}&amp;limit=100" class="text-bhagya-sindoor hover:underline">100</a> &middot;
+      <a href="/admin/activity?days={{ days }}&amp;limit=200" class="text-bhagya-sindoor hover:underline">200</a> &middot;
+      <a href="/admin/activity?days={{ days }}&amp;limit=500" class="text-bhagya-sindoor hover:underline">500</a>
     </p>
   </header>
 
   <!-- TOTALS -->
   <section class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-    <div class="bg-white rounded-2xl border border-stone-200 p-4">
-      <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Kundli forms</div>
-      <div class="font-display text-2xl text-astro-700 tabular-nums">{{ totals.get('form_kundli', 0) }}</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">Kundli forms</div>
+      <div class="font-marcellus text-2xl text-bhagya-sindoor tabular-nums">{{ totals.get('form_kundli', 0) }}</div>
     </div>
-    <div class="bg-white rounded-2xl border border-stone-200 p-4">
-      <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Matching forms</div>
-      <div class="font-display text-2xl text-astro-700 tabular-nums">{{ totals.get('form_matching', 0) }}</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">Matching forms</div>
+      <div class="font-marcellus text-2xl text-bhagya-sindoor tabular-nums">{{ totals.get('form_matching', 0) }}</div>
     </div>
-    <div class="bg-white rounded-2xl border border-stone-200 p-4">
-      <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Ask questions</div>
-      <div class="font-display text-2xl text-astro-700 tabular-nums">{{ totals.get('form_ask', 0) }}</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">Ask questions</div>
+      <div class="font-marcellus text-2xl text-bhagya-sindoor tabular-nums">{{ totals.get('form_ask', 0) }}</div>
     </div>
-    <div class="bg-white rounded-2xl border border-stone-200 p-4">
-      <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">Errors</div>
-      <div class="font-display text-2xl {% if totals.get('error', 0) %}text-rose-700{% else %}text-emerald-700{% endif %} tabular-nums">{{ totals.get('error', 0) }}</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">Errors</div>
+      <div class="font-marcellus text-2xl {% if totals.get('error', 0) %}text-bhagya-sindoor{% else %}text-emerald-800{% endif %} tabular-nums">{{ totals.get('error', 0) }}</div>
     </div>
   </section>
 
   <!-- KUNDLIS -->
-  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
-    <h2 class="font-display text-xl text-astro-700 mb-4">Kundli submissions ({{ kundlis | length }})</h2>
+  <section class="bg-white border border-bhagya-line p-5 sm:p-6">
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">Kundli submissions ({{ kundlis | length }})</h2>
     {% if not kundlis %}
-    <p class="text-sm text-stone-600 italic">No Kundli forms in this window.</p>
+    <p class="text-sm text-bhagya-muted italic">No Kundli forms in this window.</p>
     {% else %}
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
-          <tr class="text-left text-xs uppercase text-stone-600 border-b border-stone-200">
+          <tr class="text-left text-xs uppercase text-bhagya-muted border-b border-bhagya-line">
             <th class="pb-1.5 pr-3">When</th>
             <th class="pb-1.5 pr-3">Name</th>
             <th class="pb-1.5 pr-3">Birth</th>
@@ -66,14 +66,14 @@
         </thead>
         <tbody>
           {% for e in kundlis %}
-          <tr class="border-b border-stone-100 align-top">
-            <td class="py-1.5 pr-3 text-stone-600 tabular-nums whitespace-nowrap">{{ e.ts[:16] | replace('T', ' ') }}</td>
-            <td class="py-1.5 pr-3 text-stone-800">{{ e.data.name or '—' }}</td>
+          <tr class="border-b border-bhagya-line-2 align-top">
+            <td class="py-1.5 pr-3 text-bhagya-muted tabular-nums whitespace-nowrap">{{ e.ts[:16] | replace('T', ' ') }}</td>
+            <td class="py-1.5 pr-3 text-bhagya-ink">{{ e.data.name or '—' }}</td>
             <td class="py-1.5 pr-3 tabular-nums whitespace-nowrap">{{ e.data.birth_date }} {{ e.data.birth_time }}</td>
             <td class="py-1.5 pr-3">{{ e.data.birth_place }}</td>
             <td class="py-1.5 pr-3 uppercase text-xs">{{ e.data.lang }}</td>
-            <td class="py-1.5 pr-3 text-xs text-stone-600 truncate max-w-[10rem]">{{ e.email or '—' }}</td>
-            <td class="py-1.5 text-xs text-stone-600 font-mono">{{ (e.data.model or '—') | truncate(24, True) }}</td>
+            <td class="py-1.5 pr-3 text-xs text-bhagya-muted truncate max-w-[10rem]">{{ e.email or '—' }}</td>
+            <td class="py-1.5 text-xs text-bhagya-muted font-mono">{{ (e.data.model or '—') | truncate(24, True) }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -83,29 +83,29 @@
   </section>
 
   <!-- ASKS -->
-  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
-    <h2 class="font-display text-xl text-astro-700 mb-4">Ask questions ({{ asks | length }})</h2>
+  <section class="bg-white border border-bhagya-line p-5 sm:p-6">
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">Ask questions ({{ asks | length }})</h2>
     {% if not asks %}
-    <p class="text-sm text-stone-600 italic">No Ask questions in this window.</p>
+    <p class="text-sm text-bhagya-muted italic">No Ask questions in this window.</p>
     {% else %}
     <ul class="space-y-3">
       {% for e in asks %}
-      <li class="border-l-2 border-astro-300 pl-3">
-        <div class="text-xs text-stone-600 tabular-nums flex flex-wrap gap-x-3">
+      <li class="border-l-2 border-bhagya-border pl-3">
+        <div class="text-xs text-bhagya-muted tabular-nums flex flex-wrap gap-x-3">
           <span>{{ e.ts[:16] | replace('T', ' ') }}</span>
           <span class="uppercase">{{ e.data.category or 'general' }}</span>
           <span class="uppercase">{{ e.data.lang }}</span>
           {% if e.data.context and e.data.context != 'chart' %}
-          <span class="uppercase text-astro-700 font-semibold">ctx={{ e.data.context }}</span>
+          <span class="uppercase text-bhagya-sindoor font-semibold">ctx={{ e.data.context }}</span>
           {% endif %}
           {% if e.data.cache_hit %}
-          <span class="uppercase text-stone-500" title="Answer was served from cache; not a fresh LLM call">cache</span>
+          <span class="uppercase text-bhagya-muted-2" title="Answer was served from cache; not a fresh LLM call">cache</span>
           {% endif %}
-          {% if e.email %}<span class="text-astro-600">{{ e.email }}</span>{% endif %}
-          {% if e.data.model %}<span class="font-mono text-stone-600">{{ e.data.model | truncate(24, True) }}</span>{% endif %}
+          {% if e.email %}<span class="text-bhagya-sindoor">{{ e.email }}</span>{% endif %}
+          {% if e.data.model %}<span class="font-mono text-bhagya-muted">{{ e.data.model | truncate(24, True) }}</span>{% endif %}
         </div>
-        <p class="text-sm text-stone-800 mt-0.5">
-          <span class="text-astro-700 font-semibold">Q:</span>
+        <p class="text-sm text-bhagya-ink mt-0.5">
+          <span class="text-bhagya-sindoor font-semibold">Q:</span>
           {{ e.data.question | truncate(400, True) }}
         </p>
         {# Answer collapsible — click summary to expand full text. Only
@@ -114,10 +114,10 @@
            4000 chars server-side so this can be shown inline safely. #}
         {% if e.data.answer %}
         <details class="mt-1 text-sm">
-          <summary class="cursor-pointer text-astro-700 hover:text-astro-800 text-xs font-semibold uppercase tracking-wider">
+          <summary class="cursor-pointer text-bhagya-sindoor hover:text-bhagya-ink text-xs font-semibold uppercase tracking-wider">
             A: show answer ({{ e.data.answer | length }} chars)
           </summary>
-          <div class="mt-1 pl-3 border-l-2 border-astro-200 text-stone-800 whitespace-pre-wrap leading-relaxed">{{ e.data.answer }}</div>
+          <div class="mt-1 pl-3 border-l-2 border-bhagya-line text-bhagya-ink whitespace-pre-wrap leading-relaxed">{{ e.data.answer }}</div>
         </details>
         {% endif %}
       </li>
@@ -127,15 +127,15 @@
   </section>
 
   <!-- MATCHES -->
-  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
-    <h2 class="font-display text-xl text-astro-700 mb-4">Kundli matching ({{ matches | length }})</h2>
+  <section class="bg-white border border-bhagya-line p-5 sm:p-6">
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">Kundli matching ({{ matches | length }})</h2>
     {% if not matches %}
-    <p class="text-sm text-stone-600 italic">No matching submissions in this window.</p>
+    <p class="text-sm text-bhagya-muted italic">No matching submissions in this window.</p>
     {% else %}
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
-          <tr class="text-left text-xs uppercase text-stone-600 border-b border-stone-200">
+          <tr class="text-left text-xs uppercase text-bhagya-muted border-b border-bhagya-line">
             <th class="pb-1.5 pr-3">When</th>
             <th class="pb-1.5 pr-3">Groom</th>
             <th class="pb-1.5 pr-3">Bride</th>
@@ -145,10 +145,10 @@
         </thead>
         <tbody>
           {% for e in matches %}
-          <tr class="border-b border-stone-100">
-            <td class="py-1.5 pr-3 text-stone-600 tabular-nums whitespace-nowrap">{{ e.ts[:16] | replace('T', ' ') }}</td>
-            <td class="py-1.5 pr-3">{{ e.data.groom_name or '?' }} <span class="text-xs text-stone-600 tabular-nums">{{ e.data.groom_dob }}</span></td>
-            <td class="py-1.5 pr-3">{{ e.data.bride_name or '?' }} <span class="text-xs text-stone-600 tabular-nums">{{ e.data.bride_dob }}</span></td>
+          <tr class="border-b border-bhagya-line-2">
+            <td class="py-1.5 pr-3 text-bhagya-muted tabular-nums whitespace-nowrap">{{ e.ts[:16] | replace('T', ' ') }}</td>
+            <td class="py-1.5 pr-3">{{ e.data.groom_name or '?' }} <span class="text-xs text-bhagya-muted tabular-nums">{{ e.data.groom_dob }}</span></td>
+            <td class="py-1.5 pr-3">{{ e.data.bride_name or '?' }} <span class="text-xs text-bhagya-muted tabular-nums">{{ e.data.bride_dob }}</span></td>
             <td class="py-1.5 pr-3 tabular-nums font-semibold">{{ e.data.total_score }}</td>
             <td class="py-1.5 text-xs">{{ e.data.verdict }}</td>
           </tr>
@@ -160,26 +160,26 @@
   </section>
 
   <!-- ERRORS -->
-  <section class="bg-white rounded-2xl border border-rose-200 p-5 sm:p-6">
-    <h2 class="font-display text-xl text-rose-700 mb-4">Errors ({{ errors | length }})</h2>
+  <section class="bg-white border border-rose-200 p-5 sm:p-6">
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-4">Errors ({{ errors | length }})</h2>
     {% if not errors %}
-    <p class="text-sm text-emerald-700 italic">No errors in this window &mdash; nice.</p>
+    <p class="text-sm text-emerald-800 italic">No errors in this window &mdash; nice.</p>
     {% else %}
     <ul class="space-y-3">
       {% for e in errors %}
       <li class="border-l-2 border-rose-400 pl-3">
-        <div class="text-xs text-stone-600 tabular-nums flex flex-wrap gap-x-3">
+        <div class="text-xs text-bhagya-muted tabular-nums flex flex-wrap gap-x-3">
           <span>{{ e.ts[:16] | replace('T', ' ') }}</span>
-          <span class="uppercase font-semibold text-rose-700">{{ e.data.source }}</span>
-          <span class="font-mono text-stone-700">{{ e.data.error_type }}</span>
+          <span class="uppercase font-semibold text-bhagya-sindoor">{{ e.data.source }}</span>
+          <span class="font-mono text-bhagya-ink-soft">{{ e.data.error_type }}</span>
           {% if e.data.method or e.data.path %}<span>{{ e.data.method }} {{ e.data.path }}</span>{% endif %}
-          {% if e.email %}<span class="text-astro-600">{{ e.email }}</span>{% endif %}
+          {% if e.email %}<span class="text-bhagya-sindoor">{{ e.email }}</span>{% endif %}
         </div>
-        <p class="text-sm text-stone-800 mt-0.5">{{ e.data.error_message }}</p>
+        <p class="text-sm text-bhagya-ink mt-0.5">{{ e.data.error_message }}</p>
         {% if e.data.traceback %}
         <details class="mt-1">
-          <summary class="text-xs text-stone-600 cursor-pointer">Traceback</summary>
-          <pre class="text-xs bg-stone-50 p-2 rounded mt-1 overflow-x-auto">{{ e.data.traceback }}</pre>
+          <summary class="text-xs text-bhagya-muted cursor-pointer">Traceback</summary>
+          <pre class="text-xs bg-bhagya-cream-2 p-2 rounded mt-1 overflow-x-auto">{{ e.data.traceback }}</pre>
         </details>
         {% endif %}
       </li>

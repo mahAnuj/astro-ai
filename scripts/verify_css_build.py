@@ -21,8 +21,18 @@ So four gates:
   Gate 3  the astro palette has no holes (#186 regression guard)
   Gate 4  no Play CDN reference has crept back into a template
 
-Exit 0 on pass, 1 on any failure. `--skip-rebuild` runs 2-4 only, for
+Exit 0 on pass, 1 on any failure, **2 on COULD NOT VERIFY** — no npx, or npx
+present but tailwindcss not installed. Exit 2 is NOT a pass: it means the
+check did not run. That distinction is the whole reason `lg:col-span-3`
+shipped missing for eleven days (#229) — the gate was returning "unrunnable"
+and it was being read as "fine". `--skip-rebuild` runs 2-4 only, for
 environments without Node.
+
+Reproducibility note: Gate 1 is a raw byte comparison, and Tailwind embeds its
+own version banner in the output. So the build MUST be pinned — `package.json`
+holds an exact `tailwindcss` version (not a caret range) and every caller uses
+`npm ci`, never `npm install`. Without both, a patch release turns this gate
+red with no change to the repo.
 """
 
 from __future__ import annotations
@@ -105,7 +115,12 @@ def gate_1_css_is_fresh() -> list[str]:
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp) / "fresh.css"
         proc = subprocess.run(
-            [npx, "tailwindcss", "-i", str(INPUT_CSS), "-o", str(out), "--minify"],
+            # -c is explicit on purpose: without it Tailwind auto-discovers the
+            # config from cwd, so this gate's result would depend on where it
+            # was invoked from. Naming the file makes the comparison mean the
+            # same thing from any directory.
+            [npx, "tailwindcss", "-c", str(CONFIG),
+             "-i", str(INPUT_CSS), "-o", str(out), "--minify"],
             cwd=REPO_ROOT, capture_output=True, text=True,
         )
         if proc.returncode != 0:

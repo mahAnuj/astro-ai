@@ -7,12 +7,12 @@
   <defs>
     <radialGradient id="p7_aura" cx="0.5" cy="0.5" r="0.7">
       <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.7"/>
-      <stop offset="60%" stop-color="#a855f7" stop-opacity="0.12"/>
+      <stop offset="60%" stop-color="#CB5A2E" stop-opacity="0.12"/>
       <stop offset="100%" stop-color="#fefbf3" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="p7_diamond" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="p7_seventh" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#fbbf24"/>
@@ -26,7 +26,7 @@
   <ellipse cx="160" cy="160" rx="140" ry="130" fill="url(#p7_aura)"/>
 
   <!-- Star field -->
-  <g fill="#6b21a8" opacity="0.28">
+  <g fill="#9E2B25" opacity="0.28">
     <circle cx="42" cy="45" r="1.5"/>
     <circle cx="280" cy="55" r="2"/>
     <circle cx="275" cy="275" r="1.5"/>
@@ -57,7 +57,7 @@
   <!-- Nine planet glyphs orbiting the 7th (Sun, Moon, Mars, Mercury,
        Jupiter, Venus, Saturn, Rahu, Ketu). Arranged in an arc left of chart. -->
   <g font-family="Crimson Pro, Georgia, serif" font-size="16" font-weight="700"
-     text-anchor="middle" fill="#4c1d95">
+     text-anchor="middle" fill="#140F1C">
     <!-- Top-left arc -->
     <circle cx="24" cy="90"  r="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
     <text x="24" y="96">☉</text>

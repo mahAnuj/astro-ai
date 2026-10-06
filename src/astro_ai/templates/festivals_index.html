@@ -22,23 +22,23 @@
    month, so nothing here is glyph-only or hover-only. #}
 {% macro day_mark(fx) %}
 {%- if (fx.tier | default("major", true)) != "recurring" -%}
-<span class="block h-2 w-2 rounded-full bg-astro-700"></span>
+<span class="block h-2 w-2 rounded-full bg-bhagya-night"></span>
 {%- elif fx.kind | default("") == "purnima" -%}
-<span class="block h-1.5 w-1.5 rounded-full border border-stone-500 bg-transparent"></span>
+<span class="block h-1.5 w-1.5 rounded-full border border-bhagya-muted-2 bg-transparent"></span>
 {%- elif fx.kind | default("") == "amavasya" -%}
-<span class="block h-1.5 w-1.5 rounded-full bg-stone-500"></span>
+<span class="block h-1.5 w-1.5 rounded-full bg-bhagya-muted-2"></span>
 {%- elif fx.kind | default("") == "ekadashi" -%}
-<span class="block h-1.5 w-0.5 rounded-sm bg-stone-500"></span>
+<span class="block h-1.5 w-0.5 rounded-sm bg-bhagya-muted-2"></span>
 {%- else -%}
-<span class="block h-1 w-1 rounded-full border border-stone-500"></span>
+<span class="block h-1 w-1 rounded-full border border-bhagya-muted-2"></span>
 {%- endif -%}
 {% endmacro %}
 
 <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
   <header class="text-center space-y-2">
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700">Festival Calendar</div>
-    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor">Festival Calendar</div>
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink">
       Upcoming Hindu Festivals
     </h1>
     {# Claim only what the registry actually holds: a fixed, hand-verified set
@@ -60,7 +60,7 @@
        header read "The 0 festivals in our verified calendar". #}
     {% set n = festival_count | default(festivals | length) %}
     {% if n %}
-    <p class="text-stone-600">
+    <p class="text-bhagya-muted">
       The <strong>{{ n }}</strong> festival{{ 's' if n != 1 }} in our
       verified calendar between
       <strong>{{ window_start_pretty }}</strong> and <strong>{{ window_end_pretty }}</strong>
@@ -68,7 +68,7 @@
       it, what it means, and how it is observed.
     </p>
     {% else %}
-    <p class="text-stone-600">
+    <p class="text-bhagya-muted">
       Hindu festival dates, the tithi rule behind each one, what they mean, and how they are
       observed &mdash; on one page.
     </p>
@@ -79,13 +79,13 @@
        paragraphs of methodology standing between the reader and the date they
        came for. The full block is rendered at the foot of the page and this
        links down to it. #}
-    <p class="text-xs text-stone-600">
+    <p class="text-xs text-bhagya-muted">
       Dates:
-      <a href="{{ source_url }}" rel="noopener" class="underline underline-offset-2 hover:text-astro-900">{{ source_name }}</a>
-      <span class="text-stone-400">&middot;</span> New Delhi, IST
-      <span class="text-stone-400">&middot;</span> purnimanta reckoning
-      <span class="text-stone-400">&middot;</span>
-      <a href="#festival-reckoning" class="text-astro-700 underline underline-offset-2 hover:text-astro-900">how these are reckoned &darr;</a>
+      <a href="{{ source_url }}" rel="noopener" class="underline underline-offset-2 hover:text-bhagya-ink">{{ source_name }}</a>
+      <span class="text-bhagya-border">&middot;</span> New Delhi, IST
+      <span class="text-bhagya-border">&middot;</span> purnimanta reckoning
+      <span class="text-bhagya-border">&middot;</span>
+      <a href="#festival-reckoning" class="text-bhagya-sindoor underline underline-offset-2 hover:text-bhagya-ink">how these are reckoned &darr;</a>
     </p>
   </header>
 
@@ -98,47 +98,47 @@
   {% if festivals and calendar_months %}
   <section class="space-y-4" aria-labelledby="calendar-heading">
     <div class="space-y-1">
-      <h2 id="calendar-heading" class="font-display text-2xl text-astro-800">Calendar view</h2>
+      <h2 id="calendar-heading" class="font-marcellus text-2xl text-bhagya-ink">Calendar view</h2>
       {# The sentence describing bold-solid vs light-dotted days went with #132:
          the legend directly below names all four marks, and the distinction is
          self-evident the moment a grid is on screen. What stayed is the one
          thing the legend cannot say — that the names under each month are
          links. #}
-      <p class="text-sm text-stone-600">
+      <p class="text-sm text-bhagya-muted">
         Every marked day is named in the list under its month &mdash; pick either to jump
         straight to the full entry below.
       </p>
       {# Legend. The marks are decodable here without hovering, tapping or
          focusing anything, which is the point: the grid is the at-a-glance
          view and it has to be readable at a glance. #}
-      <ul class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-stone-600">
+      <ul class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-bhagya-muted">
         <li class="flex items-center gap-1.5">
-          <span class="block h-2 w-2 rounded-full bg-astro-700" aria-hidden="true"></span>Named festival
+          <span class="block h-2 w-2 rounded-full bg-bhagya-night" aria-hidden="true"></span>Named festival
         </li>
         <li class="flex items-center gap-1.5">
-          <span class="block h-1.5 w-1.5 rounded-full border border-stone-500 bg-transparent" aria-hidden="true"></span>Purnima (full moon)
+          <span class="block h-1.5 w-1.5 rounded-full border border-bhagya-muted-2 bg-transparent" aria-hidden="true"></span>Purnima (full moon)
         </li>
         <li class="flex items-center gap-1.5">
-          <span class="block h-1.5 w-1.5 rounded-full bg-stone-500" aria-hidden="true"></span>Amavasya (new moon)
+          <span class="block h-1.5 w-1.5 rounded-full bg-bhagya-muted-2" aria-hidden="true"></span>Amavasya (new moon)
         </li>
         <li class="flex items-center gap-1.5">
-          <span class="block h-1.5 w-0.5 rounded-sm bg-stone-500" aria-hidden="true"></span>Ekadashi
+          <span class="block h-1.5 w-0.5 rounded-sm bg-bhagya-muted-2" aria-hidden="true"></span>Ekadashi
         </li>
       </ul>
     </div>
 
     <div class="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {% for m in calendar_months %}
-      <section class="bg-white border border-stone-200 rounded-xl p-3 sm:p-4"
+      <section class="bg-white border border-bhagya-line p-3 sm:p-4"
                aria-labelledby="cal-{{ m.year }}-{{ '%02d' % m.month }}">
 
         <h3 id="cal-{{ m.year }}-{{ '%02d' % m.month }}"
-            class="font-display text-lg text-astro-800 text-center mb-2">{{ m.label }}</h3>
+            class="font-marcellus text-lg text-bhagya-ink text-center mb-2">{{ m.label }}</h3>
 
         {# Purely decorative: every day cell already carries its own full
            date in the aria-label, so a screen reader gains nothing from
            seven ambiguous single letters. #}
-        <div class="grid grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-wider text-stone-400"
+        <div class="grid grid-cols-7 text-center text-[10px] font-semibold uppercase tracking-wider text-bhagya-border"
              aria-hidden="true">
           {% for wd in ['S', 'M', 'T', 'W', 'T', 'F', 'S'] %}<div class="pb-1">{{ wd }}</div>{% endfor %}
         </div>
@@ -173,9 +173,9 @@
               <a href="#{{ cell.festivals[0].slug }}"
                  title="{{ cell.festivals | map(attribute='name_en') | join(' · ') }}"
                  aria-label="{{ cell.festivals | map(attribute='name_en') | join(', ') }}, {{ cell.day }} {{ m.label }}{% if cell.is_today %} (today){% endif %} — see details"
-                 class="group relative flex min-h-[2.75rem] flex-col items-center justify-center rounded-md underline underline-offset-2 hover:bg-astro-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-astro-700
-                        {%- if c.major %} font-bold text-astro-900 bg-astro-50 decoration-2 decoration-astro-500{% else %} font-normal text-stone-700 decoration-dotted decoration-stone-400{% endif %}
-                        {%- if cell.is_today %} ring-2 ring-emerald-600{% elif c.major %} ring-1 ring-astro-500{% endif %}
+                 class="group relative flex min-h-[2.75rem] flex-col items-center justify-center rounded-md underline underline-offset-2 hover:bg-bhagya-cream-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-bhagya-sindoor
+                        {%- if c.major %} font-bold text-bhagya-ink bg-bhagya-cream-2 decoration-2 decoration-bhagya-sindoor{% else %} font-normal text-bhagya-ink-soft decoration-dotted decoration-bhagya-muted{% endif %}
+                        {%- if cell.is_today %} ring-2 ring-emerald-600{% elif c.major %} ring-1 ring-bhagya-saffron{% endif %}
                         {%- if cell.is_past %} opacity-50{% endif %}">
                 <span>{{ cell.day }}</span>
                 {# Shape cue, not colour alone (WCAG 1.4.1) — one mark per
@@ -191,7 +191,7 @@
                    keyboard focus as well as hover; column-aware alignment keeps
                    the bubble inside the month card so it can never push the
                    375px layout sideways. #}
-                <span class="pointer-events-none absolute bottom-full z-20 mb-1 hidden w-max max-w-[9rem] rounded-md bg-stone-900 px-2 py-1 text-[11px] font-normal normal-case leading-snug text-white shadow-lg group-hover:block group-focus:block
+                <span class="pointer-events-none absolute bottom-full z-20 mb-1 hidden w-max max-w-[9rem] rounded-md bg-bhagya-night px-2 py-1 text-[11px] font-normal normal-case leading-snug text-bhagya-cream group-hover:block group-focus:block
                              {%- if loop.index0 <= 1 %} left-0{% elif loop.index0 >= 5 %} right-0{% else %} left-1/2 -translate-x-1/2{% endif %}">
                   {{ cell.festivals | map(attribute='name_en') | join(' · ') }}
                 </span>
@@ -203,7 +203,7 @@
               </div>
 
               {% else %}
-              <div class="flex min-h-[2.75rem] items-center justify-center {% if cell.is_past %}text-stone-300{% else %}text-stone-500{% endif %}">
+              <div class="flex min-h-[2.75rem] items-center justify-center {% if cell.is_past %}text-bhagya-border{% else %}text-bhagya-muted-2{% endif %}">
                 {{ cell.day }}
               </div>
               {% endif %}
@@ -224,25 +224,25 @@
         {% set ns = namespace(any=false, major=false) %}
         {% for week in m.weeks %}{% for cell in week %}{% if cell %}{% for f in cell.festivals %}{% set ns.any = true %}{% if (f.tier | default("major", true)) != "recurring" %}{% set ns.major = true %}{% endif %}{% endfor %}{% endif %}{% endfor %}{% endfor %}
         {% if not ns.any %}
-        <p class="mt-3 border-t border-stone-100 pt-3 text-xs text-stone-500">
+        <p class="mt-3 border-t border-bhagya-line-2 pt-3 text-xs text-bhagya-muted-2">
           No festival or lunar observance falls in this month.
         </p>
         {% else %}
         {% if not ns.major %}
-        <p class="mt-3 border-t border-stone-100 pt-3 text-xs text-stone-500">
+        <p class="mt-3 border-t border-bhagya-line-2 pt-3 text-xs text-bhagya-muted-2">
           No named festival this month &mdash; the recurring lunar days are listed below.
         </p>
         {% endif %}
-        <ul class="{% if ns.major %}mt-3 border-t border-stone-100 pt-3{% else %}mt-1{% endif %} space-y-1 text-xs">
+        <ul class="{% if ns.major %}mt-3 border-t border-bhagya-line-2 pt-3{% else %}mt-1{% endif %} space-y-1 text-xs">
           {% for week in m.weeks %}{% for cell in week %}{% if cell %}{% for f in cell.festivals %}
           <li>
-            <a href="#{{ f.slug }}" class="flex gap-2 rounded hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-astro-700 {% if cell.is_past %}opacity-60{% endif %}">
-              <span class="w-5 shrink-0 text-right font-semibold tabular-nums text-stone-500">{{ cell.day }}</span>
+            <a href="#{{ f.slug }}" class="flex gap-2 rounded hover:bg-bhagya-cream-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-bhagya-sindoor {% if cell.is_past %}opacity-60{% endif %}">
+              <span class="w-5 shrink-0 text-right font-semibold tabular-nums text-bhagya-muted-2">{{ cell.day }}</span>
               {# Same mark as the grid cell, so the legend decodes this list
                  too and the two views can never disagree about what a day is. #}
               <span class="mt-1 shrink-0" aria-hidden="true">{{ day_mark(f) }}</span>
-              <span class="underline underline-offset-2 {% if (f.tier | default('major', true)) != 'recurring' %}text-astro-800{% else %}text-stone-600 decoration-dotted{% endif %}">{{ f.name_en }}{% if f.name_hi %}
-                <span lang="hi" class="font-normal text-stone-500">{{ f.name_hi }}</span>{% endif %}</span>
+              <span class="underline underline-offset-2 {% if (f.tier | default('major', true)) != 'recurring' %}text-bhagya-sindoor{% else %}text-bhagya-muted decoration-dotted{% endif %}">{{ f.name_en }}{% if f.name_hi %}
+                <span lang="hi" class="font-normal text-bhagya-muted-2">{{ f.name_hi }}</span>{% endif %}</span>
             </a>
           </li>
           {% endfor %}{% endif %}{% endfor %}{% endfor %}
@@ -261,13 +261,13 @@
      empty festival list. #}
   {% if n %}
   <section class="space-y-3">
-    <h2 class="font-display text-2xl text-astro-800">The next six months</h2>
+    <h2 class="font-marcellus text-2xl text-bhagya-ink">The next six months</h2>
 
     {# The registry has Hindi names and notes but no Hindi significance or
        observance copy, so those two sections stay English on ?lang=hi. Stated,
        not silently mixed. #}
     {% if lang == "hi" %}
-    <p class="text-sm text-stone-600" lang="hi">
+    <p class="text-sm text-bhagya-muted" lang="hi">
       नाम, तिथि और परिचय हिन्दी में हैं। &ldquo;Significance&rdquo; और &ldquo;How it is
       observed&rdquo; अभी केवल अंग्रेज़ी में उपलब्ध हैं।
     </p>
@@ -323,7 +323,7 @@
        either way. #}
     {% for f in festivals %}{% if (f.tier | default("major", true)) != "recurring" %}
     <details id="{{ f.slug }}"
-             class="festival-card group bg-white rounded-xl border {% if f.is_today %}border-astro-500{% else %}border-stone-200{% endif %}"
+             class="festival-card group bg-white border {% if f.is_today %}border-bhagya-saffron{% else %}border-bhagya-line{% endif %}"
              {% if f.is_today %}open{% endif %}>
 
       {# summary holds phrasing content plus ONE heading-content element, so the
@@ -338,41 +338,41 @@
       {# No list-none / ::-webkit-details-marker utilities here: base.html already
          strips the native marker from every summary site-wide, and repeating
          those two classes 24 times on one page is ~1&nbsp;KB of nothing. #}
-      <summary class="flex cursor-pointer items-start gap-2.5 rounded-xl px-5 py-4 sm:px-6 hover:bg-stone-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-astro-700">
+      <summary class="flex cursor-pointer items-start gap-2.5 px-5 py-4 sm:px-6 hover:bg-bhagya-cream-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-bhagya-sindoor">
         {# Text triangle rather than the repo's usual inline SVG chevron: this
            marker is emitted 24 times on one page and the SVG costs ~6&nbsp;KB of
            the byte budget #144 fought for. Same affordance, ~1/6th the weight. #}
-        <span class="mt-1.5 shrink-0 select-none text-xs text-stone-400 transition-transform group-open:rotate-90" aria-hidden="true">&#9656;</span>
+        <span class="mt-1.5 shrink-0 select-none text-xs text-bhagya-border transition-transform group-open:rotate-90" aria-hidden="true">&#9656;</span>
         <hgroup class="min-w-0 flex-1">
-          <h3 class="font-display text-xl text-astro-800">
+          <h3 class="font-marcellus text-xl text-bhagya-ink">
             {{ f.name_en }}{% if f.name_hi %}
-            <span lang="hi" class="font-normal text-base text-stone-600">{{ f.name_hi }}</span>{% endif %}
+            <span lang="hi" class="font-normal text-base text-bhagya-muted">{{ f.name_hi }}</span>{% endif %}
           </h3>
-          <p class="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-stone-700">
+          <p class="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm text-bhagya-ink-soft">
             <span>
               <time datetime="{{ f.date_iso }}" class="font-semibold">{{ f.pretty_date }}</time>
-              <span class="text-stone-500">&middot;</span> {{ f.weekday }}
+              <span class="text-bhagya-muted-2">&middot;</span> {{ f.weekday }}
             </span>
             {% if f.is_today %}
             <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">Today</span>
             {% elif f.days_away == 1 %}
             <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800">Tomorrow</span>
             {% else %}
-            <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-stone-100 text-stone-700">in {{ f.days_away }} days</span>
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-bhagya-cream-2 text-bhagya-ink-soft">in {{ f.days_away }} days</span>
             {% endif %}
           </p>
         </hgroup>
       </summary>
 
-      <div class="space-y-3 border-t border-stone-100 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+      <div class="space-y-3 border-t border-bhagya-line-2 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
 
         {% if f.rule or f.observance_window %}
         <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
           {% if f.rule %}
-          <span class="text-xs text-stone-600">{{ f.rule }}</span>
+          <span class="text-xs text-bhagya-muted">{{ f.rule }}</span>
           {% endif %}
           {% if f.observance_window %}
-          <span class="text-xs text-stone-600">&middot; observance window: {{ f.observance_window }}</span>
+          <span class="text-xs text-bhagya-muted">&middot; observance window: {{ f.observance_window }}</span>
           {% endif %}
         </div>
         {% endif %}
@@ -381,20 +381,20 @@
            registry has note_hi for every festival, it was just never reaching
            this page (QA BUG-2). #}
         {% if f.note %}
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed font-semibold" {% if lang == "hi" %}lang="hi"{% endif %}>{{ f.note }}</p>
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed font-semibold" {% if lang == "hi" %}lang="hi"{% endif %}>{{ f.note }}</p>
         {% endif %}
 
         {% if f.significance %}
         <div>
-          <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">Significance</div>
-          <p class="text-sm sm:text-base text-stone-800 leading-relaxed">{{ f.significance }}</p>
+          <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">Significance</div>
+          <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">{{ f.significance }}</p>
         </div>
         {% endif %}
 
         {% if f.observance %}
         <div>
-          <div class="text-[11px] uppercase font-semibold text-stone-600 tracking-wider mb-1">How it is observed</div>
-          <p class="text-sm sm:text-base text-stone-800 leading-relaxed">{{ f.observance }}</p>
+          <div class="text-[11px] uppercase font-semibold text-bhagya-muted tracking-wider mb-1">How it is observed</div>
+          <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">{{ f.observance }}</p>
         </div>
         {% endif %}
 
@@ -402,7 +402,7 @@
            No article → render nothing at all, never a dead or stub link. #}
         {% if f.learn_url %}
         <p class="text-sm">
-          <a href="{{ f.learn_url }}" class="text-astro-700 font-semibold underline underline-offset-2 hover:text-astro-900">
+          <a href="{{ f.learn_url }}" class="text-bhagya-sindoor font-semibold underline underline-offset-2 hover:text-bhagya-ink">
             Read the full guide{% if f.learn_title %}: {{ f.learn_title }}{% endif %} &rarr;
           </a>
         </p>
@@ -419,13 +419,13 @@
      window rolls past the last verified year, happens while the computed lunar
      observances below are still there (QA BUG-3). #}
   <section>
-    <div class="bg-white border border-stone-200 rounded-xl p-5 sm:p-6 space-y-3">
-      <h2 class="font-display text-2xl text-astro-800">No festivals in this window</h2>
-      <p class="text-sm sm:text-base text-stone-800 leading-relaxed">
+    <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
+      <h2 class="font-marcellus text-2xl text-bhagya-ink">No festivals in this window</h2>
+      <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         We don't have festival dates listed for the next six months yet. Our verified
         calendar currently runs through {{ verified_through }}. In the meantime, check
-        today's tithi and muhurta on the <a href="/panchang" class="text-astro-700 underline underline-offset-2 hover:text-astro-900">daily Panchang</a>,
-        or read the festival guides in our <a href="/learn/" class="text-astro-700 underline underline-offset-2 hover:text-astro-900">Learning Hub</a>.
+        today's tithi and muhurta on the <a href="/panchang" class="text-bhagya-sindoor underline underline-offset-2 hover:text-bhagya-ink">daily Panchang</a>,
+        or read the festival guides in our <a href="/learn/" class="text-bhagya-sindoor underline underline-offset-2 hover:text-bhagya-ink">Learning Hub</a>.
       </p>
     </div>
   </section>
@@ -443,8 +443,8 @@
   {% if rec.any %}
   <section class="space-y-4" aria-labelledby="recurring-heading">
     <div class="space-y-1">
-      <h2 id="recurring-heading" class="font-display text-2xl text-astro-800">Purnima, Amavasya and Ekadashi</h2>
-      <p class="text-sm text-stone-600">
+      <h2 id="recurring-heading" class="font-marcellus text-2xl text-bhagya-ink">Purnima, Amavasya and Ekadashi</h2>
+      <p class="text-sm text-bhagya-muted">
         The recurring lunar observances in the same window. They fall every fortnight, so they
         are listed rather than written up one by one.
       </p>
@@ -457,10 +457,10 @@
       {% set seen = namespace(rules=[]) %}
       {% for f in festivals %}{% if (f.tier | default("major", true)) == "recurring" and f.rule and f.rule not in seen.rules %}{% set seen.rules = seen.rules + [f.rule] %}{% endif %}{% endfor %}
       {% if seen.rules %}
-      <p class="text-xs text-stone-600">{% for r in seen.rules %}{% if not loop.first %} <span class="text-stone-400">&middot;</span> {% endif %}{{ r }}{% endfor %}</p>
+      <p class="text-xs text-bhagya-muted">{% for r in seen.rules %}{% if not loop.first %} <span class="text-bhagya-border">&middot;</span> {% endif %}{{ r }}{% endfor %}</p>
       {% endif %}
     </div>
-    <ul class="bg-white border border-stone-200 rounded-xl divide-y divide-stone-100">
+    <ul class="bg-white border border-bhagya-line divide-y divide-bhagya-line-2">
       {% for f in festivals %}{% if (f.tier | default("major", true)) == "recurring" %}
       {# Row title is the rule's own subject ("Krishna Ekadashi") rather than the
          bare name_en ("Ekadashi") when the two differ, so the one piece of
@@ -470,11 +470,11 @@
       {% set head = (f.rule | default("", true)).split("—")[0] | trim %}
       {% set title = head if (head and head != f.name_en and head | length <= 28) else f.name_en %}
       <li id="{{ f.slug }}" class="recurring-row flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 px-4 py-2 sm:px-5">
-        <span class="font-semibold text-sm text-astro-800">{{ title }}{% if f.name_hi %}
-          <span lang="hi" class="font-normal text-stone-600">{{ f.name_hi }}</span>{% endif %}</span>
-        <span class="text-sm text-stone-700">
+        <span class="font-semibold text-sm text-bhagya-sindoor">{{ title }}{% if f.name_hi %}
+          <span lang="hi" class="font-normal text-bhagya-muted">{{ f.name_hi }}</span>{% endif %}</span>
+        <span class="text-sm text-bhagya-ink-soft">
           <time datetime="{{ f.date_iso }}">{{ f.pretty_date }}</time>
-          <span class="text-stone-500">&middot;</span> {{ f.weekday }}
+          <span class="text-bhagya-muted-2">&middot;</span> {{ f.weekday }}
         </span>
       </li>
       {% endif %}{% endfor %}
@@ -490,15 +490,15 @@
 
   {# CROSS-LINKS #}
   <section>
-    <h2 class="font-display text-2xl text-astro-800 mb-4">Related</h2>
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-4">Related</h2>
     <div class="grid sm:grid-cols-2 gap-3">
-      <a href="/panchang" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Today's Panchang →</div>
-        <div class="text-xs text-stone-600 mt-1">Tithi, nakshatra, yoga, karana, sunrise/sunset, Rahu Kaal and Choghadiya for your city.</div>
+      <a href="/panchang" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Today's Panchang →</div>
+        <div class="text-xs text-bhagya-muted mt-1">Tithi, nakshatra, yoga, karana, sunrise/sunset, Rahu Kaal and Choghadiya for your city.</div>
       </a>
-      <a href="/learn/" class="block p-4 bg-white rounded-xl border border-stone-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Learning Hub →</div>
-        <div class="text-xs text-stone-600 mt-1">In-depth guides on festivals, muhurat, doshas, and how classical Vedic astrology works.</div>
+      <a href="/learn/" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Learning Hub →</div>
+        <div class="text-xs text-bhagya-muted mt-1">In-depth guides on festivals, muhurat, doshas, and how classical Vedic astrology works.</div>
       </a>
     </div>
   </section>

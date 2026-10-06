@@ -9,7 +9,7 @@
   </defs>
   <rect width="320" height="320" fill="#fefbf3" rx="24"/>
   <ellipse cx="160" cy="160" rx="140" ry="130" fill="url(#kr_aura)"/>
-  <g fill="#6b21a8" opacity="0.35">
+  <g fill="#9E2B25" opacity="0.35">
     <circle cx="42" cy="45" r="1.5"/><circle cx="280" cy="55" r="2"/>
     <circle cx="275" cy="275" r="1.5"/><circle cx="50" cy="270" r="1.5"/>
   </g>

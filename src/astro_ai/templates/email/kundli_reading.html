@@ -12,6 +12,11 @@
 
     Same email-safe constraints as welcome.html: table layout, inline
     styles, 600px max width. No <style>, no JS.
+
+    Same redesign palette too (#239) — role table and measured contrast
+    ratios in daily_rashifal.html's header. This one is NOT covered by
+    scripts/verify_email_templates.py, which renders only welcome.html and
+    daily_rashifal.html, so changes here are verified by hand.
 -#}
 <!doctype html>
 <html lang="{{ lang }}">
@@ -20,15 +25,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{% if lang == 'hi' %}आपकी कुंडली रीडिंग{% else %}Your Kundli Reading{% endif %}</title>
 </head>
-<body style="margin:0;padding:0;background:#faf7f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans Devanagari',sans-serif;color:#1c1917;">
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf7f2;">
+<body style="margin:0;padding:0;background:#FAF6EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans Devanagari',sans-serif;color:#1c1917;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#FAF6EF;">
   <tr>
     <td align="center" style="padding:20px 12px;">
       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;background:#ffffff;border-radius:10px;overflow:hidden;border:1px solid #e7e5e4;">
 
         {#- BRANDED HEADER -#}
         <tr>
-          <td style="background:#6b21a8;padding:22px 28px;">
+          <td style="background:#140F1C;padding:22px 28px;">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0">
               <tr>
                 <td style="vertical-align:middle;padding-right:12px;">
@@ -39,12 +44,12 @@
                       <line x1="5" y1="50" x2="95" y2="50"/>
                       <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
                     </g>
-                    <circle cx="50" cy="50" r="8" fill="#ffd764"/>
+                    <circle cx="50" cy="50" r="8" fill="#C8A44D"/>
                   </svg>
                 </td>
                 <td style="vertical-align:middle;">
                   <div style="font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;line-height:1.1;">Shubh Bhagya</div>
-                  <div style="font-size:12px;color:#e9d5ff;margin-top:2px;letter-spacing:0.5px;">
+                  <div style="font-size:12px;color:#F1E7D8;margin-top:2px;letter-spacing:0.5px;">
                     {% if lang == 'hi' %}आपकी कुंडली रीडिंग{% else %}Your Kundli Reading{% endif %}
                   </div>
                 </td>
@@ -69,17 +74,17 @@
         {% if birth_details %}
         <tr>
           <td style="padding:16px 28px 0 28px;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:6px;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#F1E7D8;border:1px solid #DED4C2;border-radius:6px;">
               <tr>
                 <td style="padding:12px 16px;">
-                  <div style="font-size:11px;color:#7c3aed;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;">
+                  <div style="font-size:11px;color:#9E2B25;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;">
                     {% if lang == 'hi' %}जन्म विवरण{% else %}Birth details{% endif %}
                   </div>
                   <div style="font-size:14px;color:#1c1917;line-height:1.5;">
                     {% if birth_details.name %}<strong>{{ birth_details.name }}</strong> &middot; {% endif %}
                     {{ birth_details.birth_date }} {% if birth_details.birth_time %}at {{ birth_details.birth_time }}{% endif %}
                     {% if birth_details.birth_place %}<br>{{ birth_details.birth_place }}{% endif %}
-                    {% if chart and chart.lagna_rashi %}<br><span style="color:#7c3aed;">{{ chart.lagna_rashi }} {% if lang == 'hi' %}लग्न{% else %}lagna{% endif %}</span>{% endif %}
+                    {% if chart and chart.lagna_rashi %}<br><span style="color:#9E2B25;">{{ chart.lagna_rashi }} {% if lang == 'hi' %}लग्न{% else %}lagna{% endif %}</span>{% endif %}
                   </div>
                 </td>
               </tr>
@@ -92,7 +97,7 @@
         {% for title, body in sections %}
         <tr>
           <td style="padding:22px 28px 0 28px;">
-            <h2 style="margin:0 0 8px 0;font-size:17px;font-weight:700;color:#6b21a8;line-height:1.3;">
+            <h2 style="margin:0 0 8px 0;font-size:17px;font-weight:700;color:#9E2B25;line-height:1.3;">
               {{ title }}
             </h2>
             <p style="margin:0;font-size:14px;color:#1c1917;line-height:1.7;white-space:pre-wrap;">{{ body }}</p>
@@ -105,12 +110,12 @@
           <td style="padding:26px 28px 22px 28px;">
             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
               <tr>
-                <td align="center" style="padding:18px 16px;background:#faf5ff;border-radius:6px;border:1px solid #e9d5ff;">
+                <td align="center" style="padding:18px 16px;background:#F1E7D8;border-radius:6px;border:1px solid #DED4C2;">
                   <div style="font-size:13px;color:#57534e;margin-bottom:10px;">
                     {% if lang == 'hi' %}लाइव संस्करण देखें — चार्ट + कुंडली मैचिंग + दैनिक राशिफल{% else %}See the live version — chart, matching, daily Rashifal{% endif %}
                   </div>
                   <a href="{{ site_url }}/kundli"
-                     style="display:inline-block;background:#6b21a8;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:10px 22px;border-radius:6px;">
+                     style="display:inline-block;background:#E4913C;color:#17131A;text-decoration:none;font-size:14px;font-weight:600;padding:10px 22px;border-radius:6px;">
                     {% if lang == 'hi' %}shubhagya.com पर खोलें{% else %}Open on shubhagya.com{% endif %}
                   </a>
                 </td>

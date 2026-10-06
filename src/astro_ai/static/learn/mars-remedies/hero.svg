@@ -16,9 +16,9 @@
       <stop offset="100%" stop-color="#7f1d1d"/>
     </linearGradient>
     <linearGradient id="mr_gada" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="60%" stop-color="#6b21a8"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="60%" stop-color="#9E2B25"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="mr_gada_head" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#fbbf24"/>
@@ -50,7 +50,7 @@
     <!-- Handle -->
     <rect x="-4" y="-80" width="8" height="130" fill="url(#mr_gada)" rx="2"/>
     <!-- Grip texture -->
-    <g stroke="#4c1d95" stroke-width="0.7" opacity="0.6">
+    <g stroke="#140F1C" stroke-width="0.7" opacity="0.6">
       <line x1="-4" y1="20" x2="4" y2="20"/>
       <line x1="-4" y1="28" x2="4" y2="28"/>
       <line x1="-4" y1="36" x2="4" y2="36"/>
@@ -90,5 +90,5 @@
   </g>
 
   <!-- Ground/altar base line -->
-  <line x1="40" y1="278" x2="280" y2="278" stroke="#c084fc" stroke-width="1" opacity="0.4"/>
+  <line x1="40" y1="278" x2="280" y2="278" stroke="#E4A96A" stroke-width="1" opacity="0.4"/>
 </svg>

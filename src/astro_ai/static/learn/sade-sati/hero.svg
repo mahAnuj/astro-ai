@@ -23,16 +23,16 @@
   <circle cx="160" cy="165" r="140" fill="url(#aura-ss)"/>
 
   <!-- Saturn's slow orbital arc — the 7.5-year path -->
-  <path d="M 60 200 Q 160 100 260 200" fill="none" stroke="#6b21a8" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.4"/>
+  <path d="M 60 200 Q 160 100 260 200" fill="none" stroke="#9E2B25" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.4"/>
 
   <!-- Three phase markers along the arc -->
-  <g fill="#6b21a8" opacity="0.55">
+  <g fill="#9E2B25" opacity="0.55">
     <circle cx="115" cy="155" r="3.5"/>
-    <text x="115" y="138" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#6b21a8" font-weight="600">Anu</text>
+    <text x="115" y="138" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#9E2B25" font-weight="600">Anu</text>
     <circle cx="160" cy="140" r="4.5"/>
-    <text x="160" y="123" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#6b21a8" font-weight="600">Madhya</text>
+    <text x="160" y="123" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#9E2B25" font-weight="600">Madhya</text>
     <circle cx="205" cy="155" r="3.5"/>
-    <text x="205" y="138" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#6b21a8" font-weight="600">Uttara</text>
+    <text x="205" y="138" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#9E2B25" font-weight="600">Uttara</text>
   </g>
 
   <!-- Moon (Chandra) — the thing being transited, smaller, lower -->
@@ -60,5 +60,5 @@
   <!-- Devanagari label -->
   <text x="160" y="295" text-anchor="middle"
         font-family="'Noto Sans Devanagari', serif"
-        font-size="20" fill="#6b21a8" font-weight="600">साढ़े साती</text>
+        font-size="20" fill="#9E2B25" font-weight="600">साढ़े साती</text>
 </svg>

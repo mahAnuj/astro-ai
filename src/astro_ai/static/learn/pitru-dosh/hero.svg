@@ -17,9 +17,9 @@
       <stop offset="100%" stop-color="#fef9c3"/>
     </linearGradient>
     <linearGradient id="pitruthali" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#c084fc"/>
-      <stop offset="60%" stop-color="#7c3aed"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#E4A96A"/>
+      <stop offset="60%" stop-color="#B03A22"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
   </defs>
 
@@ -27,7 +27,7 @@
   <ellipse cx="160" cy="170" rx="150" ry="130" fill="url(#pitrudiya)"/>
 
   <!-- Ancestor silhouettes fading into the background (three figures) -->
-  <g fill="#6b21a8" opacity="0.2">
+  <g fill="#9E2B25" opacity="0.2">
     <!-- Grandparent (furthest) -->
     <circle cx="80" cy="90" r="10"/>
     <rect x="72" y="100" width="16" height="30" rx="3"/>
@@ -43,14 +43,14 @@
   </g>
 
   <!-- Wispy lines connecting ancestors to the diya (lineage flow) -->
-  <g stroke="#7c3aed" stroke-width="1.5" fill="none" opacity="0.3" stroke-dasharray="3,3">
+  <g stroke="#B03A22" stroke-width="1.5" fill="none" opacity="0.3" stroke-dasharray="3,3">
     <path d="M 88 130 Q 130 145, 145 175"/>
     <path d="M 232 130 Q 190 145, 175 175"/>
   </g>
 
   <!-- Diya thali (central plate) -->
   <ellipse cx="160" cy="230" rx="75" ry="12" fill="url(#pitruthali)"/>
-  <ellipse cx="160" cy="228" rx="70" ry="9" fill="#a855f7" opacity="0.7"/>
+  <ellipse cx="160" cy="228" rx="70" ry="9" fill="#CB5A2E" opacity="0.7"/>
 
   <!-- Diya body (small oil lamp) -->
   <path d="M 130 225
@@ -87,5 +87,5 @@
 
   <!-- Sanskrit "ॐ" symbol subtle top-center -->
   <text x="160" y="65" text-anchor="middle" font-family="Noto Sans Devanagari, serif"
-        font-size="30" fill="#6b21a8" opacity="0.5">ॐ</text>
+        font-size="30" fill="#9E2B25" opacity="0.5">ॐ</text>
 </svg>
