@@ -150,6 +150,17 @@ def main() -> int:
             # Measured both ways (QA 2026-10-04): htmx reachable -> FAIL 6
             # problems; htmx unreachable -> PASS. So the precondition is now
             # asserted, not assumed.
+            # WAIT for htmx rather than sampling once. Each page gets a fresh
+            # context, so htmx is re-fetched from unpkg with no HTTP cache and
+            # the first one or two lose the race — QA round 10 measured this
+            # gate at ~50% flaky across five runs against a healthy server,
+            # with unpkg reachable in 0.12s throughout. A gate that fails
+            # randomly cannot be wired into anything.
+            try:
+                page.wait_for_function("typeof window.htmx !== 'undefined'",
+                                       timeout=15000)
+            except Exception:
+                pass
             if not page.evaluate("typeof window.htmx !== 'undefined'"):
                 problems.append(
                     f"{path}: htmx did not load, so hx-boost is inert and this "
@@ -259,7 +270,17 @@ def main() -> int:
                     back.select_option("en")
             except Exception:
                 pass
-            page.wait_for_load_state("networkidle")
+            try:
+                page.wait_for_load_state("networkidle", timeout=15000)
+            except Exception:
+                # QA round 10 run 1 died here with an uncaught playwright
+                # TimeoutError — a traceback that is neither PASS, FAIL nor
+                # COULD NOT VERIFY. Record it as a problem instead.
+                problems.append(
+                    f"{path}: the page never went idle after switching back "
+                    f"to English (network stall, not necessarily a defect — "
+                    f"re-run before believing it)"
+                )
             if page.evaluate("document.documentElement.lang") != "en":
                 problems.append(f"{path}: could not get back to English from Hindi")
             back_landed = page.url.replace(args.url, "").split("?")[0]

@@ -52,18 +52,23 @@ check; neither alone is.
 TOKEN COST — measure it before wiring this into anything automated.
 
 This gate requests all 13 URLs, and the 12 rashi pages GENERATE on a cache
-miss. Measured by QA round 9 with the provider instrumented: one cold request
-is ~13,659 prompt chars ≈ 4,405 input tokens, so a full cold run is
-**~53,000 input tokens — about 26% of the 200k TPD rashifal budget per
-invocation**, with the first call putting 4,405 into an 8,000 TPM bucket.
+miss. Measured with tiktoken o200k_base by QA round 10, driving all 13 cold:
 
-That cost is invisible on a dev box only because the .env default model 404s
-and every page degrades to 503 — the silent failure mode CLAUDE.md names. And
-the QA convention of pointing BHAGYA_DAILY_CACHE_DIR at scratch *guarantees*
-the cold path.
+    13,667 prompt chars mean  ->  3,330 input tokens per call
+    12 calls                  ->  39,959 input tokens  =  20.0% of the 200k TPD
 
-So: run it against production, or against a warm cache. It is deliberately NOT
-in any CI workflow.
+An earlier version of this docstring said 4,405/call and ~53,000/run (26%).
+That was wrong by 32%, and it contradicted ARCHITECTURE.md's row — which is
+correct to within 0.3% — in the same commit. The error came from applying a
+~3.1 chars-per-token rule to a character count, where this repo's own
+constants are BYTES per token; the Hindi system prompt is Devanagari, so
+16,077 bytes against 13,659 chars. Two numbers in the tree for one
+measurement is the drift CLAUDE.md names, and this is the one that was wrong.
+
+The cost is invisible on a dev box because the .env default model 404s and
+every page degrades to 503, and the QA convention of a scratch cache dir
+guarantees the cold path. So: run it warm, or against production. It is
+deliberately NOT in any CI workflow.
 
 Needs a running server: pass --url. Exits 2 when it cannot reach one, never 0,
 because an unrunnable gate must not read as a green one.
@@ -82,17 +87,17 @@ DEFAULT_BASE = "http://127.0.0.1:8000"
 # The 12 rashi pages are generated Hindi prose and measure 96%+; a 0.60 floor
 # there means a reverted block fails immediately.
 #
-# The /hi/rashifal HUB is 24% today and that is NOT a leak this gate should
-# hide: it carries a ~4-paragraph English SEO explainer ("How Bhagya's
-# Rashifal is different"), PRE-EXISTING on both origin/main and the #124
-# branch. Localising it means composing four paragraphs of Hindi that no
-# native reader has checked, and CLAUDE.md is explicit that composed Hindi
-# needs review — shipping a machine-translated explainer onto an indexed page
-# is worse than leaving it English and saying so. Tracked separately.
+# The /hi/rashifal HUB measures 53% at HEAD, and 35% with the English
+# explainer restored. The floor is 0.20 — 33 points of slack, NOT "just
+# under its measured value", which an earlier version of this comment
+# claimed while the suppression added in the same branch had already
+# falsified it (QA round 10).
 #
-# So the hub's floor is set just under its measured value: this gate stops the
-# page getting WORSE, and does not certify it as finished. The sentinel check
-# above is what catches a precise regression.
+# The slack is deliberate and not load-bearing: the hub legitimately carries
+# bilingual sign names and brand terms, and what actually catches an
+# explainer regression is the PROSE SWEEP — verified, restoring it produces
+# 13 prose hits — not the floor. The floor is a coarse backstop for a page
+# losing most of its Hindi at once.
 FLOORS = {"hub": 0.20, "rashi": 0.60}
 
 
@@ -100,10 +105,17 @@ FLOORS = {"hub": 0.20, "rashi": 0.60}
 # Nav labels that ARE localised. Their Hindi forms must be PRESENT; absence
 # means a t() call site reverted to an English literal. Filled from i18n at
 # run time so the gate cannot drift from the table.
-# nav_rashifal_link only: it is the key QA's mutation targeted and it renders
-# in the top nav on EVERY page including the degraded 503. nav_home was tried
-# and dropped — it is a breadcrumb label the error page does not render, so it
-# produced a false positive on all 12 rashi URLs.
+# nav_rashifal_link only: the key QA's mutation targeted.
+#
+# It renders in the top nav on every 200 page. NOT on the degraded 503 — that
+# page has no <nav aria-label="Main"> at all, so the check is VACUOUS there,
+# which is measurable: mutating the top nav locally produces 1 problem (the
+# hub), not 13. An earlier version of this comment claimed "every page
+# including the degraded 503", which is false; in production, where the rashi
+# pages serve 200, it covers 13/13.
+#
+# nav_home was tried and dropped: it is a breadcrumb label the error page does
+# not render, so it produced a false positive on all 12 rashi URLs.
 NAV_KEYS = ("nav_rashifal_link",)
 # English labels that must NOT appear inside <nav aria-label="Main"> on a
 # Hindi page. The top nav is localised; the footer and bottom tab bar are not.

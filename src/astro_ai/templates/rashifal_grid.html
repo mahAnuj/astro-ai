@@ -146,30 +146,43 @@
   {# SEO body — after grid, so users see cards first but Google sees
      content. Card design matches Privacy/Terms/numerology (Tailwind
      Typography plugin is not loaded, so we don't use `prose`). #}
-  {#- Suppressed on /hi/ (#124). This is a ~4-paragraph English SEO explainer.
-    Leaving it rendered put a <main> that is ~76% English under
-    <html lang="hi">, og:locale hi_IN and a self-canonical Hindi URL — the
-    mixed-language signal this issue exists to remove. Machine-translating it
-    would ship four paragraphs no native reader has checked, which is worse;
-    suppressing ships no composed Hindi at all. QA round 9 proposed this third
-    option and it is the right one. Restore it here once a human-written
-    Hindi version exists. -#}
-{% if lang != 'hi' %}
+  {#- The English explainer is suppressed on /hi/; the LOCALISED CTA is not.
+    #124 round 9 suppressed the whole <section>, which was too blunt: the last
+    paragraph is the one this branch localised, so the Hindi hub lost its only
+    <h2>, its only internal /kundli link, and three human-reviewed Hindi
+    strings went dead — their one call site was inside the suppressed block.
+    Measured by QA round 10: hi <main> fell to 936 chars / 170 words / 0 h2 /
+    0 kundli links against en's 1854 / 306 / 1 / 1.
+
+    So the split is per-paragraph. The two English SEO paragraphs and the
+    English heading are /hi/-suppressed, because machine-translating four
+    paragraphs ships Hindi no native reader has checked — worse than omitting
+    them. The CTA renders in both languages because it is already translated.
+    Restore the rest here once a human-written Hindi version exists.
+
+    test_i18n_symmetry's orphan check could NOT see this: the keys are still
+    syntactically referenced, so "no key is wholly unused" overstates what it
+    proves for conditionally-rendered keys. -#}
 <section class="pt-4">
+  {% if lang != 'hi' %}
     <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">How Bhagya's Rashifal is different</h2>
+  {% else %}
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">{{ t(lang, 'rashifal_grid_cta_heading') }}</h2>
+  {% endif %}
     <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
+    {% if lang != 'hi' %}
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         Most free daily-horoscope sites reuse the same template across all 12 rashis with the sign name swapped in &mdash; you notice the moment you scroll past your own sign and see the same phrases repeated. Bhagya's Rashifal is generated fresh per rashi every morning, anchored on today's actual sky (weekday-lord, tithi, moon nakshatra, retrogrades, festival) so a Sunday reading feels different from a Wednesday and a Mars-ruled Aries reading feels different from a Venus-ruled Taurus on the same day.
       </p>
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         Sidereal Lahiri ayanamsa (the classical Vedic reference), Swiss Ephemeris under the hood, honest tone &mdash; no fear-based upsell, no "urgent puja needed" nudges, no astrologer-chat funnel. Read your reading, take what serves you, close the tab.
       </p>
+    {% endif %}
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         {{ t(lang, 'rashifal_grid_cta') }} <a href="/kundli" class="text-bhagya-sindoor hover:underline">{{ t(lang, 'rashifal_grid_cta_link') }}</a> {{ t(lang, 'rashifal_grid_cta_tail') }}
       </p>
     </div>
   </section>
-{% endif %}
 
 </main>
 
