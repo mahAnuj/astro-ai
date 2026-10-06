@@ -256,7 +256,47 @@ jobs:
           # Measured 2026-08-26 over the real 200-URL sitemap: warm pages
           # answer in ~1-1.6s, so the sweep runs well inside this; the cap is
           # for the pathological case, not the normal one.
-          timeout 600 xargs -a /tmp/urls.txt -P 6 -I{} /tmp/probe.sh {} > /tmp/sweep.tsv
+          # TWO GROUPS, because one of them costs LLM quota and the other does
+          # not. The /rashifal/{rashi} pages — 12 English + 12 Hindi since #124
+          # — GENERATE a reading on a cache miss, and nothing pre-warms that
+          # namespace (warm-rashifal writes only the combined key). So on the
+          # first sweep of a new day this step was spending real tokens, 24
+          # generations at -P 6.
+          #
+          # The arithmetic, so it can be re-derived rather than trusted
+          # (measured 2026-10-06 with tiktoken o200k_base; cold-page latency
+          # 28.9s is this workflow's own 2026-08-26 figure):
+          #
+          #   3,330 input tokens per cold generation
+          #   ceiling = 8,000 TPM PER MODEL x 2 models (groq120,groq20) = 16,000
+          #
+          #     -P 6 -> 12.5 calls/min -> 41,481 TPM   OVER by 2.6x
+          #     -P 3 ->  6.2 calls/min -> 20,740 TPM   OVER
+          #     -P 2 ->  4.2 calls/min -> 13,827 TPM   under, with headroom
+          #
+          # At -P 6 the sweep asked for ~78,300 tokens in a couple of minutes.
+          # It does not fail loudly when it breaches TPM: the chain falls
+          # through groq120 -> groq20 -> openai, and openai is the PAID leg. So
+          # the symptom was a bill and a rate-limit log line, not an error.
+          # That silent-exhaustion shape is what caused the 21-day rashifal
+          # email outage.
+          #
+          # -P 2 rather than a `sleep`: the request latency IS the delay, and
+          # the pages take 28.9s cold. Worst case 12 x 28.9 = 347s for this
+          # group, inside the cap below. Warm (the normal case, ~1.3s): ~16s.
+          #
+          # Adding a model was considered and does not fix it: the live Groq
+          # catalogue holds only three usable text models, and 3 x 8,000 =
+          # 24,000 still cannot absorb a 78,300-token burst. Pacing can.
+          grep -E '/rashifal/[a-z]+/?$' /tmp/urls.txt > /tmp/urls-llm.txt || true
+          grep -vE '/rashifal/[a-z]+/?$' /tmp/urls.txt > /tmp/urls-cheap.txt || true
+          n_llm=$(wc -l < /tmp/urls-llm.txt); n_cheap=$(wc -l < /tmp/urls-cheap.txt)
+          echo "sweeping $n_cheap cheap URLs at -P 6, then $n_llm LLM-backed at -P 2"
+
+          timeout 600 sh -c '
+            xargs -a /tmp/urls-cheap.txt -P 6 -I{} /tmp/probe.sh {}
+            xargs -a /tmp/urls-llm.txt   -P 2 -I{} /tmp/probe.sh {}
+          ' > /tmp/sweep.tsv
           swept_rc=$?
           swept=$(wc -l < /tmp/sweep.tsv)
           if [ "$swept_rc" -eq 124 ]; then
