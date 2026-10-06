@@ -61,6 +61,49 @@ def _isolate_daily_cache(tmp_path, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _isolate_sqlite_cache(tmp_path, monkeypatch):
+    """Point the SQLite LLM cache at a tmp file for EVERY test, always.
+
+    Same defect class as `_isolate_daily_cache` above, and it had already
+    happened: before this fixture existed, a run of this suite wrote a 57-char
+    `natal:...` row into the repo's real `bhagya.db` — a body far below the
+    800-char natal quality floor, i.e. a test artefact sitting in the cache a
+    dev server reads. `cache.get`/`put` are reached indirectly from every
+    route that generates a reading, so no test has to mention the cache to
+    corrupt it.
+
+    Patching `cache.DB_PATH` works because `_conn()` reads the module global
+    at call time; it is deliberately not the `BHAGYA_CACHE_DB` env var, which
+    is only consulted at import and so loses to whoever imports `cache` first.
+
+    Function-scoped on purpose. A module-scoped fixture runs BEFORE
+    function-scoped autouse ones, so anything hitting the cache from module
+    scope would bypass this — the same ordering trap that let a module-scoped
+    fixture sidestep `_offline_geocode`.
+    """
+    from astro_ai import cache
+
+    monkeypatch.setattr(cache, "DB_PATH", tmp_path / "bhagya.db")
+
+
+@pytest.fixture(autouse=True)
+def _clear_durable_miss_cache():
+    """Empty the durable tier's negative-miss dict around EVERY test.
+
+    It is module-level state keyed by (route, lang, prompt, chart), and the
+    charts in this suite repeat — so without this, one test recording a miss
+    makes a later test's pre-seeded blob invisible for 30 seconds and the
+    failure depends on test order. Same reasoning as the `deps` fixture: a
+    flaky suite gets ignored, which costs more than no suite.
+    """
+    from astro_ai.routes import llm_support
+
+    llm_support._DURABLE_MISSES.clear()
+    yield
+    llm_support._DURABLE_MISSES.clear()
+
+
+@pytest.fixture(autouse=True)
 def _dummy_api_key(monkeypatch):
     """Give EVERY test a placeholder `OPENAI_API_KEY`, overriding any real one.
 
@@ -178,6 +221,37 @@ def client():
     from astro_ai.main import app
 
     return TestClient(app)
+
+
+@pytest.fixture
+def saved_chart(client):
+    """POST `/reading` so the `client` carries the chart cookie `/kundli` needs.
+
+    `GET /kundli` with no saved chart renders the SEO landing page and never
+    reaches the LLM path, so anything asserting on generation cost has to get
+    a chart into the cookie first. Hermetic because `_offline_geocode` above
+    resolves the place without Nominatim.
+
+    `follow_redirects=False` keeps the fixture from rendering `/kundli` itself
+    — that render would generate a reading and the call count under test would
+    start at one.
+    """
+
+    def _install(birth_date: str = "1990-04-12", birth_time: str = "14:35",
+                 birth_place: str = "Mumbai, India", name: str = "Test Seeker"):
+        resp = client.post(
+            "/reading",
+            data={"name": name, "birth_date": birth_date,
+                  "birth_time": birth_time, "birth_place": birth_place},
+            follow_redirects=False,
+        )
+        assert resp.status_code == 303, (
+            f"POST /reading returned {resp.status_code}, so no chart cookie was set"
+        )
+        return {"name": name, "birth_date": birth_date,
+                "birth_time": birth_time, "birth_place": birth_place}
+
+    return _install
 
 
 @pytest.fixture

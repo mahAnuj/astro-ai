@@ -10,8 +10,8 @@
    Same visual style as the subscribe modal so the two feel like a set.
 -#}
 <button id="feedback-fab" type="button"
-        class="fixed bottom-4 right-4 z-30 bg-astro-700 hover:bg-astro-800 text-white
-               px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-sm font-medium
+        class="fixed bottom-24 md:bottom-4 right-4 z-30 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night
+               border border-bhagya-gold/40 px-4 py-2.5 rounded-full flex items-center gap-2 text-sm font-medium
                transition-transform hover:scale-105 no-print"
         aria-label="{% if lang == 'hi' %}सुझाव दें{% else %}Send feedback{% endif %}">
   <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -23,11 +23,11 @@
 
 <div id="feedback-backdrop"
      data-modal-backdrop
-     class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 no-print"
+     class="hidden fixed inset-0 z-50 bg-bhagya-night/60 flex items-center justify-center p-4 no-print"
      role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
-  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+  <div class="bg-bhagya-cream border border-bhagya-border rounded-md max-w-md w-full p-6 relative">
     <button id="feedback-close" type="button" aria-label="Close"
-            class="absolute top-3 right-3 text-stone-500 hover:text-stone-700 p-1">
+            class="absolute top-3 right-3 text-bhagya-muted-2 hover:text-bhagya-ink p-1">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
       </svg>
@@ -35,41 +35,41 @@
 
     {#- DEFAULT state -#}
     <div id="feedback-default">
-      <h2 id="feedback-modal-title" class="font-display text-xl font-bold text-stone-900 mb-2">
+      <h2 id="feedback-modal-title" class="font-marcellus text-xl text-bhagya-ink mb-2">
         {% if lang == 'hi' %}हमें बताएं{% else %}Tell us anything{% endif %}
       </h2>
-      <p class="text-sm text-stone-600 mb-4">
+      <p class="text-sm text-bhagya-muted mb-4">
         {% if lang == 'hi' %}समस्या, सुझाव, या जो भी आपके मन में हो — हम पढ़ते हैं।{% else %}A bug, a feature wish, or any thought — we read every one.{% endif %}
       </p>
 
       <form id="feedback-form" class="flex flex-col gap-3">
         {#- Type chips — same chip pattern as subscribe modal -#}
         <div>
-          <div class="text-xs text-stone-600 mb-1.5">
+          <div class="text-xs text-bhagya-muted mb-1.5">
             {% if lang == 'hi' %}किस बारे में?{% else %}What about?{% endif %}
           </div>
           <div class="grid grid-cols-3 gap-2">
             <label class="relative cursor-pointer">
               <input type="radio" name="type" value="problem" class="peer sr-only" checked>
-              <div class="text-center py-1.5 px-2 text-xs rounded-md border border-stone-300
-                          peer-checked:bg-astro-50 peer-checked:border-astro-500 peer-checked:text-astro-700
-                          peer-checked:font-semibold hover:border-astro-300 transition-colors">
+              <div class="text-center py-1.5 px-2 text-xs rounded-md border border-bhagya-border
+                          peer-checked:bg-bhagya-cream-2 peer-checked:border-bhagya-saffron peer-checked:text-bhagya-sindoor
+                          peer-checked:font-semibold hover:border-bhagya-saffron transition-colors">
                 {% if lang == 'hi' %}समस्या{% else %}Problem{% endif %}
               </div>
             </label>
             <label class="relative cursor-pointer">
               <input type="radio" name="type" value="feature" class="peer sr-only">
-              <div class="text-center py-1.5 px-2 text-xs rounded-md border border-stone-300
-                          peer-checked:bg-astro-50 peer-checked:border-astro-500 peer-checked:text-astro-700
-                          peer-checked:font-semibold hover:border-astro-300 transition-colors">
+              <div class="text-center py-1.5 px-2 text-xs rounded-md border border-bhagya-border
+                          peer-checked:bg-bhagya-cream-2 peer-checked:border-bhagya-saffron peer-checked:text-bhagya-sindoor
+                          peer-checked:font-semibold hover:border-bhagya-saffron transition-colors">
                 {% if lang == 'hi' %}नया फीचर{% else %}Feature{% endif %}
               </div>
             </label>
             <label class="relative cursor-pointer">
               <input type="radio" name="type" value="other" class="peer sr-only">
-              <div class="text-center py-1.5 px-2 text-xs rounded-md border border-stone-300
-                          peer-checked:bg-astro-50 peer-checked:border-astro-500 peer-checked:text-astro-700
-                          peer-checked:font-semibold hover:border-astro-300 transition-colors">
+              <div class="text-center py-1.5 px-2 text-xs rounded-md border border-bhagya-border
+                          peer-checked:bg-bhagya-cream-2 peer-checked:border-bhagya-saffron peer-checked:text-bhagya-sindoor
+                          peer-checked:font-semibold hover:border-bhagya-saffron transition-colors">
                 {% if lang == 'hi' %}अन्य{% else %}Other{% endif %}
               </div>
             </label>
@@ -78,30 +78,30 @@
 
         <textarea name="message" required rows="4"
                   placeholder="{% if lang == 'hi' %}आप क्या सोच रहे हैं?{% else %}What's on your mind?{% endif %}"
-                  class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm resize-y
-                         focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none"></textarea>
+                  class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm resize-y
+                         focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none"></textarea>
 
         <input type="email" name="email" autocomplete="email"
                placeholder="{% if lang == 'hi' %}आपका ईमेल (वैकल्पिक — जवाब के लिए){% else %}Your email (optional — so we can reply){% endif %}"
-               class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm
-                      focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+               class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm
+                      focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
 
         <button type="submit"
-                class="bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium py-2 rounded-lg transition-colors">
+                class="bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-sm font-medium py-2 rounded-lg transition-colors">
           <span class="feedback-default-text">{% if lang == 'hi' %}भेजें{% else %}Send{% endif %}</span>
           <span class="feedback-loading-text hidden">…</span>
         </button>
-        <div id="feedback-error" class="hidden text-xs text-red-600"></div>
+        <div id="feedback-error" class="hidden text-xs text-bhagya-sindoor"></div>
       </form>
     </div>
 
     {#- SUCCESS state -#}
     <div id="feedback-success" class="hidden text-center py-4">
       <div class="text-3xl mb-2">🙏</div>
-      <h2 class="font-display text-xl font-bold text-stone-900 mb-1">
+      <h2 class="font-marcellus text-xl text-bhagya-ink mb-1">
         {% if lang == 'hi' %}धन्यवाद!{% else %}Thank you!{% endif %}
       </h2>
-      <p class="text-sm text-stone-600">
+      <p class="text-sm text-bhagya-muted">
         {% if lang == 'hi' %}हम आपका सुझाव पढ़ेंगे।{% else %}We'll read it and follow up if you left an email.{% endif %}
       </p>
     </div>

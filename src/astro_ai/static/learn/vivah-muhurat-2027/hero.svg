@@ -15,5 +15,5 @@
   <path d="M 140 160 c -12 -12, -30 0, -18 15 l 18 18 l 18 -18 c 12 -15, -6 -27, -18 -15 z" fill="#e11d48" opacity="0.75"/>
   <path d="M 180 160 c -12 -12, -30 0, -18 15 l 18 18 l 18 -18 c 12 -15, -6 -27, -18 -15 z" fill="#e11d48" opacity="0.75"/>
   <text x="160" y="60" font-family="Noto Sans Devanagari, serif" font-size="24" text-anchor="middle" fill="#78350f">विवाह मुहूर्त</text>
-  <text x="160" y="270" font-family="Crimson Pro, serif" font-size="20" text-anchor="middle" fill="#6b21a8">2027</text>
+  <text x="160" y="270" font-family="Crimson Pro, serif" font-size="20" text-anchor="middle" fill="#9E2B25">2027</text>
 </svg>

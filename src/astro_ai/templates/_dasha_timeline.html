@@ -1,0 +1,133 @@
+{# ── Vimshottari Mahadasha timeline ────────────────────────────────────────
+   The redesign's proportional strip: one horizontal band whose segments are
+   sized by each period's LENGTH, so Ketu's 7 years visibly sit next to Venus's
+   20. That is the whole point of the component — a fixed-width row of six
+   boxes would say nothing a list does not.
+
+   Context expected:
+     - dasha       : DashaState (needs .mahadasha and .active_index)
+     - dasha_strip : tuple[DashaPeriod, ...] from chart.dasha_timeline()
+     - lang
+
+   THE FILLS ARE THE LEGEND. The handoff calls this out as a defect it hit
+   during design: a legend that names colours the strip does not actually
+   render is worse than no legend. The three states below and the three legend
+   swatches are driven from the same `_seg_class` macro, so they cannot drift.
+
+   #E6DAC6 (spent) and #FBEBD6 (current) are the handoff's own values for this
+   component and have no bhagya token — they are one component's fills, not
+   palette roles, and inventing two tokens for one strip would be worse. Both
+   are declared in verify_redesign_tokens.py's LEGACY with that reason.
+
+   Contrast, measured: ink #17131A on #E6DAC6 is 14.0:1 and on #FBEBD6 15.6:1;
+   muted #6B6259 on #E6DAC6 is 4.6:1. All pass AA at the sizes used here.
+-#}
+{% if dasha_strip %}
+{% set _total = dasha_strip | sum(attribute='years') %}
+{% set _active = dasha.mahadasha %}
+
+{%- macro seg_state(p) -%}
+{%- if p.start == _active.start and p.lord == _active.lord -%}now
+{%- elif p.end <= _active.start -%}past
+{%- else -%}future
+{%- endif -%}
+{%- endmacro -%}
+
+<section class="bg-bhagya-cream-2 border-y border-bhagya-line" data-dasha-timeline>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+
+    <div class="flex items-baseline justify-between gap-3 flex-wrap mb-4">
+      <div>
+        <h2 class="font-marcellus text-xl sm:text-2xl text-bhagya-ink">{{ t(lang, 'dasha_card_title') }}</h2>
+        <p class="text-sm text-bhagya-muted mt-0.5">{{ t(lang, 'dasha_card_subtitle') }}</p>
+      </div>
+      <a href="/dasha" class="text-sm text-bhagya-sindoor font-semibold whitespace-nowrap no-print">
+        {{ t(lang, 'dasha_view_full') | safe }}
+      </a>
+    </div>
+
+    {# ── DESKTOP: one proportional strip ─────────────────────────────────
+       `flex-grow` carries the proportion and `min-width:104px` stops a short
+       period collapsing to an unreadable sliver — both from the handoff. The
+       strip is a plain flex row, NOT a hairline grid: the segments abut, and
+       their top rules are the only separators. -#}
+    <div class="hidden sm:flex items-stretch" role="list"
+         aria-label="{{ t(lang, 'dasha_card_title') }}">
+      {% for p in dasha_strip %}
+      {% set _st = seg_state(p) | trim %}
+      <div role="listitem"
+           class="dasha-seg dasha-seg--{{ _st }} min-w-[104px] px-3 py-3 text-left"
+           style="flex-grow: {{ (p.years / _total * 1000) | round | int }}; flex-basis: 0;
+                  animation-delay: {{ 50 * (dasha_strip | length if _st == 'now' else loop.index0) }}ms"
+           {% if _st == 'now' %}aria-current="true"{% endif %}>
+        <div class="font-marcellus text-lg leading-none {{ 'text-bhagya-ink' if _st != 'past' else 'text-bhagya-muted' }}">{{ p.lord }}</div>
+        <div class="text-[11px] tabular-nums mt-1 {{ 'text-bhagya-muted' if _st == 'past' else 'text-bhagya-ink-soft' }}">
+          {{ p.start.year }}–{{ p.end.year }}
+        </div>
+        {% if _st == 'now' %}
+        <div class="text-[10px] font-bold uppercase tracking-[0.16em] text-bhagya-sindoor mt-1">{{ t(lang, 'dasha_now') }}</div>
+        {% else %}
+        <div class="text-[10px] text-bhagya-muted-2 mt-1 tabular-nums">{{ p.years | round(1) }}y</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    {# ── MOBILE: rows whose BAR LENGTH encodes years ──────────────────────
+       Not progress. The handoff is explicit, and it is the same information
+       the desktop strip carries, re-laid out: a reader comparing two rows is
+       comparing durations. A progress bar here would be a different claim
+       wearing the same shape. -#}
+    <div class="sm:hidden space-y-1.5">
+      {% for p in dasha_strip %}
+      {% set _st = seg_state(p) | trim %}
+      <div class="flex items-center gap-3" {% if _st == 'now' %}aria-current="true"{% endif %}>
+        <div class="w-16 shrink-0 font-marcellus text-sm {{ 'text-bhagya-muted' if _st == 'past' else 'text-bhagya-ink' }}">{{ p.lord }}</div>
+        <div class="flex-1 min-w-0">
+          <div class="dasha-seg dasha-seg--{{ _st }} h-6 flex items-center px-2"
+               style="width: {{ (p.years / _total * 100) | round(1) }}%; min-width: 3.5rem;
+                      animation-delay: {{ 50 * (dasha_strip | length if _st == 'now' else loop.index0) }}ms">
+            <span class="text-[10px] tabular-nums {{ 'text-bhagya-muted' if _st == 'past' else 'text-bhagya-ink-soft' }}">{{ p.years | round(1) }}y</span>
+          </div>
+        </div>
+        <div class="w-24 shrink-0 text-right text-[11px] tabular-nums {{ 'text-bhagya-sindoor font-bold' if _st == 'now' else 'text-bhagya-muted' }}">
+          {% if _st == 'now' %}{{ t(lang, 'dasha_now') }}{% else %}{{ p.start.year }}–{{ p.end.year }}{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {# ── Legend — same classes as the segments above, so it cannot lie ── #}
+    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-4 text-[11px] text-bhagya-muted">
+      {% for _st, _label in [('past', t(lang, 'dasha_legend_past')),
+                             ('now',  t(lang, 'dasha_legend_now')),
+                             ('future', t(lang, 'dasha_legend_future'))] %}
+      <span class="inline-flex items-center gap-1.5">
+        <span class="dasha-seg dasha-seg--{{ _st }} dasha-seg--swatch inline-block w-6 h-3.5" aria-hidden="true"></span>{{ _label }}
+      </span>
+      {% endfor %}
+    </div>
+
+    {# The active pair keeps its detail line — the strip says WHERE you are,
+       this says exactly when it started and ends, which the strip's year
+       labels round away. #}
+    <div class="mt-5 pt-4 border-t border-bhagya-line grid sm:grid-cols-2 gap-4">
+      <div>
+        <div class="text-[10px] font-bold uppercase tracking-[0.16em] text-bhagya-sindoor mb-1">{{ t(lang, 'dasha_active_maha') }}</div>
+        <div class="font-marcellus text-xl text-bhagya-ink">{{ dasha.mahadasha.lord }}</div>
+        <div class="text-sm text-bhagya-muted mt-0.5 tabular-nums">
+          {{ dasha.mahadasha.start.isoformat() }} <span class="text-bhagya-border">→</span> {{ dasha.mahadasha.end.isoformat() }}
+        </div>
+      </div>
+      <div>
+        <div class="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-800 mb-1">{{ t(lang, 'dasha_active_antar') }}</div>
+        <div class="font-marcellus text-xl text-bhagya-ink">{{ dasha.antardasha.lord }}</div>
+        <div class="text-sm text-bhagya-muted mt-0.5 tabular-nums">
+          {{ dasha.antardasha.start.isoformat() }} <span class="text-bhagya-border">→</span> {{ dasha.antardasha.end.isoformat() }}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endif %}

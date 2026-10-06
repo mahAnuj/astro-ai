@@ -88,8 +88,11 @@
 <!-- PWA: manifest declares Shubh Bhagya as an installable web app. -->
 <link rel="manifest" href="/static/manifest.webmanifest">
 <!-- theme-color tints the Android Chrome address bar and PWA status bar
-     to match the nav's astro-700 backdrop. -->
-<meta name="theme-color" content="#6b21a8">
+     to match the nav's backdrop. -->
+<!-- #140F1C is bhagya.night, the nav/footer panel colour (#241). Kept in
+     step with static/manifest.webmanifest, which sets the same value for the
+     installed PWA; the two disagreeing is a visible seam on Android. -->
+<meta name="theme-color" content="#140F1C">
 
 <!-- iOS Safari: PWA install via "Add to Home Screen" needs separate hints
      because Safari ignores most of the manifest. apple-mobile-web-app-capable
@@ -158,7 +161,12 @@
      file is ~80KB, cacheable, and parses as plain CSS.
      Loaded BEFORE the <style> block below so the hand-written rules there
      continue to win the cascade. -->
-<link rel="stylesheet" href="/static/css/app.css">
+<!-- ?v= is a CONTENT hash, not a version bump (#253). static/sw.js caches
+     /static/ first-with-no-revalidation, so a fixed URL meant rebuilt CSS was
+     never re-fetched by returning visitors — two rebuilds shipped that way.
+     The hash changes only when the bytes change, so a no-op redeploy does not
+     evict anyone's cache. -->
+<link rel="stylesheet" href="/static/css/app.css?v={{ asset_v('css/app.css') }}">
 
 <!-- HTMX for hx-boost (AJAX nav) + loading indicators. -->
 <!-- responseHandling: swap response body for ALL status codes (including 4xx/5xx
@@ -176,8 +184,9 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Inter for Latin body, Crimson Pro for Latin display, Noto Sans
-     Devanagari for Hindi body, Noto SERIF Devanagari for Devanagari display.
+<!-- Manrope for Latin body, Crimson Pro for Latin display (Marcellus on the
+     screens that have migrated), Noto Sans Devanagari for Hindi body, Noto
+     SERIF Devanagari for Devanagari display.
      display=swap prevents FOIT — text renders in fallback immediately, then
      swaps when the face arrives. With the two preconnects above this saves
      ~150-300ms LCP on cold cache.
@@ -231,8 +240,38 @@
      It is still ABOVE #189's "flat or lower" criterion, and that remains a
      deliberate waiver rather than a pass: the alternative is shipping
      Sanskrit in a sans face under a serif headline, which is the entire
-     defect. This is the cheapest correct shape, not a free one. -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@500;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400&display=swap" rel="stylesheet">
+     defect. This is the cheapest correct shape, not a free one.
+
+     REDESIGN (#233/#242): both redesign families are now requested, and the
+     budget did not stretch to accommodate them — Inter was removed to pay for
+     them. That is the whole reason the body face changed in a homepage issue.
+     Measured from Google Fonts on 2026-09-03, latin subset, these exact URLs:
+
+       Inter     wght@400;500;600;700 (variable) ....... 48,256 B  REMOVED
+       Manrope   wght@400;500;600;700 (variable) ....... 24,836 B  added
+       Marcellus (no weight axis — it has only 400) .... 14,552 B  added
+
+     Net −8,868 B on the latin subset, so the total falls rather than rises.
+     MAX_FONT_BYTES = 285,000 in scripts/verify_devanagari_serif.py; the gate
+     prints the real figure, and that is the number to trust, not this one.
+
+     Crimson Pro STAYS, and that is deliberate rather than an oversight: it is
+     still the display face for every screen that has not migrated. It comes
+     out with the last of them, which is another ~48 KB back. The redesign
+     display face is applied per-screen until then — see the fontFamily note in
+     tailwind.config.js for why it cannot simply replace `display` today (it
+     has no bold, and 15 elements in this tree ask for one).
+
+     Do not name the utilities literally in this comment. Tailwind's content
+     scanner reads raw text, comments included, so writing the class name here
+     generates its rule — an 80-byte declaration asking for a font the page
+     does not load, which is the exact state this note exists to prevent.
+     Measured 2026-09-02: it did, and this wording is the fix.
+
+     Noto Sans Devanagari at 400-700 is load-bearing and must survive the
+     redesign — see the #189 reasoning above and the static check in
+     verify_devanagari_serif.py, which fails if it stops being requested. -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Marcellus&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400&display=swap" rel="stylesheet">
 
 <!-- The Tailwind theme that used to live here as `tailwind.config = {...}`
      now lives in tailwind.config.js and is compiled into the stylesheet
@@ -243,6 +282,12 @@
 
 <style>
   /* ─── DESIGN SYSTEM CANONICALS (Cycle 7 consolidation) ─────────────
+     SUPERSEDED for colour by the REDESIGN CANONICALS block below (#233).
+     Kept because its ratios are measured and still true of the stone ramp,
+     and scripts/verify_contrast.py Gate 2 re-measures every figure stated
+     here — but no migrated template may reach for a stone or astro colour.
+     Its spacing, radius and size rules still stand.
+
      Ratified 2026-07-24 during the site-wide UI polish pass. All new
      templates must reach for these values first; deviations require a
      concrete visual reason (e.g. the diamond chart's svg wrapper keeps
@@ -263,16 +308,94 @@
 
      TEXT COLOR ON bg-cream:
        text-stone-600 → informational meta (dates, categories, hints).
-                        Passes WCAG AA at ~4.6:1.
+                        Passes WCAG AA at ~7.14:1.
        text-stone-500 → decorative only (subtle disclaimers, italic
                         transliterations, dot separators). Never for
                         actionable or standalone-readable text.
+                        4.49:1 — just under the 4.5:1 AA needs, which is
+                        exactly why this rule exists.
+       Ratios are checked by scripts/verify_contrast.py, not by eye.
+       This block previously credited stone-600 with ~4.6:1, which is
+       stone-500's figure — the two were crossed, so the colour being
+       recommended was carrying the number belonging to the colour being
+       restricted. Understated, so nothing shipped unsafe, but a wrong
+       number in the design system's own source of truth.
+
+     PLACEHOLDER TEXT:
+       placeholder-stone-500 → 4.80:1 on white. stone-400 was used until
+                        2026-09-02 and is 2.52:1 — a plain AA failure in
+                        every form on the site. Placeholder text is text;
+                        it gets no large-text exemption.
 
      META TEXT SIZE:
        text-sm  → informational meta text (dates, categories, read
                   times). Readable on mobile.
        text-xs  → badges, pills, chips, footer legal fine-print, and
                   imagery captions where compactness beats readability.
+
+     ══════════════════════════════════════════════════════════════════
+     REDESIGN CANONICALS (#233) — for screens that have migrated
+     ══════════════════════════════════════════════════════════════════
+     Everything above still governs the screens that have NOT migrated,
+     and both sets are live at once for the duration of the epic. Do not
+     mix them inside one screen.
+
+     TEXT COLOUR ON THE LIGHT SURFACES (bhagya-cream / cream-2 / white):
+       text-bhagya-ink      → headings and primary text.
+                              Passes WCAG AA at 17.03:1 on bg-bhagya-cream.
+       text-bhagya-ink-soft → long-form body copy.
+                              Passes WCAG AA at 9.16:1 on bg-bhagya-cream.
+       text-bhagya-muted    → secondary copy.
+                              Passes WCAG AA at 5.54:1 on bg-bhagya-cream.
+       text-bhagya-muted-2  → micro-labels, eyebrows, meta.
+                              Passes WCAG AA at 5.16:1 on bg-bhagya-cream.
+       text-bhagya-sindoor  → glyphs, citations and links on light.
+                              Passes WCAG AA at 6.90:1 on bg-bhagya-cream.
+       The cream-2 band is darker, so every figure above drops by roughly
+       0.6 there; muted-2 lands at 4.54:1, which is the tightest margin in
+       the palette. Nothing smaller or lighter than that on cream-2.
+
+     TEXT COLOUR ON NIGHT (bg-bhagya-night):
+       text-bhagya-cream    → primary text on the night panels.
+                              Passes WCAG AA at 17.49:1 on bg-bhagya-night.
+       text-bhagya-gold     → ornament, hairlines and micro-labels.
+                              Passes WCAG AA at 7.96:1 on bg-bhagya-night.
+       text-bhagya-saffron  → accents and eyebrows.
+                              Passes WCAG AA at 7.55:1 on bg-bhagya-night.
+
+     GOLD AND SAFFRON NEVER TOUCH A LIGHT SURFACE. gold is 2.20:1 on
+     cream and 1.93:1 on cream-2; saffron is 2.32 / 2.04. They are fills
+     and ornaments there, never text. The handoff's own README says so and
+     then broke its own rule twice; scripts/verify_contrast.py does not.
+
+     TRANSLUCENT TEXT — cream at a fractional opacity on night:
+       .48 is the FLOOR (4.71:1). The handoff specifies .45, which is
+       4.29:1 and fails. Above that: .55 → 5.83, .62 → 7.13, .66 → 7.93,
+       .72 → 9.29, .78 → 10.77, .8 → 11.33.
+       Every one of these must be listed in DECLARED_PAIRS in
+       scripts/verify_contrast.py. Gate 4 fails any that is not, because
+       a translucent colour nobody measured is how the 4.29:1 line got
+       through the handoff's review in the first place.
+
+     BORDER RADIUS — the redesign is square by default:
+       (none)       → sections, bands, cards, the hairline grids
+       rounded      → 4px: inputs and primary buttons
+       rounded-md   → 6px: the elevated form card, modal panels
+       rounded-full → pills, chips, the feedback FAB
+
+     SHADOWS — there is exactly ONE on the site: the homepage form card
+     (`0 30px 60px -20px rgba(0,0,0,.55)`). Everything else separates with
+     a border. A modal does not need one either; it sits on a scrim.
+
+     HAIRLINE GRIDS — a 1px gap over a bhagya-line grid, cells filled with
+     bhagya-cream. PADDING GOES ON THE CELLS. Put it on the grid element
+     and the gutter colour paints a thick frame round the whole block.
+
+     TYPE — font-marcellus for display on migrated screens, and NEVER with
+     font-bold: Marcellus ships one weight and the bold would be
+     synthesised. Body is the default sans (Manrope). font-display stays
+     Crimson Pro for un-migrated screens and for the four modal headings
+     here, which carry Devanagari and need a real 700.
      ────────────────────────────────────────────────────────────────── */
 
   /* HTMX loading state: swap "default" / "loading" copy inside any button while a request is in flight. */
@@ -373,10 +496,13 @@
     transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
                 box-shadow 220ms ease-out;
   }
+  /* NO TRANSFORM. The handoff's motion rule 7 is "Hover — cards go #FAF6EF →
+     #fff, or gain a #E4913C border on night panels. 120ms. No lift, no
+     scale." This rule used to translateY(-2px) with a two-layer shadow, which
+     is both a lift and a second shadow on a site whose spec allows exactly
+     one (the homepage form card). Colour only now. */
   .shadow-sm:not(.no-lift):hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 28px -12px rgba(93, 62, 180, 0.18),
-                0 6px 12px -6px rgba(0, 0, 0, 0.06);
+    background-color: #fff;
   }
 
   /* ─── Yoga card hover reveal ────────────────────────────────────────
@@ -401,28 +527,38 @@
     margin-top: 0.375rem;
   }
 
-  /* Fallback keyframe defs — Tailwind CDN emits these via the
-     inline config extend, but declare them here too so the animations
-     work even if Tailwind's utility CSS hasn't finished bootstrapping. */
-  @keyframes spinSlow {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
+  /* `breathe` is defined here AND in tailwind.config.js, with identical
+     values. Not redundancy to tidy away: this copy drives #kundli-loader
+     .caption below, which is plain CSS rather than a utility class, while the
+     config copy is what `animate-breathe` compiles to (_nav.html:31, the logo).
+     Deleting either breaks one of the two. If you edit one, edit both — the
+     values must not drift apart.
+
+     The stale note this comment replaces claimed these were fallbacks "in case
+     Tailwind's utility CSS hasn't finished bootstrapping", which stopped being
+     true when the Play CDN was removed; a pre-built stylesheet has no bootstrap
+     to lose. `spinSlow` was declared alongside it and is now deleted — nothing
+     referenced it once the #78 chart-cast replaced the rotating mandala. */
   @keyframes breathe {
     0%, 100% { transform: scale(1); }
     50%      { transform: scale(1.025); }
   }
 
-  /* ─── Kundli generation loader (mandala overlay) ────────────────────
+  /* ─── Kundli generation loader ──────────────────────────────────────
      Full-screen overlay shown during the /reading POST → /kundli
-     navigation. Rotating mandala SVG + caption. Only appears for
-     Kundli generation (see htmx event wiring below); other page
-     nav uses the existing top-bar loader. */
+     navigation. A drawn chart diamond (.chart-cast) + caption. Only
+     appears for Kundli generation (see htmx event wiring below); other
+     page nav uses the existing top-bar loader.
+
+     This said "rotating mandala SVG" until 2026-09-02, describing markup
+     #78 replaced with the chart-cast animation. The .mandala rules and
+     their spinSlow keyframe outlived the element they styled by that
+     whole period, matching nothing. */
   #kundli-loader {
     position: fixed;
     inset: 0;
     z-index: 60;
-    background: rgba(254, 250, 240, 0.94);
+    background: rgba(250, 246, 239, 0.94);
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
     display: none;
@@ -437,22 +573,79 @@
     display: flex;
     opacity: 1;
   }
-  #kundli-loader .mandala {
-    width: 120px;
-    height: 120px;
-    color: #6b21a8;
-    animation: spinSlow 6s linear infinite;
-  }
-  #kundli-loader .mandala-inner {
-    animation: spinSlow 4s linear infinite reverse;
-    transform-origin: center;
-  }
   #kundli-loader .caption {
-    font-family: 'Crimson Pro', serif;
+    /* Marcellus, not Crimson Pro — ea0725b retired Crimson Pro from the font
+       request, so this rule had been resolving to a generic serif. And no
+       italic: Marcellus ships one weight and no italic, so font-style would
+       synthesise an oblique. The breathe animation carries the feel. */
+    font-family: Marcellus, 'Noto Serif Devanagari', serif;
     font-size: 1.1rem;
-    color: #6b21a8;
-    font-style: italic;
+    color: #9E2B25;
     animation: breathe 2s ease-in-out infinite;
+  }
+
+  /* ─── Snapshot-tile stagger (#251) ───────────────────────────────
+     The four identity tiles on the Kundli result fade up 8px in a 60ms
+     stagger, first paint only. Four `nth-child` delays rather than a
+     JS observer, and no `both` fill on the start frame: the keyframe
+     begins at opacity 0, so if anything ever stops this running the
+     tiles must not be left invisible.
+
+     The reduced-motion gate below zeroes duration AND delay, and forces
+     iteration-count to 1, so a motion-sensitive reader lands on the 100%
+     frame — which is why 100% is the FULLY VISIBLE state. A keyframe
+     ending anywhere else strands them mid-animation for exactly the
+     people who opted out. */
+  @keyframes tileUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+  [data-snapshot-tile] {
+    animation: tileUp 420ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+  [data-snapshot-tile]:nth-child(2) { animation-delay:  60ms; }
+  [data-snapshot-tile]:nth-child(3) { animation-delay: 120ms; }
+  [data-snapshot-tile]:nth-child(4) { animation-delay: 180ms; }
+
+  /* ─── Vimshottari dasha strip (motion item 4) ────────────────────
+     Three states, and the LEGEND in _dasha_timeline.html reuses these
+     exact classes so it cannot describe fills the strip does not have
+     — the handoff records that mismatch as a defect it hit.
+
+     #E6DAC6 and #FBEBD6 are the handoff's own values for this one
+     component. They are not palette roles and get no bhagya token;
+     both are declared in verify_redesign_tokens.py's LEGACY.
+
+     The top rule is 3px on all three, not only on the current one.
+     The spec states 3px for current and leaves the others unstated;
+     mixing widths would shift each segment's content box by 2px and
+     make the baseline ragged. State is carried by the rule's COLOUR,
+     and the current segment is separately marked with a sindoor
+     "NOW" label — colour is never the only signal (WCAG 1.4.1). */
+  .dasha-seg--past   { background: #E6DAC6; border-top: 3px solid #DED4C2; }
+  .dasha-seg--now    { background: #FBEBD6; border-top: 3px solid #E4913C; }
+  .dasha-seg--future { background: #FAF6EF; border-top: 3px solid #C8A44D; }
+
+  /* Growing from the left via CLIP-PATH, not `transform: scaleX()`.
+     The handoff names scaleX, and for an empty bar the two are
+     identical — but these segments carry a lord name, a year range
+     and a label, and scaling the box horizontally squashes that text
+     from unreadable to normal over half a second. Clip-path reveals
+     the identical left-to-right wipe with the type at full width the
+     whole time. Substitution recorded rather than made silently.
+
+     Delays come from an inline style so the CURRENT segment can go
+     last regardless of where it sits — the handoff asks for that
+     specifically, "so the eye lands there", and nth-child cannot
+     express "whichever one is active". */
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes dashaGrow {
+      from { clip-path: inset(0 100% 0 0); }
+      to   { clip-path: inset(0 0 0 0); }
+    }
+    .dasha-seg:not(.dasha-seg--swatch) {
+      animation: dashaGrow 500ms cubic-bezier(.2, .7, .2, 1) both;
+    }
   }
 
   /* ─── Chart-cast signature animation (Issue #78) ─────────────────
@@ -462,8 +655,8 @@
   #kundli-loader .chart-cast {
     width: 180px;
     height: 180px;
-    color: #6b21a8;
-    filter: drop-shadow(0 0 20px rgba(107, 33, 168, 0.15));
+    color: #9E2B25;
+    filter: drop-shadow(0 0 20px rgba(158, 43, 37, 0.15));
   }
   #kundli-loader .chart-cast .cast-line {
     fill: none;
@@ -476,7 +669,7 @@
     animation: castDraw 1.4s ease-out forwards;
   }
   #kundli-loader .chart-cast .cast-glyph {
-    fill: #f59e0b;
+    fill: #E4913C;
     opacity: 0;
     animation: castGlyphIn 500ms ease-out 1.3s forwards;
   }
@@ -502,6 +695,50 @@
 
      Desktop-only: mobile shows the dropdown items inline under the
      "Readings" label with no toggle needed. */
+  /* ─── Footer link groups ────────────────────────────────────────────
+     On a phone the footer was 4 stacked columns carrying 20 links and a
+     button — about 25 rows before the copyright line. The reference
+     design's mobile footer is ONE line, because its 5-item tab bar is
+     the whole navigation; we cannot copy that, since these links are
+     the site's internal-linking surface (see the comments above each
+     column). So they collapse instead: 4 tappable headings on mobile,
+     unchanged columns from 768px up.
+
+     The markup ships `<details open>` and JS CLOSES it below 768px,
+     never the other way round. With JS off, and for a crawler, the
+     footer is exactly what it was — which is the case these links exist
+     to serve. Ship them closed and you have made that case worse to fix
+     a cosmetic one. */
+  .footer-group > summary { list-style: none; }
+  .footer-group > summary::-webkit-details-marker { display: none; }
+  .footer-group[open] > summary .footer-group-chev { transform: rotate(180deg); }
+
+  @media (min-width: 768px) {
+    /* Desktop is untouched: the summary is the old <h3>, inert. Reopening
+       on resize is the SCRIPT's job, not a CSS override — forcing
+       `display: block` on the children of a closed <details> does not
+       reliably reveal them (engines gate the content itself, not its
+       display), so a rule like that would look right in one browser and
+       hide the footer's links in another. */
+    .footer-group > summary { pointer-events: none; }
+  }
+
+  /* ─── Mobile nav sub-groups ─────────────────────────────────────────
+     Tools and More used to render FLAT inside the hamburger — the panels
+     carry `md:hidden`, which hides them only from 768px up, so on a phone
+     every item showed inline. That made the menu ~20 rows: 7 links, a
+     Tools label and its 5, a More label and its 4, sign-in and language.
+
+     `data-collapsed` rather than Tailwind's `hidden`, deliberately: the
+     desktop transition below toggles `md:hidden` / `md:flex` on this same
+     element, and a `hidden` in the mix would fight it — `display: none`
+     from `hidden` beats the `display: flex !important` the closed-state
+     rule relies on. A separate attribute keeps the two mechanisms from
+     touching each other. */
+  @media (max-width: 767px) {
+    .nav-dropdown-menu[data-collapsed="true"] { display: none; }
+  }
+
   @media (min-width: 768px) {
     .nav-dropdown-menu {
       transform-origin: top center;
@@ -530,7 +767,7 @@
 
   /* ─── Form focus glow ───────────────────────────────────────────────
      Most text inputs / textareas / selects sitewide already have
-     Tailwind's `focus:ring-2 focus:ring-astro-500` — the ring just
+     Tailwind's `focus:ring-2 focus:ring-bhagya-saffron` — the ring just
      snaps in with no transition. Add a smooth 200ms transition on
      box-shadow and border-color so the focus ring glows in gently.
 
@@ -584,32 +821,37 @@
   }
 
   /* ─── Primary CTA hover polish ──────────────────────────────────────
-     Any button/link/submit that uses the brand primary background
-     (bg-astro-700 — the canonical primary; darkens to bg-astro-800 on
-     hover) gets a subtle lift on hover — a 2% scale-up and a warm
-     violet shadow. On press, it dips back to 0.98 for tactile feedback.
-     GPU-only transforms; :disabled skipped so the loading/wait state
-     doesn't shimmy.
-     Automatically applies to every primary CTA sitewide without
-     touching individual templates. */
-  a.bg-astro-700,
-  button.bg-astro-700,
-  input[type="submit"].bg-astro-700 {
-    transition: transform 180ms ease-out,
-                box-shadow 180ms ease-out,
-                background-color 180ms ease-out;
+     Any button/link/submit carrying the brand primary background
+     (bg-bhagya-night) gets a subtle lift on hover — a 2% scale-up and a
+     soft night shadow. On press it dips back to 0.98 for tactile
+     feedback. GPU-only transforms; :disabled skipped so the loading/wait
+     state doesn't shimmy. Applies to every primary CTA sitewide without
+     touching individual templates.
+     #261 added the bhagya-night selectors beside the old bg-astro-700
+     ones, because a migrated button otherwise silently lost the lift.
+     The astro halves are gone now that no template renders that class —
+     they were listed only for the duration of the epic. */
+  a.bg-bhagya-night,
+  button.bg-bhagya-night,
+  input[type="submit"].bg-bhagya-night {
+    transition: background-color 120ms ease-out,
+                border-color 120ms ease-out;
   }
-  a.bg-astro-700:hover,
-  button.bg-astro-700:not(:disabled):hover,
-  input[type="submit"].bg-astro-700:not(:disabled):hover {
-    transform: translateY(-1px) scale(1.02);
-    box-shadow: 0 10px 22px -8px rgba(93, 62, 180, 0.42),
-                0 4px 8px -4px rgba(0, 0, 0, 0.08);
+  /* Motion rule 7 again: "No lift, no scale." This pair used to
+     translateY(-1px) scale(1.02) with a shadow. The saffron border is the
+     hover affordance the handoff actually specifies for night surfaces, and
+     120ms is its stated duration. */
+  a.bg-bhagya-night:hover,
+  button.bg-bhagya-night:not(:disabled):hover,
+  input[type="submit"].bg-bhagya-night:not(:disabled):hover {
+    box-shadow: inset 0 0 0 1px #E4913C;
   }
-  a.bg-astro-700:active,
-  button.bg-astro-700:not(:disabled):active,
-  input[type="submit"].bg-astro-700:not(:disabled):active {
-    transform: translateY(0) scale(0.98);
+  /* The press dip went with the hover lift — it is a scale, and the same rule
+     forbids it. A pressed button already reads as pressed from the border. */
+  a.bg-bhagya-night:active,
+  button.bg-bhagya-night:not(:disabled):active,
+  input[type="submit"].bg-bhagya-night:not(:disabled):active {
+    box-shadow: inset 0 0 0 2px #E4913C;
     transition-duration: 80ms;
   }
 
@@ -649,6 +891,14 @@
        reads like a report title rather than continuing web body. */
     main > header { margin-bottom: 8mm !important; padding-bottom: 4mm !important; border-bottom: 2px solid #292524 !important; }
     main > header h1 { font-size: 24pt !important; margin-bottom: 4pt !important; }
+    /* #243 made result.html's header a bhagya-night identity band. `article,
+       section, .bg-white` above forces a white ground on cards, but <header>
+       matches none of those, so without this the cover page prints as a solid
+       dark rectangle — wasted ink and, worse, cream text on it goes invisible
+       the moment a printer honours the background and then does not. */
+    main > header { background: none !important; padding-left: 0 !important; padding-right: 0 !important; }
+    main > header, main > header * { color: #17131A !important; }
+    main > header [class*="bg-bhagya-night"] { background: none !important; }
     /* Major section boundaries — break BEFORE each h2-headed section
        when the previous section pushes it too far down. Uses `avoid`
        for the first section (header + score) and `auto` after so long
@@ -702,14 +952,14 @@
      `class="leading-tight" lang="sa"` will be silently ignored — override
      with a more specific selector here, not with a utility class. */
   [lang="sa"] {
-    /* Crimson Pro FIRST, deliberately. It carries no Devanagari, so every
+    /* The LATIN serif FIRST, deliberately — Marcellus now, Crimson Pro
+       before ea0725b retired it. It carries no Devanagari, so every
        Devanagari glyph still falls through to Noto Serif Devanagari — but
        the Latin characters inside a shloka block (spacing, punctuation, the
-       stray transliteration) resolve to Crimson Pro, which is already
-       loaded. List the Devanagari serif first instead and the browser also
-       fetches ITS Latin subset: measured 11,908 B for glyphs we already
-       have. */
-    font-family: "Crimson Pro", "Noto Serif Devanagari", ui-serif, Georgia, serif;
+       stray transliteration) resolve to a face that is already loaded. List
+       the Devanagari serif first instead and the browser also fetches ITS
+       Latin subset: measured 11,908 B for glyphs we already have. */
+    font-family: Marcellus, "Noto Serif Devanagari", ui-serif, Georgia, serif;
     font-style: normal;
     line-height: 1.85;
     letter-spacing: 0.01em;
@@ -803,15 +1053,22 @@
 </style>
 </head>
 
-<body hx-boost="true" class="bg-cream text-stone-900 font-sans min-h-full antialiased">
+{# `font-variant-emoji: text` is a handoff non-negotiable, not decoration. The
+   zodiac characters U+2648–2653 are dual-presentation: a browser is free to
+   render them as full-colour emoji, which puts Apple's or Google's palette on
+   a page whose whole point is a controlled one. Belt and braces with the
+   U+FE0E variation selector at every glyph site — the selector is the reliable
+   half, this is the half that covers a glyph someone adds later and forgets to
+   mark. Unsupported browsers ignore the declaration; nothing regresses. #}
+<body hx-boost="true" class="bg-bhagya-cream text-bhagya-ink font-sans min-h-full antialiased [font-variant-emoji:text]">
   {# Global navigation loader — a thin animated bar pinned at the top of
      the page. Visible during every htmx-boosted nav and form POST so the
      user sees their click registered immediately (some routes take 3-8s
      for the LLM call). Vanilla JS; pure-CSS animation. #}
   <div id="bhagya-loader" class="fixed top-0 left-0 right-0 z-50 h-1 pointer-events-none no-print">
     <div id="bhagya-loader-bar"
-         class="h-full bg-gradient-to-r from-astro-500 via-astro-600 to-astro-700
-                transition-all ease-out shadow-[0_0_8px_rgba(139,92,246,0.6)]"
+         class="h-full bg-gradient-to-r from-bhagya-gold via-bhagya-saffron to-bhagya-sindoor
+                transition-all ease-out shadow-[0_0_8px_rgba(228,145,60,0.6)]"
          style="width:0;opacity:0;transition-duration:300ms;"></div>
   </div>
   <script>
@@ -851,7 +1108,7 @@
     })();
   </script>
 
-  {# Full-page mandala loader — shown during any LLM-backed generation
+  {# Full-page generation loader — shown during any LLM-backed generation
      that takes 3-8s. The overlay covers Kundli (POST /reading), Kundali
      matching (POST /matching), Ask (POST /ask), and Dasha deep-dive
      (POST /dasha/deep-dive). Caption text is set dynamically per path
@@ -883,8 +1140,8 @@
       {# Central Om glyph — fades in after diamond lines complete #}
       <circle cx="100" cy="100" r="14" class="cast-glyph"/>
       <text x="100" y="110" text-anchor="middle" class="cast-glyph"
-            font-family="Crimson Pro, Georgia, serif"
-            font-size="24" font-weight="700" fill="#3b0764"
+            font-family="'Noto Sans Devanagari', Marcellus, Georgia, serif"
+            font-size="24" font-weight="700" fill="#17131A"
             style="transform-origin: 100px 100px">ॐ</text>
     </svg>
     <div class="caption" id="kundli-loader-caption">Casting your chart&hellip;</div>
@@ -946,14 +1203,14 @@
      keyword density, E-E-A-T trust signals) and consistent UX. Each route
      can opt out by overriding the `footer` block with empty content. #}
   {% block footer %}
-  <footer class="border-t border-stone-200/70 bg-cream/40 no-print mt-12">
+  <footer class="border-t border-bhagya-gold/25 bg-bhagya-night no-print mt-12">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
       <div class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
 
         {# Brand + description — keyword-rich paragraph reinforces what
            the site is about on every page. #}
         <div class="md:col-span-4">
-          <div class="flex items-center gap-2 mb-3 text-astro-700">
+          <div class="flex items-center gap-2 mb-3 text-bhagya-saffron">
             <svg viewBox="0 0 100 100" class="w-7 h-7 shrink-0" aria-hidden="true">
               <g fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="miter">
                 <polygon points="50,5 95,50 50,95 5,50"/>
@@ -963,9 +1220,9 @@
               </g>
               <circle cx="50" cy="50" r="7" fill="#ffd764"/>
             </svg>
-            <span class="font-display text-lg font-bold">Shubh Bhagya</span>
+            <span class="font-marcellus text-lg">Shubh Bhagya</span>
           </div>
-          <p class="text-sm text-stone-600 leading-relaxed">
+          <p class="text-sm text-bhagya-cream/[.62] leading-relaxed">
             Free instant Vedic astrology online &mdash; your Janma Kundli,
             today's Rashifal for all 12 rashis, Dasha periods, Manglik &amp;
             Sade Sati analysis, and Kundali matching for marriage. Accurate
@@ -976,73 +1233,109 @@
         {# Internal links to every main reading page. Crawlers and users
            both win — site-wide navigation discoverable from any URL. #}
         <div class="md:col-span-2">
-          <h3 class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-3">Readings</h3>
+          <details open data-footer-group class="footer-group">
+          <summary class="text-xs uppercase font-semibold text-bhagya-cream/[.62] tracking-wider mb-0 md:mb-3 flex items-center justify-between
+                          cursor-pointer md:cursor-default select-none py-2.5 md:py-0">
+            <span>Readings</span>
+            <svg class="footer-group-chev md:hidden w-3 h-3 shrink-0 transition-transform"
+                 fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </summary>
           <ul class="space-y-2 text-sm">
-            <li><a href="/"         class="text-stone-700 hover:text-astro-700">Free Janma Kundli</a></li>
-            <li><a href="/rashifal" class="text-stone-700 hover:text-astro-700">Daily Rashifal</a></li>
-            <li><a href="/today"    class="text-stone-700 hover:text-astro-700">Today's Horoscope</a></li>
-            <li><a href="/monthly"  class="text-stone-700 hover:text-astro-700">Monthly Horoscope</a></li>
-            <li><a href="/yearly"   class="text-stone-700 hover:text-astro-700">Horoscope {{ current_year() }}</a></li>
-            <li><a href="/dasha"    class="text-stone-700 hover:text-astro-700">Vimshottari Dasha</a></li>
-            <li><a href="/matching" class="text-stone-700 hover:text-astro-700">Kundli Matching</a></li>
-            <li class="pt-2 mt-2 border-t border-stone-100"><a href="/learn/" class="text-stone-700 hover:text-astro-700 font-semibold">Learning Hub &rarr;</a></li>
+            <li><a href="/"         class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Free Janma Kundli</a></li>
+            <li><a href="/rashifal" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Daily Rashifal</a></li>
+            <li><a href="/today"    class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Today's Horoscope</a></li>
+            <li><a href="/monthly"  class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Monthly Horoscope</a></li>
+            <li><a href="/yearly"   class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Horoscope {{ current_year() }}</a></li>
+            <li><a href="/dasha"    class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Vimshottari Dasha</a></li>
+            <li><a href="/matching" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Kundli Matching</a></li>
+            <li class="pt-2 mt-2 border-t border-bhagya-gold/20"><a href="/learn/" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron font-semibold">Learning Hub &rarr;</a></li>
           </ul>
+        </details>
         </div>
 
         {# Free tools column — dedicated dosha checkers, muhurat, numerology.
            Adds site-wide SEO surface for the standalone tool pages
            + gives users a persistent way to discover them from any page. #}
         <div class="md:col-span-2">
-          <h3 class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-3">Free Tools</h3>
+          <details open data-footer-group class="footer-group">
+          <summary class="text-xs uppercase font-semibold text-bhagya-cream/[.62] tracking-wider mb-0 md:mb-3 flex items-center justify-between
+                          cursor-pointer md:cursor-default select-none py-2.5 md:py-0">
+            <span>Free Tools</span>
+            <svg class="footer-group-chev md:hidden w-3 h-3 shrink-0 transition-transform"
+                 fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </summary>
           <ul class="space-y-2 text-sm">
-            <li><a href="/panchang"        class="text-stone-700 hover:text-astro-700">Panchang Today</a></li>
-            <li><a href="/muhurat"         class="text-stone-700 hover:text-astro-700">Muhurat Finder</a></li>
-            <li><a href="/festivals"       class="text-stone-700 hover:text-astro-700">Festival Calendar</a></li>
-            <li><a href="/manglik-check"   class="text-stone-700 hover:text-astro-700">Manglik Dosh Check</a></li>
-            <li><a href="/sade-sati-check" class="text-stone-700 hover:text-astro-700">Sade Sati Report</a></li>
-            <li><a href="/kaal-sarp-check" class="text-stone-700 hover:text-astro-700">Kaal Sarp Check</a></li>
-            <li><a href="/numerology"      class="text-stone-700 hover:text-astro-700">Numerology</a></li>
+            <li><a href="/panchang"        class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Panchang Today</a></li>
+            <li><a href="/muhurat"         class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Muhurat Finder</a></li>
+            <li><a href="/festivals"       class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Festival Calendar</a></li>
+            <li><a href="/manglik-check"   class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Manglik Dosh Check</a></li>
+            <li><a href="/sade-sati-check" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Sade Sati Report</a></li>
+            <li><a href="/kaal-sarp-check" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Kaal Sarp Check</a></li>
+            <li><a href="/numerology"      class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Numerology</a></li>
           </ul>
+        </details>
         </div>
 
         {# Connect column — trust signals (real email), conversion CTA
            (subscribe), and a sitemap pointer for power users. #}
         <div class="md:col-span-2">
-          <h3 class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-3">Connect</h3>
+          <details open data-footer-group class="footer-group">
+          <summary class="text-xs uppercase font-semibold text-bhagya-cream/[.62] tracking-wider mb-0 md:mb-3 flex items-center justify-between
+                          cursor-pointer md:cursor-default select-none py-2.5 md:py-0">
+            <span>Connect</span>
+            <svg class="footer-group-chev md:hidden w-3 h-3 shrink-0 transition-transform"
+                 fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </summary>
           <ul class="space-y-2 text-sm">
-            <li><a href="/about" class="text-stone-700 hover:text-astro-700">About Bhagya</a></li>
-            <li><a href="mailto:contact@shubhagya.com" class="text-stone-700 hover:text-astro-700 break-all">contact@shubhagya.com</a></li>
+            <li><a href="/about" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">About Bhagya</a></li>
+            <li><a href="mailto:contact@shubhagya.com" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron break-all">contact@shubhagya.com</a></li>
             <li><button type="button" data-subscribe-trigger
-                        class="text-stone-700 hover:text-astro-700 underline-offset-2 hover:underline text-left">
+                        class="text-bhagya-cream/[.78] hover:text-bhagya-saffron underline-offset-2 hover:underline text-left">
                   Daily Rashifal email &rarr;
                 </button></li>
-            <li class="pt-2 mt-2 border-t border-stone-100">
-              <a href="/privacy" class="text-stone-700 hover:text-astro-700">Privacy Policy</a>
+            <li class="pt-2 mt-2 border-t border-bhagya-gold/20">
+              <a href="/privacy" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Privacy Policy</a>
             </li>
-            <li><a href="/terms" class="text-stone-700 hover:text-astro-700">Terms of Service</a></li>
-            <li><a href="/sitemap.xml" class="text-stone-700 hover:text-astro-700">Sitemap</a></li>
+            <li><a href="/terms" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Terms of Service</a></li>
+            <li><a href="/sitemap.xml" class="text-bhagya-cream/[.78] hover:text-bhagya-saffron">Sitemap</a></li>
           </ul>
+        </details>
         </div>
 
         {# Trust bullets — repeat the core value-prop one more time at
            the bottom; reduces bounces on landing pages. #}
         <div class="md:col-span-2">
-          <h3 class="text-xs uppercase font-semibold text-stone-600 tracking-wider mb-3">Why us</h3>
-          <ul class="space-y-2 text-sm text-stone-700">
+          <details open data-footer-group class="footer-group">
+          <summary class="text-xs uppercase font-semibold text-bhagya-cream/[.62] tracking-wider mb-0 md:mb-3 flex items-center justify-between
+                          cursor-pointer md:cursor-default select-none py-2.5 md:py-0">
+            <span>Why us</span>
+            <svg class="footer-group-chev md:hidden w-3 h-3 shrink-0 transition-transform"
+                 fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </summary>
+          <ul class="space-y-2 text-sm text-bhagya-cream/[.78]">
             <li>&check; Free &amp; honest</li>
             <li>&check; No signup needed</li>
             <li>&check; No spam, ever</li>
             <li>&check; Classical sources cited</li>
           </ul>
+        </details>
         </div>
       </div>
 
-      <div class="border-t border-stone-200 mt-8 pt-6 text-center text-xs text-stone-600 leading-relaxed">
+      <div class="border-t border-bhagya-gold/20 mt-8 pt-6 text-center text-xs text-bhagya-cream/[.62] leading-relaxed">
         <p class="mb-2">
           Readings are interpretive and for personal reflection &mdash;
           not medical, legal, or financial advice.
         </p>
-        <p class="text-stone-600">
+        <p class="text-bhagya-cream/[.62]">
           &copy; {{ current_year() }} Shubh Bhagya &middot; Built with care in India.
         </p>
       </div>
@@ -1065,14 +1358,14 @@
      iOS Safari needs static instructions because Apple doesn't surface the
      event. Banner self-dismisses on close and remembers the choice. #}
   <div id="pwa-install-banner" class="hidden fixed bottom-3 inset-x-3 sm:left-3 sm:right-auto sm:w-80
-                                       z-40 bg-white border border-stone-300 rounded-lg shadow-lg p-3 text-sm no-print">
+                                       z-40 bg-bhagya-cream border border-bhagya-border rounded-md p-3 text-sm no-print">
     <div class="flex items-start gap-3">
       <img src="/static/icons/icon-192.png" alt="" loading="lazy" decoding="async" class="w-10 h-10 rounded shrink-0">
       <div class="flex-1 min-w-0">
-        <div class="font-semibold text-stone-900">Install Shubh Bhagya</div>
-        <div id="pwa-install-msg" class="text-stone-600 text-xs mt-0.5"></div>
+        <div class="font-semibold text-bhagya-ink">Install Shubh Bhagya</div>
+        <div id="pwa-install-msg" class="text-bhagya-muted text-xs mt-0.5"></div>
       </div>
-      <button id="pwa-install-close" type="button" class="text-stone-500 hover:text-stone-700"
+      <button id="pwa-install-close" type="button" class="text-bhagya-muted-2 hover:text-bhagya-ink"
               aria-label="Dismiss install banner">
         <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
@@ -1080,7 +1373,7 @@
       </button>
     </div>
     <button id="pwa-install-action" type="button"
-            class="hidden mt-2 w-full bg-astro-700 hover:bg-astro-800 text-white text-sm font-medium py-1.5 rounded">
+            class="hidden mt-2 w-full bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-sm font-medium py-1.5 rounded">
       Install
     </button>
   </div>
@@ -1159,32 +1452,32 @@
   {% if google_client_id %}
   <div id="google-signin-backdrop"
        data-modal-backdrop
-       class="hidden fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 no-print"
+       class="hidden fixed inset-0 z-50 bg-bhagya-night/60 flex items-center justify-center p-4 no-print"
        role="dialog" aria-modal="true" aria-labelledby="google-signin-title">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative">
+    <div class="bg-bhagya-cream border border-bhagya-border rounded-md max-w-sm w-full p-6 relative">
       <button id="google-signin-close" type="button" aria-label="Close"
-              class="absolute top-3 right-3 text-stone-500 hover:text-stone-700 p-1">
+              class="absolute top-3 right-3 text-bhagya-muted-2 hover:text-bhagya-ink p-1">
         <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
         </svg>
       </button>
-      <h2 id="google-signin-title" class="font-display text-xl font-bold text-stone-900 mb-1.5">Sign in to Shubh Bhagya</h2>
-      <p class="text-sm text-stone-600 mb-3.5 leading-relaxed">Your account, on any device:</p>
-      <ul class="space-y-2 mb-4 text-sm text-stone-700">
+      <h2 id="google-signin-title" class="font-marcellus text-xl text-bhagya-ink mb-1.5">Sign in to Shubh Bhagya</h2>
+      <p class="text-sm text-bhagya-muted mb-3.5 leading-relaxed">Your account, on any device:</p>
+      <ul class="space-y-2 mb-4 text-sm text-bhagya-ink-soft">
         <li class="flex items-start gap-2">
-          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <svg class="w-4 h-4 text-bhagya-sindoor flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
           <span>Keep your Kundli chart forever &mdash; on phone, laptop, wherever.</span>
         </li>
         <li class="flex items-start gap-2">
-          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <svg class="w-4 h-4 text-bhagya-sindoor flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
           <span>Save unlimited charts (family, friends, clients).</span>
         </li>
         <li class="flex items-start gap-2">
-          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <svg class="w-4 h-4 text-bhagya-sindoor flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
           <span>Revisit past readings &amp; Ask answers anytime.</span>
         </li>
         <li class="flex items-start gap-2">
-          <svg class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          <svg class="w-4 h-4 text-bhagya-sindoor flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
           <span>No password to remember. Free.</span>
         </li>
       </ul>
@@ -1206,18 +1499,20 @@
          unchanged modal for 2-3 seconds while we verify + set the
          cookie + reload the page. #}
       <div id="google-signin-loading" class="hidden flex-col items-center gap-3 py-2">
-        <svg class="w-8 h-8 text-astro-700 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <svg class="w-8 h-8 text-bhagya-sindoor animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.25"/>
           <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
         </svg>
-        <p class="text-sm text-stone-600">Signing you in&hellip;</p>
+        <p class="text-sm text-bhagya-muted">Signing you in&hellip;</p>
       </div>
-      <p id="google-signin-error" class="hidden text-xs text-red-600 mt-3"></p>
-      <p class="text-xs text-stone-600 mt-4 leading-relaxed">
+      <p id="google-signin-error" class="hidden text-xs text-bhagya-sindoor mt-3"></p>
+      <p class="text-xs text-bhagya-muted mt-4 leading-relaxed">
         We only receive your email + name from Google. We never post on your behalf and never share your data.
       </p>
     </div>
   </div>
+
+  
 
   <script>
     // Sign-in modal glue. Lazy-loads Google Identity Services on first trigger.
@@ -1315,5 +1610,47 @@
     })();
   </script>
   {% endif %}
+<script>
+    // Footer link groups: collapsed on a phone, open from 768px up.
+    //
+    // Placed here, at the end of <body>, and NOT beside the sign-in modal
+    // script where it started: that block sits inside the google_client_id
+    // conditional, so with OAuth unconfigured the script never rendered and
+    // the footer stayed full height. It would have looked correct in any
+    // environment that happened to set the variable. Anything the whole site
+    // depends on belongs outside every conditional.
+    //
+    // (And do not write a Jinja tag into a JS comment to explain which
+    // conditional — Jinja parses tags inside comments too, and an unbalanced
+    // one here 500s every page on the site.)
+    //
+    // The markup ships `open`. This script only ever CLOSES, and only below
+    // the breakpoint — so with JS off, and for a crawler, the footer is the
+    // full four columns it has always been. That direction is deliberate:
+    // these links are the site's internal-linking surface, and shipping them
+    // collapsed would degrade the exact case they exist for in order to fix
+    // a cosmetic one.
+    //
+    // Reopening on resize is done HERE rather than in CSS because forcing
+    // `display: block` on the children of a closed <details> does not
+    // reliably reveal them.
+    (function () {
+      var DESKTOP = '(min-width: 768px)';
+      function sync() {
+        var desktop = window.matchMedia(DESKTOP).matches;
+        document.querySelectorAll('[data-footer-group]').forEach(function (d) {
+          d.open = desktop;
+        });
+      }
+      sync();
+      var mq = window.matchMedia(DESKTOP);
+      // addEventListener on MediaQueryList is the modern form; addListener is
+      // the fallback for older Safari, which is still a real share on phones.
+      if (mq.addEventListener) mq.addEventListener('change', sync);
+      else if (mq.addListener) mq.addListener(sync);
+    })();
+  </script>
+
+  {% include "_tab_bar.html" %}
 </body>
 </html>

@@ -52,26 +52,136 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        // Inter for Latin, Noto Sans Devanagari as a graceful fallback for Hindi text.
-        sans: ['Inter', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        // Manrope for Latin, Noto Sans Devanagari as a graceful fallback for Hindi text.
+        //
+        // #242 SWAPPED THE BODY FACE GLOBALLY, and the reason is arithmetic, not
+        // taste. The homepage needs Marcellus loaded, and the font budget
+        // (MAX_FONT_BYTES = 285,000 in scripts/verify_devanagari_serif.py) had
+        // ~16 KB of headroom against a measured 268,820 B. Adding Marcellus on
+        // top of Inter would have blown it. Measured from Google Fonts on
+        // 2026-09-03, latin subset, the exact URLs this repo requests:
+        //
+        //   Inter    (variable, wght@400;500;600;700) ....... 48,256 B
+        //   Manrope  (variable, wght@400;500;600;700) ....... 24,836 B
+        //   Marcellus (static 400 — it has no other weight) . 14,552 B
+        //
+        // So swapping Inter out pays for Marcellus with 8,868 B to spare, and
+        // the whole page drops to ~260 KB. Re-run the gate; do not re-derive
+        // these from memory.
+        //
+        // `display` below is deliberately NOT swapped in the same motion. See
+        // the note there.
+        sans: ['Manrope', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         // #189: the Devanagari fallback here stays the SANS face, and the
         // serif Devanagari is applied by the [lang="sa"] rule in base.html
-        // instead. Crimson Pro carries no Devanagari glyphs, so this second
-        // entry is what renders any Devanagari inside a `font-display`
-        // element — including the Hindi-toggle headings in
-        // _subscribe_modal.html and rashifal.html, which are `font-bold`.
+        // instead. Marcellus carries no Devanagari glyphs, so this second entry
+        // is what renders any Devanagari inside a `font-display` element.
         //
         // Putting "Noto Serif Devanagari" here (the first shape of the #189
-        // fix) worked visually but forced us to load the serif's 700 weight
-        // for those headings, tripling its cost — 127,280 B variable against
-        // 51,048 B for a static 400. Shlokas are the only Devanagari that
-        // needs a serif and they are never bold, so the narrower hook is
-        // both cheaper and more accurate. Full reasoning at the font <link>
-        // in base.html.
-        display: ['"Crimson Pro"', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
+        // fix) worked visually but forced us to load the serif's 700 weight,
+        // tripling its cost — 127,280 B variable against 51,048 B for a static
+        // 400. Shlokas are the only Devanagari that needs a serif and they are
+        // never bold, so the narrower hook is both cheaper and more accurate.
+        display: ['Marcellus', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
+
+        // ─── Redesign stack (#233/#238) ───────────────────────────────
+        // `display` and `marcellus` now resolve to the same stack: every screen
+        // has migrated, so Crimson Pro was removed from the font request
+        // entirely (#261). Both keys stay because ~30 templates say
+        // `font-marcellus` and a handful still say `font-display`; collapsing
+        // them is a rename with no payload effect, and not worth a sweep.
+        //
+        // NOTHING IN THIS TREE MAY PUT font-bold ON EITHER. Marcellus ships one
+        // weight and Google Fonts will never serve another, so a bold is
+        // SYNTHESISED — the same defect family as the synthesised oblique #189
+        // exists to remove. The seven elements that used to carry one (two
+        // wordmarks, four modal headings, the sign-in title) were unbolded when
+        // Crimson Pro left; two of those four modal headings render Devanagari
+        // under the Hindi toggle and now resolve to Noto Sans Devanagari 400,
+        // which is real, loaded, and regular.
+        //
+        // Marcellus and Manrope ship NO Devanagari subset, so both keep
+        // "Noto Sans Devanagari" as their second entry. That is not belt-and-
+        // braces — the handoff proposed Marcellus + Manrope + Tiro Devanagari
+        // Sanskrit and nothing else, which would have left every Hindi heading
+        // in the tree falling back to a system font at
+        // html[lang="hi"]{font-size:108%}. That is #189 returning, and
+        // scripts/verify_devanagari_serif.py fails statically if the sans stops
+        // being requested at 400-700 (#235).
+        //
+        // TIRO DEVANAGARI SANSKRIT IS NOT USED, AND THE REASON IS MEASURED.
+        // The handoff specifies it for all Devanagari. Google Fonts serves its
+        // devanagari subset at 183,900 B against Noto Serif Devanagari's
+        // 50,952 B — 3.6x, +132,948 B — which takes the page from ~164 KB to
+        // ~297 KB against a 285,000 B budget. It does not fit, and the correct
+        // output when the budget does not fit is a stated finding rather than a
+        // quiet overspend. Measured 2026-09-03 from the css2 URLs directly.
+        marcellus: ['Marcellus', '"Noto Sans Devanagari"', 'ui-serif', 'Georgia', 'serif'],
+        manrope: ['Manrope', '"Noto Sans Devanagari"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
+        // STAYS, and the reason is a gate, not inertia. Nothing renders
+        // `bg-cream` any more, so removing it looks like free hygiene — but
+        // scripts/verify_contrast.py resolves five legacy DECLARED_PAIRS rows
+        // (text-stone-600/800/900, text-astro-700/800) against `bg-cream`, and
+        // deleting the token made that gate exit 2, COULD NOT VERIFY. Tried
+        // 2026-09-04 and reverted.
+        //
+        // Those five rows now guard only rashifal.html, which is dead code
+        // (no route, no test, no reference — #262). So the token, the legacy
+        // rows and that file should retire in ONE change, not three: pulling
+        // the token alone silences a working gate to tidy a line of config.
+        // Tracked on #262. Use `bhagya.cream` for anything new.
         cream: '#faf7f2',
+
+        // ─── Redesign palette (#233/#238) ─────────────────────────────
+        // Role-based, unlike the `astro` ramp below it: night is "the sky"
+        // (hero/nav/footer panels), parchment is the editorial page the
+        // reading sits on, saffron is action, gold is ornament ON NIGHT ONLY,
+        // sindoor is glyphs and citations on the light surfaces.
+        //
+        // Namespaced under `bhagya` rather than dropped in at the top level
+        // because `cream` already exists at #faf7f2 and the redesign's cream
+        // is #FAF6EF. Two near-identical names for two different values is how
+        // a migration ships a page that is half one palette and half the
+        // other. The old one keeps its name until nothing uses it.
+        //
+        // THREE VALUES DIFFER FROM THE HANDOFF, and the arithmetic is the
+        // reason (#236). WCAG AA needs 4.5:1 for normal text; the 3.0:1
+        // exemption wants >=24px, or >=18.66px bold, and none of these is
+        // close to either:
+        //
+        //   muted-2      #8A8175 -> #6F675E   was 3.56:1 on cream / 3.13:1 on
+        //                                     cream-2, at 50 uses of 9-14px.
+        //                                     Now 5.16 / 4.54.
+        //   placeholder  #A9A096 -> #71675D   was 2.39:1, at 20 uses of
+        //                                     10-15px. Now 5.13 / 4.52.
+        //
+        // The third correction is not a colour: the "myth line" on night moves
+        // from rgba(250,246,239,.45) to .48 (4.29:1 -> 4.71:1). It lives in
+        // whichever template renders that card, not here.
+        //
+        // The handoff's own README recommends #8A8175 as one of two safe
+        // colours on cream, which is how all three got through its review. Add
+        // each of these to DECLARED_PAIRS in scripts/verify_contrast.py as a
+        // screen starts using it — the gate reads the real hex out of this
+        // file and the built CSS, so declaring the pairing is all it needs.
+        bhagya: {
+          night:       '#140F1C',  // hero/nav/footer panels, primary button fill
+          ink:         '#17131A',  // headings, primary text on the light surfaces
+          'ink-soft':  '#4A4238',  // long-form body
+          muted:       '#6B6259',  // secondary copy
+          'muted-2':   '#6F675E',  // micro-labels, meta — CORRECTED from #8A8175
+          placeholder: '#71675D',  // input placeholder — CORRECTED from #A9A096
+          cream:       '#FAF6EF',  // page background
+          'cream-2':   '#F1E7D8',  // alternating band, subtle card fill
+          line:        '#E2D6C2',  // 1px dividers, hairline-grid gutters
+          'line-2':    '#EDE4D5',  // list row dividers
+          border:      '#DED4C2',  // input + card borders
+          saffron:     '#E4913C',  // primary accent, CTA fill
+          gold:        '#C8A44D',  // ornament — ON NIGHT ONLY, 2.20:1 on cream
+          sindoor:     '#9E2B25',  // glyphs, eyebrows, citations, links on light
+        },
         astro: {
           50:  '#f6f1fb',
           100: '#ece1f6',
@@ -104,39 +214,40 @@ module.exports = {
       // rather than inventing its own keyframes. The gate in base.html
       // (@media prefers-reduced-motion) neutralises all of them for
       // motion-sensitive users.
+      // Declared here means EMITTED only if a template uses the utility —
+      // Tailwind is JIT. `reveal-up`, `flicker`, `draw-in`, `spin-slow` and
+      // `shimmer` were declared and never used by any template, so none of the
+      // five ever reached app.css: `grep -c revealUp app.css` returned 0. A
+      // vocabulary nobody speaks is not a vocabulary, and `revealUp` was
+      // actively misleading — base.html defines a DIFFERENT animation of the
+      // same name (700ms, 32px, with scale) which is the only one that has
+      // ever rendered, so reading this file gave you the wrong values for the
+      // behaviour you were looking at. Removed 2026-09-02 (#240).
+      //
+      // Add one back when a template actually needs it, not before.
       keyframes: {
-        revealUp: {
-          '0%':   { opacity: '0', transform: 'translateY(8px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
         breathe: {
           '0%, 100%': { transform: 'scale(1)' },
           '50%':      { transform: 'scale(1.025)' },
         },
-        flicker: {
-          '0%, 100%': { opacity: '1' },
-          '50%':      { opacity: '0.85' },
-        },
-        drawIn: {
-          '0%':   { strokeDashoffset: '100%' },
-          '100%': { strokeDashoffset: '0' },
-        },
-        spinSlow: {
-          'from': { transform: 'rotate(0deg)' },
-          'to':   { transform: 'rotate(360deg)' },
-        },
-        shimmer: {
-          '0%':   { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
+        // The handoff's `bhagyaGlow`, verbatim. Both stops are OPACITY, and
+        // 0%/100% carrying the same value is load-bearing: base.html's
+        // prefers-reduced-motion gate sets animation-duration to 0.01ms and
+        // iteration-count to 1, so a reduced-motion user lands on the 100%
+        // frame immediately. A keyframe that ended somewhere else would leave
+        // them staring at the end state of an animation they opted out of.
+        glow: {
+          '0%, 100%': { opacity: '0.55' },
+          '50%':      { opacity: '0.9' },
         },
       },
       animation: {
-        'reveal-up': 'revealUp 400ms ease-out forwards',
-        'breathe':   'breathe 3s ease-in-out infinite',
-        'flicker':   'flicker 1.4s ease-in-out infinite',
-        'draw-in':   'drawIn 1.2s ease-out forwards',
-        'spin-slow': 'spinSlow 20s linear infinite',
-        'shimmer':   'shimmer 2s ease-in-out infinite',
+        // _nav.html:31, the logo. base.html carries an identical `breathe`
+        // keyframe for #kundli-loader .caption, which is plain CSS rather than
+        // a utility — both are needed, and their values must not drift apart.
+        'breathe': 'breathe 3s ease-in-out infinite',
+        // index.html, the hero's radial saffron glow (#242).
+        'glow': 'glow 9s ease-in-out infinite',
       },
     },
   },

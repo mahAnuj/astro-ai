@@ -13,13 +13,13 @@
 
   <!-- HEADER ------------------------------------------------------ -->
   <header>
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">
+    <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">
       {{ t(lang, 'window_label') }} &middot; {{ window_label }} &middot; {{ t(lang, 'computed_today') }} <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </div>
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-2">
       {% if details.name %}{{ t(lang, title_key, name=details.name) }}{% else %}{{ t(lang, title_anon_key) }}{% endif %}
     </h1>
-    <p class="text-sm text-stone-600">{{ t(lang, subtitle_key) }}</p>
+    <p class="text-sm text-bhagya-muted">{{ t(lang, subtitle_key) }}</p>
   </header>
 
   {# Sade Sati badge intentionally NOT shown on outlook pages either —
@@ -29,33 +29,33 @@
 
   <!-- VARSHAPHALA (yearly only) ----------------------------------- -->
   {% if varshaphala %}
-  <section class="bg-white rounded-2xl border border-astro-200 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-astro-50/70 to-amber-50/40 px-6 py-4 border-b border-stone-100">
-      <h2 class="font-display text-xl text-astro-700">{{ t(lang, 'varshaphala_title') | safe }}</h2>
-      <p class="text-sm text-stone-600 mt-0.5">{{ t(lang, 'varshaphala_subtitle') }}</p>
+  <section class="bg-white border border-bhagya-line overflow-hidden">
+    <div class="bg-bhagya-cream-2 px-6 py-4 border-b border-bhagya-line-2">
+      <h2 class="font-marcellus text-xl text-bhagya-ink">{{ t(lang, 'varshaphala_title') | safe }}</h2>
+      <p class="text-sm text-bhagya-muted mt-0.5">{{ t(lang, 'varshaphala_subtitle') }}</p>
     </div>
     <div class="px-6 py-5 grid sm:grid-cols-2 gap-5">
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'varshaphala_solar_return') }}</div>
-        <div class="font-display text-lg text-stone-900 tabular-nums">{{ varshaphala.solar_return_moment.strftime('%Y-%m-%d %H:%M UT') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">{{ t(lang, 'varshaphala_solar_return') }}</div>
+        <div class="font-marcellus text-lg text-bhagya-ink tabular-nums">{{ varshaphala.solar_return_moment.strftime('%Y-%m-%d %H:%M UT') }}</div>
       </div>
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'varshaphala_year_lord') }}</div>
-        <div class="font-display text-lg text-stone-900">{{ varshaphala.year_lord }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">{{ t(lang, 'varshaphala_year_lord') }}</div>
+        <div class="font-marcellus text-lg text-bhagya-ink">{{ varshaphala.year_lord }}</div>
       </div>
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'varshaphala_annual_lagna') }}</div>
-        <div class="font-display text-lg text-astro-700">{{ varshaphala.annual_chart.lagna_rashi }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">{{ t(lang, 'varshaphala_annual_lagna') }}</div>
+        <div class="font-marcellus text-lg text-bhagya-sindoor">{{ varshaphala.annual_chart.lagna_rashi }}</div>
       </div>
       <div>
         {% set annual_moon = varshaphala.annual_chart.planets | selectattr("name", "equalto", "Moon") | first %}
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'varshaphala_annual_moon') }}</div>
-        <div class="font-display text-lg text-astro-700">{{ annual_moon.rashi }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">{{ t(lang, 'varshaphala_annual_moon') }}</div>
+        <div class="font-marcellus text-lg text-bhagya-sindoor">{{ annual_moon.rashi }}</div>
       </div>
-      <div class="sm:col-span-2 mt-2 bg-astro-50/40 border border-astro-100 rounded-lg px-4 py-3">
-        <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">{{ t(lang, 'varshaphala_muntha') }}</div>
-        <div class="font-display text-base text-stone-900">House {{ varshaphala.muntha_house }}</div>
-        <p class="text-sm text-stone-600 mt-1 leading-relaxed">{{ t(lang, 'varshaphala_muntha_note') | safe }}</p>
+      <div class="sm:col-span-2 mt-2 bg-bhagya-cream-2 border border-bhagya-line rounded px-4 py-3">
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">{{ t(lang, 'varshaphala_muntha') }}</div>
+        <div class="font-marcellus text-base text-bhagya-ink">House {{ varshaphala.muntha_house }}</div>
+        <p class="text-sm text-bhagya-muted mt-1 leading-relaxed">{{ t(lang, 'varshaphala_muntha_note') | safe }}</p>
       </div>
     </div>
   </section>
@@ -65,64 +65,64 @@
   {% include "_gochar_panel.html" %}
 
   <!-- KEY EVENTS (collapsible — not everyone wants this depth) ----- -->
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+  <section class="bg-white border border-bhagya-line overflow-hidden">
     <details class="group">
-      <summary class="cursor-pointer bg-gradient-to-r from-astro-50/60 to-white px-6 py-4 border-b border-stone-100 group-open:border-b group-[:not([open])]:border-b-0 hover:bg-astro-50/80 transition-colors flex items-baseline justify-between gap-3">
+      <summary class="cursor-pointer bg-bhagya-cream-2 px-6 py-4 border-b border-bhagya-line-2 group-open:border-b group-[:not([open])]:border-b-0 hover:bg-bhagya-cream-2/80 transition-colors flex items-baseline justify-between gap-3">
         <div>
-          <h2 class="font-display text-xl text-astro-700">
+          <h2 class="font-marcellus text-xl text-bhagya-ink">
             {{ t(lang, 'events_title') }}
-            <span class="text-sm text-stone-600 font-sans font-normal ml-1">({{ events | length }})</span>
+            <span class="text-sm text-bhagya-muted font-sans font-normal ml-1">({{ events | length }})</span>
           </h2>
-          <p class="text-sm text-stone-600 mt-0.5">{{ t(lang, 'events_subtitle') }}</p>
+          <p class="text-sm text-bhagya-muted mt-0.5">{{ t(lang, 'events_subtitle') }}</p>
         </div>
-        <svg class="w-5 h-5 text-stone-500 transition-transform group-open:rotate-180 flex-shrink-0 mt-1"
+        <svg class="w-5 h-5 text-bhagya-muted-2 transition-transform group-open:rotate-180 flex-shrink-0 mt-1"
              fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
         </svg>
       </summary>
       {% if events %}
-      <ul class="divide-y divide-stone-100">
+      <ul class="divide-y divide-bhagya-line-2">
         {% for e in events %}
         <li class="px-6 py-3 grid grid-cols-[7rem_1fr] items-baseline gap-4">
-          <div class="text-sm font-semibold text-stone-700 tabular-nums">{{ e.date.isoformat() }}</div>
-          <div class="text-base text-stone-800 flex items-center gap-2">
+          <div class="text-sm font-semibold text-bhagya-ink-soft tabular-nums">{{ e.date.isoformat() }}</div>
+          <div class="text-base text-bhagya-ink flex items-center gap-2">
             <span class="w-1.5 h-1.5 rounded-full
               {% if e.event_type == 'retrograde_start' %}bg-amber-500
               {% elif e.event_type == 'retrograde_end' %}bg-emerald-500
-              {% else %}bg-astro-500{% endif %}"></span>
+              {% else %}bg-bhagya-saffron{% endif %}"></span>
             <span>{{ e.summary }}</span>
           </div>
         </li>
         {% endfor %}
       </ul>
       {% else %}
-      <div class="px-6 py-8 text-center text-sm text-stone-600">{{ t(lang, 'events_none') }}</div>
+      <div class="px-6 py-8 text-center text-sm text-bhagya-muted">{{ t(lang, 'events_none') }}</div>
       {% endif %}
     </details>
   </section>
 
   <!-- READING — flowing time-segmented intro, then 5 life-area cards -->
   {% if reading_intro %}
-  <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
-    <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-3">{{ t(lang, reading_label_key) }}</h2>
-    <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-base">{{ reading_intro }}</p>
+  <article class="bg-white border border-bhagya-line p-6 sm:p-8">
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-3">{{ t(lang, reading_label_key) }}</h2>
+    <p class="leading-relaxed text-bhagya-ink whitespace-pre-wrap text-base">{{ reading_intro }}</p>
   </article>
   {% endif %}
 
   {% if reading_sections %}
   {% for title, body in reading_sections %}
-  <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
-    <h2 class="font-display text-xl text-astro-700 mb-3">{{ title }}</h2>
-    <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-base">{{ body }}</p>
+  <article class="bg-white border border-bhagya-line p-6 sm:p-8">
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-3">{{ title }}</h2>
+    <p class="leading-relaxed text-bhagya-ink whitespace-pre-wrap text-base">{{ body }}</p>
   </article>
   {% endfor %}
   {% endif %}
 
   {# Fallback for LLM outputs that ignored the structure directive. #}
   {% if not reading_intro and not reading_sections %}
-  <article class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
-    <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-3">{{ t(lang, reading_label_key) }}</h2>
-    <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-base">{{ reading }}</p>
+  <article class="bg-white border border-bhagya-line p-6 sm:p-8">
+    <h2 class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-3">{{ t(lang, reading_label_key) }}</h2>
+    <p class="leading-relaxed text-bhagya-ink whitespace-pre-wrap text-base">{{ reading }}</p>
   </article>
   {% endif %}
 

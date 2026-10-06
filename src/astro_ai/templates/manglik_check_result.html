@@ -14,10 +14,10 @@
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
   <header>
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-1">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-1">
       Manglik Dosh Check {% if details.name %}for {{ details.name }}{% endif %}
     </h1>
-    <p class="text-sm text-stone-600">
+    <p class="text-sm text-bhagya-muted">
       {{ details.birth_date }} · {{ details.birth_time }} · {{ details.birth_place }}
     </p>
   </header>
@@ -29,21 +29,21 @@
     'mitigated': ('amber',   'Manglik Dosh — Mitigated'),
     'present':   ('rose',    'Manglik Dosh — Present'),
   }.get(manglik.effective_status, ('stone', 'Unknown')) %}
-  <section class="bg-{{ status_color[0] }}-50 border-2 border-{{ status_color[0] }}-200 rounded-2xl p-6 sm:p-8">
+  <section class="bg-{{ status_color[0] }}-50 border-2 border-{{ status_color[0] }}-200 p-6 sm:p-8">
     <div class="flex items-start gap-4">
       <div class="text-4xl sm:text-5xl flex-shrink-0" aria-hidden="true">
-        {% if manglik.effective_status == 'none' %}✓{% elif manglik.effective_status == 'cancelled' %}✓{% elif manglik.effective_status == 'mitigated' %}◐{% else %}⚠{% endif %}
+        {% if manglik.effective_status == 'none' %}✓{% elif manglik.effective_status == 'cancelled' %}✓{% elif manglik.effective_status == 'mitigated' %}◐{% else %}⚠︎{% endif %}
       </div>
       <div class="min-w-0 flex-1">
-        <h2 class="font-display text-2xl sm:text-3xl text-{{ status_color[0] }}-800 mb-2">
+        <h2 class="font-marcellus text-2xl sm:text-3xl text-{{ status_color[0] }}-800 mb-2">
           {{ status_color[1] }}
         </h2>
         {% if manglik.is_manglik %}
-        <p class="text-stone-700 leading-relaxed">
+        <p class="text-bhagya-ink-soft leading-relaxed">
           Mars sits in your <strong>{{ manglik.primary_house }}{% if manglik.primary_house in [1] %}st{% elif manglik.primary_house in [2] %}nd{% elif manglik.primary_house in [3] %}rd{% else %}th{% endif %} house</strong>{% if manglik.houses | length > 1 %}, and also qualifies from other frames ({{ manglik.houses | join(', ') }}){% endif %}. Classical Vedic tradition names this Mangal Dosh — but cancellation and mitigation rules matter more than the raw diagnosis.
         </p>
         {% else %}
-        <p class="text-stone-700 leading-relaxed">
+        <p class="text-bhagya-ink-soft leading-relaxed">
           Your Mars doesn't fall in any of the six classical Manglik houses (1, 2, 4, 7, 8, or 12) — counted from your Lagna, from your Moon, or from your Venus. Marriage compatibility does not need special Manglik-Manglik matching.
         </p>
         {% endif %}
@@ -53,11 +53,11 @@
 
   {% if manglik.cancellations %}
   <!-- CANCELLATIONS -->
-  <section class="bg-white rounded-2xl border border-emerald-200 p-6">
-    <h3 class="font-display text-lg text-emerald-800 mb-3">
+  <section class="bg-white border border-emerald-200 p-6">
+    <h3 class="font-marcellus text-lg text-emerald-800 mb-3">
       {% if manglik.effective_status == 'cancelled' %}Why the dosha is cancelled{% else %}Softening factors{% endif %}
     </h3>
-    <ul class="space-y-2 text-sm text-stone-700">
+    <ul class="space-y-2 text-sm text-bhagya-ink-soft">
       {% for rule in manglik.cancellations %}
       <li class="flex gap-2">
         <span class="text-emerald-600 flex-shrink-0" aria-hidden="true">•</span>
@@ -69,20 +69,20 @@
   {% endif %}
 
   <!-- WHAT NEXT CTAs -->
-  <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6">
-    <h3 class="font-display text-lg text-astro-800 mb-3">What to do next</h3>
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
+    <h3 class="font-marcellus text-lg text-bhagya-ink mb-3">What to do next</h3>
     <div class="space-y-3">
-      <a href="/kundli" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 mb-0.5">Get your full free Janma Kundli reading →</div>
-        <div class="text-sm text-stone-600">Same birth details, complete chart + LLM narrative + 7 life areas covered.</div>
+      <a href="/kundli" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor mb-0.5">Get your full free Janma Kundli reading →</div>
+        <div class="text-sm text-bhagya-muted">Same birth details, complete chart + LLM narrative + 7 life areas covered.</div>
       </a>
-      <a href="/matching" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 mb-0.5">Check compatibility with your partner →</div>
-        <div class="text-sm text-stone-600">Full Ashtakoot 36-Guna matching, with Manglik reconciliation between both charts.</div>
+      <a href="/matching" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor mb-0.5">Check compatibility with your partner →</div>
+        <div class="text-sm text-bhagya-muted">Full Ashtakoot 36-Guna matching, with Manglik reconciliation between both charts.</div>
       </a>
-      <a href="/learn/manglik-dosh/" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 mb-0.5">Read the full Manglik Dosh guide →</div>
-        <div class="text-sm text-stone-600">Depth: all six qualifying houses, every classical cancellation rule, and the remedies that actually work.</div>
+      <a href="/learn/manglik-dosh/" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor mb-0.5">Read the full Manglik Dosh guide →</div>
+        <div class="text-sm text-bhagya-muted">Depth: all six qualifying houses, every classical cancellation rule, and the remedies that actually work.</div>
       </a>
     </div>
   </section>
@@ -92,16 +92,16 @@
      while ignoring 7H lord, Venus, Upapada, and Dasha timing that also
      shape marital karma. Shown regardless of the Manglik verdict — a
      clean chart deserves the same nuance as a Manglik one. #}
-  <section class="rounded-2xl border border-stone-200 bg-white shadow-sm p-5 sm:p-6">
+  <section class="border border-bhagya-line bg-white p-5 sm:p-6">
     <div class="flex items-start gap-3">
-      <div class="shrink-0 w-9 h-9 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center">
-        <svg class="w-4 h-4 text-stone-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+      <div class="shrink-0 w-9 h-9 rounded-full bg-bhagya-cream-2 border border-bhagya-line flex items-center justify-center">
+        <svg class="w-4 h-4 text-bhagya-ink-soft" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
         </svg>
       </div>
       <div class="flex-1">
-        <h2 class="font-display text-lg text-stone-900 mb-1.5">{{ t(lang, 'manglik_caveat_heading') }}</h2>
-        <p class="text-sm sm:text-base text-stone-800 leading-relaxed">{{ t(lang, 'manglik_caveat_body') }}</p>
+        <h2 class="font-marcellus text-lg text-bhagya-ink mb-1.5">{{ t(lang, 'manglik_caveat_heading') }}</h2>
+        <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">{{ t(lang, 'manglik_caveat_body') }}</p>
       </div>
     </div>
   </section>
@@ -112,12 +112,12 @@
      _SEVERITY_GRADING_SENTENCE and _COMPARABILITY_BAND_SENTENCE — restated
      here in this page's voice because a single-chart disclosure has no partner
      in context. If the rule changes there, change this paragraph too. #}
-  <div class="text-xs text-stone-600 leading-relaxed">
+  <div class="text-xs text-bhagya-muted leading-relaxed">
     <p><strong>Classical basis:</strong> Manglik Dosh rules are compiled from Jataka Parijata, Phaladeepika, Jataka Chandrika, and Muhurtha Chintamani (per P.V.R. Narasimha Rao's Jagannath Hora rule-set). The 6 qualifying houses (1, 2, 4, 7, 8, 12) are counted from three frames — Lagna, Moon and Venus — with severity graded 7th or 8th high, 1st, 4th or 12th moderate, 2nd alone low, and one grade lower when only the Venus frame qualifies. Cancellation rules that need only this chart — Cancer/Leo Lagna Yogakaraka exclusion, Mars in own sign or exaltation, Jupiter conjunction/aspect — are applied to this chart automatically; any that fire are listed above. Cancellation by matching with another Manglik needs both charts, so it is decided on the compatibility page rather than here, and only between partners of comparable severity: classical texts require comparability but do not define the band, so Bhagya treats equal or adjacent grades as comparable and a low-versus-high pairing as not comparable. Astronomical positions computed via Swiss Ephemeris (pyswisseph) in sidereal Lahiri ayanamsa, matching classical Vedic tradition.</p>
   </div>
 
   <div class="text-center">
-    <a href="/manglik-check" class="text-sm text-astro-600 hover:text-astro-700 underline">Check another chart</a>
+    <a href="/manglik-check" class="text-sm text-bhagya-sindoor hover:text-bhagya-sindoor underline">Check another chart</a>
   </div>
 
 </main>

@@ -60,6 +60,21 @@ def _reading_error_fragment(slug: str, is_rate: bool, msg: str,
     `responseHandling: [{"code": ".*", "swap": true}]`, so htmx swaps that
     entire document, <head> and duplicate script tags included, into a flip
     card sized for a paragraph.
+
+    #244: the classes here are Tailwind utilities built in PYTHON, so the
+    content scanner cannot see them and a template-only redesign leaves this
+    card in the old palette — the one card a reader sees when something has
+    already gone wrong. They are safelisted only by virtue of also appearing in
+    templates; if a token used here ever stops being used in markup, it stops
+    being emitted and this card loses that colour silently.
+
+    `data-retry-head` / `data-retry-body` exist for
+    tests/test_rashifal_degraded.py, which used to find the heading by its
+    COLOUR CLASS. #244's recolour broke it, and that is the wrong way round: a
+    behaviour test asserting "the heading is not repeated in the body" has no
+    business depending on which shade of grey the heading is. Same lesson as
+    the mutation anchor in scripts/mutate_behaviour_suite.py (b2c21fd) — anchor
+    on structure, never on presentation.
     """
     # `lang` was added after QA found that the Hindi hub's tiles — which this
     # branch's own fix pointed at /hi/ — rendered this card with English
@@ -79,14 +94,14 @@ def _reading_error_fragment(slug: str, is_rate: bool, msg: str,
     return (
         '<div class="h-full flex flex-col items-center justify-center text-center gap-3 p-4">'
         f'  <div class="text-3xl" aria-hidden="true">{icon}</div>'
-        f'  <div class="text-sm font-semibold text-stone-800">{head}</div>'
-        f'  <div class="text-xs text-stone-600 leading-relaxed">{msg}</div>'
+        f'  <div data-retry-head class="text-sm font-semibold text-bhagya-ink">{head}</div>'
+        f'  <div data-retry-body class="text-xs text-bhagya-muted leading-relaxed">{msg}</div>'
         '  <div class="flex gap-2 pt-1">'
-        f'    <button type="button" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold" '
+        f'    <button type="button" class="text-xs text-bhagya-sindoor hover:text-bhagya-ink hover:underline font-semibold" '
         f'            hx-get="{prefix}/rashifal/{slug}" hx-target="closest [data-card-front]" hx-swap="innerHTML" '
         f'            hx-headers=\'{{"HX-Rashifal-Fragment": "1"}}\'>{t(lang, "rashifal_card_retry")}</button>'
-        '    <span class="text-stone-300">\u00B7</span>'
-        f'    <a href="{prefix}/rashifal/{slug}" class="text-xs text-astro-700 hover:text-astro-800 hover:underline font-semibold">{t(lang, "rashifal_card_open")}</a>'
+        '    <span class="text-bhagya-border">\u00B7</span>'
+        f'    <a href="{prefix}/rashifal/{slug}" class="text-xs text-bhagya-sindoor hover:text-bhagya-ink hover:underline font-semibold">{t(lang, "rashifal_card_open")}</a>'
         '  </div>'
         '</div>'
     )
@@ -136,18 +151,18 @@ async def rashifal(request: Request) -> HTMLResponse:
 # for the standalone-page hero. Kept in main.py rather than llm.py to
 # avoid coupling the LLM layer to UI concerns.
 _RASHIFAL_UI_META: dict[str, dict[str, str]] = {
-    "aries":       {"glyph": "♈", "glyph_color": "text-orange-700",  "element": "fire",  "quality": "Movable",  "lord": "Mars",     "sa": "Mesha"},
-    "taurus":      {"glyph": "♉", "glyph_color": "text-emerald-700", "element": "earth", "quality": "Fixed",    "lord": "Venus",    "sa": "Vrishabha"},
-    "gemini":      {"glyph": "♊", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Dual",     "lord": "Mercury",  "sa": "Mithuna"},
-    "cancer":      {"glyph": "♋", "glyph_color": "text-teal-700",    "element": "water", "quality": "Movable",  "lord": "Moon",     "sa": "Karka"},
-    "leo":         {"glyph": "♌", "glyph_color": "text-orange-700",  "element": "fire",  "quality": "Fixed",    "lord": "Sun",      "sa": "Simha"},
-    "virgo":       {"glyph": "♍", "glyph_color": "text-emerald-700", "element": "earth", "quality": "Dual",     "lord": "Mercury",  "sa": "Kanya"},
-    "libra":       {"glyph": "♎", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Movable",  "lord": "Venus",    "sa": "Tula"},
-    "scorpio":     {"glyph": "♏", "glyph_color": "text-teal-700",    "element": "water", "quality": "Fixed",    "lord": "Mars",     "sa": "Vrishchika"},
-    "sagittarius": {"glyph": "♐", "glyph_color": "text-orange-700",  "element": "fire",  "quality": "Dual",     "lord": "Jupiter",  "sa": "Dhanu"},
-    "capricorn":   {"glyph": "♑", "glyph_color": "text-emerald-700", "element": "earth", "quality": "Movable",  "lord": "Saturn",   "sa": "Makara"},
-    "aquarius":    {"glyph": "♒", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Fixed",    "lord": "Saturn",   "sa": "Kumbha"},
-    "pisces":      {"glyph": "♓", "glyph_color": "text-teal-700",    "element": "water", "quality": "Dual",     "lord": "Jupiter",  "sa": "Meena"},
+    "aries":       {"glyph": "♈︎", "glyph_color": "text-orange-700",  "element": "fire",  "quality": "Movable",  "lord": "Mars",     "sa": "Mesha"},
+    "taurus":      {"glyph": "♉︎", "glyph_color": "text-emerald-700", "element": "earth", "quality": "Fixed",    "lord": "Venus",    "sa": "Vrishabha"},
+    "gemini":      {"glyph": "♊︎", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Dual",     "lord": "Mercury",  "sa": "Mithuna"},
+    "cancer":      {"glyph": "♋︎", "glyph_color": "text-teal-700",    "element": "water", "quality": "Movable",  "lord": "Moon",     "sa": "Karka"},
+    "leo":         {"glyph": "♌︎", "glyph_color": "text-orange-700",  "element": "fire",  "quality": "Fixed",    "lord": "Sun",      "sa": "Simha"},
+    "virgo":       {"glyph": "♍︎", "glyph_color": "text-emerald-700", "element": "earth", "quality": "Dual",     "lord": "Mercury",  "sa": "Kanya"},
+    "libra":       {"glyph": "♎︎", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Movable",  "lord": "Venus",    "sa": "Tula"},
+    "scorpio":     {"glyph": "♏︎", "glyph_color": "text-teal-700",    "element": "water", "quality": "Fixed",    "lord": "Mars",     "sa": "Vrishchika"},
+    "sagittarius": {"glyph": "♐︎", "glyph_color": "text-orange-700",  "element": "fire",  "quality": "Dual",     "lord": "Jupiter",  "sa": "Dhanu"},
+    "capricorn":   {"glyph": "♑︎", "glyph_color": "text-emerald-700", "element": "earth", "quality": "Movable",  "lord": "Saturn",   "sa": "Makara"},
+    "aquarius":    {"glyph": "♒︎", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Fixed",    "lord": "Saturn",   "sa": "Kumbha"},
+    "pisces":      {"glyph": "♓︎", "glyph_color": "text-teal-700",    "element": "water", "quality": "Dual",     "lord": "Jupiter",  "sa": "Meena"},
 }
 
 
@@ -208,7 +223,7 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
     if not os.environ.get("OPENAI_API_KEY"):
         msg = "Rashifal is temporarily unavailable — API key not configured."
         if is_htmx:
-            return HTMLResponse(f'<div class="text-sm text-stone-600 p-2">{msg}</div>', status_code=503)
+            return HTMLResponse(f'<div class="text-sm text-bhagya-muted p-2">{msg}</div>', status_code=503)
         return templates.TemplateResponse(
             request, "error.html",
             # Deliberately NOT localised: this fires only when the operator

@@ -44,42 +44,57 @@
    "Get your own free reading" CTA instead. #}
 {% set is_snapshot = is_snapshot | default(false) %}
 
-<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+{# #243: <main> is a bare wrapper now so the identity band below can run
+   full-bleed on night. Everything after the header sits in the inner
+   container that used to be these classes.
+
+   <header> MUST REMAIN A DIRECT CHILD OF <main>. base.html's print
+   stylesheet styles `main > header` as the cover-page title block — 24pt H1,
+   2px rule beneath — and one wrapping div silently costs the printed report
+   its title. That is why the band is built ON the header rather than by
+   putting the header inside a <section>. #}
+<main class="pb-8 sm:pb-12">
 
   {% if is_snapshot %}
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 pt-8">
   {# SNAPSHOT BANNER — makes it unmistakably clear this is someone else's
      shared reading (not the recipient's own) + provides an early CTA. #}
-  <section class="bg-gradient-to-br from-emerald-50 to-astro-50 border border-emerald-200 rounded-2xl p-5 sm:p-6 no-print">
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-5 sm:p-6 no-print">
     <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
       <div class="flex-1">
-        <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-700 mb-1">Shared reading</div>
-        <h2 class="font-display text-lg text-stone-900 mb-1">
+        <div class="text-[11px] font-semibold uppercase tracking-wider text-emerald-800 mb-1">Shared reading</div>
+        <h2 class="font-marcellus text-lg text-bhagya-ink mb-1">
           {% if details.name %}{{ details.name }}'s Janma Kundli reading{% else %}A shared Janma Kundli reading{% endif %}
         </h2>
-        <p class="text-sm text-stone-600">
+        <p class="text-sm text-bhagya-muted">
           Someone shared this Vedic reading with you. Curious about your own chart?
         </p>
       </div>
-      <a href="/" class="inline-flex items-center justify-center gap-2 bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold px-5 py-3 rounded-lg transition-colors whitespace-nowrap">
+      <a href="/" class="inline-flex items-center justify-center gap-2 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-sm font-semibold px-5 py-3 rounded transition-colors whitespace-nowrap">
         Get your free reading &rarr;
       </a>
     </div>
   </section>
+  </div>
   {% endif %}
 
-  <!-- HEADER ------------------------------------------------------ -->
-  <header class="flex items-start justify-between gap-3">
+  <!-- IDENTITY BAND (#243) — the header IS the night band. -------- -->
+  <header class="relative isolate overflow-hidden bg-bhagya-night px-4 sm:px-6 py-8 sm:py-12 mb-8">
+    <div aria-hidden="true"
+         class="pointer-events-none absolute -z-10 -top-56 -right-24 w-[600px] h-[600px] rounded-full animate-glow
+                bg-[radial-gradient(circle,rgba(228,145,60,0.2)_0%,rgba(228,145,60,0)_62%)] no-print"></div>
+    <div class="max-w-5xl mx-auto flex items-start justify-between gap-3">
     <div class="min-w-0 flex-1">
-      <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-2">
+      <h1 class="font-marcellus text-3xl sm:text-5xl text-bhagya-cream mb-2">
         {% if details.name %}{{ t(lang, 'natal_title', name=details.name) }}{% else %}{{ t(lang, 'natal_title_anon') }}{% endif %}
       </h1>
-      <p class="text-sm text-stone-600 mb-3">
+      <p class="text-sm text-bhagya-cream/[.66] mb-3">
         {{ t(lang, 'natal_subtitle', date=details.birth_date, time=details.birth_time, place=details.birth_place) }}
       </p>
       {# Download PDF — sits directly under the header line where a user
          who wants to save a copy actually looks. Uses browser Print →
          Save as PDF via the polished @media print stylesheet. #}
-      {% with pdf_filename_hint = (details.name or 'Kundli') + ' Kundli' %}
+      {% with pdf_filename_hint = (details.name or 'Kundli') + ' Kundli', pdf_on_night = true %}
         {% include "_pdf_download_button.html" %}
       {% endwith %}
     </div>
@@ -95,7 +110,7 @@
          data-bookmark-trigger is picked up by the shared JS at the bottom. #}
       <button type="button" data-bookmark-trigger
               aria-label="Bookmark this reading" title="Bookmark this reading"
-              class="p-2.5 text-astro-700 hover:text-astro-800 hover:bg-astro-50 rounded-full transition-colors">
+              class="p-2.5 text-bhagya-cream/[.78] hover:text-bhagya-saffron rounded-full transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
         </svg>
@@ -106,7 +121,7 @@
          device. Also usable directly as Instagram Story wallpaper. #}
       <a href="/kundli/card" target="_blank" rel="noopener"
          aria-label="Save your Cosmic Card" title="Save your Cosmic Card (shareable image)"
-         class="p-2.5 text-astro-700 hover:text-astro-800 hover:bg-astro-50 rounded-full transition-colors">
+         class="p-2.5 text-bhagya-cream/[.78] hover:text-bhagya-saffron rounded-full transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
         </svg>
@@ -116,7 +131,7 @@
       {# Email — signed-in only, same handler as return-triggers Email button. #}
       <button type="button" data-email-reading
               aria-label="Email me this reading" title="Email me this reading"
-              class="p-2.5 text-astro-700 hover:text-astro-800 hover:bg-astro-50 rounded-full transition-colors">
+              class="p-2.5 text-bhagya-cream/[.78] hover:text-bhagya-saffron rounded-full transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
         </svg>
@@ -128,14 +143,44 @@
          reading.js below intercepts clicks and does the POST. #}
       <a href="#" data-whatsapp-share
          aria-label="Share this reading on WhatsApp" title="Share on WhatsApp"
-         class="p-2.5 text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 rounded-full transition-colors">
+         class="p-2.5 text-bhagya-cream/[.78] hover:text-bhagya-saffron rounded-full transition-colors">
         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
       </a>
     </div>
     {% endif %}
+    </div>
+
+    {# SNAPSHOT TILES (#243) — Lagna / Janma Rashi / Surya Rashi / current
+       Mahadasha, as a hairline grid on the night band. These four values used
+       to sit in a separate "summary chips" section further down the page
+       alongside a second copy of the Mahadasha; they are the identity of the
+       chart, so the design puts them with the name. The chips section is gone,
+       not duplicated — the Dasha CARD below still renders, because it adds the
+       antardasha and the link to /dasha, which these tiles do not.
+
+       gold on night is 7.96:1; the values are cream at full opacity. Both are
+       declared in scripts/verify_contrast.py. #}
+    <div class="max-w-5xl mx-auto mt-8 grid grid-cols-2 lg:grid-cols-4 gap-px bg-bhagya-gold/25 border border-bhagya-gold/25">
+      {% macro snapshot_tile(label, value, meta, glyph=None) %}
+      <div data-snapshot-tile class="bg-bhagya-night px-4 py-4 sm:px-5 sm:py-5 min-w-0">
+        <div class="text-[10px] font-bold uppercase tracking-[0.16em] text-bhagya-gold mb-1.5">{{ label }}</div>
+        <div class="font-marcellus text-xl sm:text-[29px] leading-tight text-bhagya-cream truncate">
+          {%- if glyph %}<span aria-hidden="true" class="text-bhagya-saffron">{{ glyph }}</span> {% endif -%}
+          {{ value }}
+        </div>
+        {% if meta %}<div class="text-xs text-bhagya-cream/[.62] mt-1 truncate">{{ meta }}</div>{% endif %}
+      </div>
+      {% endmacro %}
+      {{ snapshot_tile(t(lang, 'lagna'), chart.lagna_rashi, "%.1f"|format(chart.lagna_longitude) ~ "°", lagna_glyph) }}
+      {{ snapshot_tile(t(lang, 'moon_rashi'), moon.rashi, moon.nakshatra ~ " " ~ t(lang, 'nakshatra_suffix'), moon_glyph) }}
+      {{ snapshot_tile(t(lang, 'sun_rashi'), sun.rashi, sun.nakshatra ~ " " ~ t(lang, 'nakshatra_suffix'), sun_glyph) }}
+      {{ snapshot_tile(t(lang, 'dasha_active_maha'), dasha.mahadasha.lord, dasha.mahadasha.start.isoformat() ~ " → " ~ dasha.mahadasha.end.isoformat()) }}
+    </div>
   </header>
+
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
 
   <!-- CHART HERO — the visual anchor of the reading (Issue #79) --
        Moved from below the LLM prose sections to the TOP so the chart
@@ -146,11 +191,11 @@
        NOTE: no data-reveal on this section — the chart has its own
        stroke-draw animation via .chart-draw. Double-wrapping in
        data-reveal (which starts at opacity: 0) was hiding the chart. -->
-  <section class="bg-astro-50/40 rounded-2xl border border-astro-100 shadow-sm p-5 sm:p-7">
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-5 sm:p-7">
     {# Title at top — hero chart deserves a proper heading, not a tiny caption. #}
     <div class="text-center mb-4 sm:mb-5">
-      <h2 class="font-display text-2xl sm:text-3xl text-astro-800">{{ t(lang, 'lagna_kundali') }}</h2>
-      <p class="text-sm text-stone-600 mt-1">{{ chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</p>
+      <h2 class="font-marcellus text-2xl sm:text-3xl text-bhagya-ink">{{ t(lang, 'lagna_kundali') }}</h2>
+      <p class="text-sm text-bhagya-muted mt-1">{{ chart.lagna_rashi }} {{ t(lang, 'lagna') | lower }}</p>
     </div>
     {# Chart style toggle (SEO audit #130) — North Indian is default (matches
        every existing screenshot + PDF export); South Indian is preserved via
@@ -158,14 +203,14 @@
        ship in-page and CSS toggles which is visible — zero flash, no JS
        loading spinner. #}
     <div class="flex justify-center mb-3 no-print" data-chart-toggle>
-      <div class="inline-flex bg-white border border-stone-200 rounded-lg p-0.5 text-xs">
+      <div class="inline-flex bg-white border border-bhagya-line rounded p-0.5 text-xs">
         <button type="button" data-chart-style="north"
-                class="px-3 py-1.5 rounded-md font-semibold text-stone-600 hover:text-astro-700 transition-colors data-[active=true]:bg-astro-700 data-[active=true]:text-white"
+                class="px-3 py-1.5 rounded-md font-semibold text-bhagya-muted hover:text-bhagya-sindoor transition-colors data-[active=true]:bg-bhagya-night data-[active=true]:text-bhagya-cream"
                 data-active="true">
           North Indian
         </button>
         <button type="button" data-chart-style="south"
-                class="px-3 py-1.5 rounded-md font-semibold text-stone-600 hover:text-astro-700 transition-colors data-[active=true]:bg-astro-700 data-[active=true]:text-white">
+                class="px-3 py-1.5 rounded-md font-semibold text-bhagya-muted hover:text-bhagya-sindoor transition-colors data-[active=true]:bg-bhagya-night data-[active=true]:text-bhagya-cream">
           South Indian
         </button>
       </div>
@@ -179,34 +224,45 @@
     </div>
     <div data-chart-style-panel="north">
     {# Signature moment: strokes draw in sequence, labels fade in after.
-       Same animation as before; just repositioned. #}
+       Same animation as before; just repositioned.
+
+       #239 left the hardcoded purple below at its old ramp value on purpose.
+       These hexes are invisible to Tailwind — they are SVG attributes and
+       inline styles, so a palette swap in the config cannot reach them — but
+       the same element sits beside purple utility classes that CAN be reached,
+       and recolouring one without the other ships a page that is half each
+       palette. They move with the screen that owns this file, in one motion.
+       Do not "tidy" them ahead of it; do not miss them when it lands.
+       Three sites in this file: this diamond, the divisional-chart macro
+       below, and the reading-section left rule further down. The south-Indian
+       partial this page also includes carries the same colour. #}
     <svg viewBox="0 0 400 400" class="w-full max-w-lg mx-auto block" xmlns="http://www.w3.org/2000/svg" aria-label="{{ t(lang, 'lagna_kundali') }}">
-      <rect x="2" y="2" width="396" height="396" fill="transparent" stroke="#6b21a8" stroke-width="2"
+      <rect x="2" y="2" width="396" height="396" fill="transparent" stroke="#9E2B25" stroke-width="2"
             class="chart-draw" style="--dash: 1584; animation-delay: 0ms"/>
       {# Diamond outline — 4 sides #}
-      <line x1="200" y1="2"   x2="398" y2="200" stroke="#6b21a8" stroke-width="2"
+      <line x1="200" y1="2"   x2="398" y2="200" stroke="#9E2B25" stroke-width="2"
             class="chart-draw" style="--dash: 280; animation-delay: 200ms"/>
-      <line x1="398" y1="200" x2="200" y2="398" stroke="#6b21a8" stroke-width="2"
+      <line x1="398" y1="200" x2="200" y2="398" stroke="#9E2B25" stroke-width="2"
             class="chart-draw" style="--dash: 280; animation-delay: 320ms"/>
-      <line x1="200" y1="398" x2="2"   y2="200" stroke="#6b21a8" stroke-width="2"
+      <line x1="200" y1="398" x2="2"   y2="200" stroke="#9E2B25" stroke-width="2"
             class="chart-draw" style="--dash: 280; animation-delay: 440ms"/>
-      <line x1="2"   y1="200" x2="200" y2="2"   stroke="#6b21a8" stroke-width="2"
+      <line x1="2"   y1="200" x2="200" y2="2"   stroke="#9E2B25" stroke-width="2"
             class="chart-draw" style="--dash: 280; animation-delay: 560ms"/>
       {# Two diagonals #}
-      <line x1="2"   y1="2"   x2="398" y2="398" stroke="#6b21a8" stroke-width="2"
+      <line x1="2"   y1="2"   x2="398" y2="398" stroke="#9E2B25" stroke-width="2"
             class="chart-draw" style="--dash: 560; animation-delay: 720ms"/>
-      <line x1="398" y1="2"   x2="2"   y2="398" stroke="#6b21a8" stroke-width="2"
+      <line x1="398" y1="2"   x2="2"   y2="398" stroke="#9E2B25" stroke-width="2"
             class="chart-draw" style="--dash: 560; animation-delay: 850ms"/>
       {# Sign numbers + planet labels #}
       <g class="chart-labels">
         {% for c in chart.diamond_chart() %}
         <text x="{{ c.sign_x }}" y="{{ c.sign_y }}" text-anchor="middle"
-              font-size="11" font-weight="700" fill="#a16207"
-              style="font-family: Inter, sans-serif">{{ c.sign_num }}</text>
+              font-size="11" font-weight="700" fill="#6F675E"
+              style="font-family: Manrope, sans-serif">{{ c.sign_num }}</text>
         {% for p in c.planets %}
         <text x="{{ c.planet_cx }}" y="{{ c.planet_cy + loop.index0 * 13 }}" text-anchor="middle"
-              font-size="11" font-weight="600" fill="#1c1917"
-              style="font-family: Inter, sans-serif">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}<tspan font-size="9" fill="#b45309">&nbsp;R</tspan>{% endif %}</text>
+              font-size="11" font-weight="600" fill="#17131A"
+              style="font-family: Manrope, sans-serif">{{ p[0] }}&nbsp;{{ p[1] }}&deg;{% if p[2] %}<tspan font-size="9" fill="#92400e">&nbsp;R</tspan>{% endif %}</text>
         {% endfor %}
         {% endfor %}
       </g>
@@ -250,37 +306,37 @@
        advanced readers can access them in one click. #}
     {% macro _divisional_diamond(ch, aria) -%}
       <svg viewBox="0 0 400 400" class="w-full max-w-sm mx-auto block" xmlns="http://www.w3.org/2000/svg" aria-label="{{ aria }}">
-        <rect x="2" y="2" width="396" height="396" fill="transparent" stroke="#6b21a8" stroke-width="2"/>
-        <line x1="200" y1="2"   x2="398" y2="200" stroke="#6b21a8" stroke-width="2"/>
-        <line x1="398" y1="200" x2="200" y2="398" stroke="#6b21a8" stroke-width="2"/>
-        <line x1="200" y1="398" x2="2"   y2="200" stroke="#6b21a8" stroke-width="2"/>
-        <line x1="2"   y1="200" x2="200" y2="2"   stroke="#6b21a8" stroke-width="2"/>
-        <line x1="2"   y1="2"   x2="398" y2="398" stroke="#6b21a8" stroke-width="2"/>
-        <line x1="398" y1="2"   x2="2"   y2="398" stroke="#6b21a8" stroke-width="2"/>
+        <rect x="2" y="2" width="396" height="396" fill="transparent" stroke="#9E2B25" stroke-width="2"/>
+        <line x1="200" y1="2"   x2="398" y2="200" stroke="#9E2B25" stroke-width="2"/>
+        <line x1="398" y1="200" x2="200" y2="398" stroke="#9E2B25" stroke-width="2"/>
+        <line x1="200" y1="398" x2="2"   y2="200" stroke="#9E2B25" stroke-width="2"/>
+        <line x1="2"   y1="200" x2="200" y2="2"   stroke="#9E2B25" stroke-width="2"/>
+        <line x1="2"   y1="2"   x2="398" y2="398" stroke="#9E2B25" stroke-width="2"/>
+        <line x1="398" y1="2"   x2="2"   y2="398" stroke="#9E2B25" stroke-width="2"/>
         {% for c in ch.diamond_chart() %}
         <text x="{{ c.sign_x }}" y="{{ c.sign_y }}" text-anchor="middle"
-              font-size="11" font-weight="700" fill="#a16207"
-              style="font-family: Inter, sans-serif">{{ c.sign_num }}</text>
+              font-size="11" font-weight="700" fill="#6F675E"
+              style="font-family: Manrope, sans-serif">{{ c.sign_num }}</text>
         {% for p in c.planets %}
         <text x="{{ c.planet_cx }}" y="{{ c.planet_cy + loop.index0 * 13 }}" text-anchor="middle"
-              font-size="10" font-weight="600" fill="#1c1917"
-              style="font-family: Inter, sans-serif">{{ p[0] }}</text>
+              font-size="10" font-weight="600" fill="#17131A"
+              style="font-family: Manrope, sans-serif">{{ p[0] }}</text>
         {% endfor %}
         {% endfor %}
       </svg>
     {%- endmacro %}
 
     {% if navamsha_chart %}
-    <details class="mt-5 border-t border-astro-100 pt-4 group">
-      <summary class="cursor-pointer text-sm font-semibold text-astro-700 hover:text-astro-800 flex items-center gap-1.5 list-none">
+    <details class="mt-5 border-t border-bhagya-line pt-4 group">
+      <summary class="cursor-pointer text-sm font-semibold text-bhagya-sindoor hover:text-bhagya-ink flex items-center gap-1.5 list-none">
         <svg class="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
         </svg>
-        D-9 Navamsha chart <span class="text-xs font-normal text-stone-600 ml-1">— marriage &amp; dharma lens</span>
+        D-9 Navamsha chart <span class="text-xs font-normal text-bhagya-muted ml-1">— marriage &amp; dharma lens</span>
       </summary>
       <div class="mt-3">
-        <p class="text-xs text-stone-600 mb-3">
-          Ascendant: <span class="font-semibold text-astro-700">{{ navamsha_chart.lagna_rashi }}</span>.
+        <p class="text-xs text-bhagya-muted mb-3">
+          Ascendant: <span class="font-semibold text-bhagya-sindoor">{{ navamsha_chart.lagna_rashi }}</span>.
           Read classically for marriage indicators and to confirm which natal yogas fully activate.
         </p>
         {{ _divisional_diamond(navamsha_chart, 'D-9 Navamsha chart') }}
@@ -289,16 +345,16 @@
     {% endif %}
 
     {% if dashamsa_chart %}
-    <details class="mt-5 border-t border-astro-100 pt-4 group">
-      <summary class="cursor-pointer text-sm font-semibold text-astro-700 hover:text-astro-800 flex items-center gap-1.5 list-none">
+    <details class="mt-5 border-t border-bhagya-line pt-4 group">
+      <summary class="cursor-pointer text-sm font-semibold text-bhagya-sindoor hover:text-bhagya-ink flex items-center gap-1.5 list-none">
         <svg class="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
         </svg>
-        D-10 Dashamsa chart <span class="text-xs font-normal text-stone-600 ml-1">— career &amp; profession lens</span>
+        D-10 Dashamsa chart <span class="text-xs font-normal text-bhagya-muted ml-1">— career &amp; profession lens</span>
       </summary>
       <div class="mt-3">
-        <p class="text-xs text-stone-600 mb-3">
-          Ascendant: <span class="font-semibold text-astro-700">{{ dashamsa_chart.lagna_rashi }}</span>.
+        <p class="text-xs text-bhagya-muted mb-3">
+          Ascendant: <span class="font-semibold text-bhagya-sindoor">{{ dashamsa_chart.lagna_rashi }}</span>.
           Classical career chart — the 10th house here is read for professional strength.
         </p>
         {{ _divisional_diamond(dashamsa_chart, 'D-10 Dashamsa chart') }}
@@ -306,8 +362,8 @@
     </details>
     {% endif %}
 
-    <details class="mt-5 border-t border-astro-100 pt-4 group">
-      <summary class="cursor-pointer text-sm font-semibold text-astro-700 hover:text-astro-800 flex items-center gap-1.5 list-none">
+    <details class="mt-5 border-t border-bhagya-line pt-4 group">
+      <summary class="cursor-pointer text-sm font-semibold text-bhagya-sindoor hover:text-bhagya-ink flex items-center gap-1.5 list-none">
         <svg class="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
         </svg>
@@ -315,18 +371,18 @@
       </summary>
       <table class="w-full text-sm mt-3">
         <tbody>
-          <tr class="border-b border-stone-100">
-            <td class="py-2 font-semibold text-astro-700 w-24">{{ t(lang, 'lagna') }}</td>
-            <td class="py-2 text-stone-800">{{ chart.lagna_rashi }} <span class="text-stone-600">({{ "%.1f"|format(chart.lagna_longitude) }}&deg;)</span></td>
+          <tr class="border-b border-bhagya-line-2">
+            <td class="py-2 font-semibold text-bhagya-sindoor w-24">{{ t(lang, 'lagna') }}</td>
+            <td class="py-2 text-bhagya-ink">{{ chart.lagna_rashi }} <span class="text-bhagya-muted">({{ "%.1f"|format(chart.lagna_longitude) }}&deg;)</span></td>
           </tr>
           {% for p in chart.planets %}
-          <tr class="border-b border-stone-100 last:border-0">
-            <td class="py-2 text-stone-700 w-24 align-top">
-              {{ p.name }}{% if p.retrograde %}<span class="text-xs font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded ml-1 align-middle">R</span>{% endif %}
+          <tr class="border-b border-bhagya-line-2 last:border-0">
+            <td class="py-2 text-bhagya-ink-soft w-24 align-top">
+              {{ p.name }}{% if p.retrograde %}<span class="text-xs font-semibold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded ml-1 align-middle">R</span>{% endif %}
             </td>
-            <td class="py-2 text-stone-800 leading-relaxed">
-              <div>{{ p.rashi }} <span class="text-stone-500">&middot;</span> House {{ p.house }} <span class="text-stone-500">&middot;</span> {{ "%.1f"|format(p.longitude) }}&deg;</div>
-              <div class="text-sm text-stone-600">{{ p.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
+            <td class="py-2 text-bhagya-ink leading-relaxed">
+              <div>{{ p.rashi }} <span class="text-bhagya-muted-2">&middot;</span> House {{ p.house }} <span class="text-bhagya-muted-2">&middot;</span> {{ "%.1f"|format(p.longitude) }}&deg;</div>
+              <div class="text-sm text-bhagya-muted">{{ p.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
             </td>
           </tr>
           {% endfor %}
@@ -341,26 +397,53 @@
      shown below so a low score reads as 'here is where classical
      remedies matter most now' rather than 'you have bad luck'. #}
   {% if bhagya_score %}
-  {% set _c = bhagya_score.label_class %}
-  <section class="bg-gradient-to-br from-{{ _c }}-50 via-white to-astro-50 rounded-2xl border-2 border-{{ _c }}-200 shadow-md p-5 sm:p-7">
+  {# #243: the dial used to assemble EIGHT class names at render time from
+     `bhagya_score.label_class` — a four-step semantic scale (emerald strong /
+     astro steady / amber testing / rose deep) driving two gradients, a border
+     and three text colours. Three problems with carrying that into the
+     redesign: `astro` is the brand purple standing in for "steady", so a
+     migrated page rendered a purple dial for exactly the middle bucket; the
+     gradients are the pastel-tint idiom the redesign replaces with flat bands;
+     and eight dynamic families is eight more entries the safelist must carry.
+
+     The scale is still semantic and still four steps — it just drives the
+     LABEL only, through the map below, and the container is a fixed cream
+     panel. `astro` maps to sindoor, the palette's own accent on light.
+     Measured on bhagya-cream / cream-2: emerald-800 7.13 / 6.28, sindoor
+     6.90 / 6.07, amber-800 6.58 / 5.79, rose-800 7.44 / 6.55. The panel is
+     cream-2, so the right-hand column is the one that governs.
+
+     chart.py:4478-4487 is still the only place the buckets are decided; this
+     map is presentation, and an unknown value falls back to ink rather than
+     emitting a class name that does not exist.
+
+     `data-bhagya-score` is NEW here. base.html's print stylesheet has carried
+     `aside, [data-bhagya-score] { break-inside: avoid }` for as long as the
+     dial has existed, and nothing in this tree ever set the attribute — the
+     selector matched zero elements and the dial split across page breaks in
+     every printed reading. Setting it costs nothing and makes the rule real. #}
+  {% set _score_text = {'emerald': 'text-emerald-800', 'astro': 'text-bhagya-sindoor',
+                        'amber': 'text-amber-800', 'rose': 'text-rose-800'}
+                       .get(bhagya_score.label_class, 'text-bhagya-ink') %}
+  <section data-bhagya-score class="bg-bhagya-cream-2 border border-bhagya-line p-5 sm:p-7">
     <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
       {# The big number — a stylized dial-style label. #}
-      <div class="shrink-0 relative w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-{{ _c }}-100 via-white to-{{ _c }}-50 border-4 border-{{ _c }}-300 flex flex-col items-center justify-center shadow-lg">
-        <div class="text-[10px] uppercase tracking-wider text-{{ _c }}-700 font-semibold">{{ t(lang, 'bhagya_label') }}</div>
-        <div class="font-display text-5xl sm:text-6xl text-{{ _c }}-800 tabular-nums leading-none">{{ bhagya_score.value }}</div>
-        <div class="text-[10px] text-{{ _c }}-700">{{ t(lang, 'bhagya_out_of') }}</div>
+      <div class="shrink-0 relative w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-bhagya-cream border border-bhagya-gold/60 flex flex-col items-center justify-center">
+        <div class="text-[10px] uppercase tracking-[0.16em] text-bhagya-muted-2 font-bold">{{ t(lang, 'bhagya_label') }}</div>
+        <div class="font-marcellus text-5xl sm:text-6xl {{ _score_text }} tabular-nums leading-none">{{ bhagya_score.value }}</div>
+        <div class="text-[10px] text-bhagya-muted-2">{{ t(lang, 'bhagya_out_of') }}</div>
       </div>
       <div class="flex-1 min-w-0">
-        <div class="text-xs uppercase tracking-wider font-semibold text-{{ _c }}-700 mb-1">{{ t(lang, 'bhagya_heading') }}</div>
-        <h2 class="font-display text-xl sm:text-2xl text-stone-900 leading-tight mb-2">{{ bhagya_score.label }}</h2>
-        <p class="text-sm text-stone-700 leading-relaxed">
+        <div class="text-xs uppercase tracking-[0.16em] font-bold {{ _score_text }} mb-1">{{ t(lang, 'bhagya_heading') }}</div>
+        <h2 class="font-marcellus text-xl sm:text-2xl text-bhagya-ink leading-tight mb-2">{{ bhagya_score.label }}</h2>
+        <p class="text-sm text-bhagya-ink-soft leading-relaxed">
           {{ t(lang, 'bhagya_lede') | safe }}
         </p>
       </div>
     </div>
     {% if bhagya_score.top_drivers %}
-    <div class="mt-4 pt-4 border-t border-{{ _c }}-200 space-y-2">
-      <div class="text-xs uppercase tracking-wider font-semibold text-stone-600 mb-2">{{ t(lang, 'bhagya_why') }}</div>
+    <div class="mt-4 pt-4 border-t border-bhagya-line space-y-2">
+      <div class="text-xs uppercase tracking-wider font-semibold text-bhagya-muted mb-2">{{ t(lang, 'bhagya_why') }}</div>
       {% for d in bhagya_score.top_drivers %}
       <div class="flex items-start gap-2 text-sm">
         {% if d.kind == 'boost' %}
@@ -368,13 +451,13 @@
         {% else %}
         <span class="shrink-0 mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs font-bold" title="Reducer">{{ d.weight }}</span>
         {% endif %}
-        <span class="text-stone-800 leading-snug">{{ d.note }}</span>
+        <span class="text-bhagya-ink leading-snug">{{ d.note }}</span>
       </div>
       {% endfor %}
     </div>
     {% if bhagya_score.drivers | length > 3 %}
     <details class="mt-3 group">
-      <summary class="cursor-pointer text-xs text-stone-600 hover:text-astro-700">
+      <summary class="cursor-pointer text-xs text-bhagya-muted hover:text-bhagya-sindoor">
         {{ t(lang, 'bhagya_show_all', n=bhagya_score.drivers | length) }}
       </summary>
       <div class="mt-2 space-y-2">
@@ -385,7 +468,7 @@
           {% else %}
           <span class="shrink-0 mt-0.5 inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">{{ d.weight }}</span>
           {% endif %}
-          <span class="text-stone-800 leading-snug">{{ d.note }}</span>
+          <span class="text-bhagya-ink leading-snug">{{ d.note }}</span>
         </div>
         {% endfor %}
       </div>
@@ -401,62 +484,12 @@
      Ask feature; this makes it visible. #}
   {% include "_ask_cta.html" %}
 
-  <!-- SUMMARY CHIPS ----------------------------------------------- -->
-  <section class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-    <div class="bg-white rounded-2xl border border-stone-200 p-4 flex items-start gap-3">
-      {% if lagna_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ lagna_glyph }}</span>{% endif %}
-      <div class="min-w-0">
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'lagna') }}</div>
-        <div class="font-display text-lg text-astro-700">{{ chart.lagna_rashi }}</div>
-        <div class="text-sm text-stone-600 mt-0.5">{{ "%.1f"|format(chart.lagna_longitude) }}&deg;</div>
-      </div>
-    </div>
-    <div class="bg-white rounded-2xl border border-stone-200 p-4 flex items-start gap-3">
-      {% if moon_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ moon_glyph }}</span>{% endif %}
-      <div class="min-w-0">
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'moon_rashi') }}</div>
-        <div class="font-display text-lg text-astro-700">{{ moon.rashi }}</div>
-        <div class="text-sm text-stone-600 mt-0.5">{{ moon.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
-      </div>
-    </div>
-    <div class="bg-white rounded-2xl border border-stone-200 p-4 flex items-start gap-3">
-      {% if sun_glyph %}<span class="text-3xl text-astro-700 leading-none flex-shrink-0" aria-hidden="true">{{ sun_glyph }}</span>{% endif %}
-      <div class="min-w-0">
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1">{{ t(lang, 'sun_rashi') }}</div>
-        <div class="font-display text-lg text-astro-700">{{ sun.rashi }}</div>
-        <div class="text-sm text-stone-600 mt-0.5">{{ sun.nakshatra }} {{ t(lang, 'nakshatra_suffix') }}</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ACTIVE DASHA CARD ------------------------------------------- -->
-  <section class="bg-white rounded-2xl border border-astro-200 shadow-sm overflow-hidden">
-    <div class="bg-gradient-to-r from-astro-50/60 to-white px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-3">
-      <div>
-        <h2 class="font-display text-xl text-astro-700">{{ t(lang, 'dasha_card_title') }}</h2>
-        <p class="text-sm text-stone-600 mt-0.5">{{ t(lang, 'dasha_card_subtitle') }}</p>
-      </div>
-      <a href="/dasha" class="text-sm text-astro-600 hover:text-astro-700 font-semibold whitespace-nowrap no-print">
-        {{ t(lang, 'dasha_view_full') | safe }}
-      </a>
-    </div>
-    <div class="px-6 py-5 grid sm:grid-cols-2 gap-4">
-      <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">{{ t(lang, 'dasha_active_maha') }}</div>
-        <div class="font-display text-2xl text-stone-900">{{ dasha.mahadasha.lord }}</div>
-        <div class="text-sm text-stone-600 mt-1 tabular-nums">
-          {{ dasha.mahadasha.start.isoformat() }} <span class="text-stone-300">→</span> {{ dasha.mahadasha.end.isoformat() }}
-        </div>
-      </div>
-      <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-1">{{ t(lang, 'dasha_active_antar') }}</div>
-        <div class="font-display text-2xl text-stone-900">{{ dasha.antardasha.lord }}</div>
-        <div class="text-sm text-stone-600 mt-1 tabular-nums">
-          {{ dasha.antardasha.start.isoformat() }} <span class="text-stone-300">→</span> {{ dasha.antardasha.end.isoformat() }}
-        </div>
-      </div>
-    </div>
-  </section>
+  {# ── ACTIVE DASHA ──────────────────────────────────────────────────
+     Was a two-cell Maha/Antar card. It is now the redesign's proportional
+     timeline: six Mahadashas sized by their LENGTH, so a reader sees that
+     Venus runs 20 years and Ketu 7 without reading a single date. The
+     Maha/Antar detail line survives inside the partial. #}
+  {% include "_dasha_timeline.html" %}
 
   <!-- MANGAL DOSH panel (only if present) ------------------------- -->
   {% if manglik.is_manglik %}
@@ -464,11 +497,11 @@
   {% set _eff = manglik.effective_status %}
   {% set _eff_colour = {'cancelled':'emerald', 'mitigated':'amber', 'present':'rose'}.get(_eff, 'rose') %}
   {% set _eff_label  = {'cancelled':'Cancelled', 'mitigated':'Mitigated', 'present':'Present — no cancellations'}.get(_eff, 'Present') %}
-  <section data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-    <div class="px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
+  <section data-reveal class="bg-white border border-bhagya-line overflow-hidden">
+    <div class="px-6 py-4 border-b border-bhagya-line-2 flex items-baseline justify-between gap-4">
       <div>
-        <h2 class="font-display text-xl text-{{ _eff_colour }}-700">{{ t(lang, 'manglik_title') }}</h2>
-        <p class="text-sm text-stone-600 mt-0.5">{{ _eff_label }} &middot; {{ t(lang, manglik_severity_label) }}</p>
+        <h2 class="font-marcellus text-xl text-{{ _eff_colour }}-700">{{ t(lang, 'manglik_title') }}</h2>
+        <p class="text-sm text-bhagya-muted mt-0.5">{{ _eff_label }} &middot; {{ t(lang, manglik_severity_label) }}</p>
       </div>
       <span class="text-xs font-semibold uppercase tracking-wider text-{{ _eff_colour }}-700 bg-{{ _eff_colour }}-50 border border-{{ _eff_colour }}-200 px-2 py-1 rounded">
         {{ _eff_label }}
@@ -476,8 +509,8 @@
     </div>
     <div class="px-6 py-5 space-y-4">
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">{{ t(lang, 'manglik_houses_label') }}</div>
-        <ul class="text-sm text-stone-700 space-y-0.5">
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1.5">{{ t(lang, 'manglik_houses_label') }}</div>
+        <ul class="text-sm text-bhagya-ink-soft space-y-0.5">
           {% for h in manglik.houses %}
           <li class="flex items-center gap-2">
             <span class="w-1.5 h-1.5 rounded-full bg-{{ _eff_colour }}-400"></span>
@@ -487,23 +520,23 @@
         </ul>
       </div>
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">{{ t(lang, 'manglik_about_label') }}</div>
-        <p class="text-base text-stone-800 leading-relaxed">{{ t(lang, manglik_about_key) }}</p>
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1.5">{{ t(lang, 'manglik_about_label') }}</div>
+        <p class="text-base text-bhagya-ink leading-relaxed">{{ t(lang, manglik_about_key) }}</p>
       </div>
       {# COMPUTED CANCELLATIONS — replaces the old "consult an astrologer" boilerplate
          with the actual classical rules that fire for this chart, cited by source. #}
       {% if manglik.cancellations %}
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1.5">
           {% if _eff == 'cancelled' %}Classical cancellation rules that apply{% else %}Mitigations that apply{% endif %}
         </div>
-        <ul class="text-sm text-stone-700 space-y-2">
+        <ul class="text-sm text-bhagya-ink-soft space-y-2">
           {% for rule in manglik.cancellations %}
           <li class="flex items-start gap-2">
             <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-{{ _eff_colour }}-400 flex-shrink-0"></span>
             <span>
-              <span class="text-stone-800">{{ rule.description }}</span>
-              <span class="text-xs text-stone-600 italic ml-1">— {{ rule.source }}</span>
+              <span class="text-bhagya-ink">{{ rule.description }}</span>
+              <span class="text-xs text-bhagya-muted italic ml-1">— {{ rule.source }}</span>
             </span>
           </li>
           {% endfor %}
@@ -511,14 +544,14 @@
       </div>
       {% else %}
       <div>
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">{{ t(lang, 'manglik_cancel_label') }}</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1.5">{{ t(lang, 'manglik_cancel_label') }}</div>
         {# Mutual Manglik-Manglik cancellation is conditional on comparable severity, and
            this page holds only one chart — so it cannot be evaluated here. The band is
            defined once, in matching.py: _SEVERITY_GRADING_SENTENCE and
            _COMPARABILITY_BAND_SENTENCE. That is the source of truth; the sentences below
            are the same rule in this page's shorter result-prose voice. If the band moves
            there, move it here too. #}
-        <p class="text-base text-stone-700 leading-relaxed">No classical cancellation rules apply to this chart. Matching with another Manglik partner can still cancel the dosha mutually — but classical texts require the two partners to be of comparable severity, and they do not define the band, so Bhagya treats equal or adjacent grades as comparable and a low-versus-high pairing as not. That comparison needs both charts, so it is decided on the <a href="/matching" class="text-astro-600 hover:text-astro-700 underline">compatibility check</a>, not here. Consult a knowledgeable astrologer before relying on remedies.</p>
+        <p class="text-base text-bhagya-ink-soft leading-relaxed">No classical cancellation rules apply to this chart. Matching with another Manglik partner can still cancel the dosha mutually — but classical texts require the two partners to be of comparable severity, and they do not define the band, so Bhagya treats equal or adjacent grades as comparable and a low-versus-high pairing as not. That comparison needs both charts, so it is decided on the <a href="/matching" class="text-bhagya-sindoor hover:text-bhagya-sindoor underline">compatibility check</a>, not here. Consult a knowledgeable astrologer before relying on remedies.</p>
       </div>
       {% endif %}
 
@@ -526,9 +559,9 @@
          Manglik detection over-focuses users on Mars while ignoring 7H
          lord, Venus, Upapada, and Dasha timing. Neutral (stone) tone —
          not a warning, just a broader-context note. #}
-      <div class="mt-2 pt-4 border-t border-stone-200/70">
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">{{ t(lang, 'manglik_caveat_heading') }}</div>
-        <p class="text-sm text-stone-700 leading-relaxed">{{ t(lang, 'manglik_caveat_body') }}</p>
+      <div class="mt-2 pt-4 border-t border-bhagya-line/70">
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1.5">{{ t(lang, 'manglik_caveat_heading') }}</div>
+        <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ t(lang, 'manglik_caveat_body') }}</p>
       </div>
     </div>
   </section>
@@ -554,14 +587,14 @@
      "1 classical combination active / Strengths". The sub-heading changed;
      the frame around it did not. #}
   {% set _auspicious = yogas | rejectattr("category", "equalto", "challenge") | list %}
-  <section data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-    <div class="px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
+  <section data-reveal class="bg-white border border-bhagya-line overflow-hidden">
+    <div class="px-6 py-4 border-b border-bhagya-line-2 flex items-baseline justify-between gap-4">
       <div>
-        <h2 class="font-display text-xl text-emerald-700">Yogas in your chart</h2>
-        <p class="text-sm text-stone-600 mt-0.5">{{ _auspicious | length }} classical combination{{ '' if _auspicious | length == 1 else 's' }} active{% if _auspicious | length != yogas | length %}, plus {{ yogas | length - _auspicious | length }} to be aware of{% endif %}</p>
+        <h2 class="font-marcellus text-xl text-emerald-800">Yogas in your chart</h2>
+        <p class="text-sm text-bhagya-muted mt-0.5">{{ _auspicious | length }} classical combination{{ '' if _auspicious | length == 1 else 's' }} active{% if _auspicious | length != yogas | length %}, plus {{ yogas | length - _auspicious | length }} to be aware of{% endif %}</p>
       </div>
       {% if _auspicious %}
-      <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded">Strengths</span>
+      <span class="text-xs font-semibold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded">Strengths</span>
       {% endif %}
     </div>
     <div class="px-6 py-5 space-y-5">
@@ -569,18 +602,18 @@
         {% set cat_yogas = yogas | selectattr("category", "equalto", cat_slug) | list %}
         {% if cat_yogas %}
         <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-0.5">{{ cat_label }}</div>
-          <div class="text-xs text-stone-600 mb-2.5">{{ cat_desc }}</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-0.5">{{ cat_label }}</div>
+          <div class="text-xs text-bhagya-muted mb-2.5">{{ cat_desc }}</div>
           <div class="grid sm:grid-cols-2 gap-3">
             {% for y in cat_yogas %}
             {# Group hover reveals the classical source citation — hidden
                by default so the card feels clean, appears on hover with
                a small upward slide. Focus-within keeps it accessible for
                keyboard users. #}
-            <div class="yoga-card group bg-stone-50 border border-stone-200 rounded-lg p-3.5 transition-shadow hover:shadow-md">
-              <div class="font-display text-base text-emerald-800 mb-1">{{ y.name }}</div>
-              <p class="text-sm text-stone-700 leading-relaxed">{{ y.effect }}</p>
-              <div class="yoga-source text-[11px] text-stone-600 italic mt-1.5">Source: {{ y.source }}</div>
+            <div class="yoga-card group bg-bhagya-cream-2 border border-bhagya-line rounded p-3.5 transition-shadow">
+              <div class="font-marcellus text-base text-emerald-800 mb-1">{{ y.name }}</div>
+              <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ y.effect }}</p>
+              <div class="yoga-source text-[11px] text-bhagya-muted italic mt-1.5">Source: {{ y.source }}</div>
             </div>
             {% endfor %}
           </div>
@@ -595,7 +628,7 @@
          do hold and read the rule in, and this paragraph says plainly what
          that reference is and is not. Do not restore a book name here that
          scripts/verify_rule_citations.py cannot resolve. #}
-      <p class="text-xs text-stone-600 italic border-t border-stone-100 pt-3">
+      <p class="text-xs text-bhagya-muted italic border-t border-bhagya-line-2 pt-3">
         Yogas are classical planetary combinations. Most grant specific gifts across life;
         a few, shown separately above, are read as difficult rather than fortunate.
         The reference under each card is the text we read the rule in and checked it
@@ -611,48 +644,48 @@
 
   <!-- SADE SATI panel (only if active) ---------------------------- -->
   {% if sade_sati.is_active %}
-  <section data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-    <div class="px-6 py-4 border-b border-stone-100 flex items-baseline justify-between gap-4">
+  <section data-reveal class="bg-white border border-bhagya-line overflow-hidden">
+    <div class="px-6 py-4 border-b border-bhagya-line-2 flex items-baseline justify-between gap-4">
       <div>
-        <h2 class="font-display text-xl text-amber-700">{{ t(lang, 'sade_sati_title') }}</h2>
-        <p class="text-sm text-stone-600 mt-0.5">{{ t(lang, 'sade_sati_active') }} &middot; {{ t(lang, 'sade_sati_duration') }}</p>
+        <h2 class="font-marcellus text-xl text-amber-800">{{ t(lang, 'sade_sati_title') }}</h2>
+        <p class="text-sm text-bhagya-muted mt-0.5">{{ t(lang, 'sade_sati_active') }} &middot; {{ t(lang, 'sade_sati_duration') }}</p>
       </div>
-      <span class="text-xs font-semibold uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded">
+      <span class="text-xs font-semibold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1 rounded">
         {{ t(lang, sade_phase_key) }}
       </span>
     </div>
     <div class="px-6 py-5 space-y-4">
-      <p class="text-base text-stone-800 leading-relaxed">{{ t(lang, sade_about_key) }}</p>
+      <p class="text-base text-bhagya-ink leading-relaxed">{{ t(lang, sade_about_key) }}</p>
 
       {# TIMELINE — 3-column compact stat strip with dates + progress #}
       {% if sade_sati.overall_start and sade_sati.overall_end %}
       {% set total_days = (sade_sati.overall_end - sade_sati.overall_start).days %}
       {% set elapsed_days = (today_date | string | safe and 0) %}
       {# Compute elapsed/remaining via dates passed in context: rely on Jinja math #}
-      <div class="grid sm:grid-cols-3 gap-3 bg-stone-50 rounded-lg p-4 border border-stone-100">
+      <div class="grid sm:grid-cols-3 gap-3 bg-bhagya-cream-2 rounded p-4 border border-bhagya-line-2">
         <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-0.5">{{ t(lang, 'sade_sati_started') }}</div>
-          <div class="font-display text-base text-stone-900 tabular-nums">{{ sade_sati.overall_start.strftime('%b %Y') }}</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-0.5">{{ t(lang, 'sade_sati_started') }}</div>
+          <div class="font-marcellus text-base text-bhagya-ink tabular-nums">{{ sade_sati.overall_start.strftime('%b %Y') }}</div>
         </div>
         {% if sade_sati.phase_end %}
         <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-0.5">{{ t(lang, 'sade_sati_phase_ends') }}</div>
-          <div class="font-display text-base text-stone-900 tabular-nums">{{ sade_sati.phase_end.strftime('%b %Y') }}</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-0.5">{{ t(lang, 'sade_sati_phase_ends') }}</div>
+          <div class="font-marcellus text-base text-bhagya-ink tabular-nums">{{ sade_sati.phase_end.strftime('%b %Y') }}</div>
         </div>
         {% endif %}
         <div>
-          <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-0.5">{{ t(lang, 'sade_sati_ends') }}</div>
-          <div class="font-display text-base text-stone-900 tabular-nums">{{ sade_sati.overall_end.strftime('%b %Y') }}</div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-0.5">{{ t(lang, 'sade_sati_ends') }}</div>
+          <div class="font-marcellus text-base text-bhagya-ink tabular-nums">{{ sade_sati.overall_end.strftime('%b %Y') }}</div>
         </div>
       </div>
 
       {# Progress bar across the full SS cycle #}
       {% set pct = sade_sati_progress %}
       <div>
-        <div class="h-2 rounded-full bg-stone-200 overflow-hidden">
-          <div class="h-full bg-amber-500 transition-all" style="width: {{ pct }}%;"></div>
+        <div class="h-2 bg-bhagya-line overflow-hidden">
+          <div class="h-full bg-bhagya-saffron transition-all" style="width: {{ pct }}%;"></div>
         </div>
-        <div class="flex justify-between text-xs text-stone-600 mt-1.5 tabular-nums">
+        <div class="flex justify-between text-xs text-bhagya-muted mt-1.5 tabular-nums">
           <span>{{ sade_sati_elapsed_years }} {{ t(lang, 'sade_sati_years') }} {{ t(lang, 'sade_sati_elapsed') }}</span>
           <span>{{ sade_sati_remaining_years }} {{ t(lang, 'sade_sati_years') }} {{ t(lang, 'sade_sati_remaining') }}</span>
         </div>
@@ -660,26 +693,26 @@
       {% endif %}
 
       <div class="grid sm:grid-cols-2 gap-4">
-        <div class="bg-amber-50/50 border border-amber-100 rounded-lg p-4">
-          <div class="text-xs font-semibold uppercase tracking-wider text-amber-700 mb-1.5">{{ t(lang, 'sade_sati_themes_label') }}</div>
-          <p class="text-sm text-stone-700 leading-relaxed">{{ t(lang, sade_themes_key) }}</p>
+        <div class="bg-amber-50/50 border border-amber-100 rounded p-4">
+          <div class="text-xs font-semibold uppercase tracking-wider text-amber-800 mb-1.5">{{ t(lang, 'sade_sati_themes_label') }}</div>
+          <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ t(lang, sade_themes_key) }}</p>
         </div>
-        <div class="bg-emerald-50/40 border border-emerald-100 rounded-lg p-4">
-          <div class="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-1.5">{{ t(lang, 'sade_sati_guidance_label') }}</div>
-          <p class="text-sm text-stone-700 leading-relaxed">{{ t(lang, sade_guide_key) }}</p>
+        <div class="bg-emerald-50/40 border border-emerald-100 rounded p-4">
+          <div class="text-xs font-semibold uppercase tracking-wider text-emerald-800 mb-1.5">{{ t(lang, 'sade_sati_guidance_label') }}</div>
+          <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ t(lang, sade_guide_key) }}</p>
         </div>
       </div>
 
       {# Balance — what this period gives in return #}
-      <div class="bg-stone-50 border border-stone-100 rounded-lg p-4">
-        <div class="text-xs font-semibold uppercase tracking-wider text-stone-600 mb-1.5">{{ t(lang, 'sade_sati_balance_label') }}</div>
-        <p class="text-sm text-stone-700 leading-relaxed">{{ t(lang, 'sade_sati_balance') }}</p>
+      <div class="bg-bhagya-cream-2 border border-bhagya-line-2 rounded p-4">
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1.5">{{ t(lang, 'sade_sati_balance_label') }}</div>
+        <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ t(lang, 'sade_sati_balance') }}</p>
       </div>
 
       {# Traditional precautions / remedies #}
-      <div class="bg-astro-50/40 border border-astro-100 rounded-lg p-4">
-        <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1.5">{{ t(lang, 'sade_sati_precautions_label') }}</div>
-        <p class="text-sm text-stone-700 leading-relaxed">{{ t(lang, 'sade_sati_precautions') }}</p>
+      <div class="bg-bhagya-cream-2 border border-bhagya-line rounded p-4">
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1.5">{{ t(lang, 'sade_sati_precautions_label') }}</div>
+        <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ t(lang, 'sade_sati_precautions') }}</p>
       </div>
 
     </div>
@@ -691,9 +724,9 @@
      Fills palette-purple as scroll advances. Motion-safe: without JS,
      bar stays at 0% (no fallback needed since it's an enhancement). #}
   <div id="reading-progress-bar"
-       class="fixed bottom-0 left-0 right-0 z-30 h-1 bg-stone-200/50 no-print pointer-events-none"
+       class="fixed bottom-0 left-0 right-0 z-30 h-1 bg-bhagya-line/50 no-print pointer-events-none"
        style="display: none;" aria-hidden="true">
-    <div id="reading-progress-fill" class="h-full bg-astro-500 origin-left transition-transform duration-100"
+    <div id="reading-progress-fill" class="h-full bg-bhagya-saffron origin-left transition-transform duration-100"
          style="transform: scaleX(0);"></div>
   </div>
   <script>
@@ -735,28 +768,28 @@
   {% for title, body in sections %}
   {% set _first_word = title.split()[0] if title else '' %}
   {% set _icon = _section_icons.get(_first_word, '⋄') %}
-  <article data-reveal class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8"
-           style="border-left: 3px solid #a78bfa;">
-    <h2 class="font-display text-xl text-astro-700 mb-3 flex items-center gap-2.5">
+  <article data-reveal class="bg-white border border-bhagya-line p-6 sm:p-8"
+           style="border-left: 3px solid #E4913C;">
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-3 flex items-center gap-2.5">
       <span aria-hidden="true" class="text-2xl leading-none opacity-70">{{ _icon }}</span>
       <span>{{ title }}</span>
     </h2>
-    <p class="leading-relaxed text-stone-800 whitespace-pre-wrap text-base">{{ body | linkify_learn }}</p>
+    <p class="leading-relaxed text-bhagya-ink whitespace-pre-wrap text-base">{{ body | linkify_learn }}</p>
   </article>
   {% endfor %}
 
   {% if is_snapshot %}
   {# SNAPSHOT recipient CTA — replaces the return-triggers block for
      shared-view mode. Only real action: get their own reading. #}
-  <section data-reveal class="bg-gradient-to-br from-astro-50 to-emerald-50 border border-astro-200 rounded-2xl p-6 sm:p-8 no-print text-center">
-    <h2 class="font-display text-2xl text-astro-800 mb-2">Want your own free reading?</h2>
-    <p class="text-sm text-stone-700 max-w-xl mx-auto mb-5 leading-relaxed">
+  <section data-reveal class="bg-bhagya-cream-2 border border-bhagya-line p-6 sm:p-8 no-print text-center">
+    <h2 class="font-marcellus text-2xl text-bhagya-ink mb-2">Want your own free reading?</h2>
+    <p class="text-sm text-bhagya-ink-soft max-w-xl mx-auto mb-5 leading-relaxed">
       Enter your birth details and get a personalised Vedic Kundli reading like this one in seconds. Free, honest, chart-based — no upsell, no login required.
     </p>
-    <a href="/" class="inline-flex items-center gap-2 bg-astro-700 hover:bg-astro-800 text-white text-base font-semibold px-6 py-3 rounded-lg transition-colors">
+    <a href="/" class="inline-flex items-center gap-2 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-base font-semibold px-6 py-3 rounded transition-colors">
       Generate my free Kundli &rarr;
     </a>
-    <p class="text-xs text-stone-600 mt-4">
+    <p class="text-xs text-bhagya-muted mt-4">
       Shared reading created {{ snapshot.created_at[:10] if snapshot else '' }} &middot;
       Link expires {{ snapshot.expires_at[:10] if snapshot else '' }}
     </p>
@@ -767,15 +800,15 @@
        sign-in state. Return visitors are worth 5-10x first-visitors, so
        triggering the return-intention while attention is highest matters
        more than any other single funnel change on /kundli. -->
-  <section data-reveal class="bg-gradient-to-br from-astro-50/60 to-amber-50/30 border border-astro-100 rounded-2xl p-6 sm:p-8 no-print">
+  <section data-reveal class="bg-bhagya-cream-2 border border-bhagya-line p-6 sm:p-8 no-print">
     {% set _rt_user = load_current_user(request) %}
     <div class="flex items-start gap-3 mb-4">
-      <svg class="w-6 h-6 text-astro-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+      <svg class="w-6 h-6 text-bhagya-sindoor flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
       </svg>
       <div>
-        <h2 class="font-display text-xl text-astro-800 mb-1">Come back tomorrow</h2>
-        <p class="text-sm text-stone-700 leading-relaxed">
+        <h2 class="font-marcellus text-xl text-bhagya-ink mb-1">Come back tomorrow</h2>
+        <p class="text-sm text-bhagya-ink-soft leading-relaxed">
           {% if _rt_user %}
             Your reading is saved to your account. Add a bookmark for one-tap access.
           {% else %}
@@ -788,7 +821,7 @@
     <div class="flex flex-wrap gap-2.5">
       {# Bookmark button — Ctrl+D shortcut on desktop; explicit hint on mobile #}
       <button type="button" data-bookmark-trigger
-              class="inline-flex items-center gap-2 bg-white border border-astro-300 hover:border-astro-500 text-astro-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+              class="inline-flex items-center gap-2 bg-white border border-bhagya-border hover:border-bhagya-saffron text-bhagya-sindoor text-sm font-semibold px-4 py-2 rounded transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
         </svg>
@@ -798,7 +831,7 @@
       {% if not _rt_user and google_client_id %}
       {# Signed-out visitors: nudge sign-in for cross-device sync of saved charts #}
       <button type="button" id="google-signin-trigger-natal"
-              class="inline-flex items-center gap-2 bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+              class="inline-flex items-center gap-2 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-sm font-semibold px-4 py-2 rounded transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M16 12v-4a4 4 0 10-8 0v4M6 12h12v9H6z"/>
         </svg>
@@ -810,7 +843,7 @@
       {# Email-me-this-reading — signed-in only (send goes to their own
          address). Rate-limited server-side to 1 per minute per user. #}
       <button type="button" data-email-reading
-              class="inline-flex items-center gap-2 bg-white border border-astro-300 hover:border-astro-500 text-astro-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+              class="inline-flex items-center gap-2 bg-white border border-bhagya-border hover:border-bhagya-saffron text-bhagya-sindoor text-sm font-semibold px-4 py-2 rounded transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
         </svg>
@@ -823,7 +856,7 @@
          below intercepts the click. Falls back to invite text if
          snapshot creation fails. #}
       <a href="#" data-whatsapp-share
-         class="inline-flex items-center gap-2 bg-white border border-emerald-300 hover:border-emerald-500 text-emerald-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+         class="inline-flex items-center gap-2 bg-white border border-emerald-300 hover:border-emerald-500 text-emerald-800 text-sm font-semibold px-4 py-2 rounded transition-colors">
         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
         </svg>
@@ -832,7 +865,7 @@
 
       {# Rashifal follow-up — the reader's own Moon rashi #}
       <a href="/rashifal#{{ moon.rashi.split(' ')[0] | lower }}"
-         class="inline-flex items-center gap-2 bg-white border border-stone-300 hover:border-stone-400 text-stone-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+         class="inline-flex items-center gap-2 bg-white border border-bhagya-border hover:border-bhagya-saffron text-bhagya-ink-soft text-sm font-semibold px-4 py-2 rounded transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2M5 12H3m18 0h-2m-2.05-7.05l-1.41 1.41M6.46 17.54l-1.41 1.41m0-14.14l1.41 1.41m11.08 11.08l1.41 1.41M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
         </svg>
@@ -860,7 +893,7 @@
           // Toast instead of alert() — softer UX
           var toast = document.createElement('div');
           toast.textContent = 'Press ' + shortcut + ' to bookmark this reading';
-          toast.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-stone-900 text-white text-sm px-4 py-2.5 rounded-lg shadow-lg';
+          toast.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-bhagya-night text-bhagya-cream text-sm px-4 py-2.5 rounded';
           toast.style.transition = 'opacity 400ms';
           document.body.appendChild(toast);
           setTimeout(function () { toast.style.opacity = '0'; }, 2600);
@@ -892,8 +925,8 @@
       function toast(msg, isErr) {
         var t = document.createElement('div');
         t.textContent = msg;
-        t.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-50 text-sm px-4 py-2.5 rounded-lg shadow-lg ' +
-                      (isErr ? 'bg-rose-700 text-white' : 'bg-emerald-700 text-white');
+        t.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-50 text-sm px-4 py-2.5 rounded ' +
+                      (isErr ? 'bg-bhagya-sindoor text-bhagya-cream' : 'bg-emerald-700 text-bhagya-cream');
         t.style.transition = 'opacity 400ms';
         document.body.appendChild(t);
         setTimeout(function () { t.style.opacity = '0'; }, 3000);
@@ -936,8 +969,8 @@
       function toast(msg, isErr) {
         var t = document.createElement('div');
         t.textContent = msg;
-        t.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-50 text-sm px-4 py-2.5 rounded-lg shadow-lg ' +
-                      (isErr ? 'bg-rose-700 text-white' : 'bg-emerald-700 text-white');
+        t.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-50 text-sm px-4 py-2.5 rounded ' +
+                      (isErr ? 'bg-bhagya-sindoor text-bhagya-cream' : 'bg-emerald-700 text-bhagya-cream');
         t.style.transition = 'opacity 400ms';
         document.body.appendChild(t);
         setTimeout(function () { t.style.opacity = '0'; }, 2400);
@@ -993,10 +1026,10 @@
 
   {% if not is_snapshot %}
   <!-- ASK SHUBH BHAGYA CTA — natural moment after the reading -------- -->
-  <section data-reveal class="bg-gradient-to-br from-astro-100 via-amber-50 to-rose-50 border-2 border-astro-300 rounded-2xl p-6 sm:p-8 no-print">
+  <section data-reveal class="bg-bhagya-night p-6 sm:p-8 no-print">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
       <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2 text-astro-700 mb-2">
+        <div class="flex items-center gap-2 text-bhagya-saffron mb-2">
           <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
           </svg>
@@ -1004,14 +1037,14 @@
             {% if lang == 'hi' %}अपनी कुंडली से पूछें{% else %}Got a question about your chart?{% endif %}
           </span>
         </div>
-        <h2 class="font-display text-xl sm:text-2xl text-astro-800 mb-1.5">
+        <h2 class="font-marcellus text-xl sm:text-2xl text-bhagya-cream mb-1.5">
           {% if lang == 'hi' %}शुभ भाग्य से पूछें{% else %}Ask Shubh Bhagya{% endif %}
         </h2>
-        <p class="text-stone-700 text-sm sm:text-base leading-relaxed max-w-xl">
+        <p class="text-bhagya-cream/[.72] text-sm sm:text-base leading-relaxed max-w-xl">
           {% if lang == 'hi' %}करियर, विवाह, स्वास्थ्य या किसी भी जीवन के विषय पर अपनी कुंडली के आधार पर सटीक उत्तर पाएँ। आपका चार्ट पहले से सहेजा गया है।{% else %}Ask anything about career, marriage, health, or life timing — answers grounded in your saved chart, not generic advice. Your chart is already loaded.{% endif %}
         </p>
       </div>
-      <a href="/ask" class="inline-flex items-center justify-center gap-2 bg-astro-700 hover:bg-astro-800 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all text-sm sm:text-base whitespace-nowrap flex-shrink-0">
+      <a href="/ask" class="inline-flex items-center justify-center gap-2 bg-bhagya-saffron hover:bg-bhagya-cream text-bhagya-night font-semibold px-6 py-3 rounded transition-colors text-sm sm:text-base whitespace-nowrap flex-shrink-0">
         {% if lang == 'hi' %}प्रश्न पूछें{% else %}Ask a question{% endif %}
         <span aria-hidden="true">&rarr;</span>
       </a>
@@ -1019,48 +1052,49 @@
   </section>
 
   <!-- CONTINUE YOUR CHART ----------------------------------------- -->
-  <section data-reveal class="bg-gradient-to-br from-astro-50 to-amber-50/40 border border-astro-100 rounded-2xl p-6 sm:p-8 no-print">
-    <h2 class="font-display text-xl text-astro-700 mb-2">{{ t(lang, 'continue_chart') }}</h2>
-    <p class="text-stone-600 text-sm mb-5">{{ t(lang, 'continue_chart_desc') }}</p>
+  <section data-reveal class="bg-bhagya-cream-2 border border-bhagya-line p-6 sm:p-8 no-print">
+    <h2 class="font-marcellus text-xl text-bhagya-ink mb-2">{{ t(lang, 'continue_chart') }}</h2>
+    <p class="text-bhagya-muted text-sm mb-5">{{ t(lang, 'continue_chart_desc') }}</p>
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-      <a href="/today" class="group bg-white rounded-2xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
-        <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
+      <a href="/today" class="group bg-white p-4 border border-bhagya-line hover:border-bhagya-saffron hover:transition-all relative">
+        <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#9728;</div>
-        <h3 class="font-display text-base text-stone-900 mb-0.5 group-hover:text-astro-700">{{ t(lang, 'daily_horoscope') }} &rarr;</h3>
-        <p class="text-sm text-stone-600 leading-relaxed">{{ t(lang, 'daily_horoscope_desc') }}</p>
+        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-ink">{{ t(lang, 'daily_horoscope') }} &rarr;</h3>
+        <p class="text-sm text-bhagya-muted leading-relaxed">{{ t(lang, 'daily_horoscope_desc') }}</p>
       </a>
 
-      <a href="/ask" class="group bg-white rounded-2xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
-        <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
+      <a href="/ask" class="group bg-white p-4 border border-bhagya-line hover:border-bhagya-saffron hover:transition-all relative">
+        <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#128172;</div>
-        <h3 class="font-display text-base text-stone-900 mb-0.5 group-hover:text-astro-700">{% if lang == 'hi' %}प्रश्न पूछें{% else %}Ask a question{% endif %} &rarr;</h3>
-        <p class="text-sm text-stone-600 leading-relaxed">{% if lang == 'hi' %}अपनी कुंडली पर आधारित कोई भी प्रश्न पूछें{% else %}Free-form Q&amp;A grounded in your chart{% endif %}</p>
+        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-ink">{% if lang == 'hi' %}प्रश्न पूछें{% else %}Ask a question{% endif %} &rarr;</h3>
+        <p class="text-sm text-bhagya-muted leading-relaxed">{% if lang == 'hi' %}अपनी कुंडली पर आधारित कोई भी प्रश्न पूछें{% else %}Free-form Q&amp;A grounded in your chart{% endif %}</p>
       </a>
 
-      <a href="/matching" class="group bg-white rounded-2xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
-        <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
+      <a href="/matching" class="group bg-white p-4 border border-bhagya-line hover:border-bhagya-saffron hover:transition-all relative">
+        <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#10084;</div>
-        <h3 class="font-display text-base text-stone-900 mb-0.5 group-hover:text-astro-700">{{ t(lang, 'kundali_matching') }} &rarr;</h3>
-        <p class="text-sm text-stone-600 leading-relaxed">{{ t(lang, 'kundali_matching_desc') }}</p>
+        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-ink">{{ t(lang, 'kundali_matching') }} &rarr;</h3>
+        <p class="text-sm text-bhagya-muted leading-relaxed">{{ t(lang, 'kundali_matching_desc') }}</p>
       </a>
 
-      <a href="/dasha" class="group bg-white rounded-2xl p-4 border border-astro-200 hover:border-astro-500 hover:shadow-md transition-all relative">
-        <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
+      <a href="/dasha" class="group bg-white p-4 border border-bhagya-line hover:border-bhagya-saffron hover:transition-all relative">
+        <span class="absolute top-3 right-3 text-xs font-semibold tracking-wider text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">{{ t(lang, 'badge_live') }}</span>
         <div class="text-2xl mb-1">&#9211;</div>
-        <h3 class="font-display text-base text-stone-900 mb-0.5 group-hover:text-astro-700">{{ t(lang, 'dasha_periods') }} &rarr;</h3>
-        <p class="text-sm text-stone-600 leading-relaxed">{{ t(lang, 'dasha_periods_desc') }}</p>
+        <h3 class="font-marcellus text-base text-bhagya-ink mb-0.5 group-hover:text-bhagya-ink">{{ t(lang, 'dasha_periods') }} &rarr;</h3>
+        <p class="text-sm text-bhagya-muted leading-relaxed">{{ t(lang, 'dasha_periods_desc') }}</p>
       </a>
     </div>
   </section>
 
   <div class="text-center no-print">
-    <a href="/" class="inline-flex items-center gap-1 text-astro-600 hover:text-astro-700 font-semibold text-sm">
+    <a href="/" class="inline-flex items-center gap-1 text-bhagya-sindoor hover:text-bhagya-sindoor font-semibold text-sm">
       <span aria-hidden="true">&larr;</span> {{ t(lang, 'generate_another') }}
     </a>
   </div>
   {% endif %}
 
+  </div>
 </main>
 <script>Analytics.kundliGenerated({ lang: '{{ lang }}' });</script>
 {% endblock %}

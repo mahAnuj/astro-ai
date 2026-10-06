@@ -21,26 +21,26 @@
 #}
 
 {% macro histogram(title, subtitle, items, empty_note='No data in this window.') %}
-<section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
+<section class="bg-white border border-bhagya-line p-5 sm:p-6">
   <div class="mb-3">
-    <h2 class="font-display text-lg text-astro-800">{{ title }}</h2>
-    {% if subtitle %}<p class="text-xs text-stone-600 mt-0.5">{{ subtitle }}</p>{% endif %}
+    <h2 class="font-marcellus text-lg text-bhagya-ink">{{ title }}</h2>
+    {% if subtitle %}<p class="text-xs text-bhagya-muted mt-0.5">{{ subtitle }}</p>{% endif %}
   </div>
   {% if not items %}
-  <p class="text-sm text-stone-600 italic">{{ empty_note }}</p>
+  <p class="text-sm text-bhagya-muted italic">{{ empty_note }}</p>
   {% else %}
   <ul class="space-y-2">
     {% for row in items %}
     <li>
       <div class="flex items-baseline justify-between gap-3 text-sm mb-0.5">
-        <span class="font-medium text-stone-800 truncate">{{ row.label }}</span>
-        <span class="tabular-nums text-stone-600 flex-shrink-0">{{ row.count }} · {{ row.pct }}%</span>
+        <span class="font-medium text-bhagya-ink truncate">{{ row.label }}</span>
+        <span class="tabular-nums text-bhagya-muted flex-shrink-0">{{ row.count }} · {{ row.pct }}%</span>
       </div>
       {# Bar — max-width equals its own pct so the widest bar hits 100%
          of the container. Simpler than proportional-to-max normalisation
          and keeps 100% + 0% both visually meaningful. #}
-      <div class="h-1.5 bg-stone-100 rounded-full overflow-hidden">
-        <div class="h-full bg-astro-500 rounded-full" style="width: {{ row.pct }}%;"></div>
+      <div class="h-1.5 bg-bhagya-cream-2 rounded-full overflow-hidden">
+        <div class="h-full bg-bhagya-saffron rounded-full" style="width: {{ row.pct }}%;"></div>
       </div>
     </li>
     {% endfor %}
@@ -52,52 +52,52 @@
 <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
 
   <header class="space-y-2">
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700">Audience insights</h1>
-    <p class="text-sm text-stone-600">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink">Audience insights</h1>
+    <p class="text-sm text-bhagya-muted">
       Aggregate view of who's using the site &mdash; computed from the events
       log for the last {{ days }} days. No individual users named; no new
       data collected beyond what &lsquo;Privacy&rsquo; already discloses.
     </p>
-    <p class="text-xs text-stone-500">
+    <p class="text-xs text-bhagya-muted-2">
       Generated {{ summary.generated_at.replace('T', ' ')[:16] }} UTC ·
-      <a href="?days=1"   class="{% if days == 1 %}font-semibold text-astro-700{% else %}text-astro-600 hover:underline{% endif %}">1d</a> ·
-      <a href="?days=7"   class="{% if days == 7 %}font-semibold text-astro-700{% else %}text-astro-600 hover:underline{% endif %}">7d</a> ·
-      <a href="?days=30"  class="{% if days == 30 %}font-semibold text-astro-700{% else %}text-astro-600 hover:underline{% endif %}">30d</a> ·
-      <a href="?days={{ days }}&refresh=1" class="text-astro-600 hover:underline">refresh</a>
+      <a href="?days=1"   class="{% if days == 1 %}font-semibold text-bhagya-sindoor{% else %}text-bhagya-sindoor hover:underline{% endif %}">1d</a> ·
+      <a href="?days=7"   class="{% if days == 7 %}font-semibold text-bhagya-sindoor{% else %}text-bhagya-sindoor hover:underline{% endif %}">7d</a> ·
+      <a href="?days=30"  class="{% if days == 30 %}font-semibold text-bhagya-sindoor{% else %}text-bhagya-sindoor hover:underline{% endif %}">30d</a> ·
+      <a href="?days={{ days }}&refresh=1" class="text-bhagya-sindoor hover:underline">refresh</a>
     </p>
   </header>
 
   {# TOP-LINE KPI STRIP — mirrors admin_dashboard's card style but with
      unique-emails + funnel-milestone counts pulled from the summary. #}
   <section class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-xs uppercase font-semibold tracking-wider text-stone-600">Unique emails</div>
-      <div class="font-display text-3xl text-astro-700 tabular-nums mt-1">{{ summary.funnel.unique_emails }}</div>
-      <div class="text-xs text-stone-600 mt-0.5">across all events</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-xs uppercase font-semibold tracking-wider text-bhagya-muted">Unique emails</div>
+      <div class="font-marcellus text-3xl text-bhagya-sindoor tabular-nums mt-1">{{ summary.funnel.unique_emails }}</div>
+      <div class="text-xs text-bhagya-muted mt-0.5">across all events</div>
     </div>
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-xs uppercase font-semibold tracking-wider text-stone-600">Kundli + Ask</div>
-      <div class="font-display text-3xl text-astro-700 tabular-nums mt-1">{{ summary.funnel.kundli_plus_ask }}</div>
-      <div class="text-xs text-stone-600 mt-0.5">did both</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-xs uppercase font-semibold tracking-wider text-bhagya-muted">Kundli + Ask</div>
+      <div class="font-marcellus text-3xl text-bhagya-sindoor tabular-nums mt-1">{{ summary.funnel.kundli_plus_ask }}</div>
+      <div class="text-xs text-bhagya-muted mt-0.5">did both</div>
     </div>
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-xs uppercase font-semibold tracking-wider text-stone-600">Kundli + Matching</div>
-      <div class="font-display text-3xl text-astro-700 tabular-nums mt-1">{{ summary.funnel.kundli_plus_matching }}</div>
-      <div class="text-xs text-stone-600 mt-0.5">did both</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-xs uppercase font-semibold tracking-wider text-bhagya-muted">Kundli + Matching</div>
+      <div class="font-marcellus text-3xl text-bhagya-sindoor tabular-nums mt-1">{{ summary.funnel.kundli_plus_matching }}</div>
+      <div class="text-xs text-bhagya-muted mt-0.5">did both</div>
     </div>
-    <div class="bg-white border border-stone-200 rounded-xl p-4">
-      <div class="text-xs uppercase font-semibold tracking-wider text-stone-600">Power users</div>
-      <div class="font-display text-3xl text-astro-700 tabular-nums mt-1">{{ summary.funnel.power_users }}</div>
-      <div class="text-xs text-stone-600 mt-0.5">used all 3 features</div>
+    <div class="bg-white border border-bhagya-line p-4">
+      <div class="text-xs uppercase font-semibold tracking-wider text-bhagya-muted">Power users</div>
+      <div class="font-marcellus text-3xl text-bhagya-sindoor tabular-nums mt-1">{{ summary.funnel.power_users }}</div>
+      <div class="text-xs text-bhagya-muted mt-0.5">used all 3 features</div>
     </div>
   </section>
 
   {# TOTALS + CACHE-HIT — a compact caption row before the histograms. #}
-  <section class="text-sm text-stone-700 bg-stone-50 border border-stone-200 rounded-xl p-4 flex flex-wrap gap-x-6 gap-y-2">
-    <span>Kundlis: <strong class="text-astro-700 tabular-nums">{{ summary.totals.form_kundli }}</strong></span>
-    <span>Asks: <strong class="text-astro-700 tabular-nums">{{ summary.totals.form_ask }}</strong></span>
-    <span>Matchings: <strong class="text-astro-700 tabular-nums">{{ summary.totals.form_matching }}</strong></span>
-    <span>Ask cache-hit rate: <strong class="text-astro-700 tabular-nums">{{ summary.ask_cache_hit_pct }}%</strong></span>
+  <section class="text-sm text-bhagya-ink-soft bg-bhagya-cream-2 border border-bhagya-line p-4 flex flex-wrap gap-x-6 gap-y-2">
+    <span>Kundlis: <strong class="text-bhagya-sindoor tabular-nums">{{ summary.totals.form_kundli }}</strong></span>
+    <span>Asks: <strong class="text-bhagya-sindoor tabular-nums">{{ summary.totals.form_ask }}</strong></span>
+    <span>Matchings: <strong class="text-bhagya-sindoor tabular-nums">{{ summary.totals.form_matching }}</strong></span>
+    <span>Ask cache-hit rate: <strong class="text-bhagya-sindoor tabular-nums">{{ summary.ask_cache_hit_pct }}%</strong></span>
   </section>
 
   {# TWO-COL HISTOGRAM GRID on md+, single-col on mobile. Order chosen for
@@ -141,10 +141,10 @@
 
   {# METHODOLOGY NOTE — sets user expectations about what "insight" means
      here (aggregate, existing data, one-hour cache). #}
-  <section class="text-xs text-stone-600 bg-stone-50 border border-stone-200 rounded-xl p-4 space-y-2">
-    <p><strong class="text-stone-800">Methodology:</strong> Numbers are aggregated from the GCS events log — the same substrate that powers /admin/activity. No additional PII collection. Anonymous events (no email) are excluded from the funnel dimensions since we can't link them without chart fingerprinting (Phase 2).</p>
-    <p><strong class="text-stone-800">Deferred to later phases:</strong> Ascendant / Moon / Sun rashi distributions (needs a chart compute per event); question-intent NLP clustering (regex classifier, Phase 3); return-user frequency for cookie-only visitors.</p>
-    <p><strong class="text-stone-800">Cache:</strong> Aggregation runs at most once per hour per window. Append <code>?refresh=1</code> to the URL to force re-run.</p>
+  <section class="text-xs text-bhagya-muted bg-bhagya-cream-2 border border-bhagya-line p-4 space-y-2">
+    <p><strong class="text-bhagya-ink">Methodology:</strong> Numbers are aggregated from the GCS events log — the same substrate that powers /admin/activity. No additional PII collection. Anonymous events (no email) are excluded from the funnel dimensions since we can't link them without chart fingerprinting (Phase 2).</p>
+    <p><strong class="text-bhagya-ink">Deferred to later phases:</strong> Ascendant / Moon / Sun rashi distributions (needs a chart compute per event); question-intent NLP clustering (regex classifier, Phase 3); return-user frequency for cookie-only visitors.</p>
+    <p><strong class="text-bhagya-ink">Cache:</strong> Aggregation runs at most once per hour per window. Append <code>?refresh=1</code> to the URL to force re-run.</p>
   </section>
 
 </main>

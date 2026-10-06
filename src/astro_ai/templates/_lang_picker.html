@@ -1,53 +1,32 @@
 {# Language selector — native HTML <select> that auto-submits on change.
    Caller provides `lang` (current language code). Scales to more languages
-   later by adding <option> rows; no JS framework needed.
-
-   THIS IS DELIBERATELY STILL main's <select>, NOT a button group (#124).
-
-   A button-group rewrite was built on this branch and reverted. The history
-   is worth keeping, because the next person to improve this file will
-   otherwise repeat it — four QA rounds found four defects, each introduced by
-   the previous round's fix:
-
-     v1  posted `next = request.url.path`. On a /hi/ page that is
-         /hi/rashifal, which forces Hindi, so choosing English wrote lang=en
-         and re-rendered Hindi: a dead control that silently changed the
-         reader's saved language.
-     v2  real anchors between the two URLs. With a saved `hi` preference the
-         ENGLISH url renders Hindi too, so the "English" anchor pointed at a
-         page serving Hindi. Dead again, and a regression against main.
-     v3  POST /lang with buttons. Correct server-side — and broken in a
-         browser: base.html sets hx-boost="true" on <body>, and a
-         user-clicked submit DOES fire a submit event, so htmx intercepted it,
-         swapped the body and left <html lang> stale. The 108% Devanagari rule
-         never applied and a screen reader kept the English voice.
-     v4  v3 + hx-boost="false". Fixed that, and the `english_url()` call it
-         used for `next` normalised the path, adding a second redirect hop to
-         every switch on the 77 /learn/ URLs (76 articles + the hub, measured).
-
-   So the ONLY change from main here is the `next` value, which is the one
-   thing /hi/ actually requires: post the page's English path, and let
-   `POST /lang` send the reader to the Hindi twin when they ask for Hindi.
-   The <select> is kept BECAUSE it is immune to v3 — `this.form.submit()` is
-   programmatic and fires no submit event, so htmx never sees it.
-
-   The button group was better in real ways (aria-pressed, works with JS off,
-   no `<noscript>` needed) and should come back — as its own change, with the
-   browser gate green and a mobile-reachability fix, not bundled into a
-   URL-structure issue. That is #124's QA recommendation, and it fired on this
-   file's fifth defect in four rounds.
-#}
+   later by adding <option> rows; no JS framework needed. #}
 <form method="post" action="/lang" class="inline-flex items-center">
-  {# strip_hi_prefix, not english_url: the latter also lowercases and strips
-     the trailing slash, which is v4's extra redirect hop. #}
+  {# strip_hi_prefix, not request.url.path, and not english_url either (#124).
+     On a /hi/ page, posting request.url.path back means /hi/rashifal — which
+     forces Hindi — so choosing English wrote lang=en and re-rendered Hindi: a
+     dead control that silently changed the reader's saved language.
+     `POST /lang` sends them to the Hindi twin when they ask for Hindi, so this
+     posts the ENGLISH path.
+
+     english_url() is wrong here: it runs _normalise, which lowercases and
+     strips the trailing slash, adding a second redirect hop to all 77 /learn/
+     URLs. strip_hi_prefix removes the prefix and changes nothing else. #}
   <input type="hidden" name="next" value="{{ strip_hi_prefix(request.url.path) }}">
+  {# #241: this control sits INSIDE the night nav bar, so it is styled
+     light-on-dark rather than as a page-level input. The <option> rows are
+     painted by the OS, not by us — every browser draws them on its own
+     surface — so they are deliberately left alone and only the closed
+     control is themed. #}
   <select name="lang" onchange="this.form.submit()"
-          class="bg-white border border-stone-300 rounded-md px-2 py-1 text-xs text-stone-700
-                 hover:border-astro-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500
+          class="bg-transparent border border-bhagya-gold/40 rounded-md px-2 py-1 text-xs
+                 text-bhagya-cream/[.78]
+                 hover:border-bhagya-saffron focus:ring-2 focus:ring-bhagya-saffron
+                 focus:border-bhagya-saffron
                  focus:outline-none cursor-pointer transition-colors"
           aria-label="Language">
-    <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
-    <option value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी (Hindi)</option>
+    <option class="text-bhagya-ink" value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+    <option class="text-bhagya-ink" value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी (Hindi)</option>
   </select>
-  <noscript><button type="submit" class="ml-1 text-xs text-stone-600 underline">Apply</button></noscript>
+  <noscript><button type="submit" class="ml-1 text-xs text-bhagya-cream/[.62] underline">Apply</button></noscript>
 </form>

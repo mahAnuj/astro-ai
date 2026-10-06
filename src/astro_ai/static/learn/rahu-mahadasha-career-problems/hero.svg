@@ -13,12 +13,12 @@
       <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="rmc_serp" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#3b0764"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="rmc_path" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.7"/>
-      <stop offset="100%" stop-color="#4c1d95" stop-opacity="0.35"/>
+      <stop offset="0%" stop-color="#B03A22" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#140F1C" stop-opacity="0.35"/>
     </linearGradient>
   </defs>
 

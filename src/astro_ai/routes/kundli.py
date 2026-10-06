@@ -35,6 +35,7 @@ from astro_ai.chart import (
     compute_bhagya_score,
     compute_chart,
     compute_dasha_state,
+    dasha_timeline,
     compute_dashamsa_chart,
     compute_life_chapters,
     compute_manglik_details,
@@ -60,6 +61,21 @@ from astro_ai.session import load_collection, load_user
 log = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def _natal_durable_key(*, lang: str, prompt_fp: str, chart_fp: str) -> str:
+    """GCS blob path for a natal reading — the durable half of `_cached`.
+
+    Same three components as the SQLite `cache_key`, so the two tiers can
+    never disagree about what a given reading is. Built here rather than
+    inline at each call site because there are two of them (the render path
+    and the snapshot path) and a divergence would be silent: the snapshot
+    would simply regenerate a reading the render path had already paid for.
+
+    Path-shaped for a human reading the bucket in the console; nothing ever
+    lists it (`storage.py` has no prefix listing) so the shape is cosmetic.
+    """
+    return f"llm/natal/{lang}/{prompt_fp}/{chart_fp}.txt"
 
 
 @router.post("/reading")
@@ -186,18 +202,35 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     chart_fp = cache.fingerprint_chart(details.birth_date, details.birth_time, details.birth_place)
     prompt_fp = cache.fingerprint_prompt(PROMPT_PATH)
     cache_key = f"natal:{chart_fp}:{lang}:{prompt_fp}"
-    # Detect cache hit BEFORE _cached() so we know whether this render
-    # counts as a fresh generation (worth notifying about) or a re-view
-    # of an already-generated reading (silent — user is just refreshing
-    # or navigating back to their chart). Cheap: one extra cache lookup.
-    was_cached = cache.get(cache_key) is not None
+    # Whether this render counts as a fresh generation (worth notifying
+    # about) or a re-view of an already-generated reading (silent — the user
+    # is refreshing or navigating back to their chart).
+    #
+    # This used to be a `cache.get(cache_key) is not None` probe before the
+    # call. That answered "is it in SQLITE", which stopped being the same
+    # question once `_cached` grew a durable GCS tier: a reading restored from
+    # the bucket after a cold start is a re-view, but the SQLite probe would
+    # have called it fresh and sent a duplicate Telegram ping plus a phantom
+    # `form_kundli` event — exactly the defect the guard below was added to
+    # fix. Recording whether `call_fn` actually ran answers the real question
+    # at any number of tiers, and costs one fewer cache lookup. Do NOT
+    # reintroduce a pre-check that reads the durable tier: that would put a
+    # cross-continent round-trip on the hot path (#144).
+    _generated = {"fired": False}
+
+    def _generate() -> str:
+        _generated["fired"] = True
+        return generate_reading(
+            details, chart=chart, flags=flags, life_chapters=life_chapters,
+            prompt_path=PROMPT_PATH, lang=lang, dasha_state=dasha_state,
+        )
+
     try:
         reading_text = _cached(
             cache_key, route="natal", lang=lang, ttl_days=None,
-            call_fn=lambda: generate_reading(
-                details, chart=chart, flags=flags, life_chapters=life_chapters,
-                prompt_path=PROMPT_PATH, lang=lang, dasha_state=dasha_state,
-            ),
+            call_fn=_generate,
+            durable_key=_natal_durable_key(
+                lang=lang, prompt_fp=prompt_fp, chart_fp=chart_fp),
         )
     except Exception as err:
         log.exception("natal LLM generation failed")
@@ -212,8 +245,19 @@ async def _render_natal_for(request: Request, details: BirthDetails,
             },
             status_code=503 if isinstance(err, AllProvidersExhausted) else 502,
         )
+    was_cached = not _generated["fired"]
     sections = parse_sectioned_reading(reading_text)
     sade_sati = compute_sade_sati_details(chart)
+    # One DashaState for both template variables — the strip and the
+    # active-pair detail line must agree, and passing the same object is how
+    # that is guaranteed rather than hoped for.
+    #
+    # This IS a second call in this function (there is already a `dasha_state`
+    # for the prompt), and deliberately so: the two live in different branches
+    # and tying them together would couple the render path to the LLM path for
+    # no gain. Measured 2026-09-04: compute_dasha_state is 0.0299 ms and
+    # dasha_timeline 0.0004 ms, against a ~3 ms warm page. Below the noise.
+    _dasha = compute_dasha_state(chart)
 
     # Fire owner-notification + activity event ONLY on fresh generation.
     # Every /kundli page render (refresh, back-nav, HTMX-boosted click)
@@ -299,7 +343,8 @@ async def _render_natal_for(request: Request, details: BirthDetails,
             "dashamsa_chart": compute_dashamsa_chart(chart),
             "yogas":    compute_yogas(chart),
             "sade_sati": sade_sati,
-            "dasha":    compute_dasha_state(chart),
+            "dasha":    _dasha,
+            "dasha_strip": dasha_timeline(_dasha),
             # Pre-computed SS timeline values for the panel.
             "sade_sati_progress": ss_progress,
             "sade_sati_elapsed_years": ss_elapsed_years,
@@ -505,6 +550,10 @@ async def create_kundli_snapshot(request: Request) -> JSONResponse:
                     details, chart=chart, flags=flags, life_chapters=life_chapters,
                     prompt_path=PROMPT_PATH, lang=lang, dasha_state=dasha_state,
                 ),
+                # Same durable blob the render path writes — a seeker sharing a
+                # reading they already viewed must not pay to generate it again.
+                durable_key=_natal_durable_key(
+                    lang=lang, prompt_fp=prompt_fp, chart_fp=chart_fp),
             )
         except Exception as err:  # noqa: BLE001 — snapshot can't be built without a reading
             log.exception("snapshot: reading generation failed")
@@ -583,6 +632,16 @@ async def view_kundli_snapshot(request: Request, short_id: str) -> HTMLResponse:
 
     sections = parse_sectioned_reading(snap.reading_text)
     sade_sati = compute_sade_sati_details(chart)
+    # One DashaState for both template variables — the strip and the
+    # active-pair detail line must agree, and passing the same object is how
+    # that is guaranteed rather than hoped for.
+    #
+    # This IS a second call in this function (there is already a `dasha_state`
+    # for the prompt), and deliberately so: the two live in different branches
+    # and tying them together would couple the render path to the LLM path for
+    # no gain. Measured 2026-09-04: compute_dasha_state is 0.0299 ms and
+    # dasha_timeline 0.0004 ms, against a ~3 ms warm page. Below the noise.
+    _dasha = compute_dasha_state(chart)
     moon_plt = next(p for p in chart.planets if p.name == "Moon")
     sun_plt = next(p for p in chart.planets if p.name == "Sun")
 
@@ -622,7 +681,8 @@ async def view_kundli_snapshot(request: Request, short_id: str) -> HTMLResponse:
             "dashamsa_chart": compute_dashamsa_chart(chart),
             "yogas": compute_yogas(chart),
             "sade_sati": sade_sati,
-            "dasha": compute_dasha_state(chart),
+            "dasha": _dasha,
+            "dasha_strip": dasha_timeline(_dasha),
             "sade_sati_progress": ss_progress,
             "sade_sati_elapsed_years": ss_elapsed_years,
             "sade_sati_remaining_years": ss_remaining_years,

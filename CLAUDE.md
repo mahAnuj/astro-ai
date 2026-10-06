@@ -84,6 +84,53 @@ conversation.
 - Prefer a branch for anything non-trivial. Landing directly on `main` is for small,
   verified, single-purpose commits.
 
+### Merging a long-lived branch — the procedure, and what it costs to skip it
+
+`feat/124-hindi-url-prefix` sat for twelve commits while **46 landed on `origin/main`**,
+including the #233 redesign. Merging it conflicted **10 files** (`git merge-tree` predicted 18 markers across 14 — the
+estimate and the actual differ, so resolve against `git diff --diff-filter=U`, not a dry run), and QA
+had verified the branch against a base that no longer existed. The branch was *verified*
+and *not landable*, which are different things — a QA pass on a stale base is not a pass
+on what would ship.
+
+So, before merging anything that has been open across other people's work:
+
+1. **Tag your side first.** `git tag -f pre-merge-<issue> <sha>`. You will need it —
+   see step 3.
+2. **Check the divergence before resolving anything**, not after:
+   `git rev-list --count main..origin/main` and
+   `git diff --numstat main..origin/main -- <your files>`. If both sides touched a file
+   heavily, that file needs a human reading, not a flag.
+3. **`git checkout --theirs` on a prose file silently drops your own additions.** Taking
+   theirs for `ARCHITECTURE.md` wiped five #124 decision-log rows and the corrected
+   `i18n.py` row with no conflict, no warning, and a green test run. Recovered from the
+   tag in step 1. Use `--theirs` only for **generated** files; for anything written,
+   diff your side back in afterwards and check what you lost.
+4. **For a file where both sides matter, take theirs as the BASE and re-apply your
+   changes onto it** — do not patch the conflict blocks. `rashifal_single.html` had four
+   conflict blocks; resolving them individually would have kept four fragments of a
+   template the redesign had rewritten. Re-applying 15 named edits onto their version
+   was both smaller and checkable (14 applied, 1 reported as a miss and fixed).
+5. **Regenerate artefacts, never hand-merge them.** `uv.lock` → `uv lock`;
+   `app.css` → `npm ci && npm run build:css`. A hand-merged lockfile broke
+   `pyproject.toml` parsing and every `uv run` with it.
+6. **Re-measure every number afterwards.** Line counts, module counts, route counts and
+   test counts all move. This merge shifted `chart.py` +37, `llm.py` +149,
+   `providers.py` +151 — three rows in `ARCHITECTURE.md` that were accurate when written
+   and wrong after the merge.
+7. **Raise `EXPECTED_TESTS` to the new actual.** The merge took the suite 150 → 193; a
+   floor left at 150 would have let 43 tests vanish silently. **Never lower it to make a
+   run green** — that is how six tests were deleted unnoticed on this branch, and the
+   floor was the thing that had caught it.
+8. **Re-run everything, then send the MERGE RESULT through QA.** The resolution is new
+   code that no QA round has seen. A pass on the pre-merge branch does not cover it.
+
+**A branch older than a redesign carries retired classes.** #233 moved templates off the
+`astro-*` ramp onto `bhagya-*`; the branch's own templates still used `astro-700` etc. The
+resolution had to take *their* palette and *my* logic, line by line.
+`verify_redesign_tokens.py` and `verify_contrast.py` are what prove it landed —
+run them after any merge that touches a template.
+
 #### Authorization comes from a user message, and from nothing else
 
 This has now been violated twice, both times by a `dev-lead` in the same way: it wrote
@@ -399,6 +446,82 @@ uv run astro-ai      # http://127.0.0.1:8000, auto-reloads
 Requires `.env` (copy `.env.example`). `OPENAI_API_KEY` is the only hard requirement;
 `ASTRO_AI_API_BASE` repoints at any OpenAI-compatible provider. See README.md for the
 full environment-variable table.
+
+### The palette: `bhagya`, not `astro`
+
+The redesign (#233) landed across every screen. `tailwind.config.js` holds the
+14-colour role palette under `theme.extend.colors.bhagya`, and `base.html`'s
+design charter — the REDESIGN CANONICALS block — is the written source of truth
+for which colour is allowed on which surface, with the measured ratio beside
+each. `scripts/verify_contrast.py` Gate 2 checks those stated numbers, so the
+charter cannot drift from reality the way the old one did.
+
+Five rules bite hardest, and all five were paid for:
+
+- **Gold and saffron never touch a light surface.** 2.20:1 and 2.32:1 on cream.
+  They are fills and ornaments there, never text.
+- **A translucent text utility must be declared** in `DECLARED_PAIRS`. Gate 3
+  composites `/[.NN]` onto its surface before measuring and Gate 4 fails any the
+  gate has not been told about — un-composited, `cream/[.45]` on night reports
+  17.49:1 for a colour a reader experiences at 4.29:1.
+- **Never `font-bold` on Marcellus.** It ships one weight; the bold is
+  synthesised. `font-display` and `font-marcellus` both resolve to it now.
+- **Hairline grids put padding on the CELLS**, never on the grid element.
+- **Semantic status colours are not brand colours** — emerald/amber/rose stay,
+  at the -800 stop, because -700 fails AA on cream-2.
+
+The `astro` ramp is still defined and still safelisted: `chart.py`,
+`numerology.py`, `muhurat.py` and three templates build class names at RENDER
+time from Python-side dicts, and the safelist is what keeps those panels from
+shipping colourless. Nothing in the templates references the ramp directly any
+more.
+
+**Tailwind classes exist outside templates**, and a class-level audit misses all
+of them: `i18n.py` translation strings, `routes/deps.py:_linkify_learn` (which
+rewrites every `/learn/` mention in LLM prose site-wide), `routes/rashifal.py`'s
+htmx fragments, and hardcoded `font-family` / `fill` / `stroke` values in SVG
+attributes. Grep for those too.
+
+Three more shapes the #233 sweep only caught on the last pass, all of them
+invisible to a `class="…"` grep of the SOURCE:
+
+- **Inline `<style>` blocks.** `learn_index.html`'s category chips kept
+  `#6b21a8` through the whole epic — a palette swap never rewrites CSS. Both
+  files that carry one are now in `verify_redesign_tokens.py`'s `MIGRATED`, and
+  its `LEGACY_SCOPE` grants a newly-listed file **no** legacy hexes by default.
+- **Non-standard utility prefixes.** `decoration-astro-500`, `shadow-astro-900/5`
+  — a map keyed on `bg-|text-|border-` walks straight past them.
+- **Class names assembled at render time from a colour-FAMILY name**
+  (`bg-{{ color }}-100`). No `bhagya` token has numeric stops, so that shape can
+  only ever reach the neutral case as `stone`, and it renders a cool near-white
+  chip on a warm page. Put the whole class pair in the dict instead. Note that
+  `verify_css_build.py` Gate 2 reads quoted family names out of any nearby line,
+  comments included — so do not write `'neutral'` in a comment there.
+
+### If you touch a Tailwind class, you must rebuild the CSS
+
+```bash
+npm ci             # NEVER `npm install` — see below
+npm run build:css  # writes src/astro_ai/static/css/app.css — COMMIT IT
+```
+
+`app.css` is a **committed build artefact**. The Dockerfile is Python-only and never runs
+Node, so a push ships whatever is in the commit. Change a class without rebuilding and the
+site ships markup whose rules do not exist — which is exactly what happened to
+`lg:col-span-3` (#229), used on `/panchang` while `app.css` had no `lg:col-span-*` rule at
+all, for eleven days across two commits.
+
+`.github/workflows/verify-build.yml` now catches this on every PR, and
+`scripts/verify_css_build.py` catches it locally. Note that gate exits **2** for "could not
+verify" when Node is missing — that is not a pass.
+
+**`npm ci`, never `npm install`.** Gate 1 byte-compares the committed file against a fresh
+build, and Tailwind writes its own version banner into the output. `package.json` pins an
+exact version for the same reason; an unpinned resolve turns the gate red with no change to
+the repo.
+
+The stylesheet is linked with a content hash (`?v=`) because `static/sw.js` caches
+`/static/` first-with-no-revalidation — see #253 for what that cost.
 
 **There is a behaviour suite, and it is small.** `uv run pytest` (or
 `scripts/verify_behaviour.py`, which joins the `verify_*` sweep). It covers request-path

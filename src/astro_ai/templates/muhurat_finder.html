@@ -16,43 +16,43 @@
 <main class="{% if candidates %}max-w-5xl{% else %}max-w-4xl{% endif %} mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
   <header class="text-center">
-    <h1 class="font-display text-3xl sm:text-4xl md:text-5xl text-astro-700 mb-3">Muhurat Finder</h1>
-    <p class="text-base sm:text-lg text-stone-600 max-w-xl mx-auto leading-relaxed">
+    <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink mb-3">Muhurat Finder</h1>
+    <p class="text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
       Personalised auspicious dates using classical Panchang rules — tithi, nakshatra, weekday, Panchak, Chaturmas, and karaka-planet combustion. 5 event types. Abujha Muhurats (Tulsi Vivah, Basant Panchami, Akshaya Tritiya) auto-detected. Free, no sign-up.
     </p>
   </header>
 
-  <section class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 sm:p-8">
+  <section class="bg-white border border-bhagya-line p-6 sm:p-8">
     {% if error %}
     <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">{{ error }}</div>
     {% endif %}
     <form method="post" action="/muhurat" class="space-y-4">
       <div>
-        <label for="event_type" class="block text-sm font-medium text-stone-700 mb-1">Event type</label>
-        <select name="event_type" id="event_type" class="w-full border border-stone-300 rounded-md px-3 py-3 text-base focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+        <label for="event_type" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Event type</label>
+        <select name="event_type" id="event_type" class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
           {% for et_key, et_label in event_types %}
           <option value="{{ et_key }}" {% if selected_event == et_key %}selected{% endif %}>{{ et_label }}</option>
           {% endfor %}
         </select>
       </div>
       <div>
-        <label for="city" class="block text-sm font-medium text-stone-700 mb-1">Ceremony city</label>
+        <label for="city" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Ceremony city</label>
         <input type="text" name="city" id="city" required autocomplete="address-level2"
                placeholder="e.g. Delhi, India"
                value="{{ prefill_city if prefill_city else '' }}"
-               class="w-full border border-stone-300 rounded-md px-3 py-3 text-base focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
-        <p class="text-xs text-stone-600 mt-1">Used for local Panchang timing (sunrise, tithi).</p>
+               class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
+        <p class="text-xs text-bhagya-muted mt-1">Used for local Panchang timing (sunrise, tithi).</p>
       </div>
       <div class="grid sm:grid-cols-2 gap-4">
         <div>
-          <label for="start_date" class="block text-sm font-medium text-stone-700 mb-1">Search from date</label>
+          <label for="start_date" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Search from date</label>
           <input type="date" name="start_date" id="start_date" required
                  value="{{ prefill_start if prefill_start else '' }}"
-                 class="w-full border border-stone-300 rounded-md px-3 py-3 text-base focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                 class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
         </div>
         <div>
-          <label for="days" class="block text-sm font-medium text-stone-700 mb-1">Range (days)</label>
-          <select name="days" id="days" class="w-full border border-stone-300 rounded-md px-3 py-3 text-base focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+          <label for="days" class="block text-sm font-medium text-bhagya-ink-soft mb-1">Range (days)</label>
+          <select name="days" id="days" class="w-full border border-bhagya-border rounded-md px-3 py-3 text-base focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <option value="30">30 days</option>
             <option value="60" selected>60 days</option>
             <option value="90">90 days</option>
@@ -61,13 +61,13 @@
         </div>
       </div>
       {% if has_saved_chart %}
-      <div class="rounded-lg bg-astro-50 border border-astro-200 p-3">
+      <div class="rounded bg-bhagya-cream-2 border border-bhagya-line p-3">
         <label class="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" name="use_personal" value="1" {% if use_personal %}checked{% endif %}
-                 class="mt-1 h-4 w-4 text-astro-600 border-stone-400 rounded focus:ring-astro-500">
-          <span class="text-sm text-stone-700">
-            <span class="font-semibold text-astro-800">Match with my chart</span>
-            <span class="block text-xs text-stone-600 mt-0.5">Adds Tara Bala + Chandra Bala per day + soft cautions from Sade Sati or Rahu/Ketu Dasha. Classical rating stays universal — this is an extra column, not an override.</span>
+                 class="mt-1 h-4 w-4 text-bhagya-sindoor border-bhagya-border rounded focus:ring-bhagya-saffron">
+          <span class="text-sm text-bhagya-ink-soft">
+            <span class="font-semibold text-bhagya-sindoor">Match with my chart</span>
+            <span class="block text-xs text-bhagya-muted mt-0.5">Adds Tara Bala + Chandra Bala per day + soft cautions from Sade Sati or Rahu/Ketu Dasha. Classical rating stays universal — this is an extra column, not an override.</span>
           </span>
         </label>
       </div>
@@ -75,67 +75,67 @@
 
       {# Couple mode — Vivah only. Optional bride + groom charts for the
          real-astrologer-grade wedding-date verdict. #}
-      <details class="rounded-lg bg-white border-2 border-astro-200 p-3" {% if prefill_bride_dob or prefill_groom_dob %}open{% endif %} id="couple-fieldset">
-        <summary class="cursor-pointer text-sm font-semibold text-astro-800">
+      <details class="rounded bg-white border-2 border-bhagya-line p-3" {% if prefill_bride_dob or prefill_groom_dob %}open{% endif %} id="couple-fieldset">
+        <summary class="cursor-pointer text-sm font-semibold text-bhagya-sindoor">
           Match for both bride & groom charts (Vivah only — recommended)
-          <span class="block text-xs text-stone-600 font-normal mt-0.5">Real astrologers ALWAYS use both charts for wedding dates. Adds per-partner Tara/Chandra Bala + Manglik + Sade Sati flags per candidate.</span>
+          <span class="block text-xs text-bhagya-muted font-normal mt-0.5">Real astrologers ALWAYS use both charts for wedding dates. Adds per-partner Tara/Chandra Bala + Manglik + Sade Sati flags per candidate.</span>
         </summary>
         <div class="mt-3 grid sm:grid-cols-2 gap-4">
           <div class="space-y-2">
-            <div class="text-xs uppercase font-semibold text-astro-700 tracking-wider">Bride</div>
+            <div class="text-xs uppercase font-semibold text-bhagya-sindoor tracking-wider">Bride</div>
             <input type="text" name="bride_name" placeholder="Bride's name (optional)"
                    value="{{ prefill_bride_name or '' }}"
-                   class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <input type="date" name="bride_dob" placeholder="Birth date"
                    value="{{ prefill_bride_dob or '' }}"
-                   class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <input type="time" name="bride_time" step="60" placeholder="Birth time (24h)"
                    value="{{ prefill_bride_time or '' }}"
-                   class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <input type="text" name="bride_place" placeholder="Birth city (e.g. Mumbai, India)"
                    value="{{ prefill_bride_place or '' }}"
-                   class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
           </div>
           <div class="space-y-2">
-            <div class="text-xs uppercase font-semibold text-astro-700 tracking-wider">Groom</div>
+            <div class="text-xs uppercase font-semibold text-bhagya-sindoor tracking-wider">Groom</div>
             <input type="text" name="groom_name" placeholder="Groom's name (optional)"
                    value="{{ prefill_groom_name or '' }}"
-                   class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <input type="date" name="groom_dob"
                    value="{{ prefill_groom_dob or '' }}"
-                   class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <input type="time" name="groom_time" step="60"
                    value="{{ prefill_groom_time or '' }}"
-                   class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <input type="text" name="groom_place" placeholder="Birth city"
                    value="{{ prefill_groom_place or '' }}"
-                   class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
           </div>
         </div>
-        <p class="text-xs text-stone-600 mt-2 italic">Both partners' full birth details required (date + time + place) for couple mode to activate. Leave empty to use single-chart mode.</p>
+        <p class="text-xs text-bhagya-muted mt-2 italic">Both partners' full birth details required (date + time + place) for couple mode to activate. Leave empty to use single-chart mode.</p>
       </details>
 
       {# Namkaran only — child's birth details to derive first-letter suggestions. #}
       {% if selected_event == 'namkaran' or prefill_child_dob %}
-      <details class="rounded-lg bg-white border-2 border-astro-200 p-3" {% if prefill_child_dob %}open{% endif %}>
-        <summary class="cursor-pointer text-sm font-semibold text-astro-800">
+      <details class="rounded bg-white border-2 border-bhagya-line p-3" {% if prefill_child_dob %}open{% endif %}>
+        <summary class="cursor-pointer text-sm font-semibold text-bhagya-sindoor">
           Child's birth details → suggest first letters (Namkaran only)
-          <span class="block text-xs text-stone-600 font-normal mt-0.5">Classical Namkaran uses the child's Moon-nakshatra-pada at birth to pick auspicious first syllables (108-letter table).</span>
+          <span class="block text-xs text-bhagya-muted font-normal mt-0.5">Classical Namkaran uses the child's Moon-nakshatra-pada at birth to pick auspicious first syllables (108-letter table).</span>
         </summary>
         <div class="mt-3 space-y-2">
           <input type="date" name="child_dob" placeholder="Child's birth date"
                  value="{{ prefill_child_dob or '' }}"
-                 class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                 class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
           <input type="time" name="child_time" step="60" placeholder="Birth time (24h)"
                  value="{{ prefill_child_time or '' }}"
-                 class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                 class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
           <input type="text" name="child_place" placeholder="Birth city"
                  value="{{ prefill_child_place or '' }}"
-                 class="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                 class="w-full border border-bhagya-border rounded-md px-3 py-2 text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
         </div>
       </details>
       {% endif %}
-      <button type="submit" class="w-full bg-astro-700 hover:bg-astro-800 text-white text-base font-semibold py-3 rounded-lg transition-colors">
+      <button type="submit" class="w-full bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-base font-semibold py-3 rounded transition-colors">
         Find auspicious dates →
       </button>
     </form>
@@ -158,7 +158,7 @@
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.5rem 1rem;
-        border: 1px solid #e7e5e4;        /* stone-200 */
+        border: 1px solid #E2D6C2;        /* bhagya.line */
         border-radius: 0.75rem;
         padding: 0.75rem;
         margin-bottom: 0.625rem;
@@ -170,33 +170,33 @@
         display: block;
         font-size: 10px; line-height: 1.2; font-weight: 600;
         letter-spacing: 0.06em; text-transform: uppercase;
-        color: #78716c;                   /* stone-500 */
+        color: #6B6259;                   /* bhagya.muted — 5.97:1 on white */
         margin-bottom: 0.125rem;
       }
     }
   </style>
-  <section class="bg-white rounded-2xl border border-stone-200 p-5 sm:p-6">
+  <section class="bg-white border border-bhagya-line p-5 sm:p-6">
     <div class="flex items-start justify-between gap-3 flex-wrap mb-2">
-      <h2 class="font-display text-xl text-astro-700">{{ event_label or 'Muhurat' }} candidates for {{ city }}</h2>
+      <h2 class="font-marcellus text-xl text-bhagya-ink">{{ event_label or 'Muhurat' }} candidates for {{ city }}</h2>
       {% with pdf_filename_hint = ((event_label or 'Muhurat') + ' - ' + (city or 'Search')) %}
         {% include "_pdf_download_button.html" %}
       {% endwith %}
     </div>
-    <p class="text-sm text-stone-600 mb-4">
-      <span class="font-semibold text-astro-700">{{ good_candidates | length }} auspicious dates</span> found in {{ candidates | length }}-day search from {{ start_date }}
+    <p class="text-sm text-bhagya-muted mb-4">
+      <span class="font-semibold text-bhagya-sindoor">{{ good_candidates | length }} auspicious dates</span> found in {{ candidates | length }}-day search from {{ start_date }}
       · {{ avoid_candidates | length }} restricted (see below)
-      {% if personal_active %}· <span class="text-astro-700 font-semibold">personal chart matching active</span>{% endif %}
+      {% if personal_active %}· <span class="text-bhagya-sindoor font-semibold">personal chart matching active</span>{% endif %}
     </p>
 
     {% if child_first_letter %}
-    <div class="mb-4 p-4 bg-gradient-to-br from-astro-50 to-amber-50 border-2 border-astro-200 rounded-lg">
-      <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-1">Namkaran first-letter suggestion</div>
+    <div class="mb-4 p-4 bg-bhagya-cream-2 border border-bhagya-line rounded">
+      <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Namkaran first-letter suggestion</div>
       <div class="flex items-baseline gap-3 mb-2">
-        <span class="font-display text-4xl text-astro-800">{{ child_first_letter }}</span>
-        <span class="text-sm text-stone-600">is the classical starting syllable</span>
+        <span class="font-marcellus text-4xl text-bhagya-sindoor">{{ child_first_letter }}</span>
+        <span class="text-sm text-bhagya-muted">is the classical starting syllable</span>
       </div>
-      <p class="text-sm text-stone-700">Your child was born under nakshatra <strong>{{ child_nakshatra }}</strong>, pada <strong>{{ child_pada }}</strong>. Per Muhurta Chintamani, that pada's assigned syllable is <strong>{{ child_first_letter }}</strong>. Some families prefer to choose from the full nakshatra rather than pada-strict — the four syllables for {{ child_nakshatra }} are: <strong>{{ child_all_letters | join(' · ') }}</strong>.</p>
-      <p class="text-xs text-stone-600 mt-2 italic">Traditional practice: name should start with this syllable, or contain it as the first phoneme. Modern practice often uses it as inspiration rather than a hard rule.</p>
+      <p class="text-sm text-bhagya-ink-soft">Your child was born under nakshatra <strong>{{ child_nakshatra }}</strong>, pada <strong>{{ child_pada }}</strong>. Per Muhurta Chintamani, that pada's assigned syllable is <strong>{{ child_first_letter }}</strong>. Some families prefer to choose from the full nakshatra rather than pada-strict — the four syllables for {{ child_nakshatra }} are: <strong>{{ child_all_letters | join(' · ') }}</strong>.</p>
+      <p class="text-xs text-bhagya-muted mt-2 italic">Traditional practice: name should start with this syllable, or contain it as the first phoneme. Modern practice often uses it as inspiration rather than a hard rule.</p>
     </div>
     {% endif %}
 
@@ -218,7 +218,7 @@
     {% else %}
     <table class="w-full text-sm mu-cards">
       <thead>
-        <tr class="text-left text-xs uppercase text-stone-600 border-b border-stone-200">
+        <tr class="text-left text-xs uppercase text-bhagya-muted border-b border-bhagya-line">
           <th class="pb-1.5 pr-3">Date</th>
           <th class="pb-1.5 pr-3">Day</th>
           <th class="pb-1.5 pr-3">Tithi</th>
@@ -232,20 +232,27 @@
       </thead>
       <tbody>
         {% for c in good_candidates %}
-        {% set colors = {'excellent': 'emerald', 'good': 'emerald', 'acceptable': 'amber', 'caution': 'amber'} %}
-        {% set color = colors.get(c.rating, 'stone') %}
-        {% set personal_colors = {'excellent': 'emerald', 'good': 'emerald', 'ok': 'stone', 'avoid': 'rose', 'strong': 'emerald', 'neutral': 'stone', 'weak': 'rose'} %}
-        <tr class="border-b border-stone-100 align-top">
+        {#- These carry the WHOLE class pair, not a family name. The old
+            bg-VAR-100/text-VAR-800 shape needed every family to have -100/-800
+            stops, which forced the middle case onto stone — a cool near-white
+            that reads as a different page against cream. The redesign surface
+            it belongs on (bhagya-cream-2) has no numeric stops, so the
+            indirection had to go. The two middle keys below are common live
+            values, not just fallbacks. -#}
+        {% set colors = {'excellent': 'bg-emerald-100 text-emerald-800', 'good': 'bg-emerald-100 text-emerald-800', 'acceptable': 'bg-amber-100 text-amber-800', 'caution': 'bg-amber-100 text-amber-800'} %}
+        {% set color = colors.get(c.rating, 'bg-bhagya-cream-2 text-bhagya-ink-soft') %}
+        {% set personal_colors = {'excellent': 'bg-emerald-100 text-emerald-800', 'good': 'bg-emerald-100 text-emerald-800', 'ok': 'bg-bhagya-cream-2 text-bhagya-ink-soft', 'avoid': 'bg-rose-100 text-rose-800', 'strong': 'bg-emerald-100 text-emerald-800', 'neutral': 'bg-bhagya-cream-2 text-bhagya-ink-soft', 'weak': 'bg-rose-100 text-rose-800'} %}
+        <tr class="border-b border-bhagya-line-2 align-top">
           <td data-label="Date" class="py-2 pr-3 tabular-nums whitespace-nowrap font-medium">{{ c.d.strftime('%b %d, %Y') }}</td>
           <td data-label="Day" class="py-2 pr-3">{{ c.weekday[:3] }}</td>
-          <td data-label="Tithi" class="py-2 pr-3">{{ c.tithi }}<span class="text-xs text-stone-500 ml-1">{{ c.tithi_paksha }}</span></td>
+          <td data-label="Tithi" class="py-2 pr-3">{{ c.tithi }}<span class="text-xs text-bhagya-muted-2 ml-1">{{ c.tithi_paksha }}</span></td>
           <td data-label="Nakshatra" class="py-2 pr-3 text-xs">
             {{ c.nakshatra }}
-            {% if c.nitya_yoga %}<div class="text-[10px] text-stone-500 mt-0.5">Yoga: {{ c.nitya_yoga }}</div>{% endif %}
+            {% if c.nitya_yoga %}<div class="text-[10px] text-bhagya-muted-2 mt-0.5">Yoga: {{ c.nitya_yoga }}</div>{% endif %}
           </td>
           <td data-label="Rating" class="py-2 pr-3">
             <div class="flex flex-col gap-1">
-              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-{{ color }}-100 text-{{ color }}-800 capitalize">{{ c.rating }}</span>
+              <span class="inline-block px-2 py-0.5 text-xs font-semibold rounded {{ color }} capitalize">{{ c.rating }}</span>
               {% if c.boosters %}
               <span class="inline-block px-1.5 py-0.5 text-[10px] rounded bg-emerald-100 text-emerald-800" title="{{ ' + '.join(c.boosters) }}">★ boost</span>
               {% endif %}
@@ -254,39 +261,39 @@
           {% if personal_active %}
           <td data-label="Personal" class="py-2 pr-3 text-xs">
             {% if c.personal %}
-            {% set tcolor = personal_colors.get(c.personal.tara_bala, 'stone') %}
-            {% set ccolor = personal_colors.get(c.personal.chandra_bala, 'stone') %}
+            {% set tcolor = personal_colors.get(c.personal.tara_bala, 'bg-bhagya-cream-2 text-bhagya-ink-soft') %}
+            {% set ccolor = personal_colors.get(c.personal.chandra_bala, 'bg-bhagya-cream-2 text-bhagya-ink-soft') %}
             <div class="flex flex-col gap-1">
-              <span class="inline-block px-1.5 py-0.5 rounded bg-{{ tcolor }}-100 text-{{ tcolor }}-800" title="Tara Bala position {{ c.personal.tara_position }}">
+              <span class="inline-block px-1.5 py-0.5 rounded {{ tcolor }}" title="Tara Bala position {{ c.personal.tara_position }}">
                 Tara: {{ c.personal.tara_bala_name }}
               </span>
-              <span class="inline-block px-1.5 py-0.5 rounded bg-{{ ccolor }}-100 text-{{ ccolor }}-800" title="Moon in house {{ c.personal.chandra_house }} from your natal Moon">
+              <span class="inline-block px-1.5 py-0.5 rounded {{ ccolor }}" title="Moon in house {{ c.personal.chandra_house }} from your natal Moon">
                 Chandra: {{ c.personal.chandra_bala }}
               </span>
             </div>
-            {% else %}<span class="text-stone-500">—</span>{% endif %}
+            {% else %}<span class="text-bhagya-muted-2">—</span>{% endif %}
           </td>
           {% endif %}
           {% if couple_active %}
           <td data-label="Couple" class="py-2 pr-3 text-xs">
             {% if c.couple %}
-            {% set couple_colors = {'excellent-for-both': 'emerald', 'good-for-both': 'emerald', 'mixed': 'amber', 'avoid': 'rose'} %}
-            {% set vcolor = couple_colors.get(c.couple.combined_verdict, 'stone') %}
+            {% set couple_colors = {'excellent-for-both': 'bg-emerald-100 text-emerald-800', 'good-for-both': 'bg-emerald-100 text-emerald-800', 'mixed': 'bg-amber-100 text-amber-800', 'avoid': 'bg-rose-100 text-rose-800'} %}
+            {% set vcolor = couple_colors.get(c.couple.combined_verdict, 'bg-bhagya-cream-2 text-bhagya-ink-soft') %}
             <div class="flex flex-col gap-1">
-              <span class="inline-block px-1.5 py-0.5 rounded bg-{{ vcolor }}-100 text-{{ vcolor }}-800 font-semibold" title="Combined bride+groom verdict">
+              <span class="inline-block px-1.5 py-0.5 rounded {{ vcolor }} font-semibold" title="Combined bride+groom verdict">
                 {{ c.couple.combined_verdict.replace('-', ' ') }}
               </span>
-              <div class="text-[10px] text-stone-600 leading-tight" title="Bride: Tara / Chandra / Manglik">
+              <div class="text-[10px] text-bhagya-muted leading-tight" title="Bride: Tara / Chandra / Manglik">
                 Bride: {{ c.couple.bride.tara_bala_name }} · Ch:{{ c.couple.bride.chandra_bala }}
               </div>
-              <div class="text-[10px] text-stone-600 leading-tight" title="Groom: Tara / Chandra / Manglik">
+              <div class="text-[10px] text-bhagya-muted leading-tight" title="Groom: Tara / Chandra / Manglik">
                 Groom: {{ c.couple.groom.tara_bala_name }} · Ch:{{ c.couple.groom.chandra_bala }}
               </div>
             </div>
-            {% else %}<span class="text-stone-500">—</span>{% endif %}
+            {% else %}<span class="text-bhagya-muted-2">—</span>{% endif %}
           </td>
           {% endif %}
-          <td data-label="Windows" data-span class="py-2 pr-3 text-[11px] text-stone-600 tabular-nums whitespace-nowrap">
+          <td data-label="Windows" data-span class="py-2 pr-3 text-[11px] text-bhagya-muted tabular-nums whitespace-nowrap">
             {#- Empty means "this date has no sunrise-to-sunset span", not
                "not computed" — muhurat.py leaves all three window fields empty
                on such a date because each is a fraction of that span (#228).
@@ -307,10 +314,10 @@
                states the FRACTION and gives the fixed figure only as the
                12-hour-day case. Same for the legend below. -#}
             {% if c.abhijit_muhurta or c.rahu_kaal %}
-            <div title="Abhijit Muhurta — the 8th of 15 equal parts of daylight, around solar noon. Its length follows the day: ~48 min on a 12-hour day, but 16 min to 84 min across a year at high latitude."><span class="text-emerald-700">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
+            <div title="Abhijit Muhurta — the 8th of 15 equal parts of daylight, around solar noon. Its length follows the day: ~48 min on a 12-hour day, but 16 min to 84 min across a year at high latitude."><span class="text-emerald-800">✓</span> Abhijit {{ c.abhijit_muhurta }}</div>
             <div title="Rahu Kaal — avoid for launches"><span class="text-rose-600">✗</span> Rahu Kaal {{ c.rahu_kaal }}</div>
             {%- else %}
-            <div class="text-amber-700 text-[10px] whitespace-normal max-w-[220px] leading-tight"
+            <div class="text-amber-800 text-[10px] whitespace-normal max-w-[220px] leading-tight"
                  title="Abhijit, Rahu Kaal and Choghadiya are each a fixed fraction of the sunrise-to-sunset period">
               No sunrise-to-sunset span on this date — the sub-day windows are fractions of one, so none is shown.
             </div>
@@ -318,11 +325,11 @@
             {% if c.bhadra_window %}<div class="text-rose-600 text-[10px]" title="Vishti/Bhadra karana active">✗ Bhadra active</div>{% endif %}
             {% if c.choghadiya %}
             <details class="mt-1">
-              <summary class="cursor-pointer text-astro-700 text-[10px] font-semibold">Choghadiya ▼</summary>
+              <summary class="cursor-pointer text-bhagya-sindoor text-[10px] font-semibold">Choghadiya ▼</summary>
               <div class="mt-1 space-y-0.5">
                 {% for w in c.choghadiya %}
-                {% set ch_colors = {'best': 'emerald-100 text-emerald-800', 'good': 'emerald-50 text-emerald-700', 'neutral': 'stone-50 text-stone-600', 'avoid': 'rose-50 text-rose-700'} %}
-                {% set ch_class = ch_colors.get(w.auspiciousness, 'stone-50 text-stone-600') %}
+                {% set ch_colors = {'best': 'emerald-100 text-emerald-800', 'good': 'emerald-50 text-emerald-800', 'neutral': 'bhagya-cream-2 text-bhagya-ink-soft', 'avoid': 'rose-50 text-bhagya-sindoor'} %}
+                {% set ch_class = ch_colors.get(w.auspiciousness, 'bhagya-cream-2 text-bhagya-ink-soft') %}
                 <div class="flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-{{ ch_class }}">
                   <span class="font-semibold w-12">{{ w.name }}</span>
                   <span class="text-[10px] opacity-70">{{ w.start }}-{{ w.end }}</span>
@@ -337,27 +344,27 @@
                drop the Bhadra detail on exactly those dates. Bhadra is a
                karana window — Sun and Moon longitudes, not daylength — so it
                is unaffected and belongs outside. #}
-            {% if c.bhadra_window %}<div class="text-[10px] text-rose-700 mt-1 whitespace-normal max-w-[220px] leading-tight">{{ c.bhadra_window }}</div>{% endif %}
+            {% if c.bhadra_window %}<div class="text-[10px] text-bhagya-sindoor mt-1 whitespace-normal max-w-[220px] leading-tight">{{ c.bhadra_window }}</div>{% endif %}
           </td>
-          <td data-label="Notes" data-span class="py-2 text-xs text-stone-600">{{ c.reason }}</td>
+          <td data-label="Notes" data-span class="py-2 text-xs text-bhagya-muted">{{ c.reason }}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-    <p class="text-xs text-stone-600 mt-2 italic">
-      <span class="text-emerald-700">✓</span> Abhijit Muhurta = the most auspicious window, a fifteenth of daylight around solar noon. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Vaidhriti/Vyatipata days are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present (universal auspiciousness).
+    <p class="text-xs text-bhagya-muted mt-2 italic">
+      <span class="text-emerald-800">✓</span> Abhijit Muhurta = the most auspicious window, a fifteenth of daylight around solar noon. <span class="text-rose-600">✗</span> Rahu Kaal = inauspicious, an eighth of daylight. Both are <em>fractions of the sunrise-to-sunset period</em>, not fixed durations — about 48 and 90 minutes on a 12-hour day, and longer or shorter as the day is. On a date with no ordinary sunrise-to-sunset span there is nothing to divide, so neither is shown. Yoga = Nitya Yoga; Vaidhriti/Vyatipata days are excluded from this list. Boost ★ = Amrit Siddhi / Sarvartha Siddhi / Ravi Yoga present (universal auspiciousness).
     </p>
     {% endif %}
 
     {% if avoid_candidates %}
-    <details class="mt-4 rounded-lg border border-stone-200 bg-stone-50 p-3">
-      <summary class="cursor-pointer text-sm font-semibold text-stone-700 hover:text-astro-700">
+    <details class="mt-4 rounded border border-bhagya-line bg-bhagya-cream-2 p-3">
+      <summary class="cursor-pointer text-sm font-semibold text-bhagya-ink-soft hover:text-bhagya-sindoor">
         Show {{ avoid_candidates | length }} restricted dates &amp; why
       </summary>
       <div class="mt-3">
         <table class="w-full text-xs">
           <thead>
-            <tr class="text-left uppercase text-stone-600 border-b border-stone-200">
+            <tr class="text-left uppercase text-bhagya-muted border-b border-bhagya-line">
               <th class="pb-1 pr-3">Date</th>
               <th class="pb-1 pr-3">Day</th>
               <th class="pb-1">Reason</th>
@@ -365,10 +372,10 @@
           </thead>
           <tbody>
             {% for c in avoid_candidates %}
-            <tr class="border-b border-stone-100 align-top opacity-70">
+            <tr class="border-b border-bhagya-line-2 align-top opacity-70">
               <td class="py-1 pr-3 tabular-nums whitespace-nowrap">{{ c.d.strftime('%b %d, %Y') }}</td>
               <td class="py-1 pr-3">{{ c.weekday[:3] }}</td>
-              <td class="py-1 text-stone-600">{{ c.reason }}</td>
+              <td class="py-1 text-bhagya-muted">{{ c.reason }}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -377,7 +384,7 @@
     </details>
     {% endif %}
 
-    <div class="text-xs text-stone-600 mt-4 space-y-1">
+    <div class="text-xs text-bhagya-muted mt-4 space-y-1">
       <p><strong>Classical criteria applied:</strong> tithi + nakshatra + weekday scoring; hard exclusions for Panchak, Chaturmas (Devshayani → Devuthani), Kharmas / Malmas (Sun in Sagittarius/Pisces), Adhik Maas (computed from the ephemeris for each date searched, not read from a fixed table), Dagdha tithi-weekday combinations, the Vaidhriti and Vyatipata nitya-yogas, Guru + Shukra + Budh combustion per event karaka, and eclipse days (±1 day universal blocker). Bhadra / Vishti Karana sub-day windows are computed and shown on each day so you can plan the ceremony around them.</p>
       {% if personal_active %}
       <p><strong>Personal matching:</strong> Tara Bala counts transit-day nakshatra from your natal Moon nakshatra (mod 9); positions Sampat, Kshema, Sadhaka, Mitra, Ati-Mitra are auspicious; Vipat, Pratyari, Vadha are avoided. Chandra Bala checks the transit Moon's house from your natal Moon; houses 1/3/6/7/10/11 are strong, 4/8/12 are weak. Sade Sati and Rahu/Ketu Mahadasha surface as chart-level cautions above.</p>
@@ -388,20 +395,20 @@
   </section>
   {% endif %}
 
-  <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6">
-    <h3 class="font-display text-lg text-astro-800 mb-3">Related</h3>
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
+    <h3 class="font-marcellus text-lg text-bhagya-ink mb-3">Related</h3>
     <div class="space-y-3">
-      <a href="/learn/vivah-muhurat-2027/" class="block p-3 bg-white rounded-lg border border-astro-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Vivah Muhurat 2027 guide →</div>
-        <div class="text-xs text-stone-600">The classical rules behind wedding dates</div>
+      <a href="/learn/vivah-muhurat-2027/" class="block p-3 bg-white rounded border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Vivah Muhurat 2027 guide →</div>
+        <div class="text-xs text-bhagya-muted">The classical rules behind wedding dates</div>
       </a>
-      <a href="/matching" class="block p-3 bg-white rounded-lg border border-astro-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Kundali Matching (Ashtakoot) →</div>
-        <div class="text-xs text-stone-600">Compatibility check for the couple</div>
+      <a href="/matching" class="block p-3 bg-white rounded border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Kundali Matching (Ashtakoot) →</div>
+        <div class="text-xs text-bhagya-muted">Compatibility check for the couple</div>
       </a>
-      <a href="/manglik-check" class="block p-3 bg-white rounded-lg border border-astro-200 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 text-sm">Manglik Dosh Check →</div>
-        <div class="text-xs text-stone-600">Both partners before wedding date</div>
+      <a href="/manglik-check" class="block p-3 bg-white rounded border border-bhagya-line hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor text-sm">Manglik Dosh Check →</div>
+        <div class="text-xs text-bhagya-muted">Both partners before wedding date</div>
       </a>
     </div>
   </section>

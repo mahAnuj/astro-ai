@@ -123,9 +123,26 @@ def _shared_three_tier(
     """3-tier cache for content that's identical across users: GCS → SQLite → LLM.
 
     Use this for routes where every visitor would get the same LLM output
-    (e.g. Rashifal — today only). Per-chart routes should stick with
-    `_cached`; GCS gives them nothing because the SQLite key is unique per
-    user anyway.
+    (e.g. Rashifal — today only).
+
+    This used to say per-chart routes gain nothing from GCS "because the
+    SQLite key is unique per user anyway", and that sentence is why the natal
+    reading was regenerated at ~7,800 input tokens a time on every cold start
+    until 2026-08-30. How long that lasted is not recorded anywhere in this
+    tree and is not stated here — an earlier draft of this paragraph guessed
+    at it, which is the same fabricate-then-cite defect the sentence it
+    replaces is an example of.
+    GCS's value to a per-chart route is not sharing between users — it is
+    SURVIVING THE CONTAINER. SQLite lives on `/tmp` tmpfs with min-instances 0,
+    so a per-user key that never expires is still lost on every cold start and
+    every deploy. `_cached(..., durable_key=...)` is the per-chart form.
+
+    The two are deliberately NOT merged. This one reads GCS FIRST, which is
+    right for content one warm job wrote for everybody: the local copy is the
+    outlier and the bucket is the source of truth. Natal must read SQLITE
+    FIRST, because its key is immutable and content-addressed, so a
+    cross-continent round-trip on a warm instance is pure loss. Collapsing
+    them into one function would force one of those two orders to be wrong.
 
     Cache writes propagate UP: a GCS hit also populates SQLite so the same
     instance skips the GCS round-trip next time; a fresh generation populates

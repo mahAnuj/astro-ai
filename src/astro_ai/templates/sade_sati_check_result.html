@@ -14,10 +14,10 @@
 <main class="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6">
 
   <header>
-    <h1 class="font-display text-3xl sm:text-4xl text-astro-700 mb-1">
+    <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-1">
       Sade Sati Report {% if details.name %}for {{ details.name }}{% endif %}
     </h1>
-    <p class="text-sm text-stone-600">
+    <p class="text-sm text-bhagya-muted">
       {{ details.birth_date }} · {{ details.birth_time }} · {{ details.birth_place }}
     </p>
   </header>
@@ -30,89 +30,89 @@
   } %}
   {% set phase_info = phase_labels.get(sade_sati.phase, ('stone', 'Sade Sati', '')) %}
 
-  <section class="bg-{{ phase_info[0] }}-50 border-2 border-{{ phase_info[0] }}-200 rounded-2xl p-6 sm:p-8">
+  <section class="bg-{{ phase_info[0] }}-50 border-2 border-{{ phase_info[0] }}-200 p-6 sm:p-8">
     <div class="text-4xl sm:text-5xl mb-3" aria-hidden="true">
       {% if sade_sati.phase == 'rising' %}◐{% elif sade_sati.phase == 'peak' %}●{% else %}◑{% endif %}
     </div>
-    <h2 class="font-display text-2xl sm:text-3xl text-{{ phase_info[0] }}-800 mb-2">{{ phase_info[1] }}</h2>
-    <p class="text-sm text-stone-600 mb-4">{{ phase_info[2] }}</p>
+    <h2 class="font-marcellus text-2xl sm:text-3xl text-{{ phase_info[0] }}-800 mb-2">{{ phase_info[1] }}</h2>
+    <p class="text-sm text-bhagya-muted mb-4">{{ phase_info[2] }}</p>
 
     <div class="grid sm:grid-cols-3 gap-4 mb-4">
-      <div class="bg-white rounded-lg p-4">
-        <div class="text-xs uppercase tracking-wider text-stone-600 mb-1">Overall Start</div>
-        <div class="font-display text-lg text-stone-900">{{ sade_sati.overall_start.strftime('%b %Y') if sade_sati.overall_start else '—' }}</div>
+      <div class="bg-white rounded p-4">
+        <div class="text-xs uppercase tracking-wider text-bhagya-muted mb-1">Overall Start</div>
+        <div class="font-marcellus text-lg text-bhagya-ink">{{ sade_sati.overall_start.strftime('%b %Y') if sade_sati.overall_start else '—' }}</div>
       </div>
-      <div class="bg-white rounded-lg p-4">
-        <div class="text-xs uppercase tracking-wider text-stone-600 mb-1">Current Phase Ends</div>
-        <div class="font-display text-lg text-stone-900">{{ sade_sati.phase_end.strftime('%b %Y') if sade_sati.phase_end else '—' }}</div>
+      <div class="bg-white rounded p-4">
+        <div class="text-xs uppercase tracking-wider text-bhagya-muted mb-1">Current Phase Ends</div>
+        <div class="font-marcellus text-lg text-bhagya-ink">{{ sade_sati.phase_end.strftime('%b %Y') if sade_sati.phase_end else '—' }}</div>
       </div>
-      <div class="bg-white rounded-lg p-4">
-        <div class="text-xs uppercase tracking-wider text-stone-600 mb-1">Overall End</div>
-        <div class="font-display text-lg text-stone-900">{{ sade_sati.overall_end.strftime('%b %Y') if sade_sati.overall_end else '—' }}</div>
+      <div class="bg-white rounded p-4">
+        <div class="text-xs uppercase tracking-wider text-bhagya-muted mb-1">Overall End</div>
+        <div class="font-marcellus text-lg text-bhagya-ink">{{ sade_sati.overall_end.strftime('%b %Y') if sade_sati.overall_end else '—' }}</div>
       </div>
     </div>
 
-    <p class="text-stone-700 leading-relaxed">
+    <p class="text-bhagya-ink-soft leading-relaxed">
       Saturn is currently transiting the <strong>{{ sade_sati.saturn_house_from_moon }}{% if sade_sati.saturn_house_from_moon == 1 %}st{% elif sade_sati.saturn_house_from_moon == 2 %}nd{% else %}th{% endif %} house from your natal Moon</strong>, marking the {{ sade_sati.phase }} phase of Shani's 7.5-year passage across the Moon sign region. This is not a curse — it's a period of structural life-lessons where Saturn tests, prunes, and rebuilds. The lessons of this phase compound into whatever comes after.
     </p>
   </section>
 
   {% elif sade_sati.ashtama_shani %}
-  <section class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 sm:p-8">
+  <section class="bg-amber-50 border-2 border-amber-200 p-6 sm:p-8">
     <div class="text-4xl mb-3" aria-hidden="true">◈</div>
-    <h2 class="font-display text-2xl sm:text-3xl text-amber-800 mb-2">Ashtama Shani (Saturn in 8th from Moon)</h2>
-    <p class="text-sm text-stone-600 mb-3">Not Sade Sati — a related ~2.5-year Saturn transit worth knowing about.</p>
-    <p class="text-stone-700 leading-relaxed">
+    <h2 class="font-marcellus text-2xl sm:text-3xl text-amber-800 mb-2">Ashtama Shani (Saturn in 8th from Moon)</h2>
+    <p class="text-sm text-bhagya-muted mb-3">Not Sade Sati — a related ~2.5-year Saturn transit worth knowing about.</p>
+    <p class="text-bhagya-ink-soft leading-relaxed">
       Saturn is currently transiting the <strong>8th house from your natal Moon</strong> — the classical "Ashtama Shani" phase. Themes: hidden struggles, health scrutiny, chronic-condition surfacing, unexpected turns, deep transformation, inheritance / legacy matters. Duration ~2.5 years total. This is not part of Sade Sati but is one of the three notable Saturn-from-Moon transits classical astrologers flag alongside it.
     </p>
-    <p class="text-stone-700 leading-relaxed mt-3">
+    <p class="text-bhagya-ink-soft leading-relaxed mt-3">
       Approach: prioritise health check-ups, avoid speculation and secret ventures, use the period for inner-work and closure rather than new external launches.
     </p>
   </section>
 
   {% elif sade_sati.kantaka_shani %}
-  <section class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 sm:p-8">
+  <section class="bg-amber-50 border-2 border-amber-200 p-6 sm:p-8">
     <div class="text-4xl mb-3" aria-hidden="true">◈</div>
-    <h2 class="font-display text-2xl sm:text-3xl text-amber-800 mb-2">Kantaka Shani (Saturn in 4th from Moon)</h2>
-    <p class="text-sm text-stone-600 mb-3">Not Sade Sati — a related ~2.5-year Saturn transit worth knowing about.</p>
-    <p class="text-stone-700 leading-relaxed">
+    <h2 class="font-marcellus text-2xl sm:text-3xl text-amber-800 mb-2">Kantaka Shani (Saturn in 4th from Moon)</h2>
+    <p class="text-sm text-bhagya-muted mb-3">Not Sade Sati — a related ~2.5-year Saturn transit worth knowing about.</p>
+    <p class="text-bhagya-ink-soft leading-relaxed">
       Saturn is currently transiting the <strong>4th house from your natal Moon</strong> — the classical "Kantaka Shani" (thorn-Saturn) phase. Themes: home stability, mother's health, inner peace tested, property matters, feeling emotionally unmoored, relocation possible. Duration ~2.5 years total. Distinct from Sade Sati but classically noted as a challenging Saturn-from-Moon transit.
     </p>
-    <p class="text-stone-700 leading-relaxed mt-3">
+    <p class="text-bhagya-ink-soft leading-relaxed mt-3">
       Approach: stabilise home base, tend to mother's wellbeing, defer major home renovations to after the transit unless already committed.
     </p>
   </section>
 
   {% else %}
-  <section class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-6 sm:p-8">
+  <section class="bg-emerald-50 border-2 border-emerald-200 p-6 sm:p-8">
     <div class="text-4xl mb-3" aria-hidden="true">✓</div>
-    <h2 class="font-display text-2xl sm:text-3xl text-emerald-800 mb-2">Sade Sati is not currently active</h2>
-    <p class="text-stone-700 leading-relaxed">
+    <h2 class="font-marcellus text-2xl sm:text-3xl text-emerald-800 mb-2">Sade Sati is not currently active</h2>
+    <p class="text-bhagya-ink-soft leading-relaxed">
       Saturn is currently transiting the {{ sade_sati.saturn_house_from_moon }}{% if sade_sati.saturn_house_from_moon == 1 %}st{% elif sade_sati.saturn_house_from_moon == 2 %}nd{% else %}th{% endif %} house from your natal Moon — outside the 12th-1st-2nd Sade Sati range, and also not Ashtama Shani (8th) or Kantaka Shani (4th). Life continues on its own rhythm; Shani's next visit will begin when he enters your Moon's 12th sign.
     </p>
   </section>
   {% endif %}
 
-  <section class="bg-astro-50 border border-astro-200 rounded-2xl p-6">
-    <h3 class="font-display text-lg text-astro-800 mb-3">What to do next</h3>
+  <section class="bg-bhagya-cream-2 border border-bhagya-line p-6">
+    <h3 class="font-marcellus text-lg text-bhagya-ink mb-3">What to do next</h3>
     <div class="space-y-3">
-      <a href="/kundli" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 mb-0.5">Get your full free Janma Kundli reading →</div>
-        <div class="text-sm text-stone-600">See how Sade Sati intersects with your Dasha, career, and health areas.</div>
+      <a href="/kundli" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor mb-0.5">Get your full free Janma Kundli reading →</div>
+        <div class="text-sm text-bhagya-muted">See how Sade Sati intersects with your Dasha, career, and health areas.</div>
       </a>
-      <a href="/learn/sade-sati/" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 mb-0.5">Read the full Sade Sati guide →</div>
-        <div class="text-sm text-stone-600">Phase-by-phase lessons, honest expectations, and what NOT to do.</div>
+      <a href="/learn/sade-sati/" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor mb-0.5">Read the full Sade Sati guide →</div>
+        <div class="text-sm text-bhagya-muted">Phase-by-phase lessons, honest expectations, and what NOT to do.</div>
       </a>
-      <a href="/learn/career-during-sade-sati/" class="block p-4 bg-white rounded-lg border border-astro-300 hover:border-astro-500 transition-colors">
-        <div class="font-semibold text-astro-800 mb-0.5">Career during Sade Sati →</div>
-        <div class="text-sm text-stone-600">How to navigate work, promotions, and job changes when Shani is transiting.</div>
+      <a href="/learn/career-during-sade-sati/" class="block p-4 bg-white rounded border border-bhagya-border hover:border-bhagya-saffron transition-colors">
+        <div class="font-semibold text-bhagya-sindoor mb-0.5">Career during Sade Sati →</div>
+        <div class="text-sm text-bhagya-muted">How to navigate work, promotions, and job changes when Shani is transiting.</div>
       </a>
     </div>
   </section>
 
   <div class="text-center">
-    <a href="/sade-sati-check" class="text-sm text-astro-600 hover:text-astro-700 underline">Check another chart</a>
+    <a href="/sade-sati-check" class="text-sm text-bhagya-sindoor hover:text-bhagya-sindoor underline">Check another chart</a>
   </div>
 
 </main>

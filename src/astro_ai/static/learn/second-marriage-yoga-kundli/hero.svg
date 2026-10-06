@@ -7,12 +7,12 @@
   <defs>
     <radialGradient id="sm_aura" cx="0.5" cy="0.5" r="0.7">
       <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.65"/>
-      <stop offset="70%" stop-color="#a855f7" stop-opacity="0.1"/>
+      <stop offset="70%" stop-color="#CB5A2E" stop-opacity="0.1"/>
       <stop offset="100%" stop-color="#fefbf3" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="sm_ring1" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="sm_ring2" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#f59e0b"/>
@@ -31,7 +31,7 @@
   <ellipse cx="160" cy="160" rx="140" ry="130" fill="url(#sm_aura)"/>
 
   <!-- Star field -->
-  <g fill="#6b21a8" opacity="0.28">
+  <g fill="#9E2B25" opacity="0.28">
     <circle cx="42" cy="45" r="1.5"/>
     <circle cx="280" cy="55" r="2"/>
     <circle cx="275" cy="275" r="1.5"/>
@@ -45,7 +45,7 @@
     <line x1="65"  y1="115" x2="195" y2="115"/>
     <!-- Small crack/gap on the right edge - symbolising completion -->
     <path d="M 195 115 L 199 111 M 195 115 L 199 119"
-          stroke="#4c1d95" stroke-width="1.5" opacity="0.5"/>
+          stroke="#140F1C" stroke-width="1.5" opacity="0.5"/>
   </g>
 
   <!-- SECOND diamond (partnership 2) — bottom-right, amber -->
@@ -63,8 +63,8 @@
   <!-- Small numeric markers 1 and 2 -->
   <g font-family="Crimson Pro, Georgia, serif" font-size="14" font-weight="700"
      text-anchor="middle">
-    <circle cx="40" cy="90" r="12" fill="#f0e7fb" stroke="#6b21a8" stroke-width="1.5"/>
-    <text x="40" y="95" fill="#4c1d95">1</text>
+    <circle cx="40" cy="90" r="12" fill="#F1E7D8" stroke="#9E2B25" stroke-width="1.5"/>
+    <text x="40" y="95" fill="#140F1C">1</text>
     <circle cx="280" cy="235" r="12" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
     <text x="280" y="240" fill="#78350f">2</text>
   </g>

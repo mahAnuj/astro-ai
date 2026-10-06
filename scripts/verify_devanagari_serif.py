@@ -42,9 +42,31 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import re
 import sys
 import urllib.error
 import urllib.request
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+BASE_HTML = REPO_ROOT / "src/astro_ai/templates/base.html"
+TEMPLATES = REPO_ROOT / "src/astro_ai/templates"
+
+# The Hindi UI needs a Devanagari SANS at every weight the templates use bold
+# at. This is the static half of the gate and it is the half that survives a
+# browser it cannot launch or a font host it cannot reach.
+#
+# Why it exists (#235). A redesign handoff proposed replacing the type stack
+# with Marcellus + Manrope + Tiro Devanagari Sanskrit. Neither Marcellus nor
+# Manrope ships a Devanagari subset, and Tiro is a 400-only Sanskrit serif —
+# so the whole Hindi UI would have lost its face and every bold Hindi heading
+# would have fallen through to a system font. That is #189 returning.
+#
+# The browser probe below catches it too, and more strongly, because it reads
+# what actually painted. But it needs a running server, a working Chromium and
+# network access to fonts.gstatic. This check needs a file.
+REQUIRED_DEVANAGARI_SANS = "Noto Sans Devanagari"
+REQUIRED_SANS_WEIGHTS = (400, 500, 600, 700)
 
 # Measured 2026-08-09 at 390x844 signed out: 268,820 B over 4 files.
 # Headroom for subset drift, not for adding a family — adding one should make
@@ -56,6 +78,121 @@ MAX_FONT_BYTES = 285_000
 # not painted is SKIPped rather than passed — CDP reports no fonts for it, and
 # reading that empty list as "no violation" is how this gate would go hollow.
 VIEWPORTS = (390, 1280)
+
+
+def check_font_link_statically() -> list[str]:
+    """Assert base.html still requests a Devanagari sans at 400-700.
+
+    Runs with no browser, no server and no network, so it is the one part of
+    this gate that cannot be skipped into silence. Returns failure strings.
+    """
+    fails: list[str] = []
+    html = BASE_HTML.read_text(encoding="utf-8")
+    links = re.findall(r'href="(https://fonts\.googleapis\.com/css2\?[^"]+)"', html)
+    if not links:
+        return ["base.html requests no Google Fonts css2 stylesheet — the font "
+                "<link> moved or was rewritten, and this check now verifies nothing."]
+
+    families: dict[str, set[int]] = {}
+    for link in links:
+        # family=Noto+Sans+Devanagari:wght@400;500;600;700
+        for spec in re.findall(r"family=([^&]+)", link):
+            name, _, axis = spec.partition(":")
+            name = name.replace("+", " ")
+            weights = {int(w) for w in re.findall(r"\d{3}", axis)} or {400}
+            families.setdefault(name, set()).update(weights)
+
+    have = families.get(REQUIRED_DEVANAGARI_SANS)
+    if have is None:
+        fails.append(
+            f"the font <link> no longer requests {REQUIRED_DEVANAGARI_SANS!r}. "
+            f"Requested families: {sorted(families) or 'none'}. The Hindi UI "
+            "renders at html[lang=hi]{font-size:108%} across 43 templates; "
+            "without a Devanagari sans every bold Hindi heading falls back to "
+            "a system font (#189, #235)."
+        )
+    else:
+        missing = sorted(w for w in REQUIRED_SANS_WEIGHTS if w not in have)
+        if missing:
+            fails.append(
+                f"{REQUIRED_DEVANAGARI_SANS} is requested at {sorted(have)} but "
+                f"the templates need {list(REQUIRED_SANS_WEIGHTS)} — missing "
+                f"{missing}. A weight that is not loaded is synthesised by the "
+                "browser, which is what #189 looked like."
+            )
+
+    fails.extend(check_hardcoded_faces_are_loaded(set(families)))
+    return fails
+
+
+# Families a template may name without the <link> requesting them: generic CSS
+# keywords, and system faces that are present because the OS has them. Anything
+# else must be a face we actually load.
+GENERIC_FAMILIES = {
+    "serif", "sans-serif", "monospace", "cursive", "fantasy", "system-ui",
+    "ui-serif", "ui-sans-serif", "ui-monospace", "ui-rounded",
+    "-apple-system", "blinkmacsystemfont", "segoe ui", "roboto", "helvetica",
+    "helvetica neue", "arial", "georgia", "times", "times new roman",
+    "courier", "courier new", "cambria", "consolas", "menlo", "monaco",
+    "noto color emoji", "apple color emoji", "segoe ui emoji", "inherit",
+}
+
+
+def check_hardcoded_faces_are_loaded(requested: set[str]) -> list[str]:
+    """Every font family hardcoded in a template must be one we load.
+
+    This exists because the same defect shipped twice inside one epic, and
+    neither time did anything fail:
+
+      #242 dropped Inter from the font <link>. Ten SVG labels across
+      result.html, _south_indian_chart.html and matching_result.html still
+      said `style="font-family: Inter, sans-serif"`, so they silently fell
+      back to a system sans.
+
+      ea0725b retired Crimson Pro. Six rules still named it — four in
+      learn_article_base.html's inline <style>, which every one of the 76
+      article bodies renders through, plus the loader caption and the Om
+      glyph in base.html. All six fell back to a generic serif.
+
+    A face in a `font-family:` declaration or an SVG `font-family=` attribute
+    is invisible to a Tailwind class audit and invisible to the browser probe
+    below unless that exact node happens to be sampled. It is only visible to
+    a check that reads the templates and compares them to the <link>.
+
+    Tailwind utilities are NOT checked here — those resolve through
+    tailwind.config.js, which is a different failure mode with its own gate.
+    """
+    fails: list[str] = []
+    loaded = {f.lower() for f in requested}
+
+    # `font-family: X, Y;` in CSS and `font-family="X, Y"` in SVG attributes.
+    decl = re.compile(r"""font-family\s*[:=]\s*["']?([^;"'}>]+)""", re.I)
+
+    for path in sorted(TEMPLATES.rglob("*.html")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        # Comments record the faces they replaced; a name in prose is not a
+        # declaration. Blank them first or the gate fails on its own history.
+        text = re.sub(r"\{#.*?#\}", "", text, flags=re.S)
+        text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+        text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+
+        for stack in decl.findall(text):
+            for raw in stack.split(","):
+                name = raw.strip().strip("\"'").strip()
+                if not name or name.startswith("{{") or name.startswith("var("):
+                    continue
+                low = name.lower()
+                if low in GENERIC_FAMILIES or low in loaded:
+                    continue
+                fails.append(
+                    f"{path.relative_to(REPO_ROOT)} hardcodes font-family "
+                    f"{name!r}, which the font <link> does not request. "
+                    f"Loaded: {sorted(requested)}. A named face that is not "
+                    f"loaded falls back silently — nothing errors, the text "
+                    f"just renders in something else. Either request it or "
+                    f"name a face we already load."
+                )
+    return fails
 
 
 async def run(url: str, widths: tuple[int, ...]) -> int:
@@ -76,6 +213,7 @@ async def run(url: str, widths: tuple[int, ...]) -> int:
         return 2
 
     all_failures: list[str] = []
+    unreachable = False  # set when a viewport transferred zero web-font bytes
 
     print("Devanagari serif verification (#189)\n")
 
@@ -211,11 +349,35 @@ async def run(url: str, widths: tuple[int, ...]) -> int:
                         f"{MAX_FONT_BYTES:,} B"
                     )
 
+                # A viewport that loaded NO web fonts cannot tell you which
+                # face painted anything — every [lang="sa"] node falls back to
+                # a system font and every check above fails for a reason that
+                # has nothing to do with this repo. That is COULD NOT VERIFY,
+                # not FAIL, and the distinction is the same one acf27db had to
+                # fix in verify_css_build: a gate that reports an unrunnable
+                # environment as a defect trains people to ignore it.
+                #
+                # Seen in a sandbox where Chromium cannot reach fonts.gstatic
+                # (ERR_CONNECTION_RESET, including through a proxy whose CA the
+                # browser does not trust) while curl reaches it fine.
+                if total == 0:
+                    print("    COULD NOT VERIFY: no web font was transferred at "
+                          "all — the browser could not reach the font host.")
+                    unreachable = True
+                    failures = []
+
                 all_failures += [f"[{width}px] {f}" for f in failures]
                 await ctx.close()
                 print()
         finally:
             await browser.close()
+
+    if unreachable and not all_failures:
+        print("COULD NOT VERIFY: the page rendered without its web fonts, so")
+        print("  nothing can be concluded about which face painted the shlokas.")
+        print("  Check the browser's network access to fonts.googleapis.com.")
+        print("-> SKIPPED (exit 2). This is NOT a pass — the check did not run.")
+        return 2
 
     if all_failures:
         print("FAIL")
@@ -237,6 +399,23 @@ def main() -> int:
         help="viewport width; repeatable. Defaults to 390 and 1280.",
     )
     args = ap.parse_args()
+
+    # Static check first, and its failure is final. It needs no browser and no
+    # network, so it is the part that still runs when the rest cannot — and a
+    # missing Devanagari sans is a defect whether or not a browser was
+    # available to watch it happen.
+    print("Static check — the font <link> requests a Devanagari sans\n")
+    static_failures = check_font_link_statically()
+    for f in static_failures:
+        print(f"  FAIL {f}")
+    if not static_failures:
+        print(f"  ok   {REQUIRED_DEVANAGARI_SANS} requested at "
+              f"{list(REQUIRED_SANS_WEIGHTS)}")
+    print()
+    if static_failures:
+        print("FAIL")
+        return 1
+
     return asyncio.run(run(args.url, tuple(args.width or VIEWPORTS)))
 
 

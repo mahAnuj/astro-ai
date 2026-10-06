@@ -45,15 +45,18 @@ astro-ai = "astro_ai.main:cli"
 [dependency-groups]
 dev = [
     "pytest>=8.0",
-    # Two gates need a real browser: verify_devanagari_serif.py (which
-    # faces CDP for the fonts Chromium actually painted) and
-    # verify_lang_switch_browser.py (which clicks the language control
-    # and reads <html lang> plus the computed root font-size). Both exit
-    # 2 rather than 0 when it is absent, so a sweep cannot mistake an
-    # unrunnable gate for a green one — but declared here they actually
-    # run. `uv run playwright install chromium` is still needed once for
-    # the browser binary itself (#124, QA 2026-10-04).
-    "playwright>=1.40",
+    # Drives scripts/verify_devanagari_serif.py, which reads the fonts the
+    # browser ACTUALLY painted via CDP rather than trusting the CSS. Until it
+    # was added the gate returned 2 ("could not verify") before running a
+    # single check, so #189's regression guard had never once executed.
+    #
+    # scripts/verify_lang_switch_browser.py (#124) needs it for the same
+    # reason: it clicks the language control and reads <html lang> plus the
+    # computed root font-size, which no server-side test can see. Both gates
+    # exit 2 rather than 0 when playwright is absent, so a sweep cannot
+    # mistake an unrunnable gate for a green one.
+    "playwright>=1.47",
+    "tiktoken>=0.14.0",
 ]
 
 [tool.pytest.ini_options]

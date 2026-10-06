@@ -28,8 +28,8 @@
   'dasha':    "Dasha Periods",
   'ask':      "Ask Shubh Bhagya",
 }.get(needs_chart_for, "that feature") %}
-<div class="bg-astro-100 border-b border-astro-200">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 text-sm text-astro-800 flex items-start gap-2">
+<div class="bg-bhagya-cream-2 border-b border-bhagya-line">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 text-sm text-bhagya-sindoor flex items-start gap-2">
     <svg aria-hidden="true" class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
     </svg>
@@ -39,13 +39,36 @@
 {% endif %}
 
 <!-- HERO ------------------------------------------------------------- -->
-<section class="relative overflow-hidden">
-  <!-- Subtle radial gradient backdrop for warmth without being noisy. -->
-  <div class="absolute inset-0 -z-10 bg-gradient-to-b from-astro-50/60 via-cream to-cream"></div>
-  <div class="absolute -top-24 -right-24 -z-10 w-96 h-96 rounded-full bg-astro-200/30 blur-3xl"></div>
-  <div class="absolute -bottom-24 -left-24 -z-10 w-96 h-96 rounded-full bg-amber-200/30 blur-3xl"></div>
+{# #242: the hero is a NIGHT panel now. Two decorative layers replace the three
+   pastel blur blobs that used to sit here — a 720px radial saffron glow and a
+   44px dot grid, both from the handoff.
 
-  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-20 grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-10 lg:gap-16 items-center">
+   Both are Tailwind arbitrary-value utilities rather than inline `style`
+   attributes, on purpose. An inline style is invisible to the content scanner
+   AND to scripts/verify_redesign_tokens.py's hex check, so a colour written
+   there drifts from the palette with nothing to catch it. As utilities they
+   are greppable, they live in app.css like everything else, and the rgba()
+   channels below are exactly the token values (228,145,60 = saffron #E4913C,
+   250,246,239 = cream #FAF6EF).
+
+   `isolate` + `-z-10` is the reason these paint above the section's own night
+   background but below the content: CSS paints an element's background first,
+   then negative-z-index descendants, then in-flow content. Drop `isolate` and
+   they escape into the page's stacking context. #}
+<section class="relative isolate overflow-hidden bg-bhagya-night">
+  <div aria-hidden="true"
+       class="pointer-events-none absolute -z-10 -top-40 sm:-top-56 -right-32 lg:right-28
+              w-[720px] h-[720px] rounded-full animate-glow
+              bg-[radial-gradient(circle,rgba(228,145,60,0.22)_0%,rgba(228,145,60,0)_62%)]"></div>
+  <div aria-hidden="true"
+       class="pointer-events-none absolute inset-0 -z-10 opacity-50
+              bg-[radial-gradient(rgba(250,246,239,0.14)_1px,transparent_1px)]
+              [background-size:44px_44px]"></div>
+
+  {# md:grid-cols-2 before the design's `1fr 430px` kicks in at lg. At md the
+     viewport is 768px and a fixed 430px form column would leave the prose
+     ~290px — narrower than it gets on a phone. #}
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-16 lg:py-20 grid md:grid-cols-2 lg:grid-cols-[1fr_430px] gap-4 sm:gap-6 md:gap-10 lg:gap-[72px] items-start">
     <!-- RIGHT — chart list if cookie present, else form -->
     {# md:order-2 — see the note on the left column (#195). #}
     <div class="md:order-2">
@@ -61,7 +84,7 @@
        moon sign either, so this branch never renders today). Kept as
        a stub for a future 'enter your rashi manually' quick-input. #}
     {% if user_moon_slug and user_moon_display and not (collection and collection.charts) %}
-    <div class="mb-4 rounded-2xl border-2 border-astro-300 bg-gradient-to-br from-astro-50 via-white to-amber-50/40 p-4 sm:p-5 shadow-md">
+    <div class="mb-4 rounded-md border border-bhagya-border bg-bhagya-cream p-4 sm:p-5">
       <div class="flex items-center gap-3">
         <img src="/static/rashi/{{ user_moon_slug }}.png"
              alt="{{ user_moon_display }} silhouette"
@@ -69,10 +92,10 @@
              class="w-14 h-14 object-contain shrink-0"
              decoding="async" fetchpriority="high">
         <div class="flex-1 min-w-0">
-          <div class="text-[10px] uppercase tracking-wider font-semibold text-astro-700">Your Rashifal today</div>
-          <div class="font-display text-lg text-stone-900 truncate">{{ user_moon_display }}</div>
+          <div class="text-[10px] uppercase tracking-wider font-semibold text-bhagya-sindoor">Your Rashifal today</div>
+          <div class="font-marcellus text-lg text-bhagya-ink truncate">{{ user_moon_display }}</div>
           <a href="/rashifal/{{ user_moon_slug }}"
-             class="inline-flex items-center gap-1 mt-1 text-astro-700 hover:text-astro-800 font-semibold text-sm">
+             class="inline-flex items-center gap-1 mt-1 text-bhagya-sindoor hover:text-bhagya-ink font-semibold text-sm">
             Read today's reading →
           </a>
         </div>
@@ -80,25 +103,25 @@
     </div>
     {% endif %}
     {% if collection and collection.charts %}
-      <div class="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-astro-900/5 p-6 sm:p-8">
-        <span class="inline-block text-xs font-semibold tracking-wider text-astro-700 uppercase bg-astro-100 px-3 py-1 rounded-full mb-3">
+      <div class="bg-bhagya-cream rounded-md p-6 sm:p-8 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.55)]">
+        <span class="inline-block text-xs font-semibold tracking-wider text-bhagya-sindoor uppercase bg-bhagya-cream-2 px-3 py-1 rounded-full mb-3">
           {{ collection.charts | length }} saved chart{{ "s" if collection.charts | length != 1 else "" }}
         </span>
-        <h2 class="font-display text-2xl text-astro-700 mb-1">Your charts</h2>
-        <p class="text-sm text-stone-600 mb-5">
+        <h2 class="font-marcellus text-2xl text-bhagya-ink mb-1">Your charts</h2>
+        <p class="text-sm text-bhagya-muted mb-5">
           The active chart powers today&rsquo;s reading. Switch any time.
         </p>
 
         {% set active = collection.active %}
         {# ACTIVE chart — prominent card with actions. #}
-        <div class="rounded-2xl border-2 border-astro-500 bg-astro-50/40 p-4 mb-3">
+        <div class="rounded-2xl border-2 border-bhagya-saffron bg-bhagya-cream-2 p-4 mb-3">
           <div class="flex items-start justify-between gap-2 mb-1">
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="font-semibold text-stone-900 text-base truncate">{{ active.name if active.name else 'Saved chart' }}</span>
-                <span class="text-[9px] font-semibold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded uppercase">Active</span>
+                <span class="font-semibold text-bhagya-ink text-base truncate">{{ active.name if active.name else 'Saved chart' }}</span>
+                <span class="text-[9px] font-semibold tracking-wider text-bhagya-sindoor bg-bhagya-cream border border-bhagya-saffron px-1.5 py-0.5 rounded uppercase">Active</span>
               </div>
-              <div class="text-sm text-stone-600 mt-0.5 truncate">
+              <div class="text-sm text-bhagya-muted mt-0.5 truncate">
                 {{ active.birth_date }} &middot; {{ active.birth_time }} &middot; {{ active.birth_place }}
               </div>
             </div>
@@ -106,17 +129,17 @@
             <form method="post" action="/delete-chart"
                   onsubmit="return confirm('Delete this saved chart?');">
               <input type="hidden" name="chart_id" value="{{ active.id }}">
-              <button type="submit" class="text-stone-500 hover:text-rose-600 text-lg leading-none px-1" aria-label="Delete">
+              <button type="submit" class="text-bhagya-muted-2 hover:text-bhagya-sindoor text-lg leading-none px-1" aria-label="Delete">
                 &times;
               </button>
             </form>
             {% endif %}
           </div>
           <div class="flex flex-wrap gap-2 mt-3">
-            <a href="/today" class="flex-1 text-center px-3 py-1.5 bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold rounded-lg">
+            <a href="/today" class="flex-1 text-center px-3 py-1.5 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-sm font-semibold rounded-lg">
               Today's Horoscope &rarr;
             </a>
-            <a href="/kundli" class="flex-1 text-center px-3 py-1.5 border border-astro-300 text-astro-700 hover:bg-astro-100 text-sm font-semibold rounded-lg">
+            <a href="/kundli" class="flex-1 text-center px-3 py-1.5 border border-bhagya-border text-bhagya-sindoor hover:bg-bhagya-cream-2 text-sm font-semibold rounded-lg">
               Kundli
             </a>
           </div>
@@ -125,7 +148,7 @@
         {# INACTIVE charts — compact tappable rows in a scrollable list. #}
         {% set inactive = collection.charts | rejectattr('id', 'equalto', active.id) | list %}
         {% if inactive %}
-        <div class="text-xs uppercase tracking-wider font-semibold text-stone-600 mb-1.5 mt-4">
+        <div class="text-xs uppercase tracking-wider font-semibold text-bhagya-muted mb-1.5 mt-4">
           Switch to
         </div>
         <div class="max-h-48 overflow-y-auto -mx-1 px-1 space-y-1">
@@ -135,17 +158,17 @@
               <input type="hidden" name="chart_id" value="{{ c.id }}">
               <input type="hidden" name="next" value="/">
               <button type="submit"
-                      class="w-full text-left px-3 py-2 rounded-md hover:bg-stone-50 border border-transparent hover:border-stone-200 flex items-center gap-2 text-sm min-w-0">
-                <span class="text-stone-300 group-hover:text-astro-500 transition-colors flex-shrink-0">○</span>
-                <span class="font-semibold text-stone-900 truncate">{{ c.name if c.name else 'Saved chart' }}</span>
-                <span class="text-sm text-stone-600 truncate ml-auto">{{ c.birth_date }} &middot; {{ c.birth_place.split(',')[0] }}</span>
+                      class="w-full text-left px-3 py-2 rounded-md hover:bg-bhagya-cream-2 border border-transparent hover:border-bhagya-line flex items-center gap-2 text-sm min-w-0">
+                <span class="text-bhagya-border group-hover:text-bhagya-saffron transition-colors flex-shrink-0">○</span>
+                <span class="font-semibold text-bhagya-ink truncate">{{ c.name if c.name else 'Saved chart' }}</span>
+                <span class="text-sm text-bhagya-muted truncate ml-auto">{{ c.birth_date }} &middot; {{ c.birth_place.split(',')[0] }}</span>
               </button>
             </form>
             <form method="post" action="/delete-chart"
                   onsubmit="return confirm('Delete this saved chart?');">
               <input type="hidden" name="chart_id" value="{{ c.id }}">
               <button type="submit"
-                      class="text-stone-300 hover:text-rose-600 text-base leading-none px-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      class="text-bhagya-border hover:text-bhagya-sindoor text-base leading-none px-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                       aria-label="Delete {{ c.name }}">&times;</button>
             </form>
           </div>
@@ -154,40 +177,45 @@
         {% endif %}
 
         {% if collection.charts | length < 10 %}
-        <div class="mt-6 pt-5 border-t border-stone-100">
-          <h3 class="font-display text-lg text-astro-700 mb-1">+ Save another chart</h3>
-          <p class="text-sm text-stone-600 mb-3">Add a family member, partner, or friend &mdash; up to 10 total.</p>
+        <div class="mt-6 pt-5 border-t border-bhagya-line-2">
+          <h3 class="font-marcellus text-lg text-bhagya-ink mb-1">+ Save another chart</h3>
+          <p class="text-sm text-bhagya-muted mb-3">Add a family member, partner, or friend &mdash; up to 10 total.</p>
           <form method="post" action="/reading" class="space-y-2.5">
             <input type="text" name="name" placeholder="Name (optional)"
-                   class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full px-3 py-2 border border-bhagya-border rounded-lg text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <input type="date" name="birth_date" required
-                   class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full px-3 py-2 border border-bhagya-border rounded-lg text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <input type="time" name="birth_time" required
-                   class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full px-3 py-2 border border-bhagya-border rounded-lg text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <input type="text" name="birth_place" required placeholder="Birth place (city, country)"
-                   class="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="w-full px-3 py-2 border border-bhagya-border rounded-lg text-sm focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
             <button type="submit"
-                    class="w-full py-2.5 bg-astro-700 hover:bg-astro-800 text-white text-sm font-semibold rounded-lg">
+                    class="w-full py-2.5 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night text-sm font-semibold rounded-lg">
               Get this Kundli &rarr;
             </button>
           </form>
         </div>
         {% else %}
-        <p class="text-sm text-stone-600 mt-5 pt-5 border-t border-stone-100">
+        <p class="text-sm text-bhagya-muted mt-5 pt-5 border-t border-bhagya-line-2">
           You&rsquo;ve saved the max of 10 charts. Delete one above to add another.
         </p>
         {% endif %}
 
-        <form method="post" action="/reset" class="text-center mt-4 pt-4 border-t border-stone-100">
-          <button type="submit" class="text-xs text-stone-600 hover:text-rose-600 underline">
+        <form method="post" action="/reset" class="text-center mt-4 pt-4 border-t border-bhagya-line-2">
+          <button type="submit" class="text-xs text-bhagya-muted hover:text-bhagya-sindoor underline">
             Forget all charts
           </button>
         </form>
       </div>
     {% else %}
+      {# THE ONE SHADOWED ELEMENT ON THE SITE (#242). The handoff is explicit
+         that everything else uses borders, not shadows, so this card reads as
+         the single elevated thing on the page. Do not copy the shadow onto
+         another card "for consistency" — the inconsistency is the point. #}
       <form method="post" action="/reading" id="kundli-form"
-            class="bg-white rounded-2xl border border-stone-200 shadow-xl shadow-astro-900/5 p-5 sm:p-8 scroll-mt-20">
-        <h2 class="font-display text-xl sm:text-2xl text-astro-700 mb-1">Start with your birth details</h2>
+            class="bg-bhagya-cream rounded-md p-5 sm:p-8 scroll-mt-20
+                   shadow-[0_30px_60px_-20px_rgba(0,0,0,0.55)]">
+        <h2 class="font-marcellus text-xl sm:text-[26px] text-bhagya-ink mb-1">Start with your birth details</h2>
         {# `sr-only` below sm, not `hidden` (#195). Both free the same ~40px of
            vertical space, but `hidden` computes to display:none, which drops the
            node out of the accessibility tree — independent QA confirmed a mobile
@@ -196,33 +224,44 @@
            `sr-only` positions it out of view without removing it from the tree, so
            it costs no layout height and AT keeps it. Verified: CTA bottom still 623
            at 375x667. #}
-        <p class="sr-only sm:not-sr-only text-sm text-stone-600 sm:mb-5">All four fields take a few seconds.</p>
+        <p class="sr-only sm:not-sr-only text-sm text-bhagya-muted sm:mb-5">All four fields take a few seconds.</p>
 
+        {# Birth date and birth time share a row (#242, from the handoff). That
+           is not decoration: it removes a whole field row on mobile, which is
+           the vertical budget the 11px uppercase labels and the card's larger
+           padding spend. Measure with scripts/measure_cta_fold.py before
+           changing it back to four stacked rows. #}
         <div class="space-y-3 sm:space-y-4">
           <label class="block">
-            <span class="block leading-5 sm:leading-6 text-sm font-semibold text-stone-700">Name <span class="text-stone-500 font-normal">(optional)</span></span>
+            <span class="block leading-5 sm:leading-6 text-[11px] font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Name <span class="font-medium tracking-normal normal-case text-bhagya-muted">(optional)</span></span>
             <input type="text" name="name" placeholder="e.g. Priya" autofocus autocomplete="name"
-                   class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-bhagya-border bg-white rounded text-bhagya-ink placeholder-bhagya-placeholder focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
           </label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="block">
+              <span class="block leading-5 sm:leading-6 text-[11px] font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Birth date</span>
+              <input type="date" name="birth_date" required autocomplete="bday"
+                     class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-bhagya-border bg-white rounded text-bhagya-ink focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
+            </label>
+            <label class="block">
+              <span class="block leading-5 sm:leading-6 text-[11px] font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Birth time <span class="font-medium tracking-normal normal-case text-bhagya-muted">(local)</span></span>
+              <input type="time" name="birth_time" required
+                     class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-bhagya-border bg-white rounded text-bhagya-ink focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
+            </label>
+          </div>
           <label class="block">
-            <span class="block leading-5 sm:leading-6 text-sm font-semibold text-stone-700">Birth date</span>
-            <input type="date" name="birth_date" required autocomplete="bday"
-                   class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
-          </label>
-          <label class="block">
-            <span class="block leading-5 sm:leading-6 text-sm font-semibold text-stone-700">Birth time <span class="text-stone-500 font-normal">(24-hour, local)</span></span>
-            <input type="time" name="birth_time" required
-                   class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-stone-300 rounded-lg text-stone-900 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
-          </label>
-          <label class="block">
-            <span class="block leading-5 sm:leading-6 text-sm font-semibold text-stone-700">Birth place <span class="text-stone-500 font-normal">(city, country)</span></span>
+            <span class="block leading-5 sm:leading-6 text-[11px] font-bold uppercase tracking-[0.14em] text-bhagya-muted-2">Birth place <span class="font-medium tracking-normal normal-case text-bhagya-muted">(city, country)</span></span>
             <input type="text" name="birth_place" placeholder="e.g. Mumbai, India" required autocomplete="address-level2"
-                   class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-stone-300 rounded-lg text-stone-900 placeholder-stone-400 focus:ring-2 focus:ring-astro-500 focus:border-astro-500 focus:outline-none">
+                   class="mt-1 sm:mt-1.5 w-full px-3 py-2.5 sm:py-3 border border-bhagya-border bg-white rounded text-bhagya-ink placeholder-bhagya-placeholder focus:ring-[3px] focus:ring-bhagya-saffron/[.16] focus:border-bhagya-saffron focus:outline-none">
           </label>
         </div>
 
+        {# NIGHT, not saffron — the handoff is explicit that the page's primary
+           button must not compete with the saffron "Free Kundli" pill in the
+           nav. Saffron is the HOVER state instead, which keeps the accent in
+           play without two saffron blocks fighting above the fold. #}
         <button type="submit"
-                class="mt-4 sm:mt-6 w-full py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors disabled:bg-stone-400 disabled:cursor-wait">
+                class="mt-4 sm:mt-6 w-full py-3 bg-bhagya-night hover:bg-bhagya-saffron text-bhagya-cream hover:text-bhagya-night font-semibold rounded transition-colors disabled:bg-bhagya-muted-2 disabled:text-bhagya-cream disabled:cursor-wait">
           <span class="htmx-default">Get my free Kundli instantly &rarr;</span>
           <span class="htmx-indicator">
             <svg aria-hidden="true" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -288,22 +327,39 @@
        real focus-order violation on the primary platform. The alternative, demoting
        that <h2> to a <p>, would strip a heading landmark screen-reader users navigate
        by, which is a worse trade. #}
-    <div class="md:order-1">
-      {# Navagraha Stotra invocation (Issue #75) — hidden on mobile so the
-         above-fold on 375×667 shows the value prop + form / mini-chart
-         first. Desktop keeps the shloka since there's viewport room. #}
-      <div class="hidden sm:block mb-5">
-        <p class="font-display text-base sm:text-lg text-astro-700" lang="sa">
-          नमः सूर्याय चन्द्राय मङ्गलाय बुधाय च।<br>
-          गुरु शुक्र शनिभ्यश्च राहवे केतवे नमः॥
-        </p>
-        <p class="text-xs text-stone-600 mt-1.5 italic">Salutations to all nine grahas &mdash; Navagraha Stotra</p>
-      </div>
+    <div class="md:order-1 pt-2">
+      {# #242 reordered the INSIDE of this column to the handoff's sequence —
+         eyebrow, H1, lede, chips, then a rule and the ornament. The Navagraha
+         shloka moved from the top of the column to the bottom of it.
 
-      <span class="inline-block text-xs font-semibold tracking-wider text-astro-700 uppercase bg-astro-100 px-3 py-1 rounded-full mb-2 sm:mb-4">
-        Free &middot; Instant &middot; No signup needed
-      </span>
-      <h1 class="font-display text-3xl sm:text-5xl lg:text-6xl text-stone-900 leading-tight mb-2 sm:mb-4">Your Janma Kundali,<br><span class="text-astro-700">simply explained.</span></h1>
+         That is safe against the hero's DOM-order contract above, which is
+         about which COLUMN comes first, not about the order within one. It
+         does change focus order inside this column, so the keyboard sweep was
+         re-run at both breakpoints — see the ship note on #242.
+
+         The shloka block stays in THIS column rather than moving into the form
+         card, where the handoff draws it. Two reasons: the card is replaced
+         wholesale by the saved-charts manager when a chart cookie exists, so a
+         shloka living there disappears for returning visitors; and on mobile
+         it would sit above the CTA and cost ~40px of a 44px fold margin. #}
+
+      <div class="flex items-center gap-2.5 mb-3 sm:mb-5">
+        <span class="w-[26px] h-px bg-bhagya-gold flex-none" aria-hidden="true"></span>
+        <span class="text-[11px] font-bold tracking-[0.2em] text-bhagya-gold uppercase">
+          Free &middot; Instant &middot; No signup needed
+        </span>
+      </div>
+      <h1 class="font-marcellus text-[40px] sm:text-5xl lg:text-[74px] text-bhagya-cream leading-[1.05] lg:leading-[1.02] lg:tracking-[-0.015em] mb-2 sm:mb-4">Your Janma Kundali,<br><span class="text-bhagya-saffron italic">simply</span> explained.</h1>
+
+      {# The lede sits ABOVE the trust row (handoff order: H1, lede, chips).
+         Copy is unchanged. `cream/[.66]` composites to 7.93:1 on night — the
+         handoff's own body-on-night value; anything at or below .45 fails AA
+         (4.29:1), which is the correction recorded in tailwind.config.js. #}
+      <p class="text-base sm:text-lg text-bhagya-cream/[.66] leading-relaxed max-w-[520px] mb-3 sm:mb-6">
+        Free Janma Kundali, daily horoscope, monthly &amp; yearly readings, Dasha periods,
+        and Kundli matching for marriage &mdash; with the same chart math professional
+        astrologers use.
+      </p>
 
       {# Trust bar — real counts only. Each pill has a min-count threshold
          (set server-side via TRUST_MIN_* env vars, defaults in main.py);
@@ -319,29 +375,29 @@
          nothing may push it further. These four mobile-only margin reductions give
          back 18px, netting +2px. All are sm:-restored, so desktop is unchanged — the
          row measures 16px tall at 1280px both before and after. #}
-      <div class="flex flex-wrap items-center gap-x-4 gap-y-0.5 sm:gap-y-1 text-xs text-stone-600 mb-2 sm:mb-4">
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-0.5 sm:gap-x-2.5 sm:gap-y-2 text-xs sm:text-[13px] text-bhagya-cream/[.8] mb-2 sm:mb-4">
         {% if trust_kundlis and trust_kundlis >= trust_kundlis_min %}
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-          <strong class="text-stone-700">{{ "{:,}".format(trust_kundlis) }}</strong> Kundlis generated
+        <span class="inline-flex items-center gap-1 sm:gap-1.5 sm:border sm:border-bhagya-gold/[.35] sm:rounded-full sm:px-4 sm:py-2 sm:font-medium">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-bhagya-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          <strong class="text-bhagya-cream font-semibold">{{ "{:,}".format(trust_kundlis) }}</strong> Kundlis generated
         </span>
         {% endif %}
         {% if trust_asks and trust_asks >= trust_asks_min %}
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-          <strong class="text-stone-700">{{ "{:,}".format(trust_asks) }}</strong> questions answered
+        <span class="inline-flex items-center gap-1 sm:gap-1.5 sm:border sm:border-bhagya-gold/[.35] sm:rounded-full sm:px-4 sm:py-2 sm:font-medium">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-bhagya-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          <strong class="text-bhagya-cream font-semibold">{{ "{:,}".format(trust_asks) }}</strong> questions answered
         </span>
         {% endif %}
         {% if trust_users and trust_users >= trust_users_min %}
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5.13a4 4 0 11-8 0 4 4 0 018 0zm6 3a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          <strong class="text-stone-700">{{ "{:,}".format(trust_users) }}</strong> registered readers
+        <span class="inline-flex items-center gap-1 sm:gap-1.5 sm:border sm:border-bhagya-gold/[.35] sm:rounded-full sm:px-4 sm:py-2 sm:font-medium">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-bhagya-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5.13a4 4 0 11-8 0 4 4 0 018 0zm6 3a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <strong class="text-bhagya-cream font-semibold">{{ "{:,}".format(trust_users) }}</strong> registered readers
         </span>
         {% endif %}
         {% if trust_subscribers and trust_subscribers >= trust_subscribers_min %}
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-          <strong class="text-stone-700">{{ "{:,}".format(trust_subscribers) }}</strong> daily Rashifal subscribers
+        <span class="inline-flex items-center gap-1 sm:gap-1.5 sm:border sm:border-bhagya-gold/[.35] sm:rounded-full sm:px-4 sm:py-2 sm:font-medium">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-bhagya-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <strong class="text-bhagya-cream font-semibold">{{ "{:,}".format(trust_subscribers) }}</strong> daily Rashifal subscribers
         </span>
         {% endif %}
         {# Provenance chips (#188). They fill the slot that renders when the four gated
@@ -360,29 +416,24 @@
            The article count comes from learn_registry via a Jinja global (routes/deps.py)
            and is never typed in. A hardcoded 75 is silently wrong the day article 76
            ships and nothing breaks to tell you. #}
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+        <span class="inline-flex items-center gap-1 sm:gap-1.5 sm:border sm:border-bhagya-gold/[.35] sm:rounded-full sm:px-4 sm:py-2 sm:font-medium">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-bhagya-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
           Swiss Ephemeris chart math
         </span>
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-          <a href="/learn/" class="hover:text-astro-700"><strong class="text-stone-700">{{ learn_article_count }}</strong> explainers</a>
+        <span class="inline-flex items-center gap-1 sm:gap-1.5 sm:border sm:border-bhagya-gold/[.35] sm:rounded-full sm:px-4 sm:py-2 sm:font-medium">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-bhagya-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          <a href="/learn/" class="hover:text-bhagya-saffron"><strong class="text-bhagya-cream font-semibold">{{ learn_article_count }}</strong> explainers</a>
         </span>
-        <span class="inline-flex items-center gap-1">
-          <svg aria-hidden="true" class="w-3.5 h-3.5 text-astro-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+        <span class="inline-flex items-center gap-1 sm:gap-1.5 sm:border sm:border-bhagya-gold/[.35] sm:rounded-full sm:px-4 sm:py-2 sm:font-medium">
+          <svg aria-hidden="true" class="w-3.5 h-3.5 text-bhagya-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
           {# The /about link rides on this chip because the fallback line it replaced
              (`Since 2026 · classical-source cited`) carried the hero's only link to
              /about, and dropping it was an internal-link change nobody asked for.
              Wording is unchanged and must stay unchanged — see the note above. #}
-          <a href="/about" class="hover:text-astro-700">Cited to classical sources</a>
+          <a href="/about" class="hover:text-bhagya-saffron">Cited to classical sources</a>
         </span>
       </div>
 
-      <p class="text-lg text-stone-600 leading-relaxed mb-3 sm:mb-6">
-        Free Janma Kundali, daily horoscope, monthly &amp; yearly readings, Dasha periods,
-        and Kundli matching for marriage &mdash; with the same chart math professional
-        astrologers use.
-      </p>
       {# SAMPLE KUNDLI PREVIEW (Issue #76) — replaces the 3-checkmark
          bullet list. A visual preview of the outcome (Vedic is a visual
          tradition; showing beats telling). Uses the same .chart-draw
@@ -406,51 +457,80 @@
          "if the chart cannot fit without pushing the CTA down, it does not
          ship — the form outranks the flourish", so it did not ship. #}
       <div class="hidden md:block mt-2 max-w-xs">
-        <div class="bg-white rounded-2xl border border-stone-200 shadow-md p-3.5">
+        <div class="border border-bhagya-gold/[.5] p-3.5">
+          {# #239 left the hexes below on the old purple ramp deliberately, to move
+             with the screen that owns this file. #242 is that screen, so they moved:
+             strokes and house numerals to gold #C8A44D, the three planet glyphs to
+             saffron #E4913C, the plate to night #140F1C. All three are on night, where
+             gold is 7.96:1 and saffron 7.55:1 — gold on a CREAM surface is 2.20:1 and
+             is forbidden, so do not lift this block onto a light panel unrecoloured.
+
+             These hexes are still invisible to Tailwind (SVG attributes, not classes),
+             which is why this file is now listed in MIGRATED in
+             scripts/verify_redesign_tokens.py — that gate reads every hex here and
+             fails if one stops matching a bhagya token in tailwind.config.js. #}
           <svg viewBox="0 0 400 400" class="w-full block" xmlns="http://www.w3.org/2000/svg" aria-label="Sample Janma Kundali preview">
             {# Outer border #}
-            <rect x="2" y="2" width="396" height="396" fill="white" stroke="#6b21a8" stroke-width="2"
+            <rect x="2" y="2" width="396" height="396" fill="#140F1C" stroke="#C8A44D" stroke-width="2"
                   class="chart-draw" style="--dash: 1584; animation-delay: 200ms"/>
             {# Diamond outline — 4 sides #}
-            <line x1="200" y1="2"   x2="398" y2="200" stroke="#6b21a8" stroke-width="2"
+            <line x1="200" y1="2"   x2="398" y2="200" stroke="#C8A44D" stroke-width="2"
                   class="chart-draw" style="--dash: 280; animation-delay: 400ms"/>
-            <line x1="398" y1="200" x2="200" y2="398" stroke="#6b21a8" stroke-width="2"
+            <line x1="398" y1="200" x2="200" y2="398" stroke="#C8A44D" stroke-width="2"
                   class="chart-draw" style="--dash: 280; animation-delay: 520ms"/>
-            <line x1="200" y1="398" x2="2"   y2="200" stroke="#6b21a8" stroke-width="2"
+            <line x1="200" y1="398" x2="2"   y2="200" stroke="#C8A44D" stroke-width="2"
                   class="chart-draw" style="--dash: 280; animation-delay: 640ms"/>
-            <line x1="2"   y1="200" x2="200" y2="2"   stroke="#6b21a8" stroke-width="2"
+            <line x1="2"   y1="200" x2="200" y2="2"   stroke="#C8A44D" stroke-width="2"
                   class="chart-draw" style="--dash: 280; animation-delay: 760ms"/>
             {# Two diagonals #}
-            <line x1="2"   y1="2"   x2="398" y2="398" stroke="#6b21a8" stroke-width="2"
+            <line x1="2"   y1="2"   x2="398" y2="398" stroke="#C8A44D" stroke-width="2"
                   class="chart-draw" style="--dash: 560; animation-delay: 920ms"/>
-            <line x1="398" y1="2"   x2="2"   y2="398" stroke="#6b21a8" stroke-width="2"
+            <line x1="398" y1="2"   x2="2"   y2="398" stroke="#C8A44D" stroke-width="2"
                   class="chart-draw" style="--dash: 560; animation-delay: 1050ms"/>
             {# Sample house numbers 1-12 in North-Indian arrangement.
                These are STATIC placeholders — real chart uses per-user
                computed positions. Numbers fade in after strokes complete. #}
             <g class="chart-labels">
-              <text x="200" y="88"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">1</text>
-              <text x="110" y="80"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">2</text>
-              <text x="80"  y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">3</text>
-              <text x="112" y="205" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">4</text>
-              <text x="80"  y="295" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">5</text>
-              <text x="110" y="325" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">6</text>
-              <text x="200" y="320" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">7</text>
-              <text x="290" y="325" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">8</text>
-              <text x="320" y="295" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">9</text>
-              <text x="288" y="205" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">10</text>
-              <text x="320" y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">11</text>
-              <text x="290" y="80"  text-anchor="middle" font-size="15" font-weight="700" fill="#a16207">12</text>
+              <text x="200" y="88"  text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">1</text>
+              <text x="110" y="80"  text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">2</text>
+              <text x="80"  y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">3</text>
+              <text x="112" y="205" text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">4</text>
+              <text x="80"  y="295" text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">5</text>
+              <text x="110" y="325" text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">6</text>
+              <text x="200" y="320" text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">7</text>
+              <text x="290" y="325" text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">8</text>
+              <text x="320" y="295" text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">9</text>
+              <text x="288" y="205" text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">10</text>
+              <text x="320" y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">11</text>
+              <text x="290" y="80"  text-anchor="middle" font-size="15" font-weight="700" fill="#C8A44D">12</text>
               {# One sample planet glyph to hint at what a real chart shows #}
-              <text x="200" y="115" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">La</text>
-              <text x="112" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">Mo</text>
-              <text x="288" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#1c1917">Su</text>
+              <text x="200" y="115" text-anchor="middle" font-size="13" font-weight="600" fill="#E4913C">La</text>
+              <text x="112" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#E4913C">Mo</text>
+              <text x="288" y="230" text-anchor="middle" font-size="13" font-weight="600" fill="#E4913C">Su</text>
             </g>
           </svg>
         </div>
-        <p class="text-center text-xs text-stone-600 italic mt-2.5">
+        <p class="text-center text-xs text-bhagya-cream/[.5] italic mt-2.5">
           Sample chart &mdash; yours will use your actual birth data
         </p>
+      </div>
+
+      {# Navagraha Stotra invocation (Issue #75) — hidden on mobile so the
+         above-fold on 375×667 shows the form first. Desktop keeps the shloka
+         since there's viewport room. #242 moved it from the top of this column
+         to the bottom and gave it the handoff's hairline rule above; the
+         `hidden sm:block` guard, which is what keeps it off the mobile fold,
+         is unchanged.
+
+         `[lang="sa"]` is load-bearing, not decoration: base.html scopes the
+         Devanagari SERIF to that attribute, and scripts/verify_devanagari_serif.py
+         fails if no such node exists. This is one of the three on this page. #}
+      <div class="hidden sm:block mt-6 pt-6 border-t border-bhagya-cream/[.12]">
+        <p class="font-marcellus text-base sm:text-lg text-bhagya-cream" lang="sa">
+          नमः सूर्याय चन्द्राय मङ्गलाय बुधाय च।<br>
+          गुरु शुक्र शनिभ्यश्च राहवे केतवे नमः॥
+        </p>
+        <p class="text-xs text-bhagya-cream/[.62] mt-1.5 italic">Salutations to all nine grahas &mdash; Navagraha Stotra</p>
       </div>
     </div>
   </div>
@@ -459,99 +539,142 @@
      section. Sits at the bottom of the hero band so the brand's
      classical anchor stays visible without eating a whole section. #}
   <div class="max-w-4xl mx-auto px-4 sm:px-6 pb-8 sm:pb-10 text-center">
-    <p class="font-display text-lg sm:text-xl text-astro-800/90" lang="sa">ज्योतिषं नयनम् वेदस्य</p>
-    <p class="text-xs text-stone-600 mt-1 italic">Jyotisham Nayanam Vedasya &mdash; Astrology is the eye of the Vedas.</p>
+    <p class="font-marcellus text-lg sm:text-xl text-bhagya-cream" lang="sa">ज्योतिषं नयनम् वेदस्य</p>
+    <p class="text-xs text-bhagya-cream/[.62] mt-1 italic">Jyotisham Nayanam Vedasya &mdash; Astrology is the eye of the Vedas.</p>
   </div>
 </section>
 
 
+<!-- TRUST STRIP — four facts, hairline-divided, on the alternating band ---- -->
+{# #242, from the handoff. It repeats the explainer count from the hero chips;
+   the design frame does the same, and the repeat is the point — the chips are
+   provenance beside the headline, this is the receipt under it. Do not
+   "de-duplicate" by cutting the chips: the /learn/ and /about links ride on
+   them (#188), and this strip carries neither.
+
+   It USED to repeat "Swiss Ephemeris" too, which is precisely what #234 ruled
+   out for a headline cell. See the note on that cell below.
+
+   Both numbers are read, never typed. learn_article_count comes from the
+   article registry and ask_daily_limit from routes/deps.py:_ASK_DAILY_LIMIT —
+   the constant the quota check actually enforces. A literal here is wrong the
+   day either moves, with nothing to tell you. #}
+<section class="bg-bhagya-line border-b border-bhagya-line">
+  <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-px">
+    {% macro trust_cell(value, label) %}
+    <div class="bg-bhagya-cream-2 px-4 sm:px-7 py-5 sm:py-6">
+      <div class="font-marcellus text-lg sm:text-[22px] text-bhagya-ink leading-tight">{{ value }}</div>
+      <div class="text-[11px] sm:text-xs uppercase tracking-[0.1em] text-bhagya-muted-2 mt-1">{{ label }}</div>
+    </div>
+    {% endmacro %}
+    {{ trust_cell(learn_article_count, "Explainers written") }}
+    {#- NOT "Swiss Ephemeris". #234's standing constraint: the phrase may stay
+        in body copy (12 places, the user's decision) but must NOT be promoted
+        into a headline trust cell or the Kundli identity band — a badge is a
+        stronger assertion of provenance than the same words in a paragraph,
+        and BACKLOG.md:325's verdict behind it ("Moshier worst case ~0.1″") is
+        an assertion with no artifact, taken on a box that had no swisseph
+        installed. #242 lifted this cell from the handoff and reintroduced the
+        badge; caught on the pre-close production check.
+        "Sidereal Lahiri" is what the code actually sets, at chart.py:199
+        (`swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)`), and it is checkable. -#}
+    {{ trust_cell("Sidereal Lahiri", "Ayanamsha") }}
+    {{ trust_cell(ask_daily_limit ~ " free", "Questions every day") }}
+    {{ trust_cell("₹0", "No signup, no spam") }}
+  </div>
+</section>
+
 <!-- DON'T FEAR YOUR KUNDALI — reframes Manglik / Sade Sati / Kal Sarpa anxieties -->
-<section class="border-t border-stone-200/70 bg-gradient-to-br from-astro-50/60 via-cream to-amber-50/30">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center">
+{# #242 replaced #187's worry-spine with the handoff's three outlined cards on
+   night. What #187 actually established survives intact: every reframe below is
+   lifted from copy this site already publishes (the 60-word paragraph this
+   section used to be, plus the three /learn articles it links to), so no new
+   astrological claim enters the page, and there is still zero JS.
 
-    <div class="text-xs font-semibold uppercase tracking-wider text-astro-700 mb-2">For those who hesitate</div>
-    <h2 class="font-display text-3xl sm:text-4xl text-stone-900 mb-5">Don&rsquo;t fear your Kundali</h2>
+   What went with the spine is its note about the 4px ring on the dots — the
+   ring existed only to punch a hole in the 1px rule they sat on. There is no
+   rule and there are no dots now, so there is nothing for a ring to hide. Do
+   not reinstate one on a card. (The utility is named here in prose rather
+   than literally on purpose: Tailwind scans this file as raw text, comments
+   included, so writing the class name would emit a rule nothing uses.)
 
-    <p class="text-stone-600 mb-8 max-w-2xl mx-auto">Three things people are afraid to look up.</p>
+   The hrefs keep their trailing slash: /learn/<slug> answers 307 and redirects
+   to /learn/<slug>/, so the bare form costs the visitor a hop.
 
-    {# Worry-spine (#187). A restructure of the 60-word paragraph that used to sit
-       here — every reframe below is lifted from copy we already publish (this
-       paragraph, plus the three /learn articles it links to), so no new
-       astrological claim enters the page. Zero JS.
+   Colour arithmetic on night, all measured: the myth line is cream at .48, NOT
+   the handoff's .45 — .45 composites to 4.29:1 and fails AA at 14px, .48 gives
+   4.71:1 (#236, and the correction is recorded in tailwind.config.js). The
+   truth line is .72 (9.29:1) and the link gold (7.96:1). #}
+<section class="relative isolate overflow-hidden bg-bhagya-night">
+  <div aria-hidden="true"
+       class="pointer-events-none absolute -z-10 -bottom-72 -left-32 w-[640px] h-[640px] rounded-full
+              bg-[radial-gradient(circle,rgba(158,43,37,0.3)_0%,rgba(158,43,37,0)_65%)]"></div>
 
-       The spine is one absolutely-positioned 1px rule; each dot's `ring-4
-       ring-cream` punches a hole in it, and that is the only reason the line does
-       not run visibly through the dots. Do not drop the ring.
-
-       The hrefs carry a trailing slash on purpose: /learn/<slug> answers 307 and
-       redirects to /learn/<slug>/, so the bare form costs the visitor a hop. #}
-    <div class="relative max-w-2xl mx-auto text-left pl-8 mb-8">
-      <div class="absolute left-[7px] top-2 bottom-2 w-px bg-astro-200" aria-hidden="true"></div>
-
-      <div class="relative mb-6 last:mb-0">
-        <span class="absolute -left-8 top-1.5 w-3.5 h-3.5 rounded-full bg-astro-500 ring-4 ring-cream" aria-hidden="true"></span>
-        <a href="/learn/sade-sati/" class="group block">
-          <h3 class="font-display text-xl text-stone-900 group-hover:text-astro-700 transition-colors">
-            <span class="text-astro-600" aria-hidden="true">&#9796;</span> Sade Sati
-          </h3>
-          <p class="text-stone-700 leading-relaxed mt-1">
-            <span class="italic text-stone-600">&ldquo;Seven and a half bad years.&rdquo;</span>
-            It&rsquo;s a transit, not a curse &mdash; a structured course in maturity, and most lives are better on the other side of it.
-          </p>
-        </a>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+    <div class="sm:flex sm:items-end sm:justify-between sm:gap-10 mb-8 sm:mb-9">
+      <div class="max-w-[560px]">
+        <div class="text-[11px] font-bold uppercase tracking-[0.2em] text-bhagya-saffron mb-3">For those who hesitate</div>
+        <h2 class="font-marcellus text-[29px] sm:text-4xl lg:text-[44px] leading-[1.08] text-bhagya-cream">Don&rsquo;t fear your Kundali.</h2>
       </div>
-
-      <div class="relative mb-6 last:mb-0">
-        <span class="absolute -left-8 top-1.5 w-3.5 h-3.5 rounded-full bg-astro-500 ring-4 ring-cream" aria-hidden="true"></span>
-        <a href="/learn/manglik-dosh/" class="group block">
-          <h3 class="font-display text-xl text-stone-900 group-hover:text-astro-700 transition-colors">
-            <span class="text-astro-600" aria-hidden="true">&#9794;</span> Manglik dosha
-          </h3>
-          <p class="text-stone-700 leading-relaxed mt-1">
-            <span class="italic text-stone-600">&ldquo;It will ruin the marriage.&rdquo;</span>
-            Classical texts list over a dozen cancellation rules &mdash; a lot of people labelled Manglik actually aren&rsquo;t.
-          </p>
-        </a>
-      </div>
-
-      <div class="relative mb-6 last:mb-0">
-        <span class="absolute -left-8 top-1.5 w-3.5 h-3.5 rounded-full bg-astro-500 ring-4 ring-cream" aria-hidden="true"></span>
-        <a href="/learn/kaal-sarp-dosh/" class="group block">
-          <h3 class="font-display text-xl text-stone-900 group-hover:text-astro-700 transition-colors">
-            <span class="text-astro-600" aria-hidden="true">&#9738;</span> Kaal Sarp
-          </h3>
-          <p class="text-stone-700 leading-relaxed mt-1">
-            <span class="italic text-stone-600">&ldquo;Every planet trapped.&rdquo;</span>
-            One of the most over-diagnosed conditions in modern astrology &mdash; a structure for understanding a pattern, not a sentence to fear.
-          </p>
-        </a>
-      </div>
+      <p class="text-bhagya-cream/[.55] max-w-[330px] mt-3 sm:mt-0 leading-relaxed">
+        The three things people are most afraid to look up &mdash; and what the classical texts actually say about them.
+      </p>
     </div>
 
-    <!-- Shloka card — Gita 18.66, the perfect verse for this message -->
-    <div class="bg-white/70 backdrop-blur rounded-2xl border border-astro-100 p-6 sm:p-8 mb-8 max-w-2xl mx-auto">
-      <p class="font-display text-lg sm:text-xl text-astro-800 mb-3" lang="sa">
+    {% macro worry_card(href, glyph, title, myth, truth) %}
+    <a href="{{ href }}"
+       class="group flex flex-col gap-3 border border-bhagya-gold/30 bg-bhagya-cream/[.04]
+              p-5 sm:p-7 hover:border-bhagya-saffron transition-colors">
+      <span class="font-marcellus text-[34px] leading-none text-bhagya-saffron" aria-hidden="true">{{ glyph | safe }}</span>
+      <span class="font-marcellus text-xl sm:text-[26px] text-bhagya-cream">{{ title }}</span>
+      <span class="text-sm italic text-bhagya-cream/[.48]">{{ myth | safe }}</span>
+      <span class="text-[15px] leading-[1.62] text-bhagya-cream/[.72]">{{ truth | safe }}</span>
+      <span class="mt-auto pt-2 text-[13px] font-bold uppercase tracking-[0.12em] text-bhagya-gold">Read the explainer &rarr;</span>
+    </a>
+    {% endmacro %}
+
+    <div class="grid sm:grid-cols-3 gap-4 sm:gap-6">
+      {{ worry_card("/learn/sade-sati/", "&#9796;", "Sade Sati",
+         "&ldquo;Seven and a half bad years.&rdquo;",
+         "It&rsquo;s a transit, not a curse &mdash; a structured course in maturity, and most lives are better on the other side of it.") }}
+
+      {{ worry_card("/learn/manglik-dosh/", "&#9794;", "Manglik dosha",
+         "&ldquo;It will ruin the marriage.&rdquo;",
+         "Classical texts list over a dozen cancellation rules &mdash; a lot of people labelled Manglik actually aren&rsquo;t.") }}
+
+      {{ worry_card("/learn/kaal-sarp-dosh/", "&#9738;", "Kaal Sarp",
+         "&ldquo;Every planet trapped.&rdquo;",
+         "One of the most over-diagnosed conditions in modern astrology &mdash; a structure for understanding a pattern, not a sentence to fear.") }}
+    </div>
+  </div>
+</section>
+
+<!-- GITA BAND — 18.66, the verse this whole section is built around ------- -->
+{# Its own cream-2 band now (#242), rather than a card inside the night
+   section. `lang="sa"` is load-bearing — see the note on the hero shloka. #}
+<section class="bg-bhagya-cream-2 border-y border-bhagya-line">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20 grid md:grid-cols-2 gap-8 md:gap-[72px] items-center">
+    <div class="border-l-2 border-bhagya-gold pl-5 sm:pl-8">
+      <p class="font-marcellus text-lg sm:text-[23px] leading-[1.85] text-bhagya-ink" lang="sa">
         सर्वधर्मान्परित्यज्य मामेकं शरणं व्रज।<br>
-        अहं त्वा सर्वपापेभ्यो मोक्षयिष्यामि <span class="text-rose-700">मा शुचः</span>॥
+        अहं त्वा सर्वपापेभ्यो मोक्षयिष्यामि मा शुचः॥
       </p>
-      <p class="text-xs text-stone-500 italic mb-2">Bhagavad Gita 18.66 &mdash; Krishna's final teaching</p>
-      <p class="text-sm text-stone-700 leading-relaxed">
+      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-bhagya-sindoor mt-4">Bhagavad Gita 18.66 &mdash; Krishna&rsquo;s final teaching</p>
+    </div>
+    <div>
+      <p class="font-marcellus text-xl sm:text-[30px] leading-[1.4] text-bhagya-ink">
         &ldquo;Take refuge in the Divine. I will free you from all that weighs you down &mdash;
-        <strong>do not fear, do not grieve</strong>.&rdquo;
+        <span class="text-bhagya-sindoor">do not fear, do not grieve</span>.&rdquo;
       </p>
-      <p class="text-sm text-stone-600 mt-3 leading-relaxed">
+      <p class="text-bhagya-muted leading-[1.7] max-w-[460px] mt-5">
         No chart, no dosha, no transit is above devotion. Recite the name of your chosen deity
         with sincerity and even Saturn lightens his hand.
       </p>
+      <a href="#kundli-form"
+         class="inline-block mt-6 font-semibold text-bhagya-ink border-b-2 border-bhagya-saffron pb-1 hover:text-bhagya-sindoor transition-colors">
+        See your free Kundli &rarr;
+      </a>
     </div>
-
-    <a href="#kundli-form" class="inline-flex items-center gap-2 px-6 py-3 bg-astro-700 hover:bg-astro-800 text-white font-semibold rounded-lg transition-colors">
-      See your free Kundli
-      <svg aria-hidden="true" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-      </svg>
-    </a>
-
   </div>
 </section>
 
@@ -568,60 +691,76 @@
    would ship to every visitor on every homepage render, and would put the
    stale strings it describes back into the served markup. #}
 
-<section class="border-t border-stone-200/70 bg-white/60">
+<section class="bg-bhagya-cream">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-    <!-- Decorative strip of all 12 rashi glyphs — visual anchor before the cards. -->
-    <div class="flex justify-center gap-3 sm:gap-5 text-2xl sm:text-3xl text-astro-600/70 mb-6 flex-wrap" aria-hidden="true">
-      <span>♈</span><span>♉</span><span>♊</span><span>♋</span><span>♌</span><span>♍</span><span>♎</span><span>♏</span><span>♐</span><span>♑</span><span>♒</span><span>♓</span>
-    </div>
-    <h2 class="font-display text-3xl sm:text-4xl text-center text-stone-900 mb-3">Every reading, one chart</h2>
-    <p class="text-center text-stone-600 max-w-2xl mx-auto mb-12">
-      Enter your birth details once &mdash; they all work off the same chart. No signup needed.
-    </p>
-
-    {# Reusable feature-card macro to keep the cards consistent. #}
-    {% macro feature_card(href, icon_svg, title, body) %}
-    <a href="{{ href }}"
-       class="group bg-white rounded-2xl border border-stone-200 p-6 shadow-sm
-              hover:border-astro-400 hover:shadow-md transition-all relative">
-      <div class="w-11 h-11 rounded-full bg-astro-100 text-astro-700 flex items-center justify-center mb-4 group-hover:bg-astro-200 transition-colors">
-        {{ icon_svg | safe }}
+    <div class="sm:flex sm:items-end sm:justify-between sm:gap-10 mb-8 sm:mb-10">
+      <div class="max-w-[620px]">
+        <div class="text-[11px] font-bold uppercase tracking-[0.2em] text-bhagya-sindoor mb-3">One chart, every reading</div>
+        <h2 class="font-marcellus text-[29px] sm:text-4xl lg:text-[44px] leading-[1.08] text-bhagya-ink mb-3">Every reading, one chart</h2>
+        <p class="text-bhagya-muted leading-[1.65]">
+          Enter your birth details once &mdash; they all work off the same chart. No signup needed.
+        </p>
       </div>
-      <h3 class="font-display text-xl text-stone-900 mb-1.5 group-hover:text-astro-700 transition-colors">{{ title }} &rarr;</h3>
-      <p class="text-sm text-stone-600 leading-relaxed">{{ body }}</p>
+      {# Decorative strip of all 12 rashi glyphs. Every glyph carries U+FE0E
+         (VARIATION SELECTOR-15) so it renders as TEXT and takes the colour
+         below; without it most platforms substitute a colour emoji and the
+         gold reads as a random rainbow. #}
+      <div class="hidden sm:flex gap-0.5 text-xl tracking-[0.12em] text-bhagya-gold mt-4 sm:mt-0" aria-hidden="true">♈︎♉︎♊︎♋︎♌︎♍︎♎︎♏︎♐︎♑︎♒︎♓︎</div>
+    </div>
+
+    {# HAIRLINE GRID (#242). The 1px gutters are the grid's own background
+       showing through `gap-px`, so the PADDING MUST LIVE ON THE CELLS, never on
+       the grid element — put it on the grid and the gutter colour paints a
+       thick frame around the whole block. The handoff calls this out and it is
+       the one way this pattern goes wrong. #}
+    {% macro feature_card(href, icon_svg, title, tag, body) %}
+    <a href="{{ href }}"
+       class="group flex flex-col gap-3 bg-bhagya-cream hover:bg-white p-6 sm:p-7 sm:min-h-[186px] transition-colors">
+      <div class="flex items-center justify-between text-bhagya-sindoor">
+        <span class="w-6 h-6" aria-hidden="true">{{ icon_svg | safe }}</span>
+        <span class="text-[11px] font-bold uppercase tracking-[0.14em]">{{ tag }}</span>
+      </div>
+      <h3 class="font-marcellus text-xl sm:text-[23px] leading-[1.15] text-bhagya-ink group-hover:text-bhagya-ink transition-colors">{{ title }} &rarr;</h3>
+      <p class="text-sm text-bhagya-muted leading-[1.6]">{{ body }}</p>
     </a>
     {% endmacro %}
 
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-bhagya-line border border-bhagya-line">
 
       {{ feature_card("/kundli",
         '<svg aria-hidden="true" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>',
         "Kundli",
+        "Birth chart",
         "Your full Janma Kundali plus a 7-section reading covering personality, career, money, relationships, health, travel, and life stages. North Indian diamond chart included.") }}
 
       {{ feature_card("/today",
         '<svg aria-hidden="true" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M4.9 19.1l1.4-1.4m11.4-11.4l1.4-1.4"/></svg>',
         "Today's Horoscope",
+        "Daily",
         "Today's transits read against your natal chart, plus the full Panchang — Rahu Kaal window to avoid, Abhijit Muhurta to act in, and the day's favourable colour.") }}
 
       {{ feature_card("/rashifal",
         '<svg aria-hidden="true" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
         "Rashifal",
-        "Daily horoscope for all 12 Moon signs &mdash; the classical newspaper-style format. No birth details needed; just scroll to your Janma Rashi.") }}
+        "All 12 signs",
+        "Daily horoscope for all 12 Moon signs — the classical newspaper-style format. No birth details needed; just scroll to your Janma Rashi.") }}
 
       {{ feature_card("/monthly",
         '<svg aria-hidden="true" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
         "Monthly Horoscope",
+        "Monthly",
         "Fortnight-by-fortnight outlook with five life-area cards — career, money, love, health, emotional wellbeing.") }}
 
       {{ feature_card("/yearly",
         '<svg aria-hidden="true" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h18v18H3zM3 9h18M9 3v18"/></svg>',
         "Horoscope " ~ current_year(),
+        "Yearly",
         "Quarter-by-quarter narrative plus Varshaphala (your annual chart cast at solar return). Same five life areas, year-long horizon.") }}
 
       {{ feature_card("/matching",
         '<svg aria-hidden="true" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>',
         "Kundli Matching",
+        "Marriage",
         "Full 8-koota Ashtakoot Guna Milan with verdict, Mangal Dosh check, and a compatibility reading covering emotional bond, daily life, and marriage foundation.") }}
 
       {# Second row added cycle 10 — cards user asked to elevate on the
@@ -630,72 +769,87 @@
       {{ feature_card("/numerology",
         '<svg aria-hidden="true" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m-6 4h6m-6 4h4M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>',
         "Numerology",
+        "Numbers",
         "Vedic (Johari) + Chaldean numerology from your name + DOB — Life Path character profile, best partners, career, Vedic remedies (rudraksha, yantra, mantra, plants) per your ruling planet.") }}
 
       {{ feature_card("/muhurat/vivah",
         '<svg aria-hidden="true" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/></svg>',
         "Vivah Muhurat",
+        "Dates",
         "Classical wedding-date finder applying tithi, nakshatra, Panchak, Chaturmas, Kharmas, Dagdha, Nitya Yoga rules + optional bride+groom two-chart Tara/Chandra Bala matching. Also Griha Pravesh, Namkaran, Vidyarambh, Business.") }}
 
       {{ feature_card("/ask",
         '<svg aria-hidden="true" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
         "Ask",
+        "Q&A",
         "3 free personal questions per day about your chart — marriage timing, career direction, when a specific transit lands. Real answers from your actual Kundli, not generic horoscope advice.") }}
 
     </div>
   </div>
 </section>
 
-<!-- DAILY RASHIFAL CTA — low-friction subscribe pitch for the email loop.
+<!-- EMAIL BAND — low-friction subscribe pitch for the email loop.
      Signed-in subscribers see a "you're subscribed" confirmation state
      instead of the subscribe button, so we don't nudge them for something
      they've already opted into. -->
+{# #242: two columns per the handoff, and the subscribe control is a saffron
+   block with a hard 1px ink border and no radius. There is deliberately NO
+   inline email input, which is where this diverges from the design frame:
+   subscription runs through _subscribe_modal.html, which collects rashi,
+   language and city as well as the address. An inline field here would either
+   collect a partial subscription or open the same modal after asking for the
+   address twice. `data-subscribe-trigger` is the hook base.html binds. #}
 {% set _cta_user = load_current_user(request) %}
 {% set _cta_subscribed = _cta_user and is_subscribed(_cta_user.email) %}
-<section class="border-t border-stone-200/70 bg-cream">
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center">
-    <div class="inline-flex items-center gap-2 text-astro-700 mb-3">
-      <svg viewBox="0 0 100 100" class="w-7 h-7" aria-hidden="true">
-        <g fill="none" stroke="currentColor" stroke-width="6">
-          <polygon points="50,5 95,50 50,95 5,50"/>
-          <line x1="50" y1="5" x2="50" y2="95"/>
-          <line x1="5" y1="50" x2="95" y2="50"/>
-          <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
-        </g>
-        <circle cx="50" cy="50" r="7" fill="#ffd764"/>
-      </svg>
-      <span class="font-display text-2xl font-bold">Today's Rashifal, every morning</span>
+<section class="bg-bhagya-cream border-t border-bhagya-line">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid md:grid-cols-[1fr_auto] gap-6 md:gap-14 items-center">
+    <div>
+      <div class="text-[11px] font-bold uppercase tracking-[0.2em] text-bhagya-sindoor mb-3">Every morning at sunrise</div>
+      <div class="flex items-center gap-2.5 mb-2">
+        <svg viewBox="0 0 100 100" class="w-7 h-7 flex-none text-bhagya-sindoor" aria-hidden="true">
+          <g fill="none" stroke="currentColor" stroke-width="6">
+            <polygon points="50,5 95,50 50,95 5,50"/>
+            <line x1="50" y1="5" x2="50" y2="95"/>
+            <line x1="5" y1="50" x2="95" y2="50"/>
+            <polygon points="72.5,27.5 72.5,72.5 27.5,72.5 27.5,27.5"/>
+          </g>
+          <circle cx="50" cy="50" r="7" fill="#E4913C"/>
+        </svg>
+        <h2 class="font-marcellus text-2xl sm:text-[34px] leading-tight text-bhagya-ink">Today&rsquo;s Rashifal, every morning</h2>
+      </div>
+      {% if _cta_subscribed %}
+      <p class="text-bhagya-muted">
+        Your Rashifal arrives every morning at sunrise. Delivered to <strong class="text-bhagya-ink font-semibold">{{ _cta_user.email }}</strong>.
+      </p>
+      <p class="text-sm text-bhagya-muted-2 mt-2">
+        Change your rashi, language, city, or unsubscribe anytime.
+      </p>
+      {% else %}
+      <p class="text-bhagya-muted">
+        One short email at sunrise &mdash; all 12 rashis, today&rsquo;s reading. Free, unsubscribe in one click.
+      </p>
+      {% endif %}
     </div>
 
-    {% if _cta_subscribed %}
-    {# Already subscribed — show a confirmation badge + edit link. #}
-    <p class="text-stone-600 max-w-xl mx-auto mb-5">
-      Your Rashifal arrives every morning at sunrise. Delivered to <strong>{{ _cta_user.email }}</strong>.
-    </p>
-    <div class="inline-flex items-center gap-3 flex-wrap justify-center">
-      <span class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 font-medium px-5 py-2.5 rounded-full">
+    <div class="flex flex-wrap items-center gap-3">
+      {% if _cta_subscribed %}
+      <span class="inline-flex items-center gap-2 bg-bhagya-cream-2 border border-bhagya-line text-emerald-800 font-medium px-5 py-2.5">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
         </svg>
         You're subscribed
       </span>
       <button type="button" data-subscribe-trigger
-              class="text-astro-700 hover:text-astro-800 font-medium underline underline-offset-2">
+              class="text-bhagya-sindoor hover:text-bhagya-ink font-medium underline underline-offset-2">
         Edit preferences
       </button>
+      {% else %}
+      <button type="button" data-subscribe-trigger
+              class="border border-bhagya-ink bg-bhagya-saffron text-bhagya-night font-bold px-7 py-4 hover:bg-bhagya-night hover:text-bhagya-cream transition-colors">
+        Subscribe &mdash; it&rsquo;s free
+      </button>
+      {% endif %}
     </div>
-    <p class="text-sm text-stone-600 mt-3">
-      Change your rashi, language, city, or unsubscribe anytime.
-    </p>
-    {% else %}
-    <p class="text-stone-600 max-w-xl mx-auto mb-5">
-      One short email at sunrise &mdash; all 12 rashis, today's reading. Free, unsubscribe in one click.
-    </p>
-    <button type="button" data-subscribe-trigger
-            class="bg-astro-700 hover:bg-astro-800 text-white font-medium px-6 py-3 rounded-lg transition-colors">
-      Subscribe &mdash; it's free
-    </button>
-    {% endif %}
   </div>
 </section>
 

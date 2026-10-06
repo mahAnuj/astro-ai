@@ -16,8 +16,8 @@
       <stop offset="100%" stop-color="#b45309"/>
     </radialGradient>
     <linearGradient id="s10sun_diamond" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
     <linearGradient id="s10sun_karma" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.45"/>
@@ -31,7 +31,7 @@
   <ellipse cx="160" cy="90" rx="150" ry="120" fill="url(#s10sun_aura)"/>
 
   <!-- Subtle star field -->
-  <g fill="#6b21a8" opacity="0.28">
+  <g fill="#9E2B25" opacity="0.28">
     <circle cx="42"  cy="55"  r="1.5"/>
     <circle cx="278" cy="72"  r="2"/>
     <circle cx="58"  cy="272" r="1.5"/>
@@ -83,5 +83,5 @@
   <!-- "10" label in the Karma Bhava (subtle, indicating house number) -->
   <text x="160" y="200" text-anchor="middle"
         font-family="Crimson Pro, Georgia, serif"
-        font-size="20" font-weight="700" fill="#7c3aed" opacity="0.75">10</text>
+        font-size="20" font-weight="700" fill="#B03A22" opacity="0.75">10</text>
 </svg>

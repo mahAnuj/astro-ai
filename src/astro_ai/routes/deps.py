@@ -23,6 +23,7 @@ Nothing in this package may import ``astro_ai.main``.
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import secrets
@@ -160,10 +161,40 @@ def _seeker_role(saved, last) -> str:
     return "other"
 
 
+def _asset_fingerprint(rel_path: str) -> str:
+    """Short content hash for a file under static/, or "0" if unreadable.
+
+    Why this exists (#253). `static/sw.js` serves everything under /static/
+    cache-first with no revalidation, and its only eviction path is a manual
+    bump of CACHE_VERSION. `app.css` was linked at a fixed URL, so a rebuilt
+    stylesheet was never re-fetched: two rebuilds (1e07122, e06c4e7) shipped
+    after the service worker landed and neither bumped the constant, so
+    returning visitors were still being served the 348ab01 CSS. One of those
+    rebuilds was itself a fix ("the dosha strips have been shipping without
+    their tints") that therefore never arrived.
+
+    Hashing the CONTENT rather than stamping the mtime is deliberate: a
+    rebuild that changes nothing keeps the same URL, so a redeploy does not
+    needlessly evict every client's cached stylesheet.
+
+    Computed once at import. The file cannot change under a running container
+    — the image is immutable — so there is nothing to invalidate.
+    """
+    try:
+        return hashlib.sha256((STATIC_DIR / rel_path).read_bytes()).hexdigest()[:8]
+    except OSError:
+        # Never let a missing asset break rendering; an unfingerprinted URL
+        # is a stale-cache risk, not an outage.
+        log.warning("asset fingerprint: could not read static/%s", rel_path)
+        return "0"
+
+
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 # Expose i18n to every template as `t(key, **kwargs)`. Templates pass the
 # current `lang` (also injected per-request) into the call.
 templates.env.globals["t"] = _i18n_translate
+# Cache-busting fingerprints for service-worker-cached static assets (#253).
+templates.env.globals["asset_v"] = _asset_fingerprint
 # current_year used by nav labels like "Horoscope 2026" — auto-updates yearly.
 templates.env.globals["current_year"] = lambda: date.today().year
 # Astrology-term Devanagari lookups — templates call e.g.
@@ -220,7 +251,12 @@ def _linkify_learn(text: str) -> str:
         title = _ARTICLE_TITLE_BY_SLUG.get(slug, f"/learn/{slug}/")
         return (
             f'<a href="/learn/{slug}/" '
-            f'class="text-astro-700 hover:text-astro-800 underline underline-offset-2">'
+            # Built in Python, so Tailwind's scanner never sees it — these
+            # utilities are emitted only because templates use them too. This
+            # is `_linkify_learn`, which rewrites every /learn/<slug>/ mention
+            # inside LLM prose across the whole site, so a stale colour here
+            # shows up in the body of readings on every migrated screen at once.
+            f'class="text-bhagya-sindoor hover:text-bhagya-ink underline underline-offset-2">'
             f'{_html.escape(title)}</a>'
         )
 
@@ -573,6 +609,13 @@ def _no_cdn_cache(resp: Response) -> Response:
 # Bump this when we have paid LLM capacity or revenue covering the cost.
 _ASK_DAILY_LIMIT = 3
 
+# Exposed to templates so marketing copy quotes the real number (#242's trust
+# strip does). Same reasoning as learn_article_count above: a hardcoded "3" in
+# a template is silently wrong the day this constant moves, and nothing breaks
+# to say so. index.html still carries two prose "3 free" strings in sentences
+# that would need rewording anyway — those are not covered by this.
+templates.env.globals["ask_daily_limit"] = _ASK_DAILY_LIMIT
+
 
 def _ask_quota_remaining(request: Request) -> int:
     """Read today's remaining ask count from the session cookie.
@@ -720,9 +763,16 @@ def panchang_strip_for_city(city: str) -> tuple:
     underneath, so two cities in the same 55km bucket also share one solve.
 
     Uses date.today() implicitly so a new day naturally busts the cache.
-    Cache is per-process (Cloud Run instances rebuild once each per day),
-    which is fine — the compute is <200ms so cold-start latency is
-    negligible.
+    Cache is per-process (Cloud Run instances rebuild once each per day).
+
+    That last sentence used to end "which is fine — the compute is <200ms so
+    cold-start latency is negligible". Measured 2026-09-04, it is not: the
+    FIRST call in a process takes **1.09s**, a second call for a DIFFERENT
+    city 0.048s, and a repeat 0.000s. The gap is one-time global init the
+    strip merely happens to trigger first — TimezoneFinder() at 0.551s and a
+    live Nominatim geocode at 0.422s — not the panchang solve, which is
+    indeed ~50ms. `main._warm_process_globals` now pays it during startup;
+    the numbers and the rejected alternative are recorded there.
     """
     today = date.today().isoformat()
     resolved_city = (city or "").strip() or _STRIP_DEFAULT_CITY

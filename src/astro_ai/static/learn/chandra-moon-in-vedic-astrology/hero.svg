@@ -20,7 +20,7 @@
   <circle cx="160" cy="160" r="150" fill="url(#aura-mo)"/>
 
   <!-- Stars — brighter/more stars for night mood -->
-  <g fill="#6b21a8" opacity="0.5">
+  <g fill="#9E2B25" opacity="0.5">
     <circle cx="45"  cy="55"  r="1.5"/>
     <circle cx="72"  cy="90"  r="1"/>
     <circle cx="275" cy="65"  r="2"/>
@@ -49,5 +49,5 @@
         fill="#f5f3ff" opacity="0.35"/>
 
   <!-- Classical Moon glyph on the illuminated side -->
-  <text x="130" y="180" text-anchor="middle" font-family="Crimson Pro, Georgia, serif" font-size="52" font-weight="700" fill="#4c1d95" opacity="0.65">☾</text>
+  <text x="130" y="180" text-anchor="middle" font-family="Crimson Pro, Georgia, serif" font-size="52" font-weight="700" fill="#140F1C" opacity="0.65">☾</text>
 </svg>

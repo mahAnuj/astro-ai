@@ -20,8 +20,8 @@
       <stop offset="100%" stop-color="#b45309"/>
     </linearGradient>
     <linearGradient id="jb_diamond" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a855f7"/>
-      <stop offset="100%" stop-color="#4c1d95"/>
+      <stop offset="0%" stop-color="#CB5A2E"/>
+      <stop offset="100%" stop-color="#140F1C"/>
     </linearGradient>
   </defs>
 
@@ -31,7 +31,7 @@
   <ellipse cx="160" cy="200" rx="130" ry="90" fill="url(#jb_aura)"/>
 
   <!-- Stars -->
-  <g fill="#6b21a8" opacity="0.28">
+  <g fill="#9E2B25" opacity="0.28">
     <circle cx="30"  cy="30"  r="1.5"/>
     <circle cx="290" cy="45"  r="2"/>
     <circle cx="290" cy="280" r="1.5"/>
@@ -80,7 +80,7 @@
        first-order read from the 10th -->
   <text x="160" y="205" text-anchor="middle"
         font-family="Crimson Pro, Georgia, serif"
-        font-size="18" font-weight="700" fill="#7c3aed">10</text>
+        font-size="18" font-weight="700" fill="#B03A22">10</text>
 
   <!-- Connecting lines from kundali toward each path (dashed) -->
   <g stroke="#a8a29e" stroke-width="1.5" stroke-linecap="round" fill="none" stroke-dasharray="3,3" opacity="0.6">

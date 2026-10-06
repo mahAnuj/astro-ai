@@ -21,9 +21,27 @@ of "obvious improvements" are already there with a measurement explaining why no
 Vedic astrology web app at **shubhagya.com**. FastAPI + Jinja2, Python ≥3.12, `uv`.
 Server-rendered HTML with HTMX for partial updates. No SPA, no build step for JS.
 
-Roughly 21,600 lines of Python across 30 modules, 68 routes in 25 route modules,
-54 top-level templates plus 76 `/learn` articles, 11 LLM prompt templates, 11 knowledge
-files (~6,200 lines), 13 verification gates and a 24-test behaviour suite.
+**Size, measured 2026-08-30.** Every row carries the command that produced it, because the
+prose version of this paragraph had six stale numbers at once — the line count was 32% low
+— and five of them sat unchanged beside a sixth being corrected. Re-run the command; do not
+trust the number.
+
+| | count | command |
+|---|---|---|
+| Python | 28,490 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
+| top-level modules | 35 | `ls src/astro_ai/*.py \| wc -l` |
+| route handlers | 64 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
+| modules declaring a router | 24 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
+| top-level templates | 54 | `ls src/astro_ai/templates/*.html \| wc -l` |
+| `/learn` articles | 76 | `ls src/astro_ai/templates/learn/*.html \| wc -l` |
+| LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
+| knowledge files | 11 files, 8,021 lines | `cat src/astro_ai/knowledge/*.md \| wc -l` |
+| verification gates | 18 | `ls scripts/verify_*.py \| wc -l` |
+| behaviour suite | 100 tests | `uv run pytest -p no:warnings` |
+
+`routes/` holds 26 files; the three that declare no router are `__init__.py` and the leaf
+helpers `deps.py` and `llm_support.py`. Counting files rather than routers is what makes
+"route modules" read 26 — say which you mean.
 
 Two things drive nearly every design decision in here, and they are worth internalising
 before you read anything else:
@@ -91,23 +109,25 @@ move to Cloud Monitoring.
 
 ## 3. Module map
 
+Line counts measured 2026-08-30 with `wc -l src/astro_ai/*.py | sort -rn`; four of the
+ten below were stale, so re-run it rather than citing these.
+
 ```
 src/astro_ai/
-  chart.py         4,307  Swiss Ephemeris, panchang, dashas, gochar, combustion
+  chart.py         4,534  Swiss Ephemeris, panchang, dashas, gochar, combustion
   learn_registry.py 3,107  /learn article metadata
-  numerology.py    1,844  Chaldean + Lo Shu calculators
+  numerology.py    1,910  Chaldean + Lo Shu calculators
   festival_registry.py 1,509
-  muhurat.py         1475  electional scoring; shares angas with panchang
-  llm.py         1075  prompt assembly, rashifal fan-out
+  muhurat.py       1,475  electional scoring; shares angas with panchang
+  llm.py           1,224  prompt assembly, rashifal fan-out
   matching.py      1,056  Ashtakoota 36-guna
-  i18n.py           1120  en/hi, symmetric key sets — enforced by
-                        tests/test_i18n_symmetry.py (added 2026-10-05; the
-                        word "enforced" was here for months with nothing
-                        behind it. translate() falls back to English, so a
-                        missing Hindi key renders ENGLISH on a Hindi page,
-                        silently — found by #124 QA)
-  providers.py       704  provider chain, quality gates, retry policy
-  routes/            25 modules, 68 routes
+  i18n.py          1,141  en/hi, symmetric key sets — enforced by
+                        tests/test_i18n_symmetry.py (added 2026-10-05). The
+                        word "enforced" sat here for months with nothing behind
+                        it: translate() falls back to English, so a missing Hindi
+                        key rendered ENGLISH on a Hindi page, silently (#124 QA)
+  providers.py       855  provider chain, quality gates, retry policy
+  routes/            26 files — 23 declare a router, 64 handlers (see §1)
   knowledge/*.md     classical source material — the authority for astrological claims
   prompts/*.txt      11 LLM prompt templates
 ```
@@ -128,7 +148,7 @@ This is the most misunderstood part of the system. Layers, outermost first:
 | `_PANCHANG_CACHE`, `_PANCHANG_STRIP_CACHE` | in-process dicts | no | panchang by (date, coarse lat/lon) and by (date, city) |
 | `daily_cache` | **file** on the instance | no | per-rashi readings, keyed `(namespace, slug-lang, date)` |
 | `cache` (SQLite) | `/tmp/bhagya.db`, **tmpfs** | no | per-chart LLM output, keyed by fingerprint |
-| `storage` (GCS) | bucket | **yes** | the only cross-instance layer |
+| `storage` (GCS) | bucket | **yes** | the only cross-instance layer; also the durable tier behind SQLite (below) |
 
 **Every layer except GCS is per-instance and dies with the container.** `minScale=0`
 means containers come and go constantly. If two requests must share a result, GCS is the
@@ -148,6 +168,50 @@ only thing that gets them there — this is why `/admin/warm-rashifal` works at 
   caused by ~30 sequential bucket round-trips per render. Fixed by removing them
   (32 GCS ops → 0), not by moving anything. The homepage is now ~1ms warm and there is a
   gate (`scripts/perf_homepage.py`) that measures it.
+
+### The durable tier — GCS behind SQLite, for the natal reading
+
+`routes/llm_support.py::_cached` takes an optional `durable_key`. When set, a SQLite miss
+consults GCS before calling the LLM, and a GCS hit warms SQLite:
+
+```
+SQLite hit                            → return                0 GCS ops
+SQLite miss → GCS hit → warm SQLite   → return                1 GCS GET
+both miss   → generate → write both                           1 GCS PUT
+```
+
+**Read order is the design, not an implementation detail.** SQLite first means a warm
+instance pays zero cross-continent round-trips — the `/kundli` render path must never
+acquire the shape that made #144 a 13-second homepage. `subscribe.py::_shared_three_tier`
+reads **GCS first** and is deliberately NOT merged with this: for content one warm job
+wrote for everybody, the bucket is the source of truth, whereas natal's key is immutable
+and content-addressed. One function would force one of the two orders to be wrong.
+
+It exists because "per-chart output gains nothing from GCS" was wrong. Natal is cached
+`ttl_days=None` into SQLite on `/tmp` tmpfs at `minScale=0`, so "never expires" meant
+regenerated once per instance, once per cold start and once per deploy — each a full
+~7,800-token natal call against an 8,000 TPM per-model bucket. GCS's value to a per-chart
+route is not sharing between users, it is **surviving the container**.
+
+What it does not do: it does not raise the ceiling. A chart nobody has asked for still
+costs full price and the site still serves on the order of 20–30 fresh natal readings a
+day. It removes waste only.
+
+Bounds: `durable_key` is passed explicitly by the caller, never inferred from
+`ttl_days is None` — that sentinel would sweep in `/ask`, whose key holds the seeker's
+free-text question, i.e. an unbounded keyspace against a 5,000 Class A ops/month
+allowance. A recent-miss dict (30s, swept by age) keeps a chart in neither tier from
+re-reading the bucket on every refresh; short-TTL per the 2026-08-23 rule below. A
+`PROMPT_LOGIC_VERSION` bump orphans every blob and orphans can never be listed or deleted
+— but a reading is small. `prompts/natal.txt` mandates 920–1380 words; at 5.51 UTF-8
+bytes/word (measured 2026-08-30 on a real generated body, 661 B / 120 words) that is
+**5–7.6 KB in English**, and Hindi measures **2.39× English** across 325 matched translation
+pairs in `i18n.py`, so **12–18 KB in Devanagari**. Taking 15 KB, 1,000 orphans ≈ 15 MB
+against a 5 GB free tier — 0.3%. Accepted. Both figures are DERIVED from the word mandate
+and those two ratios, not measured on a real natal reading: there is none in the tree and
+generating one costs a model-minute. An English-only figure understates the Hindi case by
+more than half, which is why both are stated — an earlier draft of this row said "~5 KB a
+reading" and silently meant English.
 
 ### Cache keying for LLM output
 
@@ -205,6 +269,21 @@ block ahead of the anchor: **12,800 of 13,310 characters (96.2%)**, unique tail 
 Measured 2026-08-26 over the wire, `/rashifal/aries`, en. This buys nothing on its own —
 Groq's prefix caching is opportunistic (measured: 1 hit in 6) and cannot be relied on —
 it only gives the cache something to hit. Keep the shared blocks first in any new prompt.
+
+**A prompt has a size budget, and it is small.** Groq's free tier is 8,000 TPM
+**per model**, and it is charged against the whole request — so the system prompt,
+the assembled chart data and Groq's own accounting all come out of one 8,000-token
+allowance. `natal.txt` reached 18,095 B (4,332 tok, 54% of the request) and took
+`/kundli` down with a 413; see the 2026-09-05 rows in the decision log. Two things
+follow for any prompt change:
+
+- **Measure it, do not estimate it.** `scripts/measure_natal_request.py` assembles the
+  real request for the eight golden charts and counts it with tiktoken.
+  `scripts/verify_natal_prompt.py` is the cheap ratchet in the `verify_*` sweep.
+- **The natal path degrades instead of failing.** `llm._shed_to_fit` drops optional
+  blocks in a declared order when a request will not fit. If you add a block to the
+  natal user message, give it a shed rank — an unranked block defaults to rank 0,
+  "never shed", which is the right default only for something the page also renders.
 
 ### Voice rules that are not negotiable
 
@@ -385,13 +464,16 @@ that. Also verify your own tooling: a `pdftotext` invocation against a wrong pat
 
 ### Verification gates
 
-Fourteen `scripts/verify_*.py` gates — count it with `ls scripts/verify_*.py` rather
-than trusting this number, which read "Twelve" while thirteen sat on disk. The
-discipline that makes them worth anything:
+Eighteen `scripts/verify_*.py` gates — count it with `ls scripts/verify_*.py` rather
+than trusting this number, which read "Twelve" while thirteen sat on disk and then
+"Fourteen" while sixteen did. Twice now the warning has outlived the number it warns
+about, inside its own sentence. The discipline that makes them worth anything:
 
 **Prove a gate can fail before trusting that it passes.** For the behaviour suite this
 is automated: `scripts/mutate_behaviour_suite.py` restores each original defect and
-asserts the suite goes red (currently 8/8). For everything else, do it by hand. Mutate the thing it guards,
+asserts the suite goes red (currently 23/23, with a CONTROL row that MUST report missed
+— a caught control means the sandbox was already red and every verdict in the run is
+void). For everything else, do it by hand. Mutate the thing it guards,
 confirm it turns red with a specific message, restore. A gate that has never failed is
 not evidence. Several gates here were written with bugs — an optional regex group that
 matched empty and reported a false failure, an unscoped row match that read 44 tables
@@ -424,6 +506,16 @@ Dated, with the evidence. **Check here before proposing a change.**
 
 | date | decision | why, measured |
 |---|---|---|
+| 2026-09-05 | **`natal.txt` compressed 18,095 B → 13,135 B, and the natal request now has a pre-flight size guard** | `/kundli` was dead in production with a Groq **413 — "Limit 8000, Requested 8562"**. A size failure, not a rate failure: a request bigger than the whole per-minute budget cannot succeed at any traffic level, and `groq120`/`groq20` share the 8,000 TPM cap, so the chain's fallback re-sent the identical bytes and got the identical 413. Measured with tiktoken `o200k_base` over the eight golden charts (`scripts/measure_natal_request.py`, which is the first thing in this repo to read `tests/kundali-qa-fixtures.json`): the old prompt was **4,332 tok — 54% of the request**, and the largest fixture assembled to **8,019 tok, already over the ceiling before Groq adds its own accounting**. That is the outage reproduced from a fixture, not inferred. Compression removed redundancy and no rules, and saves **1,221 tok on every natal call** (4,332 → 3,111, measured with tiktoken o200k_base). It read 1,250 for one commit: that was correct for the 13,029 B intermediate, and the follow-up that grew the prompt to 13,124 B updated the byte and worst-case figures on this very line while leaving the saving — the exact drift this log exists to prevent, caught by QA rather than by any gate. One correction to how that was first written up, because the count matters: the same three prohibitions ("no separate section", "do not list the placements", "do not name the technique") were restated by **two** of the six conditional-block handlers, not six — only D-9 and D-10 ever carried all three. So folding them into one umbrella is deduplication for those two and a **new, broader constraint** for the other four, which is a different thing and was briefly a self-contradiction: an umbrella reading "never list the placements it contains" sat over a block called `--- HOUSE LORD PLACEMENTS ---` whose own bullet requires conveying exactly those placements. The umbrella is now scoped — "treat a block as a LENS, never as a heading" governs all of them; the placement and technique-naming bans apply to the two DIVISIONAL blocks only. Found by QA, not by the gate, which anchors on the rule's words and cannot see what the rule is scoped to. Worst case is now **6,798 tok** (en) / **6,930** (hi), leaving ~1,200 of headroom. `scripts/verify_natal_prompt.py` holds the 45 rules and the byte budget; it was written BEFORE the compression, against the pre-compression file, so the rule set was captured before anything moved |
+| 2026-09-05 | **Optional prompt blocks shed in a declared order rather than the request 413ing** | Compression alone moves the cliff; the next chart with a long Manglik block and five topic summaries finds it again. `llm._shed_to_fit` drops, worst-first: topic summaries (trimmed ENTRY BY ENTRY first — dropping all five to save fifty tokens is a bad trade), then aspects, nakshatras, D-10, D-9. **House lords, planet dignity, Manglik detail and yogas are never shed**: the last two are rendered as panels on the same page, so dropping them from the prompt makes the prose disagree with the panel beside it, which is the #176 failure class and worse than a thinner reading. Every shed logs at WARNING — a silent degradation is how "why is my reading shorter than my friend's" goes unexplained for months |
+| 2026-09-05 | **Two measured bytes-per-token constants, not one; the safety lives in the margin** | Instruction prose runs **4.227 B/tok** (4.295 for hi), chart-data blocks **3.697–3.778**. Each constant sits just below the **floor** for its own kind, not below the average — 3.7 looks safe against a "3.70–3.78" range and is not, because `strong-gajakesari` is 3.6970 and gets under-counted by two tokens (`tests/test_natal_request_size.py` found this against tiktoken). A single 3.9 average was tried and rejected: it priced the hi system prompt 326 tok high and made the guard shed the whole 4.6 kB summaries block on 4 of 8 charts to save ~50 tokens they did not need. `cache.estimate_tokens` is deliberately NOT reused — at 4.0 it under-counts these requests by ~3%, and a guard that under-counts waves through exactly what it exists to stop. It stays as-is for the `/admin/usage` counters, which are stats, not a safety check |
+| 2026-09-05 | **A 413 is `RequestTooLarge` and skips same-host providers; a 429 still falls through** | Groq sends the 413 with `"code": "rate_limit_exceeded"` and the openai SDK has no 413 subclass, so it arrived as a generic `APIStatusError` and the `except APIError` branch logged "trying next in chain" — burning a second identical call on a model with the same cap. `providers._is_request_too_large` matches on the STATUS CODE first, because classifying an ordinary 429 as unfixable would stop the chain falling through and turn a recoverable blip into a dead page. `RequestTooLarge` subclasses `AllProvidersExhausted` so the routes' existing handlers still render the degraded page. Providers on other hosts are still tried — that is what lets the paid `openai` net catch an oversized request |
+| 2026-09-05 | **The completion reservation is NOT capped — investigated, not measured** | Groq counts input plus whatever completion it reserves against TPM, and `providers.py` sets no `max_completion_tokens`. Static evidence bounds it: gpt-oss-120b's default completion limit is tens of thousands of tokens, so if Groq reserved it in full against an 8,000 bucket then every natal request would have 413'd from the day the chain was configured, and they did not — so the reservation is not the dominant term. That does not make it zero, and settling it needs one live call with a `GROQ_API_KEY` these containers do not have. `scripts/measure_natal_request.py --live` sends the same request with and without a cap and prints Groq's own `x-ratelimit-*` headers. Until that runs, do not cap: the truncation failure mode it risks is the one that made `groq_qwen` unusable (a ~40s call returning zero visible characters), and `REQUEST_TOKEN_MARGIN = 1000` absorbs the unknown in the meantime |
+| 2026-09-03 | The Latin BODY face swapped globally to Manrope, while `display` stays Crimson Pro and the redesign's Marcellus is applied PER-SCREEN | #242. The homepage could not render as designed without Marcellus loaded, and the font budget (`MAX_FONT_BYTES = 285,000` in `scripts/verify_devanagari_serif.py`) had ~16 KB of headroom against a measured 268,820 B — adding two families on top of Inter and Crimson Pro would have cost ~39 KB and blown it. Measured from Google Fonts on 2026-09-03, latin subset, the exact URLs `base.html` requests: **Inter (variable, wght@400;500;600;700) 48,256 B** out; **Manrope (same axis) 24,836 B** and **Marcellus (static — it has no weight axis) 14,552 B** in. Net **−8,868 B**, so the total falls rather than rises. `display` was deliberately NOT swapped in the same motion: Marcellus ships one weight, and 15 `font-display font-bold`/`font-semibold` elements in this tree would have got a SYNTHESISED bold — the defect family #189 exists to remove. Two of those 15 (`_subscribe_modal.html:37`, `rashifal.html:181`) render Devanagari under the Hindi toggle and resolve to Noto Sans Devanagari 700, which is real and already loaded, so "just drop the bold" would de-bold Hindi headings. Crimson Pro retires with the last un-migrated screen, returning a further ~48 KB. Both new stacks keep `"Noto Sans Devanagari"` as their second entry (#189/#235) |
+| 2026-09-03 | **Crimson Pro retired; Marcellus + Manrope are the whole Latin stack** | #261. Measured from the live css2 URL the page requests: latin + devanagari now totals **248,836 B** against `MAX_FONT_BYTES = 285,000`, down from **268,820 B** before the epic — a smaller page having ADDED a family and removed two (Inter in #242, Crimson Pro here). Seven `font-display font-bold` elements moved to Marcellus unbolded; Marcellus ships one weight and Google Fonts will never serve another, so any bold on it is synthesised (#189's defect family). Two of those seven render Devanagari under the Hindi toggle and now resolve to Noto Sans Devanagari 400 — real, loaded, regular |
+| 2026-09-03 | **Tiro Devanagari Sanskrit rejected on payload** | #261. The handoff specifies it for all Devanagari. Its devanagari subset is **183,900 B** against Noto Serif Devanagari's **50,952 B** — 3.6x, **+132,948 B** — taking the page to ~297 KB against a 285,000 B budget. Does not fit. Recorded as a finding rather than a quiet overspend, per the token-budget rule in CLAUDE.md. Re-measure before re-proposing; do not re-derive from memory |
+| 2026-09-03 | **The mobile tab bar lives at the END of `<body>`, not in `_nav.html`** | #261. In `_nav.html` — included at the top of every page — its five links came early in the DOM while painting at the bottom of the viewport, producing one backward focus transition per language on mobile: the WCAG 2.4.3 violation #195 exists to prevent, measured by the keyboard sweep. Moved last in the document; the active tab derives from `request.url.path` because `active_page` is block-scoped and invisible there. Costs 75px of viewport, so the homepage CTA's real clearance at 375x667 is **86px** (129px without it) — `measure_cta_fold.py` reports NO change and is right to, because it measures document position, which a fixed element never moves |
+| 2026-09-03 | **Semantic status colours are not brand colours, and sit at the -800 stop** | #243/#245. good/steady/testing/deep and avoid/act are scales, and the 14-colour role palette has no green or amber. They stay on emerald/amber/rose — but at -800, because -700 is 4.48:1 (emerald) and 4.10:1 (amber) on cream-2 and fails AA at the sizes these render at. The handoff's own "Rahu Kaal in sindoor on a night block" is 2.53:1 — a fourth contrast failure in that document, after the three #236 corrected |
 | — | GCS bucket stays in the US | free tier is US-only; relocation considered and rejected |
 | 2026-10-04 | Hindi gets 13 URLs at `/hi/{path}`, not ~200 | with `?lang=hi` the rest of the site is 83-98% textually identical to English (only the chrome is translated): `/learn/` ~0.97-0.98 similar / ~1.5-1.8% Devanagari (two independent measurements, differing by method and by that day's content; the conclusion is unaffected). Only `/rashifal` + the 12 rashi pages have genuinely Hindi primary content (prod `/rashifal/aries?lang=hi`: 74.3% Devanagari, 0.240 similarity). Publishing the rest would ship ~200 near-duplicates |
 | 2026-10-04 | `/hi` is a ROUTER, not a path-stripping middleware | rewriting `scope["path"]` makes `request.url.path` return the English path inside the handler, so `base.html` canonicalises `/hi/rashifal` onto `/rashifal` — the exact defect #124 removes. Built, reproduced, discarded |
@@ -450,10 +542,19 @@ Dated, with the evidence. **Check here before proposing a change.**
 | 2026-08-25 | Bare dates in strict `/learn` articles must corroborate a date the article already verified; attribution deliberately NOT widened | #193: `diwali-muhurat-2026.html:22` said Shukla Pratipada runs "until Nov 10" — Govardhan Puja, the #143 date, in the article #143 was filed against — and no gate read it. Gate 4 compares (month, day) only, against dates that article's own attributed claims stand behind, so it can name no festival and cannot fabricate a Gate 1 failure. 9 bare dates across 4 strict articles, 0 uncorroborated; `scripts/mutate_learn_article_dates.py` 2/4 → 4/4 caught |
 | 2026-08-26 | Moonrise/moonset anchored at LOCAL MIDNIGHT, not sunrise — and computed by `compute_moon_rise_set`, not carried on `DailyPanchang` | #150: the midnight anchor puts a next-day instant on 13 of 365 Delhi days in 2026; anchoring at sunrise instead removes zero duplicates and labels 105 of 365. Absence is real too — `swe.rise_trans` returns `ret == -2`/`tret[0] == 0.0` for seven consecutive days at Tromso from 2026-12-06, and JD 0.0 raises out of `_jd_to_utc_datetime` rather than returning a wrong time. Carrying the two fields on `DailyPanchang` cost **+189.6%** per cold `compute_panchang` and **+39.5%** on a 90-day `/muhurat` search that reads neither. Splitting them out restores both. Measured 2026-08-26, three trees interleaved on one box, median-of-3 runs of median-of-7 (`65df985^` → `65df985` → this change): cold `compute_panchang` **0.2608 → 0.7553 → 0.2633 ms** (+0.96% of baseline); `find_candidates("vivah", "Delhi", 2026-09-01, days=90)` **139.1 → 194.1 → 140.3 ms** (+0.86%); `POST /muhurat` 90d Delhi cold **152.3 → 202.5 → 160.3 ms**. That last pair looked like a **+5.25%** residual and is not one — at n=3 the run could not tell 5% from noise in either direction. Re-measured 2026-08-26 by an independent QA pass at **n=80 per tree** (8 alternating blocks × 10 reps): base median **155.3 ms** (min 145.3, p25 150.6, p75 163.1) vs head median **155.6 ms** (min 144.8, p25 151.2, p75 160.9) — pooled median **+0.16%**, median-of-block-medians **−0.23%**, P(base sample < head sample) = **0.499** where 0.50 is indistinguishable. Nor is there a mechanism for a residual: the extra `_rise_or_set` frame `_sunrise_sunset` delegates through is one Python call frame, orders of magnitude below the measurement floor of a 155 ms request. The `compute_panchang` and `find_candidates` figures above ARE real — removing those regressions is the point of this entry. A `with_lunar=` flag was rejected on **correctness**, not cost: a search would fill `_PANCHANG_CACHE` with lunar-less entries and a later `/panchang` would render "no moonrise today", indistinguishable from the genuine absence `None` exists to express. Computing at the exact coordinates instead of the 0.5° grid point also removes the Srinagar calendar-flip hazard rather than documenting it. 0 GCS ops, 0 tokens: `format_panchang_for_prompt` is byte-identical (sha256 96496b85…, 535 bytes) |
 | 2026-08-27 | Moonrise/moonset rendered on `/panchang`, as two separate instants with their dates, and absence disclosed on its OWN flag rather than `daylight_ordinary` | #150: the function had zero callers. Joining the pair into a `rise — set` span would render backwards on 187 of 365 Delhi days in 2026, which is #227's defect through a different field; a next-day instant needs its date on 13 of 365 Delhi days. Absence measured over 2026: 166/365 moonless days at Tromso, 88 at Reykjavik, 0 at Delhi and Mumbai — against 5 sun-flagged Tromso days, so reusing the Sun's flag would both withhold real moonrises (2026-05-16, 00:36) and miss 109 Tromso days that have ordinary daylight and no Moon. 0 tokens: `format_panchang_for_prompt` is byte-identical to HEAD (549 bytes, sha256 40a5dcb5…) because nothing was added to `DailyPanchang`. 0 GCS ops, 2 extra Swiss Ephemeris calls (~0.5 ms) on `/panchang` only. Regression proof: 365 rendered pages per city at Delhi, Mumbai, Reykjavik and Tromso, diffed before/after — **0 removed lines** in all four, every added line inside the new card |
+| 2026-08-30 | Natal readings get a durable GCS tier behind SQLite, keyed `llm/natal/{lang}/{prompt_fp}/{chart_fp}.txt` | The natal cache is written `ttl_days=None` into SQLite on `/tmp` tmpfs at `minScale=0`/`maxScale=5`, so "never expires" meant regenerated once per instance, once per cold start and once per deploy — each a full natal call, ~7,800 input tokens against an 8,000 TPM per-model bucket, i.e. roughly a whole model-minute per page view. `_shared_three_tier`'s docstring claim that per-chart routes "gain nothing" from GCS is why this went unfixed for so long; corrected in the same commit. SQLite is read FIRST and GCS only on a local miss, so a warm instance pays **0** GCS ops (asserted on a stubbed call counter in `tests/test_natal_durable_cache.py`, not on timing) — the two functions are deliberately not merged because `_shared_three_tier` must read GCS first and natal must not. GCS values are quality-gated before use, so a bad blob is a miss and the regeneration overwrites it. A 30s recent-miss dict (swept by age, #182) keeps an ungenerated chart from re-reading the bucket on every refresh. **0 new tokens per call and per day**: no prompt file and no message-assembly code is touched, so no `PROMPT_LOGIC_VERSION` bump — a bump would cost N ÷ 25 days of the site's whole daily natal budget to rebuild N readings. Measured effect, `tests/test_natal_durable_cache.py`: two `/kundli` renders with the SQLite cache wiped between them make **1** live LLM call, was 2. This removes waste; it does **not** raise the ceiling — an unseen chart still costs full price |
 | 2026-08-31 | `og:image` is a generated 1200x630 PNG, never SVG | og:image was a 512x512 icon and all 76 learn articles pointed at 320x320 SVG heroes; FB/LinkedIn/WhatsApp/X/Slack reject SVG outright, so every article previewed as a bare link |
+| 2026-09-04 | Responses are gzipped, hashed static assets are `immutable` for a year, and the one-time per-process init is paid in the lifespan, not on a reader's request | The site had served every byte uncompressed since launch. Measured on production revision `bhagya-00380-t58` with a real `GET` carrying `Accept-Encoding: gzip, br`, headers dumped and the body kept raw: homepage HTML **141,191 B** served against 36,283 B under `gzip -9` (−74%), `app.css` **85,037 B** against 13,151 B (−85%). No `content-encoding` on either while `vary: accept-encoding` WAS present. Not a measuring artifact — the same curl through the same proxy gets `content-encoding: gzip` from google.com; `firebase.json` rewrites `**` to Cloud Run, so compression was the origin's to do. The homepage is `no-store`, so ~105 KB was paid on EVERY load, not just the first. After, on production revision `bhagya-00381-czp`: homepage **36,407 B**, `app.css` **13,152 B**, first-load total (html+css+fonts) **460,524 → 283,855 B, −176,669 B**. Separately, Cloud Run answers `cache-control: private` with no `max-age`, so a content-hashed `app.css?v=…` still cost a round trip to `asia-south1` per navigation despite #237 hashing it for exactly this reason; `_CachedStaticFiles` keys the rule on whether the URL is content-addressed (`?v=` → `immutable` 1y, else 300s), and `/sw.js` is untouched at `no-cache` because it is served from its own route for scope `/` — an immutable year there would make #253 permanent. Third: the FIRST request in a process cost **1.195 s** against **0.003 s** for the second. `cProfile` splits it — `TimezoneFinder()` 0.551 s and a live Nominatim geocode 0.422 s, both one-time (a second, different city costs 0.048 s; `trust_bar.counts()` is 1 ms, so #144's fix is holding). A/B against a `git worktree` at `da26382`, three fresh processes each: first `GET /` **5.05 / 2.17 / 2.38 s → 0.30 / 0.31 / 0.18 s**, cold total (startup + first request) **8.56 / 4.40 / 4.62 s → 6.64 / 3.15 / 2.90 s**. The lifespan does NOT shorten a scale-from-zero — Cloud Run already holds that request through startup — and the docstring says so; what it buys is Nominatim leaving the request path (`geocode_place` passes `timeout=10`, so a slow Nominatim could hang the homepage for ten seconds), a 1→2 scale-up warming before it takes traffic, and the cost appearing in startup logs. **`TimezoneFinderL` rejected on measurement**: 0.526 s to construct against 0.551 s (1.05×, no gain) and it returns `Etc/GMT+1` for Reykjavik where the full finder returns `Atlantic/Reykjavik` — one of the polar cities #150 and #227 are measured against. Fonts are now 83% of the remaining first-load payload (234,296 B of 283,855 B) and are the next lever, not the CSS |
 
 ### Rejected, with reasons — do not re-propose without new information
 
+- **`TimezoneFinderL` in place of `TimezoneFinder`** — measured 2026-09-04 at
+  0.526 s to construct against 0.551 s, i.e. no faster, while returning
+  `Etc/GMT+1` for Reykjavik where the full finder returns `Atlantic/Reykjavik`.
+- **Excluding already-compressed content types from `GZipMiddleware`** — PNG and
+  woff2 responses gain nothing from it, but the static payload is small and an
+  exclusion list is one more thing that has to stay true. Revisit with a
+  measurement if the image surface grows, not on principle.
 - **Relocating the GCS bucket** to match Cloud Run's region — free tier is US-only.
 - **Background task / worker for rashifal generation** — requires a billing change
   (`--no-cpu-throttling` bills for full instance lifetime). Explicitly declined on cost.
@@ -485,7 +586,7 @@ Dated, with the evidence. **Check here before proposing a change.**
 - **Coverage is narrow.** A behaviour suite exists (`tests/`, run via `uv run pytest` or
   `scripts/verify_behaviour.py`) but covers only request-path regressions — the cache
   lifecycle, degraded pages and blast reporting where eleven defects landed across four
-  QA rounds. Everything else is verified by execution plus the thirteen gates.
+  QA rounds. Everything else is verified by execution plus the eighteen gates.
 - **The suite is hermetic as of #224 — it needs no `.env` and no network.** It previously
   needed both, and a bare `uv run pytest` on a clean checkout reported **14 failures that
   were not defects**: nine tests reached Nominatim, and five hit the `OPENAI_API_KEY` gate.
@@ -499,8 +600,17 @@ Dated, with the evidence. **Check here before proposing a change.**
   before being told to work around it. A guard that does not guard reads as an assurance.
   Note also that `_dummy_api_key` overrides a REAL key rather than defaulting when unset,
   so a developer with live credentials cannot have a forgotten stub spend paid quota.
-- **`verify_devanagari_serif`** needs Playwright, which is not installed; it fails
-  identically on every tree and is not a signal.
+- **`verify_devanagari_serif` cannot complete in an agent container, but not for the
+  reason recorded here until 2026-09-03.** Playwright IS installed and the gate runs;
+  what fails is the network. Headless Chromium cannot reach `fonts.googleapis.com`
+  through the agent proxy — the tunnel closes mid-handshake (`ws_closed_mid_exchange`,
+  ~39 B received), with or without an explicit `proxy=` on the launch and with QUIC and
+  HTTP/2 disabled. The gate does the right thing with that: it exits **2**, COULD NOT
+  VERIFY, rather than reporting a pass. So it is not a false failure to work around —
+  it is a check that has to run in CI, where the network is real. Font PAYLOAD figures
+  can still be established out of band by fetching the css2 URL and summing the woff2
+  responses (that is where #242's numbers came from); which FACE painted a given node
+  cannot be, and needs the browser.
 
 ---
 

@@ -5,13 +5,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Kaal Sarp axis containing the planets">
   <defs>
     <radialGradient id="aura-ks" cx="0.5" cy="0.5" r="0.7">
-      <stop offset="0%" stop-color="#f0e7fb" stop-opacity="0.9"/>
-      <stop offset="60%" stop-color="#e9d5ff" stop-opacity="0.25"/>
+      <stop offset="0%" stop-color="#F1E7D8" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#F1E7D8" stop-opacity="0.25"/>
       <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="serpent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#581c87"/>
-      <stop offset="50%" stop-color="#6b21a8"/>
+      <stop offset="0%" stop-color="#17131A"/>
+      <stop offset="50%" stop-color="#9E2B25"/>
       <stop offset="100%" stop-color="#1c1917"/>
     </linearGradient>
   </defs>
@@ -20,13 +20,13 @@
   <circle cx="160" cy="160" r="140" fill="url(#aura-ks)"/>
 
   <!-- Outer ring -->
-  <circle cx="160" cy="160" r="115" fill="none" stroke="#6b21a8" stroke-width="1.5" opacity="0.3"/>
+  <circle cx="160" cy="160" r="115" fill="none" stroke="#9E2B25" stroke-width="1.5" opacity="0.3"/>
 
   <!-- The serpent body — a stylised arc forming the Kaal Sarp axis.
        Top half of a circle, with Rahu at one end and Ketu at the other. -->
   <path d="M 60 180 Q 160 50 260 180" fill="none" stroke="url(#serpent)" stroke-width="9" stroke-linecap="round" opacity="0.85"/>
   <!-- A second thinner echo line for depth -->
-  <path d="M 65 178 Q 160 60 255 178" fill="none" stroke="#a78bfa" stroke-width="2" opacity="0.4"/>
+  <path d="M 65 178 Q 160 60 255 178" fill="none" stroke="#D98A45" stroke-width="2" opacity="0.4"/>
 
   <!-- Rahu head — dark globe at one end of the axis -->
   <circle cx="60" cy="180" r="22" fill="#1c1917"/>
@@ -34,7 +34,7 @@
   <circle cx="65" cy="178" r="2" fill="#ffd764" opacity="0.7"/>
 
   <!-- Ketu tail — lighter mauve oval -->
-  <ellipse cx="260" cy="180" rx="18" ry="14" fill="#a78bfa"/>
+  <ellipse cx="260" cy="180" rx="18" ry="14" fill="#D98A45"/>
 
   <!-- Planets caught inside the bow (between Rahu and Ketu) -->
   <g>
@@ -57,5 +57,5 @@
   <!-- Devanagari label -->
   <text x="160" y="290" text-anchor="middle"
         font-family="'Noto Sans Devanagari', serif"
-        font-size="20" fill="#6b21a8" font-weight="600">काल सर्प</text>
+        font-size="20" fill="#9E2B25" font-weight="600">काल सर्प</text>
 </svg>

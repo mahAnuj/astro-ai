@@ -4,13 +4,13 @@
 
 {% set favorability_card = {
   'favorable':   'border-emerald-200 bg-emerald-50/30',
-  'neutral':     'border-stone-200 bg-white',
+  'neutral':     'border-bhagya-line bg-white',
   'challenging': 'border-rose-200 bg-rose-50/30',
 } %}
 {% set favorability_badge = {
-  'favorable':   'text-emerald-700 bg-emerald-100',
-  'neutral':     'text-stone-600 bg-stone-100',
-  'challenging': 'text-rose-700 bg-rose-100',
+  'favorable':   'text-emerald-800 bg-emerald-100',
+  'neutral':     'text-bhagya-muted bg-bhagya-cream-2',
+  'challenging': 'text-bhagya-sindoor bg-rose-100',
 } %}
 {% set favorability_label = {
   'favorable':   'favorability_favorable',
@@ -18,24 +18,24 @@
   'challenging': 'favorability_challenging',
 } %}
 
-<section class="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-  <div class="bg-gradient-to-r from-astro-50/60 to-white px-6 py-4 border-b border-stone-100">
-    <h2 class="font-display text-xl text-astro-700">{{ t(lang, 'gochar_title') }}</h2>
-    <p class="text-sm text-stone-600 mt-0.5">{{ t(lang, 'gochar_subtitle') }}</p>
+<section class="bg-white border border-bhagya-line overflow-hidden">
+  <div class="bg-bhagya-cream-2 px-6 py-4 border-b border-bhagya-line-2">
+    <h2 class="font-marcellus text-xl text-bhagya-ink">{{ t(lang, 'gochar_title') }}</h2>
+    <p class="text-sm text-bhagya-muted mt-0.5">{{ t(lang, 'gochar_subtitle') }}</p>
   </div>
   <div class="px-6 py-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
     {% for g in gochar_impacts %}
-    <div class="rounded-2xl border {{ favorability_card[g.favorability] }} p-4">
+    <div class="border {{ favorability_card[g.favorability] }} p-4">
       <div class="flex items-baseline justify-between gap-2 mb-1.5">
-        <h3 class="font-display text-lg text-stone-900">
-          {{ g.planet }}{% if g.retrograde %}<span class="text-xs font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded ml-1 align-middle">R</span>{% endif %}
+        <h3 class="font-marcellus text-lg text-bhagya-ink">
+          {{ g.planet }}{% if g.retrograde %}<span class="text-xs font-semibold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded ml-1 align-middle">R</span>{% endif %}
         </h3>
         <span class="text-xs font-semibold uppercase tracking-wider {{ favorability_badge[g.favorability] }} px-1.5 py-0.5 rounded whitespace-nowrap">
           {{ t(lang, favorability_label[g.favorability]) }}
         </span>
       </div>
-      <div class="font-display text-base text-stone-900">{{ g.sign }}</div>
-      <dl class="mt-2 text-sm text-stone-600 space-y-0.5">
+      <div class="font-marcellus text-base text-bhagya-ink">{{ g.sign }}</div>
+      <dl class="mt-2 text-sm text-bhagya-muted space-y-0.5">
         <div>{{ t(lang, 'gochar_house_lagna', n=g.house_from_lagna) }}</div>
         <div>{{ t(lang, 'gochar_house_moon', n=g.house_from_moon) }}</div>
       </dl>
@@ -49,7 +49,7 @@
      all four. Without this line that reads as personal catastrophe rather
      than as the arithmetic of the source. CLAUDE.md forbids fear framing;
      stating the base rate is how this table complies without being bent. #}
-  <p class="px-6 pb-5 -mt-1 text-xs text-stone-500 leading-relaxed">
+  <p class="px-6 pb-5 -mt-1 text-xs text-bhagya-muted-2 leading-relaxed">
     {{ t(lang, 'gochar_base_rate') }}
   </p>
 </section>
