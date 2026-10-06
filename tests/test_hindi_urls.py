@@ -873,3 +873,80 @@ def test_hindi_rashi_page_structured_data_is_not_mixed_language(hindi_client, st
     letters = [c for c in desc if c.isalpha()]
     share = sum(1 for c in letters if "ऀ" <= c <= "ॿ") / max(len(letters), 1)
     assert share >= 0.50, f"the Hindi page's JSON-LD description is not Hindi: {desc!r}"
+
+
+def test_hindi_page_anchors_are_hindi(hindi_client, stub_llm):
+    """QA round 10, M4 — uncaught by every layer in the tree.
+
+    `test_hindi_labelled_links_stay_in_hindi` asserts the INVERSE: a Hindi
+    label must not point at an English URL. An English label on the correct
+    Hindi URL is invisible to it by construction, and that is what reverting
+    `rashifal_single.html:65` produces — the word "Rashifal" at the top of
+    <main> on 12 of the 13 published Hindi URLs.
+
+    Nothing else saw it either: the gate cannot read these bodies locally
+    (503), the 0.60 <main> floor cannot be moved by a four-word label
+    (measured 98.28% with the leak live), and "Rashifal" is in the gate's
+    ALLOWED list as a brand term.
+
+    So: every anchor inside <main> whose label is long enough to be a word
+    rather than a glyph must be Hindi. The bilingual sign names are permitted
+    because they render as `मेष (Aries)` — Devanagari first.
+    """
+    from astro_ai.routes import rashifal
+
+    rashifal._regen_failures.clear()
+    stub_llm(lambda _n: "## Aries / Mesha\n" + "आज का दिन शुभ रहेगा। " * 60)
+
+    html = hindi_client.get("/hi/rashifal/aries").text
+    main = re.search(r"<main\b[^>]*>(.*?)</main>", html, re.S | re.I).group(1)
+
+    english = []
+    for label in re.findall(r"<a\b[^>]*>(.*?)</a>", main, re.S):
+        text = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", label)).strip()
+        letters = [c for c in text if c.isalpha()]
+        if len(letters) < 4:
+            continue                      # a glyph or an arrow, not a label
+        if not any("ऀ" <= c <= "ॿ" for c in text):
+            english.append(text[:40])
+    assert not english, (
+        f"anchor label(s) inside <main> on a Hindi page carry no Devanagari: "
+        f"{english}"
+    )
+
+
+def test_hindi_breadcrumb_names_are_all_hindi(hindi_client, stub_llm):
+    """QA round 10, M3 — the same miss, in structured data.
+
+    `test_hindi_rashi_page_structured_data_is_not_mixed_language` inspects the
+    Article `description` ONLY, so a BreadcrumbList item name reverting to
+    English passed — Google-visible, on 12 of the 13 Hindi URLs:
+
+        name='मुख्य पृष्ठ'  item='…/'
+        name='Rashifal'    item='…/hi/rashifal'     <- the leak
+        name='मेष'          item='…/hi/rashifal/aries'
+
+    `test_hindi_hub_breadcrumbs_are_hindi` checks /hi/rashifal only, not the
+    12 rashi pages. This checks every name on the rashi page.
+    """
+    import json
+
+    from astro_ai.routes import rashifal
+
+    rashifal._regen_failures.clear()
+    stub_llm(lambda _n: "## Aries / Mesha\n" + "आज का दिन शुभ रहेगा। " * 60)
+
+    html = hindi_client.get("/hi/rashifal/aries").text
+    found = False
+    for blob in re.findall(r'<script type="application/ld\+json">(.*?)</script>', html, re.S):
+        d = json.loads(blob)
+        if d.get("@type") != "BreadcrumbList":
+            continue
+        found = True
+        for item in d["itemListElement"]:
+            name = item["name"]
+            assert any("ऀ" <= c <= "ॿ" for c in name), (
+                f"breadcrumb name {name!r} is English on a Hindi page — "
+                f"Google reads this"
+            )
+    assert found, "no BreadcrumbList on the Hindi rashi page"

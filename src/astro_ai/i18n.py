@@ -555,6 +555,7 @@ _EN: Final[dict[str, str]] = {
     "rashifal_grid_cta_tail": "— that gives you dashas, yogas, doshas, and a substantive natal reading.",
     "rashifal_grid_reveal":   "Reveal today's reading for {rashi}",
     "rashifal_grid_subtitle": "Pick your rashi",
+    "rashifal_grid_cta_heading": "Want a deeper reading?",
 }
 
 _HI: Final[dict[str, str]] = {
@@ -1027,6 +1028,7 @@ _HI: Final[dict[str, str]] = {
     "rashifal_grid_cta_tail": "— इसमें दशा, योग, दोष और विस्तृत जन्म-पठन शामिल है।",
     "rashifal_grid_reveal":   "{rashi} का आज का राशिफल देखें",
     "rashifal_grid_subtitle": "अपनी राशि चुनें",
+    "rashifal_grid_cta_heading": "अधिक विस्तृत पठन चाहते हैं?",
 }
 
 _TABLES: Final[dict[str, dict[str, str]]] = {"en": _EN, "hi": _HI}

@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
-EXPECTED_TESTS = 196
+EXPECTED_TESTS = 198
 """Minimum tests that must RUN. Lower it deliberately, never to make a run green."""
 
 
