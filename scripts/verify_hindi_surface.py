@@ -49,6 +49,22 @@ So this gate's real coverage locally is the HUB plus the sentinel sweep on all
 stubs the provider and therefore sees the 200 path. The two together are the
 check; neither alone is.
 
+TOKEN COST — measure it before wiring this into anything automated.
+
+This gate requests all 13 URLs, and the 12 rashi pages GENERATE on a cache
+miss. Measured by QA round 9 with the provider instrumented: one cold request
+is ~13,659 prompt chars ≈ 4,405 input tokens, so a full cold run is
+**~53,000 input tokens — about 26% of the 200k TPD rashifal budget per
+invocation**, with the first call putting 4,405 into an 8,000 TPM bucket.
+
+That cost is invisible on a dev box only because the .env default model 404s
+and every page degrades to 503 — the silent failure mode CLAUDE.md names. And
+the QA convention of pointing BHAGYA_DAILY_CACHE_DIR at scratch *guarantees*
+the cold path.
+
+So: run it against production, or against a warm cache. It is deliberately NOT
+in any CI workflow.
+
 Needs a running server: pass --url. Exits 2 when it cannot reach one, never 0,
 because an unrunnable gate must not read as a green one.
 """
@@ -81,6 +97,18 @@ FLOORS = {"hub": 0.20, "rashi": 0.60}
 
 
 # English strings that actually leaked onto a Hindi page during #124.
+# Nav labels that ARE localised. Their Hindi forms must be PRESENT; absence
+# means a t() call site reverted to an English literal. Filled from i18n at
+# run time so the gate cannot drift from the table.
+# nav_rashifal_link only: it is the key QA's mutation targeted and it renders
+# in the top nav on EVERY page including the degraded 503. nav_home was tried
+# and dropped — it is a breadcrumb label the error page does not render, so it
+# produced a false positive on all 12 rashi URLs.
+NAV_KEYS = ("nav_rashifal_link",)
+# English labels that must NOT appear inside <nav aria-label="Main"> on a
+# Hindi page. The top nav is localised; the footer and bottom tab bar are not.
+NAV_ENGLISH = ("Rashifal", "Panchang", "Matching", "Kundli", "Muhurat")
+
 SENTINELS = [
     "zodiac silhouette", "All 12 rashis", "Full birth chart",
     "Back to the form", "Open full page", "Try again",
@@ -88,6 +116,8 @@ SENTINELS = [
     "daily Vedic horoscope", "Want a deeper reading",
     "Tithi, nakshatra", "Share on WhatsApp", "Today's Panchang",
     "Free Janma Kundli",
+    # the aria-label that shipped on 12 tiles of the indexed Hindi hub
+    "Reveal today's reading",
 ]
 
 # Bilingual-by-design or brand/technical, so not a leak.
@@ -99,12 +129,56 @@ ALLOWED = re.compile(
 )
 
 
-def _main_text(html: str) -> str:
-    m = re.search(r"<main\b[^>]*>(.*?)</main>", html, re.S | re.I)
-    body = m.group(1) if m else html
-    body = re.sub(r"<(script|style|svg)\b.*?</\1>", " ", body, flags=re.S | re.I)
-    body = re.sub(r"<[^>]+>", " ", body)
-    return re.sub(r"\s+", " ", body).strip()
+def _region_attr(html: str, tag: str, attr: str) -> str:
+    """The region for the element carrying `attr` — `<nav aria-label="Main">`.
+
+    Needed because a plain tag search finds the first `<nav` in the document,
+    which is a CSS rule inside a <style> block.
+    """
+    m = re.search(rf"<{tag}\b[^>]*{re.escape(attr)}[^>]*>(.*?)</{tag}>", html, re.S | re.I)
+    return m.group(1) if m else ""
+
+
+def _region(html: str, tag: str) -> str:
+    m = re.search(rf"<{tag}\b[^>]*>(.*?)</{tag}>", html, re.S | re.I)
+    return m.group(1) if m else ""
+
+
+def _visible(fragment: str) -> str:
+    """Text PLUS the attribute values a reader or screen reader is given.
+
+    Stripping tags to get the text drops `alt`, `title`, `aria-label` and
+    `placeholder` entirely — and those are exactly where leaks hid. The first
+    version of this gate did only the strip, so twelve English `alt`s sat
+    inside <main> on the Hindi hub while it reported PASS, with
+    "zodiac silhouette" as entry #1 of its own SENTINELS list. The same
+    blindness was found and fixed in the pytest test one commit earlier and
+    left here; QA round 9 caught it as the third instance of the pattern.
+    """
+    body = re.sub(r"<(script|style|svg)\b.*?</\1>", " ", fragment, flags=re.S | re.I)
+    attrs = " ".join(
+        re.findall(r'(?:alt|title|aria-label|placeholder)="([^"]*)"', body)
+    )
+    text = re.sub(r"<[^>]+>", " ", body)
+    return re.sub(r"\s+", " ", text + " " + attrs).strip()
+
+
+def _english_prose(text: str) -> list[str]:
+    """Runs of ASCII words long enough to be prose rather than a name.
+
+    This is the generic sweep the docstring has always promised and the code
+    did not have — `ALLOWED` was defined and never referenced, the fossil of
+    it. Measured consequence while it was missing: a 19-word English paragraph
+    injected into the hub's <main> moved the Devanagari share 24% -> 22%,
+    stayed above the floor, and the gate reported `leaks=0`.
+
+    Four or more consecutive ASCII words, after removing the bilingual and
+    brand/technical vocabulary that is English on a Hindi page BY DESIGN.
+    """
+    stripped = ALLOWED.sub(" ", text)
+    runs = re.findall(r"(?:\b[A-Za-z][A-Za-z'’-]{1,}\b[ ,;:]{1,3}){3,}\b[A-Za-z][A-Za-z'’-]{1,}\b",
+                      stripped)
+    return [r.strip() for r in runs if len(r.split()) >= 4]
 
 
 def _devanagari_share(text: str) -> float:
@@ -126,6 +200,10 @@ def main() -> int:
         print(f"COULD NOT VERIFY: {e}")
         return 2
 
+    from astro_ai.i18n import translate as _t
+
+    NAV_EXPECTED = {k: _t("hi", k) for k in NAV_KEYS}
+
     paths = sorted(hindi_pages.HINDI_PUBLISHED)
     hindi_urls = [hindi_pages.hindi_url(p) for p in paths]
 
@@ -146,14 +224,58 @@ def main() -> int:
             print(f"COULD NOT VERIFY: {full} unreachable ({e})")
             return 2
 
-        text = _main_text(html)
+        main = _region(html, "main")
+        text = _visible(main)
         share = _devanagari_share(text)
         hits = [s for s in SENTINELS if s in text]
+        prose = _english_prose(text)
+
+        # The localised nav labels, asserted POSITIVELY by presence.
+        #
+        # A negative sweep over <nav> was tried and was wrong twice: the regex
+        # matched a <style> block containing `nav.sticky {`, and the only real
+        # <nav> element is the bottom tab bar, which IS deliberately English
+        # along with the footer. The top nav is not inside a <nav> at all.
+        #
+        # So instead: the Hindi forms of the nav labels must appear in the
+        # document. That is what catches QA's nav_rashifal_link mutation —
+        # replacing one t() call with an English literal put live English on
+        # all 13 URLs while 196 tests stayed green, and a presence check sees
+        # it where a region sweep could not.
+        # The TOP NAV, read as its own region.
+        #
+        # Three wrong versions before this one, each caught by a bite test:
+        #   1. sweep <nav> — the regex matched a <style> block containing
+        #      `nav.sticky {`, and the first real <nav> is the bottom tab bar,
+        #      which IS deliberately English along with the footer.
+        #   2. assert the Hindi label is present in the document — passes,
+        #      because राशिफल appears in the <title> and the breadcrumbs of
+        #      every rashifal page, so it cannot isolate the nav.
+        #   3. read the expectation out of i18n — self-defeating: a mutated
+        #      TABLE value is "found" in an English page.
+        #
+        # `<nav aria-label="Main">` is the top nav specifically. An English
+        # label inside it is a lost call site; the Devanagari check on the
+        # expected value additionally catches the table reverting.
+        nav_main = _visible(_region_attr(html, "nav", 'aria-label="Main"'))
+        missing_nav = [k for k, want in NAV_EXPECTED.items()
+                       if not any("\u0900" <= c <= "\u097f" for c in want)]
+        missing_nav += [e for e in NAV_ENGLISH if e in nav_main]
 
         # A degraded page is still required to be Hindi — that was defect F9 —
         # but its body is short, so the floor is only applied to a 200.
         if hits:
             problems.append(f"{url} [{code}]: English in <main>: {hits}")
+        if prose:
+            problems.append(
+                f"{url} [{code}]: English prose in <main>: {prose[:2]}"
+            )
+        if missing_nav:
+            problems.append(
+                f"{url} [{code}]: localised nav label(s) absent from the page: "
+                f"{missing_nav} — a t() call site has been replaced with an "
+                f"English literal"
+            )
         kind = "rashi" if re.match(r"^/hi/rashifal/[a-z]+$", url) else "hub"
         floor = FLOORS[kind]
         if code == 200 and share < floor:
@@ -162,7 +284,8 @@ def main() -> int:
                 f"{floor:.0%} {kind} floor — a block has reverted to English"
             )
         checked += 1
-        print(f"  {url:<28} [{code}] devanagari={share:5.0%} leaks={len(hits)}")
+        print(f"  {url:<28} [{code}] devanagari={share:5.0%} "
+              f"sentinels={len(hits)} prose={len(prose)} nav={len(missing_nav)}")
 
     if problems:
         print(f"\nFAIL — {len(problems)} problem(s):")

@@ -1,7 +1,7 @@
 {% set lang_prefix = lang_prefix_for(lang, request.url.path) %}
 {% extends "base.html" %}
 
-{% block title %}{{ t(lang, 'rashifal_title') }} — {{ today_pretty }} · Pick your rashi · Shubh Bhagya{% endblock %}
+{% block title %}{{ t(lang, 'rashifal_title') }} — {{ today_pretty }} · {{ t(lang, 'rashifal_grid_subtitle') }} · Shubh Bhagya{% endblock %}
 {% block meta_description %}{% if lang == 'hi' %}आज का राशिफल — {{ today_pretty }}। अपनी राशि पर क्लिक करें और आज के लिए विस्तृत पढ़ाई देखें। सभी 12 राशियों के लिए मुफ्त।{% else %}Today's Rashifal for {{ today_pretty }} — pick your Moon sign to reveal a substantive daily reading. All 12 rashis, generated fresh, free.{% endif %}{% endblock %}
 
 {% block content %}
@@ -81,7 +81,7 @@
       <button type="button"
               class="rashi-card-inner block w-full aspect-[4/5] relative text-left focus:outline-none focus:ring-4 focus:ring-bhagya-saffron/40"
               data-flip-trigger
-              aria-label="Reveal today's reading for {{ en }} / {{ sa }}"
+              aria-label="{{ t(lang, 'rashifal_grid_reveal', rashi=(t(lang, 'rashi_name_' ~ slug) if lang == 'hi' else en ~ ' / ' ~ sa)) }}"
               hx-get="{{ lang_prefix }}/rashifal/{{ slug }}"
               {# lang_prefix is "/hi" on a Hindi page. Without it every tile on
                  /hi/rashifal fetched the ENGLISH fragment: /hi/* deliberately
@@ -146,7 +146,16 @@
   {# SEO body — after grid, so users see cards first but Google sees
      content. Card design matches Privacy/Terms/numerology (Tailwind
      Typography plugin is not loaded, so we don't use `prose`). #}
-  <section class="pt-4">
+  {#- Suppressed on /hi/ (#124). This is a ~4-paragraph English SEO explainer.
+    Leaving it rendered put a <main> that is ~76% English under
+    <html lang="hi">, og:locale hi_IN and a self-canonical Hindi URL — the
+    mixed-language signal this issue exists to remove. Machine-translating it
+    would ship four paragraphs no native reader has checked, which is worse;
+    suppressing ships no composed Hindi at all. QA round 9 proposed this third
+    option and it is the right one. Restore it here once a human-written
+    Hindi version exists. -#}
+{% if lang != 'hi' %}
+<section class="pt-4">
     <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">How Bhagya's Rashifal is different</h2>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
@@ -160,6 +169,7 @@
       </p>
     </div>
   </section>
+{% endif %}
 
 </main>
 

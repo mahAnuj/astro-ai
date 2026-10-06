@@ -553,6 +553,8 @@ _EN: Final[dict[str, str]] = {
     "rashifal_grid_cta":  "Want a deeper reading based on your full birth chart, not just your Moon sign?",
     "rashifal_grid_cta_link": "Compute your free Janma Kundli",
     "rashifal_grid_cta_tail": "— that gives you dashas, yogas, doshas, and a substantive natal reading.",
+    "rashifal_grid_reveal":   "Reveal today's reading for {rashi}",
+    "rashifal_grid_subtitle": "Pick your rashi",
 }
 
 _HI: Final[dict[str, str]] = {
@@ -1023,6 +1025,8 @@ _HI: Final[dict[str, str]] = {
     "rashifal_grid_cta":  "केवल चंद्र राशि नहीं, अपनी पूरी जन्म कुंडली पर आधारित विस्तृत पठन चाहते हैं?",
     "rashifal_grid_cta_link": "अपनी मुफ़्त जन्म कुंडली बनाएँ",
     "rashifal_grid_cta_tail": "— इसमें दशा, योग, दोष और विस्तृत जन्म-पठन शामिल है।",
+    "rashifal_grid_reveal":   "{rashi} का आज का राशिफल देखें",
+    "rashifal_grid_subtitle": "अपनी राशि चुनें",
 }
 
 _TABLES: Final[dict[str, dict[str, str]]] = {"en": _EN, "hi": _HI}
