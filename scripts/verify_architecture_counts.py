@@ -41,6 +41,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DOC = ROOT / "ARCHITECTURE.md"
 
+# Pinned so a row cannot be deleted silently. Raise it when adding one.
+EXPECTED_ROWS = 10
+
 ROW = re.compile(r"^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*`([^`]+)`\s*\|\s*$", re.M)
 
 
@@ -71,8 +74,20 @@ def main() -> int:
         l for l in section.splitlines()
         if l.startswith("|") and l.count("|") >= 4
         and not re.match(r"^\|[\s:-]+\|", l)        # separator
-        and "`" in l                                 # carries a command
+        and not l.lower().startswith("| what ")      # header
     ]
+    # A §1 row MUST carry a backticked command. One that does not is
+    # unverifiable, and the first version of this filter required a backtick
+    # to even consider a line a row — so a row without one was invisible
+    # rather than failing. QA proved it: a bogus row claiming 99 passed.
+    uncommanded = [l for l in looks_like_row if "`" not in l]
+    if uncommanded:
+        print("FAIL — §1 row(s) carry no backticked command, so nothing can\n"
+              "       verify them. Add the command or remove the row:")
+        for l in uncommanded:
+            print(f"         {l[:88]}")
+        return 1
+    looks_like_row = [l for l in looks_like_row if "`" in l]
     if len(looks_like_row) != len(rows):
         print(f"FAIL — {len(looks_like_row)} rows look like checkable rows but only "
               f"{len(rows)} parsed.\n       An unparseable row is a failure, not a skip "
@@ -80,6 +95,15 @@ def main() -> int:
         for l in looks_like_row:
             if not ROW.match(l + "\n"):
                 print(f"         unparsed: {l[:88]}")
+        return 1
+
+    # Hole B: deleting a row passed, because nothing pinned how many there
+    # are. A table that can silently shrink is a table that can silently stop
+    # covering something.
+    if len(rows) < EXPECTED_ROWS:
+        print(f"FAIL — §1 has {len(rows)} checkable rows, expected at least "
+              f"{EXPECTED_ROWS}.\n       A row was removed. If that is intended, "
+              f"lower EXPECTED_ROWS in this file\n       and say why in the commit.")
         return 1
 
     problems: list[str] = []
@@ -102,7 +126,19 @@ def main() -> int:
             problems.append(f"{label}: no number in the value cell {value!r}")
             continue
         # one claimed number -> the command's last number; several -> the last N
-        got = got_all[-len(claimed):] if len(got_all) >= len(claimed) else got_all
+        # Hole C: comparing the LAST len(claimed) numbers meant dropping one
+        # from `11 files, 8,021 lines` left 10 numbers checked, 11 claimed,
+        # and a PASS. That is "verified eight and reported on ten" in
+        # miniature — the exact defect this gate was written for. So the
+        # counts must match exactly.
+        if len(got_all) != len(claimed):
+            problems.append(
+                f"{label}: value cell has {len(claimed)} number(s) but its "
+                f"command prints {len(got_all)} ({got_all}). The row and the "
+                f"command disagree about what is being counted."
+            )
+            continue
+        got = got_all
         ok = got == claimed
         print(f"  {'ok ' if ok else 'BAD'} {label:<30} doc={value:<16} actual={got}")
         if not ok:

@@ -28,7 +28,7 @@ trust the number.
 
 | | count | command |
 |---|---|---|
-| Python | 29,980 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
+| Python | 29,984 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
 | top-level modules | 36 | `ls src/astro_ai/*.py \| wc -l` |
 | route handlers | 67 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 24 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
