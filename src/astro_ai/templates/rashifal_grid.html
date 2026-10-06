@@ -109,7 +109,7 @@
                container reserves consistent layout space so removing
                width/height won't regress CLS. #}
             <img src="/static/rashi/{{ slug }}.png"
-                 alt="{{ en }} ({{ sa }}) zodiac silhouette"
+                 alt="{{ t(lang, 'rashifal_grid_alt', rashi_en=en, rashi_sa=sa, rashi_hi=t(lang, 'rashi_name_' ~ slug)) }}"
                  loading="lazy" decoding="async"
                  class="max-h-32 sm:max-h-40 w-auto object-contain">
           </div>
@@ -156,7 +156,7 @@
         Sidereal Lahiri ayanamsa (the classical Vedic reference), Swiss Ephemeris under the hood, honest tone &mdash; no fear-based upsell, no "urgent puja needed" nudges, no astrologer-chat funnel. Read your reading, take what serves you, close the tab.
       </p>
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
-        Want a deeper reading based on your full birth chart, not just your Moon sign? <a href="/kundli" class="text-bhagya-sindoor hover:underline">Compute your free Janma Kundli</a> &mdash; that gives you dashas, yogas, doshas, and a substantive natal reading.
+        {{ t(lang, 'rashifal_grid_cta') }} <a href="/kundli" class="text-bhagya-sindoor hover:underline">{{ t(lang, 'rashifal_grid_cta_link') }}</a> {{ t(lang, 'rashifal_grid_cta_tail') }}
       </p>
     </div>
   </section>
