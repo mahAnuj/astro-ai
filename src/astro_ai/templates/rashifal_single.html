@@ -34,7 +34,7 @@
   "mainEntityOfPage": {"@type": "WebPage", "@id": "{{ site_url }}{{ self_path }}"},
   "url": "{{ site_url }}{{ self_path }}",
   "headline": {{ t(lang, 'rashifal_single_headline', rashi_en=rashi_en, rashi_hi=rashi_hi, date=today_pretty) | tojson }},
-  "description": {{ ((rashi_en ~ ' (' ~ rashi_sa ~ ') daily Vedic horoscope for ' ~ today_pretty ~ ' — sidereal Lahiri.')) | tojson }},
+  "description": {{ t(lang, 'rashifal_single_ld_desc', rashi_en=rashi_en, rashi_sa=rashi_sa, rashi_hi=rashi_hi, date=today_pretty) | tojson }},
   "image": {"@type": "ImageObject", "url": "{{ site_url }}/static/icons/icon-512.png", "width": 512, "height": 512},
   "datePublished": "{{ today_date }}",
   "dateModified": "{{ today_date }}",
@@ -65,7 +65,7 @@
       <a href="{{ lang_prefix }}/rashifal" class="hover:text-bhagya-sindoor">{{ t(lang, 'nav_rashifal_link') }}</a> · <time datetime="{{ today_date }}">{{ today_pretty }}</time>
     </div>
     <img src="/static/rashi/{{ rashi_slug }}.png"
-         alt="{{ rashi_en }} ({{ rashi_sa }}) zodiac silhouette"
+         alt="{{ t(lang, 'rashifal_single_alt', rashi_en=rashi_en, rashi_sa=rashi_sa, rashi_hi=rashi_hi) }}"
          width="180" height="180"
          class="mx-auto h-32 sm:h-40 w-auto object-contain"
          decoding="async" fetchpriority="high">
@@ -100,11 +100,11 @@
     <div class="grid sm:grid-cols-2 gap-3">
       <a href="/kundli" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
         <div class="font-semibold text-bhagya-sindoor text-sm">{{ t(lang, 'rashifal_kundli_cta') }}</div>
-        <div class="text-xs text-bhagya-muted mt-1">Full birth chart with dashas, yogas, and personalised reading — beyond the Moon sign.</div>
+        <div class="text-xs text-bhagya-muted mt-1">{{ t(lang, 'rashifal_kundli_desc') }}</div>
       </a>
       <a href="/panchang" class="block p-4 bg-white border border-bhagya-line hover:border-bhagya-saffron transition-colors">
         <div class="font-semibold text-bhagya-sindoor text-sm">{{ t(lang, 'rashifal_panchang_cta') }}</div>
-        <div class="text-xs text-bhagya-muted mt-1">Tithi, nakshatra, Rahu Kaal, Abhijit, Choghadiya for your city.</div>
+        <div class="text-xs text-bhagya-muted mt-1">{{ t(lang, 'rashifal_panchang_desc') }}</div>
       </a>
     </div>
   </section>

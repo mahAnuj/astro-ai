@@ -109,8 +109,28 @@ So, before merging anything that has been open across other people's work:
 4. **For a file where both sides matter, take theirs as the BASE and re-apply your
    changes onto it** — do not patch the conflict blocks. `rashifal_single.html` had four
    conflict blocks; resolving them individually would have kept four fragments of a
-   template the redesign had rewritten. Re-applying 15 named edits onto their version
-   was both smaller and checkable (14 applied, 1 reported as a miss and fixed).
+   template the redesign had rewritten.
+
+   **Then count, because a re-application script reports only the edits it was given.**
+   Mine applied 14 of 15 named edits and said so — and had silently dropped **four more**
+   it was never told about, because those edits replaced an entire attribute or element
+   body (`alt="…"`, a JSON-LD `description`, two card bodies) with no surviving anchor
+   word to match on. An `alt` attribute, a structured-data field and two visible card
+   bodies reverted to English on a page whose `<html lang>` said Hindi, and the whole
+   suite stayed green. QA found them; this file said "14 applied, 1 fixed" until it did.
+
+   One command would have caught it before the commit:
+
+   ```bash
+   git cat-file -p <your-tag>:<file> | grep -c "t(lang,"   # 19
+   grep -c "t(lang," <file>                                # 15  <- stop here
+   ```
+
+   Count the construct the change is *about* — `t(lang,`, `hx-get=`, `await `, whatever —
+   on both sides. A count that drops is a lost edit, and it is the cheapest check in this
+   list. `tests/test_i18n_symmetry.py::test_no_translation_key_is_defined_but_unused` now
+   fails on an orphaned key for the same reason, so this particular loss cannot recur
+   silently.
 5. **Regenerate artefacts, never hand-merge them.** `uv.lock` → `uv lock`;
    `app.css` → `npm ci && npm run build:css`. A hand-merged lockfile broke
    `pyproject.toml` parsing and every `uv run` with it.

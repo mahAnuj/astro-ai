@@ -29,17 +29,17 @@ trust the number.
 | | count | command |
 |---|---|---|
 | Python | 28,490 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
-| top-level modules | 35 | `ls src/astro_ai/*.py \| wc -l` |
-| route handlers | 64 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
+| top-level modules | 36 | `ls src/astro_ai/*.py \| wc -l` |
+| route handlers | 67 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 24 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
-| top-level templates | 54 | `ls src/astro_ai/templates/*.html \| wc -l` |
+| top-level templates | 56 | `ls src/astro_ai/templates/*.html \| wc -l` |
 | `/learn` articles | 76 | `ls src/astro_ai/templates/learn/*.html \| wc -l` |
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
 | knowledge files | 11 files, 8,021 lines | `cat src/astro_ai/knowledge/*.md \| wc -l` |
-| verification gates | 18 | `ls scripts/verify_*.py \| wc -l` |
+| verification gates | 21 | `ls scripts/verify_*.py \| wc -l` |
 | behaviour suite | 100 tests | `uv run pytest -p no:warnings` |
 
-`routes/` holds 26 files; the three that declare no router are `__init__.py` and the leaf
+`routes/` holds 27 files; the three that declare no router are `__init__.py` and the leaf
 helpers `deps.py` and `llm_support.py`. Counting files rather than routers is what makes
 "route modules" read 26 — say which you mean.
 
@@ -127,7 +127,7 @@ src/astro_ai/
                         it: translate() falls back to English, so a missing Hindi
                         key rendered ENGLISH on a Hindi page, silently (#124 QA)
   providers.py       855  provider chain, quality gates, retry policy
-  routes/            26 files — 23 declare a router, 64 handlers (see §1)
+  routes/            27 files — 24 declare a router, 67 handlers (see §1)
   knowledge/*.md     classical source material — the authority for astrological claims
   prompts/*.txt      11 LLM prompt templates
 ```
@@ -520,6 +520,7 @@ Dated, with the evidence. **Check here before proposing a change.**
 | 2026-10-04 | Hindi gets 13 URLs at `/hi/{path}`, not ~200 | with `?lang=hi` the rest of the site is 83-98% textually identical to English (only the chrome is translated): `/learn/` ~0.97-0.98 similar / ~1.5-1.8% Devanagari (two independent measurements, differing by method and by that day's content; the conclusion is unaffected). Only `/rashifal` + the 12 rashi pages have genuinely Hindi primary content (prod `/rashifal/aries?lang=hi`: 74.3% Devanagari, 0.240 similarity). Publishing the rest would ship ~200 near-duplicates |
 | 2026-10-04 | `/hi` is a ROUTER, not a path-stripping middleware | rewriting `scope["path"]` makes `request.url.path` return the English path inside the handler, so `base.html` canonicalises `/hi/rashifal` onto `/rashifal` — the exact defect #124 removes. Built, reproduced, discarded |
 | 2026-10-04 | `?lang=hi` 301s to `/hi/{path}` for published paths only | otherwise the same Hindi content stays reachable under an English canonical. Unpublished paths keep `?lang=hi` working — there is no Hindi URL to send them to |
+| 2026-10-05 | the language control stays a `<select>`, not a button group | `base.html` sets `hx-boost="true"` on `<body>`. A user-clicked `<button type=submit>` fires a submit event, so htmx intercepts it, swaps the body and leaves `<html>` alone — and `html[lang="hi"] { font-size: 108% }` therefore never applies, so Devanagari renders 8% small and a screen reader keeps the English voice. Measured in Chromium: 6 of 9 switches stale without `hx-boost="false"`, 0 with. `<select onchange="this.form.submit()">` is immune by construction — a PROGRAMMATIC submit fires no submit event, so htmx never sees it. A button-group rewrite was built, broke this, and was reverted; it was better in real ways (aria-pressed, works with JS off, no `<noscript>`) and should return as its own change with `scripts/verify_lang_switch_browser.py` green and the mobile-reachability fix. That gate clicks the control and reads `document.documentElement.lang` plus the computed root font-size, because four QA rounds of server-side verification could not see this class at all — `TestClient` cannot run htmx |
 | 2026-10-04 | unpublished pages emit NO hreflang, not a lone `en-IN` | a `hi-IN` pointing at a non-existent page makes Google discard hreflang site-wide, poisoning the 13 URLs that matter to decorate ~198 that do not |
 | 2026-10-04 | sitemap sweep cost: **TPM is the binding constraint, not TPD** | 12 cold Hindi generations per `verify-production` sweep at 3,341 tokens each (measured with `o200k_base`, the right family for `gpt-oss-120b/20b`; mean prompt 13,674 chars across the 12 rashis) = **40,092 input tokens/day, 20.0% of the 200k TPD** — fits. But the sweep issues them at `-P 6` with NO pacing (`_RASHIFAL_MIN_INTERVAL_S = 0.0`, and the single-rashi path is never paced at all — an earlier version of this row said `rashifal.py` passes `pacer=None`, but `generate_rashifal_for_rashi` takes no `pacer` parameter; the conclusion was right and the mechanism invented, QA round 6), so a fully cold sweep is English 12 + Hindi 12 ≈ **78,600 input tokens in a few minutes** against 8,000 TPM per model / 16,000 for the `groq120,groq20` chain. It cannot fit under ~5 minutes however scheduled, so it will 429 down the chain toward the paid `openai` leg. **Pre-existing for the English 12; #124 doubles it.** Nothing pre-warms the `rashifal_single` namespace — the warm-rashifal jobs write only the combined key. Measured by QA 2026-10-04; actual 429 behaviour NOT measured (needs real Groq calls). Flagged for the human: the fix is either pacing the sweep or adding a model, and adding a model is not an agent's decision |
 | — | Whole Sign houses | classical Parashari standard |
