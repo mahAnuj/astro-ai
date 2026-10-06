@@ -21,23 +21,23 @@ of "obvious improvements" are already there with a measurement explaining why no
 Vedic astrology web app at **shubhagya.com**. FastAPI + Jinja2, Python ≥3.12, `uv`.
 Server-rendered HTML with HTMX for partial updates. No SPA, no build step for JS.
 
-**Size, measured 2026-08-30.** Every row carries the command that produced it, because the
+**Size, measured 2026-08-30; every row re-measured 2026-10-06 and now gated by scripts/verify_architecture_counts.py.** Every row carries the command that produced it, because the
 prose version of this paragraph had six stale numbers at once — the line count was 32% low
 — and five of them sat unchanged beside a sixth being corrected. Re-run the command; do not
 trust the number.
 
 | | count | command |
 |---|---|---|
-| Python | 28,490 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
+| Python | 29,980 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
 | top-level modules | 36 | `ls src/astro_ai/*.py \| wc -l` |
 | route handlers | 67 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 24 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
 | top-level templates | 56 | `ls src/astro_ai/templates/*.html \| wc -l` |
 | `/learn` articles | 76 | `ls src/astro_ai/templates/learn/*.html \| wc -l` |
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
-| knowledge files | 11 files, 8,021 lines | `cat src/astro_ai/knowledge/*.md \| wc -l` |
-| verification gates | 21 | `ls scripts/verify_*.py \| wc -l` |
-| behaviour suite | 100 tests | `uv run pytest -p no:warnings` |
+| knowledge files | 11 files, 8,021 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
+| verification gates | 23 | `ls scripts/verify_*.py \| wc -l` |
+| behaviour suite | 196 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
 
 `routes/` holds 27 files; the three that declare no router are `__init__.py` and the leaf
 helpers `deps.py` and `llm_support.py`. Counting files rather than routers is what makes

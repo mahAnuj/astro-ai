@@ -545,6 +545,14 @@ _EN: Final[dict[str, str]] = {
     # serving this page is a Hindi URL serving English.
     "llm_too_large_title": "We couldn't prepare this chart",
     "llm_too_large_msg":   "\U0001F64F Something in this particular chart made the reading too big for us to generate just now. This is on our side, not yours, and re-submitting will not change it — we have been alerted and are looking at it. Please do try again later today.",
+    # The /hi/rashifal hub's own surfaces. Caught by
+    # scripts/verify_hindi_surface.py on its first run: the tile alt text and
+    # this CTA paragraph were hardcoded English inside <main> on an indexed
+    # Hindi URL, and no other gate can read a rendered Hindi page.
+    "rashifal_grid_alt":  "{rashi_en} ({rashi_sa}) zodiac silhouette",
+    "rashifal_grid_cta":  "Want a deeper reading based on your full birth chart, not just your Moon sign?",
+    "rashifal_grid_cta_link": "Compute your free Janma Kundli",
+    "rashifal_grid_cta_tail": "— that gives you dashas, yogas, doshas, and a substantive natal reading.",
 }
 
 _HI: Final[dict[str, str]] = {
@@ -1010,6 +1018,11 @@ _HI: Final[dict[str, str]] = {
     # COMPOSED, not harvested — add to the list a native reader should check.
     "llm_too_large_title": "हम यह कुंडली तैयार नहीं कर सके",
     "llm_too_large_msg":   "\U0001F64F इस कुंडली में कुछ ऐसा है जिससे पठन इस समय हमारे लिए बहुत बड़ा हो गया। यह हमारी ओर की समस्या है, आपकी नहीं, और दोबारा भेजने से यह नहीं बदलेगी — हमें सूचना मिल चुकी है और हम इसे देख रहे हैं। कृपया आज कुछ समय बाद फिर प्रयास करें।",
+    # COMPOSED, not harvested — for the native-reader list.
+    "rashifal_grid_alt":  "{rashi_hi} ({rashi_en}) राशि का चिह्न",
+    "rashifal_grid_cta":  "केवल चंद्र राशि नहीं, अपनी पूरी जन्म कुंडली पर आधारित विस्तृत पठन चाहते हैं?",
+    "rashifal_grid_cta_link": "अपनी मुफ़्त जन्म कुंडली बनाएँ",
+    "rashifal_grid_cta_tail": "— इसमें दशा, योग, दोष और विस्तृत जन्म-पठन शामिल है।",
 }
 
 _TABLES: Final[dict[str, dict[str, str]]] = {"en": _EN, "hi": _HI}

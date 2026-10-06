@@ -777,3 +777,99 @@ def test_hindi_404_does_not_send_readers_to_the_english_hub(hindi_client):
     assert msg, "could not find the message block"
     body = re.sub(r"<[^>]+>", "", msg.group(1))
     assert "/hi/rashifal" in body, f"the Hindi 404 points at the English hub: {body.strip()[:70]!r}"
+
+
+# --- the rendered Hindi body, which eight QA rounds kept catching by hand ----
+
+def test_hindi_rashi_page_body_has_no_english(hindi_client, stub_llm, rashi_body):
+    """Read what the page SAYS, not what its keys claim.
+
+    Five separate English leaks onto Hindi pages were found during #124, every
+    one by a human reading a rendered page. Nothing automated read one:
+
+      * verify_english_surface.py records no body, by design.
+      * verify_lang_switch_browser.py reads <html lang> and the root font-size
+        — the document CLAIMS Hindi, not that it IS Hindi.
+      * test_i18n_symmetry.py says a translation exists and that no key is
+        wholly unused. It cannot see ONE lost call site for a key still used
+        elsewhere; QA demonstrated exactly that, leaving 194 tests green with
+        a live English string on 13 indexed Hindi URLs.
+      * scripts/verify_hindi_surface.py reads the rendered page, but the rashi
+        URLs 503 locally, so it cannot see this body at all.
+
+    This test can, because it stubs the provider. It is the backstop for the
+    four call-sites a merge resolution silently dropped — an alt attribute, a
+    JSON-LD description and two card bodies, all reverted to English under
+    <html lang="hi">.
+    """
+    from astro_ai.routes import rashifal
+
+    rashifal._regen_failures.clear()
+    stub_llm(lambda _n: "## Aries / Mesha\n" + "आज का दिन शुभ रहेगा। " * 60)
+
+    r = hindi_client.get("/hi/rashifal/aries")
+    assert r.status_code == 200, r.status_code
+
+    main = re.search(r"<main\b[^>]*>(.*?)</main>", r.text, re.S | re.I)
+    assert main, "no <main> on the page"
+    body = re.sub(r"<(script|style|svg)\b.*?</\1>", " ", main.group(1), flags=re.S | re.I)
+    body = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body)).strip()
+
+    # The exact strings that leaked during #124.
+    # ATTRIBUTE values too, not only text. Stripping tags to get the text
+    # drops `alt="…"` entirely — and the alt attribute is one of the four
+    # call-sites that was actually lost, so a text-only sweep MISSED it when
+    # bite-tested. Attributes a reader or a screen reader sees: alt, title,
+    # aria-label, placeholder.
+    attrs = " ".join(
+        re.findall(r'(?:alt|title|aria-label|placeholder)="([^"]*)"', main.group(1))
+    )
+    visible = body + " " + attrs
+
+    leaked = [s for s in (
+        "zodiac silhouette", "All 12 rashis", "Full birth chart",
+        "Tithi, nakshatra", "Want a deeper reading", "Share on WhatsApp",
+        "Open full page", "daily Vedic horoscope",
+    ) if s in visible]
+    assert not leaked, f"English in <main> on a Hindi URL: {leaked}"
+
+    # and every such attribute must itself be Hindi
+    for a in re.findall(r'alt="([^"]+)"', main.group(1)):
+        a_letters = [c for c in a if c.isalpha()]
+        if len(a_letters) > 8:
+            a_share = sum(1 for c in a_letters if "\u0900" <= c <= "\u097f") / len(a_letters)
+            assert a_share >= 0.30, f"English alt text on a Hindi page: {a!r}"
+
+    letters = [c for c in body if c.isalpha()]
+    share = sum(1 for c in letters if "ऀ" <= c <= "ॿ") / max(len(letters), 1)
+    assert share >= 0.60, (
+        f"Devanagari share in <main> is {share:.0%}; a block has reverted to "
+        f"English. First 160 chars: {body[:160]!r}"
+    )
+
+
+def test_hindi_rashi_page_structured_data_is_not_mixed_language(hindi_client, stub_llm):
+    """The Article JSON-LD `description` reverted to an English sentence with a
+    Devanagari date spliced into it, emitted under `inLanguage: "hi"` on a
+    self-canonical page — a mixed-language string in the field Google reads.
+    Worse than either language alone, and invisible to every other check.
+    """
+    import json
+
+    from astro_ai.routes import rashifal
+
+    rashifal._regen_failures.clear()
+    stub_llm(lambda _n: "## Aries / Mesha\n" + "आज का दिन शुभ रहेगा। " * 60)
+    html = hindi_client.get("/hi/rashifal/aries").text
+
+    desc = None
+    for blob in re.findall(r'<script type="application/ld\+json">(.*?)</script>', html, re.S):
+        d = json.loads(blob)
+        if d.get("@type") == "Article":
+            desc = d.get("description", "")
+            assert d.get("inLanguage") == "hi", d.get("inLanguage")
+    assert desc, "no Article description in the JSON-LD"
+
+    letters = [c for c in desc if c.isalpha()]
+    share = sum(1 for c in letters if "ऀ" <= c <= "ॿ") / max(len(letters), 1)
+    assert share >= 0.50, f"the Hindi page's JSON-LD description is not Hindi: {desc!r}"

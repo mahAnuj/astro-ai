@@ -97,6 +97,10 @@ def test_hindi_strings_invent_no_placeholder_the_callers_do_not_pass():
         "rashifal_single_ld_headline": {"rashi_hi"},
         "rashifal_single_ld_desc": {"rashi_hi"},
         "rashifal_single_headline": {"rashi_hi"},
+        # rashifal_grid.html:112 passes rashi_en, rashi_sa and rashi_hi (the
+        # last via t(lang, 'rashi_name_' ~ slug)). Added for #124's hub alt,
+        # and this test caught it before the commit.
+        "rashifal_grid_alt": {"rashi_hi"},
     }
 
     bad = []
@@ -142,14 +146,20 @@ def test_no_translation_key_is_defined_but_unused():
         if f.name != "i18n.py"
     )
 
-    # Keys built by concatenation — `t(lang, 'rashi_name_' ~ rashi_slug)` —
-    # so the literal never appears. Matched by prefix instead.
-    DYNAMIC_PREFIXES = (
-        "rashi_name_", "rashi_element_", "rashi_quality_",
-        "planet_", "yoga_", "ks_", "nak_", "tithi_", "karana_",
-        "bs_", "num_", "dasha_", "gochar_", "festival_", "muhurat_",
-        "manglik_", "sade_", "dosha_", "learn_", "nav_", "cta_",
-    )
+    # Keys built by concatenation — `t(lang, 'rashi_name_' ~ rashi_slug)` — so
+    # the literal never appears. Matched by prefix instead.
+    #
+    # EXACTLY the three prefixes that are genuinely concatenated onto. The
+    # first version listed 21, of which 18 had no dynamic construction site
+    # anywhere — exempting 137 of 379 keys (36%) and hiding five real orphans
+    # (`dasha_remaining`, `manglik_present`, `num_caveat_heading`,
+    # `sade_sati_months`, `sade_sati_timeline`). QA proved the overreach by
+    # deleting the only call site of a prefix-exempt key and watching this
+    # file stay green.
+    #
+    # Before adding one, check it is actually concatenated:
+    #   grep -rnE "'<prefix>' *[~+]" src/astro_ai/
+    DYNAMIC_PREFIXES = ("rashi_name_", "rashi_element_", "rashi_quality_")
 
     # PRE-EXISTING debt, measured against origin/main at the #124 merge:
     # all 34 are orphaned there too, and the merge adds none. Pinned rather
@@ -157,6 +167,19 @@ def test_no_translation_key_is_defined_but_unused():
     # risk — but the SET may not grow. A new entry here means a call site was
     # lost, which is the defect this test exists for.
     KNOWN_ORPHANS = {
+        # Five more, surfaced by narrowing DYNAMIC_PREFIXES from 21 to the 3
+        # that are genuinely concatenated. All five are orphaned on
+        # origin/main too, so they are inherited debt, not merge losses.
+        #
+        # `manglik_present` looked like a real loss at first because a
+        # substring grep matched `bs_manglik_present` in chart.py — a
+        # different key. The test itself compares QUOTED keys and so is not
+        # fooled; the ad-hoc grep was. Worth remembering before filing one.
+        "dasha_remaining",
+        "manglik_present",
+        "num_caveat_heading",
+        "sade_sati_months",
+        "sade_sati_timeline",
         "abhijit_desc",
         "back_form",
         "badge_soon",
