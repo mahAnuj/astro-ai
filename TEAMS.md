@@ -18,12 +18,19 @@ prevent.
 | **Design** | `ui-designer` skill | Visual direction, signature moments, mobile | CTR at unchanged position | weekly |
 | **Research** | `astrologer` · `numerologist` | Corpus, citations, authenticity | Unsourced claims left on user-facing pages | weekly |
 | **IT** | `infra-lead` | Cloud Run, GCS, free tiers, deploys, latency | Headroom at 10x, and deploy proof that proves something | weekly |
+| **QA** | `qa-lead` | Verifying every team's output — code, prose, readings, visuals | Defects that reached production, and PASSes later proved wrong | every change |
 | — | **`chief`** | Ties, the objective, the lineage table | Nothing. It produces only when escalated to. | on escalation |
 
-Supporting roles sit inside teams and are dispatched by them: `architect` and `qa` serve Backend and
+Supporting roles sit inside teams and are dispatched by them: `architect` serves Backend and
 Frontend; `product-manager` serves Marketing; `project-manager` ranks the whole backlog for
-Engineering. `qa` is always a separate dispatch — *verification by the same reasoning that produced
-the change is not verification*.
+Engineering.
+
+**QA is not inside any of them.** It verifies every team's output and is always a separate
+dispatch, because *verification by the same reasoning that produced the change is not
+verification*. It routes by what changed: the `qa` agent for code, `kundali-qa` for generated
+readings, `article-qa` for content, `ui-auditor` and `mobile-flow-auditor` for the visual layer.
+Fifteen QA passes in this repo, fifteen first-submission failures — so budget two to three rounds
+per issue and treat a one-pass plan as unplanned.
 
 ## How a team's work reaches a user
 
