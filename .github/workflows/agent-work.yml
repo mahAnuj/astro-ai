@@ -78,11 +78,34 @@ jobs:
           git config user.name  "shubhagya-agent"
           git config user.email "agent@users.noreply.github.com"
 
+
+      # Plan from the analyst's latest run rather than re-deriving it. Falls
+      # through quietly when no measurement exists yet — a first run must not be
+      # blocked by the absence of a prior one.
+      - name: Fetch the latest measurement
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          id=$(gh run list --workflow agent-measure.yml --status success \
+                 --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+          if [ -n "$id" ]; then
+            gh run download "$id" -n measurement --dir /tmp/measure \
+              && echo "measurement from run $id" \
+              && ls -la /tmp/measure
+          else
+            echo "no prior measurement — proceeding without one"
+          fi
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             /agent-cycle ${{ github.event.inputs.issue }}
+
+            /tmp/measure/report.md, if present, is the analyst's latest
+            measurement. project-manager should rank against it — an issue the
+            analyst showed moving nothing outranks nothing.
           # In automation mode a plain-text prompt grants NO tools. agent-measure
           # proved it the hard way: 7 turns, 4 denials, nothing done, step green.
           # The delivery loop needs the full set because it dispatches subagents

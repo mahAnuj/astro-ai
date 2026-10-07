@@ -135,3 +135,23 @@ jobs:
           The analyst produced no /tmp/report.md. Treat this run as having produced nothing, whatever its exit status."
             echo "$MSG" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
+
+      # Persisted so the other loops plan from this analysis instead of
+      # re-deriving it. NOT committed to the repo: data/ is gitignored, and more
+      # importantly a push to main triggers a Cloud Build deploy of the live
+      # site — a nightly measurement must not redeploy production. The analyst
+      # is contents:read for the same reason.
+      - name: Persist the measurement
+        if: always()
+        run: |
+          mkdir -p /tmp/measure
+          cp -f /tmp/report.md /tmp/measure/report.md 2>/dev/null || true
+          cp -f /tmp/gsc-band.json /tmp/gsc-all.json /tmp/ga4.json /tmp/measure/ 2>/dev/null || true
+          date -u +%Y-%m-%dT%H:%M:%SZ > /tmp/measure/generated-at.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: measurement
+          path: /tmp/measure
+          retention-days: 90
