@@ -124,9 +124,14 @@ jobs:
       - name: Publish the report
         if: always()
         run: |
+          # tee, not plain redirect. A job summary is readable in the browser
+          # and NOWHERE else — the REST API does not expose it — so a redirect
+          # leaves the run uncheckable from a script, which is how this loop is
+          # actually monitored.
           if [ -s /tmp/report.md ]; then
-            cat /tmp/report.md >> "$GITHUB_STEP_SUMMARY"
+            tee -a "$GITHUB_STEP_SUMMARY" < /tmp/report.md
           else
-            echo "### No report written" >> "$GITHUB_STEP_SUMMARY"
-            echo "The analyst produced no /tmp/report.md. Treat this run as having produced nothing, whatever its exit status." >> "$GITHUB_STEP_SUMMARY"
+            MSG="### No report written
+          The analyst produced no /tmp/report.md. Treat this run as having produced nothing, whatever its exit status."
+            echo "$MSG" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
