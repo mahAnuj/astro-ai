@@ -1,0 +1,112 @@
+# Pre-merge gate. This is the green that `agent-merge` waits for.
+#
+# WHY THIS EXISTS
+# ---------------
+# `verify-production.yml` asserts against the ALREADY-DEPLOYED site. Its own
+# header says so, and it cannot gate a pull request — by the time it runs, the
+# code is live. There are 19 `scripts/verify_*.py` gates and a behaviour suite
+# in this repo and, until now, no workflow ran any of them on a PR.
+#
+# That matters more than usual here: `main` auto-deploys, there is no staging,
+# and production is the first place code runs. An autonomous loop that opens PRs
+# needs something other than its own opinion to decide what lands.
+#
+# EXIT 2 IS NOT A PASS
+# --------------------
+# Several gates exit 2 to mean "I could not run" — `verify_css_build` when
+# tailwindcss is absent, `verify_devanagari_serif` when no server answers. They
+# say so explicitly: "SKIPPED (exit 2). This is NOT a pass — the check did not
+# run." A workflow that only tests for exit 0 would silently lose coverage and
+# still show green, which is the precise failure these gates were written to
+# avoid. So this job builds the CSS and starts the app BEFORE the sweep, and
+# treats 2 as a failure.
+name: PR gates
+
+on:
+  pull_request:
+  push:
+    branches: ["feat/**", "issue/**"]
+
+concurrency:
+  group: pr-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: |
+          uv sync --all-groups
+          npm ci
+
+      # verify_css_build skips without this, and a skip is not a pass.
+      - name: Build CSS
+        run: npm run build:css
+
+      - name: Syntax sweep
+        run: |
+          find src scripts -name '*.py' -print0 \
+            | xargs -0 -n1 uv run python -c 'import ast,sys; ast.parse(open(sys.argv[1]).read())'
+
+      - name: Behaviour suite
+        run: uv run pytest -q
+
+      # A suite that cannot go red proves nothing. #141 and #146 are why.
+      - name: Prove the suite can fail
+        run: uv run python scripts/mutate_behaviour_suite.py
+
+      # verify_devanagari_serif needs a live server on 127.0.0.1:8000.
+      - name: Start the app
+        run: |
+          uv run astro-ai > /tmp/app.log 2>&1 &
+          for i in $(seq 1 40); do
+            curl -sf http://127.0.0.1:8000/health >/dev/null && echo "up after ${i}s" && exit 0
+            sleep 1
+          done
+          echo "app did not start"; tail -40 /tmp/app.log; exit 1
+
+      - name: Verification gates
+        run: |
+          pass=0; failed=""; skipped=""
+          for f in scripts/verify_*.py; do
+            n=$(basename "$f" .py)
+            uv run python "$f" > "/tmp/$n.log" 2>&1
+            code=$?
+            case $code in
+              0) pass=$((pass+1)); echo "::notice::$n PASS" ;;
+              2) skipped="$skipped $n"; echo "::error::$n SKIPPED (exit 2) — the check did not run, which is not a pass" ;;
+              *) failed="$failed $n"; echo "::error::$n FAIL (exit $code)"; tail -25 "/tmp/$n.log" ;;
+            esac
+          done
+          total=$(ls scripts/verify_*.py | wc -l)
+          echo "### Gates: $pass/$total passed" >> "$GITHUB_STEP_SUMMARY"
+          [ -n "$skipped" ] && echo "- skipped (NOT a pass):$skipped" >> "$GITHUB_STEP_SUMMARY"
+          [ -n "$failed" ]  && echo "- failed:$failed" >> "$GITHUB_STEP_SUMMARY"
+
+          # The floor. Measured 2026-10-07 on origin/main: 17 of 19 pass
+          # standalone, and the two that did not were environment — tailwindcss
+          # absent and no server — both of which this job now provides. So all
+          # 19 must pass here. Raise this when a gate is added; never lower it
+          # to make a red build green, which is how a gate quietly stops
+          # covering anything.
+          FLOOR=19
+          if [ "$pass" -lt "$FLOOR" ]; then
+            echo "::error::$pass gates passed, floor is $FLOOR"
+            exit 1
+          fi
+
+      - name: App log on failure
+        if: failure()
+        run: tail -60 /tmp/app.log || true
