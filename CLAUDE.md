@@ -8,6 +8,23 @@ managed with `uv`.
 ## ⚠️ Pushing to `main` deploys to production
 
 **A push to `main` triggers a Cloud Build → Cloud Run deploy of the live site.**
+
+**One exception, and it is invisible from the tree.** The trigger
+`rmgpgab-bhagya-asia-south1-mahAnuj-astro-ai--mapzk` carries
+`ignoredFiles: measurements/**`, added 2026-10-07. A push touching **only**
+`measurements/` builds nothing — that is what lets the nightly analyst loop
+commit its report to `main` without redeploying production every night. A push
+mixing `measurements/` with anything else still deploys, which is correct.
+
+Two consequences worth knowing before you move that directory:
+
+- **Rename or relocate `measurements/` and the filter silently stops matching.**
+  Nothing in the repository will say so; the next measurement commit will quietly
+  deploy. Change the trigger in the same breath:
+  `gcloud beta builds triggers export|import --project bhagya-500701`.
+- **Do not put anything load-bearing under `measurements/`.** A change there never
+  reaches production, so a template or a script placed in that path would appear
+  committed and never ship.
 There is no `cloudbuild.yaml` in this repo — the trigger is configured GCP-side, so
 nothing in the working tree reveals it. **`.github/workflows/verify-production.yml` is
 NOT that trigger**; it asserts against the already-deployed site and cannot deploy

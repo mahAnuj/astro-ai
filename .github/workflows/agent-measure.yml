@@ -155,3 +155,50 @@ jobs:
           name: measurement
           path: /tmp/measure
           retention-days: 90
+
+  # A SEPARATE JOB, with no agent in it. The analyst stays contents:read, so no
+  # agent in this system can write to the repository — only this shell step can,
+  # and only under measurements/.
+  #
+  # Pushing here does not deploy: the Cloud Build trigger
+  # rmgpgab-bhagya-asia-south1-mahAnuj-astro-ai--mapzk carries
+  # ignoredFiles: measurements/**, so a push touching only that path builds
+  # nothing. A mixed push still deploys, which is correct.
+  commit:
+    needs: measure
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: measurement
+          path: /tmp/measure
+        continue-on-error: true
+
+      - name: Commit the measurement
+        run: |
+          if [ ! -s /tmp/measure/report.md ]; then
+            echo "no report to persist"
+            exit 0
+          fi
+          mkdir -p measurements
+          stamp=$(date -u +%Y-%m-%d)
+          cp /tmp/measure/report.md "measurements/$stamp.md"
+          cp /tmp/measure/report.md measurements/latest.md
+          cp -f /tmp/measure/*.json measurements/ 2>/dev/null || true
+
+          git config user.name  "shubhagya-agent"
+          git config user.email "agent@users.noreply.github.com"
+          git add measurements/
+          if git diff --cached --quiet; then
+            echo "measurement unchanged since last run"
+            exit 0
+          fi
+          git commit -m "measurement $stamp
+
+          Written by the analyst loop. measurements/** is on the Cloud Build
+          trigger's ignoredFiles, so this does not deploy."
+          git push origin HEAD:main
