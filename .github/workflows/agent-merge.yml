@@ -46,17 +46,27 @@ jobs:
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
+      # Every gh call needs --repo: this job has no checkout step (it needs no
+      # code), so gh cannot infer the repository from a git remote and fails
+      # with "not a git repository".
+      GH_REPO: ${{ github.repository }}
       MAX_LINES: 400
     steps:
       - name: Find the pull request
         id: pr
         run: |
-          n=$(gh api "repos/${{ github.repository }}/commits/${{ github.event.workflow_run.head_sha }}/pulls" \
+          # `[ -z "$n" ] && { ...; }` returns 1 when $n IS set, and under bash -e
+          # that exits the step on the SUCCESS path. Same trap that blinded
+          # pr-gates. Use if/then, which has no exit status of its own.
+          n=$(gh api "repos/$GH_REPO/commits/${{ github.event.workflow_run.head_sha }}/pulls" \
                 --jq '.[0].number // empty')
-          [ -z "$n" ] && { echo "no PR for this SHA"; exit 0; }
+          if [ -z "$n" ]; then
+            echo "no PR for this SHA — nothing to merge"
+            exit 0
+          fi
           echo "number=$n" >> "$GITHUB_OUTPUT"
-          gh pr view "$n" --json headRefName,additions,deletions,files,isDraft \
-            > /tmp/pr.json
+          gh pr view "$n" --repo "$GH_REPO" \
+            --json headRefName,additions,deletions,files,isDraft > /tmp/pr.json
           echo "branch=$(jq -r .headRefName /tmp/pr.json)" >> "$GITHUB_OUTPUT"
 
       # Only branches this system opened. A human's branch is never auto-merged.
@@ -84,7 +94,7 @@ jobs:
         id: qa
         if: steps.gates.outputs.ok == 'true'
         run: |
-          gh pr view "${{ steps.pr.outputs.number }}" --json comments \
+          gh pr view "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --json comments \
             --jq '.comments[].body' > /tmp/comments.txt
           if grep -qiE '^\s*(\*\*)?QA(\*\*)?\s*:?\s*(\*\*)?PASS' /tmp/comments.txt; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
@@ -99,8 +109,8 @@ jobs:
           changed=$(( $(jq -r .additions /tmp/pr.json) + $(jq -r .deletions /tmp/pr.json) ))
           echo "diff is $changed lines (limit $MAX_LINES)"
           if [ "$changed" -gt "$MAX_LINES" ]; then
-            gh pr edit "${{ steps.pr.outputs.number }}" --add-label "too-large-to-automerge"
-            gh pr comment "${{ steps.pr.outputs.number }}" --body \
+            gh pr edit "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --add-label "too-large-to-automerge"
+            gh pr comment "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --body \
               "Gates green and QA passed, but this diff is ${changed} lines against a ${MAX_LINES}-line limit for unattended merge. Most of this app has no test coverage and \`main\` deploys on merge with no staging, so green proves less here than the line count suggests. Leaving it open."
             exit 0
           fi
@@ -109,8 +119,8 @@ jobs:
       - name: Merge
         if: steps.size.outputs.ok == 'true'
         run: |
-          gh pr merge "${{ steps.pr.outputs.number }}" --squash --delete-branch
-          gh pr comment "${{ steps.pr.outputs.number }}" --body \
+          gh pr merge "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --squash --delete-branch
+          gh pr comment "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --body \
             "Merged automatically: \`pr-gates\` green on \`${{ github.event.workflow_run.head_sha }}\`, QA PASS on record, diff within the unattended limit.
 
           **Not closing the issue.** \`main\` deploys on merge, so the issue closes only once \`verify-production.yml\` has asserted against the live site — CLAUDE.md's two-stage close."
@@ -121,7 +131,7 @@ jobs:
         run: |
           issue=$(echo "${{ steps.pr.outputs.branch }}" | sed -n 's|issue/\([0-9]\+\).*|\1|p')
           [ -z "$issue" ] && exit 0
-          gh issue comment "$issue" --body \
+          gh issue comment "$issue" --repo "$GH_REPO" --body \
             "\`pr-gates\` failed on PR #${{ steps.pr.outputs.number }} (\`${{ github.event.workflow_run.head_sha }}\`), conclusion: ${{ github.event.workflow_run.conclusion }}.
 
           Run: ${{ github.event.workflow_run.html_url }}
