@@ -25,7 +25,10 @@ name: PR gates
 on:
   pull_request:
   push:
-    branches: ["feat/**", "issue/**"]
+    # `main` only. Listing feat/** and issue/** here as well fired this workflow
+    # TWICE on every agent PR — once for the push, once for the pull_request —
+    # doubling Actions minutes on a loop that opens a PR a day.
+    branches: [main]
 
 concurrency:
   group: pr-gates-${{ github.ref }}
@@ -83,6 +86,13 @@ jobs:
 
       - name: Verification gates
         run: |
+          # GitHub runs `run:` under `bash -e`, so a failing gate would kill this
+          # step before the exit code is even read — no notice, no summary, just
+          # "exit code 1". That is how the first run of this workflow reported
+          # nothing about which gate failed. The sweep must handle its own
+          # failures, so disable the shell's.
+          set +e
+
           # Two gates need a WORKING LLM, not a stub: they fetch rendered pages
           # and assert on the prose. Without a key the app answers "API key not
           # configured", which they correctly report as English text on a Hindi
@@ -111,17 +121,16 @@ jobs:
           [ -n "$skipped" ] && echo "- skipped (NOT a pass):$skipped" >> "$GITHUB_STEP_SUMMARY"
           [ -n "$failed" ]  && echo "- failed:$failed" >> "$GITHUB_STEP_SUMMARY"
 
-          # The floor. Re-measured 2026-10-07 after #124 landed, which brought
-          # the gate count from 19 to 23. With CSS built, chromium installed and
-          # the app running, 21 of 23 pass; the other two need a live LLM and
-          # are excluded above with their reason.
+          # No hard-coded floor. #124 took the count from 19 to 23 between one
+          # commit and the next, and a literal number goes stale the moment a
+          # gate is added — then it either blocks every PR or, worse, is edited
+          # downward to make a red build green.
           #
-          # Raise this when a gate is added. Never lower it to turn a red build
-          # green — a floor that moves down is how a gate stays listed while
-          # covering nothing.
-          FLOOR=21
-          if [ "$pass" -lt "$FLOOR" ]; then
-            echo "::error::$pass gates passed, floor is $FLOOR"
+          # The rule instead: every gate that is not explicitly excluded must
+          # pass. Excluding one is a visible, reviewable line in NEEDS_LIVE_LLM
+          # with a reason beside it; silently dropping coverage is not possible.
+          if [ -n "$failed" ] || [ -n "$skipped" ] || [ "$pass" -ne "$total" ]; then
+            echo "::error::$pass of $total gates passed — failed:$failed skipped:$skipped"
             exit 1
           fi
 
