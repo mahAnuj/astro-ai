@@ -1,0 +1,72 @@
+# The Design team's loop: is the site worth staying on once someone arrives.
+#
+# Marketing is scored on arrivals, Design on what happens next. It audits the
+# live site rather than the tree, because a template that renders correctly in
+# the repo and wrongly in production is exactly the failure #253 and #254 are.
+#
+# Files proposals as issues. It never edits a template — that is
+# frontend-engineer's job, through the normal delivery loop and its gates.
+name: Agent design
+
+on:
+  schedule:
+    - cron: "0 20 * * 4"   # Thursdays, 01:30 IST
+  workflow_dispatch:
+    inputs:
+      pages:
+        description: "Pages to audit (default: home, kundli, matching, learn)"
+        required: false
+
+concurrency:
+  group: agent-design
+  cancel-in-progress: false
+
+jobs:
+  design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read      # proposes; never edits
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
+      - run: uv sync --all-groups
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Act as the Design team lead for shubhagya.com. Audit the LIVE site,
+            not the templates — #253 served a stale stylesheet to returning
+            visitors for six weeks and nothing in the tree showed it.
+
+            Pages: ${{ github.event.inputs.pages || 'https://shubhagya.com/, /kundli, /matching, /numerology, /learn' }}
+
+            Run these skills rather than re-deriving their work:
+              ui-auditor            visual regression, contrast, spacing, polish
+              mobile-flow-auditor   375x667 first — most arrivals are mobile
+              ui-designer           proactive upgrades, with references
+
+            Before proposing anything, check the page actually works. A 503 from
+            #266's Groq ceiling is an Engineering bug, not a design problem, and
+            filing it as the latter sends it to the wrong team.
+
+            Compare against rival astrology sites by WebFetch and say what they
+            do better, with URLs. A claim about a competitor that cannot be
+            fetched is not evidence.
+
+            File one issue per finding, tagged `ui` plus `skill:ui-fixer` for
+            fixes or `design-proposal` for anything needing a human eye. Each
+            must carry: the page, what is wrong, the cheapest change that would
+            test it — NOT a redesign — and the metric that would show it worked.
+
+            Do not propose redesigning a page that already ranks without a CTR
+            or funnel number to beat. #244 is flagged highest-silent-breakage-
+            risk in the redesign epic for exactly that instinct.
+          claude_args: |
+            --max-turns 80
+            --effort high
+            --allowedTools "Read,Glob,Grep,Skill,WebFetch,WebSearch,Bash(curl:*),Bash(cat:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh issue comment:*)"
