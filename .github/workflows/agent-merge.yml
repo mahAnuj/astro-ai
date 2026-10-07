@@ -1,0 +1,129 @@
+# Turns a green gate into a merge, unattended. This is where "full autonomy"
+# stops being a plan.
+#
+# WHAT DECIDES, AND WHAT DOES NOT
+# -------------------------------
+# No agent decides what lands. CLAUDE.md's rule survives intact — subagents
+# never push to `main`, they push a branch and open a PR — and the authority to
+# merge lives here, in a workflow, gated on evidence rather than on anyone's
+# judgment that the work is finished.
+#
+# Three conditions, all required:
+#   1. `pr-gates` green on the head SHA. Not "no failures" — actually green.
+#   2. A QA comment on the PR whose verdict line says PASS. qa.md is explicit
+#      that "PASS is a report, not an action", so the report is read here and
+#      the action is taken here, by different things.
+#   3. The diff is inside the size and path limits below.
+#
+# WHY A SIZE LIMIT ON AN AUTONOMOUS LOOP
+# --------------------------------------
+# Green CI means very different things for different changes. CLAUDE.md:
+# "test coverage is narrow — a behaviour suite covers request paths only, and
+# most of the app has none." For #262 (delete a dead file) green is a real
+# signal. For #114 (3D WebGL chart) it proves close to nothing, and `main`
+# auto-deploys with no staging.
+#
+# So a large diff is not blocked — it is left open and labelled. This is a
+# machine rule, not a human in the loop. Raise MAX_LINES or delete the step to
+# remove it.
+name: Agent merge
+
+on:
+  workflow_run:
+    workflows: ["PR gates"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  checks: read
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      MAX_LINES: 400
+    steps:
+      - name: Find the pull request
+        id: pr
+        run: |
+          n=$(gh api "repos/${{ github.repository }}/commits/${{ github.event.workflow_run.head_sha }}/pulls" \
+                --jq '.[0].number // empty')
+          [ -z "$n" ] && { echo "no PR for this SHA"; exit 0; }
+          echo "number=$n" >> "$GITHUB_OUTPUT"
+          gh pr view "$n" --json headRefName,additions,deletions,files,isDraft \
+            > /tmp/pr.json
+          echo "branch=$(jq -r .headRefName /tmp/pr.json)" >> "$GITHUB_OUTPUT"
+
+      # Only branches this system opened. A human's branch is never auto-merged.
+      - name: Is this an agent branch?
+        id: own
+        if: steps.pr.outputs.number
+        run: |
+          case "${{ steps.pr.outputs.branch }}" in
+            issue/*) echo "ok=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::notice::${{ steps.pr.outputs.branch }} is not an agent branch — leaving it alone" ;;
+          esac
+
+      - name: Gates green?
+        id: gates
+        if: steps.own.outputs.ok == 'true'
+        run: |
+          if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
+            echo "::error::pr-gates concluded ${{ github.event.workflow_run.conclusion }}"
+            exit 0
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      # qa.md: "PASS is a report, not an action." Read the report here.
+      - name: QA verdict
+        id: qa
+        if: steps.gates.outputs.ok == 'true'
+        run: |
+          gh pr view "${{ steps.pr.outputs.number }}" --json comments \
+            --jq '.comments[].body' > /tmp/comments.txt
+          if grep -qiE '^\s*(\*\*)?QA(\*\*)?\s*:?\s*(\*\*)?PASS' /tmp/comments.txt; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::no QA PASS comment yet — leaving the PR open"
+          fi
+
+      - name: Size and path limits
+        id: size
+        if: steps.qa.outputs.ok == 'true'
+        run: |
+          changed=$(( $(jq -r .additions /tmp/pr.json) + $(jq -r .deletions /tmp/pr.json) ))
+          echo "diff is $changed lines (limit $MAX_LINES)"
+          if [ "$changed" -gt "$MAX_LINES" ]; then
+            gh pr edit "${{ steps.pr.outputs.number }}" --add-label "too-large-to-automerge"
+            gh pr comment "${{ steps.pr.outputs.number }}" --body \
+              "Gates green and QA passed, but this diff is ${changed} lines against a ${MAX_LINES}-line limit for unattended merge. Most of this app has no test coverage and \`main\` deploys on merge with no staging, so green proves less here than the line count suggests. Leaving it open."
+            exit 0
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      - name: Merge
+        if: steps.size.outputs.ok == 'true'
+        run: |
+          gh pr merge "${{ steps.pr.outputs.number }}" --squash --delete-branch
+          gh pr comment "${{ steps.pr.outputs.number }}" --body \
+            "Merged automatically: \`pr-gates\` green on \`${{ github.event.workflow_run.head_sha }}\`, QA PASS on record, diff within the unattended limit.
+
+          **Not closing the issue.** \`main\` deploys on merge, so the issue closes only once \`verify-production.yml\` has asserted against the live site — CLAUDE.md's two-stage close."
+
+      # A red gate is information the issue needs, not just a failed run nobody reads.
+      - name: Report a failure onto the issue
+        if: steps.own.outputs.ok == 'true' && github.event.workflow_run.conclusion != 'success'
+        run: |
+          issue=$(echo "${{ steps.pr.outputs.branch }}" | sed -n 's|issue/\([0-9]\+\).*|\1|p')
+          [ -z "$issue" ] && exit 0
+          gh issue comment "$issue" --body \
+            "\`pr-gates\` failed on PR #${{ steps.pr.outputs.number }} (\`${{ github.event.workflow_run.head_sha }}\`), conclusion: ${{ github.event.workflow_run.conclusion }}.
+
+          Run: ${{ github.event.workflow_run.html_url }}
+
+          The PR stays open. Remember a gate exiting 2 is *skipped*, not passed — if that is what failed, the check did not run at all."

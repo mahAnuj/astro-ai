@@ -1,0 +1,94 @@
+# The analyst's daily run. Reads GA4 and Search Console, scores what shipped,
+# and writes findings onto the issues that claimed them.
+#
+# This is the loop that closes the circuit. Without it the other teams ship
+# forever and never learn whether any of it worked — and this backlog is
+# already full of work whose effect was never established.
+#
+# Runs before the delivery cycle so project-manager ranks against today's
+# numbers rather than yesterday's.
+name: Agent measure
+
+on:
+  schedule:
+    - cron: "0 21 * * *"   # 02:30 IST — two hours ahead of agent-work
+  workflow_dispatch:
+
+concurrency:
+  group: agent-measure
+  cancel-in-progress: true
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read       # read-only: the analyst never edits code
+      issues: write        # it writes findings and scores onto issues
+      pull-requests: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      # enable-cache MUST be an explicit false. The action defaults to `auto`,
+      # which turns caching on for hosted runners, so merely deleting
+      # `enable-cache: true` left it on — and its POST step kept exiting 2 while
+      # pruning, failing a job whose every real step had passed. agent-merge
+      # gates on this workflow concluding success, so that flake would block
+      # every agent PR after the work was already done.
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
+      - run: uv sync --all-groups
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/89117619584/locations/global/workloadIdentityPools/github/providers/astro-ai
+          service_account: agent-analytics@bhagya-500701.iam.gserviceaccount.com
+
+      # Fetch first, as data, so the agent reads numbers rather than calling an
+      # API mid-reasoning — and so a 403 fails here with a clear message instead
+      # of halfway through a cycle.
+      - name: Pull the numbers
+        env:
+          GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
+          GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
+        run: |
+          uv run python scripts/fetch_gsc.py --days 28 --band > /tmp/gsc-band.json
+          uv run python scripts/fetch_gsc.py --days 28        > /tmp/gsc-all.json
+          uv run python scripts/fetch_ga4.py --days 28        > /tmp/ga4.json
+          {
+            echo "### Window"
+            jq -r '.window | "\(.[0]) to \(.[1])"' /tmp/ga4.json
+            echo "- band queries (6-20): $(jq '.rows | length' /tmp/gsc-band.json)"
+            echo "- landing pages: $(jq '.rows | length' /tmp/ga4.json)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Act as the `analyst` agent. Follow .claude/agents/analyst.md exactly.
+
+            The data is already fetched — read these, do not re-call the APIs:
+              /tmp/gsc-band.json   the 6-20 position band, ranked by opportunity
+              /tmp/gsc-all.json    all queries in the window
+              /tmp/ga4.json        landing pages, sessions, bounce, pages/session
+
+            Do, in order:
+            1. Report the band against OBJECTIVE.md. Name the window on every number.
+            2. Score every issue closed in the last 28 days that carried a `thesis:`
+               and a `metric:`. Post the score as a comment on that issue: predicted,
+               actual, verdict. Report the misses exactly as prominently as the hits —
+               a ship that moved nothing is the most useful finding you produce.
+            3. Name your confounds before any delta: concurrent ships (git log
+               origin/main --since), seasonality, and whether the page was even
+               working — #253 served a stale stylesheet for weeks and #266 fails
+               intermittently under the Groq TPM ceiling. Traffic to a broken page is
+               not engagement.
+            4. File issues only for findings that need action, with an Evidence Block.
+
+            You are read-only on code. Never report a number you did not read from
+            those files this run. Say what you could not determine.
+          claude_args: |
+            --max-turns 60
+            --effort high
