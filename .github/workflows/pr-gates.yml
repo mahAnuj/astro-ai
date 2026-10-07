@@ -49,6 +49,14 @@ jobs:
           node-version: "22"
           cache: npm
 
+      # verify_rule_citations shells out to pdftotext to read the corpus PDFs
+      # and check that a cited line range actually contains the quotation. The
+      # runner has no poppler, so without this the gate fails AND its own
+      # mutation self-test cannot go red — it reports "mutation did not turn the
+      # gate red", which is the gate correctly refusing to vouch for itself.
+      - name: System packages
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+
       - name: Install
         run: |
           uv sync --all-groups
