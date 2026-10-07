@@ -89,6 +89,16 @@ jobs:
 
             You are read-only on code. Never report a number you did not read from
             those files this run. Say what you could not determine.
+          # WITHOUT THIS THE AGENT CAN DO NOTHING. In automation mode a
+          # plain-text prompt grants no tools at all. The first real run proved
+          # it: 7 turns, permission_denials_count 4, unable to read the JSON it
+          # had just been handed or to run `gh` — and the step still concluded
+          # success. A loop that looks like it ran is the worst failure shape
+          # available to an unattended system.
+          #
+          # Scoped to the analyst's remit: read files, query git and gh, comment
+          # and file issues. No Write, no Edit — read-only on code by definition.
           claude_args: |
             --max-turns 60
             --effort high
+            --allowedTools "Read,Glob,Grep,Bash(cat:*),Bash(jq:*),Bash(git log:*),Bash(git diff:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh issue create:*),Bash(gh pr list:*),Bash(gh run list:*)"
