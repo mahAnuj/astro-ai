@@ -1,0 +1,99 @@
+# Starts one delivery cycle. The loop itself lives in .claude/commands/agent-cycle.md.
+#
+# SCHEDULING IS A QUOTA DECISION
+# ------------------------------
+# These agents run on a Claude subscription, not an API key, so they spend the
+# same five-hour rolling budget as interactive work on this account. That cap
+# has already been hit once: com.vivatrades.stock-analysis.plist was moved from
+# 02:00 to 04:30 with the note "to avoid collision with the Claude Max 5h
+# rolling cap — by 04:30 the day's accrued usage from prior sessions has reset
+# cleanly."
+#
+# 23:00 UTC is 04:30 IST, the same post-reset window that already works.
+#
+# ONE ISSUE PER RUN
+# -----------------
+# A cycle is 10-15 agent invocations: project-manager, dev-lead, architect,
+# engineer, qa — and /bug records that this project has run fifteen QA passes
+# with every one failing its first submission, so budget two or three rounds.
+# A run that starts a second issue leaves both half-done when the budget ends.
+name: Agent work
+
+on:
+  schedule:
+    - cron: "0 23 * * *"   # 04:30 IST, after the rolling cap resets
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "Issue number to work (blank = let project-manager rank)"
+        required: false
+
+concurrency:
+  group: agent-work
+  cancel-in-progress: false   # never kill a cycle mid-QA; let it finish
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write        # push a branch — never main
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # project-manager diffs against origin/main
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: |
+          uv sync --all-groups
+          npm ci
+
+      # Keyless. The org forbids service-account keys
+      # (constraints/iam.disableServiceAccountKeyCreation), so the analyst's
+      # data comes through Workload Identity Federation scoped to this repo.
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/89117619584/locations/global/workloadIdentityPools/github/providers/astro-ai
+          service_account: agent-analytics@bhagya-500701.iam.gserviceaccount.com
+
+      - name: Identify as the agent
+        run: |
+          git config user.name  "shubhagya-agent"
+          git config user.email "agent@users.noreply.github.com"
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            /agent-cycle ${{ github.event.inputs.issue }}
+          claude_args: |
+            --max-turns 150
+            --effort high
+        env:
+          GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
+          GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
+
+      # A cycle that dies on quota leaves a branch behind. Say so on the run,
+      # because a silent half-finished branch is how GROWTH_LOG.md stopped for
+      # ten weeks with nobody noticing.
+      - name: Report an unfinished cycle
+        if: failure()
+        run: |
+          {
+            echo "### Cycle did not finish"
+            echo "Branches pushed by this run, if any:"
+            git branch -r --list 'origin/issue/*' --sort=-committerdate | head -3
+            echo ""
+            echo "If no PR was opened, the work is on the branch and the issue has no comment."
+          } >> "$GITHUB_STEP_SUMMARY"
