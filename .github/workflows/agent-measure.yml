@@ -87,6 +87,15 @@ jobs:
                not engagement.
             4. File issues only for findings that need action, with an Evidence Block.
 
+            5. WRITE YOUR FULL REPORT TO /tmp/report.md. This is not optional.
+               In automation mode nothing you say reaches a human — the run log
+               carries the prompt and the cost, not your reasoning. A report that
+               exists only in your context did not happen, and an unattended loop
+               whose output nobody can read is indistinguishable from one that
+               did nothing.
+
+               Markdown, with a table per section and the window on every number.
+
             You are read-only on code. Never report a number you did not read from
             those files this run. Say what you could not determine.
           # WITHOUT THIS THE AGENT CAN DO NOTHING. In automation mode a
@@ -101,4 +110,23 @@ jobs:
           claude_args: |
             --max-turns 60
             --effort high
-            --allowedTools "Read,Glob,Grep,Bash(cat:*),Bash(jq:*),Bash(git log:*),Bash(git diff:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh issue create:*),Bash(gh pr list:*),Bash(gh run list:*)"
+            # Bash is granted broadly and Write is allowed for the report. The
+            # guardrail is the JOB's `contents: read` permission, not the tool
+            # list: the analyst cannot push, cannot open a PR, and cannot reach
+            # main whatever it runs. Enumerating shell verbs instead produced 12
+            # denials on the previous run — it was blocked on things like `ls`
+            # and `date` — and a half-blocked agent burns turns discovering what
+            # it may not do.
+            --allowedTools "Read,Write,Glob,Grep,TodoWrite,Bash"
+
+      # Without this the work is invisible. The run log holds the prompt and the
+      # cost, never the findings.
+      - name: Publish the report
+        if: always()
+        run: |
+          if [ -s /tmp/report.md ]; then
+            cat /tmp/report.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### No report written" >> "$GITHUB_STEP_SUMMARY"
+            echo "The analyst produced no /tmp/report.md. Treat this run as having produced nothing, whatever its exit status." >> "$GITHUB_STEP_SUMMARY"
+          fi
