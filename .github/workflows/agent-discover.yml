@@ -1,0 +1,70 @@
+# Marketing's loop: what should we build next, and why that.
+#
+# Weekly rather than nightly because its inputs move slowly — GSC positions,
+# rival pages, the questions people ask on Reddit. Running it daily would file
+# the same issues against the same numbers.
+#
+# workflow_dispatch is the point: there is no reason to wait for a cron to ask
+# "what are competitors doing that we are not".
+name: Agent discover
+
+on:
+  schedule:
+    - cron: "0 20 * * 1"   # Mondays, 01:30 IST — ahead of the week's cycles
+  workflow_dispatch:
+    inputs:
+      focus:
+        description: "Optional focus (e.g. 'competitors for kundli matching')"
+        required: false
+
+concurrency:
+  group: agent-discover
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read      # files issues; writes no code
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
+      - run: uv sync --all-groups
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/89117619584/locations/global/workloadIdentityPools/github/providers/astro-ai
+          service_account: agent-analytics@bhagya-500701.iam.gserviceaccount.com
+
+      # Discovery starts from measurement, not from opinion.
+      - name: Pull the numbers
+        env:
+          GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
+          GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
+        run: |
+          uv run python scripts/fetch_gsc.py --days 28 --band > /tmp/gsc-band.json
+          uv run python scripts/fetch_ga4.py --days 28 > /tmp/ga4.json
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            /discover ${{ github.event.inputs.focus }}
+
+            The numbers are already fetched — read these first, before any opinion:
+              /tmp/gsc-band.json   queries at positions 6-20, ranked by opportunity
+              /tmp/ga4.json        landing pages, sessions, bounce, pages/session
+
+            Follow .claude/commands/discover.md exactly. In particular: the
+            analyst's data first, then rivals by WebFetch, then social by
+            WebSearch, then the corpus. File an issue ONLY if it carries a
+            complete Evidence Block. An issue missing a field is not filed.
+          claude_args: |
+            --max-turns 80
+            --effort high
+            --allowedTools "Read,Glob,Grep,Skill,WebFetch,WebSearch,Bash(cat:*),Bash(jq:*),Bash(git log:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh issue comment:*)"

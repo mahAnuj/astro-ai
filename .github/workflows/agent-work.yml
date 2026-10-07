@@ -83,9 +83,19 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             /agent-cycle ${{ github.event.inputs.issue }}
+          # In automation mode a plain-text prompt grants NO tools. agent-measure
+          # proved it the hard way: 7 turns, 4 denials, nothing done, step green.
+          # The delivery loop needs the full set because it dispatches subagents
+          # and they write code.
+          #
+          # `git push` is granted ONLY for issue/* branches. A push to main is
+          # refused by the pattern itself, so CLAUDE.md's rule is enforced by the
+          # runner rather than by an agent remembering it — which is the failure
+          # this repo has twice.
           claude_args: |
             --max-turns 150
             --effort high
+            --allowedTools "Agent,Read,Write,Edit,Glob,Grep,Skill,WebFetch,Bash(uv:*),Bash(npm:*),Bash(python3:*),Bash(cat:*),Bash(jq:*),Bash(sed:*),Bash(grep:*),Bash(ls:*),Bash(find:*),Bash(curl:*),Bash(git status:*),Bash(git log:*),Bash(git diff:*),Bash(git add:*),Bash(git commit:*),Bash(git switch:*),Bash(git branch:*),Bash(git push -u origin issue/*),Bash(git push origin issue/*),Bash(gh issue:*),Bash(gh pr create:*),Bash(gh pr view:*),Bash(gh run list:*)"
         env:
           GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
           GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
