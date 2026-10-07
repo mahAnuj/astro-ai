@@ -29,9 +29,15 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+      # enable-cache MUST be an explicit false. The action defaults to `auto`,
+      # which turns caching on for hosted runners, so merely deleting
+      # `enable-cache: true` left it on — and its POST step kept exiting 2 while
+      # pruning, failing a job whose every real step had passed. agent-merge
+      # gates on this workflow concluding success, so that flake would block
+      # every agent PR after the work was already done.
       - uses: astral-sh/setup-uv@v5
         with:
-          enable-cache: true
+          enable-cache: false
       - run: uv sync --all-groups
 
       - uses: google-github-actions/auth@v2

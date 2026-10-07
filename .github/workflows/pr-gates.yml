@@ -41,13 +41,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Cache disabled deliberately. With it on, the action's POST step — which
-      # runs after every gate has already passed — exits 2 while pruning, and
-      # fails the whole job. `agent-merge` requires this workflow to conclude
-      # success, so a cache flake after the work is done would block every agent
-      # PR for a reason unrelated to the code. `uv sync` on a warm runner costs
-      # seconds; a false red costs a cycle.
+      # enable-cache MUST be an explicit false. The action defaults to `auto`,
+      # which turns caching on for hosted runners, so merely deleting
+      # `enable-cache: true` left it on — and its POST step kept exiting 2 while
+      # pruning, failing a job whose every real step had passed. agent-merge
+      # gates on this workflow concluding success, so that flake would block
+      # every agent PR after the work was already done.
       - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
