@@ -28,6 +28,11 @@ jobs:
       contents: read      # project-manager is read-only, including on BACKLOG.md
       issues: write       # triage comments and proposed closures
       actions: read
+      # Required by claude-code-action for its GitHub App auth. Without it the
+      # step fails three times with "Could not fetch an OIDC token" before the
+      # agent runs at all — which is how the first dispatch of this workflow
+      # died. Every other loop already had it; this one was written without.
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
