@@ -32,6 +32,10 @@ jobs:
     permissions:
       contents: read      # audits; corpus writes go through a PR, not a push
       issues: write
+      # Required by claude-code-action for its GitHub App auth. Without it the
+      # step fails three times with "Could not fetch an OIDC token" before the
+      # agent runs at all — which killed the first agent-prioritise dispatch.
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
