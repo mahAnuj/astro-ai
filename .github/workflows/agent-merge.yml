@@ -52,6 +52,9 @@ permissions:
   pull-requests: write
   issues: write
   checks: read
+  # Needed to dispatch verify-production after the merge. See the step at the
+  # end of this job for why that dispatch is not optional.
+  actions: write
 
 jobs:
   merge:
@@ -205,6 +208,55 @@ jobs:
             "Merged automatically: \`pr-gates\` green on \`${{ steps.pr.outputs.sha }}\`, \`qa-pass\` on record, diff within the unattended limit.
 
           **Not closing the issue.** \`main\` deploys on merge, so the issue closes only once \`verify-production.yml\` has asserted against the live site — CLAUDE.md's two-stage close."
+
+      # WITHOUT THIS, THE LOOP HAS NO LAST MILE. Measured 2026-10-08.
+      #
+      # GitHub does not start a workflow run for an event created with the
+      # default GITHUB_TOKEN — the documented recursion guard, whose only
+      # exceptions are `workflow_dispatch` and `repository_dispatch`. This job
+      # merges with `GH_TOKEN: ${{ github.token }}`, so the push it creates
+      # triggers NOTHING:
+      #
+      #   PR #299  merged by app/github-actions  ->  0 push-triggered runs
+      #   PR #292  merged by mahAnuj             ->  2
+      #   PR #296  merged by mahAnuj             ->  2
+      #   PR #297  merged by mahAnuj             ->  2
+      #
+      # Two consequences, and the second is the serious one:
+      #
+      #   1. `close-on-evidence.yml` gates on a `verify-production` run whose
+      #      event is `push`. For an agent-merged commit that run never exists,
+      #      so no autonomously-merged PR can ever close its issue. #270 sat
+      #      open with its fix live and `qa-pass` on record.
+      #   2. The commit is NEVER VERIFIED AGAINST PRODUCTION. Cloud Build is a
+      #      GCP-side webhook and is not subject to the Actions guard, so the
+      #      merge DOES deploy — on a site with no staging, where production is
+      #      the first place code runs. The verification that was supposed to
+      #      end the loop simply did not happen.
+      #
+      # `workflow_dispatch` is the documented exception, so this dispatch does
+      # start a run even from GITHUB_TOKEN. It is the whole fix.
+      #
+      # continue-on-error: the merge already succeeded and must not be reported
+      # as failed because the follow-up dispatch did not land. A missing
+      # verification is visible as an absent run on the commit; a red
+      # agent-merge on a PR that merged cleanly is a misleading signal.
+      - name: Verify production after the merge
+        if: steps.size.outputs.ok == 'true'
+        continue-on-error: true
+        run: |
+          # --ref main, not a SHA: workflow_dispatch takes a branch or tag. The
+          # run therefore verifies main's TIP. If another merge lands in the
+          # seconds between, that newer commit is verified instead and this
+          # PR's issue stays open until the next verification — incomplete, not
+          # wrong, and it self-corrects. close-on-evidence requires
+          # /health build_sha == the run's head_sha precisely so a superseded
+          # commit cannot be reported as live.
+          if gh workflow run verify-production.yml --repo "$GH_REPO" --ref main; then
+            echo "::notice::dispatched verify-production for main after merging #${{ steps.pr.outputs.number }}"
+          else
+            echo "::warning::could not dispatch verify-production — #${{ steps.pr.outputs.number }} is merged and deploying, but NOTHING will assert against production and its issue will not auto-close. Dispatch it by hand: gh workflow run verify-production.yml --ref main"
+          fi
 
       # A red gate is information the issue needs, not just a failed run nobody reads.
       - name: Report a failure onto the issue

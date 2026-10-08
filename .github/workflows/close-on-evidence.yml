@@ -34,7 +34,26 @@ permissions:
 jobs:
   close:
     # A red verification proves nothing is live. Nothing to close.
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    #
+    # `workflow_dispatch` is accepted alongside `push`, and that is what makes
+    # this workflow reachable for autonomously-merged PRs at all. Measured
+    # 2026-10-08: GitHub does not start a run for an event created with the
+    # default GITHUB_TOKEN, so `agent-merge` merging a PR produces NO
+    # push-triggered verify-production run — PR #299 got 0, while the three
+    # PRs a human merged got 2 each. `agent-merge` now dispatches
+    # verify-production itself (workflow_dispatch being the documented
+    # exception to the guard), and this is the clause that lets the result
+    # count. Without it the dispatch would run, go green, and close nothing.
+    #
+    # `schedule` is still excluded, deliberately: a drift run asserts that
+    # production satisfies the invariants NOW, whoever deployed last. It is not
+    # evidence that any particular commit shipped, which is the claim a close
+    # makes. The live-SHA check below would mostly catch that anyway; this
+    # keeps the intent explicit rather than relying on it.
+    if: >-
+      github.event.workflow_run.conclusion == 'success'
+      && (github.event.workflow_run.event == 'push'
+          || github.event.workflow_run.event == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
