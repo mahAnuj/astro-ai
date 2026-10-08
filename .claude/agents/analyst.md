@@ -30,6 +30,12 @@ uv run python scripts/fetch_gsc.py --days 28
 uv run python scripts/fetch_ga4.py --days 28
 ```
 
+Both exports state their own coverage: read `coverage_pct` and `coverage_note` **before** any
+number. `fetch_gsc.py` defaults to `--by page` (~101% of impressions); `--by query` is a partial view
+(~9% — Google withholds anonymised queries, and that 91% cannot be recovered), so never conclude
+anything about the whole band from it. GA4 rows carry a `channel` key; check `truncated`. Quote the
+coverage beside every figure you report.
+
 **Always a trailing window, never "today".** GA4's standard reports lag 24–48h and GSC lags 2–3
 days. A trend read off incomplete days is how a shipped fix gets scored against data that has not
 arrived yet. State the exact window on every number you report.
