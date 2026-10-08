@@ -210,11 +210,29 @@ jobs:
           # github.token over HTTPS, which cannot push —
           #   "Password authentication is not supported for Git operations"
           # That is how run 37741141641 went red having produced PR #292.
+          # Point the remote at THIS JOB's token before trying anything.
+          #
+          # claude-code-action rewrites the remote URL at startup to embed its
+          # GitHub App installation token, and those expire after exactly one
+          # hour. Run 37749887640 ran 63 minutes, finished the work, and died
+          # here with "Invalid username or token" — pushing to a URL carrying a
+          # dead credential. The App token cannot be refreshed mid-run.
+          #
+          # GITHUB_TOKEN is different: minted per job, valid for the life of the
+          # job rather than sixty minutes. With contents: write it can push. So
+          # the rescue was always available; the step was just aimed at the wrong
+          # credential.
+          git remote set-url origin \
+            "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"
+
           if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
             echo "$branch already on origin — the agent pushed it"
+            # Still push: the agent may have pushed early (step 3.6) and added
+            # commits afterwards that its expiring token could not deliver.
+            git push origin "$branch" || echo "::warning::branch exists; later commits could not be pushed"
           else
             git push -u origin "$branch" || {
-              echo "::warning::fallback push failed; the agent did not push either"
+              echo "::warning::fallback push failed even with the job token"
               exit 0
             }
           fi
