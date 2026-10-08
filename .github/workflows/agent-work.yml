@@ -170,12 +170,37 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
+          # Say what happened, every time, in the summary. Three runs against
+          # #272 concluded `success` having produced nothing, and the failure was
+          # invisible except by noticing an absent branch — the fourth silent
+          # success this system produced in a day. The outcome is now stated
+          # whether or not anything shipped.
           branch=$(git rev-parse --abbrev-ref HEAD)
           case "$branch" in
             issue/*) ;;
-            *) echo "on '$branch', not an issue branch — nothing to push"; exit 0 ;;
+            *)
+              {
+                echo "### Cycle shipped nothing"
+                echo "Ended on \`$branch\`, not an \`issue/*\` branch, so no work was committed."
+                echo ""
+                echo "Either the cycle stopped legitimately at step 0 — \`cannot-reproduce\`, or a"
+                echo "premise it could not establish — or it dispatched a subagent and ended its"
+                echo "turn before the result came back, which kills the subagent (#285). Read the"
+                echo "issue comment this run wrote: a legitimate stop says so, a lost dispatch"
+                echo "claims an engineer was dispatched and leaves nothing behind."
+              } >> "$GITHUB_STEP_SUMMARY"
+              echo "on '$branch', not an issue branch — nothing to push"
+              exit 0 ;;
           esac
           if [ -z "$(git log origin/main..HEAD --oneline)" ]; then
+            {
+              echo "### Cycle shipped nothing"
+              echo "Branch \`$branch\` was created and carries **no commits**."
+              echo ""
+              echo "A branch with no commits means work started and did not finish — most likely"
+              echo "a subagent that was dispatched and then lost when the parent ended its turn"
+              echo "(#285). This is not a legitimate stop; a legitimate stop never branches."
+            } >> "$GITHUB_STEP_SUMMARY"
             echo "no commits on $branch — the cycle produced nothing"
             exit 0
           fi
