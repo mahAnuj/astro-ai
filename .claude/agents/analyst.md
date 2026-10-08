@@ -42,15 +42,15 @@ you report.
 
 GA4 rows are one per **landing × channel**, which changes how you may add them up: (1) a "landing" is
 `landingPagePlusQueryString` — path **plus query string** — so the 65 landings measured on
-2026-09-08..10-05 were only 58 distinct paths, and `/?fbclid=…` or a trailing-slash variant is a
-separate landing for the same page; fold those before ranking *pages*. Within one landing, sessions
+2026-09-08..10-05 were 60 distinct paths (58 after also folding trailing slashes), and `/?fbclid=…` or a
+trailing-slash variant is a separate landing for the same page; fold those before ranking *pages*. Within one landing, sessions
 are the sum across its channel rows — measured, `/`'s top row said 45 against a landing
 total of 56, and the Rahu page 27 against 29 — so aggregate by landing *before* ranking; (2)
 `bounce_rate` and `pages_per_session` are per channel, so weight them by `sessions` when combining;
 (3) `active_users` cannot be summed across channels, one person can appear in several. `landing_count`
 is the number of distinct landings; `row_count` is landing × channel rows, not pages.
 
-**Known stale wording outside this file (follow-up, not yet fixed):** `agent-measure.yml` lines 62,
+**Known stale wording outside this file (follow-up, not yet fixed — #291):** `agent-measure.yml` lines 62,
 63, 74, 75 and `agent-discover.yml` lines 79, 80 still describe `gsc-band.json`/`gsc-all.json` as
 "queries" and print `jq '.rows | length'` of `ga4.json` as "landing pages" (96 rows, not 65). The
 data is right; the labels are not. Trust the JSON keys over those labels.
