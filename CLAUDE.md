@@ -263,9 +263,17 @@ Two mechanisms now close issues, and **neither is an agent deciding a fix is goo
   prove: already fixed, does not reproduce, overtaken by events, duplicate. It may **not** close
   anything whose fix shipped but is unverified in production — that belongs to the workflow above.
 
+- **`/agent-cycle` at step 0**, when `validate_issue.py` returns **`CANNOT-REPRODUCE`** — five
+  probes against live production, varied inputs, all clean. That is stronger evidence than any
+  comment, and it is the same standard `project-manager` applies. **Only on exit 1.** Never on
+  `NO-REPRO` (exit 3: no executable `repro:`, so nothing was probed) and never on `INCONCLUSIVE`
+  (exit 4: the prober could not run — an earlier revision crashed on every sample and reported
+  `REPRODUCES — deterministic`).
+
 **The engineer, dev-lead, QA and architect are still denied `gh issue close`.** An agent closing
-the issue it just worked is marking its own homework, which is the same independence failure that
-makes `qa` a separate dispatch.
+the issue it just *worked* is marking its own homework, which is the same independence failure that
+makes `qa` a separate dispatch. Closing one it *probed and could not reproduce* is a different act:
+it is reporting a measurement, not grading its own fix.
 
 Every closing comment must still let someone else check you: the command, its output, and the SHA.
 "Fixed" is not a closing comment. #143 was closed as fixed while a fourth wrong date was still

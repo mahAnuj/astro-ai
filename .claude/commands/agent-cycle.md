@@ -26,8 +26,23 @@ closed it falsely, and a single page load would have left it open and misdescrib
 uv run python scripts/validate_issue.py <n> --samples 5
 ```
 
-- **Does not reproduce in 5 samples** → comment with every request and response, label
-  `cannot-reproduce`, **do not close**, move to the next item.
+- **Does not reproduce in 5 samples** → **close it**, with every request and response in the
+  closing comment, and label `cannot-reproduce`.
+
+  Granted 2026-10-08: five probes against live production, with varied inputs, is stronger
+  evidence than any claim in a comment — and it is the same standard `project-manager` closes
+  "does not reproduce" on. #156 and #157 sat open for weeks having been filed against a local
+  tree.
+
+  **Only on `CANNOT-REPRODUCE` (exit 1).** Never on `NO-REPRO` (exit 3) — that means the issue has
+  no executable `repro:` and was never probed, so it is not evidence of anything. Never on
+  `INCONCLUSIVE` (exit 4) — a prober that could not run has proved nothing, and an earlier
+  revision of `validate_issue.py` crashed on every sample and confidently reported
+  `REPRODUCES — deterministic`.
+
+  The closing comment carries the command, all five samples with their status codes and inputs,
+  and the date. Anything less is the #143 failure: closed as fixed while a fourth wrong date was
+  still live.
 - **Reproduces intermittently** → say so with the hit rate. Intermittent is a different bug from
   deterministic, with a different cause and a different fix, and conflating them wastes the cycle.
 - **Reproduces differently** from the description → comment with both, label `needs-evidence`,
