@@ -36,6 +36,29 @@ uv run python scripts/validate_issue.py <n> --samples 5
 
 One sample is not a validation. Five is the floor, with varied inputs where the issue takes any.
 
+### `NO-REPRO` is not the same as `cannot-reproduce` — do not stop on it
+
+`validate_issue.py` exits **3, `NO-REPRO`**, when the issue carries no executable `repro:` line.
+That means *"this cannot be checked by an HTTP probe"*, not *"the problem is not there"*. Most of
+this backlog is in that category: a tooling gap, a missing dimension in an export, an unsourced
+rule, a refactor, an empty `seo_title` on 38 articles. None of them is a page you can curl.
+
+Treating `NO-REPRO` as a stop blocked #272 on 2026-10-08 — the agent probed, got `NO-REPRO`,
+reported honestly that *"there is nothing to sample on shubhagya.com"*, and ended the cycle with no
+work done. The gate was written for bugs and applied to everything.
+
+**So: on `NO-REPRO`, establish the premise some other way, say how, and proceed.** The obligation
+is unchanged — *do not take the issue's word for it* — only the method is:
+
+- A missing export dimension → run the fetch script and show the field is absent.
+- A claim about the code → read it and quote the lines.
+- A claim about content → count it (`grep -c`, the registry, the template).
+- A claim about a gate or a workflow → run it, or read the run log.
+
+Comment with whatever you used. A premise established by reading is still established; a premise
+assumed because an issue asserts it is not. Stop only when you **cannot** establish it at all —
+then label `needs-evidence` and move on.
+
 ## Step 1 — eligibility
 
 ```bash
@@ -44,6 +67,11 @@ uv run python scripts/verify_issue_evidence.py <n>
 
 No Evidence Block, or a failing one → label `needs-evidence` and move on. An agent must not reach
 an engineer on a guess.
+
+**Issues filed before the Evidence Block existed are exempt**, provided you establish the premise
+yourself under step 0 and record what you used. Every one of the 50 issues open on 2026-10-08
+predates the convention; enforcing it strictly would mean the loop can never work any of them, and
+a gate that blocks the entire backlog is not a gate, it is an outage.
 
 **Bugs are exempt from `gsc:`/`ga4:`** — a broken feature needs no traffic thesis to justify
 fixing. They still need `corpus:` and `tokens:`.
