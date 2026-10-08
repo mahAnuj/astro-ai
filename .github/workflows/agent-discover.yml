@@ -88,7 +88,77 @@ jobs:
             analyst's data first, then rivals by WebFetch, then social by
             WebSearch, then the corpus. File an issue ONLY if it carries a
             complete Evidence Block. An issue missing a field is not filed.
+
+            WRITE YOUR REPORT TO /tmp/report.md. This is not optional. In
+            automation mode nothing you say reaches a human — the run log
+            carries the prompt and the cost, not your findings. A previous run
+            spent $1.21 across 51 turns and left no trace of what it concluded.
+
+            Markdown. What you found, what you filed and why, what you decided
+            NOT to file and why — that last part is as useful as the rest,
+            because it stops the same idea being re-raised next week.
           claude_args: |
+            # Write was missing and Bash was enumerated, which cost a real run:
+            # 51 turns, $1.21, 12 denials, no issues filed and no report — the
+            # agent could not write a file even if told to. The guardrail is the
+            # job's contents:read permission, not the tool list.
             --max-turns 80
             --effort high
-            --allowedTools "Read,Glob,Grep,Skill,WebFetch,WebSearch,Bash(cat:*),Bash(jq:*),Bash(git log:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh issue comment:*)"
+            --allowedTools "Read,Write,Glob,Grep,TodoWrite,Skill,WebFetch,WebSearch,Bash"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*)"
+
+      - name: Publish the report
+        if: always()
+        run: |
+          if [ -s /tmp/report.md ]; then
+            tee -a "$GITHUB_STEP_SUMMARY" < /tmp/report.md
+          else
+            echo "### No report written — treat this run as having produced nothing" \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Collect for persistence
+        if: always()
+        run: |
+          mkdir -p /tmp/out
+          cp -f /tmp/report.md /tmp/out/report.md 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: discover-report
+          path: /tmp/out
+          if-no-files-found: ignore
+
+  # Separate job, no agent in it — the discover job stays contents:read so the
+  # agent has no write credential at all. measurements/** is on the Cloud Build
+  # trigger's ignoredFiles, so this commit does not deploy the site.
+  persist:
+    needs: discover
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: discover-report
+          path: /tmp/out
+        continue-on-error: true
+      - name: Commit the report
+        run: |
+          [ -s /tmp/out/report.md ] || { echo "nothing to persist"; exit 0; }
+          mkdir -p measurements/discover
+          stamp=$(date -u +%Y-%m-%d)
+          cp /tmp/out/report.md "measurements/discover/$stamp.md"
+          cp /tmp/out/report.md measurements/discover/latest.md
+          git config user.name  "shubhagya-agent"
+          git config user.email "agent@users.noreply.github.com"
+          git add measurements/discover/
+          git diff --cached --quiet && { echo "unchanged"; exit 0; }
+          git commit -m "discover report $stamp
+
+          measurements/** is on the Cloud Build trigger's ignoredFiles, so this
+          does not deploy."
+          git push origin HEAD:main
