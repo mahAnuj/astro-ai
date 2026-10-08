@@ -476,6 +476,37 @@ MUTATIONS = [
      "    (\"मेष\",),",
      "    (\"मेष_\",),",
      "test_hindi_page_is_derived_from_devanagari_headings"),
+
+    # #268 QA round: five re-breaks that left the first 13 tests green.
+    ("#268: tier 0 is read with lang hard-coded to en (English reading on a Hindi page)",
+     "src/astro_ai/rashifal_derive.py",
+     "        hit = daily_cache.get(\"rashifal\", lang, today_iso)",
+     "        hit = daily_cache.get(\"rashifal\", \"en\", today_iso)",
+     "test_a_hindi_page_never_reads_the_english_tier_zero_file"),
+
+    ("#268: a section naming two rashis is attributed to the first (multi-match guard gone)",
+     "src/astro_ai/rashifal_derive.py",
+     "        if len(matched) != 1:",
+     "        if not matched:",
+     "test_a_section_naming_two_rashis_is_attributed_to_neither"),
+
+    ("#268: two sections for one rashi - the first wins (duplicate guard gone)",
+     "src/astro_ai/rashifal_derive.py",
+     "    return {i: bodies[0] for i, bodies in hits.items() if len(bodies) == 1}",
+     "    return {i: bodies[0] for i, bodies in hits.items() if bodies}",
+     "test_two_sections_for_one_rashi_are_attributed_to_neither"),
+
+    ("#268: a derived reading is served but never stored in rashifal_single",
+     "src/astro_ai/routes/rashifal.py",
+     "derived from the combined reading\", cache_key)\n            daily_cache.put(\"rashifal_single\", cache_key, {",
+     "derived from the combined reading\", cache_key)\n            _unused = (\"rashifal_single\", cache_key, {",
+     "test_a_derived_reading_is_stored_so_the_next_request_reads_nothing"),
+
+    ("#268: one Devanagari rashi name is misspelt (that rashi never derives in Hindi)",
+     "src/astro_ai/rashifal_derive.py",
+     "    (\"सिंह\",),",
+     "    (\"सिंह_\",),",
+     "test_every_devanagari_rashi_name_maps_to_its_own_index"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

@@ -315,3 +315,109 @@ def test_hindi_page_is_derived_from_devanagari_headings(client, exhausted, seed)
         r = client.get(f"/hi/rashifal/{SLUGS[i]}")
         assert r.status_code == 200 and _marker(i) in r.text, SLUGS[i]
     assert exhausted["n"] == 0
+
+
+# --- holes QA found by re-breaking the fix five independent ways -------------
+# Each test below is one re-break that left all of the above green.
+
+def _live_body(rashi_body, rashi_idx: int, tag: str) -> str:
+    """A live-generation reply for a rashi, carrying a tag the page can be searched for."""
+    return rashi_body(heading=NAMES[rashi_idx]).replace("A steady", f"{tag} steady", 1)
+
+
+def test_a_hindi_page_never_reads_the_english_tier_zero_file(
+        client, exhausted, seed, rashi_body):
+    """Re-break: derive reads tier 0 with lang hard-coded "en". An English blob on
+    disk and none for Hindi would then serve an ENGLISH reading under a Hindi URL
+    (<html lang=hi>) — plausible, 200, and wrong for the reader."""
+    seed(_combined(), lang="en", where="daily")
+
+    r = client.get("/hi/rashifal/aries")
+
+    assert _marker(0) not in r.text, "the English reading was served on the Hindi page"
+    assert exhausted["n"] == 1, "with no Hindi blob the live path must run (and here 503s)"
+    assert r.status_code == 503
+
+
+def _two_rashis_in_one_title() -> str:
+    headings = list(NAMES)
+    headings[2] = "Gemini / Karka"           # Mithuna's section naming Cancer's Sanskrit name too
+    return _combined(headings=headings)
+
+
+def test_a_section_naming_two_rashis_is_attributed_to_neither(
+        client, stub_llm, seed, rashi_body):
+    """Re-break: the multi-match guard goes and the FIRST rashi named wins. The
+    section's text was written for one rashi; which one is not recoverable from a
+    title that names two, so serving it as Gemini is a guess."""
+    seed(_two_rashis_in_one_title())
+    calls = stub_llm(lambda _n: _live_body(rashi_body, 2, "LIVEGEMINI"))
+
+    gemini = client.get("/rashifal/gemini")
+
+    assert _marker(2) not in gemini.text, "an ambiguous section was served as Gemini"
+    assert "LIVEGEMINI" in gemini.text and calls["n"] == 1, "Gemini must fall to live generation"
+    # Cancer has its own, unambiguous section and is not collateral damage.
+    assert _marker(3) in client.get("/rashifal/cancer").text
+    assert calls["n"] == 1
+
+
+def test_two_sections_for_one_rashi_are_attributed_to_neither(
+        client, stub_llm, seed, rashi_body):
+    """Re-break: the duplicate guard goes and the FIRST section wins. Two sections
+    for Leo means one call emitted another's heading or the job concatenated twice;
+    neither body is known to be Leo's."""
+    text = _combined() + "\n\n" + _section(NAMES[4], "DUPLICATELEOEND")
+    seed(text)
+    calls = stub_llm(lambda _n: _live_body(rashi_body, 4, "LIVELEO"))
+
+    leo = client.get("/rashifal/leo")
+
+    assert _marker(4) not in leo.text and "DUPLICATELEOEND" not in leo.text, \
+        "one of two competing Leo sections was served"
+    assert "LIVELEO" in leo.text and calls["n"] == 1
+    assert _marker(5) in client.get("/rashifal/virgo").text and calls["n"] == 1
+
+
+def test_a_derived_reading_is_stored_so_the_next_request_reads_nothing(
+        client, exhausted, seed, gcs, today_iso):
+    """Re-break: the derived body is served but not written to `rashifal_single`.
+    Every later view of the page then re-derives — free while the tier-0 file
+    exists, a bucket read per request the moment it does not (a new instance)."""
+    from astro_ai import daily_cache
+    from astro_ai.routes import llm_support
+
+    seed(_combined())
+    assert client.get("/rashifal/aries").status_code == 200
+    stored = daily_cache.get("rashifal_single", "aries-en", today_iso)
+    assert stored and _marker(0) in stored["body"], "the derived reading was not stored"
+
+    # Take away everything the DERIVE path could read from.
+    for f in (daily_cache._ROOT / "rashifal").glob("*.json"):
+        f.unlink()
+    llm_support._DURABLE_MISSES.clear()
+    reads_before = len(gcs.gets)
+
+    again = client.get("/rashifal/aries")
+
+    assert again.status_code == 200 and _marker(0) in again.text
+    assert len(gcs.gets) == reads_before, "the second request went back to the bucket"
+    assert exhausted["n"] == 0
+
+
+def test_every_devanagari_rashi_name_maps_to_its_own_index():
+    """All twelve, not a sample. Names are read from i18n's `rashi_name_*` keys —
+    the spelling the site itself prints (knowledge/rashis.md) — so a name edited
+    here, or an i18n spelling change, fails. The Hindi FORMAT the model emits is
+    still unmeasured (see rashifal_derive); this pins only that the names we accept
+    are attributed to the right rashi. The two variants are assumed spellings."""
+    from astro_ai.i18n import translate
+    from astro_ai.rashifal_derive import sections_by_rashi
+
+    for i, slug in enumerate(SLUGS):
+        name = translate("hi", f"rashi_name_{slug}")
+        got = sections_by_rashi(f"## {name}\n{_marker(i)} {_FILLER}\n\n## {NAMES[(i + 1) % 12]}\nother")
+        assert got.get(i, "").startswith(_marker(i)), f"{name!r} did not map to {slug}"
+
+    for variant, i in (("कुंभ", 10), ("वृष", 1)):
+        assert sections_by_rashi(f"## {variant}\n{_marker(i)} {_FILLER}").get(i, "").startswith(_marker(i)), variant
