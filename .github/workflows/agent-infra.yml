@@ -37,6 +37,17 @@ jobs:
           enable-cache: false
       - run: uv sync --all-groups
 
+      # Without this, gcloud is granted and unusable — the team that owns the
+      # deploy trigger could not read it, which is #280, filed by this loop
+      # about itself. Keyless: the org forbids service-account keys
+      # (constraints/iam.disableServiceAccountKeyCreation).
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/89117619584/locations/global/workloadIdentityPools/github/providers/astro-ai
+          service_account: agent-analytics@bhagya-500701.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
       # Latency and availability are measured against the live site, not the
       # tree. #266 fails intermittently — one chart succeeded, the next returned
       # 503, and a retry passed 26 seconds later — which no amount of reading
