@@ -1,0 +1,108 @@
+# The syncup: the only place the loops see each other.
+#
+# Eight teams run on separate schedules and share nothing. Analytics scores a
+# page while Growth files an issue to rewrite it; Research proves a rule
+# unsourced while Engineering ships a feature built on it. Nothing in the
+# architecture notices. This does.
+#
+# It must end in decisions, escalations or closures. A sync that produces a
+# summary is a meeting, and GROWTH_LOG.md stopping after four cycles with nobody
+# noticing for ten weeks is what that costs.
+name: Agent sync
+
+on:
+  schedule:
+    - cron: "0 18 * * 5"   # Fridays, 23:30 IST — after the week's loops have run
+  workflow_dispatch:
+
+concurrency:
+  group: agent-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+      actions: read       # reads each loop's run history
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
+      - run: uv sync --all-groups
+
+      # What each loop actually did this week, as evidence rather than memory.
+      - name: Gather the week
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          {
+            echo "## Loop runs, last 7 days"
+            gh run list --limit 60 --json workflowName,conclusion,createdAt \
+              --jq '.[] | select(.workflowName|startswith("Agent")) | "\(.createdAt[0:10])  \(.workflowName)  \(.conclusion)"'
+            echo
+            echo "## Merged this week"
+            git log origin/main --oneline --since="7 days ago"
+            echo
+            echo "## Issues touched"
+            gh issue list --state all --limit 100 --json number,title,updatedAt,labels \
+              --jq '.[] | select(.updatedAt > (now - 604800 | todate)) | "#\(.number) \(.title[0:60])"'
+          } > /tmp/week.txt
+          cat /tmp/week.txt
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            /sync
+
+            /tmp/week.txt holds this week's loop runs, merges and touched
+            issues. Read .claude/commands/sync.md and follow it exactly.
+
+            Read from the issue trail, not from memory. AGENT_STATUS.md is
+            gitignored and BACKLOG.md has run six weeks stale — neither is
+            evidence. `gh issue view N --comments` is.
+
+            You are looking for four things, in descending cost:
+              a contradiction   Research says a rule is unsourced while Growth
+                                promotes the feature built on it → escalate
+              duplicated work   two issues, one root cause, two loops → merge
+              a broken chain    blocked on something nobody is doing; blocked at
+                                two consecutive syncs is a planning defect
+              a thesis that missed   shipped, scored, moved nothing — say whether
+                                the IDEA was wrong or the EXECUTION was, because
+                                those have opposite remedies
+
+            Most escalations are already answered by the standing rulings in
+            .claude/agents/chief.md — the objective, the canonical lineage
+            table, authenticity-versus-traffic. Check those and quote the clause
+            before escalating; escalating something already ruled on burns one of
+            the three this cycle allows.
+
+            WRITE THE SYNC RECORD TO /tmp/report.md, in the SYNC_LOG.md block
+            format from sync.md: decisions, escalated, missed, blocked-twice,
+            carried. Short and comparable week to week — a log that reads like
+            minutes will not be read by the next sync, which is its only reader.
+
+            End in decisions, escalations or proposed closures. Never close an
+            issue yourself. Nobody pushes.
+          claude_args: |
+            --max-turns 60
+            --effort high
+            --allowedTools "Read,Write,Glob,Grep,TodoWrite,Bash"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*),Bash(gh issue close:*)"
+
+      - name: Publish the sync record
+        if: always()
+        run: |
+          if [ -s /tmp/report.md ]; then
+            tee -a "$GITHUB_STEP_SUMMARY" < /tmp/report.md
+          else
+            echo "### No sync record written — treat this run as having produced nothing" \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+          fi

@@ -124,9 +124,81 @@ jobs:
       - name: Publish the report
         if: always()
         run: |
+          # tee, not plain redirect. A job summary is readable in the browser
+          # and NOWHERE else — the REST API does not expose it — so a redirect
+          # leaves the run uncheckable from a script, which is how this loop is
+          # actually monitored.
           if [ -s /tmp/report.md ]; then
-            cat /tmp/report.md >> "$GITHUB_STEP_SUMMARY"
+            tee -a "$GITHUB_STEP_SUMMARY" < /tmp/report.md
           else
-            echo "### No report written" >> "$GITHUB_STEP_SUMMARY"
-            echo "The analyst produced no /tmp/report.md. Treat this run as having produced nothing, whatever its exit status." >> "$GITHUB_STEP_SUMMARY"
+            MSG="### No report written
+          The analyst produced no /tmp/report.md. Treat this run as having produced nothing, whatever its exit status."
+            echo "$MSG" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
+
+      # Persisted so the other loops plan from this analysis instead of
+      # re-deriving it. NOT committed to the repo: data/ is gitignored, and more
+      # importantly a push to main triggers a Cloud Build deploy of the live
+      # site — a nightly measurement must not redeploy production. The analyst
+      # is contents:read for the same reason.
+      - name: Persist the measurement
+        if: always()
+        run: |
+          mkdir -p /tmp/measure
+          cp -f /tmp/report.md /tmp/measure/report.md 2>/dev/null || true
+          cp -f /tmp/gsc-band.json /tmp/gsc-all.json /tmp/ga4.json /tmp/measure/ 2>/dev/null || true
+          date -u +%Y-%m-%dT%H:%M:%SZ > /tmp/measure/generated-at.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: measurement
+          path: /tmp/measure
+          retention-days: 90
+
+  # A SEPARATE JOB, with no agent in it. The analyst stays contents:read, so no
+  # agent in this system can write to the repository — only this shell step can,
+  # and only under measurements/.
+  #
+  # Pushing here does not deploy: the Cloud Build trigger
+  # rmgpgab-bhagya-asia-south1-mahAnuj-astro-ai--mapzk carries
+  # ignoredFiles: measurements/**, so a push touching only that path builds
+  # nothing. A mixed push still deploys, which is correct.
+  commit:
+    needs: measure
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: measurement
+          path: /tmp/measure
+        continue-on-error: true
+
+      - name: Commit the measurement
+        run: |
+          if [ ! -s /tmp/measure/report.md ]; then
+            echo "no report to persist"
+            exit 0
+          fi
+          mkdir -p measurements
+          stamp=$(date -u +%Y-%m-%d)
+          cp /tmp/measure/report.md "measurements/$stamp.md"
+          cp /tmp/measure/report.md measurements/latest.md
+          cp -f /tmp/measure/*.json measurements/ 2>/dev/null || true
+
+          git config user.name  "shubhagya-agent"
+          git config user.email "agent@users.noreply.github.com"
+          git add measurements/
+          if git diff --cached --quiet; then
+            echo "measurement unchanged since last run"
+            exit 0
+          fi
+          git commit -m "measurement $stamp
+
+          Written by the analyst loop. measurements/** is on the Cloud Build
+          trigger's ignoredFiles, so this does not deploy."
+          git push origin HEAD:main
