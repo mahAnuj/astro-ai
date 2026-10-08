@@ -3,11 +3,12 @@
 
 Default dimension is `page`, not `query` (#272). Google withholds any query
 searched by too few people, so the query dimension measured ~9% of the site's
-impressions in September 2026 (769 of 8,097); the page dimension measured ~101%.
+impressions (747 of 8,579 for 2026-09-08..10-05; 769 of 8,097 in September); the
+page dimension measured ~101%.
 `--by query` stays for when the wording itself matters, but it is a PARTIAL view
 and the export says so. Every export carries `coverage_pct` so a reader can see
 how much of the property the rows represent — a conclusion drawn from 7% of the
-data looks identical to one drawn from all of it unless the file says otherwise.
+data (the old export's share) looks identical to one drawn from all of it unless the file says otherwise.
 
 The 6-20 position band is the quarter's objective (#267: "organic traction is
 real and unpromoted"). Those queries are one or two places off page one and need
@@ -51,7 +52,7 @@ def main() -> int:
     start, end = window(args.days)
     url = API.format(site=urllib.parse.quote(args.site, safe=""))
     bearer = token()
-    # 25000 is the API maximum per request. The site has ~142 pages, so no
+    # 25000 is the API maximum per request. The site has ~133 pages with impressions, so no
     # startRow pagination; if rows ever reach the limit we say so below.
     data = post(url, {"startDate": start, "endDate": end, "dimensions": [args.by],
                       "rowLimit": ROW_LIMIT, "dataState": "final"}, bearer)
@@ -96,7 +97,7 @@ def main() -> int:
         cov_note = "property total impressions were 0 or unavailable; coverage not computable"
     else:
         cov_note = f"rows account for {coverage}% of the property's {total_imp} impressions"
-    if args.band:
+    if args.band and emitted_cov is not None:
         cov_note += (f" — coverage_pct/rows_impressions describe the whole fetch; --band "
                      f"printed {len(rows)} rows at position 6-20 covering {emitted_cov}% "
                      f"({emitted_imp} impressions): see emitted_coverage_pct/emitted_impressions")
