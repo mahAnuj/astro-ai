@@ -101,6 +101,24 @@ Follow `/bug` or `/feature` internals exactly, whichever fits. In particular:
   not verification. This project has run fifteen QA passes and *every one failed its first
   submission*, twice on defects the fix itself introduced. Budget two or three rounds.
 
+### Dispatch in the FOREGROUND and wait. This is not a style preference.
+
+Every `Agent` call in this cycle must pass **`run_in_background: false`**.
+
+`Agent` dispatches in the background by default, and `claude-code-action` stops reading the moment
+the parent produces its first `result` message. So a parent that dispatches an engineer and then
+ends its turn **kills the engineer mid-work and exits `success`**. Three runs against #272 did
+exactly that: dispatched, wrote an honest issue comment, ended at 7 of 150 allowed turns, and left
+no branch, no commits and no PR behind a green tick.
+
+Measured in run 37738950382: a foreground dispatch returned inline in 10.2s with real output; the
+background one returned `Async agent launched successfully` instantly and its result arrived only
+because that run stayed alive to receive it.
+
+So: dispatch, **wait for the result**, read it, then dispatch the next role. A cycle is slow because
+it is sequential — architect, then engineer, then QA, two or three rounds. That is the shape, and
+rushing it by not waiting produces nothing at all.
+
 ## Step 4 — branch and PR
 
 ```bash
