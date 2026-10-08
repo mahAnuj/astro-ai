@@ -143,3 +143,46 @@ jobs:
             echo "### No report written — treat this run as having produced nothing" \
               | tee -a "$GITHUB_STEP_SUMMARY"
           fi
+
+      - name: Collect for persistence
+        if: always()
+        run: |
+          mkdir -p /tmp/out
+          cp -f /tmp/report.md /tmp/out/report.md 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: infra-report
+          path: /tmp/out
+          if-no-files-found: ignore
+
+  persist:
+    needs: infra
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: infra-report
+          path: /tmp/out
+        continue-on-error: true
+      - name: Commit the report
+        run: |
+          [ -s /tmp/out/report.md ] || { echo "nothing to persist"; exit 0; }
+          mkdir -p measurements/infra
+          stamp=$(date -u +%Y-%m-%d)
+          cp /tmp/out/report.md "measurements/infra/$stamp.md"
+          cp /tmp/out/report.md measurements/infra/latest.md
+          git config user.name  "shubhagya-agent"
+          git config user.email "agent@users.noreply.github.com"
+          git add measurements/infra/
+          git diff --cached --quiet && { echo "unchanged"; exit 0; }
+          git commit -m "infra report $stamp
+
+          measurements/** is on the Cloud Build trigger's ignoredFiles, so this
+          does not deploy."
+          git push origin HEAD:main

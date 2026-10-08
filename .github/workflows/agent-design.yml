@@ -66,7 +66,73 @@ jobs:
             Do not propose redesigning a page that already ranks without a CTR
             or funnel number to beat. #244 is flagged highest-silent-breakage-
             risk in the redesign epic for exactly that instinct.
+
+            WRITE YOUR REPORT TO /tmp/report.md. Not optional — in automation
+            mode nothing you say otherwise reaches a human, and a run that
+            produced findings nobody can read is indistinguishable from one that
+            did nothing.
+
+            Markdown, one section per page audited: what you saw, what you
+            filed, and what you considered and rejected.
           claude_args: |
+            # Write was missing here too, and Bash was enumerated. The discover
+            # loop ran that way and spent $1.21 across 51 turns with 12 denials,
+            # filing nothing and writing nothing. The guardrail is the job's
+            # contents:read permission, not the tool list.
             --max-turns 80
             --effort high
-            --allowedTools "Read,Glob,Grep,Skill,WebFetch,WebSearch,Bash(curl:*),Bash(cat:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh issue comment:*)"
+            --allowedTools "Read,Write,Glob,Grep,TodoWrite,Skill,WebFetch,WebSearch,Bash"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*)"
+
+      - name: Publish the report
+        if: always()
+        run: |
+          if [ -s /tmp/report.md ]; then
+            tee -a "$GITHUB_STEP_SUMMARY" < /tmp/report.md
+          else
+            echo "### No report written — treat this run as having produced nothing" \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Collect for persistence
+        if: always()
+        run: |
+          mkdir -p /tmp/out
+          cp -f /tmp/report.md /tmp/out/report.md 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: design-report
+          path: /tmp/out
+          if-no-files-found: ignore
+
+  persist:
+    needs: design
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: design-report
+          path: /tmp/out
+        continue-on-error: true
+      - name: Commit the report
+        run: |
+          [ -s /tmp/out/report.md ] || { echo "nothing to persist"; exit 0; }
+          mkdir -p measurements/design
+          stamp=$(date -u +%Y-%m-%d)
+          cp /tmp/out/report.md "measurements/design/$stamp.md"
+          cp /tmp/out/report.md measurements/design/latest.md
+          git config user.name  "shubhagya-agent"
+          git config user.email "agent@users.noreply.github.com"
+          git add measurements/design/
+          git diff --cached --quiet && { echo "unchanged"; exit 0; }
+          git commit -m "design report $stamp
+
+          measurements/** is on the Cloud Build trigger's ignoredFiles, so this
+          does not deploy."
+          git push origin HEAD:main
