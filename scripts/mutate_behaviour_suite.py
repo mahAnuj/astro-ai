@@ -293,6 +293,24 @@ MUTATIONS = [
      "push the row into overflow at 320px. -#}\n      {%- if True %}",
      "test_surface_hides_daylight_windows_when_there_is_no_daylight[homepage strip]"),
 
+    # #270: the rashifal day-windows block went to the model half-English, and
+    # the Hindi reading echoed the English fragments into Devanagari prose.
+    ("#270: the band is looked up in English again (Hindi block leaks)",
+     "src/astro_ai/chart.py",
+     "band=translate(lang, band_key),", "band=translate(\"en\", band_key),",
+     "test_hindi_block_carries_no_english_once_the_two_names_are_removed"),
+
+    ("#270: the English band text drifts from the pre-localisation literal",
+     "src/astro_ai/i18n.py",
+     '"rahu_band_6": "mid-afternoon"', '"rahu_band_6": "mid afternoon"',
+     "test_english_block_is_byte_identical_to_the_pre_localisation_literals"),
+
+    ("#270: the Hindi anti-copy sentence is dropped from the directive",
+     "src/astro_ai/i18n.py",
+     "अन्य निर्देशों में दिए गए अंग्रेज़ी उदाहरण-वाक्यांशों को कभी न दोहराएँ",
+     "अन्य निर्देशों को कभी न दोहराएँ",
+     "test_hindi_block_still_gives_the_exact_names_and_forbids_clock_times"),
+
     ("/today: the two window cards render without checking the flag (#228)",
      "src/astro_ai/templates/today.html",
      "      {%- if panchang.daylight_ordinary %}\n\n      <!-- Rahu Kaal",

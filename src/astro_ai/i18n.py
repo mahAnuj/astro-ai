@@ -53,6 +53,38 @@ _EN: Final[dict[str, str]] = {
     "abhijit_muhurta":     "Abhijit Muhurta",
     "abhijit_tag":         "Best time",
     "abhijit_desc":        "Most auspicious window of the day. Favourable for important actions, meetings, signing, beginnings.",
+
+    # The LLM-facing day-windows block (chart.format_day_windows_for_rashifal,
+    # #270). These are PROMPT text, not page chrome: the whole block is
+    # localised because a Hindi reading was echoing English fragments
+    # ("in the Abhijit window near midday") out of an English block. EN must
+    # stay byte-identical to the pre-#270 literals — pinned by
+    # tests/test_rashifal_window_block.py.
+    "rashifal_window_facts": "Today's inauspicious and auspicious windows. {rahu} falls in the {ordinal} of the eight equal parts of daylight — {band} — and is the wrong time to begin anything, sign, or decide. {abhijit} is the ~48 minutes centred on LOCAL solar noon, and is the day's most favourable window for important action.",
+    "rashifal_window_directive": "Write these two names EXACTLY as: \"{rahu}\" and \"{abhijit}\". Do not transliterate them yourself, do not romanise them, and do not bold or otherwise mark them up.\nCRITICAL: state NEITHER as a clock time. Both are computed from the reader's own sunrise and sunset, and this one reading is published to the whole country — across Indian cities these windows shift by up to 79 minutes, enough that two readers' Abhijit windows do not overlap at all. Name them ('during Rahu Kaal', 'in the Abhijit window near midday') and let the page show each reader their own times. Do not invent any other hour, minute, or 'after 4 pm'-style cutoff either — you have no clock for this reader.",
+    "rahu_ord_1": "1st",
+    "rahu_ord_2": "2nd",
+    "rahu_ord_3": "3rd",
+    "rahu_ord_4": "4th",
+    "rahu_ord_5": "5th",
+    "rahu_ord_6": "6th",
+    "rahu_ord_7": "7th",
+    "rahu_ord_8": "8th",
+    # The band is a gloss on the segment ordinal, and it holds on 6 of 7
+    # weekdays across Mumbai/Delhi/Guwahati. The exception is Wednesday's
+    # segment 5: 12:41-14:16 in Mumbai ("early afternoon") but 11:25-13:02 in
+    # Guwahati, which is mostly late morning. An earlier version of this
+    # comment claimed it was "true in Guwahati and in Mumbai alike" — 6/7 is
+    # not alike, and the whole point of this block is not to overstate what
+    # survives a change of longitude.
+    "rahu_band_1": "the first stretch after sunrise",
+    "rahu_band_2": "early morning",
+    "rahu_band_3": "mid-morning",
+    "rahu_band_4": "late morning",
+    "rahu_band_5": "early afternoon",
+    "rahu_band_6": "mid-afternoon",
+    "rahu_band_7": "late afternoon",
+    "rahu_band_8": "the last stretch before sunset",
     "gochar_base_rate":    "By classical reckoning the slow planets are demanding in most positions — Saturn, Rahu and Ketu in nine houses of twelve, Jupiter in seven. Seeing several marked challenging is the ordinary shape of this table, not a verdict on your year.",
     "strip_rahu_kaal":     "Rahu Kaal (avoid)",
     "strip_abhijit":       "Abhijit (best)",
@@ -588,6 +620,34 @@ _HI: Final[dict[str, str]] = {
     "abhijit_muhurta":     "अभिजित मुहूर्त",
     "abhijit_tag":         "श्रेष्ठ समय",
     "abhijit_desc":        "दिन का सर्वोत्तम शुभ समय। महत्वपूर्ण कार्यों, बैठकों, हस्ताक्षरों और आरम्भों के लिए अनुकूल।",
+
+    # See the _EN twin. Fully Devanagari on purpose (#270): a Latin word in
+    # this block is a word the model may echo into Devanagari prose.
+    # The last sentence of the directive is the mitigation for the SECOND
+    # echo source — prompts/rashifal_single.txt (English system prompt) says
+    # `Say "during Rahu Kaal" or "in the Abhijit window near midday"`, and
+    # that file is deliberately not edited (it would move the prompt
+    # fingerprint and re-warm every cache).
+    "rashifal_window_facts": "आज के अशुभ और शुभ समय। {rahu} दिन के उजाले के आठ बराबर भागों में से {ordinal} भाग में पड़ता है — {band} — और यह कुछ भी आरम्भ करने, हस्ताक्षर करने या निर्णय लेने का अनुचित समय है। {abhijit} स्थानीय सूर्य-मध्याह्न के केंद्र में स्थित लगभग 48 मिनट की अवधि है, और महत्वपूर्ण कार्य के लिए दिन का सबसे अनुकूल समय है।",
+    "rashifal_window_directive": "इन दोनों नामों को ठीक इसी रूप में लिखें: \"{rahu}\" और \"{abhijit}\"। इन्हें स्वयं लिप्यंतरित न करें, रोमन लिपि में न लिखें, और बोल्ड या किसी अन्य रूप में चिह्नित न करें।\nअत्यंत आवश्यक: दोनों में से किसी को भी घड़ी के समय के रूप में न बताएँ। दोनों की गणना पाठक के अपने सूर्योदय और सूर्यास्त से होती है, और यह एक ही राशिफल पूरे देश में प्रकाशित होता है — भारतीय शहरों में ये अवधियाँ 79 मिनट तक खिसक जाती हैं, इतना कि दो पाठकों की अभिजित अवधियाँ आपस में बिल्कुल नहीं मिलतीं। इन्हें केवल नाम से बताएँ ('{rahu} के दौरान', 'मध्याह्न के आसपास {abhijit} में') और हर पाठक को पृष्ठ पर उसका अपना समय देखने दें। कोई अन्य घंटा, मिनट या 'शाम 4 बजे के बाद' जैसी सीमा भी न गढ़ें — इस पाठक के लिए आपके पास घड़ी नहीं है।\nअन्य निर्देशों में दिए गए अंग्रेज़ी उदाहरण-वाक्यांशों को कभी न दोहराएँ; वही बात ऊपर दिए गए नामों के साथ पूरी तरह देवनागरी में लिखें।",
+    "rahu_ord_1": "पहले",
+    "rahu_ord_2": "दूसरे",
+    "rahu_ord_3": "तीसरे",
+    "rahu_ord_4": "चौथे",
+    "rahu_ord_5": "पाँचवें",
+    "rahu_ord_6": "छठे",
+    "rahu_ord_7": "सातवें",
+    "rahu_ord_8": "आठवें",
+    # Wednesday's segment 5 is the one band that does not hold nationally;
+    # see the _EN comment.
+    "rahu_band_1": "सूर्योदय के ठीक बाद का समय",
+    "rahu_band_2": "सुबह का आरम्भिक समय",
+    "rahu_band_3": "सुबह के बीच का समय",
+    "rahu_band_4": "देर सुबह",
+    "rahu_band_5": "दोपहर बाद का आरम्भिक समय",
+    "rahu_band_6": "दोपहर बाद के बीच का समय",
+    "rahu_band_7": "देर दोपहर",
+    "rahu_band_8": "सूर्यास्त से ठीक पहले का अंतिम समय",
     "gochar_base_rate":    "शास्त्रीय गणना के अनुसार मंद ग्रह अधिकांश स्थितियों में कठिन फल देते हैं — शनि, राहु और केतु बारह में से नौ भावों में, तथा गुरु सात में। इसलिए कई ग्रहों का चुनौतीपूर्ण दिखना इस तालिका का सामान्य स्वरूप है, आपके वर्ष पर कोई निर्णय नहीं।",
     "strip_rahu_kaal":     "राहु काल (वर्जित)",
     "strip_abhijit":       "अभिजित (श्रेष्ठ)",
