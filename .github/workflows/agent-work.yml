@@ -204,7 +204,20 @@ jobs:
             echo "no commits on $branch — the cycle produced nothing"
             exit 0
           fi
-          git push -u origin "$branch"
+          # Already pushed by the agent? Then there is nothing for this net to
+          # catch, and trying anyway FAILS A SUCCESSFUL CYCLE: the agent pushes
+          # with the action's GitHub App token, while this step has only
+          # github.token over HTTPS, which cannot push —
+          #   "Password authentication is not supported for Git operations"
+          # That is how run 37741141641 went red having produced PR #292.
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "$branch already on origin — the agent pushed it"
+          else
+            git push -u origin "$branch" || {
+              echo "::warning::fallback push failed; the agent did not push either"
+              exit 0
+            }
+          fi
           if gh pr list --repo "$GH_REPO" --head "$branch" --json number --jq '.[0].number' | grep -q .; then
             echo "PR already open for $branch"
           else
