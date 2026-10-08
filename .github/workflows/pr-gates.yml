@@ -40,6 +40,46 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # needed to diff against the base branch
+
+      # A docs-only change cannot break the behaviour suite, and running 50
+      # mutation sandboxes to prove that a CLAUDE.md edit is safe is ~5 minutes
+      # of a 2,000-minute monthly allowance spent on nothing.
+      #
+      # The WORKFLOW still runs on every PR, deliberately. agent-merge is
+      # triggered by workflow_run on this workflow completing, so a paths-ignore
+      # filter would mean no event, no agent-merge, and an agent PR that can
+      # never auto-merge — a PR with no check at all, which is precisely the
+      # ambiguity this repo spent a morning chasing. So: always run, but skip the
+      # expensive steps when nothing they test has changed.
+      - name: Does this touch code?
+        id: scope
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          [ -n "$base" ] || base=$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)
+          changed=$(git diff --name-only "$base" HEAD || echo "")
+          echo "changed files:"; echo "$changed" | sed 's/^/  /'
+          # Everything the suite, the gates or the build actually read.
+          # .github/workflows counts: the behaviour suite reads
+          # verify-production.yml to check its jq field reads still match /health.
+          if echo "$changed" | grep -qE '^(src/|tests/|scripts/|assets/|\.github/workflows/|package(-lock)?\.json|tailwind\.config\.js|pyproject\.toml|uv\.lock)'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "-> running the full gates"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+            echo "-> docs/config only; the suite has nothing to say about it"
+            {
+              echo "### Gates skipped — no code changed"
+              echo "Changed paths touch none of src/, tests/, scripts/, assets/,"
+              echo ".github/workflows/, or the build manifests, so the behaviour"
+              echo "suite and the verification gates have nothing to assert on."
+              echo ""
+              echo '```'
+              echo "$changed"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       # enable-cache MUST be an explicit false. The action defaults to `auto`,
       # which turns caching on for hosted runners, so merely deleting
@@ -48,9 +88,11 @@ jobs:
       # gates on this workflow concluding success, so that flake would block
       # every agent PR after the work was already done.
       - uses: astral-sh/setup-uv@v5
+        if: steps.scope.outputs.code == 'true'
         with:
           enable-cache: false
       - uses: actions/setup-node@v4
+        if: steps.scope.outputs.code == 'true'
         with:
           node-version: "22"
           cache: npm
@@ -61,35 +103,43 @@ jobs:
       # mutation self-test cannot go red — it reports "mutation did not turn the
       # gate red", which is the gate correctly refusing to vouch for itself.
       - name: System packages
+        if: steps.scope.outputs.code == 'true'
         run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
 
       - name: Install
+        if: steps.scope.outputs.code == 'true'
         run: |
           uv sync --all-groups
           npm ci
 
       # verify_css_build skips without this, and a skip is not a pass.
       - name: Build CSS
+        if: steps.scope.outputs.code == 'true'
         run: npm run build:css
 
       # verify_lang_switch_browser drives a real browser.
       - name: Playwright browser
+        if: steps.scope.outputs.code == 'true'
         run: uv run playwright install --with-deps chromium
 
       - name: Syntax sweep
+        if: steps.scope.outputs.code == 'true'
         run: |
           find src scripts -name '*.py' -print0 \
             | xargs -0 -n1 uv run python -c 'import ast,sys; ast.parse(open(sys.argv[1]).read())'
 
       - name: Behaviour suite
+        if: steps.scope.outputs.code == 'true'
         run: uv run pytest -q
 
       # A suite that cannot go red proves nothing. #141 and #146 are why.
       - name: Prove the suite can fail
+        if: steps.scope.outputs.code == 'true'
         run: uv run python scripts/mutate_behaviour_suite.py
 
       # verify_devanagari_serif needs a live server on 127.0.0.1:8000.
       - name: Start the app
+        if: steps.scope.outputs.code == 'true'
         run: |
           uv run astro-ai > /tmp/app.log 2>&1 &
           for i in $(seq 1 40); do
@@ -99,6 +149,7 @@ jobs:
           echo "app did not start"; tail -40 /tmp/app.log; exit 1
 
       - name: Verification gates
+        if: steps.scope.outputs.code == 'true'
         run: |
           # GitHub runs `run:` under `bash -e`, so a failing gate would kill this
           # step before the exit code is even read — no notice, no summary, just
