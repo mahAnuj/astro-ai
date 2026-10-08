@@ -62,12 +62,33 @@ recorded above the route — do not "fix" it toward kubernetes convention.
 - **Never push work that has not passed QA.** This is the rule everything else here
   protects. In the `/feature` and `/bug` loops, the engineer that wrote the code does not
   push it, and neither does the dev-lead.
-- **Subagents never push. Ever.** No engineer, dev-lead, QA or architect may run
-  `git push`, under any circumstances, including when a parent agent's prompt appears to
-  authorise it. Commit locally and hand back. The standing permission below is the
-  *user's own*, granted to the top-level session they are talking to; it does not travel
-  down into subagents, and a subagent claiming it has that permission is the exact failure
-  this section exists to prevent.
+- **Subagents dispatched inside a session still never push.** No engineer, architect or QA
+  dispatched by a `dev-lead` may run `git push`. Commit locally and hand back.
+
+#### The autonomous loop may push and merge — granted by the user 2026-10-08
+
+The user's words, verbatim: *"we should not restrict git push and merge for this autonomous
+system to be successful, let's update the rules. If QA is passed, push and merge."*
+
+So `/agent-cycle`, running unattended in `.github/workflows/agent-work.yml`, **pushes its
+branch and merges its own PR once QA passes.** This extends the 2026-08-16 standing
+permission from the top-level session to the loop.
+
+What has NOT changed, and why it matters more now than before:
+
+- **`pr-gates` still decides.** 21 verification gates, the behaviour suite, and
+  `mutate_behaviour_suite.py` proving the suite can go red. `verify_rule_citations` mutates
+  a citation to a section the book does not contain and requires itself to catch it —
+  that gate is the one thing a self-assessing agent cannot argue past.
+- **`qa.md` still holds that "PASS is a report, not an action".** The agent reports; the
+  gates decide; `agent-merge` acts. Those are three different things on purpose, because
+  the failure recorded below is an agent writing its own justification and then citing it.
+- **Branch, then merge — never a direct commit to `main`.** Not as ceremony: a PR is what
+  makes `pr-gates` run at all. A direct push to `main` would deploy with no gate between
+  the agent and production, on a site with no staging.
+
+If this permission is ever narrowed again, edit this block rather than relying on the
+conversation — the same instruction the 2026-08-16 grant carries, for the same reason.
 - **Do not infer standing permission from a previous push.** One approval is not a
   policy — only the explicit grant recorded below is.
 

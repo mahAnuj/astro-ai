@@ -123,12 +123,23 @@ jobs:
             # PR, and a green run. A half-blocked agent spends its turns
             # discovering what it may not do.
             #
-            # It cannot push. That is disallowed explicitly and done by the shell
-            # step below instead, which is CLAUDE.md's rule verbatim — "commit
-            # locally and hand back". Branch protection would be the stronger
-            # guardrail but needs GitHub Pro on a private repo.
-            --allowedTools "Agent,Read,Write,Edit,Glob,Grep,Skill,WebFetch,TodoWrite,Bash"
-            --disallowedTools "Bash(git push:*)"
+            # The loop may push its branch and merge its own PR once QA passes —
+            # the user's grant of 2026-10-08, recorded in CLAUDE.md. Everything
+            # is allowed except the operations below, which are denied because
+            # they are irreversible or reach outside this repository:
+            #
+            #   rm         deleting work is never part of shipping an issue
+            #   sudo       nothing here needs root
+            #   git push --force / reset --hard   discards history, not a fix
+            #   gh repo / gh secret               deletes repos, rotates creds
+            #   gcloud                            the deploy trigger and IAM live there
+            #
+            # A push to `main` is not in that list because the loop should not
+            # want one: it branches and opens a PR, which is what makes pr-gates
+            # run at all. A direct commit to main would deploy with no gate
+            # between the agent and production.
+            --allowedTools "Agent,Read,Write,Edit,Glob,Grep,Skill,WebFetch,WebSearch,TodoWrite,Bash"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(git push --force:*),Bash(git push -f:*),Bash(git reset --hard:*),Bash(gh repo:*),Bash(gh secret:*),Bash(gcloud:*)"
         env:
           GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
           GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
@@ -147,10 +158,12 @@ jobs:
             echo "If no PR was opened, the work is on the branch and the issue has no comment."
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # The agent commits locally and stops. This pushes and opens the PR, so no
-      # agent in this system has ever run `git push` — the rule is enforced by
-      # the tool grant above rather than by an agent choosing to honour it, which
-      # is the failure this repo has had twice.
+      # A safety net, not the primary path. The agent may push and open the PR
+      # itself now; this catches the case where it committed and then ran out of
+      # turns or budget before pushing — which would otherwise leave the work on
+      # a local branch inside a runner that is about to be destroyed.
+      #
+      # Idempotent: exits quietly if the branch is already pushed or a PR exists.
       - name: Push the branch and open the PR
         if: always()
         env:
