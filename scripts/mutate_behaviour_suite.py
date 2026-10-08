@@ -19,6 +19,7 @@ from the concurrency one.
 
     uv run python scripts/mutate_behaviour_suite.py     # exit 1 if any escapes
 """
+import concurrent.futures
 import os
 import pathlib
 import shutil
@@ -495,10 +496,44 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
         return True, "CAUGHT"
 
 
+# Run the mutations concurrently. Each one already builds its own temporary
+# sandbox and shells out to its own pytest, so they share nothing and the work
+# is embarrassingly parallel — serially it was 281s, 61% of every pr-gates run,
+# against a GitHub Actions free-tier allowance this repo is already outgrowing.
+#
+# Threads rather than processes: the time is spent inside subprocess.run waiting
+# on pytest, which releases the GIL, and threads need nothing pickled.
+#
+# The worker count is capped. Each sandbox runs a full pytest, so N workers mean
+# N interpreters compiling and importing at once; past the core count they
+# contend and the wall time stops improving. `cpu_count or 1` because it returns
+# None on some platforms.
+_WORKERS = min(int(os.environ.get("MUTATE_WORKERS", "4")), (os.cpu_count() or 1))
+
+_work = [_CONTROL] + list(MUTATIONS)
+_verdicts: dict[int, tuple[str, str]] = {}
+
+with concurrent.futures.ThreadPoolExecutor(max_workers=_WORKERS) as _pool:
+    _futures = {
+        _pool.submit(_run_in_sandbox, rel, old, new, test): (i, label, test)
+        for i, (label, rel, old, new, test) in enumerate(_work)
+    }
+    for _f in concurrent.futures.as_completed(_futures):
+        i, label, test = _futures[_f]
+        try:
+            _ok, verdict = _f.result()
+        except Exception as exc:  # noqa: BLE001
+            # A worker that raised is NOT a caught mutation. Saying so keeps a
+            # crashed sandbox from counting as coverage — the same reason the
+            # control row exists.
+            verdict = f"HARNESS ERROR ({type(exc).__name__}: {exc})"
+        _verdicts[i] = (label, verdict)
+
+# Results come back out of order; report in table order so runs stay diffable.
 rows = []
 control_ok = True
-for label, rel, old, new, _test in [_CONTROL] + list(MUTATIONS):
-    ok, verdict = _run_in_sandbox(rel, old, new, _test)
+for i, (label, _rel, _old, _new, _test) in enumerate(_work):
+    _, verdict = _verdicts[i]
     if _test == "_control":
         # Inverted: for the control, MISSED is the pass.
         control_ok = verdict == "*** MISSED ***"
