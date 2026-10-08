@@ -166,6 +166,29 @@ The comment still matters, and the label never replaces it. The label says *a ve
 comment says *what was executed and what the numbers were*, which is what `qa.md` requires and what
 lets someone else check the verdict rather than trust it.
 
+## Step 3.6 — push the branch as soon as the FIRST commit exists
+
+Do not hold the work until the end. The moment the engineer hands back a commit:
+
+```bash
+git push -u origin issue/<n>-<slug>
+```
+
+Then keep pushing after each subsequent commit — QA rounds included.
+
+**Why, measured:** the GitHub App token the action gives you **expires after one hour**. Run
+37749887640 spent 63 minutes on #270 — architect, engineer, QA — produced a complete branch, and
+died at the push with `Invalid username or token`. 25 turns and $5.34 of finished work, lost,
+because it was all still on a runner that was about to be destroyed. The earlier cycle that
+produced PR #292 took 19 turns and pushed inside the hour, which is the only reason it survived.
+
+A pushed branch survives the runner, the token and the job timeout. An unpushed one survives
+nothing.
+
+Open the PR as soon as the branch is pushed, in draft if QA has not run yet, and let the later
+pushes update it. A PR that exists and is not ready is recoverable; work that never left the
+runner is not.
+
 ## Step 4 — branch and PR
 
 ```bash
