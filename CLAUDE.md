@@ -245,6 +245,43 @@ verified**, and the issue says so.
 2. **Once deployed** — verify against `origin/main` and production, then close with that
    evidence.
 
+#### Stage two is automated now — updated 2026-10-08
+
+The user's position: *"I want to let the system automatically close issues without my
+attention."* Stage two was never happening. A ranking proposed five closures with evidence on
+2026-10-08 and nothing acted on them, so the backlog grew and each weekly scan spent part of its
+budget re-sweeping issues already known to be dead.
+
+Two mechanisms now close issues, and **neither is an agent deciding a fix is good enough**:
+
+- **`close-on-evidence.yml`** closes an issue whose fix shipped. It requires three facts, all
+  computed rather than asserted: a merged PR saying `closes #N`, `verify-production` green for
+  that exact commit, and `/health` reporting that commit as the revision serving. A null
+  `build_sha` closes nothing, because then *which commit is live* is unanswerable — which is
+  precisely the uncertainty that made closing unsafe before `BUILD_SHA` was set.
+- **`project-manager`, in `/prioritise` only**, closes the four kinds its staleness sweep can
+  prove: already fixed, does not reproduce, overtaken by events, duplicate. It may **not** close
+  anything whose fix shipped but is unverified in production — that belongs to the workflow above.
+
+- **`/agent-cycle` at step 0**, when `validate_issue.py` returns **`CANNOT-REPRODUCE`** — five
+  probes against live production, varied inputs, all clean. That is stronger evidence than any
+  comment, and it is the same standard `project-manager` applies. **Only on exit 1.** Never on
+  `NO-REPRO` (exit 3: no executable `repro:`, so nothing was probed) and never on `INCONCLUSIVE`
+  (exit 4: the prober could not run — an earlier revision crashed on every sample and reported
+  `REPRODUCES — deterministic`).
+
+**The engineer, dev-lead, QA and architect are still denied `gh issue close`.** An agent closing
+the issue it just *worked* is marking its own homework, which is the same independence failure that
+makes `qa` a separate dispatch. Closing one it *probed and could not reproduce* is a different act:
+it is reporting a measurement, not grading its own fix.
+
+Every closing comment must still let someone else check you: the command, its output, and the SHA.
+"Fixed" is not a closing comment. #143 was closed as fixed while a fourth wrong date was still
+live, and that incident is why the split above exists rather than a blanket permission.
+
+**Why this permission and not the push one:** a wrong close is reversible at no cost. A wrong push
+deploys to production, where there is no staging and the code runs in front of users.
+
 **A closing comment must let someone else check you.** Not "fixed" — the commit, what was
 verified and how, and the numbers. Examples worth copying: the #144 close (before/after
 timings on a named revision), the #157 close (the measurement showing it did not

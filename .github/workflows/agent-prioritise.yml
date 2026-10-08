@@ -98,12 +98,44 @@ jobs:
             Note the deltas against the existing BACKLOG.md — what changed, what
             you carried forward unchecked, what is new since the last scan.
 
-            Read-only. Propose closures; the human closes. You never push.
+            ## You may close issues now — with evidence, and only these kinds
+
+            Granted 2026-10-08 by the user, who wants the backlog maintained
+            without their attention. It applies to THIS loop only; the delivery
+            loop's agents are still denied it.
+
+            Close only what your staleness sweep proves, and only these four:
+
+            - **Already fixed** — verified against `origin/main`, never against a
+              claim in a comment. Quote the commit and what you checked.
+            - **Does not reproduce** — you probed it. Give the request and the
+              response. #156 and #157 were filed against a local tree.
+            - **Overtaken by events** — the code it describes no longer exists.
+              Show the grep that returns nothing.
+            - **Duplicate or subsumed** — name the survivor and say why it covers
+              this one.
+
+            **Do NOT close** anything whose fix shipped but is unverified in
+            production. That is `close-on-evidence.yml`'s job, and it waits for
+            three facts: the PR merged, verify-production green for that exact
+            commit, and /health reporting that commit as serving. #143 was closed
+            as fixed while a fourth wrong date was still live — that is the
+            incident this split exists to prevent.
+
+            **Every closing comment must let someone else check you**, exactly as
+            CLAUDE.md requires: the command you ran, its output, and the SHA you
+            verified at. "Fixed" is not a closing comment. If you cannot produce
+            that evidence, do not close it — comment and leave it open.
+
+            A wrong close is cheap to undo and a wrong push is not, which is why
+            this permission exists and the push one does not.
+
+            You never push.
           claude_args: |
             --max-turns 80
             --effort high
             --allowedTools "Read,Write,Glob,Grep,TodoWrite,Bash"
-            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*),Bash(gh issue close:*)"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*)"
 
       - name: Publish the queue
         if: always()

@@ -1,0 +1,92 @@
+# Close an issue when production proves its fix is live — and only then.
+#
+# CLAUDE.md's two-stage close, mechanised:
+#
+#   1. the fix lands locally  -> comment with the SHA. DO NOT CLOSE.
+#   2. once deployed          -> verify against production, then close with
+#                                that evidence.
+#
+# Every agent is explicitly denied `gh issue close`, deliberately: #143 was
+# closed as fixed while a fourth wrong date was still live. That rule is right
+# and stays. What was missing is the second stage ever happening — this morning
+# a ranking proposed five closures with evidence and nothing acted on them, so
+# the backlog grows and every weekly ranking re-sweeps issues already known dead.
+#
+# This is not an agent exercising judgment. It is a mechanical check of the
+# condition CLAUDE.md already requires:
+#
+#   a PR that says "closes #N" merged to main, AND
+#   verify-production concluded success for that exact commit, AND
+#   /health reports that commit as the revision serving
+#
+# All three, or nothing happens.
+name: Close on production evidence
+
+on:
+  workflow_run:
+    workflows: ["verify-production"]
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  close:
+    # A red verification proves nothing is live. Nothing to close.
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Is this exact commit serving?
+        id: live
+        run: |
+          live=$(curl -s --max-time 30 https://shubhagya.com/health | jq -r '.build_sha // empty')
+          echo "deployed build_sha: ${live:-null}   workflow head: $SHA"
+          if [ -z "$live" ]; then
+            # Before BUILD_SHA was set this was always null, and a null means we
+            # cannot say WHICH commit is live — which is exactly the uncertainty
+            # that makes closing unsafe.
+            echo "::notice::/health reports no build_sha — cannot prove which commit is live, not closing anything"
+            exit 0
+          fi
+          if [ "$live" != "$SHA" ]; then
+            echo "::notice::live commit $live is not this run's $SHA — a newer deploy landed, not closing"
+            exit 0
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      - name: Close what this commit shipped
+        if: steps.live.outputs.ok == 'true'
+        run: |
+          # Only issues a merged PR explicitly claimed. A commit message
+          # mentioning an issue is not a claim that it is fixed.
+          prs=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" --jq '.[].number')
+          [ -n "$prs" ] || { echo "no PR for $SHA"; exit 0; }
+
+          for pr in $prs; do
+            body=$(gh pr view "$pr" --repo "$GH_REPO" --json body,title --jq '.title + "\n" + .body')
+            # GitHub's own closing keywords, so behaviour matches what an author
+            # reading the PR would expect.
+            issues=$(echo "$body" | grep -oiE '(clos(e|es|ed)|fix(e[sd])?|resolv(e|es|ed))[[:space:]]+#[0-9]+' \
+                     | grep -oE '[0-9]+' | sort -u)
+            [ -n "$issues" ] || { echo "PR #$pr claims no issue"; continue; }
+
+            for n in $issues; do
+              state=$(gh issue view "$n" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)
+              [ "$state" = "OPEN" ] || { echo "#$n is $state — skipping"; continue; }
+              gh issue close "$n" --repo "$GH_REPO" --reason completed --comment \
+          "Closed on production evidence.
+
+          - PR #$pr merged to \`main\`
+          - \`verify-production\` concluded **success** for \`$SHA\` ([run](${{ github.event.workflow_run.html_url }}))
+          - \`/health\` reports \`build_sha\` = \`$SHA\`, so **this commit is the revision serving**
+
+          That is CLAUDE.md's two-stage close: the fix landed, the deploy was verified, and the commit was confirmed live before closing. Reopen if production disagrees — a green run proves the invariants it asserts, not that nothing else broke."
+              echo "closed #$n"
+            done
+          done
