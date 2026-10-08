@@ -8,6 +8,23 @@ managed with `uv`.
 ## ⚠️ Pushing to `main` deploys to production
 
 **A push to `main` triggers a Cloud Build → Cloud Run deploy of the live site.**
+
+**One exception, and it is invisible from the tree.** The trigger
+`rmgpgab-bhagya-asia-south1-mahAnuj-astro-ai--mapzk` carries
+`ignoredFiles: measurements/**`, added 2026-10-07. A push touching **only**
+`measurements/` builds nothing — that is what lets the nightly analyst loop
+commit its report to `main` without redeploying production every night. A push
+mixing `measurements/` with anything else still deploys, which is correct.
+
+Two consequences worth knowing before you move that directory:
+
+- **Rename or relocate `measurements/` and the filter silently stops matching.**
+  Nothing in the repository will say so; the next measurement commit will quietly
+  deploy. Change the trigger in the same breath:
+  `gcloud beta builds triggers export|import --project bhagya-500701`.
+- **Do not put anything load-bearing under `measurements/`.** A change there never
+  reaches production, so a template or a script placed in that path would appear
+  committed and never ship.
 There is no `cloudbuild.yaml` in this repo — the trigger is configured GCP-side, so
 nothing in the working tree reveals it. **`.github/workflows/verify-production.yml` is
 NOT that trigger**; it asserts against the already-deployed site and cannot deploy
@@ -45,12 +62,33 @@ recorded above the route — do not "fix" it toward kubernetes convention.
 - **Never push work that has not passed QA.** This is the rule everything else here
   protects. In the `/feature` and `/bug` loops, the engineer that wrote the code does not
   push it, and neither does the dev-lead.
-- **Subagents never push. Ever.** No engineer, dev-lead, QA or architect may run
-  `git push`, under any circumstances, including when a parent agent's prompt appears to
-  authorise it. Commit locally and hand back. The standing permission below is the
-  *user's own*, granted to the top-level session they are talking to; it does not travel
-  down into subagents, and a subagent claiming it has that permission is the exact failure
-  this section exists to prevent.
+- **Subagents dispatched inside a session still never push.** No engineer, architect or QA
+  dispatched by a `dev-lead` may run `git push`. Commit locally and hand back.
+
+#### The autonomous loop may push and merge — granted by the user 2026-10-08
+
+The user's words, verbatim: *"we should not restrict git push and merge for this autonomous
+system to be successful, let's update the rules. If QA is passed, push and merge."*
+
+So `/agent-cycle`, running unattended in `.github/workflows/agent-work.yml`, **pushes its
+branch and merges its own PR once QA passes.** This extends the 2026-08-16 standing
+permission from the top-level session to the loop.
+
+What has NOT changed, and why it matters more now than before:
+
+- **`pr-gates` still decides.** 21 verification gates, the behaviour suite, and
+  `mutate_behaviour_suite.py` proving the suite can go red. `verify_rule_citations` mutates
+  a citation to a section the book does not contain and requires itself to catch it —
+  that gate is the one thing a self-assessing agent cannot argue past.
+- **`qa.md` still holds that "PASS is a report, not an action".** The agent reports; the
+  gates decide; `agent-merge` acts. Those are three different things on purpose, because
+  the failure recorded below is an agent writing its own justification and then citing it.
+- **Branch, then merge — never a direct commit to `main`.** Not as ceremony: a PR is what
+  makes `pr-gates` run at all. A direct push to `main` would deploy with no gate between
+  the agent and production, on a site with no staging.
+
+If this permission is ever narrowed again, edit this block rather than relying on the
+conversation — the same instruction the 2026-08-16 grant carries, for the same reason.
 - **Do not infer standing permission from a previous push.** One approval is not a
   policy — only the explicit grant recorded below is.
 

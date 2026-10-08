@@ -50,7 +50,13 @@ jobs:
       # code), so gh cannot infer the repository from a git remote and fails
       # with "not a git repository".
       GH_REPO: ${{ github.repository }}
-      MAX_LINES: 400
+      # Raised far above any plausible diff on 2026-10-08. The user's position:
+      # "we should not restrict git push and merge for this autonomous system to
+      # be successful. If QA is passed, push and merge."
+      #
+      # Left in place rather than deleted so the mechanism survives: lower it to
+      # 400 and large diffs are labelled and held again, one edit, no new code.
+      MAX_LINES: 1000000
     steps:
       - name: Find the pull request
         id: pr
