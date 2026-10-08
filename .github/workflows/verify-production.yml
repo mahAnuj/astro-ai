@@ -68,9 +68,63 @@ name: verify-production
 on:
   push:
     branches: [main]
+    # ONLY verify when the commit could have changed the deployed app.
+    #
+    # Measured 2026-10-08: of the last 25 commits on `main`, **zero** touched
+    # anything that ships. Every one was `.github/`, `.claude/`, `scripts/`,
+    # `measurements/` or a root `*.md` — agent plumbing — and every one still
+    # paid a ~5 min deploy wait plus a ~10 min sweep. 12 runs, 227 Actions
+    # minutes in one day, verifying a site that provably could not have moved.
+    #
+    # The ignore list is derived from the Dockerfile, not guessed. It copies
+    # exactly four things:
+    #     COPY pyproject.toml uv.lock README.md ./
+    #     COPY src ./src
+    # so `src/**`, `pyproject.toml`, `uv.lock` and `Dockerfile` are the whole
+    # set that can reach production. Nothing below is in the image.
+    #
+    # IGNORE-LIST, NOT AN ALLOW-LIST, DELIBERATELY. A new top-level directory
+    # must default to *verifying*; listing `paths:` instead would mean every
+    # future app path is silently exempt until someone remembers to add it.
+    # The failure direction matters more than the brevity.
+    #
+    # `*.md` NOT `**.md` — and this one is load-bearing. In GitHub path
+    # filters `*` does not cross a `/`, so `*.md` matches root-level files
+    # only. `**.md` would also match `src/astro_ai/knowledge/*.md`, which is
+    # the classical-source corpus the app READS AT RUNTIME to ground its
+    # astrological claims. A corpus edit absolutely changes what users see, so
+    # it must keep triggering a verification.
+    paths-ignore:
+      - '.github/**'
+      - '.claude/**'
+      - 'scripts/**'
+      - 'measurements/**'
+      - 'evals/**'
+      - '*.md'
   schedule:
-    - cron: '17 6 * * *'   # daily drift check; production can change without a push
+    # WEEKLY, not daily — Mondays. The drift check answers "does production
+    # still satisfy these invariants", and production drifts from causes
+    # outside this repo (a Cloud Run change, an expired key, a dependency on
+    # a date). Those are slow. A daily run cost ~19 min x 30 = ~570 min/month
+    # against a 2,000-minute allowance — a quarter of the budget to re-prove
+    # the same thing. Weekly is ~80 min/month for the same signal, a week
+    # later in the worst case.
+    - cron: '17 6 * * 1'
   workflow_dispatch:
+
+# One verification at a time. Runs 37768903779 (11:15) and 37769391086 (11:20)
+# overlapped, as did three other pairs the same day — a merge burst meant two
+# jobs each waiting ~5 min for a deploy and each sweeping 213 URLs, for one
+# commit's worth of information.
+#
+# `cancel-in-progress: false` — QUEUE, never cancel. `close-on-evidence.yml`
+# fires on this workflow concluding success and reads `workflow_run.head_sha`
+# to close the issue for THAT exact commit. Cancelling a superseded run would
+# silently drop that commit's auto-close, which is the one mechanism closing
+# issues without the user's attention.
+concurrency:
+  group: verify-production
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -256,52 +310,60 @@ jobs:
           # Measured 2026-08-26 over the real 200-URL sitemap: warm pages
           # answer in ~1-1.6s, so the sweep runs well inside this; the cap is
           # for the pathological case, not the normal one.
-          # TWO GROUPS, because one of them costs LLM quota and the other does
-          # not. The /rashifal/{rashi} pages — 12 English + 12 Hindi since #124
-          # — GENERATE a reading on a cache miss, and nothing pre-warms that
-          # namespace (warm-rashifal writes only the combined key). So on the
-          # first sweep of a new day this step was spending real tokens, 24
-          # generations at -P 6.
+          # THE LLM-BACKED PAGES ARE EXCLUDED. A verification must not spend
+          # the product's runtime budget — user's instruction 2026-10-08:
+          # "I don't think we should waste llm calls on verifying as currently
+          # I am using free llm api keys."
           #
-          # The arithmetic, so it can be re-derived rather than trusted
-          # (measured 2026-10-06 with tiktoken o200k_base; cold-page latency
-          # 28.9s is this workflow's own 2026-08-26 figure):
+          # The /rashifal/{rashi} pages — 12 English + 12 Hindi since #124 —
+          # GENERATE a reading on a cache miss, and nothing pre-warms that
+          # namespace (warm-rashifal writes only the combined key). So every
+          # sweep of a new day paid for 24 real generations.
           #
-          #   3,330 input tokens per cold generation
+          # The arithmetic, kept so it can be re-derived rather than trusted
+          # (measured 2026-10-06 with tiktoken o200k_base):
+          #
+          #   3,330 input tokens per cold generation x 24 pages = ~80,000
           #   ceiling = 8,000 TPM PER MODEL x 2 models (groq120,groq20) = 16,000
           #
-          #     -P 6 -> 12.5 calls/min -> 41,481 TPM   OVER by 2.6x
-          #     -P 3 ->  6.2 calls/min -> 20,740 TPM   OVER
-          #     -P 2 ->  4.2 calls/min -> 13,827 TPM   under, with headroom
+          # 80k tokens per sweep, and the sweep ran on EVERY push to main —
+          # 12 times on 2026-10-08 alone, so ~960k tokens of the free tier
+          # spent proving pages render. It never failed loudly when it
+          # breached TPM: the chain falls through groq120 -> groq20 -> openai,
+          # and openai is the PAID leg, so the symptom was a bill and a
+          # rate-limit line rather than an error. That silent-exhaustion shape
+          # is what caused the 21-day rashifal email outage.
           #
-          # At -P 6 the sweep asked for ~78,300 tokens in a couple of minutes.
-          # It does not fail loudly when it breaches TPM: the chain falls
-          # through groq120 -> groq20 -> openai, and openai is the PAID leg. So
-          # the symptom was a bill and a rate-limit log line, not an error.
-          # That silent-exhaustion shape is what caused the 21-day rashifal
-          # email outage.
+          # Pacing at -P 2 fixed the token RATE but not the token SPEND, and
+          # it made the sweep serial-slow: 24 pages at -P 2 with a 28.9s cold
+          # start is the long pole that pushed the whole step past the 600s
+          # cap. Every run between 06:56 and 11:20 on 2026-10-08 died at
+          # exactly 600s with `exit code 124` — 13 consecutive red runs that
+          # were the sweep timing out, not the site being broken.
           #
-          # -P 2 rather than a `sleep`: the request latency IS the delay, and
-          # the pages take 28.9s cold. Worst case 12 x 28.9 = 347s for this
-          # group, inside the cap below. Warm (the normal case, ~1.3s): ~16s.
+          # And a timing-out sweep is worse than a slow one, because the gate
+          # below exits 1 and SKIPS every remaining assertion — including the
+          # #216/#218 rule-source check, the hardest surface on this site to
+          # reach. The expensive step was masking the valuable ones.
           #
-          # Adding a model was considered and does not fix it: the live Groq
-          # catalogue holds only three usable text models, and 3 x 8,000 =
-          # 24,000 still cannot absorb a 78,300-token burst. Pacing can.
-          grep -E '/rashifal/[a-z]+/?$' /tmp/urls.txt > /tmp/urls-llm.txt || true
+          # WHAT COVERS THEM INSTEAD: the weekly drift run probes ONE rashifal
+          # page, rotating by ISO week, so the route shape is still exercised
+          # at 1/24th the tokens. See the step after this one.
           grep -vE '/rashifal/[a-z]+/?$' /tmp/urls.txt > /tmp/urls-cheap.txt || true
-          n_llm=$(wc -l < /tmp/urls-llm.txt); n_cheap=$(wc -l < /tmp/urls-cheap.txt)
-          echo "sweeping $n_cheap cheap URLs at -P 6, then $n_llm LLM-backed at -P 2"
+          n_cheap=$(wc -l < /tmp/urls-cheap.txt)
+          n_llm=$(( n - n_cheap ))
+          echo "sweeping $n_cheap URLs at -P 6; skipping $n_llm LLM-backed (token budget)"
 
-          timeout 600 sh -c '
-            xargs -a /tmp/urls-cheap.txt -P 6 -I{} /tmp/probe.sh {}
-            xargs -a /tmp/urls-llm.txt   -P 2 -I{} /tmp/probe.sh {}
-          ' > /tmp/sweep.tsv
+          # 600s is now a pathological-case cap rather than the normal path.
+          # 189 URLs at -P 6 is ~32 batches: ~41s warm (~1.3s/page, measured
+          # 2026-08-26). The removed LLM phase was what consumed the budget.
+          timeout 600 xargs -a /tmp/urls-cheap.txt -P 6 -I{} /tmp/probe.sh {} \
+            > /tmp/sweep.tsv
           swept_rc=$?
           swept=$(wc -l < /tmp/sweep.tsv)
           if [ "$swept_rc" -eq 124 ]; then
-            echo "SMOKE_STATUS=timeout-after-$swept-of-$n" >> "$GITHUB_ENV"
-            echo "::error::sweep exceeded 10 min after $swept/$n URLs — failing, not skipping"; exit 1
+            echo "SMOKE_STATUS=timeout-after-$swept-of-$n_cheap" >> "$GITHUB_ENV"
+            echo "::error::sweep exceeded 10 min after $swept/$n_cheap URLs — failing, not skipping"; exit 1
           fi
 
           # Collect EVERY failure, not just the first: one 500 and forty 500s
@@ -387,7 +449,7 @@ jobs:
           bad=$(wc -l < /tmp/bad.tsv)
           cleared=$(( cand - bad ))
 
-          echo "swept $swept/$n URLs · sweep non-200: $cand · confirmed: $bad · cleared on recheck: $cleared"
+          echo "swept $swept/$n_cheap URLs (+$n_llm LLM-backed skipped) · sweep non-200: $cand · confirmed: $bad · cleared on recheck: $cleared"
           if [ "$cleared" -gt 0 ]; then
             echo "::warning::$cleared URL(s) failed the concurrent sweep but returned 200 serially — free-tier contention, not a broken page"
           fi
@@ -399,7 +461,11 @@ jobs:
           {
             echo "### Smoke sweep"
             echo ""
-            echo "Swept **$swept / $n** sitemap URLs · confirmed non-200: **$bad**"
+            echo "Swept **$swept / $n_cheap** sitemap URLs · confirmed non-200: **$bad**"
+              echo ""
+              echo "_${n_llm} LLM-backed \`/rashifal/{rashi}\` page(s) deliberately NOT swept —"
+              echo "each generates a reading on a cache miss at ~3,330 input tokens and the"
+              echo "site runs on Groq's free tier. The weekly drift run probes one, rotating._"
             if [ "$cleared" -gt 0 ]; then
               echo ""
               echo "_${cleared} URL(s) failed the concurrent sweep and returned 200 on a serial"
@@ -431,6 +497,91 @@ jobs:
       # this step was silently handing the #193 checks an empty page.
       # Measured 2026-08-26: no slash -> HTTP 307, 0 bytes; with slash and -L ->
       # HTTP 200, 124231 bytes.
+      # The ONE LLM-backed probe this workflow is willing to pay for, and only
+      # on the weekly drift run.
+      #
+      # The sweep above skips all 24 /rashifal/{rashi} pages because each one
+      # GENERATES a reading on a cache miss (~3,330 input tokens) and the site
+      # runs on Groq's free tier. Skipping them entirely would leave the whole
+      # route shape unverified, and that route is how the daily rashifal
+      # reaches users — the surface of the 21-day silent outage.
+      #
+      # So: one page, rotated by ISO week, 1/24th the token cost, and never on
+      # a push. 12 rashis x 2 languages means the full set is covered in 24
+      # weeks; any single break shows up within one week of its own slot, and
+      # a break affecting ALL rashis (the realistic failure, since they share
+      # one code path and one prompt) shows up on the next run whichever slot
+      # it picks.
+      #
+      # continue-on-error: this is coverage, not a release gate. A free-tier
+      # rate limit is not a defect in the commit, and failing the job for one
+      # would make the gate noisier than the thing it watches.
+      - name: One LLM-backed rashifal page (weekly run only)
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          rashis="aries taurus gemini cancer leo virgo libra scorpio sagittarius capricorn aquarius pisces"
+          week=$(date -u +%V)            # 01-53, so the slot advances weekly
+          i=$(( (10#$week - 1) % 12 ))
+          rashi=$(echo $rashis | cut -d' ' -f$(( i + 1 )))
+          # Alternate language every 12 weeks so Hindi gets covered too (#124).
+          if [ $(( (10#$week - 1) / 12 % 2 )) -eq 1 ]; then
+            url="$SITE/hi/rashifal/$rashi"
+          else
+            url="$SITE/rashifal/$rashi"
+          fi
+          # 90s, not the sweep's 30s: a cold generation is a real LLM call.
+          # Measured 2026-08-26, one page took 28.9s cold.
+          # No heredoc: a heredoc body must sit at column 0, which terminates
+          # the YAML block scalar this step lives in. Same split-on-space
+          # idiom as /tmp/probe.sh above.
+          out=$(curl -sL -o /tmp/rashifal.html --max-time 90 --max-redirs 5 \
+                     -w '%{http_code} %{time_total}' "$url" 2>/dev/null) || out=""
+          [ -n "$out" ] || out="000 0"
+          code=${out%% *}
+          secs=${out##* }
+          bytes=$(wc -c < /tmp/rashifal.html 2>/dev/null || echo 0)
+
+          # A 200 IS NOT ENOUGH, and neither is page size.
+          #
+          # The failure this route actually had was a 200 carrying no reading:
+          # the envelope stripper cleaned a truncated <think> block to zero
+          # visible characters, so the page rendered empty and reported
+          # success. A whole-document byte floor cannot see that — the page is
+          # ~126,000 bytes and the chrome, nav, footer and JSON-LD survive an
+          # empty reading intact. Measured on /rashifal/aries 2026-10-08:
+          # 125,952 bytes total, of which the reading is ~1,230 characters.
+          #
+          # So measure THE PROSE CONTAINER, which is what users came for.
+          # `.speakable-body` is the div holding `{{ reading_body }}` in
+          # rashifal_single.html, and it is already load-bearing — the Article
+          # JSON-LD's SpeakableSpecification targets it.
+          #
+          # NOTE the pattern is `<div class="speakable-body` and not the bare
+          # class name: the string appears TWICE on the page, once inside the
+          # JSON-LD speakable spec. Matching the bare name finds the JSON-LD
+          # first and measures structured data instead of the reading — which
+          # would have passed on a page with no reading at all.
+          prose=$(awk '/<div class="speakable-body/{f=1} f{buf=buf $0 " "} f&&/<\/div>/{print length(buf); exit}' \
+                    /tmp/rashifal.html)
+          prose=${prose:-0}
+          echo "week $week -> $url  HTTP $code  ${secs}s  ${bytes} bytes  prose ${prose} chars"
+
+          if [ "$code" != "200" ]; then
+            echo "::warning::$url returned HTTP $code — rashifal route may be degraded"
+            exit 1
+          fi
+          # 400, against a measured ~1,280 for a real reading and ~105 for an
+          # empty one (the class attribute is inside the match window). The
+          # gap is wide on purpose: this should fire on a missing reading, not
+          # on a short one.
+          if [ "$prose" -lt 400 ]; then
+            echo "::warning::$url returned 200 but its reading is only ${prose} chars — an empty-prose render, which is exactly how the 21-day rashifal outage looked from outside"
+            exit 1
+          fi
+          echo "rashifal route healthy: $rashi, ${prose} chars of reading"
+
       - name: Fetch the pages once, so every check reads the same bytes
         run: |
           set -euo pipefail

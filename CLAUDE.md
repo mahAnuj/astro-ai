@@ -34,8 +34,8 @@ There is **no staging environment**, and test coverage is **narrow** — a behav
 covers request paths only (`uv run pytest`), and most of the app has none. A push is the
 deploy, and production is the first place code runs.
 
-**The one check that runs against production** is `verify-production.yml`, on every push
-to `main`, daily, and on demand. It exists because every `scripts/verify_*.py` gate checks
+**The one check that runs against production** is `verify-production.yml`, on a push to
+`main` **that could change the deployed app**, weekly, and on demand. It exists because every `scripts/verify_*.py` gate checks
 the *tree*, none checks the *site*, and agents working here frequently cannot reach
 `shubhagya.com` at all — so "verified" has meant "verified against `origin/main`" and the
 last mile was done by hand or not at all. Read its header before adding a check: a green
@@ -65,6 +65,47 @@ serving. Two tiers:
 Note the path is `/health`, **not** `/healthz`: `/healthz` is intercepted by Google
 infrastructure ahead of Cloud Run and never reaches the app. Measured 2026-08-26 and
 recorded above the route — do not "fix" it toward kubernetes convention.
+
+#### Its cadence is narrow on purpose — changed 2026-10-08
+
+The workflow is expensive (a ~5 min deploy wait plus a sweep of 189 URLs) and it was
+running on everything. Measured 2026-10-08: of the last 25 commits on `main`, **zero**
+touched anything that ships — all of them were `.github/`, `.claude/`, `scripts/`,
+`measurements/` or a root `*.md` — and all 25 paid a full verification. 12 runs, **227
+Actions minutes in one day**, against a 2,000-minute monthly allowance.
+
+So the push trigger carries a `paths-ignore` derived from the Dockerfile, which copies
+exactly `pyproject.toml`, `uv.lock`, `README.md` and `src/`. Three things to know:
+
+- **It is an ignore-list, not an allow-list.** A new top-level directory must default to
+  *verifying*. A `paths:` allow-list would silently exempt every future app path.
+- **The pattern is `*.md`, never `**.md`.** In GitHub path filters `*` does not cross a
+  `/`, so `*.md` is root-level only. `**.md` would also match
+  `src/astro_ai/knowledge/*.md` — the classical-source corpus the app reads at runtime to
+  ground its astrological claims. A corpus edit changes what users see and must verify.
+- **A skipped run closes no issue.** `close-on-evidence.yml` fires on this workflow
+  concluding success and reads its `head_sha`. A docs-only or workflow-only commit now
+  produces no run, so an issue whose fix was docs-only will not auto-close. That is
+  correct — "verified in production" is not a claim that can be made about a commit that
+  never reached production — but it means such issues close via `/prioritise` instead.
+
+**The sweep no longer touches the LLM-backed pages.** The 24 `/rashifal/{rashi}` routes
+generate a reading on a cache miss at ~3,330 input tokens each — ~80k tokens per sweep,
+and on 2026-10-08 the sweep ran 12 times, so **~960k free-tier tokens went on verifying
+that pages render**. Worse, pacing them at `-P 2` made the sweep the long pole: 13
+consecutive runs died at exactly 600s (`exit code 124`), and because the smoke gate exits
+1 it **skipped every remaining assertion**, including the #216/#218 rule-source check. The
+expensive step was masking the valuable ones. The weekly run now probes **one** rashifal
+page, rotating by ISO week, covering all 24 in 24 weeks.
+
+That probe asserts on **the prose container, not the page size**. Measured on
+`/rashifal/aries` 2026-10-08: 125,952 bytes total, of which the reading is ~1,280
+characters. Strip the reading and the page is still 124,784 bytes, because the chrome,
+nav, footer and JSON-LD survive — so any whole-document byte floor passes a page with no
+reading on it, which is exactly how the 21-day outage looked from outside. The check reads
+the `.speakable-body` **div** (`<div class="speakable-body`, not the bare class name — the
+string also appears in the JSON-LD speakable spec, and matching that measures structured
+data instead of the reading).
 
 ### Rules for agents
 
