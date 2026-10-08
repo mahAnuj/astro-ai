@@ -48,6 +48,7 @@ from astro_ai.chart import (
 )
 from astro_ai.llm import generate_rashifal, parse_sectioned_reading
 from astro_ai.providers import AllProvidersExhausted
+from astro_ai.rashifal_derive import combined_keys, sections_by_rashi
 from astro_ai.routes.deps import (
     RASHIFAL_PROMPT_PATH,
     _site_url,
@@ -434,7 +435,6 @@ async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
         return JSONResponse({"ok": False, "error": f"unsupported lang: {lang}"}, status_code=400)
 
     today_iso = date.today().isoformat()
-    prompt_fp = cache.fingerprint_prompt(RASHIFAL_PROMPT_PATH)
     started = _time.time()
     try:
         neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
@@ -442,12 +442,13 @@ async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
         return JSONResponse({"ok": False, "error": f"Couldn't compute reference chart: {err}"}, status_code=500)
     transit = compute_transit_snapshot(neutral_chart)
 
+    cache_key, storage_key = combined_keys(lang, today_iso)
     try:
         text = _daily_rashifal_text(
             lang=lang,
             today_iso=today_iso,
-            cache_key=f"rashifal:{today_iso}:{lang}:{prompt_fp}",
-            storage_key=f"rashifal/{today_iso}-{lang}-{prompt_fp}.txt",
+            cache_key=cache_key,
+            storage_key=storage_key,
             call_fn=lambda: generate_rashifal(
                 transit=transit, today_iso=today_iso,
                 prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
@@ -461,13 +462,32 @@ async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
 
     sections = parse_sectioned_reading(text)
     elapsed = round(_time.time() - started, 1)
-    log.info("warm-rashifal lang=%s sections=%d elapsed=%.1fs", lang, len(sections), elapsed)
+    # single_pages is the number /rashifal/{rashi} needs (#268): how many of the
+    # 12 pages can be cut from this text and pass the single route's own gate.
+    # Counted on a cache hit too — the text is what matters, not who wrote it.
+    by_rashi = sections_by_rashi(text)
+    single_pages = sum(
+        1 for i in range(12)
+        if i in by_rashi and llm_providers.passes_quality(by_rashi[i], "rashifal_single")[0]
+    )
+    log.info("warm-rashifal lang=%s sections=%d single_pages=%d elapsed=%.1fs",
+             lang, len(sections), single_pages, elapsed)
+    if single_pages < 12:
+        # Status stays 200: Cloud Scheduler judges the status and a retry would
+        # not change what the model wrote. The alert is the signal, and this is
+        # the detector #268 asked for — a heading format we do not recognise.
+        _fire_error_alert(
+            request,
+            RuntimeError(f"warm {lang}: only {single_pages}/12 single pages derivable"),
+            f"rashifal:warm:{lang}",
+        )
     # sections is the number the blast needs; anything under 12 means the blast
     # will email a partial list, so surface it rather than reporting a bare ok.
     return JSONResponse({
-        "ok": len(sections) == 12,
+        "ok": len(sections) == 12 and single_pages == 12,
         "lang": lang,
         "sections": len(sections),
+        "single_pages": single_pages,
         "chars": len(text),
         "elapsed_s": elapsed,
     })
