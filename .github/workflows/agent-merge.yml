@@ -96,17 +96,32 @@ jobs:
           echo "ok=true" >> "$GITHUB_OUTPUT"
 
       # qa.md: "PASS is a report, not an action." Read the report here.
+      #
+      # A LABEL, not a comment grep. The first agent PR (#292) had a QA verdict
+      # and no PR comment carrying it, so a text match would have left it open
+      # forever with green checks and nothing saying why. A label is binary,
+      # survives any formatting, shows in `gh pr list --label qa-pass`, and —
+      # applied to the issue as well — makes the whole loop auditable in one
+      # query instead of by reading comment bodies.
+      #
+      # qa-fail is checked too, and wins. A PR that QA failed must not merge
+      # because someone later added qa-pass without removing it.
       - name: QA verdict
         id: qa
         if: steps.gates.outputs.ok == 'true'
         run: |
-          gh pr view "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --json comments \
-            --jq '.comments[].body' > /tmp/comments.txt
-          if grep -qiE '^\s*(\*\*)?QA(\*\*)?\s*:?\s*(\*\*)?PASS' /tmp/comments.txt; then
-            echo "ok=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::no QA PASS comment yet — leaving the PR open"
-          fi
+          labels=$(gh pr view "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" \
+                     --json labels --jq '[.labels[].name] | join(",")')
+          echo "labels: ${labels:-none}"
+          case ",$labels," in
+            *,qa-fail,*)
+              echo "::notice::qa-fail is set — not merging, whatever else is present"
+              exit 0 ;;
+            *,qa-pass,*)
+              echo "ok=true" >> "$GITHUB_OUTPUT" ;;
+            *)
+              echo "::notice::no qa-pass label yet — leaving the PR open" ;;
+          esac
 
       - name: Size and path limits
         id: size
@@ -126,8 +141,18 @@ jobs:
         if: steps.size.outputs.ok == 'true'
         run: |
           gh pr merge "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --squash --delete-branch
+
+          # Link both ways so a reviewer can follow the thread from either end.
+          issue=$(echo "${{ steps.pr.outputs.branch }}" | sed -n 's|issue/\([0-9]\+\).*|\1|p')
+          if [ -n "$issue" ]; then
+            gh issue comment "$issue" --repo "$GH_REPO" --body \
+              "Merged by \`agent-merge\`: PR #${{ steps.pr.outputs.number }}, \`pr-gates\` green on \`${{ github.event.workflow_run.head_sha }}\`, \`qa-pass\` on record.
+
+          **Not closing this.** \`main\` deploys on merge, so it closes once \`verify-production.yml\` has asserted against the live site — CLAUDE.md's two-stage close. With BUILD_SHA set, that run can now prove *which* commit is serving."
+          fi
+
           gh pr comment "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --body \
-            "Merged automatically: \`pr-gates\` green on \`${{ github.event.workflow_run.head_sha }}\`, QA PASS on record, diff within the unattended limit.
+            "Merged automatically: \`pr-gates\` green on \`${{ github.event.workflow_run.head_sha }}\`, \`qa-pass\` on record, diff within the unattended limit.
 
           **Not closing the issue.** \`main\` deploys on merge, so the issue closes only once \`verify-production.yml\` has asserted against the live site — CLAUDE.md's two-stage close."
 
