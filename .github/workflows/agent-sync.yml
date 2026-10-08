@@ -93,8 +93,20 @@ jobs:
             carried. Short and comparable week to week — a log that reads like
             minutes will not be read by the next sync, which is its only reader.
 
-            End in decisions, escalations or proposed closures. Never close an
-            issue yourself. Nobody pushes.
+            **Audit the week's closures.** Since 2026-10-08 two things close
+            issues without a human: close-on-evidence.yml, and project-manager
+            in /prioritise. Nobody checks them, so you do:
+
+              gh issue list --state closed --limit 40 --json number,title,closedAt,comments
+
+            For each closed in the last 7 days, confirm its closing comment
+            carries real evidence — a command and its output, or the three facts
+            close-on-evidence requires. A closure whose comment says "fixed" and
+            nothing else is exactly the #143 failure returning, and it is cheap
+            to undo: say so in the sync record and reopen it.
+
+            End in decisions, escalations or proposed closures. You do not close
+            issues yourself — /prioritise does that. Nobody pushes.
           claude_args: |
             --max-turns 60
             --effort high
