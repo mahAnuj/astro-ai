@@ -1,0 +1,748 @@
+{
+  "source": "gsc",
+  "site": "sc-domain:shubhagya.com",
+  "window": [
+    "2026-09-08",
+    "2026-10-05"
+  ],
+  "note": "window excludes the last 3 days \u2014 GSC data is not final before that",
+  "rows": [
+    {
+      "query": "rahu mahadasha ketu antardasha",
+      "impressions": 157,
+      "clicks": 4,
+      "ctr": 0.0255,
+      "position": 9.6,
+      "band_opportunity": 5.4
+    },
+    {
+      "query": "rahu dasha with sun mahadasha and job",
+      "impressions": 32,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.3,
+      "band_opportunity": 1.9
+    },
+    {
+      "query": "rahu mahadasha ketu antardasha remedies",
+      "impressions": 29,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 8.6,
+      "band_opportunity": 1.7
+    },
+    {
+      "query": "rahu mahadasha and ketu antardasha",
+      "impressions": 26,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.1,
+      "band_opportunity": 1.6
+    },
+    {
+      "query": "ketu antardasha in rahu mahadasha",
+      "impressions": 23,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.9,
+      "band_opportunity": 1.4
+    },
+    {
+      "query": "what is manglik dosh",
+      "impressions": 23,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.5,
+      "band_opportunity": 1.4
+    },
+    {
+      "query": "rahu dasha ketu antardasha",
+      "impressions": 19,
+      "clicks": 1,
+      "ctr": 0.0526,
+      "position": 9.8,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "rahu ketu antardasha",
+      "impressions": 15,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.1,
+      "band_opportunity": 0.9
+    },
+    {
+      "query": "manglik dosh in english",
+      "impressions": 13,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 6.8,
+      "band_opportunity": 0.8
+    },
+    {
+      "query": "rahu mahadasha with ketu antardasha",
+      "impressions": 12,
+      "clicks": 1,
+      "ctr": 0.0833,
+      "position": 9.1,
+      "band_opportunity": -0.3
+    },
+    {
+      "query": "manglik houses",
+      "impressions": 11,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 27.7
+    },
+    {
+      "query": "upcoming hindu festivals",
+      "impressions": 10,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 81.8
+    },
+    {
+      "query": "bhagya kundali astrology",
+      "impressions": 9,
+      "clicks": 2,
+      "ctr": 0.2222,
+      "position": 5.2
+    },
+    {
+      "query": "bhagya score",
+      "impressions": 9,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 6.6,
+      "band_opportunity": 0.5
+    },
+    {
+      "query": "what happens in rahu mahadasha and ketu antardasha",
+      "impressions": 9,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 18.3,
+      "band_opportunity": 0.5
+    },
+    {
+      "query": "bhagya astrology",
+      "impressions": 8,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.6,
+      "band_opportunity": 0.5
+    },
+    {
+      "query": "bhagya chart",
+      "impressions": 8,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 6.8,
+      "band_opportunity": 0.5
+    },
+    {
+      "query": "manglik dosh means",
+      "impressions": 8,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 7.4,
+      "band_opportunity": 0.5
+    },
+    {
+      "query": "om angarakaya namah",
+      "impressions": 7,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 2.1
+    },
+    {
+      "query": "rahu mahadasha ketu antardasha period",
+      "impressions": 7,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.9,
+      "band_opportunity": 0.4
+    },
+    {
+      "query": "7.5 years saturn period",
+      "impressions": 6,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 7,
+      "band_opportunity": 0.4
+    },
+    {
+      "query": "hindu festivals",
+      "impressions": 6,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 99.3
+    },
+    {
+      "query": "manglik means",
+      "impressions": 6,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 10.2,
+      "band_opportunity": 0.4
+    },
+    {
+      "query": "rahu mahadasha",
+      "impressions": 6,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 2.8
+    },
+    {
+      "query": "bhagya.com",
+      "impressions": 5,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 3.8
+    },
+    {
+      "query": "jupiter in tamil",
+      "impressions": 5,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 2.8
+    },
+    {
+      "query": "manglik status means",
+      "impressions": 5,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 7.6,
+      "band_opportunity": 0.3
+    },
+    {
+      "query": "puja calendar",
+      "impressions": 5,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 84.4
+    },
+    {
+      "query": "shubhagya",
+      "impressions": 5,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 2.2
+    },
+    {
+      "query": "yes",
+      "impressions": 5,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 2.4
+    },
+    {
+      "query": "\u090f\u091a \u0915\u0945\u0932\u0947\u0902\u0921\u0930",
+      "impressions": 5,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 7.4,
+      "band_opportunity": 0.3
+    },
+    {
+      "query": "angarakaya namah",
+      "impressions": 4,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 2.8
+    },
+    {
+      "query": "festivals of hindu",
+      "impressions": 4,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 89.2
+    },
+    {
+      "query": "hindu festivals calendar",
+      "impressions": 4,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 87.5
+    },
+    {
+      "query": "mangalik dosh",
+      "impressions": 4,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 33.2
+    },
+    {
+      "query": "puja date",
+      "impressions": 4,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 87.5
+    },
+    {
+      "query": "hindu festivals list",
+      "impressions": 3,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 86.3
+    },
+    {
+      "query": "ketu mahadasha rahu antardasha",
+      "impressions": 3,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 20.7
+    },
+    {
+      "query": "ketu rahu antardasha",
+      "impressions": 3,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 13.3,
+      "band_opportunity": 0.2
+    },
+    {
+      "query": "manglik dosh",
+      "impressions": 3,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 20.3
+    },
+    {
+      "query": "rahu mahadasha effects",
+      "impressions": 3,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "upcoming puja",
+      "impressions": 3,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 72.3
+    },
+    {
+      "query": "what is manglik status",
+      "impressions": 3,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 10.7,
+      "band_opportunity": 0.2
+    },
+    {
+      "query": "what is sade sati dosha",
+      "impressions": 3,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.3,
+      "band_opportunity": 0.2
+    },
+    {
+      "query": "which pooja is today",
+      "impressions": 3,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 77.7
+    },
+    {
+      "query": "festival calendar",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 80.5
+    },
+    {
+      "query": "festival calendar hindu",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 88
+    },
+    {
+      "query": "hindu festival",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 93.5
+    },
+    {
+      "query": "hindu festival calendar",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 82.5
+    },
+    {
+      "query": "ketu rahu dasha",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 32
+    },
+    {
+      "query": "next indian festival",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 85
+    },
+    {
+      "query": "rahu ketu dasha period",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 7.5,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "rahu ketu mahadasha",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 10.5,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "sade sati career problems",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.5,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "sadesati rashi",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 8,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "shani 7.5 years on which rashi",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 10,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "sun debilitated sign",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "today festival",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 103
+    },
+    {
+      "query": "today is which festival",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 80
+    },
+    {
+      "query": "today which festival",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 82.5
+    },
+    {
+      "query": "upcoming festivals in india",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 63
+    },
+    {
+      "query": "upcoming pujas",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 83
+    },
+    {
+      "query": "what is mangalik dosh",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.5,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "what is manglik means",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 11,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "what today festival",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 90
+    },
+    {
+      "query": "which festival is coming soon",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 82.5
+    },
+    {
+      "query": "which festival is today",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 84
+    },
+    {
+      "query": "which festival is tomorrow",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 74.5
+    },
+    {
+      "query": "which hindu festival is today",
+      "impressions": 2,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 85
+    },
+    {
+      "query": "both and yes",
+      "impressions": 1,
+      "clicks": 1,
+      "ctr": 1,
+      "position": 4
+    },
+    {
+      "query": "15 ko ky h",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 5
+    },
+    {
+      "query": "2027 which month?",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "6th bhav in kundali",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 13,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "6th lord debilitated",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "8 november 2026 day",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 72
+    },
+    {
+      "query": "ab konsa festival aayega",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 8,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "any chronic illness",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "any festival today",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 80
+    },
+    {
+      "query": "bhagya chakra today",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 10,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "bhagya fal",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "bhagya rashi",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "bhagya.ai",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 27
+    },
+    {
+      "query": "bhagyafal",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 19,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "both",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "calendar with hindu festival",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 84
+    },
+    {
+      "query": "chalisa karaka",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 10,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "chauth date",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 63
+    },
+    {
+      "query": "check manglik",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 8,
+      "band_opportunity": 0.1
+    },
+    {
+      "query": "date",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 1
+    },
+    {
+      "query": "debilitated sun",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "debilitated sun in 7th house",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 3
+    },
+    {
+      "query": "debilitated sun in 8th house",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 2
+    },
+    {
+      "query": "festival days",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 92
+    },
+    {
+      "query": "festival in india today",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 84
+    },
+    {
+      "query": "festival in this month",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 86
+    },
+    {
+      "query": "festival of india calendar",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 91
+    },
+    {
+      "query": "festival of this month",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 85
+    },
+    {
+      "query": "festival today hindu",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 82
+    },
+    {
+      "query": "festival today in india",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 82
+    },
+    {
+      "query": "festival upcoming",
+      "impressions": 1,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 65
+    }
+  ]
+}

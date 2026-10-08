@@ -1,0 +1,466 @@
+{
+  "source": "ga4",
+  "property": "543505751",
+  "window": [
+    "2026-09-08",
+    "2026-10-05"
+  ],
+  "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
+  "rows": [
+    {
+      "landing": "/",
+      "sessions": 56,
+      "bounce_rate": 0.1429,
+      "pages_per_session": 5.39,
+      "active_users": 17
+    },
+    {
+      "landing": "/learn/rahu-mahadasha-ketu-antardasha/",
+      "sessions": 29,
+      "bounce_rate": 0.2759,
+      "pages_per_session": 1.0,
+      "active_users": 28
+    },
+    {
+      "landing": "/learn/rahu-mahadasha-career-problems/",
+      "sessions": 10,
+      "bounce_rate": 0.6,
+      "pages_per_session": 1.0,
+      "active_users": 10
+    },
+    {
+      "landing": "/learn/debilitated-sun-career/",
+      "sessions": 9,
+      "bounce_rate": 0.2222,
+      "pages_per_session": 1.22,
+      "active_users": 9
+    },
+    {
+      "landing": "/learn/sade-sati/",
+      "sessions": 9,
+      "bounce_rate": 0.2222,
+      "pages_per_session": 1.0,
+      "active_users": 9
+    },
+    {
+      "landing": "/learn/griha-pravesh-muhurat-2026-2027/",
+      "sessions": 8,
+      "bounce_rate": 0.625,
+      "pages_per_session": 1.0,
+      "active_users": 8
+    },
+    {
+      "landing": "/learn/kaal-sarp-dosh/",
+      "sessions": 8,
+      "bounce_rate": 0.625,
+      "pages_per_session": 2.25,
+      "active_users": 8
+    },
+    {
+      "landing": "/learn/marriage-mahadasha-timing/",
+      "sessions": 7,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 7
+    },
+    {
+      "landing": "/learn/jupiter-in-10th-house-career/",
+      "sessions": 6,
+      "bounce_rate": 0.6667,
+      "pages_per_session": 1.0,
+      "active_users": 4
+    },
+    {
+      "landing": "/learn/planets-in-7th-house-marriage/",
+      "sessions": 6,
+      "bounce_rate": 0.5,
+      "pages_per_session": 4.83,
+      "active_users": 6
+    },
+    {
+      "landing": "/learn/saturn-in-10th-house-career/",
+      "sessions": 6,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.17,
+      "active_users": 4
+    },
+    {
+      "landing": "/learn/10th-lord-in-6th-house-career/",
+      "sessions": 5,
+      "bounce_rate": 0.6,
+      "pages_per_session": 1.0,
+      "active_users": 4
+    },
+    {
+      "landing": "/learn/manglik-dosh/",
+      "sessions": 5,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 3
+    },
+    {
+      "landing": "/learn/panch-mahapurush-yoga/",
+      "sessions": 5,
+      "bounce_rate": 0.4,
+      "pages_per_session": 1.4,
+      "active_users": 4
+    },
+    {
+      "landing": "/learn/7th-lord-placement-marriage-guide/",
+      "sessions": 4,
+      "bounce_rate": 0.25,
+      "pages_per_session": 1.0,
+      "active_users": 4
+    },
+    {
+      "landing": "/learn/second-marriage-yoga-kundli/",
+      "sessions": 4,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.25,
+      "active_users": 4
+    },
+    {
+      "landing": "/festivals",
+      "sessions": 3,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/career-during-sade-sati/",
+      "sessions": 3,
+      "bounce_rate": 0.3333,
+      "pages_per_session": 2.0,
+      "active_users": 3
+    },
+    {
+      "landing": "/learn/foreign-career-yoga-kundli/",
+      "sessions": 3,
+      "bounce_rate": 0.6667,
+      "pages_per_session": 1.0,
+      "active_users": 3
+    },
+    {
+      "landing": "/learn/pitru-dosh-remedies/",
+      "sessions": 3,
+      "bounce_rate": 0.6667,
+      "pages_per_session": 1.0,
+      "active_users": 3
+    },
+    {
+      "landing": "/muhurat/griha-pravesh",
+      "sessions": 3,
+      "bounce_rate": 0.0,
+      "pages_per_session": 4.0,
+      "active_users": 3
+    },
+    {
+      "landing": "/panchang/2026-09-17",
+      "sessions": 3,
+      "bounce_rate": 0.3333,
+      "pages_per_session": 2.67,
+      "active_users": 3
+    },
+    {
+      "landing": "/learn/gochar-2026-planetary-transits/",
+      "sessions": 2,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/ketu-in-vedic-astrology/",
+      "sessions": 2,
+      "bounce_rate": 0.0,
+      "pages_per_session": 1.5,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/krittika-nakshatra/",
+      "sessions": 2,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/love-vs-arranged-marriage-kundli/",
+      "sessions": 2,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.5,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/marriage-mahadasha-timing",
+      "sessions": 2,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/marriage-timing-kundli/",
+      "sessions": 2,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/mars-remedies/",
+      "sessions": 2,
+      "bounce_rate": 0.0,
+      "pages_per_session": 3.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/name-numerology-explained/",
+      "sessions": 2,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/pitru-dosh/",
+      "sessions": 2,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/rahu-in-vedic-astrology/",
+      "sessions": 2,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/rahu-remedies/",
+      "sessions": 2,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/saturn-remedies/",
+      "sessions": 2,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/shukra-venus-in-vedic-astrology/",
+      "sessions": 2,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/sun-in-10th-house-career/",
+      "sessions": 2,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/sun-mahadasha/",
+      "sessions": 2,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/rashifal",
+      "sessions": 2,
+      "bounce_rate": 0.0,
+      "pages_per_session": 1.5,
+      "active_users": 2
+    },
+    {
+      "landing": "/?fbclid=IwcGRvZgRleHRuA2FlbQIxMQBzcnRjBmFwcF9pZAwyNTYyODEwNDA1NTgAAR540G977aYQ5AWPOcqzokuUWYkSgoagcPgr4jiyEmx3YgPv2d0MbV0mTLbo7Q_aem_48VicGAVgkpjQKqEAAEm2g",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/?fbclid=IwcGRvZgRleHRuA2FlbQIxMQBzcnRjBmFwcF9pZAwyNTYyODEwNDA1NTgAAR5DNNhoMj9Zh1tecUUyEcbSMyY7_Ku0UwvTivM-qwjrCWI1OJhZcBCkZpA1gA_aem_7QZ2qOZhBoSd2QLpIflIFA",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/?fbclid=IwcGRvZgRleHRuA2FlbQIxMQBzcnRjBmFwcF9pZAwyNTYyODEwNDA1NTgAAR6ONbDjzG4V5XYZUrG5ydIAxRobYb3ctXdy-bIFeZoV9rxxyIg4ej3kLho9dQ_aem_QXxYolPR8rtUgBJy04tibQ",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/?fbclid=IwcGRvZgRleHRuA2FlbQIxMQBzcnRjBmFwcF9pZAwyNTYyODEwNDA1NTgAAR7uQLpEoOKixbS8KO9IWZRRDvdiVlfBvlGdSTjsb1rDXPVGoVQAymwSHjur6A_aem_P21JvFrNEIRkgMp4vyLVsA",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/ask",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 5.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/kundli",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 7.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/11th-lord-placement-gains-guide/",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/2nd-lord-placement-wealth-guide/",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/ashwini-nakshatra/",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/career-not-progressing/",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 7.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/chronic-health-issues-kundli/",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/gajakesari-yoga/",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/guru-jupiter-in-vedic-astrology/",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/jupiter-remedies/",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/kaal-sarp-dosh-remedies/",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/mercury-remedies/",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/rahu-mahadasha-career-problems",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/sade-sati/?_x_tr_sl=en&_x_tr_tl=ta&_x_tr_hl=ta&_x_tr_pto=sge",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/surya-sun-in-vedic-astrology/",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 7.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/swati-nakshatra/",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 2.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/venus-remedies/",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/matching",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 2.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/muhurat/namkaran",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 10.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/panchang/2026-09-12",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 2.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/rashifal/pisces",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 4.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/terms",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 7.0,
+      "active_users": 1
+    }
+  ]
+}
