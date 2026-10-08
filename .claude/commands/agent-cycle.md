@@ -103,6 +103,42 @@ items. Read BACKLOG.md as a cache, not evidence. Read-only — propose closures,
 Take its top item. Never queue work another loop is already doing — check `AGENT_STATUS.md` and
 live branches.
 
+## Step 2.5 — check what a previous cycle already did, and continue from it
+
+Cycles die. A token expires at sixty minutes, a job times out at a hundred and twenty, a quota
+runs out. Starting from scratch each time is how the same work gets paid for twice — run
+37749887640 spent $5.34 and 63 minutes on #270 and lost all of it, and a naive re-dispatch would
+have spent it again.
+
+Before dispatching anyone, establish what exists:
+
+```bash
+git ls-remote --heads origin "issue/<n>-*"          # a branch from an earlier cycle?
+gh issue view <n> --comments                        # a design? a QA verdict? a failure?
+gh pr list --repo "$GH_REPO" --head "<branch>"      # a PR already open?
+```
+
+Then:
+
+- **A branch on `origin` with commits** — continue from it. `git switch` to it and carry on;
+  do not start a parallel branch. The commits on it are real work that survived.
+- **An architect design in the comments and no branch** — the design stands. **Skip the architect
+  and hand that design straight to the engineer.** #270 carries a complete one: 18 i18n keys, EN
+  output pinned to hash `04118625184f5800`, the token delta measured against the free tier. Paying
+  for that analysis twice is waste, and a second architect may reach a *different* design, which
+  is worse than waste.
+- **An open PR** — push to its branch rather than opening another.
+- **A QA verdict from a previous round** — read the defects it names before writing anything. This
+  project has run fifteen QA passes with every one failing its first submission; the second round
+  should not rediscover the first round's findings.
+
+**Say in your issue comment what you found and what you are reusing.** A cycle that silently
+redoes finished work looks identical to one doing it for the first time, and the only way anyone
+notices is the bill.
+
+If you deliberately discard earlier work — the design was wrong, the branch is stale against a
+moved `main` — say which and why. Discarding is a legitimate choice; discarding silently is not.
+
 ## Step 3 — build it
 
 Follow `/bug` or `/feature` internals exactly, whichever fits. In particular:
