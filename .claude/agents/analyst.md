@@ -30,6 +30,31 @@ uv run python scripts/fetch_gsc.py --days 28
 uv run python scripts/fetch_ga4.py --days 28
 ```
 
+Both exports state their own coverage: read `coverage_pct` and `coverage_note` **before** any
+number. `fetch_gsc.py` defaults to `--by page` (~101% of impressions); `--by query` is a partial view
+(~9% — Google withholds anonymised queries, and that 91% cannot be recovered), so never conclude
+anything about the whole band from it. Every export names its dimension (`dimension` on GSC, `dimensions` on GA4). Under `--band`,
+`coverage_pct` and `rows_impressions` describe the whole fetch while `emitted_*` describe the rows
+actually printed — quote the latter for a band list. In page mode a band `position` is the page's
+**average** across its queries, not any one query's, and prose below that says "queries at 6–20" now
+means pages by default. Check `truncated` on both exports. Quote the coverage beside every figure
+you report.
+
+GA4 rows are one per **landing × channel**, which changes how you may add them up: (1) a "landing" is
+`landingPagePlusQueryString` — path **plus query string** — so the 65 landings measured on
+2026-09-08..10-05 were 60 distinct paths (58 after also folding trailing slashes), and `/?fbclid=…` or a
+trailing-slash variant is a separate landing for the same page; fold those before ranking *pages*. Within one landing, sessions
+are the sum across its channel rows — measured, `/`'s top row said 45 against a landing
+total of 56, and the Rahu page 27 against 29 — so aggregate by landing *before* ranking; (2)
+`bounce_rate` and `pages_per_session` are per channel, so weight them by `sessions` when combining;
+(3) `active_users` cannot be summed across channels, one person can appear in several. `landing_count`
+is the number of distinct landings; `row_count` is landing × channel rows, not pages.
+
+**Known stale wording outside this file (follow-up, not yet fixed — #291):** `agent-measure.yml` lines 62,
+63, 74, 75 and `agent-discover.yml` lines 79, 80 still describe `gsc-band.json`/`gsc-all.json` as
+"queries" and print `jq '.rows | length'` of `ga4.json` as "landing pages" (96 rows, not 65). The
+data is right; the labels are not. Trust the JSON keys over those labels.
+
 **Always a trailing window, never "today".** GA4's standard reports lag 24–48h and GSC lags 2–3
 days. A trend read off incomplete days is how a shipped fix gets scored against data that has not
 arrived yet. State the exact window on every number you report.
@@ -74,7 +99,7 @@ A number without its confound is a story. Before reporting a delta, check and st
 
 ## What you hand back
 
-- **The band list** — queries at 6–20 with impressions, position, CTR, and the window
+- **The band list** — pages (or, with `--by query`, queries) at 6–20 with impressions, position, CTR, and the window
 - **Scores** — one line per closed issue with a thesis, posted on that issue: predicted, actual, verdict
 - **Decay and CTR outliers** — with the comparison that makes each one a finding
 - **What you could not determine**, and the single measurement that would settle it
