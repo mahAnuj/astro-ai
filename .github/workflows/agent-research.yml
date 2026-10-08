@@ -1,0 +1,192 @@
+# The Research team's loop: is every claim this site makes traceable to a book
+# it holds.
+#
+# Two specialists, because the backlog's correctness problems are domain-
+# specific and deep. `astrologer` (= astro-auditor) owns charts, dashas,
+# muhurta and Ashtakoota; `numerologist` owns the numbers.
+#
+# Both audit and report. NEITHER edits a rule — chart.py, muhurat.py,
+# numerology.py and matching.py are read-only to them, even when the fix is
+# obvious and one character long. An expert that could also edit the rule module
+# would be an expert marking its own homework, which is the independence `qa`
+# exists to protect.
+name: Agent research
+
+on:
+  schedule:
+    - cron: "0 19 * * 3"   # Wednesdays, 00:30 IST
+  workflow_dispatch:
+    inputs:
+      domain:
+        description: "astrology | numerology | both (default both)"
+        required: false
+
+concurrency:
+  group: agent-research
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    permissions:
+      contents: read      # audits; corpus writes go through a PR, not a push
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
+
+      # verify_rule_citations shells out to pdftotext. Without poppler it cannot
+      # open a book, and its own mutation self-test cannot go red either — the
+      # gate stops being able to vouch for itself.
+      - name: System packages
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+
+      - run: uv sync --all-groups
+
+      # data/ is gitignored, so a CI checkout holds ONE of the eight registered
+      # books. An absence measured against a partial corpus is worthless, which
+      # is why the agent is told to state which books it actually had.
+      - name: Which books are present
+        run: |
+          {
+            echo "## Corpus available to this run"
+            ls -la data/*.pdf data/*/*.pdf data/*/*.txt 2>/dev/null || echo "(none beyond the tracked one)"
+            echo
+            uv run python scripts/fetch_corpus.py --list 2>/dev/null || true
+          } | tee /tmp/corpus.txt
+          cat /tmp/corpus.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Act as the Research team. Domain: ${{ github.event.inputs.domain || 'both' }}.
+
+            Read these first and follow them exactly:
+              .claude/agents/astro-auditor.md    charts, dashas, muhurta, Ashtakoota
+              .claude/agents/numerologist.md     the numbers
+              src/astro_ai/knowledge/SOURCES.md  which book says what, and the traps
+
+            /tmp/corpus.txt lists the books this runner actually has. data/ is
+            gitignored, so you likely hold ONE of eight. **An absence measured
+            against a partial corpus is worthless — say which books were present
+            on every finding.**
+
+            THE CANONICAL LINEAGE, from chief.md. Not yours to revisit:
+              Vedic astrology  P.V.R. Narasimha Rao, Integrated Approach
+              Muhurta          B.V. Raman, Muhurtha (1948)
+              Numerology       Chaldean — Kumar / Cheiro
+              Contrast only    Goodwin (Western/Pythagorean) — NEVER an authority
+
+            Two consequences agents get wrong:
+            - Cheiro is NOT yet registered in scripts/fetch_corpus.py, so
+              verify_rule_citations fails any rule citing it. Registering it is
+              the first numerology task, not an afterthought.
+            - numerology.py currently implements Goodwin's reduction, which is
+              off-lineage. That is #162's real content and a migration.
+
+            Standing queue: #177/#178 (Ashtakoota has no source in the repo at
+            all), #175, #209, #211, #219, #163, #201, #200, #191, #230.
+
+            Classify every finding WRONG / UNSOURCED / CONTESTED / CORRECT.
+            Cite as `file §section ← data/<book> L<start>-<end>`. A citation with
+            no line range is not a citation — that is what #194 is about.
+
+            **Never invent a citation.** If you cannot find the rule in the
+            corpus or the books, the finding is UNSOURCED. A plausible
+            attribution is the most expensive thing you can produce, because it
+            survives review.
+
+            WRITE YOUR REPORT TO /tmp/report.md — in automation mode nothing you
+            say otherwise reaches a human. The unsourced list is the most
+            valuable part of it.
+
+            You may write src/astro_ai/knowledge/*.md and SOURCES.md — that is
+            corpus work and it is in scope. You may NOT touch chart.py,
+            muhurat.py, numerology.py or matching.py. File issues; Engineering
+            implements.
+          claude_args: |
+            --max-turns 80
+            --effort high
+            --allowedTools "Read,Write,Glob,Grep,TodoWrite,Skill,WebFetch,Bash"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*),Edit(src/astro_ai/chart.py),Edit(src/astro_ai/muhurat.py),Edit(src/astro_ai/numerology.py),Edit(src/astro_ai/matching.py)"
+
+      - name: Publish the report
+        if: always()
+        run: |
+          if [ -s /tmp/report.md ]; then
+            tee -a "$GITHUB_STEP_SUMMARY" < /tmp/report.md
+          else
+            echo "### No report written — treat this run as having produced nothing" \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # Hand the corpus changes to the next job. This job stays contents:read,
+      # so the agent — which has broad Bash — has no write credential to push
+      # with at all. Enforcing at the GitHub permission layer beats hoping a
+      # disallowedTools pattern covers every spelling of `git push`.
+      - name: Collect corpus changes
+        if: always()
+        run: |
+          mkdir -p /tmp/corpus-out
+          if [ -n "$(git status --porcelain src/astro_ai/knowledge/)" ]; then
+            cp -r src/astro_ai/knowledge /tmp/corpus-out/
+            echo "corpus changed"
+          else
+            echo "no corpus changes"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: corpus
+          path: /tmp/corpus-out
+          if-no-files-found: ignore
+
+  # A separate job, with no agent in it. Corpus additions reach main through a
+  # PR so that pr-gates runs verify_rule_citations against them — the one gate
+  # whose whole job is checking that a cited line range contains its quotation.
+  # A direct push would skip it.
+  propose:
+    needs: research
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: corpus
+          path: /tmp/corpus-out
+        continue-on-error: true
+
+      - name: Open a PR for any corpus additions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ ! -d /tmp/corpus-out/knowledge ]; then
+            echo "nothing to propose"
+            exit 0
+          fi
+          cp -r /tmp/corpus-out/knowledge/. src/astro_ai/knowledge/
+          if [ -z "$(git status --porcelain src/astro_ai/knowledge/)" ]; then
+            echo "corpus unchanged against main"
+            exit 0
+          fi
+          branch="issue/corpus-$(date -u +%Y%m%d-%H%M)"
+          git config user.name  "shubhagya-agent"
+          git config user.email "agent@users.noreply.github.com"
+          git switch -c "$branch"
+          git add src/astro_ai/knowledge/
+          git commit -m "corpus: extractions from the research loop
+
+          Sourced additions to knowledge/. Every citation carries a line range;
+          verify_rule_citations checks them in pr-gates."
+          git push -u origin "$branch"
+          gh pr create --repo "$GH_REPO" --base main --head "$branch" --fill

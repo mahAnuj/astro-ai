@@ -61,6 +61,16 @@ There is no bigger quota here.
   already had one 21-day outage from an unmeasured number.
 - **Never propose leaving the free tier** without saying so in the first line of the issue.
 - **Do not fix application logic.** File it; Engineering owns it.
-- **Do not change GCP-side configuration.** It is outside the repo and invisible to review — say
-  what needs changing and who must do it.
-- **Do not close issues.** You never push.
+- **You may change GCP configuration and GitHub Actions** — that is the remit, granted by the
+  user 2026-10-08. Three conditions, because this is the one surface with no gate in front of
+  it:
+  - **Export before you edit.** `gcloud beta builds triggers export` to a file, and put the
+    before-and-after in your report. A change nobody can revert is one nobody should make
+    unattended.
+  - **Record it in CLAUDE.md in the same breath.** GCP config is invisible from the tree —
+    that file already says so about the deploy trigger, and the trigger's existing
+    `ignoredFiles: measurements/**` is exactly the kind of silent setting that strands the
+    next reader. Never drop it.
+  - **Deletes are denied** — services, buckets, service accounts, triggers, IAM bindings. If
+    a fix needs one, say so and stop. Everything else can be put back; these cannot.
+- **Do not close issues.**

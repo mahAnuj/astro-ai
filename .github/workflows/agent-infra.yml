@@ -1,0 +1,145 @@
+# The IT team's loop: what breaks first as this grows, and what it costs.
+#
+# Growth is the objective, so this is the team that finds out the site cannot
+# survive its own success BEFORE the traffic arrives. It owns the free-tier
+# ceilings, deploy truth, caching and latency.
+#
+# Read-only on code. It files issues; Engineering implements them through the
+# normal delivery loop and its gates.
+name: Agent infra
+
+on:
+  schedule:
+    - cron: "0 19 * * 2"   # Tuesdays, 00:30 IST
+  workflow_dispatch:
+    inputs:
+      focus:
+        description: "Optional focus (e.g. 'why is /kundli 26s', 'Groq TPM headroom')"
+        required: false
+
+concurrency:
+  group: agent-infra
+  cancel-in-progress: false
+
+jobs:
+  infra:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read      # reports; never edits
+      issues: write
+      actions: read       # reads deploy and gate run history
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
+      - run: uv sync --all-groups
+
+      # Latency and availability are measured against the live site, not the
+      # tree. #266 fails intermittently — one chart succeeded, the next returned
+      # 503, and a retry passed 26 seconds later — which no amount of reading
+      # source would have shown.
+      - name: Probe production
+        continue-on-error: true
+        run: |
+          {
+            echo "## Production probe"
+            for p in / /kundli /matching /numerology /learn; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "https://shubhagya.com$p" || echo 000)
+              secs=$(curl -s -o /dev/null -w '%{time_total}' --max-time 30 "https://shubhagya.com$p" || echo -)
+              printf '%-14s %s  %ss\n' "$p" "$code" "$secs"
+            done
+            echo
+            echo "## /health"
+            curl -s --max-time 20 https://shubhagya.com/health || echo "unreachable"
+          } | tee /tmp/probe.txt
+          cat /tmp/probe.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Act as `infra-lead`. Read .claude/agents/infra-lead.md first and
+            follow it — it defines your remit and your constraints.
+
+            Focus this run: ${{ github.event.inputs.focus || 'free-tier headroom, deploy truth, latency' }}
+
+            /tmp/probe.txt holds a live probe of the main routes with status
+            codes and wall-clock times, taken moments ago.
+
+            Standing work, all of it already filed:
+
+              #266  /kundli returns 503 intermittently — the natal request is
+                    bigger than the whole Groq TPM budget. This is a capacity
+                    failure wearing a bug's clothes: a queue at its ceiling, not
+                    a logic error.
+              #212  prompt input grew 18.5%/call on the path that caused a
+                    21-day outage, unnoticed because nothing measures
+                    per-request tokens.
+              #232  twelve concurrent rashifal reads become twelve GCS calls.
+              #253  the service worker served a stale stylesheet for weeks.
+
+            Also yours: verify-production.yml's `exact` deploy tier has NEVER
+            run. It needs BUILD_SHA=$COMMIT_SHA on the GCP-side Cloud Build
+            trigger, so every green run so far proved only that *a* revision
+            landed, not which one. **You may fix this yourself** — gcloud is
+            granted (project bhagya-500701, trigger
+            rmgpgab-bhagya-asia-south1-mahAnuj-astro-ai--mapzk).
+
+            GitHub Actions is equally yours: workflow runs, gate failures,
+            triggers that never fire, cancelled jobs. `gh run view --log`,
+            `gh api`, and the workflow files themselves.
+
+            Before changing anything GCP-side:
+            - **Export first.** `gcloud beta builds triggers export` to a file,
+              and put the before-and-after in your report. A change nobody can
+              revert is a change nobody should make unattended.
+            - **Record it in CLAUDE.md**, because GCP configuration is invisible
+              from the tree — that file already says so about the deploy trigger,
+              and a second invisible change is how the first one became a
+              surprise. The trigger already carries
+              `ignoredFiles: measurements/**`; do not drop it.
+            - Deletes are denied: services, buckets, service accounts, triggers,
+              IAM bindings. If a fix needs one, say so and stop.
+
+            Every recommendation states: the ceiling, the measured current
+            usage, the traffic multiple at which it breaks, the proposed move,
+            and whether that move stays inside the free tier. A scaling proposal
+            that quietly starts costing money has not solved this project's
+            actual problem.
+
+            WRITE YOUR REPORT TO /tmp/report.md. In automation mode nothing you
+            say otherwise reaches a human — the run log carries the prompt and
+            the cost, not your findings. A report that exists only in your
+            context did not happen.
+
+            File issues only for findings that need action. Read-only on code.
+            Never report a number you did not measure this run.
+          claude_args: |
+            --max-turns 70
+            --effort high
+            # gcloud is GRANTED — user decision 2026-10-08. This team's remit IS
+            # the infrastructure: the Cloud Build trigger, Cloud Run, the GCS
+            # bucket, the free-tier ceilings. Telling it to diagnose a deploy and
+            # then denying it the only tool that can read one made it an
+            # observer of problems it was supposed to own.
+            #
+            # What stays denied is irreversible, not merely consequential. A
+            # changed trigger can be changed back from the export in the next
+            # line of its own report; a deleted Cloud Run service, bucket or
+            # service account cannot, and neither can a removed IAM binding that
+            # nobody wrote down.
+            --allowedTools "Read,Write,Glob,Grep,TodoWrite,Skill,WebFetch,Bash"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gh secret:*),Bash(gh repo:*),Bash(gcloud projects delete:*),Bash(gcloud run services delete:*),Bash(gcloud storage rm:*),Bash(gcloud storage buckets delete:*),Bash(gcloud iam service-accounts delete:*),Bash(gcloud builds triggers delete:*),Bash(gcloud projects remove-iam-policy-binding:*),Bash(gcloud iam service-accounts remove-iam-policy-binding:*)"
+
+      - name: Publish the report
+        if: always()
+        run: |
+          if [ -s /tmp/report.md ]; then
+            tee -a "$GITHUB_STEP_SUMMARY" < /tmp/report.md
+          else
+            echo "### No report written — treat this run as having produced nothing" \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
