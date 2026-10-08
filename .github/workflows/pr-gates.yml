@@ -22,13 +22,24 @@
 # treats 2 as a failure.
 name: PR gates
 
+# Pull requests ONLY.
+#
+# It used to run on push to `main` as well, which meant every merge re-ran 21
+# gates against a tree that had just passed them as a PR — ~5 minutes to
+# re-prove the same thing. Merging #284 fired four workflows for a two-file
+# change and made that obvious.
+#
+# What still covers `main` after a merge, and covers it better:
+#   verify-build.yml      on push — the committed CSS matches a fresh build
+#   verify-production.yml on push — the LIVE SITE, which is the only claim a
+#                         post-merge check can make that a pre-merge one cannot
+#
+# The gap this leaves is a squash onto a moved `main` differing semantically
+# from the branch that was tested. verify-production catches that against the
+# deployed site, which is the stronger assertion anyway — and with BUILD_SHA set
+# (2026-10-08) it can now prove which commit is serving.
 on:
   pull_request:
-  push:
-    # `main` only. Listing feat/** and issue/** here as well fired this workflow
-    # TWICE on every agent PR — once for the push, once for the pull_request —
-    # doubling Actions minutes on a loop that opens a PR a day.
-    branches: [main]
 
 concurrency:
   group: pr-gates-${{ github.ref }}
