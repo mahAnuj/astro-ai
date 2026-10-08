@@ -28,7 +28,7 @@ trust the number.
 
 | | count | command |
 |---|---|---|
-| Python | 29,986 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
+| Python | 30,047 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
 | top-level modules | 36 | `ls src/astro_ai/*.py \| wc -l` |
 | route handlers | 67 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 24 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
@@ -37,7 +37,7 @@ trust the number.
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
 | knowledge files | 11 files, 8,021 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
 | verification gates | 23 | `ls scripts/verify_*.py \| wc -l` |
-| behaviour suite | 198 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
+| behaviour suite | 203 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
 
 `routes/` holds 27 files; the three that declare no router are `__init__.py` and the leaf
 helpers `deps.py` and `llm_support.py`. Counting files rather than routers is what makes
@@ -121,7 +121,7 @@ src/astro_ai/
   muhurat.py       1,475  electional scoring; shares angas with panchang
   llm.py           1,224  prompt assembly, rashifal fan-out
   matching.py      1,056  Ashtakoota 36-guna
-  i18n.py          1,141  en/hi, symmetric key sets — enforced by
+  i18n.py          1,220  en/hi, symmetric key sets — enforced by
                         tests/test_i18n_symmetry.py (added 2026-10-05). The
                         word "enforced" sat here for months with nothing behind
                         it: translate() falls back to English, so a missing Hindi
@@ -532,6 +532,7 @@ Dated, with the evidence. **Check here before proposing a change.**
 | 2026-08-22 | Rashifal blast split into warm + send | 399s single request → 83s + 130s + 0.02s |
 | 2026-08-22 | `groq_qwen` dropped from the chain | unboundable; 399s vs 213s |
 | 2026-08-22 | Shared reading never states a clock time | 79-min national spread; two cities' windows do not overlap |
+| 2026-10-08 | The rashifal day-windows block is localised in FULL, not just the two names | #270. `format_day_windows_for_rashifal` localised only `rahu_kaal` / `abhijit_muhurta`; the band (`_RAHU_KAAL_BAND`), the ordinal (`_ordinal`), the directive prose and the example phrases `('during Rahu Kaal', 'in the Abhijit window near midday')` went to the model in English, and the Hindi reading echoed them into Devanagari prose (live on `/hi/rashifal/virgo`: "in the Abhijit window near midday", "Rahu काल"). Measured at d6c570d: **168 English words** left in the Hindi block once the two names were stripped; **0** after. Chosen: 18 i18n keys (`rashifal_window_facts`, `rashifal_window_directive`, `rahu_ord_1..8`, `rahu_band_1..8`), `chart.py` reduced to an assembler over the literal `_RAHU_KAAL_KEYS` table (literal, not `f"rahu_band_{n}"`, so `test_no_translation_key_is_defined_but_unused` can still see the keys). **English is byte-identical** — sha256 over the seven weekdays is `04118625184f5800` before and after, pinned in `tests/test_rashifal_window_block.py`. Hindi cost, o200k_base, 7 weekdays: **244–247 → 373–380 tokens (+~132/call)**, +3.9% of a ~3,341-token call; en unchanged at 243–246. Roughly +1.5k tokens/day on the Hindi blast (architect's estimate, not re-measured end to end) against the 200k TPD ceiling. A second echo source remains: `prompts/rashifal_single.txt` (English system prompt, lines ~92/112/141) says `Say "during Rahu Kaal" or "in the Abhijit window near midday"`. It is deliberately NOT edited — that would move the EN+HI prompt fingerprint and re-warm every cache — so the Hindi directive ends with a sentence telling the model not to repeat English example phrases from other instructions; that is a mitigation, not a proof, and the live hit-rate was not re-measured. Rejected: localising only band/ordinal/examples (the architect counted 103 Latin words remaining, so a no-English test would need an allowlist and prove little), `_LANG_SUFFIX['hi']` (shared with natal at the TPM ceiling), post-filtering the output. Out of scope, still English in the Hindi prompt: `/today`'s `format_panchang_for_prompt` takes no `lang`, and the weekday/tithi/Moon/retrograde signal lines. `PROMPT_LOGIC_VERSION` not bumped: rashifal's daily cache ignores it and a bump would orphan natal blobs |
 | 2026-08-22 | Gochar favourability keyed from the Moon | 62.5% of lines had the wrong verdict |
 | 2026-08-22 | Gochar keeps Raman's benefic/malefic split; no "neutral" band | Raman classifies all twelve; a neutral band would re-invent the category that caused the bug. Framing fixed instead — the panel states the base rate |
 | 2026-08-23 | Scheduler targets Cloud Run directly | Firebase Hosting's 60s rewrite cap |
