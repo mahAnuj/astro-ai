@@ -118,7 +118,17 @@ jobs:
           claude_args: |
             --max-turns 150
             --effort high
-            --allowedTools "Agent,Read,Write,Edit,Glob,Grep,Skill,WebFetch,Bash(uv:*),Bash(npm:*),Bash(python3:*),Bash(cat:*),Bash(jq:*),Bash(sed:*),Bash(grep:*),Bash(ls:*),Bash(find:*),Bash(curl:*),Bash(git status:*),Bash(git log:*),Bash(git diff:*),Bash(git add:*),Bash(git commit:*),Bash(git switch:*),Bash(git branch:*),Bash(git push -u origin issue/*),Bash(git push origin issue/*),Bash(gh issue:*),Bash(gh pr create:*),Bash(gh pr view:*),Bash(gh run list:*)"
+            # Broad Bash, because enumerating verbs left the first nightly
+            # cycle with 4 denials and nothing to show: 10 turns, no branch, no
+            # PR, and a green run. A half-blocked agent spends its turns
+            # discovering what it may not do.
+            #
+            # It cannot push. That is disallowed explicitly and done by the shell
+            # step below instead, which is CLAUDE.md's rule verbatim — "commit
+            # locally and hand back". Branch protection would be the stronger
+            # guardrail but needs GitHub Pro on a private repo.
+            --allowedTools "Agent,Read,Write,Edit,Glob,Grep,Skill,WebFetch,TodoWrite,Bash"
+            --disallowedTools "Bash(git push:*)"
         env:
           GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
           GSC_SITE_URL: ${{ secrets.GSC_SITE_URL }}
@@ -136,3 +146,29 @@ jobs:
             echo ""
             echo "If no PR was opened, the work is on the branch and the issue has no comment."
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # The agent commits locally and stops. This pushes and opens the PR, so no
+      # agent in this system has ever run `git push` — the rule is enforced by
+      # the tool grant above rather than by an agent choosing to honour it, which
+      # is the failure this repo has had twice.
+      - name: Push the branch and open the PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          branch=$(git rev-parse --abbrev-ref HEAD)
+          case "$branch" in
+            issue/*) ;;
+            *) echo "on '$branch', not an issue branch — nothing to push"; exit 0 ;;
+          esac
+          if [ -z "$(git log origin/main..HEAD --oneline)" ]; then
+            echo "no commits on $branch — the cycle produced nothing"
+            exit 0
+          fi
+          git push -u origin "$branch"
+          if gh pr list --repo "$GH_REPO" --head "$branch" --json number --jq '.[0].number' | grep -q .; then
+            echo "PR already open for $branch"
+          else
+            gh pr create --repo "$GH_REPO" --base main --head "$branch" --fill
+          fi
