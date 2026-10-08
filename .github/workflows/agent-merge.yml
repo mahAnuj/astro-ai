@@ -28,10 +28,24 @@
 # remove it.
 name: Agent merge
 
+# BOTH signals, because either can be the last one to arrive.
+#
+# Run 37762286251 fired when pr-gates completed, read `labels: none`, and left
+# #299 open. QA applied qa-pass moments later and nothing re-triggered the
+# check — a PR that met every condition, sat there.
+#
+# Label-only would mirror the same race rather than remove it: QA does not wait
+# for the gates, so a fast QA on a slow gate run labels first, this fires, finds
+# the gates still running, and stalls identically.
+#
+# So: fire on either, re-check everything each time, merge when all of it is
+# true. Order stops mattering.
 on:
   workflow_run:
     workflows: ["PR gates"]
     types: [completed]
+  pull_request_target:
+    types: [labeled]
 
 permissions:
   contents: write
@@ -42,7 +56,9 @@ permissions:
 jobs:
   merge:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'pull_request'
+    if: >-
+      github.event_name == 'pull_request_target'
+      || github.event.workflow_run.event == 'pull_request'
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
@@ -64,16 +80,24 @@ jobs:
           # `[ -z "$n" ] && { ...; }` returns 1 when $n IS set, and under bash -e
           # that exits the step on the SUCCESS path. Same trap that blinded
           # pr-gates. Use if/then, which has no exit status of its own.
-          n=$(gh api "repos/$GH_REPO/commits/${{ github.event.workflow_run.head_sha }}/pulls" \
-                --jq '.[0].number // empty')
+          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
+            n="${{ github.event.pull_request.number }}"
+          else
+            n=$(gh api "repos/$GH_REPO/commits/${{ steps.pr.outputs.sha }}/pulls" \
+                  --jq '.[0].number // empty')
+          fi
           if [ -z "$n" ]; then
             echo "no PR for this SHA — nothing to merge"
             exit 0
           fi
           echo "number=$n" >> "$GITHUB_OUTPUT"
           gh pr view "$n" --repo "$GH_REPO" \
-            --json headRefName,additions,deletions,files,isDraft > /tmp/pr.json
+            --json headRefName,headRefOid,additions,deletions,files,isDraft > /tmp/pr.json
           echo "branch=$(jq -r .headRefName /tmp/pr.json)" >> "$GITHUB_OUTPUT"
+          # Resolve the head SHA from the PR, not from the event. A `labeled`
+          # event has no workflow_run payload, so every message built from
+          # `workflow_run.head_sha` would render an empty backtick pair.
+          echo "sha=$(jq -r .headRefOid /tmp/pr.json)" >> "$GITHUB_OUTPUT"
 
       # Only branches this system opened. A human's branch is never auto-merged.
       - name: Is this an agent branch?
@@ -85,12 +109,28 @@ jobs:
             *) echo "::notice::${{ steps.pr.outputs.branch }} is not an agent branch — leaving it alone" ;;
           esac
 
+      # Query the API, do not read the event. A `labeled` event carries no
+      # workflow_run payload at all, so the old check had nothing to read and
+      # would have failed closed forever on that trigger.
       - name: Gates green?
         id: gates
         if: steps.own.outputs.ok == 'true'
         run: |
-          if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
-            echo "::error::pr-gates concluded ${{ github.event.workflow_run.conclusion }}"
+          sha=$(gh pr view "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" \
+                  --json headRefOid --jq .headRefOid)
+          echo "head: $sha"
+          runs=$(gh api "repos/$GH_REPO/commits/$sha/check-runs" \
+                   --jq '.check_runs[] | "\(.name)=\(.status):\(.conclusion // "pending")"')
+          echo "$runs" | sed 's/^/  /'
+          # Every check must have finished, and none may be anything but success.
+          # `pending` counts as not-green: a check still running is not a pass,
+          # which is the same rule pr-gates applies to its own exit-2 gates.
+          if echo "$runs" | grep -qv ":success$"; then
+            echo "::notice::not all checks are green yet — leaving the PR open"
+            exit 0
+          fi
+          if [ -z "$runs" ]; then
+            echo "::notice::no checks reported for $sha — not merging"
             exit 0
           fi
           echo "ok=true" >> "$GITHUB_OUTPUT"
@@ -146,24 +186,32 @@ jobs:
           issue=$(echo "${{ steps.pr.outputs.branch }}" | sed -n 's|issue/\([0-9]\+\).*|\1|p')
           if [ -n "$issue" ]; then
             gh issue comment "$issue" --repo "$GH_REPO" --body \
-              "Merged by \`agent-merge\`: PR #${{ steps.pr.outputs.number }}, \`pr-gates\` green on \`${{ github.event.workflow_run.head_sha }}\`, \`qa-pass\` on record.
+              "Merged by \`agent-merge\`: PR #${{ steps.pr.outputs.number }}, \`pr-gates\` green on \`${{ steps.pr.outputs.sha }}\`, \`qa-pass\` on record.
 
           **Not closing this.** \`main\` deploys on merge, so it closes once \`verify-production.yml\` has asserted against the live site — CLAUDE.md's two-stage close. With BUILD_SHA set, that run can now prove *which* commit is serving."
           fi
 
           gh pr comment "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --body \
-            "Merged automatically: \`pr-gates\` green on \`${{ github.event.workflow_run.head_sha }}\`, \`qa-pass\` on record, diff within the unattended limit.
+            "Merged automatically: \`pr-gates\` green on \`${{ steps.pr.outputs.sha }}\`, \`qa-pass\` on record, diff within the unattended limit.
 
           **Not closing the issue.** \`main\` deploys on merge, so the issue closes only once \`verify-production.yml\` has asserted against the live site — CLAUDE.md's two-stage close."
 
       # A red gate is information the issue needs, not just a failed run nobody reads.
       - name: Report a failure onto the issue
-        if: steps.own.outputs.ok == 'true' && github.event.workflow_run.conclusion != 'success'
+        # `== failure` only. `cancelled` is not a red gate — pr-gates sets
+        # cancel-in-progress, so every push inside the run window cancels the
+        # previous one; reporting that as a failure writes "pr-gates failed" onto
+        # the issue while the real run is still going and about to pass. And a
+        # label event carries no conclusion at all.
+        if: >-
+          steps.own.outputs.ok == 'true'
+          && github.event_name == 'workflow_run'
+          && github.event.workflow_run.conclusion == 'failure'
         run: |
           issue=$(echo "${{ steps.pr.outputs.branch }}" | sed -n 's|issue/\([0-9]\+\).*|\1|p')
           [ -z "$issue" ] && exit 0
           gh issue comment "$issue" --repo "$GH_REPO" --body \
-            "\`pr-gates\` failed on PR #${{ steps.pr.outputs.number }} (\`${{ github.event.workflow_run.head_sha }}\`), conclusion: ${{ github.event.workflow_run.conclusion }}.
+            "\`pr-gates\` failed on PR #${{ steps.pr.outputs.number }} (\`${{ steps.pr.outputs.sha }}\`), conclusion: ${{ github.event.workflow_run.conclusion }}.
 
           Run: ${{ github.event.workflow_run.html_url }}
 
