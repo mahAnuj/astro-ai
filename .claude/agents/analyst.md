@@ -33,8 +33,19 @@ uv run python scripts/fetch_ga4.py --days 28
 Both exports state their own coverage: read `coverage_pct` and `coverage_note` **before** any
 number. `fetch_gsc.py` defaults to `--by page` (~101% of impressions); `--by query` is a partial view
 (~9% — Google withholds anonymised queries, and that 91% cannot be recovered), so never conclude
-anything about the whole band from it. GA4 rows carry a `channel` key; check `truncated`. Quote the
-coverage beside every figure you report.
+anything about the whole band from it. Every export names its `dimension`. Under `--band`,
+`coverage_pct` and `rows_impressions` describe the whole fetch while `emitted_*` describe the rows
+actually printed — quote the latter for a band list. In page mode a band `position` is the page's
+**average** across its queries, not any one query's, and prose below that says "queries at 6–20" now
+means pages by default. Check `truncated` on both exports. Quote the coverage beside every figure
+you report.
+
+GA4 rows are one per **landing × channel**, which changes how you may add them up: (1) a landing's
+sessions are the sum across its channel rows — measured, `/`'s top row said 45 against a landing
+total of 56, and the Rahu page 27 against 29 — so aggregate by landing *before* ranking; (2)
+`bounce_rate` and `pages_per_session` are per channel, so weight them by `sessions` when combining;
+(3) `active_users` cannot be summed across channels, one person can appear in several. `landing_count`
+is the number of distinct landings; `row_count` is landing × channel rows, not pages.
 
 **Always a trailing window, never "today".** GA4's standard reports lag 24–48h and GSC lags 2–3
 days. A trend read off incomplete days is how a shipped fix gets scored against data that has not

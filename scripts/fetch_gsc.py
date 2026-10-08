@@ -62,8 +62,12 @@ def main() -> int:
 
     raw = data.get("rows", [])
     row_imp = sum(r["impressions"] for r in raw)
-    # Can exceed 100: a query/page row is counted per URL or query, and GSC's
-    # own aggregates dedupe differently. Reported as measured, never clamped.
+    # Can exceed 100, reported as measured and never clamped. What was measured
+    # (2026-09-08..10-05): page rows summed to 8,636 impressions against a property
+    # total of 8,579 (101%); the page response is labelled byPage and the property
+    # total byProperty, so the two use different aggregation types. The exact cause
+    # of the 57 surplus is UNCONFIRMED. (The query dimension undershoots, not
+    # overshoots, so it is not the same effect.)
     coverage = round(row_imp / total_imp * 100) if total_imp else None
 
     rows = []
@@ -82,14 +86,25 @@ def main() -> int:
     else:
         rows.sort(key=lambda r: -r["impressions"])
 
+    # Honest about what is printed: coverage_pct / rows_impressions describe the
+    # whole fetch, but --band prints a filtered subset (100 rows summing to 90%
+    # against a 101% fetch), so the emitted figures are computed from `rows` itself.
+    emitted_imp = sum(r["impressions"] for r in rows)
+    emitted_cov = round(emitted_imp / total_imp * 100) if total_imp else None
+
     if coverage is None:
         cov_note = "property total impressions were 0 or unavailable; coverage not computable"
     else:
         cov_note = f"rows account for {coverage}% of the property's {total_imp} impressions"
+    if args.band:
+        cov_note += (f" — coverage_pct/rows_impressions describe the whole fetch; --band "
+                     f"printed {len(rows)} rows at position 6-20 covering {emitted_cov}% "
+                     f"({emitted_imp} impressions): see emitted_coverage_pct/emitted_impressions")
     if args.by == "query":
         cov_note += (" — PARTIAL VIEW: Google withholds anonymised (low-volume) queries, "
                      "so the query dimension cannot reach the total; use --by page for totals")
-    if len(raw) >= ROW_LIMIT:
+    truncated = len(raw) >= ROW_LIMIT
+    if truncated:
         cov_note += f" — TRUNCATED at rowLimit {ROW_LIMIT}"
 
     print(json.dumps({"source": "gsc", "site": args.site, "window": [start, end],
@@ -97,6 +112,8 @@ def main() -> int:
                       "note": "window excludes the last 3 days — GSC data is not final before that",
                       "total_impressions": total_imp, "total_clicks": total_clk,
                       "rows_impressions": row_imp, "coverage_pct": coverage,
+                      "emitted_rows": len(rows), "emitted_impressions": emitted_imp,
+                      "emitted_coverage_pct": emitted_cov, "truncated": truncated,
                       "coverage_note": cov_note,
                       "rows": rows}, indent=2))
     return 0

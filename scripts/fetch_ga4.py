@@ -58,6 +58,7 @@ def main() -> int:
          "active_users": int(r["metricValues"][3]["value"])}
         for r in data.get("rows", [])
     ]
+    landing_count = len({r["landing"] for r in rows})
     row_sessions = sum(r["sessions"] for r in rows)
     row_count = data.get("rowCount", len(rows))
     truncated = row_count > len(rows)
@@ -73,6 +74,7 @@ def main() -> int:
                       "note": "window excludes the last 3 days — GA4 standard reports lag 24-48h",
                       "total_sessions": total_sessions, "rows_sessions": row_sessions,
                       "coverage_pct": coverage, "row_count": row_count,
+                      "landing_count": landing_count,
                       "truncated": truncated, "coverage_note": note,
                       "rows": rows}, indent=2))
     return 0
