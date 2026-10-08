@@ -1,0 +1,163 @@
+# The standing answer to "what is most important right now".
+#
+# project-manager already ranks correctly — but only inside a delivery cycle,
+# once a night, and the result dies with the runner. The cycle takes the top
+# item and the other six rankings evaporate. BACKLOG.md was meant to be that
+# memory; its last full scan was 2026-08-25 against 36 open issues, and there
+# are now 60. /prioritise is the command that writes it and nothing has ever
+# scheduled it.
+#
+# So: rank weekly, persist it, and let the nightly cycle rank against a
+# maintained list rather than rediscovering the backlog every night.
+name: Agent prioritise
+
+on:
+  schedule:
+    - cron: "0 17 * * 0"   # Sundays, 22:30 IST — ahead of the week's loops
+  workflow_dispatch:
+
+concurrency:
+  group: agent-prioritise
+  cancel-in-progress: false
+
+jobs:
+  prioritise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read      # project-manager is read-only, including on BACKLOG.md
+      issues: write       # triage comments and proposed closures
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # it diffs against the SHA in BACKLOG.md's header
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
+      - run: uv sync --all-groups
+
+      # Ranking against the analyst's numbers rather than against issue titles.
+      - name: Fetch the latest measurement
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          id=$(gh run list --workflow agent-measure.yml --status success \
+                 --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+          if [ -n "$id" ]; then
+            gh run download "$id" -n measurement --dir /tmp/measure && ls -la /tmp/measure
+          else
+            echo "no prior measurement — ranking on harm alone"
+          fi
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            /prioritise
+
+            Follow .claude/commands/prioritise.md and the project-manager agent
+            definition exactly.
+
+            **The staleness sweep comes first, and it matters more than usual
+            this week.** BACKLOG.md's last full scan is 2026-08-25 against 36
+            open issues; there are now 60, and roughly ten were filed by the
+            agent loops in the last two days. Treat BACKLOG.md as a cache that
+            has outlived its evidence — use it to decide where to look, never to
+            skip a check, and never restamp a carried-forward verdict with
+            today's SHA.
+
+            Probe rather than read. `uv run python scripts/validate_issue.py <n>`
+            exists now; use it where an issue has an executable repro. Per #281,
+            `NO-REPRO` means "not checkable by HTTP probe", not "not a problem" —
+            establish the premise another way and say which way.
+
+            /tmp/measure/report.md, if present, is the analyst's latest
+            measurement. Rank against it: an issue the analyst showed moving
+            nothing outranks nothing, and a page carrying real impressions
+            outranks a page carrying none.
+
+            Rank by user harm, then unblocking power. Not by ease, not by age,
+            not by label. At most 5-7 items in the queue.
+
+            WRITE THE WHOLE THING TO /tmp/report.md, in the shape BACKLOG.md
+            takes: the ranked queue with reasons, the stale list with evidence,
+            the blocked list, the explicitly-not-recommended list, and the full
+            open-issue index with a `checked@` SHA per row. **A row you did not
+            individually re-verify this pass gets an em-dash, not today's SHA.**
+            Restamping unchecked rows is how this file becomes next week's false
+            confidence, and it has already cost this repo once.
+
+            Note the deltas against the existing BACKLOG.md — what changed, what
+            you carried forward unchecked, what is new since the last scan.
+
+            Read-only. Propose closures; the human closes. You never push.
+          claude_args: |
+            --max-turns 80
+            --effort high
+            --allowedTools "Read,Write,Glob,Grep,TodoWrite,Bash"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*),Bash(gh issue close:*)"
+
+      - name: Publish the queue
+        if: always()
+        run: |
+          if [ -s /tmp/report.md ]; then
+            tee -a "$GITHUB_STEP_SUMMARY" < /tmp/report.md
+          else
+            echo "### No queue written — treat this run as having produced nothing" \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Collect for persistence
+        if: always()
+        run: |
+          mkdir -p /tmp/out
+          cp -f /tmp/report.md /tmp/out/report.md 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prioritise-report
+          path: /tmp/out
+          if-no-files-found: ignore
+
+  # Separate job, no agent in it. project-manager is read-only on BACKLOG.md by
+  # definition — "you read it but never write it; the parent session updates it
+  # from what you hand back" — so the agent job stays contents:read and this
+  # shell step does the writing.
+  persist:
+    needs: prioritise
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: prioritise-report
+          path: /tmp/out
+        continue-on-error: true
+
+      - name: Commit the queue
+        run: |
+          [ -s /tmp/out/report.md ] || { echo "nothing to persist"; exit 0; }
+          mkdir -p measurements/prioritise
+          stamp=$(date -u +%Y-%m-%d)
+          cp /tmp/out/report.md "measurements/prioritise/$stamp.md"
+          cp /tmp/out/report.md measurements/prioritise/latest.md
+
+          git config user.name  "shubhagya-agent"
+          git config user.email "agent@users.noreply.github.com"
+          git add measurements/prioritise/
+          git diff --cached --quiet && { echo "unchanged"; exit 0; }
+          git commit -m "backlog scan $stamp
+
+          measurements/** is on the Cloud Build trigger's ignoredFiles, so this
+          does not deploy. BACKLOG.md itself is NOT written here: it sits at the
+          repo root, outside that filter, so committing it would redeploy
+          production for a triage document. Promote from
+          measurements/prioritise/latest.md by hand when it is worth it."
+          git push origin HEAD:main
