@@ -3669,26 +3669,24 @@ def format_panchang_for_prompt(panchang: DailyPanchang) -> str:
     )
 
 
-# Which part of the day each Rahu Kaal segment falls in. The SEGMENT ORDINAL
-# is universal — it depends only on the weekday (_RAHU_KAAL_SEGMENT above) —
-# and the CLOCK TIME is not; see format_day_windows_for_rashifal below for why
-# that matters.
+# Segment -> the i18n keys for its ordinal and its part of the day. The SEGMENT
+# ORDINAL is universal — it depends only on the weekday (_RAHU_KAAL_SEGMENT
+# above) — and the CLOCK TIME is not; see format_day_windows_for_rashifal
+# below for why that matters.
 #
-# The BAND is a gloss on the ordinal, and it holds on 6 of 7 weekdays across
-# Mumbai/Delhi/Guwahati. The exception is Wednesday's segment 5: 12:41-14:16
-# in Mumbai ("early afternoon") but 11:25-13:02 in Guwahati, which is mostly
-# late morning. An earlier version of this comment claimed it was "true in
-# Guwahati and in Mumbai alike" — 6/7 is not alike, and the whole point of
-# this module is not to overstate what survives a change of longitude.
-_RAHU_KAAL_BAND: dict[int, str] = {
-    1: "the first stretch after sunrise",
-    2: "early morning",
-    3: "mid-morning",
-    4: "late morning",
-    5: "early afternoon",
-    6: "mid-afternoon",
-    7: "late afternoon",
-    8: "the last stretch before sunset",
+# Spelled out as literals rather than built as f"rahu_band_{n}": the
+# "no translation key is defined but unused" test matches quoted keys, and a
+# key assembled at run time is invisible to it. The band TEXT lives in i18n.py
+# (with the Wednesday-segment-5 caveat beside it) since #270 localised it.
+_RAHU_KAAL_KEYS: dict[int, tuple[str, str]] = {
+    1: ("rahu_ord_1", "rahu_band_1"),
+    2: ("rahu_ord_2", "rahu_band_2"),
+    3: ("rahu_ord_3", "rahu_band_3"),
+    4: ("rahu_ord_4", "rahu_band_4"),
+    5: ("rahu_ord_5", "rahu_band_5"),
+    6: ("rahu_ord_6", "rahu_band_6"),
+    7: ("rahu_ord_7", "rahu_band_7"),
+    8: ("rahu_ord_8", "rahu_band_8"),
 }
 
 
@@ -3728,31 +3726,34 @@ def format_day_windows_for_rashifal(panchang: DailyPanchang, lang: str = "en") -
     in the target language is asking it to transliterate, and it guesses.
     The strings come from i18n so there is one spelling per language, the
     same one the strip and the email already render.
+
+    The WHOLE block is localised, not just the two names (#270). Localising
+    only the names left ~168 English words in the Hindi prompt — band,
+    ordinal, directive and the example phrases ('during Rahu Kaal', 'in the
+    Abhijit window near midday') — and the model echoed them into Devanagari
+    prose ("Rahu काल", "in the Abhijit window near midday" seen live on
+    /hi/rashifal/virgo). So this function is only an assembler: the facts
+    template, the ordinal, the band and the directive are all i18n keys, and
+    `translate()` falls back to English for any language without a table.
+    The English output is byte-identical to the pre-#270 literals; the test
+    pins it.
     """
     from astro_ai.i18n import translate  # local: i18n must not import chart
 
     segment = _RAHU_KAAL_SEGMENT[panchang.sunrise.weekday()]
-    band = _RAHU_KAAL_BAND[segment]
+    ordinal_key, band_key = _RAHU_KAAL_KEYS[segment]
     rahu = translate(lang, "rahu_kaal")
     abhijit = translate(lang, "abhijit_muhurta")
-    return (
-        f"Today's inauspicious and auspicious windows. Rahu Kaal falls in the "
-        f"{_ordinal(segment)} of the eight equal parts of daylight — {band} — "
-        f"and is the wrong time to begin anything, sign, or decide. Abhijit "
-        f"Muhurta is the ~48 minutes centred on LOCAL solar noon, and is the "
-        f"day's most favourable window for important action.\n"
-        f"Write these two names EXACTLY as: \"{rahu}\" and \"{abhijit}\". Do not "
-        f"transliterate them yourself, do not romanise them, and do not bold "
-        f"or otherwise mark them up.\n"
-        f"CRITICAL: state NEITHER as a clock time. Both are computed from the "
-        f"reader's own sunrise and sunset, and this one reading is published to "
-        f"the whole country — across Indian cities these windows shift by up to "
-        f"79 minutes, enough that two readers' Abhijit windows do not overlap at "
-        f"all. Name them ('during Rahu Kaal', 'in the Abhijit window near "
-        f"midday') and let the page show each reader their own times. Do not "
-        f"invent any other hour, minute, or 'after 4 pm'-style cutoff either — "
-        f"you have no clock for this reader."
+    facts = translate(
+        lang,
+        "rashifal_window_facts",
+        rahu=rahu,
+        abhijit=abhijit,
+        ordinal=translate(lang, ordinal_key),
+        band=translate(lang, band_key),
     )
+    directive = translate(lang, "rashifal_window_directive", rahu=rahu, abhijit=abhijit)
+    return f"{facts}\n{directive}"
 
 
 def _rise_or_set(
