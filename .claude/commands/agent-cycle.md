@@ -119,6 +119,38 @@ So: dispatch, **wait for the result**, read it, then dispatch the next role. A c
 it is sequential — architect, then engineer, then QA, two or three rounds. That is the shape, and
 rushing it by not waiting produces nothing at all.
 
+## Step 3.5 — record QA's verdict where it can be audited
+
+QA's verdict decides whether `agent-merge` merges, so it must be **machine-readable and in two
+places**. The first agent PR (#292) carried a verdict that existed only inside the run, and the
+merge gate — then grepping PR comments — would have left it open indefinitely with green checks
+and nothing explaining why.
+
+On a **PASS**:
+
+```bash
+gh pr edit    <pr>    --repo "$GH_REPO" --add-label qa-pass
+gh issue edit <issue> --repo "$GH_REPO" --add-label qa-pass
+gh pr comment <pr>    --repo "$GH_REPO" --body "QA: PASS — <what was executed, and the numbers>"
+```
+
+On a **FAIL**, `qa-fail` on both, and the comment says what broke. `agent-merge` checks `qa-fail`
+first and refuses regardless of anything else, so a later `qa-pass` cannot override a failure
+nobody re-verified.
+
+Three reasons it is a label and not prose:
+
+- **It is the merge gate.** A gate that depends on matching free text is a gate that a formatting
+  change silently opens or closes.
+- **It is auditable in one query** — `gh pr list --label qa-pass`, `gh issue list --label qa-pass`
+  — rather than by reading comment bodies.
+- **On both sides, you can follow the thread either way**: from an issue to the PR that closed it,
+  or from a PR back to what it was for.
+
+The comment still matters, and the label never replaces it. The label says *a verdict exists*; the
+comment says *what was executed and what the numbers were*, which is what `qa.md` requires and what
+lets someone else check the verdict rather than trust it.
+
 ## Step 4 — branch and PR
 
 ```bash
