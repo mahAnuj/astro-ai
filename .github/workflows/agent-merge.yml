@@ -119,8 +119,18 @@ jobs:
           sha=$(gh pr view "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" \
                   --json headRefOid --jq .headRefOid)
           echo "head: $sha"
+          # Exclude THIS run's own check. On a pull_request_target trigger GitHub
+          # creates a check run for the `merge` job, in_progress for exactly as
+          # long as this step is reading the list — so "all checks green" could
+          # never be true and the workflow waited on itself. Run 37768968298:
+          # `merge=in_progress:pending` beside two green ones.
+          #
+          # Filtered by run id, not job name, so a rename cannot silently
+          # reintroduce the deadlock.
           runs=$(gh api "repos/$GH_REPO/commits/$sha/check-runs" \
-                   --jq '.check_runs[] | "\(.name)=\(.status):\(.conclusion // "pending")"')
+                   --jq ".check_runs[]
+                         | select((.details_url // \"\") | contains(\"/runs/$GITHUB_RUN_ID/\") | not)
+                         | \"\(.name)=\(.status):\(.conclusion // \"pending\")\"")
           echo "$runs" | sed 's/^/  /'
           # Every check must have finished, and none may be anything but success.
           # `pending` counts as not-green: a check still running is not a pass,
