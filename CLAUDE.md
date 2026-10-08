@@ -49,7 +49,16 @@ serving. Two tiers:
 
 - **exact** — `build_sha` matches the commit, so a green run proves *this commit* is live.
   Requires `--update-env-vars=BUILD_SHA=$COMMIT_SHA` on the GCP-side Cloud Build trigger.
-  **Not set yet**, so this tier has never run.
+  **Set 2026-10-08** on trigger `rmgpgab-bhagya-asia-south1-mahAnuj-astro-ai--mapzk`, in the
+  `Deploy` step. The first run on this tier is the first deploy after that date — before it,
+  every green run used the weaker tier below.
+
+  `--update-env-vars`, deliberately, **never `--set-env-vars`**: set replaces the service's
+  entire environment, which would wipe the Groq keys and everything else the app reads.
+
+  The step already passed the commit as a Cloud Run *label* (`commit-sha=$COMMIT_SHA`). Labels
+  are not visible from inside the container, which is why `/health` could not report it and the
+  env var was needed.
 - **revision-changed** — `build_sha` is null, so a green run proves only that *a* new
   revision landed, not which. This is the tier every run has used so far.
 
