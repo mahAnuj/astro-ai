@@ -242,8 +242,22 @@ runner is not.
 ```bash
 git switch -c issue/<n>-<slug>
 git push -u origin issue/<n>-<slug>
-gh pr create --fill --base main
+gh pr create --base main --title "<what changed> (#<n>)" --body "closes #<n>
+
+<the rest>"
 ```
+
+**`closes #<n>` must be in the PR BODY, and `--fill` will not put it there.** `--fill` takes the
+body from the commit messages, which name the issue but do not use a closing keyword.
+
+This stranded #304 on 2026-10-09. PR #312 was titled *"Lift the learn sticky CTA above the
+mobile tab bar (#304)"* — a **mention**, not a claim. It merged, production verified it, and
+`close-on-evidence` ran, concluded success and closed nothing: *"PR #312 claims no issue"*. A
+green run that did exactly nothing, which is this system's signature failure.
+
+`close-on-evidence` now also falls back to the `issue/<n>-` branch name, so forgetting this no
+longer strands an issue. Write it anyway — the keyword is what makes the link visible on
+GitHub to a human reading the PR, and the fallback is a net, not the mechanism.
 
 **That is the only `git push` in this system, and it is to a branch.** A push to `main` is the
 deploy, there is no staging, and production is the first place code runs. `agent-merge` decides

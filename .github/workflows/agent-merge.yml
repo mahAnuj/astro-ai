@@ -80,9 +80,26 @@ jobs:
       - name: Find the pull request
         id: pr
         run: |
-          # `[ -z "$n" ] && { ...; }` returns 1 when $n IS set, and under bash -e
-          # that exits the step on the SUCCESS path. Same trap that blinded
-          # pr-gates. Use if/then, which has no exit status of its own.
+          # if/then rather than `[ test ] && action`. The REASON recorded here
+          # before was wrong, and the correction matters because it changes
+          # where the danger is. Measured 2026-10-09:
+          #
+          #   bash -e -c '[ -z "$n" ] && exit 0; echo after'   with n set
+          #     -> prints "after", exits 0.   NOT a set -e trap.
+          #
+          # bash's -e explicitly exempts a failing command inside a && list
+          # other than the final one, so this shape never "exits on the success
+          # path". What actually bites is narrower and sharper: a trailing
+          # `[ test ] && action` becomes THE SCRIPT'S EXIT STATUS, so a false
+          # test makes a step that did all its work report failure:
+          #
+          #   printf 'echo work\n[ -n "$x" ] && echo skip\n' > t; bash -e t
+          #     -> prints "work", exits 1.   The step goes red having succeeded.
+          #
+          # So the rule is not "never use && in a run block". It is: never let
+          # `[ test ] && action` be the last line, and prefer if/then so the
+          # question never arises. pr-gates' skipped-report line was exactly
+          # that shape and would have failed a completely passing run.
           if [ "${{ github.event_name }}" = "pull_request_target" ]; then
             n="${{ github.event.pull_request.number }}"
           else
@@ -239,7 +256,7 @@ jobs:
           gh pr merge "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --squash --delete-branch
 
           # Link both ways so a reviewer can follow the thread from either end.
-          issue=$(echo "${{ steps.pr.outputs.branch }}" | sed -n 's|issue/\([0-9]\+\).*|\1|p')
+          issue=$(printf '%s' "${{ steps.pr.outputs.branch }}" | grep -oE '^issue/[0-9]+' | grep -oE '[0-9]+' || true)
           if [ -n "$issue" ]; then
             gh issue comment "$issue" --repo "$GH_REPO" --body \
               "Merged by \`agent-merge\`: PR #${{ steps.pr.outputs.number }}, \`pr-gates\` green on \`${{ steps.pr.outputs.sha }}\`, \`qa-pass\` on record.
@@ -313,7 +330,7 @@ jobs:
           && github.event_name == 'workflow_run'
           && github.event.workflow_run.conclusion == 'failure'
         run: |
-          issue=$(echo "${{ steps.pr.outputs.branch }}" | sed -n 's|issue/\([0-9]\+\).*|\1|p')
+          issue=$(printf '%s' "${{ steps.pr.outputs.branch }}" | grep -oE '^issue/[0-9]+' | grep -oE '[0-9]+' || true)
           [ -z "$issue" ] && exit 0
           gh issue comment "$issue" --repo "$GH_REPO" --body \
             "\`pr-gates\` failed on PR #${{ steps.pr.outputs.number }} (\`${{ steps.pr.outputs.sha }}\`), conclusion: ${{ github.event.workflow_run.conclusion }}.

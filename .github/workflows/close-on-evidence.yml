@@ -101,7 +101,41 @@ jobs:
             # reading the PR would expect.
             issues=$(echo "$body" | grep -oiE '(clos(e|es|ed)|fix(e[sd])?|resolv(e|es|ed))[[:space:]]+#[0-9]+' \
                      | grep -oE '[0-9]+' | sort -u)
-            [ -n "$issues" ] || { echo "PR #$pr claims no issue"; continue; }
+
+            # FALL BACK TO THE BRANCH NAME. The keyword is prose an agent has to
+            # remember to write, and on 2026-10-09 it did not: PR #312 was titled
+            # "Lift the learn sticky CTA above the mobile tab bar (#304)" — a
+            # MENTION, not a closing keyword — so this workflow ran, concluded
+            # success, and closed nothing. Run 37891007703: "PR #312 claims no
+            # issue". The first close-on-evidence run in this repo's history to
+            # reach its own close step, and it had nothing to act on.
+            #
+            # `issue/<n>-<slug>` is not a convention anyone has to remember: it is
+            # what /agent-cycle step 4 creates, and what `agent-merge` already
+            # parses to comment on the issue. A branch name is structural, a
+            # keyword in a body is a promise — and this repo's rule is that a glob
+            # beats a promise.
+            #
+            # Deliberately a FALLBACK, not a replacement: an explicit `closes #N`
+            # may name an issue the branch name does not, and it stays
+            # authoritative where present.
+            if [ -z "$issues" ]; then
+              branch=$(gh pr view "$pr" --repo "$GH_REPO" --json headRefName --jq .headRefName)
+              # grep -oE, not `sed 's|...\([0-9]\+\)...|'`: `\+` is a GNU
+              # extension, so that pattern works on ubuntu-latest and silently
+              # matches NOTHING on a BSD sed. A branch-name parser that cannot be
+              # tested on the machine the author is using is a parser nobody
+              # tests. This form behaves identically everywhere.
+              issues=$(printf '%s' "$branch" | grep -oE '^issue/[0-9]+' | grep -oE '[0-9]+' || true)
+              # if/then, NOT `[ -n "$x" ] && echo`. Under `bash -e` that compound
+              # returns 1 when $x is empty and KILLS THE STEP — the trap this repo
+              # has now hit four times (pr-gates' gate sweep, its skipped-report
+              # line, agent-merge's PR lookup, and this line as first written).
+              if [ -n "$issues" ]; then
+                echo "PR #$pr claims no issue in its body; taking #$issues from branch '$branch'"
+              fi
+            fi
+            [ -n "$issues" ] || { echo "PR #$pr claims no issue, and its branch name carries none"; continue; }
 
             for n in $issues; do
               state=$(gh issue view "$n" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)
