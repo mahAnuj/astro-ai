@@ -482,19 +482,42 @@ def check_job(name: str, text_lines: dict, jid: str, job: dict, doc: dict, rep: 
             # read as a harness regression. That mutation now uses `${{ ... }}`,
             # which is a real defect, and a control pins the other side.
             #
-            # [^}]* rather than .*? so the span cannot run past its own closing
-            # braces into a later, unrelated expression.
-            pat = re.compile(
-                r"\$\{\{[^}]*steps\." + re.escape(str(sid)) + r"\.outputs\b")
+            # EXTRACT the span, then search inside it. The first version of this
+            # used a single pattern with `[^}]*` between `${{` and the
+            # reference, reasoning that a character class could not run past its
+            # own closing braces into a later expression. True, and it also
+            # could not run past a `}` INSIDE the same expression — so any
+            # `format()` placeholder hid the reference completely:
+            #
+            #   ${{ format('v{0}-{1}', github.run_number, steps.tag.outputs.sha) }}
+            #
+            # is defect 1 of #313 verbatim, and the `[^}]*` version exited 0 on
+            # it while the version before THAT exited 1. A narrowed check that
+            # misses a real defect is worse than the false positive it fixed.
+            # Found by QA; reproduced here with old and new side by side before
+            # changing anything. `MUTATIONS` now pins it.
+            #
+            # `.*?` is safe once the match is confined to one span: finditer
+            # yields each `${{ ... }}` separately, so a reference cannot be
+            # attributed to a span it does not sit in.
+            span = re.compile(r"\$\{\{(.*?)\}\}", re.S)
+            ref = re.compile(r"steps\." + re.escape(str(sid)) + r"\.outputs\b")
             sources = {"run": run_clean, "if": str(step.get("if", "")),
                        "with": "\n".join(leaves(step.get("with"))),
                        "env": "\n".join(leaves(step.get("env")))}
             for field, body in sources.items():
-                m = pat.search(body)
-                if m:
+                hit = None
+                for sp in span.finditer(body):
+                    inner = ref.search(sp.group(1))
+                    if inner:
+                        # offset of the reference within `body`, so the reported
+                        # line is the reference's own and not the span's start.
+                        hit = sp.start(1) + inner.start()
+                        break
+                if hit is not None:
                     ln = sline
                     if field == "run" and rline:
-                        ln = rline + body[: m.start()].count("\n")
+                        ln = rline + body[:hit].count("\n")
                     rep.fail(name, ln, where, "self-reference",
                              f"step id `{sid}` reads its own `steps.{sid}.outputs.*` in `{field}`"
                              " -- empty at that point (defect 1 in #313: HTTP 422). Use the event "

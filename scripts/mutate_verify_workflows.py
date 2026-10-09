@@ -83,6 +83,15 @@ MUTATIONS = [
     #
     # Interpolated inside a quoted string IS a defect: substitution happens
     # before the shell ever sees it, so the quoting is irrelevant.
+    # Pins NEW-1. The `[^}]*` version of the check exited 0 on this while the
+    # version before it exited 1 — a `format()` placeholder's `}` hid the
+    # reference, so a real defect-1 instance walked straight through. No
+    # mutation covered it, so the harness reported 18/18 regardless. QA found it
+    # by diffing the two gates against the same tree.
+    ("self-reference hidden behind a format() placeholder", "agent-merge.yml",
+     swap(NUM_LINE,
+          'echo "n=${{ format(\'v{0}\', steps.pr.outputs.sha) }}" >> "$GITHUB_OUTPUT"'),
+     ["agent-merge.yml", "[self-reference]", "step id `pr`"]),
     ("self-reference interpolated inside a quoted string", "agent-merge.yml",
      swap(NUM_LINE, 'echo "number=${{ steps.pr.outputs.sha }}" >> "$GITHUB_OUTPUT"'),
      ["agent-merge.yml", "[self-reference]", "step id `pr`"]),
@@ -168,9 +177,12 @@ def main() -> int:
         for p in d.glob("*.yml"):
             p.unlink()
         code, _ = run_gate(d)
+        # Counted because the control RAN, not because it passed. QA showed the
+        # old placement shrank the denominator along with the numerator on a
+        # failing run: 18 OK/BAD lines printed against a reported total of 17.
+        n_controls += 1
         if code == 2:
             print("  OK   empty directory exits 2 (could not verify)")
-            n_controls += 1
         else:
             bad.append(f"empty dir exited {code}, expected 2")
             print(f"  BAD  empty directory exited {code}, expected 2")
@@ -178,9 +190,9 @@ def main() -> int:
         d = fresh_copy(base, "missing")
         (d / "agent-sync.yml").unlink()
         code, out = run_gate(d)
+        n_controls += 1
         if code == 1 and "EXPECTED_WORKFLOWS" in out:
             print("  OK   a deleted workflow trips EXPECTED_WORKFLOWS (exit 1)")
-            n_controls += 1
         else:
             bad.append(f"deleted workflow: exit {code}")
             print(f"  BAD  deleted workflow exited {code}")
