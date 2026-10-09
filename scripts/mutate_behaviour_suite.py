@@ -403,6 +403,110 @@ MUTATIONS = [
      "_BYTES_PER_TOKEN_DATA = 3.65",
      "_BYTES_PER_TOKEN_DATA = 4.0",
      "test_the_token_estimator_never_under_counts_a_real_request"),
+
+    # #268: /rashifal/{rashi} derives its reading from the cached combined text.
+    ("#268: the route never tries the combined reading (503 with the blob in the bucket)",
+     "src/astro_ai/routes/rashifal.py",
+     "reading_body = derive_single_reading(idx, lang, today_iso)",
+     "reading_body = None",
+     "test_cold_page_is_served_from_the_combined_reading_with_no_llm_call"),
+
+    ("#268: sections attributed by POSITION (an extra heading shifts every neighbour)",
+     "src/astro_ai/rashifal_derive.py",
+     "    return {i: bodies[0] for i, bodies in hits.items() if len(bodies) == 1}",
+     "    return {i: b for i, (_t, b) in enumerate(parse_sectioned_reading(text or \"\")) if i < 12}",
+     "test_an_extra_heading_in_one_reading_does_not_shift_its_neighbours"),
+
+    ("#268: headings matched by SUBSTRING and first-hit-wins (`min` is inside Gemini)",
+     "src/astro_ai/rashifal_derive.py",
+     "        matched = [i for i, names in enumerate(_ALLOWED) if segments & names]\n        if len(matched) != 1:",
+     "        matched = [i for i, names in enumerate(_ALLOWED)\n                   if any(n in seg for n in names for seg in segments)][-1:]\n        if len(matched) != 1:",
+     "test_a_missing_section_is_never_filled_from_a_name_that_merely_contains_it"),
+
+    ("#268: the derived body skips the single route's read gate (regeneration loop)",
+     "src/astro_ai/rashifal_derive.py",
+     "        ok, reason = llm_providers.passes_quality(body, \"rashifal_single\")",
+     "        ok, reason = True, \"\"",
+     "test_a_derived_body_the_read_gate_would_reject_is_not_served_and_does_not_loop"),
+
+    ("#268: the bucket is read raw, bypassing the negative-miss cache (a GCS read per request)",
+     "src/astro_ai/rashifal_derive.py",
+     "            text = _durable_get(combined_keys(lang, today_iso)[1])",
+     "            text = __import__(\"astro_ai.storage\", fromlist=[\"get\"]).get(combined_keys(lang, today_iso)[1])",
+     "test_a_missing_blob_costs_one_bucket_read_per_negative_cache_window"),
+
+    ("#268: a bucket hit is not written back to tier 0 (a GCS read per rashi)",
+     "src/astro_ai/rashifal_derive.py",
+     "            daily_cache.put(\"rashifal\", lang,\n                            {\"text\": text, \"lang\": lang, \"date_iso\": today_iso}, today_iso)",
+     "            pass",
+     "test_the_blob_is_fetched_once_for_all_twelve_rashis"),
+
+    ("#268: a corrupt blob is promoted into the cache the 07:00 blast reads",
+     "src/astro_ai/rashifal_derive.py",
+     "            ok, reason = llm_providers.passes_quality(text, \"rashifal\")",
+     "            ok, reason = True, \"\"",
+     "test_a_corrupt_blob_is_not_promoted_into_the_cache_the_blast_reads"),
+
+    ("#268: warm_rashifal writes the blob under a different key than derive reads",
+     "src/astro_ai/routes/subscribe.py",
+     "            storage_key=storage_key,\n            call_fn=lambda: generate_rashifal(",
+     "            storage_key=f\"rashifal/{today_iso}-{lang}.txt\",\n            call_fn=lambda: generate_rashifal(",
+     "test_a_reading_warmed_by_the_job_serves_a_cold_instance"),
+
+    ("#268: warm reports ok on 12 sections although fewer pages are derivable",
+     "src/astro_ai/routes/subscribe.py",
+     "\"ok\": len(sections) == 12 and single_pages == 12,",
+     "\"ok\": len(sections) == 12,",
+     "test_warm_reports_how_many_pages_it_can_serve"),
+
+    ("#268: warm does not alert when pages are not derivable",
+     "src/astro_ai/routes/subscribe.py",
+     "    if single_pages < 12:",
+     "    if False:",
+     "test_warm_reports_how_many_pages_it_can_serve"),
+
+    ("#268: derive runs AFTER the cooldown (a gate-failed rashi cannot heal from the blob)",
+     "src/astro_ai/routes/rashifal.py",
+     "    if reading_body is None:\n        reading_body = derive_single_reading(idx, lang, today_iso)",
+     "    if reading_body is None and not _regen_blocked(cache_key):\n        reading_body = derive_single_reading(idx, lang, today_iso)",
+     "test_a_cooldown_does_not_hide_a_servable_blob"),
+
+    ("#268: the Devanagari aries name is not recognised (every Hindi page falls to live generation)",
+     "src/astro_ai/rashifal_derive.py",
+     "    (\"मेष\",),",
+     "    (\"मेष_\",),",
+     "test_hindi_page_is_derived_from_devanagari_headings"),
+
+    # #268 QA round: five re-breaks that left the first 13 tests green.
+    ("#268: tier 0 is read with lang hard-coded to en (English reading on a Hindi page)",
+     "src/astro_ai/rashifal_derive.py",
+     "        hit = daily_cache.get(\"rashifal\", lang, today_iso)",
+     "        hit = daily_cache.get(\"rashifal\", \"en\", today_iso)",
+     "test_a_hindi_page_never_reads_the_english_tier_zero_file"),
+
+    ("#268: a section naming two rashis is attributed to the first (multi-match guard gone)",
+     "src/astro_ai/rashifal_derive.py",
+     "        if len(matched) != 1:",
+     "        if not matched:",
+     "test_a_section_naming_two_rashis_is_attributed_to_neither"),
+
+    ("#268: two sections for one rashi - the first wins (duplicate guard gone)",
+     "src/astro_ai/rashifal_derive.py",
+     "    return {i: bodies[0] for i, bodies in hits.items() if len(bodies) == 1}",
+     "    return {i: bodies[0] for i, bodies in hits.items() if bodies}",
+     "test_two_sections_for_one_rashi_are_attributed_to_neither"),
+
+    ("#268: a derived reading is served but never stored in rashifal_single",
+     "src/astro_ai/routes/rashifal.py",
+     "derived from the combined reading\", cache_key)\n            daily_cache.put(\"rashifal_single\", cache_key, {",
+     "derived from the combined reading\", cache_key)\n            _unused = (\"rashifal_single\", cache_key, {",
+     "test_a_derived_reading_is_stored_so_the_next_request_reads_nothing"),
+
+    ("#268: one Devanagari rashi name is misspelt (that rashi never derives in Hindi)",
+     "src/astro_ai/rashifal_derive.py",
+     "    (\"सिंह\",),",
+     "    (\"सिंह_\",),",
+     "test_every_devanagari_rashi_name_maps_to_its_own_index"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

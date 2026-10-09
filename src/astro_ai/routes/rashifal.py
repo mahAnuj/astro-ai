@@ -27,6 +27,7 @@ from astro_ai import daily_cache, festivals, hindi_pages
 from astro_ai.i18n import translate as t
 from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot
 from astro_ai.llm import parse_sectioned_reading
+from astro_ai.rashifal_derive import derive_single_reading
 from astro_ai import providers as llm_providers
 from astro_ai.providers import AllProvidersExhausted
 from astro_ai.routes.deps import (
@@ -255,6 +256,23 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
             log.warning("rashifal_single: discarding cached %s (%s) — regenerating",
                         cache_key, reason)
             reading_body = None
+
+    # Derive before generating (#268). The combined reading the 07:00 job caches
+    # already holds this rashi's section, written by the same function and prompt
+    # as the live call below, so a miss here costs a file/blob read instead of
+    # ~3,330 tokens — and still serves when the daily budget is gone (2026-10-08:
+    # 21 of 24 pages 503 with the reading sitting in the bucket). Placed BEFORE
+    # the cooldown so a rashi whose live generation failed the gate can heal
+    # from the blob. Never calls the LLM; None falls through to today's path.
+    if reading_body is None:
+        reading_body = derive_single_reading(idx, lang, today_iso)
+        if reading_body is not None:
+            log.info("rashifal_single: %s derived from the combined reading", cache_key)
+            daily_cache.put("rashifal_single", cache_key, {
+                "body": reading_body,
+                "rashi_slug": canonical_slug,
+                "lang": lang,
+            }, today_iso)
 
     # Bound the retry. Discarding a bad entry is right; discarding it on every
     # pageview and regenerating each time is one live LLM call per view, all
