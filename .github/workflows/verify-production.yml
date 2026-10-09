@@ -128,6 +128,9 @@ concurrency:
 
 permissions:
   contents: read
+  # To dispatch close-on-evidence from the final step. See it for why that
+  # dispatch is the thing that completes the autonomous chain.
+  actions: write
 
 jobs:
   verify:
@@ -760,6 +763,46 @@ jobs:
           rao=$(printf '%s' "$labels" | grep -cE 'Rao, Vedic Astrology: An Integrated Approach §[0-9]' || true)
           echo "  labels citing Rao with a section: $rao (want >0)"
           [ "$rao" -gt 0 ] || { echo "::error::#218 regressed — no label cites Rao with a section"; exit 1; }
+
+      # CLOSE THE LOOP. This step is the last mile of the whole system.
+      #
+      # close-on-evidence.yml listens for this workflow's `workflow_run`
+      # completion — but GitHub does not emit that event when the run was
+      # started with GITHUB_TOKEN, which is exactly how `agent-merge` starts it
+      # after an autonomous merge. Measured 2026-10-09, same commit both ways:
+      #
+      #   dispatched by agent-merge (GITHUB_TOKEN)  37887912818  success  -> nothing
+      #   dispatched by a user token               37890955328  success  -> fired
+      #
+      # So the verification happened and nothing consumed it. #268 and #304 both
+      # had to be closed by hand, having satisfied every condition.
+      #
+      # A `workflow_dispatch` IS exempt from the guard — that is why agent-merge
+      # can start this run at all — so dispatching the next workflow from here
+      # works where reacting to it does not.
+      #
+      # ONLY on `workflow_dispatch`. A `push`-triggered run emits its
+      # `workflow_run` normally, and dispatching as well would run
+      # close-on-evidence twice on the same commit. It is idempotent (it skips
+      # any issue not OPEN), but two runs per commit is noise that hides signal.
+      # `schedule` is excluded for the same reason it is excluded in
+      # close-on-evidence itself: a drift run says production satisfies the
+      # invariants now, not that a particular commit shipped.
+      #
+      # success() so a red verification closes nothing, which is the point.
+      - name: Hand the verdict to close-on-evidence
+        if: success() && github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -uo pipefail
+          if gh workflow run close-on-evidence.yml --repo "$GH_REPO" \
+               --ref main -f sha="$GITHUB_SHA"; then
+            echo "::notice::dispatched close-on-evidence for ${GITHUB_SHA:0:7}"
+          else
+            echo "::warning::could not dispatch close-on-evidence for ${GITHUB_SHA:0:7}. Production IS verified; nothing will close the issue. Run it by hand: gh workflow run close-on-evidence.yml --ref main -f sha=$GITHUB_SHA"
+          fi
 
       - name: Summary
         if: always()
