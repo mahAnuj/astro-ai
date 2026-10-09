@@ -399,14 +399,21 @@
    scroll on mobile only; dismissible with X. Not intrusive: only fires
    after real reading engagement, and the reader can dismiss it.
 
-   #304 — GEOMETRY, MEASURED AT 375x667 WITH A BROWSER (not read off the CSS):
-     tab bar (_tab_bar.html)  75px tall, fixed bottom-0, z-40
-     this CTA                 61px tall, so it spans 75px..136px from the bottom
-     feedback FAB             38px tall, lifted to 9rem (144px) below => 8px clear
-   `bottom-[75px]` is the tab bar's height. Before #304 this sat at bottom-0 under
-   a z-40 bar, so the CTA was invisible AND untappable (elementFromPoint at its
-   centre returned the tab bar). If the tab bar's padding changes, change this
-   number and the 9rem in the <style> below with it.
+   #304 — THE CTA SITS ON TOP OF THE MOBILE TAB BAR (#mobile-tab-bar,
+   _tab_bar.html), which is fixed bottom-0 z-40 and covers anything else at the
+   bottom edge. Before #304 this was bottom-0, so the CTA was invisible AND
+   untappable (elementFromPoint at its centre returned the tab bar).
+
+   THE OFFSETS ARE MEASURED BY THE SCRIPT BELOW, NOT HARDCODED. The tab bar is
+   rem-based and has no safe-area inset, so it grows with root font size
+   (?lang=hi, a user's font setting) and the CTA grows with touch targets and
+   wrapping. The script sets this bar's `bottom` to the tab bar's height and the
+   FAB's `bottom` to tab + CTA + 8px, on show, on resize and via ResizeObserver.
+   The CSS values (bottom-[75px], 9.5rem in the <style> below) are only the
+   no-JS / first-paint fallback: measured with touch emulation at 375x667, tab
+   bar 75px, CTA 69px, FAB 44px, so 75 + 69 + 8 = 152px = 9.5rem. Touch matters:
+   base.html's `@media (pointer: coarse)` forces min-height 44px on links and
+   buttons here, so a fine-pointer measurement under-reads the CTA by 8px.
 
    VISIBILITY IS A CLASS, NOT AN INLINE `display`. An inline `display:flex`
    outranks the stylesheet's `md:hidden`, so the old script showed this bar on
@@ -433,45 +440,71 @@
   (function () {
     var bar = document.getElementById('learn-sticky-cta');
     if (!bar) return;
-    // Respect user's dismissal for the session
-    if (sessionStorage.getItem('learn-sticky-dismissed') === '1') return;
-    // Show after user scrolls past ~35% of the article
-    function onScroll() {
-      var scrollTop = window.scrollY;
-      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (docHeight > 0 && scrollTop / docHeight > 0.35) {
-        bar.classList.remove('hidden');
-        bar.classList.add('flex');
-      }
+    var KEY = 'learn-sticky-dismissed';
+    var GAP = 8; // px between the CTA's top edge and the feedback FAB
+    function isDismissed() {
+      try { return sessionStorage.getItem(KEY) === '1'; } catch (e) { return false; }
+    }
+    // Keep the CTA's bottom edge on the tab bar's top edge and the FAB clear
+    // of the CTA, whatever the root font size or width. No tab bar (>= md)
+    // means nothing to measure and the CTA is display:none anyway.
+    function layout() {
+      var tab = document.getElementById('mobile-tab-bar');
+      var th = tab ? tab.getBoundingClientRect().height : 0;
+      if (!th || bar.classList.contains('hidden')) return;
+      bar.style.bottom = th + 'px';
+      document.documentElement.style.setProperty(
+        '--learn-fab-bottom', (th + bar.getBoundingClientRect().height + GAP) + 'px');
     }
     // Coordinate with the feedback widget (bottom-4 right-4) — when this
-     // sticky CTA is visible on mobile, push the feedback bubble up so they
-     // don't overlap. Uses a body class so CSS can target both regardless
-     // of render order.
-    function updateStickyState() {
-      var visible = !bar.classList.contains('hidden');
+    // sticky CTA is visible on mobile, push the feedback bubble up so they
+    // don't overlap. Uses a body class so CSS can target both regardless
+    // of render order.
+    function setVisible(visible) {
+      bar.classList.toggle('hidden', !visible);
+      bar.classList.toggle('flex', visible);
       document.body.classList.toggle('learn-sticky-cta-visible', visible);
+      if (visible) layout();
     }
-    function onScrollWithState() { onScroll(); updateStickyState(); }
-    window.removeEventListener('scroll', onScroll);
-    window.addEventListener('scroll', onScrollWithState, { passive: true });
+    function stop() { window.removeEventListener('scroll', onScroll); }
+    // Show after user scrolls past ~35% of the article
+    function onScroll() {
+      if (isDismissed()) { setVisible(false); stop(); return; }
+      var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (docHeight > 0 && window.scrollY / docHeight > 0.35) setVisible(true);
+    }
+    // Respect the user's dismissal for the session — at load, on a bfcache
+    // restore, and on every later scroll (the listener is removed on dismiss).
+    function honourDismissal() {
+      if (!isDismissed()) return false;
+      setVisible(false); stop(); return true;
+    }
+    if (honourDismissal()) return;
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', layout);
+    window.addEventListener('pageshow', honourDismissal);
+    if (window.ResizeObserver) {
+      var ro = new ResizeObserver(layout);
+      ro.observe(bar);
+      var tab = document.getElementById('mobile-tab-bar');
+      if (tab) ro.observe(tab);
+    }
     document.getElementById('learn-sticky-close').addEventListener('click', function () {
-      bar.classList.remove('flex');
-      bar.classList.add('hidden');
-      updateStickyState();
-      sessionStorage.setItem('learn-sticky-dismissed', '1');
+      try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
+      setVisible(false);
+      stop();
     });
   })();
 </script>
 <style>
   /* When the learn-sticky CTA is visible on mobile, push the feedback
      bubble above it so the two don't overlap at bottom-right (#304).
-     CTA top edge = 75px (tab bar) + 61px (CTA) = 136px from the bottom;
-     9rem = 144px leaves an 8px gap. Scoped to <768px: the CTA is md:hidden,
-     so from md up the FAB keeps its own md:bottom-4. */
+     --learn-fab-bottom is set by the script above (tab bar + CTA + 8px,
+     measured); 9.5rem is the touch-measured fallback. Scoped to <768px: the
+     CTA is md:hidden, so from md up the FAB keeps its own md:bottom-4. */
   @media (max-width: 767px) {
     body.learn-sticky-cta-visible #feedback-fab {
-      bottom: 9rem !important;
+      bottom: var(--learn-fab-bottom, 9.5rem) !important;
     }
   }
 </style>
