@@ -1,0 +1,13 @@
+[
+ {
+  "event": "labeled",
+  "actor": {
+   "login": "claude[bot]",
+   "type": "Bot"
+  },
+  "created_at": "2026-10-09T05:10:00Z",
+  "label": {
+   "name": "qa-pass"
+  }
+ }
+]

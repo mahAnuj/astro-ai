@@ -1,0 +1,5 @@
+2026-10-09T00:26:10.0000000Z ##[group]Run prs=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" --jq '.[].number')
+2026-10-09T00:26:10.0000000Z [ -n "$prs" ] || { echo "no PR for $SHA"; exit 0; }
+2026-10-09T00:26:10.0000000Z ##[endgroup]
+2026-10-09T00:26:12.0000000Z gh: Resource not accessible by integration (HTTP 403)
+2026-10-09T00:26:12.0000000Z ##[error]Process completed with exit code 1.

@@ -1,0 +1,7 @@
+2026-10-09T05:28:10.0000000Z ##[group]Run live=$(curl -s https://shubhagya.com/health | jq -r '.build_sha')
+2026-10-09T05:28:10.0000000Z ##[endgroup]
+2026-10-09T05:28:11.0000000Z deployed build_sha: 2f5f49f5f9d9c8aeb68c39fe5801453a8af98b91   workflow head: 2f5f49f5f9d9c8aeb68c39fe5801453a8af98b91
+2026-10-09T05:28:12.0000000Z ##[group]Run prs=$(gh api ...)
+2026-10-09T05:28:12.0000000Z echo "PR #$pr claims no issue"
+2026-10-09T05:28:12.0000000Z ##[endgroup]
+2026-10-09T05:28:14.0000000Z PR #312 claims no issue

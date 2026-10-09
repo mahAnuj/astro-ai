@@ -1,0 +1,53 @@
+{
+ "total_count": 4,
+ "workflow_runs": [
+  {
+   "id": 9011,
+   "event": "pull_request",
+   "status": "completed",
+   "conclusion": "success",
+   "created_at": "2026-10-08T02:00:00Z",
+   "run_started_at": "2026-10-08T02:00:00Z",
+   "updated_at": "2026-10-08T02:20:00Z",
+   "head_sha": "0000000000000000000000000000000000000000",
+   "head_branch": "issue/90-x",
+   "html_url": "https://github.com/mahAnuj/astro-ai/actions/runs/9011"
+  },
+  {
+   "id": 9012,
+   "event": "pull_request",
+   "status": "completed",
+   "conclusion": "success",
+   "created_at": "2026-10-08T05:00:00Z",
+   "run_started_at": "2026-10-08T05:00:00Z",
+   "updated_at": "2026-10-08T05:20:00Z",
+   "head_sha": "1111111111111111111111111111111111111111",
+   "head_branch": "issue/91-x",
+   "html_url": "https://github.com/mahAnuj/astro-ai/actions/runs/9012"
+  },
+  {
+   "id": 9013,
+   "event": "pull_request",
+   "status": "completed",
+   "conclusion": "success",
+   "created_at": "2026-10-08T08:00:00Z",
+   "run_started_at": "2026-10-08T08:00:00Z",
+   "updated_at": "2026-10-08T08:20:00Z",
+   "head_sha": "2222222222222222222222222222222222222222",
+   "head_branch": "issue/92-x",
+   "html_url": "https://github.com/mahAnuj/astro-ai/actions/runs/9013"
+  },
+  {
+   "id": 9014,
+   "event": "pull_request",
+   "status": "completed",
+   "conclusion": "success",
+   "created_at": "2026-10-08T11:00:00Z",
+   "run_started_at": "2026-10-08T11:00:00Z",
+   "updated_at": "2026-10-08T11:20:00Z",
+   "head_sha": "3333333333333333333333333333333333333333",
+   "head_branch": "issue/93-x",
+   "html_url": "https://github.com/mahAnuj/astro-ai/actions/runs/9014"
+  }
+ ]
+}
