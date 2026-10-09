@@ -30,6 +30,14 @@ on:
 permissions:
   contents: read
   issues: write
+  # REQUIRED, and its absence made this workflow incapable of its one job.
+  # The close step calls `gh api repos/{}/commits/{sha}/pulls` to find what the
+  # commit shipped, and listing a commit's pull requests needs this scope. It
+  # was missing, so that call returned
+  #     gh: Resource not accessible by integration (HTTP 403)
+  # and the step exited 1 — run 37817857859, the first run ever to get past
+  # this job's `if`. Nothing had closed on production evidence, ever.
+  pull-requests: read
 
 jobs:
   close:

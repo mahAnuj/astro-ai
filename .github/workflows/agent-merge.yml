@@ -86,7 +86,23 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request_target" ]; then
             n="${{ github.event.pull_request.number }}"
           else
-            n=$(gh api "repos/$GH_REPO/commits/${{ steps.pr.outputs.sha }}/pulls" \
+            # `github.event.workflow_run.head_sha`, NOT `steps.pr.outputs.sha`.
+            # This step's own id IS `pr`, so that expression read its own
+            # output before it existed and always rendered EMPTY, giving
+            #     gh: No commit found for SHA:  (HTTP 422)
+            # and exit 1. The whole `workflow_run` leg of this workflow failed
+            # 100% of the time — four runs on 2026-10-08 (37823306954,
+            # 37824154542, 37878016497, 37878770889) and every one before them.
+            #
+            # Only the `pull_request_target` branch above ever worked, so the
+            # dual-trigger design documented at the top of this file has been
+            # running on one leg since it was written: a PR whose gates finish
+            # AFTER its qa-pass label was never re-checked by anything.
+            #
+            # The later steps may still use steps.pr.outputs.sha — by then this
+            # step has completed and the output exists. Only a self-reference
+            # inside the defining step is empty.
+            n=$(gh api "repos/$GH_REPO/commits/${{ github.event.workflow_run.head_sha }}/pulls" \
                   --jq '.[0].number // empty')
           fi
           if [ -z "$n" ]; then
