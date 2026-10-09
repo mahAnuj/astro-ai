@@ -246,6 +246,11 @@ def test_measurement_receipt_reads_output_not_the_echoed_script():
     # "measurement from run" -- in the echoed script source. Only the output counts.
     assert lo.measurement_receipt((FIX / "defect3_measurement_403" / "actions_jobs_94011_logs.log").read_text()) == lo.DENIED
     assert lo.measurement_receipt((FIX / "healthy" / "actions_jobs_94011_logs.log").read_text()) == lo.RECEIVED
+    # output that says nothing recognisable is UNKNOWN even though the echoed script
+    # source above it mentions both receipts
+    mute = (FIX / "defect3_measurement_403" / "actions_jobs_94011_logs.log").read_text().replace(
+        "gh: Resource not accessible by integration (HTTP 403)", "gh: boom")
+    assert lo.measurement_receipt(mute) == lo.UNKNOWN
     assert lo.measurement_receipt("2026-10-09T01:00:00Z ##[group]Run actions/checkout@v4\n") == lo.UNKNOWN
     assert lo.measurement_receipt("") == lo.UNKNOWN
 

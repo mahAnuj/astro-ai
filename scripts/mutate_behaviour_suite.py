@@ -507,6 +507,68 @@ MUTATIONS = [
      "    (\"सिंह\",),",
      "    (\"सिंह_\",),",
      "test_every_devanagari_rashi_name_maps_to_its_own_index"),
+
+    # #316: the loop-outcome report. Each re-breaks a rule whose absence let a
+    # loop fail invisibly; the report that cannot go red is the defect it replaces.
+    ("#316: a merge leg that fails every run is no longer BROKEN (the 422 leg hides behind its twin)",
+     "scripts/report_loop_outcomes.py",
+     "        if rs and ok == 0:",
+     "        if False:",
+     "test_defect1_a_merge_leg_that_always_fails_is_broken_even_though_merges_happen"),
+
+    ("#316: a success that committed no report reads as idle, not broken",
+     "scripts/report_loop_outcomes.py",
+     "    if failed or nothing:",
+     "    if failed:",
+     "test_success_with_no_report_commit_is_broken_not_idle"),
+
+    ("#316: a 403 in the measurement fetch is read as a received measurement",
+     "scripts/report_loop_outcomes.py",
+     "        return DENIED",
+     "        return RECEIVED",
+     "test_defect3_a_403_in_a_continue_on_error_step_is_not_a_green_run"),
+
+    ("#316: an unreadable loop exits 0 (UNKNOWN reads as green)",
+     "scripts/report_loop_outcomes.py",
+     "    if any(f.verdict == UNKNOWN for f in findings):\n        return 2",
+     "    if any(f.verdict == UNKNOWN for f in findings):\n        return 0",
+     "test_unreadable_evidence_is_unknown_exits_two_and_is_never_green"),
+
+    ("#316: an issue a human closed counts as closed by the loop (declined path)",
+     "scripts/report_loop_outcomes.py",
+     "                if closer == BOT:\n                    continue",
+     "                if closer:\n                    continue",
+     "test_defect4_close_on_evidence_that_closed_nothing_is_broken_and_prints_the_refs_line"),
+
+    ("#316: an issue a human closed counts as closed by the loop (claimed path)",
+     "scripts/report_loop_outcomes.py",
+     "            elif closer == BOT:",
+     "            elif closer:",
+     "test_a_closing_keyword_closed_by_a_human_is_still_a_shortfall"),
+
+    ("#316: a run still in flight is counted as a failed leg run",
+     "scripts/report_loop_outcomes.py",
+     "    real = [r for r in _done(runs) if r.get(\"conclusion\") != \"skipped\"]",
+     "    real = [r for r in runs if r.get(\"conclusion\") != \"skipped\"]",
+     "test_in_flight_work_is_excluded_not_broken"),
+
+    ("#316: the measurement receipt reads the echoed script source, not the step's output",
+     "scripts/report_loop_outcomes.py",
+     "    lines = step_output(log, MEASURE_ANCHOR)\n    if not lines:\n        return UNKNOWN\n    text = \"\\n\".join(lines)",
+     "    text = log",
+     "test_measurement_receipt_reads_output_not_the_echoed_script"),
+
+    ("#316: Refs no longer suppresses the branch-name fallback (a deliberate decline reads as a miss)",
+     "scripts/report_loop_outcomes.py",
+     "    return {\"expected\": sorted(closing | (branch - refs)),",
+     "    return {\"expected\": sorted(closing | branch),",
+     "test_refs_decline_on_a_still_open_issue_is_not_a_shortfall"),
+
+    ("#316: the workflow loses pull-requests: read (the report would say UNKNOWN, forever)",
+     ".github/workflows/loop-outcomes.yml",
+     "      pull-requests: read    # agent PRs, their labels and merged_by\n",
+     "",
+     "test_workflow_grants_every_scope_the_scripts_endpoints_need"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -578,7 +640,9 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
         # to check that its jq field reads still match what /health emits. A
         # sandbox missing a file the suite reads makes EVERY mutation look
         # CAUGHT — including the control, which is how this was noticed.
-        for sub in ("src", "tests", ".github"):
+        # `scripts` since #316: tests/test_loop_outcomes.py loads
+        # scripts/report_loop_outcomes.py by path, and mutating it needs it here.
+        for sub in ("src", "tests", ".github", "scripts"):
             shutil.copytree(ROOT / sub, sandbox / sub,
                             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         # GUARD GONE — "the defect escaped" and "the test meant to catch it no
