@@ -378,3 +378,63 @@ def test_cli_writes_the_report_and_returns_the_exit_code(tmp_path, capsys):
     findings = json.loads((out / "findings.json").read_text())
     assert {f["loop"] for f in findings} >= {"agent-merge workflow_run leg", "close-on-evidence"}
     assert lo.main([*ARGS, "--fixtures", str(FIX / "healthy")]) == 0
+
+
+# --------------------------------------------------------------------------- #
+# the workflow that runs it
+# --------------------------------------------------------------------------- #
+
+WORKFLOW = ROOT / ".github" / "workflows" / "loop-outcomes.yml"
+
+
+def _scopes_needed() -> dict[str, str]:
+    """Scopes named in the script header's endpoint table: `... ... actions: read`."""
+    doc = ast.get_docstring(ast.parse((ROOT / "scripts" / "report_loop_outcomes.py").read_text()))
+    return dict(re.findall(r"\.\s+([a-z-]+): (read|write)\s*$", doc, re.M))
+
+
+def _scopes_granted() -> dict[str, str]:
+    block = re.search(r"^    permissions:\n((?:      [a-z-]+: (?:read|write).*\n)+)", WORKFLOW.read_text(), re.M)
+    return dict(re.findall(r"^      ([a-z-]+): (read|write)", block.group(1), re.M))
+
+
+def test_workflow_grants_every_scope_the_scripts_endpoints_need():
+    # The static gate (#315) cannot see `gh api` inside the script, so the table in
+    # the script header is the only statement of what it needs. A scope missing here
+    # makes the report say UNKNOWN for the loop it cannot read.
+    needed, granted = _scopes_needed(), _scopes_granted()
+    assert set(needed) == {"actions", "pull-requests", "issues", "contents", "checks"}, needed
+    rank = {"read": 1, "write": 2}
+    for scope, level in needed.items():
+        assert scope in granted and rank[granted[scope]] >= rank[level], f"{scope}: needs {level}, granted {granted.get(scope)}"
+    assert granted["issues"] == "write", "the standing report issue is created and commented on"
+
+
+def test_workflow_cron_collides_with_no_other_workflow():
+    mine = re.search(r'cron:\s*"([^"]+)"', WORKFLOW.read_text()).group(1).split()
+    for other in (ROOT / ".github" / "workflows").glob("*.yml"):
+        if other == WORKFLOW:
+            continue
+        for cron in re.findall(r'cron:\s*[\'"]([^\'"]+)[\'"]', other.read_text()):
+            c = cron.split()
+            same_day = c[4] in ("*", mine[4]) or mine[4] == "*"
+            assert not (c[:2] == mine[:2] and same_day), f"{other.name} fires at {cron}, as does loop-outcomes"
+
+
+def test_workflow_takes_since_and_until_and_the_script_accepts_them():
+    text = WORKFLOW.read_text()
+    assert re.search(r"workflow_dispatch:\n    inputs:\n      since:", text) and "      until:" in text
+    assert 'IN_SINCE: ${{ github.event.inputs.since }}' in text
+    # inputs reach the shell through env, never interpolated into the script text
+    assert "${{ github.event.inputs" not in text.split("steps:", 1)[1]
+    for flag in ("--since", "--until", "--out"):
+        assert flag in text and flag in (ROOT / "scripts" / "report_loop_outcomes.py").read_text()
+
+
+def test_workflow_posts_even_when_the_report_step_fails_and_never_closes():
+    text = WORKFLOW.read_text()
+    publish = text.split("name: Post to the standing report issue", 1)[1].split("upload-artifact", 1)[0]
+    assert "if: always()" in text.split("name: Post to the standing report issue", 1)[1][:60]
+    assert "gh issue comment" in publish and "gh issue create" in publish
+    assert "gh issue close" not in text, "closing is a human decision"
+    assert "GH_TOKEN: ${{ github.token }}" in text
