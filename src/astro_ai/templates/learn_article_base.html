@@ -395,12 +395,27 @@
 
 {# Sticky mobile Kundli CTA (Issue #73) — the bottom CTA banner is at
    the very END of every learn article (~2000 words). Many mobile
-   readers bounce before reaching it. Sticky bar appears after 50%
+   readers bounce before reaching it. Sticky bar appears after 35%
    scroll on mobile only; dismissible with X. Not intrusive: only fires
-   after real reading engagement, and the reader can dismiss it. #}
+   after real reading engagement, and the reader can dismiss it.
+
+   #304 — GEOMETRY, MEASURED AT 375x667 WITH A BROWSER (not read off the CSS):
+     tab bar (_tab_bar.html)  75px tall, fixed bottom-0, z-40
+     this CTA                 61px tall, so it spans 75px..136px from the bottom
+     feedback FAB             38px tall, lifted to 9rem (144px) below => 8px clear
+   `bottom-[75px]` is the tab bar's height. Before #304 this sat at bottom-0 under
+   a z-40 bar, so the CTA was invisible AND untappable (elementFromPoint at its
+   centre returned the tab bar). If the tab bar's padding changes, change this
+   number and the 9rem in the <style> below with it.
+
+   VISIBILITY IS A CLASS, NOT AN INLINE `display`. An inline `display:flex`
+   outranks the stylesheet's `md:hidden`, so the old script showed this bar on
+   desktop too (measured at 768 and 1280). `hidden` is removed and `flex` added
+   by the script; `md:hidden` is emitted after `flex` and wins from 768px up.
+   No box-shadow: base.html's charter allows exactly one on the site (the
+   homepage form card) and the border-t already separates this bar. #}
 <div id="learn-sticky-cta"
-     class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-bhagya-line px-4 py-3 flex items-center gap-3 no-print"
-     style="display: none; box-shadow: 0 -4px 20px rgba(107, 33, 168, 0.08);">
+     class="hidden md:hidden fixed bottom-[75px] left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-bhagya-line px-4 py-3 items-center gap-3 no-print">
   <div class="flex-1 min-w-0">
     <div class="text-xs font-semibold text-bhagya-sindoor">Check your own chart</div>
     <div class="text-[11px] text-bhagya-muted truncate">Free Janma Kundli · plain English + Hindi</div>
@@ -420,12 +435,13 @@
     if (!bar) return;
     // Respect user's dismissal for the session
     if (sessionStorage.getItem('learn-sticky-dismissed') === '1') return;
-    // Show after user scrolls past ~50% of the article
+    // Show after user scrolls past ~35% of the article
     function onScroll() {
       var scrollTop = window.scrollY;
       var docHeight = document.documentElement.scrollHeight - window.innerHeight;
       if (docHeight > 0 && scrollTop / docHeight > 0.35) {
-        bar.style.display = 'flex';
+        bar.classList.remove('hidden');
+        bar.classList.add('flex');
       }
     }
     // Coordinate with the feedback widget (bottom-4 right-4) — when this
@@ -433,14 +449,15 @@
      // don't overlap. Uses a body class so CSS can target both regardless
      // of render order.
     function updateStickyState() {
-      var visible = bar.style.display === 'flex';
+      var visible = !bar.classList.contains('hidden');
       document.body.classList.toggle('learn-sticky-cta-visible', visible);
     }
     function onScrollWithState() { onScroll(); updateStickyState(); }
     window.removeEventListener('scroll', onScroll);
     window.addEventListener('scroll', onScrollWithState, { passive: true });
     document.getElementById('learn-sticky-close').addEventListener('click', function () {
-      bar.style.display = 'none';
+      bar.classList.remove('flex');
+      bar.classList.add('hidden');
       updateStickyState();
       sessionStorage.setItem('learn-sticky-dismissed', '1');
     });
@@ -448,10 +465,14 @@
 </script>
 <style>
   /* When the learn-sticky CTA is visible on mobile, push the feedback
-     bubble up so the two don't overlap at bottom-right. Desktop unaffected
-     (sticky CTA is md:hidden). */
-  body.learn-sticky-cta-visible #feedback-fab {
-    bottom: 5rem !important;
+     bubble above it so the two don't overlap at bottom-right (#304).
+     CTA top edge = 75px (tab bar) + 61px (CTA) = 136px from the bottom;
+     9rem = 144px leaves an 8px gap. Scoped to <768px: the CTA is md:hidden,
+     so from md up the FAB keeps its own md:bottom-4. */
+  @media (max-width: 767px) {
+    body.learn-sticky-cta-visible #feedback-fab {
+      bottom: 9rem !important;
+    }
   }
 </style>
 {% endblock %}
