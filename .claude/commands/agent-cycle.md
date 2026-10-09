@@ -180,10 +180,22 @@ and nothing explaining why.
 On a **PASS**:
 
 ```bash
+gh pr ready   <pr>    --repo "$GH_REPO"          # <-- see below; a draft cannot merge
 gh pr edit    <pr>    --repo "$GH_REPO" --add-label qa-pass
 gh issue edit <issue> --repo "$GH_REPO" --add-label qa-pass
 gh pr comment <pr>    --repo "$GH_REPO" --body "QA: PASS — <what was executed, and the numbers>"
 ```
+
+**`gh pr ready` is not optional, and it is first.** Step 3.6 tells you to open the PR in
+draft before QA has run, which is right — work that never left the runner is lost. But nothing
+used to take it *out* of draft, and **GitHub refuses to merge a draft PR**. PR #303 carried
+`qa-pass`, had its fix verified, and sat open from 2026-10-08 18:09 until a human un-drafted
+it, because the loop never did.
+
+Marking it ready is also what makes the gates run on it: `pr-gates` listens for
+`ready_for_review` (added 2026-10-09 for exactly this), so a draft that is never readied has
+**no checks at all** — and `agent-merge` refuses on "no checks reported", which is the correct
+behaviour applied to a PR that could never satisfy it.
 
 On a **FAIL**, `qa-fail` on both, and the comment says what broke. `agent-merge` checks `qa-fail`
 first and refuses regardless of anything else, so a later `qa-pass` cannot override a failure

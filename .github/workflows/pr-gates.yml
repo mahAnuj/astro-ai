@@ -40,6 +40,16 @@ name: PR gates
 # (2026-10-08) it can now prove which commit is serving.
 on:
   pull_request:
+    # `ready_for_review` is NOT in the default set, which is
+    # [opened, synchronize, reopened] — and its absence stranded PR #303.
+    #
+    # /agent-cycle opens its PR as a DRAFT while QA is still running (deliberate:
+    # "a PR that exists and is not ready is recoverable; work that never left the
+    # runner is not"). Marking it ready afterwards therefore emitted an event
+    # nothing listened to, so a PR could be un-drafted and still carry no checks
+    # at all — and agent-merge refuses on "no checks reported", correctly. The PR
+    # sat with qa-pass and nothing to merge on.
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: pr-gates-${{ github.ref }}
