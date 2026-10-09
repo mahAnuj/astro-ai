@@ -26,6 +26,36 @@ on:
   workflow_run:
     workflows: ["verify-production"]
     types: [completed]
+  # DISPATCH ENTRY POINT — this is what makes the autonomous chain complete.
+  #
+  # Measured 2026-10-09: a `verify-production` run that `agent-merge` dispatched
+  # with GITHUB_TOKEN emits NO `workflow_run` event, so the trigger above never
+  # fires for it. Dispatching the identical workflow against the identical
+  # commit with a user token fired it immediately:
+  #
+  #   agent-merge, GITHUB_TOKEN  run 37887912818  success  -> no close-on-evidence
+  #   a user token, same commit  run 37890955328  success  -> fired (37891007703)
+  #
+  # GitHub's recursion guard reaches one level further than expected: the
+  # `workflow_dispatch` exemption is enough to START a run, but that run is
+  # still marked GITHUB_TOKEN-originated and its completion reaches no listener.
+  # So every autonomously-merged PR got as far as merge -> deploy -> verified,
+  # and then stopped: #268 and #304 both needed a dispatch by hand.
+  #
+  # `verify-production` now calls this directly on its own success when its
+  # event was `workflow_dispatch`. A dispatch IS exempt from the guard, which is
+  # the whole reason this path works.
+  #
+  # Deliberately NOT solved by having agent-merge close the issue itself: that
+  # would duplicate every rule below — the keyword, the `Refs` suppression, the
+  # branch fallback, the live-SHA check — in a second place, and this repo
+  # already records what copied logic does ("copied files diverge", five times
+  # in two days). One implementation, two entry points.
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Commit to close against. Must be the revision /health reports."
+        required: true
 
 permissions:
   contents: read
@@ -58,16 +88,21 @@ jobs:
     # evidence that any particular commit shipped, which is the claim a close
     # makes. The live-SHA check below would mostly catch that anyway; this
     # keeps the intent explicit rather than relying on it.
+    # A direct dispatch carries no workflow_run payload, so it is allowed through
+    # on its own terms. It is not a weaker path: the caller is verify-production
+    # itself, only on its own success, and every check below still runs — above
+    # all that /health reports THIS commit, which is the claim a close makes.
     if: >-
-      github.event.workflow_run.conclusion == 'success'
-      && (github.event.workflow_run.event == 'push'
-          || github.event.workflow_run.event == 'workflow_dispatch')
+      github.event_name == 'workflow_dispatch'
+      || (github.event.workflow_run.conclusion == 'success'
+          && (github.event.workflow_run.event == 'push'
+              || github.event.workflow_run.event == 'workflow_dispatch'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
-      SHA: ${{ github.event.workflow_run.head_sha }}
+      SHA: ${{ github.event.inputs.sha || github.event.workflow_run.head_sha }}
     steps:
       - name: Is this exact commit serving?
         id: live
@@ -170,7 +205,7 @@ jobs:
           "Closed on production evidence.
 
           - PR #$pr merged to \`main\`
-          - \`verify-production\` concluded **success** for \`$SHA\` ([run](${{ github.event.workflow_run.html_url }}))
+          - \`verify-production\` concluded **success** for \`$SHA\`${{ github.event.workflow_run.html_url && format(' ([run]({0}))', github.event.workflow_run.html_url) || '' }}
           - \`/health\` reports \`build_sha\` = \`$SHA\`, so **this commit is the revision serving**
 
           That is CLAUDE.md's two-stage close: the fix landed, the deploy was verified, and the commit was confirmed live before closing. Reopen if production disagrees — a green run proves the invariants it asserts, not that nothing else broke."
