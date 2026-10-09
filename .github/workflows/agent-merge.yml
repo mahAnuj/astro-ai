@@ -206,6 +206,33 @@ jobs:
           fi
           echo "ok=true" >> "$GITHUB_OUTPUT"
 
+      # A DRAFT CANNOT MERGE, and this job used to fetch `isDraft` and never
+      # read it. So a readied-by-nobody PR reached `gh pr merge` and failed
+      # with "Pull request is in draft state" — after every condition that
+      # matters had been satisfied.
+      #
+      # /agent-cycle now runs `gh pr ready` when QA passes, which is the
+      # primary path and the right place for it. This is the safety net for a
+      # cycle that died between QA and that command: PR #303 sat from
+      # 2026-10-08 18:09 carrying qa-pass, un-draftable by anything in the
+      # system.
+      #
+      # Un-drafting here is safe precisely BECAUSE it is the last step before
+      # merging: gates green, qa-pass on record, no qa-fail, diff inside the
+      # limit. Nothing is being waved through — the draft flag is the only
+      # thing left, and a draft carrying all of that is a bookkeeping error,
+      # not a reservation. It is logged either way, because a net that acts
+      # silently is indistinguishable from one that was never needed.
+      - name: Take it out of draft if the cycle never did
+        if: steps.size.outputs.ok == 'true'
+        run: |
+          if [ "$(jq -r .isDraft /tmp/pr.json)" = "true" ]; then
+            echo "::warning::PR #${{ steps.pr.outputs.number }} is still a draft although gates are green and qa-pass is set — /agent-cycle did not run 'gh pr ready'. Readying it here so the merge can proceed."
+            gh pr ready "${{ steps.pr.outputs.number }}" --repo "$GH_REPO"
+          else
+            echo "not a draft"
+          fi
+
       - name: Merge
         if: steps.size.outputs.ok == 'true'
         run: |
