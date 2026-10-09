@@ -42,7 +42,7 @@ on:
         description: "Window start, ISO date or time, UTC (blank = 7 days before 'until')"
         required: false
       until:
-        description: "Window end, ISO date or time, UTC (blank = now)"
+        description: "Window end, ISO date or time, UTC (blank = now). A date-only value is midnight at the START of that day: use 2026-10-10 to include 2026-10-09"
         required: false
 
 concurrency:

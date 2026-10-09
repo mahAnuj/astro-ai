@@ -256,6 +256,95 @@ def test_measurement_receipt_reads_output_not_the_echoed_script():
 
 
 # --------------------------------------------------------------------------- #
+# QA round 1: false BROKEN on old PRs, and branches no test could turn red
+# --------------------------------------------------------------------------- #
+
+def test_a_pr_merged_before_the_window_and_merely_touched_inside_it_is_not_judged():
+    # agent_prs selects by updated_at, so a PR merged 2026-10-01 and commented on
+    # 2026-10-09 arrives here. Its issue was closed by a human that day, in a
+    # window this report is not looking at: reporting it is a false BROKEN.
+    old = {**_pr(5, "Closes #5", merged_at="2026-10-01T00:00:00Z"), "updated_at": "2026-10-09T00:00:00Z"}
+    human = {5: [{"event": "closed", "actor": {"login": "someone"}, "created_at": "2026-10-01T01:00:00Z"}]}
+    f = lo.classify_close([old], VERIFIED, [], human, WINDOW)
+    assert f.verdict == lo.IDLE, f.sentence
+    # the same holds for the post-merge verification: its run was listed by the
+    # window too, so an old merge always looks like it had none
+    assert lo.classify_last_mile([old], [], WINDOW).verdict == lo.IDLE
+    eligible, no_run, red = lo.eligible_prs([old], VERIFIED, WINDOW)
+    assert (eligible, no_run, red) == ([], [], [])
+    # control: merged INSIDE the window, the identical shortfall is still BROKEN
+    fresh = _pr(5, "Closes #5", merged_at="2026-10-09T00:00:00Z")
+    assert lo.classify_close([fresh], VERIFIED, [], human, WINDOW).verdict == lo.BROKEN
+    assert lo.classify_last_mile([fresh], [], WINDOW).verdict == lo.BROKEN
+
+
+def test_a_work_run_that_concludes_failure_is_broken():
+    run = _run(30, "schedule", "failure", "2026-10-09T23:00:00Z", "2026-10-09T23:05:00Z")
+    f = lo.classify_work([run], [], [{"at": "2026-10-09T23:02:00Z", "what": "comment"}], WINDOW)
+    # a stop-on-purpose trace does not excuse a run that FAILED
+    assert f.verdict == lo.BROKEN and "run 30 concluded failure" in f.sentence
+
+
+@pytest.mark.parametrize("loop", ["agent-measure", "agent-discover", "agent-design"])
+def test_a_report_loop_whose_every_run_failed_is_broken(loop):
+    runs = [_run(40 + i, "schedule", "failure", f"2026-10-0{8 + i}T21:00:00Z", f"2026-10-0{8 + i}T21:05:00Z")
+            for i in range(2)]
+    # a report commit at the right time must not rescue a run that concluded failure
+    commits = [_commit("2026-10-08T21:02:00Z")]
+    f = lo.classify_report_loop(loop, runs, commits, WINDOW, issues_created=None)
+    assert f.verdict == lo.BROKEN
+    assert "2 of 2 runs produced no report" in f.sentence and "concluded failure" in f.sentence
+
+
+def test_a_schedule_that_does_not_fire_is_broken():
+    week = lo.Window(lo.parse_when("2026-10-02"), lo.parse_when("2026-10-09"))
+    one = [_run(50, "schedule", "success", "2026-10-03T21:00:00Z", "2026-10-03T21:30:00Z")]
+    # nightly loops owe >= 5 a week, weekly ones >= 1
+    short = lo.classify_schedule("agent-work", one, week)
+    assert short.verdict == lo.BROKEN and "schedule not firing" in short.sentence and "expected at least 5" in short.sentence
+    assert lo.classify_schedule("agent-discover", [], week).verdict == lo.BROKEN
+    assert lo.classify_schedule("agent-work", one * 5, week).verdict == lo.OK
+    assert lo.classify_schedule("agent-discover", one, week).verdict == lo.OK
+
+
+def _open_qa_pass(checks):
+    return {**_pr(7, merged_at=None), "state": "open", "checks": checks}
+
+
+OLD_QA = [{"pr": 7, "created_at": "2026-10-10T06:00:00Z"}]
+
+
+def test_a_qa_pass_pr_whose_checks_cannot_be_read_is_unknown_not_stranded_or_fine():
+    f = lo.classify_merge_outcome([_open_qa_pass(None)], OLD_QA, WINDOW)
+    assert f.verdict == lo.UNKNOWN and "its checks could not be read" in f.sentence
+    assert lo.exit_code([f]) == 2
+
+
+def test_a_qa_pass_pr_whose_checks_are_still_running_is_in_flight_not_stranded():
+    running = [{"name": "gates", "status": "in_progress", "conclusion": None}]
+    f = lo.classify_merge_outcome([_open_qa_pass(running)], OLD_QA, WINDOW)
+    assert f.verdict == lo.OK and "1 in flight" in f.sentence
+    # control: the same PR with a FAILED check is stranded
+    red = [{"name": "gates", "status": "completed", "conclusion": "failure"}]
+    assert lo.classify_merge_outcome([_open_qa_pass(red)], OLD_QA, WINDOW).verdict == lo.BROKEN
+
+
+def test_the_grace_boundary_is_inclusive_one_second_either_side():
+    limit = WINDOW.until - lo.GRACE
+    at, after = lo.iso(limit), lo.iso(limit + lo.timedelta(seconds=1))
+    assert WINDOW.settled(at) and not WINDOW.settled(after)
+    # and the classifier honours it: a silent success exactly at the limit is judged,
+    # one second later it is still in flight
+    judged = _run(60, "schedule", "success", "2026-10-10T09:00:00Z", at)
+    assert lo.classify_work([judged], [], [], WINDOW).verdict == lo.BROKEN
+    flying = _run(61, "schedule", "success", "2026-10-10T09:00:00Z", after)
+    assert lo.classify_work([flying], [], [], WINDOW).verdict == lo.IDLE
+    # a PR merged exactly at the limit is owed a verification; one second later is not
+    assert lo.classify_last_mile([_pr(5, merged_at=at)], [], WINDOW).verdict == lo.BROKEN
+    assert lo.classify_last_mile([_pr(5, merged_at=after)], [], WINDOW).verdict == lo.IDLE
+
+
+# --------------------------------------------------------------------------- #
 # the Refs / closing-keyword logic
 # --------------------------------------------------------------------------- #
 

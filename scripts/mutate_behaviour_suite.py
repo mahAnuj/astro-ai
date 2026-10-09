@@ -569,6 +569,54 @@ MUTATIONS = [
      "      pull-requests: read    # agent PRs, their labels and merged_by\n",
      "",
      "test_workflow_grants_every_scope_the_scripts_endpoints_need"),
+
+    ("#316: a PR merged before the window is judged (false BROKEN on a PR merely touched this week)",
+     "scripts/report_loop_outcomes.py",
+     '        return self.since <= ts(t) and self.settled(t)',
+     '        return self.settled(t)',
+     "test_a_pr_merged_before_the_window_and_merely_touched_inside_it_is_not_judged"),
+
+    ("#316: the post-merge verification counts a PR merged before the window",
+     "scripts/report_loop_outcomes.py",
+     '    total = len([p for p in by_bot if p.get("merged_at") and window.merged_in(p["merged_at"])])',
+     '    total = len([p for p in by_bot if p.get("merged_at") and window.settled(p["merged_at"])])',
+     "test_a_pr_merged_before_the_window_and_merely_touched_inside_it_is_not_judged"),
+
+    ("#316: an agent-work run that concluded failure is skipped instead of reported",
+     "scripts/report_loop_outcomes.py",
+     '            bad.append(f"run {r[\'id\']} concluded {r.get(\'conclusion\')}")\n            continue',
+     '            continue',
+     "test_a_work_run_that_concludes_failure_is_broken"),
+
+    ("#316: a report loop's failed run is dropped (every run failed, nothing reported)",
+     "scripts/report_loop_outcomes.py",
+     '            failed.append(f"run {r[\'id\']} concluded {r.get(\'conclusion\')}")',
+     '            pass',
+     "test_a_report_loop_whose_every_run_failed_is_broken"),
+
+    ("#316: a schedule that stopped firing reads as OK",
+     "scripts/report_loop_outcomes.py",
+     '    if len(runs) < need:',
+     '    if False:',
+     "test_a_schedule_that_does_not_fire_is_broken"),
+
+    ("#316: a PR whose checks cannot be read is no longer UNKNOWN",
+     "scripts/report_loop_outcomes.py",
+     '    if uncertain:\n        return Finding(loop, UNKNOWN',
+     '    if False:\n        return Finding(loop, UNKNOWN',
+     "test_a_qa_pass_pr_whose_checks_cannot_be_read_is_unknown_not_stranded_or_fine"),
+
+    ("#316: a PR whose checks are still running is called stranded",
+     "scripts/report_loop_outcomes.py",
+     '        return "its checks are still running", "pending"',
+     '        return "its checks are still running", "definite"',
+     "test_a_qa_pass_pr_whose_checks_are_still_running_is_in_flight_not_stranded"),
+
+    ("#316: the in-flight grace boundary is exclusive (a run exactly GRACE old is not judged)",
+     "scripts/report_loop_outcomes.py",
+     '        return ts(t) <= self.until - GRACE',
+     '        return ts(t) < self.until - GRACE',
+     "test_the_grace_boundary_is_inclusive_one_second_either_side"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

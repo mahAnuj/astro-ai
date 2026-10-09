@@ -124,8 +124,16 @@ class Window:
         return self.since <= ts(t) <= self.until
 
     def settled(self, t: str) -> bool:
-        """Old enough to demand an effect from. In flight is not broken."""
+        """Old enough to demand an effect from. In flight is not broken.
+        Inclusive: something exactly GRACE old is judged; one second younger is not."""
         return ts(t) <= self.until - GRACE
+
+    def merged_in(self, t: str) -> bool:
+        """Merged inside the window AND settled. `agent_prs` selects by updated_at, so
+        a PR merged weeks ago and merely touched this week arrives here too; its
+        verification run and its issue's close belong to a window this report is
+        not looking at, and judging it reads as a false BROKEN."""
+        return self.since <= ts(t) and self.settled(t)
 
 
 def parse_when(s: str) -> datetime:
@@ -507,7 +515,7 @@ def eligible_prs(prs, verify_runs, window: Window):
     exact condition close-on-evidence demands. Returns (eligible, no_run, red)."""
     eligible, no_run, red = [], [], []
     for pr in prs:
-        if not pr.get("merged_at") or not window.settled(pr["merged_at"]):
+        if not pr.get("merged_at") or not window.merged_in(pr["merged_at"]):
             continue
         sha = pr["merge_commit_sha"]
         vr = [v for v in verify_runs if v["head_sha"] == sha and v.get("event") in ("push", "workflow_dispatch")]
@@ -528,7 +536,7 @@ def classify_last_mile(prs, verify_runs, window: Window) -> Finding:
     loop = "agent-merge post-merge verification"
     by_bot = [p for p in prs if (p.get("merged_by") or {}).get("login") == BOT]
     _, no_run, red = eligible_prs(by_bot, verify_runs, window)
-    total = len([p for p in by_bot if p.get("merged_at") and window.settled(p["merged_at"])])
+    total = len([p for p in by_bot if p.get("merged_at") and window.merged_in(p["merged_at"])])
     if not total:
         return Finding(loop, IDLE, f"{loop}: agent-merge merged nothing in the window.", [])
     if no_run:
@@ -874,7 +882,8 @@ def render_md(findings: list[Finding], window: Window) -> str:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--since", help="ISO date/time; default 7 days before --until")
-    ap.add_argument("--until", help="ISO date/time; default now")
+    ap.add_argument("--until", help="ISO date/time; default now. A date-only value means midnight at the "
+                                    "START of that day: use --until 2026-10-10 to include 2026-10-09")
     ap.add_argument("--out", help="directory for report.md and findings.json")
     ap.add_argument("--fixtures", nargs="+", help="read fixture dirs instead of the network (earlier overrides later)")
     ap.add_argument("--repo", default=os.environ.get("GH_REPO", "mahAnuj/astro-ai"))
