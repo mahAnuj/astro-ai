@@ -1,0 +1,37 @@
+## 2026-10-09 — sync
+Baseline: none. No SYNC_LOG.md has ever been committed (`git log --all -- SYNC_LOG.md` is empty), so "blocked 2x" cannot be computed. This is sync #1, and every blocker below starts its clock today.
+Evidence limit: `gh run list` / `actions/runs` return 403 for this token. Loop outcomes come from /tmp/week.txt, which gives conclusions only, not logs. The 5 failed merge runs, 1 failed work run and 1 failed design run are unexplained here; #316 exists to answer that.
+
+decisions:
+  1. **#278 merged into #279** (survivor #279). One root cause: CI has no corpus (#278 no poppler, #279 no books). Neither fix works without the other. Neither has a comment, label or owner after 1 day.
+  2. **#279 re-ranked up, scoped to one book.** Commit 9a64a7f untracked `data/vedic_astro_textbook.pdf`, the only book CI held. `verify_rule_citations.py` marks a mutation "NOT EXERCISED" when its book is absent (L408-411, L440-442). `pr-gates.yml` treats only exit 2 as SKIPPED, and that gate passes with a note. So the "cite a section the book does not contain" mutation, which CLAUDE.md names as the one thing a self-assessing agent cannot argue past, no longer runs in `pr-gates`. This is inferred from code and tree state; CI logs were unreadable. Rao textbook is `fetch_corpus.py`-registered, author-distributed, HTTP 200 per #279. Fixing it means poppler plus `fetch_corpus.py --fetch` for that one book. It touches `.github/workflows/`, see next item.
+  3. **Workflow-edit blocker, one owner needed.** The agent App token cannot write `.github/workflows/` ("without `workflows` permission", #316). Open issues that need exactly that: #279/#278 (poppler/fetch step), #291 (labels in agent-measure/agent-discover), #316 (loop-outcomes.yml), the one-line stale note in verify-production.yml (#303 body). The loop will pick these up, burn a cycle, and stop. **Owner: repo owner, one sitting.** Either grant `workflows` to the App or apply the four edits by hand. #316's branch `issue/316-loop-outcome-report` is complete except the workflow file, and the owner has the file text in its last comment.
+  4. **#255: merge gate must honour `needs-human-review`.** agent-cycle skipped #255 on 10-09 because `agent-merge.yml` merges any green+`qa-pass` branch regardless of that label, so privacy-policy wording would ship unread. That gap has no issue of its own. Proposed: file one (owner: infra-lead). Until then the label is decorative, and #233, #263, #203, #198, #316 also carry it.
+  5. **#124 proposed closure** (for /prioritise). Landed 3851506 on 10-07. Probed 10-09 against production: `/hi/rashifal/aries` canonical → `/hi/rashifal/aries`, hreflang en-IN / hi-IN / x-default all present, `/rashifal/aries?lang=hi` → 301 to `/hi/rashifal/aries`, 39 `/hi/` lines in sitemap.xml, reading container 801-933 chars, #270 probe showed 100% Devanagari. Caveat: its traffic thesis is unscored, see carried.
+  6. **#313 stays open as parent** (#315 part 1, #316 part 2, #317 hardening). It was closed once by commit prose containing "closed #313" and reopened. Owner has listed the lesson; no further action.
+  7. **#320 deprioritise.** Its own correction says licence hygiene, not exposure (author-distributed, `fetch_corpus.py:71`). It renames 686 of 729 commits, which would also invalidate every SHA quoted as evidence in issue comments and `close-on-evidence`. Do not rewrite history while #279 needs that same book re-fetched in CI.
+
+escalated:  none. 0 of 3 used.
+  Checked against `chief.md`: #255/#177/#178/#209 vs traffic → Ruling 3 ("Authenticity wins on the claim; traffic wins on the roadmap"), already answered. #311 and #276 are Growth work that changes titles/CTAs, not astrological claims (#311 `corpus: n/a`), so there is no Research-vs-Growth contradiction this week. #311 targets `/learn/manglik-dosh/`; its title rewrite must not add a claim, and that is the only watch item.
+  One wording item for chief, not an escalation (nothing is disputed): OBJECTIVE.md says "ten highest-impression queries". Analyst, #272 comment 10-09: query rows cover ~9% of impressions, so the band is measurable by page only. Ruling 1 allows one rewrite a quarter, from measured data, and this is it. Needs a human to invoke chief.
+
+closure audit (closed in last 7 days; 6 issues, 5 automated or hand closes, 0 reopened by me):
+  #304  OK    human-closed with PR/run/`/health` SHA; QA FAIL→PASS shown in thread.
+  #270  OK    human-closed. 5 Hindi pages with HTTP, time, Devanagari %, plus absent-phrase search; serving SHA is a descendant of the fix.
+  #280  OK    human-closed. States what was done, what was not, and why it is not a reopen.
+  #285  OK    human-closed. Refuted own hypothesis, evidence is run 37741141641 → PR #292.
+  #272  THIN  human-closed 10-08 07:27 with no closing comment. Analyst scored it afterwards: PASS on stated check, PARTIAL on intent (page-keyed, not query-keyed). Stands; the gap is OBJECTIVE.md wording above, not the closure.
+  #268  THIN, KEEP CLOSED. `close-on-evidence` posted the three required facts and nothing about the fix. Facts are true, but `verify-production` no longer probes rashifal pages, and PR #303 said production Hindi heading format was "unmeasured … fail-closed" and QA was "pending" when the PR merged. Probed 2026-10-09, serving `bhagya-00418-2v2` / `build_sha 9a64a7f`: /rashifal/aries 200 0.91s 1172 chars; /rashifal/virgo 200 1.09s 916; /hi/rashifal/virgo 200 0.84s 801; /hi/rashifal/aries 200 0.64s 933. This rules out the 10-08 outage (21 of 24 pages 503). It does not show cached-vs-derived (<1.1s is consistent with either), so the Hindi derivation claim is still unproven. A closing comment reading only "SHA is serving" is the #143 shape at lower severity. **Action: add a `rashifal_single` derived-from-combined check to production verification; do not reopen.**
+  Also: PR #303 body contains both `closes #268` and `Refs #268 (not closes…)`. The close fired on the first. Same defect class as #313; the new Refs-suppression covers PR bodies only if the closing keyword is absent.
+
+missed:  nothing scored as missed. Only #272 was scored (PASS/PARTIAL, execution fine, wording of the objective is what lagged).
+  #124 shipped 10-07, 2 days; thesis needs 28d, so unscorable before ~11-04. #311 itself reports no `/hi/` page appears in GSC or GA4 in the 10-06 window. #304 shipped 10-09; #276 says no result can be read until it lands, so its clock starts today.
+
+blocked 2x: none (first sync). **Blocked at day 1, owner needed**
+  - workflow-write permission → #279, #291, #316 (item 3)
+  - CI corpus: 0 of 8 books → #279 (item 2)
+  - `needs-human-review` not honoured by agent-merge → #255 and 5 others (item 4)
+  - #313 defects 7 and 8 were resolved by the owner today; not blocked.
+
+carried: 47 of 67 open issues have not been updated since before 10-01, including the redesign epic children #242-251 plus #233, plus #114/#115/#128/#129/#131/#140, #150/#151, #159, #163, #175, #177/#178, #185, #184, #191, #194, #200/#201/#203, #209, #211, #212, #219, #230-232, #253/#254, #262-267. No update this week; BACKLOG.md (six weeks stale) must not be used to judge them. Open count today is 67 by `gh issue list --state open`.
+  Proposed closures for /prioritise, each needs its own evidence check: #124 (above); #282 (its item 1 done and item 2 declared WRONG by its owner at 10-08 07:15; confirm nothing remains); #286 (verify_issue_evidence.py absent, but #316 and #313 now carry the equivalent need; confirm or merge).
