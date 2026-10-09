@@ -119,6 +119,25 @@ jobs:
             # Deliberately a FALLBACK, not a replacement: an explicit `closes #N`
             # may name an issue the branch name does not, and it stays
             # authoritative where present.
+            # An explicit `Refs #N` SUPPRESSES the branch-name fallback for N.
+            #
+            # The fallback below exists for a PR whose author FORGOT the keyword.
+            # It must not override one that deliberately omitted it. PR #314 is
+            # exactly that case: it implements part 1 of #313 and says
+            # "Refs #313 — does not close it", because part 2 is unbuilt and two
+            # recorded defects are undecided. Its branch is
+            # `issue/313-verify-workflows-gate`, so without this the fallback
+            # would close #313 on merge and silently abandon the rest — the very
+            # thing writing `Refs` was meant to prevent.
+            #
+            # So: "no keyword" and "explicitly a reference, not a claim" are
+            # different states, and only the first is a mistake to correct.
+            refs=$(printf '%s' "$body" | grep -oiE 'refs?[[:space:]]+#[0-9]+' \
+                   | grep -oE '[0-9]+' | sort -u || true)
+            if [ -n "$refs" ]; then
+              echo "PR #$pr explicitly REFS (does not claim) #$(printf '%s' "$refs" | tr '\n' ' ')— fallback suppressed for those"
+            fi
+
             if [ -z "$issues" ]; then
               branch=$(gh pr view "$pr" --repo "$GH_REPO" --json headRefName --jq .headRefName)
               # grep -oE, not `sed 's|...\([0-9]\+\)...|'`: `\+` is a GNU
@@ -127,6 +146,13 @@ jobs:
               # tested on the machine the author is using is a parser nobody
               # tests. This form behaves identically everywhere.
               issues=$(printf '%s' "$branch" | grep -oE '^issue/[0-9]+' | grep -oE '[0-9]+' || true)
+              # Drop anything the body explicitly only REFS.
+              for r in $refs; do
+                if [ "$issues" = "$r" ]; then
+                  echo "branch names #$r but the body refs it deliberately — not closing"
+                  issues=""
+                fi
+              done
               # if/then, NOT `[ -n "$x" ] && echo`. Under `bash -e` that compound
               # returns 1 when $x is empty and KILLS THE STEP — the trap this repo
               # has now hit four times (pr-gates' gate sweep, its skipped-report
