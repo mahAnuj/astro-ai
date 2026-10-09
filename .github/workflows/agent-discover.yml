@@ -27,6 +27,20 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read      # files issues; writes no code
+      # `gh run list` / `gh run download` read ANOTHER workflow's runs, which
+      # needs this scope. An omitted scope is `none`, never inherited, so
+      # without it the step gets
+      #     HTTP 403: Resource not accessible by integration
+      # and since that step is continue-on-error it fails SILENTLY.
+      #
+      # Measured in the 2026-10-09 nightly (run 37876433396 at 02:50:34): the
+      # delivery cycle has NEVER received the analyst's measurement. The
+      # scoring arm of the loop — the one ARCHITECTURE.md calls load-bearing,
+      # "without it the others ship forever and never learn" — has been
+      # feeding nothing into delivery since it was wired up.
+      #
+      # Found by scripts/verify_workflows.py on its first run, not by a human.
+      actions: read
       issues: write
       id-token: write
     steps:
