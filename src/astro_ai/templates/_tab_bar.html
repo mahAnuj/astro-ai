@@ -31,7 +31,7 @@
    `aria-current="page"` rather than colour alone: the active tab is saffron,
    and colour must never be the only signal (WCAG 1.4.1). #}
 {% set _path = request.url.path %}
-<nav class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-bhagya-night/[.96] backdrop-blur
+<nav id="mobile-tab-bar" class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-bhagya-night/[.96] backdrop-blur
             border-t border-bhagya-gold/25 grid grid-cols-5 pb-5 no-print"
      aria-label="Quick navigation">
   {# Glyphs are text-presentation characters, deliberately.
