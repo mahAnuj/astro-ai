@@ -18,7 +18,12 @@ CONTROLS run first and matter as much as the mutations:
     (a whole-line comment and a trailing one) must exit 0 -- the false
     positive #313 warns about, since agent-merge.yml discusses the expression
     in prose beside its fix;
-  * the same text inside a QUOTED string is not a comment and must exit 1.
+  * the same text UNINTERPOLATED inside a quoted shell string must also exit 0.
+    GitHub substitutes only inside `${{ }}`; bare text is inert. QA found the
+    gate failing on `echo "see steps.live.outputs.ok in the next step"`, and
+    found this harness REQUIRING that wrong answer;
+  * the same text INTERPOLATED (`${{ ... }}`) inside a quoted string must exit 1
+    -- substitution happens before the shell runs, so quoting is irrelevant.
 
 Every mutation asserts that it actually changed the file. A mutation that
 silently matched nothing would "pass" a gate that was never tested.
@@ -69,8 +74,17 @@ MUTATIONS = [
      swap("commits/${{ github.event.workflow_run.head_sha }}/pulls",
           "commits/${{ steps.pr.outputs.sha }}/pulls"),
      ["agent-merge.yml", "[self-reference]", "step id `pr`"]),
-    ("self-reference inside a QUOTED string is not a comment", "agent-merge.yml",
-     swap(NUM_LINE, 'echo "number=$n # steps.pr.outputs.sha" >> "$GITHUB_OUTPUT"'),
+    # CORRECTED after QA. This previously planted an UNINTERPOLATED mention
+    # inside the quotes and required exit 1 — enshrining a false positive, since
+    # GitHub interpolates only inside `${{ }}` and a bare `steps.x.outputs.y` in
+    # a shell string is inert text. The harness would have passed forever while
+    # holding the wrong answer, and fixing the gate would have looked like a
+    # regression here. That is the inverse of what this file exists to prevent.
+    #
+    # Interpolated inside a quoted string IS a defect: substitution happens
+    # before the shell ever sees it, so the quoting is irrelevant.
+    ("self-reference interpolated inside a quoted string", "agent-merge.yml",
+     swap(NUM_LINE, 'echo "number=${{ steps.pr.outputs.sha }}" >> "$GITHUB_OUTPUT"'),
      ["agent-merge.yml", "[self-reference]", "step id `pr`"]),
     ("defect 2: close-on-evidence loses pull-requests: read", "close-on-evidence.yml",
      swap("  pull-requests: read\n", ""),
@@ -115,16 +129,27 @@ def main() -> int:
         base = Path(tmp)
 
         print("CONTROLS")
+        # Counted as they run. A literal goes stale the moment a control is
+        # added — the same "one number, two places" defect #313 is about, and QA
+        # found this file carrying `5 +` while six controls ran.
+        n_controls = 0
         code, out = run_gate(fresh_copy(base, "control"))
         if code != 0:
             print(f"  BLIND - the untouched tree does not pass (exit {code}); results below are noise:")
             print("\n".join("    " + l for l in out.splitlines() if l.startswith("FAIL")))
             return 1
         print("  OK   untouched copy passes (exit 0)")
+        n_controls += 1
 
         for label, new in (
             ("self-reference only in a WHOLE-LINE comment", "# steps.pr.outputs.sha\n          " + NUM_LINE),
             ("self-reference only in a TRAILING comment", NUM_LINE + "  # steps.pr.outputs.sha"),
+            # Added after QA. The gate used to FAIL on this and the mutation
+            # above used to REQUIRE that failure. It is a control precisely
+            # because the matching mutation is the interpolated form: together
+            # they pin the boundary from both sides.
+            ("self-reference UNINTERPOLATED in a quoted string",
+             'echo "see steps.pr.outputs.sha in a later step"\n          ' + NUM_LINE),
         ):
             d = fresh_copy(base, "ctl_" + str(abs(hash(label))))
             f = d / "agent-merge.yml"
@@ -132,6 +157,7 @@ def main() -> int:
             f.write_text(swap(NUM_LINE, new)(before))
             assert f.read_text() != before
             code, out = run_gate(d)
+            n_controls += 1
             if code == 0:
                 print(f"  OK   {label} passes (exit 0)")
             else:
@@ -144,6 +170,7 @@ def main() -> int:
         code, _ = run_gate(d)
         if code == 2:
             print("  OK   empty directory exits 2 (could not verify)")
+            n_controls += 1
         else:
             bad.append(f"empty dir exited {code}, expected 2")
             print(f"  BAD  empty directory exited {code}, expected 2")
@@ -153,6 +180,7 @@ def main() -> int:
         code, out = run_gate(d)
         if code == 1 and "EXPECTED_WORKFLOWS" in out:
             print("  OK   a deleted workflow trips EXPECTED_WORKFLOWS (exit 1)")
+            n_controls += 1
         else:
             bad.append(f"deleted workflow: exit {code}")
             print(f"  BAD  deleted workflow exited {code}")
@@ -179,7 +207,7 @@ def main() -> int:
                       f"containing {needles}")
                 print("\n".join("      " + l for l in out.splitlines()[-6:]))
 
-    total = 5 + len(MUTATIONS)  # 5 controls: untouched, 2 comment-only, empty dir, deleted file
+    total = n_controls + len(MUTATIONS)
     print(f"\n{total - len(bad)}/{total} controls+mutations behaved")
     if bad:
         print("FAIL - the gate cannot be trusted:")

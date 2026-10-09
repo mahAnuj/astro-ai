@@ -105,13 +105,16 @@ PR_TRIGGERS = ("pull_request", "pull_request_target")
 
 # (file, trigger) -> why it need not listen for `ready_for_review`. An entry
 # here is a hole in check 3; each one must justify itself beside it.
-TRIGGER_EXEMPT: dict[tuple[str, str], str] = {
+# The `types:` value is part of what the exemption means, so it is stored and
+# asserted. See the check below for what QA demonstrated when it was not.
+TRIGGER_EXEMPT: dict[tuple[str, str], tuple[str, list[str]]] = {
     # agent-merge's `pull_request_target` leg exists to react to the `qa-pass`
     # LABEL, and `types: [labeled]` is that intent stated explicitly. Draft
     # state is not what it waits on: it un-drafts the PR itself, in the
     # "Take it out of draft" step, once gates are green and qa-pass is set.
     ("agent-merge.yml", "pull_request_target"):
-        "reacts to the qa-pass label; un-drafts the PR itself before merging",
+        ("reacts to the qa-pass label; un-drafts the PR itself before merging",
+         ["labeled"]),
 }
 
 LEVELS = {"none": 0, "read": 1, "write": 2}
@@ -418,8 +421,24 @@ def check_triggers(name: str, doc: dict, rep: Report) -> None:
         types = cfg.get("types") if isinstance(cfg, dict) else None
         if isinstance(types, str):
             types = [types]
+        # Keyed on (file, trigger), the exemption used to survive ANY `types:`
+        # value — including None. QA changed agent-merge's `types: [labeled]` to
+        # `[opened]`, then deleted the line, and both stayed green while the gate
+        # PRINTED the old justification as though still true:
+        #     EXEMPT agent-merge.yml ... types=None -- reacts to the qa-pass label
+        # The justification is specifically that `[labeled]` IS the intent; once
+        # the value changes it no longer holds. An exemption that cannot notice
+        # it has stopped applying is a place to hide the defect check 3 is for.
         if (name, trig) in TRIGGER_EXEMPT:
-            rep.note(f"EXEMPT  {name}  `{trig}` types={types}  -- {TRIGGER_EXEMPT[(name, trig)]}")
+            why, exempt_types = TRIGGER_EXEMPT[(name, trig)]
+            if sorted(types or []) != sorted(exempt_types):
+                rep.fail(name, None, f"on.{trig}", "trigger-types",
+                         f"`types: {types}` is exempt only as `types: {exempt_types}` "
+                         f"({why}). The exemption was granted for that exact value; "
+                         "with a different one it does not apply. Restore the value, "
+                         "or remove the TRIGGER_EXEMPT entry and justify the new one.")
+                continue
+            rep.note(f"EXEMPT  {name}  `{trig}` types={types}  -- {why}")
             continue
         if not types:
             rep.fail(name, None, f"on.{trig}", "trigger-types",
@@ -450,7 +469,23 @@ def check_job(name: str, text_lines: dict, jid: str, job: dict, doc: dict, rep: 
         # 1. self-referencing step output ---------------------------------
         sid = step.get("id")
         if sid:
-            pat = re.compile(r"steps\." + re.escape(str(sid)) + r"\.outputs\b")
+            # Must sit inside a `${{ ... }}` span. GitHub interpolates ONLY
+            # there, so a bare `steps.<id>.outputs.x` in a shell string is inert
+            # text and reporting it is a false positive — QA found it with
+            #     echo "see steps.live.outputs.ok in the next step"   -> FAIL
+            # which is exactly the kind of prose this repo writes beside a fix.
+            #
+            # The harness ENSHRINED that false positive: its mutation
+            # "self-reference inside a QUOTED string is not a comment" planted an
+            # uninterpolated mention and REQUIRED exit 1, so it would have passed
+            # forever holding the wrong answer, and fixing the gate would have
+            # read as a harness regression. That mutation now uses `${{ ... }}`,
+            # which is a real defect, and a control pins the other side.
+            #
+            # [^}]* rather than .*? so the span cannot run past its own closing
+            # braces into a later, unrelated expression.
+            pat = re.compile(
+                r"\$\{\{[^}]*steps\." + re.escape(str(sid)) + r"\.outputs\b")
             sources = {"run": run_clean, "if": str(step.get("if", "")),
                        "with": "\n".join(leaves(step.get("with"))),
                        "env": "\n".join(leaves(step.get("env")))}
