@@ -106,8 +106,18 @@ That is `USER AUTHORISED PUSH` one level up. So:
    queued dispatch behind a running cycle is fine, a second simultaneous one is not.
 5. **Apply ROUTING labels only**: `needs-human-review`, `skill:*`, `needs-evidence`.
    Never a verdict label.
-6. **Escalate to `chief`** when two stalls imply conflicting repairs, which is a real
-   disagreement and what `chief` is for. Present both, verbatim.
+6. **Escalate to `chief`** in either shape, and prefer it over parking a decision:
+   - **Shape A** when two stalls imply conflicting repairs. Present both, verbatim.
+   - **Shape B** when you know what is broken and there is more than one way to fix it —
+     a choice, not a conflict. `chief` holds Standing ruling 4 (free tier, then minimum
+     permissions, then robustness over brevity, then minimum code, then minimum entropy,
+     then the objective) and that precedence is what decides. Offer the options with
+     their costs, say what is blocked, recommend one, and implement what it rules.
+
+   **Do not label `needs-human-review` because a decision is needed.** That label is for
+   something you cannot establish. A choice you can state is a `chief` escalation, and
+   using the label instead is how decisions pile up on the human while the pipeline stays
+   stopped — which is the condition you exist to end.
 
 ## What a stall is NOT
 
