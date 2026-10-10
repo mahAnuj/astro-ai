@@ -46,11 +46,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
-      contents: read          # it may not push; the repair goes through a cycle
+      contents: write         # push a BRANCH for its repair PR — never main
       pull-requests: write    # comment and routing labels only — never qa-pass
       issues: write           # file an issue, comment on one
       actions: write          # dispatch agent-work at the issue it filed
       checks: read            # read the check runs a stall is diagnosed from
+      # REQUIRED by anthropics/claude-code-action, which mints an OIDC token.
+      # Without it the step dies with
+      #     Unable to get ACTIONS_ID_TOKEN_REQUEST_URL
+      # and that is what killed this loop's very first run, 38031373476.
+      #
+      # FIFTH instance in this repo: four agent loops shipped without it in
+      # October, and this file made five on the day it was written. Eight of
+      # nine claude-code-action workflows had it; only the newest did not.
+      # Textbook "copied files diverge", and mechanically checkable — a
+      # workflow using that action must grant this scope. Specified on #317.
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -117,7 +128,21 @@ jobs:
             --max-turns 60
             --effort high
             --allowedTools "Agent,Read,Write,Edit,Glob,Grep,Skill,WebFetch,WebSearch,TodoWrite,Bash"
-            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(git push:*),Bash(git commit:*),Bash(gh pr merge:*),Bash(gh issue close:*),Bash(gh pr close:*),Bash(gh repo:*),Bash(gh secret:*),Bash(gcloud:*)"
+            # It may now commit and push a BRANCH, so `git commit` and `git push`
+            # are no longer denied — the repair has to be able to exist. What
+            # stays denied is everything that would let it skip the gates that
+            # judge the repair:
+            #
+            #   gh pr merge / gh pr review   it does not decide what lands
+            #   gh issue close / gh pr close it does not decide what is done
+            #   git push --force / reset     it does not rewrite what happened
+            #   gh pr edit --add-label       no label at all, so no QA verdict;
+            #                                routing labels go through `gh issue
+            #                                edit`, which cannot touch a PR
+            #
+            # `scripts/verify_no_relaxation.py` is the real guard and it runs on
+            # the PR. This list is the second lock, not the first.
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(git push --force:*),Bash(git push -f:*),Bash(git reset --hard:*),Bash(gh pr merge:*),Bash(gh pr review:*),Bash(gh pr edit:*),Bash(gh issue close:*),Bash(gh pr close:*),Bash(gh repo:*),Bash(gh secret:*),Bash(gcloud:*)"
 
       # Say what happened either way. A loop that reports nothing when it found
       # nothing cannot be told from one that failed to run — which is the defect
