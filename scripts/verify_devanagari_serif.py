@@ -24,6 +24,13 @@ WHAT IT ENFORCES
      #189 removes. Checked directly, because it is invisible in the diff.
   4. Web-font transfer stays at or under MAX_FONT_BYTES.
 
+STATIC HALF, NEEDS NO BROWSER (#260). Checks 1-4 above only ever look at nodes
+that ALREADY carry lang="sa". Six learn articles set their mantra in
+`<div class="sanskrit">` with no lang, so the gate walked straight past them
+while they painted in semibold sans — invisible to it by construction. The
+static half therefore also requires that every element with class "sanskrit",
+and every Devanagari text run inside class "shlok", sits under lang="sa".
+
 The gate was bite-tested against commit 4904f3b (the first shape of the #189
 fix, serif wired into `display` at wght@400;700): check 3 fails and the payload
 check fails at 345,052 B. It is not vacuous.
@@ -44,6 +51,7 @@ import argparse
 import asyncio
 import re
 import sys
+from html.parser import HTMLParser
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -192,6 +200,81 @@ def check_hardcoded_faces_are_loaded(requested: set[str]) -> list[str]:
                     f"just renders in something else. Either request it or "
                     f"name a face we already load."
                 )
+    return fails
+
+DEVANAGARI = re.compile(r"[\u0900-\u097F]")
+VOID_TAGS = {"br", "hr", "img", "input", "meta", "link", "source", "wbr", "area",
+             "base", "col", "embed", "track", "path", "circle", "rect", "line",
+             "stop", "use", "ellipse", "polygon", "polyline"}
+
+
+class _SanskritScan(HTMLParser):
+    """Walks one template, tracking ancestors' class and lang.
+
+    Records (line, reason) for (a) any element whose class list contains
+    `sanskrit` but which has no lang="sa" on itself or an ancestor, and
+    (b) any Devanagari text run inside a `shlok` element with no lang="sa" on
+    the path from that shlok down to the text.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.stack: list[tuple[str, bool, bool]] = []  # (tag, is_shlok, has_sa)
+        self.problems: list[tuple[int, str]] = []
+
+    def _lang_ok(self) -> bool:
+        return any(sa for _, _, sa in self.stack)
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        classes = (a.get("class") or "").split()
+        has_sa = (a.get("lang") or "").lower() == "sa"
+        if tag not in VOID_TAGS:
+            self.stack.append((tag, "shlok" in classes, has_sa))
+        if "sanskrit" in classes and not (has_sa or self._lang_ok()):
+            self.problems.append((
+                self.getpos()[0],
+                f'<{tag} class="{a.get("class")}"> has no lang="sa"'))
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag not in VOID_TAGS:
+            self.stack.pop()
+
+    def handle_endtag(self, tag):
+        for i in range(len(self.stack) - 1, -1, -1):
+            if self.stack[i][0] == tag:
+                del self.stack[i:]
+                return
+
+    def handle_data(self, data):
+        if not DEVANAGARI.search(data):
+            return
+        if any(shlok for _, shlok, _ in self.stack) and not self._lang_ok():
+            self.problems.append((
+                self.getpos()[0],
+                f"Devanagari inside .shlok outside lang=\"sa\": {data.strip()[:30]!r}"))
+
+
+def check_sanskrit_carries_lang() -> list[str]:
+    """Every .sanskrit element, and every Devanagari run inside .shlok, must be
+    under lang="sa" — otherwise the [lang="sa"] serif rule never applies to it
+    and the browser probe below never samples it (#260). Static: no browser.
+    """
+    fails: list[str] = []
+    for path in sorted(TEMPLATES.rglob("*.html")):
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if "sanskrit" not in text and "shlok" not in text:
+            continue
+        # Jinja comments and HTML comments can quote the markup they describe.
+        text = re.sub(r"\{#.*?#\}", lambda m: "\n" * m.group(0).count("\n"), text, flags=re.S)
+        text = re.sub(r"<!--.*?-->", lambda m: "\n" * m.group(0).count("\n"), text, flags=re.S)
+        scan = _SanskritScan()
+        scan.feed(text)
+        for line, why in scan.problems:
+            fails.append(f"{path.relative_to(REPO_ROOT)}:{line} {why}. Without "
+                         f'lang="sa" the serif rule in base.html never applies '
+                         f"and the browser gate never samples it (#260).")
     return fails
 
 
@@ -406,11 +489,14 @@ def main() -> int:
     # available to watch it happen.
     print("Static check — the font <link> requests a Devanagari sans\n")
     static_failures = check_font_link_statically()
+    static_failures += check_sanskrit_carries_lang()
     for f in static_failures:
         print(f"  FAIL {f}")
     if not static_failures:
         print(f"  ok   {REQUIRED_DEVANAGARI_SANS} requested at "
               f"{list(REQUIRED_SANS_WEIGHTS)}")
+        print('  ok   every .sanskrit element and every Devanagari run in .shlok '
+              'is under lang="sa"')
     print()
     if static_failures:
         print("FAIL")
