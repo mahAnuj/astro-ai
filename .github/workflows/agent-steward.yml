@@ -1,0 +1,137 @@
+# Notices that the pipeline has stopped, and routes the repair.
+#
+# WHY A SEPARATE LOOP
+# -------------------
+# The other nine loops take work from the BACKLOG. None watches whether work
+# that is already FINISHED is flowing. Between 2026-10-08 and 10-10 that gap
+# held a fully-QA'd product fix for nine hours (PR #319, blocked forever by a
+# `cancelled` check run), a draft nobody readied (PR #303), three issues whose
+# close chain was broken, and a measurement fetch that returned HTTP 403 on
+# every run since it was wired while every run went green.
+#
+# DETECTION IS CODE, REPAIR IS AN AGENT
+# -------------------------------------
+# `scripts/detect_stalls.py` decides whether anything is stuck. It is
+# deterministic and takes no model, because an agent that judges whether the
+# system is stalled can judge that it is not. The agent is invoked only when
+# that script exits 1, and its job is DIAGNOSIS — turning "open 9h with every
+# check green" into "a superseded check run votes forever" — plus routing the
+# fix through the normal pipeline.
+#
+# The agent cannot merge, close, push, apply a QA verdict, or edit
+# `.github/workflows/**`, `.claude/**` or `CLAUDE.md`. See steward.md for why
+# each of those is load-bearing: a monitor that can repair the gates has every
+# incentive to relax them, and that is `USER AUTHORISED PUSH` one level up.
+name: Agent steward
+
+on:
+  schedule:
+    # Twice daily, offset from every other loop. 09:00 and 15:00 UTC sit after
+    # the 02:xx nightly has finished and its PR has had time to gate, and well
+    # before the 23:00 dispatch. A stall caught within half a day is the point;
+    # catching it within the hour would mostly catch normal operation.
+    - cron: "0 9,15 * * *"
+  workflow_dispatch:
+    inputs:
+      hours:
+        description: "Age in hours before a PR counts as stalled (default 4)"
+        required: false
+
+concurrency:
+  group: agent-steward
+  cancel-in-progress: false
+
+jobs:
+  steward:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read          # it may not push; the repair goes through a cycle
+      pull-requests: write    # comment and routing labels only — never qa-pass
+      issues: write           # file an issue, comment on one
+      actions: write          # dispatch agent-work at the issue it filed
+      checks: read            # read the check runs a stall is diagnosed from
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
+
+      - name: Install
+        run: uv sync --all-groups
+
+      # THE GATE ON THIS WHOLE LOOP. Exit 0 means nothing is stuck and no agent
+      # runs — the cheap, common case, costing under a minute. Exit 2 means the
+      # detector could not determine, which is NOT a pass: it is escalated as
+      # loudly as a stall, because "the pipeline may be stalled and unobserved"
+      # is the exact condition this loop exists for.
+      - name: Is anything actually stuck?
+        id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          uv run python scripts/detect_stalls.py \
+            --hours "${{ github.event.inputs.hours || '4' }}" --json > /tmp/stalls.txt 2>&1
+          code=$?
+          set -e
+          cat /tmp/stalls.txt
+          cp /tmp/stalls.txt "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+          case $code in
+            0) echo "stalled=false" >> "$GITHUB_OUTPUT"
+               echo "::notice::no stall detected — not waking the steward" ;;
+            1) echo "stalled=true"  >> "$GITHUB_OUTPUT" ;;
+            2) echo "stalled=true"  >> "$GITHUB_OUTPUT"
+               echo "::warning::the detector could not determine the pipeline's state, which is not a pass — waking the steward to find out why" ;;
+            *) echo "stalled=true"  >> "$GITHUB_OUTPUT"
+               echo "::warning::detector exited $code, unexpected — waking the steward" ;;
+          esac
+
+      - uses: anthropics/claude-code-action@v1
+        if: steps.detect.outputs.stalled == 'true'
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Dispatch the `steward` agent with `run_in_background: false`.
+
+            `scripts/detect_stalls.py` exited non-zero, so something is stuck
+            or its state could not be determined.
+
+            **Its findings are in `/tmp/stalls.txt`** — read that file first.
+            They are a PREMISE TO VERIFY, not a conclusion: the detector is
+            deterministic, not omniscient. Re-run it yourself with
+            `uv run python scripts/detect_stalls.py --json`, then read the PRs,
+            their check runs and the relevant run logs before writing any
+            diagnosis. A finding you did not check is a guess.
+
+            Your value is the diagnosis, not the detection. Read steward.md and
+            obey its constraints exactly — in particular you may NOT apply or
+            remove `qa-pass`/`qa-fail`, may not merge, close or push, and may
+            not edit `.github/workflows/**`, `.claude/**` or `CLAUDE.md`. File
+            an issue and dispatch a cycle instead.
+
+            If every finding turns out to be normal operation, say so and
+            produce nothing. A quiet run is a correct run.
+          claude_args: |
+            --max-turns 60
+            --effort high
+            --allowedTools "Agent,Read,Write,Edit,Glob,Grep,Skill,WebFetch,WebSearch,TodoWrite,Bash"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(git push:*),Bash(git commit:*),Bash(gh pr merge:*),Bash(gh issue close:*),Bash(gh pr close:*),Bash(gh repo:*),Bash(gh secret:*),Bash(gcloud:*)"
+
+      # Say what happened either way. A loop that reports nothing when it found
+      # nothing cannot be told from one that failed to run — which is the defect
+      # this entire loop exists to catch, so it must not commit it.
+      - name: Report
+        if: always()
+        run: |
+          {
+            echo "### Steward"
+            if [ "${{ steps.detect.outputs.stalled }}" = "true" ]; then
+              echo "Detector reported a stall; the steward was woken. Its diagnosis is on the issues and PRs it names."
+            else
+              echo "**Nothing was stuck.** The detector checked drafts never readied,"
+              echo "mergeable-but-open PRs, PRs with no check runs, missing QA verdicts"
+              echo "and dead trigger legs, and found none. No agent was invoked."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

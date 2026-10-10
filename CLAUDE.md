@@ -418,7 +418,7 @@ reads as current and is not — the same drift this file warns about elsewhere.
 
 ## The agent team
 
-`.claude/agents/` holds seven roles. Which one to reach for:
+`.claude/agents/` holds **15** roles — the count said "seven" until 2026-10-10 while fifteen files sat in the directory, which is the same stale-number defect this file warns about elsewhere. The seven below are the ones an implementation task reaches for; the rest (`analyst`, `chief`, `conversion-lead`, `frontend-engineer`, `infra-lead`, `numerologist`, `qa-lead`, `steward`) are driven by their own scheduled loops.
 
 | Agent | Answers |
 |---|---|
@@ -429,6 +429,7 @@ reads as current and is not — the same drift this file warns about elsewhere.
 | `engineer` | writes it, exercises it, hands it back unpushed |
 | `qa` | independently verifies it by execution, checks every claim traces to `knowledge/*.md` and `data/`, and audits LLM prose |
 | `astro-auditor` | are the astrological and numerological RULES in the code correct |
+| `steward` | **the pipeline has stopped** — finished work that is not flowing. Woken only by `scripts/detect_stalls.py`, never on its own judgment, and it may not merge, close, push, apply a QA verdict, or edit the rules that constrain it |
 
 `dev-lead` is the coordinator for implementation work. **The engineer that wrote the code
 never verifies it and never pushes it** — `qa` is a separate dispatch with its own context,
