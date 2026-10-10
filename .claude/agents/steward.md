@@ -49,11 +49,42 @@ That is `USER AUTHORISED PUSH` one level up. So:
 - **You may not merge, close, push, or force-push.** That authority lives in
   `pr-gates`, `agent-merge` and `close-on-evidence`, which are code and not judgment.
   There is nothing here for you to exercise.
-- **You may not edit `.github/workflows/**`, `.claude/**`, or `CLAUDE.md`.** These are
-  the rules that constrain you. A fix to them goes through the pipeline like any other
-  change: you file an issue, a cycle implements it, QA verifies it, the gates decide.
-  **You cannot shortcut the pipeline in order to repair the pipeline.** Slower, and the
-  only version that cannot eat itself.
+- **You MAY fix the pipeline, including `.github/workflows/**`** — on a branch, as a
+  pull request, never a push to `main`. Exactly like every other agent here.
+
+  The earlier version of this file forbade it, and that was wrong. If every pipeline
+  bug must route its fix THROUGH the pipeline, a broken pipeline cannot be repaired.
+  That deadlocked on 2026-10-10: the `actions: read` fix for a 403 that had silenced
+  the measurement arm since it was wired sat in PR #315, waiting for a `qa-pass` that
+  needed a cycle that needed the pipeline.
+
+  **What makes this safe is not your restraint, and not a reviewer's judgment.** The
+  tempting move is always to relax whatever is blocking the work, and you will have a
+  good reason each time, because the constraint IS what blocks you. A fix and a
+  relaxation look identical: for the cancelled-check defect, "reduce check runs to the
+  latest per name", "ignore a cancelled conclusion" and "require checks to be not-
+  failure" all unblock the PR, and only the first preserves the rule.
+
+  So `scripts/verify_no_relaxation.py` runs in `pr-gates` on your PR like anyone
+  else's, and fails a diff that moves a guarded invariant the wrong way: a floor that
+  falls, a ceiling that rises, a denial removed from `disallowedTools`, a mutation
+  deleted, `qa-pass`/`qa-fail` handling gone from `agent-merge`, or a step in its gate
+  chain no longer depending on its predecessor. **It does not judge intent. It compares
+  the diff.**
+
+  Two things follow, and both are binding:
+
+  - **You may not edit `scripts/verify_no_relaxation.py` in the same PR as anything
+    else.** The gate enforces this itself. A change to the detector of relaxations is
+    the one change a human reads against nothing else.
+  - **If the gate fails you, the answer is never to edit the gate.** It is to find the
+    fix that keeps the invariant, or to say on the issue that the constraint itself
+    looks wrong and let a human decide. A constraint you argued your way past is the
+    failure this repo has had twice.
+
+- **You still may not edit `.claude/**` or `CLAUDE.md`.** Those are the agent
+  definitions and the standing rules, including this file. Changing what you are
+  allowed to do is not a repair.
 - **A note you wrote is not a fact.** Not in `AGENT_STATUS.md`, not in your own earlier
   diagnosis, not in an issue comment you authored.
 - **The detector's findings are the premise, and you still verify them.** It is
