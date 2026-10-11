@@ -1,0 +1,121 @@
+# Weekly report on what the autonomous loops actually DID, not what they concluded.
+#
+# WHY THIS EXISTS (#316, part 2 of #313)
+# --------------------------------------
+# On 2026-10-08/09 four defects in the loops' own plumbing each hid behind a
+# green or absent workflow status. A static gate (#315) reads the YAML; this
+# reads HISTORY -- whether each loop ever had an effect -- and so can see what
+# the YAML cannot: a step that 403s inside `continue-on-error`, a trigger leg
+# that fails every time while its twin works, a close job that runs and closes
+# nothing. The classification lives in scripts/report_loop_outcomes.py and is
+# tested offline; this file only supplies a token, a schedule and a place to put
+# the answer.
+#
+# WHERE THE ANSWER GOES
+# ---------------------
+# #313's first defect WAS a red run, and nobody read it. The repo's attention
+# channel is the issue list (project-manager ranks it), so a BROKEN or UNKNOWN
+# week is posted to ONE standing issue, commented on weekly. It is never
+# auto-closed: closing is a human decision, and a clear week only adds a comment.
+# The red run, the job summary and the 90-day artifact are the backstop.
+#
+# EXIT CODES, passed through: 0 all OK/IDLE; 1 something BROKEN; 2 something could
+# not be READ (UNKNOWN) -- which is not a pass, so it fails the job too.
+#
+# SCOPES. The script's `gh api` calls are invisible to #315's static gate, so the
+# endpoint -> scope table lives in the script's header, and
+# tests/test_loop_outcomes.py asserts this file grants every scope it names. A
+# scope missing here does not crash the report, it makes it say UNKNOWN for the
+# affected loop -- the same blind spot the report exists to remove.
+name: Loop outcomes
+
+on:
+  schedule:
+    # Tuesday 09:00 IST. Clear of measure (21:00 daily), discover (Mon 20:00),
+    # design (Thu 20:00), work (23:00 daily), prioritise (Sun 17:00), research
+    # (Wed 19:00), infra (Tue 19:00) and sync (Fri 18:00), and late enough that
+    # the trailing 7 days include Monday night's work cycle and its merge.
+    - cron: "30 3 * * 2"
+  workflow_dispatch:
+    inputs:
+      since:
+        description: "Window start, ISO date or time, UTC (blank = 7 days before 'until')"
+        required: false
+      until:
+        description: "Window end, ISO date or time, UTC (blank = now). A date-only value is midnight at the START of that day: use 2026-10-10 to include 2026-10-09"
+        required: false
+
+concurrency:
+  group: loop-outcomes
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read          # workflow runs, jobs, job logs
+      contents: read         # commits touching measurements/**, and the checkout
+      pull-requests: read    # agent PRs, their labels and merged_by
+      checks: read           # why an open PR has not merged
+      issues: write          # issue events (read) + the standing report issue (write)
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      # Through env, never interpolated into the script: these are free text.
+      IN_SINCE: ${{ github.event.inputs.since }}
+      IN_UNTIL: ${{ github.event.inputs.until }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Report on loop outcomes
+        id: report
+        run: |
+          args=()
+          if [ -n "$IN_SINCE" ]; then args+=(--since "$IN_SINCE"); fi
+          if [ -n "$IN_UNTIL" ]; then args+=(--until "$IN_UNTIL"); fi
+          # Stdlib only -- no `uv sync`, so the report cannot be broken by a
+          # dependency it does not use. The script appends to GITHUB_STEP_SUMMARY
+          # itself and exits 0/1/2; let that become the step's result.
+          mkdir -p /tmp/lo
+          python3 scripts/report_loop_outcomes.py "${args[@]}" --out /tmp/lo
+
+      # Always, including when the report step crashed before writing anything.
+      - name: Post to the standing report issue
+        if: always()
+        run: |
+          title='[INFRA] Loop outcome report (weekly)'
+          code='${{ steps.report.outcome }}'
+          if [ ! -s /tmp/lo/report.md ]; then
+            mkdir -p /tmp/lo
+            printf '# Loop outcome report did not produce output\n\nThe report step ended `%s` before writing report.md. See %s\n' \
+              "$code" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" > /tmp/lo/report.md
+            code=failure
+          fi
+          # Issue bodies cap at 65536 characters.
+          head -c 60000 /tmp/lo/report.md > /tmp/lo/body.md
+          printf '\n\nRun: %s/%s/actions/runs/%s\n' \
+            "${{ github.server_url }}" "${{ github.repository }}" "${{ github.run_id }}" >> /tmp/lo/body.md
+
+          num=$(gh issue list --state open --search "\"$title\" in:title" --json number,title \
+                  --jq ".[] | select(.title == \"$title\") | .number" | sed -n 1p)
+
+          if [ "$code" = "success" ]; then
+            # A clear week: say so on the standing issue if there is one, and
+            # never close it. Nothing to open an issue for otherwise.
+            if [ -n "$num" ]; then
+              gh issue comment "$num" --body-file /tmp/lo/body.md
+            fi
+          elif [ -n "$num" ]; then
+            gh issue comment "$num" --body-file /tmp/lo/body.md
+          else
+            gh issue create --title "$title" --body-file /tmp/lo/body.md
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: loop-outcomes
+          path: /tmp/lo
+          retention-days: 90
+          if-no-files-found: ignore

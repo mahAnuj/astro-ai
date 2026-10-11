@@ -1,0 +1,27 @@
+{
+ "number": 312,
+ "title": "Lift the learn sticky CTA above the mobile tab bar (#304)",
+ "body": "Refs #304 (agent merge will close with evidence after deploy).\n\n**Defect:** `#learn-sticky-cta` was `fixed bottom-0 z-30` under the `z-40` mobile tab bar \u2014 invisible and untappable on every /learn article.\n\n**Change** (template + rebuilt app.css only):\n- CTA `bottom-0` \u2192 `bottom-[75px]` (the measured tab-bar height)\n- `#feedback-fab` offset 5rem \u2192 9rem, scoped to <768px, so it clears the lifted CTA\n- Visibility toggled by class instead of inline `display:flex`, which was also showing the bar on desktop (inline style beat `md:hidden`)\n- Dropped the retired-purple box-shadow; fixed stale '50%' comment\n\nEngineer-measured at 375x667 (headless Chromium): CTA bottom == tab-bar top, elementFromPoint at CTA centre inside the CTA, FAB 8px clear. Draft until independent QA runs.\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)",
+ "state": "closed",
+ "draft": false,
+ "merged_at": "2026-10-09T05:17:49Z",
+ "merge_commit_sha": "2f5f49f5f9d9c8aeb68c39fe5801453a8af98b91",
+ "created_at": "2026-10-09T03:02:15Z",
+ "updated_at": "2026-10-09T05:17:54Z",
+ "labels": [
+  {
+   "name": "qa-pass"
+  }
+ ],
+ "head": {
+  "ref": "issue/304-learn-sticky-cta-above-tabbar",
+  "sha": "e4902e775866b3b0f65dd67c4f132d1a25ea4553"
+ },
+ "merged_by": {
+  "login": "github-actions[bot]",
+  "type": "Bot"
+ },
+ "user": {
+  "login": "claude[bot]"
+ }
+}

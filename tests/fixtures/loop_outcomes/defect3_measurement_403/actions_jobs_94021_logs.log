@@ -1,0 +1,17 @@
+2026-10-09T01:00:00.0000000Z ##[group]Run actions/checkout@v4
+2026-10-09T01:00:01.0000000Z with:
+2026-10-09T01:00:02.0000000Z ##[endgroup]
+2026-10-09T01:00:03.0000000Z ##[group]Run id=$(gh run list --workflow agent-measure.yml --status success \
+2026-10-09T01:00:04.0000000Z   --limit 1 --json databaseId --jq '.[0].databaseId // empty')
+2026-10-09T01:00:05.0000000Z if [ -n "$id" ]; then
+2026-10-09T01:00:06.0000000Z   gh run download "$id" -n measurement --dir /tmp/measure \
+2026-10-09T01:00:07.0000000Z     && echo "measurement from run $id" \
+2026-10-09T01:00:08.0000000Z else
+2026-10-09T01:00:09.0000000Z   echo "no prior measurement — proceeding without one"
+2026-10-09T01:00:10.0000000Z fi
+2026-10-09T01:00:11.0000000Z shell: /usr/bin/bash -e {0}
+2026-10-09T01:00:12.0000000Z ##[endgroup]
+2026-10-09T01:00:13.0000000Z gh: Resource not accessible by integration (HTTP 403)
+2026-10-09T01:00:14.0000000Z ##[error]Process completed with exit code 1.
+2026-10-09T01:00:15.0000000Z ##[group]Run anthropics/claude-code-action@v1
+2026-10-09T01:00:16.0000000Z ##[endgroup]

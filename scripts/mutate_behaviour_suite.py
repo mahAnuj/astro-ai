@@ -508,6 +508,115 @@ MUTATIONS = [
      "    (\"सिंह_\",),",
      "test_every_devanagari_rashi_name_maps_to_its_own_index"),
 
+    # #316: the loop-outcome report. Each re-breaks a rule whose absence let a
+    # loop fail invisibly; the report that cannot go red is the defect it replaces.
+    ("#316: a merge leg that fails every run is no longer BROKEN (the 422 leg hides behind its twin)",
+     "scripts/report_loop_outcomes.py",
+     "        if rs and ok == 0:",
+     "        if False:",
+     "test_defect1_a_merge_leg_that_always_fails_is_broken_even_though_merges_happen"),
+
+    ("#316: a success that committed no report reads as idle, not broken",
+     "scripts/report_loop_outcomes.py",
+     "    if failed or nothing:",
+     "    if failed:",
+     "test_success_with_no_report_commit_is_broken_not_idle"),
+
+    ("#316: a 403 in the measurement fetch is read as a received measurement",
+     "scripts/report_loop_outcomes.py",
+     "        return DENIED",
+     "        return RECEIVED",
+     "test_defect3_a_403_in_a_continue_on_error_step_is_not_a_green_run"),
+
+    ("#316: an unreadable loop exits 0 (UNKNOWN reads as green)",
+     "scripts/report_loop_outcomes.py",
+     "    if any(f.verdict == UNKNOWN for f in findings):\n        return 2",
+     "    if any(f.verdict == UNKNOWN for f in findings):\n        return 0",
+     "test_unreadable_evidence_is_unknown_exits_two_and_is_never_green"),
+
+    ("#316: an issue a human closed counts as closed by the loop (declined path)",
+     "scripts/report_loop_outcomes.py",
+     "                if closer == BOT:\n                    continue",
+     "                if closer:\n                    continue",
+     "test_defect4_close_on_evidence_that_closed_nothing_is_broken_and_prints_the_refs_line"),
+
+    ("#316: an issue a human closed counts as closed by the loop (claimed path)",
+     "scripts/report_loop_outcomes.py",
+     "            elif closer == BOT:",
+     "            elif closer:",
+     "test_a_closing_keyword_closed_by_a_human_is_still_a_shortfall"),
+
+    ("#316: a run still in flight is counted as a failed leg run",
+     "scripts/report_loop_outcomes.py",
+     "    real = [r for r in _done(runs) if r.get(\"conclusion\") != \"skipped\"]",
+     "    real = [r for r in runs if r.get(\"conclusion\") != \"skipped\"]",
+     "test_in_flight_work_is_excluded_not_broken"),
+
+    ("#316: the measurement receipt reads the echoed script source, not the step's output",
+     "scripts/report_loop_outcomes.py",
+     "    lines = step_output(log, MEASURE_ANCHOR)\n    if not lines:\n        return UNKNOWN\n    text = \"\\n\".join(lines)",
+     "    text = log",
+     "test_measurement_receipt_reads_output_not_the_echoed_script"),
+
+    ("#316: Refs no longer suppresses the branch-name fallback (a deliberate decline reads as a miss)",
+     "scripts/report_loop_outcomes.py",
+     "    return {\"expected\": sorted(closing | (branch - refs)),",
+     "    return {\"expected\": sorted(closing | branch),",
+     "test_refs_decline_on_a_still_open_issue_is_not_a_shortfall"),
+
+    ("#316: the workflow loses pull-requests: read (the report would say UNKNOWN, forever)",
+     ".github/workflows/loop-outcomes.yml",
+     "      pull-requests: read    # agent PRs, their labels and merged_by\n",
+     "",
+     "test_workflow_grants_every_scope_the_scripts_endpoints_need"),
+
+    ("#316: a PR merged before the window is judged (false BROKEN on a PR merely touched this week)",
+     "scripts/report_loop_outcomes.py",
+     '        return self.since <= ts(t) and self.settled(t)',
+     '        return self.settled(t)',
+     "test_a_pr_merged_before_the_window_and_merely_touched_inside_it_is_not_judged"),
+
+    ("#316: the post-merge verification counts a PR merged before the window",
+     "scripts/report_loop_outcomes.py",
+     '    total = len([p for p in by_bot if p.get("merged_at") and window.merged_in(p["merged_at"])])',
+     '    total = len([p for p in by_bot if p.get("merged_at") and window.settled(p["merged_at"])])',
+     "test_a_pr_merged_before_the_window_and_merely_touched_inside_it_is_not_judged"),
+
+    ("#316: an agent-work run that concluded failure is skipped instead of reported",
+     "scripts/report_loop_outcomes.py",
+     '            bad.append(f"run {r[\'id\']} concluded {r.get(\'conclusion\')}")\n            continue',
+     '            continue',
+     "test_a_work_run_that_concludes_failure_is_broken"),
+
+    ("#316: a report loop's failed run is dropped (every run failed, nothing reported)",
+     "scripts/report_loop_outcomes.py",
+     '            failed.append(f"run {r[\'id\']} concluded {r.get(\'conclusion\')}")',
+     '            pass',
+     "test_a_report_loop_whose_every_run_failed_is_broken"),
+
+    ("#316: a schedule that stopped firing reads as OK",
+     "scripts/report_loop_outcomes.py",
+     '    if len(runs) < need:',
+     '    if False:',
+     "test_a_schedule_that_does_not_fire_is_broken"),
+
+    ("#316: a PR whose checks cannot be read is no longer UNKNOWN",
+     "scripts/report_loop_outcomes.py",
+     '    if uncertain:\n        return Finding(loop, UNKNOWN',
+     '    if False:\n        return Finding(loop, UNKNOWN',
+     "test_a_qa_pass_pr_whose_checks_cannot_be_read_is_unknown_not_stranded_or_fine"),
+
+    ("#316: a PR whose checks are still running is called stranded",
+     "scripts/report_loop_outcomes.py",
+     '        return "its checks are still running", "pending"',
+     '        return "its checks are still running", "definite"',
+     "test_a_qa_pass_pr_whose_checks_are_still_running_is_in_flight_not_stranded"),
+
+    ("#316: the in-flight grace boundary is exclusive (a run exactly GRACE old is not judged)",
+     "scripts/report_loop_outcomes.py",
+     '        return ts(t) <= self.until - GRACE',
+     '        return ts(t) < self.until - GRACE',
+     "test_the_grace_boundary_is_inclusive_one_second_either_side"),
     # #305: the /kundli identity tiles ellipsis-clipped 10 of 12 rashi names at 375px.
     ("#305: `truncate` back on the snapshot tile value line (Lagna clipped to an ellipsis)",
      "src/astro_ai/templates/result.html",
@@ -595,22 +704,26 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
         sandbox = pathlib.Path(tmp) / "repo"
         # `.github` because the suite now reads the verify-production workflow
         # to check that its jq field reads still match what /health emits.
-        # `scripts` because test_stall_ownership.py imports detect_stalls.py to
-        # pin how a stall is assigned an owner.
+        #
+        # `scripts` for TWO independent reasons, arrived at separately — which is
+        # itself the evidence that the omission was a trap and not an oversight:
+        #   * #316: tests/test_loop_outcomes.py loads report_loop_outcomes.py by
+        #     path, and the mutations above edit that file in the sandbox.
+        #   * #325: tests/test_stall_ownership.py imports detect_stalls.py to pin
+        #     how a stall is assigned an owner.
         #
         # A sandbox missing a file the suite reads breaks EVERY row at once, and
         # it has now done so twice. The first time every mutation read CAUGHT,
-        # including the control. The second time (2026-10-11, PR #325) every row
-        # read `NON-TEST FAILURE rc=2`, because the missing file was an import
-        # rather than a read and pytest died at collection.
+        # because the suite READ a missing file. The second time every row read
+        # `NON-TEST FAILURE rc=2`, because it IMPORTED one and pytest died at
+        # collection. Same cause, opposite signal, both invisible in a pass count.
         #
         # Both times the CONTROL is what exposed it: a no-op edit that does not
-        # report MISSED means the harness is not measuring anything. That row
-        # earns its keep here — read it before any other.
+        # report MISSED means the harness is not measuring anything. Read that row
+        # before any other.
         #
         # So the rule, stated because the next addition will hit it too: ANY
-        # directory the suite reads or imports from must be copied here. 1 MB of
-        # `scripts` is cheaper than a mutation run that cannot fail.
+        # directory the suite reads or imports from must be copied here.
         for sub in ("src", "tests", ".github", "scripts"):
             shutil.copytree(ROOT / sub, sandbox / sub,
                             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))

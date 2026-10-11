@@ -98,7 +98,7 @@ DEFAULT_DIR = ROOT / ".github" / "workflows"
 
 # Pinned so a workflow cannot be deleted or renamed out of the sweep silently.
 # Raise it when adding one.
-EXPECTED_WORKFLOWS = 14
+EXPECTED_WORKFLOWS = 15
 
 # Triggers whose default `types` omit `ready_for_review`.
 PR_TRIGGERS = ("pull_request", "pull_request_target")

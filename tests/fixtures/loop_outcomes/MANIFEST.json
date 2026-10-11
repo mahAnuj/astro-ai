@@ -1,0 +1,230 @@
+{
+ "defect1_merge_leg_422/actions_workflows_agent-merge.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect1_merge_leg_422/actions_workflows_pr-gates.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect2_close_forbidden/actions_jobs_3781785001_logs.log": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect2_close_forbidden/actions_runs_37817857859_jobs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect2_close_forbidden/actions_workflows_close-on-evidence.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect2_close_forbidden/issues_90_events.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect3_measurement_403/actions_jobs_94011_logs.log": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect3_measurement_403/actions_jobs_94021_logs.log": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect3_measurement_403/actions_jobs_96011_logs.log": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect4_close_declined/actions_jobs_3789100001_logs.log": {
+  "note": "reconstructed from run 37891007703 as quoted in close-on-evidence.yml's comment: 'PR #312 claims no issue'",
+  "recorded": false
+ },
+ "defect4_close_declined/actions_runs_37891007703_jobs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect4_close_declined/actions_workflows_close-on-evidence.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect4_close_declined/actions_workflows_verify-production.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect4_close_declined/issues_304_events.json": {
+  "note": "fetched from the GitHub API 2026-10-09 and trimmed to the keys the classifier reads",
+  "recorded": true
+ },
+ "defect4_close_declined/issues_312_events.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "defect4_close_declined/pulls_312.json": {
+  "note": "fetched from the GitHub API 2026-10-09 and trimmed to the keys the classifier reads",
+  "recorded": true
+ },
+ "defect4_close_declined/pulls__state-all.json": {
+  "note": "list reconstructed; PR 312 entry is the recorded one, PR 100 is synthetic",
+  "recorded": false
+ },
+ "empty_week/actions_workflows_agent-merge.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "empty_week/actions_workflows_close-on-evidence.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "empty_week/actions_workflows_pr-gates.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "empty_week/actions_workflows_verify-production.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "empty_week/issues_comments.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "empty_week/pulls__state-all.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "forbidden/actions_workflows_agent-design.yml_runs.error": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "forbidden/actions_workflows_agent-discover.yml_runs.error": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "forbidden/actions_workflows_agent-measure.yml_runs.error": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "forbidden/actions_workflows_agent-merge.yml_runs.error": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "forbidden/actions_workflows_agent-work.yml_runs.error": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "forbidden/actions_workflows_close-on-evidence.yml_runs.error": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "forbidden/actions_workflows_pr-gates.yml_runs.error": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "forbidden/actions_workflows_verify-production.yml_runs.error": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_jobs_93011_logs.log": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_jobs_94011_logs.log": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_jobs_94021_logs.log": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_jobs_96011_logs.log": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_runs_9301_jobs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_runs_9401_jobs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_runs_9402_jobs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_runs_9601_jobs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_workflows_agent-design.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_workflows_agent-discover.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_workflows_agent-measure.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_workflows_agent-merge.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_workflows_agent-work.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_workflows_close-on-evidence.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_workflows_pr-gates.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/actions_workflows_verify-production.yml_runs.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/commits__path-measurements_design_latest.md.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/commits__path-measurements_discover_latest.md.json": {
+  "note": "fetched from the GitHub API 2026-10-09 and trimmed to the keys the classifier reads",
+  "recorded": true
+ },
+ "healthy/commits__path-measurements_latest.md.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/issues_100_events.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/issues_90_events.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/issues__state-all.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/issues_comments.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/issues_events.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/pulls_100.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ },
+ "healthy/pulls__state-all.json": {
+  "note": "reconstructed from workflow comments / API docs, not recorded",
+  "recorded": false
+ }
+}
