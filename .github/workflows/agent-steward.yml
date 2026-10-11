@@ -176,10 +176,21 @@ jobs:
           SINCE: ${{ steps.detect.outputs.started }}
         run: |
           set -uo pipefail
-          # Kinds that OBLIGE an action, per steward.md's routing table. The
-          # kinds absent here — `no-checks-ever`, `dead-trigger-leg` — route to
-          # an escalation or an issue, counted below as "any action".
-          demanded=$(grep -oE '"kind": "(draft-never-readied|no-qa-verdict|mergeable-but-open|steward-ineffective)"' /tmp/stalls.txt | wc -l | tr -d ' ')
+          # How many stalls obliged an action is DECIDED BY THE DETECTOR, which
+          # already holds the routing table and already knows whether an agent
+          # can act on each one. This step used to re-derive it with its own
+          # regex, and that copy disagreed the moment a stall appeared that
+          # routes to an action no agent can take (PR #315, whose diff touches
+          # `.github/workflows/**`): it counted it, found no action, and woke
+          # chief to rule "a human has to do this" on every single run.
+          #
+          # Absent or unparseable is treated as 0 obliged, i.e. do NOT wake
+          # chief. The detector exits non-zero on a stall and 2 on
+          # could-not-verify, both already surfaced above; inventing an
+          # escalation out of a missing line would spend an invocation on a
+          # parsing bug.
+          demanded=$(grep -oE '^OBLIGED_ACTIONS=[0-9]+$' /tmp/stalls.txt | tail -1 | cut -d= -f2)
+          demanded=${demanded:-0}
           echo "stalls demanding an action: $demanded"
           if [ "$demanded" = "0" ]; then
             echo "ok=true" >> "$GITHUB_OUTPUT"
@@ -239,11 +250,82 @@ jobs:
 
             You may not merge, close, push, label a QA verdict, or edit
             `.github/workflows/**`, `.claude/**` or `CLAUDE.md`.
+
+            **If you rule that a cycle should be dispatched, do not hand the
+            command to a human — record it and a later step runs it.** Write
+            `/tmp/chief-dispatch.txt` containing AT MOST ONE line, exactly
+            `issue=<number>`, and nothing else. No line means no dispatch, and
+            that is a legitimate ruling — #315's case is exactly it. Do not
+            write a line for a PR a cycle cannot clear (one whose diff touches
+            `.github/workflows/**`, or that a human authored), and do not write
+            one to be safe: the step cannot tell a considered dispatch from a
+            hedge, and a wasted cycle is ~50 Actions minutes under clause 1.
+
+            You do not need to check whether a cycle is already running. The
+            step checks that itself, with a credential that can actually read
+            the Actions API, and refuses rather than queueing a second.
           claude_args: |
             --max-turns 50
             --effort high
             --allowedTools "Agent,Read,Glob,Grep,Bash,WebFetch,TodoWrite"
             --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(git push:*),Bash(git commit:*),Bash(gh pr merge:*),Bash(gh pr review:*),Bash(gh pr edit:*),Bash(gh issue close:*),Bash(gh pr close:*),Bash(gh repo:*),Bash(gh secret:*),Bash(gcloud:*)"
+
+      # CHIEF DECIDES, CODE EXECUTES.
+      #
+      # chief ruled "dispatch one cycle at #305" on 2026-10-11 and could not do
+      # it. Its `gh` is the Claude App token, which 403s on the Actions API
+      # (#323); the `actions: write` above belongs to GITHUB_TOKEN, which is
+      # handed to `run:` steps and never to the agent. So the ruling arrived as
+      # a command for a human to paste, and a loop that needs a human to carry
+      # out its own decision is not a loop.
+      #
+      # This step is the carrier. It is deliberately dumb: the workflow name is
+      # hardcoded here, so the only thing chief chooses is the issue number.
+      # chief cannot dispatch anything else, cannot dispatch twice, and cannot
+      # dispatch over a cycle already in flight — the guard it could not verify
+      # for itself is verified here, where the token can read the API.
+      - name: Carry out chief's dispatch ruling
+        if: steps.acted.outputs.ok == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -uo pipefail
+          if [ ! -s /tmp/chief-dispatch.txt ]; then
+            echo "chief recorded no dispatch. That is a ruling, not a failure."
+            exit 0
+          fi
+
+          # Strict parse. Anything that is not exactly `issue=<digits>` on the
+          # first line is refused rather than guessed at, because the failure
+          # mode of a lenient parser here is dispatching a cycle at the wrong
+          # issue — 50 minutes spent on work nobody ruled on.
+          line=$(head -1 /tmp/chief-dispatch.txt | tr -d '[:space:]')
+          issue=$(printf '%s' "$line" | grep -oE '^issue=[0-9]+$' | cut -d= -f2)
+          if [ -z "$issue" ]; then
+            echo "::error::chief wrote an unparseable dispatch line: '$line'. Refusing to guess."
+            exit 1
+          fi
+
+          # The issue must be open. A cycle at a closed issue is the
+          # `cannot-reproduce` path burned at full cycle cost.
+          state=$(gh issue view "$issue" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)
+          if [ "$state" != "OPEN" ]; then
+            echo "::error::chief ruled a dispatch at #$issue, which is $state. Not dispatching."
+            exit 1
+          fi
+
+          # Guard 1, the one chief recorded as "could not establish".
+          busy=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 10 \
+                   --json status --jq '[.[] | select(.status != "completed")] | length' 2>/dev/null || echo unknown)
+          if [ "$busy" != "0" ]; then
+            echo "::warning::a cycle is in flight (or the check failed: '$busy'). Chief's ruling at #$issue stands; it waits for the next run rather than queueing behind this one."
+            exit 0
+          fi
+
+          gh workflow run agent-work.yml --repo "$GH_REPO" -f issue="$issue"
+          echo "::notice::dispatched agent-work at #$issue on chief's ruling"
+          echo "DISPATCHED=$issue" >> "$GITHUB_ENV"
 
       # Say what happened either way. A loop that reports nothing when it found
       # nothing cannot be told from one that failed to run — which is the defect
@@ -255,6 +337,15 @@ jobs:
             echo "### Steward"
             if [ "${{ steps.detect.outputs.stalled }}" = "true" ]; then
               echo "Detector reported a stall; the steward was woken. Its diagnosis is on the issues and PRs it names."
+              if [ "${{ steps.acted.outputs.ok }}" = "false" ]; then
+                echo ""
+                echo "**The steward produced no action, so chief was woken.**"
+                if [ -n "${DISPATCHED:-}" ]; then
+                  echo "chief ruled a dispatch and it was carried out: \`agent-work\` at #${DISPATCHED}."
+                else
+                  echo "chief recorded no dispatch — either it ruled the stalls un-dispatchable, or the guard refused. Its ruling is a comment on the PRs named above."
+                fi
+              fi
             else
               echo "**Nothing was stuck.** The detector checked drafts never readied,"
               echo "mergeable-but-open PRs, PRs with no check runs, missing QA verdicts"

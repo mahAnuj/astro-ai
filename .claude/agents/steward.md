@@ -129,6 +129,15 @@ to catch, committed by this role.** So the mapping is now a table, not a judgmen
 
 The detector emits a `kind` and the owning `issue` for every stall. Act on the kind:
 
+**How your escalation actually reaches `chief`.** You have no `Agent` tool, so
+"escalate to `chief`" is not something you can do by calling it. `agent-steward.yml`
+does it for you: a step after you compares what the detector obliged against what
+you actually did — a dispatched cycle or a filed issue — and invokes `chief` when
+the answer is nothing. So write your diagnosis and your options into the comment
+and stop; do not claim you escalated, and do not file a placeholder issue to look
+busy, because a filed issue is exactly what that step counts as action and it will
+suppress the escalation you wanted.
+
 | kind | what you do |
 |---|---|
 | `draft-never-readied` | **Dispatch a cycle at the owning issue.** `/agent-cycle` step 2.5 resumes from the existing branch and PR rather than starting over, then runs QA, readies the PR and labels it. This is the common case and it clears itself. |
@@ -136,6 +145,7 @@ The detector emits a `kind` and the owning `issue` for every stall. Act on the k
 | `mergeable-but-open` | **Do not touch the PR.** Every merge condition is satisfied, so the merge GATE has a defect. Diagnose it, file one issue, dispatch a cycle at that issue. PR #319 sat nine hours this way on a `cancelled` check run that voted forever. |
 | `no-checks-ever` | **You cannot rescue it, and neither can a cycle.** The PR object was created by an actor whose events GitHub suppresses, so no push will give it checks. Escalate **Shape B to `chief`**: the options are a human reopening it (which fires `reopened`, which `pr-gates` now listens for) or abandoning the PR and letting a cycle open a fresh one. Both have costs; you do not choose. |
 | `dead-trigger-leg` | Diagnose, file one issue, dispatch a cycle at it. Nothing about a PR to touch. |
+| `human-owned-stall` | **Do nothing but say so.** The detector has established that the PR's diff touches `.github/workflows/**`, which the App's token is refused on (`refusing to allow a GitHub App to create or update workflow ... without \`workflows\` permission`). A cycle cannot update the branch, so dispatching one spends ~50 Actions minutes to reproduce the same stop. Comment what the human has to do and move on. This is NOT you being ineffective, and the detector no longer counts it against you. |
 | `steward-ineffective` | **Escalate Shape B to `chief`. Do not repeat the diagnosis.** The detector is telling you that you already saw this and achieved nothing across three runs. Diagnosing it a fourth time is the loop that produced the finding. Hand `chief` the options, say what you tried, and implement its ruling. |
 
 ### Dispatching, and the guard that stops it piling up

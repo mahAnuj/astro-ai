@@ -82,6 +82,38 @@ def latest_checks(sha: str) -> dict[str, str]:
     return {n: (c.get("conclusion") or "pending") for n, c in newest.items()}
 
 
+def agent_pushable(pr: int) -> bool:
+    """Can an /agent-cycle actually update this PR's branch?
+
+    No, if the diff touches `.github/workflows/**`. The Claude App's token lacks
+    the `workflows` scope, so GitHub refuses the push outright:
+
+        refusing to allow a GitHub App to create or update workflow
+        .github/workflows/x.yml without `workflows` permission
+
+    That refusal is not a bug to route around — the scope would let the App
+    rewrite `pr-gates.yml` and `agent-merge.yml`, which ARE the enforcement, so
+    `verify_no_relaxation.py` would be running inside a file the pushing agent
+    could edit. chief declined to recommend granting it on 2026-10-11.
+
+    This matters to the DETECTOR because `draft-never-readied` and
+    `no-qa-verdict` both route to "dispatch a cycle". On a workflow-file PR that
+    dispatch cannot succeed, so the stall persists, `steward-ineffective` fires
+    at 18h, and chief is woken to rule the same un-dispatchable answer on every
+    run. A stall nothing in the loop can clear is a HUMAN stall, and saying so
+    is the difference between an escalation and a treadmill. (PR #315.)
+
+    Fails OPEN — an API error returns True, because wrongly marking a clearable
+    PR human-owned hides a real stall, while the reverse merely costs a ruling.
+    """
+    try:
+        files = json.loads(gh("pr", "view", str(pr), "--repo", REPO, "--json", "files"))
+    except RuntimeError:
+        return True
+    paths = [f.get("path", "") for f in files.get("files", [])]
+    return not any(q.startswith(".github/workflows/") for q in paths)
+
+
 def find_stalls(hours: float) -> list[dict]:
     stalls: list[dict] = []
 
@@ -102,6 +134,7 @@ def find_stalls(hours: float) -> list[dict]:
         # `merge` is agent-merge's own check run; it is not a gate.
         checks = {k: v for k, v in latest_checks(pr["headRefOid"]).items() if k != "merge"}
         green = bool(checks) and all(v == "success" for v in checks.values())
+        pushable = agent_pushable(n)
 
         if pr["isDraft"]:
             # /agent-cycle opens the PR in draft BEFORE QA, deliberately, so the
@@ -109,26 +142,26 @@ def find_stalls(hours: float) -> list[dict]:
             # cannot merge and GitHub reports nothing about why. (PR #303, #321.)
             stalls.append(dict(kind="draft-never-readied", pr=n, issue=issue, age_h=round(age, 1),
                                detail=f"draft for {age:.0f}h; gh pr ready was never run",
-                               checks=checks, labels=sorted(labels)))
+                               checks=checks, labels=sorted(labels), agent_pushable=pushable))
         elif "qa-pass" in labels and "qa-fail" not in labels and green:
             # Every merge condition satisfied. If it is still open, the gate
             # read something it did not anticipate. (PR #319, nine hours.)
             stalls.append(dict(kind="mergeable-but-open", pr=n, issue=issue, age_h=round(age, 1),
                                detail=f"qa-pass, every latest check green, open {age:.0f}h",
-                               checks=checks, labels=sorted(labels)))
+                               checks=checks, labels=sorted(labels), agent_pushable=pushable))
         elif not checks:
             # Zero checks is not "not yet green", it is "nothing ever ran", and
             # agent-merge refuses on it forever. (PR #303's action_required.)
             stalls.append(dict(kind="no-checks-ever", pr=n, issue=issue, age_h=round(age, 1),
                                detail=f"open {age:.0f}h with no check runs at all",
-                               checks={}, labels=sorted(labels)))
+                               checks={}, labels=sorted(labels), agent_pushable=pushable))
         elif "qa-pass" not in labels and "qa-fail" not in labels and green:
             # Gates green and no verdict either way: the cycle did not reach QA.
             # Distinct from the above because the fix is a QA dispatch, not a
             # pipeline repair. (PR #315, #318, #321.)
             stalls.append(dict(kind="no-qa-verdict", pr=n, issue=issue, age_h=round(age, 1),
                                detail=f"gates green, no qa-pass or qa-fail after {age:.0f}h",
-                               checks=checks, labels=sorted(labels)))
+                               checks=checks, labels=sorted(labels), agent_pushable=pushable))
 
     # THE WATCHER IS NOT WATCHED. This condition is the answer to "if the steward
     # did not act, why did nothing notice".
@@ -166,7 +199,8 @@ def find_stalls(hours: float) -> list[dict]:
     # measurement arm stayed silent for its entire life.
     STEWARD_CLEARABLE = {"draft-never-readied", "no-qa-verdict"}
     for st in list(stalls):
-        if st["kind"] in STEWARD_CLEARABLE and (st["age_h"] or 0) > 18:
+        if st["kind"] in STEWARD_CLEARABLE and (st["age_h"] or 0) > 18 \
+                and st.get("agent_pushable", True):
             stalls.append(dict(
                 kind="steward-ineffective", pr=st["pr"], issue=st["issue"],
                 age_h=st["age_h"],
@@ -175,6 +209,23 @@ def find_stalls(hours: float) -> list[dict]:
                         "and cleared nothing. ESCALATE TO CHIEF (Shape B) rather than "
                         "repeating the diagnosis."),
                 checks=st["checks"], labels=st["labels"]))
+
+    # A stall no agent can clear. Reported, but NOT as `steward-ineffective`:
+    # the steward is not ineffective for declining work it is structurally
+    # refused. Distinguishing these is chief's recommendation 2 from the
+    # 2026-10-11 ruling, and it is what stops the same un-dispatchable PR
+    # waking chief twice a day forever.
+    for st in list(stalls):
+        if st["kind"] in STEWARD_CLEARABLE and (st["age_h"] or 0) > 18 \
+                and not st.get("agent_pushable", True):
+            stalls.append(dict(
+                kind="human-owned-stall", pr=st["pr"], issue=st["issue"],
+                age_h=st["age_h"],
+                detail=(f"PR #{st['pr']} has been `{st['kind']}` for {st['age_h']:.0f}h and "
+                        "NO agent can clear it: its diff touches `.github/workflows/**`, "
+                        "which the App's token is refused on. Do not dispatch a cycle. "
+                        "A human updates the branch and records the verdict."),
+                checks=st["checks"], labels=st["labels"], agent_pushable=False))
 
     # A dead trigger leg. agent-merge's `workflow_run` leg failed 100% of the
     # time since it was written and nobody noticed, because its
@@ -215,12 +266,30 @@ def main(argv: list[str]) -> int:
     if args.json:
         print(json.dumps(stalls, indent=2))
 
+    # THE OBLIGED COUNT, emitted from here on purpose.
+    #
+    # `agent-steward.yml` used to re-derive this with its own grep over the JSON,
+    # which meant the routing table existed in three places — steward.md, this
+    # script, and a regex in YAML — and the YAML copy silently disagreed the
+    # moment `human-owned-stall` was added: it went on counting #315's
+    # `no-qa-verdict` as demanding an action no agent can take, which wakes chief
+    # twice a day to rule the same thing. One source, read by the step.
+    #
+    # A stall is obliged only if its kind routes to an action AND an agent can
+    # actually perform it. `no-checks-ever` and `dead-trigger-leg` are absent:
+    # they route to an escalation or an issue, not a dispatch.
+    obliged = [x for x in stalls
+               if x["kind"] in {"draft-never-readied", "no-qa-verdict",
+                                "mergeable-but-open", "steward-ineffective"}
+               and x.get("agent_pushable", True)]
+    print(f"OBLIGED_ACTIONS={len(obliged)}")
+
     if not stalls:
         # Say it explicitly. A detector that prints nothing when it finds
         # nothing is indistinguishable from one that did not run.
         print("PASS — no stall detected. Checked: drafts never readied, "
               "mergeable-but-open, PRs with no checks, missing QA verdicts, "
-              "dead trigger legs.")
+              "dead trigger legs, and stalls no agent can clear.")
         return 0
 
     for s in stalls:
