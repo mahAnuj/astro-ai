@@ -83,6 +83,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
+          # Timestamped BEFORE the agent runs, so "did anything happen" compares
+          # against the right instant rather than against the whole day.
+          echo "started=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
           uv run python scripts/detect_stalls.py \
             --hours "${{ github.event.inputs.hours || '4' }}" --json > /tmp/stalls.txt 2>&1
           code=$?
@@ -143,6 +146,104 @@ jobs:
             # `scripts/verify_no_relaxation.py` is the real guard and it runs on
             # the PR. This list is the second lock, not the first.
             --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(git push --force:*),Bash(git push -f:*),Bash(git reset --hard:*),Bash(gh pr merge:*),Bash(gh pr review:*),Bash(gh pr edit:*),Bash(gh issue close:*),Bash(gh pr close:*),Bash(gh repo:*),Bash(gh secret:*),Bash(gcloud:*)"
+
+      # DID IT ACTUALLY DO THE ACTIONABLES? This step is why chief exists in
+      # this file.
+      #
+      # Measured 2026-10-10: scheduled runs 38061473379 and 38078264987 each
+      # diagnosed PR #321, #318 and #315 correctly, dispatched nothing, filed
+      # nothing, escalated nothing, and concluded `success`. Green twice,
+      # pipeline still stopped. The role built to catch a green run that did
+      # nothing produced two.
+      #
+      # So the agent's own claim is not the evidence. This step computes what
+      # happened AFTER the agent started, and it does so in `run:` with
+      # `github.token`, which holds `actions: read` — the agent's own `gh` is
+      # the Claude App token and 403s on that API (#323), so a check inside the
+      # agent would be blind to exactly the thing it must verify.
+      #
+      # DETERMINISTIC ON PURPOSE. "Did a dispatch follow a stall that demanded
+      # one" is computable, so code answers it. Waking chief on every run to
+      # ask would make chief scheduled by proxy, which its own definition
+      # forbids, and would cost a full agent invocation to usually learn
+      # nothing.
+      - name: Did the steward act on what it found?
+        id: acted
+        if: steps.detect.outputs.stalled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SINCE: ${{ steps.detect.outputs.started }}
+        run: |
+          set -uo pipefail
+          # Kinds that OBLIGE an action, per steward.md's routing table. The
+          # kinds absent here — `no-checks-ever`, `dead-trigger-leg` — route to
+          # an escalation or an issue, counted below as "any action".
+          demanded=$(grep -oE '"kind": "(draft-never-readied|no-qa-verdict|mergeable-but-open|steward-ineffective)"' /tmp/stalls.txt | wc -l | tr -d ' ')
+          echo "stalls demanding an action: $demanded"
+          if [ "$demanded" = "0" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+            echo "nothing in the findings obliged an action"
+            exit 0
+          fi
+
+          # Any evidence of action taken since this run began.
+          cycles=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 10 \
+                     --json createdAt --jq "[.[] | select(.createdAt > \"$SINCE\")] | length" 2>/dev/null || echo 0)
+          issues=$(gh issue list --repo "$GH_REPO" --state all --limit 20 \
+                     --json createdAt --jq "[.[] | select(.createdAt > \"$SINCE\")] | length" 2>/dev/null || echo 0)
+          echo "since $SINCE: cycles dispatched=$cycles, issues filed=$issues"
+
+          if [ "$cycles" -gt 0 ] || [ "$issues" -gt 0 ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::the steward acted — $cycles cycle(s), $issues issue(s)"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::$demanded stall(s) demanded an action and NOTHING happened — no cycle dispatched, no issue filed. Waking chief."
+          fi
+
+      # CHIEF, and only here. Not on a schedule, not on every steward run —
+      # only when the steward was handed actionable findings and produced no
+      # action. That is a Shape B decision: the options are known, the choice
+      # is not the steward's to park, and nothing else in this system can
+      # notice the watcher failed.
+      - uses: anthropics/claude-code-action@v1
+        if: steps.acted.outputs.ok == 'false'
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Dispatch the `chief` agent with `run_in_background: false`.
+
+            **The steward just ran, was handed actionable stalls, and did
+            nothing.** No cycle was dispatched and no issue was filed. That is
+            the defect the steward exists to catch, committed by the steward,
+            and it has now happened on consecutive runs.
+
+            Read `/tmp/stalls.txt` for the findings, and the steward's own
+            comments on the PRs it names.
+
+            Rule on it as a **Shape B** escalation under Standing ruling 4.
+            The options are in `steward.md`'s routing table: dispatch a cycle at
+            the owning issue, file an issue against the gate, or escalate
+            because no agent can rescue the PR. Say which clause decided you.
+
+            Before ruling, do what Standing ruling 4 requires: **go and get the
+            data.** You have `actions: read` here only through `run:` steps, not
+            through your own `gh` (#323) — so if a fact needs the Actions API,
+            say you could not obtain it rather than guessing.
+
+            And apply the role-gap section: for each stall, work out which role
+            should have acted and whether it DID NOT RUN versus RAN AND
+            DECLINED. Those look identical from a blocked PR and mean opposite
+            things. One dispatch per role, three total.
+
+            You may not merge, close, push, label a QA verdict, or edit
+            `.github/workflows/**`, `.claude/**` or `CLAUDE.md`.
+          claude_args: |
+            --max-turns 50
+            --effort high
+            --allowedTools "Agent,Read,Glob,Grep,Bash,WebFetch,TodoWrite"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(git push:*),Bash(git commit:*),Bash(gh pr merge:*),Bash(gh pr review:*),Bash(gh pr edit:*),Bash(gh issue close:*),Bash(gh pr close:*),Bash(gh repo:*),Bash(gh secret:*),Bash(gcloud:*)"
 
       # Say what happened either way. A loop that reports nothing when it found
       # nothing cannot be told from one that failed to run — which is the defect
