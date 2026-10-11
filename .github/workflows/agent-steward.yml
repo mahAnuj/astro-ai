@@ -1,0 +1,263 @@
+# Notices that the pipeline has stopped, and routes the repair.
+#
+# WHY A SEPARATE LOOP
+# -------------------
+# The other nine loops take work from the BACKLOG. None watches whether work
+# that is already FINISHED is flowing. Between 2026-10-08 and 10-10 that gap
+# held a fully-QA'd product fix for nine hours (PR #319, blocked forever by a
+# `cancelled` check run), a draft nobody readied (PR #303), three issues whose
+# close chain was broken, and a measurement fetch that returned HTTP 403 on
+# every run since it was wired while every run went green.
+#
+# DETECTION IS CODE, REPAIR IS AN AGENT
+# -------------------------------------
+# `scripts/detect_stalls.py` decides whether anything is stuck. It is
+# deterministic and takes no model, because an agent that judges whether the
+# system is stalled can judge that it is not. The agent is invoked only when
+# that script exits 1, and its job is DIAGNOSIS — turning "open 9h with every
+# check green" into "a superseded check run votes forever" — plus routing the
+# fix through the normal pipeline.
+#
+# The agent cannot merge, close, push, apply a QA verdict, or edit
+# `.github/workflows/**`, `.claude/**` or `CLAUDE.md`. See steward.md for why
+# each of those is load-bearing: a monitor that can repair the gates has every
+# incentive to relax them, and that is `USER AUTHORISED PUSH` one level up.
+name: Agent steward
+
+on:
+  schedule:
+    # Twice daily, offset from every other loop. 09:00 and 15:00 UTC sit after
+    # the 02:xx nightly has finished and its PR has had time to gate, and well
+    # before the 23:00 dispatch. A stall caught within half a day is the point;
+    # catching it within the hour would mostly catch normal operation.
+    - cron: "0 9,15 * * *"
+  workflow_dispatch:
+    inputs:
+      hours:
+        description: "Age in hours before a PR counts as stalled (default 4)"
+        required: false
+
+concurrency:
+  group: agent-steward
+  cancel-in-progress: false
+
+jobs:
+  steward:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write         # push a BRANCH for its repair PR — never main
+      pull-requests: write    # comment and routing labels only — never qa-pass
+      issues: write           # file an issue, comment on one
+      actions: write          # dispatch agent-work at the issue it filed
+      checks: read            # read the check runs a stall is diagnosed from
+      # REQUIRED by anthropics/claude-code-action, which mints an OIDC token.
+      # Without it the step dies with
+      #     Unable to get ACTIONS_ID_TOKEN_REQUEST_URL
+      # and that is what killed this loop's very first run, 38031373476.
+      #
+      # FIFTH instance in this repo: four agent loops shipped without it in
+      # October, and this file made five on the day it was written. Eight of
+      # nine claude-code-action workflows had it; only the newest did not.
+      # Textbook "copied files diverge", and mechanically checkable — a
+      # workflow using that action must grant this scope. Specified on #317.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: false
+
+      - name: Install
+        run: uv sync --all-groups
+
+      # THE GATE ON THIS WHOLE LOOP. Exit 0 means nothing is stuck and no agent
+      # runs — the cheap, common case, costing under a minute. Exit 2 means the
+      # detector could not determine, which is NOT a pass: it is escalated as
+      # loudly as a stall, because "the pipeline may be stalled and unobserved"
+      # is the exact condition this loop exists for.
+      - name: Is anything actually stuck?
+        id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          # Timestamped BEFORE the agent runs, so "did anything happen" compares
+          # against the right instant rather than against the whole day.
+          echo "started=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          uv run python scripts/detect_stalls.py \
+            --hours "${{ github.event.inputs.hours || '4' }}" --json > /tmp/stalls.txt 2>&1
+          code=$?
+          set -e
+          cat /tmp/stalls.txt
+          cp /tmp/stalls.txt "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+          case $code in
+            0) echo "stalled=false" >> "$GITHUB_OUTPUT"
+               echo "::notice::no stall detected — not waking the steward" ;;
+            1) echo "stalled=true"  >> "$GITHUB_OUTPUT" ;;
+            2) echo "stalled=true"  >> "$GITHUB_OUTPUT"
+               echo "::warning::the detector could not determine the pipeline's state, which is not a pass — waking the steward to find out why" ;;
+            *) echo "stalled=true"  >> "$GITHUB_OUTPUT"
+               echo "::warning::detector exited $code, unexpected — waking the steward" ;;
+          esac
+
+      - uses: anthropics/claude-code-action@v1
+        if: steps.detect.outputs.stalled == 'true'
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Dispatch the `steward` agent with `run_in_background: false`.
+
+            `scripts/detect_stalls.py` exited non-zero, so something is stuck
+            or its state could not be determined.
+
+            **Its findings are in `/tmp/stalls.txt`** — read that file first.
+            They are a PREMISE TO VERIFY, not a conclusion: the detector is
+            deterministic, not omniscient. Re-run it yourself with
+            `uv run python scripts/detect_stalls.py --json`, then read the PRs,
+            their check runs and the relevant run logs before writing any
+            diagnosis. A finding you did not check is a guess.
+
+            Your value is the diagnosis, not the detection. Read steward.md and
+            obey its constraints exactly — in particular you may NOT apply or
+            remove `qa-pass`/`qa-fail`, may not merge, close or push, and may
+            not edit `.github/workflows/**`, `.claude/**` or `CLAUDE.md`. File
+            an issue and dispatch a cycle instead.
+
+            If every finding turns out to be normal operation, say so and
+            produce nothing. A quiet run is a correct run.
+          claude_args: |
+            --max-turns 60
+            --effort high
+            --allowedTools "Agent,Read,Write,Edit,Glob,Grep,Skill,WebFetch,WebSearch,TodoWrite,Bash"
+            # It may now commit and push a BRANCH, so `git commit` and `git push`
+            # are no longer denied — the repair has to be able to exist. What
+            # stays denied is everything that would let it skip the gates that
+            # judge the repair:
+            #
+            #   gh pr merge / gh pr review   it does not decide what lands
+            #   gh issue close / gh pr close it does not decide what is done
+            #   git push --force / reset     it does not rewrite what happened
+            #   gh pr edit --add-label       no label at all, so no QA verdict;
+            #                                routing labels go through `gh issue
+            #                                edit`, which cannot touch a PR
+            #
+            # `scripts/verify_no_relaxation.py` is the real guard and it runs on
+            # the PR. This list is the second lock, not the first.
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(git push --force:*),Bash(git push -f:*),Bash(git reset --hard:*),Bash(gh pr merge:*),Bash(gh pr review:*),Bash(gh pr edit:*),Bash(gh issue close:*),Bash(gh pr close:*),Bash(gh repo:*),Bash(gh secret:*),Bash(gcloud:*)"
+
+      # DID IT ACTUALLY DO THE ACTIONABLES? This step is why chief exists in
+      # this file.
+      #
+      # Measured 2026-10-10: scheduled runs 38061473379 and 38078264987 each
+      # diagnosed PR #321, #318 and #315 correctly, dispatched nothing, filed
+      # nothing, escalated nothing, and concluded `success`. Green twice,
+      # pipeline still stopped. The role built to catch a green run that did
+      # nothing produced two.
+      #
+      # So the agent's own claim is not the evidence. This step computes what
+      # happened AFTER the agent started, and it does so in `run:` with
+      # `github.token`, which holds `actions: read` — the agent's own `gh` is
+      # the Claude App token and 403s on that API (#323), so a check inside the
+      # agent would be blind to exactly the thing it must verify.
+      #
+      # DETERMINISTIC ON PURPOSE. "Did a dispatch follow a stall that demanded
+      # one" is computable, so code answers it. Waking chief on every run to
+      # ask would make chief scheduled by proxy, which its own definition
+      # forbids, and would cost a full agent invocation to usually learn
+      # nothing.
+      - name: Did the steward act on what it found?
+        id: acted
+        if: steps.detect.outputs.stalled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SINCE: ${{ steps.detect.outputs.started }}
+        run: |
+          set -uo pipefail
+          # Kinds that OBLIGE an action, per steward.md's routing table. The
+          # kinds absent here — `no-checks-ever`, `dead-trigger-leg` — route to
+          # an escalation or an issue, counted below as "any action".
+          demanded=$(grep -oE '"kind": "(draft-never-readied|no-qa-verdict|mergeable-but-open|steward-ineffective)"' /tmp/stalls.txt | wc -l | tr -d ' ')
+          echo "stalls demanding an action: $demanded"
+          if [ "$demanded" = "0" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+            echo "nothing in the findings obliged an action"
+            exit 0
+          fi
+
+          # Any evidence of action taken since this run began.
+          cycles=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 10 \
+                     --json createdAt --jq "[.[] | select(.createdAt > \"$SINCE\")] | length" 2>/dev/null || echo 0)
+          issues=$(gh issue list --repo "$GH_REPO" --state all --limit 20 \
+                     --json createdAt --jq "[.[] | select(.createdAt > \"$SINCE\")] | length" 2>/dev/null || echo 0)
+          echo "since $SINCE: cycles dispatched=$cycles, issues filed=$issues"
+
+          if [ "$cycles" -gt 0 ] || [ "$issues" -gt 0 ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::the steward acted — $cycles cycle(s), $issues issue(s)"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::$demanded stall(s) demanded an action and NOTHING happened — no cycle dispatched, no issue filed. Waking chief."
+          fi
+
+      # CHIEF, and only here. Not on a schedule, not on every steward run —
+      # only when the steward was handed actionable findings and produced no
+      # action. That is a Shape B decision: the options are known, the choice
+      # is not the steward's to park, and nothing else in this system can
+      # notice the watcher failed.
+      - uses: anthropics/claude-code-action@v1
+        if: steps.acted.outputs.ok == 'false'
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Dispatch the `chief` agent with `run_in_background: false`.
+
+            **The steward just ran, was handed actionable stalls, and did
+            nothing.** No cycle was dispatched and no issue was filed. That is
+            the defect the steward exists to catch, committed by the steward,
+            and it has now happened on consecutive runs.
+
+            Read `/tmp/stalls.txt` for the findings, and the steward's own
+            comments on the PRs it names.
+
+            Rule on it as a **Shape B** escalation under Standing ruling 4.
+            The options are in `steward.md`'s routing table: dispatch a cycle at
+            the owning issue, file an issue against the gate, or escalate
+            because no agent can rescue the PR. Say which clause decided you.
+
+            Before ruling, do what Standing ruling 4 requires: **go and get the
+            data.** You have `actions: read` here only through `run:` steps, not
+            through your own `gh` (#323) — so if a fact needs the Actions API,
+            say you could not obtain it rather than guessing.
+
+            And apply the role-gap section: for each stall, work out which role
+            should have acted and whether it DID NOT RUN versus RAN AND
+            DECLINED. Those look identical from a blocked PR and mean opposite
+            things. One dispatch per role, three total.
+
+            You may not merge, close, push, label a QA verdict, or edit
+            `.github/workflows/**`, `.claude/**` or `CLAUDE.md`.
+          claude_args: |
+            --max-turns 50
+            --effort high
+            --allowedTools "Agent,Read,Glob,Grep,Bash,WebFetch,TodoWrite"
+            --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(git push:*),Bash(git commit:*),Bash(gh pr merge:*),Bash(gh pr review:*),Bash(gh pr edit:*),Bash(gh issue close:*),Bash(gh pr close:*),Bash(gh repo:*),Bash(gh secret:*),Bash(gcloud:*)"
+
+      # Say what happened either way. A loop that reports nothing when it found
+      # nothing cannot be told from one that failed to run — which is the defect
+      # this entire loop exists to catch, so it must not commit it.
+      - name: Report
+        if: always()
+        run: |
+          {
+            echo "### Steward"
+            if [ "${{ steps.detect.outputs.stalled }}" = "true" ]; then
+              echo "Detector reported a stall; the steward was woken. Its diagnosis is on the issues and PRs it names."
+            else
+              echo "**Nothing was stuck.** The detector checked drafts never readied,"
+              echo "mergeable-but-open PRs, PRs with no check runs, missing QA verdicts"
+              echo "and dead trigger legs, and found none. No agent was invoked."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

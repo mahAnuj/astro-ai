@@ -163,16 +163,53 @@ jobs:
           #
           # Filtered by run id, not job name, so a rename cannot silently
           # reintroduce the deadlock.
-          runs=$(gh api "repos/$GH_REPO/commits/$sha/check-runs" \
-                   --jq ".check_runs[]
-                         | select((.details_url // \"\") | contains(\"/runs/$GITHUB_RUN_ID/\") | not)
-                         | \"\(.name)=\(.status):\(.conclusion // \"pending\")\"")
+          # ONE CHECK RUN PER NAME, the LATEST. A name can appear more than once
+          # on a SHA, and an older entry never disappears.
+          #
+          # `pr-gates` sets `cancel-in-progress: true` — deliberately, to save
+          # Actions minutes on a branch that gets a second push — and a cancelled
+          # run leaves a `cancelled` check run attached to the commit forever.
+          # PR #319 had `qa-pass`, a green `gates`, a green `build-gates`, and:
+          #
+          #   gates=completed:success
+          #   gates=completed:cancelled     <- the superseded run, 11 min older
+          #   -> not all checks are green yet
+          #
+          # So a fully QA'd product fix could NEVER merge. Run 37968579453 fired
+          # correctly the moment the gates went green and declined on a corpse.
+          # The rule below is right; it was reading a state it did not anticipate.
+          #
+          # Sorted by `started_at` and reduced to the last per name, which is what
+          # GitHub's own pull-request UI shows. That keeps the rule intact — a
+          # pending or failed LATEST check is still not a pass — while a
+          # superseded attempt stops voting. `.id` as a tiebreak because two runs
+          # can share a start second.
+          runs=$(gh api "repos/$GH_REPO/commits/$sha/check-runs" --paginate \
+                   --jq "[.check_runs[]
+                          | select((.details_url // \"\") | contains(\"/runs/$GITHUB_RUN_ID/\") | not)]
+                         | sort_by(.started_at, .id)
+                         | reduce .[] as \$c ({}; . + {(\$c.name): \$c})
+                         | to_entries[]
+                         | \"\(.value.name)=\(.value.status):\(.value.conclusion // \"pending\")\"")
           echo "$runs" | sed 's/^/  /'
           # Every check must have finished, and none may be anything but success.
           # `pending` counts as not-green: a check still running is not a pass,
           # which is the same rule pr-gates applies to its own exit-2 gates.
-          if echo "$runs" | grep -qv ":success$"; then
+          # Test for NON-EMPTY OUTPUT, not `grep -q`'s exit status. Measured
+          # 2026-10-10: on BSD grep (macOS) `grep -qv ':success$'` exits 1 on a
+          # list that plainly contains a non-success line, while `grep -v` on the
+          # same input prints it. GNU grep on ubuntu-latest gets it right, so the
+          # rule has always worked in CI — run 37968579453 blocked correctly on
+          # `gates=completed:cancelled`.
+          #
+          # Changed anyway, because a rule that cannot be exercised on the
+          # maintainer's own machine is a rule nobody tests. That is the same
+          # trap as the GNU-only `\+` in a sed pattern, found in this repo twice
+          # on the same day. This form behaves identically on both.
+          notgreen=$(printf '%s\n' "$runs" | grep -v ":success$" || true)
+          if [ -n "$notgreen" ]; then
             echo "::notice::not all checks are green yet — leaving the PR open"
+            printf '  blocking: %s\n' "$notgreen"
             exit 0
           fi
           if [ -z "$runs" ]; then

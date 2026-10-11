@@ -266,6 +266,49 @@ what lands, on green gates and a QA PASS.
 If you find yourself pushing to `main`, or routing around a refusal, stop and file
 `needs-human-review`.
 
+## Step 4.5 — blocked on a CHOICE, not on a conflict? Escalate to `chief`.
+
+**Do not label `needs-human-review` because a decision is needed.** That label is for work
+you cannot establish, not for work you can establish and are not authorised to choose
+between. Using it for a choice is how decisions queue up on the human while the PR sits.
+
+Measured 2026-10-10: cycles on #322 and #323 each reproduced the defect from inside their
+own run — one of them finding the bug was wider than the issue claimed — then stopped
+after 60 seconds with `needs-human-review`, because every fix option lived in
+`.github/workflows/` and choosing between them was nobody's authority. Two correct stops
+that shipped nothing, and two decisions parked.
+
+`chief` holds **Standing ruling 4**, a precedence written for exactly this: free tier,
+then minimum permissions, then robustness over brevity, then minimum code, then minimum
+entropy, then the objective. So escalate, in **Shape B** — a decision request. Dispatch
+`chief` as a subagent with `run_in_background: false`, and give it:
+
+- **the enumerated options**, each with what it changes, what permission or credential it
+  adds, and roughly how many lines. An option with no cost stated is not an option
+- **what is blocked**, and since when
+- **the Evidence Block**, or an explicit note of which fields do not apply and why
+- **the issue number**
+- **your own recommendation and reasoning**
+
+Ask it to rule under Standing ruling 4 and to name the clause that decided it.
+
+Then **implement what it rules**, and quote the ruling in your issue comment. If it
+returns `insufficient-evidence` it will say what an acceptable option would have to look
+like — go and find one, or then label `needs-human-review` with its words attached.
+
+Three things this does not do:
+
+- **It does not give you a third option.** `chief` may not invent one, and neither may you
+  by reading a ruling loosely. If every option loses, say so.
+- **It does not exempt the result from the gates.** `verify_no_relaxation.py` runs on your
+  PR regardless of who ruled, and `chief` is explicitly forbidden from ruling that a
+  guardrail should be relaxed.
+- **It is not for two options you invented to look thorough.** One real option and one
+  straw man wastes a full agent invocation. Offer what you would actually build.
+
+**Three escalations per cycle, maximum** — `chief`'s own limit. A fourth means the issue is
+underspecified, and *that* is `needs-human-review`.
+
 ## Step 5 — write the trail
 
 Every step is an **issue comment**: which agent, what it did, what it decided and why, what it
