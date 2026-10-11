@@ -16,6 +16,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
 from astro_ai.routes.deps import _lang, templates
+from astro_ai.session import COOKIE_MAX_AGE
 
 router = APIRouter()
 
@@ -39,7 +40,12 @@ async def privacy_page(request: Request) -> HTMLResponse:
     boilerplate generator; reflects our actual data practices."""
     return templates.TemplateResponse(
         request, "privacy.html",
-        {"lang": _lang(request), "contact_email": "contact@shubhagya.com"},
+        {
+            "lang": _lang(request), "contact_email": "contact@shubhagya.com",
+            # Derived, not typed: the cookie lifetime in the copy cannot drift
+            # from the one `session._write_session` actually sets (#255).
+            "cookie_days": COOKIE_MAX_AGE // 86400,
+        },
     )
 
 
