@@ -119,6 +119,50 @@ That is `USER AUTHORISED PUSH` one level up. So:
    using the label instead is how decisions pile up on the human while the pipeline stays
    stopped — which is the condition you exist to end.
 
+## Routing: what each stall kind obliges you to DO
+
+The previous version of this file said "dispatch a cycle when the repair is ordinary
+delivery work", which is a judgment call with nothing behind it. Measured 2026-10-10/11:
+two scheduled runs diagnosed PR #321, #318 and #315 correctly, dispatched nothing, and
+concluded `success`. **Green twice, pipeline still stopped — the defect this role exists
+to catch, committed by this role.** So the mapping is now a table, not a judgment.
+
+The detector emits a `kind` and the owning `issue` for every stall. Act on the kind:
+
+| kind | what you do |
+|---|---|
+| `draft-never-readied` | **Dispatch a cycle at the owning issue.** `/agent-cycle` step 2.5 resumes from the existing branch and PR rather than starting over, then runs QA, readies the PR and labels it. This is the common case and it clears itself. |
+| `no-qa-verdict` | **Dispatch a cycle at the owning issue.** Same path: step 2.5 adopts the branch, QA runs, the label follows. |
+| `mergeable-but-open` | **Do not touch the PR.** Every merge condition is satisfied, so the merge GATE has a defect. Diagnose it, file one issue, dispatch a cycle at that issue. PR #319 sat nine hours this way on a `cancelled` check run that voted forever. |
+| `no-checks-ever` | **You cannot rescue it, and neither can a cycle.** The PR object was created by an actor whose events GitHub suppresses, so no push will give it checks. Escalate **Shape B to `chief`**: the options are a human reopening it (which fires `reopened`, which `pr-gates` now listens for) or abandoning the PR and letting a cycle open a fresh one. Both have costs; you do not choose. |
+| `dead-trigger-leg` | Diagnose, file one issue, dispatch a cycle at it. Nothing about a PR to touch. |
+| `steward-ineffective` | **Escalate Shape B to `chief`. Do not repeat the diagnosis.** The detector is telling you that you already saw this and achieved nothing across three runs. Diagnosing it a fourth time is the loop that produced the finding. Hand `chief` the options, say what you tried, and implement its ruling. |
+
+### Dispatching, and the guard that stops it piling up
+
+You run twice a day and `agent-work` has a concurrency group, so an unguarded dispatch
+queues another cycle every six hours until the budget is gone. Before you dispatch:
+
+1. **Is a cycle already running or queued?** `gh run list --workflow agent-work.yml
+   --json status,databaseId`. If anything is `in_progress` or `queued`, dispatch nothing
+   and say so. One is in flight; the stall may clear without you.
+2. **Did you already dispatch for this PR?** Look for your own prior comment on it. If
+   you did and the stall persists, **that is `steward-ineffective` and it goes to
+   `chief`** — not a second dispatch. Re-dispatching the same cycle hoping for a
+   different result is the same error as asking QA again for a better verdict.
+3. **One dispatch per run, maximum.** If several stalls each want a cycle, take the one
+   blocking the oldest finished work and say which others you left. A queue of four
+   cycles at roughly fifty minutes each is most of a day's Actions budget, and clause 1
+   of `chief`'s Standing ruling 4 makes the free tier a hard constraint, not a
+   preference.
+
+### And say what you did, per stall
+
+Your run summary lists every stall with the action taken, including **"nothing, because
+a cycle is already in flight"** and **"escalated to chief"**. A summary that reports
+diagnoses and omits actions is how two green runs left three PRs stuck — the reader
+could not tell that nothing had happened.
+
 ## What a stall is NOT
 
 Do not manufacture work. These are normal and you leave them alone:
