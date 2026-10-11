@@ -118,7 +118,8 @@ def find_stalls(hours: float) -> list[dict]:
     stalls: list[dict] = []
 
     prs = json.loads(gh("pr", "list", "--repo", REPO, "--state", "open", "--limit", "50",
-                        "--json", "number,title,isDraft,labels,headRefName,headRefOid,createdAt,updatedAt"))
+                        "--json", "number,title,isDraft,labels,headRefName,headRefOid,"
+                        "createdAt,updatedAt,mergeable"))
 
     for pr in prs:
         n, age = pr["number"], age_hours(pr["createdAt"])
@@ -152,9 +153,41 @@ def find_stalls(hours: float) -> list[dict]:
         elif not checks:
             # Zero checks is not "not yet green", it is "nothing ever ran", and
             # agent-merge refuses on it forever. (PR #303's action_required.)
+            #
+            # TWO CAUSES, OPPOSITE FIXES, and the detail line now says which.
+            #
+            # 1. CONFLICTING. `pull_request` workflows run against the MERGE REF
+            #    (`refs/pull/N/merge`), which GitHub cannot compute while the PR
+            #    has conflicts — so `synchronize` fires and NO run is created.
+            #    Not a skipped run, not a failed one: nothing, with no event
+            #    anywhere saying why. Reopening does not help; only resolving the
+            #    conflict does. Measured on PR #325 on 2026-10-11: `opened` ran
+            #    both gates, then two pushes after `main` moved underneath it
+            #    produced zero runs, and the only check suite on the head was an
+            #    unrelated app's. chief had already inferred this for PR #318
+            #    ("a reopen alone will not give checks while the PR is
+            #    conflicting") and was right.
+            #
+            # 2. CREATED BY GITHUB_TOKEN. The PR object exists but GitHub
+            #    suppresses its events to stop a workflow triggering itself, so
+            #    no push will ever give it checks. Only a human reopening it
+            #    fires `reopened`. (PR #303, #318, #322.)
+            #
+            # Telling them apart is the difference between "resolve the
+            # conflict" and "a human must reopen it", and the steward was
+            # guessing.
+            conflicting = pr.get("mergeable") == "CONFLICTING"
+            why = ("the PR is CONFLICTING, so GitHub cannot build the merge ref "
+                   "that `pull_request` workflows run against — pushes fire no "
+                   "run at all. RESOLVE THE CONFLICT; reopening will not help."
+                   if conflicting else
+                   "mergeable, so the PR object itself is the problem: it was "
+                   "most likely created by GITHUB_TOKEN, whose events GitHub "
+                   "suppresses. A HUMAN must close and reopen it.")
             stalls.append(dict(kind="no-checks-ever", pr=n, issue=issue, age_h=round(age, 1),
-                               detail=f"open {age:.0f}h with no check runs at all",
-                               checks={}, labels=sorted(labels), agent_pushable=pushable))
+                               detail=f"open {age:.0f}h with no check runs at all — {why}",
+                               checks={}, labels=sorted(labels), agent_pushable=pushable,
+                               conflicting=conflicting))
         elif "qa-pass" not in labels and "qa-fail" not in labels and green:
             # Gates green and no verdict either way: the cycle did not reach QA.
             # Distinct from the above because the fix is a QA dispatch, not a

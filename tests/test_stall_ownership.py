@@ -150,3 +150,43 @@ def test_agent_pushable_fails_open(monkeypatch):
     monkeypatch.setattr(detect_stalls, "gh", boom)
     assert detect_stalls.agent_pushable(999) is True, (
         "hiding a real stall is worse than spending a ruling on a false one")
+
+
+def test_no_checks_ever_names_conflict_as_the_cause(monkeypatch):
+    """A CONFLICTING PR gets no checks ever, and the fix is not "reopen it".
+
+    `pull_request` workflows run against `refs/pull/N/merge`, which GitHub cannot
+    build while the PR conflicts — so a push fires `synchronize` and creates no
+    run at all. Measured on PR #325: `opened` ran both gates, then two pushes
+    after `main` moved underneath produced zero runs.
+
+    The steward used to be told only "no check runs at all", which it read as the
+    GITHUB_TOKEN case and routed to "a human reopens it". That advice cannot
+    work here, so the detail line has to separate the two.
+    """
+    prs = [_pr(340, draft=False, hours=36, labels=[])]
+    prs[0]["mergeable"] = "CONFLICTING"
+    _install(monkeypatch, prs, workflow_prs=set())
+    monkeypatch.setattr(detect_stalls, "latest_checks", lambda sha: {})
+    stalls = detect_stalls.find_stalls(4)
+
+    hit = [s for s in stalls if s["kind"] == "no-checks-ever"]
+    assert len(hit) == 1
+    assert hit[0]["conflicting"] is True
+    assert "RESOLVE THE CONFLICT" in hit[0]["detail"]
+    assert "reopen" not in hit[0]["detail"].lower().replace("reopening will not help", "")
+
+
+def test_no_checks_ever_on_a_clean_pr_still_says_reopen(monkeypatch):
+    """The GITHUB_TOKEN case keeps its original routing (PR #303, #318, #322)."""
+    prs = [_pr(341, draft=False, hours=36, labels=[])]
+    prs[0]["mergeable"] = "MERGEABLE"
+    _install(monkeypatch, prs, workflow_prs=set())
+    monkeypatch.setattr(detect_stalls, "latest_checks", lambda sha: {})
+    stalls = detect_stalls.find_stalls(4)
+
+    hit = [s for s in stalls if s["kind"] == "no-checks-ever"]
+    assert len(hit) == 1
+    assert hit[0]["conflicting"] is False
+    assert "reopen" in hit[0]["detail"].lower()
+    assert "GITHUB_TOKEN" in hit[0]["detail"]

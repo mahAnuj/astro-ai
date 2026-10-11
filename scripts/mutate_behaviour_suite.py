@@ -507,6 +507,25 @@ MUTATIONS = [
      "    (\"सिंह\",),",
      "    (\"सिंह_\",),",
      "test_every_devanagari_rashi_name_maps_to_its_own_index"),
+
+    # #305: the /kundli identity tiles ellipsis-clipped 10 of 12 rashi names at 375px.
+    ("#305: `truncate` back on the snapshot tile value line (Lagna clipped to an ellipsis)",
+     "src/astro_ai/templates/result.html",
+     "leading-tight text-bhagya-cream break-words\">",
+     "leading-tight text-bhagya-cream truncate\">",
+     "test_no_tile_clips_its_text"),
+
+    ("#305: `truncate` back on the snapshot tile meta line (Uttara Ashadha Nakshatra clipped)",
+     "src/astro_ai/templates/result.html",
+     "text-bhagya-cream/[.62] mt-1 break-words\">",
+     "text-bhagya-cream/[.62] mt-1 truncate\">",
+     "test_no_tile_clips_its_text"),
+
+    ("#305: meta words lose nowrap (the Mahadasha dates split at their hyphens)",
+     "src/astro_ai/templates/result.html",
+     "<span class=\"whitespace-nowrap\">{{ word }}</span>",
+     "<span>{{ word }}</span>",
+     "test_meta_words_are_nowrap_so_dates_do_not_split_at_hyphens"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
