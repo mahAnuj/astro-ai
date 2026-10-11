@@ -147,9 +147,23 @@ def find_stalls(hours: float) -> list[dict]:
     # success having done nothing. It escalates PAST the steward to `chief`,
     # which holds the precedence for deciding what to do about it.
     #
-    # 18h, not a run count: it needs no cross-referencing of run history and so
-    # cannot itself fail on a 403, which is how the measurement arm stayed
-    # silent for its whole life. Three scheduled runs fit in 18 hours.
+    # 18h, not a run count, and the reason matters more than I first wrote.
+    #
+    # The first version said "three scheduled runs fit in 18 hours". That is not
+    # reliable: GitHub delays free-tier crons by hours. Measured — the steward's
+    # `0 9,15 * * *` fired at 14:54 and 19:03, and agent-work's `0 23 * * *`
+    # fired at 02:09 and 01:38, each roughly three hours late. A run count
+    # inferred from wall-clock is therefore a guess.
+    #
+    # The condition stands on its own without that inference: a stall the
+    # steward is able to clear, still present 18 hours later, is unresolved
+    # regardless of how many runs saw it. That is the signal — persistence, not
+    # attendance.
+    #
+    # Still a duration rather than a cross-reference of run history, because
+    # reading that history needs the Actions API, and the agent's own token 403s
+    # on it (#323). A detector that can fail on a permission is how the
+    # measurement arm stayed silent for its entire life.
     STEWARD_CLEARABLE = {"draft-never-readied", "no-qa-verdict"}
     for st in list(stalls):
         if st["kind"] in STEWARD_CLEARABLE and (st["age_h"] or 0) > 18:
