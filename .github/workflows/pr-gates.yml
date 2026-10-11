@@ -4,7 +4,7 @@
 # ---------------
 # `verify-production.yml` asserts against the ALREADY-DEPLOYED site. Its own
 # header says so, and it cannot gate a pull request — by the time it runs, the
-# code is live. There are 24 `scripts/verify_*.py` gates and a behaviour suite
+# code is live. There are 25 `scripts/verify_*.py` gates and a behaviour suite
 # in this repo and, until now, no workflow ran any of them on a PR.
 #
 # That matters more than usual here: `main` auto-deploys, there is no staging,
