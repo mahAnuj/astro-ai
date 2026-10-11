@@ -594,10 +594,24 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
     with tempfile.TemporaryDirectory(prefix="mutate-") as tmp:
         sandbox = pathlib.Path(tmp) / "repo"
         # `.github` because the suite now reads the verify-production workflow
-        # to check that its jq field reads still match what /health emits. A
-        # sandbox missing a file the suite reads makes EVERY mutation look
-        # CAUGHT — including the control, which is how this was noticed.
-        for sub in ("src", "tests", ".github"):
+        # to check that its jq field reads still match what /health emits.
+        # `scripts` because test_stall_ownership.py imports detect_stalls.py to
+        # pin how a stall is assigned an owner.
+        #
+        # A sandbox missing a file the suite reads breaks EVERY row at once, and
+        # it has now done so twice. The first time every mutation read CAUGHT,
+        # including the control. The second time (2026-10-11, PR #325) every row
+        # read `NON-TEST FAILURE rc=2`, because the missing file was an import
+        # rather than a read and pytest died at collection.
+        #
+        # Both times the CONTROL is what exposed it: a no-op edit that does not
+        # report MISSED means the harness is not measuring anything. That row
+        # earns its keep here — read it before any other.
+        #
+        # So the rule, stated because the next addition will hit it too: ANY
+        # directory the suite reads or imports from must be copied here. 1 MB of
+        # `scripts` is cheaper than a mutation run that cannot fail.
+        for sub in ("src", "tests", ".github", "scripts"):
             shutil.copytree(ROOT / sub, sandbox / sub,
                             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         # GUARD GONE — "the defect escaped" and "the test meant to catch it no
