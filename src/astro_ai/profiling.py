@@ -10,8 +10,9 @@ Result is cached per (days, day) to GCS at `profiling/summary-{d}d-{iso}.json`
 with a 1-hour TTL so repeated admin loads don't re-scan the events log.
 
 Scope of this Phase 1 module (per GitHub issue #140):
-  - Age-band histogram from Kundli birth_date
-  - Top-N cities from Kundli birth_place (best-effort free-text parse)
+  - Age-band histogram from Kundli events' `age_band` (legacy rows: birth_date)
+  - Top-N cities from Kundli events' `city` (legacy rows: birth_place,
+    best-effort free-text parse)
   - Language distribution (EN/HI) across all event types
   - Question-category distribution from Ask events
   - Ask-context split (chart / numerology / matching)
@@ -97,6 +98,18 @@ def _city_from_place(place: str) -> str:
     return _CITY_ALIASES.get(first, first.title())
 
 
+def coarse_profile(birth_date: str, birth_place: str) -> dict[str, str]:
+    """The only birth-derived fields an event may carry: an age band and a city.
+
+    Keeps the /admin/insights panels alive without storing the raw date or
+    place (#255). Either value is "" / "unknown" when it cannot be derived.
+    """
+    return {
+        "age_band": _age_bucket_from_dob(str(birth_date or "")),
+        "city": _city_from_place(str(birth_place or "")),
+    }
+
+
 def _bump(hist: Counter, key: str) -> None:
     """Increment a histogram counter, skipping empties."""
     if key:
@@ -160,8 +173,13 @@ def audience_summary(*, days: int = 30, force_refresh: bool = False) -> dict[str
     city_hist: Counter[str] = Counter()
     for e in kundlis:
         d = e.get("data") or {}
-        _bump(age_hist, _age_bucket_from_dob(str(d.get("birth_date", ""))))
-        _bump(city_hist, _city_from_place(str(d.get("birth_place", ""))))
+        # New events carry the coarse bands only (see coarse_profile); events
+        # written before #255 still hold raw birth_date/birth_place, and live
+        # for up to EVENT_RETENTION_DAYS after the deploy, so fall back.
+        _bump(age_hist, str(d.get("age_band") or "")
+              or _age_bucket_from_dob(str(d.get("birth_date", ""))))
+        _bump(city_hist, str(d.get("city") or "")
+              or _city_from_place(str(d.get("birth_place", ""))))
 
     # ----- Language: every event carries lang in data. Some legacy events
     # may not, so we fall back to "unknown". -----
