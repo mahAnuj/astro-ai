@@ -617,6 +617,24 @@ MUTATIONS = [
      '        return ts(t) <= self.until - GRACE',
      '        return ts(t) < self.until - GRACE',
      "test_the_grace_boundary_is_inclusive_one_second_either_side"),
+    # #305: the /kundli identity tiles ellipsis-clipped 10 of 12 rashi names at 375px.
+    ("#305: `truncate` back on the snapshot tile value line (Lagna clipped to an ellipsis)",
+     "src/astro_ai/templates/result.html",
+     "leading-tight text-bhagya-cream break-words\">",
+     "leading-tight text-bhagya-cream truncate\">",
+     "test_no_tile_clips_its_text"),
+
+    ("#305: `truncate` back on the snapshot tile meta line (Uttara Ashadha Nakshatra clipped)",
+     "src/astro_ai/templates/result.html",
+     "text-bhagya-cream/[.62] mt-1 break-words\">",
+     "text-bhagya-cream/[.62] mt-1 truncate\">",
+     "test_no_tile_clips_its_text"),
+
+    ("#305: meta words lose nowrap (the Mahadasha dates split at their hyphens)",
+     "src/astro_ai/templates/result.html",
+     "<span class=\"whitespace-nowrap\">{{ word }}</span>",
+     "<span>{{ word }}</span>",
+     "test_meta_words_are_nowrap_so_dates_do_not_split_at_hyphens"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -685,11 +703,27 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
     with tempfile.TemporaryDirectory(prefix="mutate-") as tmp:
         sandbox = pathlib.Path(tmp) / "repo"
         # `.github` because the suite now reads the verify-production workflow
-        # to check that its jq field reads still match what /health emits. A
-        # sandbox missing a file the suite reads makes EVERY mutation look
-        # CAUGHT — including the control, which is how this was noticed.
-        # `scripts` since #316: tests/test_loop_outcomes.py loads
-        # scripts/report_loop_outcomes.py by path, and mutating it needs it here.
+        # to check that its jq field reads still match what /health emits.
+        #
+        # `scripts` for TWO independent reasons, arrived at separately — which is
+        # itself the evidence that the omission was a trap and not an oversight:
+        #   * #316: tests/test_loop_outcomes.py loads report_loop_outcomes.py by
+        #     path, and the mutations above edit that file in the sandbox.
+        #   * #325: tests/test_stall_ownership.py imports detect_stalls.py to pin
+        #     how a stall is assigned an owner.
+        #
+        # A sandbox missing a file the suite reads breaks EVERY row at once, and
+        # it has now done so twice. The first time every mutation read CAUGHT,
+        # because the suite READ a missing file. The second time every row read
+        # `NON-TEST FAILURE rc=2`, because it IMPORTED one and pytest died at
+        # collection. Same cause, opposite signal, both invisible in a pass count.
+        #
+        # Both times the CONTROL is what exposed it: a no-op edit that does not
+        # report MISSED means the harness is not measuring anything. Read that row
+        # before any other.
+        #
+        # So the rule, stated because the next addition will hit it too: ANY
+        # directory the suite reads or imports from must be copied here.
         for sub in ("src", "tests", ".github", "scripts"):
             shutil.copytree(ROOT / sub, sandbox / sub,
                             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))

@@ -374,12 +374,17 @@
     from { opacity: 0; transform: translateY(10px); filter: blur(2px); }
     to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
   }
+  /* #260 — NO font-family, font-weight or line-height here, on purpose. The
+     markup carries lang="sa", so base.html's [lang="sa"] rule supplies the
+     serif Devanagari (Marcellus, Noto Serif Devanagari), weight 400 and
+     line-height 1.85. This selector is (0,3,0) against that rule's (0,1,0):
+     any of those three declared here wins silently and puts the mantra back
+     in Noto Sans at a synthesised 600 (the defect #189 removed elsewhere,
+     which sat here unseen because the gate only walks [lang="sa"] nodes).
+     Only size, colour, spacing and the reveal belong in this rule. */
   .article-prose .shlok .sanskrit {
-    font-family: 'Noto Sans Devanagari', serif;
     font-size: 1.2rem;
     color: #17131A;
-    font-weight: 600;
-    line-height: 1.5;
     margin-bottom: 0.5rem;
     animation: shlokReveal 900ms ease-out both;
   }
