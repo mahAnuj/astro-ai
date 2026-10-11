@@ -26,9 +26,9 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 
 from astro_ai import notify
+from astro_ai.identity import identity_key, short_key
 from astro_ai.routes.deps import _ask_cta_ctx, _lang, templates
 from astro_ai.routes.llm_support import _fire_error_alert
-from astro_ai.session import load_user
 
 log = logging.getLogger(__name__)
 
@@ -124,11 +124,10 @@ async def numerology_calculate(
             status_code=400,
         )
     try:
-        _u = load_user(request)
+        # Name and birth date go in only as a keyed hash (#255).
         notify.numerology_computed(
-            name=reading.name, system=reading.system,
-            life_path=int(reading.life_path),
-            user_email=(_u.email if _u else ""),
+            system=reading.system, life_path=int(reading.life_path),
+            key=short_key(identity_key(reading.name, birth_date)),
         )
     except Exception:
         pass

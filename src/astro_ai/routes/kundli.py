@@ -23,12 +23,15 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from datetime import date
 
 from fastapi import APIRouter, Form, Request, Response
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from astro_ai import cache, email_sender, events, notify, snapshots, users
+from astro_ai.identity import identity_key, short_key
+from astro_ai.profiling import coarse_profile
 from astro_ai import providers as llm_providers
 from astro_ai.chart import (
     ChartError,
@@ -216,14 +219,18 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     # at any number of tiers, and costs one fewer cache lookup. Do NOT
     # reintroduce a pre-check that reads the durable tier: that would put a
     # cross-continent round-trip on the hot path (#144).
-    _generated = {"fired": False}
+    _generated = {"fired": False, "secs": None}
 
     def _generate() -> str:
         _generated["fired"] = True
-        return generate_reading(
-            details, chart=chart, flags=flags, life_chapters=life_chapters,
-            prompt_path=PROMPT_PATH, lang=lang, dasha_state=dasha_state,
-        )
+        started = time.monotonic()
+        try:
+            return generate_reading(
+                details, chart=chart, flags=flags, life_chapters=life_chapters,
+                prompt_path=PROMPT_PATH, lang=lang, dasha_state=dasha_state,
+            )
+        finally:
+            _generated["secs"] = time.monotonic() - started
 
     try:
         reading_text = _cached(
@@ -266,22 +273,27 @@ async def _render_natal_for(request: Request, details: BirthDetails,
     # is re-viewing their already-generated reading, not a new event.
     _u_natal = load_user(request)
     if not was_cached:
+        # The alert and the event carry a keyed hash and the rashi triple, never
+        # the name / date / time / place (#255). The relay is a diagnostic:
+        # which chart shape, which model, what it cost.
+        _lagna, _moon, _sun = notify.chart_rashis(chart)
+        _id_full = identity_key(
+            details.name, details.birth_date, details.birth_time, details.birth_place)
+        _model = llm_providers.last_used_model()
         notify.kundli_generated(
-            name=details.name, birth_date=details.birth_date,
-            birth_time=details.birth_time, birth_place=details.birth_place,
-            lang=lang, user_email=(_u_natal.email if _u_natal else ""),
-            model=llm_providers.last_used_model(),
+            lagna=_lagna, moon=_moon, sun=_sun, lang=lang,
+            key=short_key(_id_full), model=_model,
+            tokens=llm_providers.last_used_tokens(),
+            latency_s=_generated["secs"],
         )
         events.record(
             type="form_kundli",
             email=(_u_natal.email if _u_natal else ""),
             data={
-                "name": details.name, "birth_date": details.birth_date,
-                "birth_time": details.birth_time, "birth_place": details.birth_place,
-                "lang": lang, "model": llm_providers.last_used_model(),
-                "rashi_lagna": chart.lagna_rashi,
-                "rashi_moon": next((p.rashi for p in chart.planets if p.name == "Moon"), ""),
-                "rashi_sun": next((p.rashi for p in chart.planets if p.name == "Sun"), ""),
+                "identity": _id_full[:32],
+                "lang": lang, "model": _model,
+                "rashi_lagna": _lagna, "rashi_moon": _moon, "rashi_sun": _sun,
+                **coarse_profile(details.birth_date, details.birth_place),
             },
         )
 

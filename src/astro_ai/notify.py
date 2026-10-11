@@ -21,12 +21,24 @@ preview envs. Zero-config to disable.
 Fire-and-forget: every notify() call spawns an asyncio task and returns
 immediately. Never blocks the user request. Errors log-and-swallow.
 
-Privacy: user PII (name, DOB, birthplace, email, question text) IS sent
-to Telegram. This is the site owner's private bot chat, not a public
-group. The bot token grants message-send-only permission, not read
-access to any user's Telegram data. Update the site privacy policy to
-disclose that submission diagnostics are relayed via Telegram to the
-site operator.
+Privacy (#255): the four birth-data alerts -- `kundli_generated`,
+`matching_done`, `dosha_checked`, `numerology_computed` -- carry NO PII. They
+send a diagnostic (rashi names, model, tokens, latency, cache state) and an
+8-hex `identity.short_key`, which lets the owner find the matching event
+without the alert saying whose it is. Name, birth date/time/place and email
+are never passed to them.
+
+These formatters STILL carry PII, and templates/privacy.html discloses it:
+  - ask_submitted      question text + signed-in email
+  - new_signin         email + name
+  - subscribed         email
+  - feedback_submitted message text + email
+  - error_seen         exception message + traceback (+ email); a ChartError,
+                       whose message embeds the birth place, is redacted
+                       upstream in routes/llm_support._fire_error_alert
+  - muhurat_computed   city + signed-in email
+This is the site owner's private bot chat, not a public group; the bot token
+grants send-only permission.
 """
 
 from __future__ import annotations
@@ -138,43 +150,77 @@ def _escape_md(s: str) -> str:
     return s
 
 
-def kundli_generated(
-    *, name: str, birth_date: str, birth_time: str, birth_place: str,
-    lang: str, user_email: str = "", model: str = "",
-) -> None:
-    """/reading POST → new Kundli generated. `model` is the LLM that served it."""
-    parts = [
-        "🕉  *Kundli generated*",
-        f"👤 {_escape_md(name) or '_(anonymous)_'}",
-        f"📅 {birth_date} · {birth_time} · {_escape_md(birth_place)}",
-        f"🌐 lang={lang}",
-    ]
-    if user_email:
-        parts.append(f"✉️ {_escape_md(user_email)}")
+def chart_rashis(chart) -> tuple[str, str, str]:
+    """(lagna, moon, sun) rashi names of a computed chart -- the one birth-derived
+    fact the diagnostic alerts and the `form_kundli` event may carry."""
+    def _rashi_of(name: str) -> str:
+        return next((p.rashi for p in chart.planets if p.name == name), "")
+    return chart.lagna_rashi, _rashi_of("Moon"), _rashi_of("Sun")
+
+
+def _rashi_line(lagna: str, moon: str, sun: str) -> str:
+    bits = [f"{k}={_escape_md(v)}" for k, v in
+            (("lagna", lagna), ("moon", moon), ("sun", sun)) if v]
+    return "📊 " + " · ".join(bits) if bits else ""
+
+
+def _cost_line(lang: str, model: str, tokens: Optional[int],
+               latency_s: Optional[float], cache: str) -> str:
+    """lang · model · tokens · latency · cache. A field that is absent is
+    omitted, never printed as None or guessed -- `tokens` is None whenever the
+    provider returned no usage block."""
+    bits = [lang] if lang else []
     if model:
-        parts.append(f"🤖 {_escape_md(model)}")
-    dedup = f"kundli:{user_email or name}:{birth_date}"
-    notify("\n".join(parts), dedup_key=dedup)
+        bits.append(f"🤖 {_escape_md(model)}")
+    if tokens is not None:
+        bits.append(f"{tokens:,} tok")
+    if latency_s is not None:
+        bits.append(f"{latency_s:.1f}s")
+    if cache:
+        bits.append(f"cache={cache}")
+    return "🌐 " + " · ".join(bits) if bits else ""
+
+
+def _compose(*lines: str) -> str:
+    return "\n".join(line for line in lines if line)
+
+
+def kundli_generated(
+    *, lagna: str, moon: str, sun: str, lang: str, key: str,
+    model: str = "", tokens: Optional[int] = None,
+    latency_s: Optional[float] = None, cache: str = "miss",
+) -> None:
+    """/reading → new Kundli generated. A diagnostic, not an identity (#255).
+
+    `key` is `identity.short_key(...)`. The dedup key is built from it, so no
+    birth detail or email sits in the in-memory dict either.
+    """
+    notify(
+        _compose("🕉  *Kundli generated*", _rashi_line(lagna, moon, sun),
+                 _cost_line(lang, model, tokens, latency_s, cache),
+                 f"🔖 {key}" if key else ""),
+        dedup_key=f"kundli:{key}",
+    )
 
 
 def matching_done(
-    *, groom_name: str, groom_dob: str, bride_name: str, bride_dob: str,
-    total_score: str, lang: str, user_email: str = "", model: str = "",
+    *, groom_moon: str, bride_moon: str, total_score: str, lang: str,
+    groom_key: str, bride_key: str, model: str = "",
+    tokens: Optional[int] = None, latency_s: Optional[float] = None,
+    cache: str = "miss",
 ) -> None:
-    """/matching POST → Ashtakoot matching complete."""
-    parts = [
-        "💍  *Kundli matching*",
-        f"🤵 {_escape_md(groom_name) or '?'} · {groom_dob}",
-        f"👰 {_escape_md(bride_name) or '?'} · {bride_dob}",
-        f"⭐ Ashtakoot: *{total_score}*",
-        f"🌐 lang={lang}",
-    ]
-    if user_email:
-        parts.append(f"✉️ {_escape_md(user_email)}")
-    if model:
-        parts.append(f"🤖 {_escape_md(model)}")
-    dedup = f"matching:{groom_dob}:{bride_dob}"
-    notify("\n".join(parts), dedup_key=dedup)
+    """/matching POST → Ashtakoot matching complete. No names or dates (#255)."""
+    moons = " · ".join(
+        f"{k}={_escape_md(v)}" for k, v in
+        (("groom moon", groom_moon), ("bride moon", bride_moon)) if v)
+    notify(
+        _compose("💍  *Kundli matching*",
+                 f"⭐ Ashtakoot: *{total_score}*",
+                 f"📊 {moons}" if moons else "",
+                 _cost_line(lang, model, tokens, latency_s, cache),
+                 f"🔖 {groom_key} · {bride_key}"),
+        dedup_key=f"matching:{groom_key}:{bride_key}",
+    )
 
 
 def ask_submitted(
@@ -240,26 +286,24 @@ def feedback_submitted(*, type: str, message: str, page: str = "", email: str = 
 
 
 def dosha_checked(
-    *, dosha_type: str, birth_place: str,
-    is_present: bool, extra: str = "",
-    user_email: str = "",
+    *, dosha_type: str, is_present: bool, key: str, lagna: str = "",
+    moon: str = "", sun: str = "", extra: str = "",
 ) -> None:
     """/manglik-check | /sade-sati-check | /kaal-sarp-check completion.
 
     `dosha_type` = 'Manglik' | 'Sade Sati' | 'Kaal Sarp'. `extra` is a short
-    detail string (severity, phase, type) — keep it human-readable.
+    detail string (severity, phase, type) -- keep it human-readable. No birth
+    place, name or email (#255); `key` is `identity.short_key(...)`.
     """
     icon = {"Manglik": "🔥", "Sade Sati": "🪐", "Kaal Sarp": "🐍"}.get(dosha_type, "🔮")
     status = "*present*" if is_present else "clear"
-    parts = [
-        f"{icon}  *{dosha_type} check*",
-        f"📊 {status}" + (f" · {_escape_md(extra)}" if extra else ""),
-        f"📅 born in {_escape_md(birth_place)}",
-    ]
-    if user_email:
-        parts.append(f"✉️ {_escape_md(user_email)}")
-    dedup = f"dosha:{dosha_type}:{user_email or birth_place}"
-    notify("\n".join(parts), dedup_key=dedup)
+    notify(
+        _compose(f"{icon}  *{dosha_type} check*",
+                 f"📊 {status}" + (f" · {_escape_md(extra)}" if extra else ""),
+                 _rashi_line(lagna, moon, sun),
+                 f"🔖 {key}" if key else ""),
+        dedup_key=f"dosha:{dosha_type}:{key}",
+    )
 
 
 def muhurat_computed(
@@ -278,19 +322,15 @@ def muhurat_computed(
     notify("\n".join(parts), dedup_key=dedup)
 
 
-def numerology_computed(
-    *, name: str, system: str, life_path: int, user_email: str = "",
-) -> None:
-    """/numerology POST → numerology reading generated."""
-    parts = [
-        "🔢  *Numerology reading*",
-        f"👤 {_escape_md(name) or '_(anon)_'} · system={system}",
-        f"🛤 life path *{life_path}*",
-    ]
-    if user_email:
-        parts.append(f"✉️ {_escape_md(user_email)}")
-    dedup = f"numerology:{user_email or name}"
-    notify("\n".join(parts), dedup_key=dedup)
+def numerology_computed(*, system: str, life_path: int, key: str) -> None:
+    """/numerology POST → numerology reading generated. No name or date (#255);
+    `key` is `identity.short_key(identity_key(name, birth_date))`."""
+    notify(
+        _compose("🔢  *Numerology reading*",
+                 f"🛤 life path *{life_path}* · system={_escape_md(system)}",
+                 f"🔖 {key}" if key else ""),
+        dedup_key=f"numerology:{key}",
+    )
 
 
 def error_seen(
