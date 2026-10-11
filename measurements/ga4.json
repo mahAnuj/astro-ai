@@ -2,37 +2,37 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-09-10",
-    "2026-10-07"
+    "2026-09-11",
+    "2026-10-08"
   ],
   "dimensions": [
     "landingPagePlusQueryString",
     "sessionDefaultChannelGroup"
   ],
   "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
-  "total_sessions": 273,
-  "rows_sessions": 274,
-  "coverage_pct": 100,
-  "row_count": 97,
-  "landing_count": 65,
+  "total_sessions": 280,
+  "rows_sessions": 282,
+  "coverage_pct": 101,
+  "row_count": 101,
+  "landing_count": 69,
   "truncated": false,
-  "coverage_note": "rows account for 100% of the property's 273 sessions",
+  "coverage_note": "rows account for 101% of the property's 280 sessions",
   "rows": [
     {
       "landing": "/",
       "channel": "Direct",
       "sessions": 49,
-      "bounce_rate": 0.2041,
-      "pages_per_session": 4.84,
-      "active_users": 12
+      "bounce_rate": 0.2245,
+      "pages_per_session": 4.82,
+      "active_users": 15
     },
     {
       "landing": "/learn/rahu-mahadasha-ketu-antardasha/",
       "channel": "Organic Search",
-      "sessions": 28,
-      "bounce_rate": 0.2143,
-      "pages_per_session": 1.0,
-      "active_users": 27
+      "sessions": 30,
+      "bounce_rate": 0.2333,
+      "pages_per_session": 1.03,
+      "active_users": 29
     },
     {
       "landing": "/",
@@ -53,10 +53,10 @@
     {
       "landing": "/learn/debilitated-sun-career/",
       "channel": "Organic Search",
-      "sessions": 6,
-      "bounce_rate": 0.0,
-      "pages_per_session": 1.17,
-      "active_users": 6
+      "sessions": 7,
+      "bounce_rate": 0.1429,
+      "pages_per_session": 1.14,
+      "active_users": 7
     },
     {
       "landing": "/learn/kaal-sarp-dosh/",
@@ -91,20 +91,28 @@
       "active_users": 6
     },
     {
+      "landing": "/learn/10th-lord-in-6th-house-career/",
+      "channel": "Organic Search",
+      "sessions": 5,
+      "bounce_rate": 0.6,
+      "pages_per_session": 1.0,
+      "active_users": 4
+    },
+    {
+      "landing": "/learn/griha-pravesh-muhurat-2026-2027/",
+      "channel": "Direct",
+      "sessions": 5,
+      "bounce_rate": 0.8,
+      "pages_per_session": 1.0,
+      "active_users": 5
+    },
+    {
       "landing": "/learn/griha-pravesh-muhurat-2026-2027/",
       "channel": "Organic Search",
       "sessions": 5,
       "bounce_rate": 0.6,
       "pages_per_session": 1.0,
       "active_users": 5
-    },
-    {
-      "landing": "/learn/jupiter-in-10th-house-career/",
-      "channel": "Organic Search",
-      "sessions": 5,
-      "bounce_rate": 0.6,
-      "pages_per_session": 1.0,
-      "active_users": 3
     },
     {
       "landing": "/learn/manglik-dosh/",
@@ -123,12 +131,12 @@
       "active_users": 5
     },
     {
-      "landing": "/learn/10th-lord-in-6th-house-career/",
+      "landing": "/",
       "channel": "Organic Search",
       "sessions": 4,
-      "bounce_rate": 0.5,
-      "pages_per_session": 1.0,
-      "active_users": 3
+      "bounce_rate": 0.0,
+      "pages_per_session": 2.5,
+      "active_users": 4
     },
     {
       "landing": "/learn/7th-lord-placement-marriage-guide/",
@@ -144,22 +152,6 @@
       "sessions": 4,
       "bounce_rate": 0.25,
       "pages_per_session": 1.75,
-      "active_users": 4
-    },
-    {
-      "landing": "/learn/griha-pravesh-muhurat-2026-2027/",
-      "channel": "Direct",
-      "sessions": 4,
-      "bounce_rate": 0.75,
-      "pages_per_session": 1.0,
-      "active_users": 4
-    },
-    {
-      "landing": "/learn/marriage-mahadasha-timing/",
-      "channel": "AI Assistant",
-      "sessions": 4,
-      "bounce_rate": 0.75,
-      "pages_per_session": 1.0,
       "active_users": 4
     },
     {
@@ -187,14 +179,6 @@
       "active_users": 2
     },
     {
-      "landing": "/",
-      "channel": "Organic Search",
-      "sessions": 3,
-      "bounce_rate": 0.0,
-      "pages_per_session": 2.33,
-      "active_users": 3
-    },
-    {
       "landing": "/kundli",
       "channel": "Organic Search",
       "sessions": 3,
@@ -211,11 +195,35 @@
       "active_users": 3
     },
     {
+      "landing": "/learn/jupiter-in-10th-house-career/",
+      "channel": "Organic Search",
+      "sessions": 3,
+      "bounce_rate": 0.3333,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/marriage-mahadasha-timing/",
+      "channel": "AI Assistant",
+      "sessions": 3,
+      "bounce_rate": 0.6667,
+      "pages_per_session": 1.0,
+      "active_users": 3
+    },
+    {
       "landing": "/learn/pitru-dosh-remedies/",
       "channel": "AI Assistant",
       "sessions": 3,
       "bounce_rate": 0.6667,
       "pages_per_session": 1.0,
+      "active_users": 3
+    },
+    {
+      "landing": "/learn/sade-sati/",
+      "channel": "Direct",
+      "sessions": 3,
+      "bounce_rate": 0.3333,
+      "pages_per_session": 1.33,
       "active_users": 3
     },
     {
@@ -235,6 +243,14 @@
       "active_users": 0
     },
     {
+      "landing": "/learn/7th-lord-placement-marriage-guide/",
+      "channel": "Direct",
+      "sessions": 2,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
       "landing": "/learn/kaal-sarp-dosh/",
       "channel": "Organic Search",
       "sessions": 2,
@@ -243,15 +259,15 @@
       "active_users": 2
     },
     {
-      "landing": "/learn/marriage-mahadasha-timing",
-      "channel": "Direct",
+      "landing": "/learn/name-numerology-explained/",
+      "channel": "AI Assistant",
       "sessions": 2,
-      "bounce_rate": 1.0,
+      "bounce_rate": 0.5,
       "pages_per_session": 1.0,
       "active_users": 2
     },
     {
-      "landing": "/learn/name-numerology-explained/",
+      "landing": "/learn/planets-in-7th-house-marriage/",
       "channel": "AI Assistant",
       "sessions": 2,
       "bounce_rate": 0.5,
@@ -275,10 +291,10 @@
       "active_users": 2
     },
     {
-      "landing": "/learn/sade-sati/",
+      "landing": "/learn/saturn-in-10th-house-career/",
       "channel": "Direct",
       "sessions": 2,
-      "bounce_rate": 0.5,
+      "bounce_rate": 1.0,
       "pages_per_session": 1.0,
       "active_users": 2
     },
@@ -307,14 +323,6 @@
       "active_users": 2
     },
     {
-      "landing": "/learn/shukra-venus-in-vedic-astrology/",
-      "channel": "Organic Search",
-      "sessions": 2,
-      "bounce_rate": 0.5,
-      "pages_per_session": 1.0,
-      "active_users": 2
-    },
-    {
       "landing": "/learn/sun-in-10th-house-career/",
       "channel": "Organic Search",
       "sessions": 2,
@@ -328,14 +336,6 @@
       "sessions": 2,
       "bounce_rate": 0.0,
       "pages_per_session": 4.0,
-      "active_users": 2
-    },
-    {
-      "landing": "/panchang/2026-09-17",
-      "channel": "AI Assistant",
-      "sessions": 2,
-      "bounce_rate": 0.5,
-      "pages_per_session": 2.0,
       "active_users": 2
     },
     {
@@ -395,8 +395,8 @@
       "active_users": 1
     },
     {
-      "landing": "/learn/7th-lord-placement-marriage-guide/",
-      "channel": "Direct",
+      "landing": "/learn/ardra-nakshatra/",
+      "channel": "Organic Search",
       "sessions": 1,
       "bounce_rate": 1.0,
       "pages_per_session": 1.0,
@@ -423,14 +423,6 @@
       "channel": "Organic Search",
       "sessions": 1,
       "bounce_rate": 0.0,
-      "pages_per_session": 1.0,
-      "active_users": 1
-    },
-    {
-      "landing": "/learn/foreign-career-yoga-kundli/",
-      "channel": "AI Assistant",
-      "sessions": 1,
-      "bounce_rate": 1.0,
       "pages_per_session": 1.0,
       "active_users": 1
     },
@@ -476,6 +468,14 @@
     },
     {
       "landing": "/learn/jupiter-in-10th-house-career/",
+      "channel": "Direct",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/jupiter-remedies/",
       "channel": "Direct",
       "sessions": 1,
       "bounce_rate": 1.0,
@@ -547,7 +547,23 @@
       "active_users": 1
     },
     {
+      "landing": "/learn/magha-nakshatra/",
+      "channel": "Organic Search",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
       "landing": "/learn/manglik-dosh/",
+      "channel": "Direct",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/marriage-mahadasha-timing",
       "channel": "Direct",
       "sessions": 1,
       "bounce_rate": 1.0,
@@ -620,14 +636,6 @@
     },
     {
       "landing": "/learn/planets-in-7th-house-marriage/",
-      "channel": "AI Assistant",
-      "sessions": 1,
-      "bounce_rate": 1.0,
-      "pages_per_session": 1.0,
-      "active_users": 1
-    },
-    {
-      "landing": "/learn/planets-in-7th-house-marriage/",
       "channel": "Direct",
       "sessions": 1,
       "bounce_rate": 0.0,
@@ -675,8 +683,8 @@
       "active_users": 1
     },
     {
-      "landing": "/learn/saturn-in-10th-house-career/",
-      "channel": "Direct",
+      "landing": "/learn/shukra-venus-in-vedic-astrology/",
+      "channel": "Organic Search",
       "sessions": 1,
       "bounce_rate": 1.0,
       "pages_per_session": 1.0,
@@ -739,6 +747,22 @@
       "active_users": 1
     },
     {
+      "landing": "/muhurat",
+      "channel": "AI Assistant",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/muhurat/business",
+      "channel": "AI Assistant",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
       "landing": "/muhurat/namkaran",
       "channel": "Organic Search",
       "sessions": 1,
@@ -752,6 +776,14 @@
       "sessions": 1,
       "bounce_rate": 0.0,
       "pages_per_session": 2.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/panchang/2026-09-17",
+      "channel": "AI Assistant",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 3.0,
       "active_users": 1
     },
     {
