@@ -161,16 +161,26 @@
        antardasha and the link to /dasha, which these tiles do not.
 
        gold on night is 7.96:1; the values are cream at full opacity. Both are
-       declared in scripts/verify_contrast.py. #}
+       declared in scripts/verify_contrast.py.
+
+       NO `truncate` on the value or meta line (#305). At 375px a tile's value
+       box is ~138px and 10 of the 12 rashi names ("Cancer (Karka)") plus meta
+       such as "Uttara Ashadha Nakshatra" were cut to an ellipsis — the Lagna is
+       the first thing a seeker reads. They wrap instead and the grid rows
+       grow. Each meta word is nowrap so an ISO date (2030-05-01) is never split
+       at its hyphens. tests/test_snapshot_tiles_wrap.py pins this;
+       scripts/measure_snapshot_tiles.py measures it in a browser. #}
     <div class="max-w-5xl mx-auto mt-8 grid grid-cols-2 lg:grid-cols-4 gap-px bg-bhagya-gold/25 border border-bhagya-gold/25">
       {% macro snapshot_tile(label, value, meta, glyph=None) %}
       <div data-snapshot-tile class="bg-bhagya-night px-4 py-4 sm:px-5 sm:py-5 min-w-0">
         <div class="text-[10px] font-bold uppercase tracking-[0.16em] text-bhagya-gold mb-1.5">{{ label }}</div>
-        <div class="font-marcellus text-xl sm:text-[29px] leading-tight text-bhagya-cream truncate">
+        <div class="font-marcellus text-xl sm:text-[29px] leading-tight text-bhagya-cream break-words">
           {%- if glyph %}<span aria-hidden="true" class="text-bhagya-saffron">{{ glyph }}</span> {% endif -%}
           {{ value }}
         </div>
-        {% if meta %}<div class="text-xs text-bhagya-cream/[.62] mt-1 truncate">{{ meta }}</div>{% endif %}
+        {% if meta %}<div class="text-xs text-bhagya-cream/[.62] mt-1 break-words">
+          {%- for word in meta.split(' ') %}<span class="whitespace-nowrap">{{ word }}</span> {% endfor -%}
+        </div>{% endif %}
       </div>
       {% endmacro %}
       {{ snapshot_tile(t(lang, 'lagna'), chart.lagna_rashi, "%.1f"|format(chart.lagna_longitude) ~ "°", lagna_glyph) }}
