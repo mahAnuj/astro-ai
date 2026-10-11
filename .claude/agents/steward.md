@@ -140,8 +140,13 @@ The detector emits a `kind` and the owning `issue` for every stall. Act on the k
 
 ### Dispatching, and the guard that stops it piling up
 
-You run twice a day and `agent-work` has a concurrency group, so an unguarded dispatch
-queues another cycle every six hours until the budget is gone. Before you dispatch:
+You run twice a day — `0 9,15 * * *`, though GitHub delays free-tier crons by hours, so
+the observed spacing was 14:54 then 19:03 — and `agent-work` has a concurrency group. An
+unguarded dispatch therefore queues another cycle on every run until the budget is gone.
+The check itself is cheap: a scheduled run costs ~2.5 minutes measured, and under a
+minute when the detector finds nothing and no agent is woken. **A cycle is ~50 minutes,
+twenty times that**, so the dispatches are the whole cost and these guards are what
+protect clause 1 of Standing ruling 4. Before you dispatch:
 
 1. **Is a cycle already running or queued?** `gh run list --workflow agent-work.yml
    --json status,databaseId`. If anything is `in_progress` or `queued`, dispatch nothing
