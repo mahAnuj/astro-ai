@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
@@ -91,6 +92,12 @@ def find_stalls(hours: float) -> list[dict]:
         n, age = pr["number"], age_hours(pr["createdAt"])
         if age < hours:
             continue
+        # The owning issue, taken from the branch name rather than guessed. The
+        # steward routes on this, so leaving it to be inferred downstream is how
+        # a dispatch lands on the wrong issue. `grep`-equivalent, not GNU sed:
+        # `\+` is a GNU extension and matched nothing on BSD twice this week.
+        m = re.match(r"^issue/(\d+)", pr["headRefName"] or "")
+        issue = int(m.group(1)) if m else None
         labels = {l["name"] for l in pr["labels"]}
         # `merge` is agent-merge's own check run; it is not a gate.
         checks = {k: v for k, v in latest_checks(pr["headRefOid"]).items() if k != "merge"}
@@ -100,28 +107,60 @@ def find_stalls(hours: float) -> list[dict]:
             # /agent-cycle opens the PR in draft BEFORE QA, deliberately, so the
             # work survives the runner. Nothing used to take it out. A draft
             # cannot merge and GitHub reports nothing about why. (PR #303, #321.)
-            stalls.append(dict(kind="draft-never-readied", pr=n, age_h=round(age, 1),
+            stalls.append(dict(kind="draft-never-readied", pr=n, issue=issue, age_h=round(age, 1),
                                detail=f"draft for {age:.0f}h; gh pr ready was never run",
                                checks=checks, labels=sorted(labels)))
         elif "qa-pass" in labels and "qa-fail" not in labels and green:
             # Every merge condition satisfied. If it is still open, the gate
             # read something it did not anticipate. (PR #319, nine hours.)
-            stalls.append(dict(kind="mergeable-but-open", pr=n, age_h=round(age, 1),
+            stalls.append(dict(kind="mergeable-but-open", pr=n, issue=issue, age_h=round(age, 1),
                                detail=f"qa-pass, every latest check green, open {age:.0f}h",
                                checks=checks, labels=sorted(labels)))
         elif not checks:
             # Zero checks is not "not yet green", it is "nothing ever ran", and
             # agent-merge refuses on it forever. (PR #303's action_required.)
-            stalls.append(dict(kind="no-checks-ever", pr=n, age_h=round(age, 1),
+            stalls.append(dict(kind="no-checks-ever", pr=n, issue=issue, age_h=round(age, 1),
                                detail=f"open {age:.0f}h with no check runs at all",
                                checks={}, labels=sorted(labels)))
         elif "qa-pass" not in labels and "qa-fail" not in labels and green:
             # Gates green and no verdict either way: the cycle did not reach QA.
             # Distinct from the above because the fix is a QA dispatch, not a
             # pipeline repair. (PR #315, #318, #321.)
-            stalls.append(dict(kind="no-qa-verdict", pr=n, age_h=round(age, 1),
+            stalls.append(dict(kind="no-qa-verdict", pr=n, issue=issue, age_h=round(age, 1),
                                detail=f"gates green, no qa-pass or qa-fail after {age:.0f}h",
                                checks=checks, labels=sorted(labels)))
+
+    # THE WATCHER IS NOT WATCHED. This condition is the answer to "if the steward
+    # did not act, why did nothing notice".
+    #
+    # The steward runs 09:00 and 15:00 UTC. A stall it is capable of clearing —
+    # a draft needing a cycle, a missing QA verdict — that is still here after
+    # three of its runs means the steward SAW it and achieved nothing. Measured
+    # 2026-10-10/11: runs 38061473379 and 38078264987 both diagnosed PR #321,
+    # #318 and #315 correctly, dispatched nothing, and concluded success. Green
+    # twice, pipeline still stopped. That is the defect the steward exists to
+    # catch, committed by the steward.
+    #
+    # `chief` cannot notice this itself: it is invoked only by escalation and
+    # cannot initiate, deliberately. So the detector notices, because
+    # deterministic code is the one part of this system that cannot report
+    # success having done nothing. It escalates PAST the steward to `chief`,
+    # which holds the precedence for deciding what to do about it.
+    #
+    # 18h, not a run count: it needs no cross-referencing of run history and so
+    # cannot itself fail on a 403, which is how the measurement arm stayed
+    # silent for its whole life. Three scheduled runs fit in 18 hours.
+    STEWARD_CLEARABLE = {"draft-never-readied", "no-qa-verdict"}
+    for st in list(stalls):
+        if st["kind"] in STEWARD_CLEARABLE and (st["age_h"] or 0) > 18:
+            stalls.append(dict(
+                kind="steward-ineffective", pr=st["pr"], issue=st["issue"],
+                age_h=st["age_h"],
+                detail=(f"PR #{st['pr']} has been `{st['kind']}` for {st['age_h']:.0f}h. "
+                        "The steward has had at least three scheduled runs in that window "
+                        "and cleared nothing. ESCALATE TO CHIEF (Shape B) rather than "
+                        "repeating the diagnosis."),
+                checks=st["checks"], labels=st["labels"]))
 
     # A dead trigger leg. agent-merge's `workflow_run` leg failed 100% of the
     # time since it was written and nobody noticed, because its
@@ -135,7 +174,7 @@ def find_stalls(hours: float) -> list[dict]:
             continue
         leg_runs = [r for r in runs if r["event"] == leg]
         if leg_runs and not any(r["conclusion"] == "success" for r in leg_runs):
-            stalls.append(dict(kind="dead-trigger-leg", pr=None, age_h=None,
+            stalls.append(dict(kind="dead-trigger-leg", pr=None, issue=None, age_h=None,
                                detail=f"{wf}: the `{leg}` leg has {len(leg_runs)} runs and zero successes",
                                checks={}, labels=[]))
 
@@ -172,12 +211,17 @@ def main(argv: list[str]) -> int:
 
     for s in stalls:
         where = f"PR #{s['pr']}" if s["pr"] else "workflow"
-        print(f"STALL  {s['kind']:22} {where:10} {s['detail']}")
+        owns = f"(issue #{s['issue']})" if s.get("issue") else ""
+        print(f"STALL  {s['kind']:22} {where:10} {owns:14} {s['detail']}")
         if s["checks"]:
             print(f"       checks: {', '.join(f'{k}={v}' for k, v in sorted(s['checks'].items()))}")
 
-    print(f"\nFAIL - {len(stalls)} stall(s). The pipeline is not flowing and no "
-          "loop owns this; escalate to the steward.")
+    ineffective = [x for x in stalls if x["kind"] == "steward-ineffective"]
+    print(f"\nFAIL - {len(stalls)} stall(s). The pipeline is not flowing.")
+    if ineffective:
+        print(f"       {len(ineffective)} of them have outlived three steward runs: "
+              "ESCALATE TO CHIEF (Shape B). Diagnosing again is the loop that "
+              "produced this finding.")
     return 1
 
 
