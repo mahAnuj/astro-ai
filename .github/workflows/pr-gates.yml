@@ -4,7 +4,7 @@
 # ---------------
 # `verify-production.yml` asserts against the ALREADY-DEPLOYED site. Its own
 # header says so, and it cannot gate a pull request — by the time it runs, the
-# code is live. There are 19 `scripts/verify_*.py` gates and a behaviour suite
+# code is live. There are 25 `scripts/verify_*.py` gates and a behaviour suite
 # in this repo and, until now, no workflow ran any of them on a PR.
 #
 # That matters more than usual here: `main` auto-deploys, there is no staging,
@@ -157,6 +157,22 @@ jobs:
       - name: Prove the suite can fail
         if: steps.scope.outputs.code == 'true'
         run: uv run python scripts/mutate_behaviour_suite.py
+
+      # Same rule, applied to the workflow gate. `verify_workflows.py` already
+      # runs via the `scripts/verify_*.py` sweep below, but running is not the
+      # same as being PROVEN, and ARCHITECTURE.md's standing rule is "prove a
+      # gate can fail before trusting that it passes".
+      #
+      # This step was missing while ARCHITECTURE.md asserted it was here. QA
+      # caught both halves: the gate was live and unproven in CI, which is
+      # precisely the condition its harness exists to prevent. The doc was right
+      # about what should be true and wrong about what was.
+      #
+      # Cheap, unlike the behaviour-suite mutations: no sandboxed test runs, just
+      # the gate re-executed over temp copies of .github/workflows.
+      - name: Prove the workflow gate can fail
+        if: steps.scope.outputs.code == 'true'
+        run: uv run python scripts/mutate_verify_workflows.py
 
       # verify_devanagari_serif needs a live server on 127.0.0.1:8000.
       - name: Start the app

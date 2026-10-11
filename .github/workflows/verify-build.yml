@@ -26,6 +26,11 @@ name: verify-build
 
 on:
   pull_request:
+    # Same reason as pr-gates: the default set is [opened, synchronize,
+    # reopened] and omits `ready_for_review`, so a draft PR that is later
+    # readied emits an event nothing listens to and the PR carries no check
+    # at all (#303). Found by verify_workflows.py.
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
   workflow_dispatch:
