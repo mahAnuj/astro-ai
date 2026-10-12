@@ -29,7 +29,7 @@
       <div class="bg-white border border-bhagya-line p-4 sm:p-5">
         <div class="font-semibold text-bhagya-ink mb-1">Birth details (name, date, time, place)</div>
         <p class="text-sm text-bhagya-ink leading-relaxed">
-          Required to compute your Vedic birth chart. Stored in a signed browser cookie so you don't re-enter them each visit. If you sign in, they persist across your devices. Clear them from <a href="/account" class="text-bhagya-sindoor hover:underline">/account</a> or by clearing your browser cookies.
+          Required to compute your Vedic birth chart. Stored in a signed browser cookie so you don't re-enter them each visit. If you sign in, they persist across your devices. Remove a saved chart with the &times; on the <a href="/" class="text-bhagya-sindoor hover:underline">home page</a>, use "Forget all charts" there to clear them all, or clear your browser cookies.
         </p>
       </div>
 
@@ -50,7 +50,14 @@
       <div class="bg-white border border-bhagya-line p-4 sm:p-5">
         <div class="font-semibold text-bhagya-ink mb-1">Our 30-day activity log</div>
         <p class="text-sm text-bhagya-ink leading-relaxed">
-          So we can spot errors and see what is used, we keep a private activity log for a rolling 30 days. For each chart generated it records the language, the AI model used, the three signs (Lagna, Moon, Sun), an approximate age band, your birth city, and a keyed one-way hash of your birth details. It does <strong>not</strong> record your name, birth date, birth time or full place. If you are signed in it also records your email address. For each question you ask it records the question, the answer, and your email address if you are signed in.
+          So we can spot errors and see what is used, we keep a private activity log, and we only read entries from the last 30 days. For each chart generated it records the language, the AI model used, the three signs (Lagna, Moon, Sun), an approximate age band, your birth city, and a keyed one-way hash of your birth details. It does <strong>not</strong> record your name, birth date, birth time or full place. If you are signed in it also records your email address. For each question you ask it records the question, the answer, and your email address if you are signed in.
+        </p>
+      </div>
+
+      <div class="bg-white border border-bhagya-line p-4 sm:p-5">
+        <div class="font-semibold text-bhagya-ink mb-1">Readings you share</div>
+        <p class="text-sm text-bhagya-ink leading-relaxed">
+          If you press Share on a Kundli reading, we store the birth details you entered (name, date, time and place) and the full reading text behind a public link. <strong>Anyone who has the link can read it</strong>, with no sign-in. The link stops working after 30 days. If you were signed in, your Google account ID is stored with it. Pressing Share is the only thing that creates one.
         </p>
       </div>
 
@@ -95,7 +102,8 @@
         <li>&bull; <strong>Browser cookies:</strong> kept for {{ cookie_days }} days from the last time something is saved to it (saving a chart, switching language, asking a question, signing in). Visits that only read it do not extend it.</li>
         <li>&bull; <strong>Signed-in account data:</strong> until you request deletion.</li>
         <li>&bull; <strong>Cached Kundli readings:</strong> kept indefinitely in cloud storage, keyed to a one-way fingerprint of the birth date, time and place. The reading's text can include the name you entered. Other cached answers (Ask, matching) live in temporary server storage that is cleared when the server restarts.</li>
-        <li>&bull; <strong>Activity log:</strong> a rolling 30-day window; we do not read or use entries older than that.</li>
+        <li>&bull; <strong>Activity log:</strong> we only read entries from the last 30 days. Older entries are not automatically deleted from storage; ask us to delete them if you want them gone.</li>
+        <li>&bull; <strong>Shared reading links:</strong> a link created with the Share button stops working after 30 days. The copy in storage is not removed by our code at that point, so email us if you want it deleted sooner.</li>
         <li>&bull; <strong>Operational logs:</strong> a few weeks for debugging, then discarded.</li>
         <li>&bull; <strong>Analytics data:</strong> the provider's default retention window.</li>
       </ul>
@@ -117,7 +125,7 @@
           <strong>Delete your data.</strong> Email <a href="mailto:{{ contact_email }}" class="text-bhagya-sindoor hover:underline">{{ contact_email }}</a> and we'll delete it within 7 days. If you never signed in, we hold no email address for you: anonymous use is keyed to a one-way fingerprint of your birth details, not to who you are. To remove a cached reading, send us the birth date, time and place so we can compute the fingerprint and find it.
         </li>
         <li>
-          <strong>Withdraw sign-in consent.</strong> Click "Sign out" in the nav. You can also revoke Shubh Bhagya's Google access at <a href="https://myaccount.google.com/permissions" rel="noopener" class="text-bhagya-sindoor hover:underline">myaccount.google.com/permissions</a>.
+          <strong>Withdraw sign-in consent.</strong> Click "Sign out" on the <a href="/account" class="text-bhagya-sindoor hover:underline">/account</a> page. You can also revoke Shubh Bhagya's Google access at <a href="https://myaccount.google.com/permissions" rel="noopener" class="text-bhagya-sindoor hover:underline">myaccount.google.com/permissions</a>.
         </li>
       </ul>
     </div>
@@ -143,7 +151,7 @@
     <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">Changes &amp; contact</h2>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
-        If we materially change this policy, we'll update the "Last updated" date at the top and — for signed-in users — surface a notice on <a href="/account" class="text-bhagya-sindoor hover:underline">/account</a>. Minor edits happen silently.
+        If we materially change this policy, we'll update the "Last updated" date at the top and, where we can, tell people who have emailed us. Minor edits happen silently.
       </p>
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         Questions, requests, or concerns: email <a href="mailto:{{ contact_email }}" class="text-bhagya-sindoor hover:underline">{{ contact_email }}</a>, or use the <strong>Feedback button</strong> in the bottom-right corner of any page. A human replies, usually within 48 hours.
