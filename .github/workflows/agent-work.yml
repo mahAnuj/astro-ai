@@ -20,8 +20,31 @@
 name: Agent work
 
 on:
+  # TWICE a day since 2026-10-13, not once. The repo going public removed the
+  # 2,000 Actions minutes/month ceiling, but Actions minutes were never what
+  # limited this loop: the Claude Max 5h rolling cap is, and a cycle is 10-15
+  # agent invocations.
+  #
+  # Why two and not more, measured over 22 `agent-work` cycles (2026-10-08 to
+  # 2026-10-13): 10 shipped, 11 produced nothing, 1 left a PR open — a 50%
+  # yield. Five of the eleven failures ran 1-3 minutes, which is the loop
+  # finding nothing eligible and stopping, not a slow failure. Running more
+  # often at that yield buys more of the same, and the eligible queue is the
+  # binding constraint now that the evidence gate (#286) rejects an unevidenced
+  # issue: 42 of 63 open issues carry no priority label at all.
+  #
+  # Duration: median 18 minutes, longest observed 76. Twelve hours apart leaves
+  # headroom against the longest cycle, which matters because `concurrency`
+  # below does not cancel: a second run QUEUES, and GitHub keeps only one
+  # pending run per group and silently drops the rest. A tighter schedule would
+  # show up as runs that never happened, with nothing to say why — the same
+  # class of invisible failure as #322.
+  #
+  # Raise this again only once #335 can show WHY half the cycles produce
+  # nothing. Rate before yield is how you buy more of what you cannot see.
   schedule:
     - cron: "0 23 * * *"   # 04:30 IST, after the rolling cap resets
+    - cron: "0 11 * * *"   # 16:30 IST, twelve hours on
   workflow_dispatch:
     inputs:
       issue:
