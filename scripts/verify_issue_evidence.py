@@ -82,14 +82,21 @@ def field(text: str, name: str) -> str | None:
     # of every value, which only `corpus:` noticed, because it is the one field
     # matched at position 0; the others search for a digit anywhere and passed
     # regardless. The self-test below is what caught it.
-    m = re.search(
+    # LAST match, not first. scripts/validate_issue.py states the rule outright
+    # -- "Last `repro:` wins — a correction in a comment supersedes the body" --
+    # and reading comments at all is pointless without it: the body's original
+    # field would shadow every correction, so a repaired Evidence Block could
+    # never clear this gate. #311 is the case: its body carries a repro reading
+    # /tmp, and the fix is a comment.
+    ms = list(re.finditer(
         rf"^[ \t]*(?:[-*][ \t]*)?(?:\*\*)?{re.escape(name)}(?:\*\*)?:(?:\*\*)?[ \t]*"
         rf"(.+?)(?=\n[ \t]*(?:[-*][ \t]*)?(?:\*\*)?\w[\w -]*(?:\*\*)?:(?:\*\*)?|\n[ \t]*#|\Z)",
         text,
         re.M | re.S | re.I,
-    )
-    if not m:
+    ))
+    if not ms:
         return None
+    m = ms[-1]
     # Belt and braces: strip any stray emphasis the shapes above did not absorb.
     return " ".join(m.group(1).split()).lstrip("*").strip()
 
@@ -265,6 +272,18 @@ SELF_TESTS: list[tuple[str, str, list[str], str, int]] = [
      'repro: jq .rows measurements/gsc-band.json -> 4 rows, ctr < 0.9\n'
      'thesis: rewriting title/meta raises CTR at unchanged position.\n'
      'metric: combined CTR >= 1.5% on >= 1500 impressions.\n', [], "2026-10-13", 0),
+    ("a later repro: supersedes an earlier one (#311's shape: body broken, comment fixes it)",
+     'gsc: window 2026-09-13 -> 2026-10-10\ncorpus: n/a — title/meta only, no astrological claim\n'
+     'tokens: 0 — static title, no LLM call\nthesis: rewriting title/meta raises CTR\n'
+     'metric: >= 1.2% on >= 2000 impressions\n'
+     'repro: jq .rows /tmp/gsc-band.json\n'
+     '--- a comment, appended below the body ---\n'
+     'repro: python3 -c "..." measurements/gsc-all.json -> expect 15 2477\n', [], "2026-10-13", 0),
+    ("an earlier GOOD repro is not rescued by a later broken one",
+     'gsc: window 2026-09-13 -> 2026-10-10\ncorpus: n/a — title/meta only\ntokens: 0 measured\n'
+     'thesis: x\nmetric: >= 1.2% on 2000 impressions\n'
+     'repro: GET /kundli -> 200 contains "Lagna"\n'
+     '--- comment ---\nrepro: jq .rows /tmp/gsc-band.json\n', [], "2026-10-13", 1),
     ("a REMEMBERED competitor claim with no URL still fails",
      GOOD.replace("(fetched 2026-10-13) https://dashaclub.com/mangal-dosha-calculator puts a button under the H1.",
                   "I recall a rival putting the button under the H1."), [], "2026-10-13", 1),
