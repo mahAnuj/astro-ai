@@ -1,62 +1,72 @@
-# /discover — 2026-10-08
+# /discover report — 2026-10-13
 
-Window for all numbers: GSC and GA4, 2026-09-08 → 2026-10-05 (the last 3 days are excluded because the data is not final).
+**Filed 1 issue: #329.** Everything else I considered is under "Not filed" below, with the reason.
 
-**Filed: 1 issue (#276). Held back: 5 ideas, listed below with reasons.** The cap is 30. Only one idea carried a complete Evidence Block that this cycle's data supports.
+## Inputs and their limits
 
-## Inputs, and what was missing
+- Read first, as instructed: `/tmp/gsc-band.json`, `/tmp/ga4.json`, `/tmp/measure/report.md` (analyst, 2026-10-12), then `OBJECTIVE.md`.
+- **The fetched files are one day newer than the analyst's.**
+  - Fetched files: window 2026-09-13 → 2026-10-10. Analyst's: 2026-09-12 → 2026-10-09. The two overlap by 27 of 28 days, so I did not read the difference as movement.
+  - `/tmp/measure/gsc-all.json` is the older window. I used it only for pages outside the band.
+- **The data is page-level, not query-level.** The "queries at positions 6-20" file is `dimension: page`: 99 rows, 8,012 impressions, 82% of the property's 9,765. OBJECTIVE.md's "ten highest-impression queries" cannot be scored literally. This is already tracked in #272 and #291, and I added nothing.
+- **Sample size is tiny.** 103 clicks and 278 sessions in 28 days. Most per-page claims below are directional only.
+- **Social search returned no Reddit or Quora threads.**
+  - I ran three public WebSearches (r/vedicastrology-style queries for Rahu-Ketu timing and Sade Sati start). All results were astrology sites.
+  - So the "questions in their own words" step produced no social evidence. I did not invent any.
+  - What those searches do show is rival content answering the same "when does it start / end" questions with a calculator link.
+- **Corpus:** nothing I specified is rule-shaped, so there was nothing to check. #329 changes no astrological claim.
 
-| Input | State |
-|---|---|
-| `/tmp/gsc-band.json` | Read. 61 queries in positions 6–20. |
-| `/tmp/ga4.json` | Read. About 70 landing rows. |
-| `/tmp/measure/report.md` | **Absent.** No analyst report exists, so there are no scored theses to defer to. I leaned on #272, the analyst's 2026-10-07 issue, for the measurement limits. |
-| Rivals (WebFetch) | astromedha.in and satyori.com fetched. shubhagya.com fetched, but the response had no `<title>` or meta tags. |
-| Social (WebSearch) | **Produced nothing usable.** `reddit.com` is rejected by the search tool (400). The unfiltered Quora-targeted query returned no Quora pages. Treat every social-intent claim as unmeasured this cycle. |
-| Corpus | **Not measured.** `scripts/corpus_search.py` fails because `pdftotext` is not installed. `data/` holds 1 of 7 books (`vedic_astro_textbook.pdf`). Any absence measured here would be worthless, so I made none. |
+## What the numbers say this cycle
 
-## What the numbers show
+1. **`/learn/debilitated-sun-career/` left the band.** The analyst had 871 impressions at position 6.0. It is absent from the new band file, and band impressions fell from 8,830 to 8,012 (-818). That is roughly the page's own impressions.
+   - **I cannot tell which direction it moved.** It could be position < 6 (a gain) or > 20 (a loss). The band file cannot say, and the new `gsc-all` was not fetched.
+   - **Next step:** the analyst should check this page first next run. It is the only top-10 page whose status changed.
+2. **The "backfill `seo_title`" premise from #267 is not supported by this window.** 38 of the 76 articles have an override. Of the 64 articles in the band file, I split them by that flag:
 
-- **The band is almost one topic.** Of the 61 band queries, the "rahu mahadasha ketu antardasha" phrasing family dominates:
-  - The head query has 157 impressions, 4 clicks and CTR 2.55% at position 9.6.
-  - About 170 more impressions spread over 11 variants, all with 0–1 clicks, at positions 8.6–9.9.
-  - Every band query is ≤157 impressions over 28 days, so the whole band is tiny.
-- **Manglik definitional queries are the second cluster.** `what is manglik dosh`, `manglik dosh in english`, `manglik dosh means`, `manglik means` and `manglik status means` total about 60 impressions at positions 6.8–10.2, with 0 clicks.
-- **`/learn/rahu-mahadasha-ketu-antardasha/` has 29 sessions and pages/session of exactly 1.0.** It is the largest non-homepage landing. The next `/learn/` page has 10 sessions.
-  - Its GA4 sessions (29) are far above the family's GSC clicks (about 6). At least 23 sessions came from somewhere the exports cannot name (#272).
-  - The `/?fbclid=` rows show Meta traffic exists.
-- **The Rahu–Ketu page's metadata is still unshipped.** The registry's `seo_title` and `seo_description` for this slug are empty (38 of 76 articles are in that state). That is #267 work item 1, so it is already specified and still open.
+   | cohort | pages | impressions | clicks | CTR | weighted position |
+   |---|--:|--:|--:|--:|--:|
+   | with `seo_title` override | 33 | 4,670 | 39 | 0.84% | 7.02 |
+   | without override | 31 | 3,009 | 43 | 1.43% | 7.39 |
+   | without override, excluding `rahu-mahadasha-ketu-antardasha` | 30 | 1,448 | 15 | 1.04% | — |
+
+   - The best-converting page on the site, `rahu-mahadasha-ketu-antardasha` (28 clicks), has **no override**. Its title is the card copy, "Surviving the Nodal Axis Flip".
+   - All four pages #311 calls under-performing **do have** compliant overrides.
+   - With the reference page excluded, the no-override cohort is 1.04% vs 0.84% for the override cohort. That difference is not significant: P(≥ 15 clicks) is about 0.24 at the override rate.
+   - The honest reading is that this window gives **no evidence that a compliant override raises CTR**, and a little evidence against. Intent and topic are confounded.
+3. **The funnel picture is unchanged from the analyst's.**
+   - 188 `/learn` sessions, 62% single-page. The tracked pieces are #276 (CTA position), #304 (sticky CTA hidden) and #311 (titles).
+   - The `/learn/sade-sati/` organic sessions are 7 at 1.00 pages/session. The article does link `/sade-sati-check` at line 43 of 121, so the tool is present and the gap is not a missing link.
 
 ## Filed
 
-### #276 — [CONVERSION] Top /learn landing sends 0 of 29 sessions onward
+| # | title | why it passed the bar |
+|---|---|---|
+| **#329** | [CONVERSION] `/learn/manglik-dosh/` explains how to check Manglik status but never links the site's own checker | **Verified in the template and on production.** The article's section "How to check if you're Manglik" (line 30) has no link to `/manglik-check`. The closing "Janma Kundli generator" mention at line 126 has no href. Production's only two `manglik-check` matches on that page are the nav and footer. Competitor evidence is a fetched URL (dashaclub.com). Tokens are 0, because the checker has no LLM call. The metric has an explicit "inconclusive below 10 sessions" clause. |
 
-- **Finding:** the page has a `/dasha` callout at line 87 of 120, after six of its eight sections. No session went on to a second page.
-- **Rivals:** neither rival gives the visitor their own start date. astromedha.in has no timing tool and upsells a ₹599 report. satyori.com has no calculator.
-- **Thesis:** a "find your Ketu antardasha dates" CTA before the second `<h2>` turns some of the 0-of-29 into onward visits.
-- **Metric:** GA4 pages/session for that landing in the next 28 days. ≥1.20 passes, 1.0 means the thesis is false, and under 20 sessions is inconclusive.
-- **Limits stated in the issue:**
-  - Traffic source is unknown (#272), so the sessions may not be organic.
-  - n = 29, so the 1.20 bar is a pre-registered threshold, not a significance test.
-  - It must not ship alongside the #267 title/description change, or the read is confounded.
-  - The corpus field says n/a because the issue adds no rule. The page's existing 10.5-year arithmetic was not re-audited, because the corpus was unavailable.
-- **Correction:** I mis-described the callout's position in the first draft of the issue body and fixed it with `gh issue edit` straight after filing.
+**Weakness, stated plainly:** the traffic evidence for #329 is thin (5 landing sessions across channels, 419 impressions). I filed it because the defect is deterministic and checkable, the fix is a link, and it costs nothing in free-tier terms. The metric cannot settle it quickly if traffic stays this low.
 
-## Considered and NOT filed
+## Not filed, and why
 
-1. **Title and description for the Rahu–Ketu page and the other 37 articles with no `seo_title`.** This duplicates #267 work item 1, which is open and unshipped. It is the best-supported lever in the data, since the head query has CTR 2.55% at position 9.6. The next step is to ship #267's item, not to file a new issue. I did not comment on #267, to keep this run's outward writes to one issue.
-2. **A Manglik "what is it" definition lead.** `manglik-dosh` already opens with an "In short" callout that defines the term, and its `seo_title` already contains "What It Means". The page is optimised for these queries, and the position has not moved. GSC has no page dimension, so I cannot confirm that this page is the one ranking. At about 60 impressions and 0 clicks, the expected gain is about 1 click. Re-raise only if #272's page dimension shows a different URL ranking.
-3. **A new article for `rahu dasha with sun mahadasha and job` (32 impressions, position 9.3).** #267 holds new articles until 2026-12-19 because supply is not the constraint. I also cannot tell which existing page ranks for this query.
-4. **The `bhagya score`, `bhagya chart` and `bhagya astrology` queries (8–9 impressions each).** These look like brand or navigational queries, and the data is too thin to justify anything.
-5. **The Hindi, Arabic and single-impression noise queries.** These are `एच कैलेंडर`, `نعم`, `ha`, `job` and `tell me more`. They are not actionable. The Hindi surface belongs to #124.
+| idea | why not |
+|---|---|
+| **Blanket `seo_title`/`seo_description` backfill for the 38 articles without overrides** (#267's "one edit to one file") | The cohort comparison above does not support it. It would also confound #311's measurement. If anyone raises it again, the minimum is a per-query SERP check, not a bulk edit. |
+| **Zero-click title tests** on `the-9-grahas-overview`, `shukra-venus`, `rahu-in-vedic-astrology`, `saturn-in-10th-house-career` | 97–109 impressions at position 6–8. At the band's own 0.92% rate the expected clicks are about 1, so 0 clicks is P ≈ 0.37, indistinguishable from noise. Filing a "title mismatch" on that would be an opinion with a number attached. |
+| **`/festivals` at position 27.5** (344 impressions, 1 click) | The analyst flagged it as a product question. I could not pin down a rival or an executable repro this cycle. A WebSearch for October 2026 festival lists returned sources disagreeing on Dussehra, Sharad Purnima, Karwa Chauth and Diwali dates. That makes any festival-content claim a dates-verification task first, per CLAUDE.md, and no source could be recorded. Not filed, but a future cycle with a fetched competitor page and the new `gsc-all` could. |
+| **A Sade Sati / Rahu-Ketu "calculator above the fold" CTA** | Already specified in #276 (Rahu-Ketu). Sade Sati already links its checker at line 43. n = 7. |
+| **Query-level objective scoring** | Tracked in #272 and #291. |
+| **Hindi `/hi/` surface** | Zero rows in GSC and GA4 (analyst, section 3). Nothing to specify until it gets impressions. #124 stands. |
+| **Anything about tool funnels (kundli, matching, numerology)** | Landings total a handful of sessions and the export has no landing → form → result sequence. Cannot be measured, so cannot carry a metric. |
+| **Home page (`/`) Direct traffic** | 53 of 64 sessions are Direct and unattributable. The analyst's open question, not a build. |
+| **New `/learn` articles** | OBJECTIVE.md: optimise the band before publishing more, and nothing in this cycle's data argues otherwise. |
 
-## Should NOT be built
+## Left open for the next cycle
 
-Nothing was specified that touches the Groq budget. #276 uses 0 tokens, and I added no LLM feature.
+- Where `debilitated-sun-career` went (above). Needs the new `gsc-all.json` or a query-level fetch.
+- Whether any no-override article at position 6–8 has a per-query title mismatch. Needs the query dimension, which these exports lack.
+- No competitor SERP was fetched for the top band pages (`rahu-mahadasha-career-problems`, `sade-sati`). The one search I ran for the first returned only astromedha.in pages and generic results, so I have no fetched comparison for it.
 
-## For the next run
+## Not done
 
-- **Ship #267 work item 1 first.** Until then every band query on the Rahu–Ketu family is stuck at the fallback metadata, and any other Rahu page change is confounded.
-- **#272 has to land** (a GSC page dimension and a GA4 channel dimension). Without them, "which page ranks for this band query" and "are these sessions organic" cannot be answered, and I could only reason by topic.
-- **Fix the sandbox before the next corpus-dependent discovery.** Install `pdftotext` and fetch the missing books. Right now any rule-shaped issue would have to be filed as `[UNSOURCED]` by default.
-- **Social needs another route.** Reddit is blocked for the search tool. Quora and X returned nothing through unfiltered queries.
+- I did not run `competitor-scout`, `seo-auditor` or `keyword-researcher` skills; none was listed as available to me this session, so rivals came from WebSearch and WebFetch only.
+- I did not comment on #311. Its thesis is the one the cohort table questions, and the analyst has already posted twice on it. The cohort table above is for whoever picks it up.
+- Builds nothing, closes nothing, pushed nothing.
