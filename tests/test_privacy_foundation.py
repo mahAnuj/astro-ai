@@ -138,6 +138,36 @@ def test_coarse_profile_returns_band_and_city_only():
     assert out["age_band"] == "unknown"  # >120 years ago
 
 
+@pytest.mark.parametrize("place", [
+    "Flat 4B, Rose Villa, Andheri, Mumbai",
+    "12 MG Road, Pune",
+    "221B Baker Street, London, UK",
+    "Rose Villa, Mumbai",
+    "Vijay Nagar, Indore",
+    "Mumbai 400001, India",
+    "Rose Villa Andheri Mumbai",
+    "Near City Mall Andheri Mumbai",
+    "Andheri, Mumbai, Maharashtra, India",  # four tokens: the first is not the city
+])
+def test_city_drops_street_addresses_instead_of_storing_a_fragment(place):
+    # The event log is the thing #255 exists to keep free of identifying detail;
+    # "Flat 4B" is a street address, not a city.
+    assert profiling.coarse_profile("1990-01-01", place)["city"] == ""
+
+
+@pytest.mark.parametrize("place,city", [
+    ("Mumbai, Maharashtra, India", "Mumbai"),
+    ("Bombay", "Mumbai"),
+    ("Pune", "Pune"),
+    ("New Delhi, India", "Delhi"),
+    ("delhi, india, 110001", "Delhi"),
+    ("Ahmednagar, Maharashtra, India", "Ahmednagar"),
+    ("Thiruvananthapuram, Kerala", "Thiruvananthapuram"),
+])
+def test_city_keeps_ordinary_city_state_country_inputs(place, city):
+    assert profiling.coarse_profile("1990-01-01", place)["city"] == city
+
+
 def test_audience_summary_reads_new_shape_events(monkeypatch):
     out = _summary(monkeypatch, [
         {"type": "form_kundli", "data": {"age_band": "25-34", "city": "Pune", "lang": "en"}},

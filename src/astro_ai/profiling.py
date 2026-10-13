@@ -28,6 +28,7 @@ Deferred to later phases:
 from __future__ import annotations
 
 import logging
+import re
 from collections import Counter
 from datetime import date, datetime, timezone
 from typing import Any
@@ -82,18 +83,55 @@ def _age_bucket_from_dob(dob: str) -> str:
     return "55+"
 
 
+# Words that mark a fragment of a street address rather than a city. Any one of
+# them in any comma token drops the city entirely (#255): a stored "Flat 4B" or
+# "Rose Villa" is the identifying detail the coarse profile exists to avoid, and a
+# missing histogram row costs far less than a retained address. Whole-word match
+# on lower-cased letters, so "Ahmednagar" and "Stockholm" do not trip it.
+_ADDRESS_WORDS = frozenset({
+    "flat", "house", "plot", "street", "st", "road", "rd", "lane", "ln", "nagar",
+    "apartment", "apartments", "apt", "building", "bldg", "tower", "towers",
+    "villa", "society", "colony", "sector", "block", "floor", "wing", "marg",
+    "chowk", "gali", "galli", "near", "opp", "opposite", "behind", "avenue",
+    "ave", "drive", "residency", "bungalow", "enclave", "vihar", "layout",
+    "phase", "po", "box",
+})
+
+
 def _city_from_place(place: str) -> str:
-    """Best-effort city extraction from a free-text birth_place string.
+    """Best-effort COARSE city from a free-text birth_place, failing closed.
 
     Convention we see in the events log: "City, State, Country" or
     "City, Country" or bare "City". Take the first comma-separated
     token, lowercase, look up an alias if any, else title-case the
-    original. Returns "" when the input is empty or clearly non-city.
+    original.
+
+    The field is free text and users do type street addresses into it
+    ("Flat 4B, Rose Villa, Andheri, Mumbai"), so the first token is not safe
+    to store on trust. Returns "" — drops the city — when the input is empty,
+    has more than the three tokens of "City, State, Country", carries a digit
+    in any token (other than a bare trailing postal code, which is never
+    stored), contains an address word anywhere, or the first token is longer
+    than four words / 40 characters. Failing closed is deliberate (#255).
     """
     if not place:
         return ""
-    first = place.split(",", 1)[0].strip().lower()
-    if not first or len(first) > 40:
+    tokens = [t.strip().lower() for t in place.split(",")]
+    if len(tokens) > 3 or not tokens[0]:
+        return ""
+    for i, tok in enumerate(tokens):
+        if "c/o" in tok:
+            return ""
+        if re.search(r"\d", tok):
+            # "Delhi, India, 110001": a bare postal code in the last slot is
+            # harmless because only the first token is ever kept.
+            if i == len(tokens) - 1 and i > 0 and re.fullmatch(r"[\d\s-]+", tok):
+                continue
+            return ""
+        if _ADDRESS_WORDS.intersection(re.findall(r"[^\W\d_]+", tok)):
+            return ""
+    first = tokens[0]
+    if len(first) > 40 or len(first.split()) > 4:
         return ""
     return _CITY_ALIASES.get(first, first.title())
 

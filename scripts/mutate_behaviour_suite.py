@@ -689,6 +689,18 @@ MUTATIONS = [
      "        _bump(age_hist, str(d.get(\"age_band\") or \"\"))",
      "test_audience_summary_still_reads_legacy_raw_events"),
 
+    ("#255: city goes back to storing the first comma token of a street address",
+     "src/astro_ai/profiling.py",
+     "    if len(tokens) > 3 or not tokens[0]:\n        return \"\"",
+     "    if not tokens[0]:\n        return \"\"",
+     "test_city_drops_street_addresses_instead_of_storing_a_fragment"),
+
+    ("#255: city stops recognising address words (flat / road / villa fragments stored)",
+     "src/astro_ai/profiling.py",
+     "        if _ADDRESS_WORDS.intersection(re.findall(r\"[^\\W\\d_]+\", tok)):\n            return \"\"",
+     "        if False:\n            return \"\"",
+     "test_city_drops_street_addresses_instead_of_storing_a_fragment"),
+
     ("#255: /privacy points at a 'Delete my data' option that does not exist again",
      "src/astro_ai/templates/privacy.html",
      "<strong>Delete your data.</strong>",
