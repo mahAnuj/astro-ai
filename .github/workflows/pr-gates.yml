@@ -51,6 +51,16 @@ on:
     # sat with qa-pass and nothing to merge on.
     types: [opened, synchronize, reopened, ready_for_review]
 
+  # #322: so agent-work's fallback net can make this run against a branch whose
+  # PR was opened with GITHUB_TOKEN, which emits no `pull_request` event. Those
+  # PRs were born gate-less and agent-merge refused them forever.
+  #
+  # A dispatched run checks out the BRANCH, not `refs/pull/N/merge`, so it does
+  # not prove the merge result — only that the branch itself passes. That is
+  # weaker than the `pull_request` leg above and must not be mistaken for it.
+  # It is still strictly better than the nothing it replaces.
+  workflow_dispatch:
+
 concurrency:
   group: pr-gates-${{ github.ref }}
   cancel-in-progress: true
