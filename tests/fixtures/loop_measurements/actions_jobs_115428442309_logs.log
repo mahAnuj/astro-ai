@@ -1,0 +1,152 @@
+2026-10-13T17:03:33.0277990Z branch 'main' set up to track 'origin/main'.
+2026-10-13T17:03:33.0277990Z branch 'main' set up to track 'origin/main'.
+2026-10-13T17:18:27.9345443Z ##[group]Run # Say what happened, every time, in the summary. Three runs against
+2026-10-13T17:18:27.9345860Z [36;1m# Say what happened, every time, in the summary. Three runs against[0m
+2026-10-13T17:18:27.9346161Z [36;1m# #272 concluded `success` having produced nothing, and the failure was[0m
+2026-10-13T17:18:27.9346463Z [36;1m# invisible except by noticing an absent branch — the fourth silent[0m
+2026-10-13T17:18:27.9346769Z [36;1m# success this system produced in a day. The outcome is now stated[0m
+2026-10-13T17:18:27.9347012Z [36;1m# whether or not anything shipped.[0m
+2026-10-13T17:18:27.9347217Z [36;1mbranch=$(git rev-parse --abbrev-ref HEAD)[0m
+2026-10-13T17:18:27.9347409Z [36;1mcase "$branch" in[0m
+2026-10-13T17:18:27.9347663Z [36;1m  issue/*) ;;[0m
+2026-10-13T17:18:27.9347804Z [36;1m  *)[0m
+2026-10-13T17:18:27.9347927Z [36;1m    {[0m
+2026-10-13T17:18:27.9348071Z [36;1m      echo "### Cycle shipped nothing"[0m
+2026-10-13T17:18:27.9348351Z [36;1m      echo "Ended on \`$branch\`, not an \`issue/*\` branch, so no work was committed."[0m
+2026-10-13T17:18:27.9348600Z [36;1m      echo ""[0m
+2026-10-13T17:18:27.9348845Z [36;1m      echo "Either the cycle stopped legitimately at step 0 — \`cannot-reproduce\`, or a"[0m
+2026-10-13T17:18:27.9349210Z [36;1m      echo "premise it could not establish — or it dispatched a subagent and ended its"[0m
+2026-10-13T17:18:27.9349560Z [36;1m      echo "turn before the result came back, which kills the subagent (#285). Read the"[0m
+2026-10-13T17:18:27.9349902Z [36;1m      echo "issue comment this run wrote: a legitimate stop says so, a lost dispatch"[0m
+2026-10-13T17:18:27.9350219Z [36;1m      echo "claims an engineer was dispatched and leaves nothing behind."[0m
+2026-10-13T17:18:27.9350459Z [36;1m    } >> "$GITHUB_STEP_SUMMARY"[0m
+2026-10-13T17:18:27.9350671Z [36;1m    echo "on '$branch', not an issue branch — nothing to push"[0m
+2026-10-13T17:18:27.9350883Z [36;1m    exit 0 ;;[0m
+2026-10-13T17:18:27.9351025Z [36;1mesac[0m
+2026-10-13T17:18:27.9351199Z [36;1mif [ -z "$(git log origin/main..HEAD --oneline)" ]; then[0m
+2026-10-13T17:18:27.9351398Z [36;1m  {[0m
+2026-10-13T17:18:27.9351540Z [36;1m    echo "### Cycle shipped nothing"[0m
+2026-10-13T17:18:27.9351775Z [36;1m    echo "Branch \`$branch\` was created and carries **no commits**."[0m
+2026-10-13T17:18:27.9351994Z [36;1m    echo ""[0m
+2026-10-13T17:18:27.9352363Z [36;1m    echo "A branch with no commits means work started and did not finish — most likely"[0m
+2026-10-13T17:18:27.9352712Z [36;1m    echo "a subagent that was dispatched and then lost when the parent ended its turn"[0m
+2026-10-13T17:18:27.9353048Z [36;1m    echo "(#285). This is not a legitimate stop; a legitimate stop never branches."[0m
+2026-10-13T17:18:27.9353298Z [36;1m  } >> "$GITHUB_STEP_SUMMARY"[0m
+2026-10-13T17:18:27.9353512Z [36;1m  echo "no commits on $branch — the cycle produced nothing"[0m
+2026-10-13T17:18:27.9353717Z [36;1m  exit 0[0m
+2026-10-13T17:18:27.9353848Z [36;1mfi[0m
+2026-10-13T17:18:27.9354039Z [36;1m# Already pushed by the agent? Then there is nothing for this net to[0m
+2026-10-13T17:18:27.9354333Z [36;1m# catch, and trying anyway FAILS A SUCCESSFUL CYCLE: the agent pushes[0m
+2026-10-13T17:18:27.9354612Z [36;1m# with the action's GitHub App token, while this step has only[0m
+2026-10-13T17:18:27.9354858Z [36;1m# github.token over HTTPS, which cannot push —[0m
+2026-10-13T17:18:27.9355121Z [36;1m#   "Password authentication is not supported for Git operations"[0m
+2026-10-13T17:18:27.9355396Z [36;1m# That is how run 37741141641 went red having produced PR #292.[0m
+2026-10-13T17:18:27.9355657Z [36;1m# Point the remote at THIS JOB's token before trying anything.[0m
+2026-10-13T17:18:27.9355867Z [36;1m#[0m
+2026-10-13T17:18:27.9356065Z [36;1m# claude-code-action rewrites the remote URL at startup to embed its[0m
+2026-10-13T17:18:27.9356362Z [36;1m# GitHub App installation token, and those expire after exactly one[0m
+2026-10-13T17:18:27.9356761Z [36;1m# hour. Run 37749887640 ran 63 minutes, finished the work, and died[0m
+2026-10-13T17:18:27.9357048Z [36;1m# here with "Invalid username or token" — pushing to a URL carrying a[0m
+2026-10-13T17:18:27.9357328Z [36;1m# dead credential. The App token cannot be refreshed mid-run.[0m
+2026-10-13T17:18:27.9357734Z [36;1m#[0m
+2026-10-13T17:18:27.9357980Z [36;1m# GITHUB_TOKEN is different: minted per job, valid for the life of the[0m
+2026-10-13T17:18:27.9358278Z [36;1m# job rather than sixty minutes. With contents: write it can push. So[0m
+2026-10-13T17:18:27.9358571Z [36;1m# the rescue was always available; the step was just aimed at the wrong[0m
+2026-10-13T17:18:27.9358800Z [36;1m# credential.[0m
+2026-10-13T17:18:27.9358954Z [36;1mgit remote set-url origin \[0m
+2026-10-13T17:18:27.9359195Z [36;1m  "https://x-access-token:${GH_TOKEN}@github.com/${GH_REPO}.git"[0m
+2026-10-13T17:18:27.9359418Z [36;1m[0m
+2026-10-13T17:18:27.9359628Z [36;1mif git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then[0m
+2026-10-13T17:18:27.9359913Z [36;1m  echo "$branch already on origin — the agent pushed it"[0m
+2026-10-13T17:18:27.9360177Z [36;1m  # Still push: the agent may have pushed early (step 3.6) and added[0m
+2026-10-13T17:18:27.9360454Z [36;1m  # commits afterwards that its expiring token could not deliver.[0m
+2026-10-13T17:18:27.9360782Z [36;1m  git push origin "$branch" || echo "::warning::branch exists; later commits could not be pushed"[0m
+2026-10-13T17:18:27.9361053Z [36;1melse[0m
+2026-10-13T17:18:27.9361201Z [36;1m  git push -u origin "$branch" || {[0m
+2026-10-13T17:18:27.9361429Z [36;1m    echo "::warning::fallback push failed even with the job token"[0m
+2026-10-13T17:18:27.9361649Z [36;1m    exit 0[0m
+2026-10-13T17:18:27.9361784Z [36;1m  }[0m
+2026-10-13T17:18:27.9361905Z [36;1mfi[0m
+2026-10-13T17:18:27.9362147Z [36;1mif gh pr list --repo "$GH_REPO" --head "$branch" --json number --jq '.[0].number' | grep -q .; then[0m
+2026-10-13T17:18:27.9362448Z [36;1m  echo "PR already open for $branch"[0m
+2026-10-13T17:18:27.9362621Z [36;1melse[0m
+2026-10-13T17:18:27.9362809Z [36;1m  gh pr create --repo "$GH_REPO" --base main --head "$branch" --fill[0m
+2026-10-13T17:18:27.9363033Z [36;1mfi[0m
+2026-10-13T17:18:27.9363158Z [36;1m[0m
+2026-10-13T17:18:27.9363335Z [36;1m# #322: a PR this net opened is born WITHOUT CHECKS, and would stay[0m
+2026-10-13T17:18:27.9363560Z [36;1m# that way forever.[0m
+2026-10-13T17:18:27.9374470Z [36;1m#[0m
+2026-10-13T17:18:27.9374796Z [36;1m# GitHub does not emit `pull_request` events for actions taken with[0m
+2026-10-13T17:18:27.9375249Z [36;1m# GITHUB_TOKEN. The primary path is unaffected because the agent uses[0m
+2026-10-13T17:18:27.9375552Z [36;1m# the Claude App token, which is why PRs #319 and #321 had checks and[0m
+2026-10-13T17:18:27.9375841Z [36;1m# #318 — the first PR this net ever opened — had none. `agent-merge`[0m
+2026-10-13T17:18:27.9376146Z [36;1m# then refuses it, correctly, on "no checks reported": there is no red[0m
+2026-10-13T17:18:27.9376433Z [36;1m# run, no skipped run, no event at all to explain the silence.[0m
+2026-10-13T17:18:27.9376652Z [36;1m#[0m
+2026-10-13T17:18:27.9376846Z [36;1m# Dispatching `pr-gates` on the branch is the fix that needs no new[0m
+2026-10-13T17:18:27.9377145Z [36;1m# credential. `workflow_dispatch` is the one documented exception to[0m
+2026-10-13T17:18:27.9377439Z [36;1m# the recursion guard — a GITHUB_TOKEN dispatch DOES start a run — and[0m
+2026-10-13T17:18:27.9377926Z [36;1m# that run attaches its check runs to the head SHA, which is what[0m
+2026-10-13T17:18:27.9378210Z [36;1m# agent-merge reads. Defect 7 on #313 used exactly this for[0m
+2026-10-13T17:18:27.9378462Z [36;1m# close-on-evidence.[0m
+2026-10-13T17:18:27.9378631Z [36;1m#[0m
+2026-10-13T17:18:27.9378848Z [36;1m# What this does NOT give us: the dispatched run tests the BRANCH, not[0m
+2026-10-13T17:18:27.9379139Z [36;1m# `refs/pull/N/merge`, so it cannot catch a conflict with a moved[0m
+2026-10-13T17:18:27.9379574Z [36;1m# `main`. That is a weaker assertion than a real `pull_request` run and[0m
+2026-10-13T17:18:27.9379862Z [36;1m# is stated here so nobody reads this green as the stronger one. The[0m
+2026-10-13T17:18:27.9380162Z [36;1m# first push by a human or the App to the branch produces the real run.[0m
+2026-10-13T17:18:27.9380397Z [36;1m#[0m
+2026-10-13T17:18:27.9380588Z [36;1m# Never fail the cycle over this: the work is pushed and the PR is[0m
+2026-10-13T17:18:27.9380884Z [36;1m# open, which is the net's whole job. A missed dispatch is a stall the[0m
+2026-10-13T17:18:27.9381165Z [36;1m# steward can see, not a reason to discard a delivered branch.[0m
+2026-10-13T17:18:27.9381460Z [36;1mif gh workflow run pr-gates.yml --repo "$GH_REPO" --ref "$branch"; then[0m
+2026-10-13T17:18:27.9381833Z [36;1m  echo "::notice::dispatched pr-gates on $branch — the net's PR would otherwise carry no checks (#322)"[0m
+2026-10-13T17:18:27.9382156Z [36;1melse[0m
+2026-10-13T17:18:27.9382694Z [36;1m  echo "::warning::could not dispatch pr-gates on $branch. The PR is open and carries NO CHECKS, so agent-merge will refuse it on 'no checks reported' and it will not merge. Dispatch it by hand: gh workflow run pr-gates.yml --ref $branch"[0m
+2026-10-13T17:18:27.9383232Z [36;1mfi[0m
+2026-10-13T17:18:27.9436960Z shell: /usr/bin/bash -e {0}
+2026-10-13T17:18:27.9437116Z env:
+2026-10-13T17:18:27.9437279Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+2026-10-13T17:18:27.9437841Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/astro-ai/astro-ai/gha-creds-bbf2278e2f0108d7.json
+2026-10-13T17:18:27.9438256Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/astro-ai/astro-ai/gha-creds-bbf2278e2f0108d7.json
+2026-10-13T17:18:27.9438625Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/astro-ai/astro-ai/gha-creds-bbf2278e2f0108d7.json
+2026-10-13T17:18:27.9438898Z   CLOUDSDK_CORE_PROJECT: bhagya-500701
+2026-10-13T17:18:27.9439080Z   CLOUDSDK_PROJECT: bhagya-500701
+2026-10-13T17:18:27.9439254Z   GCLOUD_PROJECT: bhagya-500701
+2026-10-13T17:18:27.9439418Z   GCP_PROJECT: bhagya-500701
+2026-10-13T17:18:27.9439579Z   GOOGLE_CLOUD_PROJECT: bhagya-500701
+2026-10-13T17:18:27.9441205Z   GH_TOKEN: ***
+2026-10-13T17:18:27.9441349Z   GH_REPO: mahAnuj/astro-ai
+2026-10-13T17:18:27.9441503Z ##[endgroup]
+2026-10-13T17:18:28.1528042Z issue/311-title-meta-ctr-test already on origin — the agent pushed it
+2026-10-13T17:18:28.4793952Z Everything up-to-date
+2026-10-13T17:18:28.9457646Z PR already open for issue/311-title-meta-ctr-test
+2026-10-13T17:18:30.8659075Z https://github.com/mahAnuj/astro-ai/actions/runs/38437592692
+2026-10-13T17:18:30.8687074Z ##[notice]dispatched pr-gates on issue/311-title-meta-ctr-test — the net's PR would otherwise carry no checks (#322)
+2026-10-13T17:18:30.8913516Z Post job cleanup.
+2026-10-13T17:18:30.8916381Z ##[start-action display=Install Bun;id=__8008a5bd-37f0-40ab-90fd-d0f33c5462bf.setup-bun]
+2026-10-13T17:18:30.8940188Z Post job cleanup.
+2026-10-13T17:18:31.0104185Z ##[end-action id=__8008a5bd-37f0-40ab-90fd-d0f33c5462bf.setup-bun;outcome=success;conclusion=success;duration_ms=118]
+2026-10-13T17:18:31.0156320Z Post job cleanup.
+2026-10-13T17:18:31.0809986Z Removed exported credentials at "/home/runner/work/astro-ai/astro-ai/gha-creds-bbf2278e2f0108d7.json".
+2026-10-13T17:18:31.0932662Z Post job cleanup.
+2026-10-13T17:18:31.1943237Z (node:16628) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-13T17:18:31.1944118Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-13T17:18:31.1945374Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-40ebd7fac61ca2866f07539a60bb66d8f38b308b7ac03c41b34eadcea8c61173, not saving cache.
+2026-10-13T17:18:31.2087019Z Post job cleanup.
+2026-10-13T17:18:31.2976826Z (node:16636) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-13T17:18:31.2977596Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-13T17:18:31.3137620Z Post job cleanup.
+2026-10-13T17:18:31.3778924Z [command]/usr/bin/git version
+2026-10-13T17:18:31.3812539Z git version 2.55.0
+2026-10-13T17:18:31.3842113Z Temporarily overriding HOME='/home/runner/work/_temp/ce90c40b-f5db-40c5-aa89-b7a37f018205' before making global git config changes
+2026-10-13T17:18:31.3842971Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-13T17:18:31.3845903Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/astro-ai/astro-ai
+2026-10-13T17:18:31.3884437Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-13T17:18:31.3933536Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-13T17:18:31.4148350Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-13T17:18:31.4179237Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-13T17:18:31.4406617Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-13T17:18:31.4438770Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-13T17:18:31.4750023Z Cleaning up orphan processes
+2026-10-13T17:18:31.4975223Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, astral-sh/setup-uv@v5, google-github-actions/auth@v2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

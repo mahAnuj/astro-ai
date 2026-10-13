@@ -321,3 +321,47 @@ jobs:
           else
             echo "::warning::could not dispatch pr-gates on $branch. The PR is open and carries NO CHECKS, so agent-merge will refuse it on 'no checks reported' and it will not merge. Dispatch it by hand: gh workflow run pr-gates.yml --ref $branch"
           fi
+
+      # The run's own record of what it worked (#338). The ops page reads this
+      # back instead of guessing from timestamps which PR a run produced: two
+      # cycles close together are attributed wrongly by any time-window match,
+      # and a wrong attribution looks exactly like a right one.
+      #
+      # Written with printf and %s ON PURPOSE. A run's log echoes this step's
+      # SOURCE inside its `##[group]Run` block, so a literal receipt in the
+      # script would make every run's log appear to contain one. With %s the
+      # echoed source cannot satisfy the reader's `issue=(\d+|none)`, and only
+      # the real output can. scripts/collect_loop_measurements.py reads it;
+      # a test pins this literal.
+      #
+      # Never fails the run: a missing receipt downgrades a row to the log tier,
+      # whereas a red cycle would block agent-merge on a bookkeeping line.
+      # `gh pr list --head` takes the newest PR on the branch; the branch is
+      # unique to this run's issue in practice, and the receipt records the PR the
+      # run ENDED with, which is what the ops page wants.
+      - name: Record the loop receipt
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          branch=$(git for-each-ref --sort=-committerdate --count=1 \
+            --format='%(refname:short)' refs/heads/issue/ || true)
+          issue=none
+          pr=none
+          if [ -n "$branch" ]; then
+            n=$(printf '%s' "$branch" | sed -n 's|^issue/\([0-9][0-9]*\).*|\1|p')
+            [ -n "$n" ] && issue=$n
+            # A FAILED lookup is not "no PR". Printing pr=none then would record a
+            # false `nothing` for a run that did open one, so print no receipt at
+            # all and let the reader fall back to the net step's log lines.
+            p=$(gh pr list --repo "$GH_REPO" --head "$branch" --state all \
+              --json number --jq '.[0].number // empty') || {
+              echo "::warning::could not list PRs for $branch; no receipt recorded"
+              exit 0
+            }
+            [ -n "$p" ] && pr=$p
+          else
+            branch=none
+          fi
+          printf 'LOOP-RECEIPT issue=%s branch=%s pr=%s\n' "$issue" "$branch" "$pr"

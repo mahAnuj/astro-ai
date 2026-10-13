@@ -636,6 +636,25 @@ MUTATIONS = [
      "<span>{{ word }}</span>",
      "test_meta_words_are_nowrap_so_dates_do_not_split_at_hyphens"),
 
+    # --- #338: loop/cost measurements ---
+    ("#338: a run that printed 'no commits on' borrows the PR a later run opened",
+     "scripts/collect_loop_measurements.py",
+     '    (re.compile(r"no commits on (\\S+)"), True),',
+     '    (re.compile(r"no commits on (\\S+)"), False),',
+     "test_no_commits_run_is_nothing_and_does_not_borrow_a_later_runs_pr"),
+
+    ("#338: a reused branch hands every run its NEWEST pr, not the one at run end",
+     "scripts/collect_loop_measurements.py",
+     '    seen = [p["number"] for p in prs if ts(p["created_at"]) <= run_end]',
+     '    seen = [p["number"] for p in prs]',
+     "test_a_reused_branch_gets_the_pr_that_existed_when_the_run_ended"),
+
+    ("#338: a figure may stand on an explanation instead of 'known'/'free-tier' (zero for an unknown)",
+     "scripts/collect_loop_measurements.py",
+     "        elif status not in FIGURE_STATUSES:",
+     "        elif False:",
+     "test_a_zero_standing_on_an_explanation_fails"),
+
     # --- #255: birth details out of the Telegram relay and the events log ---
     #
     # Each row re-breaks one leak or one silent failure that the privacy work
@@ -819,7 +838,11 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
         #
         # So the rule, stated because the next addition will hit it too: ANY
         # directory the suite reads or imports from must be copied here.
-        for sub in ("src", "tests", ".github", "scripts"):
+        #
+        # `measurements` since #338: test_committed_measurement_files_pass_their_
+        # validators reads loop.json and cost.json, and without them every row
+        # would fail at that one test and read as CAUGHT.
+        for sub in ("src", "tests", ".github", "scripts", "measurements"):
             shutil.copytree(ROOT / sub, sandbox / sub,
                             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         # GUARD GONE — "the defect escaped" and "the test meant to catch it no

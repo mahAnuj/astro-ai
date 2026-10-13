@@ -1,0 +1,60 @@
+{
+  "rows": [
+    {
+      "item": "Claude Max 5x",
+      "vendor": "Anthropic",
+      "monthly_usd": 100,
+      "basis": "flat monthly subscription",
+      "status": "known",
+      "note": "Owner-confirmed 2026-10-13. Funds every claude-code-action run; per-run cost is not separable."
+    },
+    {
+      "item": "GitHub Actions",
+      "vendor": "GitHub",
+      "monthly_usd": 0,
+      "basis": "public repository",
+      "status": "known",
+      "note": "Unlimited minutes for a public repo since 2026-10-12 (stated in #338)."
+    },
+    {
+      "item": "Groq",
+      "vendor": "Groq",
+      "monthly_usd": 0,
+      "basis": "free tier",
+      "status": "free-tier",
+      "note": "8,000 TPM per model. The paid fallthrough is OpenAI, below."
+    },
+    {
+      "item": "Google Analytics 4",
+      "vendor": "Google",
+      "monthly_usd": 0,
+      "basis": "free tier",
+      "status": "free-tier",
+      "note": ""
+    },
+    {
+      "item": "Search Console",
+      "vendor": "Google",
+      "monthly_usd": 0,
+      "basis": "free tier",
+      "status": "free-tier",
+      "note": ""
+    },
+    {
+      "item": "Google Cloud (Cloud Run, GCS, Cloud Build)",
+      "vendor": "Google",
+      "monthly_usd": null,
+      "basis": "no figure readable",
+      "status": "awaiting billing export",
+      "note": "No BigQuery billing export on bhagya-500701 and no gcloud command returns spend."
+    },
+    {
+      "item": "OpenAI",
+      "vendor": "OpenAI",
+      "monthly_usd": null,
+      "basis": "no figure readable",
+      "status": "no usage source read",
+      "note": "Paid safety net at the end of the LLM chain; its spend is not read by anything here."
+    }
+  ]
+}

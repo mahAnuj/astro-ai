@@ -1,0 +1,59 @@
+2026-10-08T05:58:31.9291845Z branch 'main' set up to track 'origin/main'.
+2026-10-08T05:59:59.7283418Z ##[group]Run branch=$(git rev-parse --abbrev-ref HEAD)
+2026-10-08T05:59:59.7283889Z [36;1mbranch=$(git rev-parse --abbrev-ref HEAD)[0m
+2026-10-08T05:59:59.7284235Z [36;1mcase "$branch" in[0m
+2026-10-08T05:59:59.7284500Z [36;1m  issue/*) ;;[0m
+2026-10-08T05:59:59.7284860Z [36;1m  *) echo "on '$branch', not an issue branch — nothing to push"; exit 0 ;;[0m
+2026-10-08T05:59:59.7285271Z [36;1mesac[0m
+2026-10-08T05:59:59.7285584Z [36;1mif [ -z "$(git log origin/main..HEAD --oneline)" ]; then[0m
+2026-10-08T05:59:59.7286025Z [36;1m  echo "no commits on $branch — the cycle produced nothing"[0m
+2026-10-08T05:59:59.7286374Z [36;1m  exit 0[0m
+2026-10-08T05:59:59.7286595Z [36;1mfi[0m
+2026-10-08T05:59:59.7286827Z [36;1mgit push -u origin "$branch"[0m
+2026-10-08T05:59:59.7287597Z [36;1mif gh pr list --repo "$GH_REPO" --head "$branch" --json number --jq '.[0].number' | grep -q .; then[0m
+2026-10-08T05:59:59.7288142Z [36;1m  echo "PR already open for $branch"[0m
+2026-10-08T05:59:59.7288480Z [36;1melse[0m
+2026-10-08T05:59:59.7288802Z [36;1m  gh pr create --repo "$GH_REPO" --base main --head "$branch" --fill[0m
+2026-10-08T05:59:59.7289192Z [36;1mfi[0m
+2026-10-08T05:59:59.7351762Z shell: /usr/bin/bash -e {0}
+2026-10-08T05:59:59.7352035Z env:
+2026-10-08T05:59:59.7352308Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+2026-10-08T05:59:59.7352892Z   CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE: /home/runner/work/astro-ai/astro-ai/gha-creds-01f0db195a2c54c8.json
+2026-10-08T05:59:59.7353615Z   GOOGLE_APPLICATION_CREDENTIALS: /home/runner/work/astro-ai/astro-ai/gha-creds-01f0db195a2c54c8.json
+2026-10-08T05:59:59.7354267Z   GOOGLE_GHA_CREDS_PATH: /home/runner/work/astro-ai/astro-ai/gha-creds-01f0db195a2c54c8.json
+2026-10-08T05:59:59.7354739Z   CLOUDSDK_CORE_PROJECT: bhagya-500701
+2026-10-08T05:59:59.7355039Z   CLOUDSDK_PROJECT: bhagya-500701
+2026-10-08T05:59:59.7355314Z   GCLOUD_PROJECT: bhagya-500701
+2026-10-08T05:59:59.7355587Z   GCP_PROJECT: bhagya-500701
+2026-10-08T05:59:59.7355866Z   GOOGLE_CLOUD_PROJECT: bhagya-500701
+2026-10-08T05:59:59.7358974Z   GH_TOKEN: ***
+2026-10-08T05:59:59.7359223Z   GH_REPO: mahAnuj/astro-ai
+2026-10-08T05:59:59.7359682Z ##[endgroup]
+2026-10-08T05:59:59.7481177Z no commits on issue/272-measurement-dimensions — the cycle produced nothing
+2026-10-08T05:59:59.7865570Z Post job cleanup.
+2026-10-08T05:59:59.7869407Z ##[start-action display=Install Bun;id=__841907bb-e3e1-4976-9f90-a02402d4337a.setup-bun]
+2026-10-08T05:59:59.7903398Z Post job cleanup.
+2026-10-08T05:59:59.9985793Z ##[end-action id=__841907bb-e3e1-4976-9f90-a02402d4337a.setup-bun;outcome=success;conclusion=success;duration_ms=211]
+2026-10-08T06:00:00.0095661Z Post job cleanup.
+2026-10-08T06:00:00.1259487Z Removed exported credentials at "/home/runner/work/astro-ai/astro-ai/gha-creds-01f0db195a2c54c8.json".
+2026-10-08T06:00:00.1622568Z Post job cleanup.
+2026-10-08T06:00:00.3147021Z (node:2905) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-08T06:00:00.3149221Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-08T06:00:00.3151551Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-40ebd7fac61ca2866f07539a60bb66d8f38b308b7ac03c41b34eadcea8c61173, not saving cache.
+2026-10-08T06:00:00.3285747Z Post job cleanup.
+2026-10-08T06:00:00.4975228Z (node:2914) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-08T06:00:00.4983987Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-08T06:00:00.5564321Z Post job cleanup.
+2026-10-08T06:00:00.7063910Z [command]/usr/bin/git version
+2026-10-08T06:00:00.7125856Z git version 2.55.0
+2026-10-08T06:00:00.7209348Z Temporarily overriding HOME='/home/runner/work/_temp/8ec95b0e-d22b-4376-ab7b-a848ab859115' before making global git config changes
+2026-10-08T06:00:00.7222410Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T06:00:00.7223884Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/astro-ai/astro-ai
+2026-10-08T06:00:00.7258862Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T06:00:00.7318860Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T06:00:00.7721046Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T06:00:00.7783663Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T06:00:00.8208472Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T06:00:00.8250593Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T06:00:00.8802955Z Cleaning up orphan processes
+2026-10-08T06:00:00.9058712Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, astral-sh/setup-uv@v5, google-github-actions/auth@v2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
