@@ -2,28 +2,28 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-09-12",
-    "2026-10-09"
+    "2026-09-13",
+    "2026-10-10"
   ],
   "dimensions": [
     "landingPagePlusQueryString",
     "sessionDefaultChannelGroup"
   ],
   "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
-  "total_sessions": 276,
-  "rows_sessions": 278,
+  "total_sessions": 278,
+  "rows_sessions": 280,
   "coverage_pct": 101,
-  "row_count": 99,
-  "landing_count": 67,
+  "row_count": 101,
+  "landing_count": 69,
   "truncated": false,
-  "coverage_note": "rows account for 101% of the property's 276 sessions",
+  "coverage_note": "rows account for 101% of the property's 278 sessions",
   "rows": [
     {
       "landing": "/",
       "channel": "Direct",
       "sessions": 53,
       "bounce_rate": 0.2453,
-      "pages_per_session": 4.68,
+      "pages_per_session": 4.26,
       "active_users": 17
     },
     {
@@ -107,14 +107,6 @@
       "active_users": 5
     },
     {
-      "landing": "/learn/manglik-dosh/",
-      "channel": "Organic Search",
-      "sessions": 5,
-      "bounce_rate": 1.0,
-      "pages_per_session": 1.0,
-      "active_users": 3
-    },
-    {
       "landing": "/",
       "channel": "Organic Search",
       "sessions": 4,
@@ -123,12 +115,12 @@
       "active_users": 4
     },
     {
-      "landing": "/learn/7th-lord-placement-marriage-guide/",
+      "landing": "/kundli",
       "channel": "Organic Search",
       "sessions": 4,
-      "bounce_rate": 0.25,
-      "pages_per_session": 1.0,
-      "active_users": 4
+      "bounce_rate": 0.5,
+      "pages_per_session": 3.25,
+      "active_users": 3
     },
     {
       "landing": "/learn/career-during-sade-sati/",
@@ -163,12 +155,12 @@
       "active_users": 2
     },
     {
-      "landing": "/kundli",
+      "landing": "/learn/7th-lord-placement-marriage-guide/",
       "channel": "Organic Search",
       "sessions": 3,
-      "bounce_rate": 0.6667,
-      "pages_per_session": 1.33,
-      "active_users": 2
+      "bounce_rate": 0.3333,
+      "pages_per_session": 1.0,
+      "active_users": 3
     },
     {
       "landing": "/learn/debilitated-sun-career/",
@@ -179,20 +171,12 @@
       "active_users": 3
     },
     {
-      "landing": "/learn/kaal-sarp-dosh/",
-      "channel": "Direct",
+      "landing": "/learn/manglik-dosh/",
+      "channel": "Organic Search",
       "sessions": 3,
-      "bounce_rate": 0.6667,
-      "pages_per_session": 1.33,
-      "active_users": 3
-    },
-    {
-      "landing": "/learn/marriage-mahadasha-timing/",
-      "channel": "AI Assistant",
-      "sessions": 3,
-      "bounce_rate": 0.6667,
+      "bounce_rate": 1.0,
       "pages_per_session": 1.0,
-      "active_users": 3
+      "active_users": 2
     },
     {
       "landing": "/learn/marriage-mahadasha-timing/",
@@ -235,6 +219,14 @@
       "active_users": 0
     },
     {
+      "landing": "/learn/2nd-lord-placement-wealth-guide/",
+      "channel": "Direct",
+      "sessions": 2,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
       "landing": "/learn/7th-lord-placement-marriage-guide/",
       "channel": "Direct",
       "sessions": 2,
@@ -244,9 +236,25 @@
     },
     {
       "landing": "/learn/jupiter-in-10th-house-career/",
+      "channel": "Direct",
+      "sessions": 2,
+      "bounce_rate": 0.5,
+      "pages_per_session": 2.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/jupiter-in-10th-house-career/",
       "channel": "Organic Search",
       "sessions": 2,
       "bounce_rate": 0.0,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/kaal-sarp-dosh/",
+      "channel": "Direct",
+      "sessions": 2,
+      "bounce_rate": 1.0,
       "pages_per_session": 1.0,
       "active_users": 2
     },
@@ -263,6 +271,22 @@
       "channel": "Direct",
       "sessions": 2,
       "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/marriage-mahadasha-timing",
+      "channel": "Direct",
+      "sessions": 2,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 2
+    },
+    {
+      "landing": "/learn/marriage-mahadasha-timing/",
+      "channel": "AI Assistant",
+      "sessions": 2,
+      "bounce_rate": 0.5,
       "pages_per_session": 1.0,
       "active_users": 2
     },
@@ -355,11 +379,27 @@
       "active_users": 2
     },
     {
+      "landing": "/muhurat",
+      "channel": "AI Assistant",
+      "sessions": 2,
+      "bounce_rate": 0.5,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
       "landing": "(not set)",
       "channel": "Organic Search",
       "sessions": 1,
       "bounce_rate": 1.0,
       "pages_per_session": 0.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/ask",
+      "channel": "Direct",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 6.0,
       "active_users": 1
     },
     {
@@ -380,14 +420,6 @@
     },
     {
       "landing": "/learn/10th-lord-in-6th-house-career/",
-      "channel": "Direct",
-      "sessions": 1,
-      "bounce_rate": 1.0,
-      "pages_per_session": 1.0,
-      "active_users": 1
-    },
-    {
-      "landing": "/learn/2nd-lord-placement-wealth-guide/",
       "channel": "Direct",
       "sessions": 1,
       "bounce_rate": 1.0,
@@ -475,14 +507,6 @@
       "active_users": 1
     },
     {
-      "landing": "/learn/jupiter-in-10th-house-career/",
-      "channel": "Direct",
-      "sessions": 1,
-      "bounce_rate": 1.0,
-      "pages_per_session": 1.0,
-      "active_users": 1
-    },
-    {
       "landing": "/learn/jupiter-remedies/",
       "channel": "Direct",
       "sessions": 1,
@@ -549,14 +573,6 @@
     {
       "landing": "/learn/magha-nakshatra/",
       "channel": "Organic Search",
-      "sessions": 1,
-      "bounce_rate": 1.0,
-      "pages_per_session": 1.0,
-      "active_users": 1
-    },
-    {
-      "landing": "/learn/marriage-mahadasha-timing",
-      "channel": "Direct",
       "sessions": 1,
       "bounce_rate": 1.0,
       "pages_per_session": 1.0,
@@ -632,6 +648,14 @@
       "sessions": 1,
       "bounce_rate": 0.0,
       "pages_per_session": 7.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/pushya-nakshatra/",
+      "channel": "Organic Search",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 1.0,
       "active_users": 1
     },
     {
@@ -735,14 +759,6 @@
       "channel": "Unassigned",
       "sessions": 1,
       "bounce_rate": 1.0,
-      "pages_per_session": 1.0,
-      "active_users": 1
-    },
-    {
-      "landing": "/muhurat",
-      "channel": "AI Assistant",
-      "sessions": 1,
-      "bounce_rate": 0.0,
       "pages_per_session": 1.0,
       "active_users": 1
     },
