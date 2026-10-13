@@ -51,7 +51,18 @@ jobs:
       # feeding nothing into delivery since it was wired up.
       #
       # Found by scripts/verify_workflows.py on its first run, not by a human.
-      actions: read
+      #
+      # WRITE, not read, since #322. The net below opens a PR with
+      # `github.token`, and GitHub emits no `pull_request` event for anything
+      # GITHUB_TOKEN does — so `pr-gates` never fired on it and `agent-merge`
+      # refused the PR forever on "no checks reported", with no red run to
+      # explain why. PR #318 sat gate-less for ~14h that way.
+      #
+      # `workflow_dispatch` is the documented exception: a run dispatched with
+      # GITHUB_TOKEN DOES start, and it attaches its check runs to the head
+      # SHA, which is what agent-merge reads. Dispatching needs `actions:
+      # write`; reading runs needed only `read`.
+      actions: write
       pull-requests: write
       issues: write
       id-token: write
@@ -254,4 +265,36 @@ jobs:
             echo "PR already open for $branch"
           else
             gh pr create --repo "$GH_REPO" --base main --head "$branch" --fill
+          fi
+
+          # #322: a PR this net opened is born WITHOUT CHECKS, and would stay
+          # that way forever.
+          #
+          # GitHub does not emit `pull_request` events for actions taken with
+          # GITHUB_TOKEN. The primary path is unaffected because the agent uses
+          # the Claude App token, which is why PRs #319 and #321 had checks and
+          # #318 — the first PR this net ever opened — had none. `agent-merge`
+          # then refuses it, correctly, on "no checks reported": there is no red
+          # run, no skipped run, no event at all to explain the silence.
+          #
+          # Dispatching `pr-gates` on the branch is the fix that needs no new
+          # credential. `workflow_dispatch` is the one documented exception to
+          # the recursion guard — a GITHUB_TOKEN dispatch DOES start a run — and
+          # that run attaches its check runs to the head SHA, which is what
+          # agent-merge reads. Defect 7 on #313 used exactly this for
+          # close-on-evidence.
+          #
+          # What this does NOT give us: the dispatched run tests the BRANCH, not
+          # `refs/pull/N/merge`, so it cannot catch a conflict with a moved
+          # `main`. That is a weaker assertion than a real `pull_request` run and
+          # is stated here so nobody reads this green as the stronger one. The
+          # first push by a human or the App to the branch produces the real run.
+          #
+          # Never fail the cycle over this: the work is pushed and the PR is
+          # open, which is the net's whole job. A missed dispatch is a stall the
+          # steward can see, not a reason to discard a delivered branch.
+          if gh workflow run pr-gates.yml --repo "$GH_REPO" --ref "$branch"; then
+            echo "::notice::dispatched pr-gates on $branch — the net's PR would otherwise carry no checks (#322)"
+          else
+            echo "::warning::could not dispatch pr-gates on $branch. The PR is open and carries NO CHECKS, so agent-merge will refuse it on 'no checks reported' and it will not merge. Dispatch it by hand: gh workflow run pr-gates.yml --ref $branch"
           fi
