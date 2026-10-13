@@ -131,19 +131,35 @@ def check(body: str, labels: list[str], created: str) -> tuple[int, list[str]]:
         out.append("ok   gsc:/ga4: — exempt, labelled `bug`")
     elif not (gsc or ga4):
         problems.append("no `gsc:` or `ga4:` — a decision to build needs a measurement, not an opinion")
+    # ANY of the present fields may carry the window, not specifically `gsc:`.
+    # When an issue states both, the convention in use writes the window once
+    # and says "same window" on the second -- #311 does exactly that, and an
+    # earlier version of this gate failed it for the sin of not repeating
+    # itself. A gate that rejects the house style trains the loop to pad the
+    # block with noise, which is worse than the thing it was checking for.
+    elif not any(re.search(r"\d{4}-\d{2}-\d{2}", f) for f in (gsc, ga4) if f):
+        problems.append("neither `gsc:` nor `ga4:` states a date window — without one the number cannot be scored later")
     else:
-        got = gsc or ga4 or ""
-        if not re.search(r"\d{4}-\d{2}-\d{2}", got):
-            problems.append("`gsc:`/`ga4:` states no date window — without one the number cannot be scored later")
-        else:
-            out.append("ok   gsc:/ga4: — measurement with a date window")
+        out.append("ok   gsc:/ga4: — measurement with a date window")
 
     # competing: optional, but a rival claim that cannot be fetched is not evidence.
+    # A URL, or an explicit statement that no rival was checked. The rule exists
+    # to stop a REMEMBERED claim about a competitor being passed off as
+    # evidence; it was never meant to punish saying "I did not look". #311 says
+    # "not checked — no SERP access in this run", which is the honest form, and
+    # failing that while passing any URL at all would reward the wrong habit.
     comp = field(body, "competing")
-    if comp and not re.search(r"https?://", comp):
-        problems.append("`competing:` has no URL — a recollection about a rival is not evidence")
-    elif comp:
+    if not comp:
+        out.append("ok   competing: — absent, which is allowed")
+    elif re.search(r"https?://", comp):
         out.append("ok   competing: — carries a URL")
+    elif re.match(r"(not checked|none|n/?a)\b", comp, re.I):
+        if len(comp) < 16:
+            problems.append("`competing:` declines to cite a rival but gives no reason — say why none was checked")
+        else:
+            out.append("ok   competing: — explicitly not checked, with a reason")
+    else:
+        problems.append("`competing:` makes a claim about a rival with no URL — a recollection is not evidence")
 
     # corpus: a file and a line range, or an explicit escape hatch.
     corpus = field(body, "corpus")
@@ -239,6 +255,19 @@ SELF_TESTS: list[tuple[str, str, list[str], str, int]] = [
                                                  "- **metric:** it should get better."), [], "2026-10-13", 1),
     ("corpus naming no line range fails", GOOD.replace("- **corpus:** n/a. It adds a link and one sentence of lead-in, no astrological claim.",
                                                        "- **corpus:** the Rao book."), [], "2026-10-13", 1),
+    # Both of these are #311's real text. An earlier version of this gate failed
+    # it on both, and #311 was right on both counts.
+    ("window on ga4 only, gsc says 'same window' (#311's real shape)",
+     'ga4: window 2026-09-09 -> 2026-10-06 (28d), property 543505751.\n'
+     'gsc: same window, `sc-domain:shubhagya.com`, dimension: page, coverage 101%.\n'
+     'competing: not checked — no SERP access in this run.\n'
+     'corpus: n/a — no astrological claim is changed.\ntokens: 0 — static title/meta, no LLM call.\n'
+     'repro: jq .rows measurements/gsc-band.json -> 4 rows, ctr < 0.9\n'
+     'thesis: rewriting title/meta raises CTR at unchanged position.\n'
+     'metric: combined CTR >= 1.5% on >= 1500 impressions.\n', [], "2026-10-13", 0),
+    ("a REMEMBERED competitor claim with no URL still fails",
+     GOOD.replace("(fetched 2026-10-13) https://dashaclub.com/mangal-dosha-calculator puts a button under the H1.",
+                  "I recall a rival putting the button under the H1."), [], "2026-10-13", 1),
 ]
 
 
@@ -277,7 +306,7 @@ def main() -> int:
         return self_test()
 
     out = subprocess.run(
-        ["gh", "issue", "view", str(args.issue), "--json", "body,labels,createdAt,title"],
+        ["gh", "issue", "view", str(args.issue), "--json", "body,labels,createdAt,title,comments"],
         capture_output=True, text=True, check=False,
     )
     if out.returncode != 0:
@@ -287,9 +316,18 @@ def main() -> int:
         return 2
     d = json.loads(out.stdout)
     labels = [l["name"] for l in d.get("labels") or []]
+    # Comments count, exactly as they do in scripts/validate_issue.py:
+    # "several in this repo carry corrections that invert the original finding,
+    # and a repro added in a comment is the current one." An Evidence Block
+    # repaired in a comment is the live one; reading only the body would force
+    # an edit to the original post to clear a gate, which loses the audit trail
+    # of what the block used to say.
+    comments = [c.get("body") or "" for c in d.get("comments") or []]
+    text = "\n".join([d.get("body") or ""] + comments)
     print(f"#{args.issue} {d.get('title', '')[:70]}")
-    print(f"  labels: {', '.join(labels) or 'none'}\n")
-    code, lines = check(d.get("body") or "", labels, d.get("createdAt") or "")
+    print(f"  labels: {', '.join(labels) or 'none'}"
+          f"{f'  (+{len(comments)} comment(s) read)' if comments else ''}\n")
+    code, lines = check(text, labels, d.get("createdAt") or "")
     for line in lines:
         print(f"  {line}" if line else "")
     if code:
