@@ -148,6 +148,15 @@ def test_coarse_profile_returns_band_and_city_only():
     "Rose Villa Andheri Mumbai",
     "Near City Mall Andheri Mumbai",
     "Andheri, Mumbai, Maharashtra, India",  # four tokens: the first is not the city
+    "c/o Sharma, Delhi",
+    "ramesh@example.com",
+    "Sharma Residence, Delhi",
+    "Shanti Nivas, Pune",
+    "Hanuman Mandir, Pune",
+    # Devanagari addresses: matras are not \w, so these need their own check
+    "मकान नं गांधी नगर, दिल्ली",
+    "रोज़ विला, मुंबई",
+    "शर्मा भवन, दिल्ली",
 ])
 def test_city_drops_street_addresses_instead_of_storing_a_fragment(place):
     # The event log is the thing #255 exists to keep free of identifying detail;
@@ -163,6 +172,8 @@ def test_city_drops_street_addresses_instead_of_storing_a_fragment(place):
     ("delhi, india, 110001", "Delhi"),
     ("Ahmednagar, Maharashtra, India", "Ahmednagar"),
     ("Thiruvananthapuram, Kerala", "Thiruvananthapuram"),
+    ("मुंबई, महाराष्ट्र, भारत", "मुंबई"),
+    ("दिल्ली", "दिल्ली"),
 ])
 def test_city_keeps_ordinary_city_state_country_inputs(place, city):
     assert profiling.coarse_profile("1990-01-01", place)["city"] == city

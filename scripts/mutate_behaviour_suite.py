@@ -701,6 +701,18 @@ MUTATIONS = [
      "        if False:\n            return \"\"",
      "test_city_drops_street_addresses_instead_of_storing_a_fragment"),
 
+    ("#255: city stops dropping c/o and email-shaped places",
+     "src/astro_ai/profiling.py",
+     "        if \"c/o\" in tok or \"@\" in tok:\n            return \"\"",
+     "        if False:\n            return \"\"",
+     "test_city_drops_street_addresses_instead_of_storing_a_fragment"),
+
+    ("#255: city stops recognising Devanagari address words (Hindi addresses stored)",
+     "src/astro_ai/profiling.py",
+     "        if any(w in tok for w in _ADDRESS_SUBSTRINGS_DEVANAGARI):\n            return \"\"",
+     "        if False:\n            return \"\"",
+     "test_city_drops_street_addresses_instead_of_storing_a_fragment"),
+
     ("#255: /privacy points at a 'Delete my data' option that does not exist again",
      "src/astro_ai/templates/privacy.html",
      "<strong>Delete your data.</strong>",

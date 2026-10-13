@@ -94,8 +94,16 @@ _ADDRESS_WORDS = frozenset({
     "villa", "society", "colony", "sector", "block", "floor", "wing", "marg",
     "chowk", "gali", "galli", "near", "opp", "opposite", "behind", "avenue",
     "ave", "drive", "residency", "bungalow", "enclave", "vihar", "layout",
-    "phase", "po", "box",
+    "phase", "po", "box", "residence", "niwas", "nivas", "bhavan", "bhawan",
+    "kutir", "mandir",
 })
+# The same for Devanagari. Matras are not \w, so the whole-word split above cannot
+# see these words; they are matched as substrings instead (Hindi is a supported
+# language, so a Hindi address is a likely input, not a corner case).
+_ADDRESS_SUBSTRINGS_DEVANAGARI = (
+    "मकान", "गली", "निवास", "भवन", "विला", "नगर", "फ्लैट", "सोसाइटी", "सोसायटी",
+    "कॉलोनी", "रोड", "मार्ग", "सेक्टर", "अपार्टमेंट",
+)
 
 
 def _city_from_place(place: str) -> str:
@@ -120,7 +128,9 @@ def _city_from_place(place: str) -> str:
     if len(tokens) > 3 or not tokens[0]:
         return ""
     for i, tok in enumerate(tokens):
-        if "c/o" in tok:
+        if "c/o" in tok or "@" in tok:
+            return ""
+        if any(w in tok for w in _ADDRESS_SUBSTRINGS_DEVANAGARI):
             return ""
         if re.search(r"\d", tok):
             # "Delhi, India, 110001": a bare postal code in the last slot is
