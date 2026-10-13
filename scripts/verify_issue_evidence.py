@@ -88,9 +88,20 @@ def field(text: str, name: str) -> str | None:
     # field would shadow every correction, so a repaired Evidence Block could
     # never clear this gate. #311 is the case: its body carries a repro reading
     # /tmp, and the fix is a comment.
+    # A field ends at the next BULLET, heading or bare `label:` line — not at
+    # the next thing that looks like a label.
+    #
+    # The old terminator only recognised a following label of [\w -], so any
+    # field named with a bracket, slash or dot was invisible to it and the
+    # PREVIOUS field swallowed it whole. #335 passed the date-window check that
+    # way: its `ga4:` ran on into `- **loop (measured 2026-10-13, ...)**` and
+    # borrowed a date belonging to another field. A gate that passes an issue
+    # for the wrong reason is worse than one that fails it for the wrong reason,
+    # because nobody goes looking.
     ms = list(re.finditer(
         rf"^[ \t]*(?:[-*][ \t]*)?(?:\*\*)?{re.escape(name)}(?:\*\*)?:(?:\*\*)?[ \t]*"
-        rf"(.+?)(?=\n[ \t]*(?:[-*][ \t]*)?(?:\*\*)?\w[\w -]*(?:\*\*)?:(?:\*\*)?|\n[ \t]*#|\Z)",
+        rf"(.+?)(?=\n[ \t]*[-*][ \t]+|\n[ \t]*#|\n[ \t]*\*\*[^*\n]{{1,48}}\*\*:"
+        rf"|\n[ \t]*[A-Za-z][^\n:]{{0,46}}:[ \t]|\Z)",
         text,
         re.M | re.S | re.I,
     ))
@@ -128,14 +139,25 @@ def check(body: str, labels: list[str], created: str) -> tuple[int, list[str]]:
         return 0, [f"EXEMPT — filed {created[:10]}, before the convention ({CONVENTION_DATE}).",
                    "  The premise must still be established under step 0; this gate does not excuse that."]
 
-    is_bug = "bug" in labels
+    # `bug` was exempted from gsc:/ga4: because a broken feature needs no traffic
+    # thesis to justify fixing. Internal work has no traffic surface at all: an
+    # admin page behind HTTP Basic will never appear in Search Console. Ten of
+    # the fifteen post-convention issues failing this gate on 2026-10-13 failed
+    # on exactly that, and the honest ones said so in the field. Requiring a
+    # number that cannot exist teaches the loop to invent one.
+    #
+    # Deliberately NOT exempt: enhancement, feature, seo, ui, conversion. Those
+    # all touch something a visitor sees, so a traffic thesis is the point.
+    no_traffic_surface = bool({"bug", "chore"} & set(labels)) or "category:technical" in labels
+    is_bug = no_traffic_surface
     problems: list[str] = []
 
     # gsc:/ga4: -- one is mandatory, with a window. Bugs are exempt: a broken
     # feature needs no traffic thesis to justify fixing (agent-cycle.md).
     gsc, ga4 = field(body, "gsc"), field(body, "ga4")
     if is_bug:
-        out.append("ok   gsc:/ga4: — exempt, labelled `bug`")
+        out.append("ok   gsc:/ga4: — exempt, no traffic surface ("
+                   + ", ".join(sorted({"bug", "chore", "category:technical"} & set(labels))) + ")")
     elif not (gsc or ga4):
         problems.append("no `gsc:` or `ga4:` — a decision to build needs a measurement, not an opinion")
     # ANY of the present fields may carry the window, not specifically `gsc:`.
@@ -284,6 +306,20 @@ SELF_TESTS: list[tuple[str, str, list[str], str, int]] = [
      'thesis: x\nmetric: >= 1.2% on 2000 impressions\n'
      'repro: GET /kundli -> 200 contains "Lagna"\n'
      '--- comment ---\nrepro: jq .rows /tmp/gsc-band.json\n', [], "2026-10-13", 1),
+    ("a field must NOT borrow a date from the next bullet (#335's false pass)",
+     'ga4: same window as above.\n'
+     '- **loop (measured 2026-10-13):** 26 cycles, 13 produced nothing\n'
+     'corpus: n/a — internal page, no astrological claim\ntokens: 0 measured\n'
+     'thesis: x\nmetric: >= 5 cycles observed\nrepro: curl /admin/ops -> expect 404\n',
+     [], "2026-10-13", 1),
+    ("infra work is exempt from gsc:/ga4:, as a bug is",
+     'corpus: n/a — internal page, no astrological claim\ntokens: 0 measured\n'
+     'thesis: x\nmetric: >= 5 cycles observed\nrepro: curl /admin/ops -> expect 404\n',
+     ["category:technical"], "2026-10-13", 0),
+    ("an enhancement is NOT exempt — it touches something a visitor sees",
+     'corpus: n/a — copy only\ntokens: 0 measured\nthesis: x\nmetric: >= 1.2% CTR\n'
+     'repro: GET /learn -> 200 contains "Manglik"\n',
+     ["enhancement"], "2026-10-13", 1),
     ("a REMEMBERED competitor claim with no URL still fails",
      GOOD.replace("(fetched 2026-10-13) https://dashaclub.com/mangal-dosha-calculator puts a button under the H1.",
                   "I recall a rival putting the button under the H1."), [], "2026-10-13", 1),
