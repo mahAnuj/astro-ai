@@ -10,8 +10,9 @@ Result is cached per (days, day) to GCS at `profiling/summary-{d}d-{iso}.json`
 with a 1-hour TTL so repeated admin loads don't re-scan the events log.
 
 Scope of this Phase 1 module (per GitHub issue #140):
-  - Age-band histogram from Kundli birth_date
-  - Top-N cities from Kundli birth_place (best-effort free-text parse)
+  - Age-band histogram from Kundli events' `age_band` (legacy rows: birth_date)
+  - Top-N cities from Kundli events' `city` (legacy rows: birth_place,
+    best-effort free-text parse)
   - Language distribution (EN/HI) across all event types
   - Question-category distribution from Ask events
   - Ask-context split (chart / numerology / matching)
@@ -27,6 +28,7 @@ Deferred to later phases:
 from __future__ import annotations
 
 import logging
+import re
 from collections import Counter
 from datetime import date, datetime, timezone
 from typing import Any
@@ -81,20 +83,79 @@ def _age_bucket_from_dob(dob: str) -> str:
     return "55+"
 
 
+# Words that mark a fragment of a street address rather than a city. Any one of
+# them in any comma token drops the city entirely (#255): a stored "Flat 4B" or
+# "Rose Villa" is the identifying detail the coarse profile exists to avoid, and a
+# missing histogram row costs far less than a retained address. Whole-word match
+# on lower-cased letters, so "Ahmednagar" and "Stockholm" do not trip it.
+_ADDRESS_WORDS = frozenset({
+    "flat", "house", "plot", "street", "st", "road", "rd", "lane", "ln", "nagar",
+    "apartment", "apartments", "apt", "building", "bldg", "tower", "towers",
+    "villa", "society", "colony", "sector", "block", "floor", "wing", "marg",
+    "chowk", "gali", "galli", "near", "opp", "opposite", "behind", "avenue",
+    "ave", "drive", "residency", "bungalow", "enclave", "vihar", "layout",
+    "phase", "po", "box", "residence", "niwas", "nivas", "bhavan", "bhawan",
+    "kutir", "mandir",
+})
+# The same for Devanagari. Matras are not \w, so the whole-word split above cannot
+# see these words; they are matched as substrings instead (Hindi is a supported
+# language, so a Hindi address is a likely input, not a corner case).
+_ADDRESS_SUBSTRINGS_DEVANAGARI = (
+    "मकान", "गली", "निवास", "भवन", "विला", "नगर", "फ्लैट", "सोसाइटी", "सोसायटी",
+    "कॉलोनी", "रोड", "मार्ग", "सेक्टर", "अपार्टमेंट",
+)
+
+
 def _city_from_place(place: str) -> str:
-    """Best-effort city extraction from a free-text birth_place string.
+    """Best-effort COARSE city from a free-text birth_place, failing closed.
 
     Convention we see in the events log: "City, State, Country" or
     "City, Country" or bare "City". Take the first comma-separated
     token, lowercase, look up an alias if any, else title-case the
-    original. Returns "" when the input is empty or clearly non-city.
+    original.
+
+    The field is free text and users do type street addresses into it
+    ("Flat 4B, Rose Villa, Andheri, Mumbai"), so the first token is not safe
+    to store on trust. Returns "" — drops the city — when the input is empty,
+    has more than the three tokens of "City, State, Country", carries a digit
+    in any token (other than a bare trailing postal code, which is never
+    stored), contains an address word anywhere, or the first token is longer
+    than four words / 40 characters. Failing closed is deliberate (#255).
     """
     if not place:
         return ""
-    first = place.split(",", 1)[0].strip().lower()
-    if not first or len(first) > 40:
+    tokens = [t.strip().lower() for t in place.split(",")]
+    if len(tokens) > 3 or not tokens[0]:
+        return ""
+    for i, tok in enumerate(tokens):
+        if "c/o" in tok or "@" in tok:
+            return ""
+        if any(w in tok for w in _ADDRESS_SUBSTRINGS_DEVANAGARI):
+            return ""
+        if re.search(r"\d", tok):
+            # "Delhi, India, 110001": a bare postal code in the last slot is
+            # harmless because only the first token is ever kept.
+            if i == len(tokens) - 1 and i > 0 and re.fullmatch(r"[\d\s-]+", tok):
+                continue
+            return ""
+        if _ADDRESS_WORDS.intersection(re.findall(r"[^\W\d_]+", tok)):
+            return ""
+    first = tokens[0]
+    if len(first) > 40 or len(first.split()) > 4:
         return ""
     return _CITY_ALIASES.get(first, first.title())
+
+
+def coarse_profile(birth_date: str, birth_place: str) -> dict[str, str]:
+    """The only birth-derived fields an event may carry: an age band and a city.
+
+    Keeps the /admin/insights panels alive without storing the raw date or
+    place (#255). Either value is "" / "unknown" when it cannot be derived.
+    """
+    return {
+        "age_band": _age_bucket_from_dob(str(birth_date or "")),
+        "city": _city_from_place(str(birth_place or "")),
+    }
 
 
 def _bump(hist: Counter, key: str) -> None:
@@ -160,8 +221,13 @@ def audience_summary(*, days: int = 30, force_refresh: bool = False) -> dict[str
     city_hist: Counter[str] = Counter()
     for e in kundlis:
         d = e.get("data") or {}
-        _bump(age_hist, _age_bucket_from_dob(str(d.get("birth_date", ""))))
-        _bump(city_hist, _city_from_place(str(d.get("birth_place", ""))))
+        # New events carry the coarse bands only (see coarse_profile); events
+        # written before #255 still hold raw birth_date/birth_place, and live
+        # for up to EVENT_RETENTION_DAYS after the deploy, so fall back.
+        _bump(age_hist, str(d.get("age_band") or "")
+              or _age_bucket_from_dob(str(d.get("birth_date", ""))))
+        _bump(city_hist, str(d.get("city") or "")
+              or _city_from_place(str(d.get("birth_place", ""))))
 
     # ----- Language: every event carries lang in data. Some legacy events
     # may not, so we fall back to "unknown". -----

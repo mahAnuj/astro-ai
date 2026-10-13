@@ -635,6 +635,101 @@ MUTATIONS = [
      "<span class=\"whitespace-nowrap\">{{ word }}</span>",
      "<span>{{ word }}</span>",
      "test_meta_words_are_nowrap_so_dates_do_not_split_at_hyphens"),
+
+    # --- #255: birth details out of the Telegram relay and the events log ---
+    #
+    # Each row re-breaks one leak or one silent failure that the privacy work
+    # closed. The Kaal Sarp row is the instructive one: it never failed loudly,
+    # because the call sat in try/except-pass and swallowed the AttributeError.
+    ("#255: the seeker's name and place go back into the kundli alert",
+     "src/astro_ai/routes/kundli.py",
+     "            key=short_key(_id_full), model=_model,",
+     "            key=f\"{details.name} {details.birth_place} {short_key(_id_full)}\", model=_model,",
+     "test_kundli_relay_is_a_diagnostic_not_an_identity"),
+
+    ("#255: the raw birth place goes back into the form_kundli event",
+     "src/astro_ai/routes/kundli.py",
+     "                \"identity\": _id_full[:32],",
+     "                \"identity\": _id_full[:32], \"birth_place\": details.birth_place,",
+     "test_kundli_event_keeps_analytics_and_drops_identity"),
+
+    ("#255: ChartError redaction disabled (a typo'd city reaches Telegram verbatim)",
+     "src/astro_ai/routes/llm_support.py",
+     "        if isinstance(err, ChartError):",
+     "        if False and isinstance(err, ChartError):",
+     "test_chart_error_is_relayed_without_its_message_or_traceback"),
+
+    ("#255: Kaal Sarp alert reads the nonexistent `is_present` again (never fired)",
+     "src/astro_ai/routes/dosha.py",
+     "            is_present=kaal_sarp.is_kaal_sarp,",
+     "            is_present=kaal_sarp.is_present,",
+     "test_dosha_relay_carries_no_birth_detail"),
+
+    ("#255: identity_key becomes an unkeyed hash (a lookup table from the plaintext)",
+     "src/astro_ai/identity.py",
+     "    return hmac.new(_subkey(), joined.encode(\"utf-8\"), hashlib.sha256).hexdigest()",
+     "    return hashlib.sha256(joined.encode(\"utf-8\")).hexdigest()",
+     "test_identity_key_is_not_an_unkeyed_hash"),
+
+    ("#255: session cookie loses Secure on Cloud Run",
+     "src/astro_ai/session.py",
+     "        secure=bool(os.environ.get(\"K_REVISION\")),",
+     "        secure=False,",
+     "test_session_cookie_is_secure_on_cloud_run"),
+
+    ("#255: audience_summary ignores the coarse age_band on new events",
+     "src/astro_ai/profiling.py",
+     "        _bump(age_hist, str(d.get(\"age_band\") or \"\")\n              or _age_bucket_from_dob(str(d.get(\"birth_date\", \"\"))))",
+     "        _bump(age_hist, _age_bucket_from_dob(str(d.get(\"birth_date\", \"\"))))",
+     "test_audience_summary_reads_new_shape_events"),
+
+    ("#255: audience_summary drops the legacy raw-field fallback (30 days of events vanish)",
+     "src/astro_ai/profiling.py",
+     "        _bump(age_hist, str(d.get(\"age_band\") or \"\")\n              or _age_bucket_from_dob(str(d.get(\"birth_date\", \"\"))))",
+     "        _bump(age_hist, str(d.get(\"age_band\") or \"\"))",
+     "test_audience_summary_still_reads_legacy_raw_events"),
+
+    ("#255: city goes back to storing the first comma token of a street address",
+     "src/astro_ai/profiling.py",
+     "    if len(tokens) > 3 or not tokens[0]:\n        return \"\"",
+     "    if not tokens[0]:\n        return \"\"",
+     "test_city_drops_street_addresses_instead_of_storing_a_fragment"),
+
+    ("#255: city stops recognising address words (flat / road / villa fragments stored)",
+     "src/astro_ai/profiling.py",
+     "        if _ADDRESS_WORDS.intersection(re.findall(r\"[^\\W\\d_]+\", tok)):\n            return \"\"",
+     "        if False:\n            return \"\"",
+     "test_city_drops_street_addresses_instead_of_storing_a_fragment"),
+
+    ("#255: city stops dropping c/o and email-shaped places",
+     "src/astro_ai/profiling.py",
+     "        if \"c/o\" in tok or \"@\" in tok:\n            return \"\"",
+     "        if False:\n            return \"\"",
+     "test_city_drops_street_addresses_instead_of_storing_a_fragment"),
+
+    ("#255: city stops recognising Devanagari address words (Hindi addresses stored)",
+     "src/astro_ai/profiling.py",
+     "        if any(w in tok for w in _ADDRESS_SUBSTRINGS_DEVANAGARI):\n            return \"\"",
+     "        if False:\n            return \"\"",
+     "test_city_drops_street_addresses_instead_of_storing_a_fragment"),
+
+    ("#255: /privacy points at a 'Delete my data' option that does not exist again",
+     "src/astro_ai/templates/privacy.html",
+     "<strong>Delete your data.</strong>",
+     "<strong>Delete my data</strong>",
+     "test_privacy_page_does_not_point_at_a_delete_option_that_does_not_exist"),
+
+    ("#255: /admin/activity loses its legacy-row branch (old events render blank)",
+     "src/astro_ai/templates/admin_activity.html",
+     "{% if e.data.identity %}",
+     "{% if True %}",
+     "test_admin_activity_renders_both_event_shapes"),
+
+    ("#255: /admin dashboard loses its legacy-row branch (old events render 'None')",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{% if e.data.get('identity') %}",
+     "{% if True %}",
+     "test_admin_dashboard_renders_both_event_shapes"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

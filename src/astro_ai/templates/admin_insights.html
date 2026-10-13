@@ -106,7 +106,7 @@
 
     {{ histogram(
         'Age bands',
-        'From Kundli birth_date (unknown = malformed or missing)',
+        'From the coarse age_band on Kundli events (unknown = missing or implausible). Events from before #255 may still hold a raw birth_date for up to 30 days.',
         summary.age_bands
     ) }}
 
@@ -118,9 +118,9 @@
 
     {{ histogram(
         'Top cities',
-        'First-token parse of Kundli birth_place (best-effort)',
+        'From the coarse city on Kundli events; blank when the place looks like a street address. Events from before #255 may still hold a raw birth_place for up to 30 days.',
         summary.top_cities,
-        empty_note='No Kundlis with a parseable birth_place yet.'
+        empty_note='No Kundlis with a usable city yet.'
     ) }}
 
     {{ histogram(

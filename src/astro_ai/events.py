@@ -28,9 +28,17 @@ Schema (per-day file, JSON — not JSONL, easier to CAS):
       ]
     }
 
-PII: birth details, emails, question text ARE stored. Same PII the site
-already stores in users.json + sends to Telegram alerts. Update privacy
-policy accordingly.
+PII (#255): `form_kundli` and `form_matching` no longer store name, birth
+date, time or place. They carry `identity.identity_key` hashes (HMAC: not
+reversible, and not guessable from a date, without the server secret), the
+rashi triple, and the coarse `profiling.coarse_profile` fields (age band, city) that keep
+/admin/insights working.
+
+Events STILL carry: the signed-in user's email on every event; `form_ask`
+question text and the answer body; `error` message and traceback (a ChartError,
+which embeds the birth place, is redacted in routes/llm_support). Rows written
+before #255 still hold raw birth details until they age out at
+EVENT_RETENTION_DAYS. templates/privacy.html discloses the remainder.
 """
 
 from __future__ import annotations

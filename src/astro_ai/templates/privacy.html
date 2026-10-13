@@ -10,14 +10,14 @@
 
   <header>
     <h1 class="font-marcellus text-3xl sm:text-4xl text-bhagya-ink mb-2">Privacy Policy</h1>
-    <p class="text-sm text-bhagya-muted">Last updated: {{ current_year() }}-08-06</p>
+    <p class="text-sm text-bhagya-muted">Last updated: 2026-10-11</p>
   </header>
 
   {# The short version — bold summary, sets expectations before the detail. #}
   <section class="border-2 border-bhagya-border bg-bhagya-cream-2/50 p-5 sm:p-7">
     <h2 class="font-marcellus text-lg sm:text-xl text-bhagya-ink mb-2">The short version</h2>
     <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
-      We keep your birth details so we can compute your chart. We keep your email only if you sign in with Google. We use standard third-party services for analytics, hosting, and AI-generated readings. <strong>We don't sell your data, we don't run ads, and we don't email you unless you subscribe.</strong> You can delete your data anytime by writing to us.
+      We keep your birth details so we can compute your chart. We keep your email only if you sign in with Google, subscribe, or write to us. We use standard third-party services for analytics, hosting, and AI-generated readings. <strong>We don't sell or rent your personal information, we don't run ads, and we don't email you unless you subscribe.</strong> You can ask us to delete your data anytime by writing to us.
     </p>
   </section>
 
@@ -29,7 +29,7 @@
       <div class="bg-white border border-bhagya-line p-4 sm:p-5">
         <div class="font-semibold text-bhagya-ink mb-1">Birth details (name, date, time, place)</div>
         <p class="text-sm text-bhagya-ink leading-relaxed">
-          Required to compute your Vedic birth chart. Stored in a signed browser cookie so you don't re-enter them each visit. If you sign in, they persist across your devices. Clear them from <a href="/account" class="text-bhagya-sindoor hover:underline">/account</a> or by clearing your browser cookies.
+          Required to compute your Vedic birth chart. Stored in a signed browser cookie so you don't re-enter them each visit. If you sign in, they persist across your devices. The &times; on a saved chart on the <a href="/" class="text-bhagya-sindoor hover:underline">home page</a> removes that chart from this browser and, if you are signed in, from your account. "Forget all charts" there, and clearing your browser cookies, clear this browser only: if you are signed in, the copy in your account comes back at your next sign-in until you ask us by email to delete it (see "Your rights").
         </p>
       </div>
 
@@ -43,7 +43,21 @@
       <div class="bg-white border border-bhagya-line p-4 sm:p-5">
         <div class="font-semibold text-bhagya-ink mb-1">Questions you ask</div>
         <p class="text-sm text-bhagya-ink leading-relaxed">
-          When you use the Ask feature, your question is sent (with your chart data) to an AI language-model provider to generate an answer. Cached briefly on our server so re-asking the same question is instant. Never used to train any AI model.
+          When you use the Ask feature, your question is sent (with your chart data) to an AI language-model provider to generate an answer. The question and answer are also written to our 30-day activity log (below), and the answer is cached in temporary server storage so re-asking the same question is instant. Never used to train any AI model.
+        </p>
+      </div>
+
+      <div class="bg-white border border-bhagya-line p-4 sm:p-5">
+        <div class="font-semibold text-bhagya-ink mb-1">Our 30-day activity log</div>
+        <p class="text-sm text-bhagya-ink leading-relaxed">
+          So we can spot errors and see what is used, we keep a private activity log, and we only read entries from the last 30 days. For each chart generated it records the language, the AI model used, the three signs (Lagna, Moon, Sun), an approximate age band, your birth city, and a keyed one-way hash of your birth details. It does <strong>not</strong> record your name, birth date, birth time or full place. If you are signed in it also records your email address. For each question you ask it records the question, the answer, and your email address if you are signed in.
+        </p>
+      </div>
+
+      <div class="bg-white border border-bhagya-line p-4 sm:p-5">
+        <div class="font-semibold text-bhagya-ink mb-1">Readings you share</div>
+        <p class="text-sm text-bhagya-ink leading-relaxed">
+          If you press "Share on WhatsApp" on a Kundli reading, we store the birth details you entered (name, date, time and place) and the full reading text behind a public link. <strong>Anyone who has the link can read it</strong>, with no sign-in. The link stops working after 30 days. If you were signed in, your Google account ID is stored with it. Pressing that button is the only thing that creates one.
         </p>
       </div>
 
@@ -57,7 +71,7 @@
       <div class="bg-white border border-bhagya-line p-4 sm:p-5">
         <div class="font-semibold text-bhagya-ink mb-1">Cookies</div>
         <p class="text-sm text-bhagya-ink leading-relaxed">
-          One signed session cookie (your birth details, language preference, sign-in state). One small counter for the daily 3-free-questions Ask limit. A couple of analytics cookies set by our analytics provider. No advertising cookies. No cross-site tracking.
+          One signed session cookie (your birth details, language preference, sign-in state, and the counter for the daily 3-free-questions Ask limit). A couple of analytics cookies set by our analytics provider. No advertising cookies. No cross-site tracking.
         </p>
       </div>
 
@@ -69,10 +83,13 @@
     <h2 class="font-marcellus text-2xl text-bhagya-ink mb-4">Who we share data with</h2>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
-        To operate the site we rely on a small number of standard third-party services: <strong>cloud infrastructure</strong> (hosting + logs), <strong>AI language-model providers</strong> (chart-reading + Ask generation), <strong>Google Sign-In</strong> (if you sign in), and <strong>analytics</strong> (anonymous usage patterns). Each receives only what it needs; none are permitted to use your data to train models or serve you ads.
+        To operate the site we rely on a small number of standard third-party services: <strong>cloud infrastructure</strong> (hosting + logs), <strong>AI language-model providers</strong> (chart-reading + Ask generation), <strong>Google Sign-In</strong> (if you sign in), <strong>email delivery</strong> (Brevo, used only to send you something you subscribed to or asked us to email, and to forward feedback to us), and <strong>analytics</strong> (anonymous usage patterns). Each receives only what it needs; none are permitted to use your data to train models or serve you ads.
       </p>
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
-        We <strong>do not sell your data</strong> to anyone. We <strong>do not run advertising</strong>. We <strong>do not share your personal details</strong> with astrologers, matrimonial services, or any other third party outside the operational vendors above.
+        We <strong>do not sell or rent your personal information</strong> to anyone. We <strong>do not run advertising</strong>. We <strong>do not share your personal details</strong> with astrologers, matrimonial services, or any other third party outside the operational vendors above.
+      </p>
+      <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
+        <strong>Notifications to the site operator.</strong> When you submit a question, send feedback, subscribe, or sign in, a notification containing that text or your email address is sent to the site operator through Telegram (a sign-in notification also includes the name on your Google profile). A muhurat search sends the event type and city, plus your email if you are signed in. If something goes wrong on a page, an error notice is sent with the page address, technical error details and, if you are signed in, your email. <strong>Birth details (name, date, time, place) are never included.</strong> Chart, matching, dosha and numerology notifications carry only the three signs, language, AI model, cost figures and a short one-way code.
       </p>
     </div>
   </section>
@@ -82,9 +99,11 @@
     <h2 class="font-marcellus text-2xl text-bhagya-ink mb-4">How long we keep it</h2>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6">
       <ul class="space-y-2 text-sm sm:text-base text-bhagya-ink">
-        <li>&bull; <strong>Browser cookies:</strong> extended on each visit; expire if you go inactive.</li>
+        <li>&bull; <strong>Browser cookies:</strong> kept for {{ cookie_days }} days from the last time something is saved to it (saving a chart, switching language, asking a question, signing in). Visits that only read it do not extend it.</li>
         <li>&bull; <strong>Signed-in account data:</strong> until you request deletion.</li>
-        <li>&bull; <strong>Cached AI-generated readings:</strong> a couple of weeks per unique chart+question combo.</li>
+        <li>&bull; <strong>Cached Kundli readings:</strong> kept indefinitely in cloud storage, keyed to a one-way fingerprint of the birth date, time and place. The reading's text can include the name you entered. Other cached answers (Ask, matching) live in temporary server storage that is cleared when the server restarts.</li>
+        <li>&bull; <strong>Activity log:</strong> we only read entries from the last 30 days. Older entries are not automatically deleted from storage; ask us to delete them if you want them gone.</li>
+        <li>&bull; <strong>Shared reading links:</strong> a link created with "Share on WhatsApp" stops working after 30 days. The copy in storage is not removed by our code at that point, so email us if you want it deleted sooner.</li>
         <li>&bull; <strong>Operational logs:</strong> a few weeks for debugging, then discarded.</li>
         <li>&bull; <strong>Analytics data:</strong> the provider's default retention window.</li>
       </ul>
@@ -97,16 +116,16 @@
     <div class="bg-white border border-bhagya-line p-5 sm:p-6">
       <ul class="space-y-3 text-sm sm:text-base text-bhagya-ink">
         <li>
-          <strong>See your data.</strong> Visit <a href="/account" class="text-bhagya-sindoor hover:underline">/account</a> when signed in — everything we hold on you is shown.
+          <strong>See your data.</strong> Visit <a href="/account" class="text-bhagya-sindoor hover:underline">/account</a> when signed in to see your profile and saved charts. For anything else, such as the activity log or cached readings, email us at <a href="mailto:{{ contact_email }}" class="text-bhagya-sindoor hover:underline">{{ contact_email }}</a>.
         </li>
         <li>
           <strong>Correct your data.</strong> Re-enter your birth details from the home page or Kundli page to overwrite what we have.
         </li>
         <li>
-          <strong>Delete your data.</strong> Use the <strong>Feedback button</strong> in the bottom-right corner of any page, select "Delete my data", and we'll remove your record within 7 days. No questions asked.
+          <strong>Delete your data.</strong> Email <a href="mailto:{{ contact_email }}" class="text-bhagya-sindoor hover:underline">{{ contact_email }}</a> and we'll delete it within 7 days. If you never signed in, we hold no email address for you: anonymous use is keyed to a one-way fingerprint of your birth details, not to who you are. To remove a cached reading, send us the birth date, time and place so we can compute the fingerprint and find it.
         </li>
         <li>
-          <strong>Withdraw sign-in consent.</strong> Click "Sign out" in the nav. You can also revoke Shubh Bhagya's Google access at <a href="https://myaccount.google.com/permissions" rel="noopener" class="text-bhagya-sindoor hover:underline">myaccount.google.com/permissions</a>.
+          <strong>Withdraw sign-in consent.</strong> Click "Sign out" on the <a href="/account" class="text-bhagya-sindoor hover:underline">/account</a> page. You can also revoke Shubh Bhagya's Google access at <a href="https://myaccount.google.com/permissions" rel="noopener" class="text-bhagya-sindoor hover:underline">myaccount.google.com/permissions</a>.
         </li>
       </ul>
     </div>
@@ -117,7 +136,7 @@
     <div class="bg-white border border-bhagya-line p-5">
       <h3 class="font-semibold text-bhagya-ink mb-1.5">Security</h3>
       <p class="text-sm text-bhagya-ink leading-relaxed">
-        All traffic runs over HTTPS. Session data is cryptographically signed so it can't be tampered with. We take reasonable industry-standard precautions; no online service can guarantee absolute security, so treat your birth details as you would any personal record online.
+        All traffic runs over HTTPS. Your session cookie is HttpOnly, SameSite=Lax and Secure. It is signed so it can't be tampered with, but signed is not encrypted: the contents can be read by anyone who has the cookie. We take reasonable industry-standard precautions; no online service can guarantee absolute security, so treat your birth details as you would any personal record online.
       </p>
     </div>
     <div class="bg-white border border-bhagya-line p-5">
@@ -132,10 +151,10 @@
     <h2 class="font-marcellus text-2xl text-bhagya-ink mb-3">Changes &amp; contact</h2>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3">
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
-        If we materially change this policy, we'll update the "Last updated" date at the top and — for signed-in users — surface a notice on <a href="/account" class="text-bhagya-sindoor hover:underline">/account</a>. Minor edits happen silently.
+        If we materially change this policy, we'll update the "Last updated" date at the top and, where we can, tell people who have emailed us. Minor edits happen silently.
       </p>
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
-        Questions, requests, or concerns: use the <strong>Feedback button</strong> in the bottom-right corner of any page. A human replies, usually within 48 hours.
+        Questions, requests, or concerns: email <a href="mailto:{{ contact_email }}" class="text-bhagya-sindoor hover:underline">{{ contact_email }}</a>, or use the <strong>Feedback button</strong> in the bottom-right corner of any page. A human replies, usually within 48 hours.
       </p>
     </div>
   </section>

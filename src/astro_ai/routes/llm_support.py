@@ -33,10 +33,20 @@ def _fire_error_alert(request, err: Exception, source: str) -> None:
         _path = request.url.path if request is not None else ""
         _method = request.method if request is not None else ""
         _tb_str = _tb.format_exc()
+        _msg = str(err) or repr(err)
+        from astro_ai.chart import ChartError
+
+        if isinstance(err, ChartError):
+            # ChartError messages embed the raw birth place (`{place!r}`), and
+            # the traceback repeats them. Class name only (#255): otherwise a
+            # typo'd city reaches Telegram and the events log verbatim, which
+            # the "stored only on your device" copy on the dosha forms denies.
+            _msg = "birth input rejected"
+            _tb_str = ""
         notify.error_seen(
             source=source,
             error_type=type(err).__name__,
-            error_message=str(err) or repr(err),
+            error_message=_msg,
             path=_path, method=_method,
             user_email=_user_email,
             traceback_str=_tb_str,
@@ -48,7 +58,7 @@ def _fire_error_alert(request, err: Exception, source: str) -> None:
             data={
                 "source": source,
                 "error_type": type(err).__name__,
-                "error_message": (str(err) or repr(err))[:500],
+                "error_message": _msg[:500],
                 "path": _path, "method": _method,
                 # Keep last ~1500 chars of traceback for post-hoc diagnosis.
                 "traceback": _tb_str[-1500:] if _tb_str else "",

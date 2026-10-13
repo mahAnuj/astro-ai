@@ -144,9 +144,17 @@ class ChartCollection:
 # ---------------------------------------------------------------------------
 
 
+def cookie_secret() -> str:
+    """The signing secret: the one place the env var and dev fallback are read.
+
+    Public because `identity.py` derives its HMAC subkey from it rather than
+    asking for a second secret — see that module for why.
+    """
+    return os.environ.get("ASTRO_AI_COOKIE_SECRET") or _DEV_SECRET
+
+
 def _serializer() -> URLSafeSerializer:
-    secret = os.environ.get("ASTRO_AI_COOKIE_SECRET") or _DEV_SECRET
-    return URLSafeSerializer(secret, salt="birth-details")
+    return URLSafeSerializer(cookie_secret(), salt="birth-details")
 
 
 def _load_session(request: Request) -> dict:
@@ -171,7 +179,12 @@ def _write_session(response: Response, data: dict) -> None:
         max_age=COOKIE_MAX_AGE,
         httponly=True,
         samesite="lax",
-        secure=False,  # dev only; flip to True when behind HTTPS-only
+        # Keyed on K_REVISION, which Cloud Run sets and local dev / TestClient
+        # leave unset: the browser sees HTTPS at Firebase Hosting and applies
+        # Secure there, but this function has no request to read the scheme
+        # from (Cloud Run itself sees plain http behind the proxy). Always-True
+        # would stop the cookie round-tripping over http://127.0.0.1.
+        secure=bool(os.environ.get("K_REVISION")),
     )
 
 

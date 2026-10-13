@@ -270,7 +270,11 @@
         </div>
         <div class="text-bhagya-ink mt-0.5">
           {% if e.type == 'form_kundli' %}
-            <span class="truncate block">{{ e.data.get('name') or '(anon)' }} · {{ e.data.get('birth_date') }} · {{ e.data.get('birth_place') }}</span>
+            {% if e.data.get('identity') %}
+            <span class="truncate block"><span class="font-mono text-xs text-bhagya-muted">{{ e.data.get('identity')[:8] }}</span> · {{ e.data.get('rashi_lagna') or '—' }} / {{ e.data.get('rashi_moon') or '—' }} / {{ e.data.get('rashi_sun') or '—' }}{% if e.data.get('age_band') %} · {{ e.data.get('age_band') }}{% endif %} · {{ e.data.get('city') or '—' }}{% if e.data.get('model') %} · {{ e.data.get('model') | truncate(24, True) }}{% endif %}</span>
+            {% else %}
+            <span class="truncate block">{{ e.data.get('name') or '(anon)' }} · {{ e.data.get('birth_date') or '—' }} · {{ e.data.get('birth_place') or '—' }}</span>
+            {% endif %}
           {% elif e.type == 'form_ask' %}
             <span class="block"><span class="text-bhagya-sindoor font-semibold">Q:</span> {{ (e.data.get('question') or '') | truncate(200, True) }}</span>
             {% if e.data.get('answer') %}
@@ -284,7 +288,11 @@
             <div class="mt-1 text-xs text-bhagya-muted-2 italic">Answer not captured (event predates 2026-08-06 or served from cache before cache-hit persistence was added).</div>
             {% endif %}
           {% elif e.type == 'form_matching' %}
-            <span class="truncate block">{{ e.data.get('groom_name') or '?' }} × {{ e.data.get('bride_name') or '?' }} · {{ e.data.get('total_score') }}</span>
+            {% if e.data.get('groom_key') or e.data.get('bride_key') %}
+            <span class="truncate block"><span class="font-mono text-xs text-bhagya-muted">{{ (e.data.get('groom_key') or '')[:8] or '?' }}</span> × <span class="font-mono text-xs text-bhagya-muted">{{ (e.data.get('bride_key') or '')[:8] or '?' }}</span> · {{ e.data.get('total_score') or '—' }}</span>
+            {% else %}
+            <span class="truncate block">{{ e.data.get('groom_name') or '?' }} × {{ e.data.get('bride_name') or '?' }} · {{ e.data.get('total_score') or '—' }}</span>
+            {% endif %}
           {% elif e.type == 'error' %}
             <span class="truncate block">{{ e.data.get('where', '?') }} · {{ (e.data.get('message') or '') | truncate(140, True) }}</span>
           {% else %}

@@ -148,6 +148,10 @@ def strip_reasoning_envelope(text: str) -> str:
 # Contextvars are async-safe and don't leak across requests.
 _last_provider: ContextVar[str] = ContextVar("_last_provider", default="")
 _last_model: ContextVar[str] = ContextVar("_last_model", default="")
+# Total tokens the most recent call reported. Set in _call_one on EVERY call
+# (None when the response carries no usage) so a fallback provider that omits
+# usage cannot inherit the figure from the one that failed before it.
+_last_usage: ContextVar[int | None] = ContextVar("_last_usage", default=None)
 
 
 def last_used_model() -> str:
@@ -161,6 +165,14 @@ def last_used_model() -> str:
     if not prov and not mod:
         return ""
     return f"{prov}:{mod}"
+
+
+def last_used_tokens() -> int | None:
+    """Total tokens the current request's most recent LLM call reported.
+
+    None when no call happened or the provider returned no usage block.
+    """
+    return _last_usage.get(None)
 
 
 # ─── Response quality validation ─────────────────────────────────────
@@ -546,6 +558,8 @@ def _call_one(provider: ProviderConfig, messages: list[dict]) -> str:
         log.info("provider %s (%s) does not accept reasoning_effort — "
                  "retrying without it and remembering", provider.name, model)
         response = client.chat.completions.create(model=model, messages=messages)
+
+    _last_usage.set(getattr(getattr(response, "usage", None), "total_tokens", None))
 
     choice = response.choices[0]
     content = choice.message.content or ""

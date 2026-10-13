@@ -17,12 +17,14 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 
 from astro_ai import cache, events, notify
 from astro_ai import providers as llm_providers
+from astro_ai.identity import identity_key, short_key
 from astro_ai.chart import ChartError, compute_chart
 from astro_ai.llm import generate_matching_narrative, parse_sectioned_reading
 from astro_ai.matching import compute_guna_milan
@@ -108,6 +110,7 @@ async def matching_result(
     # Declared out here so the except handler can read it even if the failure
     # happened before the closure was built.
     llm_invoked = [False]
+    llm_secs: list[float | None] = [None]
     if os.environ.get("OPENAI_API_KEY"):
         try:
             g_fp = cache.fingerprint_chart(g_birth_date, g_birth_time, g_birth_place)
@@ -131,15 +134,19 @@ async def matching_result(
             # a nested function where `nonlocal` would apply.
             def _generate() -> str:
                 llm_invoked[0] = True
-                return generate_matching_narrative(
-                    groom_name=g_name.strip(),
-                    bride_name=b_name.strip(),
-                    groom_chart=groom_chart,
-                    bride_chart=bride_chart,
-                    guna=guna,
-                    prompt_path=MATCHING_PROMPT_PATH,
-                    lang=lang,
-                )
+                started = time.monotonic()
+                try:
+                    return generate_matching_narrative(
+                        groom_name=g_name.strip(),
+                        bride_name=b_name.strip(),
+                        groom_chart=groom_chart,
+                        bride_chart=bride_chart,
+                        guna=guna,
+                        prompt_path=MATCHING_PROMPT_PATH,
+                        lang=lang,
+                    )
+                finally:
+                    llm_secs[0] = time.monotonic() - started
 
             narrative_text = _cached(
                 cache_key, route="matching", lang=lang, ttl_days=None,
@@ -167,22 +174,26 @@ async def matching_result(
     # hit) is reported when we do fire.
     _u_match = load_user(request)
     if not was_cached:
+        # Keyed hashes and Moon rashis only -- no names, dates or places (#255).
+        _g_key = identity_key(g_name, g_birth_date, g_birth_time, g_birth_place)
+        _b_key = identity_key(b_name, b_birth_date, b_birth_time, b_birth_place)
+        _model = llm_providers.last_used_model()
         notify.matching_done(
-            groom_name=g_name.strip(), groom_dob=g_birth_date,
-            bride_name=b_name.strip(), bride_dob=b_birth_date,
+            groom_moon=notify.chart_rashis(groom_chart)[1],
+            bride_moon=notify.chart_rashis(bride_chart)[1],
             total_score=f"{guna.total_awarded:g}/{guna.total_max} · {guna.overall_verdict}",
-            lang=lang, user_email=(_u_match.email if _u_match else ""),
-            model=llm_providers.last_used_model(),
+            lang=lang, groom_key=short_key(_g_key), bride_key=short_key(_b_key),
+            model=_model, tokens=llm_providers.last_used_tokens(),
+            latency_s=llm_secs[0],
         )
         events.record(
             type="form_matching",
             email=(_u_match.email if _u_match else ""),
             data={
-                "groom_name": g_name.strip(), "groom_dob": g_birth_date,
-                "bride_name": b_name.strip(), "bride_dob": b_birth_date,
+                "groom_key": _g_key[:32], "bride_key": _b_key[:32],
                 "total_score": f"{guna.total_awarded:g}/{guna.total_max}",
                 "verdict": guna.overall_verdict, "lang": lang,
-                "model": llm_providers.last_used_model(),
+                "model": _model,
             },
         )
 

@@ -56,8 +56,8 @@
         <thead>
           <tr class="text-left text-xs uppercase text-bhagya-muted border-b border-bhagya-line">
             <th class="pb-1.5 pr-3">When</th>
-            <th class="pb-1.5 pr-3">Name</th>
-            <th class="pb-1.5 pr-3">Birth</th>
+            <th class="pb-1.5 pr-3">Who</th>
+            <th class="pb-1.5 pr-3">Chart</th>
             <th class="pb-1.5 pr-3">Place</th>
             <th class="pb-1.5 pr-3">Lang</th>
             <th class="pb-1.5 pr-3">Email</th>
@@ -68,9 +68,20 @@
           {% for e in kundlis %}
           <tr class="border-b border-bhagya-line-2 align-top">
             <td class="py-1.5 pr-3 text-bhagya-muted tabular-nums whitespace-nowrap">{{ e.ts[:16] | replace('T', ' ') }}</td>
+            {# New rows (#255) carry a keyed hash + rashi triple + coarse profile;
+               legacy rows (up to 30 days old) still carry the raw fields. #}
+            {% if e.data.identity %}
+            <td class="py-1.5 pr-3 text-xs text-bhagya-muted font-mono">{{ e.data.identity[:8] }}</td>
+            <td class="py-1.5 pr-3 text-xs">
+              {{ e.data.rashi_lagna or '—' }} / {{ e.data.rashi_moon or '—' }} / {{ e.data.rashi_sun or '—' }}
+              {% if e.data.age_band %}<span class="text-bhagya-muted">· {{ e.data.age_band }}</span>{% endif %}
+            </td>
+            <td class="py-1.5 pr-3">{{ e.data.city or '—' }}</td>
+            {% else %}
             <td class="py-1.5 pr-3 text-bhagya-ink">{{ e.data.name or '—' }}</td>
-            <td class="py-1.5 pr-3 tabular-nums whitespace-nowrap">{{ e.data.birth_date }} {{ e.data.birth_time }}</td>
-            <td class="py-1.5 pr-3">{{ e.data.birth_place }}</td>
+            <td class="py-1.5 pr-3 tabular-nums whitespace-nowrap">{{ ((e.data.birth_date or '') ~ ' ' ~ (e.data.birth_time or '')) | trim or '—' }}</td>
+            <td class="py-1.5 pr-3">{{ e.data.birth_place or '—' }}</td>
+            {% endif %}
             <td class="py-1.5 pr-3 uppercase text-xs">{{ e.data.lang }}</td>
             <td class="py-1.5 pr-3 text-xs text-bhagya-muted truncate max-w-[10rem]">{{ e.email or '—' }}</td>
             <td class="py-1.5 text-xs text-bhagya-muted font-mono">{{ (e.data.model or '—') | truncate(24, True) }}</td>
@@ -147,8 +158,13 @@
           {% for e in matches %}
           <tr class="border-b border-bhagya-line-2">
             <td class="py-1.5 pr-3 text-bhagya-muted tabular-nums whitespace-nowrap">{{ e.ts[:16] | replace('T', ' ') }}</td>
+            {% if e.data.groom_key or e.data.bride_key %}
+            <td class="py-1.5 pr-3 text-xs text-bhagya-muted font-mono">{{ (e.data.groom_key or '')[:8] or '?' }}</td>
+            <td class="py-1.5 pr-3 text-xs text-bhagya-muted font-mono">{{ (e.data.bride_key or '')[:8] or '?' }}</td>
+            {% else %}
             <td class="py-1.5 pr-3">{{ e.data.groom_name or '?' }} <span class="text-xs text-bhagya-muted tabular-nums">{{ e.data.groom_dob }}</span></td>
             <td class="py-1.5 pr-3">{{ e.data.bride_name or '?' }} <span class="text-xs text-bhagya-muted tabular-nums">{{ e.data.bride_dob }}</span></td>
+            {% endif %}
             <td class="py-1.5 pr-3 tabular-nums font-semibold">{{ e.data.total_score }}</td>
             <td class="py-1.5 text-xs">{{ e.data.verdict }}</td>
           </tr>

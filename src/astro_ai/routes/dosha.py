@@ -19,6 +19,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse
 
 from astro_ai import notify
+from astro_ai.identity import identity_key, short_key
 from astro_ai.chart import (
     ChartError,
     compute_chart,
@@ -29,7 +30,7 @@ from astro_ai.chart import (
 from astro_ai.llm import BirthDetails
 from astro_ai.routes.deps import _lang, _save_collection_synced, templates
 from astro_ai.routes.llm_support import _fire_error_alert
-from astro_ai.session import load_collection, load_user
+from astro_ai.session import load_collection
 
 router = APIRouter()
 
@@ -76,6 +77,16 @@ def _prefill_from_cookie(request: Request) -> dict | None:
         "birth_date": saved.birth_date,
         "birth_time": saved.birth_time,
         "birth_place": saved.birth_place,
+    }
+
+
+def _dosha_relay(chart, details: BirthDetails) -> dict:
+    """The identity-free part of a dosha alert: rashi triple + keyed short hash (#255)."""
+    lagna, moon, sun = notify.chart_rashis(chart)
+    return {
+        "lagna": lagna, "moon": moon, "sun": sun,
+        "key": short_key(identity_key(
+            details.name, details.birth_date, details.birth_time, details.birth_place)),
     }
 
 
@@ -138,13 +149,11 @@ async def manglik_check_result(
         collection = None
     manglik = compute_manglik_details(chart)
     try:
-        _u = load_user(request)
         notify.dosha_checked(
             dosha_type="Manglik",
-            birth_place=details.birth_place,
             is_present=manglik.is_manglik,
             extra=f"{manglik.effective_status}, {manglik.severity}" if manglik.is_manglik else "",
-            user_email=(_u.email if _u else ""),
+            **_dosha_relay(chart, details),
         )
     except Exception:
         pass
@@ -205,7 +214,6 @@ async def sade_sati_check_result(
         collection = None
     sade_sati = compute_sade_sati_details(chart)
     try:
-        _u = load_user(request)
         if sade_sati.is_active:
             _extra = f"{sade_sati.phase or ''} phase"
         elif sade_sati.ashtama_shani:
@@ -216,10 +224,9 @@ async def sade_sati_check_result(
             _extra = f"Saturn in H{sade_sati.saturn_house_from_moon} from Moon"
         notify.dosha_checked(
             dosha_type="Sade Sati",
-            birth_place=details.birth_place,
             is_present=(sade_sati.is_active or sade_sati.ashtama_shani or sade_sati.kantaka_shani),
             extra=_extra,
-            user_email=(_u.email if _u else ""),
+            **_dosha_relay(chart, details),
         )
     except Exception:
         pass
@@ -290,13 +297,15 @@ async def kaal_sarp_check_result(
         collection = None
     kaal_sarp = compute_kaal_sarp(chart)
     try:
-        _u = load_user(request)
         notify.dosha_checked(
             dosha_type="Kaal Sarp",
-            birth_place=details.birth_place,
-            is_present=kaal_sarp.is_present,
-            extra=(kaal_sarp.type_name or "") if kaal_sarp.is_present else "",
-            user_email=(_u.email if _u else ""),
+            # `is_kaal_sarp`, not `is_present`: the latter does not exist, and
+            # this call sits in try/except-pass, so the AttributeError silently
+            # suppressed every Kaal Sarp alert until #255's test asserted one
+            # arrived.
+            is_present=kaal_sarp.is_kaal_sarp,
+            extra=(kaal_sarp.type_name or "") if kaal_sarp.is_kaal_sarp else "",
+            **_dosha_relay(chart, details),
         )
     except Exception:
         pass
