@@ -1607,8 +1607,8 @@ def topic_summaries_for_chart(
     # while refusing to link the article that explains it.
     #
     # The known residue is a LABELLING problem, not a selection one: _linkify_learn
-    # uses seo_title, so a cancelled chart gets an anchor reading "...How to Check,
-    # Remedies" beside a "Cancelled" panel. Tracked as a follow-up.
+    # uses seo_title, so it must stay neutral beside a "Cancelled" panel (#311 made
+    # it "Is It Real? Cancellation Rules Most Skip"); never imply the reader is Manglik.
     if flags.manglik:
         selected.append("manglik-dosh")
     if flags.sade_sati:
