@@ -422,7 +422,12 @@ MEASURE = ROOT / ".github" / "workflows" / "agent-measure.yml"
 
 def test_commit_job_grants_exactly_the_scopes_the_collector_needs_and_orders_its_steps():
     job = yaml.safe_load(MEASURE.read_text())["jobs"]["commit"]
-    assert job["permissions"] == {"contents": "write", "actions": "read", "pull-requests": "read"}
+    # `issues: read` was added by #344 for scripts/collect_issue_backlog.py.
+    # This is an exact pin, not a floor: a scope appearing here that no step
+    # needs is as much a defect as a missing one, so widening it has to be a
+    # deliberate edit to this line rather than something a PR can drift into.
+    assert job["permissions"] == {"contents": "write", "actions": "read",
+                                  "pull-requests": "read", "issues": "read"}
     names = [s.get("name") for s in job["steps"]]
     collect_i, commit_i = names.index("Collect loop measurements"), names.index("Commit the measurement")
     assert collect_i < commit_i

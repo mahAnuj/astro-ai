@@ -56,11 +56,26 @@ jobs:
           uv run python scripts/fetch_gsc.py --days 28 --band > /tmp/gsc-band.json
           uv run python scripts/fetch_gsc.py --days 28        > /tmp/gsc-all.json
           uv run python scripts/fetch_ga4.py --days 28        > /tmp/ga4.json
+          # The series and the two trend reports (#344). Each is one more API
+          # call against the same token; none of them changes the three files
+          # above, which the analyst's prompt already reads by name.
+          #
+          # These exist because "daily users" and "trending pages" were believed
+          # to need a history store. They do not: GSC keeps 16 months and GA4
+          # returns a `date` dimension on request, so the series was always
+          # one query away. Measured 2026-10-14: 97 days of GA4 back to
+          # 2026-06-28, which is when the property started collecting.
+          uv run python scripts/fetch_ga4.py --days 28 --daily        > /tmp/ga4-daily.json
+          uv run python scripts/fetch_gsc.py --days 28 --by date      > /tmp/gsc-daily.json
+          uv run python scripts/fetch_gsc.py --days 28 --trend --by page  > /tmp/gsc-trend-page.json
+          uv run python scripts/fetch_gsc.py --days 28 --trend --by query > /tmp/gsc-trend-query.json
           {
             echo "### Window"
             jq -r '.window | "\(.[0]) to \(.[1])"' /tmp/ga4.json
             echo "- band queries (6-20): $(jq '.rows | length' /tmp/gsc-band.json)"
             echo "- landing pages: $(jq '.rows | length' /tmp/ga4.json)"
+            echo "- daily series: $(jq '.days_with_traffic' /tmp/ga4-daily.json) of $(jq '.days' /tmp/ga4-daily.json) days with traffic"
+            echo "- biggest page move: $(jq -r '.rows[0] | "\(.page) \(.impressions_prev) -> \(.impressions)"' /tmp/gsc-trend-page.json)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: anthropics/claude-code-action@v1
@@ -178,6 +193,7 @@ jobs:
       # reads as a 403 and the step would write nothing, quietly.
       actions: read
       pull-requests: read
+      issues: read           # `gh issue list` in the backlog collector below
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -203,6 +219,19 @@ jobs:
         run: |
           python3 scripts/collect_loop_measurements.py --out measurements \
             || echo "::warning::loop measurements not refreshed; measurements/loop.json is the previous one"
+
+      # #335: the open backlog, with a derived area/type/priority, so the ops
+      # page can render it without calling the GitHub API per request — Cloud
+      # Run's egress IP is shared and an unauthenticated call would start
+      # failing at 60/hour for reasons invisible to the owner.
+      - name: Collect the issue backlog
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 scripts/collect_issue_backlog.py --repo "$GH_REPO" --out measurements/issues.json \
+            || echo "::warning::backlog not refreshed; measurements/issues.json is the previous one"
 
       - name: Commit the measurement
         run: |

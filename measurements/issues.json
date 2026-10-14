@@ -1,0 +1,979 @@
+{
+  "generated_at": "2026-10-14T07:22:00Z",
+  "repo": "mahAnuj/astro-ai",
+  "open": 66,
+  "by_area": {
+    "INFRA": 12,
+    "UNCLASSIFIED": 12,
+    "REDESIGN": 10,
+    "FEATURE": 7,
+    "UI": 4,
+    "BUG": 3,
+    "NUMEROLOGY": 3,
+    "SEO": 2,
+    "RASHIFAL": 2,
+    "DESIGN": 2,
+    "TASK": 2,
+    "CHORE": 2,
+    "CONVERSION": 1,
+    "KUNDLI": 1,
+    "BLOCKER": 1,
+    "KNOWLEDGE": 1,
+    "MATCHING": 1
+  },
+  "by_type": {
+    "enhancement": 22,
+    "untyped": 18,
+    "bug": 8,
+    "design": 6,
+    "correctness": 6,
+    "chore": 5,
+    "ui": 1
+  },
+  "by_priority": {
+    "unset": 43,
+    "medium": 17,
+    "high": 6
+  },
+  "blocked": 7,
+  "rows": [
+    {
+      "number": 341,
+      "title": "[INFRA] verify-production's exact deploy gate waits 12 min for a SHA that may never deploy (measurements-only HEAD) and fails red",
+      "area": "INFRA",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-10-13T23:19:30Z",
+      "updated": "2026-10-13T23:19:30Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 340,
+      "title": "[INFRA] The exact tier is live, but the tree still says it never ran - and prints --set-env-vars, which CLAUDE.md forbids",
+      "area": "INFRA",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-10-13T23:19:23Z",
+      "updated": "2026-10-13T23:19:23Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 339,
+      "title": "[INFRA] GitHub refused to start 6 Actions jobs on 2026-10-12: 'recent account payments have failed or your spending limit needs to be increased'",
+      "area": "INFRA",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "needs-human-review",
+        "chore"
+      ],
+      "created": "2026-10-13T23:19:21Z",
+      "updated": "2026-10-13T23:19:21Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 338,
+      "title": "[INFRA] The loop's own outcomes and cost are not committed anywhere a page can read them",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "high",
+      "labels": [
+        "category:technical",
+        "priority:high",
+        "needs-human-review"
+      ],
+      "created": "2026-10-13T18:09:21Z",
+      "updated": "2026-10-13T18:31:58Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 335,
+      "title": "[INFRA] Nothing shows whether the agent team is working, failing or costing too much — build /admin/ops",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "high",
+      "labels": [
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-10-13T17:49:46Z",
+      "updated": "2026-10-13T18:09:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 329,
+      "title": "[CONVERSION] /learn/manglik-dosh/ explains how to check Manglik status but never links the site's own checker",
+      "area": "CONVERSION",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-13T01:50:07Z",
+      "updated": "2026-10-13T01:50:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 327,
+      "title": "[INFRA] Nothing checks the AI output against the prompt's own rules, so a model swap is invisible",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "medium",
+      "labels": [
+        "category:technical",
+        "priority:medium"
+      ],
+      "created": "2026-10-11T18:12:08Z",
+      "updated": "2026-10-11T18:12:08Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 326,
+      "title": "[INFRA] Loop outcome report (weekly)",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-11T16:45:57Z",
+      "updated": "2026-10-13T10:54:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 323,
+      "title": "[INFRA] The steward agent's gh is the Claude App token: check-runs and Actions runs return 403 inside the agent that must diagnose from them",
+      "area": "INFRA",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "needs-human-review"
+      ],
+      "created": "2026-10-10T07:06:20Z",
+      "updated": "2026-10-11T16:50:43Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 317,
+      "title": "[INFRA] Harden verify_workflows.py: two missing checks and a heredoc false positive",
+      "area": "INFRA",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-09T16:33:15Z",
+      "updated": "2026-10-09T16:33:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 310,
+      "title": "[UI] PWA install banner covers the primary CTA on the first fold, mobile and desktop",
+      "area": "UI",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "design-proposal"
+      ],
+      "created": "2026-10-09T00:18:11Z",
+      "updated": "2026-10-09T03:21:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 309,
+      "title": "[UI] Subscribe modal fires over the empty form on the second tool page a visitor opens",
+      "area": "UI",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "design-proposal"
+      ],
+      "created": "2026-10-09T00:18:09Z",
+      "updated": "2026-10-09T00:18:09Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 308,
+      "title": "[UI] Mobile feedback FAB sits on top of reading text on result and form pages",
+      "area": "UI",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "design-proposal"
+      ],
+      "created": "2026-10-09T00:18:08Z",
+      "updated": "2026-10-09T00:18:08Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 307,
+      "title": "[UI] Sub-12px text is back: 10px tab-bar labels on every page, 234 sub-12px nodes on /learn, chip counts at 4.21:1",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-10-09T00:18:06Z",
+      "updated": "2026-10-09T00:18:06Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 291,
+      "title": "Workflow prompts still label GSC pages as 'queries' and GA4 row count as 'landing pages' (follow-up to #272)",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-08T07:14:27Z",
+      "updated": "2026-10-08T07:14:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 282,
+      "title": "[INFRA] Set BUILD_SHA on the Cloud Build trigger, then collapse the duplicated production checks",
+      "area": "INFRA",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-10-08T06:16:12Z",
+      "updated": "2026-10-08T07:15:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 279,
+      "title": "[INFRA] CI holds 1 of 8 registered corpus books and nothing fetches the rest — 4 are fixable free, 4 need a human decision",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-08T05:53:58Z",
+      "updated": "2026-10-09T22:26:51Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 278,
+      "title": "[INFRA] agent-discover/agent-work (and 4 more workflows) never install poppler-utils — corpus_search.py and fetch_corpus.py fail; research's fetch_corpus --list is a dead flag",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-08T05:53:57Z",
+      "updated": "2026-10-09T22:26:53Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 267,
+      "title": "[SEO] Organic traction is real and unpromoted — optimise the 6–20 band before publishing more",
+      "area": "SEO",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-09-19T13:44:15Z",
+      "updated": "2026-09-19T17:06:34Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 266,
+      "title": "[BUG] /kundli returns \"high demand\" for every chart — Groq 413, the natal request is bigger than the whole TPM budget",
+      "area": "BUG",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-09-05T06:54:53Z",
+      "updated": "2026-10-13T23:19:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 265,
+      "title": "The og:image card bakes \"Swiss Ephemeris\" and a hardcoded explainer count into every social preview",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-09-04T11:06:50Z",
+      "updated": "2026-09-04T11:06:50Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 264,
+      "title": "/ask as a thread: the design shows multi-turn, the app has no conversation history",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement"
+      ],
+      "created": "2026-09-04T04:49:03Z",
+      "updated": "2026-09-04T04:49:03Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 263,
+      "title": "/ask: the citation line the design wants has no data behind it",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "needs-human-review"
+      ],
+      "created": "2026-09-04T04:48:44Z",
+      "updated": "2026-09-04T04:48:44Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 262,
+      "title": "Delete rashifal.html — 246 lines of dead code, now the only purple file left",
+      "area": "UNCLASSIFIED",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-09-04T04:47:35Z",
+      "updated": "2026-09-04T04:47:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 254,
+      "title": "Six pages use `prose` classes that have never had any rules — the typography plugin was never installed",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "priority:medium"
+      ],
+      "created": "2026-09-02T12:18:38Z",
+      "updated": "2026-09-02T12:18:38Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 253,
+      "title": "The service worker has been serving a stale stylesheet to returning visitors since 2026-08-16",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high"
+      ],
+      "created": "2026-09-02T12:18:19Z",
+      "updated": "2026-09-04T11:17:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 251,
+      "title": "Redesign: motion — chart cast, dasha bars, hero glow, nav condense",
+      "area": "REDESIGN",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "priority:medium"
+      ],
+      "created": "2026-09-02T10:10:01Z",
+      "updated": "2026-09-04T14:56:20Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 250,
+      "title": "Redesign: Learning Hub — 2 files, 76 articles, and one gate that hates reflowing",
+      "area": "REDESIGN",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "priority:medium"
+      ],
+      "created": "2026-09-02T10:09:40Z",
+      "updated": "2026-09-04T14:56:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 249,
+      "title": "Redesign: Vivah Muhurat (muhurat_finder.html, muhurat_landing.html)",
+      "area": "REDESIGN",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "priority:medium"
+      ],
+      "created": "2026-09-02T10:09:19Z",
+      "updated": "2026-09-04T14:56:12Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 248,
+      "title": "Redesign: Ask (ask.html, _ask_cta.html)",
+      "area": "REDESIGN",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "priority:medium"
+      ],
+      "created": "2026-09-02T10:09:02Z",
+      "updated": "2026-09-04T14:53:46Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 247,
+      "title": "Redesign: Numerology (numerology.html) — two gates and production CI grep this page",
+      "area": "REDESIGN",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "priority:medium"
+      ],
+      "created": "2026-09-02T10:08:41Z",
+      "updated": "2026-09-04T14:56:10Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 246,
+      "title": "Redesign: Kundli Matching (matching.html, matching_result.html)",
+      "area": "REDESIGN",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "priority:medium"
+      ],
+      "created": "2026-09-02T10:08:23Z",
+      "updated": "2026-09-04T14:56:02Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 245,
+      "title": "Redesign: Today + Panchang (today.html, panchang.html, _panchang_strip.html, _gochar_panel.html)",
+      "area": "REDESIGN",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "priority:medium"
+      ],
+      "created": "2026-09-02T10:08:07Z",
+      "updated": "2026-09-04T14:56:00Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 244,
+      "title": "Redesign: Daily Rashifal — highest silent-breakage risk in the epic",
+      "area": "REDESIGN",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "priority:medium"
+      ],
+      "created": "2026-09-02T10:07:49Z",
+      "updated": "2026-09-04T14:55:54Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 243,
+      "title": "Redesign: Kundli result (result.html, _south_indian_chart.html)",
+      "area": "REDESIGN",
+      "type": "enhancement",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "priority:high"
+      ],
+      "created": "2026-09-02T10:07:28Z",
+      "updated": "2026-09-04T14:54:11Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 242,
+      "title": "Redesign: homepage (index.html)",
+      "area": "REDESIGN",
+      "type": "enhancement",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "priority:high",
+        "page:homepage"
+      ],
+      "created": "2026-09-02T10:07:02Z",
+      "updated": "2026-09-04T14:55:51Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 233,
+      "title": "Epic: visual redesign — modern devotional identity (desktop + mobile)",
+      "area": "UNCLASSIFIED",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "design-proposal",
+        "needs-human-review"
+      ],
+      "created": "2026-09-02T10:03:54Z",
+      "updated": "2026-09-04T14:53:44Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 232,
+      "title": "rashifal page: memoise the blast text so twelve concurrent reads become one GCS call",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-09-01T18:01:50Z",
+      "updated": "2026-09-01T18:01:50Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 231,
+      "title": "Cosmic Card is served as SVG, so snapshot og:image previews fail on every major platform",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-08-31T17:52:23Z",
+      "updated": "2026-08-31T17:52:23Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 230,
+      "title": "prompts/*.txt assert sourced astrological claims, and no gate can see them",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-08-30T07:22:10Z",
+      "updated": "2026-08-30T07:22:10Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 219,
+      "title": "muhurat combustion: degree-orb model vs the days-from-heliacal model, and two blocking states we don't model",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-08-23T09:00:34Z",
+      "updated": "2026-08-23T09:00:34Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 212,
+      "title": "rashifal: prompt input grew 18.5%/call on the path that caused the 21-day outage",
+      "area": "RASHIFAL",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-08-22T08:07:10Z",
+      "updated": "2026-08-26T06:49:14Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 211,
+      "title": "rashifal: the 12 daily readings differ because the prompt says to, not because anything is computed — Gochara is in the corpus and unused",
+      "area": "RASHIFAL",
+      "type": "correctness",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "astrology-correctness"
+      ],
+      "created": "2026-08-20T17:30:19Z",
+      "updated": "2026-08-20T17:30:19Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 209,
+      "title": "kundli: /kundli landing and /about advertise nakshatra padas, moolatrikona and Swiss Ephemeris — none of the three is what the engine computes",
+      "area": "KUNDLI",
+      "type": "correctness",
+      "priority": "medium",
+      "labels": [
+        "priority:medium",
+        "astrology-correctness"
+      ],
+      "created": "2026-08-16T09:30:19Z",
+      "updated": "2026-08-16T12:26:11Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 203,
+      "title": "[DESIGN] Name numerology: build a \"Your Name\" section inside the /numerology reading — not a name-correction tool",
+      "area": "DESIGN",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "design-proposal",
+        "needs-human-review"
+      ],
+      "created": "2026-08-15T04:51:01Z",
+      "updated": "2026-08-15T10:02:36Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 201,
+      "title": "numerology: resolving #163's 23 pair disagreements needs a directional 9x9 model — symmetric frozenset tables cannot express Johari",
+      "area": "NUMEROLOGY",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-08-10T12:56:21Z",
+      "updated": "2026-08-10T12:56:21Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 200,
+      "title": "numerology: user-facing copy names books and authors throughout, against CLAUDE.md's cite-the-tradition rule",
+      "area": "NUMEROLOGY",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-08-10T12:55:44Z",
+      "updated": "2026-08-10T12:55:44Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 198,
+      "title": "[DESIGN] Mobile hero has no motion — and after #195 the sample chart now costs the CTA nothing",
+      "area": "DESIGN",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "design-proposal",
+        "page:homepage",
+        "needs-human-review",
+        "skill:ui-designer"
+      ],
+      "created": "2026-08-10T12:53:11Z",
+      "updated": "2026-08-10T12:53:11Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 194,
+      "title": "[TASK] Nothing verifies that a cited quotation appears within its cited line range — 6 of 13 citations were short",
+      "area": "TASK",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement"
+      ],
+      "created": "2026-08-08T18:59:03Z",
+      "updated": "2026-08-08T18:59:03Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 191,
+      "title": "[TASK] Extract the ~22,000 readable lines already in data/ — no OCR needed",
+      "area": "TASK",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement"
+      ],
+      "created": "2026-08-08T12:47:46Z",
+      "updated": "2026-08-08T12:55:02Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 185,
+      "title": "[CHORE] Decide whether the #154 route-table guard should become a permanent gate",
+      "area": "CHORE",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement"
+      ],
+      "created": "2026-08-08T09:45:58Z",
+      "updated": "2026-08-26T12:11:39Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 184,
+      "title": "[CHORE] Post-#154 cleanup: stale main.py doc pointers + dead code",
+      "area": "CHORE",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement"
+      ],
+      "created": "2026-08-08T09:45:41Z",
+      "updated": "2026-08-08T09:45:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 178,
+      "title": "[BLOCKER] Ashtakoota + Lo Shu + Rudraksha rules have no source in repo — acquire Muhurtha and a Lo Shu source, or remove the claims",
+      "area": "BLOCKER",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement"
+      ],
+      "created": "2026-08-08T09:02:35Z",
+      "updated": "2026-08-25T14:17:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 177,
+      "title": "knowledge: no Ashtakoot Guna Milan material in the corpus or in data/ — the entire 36-point engine + verdict bands are untraceable, and rashis.md points at a vedic_reference.md §26.5 that does not exist",
+      "area": "KNOWLEDGE",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-08-08T08:55:15Z",
+      "updated": "2026-08-16T17:48:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 175,
+      "title": "matching: Vashya koota collapses the 5x5 matrix to 3 tiers and ignores the half-sign splits — Scorpio Moon scores 0/2 against 11 of 12 rashis",
+      "area": "MATCHING",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-08-08T08:52:09Z",
+      "updated": "2026-08-16T17:19:49Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 163,
+      "title": "numerology: two compatibility tables disagree on 23 of 45 pairs; 3 table rows are unreachable",
+      "area": "NUMEROLOGY",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-08-08T08:47:35Z",
+      "updated": "2026-08-26T14:54:55Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 159,
+      "title": "[FEATURE] Local RAG index over knowledge/*.md + data/ books for citation-bearing rule lookup",
+      "area": "FEATURE",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement"
+      ],
+      "created": "2026-08-08T08:31:53Z",
+      "updated": "2026-08-25T14:17:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 151,
+      "title": "[BUG] knowledge/*.md has no Panchang-anga material — astrological claims on /panchang cannot trace to the corpus",
+      "area": "BUG",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-08-07T15:59:26Z",
+      "updated": "2026-08-07T15:59:26Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 150,
+      "title": "[BUG] /panchang still omits Yamaganda, Gulikai, Brahma Muhurta and moonrise/moonset — #132 Phase 1 gap",
+      "area": "BUG",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-08-07T15:59:16Z",
+      "updated": "2026-08-27T04:14:14Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 140,
+      "title": "[FEATURE] User profiling insights — audience shape from birth details + question text",
+      "area": "FEATURE",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "category:content"
+      ],
+      "created": "2026-08-06T11:56:00Z",
+      "updated": "2026-08-07T15:42:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 131,
+      "title": "[FEATURE] PDF download of Kundli — matchmaking use case gap",
+      "area": "FEATURE",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "priority:medium"
+      ],
+      "created": "2026-07-31T04:32:11Z",
+      "updated": "2026-08-05T05:26:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 129,
+      "title": "[FEATURE] Add Shodashvarga divisional charts (D-1 to D-60)",
+      "area": "FEATURE",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "priority:medium"
+      ],
+      "created": "2026-07-31T04:31:25Z",
+      "updated": "2026-07-31T14:39:02Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 128,
+      "title": "[FEATURE] Add Ashtakvarga calculator — competitor gap",
+      "area": "FEATURE",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "priority:medium"
+      ],
+      "created": "2026-07-31T04:31:23Z",
+      "updated": "2026-07-31T14:44:38Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 124,
+      "title": "[SEO] Move Hindi from client-side toggle to /hi/... URLs with hreflang",
+      "area": "SEO",
+      "type": "untyped",
+      "priority": "high",
+      "labels": [
+        "seo",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-07-31T04:30:11Z",
+      "updated": "2026-10-09T22:26:56Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 115,
+      "title": "[FEATURE] Timeline Lotus — Vimshottari Dasha as scrubbable 3D helix, bandwidth-adaptive",
+      "area": "FEATURE",
+      "type": "untyped",
+      "priority": "medium",
+      "labels": [
+        "priority:medium"
+      ],
+      "created": "2026-07-29T19:04:36Z",
+      "updated": "2026-07-29T19:58:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 114,
+      "title": "[FEATURE] Interactive 3D birth chart — WebGL mandala with bandwidth-adaptive fallback",
+      "area": "FEATURE",
+      "type": "untyped",
+      "priority": "medium",
+      "labels": [
+        "priority:medium"
+      ],
+      "created": "2026-07-29T19:04:05Z",
+      "updated": "2026-07-29T19:58:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    }
+  ]
+}

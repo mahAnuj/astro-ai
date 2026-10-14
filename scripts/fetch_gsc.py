@@ -17,6 +17,25 @@ no new content, which is why they outrank publishing more.
 Ranked by impressions x achievable CTR gain, not by impressions alone: a query
 at position 11 with 2,000 impressions is worth more than one at position 4 with
 5,000, because the second has already won.
+
+TWO MODES BEYOND THE SNAPSHOT
+-----------------------------
+`--by date` returns one row per day. `--trend` returns the same dimension
+measured over TWO adjacent windows with the delta between them.
+
+Both exist because "trending" was believed to be impossible here: nothing in
+this repo retains history, each run overwrites its JSON, so a trend looked like
+it needed a history store first. It does not. Search Console keeps 16 months
+and will return a `date` dimension or any window you ask for -- GSC IS the
+history store, and the gap was that neither was ever requested.
+
+Measured 2026-10-14, 28 days against the 28 before: /learn/rahu-mahadasha-ketu-
+antardasha/ went 146 -> 1,589 impressions and /festivals went 1,598 -> 228.
+Neither movement was visible anywhere in this repo before.
+
+A `--trend --by query` carries the same ~9% coverage caveat as any query fetch,
+and the emitted document repeats it, because a ranked list of risers looks
+equally authoritative whether it saw all the data or a twelfth of it.
 """
 
 from __future__ import annotations
@@ -26,6 +45,7 @@ import json
 import os
 import sys
 import urllib.parse
+from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _gapi import post, token, window  # noqa: E402
@@ -37,6 +57,84 @@ ROW_LIMIT = 25000
 CTR_AT = {1: .27, 2: .15, 3: .11, 4: .08, 5: .06}
 
 
+def fetch_dim(url: str, bearer: str, dim: str, start: str, end: str) -> dict:
+    """{key -> row} for one dimension over one window. One request."""
+    data = post(url, {"startDate": start, "endDate": end, "dimensions": [dim],
+                      "rowLimit": ROW_LIMIT, "dataState": "final"}, bearer)
+    return {r["keys"][0]: r for r in data.get("rows", [])}
+
+
+def property_impressions(url: str, bearer: str, start: str, end: str) -> int:
+    """The window's total, with no dimension. What coverage is measured against."""
+    total = post(url, {"startDate": start, "endDate": end, "dataState": "final"}, bearer)
+    return (total.get("rows") or [{}])[0].get("impressions", 0)
+
+
+def trend(args, start: str, end: str, url: str, bearer: str) -> int:
+    """This window against the one immediately before it, same dimension.
+
+    The previous window is the SAME LENGTH and ends the day before this one
+    starts, so the two are comparable without weighting. A 28-day window
+    compared against 14 days would make every page look like it was collapsing.
+
+    A key present now and absent before is a row with `prev=0` and
+    `is_new=True`, not a row omitted: a page that went from nothing to 800
+    impressions is the single most interesting thing this report can find, and
+    an inner join would drop it.
+
+    Rows are ordered by the absolute size of the movement, so the biggest fall
+    is as visible as the biggest rise. A report sorted by `delta` descending
+    buries every regression at the bottom, which is where /festivals losing
+    1,370 impressions had been sitting unseen.
+    """
+    span = (datetime.strptime(end, "%Y-%m-%d") - datetime.strptime(start, "%Y-%m-%d")).days
+    prev_end = (datetime.strptime(start, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
+    prev_start = (datetime.strptime(prev_end, "%Y-%m-%d") - timedelta(days=span)).strftime("%Y-%m-%d")
+
+    cur = fetch_dim(url, bearer, args.by, start, end)
+    pre = fetch_dim(url, bearer, args.by, prev_start, prev_end)
+
+    rows = []
+    for key in set(cur) | set(pre):
+        c, p = cur.get(key), pre.get(key)
+        c_imp = c["impressions"] if c else 0
+        p_imp = p["impressions"] if p else 0
+        rows.append({
+            args.by: key,
+            "impressions": c_imp, "impressions_prev": p_imp,
+            "delta": c_imp - p_imp,
+            # None, not 0 and not infinity: a page with no previous impressions
+            # has no percentage change, and 100% would be a different claim.
+            "delta_pct": round((c_imp - p_imp) / p_imp * 100, 1) if p_imp else None,
+            "clicks": c["clicks"] if c else 0,
+            "clicks_prev": p["clicks"] if p else 0,
+            "position": round(c["position"], 1) if c else None,
+            "position_prev": round(p["position"], 1) if p else None,
+            "is_new": p is None,
+            "is_gone": c is None,
+        })
+    rows.sort(key=lambda r: -abs(r["delta"]))
+
+    cur_total = property_impressions(url, bearer, start, end)
+    cov = round(sum(r["impressions"] for r in rows) / cur_total * 100) if cur_total else None
+    note = (f"rows account for {cov}% of the property's {cur_total} impressions "
+            f"in the current window") if cov is not None else \
+           "property total impressions were 0 or unavailable; coverage not computable"
+    if args.by == "query":
+        note += (" — the query dimension is a PARTIAL view: Google withholds queries "
+                 "searched by too few people, so risers and fallers below describe only "
+                 "the measured share, not the site")
+
+    print(json.dumps({
+        "source": "gsc", "site": args.site, "mode": "trend", "dimension": args.by,
+        "window": [start, end], "window_prev": [prev_start, prev_end],
+        "total_impressions": cur_total, "coverage_pct": cov, "coverage_note": note,
+        "keys_now": len(cur), "keys_prev": len(pre),
+        "rows": rows,
+    }, indent=2))
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=28)
@@ -45,13 +143,21 @@ def main() -> int:
     # that reads like a permissions failure rather than a wrong identifier.
     ap.add_argument("--site", default=os.environ.get("GSC_SITE_URL", "sc-domain:shubhagya.com"))
     ap.add_argument("--band", action="store_true", help="only the 6-20 position band")
-    ap.add_argument("--by", choices=("page", "query"), default="page",
+    ap.add_argument("--by", choices=("page", "query", "date"), default="page",
                     help="dimension; query is a PARTIAL view (anonymised queries are withheld)")
+    ap.add_argument("--trend", action="store_true",
+                    help="compare this window with the one before it and emit deltas")
     args = ap.parse_args()
+    if args.trend and args.by == "date":
+        sys.exit("--trend compares two windows on one dimension; "
+                 "--by date is already a series, so the two are redundant")
 
     start, end = window(args.days)
     url = API.format(site=urllib.parse.quote(args.site, safe=""))
     bearer = token()
+
+    if args.trend:
+        return trend(args, start, end, url, bearer)
     # 25000 is the API maximum per request. The site has ~133 pages with impressions, so no
     # startRow pagination; if rows ever reach the limit we say so below.
     data = post(url, {"startDate": start, "endDate": end, "dimensions": [args.by],
@@ -76,14 +182,24 @@ def main() -> int:
         pos, imp = r["position"], r["impressions"]
         row = {args.by: r["keys"][0], "impressions": imp, "clicks": r["clicks"],
                "ctr": round(r["ctr"], 4), "position": round(pos, 1)}
-        if 6 <= pos <= 20:
+        # The band is an opportunity on a page or a query. A DAY has an average
+        # position too, but "move 2026-10-09 into the top 5" is not a task, so
+        # the field is omitted rather than computed into nonsense.
+        if args.by != "date" and 6 <= pos <= 20:
             # Gain if it reached position 5 — the conservative target.
             row["band_opportunity"] = round(imp * (CTR_AT[5] - r["ctr"]), 1)
         rows.append(row)
 
+    if args.band and args.by == "date":
+        sys.exit("--band selects the 6-20 position band on pages or queries; "
+                 "a date has no band")
     if args.band:
         rows = [r for r in rows if "band_opportunity" in r]
         rows.sort(key=lambda r: -r["band_opportunity"])
+    elif args.by == "date":
+        # Chronological, because this one is a series and a series read out of
+        # order is not a series.
+        rows.sort(key=lambda r: r["date"])
     else:
         rows.sort(key=lambda r: -r["impressions"])
 
