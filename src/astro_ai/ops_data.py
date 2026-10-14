@@ -422,6 +422,215 @@ def _agents_view() -> dict:
     }
 
 
+APP_CACHE_TTL = float(os.environ.get("OPS_APP_CACHE_TTL", "60"))
+_app_cache: tuple[float, dict] | None = None
+
+
+def _app_view(days: int = 7) -> dict:
+    """App health, read from the app's OWN stores, in-process.
+
+    THE ONE LIVE PANEL, AND WHY IT CAN BE
+    -------------------------------------
+    Every other panel reads a committed snapshot, because its source is the
+    GitHub API and /admin/ops runs on Cloud Run where an unauthenticated call
+    is rate-limited per egress IP, shared with every other tenant on it.
+
+    This source is different: `events` and `llm_stats` are THIS app's own GCS
+    data, already read in-process by /admin/activity and /admin/usage. Nothing
+    to collect, nothing to commit, no external quota. So it is read live on a
+    60 s cache rather than once a day.
+
+    NOTHING HERE IS NEW INSTRUMENTATION. Every figure below was already being
+    written; none of it had ever been displayed as a rate or a trend.
+
+    A ZERO DENOMINATOR IS NOT HEALTH
+    --------------------------------
+    With no GCS configured (dev, preview) every counter reads 0, and "0 errors"
+    would render as a clean bill of health for an app that recorded nothing at
+    all. `measured` is False in that case and the panel says so instead.
+    """
+    global _app_cache
+    now = time.time()
+    if _app_cache and now - _app_cache[0] < APP_CACHE_TTL:
+        return _app_cache[1]
+
+    out: dict[str, Any] = {"ok": False, "measured": False, "days": days}
+    try:
+        from astro_ai import events, llm_stats
+
+        usage = llm_stats.usage_summary(days) or {}
+        rng = llm_stats.range_summary(days) or {}
+        agg = rng.get("aggregate") or {}
+        errors = events.recent(types=["error"], days=days, limit=500) or []
+
+        calls = int(usage.get("total_calls") or 0)
+        hits = int(usage.get("cache_hits") or 0)
+        misses = max(int(usage.get("cache_misses") or 0), 0)
+        fallbacks = int(agg.get("fallbacks") or 0)
+
+        # Per feature. `input_tokens` is only accumulated on a MISS -- a cache
+        # hit spends none -- so tokens per request divides by misses, not calls.
+        # Dividing by calls would quietly understate every prompt as the cache
+        # warms, which is the opposite of what a budget reader needs.
+        routes = []
+        for r in usage.get("by_route") or []:
+            c, h = int(r.get("calls") or 0), int(r.get("hits") or 0)
+            m = max(c - h, 0)
+            per = (int(r.get("input_tokens") or 0) / m) if m else None
+            routes.append({
+                "route": r.get("route") or "unknown",
+                "calls": c, "hits": h, "misses": m,
+                "hit_rate": int(r.get("hit_rate_pct") or 0),
+                "input_tokens": int(r.get("input_tokens") or 0),
+                "output_tokens": int(r.get("output_tokens") or 0),
+                "per_request": round(per) if per is not None else None,
+                # What the cache avoided: hits x the mean cost of a miss on
+                # this same route. An estimate, and labelled as one on the page.
+                "saved": round(h * per) if per is not None else 0,
+            })
+        routes.sort(key=lambda r: -(r["input_tokens"] or 0))
+
+        # A 413 is a size failure and a 429 is a rate failure; they need
+        # opposite fixes. providers.py separates the exception types for
+        # exactly this reason, and #266 cost real time to the conflation.
+        kinds = Counter((e.get("data") or {}).get("error_type") or "?" for e in errors)
+        sources = Counter((e.get("data") or {}).get("source") or "?" for e in errors)
+        too_large = sum(v for k, v in kinds.items() if k == "RequestTooLarge")
+        exhausted = sum(v for k, v in kinds.items() if k == "AllProvidersExhausted")
+
+        out = {
+            "ok": True,
+            # The denominator, not a judgement: 0 calls means nothing was
+            # recorded, which must never render as "no errors".
+            "measured": calls > 0,
+            "days": days,
+            "calls": calls, "hits": hits, "misses": misses,
+            "hit_rate": int(usage.get("hit_rate_pct") or 0),
+            "avg_miss_ms": int(usage.get("avg_miss_latency_ms") or 0),
+            "errors": len(errors),
+            # Per 100 CALLS. Error sources and llm_stats routes are different
+            # vocabularies (`chart:matching` vs `matching`), so this is an
+            # overall rate; it is deliberately NOT broken down per route,
+            # because no mapping between the two exists to do it honestly.
+            "error_rate": round(len(errors) / calls * 100, 2) if calls else None,
+            "fallbacks": fallbacks,
+            "fallback_rate": round(fallbacks / calls * 100, 2) if calls else None,
+            # The leading indicator, by day, oldest first.
+            "fallback_trend": [int(d.get("fallbacks") or 0)
+                               for d in reversed(rng.get("days") or [])],
+            "too_large": too_large, "exhausted": exhausted,
+            "kinds": kinds.most_common(6),
+            "sources": sources.most_common(8),
+            "routes": routes,
+            "input_tokens": int(usage.get("total_input_tokens") or 0),
+            "output_tokens": int(usage.get("total_output_tokens") or 0),
+            "by_provider": sorted((agg.get("by_provider") or {}).items(),
+                                  key=lambda kv: -kv[1]),
+        }
+    except Exception:                       # noqa: BLE001 — the page never fails
+        log.debug("ops app view failed", exc_info=True)
+
+    _app_cache = (now, out)
+    return out
+
+
+# Thresholds are NAMED, not inlined, because an alert that fires on a magic
+# number is an alert nobody can argue with. Each is a judgement and should be
+# edited here when it proves wrong.
+ERROR_RATE_RED = 5.0      # % of LLM calls producing an error event
+ERROR_RATE_AMBER = 1.0
+FALLBACK_RATE_AMBER = 2.0  # calls that only succeeded on a second provider
+
+
+def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
+            ages: dict) -> list[dict]:
+    """Everything currently wrong, worst first, or an empty list.
+
+    WHY THIS LEADS THE PAGE
+    -----------------------
+    A dashboard that shows every number equally makes the reader do the
+    triage. The panels below answer "how is it going"; this answers the only
+    question worth putting first — "is something broken right now".
+
+    TWO RULES THIS MUST NOT BREAK
+    -----------------------------
+    1. Silence means checked-and-clear, never not-checked. A source that could
+       not be read emits its own alert rather than contributing nothing, so an
+       empty strip can be trusted.
+    2. No green badges. A row of reassurance for every passing check is noise
+       that teaches the reader to skip the strip, and the one day it turns red
+       they will skip it too.
+    """
+    out: list[dict] = []
+
+    def add(level, title, detail, where=""):
+        out.append({"level": level, "title": title, "detail": detail, "where": where})
+
+    # --- the product ----------------------------------------------------
+    if not app.get("ok"):
+        add("amber", "App health unreadable",
+            "events and llm_stats could not be read, so nothing below covers the product.")
+    elif not app.get("measured"):
+        add("amber", "No LLM calls recorded",
+            f"Nothing in the last {app.get('days')} days. Either the app is idle or "
+            "stats are not reaching GCS — a zero here is not a clean bill of health.")
+    else:
+        rate = app.get("error_rate") or 0.0
+        if rate >= ERROR_RATE_RED:
+            add("red", f"{rate}% of LLM calls are erroring",
+                f"{app['errors']} error events against {app['calls']} calls in "
+                f"{app['days']} days.", "/admin/activity")
+        elif rate >= ERROR_RATE_AMBER:
+            add("amber", f"Error rate {rate}%",
+                f"{app['errors']} of {app['calls']} calls.", "/admin/activity")
+        if app.get("exhausted"):
+            add("red", f"{app['exhausted']} requests had every provider fail",
+                "AllProvidersExhausted — the user saw the \u201chigh demand\u201d page, "
+                "not a reading.", "/admin/activity")
+        if app.get("too_large"):
+            add("red", f"{app['too_large']} requests exceeded the provider's size limit",
+                "RequestTooLarge (413) is a prompt-size failure, not a rate limit. "
+                "Shrinking the prompt is the fix; waiting is not.", "/admin/activity")
+        fr = app.get("fallback_rate") or 0.0
+        if fr >= FALLBACK_RATE_AMBER:
+            add("amber", f"{fr}% of calls needed a second provider",
+                "Rising fallbacks arrive BEFORE user-visible failure.", "/admin/usage")
+
+    # --- the agent team -------------------------------------------------
+    for lp in (agents.get("loops") or []):
+        # Keys are the collector's own: runs_scheduled / slots_due / last_run.
+        # Guessing `ran`/`due` printed "0 of 0 scheduled runs succeeded" next to
+        # the word BROKEN -- a line that argues against its own headline, which
+        # is worse than no detail at all.
+        ran, due = lp.get("runs_scheduled", 0), lp.get("slots_due", 0)
+        last = (lp.get("last_run") or "")[:10]
+        if lp.get("verdict") == "broken":
+            add("red", f"{lp.get('workflow')} is broken",
+                f"Last run {last or 'unknown'} ended "
+                f"{lp.get('last_conclusion') or 'badly'}"
+                + (f"; {ran} of {due} scheduled slots ran." if due else "."),
+                lp.get("display") or "")
+        elif lp.get("verdict") == "missing-slots":
+            add("amber", f"{lp.get('workflow')} missed scheduled runs",
+                f"{ran} of {due} slots since {(lp.get('schedule_since') or '')[:10]}.",
+                lp.get("display") or "")
+
+    if loop.get("ok") and loop.get("today_failed"):
+        add("amber", f"{len(loop['today_failed'])} cycle(s) failed today",
+            "A cycle that did not deliver leaves its issue untouched.")
+
+    # --- the data under the page ----------------------------------------
+    for name, a in (ages or {}).items():
+        if a.get("stale"):
+            add("amber", f"{name} data is {a.get('text')}",
+                "A daily collection has been missed, so the figures below are older "
+                "than one run.")
+
+    order = {"red": 0, "amber": 1}
+    out.sort(key=lambda a: order.get(a["level"], 9))
+    return out
+
+
 def snapshot(now: datetime | None = None) -> dict:
     """Everything /admin/ops renders, in one dict. Never raises."""
     now = now or datetime.now(timezone.utc)
@@ -439,8 +648,18 @@ def snapshot(now: datetime | None = None) -> dict:
     cost = _cost_view(_fetch("cost.json"), shipped_30d)
     traffic = _traffic_view()
     agents = _agents_view()
+    app = _app_view()
+    ages = {
+        "Delivery": _age((loop_doc or {}).get("generated_at"), now),
+        "Backlog": _age((issues_doc or {}).get("generated_at"), now),
+        "Team": _age((_fetch("agents.json") or {}).get("generated_at"), now),
+    }
+
+    alerts = _alerts(loop, issues, agents, app, ages)
 
     return {
+        "alerts": alerts,
+        "reds": sum(1 for a in alerts if a["level"] == "red"),
         "now_ist": now_ist,
         "today_ist": today_ist,
         "next_cycle_ist": next_cycle_ist(now),
@@ -449,6 +668,7 @@ def snapshot(now: datetime | None = None) -> dict:
         "cost": cost,
         "traffic": traffic,
         "agents": agents,
+        "app": app,
         "source": "disk" if measurements_dir() else "github",
         # The one line every loop ranks against, carried in issues.json because
         # the Docker image copies only `src/` -- OBJECTIVE.md is not in the
@@ -456,16 +676,13 @@ def snapshot(now: datetime | None = None) -> dict:
         "objective": (issues_doc or {}).get("objective") or "",
         # Per-source age, so a count can be read as of a time rather than as
         # now. Keyed by the panel that shows it, not by filename.
-        "ages": {
-            "delivery": _age((loop_doc or {}).get("generated_at"), now),
-            "backlog": _age((issues_doc or {}).get("generated_at"), now),
-            "team": _age((_fetch("agents.json") or {}).get("generated_at"), now),
-        },
+        "ages": ages,
         # Named so the footer can say which panel is missing rather than
         # rendering an empty one with no explanation.
         "missing": [n for n, v in (("loop.json", loop["ok"]),
                                    ("cost.json", cost["ok"]),
                                    ("issues.json", issues["ok"]),
                                    ("traffic", traffic["ok"]),
-                                   ("agents.json", agents["ok"])) if not v],
+                                   ("agents.json", agents["ok"]),
+                                   ("app health", app["ok"])) if not v],
     }

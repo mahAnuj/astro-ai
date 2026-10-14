@@ -168,6 +168,36 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .bar button.p-medium{background:var(--open)}
 .bar button.p-unset{background:var(--nothing)}
 
+/* ── Alert strip. The first thing on the page, and empty on a good day.
+   A row of green "OK" badges would be noise that trains the reader to skip
+   the strip — so a passing check renders NOTHING, and the one quiet line
+   below says what was checked so silence is unambiguous. */
+.alerts{margin:0 0 18px;display:grid;gap:8px}
+.alert{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;align-items:baseline;
+  padding:13px 16px;border:1px solid var(--line);border-radius:3px}
+.alert .sev{grid-row:span 2;font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;
+  text-transform:uppercase;padding:5px 8px;border-radius:2px;align-self:start}
+.alert .t{font-size:15px;font-weight:600;line-height:1.35}
+.alert .d{font-size:12.5px;line-height:1.5;color:var(--ink-dim);max-width:76ch}
+.alert .d a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+.alert .d a:hover{border-bottom-color:var(--accent)}
+.alert.red{border-color:#6b3329;background:linear-gradient(90deg,rgba(224,97,74,.07),transparent 65%)}
+.alert.red .sev{color:var(--failed);border:1px solid #6b3329}
+.alert.red .t{color:#f0a393}
+.alert.amber{border-color:#6b5223;background:linear-gradient(90deg,rgba(227,168,74,.05),transparent 65%)}
+.alert.amber .sev{color:var(--open);border:1px solid #6b5223}
+.clear{margin:0 0 18px;padding:11px 16px;border:1px solid var(--line);border-radius:3px;
+  font-size:12.5px;color:var(--ink-mute)}
+.clear b{color:var(--shipped);font-weight:600}
+
+/* ── App health: the product, not the team. Live, 60s cache. ─────────── */
+.rt{width:100%;border-collapse:collapse;font-size:13px}
+.rt th{text-align:left;font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-mute);padding:0 0 9px;font-weight:600}
+.rt td{padding:9px 0;border-top:1px solid var(--line);vertical-align:baseline}
+.rt td.n{text-align:right;font-family:var(--mono);font-size:12px;white-space:nowrap}
+.rt .sub{display:block;font-size:11px;color:var(--ink-mute);margin-top:2px}
+
 /* ── The objective. One line, above everything that claims progress. ────
    The page measured traffic, delivery and cost and never said what any of it
    was FOR, so there was nothing to judge a number against. chief owns the
@@ -385,14 +415,32 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       <span><span class="lbl">next cycle due</span>
         <span class="mono" style="margin-left:7px">{{ ops.next_cycle_ist.strftime('%a %H:%M') }} IST</span></span>
       <span><span class="lbl">cycle data</span>
-        <span class="age {{ 'stale' if ops.ages.delivery.stale }}" style="margin-left:7px"
-              title="collected {{ L.generated_at or 'never' }}">{{ ops.ages.delivery.text }}</span></span>
+        <span class="age {{ 'stale' if ops.ages.Delivery.stale }}" style="margin-left:7px"
+              title="collected {{ L.generated_at or 'never' }}">{{ ops.ages.Delivery.text }}</span></span>
       <a href="/admin" class="lbl" style="color:var(--accent)">← admin</a>
     </div>
   </div>
 </header>
 
 <div class="wrap">
+
+  {# ── Anything wrong, first. Nothing here on a good day. ───────────── #}
+  {% if ops.alerts %}
+  <section class="alerts">
+    {% for a in ops.alerts %}
+    <div class="alert {{ a.level }}">
+      <span class="sev">{{ a.level }}</span>
+      <span class="t">{{ a.title }}</span>
+      <span class="d">{{ a.detail }}
+        {% if a.where %}<a href="{{ a.where }}">look →</a>{% endif %}</span>
+    </div>
+    {% endfor %}
+  </section>
+  {% else %}
+  <p class="clear"><b>Nothing is failing.</b> Checked: LLM error rate, provider
+    exhaustion and oversize requests, fallback rate, every scheduled loop against the
+    runs it was due, today's cycles, and the age of each committed file.</p>
+  {% endif %}
 
   {# ── What all of it is for. OBJECTIVE.md, carried in issues.json. ──── #}
   <section class="obj">
@@ -442,7 +490,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       <span class="caret">▸</span><span class="lbl">Shipped today</span>
       <span class="v"><span class="num c-shipped">{{ L.today_shipped|length }}</span></span>
       <span class="foot">merged to main, {{ ops.today_ist }}<br>
-        <span class="age {{ 'stale' if ops.ages.delivery.stale }}">as of {{ ops.ages.delivery.text }}</span></span>
+        <span class="age {{ 'stale' if ops.ages.Delivery.stale }}">as of {{ ops.ages.Delivery.text }}</span></span>
     </button>
     <button class="tile" data-drill="today-filed" {{ '' if I.filed_today else 'disabled' }}>
       <span class="caret">▸</span><span class="lbl">Filed today</span>
@@ -459,7 +507,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       <span class="v"><span class="num">{{ I.open }}</span>
         <span class="foot c-open">{{ I.by_priority.get('unset', 0) }} unranked</span></span>
       <span class="foot">{{ I.blocked|length }} blocked on a human<br>
-        <span class="age {{ 'stale' if ops.ages.backlog.stale }}">as of {{ ops.ages.backlog.text }}</span></span>
+        <span class="age {{ 'stale' if ops.ages.Backlog.stale }}">as of {{ ops.ages.Backlog.text }}</span></span>
     </button>
   </section>
 
@@ -767,6 +815,80 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
             summary is generated — nothing here spends a token.
           </p>
         </div>
+      </div>
+    </section>
+
+    {# ── App health. The product, not the team. Live, 60 s cache. ───── #}
+    <section class="panel">
+      <h2>App health
+        <span class="lbl">last {{ ops.app.days }} d ·
+          {% if ops.app.measured %}live, 60 s cache{% else %}nothing recorded{% endif %}</span>
+      </h2>
+      <div class="body">
+        {% if not ops.app.ok %}
+        <div class="empty"><code>events</code> and <code>llm_stats</code> could not be read.</div>
+        {% elif not ops.app.measured %}
+        <div class="empty">No LLM calls recorded in this window. That is not the same as no
+          errors — with no calls there is no denominator, so nothing below can be a rate.</div>
+        {% else %}
+        <div class="kv">
+          <div><span>LLM calls</span><b class="mono">{{ "{:,}".format(ops.app.calls) }}</b></div>
+          <div><span>error events</span>
+            <b class="mono {{ 'c-failed' if ops.app.error_rate and ops.app.error_rate >= 5 }}">{{ ops.app.errors }} · {{ ops.app.error_rate }}%</b></div>
+          <div><span>every provider failed</span>
+            <b class="mono {{ 'c-failed' if ops.app.exhausted }}">{{ ops.app.exhausted }}</b></div>
+          <div><span>recovered on a 2nd provider</span>
+            <b class="mono">{{ ops.app.fallbacks }}</b></div>
+          <div><span>cache hit rate</span><b class="mono">{{ ops.app.hit_rate }}%</b></div>
+          <div><span>input tokens</span><b class="mono">{{ "{:,}".format(ops.app.input_tokens) }}</b></div>
+        </div>
+
+        <h3 class="lbl" style="margin:22px 0 10px">Tokens per request, by feature</h3>
+        <table class="rt">
+          <thead><tr><th>feature</th><th class="n">calls</th><th class="n">cache</th>
+            <th class="n">in / request</th><th class="n">saved by cache</th></tr></thead>
+          <tbody>
+          {% for r in ops.app.routes %}
+          <tr>
+            <td>{{ r.route }}<span class="sub">{{ "{:,}".format(r.input_tokens) }} in · {{ "{:,}".format(r.output_tokens) }} out</span></td>
+            <td class="n">{{ "{:,}".format(r.calls) }}</td>
+            <td class="n {{ 'c-open' if r.hit_rate == 0 }}">{{ r.hit_rate }}%</td>
+            <td class="n">{{ "{:,}".format(r.per_request) if r.per_request is not none else '—' }}</td>
+            <td class="n">{{ "{:,}".format(r.saved) if r.saved else '—' }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <p class="q-note">
+          <b>in / request</b> divides input tokens by <em>misses</em>, not calls — a cache hit
+          spends no tokens, so dividing by calls would make every prompt look cheaper as the
+          cache warms. <b>saved by cache</b> is hits × the mean cost of a miss on that same
+          route: an estimate, because the avoided prompt was never measured.
+          A feature at <b>0%</b> cache is paying full price on every request.
+        </p>
+
+        {% if ops.app.sources %}
+        <h3 class="lbl" style="margin:22px 0 10px">Where the errors are</h3>
+        <table class="rt">
+          <thead><tr><th>source</th><th class="n">events</th></tr></thead>
+          <tbody>
+          {% for src, cnt in ops.app.sources %}
+          <tr><td>{{ src }}</td><td class="n">{{ cnt }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <p class="q-note">
+          Counted from <code>events</code>, whose <code>source</code> names
+          (<code>chart:matching</code>) are a different vocabulary from
+          <code>llm_stats</code> routes (<code>matching</code>). No mapping between them
+          exists, so the error rate above is overall and is deliberately <b>not</b> split per
+          feature — inventing that join would put a confident wrong number on the page.
+          <b>413</b> (<code>RequestTooLarge</code>, {{ ops.app.too_large }}) is a prompt-size
+          failure and <b>429</b> a rate failure; they need opposite fixes, so they are counted
+          apart.
+        </p>
+        {% endif %}
+        {% endif %}
       </div>
     </section>
 
