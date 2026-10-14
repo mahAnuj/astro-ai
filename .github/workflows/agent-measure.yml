@@ -169,7 +169,15 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write        # the push
+      # The next step reads other workflows' runs and their job logs
+      # (`actions/...`) and looks pull requests up (`pulls/...`) with `gh api`
+      # INSIDE a script, which scripts/verify_workflows.py cannot see. The
+      # endpoint -> scope table is in that script's header; a test pins this
+      # block against it. An omitted scope is `none`, so leaving either out
+      # reads as a 403 and the step would write nothing, quietly.
+      actions: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -178,17 +186,37 @@ jobs:
           path: /tmp/measure
         continue-on-error: true
 
+      # #338: what the delivery loop produced and what the team costs, as data
+      # the /admin/ops page can fetch. Deterministic Python, zero LLM calls.
+      #
+      # BEFORE the report check below, on purpose: that check exits 0 when the
+      # analyst wrote no report, and a collector placed after it would be
+      # skipped on exactly the days the loop is least healthy. And
+      # continue-on-error, so a GitHub API hiccup can never stop the analyst's
+      # own report being committed. A failure leaves the previous file standing
+      # (the script writes nothing when its document does not validate).
+      - name: Collect loop measurements
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 scripts/collect_loop_measurements.py --out measurements \
+            || echo "::warning::loop measurements not refreshed; measurements/loop.json is the previous one"
+
       - name: Commit the measurement
         run: |
-          if [ ! -s /tmp/measure/report.md ]; then
-            echo "no report to persist"
-            exit 0
-          fi
           mkdir -p measurements
           stamp=$(date -u +%Y-%m-%d)
-          cp /tmp/measure/report.md "measurements/$stamp.md"
-          cp /tmp/measure/report.md measurements/latest.md
-          cp -f /tmp/measure/*.json measurements/ 2>/dev/null || true
+          # Only the analyst's own files are conditional on a report existing.
+          # The loop and cost files above are committed either way.
+          if [ -s /tmp/measure/report.md ]; then
+            cp /tmp/measure/report.md "measurements/$stamp.md"
+            cp /tmp/measure/report.md measurements/latest.md
+            cp -f /tmp/measure/*.json measurements/ 2>/dev/null || true
+          else
+            echo "no report to persist"
+          fi
 
           git config user.name  "shubhagya-agent"
           git config user.email "agent@users.noreply.github.com"
@@ -201,4 +229,8 @@ jobs:
 
           Written by the analyst loop. measurements/** is on the Cloud Build
           trigger's ignoredFiles, so this does not deploy."
+          # The analyst job takes minutes to hours; main moves meanwhile, and
+          # a plain push of a checkout from before that is rejected as
+          # non-fast-forward. Rebase onto what is there now.
+          git pull --rebase origin main
           git push origin HEAD:main
