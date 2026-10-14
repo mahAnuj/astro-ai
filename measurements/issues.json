@@ -1,7 +1,9 @@
 {
-  "generated_at": "2026-10-14T07:22:00Z",
+  "generated_at": "2026-10-14T17:44:55Z",
   "repo": "mahAnuj/astro-ai",
-  "open": 66,
+  "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
+  "open": 65,
+  "with_ask": 30,
   "by_area": {
     "INFRA": 12,
     "UNCLASSIFIED": 12,
@@ -15,7 +17,6 @@
     "DESIGN": 2,
     "TASK": 2,
     "CHORE": 2,
-    "CONVERSION": 1,
     "KUNDLI": 1,
     "BLOCKER": 1,
     "KNOWLEDGE": 1,
@@ -23,23 +24,69 @@
   },
   "by_type": {
     "enhancement": 22,
-    "untyped": 18,
-    "bug": 8,
+    "untyped": 16,
+    "chore": 7,
+    "bug": 7,
     "design": 6,
     "correctness": 6,
-    "chore": 5,
     "ui": 1
   },
   "by_priority": {
-    "unset": 43,
+    "unset": 42,
     "medium": 17,
     "high": 6
   },
-  "blocked": 7,
+  "blocked": 5,
   "rows": [
+    {
+      "number": 347,
+      "title": "[INFRA] agent-measure runs two hours before agent-work, so a cycle's own outcome is reported ~21.5h late",
+      "ask": "A second cron on agent-measure.yml, collectors only.",
+      "area": "INFRA",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-10-14T17:42:20Z",
+      "updated": "2026-10-14T17:42:20Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 346,
+      "title": "[INFRA] Fifteen scheduled agent loops and nothing measures whether any of them works",
+      "ask": "Liveness — did each loop run when it was due.",
+      "area": "INFRA",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-10-14T17:41:56Z",
+      "updated": "2026-10-14T17:41:56Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 345,
+      "title": "[INFRA] measurements/ hold one window's totals, so /admin/ops can show a level and never a trend",
+      "ask": "The GSC query dimension covers only ~8–9% of impressions — Google withholds low-volume",
+      "area": "INFRA",
+      "type": "chore",
+      "priority": "unset",
+      "labels": [
+        "chore"
+      ],
+      "created": "2026-10-14T17:41:30Z",
+      "updated": "2026-10-14T17:41:30Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 341,
       "title": "[INFRA] verify-production's exact deploy gate waits 12 min for a SHA that may never deploy (measurements-only HEAD) and fails red",
+      "ask": "Free-tier: no cost change (fewer wasted 12-min waits: each timeout burns 12 min of runner time).",
       "area": "INFRA",
       "type": "chore",
       "priority": "unset",
@@ -54,6 +101,7 @@
     {
       "number": 340,
       "title": "[INFRA] The exact tier is live, but the tree still says it never ran - and prints --set-env-vars, which CLAUDE.md forbids",
+      "ask": "Edit the four strings and the two agent prompts; remove or build verify_token_budget.py (a separate decision - building it is the #212 work).",
       "area": "INFRA",
       "type": "chore",
       "priority": "unset",
@@ -66,23 +114,9 @@
       "needs_evidence": false
     },
     {
-      "number": 339,
-      "title": "[INFRA] GitHub refused to start 6 Actions jobs on 2026-10-12: 'recent account payments have failed or your spending limit needs to be increased'",
-      "area": "INFRA",
-      "type": "chore",
-      "priority": "unset",
-      "labels": [
-        "needs-human-review",
-        "chore"
-      ],
-      "created": "2026-10-13T23:19:21Z",
-      "updated": "2026-10-13T23:19:21Z",
-      "blocked": true,
-      "needs_evidence": false
-    },
-    {
       "number": 338,
       "title": "[INFRA] The loop's own outcomes and cost are not committed anywhere a page can read them",
+      "ask": "",
       "area": "INFRA",
       "type": "untyped",
       "priority": "high",
@@ -99,6 +133,7 @@
     {
       "number": 335,
       "title": "[INFRA] Nothing shows whether the agent team is working, failing or costing too much — build /admin/ops",
+      "ask": "",
       "area": "INFRA",
       "type": "untyped",
       "priority": "high",
@@ -112,20 +147,9 @@
       "needs_evidence": false
     },
     {
-      "number": 329,
-      "title": "[CONVERSION] /learn/manglik-dosh/ explains how to check Manglik status but never links the site's own checker",
-      "area": "CONVERSION",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-10-13T01:50:07Z",
-      "updated": "2026-10-13T01:50:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 327,
       "title": "[INFRA] Nothing checks the AI output against the prompt's own rules, so a model swap is invisible",
+      "ask": "A rate, not just events — surface pass/fail counts over a window on /admin/insights, which already exists.",
       "area": "INFRA",
       "type": "untyped",
       "priority": "medium",
@@ -139,35 +163,9 @@
       "needs_evidence": false
     },
     {
-      "number": 326,
-      "title": "[INFRA] Loop outcome report (weekly)",
-      "area": "INFRA",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-10-11T16:45:57Z",
-      "updated": "2026-10-13T10:54:35Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 323,
-      "title": "[INFRA] The steward agent's gh is the Claude App token: check-runs and Actions runs return 403 inside the agent that must diagnose from them",
-      "area": "INFRA",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "needs-human-review"
-      ],
-      "created": "2026-10-10T07:06:20Z",
-      "updated": "2026-10-11T16:50:43Z",
-      "blocked": true,
-      "needs_evidence": false
-    },
-    {
       "number": 317,
       "title": "[INFRA] Harden verify_workflows.py: two missing checks and a heredoc false positive",
+      "ask": "Add a mutation to scripts/mutate_verify_workflows.py for each new check, and a control for each near-miss that must NOT fail — the prose comment about +, and a && that is not the",
       "area": "INFRA",
       "type": "bug",
       "priority": "unset",
@@ -182,6 +180,7 @@
     {
       "number": 310,
       "title": "[UI] PWA install banner covers the primary CTA on the first fold, mobile and desktop",
+      "ask": "",
       "area": "UI",
       "type": "design",
       "priority": "unset",
@@ -197,6 +196,7 @@
     {
       "number": 309,
       "title": "[UI] Subscribe modal fires over the empty form on the second tool page a visitor opens",
+      "ask": "",
       "area": "UI",
       "type": "design",
       "priority": "unset",
@@ -212,6 +212,7 @@
     {
       "number": 308,
       "title": "[UI] Mobile feedback FAB sits on top of reading text on result and form pages",
+      "ask": "",
       "area": "UI",
       "type": "design",
       "priority": "unset",
@@ -227,6 +228,7 @@
     {
       "number": 307,
       "title": "[UI] Sub-12px text is back: 10px tab-bar labels on every page, 234 sub-12px nodes on /learn, chip counts at 4.21:1",
+      "ask": "",
       "area": "UI",
       "type": "ui",
       "priority": "unset",
@@ -242,6 +244,7 @@
     {
       "number": 291,
       "title": "Workflow prompts still label GSC pages as 'queries' and GA4 row count as 'landing pages' (follow-up to #272)",
+      "ask": "",
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
@@ -254,6 +257,7 @@
     {
       "number": 282,
       "title": "[INFRA] Set BUILD_SHA on the Cloud Build trigger, then collapse the duplicated production checks",
+      "ask": "1. Set BUILD_SHA on the Cloud Build trigger.",
       "area": "INFRA",
       "type": "chore",
       "priority": "unset",
@@ -268,6 +272,7 @@
     {
       "number": 279,
       "title": "[INFRA] CI holds 1 of 8 registered corpus books and nothing fetches the rest — 4 are fixable free, 4 need a human decision",
+      "ask": "",
       "area": "INFRA",
       "type": "untyped",
       "priority": "unset",
@@ -280,6 +285,7 @@
     {
       "number": 278,
       "title": "[INFRA] agent-discover/agent-work (and 4 more workflows) never install poppler-utils — corpus_search.py and fetch_corpus.py fail; research's fetch_corpus --list is a dead flag",
+      "ask": "Priority: agent-work and agent-discover (they consume the corpus); agent-design/sync/infra/measure are optional.",
       "area": "INFRA",
       "type": "untyped",
       "priority": "unset",
@@ -292,6 +298,7 @@
     {
       "number": 267,
       "title": "[SEO] Organic traction is real and unpromoted — optimise the 6–20 band before publishing more",
+      "ask": "Build an opportunity map over all search-visible pages, classified 🟢 working / 🟡 quick win / 🔵 emerging / 🟠 investigate / 🔴 technical, and pick the 10–20 highest-ROI pages.",
       "area": "SEO",
       "type": "untyped",
       "priority": "unset",
@@ -304,6 +311,7 @@
     {
       "number": 266,
       "title": "[BUG] /kundli returns \"high demand\" for every chart — Groq 413, the natal request is bigger than the whole TPM budget",
+      "ask": "",
       "area": "BUG",
       "type": "bug",
       "priority": "unset",
@@ -318,6 +326,7 @@
     {
       "number": 265,
       "title": "The og:image card bakes \"Swiss Ephemeris\" and a hardcoded explainer count into every social preview",
+      "ask": "",
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
@@ -330,6 +339,7 @@
     {
       "number": 264,
       "title": "/ask as a thread: the design shows multi-turn, the app has no conversation history",
+      "ask": "Server-side history.",
       "area": "UNCLASSIFIED",
       "type": "enhancement",
       "priority": "unset",
@@ -344,6 +354,7 @@
     {
       "number": 263,
       "title": "/ask: the citation line the design wants has no data behind it",
+      "ask": "Decide what a citation means here.",
       "area": "UNCLASSIFIED",
       "type": "enhancement",
       "priority": "unset",
@@ -359,6 +370,7 @@
     {
       "number": 262,
       "title": "Delete rashifal.html — 246 lines of dead code, now the only purple file left",
+      "ask": "",
       "area": "UNCLASSIFIED",
       "type": "chore",
       "priority": "unset",
@@ -373,6 +385,7 @@
     {
       "number": 254,
       "title": "Six pages use `prose` classes that have never had any rules — the typography plugin was never installed",
+      "ask": "Add @tailwindcss/typography to devDependencies and a plugins: [require('@tailwindcss/typography')] key to tailwind.config.js, then rebuild.",
       "area": "UNCLASSIFIED",
       "type": "bug",
       "priority": "medium",
@@ -388,6 +401,7 @@
     {
       "number": 253,
       "title": "The service worker has been serving a stale stylesheet to returning visitors since 2026-08-16",
+      "ask": "Cache-bust the URL rather than bumping the constant.",
       "area": "UNCLASSIFIED",
       "type": "bug",
       "priority": "high",
@@ -403,6 +417,7 @@
     {
       "number": 251,
       "title": "Redesign: motion — chart cast, dasha bars, hero glow, nav condense",
+      "ask": "",
       "area": "REDESIGN",
       "type": "enhancement",
       "priority": "medium",
@@ -418,6 +433,7 @@
     {
       "number": 250,
       "title": "Redesign: Learning Hub — 2 files, 76 articles, and one gate that hates reflowing",
+      "ask": "",
       "area": "REDESIGN",
       "type": "enhancement",
       "priority": "medium",
@@ -433,6 +449,7 @@
     {
       "number": 249,
       "title": "Redesign: Vivah Muhurat (muhurat_finder.html, muhurat_landing.html)",
+      "ask": "",
       "area": "REDESIGN",
       "type": "enhancement",
       "priority": "medium",
@@ -448,6 +465,7 @@
     {
       "number": 248,
       "title": "Redesign: Ask (ask.html, _ask_cta.html)",
+      "ask": "",
       "area": "REDESIGN",
       "type": "enhancement",
       "priority": "medium",
@@ -463,6 +481,7 @@
     {
       "number": 247,
       "title": "Redesign: Numerology (numerology.html) — two gates and production CI grep this page",
+      "ask": "The prototype shows the result state only.",
       "area": "REDESIGN",
       "type": "enhancement",
       "priority": "medium",
@@ -478,6 +497,7 @@
     {
       "number": 246,
       "title": "Redesign: Kundli Matching (matching.html, matching_result.html)",
+      "ask": "",
       "area": "REDESIGN",
       "type": "enhancement",
       "priority": "medium",
@@ -493,6 +513,7 @@
     {
       "number": 245,
       "title": "Redesign: Today + Panchang (today.html, panchang.html, _panchang_strip.html, _gochar_panel.html)",
+      "ask": "Never scroll horizontally.",
       "area": "REDESIGN",
       "type": "enhancement",
       "priority": "medium",
@@ -508,6 +529,7 @@
     {
       "number": 244,
       "title": "Redesign: Daily Rashifal — highest silent-breakage risk in the epic",
+      "ask": "",
       "area": "REDESIGN",
       "type": "enhancement",
       "priority": "medium",
@@ -523,6 +545,7 @@
     {
       "number": 243,
       "title": "Redesign: Kundli result (result.html, _south_indian_chart.html)",
+      "ask": "",
       "area": "REDESIGN",
       "type": "enhancement",
       "priority": "high",
@@ -538,6 +561,7 @@
     {
       "number": 242,
       "title": "Redesign: homepage (index.html)",
+      "ask": "",
       "area": "REDESIGN",
       "type": "enhancement",
       "priority": "high",
@@ -554,6 +578,7 @@
     {
       "number": 233,
       "title": "Epic: visual redesign — modern devotional identity (desktop + mobile)",
+      "ask": "",
       "area": "UNCLASSIFIED",
       "type": "design",
       "priority": "unset",
@@ -570,6 +595,7 @@
     {
       "number": 232,
       "title": "rashifal page: memoise the blast text so twelve concurrent reads become one GCS call",
+      "ask": "",
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
@@ -582,6 +608,7 @@
     {
       "number": 231,
       "title": "Cosmic Card is served as SVG, so snapshot og:image previews fail on every major platform",
+      "ask": "Rasterise to PNG.",
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
@@ -594,6 +621,7 @@
     {
       "number": 230,
       "title": "prompts/*.txt assert sourced astrological claims, and no gate can see them",
+      "ask": "Where the corpus supports the claim, cite the book we hold — chart.py now does this as Rao, Vedic Astrology: An Integrated Approach §11.2.1, and ae35b3a re-cited five more yogas",
       "area": "UNCLASSIFIED",
       "type": "bug",
       "priority": "unset",
@@ -608,6 +636,7 @@
     {
       "number": 219,
       "title": "muhurat combustion: degree-orb model vs the days-from-heliacal model, and two blocking states we don't model",
+      "ask": "",
       "area": "UNCLASSIFIED",
       "type": "untyped",
       "priority": "unset",
@@ -620,6 +649,7 @@
     {
       "number": 212,
       "title": "rashifal: prompt input grew 18.5%/call on the path that caused the 21-day outage",
+      "ask": "",
       "area": "RASHIFAL",
       "type": "untyped",
       "priority": "unset",
@@ -632,6 +662,7 @@
     {
       "number": 211,
       "title": "rashifal: the 12 daily readings differ because the prompt says to, not because anything is computed — Gochara is in the corpus and unused",
+      "ask": "",
       "area": "RASHIFAL",
       "type": "correctness",
       "priority": "medium",
@@ -647,6 +678,7 @@
     {
       "number": 209,
       "title": "kundli: /kundli landing and /about advertise nakshatra padas, moolatrikona and Swiss Ephemeris — none of the three is what the engine computes",
+      "ask": "This is a copy-versus-code mismatch, so either direction closes it — but pick one",
       "area": "KUNDLI",
       "type": "correctness",
       "priority": "medium",
@@ -662,6 +694,7 @@
     {
       "number": 203,
       "title": "[DESIGN] Name numerology: build a \"Your Name\" section inside the /numerology reading — not a name-correction tool",
+      "ask": "",
       "area": "DESIGN",
       "type": "design",
       "priority": "unset",
@@ -677,6 +710,7 @@
     {
       "number": 201,
       "title": "numerology: resolving #163's 23 pair disagreements needs a directional 9x9 model — symmetric frozenset tables cannot express Johari",
+      "ask": "",
       "area": "NUMEROLOGY",
       "type": "correctness",
       "priority": "unset",
@@ -691,6 +725,7 @@
     {
       "number": 200,
       "title": "numerology: user-facing copy names books and authors throughout, against CLAUDE.md's cite-the-tradition rule",
+      "ask": "Rewrite each to name the tradition rather than the author, matching the compound-number caption as the reference example.",
       "area": "NUMEROLOGY",
       "type": "untyped",
       "priority": "unset",
@@ -703,6 +738,7 @@
     {
       "number": 198,
       "title": "[DESIGN] Mobile hero has no motion — and after #195 the sample chart now costs the CTA nothing",
+      "ask": "",
       "area": "DESIGN",
       "type": "design",
       "priority": "unset",
@@ -720,6 +756,7 @@
     {
       "number": 194,
       "title": "[TASK] Nothing verifies that a cited quotation appears within its cited line range — 6 of 13 citations were short",
+      "ask": "Assert that each cited quotation actually appears within its cited line range.",
       "area": "TASK",
       "type": "enhancement",
       "priority": "unset",
@@ -734,6 +771,7 @@
     {
       "number": 191,
       "title": "[TASK] Extract the ~22,000 readable lines already in data/ — no OCR needed",
+      "ask": "Extract vedic_astro_textbook.pdf fully.",
       "area": "TASK",
       "type": "enhancement",
       "priority": "unset",
@@ -748,6 +786,7 @@
     {
       "number": 185,
       "title": "[CHORE] Decide whether the #154 route-table guard should become a permanent gate",
+      "ask": "",
       "area": "CHORE",
       "type": "enhancement",
       "priority": "unset",
@@ -762,6 +801,7 @@
     {
       "number": 184,
       "title": "[CHORE] Post-#154 cleanup: stale main.py doc pointers + dead code",
+      "ask": "",
       "area": "CHORE",
       "type": "enhancement",
       "priority": "unset",
@@ -776,6 +816,7 @@
     {
       "number": 178,
       "title": "[BLOCKER] Ashtakoota + Lo Shu + Rudraksha rules have no source in repo — acquire Muhurtha and a Lo Shu source, or remove the claims",
+      "ask": "Install ocrmypdf (or tesseract + a wrapper) locally.",
       "area": "BLOCKER",
       "type": "enhancement",
       "priority": "unset",
@@ -790,6 +831,7 @@
     {
       "number": 177,
       "title": "knowledge: no Ashtakoot Guna Milan material in the corpus or in data/ — the entire 36-point engine + verdict bands are untraceable, and rashis.md points at a vedic_reference.md §26.5 that does not exist",
+      "ask": "Write vedic_reference.md §26 — Ashtakoot Guna Milan",
       "area": "KNOWLEDGE",
       "type": "correctness",
       "priority": "unset",
@@ -804,6 +846,7 @@
     {
       "number": 175,
       "title": "matching: Vashya koota collapses the 5x5 matrix to 3 tiers and ignores the half-sign splits — Scorpio Moon scores 0/2 against 11 of 12 rashis",
+      "ask": "",
       "area": "MATCHING",
       "type": "correctness",
       "priority": "unset",
@@ -818,6 +861,7 @@
     {
       "number": 163,
       "title": "numerology: two compatibility tables disagree on 23 of 45 pairs; 3 table rows are unreachable",
+      "ask": "",
       "area": "NUMEROLOGY",
       "type": "correctness",
       "priority": "unset",
@@ -832,6 +876,7 @@
     {
       "number": 159,
       "title": "[FEATURE] Local RAG index over knowledge/*.md + data/ books for citation-bearing rule lookup",
+      "ask": "",
       "area": "FEATURE",
       "type": "enhancement",
       "priority": "unset",
@@ -846,6 +891,7 @@
     {
       "number": 151,
       "title": "[BUG] knowledge/*.md has no Panchang-anga material — astrological claims on /panchang cannot trace to the corpus",
+      "ask": "",
       "area": "BUG",
       "type": "bug",
       "priority": "unset",
@@ -860,6 +906,7 @@
     {
       "number": 150,
       "title": "[BUG] /panchang still omits Yamaganda, Gulikai, Brahma Muhurta and moonrise/moonset — #132 Phase 1 gap",
+      "ask": "",
       "area": "BUG",
       "type": "bug",
       "priority": "unset",
@@ -874,6 +921,7 @@
     {
       "number": 140,
       "title": "[FEATURE] User profiling insights — audience shape from birth details + question text",
+      "ask": "",
       "area": "FEATURE",
       "type": "enhancement",
       "priority": "unset",
@@ -889,6 +937,7 @@
     {
       "number": 131,
       "title": "[FEATURE] PDF download of Kundli — matchmaking use case gap",
+      "ask": "Add \"Download PDF\" button on /kundli result page",
       "area": "FEATURE",
       "type": "enhancement",
       "priority": "medium",
@@ -904,6 +953,7 @@
     {
       "number": 129,
       "title": "[FEATURE] Add Shodashvarga divisional charts (D-1 to D-60)",
+      "ask": "Phase 1: D-9 Navamsha only (highest usage) — render alongside D-1 on /kundli result",
       "area": "FEATURE",
       "type": "enhancement",
       "priority": "medium",
@@ -919,6 +969,7 @@
     {
       "number": 128,
       "title": "[FEATURE] Add Ashtakvarga calculator — competitor gap",
+      "ask": "Compute BAV (Bhinnashtakavarga) for each of 7 planets",
       "area": "FEATURE",
       "type": "enhancement",
       "priority": "medium",
@@ -934,6 +985,7 @@
     {
       "number": 124,
       "title": "[SEO] Move Hindi from client-side toggle to /hi/... URLs with hreflang",
+      "ask": "Start with the top 10 pages by traffic: /, /rashifal, /kundli, /matching, /manglik-check, /sade-sati-check, /muhurat, /numerology, /learn",
       "area": "SEO",
       "type": "untyped",
       "priority": "high",
@@ -950,6 +1002,7 @@
     {
       "number": 115,
       "title": "[FEATURE] Timeline Lotus — Vimshottari Dasha as scrubbable 3D helix, bandwidth-adaptive",
+      "ask": "Route: progressive enhancement on existing /kundli — new \"Timeline\" panel below Life Stages section",
       "area": "FEATURE",
       "type": "untyped",
       "priority": "medium",
@@ -964,6 +1017,7 @@
     {
       "number": 114,
       "title": "[FEATURE] Interactive 3D birth chart — WebGL mandala with bandwidth-adaptive fallback",
+      "ask": "Route: progressive enhancement on existing /kundli — replaces the static SVG chart hero when device+network can handle it.",
       "area": "FEATURE",
       "type": "untyped",
       "priority": "medium",

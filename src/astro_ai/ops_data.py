@@ -185,6 +185,35 @@ def _loop_view(doc: dict | None, today_ist: str) -> dict:
     }
 
 
+def _age(ts: str | None, now: datetime) -> dict:
+    """How old a committed snapshot is, in words.
+
+    WHY THIS EXISTS, MEASURED
+    -------------------------
+    On 2026-10-14 the page showed `66 open` from a 07:22Z collection while 65
+    were actually open -- #329 had closed at 16:13Z. The snapshot time WAS on
+    the page, as `2026-10-14T07:22:00Z` in mono. A raw UTC timestamp does not
+    read as stale, so the number read as WRONG rather than as OLD. "9h ago"
+    reads as old. That is the entire difference this function makes.
+    """
+    at = _ist(ts)
+    if at is None:
+        return {"text": "age unknown", "hours": None, "stale": True,
+                "at_ist": None}
+    hours = (now.astimezone(IST) - at).total_seconds() / 3600.0
+    hours = max(hours, 0.0)        # clock skew: never print a negative age
+    if hours < 1:
+        text = f"{int(hours * 60)}m ago"
+    elif hours < 48:
+        text = f"{int(hours)}h ago"
+    else:
+        text = f"{int(hours / 24)}d ago"
+    # The collectors run daily, so past 26h a run has been MISSED -- an hour of
+    # slack for a late start, not an opinion about how fresh is fresh enough.
+    return {"text": text, "hours": round(hours, 1), "stale": hours > 26,
+            "at_ist": at.strftime("%d %b %H:%M")}
+
+
 def _issues_view(doc: dict | None, today_ist: str) -> dict:
     """Backlog rows plus the three groupings the bars offer for drill-down."""
     if not doc or not isinstance(doc.get("rows"), list):
@@ -197,6 +226,10 @@ def _issues_view(doc: dict | None, today_ist: str) -> dict:
         "generated_at": doc.get("generated_at"),
         "open": len(rows),
         "rows": rows,
+        # Stated, never implied. 29 of 65 issues yielded a readable ask on
+        # 2026-10-14, so a column of 29 summaries over 65 rows has to say which
+        # number is which or it reads as a column that silently lost 36 rows.
+        "with_ask": doc.get("with_ask", sum(1 for r in rows if r.get("ask"))),
         "by_priority": doc.get("by_priority") or dict(Counter(r["priority"] for r in rows)),
         "by_area": doc.get("by_area") or dict(Counter(r["area"] for r in rows)),
         "by_type": doc.get("by_type") or dict(Counter(r["type"] for r in rows)),
@@ -395,8 +428,10 @@ def snapshot(now: datetime | None = None) -> dict:
     now_ist = now.astimezone(IST)
     today_ist = now_ist.strftime("%Y-%m-%d")
 
-    loop = _loop_view(_fetch("loop.json"), today_ist)
-    issues = _issues_view(_fetch("issues.json"), today_ist)
+    loop_doc = _fetch("loop.json")
+    issues_doc = _fetch("issues.json")
+    loop = _loop_view(loop_doc, today_ist)
+    issues = _issues_view(issues_doc, today_ist)
 
     cutoff = (now - timedelta(days=30)).strftime("%Y-%m-%d")
     shipped_30d = sum(1 for r in loop["rows"]
@@ -415,6 +450,17 @@ def snapshot(now: datetime | None = None) -> dict:
         "traffic": traffic,
         "agents": agents,
         "source": "disk" if measurements_dir() else "github",
+        # The one line every loop ranks against, carried in issues.json because
+        # the Docker image copies only `src/` -- OBJECTIVE.md is not in the
+        # container. "" when chief has not written one, which is a real state.
+        "objective": (issues_doc or {}).get("objective") or "",
+        # Per-source age, so a count can be read as of a time rather than as
+        # now. Keyed by the panel that shows it, not by filename.
+        "ages": {
+            "delivery": _age((loop_doc or {}).get("generated_at"), now),
+            "backlog": _age((issues_doc or {}).get("generated_at"), now),
+            "team": _age((_fetch("agents.json") or {}).get("generated_at"), now),
+        },
         # Named so the footer can say which panel is missing rather than
         # rendering an empty one with no explanation.
         "missing": [n for n, v in (("loop.json", loop["ok"]),

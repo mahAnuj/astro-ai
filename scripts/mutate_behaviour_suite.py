@@ -649,6 +649,18 @@ MUTATIONS = [
      '    seen = [p["number"] for p in prs]',
      "test_a_reused_branch_gets_the_pr_that_existed_when_the_run_ended"),
 
+    ("#345: dropping measure.if runs the ANALYST twice a day against the 5h cap",
+     ".github/workflows/agent-measure.yml",
+     "    if: github.event.schedule != '0 2 * * *'\n",
+     "",
+     "test_the_second_slot_runs_the_collectors_without_the_analyst"),
+
+    ("#345: the collectors-only slot removed — a cycle's outcome is a day late again",
+     ".github/workflows/agent-measure.yml",
+     '    - cron: "0 2 * * *"',
+     '    - cron: "0 3 * * *"',
+     "test_the_second_slot_runs_the_collectors_without_the_analyst"),
+
     ("#338: a figure may stand on an explanation instead of 'known'/'free-tier' (zero for an unknown)",
      "scripts/collect_loop_measurements.py",
      "        elif status not in FIGURE_STATUSES:",

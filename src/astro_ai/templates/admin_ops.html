@@ -168,16 +168,41 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .bar button.p-medium{background:var(--open)}
 .bar button.p-unset{background:var(--nothing)}
 
+/* ── The objective. One line, above everything that claims progress. ────
+   The page measured traffic, delivery and cost and never said what any of it
+   was FOR, so there was nothing to judge a number against. chief owns the
+   line; this only renders it. */
+.obj{display:flex;gap:14px;align-items:baseline;margin:0 0 18px;padding:13px 16px;
+  border:1px solid var(--line);border-left:2px solid var(--shipped);
+  background:linear-gradient(90deg,rgba(91,185,140,.05),transparent 60%);border-radius:3px}
+.obj .lbl{flex:none;padding-top:2px}
+.obj p{margin:0;font:400 15px/1.45 Marcellus,Georgia,serif;color:var(--ink);max-width:70ch}
+.obj .none{font-family:Manrope,sans-serif;font-size:13px;color:var(--ink-mute)}
+
+/* An age, not a timestamp. `2026-10-14T07:22:00Z` does not read as stale;
+   "9h ago" does. Amber once a daily collection has been missed. */
+.age{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);letter-spacing:.02em}
+.age.stale{color:var(--open)}
+
 /* The ranked queue under the bars. Rows are quiet until hovered — the bars
    above are the colour in this panel, and two competing colour fields in one
    card read as noise. */
 .queue{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
-.q-item{display:flex;gap:8px;align-items:baseline;padding:9px 0;
+.q-item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;
+  align-items:baseline;padding:9px 0;
   border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
+.q-chips{display:flex;gap:5px;flex:none}
 .q-item:last-of-type{border-bottom:0}
 .q-item:hover{text-decoration:none}
 .q-item:hover .q-t{color:var(--accent)}
 .q-t{font-size:13px;line-height:1.45}
+/* What the issue REQUIRES, under what is wrong with it. Indented to the title
+   so it reads as subordinate, and capped at 70ch — past that it stops being a
+   summary. Absent for 35 of 62 issues, and the note under the queue says so. */
+.q-ask{grid-column:2;margin:0;font-size:12px;line-height:1.5;
+  color:var(--ink-dim);max-width:70ch}
+.q-t{grid-column:2}
+.q-more{padding:10px 0 0;font-size:12px;color:var(--ink-mute)}
 .q-note{margin:16px 0 0;font-size:12px;color:var(--ink-mute);line-height:1.6}
 .q-note code{font-family:var(--mono);color:var(--ink-dim)}
 
@@ -299,6 +324,17 @@ table.cost .v{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
 .item .r1{display:flex;gap:9px;align-items:baseline;margin-bottom:4px;flex-wrap:wrap}
 .item .t{font-size:14px;line-height:1.45}
 .item .meta{font-family:var(--mono);font-size:11px;color:var(--ink-mute)}
+/* The ask, in the drill-down too — this is where you read the queue. */
+.item .ask{font-size:12.5px;line-height:1.5;color:var(--ink-dim);margin:5px 0 0;max-width:62ch}
+/* WHY something happened is already written down, by the agent that did it, in
+   the issue comments. So a cycle row links to the comment thread as well as to
+   the run log — a run says WHAT happened, the thread says why. Two links means
+   the row cannot be one <a>, hence div + explicit links. */
+.item .links{display:flex;gap:14px;margin-top:7px;flex-wrap:wrap}
+.item .links a{font:500 11px/1 Manrope,sans-serif;letter-spacing:.04em;
+  color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+.item .links a:hover{border-bottom-color:var(--accent)}
+.item.row{cursor:default}
 .chip{font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;text-transform:uppercase;
   padding:4px 7px;border-radius:2px;border:1px solid var(--line-2);color:var(--ink-dim);flex:none}
 .chip.shipped{color:var(--shipped);border-color:#2f5c47}
@@ -306,6 +342,11 @@ table.cost .v{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
 .chip.nothing{color:var(--nothing)}
 .chip.pr-open{color:var(--open);border-color:#6b5223}
 .chip.high{color:var(--failed);border-color:#6b3329}
+.chip.medium{color:var(--open);border-color:#6b5223}
+.chip.low{color:var(--ink-mute)}
+/* Unranked is not low. It is the absence of a decision, so it gets the colour
+   of "nothing recorded" rather than a position on the scale. */
+.chip.unset{color:var(--nothing);border-color:var(--line-2)}
 .chip.blocked{color:var(--open);border-color:#6b5223}
 .empty{padding:30px 0;color:var(--ink-mute);font-size:13px}
 
@@ -343,14 +384,27 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
     <div class="top-meta">
       <span><span class="lbl">next cycle due</span>
         <span class="mono" style="margin-left:7px">{{ ops.next_cycle_ist.strftime('%a %H:%M') }} IST</span></span>
-      <span><span class="lbl">data</span>
-        <span class="mono" style="margin-left:7px">{{ L.generated_at or '—' }}</span></span>
+      <span><span class="lbl">cycle data</span>
+        <span class="age {{ 'stale' if ops.ages.delivery.stale }}" style="margin-left:7px"
+              title="collected {{ L.generated_at or 'never' }}">{{ ops.ages.delivery.text }}</span></span>
       <a href="/admin" class="lbl" style="color:var(--accent)">← admin</a>
     </div>
   </div>
 </header>
 
 <div class="wrap">
+
+  {# ── What all of it is for. OBJECTIVE.md, carried in issues.json. ──── #}
+  <section class="obj">
+    <div class="lbl">Objective</div>
+    {% if ops.objective %}
+    <p>{{ ops.objective }}</p>
+    {% else %}
+    <p class="none">No <code>OBJECTIVE.md</code> line could be read. Four loops run on
+      separate schedules and rank against this one sentence; without it they optimise
+      independently. <code>chief</code> owns it.</p>
+    {% endif %}
+  </section>
 
   {# ── The sentence. Written from the newest row, never hardcoded. ───── #}
   <section class="verdict">
@@ -387,7 +441,8 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
     <button class="tile" data-drill="today-shipped">
       <span class="caret">▸</span><span class="lbl">Shipped today</span>
       <span class="v"><span class="num c-shipped">{{ L.today_shipped|length }}</span></span>
-      <span class="foot">merged to main, {{ ops.today_ist }}</span>
+      <span class="foot">merged to main, {{ ops.today_ist }}<br>
+        <span class="age {{ 'stale' if ops.ages.delivery.stale }}">as of {{ ops.ages.delivery.text }}</span></span>
     </button>
     <button class="tile" data-drill="today-filed" {{ '' if I.filed_today else 'disabled' }}>
       <span class="caret">▸</span><span class="lbl">Filed today</span>
@@ -403,7 +458,8 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       <span class="caret">▸</span><span class="lbl">Open backlog</span>
       <span class="v"><span class="num">{{ I.open }}</span>
         <span class="foot c-open">{{ I.by_priority.get('unset', 0) }} unranked</span></span>
-      <span class="foot">{{ I.blocked|length }} blocked on a human</span>
+      <span class="foot">{{ I.blocked|length }} blocked on a human<br>
+        <span class="age {{ 'stale' if ops.ages.backlog.stale }}">as of {{ ops.ages.backlog.text }}</span></span>
     </button>
   </section>
 
@@ -667,23 +723,48 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
 
         {# The bars answer "how many". This answers "which" — the ranked queue
            the loop actually draws from, highest first, each one clickable. #}
-        {% set ranked = I.rows|selectattr('priority', 'equalto', 'high')|list %}
+        {# Priority order, then recency inside a band. `high` alone showed 6 rows
+           of 62 and read as if the backlog were nearly empty; the honest view is
+           the whole queue in the order project-manager would take it, capped so
+           the panel stays a summary. Unranked sit LAST and are labelled as
+           unranked rather than low — nobody ranked them, which is not the same
+           as ranking them low. #}
+        {% set _hi = I.rows|selectattr('priority','equalto','high')|list %}
+        {% set _md = I.rows|selectattr('priority','equalto','medium')|list %}
+        {% set _lo = I.rows|selectattr('priority','equalto','low')|list %}
+        {% set _un = I.rows|selectattr('priority','equalto','unset')|list %}
+        {% set ranked = (_hi + _md + _lo + _un)[:14] %}
         <div class="queue">
           <div class="lbl" style="margin-bottom:10px">Top of the queue</div>
           {% for r in ranked %}
           <a class="q-item" href="https://github.com/mahAnuj/astro-ai/issues/{{ r.number }}">
-            <span class="chip high">high</span>
-            {% if r.blocked %}<span class="chip blocked">blocked</span>{% endif %}
+            <span class="q-chips">
+              <span class="chip {{ r.priority }}">{{ 'unranked' if r.priority == 'unset' else r.priority }}</span>
+              {% if r.blocked %}<span class="chip blocked">blocked</span>{% endif %}
+            </span>
             <span class="q-t">#{{ r.number }} {{ r.title }}</span>
+            {% if r.ask %}<span class="q-ask">{{ r.ask }}</span>{% endif %}
           </a>
           {% else %}
-          <div class="empty">Nothing carries priority:high.</div>
+          <div class="empty">No open issues.</div>
           {% endfor %}
+          {% if I.open > ranked|length %}
+          <div class="q-more">{{ I.open - ranked|length }} more — open the
+            <b>Open backlog</b> tile for all {{ I.open }}.</div>
+          {% endif %}
           <p class="q-note">
             <b>{{ I.by_priority.get('unset', 0) }} of {{ I.open }} open issues carry no priority
             label at all.</b> project-manager ranks what is labelled, so those are not in any
             queue — they are not low priority, they are unranked. Running
             <code>/prioritise</code> is what moves them into one.
+          </p>
+          <p class="q-note">
+            The grey line under a title is what the issue <b>requires</b>, lifted from its body
+            — a title says what is wrong, not what to do. It is read by regex from whichever
+            section states the work, and the bodies use 40+ different headings for that, so
+            <b>{{ I.with_ask }} of {{ I.open }}</b> issues yield one and the rest show nothing.
+            A blank means nobody wrote down what the issue needs, which is worth seeing. No
+            summary is generated — nothing here spends a token.
           </p>
         </div>
       </div>
@@ -787,8 +868,21 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
     });
   }
 
+  function link(href, label) {
+    return '<a href="' + href + '">' + label + '</a>';
+  }
+
   /* One renderer for both row kinds. A cycle and an issue both reduce to
-     "a chip, a title, a line of metadata, and a GitHub URL". */
+     "a chip, a title, a line of metadata, and somewhere to read more".
+
+     WHY THE ROWS CARRY LINKS RATHER THAN BEING ONE
+     ----------------------------------------------
+     A run log says WHAT a cycle did. It does not say why, and the why is
+     already written down: every agent comments its decision, what it rejected,
+     the SHA and the token cost on the issue as it works. Summarising that with
+     a fresh agent would cost quota, add latency and lose attribution — the
+     comment thread IS the record, so the row points at it. Two destinations
+     means a row cannot be a single <a>. */
   function render(rows, kind) {
     if (!rows.length) {
       list.innerHTML = '<div class="empty">Nothing in this group.</div>';
@@ -798,19 +892,29 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       if (kind === "cycle") {
         var bits = [r.time_ist + " IST", r.date_ist, r.minutes + " min", r.trigger];
         if (r.attribution === "unattributed") bits.push("unattributable");
-        return '<a class="item" href="' + REPO + "/actions/runs/" + r.run + '">' +
+        var ls = [link(REPO + "/actions/runs/" + r.run, "run log &rarr;")];
+        /* The agents' own account of the work, which is the "why". */
+        if (r.issue) ls.push(link(REPO + "/issues/" + r.issue, "what the agents said &rarr;"));
+        if (r.pr) ls.push(link(REPO + "/pull/" + r.pr, "PR #" + r.pr + " diff &rarr;"));
+        return '<div class="item row">' +
           '<div class="r1"><span class="chip ' + esc(r.outcome).replace(" ", "-") + '">' +
             esc(r.outcome) + "</span>" +
           '<span class="t">' + (r.issue ? "#" + r.issue : "no issue attributed") +
-            (r.pr ? " → PR #" + r.pr : "") + "</span></div>" +
-          '<div class="meta">' + esc(bits.join(" · ")) + "</div></a>";
+            (r.pr ? " \u2192 PR #" + r.pr : "") + "</span></div>" +
+          '<div class="meta">' + esc(bits.join(" \u00b7 ")) + "</div>" +
+          '<div class="links">' + ls.join("") + "</div></div>";
       }
       var chips = "";
       if (r.priority && r.priority !== "unset") chips += '<span class="chip ' + esc(r.priority) + '">' + esc(r.priority) + "</span>";
       if (r.blocked) chips += '<span class="chip blocked">blocked</span>';
-      return '<a class="item" href="' + REPO + "/issues/" + r.number + '">' +
+      return '<div class="item row">' +
         '<div class="r1">' + chips + '<span class="t">#' + r.number + " " + esc(r.title) + "</span></div>" +
-        '<div class="meta">' + esc([r.area, r.type, "prio " + r.priority].join(" · ")) + "</div></a>";
+        '<div class="meta">' + esc([r.area, r.type, "prio " + r.priority].join(" \u00b7 ")) + "</div>" +
+        (r.ask ? '<p class="ask">' + esc(r.ask) + "</p>" : "") +
+        '<div class="links">' +
+          link(REPO + "/issues/" + r.number, "issue &rarr;") +
+          link(REPO + "/issues/" + r.number + "#partial-timeline", "discussion &rarr;") +
+        "</div></div>";
     }).join("");
   }
 

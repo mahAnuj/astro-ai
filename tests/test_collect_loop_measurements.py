@@ -441,6 +441,41 @@ def test_commit_job_grants_exactly_the_scopes_the_collector_needs_and_orders_its
     assert run_text.index("git pull --rebase origin main") < run_text.index("git push origin HEAD:main")
 
 
+COLLECTORS_ONLY_CRON = "0 2 * * *"
+
+
+def test_the_second_slot_runs_the_collectors_without_the_analyst():
+    """The 02:00 slot exists so a cycle's own outcome lands the same day, and it
+    must NOT invoke the analyst.
+
+    The 21:00 run is two hours AHEAD of agent-work because the cycle plans from
+    its report, so the cycle's result waits ~21.5 h for the next one -- measured
+    2026-10-14, when /admin/ops read "1 shipped today" while #276 and #329 had
+    both shipped. The fix is a second slot that runs the `commit` job only.
+
+    Dropping `measure.if` would silently double the analyst's spend against the
+    Claude 5 h rolling cap this repo has already exhausted once, and nothing
+    else in the suite would notice: both runs would simply go green.
+    """
+    doc = yaml.safe_load(MEASURE.read_text())
+    on = doc.get(True) or doc.get("on")
+    crons = [c["cron"] for c in on["schedule"]]
+    assert COLLECTORS_ONLY_CRON in crons
+    assert crons.index("0 21 * * *") < crons.index(COLLECTORS_ONLY_CRON)
+
+    # The analyst is skipped on that slot, and only on that slot: a
+    # workflow_dispatch carries no `github.event.schedule`, so a manual run
+    # still measures.
+    assert doc["jobs"]["measure"]["if"] == f"github.event.schedule != '{COLLECTORS_ONLY_CRON}'"
+
+    # ...and the collectors still run, which only holds while `commit` is
+    # always() over a needs: measure that may be skipped.
+    commit = doc["jobs"]["commit"]
+    assert commit["needs"] == "measure"
+    assert commit["if"] == "always()"
+    assert commit.get("permissions", {}).get("contents") == "write"
+
+
 def test_no_workflow_was_added():
     assert len(list((ROOT / ".github" / "workflows").glob("*.yml"))) == 15
 

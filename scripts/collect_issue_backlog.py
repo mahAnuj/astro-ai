@@ -28,6 +28,36 @@ applied. A missing priority is recorded as "unset" rather than guessed: 43 of
 the 66 open issues carry no priority label at all, and that number is the most
 actionable thing on the page -- project-manager cannot rank what nobody ranked.
 
+THE ASK LINE IS EXTRACTED, AND HALF THE TIME IT CANNOT BE
+---------------------------------------------------------
+A title says what is WRONG; a reader ranking the queue needs what is REQUIRED.
+The bodies carry it, but there is no shared structure to read it from: measured
+2026-10-14 across the 65 open issues there are 40+ distinct section headings for
+the same job -- Scope, Fix, Required, Proposed change, What to do, Proposed
+work, Suggested fix, Design, Recommendation, Options, What it would take -- and
+12 issues have no headings at all.
+
+So `ask` comes off a ladder of heading synonyms, then the body preamble. Two
+things it must NOT do, both found by measuring rather than by reasoning:
+
+  * "scope" matches inside "Out of scope". #335's ask came out as "The public
+    mirror on anujmahajan.com", lifted from its out-of-scope list -- a
+    confident sentence saying the opposite of the truth. Hence _NEGATIVE.
+  * a matched section often opens with something that is not a statement: a
+    bare file path (#327), a config value (#266 -> "BHAGYA_LLM_PROVIDERS=..."),
+    a colon lead-in (#263 -> "Not a design task. Roughly:"), or the redesign
+    epic's shared preamble "Part of #233. Depends on #241." which 10 of the
+    #242-#251 children emit identically. Hence _usable().
+
+With both guards about half the backlog yields a real ask and half yields
+nothing. `ask` is then "" and the page shows a blank, because an issue with no
+readable statement of the work is a triage finding worth seeing -- filling the
+row with boilerplate would hide exactly the issues that need rewriting. The
+coverage number is printed on every run so the ratio itself is visible.
+
+NO LLM ON THIS PATH. Every field here is a regex over text the agents already
+wrote. The page must stay free to render.
+
 Writes measurements/issues.json. Stdlib plus the `gh` CLI, which every workflow
 in this repo already has on PATH.
 """
@@ -60,6 +90,174 @@ _TYPES = (
     ("chore", "chore"),
     ("enhancement", "enhancement"),
 )
+
+
+# Headings that introduce WHAT TO DO, most explicit first. A ladder, not a key:
+# see the module docstring for why there is no single heading to read.
+_ASK_HEADINGS = (
+    "proposed change", "proposed work", "proposed fix", "proposed move",
+    "proposed check", "suggested fix", "suggested shape", "what to do",
+    "what it needs", "what it would take", "what is required", "required",
+    "scope", "fix", "work, in this order", "design", "two ways to close it",
+    "recommendation", "immediate mitigation", "next step", "options",
+)
+
+# A heading containing any of these is about what NOT to do. Matching "scope"
+# inside "Out of scope" gave #335 an ask lifted from its own exclusion list.
+_NEGATIVE = (
+    "out of scope", "not in scope", "explicitly out", "non-negotiable",
+    "do not", "must not", "do no", "not claimed", "not done",
+)
+
+_HEADING = re.compile(r"^#{2,4}\s+(.+?)\s*$", re.M)
+
+# Cross-references the redesign epic's children all open with. Ten of #242-#251
+# emit "Part of #233. Depends on #241." verbatim, which is provenance, not work.
+_BOILERPLATE = re.compile(
+    r"^(part of #\d+|depends on #\d+|fell out of|found by|surfaced by|"
+    r"split out of|deferred decision|supersedes|tracking issue|housekeeping)",
+    re.I,
+)
+
+# A line that is a path, a config assignment, or a verdict stamp rather than a
+# sentence about work.
+_PATHLIKE = re.compile(r"^[\w/.\-]*[/.](py|html|css|js|json|md|yml|yaml|pdf)\b|^/")
+# `PROOF = "..."`, `BHAGYA_LLM_PROVIDERS=groq120`. The space before `=` is why
+# an anchored `[A-Z0-9_]+=` missed #265.
+_ASSIGNMENT = re.compile(r"^[A-Z0-9_]{4,}\s*=")
+# A shell or YAML fragment pasted as the proposal: #341 gave `git log -1 ...`
+# and #278 gave `run: sudo apt-get install ...`, both of which read as prose.
+_CODELIKE = re.compile(
+    r"^(git|gh|run|uv|npm|npx|curl|cd|sed|awk|grep|echo|sudo|python3?|docker|"
+    r"gcloud|jq|cat|export|if|for|while)\b[\s:]", re.I,
+)
+# A machine verdict or counter line: "6 BROKEN, 2 UNKNOWN, 7 OK", "Verdict: ...".
+_STATUSLINE = re.compile(r"^(verdict|status|result|page|pages)\b\s*:", re.I)
+_COUNTERLINE = re.compile(r"^\d+\s+[A-Z]{2,}\b")
+# A clause continuing an argument from the line above, so it cannot stand alone
+# as the ask: #279's section opened "So the free route can take CI from 1/8 to 4/8."
+_CONTINUATION = re.compile(
+    r"^(so|then|therefore|however|but|and|also|thus|hence|besides|"
+    r"note that|that said|which|because)\b", re.I,
+)
+# Two adjacent lowercase words -- the cheapest test for "this is prose".
+_PROSE = re.compile(r"[a-z]{3}\s+[a-z]{3}")
+
+
+def _sections(body: str) -> list[tuple[str, str]]:
+    """[(heading, text)] for every `##`..`####` section, in document order."""
+    out: list[tuple[str, str]] = []
+    last: tuple[str, int] | None = None
+    for m in _HEADING.finditer(body):
+        if last:
+            out.append((last[0], body[last[1]:m.start()]))
+        last = (m.group(1).strip(), m.end())
+    if last:
+        out.append((last[0], body[last[1]:]))
+    return out
+
+
+def _strip_markup(line: str) -> str:
+    """Bullet markers, code ticks, bold/italic and link syntax off one line."""
+    s = re.sub(r"^\s*([-*+]|\d+[.)])\s+", "", line.strip())
+    s = re.sub(r"`([^`]+)`", r"\1", s)
+    s = re.sub(r"\*\*([^*]+)\*\*", r"\1", s)
+    s = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"\1", s)
+    s = s.replace("**", "")      # an unclosed bold span, left by a line split
+    s = re.sub(r"\[([^]]+)\]\([^)]*\)", r"\1", s)
+    # Markdown backslash-escapes, which an agent writes when a path would
+    # otherwise be read as emphasis: #124's scope renders "\/\, \/rashifal\"
+    # on the page unless they come off here.
+    s = re.sub(r"\\([^A-Za-z0-9])", r"\1", s)
+    return s.strip().rstrip("\\").strip()
+
+
+def _usable(s: str) -> bool:
+    """Is this line a statement of work, or one of the things measured to be
+    noise? Each test below exists because a real issue produced that shape."""
+    if len(s) < 25:
+        return False
+    if _BOILERPLATE.match(s):
+        return False
+    if s.endswith(":"):           # a lead-in to a list, not a statement
+        return False
+    if _ASSIGNMENT.match(s) or _PATHLIKE.match(s) or _CODELIKE.match(s):
+        return False
+    if _STATUSLINE.match(s) or _COUNTERLINE.match(s):
+        return False
+    if not s[:1].isalnum():       # an emoji or symbol stamp, e.g. #327's "WARN"
+        return False
+    if not (s[:1].isupper() or s[:1].isdigit()):
+        return False              # mid-sentence fragment: #151's "the five angas"
+    if _CONTINUATION.match(s):
+        return False
+    return bool(_PROSE.search(s))
+
+
+def _first_claim(text: str, limit: int = 180) -> str:
+    """The first usable sentence in `text`, trimmed to one sentence."""
+    for raw in text.split("\n"):
+        stripped = raw.strip()
+        if not stripped or stripped.startswith(("```", "|", ">", "---", "#")):
+            continue
+        cleaned = _strip_markup(stripped)
+        if not _usable(cleaned):
+            continue
+        m = re.match(r"^(.{14,%d}?[.!?])(\s|$)" % limit, cleaned)
+        if m:
+            return m.group(1)
+        # No sentence end in range: cut on a word boundary, never mid-word, and
+        # drop a dangling open bracket (#177 ended "(the section rashis.md:249").
+        cut = cleaned[:limit].rsplit(" ", 1)[0] if len(cleaned) > limit else cleaned
+        if cut.count("(") > cut.count(")"):
+            cut = cut[:cut.rfind("(")].rstrip()
+        return cut.rstrip(" ,;:-—")
+    return ""
+
+
+def derive_ask(body: str) -> str:
+    """One plain line saying what the issue requires, or "" if none is readable.
+
+    Tries the ask headings in order, then the preamble above the first heading.
+    Never guesses: see the module docstring for why a blank is the right answer.
+    """
+    if not body:
+        return ""
+    secs = _sections(body)
+    for want in _ASK_HEADINGS:
+        for name, text in secs:
+            low = name.lower()
+            if any(neg in low for neg in _NEGATIVE):
+                continue
+            if low.startswith(want) or want in low:
+                claim = _first_claim(text)
+                if claim:
+                    return claim
+    # NO PREAMBLE FALLBACK. It was tried and measured: of 25 asks it produced,
+    # 14 were context rather than work -- "Workflow files were deliberately not
+    # touched in #272's PR" (#291), "6 BROKEN, 2 UNKNOWN, 7 OK" (#326), the
+    # "Page: ..." field label the UI audits open with (#307-#310). A blank says
+    # "nobody wrote down what this needs", which is true and useful. A confident
+    # wrong line teaches the reader to distrust the whole column.
+    return ""
+
+
+def read_objective(path: str = "OBJECTIVE.md") -> str:
+    """The one line every loop ranks against, from OBJECTIVE.md's blockquote.
+
+    Committed into issues.json rather than read by the page: the Docker image
+    copies only `src/`, so OBJECTIVE.md is absent from the container, and the
+    backlog is the thing the objective is meant to rank. Returns "" if absent --
+    chief owns that file and may not have written it yet.
+    """
+    p = Path(path)
+    if not p.is_file():
+        return ""
+    for line in p.read_text().split("\n"):
+        s = line.strip()
+        if s.startswith(">"):
+            return _strip_markup(s.lstrip("> ").strip())
+    return ""
 
 
 def derive_area(title: str) -> str:
@@ -97,6 +295,9 @@ def row_for(issue: dict) -> dict:
     return {
         "number": issue["number"],
         "title": issue["title"],
+        # What the issue REQUIRES, not what is wrong with it. "" where no
+        # statement of work could be read -- never boilerplate. See the docstring.
+        "ask": derive_ask(issue.get("body") or ""),
         "area": derive_area(issue["title"]),
         "type": derive_type(labels),
         "priority": derive_priority(labels),
@@ -115,7 +316,8 @@ def fetch(repo: str, state: str, limit: int) -> list[dict]:
     """`gh issue list` as JSON. Raises on a non-zero exit rather than guessing."""
     out = subprocess.run(
         ["gh", "issue", "list", "--repo", repo, "--state", state,
-         "--limit", str(limit), "--json", "number,title,labels,createdAt,updatedAt"],
+         "--limit", str(limit), "--json",
+         "number,title,labels,createdAt,updatedAt,body"],
         capture_output=True, text=True, check=True,
     ).stdout
     return json.loads(out)
@@ -128,7 +330,11 @@ def build(issues: list[dict], *, repo: str) -> dict:
     return {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "repo": repo,
+        "objective": read_objective(),
         "open": len(rows),
+        # Stated, not implied. Half the backlog has no readable ask, and a page
+        # showing 30 summaries over 65 rows must say which number is which.
+        "with_ask": sum(1 for r in rows if r["ask"]),
         "by_area": dict(Counter(r["area"] for r in rows).most_common()),
         "by_type": dict(Counter(r["type"] for r in rows).most_common()),
         "by_priority": dict(Counter(r["priority"] for r in rows).most_common()),
@@ -155,7 +361,9 @@ def main(argv: list[str] | None = None) -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n")
     print(f"{out}: {doc['open']} open, {len(doc['by_area'])} areas, "
-          f"{doc['by_priority'].get('unset', 0)} unprioritised, {doc['blocked']} blocked")
+          f"{doc['by_priority'].get('unset', 0)} unprioritised, {doc['blocked']} blocked, "
+          f"{doc['with_ask']} with a readable ask"
+          + ("" if doc["objective"] else ", NO OBJECTIVE.md"))
     return 0
 
 

@@ -12,6 +12,19 @@ name: Agent measure
 on:
   schedule:
     - cron: "0 21 * * *"   # 02:30 IST — two hours ahead of agent-work
+    # A SECOND SLOT, COLLECTORS ONLY. The 21:00 run is deliberately two hours
+    # AHEAD of agent-work (23:00) because the cycle plans from the analyst's
+    # report. The consequence, measured 2026-10-14: the cycle's own outcome is
+    # never in that night's data. It waits for the next 21:00 run, ~21.5 h
+    # later, so "shipped today" on /admin/ops was structurally a day behind —
+    # it read 1 while two issues had shipped (#276 at 02:02Z, #329 at 16:07Z).
+    #
+    # Fixing it by moving 21:00 later would break the ordering the cycle needs.
+    # So this slot runs the `commit` job only: the three deterministic
+    # collectors, GitHub API and committed rates, zero LLM calls and no GA4 or
+    # GSC quota. 02:00 UTC is 07:30 IST — after a 04:30 IST cycle that medians
+    # 18 min and is capped at 120, with an hour of slack.
+    - cron: "0 2 * * *"    # 07:30 IST — collectors only, see `measure.if`
   workflow_dispatch:
 
 concurrency:
@@ -20,6 +33,14 @@ concurrency:
 
 jobs:
   measure:
+    # Skipped on the 02:00 collectors-only slot. `commit` is `if: always()` and
+    # so still runs — that is what makes the second slot cost one cheap job
+    # rather than a second analyst invocation against the 5 h rolling cap.
+    #
+    # A `workflow_dispatch` carries no `github.event.schedule`, so a manual run
+    # always does the full measurement. That is the intent: a human asking for
+    # a measurement wants the analyst, not just a recount.
+    if: github.event.schedule != '0 2 * * *'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
