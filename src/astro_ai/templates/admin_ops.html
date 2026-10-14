@@ -189,9 +189,29 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .chart{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:15px 16px 10px}
 .chart .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
 .chart .big{font-family:Marcellus,Georgia,serif;font-size:27px;line-height:1;font-variant-numeric:tabular-nums}
-.chart svg{display:block;width:100%;height:78px;overflow:visible}
-.chart .ax{display:flex;justify-content:space-between;margin-top:7px}
-.chart .ax span{font-family:var(--mono);font-size:10px;color:var(--ink-mute)}
+/* The plot is a grid: a fixed y-axis gutter, then the stretching SVG. Axis
+   TEXT lives in HTML, never in the SVG — the path is drawn with
+   preserveAspectRatio="none" so it fills any width, and anything in that same
+   coordinate system stretches with it, letters included. */
+.plot{display:grid;grid-template-columns:34px 1fr;gap:0 7px}
+.yax{display:flex;flex-direction:column;justify-content:space-between;
+  height:92px;text-align:right}
+.yax span{font-family:var(--mono);font-size:10px;color:var(--ink-mute);
+  line-height:1;transform:translateY(-3px)}
+.chart svg{display:block;width:100%;height:92px;overflow:visible}
+.xax{grid-column:2;position:relative;height:15px;margin-top:5px}
+.xax span{position:absolute;font-family:var(--mono);font-size:10px;color:var(--ink-mute);
+  white-space:nowrap}
+.xax span:first-child{left:0}
+.xax span:last-child{right:0}
+.gl{stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
+/* A full-height target per day, so the pointer never has to find a 2px line.
+   Each carries a <title>, which is how a reader gets one day's number with no
+   JavaScript at all. */
+.band{fill:transparent}
+.band:hover{fill:rgba(232,228,218,.06)}
+.dot{opacity:0;pointer-events:none}
+.band:hover + .dot{opacity:1}
 
 /* ── Movers ───────────────────────────────────────────────────────────── */
 .movers{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
@@ -209,6 +229,32 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .up .d{color:var(--shipped)} .down .d{color:var(--failed)}
 .cov{display:inline-block;font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;
   text-transform:uppercase;padding:4px 7px;border-radius:2px;border:1px solid #6b5223;color:var(--open)}
+
+/* ── Team: loop liveness, delivery yield, per-agent activity ──────────────
+   The verdict chip carries the colour; the row stays quiet. A table where
+   every row is tinted is a table where nothing stands out, and the whole
+   point of this one is that a single loop is broken. */
+.loops{width:100%;border-collapse:collapse;font-size:12.5px}
+.loops th{text-align:left;font:600 10px/1 Manrope,sans-serif;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-mute);padding:0 10px 9px 0;border-bottom:1px solid var(--line)}
+.loops td{padding:9px 10px 9px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.loops tr:last-child td{border-bottom:0}
+.loops td.w{white-space:normal}
+.loops a{color:var(--ink)}
+.loops a:hover{color:var(--accent);text-decoration:none}
+.loops .c{font-family:var(--mono);font-size:11px;color:var(--ink-mute)}
+.v-broken{color:var(--failed);border-color:#6b3329}
+.v-dormant{color:var(--failed);border-color:#6b3329}
+.v-missing-slots{color:var(--open);border-color:#6b5223}
+.v-reporting{color:var(--open);border-color:#6b5223}
+.v-ok{color:var(--shipped);border-color:#2f5c47}
+.v-not-due-yet,.v-on-demand{color:var(--ink-mute)}
+.who{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+.who span{border:1px solid var(--line-2);border-radius:2px;padding:6px 9px;font-size:12px;color:var(--ink-dim)}
+.who b{color:var(--ink);font-family:var(--mono);font-size:12px;margin-left:5px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:7px 14px;font-size:12.5px;margin-top:4px}
+.kv .n{font-family:var(--mono);color:var(--ink);text-align:right}
+.kv .lab{color:var(--ink-dim)}
 
 /* ── Cost table ───────────────────────────────────────────────────────── */
 table.cost{width:100%;border-collapse:collapse;font-size:13px}
@@ -424,6 +470,89 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
     </div>
   </section>
 
+  {# ── Team. Liveness first, then yield, then who did what. ───────────────
+     Liveness leads because a loop that never runs cannot produce bad work to
+     grade, and a yield figure over zero runs reads as a flawless 0 of 0. #}
+  {% if ops.agents.ok %}
+  {% set A = ops.agents %}
+  <section class="panel">
+    <h2>Team <span class="lbl">
+      {% if A.alerts %}<span style="color:var(--failed)">{{ A.alerts|length }} loop{{ '' if A.alerts|length == 1 else 's' }} need attention</span>
+      {% else %}every scheduled loop ran when due{% endif %}
+      · {{ A.window_days }} d</span></h2>
+    <div class="body">
+      <table class="loops">
+        <thead><tr><th>Loop</th><th>Cadence</th><th>Due</th><th>Ran</th><th>Last</th><th></th></tr></thead>
+        <tbody>
+        {% for r in A.scheduled %}
+          <tr>
+            <td class="w"><a href="https://github.com/mahAnuj/astro-ai/actions/workflows/{{ r.workflow }}">{{ r.workflow[:-4] }}</a></td>
+            <td class="c">{{ (r.cadence or ['—'])|join(' + ') }}</td>
+            <td class="c">{{ r.slots_due if r.slots_due is not none else '—' }}</td>
+            <td class="c">{{ r.runs_scheduled }}</td>
+            <td class="c">{{ (r.last_run or '—')[0:10] }}</td>
+            <td><span class="chip v-{{ r.verdict }}">{{ r.verdict }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <p class="note" style="margin-top:12px">
+        <b>Due</b> counts the cron slots that fell since the workflow file was <i>last edited</i>,
+        not since it was created — a schedule is only knowable from when it was last written.
+        Counting from creation reported <code>agent-work</code> as missing eight 16:30 slots that
+        no schedule had declared yet, which is why the window moved.
+        <b>reporting</b> means the run went red because its own script found something, not because
+        it failed: <code>loop-outcomes</code> exits non-zero when a loop is broken, so colouring it
+        the same red as a crash teaches a reader to ignore red.
+      </p>
+
+      <div class="cols" style="margin-top:22px">
+        <div>
+          <div class="lbl" style="margin-bottom:9px">Delivery yield · agent-work</div>
+          <div class="kv">
+            <span class="lab">cycles recorded</span><span class="n">{{ A.delivery.cycles }}</span>
+            <span class="lab">shipped and merged</span><span class="n c-shipped">{{ A.delivery.outcomes.get('shipped', 0) }}</span>
+            <span class="lab">produced nothing</span><span class="n">{{ A.delivery.outcomes.get('nothing', 0) }}</span>
+            <span class="lab">failed</span><span class="n c-failed">{{ A.delivery.outcomes.get('failed', 0) }}</span>
+            <span class="lab">unattributable</span><span class="n">{{ A.delivery.outcomes.get('unknown', 0) }}</span>
+            <span class="lab"><b>yield</b></span><span class="n"><b>{{ A.delivery.yield_pct }}%</b></span>
+            <span class="lab">median cycle</span><span class="n">{{ A.delivery.median_minutes }} min</span>
+            <span class="lab">runner minutes per shipped issue</span><span class="n">{{ A.delivery.minutes_per_shipped }}</span>
+          </div>
+          <p class="note">Runner minutes are the only cost signal available per loop: the Claude
+            subscription is flat and cannot be attributed to a run.</p>
+        </div>
+        <div>
+          <div class="lbl" style="margin-bottom:9px">Who spoke · {{ A.window_days }} d</div>
+          <div class="who">
+            {% for name, n in A.agents.by_agent.items() %}
+            <span>{{ name }}<b>{{ n }}</b></span>
+            {% endfor %}
+          </div>
+          <div class="lbl" style="margin:18px 0 9px">QA rounds</div>
+          <div class="kv">
+            <span class="lab">issues with a verdict</span><span class="n">{{ A.agents.qa.issues_with_a_verdict }}</span>
+            <span class="lab">reached PASS</span><span class="n">{{ A.agents.qa.issues_reaching_pass }}</span>
+            <span class="lab">failed first submission</span><span class="n">{{ A.agents.qa.first_submission_failed }} ({{ A.agents.qa.first_submission_fail_pct }}%)</span>
+            <span class="lab">most rounds on one issue</span><span class="n">{{ A.agents.qa.max_rounds }}</span>
+          </div>
+          <p class="note">
+            <code>/bug</code> records fifteen QA passes with <i>every one</i> failing its first
+            submission. At {{ A.agents.qa.first_submission_fail_pct }}% that is no longer true —
+            the number is here so a regression is visible rather than remembered.
+            <br><br>
+            {{ A.agents.unmatched_count }} of {{ A.agents.comments_by_agents }} agent comments
+            ({{ A.agents.unmatched_pct }}%) matched no agent pattern and are counted, not dropped:
+            a parser that silently reads half its input looks identical to one that reads all of it.
+            These figures come from the agents' own comments, so they catch an agent that stops or
+            regresses — not one that writes a confident comment and does nothing. The gates catch that.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
   {# ── Traffic. Two daily series and what moved between two windows. ──────
      This panel existed as an apology for most of a day: GA4's committed export
      carries landing x channel with no date, and nothing here retained history,
@@ -435,37 +564,51 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
   <section class="panel">
     <h2>Traffic <span class="lbl">{{ T.window[0] }} → {{ T.window[1] }}</span></h2>
     <div class="body">
+      {% macro chart(sr, label, big, side, stroke, fill, unit) %}
+      <div class="chart">
+        <div class="hd">
+          <div><span class="lbl">{{ label }}</span>
+            <div class="big">{{ big }}</div></div>
+          <div class="lbl" style="text-align:right">{{ side|safe }}</div>
+        </div>
+        <div class="plot">
+          <div class="yax">
+            {% for t in sr.yticks %}<span>{{ '{:,}'.format(t) }}</span>{% endfor %}
+          </div>
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
+               aria-label="{{ sr.n }} days, peak {{ sr.peak }} {{ unit }}, axis to {{ sr.top }}">
+            {% for y in sr.ygrid %}
+            <line class="gl" x1="0" y1="{{ y }}" x2="100" y2="{{ y }}"/>
+            {% endfor %}
+            <polygon points="{{ sr.area }}" fill="{{ fill }}"/>
+            <polyline points="{{ sr.line }}" fill="none" stroke="{{ stroke }}"
+                      stroke-width="1.6" vector-effect="non-scaling-stroke"
+                      stroke-linejoin="round" stroke-linecap="round"/>
+            {% for b in sr.bands %}
+            <rect class="band" x="{{ b.x }}" y="0" width="{{ b.w }}" height="100">
+              <title>{{ b.date }} — {{ b.value }} {{ unit }}{% if b.no_data %} (no data returned){% endif %}</title>
+            </rect>
+            <circle class="dot" cx="{{ b.px }}" cy="{{ b.py }}" r="2.4"
+                    fill="{{ stroke }}" vector-effect="non-scaling-stroke"
+                    transform="translate({{ b.px }} {{ b.py }}) scale(0.28 1) translate(-{{ b.px }} -{{ b.py }})"/>
+            {% endfor %}
+          </svg>
+          <div class="xax">
+            {% for t in sr.xticks %}
+            <span style="left:{{ t.pos }}%;transform:translateX({{ '0' if loop.first else ('-100%' if loop.last else '-50%') }})">{{ t.date[5:] }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endmacro %}
+
       <div class="charts">
-        <div class="chart">
-          <div class="hd">
-            <div><span class="lbl">People · daily active users</span>
-              <div class="big">{{ T.users.total }}</div></div>
-            <div class="lbl" style="text-align:right">peak {{ T.users.max }}<br>last {{ T.users.last }}</div>
-          </div>
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
-               aria-label="Daily active users, {{ T.users.n }} days, peak {{ T.users.max }}">
-            <polygon points="{{ T.users.area }}" fill="rgba(227,168,74,.14)"/>
-            <polyline points="{{ T.users.line }}" fill="none" stroke="var(--accent)"
-                      stroke-width="1.6" vector-effect="non-scaling-stroke"
-                      stroke-linejoin="round" stroke-linecap="round"/>
-          </svg>
-          <div class="ax"><span>{{ T.users.labels[0] }}</span><span>{{ T.users.labels[1] }}</span></div>
-        </div>
-        <div class="chart">
-          <div class="hd">
-            <div><span class="lbl">Search impressions · daily</span>
-              <div class="big">{{ '{:,}'.format(T.impressions.total) }}</div></div>
-            <div class="lbl" style="text-align:right">peak {{ T.impressions.max }}<br>{{ T.clicks_total }} clicks</div>
-          </div>
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
-               aria-label="Daily search impressions, {{ T.impressions.n }} days, peak {{ T.impressions.max }}">
-            <polygon points="{{ T.impressions.area }}" fill="rgba(91,185,140,.13)"/>
-            <polyline points="{{ T.impressions.line }}" fill="none" stroke="var(--shipped)"
-                      stroke-width="1.6" vector-effect="non-scaling-stroke"
-                      stroke-linejoin="round" stroke-linecap="round"/>
-          </svg>
-          <div class="ax"><span>{{ T.impressions.labels[0] }}</span><span>{{ T.impressions.labels[1] }}</span></div>
-        </div>
+        {{ chart(T.users, 'People · daily active users', T.users.total,
+                 'peak ' ~ T.users.peak ~ '<br>last ' ~ T.users.last,
+                 'var(--accent)', 'rgba(227,168,74,.14)', 'users') }}
+        {{ chart(T.impressions, 'Search impressions · daily', '{:,}'.format(T.impressions.total),
+                 'peak ' ~ T.impressions.peak ~ '<br>' ~ T.clicks_total ~ ' clicks',
+                 'var(--shipped)', 'rgba(91,185,140,.13)', 'impressions') }}
       </div>
 
       {# A page row links to the live page. A QUERY row links nowhere: the

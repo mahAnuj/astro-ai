@@ -44,7 +44,7 @@ from typing import Any
 log = logging.getLogger(__name__)
 
 #: Files this page reads, in the order the template presents them.
-FILES = ("loop.json", "cost.json", "issues.json",
+FILES = ("loop.json", "cost.json", "issues.json", "agents.json",
          "ga4-daily.json", "gsc-daily.json",
          "gsc-trend-page.json", "gsc-trend-query.json")
 
@@ -205,39 +205,91 @@ def _issues_view(doc: dict | None, today_ist: str) -> dict:
     }
 
 
+def _nice_top(v: int) -> int:
+    """A round number at or above `v`, so the y axis reads 20 rather than 18.
+
+    Without this the top gridline is labelled with whatever the single busiest
+    day happened to be, which makes two charts side by side impossible to
+    compare and makes the axis look like data rather than a scale.
+    """
+    if v <= 0:
+        return 1
+    import math
+    mag = 10 ** int(math.floor(math.log10(v)))
+    # Fine enough that a peak of 540 tops out at 600, not 1000. A coarse
+    # ladder leaves so much headroom the line flattens into the floor and the
+    # chart stops showing the shape it exists to show.
+    for step in (1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10):
+        if v <= step * mag:
+            return int(step * mag)
+    return int(10 * mag)
+
+
 def _series(rows: list[dict], key: str, *, width: float = 100.0, height: float = 100.0) -> dict:
-    """Turn a daily series into an SVG path, server-side.
+    """Turn a daily series into an SVG path plus the labels an axis needs.
 
     No charting library: the page loads nothing from a CDN but two fonts, and a
-    line through 28 points is four lines of arithmetic. The path is emitted in
-    a 0..100 viewBox and stretched by CSS, so the same string renders at any
-    panel width without recomputing.
+    line through 28 points is arithmetic.
 
-    The y axis starts at ZERO, always. A chart auto-scaled to its own minimum
-    turns a wobble between 6 and 11 users into a cliff, which is the single
-    easiest way for a dashboard to lie without containing a false number.
+    The y axis starts at ZERO and tops out at a ROUND number, always. A chart
+    auto-scaled to its own minimum turns a wobble between 6 and 11 users into a
+    cliff, which is the easiest way for a dashboard to mislead while containing
+    no false number.
+
+    Axis text is NOT emitted into the SVG. The path is stretched with
+    `preserveAspectRatio="none"` so it fills any panel width, and anything
+    drawn in the same coordinate system stretches with it -- letters included.
+    The labels are returned as plain values for the template to place in HTML
+    beside the plot, where they stay legible at any width.
     """
     vals = [r.get(key) or 0 for r in rows]
     if not vals:
         return {"ok": False}
-    top = max(vals) or 1
+    peak = max(vals)
+    top = _nice_top(peak)
     n = len(vals)
-    pts = [((i / (n - 1) if n > 1 else 0) * width, height - (v / top) * height)
-           for i, v in enumerate(vals)]
+
+    def x_at(i: int) -> float:
+        return (i / (n - 1) if n > 1 else 0) * width
+
+    pts = [(x_at(i), height - (v / top) * height) for i, v in enumerate(vals)]
     line = " ".join(f"{x:.2f},{y:.2f}" for x, y in pts)
+
+    # One hover band per day, full height, so the pointer never has to find a
+    # 2px line. Each carries its own <title>, which is how a reader gets the
+    # number for a specific day without any JavaScript.
+    band = width / n
+    bands = [{
+        "x": round(i * band, 3), "w": round(band, 3),
+        "value": vals[i],
+        "date": rows[i].get("date"),
+        "no_data": bool(rows[i].get("no_data")),
+        # The point itself, for the dot drawn on hover.
+        "px": round(pts[i][0], 2), "py": round(pts[i][1], 2),
+    } for i in range(n)]
+
+    # Four x labels at most: first, last, and two inside. More than that and
+    # they collide on a phone.
+    idx = sorted({0, (n - 1) // 3, 2 * (n - 1) // 3, n - 1})
     return {
         "ok": True,
         "line": line,
-        # Closed back along the baseline, for the soft fill under the line.
         "area": f"{line} {width:.2f},{height:.2f} 0.00,{height:.2f}",
-        "max": top,
+        "top": top,
+        "peak": peak,
+        "max": peak,          # kept: the template already reads `max`
         "last": vals[-1],
         "first": vals[0],
         "total": sum(vals),
         "n": n,
+        # Top, middle, zero — the three the eye actually uses.
+        "yticks": [top, top // 2, 0],
+        # Horizontal rules at the same three heights, in SVG units.
+        "ygrid": [0.0, height / 2, height],
+        "xticks": [{"i": i, "pos": round(x_at(i) / width * 100, 2),
+                    "date": rows[i].get("date")} for i in idx],
+        "bands": bands,
         "labels": [rows[0].get("date"), rows[-1].get("date")],
-        # Marks the days the API returned nothing, so a collection gap is not
-        # read as a day with no visitors.
         "gaps": sum(1 for r in rows if r.get("no_data")),
     }
 
@@ -310,6 +362,33 @@ def _cost_view(doc: dict | None, shipped_30d: int) -> dict:
     }
 
 
+def _agents_view() -> dict:
+    """Loop liveness, delivery yield and per-agent activity (#345).
+
+    Passed through almost verbatim: the collector already decided every
+    verdict, and re-deriving one here would let the page and the file disagree
+    about whether a loop is dormant. The only thing added is the ordering the
+    table renders in — alerts first, because a page that puts a broken loop
+    eleventh is a page nobody reads to row eleven.
+    """
+    doc = _fetch("agents.json")
+    if not doc or not isinstance(doc.get("loops"), list):
+        return {"ok": False, "loops": []}
+    rank = {"broken": 0, "dormant": 1, "missing-slots": 2, "reporting": 3,
+            "ok": 4, "not-due-yet": 5, "on-demand": 6}
+    loops = sorted(doc["loops"], key=lambda r: (rank.get(r["verdict"], 9), r["workflow"]))
+    return {
+        "ok": True,
+        "generated_at": doc.get("generated_at"),
+        "window_days": doc.get("window_days"),
+        "loops": loops,
+        "alerts": doc.get("alerts") or [],
+        "scheduled": [r for r in loops if r["verdict"] != "on-demand"],
+        "delivery": doc.get("delivery") or {},
+        "agents": doc.get("agents") or {},
+    }
+
+
 def snapshot(now: datetime | None = None) -> dict:
     """Everything /admin/ops renders, in one dict. Never raises."""
     now = now or datetime.now(timezone.utc)
@@ -324,6 +403,7 @@ def snapshot(now: datetime | None = None) -> dict:
                       if r["outcome"] == "shipped" and (r["date_ist"] or "") >= cutoff)
     cost = _cost_view(_fetch("cost.json"), shipped_30d)
     traffic = _traffic_view()
+    agents = _agents_view()
 
     return {
         "now_ist": now_ist,
@@ -333,11 +413,13 @@ def snapshot(now: datetime | None = None) -> dict:
         "issues": issues,
         "cost": cost,
         "traffic": traffic,
+        "agents": agents,
         "source": "disk" if measurements_dir() else "github",
         # Named so the footer can say which panel is missing rather than
         # rendering an empty one with no explanation.
         "missing": [n for n, v in (("loop.json", loop["ok"]),
                                    ("cost.json", cost["ok"]),
                                    ("issues.json", issues["ok"]),
-                                   ("traffic", traffic["ok"])) if not v],
+                                   ("traffic", traffic["ok"]),
+                                   ("agents.json", agents["ok"])) if not v],
     }

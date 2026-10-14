@@ -233,6 +233,20 @@ jobs:
           python3 scripts/collect_issue_backlog.py --repo "$GH_REPO" --out measurements/issues.json \
             || echo "::warning::backlog not refreshed; measurements/issues.json is the previous one"
 
+      # #345: is each loop alive, is it producing, and which agent is failing.
+      # Runs AFTER the loop collector because it reads measurements/loop.json
+      # for the delivery yield rather than recomputing it — two files
+      # disagreeing about how many cycles shipped is worse than one file saying
+      # nothing. continue-on-error for the same reason as the others.
+      - name: Collect agent performance
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 scripts/collect_agent_performance.py --repo "$GH_REPO" --out measurements/agents.json \
+            || echo "::warning::agent performance not refreshed; measurements/agents.json is the previous one"
+
       - name: Commit the measurement
         run: |
           mkdir -p measurements

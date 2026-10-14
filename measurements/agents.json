@@ -1,0 +1,347 @@
+{
+  "generated_at": "2026-10-14T12:01:06Z",
+  "repo": "mahAnuj/astro-ai",
+  "window_days": 30,
+  "loops": [
+    {
+      "workflow": "agent-design.yml",
+      "display": "Agent design",
+      "cadence": [
+        "00 20 * * 4"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-08T12:34:05+05:30",
+      "slots_due": 1,
+      "runs_scheduled": 1,
+      "runs_total": 2,
+      "last_run": "2026-10-09T00:01:44Z",
+      "last_conclusion": "failure",
+      "verdict": "broken"
+    },
+    {
+      "workflow": "agent-discover.yml",
+      "display": "Agent discover",
+      "cadence": [
+        "00 20 * * 1"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-11T21:54:16+05:30",
+      "slots_due": 1,
+      "runs_scheduled": 1,
+      "runs_total": 3,
+      "last_run": "2026-10-13T01:47:23Z",
+      "last_conclusion": "success",
+      "verdict": "ok"
+    },
+    {
+      "workflow": "agent-infra.yml",
+      "display": "Agent infra",
+      "cadence": [
+        "00 19 * * 2"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-08T12:19:08+05:30",
+      "slots_due": 1,
+      "runs_scheduled": 1,
+      "runs_total": 3,
+      "last_run": "2026-10-13T23:13:25Z",
+      "last_conclusion": "success",
+      "verdict": "ok"
+    },
+    {
+      "workflow": "agent-measure.yml",
+      "display": "Agent measure",
+      "cadence": [
+        "00 21 * * *"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-14T13:44:40+05:30",
+      "slots_due": 0,
+      "runs_scheduled": 7,
+      "runs_total": 14,
+      "last_run": "2026-10-14T00:05:33Z",
+      "last_conclusion": "success",
+      "verdict": "not-due-yet"
+    },
+    {
+      "workflow": "agent-merge.yml",
+      "display": "Agent merge",
+      "cadence": [],
+      "cadence_error": null,
+      "schedule_since": null,
+      "slots_due": null,
+      "runs_scheduled": 0,
+      "runs_total": 94,
+      "last_run": "2026-10-14T07:25:09Z",
+      "last_conclusion": "success",
+      "verdict": "on-demand"
+    },
+    {
+      "workflow": "agent-prioritise.yml",
+      "display": "Agent prioritise",
+      "cadence": [
+        "00 17 * * 0"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-08T14:48:31+05:30",
+      "slots_due": 1,
+      "runs_scheduled": 1,
+      "runs_total": 4,
+      "last_run": "2026-10-11T20:41:38Z",
+      "last_conclusion": "success",
+      "verdict": "ok"
+    },
+    {
+      "workflow": "agent-research.yml",
+      "display": "Agent research",
+      "cadence": [
+        "00 19 * * 3"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-08T12:34:05+05:30",
+      "slots_due": 0,
+      "runs_scheduled": 0,
+      "runs_total": 0,
+      "last_run": null,
+      "last_conclusion": null,
+      "verdict": "not-due-yet"
+    },
+    {
+      "workflow": "agent-steward.yml",
+      "display": "Agent steward",
+      "cadence": null,
+      "cadence_error": "only a fixed minute and hour are supported: '0 9,15 * * *'",
+      "schedule_since": null,
+      "slots_due": null,
+      "runs_scheduled": 5,
+      "runs_total": 8,
+      "last_run": "2026-10-13T16:34:56Z",
+      "last_conclusion": "success",
+      "verdict": "on-demand"
+    },
+    {
+      "workflow": "agent-sync.yml",
+      "display": "Agent sync",
+      "cadence": [
+        "00 18 * * 5"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-08T14:48:31+05:30",
+      "slots_due": 1,
+      "runs_scheduled": 1,
+      "runs_total": 1,
+      "last_run": "2026-10-09T22:23:32Z",
+      "last_conclusion": "success",
+      "verdict": "ok"
+    },
+    {
+      "workflow": "agent-work.yml",
+      "display": "Agent work",
+      "cadence": [
+        "00 23 * * *",
+        "00 11 * * *"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-13T18:29:55Z",
+      "slots_due": 2,
+      "runs_scheduled": 7,
+      "runs_total": 25,
+      "last_run": "2026-10-14T01:41:06Z",
+      "last_conclusion": "success",
+      "verdict": "ok"
+    },
+    {
+      "workflow": "close-on-evidence.yml",
+      "display": "Close on production evidence",
+      "cadence": [],
+      "cadence_error": null,
+      "schedule_since": null,
+      "slots_due": null,
+      "runs_scheduled": 0,
+      "runs_total": 25,
+      "last_run": "2026-10-14T02:08:40Z",
+      "last_conclusion": "success",
+      "verdict": "on-demand"
+    },
+    {
+      "workflow": "loop-outcomes.yml",
+      "display": "Loop outcomes",
+      "cadence": [
+        "30 03 * * 2"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-11T22:14:15+05:30",
+      "slots_due": 1,
+      "runs_scheduled": 1,
+      "runs_total": 2,
+      "last_run": "2026-10-13T10:53:17Z",
+      "last_conclusion": "failure",
+      "verdict": "reporting"
+    },
+    {
+      "workflow": "pr-gates.yml",
+      "display": "PR gates",
+      "cadence": [],
+      "cadence_error": null,
+      "schedule_since": null,
+      "slots_due": null,
+      "runs_scheduled": 0,
+      "runs_total": 92,
+      "last_run": "2026-10-14T07:17:18Z",
+      "last_conclusion": "success",
+      "verdict": "on-demand"
+    },
+    {
+      "workflow": "verify-build.yml",
+      "display": "verify-build",
+      "cadence": [],
+      "cadence_error": null,
+      "schedule_since": null,
+      "slots_due": null,
+      "runs_scheduled": 0,
+      "runs_total": 100,
+      "last_run": "2026-10-14T07:17:18Z",
+      "last_conclusion": "success",
+      "verdict": "on-demand"
+    },
+    {
+      "workflow": "verify-production.yml",
+      "display": "verify-production",
+      "cadence": [
+        "17 06 * * 1"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-09T22:13:01+05:30",
+      "slots_due": 1,
+      "runs_scheduled": 25,
+      "runs_total": 63,
+      "last_run": "2026-10-14T02:02:57Z",
+      "last_conclusion": "success",
+      "verdict": "ok"
+    }
+  ],
+  "delivery": {
+    "ok": true,
+    "cycles": 25,
+    "outcomes": {
+      "shipped": 12,
+      "nothing": 5,
+      "unknown": 4,
+      "failed": 4
+    },
+    "yield_pct": 48,
+    "median_minutes": 18.3,
+    "minutes_total": 674.2,
+    "minutes_per_shipped": 56.2
+  },
+  "agents": {
+    "window_days": 30,
+    "comments_total": 148,
+    "comments_by_agents": 86,
+    "comments_by_automation": 28,
+    "by_agent": {
+      "agent-cycle": 28,
+      "qa": 17,
+      "steward": 8,
+      "analyst": 6,
+      "chief": 4,
+      "infra-lead": 2,
+      "architect": 2,
+      "engineer": 1
+    },
+    "unmatched_count": 18,
+    "unmatched_pct": 21,
+    "unmatched_sample": [
+      {
+        "issue": "272",
+        "at": "2026-10-07T06:16:02Z",
+        "head": "Correction to finding 1: I wrote \"at least 23 sessions\" came from sources the export canno"
+      },
+      {
+        "issue": "272",
+        "at": "2026-10-07T06:59:34Z",
+        "head": "## Fifth gap, found scoring the 2026-10-07 run: the funnel cannot be measured from this ex"
+      },
+      {
+        "issue": "270",
+        "at": "2026-10-08T08:35:20Z",
+        "head": "**/agent-cycle premise check (2026-10-08, main @ c9c0f2b).** `validate_issue.py 270` → NO-"
+      },
+      {
+        "issue": "270",
+        "at": "2026-10-08T09:47:52Z",
+        "head": "**/agent-cycle (2026-10-08, main @ d6c570d) — resuming after the lost run.** `validate_iss"
+      },
+      {
+        "issue": "276",
+        "at": "2026-10-09T00:18:16Z",
+        "head": "Related evidence from the 2026-10-09 design audit: on mobile the sticky Kundli bar that wa"
+      },
+      {
+        "issue": "279",
+        "at": "2026-10-09T22:26:51Z",
+        "head": "**/sync 2026-10-09 — decision: #278 is folded into this issue; this one is re-ranked up.**"
+      },
+      {
+        "issue": "278",
+        "at": "2026-10-09T22:26:52Z",
+        "head": "**/sync 2026-10-09 — folded into #279** (same root cause: CI has no corpus). Continue ther"
+      },
+      {
+        "issue": "268",
+        "at": "2026-10-09T22:26:54Z",
+        "head": "**/sync 2026-10-09 — closure audit: stands, but the closing comment is thin.** The `close"
+      }
+    ],
+    "qa": {
+      "issues_with_a_verdict": 11,
+      "issues_reaching_pass": 11,
+      "first_submission_failed": 3,
+      "first_submission_fail_pct": 27,
+      "rounds_per_issue": {
+        "328": [
+          "FAIL",
+          "FAIL",
+          "PASS",
+          "PASS"
+        ],
+        "312": [
+          "FAIL",
+          "PASS"
+        ],
+        "304": [
+          "FAIL",
+          "PASS"
+        ],
+        "299": [
+          "PASS"
+        ],
+        "270": [
+          "PASS"
+        ],
+        "303": [
+          "PASS"
+        ],
+        "319": [
+          "PASS"
+        ],
+        "324": [
+          "PASS"
+        ],
+        "321": [
+          "PASS"
+        ],
+        "334": [
+          "PASS"
+        ],
+        "342": [
+          "PASS"
+        ]
+      },
+      "max_rounds": 4
+    }
+  },
+  "alerts": [
+    "agent-design.yml"
+  ]
+}
