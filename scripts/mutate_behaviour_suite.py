@@ -903,6 +903,33 @@ MUTATIONS = [
      '"store": store, "store_is_local": store.startswith("local:"),\n            "store_detail": store_detail,\n            "days": days,',
      '"store": store, "store_is_local": False,\n            "store_detail": store_detail,\n            "days": days,',
      "test_ops_says_it_is_reading_a_local_dev_store"),
+
+    # #367. The triage script writes under the owner's identity on text strangers wrote; each
+    # row re-breaks one clause of the chief's ruling. The close row is the one the ruling asked
+    # for by name: a `gh issue close` call injected must turn the suite red.
+    ("#367: a `gh issue close` call appears in the triage script",
+     "scripts/triage_outsider_issues.py",
+     '    n, problems = str(int(issue["number"])), []\n',
+     '    n, problems = str(int(issue["number"])), []\n    gh(["issue", "close", n, "--repo", repo])\n',
+     "test_no_close_path_exists_in_the_script"),
+
+    ("#367: an UNRESOLVED resolver is treated as an outsider (fail open)",
+     "scripts/triage_outsider_issues.py",
+     '    return "error", f"{why}: {r.err.strip()[:100]}".rstrip(": ")',
+     '    return "outsider", ""',
+     "test_any_other_resolver_code_fails_closed_with_a_named_cause"),
+
+    ("#367: the duplicate comment echoes the stranger's title",
+     "scripts/triage_outsider_issues.py",
+     'f"This looks similar to #{int(dup[0])}, which is older and still open. "',
+     'f"This looks similar to #{int(dup[0])} ({issue.get(\'title\')}), which is older and still open. "',
+     "test_the_duplicate_comment_links_the_candidate_and_nothing_else"),
+
+    ("#367: the idempotence marker is ignored (a comment on every run)",
+     "scripts/triage_outsider_issues.py",
+     "    if d.comment is not None and not has_marker(issue, d.key):",
+     "    if d.comment is not None:",
+     "test_a_state_already_commented_by_this_token_posts_nothing_again"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
