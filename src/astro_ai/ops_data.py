@@ -581,14 +581,41 @@ def _app_view(days: int = 7) -> dict:
         for r in usage.get("by_route") or []:
             c, h = int(r.get("calls") or 0), int(r.get("hits") or 0)
             m = max(c - h, 0)
-            per = (int(r.get("input_tokens") or 0) / m) if m else None
+            # TOTAL, not input. Groq's 8,000 TPM and 200,000 TPD both count
+            # input + output, so an input-only figure reads as headroom the
+            # budget does not have. ARCHITECTURE.md records a measured
+            # ~7,800-token natal call against that 8,000 bucket; whether it
+            # already included completion tokens was never written down, which
+            # is why this now shows both and why #350's Limit/Used/Requested
+            # parse is worth doing.
+            #
+            # Input stays broken out beside it because input is the half that
+            # grows SILENTLY -- #212 measured prompt input growing 18.5%/call,
+            # and #266 was a 413, a pure input-size failure. Total is the
+            # ceiling; input is the regression signal. Neither replaces the
+            # other.
+            in_tok = int(r.get("input_tokens") or 0)
+            out_tok = int(r.get("output_tokens") or 0)
+            per = (in_tok / m) if m else None
+            per_out = (out_tok / m) if m else None
+            per_total = ((in_tok + out_tok) / m) if m else None
             routes.append({
                 "route": r.get("route") or "unknown",
                 "calls": c, "hits": h, "misses": m,
                 "hit_rate": int(r.get("hit_rate_pct") or 0),
-                "input_tokens": int(r.get("input_tokens") or 0),
-                "output_tokens": int(r.get("output_tokens") or 0),
+                "input_tokens": in_tok,
+                "output_tokens": out_tok,
                 "per_request": round(per) if per is not None else None,
+                "per_request_out": round(per_out) if per_out is not None else None,
+                "per_request_total": round(per_total) if per_total is not None else None,
+                # The per-request total as a share of ONE MODEL'S per-minute
+                # bucket. This is the number that makes the column actionable:
+                # a route at 90% cannot run two at once without a 429, however
+                # healthy its hit rate looks. ARCHITECTURE.md already records
+                # "a full ~7,800-token natal call against an 8,000 TPM
+                # per-model bucket" -- 97% of it -- and nothing on this page
+                # said so.
+                "tpm_pct": round(per_total / TPM_PER_MODEL * 100) if per_total else None,
                 # None, not 0: no recorded latency means UNKNOWN, and a zero
                 # would read as fast. Covers only days recorded since #355.
                 "avg_miss_ms": r.get("avg_miss_latency_ms"),
@@ -605,6 +632,27 @@ def _app_view(days: int = 7) -> dict:
         sources = Counter((e.get("data") or {}).get("source") or "?" for e in errors)
         too_large = sum(v for k, v in kinds.items() if k == "RequestTooLarge")
         exhausted = sum(v for k, v in kinds.items() if k == "AllProvidersExhausted")
+
+        # WHICH FEATURE BROKE, AND HOW OFTEN, BECAUSE OF THE TOKEN BUDGET.
+        #
+        # A fallback is not a break: the chain recovered and the visitor saw a
+        # reading. These two exception types are the cases where it did NOT --
+        # the visitor got the "high demand" page instead. That is the number
+        # worth counting, and until now the page showed only its total.
+        #
+        # The comment on `error_rate` below says a per-route breakdown cannot
+        # be done honestly, and that is still true OF THAT RATE: it divides
+        # error events by llm_stats calls, and the two use different
+        # vocabularies (`chart:matching` vs `matching`), so there is no
+        # denominator to divide by per route. This is a COUNT, not a rate. It
+        # groups error events by their own `source` field and never crosses
+        # into llm_stats, so no mapping is needed and nothing is implied about
+        # how often the feature succeeded.
+        budget_breaks = Counter(
+            (e.get("data") or {}).get("source") or "?"
+            for e in errors
+            if ((e.get("data") or {}).get("error_type") or "") in BUDGET_ERROR_TYPES
+        )
 
         out = {
             "ok": True,
@@ -630,16 +678,52 @@ def _app_view(days: int = 7) -> dict:
                 (k.split("|", 1)[0], k.split("|", 1)[-1], n)
                 for k, n in (agg.get("fallback_reasons") or {}).items()
             ],
+            # HOW MANY FAILURES WERE THE TOKEN BUDGET, specifically. The
+            # fallback count alone cannot answer it: `timeout` and `unknown`
+            # are the provider having a bad minute, and no prompt change fixes
+            # them, while `413` and `429_*` are OUR size and OUR pacing and a
+            # prompt change fixes both. Separating them is the difference
+            # between "shrink rashifal" and "nothing to do".
+            #
+            # 413  the request alone exceeded the model's limit -- #266
+            # 429_tpm  per-minute bucket; concurrency or size
+            # 429_tpd  per-day bucket; total volume -- 2026-10-08
+            "budget_failures": sum(
+                n for k, n in (agg.get("fallback_reasons") or {}).items()
+                if k.split("|", 1)[-1] in BUDGET_FAIL_REASONS
+            ),
             "fallback_rate": round(fallbacks / calls * 100, 2) if calls else None,
             # The leading indicator, by day, oldest first.
             "fallback_trend": [int(d.get("fallbacks") or 0)
                                for d in reversed(rng.get("days") or [])],
             "too_large": too_large, "exhausted": exhausted,
+            # [(feature, n)] worst first, and the total. A COUNT of
+            # user-visible breaks caused by the budget -- never a rate; see
+            # where it is built for why a rate would not be honest here.
+            "budget_breaks": budget_breaks.most_common(8),
+            "budget_breaks_total": sum(budget_breaks.values()),
             "kinds": kinds.most_common(6),
             "sources": sources.most_common(8),
             "routes": routes,
             "input_tokens": int(usage.get("total_input_tokens") or 0),
             "output_tokens": int(usage.get("total_output_tokens") or 0),
+            # The WORST day in the window, against a ceiling. An average over
+            # the window cannot say how close the daily cap came: 2026-10-08
+            # reached `TPD: Limit 200000, Used 198888` and took every rashifal
+            # page down, and it averages away to nothing beside seven quiet
+            # days. None when nothing was recorded -- never 0, which would read
+            # as a quiet day rather than as no data.
+            "peak_day_tokens": usage.get("peak_day_tokens"),
+            "peak_day": usage.get("peak_day"),
+            # HONEST LIMIT: TPD is per MODEL, and this total is across the
+            # whole chain (groq120 + groq20), so the chain's real ceiling is
+            # higher than one bucket. It is still the right alarm, because
+            # traffic is not split evenly and 2026-10-08 was ONE model
+            # exhausting, not the pair. Read it as "how close the busiest day
+            # came to a single model's cap if it had all landed on one", which
+            # is the case the rashifal blast actually produces.
+            "peak_day_pct": (round(int(usage["peak_day_tokens"]) / TPD_PER_MODEL * 100)
+                             if usage.get("peak_day_tokens") else None),
             "by_provider": sorted((agg.get("by_provider") or {}).items(),
                                   key=lambda kv: -kv[1]),
         }
@@ -655,7 +739,38 @@ def _app_view(days: int = 7) -> dict:
 # edited here when it proves wrong.
 ERROR_RATE_RED = 5.0      # % of LLM calls producing an error event
 ERROR_RATE_AMBER = 1.0
+# Groq's free tier, PER MODEL, not per key (CLAUDE.md "Token budget"). Both
+# limits count input + output, which is why the table's headline figure is the
+# total and not the input alone. A constant rather than a literal in the view:
+# the chain is groq120,groq20, so the bucket a route competes for is one of
+# these, not their sum.
+# The fallback reasons that are OUR token budget rather than the provider
+# having a bad minute. providers.py emits exactly five: these three, plus
+# `timeout` and `unknown`. Keeping the set here rather than inline is what lets
+# a test assert that every reason providers.py can emit is classified one way
+# or the other -- an unclassified new reason would otherwise silently count as
+# "not a budget failure" and the red metric would under-report.
+BUDGET_FAIL_REASONS = ("413", "429", "429_tpm", "429_tpd")
+
+# The exception types that mean a request DIED on the token budget, as opposed
+# to recovering on a second provider. providers.py raises AllProvidersExhausted
+# when the whole chain is spent and RequestTooLarge (a subclass) when one
+# request alone exceeds the model limit; `error_type` records the concrete
+# class, so both names appear and both belong here. A visitor saw the "high
+# demand" page for every one of these.
+BUDGET_ERROR_TYPES = ("AllProvidersExhausted", "RequestTooLarge")
+TPM_PER_MODEL = 8000
+# Observed, not documented by Groq for this tier: CLAUDE.md records "the daily
+# rashifal path has been observed against a 200,000 TPD limit", and the
+# 2026-10-08 body read `TPD: Limit 200000, Used 198888`. Also per model.
+TPD_PER_MODEL = 200000
 FALLBACK_RATE_AMBER = 2.0  # calls that only succeeded on a second provider
+# The busiest DAY against the per-model daily cap. Red at 100 rather than at
+# the cap itself: the figure is the whole chain's spend measured against ONE
+# model's bucket, so 100% does not mean an outage happened -- it means the day
+# only survived by landing on more than one model, which is luck, not design.
+PEAK_DAY_AMBER = 60
+PEAK_DAY_RED = 100
 
 
 def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
@@ -709,8 +824,35 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
                 "Shrinking the prompt is the fix; waiting is not.", "/admin/activity")
         fr = app.get("fallback_rate") or 0.0
         if fr >= FALLBACK_RATE_AMBER:
+            # Name the CAUSE, rather than adding a second alert beside this one
+            # saying the same thing in other words. The distinction is the only
+            # actionable part: a budget failure is our prompt size or our
+            # pacing and a change fixes it; a timeout is the provider having a
+            # bad minute and no change we make does anything.
+            bf = app.get("budget_failures") or 0
+            why = (f"{bf} of them hit the token budget (413 or 429) — that is prompt size or "
+                   "pacing, and a change fixes it. "
+                   if bf else
+                   "None of them hit the token budget, so this is provider instability, "
+                   "not prompt size — shrinking a prompt would do nothing. ")
             add("amber", f"{fr}% of calls needed a second provider",
-                "Rising fallbacks arrive BEFORE user-visible failure.", "/admin/usage")
+                why + "Rising fallbacks arrive BEFORE user-visible failure.", "/admin/usage")
+        # THE DAILY CEILING, which no panel showed before #355. 2026-10-08 read
+        # `TPD: Limit 200000, Used 198888` and took every rashifal page down for
+        # the day; an average over the window hides that completely, so the
+        # alarm is on the WORST day, not the mean.
+        pk = app.get("peak_day_pct")
+        if pk is not None and pk >= PEAK_DAY_RED:
+            add("red", f"the busiest day used {pk}% of a model's daily token cap",
+                f"{app.get('peak_day_tokens'):,} tokens on {app.get('peak_day')}, against "
+                f"{TPD_PER_MODEL:,} TPD per model. Over 100% means it only survived by "
+                "spreading across the chain; one more page on the wrong model is an outage.",
+                "/admin/usage")
+        elif pk is not None and pk >= PEAK_DAY_AMBER:
+            add("amber", f"the busiest day used {pk}% of a model's daily token cap",
+                f"{app.get('peak_day_tokens'):,} tokens on {app.get('peak_day')}. The cap is "
+                "per model and per day; headroom is smaller than the window average suggests.",
+                "/admin/usage")
 
     # --- the agent team -------------------------------------------------
     for lp in (agents.get("loops") or []):
@@ -810,6 +952,13 @@ def snapshot(now: datetime | None = None) -> dict:
         # answer as `source` now that one panel is fetched per request.
         "issues_source": ("the GitHub API, live" if live_doc is not None
                           else "measurements/issues.json"),
+        # The free-tier ceilings, passed through rather than written into the
+        # template: the Token budget panel states them as numbers the reader is
+        # meant to compare against, and a literal in HTML is a number nothing
+        # can keep in step with `TPM_PER_MODEL` when the tier changes.
+        "tpm_per_model": TPM_PER_MODEL,
+        "budget_fail_reasons": BUDGET_FAIL_REASONS,
+        "tpd_per_model": TPD_PER_MODEL,
         # The one line every loop ranks against, carried in issues.json because
         # the Docker image copies only `src/` -- OBJECTIVE.md is not in the
         # container. "" when chief has not written one, which is a real state.

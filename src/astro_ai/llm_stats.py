@@ -227,6 +227,8 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
     misses = 0
     in_tok = 0
     out_tok = 0
+    peak_tok = 0
+    peak_date: str | None = None
     by_route_acc: dict[str, dict[str, int]] = {}
     for i in range(days):
         d = today - timedelta(days=i)
@@ -240,6 +242,15 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
         miss_latency_sum += c.get("miss_latency_sum_ms", 0)
         in_tok += c.get("input_tokens", 0)
         out_tok += c.get("output_tokens", 0)
+        # THE PEAK DAY, not the average. The daily limit is a CEILING, and an
+        # average cannot tell you how close a ceiling came -- 30 quiet days
+        # around one 198,888-token day (2026-10-08) average to nothing while
+        # the day itself exhausted the quota and took every rashifal page down.
+        # So: the worst day in the window, and which day it was, because "when"
+        # is what makes it diagnosable.
+        day_tok = c.get("input_tokens", 0) + c.get("output_tokens", 0)
+        if day_tok > peak_tok:
+            peak_tok, peak_date = day_tok, d.isoformat()
         for route, r in blob.get("call_by_route", {}).items():
             acc = by_route_acc.setdefault(route, {"calls": 0, "hits": 0,
                                                     "input_tokens": 0, "output_tokens": 0,
@@ -271,6 +282,10 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
         "hit_rate_pct": int(hits / total * 100) if total else 0,
         "total_input_tokens": in_tok,
         "total_output_tokens": out_tok,
+        # None, not 0, when nothing was recorded: a zero peak would read as
+        # "a quiet day", which is the opposite of "we have no idea".
+        "peak_day_tokens": peak_tok or None,
+        "peak_day": peak_date,
         "avg_miss_latency_ms": int(miss_latency_sum / misses) if misses else 0,
         "by_route": by_route,
         "cache_entries": 0,   # SQLite-only concept; filled by admin_usage from cache.py
