@@ -774,6 +774,58 @@ MUTATIONS = [
      "{% if True %}",
      "test_admin_dashboard_renders_both_event_shapes"),
 
+    ("#354: trust boundary matches exact paths only (a nested prompt would merge)",
+     ".github/workflows/agent-merge.yml",
+     '"$entry"*) printf',
+     '"$entry") printf',
+     "test_protected_path_is_held"),
+
+    ("#354: the merge step ignores the trust boundary (reads steps.size again)",
+     ".github/workflows/agent-merge.yml",
+     "      - name: Merge\n        if: steps.boundary.outputs.ok == 'true'",
+     "      - name: Merge\n        if: steps.size.outputs.ok == 'true'",
+     "test_every_step_after_the_boundary_waits_on_it"),
+
+    ("#358: the pull_request_target leg stops checking the head repository",
+     ".github/workflows/agent-merge.yml",
+     "        && github.event.pull_request.head.repo.full_name == github.repository\n",
+     "",
+     "test_both_trigger_legs_require_the_head_to_be_this_repository"),
+
+    ("#358: the agent-branch filter interpolates the branch name again",
+     ".github/workflows/agent-merge.yml",
+     'case "$PR_BRANCH" in',
+     'case "${{ steps.pr.outputs.branch }}" in',
+     "test_the_agent_branch_filter_reads_an_env_var_not_an_interpolation"),
+
+    # The failure mode of the env: refactor itself: an undeclared name expands
+    # to the empty string, so the post-merge issue comment goes to `gh issue
+    # comment ""` AFTER the merge has happened. Nothing errors.
+    ("#358: the merge step expands $PR_BRANCH without declaring it",
+     ".github/workflows/agent-merge.yml",
+     "          PR_BRANCH: ${{ steps.pr.outputs.branch }}\n"
+     "          PR_NUMBER: ${{ steps.pr.outputs.number }}\n"
+     "          PR_SHA: ${{ steps.pr.outputs.sha }}\n"
+     "        run: |\n"
+     '          gh pr merge "$PR_NUMBER"',
+     "          PR_NUMBER: ${{ steps.pr.outputs.number }}\n"
+     "          PR_SHA: ${{ steps.pr.outputs.sha }}\n"
+     "        run: |\n"
+     '          gh pr merge "$PR_NUMBER"',
+     "test_every_managed_variable_a_step_expands_is_declared"),
+
+    ("#357: the sweep stops requiring qa-pass",
+     ".github/workflows/agent-merge.yml",
+     'select([.labels[].name] | index("qa-pass"))',
+     "select(true)",
+     "test_a_pr_without_qa_pass_is_not_a_candidate"),
+
+    ("#357: the sweep stops checking the head repository",
+     ".github/workflows/agent-merge.yml",
+     'select(.head.repo.full_name == "\'"$GH_REPO"\'")',
+     "select(true)",
+     "test_a_fork_head_is_never_a_candidate"),
+
     ("#355: an unrecorded route latency reads as 0 (a zero reads as 'fast')",
      "src/astro_ai/llm_stats.py",
      'int(v["lat_sum"] / v["lat_n"]) if v["lat_n"] else None',

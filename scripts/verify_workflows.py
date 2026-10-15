@@ -103,6 +103,19 @@ EXPECTED_WORKFLOWS = 15
 # Triggers whose default `types` omit `ready_for_review`.
 PR_TRIGGERS = ("pull_request", "pull_request_target")
 
+# Triggers that give a job a WRITE token while the head of the pull request is
+# chosen by someone who may not have write access to this repository (#358):
+#
+#   pull_request_target  runs the BASE repo's definition against a fork head
+#   workflow_run         fires in the BASE repo after a `pull_request` run,
+#                        with the base definition and a write token
+#   issue_comment        body and author are arbitrary
+#
+# In a workflow carrying one of these, no `${{ }}` may appear inside a `run:`
+# block. See check 5 for why that rule is "none" rather than a list of unsafe
+# expressions.
+PRIVILEGED_TRIGGERS = ("pull_request_target", "workflow_run", "issue_comment")
+
 # (file, trigger) -> why it need not listen for `ready_for_review`. An entry
 # here is a hole in check 3; each one must justify itself beside it.
 # The `types:` value is part of what the exemption means, so it is stored and
@@ -452,6 +465,104 @@ def check_triggers(name: str, doc: dict, rep: Report) -> None:
                      "readied later gets no run (#303).")
 
 
+def run_blocks(text: str) -> list[tuple[int, str]]:
+    """(1-based line of each `run:` body line, that line) for every run: scalar.
+
+    Hand-scanned rather than taken from `yaml.compose`, because the check below
+    needs the RAW text: safe_load would already have resolved nothing (the
+    expression is literal inside the scalar) but compose would hand back a
+    single blob whose internal line numbers must then be recomputed anyway.
+    A block ends at the first line indented no further than the `run:` key.
+    """
+    out: list[tuple[int, str]] = []
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        m = re.match(r"^(\s*)run:\s*[|>]", lines[i])
+        if not m:
+            i += 1
+            continue
+        ind = len(m.group(1))
+        i += 1
+        while i < len(lines):
+            ln = lines[i]
+            if ln.strip() and len(ln) - len(ln.lstrip()) <= ind:
+                break
+            out.append((i + 1, ln))
+            i += 1
+    return out
+
+
+def check_interpolation(name: str, text: str, doc: dict, rep: Report) -> None:
+    """Check 5: no `${{ }}` inside a `run:` block of a privileged workflow (#358).
+
+    WHY THE RULE IS "NONE", NOT "NO UNSAFE ONES"
+    --------------------------------------------
+    `${{ }}` is textual substitution performed BEFORE bash parses the script.
+    An interpolated value is not a shell string, it is shell source. So the
+    question is never "is this quoted properly" -- there is no quoting that
+    survives, because the quotes are part of the text being replaced.
+
+    A gate that allowed "safe" expressions would have to decide which values an
+    outsider can influence, and that judgment is exactly what went wrong:
+    `agent-merge` interpolated a pull-request HEAD BRANCH NAME into
+    `case "${{ steps.pr.outputs.branch }}" in` -- the agent-branch filter
+    itself -- in a job holding contents+actions write, with no fork guard.
+    `git check-ref-format` accepts `$ ( ) " ` ; & |` in a branch name and
+    `${IFS}` stands in for the forbidden space, so the filter was the injection
+    point and ran before it could reject anything.
+
+    Values reach these jobs through `env:` instead, where bash never re-parses
+    them, and are expanded quoted. That is mechanical, so this gate is too.
+
+    Shell comments are stripped first: the fix is documented in comments that
+    necessarily quote the construct they warn about, and a gate that could not
+    tell a warning from an occurrence would punish explaining itself.
+    """
+    on = yaml_get(doc, "on")
+    if isinstance(on, str):
+        on = {on: None}
+    elif isinstance(on, list):
+        on = {trig: None for trig in on}
+    if not isinstance(on, dict):
+        return  # check_triggers already failed this file
+    privileged = [trig for trig in PRIVILEGED_TRIGGERS if trig in on]
+    if not privileged:
+        return
+
+    hits = 0
+    for lineno, raw in run_blocks(text):
+        if "${{" not in raw:
+            continue
+        # strip_shell_comments preserves line count, so index 0 is this line.
+        if "${{" not in strip_shell_comments(raw):
+            continue
+        # DETECTION IS THE PRESENCE OF `${{`, NOT A MATCH ON THE WHOLE
+        # EXPRESSION. The first draft of this check reported
+        # `re.findall(r"\$\{\{[^}]*\}\}")` and exited 0 on
+        # `${{ format('{0}', steps.pr.outputs.branch) }}` -- `[^}]*` stops at
+        # the `}` inside `{0}`, so a real defect read as clean and the gate
+        # even printed "ok". mutate_verify_workflows.py caught it, and check 1
+        # above carries a comment about the identical trap, which is how a
+        # second instance of one mistake ends up in one file.
+        #
+        # So: every `${{` is a failure, and the expression text is only ever
+        # used to make the message readable.
+        for idx in (m.start() for m in re.finditer(r"\$\{\{", raw)):
+            end = raw.rfind("}}")
+            expr = raw[idx:end + 2] if end > idx else raw[idx:]
+            if len(expr) > 90:
+                expr = expr[:87] + "..."
+            hits += 1
+            rep.fail(name, lineno, "(run:)", "interpolation",
+                     f"`{expr.strip()}` is substituted into shell before bash parses it; "
+                     f"this workflow is triggered by {'/'.join(privileged)}, so pass it "
+                     "through `env:` and expand it quoted instead (#358)")
+    if not hits:
+        rep.note(f"ok    {name}  [interpolation]  privileged trigger "
+                 f"({'/'.join(privileged)}); no `${{{{ }}}}` in any run: block")
+
+
 def check_job(name: str, text_lines: dict, jid: str, job: dict, doc: dict, rep: Report) -> None:
     steps = job.get("steps")
     if not isinstance(steps, list):
@@ -581,6 +692,7 @@ def check_file(path: Path, rep: Report) -> None:
         rep.fail(name, None, "(file)", "parse", "no top-level `jobs:` mapping")
         return
     check_triggers(name, doc, rep)
+    check_interpolation(name, text, doc, rep)
     for jid, job in doc["jobs"].items():
         if isinstance(job, dict):
             check_job(name, lines, str(jid), job, doc, rep)
@@ -614,8 +726,8 @@ def main() -> int:
     if rep.failures:
         print(f"\nFAIL - {len(rep.failures)} problem(s) across {len(files)} workflow files")
         return 1
-    print(f"PASS - {len(files)} workflow files; self-reference, gh-vs-permissions and "
-          "pull_request types checks clean")
+    print(f"PASS - {len(files)} workflow files; self-reference, gh-vs-permissions, "
+          "pull_request types and run:-interpolation checks clean")
     return 0
 
 

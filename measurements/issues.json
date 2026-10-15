@@ -1,14 +1,15 @@
 {
-  "generated_at": "2026-10-15T09:37:20Z",
+  "generated_at": "2026-10-15T15:30:25Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 65,
-  "with_ask": 31,
+  "open": 69,
+  "with_ask": 33,
   "by_area": {
-    "UNCLASSIFIED": 12,
+    "UNCLASSIFIED": 13,
     "INFRA": 10,
     "REDESIGN": 10,
     "FEATURE": 7,
+    "SECURITY": 4,
     "UI": 4,
     "BUG": 3,
     "NUMEROLOGY": 3,
@@ -18,7 +19,6 @@
     "TASK": 2,
     "CHORE": 2,
     "LLM": 1,
-    "SECURITY": 1,
     "KUNDLI": 1,
     "BLOCKER": 1,
     "KNOWLEDGE": 1,
@@ -27,7 +27,7 @@
   "by_type": {
     "enhancement": 22,
     "untyped": 15,
-    "bug": 9,
+    "bug": 13,
     "chore": 6,
     "design": 6,
     "correctness": 6,
@@ -36,10 +36,77 @@
   "by_priority": {
     "unset": 41,
     "medium": 17,
-    "high": 7
+    "high": 11
   },
-  "blocked": 5,
+  "blocked": 6,
   "rows": [
+    {
+      "number": 362,
+      "title": "security: a change to `prompts/*.txt` is invisible to the gates, although it is what the app sends to the model on every request",
+      "ask": "",
+      "area": "SECURITY",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-10-15T14:32:57Z",
+      "updated": "2026-10-15T14:32:57Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 361,
+      "title": "security: the loop acts on any issue from anyone, and strictness should key on the issue's author rather than on the PR's paths",
+      "ask": "",
+      "area": "SECURITY",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-10-15T14:32:55Z",
+      "updated": "2026-10-15T15:11:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 358,
+      "title": "security: a fork-chosen branch name is interpolated into `run:` shell in `agent-merge`, which holds a repo-write token and has no fork guard",
+      "ask": "Never interpolate a PR-controlled value into run:.",
+      "area": "SECURITY",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "needs-human-review"
+      ],
+      "created": "2026-10-15T13:50:51Z",
+      "updated": "2026-10-15T14:11:18Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 357,
+      "title": "`agent-merge` is edge-triggered only, so a docs-only PR strands: `pr-gates` skips its suite in 9s and wakes the merge 60s before `verify-build` finishes",
+      "ask": "Add a scheduled job that re-evaluates open PRs carrying qa-pass whose every check has",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high"
+      ],
+      "created": "2026-10-15T13:50:45Z",
+      "updated": "2026-10-15T14:11:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 355,
       "title": "llm: a cache miss averages 40s and half of all misses need a second provider — and neither is attributable per route",
@@ -49,10 +116,11 @@
       "priority": "high",
       "labels": [
         "bug",
-        "priority:high"
+        "priority:high",
+        "qa-pass"
       ],
       "created": "2026-10-15T04:47:23Z",
-      "updated": "2026-10-15T04:47:23Z",
+      "updated": "2026-10-15T15:06:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -69,7 +137,7 @@
         "needs-human-review"
       ],
       "created": "2026-10-15T04:38:13Z",
-      "updated": "2026-10-15T05:09:17Z",
+      "updated": "2026-10-15T14:33:21Z",
       "blocked": true,
       "needs_evidence": false
     },
