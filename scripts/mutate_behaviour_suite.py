@@ -809,6 +809,12 @@ MUTATIONS = [
      '        return f"gcs:{name}"',
      '        return f"local:{name}"',
      "test_describe_store_names_the_bucket_or_the_local_dir"),
+
+    ("#355: /admin/ops never shows the 'local dev store' badge (store_is_local forced False)",
+     "src/astro_ai/ops_data.py",
+     '"store": store, "store_is_local": store.startswith("local:"),\n            "store_detail": store_detail,\n            "days": days,',
+     '"store": store, "store_is_local": False,\n            "store_detail": store_detail,\n            "days": days,',
+     "test_ops_says_it_is_reading_a_local_dev_store"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

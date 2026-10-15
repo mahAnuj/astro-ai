@@ -270,6 +270,11 @@ def test_ops_says_it_is_reading_a_local_dev_store(client, stats_dir, monkeypatch
     assert str(stats_dir) in html
     assert "first 429_tpm ×1" in html
     assert "41.2 s" in html
+    # The tooltip must name BOTH local dirs: events does not use llm_stats' dir.
+    from astro_ai import events
+    assert str(events._LOCAL_FALLBACK_DIR) in html
+    assert "needed a retry or a 2nd provider" in html
+    assert "reason for the last failure" in html
 
 
 def test_ops_names_the_bucket_when_one_is_configured(client, stats_dir, monkeypatch, tmp_path):
@@ -284,3 +289,4 @@ def test_ops_names_the_bucket_when_one_is_configured(client, stats_dir, monkeypa
     assert r.status_code == 200
     assert "gcs:prod-bucket" in r.text
     assert "not production" not in r.text
+    assert "configured, not verified reachable" in r.text

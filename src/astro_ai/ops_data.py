@@ -549,10 +549,17 @@ def _app_view(days: int = 7) -> dict:
 
     # Said on the page, because "0 errors" from a developer's /tmp and from
     # production's bucket looked identical (#355).
-    from astro_ai import storage
+    from astro_ai import events, llm_stats, storage
     store = storage.describe_store()
+    # `describe_store` names only llm_stats' dir; events keeps its own, so a
+    # local tooltip that named one directory would misdescribe the other half.
+    store_detail = (f"local: llm_stats in {llm_stats._LOCAL_FALLBACK_DIR}, "
+                    f"events in {events._LOCAL_FALLBACK_DIR}"
+                    if store.startswith("local:")
+                    else f"{store} -- configured, not verified reachable")
     out: dict[str, Any] = {"ok": False, "measured": False, "days": days,
-                           "store": store, "store_is_local": store.startswith("local:")}
+                           "store": store, "store_is_local": store.startswith("local:"),
+                           "store_detail": store_detail}
     try:
         from astro_ai import events, llm_stats
 
@@ -605,6 +612,7 @@ def _app_view(days: int = 7) -> dict:
             # recorded, which must never render as "no errors".
             "measured": calls > 0,
             "store": store, "store_is_local": store.startswith("local:"),
+            "store_detail": store_detail,
             "days": days,
             "calls": calls, "hits": hits, "misses": misses,
             "hit_rate": int(usage.get("hit_rate_pct") or 0),

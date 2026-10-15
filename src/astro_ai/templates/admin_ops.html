@@ -838,9 +838,9 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         {% if ops.app.measured %}<span class="age live"
               title="read from this app's own GCS stores on the request, 60 s cache">live</span>{% endif %}
         {% if ops.app.store_is_local %}<span class="age stale" style="margin-left:7px"
-              title="BHAGYA_STORAGE_BUCKET is unset, so events and llm_stats come from {{ ops.app.store }}">local dev store — not production</span>
+              title="BHAGYA_STORAGE_BUCKET is unset. {{ ops.app.store_detail }}">local dev store — not production</span>
         {% elif ops.app.store %}<span class="age" style="margin-left:7px"
-              title="the store events and llm_stats are read from">{{ ops.app.store }}</span>{% endif %}
+              title="{{ ops.app.store_detail }}">{{ ops.app.store }}</span>{% endif %}
       </h2>
       <div class="body">
         {% if not ops.app.ok %}
@@ -855,10 +855,10 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
             <b class="mono {{ 'c-failed' if ops.app.error_rate and ops.app.error_rate >= 5 }}">{{ ops.app.errors }} · {{ ops.app.error_rate }}%</b></div>
           <div><span>every provider failed</span>
             <b class="mono {{ 'c-failed' if ops.app.exhausted }}">{{ ops.app.exhausted }}</b></div>
-          <div><span>recovered on a 2nd provider</span>
+          <div><span>needed a retry or a 2nd provider</span>
             <b class="mono">{{ ops.app.fallbacks }}</b></div>
           {% if ops.app.fallback_reasons %}
-          <div><span>&nbsp;&nbsp;why the 1st provider failed</span>
+          <div><span>&nbsp;&nbsp;reason for the last failure</span>
             <b class="mono" style="font-weight:400;font-size:11px">{% for prov, why, n in ops.app.fallback_reasons %}{{ prov }} {{ why }} ×{{ n }}{% if not loop.last %} · {% endif %}{% endfor %}</b></div>
           {% endif %}
           <div><span>cache hit rate</span><b class="mono">{{ ops.app.hit_rate }}%</b></div>
@@ -891,8 +891,10 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           <b>avg miss</b> is wall-clock per generated reading, per feature, and covers only days
           recorded since #355 — earlier days stored one global figure, so a feature with no
           recorded latency shows <b>—</b>, never 0.
-          {% if ops.app.fallbacks %}The reasons beside <b>recovered on a 2nd provider</b> likewise
-          cover only those days, so they can sum to less than the count.{% endif %}
+          {% if ops.app.fallbacks %}The reasons beside <b>needed a retry or a 2nd provider</b> likewise
+          cover only those days, so they can sum to less than the count. Only the
+          <em>last</em> failure before the success is recorded, and a same-provider retry
+          after a 429 counts as a fallback too.{% endif %}
         </p>
 
         {% if ops.app.sources %}
