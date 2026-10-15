@@ -13,7 +13,8 @@
 #   2. A QA comment on the PR whose verdict line says PASS. qa.md is explicit
 #      that "PASS is a report, not an action", so the report is read here and
 #      the action is taken here, by different things.
-#   3. The diff is inside the size and path limits below.
+#   3. The diff is inside the size limit below and touches none of the
+#      trust-boundary paths (#354), which a human merges.
 #
 # WHY A SIZE LIMIT ON AN AUTONOMOUS LOOP
 # --------------------------------------
@@ -46,6 +47,48 @@ on:
     types: [completed]
   pull_request_target:
     types: [labeled]
+  # THE SWEEP (#357). Both triggers above are EDGES, and this job had no way to
+  # re-ask the question after one was spent. Whenever the last green check
+  # landed after the last edge, a PR stayed green, qa-pass and MERGEABLE
+  # forever. It happened four times:
+  #
+  #   #303  `ready_for_review` was not in pr-gates' `pull_request` types, so
+  #         the readied PR carried no check at all
+  #   #322  a GITHUB_TOKEN-authored PR emits no workflow_run
+  #   #352  the run that went green was `workflow_dispatch`, which the `if:`
+  #         below deliberately excludes (a dispatched run checks out the
+  #         BRANCH, not refs/pull/N/merge, so it does not prove the merge)
+  #   #356  `verify-build` is a different workflow, and this one listens only
+  #         to "PR gates"
+  #
+  # Each was fixed by adding or correcting an edge, and a fifth edge was always
+  # going to be missed -- so the answer is to stop relying on edges. #356 shows
+  # why the ordering is not even unlikely: pr-gates SKIPS its suite on a
+  # docs-only change and finishes in 9s (deliberately, so this job still gets
+  # its trigger), while verify-build has no such skip and takes ~70s. Measured
+  # 2026-10-15: pr-gates 9s vs verify-build 68s on #356; 8m34s vs 75s on the
+  # code PR before it. The "pr-gates is the slowest check" assumption holds for
+  # code and inverts for exactly the PRs the skip was written for.
+  #
+  # The sweep adds NO new authority. It only supplies a PR number; every
+  # condition -- agent branch, gates green, qa-pass, size, trust boundary -- is
+  # re-read from the API by the same steps, in the same order. So the worst a
+  # sweep can do is merge something that already satisfies every condition.
+  schedule:
+    - cron: "*/30 * * * *"
+  # For draining the queue by hand after a fix, without waiting for the cron.
+  workflow_dispatch:
+
+# Serialised repo-wide, NOT keyed on the PR: the workflow_run leg does not know
+# which PR it is about until the first step has run, so a per-PR group cannot be
+# expressed here. `cancel-in-progress: false` because cancelling a merge
+# half-way is the one outcome worth avoiding; GitHub keeps a single pending run
+# per group, so a sweep firing during an edge-triggered run queues behind it and
+# a redundant third is dropped -- which is correct, since the next sweep asks
+# again in 30 minutes.
+concurrency:
+  group: agent-merge
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -59,9 +102,31 @@ permissions:
 jobs:
   merge:
     runs-on: ubuntu-latest
+    # A FORK PR NEVER REACHES THIS JOB (#358). The repo is public and this job
+    # holds contents+actions write. Before this guard, a fork PR satisfied the
+    # workflow_run clause with no maintainer action at all: pr-gates runs on
+    # `pull_request` (fork PRs included), it completes, workflow_run fires in
+    # the BASE repo with the base repo's definition and the write token, and
+    # `workflow_run.event == 'pull_request'` was true.
+    #
+    # The loop only ever merges branches it opened in this repository, and
+    # qa-pass is applied only by /agent-cycle, which only runs on those. So a
+    # fork head is not a case to handle carefully -- it is a case to refuse.
+    #
+    # Both legs are guarded: `pull_request_target` carries
+    # `event.pull_request.head.repo`, `workflow_run` carries
+    # `event.workflow_run.head_repository`, and neither is readable from the
+    # other, so one clause cannot cover both.
     if: >-
-      github.event_name == 'pull_request_target'
-      || github.event.workflow_run.event == 'pull_request'
+      (
+        github.event_name == 'pull_request_target'
+        && github.event.pull_request.head.repo.full_name == github.repository
+      ) || (
+        github.event_name == 'workflow_run'
+        && github.event.workflow_run.event == 'pull_request'
+        && github.event.workflow_run.head_repository.full_name == github.repository
+      ) || github.event_name == 'schedule'
+      || github.event_name == 'workflow_dispatch'
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
@@ -69,6 +134,21 @@ jobs:
       # code), so gh cannot infer the repository from a git remote and fails
       # with "not a git repository".
       GH_REPO: ${{ github.repository }}
+      # NOTHING FROM THE PULL REQUEST IS INTERPOLATED INTO A `run:` BLOCK (#358).
+      # `${{ }}` is textual substitution performed BEFORE bash parses the
+      # script, so an interpolated value is not a shell string -- it is shell
+      # source. This job runs under pull_request_target/workflow_run with
+      # contents+actions write, so a value the PR author chooses must never
+      # reach it that way. Every such value arrives as an environment variable,
+      # which bash never re-parses, and is expanded quoted.
+      #
+      # verify_workflows.py enforces this for every workflow carrying a
+      # privileged trigger; see `no `${{ }}` in run:` there.
+      EVENT_NAME: ${{ github.event_name }}
+      EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+      RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+      RUN_URL: ${{ github.event.workflow_run.html_url }}
       # Raised far above any plausible diff on 2026-10-08. The user's position:
       # "we should not restrict git push and merge for this autonomous system to
       # be successful. If QA is passed, push and merge."
@@ -76,6 +156,30 @@ jobs:
       # Left in place rather than deleted so the mechanism survives: lower it to
       # 400 and large diffs are labelled and held again, one edit, no new code.
       MAX_LINES: 1000000
+      # THE TRUST BOUNDARY — the one place it is listed (#354). A PR touching
+      # any of these is never auto-merged; see the "Trust boundary" step.
+      # One entry per line. An entry ending in `/` matches everything beneath
+      # it at any depth; any other entry matches that exact path and nothing
+      # else (so `events.py` does not catch `events_helper.py`).
+      #
+      #   prompts/    the system prompts. routes/deps.py PROMPTS_DIR loads them and
+      #               they become the system prompt for every request.
+      #   knowledge/  NOT read at runtime (measured 2026-10-15: no Python opens
+      #               one). It is what agents treat as the authority, so a
+      #               poisoned rule gets transcribed into code as a *sourced*
+      #               change by the next agent to touch that area.
+      #   workflows/  the gates themselves, and this file with them.
+      #   events.py   what is recorded about a user.
+      #   notify.py / email_sender.py   what leaves to Telegram / Brevo.
+      #   storage.py  where it is kept.
+      TRUST_BOUNDARY: |
+        src/astro_ai/prompts/
+        src/astro_ai/knowledge/
+        .github/workflows/
+        src/astro_ai/events.py
+        src/astro_ai/notify.py
+        src/astro_ai/email_sender.py
+        src/astro_ai/storage.py
     steps:
       - name: Find the pull request
         id: pr
@@ -100,8 +204,51 @@ jobs:
           # `[ test ] && action` be the last line, and prefer if/then so the
           # question never arises. pr-gates' skipped-report line was exactly
           # that shape and would have failed a completely passing run.
-          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            n="${{ github.event.pull_request.number }}"
+          if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            # THE SWEEP picks a CANDIDATE, it does not decide anything (#357).
+            # The filters here are only what makes a candidate worth spending
+            # the remaining steps on:
+            #
+            #   state=open, not draft      there is something left to merge
+            #   head.repo == this repo     a fork head never reaches a write
+            #                              token, the same rule as the job `if:`
+            #   head.ref starts issue/     the loop's own branches, re-checked
+            #                              by the `own` step anyway
+            #   qa-pass present            otherwise the `qa` step would stop,
+            #                              and the sweep would spend every run
+            #                              on an ineligible PR and never reach
+            #                              an eligible one
+            #   qa-fail / needs-human-review / too-large-to-automerge absent
+            #                              all three mean "a human decides";
+            #                              holding them here is what keeps the
+            #                              sweep from re-labelling the same PR
+            #                              every 30 minutes forever
+            #
+            # Every one of those is re-read and re-decided downstream. Lowest
+            # number first, one per run: a second eligible PR is taken by the
+            # next sweep, which is the same "one issue per run" rule the rest
+            # of the loop follows.
+            # No `--paginate`: with `--jq`, gh applies the filter PER PAGE, so
+            # `sort | first` would print one number per page and `n` would hold
+            # several. per_page=100 is well past any plausible open-PR count for
+            # this loop; if it is ever exceeded the sweep still works, it just
+            # considers the first 100.
+            n=$(gh api "repos/$GH_REPO/pulls?state=open&per_page=100" --jq '
+                  [ .[]
+                    | select(.draft == false)
+                    | select(.head.repo.full_name == "'"$GH_REPO"'")
+                    | select(.head.ref | startswith("issue/"))
+                    | select([.labels[].name] | index("qa-pass"))
+                    | select([.labels[].name]
+                             | (index("qa-fail") // index("needs-human-review")
+                                // index("too-large-to-automerge")) | not)
+                    | .number ]
+                  | sort | first // empty')
+            if [ -n "$n" ]; then
+              echo "::notice::sweep picked PR #$n — every condition is re-checked below"
+            fi
+          elif [ "$EVENT_NAME" = "pull_request_target" ]; then
+            n="$EVENT_PR_NUMBER"
           else
             # `github.event.workflow_run.head_sha`, NOT `steps.pr.outputs.sha`.
             # This step's own id IS `pr`, so that expression read its own
@@ -119,16 +266,25 @@ jobs:
             # The later steps may still use steps.pr.outputs.sha — by then this
             # step has completed and the output exists. Only a self-reference
             # inside the defining step is empty.
-            n=$(gh api "repos/$GH_REPO/commits/${{ github.event.workflow_run.head_sha }}/pulls" \
+            n=$(gh api "repos/$GH_REPO/commits/$RUN_HEAD_SHA/pulls" \
                   --jq '.[0].number // empty')
           fi
           if [ -z "$n" ]; then
-            echo "no PR for this SHA — nothing to merge"
+            echo "nothing to merge (no PR for this SHA, or no sweep candidate)"
             exit 0
           fi
           echo "number=$n" >> "$GITHUB_OUTPUT"
           gh pr view "$n" --repo "$GH_REPO" \
-            --json headRefName,headRefOid,additions,deletions,files,isDraft > /tmp/pr.json
+            --json headRefName,headRefOid,additions,deletions,files,isDraft,state > /tmp/pr.json
+          # An edge and a sweep can both reach the same PR, and the sweep can
+          # fire while an earlier run is merging. `gh pr merge` on a merged PR
+          # fails, after every condition has already been satisfied, so the
+          # cheapest place to notice is here.
+          state=$(jq -r .state /tmp/pr.json)
+          if [ "$state" != "OPEN" ]; then
+            echo "::notice::PR #$n is $state — already handled, nothing to do"
+            exit 0
+          fi
           echo "branch=$(jq -r .headRefName /tmp/pr.json)" >> "$GITHUB_OUTPUT"
           # Resolve the head SHA from the PR, not from the event. A `labeled`
           # event has no workflow_run payload, so every message built from
@@ -139,10 +295,12 @@ jobs:
       - name: Is this an agent branch?
         id: own
         if: steps.pr.outputs.number
+        env:
+          PR_BRANCH: ${{ steps.pr.outputs.branch }}
         run: |
-          case "${{ steps.pr.outputs.branch }}" in
+          case "$PR_BRANCH" in
             issue/*) echo "ok=true" >> "$GITHUB_OUTPUT" ;;
-            *) echo "::notice::${{ steps.pr.outputs.branch }} is not an agent branch — leaving it alone" ;;
+            *) echo "::notice::$PR_BRANCH is not an agent branch — leaving it alone" ;;
           esac
 
       # Query the API, do not read the event. A `labeled` event carries no
@@ -151,8 +309,10 @@ jobs:
       - name: Gates green?
         id: gates
         if: steps.own.outputs.ok == 'true'
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
-          sha=$(gh pr view "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" \
+          sha=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" \
                   --json headRefOid --jq .headRefOid)
           echo "head: $sha"
           # Exclude THIS run's own check. On a pull_request_target trigger GitHub
@@ -232,8 +392,10 @@ jobs:
       - name: QA verdict
         id: qa
         if: steps.gates.outputs.ok == 'true'
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
-          labels=$(gh pr view "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" \
+          labels=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" \
                      --json labels --jq '[.labels[].name] | join(",")')
           echo "labels: ${labels:-none}"
           case ",$labels," in
@@ -249,16 +411,125 @@ jobs:
       - name: Size and path limits
         id: size
         if: steps.qa.outputs.ok == 'true'
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
           changed=$(( $(jq -r .additions /tmp/pr.json) + $(jq -r .deletions /tmp/pr.json) ))
           echo "diff is $changed lines (limit $MAX_LINES)"
           if [ "$changed" -gt "$MAX_LINES" ]; then
-            gh pr edit "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --add-label "too-large-to-automerge"
-            gh pr comment "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --body \
+            gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --add-label "too-large-to-automerge"
+            gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body \
               "Gates green and QA passed, but this diff is ${changed} lines against a ${MAX_LINES}-line limit for unattended merge. Most of this app has no test coverage and \`main\` deploys on merge with no staging, so green proves less here than the line count suggests. Leaving it open."
             exit 0
           fi
           echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      # THE TRUST BOUNDARY (#354). The repo is public and this job merges
+      # unattended, so "gates green + qa-pass" cannot be the whole test for a
+      # change to the things that decide what the product says, what agents
+      # believe, what the gates are, or where user data goes. Those are held
+      # for a human, exactly as an over-limit diff is.
+      #
+      # THIS JOB HAS NO CHECKOUT AND MUST NOT GAIN ONE. It runs under
+      # pull_request_target with a write token, so nothing from the PR may
+      # execute here. The file list therefore comes from the API, and the
+      # paths are only ever compared as strings: never eval'd, never
+      # interpolated into the script (they arrive via a file), and quoted at
+      # every use. A hostile file name can at worst be a false positive.
+      #
+      # THE FILES API, NOT `gh pr view --json files`: the latter stops at 100
+      # files, so a PR could bury a protected path at position 101. The
+      # paginated endpoint reaches 3,000; at that cap the list may be
+      # truncated, so the step fails CLOSED and holds the PR.
+      #
+      # `previous_filename` is included: moving `prompts/natal.txt` out of the
+      # protected tree is a change to it, and a rename lists only the new name
+      # under `filename`.
+      #
+      # Fails closed on error too: if the API call fails the step fails, `ok`
+      # is never set, and nothing downstream runs.
+      - name: Trust boundary
+        id: boundary
+        if: steps.size.outputs.ok == 'true'
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          # Prints the matching entry and returns 0 if $1 is protected.
+          # Kept a pure function of ($1, $TRUST_BOUNDARY) so a test can lift it
+          # out of this file and drive it with a table of paths.
+          is_protected() {
+            local entry
+            while IFS= read -r entry; do
+              if [ -z "$entry" ]; then continue; fi
+              case "$entry" in
+                */)
+                  case "$1" in
+                    "$entry"*) printf '%s\n' "$entry"; return 0 ;;
+                  esac ;;
+                *)
+                  if [ "$1" = "$entry" ]; then printf '%s\n' "$entry"; return 0; fi ;;
+              esac
+            done <<< "$TRUST_BOUNDARY"
+            return 1
+          }
+
+          gh api "repos/$GH_REPO/pulls/$PR_NUMBER/files" --paginate \
+            --jq '.[] | .filename, (.previous_filename // empty)' > /tmp/pr-files.txt
+          total=$(wc -l < /tmp/pr-files.txt)
+          echo "PR files and rename sources checked: $total"
+
+          : > /tmp/pr-protected.txt
+          while IFS= read -r f; do
+            if hit=$(is_protected "$f"); then
+              printf '%s  (%s)\n' "$f" "$hit" >> /tmp/pr-protected.txt
+            fi
+          done < /tmp/pr-files.txt
+          # Sorted and de-duplicated: a rename lists both names and a path can
+          # appear twice.
+          sort -u /tmp/pr-protected.txt -o /tmp/pr-protected.txt
+
+          capped=false
+          if [ "$total" -ge 3000 ]; then capped=true; fi
+
+          if [ ! -s /tmp/pr-protected.txt ] && [ "$capped" = "false" ]; then
+            echo "no protected path touched"
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "::notice::trust boundary touched — holding PR #$PR_NUMBER for a human"
+          sed 's/^/  /' /tmp/pr-protected.txt
+
+          # Idempotent: this job fires on every label and every gate run, so
+          # comment once. The label is the record that it already did.
+          labels=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json labels --jq '[.labels[].name] | join(",")')
+          case ",$labels," in
+            *,needs-human-review,*)
+              echo "already labelled needs-human-review — not commenting again"
+              exit 0 ;;
+          esac
+
+          {
+            echo "Gates are green and QA passed, but this PR changes the trust boundary, so \`agent-merge\` will not merge it unattended. It stays open for a human."
+            echo
+            if [ -s /tmp/pr-protected.txt ]; then
+              echo "Matched (file, then the protected entry it fell under):"
+              echo
+              echo '```'
+              head -n 30 /tmp/pr-protected.txt
+              echo '```'
+              echo
+            fi
+            if [ "$capped" = "true" ]; then
+              echo "The files API returned $total entries, its ceiling, so the list may be truncated and the PR is held."
+              echo
+            fi
+            echo "Why: these paths decide what the product tells users (\`prompts/\`), what agents treat as authority (\`knowledge/\`), what the gates are (\`.github/workflows/\`), and what is recorded about, sent about, or stored about a user (\`events.py\`, \`notify.py\`, \`email_sender.py\`, \`storage.py\`). See #354."
+            echo
+            echo "To land it: review, then merge by hand. Removing the label does not release it; the next run puts it back."
+          } > /tmp/pr-comment.md
+          gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body-file /tmp/pr-comment.md
+          gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --add-label "needs-human-review"
 
       # A DRAFT CANNOT MERGE, and this job used to fetch `isDraft` and never
       # read it. So a readied-by-nobody PR reached `gh pr merge` and failed
@@ -273,36 +544,42 @@ jobs:
       #
       # Un-drafting here is safe precisely BECAUSE it is the last step before
       # merging: gates green, qa-pass on record, no qa-fail, diff inside the
-      # limit. Nothing is being waved through — the draft flag is the only
+      # limit, no trust-boundary path touched. Nothing is being waved through — the draft flag is the only
       # thing left, and a draft carrying all of that is a bookkeeping error,
       # not a reservation. It is logged either way, because a net that acts
       # silently is indistinguishable from one that was never needed.
       - name: Take it out of draft if the cycle never did
-        if: steps.size.outputs.ok == 'true'
+        if: steps.boundary.outputs.ok == 'true'
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
           if [ "$(jq -r .isDraft /tmp/pr.json)" = "true" ]; then
-            echo "::warning::PR #${{ steps.pr.outputs.number }} is still a draft although gates are green and qa-pass is set — /agent-cycle did not run 'gh pr ready'. Readying it here so the merge can proceed."
-            gh pr ready "${{ steps.pr.outputs.number }}" --repo "$GH_REPO"
+            echo "::warning::PR #$PR_NUMBER is still a draft although gates are green and qa-pass is set — /agent-cycle did not run 'gh pr ready'. Readying it here so the merge can proceed."
+            gh pr ready "$PR_NUMBER" --repo "$GH_REPO"
           else
             echo "not a draft"
           fi
 
       - name: Merge
-        if: steps.size.outputs.ok == 'true'
+        if: steps.boundary.outputs.ok == 'true'
+        env:
+          PR_BRANCH: ${{ steps.pr.outputs.branch }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_SHA: ${{ steps.pr.outputs.sha }}
         run: |
-          gh pr merge "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --squash --delete-branch
+          gh pr merge "$PR_NUMBER" --repo "$GH_REPO" --squash --delete-branch
 
           # Link both ways so a reviewer can follow the thread from either end.
-          issue=$(printf '%s' "${{ steps.pr.outputs.branch }}" | grep -oE '^issue/[0-9]+' | grep -oE '[0-9]+' || true)
+          issue=$(printf '%s' "$PR_BRANCH" | grep -oE '^issue/[0-9]+' | grep -oE '[0-9]+' || true)
           if [ -n "$issue" ]; then
             gh issue comment "$issue" --repo "$GH_REPO" --body \
-              "Merged by \`agent-merge\`: PR #${{ steps.pr.outputs.number }}, \`pr-gates\` green on \`${{ steps.pr.outputs.sha }}\`, \`qa-pass\` on record.
+              "Merged by \`agent-merge\`: PR #$PR_NUMBER, \`pr-gates\` green on \`$PR_SHA\`, \`qa-pass\` on record.
 
           **Not closing this.** \`main\` deploys on merge, so it closes once \`verify-production.yml\` has asserted against the live site — CLAUDE.md's two-stage close. With BUILD_SHA set, that run can now prove *which* commit is serving."
           fi
 
-          gh pr comment "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --body \
-            "Merged automatically: \`pr-gates\` green on \`${{ steps.pr.outputs.sha }}\`, \`qa-pass\` on record, diff within the unattended limit.
+          gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body \
+            "Merged automatically: \`pr-gates\` green on \`$PR_SHA\`, \`qa-pass\` on record, diff within the unattended limit.
 
           **Not closing the issue.** \`main\` deploys on merge, so the issue closes only once \`verify-production.yml\` has asserted against the live site — CLAUDE.md's two-stage close."
 
@@ -339,8 +616,10 @@ jobs:
       # verification is visible as an absent run on the commit; a red
       # agent-merge on a PR that merged cleanly is a misleading signal.
       - name: Verify production after the merge
-        if: steps.size.outputs.ok == 'true'
+        if: steps.boundary.outputs.ok == 'true'
         continue-on-error: true
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
           # --ref main, not a SHA: workflow_dispatch takes a branch or tag. The
           # run therefore verifies main's TIP. If another merge lands in the
@@ -350,9 +629,9 @@ jobs:
           # /health build_sha == the run's head_sha precisely so a superseded
           # commit cannot be reported as live.
           if gh workflow run verify-production.yml --repo "$GH_REPO" --ref main; then
-            echo "::notice::dispatched verify-production for main after merging #${{ steps.pr.outputs.number }}"
+            echo "::notice::dispatched verify-production for main after merging #$PR_NUMBER"
           else
-            echo "::warning::could not dispatch verify-production — #${{ steps.pr.outputs.number }} is merged and deploying, but NOTHING will assert against production and its issue will not auto-close. Dispatch it by hand: gh workflow run verify-production.yml --ref main"
+            echo "::warning::could not dispatch verify-production — #$PR_NUMBER is merged and deploying, but NOTHING will assert against production and its issue will not auto-close. Dispatch it by hand: gh workflow run verify-production.yml --ref main"
           fi
 
       # A red gate is information the issue needs, not just a failed run nobody reads.
@@ -366,12 +645,16 @@ jobs:
           steps.own.outputs.ok == 'true'
           && github.event_name == 'workflow_run'
           && github.event.workflow_run.conclusion == 'failure'
+        env:
+          PR_BRANCH: ${{ steps.pr.outputs.branch }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_SHA: ${{ steps.pr.outputs.sha }}
         run: |
-          issue=$(printf '%s' "${{ steps.pr.outputs.branch }}" | grep -oE '^issue/[0-9]+' | grep -oE '[0-9]+' || true)
+          issue=$(printf '%s' "$PR_BRANCH" | grep -oE '^issue/[0-9]+' | grep -oE '[0-9]+' || true)
           [ -z "$issue" ] && exit 0
           gh issue comment "$issue" --repo "$GH_REPO" --body \
-            "\`pr-gates\` failed on PR #${{ steps.pr.outputs.number }} (\`${{ steps.pr.outputs.sha }}\`), conclusion: ${{ github.event.workflow_run.conclusion }}.
+            "\`pr-gates\` failed on PR #$PR_NUMBER (\`$PR_SHA\`), conclusion: $RUN_CONCLUSION.
 
-          Run: ${{ github.event.workflow_run.html_url }}
+          Run: $RUN_URL
 
           The PR stays open. Remember a gate exiting 2 is *skipped*, not passed — if that is what failed, the check did not run at all."

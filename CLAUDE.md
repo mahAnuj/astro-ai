@@ -140,6 +140,19 @@ What has NOT changed, and why it matters more now than before:
 - **Branch, then merge — never a direct commit to `main`.** Not as ceremony: a PR is what
   makes `pr-gates` run at all. A direct push to `main` would deploy with no gate between
   the agent and production, on a site with no staging.
+- **A PR touching the trust boundary is held for a human (#354).** The repo is public, so
+  `agent-merge` labels `needs-human-review` and leaves open any PR that changes
+  `src/astro_ai/prompts/`, `src/astro_ai/knowledge/`, `.github/workflows/`, `events.py`,
+  `notify.py`, `email_sender.py` or `storage.py`. The loop still pushes and merges
+  everything else. The list is the `TRUST_BOUNDARY` env var in `agent-merge.yml`.
+- **A merge can arrive up to 30 minutes after the gates go green (#357).** `agent-merge`
+  now also runs on a `*/30` cron and re-evaluates open `issue/*` PRs carrying `qa-pass`,
+  because its two event triggers are edges and a PR whose last green check landed after
+  the last edge used to strand forever — four times, most recently #356. **So a PR that
+  has not merged yet is not a PR that was refused.** Check `gh run list --workflow=
+  agent-merge.yml` before concluding anything, and never re-push to force a new edge.
+  The sweep re-reads every condition from the API; it cannot merge anything the
+  edge-triggered path would have refused.
 
 If this permission is ever narrowed again, edit this block rather than relying on the
 conversation — the same instruction the 2026-08-16 grant carries, for the same reason.
