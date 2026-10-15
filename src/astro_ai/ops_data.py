@@ -1,4 +1,6 @@
-"""Read the committed ops measurements for /admin/ops (#335, slice 2 of 3).
+"""Everything /admin/ops renders: committed measurements, plus a live backlog.
+
+Issues: #335 (the page), #345 (the team panel), #353 (the live backlog).
 
 WHERE THE DATA COMES FROM, AND WHY IT IS NOT READ FROM DISK IN PRODUCTION
 ------------------------------------------------------------------------
@@ -13,6 +15,20 @@ deployed container** — the architect recorded that caveat on #338 before the
 page was written. So this module reads from disk when a `measurements/`
 directory is present (a developer's checkout, and the tests) and otherwise
 fetches the files over HTTPS from the repository's committed `main`.
+
+ONE PANEL IS LIVE: THE BACKLOG (#353)
+-------------------------------------
+Open issues are fetched from the GitHub API on the request, with the committed
+`issues.json` as the fallback, because that panel is the only one where a live
+read is affordable and the only one where staleness actively misleads:
+
+    open issues          1 request    1.08 s      <- live
+    agent performance   46 requests     38 s
+    loop measurements   48 requests     92 s
+
+The page always says which it is showing -- "live" or "as of 9h ago" -- and a
+fallback raises its own amber alert, because a silent downgrade to yesterday's
+count is the failure this page exists to catch rather than commit.
 
 Every loader returns `None` on any failure instead of raising. A monitoring
 page that 500s because one of its panels has no data is worse than a page that
@@ -41,6 +57,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from astro_ai import issue_backlog
+
 log = logging.getLogger(__name__)
 
 #: Files this page reads, in the order the template presents them.
@@ -62,6 +80,18 @@ HTTP_TIMEOUT = float(os.environ.get("OPS_HTTP_TIMEOUT", "4"))
 #: The files change at most twice a day (the `agent-measure` commit), so a
 #: per-process cache this long costs nothing and keeps a reload instant.
 CACHE_TTL = float(os.environ.get("OPS_CACHE_TTL", "300"))
+
+#: The repository whose open issues ARE the backlog.
+GH_REPO = os.environ.get("OPS_GH_REPO", "mahAnuj/astro-ai")
+
+#: Live backlog, on by default. "0" pins the page to the committed snapshot —
+#: what the tests set, and what an environment with no egress wants.
+LIVE_ISSUES = os.environ.get("OPS_LIVE_ISSUES", "1") != "0"
+
+#: Optional. A token raises the API budget from 60/hour shared across every
+#: tenant on this egress IP to 5,000/hour for this app alone. The live path
+#: works without one — it just has less headroom before it falls back.
+GH_TOKEN = os.environ.get("OPS_GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or None
 
 #: Asia/Kolkata. The owner reads this page in IST and the schedules are
 #: documented in IST ("04:30 IST, after the rolling cap resets"), so every
@@ -120,6 +150,60 @@ def _fetch(name: str) -> Any | None:
     if data is not None:
         _cache[name] = (now, data)
     return data
+
+
+_live_cache: tuple[float, dict] | None = None
+
+
+def _live_issues(objective: str) -> dict | None:
+    """The backlog from the GitHub API, shaped exactly like issues.json.
+
+    WHY THIS PANEL IS LIVE AND THE OTHERS ARE NOT
+    ---------------------------------------------
+    Because it is the only one that can be. Measured 2026-10-15:
+
+        open issues          1 request    1.08 s
+        agent performance   46 requests     38 s
+        loop measurements   48 requests     92 s
+
+    The backlog is one call; the other two walk workflow runs and their logs.
+    `collect_agent_performance` is 1 workflow list + 2 run queries x 15 active
+    workflows + up to 15 commit lookups -- ONE render would spend 46 of the
+    60/hour unauthenticated budget, and the cheap shortcut does not exist:
+    `/actions/runs?per_page=100` is one request but its newest 100 runs cover
+    11 of 15 workflows, and the four it misses are the dormant ones, which are
+    exactly the ones worth an alert.
+
+    That panel could not be computed here at any price anyway: `liveness()`
+    reads `.github/workflows/*.yml` and `schedule_since()` shells out to
+    `git log`, and the image copies `src/` and three files.
+
+    And the backlog is the panel where staleness actually misleads. On
+    2026-10-14 the page read `66 open` against 65 actual and the number looked
+    WRONG rather than OLD -- which is the whole reason `_age` exists. A count
+    that disagrees with GitHub by two is worse than a count that admits it is
+    a day behind, and both are worse than the right number.
+
+    Returns None on ANY failure, including a 403 from a rate limit spent by
+    another tenant on the same egress IP. The caller then renders the committed
+    snapshot and labels it, so a failure here costs freshness, never the panel.
+    """
+    global _live_cache
+    now = time.monotonic()
+    if _live_cache and now - _live_cache[0] < CACHE_TTL:
+        return _live_cache[1]
+    try:
+        issues = issue_backlog.fetch_live(
+            GH_REPO, timeout=HTTP_TIMEOUT, token=GH_TOKEN)
+        # The objective comes from the committed snapshot: it lives in
+        # OBJECTIVE.md, which the container does not have. Fetching the
+        # backlog live does not make that file appear.
+        doc = issue_backlog.build(issues, repo=GH_REPO, objective=objective)
+    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:
+        log.warning("ops_data: live backlog unavailable, using the snapshot: %s", exc)
+        return None
+    _live_cache = (now, doc)
+    return doc
 
 
 def _ist(ts: str | None) -> datetime | None:
@@ -214,16 +298,25 @@ def _age(ts: str | None, now: datetime) -> dict:
             "at_ist": at.strftime("%d %b %H:%M")}
 
 
-def _issues_view(doc: dict | None, today_ist: str) -> dict:
-    """Backlog rows plus the three groupings the bars offer for drill-down."""
+def _issues_view(doc: dict | None, today_ist: str, *, live: bool = False,
+                 fell_back: bool = False) -> dict:
+    """Backlog rows plus the three groupings the bars offer for drill-down.
+
+    `live` and `fell_back` travel WITH the numbers rather than being derived
+    again by the template, because they are the only thing that says whether
+    `open` is this minute's count or yesterday's. A panel that cannot say which
+    it is showing is the failure #353 exists to fix.
+    """
     if not doc or not isinstance(doc.get("rows"), list):
-        return {"ok": False, "rows": []}
+        return {"ok": False, "rows": [], "live": False, "fell_back": fell_back}
     rows = doc["rows"]
     filed_today = [r for r in rows
                    if (d := _ist(r.get("created"))) and d.strftime("%Y-%m-%d") == today_ist]
     return {
         "ok": True,
         "generated_at": doc.get("generated_at"),
+        "live": live,
+        "fell_back": fell_back,
         "open": len(rows),
         "rows": rows,
         # Stated, never implied. 29 of 65 issues yielded a readable ask on
@@ -620,7 +713,21 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
             "A cycle that did not deliver leaves its issue untouched.")
 
     # --- the data under the page ----------------------------------------
+    # Rule 1 above: a source that could not be read says so. The backlog is
+    # normally live, so falling back to the committed file is a FAILED API
+    # call, not a quiet downgrade -- and the figure it fell back to may be a
+    # day old while the strip above it stays silent.
+    if issues.get("fell_back"):
+        add("amber", "Backlog fell back to the committed snapshot",
+            "The live GitHub call failed, most likely the 60/hour unauthenticated "
+            "budget on a shared egress IP. The count below is as of the last "
+            "collection, not now.")
+
     for name, a in (ages or {}).items():
+        # A live panel has no age to be stale. Reporting "Backlog data is 0m
+        # ago" as an alert would be a row that fires every single render.
+        if name == "Backlog" and issues.get("live"):
+            continue
         if a.get("stale"):
             add("amber", f"{name} data is {a.get('text')}",
                 "A daily collection has been missed, so the figures below are older "
@@ -638,9 +745,15 @@ def snapshot(now: datetime | None = None) -> dict:
     today_ist = now_ist.strftime("%Y-%m-%d")
 
     loop_doc = _fetch("loop.json")
-    issues_doc = _fetch("issues.json")
+    # Live first, committed file second. The snapshot is read either way: it
+    # carries the objective, which is not in the container, and it is what the
+    # page falls back to when the API call fails.
+    snap_doc = _fetch("issues.json")
+    live_doc = _live_issues((snap_doc or {}).get("objective") or "") if LIVE_ISSUES else None
+    issues_doc = live_doc or snap_doc
     loop = _loop_view(loop_doc, today_ist)
-    issues = _issues_view(issues_doc, today_ist)
+    issues = _issues_view(issues_doc, today_ist, live=live_doc is not None,
+                          fell_back=LIVE_ISSUES and live_doc is None)
 
     cutoff = (now - timedelta(days=30)).strftime("%Y-%m-%d")
     shipped_30d = sum(1 for r in loop["rows"]
@@ -651,7 +764,7 @@ def snapshot(now: datetime | None = None) -> dict:
     app = _app_view()
     ages = {
         "Delivery": _age((loop_doc or {}).get("generated_at"), now),
-        "Backlog": _age((issues_doc or {}).get("generated_at"), now),
+        "Backlog": _age((issues_doc or {}).get("generated_at"), now),  # "live" when fetched
         "Team": _age((_fetch("agents.json") or {}).get("generated_at"), now),
     }
 
@@ -670,10 +783,14 @@ def snapshot(now: datetime | None = None) -> dict:
         "agents": agents,
         "app": app,
         "source": "disk" if measurements_dir() else "github",
+        # Where the backlog specifically came from, which is no longer the same
+        # answer as `source` now that one panel is fetched per request.
+        "issues_source": ("the GitHub API, live" if live_doc is not None
+                          else "measurements/issues.json"),
         # The one line every loop ranks against, carried in issues.json because
         # the Docker image copies only `src/` -- OBJECTIVE.md is not in the
         # container. "" when chief has not written one, which is a real state.
-        "objective": (issues_doc or {}).get("objective") or "",
+        "objective": (snap_doc or {}).get("objective") or "",
         # Per-source age, so a count can be read as of a time rather than as
         # now. Keyed by the panel that shows it, not by filename.
         "ages": ages,

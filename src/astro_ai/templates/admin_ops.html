@@ -213,6 +213,13 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
    "9h ago" does. Amber once a daily collection has been missed. */
 .age{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);letter-spacing:.02em}
 .age.stale{color:var(--open)}
+/* `live` is a state, not an age, so it gets a dot rather than a colour of its
+   own — three panels with three different freshness stories (live, live,
+   and a snapshot that CANNOT be live) have to be comparable at a glance.
+   Deliberately not green text: on this page green means "no alerts", and a
+   freshness badge must not compete with the strip at the top. */
+.age.live{color:var(--ink-dim)}
+.age.live::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--shipped);margin-right:4px;vertical-align:1px}
 
 /* The ranked queue under the bars. Rows are quiet until hovered — the bars
    above are the colour in this panel, and two competing colour fields in one
@@ -507,7 +514,9 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       <span class="v"><span class="num">{{ I.open }}</span>
         <span class="foot c-open">{{ I.by_priority.get('unset', 0) }} unranked</span></span>
       <span class="foot">{{ I.blocked|length }} blocked on a human<br>
-        <span class="age {{ 'stale' if ops.ages.Backlog.stale }}">as of {{ ops.ages.Backlog.text }}</span></span>
+        {% if I.live %}<span class="age live" title="fetched from the GitHub API on this request">live</span>
+        {% else %}<span class="age {{ 'stale' if ops.ages.Backlog.stale }}"
+              title="from measurements/issues.json, collected {{ I.generated_at or 'never' }}">as of {{ ops.ages.Backlog.text }}</span>{% endif %}</span>
     </button>
   </section>
 
@@ -583,7 +592,9 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
     <h2>Team <span class="lbl">
       {% if A.alerts %}<span style="color:var(--failed)">{{ A.alerts|length }} loop{{ '' if A.alerts|length == 1 else 's' }} need attention</span>
       {% else %}every scheduled loop ran when due{% endif %}
-      · {{ A.window_days }} d</span></h2>
+      · {{ A.window_days }} d</span>
+      <span class="age {{ 'stale' if ops.ages.Team.stale }}"
+            title="from measurements/agents.json, collected {{ A.generated_at or 'never' }}">as of {{ ops.ages.Team.text }}</span></h2>
     <div class="body">
       <table class="loops">
         <thead><tr><th>Loop</th><th>Cadence</th><th>Due</th><th>Ran</th><th>Last</th><th></th></tr></thead>
@@ -760,7 +771,9 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
   <div class="cols">
     {# ── Backlog, three ways, each segment a filter ─────────────────── #}
     <section class="panel">
-      <h2>Backlog <span class="lbl">{{ I.open }} open · click a bar</span></h2>
+      <h2>Backlog <span class="lbl">{{ I.open }} open · click a bar</span>
+        {% if I.live %}<span class="age live">live</span>
+        {% else %}<span class="age {{ 'stale' if ops.ages.Backlog.stale }}">as of {{ ops.ages.Backlog.text }}</span>{% endif %}</h2>
       <div class="body">
         <div class="seg-tabs" role="tablist">
           <button role="tab" aria-selected="true"  data-group="priority">priority</button>
@@ -821,8 +834,9 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
     {# ── App health. The product, not the team. Live, 60 s cache. ───── #}
     <section class="panel">
       <h2>App health
-        <span class="lbl">last {{ ops.app.days }} d ·
-          {% if ops.app.measured %}live, 60 s cache{% else %}nothing recorded{% endif %}</span>
+        <span class="lbl">last {{ ops.app.days }} d{% if not ops.app.measured %} · nothing recorded{% endif %}</span>
+        {% if ops.app.measured %}<span class="age live"
+              title="read from this app's own GCS stores on the request, 60 s cache">live</span>{% endif %}
       </h2>
       <div class="body">
         {% if not ops.app.ok %}
@@ -949,8 +963,8 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
     Rendered from
     <code>measurements/loop.json</code> ({{ L.rows|length }} cycles, generated {{ L.generated_at or '—' }}),
     <code>measurements/cost.json</code>,
-    <code>measurements/issues.json</code> ({{ I.open }} open, generated {{ I.generated_at or '—' }}),
-    read from <b>{{ ops.source }}</b>.
+    read from <b>{{ ops.source }}</b>; the backlog ({{ I.open }} open) from
+    <b>{{ ops.issues_source }}</b>{% if not I.live %}, generated {{ I.generated_at or '—' }}{% endif %}.
     {% if ops.missing %}<br><b style="color:var(--failed)">Unavailable: {{ ops.missing|join(', ') }}</b> — those panels are blank, not zero.{% endif %}
     <br>Cycle attribution:
     {% for k, v in L.attribution.items() %}{{ v }}&nbsp;{{ k }}{{ ', ' if not loop.last }}{% endfor %}.

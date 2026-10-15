@@ -442,6 +442,13 @@ def test_commit_job_grants_exactly_the_scopes_the_collector_needs_and_orders_its
 
 
 COLLECTORS_ONLY_CRON = "0 2 * * *"
+#: Added by #353. The team panel is the one on /admin/ops that cannot be read
+#: live -- 46 GitHub requests against a 60/hour budget, and it needs
+#: `.github/workflows/*.yml` and `git log`, neither of which is in the
+#: container. Collection frequency is therefore its only freshness lever.
+EXTRA_COLLECTOR_CRON = "0 5,8,11,14,17,20 * * *"
+#: The only schedule that may invoke the analyst.
+ANALYST_CRON = "0 21 * * *"
 
 
 def test_the_second_slot_runs_the_collectors_without_the_analyst():
@@ -461,12 +468,22 @@ def test_the_second_slot_runs_the_collectors_without_the_analyst():
     on = doc.get(True) or doc.get("on")
     crons = [c["cron"] for c in on["schedule"]]
     assert COLLECTORS_ONLY_CRON in crons
-    assert crons.index("0 21 * * *") < crons.index(COLLECTORS_ONLY_CRON)
+    assert EXTRA_COLLECTOR_CRON in crons
+    assert crons.index(ANALYST_CRON) < crons.index(COLLECTORS_ONLY_CRON)
 
-    # The analyst is skipped on that slot, and only on that slot: a
-    # workflow_dispatch carries no `github.event.schedule`, so a manual run
-    # still measures.
-    assert doc["jobs"]["measure"]["if"] == f"github.event.schedule != '{COLLECTORS_ONLY_CRON}'"
+    # An ALLOW-LIST. With seven collector slots a deny-list has to be edited
+    # every time one is added, and a forgotten entry runs the analyst six extra
+    # times a day against the Claude 5 h rolling cap -- going green both times.
+    # Anything unlisted must fail safe, so this asserts the SHAPE, not just the
+    # current string: no `!=` may appear in it.
+    cond = doc["jobs"]["measure"]["if"]
+    assert "!=" not in cond, "a deny-list here fails open; list what MAY run the analyst"
+    assert cond == f"github.event.schedule == '' || github.event.schedule == '{ANALYST_CRON}'"
+
+    # And every collector slot is excluded by it, which is the property the
+    # string above only implies.
+    for cron in (COLLECTORS_ONLY_CRON, EXTRA_COLLECTOR_CRON):
+        assert f"== '{cron}'" not in cond
 
     # ...and the collectors still run, which only holds while `commit` is
     # always() over a needs: measure that may be skipped.

@@ -25,6 +25,20 @@ on:
     # GSC quota. 02:00 UTC is 07:30 IST — after a 04:30 IST cycle that medians
     # 18 min and is capped at 120, with an hour of slack.
     - cron: "0 2 * * *"    # 07:30 IST — collectors only, see `measure.if`
+    #
+    # AND EVERY THREE HOURS AFTER IT, STILL COLLECTORS ONLY (#353).
+    # /admin/ops fetches the backlog live, and reads app health from this app's
+    # own GCS stores on the request. The team panel can do neither: measured
+    # 2026-10-15 `collect_agent_performance` needs 46 GitHub requests against a
+    # 60/hour unauthenticated budget, AND it reads `.github/workflows/*.yml`
+    # plus `git log`, neither of which is in the container -- the image copies
+    # `src/` and three files. So the only lever on that panel's freshness is
+    # how often this runs, and a loop that broke at 09:00 IST should not be
+    # reported at 07:30 the next morning.
+    #
+    # Cheap: no analyst, no LLM call, no GA4 or GSC quota, and `measurements/**`
+    # is on the Cloud Build trigger's ignoredFiles so none of it deploys.
+    - cron: "0 5,8,11,14,17,20 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -37,10 +51,18 @@ jobs:
     # so still runs — that is what makes the second slot cost one cheap job
     # rather than a second analyst invocation against the 5 h rolling cap.
     #
-    # A `workflow_dispatch` carries no `github.event.schedule`, so a manual run
-    # always does the full measurement. That is the intent: a human asking for
-    # a measurement wants the analyst, not just a recount.
-    if: github.event.schedule != '0 2 * * *'
+    # An ALLOW-LIST, not a deny-list. It was `!= '0 2 * * *'` while there was
+    # one collectors-only slot; with seven, a deny-list is a line that has to be
+    # edited every time a slot is added and whose failure mode is silent --
+    # a forgotten entry runs the analyst six extra times a day against the
+    # Claude 5 h rolling cap this repo has already exhausted once, and both runs
+    # go green. Stated the other way round, anything unlisted fails safe.
+    #
+    # A `workflow_dispatch` carries no `github.event.schedule` at all, so the
+    # empty comparison is what lets a manual run do the full measurement. That
+    # is the intent: a human asking for a measurement wants the analyst, not
+    # just a recount.
+    if: github.event.schedule == '' || github.event.schedule == '0 21 * * *'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
