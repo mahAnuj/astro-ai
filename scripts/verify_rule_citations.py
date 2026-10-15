@@ -35,6 +35,12 @@ WHAT IT CHECKS
 5. `templates/result.html` must not print an unregistered book name to the
    reader. Jinja comments (`{# … #}`) are stripped first: they do not render,
    and this file's own history note names the book it removed.
+6. `templates/about.html` must state the yoga count the code actually has
+   ("We detect N classical yogas" — N is the number of distinct yoga slugs in
+   `chart.py`), and must not claim moolatrikona unless `chart.py` has code for
+   it. #209: /about advertised "all classical yogas" (23 are implemented) and
+   moolatrikona dignity (a comment, nothing computed). Prose that describes
+   the computation is a claim about the code and gets a gate like one.
 
 RULES FOR ANYONE EDITING THIS FILE
 ----------------------------------
@@ -45,7 +51,7 @@ RULES FOR ANYONE EDITING THIS FILE
   not silently count as verified. Say which books were present whenever you
   report on this gate (CLAUDE.md).
 - The self-test runs on every invocation: it re-breaks #216 and #218 six ways
-  — including on the page's own provenance line — and asserts this gate goes
+  — including on the page's own provenance line — and #209 three more, and asserts this gate goes
   red on each. A gate that has never failed is not evidence (ARCHITECTURE.md).
   The count in this sentence is the length of `_MUTATIONS` plus the HTML one;
   keep it honest if you add another.
@@ -60,6 +66,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 CHART = ROOT / "src" / "astro_ai" / "chart.py"
 RESULT_HTML = ROOT / "src" / "astro_ai" / "templates" / "result.html"
+ABOUT_HTML = ROOT / "src" / "astro_ai" / "templates" / "about.html"
 
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -405,6 +412,77 @@ def _cited_in_html_ok(rendered: str) -> set[str]:
     return {t for t in _UNHELD_ATTRIBUTIONS if f">{t}<" in rendered}
 
 
+def _yoga_slugs(text: str) -> set[str]:
+    """Distinct yoga slugs `chart.py` can produce.
+
+    Most `YogaResult(slug=...)` calls carry a literal. Two functions build the
+    slug from a name bound out of a dict of tuples (`slug, name, ... = names[k]`),
+    so for a non-literal slug every `*_yoga` string that opens a tuple in the
+    same function is a candidate. An over-count would show as a spurious
+    failure, an under-count as a silent pass, and only the first is acceptable.
+    """
+    tree = ast.parse(text)
+    slugs: set[str] = set()
+    for fn in ast.walk(tree):
+        if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        for node in ast.walk(fn):
+            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                    and node.func.id == "YogaResult"):
+                continue
+            kw = next((k for k in node.keywords if k.arg == "slug"), None)
+            if kw is None:
+                continue
+            if isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str):
+                slugs.add(kw.value.value)
+            else:
+                slugs.update(t.elts[0].value for t in ast.walk(fn)
+                             if isinstance(t, ast.Tuple) and t.elts
+                             and isinstance(t.elts[0], ast.Constant)
+                             and isinstance(t.elts[0].value, str)
+                             and t.elts[0].value.endswith("_yoga"))
+    return slugs
+
+
+def _has_moolatrikona_code(text: str) -> bool:
+    """True if `chart.py` binds any NAME containing moolatrikona/mulatrikona.
+
+    Names only, never strings or comments: the comment at chart.py ~1114 says
+    "Saturn's moolatrikona" and is exactly the thing that does not count.
+    """
+    for node in ast.walk(ast.parse(text)):
+        name = (node.id if isinstance(node, ast.Name)
+                else node.name if isinstance(node, (ast.FunctionDef, ast.ClassDef))
+                else node.arg if isinstance(node, ast.arg) else "")
+        if re.search(r"m(?:oo|u)latrikona", name, re.I):
+            return True
+    return False
+
+
+def _about_problems(text: str, about: str) -> list[str]:
+    """#209: what /about says the code does, against what the code does."""
+    rendered = re.sub(r"\{#.*?#\}", "", about, flags=re.S)
+    flat = " ".join(re.sub(r"<[^>]+>", " ", rendered).split())
+    actual = len(_yoga_slugs(text))
+    if actual == 0:
+        return ["found no yoga slugs in chart.py — the anchors have moved, and a "
+                "gate that cannot find its subject passes vacuously (#193)"]
+    fails: list[str] = []
+    m = re.search(r"We detect (\d+) classical yogas", flat)
+    if not m:
+        fails.append("about.html no longer says 'We detect N classical yogas', so "
+                     "its yoga count cannot be checked. Restore the sentence or "
+                     "re-point this gate (#209).")
+    elif int(m.group(1)) != actual:
+        fails.append(f"about.html says it detects {m.group(1)} yogas; chart.py "
+                     f"implements {actual} distinct slugs (#209).")
+    if re.search(r"m(?:oo|u)latrikona", flat, re.I) and not _has_moolatrikona_code(text):
+        fails.append("about.html mentions moolatrikona, but chart.py computes no "
+                     "such dignity — it appears only in a comment (#209). Remove "
+                     "the claim or implement the dignity.")
+    return fails
+
+
 # ─── self-test ────────────────────────────────────────────────────────────
 # Each mutation is a real defect, re-inserted. If any of them does not turn
 # this gate red, the gate is decorative.
@@ -459,6 +537,28 @@ def _self_test(text: str, html: str) -> list[str]:
         survived.append("result.html re-asserts BPHS in its provenance line")
     else:
         print("    red on: result.html re-asserts BPHS in its provenance line")
+    # #209 — the /about claims, each a defect re-inserted on the page side or
+    # the code side. The clean pair must pass first, or "red" means nothing.
+    about = ABOUT_HTML.read_text(encoding="utf-8")
+    if _about_problems(text, about):
+        survived.append("/about check is already red before any mutation")
+        return survived
+    n = len(_yoga_slugs(text))
+    about_cases = (
+        ("#209: /about overstates the yoga count by one", text,
+         about.replace(f"We detect {n} classical", f"We detect {n + 1} classical", 1)),
+        ("#209: /about claims moolatrikona again", text,
+         about.replace("exalted, own-sign", "exalted, own-sign, moolatrikona", 1)),
+        ("#209: a yoga is removed from the code, so the page count is stale",
+         text.replace('slug="vesi_yoga"', 'slug="vosi_yoga"', 1), about),
+    )
+    for name, t, a in about_cases:
+        if t == text and a == about:
+            survived.append(f"{name} — anchor not found; re-point it")
+        elif not _about_problems(t, a):
+            survived.append(name)
+        else:
+            print(f"    red on: {name}")
     return survived
 
 
@@ -467,6 +567,7 @@ def main(argv: list[str]) -> int:
     html = RESULT_HTML.read_text(encoding="utf-8")
 
     fails, notes = _problems(text, html)
+    fails += _about_problems(text, ABOUT_HTML.read_text(encoding="utf-8"))
     for n in notes:
         print(f"NOT VERIFIED — {n}")
     for f in fails:
