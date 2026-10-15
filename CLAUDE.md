@@ -82,8 +82,8 @@ exactly `pyproject.toml`, `uv.lock`, `README.md` and `src/`. Three things to kno
 - **The pattern is `*.md`, never `**.md`.** In GitHub path filters `*` does not cross a
   `/`, so `*.md` is root-level only. `**.md` would also match
   `src/astro_ai/knowledge/*.md` — the classical-source corpus. **The app does not read it at
-  runtime** (measured 2026-10-15: no Python opens any of the 11 files; the one grep hit is a
-  comment); it is the authority *agents* cite, and it sits under `src/`, which the Dockerfile
+  runtime** (measured 2026-10-15: no Python opens any of the 11 files; the only line in `src/`
+  pairing "knowledge" with a file-read call is a comment, `numerology.py:996`); it is the authority *agents* cite, and it sits under `src/`, which the Dockerfile
   copies, so it ships in the image. Keeping it verifying is the conservative default — every
   edit under `src/` verifies. The file that IS read at runtime and becomes the system prompt
   is `src/astro_ai/prompts/*.txt`, loaded via `routes/deps.py` `PROMPTS_DIR`.
