@@ -826,6 +826,84 @@ MUTATIONS = [
      "select(true)",
      "test_a_fork_head_is_never_a_candidate"),
 
+    # The defect this set was written after: providers.py also returns a BARE
+    # `429` when the error text names neither window, and the first version of
+    # the constant listed only 413/429_tpm/429_tpd -- so a real rate limit
+    # counted as "not the budget" and the red metric under-reported.
+    ("#355: a bare 429 stops counting as a token-budget failure",
+     "src/astro_ai/ops_data.py",
+     'BUDGET_FAIL_REASONS = ("413", "429", "429_tpm", "429_tpd")',
+     'BUDGET_FAIL_REASONS = ("413", "429_tpm", "429_tpd")',
+     "test_every_reason_providers_can_emit_is_classified"),
+
+    ("#355: tokens per request goes back to counting input only",
+     "src/astro_ai/ops_data.py",
+     "per_total = ((in_tok + out_tok) / m) if m else None",
+     "per_total = (in_tok / m) if m else None",
+     "test_per_request_total_is_input_plus_output_over_misses"),
+
+    ("#355: the daily figure becomes the last day instead of the worst",
+     "src/astro_ai/llm_stats.py",
+     "if day_tok > peak_tok:",
+     "if day_tok >= 0:",
+     "test_peak_day_reports_the_worst_day_and_names_it"),
+
+    ("#355: an unrecorded peak reads as a quiet day rather than as no data",
+     "src/astro_ai/llm_stats.py",
+     '"peak_day_tokens": peak_tok or None,',
+     '"peak_day_tokens": peak_tok,',
+     "test_peak_day_is_none_when_nothing_was_recorded"),
+
+    # RequestTooLarge SUBCLASSES AllProvidersExhausted, but `error_type` stores
+    # the concrete class name, so dropping it misses every 413.
+    ("#355: a 413 stops counting as a feature broken by the budget",
+     "src/astro_ai/ops_data.py",
+     'BUDGET_ERROR_TYPES = ("AllProvidersExhausted", "RequestTooLarge")',
+     'BUDGET_ERROR_TYPES = ("AllProvidersExhausted",)',
+     "test_request_too_large_is_a_break_although_it_subclasses_exhausted"),
+
+    ("#355: an unrecorded route latency reads as 0 (a zero reads as 'fast')",
+     "src/astro_ai/llm_stats.py",
+     'int(v["lat_sum"] / v["lat_n"]) if v["lat_n"] else None',
+     'int(v["lat_sum"] / v["lat_n"]) if v["lat_n"] else 0',
+     "test_a_day_file_from_before_the_change_is_unknown_not_fast"),
+
+    ("#355: per-route latency averaged over calls-hits (old days dilute it)",
+     "src/astro_ai/llm_stats.py",
+     'acc["lat_n"] += r.get("miss_latency_n", 0)',
+     'acc["lat_n"] += r.get("calls", 0) - r.get("hits", 0)',
+     "test_a_day_file_from_before_the_change_is_unknown_not_fast"),
+
+    ("#355: a 413 filed under 429_tpm (structural failure read as a rate limit)",
+     "src/astro_ai/providers.py",
+     '    if _is_request_too_large(err):\n        return "413"\n',
+     '    if False:\n        return "413"\n',
+     "test_failure_reason_classification"),
+
+    ("#355: chat() drops the fallback reason on the way to llm_stats",
+     "src/astro_ai/providers.py",
+     "                        fallback_reason=last_reason,\n",
+     '                        fallback_reason="",\n',
+     "test_a_tpm_429_then_success_is_recorded_with_its_reason_and_provider"),
+
+    ("#355: fallbacks counted but reasons not (the sum invariant)",
+     "src/astro_ai/llm_stats.py",
+     "            reasons[rkey] = reasons.get(rkey, 0) + 1\n",
+     "            pass\n",
+     "test_reasons_sum_to_fallbacks_across_mixed_failures"),
+
+    ("#355: /admin/ops labels a configured bucket as local (or vice versa)",
+     "src/astro_ai/storage.py",
+     '        return f"gcs:{name}"',
+     '        return f"local:{name}"',
+     "test_describe_store_names_the_bucket_or_the_local_dir"),
+
+    ("#355: /admin/ops never shows the 'local dev store' badge (store_is_local forced False)",
+     "src/astro_ai/ops_data.py",
+     '"store": store, "store_is_local": store.startswith("local:"),\n            "store_detail": store_detail,\n            "days": days,',
+     '"store": store, "store_is_local": False,\n            "store_detail": store_detail,\n            "days": days,',
+     "test_ops_says_it_is_reading_a_local_dev_store"),
+
     # --- #361: issue provenance. The resolver is the control that keeps an outsider's
     # issue from reaching an engineer; each row makes it say TRUSTED when it must not.
     ("#361: permission 'none' resolves as trusted (every stranger is a maintainer)",

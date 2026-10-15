@@ -112,12 +112,12 @@
       {%- if panchang_strip.daylight_ordinary %}
 
       <div class="flex items-center gap-1 min-w-0">
-        <span class="text-bhagya-sindoor uppercase text-[10px] tracking-wider font-semibold whitespace-nowrap">{{ t(lang, 'strip_rahu_kaal') }}</span>
+        <span class="text-bhagya-sindoor uppercase text-xs tracking-wider font-semibold whitespace-nowrap">{{ t(lang, 'strip_rahu_kaal') }}</span>
         <span class="text-bhagya-ink font-medium tabular-nums whitespace-nowrap">{{ panchang_strip.rahu_kaal_start.strftime('%H:%M') }}–{{ panchang_strip.rahu_kaal_end.strftime('%H:%M') }}</span>
       </div>
       {%- else %}
       <div class="flex items-center gap-1 min-w-0">
-        <span class="text-bhagya-sindoor uppercase text-[10px] tracking-wider font-semibold whitespace-nowrap">{% if lang == 'hi' %}सूर्योदय–सूर्यास्त अवधि नहीं{% else %}No sunrise-to-sunset day{% endif %}</span>
+        <span class="text-bhagya-sindoor uppercase text-xs tracking-wider font-semibold whitespace-nowrap">{% if lang == 'hi' %}सूर्योदय–सूर्यास्त अवधि नहीं{% else %}No sunrise-to-sunset day{% endif %}</span>
         <span class="text-bhagya-ink font-medium">{% if lang == 'hi' %}राहु काल व अभिजित उपलब्ध नहीं{% else %}Rahu Kaal &amp; Abhijit unavailable{% endif %}</span>
       </div>
       {%- endif %}
@@ -131,19 +131,19 @@
       {%- if panchang_strip.daylight_ordinary %}
 
       <div class="flex items-center gap-1 min-w-0">
-        <span class="text-emerald-800 uppercase text-[10px] tracking-wider font-semibold whitespace-nowrap">{{ t(lang, 'strip_abhijit') }}</span>
+        <span class="text-emerald-800 uppercase text-xs tracking-wider font-semibold whitespace-nowrap">{{ t(lang, 'strip_abhijit') }}</span>
         <span class="text-bhagya-ink font-medium tabular-nums whitespace-nowrap">{{ panchang_strip.abhijit_start.strftime('%H:%M') }}–{{ panchang_strip.abhijit_end.strftime('%H:%M') }}</span>
       </div>
       {%- endif %}
 
       <div class="flex items-center gap-1 min-w-0">
-        <span class="text-bhagya-muted-2 uppercase text-[10px] tracking-wider whitespace-nowrap">{{ t(lang, 'strip_tithi') }}</span>
+        <span class="text-bhagya-muted-2 uppercase text-xs tracking-wider whitespace-nowrap">{{ t(lang, 'strip_tithi') }}</span>
         <span class="text-bhagya-ink font-medium whitespace-nowrap">{{ panchang_strip.tithi_paksha }} {{ panchang_strip.tithi_name }}</span>
       </div>
 
       {% if panchang_moon %}
       <div class="flex items-center gap-1 min-w-0">
-        <span class="text-bhagya-muted-2 uppercase text-[10px] tracking-wider whitespace-nowrap">{{ t(lang, 'strip_moon') }}</span>
+        <span class="text-bhagya-muted-2 uppercase text-xs tracking-wider whitespace-nowrap">{{ t(lang, 'strip_moon') }}</span>
         <span class="text-bhagya-ink font-medium whitespace-nowrap">{{ panchang_moon.nakshatra }} &middot; {{ panchang_moon.rashi.split(' ')[0] }}</span>
       </div>
       {% endif %}
