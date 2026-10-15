@@ -90,10 +90,11 @@ on:
     #
     # `*.md` NOT `**.md` — and this one is load-bearing. In GitHub path
     # filters `*` does not cross a `/`, so `*.md` matches root-level files
-    # only. `**.md` would also match `src/astro_ai/knowledge/*.md`, which is
-    # the classical-source corpus the app READS AT RUNTIME to ground its
-    # astrological claims. A corpus edit absolutely changes what users see, so
-    # it must keep triggering a verification.
+    # only. `**.md` would also match `src/astro_ai/knowledge/*.md`, the
+    # classical-source corpus. The app does NOT read it at runtime (measured
+    # 2026-10-15: no Python opens one); it is the authority agents cite, and it
+    # sits under `src/`, which the image copies. Keeping it verifying is the
+    # conservative default: every edit under `src/` triggers a verification.
     paths-ignore:
       - '.github/**'
       - '.claude/**'

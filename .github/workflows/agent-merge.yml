@@ -13,7 +13,8 @@
 #   2. A QA comment on the PR whose verdict line says PASS. qa.md is explicit
 #      that "PASS is a report, not an action", so the report is read here and
 #      the action is taken here, by different things.
-#   3. The diff is inside the size and path limits below.
+#   3. The diff is inside the size limit below and touches none of the
+#      trust-boundary paths (#354), which a human merges.
 #
 # WHY A SIZE LIMIT ON AN AUTONOMOUS LOOP
 # --------------------------------------
@@ -76,6 +77,30 @@ jobs:
       # Left in place rather than deleted so the mechanism survives: lower it to
       # 400 and large diffs are labelled and held again, one edit, no new code.
       MAX_LINES: 1000000
+      # THE TRUST BOUNDARY — the one place it is listed (#354). A PR touching
+      # any of these is never auto-merged; see the "Trust boundary" step.
+      # One entry per line. An entry ending in `/` matches everything beneath
+      # it at any depth; any other entry matches that exact path and nothing
+      # else (so `events.py` does not catch `events_helper.py`).
+      #
+      #   prompts/    the system prompts. routes/deps.py PROMPTS_DIR loads them and
+      #               they become the system prompt for every request.
+      #   knowledge/  NOT read at runtime (measured 2026-10-15: no Python opens
+      #               one). It is what agents treat as the authority, so a
+      #               poisoned rule gets transcribed into code as a *sourced*
+      #               change by the next agent to touch that area.
+      #   workflows/  the gates themselves, and this file with them.
+      #   events.py   what is recorded about a user.
+      #   notify.py / email_sender.py   what leaves to Telegram / Brevo.
+      #   storage.py  where it is kept.
+      TRUST_BOUNDARY: |
+        src/astro_ai/prompts/
+        src/astro_ai/knowledge/
+        .github/workflows/
+        src/astro_ai/events.py
+        src/astro_ai/notify.py
+        src/astro_ai/email_sender.py
+        src/astro_ai/storage.py
     steps:
       - name: Find the pull request
         id: pr
@@ -260,6 +285,113 @@ jobs:
           fi
           echo "ok=true" >> "$GITHUB_OUTPUT"
 
+      # THE TRUST BOUNDARY (#354). The repo is public and this job merges
+      # unattended, so "gates green + qa-pass" cannot be the whole test for a
+      # change to the things that decide what the product says, what agents
+      # believe, what the gates are, or where user data goes. Those are held
+      # for a human, exactly as an over-limit diff is.
+      #
+      # THIS JOB HAS NO CHECKOUT AND MUST NOT GAIN ONE. It runs under
+      # pull_request_target with a write token, so nothing from the PR may
+      # execute here. The file list therefore comes from the API, and the
+      # paths are only ever compared as strings: never eval'd, never
+      # interpolated into the script (they arrive via a file), and quoted at
+      # every use. A hostile file name can at worst be a false positive.
+      #
+      # THE FILES API, NOT `gh pr view --json files`: the latter stops at 100
+      # files, so a PR could bury a protected path at position 101. The
+      # paginated endpoint reaches 3,000; at that cap the list may be
+      # truncated, so the step fails CLOSED and holds the PR.
+      #
+      # `previous_filename` is included: moving `prompts/natal.txt` out of the
+      # protected tree is a change to it, and a rename lists only the new name
+      # under `filename`.
+      #
+      # Fails closed on error too: if the API call fails the step fails, `ok`
+      # is never set, and nothing downstream runs.
+      - name: Trust boundary
+        id: boundary
+        if: steps.size.outputs.ok == 'true'
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          # Prints the matching entry and returns 0 if $1 is protected.
+          # Kept a pure function of ($1, $TRUST_BOUNDARY) so a test can lift it
+          # out of this file and drive it with a table of paths.
+          is_protected() {
+            local entry
+            while IFS= read -r entry; do
+              if [ -z "$entry" ]; then continue; fi
+              case "$entry" in
+                */)
+                  case "$1" in
+                    "$entry"*) printf '%s\n' "$entry"; return 0 ;;
+                  esac ;;
+                *)
+                  if [ "$1" = "$entry" ]; then printf '%s\n' "$entry"; return 0; fi ;;
+              esac
+            done <<< "$TRUST_BOUNDARY"
+            return 1
+          }
+
+          gh api "repos/$GH_REPO/pulls/$PR_NUMBER/files" --paginate \
+            --jq '.[] | .filename, (.previous_filename // empty)' > /tmp/pr-files.txt
+          total=$(wc -l < /tmp/pr-files.txt)
+          echo "PR files and rename sources checked: $total"
+
+          : > /tmp/pr-protected.txt
+          while IFS= read -r f; do
+            if hit=$(is_protected "$f"); then
+              printf '%s  (%s)\n' "$f" "$hit" >> /tmp/pr-protected.txt
+            fi
+          done < /tmp/pr-files.txt
+          # Sorted and de-duplicated: a rename lists both names and a path can
+          # appear twice.
+          sort -u /tmp/pr-protected.txt -o /tmp/pr-protected.txt
+
+          capped=false
+          if [ "$total" -ge 3000 ]; then capped=true; fi
+
+          if [ ! -s /tmp/pr-protected.txt ] && [ "$capped" = "false" ]; then
+            echo "no protected path touched"
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "::notice::trust boundary touched — holding PR #$PR_NUMBER for a human"
+          sed 's/^/  /' /tmp/pr-protected.txt
+
+          # Idempotent: this job fires on every label and every gate run, so
+          # comment once. The label is the record that it already did.
+          labels=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" --json labels --jq '[.labels[].name] | join(",")')
+          case ",$labels," in
+            *,needs-human-review,*)
+              echo "already labelled needs-human-review — not commenting again"
+              exit 0 ;;
+          esac
+
+          {
+            echo "Gates are green and QA passed, but this PR changes the trust boundary, so \`agent-merge\` will not merge it unattended. It stays open for a human."
+            echo
+            if [ -s /tmp/pr-protected.txt ]; then
+              echo "Matched (file, then the protected entry it fell under):"
+              echo
+              echo '```'
+              head -n 30 /tmp/pr-protected.txt
+              echo '```'
+              echo
+            fi
+            if [ "$capped" = "true" ]; then
+              echo "The files API returned $total entries, its ceiling, so the list may be truncated and the PR is held."
+              echo
+            fi
+            echo "Why: these paths decide what the product tells users (\`prompts/\`), what agents treat as authority (\`knowledge/\`), what the gates are (\`.github/workflows/\`), and what is recorded about, sent about, or stored about a user (\`events.py\`, \`notify.py\`, \`email_sender.py\`, \`storage.py\`). See #354."
+            echo
+            echo "To land it: review, then merge by hand. Removing the label does not release it; the next run puts it back."
+          } > /tmp/pr-comment.md
+          gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body-file /tmp/pr-comment.md
+          gh pr edit "$PR_NUMBER" --repo "$GH_REPO" --add-label "needs-human-review"
+
       # A DRAFT CANNOT MERGE, and this job used to fetch `isDraft` and never
       # read it. So a readied-by-nobody PR reached `gh pr merge` and failed
       # with "Pull request is in draft state" — after every condition that
@@ -273,12 +405,12 @@ jobs:
       #
       # Un-drafting here is safe precisely BECAUSE it is the last step before
       # merging: gates green, qa-pass on record, no qa-fail, diff inside the
-      # limit. Nothing is being waved through — the draft flag is the only
+      # limit, no trust-boundary path touched. Nothing is being waved through — the draft flag is the only
       # thing left, and a draft carrying all of that is a bookkeeping error,
       # not a reservation. It is logged either way, because a net that acts
       # silently is indistinguishable from one that was never needed.
       - name: Take it out of draft if the cycle never did
-        if: steps.size.outputs.ok == 'true'
+        if: steps.boundary.outputs.ok == 'true'
         run: |
           if [ "$(jq -r .isDraft /tmp/pr.json)" = "true" ]; then
             echo "::warning::PR #${{ steps.pr.outputs.number }} is still a draft although gates are green and qa-pass is set — /agent-cycle did not run 'gh pr ready'. Readying it here so the merge can proceed."
@@ -288,7 +420,7 @@ jobs:
           fi
 
       - name: Merge
-        if: steps.size.outputs.ok == 'true'
+        if: steps.boundary.outputs.ok == 'true'
         run: |
           gh pr merge "${{ steps.pr.outputs.number }}" --repo "$GH_REPO" --squash --delete-branch
 
@@ -339,7 +471,7 @@ jobs:
       # verification is visible as an absent run on the commit; a red
       # agent-merge on a PR that merged cleanly is a misleading signal.
       - name: Verify production after the merge
-        if: steps.size.outputs.ok == 'true'
+        if: steps.boundary.outputs.ok == 'true'
         continue-on-error: true
         run: |
           # --ref main, not a SHA: workflow_dispatch takes a branch or tag. The

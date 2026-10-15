@@ -773,6 +773,18 @@ MUTATIONS = [
      "{% if e.data.get('identity') %}",
      "{% if True %}",
      "test_admin_dashboard_renders_both_event_shapes"),
+
+    ("#354: trust boundary matches exact paths only (a nested prompt would merge)",
+     ".github/workflows/agent-merge.yml",
+     '"$entry"*) printf',
+     '"$entry") printf',
+     "test_protected_path_is_held"),
+
+    ("#354: the merge step ignores the trust boundary (reads steps.size again)",
+     ".github/workflows/agent-merge.yml",
+     "      - name: Merge\n        if: steps.boundary.outputs.ok == 'true'",
+     "      - name: Merge\n        if: steps.size.outputs.ok == 'true'",
+     "test_every_step_after_the_boundary_waits_on_it"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
