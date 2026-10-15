@@ -23,6 +23,12 @@ filed one (`grep -rciE 'author_association|collaborator|permission'` over this f
 uv run python scripts/resolve_provenance.py <n> --apply
 ```
 
+**When this runs.** If the issue number is handed to you, run it first. If it only becomes known after
+Step 2 (the ranking picks it), run it **immediately after the top item is chosen — before Step 2.5 and
+before any build step**, and treat the order of this file as "0a, then everything else for that
+issue". `project-manager` already ran the read-only check while ranking; that is advice, and this
+`--apply` run is the record.
+
 The script reads the author's permission from `collaborators/<login>/permission` (never from
 `author_association`), treats **every `is_bot=true` author as untrusted with no allowlist**, and
 honours a `provenance:trusted` override only if a *human* with `admin`/`write` applied it. Chief's
@@ -161,14 +167,14 @@ have spent it again.
 Before dispatching anyone, establish what exists:
 
 ```bash
-git ls-remote --heads origin "issue/<n>-*"          # a branch from an earlier cycle?
+git ls-remote --heads origin "issue/<n>-*" "partial/<n>-*"   # a branch from an earlier cycle? (both forms; see Step 4)
 gh issue view <n> --comments                        # a design? a QA verdict? a failure?
 gh pr list --repo "$GH_REPO" --head "<branch>"      # a PR already open?
 ```
 
 Then:
 
-- **A branch on `origin` with commits** — continue from it. `git switch` to it and carry on;
+- **A branch on `origin` with commits** (`issue/<n>-*` or `partial/<n>-*`) — continue from it. `git switch` to it and carry on;
   do not start a parallel branch. The commits on it are real work that survived.
 - **An architect design in the comments and no branch** — the design stands. **Skip the architect
   and hand that design straight to the engineer.** #270 carries a complete one: 18 i18n keys, EN
@@ -269,10 +275,17 @@ lets someone else check the verdict rather than trust it.
 Do not hold the work until the end. The moment the engineer hands back a commit:
 
 ```bash
-git push -u origin issue/<n>-<slug>
+git push -u origin issue/<n>-<slug>        # or partial/<n>-<slug> — see Step 4 for which
 ```
 
 Then keep pushing after each subsequent commit — QA rounds included.
+
+**On a `partial/<n>-<slug>` branch this is not optional, and nothing will catch you.**
+`.github/workflows/agent-work.yml`'s safety-net step ("Push the branch and open the PR"), its
+"Report an unfinished cycle" summary and its loop receipt only recognise `issue/*` branches (a
+`case` on `issue/*`, `origin/issue/*` and `refs/heads/issue/`). On a `partial/` branch they report
+"shipped nothing", push nothing and attribute no PR to the run. Push after **every** commit yourself.
+This is a known gap in the workflow that this loop's token cannot fix (no `workflows` permission).
 
 **Why, measured:** the GitHub App token the action gives you **expires after one hour**. Run
 37749887640 spent 63 minutes on #270 — architect, engineer, QA — produced a complete branch, and
@@ -289,12 +302,19 @@ runner is not.
 
 ## Step 4 — branch and PR
 
+Two branch forms, and the choice is made by whether the PR **fully closes** the issue:
+
+| | branch | PR body | what happens at merge |
+|---|---|---|---|
+| fixes every acceptance criterion | `issue/<n>-<slug>` | `closes #<n>` | `agent-merge` may merge it (provenance permitting); `close-on-evidence` may close the issue after verifying production |
+| acceptance criteria remain that the loop cannot do (e.g. anything under `.github/workflows/`) | `partial/<n>-<slug>` | `refs #<n>`, plus what remains | `agent-merge` ignores it (it only manages `issue/`); a human reviews and merges; nothing closes the issue |
+
 ```bash
-git switch -c issue/<n>-<slug>
-git push -u origin issue/<n>-<slug>
+git switch -c issue/<n>-<slug>             # or partial/<n>-<slug>
+git push -u origin issue/<n>-<slug>        # or partial/<n>-<slug>
 gh pr create --base main --title "<what changed> (#<n>)" --body "closes #<n>
 
-<the rest>"
+<the rest>"                                # partial: `refs #<n>` instead of `closes #<n>`
 ```
 
 **`closes #<n>` must be in the PR BODY, and `--fill` will not put it there.** `--fill` takes the
@@ -316,7 +336,8 @@ what lands, on green gates and a QA PASS.
 If you find yourself pushing to `main`, or routing around a refusal, stop and file
 `needs-human-review`.
 
-**A PR for a PARTIAL fix must not carry `closes #<n>` and must not use an `issue/<n>-` branch.**
+**The table above is the rule; this is the reason.** A PR for a PARTIAL fix must not carry
+`closes #<n>` and must not use an `issue/<n>-` branch.
 `close-on-evidence` falls back to the branch name when the body has no closing keyword, so
 `issue/<n>-…` alone is enough for it to close an issue the PR only half-delivered, and
 `agent-merge` treats `issue/` as "the loop's own branch". Name a partial branch `partial/<n>-<slug>`,

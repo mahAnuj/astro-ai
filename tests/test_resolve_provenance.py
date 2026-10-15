@@ -5,8 +5,8 @@ now classifies the author, and the chief's ruling on #361 fixes the shape: fail 
 bot allowlist, an override honoured by WHO applied it, and "could not ask" kept distinct from
 "asked and the answer was no". Each test below is one of those clauses. A resolver that
 answers TRUSTED when it should answer OUTSIDER or UNRESOLVED is the defect, so the
-assertions are on the verdict, and `scripts/mutate_behaviour_suite.py` re-breaks three of
-them to prove they can go red.
+assertions are on the verdict, and the `#361` rows of `scripts/mutate_behaviour_suite.py`
+re-break the load-bearing ones to prove they can go red.
 
 Hermetic: the `gh` runner is a fake. Nothing here touches the network, and `run_gh` is
 poisoned in `_no_network` so an accidental real call fails loudly.
@@ -149,6 +149,21 @@ def test_an_invalid_login_is_unresolved_and_reaches_no_api_call(login):
     assert fake.permission_calls() == []
 
 
+@pytest.mark.parametrize("login", ["a\n", "x[bot]\n", "alice\n", "alice\r\n", "alice\x00", "alice "])
+def test_a_trailing_newline_or_control_character_is_not_a_login(login):
+    # `$` matches before a trailing newline; the login must be a FULL match.
+    assert rp.normalise_login(login) is None
+    assert rp.normalise_login("app/" + login) is None
+    fake = FakeGh(author=(login, False), perms={"alice": OK("write")})
+    assert verdict(fake) == rp.UNRESOLVED
+    assert fake.permission_calls() == []
+
+
+@pytest.mark.parametrize("login", ["a", "alice", "x[bot]", "app/claude", "a-b"])
+def test_ordinary_logins_still_validate(login):
+    assert rp.normalise_login(login) is not None
+
+
 def test_a_missing_or_malformed_author_is_unresolved():
     for bad in ('{"author": null, "labels": []}', '{"labels": []}', "not json",
                 '{"author": {"login": "alice"}, "labels": []}',
@@ -230,6 +245,25 @@ def test_an_override_that_was_then_removed_is_ignored():
                           unlabeled("provenance:trusted", "mahAnuj", "2026-10-15T11:00:00Z", 2)],
                          perms={"mahAnuj": OK("admin")})
     assert verdict(fake) == rp.OUTSIDER
+
+
+def test_a_same_second_label_and_unlabel_are_ordered_by_id():
+    # GitHub timestamps to the second, so a quick label+unlabel ties on created_at and only the
+    # event id says which came last. Dropping the id tiebreak makes this order arbitrary.
+    t = "2026-10-15T10:00:00Z"
+    perms = {"mahAnuj": OK("admin")}
+    # labeled (id 5) then unlabeled (id 6): removed, so ignored. The unlabeled event is listed
+    # FIRST in the payload, so a sort that ignores id would leave the LABELED event last.
+    removed = [unlabeled("provenance:trusted", "mahAnuj", t, 6),
+               labeled("provenance:trusted", "mahAnuj", at=t, id_=5)]
+    assert verdict(outsider_with(removed, perms=perms)) == rp.OUTSIDER
+    # unlabeled (id 5) then labeled (id 6): honoured. The lower-id event is listed LAST, and
+    # must not win just because it is last in the payload.
+    relabeled = [labeled("provenance:trusted", "mahAnuj", at=t, id_=6),
+                 unlabeled("provenance:trusted", "mahAnuj", t, 5)]
+    assert verdict(outsider_with(relabeled, perms=perms)) == rp.TRUSTED
+    ev = rp.latest_label_event(relabeled, "provenance:trusted")
+    assert ev is not None and ev["id"] == 6
 
 
 def test_the_latest_labeler_decides_not_the_first():
@@ -348,11 +382,25 @@ def test_apply_on_unresolved_comments_once_and_is_idempotent():
         def __call__(self, args):
             if args[:2] == ["issue", "view"] and "comments" in args[-1]:
                 self.calls.append(list(args))
-                return OK(json.dumps({"comments": [{"body": rp.UNRESOLVED_MARKER + " earlier"}]}))
+                return OK(json.dumps({"comments": [{"body": rp.UNRESOLVED_MARKER + " earlier",
+                                                    "viewerDidAuthor": True}]}))
             return super().__call__(args)
     second = Seen(perms={"alice": ERR(403, "no")})
     assert run_main(second, "--apply") == 2
     assert [c for c in second.calls if c[:2] == ["issue", "comment"]] == []
+
+
+def test_a_copied_marker_in_someone_elses_comment_does_not_suppress_the_stop():
+    class Spoofed(FakeGh):
+        def __call__(self, args):
+            if args[:2] == ["issue", "view"] and args[-1] == "comments":
+                self.calls.append(list(args))
+                return OK(json.dumps({"comments": [{"body": rp.UNRESOLVED_MARKER, "viewerDidAuthor": False},
+                                                   {"body": rp.UNRESOLVED_MARKER}]}))
+            return super().__call__(args)
+    fake = Spoofed(perms={"alice": ERR(403, "no")})
+    assert run_main(fake, "--apply") == 2
+    assert len([c for c in fake.calls if c[:2] == ["issue", "comment"]]) == 1
 
 
 def test_the_unresolved_comment_never_echoes_an_attacker_login():

@@ -123,7 +123,8 @@ def normalise_login(raw) -> str | None:
     if not isinstance(raw, str):
         return None
     login = raw[len("app/"):] if raw.startswith("app/") else raw
-    return login if _LOGIN.match(login) else None
+    # fullmatch, not match: `$` also matches just before a trailing newline, so `x\n` passed.
+    return login if _LOGIN.fullmatch(login) else None
 
 
 def _safe(raw) -> str:
@@ -281,7 +282,11 @@ def _comment_exists(gh: Gh, repo: str, number: int) -> bool | None:
     if r.rc != 0:
         return None
     try:
-        return any(UNRESOLVED_MARKER in (c.get("body") or "") for c in json.loads(r.out).get("comments", []))
+        # Only a comment THIS token wrote counts: the marker is public text, and anyone who copies
+        # it into a comment must not be able to silence the stop. A different token (a rerun
+        # under another identity) posts a visible duplicate, which is the safe direction.
+        return any(UNRESOLVED_MARKER in (c.get("body") or "") and c.get("viewerDidAuthor") is True
+                   for c in json.loads(r.out).get("comments", []))
     except (ValueError, AttributeError, TypeError):
         return None
 
