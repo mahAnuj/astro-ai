@@ -81,8 +81,12 @@ exactly `pyproject.toml`, `uv.lock`, `README.md` and `src/`. Three things to kno
   *verifying*. A `paths:` allow-list would silently exempt every future app path.
 - **The pattern is `*.md`, never `**.md`.** In GitHub path filters `*` does not cross a
   `/`, so `*.md` is root-level only. `**.md` would also match
-  `src/astro_ai/knowledge/*.md` — the classical-source corpus the app reads at runtime to
-  ground its astrological claims. A corpus edit changes what users see and must verify.
+  `src/astro_ai/knowledge/*.md` — the classical-source corpus. **The app does not read it at
+  runtime** (measured 2026-10-15: no Python opens any of the 11 files; the only line in `src/`
+  pairing "knowledge" with a file-read call is a comment, `numerology.py:996`); it is the authority *agents* cite, and it sits under `src/`, which the Dockerfile
+  copies, so it ships in the image. Keeping it verifying is the conservative default — every
+  edit under `src/` verifies. The file that IS read at runtime and becomes the system prompt
+  is `src/astro_ai/prompts/*.txt`, loaded via `routes/deps.py` `PROMPTS_DIR`.
 - **A skipped run closes no issue.** `close-on-evidence.yml` fires on this workflow
   concluding success and reads its `head_sha`. A docs-only or workflow-only commit now
   produces no run, so an issue whose fix was docs-only will not auto-close. That is
