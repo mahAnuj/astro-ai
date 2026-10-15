@@ -38,9 +38,9 @@ trust the number.
 | knowledge files | 11 files, 8,021 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
 | verification gates | 26 | `ls scripts/verify_*.py \| wc -l` |
 <<<<<<< HEAD
-| behaviour suite | 570 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
+| behaviour suite | 576 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
 =======
-| behaviour suite | 570 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
+| behaviour suite | 576 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
 >>>>>>> origin/main
 
 `routes/` holds 27 files; the three that declare no router are `__init__.py` and the leaf

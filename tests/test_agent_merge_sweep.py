@@ -26,8 +26,11 @@ is worth those steps' time, and that a held PR is not one.
 from __future__ import annotations
 
 import json
+import pathlib
 import re
 import subprocess
+import tempfile
+import textwrap
 from pathlib import Path
 
 import pytest
@@ -52,7 +55,13 @@ FILTER = _sweep_filter()
 
 
 def _pick(pulls: list[dict]) -> str:
-    """Run the workflow's own filter over a /pulls payload. '' = no candidate."""
+    """Run the workflow's own jq over a /pulls payload.
+
+    Returns the SHORTLIST, space separated, lowest first -- `` when empty. The
+    filter no longer selects: since #374 it hands a list to a shell loop that
+    walks it asking each candidate for `mergeable`, because the `pulls` LIST
+    endpoint does not carry that field. `_walk` below drives that loop.
+    """
     shell = (
         'printf %s "$PULLS" | jq --raw-output \''
         + FILTER.replace("'\"$GH_REPO\"'", REPO)
@@ -79,8 +88,10 @@ def test_an_eligible_pr_is_picked():
     assert _pick([pr(356)]) == "356"
 
 
-def test_the_lowest_number_is_picked_so_the_queue_drains_in_order():
-    assert _pick([pr(360), pr(352), pr(356)]) == "352"
+def test_the_shortlist_is_sorted_so_the_queue_drains_in_order():
+    # Lowest first, and ALL of them: the walk needs the rest to fall through to
+    # when a lower one turns out to be unmergeable (#374).
+    assert _pick([pr(360), pr(352), pr(356)]) == "352 356 360"
 
 
 def test_no_open_prs_yields_no_candidate():
@@ -130,6 +141,82 @@ def test_a_draft_is_never_a_candidate():
     # gates and qa-pass are already known good. The sweep has no such context,
     # so it does not ready anything.
     assert _pick([pr(356, draft=True)]) == ""
+
+
+# --- the walk: mergeability, and not stopping at the first (#374) ---
+
+def _walk(shortlist: str, mergeable: dict[int, str]) -> tuple[str, str]:
+    """Run the workflow's own candidate loop. Returns (picked, stderr+stdout).
+
+    The loop is lifted out of the `pr` step rather than reimplemented, and `gh`
+    is replaced by a script on PATH that answers `pr view <n> --json mergeable`
+    from the table passed in. Nothing from a PR is executed; the values are
+    literals below.
+    """
+    job = yaml.safe_load(WORKFLOW.read_text())["jobs"]["merge"]
+    run = next(s for s in job["steps"] if s.get("id") == "pr")["run"]
+    m = re.search(r'(\n\s*n=""\n\s*for cand in \$candidates; do.*?\n\s*done\n)', run, re.S)
+    assert m, "the sweep's candidate loop is no longer recognisable in the `pr` step"
+    loop = textwrap.dedent(m.group(1))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        bin_dir = pathlib.Path(tmp) / "bin"
+        bin_dir.mkdir()
+        table = ";".join(f"{k}={v}" for k, v in mergeable.items())
+        gh = bin_dir / "gh"
+        gh.write_text(
+            "#!/bin/bash\n"
+            'for p in $@; do case "$p" in [0-9]*) n="$p"; break;; esac; done\n'
+            f'for e in $(echo "{table}" | tr ";" " "); do\n'
+            '  k="${e%%=*}"; v="${e#*=}"\n'
+            '  if [ "$k" = "$n" ]; then printf "%s" "$v"; exit 0; fi\n'
+            "done\n"
+            "exit 1\n")
+        gh.chmod(0o755)
+        script = f'candidates="{shortlist}"\nGH_REPO=x\n{loop}\nprintf "PICKED=%s" "$n"\n'
+        r = subprocess.run(["bash", "-c", script], capture_output=True, text=True,
+                           env={"PATH": f"{bin_dir}:/usr/bin:/bin"})
+    out = r.stdout + r.stderr
+    picked = re.search(r"PICKED=(\d*)", out)
+    return (picked.group(1) if picked else ""), out
+
+
+def test_a_conflicting_candidate_is_skipped_for_the_next_one():
+    # The #360 case, 2026-10-15: selected while CONFLICTING, ran the whole
+    # chain, and stopped only because the trust boundary held it.
+    picked, _ = _walk("352 356", {352: "CONFLICTING", 356: "MERGEABLE"})
+    assert picked == "356"
+
+
+def test_a_conflicting_pr_does_not_block_the_queue_forever():
+    # The starvation shape the cron introduced and the edge trigger never had.
+    picked, _ = _walk("300 352 356", {300: "CONFLICTING", 352: "CONFLICTING",
+                                      356: "MERGEABLE"})
+    assert picked == "356"
+
+
+def test_unknown_is_not_treated_as_mergeable():
+    # GitHub computes mergeability lazily. Accepting UNKNOWN would make the
+    # failure intermittent, which is worse than reliable.
+    picked, _ = _walk("352", {352: "UNKNOWN"})
+    assert picked == ""
+
+
+def test_an_unreadable_candidate_is_skipped_not_assumed_good():
+    picked, _ = _walk("352 356", {356: "MERGEABLE"})   # 352 absent -> gh exits 1
+    assert picked == "356"
+
+
+def test_every_skip_says_why():
+    # A sweep that found candidates and took none must not read like "nothing
+    # to do" -- #357 exists because silence hid four stranded PRs.
+    _, out = _walk("352 356", {352: "CONFLICTING", 356: "MERGEABLE"})
+    assert "skipping #352" in out and "CONFLICTING" in out
+
+
+def test_nothing_eligible_yields_no_candidate():
+    picked, _ = _walk("352 356", {352: "CONFLICTING", 356: "CONFLICTING"})
+    assert picked == ""
 
 
 # --- the filter's own shape -------------------------------------------------
