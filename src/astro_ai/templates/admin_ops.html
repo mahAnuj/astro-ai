@@ -315,6 +315,8 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .who span{border:1px solid var(--line-2);border-radius:2px;padding:6px 9px;font-size:12px;color:var(--ink-dim)}
 .who b{color:var(--ink);font-family:var(--mono);font-size:12px;margin-left:5px}
 .kv{display:grid;grid-template-columns:1fr auto;gap:7px 14px;font-size:12.5px;margin-top:4px}
+.kv>div{display:flex;justify-content:space-between;align-items:baseline;gap:14px;min-width:0}
+.kv>div>b{flex:none}
 .kv .n{font-family:var(--mono);color:var(--ink);text-align:right}
 .kv .lab{color:var(--ink-dim)}
 
@@ -579,6 +581,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
             bucket</span>{% else %}—{% endif %}</b></div>
       </div>
 
+      <h3 class="lbl" style="margin:22px 0 10px">Tokens per request, by feature</h3>
       <table class="rt">
         <thead><tr><th>feature</th><th class="n">calls</th><th class="n">cache</th>
           <th class="n">total / request</th><th class="n">of one bucket</th>
