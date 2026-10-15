@@ -103,6 +103,12 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
       SHA: ${{ github.event.inputs.sha || github.event.workflow_run.head_sha }}
+      # Via env, not interpolated into the `run:` block below: this workflow
+      # carries a privileged trigger (workflow_run), so verify_workflows.py
+      # requires every value to arrive this way. See #358 for why -- `${{ }}`
+      # is substituted before bash parses the script, so an interpolated value
+      # is shell source, not a shell string.
+      RUN_URL: ${{ github.event.workflow_run.html_url }}
     steps:
       - name: Is this exact commit serving?
         id: live
@@ -201,11 +207,13 @@ jobs:
             for n in $issues; do
               state=$(gh issue view "$n" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)
               [ "$state" = "OPEN" ] || { echo "#$n is $state — skipping"; continue; }
+              # Empty on a workflow_dispatch run, which has no workflow_run payload.
+              if [ -n "${RUN_URL:-}" ]; then run_link=" ([run]($RUN_URL))"; else run_link=""; fi
               gh issue close "$n" --repo "$GH_REPO" --reason completed --comment \
           "Closed on production evidence.
 
           - PR #$pr merged to \`main\`
-          - \`verify-production\` concluded **success** for \`$SHA\`${{ github.event.workflow_run.html_url && format(' ([run]({0}))', github.event.workflow_run.html_url) || '' }}
+          - \`verify-production\` concluded **success** for \`$SHA\`$run_link
           - \`/health\` reports \`build_sha\` = \`$SHA\`, so **this commit is the revision serving**
 
           That is CLAUDE.md's two-stage close: the fix landed, the deploy was verified, and the commit was confirmed live before closing. Reopen if production disagrees — a green run proves the invariants it asserts, not that nothing else broke."

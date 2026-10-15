@@ -71,7 +71,11 @@ NUM_LINE = 'echo "number=$n" >> "$GITHUB_OUTPUT"'
 # (name, file, transform, substrings that ONE FAIL line must all contain)
 MUTATIONS = [
     ("defect 1: steps.pr.outputs.sha back inside the `pr` step", "agent-merge.yml",
-     swap("commits/${{ github.event.workflow_run.head_sha }}/pulls",
+     # The anchor is `$RUN_HEAD_SHA`, not the interpolated form: #358 moved
+     # every event value in this workflow behind `env:`. The mutation plants the
+     # interpolated self-reference back, so check 1 AND check 5 both fire on it
+     # -- the assertion below still names the check-1 line specifically.
+     swap("commits/$RUN_HEAD_SHA/pulls",
           "commits/${{ steps.pr.outputs.sha }}/pulls"),
      ["agent-merge.yml", "[self-reference]", "step id `pr`"]),
     # CORRECTED after QA. This previously planted an UNINTERPOLATED mention
@@ -126,6 +130,27 @@ MUTATIONS = [
     ("malformed YAML is a failure, not a skip", "agent-sync.yml",
      lambda t: t + "\nbroken: [unclosed\n",
      ["agent-sync.yml", "[parse]"]),
+    # Pins check 5 (#358). This is the real defect, restored verbatim: the
+    # branch-name filter was `case "${{ steps.pr.outputs.branch }}" in`, so a
+    # fork-chosen head ref was shell source inside the step meant to reject it.
+    ("defect 5: the agent-branch filter interpolates the branch name again",
+     "agent-merge.yml",
+     swap('case "$PR_BRANCH" in', 'case "${{ steps.pr.outputs.branch }}" in'),
+     ["agent-merge.yml", "[interpolation]", "steps.pr.outputs.branch"]),
+    # The same rule on the other privileged workflow, and on an
+    # `event`-derived value rather than a step output -- so the check is not
+    # quietly only about `steps.*`.
+    ("a workflow_run value interpolated into run: in close-on-evidence",
+     "close-on-evidence.yml",
+     swap("$run_link", "${{ github.event.workflow_run.html_url }}"),
+     ["close-on-evidence.yml", "[interpolation]", "github.event.workflow_run.html_url"]),
+    # The one the `[^}]*` form of the self-reference check already taught us
+    # about: a `}` inside the expression must not end the match early.
+    ("an interpolation hidden behind a format() placeholder in run:",
+     "agent-merge.yml",
+     swap('case "$PR_BRANCH" in',
+          'case "${{ format(\'{0}\', steps.pr.outputs.branch) }}" in'),
+     ["agent-merge.yml", "[interpolation]", "format("]),
 ]
 
 
@@ -164,6 +189,31 @@ def main() -> int:
             f = d / "agent-merge.yml"
             before = f.read_text()
             f.write_text(swap(NUM_LINE, new)(before))
+            assert f.read_text() != before
+            code, out = run_gate(d)
+            n_controls += 1
+            if code == 0:
+                print(f"  OK   {label} passes (exit 0)")
+            else:
+                bad.append(f"control '{label}' exited {code}")
+                print(f"  BAD  {label} exited {code} - false positive on prose")
+
+        # Check 5's own false-positive control (#358). The fix is explained in
+        # comments that quote the construct they warn about -- agent-merge.yml
+        # and close-on-evidence.yml both do -- so a gate that could not tell a
+        # warning from an occurrence would punish explaining itself. The
+        # untouched copy already covers the comments in the real files; this
+        # plants one inside a run: block, where the check actually looks.
+        for label, new in (
+            ("an interpolation named only in a WHOLE-LINE shell comment",
+             '# never write ${{ steps.pr.outputs.branch }} here\n          case "$PR_BRANCH" in'),
+            ("an interpolation named only in a TRAILING shell comment",
+             'case "$PR_BRANCH" in  # not ${{ steps.pr.outputs.branch }}'),
+        ):
+            d = fresh_copy(base, "ctl5_" + str(abs(hash(label))))
+            f = d / "agent-merge.yml"
+            before = f.read_text()
+            f.write_text(swap('case "$PR_BRANCH" in', new)(before))
             assert f.read_text() != before
             code, out = run_gate(d)
             n_controls += 1
