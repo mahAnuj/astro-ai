@@ -27,8 +27,30 @@ Schema (per-day file):
         "ask":      30,
         ...
       },
-      "fallbacks": 2   # number of calls that succeeded after an upstream 429/error
+      "fallbacks": 2,  # number of calls that succeeded after an upstream 429/error
+      "fallback_reasons": {          # #355 — WHY each fallback happened
+        "groq120|429_tpm": 1,        # "<provider that failed>|<reason class>"
+        "groq20|quality":  1,
+      },
+      "calls": {"total": .., "hits": .., "misses": .., "miss_latency_sum_ms": ..},
+      "call_by_route": {
+        "rashifal": {"calls": .., "hits": .., "input_tokens": .., "output_tokens": ..,
+                     "miss_latency_sum_ms": 41200, "miss_latency_n": 3}   # #355
+      }
     }
+
+Two invariants worth knowing before reading a number off this file:
+
+  * sum(fallback_reasons.values()) == fallbacks for any day recorded after #355,
+    because both are incremented in the same mutator. A day recorded BEFORE it
+    has `fallbacks` and no `fallback_reasons` at all, so over a mixed window the
+    reasons add up to LESS than the fallbacks. That is a gap in the record, not
+    a bug, and the page says so.
+  * Per-route latency is two keys, not one. `miss_latency_n` counts only the
+    misses whose latency was recorded. Day-files written before #355 have
+    misses and no latency; dividing by `calls - hits` would drag a route's
+    average toward zero across the whole 30-day window, and a zero reads as
+    "fast". Divide by `miss_latency_n`, and report None when it is 0.
 """
 
 from __future__ import annotations
@@ -75,12 +97,19 @@ def _read_day(day: date) -> dict[str, Any] | None:
         return None
 
 
-def record(*, provider: str, model: str, route: str = "", fallback: bool = False) -> None:
+def record(*, provider: str, model: str, route: str = "", fallback: bool = False,
+           fallback_reason: str = "", failed_provider: str = "") -> None:
     """Increment counters for today's LLM call. Best-effort; never raises.
 
     Called from providers.chat() after a successful response. `route` labels
     the calling feature ("natal", "ask", "matching", ...). `fallback=True`
     indicates this provider only succeeded after an upstream one failed.
+
+    `fallback_reason` / `failed_provider` say why (#355). They are counted in
+    the SAME mutator as `fallbacks`, so sum(fallback_reasons.values()) ==
+    fallbacks for every day recorded after this change. A caller passing
+    `fallback=True` with no reason lands under "unknown|unknown" rather than
+    being dropped, to keep that invariant.
     """
     today = date.today()
     stat_key = f"{provider}|{model}|{route or 'unknown'}"
@@ -94,6 +123,9 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
         data["totals"][route_key] = data["totals"].get(route_key, 0) + 1
         if fallback:
             data["fallbacks"] = data.get("fallbacks", 0) + 1
+            reasons = data.setdefault("fallback_reasons", {})
+            rkey = f"{failed_provider or 'unknown'}|{fallback_reason or 'unknown'}"
+            reasons[rkey] = reasons.get(rkey, 0) + 1
         return data
 
     result = storage.update_json(_key_for(today), _mut, default=None)
@@ -157,6 +189,10 @@ def record_call(*, route: str, cache_hit: bool, latency_ms: int = 0,
         else:
             r["input_tokens"] = r.get("input_tokens", 0) + input_tokens
             r["output_tokens"] = r.get("output_tokens", 0) + output_tokens
+            # Per-route latency (#355). Two keys, because `n` is not derivable
+            # from `calls - hits` on a route that has pre-#355 misses.
+            r["miss_latency_sum_ms"] = r.get("miss_latency_sum_ms", 0) + latency_ms
+            r["miss_latency_n"] = r.get("miss_latency_n", 0) + 1
         return data
 
     result = storage.update_json(_key_for(today), _mut, default=None)
@@ -191,6 +227,8 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
     misses = 0
     in_tok = 0
     out_tok = 0
+    peak_tok = 0
+    peak_date: str | None = None
     by_route_acc: dict[str, dict[str, int]] = {}
     for i in range(days):
         d = today - timedelta(days=i)
@@ -204,9 +242,21 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
         miss_latency_sum += c.get("miss_latency_sum_ms", 0)
         in_tok += c.get("input_tokens", 0)
         out_tok += c.get("output_tokens", 0)
+        # THE PEAK DAY, not the average. The daily limit is a CEILING, and an
+        # average cannot tell you how close a ceiling came -- 30 quiet days
+        # around one 198,888-token day (2026-10-08) average to nothing while
+        # the day itself exhausted the quota and took every rashifal page down.
+        # So: the worst day in the window, and which day it was, because "when"
+        # is what makes it diagnosable.
+        day_tok = c.get("input_tokens", 0) + c.get("output_tokens", 0)
+        if day_tok > peak_tok:
+            peak_tok, peak_date = day_tok, d.isoformat()
         for route, r in blob.get("call_by_route", {}).items():
             acc = by_route_acc.setdefault(route, {"calls": 0, "hits": 0,
-                                                    "input_tokens": 0, "output_tokens": 0})
+                                                    "input_tokens": 0, "output_tokens": 0,
+                                                    "lat_sum": 0, "lat_n": 0})
+            acc["lat_sum"] += r.get("miss_latency_sum_ms", 0)
+            acc["lat_n"] += r.get("miss_latency_n", 0)
             acc["calls"] += r.get("calls", 0)
             acc["hits"] += r.get("hits", 0)
             acc["input_tokens"] += r.get("input_tokens", 0)
@@ -215,7 +265,11 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
         [
             {"route": k, "calls": v["calls"], "hits": v["hits"],
              "hit_rate_pct": int(v["hits"] / v["calls"] * 100) if v["calls"] else 0,
-             "input_tokens": v["input_tokens"], "output_tokens": v["output_tokens"]}
+             "input_tokens": v["input_tokens"], "output_tokens": v["output_tokens"],
+             # None, never 0: a route with no recorded latency is UNKNOWN, and
+             # a zero would read as "fast". Covers only days recorded since #355.
+             "avg_miss_latency_ms": int(v["lat_sum"] / v["lat_n"]) if v["lat_n"] else None,
+             "miss_latency_n": v["lat_n"]}
             for k, v in by_route_acc.items()
         ],
         key=lambda r: -r["calls"],
@@ -228,6 +282,10 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
         "hit_rate_pct": int(hits / total * 100) if total else 0,
         "total_input_tokens": in_tok,
         "total_output_tokens": out_tok,
+        # None, not 0, when nothing was recorded: a zero peak would read as
+        # "a quiet day", which is the opposite of "we have no idea".
+        "peak_day_tokens": peak_tok or None,
+        "peak_day": peak_date,
         "avg_miss_latency_ms": int(miss_latency_sum / misses) if misses else 0,
         "by_route": by_route,
         "cache_entries": 0,   # SQLite-only concept; filled by admin_usage from cache.py
@@ -256,6 +314,7 @@ def range_summary(days: int) -> dict[str, Any]:
             "by_provider": {"groq120": 45, "groq20": 20, ...},
             "total_calls": 87,
             "fallbacks": 3,
+            "fallback_reasons": {"groq120|429_tpm": 2, ...},   # sorted desc; #355
           }
         }
     """
@@ -266,6 +325,7 @@ def range_summary(days: int) -> dict[str, Any]:
     by_provider: dict[str, int] = defaultdict(int)
     total = 0
     fallbacks = 0
+    fallback_reasons: dict[str, int] = defaultdict(int)
     daily: list[dict[str, Any]] = []
     for i in range(days):
         d = today - timedelta(days=i)
@@ -285,6 +345,8 @@ def range_summary(days: int) -> dict[str, Any]:
                 by_route[route] += count
                 total += count
         fallbacks += blob.get("fallbacks", 0)
+        for rkey, n in (blob.get("fallback_reasons") or {}).items():
+            fallback_reasons[rkey] += n
     daily.reverse()  # oldest first for display
     return {
         "days": daily,
@@ -294,5 +356,6 @@ def range_summary(days: int) -> dict[str, Any]:
             "by_provider": dict(sorted(by_provider.items(), key=lambda kv: -kv[1])),
             "total_calls": total,
             "fallbacks": fallbacks,
+            "fallback_reasons": dict(sorted(fallback_reasons.items(), key=lambda kv: -kv[1])),
         },
     }

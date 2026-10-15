@@ -520,6 +520,107 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
     </button>
   </section>
 
+  {# ── Token budget ──────────────────────────────────────────────────────
+     FULL WIDTH, AND ABOVE THE FOLD, ON PURPOSE. This lived inside App health,
+     which sits in the 1fr column of a `1.25fr 1fr` grid — so the one table on
+     the page with six numeric columns was rendered in the narrower half, at
+     the bottom. CLAUDE.md puts it the other way round: "the free Groq tier is
+     the ceiling every role designs against". A ceiling every design decision
+     is made against is not a sub-heading of a health panel.
+     Breaking it out also lets the row carry `total / request`, which is the
+     figure the limit actually counts, without a seventh column in a 1fr box. #}
+  <section class="panel">
+    <h2>Token budget
+      <span class="lbl">last {{ ops.app.days }} d · {{ "{:,}".format(ops.tpm_per_model) }} TPM per model</span>
+      {% if ops.app.measured %}<span class="age live"
+            title="read from this app's own GCS stores on the request, 60 s cache">live</span>{% endif %}
+      {% if ops.app.store_is_local %}<span class="age stale" style="margin-left:7px"
+            title="BHAGYA_STORAGE_BUCKET is unset. {{ ops.app.store_detail }}">local dev store — not production</span>{% endif %}
+    </h2>
+    <div class="body">
+      {% if not ops.app.measured %}
+      <div class="empty">No LLM calls recorded in this window, so there is no denominator and
+        nothing below would be a rate.</div>
+      {% else %}
+      <div class="kv">
+        <div><span>input tokens</span><b class="mono">{{ "{:,}".format(ops.app.input_tokens) }}</b></div>
+        <div><span>output tokens</span><b class="mono">{{ "{:,}".format(ops.app.output_tokens) }}</b></div>
+        <div><span>total — what the limit counts</span>
+          <b class="mono">{{ "{:,}".format(ops.app.input_tokens + ops.app.output_tokens) }}</b></div>
+        {# The question the rest of the panel exists to answer: is the budget
+           actually BREAKING requests, or is it merely large? `timeout` and
+           `unknown` are the provider having a bad minute and no prompt change
+           fixes them; 413 and 429_* are our size and our pacing. Only the
+           second kind turns red. #}
+        <div><span>failed on the token budget</span>
+          <b class="mono {{ 'c-failed' if ops.app.budget_failures }}">{{ ops.app.budget_failures }}{%
+            if ops.app.fallbacks %} <span style="font-weight:400;color:var(--ink-mute)">of
+            {{ ops.app.fallbacks }} retries</span>{% endif %}</b></div>
+        {# The one that matters most: a fallback is not a break — the chain
+           recovered and the visitor got their reading. These are the times it
+           did not. Per feature, because "something broke 97 times" and
+           "rashifal broke 97 times" are different instructions. #}
+        <div><span>features broken by the budget — visitor saw an error</span>
+          <b class="mono {{ 'c-failed' if ops.app.budget_breaks_total }}">{{ ops.app.budget_breaks_total }}</b></div>
+        {% for feature, n in ops.app.budget_breaks %}
+        <div><span>&nbsp;&nbsp;{{ feature }}</span>
+          <b class="mono c-failed" style="font-weight:400">{{ n }}</b></div>
+        {% endfor %}
+        {% if ops.app.fallback_reasons %}
+        <div><span>why</span>
+          <b class="mono" style="font-weight:400;font-size:11px">{% for prov, why, n in ops.app.fallback_reasons %}<span
+            class="{{ 'c-failed' if why in ops.budget_fail_reasons }}">{{ prov }} {{ why }} ×{{ n }}</span>{%
+            if not loop.last %} · {% endif %}{% endfor %}</b></div>
+        {% endif %}
+        <div><span>busiest day{% if ops.app.peak_day %} · {{ ops.app.peak_day }}{% endif %}</span>
+          <b class="mono {{ 'c-failed' if ops.app.peak_day_pct and ops.app.peak_day_pct >= 80 }}">{% if
+            ops.app.peak_day_tokens %}{{ "{:,}".format(ops.app.peak_day_tokens) }}
+            <span style="font-weight:400;color:var(--ink-mute)">· {{ ops.app.peak_day_pct }}% of a day's
+            bucket</span>{% else %}—{% endif %}</b></div>
+      </div>
+
+      <table class="rt">
+        <thead><tr><th>feature</th><th class="n">calls</th><th class="n">cache</th>
+          <th class="n">total / request</th><th class="n">of one bucket</th>
+          <th class="n">avg miss</th><th class="n">saved by cache</th></tr></thead>
+        <tbody>
+        {% for r in ops.app.routes %}
+        <tr>
+          <td>{{ r.route }}<span class="sub">{{ "{:,}".format(r.input_tokens) }} in · {{ "{:,}".format(r.output_tokens) }} out</span></td>
+          <td class="n">{{ "{:,}".format(r.calls) }}</td>
+          <td class="n {{ 'c-open' if r.hit_rate == 0 }}">{{ r.hit_rate }}%</td>
+          <td class="n">{{ "{:,}".format(r.per_request_total) if r.per_request_total is not none else '—' }}
+            <span class="sub">{{ "{:,}".format(r.per_request) if r.per_request is not none else '—' }} in ·
+              {{ "{:,}".format(r.per_request_out) if r.per_request_out is not none else '—' }} out</span></td>
+          <td class="n {{ 'c-failed' if r.tpm_pct and r.tpm_pct >= 50 }}">{{ r.tpm_pct ~ '%' if r.tpm_pct is not none else '—' }}</td>
+          <td class="n">{{ "%.1f s"|format(r.avg_miss_ms / 1000) if r.avg_miss_ms is not none else '—' }}</td>
+          <td class="n">{{ "{:,}".format(r.saved) if r.saved else '—' }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <p class="q-note">
+        <b>total / request</b> is input + output, because both of Groq's limits count both —
+        an input-only figure reads as headroom the budget does not have. Input is broken out
+        beneath it because input is the half that grows <em>silently</em>: #212 measured prompt
+        input growing 18.5% per call, and #266 was a 413, a pure input-size failure. Total is
+        the ceiling; input is the regression signal.
+        <b>of one bucket</b> is that total against {{ "{:,}".format(ops.tpm_per_model) }} TPM
+        for a single model — the chain is two models with separate buckets, so a route near
+        100% cannot run twice concurrently on the same one whatever its hit rate looks like.
+        All of it divides by <em>misses</em>, not calls: a cache hit spends no tokens, so
+        dividing by calls would make every prompt look cheaper as the cache warms.
+        <b>saved by cache</b> is hits × the mean cost of a miss on that route — an estimate,
+        because the avoided prompt was never measured. A feature at <b>0%</b> cache pays full
+        price every request.
+        <b>avg miss</b> is wall-clock per generated reading and covers only days recorded since
+        #355; earlier days stored one global figure, so a feature with none shows <b>—</b>,
+        never 0.
+      </p>
+      {% endif %}
+    </div>
+  </section>
+
   {# ── Signature panel ───────────────────────────────────────────────── #}
   <section class="panel">
     <h2>Cycle ribbon <span class="lbl">24 h IST · click a block</span></h2>
@@ -837,6 +938,10 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         <span class="lbl">last {{ ops.app.days }} d{% if not ops.app.measured %} · nothing recorded{% endif %}</span>
         {% if ops.app.measured %}<span class="age live"
               title="read from this app's own GCS stores on the request, 60 s cache">live</span>{% endif %}
+        {% if ops.app.store_is_local %}<span class="age stale" style="margin-left:7px"
+              title="BHAGYA_STORAGE_BUCKET is unset. {{ ops.app.store_detail }}">local dev store — not production</span>
+        {% elif ops.app.store %}<span class="age" style="margin-left:7px"
+              title="{{ ops.app.store_detail }}">{{ ops.app.store }}</span>{% endif %}
       </h2>
       <div class="body">
         {% if not ops.app.ok %}
@@ -851,35 +956,14 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
             <b class="mono {{ 'c-failed' if ops.app.error_rate and ops.app.error_rate >= 5 }}">{{ ops.app.errors }} · {{ ops.app.error_rate }}%</b></div>
           <div><span>every provider failed</span>
             <b class="mono {{ 'c-failed' if ops.app.exhausted }}">{{ ops.app.exhausted }}</b></div>
-          <div><span>recovered on a 2nd provider</span>
+          <div><span>needed a retry or a 2nd provider</span>
             <b class="mono">{{ ops.app.fallbacks }}</b></div>
+          {% if ops.app.fallback_reasons %}
+          <div><span>&nbsp;&nbsp;reason for the last failure</span>
+            <b class="mono" style="font-weight:400;font-size:11px">{% for prov, why, n in ops.app.fallback_reasons %}{{ prov }} {{ why }} ×{{ n }}{% if not loop.last %} · {% endif %}{% endfor %}</b></div>
+          {% endif %}
           <div><span>cache hit rate</span><b class="mono">{{ ops.app.hit_rate }}%</b></div>
-          <div><span>input tokens</span><b class="mono">{{ "{:,}".format(ops.app.input_tokens) }}</b></div>
         </div>
-
-        <h3 class="lbl" style="margin:22px 0 10px">Tokens per request, by feature</h3>
-        <table class="rt">
-          <thead><tr><th>feature</th><th class="n">calls</th><th class="n">cache</th>
-            <th class="n">in / request</th><th class="n">saved by cache</th></tr></thead>
-          <tbody>
-          {% for r in ops.app.routes %}
-          <tr>
-            <td>{{ r.route }}<span class="sub">{{ "{:,}".format(r.input_tokens) }} in · {{ "{:,}".format(r.output_tokens) }} out</span></td>
-            <td class="n">{{ "{:,}".format(r.calls) }}</td>
-            <td class="n {{ 'c-open' if r.hit_rate == 0 }}">{{ r.hit_rate }}%</td>
-            <td class="n">{{ "{:,}".format(r.per_request) if r.per_request is not none else '—' }}</td>
-            <td class="n">{{ "{:,}".format(r.saved) if r.saved else '—' }}</td>
-          </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-        <p class="q-note">
-          <b>in / request</b> divides input tokens by <em>misses</em>, not calls — a cache hit
-          spends no tokens, so dividing by calls would make every prompt look cheaper as the
-          cache warms. <b>saved by cache</b> is hits × the mean cost of a miss on that same
-          route: an estimate, because the avoided prompt was never measured.
-          A feature at <b>0%</b> cache is paying full price on every request.
-        </p>
 
         {% if ops.app.sources %}
         <h3 class="lbl" style="margin:22px 0 10px">Where the errors are</h3>

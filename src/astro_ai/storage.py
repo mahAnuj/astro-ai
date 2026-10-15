@@ -47,6 +47,24 @@ def _bucket_name() -> str | None:
     return name.strip() if name else None
 
 
+def describe_store() -> str:
+    """Which store a read/write lands in: "gcs:<bucket>" or "local:<dir>".
+
+    For /admin/ops, which was rendering "0 errors" from a developer machine's
+    /tmp and from production's bucket in the same words (#355). Configuration
+    only: it does not probe the bucket, so "gcs:" means "configured", and a
+    bucket that is unreachable still falls back to /tmp at call time. The
+    bucket NAME is not a credential; nothing else is emitted.
+    """
+    name = _bucket_name()
+    if name:
+        return f"gcs:{name}"
+    # The local dir is owned by the module that writes it; name it rather than
+    # duplicating a second constant. Lazy import: llm_stats imports this module.
+    from astro_ai import llm_stats
+    return f"local:{llm_stats._LOCAL_FALLBACK_DIR}"
+
+
 def reset_client() -> None:
     """Drop the cached client so the next call rebuilds it.
 
