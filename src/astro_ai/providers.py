@@ -399,6 +399,39 @@ def _is_request_too_large(err: Exception) -> bool:
     return "request too large" in text or "too large for model" in text
 
 
+def _failure_reason(err: Exception) -> str:
+    """Short class for WHY a provider failed, for the fallback breakdown (#355).
+
+    One of: 429_tpm, 429_tpd, 429 (a rate limit that names neither window),
+    413, timeout, empty, quality, error. A closed vocabulary on purpose: these
+    are stored as dict keys in every day-file, so free text would grow the blob
+    without bound and never aggregate.
+
+    The 413 test runs FIRST. Groq's oversized-request body spells out "tokens
+    per minute (TPM)", so classifying on the words alone would file a
+    structural failure under 429_tpm — the exact conflation RequestTooLarge
+    exists to prevent. Deliberately does not parse the Limit/Used/Requested
+    figures; that is #350.
+
+    `quality` is not derived here: a bad-output response is not an exception,
+    so chat() sets it explicitly instead of parsing its own message back.
+    """
+    if _is_request_too_large(err):
+        return "413"
+    if isinstance(err, RateLimitError):
+        text = str(err).lower()
+        if "per day" in text or "tpd" in text:
+            return "429_tpd"
+        if "per minute" in text or "tpm" in text:
+            return "429_tpm"
+        return "429"
+    if isinstance(err, APITimeoutError):
+        return "timeout"
+    if isinstance(err, EmptyCompletion):
+        return "empty"
+    return "error"
+
+
 # Groq's free tier is 8,000 TPM PER MODEL, and it counts the request against
 # that same bucket — so a single request above the cap can never succeed, at
 # any traffic level, on any free-tier model in the chain.
@@ -674,12 +707,25 @@ def chat(messages: list[dict], *, route: str = "") -> str:
         )
 
     last_err: Exception | None = None
+    # Who produced `last_err` and why, for llm_stats' fallback breakdown. Set
+    # ONLY through _fail() below so they cannot drift from `last_err` — a
+    # fallback recorded with last_err set and no reason would break
+    # sum(fallback_reasons) == fallbacks.
+    last_failed_provider = ""
+    last_reason = ""
     sleep_budget = RETRY_AFTER_BUDGET_S
     # Hosts that have already rejected this request as too large. Same-host
     # providers share the per-request ceiling, so once one says 413 the rest
     # will too — see RequestTooLarge.
     too_large_hosts: set[str | None] = set()
     too_large = False
+
+    def _fail(err: Exception, reason: str | None = None) -> None:
+        """Record `err` as this request's latest failure, with its provider and reason."""
+        nonlocal last_err, last_failed_provider, last_reason
+        last_err = err
+        last_failed_provider = provider.name
+        last_reason = reason or _failure_reason(err)
 
     def _note_too_large(err: Exception) -> bool:
         """Record a 413 and mark its host unusable for this request.
@@ -744,7 +790,8 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                         "provider %s returned bad output for route=%s (%s) — trying next",
                         provider.name, route, reason,
                     )
-                    last_err = RuntimeError(f"quality-fail: {provider.name} for {route}: {reason}")
+                    _fail(RuntimeError(f"quality-fail: {provider.name} for {route}: {reason}"),
+                          "quality")
                     break
                 # Track which (provider, model) served this request. Downstream
                 # code (notify.kundli_generated etc.) reads via last_used_model().
@@ -775,6 +822,8 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                         model=provider.model(),
                         route=route,
                         fallback=(last_err is not None),
+                        fallback_reason=last_reason,
+                        failed_provider=last_failed_provider,
                     )
                 except Exception:  # noqa: BLE001 — stats never break the reading
                     log.debug("llm_stats.record failed", exc_info=True)
@@ -797,7 +846,7 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                     log.info("provider %s succeeded after upstream failures", provider.name)
                 return text
             except RateLimitError as err:
-                last_err = err
+                _fail(err)
                 # Parsing is defensive: this runs inside an exception handler,
                 # so anything it raises converts a recoverable 429 into a dead
                 # chain. Headers come from the provider, not from us.
@@ -836,7 +885,7 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                 )
                 break
             except (APIError, APIConnectionError, APITimeoutError) as err:
-                last_err = err
+                _fail(err)
                 if _note_too_large(err):
                     break
                 log.warning("provider %s API error (%s) — trying next in chain", provider.name, err)
@@ -847,7 +896,7 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                 # however it reaches us, and pinning the handling to one except
                 # clause makes it depend on which SDK class the provider's
                 # library happens to raise.
-                last_err = err
+                _fail(err)
                 if _note_too_large(err):
                     break
                 log.warning("provider %s unexpected error (%s) — trying next in chain", provider.name, err)

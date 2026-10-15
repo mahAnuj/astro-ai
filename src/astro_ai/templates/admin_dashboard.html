@@ -133,6 +133,7 @@
             <th class="text-right py-2">Calls</th>
             <th class="text-right py-2">Hits</th>
             <th class="text-right py-2">Hit rate</th>
+            <th class="text-right py-2" title="Mean wall-clock of a cache miss. Only days recorded since #355; — means none recorded, not zero.">Avg miss</th>
             <th class="text-right py-2">Input (est.)</th>
             <th class="text-right py-2">Output (est.)</th>
           </tr>
@@ -144,6 +145,7 @@
             <td class="py-2 text-right text-bhagya-ink tabular-nums">{{ r.calls }}</td>
             <td class="py-2 text-right text-emerald-800 tabular-nums">{{ r.hits }}</td>
             <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ r.hit_rate_pct }}%</td>
+            <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ "%.1fs"|format(r.avg_miss_latency_ms / 1000) if r.avg_miss_latency_ms is not none else "—" }}</td>
             <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ r.input_tokens }}</td>
             <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ r.output_tokens }}</td>
           </tr>

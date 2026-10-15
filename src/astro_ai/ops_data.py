@@ -547,7 +547,12 @@ def _app_view(days: int = 7) -> dict:
     if _app_cache and now - _app_cache[0] < APP_CACHE_TTL:
         return _app_cache[1]
 
-    out: dict[str, Any] = {"ok": False, "measured": False, "days": days}
+    # Said on the page, because "0 errors" from a developer's /tmp and from
+    # production's bucket looked identical (#355).
+    from astro_ai import storage
+    store = storage.describe_store()
+    out: dict[str, Any] = {"ok": False, "measured": False, "days": days,
+                           "store": store, "store_is_local": store.startswith("local:")}
     try:
         from astro_ai import events, llm_stats
 
@@ -577,6 +582,9 @@ def _app_view(days: int = 7) -> dict:
                 "input_tokens": int(r.get("input_tokens") or 0),
                 "output_tokens": int(r.get("output_tokens") or 0),
                 "per_request": round(per) if per is not None else None,
+                # None, not 0: no recorded latency means UNKNOWN, and a zero
+                # would read as fast. Covers only days recorded since #355.
+                "avg_miss_ms": r.get("avg_miss_latency_ms"),
                 # What the cache avoided: hits x the mean cost of a miss on
                 # this same route. An estimate, and labelled as one on the page.
                 "saved": round(h * per) if per is not None else 0,
@@ -596,6 +604,7 @@ def _app_view(days: int = 7) -> dict:
             # The denominator, not a judgement: 0 calls means nothing was
             # recorded, which must never render as "no errors".
             "measured": calls > 0,
+            "store": store, "store_is_local": store.startswith("local:"),
             "days": days,
             "calls": calls, "hits": hits, "misses": misses,
             "hit_rate": int(usage.get("hit_rate_pct") or 0),
@@ -607,6 +616,12 @@ def _app_view(days: int = 7) -> dict:
             # because no mapping between the two exists to do it honestly.
             "error_rate": round(len(errors) / calls * 100, 2) if calls else None,
             "fallbacks": fallbacks,
+            # [(provider, reason, n)], most common first. Sums to LESS than
+            # `fallbacks` over a window that includes pre-#355 days.
+            "fallback_reasons": [
+                (k.split("|", 1)[0], k.split("|", 1)[-1], n)
+                for k, n in (agg.get("fallback_reasons") or {}).items()
+            ],
             "fallback_rate": round(fallbacks / calls * 100, 2) if calls else None,
             # The leading indicator, by day, oldest first.
             "fallback_trend": [int(d.get("fallbacks") or 0)

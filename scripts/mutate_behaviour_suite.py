@@ -773,6 +773,42 @@ MUTATIONS = [
      "{% if e.data.get('identity') %}",
      "{% if True %}",
      "test_admin_dashboard_renders_both_event_shapes"),
+
+    ("#355: an unrecorded route latency reads as 0 (a zero reads as 'fast')",
+     "src/astro_ai/llm_stats.py",
+     'int(v["lat_sum"] / v["lat_n"]) if v["lat_n"] else None',
+     'int(v["lat_sum"] / v["lat_n"]) if v["lat_n"] else 0',
+     "test_a_day_file_from_before_the_change_is_unknown_not_fast"),
+
+    ("#355: per-route latency averaged over calls-hits (old days dilute it)",
+     "src/astro_ai/llm_stats.py",
+     'acc["lat_n"] += r.get("miss_latency_n", 0)',
+     'acc["lat_n"] += r.get("calls", 0) - r.get("hits", 0)',
+     "test_a_day_file_from_before_the_change_is_unknown_not_fast"),
+
+    ("#355: a 413 filed under 429_tpm (structural failure read as a rate limit)",
+     "src/astro_ai/providers.py",
+     '    if _is_request_too_large(err):\n        return "413"\n',
+     '    if False:\n        return "413"\n',
+     "test_failure_reason_classification"),
+
+    ("#355: chat() drops the fallback reason on the way to llm_stats",
+     "src/astro_ai/providers.py",
+     "                        fallback_reason=last_reason,\n",
+     '                        fallback_reason="",\n',
+     "test_a_tpm_429_then_success_is_recorded_with_its_reason_and_provider"),
+
+    ("#355: fallbacks counted but reasons not (the sum invariant)",
+     "src/astro_ai/llm_stats.py",
+     "            reasons[rkey] = reasons.get(rkey, 0) + 1\n",
+     "            pass\n",
+     "test_reasons_sum_to_fallbacks_across_mixed_failures"),
+
+    ("#355: /admin/ops labels a configured bucket as local (or vice versa)",
+     "src/astro_ai/storage.py",
+     '        return f"gcs:{name}"',
+     '        return f"local:{name}"',
+     "test_describe_store_names_the_bucket_or_the_local_dir"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
