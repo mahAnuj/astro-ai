@@ -47,6 +47,48 @@ on:
     types: [completed]
   pull_request_target:
     types: [labeled]
+  # THE SWEEP (#357). Both triggers above are EDGES, and this job had no way to
+  # re-ask the question after one was spent. Whenever the last green check
+  # landed after the last edge, a PR stayed green, qa-pass and MERGEABLE
+  # forever. It happened four times:
+  #
+  #   #303  `ready_for_review` was not in pr-gates' `pull_request` types, so
+  #         the readied PR carried no check at all
+  #   #322  a GITHUB_TOKEN-authored PR emits no workflow_run
+  #   #352  the run that went green was `workflow_dispatch`, which the `if:`
+  #         below deliberately excludes (a dispatched run checks out the
+  #         BRANCH, not refs/pull/N/merge, so it does not prove the merge)
+  #   #356  `verify-build` is a different workflow, and this one listens only
+  #         to "PR gates"
+  #
+  # Each was fixed by adding or correcting an edge, and a fifth edge was always
+  # going to be missed -- so the answer is to stop relying on edges. #356 shows
+  # why the ordering is not even unlikely: pr-gates SKIPS its suite on a
+  # docs-only change and finishes in 9s (deliberately, so this job still gets
+  # its trigger), while verify-build has no such skip and takes ~70s. Measured
+  # 2026-10-15: pr-gates 9s vs verify-build 68s on #356; 8m34s vs 75s on the
+  # code PR before it. The "pr-gates is the slowest check" assumption holds for
+  # code and inverts for exactly the PRs the skip was written for.
+  #
+  # The sweep adds NO new authority. It only supplies a PR number; every
+  # condition -- agent branch, gates green, qa-pass, size, trust boundary -- is
+  # re-read from the API by the same steps, in the same order. So the worst a
+  # sweep can do is merge something that already satisfies every condition.
+  schedule:
+    - cron: "*/30 * * * *"
+  # For draining the queue by hand after a fix, without waiting for the cron.
+  workflow_dispatch:
+
+# Serialised repo-wide, NOT keyed on the PR: the workflow_run leg does not know
+# which PR it is about until the first step has run, so a per-PR group cannot be
+# expressed here. `cancel-in-progress: false` because cancelling a merge
+# half-way is the one outcome worth avoiding; GitHub keeps a single pending run
+# per group, so a sweep firing during an edge-triggered run queues behind it and
+# a redundant third is dropped -- which is correct, since the next sweep asks
+# again in 30 minutes.
+concurrency:
+  group: agent-merge
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -83,7 +125,8 @@ jobs:
         github.event_name == 'workflow_run'
         && github.event.workflow_run.event == 'pull_request'
         && github.event.workflow_run.head_repository.full_name == github.repository
-      )
+      ) || github.event_name == 'schedule'
+      || github.event_name == 'workflow_dispatch'
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
@@ -161,7 +204,50 @@ jobs:
           # `[ test ] && action` be the last line, and prefer if/then so the
           # question never arises. pr-gates' skipped-report line was exactly
           # that shape and would have failed a completely passing run.
-          if [ "$EVENT_NAME" = "pull_request_target" ]; then
+          if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            # THE SWEEP picks a CANDIDATE, it does not decide anything (#357).
+            # The filters here are only what makes a candidate worth spending
+            # the remaining steps on:
+            #
+            #   state=open, not draft      there is something left to merge
+            #   head.repo == this repo     a fork head never reaches a write
+            #                              token, the same rule as the job `if:`
+            #   head.ref starts issue/     the loop's own branches, re-checked
+            #                              by the `own` step anyway
+            #   qa-pass present            otherwise the `qa` step would stop,
+            #                              and the sweep would spend every run
+            #                              on an ineligible PR and never reach
+            #                              an eligible one
+            #   qa-fail / needs-human-review / too-large-to-automerge absent
+            #                              all three mean "a human decides";
+            #                              holding them here is what keeps the
+            #                              sweep from re-labelling the same PR
+            #                              every 30 minutes forever
+            #
+            # Every one of those is re-read and re-decided downstream. Lowest
+            # number first, one per run: a second eligible PR is taken by the
+            # next sweep, which is the same "one issue per run" rule the rest
+            # of the loop follows.
+            # No `--paginate`: with `--jq`, gh applies the filter PER PAGE, so
+            # `sort | first` would print one number per page and `n` would hold
+            # several. per_page=100 is well past any plausible open-PR count for
+            # this loop; if it is ever exceeded the sweep still works, it just
+            # considers the first 100.
+            n=$(gh api "repos/$GH_REPO/pulls?state=open&per_page=100" --jq '
+                  [ .[]
+                    | select(.draft == false)
+                    | select(.head.repo.full_name == "'"$GH_REPO"'")
+                    | select(.head.ref | startswith("issue/"))
+                    | select([.labels[].name] | index("qa-pass"))
+                    | select([.labels[].name]
+                             | (index("qa-fail") // index("needs-human-review")
+                                // index("too-large-to-automerge")) | not)
+                    | .number ]
+                  | sort | first // empty')
+            if [ -n "$n" ]; then
+              echo "::notice::sweep picked PR #$n — every condition is re-checked below"
+            fi
+          elif [ "$EVENT_NAME" = "pull_request_target" ]; then
             n="$EVENT_PR_NUMBER"
           else
             # `github.event.workflow_run.head_sha`, NOT `steps.pr.outputs.sha`.
@@ -184,12 +270,21 @@ jobs:
                   --jq '.[0].number // empty')
           fi
           if [ -z "$n" ]; then
-            echo "no PR for this SHA — nothing to merge"
+            echo "nothing to merge (no PR for this SHA, or no sweep candidate)"
             exit 0
           fi
           echo "number=$n" >> "$GITHUB_OUTPUT"
           gh pr view "$n" --repo "$GH_REPO" \
-            --json headRefName,headRefOid,additions,deletions,files,isDraft > /tmp/pr.json
+            --json headRefName,headRefOid,additions,deletions,files,isDraft,state > /tmp/pr.json
+          # An edge and a sweep can both reach the same PR, and the sweep can
+          # fire while an earlier run is merging. `gh pr merge` on a merged PR
+          # fails, after every condition has already been satisfied, so the
+          # cheapest place to notice is here.
+          state=$(jq -r .state /tmp/pr.json)
+          if [ "$state" != "OPEN" ]; then
+            echo "::notice::PR #$n is $state — already handled, nothing to do"
+            exit 0
+          fi
           echo "branch=$(jq -r .headRefName /tmp/pr.json)" >> "$GITHUB_OUTPUT"
           # Resolve the head SHA from the PR, not from the event. A `labeled`
           # event has no workflow_run payload, so every message built from
