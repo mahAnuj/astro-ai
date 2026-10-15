@@ -1,0 +1,184 @@
+{
+  "source": "ga4",
+  "property": "543505751",
+  "window": [
+    "2026-09-14",
+    "2026-10-11"
+  ],
+  "dimensions": [
+    "date"
+  ],
+  "note": "window excludes the last 3 days - GA4 standard reports lag 24-48h. A day absent from the API is emitted as 0 with no_data=true, so a gap in collection is visible rather than drawn as a flat line.",
+  "days": 28,
+  "days_with_traffic": 28,
+  "rows": [
+    {
+      "date": "2026-09-14",
+      "active_users": 8,
+      "sessions": 8,
+      "new_users": 7
+    },
+    {
+      "date": "2026-09-15",
+      "active_users": 10,
+      "sessions": 10,
+      "new_users": 9
+    },
+    {
+      "date": "2026-09-16",
+      "active_users": 10,
+      "sessions": 11,
+      "new_users": 10
+    },
+    {
+      "date": "2026-09-17",
+      "active_users": 8,
+      "sessions": 8,
+      "new_users": 6
+    },
+    {
+      "date": "2026-09-18",
+      "active_users": 11,
+      "sessions": 13,
+      "new_users": 10
+    },
+    {
+      "date": "2026-09-19",
+      "active_users": 3,
+      "sessions": 6,
+      "new_users": 2
+    },
+    {
+      "date": "2026-09-20",
+      "active_users": 13,
+      "sessions": 13,
+      "new_users": 11
+    },
+    {
+      "date": "2026-09-21",
+      "active_users": 6,
+      "sessions": 6,
+      "new_users": 4
+    },
+    {
+      "date": "2026-09-22",
+      "active_users": 6,
+      "sessions": 7,
+      "new_users": 6
+    },
+    {
+      "date": "2026-09-23",
+      "active_users": 7,
+      "sessions": 7,
+      "new_users": 5
+    },
+    {
+      "date": "2026-09-24",
+      "active_users": 11,
+      "sessions": 12,
+      "new_users": 9
+    },
+    {
+      "date": "2026-09-25",
+      "active_users": 7,
+      "sessions": 9,
+      "new_users": 6
+    },
+    {
+      "date": "2026-09-26",
+      "active_users": 7,
+      "sessions": 9,
+      "new_users": 6
+    },
+    {
+      "date": "2026-09-27",
+      "active_users": 12,
+      "sessions": 14,
+      "new_users": 10
+    },
+    {
+      "date": "2026-09-28",
+      "active_users": 6,
+      "sessions": 6,
+      "new_users": 6
+    },
+    {
+      "date": "2026-09-29",
+      "active_users": 11,
+      "sessions": 13,
+      "new_users": 9
+    },
+    {
+      "date": "2026-09-30",
+      "active_users": 6,
+      "sessions": 7,
+      "new_users": 3
+    },
+    {
+      "date": "2026-10-01",
+      "active_users": 4,
+      "sessions": 5,
+      "new_users": 3
+    },
+    {
+      "date": "2026-10-02",
+      "active_users": 11,
+      "sessions": 11,
+      "new_users": 10
+    },
+    {
+      "date": "2026-10-03",
+      "active_users": 10,
+      "sessions": 11,
+      "new_users": 9
+    },
+    {
+      "date": "2026-10-04",
+      "active_users": 7,
+      "sessions": 7,
+      "new_users": 6
+    },
+    {
+      "date": "2026-10-05",
+      "active_users": 9,
+      "sessions": 12,
+      "new_users": 8
+    },
+    {
+      "date": "2026-10-06",
+      "active_users": 18,
+      "sessions": 20,
+      "new_users": 13
+    },
+    {
+      "date": "2026-10-07",
+      "active_users": 11,
+      "sessions": 13,
+      "new_users": 10
+    },
+    {
+      "date": "2026-10-08",
+      "active_users": 18,
+      "sessions": 19,
+      "new_users": 16
+    },
+    {
+      "date": "2026-10-09",
+      "active_users": 9,
+      "sessions": 10,
+      "new_users": 7
+    },
+    {
+      "date": "2026-10-10",
+      "active_users": 6,
+      "sessions": 8,
+      "new_users": 5
+    },
+    {
+      "date": "2026-10-11",
+      "active_users": 9,
+      "sessions": 9,
+      "new_users": 8
+    }
+  ]
+}

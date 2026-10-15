@@ -422,7 +422,12 @@ MEASURE = ROOT / ".github" / "workflows" / "agent-measure.yml"
 
 def test_commit_job_grants_exactly_the_scopes_the_collector_needs_and_orders_its_steps():
     job = yaml.safe_load(MEASURE.read_text())["jobs"]["commit"]
-    assert job["permissions"] == {"contents": "write", "actions": "read", "pull-requests": "read"}
+    # `issues: read` was added by #344 for scripts/collect_issue_backlog.py.
+    # This is an exact pin, not a floor: a scope appearing here that no step
+    # needs is as much a defect as a missing one, so widening it has to be a
+    # deliberate edit to this line rather than something a PR can drift into.
+    assert job["permissions"] == {"contents": "write", "actions": "read",
+                                  "pull-requests": "read", "issues": "read"}
     names = [s.get("name") for s in job["steps"]]
     collect_i, commit_i = names.index("Collect loop measurements"), names.index("Commit the measurement")
     assert collect_i < commit_i
@@ -434,6 +439,58 @@ def test_commit_job_grants_exactly_the_scopes_the_collector_needs_and_orders_its
     # the report-less early exit would skip the collector's files on the worst days
     assert 'echo "no report to persist"\n            exit 0' not in run_text
     assert run_text.index("git pull --rebase origin main") < run_text.index("git push origin HEAD:main")
+
+
+COLLECTORS_ONLY_CRON = "0 2 * * *"
+#: Added by #353. The team panel is the one on /admin/ops that cannot be read
+#: live -- 46 GitHub requests against a 60/hour budget, and it needs
+#: `.github/workflows/*.yml` and `git log`, neither of which is in the
+#: container. Collection frequency is therefore its only freshness lever.
+EXTRA_COLLECTOR_CRON = "0 5,8,11,14,17,20 * * *"
+#: The only schedule that may invoke the analyst.
+ANALYST_CRON = "0 21 * * *"
+
+
+def test_the_second_slot_runs_the_collectors_without_the_analyst():
+    """The 02:00 slot exists so a cycle's own outcome lands the same day, and it
+    must NOT invoke the analyst.
+
+    The 21:00 run is two hours AHEAD of agent-work because the cycle plans from
+    its report, so the cycle's result waits ~21.5 h for the next one -- measured
+    2026-10-14, when /admin/ops read "1 shipped today" while #276 and #329 had
+    both shipped. The fix is a second slot that runs the `commit` job only.
+
+    Dropping `measure.if` would silently double the analyst's spend against the
+    Claude 5 h rolling cap this repo has already exhausted once, and nothing
+    else in the suite would notice: both runs would simply go green.
+    """
+    doc = yaml.safe_load(MEASURE.read_text())
+    on = doc.get(True) or doc.get("on")
+    crons = [c["cron"] for c in on["schedule"]]
+    assert COLLECTORS_ONLY_CRON in crons
+    assert EXTRA_COLLECTOR_CRON in crons
+    assert crons.index(ANALYST_CRON) < crons.index(COLLECTORS_ONLY_CRON)
+
+    # An ALLOW-LIST. With seven collector slots a deny-list has to be edited
+    # every time one is added, and a forgotten entry runs the analyst six extra
+    # times a day against the Claude 5 h rolling cap -- going green both times.
+    # Anything unlisted must fail safe, so this asserts the SHAPE, not just the
+    # current string: no `!=` may appear in it.
+    cond = doc["jobs"]["measure"]["if"]
+    assert "!=" not in cond, "a deny-list here fails open; list what MAY run the analyst"
+    assert cond == f"github.event.schedule == '' || github.event.schedule == '{ANALYST_CRON}'"
+
+    # And every collector slot is excluded by it, which is the property the
+    # string above only implies.
+    for cron in (COLLECTORS_ONLY_CRON, EXTRA_COLLECTOR_CRON):
+        assert f"== '{cron}'" not in cond
+
+    # ...and the collectors still run, which only holds while `commit` is
+    # always() over a needs: measure that may be skipped.
+    commit = doc["jobs"]["commit"]
+    assert commit["needs"] == "measure"
+    assert commit["if"] == "always()"
+    assert commit.get("permissions", {}).get("contents") == "write"
 
 
 def test_no_workflow_was_added():

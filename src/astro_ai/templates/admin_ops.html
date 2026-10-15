@@ -1,0 +1,1159 @@
+{#  /admin/ops — the agent team's control room (#335, slice 2 of 3).
+
+    DELIBERATELY NOT {% extends "base.html" %}
+    ------------------------------------------
+    Two reasons, both mechanical rather than aesthetic:
+
+    1. Tailwind's output is COMPILED AND COMMITTED (package.json: `build:css`
+       writes src/astro_ai/static/css/app.css). A class used only here would be
+       purged out of that file, so the page would deploy unstyled until someone
+       remembered to rebuild. Every rule this page needs is therefore in the
+       <style> block below, which no build step can drop.
+    2. This is an instrument, not a site page. It has no nav, no footer, no
+       consent banner and no analytics — nothing that would make an owner's
+       3am glance slower or feed the site's own metrics with admin traffic.
+
+    The one link out is "back to /admin". The brand thread is kept through
+    Marcellus and the saffron accent, both lifted from the public palette.
+
+    DRILL-DOWN IS CLIENT-SIDE ON DATA ALREADY IN THE PAGE
+    ----------------------------------------------------
+    Every row is already here (66 issues, 25 cycles — kilobytes). So a click
+    filters and renders locally: no second request, nothing to rate-limit, and
+    it still works if GitHub is down. The JSON blob below is the SAME object
+    the server rendered the summary from, so a drill-down can never disagree
+    with the headline above it.
+#}<!doctype html>
+<html lang="en" class="ops">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Ops — Shubh Bhagya agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Tokens ───────────────────────────────────────────────────────────────
+   A night ground with WARM ink (#e8e4da is the public site's cream, not a
+   cold grey), so the console reads as the same brand after dark rather than
+   as a generic dark admin theme. Saffron is bhagya-saffron. The four outcome
+   colours are semantic and used nowhere else — a colour on this page always
+   means the same thing. */
+:root{
+  --ground:#0e1013; --panel:#16191f; --panel-2:#1c212a; --panel-3:#222836;
+  --line:#272c37; --line-2:#39404f;
+  --ink:#e8e4da; --ink-dim:#9ba2ae; --ink-mute:#6e7684;
+  --shipped:#5bb98c; --open:#e3a84a; --nothing:#646c7a; --failed:#e0614a;
+  --accent:#e3a84a; --accent-dim:#8a6a2a;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--ground); color:var(--ink);
+  font:400 15px/1.55 Manrope,system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  /* A single very soft warm bloom at the top, so the page is not a flat
+     rectangle of near-black. No second gradient anywhere. */
+  background-image:radial-gradient(1200px 420px at 18% -12%,rgba(227,168,74,.07),transparent 70%);
+  background-repeat:no-repeat;
+}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 72px}
+
+/* The ribbon is the only thing that scrolls sideways, and a default light
+   scrollbar under it was the single brightest object on the page. */
+.ribbon,.sheet .list{scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
+.ribbon::-webkit-scrollbar,.sheet .list::-webkit-scrollbar{height:8px;width:8px}
+.ribbon::-webkit-scrollbar-track,.sheet .list::-webkit-scrollbar-track{background:transparent}
+.ribbon::-webkit-scrollbar-thumb,.sheet .list::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:4px}
+.ribbon::-webkit-scrollbar-thumb:hover,.sheet .list::-webkit-scrollbar-thumb:hover{background:var(--ink-mute)}
+
+/* ── Micro-label: the console's recurring voice ───────────────────────── */
+.lbl{font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-mute)}
+.num{font-family:Marcellus,Georgia,serif;font-variant-numeric:tabular-nums;line-height:1}
+.mono{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
+
+/* ── Topbar ───────────────────────────────────────────────────────────── */
+header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
+.top-in{max-width:1180px;margin:0 auto;padding:16px 20px;display:flex;
+  align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.mark{font-family:Marcellus,Georgia,serif;font-size:17px;letter-spacing:.02em}
+.mark b{color:var(--accent);font-weight:400}
+.top-meta{display:flex;gap:18px;flex-wrap:wrap;align-items:baseline}
+
+/* ── Verdict: the one sentence this page exists to deliver ───────────── */
+.verdict{border:1px solid var(--line);border-left:2px solid var(--accent);
+  background:linear-gradient(90deg,rgba(227,168,74,.045),transparent 55%);
+  padding:20px 22px;border-radius:3px;margin-bottom:22px}
+.verdict p{margin:8px 0 0;font-size:19px;line-height:1.5;max-width:68ch}
+.verdict .sub{font-size:13px;color:var(--ink-dim);margin-top:10px;max-width:78ch}
+.verdict b{font-weight:600}
+
+/* ── Tiles ────────────────────────────────────────────────────────────── */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:26px}
+.tile{appearance:none;text-align:left;width:100%;cursor:pointer;
+  background:var(--panel);border:1px solid var(--line);border-radius:3px;
+  padding:16px 16px 14px;color:inherit;font:inherit;
+  transition:border-color .16s,background .16s,transform .16s}
+.tile:hover,.tile:focus-visible{border-color:var(--line-2);background:var(--panel-2);transform:translateY(-1px)}
+.tile[disabled]{cursor:default;opacity:.55}
+.tile[disabled]:hover{transform:none;background:var(--panel);border-color:var(--line)}
+.tile .v{display:flex;align-items:baseline;gap:8px;margin:10px 0 2px}
+.tile .v .num{font-size:38px}
+.tile .foot{font-size:12px;color:var(--ink-mute)}
+.tile .caret{float:right;color:var(--ink-mute);font-size:11px;letter-spacing:.1em}
+.c-shipped{color:var(--shipped)} .c-open{color:var(--open)}
+.c-failed{color:var(--failed)}  .c-nothing{color:var(--nothing)}
+
+/* ── Panels ───────────────────────────────────────────────────────────── */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:3px;margin-bottom:22px}
+.panel > h2{margin:0;padding:14px 18px;border-bottom:1px solid var(--line);
+  font:400 15px/1 Marcellus,Georgia,serif;letter-spacing:.03em;
+  display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.panel > h2 .lbl{font-weight:600}
+.panel .body{padding:18px}
+.cols{display:grid;grid-template-columns:1.25fr 1fr;gap:22px;align-items:start}
+
+/* ── THE SIGNATURE: the cycle ribbon ──────────────────────────────────────
+   One lane per day, a 24-hour IST x-axis, each cycle a block placed at its
+   start time and as wide as it ran. Two dashed verticals mark the crons
+   (04:30 and 16:30 IST), so a cron that fired late is visible as a block
+   sitting to the RIGHT of its own line — which is what happened on
+   2026-10-14, when the 04:30 leg started at 07:11. A table of start times
+   cannot show that, and a bar chart of durations cannot show when. */
+.ribbon{overflow-x:auto;padding-bottom:4px}
+.ribbon-in{min-width:680px}
+.axis{display:grid;grid-template-columns:62px 1fr;align-items:center;margin-bottom:6px}
+.ticks{position:relative;height:14px}
+.ticks span{position:absolute;transform:translateX(-50%);font-size:10px;color:var(--ink-mute);font-family:var(--mono)}
+.lane{display:grid;grid-template-columns:62px 1fr;align-items:center;margin-bottom:5px}
+.lane .day{font-family:var(--mono);font-size:11px;color:var(--ink-mute);padding-right:10px;text-align:right}
+.lane.is-today .day{color:var(--accent)}
+.track{position:relative;height:26px;background:var(--panel-2);border:1px solid var(--line);border-radius:2px}
+.grid-line{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.cron-line{position:absolute;top:-2px;bottom:-2px;width:0;border-left:1px dashed var(--accent-dim)}
+.now-line{position:absolute;top:-3px;bottom:-3px;width:0;border-left:1px solid var(--accent)}
+.blk{position:absolute;top:3px;bottom:3px;min-width:7px;border:0;padding:0;border-radius:2px;
+  cursor:pointer;transform-origin:left center;
+  transition:filter .14s,box-shadow .14s}
+.blk:hover,.blk:focus-visible{filter:brightness(1.25);box-shadow:0 0 0 1px var(--ink)}
+.blk.o-shipped{background:var(--shipped)} .blk.o-pr-open{background:var(--open)}
+.blk.o-nothing{background:var(--nothing)} .blk.o-failed{background:var(--failed)}
+.blk.o-unknown{background:repeating-linear-gradient(135deg,var(--failed) 0 4px,#8c3e32 4px 8px)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--ink-dim)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:1px;margin-right:6px;vertical-align:baseline}
+
+/* ── Segmented bars (backlog groupings) ──────────────────────────────── */
+.seg-tabs{display:flex;gap:2px;margin-bottom:16px;border:1px solid var(--line);
+  border-radius:3px;padding:2px;width:fit-content;background:var(--panel-2)}
+.seg-tabs button{appearance:none;background:none;border:0;color:var(--ink-dim);
+  font:600 10px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;
+  padding:8px 13px;border-radius:2px;cursor:pointer}
+.seg-tabs button[aria-selected="true"]{background:var(--panel-3);color:var(--ink)}
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:grid;grid-template-columns:118px 1fr 34px;gap:11px;align-items:center}
+.bar-row .k{font-size:12px;color:var(--ink-dim);text-align:right;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.bar-row .n{font-family:var(--mono);font-size:12px;color:var(--ink-dim);text-align:right}
+.bar{height:20px;background:var(--panel-2);border-radius:2px;overflow:hidden}
+.bar button{display:block;height:100%;border:0;padding:0;cursor:pointer;min-width:3px;
+  background:var(--line-2);transition:filter .14s}
+.bar button:hover,.bar button:focus-visible{filter:brightness(1.4)}
+.bar button.p-high{background:var(--failed)}
+.bar button.p-medium{background:var(--open)}
+.bar button.p-unset{background:var(--nothing)}
+
+/* ── Alert strip. The first thing on the page, and empty on a good day.
+   A row of green "OK" badges would be noise that trains the reader to skip
+   the strip — so a passing check renders NOTHING, and the one quiet line
+   below says what was checked so silence is unambiguous. */
+.alerts{margin:0 0 18px;display:grid;gap:8px}
+.alert{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;align-items:baseline;
+  padding:13px 16px;border:1px solid var(--line);border-radius:3px}
+.alert .sev{grid-row:span 2;font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;
+  text-transform:uppercase;padding:5px 8px;border-radius:2px;align-self:start}
+.alert .t{font-size:15px;font-weight:600;line-height:1.35}
+.alert .d{font-size:12.5px;line-height:1.5;color:var(--ink-dim);max-width:76ch}
+.alert .d a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+.alert .d a:hover{border-bottom-color:var(--accent)}
+.alert.red{border-color:#6b3329;background:linear-gradient(90deg,rgba(224,97,74,.07),transparent 65%)}
+.alert.red .sev{color:var(--failed);border:1px solid #6b3329}
+.alert.red .t{color:#f0a393}
+.alert.amber{border-color:#6b5223;background:linear-gradient(90deg,rgba(227,168,74,.05),transparent 65%)}
+.alert.amber .sev{color:var(--open);border:1px solid #6b5223}
+.clear{margin:0 0 18px;padding:11px 16px;border:1px solid var(--line);border-radius:3px;
+  font-size:12.5px;color:var(--ink-mute)}
+.clear b{color:var(--shipped);font-weight:600}
+
+/* ── App health: the product, not the team. Live, 60s cache. ─────────── */
+.rt{width:100%;border-collapse:collapse;font-size:13px}
+.rt th{text-align:left;font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-mute);padding:0 0 9px;font-weight:600}
+.rt td{padding:9px 0;border-top:1px solid var(--line);vertical-align:baseline}
+.rt td.n{text-align:right;font-family:var(--mono);font-size:12px;white-space:nowrap}
+.rt .sub{display:block;font-size:11px;color:var(--ink-mute);margin-top:2px}
+
+/* ── The objective. One line, above everything that claims progress. ────
+   The page measured traffic, delivery and cost and never said what any of it
+   was FOR, so there was nothing to judge a number against. chief owns the
+   line; this only renders it. */
+.obj{display:flex;gap:14px;align-items:baseline;margin:0 0 18px;padding:13px 16px;
+  border:1px solid var(--line);border-left:2px solid var(--shipped);
+  background:linear-gradient(90deg,rgba(91,185,140,.05),transparent 60%);border-radius:3px}
+.obj .lbl{flex:none;padding-top:2px}
+.obj p{margin:0;font:400 15px/1.45 Marcellus,Georgia,serif;color:var(--ink);max-width:70ch}
+.obj .none{font-family:Manrope,sans-serif;font-size:13px;color:var(--ink-mute)}
+
+/* An age, not a timestamp. `2026-10-14T07:22:00Z` does not read as stale;
+   "9h ago" does. Amber once a daily collection has been missed. */
+.age{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);letter-spacing:.02em}
+.age.stale{color:var(--open)}
+/* `live` is a state, not an age, so it gets a dot rather than a colour of its
+   own — three panels with three different freshness stories (live, live,
+   and a snapshot that CANNOT be live) have to be comparable at a glance.
+   Deliberately not green text: on this page green means "no alerts", and a
+   freshness badge must not compete with the strip at the top. */
+.age.live{color:var(--ink-dim)}
+.age.live::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--shipped);margin-right:4px;vertical-align:1px}
+
+/* The ranked queue under the bars. Rows are quiet until hovered — the bars
+   above are the colour in this panel, and two competing colour fields in one
+   card read as noise. */
+.queue{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+.q-item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;
+  align-items:baseline;padding:9px 0;
+  border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
+.q-chips{display:flex;gap:5px;flex:none}
+.q-item:last-of-type{border-bottom:0}
+.q-item:hover{text-decoration:none}
+.q-item:hover .q-t{color:var(--accent)}
+.q-t{font-size:13px;line-height:1.45}
+/* What the issue REQUIRES, under what is wrong with it. Indented to the title
+   so it reads as subordinate, and capped at 70ch — past that it stops being a
+   summary. Absent for 35 of 62 issues, and the note under the queue says so. */
+.q-ask{grid-column:2;margin:0;font-size:12px;line-height:1.5;
+  color:var(--ink-dim);max-width:70ch}
+.q-t{grid-column:2}
+.q-more{padding:10px 0 0;font-size:12px;color:var(--ink-mute)}
+.q-note{margin:16px 0 0;font-size:12px;color:var(--ink-mute);line-height:1.6}
+.q-note code{font-family:var(--mono);color:var(--ink-dim)}
+
+/* ── Traffic: two series, drawn server-side as SVG paths ──────────────────
+   The y axis starts at zero on both. A chart scaled to its own minimum turns
+   a wobble between 6 and 11 users into a cliff, and that is the easiest way
+   for a dashboard to mislead while containing no false number. */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.chart{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:15px 16px 10px}
+.chart .hd{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.chart .big{font-family:Marcellus,Georgia,serif;font-size:27px;line-height:1;font-variant-numeric:tabular-nums}
+/* The plot is a grid: a fixed y-axis gutter, then the stretching SVG. Axis
+   TEXT lives in HTML, never in the SVG — the path is drawn with
+   preserveAspectRatio="none" so it fills any width, and anything in that same
+   coordinate system stretches with it, letters included. */
+.plot{display:grid;grid-template-columns:34px 1fr;gap:0 7px}
+.yax{display:flex;flex-direction:column;justify-content:space-between;
+  height:92px;text-align:right}
+.yax span{font-family:var(--mono);font-size:10px;color:var(--ink-mute);
+  line-height:1;transform:translateY(-3px)}
+.chart svg{display:block;width:100%;height:92px;overflow:visible}
+.xax{grid-column:2;position:relative;height:15px;margin-top:5px}
+.xax span{position:absolute;font-family:var(--mono);font-size:10px;color:var(--ink-mute);
+  white-space:nowrap}
+.xax span:first-child{left:0}
+.xax span:last-child{right:0}
+.gl{stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
+/* A full-height target per day, so the pointer never has to find a 2px line.
+   Each carries a <title>, which is how a reader gets one day's number with no
+   JavaScript at all. */
+.band{fill:transparent}
+.band:hover{fill:rgba(232,228,218,.06)}
+.dot{opacity:0;pointer-events:none}
+.band:hover + .dot{opacity:1}
+
+/* ── Movers ───────────────────────────────────────────────────────────── */
+.movers{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
+.mv h3{margin:0 0 4px;font:600 10px/1 Manrope,sans-serif;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-mute)}
+.mv .cap{font-size:11.5px;color:var(--ink-mute);margin:0 0 11px;line-height:1.5}
+.mv a,.mv div.row{display:grid;grid-template-columns:1fr 54px 60px;gap:9px;align-items:baseline;
+  padding:8px 0;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:12.5px}
+.mv a:last-child,.mv div.row:last-child{border-bottom:0}
+.mv a:hover{text-decoration:none}
+.mv a:hover .k{color:var(--accent)}
+.mv .k{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mv .d{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.mv .was{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);text-align:right;white-space:nowrap}
+.up .d{color:var(--shipped)} .down .d{color:var(--failed)}
+.cov{display:inline-block;font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;
+  text-transform:uppercase;padding:4px 7px;border-radius:2px;border:1px solid #6b5223;color:var(--open)}
+
+/* ── Team: loop liveness, delivery yield, per-agent activity ──────────────
+   The verdict chip carries the colour; the row stays quiet. A table where
+   every row is tinted is a table where nothing stands out, and the whole
+   point of this one is that a single loop is broken. */
+.loops{width:100%;border-collapse:collapse;font-size:12.5px}
+.loops th{text-align:left;font:600 10px/1 Manrope,sans-serif;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-mute);padding:0 10px 9px 0;border-bottom:1px solid var(--line)}
+.loops td{padding:9px 10px 9px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.loops tr:last-child td{border-bottom:0}
+.loops td.w{white-space:normal}
+.loops a{color:var(--ink)}
+.loops a:hover{color:var(--accent);text-decoration:none}
+.loops .c{font-family:var(--mono);font-size:11px;color:var(--ink-mute)}
+.v-broken{color:var(--failed);border-color:#6b3329}
+.v-dormant{color:var(--failed);border-color:#6b3329}
+.v-missing-slots{color:var(--open);border-color:#6b5223}
+.v-reporting{color:var(--open);border-color:#6b5223}
+.v-ok{color:var(--shipped);border-color:#2f5c47}
+.v-not-due-yet,.v-on-demand{color:var(--ink-mute)}
+.who{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+.who span{border:1px solid var(--line-2);border-radius:2px;padding:6px 9px;font-size:12px;color:var(--ink-dim)}
+.who b{color:var(--ink);font-family:var(--mono);font-size:12px;margin-left:5px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:7px 14px;font-size:12.5px;margin-top:4px}
+.kv .n{font-family:var(--mono);color:var(--ink);text-align:right}
+.kv .lab{color:var(--ink-dim)}
+
+/* ── Cost table ───────────────────────────────────────────────────────── */
+table.cost{width:100%;border-collapse:collapse;font-size:13px}
+table.cost th{text-align:left;font:600 10px/1 Manrope,sans-serif;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-mute);padding:0 0 9px;border-bottom:1px solid var(--line)}
+table.cost th:last-child,table.cost td:last-child{text-align:right}
+table.cost td{padding:10px 0;border-bottom:1px solid var(--line);vertical-align:top}
+table.cost tr:last-child td{border-bottom:0}
+table.cost .v{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.unknown{color:var(--open);font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.note{font-size:11.5px;color:var(--ink-mute);margin-top:3px;line-height:1.45}
+.arith{margin-top:16px;padding:14px;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:2px;font-size:12.5px;color:var(--ink-dim);line-height:1.6}
+.arith .eq{font-family:var(--mono);color:var(--ink);display:block;margin-bottom:6px;font-size:13px}
+
+/* ── Gap notice: what this page CANNOT show, said out loud ───────────── */
+.gap{border:1px dashed var(--line-2);border-radius:3px;padding:15px 17px;
+  font-size:13px;color:var(--ink-dim);line-height:1.6}
+.gap h3{margin:0 0 7px;font:600 10px/1 Manrope,sans-serif;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--open)}
+
+/* ── Drill-down sheet ─────────────────────────────────────────────────── */
+.scrim{position:fixed;inset:0;background:rgba(5,6,8,.62);opacity:0;pointer-events:none;
+  transition:opacity .2s;z-index:40;backdrop-filter:blur(2px)}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);z-index:41;
+  background:var(--panel);border-left:1px solid var(--line-2);
+  transform:translateX(100%);transition:transform .24s cubic-bezier(.22,.7,.2,1);
+  display:flex;flex-direction:column}
+.sheet.on{transform:none}
+.sheet header{padding:18px 20px;border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.sheet h2{margin:6px 0 0;font:400 19px/1.3 Marcellus,Georgia,serif}
+.sheet .x{appearance:none;background:none;border:1px solid var(--line);color:var(--ink-dim);
+  border-radius:2px;width:30px;height:30px;cursor:pointer;flex:none;font-size:15px;line-height:1}
+.sheet .x:hover{color:var(--ink);border-color:var(--line-2)}
+.sheet .list{overflow-y:auto;padding:10px 20px 28px;flex:1}
+.item{display:block;padding:13px 0;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
+.item:last-child{border-bottom:0}
+.item:hover{text-decoration:none}
+.item:hover .t{color:var(--accent)}
+.item .r1{display:flex;gap:9px;align-items:baseline;margin-bottom:4px;flex-wrap:wrap}
+.item .t{font-size:14px;line-height:1.45}
+.item .meta{font-family:var(--mono);font-size:11px;color:var(--ink-mute)}
+/* The ask, in the drill-down too — this is where you read the queue. */
+.item .ask{font-size:12.5px;line-height:1.5;color:var(--ink-dim);margin:5px 0 0;max-width:62ch}
+/* WHY something happened is already written down, by the agent that did it, in
+   the issue comments. So a cycle row links to the comment thread as well as to
+   the run log — a run says WHAT happened, the thread says why. Two links means
+   the row cannot be one <a>, hence div + explicit links. */
+.item .links{display:flex;gap:14px;margin-top:7px;flex-wrap:wrap}
+.item .links a{font:500 11px/1 Manrope,sans-serif;letter-spacing:.04em;
+  color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+.item .links a:hover{border-bottom-color:var(--accent)}
+.item.row{cursor:default}
+.chip{font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;text-transform:uppercase;
+  padding:4px 7px;border-radius:2px;border:1px solid var(--line-2);color:var(--ink-dim);flex:none}
+.chip.shipped{color:var(--shipped);border-color:#2f5c47}
+.chip.failed,.chip.unknown{color:var(--failed);border-color:#6b3329}
+.chip.nothing{color:var(--nothing)}
+.chip.pr-open{color:var(--open);border-color:#6b5223}
+.chip.high{color:var(--failed);border-color:#6b3329}
+.chip.medium{color:var(--open);border-color:#6b5223}
+.chip.low{color:var(--ink-mute)}
+/* Unranked is not low. It is the absence of a decision, so it gets the colour
+   of "nothing recorded" rather than a position on the scale. */
+.chip.unset{color:var(--nothing);border-color:var(--line-2)}
+.chip.blocked{color:var(--open);border-color:#6b5223}
+.empty{padding:30px 0;color:var(--ink-mute);font-size:13px}
+
+/* ── Provenance footer: where every number came from ─────────────────── */
+footer.prov{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:12px;color:var(--ink-mute);line-height:1.7}
+footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
+
+@media (max-width:860px){
+  .cols,.charts,.movers{grid-template-columns:1fr}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .verdict p{font-size:17px}
+  .bar-row{grid-template-columns:96px 1fr 30px}
+  .sheet{top:auto;height:86vh;width:100%;border-left:0;border-top:1px solid var(--line-2);
+    border-radius:8px 8px 0 0;transform:translateY(100%)}
+  .sheet.on{transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+/* The one orchestrated moment: the ribbon draws itself left-to-right on load,
+   which is also the direction time runs on it. Nothing else animates. */
+@keyframes draw{from{transform:scaleX(0);opacity:.3}to{transform:scaleX(1);opacity:1}}
+.blk{animation:draw .42s cubic-bezier(.2,.8,.3,1) both}
+</style>
+</head>
+<body>
+
+{% set L = ops.loop %}{% set I = ops.issues %}{% set C = ops.cost %}
+{% set latest = L.latest %}
+
+<header class="top">
+  <div class="top-in">
+    <div class="mark">Shubh Bhagya <b>· ops</b></div>
+    <div class="top-meta">
+      <span><span class="lbl">next cycle due</span>
+        <span class="mono" style="margin-left:7px">{{ ops.next_cycle_ist.strftime('%a %H:%M') }} IST</span></span>
+      <span><span class="lbl">cycle data</span>
+        <span class="age {{ 'stale' if ops.ages.Delivery.stale }}" style="margin-left:7px"
+              title="collected {{ L.generated_at or 'never' }}">{{ ops.ages.Delivery.text }}</span></span>
+      <a href="/admin" class="lbl" style="color:var(--accent)">← admin</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  {# ── Anything wrong, first. Nothing here on a good day. ───────────── #}
+  {% if ops.alerts %}
+  <section class="alerts">
+    {% for a in ops.alerts %}
+    <div class="alert {{ a.level }}">
+      <span class="sev">{{ a.level }}</span>
+      <span class="t">{{ a.title }}</span>
+      <span class="d">{{ a.detail }}
+        {% if a.where %}<a href="{{ a.where }}">look →</a>{% endif %}</span>
+    </div>
+    {% endfor %}
+  </section>
+  {% else %}
+  <p class="clear"><b>Nothing is failing.</b> Checked: LLM error rate, provider
+    exhaustion and oversize requests, fallback rate, every scheduled loop against the
+    runs it was due, today's cycles, and the age of each committed file.</p>
+  {% endif %}
+
+  {# ── What all of it is for. OBJECTIVE.md, carried in issues.json. ──── #}
+  <section class="obj">
+    <div class="lbl">Objective</div>
+    {% if ops.objective %}
+    <p>{{ ops.objective }}</p>
+    {% else %}
+    <p class="none">No <code>OBJECTIVE.md</code> line could be read. Four loops run on
+      separate schedules and rank against this one sentence; without it they optimise
+      independently. <code>chief</code> owns it.</p>
+    {% endif %}
+  </section>
+
+  {# ── The sentence. Written from the newest row, never hardcoded. ───── #}
+  <section class="verdict">
+    <div class="lbl">Last cycle</div>
+    {% if latest %}
+    <p>
+      {% if latest.outcome == 'shipped' %}
+        Shipped <b>#{{ latest.issue }}</b> as <b>PR&nbsp;#{{ latest.pr }}</b>, merged.
+      {% elif latest.outcome == 'pr open' %}
+        Opened <b>PR&nbsp;#{{ latest.pr }}</b> for <b>#{{ latest.issue }}</b> — still unmerged.
+      {% elif latest.outcome == 'nothing' %}
+        Ran for {{ latest.minutes }} minutes and <b>produced nothing</b>.
+      {% else %}
+        <b>Did not deliver</b>{% if latest.issue %} on #{{ latest.issue }}{% endif %}
+        — recorded as <b>{{ latest.outcome }}</b>.
+      {% endif %}
+      Started {{ latest.time_ist }} IST on {{ latest.date_ist }}, ran {{ latest.minutes }} min.
+    </p>
+    <p class="sub">
+      {{ L.outcomes.get('shipped', 0) }} of {{ L.rows|length }} recorded cycles shipped.
+      {% if L.attribution.get('unattributed') %}
+        {{ L.attribution['unattributed'] }} could not be attributed from their own logs and carry
+        no issue or PR — recorded as unknown rather than guessed from timestamps.
+      {% endif %}
+      <a href="https://github.com/{{ I.rows and 'mahAnuj/astro-ai' or '' }}/actions/runs/{{ latest.run }}">Open run {{ latest.run }} →</a>
+    </p>
+    {% else %}
+    <p>No cycle data. <code>measurements/loop.json</code> could not be read.</p>
+    {% endif %}
+  </section>
+
+  {# ── Tiles. Every one opens the rows behind it. ─────────────────────── #}
+  <section class="tiles">
+    <button class="tile" data-drill="today-shipped">
+      <span class="caret">▸</span><span class="lbl">Shipped today</span>
+      <span class="v"><span class="num c-shipped">{{ L.today_shipped|length }}</span></span>
+      <span class="foot">merged to main, {{ ops.today_ist }}<br>
+        <span class="age {{ 'stale' if ops.ages.Delivery.stale }}">as of {{ ops.ages.Delivery.text }}</span></span>
+    </button>
+    <button class="tile" data-drill="today-filed" {{ '' if I.filed_today else 'disabled' }}>
+      <span class="caret">▸</span><span class="lbl">Filed today</span>
+      <span class="v"><span class="num">{{ I.filed_today|length }}</span></span>
+      <span class="foot">new issues opened</span>
+    </button>
+    <button class="tile" data-drill="today-failed">
+      <span class="caret">▸</span><span class="lbl">Failed today</span>
+      <span class="v"><span class="num {{ 'c-failed' if L.today_failed else 'c-nothing' }}">{{ L.today_failed|length }}</span></span>
+      <span class="foot">cycles that did not deliver</span>
+    </button>
+    <button class="tile" data-drill="backlog">
+      <span class="caret">▸</span><span class="lbl">Open backlog</span>
+      <span class="v"><span class="num">{{ I.open }}</span>
+        <span class="foot c-open">{{ I.by_priority.get('unset', 0) }} unranked</span></span>
+      <span class="foot">{{ I.blocked|length }} blocked on a human<br>
+        {% if I.live %}<span class="age live" title="fetched from the GitHub API on this request">live</span>
+        {% else %}<span class="age {{ 'stale' if ops.ages.Backlog.stale }}"
+              title="from measurements/issues.json, collected {{ I.generated_at or 'never' }}">as of {{ ops.ages.Backlog.text }}</span>{% endif %}</span>
+    </button>
+  </section>
+
+  {# ── Signature panel ───────────────────────────────────────────────── #}
+  <section class="panel">
+    <h2>Cycle ribbon <span class="lbl">24 h IST · click a block</span></h2>
+    <div class="body">
+      <div class="ribbon">
+        <div class="ribbon-in">
+          <div class="axis">
+            <span></span>
+            <div class="ticks">
+              {# 24 is labelled 24, not 0 — a lane runs to midnight, it does not
+                 wrap. The last tick is nudged inside so it is not half cut off. #}
+              {% for h in [0, 4, 8, 12, 16, 20, 24] %}
+              <span style="left:{{ (h / 24 * 100)|round(3) }}%;
+                           {% if h == 0 %}transform:none{% elif h == 24 %}transform:translateX(-100%){% endif %}">{{ '%02d'|format(h) }}</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% for day in L.days %}
+          {% set day_rows = L.rows|selectattr('date_ist', 'equalto', day)|list %}
+          <div class="lane{{ ' is-today' if day == ops.today_ist else '' }}">
+            <div class="day">{{ day[5:] }}</div>
+            <div class="track">
+              {% for h in [4, 8, 12, 16, 20] %}
+              <span class="grid-line" style="left:{{ (h / 24 * 100)|round(3) }}%"></span>
+              {% endfor %}
+              {# The two crons, in IST: 23:00 UTC = 04:30, 11:00 UTC = 16:30. #}
+              {% for m in [270, 990] %}
+              <span class="cron-line" style="left:{{ (m / 1440 * 100)|round(3) }}%"
+                    title="scheduled cycle, {{ '%02d:%02d'|format(m // 60, m % 60) }} IST"></span>
+              {% endfor %}
+              {% if day == ops.today_ist %}
+              <span class="now-line" title="now"
+                    style="left:{{ ((ops.now_ist.hour * 60 + ops.now_ist.minute) / 1440 * 100)|round(3) }}%"></span>
+              {% endif %}
+              {% for r in day_rows %}
+              {% if r.started_ist_minutes is not none %}
+              <button class="blk o-{{ r.outcome|replace(' ', '-') }}"
+                      data-run="{{ r.run }}"
+                      style="left:{{ (r.started_ist_minutes / 1440 * 100)|round(3) }}%;
+                             width:{{ ([(r.minutes or 2) / 1440 * 100, 0.6]|max)|round(3) }}%;
+                             animation-delay:{{ loop.index0 * 45 }}ms"
+                      title="{{ r.time_ist }} IST · {{ r.minutes }} min · {{ r.outcome }}">
+                <span class="sr-only" style="position:absolute;left:-9999px">
+                  {{ r.time_ist }}, {{ r.minutes }} minutes, {{ r.outcome }}</span>
+              </button>
+              {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--shipped)"></i>shipped &amp; merged</span>
+        <span><i style="background:var(--open)"></i>PR left open</span>
+        <span><i style="background:var(--nothing)"></i>produced nothing</span>
+        <span><i style="background:var(--failed)"></i>failed</span>
+        <span><i style="background:repeating-linear-gradient(135deg,var(--failed) 0 3px,#8c3e32 3px 6px)"></i>unattributable</span>
+        <span style="color:var(--ink-mute)">┆ dashed = cron due</span>
+      </div>
+    </div>
+  </section>
+
+  {# ── Team. Liveness first, then yield, then who did what. ───────────────
+     Liveness leads because a loop that never runs cannot produce bad work to
+     grade, and a yield figure over zero runs reads as a flawless 0 of 0. #}
+  {% if ops.agents.ok %}
+  {% set A = ops.agents %}
+  <section class="panel">
+    <h2>Team <span class="lbl">
+      {% if A.alerts %}<span style="color:var(--failed)">{{ A.alerts|length }} loop{{ '' if A.alerts|length == 1 else 's' }} need attention</span>
+      {% else %}every scheduled loop ran when due{% endif %}
+      · {{ A.window_days }} d</span>
+      <span class="age {{ 'stale' if ops.ages.Team.stale }}"
+            title="from measurements/agents.json, collected {{ A.generated_at or 'never' }}">as of {{ ops.ages.Team.text }}</span></h2>
+    <div class="body">
+      <table class="loops">
+        <thead><tr><th>Loop</th><th>Cadence</th><th>Due</th><th>Ran</th><th>Last</th><th></th></tr></thead>
+        <tbody>
+        {% for r in A.scheduled %}
+          <tr>
+            <td class="w"><a href="https://github.com/mahAnuj/astro-ai/actions/workflows/{{ r.workflow }}">{{ r.workflow[:-4] }}</a></td>
+            <td class="c">{{ (r.cadence or ['—'])|join(' + ') }}</td>
+            <td class="c">{{ r.slots_due if r.slots_due is not none else '—' }}</td>
+            <td class="c">{{ r.runs_scheduled }}</td>
+            <td class="c">{{ (r.last_run or '—')[0:10] }}</td>
+            <td><span class="chip v-{{ r.verdict }}">{{ r.verdict }}</span></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <p class="note" style="margin-top:12px">
+        <b>Due</b> counts the cron slots that fell since the workflow file was <i>last edited</i>,
+        not since it was created — a schedule is only knowable from when it was last written.
+        Counting from creation reported <code>agent-work</code> as missing eight 16:30 slots that
+        no schedule had declared yet, which is why the window moved.
+        <b>reporting</b> means the run went red because its own script found something, not because
+        it failed: <code>loop-outcomes</code> exits non-zero when a loop is broken, so colouring it
+        the same red as a crash teaches a reader to ignore red.
+      </p>
+
+      <div class="cols" style="margin-top:22px">
+        <div>
+          <div class="lbl" style="margin-bottom:9px">Delivery yield · agent-work</div>
+          <div class="kv">
+            <span class="lab">cycles recorded</span><span class="n">{{ A.delivery.cycles }}</span>
+            <span class="lab">shipped and merged</span><span class="n c-shipped">{{ A.delivery.outcomes.get('shipped', 0) }}</span>
+            <span class="lab">produced nothing</span><span class="n">{{ A.delivery.outcomes.get('nothing', 0) }}</span>
+            <span class="lab">failed</span><span class="n c-failed">{{ A.delivery.outcomes.get('failed', 0) }}</span>
+            <span class="lab">unattributable</span><span class="n">{{ A.delivery.outcomes.get('unknown', 0) }}</span>
+            <span class="lab"><b>yield</b></span><span class="n"><b>{{ A.delivery.yield_pct }}%</b></span>
+            <span class="lab">median cycle</span><span class="n">{{ A.delivery.median_minutes }} min</span>
+            <span class="lab">runner minutes per shipped issue</span><span class="n">{{ A.delivery.minutes_per_shipped }}</span>
+          </div>
+          <p class="note">Runner minutes are the only cost signal available per loop: the Claude
+            subscription is flat and cannot be attributed to a run.</p>
+        </div>
+        <div>
+          <div class="lbl" style="margin-bottom:9px">Who spoke · {{ A.window_days }} d</div>
+          <div class="who">
+            {% for name, n in A.agents.by_agent.items() %}
+            <span>{{ name }}<b>{{ n }}</b></span>
+            {% endfor %}
+          </div>
+          <div class="lbl" style="margin:18px 0 9px">QA rounds</div>
+          <div class="kv">
+            <span class="lab">issues with a verdict</span><span class="n">{{ A.agents.qa.issues_with_a_verdict }}</span>
+            <span class="lab">reached PASS</span><span class="n">{{ A.agents.qa.issues_reaching_pass }}</span>
+            <span class="lab">failed first submission</span><span class="n">{{ A.agents.qa.first_submission_failed }} ({{ A.agents.qa.first_submission_fail_pct }}%)</span>
+            <span class="lab">most rounds on one issue</span><span class="n">{{ A.agents.qa.max_rounds }}</span>
+          </div>
+          <p class="note">
+            <code>/bug</code> records fifteen QA passes with <i>every one</i> failing its first
+            submission. At {{ A.agents.qa.first_submission_fail_pct }}% that is no longer true —
+            the number is here so a regression is visible rather than remembered.
+            <br><br>
+            {{ A.agents.unmatched_count }} of {{ A.agents.comments_by_agents }} agent comments
+            ({{ A.agents.unmatched_pct }}%) matched no agent pattern and are counted, not dropped:
+            a parser that silently reads half its input looks identical to one that reads all of it.
+            These figures come from the agents' own comments, so they catch an agent that stops or
+            regresses — not one that writes a confident comment and does nothing. The gates catch that.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {# ── Traffic. Two daily series and what moved between two windows. ──────
+     This panel existed as an apology for most of a day: GA4's committed export
+     carries landing x channel with no date, and nothing here retained history,
+     so a trend looked like it needed a history store built first. It did not.
+     GSC keeps 16 months and GA4 returns a `date` dimension on request — both
+     ARE the history store, and the gap was that neither was ever asked for. #}
+  {% if ops.traffic.ok %}
+  {% set T = ops.traffic %}
+  <section class="panel">
+    <h2>Traffic <span class="lbl">{{ T.window[0] }} → {{ T.window[1] }}</span></h2>
+    <div class="body">
+      {% macro chart(sr, label, big, side, stroke, fill, unit) %}
+      <div class="chart">
+        <div class="hd">
+          <div><span class="lbl">{{ label }}</span>
+            <div class="big">{{ big }}</div></div>
+          <div class="lbl" style="text-align:right">{{ side|safe }}</div>
+        </div>
+        <div class="plot">
+          <div class="yax">
+            {% for t in sr.yticks %}<span>{{ '{:,}'.format(t) }}</span>{% endfor %}
+          </div>
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img"
+               aria-label="{{ sr.n }} days, peak {{ sr.peak }} {{ unit }}, axis to {{ sr.top }}">
+            {% for y in sr.ygrid %}
+            <line class="gl" x1="0" y1="{{ y }}" x2="100" y2="{{ y }}"/>
+            {% endfor %}
+            <polygon points="{{ sr.area }}" fill="{{ fill }}"/>
+            <polyline points="{{ sr.line }}" fill="none" stroke="{{ stroke }}"
+                      stroke-width="1.6" vector-effect="non-scaling-stroke"
+                      stroke-linejoin="round" stroke-linecap="round"/>
+            {% for b in sr.bands %}
+            <rect class="band" x="{{ b.x }}" y="0" width="{{ b.w }}" height="100">
+              <title>{{ b.date }} — {{ b.value }} {{ unit }}{% if b.no_data %} (no data returned){% endif %}</title>
+            </rect>
+            <circle class="dot" cx="{{ b.px }}" cy="{{ b.py }}" r="2.4"
+                    fill="{{ stroke }}" vector-effect="non-scaling-stroke"
+                    transform="translate({{ b.px }} {{ b.py }}) scale(0.28 1) translate(-{{ b.px }} -{{ b.py }})"/>
+            {% endfor %}
+          </svg>
+          <div class="xax">
+            {% for t in sr.xticks %}
+            <span style="left:{{ t.pos }}%;transform:translateX({{ '0' if loop.first else ('-100%' if loop.last else '-50%') }})">{{ t.date[5:] }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endmacro %}
+
+      <div class="charts">
+        {{ chart(T.users, 'People · daily active users', T.users.total,
+                 'peak ' ~ T.users.peak ~ '<br>last ' ~ T.users.last,
+                 'var(--accent)', 'rgba(227,168,74,.14)', 'users') }}
+        {{ chart(T.impressions, 'Search impressions · daily', '{:,}'.format(T.impressions.total),
+                 'peak ' ~ T.impressions.peak ~ '<br>' ~ T.clicks_total ~ ' clicks',
+                 'var(--shipped)', 'rgba(91,185,140,.13)', 'impressions') }}
+      </div>
+
+      {# A page row links to the live page. A QUERY row links nowhere: the
+         dimension value is a search phrase, not a URL, and a link built from
+         one would 404 on this site. #}
+      {% macro movers(m, label, linkable) %}
+      <div class="mv">
+        <h3>{{ label }}</h3>
+        <p class="cap">
+          {{ m.window[0] }}→{{ m.window[1] }} against {{ m.window_prev[0] }}→{{ m.window_prev[1] }},
+          same length.
+          {% if m.coverage_pct is not none and m.coverage_pct < 50 %}
+          <br><span class="cov">{{ m.coverage_pct }}% coverage</span>
+          Google withholds low-volume queries, so this ranks only the measured share.
+          {% endif %}
+        </p>
+        {% for r in m.up + m.down %}
+        {% set key = r[m.dimension] %}
+        {% set dir = 'up' if r.delta > 0 else 'down' %}
+        {% if linkable %}
+        <a class="{{ dir }}" href="{{ key }}">
+          <span class="k">{{ key|replace('https://shubhagya.com', '') }}</span>
+          <span class="d">{{ '+' if r.delta > 0 }}{{ r.delta }}</span>
+          <span class="was">{{ r.impressions_prev }}→{{ r.impressions }}</span>
+        </a>
+        {% else %}
+        <div class="row {{ dir }}">
+          <span class="k">{{ key }}</span>
+          <span class="d">{{ '+' if r.delta > 0 }}{{ r.delta }}</span>
+          <span class="was">{{ r.impressions_prev }}→{{ r.impressions }}</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+      {% endmacro %}
+
+      <div class="movers">
+        {{ movers(T.pages, 'Pages — biggest movers', true) }}
+        {{ movers(T.queries, 'Queries — biggest movers', false) }}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="cols">
+    {# ── Backlog, three ways, each segment a filter ─────────────────── #}
+    <section class="panel">
+      <h2>Backlog <span class="lbl">{{ I.open }} open · click a bar</span>
+        {% if I.live %}<span class="age live">live</span>
+        {% else %}<span class="age {{ 'stale' if ops.ages.Backlog.stale }}">as of {{ ops.ages.Backlog.text }}</span>{% endif %}</h2>
+      <div class="body">
+        <div class="seg-tabs" role="tablist">
+          <button role="tab" aria-selected="true"  data-group="priority">priority</button>
+          <button role="tab" aria-selected="false" data-group="area">area</button>
+          <button role="tab" aria-selected="false" data-group="type">type</button>
+        </div>
+        <div class="bars" id="bars"></div>
+
+        {# The bars answer "how many". This answers "which" — the ranked queue
+           the loop actually draws from, highest first, each one clickable. #}
+        {# Priority order, then recency inside a band. `high` alone showed 6 rows
+           of 62 and read as if the backlog were nearly empty; the honest view is
+           the whole queue in the order project-manager would take it, capped so
+           the panel stays a summary. Unranked sit LAST and are labelled as
+           unranked rather than low — nobody ranked them, which is not the same
+           as ranking them low. #}
+        {% set _hi = I.rows|selectattr('priority','equalto','high')|list %}
+        {% set _md = I.rows|selectattr('priority','equalto','medium')|list %}
+        {% set _lo = I.rows|selectattr('priority','equalto','low')|list %}
+        {% set _un = I.rows|selectattr('priority','equalto','unset')|list %}
+        {% set ranked = (_hi + _md + _lo + _un)[:14] %}
+        <div class="queue">
+          <div class="lbl" style="margin-bottom:10px">Top of the queue</div>
+          {% for r in ranked %}
+          <a class="q-item" href="https://github.com/mahAnuj/astro-ai/issues/{{ r.number }}">
+            <span class="q-chips">
+              <span class="chip {{ r.priority }}">{{ 'unranked' if r.priority == 'unset' else r.priority }}</span>
+              {% if r.blocked %}<span class="chip blocked">blocked</span>{% endif %}
+            </span>
+            <span class="q-t">#{{ r.number }} {{ r.title }}</span>
+            {% if r.ask %}<span class="q-ask">{{ r.ask }}</span>{% endif %}
+          </a>
+          {% else %}
+          <div class="empty">No open issues.</div>
+          {% endfor %}
+          {% if I.open > ranked|length %}
+          <div class="q-more">{{ I.open - ranked|length }} more — open the
+            <b>Open backlog</b> tile for all {{ I.open }}.</div>
+          {% endif %}
+          <p class="q-note">
+            <b>{{ I.by_priority.get('unset', 0) }} of {{ I.open }} open issues carry no priority
+            label at all.</b> project-manager ranks what is labelled, so those are not in any
+            queue — they are not low priority, they are unranked. Running
+            <code>/prioritise</code> is what moves them into one.
+          </p>
+          <p class="q-note">
+            The grey line under a title is what the issue <b>requires</b>, lifted from its body
+            — a title says what is wrong, not what to do. It is read by regex from whichever
+            section states the work, and the bodies use 40+ different headings for that, so
+            <b>{{ I.with_ask }} of {{ I.open }}</b> issues yield one and the rest show nothing.
+            A blank means nobody wrote down what the issue needs, which is worth seeing. No
+            summary is generated — nothing here spends a token.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {# ── App health. The product, not the team. Live, 60 s cache. ───── #}
+    <section class="panel">
+      <h2>App health
+        <span class="lbl">last {{ ops.app.days }} d{% if not ops.app.measured %} · nothing recorded{% endif %}</span>
+        {% if ops.app.measured %}<span class="age live"
+              title="read from this app's own GCS stores on the request, 60 s cache">live</span>{% endif %}
+      </h2>
+      <div class="body">
+        {% if not ops.app.ok %}
+        <div class="empty"><code>events</code> and <code>llm_stats</code> could not be read.</div>
+        {% elif not ops.app.measured %}
+        <div class="empty">No LLM calls recorded in this window. That is not the same as no
+          errors — with no calls there is no denominator, so nothing below can be a rate.</div>
+        {% else %}
+        <div class="kv">
+          <div><span>LLM calls</span><b class="mono">{{ "{:,}".format(ops.app.calls) }}</b></div>
+          <div><span>error events</span>
+            <b class="mono {{ 'c-failed' if ops.app.error_rate and ops.app.error_rate >= 5 }}">{{ ops.app.errors }} · {{ ops.app.error_rate }}%</b></div>
+          <div><span>every provider failed</span>
+            <b class="mono {{ 'c-failed' if ops.app.exhausted }}">{{ ops.app.exhausted }}</b></div>
+          <div><span>recovered on a 2nd provider</span>
+            <b class="mono">{{ ops.app.fallbacks }}</b></div>
+          <div><span>cache hit rate</span><b class="mono">{{ ops.app.hit_rate }}%</b></div>
+          <div><span>input tokens</span><b class="mono">{{ "{:,}".format(ops.app.input_tokens) }}</b></div>
+        </div>
+
+        <h3 class="lbl" style="margin:22px 0 10px">Tokens per request, by feature</h3>
+        <table class="rt">
+          <thead><tr><th>feature</th><th class="n">calls</th><th class="n">cache</th>
+            <th class="n">in / request</th><th class="n">saved by cache</th></tr></thead>
+          <tbody>
+          {% for r in ops.app.routes %}
+          <tr>
+            <td>{{ r.route }}<span class="sub">{{ "{:,}".format(r.input_tokens) }} in · {{ "{:,}".format(r.output_tokens) }} out</span></td>
+            <td class="n">{{ "{:,}".format(r.calls) }}</td>
+            <td class="n {{ 'c-open' if r.hit_rate == 0 }}">{{ r.hit_rate }}%</td>
+            <td class="n">{{ "{:,}".format(r.per_request) if r.per_request is not none else '—' }}</td>
+            <td class="n">{{ "{:,}".format(r.saved) if r.saved else '—' }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <p class="q-note">
+          <b>in / request</b> divides input tokens by <em>misses</em>, not calls — a cache hit
+          spends no tokens, so dividing by calls would make every prompt look cheaper as the
+          cache warms. <b>saved by cache</b> is hits × the mean cost of a miss on that same
+          route: an estimate, because the avoided prompt was never measured.
+          A feature at <b>0%</b> cache is paying full price on every request.
+        </p>
+
+        {% if ops.app.sources %}
+        <h3 class="lbl" style="margin:22px 0 10px">Where the errors are</h3>
+        <table class="rt">
+          <thead><tr><th>source</th><th class="n">events</th></tr></thead>
+          <tbody>
+          {% for src, cnt in ops.app.sources %}
+          <tr><td>{{ src }}</td><td class="n">{{ cnt }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <p class="q-note">
+          Counted from <code>events</code>, whose <code>source</code> names
+          (<code>chart:matching</code>) are a different vocabulary from
+          <code>llm_stats</code> routes (<code>matching</code>). No mapping between them
+          exists, so the error rate above is overall and is deliberately <b>not</b> split per
+          feature — inventing that join would put a confident wrong number on the page.
+          <b>413</b> (<code>RequestTooLarge</code>, {{ ops.app.too_large }}) is a prompt-size
+          failure and <b>429</b> a rate failure; they need opposite fixes, so they are counted
+          apart.
+        </p>
+        {% endif %}
+        {% endif %}
+      </div>
+    </section>
+
+    {# ── Cost. Nulls stay null. ─────────────────────────────────────── #}
+    <section class="panel">
+      <h2>Cost <span class="lbl">per month</span></h2>
+      <div class="body">
+        <table class="cost">
+          <thead><tr><th>Item</th><th>USD / mo</th></tr></thead>
+          <tbody>
+          {% for r in C.rows %}
+            <tr>
+              <td>{{ r.item }}
+                {% if r.note %}<div class="note">{{ r.note }}</div>{% endif %}</td>
+              <td class="v">
+                {% if r.monthly_usd is none %}
+                  <span class="unknown">not readable</span>
+                  <div class="note">{{ r.status }}</div>
+                {% elif r.monthly_usd == 0 %}
+                  <span style="color:var(--ink-mute)">$0</span>
+                  <div class="note">{{ r.status }}</div>
+                {% else %}
+                  ${{ '%.0f'|format(r.monthly_usd) }}
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <div class="arith">
+          <span class="eq">${{ '%.0f'|format(C.known_usd) }} ÷ {{ C.shipped_30d }} shipped in 30 days
+            = ${{ C.per_issue_usd if C.per_issue_usd is not none else '—' }} per shipped issue</span>
+          That is the <b>readable</b> spend only. {{ C.unknown|length }} item{{ '' if C.unknown|length == 1 else 's' }}
+          — {{ C.unknown|map(attribute='item')|join(', ') }} — have no figure any command here can read,
+          so they are shown as unknown rather than as zero. The real cost per issue is therefore
+          <b>higher than ${{ C.per_issue_usd }}</b>, by an amount nothing on this page knows.
+          The Claude subscription is flat, so a month with 2 shipped issues costs the same $100 as a
+          month with 12: this number measures throughput, not consumption.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  {# ── What the page cannot show. Stated, not omitted. ───────────────── #}
+  <section class="gap">
+    <h3>One thing is still missing</h3>
+    <b>Instructing the team from here.</b> That is the last slice of #335 and needs a GitHub
+    token in Secret Manager before a form on this page can file an issue. Until then the
+    instruction channel is the issue list itself.
+    <br><br>
+    <b>What the query table cannot tell you.</b> Search Console withholds any query searched by
+    too few people, so the query dimension measures about 8% of this site's impressions. The
+    pages table is near-complete; the queries table ranks only the measured share, and a query
+    absent from it is not a query nobody searched.
+  </section>
+
+  <footer class="prov">
+    Rendered from
+    <code>measurements/loop.json</code> ({{ L.rows|length }} cycles, generated {{ L.generated_at or '—' }}),
+    <code>measurements/cost.json</code>,
+    read from <b>{{ ops.source }}</b>; the backlog ({{ I.open }} open) from
+    <b>{{ ops.issues_source }}</b>{% if not I.live %}, generated {{ I.generated_at or '—' }}{% endif %}.
+    {% if ops.missing %}<br><b style="color:var(--failed)">Unavailable: {{ ops.missing|join(', ') }}</b> — those panels are blank, not zero.{% endif %}
+    <br>Cycle attribution:
+    {% for k, v in L.attribution.items() %}{{ v }}&nbsp;{{ k }}{{ ', ' if not loop.last }}{% endfor %}.
+    A row is attributed from its own run record (a printed receipt, or its own log lines), never
+    from a timestamp near another event.
+    <br>Times are IST. GitHub runs a cron late under load, so the scheduled markers say
+    <i>due</i>, not <i>ran</i>.
+  </footer>
+</div>
+
+{# ── Drill-down ─────────────────────────────────────────────────────── #}
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-h" hidden>
+  <header>
+    <div><span class="lbl" id="sheet-k">—</span><h2 id="sheet-h">—</h2></div>
+    <button class="x" id="sheet-x" aria-label="Close">✕</button>
+  </header>
+  <div class="list" id="sheet-list"></div>
+</aside>
+
+<script type="application/json" id="ops-data">{{ ops_json | safe }}</script>
+<script>
+(function () {
+  "use strict";
+  var D = JSON.parse(document.getElementById("ops-data").textContent);
+  var REPO = "https://github.com/" + D.repo;
+  var sheet = document.getElementById("sheet"),
+      scrim = document.getElementById("scrim"),
+      list  = document.getElementById("sheet-list"),
+      hK    = document.getElementById("sheet-k"),
+      hT    = document.getElementById("sheet-h"),
+      opener = null;
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function link(href, label) {
+    return '<a href="' + href + '">' + label + '</a>';
+  }
+
+  /* One renderer for both row kinds. A cycle and an issue both reduce to
+     "a chip, a title, a line of metadata, and somewhere to read more".
+
+     WHY THE ROWS CARRY LINKS RATHER THAN BEING ONE
+     ----------------------------------------------
+     A run log says WHAT a cycle did. It does not say why, and the why is
+     already written down: every agent comments its decision, what it rejected,
+     the SHA and the token cost on the issue as it works. Summarising that with
+     a fresh agent would cost quota, add latency and lose attribution — the
+     comment thread IS the record, so the row points at it. Two destinations
+     means a row cannot be a single <a>. */
+  function render(rows, kind) {
+    if (!rows.length) {
+      list.innerHTML = '<div class="empty">Nothing in this group.</div>';
+      return;
+    }
+    list.innerHTML = rows.map(function (r) {
+      if (kind === "cycle") {
+        var bits = [r.time_ist + " IST", r.date_ist, r.minutes + " min", r.trigger];
+        if (r.attribution === "unattributed") bits.push("unattributable");
+        var ls = [link(REPO + "/actions/runs/" + r.run, "run log &rarr;")];
+        /* The agents' own account of the work, which is the "why". */
+        if (r.issue) ls.push(link(REPO + "/issues/" + r.issue, "what the agents said &rarr;"));
+        if (r.pr) ls.push(link(REPO + "/pull/" + r.pr, "PR #" + r.pr + " diff &rarr;"));
+        return '<div class="item row">' +
+          '<div class="r1"><span class="chip ' + esc(r.outcome).replace(" ", "-") + '">' +
+            esc(r.outcome) + "</span>" +
+          '<span class="t">' + (r.issue ? "#" + r.issue : "no issue attributed") +
+            (r.pr ? " \u2192 PR #" + r.pr : "") + "</span></div>" +
+          '<div class="meta">' + esc(bits.join(" \u00b7 ")) + "</div>" +
+          '<div class="links">' + ls.join("") + "</div></div>";
+      }
+      var chips = "";
+      if (r.priority && r.priority !== "unset") chips += '<span class="chip ' + esc(r.priority) + '">' + esc(r.priority) + "</span>";
+      if (r.blocked) chips += '<span class="chip blocked">blocked</span>';
+      return '<div class="item row">' +
+        '<div class="r1">' + chips + '<span class="t">#' + r.number + " " + esc(r.title) + "</span></div>" +
+        '<div class="meta">' + esc([r.area, r.type, "prio " + r.priority].join(" \u00b7 ")) + "</div>" +
+        (r.ask ? '<p class="ask">' + esc(r.ask) + "</p>" : "") +
+        '<div class="links">' +
+          link(REPO + "/issues/" + r.number, "issue &rarr;") +
+          link(REPO + "/issues/" + r.number + "#partial-timeline", "discussion &rarr;") +
+        "</div></div>";
+    }).join("");
+  }
+
+  function open(kindLabel, title, rows, kind) {
+    opener = document.activeElement;
+    hK.textContent = kindLabel;
+    hT.textContent = title;
+    render(rows, kind);
+    sheet.hidden = false;
+    /* A frame, so the transform transition has a start state to run from. */
+    requestAnimationFrame(function () { sheet.classList.add("on"); scrim.classList.add("on"); });
+    document.getElementById("sheet-x").focus();
+  }
+
+  function close() {
+    sheet.classList.remove("on");
+    scrim.classList.remove("on");
+    setTimeout(function () { sheet.hidden = true; }, 240);
+    if (opener && opener.focus) opener.focus();
+  }
+
+  document.getElementById("sheet-x").addEventListener("click", close);
+  scrim.addEventListener("click", close);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !sheet.hidden) close();
+  });
+
+  /* Tiles ---------------------------------------------------------------- */
+  var TILES = {
+    "today-shipped": ["shipped today", "Cycles that merged to main today",
+                      function () { return D.today_shipped; }, "cycle"],
+    "today-filed":   ["filed today", "Issues opened today",
+                      function () { return D.filed_today; }, "issue"],
+    "today-failed":  ["failed today", "Cycles that did not deliver today",
+                      function () { return D.today_failed; }, "cycle"],
+    "backlog":       ["backlog", "Every open issue, highest priority first",
+                      function () {
+                        var rank = { high: 0, medium: 1, low: 2, unset: 3 };
+                        return D.issues.slice().sort(function (a, b) {
+                          return (rank[a.priority] ?? 9) - (rank[b.priority] ?? 9) || b.number - a.number;
+                        });
+                      }, "issue"]
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-drill]"), function (el) {
+    el.addEventListener("click", function () {
+      var t = TILES[el.getAttribute("data-drill")];
+      if (t) open(t[0], t[1], t[2](), t[3]);
+    });
+  });
+
+  /* Ribbon blocks -------------------------------------------------------- */
+  Array.prototype.forEach.call(document.querySelectorAll(".blk"), function (el) {
+    el.addEventListener("click", function () {
+      var id = Number(el.getAttribute("data-run"));
+      var r = D.cycles.filter(function (x) { return x.run === id; });
+      open("cycle " + id, r.length ? r[0].date_ist + " at " + r[0].time_ist + " IST" : "cycle",
+           r, "cycle");
+    });
+  });
+
+  /* Backlog bars -------------------------------------------------------- */
+  var GROUPS = { priority: "by_priority", area: "by_area", type: "by_type" };
+  var ORDER = { priority: ["high", "medium", "low", "unset"] };
+
+  function drawBars(group) {
+    var counts = D[GROUPS[group]] || {};
+    var keys = Object.keys(counts);
+    if (ORDER[group]) {
+      keys.sort(function (a, b) {
+        var ia = ORDER[group].indexOf(a), ib = ORDER[group].indexOf(b);
+        return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+      });
+    } else {
+      keys.sort(function (a, b) { return counts[b] - counts[a]; });
+    }
+    var max = Math.max.apply(null, keys.map(function (k) { return counts[k]; }).concat([1]));
+    document.getElementById("bars").innerHTML = keys.map(function (k) {
+      var pct = Math.max(counts[k] / max * 100, 2);
+      return '<div class="bar-row"><div class="k">' + esc(k) + "</div>" +
+        '<div class="bar"><button class="p-' + esc(k) + '" style="width:' + pct.toFixed(1) + '%"' +
+        ' data-group="' + esc(group) + '" data-key="' + esc(k) + '"' +
+        ' aria-label="' + esc(k) + ": " + counts[k] + ' issues"></button></div>' +
+        '<div class="n">' + counts[k] + "</div></div>";
+    }).join("");
+    Array.prototype.forEach.call(document.querySelectorAll("#bars button"), function (el) {
+      el.addEventListener("click", function () {
+        var key = el.getAttribute("data-key");
+        open(group + " · " + key, key + " — " + counts[key] + " open",
+             D.issues.filter(function (i) { return i[group] === key; }), "issue");
+      });
+    });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".seg-tabs button"), function (btn) {
+    btn.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".seg-tabs button"), function (b) {
+        b.setAttribute("aria-selected", String(b === btn));
+      });
+      drawBars(btn.getAttribute("data-group"));
+    });
+  });
+  drawBars("priority");
+})();
+</script>
+</body>
+</html>

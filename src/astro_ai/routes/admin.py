@@ -6,6 +6,7 @@ Owns:
     GET /admin/usage        301 to /admin (the old URL, merged 2026-08-06)
     GET /admin/activity     recent kundli / ask / matching submissions + errors
     GET /admin/insights     audience-shape aggregates (issue #140)
+    GET /admin/ops          agent-loop control room (issue #335)
     GET /admin/subscribers  full Rashifal-email subscriber list
 
 Auth is declared PER ROUTE, exactly as before: five of the six carry
@@ -20,10 +21,12 @@ Absolute imports only.
 
 from __future__ import annotations
 
+import json
+
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from astro_ai import cache, events, feedback, subscribers, users
+from astro_ai import cache, events, feedback, ops_data, subscribers, users
 from astro_ai.routes.deps import _lang, require_admin, templates
 
 router = APIRouter()
@@ -143,6 +146,45 @@ async def admin_insights(request: Request, days: int = 30,
     return templates.TemplateResponse(
         request, "admin_insights.html",
         {"lang": _lang(request), "days": days, "summary": summary},
+    )
+
+
+@router.get("/admin/ops", response_class=HTMLResponse,
+            dependencies=[Depends(require_admin)])
+async def admin_ops(request: Request) -> HTMLResponse:
+    """The agent team's control room — what the loop did, costs, and the backlog.
+
+    Reads only the committed `measurements/*.json` files via `ops_data`, which
+    returns None per file on failure rather than raising, so a missing file
+    blanks one panel and the footer names it. Nothing here calls the GitHub API
+    at request time: Cloud Run's egress IP is shared, and an unauthenticated
+    API call would start failing at 60/hour for reasons invisible to the owner.
+
+    The same snapshot is serialised into the page as JSON so the drill-downs
+    filter data already rendered — a drill-down cannot disagree with the
+    headline it was opened from.
+    """
+    ops = ops_data.snapshot()
+    L, I = ops["loop"], ops["issues"]
+    client = {
+        "repo": "mahAnuj/astro-ai",
+        "cycles": L["rows"],
+        "issues": I["rows"],
+        "today_shipped": L["today_shipped"],
+        "today_failed": L["today_failed"],
+        "filed_today": I["filed_today"],
+        "by_priority": I.get("by_priority", {}),
+        "by_area": I.get("by_area", {}),
+        "by_type": I.get("by_type", {}),
+    }
+    return templates.TemplateResponse(
+        request, "admin_ops.html",
+        {
+            "lang": _lang(request),
+            "ops": ops,
+            # </script> inside a JSON string would end the block early.
+            "ops_json": json.dumps(client).replace("</", "<\\/"),
+        },
     )
 
 

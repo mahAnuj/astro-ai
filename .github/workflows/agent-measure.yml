@@ -12,6 +12,33 @@ name: Agent measure
 on:
   schedule:
     - cron: "0 21 * * *"   # 02:30 IST — two hours ahead of agent-work
+    # A SECOND SLOT, COLLECTORS ONLY. The 21:00 run is deliberately two hours
+    # AHEAD of agent-work (23:00) because the cycle plans from the analyst's
+    # report. The consequence, measured 2026-10-14: the cycle's own outcome is
+    # never in that night's data. It waits for the next 21:00 run, ~21.5 h
+    # later, so "shipped today" on /admin/ops was structurally a day behind —
+    # it read 1 while two issues had shipped (#276 at 02:02Z, #329 at 16:07Z).
+    #
+    # Fixing it by moving 21:00 later would break the ordering the cycle needs.
+    # So this slot runs the `commit` job only: the three deterministic
+    # collectors, GitHub API and committed rates, zero LLM calls and no GA4 or
+    # GSC quota. 02:00 UTC is 07:30 IST — after a 04:30 IST cycle that medians
+    # 18 min and is capped at 120, with an hour of slack.
+    - cron: "0 2 * * *"    # 07:30 IST — collectors only, see `measure.if`
+    #
+    # AND EVERY THREE HOURS AFTER IT, STILL COLLECTORS ONLY (#353).
+    # /admin/ops fetches the backlog live, and reads app health from this app's
+    # own GCS stores on the request. The team panel can do neither: measured
+    # 2026-10-15 `collect_agent_performance` needs 46 GitHub requests against a
+    # 60/hour unauthenticated budget, AND it reads `.github/workflows/*.yml`
+    # plus `git log`, neither of which is in the container -- the image copies
+    # `src/` and three files. So the only lever on that panel's freshness is
+    # how often this runs, and a loop that broke at 09:00 IST should not be
+    # reported at 07:30 the next morning.
+    #
+    # Cheap: no analyst, no LLM call, no GA4 or GSC quota, and `measurements/**`
+    # is on the Cloud Build trigger's ignoredFiles so none of it deploys.
+    - cron: "0 5,8,11,14,17,20 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -20,6 +47,22 @@ concurrency:
 
 jobs:
   measure:
+    # Skipped on the 02:00 collectors-only slot. `commit` is `if: always()` and
+    # so still runs — that is what makes the second slot cost one cheap job
+    # rather than a second analyst invocation against the 5 h rolling cap.
+    #
+    # An ALLOW-LIST, not a deny-list. It was `!= '0 2 * * *'` while there was
+    # one collectors-only slot; with seven, a deny-list is a line that has to be
+    # edited every time a slot is added and whose failure mode is silent --
+    # a forgotten entry runs the analyst six extra times a day against the
+    # Claude 5 h rolling cap this repo has already exhausted once, and both runs
+    # go green. Stated the other way round, anything unlisted fails safe.
+    #
+    # A `workflow_dispatch` carries no `github.event.schedule` at all, so the
+    # empty comparison is what lets a manual run do the full measurement. That
+    # is the intent: a human asking for a measurement wants the analyst, not
+    # just a recount.
+    if: github.event.schedule == '' || github.event.schedule == '0 21 * * *'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -56,11 +99,26 @@ jobs:
           uv run python scripts/fetch_gsc.py --days 28 --band > /tmp/gsc-band.json
           uv run python scripts/fetch_gsc.py --days 28        > /tmp/gsc-all.json
           uv run python scripts/fetch_ga4.py --days 28        > /tmp/ga4.json
+          # The series and the two trend reports (#344). Each is one more API
+          # call against the same token; none of them changes the three files
+          # above, which the analyst's prompt already reads by name.
+          #
+          # These exist because "daily users" and "trending pages" were believed
+          # to need a history store. They do not: GSC keeps 16 months and GA4
+          # returns a `date` dimension on request, so the series was always
+          # one query away. Measured 2026-10-14: 97 days of GA4 back to
+          # 2026-06-28, which is when the property started collecting.
+          uv run python scripts/fetch_ga4.py --days 28 --daily        > /tmp/ga4-daily.json
+          uv run python scripts/fetch_gsc.py --days 28 --by date      > /tmp/gsc-daily.json
+          uv run python scripts/fetch_gsc.py --days 28 --trend --by page  > /tmp/gsc-trend-page.json
+          uv run python scripts/fetch_gsc.py --days 28 --trend --by query > /tmp/gsc-trend-query.json
           {
             echo "### Window"
             jq -r '.window | "\(.[0]) to \(.[1])"' /tmp/ga4.json
             echo "- band queries (6-20): $(jq '.rows | length' /tmp/gsc-band.json)"
             echo "- landing pages: $(jq '.rows | length' /tmp/ga4.json)"
+            echo "- daily series: $(jq '.days_with_traffic' /tmp/ga4-daily.json) of $(jq '.days' /tmp/ga4-daily.json) days with traffic"
+            echo "- biggest page move: $(jq -r '.rows[0] | "\(.page) \(.impressions_prev) -> \(.impressions)"' /tmp/gsc-trend-page.json)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: anthropics/claude-code-action@v1
@@ -178,6 +236,7 @@ jobs:
       # reads as a 403 and the step would write nothing, quietly.
       actions: read
       pull-requests: read
+      issues: read           # `gh issue list` in the backlog collector below
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -203,6 +262,33 @@ jobs:
         run: |
           python3 scripts/collect_loop_measurements.py --out measurements \
             || echo "::warning::loop measurements not refreshed; measurements/loop.json is the previous one"
+
+      # #335: the open backlog, with a derived area/type/priority, so the ops
+      # page can render it without calling the GitHub API per request — Cloud
+      # Run's egress IP is shared and an unauthenticated call would start
+      # failing at 60/hour for reasons invisible to the owner.
+      - name: Collect the issue backlog
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 scripts/collect_issue_backlog.py --repo "$GH_REPO" --out measurements/issues.json \
+            || echo "::warning::backlog not refreshed; measurements/issues.json is the previous one"
+
+      # #345: is each loop alive, is it producing, and which agent is failing.
+      # Runs AFTER the loop collector because it reads measurements/loop.json
+      # for the delivery yield rather than recomputing it — two files
+      # disagreeing about how many cycles shipped is worse than one file saying
+      # nothing. continue-on-error for the same reason as the others.
+      - name: Collect agent performance
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python3 scripts/collect_agent_performance.py --repo "$GH_REPO" --out measurements/agents.json \
+            || echo "::warning::agent performance not refreshed; measurements/agents.json is the previous one"
 
       - name: Commit the measurement
         run: |
