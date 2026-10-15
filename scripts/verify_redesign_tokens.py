@@ -328,9 +328,10 @@ def gate_2_no_purple_returns() -> list[str]:
 # under it (tab bar labels on every page, 233 nodes on /learn/, the panchang
 # strip). Files listed here have been brought up to the floor; the gate keeps
 # them there. It is deliberately NOT applied to every template: index.html,
-# result.html and ten others still carry 10-11px labels that are not yet
-# decided, and a gate that fails today on files nobody is touching just gets
-# switched off. Add a file here when its sub-12px text is fixed.
+# panchang.html and other templates (see `git grep 'text-\[1[01]px\]'`) still
+# carry 10-11px labels that are not yet decided, and a gate that fails today
+# on files nobody is touching just gets switched off. Add a file here when its
+# sub-12px text is fixed.
 MIN_TEXT_PX = 12
 TEXT_FLOOR_CLEAN = (
     "src/astro_ai/templates/_tab_bar.html",
