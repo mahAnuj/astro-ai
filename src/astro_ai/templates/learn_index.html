@@ -12,7 +12,7 @@
   <!-- HERO -->
   <header class="border-b border-bhagya-gold/25 bg-bhagya-night">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20 text-center">
-      <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-bhagya-gold inline-block mb-3">
+      <span class="text-xs font-bold uppercase tracking-[0.2em] text-bhagya-gold inline-block mb-3">
         Learning Hub &middot; {{ articles | length }} explainers
       </span>
       <h1 class="font-marcellus text-3xl sm:text-5xl text-bhagya-cream leading-tight mb-3">
@@ -49,13 +49,13 @@
       <div id="learn-categories" class="flex flex-wrap items-center gap-2">
         <button type="button" data-cat="all"
                 class="learn-cat-chip is-active px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider border transition-colors">
-          All <span class="opacity-70 font-normal normal-case">({{ articles | length }})</span>
+          All <span class="learn-cat-n font-normal normal-case">({{ articles | length }})</span>
         </button>
         {% for cat in _cats %}
         {% set _n = (articles | selectattr('category', 'equalto', cat) | list | length) %}
         <button type="button" data-cat="{{ cat }}"
                 class="learn-cat-chip px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider border transition-colors">
-          {{ cat }} <span class="opacity-70 font-normal normal-case">({{ _n }})</span>
+          {{ cat }} <span class="learn-cat-n font-normal normal-case">({{ _n }})</span>
         </button>
         {% endfor %}
       </div>
@@ -81,9 +81,9 @@
         </div>
         <div class="p-5">
           <div class="flex items-center gap-2 mb-2">
-            <span class="text-[10px] font-semibold uppercase tracking-wider text-bhagya-sindoor">{{ a.category }}</span>
-            <span class="text-[10px] text-bhagya-muted-2">&middot;</span>
-            <span class="text-[10px] text-bhagya-muted">{{ a.read_time }}</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor">{{ a.category }}</span>
+            <span class="text-xs text-bhagya-muted-2">&middot;</span>
+            <span class="text-xs text-bhagya-muted">{{ a.read_time }}</span>
           </div>
           <h2 class="font-marcellus text-lg text-bhagya-ink leading-snug mb-2 group-hover:text-bhagya-ink">
             {{ a.title }}
@@ -116,6 +116,11 @@
       color: #9E2B25;        /* bhagya.sindoor — 7.43:1 on white */
       border-color: #E4913C; /* bhagya.saffron: a border, never text */
     }
+    /* Count beside the label. Was opacity-70 on the chip colour: 4.21:1 on
+       white, under AA. A solid token instead: bhagya.muted, 5.97:1 on white.
+       The active chip is night, so its count inherits cream (17.49:1). */
+    .learn-cat-chip .learn-cat-n { color: #6B6259; }
+    .learn-cat-chip.is-active .learn-cat-n { color: inherit; }
     .learn-cat-chip.is-active {
       background: #140F1C;   /* bhagya.night */
       color: #FAF6EF;        /* bhagya.cream — 17.49:1 on night */

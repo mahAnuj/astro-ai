@@ -324,6 +324,45 @@ def gate_2_no_purple_returns() -> list[str]:
     return failures
 
 
+# #307: #43 set 12px as the mobile text floor, and three templates were still
+# under it (tab bar labels on every page, 233 nodes on /learn/, the panchang
+# strip). Files listed here have been brought up to the floor; the gate keeps
+# them there. It is deliberately NOT applied to every template: index.html,
+# panchang.html and other templates (see `git grep 'text-\[1[01]px\]'`) still
+# carry 10-11px labels that are not yet decided, and a gate that fails today
+# on files nobody is touching just gets switched off. Add a file here when its
+# sub-12px text is fixed.
+MIN_TEXT_PX = 12
+TEXT_FLOOR_CLEAN = (
+    "src/astro_ai/templates/_tab_bar.html",
+    "src/astro_ai/templates/_panchang_strip.html",
+    "src/astro_ai/templates/learn_index.html",
+)
+_SUB_FLOOR = re.compile(r"text-\[(\d+(?:\.\d+)?)px\]")
+
+
+def gate_3_text_floor() -> list[str]:
+    failures: list[str] = []
+    for rel in TEXT_FLOOR_CLEAN:
+        path = REPO_ROOT / rel
+        if not path.exists():
+            failures.append(f"  FAIL {rel} does not exist — update TEXT_FLOOR_CLEAN")
+            continue
+        for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            for m in _SUB_FLOOR.finditer(line):
+                if float(m.group(1)) < MIN_TEXT_PX:
+                    failures.append(
+                        f"  FAIL {rel}:{n} uses {m.group(0)}, under the "
+                        f"{MIN_TEXT_PX}px mobile floor (#43, #307).\n"
+                        f"       {line.strip()[:100]}\n"
+                        f"       Use text-xs (12px) or larger."
+                    )
+    if not failures:
+        print(f"  ok   no text under {MIN_TEXT_PX}px in the {len(TEXT_FLOOR_CLEAN)} "
+              f"floor-clean file(s)")
+    return failures
+
+
 def main() -> int:
     print("Redesign token verification")
     print(f"  config : {CONFIG.relative_to(REPO_ROOT)}")
@@ -340,6 +379,7 @@ def main() -> int:
     for title, fn in (
         ("Gate 1 - every hex in a migrated file is a token", lambda: gate_1_every_hex_is_a_token(tokens)),
         ("Gate 2 - the astro purple ramp has not come back", gate_2_no_purple_returns),
+        ("Gate 3 - no text under the 12px floor in cleaned files", gate_3_text_floor),
     ):
         print(title)
         found = fn()
