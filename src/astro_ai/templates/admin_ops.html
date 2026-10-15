@@ -56,12 +56,27 @@
    page (its hexes live in this <style> block), so no gate saw it. #838a97 is
    5.07:1 / 4.65:1, still clearly quieter than --ink-dim (6.85:1). Column
    headers, .lbl and explanatory prose use --ink-dim; --ink-mute is kept for
-   furniture (ticks, ages, carets) where quiet is the point. */
+   furniture (ticks, ages, carets) where quiet is the point.
+
+   --nothing (#646c7a) is a FILL colour (ribbon blocks, bar segments, the
+   legend swatch) and stays. As TEXT it was 3.33:1 on --panel and 3.05:1 on
+   --panel-2, so the "nothing" and "unranked" chips use --nothing-text (#8a919d:
+   6.00 / 5.55 / 5.09 / 4.64:1 on ground / panel / panel-2 / panel-3) and keep
+   --nothing for their identity elsewhere. `.c-nothing` is the 38px "0 failed"
+   numeral — large text, where 3:1 is the bar, and it measures 3.33:1 — so it
+   keeps the fill colour.
+   Every other text colour on every surface it renders on (ground / panel /
+   panel-2 / panel-3): ink 15.0-11.6, ink-dim 7.4-5.7, ink-mute 5.5-4.2,
+   shipped 8.0-6.2, open/accent 9.0-7.0, failed 5.4-4.2, red alert title #f0a393
+   9.4-7.3. Two pairs sit under 4.5 and are left on purpose: ink-mute (4.24) and
+   failed (4.20) on --panel-3 — the only thing on --panel-3 is the selected
+   segment tab, which is --ink (11.6). failed on the tinted red alert is 5.07.
+   Measured by hand 2026-10-15; verify_contrast does not scan this page. */
 :root{
   --ground:#0e1013; --panel:#16191f; --panel-2:#1c212a; --panel-3:#222836;
   --line:#272c37; --line-2:#39404f;
   --ink:#e8e4da; --ink-dim:#9ba2ae; --ink-mute:#838a97;
-  --shipped:#5bb98c; --open:#e3a84a; --nothing:#646c7a; --failed:#e0614a;
+  --shipped:#5bb98c; --open:#e3a84a; --nothing:#646c7a; --nothing-text:#8a919d; --failed:#e0614a;
   --accent:#e3a84a; --accent-dim:#8a6a2a;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
 }
@@ -339,7 +354,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .loops td{padding:9px 10px 9px 0;border-bottom:1px solid var(--line);white-space:nowrap}
 .loops tr:last-child td{border-bottom:0}
 .loops td.w{white-space:normal}
-.loops a{color:var(--ink)}
+.loops a{color:var(--ink);white-space:nowrap}
 .loops a:hover{color:var(--accent);text-decoration:none}
 .loops .c{font-family:var(--mono);font-size:12px;color:var(--ink-mute)}
 .v-broken{color:var(--failed);border-color:#6b3329}
@@ -363,7 +378,10 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
    at the other; the hairline carries the eye across the row instead. All four
    call sites (Token budget, App health, Delivery yield, QA rounds) use the
    same markup — a <div> per row holding a label and a value — so a fifth one
-   cannot reintroduce a fourth variant. Both halves may wrap at a space (a figure has none, so
+   cannot reintroduce a fourth variant. Every value is weight 600 (`b` is
+   otherwise 700 and `span` 400, which is how two call sites disagreed);
+   a qualifier inside a value ("of 2 retries") is an inline span and stays 400.
+   Both halves may wrap at a space (a figure has none, so
    it never breaks); `wide` marks a row whose value is a list rather than a
    figure and sets it a size down. */
 .kv{display:block;max-width:38rem;font-size:13px;margin-top:4px}
@@ -371,10 +389,25 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
   min-width:0;padding:7px 0;border-bottom:1px solid var(--line)}
 .kv>div:last-child{border-bottom:0}
 .kv>div>:first-child{color:var(--ink-dim);min-width:0;flex:1 1 auto}
-.kv>div>:last-child{flex:0 1 auto;text-align:right;line-height:1.5}
+.kv>div>:last-child{flex:0 1 auto;text-align:right;line-height:1.5;font-weight:600}
+.kv b{font-weight:600}
 .kv>div.wide>:last-child{font-size:12px}
 .kv .n,.kv .mono{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
 .kv .lab{color:var(--ink-dim)}
+
+/* ── Tables that may not fit: ONE RULE (#369) ───────────────────────────────
+   Every table that can be wider than a phone sits in a `.tscroll` wrapper. The
+   wrapper scrolls; the table stays `display:table; width:100%`, so a narrow
+   table (the two-column "Where the errors are") still fills its panel and a
+   wide one (the seven-column token table, the team table) overflows INTO the
+   wrapper rather than past the viewport. A table's own `min-width` says how
+   narrow it may get before it scrolls. `display:block;overflow:auto` on the
+   table itself was tried first: it makes every table contract to its content. */
+.tscroll{overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
+.tscroll::-webkit-scrollbar{height:8px}
+.tscroll::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:4px}
+.rt.cols7{min-width:720px}
+.loops{min-width:520px}
 
 /* ── Cost table ───────────────────────────────────────────────────────── */
 table.cost{width:100%;border-collapse:collapse;font-size:13px}
@@ -434,14 +467,14 @@ table.cost .v{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
   padding:4px 7px;border-radius:2px;border:1px solid var(--line-2);color:var(--ink-dim);flex:none}
 .chip.shipped{color:var(--shipped);border-color:#2f5c47}
 .chip.failed,.chip.unknown{color:var(--failed);border-color:#6b3329}
-.chip.nothing{color:var(--nothing)}
+.chip.nothing{color:var(--nothing-text)}
 .chip.pr-open{color:var(--open);border-color:#6b5223}
 .chip.high{color:var(--failed);border-color:#6b3329}
 .chip.medium{color:var(--open);border-color:#6b5223}
 .chip.low{color:var(--ink-mute)}
 /* Unranked is not low. It is the absence of a decision, so it gets the colour
    of "nothing recorded" rather than a position on the scale. */
-.chip.unset{color:var(--nothing);border-color:var(--line-2)}
+.chip.unset{color:var(--nothing-text);border-color:var(--line-2)}
 .chip.blocked{color:var(--open);border-color:#6b5223}
 .empty{padding:30px 0;color:var(--ink-mute);font-size:13px}
 
@@ -453,11 +486,6 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
 @media (max-width:860px){
   .cols,.charts,.movers{grid-template-columns:1fr}
   .tiles{grid-template-columns:repeat(2,1fr)}
-  /* Seven numeric columns cannot fit 375px, and before this they were simply
-     cut off by the viewport — the right-hand columns were unreachable. The
-     table scrolls inside the panel instead. Not applied at desktop, where
-     display:block would stop the table filling its container. */
-  .rt{display:block;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
   .verdict p{font-size:17px}
   .bar-row{grid-template-columns:96px 1fr 30px}
   .sheet{top:auto;height:86vh;width:100%;border-left:0;border-top:1px solid var(--line-2);
@@ -627,11 +655,11 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           <b class="mono {{ 'c-failed' if ops.app.budget_breaks_total }}">{{ ops.app.budget_breaks_total }}</b></div>
         {% for feature, n in ops.app.budget_breaks %}
         <div><span>&nbsp;&nbsp;{{ feature }}</span>
-          <b class="mono c-failed" style="font-weight:400">{{ n }}</b></div>
+          <b class="mono c-failed">{{ n }}</b></div>
         {% endfor %}
         {% if ops.app.fallback_reasons %}
         <div class="wide"><span>why</span>
-          <b class="mono" style="font-weight:400">{% for prov, why, n in ops.app.fallback_reasons %}<span
+          <b class="mono">{% for prov, why, n in ops.app.fallback_reasons %}<span
             class="{{ 'c-failed' if why in ops.budget_fail_reasons }}">{{ prov }} {{ why }} ×{{ n }}</span>{%
             if not loop.last %} · {% endif %}{% endfor %}</b></div>
         {% endif %}
@@ -643,7 +671,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       </div>
 
       <h3 class="lbl" style="margin:22px 0 10px">Tokens per request, by feature</h3>
-      <table class="rt">
+      <div class="tscroll"><table class="rt cols7">
         <thead><tr><th>feature</th><th class="n">calls</th><th class="n">cache</th>
           <th class="n">total / request</th><th class="n">of one bucket</th>
           <th class="n">avg miss</th><th class="n">saved by cache</th></tr></thead>
@@ -662,7 +690,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         </tr>
         {% endfor %}
         </tbody>
-      </table>
+      </table></div>
       <p class="q-note">
         <b>total / request</b> is input + output, because both of Groq's limits count both —
         an input-only figure reads as headroom the budget does not have. Input is broken out
@@ -761,7 +789,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       <span class="age {{ 'stale' if ops.ages.Team.stale }}"
             title="from measurements/agents.json, collected {{ A.generated_at or 'never' }}">as of {{ ops.ages.Team.text }}</span></h2>
     <div class="body">
-      <table class="loops">
+      <div class="tscroll"><table class="loops">
         <thead><tr><th>Loop</th><th>Cadence</th><th>Due</th><th>Ran</th><th>Last</th><th></th></tr></thead>
         <tbody>
         {% for r in A.scheduled %}
@@ -775,7 +803,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           </tr>
         {% endfor %}
         </tbody>
-      </table>
+      </table></div>
       <p class="note" style="margin-top:12px">
         <b>Due</b> counts the cron slots that fell since the workflow file was <i>last edited</i>,
         not since it was created — a schedule is only knowable from when it was last written.
@@ -1024,21 +1052,21 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
             <b class="mono">{{ ops.app.fallbacks }}</b></div>
           {% if ops.app.fallback_reasons %}
           <div class="wide"><span>&nbsp;&nbsp;reason for the last failure</span>
-            <b class="mono" style="font-weight:400">{% for prov, why, n in ops.app.fallback_reasons %}{{ prov }} {{ why }} ×{{ n }}{% if not loop.last %} · {% endif %}{% endfor %}</b></div>
+            <b class="mono">{% for prov, why, n in ops.app.fallback_reasons %}{{ prov }} {{ why }} ×{{ n }}{% if not loop.last %} · {% endif %}{% endfor %}</b></div>
           {% endif %}
           <div><span>cache hit rate</span><b class="mono">{{ ops.app.hit_rate }}%</b></div>
         </div>
 
         {% if ops.app.sources %}
         <h3 class="lbl" style="margin:22px 0 10px">Where the errors are</h3>
-        <table class="rt">
+        <div class="tscroll"><table class="rt">
           <thead><tr><th>source</th><th class="n">events</th></tr></thead>
           <tbody>
           {% for src, cnt in ops.app.sources %}
           <tr><td>{{ src }}</td><td class="n">{{ cnt }}</td></tr>
           {% endfor %}
           </tbody>
-        </table>
+        </table></div>
         <p class="q-note">
           Counted from <code>events</code>, whose <code>source</code> names
           (<code>chart:matching</code>) are a different vocabulary from
