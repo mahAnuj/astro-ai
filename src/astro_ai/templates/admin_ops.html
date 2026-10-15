@@ -402,8 +402,14 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
    wide one (the seven-column token table, the team table) overflows INTO the
    wrapper rather than past the viewport. A table's own `min-width` says how
    narrow it may get before it scrolls. `display:block;overflow:auto` on the
-   table itself was tried first: it makes every table contract to its content. */
-.tscroll{overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
+   table itself was tried first: it makes every table contract to its content.
+   `overflow-x:auto` also forces overflow-y to auto, which clips the 2px ring +
+   2px offset of :focus-visible on a link sitting flush at a cell's left edge,
+   so the wrapper carries 4px of padding and an equal negative margin: the ring
+   has room inside the clip box and the table does not move. Each wrapper is
+   `role="region"` with an aria-label because a scroll region is keyboard-
+   focusable in Chromium and must be named. */
+.tscroll{overflow-x:auto;padding:4px;margin:-4px;scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
 .tscroll::-webkit-scrollbar{height:8px}
 .tscroll::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:4px}
 .rt.cols7{min-width:720px}
@@ -671,7 +677,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       </div>
 
       <h3 class="lbl" style="margin:22px 0 10px">Tokens per request, by feature</h3>
-      <div class="tscroll"><table class="rt cols7">
+      <div class="tscroll" role="region" aria-label="Tokens per request, by feature"><table class="rt cols7">
         <thead><tr><th>feature</th><th class="n">calls</th><th class="n">cache</th>
           <th class="n">total / request</th><th class="n">of one bucket</th>
           <th class="n">avg miss</th><th class="n">saved by cache</th></tr></thead>
@@ -789,7 +795,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
       <span class="age {{ 'stale' if ops.ages.Team.stale }}"
             title="from measurements/agents.json, collected {{ A.generated_at or 'never' }}">as of {{ ops.ages.Team.text }}</span></h2>
     <div class="body">
-      <div class="tscroll"><table class="loops">
+      <div class="tscroll" role="region" aria-label="Scheduled loops"><table class="loops">
         <thead><tr><th>Loop</th><th>Cadence</th><th>Due</th><th>Ran</th><th>Last</th><th></th></tr></thead>
         <tbody>
         {% for r in A.scheduled %}
@@ -1059,7 +1065,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
 
         {% if ops.app.sources %}
         <h3 class="lbl" style="margin:22px 0 10px">Where the errors are</h3>
-        <div class="tscroll"><table class="rt">
+        <div class="tscroll" role="region" aria-label="Where the errors are"><table class="rt">
           <thead><tr><th>source</th><th class="n">events</th></tr></thead>
           <tbody>
           {% for src, cnt in ops.app.sources %}
