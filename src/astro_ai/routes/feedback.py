@@ -11,6 +11,7 @@ by its absolute name; a relative import here would self-import and fail obscurel
 
 from __future__ import annotations
 
+import html as _html
 import os
 
 from fastapi import APIRouter, Form, Request
@@ -79,14 +80,33 @@ async def submit_feedback(
         if admin_to and entry:
             label = {"problem": "🐛 Problem", "feature": "✨ Feature request",
                      "other": "💬 Feedback"}.get(entry["type"], "Feedback")
+            # ESCAPED, because all three of these are typed by an anonymous
+            # visitor (#373). `POST /feedback` needs no auth, `feedback.add`
+            # caps the message at 2,000 characters and sanitises nothing, and
+            # this body is delivered to the owner's inbox FROM THE SITE'S OWN
+            # Brevo sender domain -- so it passes SPF and DKIM and renders as a
+            # genuine Shubh Bhagya notification. Mail clients strip <script>,
+            # but <a href>, a remote <img> and a styled block all render, which
+            # is enough to spoof one.
+            #
+            # Escaped HERE rather than in `feedback.add`: storage keeps what the
+            # visitor actually typed, which is what /admin/feedback needs to
+            # show and what makes the record honest. Escaping belongs where the
+            # markup is built, and any future consumer must do its own.
+            #
+            # The Telegram path already escapes (`notify._escape_md` on all
+            # three fields); this was the only unescaped one.
+            msg = _html.escape(entry["message"] or "")
+            page = _html.escape(entry["page"] or "") or "unknown page"
+            frm = _html.escape(entry["email"] or "") or "(anonymous)"
             html = (
-                f"<p><strong>{label}</strong> via {entry['page'] or 'unknown page'}</p>"
+                f"<p><strong>{label}</strong> via {page}</p>"
                 f"<blockquote style='border-left:3px solid #9E2B25;padding:8px 12px;"
-                f"margin:8px 0;background:#FAF6EF;'>{entry['message']}</blockquote>"
+                f"margin:8px 0;background:#FAF6EF;'>{msg}</blockquote>"
                 f"<p style='font-size:12px;color:#6B6259;'>"
-                f"From: {entry['email'] or '(anonymous)'}<br>"
-                f"At: {entry['ts']}<br>"
-                f"ID: <code>{entry['id']}</code></p>"
+                f"From: {frm}<br>"
+                f"At: {_html.escape(str(entry['ts']))}<br>"
+                f"ID: <code>{_html.escape(str(entry['id']))}</code></p>"
             )
             email_sender.send(admin_to, subject=f"[Shubh Bhagya feedback] {label}", html=html)
     except Exception as err:

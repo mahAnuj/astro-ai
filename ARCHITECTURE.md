@@ -28,7 +28,7 @@ trust the number.
 
 | | count | command |
 |---|---|---|
-| Python | 32,043 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
+| Python | 32,063 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
 | top-level modules | 40 | `ls src/astro_ai/*.py \| wc -l` |
 | route handlers | 68 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 24 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
@@ -38,9 +38,9 @@ trust the number.
 | knowledge files | 11 files, 8,021 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
 | verification gates | 26 | `ls scripts/verify_*.py \| wc -l` |
 <<<<<<< HEAD
-| behaviour suite | 570 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
+| behaviour suite | 577 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
 =======
-| behaviour suite | 570 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
+| behaviour suite | 577 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
 >>>>>>> origin/main
 
 `routes/` holds 27 files; the three that declare no router are `__init__.py` and the leaf
