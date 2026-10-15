@@ -39,11 +39,28 @@
    cold grey), so the console reads as the same brand after dark rather than
    as a generic dark admin theme. Saffron is bhagya-saffron. The four outcome
    colours are semantic and used nowhere else — a colour on this page always
-   means the same thing. */
+   means the same thing.
+
+   TYPE SCALE (#369, one pass over the whole page — change a step here, not
+   per panel). The floor is 12px for anything a person READS (prose, values,
+   row labels, captions, ages, table cells) and 11px for the UPPERCASE tracked
+   labels and column headers, which are short and set heavier (600). Mono chart
+   furniture (axis ticks) is 11px: it is a number beside a line, not a sentence.
+   Nothing is 10px or below: at 9.5-10px with .12-.15em tracking on a near-black
+   ground, small caps stop reading as words and start reading as texture, which
+   is what the owner reported. Larger text is a deliberate role: 13px table and
+   metric rows, 15px panel/alert titles, 19px the verdict.
+
+   --ink-mute was #6e7684, which is 3.85:1 on --panel and 3.53:1 on --panel-2 —
+   under AA (4.5:1) for text this size. verify_contrast does not scan this
+   page (its hexes live in this <style> block), so no gate saw it. #838a97 is
+   5.07:1 / 4.65:1, still clearly quieter than --ink-dim (6.85:1). Column
+   headers, .lbl and explanatory prose use --ink-dim; --ink-mute is kept for
+   furniture (ticks, ages, carets) where quiet is the point. */
 :root{
   --ground:#0e1013; --panel:#16191f; --panel-2:#1c212a; --panel-3:#222836;
   --line:#272c37; --line-2:#39404f;
-  --ink:#e8e4da; --ink-dim:#9ba2ae; --ink-mute:#6e7684;
+  --ink:#e8e4da; --ink-dim:#9ba2ae; --ink-mute:#838a97;
   --shipped:#5bb98c; --open:#e3a84a; --nothing:#646c7a; --failed:#e0614a;
   --accent:#e3a84a; --accent-dim:#8a6a2a;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
@@ -74,7 +91,7 @@ a:hover{text-decoration:underline}
 .ribbon::-webkit-scrollbar-thumb:hover,.sheet .list::-webkit-scrollbar-thumb:hover{background:var(--ink-mute)}
 
 /* ── Micro-label: the console's recurring voice ───────────────────────── */
-.lbl{font-size:10px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-mute)}
+.lbl{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim)}
 .num{font-family:Marcellus,Georgia,serif;font-variant-numeric:tabular-nums;line-height:1}
 .mono{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
 
@@ -106,7 +123,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .tile .v{display:flex;align-items:baseline;gap:8px;margin:10px 0 2px}
 .tile .v .num{font-size:38px}
 .tile .foot{font-size:12px;color:var(--ink-mute)}
-.tile .caret{float:right;color:var(--ink-mute);font-size:11px;letter-spacing:.1em}
+.tile .caret{float:right;color:var(--ink-mute);font-size:12px;letter-spacing:.1em}
 .c-shipped{color:var(--shipped)} .c-open{color:var(--open)}
 .c-failed{color:var(--failed)}  .c-nothing{color:var(--nothing)}
 
@@ -129,10 +146,10 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .ribbon{overflow-x:auto;padding-bottom:4px}
 .ribbon-in{min-width:680px}
 .axis{display:grid;grid-template-columns:62px 1fr;align-items:center;margin-bottom:6px}
-.ticks{position:relative;height:14px}
-.ticks span{position:absolute;transform:translateX(-50%);font-size:10px;color:var(--ink-mute);font-family:var(--mono)}
+.ticks{position:relative;height:16px}
+.ticks span{position:absolute;transform:translateX(-50%);font-size:11px;color:var(--ink-mute);font-family:var(--mono)}
 .lane{display:grid;grid-template-columns:62px 1fr;align-items:center;margin-bottom:5px}
-.lane .day{font-family:var(--mono);font-size:11px;color:var(--ink-mute);padding-right:10px;text-align:right}
+.lane .day{font-family:var(--mono);font-size:12px;color:var(--ink-mute);padding-right:10px;text-align:right}
 .lane.is-today .day{color:var(--accent)}
 .track{position:relative;height:26px;background:var(--panel-2);border:1px solid var(--line);border-radius:2px}
 .grid-line{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
@@ -152,7 +169,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .seg-tabs{display:flex;gap:2px;margin-bottom:16px;border:1px solid var(--line);
   border-radius:3px;padding:2px;width:fit-content;background:var(--panel-2)}
 .seg-tabs button{appearance:none;background:none;border:0;color:var(--ink-dim);
-  font:600 10px/1 Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;
+  font:600 11px/1 Manrope,sans-serif;letter-spacing:.1em;text-transform:uppercase;
   padding:8px 13px;border-radius:2px;cursor:pointer}
 .seg-tabs button[aria-selected="true"]{background:var(--panel-3);color:var(--ink)}
 .bars{display:flex;flex-direction:column;gap:9px}
@@ -175,10 +192,10 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .alerts{margin:0 0 18px;display:grid;gap:8px}
 .alert{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;align-items:baseline;
   padding:13px 16px;border:1px solid var(--line);border-radius:3px}
-.alert .sev{grid-row:span 2;font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;
+.alert .sev{grid-row:span 2;font:600 11px/1 Manrope,sans-serif;letter-spacing:.08em;
   text-transform:uppercase;padding:5px 8px;border-radius:2px;align-self:start}
 .alert .t{font-size:15px;font-weight:600;line-height:1.35}
-.alert .d{font-size:12.5px;line-height:1.5;color:var(--ink-dim);max-width:76ch}
+.alert .d{font-size:13px;line-height:1.5;color:var(--ink-dim);max-width:76ch}
 .alert .d a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
 .alert .d a:hover{border-bottom-color:var(--accent)}
 .alert.red{border-color:#6b3329;background:linear-gradient(90deg,rgba(224,97,74,.07),transparent 65%)}
@@ -187,16 +204,33 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .alert.amber{border-color:#6b5223;background:linear-gradient(90deg,rgba(227,168,74,.05),transparent 65%)}
 .alert.amber .sev{color:var(--open);border:1px solid #6b5223}
 .clear{margin:0 0 18px;padding:11px 16px;border:1px solid var(--line);border-radius:3px;
-  font-size:12.5px;color:var(--ink-mute)}
+  font-size:13px;color:var(--ink-mute)}
 .clear b{color:var(--shipped);font-weight:600}
 
-/* ── App health: the product, not the team. Live, 60s cache. ─────────── */
+/* ── App health / token table: the product, not the team. Live, 60s cache. ──
+   Three things made this table hard to follow across seven columns (#369):
+   (1) `th.n` had no rule, so every numeric header was LEFT-aligned over a
+       right-aligned column of figures — the header sat a full column-width
+       away from its numbers. Numeric headers now right-align like their cells.
+   (2) Cells had no horizontal padding, so right-aligned columns ran into the
+       next column's left edge. Every cell after the first gets a gutter.
+   (3) A cell's `.sub` line (the in/out split) makes a row two lines tall. Rows
+       are now separated by a hairline UNDER each row and the header carries a
+       stronger rule under it, so a two-line row reads as one unit rather than
+       as two stray lines; and the number and its sub are in one mono column,
+       right-aligned, so the digits stack. Cells align on their FIRST baseline,
+       which is the figure itself, never the sub line. */
 .rt{width:100%;border-collapse:collapse;font-size:13px}
-.rt th{text-align:left;font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--ink-mute);padding:0 0 9px;font-weight:600}
-.rt td{padding:9px 0;border-top:1px solid var(--line);vertical-align:baseline}
-.rt td.n{text-align:right;font-family:var(--mono);font-size:12px;white-space:nowrap}
-.rt .sub{display:block;font-size:11px;color:var(--ink-mute);margin-top:2px}
+.rt th{text-align:left;font:600 11px/1.2 Manrope,sans-serif;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-dim);padding:0 0 10px;border-bottom:1px solid var(--line-2);
+  vertical-align:bottom}
+.rt th.n{text-align:right}
+.rt th+th,.rt td+td{padding-left:18px}
+.rt td{padding:10px 0;border-bottom:1px solid var(--line);vertical-align:baseline}
+.rt tr:last-child td{border-bottom:0}
+.rt td.n{text-align:right;font-family:var(--mono);font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rt .sub{display:block;font-size:12px;color:var(--ink-dim);margin-top:3px}
+.rt td.n .sub{white-space:nowrap}
 
 /* ── The objective. One line, above everything that claims progress. ────
    The page measured traffic, delivery and cost and never said what any of it
@@ -211,7 +245,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 
 /* An age, not a timestamp. `2026-10-14T07:22:00Z` does not read as stale;
    "9h ago" does. Amber once a daily collection has been missed. */
-.age{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);letter-spacing:.02em}
+.age{font-family:var(--mono);font-size:12px;color:var(--ink-mute);letter-spacing:.02em}
 .age.stale{color:var(--open)}
 /* `live` is a state, not an age, so it gets a dot rather than a colour of its
    own — three panels with three different freshness stories (live, live,
@@ -240,7 +274,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
   color:var(--ink-dim);max-width:70ch}
 .q-t{grid-column:2}
 .q-more{padding:10px 0 0;font-size:12px;color:var(--ink-mute)}
-.q-note{margin:16px 0 0;font-size:12px;color:var(--ink-mute);line-height:1.6}
+.q-note{margin:16px 0 0;font-size:12px;color:var(--ink-dim);line-height:1.6}
 .q-note code{font-family:var(--mono);color:var(--ink-dim)}
 
 /* ── Traffic: two series, drawn server-side as SVG paths ──────────────────
@@ -255,17 +289,20 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
    TEXT lives in HTML, never in the SVG — the path is drawn with
    preserveAspectRatio="none" so it fills any width, and anything in that same
    coordinate system stretches with it, letters included. */
-.plot{display:grid;grid-template-columns:34px 1fr;gap:0 7px}
+.plot{display:grid;grid-template-columns:40px 1fr;gap:0 7px}
 .yax{display:flex;flex-direction:column;justify-content:space-between;
   height:92px;text-align:right}
-.yax span{font-family:var(--mono);font-size:10px;color:var(--ink-mute);
+.yax span{font-family:var(--mono);font-size:11px;color:var(--ink-mute);
   line-height:1;transform:translateY(-3px)}
 .chart svg{display:block;width:100%;height:92px;overflow:visible}
-.xax{grid-column:2;position:relative;height:15px;margin-top:5px}
-.xax span{position:absolute;font-family:var(--mono);font-size:10px;color:var(--ink-mute);
+.xax{grid-column:2;position:relative;height:16px;margin-top:5px}
+.xax span{position:absolute;font-family:var(--mono);font-size:11px;color:var(--ink-mute);
   white-space:nowrap}
 .xax span:first-child{left:0}
-.xax span:last-child{right:0}
+/* Inline `left:100%` + translateX(-100%) already right-aligns the last tick;
+   a `right:0` on top over-constrained the box to zero width and the label
+   spilled past the card (#369, visible once the ticks became 11px). */
+.xax span:last-child{right:auto}
 .gl{stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke}
 /* A full-height target per day, so the pointer never has to find a 2px line.
    Each carries a <title>, which is how a reader gets one day's number with no
@@ -277,34 +314,34 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 
 /* ── Movers ───────────────────────────────────────────────────────────── */
 .movers{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
-.mv h3{margin:0 0 4px;font:600 10px/1 Manrope,sans-serif;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--ink-mute)}
-.mv .cap{font-size:11.5px;color:var(--ink-mute);margin:0 0 11px;line-height:1.5}
-.mv a,.mv div.row{display:grid;grid-template-columns:1fr 54px 60px;gap:9px;align-items:baseline;
-  padding:8px 0;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:12.5px}
+.mv h3{margin:0 0 4px;font:600 11px/1.2 Manrope,sans-serif;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-dim)}
+.mv .cap{font-size:12px;color:var(--ink-dim);margin:0 0 11px;line-height:1.5}
+.mv a,.mv div.row{display:grid;grid-template-columns:1fr 54px 76px;gap:9px;align-items:baseline;
+  padding:8px 0;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none;font-size:13px}
 .mv a:last-child,.mv div.row:last-child{border-bottom:0}
 .mv a:hover{text-decoration:none}
 .mv a:hover .k{color:var(--accent)}
 .mv .k{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mv .d{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
-.mv .was{font-family:var(--mono);font-size:10.5px;color:var(--ink-mute);text-align:right;white-space:nowrap}
+.mv .d{font-family:var(--mono);font-size:13px;text-align:right;font-variant-numeric:tabular-nums}
+.mv .was{font-family:var(--mono);font-size:12px;color:var(--ink-mute);text-align:right;white-space:nowrap}
 .up .d{color:var(--shipped)} .down .d{color:var(--failed)}
-.cov{display:inline-block;font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;
+.cov{display:inline-block;font:600 11px/1 Manrope,sans-serif;letter-spacing:.08em;
   text-transform:uppercase;padding:4px 7px;border-radius:2px;border:1px solid #6b5223;color:var(--open)}
 
 /* ── Team: loop liveness, delivery yield, per-agent activity ──────────────
    The verdict chip carries the colour; the row stays quiet. A table where
    every row is tinted is a table where nothing stands out, and the whole
    point of this one is that a single loop is broken. */
-.loops{width:100%;border-collapse:collapse;font-size:12.5px}
-.loops th{text-align:left;font:600 10px/1 Manrope,sans-serif;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--ink-mute);padding:0 10px 9px 0;border-bottom:1px solid var(--line)}
+.loops{width:100%;border-collapse:collapse;font-size:13px}
+.loops th{text-align:left;font:600 11px/1.2 Manrope,sans-serif;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-dim);padding:0 10px 9px 0;border-bottom:1px solid var(--line)}
 .loops td{padding:9px 10px 9px 0;border-bottom:1px solid var(--line);white-space:nowrap}
 .loops tr:last-child td{border-bottom:0}
 .loops td.w{white-space:normal}
 .loops a{color:var(--ink)}
 .loops a:hover{color:var(--accent);text-decoration:none}
-.loops .c{font-family:var(--mono);font-size:11px;color:var(--ink-mute)}
+.loops .c{font-family:var(--mono);font-size:12px;color:var(--ink-mute)}
 .v-broken{color:var(--failed);border-color:#6b3329}
 .v-dormant{color:var(--failed);border-color:#6b3329}
 .v-missing-slots{color:var(--open);border-color:#6b5223}
@@ -314,30 +351,49 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .who{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
 .who span{border:1px solid var(--line-2);border-radius:2px;padding:6px 9px;font-size:12px;color:var(--ink-dim)}
 .who b{color:var(--ink);font-family:var(--mono);font-size:12px;margin-left:5px}
-.kv{display:grid;grid-template-columns:1fr auto;gap:7px 14px;font-size:12.5px;margin-top:4px}
-.kv>div{display:flex;justify-content:space-between;align-items:baseline;gap:14px;min-width:0}
-.kv>div>b{flex:none}
-.kv .n{font-family:var(--mono);color:var(--ink);text-align:right}
+/* THE METRIC BLOCK RULE (#369): ONE ROW PER LINE, label left, value right,
+   a hairline under each row, and the block capped at 38rem.
+   `.kv` used to be a two-up grid (`1fr auto` over <div> rows), which at the
+   full width of the Token budget panel put unrelated rows side by side —
+   "total — what the limit counts  244,629" beside "failed on the token
+   budget  0 of 10 retries" — and a reader takes neighbours for a pair. Rows in
+   these blocks are a LIST, not a grid: each is its own fact, and their order is
+   the order of the argument (tokens, then what broke). The cap stops a
+   full-width panel from putting a label at one edge and its value 1100px away
+   at the other; the hairline carries the eye across the row instead. All four
+   call sites (Token budget, App health, Delivery yield, QA rounds) use the
+   same markup — a <div> per row holding a label and a value — so a fifth one
+   cannot reintroduce a fourth variant. Both halves may wrap at a space (a figure has none, so
+   it never breaks); `wide` marks a row whose value is a list rather than a
+   figure and sets it a size down. */
+.kv{display:block;max-width:38rem;font-size:13px;margin-top:4px}
+.kv>div{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  min-width:0;padding:7px 0;border-bottom:1px solid var(--line)}
+.kv>div:last-child{border-bottom:0}
+.kv>div>:first-child{color:var(--ink-dim);min-width:0;flex:1 1 auto}
+.kv>div>:last-child{flex:0 1 auto;text-align:right;line-height:1.5}
+.kv>div.wide>:last-child{font-size:12px}
+.kv .n,.kv .mono{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
 .kv .lab{color:var(--ink-dim)}
 
 /* ── Cost table ───────────────────────────────────────────────────────── */
 table.cost{width:100%;border-collapse:collapse;font-size:13px}
-table.cost th{text-align:left;font:600 10px/1 Manrope,sans-serif;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--ink-mute);padding:0 0 9px;border-bottom:1px solid var(--line)}
+table.cost th{text-align:left;font:600 11px/1.2 Manrope,sans-serif;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-dim);padding:0 0 9px;border-bottom:1px solid var(--line)}
 table.cost th:last-child,table.cost td:last-child{text-align:right}
 table.cost td{padding:10px 0;border-bottom:1px solid var(--line);vertical-align:top}
 table.cost tr:last-child td{border-bottom:0}
 table.cost .v{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
-.unknown{color:var(--open);font-size:11px;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
-.note{font-size:11.5px;color:var(--ink-mute);margin-top:3px;line-height:1.45}
+.unknown{color:var(--open);font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.note{font-size:12px;color:var(--ink-dim);margin-top:3px;line-height:1.45}
 .arith{margin-top:16px;padding:14px;background:var(--panel-2);border:1px solid var(--line);
-  border-radius:2px;font-size:12.5px;color:var(--ink-dim);line-height:1.6}
+  border-radius:2px;font-size:13px;color:var(--ink-dim);line-height:1.6}
 .arith .eq{font-family:var(--mono);color:var(--ink);display:block;margin-bottom:6px;font-size:13px}
 
 /* ── Gap notice: what this page CANNOT show, said out loud ───────────── */
 .gap{border:1px dashed var(--line-2);border-radius:3px;padding:15px 17px;
   font-size:13px;color:var(--ink-dim);line-height:1.6}
-.gap h3{margin:0 0 7px;font:600 10px/1 Manrope,sans-serif;letter-spacing:.14em;
+.gap h3{margin:0 0 7px;font:600 11px/1.2 Manrope,sans-serif;letter-spacing:.1em;
   text-transform:uppercase;color:var(--open)}
 
 /* ── Drill-down sheet ─────────────────────────────────────────────────── */
@@ -362,19 +418,19 @@ table.cost .v{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
 .item:hover .t{color:var(--accent)}
 .item .r1{display:flex;gap:9px;align-items:baseline;margin-bottom:4px;flex-wrap:wrap}
 .item .t{font-size:14px;line-height:1.45}
-.item .meta{font-family:var(--mono);font-size:11px;color:var(--ink-mute)}
+.item .meta{font-family:var(--mono);font-size:12px;color:var(--ink-mute)}
 /* The ask, in the drill-down too — this is where you read the queue. */
-.item .ask{font-size:12.5px;line-height:1.5;color:var(--ink-dim);margin:5px 0 0;max-width:62ch}
+.item .ask{font-size:13px;line-height:1.5;color:var(--ink-dim);margin:5px 0 0;max-width:62ch}
 /* WHY something happened is already written down, by the agent that did it, in
    the issue comments. So a cycle row links to the comment thread as well as to
    the run log — a run says WHAT happened, the thread says why. Two links means
    the row cannot be one <a>, hence div + explicit links. */
 .item .links{display:flex;gap:14px;margin-top:7px;flex-wrap:wrap}
-.item .links a{font:500 11px/1 Manrope,sans-serif;letter-spacing:.04em;
+.item .links a{font:500 12px/1 Manrope,sans-serif;letter-spacing:.03em;
   color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
 .item .links a:hover{border-bottom-color:var(--accent)}
 .item.row{cursor:default}
-.chip{font:600 9.5px/1 Manrope,sans-serif;letter-spacing:.12em;text-transform:uppercase;
+.chip{font:600 11px/1 Manrope,sans-serif;letter-spacing:.08em;text-transform:uppercase;
   padding:4px 7px;border-radius:2px;border:1px solid var(--line-2);color:var(--ink-dim);flex:none}
 .chip.shipped{color:var(--shipped);border-color:#2f5c47}
 .chip.failed,.chip.unknown{color:var(--failed);border-color:#6b3329}
@@ -397,6 +453,11 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
 @media (max-width:860px){
   .cols,.charts,.movers{grid-template-columns:1fr}
   .tiles{grid-template-columns:repeat(2,1fr)}
+  /* Seven numeric columns cannot fit 375px, and before this they were simply
+     cut off by the viewport — the right-hand columns were unreachable. The
+     table scrolls inside the panel instead. Not applied at desktop, where
+     display:block would stop the table filling its container. */
+  .rt{display:block;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--line-2) transparent}
   .verdict p{font-size:17px}
   .bar-row{grid-template-columns:96px 1fr 30px}
   .sheet{top:auto;height:86vh;width:100%;border-left:0;border-top:1px solid var(--line-2);
@@ -569,8 +630,8 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           <b class="mono c-failed" style="font-weight:400">{{ n }}</b></div>
         {% endfor %}
         {% if ops.app.fallback_reasons %}
-        <div><span>why</span>
-          <b class="mono" style="font-weight:400;font-size:11px">{% for prov, why, n in ops.app.fallback_reasons %}<span
+        <div class="wide"><span>why</span>
+          <b class="mono" style="font-weight:400">{% for prov, why, n in ops.app.fallback_reasons %}<span
             class="{{ 'c-failed' if why in ops.budget_fail_reasons }}">{{ prov }} {{ why }} ×{{ n }}</span>{%
             if not loop.last %} · {% endif %}{% endfor %}</b></div>
         {% endif %}
@@ -729,14 +790,14 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         <div>
           <div class="lbl" style="margin-bottom:9px">Delivery yield · agent-work</div>
           <div class="kv">
-            <span class="lab">cycles recorded</span><span class="n">{{ A.delivery.cycles }}</span>
-            <span class="lab">shipped and merged</span><span class="n c-shipped">{{ A.delivery.outcomes.get('shipped', 0) }}</span>
-            <span class="lab">produced nothing</span><span class="n">{{ A.delivery.outcomes.get('nothing', 0) }}</span>
-            <span class="lab">failed</span><span class="n c-failed">{{ A.delivery.outcomes.get('failed', 0) }}</span>
-            <span class="lab">unattributable</span><span class="n">{{ A.delivery.outcomes.get('unknown', 0) }}</span>
-            <span class="lab"><b>yield</b></span><span class="n"><b>{{ A.delivery.yield_pct }}%</b></span>
-            <span class="lab">median cycle</span><span class="n">{{ A.delivery.median_minutes }} min</span>
-            <span class="lab">runner minutes per shipped issue</span><span class="n">{{ A.delivery.minutes_per_shipped }}</span>
+            <div><span class="lab">cycles recorded</span><span class="n">{{ A.delivery.cycles }}</span></div>
+            <div><span class="lab">shipped and merged</span><span class="n c-shipped">{{ A.delivery.outcomes.get('shipped', 0) }}</span></div>
+            <div><span class="lab">produced nothing</span><span class="n">{{ A.delivery.outcomes.get('nothing', 0) }}</span></div>
+            <div><span class="lab">failed</span><span class="n c-failed">{{ A.delivery.outcomes.get('failed', 0) }}</span></div>
+            <div><span class="lab">unattributable</span><span class="n">{{ A.delivery.outcomes.get('unknown', 0) }}</span></div>
+            <div><span class="lab"><b>yield</b></span><span class="n"><b>{{ A.delivery.yield_pct }}%</b></span></div>
+            <div><span class="lab">median cycle</span><span class="n">{{ A.delivery.median_minutes }} min</span></div>
+            <div><span class="lab">runner minutes per shipped issue</span><span class="n">{{ A.delivery.minutes_per_shipped }}</span></div>
           </div>
           <p class="note">Runner minutes are the only cost signal available per loop: the Claude
             subscription is flat and cannot be attributed to a run.</p>
@@ -750,10 +811,10 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           </div>
           <div class="lbl" style="margin:18px 0 9px">QA rounds</div>
           <div class="kv">
-            <span class="lab">issues with a verdict</span><span class="n">{{ A.agents.qa.issues_with_a_verdict }}</span>
-            <span class="lab">reached PASS</span><span class="n">{{ A.agents.qa.issues_reaching_pass }}</span>
-            <span class="lab">failed first submission</span><span class="n">{{ A.agents.qa.first_submission_failed }} ({{ A.agents.qa.first_submission_fail_pct }}%)</span>
-            <span class="lab">most rounds on one issue</span><span class="n">{{ A.agents.qa.max_rounds }}</span>
+            <div><span class="lab">issues with a verdict</span><span class="n">{{ A.agents.qa.issues_with_a_verdict }}</span></div>
+            <div><span class="lab">reached PASS</span><span class="n">{{ A.agents.qa.issues_reaching_pass }}</span></div>
+            <div><span class="lab">failed first submission</span><span class="n">{{ A.agents.qa.first_submission_failed }} ({{ A.agents.qa.first_submission_fail_pct }}%)</span></div>
+            <div><span class="lab">most rounds on one issue</span><span class="n">{{ A.agents.qa.max_rounds }}</span></div>
           </div>
           <p class="note">
             <code>/bug</code> records fifteen QA passes with <i>every one</i> failing its first
@@ -962,8 +1023,8 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           <div><span>needed a retry or a 2nd provider</span>
             <b class="mono">{{ ops.app.fallbacks }}</b></div>
           {% if ops.app.fallback_reasons %}
-          <div><span>&nbsp;&nbsp;reason for the last failure</span>
-            <b class="mono" style="font-weight:400;font-size:11px">{% for prov, why, n in ops.app.fallback_reasons %}{{ prov }} {{ why }} ×{{ n }}{% if not loop.last %} · {% endif %}{% endfor %}</b></div>
+          <div class="wide"><span>&nbsp;&nbsp;reason for the last failure</span>
+            <b class="mono" style="font-weight:400">{% for prov, why, n in ops.app.fallback_reasons %}{{ prov }} {{ why }} ×{{ n }}{% if not loop.last %} · {% endif %}{% endfor %}</b></div>
           {% endif %}
           <div><span>cache hit rate</span><b class="mono">{{ ops.app.hit_rate }}%</b></div>
         </div>
