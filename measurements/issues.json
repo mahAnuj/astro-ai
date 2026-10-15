@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-10-14T17:44:55Z",
+  "generated_at": "2026-10-15T09:37:20Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
   "open": 65,
-  "with_ask": 30,
+  "with_ask": 31,
   "by_area": {
-    "INFRA": 12,
     "UNCLASSIFIED": 12,
+    "INFRA": 10,
     "REDESIGN": 10,
     "FEATURE": 7,
     "UI": 4,
@@ -17,6 +17,8 @@
     "DESIGN": 2,
     "TASK": 2,
     "CHORE": 2,
+    "LLM": 1,
+    "SECURITY": 1,
     "KUNDLI": 1,
     "BLOCKER": 1,
     "KNOWLEDGE": 1,
@@ -24,62 +26,80 @@
   },
   "by_type": {
     "enhancement": 22,
-    "untyped": 16,
-    "chore": 7,
-    "bug": 7,
+    "untyped": 15,
+    "bug": 9,
+    "chore": 6,
     "design": 6,
     "correctness": 6,
     "ui": 1
   },
   "by_priority": {
-    "unset": 42,
+    "unset": 41,
     "medium": 17,
-    "high": 6
+    "high": 7
   },
   "blocked": 5,
   "rows": [
     {
-      "number": 347,
-      "title": "[INFRA] agent-measure runs two hours before agent-work, so a cycle's own outcome is reported ~21.5h late",
-      "ask": "A second cron on agent-measure.yml, collectors only.",
-      "area": "INFRA",
-      "type": "chore",
-      "priority": "unset",
+      "number": 355,
+      "title": "llm: a cache miss averages 40s and half of all misses need a second provider — and neither is attributable per route",
+      "ask": "Record miss latency per route (and ideally per provider attempt).",
+      "area": "LLM",
+      "type": "bug",
+      "priority": "high",
       "labels": [
-        "chore"
+        "bug",
+        "priority:high"
       ],
-      "created": "2026-10-14T17:42:20Z",
-      "updated": "2026-10-14T17:42:20Z",
+      "created": "2026-10-15T04:47:23Z",
+      "updated": "2026-10-15T04:47:23Z",
       "blocked": false,
       "needs_evidence": false
     },
     {
-      "number": 346,
-      "title": "[INFRA] Fifteen scheduled agent loops and nothing measures whether any of them works",
-      "ask": "Liveness — did each loop run when it was due.",
+      "number": 354,
+      "title": "security: the repo is public and the loop auto-merges — nothing gates the system prompts, the agent-facing corpus, or egress",
+      "ask": "1. agent-merge refuses to auto-merge a PR touching the trust boundary.",
+      "area": "SECURITY",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "needs-human-review"
+      ],
+      "created": "2026-10-15T04:38:13Z",
+      "updated": "2026-10-15T05:09:17Z",
+      "blocked": true,
+      "needs_evidence": false
+    },
+    {
+      "number": 351,
+      "title": "[INFRA] GCP spend is unreadable without a billing export, but free-tier headroom is readable today — 3% of Cloud Run requests, 0.4% of GCS",
+      "ask": "Cloud Run service's CPU/memory allocation so the vCPU-s and GiB-s conversions are computed",
       "area": "INFRA",
       "type": "chore",
       "priority": "unset",
       "labels": [
         "chore"
       ],
-      "created": "2026-10-14T17:41:56Z",
-      "updated": "2026-10-14T17:41:56Z",
+      "created": "2026-10-14T19:03:55Z",
+      "updated": "2026-10-14T19:03:55Z",
       "blocked": false,
       "needs_evidence": false
     },
     {
-      "number": 345,
-      "title": "[INFRA] measurements/ hold one window's totals, so /admin/ops can show a level and never a trend",
-      "ask": "The GSC query dimension covers only ~8–9% of impressions — Google withholds low-volume",
+      "number": 350,
+      "title": "[INFRA] Provider headroom is unmeasurable: llm_stats is per-day against a per-MINUTE cap, and Groq's own 'Limit 8000, Requested 8562' is parsed for back-off then discarded",
+      "ask": "Capture Limit and Requested from the 429/413 body where _retry_after_seconds",
       "area": "INFRA",
       "type": "chore",
       "priority": "unset",
       "labels": [
         "chore"
       ],
-      "created": "2026-10-14T17:41:30Z",
-      "updated": "2026-10-14T17:41:30Z",
+      "created": "2026-10-14T18:52:30Z",
+      "updated": "2026-10-14T18:52:30Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -111,23 +131,6 @@
       "created": "2026-10-13T23:19:23Z",
       "updated": "2026-10-13T23:19:23Z",
       "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 338,
-      "title": "[INFRA] The loop's own outcomes and cost are not committed anywhere a page can read them",
-      "ask": "",
-      "area": "INFRA",
-      "type": "untyped",
-      "priority": "high",
-      "labels": [
-        "category:technical",
-        "priority:high",
-        "needs-human-review"
-      ],
-      "created": "2026-10-13T18:09:21Z",
-      "updated": "2026-10-13T18:31:58Z",
-      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -684,10 +687,11 @@
       "priority": "medium",
       "labels": [
         "priority:medium",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass"
       ],
       "created": "2026-08-16T09:30:19Z",
-      "updated": "2026-08-16T12:26:11Z",
+      "updated": "2026-10-15T02:05:31Z",
       "blocked": false,
       "needs_evidence": false
     },
