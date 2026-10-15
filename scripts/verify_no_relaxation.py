@@ -71,6 +71,12 @@ FLOORS = {
 # output, so that deleting one line cannot quietly skip a condition.
 CHAIN = [("own", "gates"), ("gates", "qa"), ("qa", "size")]
 
+# file -> phrases that must still appear in it at HEAD.
+#
+# One entry today, and the loop below is written for many on purpose: the
+# first attempt to add a second one is what exposed the defect this commit
+# fixes. #361's outsider policy is the waiting caller -- it is prose in a file
+# agents edit, and it lands here once that branch is on main.
 REQUIRED_SUBSTRINGS = {
     ".github/workflows/agent-merge.yml": ["qa-pass", "qa-fail"],
 }
@@ -202,12 +208,34 @@ def main(argv: list[str]) -> int:
             elif f"steps.{prev}.outputs.ok" not in a_txt:
                 bad.append(f"{am}: nothing depends on `steps.{prev}.outputs.ok` any more, so the "
                            f"`{prev}` condition can no longer block a merge.")
-        for needed in REQUIRED_SUBSTRINGS.get(am, []):
-            if needed not in a_txt:
-                bad.append(f"{am}: `{needed}` no longer appears. The QA verdict is the one thing "
-                           f"an agent must not be able to route around.")
         if not any(b.startswith(am) for b in bad):
             print(f"  ok   gate chain intact  {am}")
+
+    # 7. Phrases that must survive, in EVERY file that declares one.
+    #
+    # This loop used to live inside the `if am in changed:` block above and read
+    # `REQUIRED_SUBSTRINGS.get(am, ...)` -- so it only ever consulted the
+    # agent-merge entry, and any other key added to the table was INERT. Found
+    # 2026-10-15 by adding the #361 policy floors and watching the gate stay
+    # green while the phrase was deleted. A floor nobody checks is worse than no
+    # floor, because it is cited as protection.
+    #
+    # Checked on EVERY run, not only when the file is in the diff: the point is
+    # that the phrase is present, and a diff-scoped check cannot notice a file
+    # that was weakened on a branch this run did not compare against.
+    for path, needed_list in REQUIRED_SUBSTRINGS.items():
+        txt = at("HEAD", path)
+        if txt is None:
+            bad.append(f"{path}: declared in REQUIRED_SUBSTRINGS and not readable at HEAD. "
+                       f"A guarded file that vanished is a weakening, not a skip.")
+            continue
+        missing = [n for n in needed_list if n not in txt]
+        if missing:
+            for n in missing:
+                bad.append(f"{path}: `{n}` no longer appears. It is floored because the rule "
+                           f"it carries is one an agent is tempted to soften rather than keep.")
+        else:
+            print(f"  ok   phrases floored   {path} ({len(needed_list)})")
 
     print()
     if bad:
