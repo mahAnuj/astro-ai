@@ -37,10 +37,13 @@ WHAT IT CHECKS
    and this file's own history note names the book it removed.
 6. `templates/about.html` must state the yoga count the code actually has
    ("We detect N classical yogas" — N is the number of distinct yoga slugs in
-   `chart.py`), and must not claim moolatrikona unless `chart.py` has code for
-   it. #209: /about advertised "all classical yogas" (23 are implemented) and
-   moolatrikona dignity (a comment, nothing computed). Prose that describes
-   the computation is a claim about the code and gets a gate like one.
+   `chart.py`), must not claim moolatrikona (in any spelling) unless `chart.py`
+   has code for it, and its "How the chart math works" section must not repeat
+   the other claims #209 removed (`_BANNED_MATH_CLAIMS`; the gate fails closed
+   if that section cannot be found). #209: /about advertised "all classical
+   yogas" (23 are implemented) and moolatrikona dignity (a comment, nothing
+   computed). Prose that describes the computation is a claim about the code
+   and gets a gate like one.
 
 RULES FOR ANYONE EDITING THIS FILE
 ----------------------------------
@@ -51,10 +54,13 @@ RULES FOR ANYONE EDITING THIS FILE
   not silently count as verified. Say which books were present whenever you
   report on this gate (CLAUDE.md).
 - The self-test runs on every invocation: it re-breaks #216 and #218 six ways
-  — including on the page's own provenance line — and #209 three more, and asserts this gate goes
-  red on each. A gate that has never failed is not evidence (ARCHITECTURE.md).
-  The count in this sentence is the length of `_MUTATIONS` plus the HTML one;
-  keep it honest if you add another.
+  — including on the page's own provenance line — and #209 nineteen more
+  (count, yoga removed, seven moolatrikona spellings plus the plain claim,
+  seven banned phrases, the missing section, a positional-slug yoga), and
+  asserts this gate goes red on each. A gate that has never failed is not
+  evidence (ARCHITECTURE.md). The count in this sentence is the length of
+  `_MUTATIONS` plus the HTML one plus the #209 cases; keep it honest if you
+  add another.
 """
 from __future__ import annotations
 
@@ -415,11 +421,18 @@ def _cited_in_html_ok(rendered: str) -> set[str]:
 def _yoga_slugs(text: str) -> set[str]:
     """Distinct yoga slugs `chart.py` can produce.
 
-    Most `YogaResult(slug=...)` calls carry a literal. Two functions build the
-    slug from a name bound out of a dict of tuples (`slug, name, ... = names[k]`),
-    so for a non-literal slug every `*_yoga` string that opens a tuple in the
-    same function is a candidate. An over-count would show as a spurious
-    failure, an under-count as a silent pass, and only the first is acceptable.
+    A `YogaResult` call is counted when its slug is the `slug=` keyword OR the
+    first positional argument. A constant string is taken as-is. Anything else
+    (a name bound out of a dict of tuples, `slug, name, ... = names[k]` — two
+    functions do this) falls back to every `*_yoga` string that opens a tuple
+    in the same function, which can over-count if such a function holds a
+    spare tuple.
+
+    NOT counted: a slug built any other way and not matching `*_yoga` (an
+    f-string, a call, a name bound outside the function). That UNDER-counts,
+    and an under-count is the direction that lets /about pass while stale; the
+    only defences are that `_about_problems` fails when the count is 0 and the
+    self-test proves a change in the count is seen, for both call shapes.
     """
     tree = ast.parse(text)
     slugs: set[str] = set()
@@ -431,10 +444,12 @@ def _yoga_slugs(text: str) -> set[str]:
                     and node.func.id == "YogaResult"):
                 continue
             kw = next((k for k in node.keywords if k.arg == "slug"), None)
-            if kw is None:
+            value = (kw.value if kw is not None
+                     else node.args[0] if node.args else None)
+            if value is None:
                 continue
-            if isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str):
-                slugs.add(kw.value.value)
+            if isinstance(value, ast.Constant) and isinstance(value.value, str):
+                slugs.add(value.value)
             else:
                 slugs.update(t.elts[0].value for t in ast.walk(fn)
                              if isinstance(t, ast.Tuple) and t.elts
@@ -459,16 +474,55 @@ def _has_moolatrikona_code(text: str) -> bool:
     return False
 
 
+def _normalise(html: str) -> str:
+    """Visible prose, lowercased, with tags/comments gone and every run of
+    whitespace, hyphens and underscores collapsed to one space — so a claim
+    cannot dodge a pattern by being wrapped across lines, hyphenated or tagged.
+    Tags become a space, not nothing: a join can hide a phrase, a split cannot.
+    """
+    s = re.sub(r"\{#.*?#\}|<!--.*?-->", "", html, flags=re.S)
+    s = re.sub(r"<[^>]+>", " ", s)
+    return re.sub(r"[\s_-]+", " ", s).strip().lower()
+
+
+# Claims #209 removed from the "How the chart math works" section, each false
+# for a reason recorded in the commit. Matched on `_normalise` output. Scoped to
+# that section, NOT the page: /about still mentions BPHS elsewhere (the
+# provenance and sources lists), deliberately and out of this gate's scope.
+_BANNED_MATH_CLAIMS: tuple[tuple[str, str], ...] = (
+    (r"first principles",
+     "'from first principles' (the dignity and dasha tables are literal tables)"),
+    (r"all classical yogas", "'all classical yogas' (a fixed, smaller set is implemented)"),
+    (r"full canonical rule set", "'full canonical rule set' (Manglik rules are a compiled subset)"),
+    (r"every classical cancellation",
+     "'every classical cancellation' (Sade Sati and Kaal Sarp have none)"),
+    (r"nothing is hard ?coded", "'nothing is hardcoded' (the dignity and dasha tables are)"),
+    (r"per bphs rules", "'per BPHS rules' (BPHS is not held; #216)"),
+)
+
+
+def _math_section(about: str) -> str | None:
+    """Normalised text of the <section> holding the 'How the chart math works'
+    heading, or None if it cannot be found (the caller fails closed)."""
+    m = re.search(r"<h[1-6][^>]*>[^<]*how\s+the\s+chart\s+math\s+works", about, re.I)
+    if not m:
+        return None
+    start = about.rfind("<section", 0, m.start())
+    end = about.find("</section>", m.end())
+    if start == -1 or end == -1:
+        return None
+    return _normalise(about[start:end])
+
+
 def _about_problems(text: str, about: str) -> list[str]:
     """#209: what /about says the code does, against what the code does."""
-    rendered = re.sub(r"\{#.*?#\}", "", about, flags=re.S)
-    flat = " ".join(re.sub(r"<[^>]+>", " ", rendered).split())
+    flat = _normalise(about)
     actual = len(_yoga_slugs(text))
     if actual == 0:
         return ["found no yoga slugs in chart.py — the anchors have moved, and a "
                 "gate that cannot find its subject passes vacuously (#193)"]
     fails: list[str] = []
-    m = re.search(r"We detect (\d+) classical yogas", flat)
+    m = re.search(r"we detect (\d+) classical yogas", flat)
     if not m:
         fails.append("about.html no longer says 'We detect N classical yogas', so "
                      "its yoga count cannot be checked. Restore the sentence or "
@@ -476,10 +530,22 @@ def _about_problems(text: str, about: str) -> list[str]:
     elif int(m.group(1)) != actual:
         fails.append(f"about.html says it detects {m.group(1)} yogas; chart.py "
                      f"implements {actual} distinct slugs (#209).")
-    if re.search(r"m(?:oo|u)latrikona", flat, re.I) and not _has_moolatrikona_code(text):
+    # Tolerates moola-trikona, moola trikona, mool trikona, moolatrikon and a
+    # line-split "moola\ntrikona" — all collapse to spaces in `_normalise`.
+    if re.search(r"m(?:oo|u)l[a-z]*\W*trikon", flat) and not _has_moolatrikona_code(text):
         fails.append("about.html mentions moolatrikona, but chart.py computes no "
                      "such dignity — it appears only in a comment (#209). Remove "
                      "the claim or implement the dignity.")
+    section = _math_section(about)
+    if section is None:
+        fails.append("about.html has no <section> with the heading 'How the chart "
+                     "math works', so its banned claims cannot be checked. Restore "
+                     "it or re-point this gate (#209).")
+    else:
+        for pat, why in _BANNED_MATH_CLAIMS:
+            if re.search(pat, section):
+                fails.append(f"about.html's 'How the chart math works' makes a "
+                             f"claim #209 removed: {why}.")
     return fails
 
 
@@ -552,7 +618,32 @@ def _self_test(text: str, html: str) -> list[str]:
         ("#209: a yoga is removed from the code, so the page count is stale",
          text.replace('slug="vesi_yoga"', 'slug="vosi_yoga"', 1), about),
     )
-    for name, t, a in about_cases:
+    # Spelling variants of the moolatrikona claim, each banned phrase, and the
+    # section going missing (which must fail closed) — injected at the end of
+    # the math section's last paragraph.
+    tail = "</p>\n  </section>\n\n  {# CONTACT #}"
+
+    def _inject(sentence: str) -> str:
+        return about.replace(tail, f" {sentence}{tail}", 1)
+
+    variants = ("moola-trikona", "moola trikona", "mool trikona", "moolatrikon",
+                "Mulatrikona", "moola\n      trikona", "moola_trikona")
+    phrases = ("computed from first principles", "all classical yogas",
+               "the full canonical rule set", "every classical\n   cancellation",
+               "Nothing is hardcoded", "nothing is hard-coded", "per BPHS\n rules")
+    extra = [(f"#209: /about claims moolatrikona as {v!r}", text,
+              _inject(f"Dignities include {v}.")) for v in variants]
+    extra += [(f"#209: /about re-asserts {ph!r}", text, _inject(f"We use {ph}."))
+              for ph in phrases]
+    extra += [("#209: the math section's heading is gone (must fail closed)", text,
+               about.replace("How the chart math works", "How we work", 1)),
+              # Proves _yoga_slugs sees a positional slug: the extra yoga moves
+              # the count, so the page's N goes stale.
+              ("#209: a positional-slug YogaResult is counted",
+               text + "\n\ndef _selftest_pos():\n"
+                      "    return YogaResult('selftest_pos_yoga', 'x')\n",
+               about)]
+    for name, t, a in about_cases + tuple(extra):
         if t == text and a == about:
             survived.append(f"{name} — anchor not found; re-point it")
         elif not _about_problems(t, a):
