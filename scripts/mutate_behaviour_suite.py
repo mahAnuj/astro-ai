@@ -955,6 +955,57 @@ MUTATIONS = [
      ' and c.get("viewerDidAuthor") is True',
      "",
      "test_a_copied_marker_in_someone_elses_comment_does_not_suppress_the_stop"),
+
+    # --- #362: the prompt manifest gate. The gate lives in scripts/ and is the
+    # thing under mutation here; tests/test_prompt_manifest.py drives it against
+    # a temp copy of the prompts, so each row below disables one clause of it.
+    ("#362: a changed prompt no longer fails the hash comparison",
+     "scripts/verify_prompt_manifest.py",
+     "        elif _sha256(files[name]) != manifest[name]:",
+     "        elif False:",
+     "test_a_one_character_change_to_any_prompt_fails_and_names_the_file"),
+
+    ("#362: an unlisted prompt on disk is skipped instead of failing",
+     "scripts/verify_prompt_manifest.py",
+     "        if name not in manifest:\n",
+     "        if name not in manifest:\n            continue\n",
+     "test_an_unlisted_prompt_on_disk_fails_and_names_it"),
+
+    ("#362: a listed prompt missing from disk is not reported",
+     "scripts/verify_prompt_manifest.py",
+     "    for name in sorted(set(manifest) - set(files)):",
+     "    for name in sorted(set()):",
+     "test_a_listed_prompt_missing_from_disk_fails_and_names_it"),
+
+    ("#362: an unparseable manifest crashes into exit 1 instead of exit 2",
+     "scripts/verify_prompt_manifest.py",
+     "    except (ValueError, UnicodeDecodeError) as exc:",
+     "    except UnicodeDecodeError as exc:",
+     "test_an_unusable_manifest_exits_two"),
+
+    ("#362: a wrong-shaped manifest is accepted past the shape check",
+     "scripts/verify_prompt_manifest.py",
+     "    if not isinstance(data, dict):",
+     "    if False:",
+     "test_an_unusable_manifest_exits_two"),
+
+    ("#362: could-not-verify returns 1, which pr-gates would count as an ordinary failure",
+     "scripts/verify_prompt_manifest.py",
+     "              f\"      {UPDATE_CMD}\")\n        return 2\n",
+     "              f\"      {UPDATE_CMD}\")\n        return 1\n",
+     "test_a_missing_manifest_is_could_not_verify_not_fail"),
+
+    ("#362: a bare run regenerates the manifest (the gate would pass on anything)",
+     "scripts/verify_prompt_manifest.py",
+     "    do_update = False\n",
+     "    do_update = True\n",
+     "test_update_is_never_the_default"),
+
+    ("#362: the hash is taken over decoded text, so a CRLF checkout re-hashes silently",
+     "scripts/verify_prompt_manifest.py",
+     "    return hashlib.sha256(path.read_bytes()).hexdigest()",
+     "    return hashlib.sha256(path.read_text().encode()).hexdigest()",
+     "test_line_endings_are_part_of_the_hash"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
