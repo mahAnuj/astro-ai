@@ -39,7 +39,11 @@
   <header class="text-center">
     <h1 class="font-marcellus text-3xl sm:text-4xl md:text-5xl text-bhagya-ink mb-3">Free Numerology Calculator</h1>
     <p class="text-base sm:text-lg text-bhagya-muted max-w-xl mx-auto leading-relaxed">
-      Chaldean (Cheiro) and Lo Shu grid calculators — Life Path, Birthday, Destiny/Expression, Soul Urge, Personality numbers plus Personal Year forecast, Karmic Debt flags, per-number remedies (gemstone, colour, deity, mantra), and the 3×3 Lo Shu birth-number matrix. Free, no sign-up. See caveat above about tradition.
+      {# Was "Chaldean (Cheiro) and Lo Shu grid" (#200). Visible body copy, so the
+         author goes; the SEO strings that carry "(Cheiro)" — page_title/page_meta
+         in routes/numerology.py and tool_desc above — are a search-term decision
+         and are left for a human, see scripts/verify_numerology_copy.py. #}
+      Chaldean and Lo Shu grid calculators — Life Path, Birthday, Destiny/Expression, Soul Urge, Personality numbers plus Personal Year forecast, Karmic Debt flags, per-number remedies (gemstone, colour, deity, mantra), and the 3×3 Lo Shu birth-number matrix. Free, no sign-up. See caveat above about tradition.
     </p>
   </header>
 
@@ -95,7 +99,7 @@
     <h2 class="font-marcellus text-2xl text-bhagya-ink mb-4">What numerology reads (and doesn't)</h2>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6 space-y-3 mb-4">
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
-        Numerology reads your <strong>name + birth date</strong> through a modern Western (Cheiro) or ancient Chinese (Lo Shu) framework. Vedic astrology reads your <strong>full birth chart</strong> from a completely different tradition. These are separate systems, not two views of the same underlying method &mdash; sometimes their readings coincidentally align, sometimes they don't.
+        Numerology reads your <strong>name + birth date</strong> through a modern Western (Chaldean) or ancient Chinese (Lo Shu) framework. Vedic astrology reads your <strong>full birth chart</strong> from a completely different tradition. These are separate systems, not two views of the same underlying method &mdash; sometimes their readings coincidentally align, sometimes they don't.
       </p>
       <p class="text-sm sm:text-base text-bhagya-ink leading-relaxed">
         Numerology cannot predict marriage timing, career changes, or specific life events &mdash; those need chart-based Jyotish analysis. What numerology can offer: a compact prompt for self-reflection on your inner drive, external personality, and how you see your own life theme. Treat it as a mirror, not an oracle.
@@ -105,14 +109,27 @@
       </p>
     </div>
 
+    {# Origins below name the tradition, not the author (#200). Provenance, kept
+       here where it can be checked rather than in the page. Two claims, two
+       different footings:
+       - Chaldean table: Cheiro (William John Warner, 1866-1936) as the origin of
+         the table in wide Indian circulation — SOURCED, knowledge/numerology.md
+         line 6 (source key) and §14.
+       - Life Path / Destiny-Expression as the work of L. Dow Balliett and Juno
+         Jordan, USA, ~1908-1940s — NOT sourced in knowledge/*.md (grep for
+         Balliett / Juno Jordan / 1908 there returns nothing, 2026-10-16). It
+         comes from the "classical-source research (2026-08-04)" recorded in the
+         comment above i18n.py num_caveat_heading, and is stated in
+         num_caveat_body_2, which keeps the authors visible on this page.
+         Treat the bullets' dating as that research's claim, not the corpus's. #}
     <h3 class="font-marcellus text-xl text-bhagya-ink mb-3">The 5 numbers we compute (and where they come from)</h3>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6">
       <ul class="space-y-2.5 text-sm sm:text-base text-bhagya-ink leading-relaxed">
-        <li>&bull; <strong>Life Path Number</strong> &mdash; all the digits of your birth date added together, then reduced; your reading spells out that convention and why this page uses it. Origin: L. Dow Balliett / Juno Jordan, USA, ~1908-1940s.</li>
-        <li>&bull; <strong>Destiny / Expression Number</strong> &mdash; English-letter name reduction. Origin: same Balliett/Jordan lineage.</li>
+        <li>&bull; <strong>Life Path Number</strong> &mdash; all the digits of your birth date added together, then reduced; your reading spells out that convention and why this page uses it. Origin: early-20th-century American numerology, ~1908-1940s.</li>
+        <li>&bull; <strong>Destiny / Expression Number</strong> &mdash; English-letter name reduction. Origin: same early-20th-century American lineage.</li>
         <li>&bull; <strong>Soul Urge Number</strong> &mdash; from name vowels. Origin: 20th-c. Western numerology.</li>
         <li>&bull; <strong>Personality Number</strong> &mdash; from name consonants. Origin: 20th-c. Western numerology.</li>
-        <li>&bull; <strong>Name Number</strong> &mdash; the total of your name letters on the Chaldean table, then reduced; it is the same quantity as the Destiny/Expression number, under the name Indian numerology uses for it. Origin of the Chaldean table: Cheiro (William John Warner, 1866-1936); the tables in wide Indian circulation trace to him.</li>
+        <li>&bull; <strong>Name Number</strong> &mdash; the total of your name letters on the Chaldean table, then reduced; it is the same quantity as the Destiny/Expression number, under the name Indian numerology uses for it. Origin of the Chaldean table: early-20th-century Western Chaldean numerology; the tables in wide Indian circulation trace to that lineage.</li>
       </ul>
     </div>
   </section>
@@ -493,7 +510,10 @@
             {% for d in prof.good_dates %}<span class="w-7 h-7 flex items-center justify-center text-xs tabular-nums bg-white rounded border border-bhagya-border">{{ d }}</span>{% endfor %}
             {% for d in prof.exalted_dates %}<span class="w-7 h-7 flex items-center justify-center text-xs tabular-nums bg-bhagya-cream-2 text-bhagya-sindoor font-semibold rounded border-2 border-bhagya-saffron" title="Exalted — most fortunate">{{ d }}★</span>{% endfor %}
           </div>
-          {% if prof.exalted_dates %}<div class="text-xs text-bhagya-muted mt-1 italic">★ = exalted date per Johari (most fortunate birth-dates that reduce to your Life Path)</div>{% endif %}
+          {# Exalted-date lists are Johari §4 (the "Exalted N: from birth-date …"
+             lines per number, knowledge/numerology.md:204-323); named in the
+             comment, not the page (#200). #}
+          {% if prof.exalted_dates %}<div class="text-xs text-bhagya-muted mt-1 italic">★ = exalted date in the Vedic-integrated numerology tradition (most fortunate birth-dates that reduce to your Life Path)</div>{% endif %}
         </div>
       </div>
     </div>
@@ -506,7 +526,10 @@
   <section class="bg-white border-2 border-bhagya-line p-5 sm:p-6">
     <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Vedic Remedies</div>
     <h2 class="font-marcellus text-xl text-bhagya-ink mb-1">Your Life Path {{ reading.life_path }} is ruled by {{ rem.planet }} ({{ rem.planet_sanskrit }})</h2>
-    <p class="text-xs text-bhagya-muted mb-4 italic">Per Johari's Vedic-integrated system. Practise consistency over intensity — remedies work by shifting your relationship with the planet's energy, not by magic.</p>
+    {# "Per Johari's Vedic-integrated system" until #200 — Johari §3/§4/§11
+       (colour, gemstone, day, direction, deity table at knowledge/numerology.md
+       :162; rudraksha, fasting and mantra in §11). The page names the tradition. #}
+    <p class="text-xs text-bhagya-muted mb-4 italic">These remedies follow the Vedic-integrated numerology tradition. Practise consistency over intensity — remedies work by shifting your relationship with the planet's energy, not by magic.</p>
     <div class="grid sm:grid-cols-2 gap-3 text-sm">
       <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Best day</span><div class="text-bhagya-ink font-medium">{{ rem.day }}</div></div>
       <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Direction to face</span><div class="text-bhagya-ink font-medium">{{ rem.direction }}</div></div>
@@ -579,7 +602,13 @@
       <span class="text-sm text-bhagya-muted">of the 9-year cycle</span>
     </div>
     <p class="text-sm text-bhagya-ink-soft leading-relaxed">{{ reading.personal_year_theme }}</p>
-    <p class="text-xs text-bhagya-muted mt-3 italic">Kumar's formula: birth-month digits + birth-day digits + target-year digits, reduced all the way to 1-9. Cycles 1-9 across your life; each year sets the year's theme.</p>
+    {# "Kumar's formula" until #200. Traced 2026-10-16 to knowledge/numerology.md
+       §12.8 (Kumar Ch.1 calculation-inputs table, §2.5.3: "Personal Year Number |
+       Birth date + Universal year"; §12.8 expands it to birth_month + birth_date
+       + universal_year). The "reduced all the way to 1-9" clause is NOT Kumar's:
+       it is the product decision recorded in §12.8 "Implemented as of #169".
+       Johari's variant (§9, last two digits + weekday) is not what this runs. #}
+    <p class="text-xs text-bhagya-muted mt-3 italic">The Personal Year method used on this page: birth-month digits + birth-day digits + target-year digits, reduced all the way to 1-9. Cycles 1-9 across your life; each year sets the year's theme.</p>
   </section>
   {% endif %}
 
