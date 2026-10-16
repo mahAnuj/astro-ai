@@ -930,6 +930,57 @@ MUTATIONS = [
      "    if d.comment is not None and not has_marker(issue, d.key):",
      "    if d.comment is not None:",
      "test_a_state_already_commented_by_this_token_posts_nothing_again"),
+
+
+    # --- #361: issue provenance. The resolver is the control that keeps an outsider's
+    # issue from reaching an engineer; each row makes it say TRUSTED when it must not.
+    ("#361: permission 'none' resolves as trusted (every stranger is a maintainer)",
+     "scripts/resolve_provenance.py",
+     'PERM_TRUSTED = {"admin", "write"}',
+     'PERM_TRUSTED = {"admin", "write", "none"}',
+     "test_read_and_none_are_outsiders"),
+
+    ("#361: a bot-applied provenance:trusted is honoured (the loop vouches for itself)",
+     "scripts/resolve_provenance.py",
+     '    if actor.get("type") != "User":',
+     "    if False:",
+     "test_a_bot_applied_override_is_ignored"),
+
+    ("#361: a bot author is treated as trusted (no allowlist, and no default either)",
+     "scripts/resolve_provenance.py",
+     "    if is_bot:\n        base = OUTSIDER",
+     "    if is_bot:\n        base = TRUSTED",
+     "test_a_bot_author_is_an_outsider_whatever_its_permission"),
+
+    ("#361: a 403 / 5xx collapses into 'outsider' instead of stopping (could-not-ask != no)",
+     "scripts/resolve_provenance.py",
+     'return Perm("unresolved", detail=f"gh exit {r.rc}: {r.err.strip()[:120]}")',
+     'return Perm("absent", detail=f"gh exit {r.rc}: {r.err.strip()[:120]}")',
+     "test_a_failure_to_ask_is_unresolved_never_a_default"),
+
+    ("#361: the login regex is skipped (an attacker-shaped login reaches the API call)",
+     "scripts/resolve_provenance.py",
+     "    return login if _LOGIN.fullmatch(login) else None",
+     "    return login",
+     "test_an_invalid_login_is_unresolved_and_reaches_no_api_call"),
+
+    ("#361: the login check backs off to match() -- a trailing newline survives `$`",
+     "scripts/resolve_provenance.py",
+     "    return login if _LOGIN.fullmatch(login) else None",
+     "    return login if _LOGIN.match(login) else None",
+     "test_a_trailing_newline_or_control_character_is_not_a_login"),
+
+    ("#361: override events sorted by timestamp alone (a same-second unlabel loses to a label)",
+     "scripts/resolve_provenance.py",
+     '    relevant.sort(key=lambda e: (str(e.get("created_at", "")), e.get("id") or 0))',
+     '    relevant.sort(key=lambda e: str(e.get("created_at", "")))',
+     "test_a_same_second_label_and_unlabel_are_ordered_by_id"),
+
+    ("#361: any comment carrying the marker silences the UNRESOLVED stop (spoofable)",
+     "scripts/resolve_provenance.py",
+     ' and c.get("viewerDidAuthor") is True',
+     "",
+     "test_a_copied_marker_in_someone_elses_comment_does_not_suppress_the_stop"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

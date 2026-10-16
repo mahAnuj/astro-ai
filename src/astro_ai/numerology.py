@@ -1179,7 +1179,8 @@ _PROFILES: dict[int, LifePathProfile] = {
         good_dates=(8, 17, 26),
         exalted_dates=(26, 35),
         best_day="Saturday",
-        life_challenges="Your central challenge is not internalising society's dismissal of you. 8-natives are frequently misjudged as 'unlucky' or 'behind schedule' when in fact they're playing a longer game. Marriage requires exceptional care — Johari specifically warns 26-borns to avoid marrying 4, 8, or 9. The mid-life shift from being misunderstood to being respected is your reward for patience.",
+        # Prose names the tradition, not the book (#200); source: Johari §4 Number 8 (knowledge/numerology.md:295-310).
+        life_challenges="Your central challenge is not internalising society's dismissal of you. 8-natives are frequently misjudged as 'unlucky' or 'behind schedule' when in fact they're playing a longer game. Marriage requires exceptional care — the Vedic-integrated tradition specifically warns 26-borns to avoid marrying 4, 8, or 9. The mid-life shift from being misunderstood to being respected is your reward for patience.",
     ),
     9: LifePathProfile(
         number=9, planet="Mars", planet_sanskrit="Mangal",
@@ -1202,7 +1203,8 @@ _PROFILES: dict[int, LifePathProfile] = {
         good_dates=(9, 18, 27),
         exalted_dates=(27, 36),
         best_day="Tuesday",
-        life_challenges="Your lifelong practice is anger management. Not suppressing it — Mars energy suppressed becomes illness — but channeling it into constructive action rather than corrosive reactions. Marriage is complicated: you attract partners who challenge you, and you need to distinguish between challenges that grow you and dynamics that destroy you. Number 6 women (Venus) are Johari's ideal partner for 9-men; number 3 men (Jupiter) for 9-women.",
+        # Prose names the tradition, not the book (#200); source: Johari §4 Number 9 (knowledge/numerology.md:312-325).
+        life_challenges="Your lifelong practice is anger management. Not suppressing it — Mars energy suppressed becomes illness — but channeling it into constructive action rather than corrosive reactions. Marriage is complicated: you attract partners who challenge you, and you need to distinguish between challenges that grow you and dynamics that destroy you. Number 6 women (Venus) are the tradition's ideal partner for 9-men; number 3 men (Jupiter) for 9-women.",
     ),
 }
 
@@ -1336,19 +1338,20 @@ def compute_compatibility(name_a: str, birth_date_a: str,
         elif marriage_v == "avoid":
             total = max(0, total - 25)
 
-    # Summary paragraph
+    # Summary paragraph. User-facing text names the tradition, not the book
+    # (#200); the source is Johari §7 (knowledge/numerology.md:585, :587-589).
     tone = ("This is a supportive pairing — energies flow easily between you. "
-            "Johari's caveat: friend-pairings can be TOO comfortable and stop growth. Introduce healthy challenge."
+            "The Vedic-integrated tradition's caveat: friend-pairings can be TOO comfortable and stop growth. Introduce healthy challenge."
             if lp_v == "friend" else
             "This is a growth-through-friction pairing. Not easy, but productive. "
-            "Enemy numbers force you both awake — Johari sees this as more valuable than comfort in the long run."
+            "Enemy numbers force you both awake — the Vedic-integrated tradition sees this as more valuable than comfort in the long run."
             if lp_v == "enemy" else
             "This is a neutral pairing — cooperation possible but requires conscious effort from both sides.")
     if context == "marriage":
         if marriage_v == "best":
-            tone += " Classical marriage-favourable pair per Johari — one of the six pairings the text specifically endorses."
+            tone += " Classical marriage-favourable pair in the Vedic-integrated tradition — one of the six pairings it specifically endorses."
         elif marriage_v == "avoid":
-            tone += " Classical marriage-avoid pair per Johari — extra care with communication, patience, and mutual respect required. Not impossible; just harder."
+            tone += " Classical marriage-avoid pair in the Vedic-integrated tradition — extra care with communication, patience, and mutual respect required. Not impossible; just harder."
 
     return CompatibilityReading(
         person_a_name=r_a.name, person_a_life_path=r_a.life_path,
