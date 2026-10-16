@@ -110,12 +110,18 @@
     </div>
 
     {# Origins below name the tradition, not the author (#200). Provenance, kept
-       here where it can be checked rather than in the page: Life Path and
-       Destiny/Expression follow L. Dow Balliett / Juno Jordan (USA, ~1908-1940s);
-       the Chaldean letter table is the one Cheiro (William John Warner,
-       1866-1936) published, and the tables in wide Indian circulation trace to
-       it — knowledge/numerology.md §2.5, §5, §14.2. The dated historical
-       statement naming those authors stays in i18n.py num_caveat_body_*. #}
+       here where it can be checked rather than in the page. Two claims, two
+       different footings:
+       - Chaldean table: Cheiro (William John Warner, 1866-1936) as the origin of
+         the table in wide Indian circulation — SOURCED, knowledge/numerology.md
+         line 6 (source key) and §14.
+       - Life Path / Destiny-Expression as the work of L. Dow Balliett and Juno
+         Jordan, USA, ~1908-1940s — NOT sourced in knowledge/*.md (grep for
+         Balliett / Juno Jordan / 1908 there returns nothing, 2026-10-16). It
+         comes from the "classical-source research (2026-08-04)" recorded in the
+         comment above i18n.py num_caveat_heading, and is stated in
+         num_caveat_body_2, which keeps the authors visible on this page.
+         Treat the bullets' dating as that research's claim, not the corpus's. #}
     <h3 class="font-marcellus text-xl text-bhagya-ink mb-3">The 5 numbers we compute (and where they come from)</h3>
     <div class="bg-white border border-bhagya-line p-5 sm:p-6">
       <ul class="space-y-2.5 text-sm sm:text-base text-bhagya-ink leading-relaxed">
@@ -504,7 +510,8 @@
             {% for d in prof.good_dates %}<span class="w-7 h-7 flex items-center justify-center text-xs tabular-nums bg-white rounded border border-bhagya-border">{{ d }}</span>{% endfor %}
             {% for d in prof.exalted_dates %}<span class="w-7 h-7 flex items-center justify-center text-xs tabular-nums bg-bhagya-cream-2 text-bhagya-sindoor font-semibold rounded border-2 border-bhagya-saffron" title="Exalted — most fortunate">{{ d }}★</span>{% endfor %}
           </div>
-          {# Exalted-date lists are Johari §4 (per-number profile); named in the
+          {# Exalted-date lists are Johari §4 (the "Exalted N: from birth-date …"
+             lines per number, knowledge/numerology.md:204-323); named in the
              comment, not the page (#200). #}
           {% if prof.exalted_dates %}<div class="text-xs text-bhagya-muted mt-1 italic">★ = exalted date in the Vedic-integrated numerology tradition (most fortunate birth-dates that reduce to your Life Path)</div>{% endif %}
         </div>
@@ -519,9 +526,10 @@
   <section class="bg-white border-2 border-bhagya-line p-5 sm:p-6">
     <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-sindoor mb-1">Vedic Remedies</div>
     <h2 class="font-marcellus text-xl text-bhagya-ink mb-1">Your Life Path {{ reading.life_path }} is ruled by {{ rem.planet }} ({{ rem.planet_sanskrit }})</h2>
-    {# "Per Johari's Vedic-integrated system" until #200 — Johari §4/§11,
-       knowledge/numerology.md. The page names the tradition. #}
-    <p class="text-xs text-bhagya-muted mb-4 italic">In the Vedic-integrated numerology tradition. Practise consistency over intensity — remedies work by shifting your relationship with the planet's energy, not by magic.</p>
+    {# "Per Johari's Vedic-integrated system" until #200 — Johari §3/§4/§11
+       (colour, gemstone, day, direction, deity table at knowledge/numerology.md
+       :162; rudraksha, fasting and mantra in §11). The page names the tradition. #}
+    <p class="text-xs text-bhagya-muted mb-4 italic">These remedies follow the Vedic-integrated numerology tradition. Practise consistency over intensity — remedies work by shifting your relationship with the planet's energy, not by magic.</p>
     <div class="grid sm:grid-cols-2 gap-3 text-sm">
       <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Best day</span><div class="text-bhagya-ink font-medium">{{ rem.day }}</div></div>
       <div class="p-3 bg-bhagya-cream-2 rounded"><span class="text-xs uppercase text-bhagya-muted">Direction to face</span><div class="text-bhagya-ink font-medium">{{ rem.direction }}</div></div>
@@ -600,7 +608,7 @@
        + universal_year). The "reduced all the way to 1-9" clause is NOT Kumar's:
        it is the product decision recorded in §12.8 "Implemented as of #169".
        Johari's variant (§9, last two digits + weekday) is not what this runs. #}
-    <p class="text-xs text-bhagya-muted mt-3 italic">The standard Personal Year method: birth-month digits + birth-day digits + target-year digits, reduced all the way to 1-9. Cycles 1-9 across your life; each year sets the year's theme.</p>
+    <p class="text-xs text-bhagya-muted mt-3 italic">The Personal Year method used on this page: birth-month digits + birth-day digits + target-year digits, reduced all the way to 1-9. Cycles 1-9 across your life; each year sets the year's theme.</p>
   </section>
   {% endif %}
 

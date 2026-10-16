@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify that the numerology pages' RENDERED copy names traditions, not authors.
+"""Verify that the numerology pages' user-facing copy names traditions, not authors.
 
 WHY THIS EXISTS
 ---------------
@@ -13,8 +13,11 @@ occurrences of "Lo Shu" (#172, guarded by verify_lo_shu_attribution.py).
 
 Provenance was RELOCATED, not deleted: it lives in the adjacent `{# … #}` Jinja
 comments, which never reach the browser, and in knowledge/numerology.md. So this
-gate looks only at what a reader receives — comments are stripped first — and
-the comments are free to say "Johari §4 / Kumar Ch.1".
+gate looks only at what can reach a reader — Jinja comments are stripped from
+the two templates, and `numerology.py` is read through `ast` so only string
+constants count (docstrings, `#` comments and identifiers are free to say
+"Johari §4 / Kumar Ch.1"). It scans SOURCE, not rendered pages: a string built at
+runtime from pieces would not be seen.
 
 RULES FOR ANYONE EDITING THIS FILE
 ----------------------------------
@@ -31,18 +34,23 @@ RULES FOR ANYONE EDITING THIS FILE
 """
 from __future__ import annotations
 
+import ast
 import re
 import sys
 from pathlib import Path
 
-TEMPLATES = Path(__file__).resolve().parent.parent / "src" / "astro_ai" / "templates"
+PKG = Path(__file__).resolve().parent.parent / "src" / "astro_ai"
+TEMPLATES = PKG / "templates"
 FILES = ("numerology.html", "numerology_compat.html")
+PYFILE = "numerology.py"
 
 # Author names that must not appear as the source of a rule in rendered copy.
-# Jordan/Warner/Hamon are the secondary names that rode along with Balliett and
-# Cheiro ("Balliett / Jordan", "William John Warner").
-_NAMES = re.compile(r"Johari|Kumar|Cheiro|Balliett|Seton|Juno Jordan|Warner|Hamon",
-                    re.IGNORECASE)
+# Includes the given names and secondary names that ride along with a surname
+# ("Balliett / Juno Jordan", "William John Warner", "Harish Johari", "Jayant
+# Kumar", Goodwin from the corpus's source key) — a mutation adding
+# "(Jayant, Goodwin, Harish)" must go red, and a surname-only list let it pass.
+_NAMES = re.compile(r"Johari|Harish|Kumar|Jayant|Cheiro|Warner|Hamon|Balliett|"
+                    r"Seton|Juno Jordan|Goodwin", re.IGNORECASE)
 
 # (file, fragment containing the mention, reason). Each carries exactly one
 # mention. These are SEO strings, not citations of a rule: "Chaldean (Cheiro)" is
@@ -80,10 +88,10 @@ _ANCHORS: tuple[tuple[str, str, str], ...] = (
      "★ = exalted date in the Vedic-integrated numerology tradition",
      "★ = exalted date per Johari"),
     ("numerology.html",
-     "In the Vedic-integrated numerology tradition. Practise",
+     "These remedies follow the Vedic-integrated numerology tradition. Practise",
      "Per Johari's Vedic-integrated system. Practise"),
     ("numerology.html",
-     "The standard Personal Year method: birth-month digits",
+     "The Personal Year method used on this page: birth-month digits",
      "Kumar's formula: birth-month digits"),
     ("numerology_compat.html",
      "compatibility in the Vedic-integrated numerology tradition",
@@ -92,17 +100,35 @@ _ANCHORS: tuple[tuple[str, str, str], ...] = (
      "compared in the Vedic-integrated numerology tradition.",
      "compared per Johari's classical Vedic-integrated system."),
     ("numerology_compat.html",
-     "the tradition's specific 6 favourable + 6 avoid marriage pairs",
+     "the Vedic-integrated tradition's specific 6 favourable + 6 avoid marriage pairs",
      "Johari's specific 6 favourable + 6 avoid marriage pairs"),
     ("numerology_compat.html",
-     "<strong>The tradition's honest framing:</strong>",
+     "<strong>The Vedic-integrated tradition's honest framing:</strong>",
      "<strong>Johari's honest framing:</strong>"),
     ("numerology_compat.html",
-     "Classical marriage-favourable pair in this tradition",
+     "Classical marriage-favourable pair in the Vedic-integrated tradition",
      "Classical marriage-favourable pair per Johari"),
     ("numerology_compat.html",
-     "Classical marriage-avoid pair in this tradition",
+     "Classical marriage-avoid pair in the Vedic-integrated tradition",
      "Classical marriage-avoid pair per Johari"),
+)
+
+# numerology.py string constants that used to name Johari and render beside the
+# badges (compat summary) or in the life-challenge prose. (replacement fragment,
+# phrase it replaced). Same rule as _ANCHORS: missing = FAIL.
+_PY_ANCHORS: tuple[tuple[str, str], ...] = (
+    ("The Vedic-integrated tradition's caveat: friend-pairings",
+     "Johari's caveat: friend-pairings"),
+    ("the Vedic-integrated tradition sees this as more valuable",
+     "Johari sees this as more valuable"),
+    (" Classical marriage-favourable pair in the Vedic-integrated tradition",
+     " Classical marriage-favourable pair per Johari"),
+    (" Classical marriage-avoid pair in the Vedic-integrated tradition",
+     " Classical marriage-avoid pair per Johari"),
+    ("the Vedic-integrated tradition specifically warns 26-borns",
+     "Johari specifically warns 26-borns"),
+    ("are the tradition's ideal partner for 9-men",
+     "are Johari's ideal partner for 9-men"),
 )
 
 _COMMENT = re.compile(r"\{#.*?#\}", re.DOTALL)
@@ -113,8 +139,34 @@ def _rendered(text: str) -> str:
     return _COMMENT.sub("", text)
 
 
+def _py_literals(text: str) -> list[tuple[int, str]]:
+    """(line, value) of every non-docstring string constant in the module."""
+    tree = ast.parse(text)
+    docs: set[int] = set()
+    for n in ast.walk(tree):
+        if isinstance(n, (ast.Module, ast.ClassDef, ast.FunctionDef,
+                          ast.AsyncFunctionDef)) and n.body:
+            first = n.body[0]
+            if (isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant)
+                    and isinstance(first.value.value, str)):
+                docs.add(id(first.value))
+    return [(n.lineno, n.value) for n in ast.walk(tree)
+            if isinstance(n, ast.Constant) and isinstance(n.value, str)
+            and id(n) not in docs]
+
+
 def _problems(texts: dict[str, str]) -> list[str]:
     problems: list[str] = []
+    literals = _py_literals(texts[PYFILE])
+    joined_py = "\n".join(v for _l, v in literals)
+    for new, _old in _PY_ANCHORS:
+        if new not in joined_py:
+            problems.append(f"{PYFILE}: anchor not found in string literals — {new!r}. "
+                            "Re-point it if the string was reworded; do not delete it.")
+    for line, value in literals:
+        for m in _NAMES.finditer(value):
+            problems.append(f"{PYFILE}:{line}: author named in a string literal — "
+                            f"{m.group(0)!r} in …{value[max(0, m.start() - 50):m.end() + 30]!r}…")
     stripped = {name: _rendered(texts[name]) for name in FILES}
 
     for fname, new, _old in _ANCHORS:
@@ -152,9 +204,17 @@ def _self_test(texts: dict[str, str]) -> int:
     failures = 0
     mutations: list[tuple[str, str, str, str]] = [
         (f"{old!r} restored", fname, new, old) for fname, new, old in _ANCHORS]
+    mutations += [(f"{PYFILE}: {old!r} restored", PYFILE, new, old)
+                  for new, old in _PY_ANCHORS]
     mutations.append(("a bare new mention", "numerology_compat.html",
                       "Numerology Compatibility Check",
                       "Numerology Compatibility Check (after Kumar)"))
+    mutations.append(("given names added (Jayant, Goodwin, Harish)",
+                      "numerology_compat.html", "Numerology Compatibility Check",
+                      "Numerology Compatibility Check (Jayant, Goodwin, Harish)"))
+    mutations.append(("a new author in a numerology.py string literal", PYFILE,
+                      '"This is a neutral pairing',
+                      '"Per Kumar: This is a neutral pairing'))
     for label, fname, new, old in mutations:
         body = texts[fname]
         if new not in body:
@@ -168,14 +228,20 @@ def _self_test(texts: dict[str, str]) -> int:
         else:
             print(f"  FAIL  {label} — gate stayed green on a known defect")
             failures += 1
-    # The converse: a mention inside a Jinja comment is provenance and must pass.
-    mutated = dict(texts)
-    mutated["numerology.html"] = texts["numerology.html"] + "\n{# Johari §4 / Kumar Ch.1 #}\n"
-    if _problems(mutated):
-        print("  FAIL  an author in a {# #} comment — gate flagged provenance")
-        failures += 1
-    else:
-        print("  ok    an author in a {# #} comment — correctly ignored")
+    # The converse: provenance in a Jinja comment, a `#` comment or a docstring
+    # must pass.
+    for label, fname, tail in (
+            ("an author in a {# #} comment", "numerology.html",
+             "\n{# Johari §4 / Kumar Ch.1 #}\n"),
+            ("an author in a # comment and a docstring", PYFILE,
+             '\n# Johari §4, Kumar Ch.1\ndef _zz():\n    """Per Johari §7."""\n')):
+        mutated = dict(texts)
+        mutated[fname] = texts[fname] + tail
+        if _problems(mutated):
+            print(f"  FAIL  {label} — gate flagged provenance")
+            failures += 1
+        else:
+            print(f"  ok    {label} — correctly ignored")
     return failures
 
 
@@ -183,6 +249,7 @@ def main(argv: list[str]) -> int:
     args = [a for a in argv[1:] if a != "--self-test"]
     root = Path(args[0]) if args else TEMPLATES
     texts = {name: (root / name).read_text(encoding="utf-8") for name in FILES}
+    texts[PYFILE] = (PKG / PYFILE).read_text(encoding="utf-8")
 
     problems = _problems(texts)
     for p in problems:
@@ -190,7 +257,8 @@ def main(argv: list[str]) -> int:
     if problems:
         return 1
 
-    print(f"Rendered numerology copy clean — {len(_ANCHORS)} anchors present, "
+    print(f"Numerology template source and {PYFILE} string literals clean — "
+          f"{len(_ANCHORS)} template + {len(_PY_ANCHORS)} literal anchors present, "
           f"{len(_ALLOWED)} allowed mention(s) (SEO term), no other author named.")
     print("Self-test (each known defect must turn this gate red):")
     if _self_test(texts):
