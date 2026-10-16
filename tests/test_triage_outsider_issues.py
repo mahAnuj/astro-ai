@@ -7,10 +7,14 @@ each clause is a test below: the outsider decision has ONE source (the resolver'
 fails closed; the posted comment never echoes the issue; nothing can close an issue; and the
 same state is never commented twice.
 
-*** THE RESOLVER IS MOCKED. *** `scripts/resolve_provenance.py` is not on `main` until #363
-lands, so every resolver exit code here is a fake runner's. These tests prove this script obeys
-the documented contract (0 trusted, 1 outsider, 2 unresolved); they prove nothing about the
-real resolver. One real invocation on a known outsider issue is owed after #363 merges.
+*** THE RESOLVER IS MOCKED HERE. *** Every resolver result below is a fake runner's. The debt
+this note used to record -- "one real invocation is owed after #363 merges" -- is now partly
+paid in `test_triage_resolver_contract.py`, which drives the same code through a REAL
+subprocess, and that file exists because of what the mock could not express: the fake returned
+a bare exit code, so it could not distinguish a resolver that exits 1 with an OUTSIDER verdict
+from one that exits 1 because it CRASHED. #377 DEF-1 was exactly that, and it passed review
+here. The fake now prints the verdict line the real script prints, because a stand-in with a
+weaker contract than the thing it stands in for is how that defect got through.
 
 Hermetic: `gh` and the resolver are injected fakes, and `subprocess.run` is poisoned so an
 accidental real call fails loudly.
@@ -85,14 +89,27 @@ class FakeGh:
 
 
 class FakeResolver:
-    """number -> exit code. Records every number it was asked about."""
+    """number -> exit code. Records every number it was asked about.
 
-    def __init__(self, codes=None, default=1):
+    It PRINTS the verdict for that code, because the real resolver does
+    (`#<n>  <VERDICT> -- <reason>`) and `classify_provenance` reads both. A fake that
+    returned a bare status was a weaker contract than the script it stands in for, which
+    is how a crash exiting 1 passed for an OUTSIDER finding. Pass `silent=True` to get the
+    old behaviour -- that is now the shape of a traceback, and is tested as one.
+    """
+
+    def __init__(self, codes=None, default=1, silent=False):
         self.codes, self.default, self.asked = codes or {}, default, []
+        self.silent = silent
 
     def __call__(self, number):
         self.asked.append(number)
-        return t.Result(self.codes.get(number, self.default), "", "")
+        rc = self.codes.get(number, self.default)
+        if self.silent:
+            return t.Result(rc, "", "")
+        word = t._EXIT_VERDICT.get(rc)
+        out = "" if word is None else f"#{number}  {word} -- fake\n"
+        return t.Result(rc, out, "")
 
 
 @pytest.fixture
@@ -115,6 +132,40 @@ def test_resolver_exit_1_is_an_outsider_and_is_triaged(resolver_file, capsys):
     rc, gh, _ = run([issue(5)], path=resolver_file, argv=["--apply"])
     assert rc == 0
     assert any(c[:2] == ["issue", "edit"] and "--add-label" in c for c in gh.writes())
+
+
+def test_a_crashing_resolver_is_not_an_outsider(resolver_file, capsys):
+    """#377 DEF-1. An uncaught exception in the resolver exits 1 -- OUTSIDER's code -- and
+    prints a traceback to stderr, never a verdict to stdout. Reading the status alone turned
+    every crash into a finding against the author, and labelled their issue for it."""
+    rc, gh, _ = run([issue(5)], FakeResolver(default=1, silent=True),
+                    path=resolver_file, argv=["--apply"])
+    err = capsys.readouterr().err
+    assert rc == t.EXIT_FAIL, "a crash must fail the run, not pass as a verdict"
+    assert gh.writes() == [], "a crash must write no label"
+    assert "without printing a verdict" in err and "#5" in err
+
+
+def test_a_resolver_whose_word_and_status_disagree_is_an_error(resolver_file, capsys):
+    """Neither statement wins: disagreement means the resolver is not behaving to contract."""
+    class Contradictory:
+        def __call__(self, number):
+            return t.Result(1, f"#{number}  TRUSTED -- says one thing, exits another\n", "")
+
+    rc, gh, _ = run([issue(5)], Contradictory(), path=resolver_file, argv=["--apply"])
+    assert rc == t.EXIT_FAIL and gh.writes() == []
+    assert "printed TRUSTED but exited 1" in capsys.readouterr().err
+
+
+def test_a_verdict_for_another_issue_is_not_read_as_this_one(resolver_file, capsys):
+    """The reason text is free-form and may quote other issue numbers; only the line whose
+    number matches the issue under test counts."""
+    class WrongNumber:
+        def __call__(self, number):
+            return t.Result(1, "#999  OUTSIDER -- a verdict about a different issue\n", "")
+
+    rc, gh, _ = run([issue(5)], WrongNumber(), path=resolver_file, argv=["--apply"])
+    assert rc == t.EXIT_FAIL and gh.writes() == []
 
 
 def test_resolver_exit_0_is_trusted_and_skipped_silently(resolver_file, capsys):
@@ -363,9 +414,42 @@ def test_the_cap_bounds_the_stage2_list(resolver_file, capsys):
              "feedback widget unreachable behind keyboard on small androids"]
     issues = [issue(n, title=f"report {n}", body=prose[n - 1] + "\n" + block(f"unit{n}"))
               for n in range(1, 9)]
-    run(issues, path=resolver_file, argv=["--cap", "3"])
+    gh = FakeGh(issues)
+    run(issues, path=resolver_file, argv=["--cap", "3", "--apply"], gh=gh)
     out = capsys.readouterr().out
-    assert "STAGE2: 1 2 3\n" in out and "5 more held back" in out
+    assert "STAGE2: 1 2 3\n" in out
+    assert "5 candidate(s) held back by --cap 3" in out and "#4 #5 #6 #7 #8" in out
+
+    # THE CAP MUST BOUND THE WORK, NOT THE PRINTOUT. Labelling a candidate it declined to
+    # list dropped it permanently: `already_done` reads that label, so the next run skipped
+    # it before it could ever be listed. A held-back issue must be untouched.
+    touched = {int(c[2]) for c in gh.writes() if tuple(c[:2]) == ("issue", "edit")}
+    assert touched == {1, 2, 3}, f"held-back candidates were written to: {touched - {1, 2, 3}}"
+
+
+def test_held_back_candidates_are_listed_by_the_next_run(resolver_file, capsys):
+    """The regression #377 DEF-2 was filed for: run 1 labelled all 8 and listed 3, then run 2
+    skipped all 8 as already-done and listed NONE. The surplus was discarded, not deferred."""
+    prose = ["geocoding rejects diacritics typed into birthplace field, suggests nothing",
+             "sitemap lastmod timestamps stale after redeploy, crawlers ignore updates",
+             "hindi hub tiles render blank until second refresh completes loading",
+             "dasha timeline overflows container horizontally beyond viewport edge",
+             "panchang strip flickers between cities during hydration swap"]
+
+    def five(labelled=()):
+        return [issue(n, title=f"report {n}", body=prose[n - 1] + "\n" + block(f"unit{n}"),
+                      labels=[t.LABEL_REVIEWED] if n in labelled else [])
+                for n in range(1, 6)]
+
+    issues = five()
+    gh = FakeGh(issues)
+    run(issues, path=resolver_file, argv=["--cap", "2", "--apply"], gh=gh)
+    assert "STAGE2: 1 2\n" in capsys.readouterr().out
+
+    # Run 2 against the state run 1 actually left behind: #1 and #2 now carry the label.
+    done = five(labelled=(1, 2))
+    run(done, path=resolver_file, argv=["--cap", "2", "--apply"], gh=FakeGh(done))
+    assert "STAGE2: 3 4\n" in capsys.readouterr().out
 
 
 def test_cap_zero_lists_nothing(resolver_file, capsys):

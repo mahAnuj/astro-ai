@@ -111,6 +111,12 @@ RESOLVER_TIMEOUT_S = 120
 
 EXIT_OK, EXIT_FAIL = 0, 2
 
+# The resolver's stdout contract, `#<n>  <VERDICT> -- <reason>`, and the exit code each
+# verdict carries. Read TOGETHER, never separately: a crashing resolver exits 1, which is
+# OUTSIDER's code, so the status alone cannot tell a verdict from a traceback.
+_RESOLVER_VERDICT = re.compile(r"^#(\d+)\s+(TRUSTED|OUTSIDER|UNRESOLVED)\s+--", re.M)
+_EXIT_VERDICT = {0: "TRUSTED", 1: "OUTSIDER", 2: "UNRESOLVED"}
+
 # What a usable `repro:` looks like. Static text: it is the same for every issue.
 REPRO_HELP = (
     "A usable `repro:` states a command or request AND what it should show, for example:\n"
@@ -345,16 +351,60 @@ def already_done(issue: dict, d: Decision) -> bool:
     return d.comment is None or has_marker(issue, d.key)
 
 
+def verdict_printed(out: str, number: int) -> str | None:
+    """The verdict the resolver PRINTED for `number`, or None if it printed none.
+
+    The line is `#<n>  <VERDICT> -- <reason>` (resolve_provenance.main). Matched against
+    the requested number so a reason that happens to quote another issue cannot be read
+    as a second verdict.
+    """
+    for m in _RESOLVER_VERDICT.finditer(out or ""):
+        if int(m.group(1)) == number:
+            return m.group(2)
+    return None
+
+
+def stderr_gist(err: str) -> str:
+    """The informative END of stderr, not its beginning.
+
+    A traceback's first 100 characters are the banner and a temp path -- `Traceback (most
+    recent call last):   File "/private/var/folders/...` -- while the line that names the
+    failure is the LAST one. This string is what an operator reads in a FAIL line, so a
+    cause that truncates before the exception announces nothing.
+    """
+    lines = [ln.strip() for ln in (err or "").splitlines() if ln.strip()]
+    return lines[-1][:140] if lines else ""
+
+
 def classify_provenance(resolver: Resolver, number: int) -> tuple:
-    """('outsider'|'trusted'|'error', cause). Anything but exit 0/1 is an error: fail closed."""
+    """('outsider'|'trusted'|'error', cause). Fail closed.
+
+    THE EXIT CODE ALONE CANNOT BE TRUSTED. An uncaught exception in the resolver exits 1,
+    which is OUTSIDER's code, so a crash and a finding are indistinguishable by status --
+    and the crash direction is the expensive one: it routes a maintainer's issue into the
+    outsider path and labels it. So the resolver's two statements must agree. It prints its
+    verdict by contract (`#<n>  <VERDICT> -- <reason>`); a traceback carries no such line.
+    Anything short of agreement is an error, never a verdict.
+    """
     r = resolver(number)
-    if r.rc == 1:
-        return "outsider", ""
-    if r.rc == 0:
-        return "trusted", ""
-    why = {2: "resolver reported UNRESOLVED", 124: "resolver timed out",
-           127: "resolver could not be executed"}.get(r.rc, f"resolver exited {r.rc}")
-    return "error", f"{why}: {r.err.strip()[:100]}".rstrip(": ")
+    said = verdict_printed(r.out, number)
+    expected = _EXIT_VERDICT.get(r.rc)
+    detail = stderr_gist(r.err)
+
+    if expected is not None and said == expected:
+        if said == "TRUSTED":
+            return "trusted", ""
+        if said == "OUTSIDER":
+            return "outsider", ""
+        return "error", f"resolver reported UNRESOLVED: {detail}".rstrip(": ")
+
+    if said is None:
+        why = {124: "resolver timed out", 127: "resolver could not be executed"}.get(
+            r.rc, f"resolver exited {r.rc} without printing a verdict "
+                  "(a crash exits 1, the same code as OUTSIDER)")
+    else:
+        why = f"resolver printed {said} but exited {r.rc}"
+    return "error", f"{why}: {detail}".rstrip(": ")
 
 
 def apply_decision(gh: Gh, repo: str, issue: dict, d: Decision) -> list:
@@ -417,11 +467,21 @@ def main(argv: list | None = None, gh: Gh = run_gh, resolver: Resolver | None = 
 
     failures: list = []
     stage2: list = []
+    deferred: list = []
     mode = "APPLIED" if args.apply else "WOULD"
     for issue in issues:
         n = int(issue["number"])
         d = decide(issue, issues)
         if already_done(issue, d):
+            continue
+        # THE CAP BOUNDS THE WORK, NOT THE PRINTOUT. Capping the `STAGE2:` line after the
+        # loop had already labelled and commented on every candidate dropped the surplus
+        # PERMANENTLY: the label is what `already_done` reads, so the next run skipped the
+        # held-back issues before they could be listed, and `STAGE2:` came back empty. An
+        # issue deferred here is left untouched -- no label, no comment, and the resolver is
+        # not even asked -- which is exactly what makes the next run pick it up.
+        if d.label == LABEL_REVIEWED and len(stage2) >= args.cap:
+            deferred.append(n)
             continue
         kind, cause = classify_provenance(resolver, n)
         if kind == "trusted":
@@ -434,9 +494,10 @@ def main(argv: list | None = None, gh: Gh = run_gh, resolver: Resolver | None = 
             stage2.append(n)
         if args.apply:
             failures.extend(apply_decision(gh, args.repo, issue, d))
-    print("STAGE2: " + " ".join(str(n) for n in stage2[:args.cap]))
-    if len(stage2) > args.cap:
-        print(f"({len(stage2) - args.cap} more held back by --cap {args.cap})")
+    print("STAGE2: " + " ".join(str(n) for n in stage2))
+    if deferred:
+        print(f"({len(deferred)} candidate(s) held back by --cap {args.cap}, unexamined and "
+              f"unlabelled so the next run sees them: {' '.join('#' + str(n) for n in deferred)})")
     for f in failures:
         print(f"FAIL: {f}", file=sys.stderr)
     return EXIT_FAIL if failures else EXIT_OK

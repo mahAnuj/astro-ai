@@ -915,9 +915,27 @@ MUTATIONS = [
 
     ("#367: an UNRESOLVED resolver is treated as an outsider (fail open)",
      "scripts/triage_outsider_issues.py",
-     '    return "error", f"{why}: {r.err.strip()[:100]}".rstrip(": ")',
-     '    return "outsider", ""',
+     '        return "error", f"resolver reported UNRESOLVED: {detail}".rstrip(": ")',
+     '        return "outsider", ""',
      "test_any_other_resolver_code_fails_closed_with_a_named_cause"),
+
+    # #377 DEF-1. The resolver's exit code and its printed verdict must be read TOGETHER: a
+    # crash exits 1, which is OUTSIDER's own code, so status alone cannot tell a finding from
+    # a traceback. This row restores the defect exactly -- believe the status, ignore the word.
+    ("#377: provenance is read from the exit code alone, so a crash is an OUTSIDER finding",
+     "scripts/triage_outsider_issues.py",
+     "    said = verdict_printed(r.out, number)",
+     "    said = _EXIT_VERDICT.get(r.rc)",
+     "test_a_crashing_resolver_is_not_an_outsider"),
+
+    # #377 DEF-2. The cap must bound the WORK. Capping only the printout left the surplus
+    # labelled, and `already_done` reads that label, so the next run skipped the held-back
+    # issues before they could be listed -- discarded, not deferred.
+    ("#377: --cap bounds the printout but not the work, so held-back candidates are labelled",
+     "scripts/triage_outsider_issues.py",
+     "        if d.label == LABEL_REVIEWED and len(stage2) >= args.cap:",
+     "        if d.label == LABEL_REVIEWED and False:",
+     "test_the_cap_bounds_the_stage2_list"),
 
     ("#367: the duplicate comment echoes the stranger's title",
      "scripts/triage_outsider_issues.py",
