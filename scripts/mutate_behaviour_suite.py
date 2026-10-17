@@ -927,6 +927,67 @@ MUTATIONS = [
      '"store": store, "store_is_local": False,\n            "store_detail": store_detail,\n            "days": days,',
      "test_ops_says_it_is_reading_a_local_dev_store"),
 
+    # #367. The triage script writes under the owner's identity on text strangers wrote; each
+    # row re-breaks one clause of the chief's ruling. The close row is the one the ruling asked
+    # for by name: a `gh issue close` call injected must turn the suite red.
+    ("#367: a `gh issue close` call appears in the triage script",
+     "scripts/triage_outsider_issues.py",
+     '    n, problems = str(int(issue["number"])), []\n',
+     '    n, problems = str(int(issue["number"])), []\n    gh(["issue", "close", n, "--repo", repo])\n',
+     "test_no_close_path_exists_in_the_script"),
+
+    ("#367: an UNRESOLVED resolver is treated as an outsider (fail open)",
+     "scripts/triage_outsider_issues.py",
+     '        return "error", f"resolver reported UNRESOLVED: {detail}".rstrip(": ")',
+     '        return "outsider", ""',
+     "test_any_other_resolver_code_fails_closed_with_a_named_cause"),
+
+    # #377 DEF-1. The resolver's exit code and its printed verdict must be read TOGETHER: a
+    # crash exits 1, which is OUTSIDER's own code, so status alone cannot tell a finding from
+    # a traceback. This row restores the defect exactly -- believe the status, ignore the word.
+    ("#377: provenance is read from the exit code alone, so a crash is an OUTSIDER finding",
+     "scripts/triage_outsider_issues.py",
+     "    said = verdict_printed(r.out, number)",
+     "    said = _EXIT_VERDICT.get(r.rc)",
+     "test_a_crashing_resolver_is_not_an_outsider"),
+
+    # #377 DEF-2. The cap must bound the WORK. Capping only the printout left the surplus
+    # labelled, and `already_done` reads that label, so the next run skipped the held-back
+    # issues before they could be listed -- discarded, not deferred.
+    #
+    # TWO ROWS, because `... and False` is NOT the defect. It removes deferral AND the
+    # printout cap, so it fails loudly on several assertions at once and proves less than it
+    # appears to. QA round 2 made the point: the EXACT restoration keeps the cap branch and
+    # its printed strings byte-identical and merely applies the decision before deferring --
+    # the surplus is labelled and then held back, which is precisely how the bug was silent.
+    # Keep both: the blunt one guards the branch existing, the exact one guards the ordering.
+    ("#377: --cap bounds the printout but not the work, so held-back candidates are labelled",
+     "scripts/triage_outsider_issues.py",
+     "        if d.label == LABEL_REVIEWED and len(stage2) >= args.cap:",
+     "        if d.label == LABEL_REVIEWED and False:",
+     "test_the_cap_bounds_the_stage2_list"),
+
+    ("#377: the deferred candidate is LABELLED before it is deferred (the exact DEF-2 defect)",
+     "scripts/triage_outsider_issues.py",
+     "        if d.label == LABEL_REVIEWED and len(stage2) >= args.cap:\n"
+     "            deferred.append(n)",
+     "        if d.label == LABEL_REVIEWED and len(stage2) >= args.cap:\n"
+     "            if args.apply:\n"
+     "                failures.extend(apply_decision(gh, args.repo, issue, d))\n"
+     "            deferred.append(n)",
+     "test_held_back_candidates_are_listed_by_the_next_run"),
+
+    ("#367: the duplicate comment echoes the stranger's title",
+     "scripts/triage_outsider_issues.py",
+     'f"This looks similar to #{int(dup[0])}, which is older and still open. "',
+     'f"This looks similar to #{int(dup[0])} ({issue.get(\'title\')}), which is older and still open. "',
+     "test_the_duplicate_comment_links_the_candidate_and_nothing_else"),
+
+    ("#367: the idempotence marker is ignored (a comment on every run)",
+     "scripts/triage_outsider_issues.py",
+     "    if d.comment is not None and not has_marker(issue, d.key):",
+     "    if d.comment is not None:",
+     "test_a_state_already_commented_by_this_token_posts_nothing_again"),
 
 
     # --- #361: issue provenance. The resolver is the control that keeps an outsider's
