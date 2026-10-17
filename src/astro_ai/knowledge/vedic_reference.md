@@ -127,6 +127,94 @@ rule-set. Each rule is tagged **cancels** (dosha is fully nullified) or
 
 ---
 
+### 1.6 Rao's textbook does not treat Mangal Dosha at all — measured 2026-10-17 (#191)
+
+**This is an absence finding on the corpus's canonical Vedic authority, and it
+bears directly on §1.3 rule 18 (combust Mars), on §1.1's severity claim, and on
+`chart.py`'s three-tier severity grading.**
+
+Measured against `data/vedic_astro_textbook.pdf` (P.V.R. Narasimha Rao, *Vedic
+Astrology: An Integrated Approach*), plain `pdftotext`, **20,669 lines** — the
+fingerprint `SOURCES.md` records:
+
+| term | hits in Rao's textbook |
+|---|---|
+| `kuja` | **0** |
+| `dosha` / `dosa` / `dosham` | **0** |
+| `mangal` | **3**, none of them a dosha — line 5476 `Chandra-Mangala Yoga`, line 5828 `Guru-Mangala Yoga`, line 19876 *"Mangal sutra worn by a lady"* |
+| `ashtama` | **0** |
+
+So **the book this repo treats as its canonical Vedic authority contains no
+Manglik / Kuja-dosha doctrine whatsoever** — no definition, no house list, no
+cancellation set, no severity grading. He has a 36-section predictive apparatus
+and a marriage-timing method (§5.5 here, Rao §16.5 and §31.4) and never invokes
+the dosha.
+
+That is not evidence the dosha is fake. It is evidence that **Rao cannot be
+cited for anything about it**, including for anything the shipped code does,
+and that the doctrine reaches this product only through books we hold in
+weaker form or do not hold at all.
+
+**What the corpus actually holds on Kuja dosha**, re-measured 2026-10-17 across
+**14 books, 94,019 `-layout` lines** (`scripts/corpus_search.py "kuja dosha"`):
+
+| Book | hits | What it gives |
+|---|---|---|
+| Vasudev, *Astrology* (`Astrology-e-book-compressed.pdf`) | **11** | A full discussion — and a hostile one |
+| Raman, *Muhurtha or Electional Astrology* (1948) | **7** | The "ANTIDOTES FOR KUJA DOSHA" list — see `grahas.md` §12.4 |
+| Rao, *Vedic Astrology: An Integrated Approach* | **0** | — |
+| Rao, *Lessons on Vedic Astrology* Vol. I | **0** | — |
+| everything else | 0 | — |
+
+#### 1.6.1 Vasudev's treatment — the house list, and his rejection of the cancellations
+
+Vasudev, *Astrology* (Chennareddy Vasudev), section *"The excessive unwanted
+importance of 'Kuja Dosham'"*, printed pp. **90–94**, `-layout` lines
+**2566–2695** (heading at 2566). `Astrology-e-book-compressed.pdf` is `-layout` 4,558 lines /
+plain 5,220 lines; the ranges here are **`-layout`**, matching
+`corpus_search.py`'s numbering and `grahas.md` §12.4's Vasudev citations.
+
+- **Houses** (lines 2568–2575): *"It is said that 'Kuja dosham' exists if MARS
+  is placed in 2,4,7,8,12 bhavas of a horoscope. **Some include 1 bhava also.**
+  Some go further and say that the above bhavas to be checked from Moon and
+  Venus also. If truely checked, we won't find any body without kuja dosham.
+  Hence, for our discussion, let us limit Kuja doshan from ascendant only."*
+  — so **the 1st house is optional even in his own framing**, and the
+  Moon/Venus references are something he explicitly declines to use.
+- **He opens by denying its pedigree** (line 2568): *"The 'Kuja Dosham' is not
+  to be found in the standard astrological texts."*
+- **Per-house effects** (lines 2630–2662), which is the nearest thing in the
+  corpus to a severity ordering: 2nd — family fights, undiplomatic speech; 4th
+  — depression, dullness, family fights, *"4th mars is suitable for gain of
+  lands"*; 7th — *"damages the relationship with ego, arguements, agression …
+  If other malefics aspect or associate, then seperation takes place"*; 8th —
+  *"very bad for women since it is a husbands location in a woman's chart … if
+  aspected or associated with malefics, tries to kill the husband"*; 12th —
+  bed comforts, misunderstanding, non-compatibility.
+- **He rejects Mars-exclusivity** (lines 2662–2680): replace Mars with Saturn,
+  Sun, Rahu or Ketu and *"similar problems at a different scale can be
+  experienced"*; Sun, Saturn and Rahu are *"Terrorist Planets"* whose lone
+  placement in the 7th is *"as serious as that of MARS placement"*; *"giving
+  excessive importance to only MARS in the name of 'Kuja Dosham' is wrong."*
+- **He rejects the cancellation rules specifically** (lines 2613–2617), already
+  recorded in `grahas.md` §12.4: of a pundit who applied *"various dictums
+  given in texts for compensation conditions of Kuja dosham"* — *"But these
+  rules were not given by maharshis and I found them not working well in many
+  circumstances."*
+
+#### 1.6.2 Verdicts for the open findings
+
+| Finding | Verdict | Basis |
+|---|---|---|
+| **Combust Mars cancels Manglik** (§1.3 rule 18, `chart.py` `mars_combust`, `effect="cancels"`, `source="Classical matching practice"`) | **still UNSOURCED, and now absent from the canonical authority too.** No change to the #218 verdict; the evidence against it is stronger | `kuja`/`dosha` = **0** in Rao's textbook (20,669 plain lines) and **0** in Rao's *Lessons*; absent from Raman's dedicated antidote list (`grahas.md` §12.4); Vasudev discusses the compensations at length and does not list it, while rejecting the whole family of them |
+| **Cancellation conditions and their orbs, generally** | **UNSOURCED in Rao; CONTESTED in the corpus.** Rao gives none because he gives no dosha. Raman gives a list that does not match `chart.py`. Vasudev gives a list and then disowns it. The only quantified orb anywhere near this is Rao's **6°** for a *Raja-Yoga* association (`yogas.md` §7.4) — a different rule about a different thing | as above |
+| **The severity ladder: "high" (7th/8th) / "moderate" (1st/4th/12th) / "low" (2nd)** — `chart.py:1031`, graded at `chart.py:1033–1037` | **still UNSOURCED as a ladder.** Rao does not grade it. Two parts have weak corroboration and one is positively counter-indicated | **"7th and 8th most serious"**: weakly corroborated by Vasudev's per-house prose (7th = separation at line 2648, 8th = *"tries to kill the husband"* at line 2655) — but he grades no tiers and the 8th reads worse than the 7th in his text, which is the opposite of a tie. **"1st in the moderate tier"**: counter-indicated — Vasudev's own list is 2/4/7/8/12 and the 1st is *"Some include 1 bhava also"* (line 2570). **"2nd alone is lowest"**: not stated anywhere |
+| **§1.1's "The 7th and 8th are considered most serious"**, sourced to *BPHS*, *Mansagari*, *Jataka Parijata* | **citation defect, #216 class.** All three books are absent from `data/` and absent from `fetch_corpus.py`'s registry. The claim is now *partly* traceable to Vasudev, who is present — but Vasudev is an introductory text that opens by saying the dosha is not in the standard texts, which is a different claim from the one §1.1 makes | `SOURCES.md` → "Which books our claims depend on" |
+
+**Nothing here changes a rule.** `chart.py` and `matching.py` are untouched.
+
+---
+
 ## 2. Sade Sati (Saturn's 7.5-year transit through 12th, 1st, 2nd from Moon)
 
 ### 2.1 Definition
@@ -174,6 +262,90 @@ if active.
 - Service to elderly, labourers, the disabled — direct Saturn karma
 - Avoid taking on new debt, new marriages, major risks during Madhya phase
 - Sapphire (neelam) — **never without expert review**; a wrong sapphire can devastate within days
+
+---
+
+### 2.7 Sade Sati — what is sourced and what is not, measured 2026-10-17 (#191)
+
+**§2.1 above cites *Phaladeepika*, *Brihat Jataka* and *Saravali*. None of the
+three is in `data/`, and none is in `fetch_corpus.py`'s registry** — the same
+#216 defect the `[BPHS]` licence was withdrawn for. What follows replaces that
+citation with a book we hold, and marks what remains unsourced.
+
+#### 2.7.1 SOURCED: the definition and the durations — Rao, *Lessons* Vol. I
+
+`data/book1-for-CD.pdf` (P.V.R. Narasimha Rao, *Lessons on Vedic Astrology*,
+Vol. I), **plain `pdftotext`, 12,244 lines**. Lesson #1, numbered note **11**,
+printed p. 4, **lines 281–287**:
+
+> *"The periods when transit Sa is posited in three signs i.e., the sign behind
+> the Moon, the sign of the Mo and the sign ahead of the Mo are called
+> Sade-Sati period. This period is important because Mo is the significator of
+> the mind and Saturn's placement in these signs may cause much trouble to
+> mind. So each Sade-sati period is for 2.5 years and the total is 7.5 years
+> for one full rotation of the zodiac."*
+
+That sources, from a book in `data/`:
+
+- the three-sign span — **12th from Moon, Moon's own rasi, 2nd from Moon**;
+- **2.5 years per phase, 7.5 years total**;
+- the **rationale** — Moon is the significator of the mind, so the affliction is
+  mental. §2.2's "mental burden" column is Rao's own reasoning, not ours.
+
+#### 2.7.2 SOURCED: why a strong Saturn softens it — and how strong
+
+Same book, Lesson #1 note **29**, printed p. 7, **lines 476–478**:
+
+> *"If Sa is LL or Yogakaraka, it is hardly going to trouble the person even in
+> a Sade Sathi Period."*
+
+**This sources §2.3's third bullet, but narrower than §2.3 states it.** §2.3
+says *"A strong natal Saturn (own/exalted/in good house) significantly softens
+Sade Sati."* Rao's condition is **functional**, not dignity-based: Saturn as
+**lagna lord** or as **yogakaraka** for the ascendant. Own-sign, exaltation and
+"good house" are *our* generalisation and remain **UNSOURCED**. The distinction
+is load-bearing — Saturn is lagna lord for Capricorn and Aquarius and
+yogakaraka for Taurus and Libra, which is a specific, computable set, whereas
+"strong" is not.
+
+Note **28** on the same page (lines 474–475) gives the general frame our
+dasha/transit material rests on: *"Position in the natal chart is the main
+thing – shows what one has to go through in life. Transits show the time when
+one has to go though it."* And note **27**: *"In which area Sa wants the native
+to work hard depends upon his position in different Varga chakras."*
+
+#### 2.7.3 UNSOURCED: every phase NAME, in both the engine's and this file's spelling
+
+Measured with `scripts/corpus_search.py --absent` across **14 books, 94,019
+`-layout` lines**:
+
+| Term | Where it is used in this repo | Hits |
+|---|---|---|
+| `arohini` | `chart.py:651`, `i18n.py:172` — "Rising Phase (Arohini)" | **0** (3 spellings) |
+| `avarohini` | `chart.py:653`, `i18n.py:174` — "Setting Phase (Avarohini)" | **0** (4 spellings) |
+| `arambha` | this file §2.1/§2.2, `learn_registry.py:635`, `templates/learn/career-during-sade-sati.html` | **0** (3 spellings) |
+| `madhya` | this file §2.1/§2.2, the article, the registry | **1** — Raman, *Astrology for Beginners*, and not about Sade Sati |
+| `uttara` | this file §2.1/§2.2, the article, the registry | 48 — **all nakshatra names** (Uttara Phalguni / Uttaraashaadha etc.), not phase names |
+| `elinati` (the Telugu name) | nowhere | **0** |
+| `ashtama shani` | this file §2.4 | **0** (6 spellings) |
+
+**Rao names no phases.** He describes them positionally — *"the sign behind the
+Moon, the sign of the Mo and the sign ahead of the Mo"* — and stops. So:
+
+| Open finding | Verdict |
+|---|---|
+| Engine says `arohini` / `avarohini`; `knowledge/` says `Arambha` / `Uttara`; both sets absent from the corpus | **BOTH UNSOURCED. The corpus cannot settle it, and the right answer is NOT to pick one.** This is a CONTESTED-by-silence case: the names are real in modern practice (they are in wide circulation) but no book we hold uses either set, so neither can be presented to a reader as classical |
+| The *incoherence* between the two — the same product calls the same phase two different Sanskrit names on two surfaces | **A real defect, and it is the defect.** It is a consistency bug, not a sourcing one, and it is fixable without a source: pick one vocabulary, or describe the phases positionally as Rao does ("Saturn in the sign before your Moon") and drop the Sanskrit |
+| `Madhya` as the peak-phase name | **UNSOURCED for this use.** Its single corpus hit is unrelated |
+| §2.4 Ashtama Shani (Saturn in the 8th from Moon, ~2.5 years), sourced to "Classical transit literature; BV Raman, KN Rao" | **UNSOURCED.** `ashtama shani` = 0 across all 14 books, and `ashtama` = 0 in Rao's textbook. KN Rao is not in `data/` and not in the registry |
+
+**Positional description is always safe and always sourced.** "Saturn moving
+through the sign before your Moon sign, then your Moon sign, then the one
+after — about two and a half years each" is Rao's own formulation and needs no
+Sanskrit label.
+
+**Nothing here changes a rule.** `chart.py:651–653` and `i18n.py:172–174` are
+untouched; so is the article.
 
 ---
 
@@ -542,6 +714,233 @@ The classical principle "a planet sitting in the house it is karaka for damages 
 
 ---
 
+## 5B. Timing — Rao's dasha and transit apparatus (extracted 2026-10-17, #191)
+
+**Why this section exists.** Every question the live site actually gets — *will
+I clear this exam, will I get a job, will I marry this year, when will the
+money come* — is a **timing** question, and `prompts/ask.txt`'s CATEGORY
+GUIDANCE gives one topic line per category and names no classical rule at all.
+The `/ask` request carries natal chart, current dasha and the vedic flags, and
+**no transit data whatsoever**. So the timing doctrine was being supplied
+entirely from model recall. This section is what Rao actually says, so the gap
+is at least visible and citable.
+
+**Flag and fingerprint:** all line ranges are **plain `pdftotext`** (no
+`-layout`) over `data/vedic_astro_textbook.pdf` = **20,669 lines**, and over
+`data/book1-for-CD.pdf` (Rao, *Lessons* Vol. I) = **12,244 lines**. `grahas.md`
+§12 cites the textbook under `-layout` (16,724 lines); the schemes do not
+interchange.
+
+**Chapter map correction.** `SOURCES.md` lists the dashas as "Ch. 16-25" and
+predictive techniques as "Ch. 26-33". Measured: **Ch. 16–24** are the dasha
+systems (Vimsottari 10311, Ashtottari 10801, Narayana 11066, Lagna Kendradi
+12081, Sudasa 12240, Drigdasa 12371, Niryaana Shoola 12549, Shoola 12764,
+Kalachakra 12991), **Ch. 25–26** are transits (13982, 15187), **Ch. 27–29** are
+Tajaka (16124, 16461, 17260), **Ch. 30–31** are annual and Sudarsana Chakra
+dasas (17619, 17993), Ch. 32 is birthtime error (18200) and Ch. 33 is rational
+thinking (18845). There is also an unnumbered **Part 6: Real-life Examples**
+(20324–20669) which the map does not mention at all and which is the single
+most useful part of the book for this product.
+
+### 5B.1 The general rule: a dasha lord delivers what it promises IN A VARGA
+
+[Rao §16.5.1, lines 10486–10513]
+
+> *"Vimsottari dasa is a very general phalita dasa that can also be used as an
+> ayur dasa. All kinds of general results can be seen from it. **A planet gives
+> the results promised by its positions in various divisional charts.**"*
+> — lines 10494–10496
+
+**This is Rao's answer to "does this Mahadasha/Antardasha lord support this
+bhava".** It is not a lookup on the lord's natal house in D-1; it is *the
+lord's placement in the varga that owns the question.* Rao's nine examples,
+verbatim [lines 10497–10509]:
+
+| # | Rao's example | Life area |
+|---|---|---|
+| 1 | *"Period of the 5th lord in D-7 can give a child."* | children |
+| 2 | *"Period of the 8th lord in rasi chart can give some troubles and frustration."* | general |
+| 3 | *"Period of a planet exalted in GL in D-10 can give power and authority in career."* | **career** |
+| 4 | *"Period of an exalted planet in the 12th from AK in D-9 can give serious thoughts related to spiritual liberation."* | spiritual |
+| 5 | *"Period of the 7th lord in D-9 can give marriage."* | **marriage** |
+| 6 | *"Period of a planet with Rahu in the 9th in D-4 can give foreign residence."* | relocation |
+| 7 | *"Period of an exalted planet aspecting HL from the 11th from AL in rasi chart can give a lot of wealth."* | **money** |
+| 8 | *"Period of a planet joined by Moon and Saturn in the 8th house in D-30 may give serious psychological problems and suicidal tendencies."* | mental health |
+| 9 | *"Period of a well-disposed planet aspecting A3 in D-10 may make one write some books."* | output |
+
+And the recursion rule [lines 10510–10513]: *"Each planet gives the results
+indicated by it in its dasas and antardasas. **When analyzing antardasas, we
+can take the dasa lord as a temporary lagna and analyze the charts.**"*
+
+**Example 8 is a safety matter, not a feature.** Rao writes it as a dasha
+result; this product must never render anything of that kind. It is recorded
+here because an engineer reading §16.5.1 will meet it, and because Rao's own
+ethics rule (§5B.6) is the right response to it.
+
+### 5B.2 Which dasha level answers which question — the Tripod of Life
+
+[Rao §16.5.3 "Rath's 'Tripod of Life' Principle", lines 10543–10563]
+
+> *"Sun, Moon and lagna form the 'tripod of life'. **Parasara clearly said that
+> we should analyze all charts with respect to the positions of Sun, Moon and
+> lagna.**"* — lines 10547–10548
+
+Rao's assignment, which is the most directly useful rule in the chapter:
+
+| Dasha level | Reference point to judge it from | Rao's reason |
+|---|---|---|
+| **Mahadasha** | **Sun** (soul) | *"The results experienced due to soul (Sun) last long and change slowly."* |
+| **Antardasha** | **Moon** (mind) | *"The results experienced due to mind (Moon) last shorter and change fast."* |
+| **Pratyantardasha** | **Lagna** (body) | *"The results experienced due to body (lagna) change even faster."* |
+
+[lines 10552–10558]
+
+And the matching rule for **when a yoga pays out**, which is new material for
+this corpus [lines 10559–10562]:
+
+> *"If a planet takes part in a **Ravi yoga** (solar combination), it gives the
+> results of the yoga in its **mahadasa**. If a planet takes part in a
+> **Chandra Yoga** (lunar combination), it gives the results of the yoga in its
+> **antardasas**. If a planet takes part in other yogas (e.g. a **Raja Yoga**),
+> it gives the results of the yoga primarily in its **pratyantardasas**."*
+
+> *"In addition, dasa lord can be taken as a reference point when interpreting
+> antardasas."* — line 10563
+
+**Note what this does to the #398 B question.** Rao's own timing rule puts a
+Raja Yoga's payout at the **pratyantardasha** level — the shortest, finest
+level — which is the opposite of "fully manifested". See `yogas.md` §13.1.
+
+### 5B.3 Transits — the half the `/ask` path does not have
+
+| Rule | Rao | Lines |
+|---|---|---|
+| **Natal vs transit, stated plainly** | *"Natal positions stand for the innate potential of a nativity and the transit positions show the temporary influences – planetary pulls and pushes."* | §25.7, 15108–15110 |
+| Rao's *Lessons* puts it more usably | *"Position in the natal chart is the main thing – shows what one has to go through in life. **Transits show the time when one has to go though it.**"* | *Lessons* Vol. I, Lesson #1 note 28, printed p. 7, lines **474–475** |
+| **The master transit rule** (Rao sets it in bold type) | *"A planet occupying or aspecting a rasi in transit influences the matters signified by the houses and planets stationed in that rasi in the natal chart. The exact nature of the influence exerted by a planet depends on its inherent nature and the matters it stands for in the natal chart."* | §25.3, 14394–14398 |
+| **The dasha↔transit link** | *"The most popular natal reference in transit analysis is Moon … **The transit of Vimsottari dasa lord is particularly important, because he is the one who has the greatest influence on one's mental state during a period.**"* | §25.2, 13994–13999 |
+| Coarse vs fine timing | *"the interaction between the **natal divisional charts and the transit rasi chart** helps in **coarse** timing of events and the interaction between the **natal rasi chart and transit divisional charts** helps in **fine** timing of events."* | §25.7, 15111–15113 |
+| Worked marriage transits | *"Jupiter transiting in the Ta may give marriage to someone born in Sc lagna, because Ta is the 7th house from Sc. Saturn transiting in Ar may give relationship problems or marital problems for someone born in Li lagna, because Ar is the 7th house from Li."* Also: Jupiter in Virgo aspects Taurus (7th from Scorpio) **and** natal Venus in Pisces, *"and hence he may give marriage"* | §25.3, 14376–14384 (sign transits) and 14385–14391 (aspects) |
+| Saturn transits over the three lagnas | *"Saturn's transit over the rasi containing one's lagna may throw obstructions and hamper one's activities. Saturn's transit over the rasi containing one's Chandra lagna may create frustration and mental depression. Saturn's transit over the rasi containing one's paaka lagna may leave one feeling sick all the time and attack the physical vitality."* | §7.3.5, 3517–3521 |
+
+**One honesty marker to preserve.** Rao flags his own varga-transit method as
+*his own research*, not classical: *"the actual approach is essentially based on
+this author's own researches … readers are advised to keep in mind that what
+follows is a product of the very limited intelligence of this author and hence
+prone to errors."* [§25.4, lines 14440–14452]. If this product ever ships
+varga transits, that provenance travels with them.
+
+### 5B.4 Timing an event, not a tendency — Rao's method as he actually works it
+
+**Part 6: Real-life Examples** (lines 20324–20669) is five worked predictions
+with the reasoning shown. This is the only place in the book where Rao answers
+the question shape our users ask.
+
+| # | Question asked of Rao | Lines | The apparatus he used |
+|---|---|---|---|
+| 1 | *"exactly when she would get married"* | 20328–20380 | Vimsottari MD (Jupiter, lagna lord in 11th, aspecting 7th house and 7th lord) → AD (7th lord of **D-9**, which was too late) → Jupiter's **rasi transit** (Pisces = natal lagna, aspecting the 7th and the rasi holding natal Mercury) → **PD** (Mercury, 7th lord in rasi and lagna in D-9, also DK) → cross-check with **Sudarsana Chakra dasa** → cross-check with **Tajaka annual chart** (2nd lord exchange, *vivaha saham*, *muntha* lord, *ithasala* with Venus, upapada lord) → **Patyayini dasa** narrowing to Dec 98/Feb–Mar 99 → then a **cultural** filter: the lunar month of Maagha brings *"the season of marriages in India"* |
+| 2 | child's birth date | 20382–20459 | **Narayana dasa of D-7** |
+| 3 | *"asked if there was a change of job for him"* | 20460–20542 | **Narayana dasa of D-10**, antardasa read as the **8th from A10** (*"which can show the workplace"*) with its lord in the 12th from A10 → prediction of deterioration, being forced out in June, a better job in July → **PD** resolution in retrospect (Scorpio PD = 8th lord + debilitated Moon = pressure; Sagittarius PD = Sun as lagna lord and lord of the 5th from AL = new job with higher status). A year later, the same native asked whether his career would be stable enough to buy a house — answered from the running MD/AD, plus the **yogada** rule for money and power |
+| 4 | *"if her friend's son would get an award or not"* | 20543–20594 | Tajaka **monthly** chart → Tajaka **sixty-hour** chart. See §5B.5 |
+| 5 | retro-timing a marriage during birthtime rectification | 20595–20669 | Vimsottari MD (Mercury as 7th lord in the 7th of navamsa) → AD candidates (Mars owning the 2nd and upapada and joining lagna lord; Jupiter) |
+
+**The pattern, stated once:** *pick the varga that owns the question → run that
+varga's dasha (Narayana for vargas, Vimsottari for general) → narrow MD → AD →
+PD → confirm with a transit → confirm with a second, independent dasha system
+(Sudarsana Chakra / Tajaka Patyayini) → apply any cultural or practical filter.*
+Rao never predicts from one apparatus.
+
+**What the product has of that chain, measured in `src/astro_ai/` on
+2026-10-17:**
+
+| Rao's input | In the code? |
+|---|---|
+| Vimsottari **mahadasha + antardasha** | ✅ `chart.py` (`DashaPeriod`, `antardasha`) |
+| Vimsottari **pratyantardasha** | ❌ `grep -ciE "pratyantar"` = **0** across `src/astro_ai/` |
+| D-9 and D-10 | ✅ computed (`navamsa`/`dasamsa`, 10 hits in `chart.py`) |
+| **Narayana dasa** (of D-1 or of any varga) | ❌ **0** — the only `narayana` hit is "Lakshmi-Narayana" in `festival_registry.py:388` |
+| **Sudarsana Chakra dasa** | ❌ **0** |
+| **Patyayini dasa / sahams / a 60-hour Tajaka chart** | ❌ **0**. `chart.py:2948` names Patyayini only to say it is *out of scope*: *"The full Tajik system includes Muntha, Year Lord (Patyayini Dasha lord), Sahams, and dozens of other layers. For v1 we expose the four headline elements…"* |
+| Tajaka **annual** chart | 🟡 **partially** — `Varshaphala` (solar return, Muntha house, year lord) exists in `chart.py:2944+`, but it is consumed **only** by `routes/outlook.py` and `templates/outlook.html`. It never reaches `/ask` or the natal reading |
+| Ashtottari, Kalachakra, Drigdasa, Sudasa, Shoola | ❌ **0** each |
+| **Transits on the `/ask` path** | ❌ `grep -ciE "gochar\|transit"` on `routes/ask.py` = **0** |
+
+So a "will I marry this year" answer from `/ask` is built from **Vimsottari
+MD/AD plus the natal chart** — two of the seven inputs Rao used to answer that
+exact question, and without the transit step he treats as the one that fixes
+the date.
+
+### 5B.5 Rao REFUSES to answer a binary competitive outcome from a dasha
+
+**This is the most product-relevant passage in the book, and it should be read
+before any further work on the exam and job categories.** Real-life Example 4,
+lines 20559–20576, on whether an Oscar nominee would win:
+
+> *"For someone in the entertainment business, an Oscar nomination itself is a
+> major achievement. **We cannot look at the dasas one is running and conclude
+> whether one will win the award or not.** Because of the nomination, one will
+> get a lot of good publicity. If one doesn't get the award, one may be unhappy
+> on that night and the next couple of days. **We cannot say that one will not
+> get the award because a bad pratyantardasa is running or that one will get the
+> award because a good pratyantardasa is running.** We need to go much deeper
+> and look at the 1-2 days surrounding the award. We need to understand the
+> native's mood on the morning of March 27. That alone can say whether the
+> native won the award on March 26 or not. **Irrespective of whether one wins
+> the award or not, a few weeks before March 26 and a few months after March 26
+> are bound to be excellent in the native's career. The mood on March 27 is the
+> clinching factor."*
+
+Three things follow, and all three are citable:
+
+1. **A dasha does not settle a pass/fail.** Rao says it twice, in both
+   directions, about the finest dasha level he uses.
+2. **What a dasha DOES settle is the surrounding period's quality** — *"a few
+   weeks before … and a few months after … are bound to be excellent in the
+   native's career"* — which is exactly the shape of a legitimate answer: the
+   period, not the verdict.
+3. **His method of last resort is a 60-hour Tajaka chart read for the native's
+   MOOD**, not for the outcome. The product computes no Tajaka chart of any
+   kind, so it cannot do even this.
+
+**Finding for `prompts/ask.txt` (a finding, not a fix).** The file already
+forbids guaranteeing outcomes, in its HONESTY block at **lines 26–30**:
+*"Astrology shows tendencies, not certainties"*, *"DO NOT promise outcomes"*,
+*"Astrology CANNOT pinpoint specific countries, exact future events, names of
+future partners, or guarantee outcomes."* (re-measured 2026-10-17). Rao supplies the *positive*
+form of that constraint: the corpus supports answering "what will this period
+be like for your studies / your career" and does **not** support answering
+"will you pass". The `general` category currently absorbs every exam question
+("interpret per question text") with no rule attached, and there is no
+studies/education category at all — `grep -ciE "exam|studies|education|student"`
+returns **0** in both `prompts/ask.txt` and `routes/ask.py`, and
+`grep -ciE "gochar|transit"` returns **0** in `routes/ask.py` — so a
+time-bound question reaches the model with no transit data at all, which is
+half of Rao's apparatus missing (§5B.3). Both re-measured 2026-10-17; the
+CATEGORY GUIDANCE block is `prompts/ask.txt:48–56` and gives one topic line
+per category naming no bhava, no chart and no dasha lord. The houses,
+charts and references for the studies question **are** now sourced — see
+`houses.md` → "Studies and exams" (D-24; 4th for education, 5th for
+intelligence/scholarship, 5th from AL for success in competition, 9th for
+higher studies, Mercury and Jupiter as karakas) — so the category can be
+grounded without inventing a prediction rule.
+
+### 5B.6 Rao's ethics constraint on any timing answer
+
+> *"An ethical astrologer will not scare a client by predicting death, but he
+> may caution a client gently before critical periods and suggest some remedial
+> measures."*
+> — Rao Ch. 13, already quoted at §8.5.5 above
+
+The whole of **Ch. 37 "Ethical Behavior of a Jyotishi"** (lines 20236–20299)
+is the long form. And Rao's remedy framing (`remedies.md` §1.1) is the
+constructive half: a timing answer that names a hard period should name a
+remedy with it.
+
+**Nothing in this section is a prediction rule, and nothing here was added to
+any prompt or to `chart.py`.** It is what the book says, with line numbers.
+
+---
+
 ## 6. Houses (Bhavas) — significations and structural principles
 
 > Source: P.V.R. Narasimha Rao, Ch. 7 ("Houses"). Cross-checked with BPHS.
@@ -831,7 +1230,18 @@ These are short, attribution-friendly, and align with our stance. Use sparingly 
 
 ## 8.5 Reading methodology — Rao's funnel (engineering reference)
 
-> Source: P.V.R. Narasimha Rao, Ch. 13 ("Interpreting Charts").
+> Source: P.V.R. Narasimha Rao, Ch. 13 ("Interpreting Charts"), **plain
+> `pdftotext` lines 8723–9211** (chapter head at 8723; §13.1 Introduction 8724,
+> §13.2 Functional Nature 8734, §13.3 Baadhakas 8886, **§13.4 Analyzing Charts
+> 8949**, §13.5 Examples 9050, §13.6 Conclusion 9203). Pinned 2026-10-17 —
+> this section had section numbers but no ranges.
+>
+> The **five-step funnel in §8.5.1 below is §13.4.1 "Basic Guidelines", lines
+> 8955–9010** — (1) divisional chart 8955–8965, (2) house 8966–8972,
+> (3) reference 8973–8986, (4) house vs arudha 8987–8993, (5) influences
+> 8994–9005, (6) standard results 9006–9010. The family-member rules in
+> §8.5.5 are **§13.4.2, lines 9011–9049**.
+>
 > This section is for engineers building chart-analysis features. It is NOT
 > injected into LLM prompts — the natal prompt already instructs the LLM to
 > stay at the human-experience layer.

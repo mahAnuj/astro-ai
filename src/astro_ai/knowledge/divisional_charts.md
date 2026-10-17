@@ -107,6 +107,10 @@ by its Navamsha, not its Rasi."**
 - **Yoga confirmation** — a yoga that appears in the D-1 is
   considered activated only if it ALSO appears in the D-9. This is
   a critical filter for reading raja yogas.
+  **[UNSOURCED, and CONTESTED by Rao — see "Yoga strength across the vargas"
+  below. Kept because it may be real practice somewhere, but it has no
+  citation in this corpus and Rao's rule is a ten-chart count, not a D-9
+  gate. Do not render this to a reader as classical.]**
 
 ### How Navamsha is constructed [Raman, Ch. II, pp. 23-24]
 
@@ -173,7 +177,11 @@ work life, especially the mid-to-late career phase.
 - Actual profession (as distinct from what the 10th of D-1 promises)
 - Career shifts, especially the second career
 - Public reputation and status
-- Judging Raja Yogas (do they carry into the D-10?)
+- Judging Raja Yogas — **one input, not the test.** D-10 is one of the ten
+  Dasavarga charts Rao counts over, and §36.4 makes it the chart of
+  "achievements in society"; §12.5's Vajpayee example explains a career from
+  D-10's SAV alone. But Rao's magnitude rule is the ten-chart count, orb and
+  freedom from affliction — see "Yoga strength across the vargas" below
 
 **Common rules:**
 - **10th lord of D-1 also strong in D-10** = career matches early
@@ -308,12 +316,263 @@ Future additions (see the TODO comments in `chart.py`) will add D-10
 
 ---
 
+## Rao on the vargas — Ch. 6, extracted 2026-10-17 (#191, for #398 B)
+
+**Everything in this block and the four that follow comes from
+P.V.R. Narasimha Rao, *Vedic Astrology: An Integrated Approach*, and every
+line range is measured with PLAIN `pdftotext` (no `-layout`), which yields
+**20,669** lines for `data/vedic_astro_textbook.pdf` — the fingerprint
+`SOURCES.md` records. Ranges taken under `-layout` (16,724 lines) will not
+resolve against these; `grahas.md` §12 uses `-layout` and says so, this block
+does not.**
+
+Why this extraction exists: `prompts/natal.txt:65` asserts that "a raja or
+wealth yoga surviving into D-9 is fully manifested **per Parashara**". Rao is
+the canonical Vedic authority in this corpus and Ch. 6 is his treatment of the
+vargas, so the claim is settled here. The verdict is in
+"Yoga strength across the vargas" below: **CONTRADICTED**.
+
+### Rao's own scope limits [Rao §6.1–6.2, lines 2643–2688; §6.7, lines 3295–3296]
+
+- **"Sage Parasara defined 16 different divisions of rasis. Jaimini and Tajaka
+  writers mentioned 4 more divisions."** (line 2654). So the 16 of
+  *Shodashavarga* are Parashara's; the 20 Rao computes include four that are
+  not.
+- Rao computes **20** divisional charts and explicitly excludes D-108, D-150
+  and the variant forms of D-2, D-3, D-8 and D-11 (line 2687).
+- **"For D-8 and D-11, there are different versions. For D-2 and D-3 also,
+  there are variations."** (line 3295) — and Rao ignores the variations. Any
+  D-8/D-11 value this repo computes is therefore **CONTESTED by construction**
+  and should name its convention.
+- `D-n` means the chart built on dividing each rasi into *n* parts (line 2680).
+
+### Table 11 — Rao's varga significations [Rao §6.3, lines 3034–3098]
+
+The table is printed in column-interleaved order under plain `pdftotext`;
+the pairing below was cross-checked against `pdftotext -layout`.
+
+| Varga | Symbol | Rao's "area of life to be seen from it" |
+|---|---|---|
+| Rasi | D-1 | Existence at the physical level |
+| Hora | D-2 | Wealth and money |
+| Drekkana | D-3 | Everything related to brothers and sisters |
+| Chaturthamsa | D-4 | Residence, houses owned, properties and fortune |
+| Panchamsa | D-5 | Fame, authority and power |
+| Shashthamsa | D-6 | Health troubles |
+| Saptamsa | D-7 | Everything related to children (and grand-children) |
+| Ashtamsa | D-8 | Sudden and unexpected troubles, litigation etc |
+| Navamsa | D-9 | Marriage and everything related to spouse(s), **dharma** (duty and righteousness), interaction with other people, **basic skills, inner self** |
+| Dasamsa | D-10 | **Career, activities and achievements in society** |
+| Rudramsa | D-11 | Death and destruction |
+| Dwadasamsa | D-12 | Everything related to parents (also uncles, aunts and grand-parents, i.e. blood-relatives of parents) |
+| Shodasamsa | D-16 | Vehicles, pleasures, comforts and discomforts |
+| Vimsamsa | D-20 | Religious activities and spiritual matters |
+| Chaturvimsamsa | D-24 | Learning, knowledge and education |
+| Nakshatramsa | D-27 | Strengths and weaknesses, inherent nature |
+| Trimsamsa | D-30 | Evils and punishment, sub-conscious self, some diseases |
+| Khavedamsa | D-40 | Auspicious and inauspicious events |
+| Akshavedamsa | D-45 | All matters |
+| Shashtyamsa | D-60 | Karma of past life, all matters |
+
+**Three divergences from this file's own "16 vargas at a glance" table above,
+recorded rather than overwritten** — the earlier table came from Raman plus
+uncited BPHS material, and the rows are not interchangeable:
+
+| Varga | This file's table | Rao Table 11 | Note |
+|---|---|---|---|
+| D-5 | *(absent)* | Fame, authority and power | Rao computes it; we do not list it |
+| D-6 | *(absent)* | Health troubles | Rao computes it; we do not list it |
+| D-11 | Death and destruction *(absent above)* | Death and destruction | agrees with `vedic_reference.md §6.9` ("Forces of death secondary — D-11 Rudramsa") |
+| D-40 / D-45 | "Maternal / paternal karmic inheritance" | "Auspicious and inauspicious events" / "All matters" | **CONTESTED.** Rao does not give the maternal/paternal split. Whoever cites it must cite someone other than Rao, or mark it unsourced |
+| D-9 | "Spouse, marriage, dharma, hidden strength" | adds **"interaction with other people, basic skills, inner self"** and omits "hidden strength" | "hidden strength" is not Rao's phrase for D-9; see the yoga section below, where it matters |
+
+### The four planes [Rao §6.4, lines 3120–3140]
+
+Rao groups the vargas by the plane of existence they read, which is the
+principle behind Table 11 rather than a list to memorise:
+
+| Divisions | Plane | What it shows |
+|---|---|---|
+| 1–12 | **Physical** | Body, wealth, residence, spouse, children, parents |
+| 13–24 (D-16, D-20, D-24) | **Mental** | Pleasure and unhappiness, religiousness, learning and knowledge |
+| 25–36 (D-27, D-30) | **Sub-conscious** | Strengths, weaknesses, inherent nature, evils, psychological imbalance |
+| above 36 (D-40, D-45, D-60) | **Karmic** | Existence above body, mind and sub-conscious, from previous lives |
+
+Rao attaches a footnote (line 3140) telling readers to **leave the >36 charts
+alone until they have a competent guru**. Our D-40/D-45/D-60 rows above carry
+no such warning; if those charts are ever rendered, the warning travels with
+them.
+
+### Varga groups and amsabala [Rao §6.6, lines 3179–3280]
+
+A planet in its **moolatrikona, an own rasi, or its rasi of exaltation** counts
+as well placed in that chart. Count those across a named group of charts; the
+count names an *amsa*, and the higher the count the stronger the planet
+(lines 3185–3191).
+
+| Group | Charts in it | Line |
+|---|---|---|
+| **Shadvarga** (6) | D-1, D-2, D-3, **D-9**, D-12, D-30 | 3197–3199 |
+| **Saptavarga** (7) | D-1, D-2, D-3, D-7, **D-9**, D-12, D-30 | 3209–3211 |
+| **Dasavarga** (10) | D-1, D-2, D-3, D-7, **D-9**, **D-10**, D-12, D-16, D-30, D-60 | 3225–3228 |
+| **Shodasavarga** (16) | D-1, D-2, D-3, D-4, D-7, **D-9**, **D-10**, D-12, D-16, D-20, D-24, D-27, D-30, D-40, D-45, D-60 | 3243–3246 |
+
+Amsa ladders, verbatim from Rao:
+
+- Shadvarga (lines 3203–3205): Kimsukaamsa 2, Vyanjanaamsa 3, Chaamaraamsa 4,
+  Chatraamsa 5, Kundalaamsa 6.
+- Saptavarga (lines 3214–3215): as above plus Mukutaamsa 7.
+- **Dasavarga (lines 3230–3232): Paarijaataamsa 2, Uttamaamsa 3, Gopuraamsa 4,
+  Simhaasanaamsa 5, Paaraavataamsa 6, Devalokamsa 7, Brahmalokamsa 8,
+  Airaavataamsa 9, Sreedhaamaamsa 10.**
+- Shodasavarga (lines 3248–3251): Bhedakaamsa 2 … Sree Vallabhaamsa 16.
+
+Rao singles the Dasavarga ladder out: **"This group is very important and some
+yogas – special combinations – make use of these amsas … A quadrant lord with
+good amsabala in dasavarga makes one very successful."** (lines 3233–3236).
+This is the group that settles the D-9 question below. Rao's worked example
+(Bill Cosby's Jupiter, lines 3261–3279) counts the same planet through all four
+groups and gets four different amsas from it — the count is per group, never a
+single global number.
+
+**Vargottama** is defined narrowly: *"A planet is in vargottamaamsa if it
+occupies the same sign in Rasi and Navamsa charts."* (line 6351, a footnote in
+§11.7.3). That SOURCES this file's "Vargottama planet" rule above, which had
+no citation. Note what it is **not**: a yoga-manifestation test. It is a
+single-planet dignity.
+
+### Yoga strength across the vargas — what Parashara actually requires
+
+**This settles `prompts/natal.txt:65`. Verdict: CONTRADICTED.**
+
+Rao's one Parashara-attributed rule about yogas and vargas is in **§11.7.2
+"Magnitude of a Raaja Yoga"** (lines 6151–6234). Its three primary factors are
+not varga-based at all:
+
+1. the two planets must be **free from affliction by functional malefics**
+   (line 6161);
+2. the conjunction or aspect forming the yoga must be **close — "say, within 6°
+   or so"** (lines 6163–6164), with a footnote: *"Anything greater than 5 or 6
+   degrees is too large for a Raaja Yoga to give its full results."* (line
+   6256). Rao's worked counter-example: Mercury at 2° and Venus at 26° of
+   Taurus do form Dharma-Karmadhipati Yoga, but *"the two planets are too far
+   apart for this yoga to give its full results"* (lines 6165–6171);
+3. neither planet may be **combust, debilitated, in an inimical house, or in a
+   bad avastha** (lines 6172–6173).
+
+Then, and only then:
+
+> **"In addition to the above factors, Sage Parasara recommended looking at the
+> amsas occupied by the 2 planets as per Dasa Varga (ten division) scheme."**
+> — lines 6174–6176
+
+So the rule Rao attributes to Parashara is:
+
+- a **count over the ten Dasavarga charts** (D-1, D-2, D-3, D-7, D-9, D-10,
+  D-12, D-16, D-30, D-60), not a test on D-9;
+- applied to **the two yoga-forming planets' own dignity** (own / exaltation /
+  moolatrikona), not to whether the yoga re-forms in a sub-chart;
+- **graded on a nine-step ladder**, not binary: count 0–1 is "ordinary", 2
+  "a king who rules his people well", 3 "a good king with tremendous assets",
+  4 "a great king respected by many kings", 5 "a great emperor who rules the
+  whole world", and 6–9 *"only for divine persons"* (lines 6178–6198).
+
+And Rao closes the section by denying exactly the word the prompt uses:
+
+> **"Final Judgment: None of the above factors influences the end result
+> completely. We should look at all the factors and make the final judgment."**
+> — lines 6199–6200
+
+His two worked examples make the point concretely. **Rajiv Gandhi** (lines
+6203–6212) had Raja-Yoga planets in Simhaasanaamsa — count 5, the "emperor of
+the whole world" rung — but they were more than 8° apart and afflicted, so
+*"the Yoga is pretty weak … In the end, he only became India's prime minister
+and not an 'emperor of the whole world'."* **Akbar** (lines 6213–6225) was a
+great emperor with his Raja-Yoga planets only in Uttamaamsa and
+Paarijaataamsa. The varga count neither guarantees nor withholds the result.
+
+**Where D-9 genuinely does appear in Rao's Raja Yogas**, it appears as one
+member of a set, never alone:
+
+- *"If the same planet aspects lagna in the six divisional charts of shad
+  vargas – Rasi, Navamsa, Hora, Drekkana, Dwadasamsa, Trimsamsa – then that
+  planet gives a Raaja Yoga."* (§11.7.3 (7), lines 6295–6297) — six charts,
+  and this **constitutes** a yoga rather than confirming one.
+- *"If lagna in Rasi, Navamsa and Drekkana charts is occupied by a planet in
+  own or exaltation sign, then the native becomes a king."* (§11.7.3 (9),
+  lines 6306–6308) — three charts, and *"It can be different planets."*
+
+**What Rao does say about yogas in divisional charts** is a re-interpretation
+rule, not an amplification rule:
+
+> **"Many yogas are applicable in divisional charts. When we use yogas in
+> divisional charts, we should interpret the results ascribed to a yoga based
+> on the matters signified by the divisional chart."**
+> — §11.1, lines 5320–5323
+>
+> **"When using yogas in divisional charts, adapt the results to the matters
+> signified by the chart. All the great results ascribed to some yogas may not
+> materialize in reality, due to weaknesses in them. Unless a yoga is very
+> strong, all the results cannot expected."**
+> — §11.11 Conclusion, lines 6543–6547
+
+And for the Ravi yogas specifically: *"they are less common in divisional
+charts. One can apply these yogas in D-9 and D-10 in particular."* (§11.2,
+lines 5351–5353) — **D-9 *and* D-10, as a pair, and as the charts in which to
+*apply* a yoga, not as a confirmation gate.**
+
+Finally, Rao names which chart "manifestation" belongs to, and it is not D-9:
+
+> **"Rasi is the chart of physical manifestation; navamsa is the chart of
+> dharma and inner self; and, dasamsa is the chart of achievements in
+> society."**
+> — §36.4, lines 20217–20219
+
+A **raja yoga** is a combination giving *power and prosperity* (§11.7, lines
+6109–6110) and a **dhana yoga** gives *abundant riches* (§11.9, line 6414).
+Both are achievements in society and both are physical-plane. On Rao's own
+mapping those read from **D-1 and D-10**; D-9 reads *dharma, interaction with
+others, basic skills and the inner self*.
+
+#### Findings for the open defect
+
+| Claim | Where | Verdict against Rao |
+|---|---|---|
+| "a raja or wealth yoga surviving into D-9 is fully manifested" | `prompts/natal.txt:65` | **CONTRADICTED.** D-9 survival is not Rao's manifestation test; "fully" is denied by §11.11 and by the Rajiv Gandhi example; the sphere of a raja/dhana yoga is D-1/D-10 per §36.4 |
+| "…**per Parashara**" | `prompts/natal.txt:65` | **MISATTRIBUTED.** The Parashara-attributed varga rule (§11.7.2, line 6174) is the **ten-chart Dasavarga amsa count** on the two yoga-forming planets. Citing Parashara for a D-9 binary is the #216 defect class |
+| "a yoga that appears in the D-1 is considered activated only if it ALSO appears in the D-9" | this file, "What Navamsha rules" bullet above | **UNSOURCED, and CONTESTED by Rao.** It carries no citation and Rao states the opposite relation (re-interpret per the chart's sphere). Left in place, flagged here, not overwritten |
+| "Judging Raja Yogas (do they carry into the D-10?)" | this file, D-10 section above | **PARTIALLY SOURCED.** D-10 is in the Dasavarga ten and is the chart of achievements in society (§36.4), so it is the better of the two; but Rao's test is the ten-chart count, not a D-10 carry-through. Phrase it as one input |
+
+### Ashtakavarga applies in every varga, not only D-1 [Rao §12.5, lines 7808–7881]
+
+> *"There is a misconception that ashtakavarga is applicable only to rasi
+> charts. Parasara does not say it … So all the analysis in the rest of his
+> classic applies to all the divisional charts, unless Parasara explicitly
+> mentions rasi chart."* — lines 7809–7813
+
+Mechanically identical: the benefic houses for each planet with respect to the
+eight references are the same in every varga, so BAV and SAV compute the same
+way (lines 7831–7834). Rao's worked example is **Vajpayee** (lines 7836–7869):
+rasi-chart SAV gives lagna 26 and the 10th 28 rekhas — *"just average"* — and
+the career is explained only by D-10, whose lagna holds **35 rekhas**, the
+maximum in that chart, with the 8th at 33 explaining the struggle. Rao's
+explicit answer to "why was his career successful" is *"The answer lies in the
+SAV of D-10."* (line 7864).
+
+This is a second, independent Rao passage putting **career** manifestation in
+**D-10** — and it is a worked chart, not a dictum.
+
+---
+
 ## Cross-references
 
 - **Vimshottari Dasha** (times the events vargas describe) — see
   `vedic_reference.md §5`
-- **Yogas** (confirmed only when present in both D-1 and D-9) — see
-  `vedic_reference.md §4`
+- **Yogas** — see `vedic_reference.md §4` and `yogas.md`. **Do not repeat the
+  "confirmed only when present in both D-1 and D-9" formula that used to sit
+  on this bullet**: it is unsourced and Rao contradicts it. His test is the
+  ten-chart Dasavarga amsa count (§11.7.2) — see "Yoga strength across the
+  vargas" above
 - **Karakas** (each planet's natural significations that vargas
   refine) — see `vedic_reference.md §5A`
 - **Manglik in D-9** — Manglik status must be checked in D-9 too;
@@ -323,5 +582,7 @@ Future additions (see the TODO comments in `chart.py`) will add D-10
   factors) — see the learn hub article on Kundali Matching
 
 ---
+
+*Extended: 2026-10-17 (#191, for #398 B) from P.V.R. Narasimha Rao "Vedic Astrology: An Integrated Approach" Ch. 6 (§§6.1–6.7), §11.1, §11.2, §11.7.2, §11.7.3, §11.11, §12.5 and §36.4. All Rao line ranges are PLAIN `pdftotext` (20,669 lines); table pairings cross-checked against `-layout`. Rao's Table 11 is now the primary varga-signification source and supersedes the uncited BPHS rows where they disagree — the disagreements are tabulated, not silently replaced.*
 
 *Extracted: 2026-07-20 from BV Raman "Astrology for Beginners" Ch. II (pp. 23-30, Navamsha construction and use); other vargas cross-verified with universally-cited BPHS Ch. 6-8 rules. Raman covers Navamsha in real depth but only mentions D-3/D-10/D-30 in passing. Full detail on rarer vargas (D-16/D-24/D-40/D-45) awaits extraction from Varahamihira Hora Sastra.*
