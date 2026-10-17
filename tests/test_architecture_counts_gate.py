@@ -129,3 +129,38 @@ def test_a_report_only_row_that_vanished_fails(tmp_path, monkeypatch, capsys):
     rc, out = _run(tmp_path, monkeypatch, capsys, rows)
     assert rc != 0
     assert "REPORT_ONLY row 'Python' is not in §1" in out
+
+
+# What a report-only command may print. The valued rows parse with _numbers(),
+# which ignores sign and splits decimals; the report-only check reads the last
+# whitespace token whole, so each of these must fail on its own.
+@pytest.mark.parametrize("cmd", [
+    "echo hello",             # no number at all
+    "echo 40; echo 0",        # first > 0, LAST is 0: "last number" is the rule
+    "echo -5",                # sign was dropped by _numbers(): read as 5
+    "echo 0.5",               # decimal was split: read as [0, 5]
+    "echo 7 apples",          # trailing word: last token is not a number
+])
+def test_a_report_only_command_must_end_in_a_plain_positive_integer(
+        cmd, tmp_path, monkeypatch, capsys):
+    rc, out = _run(tmp_path, monkeypatch, capsys, _with("Python", cmd=cmd))
+    assert rc != 0, out
+    assert "Python: report-only row's command printed" in out
+    assert "must be a plain positive integer" in out
+
+
+def test_the_last_number_decides_not_the_first(tmp_path, monkeypatch, capsys):
+    # The mirror of `echo 40; echo 0`: leading zero-ish noise is fine when the
+    # LAST token is the count, which is what `wc -l` and `awk` really print.
+    rc, out = _run(tmp_path, monkeypatch, capsys, _with("Python", cmd="echo 0; echo 40"))
+    assert rc == 0, out
+    assert "actual=[40]" in out
+
+
+@pytest.mark.parametrize("cell", ["Measured", "MEASURED", "measured (~32k)"])
+def test_measured_must_be_exactly_the_lowercase_word_on_a_report_only_row(
+        cell, tmp_path, monkeypatch, capsys):
+    # `measured (~32k)` would also smuggle a number back in.
+    rc, out = _run(tmp_path, monkeypatch, capsys, _with("behaviour suite", value=cell))
+    assert rc != 0, out
+    assert "behaviour suite: volatile; a number here is what makes every PR conflict" in out

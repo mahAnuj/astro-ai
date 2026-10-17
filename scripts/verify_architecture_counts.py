@@ -34,11 +34,14 @@ both numbers and both are checked.
 REPORT-ONLY ROWS (#405)
 
 Four rows are volatile: Python (lines), top-level modules, verification gates and
-the behaviour suite. Measured on main@50a9c42 over the last 100 commits, the
-doc moved in 27 of them, verify_behaviour.py in 22 and
-mutate_behaviour_suite.py in 19 — and every PR that added a test or a gate
-hand-edited the same number in the same shared file, so concurrent PRs
-conflicted on a line that carried no information the command did not.
+the behaviour suite. Measured on main@50a9c42 over `git log -100` (99 non-merge
+commits plus merge 4f66d50), the WHOLE FILES changed in: ARCHITECTURE.md 27
+non-merge commits, verify_behaviour.py 22, mutate_behaviour_suite.py 19 (28/23/20
+counting merge 4f66d50, which resolved conflicts in all three). Those are file
+figures, not row figures: the four rows' own lines changed in 24 of the 99
+(Python 10, modules 4, gates 7, behaviour suite 19). Every PR that added a test
+or a gate hand-edited the same number in the same shared file, so concurrent
+PRs conflicted on a line that carried no information the command did not.
 
 So those rows (REPORT_ONLY, below) store the word `measured` in the count cell
 instead of a number, and this gate prints the live value. The rule runs in BOTH
@@ -50,10 +53,18 @@ directions, because either half alone reopens a hole:
     to exempt a row from checking by editing one word.
 
 A REPORT_ONLY row is not unchecked: its command must still run and its last
-numeric token must be greater than zero, so a command that rotted (a moved
-path counts 0) still turns the gate red. Two rows sharing a label or a command
-also FAIL — EXPECTED_ROWS is a floor, and a floor is blind to a row that was
-duplicated rather than removed.
+token must be a positive integer, so a command that rotted (a moved
+path counts 0) still turns the gate red. "Positive integer" is strict: the last
+token of the output must be digits only, so `-5`, `0.5` and `hello` fail.
+
+WHAT THIS WEAKENS: these four rows are no longer pinned to a typed value, so a
+command swapped for a narrower one (`ls scripts/verify_b*.py | wc -l`) still
+passes while it prints a positive integer. What remains is that the command
+runs, prints a positive integer, and the doc cannot store a stale number. It
+does not prove the command counts the right thing.
+
+Two rows sharing a label or a command also FAIL — EXPECTED_ROWS is a floor, and
+a floor is blind to a row that was duplicated rather than removed.
 """
 from __future__ import annotations
 
@@ -178,10 +189,15 @@ def main() -> int:
                     f"{label}: volatile; a number here is what makes every PR "
                     f"conflict — write `{MEASURED}`, not {value!r}")
                 continue
-            if not got_all or got_all[-1] <= 0:
+            # The last whitespace token itself, not _numbers(): that ignores
+            # sign and splits decimals, so `-5` read as 5 and `0.5` as [0, 5].
+            # Scoped to these rows — the valued rows' cells carry `9,358`.
+            last = out.stdout.split()[-1]
+            if not re.fullmatch(r"[1-9][0-9]*", last):
                 problems.append(
-                    f"{label}: report-only row's command printed {got_all}; the "
-                    f"last number must be > 0 (a rotted command counts 0): {cmd}")
+                    f"{label}: report-only row's command printed {got_all}; its "
+                    f"last token {last!r} must be a plain positive integer (a "
+                    f"rotted command counts 0): {cmd}")
                 continue
             print(f"  rep {label:<30} doc={value:<16} actual=[{got_all[-1]}]")
             continue
