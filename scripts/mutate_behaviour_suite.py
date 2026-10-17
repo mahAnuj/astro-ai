@@ -876,6 +876,15 @@ MUTATIONS = [
      'BUDGET_ERROR_TYPES = ("AllProvidersExhausted",)',
      "test_request_too_large_is_a_break_although_it_subclasses_exhausted"),
 
+    # The defect as it shipped: an anonymous visitor's 2,000 characters
+    # interpolated raw into an HTML email sent from the site's own authenticated
+    # sender domain.
+    ("#373: the feedback email stops escaping the visitor's message",
+     "src/astro_ai/routes/feedback.py",
+     'msg = _html.escape(entry["message"] or "")',
+     'msg = entry["message"] or ""',
+     "test_a_script_payload_in_the_message_does_not_survive_as_markup"),
+
     ("#355: an unrecorded route latency reads as 0 (a zero reads as 'fast')",
      "src/astro_ai/llm_stats.py",
      'int(v["lat_sum"] / v["lat_n"]) if v["lat_n"] else None',
@@ -918,6 +927,67 @@ MUTATIONS = [
      '"store": store, "store_is_local": False,\n            "store_detail": store_detail,\n            "days": days,',
      "test_ops_says_it_is_reading_a_local_dev_store"),
 
+    # #367. The triage script writes under the owner's identity on text strangers wrote; each
+    # row re-breaks one clause of the chief's ruling. The close row is the one the ruling asked
+    # for by name: a `gh issue close` call injected must turn the suite red.
+    ("#367: a `gh issue close` call appears in the triage script",
+     "scripts/triage_outsider_issues.py",
+     '    n, problems = str(int(issue["number"])), []\n',
+     '    n, problems = str(int(issue["number"])), []\n    gh(["issue", "close", n, "--repo", repo])\n',
+     "test_no_close_path_exists_in_the_script"),
+
+    ("#367: an UNRESOLVED resolver is treated as an outsider (fail open)",
+     "scripts/triage_outsider_issues.py",
+     '        return "error", f"resolver reported UNRESOLVED: {detail}".rstrip(": ")',
+     '        return "outsider", ""',
+     "test_any_other_resolver_code_fails_closed_with_a_named_cause"),
+
+    # #377 DEF-1. The resolver's exit code and its printed verdict must be read TOGETHER: a
+    # crash exits 1, which is OUTSIDER's own code, so status alone cannot tell a finding from
+    # a traceback. This row restores the defect exactly -- believe the status, ignore the word.
+    ("#377: provenance is read from the exit code alone, so a crash is an OUTSIDER finding",
+     "scripts/triage_outsider_issues.py",
+     "    said = verdict_printed(r.out, number)",
+     "    said = _EXIT_VERDICT.get(r.rc)",
+     "test_a_crashing_resolver_is_not_an_outsider"),
+
+    # #377 DEF-2. The cap must bound the WORK. Capping only the printout left the surplus
+    # labelled, and `already_done` reads that label, so the next run skipped the held-back
+    # issues before they could be listed -- discarded, not deferred.
+    #
+    # TWO ROWS, because `... and False` is NOT the defect. It removes deferral AND the
+    # printout cap, so it fails loudly on several assertions at once and proves less than it
+    # appears to. QA round 2 made the point: the EXACT restoration keeps the cap branch and
+    # its printed strings byte-identical and merely applies the decision before deferring --
+    # the surplus is labelled and then held back, which is precisely how the bug was silent.
+    # Keep both: the blunt one guards the branch existing, the exact one guards the ordering.
+    ("#377: --cap bounds the printout but not the work, so held-back candidates are labelled",
+     "scripts/triage_outsider_issues.py",
+     "        if d.label == LABEL_REVIEWED and len(stage2) >= args.cap:",
+     "        if d.label == LABEL_REVIEWED and False:",
+     "test_the_cap_bounds_the_stage2_list"),
+
+    ("#377: the deferred candidate is LABELLED before it is deferred (the exact DEF-2 defect)",
+     "scripts/triage_outsider_issues.py",
+     "        if d.label == LABEL_REVIEWED and len(stage2) >= args.cap:\n"
+     "            deferred.append(n)",
+     "        if d.label == LABEL_REVIEWED and len(stage2) >= args.cap:\n"
+     "            if args.apply:\n"
+     "                failures.extend(apply_decision(gh, args.repo, issue, d))\n"
+     "            deferred.append(n)",
+     "test_held_back_candidates_are_listed_by_the_next_run"),
+
+    ("#367: the duplicate comment echoes the stranger's title",
+     "scripts/triage_outsider_issues.py",
+     'f"This looks similar to #{int(dup[0])}, which is older and still open. "',
+     'f"This looks similar to #{int(dup[0])} ({issue.get(\'title\')}), which is older and still open. "',
+     "test_the_duplicate_comment_links_the_candidate_and_nothing_else"),
+
+    ("#367: the idempotence marker is ignored (a comment on every run)",
+     "scripts/triage_outsider_issues.py",
+     "    if d.comment is not None and not has_marker(issue, d.key):",
+     "    if d.comment is not None:",
+     "test_a_state_already_commented_by_this_token_posts_nothing_again"),
 
 
     # --- #361: issue provenance. The resolver is the control that keeps an outsider's
@@ -981,6 +1051,49 @@ MUTATIONS = [
      "                _last_prefix.set(None)\n",
      "",
      "test_chat_resets_the_figure_before_each_call_so_a_stub_cannot_inherit_it"),
+    # --- #400: the per-route token budget gate. A size gate that cannot go red is
+    # the honour system it replaced; each row neuters one comparison it makes.
+    ("#400: the ceiling comparison is neutered (an oversized prompt passes)",
+     "scripts/verify_token_budget.py",
+     "        if worst > ceiling:", "        if False and worst > ceiling:",
+     "test_a_route_over_its_ceiling_fails_naming_the_route_the_ceiling_and_the_value"),
+
+    ("#400: the growth comparison is neutered (#212 again: each step under the ceiling)",
+     "scripts/verify_token_budget.py",
+     "        if en > limit:", "        if False and en > limit:",
+     "test_growth_under_the_ceiling_still_fails"),
+
+    ("#400: the ceiling ignores the Hindi variant (+132 tok on every route unseen)",
+     "scripts/verify_token_budget.py",
+     "        worst = max(en, hi)", "        worst = en",
+     "test_the_hindi_variant_is_judged_against_the_ceiling"),
+
+    ("#400: a row whose route was never measured stops failing",
+     "scripts/verify_token_budget.py",
+     "        if route not in measured:", "        if False:",
+     "test_a_row_for_a_route_that_was_not_measured_fails"),
+
+    ("#400: a twelfth prompt file is no longer noticed (ships unbudgeted)",
+     "scripts/verify_token_budget.py",
+     "        extra = uncovered_prompts(declared, prompts_dir)", "        extra = []",
+     "test_a_twelfth_prompt_file_with_no_budget_fails"),
+
+    ("#400: an empty override is accepted (a pass that measured nothing)",
+     "scripts/verify_token_budget.py",
+     "if not path.is_file() or path.stat().st_size == 0:", "if False:",
+     "test_an_override_that_is_empty_is_refused_not_skipped_past"),
+
+    ("#400: could-not-run exits 0 (an unmeasured gate reads as green)",
+     "scripts/verify_token_budget.py",
+     "This is NOT a pass — the check did not run.\")\n        return 2",
+     "This is NOT a pass — the check did not run.\")\n        return 0",
+     "test_an_unavailable_tokenizer_is_exit_two_and_says_it_is_not_a_pass"),
+
+    ("#400: the natal row drops the chart payload (#266 was the SUM)",
+     "scripts/verify_token_budget.py",
+     'measured["natal+payload"] = (n_en + user, n_hi + user)',
+     'measured["natal+payload"] = (n_en, n_hi)',
+     "test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
