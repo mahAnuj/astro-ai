@@ -79,6 +79,20 @@ CHAIN = [("own", "gates"), ("gates", "qa"), ("qa", "size")]
 # agents edit, and it lands here once that branch is on main.
 REQUIRED_SUBSTRINGS = {
     ".github/workflows/agent-merge.yml": ["qa-pass", "qa-fail"],
+    # #361. The loop does not implement an outsider's issue, under any label or
+    # assignment. Floored because it lives as PROSE in files agents are expected
+    # to edit, and because the softening is specific and predictable: the rule
+    # REPLACED a "proceed, but under four stricter rules" version, so reverting
+    # to one is the obvious move for an agent that wants to work an issue it has
+    # been told to skip.
+    #
+    # Phrases, not paraphrases: each is a single line in the file, short enough
+    # to survive reflow and distinctive enough that nothing else matches it.
+    ".claude/commands/agent-cycle.md": [
+        "Comment, label, skip",
+        "under any label, assignment or circumstance",
+    ],
+    ".claude/agents/project-manager.md": ["not ranked at all"],
 }
 
 
