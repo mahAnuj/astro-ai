@@ -30,6 +30,30 @@ a command that cannot run, or a value that cannot be read, fails.
 
 Rows whose command is inherently multi-valued (`11 files, 8,021 lines`) declare
 both numbers and both are checked.
+
+REPORT-ONLY ROWS (#405)
+
+Four rows are volatile: Python (lines), top-level modules, verification gates and
+the behaviour suite. Measured on main@50a9c42 over the last 100 commits, the
+doc moved in 27 of them, verify_behaviour.py in 22 and
+mutate_behaviour_suite.py in 19 — and every PR that added a test or a gate
+hand-edited the same number in the same shared file, so concurrent PRs
+conflicted on a line that carried no information the command did not.
+
+So those rows (REPORT_ONLY, below) store the word `measured` in the count cell
+instead of a number, and this gate prints the live value. The rule runs in BOTH
+directions, because either half alone reopens a hole:
+
+  - a REPORT_ONLY row carrying a number FAILS — a number there is exactly what
+    makes every PR conflict, and it would be unchecked by nothing but this rule;
+  - any other row carrying `measured` FAILS — otherwise `measured` becomes a way
+    to exempt a row from checking by editing one word.
+
+A REPORT_ONLY row is not unchecked: its command must still run and its last
+numeric token must be greater than zero, so a command that rotted (a moved
+path counts 0) still turns the gate red. Two rows sharing a label or a command
+also FAIL — EXPECTED_ROWS is a floor, and a floor is blind to a row that was
+duplicated rather than removed.
 """
 from __future__ import annotations
 
@@ -43,6 +67,16 @@ DOC = ROOT / "ARCHITECTURE.md"
 
 # Pinned so a row cannot be deleted silently. Raise it when adding one.
 EXPECTED_ROWS = 10
+
+# Rows whose count cell must read exactly `measured` (see the docstring). Labels
+# are the first cell of the §1 table, verbatim.
+REPORT_ONLY = {
+    "Python",
+    "top-level modules",
+    "verification gates",
+    "behaviour suite",
+}
+MEASURED = "measured"
 
 ROW = re.compile(r"^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*`([^`]+)`\s*\|\s*$", re.M)
 
@@ -106,6 +140,23 @@ def main() -> int:
               f"lower EXPECTED_ROWS in this file\n       and say why in the commit.")
         return 1
 
+    # EXPECTED_ROWS counts rows, so a row that is DUPLICATED rather than
+    # removed leaves it satisfied while a different row quietly stops being
+    # covered. Compare label and (unescaped) command.
+    dupes: list[str] = []
+    for what, keys in (("label", [r[0] for r in rows]),
+                       ("command", [r[2].replace("\\|", "|") for r in rows])):
+        for k in sorted({k for k in keys if keys.count(k) > 1}):
+            dupes.append(f"duplicate {what}: {k}")
+    missing = sorted(REPORT_ONLY - {r[0] for r in rows})
+    if dupes or missing:
+        print("FAIL — §1 rows are not one-per-thing:")
+        for d in dupes:
+            print(f"  - {d}")
+        for m in missing:
+            print(f"  - REPORT_ONLY row {m!r} is not in §1 (renamed or removed?)")
+        return 1
+
     problems: list[str] = []
     print(f"ARCHITECTURE.md §1 — {len(rows)} rows, each against its own command\n")
     for label, value, cmd in rows:
@@ -120,8 +171,26 @@ def main() -> int:
             problems.append(f"{label}: command produced no output ({cmd})")
             continue
 
-        claimed = _numbers(value)
         got_all = _numbers(out.stdout)
+        if label in REPORT_ONLY:
+            if value != MEASURED:
+                problems.append(
+                    f"{label}: volatile; a number here is what makes every PR "
+                    f"conflict — write `{MEASURED}`, not {value!r}")
+                continue
+            if not got_all or got_all[-1] <= 0:
+                problems.append(
+                    f"{label}: report-only row's command printed {got_all}; the "
+                    f"last number must be > 0 (a rotted command counts 0): {cmd}")
+                continue
+            print(f"  rep {label:<30} doc={value:<16} actual=[{got_all[-1]}]")
+            continue
+        if value == MEASURED:
+            problems.append(
+                f"{label}: `{MEASURED}` is reserved for REPORT_ONLY rows "
+                f"({', '.join(sorted(REPORT_ONLY))}); this row must state its number")
+            continue
+        claimed = _numbers(value)
         if not claimed:
             problems.append(f"{label}: no number in the value cell {value!r}")
             continue
