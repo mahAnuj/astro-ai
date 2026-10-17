@@ -714,6 +714,211 @@ The classical principle "a planet sitting in the house it is karaka for damages 
 
 ---
 
+## 5B. Timing — Rao's dasha and transit apparatus (extracted 2026-10-17, #191)
+
+**Why this section exists.** Every question the live site actually gets — *will
+I clear this exam, will I get a job, will I marry this year, when will the
+money come* — is a **timing** question, and `prompts/ask.txt`'s CATEGORY
+GUIDANCE gives one topic line per category and names no classical rule at all.
+The `/ask` request carries natal chart, current dasha and the vedic flags, and
+**no transit data whatsoever**. So the timing doctrine was being supplied
+entirely from model recall. This section is what Rao actually says, so the gap
+is at least visible and citable.
+
+**Flag and fingerprint:** all line ranges are **plain `pdftotext`** (no
+`-layout`) over `data/vedic_astro_textbook.pdf` = **20,669 lines**, and over
+`data/book1-for-CD.pdf` (Rao, *Lessons* Vol. I) = **12,244 lines**. `grahas.md`
+§12 cites the textbook under `-layout` (16,724 lines); the schemes do not
+interchange.
+
+**Chapter map correction.** `SOURCES.md` lists the dashas as "Ch. 16-25" and
+predictive techniques as "Ch. 26-33". Measured: **Ch. 16–24** are the dasha
+systems (Vimsottari 10311, Ashtottari 10801, Narayana 11066, Lagna Kendradi
+12081, Sudasa 12240, Drigdasa 12371, Niryaana Shoola 12549, Shoola 12764,
+Kalachakra 12991), **Ch. 25–26** are transits (13982, 15187), **Ch. 27–29** are
+Tajaka (16124, 16461, 17260), **Ch. 30–31** are annual and Sudarsana Chakra
+dasas (17619, 17993), Ch. 32 is birthtime error (18200) and Ch. 33 is rational
+thinking (18845). There is also an unnumbered **Part 6: Real-life Examples**
+(20324–20669) which the map does not mention at all and which is the single
+most useful part of the book for this product.
+
+### 5B.1 The general rule: a dasha lord delivers what it promises IN A VARGA
+
+[Rao §16.5.1, lines 10486–10513]
+
+> *"Vimsottari dasa is a very general phalita dasa that can also be used as an
+> ayur dasa. All kinds of general results can be seen from it. **A planet gives
+> the results promised by its positions in various divisional charts.**"*
+> — lines 10494–10496
+
+**This is Rao's answer to "does this Mahadasha/Antardasha lord support this
+bhava".** It is not a lookup on the lord's natal house in D-1; it is *the
+lord's placement in the varga that owns the question.* Rao's nine examples,
+verbatim [lines 10497–10509]:
+
+| # | Rao's example | Life area |
+|---|---|---|
+| 1 | *"Period of the 5th lord in D-7 can give a child."* | children |
+| 2 | *"Period of the 8th lord in rasi chart can give some troubles and frustration."* | general |
+| 3 | *"Period of a planet exalted in GL in D-10 can give power and authority in career."* | **career** |
+| 4 | *"Period of an exalted planet in the 12th from AK in D-9 can give serious thoughts related to spiritual liberation."* | spiritual |
+| 5 | *"Period of the 7th lord in D-9 can give marriage."* | **marriage** |
+| 6 | *"Period of a planet with Rahu in the 9th in D-4 can give foreign residence."* | relocation |
+| 7 | *"Period of an exalted planet aspecting HL from the 11th from AL in rasi chart can give a lot of wealth."* | **money** |
+| 8 | *"Period of a planet joined by Moon and Saturn in the 8th house in D-30 may give serious psychological problems and suicidal tendencies."* | mental health |
+| 9 | *"Period of a well-disposed planet aspecting A3 in D-10 may make one write some books."* | output |
+
+And the recursion rule [lines 10510–10513]: *"Each planet gives the results
+indicated by it in its dasas and antardasas. **When analyzing antardasas, we
+can take the dasa lord as a temporary lagna and analyze the charts.**"*
+
+**Example 8 is a safety matter, not a feature.** Rao writes it as a dasha
+result; this product must never render anything of that kind. It is recorded
+here because an engineer reading §16.5.1 will meet it, and because Rao's own
+ethics rule (§5B.6) is the right response to it.
+
+### 5B.2 Which dasha level answers which question — the Tripod of Life
+
+[Rao §16.5.3 "Rath's 'Tripod of Life' Principle", lines 10543–10563]
+
+> *"Sun, Moon and lagna form the 'tripod of life'. **Parasara clearly said that
+> we should analyze all charts with respect to the positions of Sun, Moon and
+> lagna.**"* — lines 10547–10548
+
+Rao's assignment, which is the most directly useful rule in the chapter:
+
+| Dasha level | Reference point to judge it from | Rao's reason |
+|---|---|---|
+| **Mahadasha** | **Sun** (soul) | *"The results experienced due to soul (Sun) last long and change slowly."* |
+| **Antardasha** | **Moon** (mind) | *"The results experienced due to mind (Moon) last shorter and change fast."* |
+| **Pratyantardasha** | **Lagna** (body) | *"The results experienced due to body (lagna) change even faster."* |
+
+[lines 10552–10558]
+
+And the matching rule for **when a yoga pays out**, which is new material for
+this corpus [lines 10559–10562]:
+
+> *"If a planet takes part in a **Ravi yoga** (solar combination), it gives the
+> results of the yoga in its **mahadasa**. If a planet takes part in a
+> **Chandra Yoga** (lunar combination), it gives the results of the yoga in its
+> **antardasas**. If a planet takes part in other yogas (e.g. a **Raja Yoga**),
+> it gives the results of the yoga primarily in its **pratyantardasas**."*
+
+> *"In addition, dasa lord can be taken as a reference point when interpreting
+> antardasas."* — line 10563
+
+**Note what this does to the #398 B question.** Rao's own timing rule puts a
+Raja Yoga's payout at the **pratyantardasha** level — the shortest, finest
+level — which is the opposite of "fully manifested". See `yogas.md` §13.1.
+
+### 5B.3 Transits — the half the `/ask` path does not have
+
+| Rule | Rao | Lines |
+|---|---|---|
+| **Natal vs transit, stated plainly** | *"Natal positions stand for the innate potential of a nativity and the transit positions show the temporary influences – planetary pulls and pushes."* | §25.7, 15108–15110 |
+| Rao's *Lessons* puts it more usably | *"Position in the natal chart is the main thing – shows what one has to go through in life. **Transits show the time when one has to go though it.**"* | *Lessons* Vol. I, Lesson #1 note 28, printed p. 7, lines **474–475** |
+| **The master transit rule** (Rao sets it in bold type) | *"A planet occupying or aspecting a rasi in transit influences the matters signified by the houses and planets stationed in that rasi in the natal chart. The exact nature of the influence exerted by a planet depends on its inherent nature and the matters it stands for in the natal chart."* | §25.3, 14394–14398 |
+| **The dasha↔transit link** | *"The most popular natal reference in transit analysis is Moon … **The transit of Vimsottari dasa lord is particularly important, because he is the one who has the greatest influence on one's mental state during a period.**"* | §25.2, 13994–13999 |
+| Coarse vs fine timing | *"the interaction between the **natal divisional charts and the transit rasi chart** helps in **coarse** timing of events and the interaction between the **natal rasi chart and transit divisional charts** helps in **fine** timing of events."* | §25.7, 15111–15113 |
+| Worked marriage transits | *"Jupiter transiting in the Ta may give marriage to someone born in Sc lagna, because Ta is the 7th house from Sc. Saturn transiting in Ar may give relationship problems or marital problems for someone born in Li lagna, because Ar is the 7th house from Li."* Also: Jupiter in Virgo aspects Taurus (7th from Scorpio) **and** natal Venus in Pisces, *"and hence he may give marriage"* | §25.3, 14376–14384 (sign transits) and 14385–14391 (aspects) |
+| Saturn transits over the three lagnas | *"Saturn's transit over the rasi containing one's lagna may throw obstructions and hamper one's activities. Saturn's transit over the rasi containing one's Chandra lagna may create frustration and mental depression. Saturn's transit over the rasi containing one's paaka lagna may leave one feeling sick all the time and attack the physical vitality."* | §7.3.5, 3517–3521 |
+
+**One honesty marker to preserve.** Rao flags his own varga-transit method as
+*his own research*, not classical: *"the actual approach is essentially based on
+this author's own researches … readers are advised to keep in mind that what
+follows is a product of the very limited intelligence of this author and hence
+prone to errors."* [§25.4, lines 14440–14452]. If this product ever ships
+varga transits, that provenance travels with them.
+
+### 5B.4 Timing an event, not a tendency — Rao's method as he actually works it
+
+**Part 6: Real-life Examples** (lines 20324–20669) is five worked predictions
+with the reasoning shown. This is the only place in the book where Rao answers
+the question shape our users ask.
+
+| # | Question asked of Rao | Lines | The apparatus he used |
+|---|---|---|---|
+| 1 | *"exactly when she would get married"* | 20328–20380 | Vimsottari MD (Jupiter, lagna lord in 11th, aspecting 7th house and 7th lord) → AD (7th lord of **D-9**, which was too late) → Jupiter's **rasi transit** (Pisces = natal lagna, aspecting the 7th and the rasi holding natal Mercury) → **PD** (Mercury, 7th lord in rasi and lagna in D-9, also DK) → cross-check with **Sudarsana Chakra dasa** → cross-check with **Tajaka annual chart** (2nd lord exchange, *vivaha saham*, *muntha* lord, *ithasala* with Venus, upapada lord) → **Patyayini dasa** narrowing to Dec 98/Feb–Mar 99 → then a **cultural** filter: the lunar month of Maagha brings *"the season of marriages in India"* |
+| 2 | child's birth date | 20382–20459 | **Narayana dasa of D-7** |
+| 3 | *"asked if there was a change of job for him"* | 20460–20542 | **Narayana dasa of D-10**, antardasa read as the **8th from A10** (*"which can show the workplace"*) with its lord in the 12th from A10 → prediction of deterioration, being forced out in June, a better job in July → **PD** resolution in retrospect (Scorpio PD = 8th lord + debilitated Moon = pressure; Sagittarius PD = Sun as lagna lord and lord of the 5th from AL = new job with higher status). A year later, the same native asked whether his career would be stable enough to buy a house — answered from the running MD/AD, plus the **yogada** rule for money and power |
+| 4 | *"if her friend's son would get an award or not"* | 20543–20594 | Tajaka **monthly** chart → Tajaka **sixty-hour** chart. See §5B.5 |
+| 5 | retro-timing a marriage during birthtime rectification | 20595–20669 | Vimsottari MD (Mercury as 7th lord in the 7th of navamsa) → AD candidates (Mars owning the 2nd and upapada and joining lagna lord; Jupiter) |
+
+**The pattern, stated once:** *pick the varga that owns the question → run that
+varga's dasha (Narayana for vargas, Vimsottari for general) → narrow MD → AD →
+PD → confirm with a transit → confirm with a second, independent dasha system
+(Sudarsana Chakra / Tajaka Patyayini) → apply any cultural or practical filter.*
+Rao never predicts from one apparatus.
+
+**What the product has of that chain:** Vimsottari MD/AD only. It has no
+Narayana dasa, no varga dashas, no Sudarsana Chakra dasa, no Tajaka annual or
+monthly chart, no Patyayini dasa, and — on the `/ask` path — no transits at
+all. So a "will I marry this year" answer from `/ask` is using **one of the
+seven** inputs Rao used to answer that exact question.
+
+### 5B.5 Rao REFUSES to answer a binary competitive outcome from a dasha
+
+**This is the most product-relevant passage in the book, and it should be read
+before any further work on the exam and job categories.** Real-life Example 4,
+lines 20559–20576, on whether an Oscar nominee would win:
+
+> *"For someone in the entertainment business, an Oscar nomination itself is a
+> major achievement. **We cannot look at the dasas one is running and conclude
+> whether one will win the award or not.** Because of the nomination, one will
+> get a lot of good publicity. If one doesn't get the award, one may be unhappy
+> on that night and the next couple of days. **We cannot say that one will not
+> get the award because a bad pratyantardasa is running or that one will get the
+> award because a good pratyantardasa is running.** We need to go much deeper
+> and look at the 1-2 days surrounding the award. We need to understand the
+> native's mood on the morning of March 27. That alone can say whether the
+> native won the award on March 26 or not. **Irrespective of whether one wins
+> the award or not, a few weeks before March 26 and a few months after March 26
+> are bound to be excellent in the native's career. The mood on March 27 is the
+> clinching factor."*
+
+Three things follow, and all three are citable:
+
+1. **A dasha does not settle a pass/fail.** Rao says it twice, in both
+   directions, about the finest dasha level he uses.
+2. **What a dasha DOES settle is the surrounding period's quality** — *"a few
+   weeks before … and a few months after … are bound to be excellent in the
+   native's career"* — which is exactly the shape of a legitimate answer: the
+   period, not the verdict.
+3. **His method of last resort is a 60-hour Tajaka chart read for the native's
+   MOOD**, not for the outcome. The product computes no Tajaka chart of any
+   kind, so it cannot do even this.
+
+**Finding for `prompts/ask.txt` (a finding, not a fix).** The file already
+forbids guaranteeing outcomes at lines 28 and 30. Rao supplies the *positive*
+form of that constraint: the corpus supports answering "what will this period
+be like for your studies / your career" and does **not** support answering
+"will you pass". The `general` category currently absorbs every exam question
+("interpret per question text") with no rule attached, and there is no
+studies/education category at all — `grep -ciE "exam|studies|education|student"`
+returns **0** in both `prompts/ask.txt` and `routes/ask.py`. The houses,
+charts and references for the studies question **are** now sourced — see
+`houses.md` → "Studies and exams" (D-24; 4th for education, 5th for
+intelligence/scholarship, 5th from AL for success in competition, 9th for
+higher studies, Mercury and Jupiter as karakas) — so the category can be
+grounded without inventing a prediction rule.
+
+### 5B.6 Rao's ethics constraint on any timing answer
+
+> *"An ethical astrologer will not scare a client by predicting death, but he
+> may caution a client gently before critical periods and suggest some remedial
+> measures."*
+> — Rao Ch. 13, already quoted at §8.5.5 above
+
+The whole of **Ch. 37 "Ethical Behavior of a Jyotishi"** (lines 20236–20299)
+is the long form. And Rao's remedy framing (`remedies.md` §1.1) is the
+constructive half: a timing answer that names a hard period should name a
+remedy with it.
+
+**Nothing in this section is a prediction rule, and nothing here was added to
+any prompt or to `chart.py`.** It is what the book says, with line numbers.
+
+---
+
 ## 6. Houses (Bhavas) — significations and structural principles
 
 > Source: P.V.R. Narasimha Rao, Ch. 7 ("Houses"). Cross-checked with BPHS.
@@ -1003,7 +1208,18 @@ These are short, attribution-friendly, and align with our stance. Use sparingly 
 
 ## 8.5 Reading methodology — Rao's funnel (engineering reference)
 
-> Source: P.V.R. Narasimha Rao, Ch. 13 ("Interpreting Charts").
+> Source: P.V.R. Narasimha Rao, Ch. 13 ("Interpreting Charts"), **plain
+> `pdftotext` lines 8723–9211** (chapter head at 8723; §13.1 Introduction 8724,
+> §13.2 Functional Nature 8734, §13.3 Baadhakas 8886, **§13.4 Analyzing Charts
+> 8949**, §13.5 Examples 9050, §13.6 Conclusion 9203). Pinned 2026-10-17 —
+> this section had section numbers but no ranges.
+>
+> The **five-step funnel in §8.5.1 below is §13.4.1 "Basic Guidelines", lines
+> 8955–9010** — (1) divisional chart 8955–8965, (2) house 8966–8972,
+> (3) reference 8973–8986, (4) house vs arudha 8987–8993, (5) influences
+> 8994–9005, (6) standard results 9006–9010. The family-member rules in
+> §8.5.5 are **§13.4.2, lines 9011–9049**.
+>
 > This section is for engineers building chart-analysis features. It is NOT
 > injected into LLM prompts — the natal prompt already instructs the LLM to
 > stay at the human-experience layer.

@@ -3,8 +3,11 @@
 Living document tracking what's been extracted from each source PDF,
 what's still pending, and how new articles should cite them.
 
-**Last updated:** 2026-08-27 (#216 — the `[BPHS]` citation licence withdrawn;
-corpus-dependency audit appended at the end)
+**Last updated:** 2026-10-17 (#191 — Rao textbook extraction: Ch. 6, Ch. 7,
+Ch. 16/25/26 + Part 6, line-pinning of Ch. 11, 13 and 34, and a **correction to
+this file's own chapter map**, which was wrong about Ch. 4-5, 6-8, 9-15 and the
+muhurta chapter. Provenance ledger at the end. Earlier: 2026-08-27, #216 — the
+`[BPHS]` citation licence withdrawn; corpus-dependency audit appended)
 
 ---
 
@@ -21,7 +24,7 @@ The two OCR-blocked scans (`varahmihirHorasastram.pdf`, `Numerology.pdf`) have b
 | # | File | Author | Text lines | Status | Priority |
 |---|------|--------|------------|--------|----------|
 | 1 | `Astrology For Beginners BVRaman_text.pdf` | BV Raman | 15,409 | ✅ **Fully extracted** | Done |
-| 2 | `vedic_astro_textbook.pdf` | P.V.R. Narasimha Rao | 20,669 | 🟡 **Partially cited** (Ch. 34 remedies; **§4.3 Other Upagrahas / Table 10 → `vedic_reference.md` §28**, 2026-08-26) | HIGH — full extraction pending |
+| 2 | `vedic_astro_textbook.pdf` | P.V.R. Narasimha Rao | 20,669 | 🟢 **Substantially extracted** — Ch. 3 (`grahas.md`), **Ch. 6 vargas (`divisional_charts.md`, 2026-10-17)**, **Ch. 7 houses + the four life areas (`houses.md`, 2026-10-17)**, Ch. 11 yogas (`yogas.md`, line-pinned 2026-10-17), Ch. 12 §12.5, Ch. 13 (`vedic_reference.md` §8.5, line-pinned), **Ch. 16/25/26 + Part 6 timing (`vedic_reference.md` §5B, 2026-10-17)**, Ch. 34 remedies (`remedies.md`, line-pinned 2026-10-17), §4.3 Other Upagrahas / Table 10 (`vedic_reference.md` §28, 2026-08-26). Still unextracted: Ch. 1, 2, 5, 8, 9, 10, 14, 15, 17–24, 27–33, 35–37 | MEDIUM — the high-value chapters are done |
 | 3 | `book1-for-CD.pdf` | P.V.R. Narasimha Rao (Lessons Vol. I) | 12,244 | ❌ Not extracted | MEDIUM |
 | 4 | `Astrology-e-book-compressed.pdf` | Chennareddy Vasudev | 5,220 | ❌ Not extracted | LOW (introductory) |
 | 6 | `Numerology-With Tantra, Ayurveda, and Astrology.pdf` | Harish Johari (Destiny Books / Inner Traditions, 1990) | 5,952 | 🟡 **Partially extracted** → `numerology.md` §1-§12 | MEDIUM |
@@ -99,30 +102,87 @@ audit does not re-derive them:
 
 The most systematically-organised source. 407+ numbered sections.
 
-**Sections extractable now (highest ROI):**
+### The map below was WRONG about four chapter ranges — corrected 2026-10-17
 
-- **Ch. 1** — Introduction: grahas, rasis, bhavas, nakshatras, tithis, ayanamsa, dasha overview
-- **Ch. 2** — Rasis in detail: characteristics, elements, gunas, directions, indications (2.1–2.3+)
-- **Ch. 3** — Planets in detail: characteristics, Vishnu avatars, benefics/malefics, deities, gunas, abodes (3.1–3.2.11+)
-- **Ch. 4-5** — Bhavas (houses) and their significations
-- **Ch. 6-8** — Vargas (divisional charts) in Rao's canonical treatment
-- **Ch. 9-15** — Yogas, doshas, Ashtakavarga
-- **Ch. 16-25** — Dasha systems (Vimshottari, Yogini, Chara, others)
-- **Ch. 26-33** — Predictive techniques, timing, muhurta
-- **Ch. 34** — Remedies (**already partially cited in vedic_reference.md §7A**)
-- **Ch. 35+** — Practical case studies, birthtime rectification
+The previous version of this map sent readers to the wrong chapters, and two
+extractions were planned against it. **Measured from the chapter heads with
+`grep -nE "^[0-9]+\. [A-Z]"` over plain `pdftotext` (20,669 lines):**
 
-**Sections priority for MD extraction:**
+| Ch. | Title | Plain line | The old map said |
+|---|---|---|---|
+| 1 | Basic Concepts | 308 | ✅ |
+| 2 | Rasis | 1319 | ✅ |
+| 3 | Planets | 1576 | ✅ |
+| 4 | **Upagrahas** | 2161 | ❌ "Bhavas (houses)" |
+| 5 | **Special Lagnas** | 2435 | ❌ "Bhavas (houses)" |
+| 6 | **Divisional Charts** | 2642 | ⚠️ said "Ch. 6-8"; vargas are Ch. 6 **alone** |
+| 7 | **Houses** | 3307 | ❌ mapped to "Vargas" |
+| 8 | **Karakas** | 3812 | ❌ mapped to "Vargas" |
+| 9 | **Arudha Padas** | 4186 | ❌ mapped to "Yogas, doshas" |
+| 10 | **Aspects and Argalas** | 4702 | ❌ mapped to "Yogas, doshas" |
+| 11 | Yogas | 5308 | ✅ (inside the 9-15 band) |
+| 12 | Ashtakavarga | 6555 | ✅ |
+| 13 | **Interpreting Charts** | 8723 | ❌ not named at all |
+| 14 | Topics Related to Longevity | 9212 | ❌ not named |
+| 15 | Strength of Planets and Rasis | 9476 | ❌ not named |
+| 16 | Vimsottari Dasa | 10311 | ✅ |
+| 17 | Ashtottari Dasa | 10801 | ✅ |
+| 18 | Narayana Dasa | 11066 | ✅ |
+| 19 | Lagna Kendradi Rasi Dasa | 12081 | ✅ |
+| 20 | Sudasa | 12240 | ✅ |
+| 21 | Drigdasa | 12371 | ✅ |
+| 22 | Niryaana Shoola Dasa | 12549 | ✅ |
+| 23 | Shoola Dasa | 12764 | ✅ |
+| 24 | Kalachakra Dasa | 12991 | ✅ |
+| 25 | **Transits and Natal References** | 13982 | ⚠️ the dasha band stopped at 25; Ch. 25 is transits |
+| 26 | Transits: Miscellaneous Topics | 15187 | ✅ |
+| 27 | Tajaka Chart Basics | 16124 | ✅ |
+| 28 | Techniques of Tajaka Charts | 16461 | ✅ |
+| 29 | Tajaka Yogas | 17260 | ✅ |
+| 30 | Annual Dasas | 17619 | ✅ |
+| 31 | Sudarsana Chakra Dasa | 17993 | ✅ |
+| 32 | Impact of Birthtime Error | 18200 | ✅ |
+| 33 | Rational Thinking | 18845 | ✅ |
+| 34 | Remedial Measures | 19161 | ✅ |
+| 35 | Mundane Astrology | 19529 | ✅ |
+| 36 | Muhurta or Electional Astrology | 19835 | ⚠️ the old map put muhurta in "26-33" |
+| 37 | Ethical Behavior of a Jyotishi | 20236 | ❌ not named |
+| — | **Part 6: Real-life Examples** | **20324–20669** | ❌ not named, and it is the most product-useful part of the book |
 
-| Priority | Chapters | Target MD file |
-|----------|----------|----------------|
-| P0 | Ch. 2 (Rasis) | Extend existing `rashis.md` with Rao's finer classifications |
-| P0 | Ch. 3 (Planets) | New `grahas.md` (currently we have per-planet articles but no consolidated ref) |
-| P1 | Ch. 4-5 (Bhavas) | Extend existing `houses.md` with Rao's Vishnu-limb assignments and finer rules |
-| P1 | Ch. 9-15 (Yogas/Doshas/Ashtakavarga) | New `yogas.md` + expand `vedic_reference.md §4` |
-| P2 | Ch. 6-8 (Vargas) | Extend existing `divisional_charts.md` |
-| P2 | Ch. 16-25 (Dashas) | New `dashas.md` (consolidate all dasha systems, not just Vimshottari) |
-| P3 | Ch. 34 (Remedies) | New `remedies.md` (deferred from BV Raman since Raman is thin here) |
+**There is no doshas chapter.** The old map's "Ch. 9-15 — Yogas, doshas,
+Ashtakavarga" implied one. Measured: `kuja` **0**, `dosha`/`dosa`/`dosham`
+**0**, `ashtama` **0** across all 20,669 plain lines. Rao's textbook carries no
+Manglik, Kuja-dosha, Sade-Sati or Kaal-Sarp doctrine at all. Recorded in
+`vedic_reference.md` §1.6 with the per-book counts.
+
+**Extraction status by chapter, 2026-10-17:**
+
+| Chapter | Target MD | Status |
+|----------|-----------|--------|
+| Ch. 3 (Planets) | `grahas.md` | ✅ done 2026-07-23; §12 combustion extended 2026-08-26 (cites under **`-layout`**) |
+| **Ch. 6 (Divisional Charts)** | `divisional_charts.md` | ✅ **done 2026-10-17** — Table 11, the four planes, varga groups + amsa ladders, vargottama, §11.7.2's Parashara rule, §12.5, §36.4 |
+| **Ch. 7 (Houses)** | `houses.md` | ✅ **done 2026-10-17** — §7.2 significations verbatim, §7.3 varga-scoping, §7.4.5/§7.4.6, plus the four life areas |
+| **Ch. 11 (Yogas)** | `yogas.md` | ✅ content done 2026-07; **line-pinned and the BPHS misattribution corrected 2026-10-17** |
+| Ch. 12 §12.5 (Ashtakavarga in vargas) | `divisional_charts.md` | ✅ done 2026-10-17 |
+| Ch. 13 (Interpreting Charts) | `vedic_reference.md` §8.5 | ✅ content done; **line-pinned 2026-10-17** |
+| **Ch. 16 / 25 / 26 / Part 6 (timing)** | `vedic_reference.md` **§5B** | ✅ **done 2026-10-17** — dasha→varga rule, Tripod of Life, transit rules, the five worked predictions, and Rao's refusal to call a competitive outcome from a dasha |
+| Ch. 34 (Remedies) | `remedies.md` | ✅ content done 2026-07-24; **line-pinned and the shipped assignments audited 2026-10-17** |
+| §4.3 Other Upagrahas / Table 10 | `vedic_reference.md` §28 | ✅ done 2026-08-26 |
+| **Ch. 2 (Rasis)** | extend `rashis.md` | ❌ **P0** — Rao's finer classifications, and the Vishnu-limb material (line 1337; it is a RASI doctrine, not a bhava one) |
+| Ch. 8 (Karakas) | `vedic_reference.md` §5A | 🟡 partially — chara/sthira karakas are there; not line-pinned |
+| Ch. 9 (Arudha Padas) | new target needed | ❌ **P1** — `houses.md` and §5B now cite A5/A7/A10/AL/upapada repeatedly with no arudha reference file |
+| Ch. 10 (Aspects and Argalas) | `aspects.md` | ❌ **P1** — `aspects.md`'s primary source is Raman, `[MISSING]` on most checkouts; argala is uncovered |
+| Ch. 14 (Longevity), Ch. 15 (Strength) | `vedic_reference.md` | ❌ P2 |
+| Ch. 17–24 (the other dasha systems) | new `dashas.md` | ❌ P2 — **§5B shows the product uses 1 of the 7 timing apparatus Rao used**, so this is now the clearest capability gap |
+| Ch. 27–29 (Tajaka), Ch. 30–31 | new `dashas.md` | ❌ P2 — Rao's method of last resort for a dated question |
+| Ch. 33 (Rational Thinking) | `vedic_reference.md` §8.2 | ✅ done |
+| Ch. 36 (Muhurta) | `grahas.md` §12.5, `muhurat` material | 🟡 partially |
+| Ch. 37 (Ethics) | `vedic_reference.md` §5B.6 | 🟡 cited, not extracted |
+
+**The old priority table is retired.** It listed `grahas.md`, `yogas.md` and
+`remedies.md` as "New" files; all three have existed since July 2026, and the
+instruction to create them is how a reader ends up duplicating a file instead
+of extending it.
 
 ---
 
@@ -301,6 +361,26 @@ purely because they mixed the two.
 
 **88,775 lines total.** Most of it is unextracted — see #191.
 
+**RE-MEASURED 2026-10-17 (#191): the corpus is now 14 books, 94,019 `-layout`
+lines, not 7 books / 85,979.** `scripts/corpus_search.py` prints the live list;
+it now includes **Cheiro, *Book of Numbers*** (8,389 `-layout` lines — which
+bears on #172/#160 and was previously recorded as "not in `data/`"), a
+Chaldean-numerology compilation (4,829), *Muhurta Chintamani* in Sanskrit
+(8,040) and four small number-compatibility PDFs. Note that
+`Astrology For Beginners BVRaman_text.pdf` reports **5,390** `-layout` lines
+against 15,409 plain, which is a much bigger gap than the ~30% the rest of this
+file assumes — worth checking before any absence is claimed against Raman.
+New absences measured 2026-10-17 across all 14 books, with the search run
+recorded beside each: `Surya Namaskar` **0** (4 spellings), `namaskar` **0**,
+`red lentil` **0** (3), `masoor` **0** (4), `Hanuman Chalisa` **0** (6),
+`Shani Beej` **0** (6), `Rahu Beej` **0** (4), `arohini` **0** (3),
+`avarohini` **0** (4), `arambha` **0** (3), `elinati` **0** (4),
+`ashtama shani` **0** (6), `Manglik` **0** (3). Present but not where it was
+assumed: `sesame oil` **2** (both Johari, Ayurvedic massage), `outsiders`
+**1** (Cheiro), `madhya` **1** (Raman AfB, unrelated), `sade sati` **1**
+(Rao *Lessons*, as `Sade Sathi`), `kuja dosha` **18** (Vasudev 11, Raman
+*Muhurtha* 7, **Rao's textbook 0**).
+
 **Measured absences — SUPERSEDED 2026-08-16, and the correction matters more than the
 note did.** This block used to record `Vashya` **0**, `Lo Shu` **0**, `Ashtakoot` **0**
 and `Yoni` as three false positives, marked "do not re-search". Adding
@@ -406,3 +486,80 @@ against tree. Neither reaches the book.
 What would resolve it is supplying the book (`--from-dir` / `--from-bucket`),
 after which the transcription can be verified against p.101 for the first time
 since it was written.
+
+
+---
+
+## Provenance ledger — Rao textbook extraction, 2026-10-17 (#191)
+
+**Flag, stated once and binding on every range below: PLAIN `pdftotext`, no
+`-layout`.** `data/vedic_astro_textbook.pdf` = **20,669 lines**, re-verified
+2026-10-17 against the fingerprint in the table at the top of this file.
+`data/book1-for-CD.pdf` (Rao *Lessons* Vol. I) = **12,244 lines**, also plain.
+`data/Astrology-e-book-compressed.pdf` (Vasudev) is cited under **`-layout`**
+(**4,558 lines**) because `grahas.md` §12.4's Vasudev citations and
+`corpus_search.py`'s line numbers both use that scheme and the two must agree.
+
+**`grahas.md` §12 remains under `-layout` (16,724 lines) and says so.** The two
+schemes are live in the corpus simultaneously. That is not ideal, but silently
+renumbering §12 would break every citation in it, and the right fix is that
+every section declares its flag — which they all now do.
+
+| MD file + section | Rao source | Plain lines | What it settles |
+|---|---|---|---|
+| `divisional_charts.md` → "Rao on the vargas" | §6.1–6.2 | 2643–2688 | the 16 divisions are Parashara's, 4 more are Jaimini/Tajaka; Rao computes 20 and excludes D-108/D-150 and the D-2/D-3/D-8/D-11 variants |
+| ↳ Table 11 significations | §6.3 | 3034–3098 | D-9 = marriage/dharma/basic skills/inner self; D-10 = career and achievements in society. Supersedes the uncited BPHS rows where they disagree; D-40/D-45's "maternal/paternal karmic inheritance" is CONTESTED |
+| ↳ the four planes | §6.4 | 3120–3140 | 1–12 physical, 13–24 mental, 25–36 sub-conscious, >36 karmic, with Rao's "find a guru first" footnote on the last group |
+| ↳ varga groups + amsa ladders | §6.6 | 3179–3280 | Shadvarga / Saptavarga / **Dasavarga (10)** / Shodasavarga memberships and the nine-step Dasavarga ladder |
+| ↳ vargottama defined | §11.7.3 fn | 6351 | same sign in Rasi and Navamsa — sources a rule that had no citation |
+| ↳ **the #398 B verdict** | §11.7.2 | 6151–6234 | Parashara's rule is a **ten-chart Dasavarga count** on the two yoga-forming planets, not a D-9 survival test. `prompts/natal.txt:65` is **CONTRADICTED** and its Parashara attribution is **WRONG** |
+| ↳ Ashtakavarga in every varga | §12.5 | 7808–7881 | Parasara did not restrict it to D-1; the Vajpayee example explains a career from **D-10's SAV** |
+| ↳ which chart "manifestation" means | §36.4 | 20217–20219 | *"Rasi is the chart of physical manifestation; navamsa is the chart of dharma and inner self; and, dasamsa is the chart of achievements in society."* |
+| `houses.md` → Rao's significations | §7.2 | 3346–3388 | all twelve houses verbatim; 2nd = wealth/assets, 11th = income/gains, 6th = enemies/service/servants |
+| ↳ house meaning is varga-scoped | §7.3 | 3402–3411 | the 4th house means education in D-24, vehicle in D-16, house in D-4, mother in D-12 |
+| ↳ positional logic + halves | §7.4.5–7.4.6 | 3741–3762 | trines prosper, quadrants sustain, upachayas grow, dusthanas obstruct, argala decides; 7th–12th visible, 1st–6th invisible |
+| ↳ **studies and exams** | §7.3.5 + §13.4.1 | 3505–3517, 8966–8993 | **success in competition = 5th from ARUDHA LAGNA in D-24**; scholarship = 5th from lagna; memory = 5th from paaka lagna; awards = A5. **The 6th house is NOT Rao's exam house** |
+| ↳ career / marriage / money | §7.2, §6.3, §6.5, §11.9, §18.5, Part 6 | see the file | 10th + D-10 + GL + AL + A10; 7th + D-9 + upapada; 2nd vs 11th + D-2 + HL |
+| `vedic_reference.md` **§5B.1** | §16.5.1 | 10486–10513 | *"A planet gives the results promised by its positions in various divisional charts"* + nine worked dasha-result examples |
+| ↳ **§5B.2 Tripod of Life** | §16.5.3 | 10543–10563 | Sun judges the **mahadasha**, Moon the **antardasha**, lagna the **pratyantardasha**; Ravi yogas pay in MD, Chandra yogas in AD, **Raja yogas primarily in PD** |
+| ↳ §5B.3 transits | §25.2, 25.3, 25.4, 25.7, §7.3.5 | 13994–13999, 14376–14398, 14440–14452, 15106–15115, 3517–3521 | the transit of the **Vimsottari dasha lord** is the important one; the master transit rule; coarse vs fine timing; Rao's own-research disclaimer on varga transits |
+| ↳ §5B.4 timing an event | Part 6 Ex. 1–5 | 20328–20669 | the full chain Rao uses — varga → varga dasha → MD → AD → PD → transit → a second dasha system → cultural filter. **The product has 1 of 7** |
+| ↳ **§5B.5 the refusal** | Part 6 Ex. 4 | 20559–20576 | *"We cannot look at the dasas one is running and conclude whether one will win the award or not."* The citable stance for "will I pass / will I get it" |
+| ↳ §8.5 pinned | Ch. 13 | 8723–9211 | the five-step funnel is §13.4.1, lines 8955–9010 |
+| ↳ **§1.6 Manglik** | absence | — | `kuja` 0, `dosha` 0, `ashtama` 0 in 20,669 lines. Vasudev (`-layout` 2566–2695) extracted instead |
+| ↳ **§2.7 Sade Sati** | *Lessons* Vol. I | 281–287, 474–478 | definition, 2.5/7.5 years and the mind rationale now sourced to a book we hold; the softening condition is **Saturn as lagna lord or yogakaraka**, not "strong"; **every phase name is UNSOURCED** |
+| `yogas.md` §7.4, §13, §14 | §11.1–11.11 | 5309–6549 | Ch. 11 subsection map; the amsa ladder re-attributed from "(from BPHS)" to **Sage Parasara** (line 6174); the 6° Raja-Yoga orb sourced (6163–6164, fn 6256) |
+| `remedies.md` §11, §12 | §34.1–34.6 | 19162–19523 | every section pinned; the eleven `prompts/natal.txt:68` assignments audited — 3 WRONG, 4 UNSOURCED, 4 CORRECT |
+
+### Findings this extraction produced, for whoever files them
+
+**Not filed. No issue was opened and no rule was edited.** `chart.py`,
+`matching.py`, `muhurat.py`, `numerology.py`, `prompts/*.txt` and
+`templates/*` are untouched by this work.
+
+1. `prompts/natal.txt:65` — "raja or wealth yoga surviving into D-9 is fully
+   manifested per Parashara" is **CONTRADICTED and misattributed**.
+2. `prompts/natal.txt:68` — **three WRONG remedy rows** (Sun→red lentils,
+   Moon→Shiva, Saturn→Hanuman) with sourced correct values, and **four
+   UNSOURCED** with measured absences.
+3. `vedic_reference.md:125` — "red lentils (masoor dal)" as a Tuesday/Mars
+   remedy is **UNSOURCED**: `red lentil` and `masoor` are **0 hits** in all
+   94,019 `-layout` lines. Rao's Mars grain is **toor daal**.
+4. `chart.py:1031` Manglik severity ladder — **UNSOURCED as a ladder**, and the
+   "1st house = moderate" tier is **counter-indicated** by the only corpus
+   source that lists the houses (Vasudev: *"Some include 1 bhava also"*).
+5. `chart.py:651–653` vs `i18n.py:172–174` vs `knowledge/` vs
+   `learn_registry.py` — **four surfaces, two different Sanskrit vocabularies**
+   for the Sade Sati phases, none of which is in any book we hold.
+6. `prompts/ask.txt` — no studies/education category
+   (`grep -ciE "exam|studies|education|student"` = **0**), one topic line per
+   category naming no classical rule, and **no transit data on the `/ask`
+   path**. The houses and charts for all four life areas are now sourced in
+   `houses.md`; Rao's refusal to call an outcome is in §5B.5.
+7. `divisional_charts.md` self-divergence — the file's own "a yoga is activated
+   only if it ALSO appears in the D-9" bullet is uncited and contested by Rao.
+   Flagged in place rather than deleted.
+8. `aspects.md`, `houses.md`, `rashis.md`, `divisional_charts.md` all still
+   name **BPHS** or a `[MISSING]` Raman as a primary source. Rao's Ch. 7 now
+   covers the houses from a book we hold; the BPHS lines in those headers are
+   still the #216 defect and were not touched here.
