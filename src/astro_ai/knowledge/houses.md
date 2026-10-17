@@ -554,7 +554,7 @@ the exam house" is not.** Karakas for learning: **Mercury** (scholarship) and
 | Gains from it | **11th** — *"income, gains, realization of hopes"* [§7.2, lines 3383–3384] |
 | Power and authority in career | **GL (ghati lagna)** in D-10 — *"Period of a planet exalted in GL in D-10 can give power and authority in career"* [§16.5.1 (3), line 10499] |
 | Status / how career is perceived | **AL** of D-10; *"Because AL shows status, planets associating with AL or the 5th or the 10th from it are favorable. If the lord of AL is in the 10th from it and aspects GL, probably his period will give a promotion."* [§6.5, lines 3165–3170] |
-| The workplace itself | **A10** — *"the 8th house from A10 (which can show the workplace)"* [Real-life Example 3, lines 20462–20465] |
+| The workplace itself | **A10** — *"the 8th house from A10 (which can show the workplace)"* [Real-life Example 3, lines 20464–20466] |
 | Books / published output (for authors) | **A3 in D-10**, read separately from the 3rd house which shows writing *skill* [§13.4.1 (5), lines 9001–9005] |
 
 ### Marriage — SOURCED, including the chart and the reference
