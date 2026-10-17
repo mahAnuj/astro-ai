@@ -341,21 +341,47 @@ dusthana lords.**
 
 ### 7.4 Magnitude — how strong is a Raja Yoga?
 
-Not all Raja Yogas are equal. Rao §11.7.2 lists the key factors:
+Not all Raja Yogas are equal. Rao §11.7.2 [lines 6151–6234] lists the key
+factors, in his order:
 
-1. **Freedom from affliction** — planets should not be aspected by
-   functional malefics or by naisargika malefics that are strong.
-2. **Closeness of the yoga-forming aspect or conjunction** —
-   should be within ~6°. Two planets in the same sign but 25°
-   apart form a very weak yoga.
-3. **Dignity of both planets** — should not be combust, debilitated,
-   in inimical signs, or in bad avasthas.
+1. **Freedom from affliction** — *"The two planets should be free from
+   afflictions from functional malefics."* [line 6161]
+2. **Closeness of the yoga-forming aspect or conjunction** — *"should be
+   close (say, within 6° or so)"* [lines 6163–6164], with a footnote:
+   *"Anything greater than 5 or 6 degrees is too large for a Raaja Yoga to
+   give its full results."* [line 6256]. Rao's own counter-example: Mercury at
+   2° and Venus at 26° of Taurus **do** form Dharma-Karmadhipati Yoga, *"however,
+   the two planets are too far apart for this yoga to give its full results"*
+   [lines 6165–6171].
+3. **Dignity of both planets** — *"should not be combust, debilitated or in an
+   inimical house or in bad avasthas (states)"* [lines 6172–6173].
 
-**Rao's Dasa-Varga amsa scale (from BPHS):**
+**This is the sourced orb for a yoga, and it is the only one in the corpus.**
+6° (or "5 or 6") for a Raja-Yoga conjunction or aspect, from Rao, with a
+worked counter-example. Do not confuse it with the 6° `chart.py` uses as a
+*combustion* threshold for the Manglik cancellation rule — that one is
+UNSOURCED (`grahas.md` §12.4) and the coincidence of the number is a trap, not
+a corroboration.
 
-Count in how many of the ten Dasa-Varga divisional charts each
-planet occupies an own, exaltation, or moolatrikona sign. The count
-determines the magnitude of the yoga:
+**Rao's Dasa-Varga amsa scale — which Rao attributes to SAGE PARASARA, not
+to BPHS as a book** [Rao §11.7.2, plain-`pdftotext` line 6174]:
+
+> *"In addition to the above factors, Sage Parasara recommended looking at the
+> amsas occupied by the 2 planets as per Dasa Varga (ten division) scheme."*
+
+**The attribution matters, and this line used to read "(from BPHS)".** Under
+the #216 ruling we cite the proximate source we actually read: Rao, who names
+Parashara as the authority. We do not cite BPHS, which is not in `data/` and
+which `verify_rule_citations.py` fails on unconditionally. Rao's own footnote
+(line 6253) does name *"Brihat Paaraasara Horaa Saastram"* while discussing
+Saalivaahana — citing *that* is citing Rao's footnote, which is legitimate;
+citing BPHS directly is not.
+
+Count in how many of the **ten** Dasa-Varga divisional charts — **D-1, D-2,
+D-3, D-7, D-9, D-10, D-12, D-16, D-30, D-60** [Rao §6.6.3, lines 3225–3228] —
+**each of the two yoga-forming planets** occupies an own, exaltation, or
+moolatrikona sign. The count determines the magnitude of the yoga
+[lines 6178–6198]:
 
 | Amsa name | Count | Yoga magnitude |
 |-----------|-------|---------------|
@@ -369,10 +395,25 @@ determines the magnitude of the yoga:
 | Brahmalokamsa | 8 | Divine only |
 | Airaavataamsa | 9 | Divine only (Vishnu incarnations like Rama, Krishna) |
 
-Simhaasanaamsa and above are extremely rare — Rao gives examples
-including Rajiv Gandhi (whose Simhaasanaamsa was weakened by
-functional malefics) and Akbar (whose lower Uttamamsa placement was
-compensated by many other yogas).
+Rao's own ceiling on this ladder, stated immediately after it:
+
+> *"Final Judgment: None of the above factors influences the end result
+> completely. We should look at all the factors and make the final judgment."*
+> — line 6199
+
+Simhaasanaamsa and above are extremely rare — and Rao's two worked examples are
+there precisely to show the count is not decisive in either direction.
+**Rajiv Gandhi** [lines 6203–6212] had Raja-Yoga planets in Simhaasanaamsa, the
+"emperor of the whole world" rung, but they sat more than 8° apart with
+functional malefics on them: *"So the Yoga is pretty weak … In the end, he only
+became India's prime minister and not an 'emperor of the whole world'."*
+**Akbar** [lines 6213–6225] was a great emperor with his Raja-Yoga planets only
+in Uttamaamsa and Paarijaataamsa, because they were *"less than a degree
+apart"* and strong in other yogas. Counts 6–9 Rao reserves outright for
+*"divine persons such as Svaayambhuva Manu … Brahma (Creator!!) and Vishnu's
+incarnations such as Sri Rama and Sri Krishna"* [lines 6195–6198] — so the
+ladder's top four rungs are not reachable by a human chart and should never be
+rendered to a user as a possible result.
 
 ### 7.5 Additional Raja Yoga combinations (Rao §11.7.3)
 
@@ -480,6 +521,120 @@ a line, etc.). Complex and less commonly named than the yogas above.
   the Sanskrit name + effect. In the LLM-generated prose we should
   say "you have a warrior-nature classical combination" and let the
   panel carry the technical detail.
+
+---
+
+## 13. Yogas in divisional charts — Rao's actual rule (added 2026-10-17, #191)
+
+**All line ranges in this section and in §14 are PLAIN `pdftotext`** (no
+`-layout`), giving `data/vedic_astro_textbook.pdf` **20,669** lines — the
+fingerprint `SOURCES.md` records. `grahas.md` §12 cites the same book under
+`-layout` (16,724 lines) and says so; these ranges will not resolve against
+those.
+
+Three statements, and together they are the whole of Rao's doctrine on this:
+
+> **"Many yogas are applicable in divisional charts. When we use yogas in
+> divisional charts, we should interpret the results ascribed to a yoga based
+> on the matters signified by the divisional chart."**
+> — §11.1, lines 5320–5323
+
+> **"When using yogas in divisional charts, adapt the results to the matters
+> signified by the chart. All the great results ascribed to some yogas may not
+> materialize in reality, due to weaknesses in them. Unless a yoga is very
+> strong, all the results cannot expected. Just one yoga cannot make or break a
+> personality, unless it is very powerful. In the case of yogas with many
+> conditions, partial results may sometimes be experienced if all the
+> conditions are not satisfied."**
+> — §11.11 Conclusion, lines 6543–6549
+
+> *"Because Mercury and Venus are with Sun or a sign away from him most of the
+> time, the following yogas are very common in rasi chart. However, they are
+> less common in divisional charts. One can apply these yogas in D-9 and D-10
+> in particular."*
+> — §11.2 (Ravi Yogas), lines 5350–5353
+
+**So a yoga in a varga is RE-INTERPRETED into that varga's sphere, never
+amplified.** Rao's worked instance is Budha-Aditya: *"This yoga is the most
+powerful in divisional charts like D-10 … Suppose someone has Sun and Mercury
+together in Leo in D-10. Then that person has a powerful Budha-Aditya yoga in
+career."* [§11.2.4 "Nipuna Yoga", plain lines **5395–5400**; the same passage
+is `-layout` lines 4239–4245, which is how `grahas.md` §12 would cite it] — the yoga's result is *scoped to career* because D-10 is the
+career chart, not strengthened because it recurs.
+
+### 13.1 Finding — `prompts/natal.txt:65` is CONTRADICTED (#398 B)
+
+The prompt asserts "a raja or wealth yoga surviving into D-9 is fully
+manifested **per Parashara**". Measured against Rao:
+
+| Element of the claim | Rao |
+|---|---|
+| "surviving into D-9" as the test | **Not his test.** The Parashara-attributed varga rule is a count over the **ten** Dasavarga charts applied to the two yoga-forming planets' dignity (§11.7.2 line 6174; group at §6.6.3 lines 3225–3228) |
+| "fully manifested" | **Denied.** §11.11 lines 6545–6547; §11.7.2's *"Final Judgment"* line 6199; and the Rajiv Gandhi example, Simhaasanaamsa yet *"pretty weak"* |
+| "per Parashara" | **Misattributed.** Parashara is named for the ten-chart count, not for a D-9 gate. This is the #216 defect class: a real authority's name on a claim it was not read for |
+| the sphere a raja/dhana yoga belongs to | **D-1 and D-10, not D-9.** *"Rasi is the chart of physical manifestation; navamsa is the chart of dharma and inner self; and, dasamsa is the chart of achievements in society."* (§36.4, lines 20217–20219). Raja yoga = *"power and prosperity"* (§11.7, lines 6109–6110); dhana yoga = *"abundant riches"* (§11.9, line 6414) |
+
+Where D-9 does appear in Rao's Raja Yogas it is one of a set, and it
+**constitutes** the yoga rather than confirming one: §11.7.3 (7) requires the
+same planet to aspect lagna in **all six** shadvarga charts (lines 6295–6297);
+§11.7.3 (9) requires D-1, D-9 **and** D-3 (lines 6306–6308).
+
+Full treatment, including the D-9 vs D-10 significations table and the
+divergences from the older uncited material, is in
+`divisional_charts.md` → "Yoga strength across the vargas".
+
+**This is a finding, not a fix.** `prompts/natal.txt` is unmodified.
+
+---
+
+## 14. Provenance — Rao Ch. 11, line by line (added 2026-10-17, #191)
+
+This file was written from Rao Ch. 11 with section numbers but no line ranges.
+Pinned now so the next audit does not re-read the chapter.
+
+| Rao section | Title | Plain-`pdftotext` lines |
+|---|---|---|
+| §11.1 | Introduction (incl. the divisional-chart rule and the "read more" caution) | 5309–5348 |
+| §11.2 | Ravi Yogas (Vesi, Vosi, Ubhayachari) | 5349–5401 |
+| §11.3 | Chandra Yogas (Sunapha, Anapha, Duradhara, Kemadruma, Chandra-Mangala, Adhi) | 5402–5492 |
+| §11.4 | Pancha Mahapurusha Yogas | 5493–5591 |
+| §11.5 | Naabhasa Yogas | 5592–5795 |
+| §11.6 | Other Popular Yogas (Subha, Asubha, Gaja-Kesari, Guru-Mangala, Amala, Parvata, Kalanidhi, Chamara, Sankha, Bheri, Kahala, Khadga, Kusuma, Matsya, Kalpadruma, Budha-Aditya/Nipuna) | 5796–6107 |
+| §11.7 | Raaja Yogas | 6108–6336 |
+| §11.7.1 | Basics (quadrant/trine lord association; the three kinds of association; Dharma-Karmadhipati; Vipareeta) | 6112–6150 |
+| **§11.7.2** | **Magnitude of a Raaja Yoga** | **6151–6234** |
+| §11.7.3 | More Raja Yogas (18 numbered combinations) | 6235–6336 |
+| §11.8 | Raaja Sambandha Yogas | 6337–6412 |
+| §11.9 | Dhana Yogas (per-lagna combinations, attributed to Parasara at line 6419) | 6413–6489 |
+| §11.10 | Daridra Yogas | 6490–6534 |
+| §11.11 | Conclusion (the hedges) | 6535–6549 |
+
+Two §1 claims in this file now carry their source:
+
+- The quote in §1 — *"for a yoga to be fully present, all the required
+  combinations must be present and the participating planets must be strong"* —
+  is verbatim Rao, **§11.6, lines 5798–5800**, and the sentence before it adds
+  *"Sometimes the results of a dasa may be felt even if all the required
+  combinations are not present."*
+- §9's Dhana Yogas: Rao's per-lagna combinations are introduced as *"In
+  addition to these general principles, Parasara listed specific combinations
+  for various lagnas. In all these combinations, the strength of the
+  participating planets decides the magnitude of results experienced."*
+  **lines 6419–6421**. So the magnitude rule applies to wealth yogas on the
+  same terms as to raja yogas — which is the other half of why
+  `prompts/natal.txt:65`'s "raja **or wealth** yoga" phrasing does not get a
+  different answer.
+
+Two things Rao's Ch. 11 does **not** give, recorded so nobody cites him for
+them:
+
+- **No orb for anything but the Raja-Yoga association.** 6° (§11.7.2) is
+  stated for the conjunction/aspect forming a raja yoga. Rao gives no orb for
+  Chandra-Mangala, for Gaja-Kesari, or for any other yoga in the chapter.
+- **No numeric scoring.** The amsa ladder is the only quantified scale in the
+  chapter, and it ranks *outcomes in mythological terms*, not points. Any
+  numeric yoga-strength score in this product is our own construct and must
+  not be attributed to him.
 
 ---
 
