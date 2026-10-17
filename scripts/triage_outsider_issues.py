@@ -457,7 +457,9 @@ def main(argv: list | None = None, gh: Gh = run_gh, resolver: Resolver | None = 
     # "no resolver, therefore everyone is trusted/untrusted" is exactly what must not happen.
     if not resolver_path.is_file():
         print(f"FAIL: {resolver_path.name} is not present, so no issue can be classified as an "
-              "outsider's. Nothing was labelled or commented. (#363 has not landed.)", file=sys.stderr)
+              "outsider's. Nothing was labelled or commented. It IS tracked on `main` (#363 "
+              "landed), so this means it was deleted or the checkout is incomplete -- not that "
+              "a PR is still open.", file=sys.stderr)
         return EXIT_FAIL
     if resolver is None:
         resolver = lambda n: run_resolver(n, args.repo)  # noqa: E731
