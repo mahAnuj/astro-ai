@@ -446,7 +446,7 @@ single-planet dignity.
 **This settles `prompts/natal.txt:65`. Verdict: CONTRADICTED.**
 
 Rao's one Parashara-attributed rule about yogas and vargas is in **§11.7.2
-"Magnitude of a Raaja Yoga"** (lines 6153–6206). Its three primary factors are
+"Magnitude of a Raaja Yoga"** (lines 6151–6234). Its three primary factors are
 not varga-based at all:
 
 1. the two planets must be **free from affliction by functional malefics**

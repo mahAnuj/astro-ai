@@ -127,6 +127,94 @@ rule-set. Each rule is tagged **cancels** (dosha is fully nullified) or
 
 ---
 
+### 1.6 Rao's textbook does not treat Mangal Dosha at all — measured 2026-10-17 (#191)
+
+**This is an absence finding on the corpus's canonical Vedic authority, and it
+bears directly on §1.3 rule 18 (combust Mars), on §1.1's severity claim, and on
+`chart.py`'s three-tier severity grading.**
+
+Measured against `data/vedic_astro_textbook.pdf` (P.V.R. Narasimha Rao, *Vedic
+Astrology: An Integrated Approach*), plain `pdftotext`, **20,669 lines** — the
+fingerprint `SOURCES.md` records:
+
+| term | hits in Rao's textbook |
+|---|---|
+| `kuja` | **0** |
+| `dosha` / `dosa` / `dosham` | **0** |
+| `mangal` | **3**, none of them a dosha — line 5476 `Chandra-Mangala Yoga`, line 5828 `Guru-Mangala Yoga`, line 19876 *"Mangal sutra worn by a lady"* |
+| `ashtama` | **0** |
+
+So **the book this repo treats as its canonical Vedic authority contains no
+Manglik / Kuja-dosha doctrine whatsoever** — no definition, no house list, no
+cancellation set, no severity grading. He has a 36-section predictive apparatus
+and a marriage-timing method (§5.5 here, Rao §16.5 and §31.4) and never invokes
+the dosha.
+
+That is not evidence the dosha is fake. It is evidence that **Rao cannot be
+cited for anything about it**, including for anything the shipped code does,
+and that the doctrine reaches this product only through books we hold in
+weaker form or do not hold at all.
+
+**What the corpus actually holds on Kuja dosha**, re-measured 2026-10-17 across
+**14 books, 94,019 `-layout` lines** (`scripts/corpus_search.py "kuja dosha"`):
+
+| Book | hits | What it gives |
+|---|---|---|
+| Vasudev, *Astrology* (`Astrology-e-book-compressed.pdf`) | **11** | A full discussion — and a hostile one |
+| Raman, *Muhurtha or Electional Astrology* (1948) | **7** | The "ANTIDOTES FOR KUJA DOSHA" list — see `grahas.md` §12.4 |
+| Rao, *Vedic Astrology: An Integrated Approach* | **0** | — |
+| Rao, *Lessons on Vedic Astrology* Vol. I | **0** | — |
+| everything else | 0 | — |
+
+#### 1.6.1 Vasudev's treatment — the house list, and his rejection of the cancellations
+
+Vasudev, *Astrology* (Chennareddy Vasudev), section *"The excessive unwanted
+importance of 'Kuja Dosham'"*, printed pp. **90–94**, `-layout` lines
+**2566–2695** (heading at 2566). `Astrology-e-book-compressed.pdf` is `-layout` 4,558 lines /
+plain 5,220 lines; the ranges here are **`-layout`**, matching
+`corpus_search.py`'s numbering and `grahas.md` §12.4's Vasudev citations.
+
+- **Houses** (lines 2568–2575): *"It is said that 'Kuja dosham' exists if MARS
+  is placed in 2,4,7,8,12 bhavas of a horoscope. **Some include 1 bhava also.**
+  Some go further and say that the above bhavas to be checked from Moon and
+  Venus also. If truely checked, we won't find any body without kuja dosham.
+  Hence, for our discussion, let us limit Kuja doshan from ascendant only."*
+  — so **the 1st house is optional even in his own framing**, and the
+  Moon/Venus references are something he explicitly declines to use.
+- **He opens by denying its pedigree** (line 2568): *"The 'Kuja Dosham' is not
+  to be found in the standard astrological texts."*
+- **Per-house effects** (lines 2630–2662), which is the nearest thing in the
+  corpus to a severity ordering: 2nd — family fights, undiplomatic speech; 4th
+  — depression, dullness, family fights, *"4th mars is suitable for gain of
+  lands"*; 7th — *"damages the relationship with ego, arguements, agression …
+  If other malefics aspect or associate, then seperation takes place"*; 8th —
+  *"very bad for women since it is a husbands location in a woman's chart … if
+  aspected or associated with malefics, tries to kill the husband"*; 12th —
+  bed comforts, misunderstanding, non-compatibility.
+- **He rejects Mars-exclusivity** (lines 2662–2680): replace Mars with Saturn,
+  Sun, Rahu or Ketu and *"similar problems at a different scale can be
+  experienced"*; Sun, Saturn and Rahu are *"Terrorist Planets"* whose lone
+  placement in the 7th is *"as serious as that of MARS placement"*; *"giving
+  excessive importance to only MARS in the name of 'Kuja Dosham' is wrong."*
+- **He rejects the cancellation rules specifically** (lines 2613–2617), already
+  recorded in `grahas.md` §12.4: of a pundit who applied *"various dictums
+  given in texts for compensation conditions of Kuja dosham"* — *"But these
+  rules were not given by maharshis and I found them not working well in many
+  circumstances."*
+
+#### 1.6.2 Verdicts for the open findings
+
+| Finding | Verdict | Basis |
+|---|---|---|
+| **Combust Mars cancels Manglik** (§1.3 rule 18, `chart.py` `mars_combust`, `effect="cancels"`, `source="Classical matching practice"`) | **still UNSOURCED, and now absent from the canonical authority too.** No change to the #218 verdict; the evidence against it is stronger | `kuja`/`dosha` = **0** in Rao's textbook (20,669 plain lines) and **0** in Rao's *Lessons*; absent from Raman's dedicated antidote list (`grahas.md` §12.4); Vasudev discusses the compensations at length and does not list it, while rejecting the whole family of them |
+| **Cancellation conditions and their orbs, generally** | **UNSOURCED in Rao; CONTESTED in the corpus.** Rao gives none because he gives no dosha. Raman gives a list that does not match `chart.py`. Vasudev gives a list and then disowns it. The only quantified orb anywhere near this is Rao's **6°** for a *Raja-Yoga* association (`yogas.md` §7.4) — a different rule about a different thing | as above |
+| **The severity ladder: "high" (7th/8th) / "moderate" (1st/4th/12th) / "low" (2nd)** — `chart.py:1031`, graded at `chart.py:1033–1037` | **still UNSOURCED as a ladder.** Rao does not grade it. Two parts have weak corroboration and one is positively counter-indicated | **"7th and 8th most serious"**: weakly corroborated by Vasudev's per-house prose (7th = separation at line 2648, 8th = *"tries to kill the husband"* at line 2655) — but he grades no tiers and the 8th reads worse than the 7th in his text, which is the opposite of a tie. **"1st in the moderate tier"**: counter-indicated — Vasudev's own list is 2/4/7/8/12 and the 1st is *"Some include 1 bhava also"* (line 2570). **"2nd alone is lowest"**: not stated anywhere |
+| **§1.1's "The 7th and 8th are considered most serious"**, sourced to *BPHS*, *Mansagari*, *Jataka Parijata* | **citation defect, #216 class.** All three books are absent from `data/` and absent from `fetch_corpus.py`'s registry. The claim is now *partly* traceable to Vasudev, who is present — but Vasudev is an introductory text that opens by saying the dosha is not in the standard texts, which is a different claim from the one §1.1 makes | `SOURCES.md` → "Which books our claims depend on" |
+
+**Nothing here changes a rule.** `chart.py` and `matching.py` are untouched.
+
+---
+
 ## 2. Sade Sati (Saturn's 7.5-year transit through 12th, 1st, 2nd from Moon)
 
 ### 2.1 Definition
@@ -174,6 +262,90 @@ if active.
 - Service to elderly, labourers, the disabled — direct Saturn karma
 - Avoid taking on new debt, new marriages, major risks during Madhya phase
 - Sapphire (neelam) — **never without expert review**; a wrong sapphire can devastate within days
+
+---
+
+### 2.7 Sade Sati — what is sourced and what is not, measured 2026-10-17 (#191)
+
+**§2.1 above cites *Phaladeepika*, *Brihat Jataka* and *Saravali*. None of the
+three is in `data/`, and none is in `fetch_corpus.py`'s registry** — the same
+#216 defect the `[BPHS]` licence was withdrawn for. What follows replaces that
+citation with a book we hold, and marks what remains unsourced.
+
+#### 2.7.1 SOURCED: the definition and the durations — Rao, *Lessons* Vol. I
+
+`data/book1-for-CD.pdf` (P.V.R. Narasimha Rao, *Lessons on Vedic Astrology*,
+Vol. I), **plain `pdftotext`, 12,244 lines**. Lesson #1, numbered note **11**,
+printed p. 4, **lines 281–287**:
+
+> *"The periods when transit Sa is posited in three signs i.e., the sign behind
+> the Moon, the sign of the Mo and the sign ahead of the Mo are called
+> Sade-Sati period. This period is important because Mo is the significator of
+> the mind and Saturn's placement in these signs may cause much trouble to
+> mind. So each Sade-sati period is for 2.5 years and the total is 7.5 years
+> for one full rotation of the zodiac."*
+
+That sources, from a book in `data/`:
+
+- the three-sign span — **12th from Moon, Moon's own rasi, 2nd from Moon**;
+- **2.5 years per phase, 7.5 years total**;
+- the **rationale** — Moon is the significator of the mind, so the affliction is
+  mental. §2.2's "mental burden" column is Rao's own reasoning, not ours.
+
+#### 2.7.2 SOURCED: why a strong Saturn softens it — and how strong
+
+Same book, Lesson #1 note **29**, printed p. 7, **lines 476–478**:
+
+> *"If Sa is LL or Yogakaraka, it is hardly going to trouble the person even in
+> a Sade Sathi Period."*
+
+**This sources §2.3's third bullet, but narrower than §2.3 states it.** §2.3
+says *"A strong natal Saturn (own/exalted/in good house) significantly softens
+Sade Sati."* Rao's condition is **functional**, not dignity-based: Saturn as
+**lagna lord** or as **yogakaraka** for the ascendant. Own-sign, exaltation and
+"good house" are *our* generalisation and remain **UNSOURCED**. The distinction
+is load-bearing — Saturn is lagna lord for Capricorn and Aquarius and
+yogakaraka for Taurus and Libra, which is a specific, computable set, whereas
+"strong" is not.
+
+Note **28** on the same page (lines 474–475) gives the general frame our
+dasha/transit material rests on: *"Position in the natal chart is the main
+thing – shows what one has to go through in life. Transits show the time when
+one has to go though it."* And note **27**: *"In which area Sa wants the native
+to work hard depends upon his position in different Varga chakras."*
+
+#### 2.7.3 UNSOURCED: every phase NAME, in both the engine's and this file's spelling
+
+Measured with `scripts/corpus_search.py --absent` across **14 books, 94,019
+`-layout` lines**:
+
+| Term | Where it is used in this repo | Hits |
+|---|---|---|
+| `arohini` | `chart.py:651`, `i18n.py:172` — "Rising Phase (Arohini)" | **0** (3 spellings) |
+| `avarohini` | `chart.py:653`, `i18n.py:174` — "Setting Phase (Avarohini)" | **0** (4 spellings) |
+| `arambha` | this file §2.1/§2.2, `learn_registry.py:635`, `templates/learn/career-during-sade-sati.html` | **0** (3 spellings) |
+| `madhya` | this file §2.1/§2.2, the article, the registry | **1** — Raman, *Astrology for Beginners*, and not about Sade Sati |
+| `uttara` | this file §2.1/§2.2, the article, the registry | 48 — **all nakshatra names** (Uttara Phalguni / Uttaraashaadha etc.), not phase names |
+| `elinati` (the Telugu name) | nowhere | **0** |
+| `ashtama shani` | this file §2.4 | **0** (6 spellings) |
+
+**Rao names no phases.** He describes them positionally — *"the sign behind the
+Moon, the sign of the Mo and the sign ahead of the Mo"* — and stops. So:
+
+| Open finding | Verdict |
+|---|---|
+| Engine says `arohini` / `avarohini`; `knowledge/` says `Arambha` / `Uttara`; both sets absent from the corpus | **BOTH UNSOURCED. The corpus cannot settle it, and the right answer is NOT to pick one.** This is a CONTESTED-by-silence case: the names are real in modern practice (they are in wide circulation) but no book we hold uses either set, so neither can be presented to a reader as classical |
+| The *incoherence* between the two — the same product calls the same phase two different Sanskrit names on two surfaces | **A real defect, and it is the defect.** It is a consistency bug, not a sourcing one, and it is fixable without a source: pick one vocabulary, or describe the phases positionally as Rao does ("Saturn in the sign before your Moon") and drop the Sanskrit |
+| `Madhya` as the peak-phase name | **UNSOURCED for this use.** Its single corpus hit is unrelated |
+| §2.4 Ashtama Shani (Saturn in the 8th from Moon, ~2.5 years), sourced to "Classical transit literature; BV Raman, KN Rao" | **UNSOURCED.** `ashtama shani` = 0 across all 14 books, and `ashtama` = 0 in Rao's textbook. KN Rao is not in `data/` and not in the registry |
+
+**Positional description is always safe and always sourced.** "Saturn moving
+through the sign before your Moon sign, then your Moon sign, then the one
+after — about two and a half years each" is Rao's own formulation and needs no
+Sanskrit label.
+
+**Nothing here changes a rule.** `chart.py:651–653` and `i18n.py:172–174` are
+untouched; so is the article.
 
 ---
 
