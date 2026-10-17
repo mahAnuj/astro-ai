@@ -564,8 +564,13 @@ def format_guna_milan_for_prompt(guna, pair_label: str | None = None) -> str:
         sev = "gravest form" if nd.grave else ("reduced" if nd.alpa else "present")
         lines.append(f"Nadi dosha: {nd.nadi} Nadi — {sev}")
         lines += [f"  mitigation: {m}" for m in nd.mitigations]
-        lines.append("  NOTE: Nadi has NO cancelling conditions in this tradition and "
-                     "gains no points from any mitigation.")
+        # Fed the same way as `bd.unevaluated` above. The overlay names the
+        # regional/community exemptions; without this line the model is told
+        # they exist and is never shown what /matching says about them (#397).
+        lines += [f"  not evaluated: {u}" for u in nd.unevaluated]
+        lines.append("  NOTE: Nadi gains no points from any mitigation, and is not "
+                     "among the Bhakoot parihāras. Regional/community exemptions "
+                     "exist in the text and are not applied here.")
 
     return "\n".join(lines)
 
