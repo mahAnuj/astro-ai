@@ -446,8 +446,19 @@ def test_held_back_candidates_are_listed_by_the_next_run(resolver_file, capsys):
     run(issues, path=resolver_file, argv=["--cap", "2", "--apply"], gh=gh)
     assert "STAGE2: 1 2\n" in capsys.readouterr().out
 
-    # Run 2 against the state run 1 actually left behind: #1 and #2 now carry the label.
-    done = five(labelled=(1, 2))
+    # Run 2 against the state run 1 ACTUALLY left behind, READ BACK from the gh calls --
+    # never a hand-written set. Hard-coding `labelled=(1, 2)` here is what made an earlier
+    # version of this test unable to fail for the defect it names: under the defect run 1
+    # labels all five, so the real state is (1,2,3,4,5) and run 2 lists NOTHING. A fixture
+    # that states the post-fix outcome assumes the fix it is meant to guard.
+    labelled = tuple(sorted(
+        int(c[2]) for c in gh.writes()
+        if c[:2] == ["issue", "edit"] and "--add-label" in c and t.LABEL_REVIEWED in c))
+    assert labelled == (1, 2), (
+        f"run 1 wrote the label for {labelled} -- the cap must bound the WORK, not just the "
+        "printout, or the surplus is labelled and then discarded")
+
+    done = five(labelled=labelled)
     run(done, path=resolver_file, argv=["--cap", "2", "--apply"], gh=FakeGh(done))
     assert "STAGE2: 3 4\n" in capsys.readouterr().out
 

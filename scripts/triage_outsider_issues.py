@@ -27,11 +27,16 @@ other code, a timeout, or the file being absent = FAIL CLOSED: no label, no comm
 script exits non-zero and names the cause on stderr. Labels and `author_association` are
 deliberately not consulted -- a second predicate for one fact is how the two drift.
 
-*** THE RESOLVER CONTRACT IS MOCKED UNTIL #363 LANDS. ***
-`resolve_provenance.py` is not on `main` (PR #363 is open). Until it is, this script is INERT
-by design: it exits 2 naming the missing file. The tests inject a fake runner for the three
-exit codes and therefore prove nothing about the real resolver. One real invocation on a known
-outsider issue is owed once #363 merges.
+*** THE RESOLVER IS REAL NOW, AND THE CONTRACT IS READ FROM TWO SIGNALS. ***
+`resolve_provenance.py` landed on `main` with #363, so the resolver-presence gate no longer
+makes this script inert -- it clears that check and proceeds to `gh`. Inertness now rests
+SOLELY on nothing invoking this script (no workflow, no command references it), which is a
+thinner margin than the old "the file is missing" mechanism, so do not rely on it.
+
+Provenance is read from the printed verdict line AND the exit status TOGETHER, never the
+status alone: a crashing resolver exits 1, which is OUTSIDER's code, so the status by itself
+cannot tell a verdict from a traceback (#377 DEF-1). `tests/test_triage_resolver_contract.py`
+drives the real resolver through a real subprocess, offline, and pins that coupling.
 
 WHAT THIS DELIBERATELY DOES NOT DO
 ----------------------------------
@@ -39,7 +44,7 @@ WHAT THIS DELIBERATELY DOES NOT DO
   fetches whatever URL a `repro:` names (urllib follows redirects, off-host included) and whose
   `POST /reading` fixtures spend production Groq tokens on a stranger's say-so. There is no
   probe code here at all. (Chief's ruling on #367, constraint 5, option b.)
-* No stage 2. `--cap N` bounds how many stage-2 candidates are LISTED (`STAGE2: n n n`); nothing
+* No stage 2. `--cap N` bounds how many stage-2 candidates are EXAMINED per run; nothing
   is dispatched and no LLM is called.
 * No close path. There is no `gh issue close`, `gh pr close`, `--state closed` or state-mutating
   `gh api` call anywhere in this file; a test scans for every one of them and
@@ -438,7 +443,7 @@ def main(argv: list | None = None, gh: Gh = run_gh, resolver: Resolver | None = 
     ap.add_argument("--repo", default=os.environ.get("GH_REPO") or os.environ.get("GITHUB_REPOSITORY", ""))
     ap.add_argument("--apply", action="store_true", help="write labels and comments (default: read-only)")
     ap.add_argument("--cap", type=int, default=DEFAULT_CAP,
-                    help="at most this many stage-2 candidates are listed per run")
+                    help="at most this many stage-2 candidates are EXAMINED per run; the rest are deferred untouched for the next run, not dropped")
     ap.add_argument("--limit", type=int, default=DEFAULT_LIMIT,
                     help="how many open issues to read (gh issue list --limit)")
     args = ap.parse_args(argv)

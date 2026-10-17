@@ -826,6 +826,20 @@ MUTATIONS = [
      "select(true)",
      "test_a_fork_head_is_never_a_candidate"),
 
+    ("#374: the sweep stops checking whether its candidate can merge",
+     ".github/workflows/agent-merge.yml",
+     'if [ "$m" = "MERGEABLE" ]; then',
+     'if true; then',
+     "test_a_conflicting_candidate_is_skipped_for_the_next_one"),
+
+    # UNKNOWN is what GitHub answers while it computes mergeability. Accepting
+    # it makes the failure intermittent, which is worse than reliable.
+    ("#374: the sweep accepts UNKNOWN as good enough",
+     ".github/workflows/agent-merge.yml",
+     'if [ "$m" = "MERGEABLE" ]; then',
+     'if [ "$m" != "CONFLICTING" ]; then',
+     "test_unknown_is_not_treated_as_mergeable"),
+
     # The defect this set was written after: providers.py also returns a BARE
     # `429` when the error text names neither window, and the first version of
     # the constant listed only 413/429_tpm/429_tpd -- so a real rate limit
@@ -931,11 +945,28 @@ MUTATIONS = [
     # #377 DEF-2. The cap must bound the WORK. Capping only the printout left the surplus
     # labelled, and `already_done` reads that label, so the next run skipped the held-back
     # issues before they could be listed -- discarded, not deferred.
+    #
+    # TWO ROWS, because `... and False` is NOT the defect. It removes deferral AND the
+    # printout cap, so it fails loudly on several assertions at once and proves less than it
+    # appears to. QA round 2 made the point: the EXACT restoration keeps the cap branch and
+    # its printed strings byte-identical and merely applies the decision before deferring --
+    # the surplus is labelled and then held back, which is precisely how the bug was silent.
+    # Keep both: the blunt one guards the branch existing, the exact one guards the ordering.
     ("#377: --cap bounds the printout but not the work, so held-back candidates are labelled",
      "scripts/triage_outsider_issues.py",
      "        if d.label == LABEL_REVIEWED and len(stage2) >= args.cap:",
      "        if d.label == LABEL_REVIEWED and False:",
      "test_the_cap_bounds_the_stage2_list"),
+
+    ("#377: the deferred candidate is LABELLED before it is deferred (the exact DEF-2 defect)",
+     "scripts/triage_outsider_issues.py",
+     "        if d.label == LABEL_REVIEWED and len(stage2) >= args.cap:\n"
+     "            deferred.append(n)",
+     "        if d.label == LABEL_REVIEWED and len(stage2) >= args.cap:\n"
+     "            if args.apply:\n"
+     "                failures.extend(apply_decision(gh, args.repo, issue, d))\n"
+     "            deferred.append(n)",
+     "test_held_back_candidates_are_listed_by_the_next_run"),
 
     ("#367: the duplicate comment echoes the stranger's title",
      "scripts/triage_outsider_issues.py",
