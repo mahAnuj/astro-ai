@@ -233,7 +233,7 @@ jobs:
             # several. per_page=100 is well past any plausible open-PR count for
             # this loop; if it is ever exceeded the sweep still works, it just
             # considers the first 100.
-            n=$(gh api "repos/$GH_REPO/pulls?state=open&per_page=100" --jq '
+            candidates=$(gh api "repos/$GH_REPO/pulls?state=open&per_page=100" --jq '
                   [ .[]
                     | select(.draft == false)
                     | select(.head.repo.full_name == "'"$GH_REPO"'")
@@ -243,10 +243,43 @@ jobs:
                              | (index("qa-fail") // index("needs-human-review")
                                 // index("too-large-to-automerge")) | not)
                     | .number ]
-                  | sort | first // empty')
-            if [ -n "$n" ]; then
-              echo "::notice::sweep picked PR #$n — every condition is re-checked below"
-            fi
+                  | sort | join(" ")')
+
+            # MERGEABILITY IS CHECKED HERE, AND THE LIST IS WALKED (#374).
+            #
+            # The filter above cannot ask: the `pulls` LIST endpoint does not
+            # return `mergeable`, only `pulls/{n}` does. So the shortlist is
+            # built first and each candidate is asked in turn.
+            #
+            # Walking matters more than the check. The first version took
+            # `sort | first` and stopped, so one conflicting PR low in the
+            # range was selected on EVERY run, forever, and nothing behind it
+            # was ever reached. An edge-triggered run does not have this
+            # problem -- it fires for one specific PR, so a conflict fails once
+            # and that is the end of it. Adding a cron turned a one-off failure
+            # into a permanent block. Observed on PR #360, 2026-10-15: the
+            # sweep selected it while CONFLICTING and ran the whole chain,
+            # stopping only because the trust boundary held it for storage.py.
+            # Without that hold it would have reached `gh pr merge`, which
+            # fails on a conflict, turning this workflow red every 30 minutes.
+            #
+            # UNKNOWN IS NOT MERGEABLE. GitHub computes mergeability lazily and
+            # answers UNKNOWN while it does. Treating that as eligible would
+            # reintroduce the failure intermittently, which is worse than
+            # reliably -- so it is skipped and the next sweep asks again.
+            n=""
+            for cand in $candidates; do
+              m=$(gh pr view "$cand" --repo "$GH_REPO" --json mergeable --jq .mergeable 2>/dev/null || echo "")
+              if [ "$m" = "MERGEABLE" ]; then
+                n="$cand"
+                echo "::notice::sweep picked PR #$n — every condition is re-checked below"
+                break
+              fi
+              # Said out loud: a sweep that found candidates and silently took
+              # none reads identically to "nothing to do", and #357 exists
+              # because silence hid four stranded PRs.
+              echo "  skipping #$cand — mergeable=${m:-unreadable}"
+            done
           elif [ "$EVENT_NAME" = "pull_request_target" ]; then
             n="$EVENT_PR_NUMBER"
           else

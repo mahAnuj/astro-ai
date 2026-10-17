@@ -826,6 +826,20 @@ MUTATIONS = [
      "select(true)",
      "test_a_fork_head_is_never_a_candidate"),
 
+    ("#374: the sweep stops checking whether its candidate can merge",
+     ".github/workflows/agent-merge.yml",
+     'if [ "$m" = "MERGEABLE" ]; then',
+     'if true; then',
+     "test_a_conflicting_candidate_is_skipped_for_the_next_one"),
+
+    # UNKNOWN is what GitHub answers while it computes mergeability. Accepting
+    # it makes the failure intermittent, which is worse than reliable.
+    ("#374: the sweep accepts UNKNOWN as good enough",
+     ".github/workflows/agent-merge.yml",
+     'if [ "$m" = "MERGEABLE" ]; then',
+     'if [ "$m" != "CONFLICTING" ]; then',
+     "test_unknown_is_not_treated_as_mergeable"),
+
     # The defect this set was written after: providers.py also returns a BARE
     # `429` when the error text names neither window, and the first version of
     # the constant listed only 413/429_tpm/429_tpd -- so a real rate limit
