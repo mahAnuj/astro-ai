@@ -81,11 +81,11 @@ BOOKS: tuple[Book, ...] = (
          "https://shanthavasanthatrust.org/wp-content/uploads/2023/08/"
          "Astrology-e-book-compressed.pdf",
          "Published free by Shantha Vasantha Trust."),
-    Book("Numerology-With Tantra, Ayurveda, and Astrology.pdf", "Harish Johari",
+    Book("numerology/Numerology-With Tantra, Ayurveda, and Astrology.pdf", "Harish Johari",
          "Numerology: With Tantra, Ayurveda, and Astrology", 5_952, "owned",
          "Destiny Books / Inner Traditions, 1990. ISBN 9780892812585. In print. "
          "Blocks #163, #201, #173 — the highest-value item to supply."),
-    Book("Numerology-You.pdf", "Jayant Kumar",
+    Book("numerology/Numerology-You.pdf", "Jayant Kumar",
          "Numerology & You", 1_110, "owned",
          "Educreation, 2016. ISBN 978-1-61813-620-6. Our copy is a 43-page "
          "publisher sample, so its 1,110 lines are the SAMPLE, not the book."),
@@ -101,11 +101,31 @@ BOOKS: tuple[Book, ...] = (
          "entry. It went missing from data/ and the table was briefly "
          "unverifiable by anyone. Restored and re-verified 2026-08-26: line "
          "7183 is the table, and all six orbs match what chart.py ships."),
-    Book("Numerology the Complete Guide, Volume 1-The Personality Reading.pdf",
+    Book("numerology/Numerology the Complete Guide, Volume 1-The Personality Reading.pdf",
          "Matthew Oliver Goodwin",
          "Numerology: The Complete Guide, Vol. 1", 28_171, "owned",
          "Newcastle Publishing, 1981. Western/Pythagorean, NOT Vedic — see "
          "SOURCES.md before citing. Largest single item in #191."),
+    # Rows 10-11. Both were on disk and searched by corpus_search.py for months
+    # while unregistered here, so verify_rule_citations.py failed any rule that
+    # cited them -- which is why no Chaldean rule could be cited even though
+    # Chaldean is the canonical numerology lineage. Counts measured 2026-10-17,
+    # plain `pdftotext` (NO -layout), poppler 26.07.0.
+    Book("numerology/2015.70770.Cheiros-Book-Of-Numbers_text.pdf", "Cheiro",
+         "Cheiro's Book of Numbers", 14_183, "owned",
+         "On disk; the filename carries a Digital Library of India / archive.org "
+         "identifier, the same provenance shape as the 1948 Muhurtha scan. "
+         "CANONICAL for Chaldean numerology alongside Kumar, per the standing "
+         "lineage ruling. No URL recorded here deliberately: SOURCES.md must "
+         "state this edition's provenance and copyright before one is added."),
+    Book("numerology/chaldean-numerology-new-and-improved-various-sources-2888.pdf",
+         "various (compilation)",
+         "Chaldean Numerology — New and Improved (various sources)", 4_268, "owned",
+         "Registered so the corpus count is honest, NOT so it can be cited. A "
+         "multi-source compilation with no single author or edition cannot be "
+         "the authority for a shipped rule -- there is no line range a reader "
+         "could check against a known book. Use it to locate a claim, then cite "
+         "Cheiro or Kumar for it."),
 )
 
 
