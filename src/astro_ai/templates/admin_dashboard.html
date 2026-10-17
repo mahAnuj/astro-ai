@@ -249,9 +249,9 @@
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.hit_pct }}%</td>
               {% endif %}
               {% if pc.effective_pct is none %}
-              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Nothing measurable here: a non-reporting model, or every prompt under the minimum cacheable length. Unmeasured, not 0%.">—</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Nothing measurable here: a non-reporting model, every prompt under the minimum cacheable length, or no usable usage block. Unmeasured, not 0%.">—</td>
               {% else %}
-              <td class="py-2 text-right text-bhagya-sindoor font-semibold tabular-nums">{{ pc.effective_pct }}%</td>
+              <td class="py-2 text-right text-bhagya-sindoor font-semibold tabular-nums">{{ pc.effective_pct }}%{% if pc.impossible %}<span title="IMPOSSIBLE: cached tokens exceed prompt tokens, so this accounting is wrong. The figure shown is clamped to 100% and is not trustworthy.">&nbsp;&#9888;</span>{% endif %}</td>
               {% endif %}
             </tr>
             {% endfor %}
@@ -268,10 +268,20 @@
           calls on <code>gpt-oss-120b</code>, which reads 97.5% as a hit rate and 13.9% as a
           saving. <em>Effective is a saving over the Measurable calls, not over Fresh calls</em>
           &mdash; compare those two columns before reading it as a share of the route's traffic.
+          {% set ru = llm_stats.aggregate.prefix_cache.values() | map(attribute='reported_unmeasurable') | sum %}
+          {% if ru %}<strong>{{ ru }} call(s) reported a cache figure our rule says they could not</strong>
+          &mdash; so 128 is too high a floor for some model, or a model is missing from the
+          reporting set, and Effective is understating until that is fixed.{% endif %}
+          {% if llm_stats.aggregate.prefix_cache_skipped_rows %}<strong>{{ llm_stats.aggregate.prefix_cache_skipped_rows }} stored row(s)
+          written by an older schema were excluded</strong>, so Fresh calls here will be short of
+          the By-route totals above.{% endif %}
           A call is Measurable on one of the three cache-reporting models with at least 128 prompt
           tokens, counted on the whole request (system + question or chart), not the system prompt
-          alone. Every route clears that, so a dash here means a non-reporting model served the
-          call, not a short prompt.
+          alone. <strong>A dash has three causes</strong>, so check which before concluding
+          anything: a non-reporting model served every call; the prompts were under the minimum
+          (no route's system prompt is under 732 tokens, so this should not happen); or the
+          provider returned no usable <code>usage</code> block at all. The Measurable column tells
+          the first two apart from Fresh calls.
 
         </p>
       </div>

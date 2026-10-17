@@ -28,7 +28,7 @@ trust the number.
 
 | | count | command |
 |---|---|---|
-| Python | 32,286 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
+| Python | 32,377 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
 | top-level modules | 40 | `ls src/astro_ai/*.py \| wc -l` |
 | route handlers | 68 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 24 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
@@ -37,7 +37,7 @@ trust the number.
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
 | knowledge files | 11 files, 9,358 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
 | verification gates | 28 | `ls scripts/verify_*.py \| wc -l` |
-| behaviour suite | 679 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
+| behaviour suite | 691 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
 
 `routes/` holds 27 files; the three that declare no router are `__init__.py` and the leaf
 helpers `deps.py` and `llm_support.py`. Counting files rather than routers is what makes
@@ -274,7 +274,26 @@ So there are two rates, and they are far apart:
 | | numerator | denominator | what it says |
 |---|---|---|---|
 | `hit_pct` | `cached_tokens` | `prompt_reported` | how hard a hit lands |
-| `effective_pct` | `cached_tokens` | `prompt_measurable` | **the quota actually saved** |
+| `effective_pct` | `cached_measurable` | `prompt_measurable` | **the quota actually saved** |
+
+**Two numerators, not one, and that is the load-bearing part.** `reported` sums whatever the
+provider actually told us, on any model — `prompt_tokens_details.cached_tokens` is an
+OpenAI-compatible field and four of the eight configured providers are not Groq. `measurable` is
+the separate question of whether a *silence* from that call would have meant "missed", which is a
+property of `(model, prompt size)` alone. Sharing one `cached_tokens` between the two forced a
+`cached is not None or ...` disjunct into the measurability test to stop the rate exceeding 100%,
+and that disjunct is what made measurability depend on the **outcome**: a hit at 714 tokens counted
+toward the denominator and a miss at 714 did not, so the denominator selected for hits. Separate
+numerators remove the need for it, and because one call's cached tokens cannot exceed its own
+prompt tokens, neither rate can exceed 100% by construction rather than by the clamp.
+
+Two counters exist so the rule is falsifiable in production rather than by live calls:
+`reported_unmeasurable` (a provider reported on a call the rule said could not — the floor is too
+high, or a model is missing from the set) and `prefix_cache_skipped_rows` (stored rows from an older
+schema, excluded; also logged at WARNING). Both are surfaced on `/admin`, as is an `impossible`
+flag when `cached > prompt`: the clamp keeps a nonsense percentage off the page, but *smoothing* an
+impossible figure into a plausible one hides the only evidence the accounting is broken — a rate
+over 100% is how the old-schema bug was caught at 571% and 3998%.
 
 Measured live 2026-10-17 on `openai/gpt-oss-120b`: 1 hit in 7 identical calls, 2,304 of 2,363
 prompt tokens cached. `hit_pct` 97.5%, `effective_pct` 13.9% — a 7x gap, and only the second is a
@@ -284,9 +303,11 @@ clamped to 0–100 because the figures are the provider's and nothing upstream g
 
 The threshold is compared against the provider's `prompt_tokens` — **the whole request, system plus
 question or chart**, not the system prompt alone. `MIN_CACHEABLE_PREFIX` is 128, the BOTTOM of
-Groq's documented 128–1024 range: at the top of that range a hit above the floor was measurable
-while a miss on the identical request was not, so the denominator selected for hits. See the
-constant's comment for why the remaining error is the safe direction.
+Groq's documented 128–1024 range. Lowering it was not itself the fix — it only shrank the
+asymmetric band to [0,128) — and the claim that a sub-128 hit "cannot occur" was an assumption
+about Groq, not a property of this code. Separate numerators are what removed the asymmetry; the
+floor now only decides what a silence means, and 128 keeps the residual error in the understating
+direction. See the constant's comment.
 
 Chat route (the `route=` passed to `providers.chat`, NOT the web route in "By route") to prompt
 file, with system-prompt tokens measured by tiktoken `o200k_base` on 2026-10-17 (issue #396):
@@ -307,7 +328,12 @@ with a golden chart against 3,111 for the prompt file (`scripts/verify_token_bud
 earlier revision predicted `dasha`, `outlook` and `today` would read "a dash or about 0" from being
 under the threshold; that was wrong twice, because it compared the system prompt against a limit
 applied to the full request, and because "about 0" is a reading the code deliberately never
-produces. **A dash means a non-reporting model served the call, not a short prompt.**
+produces. **A dash has three causes** and they must not be conflated: a non-reporting model served
+every call; every prompt was under `MIN_CACHEABLE_PREFIX`; or the provider returned no
+usable `usage` block, in which case `_prefix_usage` yields `None` and even the prompt size
+is unknown. Only the first is likely on current traffic. An earlier revision of this
+section asserted the first as the only cause, which the table's own column tooltip
+contradicted.
 
 Known limits, stated so nobody over-reads the panel:
 

@@ -1064,8 +1064,8 @@ MUTATIONS = [
 
     ("#396: the model allowlist is ignored, so a non-caching model's silence scores 0%",
      "src/astro_ai/llm_stats.py",
-     "                model in CACHE_REPORTING_MODELS and prompt_tokens >= MIN_CACHEABLE_PREFIX)",
-     "                True)",
+     "            measurable = (model in CACHE_REPORTING_MODELS",
+     "            measurable = (True",
      "test_a_miss_on_a_non_reporting_model_is_not_scored_as_zero"),
 
     ("#396: the minimum-prefix threshold is ignored (an ineligible prompt scores 0%)",
@@ -1073,16 +1073,27 @@ MUTATIONS = [
      "prompt_tokens >= MIN_CACHEABLE_PREFIX)", "True)",
      "test_a_prompt_under_the_minimum_cacheable_length_is_not_measurable"),
 
-    ("#396: a call that REPORTED is no longer forced measurable (effective rate can exceed 100%)",
+    # Superseded: there is no longer a `cached is not None or ...` disjunct to
+    # remove -- separate numerators made it unnecessary. The equivalent defect in
+    # the new design is restoring the outcome-dependence it replaced.
+    ("#396: measurability reads the OUTCOME again (a hit counts, a miss of the same size does not)",
      "src/astro_ai/llm_stats.py",
-     "            measurable = cached_tokens is not None or (",
-     "            measurable = (",
-     "test_a_reported_call_under_the_minimum_still_counts_so_the_rate_cannot_exceed_100"),
+     "            measurable = (model in CACHE_REPORTING_MODELS\n",
+     "            measurable = (cached_tokens is not None or model in CACHE_REPORTING_MODELS\n",
+     "test_measurability_never_depends_on_the_outcome_at_any_size"),
+
+    ("#396: effective_pct borrows the shared numerator (a sub-floor hit inflates it)",
+     "src/astro_ai/llm_stats.py",
+     '_rate(v["cached_measurable"], v["prompt_measurable"],',
+     '_rate(v["cached_tokens"], v["prompt_measurable"],',
+     "test_a_sub_floor_report_does_not_inflate_the_effective_numerator"),
 
     ("#396: effective_pct divides by reported tokens, collapsing it into hit_pct (the original defect)",
      "src/astro_ai/llm_stats.py",
-     '_rate(v["cached_tokens"], v["prompt_measurable"],',
-     '_rate(v["cached_tokens"], v["prompt_reported"],',
+     '_rate(v["cached_measurable"], v["prompt_measurable"],\n'
+     '                                               v["measurable"]),',
+     '_rate(v["cached_measurable"], v["prompt_reported"],\n'
+     '                                               v["measurable"]),',
      "test_the_two_rates_diverge_and_effective_is_the_honest_one"),
 
     # --- #410 QA round 1: the follow-up's own defects. Each row restores the
@@ -1094,7 +1105,7 @@ MUTATIONS = [
 
     ("#410: an older stored schema is summed field-by-field again (mixed window published 571%)",
      "src/astro_ai/llm_stats.py",
-     "            if not _PREFIX_ZERO.keys() <= pc.keys():\n                continue\n", "",
+     "            if not _PREFIX_ZERO.keys() <= pc.keys():", "            if False:",
      "test_an_old_schema_day_blob_is_skipped_whole_not_summed_field_by_field"),
 
     ("#410: the rate is no longer clamped (a misreporting provider puts 250% on the dashboard)",

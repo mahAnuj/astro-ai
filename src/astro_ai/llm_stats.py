@@ -145,7 +145,9 @@ CACHE_REPORTING_MODELS = frozenset({
 #
 # In practice the band is nearly empty anyway. The threshold is compared against
 # the provider's `prompt_tokens`, which is system + user, not the system prompt
-# alone -- the smallest system prompt in the repo is 572 tokens and every route
+# alone -- the smallest system prompt any route actually SENDS is 732 tokens
+# (`monthly`; the 572-token ask_numerology.txt is an overlay on ask.txt and is
+# never sent by itself, so ask+numerology is 1,822) and every route
 # adds a chart or question payload on top.
 MIN_CACHEABLE_PREFIX = 128
 
@@ -154,18 +156,38 @@ def _rate(cached: int, prompt: int, n: int) -> float | None:
     """cached/prompt as a percentage, or None when nothing measurable happened.
 
     None, never 0: a route served only by a non-reporting model was not observed,
-    and a zero there would read as "no caching". Clamped to 0-100 because the
-    figures come from the provider and nothing upstream guarantees they are sane
-    -- a misreporting provider should not put 250% on the dashboard.
+    and a zero there would read as "no caching".
+
+    Clamped to 0-100 because the figures are the provider's and nothing upstream
+    guarantees they are sane. But the clamp is reported separately by
+    `_is_impossible`, because SMOOTHING an impossible figure into a plausible one
+    is its own defect: a rate over 100% is the only evidence the accounting is
+    broken, and it is exactly how the old-schema aggregation bug was caught (it
+    published 571% and 3998%). Under a silent clamp that same bug would have read
+    a tidy 100.0% and nobody would have looked.
     """
     if not n or prompt <= 0:
         return None
     return round(max(0.0, min(100.0, cached / prompt * 100)), 1)
 
+
+def _is_impossible(v: dict) -> bool:
+    """True when the stored sums cannot describe a real cache.
+
+    Cached tokens are a SUBSET of prompt tokens (Groq: "cached_tokens: Number of
+    input tokens that were served from cache"), so cached > prompt means the
+    accounting is wrong -- a misreporting provider, or a bug in this module. The
+    dashboard flags it instead of letting the clamp hide it.
+    """
+    return (v["cached_tokens"] < 0 or v["cached_measurable"] < 0
+            or v["cached_tokens"] > v["prompt_reported"]
+            or v["cached_measurable"] > v["prompt_measurable"])
+
 # One definition of the counter row, shared by record() and range_summary(). They
 # drifting apart is how a field gets summed in one place and ignored in the other.
 _PREFIX_ZERO = {"calls": 0, "measurable": 0, "reported": 0,
-                "prompt_measurable": 0, "prompt_reported": 0, "cached_tokens": 0}
+                "prompt_measurable": 0, "prompt_reported": 0, "cached_tokens": 0,
+                "cached_measurable": 0, "reported_unmeasurable": 0}
 
 
 def _key_for(day: date) -> str:
@@ -228,12 +250,56 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
         pc = data.setdefault("prefix_cache", {}).setdefault(stat_key, dict(_PREFIX_ZERO))
         pc["calls"] = pc.get("calls", 0) + 1
         if prompt_tokens is not None:
-            # A call that REPORTED is measurable by definition, whatever its size:
-            # the model's own minimum may be 128, and excluding a reported call
-            # from the denominator while counting its cached tokens in the
-            # numerator would let the effective rate exceed 100%.
-            measurable = cached_tokens is not None or (
-                model in CACHE_REPORTING_MODELS and prompt_tokens >= MIN_CACHEABLE_PREFIX)
+            # MEASURABILITY READS (model, size) AND NOTHING ELSE. In particular it
+            # must not read the OUTCOME, which is the bug this whole key exists to
+            # remove and which survived two attempts:
+            #
+            #   v1  `cached is not None` alone      -> every miss dropped; 97.5%
+            #                                          published where 13.9% was true
+            #   v2  `cached is not None or (model, size>=1024)` -> a HIT at 714 tok was
+            #                                          measurable and a MISS at 714 was
+            #                                          not; the denominator selected
+            #                                          for hits, same defect, narrower
+            #   v3  lowering the floor to 128       -> band shrunk to [0,128), NOT
+            #                                          removed. The claim that a
+            #                                          sub-128 hit "cannot occur" was
+            #                                          an assumption about Groq, not a
+            #                                          property of this code:
+            #                                          CACHE_REPORTING_MODELS matches
+            #                                          the MODEL STRING only, with no
+            #                                          provider or base_url check, and
+            #                                          `_legacy_provider` takes both
+            #                                          ASTRO_AI_API_BASE and
+            #                                          ASTRO_AI_MODEL from the
+            #                                          environment.
+            #
+            # So the disjunct is gone. The cached count is now added ONLY inside the
+            # measurable branch, which is what makes numerator and denominator
+            # consistent by construction -- the >100% that the disjunct was protecting
+            # against is unreachable because an unmeasurable call contributes to
+            # neither, rather than to one.
+            # TWO SEPARATE NUMERATORS. This is what lets measurability read
+            # (model, size) and nothing else without either losing data or
+            # letting a rate exceed 100%:
+            #
+            #   reported  -- the provider TOLD us. Always trustworthy, whatever
+            #                the model: `prompt_tokens_details.cached_tokens` is
+            #                an OpenAI-compatible field and the chain has four
+            #                non-Groq providers, one of them OpenAI itself. These
+            #                sums feed hit_pct.
+            #   measurable -- a SILENCE from this call would have meant "missed".
+            #                That is a property of (model, size) alone. These sums
+            #                feed effective_pct.
+            #
+            # Sharing one `cached_tokens` across both is what forced the earlier
+            # `cached is not None or ...` disjunct, and the disjunct is what made
+            # measurability outcome-dependent: a hit at 714 tok counted and a miss
+            # at 714 did not, so the denominator selected for hits. With separate
+            # numerators each rate divides sums gathered under its own rule, and
+            # because a single call's cached <= its prompt, neither can exceed 100%
+            # by construction rather than by a clamp.
+            measurable = (model in CACHE_REPORTING_MODELS
+                          and prompt_tokens >= MIN_CACHEABLE_PREFIX)
             if measurable:
                 pc["measurable"] = pc.get("measurable", 0) + 1
                 pc["prompt_measurable"] = pc.get("prompt_measurable", 0) + prompt_tokens
@@ -241,6 +307,15 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
                 pc["reported"] = pc.get("reported", 0) + 1
                 pc["prompt_reported"] = pc.get("prompt_reported", 0) + prompt_tokens
                 pc["cached_tokens"] = pc.get("cached_tokens", 0) + cached_tokens
+                if measurable:
+                    pc["cached_measurable"] = pc.get("cached_measurable", 0) + cached_tokens
+                else:
+                    # The provider reported on a call our rule says it could not.
+                    # Kept as a counter rather than discarded, because it is
+                    # evidence the rule is wrong -- too high a floor, or a model
+                    # missing from the set -- and it makes that falsifiable by
+                    # production instead of by live calls nobody may spend.
+                    pc["reported_unmeasurable"] = pc.get("reported_unmeasurable", 0) + 1
         return data
 
     result = storage.update_json(_key_for(today), _mut, default=None)
@@ -445,6 +520,7 @@ def range_summary(days: int) -> dict[str, Any]:
     fallbacks = 0
     fallback_reasons: dict[str, int] = defaultdict(int)
     prefix_acc: dict[str, dict[str, int]] = {}
+    skipped_rows = 0          # prefix_cache rows from an older schema (#410 NEW-5)
     daily: list[dict[str, Any]] = []
     for i in range(days):
         d = today - timedelta(days=i)
@@ -481,6 +557,17 @@ def range_summary(days: int) -> dict[str, Any]:
             # 3998%). Requiring every field makes a schema change show up as a
             # missing row rather than an inflated percentage.
             if not _PREFIX_ZERO.keys() <= pc.keys():
+                # Say so. The comment here used to claim the skip "makes a schema
+                # change show up as a missing row", which is only true when the
+                # route has no current-schema days: otherwise the row is present
+                # and the sole symptom is a silent gap between "By route" and this
+                # table's Fresh calls. A log line is the difference between a
+                # discrepancy someone can explain and one they cannot.
+                log.warning("llm_stats: skipping a prefix_cache row with an "
+                            "unrecognised shape (key=%s, fields=%s) -- its counts "
+                            "are excluded from the aggregate", compound_key,
+                            sorted(pc.keys()))
+                skipped_rows += 1
                 continue
             acc = prefix_acc.setdefault(parts[2], dict(_PREFIX_ZERO))
             for field in acc:
@@ -509,9 +596,13 @@ def range_summary(days: int) -> dict[str, Any]:
             "prefix_cache": {
                 route: {**v,
                         "hit_pct": _rate(v["cached_tokens"], v["prompt_reported"], v["reported"]),
-                        "effective_pct": _rate(v["cached_tokens"], v["prompt_measurable"],
-                                               v["measurable"])}
+                        "effective_pct": _rate(v["cached_measurable"], v["prompt_measurable"],
+                                               v["measurable"]),
+                        "impossible": _is_impossible(v)}
                 for route, v in sorted(prefix_acc.items(), key=lambda kv: -kv[1]["calls"])
             },
+            # Non-zero means some stored rows were written by an older schema and
+            # excluded, so this table's Fresh calls will be short of "By route".
+            "prefix_cache_skipped_rows": skipped_rows,
         },
     }
