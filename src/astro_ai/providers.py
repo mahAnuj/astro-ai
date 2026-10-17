@@ -152,6 +152,67 @@ _last_model: ContextVar[str] = ContextVar("_last_model", default="")
 # (None when the response carries no usage) so a fallback provider that omits
 # usage cannot inherit the figure from the one that failed before it.
 _last_usage: ContextVar[int | None] = ContextVar("_last_usage", default=None)
+# (prompt_tokens, cached_tokens_or_None) for the most recent call, or None when
+# even the prompt size could not be read (#396). Kept apart from _last_usage on
+# purpose: that one is a total other modules already read. chat() resets this to
+# None before EVERY _call_one, so one provider's figures cannot be recorded
+# against the next provider that served the request.
+#
+# The SECOND element is independently optional, and that is the whole point.
+# Measured against live Groq 2026-10-17 on openai/gpt-oss-120b with a 2,363-token
+# prompt: a cache MISS returns `prompt_tokens_details: null` -- the entire object,
+# not `cached_tokens: 0` -- and a HIT returns `{"cached_tokens": 2304}`. So a
+# silence is ambiguous at THIS layer (unsupported model? or supported and simply
+# missed?) and must not be collapsed here. We therefore keep the prompt size even
+# when the cache figure is absent, and llm_stats.record() -- which knows the model
+# -- is what resolves the ambiguity. Returning None for the whole tuple on a miss
+# (the original shape) threw away the one number needed to resolve it.
+_last_prefix: ContextVar[tuple[int, int | None] | None] = ContextVar("_last_prefix", default=None)
+
+
+def _prefix_usage(usage) -> tuple[int, int | None] | None:
+    """(prompt_tokens, cached_tokens) from a usage block; cached may be None.
+
+    Three outcomes, because the provider has three things to say:
+
+    * `None`            -- no readable prompt size, so nothing is known at all.
+    * `(prompt, None)`  -- the prompt size is known, the cache figure is NOT.
+                           A cached count of `None` is never turned into 0 here:
+                           recording a silence as a measured zero would put a
+                           confident "0% cached" against a call that may simply
+                           have been ineligible. Resolving which is
+                           llm_stats.record()'s job -- it knows the model.
+    * `(prompt, n)`     -- the provider reported, and `n` may legitimately be 0.
+
+    bool is excluded because it is an int subclass. A negative count, and a
+    cached count LARGER than the prompt it came from, are both rejected: neither
+    is a measurement, and letting either through would publish a percentage that
+    is negative or over 100. Rejecting them here is what makes llm_stats's
+    "neither rate can exceed 100% by construction" an actual property of the
+    code rather than an assumption about the provider. Never raises -- this runs on the happy
+    path of every LLM call.
+    """
+    try:
+        prompt = getattr(usage, "prompt_tokens", None)
+        details = getattr(usage, "prompt_tokens_details", None)
+        cached = getattr(details, "cached_tokens", None)
+    except Exception:  # noqa: BLE001 — observability never breaks a reading
+        return None
+    if not isinstance(prompt, int) or isinstance(prompt, bool) or prompt < 0:
+        return None
+    if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:
+        return prompt, None
+    if cached > prompt:
+        # Cached tokens are a SUBSET of prompt tokens (Groq: "cached_tokens:
+        # Number of input tokens that were served from cache"), so this is not a
+        # measurement -- it is a provider reporting something impossible. Rejected
+        # here rather than stored, because llm_stats documents "neither rate can
+        # exceed 100% by construction" and that is only true if this holds. QA
+        # round 3 found the claim was resting on vendor sanity with nothing
+        # enforcing it: _prefix_usage(prompt=100, cached=5000) returned
+        # (100, 5000) and the published 5000% was saved only by the clamp.
+        return prompt, None
+    return prompt, cached
 
 
 def last_used_model() -> str:
@@ -593,6 +654,7 @@ def _call_one(provider: ProviderConfig, messages: list[dict]) -> str:
         response = client.chat.completions.create(model=model, messages=messages)
 
     _last_usage.set(getattr(getattr(response, "usage", None), "total_tokens", None))
+    _last_prefix.set(_prefix_usage(getattr(response, "usage", None)))
 
     choice = response.choices[0]
     content = choice.message.content or ""
@@ -769,7 +831,11 @@ def chat(messages: list[dict], *, route: str = "") -> str:
         retried = False
         while True:
             try:
+                # Reset first: a fake or failing _call_one never sets it, and
+                # the previous provider's figures must not be read as this one's.
+                _last_prefix.set(None)
                 raw_text = _call_one(provider, messages)
+                prefix = _last_prefix.get()
                 # Sanitize reasoning-model leakage BEFORE the quality gate so
                 # the heading-count check operates on the visible answer, not
                 # on the model's `<think>` scratchpad. Also prevents any
@@ -811,6 +877,9 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                         "fallback_from": last_err is not None,
                         "chars_out": len(text),
                         "leaked_reasoning": leaked_reasoning,
+                        # Groq prefix cache (#396); null = not reported, not 0.
+                        "prompt_tokens": prefix[0] if prefix else None,
+                        "cached_tokens": prefix[1] if prefix else None,
                     }},
                 )
                 # Persistent per-day counter for /admin/usage. Best-effort;
@@ -824,6 +893,8 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                         fallback=(last_err is not None),
                         fallback_reason=last_reason,
                         failed_provider=last_failed_provider,
+                        prompt_tokens=prefix[0] if prefix else None,
+                        cached_tokens=prefix[1] if prefix else None,
                     )
                 except Exception:  # noqa: BLE001 — stats never break the reading
                     log.debug("llm_stats.record failed", exc_info=True)

@@ -1040,6 +1040,134 @@ MUTATIONS = [
      "",
      "test_a_copied_marker_in_someone_elses_comment_does_not_suppress_the_stop"),
 
+    ("#396: a provider that omits prompt_tokens_details is recorded as a measured 0 (absent -> zero)",
+     "src/astro_ai/providers.py",
+     'cached = getattr(details, "cached_tokens", None)',
+     'cached = getattr(details, "cached_tokens", 0)',
+     "test_a_provider_that_does_not_report_is_absent_never_zero"),
+
+    ("#396: chat() stops resetting the prefix figure before each call (provider A's cached count leaks to B)",
+     "src/astro_ai/providers.py",
+     "                _last_prefix.set(None)\n",
+     "",
+     "test_chat_resets_the_figure_before_each_call_so_a_stub_cannot_inherit_it"),
+
+    # --- #396 follow-up: classifying a SILENCE. Groq sends no cache figure at
+    # all on a miss, so "absent" means either "this model cannot report" or
+    # "this model reported nothing". Only the first is unmeasurable. Each row
+    # below collapses that distinction in one direction or the other -- the
+    # first four inflate the saving, the fifth invents one.
+    ("#396: a junk cache figure discards the prompt size too (a miss becomes unclassifiable)",
+     "src/astro_ai/providers.py",
+     "    if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:\n"
+     "        return prompt, None\n",
+     "    if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:\n"
+     "        return None\n",
+     "test_prefix_usage_accepts_only_real_ints"),
+
+    ("#396: the model allowlist is ignored, so a non-caching model's silence scores 0%",
+     "src/astro_ai/llm_stats.py",
+     "            measurable = (model in CACHE_REPORTING_MODELS",
+     "            measurable = (True",
+     "test_a_miss_on_a_non_reporting_model_is_not_scored_as_zero"),
+
+    ("#396: the minimum-prefix threshold is ignored (an ineligible prompt scores 0%)",
+     "src/astro_ai/llm_stats.py",
+     "prompt_tokens >= MIN_CACHEABLE_PREFIX)", "True)",
+     "test_a_prompt_under_the_minimum_cacheable_length_is_not_measurable"),
+
+    # Superseded: there is no longer a `cached is not None or ...` disjunct to
+    # remove -- separate numerators made it unnecessary. The equivalent defect in
+    # the new design is restoring the outcome-dependence it replaced.
+    ("#396: measurability reads the OUTCOME again (a hit counts, a miss of the same size does not)",
+     "src/astro_ai/llm_stats.py",
+     "            measurable = (model in CACHE_REPORTING_MODELS\n",
+     "            measurable = (cached_tokens is not None or model in CACHE_REPORTING_MODELS\n",
+     "test_measurability_never_depends_on_the_outcome_at_any_size"),
+
+    ("#396: effective_pct borrows the shared numerator (a sub-floor hit inflates it)",
+     "src/astro_ai/llm_stats.py",
+     '_rate(v["cached_measurable"], v["prompt_measurable"],',
+     '_rate(v["cached_tokens"], v["prompt_measurable"],',
+     "test_a_sub_floor_report_does_not_inflate_the_effective_numerator"),
+
+    # --- #410 QA round 3. Each row restores a defect round 3 measured.
+    ("#410: a cached count larger than its own prompt is accepted again (5000% stored)",
+     "src/astro_ai/providers.py",
+     "    if cached > prompt:", "    if False:",
+     "test_a_cached_count_larger_than_its_prompt_is_refused_at_the_source"),
+
+    ("#410: the impossible flag leaves the route cell, invisible when Effective is a dash",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{{ route }}{% if pc.impossible %}", "{{ route }}{% if False %}",
+     "test_the_anomaly_flag_is_visible_when_only_the_reported_side_is_broken"),
+
+    ("#410: the table pairs the measurable denominator with the reported numerator again",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{{ pc.prompt_measurable }} / {{ pc.cached_measurable }}",
+     "{{ pc.prompt_measurable }} / {{ pc.cached_tokens }}",
+     "test_the_two_column_pairs_each_divide_to_their_own_rate"),
+
+    ("#410: the unmeasurable-report notice drops the benign cause and the warning",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "Most likely a non-Groq provider reporting its own cache", "Most likely nothing",
+     "test_the_unmeasurable_report_notice_names_the_benign_cause_and_forbids_the_harmful_fix"),
+
+    ("#410: a malformed stat_key is dropped silently again (a whole window can vanish)",
+     "src/astro_ai/llm_stats.py",
+     "                                compound_key, len(parts))\n                skipped_rows += 1",
+     "                                compound_key, len(parts))",
+     "test_a_malformed_stat_key_is_counted_and_logged_not_dropped_silently"),
+
+    ("#410: the skip notice moves back inside the table's own if (total loss is silent)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{% if llm_stats.aggregate.prefix_cache_skipped_rows and not llm_stats.aggregate.prefix_cache %}",
+     "{% if False %}",
+     "test_the_skip_notice_survives_when_every_row_is_skipped"),
+
+    ("#410: the By-route table's headers are overwritten with the prefix-cache ones",
+     "src/astro_ai/templates/admin_dashboard.html",
+     '            <th class="text-right py-2">Response-cache hits</th>',
+     '            <th class="text-right py-2">Measurable</th>',
+     "test_the_by_route_table_still_has_its_own_headers"),
+
+    ("#396: effective_pct divides by reported tokens, collapsing it into hit_pct (the original defect)",
+     "src/astro_ai/llm_stats.py",
+     '_rate(v["cached_measurable"], v["prompt_measurable"],\n'
+     '                                               v["measurable"]),',
+     '_rate(v["cached_measurable"], v["prompt_reported"],\n'
+     '                                               v["measurable"]),',
+     "test_the_two_rates_diverge_and_effective_is_the_honest_one"),
+
+    # --- #410 QA round 1: the follow-up's own defects. Each row restores the
+    # behaviour QA measured and the suite must go red.
+    ("#410: MIN_CACHEABLE_PREFIX back to 1024 (a hit is measurable, a miss of the same size is not)",
+     "src/astro_ai/llm_stats.py",
+     "MIN_CACHEABLE_PREFIX = 128", "MIN_CACHEABLE_PREFIX = 1024",
+     "test_a_miss_and_a_hit_at_the_same_size_are_both_measurable"),
+
+    ("#410: an older stored schema is summed field-by-field again (mixed window published 571%)",
+     "src/astro_ai/llm_stats.py",
+     "            if not _PREFIX_ZERO.keys() <= pc.keys():", "            if False:",
+     "test_an_old_schema_day_blob_is_skipped_whole_not_summed_field_by_field"),
+
+    ("#410: the rate is no longer clamped (a misreporting provider puts 250% on the dashboard)",
+     "src/astro_ai/llm_stats.py",
+     "    return round(max(0.0, min(100.0, cached / prompt * 100)), 1)",
+     "    return round(cached / prompt * 100, 1)",
+     "test_a_rate_is_clamped_and_a_negative_count_is_refused"),
+
+    ("#410: a negative cached count is accepted as a measurement",
+     "src/astro_ai/providers.py",
+     "or isinstance(cached, bool) or cached < 0:", "or isinstance(cached, bool):",
+     "test_a_rate_is_clamped_and_a_negative_count_is_refused"),
+
+    ("#410: the footnote names prompt overlays as if they were chat routes",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "          A call is Measurable on one of the three cache-reporting models",
+     "          <code>ask_matching</code> and <code>ask_numerology</code> are excluded.\n"
+     "          A call is Measurable on one of the three cache-reporting models",
+     "test_every_route_name_in_the_footnote_is_a_real_chat_route"),
     # --- #400: the per-route token budget gate. A size gate that cannot go red is
     # the honour system it replaced; each row neuters one comparison it makes.
     ("#400: the ceiling comparison is neutered (an oversized prompt passes)",
