@@ -523,7 +523,7 @@ every section declares its flag — which they all now do.
 | `vedic_reference.md` **§5B.1** | §16.5.1 | 10486–10513 | *"A planet gives the results promised by its positions in various divisional charts"* + nine worked dasha-result examples |
 | ↳ **§5B.2 Tripod of Life** | §16.5.3 | 10543–10563 | Sun judges the **mahadasha**, Moon the **antardasha**, lagna the **pratyantardasha**; Ravi yogas pay in MD, Chandra yogas in AD, **Raja yogas primarily in PD** |
 | ↳ §5B.3 transits | §25.2, 25.3, 25.4, 25.7, §7.3.5 | 13994–13999, 14376–14398, 14440–14452, 15106–15115, 3517–3521 | the transit of the **Vimsottari dasha lord** is the important one; the master transit rule; coarse vs fine timing; Rao's own-research disclaimer on varga transits |
-| ↳ §5B.4 timing an event | Part 6 Ex. 1–5 | 20328–20669 | the full chain Rao uses — varga → varga dasha → MD → AD → PD → transit → a second dasha system → cultural filter. **The product has 1 of 7** |
+| ↳ §5B.4 timing an event | Part 6 Ex. 1–5 | 20328–20669 | the full chain Rao uses — varga → varga dasha → MD → AD → PD → transit → a second dasha system → cultural filter. **The product has 2 of 7**, measured in `src/astro_ai/`: no pratyantardasha, no Narayana dasa, no Sudarsana Chakra dasa, no Patyayini dasa, and `Varshaphala` exists but reaches only `/outlook` |
 | ↳ **§5B.5 the refusal** | Part 6 Ex. 4 | 20559–20576 | *"We cannot look at the dasas one is running and conclude whether one will win the award or not."* The citable stance for "will I pass / will I get it" |
 | ↳ §8.5 pinned | Ch. 13 | 8723–9211 | the five-step funnel is §13.4.1, lines 8955–9010 |
 | ↳ **§1.6 Manglik** | absence | — | `kuja` 0, `dosha` 0, `ashtama` 0 in 20,669 lines. Vasudev (`-layout` 2566–2695) extracted instead |
@@ -552,10 +552,17 @@ every section declares its flag — which they all now do.
    `learn_registry.py` — **four surfaces, two different Sanskrit vocabularies**
    for the Sade Sati phases, none of which is in any book we hold.
 6. `prompts/ask.txt` — no studies/education category
-   (`grep -ciE "exam|studies|education|student"` = **0**), one topic line per
-   category naming no classical rule, and **no transit data on the `/ask`
-   path**. The houses and charts for all four life areas are now sourced in
+   (`grep -ciE "exam|studies|education|student"` = **0** in both
+   `prompts/ask.txt` and `routes/ask.py`), one topic line per category
+   (`ask.txt:48–56`) naming no bhava, chart or dasha lord, and **no transit
+   data on the `/ask` path** (`grep -ciE "gochar|transit"` on `routes/ask.py`
+   = **0**). The houses and charts for all four life areas are now sourced in
    `houses.md`; Rao's refusal to call an outcome is in §5B.5.
+9. **Timing capability gap, measured.** Of the seven apparatus Rao used to
+   answer "exactly when will she marry", the code has two. `chart.py:2948`
+   already documents Patyayini/sahams as out of scope, and `Varshaphala` is
+   built but wired only to `/outlook`. Recorded as a capability finding, not a
+   defect — nobody claimed the product had them.
 7. `divisional_charts.md` self-divergence — the file's own "a yoga is activated
    only if it ALSO appears in the D-9" bullet is uncited and contested by Rao.
    Flagged in place rather than deleted.

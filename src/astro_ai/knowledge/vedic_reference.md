@@ -850,11 +850,25 @@ PD → confirm with a transit → confirm with a second, independent dasha syste
 (Sudarsana Chakra / Tajaka Patyayini) → apply any cultural or practical filter.*
 Rao never predicts from one apparatus.
 
-**What the product has of that chain:** Vimsottari MD/AD only. It has no
-Narayana dasa, no varga dashas, no Sudarsana Chakra dasa, no Tajaka annual or
-monthly chart, no Patyayini dasa, and — on the `/ask` path — no transits at
-all. So a "will I marry this year" answer from `/ask` is using **one of the
-seven** inputs Rao used to answer that exact question.
+**What the product has of that chain, measured in `src/astro_ai/` on
+2026-10-17:**
+
+| Rao's input | In the code? |
+|---|---|
+| Vimsottari **mahadasha + antardasha** | ✅ `chart.py` (`DashaPeriod`, `antardasha`) |
+| Vimsottari **pratyantardasha** | ❌ `grep -ciE "pratyantar"` = **0** across `src/astro_ai/` |
+| D-9 and D-10 | ✅ computed (`navamsa`/`dasamsa`, 10 hits in `chart.py`) |
+| **Narayana dasa** (of D-1 or of any varga) | ❌ **0** — the only `narayana` hit is "Lakshmi-Narayana" in `festival_registry.py:388` |
+| **Sudarsana Chakra dasa** | ❌ **0** |
+| **Patyayini dasa / sahams / a 60-hour Tajaka chart** | ❌ **0**. `chart.py:2948` names Patyayini only to say it is *out of scope*: *"The full Tajik system includes Muntha, Year Lord (Patyayini Dasha lord), Sahams, and dozens of other layers. For v1 we expose the four headline elements…"* |
+| Tajaka **annual** chart | 🟡 **partially** — `Varshaphala` (solar return, Muntha house, year lord) exists in `chart.py:2944+`, but it is consumed **only** by `routes/outlook.py` and `templates/outlook.html`. It never reaches `/ask` or the natal reading |
+| Ashtottari, Kalachakra, Drigdasa, Sudasa, Shoola | ❌ **0** each |
+| **Transits on the `/ask` path** | ❌ `grep -ciE "gochar\|transit"` on `routes/ask.py` = **0** |
+
+So a "will I marry this year" answer from `/ask` is built from **Vimsottari
+MD/AD plus the natal chart** — two of the seven inputs Rao used to answer that
+exact question, and without the transit step he treats as the one that fixes
+the date.
 
 ### 5B.5 Rao REFUSES to answer a binary competitive outcome from a dasha
 
@@ -889,13 +903,21 @@ Three things follow, and all three are citable:
    kind, so it cannot do even this.
 
 **Finding for `prompts/ask.txt` (a finding, not a fix).** The file already
-forbids guaranteeing outcomes at lines 28 and 30. Rao supplies the *positive*
+forbids guaranteeing outcomes, in its HONESTY block at **lines 26–30**:
+*"Astrology shows tendencies, not certainties"*, *"DO NOT promise outcomes"*,
+*"Astrology CANNOT pinpoint specific countries, exact future events, names of
+future partners, or guarantee outcomes."* (re-measured 2026-10-17). Rao supplies the *positive*
 form of that constraint: the corpus supports answering "what will this period
 be like for your studies / your career" and does **not** support answering
 "will you pass". The `general` category currently absorbs every exam question
 ("interpret per question text") with no rule attached, and there is no
 studies/education category at all — `grep -ciE "exam|studies|education|student"`
-returns **0** in both `prompts/ask.txt` and `routes/ask.py`. The houses,
+returns **0** in both `prompts/ask.txt` and `routes/ask.py`, and
+`grep -ciE "gochar|transit"` returns **0** in `routes/ask.py` — so a
+time-bound question reaches the model with no transit data at all, which is
+half of Rao's apparatus missing (§5B.3). Both re-measured 2026-10-17; the
+CATEGORY GUIDANCE block is `prompts/ask.txt:48–56` and gives one topic line
+per category naming no bhava, no chart and no dasha lord. The houses,
 charts and references for the studies question **are** now sourced — see
 `houses.md` → "Studies and exams" (D-24; 4th for education, 5th for
 intelligence/scholarship, 5th from AL for success in competition, 9th for
