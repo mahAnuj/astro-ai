@@ -94,8 +94,14 @@ async def submit_feedback(
             # show and what makes the record honest. Escaping belongs where the
             # markup is built, and any future consumer must do its own.
             #
-            # The Telegram path already escapes (`notify._escape_md` on all
-            # three fields); this was the only unescaped one.
+            # DO NOT read this as "the Telegram path is safe". An earlier version of
+            # this comment said `notify._escape_md` already escapes all three fields;
+            # QA disproved it. `_escape_md` does not escape its own escape character
+            # (`'\\' in ('_','*','`','[')` is False) and `notify.py:105` sends
+            # `parse_mode: "Markdown"`, so a payload can still break out there. That is
+            # #387, deliberately out of this diff's scope -- it is a different sink with
+            # a different mechanism, and widening a security diff hurts review. This
+            # change makes the EMAIL body safe and claims nothing about Telegram.
             msg = _html.escape(entry["message"] or "")
             page = _html.escape(entry["page"] or "") or "unknown page"
             frm = _html.escape(entry["email"] or "") or "(anonymous)"
