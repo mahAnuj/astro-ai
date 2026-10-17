@@ -34,7 +34,12 @@ Schema (per-day file):
       },
       "prefix_cache": {              # #396 — Groq's PROVIDER-side prefix cache
         "groq120|openai/gpt-oss-120b|rashifal_single": {
-          "calls": 4, "reported": 3, "prompt_tokens": 6834, "cached_tokens": 5760}
+          "calls": 7,                  # every provider call on this provider|model|route
+          "measurable": 7,             # ...of those, calls where a SILENCE is informative
+          "reported": 1,               # ...of those, calls that returned a cache figure
+          "prompt_measurable": 16541,  # prompt tokens over measurable calls
+          "prompt_reported": 2363,     # prompt tokens over reported calls only
+          "cached_tokens": 2304}
       },
       "calls": {"total": .., "hits": .., "misses": .., "miss_latency_sum_ms": ..},
       "call_by_route": {
@@ -47,10 +52,14 @@ Two invariants worth knowing before reading a number off this file:
 
   * prefix_cache is NOT the response cache (`calls.hits`). That one is this
     app's own cache and dies with the Cloud Run instance; this one is Groq's and
-    does not. `calls` counts every served call, but `reported` / `prompt_tokens`
-    / `cached_tokens` move only when the provider actually returned a cache
-    figure. A provider that omits it leaves reported at 0 and NO token sums --
-    absent is not zero, and the ratio is cached/prompt over reported calls only.
+    does not. `calls` counts every served call; `reported` moves only when the
+    provider actually returned a figure; `measurable` sits between them -- a
+    call on a CACHE_REPORTING_MODELS model with a prompt at or over
+    MIN_CACHEABLE_PREFIX, where Groq's silence means "missed", not "cannot say".
+    A miss therefore adds to `prompt_measurable` with zero cached tokens, which
+    is what makes effective_pct honest; a call on a non-reporting model adds to
+    `calls` and nothing else. Absent is still not zero -- but a measured miss IS
+    zero, and conflating the two is what overstated the benefit ~7x.
 
   * sum(fallback_reasons.values()) == fallbacks for any day recorded after #355,
     because both are incremented in the same mutator. A day recorded BEFORE it
@@ -84,6 +93,37 @@ log = logging.getLogger(__name__)
 STATS_RETENTION_DAYS = 30
 
 _LOCAL_FALLBACK_DIR = Path(os.environ.get("BHAGYA_LLM_STATS_FALLBACK_DIR", "/tmp/bhagya_llm_stats"))
+
+# --- #396: what makes a missing cache figure INFORMATIVE ---------------------
+#
+# Groq returns no `prompt_tokens_details` object at all on a cache miss, so an
+# absent figure is ambiguous: it could mean "this model never reports" or
+# "this model reports and this call simply missed". Measured live on
+# openai/gpt-oss-120b, 2026-10-17: 1 hit (cached 2304 of 2363 prompt tokens)
+# and 6 misses across 7 identical-prefix calls, every miss arriving as
+# `prompt_tokens_details: null`. Both states look the same on the wire.
+#
+# The model resolves it. Groq documents prefix caching for exactly these three
+# models, with a minimum cacheable prefix "ranging from 128 to 1024 tokens"
+# depending on the model (console.groq.com/docs/prompt-caching, read 2026-10-17).
+# Both spellings are listed because the chain configures the `openai/` prefix
+# while the docs name the bare model.
+CACHE_REPORTING_MODELS = frozenset({
+    "openai/gpt-oss-120b", "openai/gpt-oss-20b", "openai/gpt-oss-safeguard-20b",
+    "gpt-oss-120b", "gpt-oss-20b", "gpt-oss-safeguard-20b",
+})
+
+# 1024 is the TOP of Groq's documented 128-1024 range, and that is deliberate.
+# Below it we cannot tell a genuine miss from a prompt that was never eligible
+# to be cached, so those calls stay UNMEASURABLE rather than being scored 0%.
+# Under-reporting the denominator is the conservative error here: it leaves a
+# route showing "--" instead of showing it a confident and wrong 0%.
+MIN_CACHEABLE_PREFIX = 1024
+
+# One definition of the counter row, shared by record() and range_summary(). They
+# drifting apart is how a field gets summed in one place and ignored in the other.
+_PREFIX_ZERO = {"calls": 0, "measurable": 0, "reported": 0,
+                "prompt_measurable": 0, "prompt_reported": 0, "cached_tokens": 0}
 
 
 def _key_for(day: date) -> str:
@@ -143,13 +183,22 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
             reasons = data.setdefault("fallback_reasons", {})
             rkey = f"{failed_provider or 'unknown'}|{fallback_reason or 'unknown'}"
             reasons[rkey] = reasons.get(rkey, 0) + 1
-        pc = data.setdefault("prefix_cache", {}).setdefault(
-            stat_key, {"calls": 0, "reported": 0, "prompt_tokens": 0, "cached_tokens": 0})
+        pc = data.setdefault("prefix_cache", {}).setdefault(stat_key, dict(_PREFIX_ZERO))
         pc["calls"] = pc.get("calls", 0) + 1
-        if prompt_tokens is not None and cached_tokens is not None:
-            pc["reported"] = pc.get("reported", 0) + 1
-            pc["prompt_tokens"] = pc.get("prompt_tokens", 0) + prompt_tokens
-            pc["cached_tokens"] = pc.get("cached_tokens", 0) + cached_tokens
+        if prompt_tokens is not None:
+            # A call that REPORTED is measurable by definition, whatever its size:
+            # the model's own minimum may be 128, and excluding a reported call
+            # from the denominator while counting its cached tokens in the
+            # numerator would let the effective rate exceed 100%.
+            measurable = cached_tokens is not None or (
+                model in CACHE_REPORTING_MODELS and prompt_tokens >= MIN_CACHEABLE_PREFIX)
+            if measurable:
+                pc["measurable"] = pc.get("measurable", 0) + 1
+                pc["prompt_measurable"] = pc.get("prompt_measurable", 0) + prompt_tokens
+            if cached_tokens is not None:
+                pc["reported"] = pc.get("reported", 0) + 1
+                pc["prompt_reported"] = pc.get("prompt_reported", 0) + prompt_tokens
+                pc["cached_tokens"] = pc.get("cached_tokens", 0) + cached_tokens
         return data
 
     result = storage.update_json(_key_for(today), _mut, default=None)
@@ -339,8 +388,9 @@ def range_summary(days: int) -> dict[str, Any]:
             "total_calls": 87,
             "fallbacks": 3,
             "fallback_reasons": {"groq120|429_tpm": 2, ...},   # sorted desc; #355
-            "prefix_cache": {"rashifal_single": {"calls", "reported",
-                             "prompt_tokens", "cached_tokens", "pct"}, ...},   # #396
+            "prefix_cache": {"rashifal_single": {"calls", "measurable", "reported",
+                             "prompt_measurable", "prompt_reported", "cached_tokens",
+                             "hit_pct", "effective_pct"}, ...},   # #396
           }
         }
     """
@@ -380,8 +430,7 @@ def range_summary(days: int) -> dict[str, Any]:
             parts = compound_key.split("|")
             if len(parts) != 3:
                 continue
-            acc = prefix_acc.setdefault(parts[2], {"calls": 0, "reported": 0,
-                                                     "prompt_tokens": 0, "cached_tokens": 0})
+            acc = prefix_acc.setdefault(parts[2], dict(_PREFIX_ZERO))
             for field in acc:
                 acc[field] += pc.get(field, 0)
     daily.reverse()  # oldest first for display
@@ -394,12 +443,23 @@ def range_summary(days: int) -> dict[str, Any]:
             "total_calls": total,
             "fallbacks": fallbacks,
             "fallback_reasons": dict(sorted(fallback_reasons.items(), key=lambda kv: -kv[1])),
+            # TWO rates, because they answer two different questions and the
+            # difference is large. Measured live 2026-10-17: 1 hit in 7 identical
+            # calls on gpt-oss-120b, cached 2304 of 2363 prompt tokens. hit_pct
+            # reads 97.5% -- true, and it is how hard a hit lands. effective_pct
+            # reads 13.9% -- also true, and it is the only one that describes the
+            # quota actually saved. Publishing hit_pct alone overstates the
+            # benefit by ~7x, because its denominator excludes every miss.
+            #
+            # Both are None rather than 0 when nothing measurable happened: a
+            # route served only by a non-reporting model, or only by prompts under
+            # MIN_CACHEABLE_PREFIX, was never observed and must not read as 0%.
             "prefix_cache": {
                 route: {**v,
-                        # None, never 0: no reported call (or no prompt tokens)
-                        # means UNMEASURED, and a zero would read as "no caching".
-                        "pct": (round(v["cached_tokens"] / v["prompt_tokens"] * 100, 1)
-                                if v["reported"] and v["prompt_tokens"] else None)}
+                        "hit_pct": (round(v["cached_tokens"] / v["prompt_reported"] * 100, 1)
+                                    if v["reported"] and v["prompt_reported"] else None),
+                        "effective_pct": (round(v["cached_tokens"] / v["prompt_measurable"] * 100, 1)
+                                          if v["measurable"] and v["prompt_measurable"] else None)}
                 for route, v in sorted(prefix_acc.items(), key=lambda kv: -kv[1]["calls"])
             },
         },

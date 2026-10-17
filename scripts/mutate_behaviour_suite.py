@@ -1051,6 +1051,39 @@ MUTATIONS = [
      "                _last_prefix.set(None)\n",
      "",
      "test_chat_resets_the_figure_before_each_call_so_a_stub_cannot_inherit_it"),
+
+    # --- #396 follow-up: classifying a SILENCE. Groq sends no cache figure at
+    # all on a miss, so "absent" means either "this model cannot report" or
+    # "this model reported nothing". Only the first is unmeasurable. Each row
+    # below collapses that distinction in one direction or the other -- the
+    # first four inflate the saving, the fifth invents one.
+    ("#396: a junk cache figure discards the prompt size too (a miss becomes unclassifiable)",
+     "src/astro_ai/providers.py",
+     "        return prompt, None\n", "        return None\n",
+     "test_prefix_usage_accepts_only_real_ints"),
+
+    ("#396: the model allowlist is ignored, so a non-caching model's silence scores 0%",
+     "src/astro_ai/llm_stats.py",
+     "                model in CACHE_REPORTING_MODELS and prompt_tokens >= MIN_CACHEABLE_PREFIX)",
+     "                True)",
+     "test_a_miss_on_a_non_reporting_model_is_not_scored_as_zero"),
+
+    ("#396: the minimum-prefix threshold is ignored (an ineligible prompt scores 0%)",
+     "src/astro_ai/llm_stats.py",
+     "prompt_tokens >= MIN_CACHEABLE_PREFIX)", "True)",
+     "test_a_prompt_under_the_minimum_cacheable_length_is_not_measurable"),
+
+    ("#396: a call that REPORTED is no longer forced measurable (effective rate can exceed 100%)",
+     "src/astro_ai/llm_stats.py",
+     "            measurable = cached_tokens is not None or (",
+     "            measurable = (",
+     "test_a_reported_call_under_the_minimum_still_counts_so_the_rate_cannot_exceed_100"),
+
+    ("#396: effective_pct divides by reported tokens, collapsing it into hit_pct (the original defect)",
+     "src/astro_ai/llm_stats.py",
+     'v["cached_tokens"] / v["prompt_measurable"] * 100',
+     'v["cached_tokens"] / v["prompt_reported"] * 100',
+     "test_the_two_rates_diverge_and_effective_is_the_honest_one"),
     # --- #400: the per-route token budget gate. A size gate that cannot go red is
     # the honour system it replaced; each row neuters one comparison it makes.
     ("#400: the ceiling comparison is neutered (an oversized prompt passes)",

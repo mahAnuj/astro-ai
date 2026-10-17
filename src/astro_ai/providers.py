@@ -152,23 +152,40 @@ _last_model: ContextVar[str] = ContextVar("_last_model", default="")
 # (None when the response carries no usage) so a fallback provider that omits
 # usage cannot inherit the figure from the one that failed before it.
 _last_usage: ContextVar[int | None] = ContextVar("_last_usage", default=None)
-# (prompt_tokens, cached_tokens) the most recent call reported, or None when the
-# provider did not report a cache figure (#396). Kept apart from _last_usage on
+# (prompt_tokens, cached_tokens_or_None) for the most recent call, or None when
+# even the prompt size could not be read (#396). Kept apart from _last_usage on
 # purpose: that one is a total other modules already read. chat() resets this to
 # None before EVERY _call_one, so one provider's figures cannot be recorded
 # against the next provider that served the request.
-_last_prefix: ContextVar[tuple[int, int] | None] = ContextVar("_last_prefix", default=None)
+#
+# The SECOND element is independently optional, and that is the whole point.
+# Measured against live Groq 2026-10-17 on openai/gpt-oss-120b with a 2,363-token
+# prompt: a cache MISS returns `prompt_tokens_details: null` -- the entire object,
+# not `cached_tokens: 0` -- and a HIT returns `{"cached_tokens": 2304}`. So a
+# silence is ambiguous at THIS layer (unsupported model? or supported and simply
+# missed?) and must not be collapsed here. We therefore keep the prompt size even
+# when the cache figure is absent, and llm_stats.record() -- which knows the model
+# -- is what resolves the ambiguity. Returning None for the whole tuple on a miss
+# (the original shape) threw away the one number needed to resolve it.
+_last_prefix: ContextVar[tuple[int, int | None] | None] = ContextVar("_last_prefix", default=None)
 
 
-def _prefix_usage(usage) -> tuple[int, int] | None:
-    """(prompt_tokens, cached_tokens) from a response's usage block, or None.
+def _prefix_usage(usage) -> tuple[int, int | None] | None:
+    """(prompt_tokens, cached_tokens) from a usage block; cached may be None.
 
-    None means "this provider did not say", which is NOT the same as zero: a
-    non-Groq provider or a model without prefix caching omits
-    `prompt_tokens_details`, and recording that as 0 would put a confident
-    "0% cached" on the dashboard for a route that was simply never measured.
-    A reported zero is (n, 0). bool is excluded because it is an int subclass.
-    Never raises -- this runs on the happy path of every LLM call.
+    Three outcomes, because the provider has three things to say:
+
+    * `None`            -- no readable prompt size, so nothing is known at all.
+    * `(prompt, None)`  -- the prompt size is known, the cache figure is NOT.
+                           A cached count of `None` is never turned into 0 here:
+                           recording a silence as a measured zero would put a
+                           confident "0% cached" against a call that may simply
+                           have been ineligible. Resolving which is
+                           llm_stats.record()'s job -- it knows the model.
+    * `(prompt, n)`     -- the provider reported, and `n` may legitimately be 0.
+
+    bool is excluded because it is an int subclass. Never raises -- this runs on
+    the happy path of every LLM call.
     """
     try:
         prompt = getattr(usage, "prompt_tokens", None)
@@ -176,9 +193,10 @@ def _prefix_usage(usage) -> tuple[int, int] | None:
         cached = getattr(details, "cached_tokens", None)
     except Exception:  # noqa: BLE001 — observability never breaks a reading
         return None
-    for v in (prompt, cached):
-        if not isinstance(v, int) or isinstance(v, bool):
-            return None
+    if not isinstance(prompt, int) or isinstance(prompt, bool):
+        return None
+    if not isinstance(cached, int) or isinstance(cached, bool):
+        return prompt, None
     return prompt, cached
 
 

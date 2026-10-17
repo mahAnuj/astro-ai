@@ -83,9 +83,12 @@ def test_a_reported_cache_figure_is_recorded_and_becomes_a_ratio(stats_dir, monk
     _install(monkeypatch, {"p": (GOOD, _usage(2278, cached=1920))})
     _chat()
     e = _agg()
-    assert (e["calls"], e["reported"]) == (1, 1)
-    assert (e["prompt_tokens"], e["cached_tokens"]) == (2278, 1920)
-    assert e["pct"] == pytest.approx(84.3, abs=0.05)
+    assert (e["calls"], e["measurable"], e["reported"]) == (1, 1, 1)
+    assert (e["prompt_reported"], e["cached_tokens"]) == (2278, 1920)
+    assert e["hit_pct"] == pytest.approx(84.3, abs=0.05)
+    # A call that reported is measurable whatever its size, so with no misses in
+    # the window the two rates agree. They diverge only once a miss is counted.
+    assert e["effective_pct"] == pytest.approx(84.3, abs=0.05)
 
 
 # 2 -------------------------------------------------------------------------
@@ -96,9 +99,13 @@ def test_a_provider_that_does_not_report_is_absent_never_zero(stats_dir, monkeyp
     _install(monkeypatch, {"p": (GOOD, _usage(2278))})     # no prompt_tokens_details
     _chat()
     e = _agg()
-    assert e["calls"] == 1 and e["reported"] == 0
-    assert e["prompt_tokens"] == 0 and e["cached_tokens"] == 0
-    assert e["pct"] is None and e["pct"] != 0
+    assert e["calls"] == 1 and e["measurable"] == 0 and e["reported"] == 0
+    assert e["prompt_measurable"] == 0 and e["prompt_reported"] == 0
+    assert e["cached_tokens"] == 0
+    assert e["hit_pct"] is None and e["hit_pct"] != 0
+    # BOTH rates stay None. This provider cannot report, so its silence carries
+    # no information and must not be scored as a miss either.
+    assert e["effective_pct"] is None and e["effective_pct"] != 0
 
 
 # 3 -------------------------------------------------------------------------
@@ -107,8 +114,8 @@ def test_a_measured_miss_is_zero_and_distinct_from_absent(stats_dir, monkeypatch
     _install(monkeypatch, {"p": (GOOD, _usage(2278, cached=0))})
     _chat()
     e = _agg()
-    assert e["reported"] == 1 and e["pct"] == 0.0
-    assert e["pct"] is not None
+    assert e["reported"] == 1 and e["hit_pct"] == 0.0
+    assert e["hit_pct"] is not None
 
 
 # 4 -------------------------------------------------------------------------
@@ -117,12 +124,16 @@ def test_a_null_cached_tokens_inside_details_is_absent(stats_dir, monkeypatch):
     _install(monkeypatch, {"p": (GOOD, _usage(2278, cached=None))})
     _chat()
     e = _agg()
-    assert e["calls"] == 1 and e["reported"] == 0 and e["pct"] is None
+    assert e["calls"] == 1 and e["reported"] == 0 and e["hit_pct"] is None
 
 
 @pytest.mark.parametrize("bad", [True, "1920", 12.5, object()])
 def test_prefix_usage_accepts_only_real_ints(bad):
-    assert providers._prefix_usage(_usage(100, cached=bad)) is None
+    # A junk CACHED figure is discarded but the prompt size survives: it is what
+    # lets llm_stats.record() tell "this model never reports" from "this call
+    # missed". Returning None for the pair here is what hid that distinction.
+    assert providers._prefix_usage(_usage(100, cached=bad)) == (100, None)
+    # A junk PROMPT size leaves nothing usable, so the whole pair is dropped.
     assert providers._prefix_usage(SimpleNamespace(prompt_tokens=bad)) is None
     assert providers._prefix_usage(None) is None
     assert providers._prefix_usage(_usage(100, cached=40)) == (100, 40)
@@ -140,7 +151,7 @@ def test_a_failed_providers_figures_do_not_become_the_next_providers(stats_dir, 
     _chat()
     e = _agg()
     assert e["calls"] == 1 and e["reported"] == 0
-    assert e["cached_tokens"] == 0 and e["pct"] is None
+    assert e["cached_tokens"] == 0 and e["hit_pct"] is None
 
 
 def test_chat_resets_the_figure_before_each_call_so_a_stub_cannot_inherit_it(
@@ -173,7 +184,7 @@ def test_chat_resets_the_figure_before_each_call_so_a_stub_cannot_inherit_it(
     _chat()
     e = _agg()
     assert e["calls"] == 1 and e["reported"] == 0
-    assert e["cached_tokens"] == 0 and e["pct"] is None
+    assert e["cached_tokens"] == 0 and e["hit_pct"] is None
 
 
 # 6 -------------------------------------------------------------------------
@@ -186,7 +197,7 @@ def test_the_ratio_is_over_reported_calls_only(stats_dir, monkeypatch):
         _chat()
     e = _agg()
     assert e["calls"] == 4 and e["reported"] == 1
-    assert e["pct"] == 50.0, "three unreported calls must not dilute the one measurement"
+    assert e["hit_pct"] == 50.0, "three unreported calls must not dilute the one measurement"
 
 
 # 7 -------------------------------------------------------------------------
@@ -205,7 +216,7 @@ def test_a_day_file_from_before_the_change_neither_errors_nor_dilutes(stats_dir,
     _chat()
     agg = llm_stats.range_summary(3)["aggregate"]
     assert agg["prefix_cache"]["ask"]["calls"] == 1, "50 pre-change calls must not be counted"
-    assert agg["prefix_cache"]["ask"]["pct"] == 50.0
+    assert agg["prefix_cache"]["ask"]["hit_pct"] == 50.0
     assert agg["total_calls"] == 51
 
 
@@ -263,3 +274,125 @@ def test_dashboard_names_both_caches_and_shows_unreported_as_a_dash(
     assert "—" in unmeasured
     assert "0%" not in re.sub(r"<[^>]+>", " ", unmeasured), (
         "a route the provider never reported on must not read as 0% cached")
+
+
+# --- #396 follow-up: a MISS on a cache-reporting model is a measured zero ----
+#
+# Groq returns no `prompt_tokens_details` object at all on a cache miss -- not
+# `cached_tokens: 0`. Measured live 2026-10-17 against openai/gpt-oss-120b with
+# the real 2,363-token rashifal_single prefix: 1 hit (cached 2304) and 6 misses
+# across 7 identical calls, every miss arriving as `prompt_tokens_details: null`.
+#
+# So "absent" means two different things depending on the model, and only one of
+# them is unmeasurable. Scoring both as unmeasurable excluded every miss from the
+# denominator and overstated the saving ~7x.
+
+CACHING_MODEL = "openai/gpt-oss-120b"
+
+
+def _install_model(monkeypatch, usages, model=CACHING_MODEL, route="ask"):
+    """Like _install, but pins the MODEL -- which is what decides measurability.
+
+    `usages` is a list consumed one per call, so a single install can serve a
+    hit-then-miss sequence the way the live probe saw it.
+    """
+    chain = [providers.ProviderConfig("groq120", "https://p.example/v1", model, "K")]
+    monkeypatch.setenv("K", "k")
+    pending = list(usages)
+
+    def factory(*, api_key=None, base_url=None, **kw):
+        def create(**k):
+            usage = pending.pop(0)
+            return SimpleNamespace(
+                choices=[SimpleNamespace(message=SimpleNamespace(content=GOOD),
+                                         finish_reason="stop")],
+                usage=usage)
+        return SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+
+    monkeypatch.setattr(providers, "OpenAI", factory)
+    monkeypatch.setattr(providers, "_ordered_for_request", lambda: chain)
+    return route
+
+
+def test_the_two_rates_diverge_and_effective_is_the_honest_one(stats_dir, monkeypatch):
+    """The live sample, replayed: 1 hit + 6 misses on a cache-reporting model.
+
+    This is the regression the follow-up exists for. Before it, the six misses
+    were all dropped from the denominator and the dashboard showed 97.5%.
+    """
+    hit = _usage(2363, cached=2304)
+    misses = [_usage(2363) for _ in range(6)]          # details absent, as Groq sends
+    _install_model(monkeypatch, [hit] + misses)
+    for _ in range(7):
+        _chat()
+    e = _agg()
+    assert (e["calls"], e["measurable"], e["reported"]) == (7, 7, 1)
+    assert e["prompt_measurable"] == 2363 * 7
+    assert e["prompt_reported"] == 2363
+    assert e["cached_tokens"] == 2304
+
+    # How hard a hit lands -- true, and not a saving.
+    assert e["hit_pct"] == pytest.approx(97.5, abs=0.05)
+    # The quota actually saved. 2304 / (2363*7).
+    assert e["effective_pct"] == pytest.approx(13.9, abs=0.05)
+    assert e["effective_pct"] < e["hit_pct"] / 6, (
+        "a miss on a cache-reporting model must enter the denominator; if the two "
+        "rates track each other the misses are being dropped again")
+
+
+def test_a_miss_on_a_non_reporting_model_is_not_scored_as_zero(stats_dir, monkeypatch):
+    """The other half of the distinction, and why it cannot just count every miss.
+
+    llama-3.3-70b-versatile has no prefix cache at all, so its silence says
+    nothing. Counting it as a measured zero would invent a 0% for a route that
+    was never observed -- the mirror of the bug above.
+    """
+    _install_model(monkeypatch, [_usage(2363)], model="llama-3.3-70b-versatile")
+    _chat()
+    e = _agg()
+    assert e["calls"] == 1 and e["measurable"] == 0 and e["reported"] == 0
+    assert e["hit_pct"] is None and e["effective_pct"] is None
+
+
+def test_a_prompt_under_the_minimum_cacheable_length_is_not_measurable(stats_dir, monkeypatch):
+    """Groq's minimum cacheable prefix is 128-1024 tokens depending on the model.
+
+    Under 1024 we cannot tell a miss from an ineligible prompt, so those calls
+    stay out of the denominator. `dasha` (944 tok) and `today` (743) live here.
+    """
+    _install_model(monkeypatch, [_usage(llm_stats.MIN_CACHEABLE_PREFIX - 1)])
+    _chat()
+    e = _agg()
+    assert e["calls"] == 1 and e["measurable"] == 0
+    assert e["effective_pct"] is None, "an ineligible prompt is unmeasured, not 0%"
+
+
+def test_a_reported_call_under_the_minimum_still_counts_so_the_rate_cannot_exceed_100(
+        stats_dir, monkeypatch):
+    """A model's own floor may be 128, so a short prompt CAN legitimately report.
+
+    If such a call were excluded from `prompt_measurable` while its cached tokens
+    stayed in the numerator, effective_pct would exceed 100%.
+    """
+    short = llm_stats.MIN_CACHEABLE_PREFIX - 1
+    _install_model(monkeypatch, [_usage(short, cached=short)])
+    _chat()
+    e = _agg()
+    assert e["measurable"] == 1 and e["prompt_measurable"] == short
+    assert e["effective_pct"] == 100.0
+    assert e["effective_pct"] <= 100.0
+
+
+def test_the_dashboard_shows_the_effective_rate_not_only_the_hit_rate(
+        stats_dir, monkeypatch, admin):
+    """The number a reader takes away must be the saving, not the hit rate."""
+    _install_model(monkeypatch, [_usage(2363, cached=2304)] + [_usage(2363) for _ in range(6)])
+    for _ in range(7):
+        _chat()
+    html = admin.get("/admin").text
+    row = _row(html, "ask")
+    assert "13.9%" in row, "the effective rate must be rendered"
+    assert "Effective" in html and "Hit rate" in html, "both columns must be labelled"
+    assert "Read Effective, not Hit rate" in html, (
+        "the page must say which number is the saving; two bare percentages "
+        "invite the reader to take the larger one")
