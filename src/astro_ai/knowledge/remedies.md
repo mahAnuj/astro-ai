@@ -401,6 +401,148 @@ responses:
 
 ---
 
+## 11. Provenance — Rao Ch. 34, line by line (added 2026-10-17, #191)
+
+**This file was written in 2026-07-24 from Rao Ch. 34 but carried no line
+ranges, so nothing above §11 was checkable without re-reading the chapter.
+Every section is now pinned.** All ranges are **PLAIN `pdftotext`** (no
+`-layout`), which gives `data/vedic_astro_textbook.pdf` **20,669** lines — the
+fingerprint `SOURCES.md` records. `grahas.md` §12 cites the same book under
+`-layout` (16,724 lines); the two numbering schemes are not interchangeable.
+
+| This file | Rao | Plain-`pdftotext` lines |
+|---|---|---|
+| §1.1 purpose of remedies | §34.1 | 19162–19181 |
+| §3 common-sense remedies | §34.1.1 | 19183–19199 |
+| §2 the four categories | §34.1.2 | 19200–19214 |
+| §4 gemstones, prose rules | §34.2 | 19215–19238 |
+| **§4.2 gemstone + metal table (Table 77)** | §34.2 | **19239–19298** |
+| §4.3 wearing rules | §34.2 | 19300–19302 |
+| §4.4 two-gemstone combinations | §34.2 | 19304–19312 |
+| §4.5 finger conventions | §34.2 | 19309–19324 |
+| §5 good deeds, per-planet | §34.3 | 19327–19339 |
+| **§5.1 grain donations** | §34.3 | **19340–19346** |
+| §5.2 fasting | §34.3 | 19347–19350 |
+| §6 / §6.1 mantra and stotra cautions | §34.4 | 19356–19387 |
+| **§6.2 recitation counts** | §34.4.1–34.4.9 | **19389–19451** |
+| §9 divisional-chart remedy targeting | §34.4 | 19369–19373 |
+| §7 deity propitiation, prose | §34.5 | 19456–19461 |
+| **§7.1 planet→deity table (Table 78)** | §34.5 | **19467–19489** |
+| §7.2 choosing a deity from combinations | §34.5 | 19491–19510 |
+| — Rao's own closing hedge | §34.6 | 19516–19523 |
+
+Three verifications worth recording, because they are the kind of thing a
+re-read would otherwise redo:
+
+- **Table 77 and Table 78 both interleave their columns under plain
+  `pdftotext`.** Table 78 prints all nine deity cells (19469–19485) before the
+  planet labels resume at 19486. The pairings in §4.2 and §7.1 above were
+  re-derived from `pdftotext -layout` (lines 15509–15522 for Table 78) and are
+  correct as written.
+- **Rao gives Ketu NO grain.** §34.3's grain sentence runs Sun → Rahu and stops
+  (line 19344). §5.1's table correctly has no Ketu row. This matters below.
+- **Rao spells it "Ganesa"** (line 19485); §7.1 writes "Ganesha". Harmless, but
+  a grep for the book's own spelling will miss ours.
+
+### 11.1 Rao's own closing hedge — quote it when remedies get prescriptive
+
+> *"This book is only an introductory textbook of integrated Vedic astrology …
+> The coverage of the topics in the current part ("Special Topics") is
+> particularly brief … Readers should refer to other books for more details."*
+> — §34.6, lines 19517–19521
+
+He names one onward source: **"Vedic Remedies in Astrology" by Pt. Sanjay
+Rath** (lines 19522–19523). It is **not in `data/`**. Do not cite it.
+
+### 11.2 Unsourced additions already in this file
+
+These sit in §5's good-deeds table and are **not** in Rao §34.3. They are
+plausible and may well be real practice; they are not his, and the table reads
+as though they were. Listed so a reader can tell the two apart, not removed:
+
+| Row | In Rao §34.3 (lines 19330–19339) | Added by us |
+|---|---|---|
+| Mars | physical exercise; donate to a school gym | "blood donation" |
+| Venus | read poetry; help a poet | "support artists" |
+| Saturn | perform physical labor; help manual labourers | "serve the elderly" |
+| Ketu | meditation | "support renunciates" |
+
+Also: §5.1 reads "Sesame seeds (black)" — Rao writes only *"Saturn rules sesame
+seeds"* (lines 19343–19344); the colour is ours. And §9's "Want career
+strengthening → worship yogakaraka in D-10" is a **gemstone** rule in Rao
+(§34.2, lines 19222–19223: *"suppose someone wants improvement in career.
+We can prescribe the gemstone of a yogakaraka in D-10"*; and §34.2 line 19322
+puts the same yogakaraka-in-D-10 on the middle *finger*), not a worship rule; the worship rule is *lagna lord* of the relevant
+varga (§34.4, lines 19369–19373).
+
+---
+
+## 12. Audit of the shipped remedy assignments — `prompts/natal.txt:68` (#398 A)
+
+`prompts/natal.txt:68` assigns a per-planet remedy pair to the LLM for any
+debilitated, combust or otherwise weak planet. Rao Ch. 34 is the authority
+those assignments are nominally drawn from (§5.1 cites §34.3, §7.1 cites
+§34.5). Measured against his own tables, 2026-10-17.
+
+**Corpus present for every absence claim below: 14 books, 94,019 `-layout`
+lines, via `scripts/corpus_search.py --absent`** — Cheiro *Book of Numbers*,
+Raman *Astrology for Beginners*, Vasudev *Astrology*, two numerology leaflets,
+Goodwin, Johari, Kumar, Rao *Lessons* Vol. I, a Chaldean-numerology compilation,
+*Muhurta Chintamani* (Sanskrit), Raman *Muhurtha* (1948), Rao
+*Vedic Astrology: An Integrated Approach*, and two number-compatibility PDFs.
+Absence verdicts are absences across those fourteen.
+
+| # | Shipped assignment | Rao's own text | Verdict |
+|---|---|---|---|
+| 1 | **Sun → red-lentil Sunday charity** | *"Sun rules wheat"* (§34.3, line 19341) | **WRONG.** Rao's Sun grain is **wheat**. And `red lentil` / `masoor`: **0 hits across all 94,019 lines** — the substitute grain is in no book we hold, for any planet. **Correcting this file's own earlier note:** red lentils are *not* Mars's either; Rao gives Mars **toor daal, "a dark yellow lentil"** (line 19341). `vedic_reference.md:125` assigns "red lentils (masoor dal)" to Tuesday/Mars as a "classical Tuesday remedy" — that is **also UNSOURCED**, by the same measurement |
+| 2 | **Sun → Surya Namaskar at sunrise** | not in Ch. 34; Rao's Sun good-deed is temple visit / donation / temple administration (§34.3, lines 19330–19331) | **UNSOURCED.** `Surya Namaskar` and `namaskar`: **0 hits for any of 4 and any of 3 spellings respectively across all 94,019 lines**. Proved absent, not merely unlocated |
+| 3 | **Moon → milk offering to Shiva** | Table 78: Moon → **Gauri, Lalita, Saraswati, Krishna** (line 19470). **Shiva is the Sun's** (line 19469) | **WRONG.** Not a near miss — the two rows are adjacent in the same table. Rao's §34.5 prose independently confirms the direction: *"Sun denotes a Shaiva deity. Moon and Venus denote a goddess."* (lines 19494–19495) |
+| 4 | **Mars → Hanuman Chalisa, Tuesday charity** | Table 78: Mars → **Hanuman**, Rudra, Kartikeya (Subrahmanya), Narasimha (lines 19471–19472) | **CORRECT** on the deity — Hanuman is Rao's first-listed Mars deity. The *text* "Hanuman Chalisa" is **0 hits across 6 spellings** in the corpus; cite the deity, not the stotra |
+| 5 | **Saturn → Hanuman intercession** | Table 78: Saturn → **Vishnu, Brahma** (line 19481) | **WRONG as a base assignment.** The folk rule's actual root is traceable and it runs the other way: *"Mars with Saturnine influence may show Hanuman, as Saturn shows a Vaishnava deity and he has humility and the spirit of a servant."* (§34.5, lines 19504–19506). Hanuman is reached from a **Mars** placement that carries Saturnine influence. Saturn alone never yields him in Rao |
+| 6 | **Saturn → black-sesame charity; Saturday service** | *"Saturn rules sesame seeds"* (lines 19343–19344); *"To please Saturn, one may perform some physical labor or help some people who live on manual labor"* (lines 19336–19337) | **CORRECT** in substance. "black" is our addition; Rao says "sesame seeds" |
+| 7 | **Rahu → Durga worship** | Table 78: Rahu → **Durga**, Narasimha (line 19483) | **CORRECT** |
+| 8 | **Rahu → serve outsiders** | §34.3: Rahu → *"donate some money to a research organization or go on a pilgrimage"* (lines 19338–19339) | **UNSOURCED.** `outsiders` returns **1 hit in all 94,019 lines**, in Cheiro's *Book of Numbers* — a numerology text, nothing to do with Rahu or with remedies. Nothing in Rao licenses it |
+| 9 | **Ketu → Ganesha worship** | Table 78: Ketu → **Ganesa** (line 19485) | **CORRECT** |
+| 10 | **Ketu → sesame-oil charity** | Rao gives **Ketu no grain and no oil**; his Ketu good-deed is *"one may do meditation"* (line 19339). **Sesame is Saturn's** (line 19344) | **UNSOURCED, and cross-assigned.** `sesame oil` returns **2 hits in all 94,019 lines**, both in Johari's *Numerology with Tantra, Ayurveda and Astrology* (lines 2274, 4863, `-layout`) and both Ayurvedic self-massage prose — not a remedy, not astrological, not Ketu's. `sesame` appears **once** in the whole Rao textbook, and it is the Saturn grain sentence |
+| 11 | **Moon → Monday fasting** (and the weekday pattern generally) | Rao's fasting rule is **not** "fast on the weak planet's weekday": *"Fasting on the weekday ruled by upapada lord in rasi chart … mitigates troubles in one's marriage. Fasting on the weekday ruled by rajyapada lord may mitigate troubles in career."* (§34.3, lines 19347–19350) | **UNSOURCED as stated.** What Rao *does* tie to a planet's own weekday is **mantra recitation** (*"The weekday ruled by a planet is ideal for repeating its mantra"*, lines 19378–19379) and **first wearing a gemstone** (lines 19300–19302). The whole weekday-fasting family in the prompt (Mercury Wednesday, Jupiter Thursday, Venus Friday) rests on the same unsourced step |
+
+### 12.1 Summary for the fix loop — do not act on this section without one
+
+**Four of the eleven are CORRECT** (Mars→Hanuman, Rahu→Durga, Ketu→Ganesa,
+Saturn→sesame/service). **Three are WRONG against Rao's own adjacent table
+rows** (Sun→red lentils, Moon→Shiva, Saturn→Hanuman). **Four are UNSOURCED with
+a measured absence** (Surya Namaskar, Rahu "serve outsiders", Ketu sesame-oil,
+weekday fasting).
+
+The correct values for the three WRONG rows **are** sourceable, and they are:
+
+| Planet | Grain, per Rao §34.3 line 19341–19344 | Deity, per Rao Table 78 lines 19469–19485 |
+|---|---|---|
+| Sun | wheat | Shiva, Rama |
+| Moon | rice | Gauri, Lalita, Saraswati, Krishna |
+| Mars | toor daal (dark yellow lentil) | Hanuman, Rudra, Kartikeya (Subrahmanya), Narasimha |
+| Mercury | moong daal | Vishnu, Narayana, Buddha |
+| Jupiter | chick peas | Hayagreeva, Vishnu, Parameswara, Dattatreya, any guru |
+| Venus | "a whitish grain" — Rao names none | Lakshmi, Parvati |
+| Saturn | sesame seeds | Vishnu, Brahma |
+| Rahu | black gram daal | Durga, Narasimha |
+| Ketu | **none given** | Ganesa |
+
+**Venus's grain cannot be made specific from Rao** — he writes *"Venus rules a
+whitish grain"* and stops. Do not resolve it to rice (Moon's) or to barley; no
+book we hold names it.
+
+**And Rao's §34.5 caveat applies to any table-driven deity remedy:** *"The
+guidelines given in books are merely guidelines. The exact application depends
+on an astrologer's knowledge of mythology and classics … By propitiating a
+deity who closely represents the spirit of a planet in a particular chart, one
+can please the planet more effectively."* (lines 19507–19510). A fixed
+planet→deity map is Rao's starting point, not his answer — which is a reason to
+keep the prompt's language devotional and non-prescriptive even once the three
+WRONG rows are corrected.
+
+---
+
 ## Cross-references
 
 - **Karakas** (which planet governs which life area) —
@@ -418,5 +560,7 @@ responses:
   cross-linked here in a future edit.
 
 ---
+
+*Extended: 2026-10-17 (#191, for #398 A) — every section pinned to plain-`pdftotext` line ranges in §11, and the eleven shipped `prompts/natal.txt:68` assignments audited against Rao's own Tables 77/78 and §34.3 in §12. Three are WRONG, four UNSOURCED with measured absences, four CORRECT. No rule was edited; `prompts/natal.txt` is untouched.*
 
 *Extracted: 2026-07-24 from P.V.R. Narasimha Rao "Vedic Astrology: An Integrated Approach" Ch. 34 (§§34.1–34.6). Full chapter now extracted, superseding the earlier partial extraction in vedic_reference.md §7A. Mantras cited in transliteration only for widely-accepted bija forms; full nama stotras kept in Devanagari-only convention per Rao's explicit anti-mispronunciation guidance.*
