@@ -876,6 +876,15 @@ MUTATIONS = [
      'BUDGET_ERROR_TYPES = ("AllProvidersExhausted",)',
      "test_request_too_large_is_a_break_although_it_subclasses_exhausted"),
 
+    # The defect as it shipped: an anonymous visitor's 2,000 characters
+    # interpolated raw into an HTML email sent from the site's own authenticated
+    # sender domain.
+    ("#373: the feedback email stops escaping the visitor's message",
+     "src/astro_ai/routes/feedback.py",
+     'msg = _html.escape(entry["message"] or "")',
+     'msg = entry["message"] or ""',
+     "test_a_script_payload_in_the_message_does_not_survive_as_markup"),
+
     ("#355: an unrecorded route latency reads as 0 (a zero reads as 'fast')",
      "src/astro_ai/llm_stats.py",
      'int(v["lat_sum"] / v["lat_n"]) if v["lat_n"] else None',
