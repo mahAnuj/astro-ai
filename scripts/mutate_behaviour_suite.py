@@ -1039,6 +1039,50 @@ MUTATIONS = [
      ' and c.get("viewerDidAuthor") is True',
      "",
      "test_a_copied_marker_in_someone_elses_comment_does_not_suppress_the_stop"),
+
+    # --- #400: the per-route token budget gate. A size gate that cannot go red is
+    # the honour system it replaced; each row neuters one comparison it makes.
+    ("#400: the ceiling comparison is neutered (an oversized prompt passes)",
+     "scripts/verify_token_budget.py",
+     "        if worst > ceiling:", "        if False and worst > ceiling:",
+     "test_a_route_over_its_ceiling_fails_naming_the_route_the_ceiling_and_the_value"),
+
+    ("#400: the growth comparison is neutered (#212 again: each step under the ceiling)",
+     "scripts/verify_token_budget.py",
+     "        if en > limit:", "        if False and en > limit:",
+     "test_growth_under_the_ceiling_still_fails"),
+
+    ("#400: the ceiling ignores the Hindi variant (+132 tok on every route unseen)",
+     "scripts/verify_token_budget.py",
+     "        worst = max(en, hi)", "        worst = en",
+     "test_the_hindi_variant_is_judged_against_the_ceiling"),
+
+    ("#400: a row whose route was never measured stops failing",
+     "scripts/verify_token_budget.py",
+     "        if route not in measured:", "        if False:",
+     "test_a_row_for_a_route_that_was_not_measured_fails"),
+
+    ("#400: a twelfth prompt file is no longer noticed (ships unbudgeted)",
+     "scripts/verify_token_budget.py",
+     "        extra = uncovered_prompts(declared, prompts_dir)", "        extra = []",
+     "test_a_twelfth_prompt_file_with_no_budget_fails"),
+
+    ("#400: an empty override is accepted (a pass that measured nothing)",
+     "scripts/verify_token_budget.py",
+     "if not path.is_file() or path.stat().st_size == 0:", "if False:",
+     "test_an_override_that_is_empty_is_refused_not_skipped_past"),
+
+    ("#400: could-not-run exits 0 (an unmeasured gate reads as green)",
+     "scripts/verify_token_budget.py",
+     "This is NOT a pass — the check did not run.\")\n        return 2",
+     "This is NOT a pass — the check did not run.\")\n        return 0",
+     "test_an_unavailable_tokenizer_is_exit_two_and_says_it_is_not_a_pass"),
+
+    ("#400: the natal row drops the chart payload (#266 was the SUM)",
+     "scripts/verify_token_budget.py",
+     'measured["natal+payload"] = (n_en + user, n_hi + user)',
+     'measured["natal+payload"] = (n_en, n_hi)',
+     "test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
