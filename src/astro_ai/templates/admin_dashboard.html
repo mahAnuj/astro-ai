@@ -217,6 +217,15 @@
 
       {# PROVIDER-SIDE PREFIX CACHE (#396). Keyed by the CHAT route (the prompt),
          not the web route in "By route" above -- the vocabularies differ. #}
+      {% if llm_stats.aggregate.prefix_cache_skipped_rows and not llm_stats.aggregate.prefix_cache %}
+      {# Every stored row was skipped, so the table below does not render at all.
+         Without this the only trace is a server log nobody reads (QA r3, BUG-12). #}
+      <p class="text-xs text-bhagya-muted mt-6">
+        <strong>Provider-side prefix cache: {{ llm_stats.aggregate.prefix_cache_skipped_rows }}
+        stored row(s) were written by an older schema and excluded</strong> &mdash; which is every
+        row in this window, so there is no table to show. Widen the window, or re-record.
+      </p>
+      {% endif %}
       {% if llm_stats.aggregate.prefix_cache %}
       <div class="mt-6">
         <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-2">Provider-side prefix cache (Groq), by prompt route</div>
@@ -226,32 +235,32 @@
             <tr class="border-b border-bhagya-line">
               <th class="text-left py-2">Route</th>
               <th class="text-right py-2">Fresh calls</th>
-              <th class="text-right py-2" title="Calls on a cache-reporting model whose prompt is long enough that silence means MISSED, not &quot;cannot say&quot;.">Measurable</th>
-              <th class="text-right py-2" title="Measurable calls that actually returned a cache figure — the hits.">Hits</th>
-              <th class="text-right py-2" title="Prompt tokens summed over measurable calls. This is the denominator of Effective.">Prompt tokens</th>
-              <th class="text-right py-2">Cached</th>
-              <th class="text-right py-2" title="Cached / prompt tokens over HITS ONLY. Says how hard a hit lands; ignores every miss, so it is not a saving.">Hit rate</th>
-              <th class="text-right py-2" title="Cached / prompt tokens over ALL measurable calls, misses counted as the zero they are. This is the quota actually saved.">Effective</th>
+              <th class="text-right py-2" title="Calls on a cache-reporting model whose prompt is long enough that silence means MISSED, not &quot;cannot say&quot;. The Effective pair is measured over these.">Measurable</th>
+              <th class="text-right py-2" title="Measurable prompt tokens, and of those how many came from cache. These two are the Effective fraction.">Msr prompt / cached</th>
+              <th class="text-right py-2" title="Calls that returned a cache figure. NOT a subset of Measurable: cached_tokens is an OpenAI-compatible field, so a non-Groq provider can report while its silences stay unmeasurable.">Reported</th>
+              <th class="text-right py-2" title="Reported prompt tokens, and of those how many came from cache. These two are the Hit-rate fraction.">Rep prompt / cached</th>
+              <th class="text-right py-2" title="Cached / prompt over REPORTED calls only. Says how hard a hit lands; ignores every miss, so it is not a saving.">Hit rate</th>
+              <th class="text-right py-2" title="Cached / prompt over ALL measurable calls, misses counted as the zero they are. This is the quota actually saved.">Effective</th>
             </tr>
           </thead>
           <tbody>
             {% for route, pc in llm_stats.aggregate.prefix_cache.items() %}
             <tr class="border-b border-bhagya-line-2 last:border-0">
-              <td class="py-2 font-semibold text-bhagya-ink">{{ route }}</td>
+              <td class="py-2 font-semibold text-bhagya-ink">{{ route }}{% if pc.impossible %}<span class="text-bhagya-sindoor" title="IMPOSSIBLE: the stored sums for this route cannot describe a real cache (cached exceeds prompt, or a counter exceeds the call count). Every percentage on this row is clamped and untrustworthy.">&nbsp;&#9888;</span>{% endif %}</td>
               <td class="py-2 text-right text-bhagya-ink tabular-nums">{{ pc.calls }}</td>
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.measurable }}</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums">{% if pc.measurable %}{{ pc.prompt_measurable }} / {{ pc.cached_measurable }}{% else %}&mdash;{% endif %}</td>
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.reported }}</td>
-              <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.prompt_measurable if pc.measurable else "—" }}</td>
-              <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.cached_tokens if pc.measurable else "—" }}</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums">{% if pc.reported %}{{ pc.prompt_reported }} / {{ pc.cached_tokens }}{% else %}&mdash;{% endif %}</td>
               {% if pc.hit_pct is none %}
-              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="No call on this route returned a cache figure. Not zero — unreported.">—</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Either no call returned a cache figure, or the reported prompt total is zero. Not zero cached — unmeasured.">&mdash;</td>
               {% else %}
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.hit_pct }}%</td>
               {% endif %}
               {% if pc.effective_pct is none %}
-              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Nothing measurable here: a non-reporting model, every prompt under the minimum cacheable length, or no usable usage block. Unmeasured, not 0%.">—</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Nothing measurable here: a non-reporting model, every prompt under the minimum cacheable length, or no usable usage block. Unmeasured, not 0%.">&mdash;</td>
               {% else %}
-              <td class="py-2 text-right text-bhagya-sindoor font-semibold tabular-nums">{{ pc.effective_pct }}%{% if pc.impossible %}<span title="IMPOSSIBLE: cached tokens exceed prompt tokens, so this accounting is wrong. The figure shown is clamped to 100% and is not trustworthy.">&nbsp;&#9888;</span>{% endif %}</td>
+              <td class="py-2 text-right text-bhagya-sindoor font-semibold tabular-nums">{{ pc.effective_pct }}%</td>
               {% endif %}
             </tr>
             {% endfor %}
@@ -269,12 +278,19 @@
           saving. <em>Effective is a saving over the Measurable calls, not over Fresh calls</em>
           &mdash; compare those two columns before reading it as a share of the route's traffic.
           {% set ru = llm_stats.aggregate.prefix_cache.values() | map(attribute='reported_unmeasurable') | sum %}
-          {% if ru %}<strong>{{ ru }} call(s) reported a cache figure our rule says they could not</strong>
-          &mdash; so 128 is too high a floor for some model, or a model is missing from the
-          reporting set, and Effective is understating until that is fixed.{% endif %}
-          {% if llm_stats.aggregate.prefix_cache_skipped_rows %}<strong>{{ llm_stats.aggregate.prefix_cache_skipped_rows }} stored row(s)
-          written by an older schema were excluded</strong>, so Fresh calls here will be short of
-          the By-route totals above.{% endif %}
+          {% if ru %}<strong>{{ ru }} call(s) reported a cache figure on a call this rule treats as
+          unmeasurable.</strong> Most likely a non-Groq provider reporting its own cache, which is
+          correct and needs no action &mdash; its figure counts toward Hit rate and is rightly kept
+          out of Effective, because its silences follow a different convention. It can also mean the
+          128-token floor is too high for a Groq model. <em>Do not add a non-Groq model to the
+          reporting set to silence this</em>: that would make its silences count as measured zeros
+          under a Groq-derived floor, which is the original defect this panel was built to remove.
+          {% endif %}
+          {% if llm_stats.aggregate.prefix_cache_skipped_rows %}<strong>{{ llm_stats.aggregate.prefix_cache_skipped_rows }}
+          stored row(s) written by an older schema were excluded</strong>, so their calls are
+          missing from this table. (Do not read that against &ldquo;By route&rdquo; above: that
+          table is keyed by web route and this one by chat route, so the two never match
+          anyway.){% endif %}
           A call is Measurable on one of the three cache-reporting models with at least 128 prompt
           tokens, counted on the whole request (system + question or chart), not the system prompt
           alone. <strong>A dash has three causes</strong>, so check which before concluding

@@ -31,6 +31,15 @@ GOOD = "A perfectly adequate reading. " * 10
 SHORT = "too short"        # 200 OK, fails the quality gate on `ask`
 
 
+@pytest.fixture(autouse=True)
+def _forget_warned_rows():
+    """The skip WARNING is deduped per key per process (BUG-18), so a test that
+    asserts the log fires must not inherit another test's suppression."""
+    llm_stats._warned_rows.clear()
+    yield
+    llm_stats._warned_rows.clear()
+
+
 @pytest.fixture
 def stats_dir(tmp_path, monkeypatch):
     monkeypatch.delenv("BHAGYA_STORAGE_BUCKET", raising=False)
@@ -544,36 +553,69 @@ CHAT_ROUTES = frozenset({
 
 
 def test_every_route_name_in_the_footnote_is_a_real_chat_route():
-    """BUG-1, statically. Any route the copy names must be able to appear."""
-    import pathlib
-    src = pathlib.Path(__file__).resolve().parents[1] / "src" / "astro_ai"
-    code = "\n".join(p.read_text() for p in src.rglob("*.py"))
+    """BUG-1 statically, hardened twice.
+
+    Round 2 found the first version derived its route set from `route="..."`
+    across src/, which is a SUPERSET -- `rashifal` and `dasha_deep_dive` are
+    web-cache routes that never reach providers.chat, so naming either was the
+    same never-appears defect and stayed green.
+
+    Round 3 found five more holes in the second version: a plain-text name off a
+    hard-coded four-item list, ANY capitalisation (the regex was lower-case
+    only), and anything outside one `<p>` slice -- including the column tooltips
+    that a sibling test treats as part of the same copy. It also rejected
+    `rashifal_single`, a REAL chat route, because `rashifal` is a prefix of it.
+
+    So: the whole prefix-cache block, case-insensitively, word-boundary matched,
+    derived from CHAT_ROUTES rather than a denylist.
+    """
+    import pathlib as _pl
+    src = _pl.Path(__file__).resolve().parents[1] / "src" / "astro_ai"
+    code = "\n".join(q.read_text() for q in src.rglob("*.py"))
     declared = set(re.findall(r'route="([A-Za-z_0-9]+)"', code))
     assert CHAT_ROUTES <= declared, (
         f"CHAT_ROUTES names {CHAT_ROUTES - declared}, which no longer appears in "
         "src/ -- update the set rather than deleting the check")
 
     tmpl = (src / "templates" / "admin_dashboard.html").read_text()
-    start = tmpl.index("Two different caches")
-    end = tmpl.index("</p>", start)
-    footnote = tmpl[start:end]
-    # Hyphens included, or `gpt-oss-120b` never matches and the allowance below is
-    # dead code -- which it was, making the whole assertion `set() <= real`.
-    named = set(re.findall(r"<code>([a-z_0-9.\-]+)</code>", footnote))
+    # The WHOLE prefix-cache section, not one paragraph: the header tooltips are
+    # copy too, and a name hidden in one was invisible to the old slice.
+    start = tmpl.index("PROVIDER-SIDE PREFIX CACHE")
+    # To the END of the footnote paragraph. NOT to the first `{% endif %}` after
+    # "Two different caches": the footnote now opens with two conditional notices,
+    # so that landed BEFORE the prose and silently excluded it -- which is how a
+    # first version of this very assertion covered nothing.
+    block = tmpl[start:tmpl.index("</p>", tmpl.index("Two different caches"))]
+    assert "A call is Measurable" in block and "Measurable</th>" in block, (
+        "the slice must span the column tooltips AND the whole footnote; if either "
+        "anchor moves, this test is checking a window with nothing in it")
+
+    # Every route-shaped token, however wrapped and however capitalised.
     MODELS = {"gpt-oss-120b", "gpt-oss-20b", "gpt-oss-safeguard-20b"}
-    NOT_ROUTES = {"usage"}          # API field names the copy may legitimately cite
+    NOT_ROUTES = {"usage"}   # an API FIELD name the copy cites; never a route
+    named = {m.lower() for m in re.findall(r"<code>([A-Za-z_0-9.\-]+)</code>", block)}
     assert named - MODELS - NOT_ROUTES <= CHAT_ROUTES, (
-        f"the prefix-cache footnote names {sorted(named - MODELS - NOT_ROUTES - CHAT_ROUTES)}, "
-        "which cannot appear as a prefix_cache row")
-    # And a bare mention, with no <code> wrapper, was previously invisible here.
-    for overlay in ("ask_matching", "ask_numerology", "dasha_deep_dive", "rashifal"):
-        assert overlay not in footnote, (
-            f"{overlay!r} is a prompt overlay or a web-cache route, so it can never "
-            "appear in this table; naming it is the BUG-1 defect")
+        f"the prefix-cache copy names {sorted(named - MODELS - NOT_ROUTES - CHAT_ROUTES)} "
+        "in a <code> span, which cannot appear as a prefix_cache row")
+
+    # And unwrapped: any non-chat route name anywhere in the block, whole-word and
+    # case-insensitive. `\b` is what stops `rashifal` matching `rashifal_single`
+    # (underscore is a word character, so the boundary does not fire mid-token).
+    ghosts = (declared - CHAT_ROUTES) | {"ask_matching", "ask_numerology", "panchang", "monthly"}
+    for ghost in sorted(ghosts):
+        assert not re.search(rf"\b{re.escape(ghost)}\b", block, re.IGNORECASE), (
+            f"{ghost!r} is a prompt overlay, a prompt file or a web-cache route, so it "
+            "can never appear as a prefix_cache row; naming it is the BUG-1 defect")
+
+    # The guard above must not reject a legitimate route (round 3, BUG-11).
+    assert "rashifal_single" not in ghosts
+    for real in sorted(CHAT_ROUTES):
+        assert real not in ghosts, f"{real} is a chat route and must not be denied"
 
 
-# --- QA round 2 findings. BUG-3 was relocated, not removed; NEW-1..NEW-6. -----
-
+# [50,100,127] pin the 128-floor variant of the bug and [714,1023] the 1024-floor
+# variant. 2363 is the live-measured request size: it cannot fail under any floor
+# in play, and is kept as documentation of the real call, not as a guard (QA r3).
 @pytest.mark.parametrize("size", [50, 100, 127, 714, 1023, 2363])
 def test_measurability_never_depends_on_the_outcome_at_any_size(
         size, stats_dir, monkeypatch):
@@ -605,6 +647,7 @@ def test_measurability_never_depends_on_the_outcome_at_any_size(
         "is selecting on the outcome, which is BUG-3 at a different size")
 
 
+
 def test_a_sub_floor_report_is_counted_so_the_floor_is_falsifiable(
         stats_dir, monkeypatch):
     """BUG-3, round 2. Whether gpt-oss-20b's real floor is under 1024 could not be
@@ -626,16 +669,29 @@ def test_an_impossible_accounting_is_flagged_not_smoothed_to_100(stats_dir, monk
     clamp stays -- a nonsense percentage is not worth publishing -- but the fact
     that it bit is published beside it.
     """
+    def row(**kw):
+        return {**llm_stats._PREFIX_ZERO, "calls": 10, **kw}
+
     assert llm_stats._rate(5000, 2000, 1) == 100.0, "still clamped"
-    assert llm_stats._is_impossible(
-        {"cached_tokens": 5000, "cached_measurable": 5000,
-         "prompt_reported": 2000, "prompt_measurable": 2000}) is True
-    assert llm_stats._is_impossible(
-        {"cached_tokens": -1, "cached_measurable": 0,
-         "prompt_reported": 100, "prompt_measurable": 100}) is True
-    assert llm_stats._is_impossible(
-        {"cached_tokens": 96, "cached_measurable": 96,
-         "prompt_reported": 100, "prompt_measurable": 100}) is False
+    # cached exceeding prompt, on either side
+    assert llm_stats._is_impossible(row(
+        cached_tokens=5000, cached_measurable=5000,
+        prompt_reported=2000, prompt_measurable=2000)) is True
+    assert llm_stats._is_impossible(row(cached_tokens=-1)) is True
+    # pairs record() cannot produce (BUG-15)
+    assert llm_stats._is_impossible(row(
+        cached_tokens=90, cached_measurable=900,
+        prompt_reported=100, prompt_measurable=10_000)) is True
+    assert llm_stats._is_impossible(row(calls=1, measurable=2)) is True
+    assert llm_stats._is_impossible(row(calls=1, reported=2)) is True
+    # and the legitimate shapes stay clean
+    assert llm_stats._is_impossible(row(
+        cached_tokens=96, cached_measurable=96,
+        prompt_reported=100, prompt_measurable=100)) is False
+    assert llm_stats._is_impossible(row(
+        cached_tokens=100, cached_measurable=100,
+        prompt_reported=100, prompt_measurable=100)) is False, "cached == prompt is legal"
+    assert llm_stats._is_impossible(row(calls=0)) is False, "an all-zero row is not an anomaly"
 
 
 def test_a_skipped_old_schema_row_is_logged_and_counted(stats_dir, monkeypatch, caplog):
@@ -709,3 +765,170 @@ def test_a_sub_floor_report_does_not_inflate_the_effective_numerator(
         "one measurable call, a miss: the honest effective rate is 0%, not "
         f"{short}/2000 borrowed from a call that was never measurable")
     assert e["impossible"] is False
+
+
+# --- QA round 3 findings -------------------------------------------------------
+
+def test_a_cached_count_larger_than_its_prompt_is_refused_at_the_source():
+    """BUG-9. "Neither rate can exceed 100% by construction" was ASSUMED.
+
+    Round 3 found nothing enforced it: `_prefix_usage(prompt=100, cached=5000)`
+    returned `(100, 5000)`, record() stored it, and the published 5000% was saved
+    only by the display clamp -- a vendor assumption dressed as a property of the
+    code, which is the error species round 2 condemned. Now enforced, so the
+    claim is true of the code and the clamp is defence in depth.
+    """
+    assert providers._prefix_usage(_usage(100, cached=5000)) == (100, None)
+    assert providers._prefix_usage(_usage(0, cached=900)) == (0, None)
+    assert providers._prefix_usage(_usage(100, cached=100)) == (100, 100), "equal is legal"
+    assert providers._prefix_usage(_usage(2363, cached=2304)) == (2363, 2304)
+
+
+def test_the_anomaly_flag_is_visible_when_only_the_reported_side_is_broken(
+        stats_dir, monkeypatch, admin):
+    """BUG-1. The glyph hung off the Effective cell, inside its `{% else %}`.
+
+    So when the impossibility was on the REPORTED side and effective_pct was
+    None, `impossible` was True and nothing rendered anywhere, while Hit rate
+    showed a tidy clamped 100.0% -- the exact outcome the flag exists to prevent.
+    It now hangs off the route cell, which always renders.
+    """
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    today = date.today()
+    (stats_dir / f"{today.isoformat()}.json").write_text(json.dumps({
+        "date": today.isoformat(),
+        "counts": {"groq120|openai/gpt-oss-120b|ask": 7},
+        "totals": {"ask": 7}, "fallbacks": 0,
+        "prefix_cache": {"groq120|openai/gpt-oss-120b|ask": {
+            **llm_stats._PREFIX_ZERO,
+            "calls": 7, "reported": 7, "prompt_reported": 100, "cached_tokens": 5000}},
+    }))
+    e = llm_stats.range_summary(1)["aggregate"]["prefix_cache"]["ask"]
+    assert e["impossible"] is True and e["effective_pct"] is None
+    html = admin.get("/admin").text
+    assert "&#9888;" in html or "⚠" in html, (
+        "an impossible row must be flagged even when Effective is a dash")
+
+
+def test_the_two_column_pairs_each_divide_to_their_own_rate(
+        stats_dir, monkeypatch, admin):
+    """BUG-2. The table showed `prompt_measurable` beside `cached_tokens`.
+
+    Those come from different numerators, so the two adjacent columns divided to
+    450% on screen with `impossible` False -- the split was made in the data and
+    not carried into the table. Each pair must now be self-consistent.
+    """
+    _install_model(monkeypatch, [_usage(1000)])                    # measurable miss
+    _chat()
+    _install_model(monkeypatch, [_usage(5000, cached=4500)], model="gpt-4o")
+    _chat()
+    e = _agg()
+    assert e["measurable"] == 1 and e["prompt_measurable"] == 1000
+    assert e["cached_measurable"] == 0, "the gpt-4o hit is not measurable"
+    assert e["cached_tokens"] == 4500 and e["prompt_reported"] == 5000
+    assert e["effective_pct"] == 0.0 and e["hit_pct"] == 90.0
+    html = admin.get("/admin").text
+    assert "1000 / 0" in html, "the measurable pair must be shown together"
+    assert "5000 / 4500" in html, "the reported pair must be shown together"
+
+
+def test_the_unmeasurable_report_notice_names_the_benign_cause_and_forbids_the_harmful_fix(
+        stats_dir, monkeypatch, admin):
+    """BUG-4. The notice named two causes and prescribed a fix that reinstates v1.
+
+    `reported_unmeasurable` also increments for the case the design EXISTS for --
+    a non-Groq provider reporting its own cache, correctly excluded from
+    Effective. Telling the operator to add that model to CACHE_REPORTING_MODELS
+    would make its silences count as measured zeros under a Groq-derived floor.
+    """
+    _install_model(monkeypatch, [_usage(5000, cached=4500)], model="gpt-4o")
+    _chat()
+    assert _agg()["reported_unmeasurable"] == 1
+    html = admin.get("/admin").text
+    assert "non-Groq provider reporting its own cache" in html
+    assert "Do not add a non-Groq model to the" in html
+
+
+def test_a_malformed_stat_key_is_counted_and_logged_not_dropped_silently(
+        stats_dir, monkeypatch, caplog):
+    """BUG-13. `len(parts) != 3` was a silent `continue`.
+
+    That is the branch EVERY stored row falls into if a segment is ever added to
+    `stat_key`, so a whole window could vanish with nothing to show for it.
+    """
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    today = date.today()
+    (stats_dir / f"{today.isoformat()}.json").write_text(json.dumps({
+        "date": today.isoformat(), "counts": {}, "totals": {}, "fallbacks": 0,
+        "prefix_cache": {"p|m|extra|route": dict(llm_stats._PREFIX_ZERO),
+                         "p|m": dict(llm_stats._PREFIX_ZERO),
+                         "justroute": dict(llm_stats._PREFIX_ZERO)},
+    }))
+    with caplog.at_level("WARNING"):
+        agg = llm_stats.range_summary(1)["aggregate"]
+    assert agg["prefix_cache_skipped_rows"] == 3
+    assert "not provider|model|route" in caplog.text
+
+
+def test_the_skip_notice_survives_when_every_row_is_skipped(
+        stats_dir, monkeypatch, admin):
+    """BUG-12. The notice lived inside `{% if ...prefix_cache %}`.
+
+    In the total-loss case the table does not render, so the notice vanished with
+    it and the only trace was a server log nobody reads.
+    """
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    today = date.today()
+    (stats_dir / f"{today.isoformat()}.json").write_text(json.dumps({
+        "date": today.isoformat(), "counts": {"groq120|m|ask": 4},
+        "totals": {"ask": 4}, "fallbacks": 0,
+        "prefix_cache": {"groq120|m|ask": {
+            "calls": 4, "reported": 3, "prompt_tokens": 80, "cached_tokens": 76}},
+    }))
+    agg = llm_stats.range_summary(1)["aggregate"]
+    assert agg["prefix_cache"] == {} and agg["prefix_cache_skipped_rows"] == 1
+    html = admin.get("/admin").text
+    assert "written by an older schema and excluded" in html, (
+        "when every row is skipped the table is absent, so the notice must not be "
+        "inside the table's own {% if %}")
+
+
+def test_the_skip_warning_is_not_emitted_once_per_row_per_request(
+        stats_dir, monkeypatch, caplog):
+    """BUG-18. 30 rows x a 30-day window logged ~900 lines on one page view."""
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    bad = {"calls": 1, "reported": 1, "prompt_tokens": 10, "cached_tokens": 5}
+    for d in range(3):
+        day = date.today() - timedelta(days=d)
+        (stats_dir / f"{day.isoformat()}.json").write_text(json.dumps({
+            "date": day.isoformat(), "counts": {}, "totals": {}, "fallbacks": 0,
+            "prefix_cache": {"groq120|m|ask": dict(bad)},
+        }))
+    with caplog.at_level("WARNING"):
+        llm_stats.range_summary(5)
+        llm_stats.range_summary(5)
+    lines = [r for r in caplog.records if "unrecognised shape" in r.getMessage()]
+    assert len(lines) == 1, (
+        f"one key across 3 days and 2 calls logged {len(lines)} times; the dedup is "
+        "what keeps a persistent old row from flooding every /admin load")
+
+
+def test_the_by_route_table_still_has_its_own_headers():
+    """Not a QA finding -- a bug I introduced while fixing BUG-2 and nothing caught.
+
+    Editing "the Route table" by its first match rewrote the BY-ROUTE table's
+    headers with the prefix-cache ones, so the page would have shipped a table
+    labelled Measurable/Hit rate/Effective over cells holding response-cache hits
+    and token estimates. There are two tables whose first column is Route.
+    """
+    import pathlib as _pl
+    tmpl = (_pl.Path(__file__).resolve().parents[1]
+            / "src" / "astro_ai" / "templates" / "admin_dashboard.html").read_text()
+    by_route = tmpl[tmpl.index("By route</h3>"):tmpl.index("</tr>", tmpl.index("By route</h3>"))]
+    for header in ("Response-cache hits", "Response-cache hit rate", "Avg miss",
+                   "Input (est.)", "Output (est.)"):
+        assert header in by_route, f"the By-route table lost its {header!r} header"
+    for alien in ("Measurable", "Effective", "Msr prompt", "Rep prompt"):
+        assert alien not in by_route, (
+            f"{alien!r} belongs to the prefix-cache table; the By-route headers were "
+            "overwritten and its cells no longer match its labels")

@@ -28,7 +28,7 @@ trust the number.
 
 | | count | command |
 |---|---|---|
-| Python | 32,377 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
+| Python | 32,427 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
 | top-level modules | 40 | `ls src/astro_ai/*.py \| wc -l` |
 | route handlers | 68 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 24 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
@@ -37,7 +37,7 @@ trust the number.
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
 | knowledge files | 11 files, 9,358 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
 | verification gates | 28 | `ls scripts/verify_*.py \| wc -l` |
-| behaviour suite | 691 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
+| behaviour suite | 699 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
 
 `routes/` holds 27 files; the three that declare no router are `__init__.py` and the leaf
 helpers `deps.py` and `llm_support.py`. Counting files rather than routers is what makes
@@ -262,12 +262,17 @@ before every provider attempt, so a failed provider's figures cannot be booked a
 one). `llm_stats.record` adds them to a `prefix_cache` key in the SAME per-day mutator that
 already writes `counts` — zero extra storage operations.
 
-Three counters, because a silence means two different things. `calls` moves on every served call.
-`reported` moves only when the provider returned a figure. `measurable` sits between them: a call
-on a `CACHE_REPORTING_MODELS` model with at least `MIN_CACHEABLE_PREFIX` prompt tokens, where
-Groq's silence means *missed* rather than *cannot say*. **Absent is still not zero** — a non-Groq
-provider leaves `measurable` at 0 and the dashboard shows a dash — **but a measured miss IS zero**,
-and it belongs in the denominator.
+Five stored counters and two derived rates, because a silence means two different things.
+`calls` moves on every served call. `reported` moves when the provider returned a figure, **on any
+model**. `measurable` moves when a *silence* from that call would have meant "missed" — a
+`CACHE_REPORTING_MODELS` model with at least `MIN_CACHEABLE_PREFIX` prompt tokens.
+
+**`reported` and `measurable` are independent; neither contains the other.** A non-Groq provider
+reporting its own cache is reported but not measurable; Groq missing is measurable but not
+reported. (An earlier revision of this section said `measurable` "sits between" them and that a
+non-Groq call "adds to `calls` and nothing else"; QA disproved both — such a call adds to four
+fields.) **Absent is still not zero**, and **a measured miss IS zero** and belongs in the
+denominator.
 
 So there are two rates, and they are far apart:
 
@@ -290,10 +295,20 @@ prompt tokens, neither rate can exceed 100% by construction rather than by the c
 Two counters exist so the rule is falsifiable in production rather than by live calls:
 `reported_unmeasurable` (a provider reported on a call the rule said could not — the floor is too
 high, or a model is missing from the set) and `prefix_cache_skipped_rows` (stored rows from an older
-schema, excluded; also logged at WARNING). Both are surfaced on `/admin`, as is an `impossible`
-flag when `cached > prompt`: the clamp keeps a nonsense percentage off the page, but *smoothing* an
-impossible figure into a plausible one hides the only evidence the accounting is broken — a rate
-over 100% is how the old-schema bug was caught at 571% and 3998%.
+schema, excluded; also logged at WARNING). Both are surfaced on `/admin` — the skipped-row count twice, because when
+*every* row is skipped the table does not render and the notice had to move outside it.
+
+An `impossible` flag rides the route cell whenever the stored sums cannot describe a real cache.
+It is deliberately on the route cell and not on a percentage: it first hung off `effective_pct`'s
+`{% else %}` branch, so a reported-side impossibility with `effective_pct` of `None` rendered
+nothing at all while Hit rate showed a tidy clamped 100% — the exact outcome the flag exists to
+prevent. The clamp keeps a nonsense percentage off the page, but *smoothing* an impossible figure
+into a plausible one hides the only evidence the accounting is broken.
+
+Per-call sanity is enforced upstream instead of assumed: `providers._prefix_usage` rejects a
+`cached` count exceeding its own `prompt_tokens`, which is what makes "neither rate can exceed
+100%" a property of the code. Before that, `(prompt=100, cached=5000)` was stored intact and only
+the display clamp hid the 5000%.
 
 Measured live 2026-10-17 on `openai/gpt-oss-120b`: 1 hit in 7 identical calls, 2,304 of 2,363
 prompt tokens cached. `hit_pct` 97.5%, `effective_pct` 13.9% — a 7x gap, and only the second is a

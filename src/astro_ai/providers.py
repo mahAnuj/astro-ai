@@ -184,9 +184,12 @@ def _prefix_usage(usage) -> tuple[int, int | None] | None:
                            llm_stats.record()'s job -- it knows the model.
     * `(prompt, n)`     -- the provider reported, and `n` may legitimately be 0.
 
-    bool is excluded because it is an int subclass, and a negative count is
-    rejected: it is not a measurement, and letting one through would put a
-    negative percentage on the dashboard. Never raises -- this runs on the happy
+    bool is excluded because it is an int subclass. A negative count, and a
+    cached count LARGER than the prompt it came from, are both rejected: neither
+    is a measurement, and letting either through would publish a percentage that
+    is negative or over 100. Rejecting them here is what makes llm_stats's
+    "neither rate can exceed 100% by construction" an actual property of the
+    code rather than an assumption about the provider. Never raises -- this runs on the happy
     path of every LLM call.
     """
     try:
@@ -198,6 +201,16 @@ def _prefix_usage(usage) -> tuple[int, int | None] | None:
     if not isinstance(prompt, int) or isinstance(prompt, bool) or prompt < 0:
         return None
     if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:
+        return prompt, None
+    if cached > prompt:
+        # Cached tokens are a SUBSET of prompt tokens (Groq: "cached_tokens:
+        # Number of input tokens that were served from cache"), so this is not a
+        # measurement -- it is a provider reporting something impossible. Rejected
+        # here rather than stored, because llm_stats documents "neither rate can
+        # exceed 100% by construction" and that is only true if this holds. QA
+        # round 3 found the claim was resting on vendor sanity with nothing
+        # enforcing it: _prefix_usage(prompt=100, cached=5000) returned
+        # (100, 5000) and the published 5000% was saved only by the clamp.
         return prompt, None
     return prompt, cached
 
