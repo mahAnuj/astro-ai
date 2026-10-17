@@ -289,9 +289,11 @@ class NadiDosha:
     """Nadi dosha and its classical mitigations, kept SEPARATE from the score.
 
     Same separation as `BhakootDosha`, and for the same reason (#170). The
-    difference is that Nadi has no parihāra list at all: the Bhakoot section
-    ends परन्तु नाडी सभीमें होनी चाहिये — Nadi must be clean regardless. What
-    the text offers instead is *gradation*, not cancellation.
+    difference is that Nadi is not among the Bhakoot parihāras: the Bhakoot
+    section ends परन्तु नाडी सभीमें होनी चाहिये — Nadi must be sound alongside
+    them. What the text offers for Nadi itself is *gradation*, regional and
+    community exemptions (disclosed, not applied) and shanti — never a
+    cancellation that restores points.
     """
 
     present: bool
@@ -967,9 +969,11 @@ def _nadi(g_nak: str, b_nak: str) -> KootaScore:
     also carried a "BPHS matching tradition" provenance label that #170 could
     not verify and that this reading does not support.
 
-    Unlike Bhakoot, Nadi has no parihāra list at all — the Bhakoot section ends
-    परन्तु नाडी सभीमें होनी चाहिये, Nadi must be clean regardless. What the
-    text offers here is gradation and shanti, never cancellation.
+    Unlike Bhakoot, Nadi is not among the parihāras — the Bhakoot section ends
+    परन्तु नाडी सभीमें होनी चाहिये, Nadi must be sound alongside them. What the
+    text offers for Nadi itself is gradation, regional and community
+    exemptions (disclosed in `_NADI_UNEVALUATED`, not applied) and shanti. No
+    mitigation ever adds koota points here.
     """
     g_n = _NAKSHATRA_NADI[g_nak]
     b_n = _NAKSHATRA_NADI[b_nak]
@@ -985,7 +989,8 @@ def _nadi(g_nak: str, b_nak: str) -> KootaScore:
     )
 
 
-# Mitigations the text DOES grant for Nadi, none of which cancel it.
+# Mitigations the text DOES grant for Nadi, none of which this product applies
+# or lets move a koota score.
 #
 # Deliberately NOT auto-applied: मध्यनाडी छोड़के पार्श्वनाडियोंका दोष गोदावरीके
 # दक्षिण अथवा क्षत्रिय आदिकोंको नहीं — outside Madhya, the side-Nadi dosha is
@@ -1045,9 +1050,10 @@ def _nadi_dosha(g_moon, b_moon, g_nak: str, b_nak: str) -> NadiDosha:
     if alpa:
         note += " One mitigation applies, below."
     note += (
-        " Nadi has no cancelling conditions in this tradition: it is required to be "
-        "clean regardless of how the other kootas score, and remedial measures rather "
-        "than cancellation are what the classical texts prescribe."
+        " Nadi is not among the Bhakoot parihāras and is required to be sound "
+        "alongside them; the tradition also records exemptions by region and "
+        "community (shown below), which we do not apply, and prescribes shanti "
+        "where it is present."
     )
 
     return NadiDosha(

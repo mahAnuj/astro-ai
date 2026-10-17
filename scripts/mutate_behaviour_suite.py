@@ -1022,6 +1022,36 @@ MUTATIONS = [
      'measured["natal+payload"] = (n_en + user, n_hi + user)',
      'measured["natal+payload"] = (n_en, n_hi)',
      "test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt"),
+
+    ("#397: the /ask overlay re-asserts 'no cancelling conditions' for Nadi",
+     "src/astro_ai/prompts/ask_matching.txt",
+     "- Nadi is not among the Bhakoot parihāras. The tradition records regional and community exemptions for it, which this product does not apply, and a slight (alpa) grade where pada-Nadi differs. Never invent any other Nadi condition.",
+     "- Nadi has no cancelling conditions in this tradition. Never invent one.",
+     "test_no_surface_asserts_nadi_has_no_cancelling_conditions"),
+
+    ("#397: the two /ask overlays' Nadi lines drift apart",
+     "src/astro_ai/prompts/ask_matching_third_party.txt",
+     "which this product does not apply, and a slight (alpa) grade",
+     "which this product does apply, and a slight (alpa) grade",
+     "test_both_ask_overlays_carry_the_identical_nadi_line"),
+
+    ("#397: the engine's Nadi note re-asserts the absolute beside the exemption",
+     "src/astro_ai/matching.py",
+     '" Nadi is not among the Bhakoot parihāras and is required to be sound "\n        "alongside them;',
+     '" Nadi has no cancelling conditions in this tradition and is required to be sound "\n        "alongside them;',
+     "test_engine_note_states_the_narrowed_position_and_keeps_the_disclosure"),
+
+    ("#397: /ask context stops feeding nd.unevaluated (overlay names what the model cannot see)",
+     "src/astro_ai/llm.py",
+     '        lines += [f"  not evaluated: {u}" for u in nd.unevaluated]\n',
+     "",
+     "test_ask_context_names_the_exemptions_the_overlay_refers_to"),
+
+    ("#397: Hindi panel footnote regains the false first sentence",
+     "src/astro_ai/i18n.py",
+     '"किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     '"नाड़ी का कोई परिहार नहीं होता। किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     "test_panel_footnote_still_says_no_points_and_not_the_absolute"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
