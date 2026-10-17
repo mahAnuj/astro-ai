@@ -28,7 +28,7 @@ trust the number.
 
 | | count | command |
 |---|---|---|
-| Python | 32,046 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
+| Python | 32,072 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
 | top-level modules | 40 | `ls src/astro_ai/*.py \| wc -l` |
 | route handlers | 68 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 24 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
@@ -37,7 +37,7 @@ trust the number.
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
 | knowledge files | 11 files, 9,358 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
 | verification gates | 28 | `ls scripts/verify_*.py \| wc -l` |
-| behaviour suite | 591 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
+| behaviour suite | 598 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
 
 `routes/` holds 27 files; the three that declare no router are `__init__.py` and the leaf
 helpers `deps.py` and `llm_support.py`. Counting files rather than routers is what makes
@@ -485,7 +485,7 @@ about, inside its own sentence. The discipline that makes them worth anything:
 
 **Prove a gate can fail before trusting that it passes.** For the behaviour suite this
 is automated: `scripts/mutate_behaviour_suite.py` restores each original defect and
-asserts the suite goes red (currently 150/150 as of 2026-10-17, with a CONTROL row that MUST report missed
+asserts the suite goes red (currently 151/151 as of 2026-10-17, with a CONTROL row that MUST report missed
 — a caught control means the sandbox was already red and every verdict in the run is
 void). For everything else, do it by hand. Mutate the thing it guards,
 confirm it turns red with a specific message, restore. A gate that has never failed is
