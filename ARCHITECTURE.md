@@ -28,7 +28,7 @@ trust the number.
 
 | | count | command |
 |---|---|---|
-| Python | 32,233 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
+| Python | 32,286 lines | `find src -name '*.py' \| xargs cat \| wc -l` |
 | top-level modules | 40 | `ls src/astro_ai/*.py \| wc -l` |
 | route handlers | 68 | `grep -rhoE '^@router\.(get\|post\|put\|delete\|patch\|head\|options)\(' src/astro_ai/routes/*.py \| wc -l` |
 | modules declaring a router | 24 | `grep -ln '^router = APIRouter' src/astro_ai/routes/*.py \| wc -l` |
@@ -37,7 +37,7 @@ trust the number.
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
 | knowledge files | 11 files, 9,358 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
 | verification gates | 28 | `ls scripts/verify_*.py \| wc -l` |
-| behaviour suite | 672 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
+| behaviour suite | 679 tests | `uv run pytest -p no:warnings \| grep -oE '[0-9]+ passed'` |
 
 `routes/` holds 27 files; the three that declare no router are `__init__.py` and the leaf
 helpers `deps.py` and `llm_support.py`. Counting files rather than routers is what makes
@@ -260,10 +260,33 @@ How it is recorded: `providers._call_one` reads `usage.prompt_tokens` and
 `usage.prompt_tokens_details.cached_tokens` into the `_last_prefix` ContextVar (reset by `chat()`
 before every provider attempt, so a failed provider's figures cannot be booked against the next
 one). `llm_stats.record` adds them to a `prefix_cache` key in the SAME per-day mutator that
-already writes `counts` — zero extra storage operations. `calls` moves on every served call;
-`reported`, `prompt_tokens` and `cached_tokens` move only when the provider returned a figure, so
-**absent is not zero**: a non-Groq provider leaves `reported` at 0 and the dashboard shows a dash.
-`pct` is cached/prompt summed over reported calls only.
+already writes `counts` — zero extra storage operations.
+
+Three counters, because a silence means two different things. `calls` moves on every served call.
+`reported` moves only when the provider returned a figure. `measurable` sits between them: a call
+on a `CACHE_REPORTING_MODELS` model with at least `MIN_CACHEABLE_PREFIX` prompt tokens, where
+Groq's silence means *missed* rather than *cannot say*. **Absent is still not zero** — a non-Groq
+provider leaves `measurable` at 0 and the dashboard shows a dash — **but a measured miss IS zero**,
+and it belongs in the denominator.
+
+So there are two rates, and they are far apart:
+
+| | numerator | denominator | what it says |
+|---|---|---|---|
+| `hit_pct` | `cached_tokens` | `prompt_reported` | how hard a hit lands |
+| `effective_pct` | `cached_tokens` | `prompt_measurable` | **the quota actually saved** |
+
+Measured live 2026-10-17 on `openai/gpt-oss-120b`: 1 hit in 7 identical calls, 2,304 of 2,363
+prompt tokens cached. `hit_pct` 97.5%, `effective_pct` 13.9% — a 7x gap, and only the second is a
+saving. An earlier revision published `hit_pct` alone, which is why the dashboard now says which
+one to read. Both are `None` (a dash), never 0, when nothing measurable happened, and both are
+clamped to 0–100 because the figures are the provider's and nothing upstream guarantees them.
+
+The threshold is compared against the provider's `prompt_tokens` — **the whole request, system plus
+question or chart**, not the system prompt alone. `MIN_CACHEABLE_PREFIX` is 128, the BOTTOM of
+Groq's documented 128–1024 range: at the top of that range a hit above the floor was measurable
+while a miss on the identical request was not, so the denominator selected for hits. See the
+constant's comment for why the remaining error is the safe direction.
 
 Chat route (the `route=` passed to `providers.chat`, NOT the web route in "By route") to prompt
 file, with system-prompt tokens measured by tiktoken `o200k_base` on 2026-10-17 (issue #396):
@@ -278,8 +301,13 @@ file, with system-prompt tokens measured by tiktoken `o200k_base` on 2026-10-17 
 | `outlook` | `monthly.txt` / `yearly.txt` | 732 / 819 |
 | `today` | `daily.txt` | 743 |
 
-Below the worst-case 1,024-token threshold (`dasha`, `outlook`, `today`) a dash or about 0% is the
-expected reading, not a regression.
+Those are **system-prompt** tokens. The measurability threshold is judged on the whole request, so
+every route clears 128 once its question or chart payload is added — `natal` alone is 6,798 tokens
+with a golden chart against 3,111 for the prompt file (`scripts/verify_token_budget.py`). An
+earlier revision predicted `dasha`, `outlook` and `today` would read "a dash or about 0" from being
+under the threshold; that was wrong twice, because it compared the system prompt against a limit
+applied to the full request, and because "about 0" is a reading the code deliberately never
+produces. **A dash means a non-reporting model served the call, not a short prompt.**
 
 Known limits, stated so nobody over-reads the panel:
 
@@ -579,7 +607,7 @@ Dated, with the evidence. **Check here before proposing a change.**
 
 | date | decision | why, measured |
 |---|---|---|
-| 2026-10-17 | **Groq prefix-cache usage is recorded in `llm_stats` (`prefix_cache`), not in `cache.py`'s `llm_calls`; absent is never zero** | #396. `grep -rn "cached_tokens\|prompt_tokens_details" src/` returned 0, so `/admin` could show a route as uncached while Groq served half its prefix, with only the response cache's hit rate beside it. Recorded in the per-day `llm_stats` blob inside the mutator `record()` already runs: **0 added storage operations**, **0 added LLM calls**, **0 prompt tokens** (it reads a field already in the response). A `cached_tokens` column on `llm_calls` was **not** added, though the issue proposed it: the dashboard never reads `llm_calls` (it reads `llm_stats`); `llm_calls` rows are per reading, not per provider attempt, so a fallback chain would need to pick one attempt's figure; `rashifal` runs `chat()` in a thread pool, where a ContextVar set in the worker is not visible to the caller that writes the row; and its `route` is the web route (`rashifal`), not the chat route (`rashifal_single`), so a per-prompt ratio could not be keyed from it. Rejected too: deriving the figure from `input_tokens`, which is a text-length estimate (~4 chars/token) and would present a guess as a measurement. The ratio is cached/prompt over reported calls only, so providers that omit the field cannot dilute it. Mutation-tested: `scripts/mutate_behaviour_suite.py` re-breaks "absent coerced to 0" and "no reset between providers" and the suite goes red |
+| 2026-10-17 | **Groq prefix-cache usage is recorded in `llm_stats` (`prefix_cache`), not in `cache.py`'s `llm_calls`; absent is never zero** | #396. `grep -rn "cached_tokens\|prompt_tokens_details" src/` returned 0, so `/admin` could show a route as uncached while Groq served half its prefix, with only the response cache's hit rate beside it. Recorded in the per-day `llm_stats` blob inside the mutator `record()` already runs: **0 added storage operations**, **0 added LLM calls**, **0 prompt tokens** (it reads a field already in the response). A `cached_tokens` column on `llm_calls` was **not** added, though the issue proposed it: the dashboard never reads `llm_calls` (it reads `llm_stats`); `llm_calls` rows are per reading, not per provider attempt, so a fallback chain would need to pick one attempt's figure; `rashifal` runs `chat()` in a thread pool, where a ContextVar set in the worker is not visible to the caller that writes the row; and its `route` is the web route (`rashifal`), not the chat route (`rashifal_single`), so a per-prompt ratio could not be keyed from it. Rejected too: deriving the figure from `input_tokens`, which is a text-length estimate (~4 chars/token) and would present a guess as a measurement. Superseded the same day by measurement: a MISS also arrives as `prompt_tokens_details: null`, so "cached/prompt over reported calls only" excluded every miss from its own denominator and read 97.5% where the saving was 13.9%. Now two rates — `hit_pct` over hits, `effective_pct` over all measurable calls with misses as the zeros they are — and `measurable` is the counter that tells a non-reporting model from one that simply missed. Mutation-tested: `scripts/mutate_behaviour_suite.py` re-breaks "absent coerced to 0" and "no reset between providers" and the suite goes red |
 | 2026-09-05 | **`natal.txt` compressed 18,095 B → 13,135 B, and the natal request now has a pre-flight size guard** | `/kundli` was dead in production with a Groq **413 — "Limit 8000, Requested 8562"**. A size failure, not a rate failure: a request bigger than the whole per-minute budget cannot succeed at any traffic level, and `groq120`/`groq20` share the 8,000 TPM cap, so the chain's fallback re-sent the identical bytes and got the identical 413. Measured with tiktoken `o200k_base` over the eight golden charts (`scripts/measure_natal_request.py`, which is the first thing in this repo to read `tests/kundali-qa-fixtures.json`): the old prompt was **4,332 tok — 54% of the request**, and the largest fixture assembled to **8,019 tok, already over the ceiling before Groq adds its own accounting**. That is the outage reproduced from a fixture, not inferred. Compression removed redundancy and no rules, and saves **1,221 tok on every natal call** (4,332 → 3,111, measured with tiktoken o200k_base). It read 1,250 for one commit: that was correct for the 13,029 B intermediate, and the follow-up that grew the prompt to 13,124 B updated the byte and worst-case figures on this very line while leaving the saving — the exact drift this log exists to prevent, caught by QA rather than by any gate. One correction to how that was first written up, because the count matters: the same three prohibitions ("no separate section", "do not list the placements", "do not name the technique") were restated by **two** of the six conditional-block handlers, not six — only D-9 and D-10 ever carried all three. So folding them into one umbrella is deduplication for those two and a **new, broader constraint** for the other four, which is a different thing and was briefly a self-contradiction: an umbrella reading "never list the placements it contains" sat over a block called `--- HOUSE LORD PLACEMENTS ---` whose own bullet requires conveying exactly those placements. The umbrella is now scoped — "treat a block as a LENS, never as a heading" governs all of them; the placement and technique-naming bans apply to the two DIVISIONAL blocks only. Found by QA, not by the gate, which anchors on the rule's words and cannot see what the rule is scoped to. Worst case is now **6,798 tok** (en) / **6,930** (hi), leaving ~1,200 of headroom. `scripts/verify_natal_prompt.py` holds the 45 rules and the byte budget; it was written BEFORE the compression, against the pre-compression file, so the rule set was captured before anything moved |
 | 2026-09-05 | **Optional prompt blocks shed in a declared order rather than the request 413ing** | Compression alone moves the cliff; the next chart with a long Manglik block and five topic summaries finds it again. `llm._shed_to_fit` drops, worst-first: topic summaries (trimmed ENTRY BY ENTRY first — dropping all five to save fifty tokens is a bad trade), then aspects, nakshatras, D-10, D-9. **House lords, planet dignity, Manglik detail and yogas are never shed**: the last two are rendered as panels on the same page, so dropping them from the prompt makes the prose disagree with the panel beside it, which is the #176 failure class and worse than a thinner reading. Every shed logs at WARNING — a silent degradation is how "why is my reading shorter than my friend's" goes unexplained for months |
 | 2026-09-05 | **Two measured bytes-per-token constants, not one; the safety lives in the margin** | Instruction prose runs **4.227 B/tok** (4.295 for hi), chart-data blocks **3.697–3.778**. Each constant sits just below the **floor** for its own kind, not below the average — 3.7 looks safe against a "3.70–3.78" range and is not, because `strong-gajakesari` is 3.6970 and gets under-counted by two tokens (`tests/test_natal_request_size.py` found this against tiktoken). A single 3.9 average was tried and rejected: it priced the hi system prompt 326 tok high and made the guard shed the whole 4.6 kB summaries block on 4 of 8 charts to save ~50 tokens they did not need. `cache.estimate_tokens` is deliberately NOT reused — at 4.0 it under-counts these requests by ~3%, and a guard that under-counts waves through exactly what it exists to stop. It stays as-is for the `/admin/usage` counters, which are stats, not a safety check |

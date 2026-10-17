@@ -184,8 +184,10 @@ def _prefix_usage(usage) -> tuple[int, int | None] | None:
                            llm_stats.record()'s job -- it knows the model.
     * `(prompt, n)`     -- the provider reported, and `n` may legitimately be 0.
 
-    bool is excluded because it is an int subclass. Never raises -- this runs on
-    the happy path of every LLM call.
+    bool is excluded because it is an int subclass, and a negative count is
+    rejected: it is not a measurement, and letting one through would put a
+    negative percentage on the dashboard. Never raises -- this runs on the happy
+    path of every LLM call.
     """
     try:
         prompt = getattr(usage, "prompt_tokens", None)
@@ -193,9 +195,9 @@ def _prefix_usage(usage) -> tuple[int, int | None] | None:
         cached = getattr(details, "cached_tokens", None)
     except Exception:  # noqa: BLE001 — observability never breaks a reading
         return None
-    if not isinstance(prompt, int) or isinstance(prompt, bool):
+    if not isinstance(prompt, int) or isinstance(prompt, bool) or prompt < 0:
         return None
-    if not isinstance(cached, int) or isinstance(cached, bool):
+    if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:
         return prompt, None
     return prompt, cached
 

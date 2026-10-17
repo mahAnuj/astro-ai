@@ -108,17 +108,59 @@ _LOCAL_FALLBACK_DIR = Path(os.environ.get("BHAGYA_LLM_STATS_FALLBACK_DIR", "/tmp
 # depending on the model (console.groq.com/docs/prompt-caching, read 2026-10-17).
 # Both spellings are listed because the chain configures the `openai/` prefix
 # while the docs name the bare model.
+#
+# This is an EXACT match, and that is a sharp edge worth knowing: `ProviderConfig
+# .model()` returns `os.environ.get(f"{NAME}_MODEL", default)`, so pointing
+# GROQ120_MODEL at a pinned or versioned id -- `openai/gpt-oss-120b-0924` -- makes
+# the route unrecognised and every row for it reads "--" with nothing saying why.
+# Exact matching is still preferred over a prefix test, which would quietly
+# classify some future non-caching `gpt-oss-*` variant as reporting; the fix for a
+# pinned id is to add it here.
 CACHE_REPORTING_MODELS = frozenset({
     "openai/gpt-oss-120b", "openai/gpt-oss-20b", "openai/gpt-oss-safeguard-20b",
     "gpt-oss-120b", "gpt-oss-20b", "gpt-oss-safeguard-20b",
 })
 
-# 1024 is the TOP of Groq's documented 128-1024 range, and that is deliberate.
-# Below it we cannot tell a genuine miss from a prompt that was never eligible
-# to be cached, so those calls stay UNMEASURABLE rather than being scored 0%.
-# Under-reporting the denominator is the conservative error here: it leaves a
-# route showing "--" instead of showing it a confident and wrong 0%.
-MIN_CACHEABLE_PREFIX = 1024
+# 128 is the BOTTOM of Groq's documented 128-1024 range, and the choice matters.
+#
+# An earlier version used 1024, the top, reasoning that below it a miss cannot be
+# told from a prompt that was never eligible. That was wrong in a way worth
+# recording, because it reintroduced the exact bias this module exists to remove:
+# `measurable` is also true whenever a call REPORTED (it has to be, or a reported
+# call's cached tokens would count in the numerator while its prompt tokens were
+# missing from the denominator). So with the floor at 1024, a HIT at 714 tokens
+# was measurable and a MISS at 714 on the identical request was not -- the
+# denominator selected for hits, which is selection bias at the length level
+# after we had just removed it at the model level. Measured: 1 hit + 6 misses at
+# 714 tok read 97.5% instead of the true 13.9%.
+#
+# At 128 the asymmetry is unreachable rather than merely smaller: Groq cannot
+# cache a prefix shorter than 128 tokens on any model, so a hit below the floor
+# cannot occur and the "reported" disjunct never has to rescue one.
+#
+# The cost is the opposite error, and it is the safe one: if a particular model's
+# real floor is higher than 128, its misses between 128 and that floor are scored
+# as zeros when they were never eligible, which UNDERSTATES the saving. For a
+# quota metric, under-promising is the correct direction to be wrong in.
+#
+# In practice the band is nearly empty anyway. The threshold is compared against
+# the provider's `prompt_tokens`, which is system + user, not the system prompt
+# alone -- the smallest system prompt in the repo is 572 tokens and every route
+# adds a chart or question payload on top.
+MIN_CACHEABLE_PREFIX = 128
+
+
+def _rate(cached: int, prompt: int, n: int) -> float | None:
+    """cached/prompt as a percentage, or None when nothing measurable happened.
+
+    None, never 0: a route served only by a non-reporting model was not observed,
+    and a zero there would read as "no caching". Clamped to 0-100 because the
+    figures come from the provider and nothing upstream guarantees they are sane
+    -- a misreporting provider should not put 250% on the dashboard.
+    """
+    if not n or prompt <= 0:
+        return None
+    return round(max(0.0, min(100.0, cached / prompt * 100)), 1)
 
 # One definition of the counter row, shared by record() and range_summary(). They
 # drifting apart is how a field gets summed in one place and ignored in the other.
@@ -430,6 +472,16 @@ def range_summary(days: int) -> dict[str, Any]:
             parts = compound_key.split("|")
             if len(parts) != 3:
                 continue
+            # A row written by an OLDER schema must be skipped whole, not summed
+            # field-by-field. The first #396 shape stored `prompt_tokens`; this
+            # one stores `prompt_measurable` / `prompt_reported`. Summing by the
+            # CURRENT field list silently takes such a row's `cached_tokens` into
+            # the numerator while contributing nothing to either denominator, and
+            # a mixed window then publishes a rate over 100% (measured: 571% and
+            # 3998%). Requiring every field makes a schema change show up as a
+            # missing row rather than an inflated percentage.
+            if not _PREFIX_ZERO.keys() <= pc.keys():
+                continue
             acc = prefix_acc.setdefault(parts[2], dict(_PREFIX_ZERO))
             for field in acc:
                 acc[field] += pc.get(field, 0)
@@ -456,10 +508,9 @@ def range_summary(days: int) -> dict[str, Any]:
             # MIN_CACHEABLE_PREFIX, was never observed and must not read as 0%.
             "prefix_cache": {
                 route: {**v,
-                        "hit_pct": (round(v["cached_tokens"] / v["prompt_reported"] * 100, 1)
-                                    if v["reported"] and v["prompt_reported"] else None),
-                        "effective_pct": (round(v["cached_tokens"] / v["prompt_measurable"] * 100, 1)
-                                          if v["measurable"] and v["prompt_measurable"] else None)}
+                        "hit_pct": _rate(v["cached_tokens"], v["prompt_reported"], v["reported"]),
+                        "effective_pct": _rate(v["cached_tokens"], v["prompt_measurable"],
+                                               v["measurable"])}
                 for route, v in sorted(prefix_acc.items(), key=lambda kv: -kv[1]["calls"])
             },
         },

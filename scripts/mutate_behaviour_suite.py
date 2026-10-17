@@ -1081,9 +1081,39 @@ MUTATIONS = [
 
     ("#396: effective_pct divides by reported tokens, collapsing it into hit_pct (the original defect)",
      "src/astro_ai/llm_stats.py",
-     'v["cached_tokens"] / v["prompt_measurable"] * 100',
-     'v["cached_tokens"] / v["prompt_reported"] * 100',
+     '_rate(v["cached_tokens"], v["prompt_measurable"],',
+     '_rate(v["cached_tokens"], v["prompt_reported"],',
      "test_the_two_rates_diverge_and_effective_is_the_honest_one"),
+
+    # --- #410 QA round 1: the follow-up's own defects. Each row restores the
+    # behaviour QA measured and the suite must go red.
+    ("#410: MIN_CACHEABLE_PREFIX back to 1024 (a hit is measurable, a miss of the same size is not)",
+     "src/astro_ai/llm_stats.py",
+     "MIN_CACHEABLE_PREFIX = 128", "MIN_CACHEABLE_PREFIX = 1024",
+     "test_a_miss_and_a_hit_at_the_same_size_are_both_measurable"),
+
+    ("#410: an older stored schema is summed field-by-field again (mixed window published 571%)",
+     "src/astro_ai/llm_stats.py",
+     "            if not _PREFIX_ZERO.keys() <= pc.keys():\n                continue\n", "",
+     "test_an_old_schema_day_blob_is_skipped_whole_not_summed_field_by_field"),
+
+    ("#410: the rate is no longer clamped (a misreporting provider puts 250% on the dashboard)",
+     "src/astro_ai/llm_stats.py",
+     "    return round(max(0.0, min(100.0, cached / prompt * 100)), 1)",
+     "    return round(cached / prompt * 100, 1)",
+     "test_a_rate_is_clamped_and_a_negative_count_is_refused"),
+
+    ("#410: a negative cached count is accepted as a measurement",
+     "src/astro_ai/providers.py",
+     "or isinstance(cached, bool) or cached < 0:", "or isinstance(cached, bool):",
+     "test_a_rate_is_clamped_and_a_negative_count_is_refused"),
+
+    ("#410: the footnote names prompt overlays as if they were chat routes",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "          A call is Measurable on one of the three cache-reporting models",
+     "          <code>ask_matching</code> and <code>ask_numerology</code> are excluded.\n"
+     "          A call is Measurable on one of the three cache-reporting models",
+     "test_every_route_name_in_the_footnote_is_a_real_chat_route"),
     # --- #400: the per-route token budget gate. A size gate that cannot go red is
     # the honour system it replaced; each row neuters one comparison it makes.
     ("#400: the ceiling comparison is neutered (an oversized prompt passes)",

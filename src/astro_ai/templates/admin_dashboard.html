@@ -261,19 +261,18 @@
         <p class="text-xs text-bhagya-muted mt-4">
           Two different caches. The <strong>response cache</strong> is this app's own: it lives in
           each Cloud Run instance and dies with it. The <strong>prefix cache</strong> is Groq's: it
-          survives our cold starts, expires after about 2 hours idle, is opportunistic, and only
-          applies above a model-dependent minimum prefix (128&ndash;1024 tokens).
+          survives our cold starts, expires after about 2 hours idle, and is opportunistic.
           <strong>Read Effective, not Hit rate.</strong> Groq returns no cache figure at all on a
-          miss &mdash; not a zero &mdash; so Hit rate's denominator excludes every miss and
-          overstates the saving. Measured against live Groq 2026-10-17: 1 hit in 7 identical calls
-          on <code>gpt-oss-120b</code>, which reads 97.5% as a hit rate and 13.9% as a saving.
-          A call counts as Measurable only on one of the three cache-reporting models with a prompt
-          of at least 1,024 tokens, so <code>dasha</code> (944), <code>outlook</code>
-          (monthly 732 / yearly 819), <code>today</code> (743), <code>ask_matching</code> (714) and
-          <code>ask_numerology</code> (572) are excluded rather than scored 0% (tiktoken
-          o200k_base, measured 2026-10-17). Nothing is padded to cross the threshold, and a route
-          with fewer than one request per 2 hours never warms. Response-cache hits make no provider
-          call, so they record nothing here.
+          miss &mdash; not a zero &mdash; so Hit rate's denominator counts only the calls that hit
+          and overstates the saving. Measured against live Groq 2026-10-17: 1 hit in 7 identical
+          calls on <code>gpt-oss-120b</code>, which reads 97.5% as a hit rate and 13.9% as a
+          saving. <em>Effective is a saving over the Measurable calls, not over Fresh calls</em>
+          &mdash; compare those two columns before reading it as a share of the route's traffic.
+          A call is Measurable on one of the three cache-reporting models with at least 128 prompt
+          tokens, counted on the whole request (system + question or chart), not the system prompt
+          alone. Every route clears that, so a dash here means a non-reporting model served the
+          call, not a short prompt.
+
         </p>
       </div>
       {% endif %}

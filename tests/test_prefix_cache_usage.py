@@ -111,6 +111,14 @@ def test_a_provider_that_does_not_report_is_absent_never_zero(stats_dir, monkeyp
 # 3 -------------------------------------------------------------------------
 
 def test_a_measured_miss_is_zero_and_distinct_from_absent(stats_dir, monkeypatch):
+    """A reported ZERO is a measurement; an absent field is not.
+
+    Note on the shape: Groq itself never sends `{"cached_tokens": 0}` -- measured
+    2026-10-17, a miss omits `prompt_tokens_details` entirely, which is what
+    test_a_provider_that_does_not_report_is_absent_never_zero covers. This case
+    is the OpenAI-compatible contract rather than Groq's observed behaviour, kept
+    because the chain has four non-Groq providers and any of them may send it.
+    """
     _install(monkeypatch, {"p": (GOOD, _usage(2278, cached=0))})
     _chat()
     e = _agg()
@@ -378,9 +386,15 @@ def test_a_reported_call_under_the_minimum_still_counts_so_the_rate_cannot_excee
     _install_model(monkeypatch, [_usage(short, cached=short)])
     _chat()
     e = _agg()
+    # Assert on the UNCLAMPED sums, not on the published percentage. _rate() now
+    # clamps to 0-100, so `effective_pct <= 100` is vacuously true and would pass
+    # even if the call were missing from the denominator -- the clamp would hide
+    # exactly the defect this test is named for. The sums are what prove it.
     assert e["measurable"] == 1 and e["prompt_measurable"] == short
+    assert e["prompt_measurable"] >= e["cached_tokens"], (
+        "the cached tokens of a reported call are in the numerator, so its prompt "
+        "tokens must be in the denominator or the true ratio exceeds 100%")
     assert e["effective_pct"] == 100.0
-    assert e["effective_pct"] <= 100.0
 
 
 def test_the_dashboard_shows_the_effective_rate_not_only_the_hit_rate(
@@ -396,3 +410,119 @@ def test_the_dashboard_shows_the_effective_rate_not_only_the_hit_rate(
     assert "Read Effective, not Hit rate" in html, (
         "the page must say which number is the saving; two bare percentages "
         "invite the reader to take the larger one")
+
+
+# --- QA round 1 findings on #410 (BUG-1..BUG-9). Each defect, pinned. --------
+
+def test_a_miss_and_a_hit_at_the_same_size_are_both_measurable(stats_dir, monkeypatch):
+    """BUG-3. Measurability must depend on (model, size), never on the OUTCOME.
+
+    With the floor at 1024 a hit at 714 tokens was measurable (because reporting
+    implies measurable) while a miss at 714 on the identical request was not, so
+    the denominator selected for hits -- the same bias at the length level that
+    this module removed at the model level. 1 hit + 6 misses at 714 read 97.5%
+    where the truth is 13.9%.
+    """
+    _install_model(monkeypatch, [_usage(714, cached=696)] + [_usage(714) for _ in range(6)],
+                   model="openai/gpt-oss-20b")
+    for _ in range(7):
+        _chat()
+    e = _agg()
+    assert e["measurable"] == 7, (
+        "a miss must be as measurable as a hit of the same size on the same model; "
+        "if only the hit counts, the denominator selects for hits")
+    assert e["prompt_measurable"] == 714 * 7
+    assert e["effective_pct"] == pytest.approx(13.9, abs=0.05)
+    assert e["hit_pct"] == pytest.approx(97.5, abs=0.05)
+
+
+def test_the_threshold_is_the_bottom_of_groqs_range_not_the_top():
+    """BUG-3. The constant's VALUE is the fix; pin it with the reason."""
+    assert llm_stats.MIN_CACHEABLE_PREFIX == 128, (
+        "128 is the bottom of Groq's documented 128-1024 range. At the top, a hit "
+        "above the floor is measurable and a miss on the identical request is not")
+
+
+def test_an_old_schema_day_blob_is_skipped_whole_not_summed_field_by_field(
+        stats_dir, monkeypatch):
+    """BUG-2. A row from the FIRST #396 schema must not inflate a mixed window.
+
+    That schema stored `prompt_tokens`; this one stores `prompt_measurable` /
+    `prompt_reported`. Summing by the current field list took such a row's
+    cached_tokens into the numerator with nothing in either denominator, and a
+    mixed window published 571% effective / 3998% hit.
+    """
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    old = date.today() - timedelta(days=1)
+    (stats_dir / f"{old.isoformat()}.json").write_text(json.dumps({
+        "date": old.isoformat(), "counts": {}, "totals": {}, "fallbacks": 0,
+        "prefix_cache": {                      # the c2735cf shape, verbatim
+            "groq120|openai/gpt-oss-120b|ask": {
+                "calls": 40, "reported": 40,
+                "prompt_tokens": 80_000, "cached_tokens": 76_000}},
+    }))
+    _install_model(monkeypatch, [_usage(2363, cached=2304)] + [_usage(2363) for _ in range(6)])
+    for _ in range(7):
+        _chat()
+    e = llm_stats.range_summary(3)["aggregate"]["prefix_cache"]["ask"]
+    assert e["cached_tokens"] == 2304, (
+        "the old row's 76,000 cached tokens must not enter the numerator when its "
+        "prompt total cannot enter the denominator")
+    assert e["calls"] == 7 and e["measurable"] == 7
+    assert e["effective_pct"] == pytest.approx(13.9, abs=0.05)
+    assert e["hit_pct"] <= 100.0
+
+
+def test_a_rate_is_clamped_and_a_negative_count_is_refused(stats_dir, monkeypatch):
+    """BUG-6. The figures are the provider's; nothing upstream vouches for them."""
+    # Negative counts never become a measurement in the first place.
+    assert providers._prefix_usage(_usage(-5, cached=-1)) is None
+    assert providers._prefix_usage(_usage(2000, cached=-1)) == (2000, None)
+    # And an impossible overshoot is clamped rather than published.
+    assert llm_stats._rate(5000, 2000, 1) == 100.0
+    assert llm_stats._rate(0, 0, 1) is None
+    assert llm_stats._rate(100, 200, 0) is None
+
+
+def test_the_footnote_does_not_name_routes_that_do_not_exist(admin, stats_dir, monkeypatch):
+    """BUG-1. The copy claimed five routes were excluded by the threshold.
+
+    Two of them (`ask_matching`, `ask_numerology`) are PROMPT OVERLAYS on the
+    `ask` route, not routes -- nothing ever passes them to providers.chat, so no
+    such row can appear. The other three were compared as system-prompt tokens
+    against a threshold applied to the whole request, which they clear.
+    """
+    _install_model(monkeypatch, [_usage(2363, cached=2304)])
+    _chat()
+    html = admin.get("/admin").text
+    for ghost in ("ask_matching</code>", "ask_numerology</code>"):
+        assert ghost not in html, f"{ghost} is a prompt overlay, not a chat route"
+    assert "a dash or about 0" not in html
+    assert "system + question or chart" in html, (
+        "the threshold is judged on the whole request; saying so is what stops the "
+        "next reader repeating the system-prompt-only mistake")
+
+
+def test_effective_is_disclosed_as_a_share_of_measurable_not_of_traffic(
+        admin, stats_dir, monkeypatch):
+    """BUG-9. 'The quota actually saved' is a saving over MEASURABLE calls."""
+    _install_model(monkeypatch, [_usage(2363, cached=2304)])
+    _chat()
+    html = admin.get("/admin").text
+    assert "not over Fresh calls" in html
+
+
+def test_every_route_name_in_the_footnote_is_a_real_chat_route():
+    """BUG-1, statically. Any <code>route</code> the copy names must exist."""
+    import pathlib
+    src = pathlib.Path(__file__).resolve().parents[1] / "src" / "astro_ai"
+    real = set(re.findall(r'route="([A-Za-z_0-9]+)"',
+                          "\n".join(p.read_text() for p in src.rglob("*.py"))))
+    assert {"natal", "ask", "rashifal_single", "today", "dasha", "outlook"} <= real
+    tmpl = (src / "templates" / "admin_dashboard.html").read_text()
+    start = tmpl.index("Two different caches")
+    named = set(re.findall(r"<code>([a-z_0-9]+)</code>", tmpl[start:start + 2000]))
+    # gpt-oss-120b is a model, not a route; everything else named must be a route.
+    assert named - {"gpt-oss-120b"} <= real, (
+        f"the prefix-cache footnote names {named - {'gpt-oss-120b'} - real} which "
+        "is not a route passed to providers.chat")
