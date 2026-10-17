@@ -32,6 +32,10 @@ Schema (per-day file):
         "groq120|429_tpm": 1,        # "<provider that failed>|<reason class>"
         "groq20|quality":  1,
       },
+      "prefix_cache": {              # #396 — Groq's PROVIDER-side prefix cache
+        "groq120|openai/gpt-oss-120b|rashifal_single": {
+          "calls": 4, "reported": 3, "prompt_tokens": 6834, "cached_tokens": 5760}
+      },
       "calls": {"total": .., "hits": .., "misses": .., "miss_latency_sum_ms": ..},
       "call_by_route": {
         "rashifal": {"calls": .., "hits": .., "input_tokens": .., "output_tokens": ..,
@@ -40,6 +44,13 @@ Schema (per-day file):
     }
 
 Two invariants worth knowing before reading a number off this file:
+
+  * prefix_cache is NOT the response cache (`calls.hits`). That one is this
+    app's own cache and dies with the Cloud Run instance; this one is Groq's and
+    does not. `calls` counts every served call, but `reported` / `prompt_tokens`
+    / `cached_tokens` move only when the provider actually returned a cache
+    figure. A provider that omits it leaves reported at 0 and NO token sums --
+    absent is not zero, and the ratio is cached/prompt over reported calls only.
 
   * sum(fallback_reasons.values()) == fallbacks for any day recorded after #355,
     because both are incremented in the same mutator. A day recorded BEFORE it
@@ -98,7 +109,9 @@ def _read_day(day: date) -> dict[str, Any] | None:
 
 
 def record(*, provider: str, model: str, route: str = "", fallback: bool = False,
-           fallback_reason: str = "", failed_provider: str = "") -> None:
+           fallback_reason: str = "", failed_provider: str = "",
+           prompt_tokens: int | None = None,
+           cached_tokens: int | None = None) -> None:
     """Increment counters for today's LLM call. Best-effort; never raises.
 
     Called from providers.chat() after a successful response. `route` labels
@@ -110,6 +123,10 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
     fallbacks for every day recorded after this change. A caller passing
     `fallback=True` with no reason lands under "unknown|unknown" rather than
     being dropped, to keep that invariant.
+
+    `prompt_tokens` / `cached_tokens` (#396) are what the provider reported for
+    its own prefix cache, or None when it reported nothing. They are counted in
+    the same mutator -- no extra storage write -- and only when BOTH are given.
     """
     today = date.today()
     stat_key = f"{provider}|{model}|{route or 'unknown'}"
@@ -126,6 +143,13 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
             reasons = data.setdefault("fallback_reasons", {})
             rkey = f"{failed_provider or 'unknown'}|{fallback_reason or 'unknown'}"
             reasons[rkey] = reasons.get(rkey, 0) + 1
+        pc = data.setdefault("prefix_cache", {}).setdefault(
+            stat_key, {"calls": 0, "reported": 0, "prompt_tokens": 0, "cached_tokens": 0})
+        pc["calls"] = pc.get("calls", 0) + 1
+        if prompt_tokens is not None and cached_tokens is not None:
+            pc["reported"] = pc.get("reported", 0) + 1
+            pc["prompt_tokens"] = pc.get("prompt_tokens", 0) + prompt_tokens
+            pc["cached_tokens"] = pc.get("cached_tokens", 0) + cached_tokens
         return data
 
     result = storage.update_json(_key_for(today), _mut, default=None)
@@ -315,6 +339,8 @@ def range_summary(days: int) -> dict[str, Any]:
             "total_calls": 87,
             "fallbacks": 3,
             "fallback_reasons": {"groq120|429_tpm": 2, ...},   # sorted desc; #355
+            "prefix_cache": {"rashifal_single": {"calls", "reported",
+                             "prompt_tokens", "cached_tokens", "pct"}, ...},   # #396
           }
         }
     """
@@ -326,6 +352,7 @@ def range_summary(days: int) -> dict[str, Any]:
     total = 0
     fallbacks = 0
     fallback_reasons: dict[str, int] = defaultdict(int)
+    prefix_acc: dict[str, dict[str, int]] = {}
     daily: list[dict[str, Any]] = []
     for i in range(days):
         d = today - timedelta(days=i)
@@ -347,6 +374,16 @@ def range_summary(days: int) -> dict[str, Any]:
         fallbacks += blob.get("fallbacks", 0)
         for rkey, n in (blob.get("fallback_reasons") or {}).items():
             fallback_reasons[rkey] += n
+        # Days recorded before #396 have no key and contribute nothing -- they
+        # must not count as calls with a missing figure, or they would dilute.
+        for compound_key, pc in (blob.get("prefix_cache") or {}).items():
+            parts = compound_key.split("|")
+            if len(parts) != 3:
+                continue
+            acc = prefix_acc.setdefault(parts[2], {"calls": 0, "reported": 0,
+                                                     "prompt_tokens": 0, "cached_tokens": 0})
+            for field in acc:
+                acc[field] += pc.get(field, 0)
     daily.reverse()  # oldest first for display
     return {
         "days": daily,
@@ -357,5 +394,13 @@ def range_summary(days: int) -> dict[str, Any]:
             "total_calls": total,
             "fallbacks": fallbacks,
             "fallback_reasons": dict(sorted(fallback_reasons.items(), key=lambda kv: -kv[1])),
+            "prefix_cache": {
+                route: {**v,
+                        # None, never 0: no reported call (or no prompt tokens)
+                        # means UNMEASURED, and a zero would read as "no caching".
+                        "pct": (round(v["cached_tokens"] / v["prompt_tokens"] * 100, 1)
+                                if v["reported"] and v["prompt_tokens"] else None)}
+                for route, v in sorted(prefix_acc.items(), key=lambda kv: -kv[1]["calls"])
+            },
         },
     }

@@ -969,6 +969,18 @@ MUTATIONS = [
      ' and c.get("viewerDidAuthor") is True',
      "",
      "test_a_copied_marker_in_someone_elses_comment_does_not_suppress_the_stop"),
+
+    ("#396: a provider that omits prompt_tokens_details is recorded as a measured 0 (absent -> zero)",
+     "src/astro_ai/providers.py",
+     'cached = getattr(details, "cached_tokens", None)',
+     'cached = getattr(details, "cached_tokens", 0)',
+     "test_a_provider_that_does_not_report_is_absent_never_zero"),
+
+    ("#396: chat() stops resetting the prefix figure before each call (provider A's cached count leaks to B)",
+     "src/astro_ai/providers.py",
+     "                _last_prefix.set(None)\n",
+     "",
+     "test_chat_resets_the_figure_before_each_call_so_a_stub_cannot_inherit_it"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

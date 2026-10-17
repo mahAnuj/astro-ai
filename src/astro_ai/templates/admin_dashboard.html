@@ -106,13 +106,13 @@
         <div class="font-marcellus text-2xl text-bhagya-sindoor tabular-nums">{{ summary.total_calls }}</div>
       </div>
       <div class="bg-white border border-bhagya-line p-4">
-        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">Cache hits</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">Response-cache hits</div>
         <div class="font-marcellus text-2xl text-emerald-800 tabular-nums">{{ summary.cache_hits }}
           <span class="text-sm text-bhagya-muted">({{ summary.hit_rate_pct }}%)</span>
         </div>
       </div>
       <div class="bg-white border border-bhagya-line p-4">
-        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">Cache misses</div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-1">Response-cache misses</div>
         <div class="font-marcellus text-2xl text-bhagya-sindoor tabular-nums">{{ summary.cache_misses }}</div>
       </div>
       <div class="bg-white border border-bhagya-line p-4">
@@ -131,8 +131,8 @@
           <tr class="border-b border-bhagya-line">
             <th class="text-left py-2">Route</th>
             <th class="text-right py-2">Calls</th>
-            <th class="text-right py-2">Hits</th>
-            <th class="text-right py-2">Hit rate</th>
+            <th class="text-right py-2">Response-cache hits</th>
+            <th class="text-right py-2">Response-cache hit rate</th>
             <th class="text-right py-2" title="Mean wall-clock of a cache miss. Only days recorded since #355; — means none recorded, not zero.">Avg miss</th>
             <th class="text-right py-2">Input (est.)</th>
             <th class="text-right py-2">Output (est.)</th>
@@ -167,7 +167,7 @@
     {# LLM CALL BREAKDOWN — per-model + per-route + per-provider #}
     <div class="bg-white border border-bhagya-line p-5 sm:p-6">
       <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
-        <h3 class="font-marcellus text-base text-bhagya-ink">Fresh LLM calls (cache misses)</h3>
+        <h3 class="font-marcellus text-base text-bhagya-ink">Fresh LLM calls (response-cache misses)</h3>
         <div class="text-xs text-bhagya-muted tabular-nums">
           Total: <strong>{{ llm_stats.aggregate.total_calls }}</strong>
           {% if llm_stats.aggregate.fallbacks %}
@@ -215,6 +215,55 @@
         </div>
       </div>
 
+      {# PROVIDER-SIDE PREFIX CACHE (#396). Keyed by the CHAT route (the prompt),
+         not the web route in "By route" above -- the vocabularies differ. #}
+      {% if llm_stats.aggregate.prefix_cache %}
+      <div class="mt-6">
+        <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-2">Provider-side prefix cache (Groq), by prompt route</div>
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted">
+            <tr class="border-b border-bhagya-line">
+              <th class="text-left py-2">Route</th>
+              <th class="text-right py-2">Fresh calls</th>
+              <th class="text-right py-2" title="Calls where the provider returned a cache figure at all.">Reported</th>
+              <th class="text-right py-2" title="Prompt tokens of the reported calls only.">Prompt tokens (measured)</th>
+              <th class="text-right py-2">Cached</th>
+              <th class="text-right py-2" title="Cached / prompt tokens over reported calls only.">Prefix-cache %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for route, pc in llm_stats.aggregate.prefix_cache.items() %}
+            <tr class="border-b border-bhagya-line-2 last:border-0">
+              <td class="py-2 font-semibold text-bhagya-ink">{{ route }}</td>
+              <td class="py-2 text-right text-bhagya-ink tabular-nums">{{ pc.calls }}</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.reported }}</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.prompt_tokens if pc.reported else "—" }}</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.cached_tokens if pc.reported else "—" }}</td>
+              {% if pc.pct is none %}
+              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Not reported by the provider. That is not zero.">—</td>
+              {% else %}
+              <td class="py-2 text-right text-bhagya-sindoor font-semibold tabular-nums">{{ pc.pct }}%</td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+        <p class="text-xs text-bhagya-muted mt-4">
+          Two different caches. The <strong>response cache</strong> is this app's own: it lives in
+          each Cloud Run instance and dies with it. The <strong>prefix cache</strong> is Groq's: it
+          survives our cold starts, expires after about 2 hours idle, is opportunistic, and only
+          applies above a model-dependent minimum prefix (128&ndash;1024 tokens).
+          <code>dasha</code>, <code>outlook</code> (monthly 732 / yearly 819 tokens) and
+          <code>today</code> (743) have system prompts under 1,024 tokens (tiktoken o200k_base,
+          measured 2026-10-17), so expect a dash or about 0 there. Nothing is padded to cross the
+          threshold, and a route with fewer than one request per 2 hours never warms.
+          Response-cache hits make no provider call, so they record nothing here.
+        </p>
+      </div>
+      {% endif %}
+
       {% if llm_stats.days | length > 1 %}
       <div class="mt-6">
         <div class="text-xs font-semibold uppercase tracking-wider text-bhagya-muted mb-2">Daily breakdown</div>
@@ -242,7 +291,7 @@
       {% endif %}
 
       <p class="text-xs text-bhagya-muted mt-4">
-        Cache hits don't count here — only fresh LLM calls that consumed provider quota.
+        Response-cache hits don't count here — only fresh LLM calls that consumed provider quota.
         Token counts are <em>estimates</em> from text length (~4 chars/token Latin, ~2.5 Devanagari).
       </p>
       {% endif %}

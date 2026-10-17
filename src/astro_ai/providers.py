@@ -152,6 +152,34 @@ _last_model: ContextVar[str] = ContextVar("_last_model", default="")
 # (None when the response carries no usage) so a fallback provider that omits
 # usage cannot inherit the figure from the one that failed before it.
 _last_usage: ContextVar[int | None] = ContextVar("_last_usage", default=None)
+# (prompt_tokens, cached_tokens) the most recent call reported, or None when the
+# provider did not report a cache figure (#396). Kept apart from _last_usage on
+# purpose: that one is a total other modules already read. chat() resets this to
+# None before EVERY _call_one, so one provider's figures cannot be recorded
+# against the next provider that served the request.
+_last_prefix: ContextVar[tuple[int, int] | None] = ContextVar("_last_prefix", default=None)
+
+
+def _prefix_usage(usage) -> tuple[int, int] | None:
+    """(prompt_tokens, cached_tokens) from a response's usage block, or None.
+
+    None means "this provider did not say", which is NOT the same as zero: a
+    non-Groq provider or a model without prefix caching omits
+    `prompt_tokens_details`, and recording that as 0 would put a confident
+    "0% cached" on the dashboard for a route that was simply never measured.
+    A reported zero is (n, 0). bool is excluded because it is an int subclass.
+    Never raises -- this runs on the happy path of every LLM call.
+    """
+    try:
+        prompt = getattr(usage, "prompt_tokens", None)
+        details = getattr(usage, "prompt_tokens_details", None)
+        cached = getattr(details, "cached_tokens", None)
+    except Exception:  # noqa: BLE001 — observability never breaks a reading
+        return None
+    for v in (prompt, cached):
+        if not isinstance(v, int) or isinstance(v, bool):
+            return None
+    return prompt, cached
 
 
 def last_used_model() -> str:
@@ -593,6 +621,7 @@ def _call_one(provider: ProviderConfig, messages: list[dict]) -> str:
         response = client.chat.completions.create(model=model, messages=messages)
 
     _last_usage.set(getattr(getattr(response, "usage", None), "total_tokens", None))
+    _last_prefix.set(_prefix_usage(getattr(response, "usage", None)))
 
     choice = response.choices[0]
     content = choice.message.content or ""
@@ -769,7 +798,11 @@ def chat(messages: list[dict], *, route: str = "") -> str:
         retried = False
         while True:
             try:
+                # Reset first: a fake or failing _call_one never sets it, and
+                # the previous provider's figures must not be read as this one's.
+                _last_prefix.set(None)
                 raw_text = _call_one(provider, messages)
+                prefix = _last_prefix.get()
                 # Sanitize reasoning-model leakage BEFORE the quality gate so
                 # the heading-count check operates on the visible answer, not
                 # on the model's `<think>` scratchpad. Also prevents any
@@ -811,6 +844,9 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                         "fallback_from": last_err is not None,
                         "chars_out": len(text),
                         "leaked_reasoning": leaked_reasoning,
+                        # Groq prefix cache (#396); null = not reported, not 0.
+                        "prompt_tokens": prefix[0] if prefix else None,
+                        "cached_tokens": prefix[1] if prefix else None,
                     }},
                 )
                 # Persistent per-day counter for /admin/usage. Best-effort;
@@ -824,6 +860,8 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                         fallback=(last_err is not None),
                         fallback_reason=last_reason,
                         failed_provider=last_failed_provider,
+                        prompt_tokens=prefix[0] if prefix else None,
+                        cached_tokens=prefix[1] if prefix else None,
                     )
                 except Exception:  # noqa: BLE001 — stats never break the reading
                     log.debug("llm_stats.record failed", exc_info=True)
