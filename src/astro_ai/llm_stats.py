@@ -330,11 +330,28 @@ def range_summary(days: int) -> dict[str, Any]:
     for i in range(days):
         d = today - timedelta(days=i)
         blob = _read_day(d) or _empty_day(d)
+        # `route_tokens` is ADDITIVE to this entry's documented shape, not a
+        # change to it. The blob already carries per-day per-route tokens in
+        # `call_by_route` (#355) and this loop already reads every blob in the
+        # window, so a per-feature trend costs no extra read and needs no new
+        # instrumentation -- it was being written and never displayed.
+        #
+        # Only the two token fields are carried. The rest of `call_by_route`
+        # (hits, latency sums) belongs to the aggregate table, and copying it
+        # per day would put a second, differently-windowed copy of those
+        # figures on the page for a reader to mistake for the first.
+        route_tokens = {
+            route: {"input_tokens": int(r.get("input_tokens") or 0),
+                    "output_tokens": int(r.get("output_tokens") or 0)}
+            for route, r in (blob.get("call_by_route") or {}).items()
+            if isinstance(r, dict)
+        }
         daily.append({
             "date": blob["date"],
             "totals": dict(blob.get("totals", {})),
             "fallbacks": blob.get("fallbacks", 0),
             "total": sum(blob.get("totals", {}).values()),
+            "route_tokens": route_tokens,
         })
         for compound_key, count in blob.get("counts", {}).items():
             parts = compound_key.split("|")

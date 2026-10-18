@@ -582,7 +582,98 @@ def _agents_view() -> dict:
 
 
 APP_CACHE_TTL = float(os.environ.get("OPS_APP_CACHE_TTL", "60"))
-_app_cache: tuple[float, dict] | None = None
+
+#: The windows the Token budget / App health panels offer, in days.
+#:
+#: 30 IS A CEILING, NOT A CHOICE. `events.EVENT_RETENTION_DAYS = 30` and
+#: `events.recent()` clamps to it, so a larger window would silently return 30
+#: days of data under a label saying otherwise -- a number that lies about its
+#: own denominator, which is the defect class this page keeps finding.
+#:
+#: An explicit SET rather than a range, for the same reason: `?window=3650`
+#: must be refused, not clamped-and-mislabelled.
+APP_WINDOWS = (1, 7, 30)
+
+#: Unchanged default. A filter that silently moved the default would make every
+#: figure on the page incomparable with the ones recorded in ARCHITECTURE.md.
+DEFAULT_APP_DAYS = 7
+
+#: KEYED BY WINDOW. It was a single slot, which was correct while `days` was
+#: hard-coded and becomes a bug the moment it is not: the first render would
+#: populate it and every other window would be served that answer for 60s,
+#: under its own heading. Found while adding the filter, not in production.
+_app_cache: dict[int, tuple[float, dict]] = {}
+
+
+#: How many features the trend chart names before the rest become "other".
+#: Six is what fits a legend on one line at 375px without wrapping; the
+#: remainder is never dropped, only grouped, so the stack still sums to the
+#: day's total.
+TREND_TOP_N = 6
+
+
+def _token_trend(rng: dict, days: int) -> dict:
+    """Per-day, per-feature token totals for the window — a stacked series.
+
+    NO NEW INSTRUMENTATION. `call_by_route` has carried per-day input and
+    output tokens since #355 and `range_summary` already reads every blob in
+    the window; this only stops throwing the per-day part away.
+
+    TOTAL, NOT INPUT, for the same reason the table beside it uses total:
+    Groq's 8,000 TPM and 200,000 TPD both count input + output, so an
+    input-only trend reads as headroom the budget does not have.
+
+    The features are ranked ONCE over the whole window, not per day, so a bar
+    keeps its colour from one day to the next. A legend that reorders itself
+    daily is unreadable as a trend, which is the only thing this chart is for.
+    """
+    rows = [d for d in (rng.get("days") or []) if isinstance(d, dict)]
+    # `range_summary` walks backwards from today; a chart reads left to right.
+    rows = sorted(rows, key=lambda d: d.get("date") or "")
+    totals: dict[str, int] = {}
+    for d in rows:
+        for route, tok in (d.get("route_tokens") or {}).items():
+            totals[route] = (totals.get(route, 0)
+                             + int(tok.get("input_tokens") or 0)
+                             + int(tok.get("output_tokens") or 0))
+    if not totals or not any(totals.values()):
+        return {"ok": False, "days": days}
+
+    ranked = sorted(totals, key=lambda r: -totals[r])
+    named, rest = ranked[:TREND_TOP_N], set(ranked[TREND_TOP_N:])
+    features = named + (["other"] if rest else [])
+
+    series, peak = [], 0
+    for d in rows:
+        per = {f: 0 for f in features}
+        for route, tok in (d.get("route_tokens") or {}).items():
+            n = int(tok.get("input_tokens") or 0) + int(tok.get("output_tokens") or 0)
+            key = "other" if route in rest else route
+            per[key] = per.get(key, 0) + n
+        day_total = sum(per.values())
+        peak = max(peak, day_total)
+        series.append({"date": (d.get("date") or "")[5:],   # MM-DD; the year
+                       "full_date": d.get("date") or "",    # is in the heading
+                       "total": day_total, "by_feature": per})
+
+    top = _nice_top(peak)
+    return {
+        "ok": True,
+        "days": days,
+        "features": features,
+        "series": series,
+        "peak": peak,
+        "top": top,
+        # The reference line. NOT a ceiling for this sum: TPD is per MODEL and
+        # this total is across the whole chain, which is the same caveat
+        # `peak_day_pct` already carries. Drawn, and labelled as per-model, so
+        # a reader can see how close one day came without being told a number
+        # that is not true of the stack.
+        "tpd": TPD_PER_MODEL,
+        "tpd_visible": top >= TPD_PER_MODEL * 0.25,
+        "tpd_y": round(100 - min(TPD_PER_MODEL / top, 1.0) * 100, 2) if top else 100,
+        "grouped": sorted(rest),
+    }
 
 
 def _app_view(days: int = 7) -> dict:
@@ -608,10 +699,10 @@ def _app_view(days: int = 7) -> dict:
     would render as a clean bill of health for an app that recorded nothing at
     all. `measured` is False in that case and the panel says so instead.
     """
-    global _app_cache
     now = time.time()
-    if _app_cache and now - _app_cache[0] < APP_CACHE_TTL:
-        return _app_cache[1]
+    hit = _app_cache.get(days)
+    if hit and now - hit[0] < APP_CACHE_TTL:
+        return hit[1]
 
     # Said on the page, because "0 errors" from a developer's /tmp and from
     # production's bucket looked identical (#355).
@@ -624,6 +715,7 @@ def _app_view(days: int = 7) -> dict:
                     if store.startswith("local:")
                     else f"{store} -- configured, not verified reachable")
     out: dict[str, Any] = {"ok": False, "measured": False, "days": days,
+                           "trend": {"ok": False, "days": days},
                            "store": store, "store_is_local": store.startswith("local:"),
                            "store_detail": store_detail}
     try:
@@ -792,11 +884,12 @@ def _app_view(days: int = 7) -> dict:
                              if usage.get("peak_day_tokens") else None),
             "by_provider": sorted((agg.get("by_provider") or {}).items(),
                                   key=lambda kv: -kv[1]),
+            "trend": _token_trend(rng, days),
         }
     except Exception:                       # noqa: BLE001 — the page never fails
         log.debug("ops app view failed", exc_info=True)
 
-    _app_cache = (now, out)
+    _app_cache[days] = (now, out)
     return out
 
 
@@ -879,13 +972,16 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
                 f"{app['days']} days.", "/admin/activity")
         elif rate >= ERROR_RATE_AMBER:
             add("amber", f"Error rate {rate}%",
-                f"{app['errors']} of {app['calls']} calls.", "/admin/activity")
+                f"{app['errors']} of {app['calls']} calls in {app['days']}d.",
+                "/admin/activity")
         if app.get("exhausted"):
-            add("red", f"{app['exhausted']} requests had every provider fail",
+            add("red", f"{app['exhausted']} requests had every provider fail "
+                       f"in {app['days']}d",
                 "AllProvidersExhausted — the user saw the \u201chigh demand\u201d page, "
                 "not a reading.", "/admin/activity")
         if app.get("too_large"):
-            add("red", f"{app['too_large']} requests exceeded the provider's size limit",
+            add("red", f"{app['too_large']} requests exceeded the provider's "
+                       f"size limit in {app['days']}d",
                 "RequestTooLarge (413) is a prompt-size failure, not a rate limit. "
                 "Shrinking the prompt is the fix; waiting is not.", "/admin/activity")
         fr = app.get("fallback_rate") or 0.0
@@ -977,8 +1073,17 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
     return out
 
 
-def snapshot(now: datetime | None = None) -> dict:
-    """Everything /admin/ops renders, in one dict. Never raises."""
+def snapshot(now: datetime | None = None,
+             app_days: int = DEFAULT_APP_DAYS) -> dict:
+    """Everything /admin/ops renders, in one dict. Never raises.
+
+    `app_days` is the Token budget / App health window. It drives the alert
+    strip too, deliberately: an error rate is a rate OVER a window, and showing
+    a 30-day alert above a 1-day table would be two different claims stacked on
+    each other. Every alert built from it names the window for that reason.
+    """
+    if app_days not in APP_WINDOWS:
+        app_days = DEFAULT_APP_DAYS
     now = now or datetime.now(timezone.utc)
     now_ist = now.astimezone(IST)
     today_ist = now_ist.strftime("%Y-%m-%d")
@@ -1005,7 +1110,7 @@ def snapshot(now: datetime | None = None) -> dict:
     cost = _cost_view(_fetch("cost.json"), shipped_30d)
     traffic = _traffic_view()
     agents = _agents_view()
-    app = _app_view()
+    app = _app_view(app_days)
     ages = {
         "Delivery": _age((loop_doc or {}).get("generated_at"), now),
         "Backlog": _age((issues_doc or {}).get("generated_at"), now),  # "live" when fetched
@@ -1019,6 +1124,10 @@ def snapshot(now: datetime | None = None) -> dict:
         "reds": sum(1 for a in alerts if a["level"] == "red"),
         "now_ist": now_ist,
         "today_ist": today_ist,
+        # The window in force, and the ones on offer. Both travel with the
+        # data so the template holds no list of its own to drift from this one.
+        "app_days": app_days,
+        "app_windows": APP_WINDOWS,
         "next_cycle_ist": next_cycle_ist(now),
         "loop": loop,
         "issues": issues,

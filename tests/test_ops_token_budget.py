@@ -42,8 +42,13 @@ def _route(**kw):
 def _reset_app_cache():
     """`_app_view` memoises for APP_CACHE_TTL (60 s), so a second call in the
     same second returns the first test's data. Isolation, not a workaround:
-    every test here builds its own store."""
-    ops_data._app_cache = None
+    every test here builds its own store.
+
+    `.clear()`, not `= None`: the cache is keyed by WINDOW since the Token
+    budget filter landed, so the sentinel is an empty dict. Assigning None
+    gave `AttributeError: 'NoneType' object has no attribute 'clear'` in every
+    test that ran after this one."""
+    ops_data._app_cache.clear()
 
 
 def _routes_from(rows, monkeypatch):

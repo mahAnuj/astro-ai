@@ -1131,6 +1131,60 @@ MUTATIONS = [
      '                "today_failed": (live_today or {}).get("failed", [])}',
      '                "today_failed": []}',
      "test_live_tiles_survive_a_missing_snapshot_file"),
+
+    ("#ops-window: the app cache goes back to one slot (window A answers under B's heading)",
+     "src/astro_ai/ops_data.py",
+     "    hit = _app_cache.get(days)",
+     "    hit = next(iter(_app_cache.values()), None)",
+     "test_two_windows_do_not_share_one_cache_slot"),
+
+    ("#ops-window: an unoffered window is clamped instead of refused (3650 renders as 30)",
+     "src/astro_ai/ops_data.py",
+     "    if app_days not in APP_WINDOWS:\n        app_days = DEFAULT_APP_DAYS",
+     "    app_days = max(1, min(app_days, max(APP_WINDOWS)))",
+     "test_an_unoffered_window_falls_back_rather_than_being_clamped"),
+
+    ("#ops-window: a window above the event-retention ceiling is offered",
+     "src/astro_ai/ops_data.py",
+     "APP_WINDOWS = (1, 7, 30)",
+     "APP_WINDOWS = (1, 7, 30, 90)",
+     "test_the_offered_windows_stay_inside_the_retention_ceiling"),
+
+    ("#ops-window: ?window=abc 422s the whole control room",
+     "src/astro_ai/routes/admin.py",
+     "async def admin_ops(request: Request, window: str = \"\") -> HTMLResponse:",
+     "async def admin_ops(request: Request, window: int = 0) -> HTMLResponse:",
+     "test_a_mistyped_window_renders_the_default_page_not_an_error"),
+
+    ("#ops-trend: features are ranked per day, so a bar changes colour daily",
+     "src/astro_ai/ops_data.py",
+     "    ranked = sorted(totals, key=lambda r: -totals[r])",
+     "    ranked = sorted(totals)",
+     "test_features_are_ranked_over_the_window_not_per_day"),
+
+    ("#ops-trend: the overflow features are dropped instead of grouped",
+     "src/astro_ai/ops_data.py",
+     '            key = "other" if route in rest else route\n            per[key] = per.get(key, 0) + n',
+     '            if route in rest:\n                continue\n            per[route] = per.get(route, 0) + n',
+     "test_beyond_the_top_n_features_are_grouped_never_dropped"),
+
+    ("#ops-trend: the chart reads newest-first, so the trend runs backwards",
+     "src/astro_ai/ops_data.py",
+     '    rows = sorted(rows, key=lambda d: d.get("date") or "")',
+     '    rows = sorted(rows, key=lambda d: d.get("date") or "", reverse=True)',
+     "test_days_read_left_to_right_oldest_first"),
+
+    ("#ops-trend: an empty window renders a flat zero chart instead of nothing",
+     "src/astro_ai/ops_data.py",
+     '    if not totals or not any(totals.values()):\n        return {"ok": False, "days": days}',
+     '    if False:\n        return {"ok": False, "days": days}',
+     "test_a_window_with_no_tokens_is_not_ok_rather_than_a_flat_zero_chart"),
+
+    ("#ops-trend: the axis top ignores the peak, so the tallest bar overflows",
+     "src/astro_ai/ops_data.py",
+     '"total": day_total, "by_feature": per})\n\n    top = _nice_top(peak)',
+     '"total": day_total, "by_feature": per})\n\n    top = _nice_top(peak // 2) if peak else 1',
+     "test_no_bar_can_overflow_the_axis"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
