@@ -885,6 +885,16 @@ MUTATIONS = [
      'msg = entry["message"] or ""',
      "test_a_script_payload_in_the_message_does_not_survive_as_markup"),
 
+    # The defect as it shipped: `import logging` inside the email `except`
+    # block. A local import anywhere in a function makes the name local for the
+    # WHOLE function, whatever the module binds -- so the Telegram handler
+    # above it raised UnboundLocalError and a saved submission returned 500.
+    ("#408: `import logging` back inside the email except (Telegram handler 500s)",
+     "src/astro_ai/routes/feedback.py",
+     '    except Exception as err:\n        logging.getLogger(__name__).warning("admin feedback',
+     '    except Exception as err:\n        import logging\n        logging.getLogger(__name__).warning("admin feedback',
+     "test_a_telegram_failure_does_not_500_a_saved_submission"),
+
     ("#355: an unrecorded route latency reads as 0 (a zero reads as 'fast')",
      "src/astro_ai/llm_stats.py",
      'int(v["lat_sum"] / v["lat_n"]) if v["lat_n"] else None',
