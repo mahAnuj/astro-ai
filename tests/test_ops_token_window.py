@@ -217,12 +217,21 @@ def test_features_are_ranked_over_the_window_not_per_day():
     would recolour every bar daily and the chart would be unreadable as a
     trend, which is the only thing it is for.
     """
-    rng = _rng(("2026-10-01", {"a": 100, "b": 1}),
-               ("2026-10-02", {"a": 1, "b": 100}))
+    # NAMES CHOSEN SO ALPHABETICAL ORDER IS THE WRONG ANSWER, and totals chosen
+    # so they do not tie. The first version of this test used {a: 100, b: 1}
+    # and {a: 1, b: 100} -- equal window totals, so a stable sort preserved
+    # insertion order and `sorted(totals)` produced the SAME list. The
+    # mutation harness reported MISSED: the assertion could not fail.
+    #
+    # Here zeta wins the window (110 vs 91) while alpha wins day two (90 vs
+    # 10), so this one list distinguishes three implementations: ranked by
+    # window total (correct), ranked alphabetically, and ranked per day.
+    rng = _rng(("2026-10-01", {"zeta": 100, "alpha": 1}),
+               ("2026-10-02", {"zeta": 10, "alpha": 90}))
     tr = ops_data._token_trend(rng, 2)
-    assert tr["features"] == ["a", "b"]          # a wins on the window total
+    assert tr["features"] == ["zeta", "alpha"]
     for s in tr["series"]:
-        assert list(s["by_feature"]) == ["a", "b"], "order moved between days"
+        assert list(s["by_feature"]) == ["zeta", "alpha"], "order moved between days"
 
 
 def test_beyond_the_top_n_features_are_grouped_never_dropped():
