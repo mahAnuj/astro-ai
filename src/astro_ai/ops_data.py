@@ -204,14 +204,32 @@ def _live_issues(objective: str) -> dict | None:
         # OBJECTIVE.md, which the container does not have. Fetching the
         # backlog live does not make that file appear.
         doc = issue_backlog.build(issues, repo=GH_REPO, objective=objective)
-    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:
-        log.warning("ops_data: live backlog unavailable, using the snapshot: %s", exc)
+    except Exception as exc:  # noqa: BLE001
+        # Broad for the same reason as `_live_today` below, and it is the same
+        # page: the old (URLError, OSError, ValueError, KeyError) tuple missed
+        # `http.client.IncompleteRead` and anything else outside OSError, and
+        # an escape here 500s the whole control room to protect one panel.
+        log.warning("ops_data: live backlog unavailable, using the snapshot: %s",
+                    exc, exc_info=True)
         return None
     _live_cache = (now, doc)
     return doc
 
 
-_today_cache: tuple[float, dict] | None = None
+#: (monotonic stamp, the IST day it describes, the answer or None).
+#:
+#: THE DAY IS PART OF THE KEY. Without it the entry survives IST midnight and
+#: the page reports YESTERDAY's merges and failures as "today, live" for up to
+#: CACHE_TTL. The tiles are bucketed by IST day and 00:00 IST is 18:30 UTC, so
+#: the boundary falls in the middle of an ordinary working afternoon in UTC --
+#: it is not a quiet hour anyone would notice it in.
+#:
+#: None IS CACHED TOO. A failure that is not remembered costs one request per
+#: render forever, and the overwhelmingly likely failure here is a 403 from the
+#: 60/hour unauthenticated budget -- so not caching it is what keeps the budget
+#: spent. Re-asking on every reload is how an outage becomes a self-inflicted
+#: one.
+_today_cache: tuple[float, str, dict | None] | None = None
 
 
 def _live_today(day_start: datetime) -> dict | None:
@@ -225,15 +243,32 @@ def _live_today(day_start: datetime) -> dict | None:
     """
     global _today_cache
     now = time.monotonic()
-    if _today_cache and now - _today_cache[0] < CACHE_TTL:
-        return _today_cache[1]
+    day = day_start.isoformat()
+    if (_today_cache and _today_cache[1] == day
+            and now - _today_cache[0] < CACHE_TTL):
+        return _today_cache[2]
     try:
         doc = ops_today.fetch_today(
             GH_REPO, day_start, timeout=HTTP_TIMEOUT, token=GH_TOKEN)
-    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:
-        log.warning("ops_data: live today unavailable, using the snapshot: %s", exc)
+    except Exception as exc:  # noqa: BLE001 -- see below
+        # DELIBERATELY BROAD, and the docstring above is the contract: None on
+        # ANY failure. The previous tuple was
+        # (URLError, OSError, ValueError, KeyError), which reads as
+        # exhaustive and is not: `http.client.IncompleteRead` -- a truncated
+        # response, the ordinary failure of a long-poll over a flaky link --
+        # inherits from HTTPException and is none of those four, so it escaped
+        # and 500'd the WHOLE /admin/ops page rather than one tile.
+        #
+        # The asymmetry is what decides it. Letting an exception through here
+        # takes down the one page you open when the system is broken, to
+        # protect a freshness nicety; catching it costs a stale label that the
+        # page already prints. `exc_info` keeps the bug visible in the log,
+        # which is what a broad catch usually throws away.
+        log.warning("ops_data: live today unavailable, using the snapshot: %s",
+                    exc, exc_info=True)
+        _today_cache = (now, day, None)
         return None
-    _today_cache = (now, doc)
+    _today_cache = (now, day, doc)
     return doc
 
 
@@ -946,10 +981,22 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
     # failing, which is the very thing the alert exists to announce.
     if loop.get("today_failed"):
         n = len(loop["today_failed"])
-        which = ", ".join(sorted({f.get("workflow") or "?"
-                                  for f in loop["today_failed"]}))
-        add("amber", f"{n} loop run(s) failed today",
-            f"{which}. A leg that did not finish leaves its work untouched.")
+        if loop.get("today_live"):
+            # Live rows are WORKFLOW RUNS and carry `workflow`.
+            which = ", ".join(sorted({f.get("workflow") or "an unnamed workflow"
+                                      for f in loop["today_failed"]}))
+            add("amber", f"{n} loop run(s) failed today",
+                f"{which}. A leg that did not finish leaves its work untouched.")
+        else:
+            # Fallback rows are agent-work CYCLES from loop.json and have no
+            # `workflow` key at all, so the live wording rendered a literal
+            # "?" to the reader -- on the one path that is taken whenever the
+            # API is unreachable, i.e. exactly when someone is reading this
+            # page to find out what broke. Say what the rows actually are.
+            add("amber", f"{n} agent-work cycle(s) failed today",
+                "From the committed snapshot, not live, so this counts "
+                "agent-work only and may be out of date. A cycle that did not "
+                "deliver leaves its issue untouched.")
 
     # --- the data under the page ----------------------------------------
     # Rule 1 above: a source that could not be read says so. The backlog is

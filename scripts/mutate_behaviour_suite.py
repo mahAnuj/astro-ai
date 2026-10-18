@@ -885,6 +885,16 @@ MUTATIONS = [
      'msg = entry["message"] or ""',
      "test_a_script_payload_in_the_message_does_not_survive_as_markup"),
 
+    # The defect as it shipped: `import logging` inside the email `except`
+    # block. A local import anywhere in a function makes the name local for the
+    # WHOLE function, whatever the module binds -- so the Telegram handler
+    # above it raised UnboundLocalError and a saved submission returned 500.
+    ("#408: `import logging` back inside the email except (Telegram handler 500s)",
+     "src/astro_ai/routes/feedback.py",
+     '    except Exception as err:\n        logging.getLogger(__name__).warning("admin feedback',
+     '    except Exception as err:\n        import logging\n        logging.getLogger(__name__).warning("admin feedback',
+     "test_a_telegram_failure_does_not_500_a_saved_submission"),
+
     ("#355: an unrecorded route latency reads as 0 (a zero reads as 'fast')",
      "src/astro_ai/llm_stats.py",
      'int(v["lat_sum"] / v["lat_n"]) if v["lat_n"] else None',
@@ -1125,6 +1135,82 @@ MUTATIONS = [
      '    if loop.get("today_failed"):\n        n = len(loop["today_failed"])',
      '    if loop.get("ok") and loop.get("today_failed"):\n        n = len(loop["today_failed"])',
      "test_the_failure_alert_fires_even_with_no_loop_json"),
+
+    # --- QA round 1 on #418 (2026-10-18). Eleven findings; these are the
+    # mutations for the ones that were real. Every behaviour below had NO gate
+    # that could fail before this round. -----------------------------------
+    ("#ops-today: the live cache is keyed on the clock alone (survives IST midnight)",
+     "src/astro_ai/ops_data.py",
+     '    if (_today_cache and _today_cache[1] == day\n'
+     '            and now - _today_cache[0] < CACHE_TTL):',
+     '    if _today_cache and now - _today_cache[0] < CACHE_TTL:',
+     "test_the_live_cache_does_not_survive_ist_midnight"),
+
+    ("#ops-today: the live-today catch narrows back to four types (IncompleteRead 500s the page)",
+     "src/astro_ai/ops_data.py",
+     "    except Exception as exc:  # noqa: BLE001 -- see below",
+     "    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:",
+     "test_a_failure_outside_the_four_old_exception_types_does_not_500_the_page"),
+
+    ("#ops-today: a failure is not remembered (an outage costs a request per render)",
+     "src/astro_ai/ops_data.py",
+     '        _today_cache = (now, day, None)\n        return None',
+     '        return None',
+     "test_a_failing_live_path_is_not_retried_on_every_render"),
+
+    ("#ops-today: shipped is sorted oldest-first",
+     "src/astro_ai/ops_today.py",
+     '"shipped": sorted(shipped.values(), key=lambda s: s["merged_at"], reverse=True)',
+     '"shipped": sorted(shipped.values(), key=lambda s: s["merged_at"])',
+     "test_shipped_and_failed_are_newest_first"),
+
+    ("#ops-today: failed is sorted oldest-first",
+     "src/astro_ai/ops_today.py",
+     '"failed": sorted(failed, key=lambda f: f["started"] or "", reverse=True)',
+     '"failed": sorted(failed, key=lambda f: f["started"] or "")',
+     "test_shipped_and_failed_are_newest_first"),
+
+    ("#ops-today: the live cache never expires (the tiles freeze for the process)",
+     "src/astro_ai/ops_data.py",
+     '            and now - _today_cache[0] < CACHE_TTL):',
+     '            and True):',
+     "test_the_live_cache_expires"),
+
+    ("#ops-today: a truncated page is reported as complete (a silent undercount)",
+     "src/astro_ai/ops_today.py",
+     '        "truncated": pr_more or runs_more,',
+     '        "truncated": False,',
+     "test_a_truncated_runs_page_is_admitted_rather_than_undercounted"),
+
+    ("#ops-today: the pager always spends MAX_PAGES (3x the budget on a quiet day)",
+     "src/astro_ai/ops_today.py",
+     '        if len(batch) < PER_PAGE:\n            return rows, False',
+     '        if False:\n            return rows, False',
+     "test_an_ordinary_day_still_costs_one_request_per_endpoint"),
+
+    ("#ops-today: the steward drops off the loop (the leg that reports stoppage, invisible)",
+     "src/astro_ai/ops_today.py",
+     '    "agent-steward.yml",\n',
+     '',
+     "test_the_steward_counts_as_a_loop_leg"),
+
+    ("#ops-today: the fallback alert renders a literal '?' to the reader",
+     "src/astro_ai/ops_data.py",
+     '            add("amber", f"{n} agent-work cycle(s) failed today",',
+     '            add("amber", f"{n} loop run(s) failed today - ?",',
+     "test_the_fallback_alert_does_not_render_a_literal_question_mark"),
+
+    ("#ops-today: snapshot() is awaited inline (up to 12s of event loop, app-wide)",
+     "src/astro_ai/routes/admin.py",
+     '    ops = await asyncio.to_thread(ops_data.snapshot)',
+     '    ops = ops_data.snapshot()',
+     "test_the_ops_page_does_not_block_the_event_loop"),
+
+    ("#ops-today: today_live is hardcoded (the drill-down picks the wrong renderer)",
+     "src/astro_ai/routes/admin.py",
+     '        "today_live": L.get("today_live", False),',
+     '        "today_live": False,',
+     "test_the_page_tells_the_drill_down_which_shape_the_rows_are"),
 
     ("#ops-today: a missing snapshot blanks the live tiles too",
      "src/astro_ai/ops_data.py",
