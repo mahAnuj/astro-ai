@@ -122,7 +122,7 @@ rule-set. Each rule is tagged **cancels** (dosha is fully nullified) or
 
 - **Match with another Manglik of comparable severity** — the most commonly cited classical remedy; it neutralizes the dosha mutually (see rule 20).
 - **Recitation of Hanuman Chalisa / Mangal stotra** — Mars's adhidevata. Traditional, low-risk, devotional.
-- **Donation on Tuesday** — red lentils (masoor dal), red cloth, sweets. Classical Tuesday remedy for afflicted Mars.
+- **Donation on Tuesday** — toor daal (a dark yellow lentil), Rao's grain for Mars (§34.3, line 19341, plain `pdftotext`). **The earlier "red lentils (masoor dal)" was UNSOURCED** — `red lentil` and `masoor` are 0 hits across all 94,019 lines of the 14-book corpus (#398); red cloth and sweets are likewise not in Rao and stay unsourced. The weekday is also not Rao's: he ties a planet's own weekday to mantra recitation and first wearing a gemstone, not to charity (`remedies.md` §12 row 11).
 - **Coral (moonga) gemstone** — ONLY after a competent astrologer reviews the whole chart. Wearing coral without analysis can amplify Mars if Mars is not actually benefic for the chart. Default LLM stance: suggest consultation, do not prescribe.
 
 ---

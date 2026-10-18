@@ -48,6 +48,12 @@ the 413 taught us about.
       system-prompt token count must leave room for the chart data. The
       numbers and their provenance are recorded beside the constants.
 
+  Gate 4 - no stale size citations.  Prose that quotes the prompt's byte size
+      must still match it.
+
+  Gate 5 - no retired claims.  Strings #398 removed as wrong or unsourced
+      (FORBIDDEN) must not reappear.
+
 Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris — it reads one
 file, so it runs anywhere and belongs in the `verify_*` sweep.
 
@@ -85,7 +91,7 @@ HEADINGS = (
 # were guesses in the first version of this file and every one of them was
 # wrong — the guessed chars-per-token over-counted the prompt by 16%.
 #
-#   * The system prompt is 3,111 tok at 13,135 B — 4.22 B/tok for instruction
+#   * The system prompt is 3,111 tok at 13,135 B (13,013 B after #398) — 4.22 B/tok for instruction
 #     prose. It is identical on every request; only the user message varies.
 #   * The largest chart payload across the eight fixtures is 3,687 tok
 #     (cancer-lagna-manglik-exempt: Manglik detail block plus topic summaries).
@@ -345,9 +351,10 @@ RULES: tuple[Rule, ...] = (
     ),
     Rule(
         "d9-navamsha-scope",
-        "#62. The D-9 is a lens for marriage and yoga confirmation only. Given "
-        "any wider licence the model writes a Navamsha section.",
-        anchors=(r"D-9", r"NAVAMSHA|Navamsha", r"[Mm]arriage", r"yoga"),
+        "#62. The D-9 is a lens for the marriage cross-check only (#398 removed "
+        "the yoga-confirmation use: Rao puts manifestation in D-1 and D-10). "
+        "Given any wider licence the model writes a Navamsha section.",
+        anchors=(r"D-9", r"NAVAMSHA|Navamsha", r"[Mm]arriage"),
         # the substance, not just the block name: the 7th-house cross-check and
         # the kendra/trikona test are the rule. Without them "use the D-9 for
         # marriage" is an instruction with no method attached.
@@ -595,6 +602,37 @@ def gate_4_no_stale_size_citations(text: str) -> bool:
     return ok
 
 
+# Claims #398 removed because they were measured against Rao Ch. 34 / §11 and
+# found wrong, unsourced or cross-assigned (knowledge/remedies.md §12,
+# divisional_charts.md). Gate 2 asks whether rules are still STATED; nothing
+# else asked whether a corrected claim had crept back, and these came from
+# training-data folk practice, which is exactly what a later edit reintroduces.
+# Matching is case-insensitive and hyphen/space-agnostic.
+FORBIDDEN = (
+    (r"red[- ]lentil|masoor", "Sun's grain is wheat; red lentil is in no book we hold"),
+    (r"Surya Namaskar", "proved absent from all 14 books"),
+    (r"milk offering", "Shiva is the Sun's deity, not the Moon's (Table 78)"),
+    (r"Hanuman intercession", "Saturn -> Vishnu, Brahma; Hanuman only via Mars with Saturnine influence"),
+    (r"serve outsiders", "unsourced; Rao's Rahu deed is a donation to research or a pilgrimage"),
+    (r"sesame[- ]oil", "unsourced; sesame is Saturn's and Rao gives Ketu no grain or oil"),
+    (r"black[- ]sesame", "'black' is ours; Rao says sesame"),
+    (r"per Parashara", "misattributed: his rule is a ten-chart count, not a D-9 gate"),
+    (r"fully manifested", "Rao §11.7.2 / §11.11 deny that any one factor settles a yoga"),
+)
+
+
+def gate_5_no_retired_claims(text: str) -> bool:
+    print("Gate 5 - no retired claims")
+    ok = True
+    for pattern, why in FORBIDDEN:
+        for m in re.finditer(pattern, text, flags=re.IGNORECASE):
+            ok = False
+            _fail(f"/{pattern}/ matched {m.group(0)!r} - {why}")
+    if ok:
+        print(f"  ok    {len(FORBIDDEN)} retired claims absent")
+    return ok
+
+
 def main() -> int:
     if not PROMPT.exists():
         print(f"FAIL: {PROMPT} does not exist")
@@ -606,6 +644,7 @@ def main() -> int:
         gate_2_rules(text),
         gate_3_budget(text),
         gate_4_no_stale_size_citations(text),
+        gate_5_no_retired_claims(text),
     ]
     print()
     if all(results):
