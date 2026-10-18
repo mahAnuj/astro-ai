@@ -68,7 +68,26 @@ concurrency:
 jobs:
   gates:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 35, not 20. Measured on run 39053584241 (PR #410, 2026-10-17): the job was
+    # killed at 20m10s *inside* the verification sweep, having already spent
+    #   behaviour suite        16s
+    #   mutation sweep     15m46s   <- 178 rows at ~5.3s each
+    #   verification gates  2m32s   (21 of 25 reached, then the axe)
+    # The previous head of that same PR passed at 19m58s — two seconds of
+    # margin — so every branch in the repo was sitting on this cliff, not just
+    # the one that fell off. main's own sweep is 13m31s (run 39086177280).
+    #
+    # Raising a timeout is not relaxing a gate. A gate killed by the clock does
+    # not FAIL, it never RUNS, which is this file's own "exit 2 is skipped, not
+    # passed" hazard arriving by a different road: the four gates after
+    # verify_numerology_reduction asserted nothing and nobody could tell.
+    # agent-merge blocks on `cancelled` correctly, so the PR stayed shut — the
+    # defect is that the evidence was never produced, not that it was ignored.
+    #
+    # The sweep is the cost and it is a real one; 178 mutations have to run the
+    # suite 178 times. The durable fix is to shard it into a parallel job. This
+    # buys the room to do that deliberately instead of under a red PR.
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
