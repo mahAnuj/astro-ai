@@ -46,6 +46,22 @@ sys.path.insert(0, str(ROOT / "src"))
 from astro_ai import issue_backlog, ops_data  # noqa: E402
 
 
+@pytest.fixture(autouse=True)
+def _backlog_only(monkeypatch):
+    """This file is about the BACKLOG panel, so pin the other live path off.
+
+    /admin/ops gained a second live source on 2026-10-18 -- the "shipped
+    today" / "failed today" tiles, two more requests (`ops_today`). Leaving it
+    on here would make every `_stub` page budget in this file count calls it
+    was not written to describe, and the call-budget assertion below would be
+    measuring two caches at once instead of the backlog's.
+
+    The whole-page budget is asserted in `test_ops_today_live.py`, where it
+    belongs.
+    """
+    monkeypatch.setattr(ops_data, "LIVE_TODAY", False)
+
+
 def _issue(number: int, *, title: str = "x: a thing", body: str = "",
            labels: tuple[str, ...] = (), pr: bool = False) -> dict:
     """One item as the REST endpoint returns it: snake_case, PRs included."""

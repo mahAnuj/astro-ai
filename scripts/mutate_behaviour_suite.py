@@ -1083,6 +1083,54 @@ MUTATIONS = [
      'measured["natal+payload"] = (n_en + user, n_hi + user)',
      'measured["natal+payload"] = (n_en, n_hi)',
      "test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt"),
+
+    ("#ops-today: the failure tile is scoped back to agent-work (the 2026-10-18 blindness)",
+     "src/astro_ai/ops_today.py",
+     '    "agent-measure.yml",\n',
+     '',
+     "test_every_loop_leg_counts_as_a_failure_not_just_agent_work"),
+
+    ("#ops-today: a red pr-gates run counts as a loop failure (every caught defect reads as an outage)",
+     "src/astro_ai/ops_today.py",
+     '    "verify-production.yml",\n)',
+     '    "verify-production.yml",\n    "pr-gates.yml",\n)',
+     "test_a_red_pr_gate_is_not_a_loop_failure"),
+
+    ("#ops-today: a clock-killed run stops counting (cancelled is not failed)",
+     "src/astro_ai/ops_today.py",
+     'FAILED_CONCLUSIONS = ("failure", "timed_out", "cancelled")',
+     'FAILED_CONCLUSIONS = ("failure", "timed_out")',
+     "test_a_run_killed_by_the_clock_counts_as_failed"),
+
+    ("#ops-today: the runs query is bounded by today's UTC date (drops 00:00-05:30 IST)",
+     "src/astro_ai/ops_today.py",
+     'day = day_start.strftime("%Y-%m-%d")',
+     'day = datetime.now(timezone.utc).strftime("%Y-%m-%d")',
+     "test_the_actions_query_is_bounded_by_the_ist_day_start_not_todays_utc_date"),
+
+    ("#ops-today: the workflow match reads the display name, not the path",
+     "src/astro_ai/ops_today.py",
+     'path = (r.get("path") or "").rsplit("/", 1)[-1]',
+     'path = (r.get("name") or "") + ".yml"',
+     "test_a_renamed_workflow_display_name_does_not_empty_the_tile"),
+
+    ("#ops-today: live rows are merged with the snapshot instead of replacing it",
+     "src/astro_ai/ops_data.py",
+     '        "today_failed": (live_today["failed"] if live_today is not None',
+     '        "today_failed": (live_today["failed"] + [r for r in today] if live_today is not None',
+     "test_live_rows_replace_the_snapshot_rather_than_joining_them"),
+
+    ("#ops-today: the failure alert is gated on loop.json again (the broken part reports itself)",
+     "src/astro_ai/ops_data.py",
+     '    if loop.get("today_failed"):\n        n = len(loop["today_failed"])',
+     '    if loop.get("ok") and loop.get("today_failed"):\n        n = len(loop["today_failed"])',
+     "test_the_failure_alert_fires_even_with_no_loop_json"),
+
+    ("#ops-today: a missing snapshot blanks the live tiles too",
+     "src/astro_ai/ops_data.py",
+     '                "today_failed": (live_today or {}).get("failed", [])}',
+     '                "today_failed": []}',
+     "test_live_tiles_survive_a_missing_snapshot_file"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
