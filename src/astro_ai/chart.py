@@ -3964,8 +3964,8 @@ def _rashi_index(rashi_label: str) -> int:
 # classical examples: 15° Aries → Leo (5th pada), 0° Taurus → Capricorn
 # (Taurus is fixed, starts from 9th from itself).
 #
-# Classical use: marriage/dharma readings, and confirming raja yogas —
-# a yoga must survive in D-9 to fully manifest per Parashara.
+# Classical use: marriage/dharma readings. NOT a gate on yogas — Rao puts
+# manifestation in D-1 and D-10 (§36.4; knowledge/divisional_charts.md, #398).
 _NAVAMSHA_STEP = 30.0 / 9.0  # 3°20'
 
 

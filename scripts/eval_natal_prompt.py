@@ -3,7 +3,7 @@ r"""Generative eval: did compressing `natal.txt` break the reading?
 
 WHY THIS EXISTS
 ---------------
-`prompts/natal.txt` was compressed from 18,095 B to 13,135 B to fix a Groq 413
+`prompts/natal.txt` was compressed from 18,095 B to 13,135 B (13,013 B after #398) to fix a Groq 413
 ("Limit 8000, Requested 8562"). `scripts/verify_natal_prompt.py` proves every
 rule is still WRITTEN in the file. That is necessary and not sufficient: a rule
 can survive as text and stop working, because rewriting the prose around it

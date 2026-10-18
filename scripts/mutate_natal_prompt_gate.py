@@ -121,6 +121,27 @@ def main() -> int:
                     print(f"  MISSED  {rule.rule_id}  dropping {token!r} from the "
                           f"list went unnoticed")
 
+    # Gate 5 is the opposite shape: it forbids text rather than requiring it, so
+    # the mutation is INSERTION. Each retired claim, appended to the real
+    # prompt, must turn Gate 5 red; the unmutated control must be green.
+    samples = {  # a literal that each alternation pattern must catch
+        r"red[- ]lentil|masoor": "red-lentil",
+        r"sesame[- ]oil": "sesame-oil",
+        r"black[- ]sesame": "black-sesame",
+    }
+    for pattern, _why in gate.FORBIDDEN:
+        sample = samples.get(pattern, pattern)
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            green = gate.gate_5_no_retired_claims(original)
+            mutant_ok = gate.gate_5_no_retired_claims(original + "\n" + sample + "\n")
+        if green and not mutant_ok:
+            caught += 1
+        else:
+            missed += 1
+            print(f"  MISSED  retired-claim  /{pattern}/ (control green={green}, "
+                  f"mutant went red={not mutant_ok})")
+
     lines = original.splitlines(keepends=True)
     unprotected = [
         i
