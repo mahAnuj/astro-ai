@@ -3964,8 +3964,8 @@ def _rashi_index(rashi_label: str) -> int:
 # classical examples: 15° Aries → Leo (5th pada), 0° Taurus → Capricorn
 # (Taurus is fixed, starts from 9th from itself).
 #
-# Classical use: marriage/dharma readings, and confirming raja yogas —
-# a yoga must survive in D-9 to fully manifest per Parashara.
+# Classical use: marriage/dharma readings. NOT a gate on yogas — Rao puts
+# manifestation in D-1 and D-10 (§36.4; knowledge/divisional_charts.md, #398).
 _NAVAMSHA_STEP = 30.0 / 9.0  # 3°20'
 
 
@@ -4019,7 +4019,7 @@ def format_navamsha_for_prompt(chart: Chart) -> str:
 
     Format: one line per planet, plus the D-9 lagna at top. Prefix with
     a header the prompt can key off. Kept short — house + rashi per
-    planet is enough for classical yoga-confirmation reading.
+    planet is enough for the marriage cross-check (not for yoga strength).
     """
     d9 = compute_navamsha_chart(chart)
     lines = [f"D-9 Navamsha Lagna: {d9.lagna_rashi.split(' ')[0]}"]
