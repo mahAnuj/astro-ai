@@ -184,9 +184,24 @@ def test_an_app_alert_names_the_window_it_was_measured_over():
 # --------------------------------------------------------------------------- #
 
 def _rng(*days_):
-    """A `range_summary`-shaped doc. NEWEST FIRST, as the real one returns."""
+    """A `range_summary`-shaped doc. NEWEST FIRST, as the real one returns.
+
+    A route's value is either an int -- input tokens, no output -- or an
+    `(input, output)` pair.
+
+    THE PAIR FORM EXISTS BECAUSE THE INT FORM COULD NOT FAIL. Every fixture in
+    this file wrote `"output_tokens": 0`, so nothing here covered the thing the
+    panel is FOR: Groq's 8,000 TPM and 200,000 TPD both count input + output,
+    and `_token_trend` sums both in two separate places. QA round 1 dropped the
+    output term from each and the whole suite stayed green -- the same class as
+    the tied sort keys below and as #418's `_pr` omitting `closed_at`: the
+    fixture, not the assertion, was what could not fail.
+    """
+    def tok(v):
+        i, o = v if isinstance(v, tuple) else (v, 0)
+        return {"input_tokens": i, "output_tokens": o}
     return {"days": [{"date": d, "route_tokens": {
-        r: {"input_tokens": v, "output_tokens": 0} for r, v in routes.items()}}
+        r: tok(v) for r, v in routes.items()}}
         for d, routes in reversed(days_)]}
 
 
@@ -196,9 +211,28 @@ def test_the_stack_sums_to_the_underlying_blobs():
     A chart whose bars do not add up to the table beside it teaches the reader
     to distrust both.
     """
-    rng = _rng(("2026-10-01", {"a": 10, "b": 5}), ("2026-10-02", {"a": 7, "c": 3}))
+    rng = _rng(("2026-10-01", {"a": (10, 2), "b": (5, 1)}),
+               ("2026-10-02", {"a": (7, 3), "c": (3, 4)}))
     tr = ops_data._token_trend(rng, 2)
-    assert sum(s["total"] for s in tr["series"]) == 25
+    # 25 input + 10 output. Output is in the figure because the limit counts it;
+    # an input-only total reads as headroom the budget does not have.
+    assert sum(s["total"] for s in tr["series"]) == 35
+
+
+def test_the_ranking_is_by_total_tokens_not_input():
+    """The order of the legend must be the order of the BUDGET consumed.
+
+    `_token_trend` sums input + output twice over -- once into `totals`, which
+    ranks the features and assigns the colours, and once per day into
+    `by_feature`, which draws them. Dropping the output term from the ranking
+    pass changes nothing a fixture with `output_tokens: 0` can see, so this
+    picks figures where the two orders DISAGREE: by input alone `b` (50) leads
+    `a` (1); by total `a` (101) leads `b` (51). No tie anywhere, deliberately.
+    """
+    rng = _rng(("2026-10-01", {"a": (1, 100), "b": (50, 1)}))
+    tr = ops_data._token_trend(rng, 1)
+    assert tr["features"] == ["a", "b"]
+    assert tr["series"][0]["by_feature"] == {"a": 101, "b": 51}
 
 
 def test_days_read_left_to_right_oldest_first():
@@ -270,3 +304,130 @@ def test_the_unmeasured_zero_state_still_carries_a_trend_key():
     state earlier today; it is not going to do it twice.
     """
     assert ops_data._app_view(7).get("trend") is not None
+
+
+# --------------------------------------------------------------------------- #
+# The TPD reference line — QA round 1, BUG-1
+#
+# The line was gated on `top >= TPD_PER_MODEL * 0.25` and its y was CLAMPED
+# with `min(TPD_PER_MODEL / top, 1.0)`, which pins it to the top edge for every
+# window whose peak is under one bucket — while the legend went on reading
+# "200,000 TPD · one model". A 50,000-token day therefore drew a full-height
+# bar touching a line labelled 200,000: a 4x overstatement, on the one panel
+# whose entire job is to say how much of the budget a day spent.
+#
+# The existing fixture (peak 500) never drew the line at all, which is why two
+# mutants of this arithmetic survived all 705 tests.
+# --------------------------------------------------------------------------- #
+
+def test_the_tpd_line_is_not_drawn_when_one_bucket_is_off_the_chart():
+    """Below one bucket there is no honest place to put it, so it is absent.
+
+    Nothing is lost by the absence: `peak` is in the legend either way and
+    `peak_day_pct` states the same day as a percentage of one bucket in the
+    panel above. A clamped line is not a reference, it is decoration carrying
+    a number.
+    """
+    tr = ops_data._token_trend(
+        _rng(("2026-10-01", {"a": ops_data.TPD_PER_MODEL // 4})), 1)
+    assert tr["top"] < ops_data.TPD_PER_MODEL
+    assert tr["tpd_visible"] is False
+
+
+def test_the_tpd_line_is_drawn_at_the_height_its_label_claims():
+    """The line and the bars must be on one scale, or the label is false.
+
+    `top` is 400,000 here, so one bucket is exactly half the axis: a day that
+    spent exactly TPD_PER_MODEL must have its bar top land ON the line. That
+    equality is the whole property — it fails for any clamp, and it fails for
+    a line placed by anything other than the same `top` the bars use.
+    """
+    tr = ops_data._token_trend(
+        _rng(("2026-10-01", {"a": ops_data.TPD_PER_MODEL}),
+             ("2026-10-02", {"a": ops_data.TPD_PER_MODEL * 2})), 2)
+    assert tr["top"] == ops_data.TPD_PER_MODEL * 2
+    assert tr["tpd_visible"] is True
+    assert tr["tpd_y"] == 50.0
+    day_one = tr["series"][0]
+    bar_top = 100 - day_one["total"] / tr["top"] * 100
+    assert bar_top == tr["tpd_y"]
+
+
+# --------------------------------------------------------------------------- #
+# The error rate — QA round 1, BUG-2
+#
+# `events.recent` is newest-first and stops dead at `limit`, so the NUMERATOR
+# was capped at 500 while the denominator (`llm_stats` total_calls) grew with
+# the window. Widening the window therefore lowered the reported rate on
+# identical data, and past ~5,000 calls the 30-day view fell under
+# ERROR_RATE_AMBER and the alert vanished entirely — the window with the most
+# errors being the one that reported none.
+# --------------------------------------------------------------------------- #
+
+def _app_with(n_errors, calls, monkeypatch, days=7):
+    """`_app_view` over a store holding `n_errors` errors and `calls` calls.
+
+    `recent` HONOURS `limit` here, as the real one does. A mock that ignored it
+    would make the saturation untestable — the defect lives in the cap, so a
+    fixture that cannot be capped cannot see it.
+    """
+    from astro_ai import llm_stats
+    store = [{"data": {"error_type": "APITimeoutError", "source": "chart:natal"}}
+             for _ in range(n_errors)]
+    monkeypatch.setattr(events, "recent",
+                        lambda **kw: store[:kw.get("limit", 100)])
+    monkeypatch.setattr(llm_stats, "usage_summary",
+                        lambda d: {"days": d, "total_calls": calls, "cache_hits": 0,
+                                   "cache_misses": calls, "hit_rate_pct": 0,
+                                   "total_input_tokens": 0, "total_output_tokens": 0,
+                                   "by_route": []})
+    monkeypatch.setattr(llm_stats, "range_summary", lambda d: {"days": []})
+    ops_data._app_cache.clear()
+    return ops_data._app_view(days)
+
+
+def test_an_unsaturated_read_still_reports_a_rate(monkeypatch):
+    app = _app_with(50, 1000, monkeypatch)
+    assert app["errors"] == 50
+    assert app["errors_truncated"] is False
+    assert app["error_rate"] == 5.0
+
+
+def test_the_rate_is_withheld_rather_than_understated_when_the_read_saturates(monkeypatch):
+    """600 errors against 10,000 calls is 6%. Capped at 500 it reads 5.0%.
+
+    5.0% is not merely imprecise — it is the wrong side of ERROR_RATE_RED's
+    boundary behaviour for a reader comparing windows, and it moves further
+    from the truth the worse the incident gets. So there is no rate.
+    """
+    app = _app_with(600, 10_000, monkeypatch)
+    assert app["errors_truncated"] is True
+    assert app["errors"] == ops_data.ERROR_EVENT_LIMIT
+    assert app["error_rate"] is None
+
+
+def test_exactly_the_cap_is_not_reported_as_truncated(monkeypatch):
+    """The off-by-one that `limit + 1` exists to settle.
+
+    `len(errors) == limit` is ambiguous — it is the same result for a store
+    holding exactly 500 and one holding 5,000 — so one extra is fetched and
+    the flag is set on the overflow, not on the equality.
+    """
+    app = _app_with(ops_data.ERROR_EVENT_LIMIT, 10_000, monkeypatch)
+    assert app["errors_truncated"] is False
+    assert app["error_rate"] == 5.0
+
+
+def test_a_saturated_read_alerts_rather_than_going_quiet(monkeypatch):
+    """Silence is the failure mode this rate had: no number, no alert.
+
+    The amber/red branches are driven by `rate`, which is None on saturation,
+    so without a branch of its own the busiest window would be the calm one.
+    """
+    app = _app_with(5_000, 100_000, monkeypatch)
+    alerts = ops_data._alerts({"ok": True, "rows": [], "today_failed": []},
+                              {"ok": True}, {"ok": True}, app, {})
+    hit = [a for a in alerts if "error events" in a["title"]]
+    assert hit, f"a saturated read raised no alert: {[a['title'] for a in alerts]}"
+    assert hit[0]["level"] == "red"
+    assert "cannot be computed" in hit[0]["detail"]

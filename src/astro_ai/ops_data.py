@@ -646,6 +646,18 @@ _app_cache: dict[int, tuple[float, dict]] = {}
 #: day's total.
 TREND_TOP_N = 6
 
+#: How many error events `_app_view` will read. `events.recent` is newest-first
+#: and stops dead at its `limit`, so this is a CAP ON THE NUMERATOR of the error
+#: rate -- while the denominator (`llm_stats` total_calls) has no cap at all.
+#: Measured consequence of dividing one by the other: a steady 10% true error
+#: rate renders 10.0% at ?window=1, 1.79% at 7 and nothing at all at 30, so
+#: WIDENING the window made the app look healthier on identical data, and past
+#: 5,000 calls the 30-day view fell under ERROR_RATE_AMBER and the alert
+#: disappeared. One more than the cap is fetched so saturation is detectable
+#: rather than inferred from `len() == limit`, which is ambiguous at exactly
+#: the cap; on saturation the rate is withheld and the alert says why.
+ERROR_EVENT_LIMIT = 500
+
 
 def _token_trend(rng: dict, days: int) -> dict:
     """Per-day, per-feature token totals for the window — a stacked series.
@@ -704,9 +716,24 @@ def _token_trend(rng: dict, days: int) -> dict:
         # `peak_day_pct` already carries. Drawn, and labelled as per-model, so
         # a reader can see how close one day came without being told a number
         # that is not true of the stack.
+        #
+        # DRAWN ONLY WHEN IT FITS INSIDE THE CHART. The first version gated on
+        # `top >= TPD_PER_MODEL * 0.25` and then CLAMPED the y with
+        # `min(TPD_PER_MODEL / top, 1.0)`, which pins the line to y=0 -- the
+        # top edge -- for every window whose peak is under the bucket. The
+        # legend still read "200,000 TPD · one model", so a 50,000-token day
+        # rendered a full-height bar touching a line labelled 200,000:
+        # overstating the busiest day by 4x, on the one panel whose entire job
+        # is to say how much of the budget a day spent. A reference line that
+        # has to be clamped to be drawn is not a reference; it is decoration
+        # carrying a number. So the condition is now the honest one -- the line
+        # appears when the bucket is actually inside the y-range -- and below
+        # that it is simply absent. No information is lost by the absence:
+        # `peak {peak}/day` sits in the legend either way and `peak_day_pct`
+        # states the same day as a percentage of one bucket in the panel above.
         "tpd": TPD_PER_MODEL,
-        "tpd_visible": top >= TPD_PER_MODEL * 0.25,
-        "tpd_y": round(100 - min(TPD_PER_MODEL / top, 1.0) * 100, 2) if top else 100,
+        "tpd_visible": top >= TPD_PER_MODEL,
+        "tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,
         "grouped": sorted(rest),
     }
 
@@ -759,7 +786,10 @@ def _app_view(days: int = 7) -> dict:
         usage = llm_stats.usage_summary(days) or {}
         rng = llm_stats.range_summary(days) or {}
         agg = rng.get("aggregate") or {}
-        errors = events.recent(types=["error"], days=days, limit=500) or []
+        errors = events.recent(types=["error"], days=days,
+                               limit=ERROR_EVENT_LIMIT + 1) or []
+        errors_truncated = len(errors) > ERROR_EVENT_LIMIT
+        errors = errors[:ERROR_EVENT_LIMIT]
 
         calls = int(usage.get("total_calls") or 0)
         hits = int(usage.get("cache_hits") or 0)
@@ -859,11 +889,21 @@ def _app_view(days: int = 7) -> dict:
             "hit_rate": int(usage.get("hit_rate_pct") or 0),
             "avg_miss_ms": int(usage.get("avg_miss_latency_ms") or 0),
             "errors": len(errors),
+            # A FLOOR, not a count, when this is True: there were more error
+            # events in the window than ERROR_EVENT_LIMIT and the rest were
+            # never read. The page must say "at least".
+            "errors_truncated": errors_truncated,
             # Per 100 CALLS. Error sources and llm_stats routes are different
             # vocabularies (`chart:matching` vs `matching`), so this is an
             # overall rate; it is deliberately NOT broken down per route,
             # because no mapping between the two exists to do it honestly.
-            "error_rate": round(len(errors) / calls * 100, 2) if calls else None,
+            #
+            # None ON SATURATION, and that is the whole point of the flag: a
+            # capped numerator over an uncapped denominator is not a low rate,
+            # it is an unknown one, and the smaller number it produces points
+            # the wrong way. See ERROR_EVENT_LIMIT for the measured figures.
+            "error_rate": (None if errors_truncated or not calls
+                           else round(len(errors) / calls * 100, 2)),
             "fallbacks": fallbacks,
             # [(provider, reason, n)], most common first. Sums to LESS than
             # `fallbacks` over a window that includes pre-#355 days.
@@ -1000,6 +1040,16 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
             f"Nothing in the last {app.get('days')} days. Either the app is idle or "
             "stats are not reaching GCS — a zero here is not a clean bill of health.")
     else:
+        # Saturation is reported INSTEAD of a rate, never as silence. The
+        # branch below is driven by `rate`, which is None here, so without
+        # this the window with the MOST errors would be the one with no alert.
+        if app.get("errors_truncated"):
+            add("red", f"More than {app['errors']:,} LLM error events in "
+                       f"{app['days']}d",
+                f"Reading stopped at {app['errors']:,}, so the rate cannot be "
+                "computed: the error count is capped and the call count is not, "
+                "and dividing them would understate it. Narrow the window to "
+                "get a rate.", "/admin/activity")
         rate = app.get("error_rate") or 0.0
         if rate >= ERROR_RATE_RED:
             add("red", f"{rate}% of LLM calls are erroring",

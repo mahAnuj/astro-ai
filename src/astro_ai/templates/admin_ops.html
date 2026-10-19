@@ -1164,8 +1164,15 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         {% else %}
         <div class="kv">
           <div><span>LLM calls</span><b class="mono">{{ "{:,}".format(ops.app.calls) }}</b></div>
+          {#- `error_rate` is None once the read saturates: the count is capped and
+              the call count is not, so the quotient would understate it. Rendered
+              as "at least N · rate unavailable" rather than as a number, because
+              `{{ None }}%` reads as "None%" and a smaller wrong rate reads as
+              health. -#}
           <div><span>error events</span>
-            <b class="mono {{ 'c-failed' if ops.app.error_rate and ops.app.error_rate >= 5 }}">{{ ops.app.errors }} · {{ ops.app.error_rate }}%</b></div>
+            <b class="mono {{ 'c-failed' if ops.app.errors_truncated or (ops.app.error_rate and ops.app.error_rate >= 5) }}">
+              {%- if ops.app.errors_truncated %}&ge;{{ "{:,}".format(ops.app.errors) }} · rate unavailable (read capped)
+              {%- else %}{{ ops.app.errors }} · {{ ops.app.error_rate }}%{% endif %}</b></div>
           <div><span>every provider failed</span>
             <b class="mono {{ 'c-failed' if ops.app.exhausted }}">{{ ops.app.exhausted }}</b></div>
           <div><span>needed a retry or a 2nd provider</span>

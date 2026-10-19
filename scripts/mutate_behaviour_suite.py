@@ -1202,8 +1202,8 @@ MUTATIONS = [
 
     ("#ops-today: snapshot() is awaited inline (up to 12s of event loop, app-wide)",
      "src/astro_ai/routes/admin.py",
-     '    ops = await asyncio.to_thread(ops_data.snapshot)',
-     '    ops = ops_data.snapshot()',
+     '    ops = await asyncio.to_thread(ops_data.snapshot, app_days=days)',
+     '    ops = ops_data.snapshot(app_days=days)',
      "test_the_ops_page_does_not_block_the_event_loop"),
 
     ("#ops-today: today_live is hardcoded (the drill-down picks the wrong renderer)",
@@ -1271,6 +1271,51 @@ MUTATIONS = [
      '"total": day_total, "by_feature": per})\n\n    top = _nice_top(peak)',
      '"total": day_total, "by_feature": per})\n\n    top = _nice_top(peak // 2) if peak else 1',
      "test_no_bar_can_overflow_the_axis"),
+    # ---- QA round 1 on #419. Every row below is a defect the reviewer found
+    # ---- in this PR's own code, re-broken here so the new tests must stay red
+    # ---- against it. The first three were mutants that survived all 705 tests.
+
+    ("#ops-trend: the TPD line is clamped back onto the top edge (BUG-1, 4x overstatement)",
+     "src/astro_ai/ops_data.py",
+     '        "tpd_visible": top >= TPD_PER_MODEL,\n        "tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '        "tpd_visible": top >= TPD_PER_MODEL * 0.25,\n        "tpd_y": round(100 - min(TPD_PER_MODEL / top, 1.0) * 100, 2) if top else 100,',
+     "test_the_tpd_line_is_not_drawn_when_one_bucket_is_off_the_chart"),
+
+    ("#ops-trend: the TPD line is placed by its own scale, not the bars'",
+     "src/astro_ai/ops_data.py",
+     '        "tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '        "tpd_y": round(100 - TPD_PER_MODEL / (top * 2) * 100, 2) if top else 100,',
+     "test_the_tpd_line_is_drawn_at_the_height_its_label_claims"),
+
+    ("#ops-trend: the ranking counts input only, so the legend orders by half the budget (BUG-3)",
+     "src/astro_ai/ops_data.py",
+     '            totals[route] = (totals.get(route, 0)\n                             + int(tok.get("input_tokens") or 0)\n                             + int(tok.get("output_tokens") or 0))',
+     '            totals[route] = totals.get(route, 0) + int(tok.get("input_tokens") or 0)',
+     "test_the_ranking_is_by_total_tokens_not_input"),
+
+    ("#ops-trend: a bar counts input only, so the stack understates the day",
+     "src/astro_ai/ops_data.py",
+     '            n = int(tok.get("input_tokens") or 0) + int(tok.get("output_tokens") or 0)',
+     '            n = int(tok.get("input_tokens") or 0)',
+     "test_the_stack_sums_to_the_underlying_blobs"),
+
+    ("#ops-errors: the numerator is capped at the limit, so a wider window reads healthier (BUG-2)",
+     "src/astro_ai/ops_data.py",
+     '            "error_rate": (None if errors_truncated or not calls\n                           else round(len(errors) / calls * 100, 2)),',
+     '            "error_rate": round(len(errors) / calls * 100, 2) if calls else None,',
+     "test_the_rate_is_withheld_rather_than_understated_when_the_read_saturates"),
+
+    ("#ops-errors: saturation is inferred from len() == limit, ambiguous at exactly the cap",
+     "src/astro_ai/ops_data.py",
+     '                               limit=ERROR_EVENT_LIMIT + 1) or []\n        errors_truncated = len(errors) > ERROR_EVENT_LIMIT',
+     '                               limit=ERROR_EVENT_LIMIT) or []\n        errors_truncated = len(errors) >= ERROR_EVENT_LIMIT',
+     "test_exactly_the_cap_is_not_reported_as_truncated"),
+
+    ("#ops-errors: a saturated read raises no alert, so the worst window is the quiet one",
+     "src/astro_ai/ops_data.py",
+     '        if app.get("errors_truncated"):\n            add("red", f"More than {app[\'errors\']:,} LLM error events in "',
+     '        if False:\n            add("red", f"More than {app[\'errors\']:,} LLM error events in "',
+     "test_a_saturated_read_alerts_rather_than_going_quiet"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
