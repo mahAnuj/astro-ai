@@ -142,6 +142,53 @@ def main() -> int:
             print(f"  MISSED  retired-claim  /{pattern}/ (control green={green}, "
                   f"mutant went red={not mutant_ok})")
 
+    # Gate 6 is the same insertion shape, applied to the topic summaries. The
+    # mutation re-inserts a retired claim into ONE real summary and requires the
+    # gate to go red AND to name that slug - a gate that fails without saying
+    # where is a gate nobody can act on.
+    from astro_ai.learn_registry import ARTICLES
+
+    real = [(a.slug, a.llm_summary) for a in ARTICLES if a.llm_summary]
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        control6 = gate.gate_6_no_retired_claims_in_summaries(real)
+    if not control6:
+        print("  BLIND — Gate 6 already fails on the real registry:")
+        print(buf.getvalue())
+        return 1
+    summary_samples = {  # a literal that each pattern must catch
+        r"red[- ]lentil|masoor": "red-lentil Sunday charity",
+        r"sesame[- ]oil": "sesame-oil charity",
+        r"black[- ]sesame": "black-sesame seeds",
+        r"Hanuman[^\n]{0,60}(?:Shani|Saturn|Saturday)|(?:Shani|Saturn|Saturday)[^\n]{0,60}Hanuman":
+            "Hanuman is the classical intercessor with Shani",
+        r"confirmation in D-?9|Raja Yoga confirmation": "Confirmation in D-9 Navamsha strengthens the effect",
+    }
+    target = real[0][0]
+    for pattern, _why in gate.SUMMARY_FORBIDDEN:
+        sample = summary_samples.get(pattern, pattern)
+        mutated = [(slug, text + ("\n• " + sample if slug == target else ""))
+                   for slug, text in real]
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            mutant_ok = gate.gate_6_no_retired_claims_in_summaries(mutated)
+        if not mutant_ok and f"{target}: /{pattern}/" in buf.getvalue():
+            caught += 1
+        else:
+            missed += 1
+            print(f"  MISSED  summary-claim  /{pattern}/ (went red={not mutant_ok}, "
+                  f"named {target}={f'{target}:' in buf.getvalue()})")
+
+    # Hanuman as a MARS deity is sourced (Table 78) and must stay legal.
+    ok_mars = [(slug, text + "\n• Mars deities: Hanuman, Rudra, Kartikeya") for slug, text in real]
+    with redirect_stdout(io.StringIO()):
+        still_green = gate.gate_6_no_retired_claims_in_summaries(ok_mars)
+    if still_green:
+        caught += 1
+    else:
+        missed += 1
+        print("  MISSED  summary-claim  Hanuman as a Mars deity wrongly forbidden")
+
     lines = original.splitlines(keepends=True)
     unprotected = [
         i

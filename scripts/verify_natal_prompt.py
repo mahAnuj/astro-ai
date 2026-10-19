@@ -54,6 +54,17 @@ the 413 taught us about.
   Gate 5 - no retired claims.  Strings #398 removed as wrong or unsourced
       (FORBIDDEN) must not reappear.
 
+  Gate 6 - no retired claims in the topic summaries.  The natal user message
+      carries RELEVANT TOPIC SUMMARIES, built from `Article.llm_summary` in
+      `learn_registry.py` (`chart.format_topic_summaries_for_prompt` emits
+      nothing else). Gate 5 cleaned the system prompt and the summaries
+      kept saying red-lentil, Surya Namaskar, black sesame and "Hanuman is
+      the intercessor with Shani" - so a reader was still told them, from
+      the other half of the same request. This gate runs SUMMARY_FORBIDDEN
+      over every llm_summary and names the offending slug. Only llm_summary
+      is scanned: the /learn article bodies and FAQs are a later slice of
+      #398 and would fail it today.
+
 Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris — it reads one
 file, so it runs anywhere and belongs in the `verify_*` sweep.
 
@@ -69,6 +80,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+# Gate 6 reads the registry. learn_registry.py imports only `dataclasses`, so
+# this stays runnable with no API key and no ephemeris, like the other gates.
+sys.path.insert(0, str(REPO_ROOT / "src"))
 PROMPT = REPO_ROOT / "src" / "astro_ai" / "prompts" / "natal.txt"
 
 # --- Gate 1 ------------------------------------------------------------------
@@ -633,6 +647,55 @@ def gate_5_no_retired_claims(text: str) -> bool:
     return ok
 
 
+# What Gate 6 forbids inside an llm_summary. Starts from FORBIDDEN, with two
+# changes. "milk offering" is narrowed to the claim #398 actually retired
+# (Moon -> Shiva): kaal-sarp-dosh-remedies has a Nag Panchami serpent milk
+# offering, a different practice that Rao does not address either way, and a
+# bare pattern would have forced a rewrite of it to satisfy a regex. And three
+# patterns the system prompt never carried but the summaries did.
+SUMMARY_FORBIDDEN = tuple(
+    (p, w) for p, w in FORBIDDEN if p != r"milk offering"
+) + (
+    (r"milk offering to Shiva", "Shiva is the Sun's deity, not the Moon's (Table 78)"),
+    # Per LINE, because a summary is bulleted and the planets sit on one bullet.
+    # Saturday is Saturn's day, so "Hanuman ... Saturday" is the same folk rule
+    # reached by the weekday. Hanuman as a MARS deity (Table 78) is untouched.
+    (r"Hanuman[^\n]{0,60}(?:Shani|Saturn|Saturday)|(?:Shani|Saturn|Saturday)[^\n]{0,60}Hanuman",
+     "Saturn -> Vishnu, Brahma; Hanuman only via Mars with Saturnine influence (Rao 19504-19506)"),
+    # "D-9 confirmation" in a MARRIAGE bullet is a different, sourced use and
+    # does not match: the pattern needs the confirmation to come first.
+    (r"confirmation in D-?9|Raja Yoga confirmation",
+     "yoga manifestation is D-1/D-10, not a D-9 gate (Rao 20217-20219; divisional_charts.md:107-113)"),
+)
+
+
+def gate_6_no_retired_claims_in_summaries(summaries=None) -> bool:
+    """`summaries` is an iterable of (slug, text); default is the real registry.
+
+    The parameter exists so `mutate_natal_prompt_gate.py` can feed it a
+    re-broken summary without editing learn_registry.py.
+    """
+    print("Gate 6 - no retired claims in topic summaries (Article.llm_summary)")
+    if summaries is None:
+        from astro_ai.learn_registry import ARTICLES
+
+        summaries = [(a.slug, a.llm_summary) for a in ARTICLES]
+    summaries = [(slug, text) for slug, text in summaries if text]
+    ok = True
+    for slug, text in summaries:
+        for pattern, why in SUMMARY_FORBIDDEN:
+            for m in re.finditer(pattern, text, flags=re.IGNORECASE):
+                ok = False
+                _fail(f"{slug}: /{pattern}/ matched {m.group(0)!r} - {why}")
+    if not summaries:
+        ok = False
+        _fail("no Article carries an llm_summary, so this gate is checking nothing")
+    elif ok:
+        print(f"  ok    {len(summaries)} summaries x {len(SUMMARY_FORBIDDEN)} "
+              f"retired claims: none present")
+    return ok
+
+
 def main() -> int:
     if not PROMPT.exists():
         print(f"FAIL: {PROMPT} does not exist")
@@ -645,6 +708,7 @@ def main() -> int:
         gate_3_budget(text),
         gate_4_no_stale_size_citations(text),
         gate_5_no_retired_claims(text),
+        gate_6_no_retired_claims_in_summaries(),
     ]
     print()
     if all(results):

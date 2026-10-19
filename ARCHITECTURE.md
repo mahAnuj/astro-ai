@@ -305,7 +305,9 @@ follow for any prompt change:
 
 - **Measure it, do not estimate it.** `scripts/measure_natal_request.py` assembles the
   real request for the eight golden charts and counts it with tiktoken.
-  `scripts/verify_natal_prompt.py` is the cheap ratchet in the `verify_*` sweep.
+  `scripts/verify_natal_prompt.py` is the cheap ratchet in the `verify_*` sweep; its Gates 5
+  and 6 forbid claims #398 retired, in `natal.txt` and in every `Article.llm_summary` (the
+  topic summaries ride in the same request).
   `scripts/verify_token_budget.py` (#400) is the one that fails on SIZE for every prompt
   path, not natal alone: a committed per-route ceiling and baseline, and a growth
   allowance (5% by default). A new `prompts/*.txt` with no row fails it. Raising a

@@ -183,7 +183,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Friends: Moon, Mars, Jupiter. Enemies: Venus, Saturn. Neutral: Mercury\n'
             '• Strong Sun: leadership, confidence, government service, strong father-relationship\n'
             '• Weak Sun: authority problems, low self-esteem, father-issues, ego traps\n'
-            '• Safe remedies: Surya Namaskar sunrise, Aditya Hridaya Stotram, red-lentil/wheat Sunday charity'
+            '• Safe remedies: Aditya Hridaya Stotram, wheat Sunday charity, temple visit'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -226,7 +226,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Vimshottari Dasha starts from Moon's nakshatra at birth — Moon is the timekeeper\n"
             '• Strong Moon: emotional stability, popularity, good mother-relationship\n'
             '• Weak Moon (Kemadruma yoga): loneliness, mood cycles, mother-issues, mental agitation\n'
-            '• Safe remedies: Monday fasting, milk offering to Shiva, silver/pearl (with consultation), moon-gazing'
+            '• Safe remedies: Monday fasting, Gauri/Krishna worship, silver/pearl (with consultation), moon-gazing'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -441,7 +441,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong Rahu: material success, foreign gains, entrepreneurial rise, technology mastery\n'
             '• Weak/afflicted Rahu: addictions, deception (self and others), scandal, confusion\n'
             '• Amplifies whichever house/planet it associates with — takes on that flavour\n'
-            '• Safe remedies: Rahu Beej mantra, Durga worship, black gram Saturday charity, serve outsiders/marginalized'
+            '• Safe remedies: Rahu Beej mantra, Durga worship, black gram Saturday charity, pilgrimage'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -484,7 +484,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Strong Ketu: intuition, spiritual insight, healing abilities, freedom from illusion\n'
             '• Weak/afflicted Ketu: mysterious ailments, isolation, loss, confusion about identity\n'
             '• Ketu in 12th house = classical moksha karaka; in 5th = past-life scholar returning\n'
-            '• Safe remedies: Ganesha worship, sesame-oil charity, Ketu Beej mantra, spiritual retreat'
+            '• Safe remedies: Ganesha worship, Ketu Beej mantra, meditation, spiritual retreat'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -611,7 +611,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Weak/afflicted Sun: conflict with authority, health of eyes/heart, father-related stress, ego problems\n'
             '• Peak-effect years: middle 2-3 years of the 6-year window\n'
             '• Antardashas within: Sun-Moon (public dealings), Sun-Mars (conflict/action), Sun-Rahu (sudden change)\n'
-            '• Safe remedies: Surya Namaskar at sunrise, Aditya Hridaya Stotram, red-lentil/wheat/jaggery Sunday charity'
+            '• Safe remedies: Aditya Hridaya Stotram, wheat/jaggery Sunday charity, temple visit'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -654,7 +654,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Peak phase (~2.5y in 1st) → health, identity, self-doubt themes\n"
             "• Setting phase (~2.5y in 2nd) → family, speech, financial recovery themes\n"
             "• Not universally bad — forces maturity, discipline, long-term foundation\n"
-            "• Safe remedies: Hanuman Chalisa Saturdays, serve elderly, donate black daal / mustard oil\n"
+            "• Safe remedies: Vishnu worship, serve elderly, donate black daal / mustard oil\n"
             "• Do NOT blame all life difficulty on Sade Sati — check Dasha + transit context first"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
@@ -740,7 +740,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Slowest planet — ~29.5 years per orbit. Sade Sati = 7.5-year Saturn transit through 12th/1st/2nd from Moon\n'
             '• Sasha Yoga (Saturn in kendra in own/exalted sign) is one of the 5 Panch Mahapurush yogas — leadership of multitudes\n'
             '• Strong Saturn: longevity, discipline, methodical success, respect in old age\n'
-            '• Safe remedies: Saturday service (physical labor, elderly help), Shani Beej mantra, sesame-oil/iron Saturday charity, NEVER wear blue sapphire without full chart consultation'
+            '• Safe remedies: Saturday service (physical labor, elderly help), Shani Beej mantra, sesame/iron Saturday charity, NEVER wear blue sapphire without full chart consultation'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -1098,12 +1098,11 @@ ARTICLES: tuple[Article, ...] = (
         ),
         llm_summary=(
             'Keypoints:\n'
-            "• Mars safe universal practices: Tuesday fasting, Hanuman Chalisa daily (esp. Tuesday/Saturday), Mars Beej mantra 'Om Kraam Kreem Kroum Sah Bhaumaya Namah'\n"
-            '• Charity: red lentils (masoor dal), red cloth, jaggery, red-flowers to temples on Tuesdays\n'
+            "• Mars safe universal practices: Tuesday fasting, Hanuman Chalisa daily (esp. Tuesday), Mars Beej mantra 'Om Kraam Kreem Kroum Sah Bhaumaya Namah'\n"
+            '• Charity: toor daal (the Mars grain), red cloth, jaggery, red-flowers to temples on Tuesdays\n'
             '• Behavioural: honour siblings (esp. brothers), donate blood, physical service to those in need\n'
             '• Gemstone (Red Coral / Moonga): CLASSICAL Mars gem BUT never without full chart consultation — Manglik or afflicted Mars can react badly\n'
-            '• Hanuman worship is the STRONGEST classical Mars remedy — Hanuman is Rudra-Mars incarnate\n'
-            "• Kartikeya/Muruga worship also strengthens Mars (Kartikeya is Mars's presiding deity)"
+            '• Mars deities: Hanuman, Rudra, Kartikeya (Muruga), Narasimha'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -1144,11 +1143,11 @@ ARTICLES: tuple[Article, ...] = (
         llm_summary=(
             'Keypoints:\n'
             "• Saturn safe universal practices: Saturday service (physical labor, help for elderly/poor), Shani Beej mantra 'Om Praam Preem Praum Sah Shanaishcharaya Namah', Dasharatha Krita Shani Stotram\n"
-            '• Charity: black sesame seeds, iron items, mustard oil, black cloth to needy laborers on Saturdays\n'
+            '• Charity: sesame seeds, iron items, mustard oil, black cloth to needy laborers on Saturdays\n'
             '• Behavioural: honour elders, feed stray animals (esp. black dogs, crows), avoid harming ants\n'
             '• Gemstone (Blue Sapphire / Neelam): the MOST DANGEROUS gemstone when worn wrong — NEVER without full chart consultation. Wrong Neelam can cause dramatic negative effects within 24-48 hours\n'
             '• Safer alternatives: amethyst (Jamunia) or blue topaz as substitute\n'
-            '• Hanuman is the classical intercessor with Shani — Hanuman Chalisa Saturdays is safest\n'
+            '• Saturn deities: Vishnu, Brahma\n'
             '• Peepal-tree Saturday oil lamp is a classical safe practice'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
@@ -1286,7 +1285,7 @@ ARTICLES: tuple[Article, ...] = (
             '• The pattern often SHIFTS at Saturn return (~29-30) or during favorable Jupiter transit to 10th\n'
             '• 10th lord placement matters more than planets IN 10th — see 10th-lord-in-6th-house-career for specific dusthana pattern\n'
             '• Some blockages are alignment issues: chart shows technical/service career, person pursues creative/hype fields\n'
-            '• Remedies: strengthen 10th lord, aligned service (donate skill to needy), Hanuman Chalisa Tuesday/Saturday'
+            '• Remedies: strengthen 10th lord, aligned service (donate skill to needy)'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -1336,7 +1335,7 @@ ARTICLES: tuple[Article, ...] = (
             "    - Elevation phase (~36-56): institutional respect that often outlasts peers'\n"
             "• Best-fit careers: government, judiciary, law, engineering, agriculture, elderly care, long-tenure private roles\n"
             "• Fights hype-driven, youth-focused, or short-cycle careers\n"
-            "• Safe remedies: Saturday service, black-sesame/iron/mustard-oil charity, Shani Beej mantra\n"
+            "• Safe remedies: Saturday service, sesame/iron/mustard-oil charity, Shani Beej mantra\n"
             "• NEVER wear blue sapphire (Neelam) without full chart consultation — most dangerous gemstone if worn wrong"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
@@ -1436,7 +1435,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Fights: dominance-forward (aggressive sales, competitive politics, alpha-founder roles)\n'
             '• Neechabhanga Raja Yoga (cancellation): Venus/Saturn/Mars in kendra from Lagna/Moon, OR Sun exalted in D-9\n'
             '• When cancelled, produces unusual late-career strength — chief-justice / senior-advisor patterns\n'
-            '• Remedies: Sun-strengthening practices (Surya Namaskar, water offering), honour father-figures, wheat/jaggery Sunday charity'
+            '• Remedies: Sun-strengthening practices (water offering), honour father-figures, wheat/jaggery Sunday charity'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -1864,7 +1863,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Rahu FAVOURS: technology, foreign work, media, novel categories, entrepreneurship in emerging fields\n"
             "• Rahu FIGHTS: traditional government service, ancestral businesses, classical priesthood, conservative sales\n"
             "• Best sub-periods for major decisions: Rahu-Jupiter and Rahu-Mercury Antardashas\n"
-            "• Safe remedies: Rahu Beej mantra (18,000 count target), Durga worship, serve outsiders/marginalized, black-daal Saturday charity\n"
+            "• Safe remedies: Rahu Beej mantra (18,000 count target), Durga worship, pilgrimage, black-daal Saturday charity\n"
             "• NEVER wear hessonite (gomedh) without full chart consultation"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
@@ -2003,8 +2002,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Classical effects: fame, wealth, intelligence, favour from authorities, respected reputation\n'
             '• Requires additional conditions: Jupiter not debilitated/combust, benefic association helps\n'
             '• Search-intent note: heavily searched — real classical yoga but often oversold as guaranteed success\n'
-            '• Timing: activates in Jupiter or Moon Mahadasha/Antardasha\n'
-            '• Confirmation in D-9 Navamsha strengthens the effect (per classical Raja Yoga confirmation rule)'
+            '• Timing: activates in Jupiter or Moon Mahadasha/Antardasha'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2051,7 +2049,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Malavya (Venus): Taurus/Libra/Pisces in kendra — beauty, luxury, artistic success, marital happiness\n'
             '• Sasa (Saturn): Capricorn/Aquarius/Libra in kendra — discipline, leadership of multitudes, longevity\n'
             '• Each grants LIFELONG signature qualities of that planet — not period-bound\n'
-            "• Activates fully during that planet's Mahadasha; confirmation in D-9 amplifies"
+            "• Effects concentrate in that planet's Mahadasha"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2828,7 +2826,7 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "Why does Ketu cause 'mysterious' losses?", "a": "Ketu operates through what's karmically due to end. When something is meant to conclude — a relationship, career phase, health condition — Ketu accelerates its ending. Sometimes this looks 'mysterious' because there's no visible outer cause. Remedies help you cooperate with the ending consciously rather than resisting."},
         ),
         llm_summary=(
-            'Keypoints:\n• Ketu = shadow planet, karaka of detachment, past-life karma, mysterious losses, spiritual insight\n• 6 classical remedies: (1) Ganesha worship (presiding deity — Om Gam Ganapataye Namah 108x, Sankashti vrat), (2) Ketu Beej mantra "Om Sram Sreem Sraum Sah Ketave Namah" 108x, (3) service to elderly/ascetics/orphans/animals, (4) Tuesday charity (sesame oil, grey clothes, blankets), (5) fasting (Tuesday partial, Amavasya full, Ekadashi), (6) Pitru Paksha shraddha\n• Day: Tuesday (shared with Mars)\n• SAFE — no gemstone; cat\'s eye requires chart analysis\n• Timeline: weeks (habit), 2-6 mo (attachments loosen), year 2+ (subtle awareness emerges)'
+            'Keypoints:\n• Ketu = shadow planet, karaka of detachment, past-life karma, mysterious losses, spiritual insight\n• 6 classical remedies: (1) Ganesha worship (presiding deity — Om Gam Ganapataye Namah 108x, Sankashti vrat), (2) Ketu Beej mantra "Om Sram Sreem Sraum Sah Ketave Namah" 108x, (3) service to elderly/ascetics/orphans/animals, (4) Tuesday charity (grey clothes, blankets), (5) fasting (Tuesday partial, Amavasya full, Ekadashi), (6) Pitru Paksha shraddha\n• Day: Tuesday (shared with Mars)\n• SAFE — no gemstone; cat\'s eye requires chart analysis\n• Timeline: weeks (habit), 2-6 mo (attachments loosen), year 2+ (subtle awareness emerges)'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2846,7 +2844,7 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "How do Sun remedies help with father-relationship?", "a": "Sun is father-karaka. Classical practice: if father is living, serve consciously (touch feet, seek blessings, listen); if deceased, perform annual shraddha. Sun rewards those who honor the father archetype — this often produces healing in the actual relationship over months."},
         ),
         llm_summary=(
-            'Keypoints:\n• Sun = atmakaraka (self), karaka of authority, father, vitality, confidence\n• 7 classical remedies: (1) Surya Namaskar 12 rounds daily at sunrise, (2) Aditya Hridaya Stotra recitation, (3) copper vessel water offering at sunrise (arghya), (4) Sunday charity (wheat, jaggery, red flowers, copper), (5) Sunday partial fast, (6) Sun Beej mantra "Om Hraam Hreem Hraum Sah Suryaya Namah" 108x, (7) serving father and honoring authority\n• Day: Sunday\n• Ruby (Manik) — SAFER than hessonite/blue sapphire but still needs chart check\n• Timeline: 4-6 weeks morning-energy shift; 6-12 mo confidence shift; year 2+ structural'
+            'Keypoints:\n• Sun = atmakaraka (self), karaka of authority, father, vitality, confidence\n• 7 classical remedies: (1) temple visit/donation, (2) Aditya Hridaya Stotra recitation, (3) copper vessel water offering at sunrise (arghya), (4) Sunday charity (wheat, jaggery, red flowers, copper), (5) Sunday partial fast, (6) Sun Beej mantra "Om Hraam Hreem Hraum Sah Suryaya Namah" 108x, (7) serving father and honoring authority\n• Day: Sunday\n• Ruby (Manik) — SAFER than hessonite/blue sapphire but still needs chart check\n• Timeline: 4-6 weeks morning-energy shift; 6-12 mo confidence shift; year 2+ structural'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2864,7 +2862,7 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "Can I wear Pearl (Moti) as Moon remedy?", "a": "Pearl is safer than most gemstones but still requires Ascendant verification. Cancer, Scorpio, Pisces most compatible. Consult a qualified astrologer before wearing. The Monday practices + silver items are safe universal remedies."},
         ),
         llm_summary=(
-            'Keypoints:\n• Moon = karaka of mind (manas), emotion, mother, mental peace\n• Moon remedies matter MORE than other planet remedies for mental wellbeing\n• Classical: (1) Monday milk offering to Shiva at temple, (2) Somvar vrat / Solah Somvar, (3) Chandra Beej mantra "Om Shraam Shreem Shraum Sah Chandramase Namah" 108x, (4) silver items (glass, ring), (5) Monday charity (rice, milk, white clothes), (6) serving mother, (7) Nadi Shodhana + Brahmi + sleep hygiene as modern complements\n• Day: Monday\n• Pearl (Moti) — safer than most but verify Ascendant\n• CRITICAL: complement — do not replace — professional mental healthcare'
+            'Keypoints:\n• Moon = karaka of mind (manas), emotion, mother, mental peace\n• Moon remedies matter MORE than other planet remedies for mental wellbeing\n• Classical: (1) Monday Gauri/Krishna worship, (2) Somvar vrat / Solah Somvar, (3) Chandra Beej mantra "Om Shraam Shreem Shraum Sah Chandramase Namah" 108x, (4) silver items (glass, ring), (5) Monday charity (rice, milk, white clothes), (6) serving mother, (7) Nadi Shodhana + Brahmi + sleep hygiene as modern complements\n• Day: Monday\n• Pearl (Moti) — safer than most but verify Ascendant\n• CRITICAL: complement — do not replace — professional mental healthcare'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2918,7 +2916,7 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "What if I'm Manglik and my partner is not?", "a": "Classical tradition recommends Manglik-Manglik matching, with one condition that most retellings drop: the two doshas must be of comparable severity, because it is the symmetry between the charts that cancels them. Tradition asks for comparability but never says how wide a gap is too wide, so we set that band ourselves and call it ours rather than scripture — equal or adjacent grades on low/moderate/high count as comparable, and a low does not cancel a high. If mismatch: soften with Hanuman practices + Vishnu worship + Kumbh Vivah before marriage. Also: many 'mismatch' cases are actually cancelled Manglik in one or both charts — verify with our /manglik-check tool first."},
         ),
         llm_summary=(
-            'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 counted from ALL THREE of Lagna, Moon and Venus (any one frame qualifying is enough)\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching a partner of comparable Manglik severity)\n• 7 classical remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) Vishnu Sahasranama + Ekadashi vrat, (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (toor daal/arhar — Mars classical grain, plus red masoor folk offering, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS), (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels ONLY when both partners are Manglik of comparable severity — Bhagya convention, stated as ours not scripture: equal or adjacent grades on low/moderate/high are comparable, a low does not cancel a high), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
+            'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 counted from ALL THREE of Lagna, Moon and Venus (any one frame qualifying is enough)\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching a partner of comparable Manglik severity)\n• 7 classical remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) Vishnu Sahasranama + Ekadashi vrat, (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (toor daal/arhar — Mars classical grain, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS), (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels ONLY when both partners are Manglik of comparable severity — Bhagya convention, stated as ours not scripture: equal or adjacent grades on low/moderate/high are comparable, a low does not cancel a high), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
