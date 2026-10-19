@@ -646,16 +646,41 @@ _app_cache: dict[int, tuple[float, dict]] = {}
 #: day's total.
 TREND_TOP_N = 6
 
-#: How many error events `_app_view` will read. `events.recent` is newest-first
-#: and stops dead at its `limit`, so this is a CAP ON THE NUMERATOR of the error
-#: rate -- while the denominator (`llm_stats` total_calls) has no cap at all.
-#: Measured consequence of dividing one by the other: a steady 10% true error
-#: rate renders 10.0% at ?window=1, 1.79% at 7 and nothing at all at 30, so
-#: WIDENING the window made the app look healthier on identical data, and past
-#: 5,000 calls the 30-day view fell under ERROR_RATE_AMBER and the alert
-#: disappeared. One more than the cap is fetched so saturation is detectable
-#: rather than inferred from `len() == limit`, which is ambiguous at exactly
-#: the cap; on saturation the rate is withheld and the alert says why.
+#: How many error events `_app_view` reads IN FULL, for the per-type and
+#: per-feature breakdowns. `events.recent` is newest-first and stops dead at its
+#: `limit`, so this is a sample size, NOT the error count: the count comes from
+#: `events.counts_by_type`, which is uncapped.
+#:
+#: IT USED TO BE THE NUMERATOR, AND THAT WAS THE DEFECT. Dividing a capped
+#: numerator by an uncapped denominator (`llm_stats` total_calls) made a steady
+#: 10% true error rate render 10.0% at ?window=1, 1.79% at 7 and nothing at all
+#: at 30 -- past ~5,000 calls the 30-day view fell under ERROR_RATE_AMBER and
+#: the alert disappeared, so WIDENING the window made the app look healthier on
+#: identical data.
+#:
+#: The first fix withheld the rate on saturation. QA round 2 showed that was
+#: half a fix and bought a worse bug: `exhausted`, `too_large`, `kinds`,
+#: `sources` and `budget_breaks` are ALL derived from the same capped list and
+#: were still printed as exact counts, so a RED alert read "93 requests had
+#: every provider fail in 7d" against a true 180 -- and read the same at 7d and
+#: 30d, which is the very "widening changes nothing" lie, two lines below a new
+#: alert explaining that the read had stopped at 500. It also made a healthy
+#: high-volume app permanently red: 501 errors against 1,000,000 calls is a
+#: 0.05% rate and rendered as an alert with no number.
+#:
+#: So the count is now exact and the rate is always computable. This cap only
+#: bounds the BREAKDOWNS, every one of which is therefore a floor when
+#: `errors_truncated` -- rendered with a leading U+2265 and said in words beside
+#: the table, at the point of use rather than in the alert strip: a sampled
+#: breakdown is a disclosure, not something broken right now.
+#:
+#: One more than the cap is fetched so saturation is detected rather than
+#: inferred from `len() == limit`, which is ambiguous at exactly the cap.
+#:
+#: Reading both costs nothing extra: `events._read_day` is memoised and pins an
+#: elapsed day for the process lifetime, so `counts_by_type` after `recent`
+#: re-walks cached blobs rather than the bucket. Measured as free; do not
+#: "optimise" it back into one capped read.
 ERROR_EVENT_LIMIT = 500
 
 
@@ -786,6 +811,13 @@ def _app_view(days: int = 7) -> dict:
         usage = llm_stats.usage_summary(days) or {}
         rng = llm_stats.range_summary(days) or {}
         agg = rng.get("aggregate") or {}
+        # THE COUNT IS EXACT; THE SAMPLE IS CAPPED. Two reads, deliberately:
+        # `counts_by_type` is uncapped and gives the true error total, so the
+        # rate is a real rate at every window; `recent` gives the newest
+        # ERROR_EVENT_LIMIT events, which is all the per-type and per-feature
+        # breakdowns can see. See ERROR_EVENT_LIMIT for why this is two numbers
+        # and not one, and for why the second read is free.
+        errors_total = int((events.counts_by_type(days=days) or {}).get("error") or 0)
         errors = events.recent(types=["error"], days=days,
                                limit=ERROR_EVENT_LIMIT + 1) or []
         errors_truncated = len(errors) > ERROR_EVENT_LIMIT
@@ -888,22 +920,24 @@ def _app_view(days: int = 7) -> dict:
             "calls": calls, "hits": hits, "misses": misses,
             "hit_rate": int(usage.get("hit_rate_pct") or 0),
             "avg_miss_ms": int(usage.get("avg_miss_latency_ms") or 0),
-            "errors": len(errors),
-            # A FLOOR, not a count, when this is True: there were more error
-            # events in the window than ERROR_EVENT_LIMIT and the rest were
-            # never read. The page must say "at least".
+            # EXACT, from the uncapped `counts_by_type`. Never `len(errors)`,
+            # which is the sample size and reads as the count.
+            "errors": errors_total,
+            # The sample the BREAKDOWNS below were computed from. `exhausted`,
+            # `too_large`, `error_kinds`, `error_sources` and `budget_breaks`
+            # are each a floor when this is True, and the page says so.
+            "errors_sampled": len(errors),
             "errors_truncated": errors_truncated,
             # Per 100 CALLS. Error sources and llm_stats routes are different
             # vocabularies (`chart:matching` vs `matching`), so this is an
             # overall rate; it is deliberately NOT broken down per route,
             # because no mapping between the two exists to do it honestly.
             #
-            # None ON SATURATION, and that is the whole point of the flag: a
-            # capped numerator over an uncapped denominator is not a low rate,
-            # it is an unknown one, and the smaller number it produces points
-            # the wrong way. See ERROR_EVENT_LIMIT for the measured figures.
-            "error_rate": (None if errors_truncated or not calls
-                           else round(len(errors) / calls * 100, 2)),
+            # ALWAYS COMPUTABLE NOW, because both sides are uncapped. The
+            # previous version returned None on saturation, which withheld the
+            # figure from exactly the windows that needed it and made a 0.05%
+            # rate on a busy site render as a red alert with no number.
+            "error_rate": (round(errors_total / calls * 100, 2) if calls else None),
             "fallbacks": fallbacks,
             # [(provider, reason, n)], most common first. Sums to LESS than
             # `fallbacks` over a window that includes pre-#355 days.
@@ -1040,16 +1074,20 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
             f"Nothing in the last {app.get('days')} days. Either the app is idle or "
             "stats are not reaching GCS — a zero here is not a clean bill of health.")
     else:
-        # Saturation is reported INSTEAD of a rate, never as silence. The
-        # branch below is driven by `rate`, which is None here, so without
-        # this the window with the MOST errors would be the one with no alert.
-        if app.get("errors_truncated"):
-            add("red", f"More than {app['errors']:,} LLM error events in "
-                       f"{app['days']}d",
-                f"Reading stopped at {app['errors']:,}, so the rate cannot be "
-                "computed: the error count is capped and the call count is not, "
-                "and dividing them would understate it. Narrow the window to "
-                "get a rate.", "/admin/activity")
+        # EVERY COUNT DERIVED FROM THE CAPPED SAMPLE IS A FLOOR. `exhausted`
+        # and `too_large` come from `recent`, which stops at
+        # ERROR_EVENT_LIMIT; the rate and the error total do not. Printing a
+        # floor as an exact count is how a red alert came to read "93 requests
+        # had every provider fail in 7d" against a true 180, and to read the
+        # SAME at 7d and 30d -- the widening-changes-nothing lie this whole
+        # change was filed about, surviving in the alert beside it.
+        #
+        # There is no alert for the truncation itself. The count is exact and
+        # the rate is real, so nothing is broken; the breakdown is a sample,
+        # and that is disclosed in the panel where the breakdown is read. An
+        # alert here would be permanent on any busy site and would teach the
+        # reader to skip the strip, which rule 2 above exists to prevent.
+        at_least = "\u2265" if app.get("errors_truncated") else ""
         rate = app.get("error_rate") or 0.0
         if rate >= ERROR_RATE_RED:
             add("red", f"{rate}% of LLM calls are erroring",
@@ -1059,16 +1097,20 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
             add("amber", f"Error rate {rate}%",
                 f"{app['errors']} of {app['calls']} calls in {app['days']}d.",
                 "/admin/activity")
+        sampled = ("" if not app.get("errors_truncated") else
+                   f" Counted over the newest {app.get('errors_sampled', 0):,} of "
+                   f"{app.get('errors', 0):,} error events, so this is a floor.")
         if app.get("exhausted"):
-            add("red", f"{app['exhausted']} requests had every provider fail "
+            add("red", f"{at_least}{app['exhausted']} requests had every provider fail "
                        f"in {app['days']}d",
                 "AllProvidersExhausted — the user saw the \u201chigh demand\u201d page, "
-                "not a reading.", "/admin/activity")
+                "not a reading." + sampled, "/admin/activity")
         if app.get("too_large"):
-            add("red", f"{app['too_large']} requests exceeded the provider's "
+            add("red", f"{at_least}{app['too_large']} requests exceeded the provider's "
                        f"size limit in {app['days']}d",
                 "RequestTooLarge (413) is a prompt-size failure, not a rate limit. "
-                "Shrinking the prompt is the fix; waiting is not.", "/admin/activity")
+                "Shrinking the prompt is the fix; waiting is not." + sampled,
+                "/admin/activity")
         fr = app.get("fallback_rate") or 0.0
         if fr >= FALLBACK_RATE_AMBER:
             # Name the CAUSE, rather than adding a second alert beside this one
@@ -1244,6 +1286,11 @@ def snapshot(now: datetime | None = None,
         "tpm_per_model": TPM_PER_MODEL,
         "budget_fail_reasons": BUDGET_FAIL_REASONS,
         "tpd_per_model": TPD_PER_MODEL,
+        # Same reason, for the same template: the error cell coloured itself
+        # on a hardcoded `>= 5` while the alert strip used ERROR_RATE_RED, so
+        # editing the constant would have desynced the panel from the alert
+        # beside it with nothing to say so.
+        "error_rate_red": ERROR_RATE_RED,
         # The one line every loop ranks against, carried in issues.json because
         # the Docker image copies only `src/` -- OBJECTIVE.md is not in the
         # container. "" when chief has not written one, which is a real state.

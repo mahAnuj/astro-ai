@@ -320,18 +320,33 @@ def test_the_unmeasured_zero_state_still_carries_a_trend_key():
 # mutants of this arithmetic survived all 705 tests.
 # --------------------------------------------------------------------------- #
 
-def test_the_tpd_line_is_not_drawn_when_one_bucket_is_off_the_chart():
+@pytest.mark.parametrize("peak,visible", [
+    # JUST UNDER, not a quarter of it. QA round 2: a fixture at
+    # TPD_PER_MODEL // 4 pins the gate only at the pre-fix constant, so any
+    # intermediate threshold survives -- `top >= TPD_PER_MODEL / 2` passed all
+    # 745 tests, and at peak 150,000 it draws `<line y1="-33.33">`, clipped
+    # outside the viewBox, while the legend still promises a 200,000 reference
+    # the reader cannot find. That is BUG-1's lie in a new form.
+    (150_000, False),                        # top = 150,000, just under
+    (200_000, True),                         # top = 200,000, exactly one bucket
+    (200_001, True),
+])
+def test_the_tpd_line_appears_exactly_when_one_bucket_fits_on_the_chart(peak, visible):
     """Below one bucket there is no honest place to put it, so it is absent.
 
     Nothing is lost by the absence: `peak` is in the legend either way and
     `peak_day_pct` states the same day as a percentage of one bucket in the
     panel above. A clamped line is not a reference, it is decoration carrying
     a number.
+
+    The 200,000 row pins `>=` against `>`: the boundary is reachable and is the
+    first visible case, so a strict comparison would silently move the whole
+    band (150,000, 200,000] from "line at the top edge" to "no line".
     """
-    tr = ops_data._token_trend(
-        _rng(("2026-10-01", {"a": ops_data.TPD_PER_MODEL // 4})), 1)
-    assert tr["top"] < ops_data.TPD_PER_MODEL
-    assert tr["tpd_visible"] is False
+    tr = ops_data._token_trend(_rng(("2026-10-01", {"a": peak})), 1)
+    assert tr["tpd_visible"] is visible
+    if not visible:
+        assert tr["top"] < ops_data.TPD_PER_MODEL
 
 
 def test_the_tpd_line_is_drawn_at_the_height_its_label_claims():
@@ -353,6 +368,34 @@ def test_the_tpd_line_is_drawn_at_the_height_its_label_claims():
     assert bar_top == tr["tpd_y"]
 
 
+def test_the_tpd_line_is_measured_from_the_top_of_the_chart_not_the_bottom():
+    """An asymmetric case, because 50 is its own mirror image.
+
+    QA round 2: the test above is satisfied by the WRONG formula. Its fixture
+    puts one bucket at exactly half the axis, so `tpd_y == 50.0` and
+    `100 - tpd_y == 50.0` are the same assertion, and dropping the `100 -`
+    passed all 745 tests and the 195-row sweep. On the real 30-day store
+    (`top = 2,500,000`, busiest day ~11.5 buckets) the correct line renders at
+    y=92 near the floor; the inverted one renders at y=8 near the ceiling, so
+    every bar sits comfortably below a line labelled `200,000 TPD · one model`
+    and the chart reads "no day came near a bucket" for a window whose busiest
+    day spent eleven. A larger misstatement than the 4x it replaced.
+
+    SVG y grows downward, so a SMALLER reference must sit LOWER on the chart:
+    one fifth of the axis is 80 from the top, not 20.
+    """
+    tr = ops_data._token_trend(
+        _rng(("2026-10-01", {"a": ops_data.TPD_PER_MODEL * 5})), 1)
+    assert tr["top"] == ops_data.TPD_PER_MODEL * 5
+    assert tr["tpd_visible"] is True
+    assert tr["tpd_y"] == 80.0, (
+        "the reference is one fifth of the axis, so it belongs 80 units down "
+        "from the top; 20.0 here means the y is measured from the wrong edge"
+    )
+    # And the bar, which is the whole axis, must reach ABOVE it.
+    assert 100 - tr["series"][0]["total"] / tr["top"] * 100 < tr["tpd_y"]
+
+
 # --------------------------------------------------------------------------- #
 # The error rate — QA round 1, BUG-2
 #
@@ -367,13 +410,17 @@ def test_the_tpd_line_is_drawn_at_the_height_its_label_claims():
 def _app_with(n_errors, calls, monkeypatch, days=7):
     """`_app_view` over a store holding `n_errors` errors and `calls` calls.
 
-    `recent` HONOURS `limit` here, as the real one does. A mock that ignored it
-    would make the saturation untestable — the defect lives in the cap, so a
-    fixture that cannot be capped cannot see it.
+    BOTH reads are stubbed, and they must agree: `counts_by_type` is uncapped
+    and is where the COUNT comes from, `recent` honours `limit` exactly as the
+    real one does and is where the BREAKDOWNS come from. A mock that ignored
+    `limit` would make the sampling untestable -- the defect lives in the cap,
+    so a fixture that cannot be capped cannot see it.
     """
     from astro_ai import llm_stats
-    store = [{"data": {"error_type": "APITimeoutError", "source": "chart:natal"}}
+    store = [{"data": {"error_type": "AllProvidersExhausted", "source": "chart:natal"}}
              for _ in range(n_errors)]
+    monkeypatch.setattr(events, "counts_by_type",
+                        lambda **kw: {"error": n_errors, "page_view": 7})
     monkeypatch.setattr(events, "recent",
                         lambda **kw: store[:kw.get("limit", 100)])
     monkeypatch.setattr(llm_stats, "usage_summary",
@@ -386,48 +433,222 @@ def _app_with(n_errors, calls, monkeypatch, days=7):
     return ops_data._app_view(days)
 
 
-def test_an_unsaturated_read_still_reports_a_rate(monkeypatch):
+def _alerts_for(app):
+    return ops_data._alerts({"ok": True, "rows": [], "today_failed": []},
+                            {"ok": True}, {"ok": True}, app, {})
+
+
+def test_an_unsaturated_read_reports_an_exact_count_and_rate(monkeypatch):
     app = _app_with(50, 1000, monkeypatch)
     assert app["errors"] == 50
+    assert app["errors_sampled"] == 50
     assert app["errors_truncated"] is False
     assert app["error_rate"] == 5.0
 
 
-def test_the_rate_is_withheld_rather_than_understated_when_the_read_saturates(monkeypatch):
-    """600 errors against 10,000 calls is 6%. Capped at 500 it reads 5.0%.
+def test_the_rate_comes_from_the_uncapped_count_not_the_capped_sample(monkeypatch):
+    """600 errors against 10,000 calls is 6%. The sample stops at 500.
 
-    5.0% is not merely imprecise — it is the wrong side of ERROR_RATE_RED's
-    boundary behaviour for a reader comparing windows, and it moves further
-    from the truth the worse the incident gets. So there is no rate.
+    Reading the numerator off the sample gave 5.0% -- and the further the true
+    count ran past the cap, the further the reported rate fell. The count is
+    now read from `events.counts_by_type`, which has no limit, so the rate is
+    a rate at every window and the sample size is reported separately.
     """
     app = _app_with(600, 10_000, monkeypatch)
+    assert app["errors"] == 600, "the count must be the true total, not the sample"
+    assert app["errors_sampled"] == ops_data.ERROR_EVENT_LIMIT
     assert app["errors_truncated"] is True
-    assert app["errors"] == ops_data.ERROR_EVENT_LIMIT
-    assert app["error_rate"] is None
+    assert app["error_rate"] == 6.0
+
+
+def test_widening_the_window_cannot_lower_the_rate_on_the_same_data(monkeypatch):
+    """The property the whole finding was about, asserted directly.
+
+    Identical store, two windows. Before, the capped numerator made 7d report
+    a lower rate than 1d and 30d lower still, so the operator's instinct --
+    widen the window to see the trend -- moved the number the wrong way.
+    """
+    rates = [_app_with(900, 10_000, monkeypatch, days=d)["error_rate"]
+             for d in (1, 7, 30)]
+    assert rates == [9.0, 9.0, 9.0], rates
 
 
 def test_exactly_the_cap_is_not_reported_as_truncated(monkeypatch):
     """The off-by-one that `limit + 1` exists to settle.
 
-    `len(errors) == limit` is ambiguous — it is the same result for a store
-    holding exactly 500 and one holding 5,000 — so one extra is fetched and
-    the flag is set on the overflow, not on the equality.
+    `len(sample) == limit` is ambiguous -- the same result for a store holding
+    exactly 500 and one holding 5,000 -- so one extra is fetched and the flag
+    is set on the overflow, not on the equality.
     """
     app = _app_with(ops_data.ERROR_EVENT_LIMIT, 10_000, monkeypatch)
     assert app["errors_truncated"] is False
-    assert app["error_rate"] == 5.0
+    assert app["errors"] == app["errors_sampled"] == ops_data.ERROR_EVENT_LIMIT
 
 
-def test_a_saturated_read_alerts_rather_than_going_quiet(monkeypatch):
-    """Silence is the failure mode this rate had: no number, no alert.
+def test_a_sample_derived_alert_count_is_marked_as_a_floor(monkeypatch):
+    """`exhausted` comes from the capped sample; the rate does not.
 
-    The amber/red branches are driven by `rate`, which is None on saturation,
-    so without a branch of its own the busiest window would be the calm one.
+    QA round 2 measured this on the real local store: a RED alert read
+    "93 requests had every provider fail in 7d" against a true 180, and read
+    the SAME at 7d and 30d -- the widening-changes-nothing lie, surviving two
+    lines below a new alert that explained the read had stopped at 500. Every
+    figure taken from the sample is a floor and must say so.
     """
-    app = _app_with(5_000, 100_000, monkeypatch)
-    alerts = ops_data._alerts({"ok": True, "rows": [], "today_failed": []},
-                              {"ok": True}, {"ok": True}, app, {})
-    hit = [a for a in alerts if "error events" in a["title"]]
-    assert hit, f"a saturated read raised no alert: {[a['title'] for a in alerts]}"
-    assert hit[0]["level"] == "red"
-    assert "cannot be computed" in hit[0]["detail"]
+    app = _app_with(1_200, 10_000, monkeypatch)
+    assert app["errors_truncated"] is True
+    # All 500 sampled events are AllProvidersExhausted, so `exhausted` is the
+    # sample size -- a floor under the true 1,200.
+    assert app["exhausted"] == ops_data.ERROR_EVENT_LIMIT < app["errors"]
+    hit = [a for a in _alerts_for(app) if "provider fail" in a["title"]]
+    assert hit, "the exhausted alert vanished"
+    assert hit[0]["title"].startswith("\u2265"), hit[0]["title"]
+    assert "floor" in hit[0]["detail"], hit[0]["detail"]
+
+
+def test_an_exact_sample_derived_count_carries_no_floor_marker(monkeypatch):
+    """The marker must mean something, so it must be absent when exact."""
+    app = _app_with(40, 10_000, monkeypatch)
+    hit = [a for a in _alerts_for(app) if "provider fail" in a["title"]]
+    assert hit and not hit[0]["title"].startswith("\u2265"), hit[0]["title"]
+    assert "floor" not in hit[0]["detail"]
+
+
+def test_volume_alone_does_not_raise_an_alert(monkeypatch):
+    """501 errors against 1,000,000 calls is 0.05%. That is a healthy app.
+
+    The first version of this fix withheld the rate whenever the COUNT
+    saturated, regardless of the denominator, and raised a red alert in its
+    place -- so a busy site got a red that never cleared and no number at all,
+    which is exactly the "teaches the reader to skip the strip" failure rule 2
+    of `_alerts` is written against.
+    """
+    app = _app_with(501, 1_000_000, monkeypatch)
+    assert app["error_rate"] == 0.05
+    assert app["errors_truncated"] is True
+    noisy = [a for a in _alerts_for(app)
+             if "error event" in a["title"] or "erroring" in a["title"]
+             or "Error rate" in a["title"]]
+    assert not noisy, f"a 0.05% error rate raised {[a['title'] for a in noisy]}"
+
+
+def test_a_real_error_rate_still_alerts_when_the_sample_is_capped(monkeypatch):
+    """The converse: saturation must not become a reason for silence either.
+
+    900 errors against 5,000 calls is 18%, well over ERROR_RATE_RED, and the
+    sample is capped. The rate is exact, so the alert is the ordinary one.
+    """
+    app = _app_with(900, 5_000, monkeypatch)
+    assert app["errors_truncated"] is True and app["error_rate"] == 18.0
+    red = [a for a in _alerts_for(app) if "erroring" in a["title"]]
+    assert red and red[0]["level"] == "red", [a["title"] for a in _alerts_for(app)]
+
+
+# --------------------------------------------------------------------------- #
+# The template half — QA round 2, finding 4
+#
+# Four mutants, each reverting a claimed part of this change, all survived the
+# full 745-test suite: the `tpd_visible` guard removed from the `<line>` (which
+# then draws at y=-300 for a 50,000-token peak), the same guard removed from
+# the legend (claiming a 200,000 reference on every window), the capped-sample
+# notice made unreachable (the page then rendered a literal `None%`), and the
+# error cell's threshold left as a hardcoded `>= 5` beside an alert strip
+# reading `ERROR_RATE_RED`.
+#
+# The commit message and the ARCHITECTURE.md row both asserted this rendering.
+# A claim about what a page shows belongs in a test that renders the page.
+# --------------------------------------------------------------------------- #
+
+def _ops_html(monkeypatch, *, peak=None, n_errors=0, calls=1000, window=None):
+    """The real page, with the app panel driven from a stubbed store."""
+    from astro_ai import llm_stats
+    store = [{"data": {"error_type": "AllProvidersExhausted", "source": "chart:natal"}}
+             for _ in range(n_errors)]
+    monkeypatch.setattr(events, "counts_by_type", lambda **kw: {"error": n_errors})
+    monkeypatch.setattr(events, "recent", lambda **kw: store[:kw.get("limit", 100)])
+    monkeypatch.setattr(llm_stats, "usage_summary",
+                        lambda d: {"days": d, "total_calls": calls, "cache_hits": 0,
+                                   "cache_misses": calls, "hit_rate_pct": 0,
+                                   "total_input_tokens": 0, "total_output_tokens": 0,
+                                   "by_route": []})
+    if peak is None:
+        monkeypatch.setattr(llm_stats, "range_summary", lambda d: {"days": []})
+    else:
+        monkeypatch.setattr(llm_stats, "range_summary",
+                            lambda d: _rng(("2026-10-01", {"a": peak})))
+    ops_data._app_cache.clear()
+    r = _page(window)
+    assert r.status_code == 200, r.status_code
+    return r.text
+
+
+def test_the_page_draws_no_tpd_line_when_one_bucket_is_off_the_chart(monkeypatch):
+    html = _ops_html(monkeypatch, peak=50_000)
+    assert 'class="tpdline"' not in html, "the reference line is drawn off the chart"
+    assert "TPD · one model" not in html, (
+        "the legend promises a reference the chart does not contain"
+    )
+    # The thing that replaces it must actually be there.
+    assert "peak 50,000/day" in html
+
+
+def test_the_page_draws_the_tpd_line_and_its_legend_together(monkeypatch):
+    html = _ops_html(monkeypatch, peak=ops_data.TPD_PER_MODEL * 5)
+    assert 'class="tpdline"' in html
+    assert "200,000 TPD · one model" in html
+    assert 'y1="80.0"' in html, "the line is not where _token_trend put it"
+    # No coordinate may fall outside the viewBox.
+    assert 'y1="-' not in html and 'y2="-' not in html
+
+
+def test_the_page_never_renders_a_none_rate(monkeypatch):
+    """`{{ None }}%` reads as "None%". The cell must always carry a number."""
+    html = _ops_html(monkeypatch, n_errors=600, calls=10_000)
+    assert "None%" not in html
+    assert "600 · 6.0%" in html, "the exact count and rate are not on the page"
+
+
+def test_the_page_discloses_that_a_capped_sample_fed_the_breakdowns(monkeypatch):
+    html = _ops_html(monkeypatch, n_errors=600, calls=10_000)
+    flat = " ".join(html.split())          # the notice wraps across source lines
+    assert "so each is a floor, not a total" in flat
+    assert "newest 500 of those 600 events" in flat
+    # EVERY sample-derived figure carries the marker, asserted per element.
+    # A bare `"≥500" in html` passed with the budget-break marker removed,
+    # because the sources table below also renders one -- the same
+    # satisfied-by-a-different-element shape as the rest of this file's
+    # findings.
+    assert flat.count('<b class="mono c-failed">≥500</b>') == 2, (
+        "the budget-break total and its per-feature row must both be marked"
+    )
+    assert '<td class="n">≥500</td>' in flat, (
+        "the 'Where the errors are' table prints a sampled count as exact"
+    )
+    assert '<span class="t">≥500 requests had every provider fail' in flat
+
+
+def test_the_page_says_nothing_about_a_sample_when_the_read_was_complete(monkeypatch):
+    html = _ops_html(monkeypatch, n_errors=40, calls=10_000)
+    assert "so each is a floor, not a total" not in " ".join(html.split())
+    assert "≥" not in html.split('<h3 class="lbl" style="margin:22px 0 10px">Where the errors are')[0][-4000:]
+
+
+def test_the_error_cell_takes_its_red_threshold_from_the_module(monkeypatch):
+    """A literal in HTML is a number nothing can keep in step with.
+
+    `ops.app.error_rate >= 5` duplicated `ERROR_RATE_RED`, which `snapshot`
+    did not pass through — so editing the constant would have desynced the
+    panel's colour from the alert strip beside it with nothing to say so.
+    This asserts the plumbing exists, then moves the constant and checks the
+    cell follows it.
+    """
+    assert ops_data.snapshot()["error_rate_red"] == ops_data.ERROR_RATE_RED
+    # 3% is under the real threshold of 5, so the cell is not red...
+    html = _ops_html(monkeypatch, n_errors=30, calls=1_000)
+    assert "30 · 3.0%" in html
+    assert 'c-failed">30 · 3.0%' not in html
+    # ...and becomes red when the module's threshold moves below it.
+    monkeypatch.setattr(ops_data, "ERROR_RATE_RED", 2.0)
+    html = _ops_html(monkeypatch, n_errors=30, calls=1_000)
+    assert 'c-failed">30 · 3.0%' in html, (
+        "the cell did not follow ERROR_RATE_RED, so it is still reading a literal"
+    )

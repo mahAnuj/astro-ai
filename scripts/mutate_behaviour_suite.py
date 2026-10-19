@@ -1279,7 +1279,7 @@ MUTATIONS = [
      "src/astro_ai/ops_data.py",
      '        "tpd_visible": top >= TPD_PER_MODEL,\n        "tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
      '        "tpd_visible": top >= TPD_PER_MODEL * 0.25,\n        "tpd_y": round(100 - min(TPD_PER_MODEL / top, 1.0) * 100, 2) if top else 100,',
-     "test_the_tpd_line_is_not_drawn_when_one_bucket_is_off_the_chart"),
+     "test_the_tpd_line_appears_exactly_when_one_bucket_fits_on_the_chart"),
 
     ("#ops-trend: the TPD line is placed by its own scale, not the bars'",
      "src/astro_ai/ops_data.py",
@@ -1299,23 +1299,94 @@ MUTATIONS = [
      '            n = int(tok.get("input_tokens") or 0)',
      "test_the_stack_sums_to_the_underlying_blobs"),
 
-    ("#ops-errors: the numerator is capped at the limit, so a wider window reads healthier (BUG-2)",
-     "src/astro_ai/ops_data.py",
-     '            "error_rate": (None if errors_truncated or not calls\n                           else round(len(errors) / calls * 100, 2)),',
-     '            "error_rate": round(len(errors) / calls * 100, 2) if calls else None,',
-     "test_the_rate_is_withheld_rather_than_understated_when_the_read_saturates"),
-
     ("#ops-errors: saturation is inferred from len() == limit, ambiguous at exactly the cap",
      "src/astro_ai/ops_data.py",
      '                               limit=ERROR_EVENT_LIMIT + 1) or []\n        errors_truncated = len(errors) > ERROR_EVENT_LIMIT',
      '                               limit=ERROR_EVENT_LIMIT) or []\n        errors_truncated = len(errors) >= ERROR_EVENT_LIMIT',
      "test_exactly_the_cap_is_not_reported_as_truncated"),
+    # ---- QA round 2 on #419. Six of these mutants survived all 745 tests AND
+    # ---- the 195-row sweep; the sweep's own rows only mutated what the
+    # ---- round-1 fix had moved, so they could not see the sign, the gate
+    # ---- value, or any template branch.
 
-    ("#ops-errors: a saturated read raises no alert, so the worst window is the quiet one",
+    ("#ops-trend: the TPD gate is strict, so the whole (150k, 200k] band loses its line",
      "src/astro_ai/ops_data.py",
-     '        if app.get("errors_truncated"):\n            add("red", f"More than {app[\'errors\']:,} LLM error events in "',
-     '        if False:\n            add("red", f"More than {app[\'errors\']:,} LLM error events in "',
-     "test_a_saturated_read_alerts_rather_than_going_quiet"),
+     '"tpd_visible": top >= TPD_PER_MODEL,',
+     '"tpd_visible": top > TPD_PER_MODEL,',
+     "test_the_tpd_line_appears_exactly_when_one_bucket_fits_on_the_chart"),
+
+    ("#ops-trend: the TPD gate slides to half a bucket (line clipped, legend still promises it)",
+     "src/astro_ai/ops_data.py",
+     '"tpd_visible": top >= TPD_PER_MODEL,',
+     '"tpd_visible": top >= TPD_PER_MODEL / 2,',
+     "test_the_tpd_line_appears_exactly_when_one_bucket_fits_on_the_chart"),
+
+    ("#ops-trend: tpd_y is measured from the bottom edge (11 buckets reads as none)",
+     "src/astro_ai/ops_data.py",
+     '"tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '"tpd_y": round(TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     "test_the_tpd_line_is_measured_from_the_top_of_the_chart_not_the_bottom"),
+
+    ("#ops-errors: the count reverts to the capped sample",
+     "src/astro_ai/ops_data.py",
+     '"errors": errors_total,',
+     '"errors": len(errors),',
+     "test_the_rate_comes_from_the_uncapped_count_not_the_capped_sample"),
+
+    ("#ops-errors: the rate reverts to the capped sample (widening lowers it again)",
+     "src/astro_ai/ops_data.py",
+     '"error_rate": (round(errors_total / calls * 100, 2) if calls else None),',
+     '"error_rate": (round(len(errors) / calls * 100, 2) if calls else None),',
+     "test_widening_the_window_cannot_lower_the_rate_on_the_same_data"),
+
+    ("#ops-errors: the rate is withheld on saturation (0.05% on a busy site shows no number)",
+     "src/astro_ai/ops_data.py",
+     '"error_rate": (round(errors_total / calls * 100, 2) if calls else None),',
+     '"error_rate": (None if errors_truncated or not calls else round(errors_total / calls * 100, 2)),',
+     "test_volume_alone_does_not_raise_an_alert"),
+
+    ("#ops-errors: a sample-derived alert count drops its floor marker (93 printed for 180)",
+     "src/astro_ai/ops_data.py",
+     'add("red", f"{at_least}{app[\'exhausted\']} requests had every provider fail "',
+     'add("red", f"{app[\'exhausted\']} requests had every provider fail "',
+     "test_a_sample_derived_alert_count_is_marked_as_a_floor"),
+
+    ("#ops-errors: the floor sentence is never appended to a sampled alert",
+     "src/astro_ai/ops_data.py",
+     '        sampled = ("" if not app.get("errors_truncated") else',
+     '        sampled = ("" if True else',
+     "test_a_sample_derived_alert_count_is_marked_as_a_floor"),
+
+    ("#ops-tpl: the TPD line is drawn unguarded (y=-300 for a 50k peak)",
+     "src/astro_ai/templates/admin_ops.html",
+     '          {%- if ops.app.trend.tpd_visible %}\n          <line x1="0"',
+     '          {%- if True %}\n          <line x1="0"',
+     "test_the_page_draws_no_tpd_line_when_one_bucket_is_off_the_chart"),
+
+    ("#ops-tpl: the TPD legend is shown unguarded (200,000 claimed on every window)",
+     "src/astro_ai/templates/admin_ops.html",
+     '          {%- if ops.app.trend.tpd_visible %}\n          <span class="lg"><i class="sw tpdsw"></i>',
+     '          {%- if True %}\n          <span class="lg"><i class="sw tpdsw"></i>',
+     "test_the_page_draws_no_tpd_line_when_one_bucket_is_off_the_chart"),
+
+    ("#ops-tpl: the capped-sample notice is unreachable",
+     "src/astro_ai/templates/admin_ops.html",
+     '          {%- if ops.app.errors_truncated %}\n          <div class="wide"><span>&nbsp;</span>',
+     '          {%- if False %}\n          <div class="wide"><span>&nbsp;</span>',
+     "test_the_page_discloses_that_a_capped_sample_fed_the_breakdowns"),
+
+    ("#ops-tpl: a sampled breakdown count is printed as exact",
+     "src/astro_ai/templates/admin_ops.html",
+     """<b class="mono {{ 'c-failed' if ops.app.budget_breaks_total }}">{{ '≥' if ops.app.errors_truncated }}{{ ops.app.budget_breaks_total }}</b>""",
+     """<b class="mono {{ 'c-failed' if ops.app.budget_breaks_total }}">{{ ops.app.budget_breaks_total }}</b>""",
+     "test_the_page_discloses_that_a_capped_sample_fed_the_breakdowns"),
+
+    ("#ops-tpl: the error cell goes back to a hardcoded red threshold",
+     "src/astro_ai/templates/admin_ops.html",
+     "ops.app.error_rate >= ops.error_rate_red",
+     "ops.app.error_rate >= 5",
+     "test_the_error_cell_takes_its_red_threshold_from_the_module"),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
