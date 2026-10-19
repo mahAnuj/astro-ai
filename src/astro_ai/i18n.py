@@ -915,7 +915,7 @@ _HI: Final[dict[str, str]] = {
     "matching_nadi_plain":  "विद्यमान",
     "matching_nadi_mitig":  "जो इसे कम करता है",
     "matching_nadi_nocancel":
-        "किसी भी छूट से इसके अंक नहीं बढ़ते।",
+        "भकूट के परिहारों में नाड़ी सम्मिलित नहीं है; किसी भी छूट से इसके अंक नहीं बढ़ते।",
     "matching_breakdown":  "कूट-वार विवरण",
     "matching_col_koota":  "कूट",
     "matching_col_max":    "अधिकतम",

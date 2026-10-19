@@ -1096,20 +1096,20 @@ MUTATIONS = [
 
     ("#397: the /ask overlay re-asserts 'no cancelling conditions' for Nadi",
      "src/astro_ai/prompts/ask_matching.txt",
-     "- Nadi is not among the Bhakoot parihāras. The tradition records regional and community exemptions for it, which this product does not apply, and a slight (alpa) grade where pada-Nadi differs. Never invent any other Nadi condition.",
+     '- Nadi is not among the Bhakoot parihāras. The exemptions the tradition records apply OUTSIDE the Madhya Nadi only and this product applies none of them — never tell a seeker whose Nadi is Madhya that one exists for their case. A slight (alpa) grade applies where pada-Nadi differs. Never invent any other Nadi condition.',
      "- Nadi has no cancelling conditions in this tradition. Never invent one.",
      "test_no_surface_asserts_nadi_has_no_cancelling_conditions"),
 
     ("#397: the two /ask overlays' Nadi lines drift apart",
      "src/astro_ai/prompts/ask_matching_third_party.txt",
-     "which this product does not apply, and a slight (alpa) grade",
-     "which this product does apply, and a slight (alpa) grade",
+     "apply OUTSIDE the Madhya Nadi only and this product applies none of them",
+     "apply OUTSIDE the Madhya Nadi only and this product applies them",
      "test_both_ask_overlays_carry_the_identical_nadi_line"),
 
     ("#397: the engine's Nadi note re-asserts the absolute beside the exemption",
      "src/astro_ai/matching.py",
-     '" Nadi is not among the Bhakoot parihāras and is required to be sound "\n        "alongside them;',
-     '" Nadi has no cancelling conditions in this tradition and is required to be sound "\n        "alongside them;',
+     '" Nadi is not among the Bhakoot parihāras and is required to be sound "\n        "alongside them, and the tradition prescribes shanti where it is present."',
+     '" Nadi has no cancelling conditions in this tradition and is required to be sound "\n        "alongside them, and the tradition prescribes shanti where it is present."',
      "test_engine_note_states_the_narrowed_position_and_keeps_the_disclosure"),
 
     ("#397: /ask context stops feeding nd.unevaluated (overlay names what the model cannot see)",
@@ -1120,9 +1120,48 @@ MUTATIONS = [
 
     ("#397: Hindi panel footnote regains the false first sentence",
      "src/astro_ai/i18n.py",
-     '"किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     '"भकूट के परिहारों में नाड़ी सम्मिलित नहीं है; किसी भी छूट से इसके अंक नहीं बढ़ते।",',
      '"नाड़ी का कोई परिहार नहीं होता। किसी भी छूट से इसके अंक नहीं बढ़ते।",',
      "test_panel_footnote_still_says_no_points_and_not_the_absolute"),
+
+    # ---- QA round 1 on #397. All four blockers were introduced BY this
+    # ---- change; the last row is a pre-existing hole the reviewer measured.
+
+    ("#397 QA: the exemption sentence is unscoped again, so a Madhya pair is told one was declined",
+     "src/astro_ai/matching.py",
+     '    note += (\n        " The regional and community exemptions it records do not extend to the "\n        "Madhya Nadi."\n        if grave else\n        " It also records exemptions by region and community (shown below), "\n        "which we do not apply."\n    )',
+     '    note += (\n        " It also records exemptions by region and community (shown below), "\n        "which we do not apply."\n    )',
+     "test_a_madhya_pair_is_not_told_an_exemption_was_declined_for_it"),
+
+    ("#397 QA: the Hindi footnote states the OPPOSITE position (ASCII _ABSOLUTE cannot see it)",
+     "src/astro_ai/i18n.py",
+     '"भकूट के परिहारों में नाड़ी सम्मिलित नहीं है; किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     '"नाड़ी के परिहार लागू होते हैं; किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     "test_the_hindi_footnote_states_the_position_and_not_only_the_points"),
+
+    ("#397 QA: a contradicting overlay instruction on a line the old prefix scan could not see",
+     "src/astro_ai/prompts/ask_matching.txt",
+     "- The same holds for every Nadi mitigation:",
+     "- Regional or community exemptions for Nadi are not part of this tradition; never tell the seeker one exists.\n- The same holds for every Nadi mitigation:",
+     "test_no_other_line_in_an_overlay_restates_the_nadi_rule"),
+
+    ("#397 QA: the alpa branch says the tradition REMOVES the dosha",
+     "src/astro_ai/matching.py",
+     '"dosha slight in this case — reduced, not removed."',
+     '"dosha removed entirely in this case."',
+     "test_the_alpa_branch_says_reduced_and_never_removed"),
+
+    ("#397 QA: the alpa grading is inverted (no fixture reached this branch at all)",
+     "src/astro_ai/matching.py",
+     "            if g_pn != b_pn:\n                alpa = True",
+     "            if g_pn == b_pn:\n                alpa = True",
+     "test_the_alpa_branch_says_reduced_and_never_removed"),
+
+    ("#397 QA: a same-Nadi pair is awarded 8/8 (18.0 Avara -> 26.0 Madhyam, 681 tests passed)",
+     "src/astro_ai/matching.py",
+     'name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=0.0,',
+     'name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=8.0,',
+     "test_a_nadi_dosha_awards_no_points_however_it_is_graded"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

@@ -1049,11 +1049,26 @@ def _nadi_dosha(g_moon, b_moon, g_nak: str, b_nak: str) -> NadiDosha:
         note = f"Both Moons share the {g_n} Nadi — Nadi dosha is present."
     if alpa:
         note += " One mitigation applies, below."
+    # SCOPED BY GRADE, because the exemption itself is. The source reads
+    # मध्यनाडी छोड़के पार्श्वनाडियोंका दोष… -- "EXCLUDING Madhya Nadi, the
+    # side-Nadi dosha is waived south of the Godavari and for Kshatriyas and
+    # others". An unscoped "the tradition records exemptions, which we do not
+    # apply" told exactly the couples the text excludes from the exemption that
+    # one existed and we had declined it, directly beside a panel reading
+    # `Madhya · Gravest form` -- and beside `_NADI_UNEVALUATED`, which IS
+    # scoped, so the same claim appeared twice in one panel at two different
+    # scopes. That is a milder form of the two-sentences-that-cannot-both-be-
+    # true defect this change exists to remove, introduced while removing it.
     note += (
         " Nadi is not among the Bhakoot parihāras and is required to be sound "
-        "alongside them; the tradition also records exemptions by region and "
-        "community (shown below), which we do not apply, and prescribes shanti "
-        "where it is present."
+        "alongside them, and the tradition prescribes shanti where it is present."
+    )
+    note += (
+        " The regional and community exemptions it records do not extend to the "
+        "Madhya Nadi."
+        if grave else
+        " It also records exemptions by region and community (shown below), "
+        "which we do not apply."
     )
 
     return NadiDosha(
