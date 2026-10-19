@@ -53,8 +53,21 @@ def _no_cache():
     ops_data._live_cache = None
 
 
-def _pr(number: int, merged_at: str | None) -> dict:
+def _pr(number: int, merged_at: str | None,
+        closed_at: str = "2026-10-17T20:00:00Z") -> dict:
+    """A row from `/pulls?state=closed`.
+
+    `closed_at` IS ALWAYS PRESENT, and defaults to a timestamp inside the day,
+    because that is what the endpoint returns: every row from `state=closed`
+    carries one, merged or not. Omitting it made
+    `test_an_unmerged_closed_pr_is_not_shipped` unable to fail -- the obvious
+    wrong implementation, `merged_at or closed_at`, counts every closed PR as
+    shipped and passed against a fixture where `closed_at` did not exist.
+    Proved by mutation, which reported MISSED. Same class as the tied-sort-key
+    defect in #419: the fixture, not the assertion, was what could not fail.
+    """
     return {"number": number, "title": f"PR {number}", "merged_at": merged_at,
+            "closed_at": closed_at,
             "html_url": f"https://github.com/x/y/pull/{number}"}
 
 
@@ -100,7 +113,14 @@ def test_a_pr_merged_before_the_ist_day_started_is_not_shipped_today(monkeypatch
 
 
 def test_an_unmerged_closed_pr_is_not_shipped(monkeypatch):
-    _stub(monkeypatch, [_pr(1, None)], [])
+    """Closed is not merged, and the row carries `closed_at` to prove it.
+
+    The fixture is the whole test: `merged_at` is None while `closed_at` sits
+    INSIDE the day, so an implementation reading `merged_at or closed_at` --
+    the natural wrong one, since every row here is closed -- counts this PR and
+    fails. See `_pr`.
+    """
+    _stub(monkeypatch, [_pr(1, None, closed_at="2026-10-17T20:00:00Z")], [])
     assert ops_today.fetch_today("x/y", DAY_START, timeout=1)["shipped"] == []
 
 
@@ -352,3 +372,233 @@ def test_one_render_costs_three_api_calls_and_a_second_render_costs_none(monkeyp
     assert len(urls) == 3, urls
     ops_data.snapshot(now=datetime(2026, 10, 18, 6, 1, tzinfo=timezone.utc))
     assert len(urls) == 3, "the 300s caches are what keep this inside the budget"
+
+
+# --------------------------------------------------------------------------- #
+# Round 1 QA (2026-10-18) found eleven defects in the code above. These are the
+# gates for the ones that were real, each named after the wrong behaviour it
+# forbids rather than the right one it allows. Every one of them was MISSED by
+# the suite as it stood -- a mutation proving each is in
+# `mutate_behaviour_suite.py` beside it.
+# --------------------------------------------------------------------------- #
+
+def test_the_live_cache_does_not_survive_ist_midnight(monkeypatch):
+    """Keyed on the clock alone, the entry outlives the day it describes.
+
+    00:00 IST is 18:30 UTC, i.e. the middle of a UTC working afternoon, so the
+    rollover is not an hour anyone would catch this in. For up to CACHE_TTL
+    after midnight the tile reported YESTERDAY's merges and failures under the
+    word "today", with the `live` badge beside them.
+    """
+    yday = DAY_START - timedelta(days=1)
+    _stub(monkeypatch, [], [_run(1, "agent-work.yml", "failure",
+                                 "2026-10-16T19:00:00Z")])
+    before = ops_today.fetch_today("x/y", yday, timeout=1)
+    ops_data._today_cache = (ops_data.time.monotonic(), yday.isoformat(), before)
+    assert len(ops_data._live_today(yday)["failed"]) == 1, "same day: cached"
+    # One second later in wall-clock terms, but a different IST day.
+    fresh = ops_data._live_today(DAY_START)
+    assert fresh is None or fresh["since"] == SINCE, \
+        "the entry for the previous IST day was served for today"
+
+
+def test_a_failure_outside_the_four_old_exception_types_does_not_500_the_page(
+        monkeypatch):
+    """`http.client.IncompleteRead` is not URLError, OSError, ValueError or KeyError.
+
+    A truncated response is the ordinary failure of an HTTP read over a flaky
+    link. Under the old tuple it escaped `_live_today`, escaped `snapshot()`,
+    and took down the whole control room -- the one page you open to find out
+    what is broken -- to protect a freshness nicety on one tile.
+    """
+    import http.client
+
+    def boom(*a, **k):
+        raise http.client.IncompleteRead(b"half")
+
+    monkeypatch.setattr(ops_today, "fetch_today", boom)
+    monkeypatch.setattr(ops_data, "LIVE_TODAY", True)
+    assert ops_data._live_today(DAY_START) is None
+
+
+def test_a_failing_live_path_is_not_retried_on_every_render(monkeypatch):
+    """None is cached too, or an outage costs one request per page view.
+
+    The overwhelmingly likely failure is a 403 from the 60/hour unauthenticated
+    budget on a shared egress IP. Re-asking every render is what keeps that
+    budget spent -- the outage becomes self-sustaining.
+    """
+    calls = []
+
+    def boom(*a, **k):
+        calls.append(1)
+        raise urllib.error.URLError("rate limited")
+
+    monkeypatch.setattr(ops_today, "fetch_today", boom)
+    assert ops_data._live_today(DAY_START) is None
+    assert ops_data._live_today(DAY_START) is None
+    assert len(calls) == 1, "the failure was re-asked instead of remembered"
+
+
+def test_shipped_and_failed_are_newest_first(monkeypatch):
+    """The drill-down lists them in order and nothing asserted it.
+
+    Reversed, the page reads as though the oldest event of the day were the
+    most recent thing that happened.
+    """
+    _stub(monkeypatch,
+          [_pr(1, "2026-10-17T19:00:00Z"), _pr(2, "2026-10-18T09:00:00Z")],
+          [_run(1, "agent-work.yml", "failure", "2026-10-17T19:00:00Z"),
+           _run(2, "agent-merge.yml", "failure", "2026-10-18T09:00:00Z")])
+    got = ops_today.fetch_today("x/y", DAY_START, timeout=1)
+    assert [s["pr"] for s in got["shipped"]] == [2, 1]
+    assert [f["run"] for f in got["failed"]] == [2, 1]
+
+
+def test_the_live_cache_expires(monkeypatch):
+    """Without the TTL the tiles freeze at the first render of the process."""
+    _stub(monkeypatch, [], [])
+    first = ops_data._live_today(DAY_START)
+    assert ops_data._live_today(DAY_START) is first
+    stamp, day, doc = ops_data._today_cache
+    ops_data._today_cache = (stamp - ops_data.CACHE_TTL - 1, day, doc)
+    assert ops_data._live_today(DAY_START) is not first, "the TTL was ignored"
+
+
+def test_a_truncated_runs_page_is_admitted_rather_than_undercounted(monkeypatch):
+    """Overflow must not read as a quiet zero.
+
+    Measured 2026-10-18: page 1 spanned 31 hours against `total_count` 139,
+    with 51 rows inside the IST day two-thirds through it. Under 2x headroom,
+    and the failure mode is a SILENT UNDERCOUNT -- which is this module's own
+    bug class, one layer up.
+    """
+    # Every page full, and every row inside the day: the pager can never reach
+    # back past `since`, so it must stop at MAX_PAGES and say so.
+    full = [_run(i, "agent-work.yml", "success", "2026-10-18T09:00:00Z")
+            for i in range(ops_today.PER_PAGE)]
+    urls = _stub(monkeypatch, [], full)
+    got = ops_today.fetch_today("x/y", DAY_START, timeout=1)
+    assert got["truncated"] is True
+    runs_urls = [u for u in urls if "/actions/runs" in u]
+    assert len(runs_urls) == ops_today.MAX_PAGES, runs_urls
+    assert "page=2" in runs_urls[1]
+
+
+def test_an_ordinary_day_still_costs_one_request_per_endpoint(monkeypatch):
+    """The pager must not turn the common case into MAX_PAGES requests.
+
+    A short page means the endpoint ran out; there is nothing unfetched.
+    """
+    urls = _stub(monkeypatch, [_pr(1, "2026-10-18T09:00:00Z")],
+                 [_run(1, "agent-work.yml", "failure", "2026-10-18T09:00:00Z")])
+    got = ops_today.fetch_today("x/y", DAY_START, timeout=1)
+    assert got["truncated"] is False
+    assert len(urls) == 2, urls
+
+
+def test_every_workflow_is_either_a_loop_leg_or_declared_not_one():
+    """The two sets must be exhaustive over `.github/workflows/`.
+
+    `LOOP_WORKFLOWS` used to mirror `report_loop_outcomes.WORKFLOW`, which is
+    itself a partial list -- so the mirror inherited six blind spots. The worst
+    was `agent-steward.yml`, whose stated job is to notice that the pipeline
+    has stopped: its own failure was invisible on the tile built to show the
+    pipeline stopping.
+
+    This is the sync guard. A new workflow fails here instead of silently never
+    being counted. It lives in the tests because the app image ships `src/` and
+    three files, not `.github/`.
+    """
+    on_disk = {p.name for p in (ROOT / ".github" / "workflows").glob("*.yml")}
+    declared = set(ops_today.LOOP_WORKFLOWS) | set(ops_today.NOT_LOOP_WORKFLOWS)
+    assert on_disk - declared == set(), \
+        "a workflow is neither a loop leg nor declared not one"
+    assert declared - on_disk == set(), "a declared workflow no longer exists"
+    assert not set(ops_today.LOOP_WORKFLOWS) & set(ops_today.NOT_LOOP_WORKFLOWS)
+
+
+def test_the_steward_counts_as_a_loop_leg(monkeypatch):
+    """Named on its own, because it is the one that makes the rule matter."""
+    _stub(monkeypatch, [],
+          [_run(1, "agent-steward.yml", "failure", "2026-10-18T09:00:00Z")])
+    got = ops_today.fetch_today("x/y", DAY_START, timeout=1)
+    assert [f["run"] for f in got["failed"]] == [1]
+
+
+def test_the_fallback_alert_does_not_render_a_literal_question_mark():
+    """Snapshot rows are CYCLES and carry no `workflow` key.
+
+    The live wording joined `f.get("workflow") or "?"` over them, so the
+    fallback -- the path taken whenever the API is unreachable, i.e. exactly
+    when someone is reading this page to find out what broke -- printed "?" to
+    the reader.
+    """
+    loop = {"ok": True, "today_live": False, "today_failed": [{"outcome": "failed"}],
+            "rows": [], "outcomes": {}, "attribution": {}, "days": [],
+            "latest": None, "today": [], "today_shipped": []}
+    alerts = ops_data._alerts(loop=loop, issues={"rows": []},
+                              agents={}, app={}, ages={})
+    failed = [a for a in alerts if "failed today" in a["title"]]
+    assert failed, "the fallback alert did not fire"
+    assert "?" not in failed[0]["detail"]
+    assert "cycle" in failed[0]["title"]
+
+
+def test_the_ops_page_does_not_block_the_event_loop(monkeypatch):
+    """`snapshot()` makes up to three blocking urllib calls at 4s each.
+
+    Awaited inline in a coroutine that is up to 12s of the whole single-process
+    app serving nobody, not 12s of one request.
+    """
+    import asyncio
+    import os
+    from fastapi.testclient import TestClient
+    from astro_ai.main import app
+    from astro_ai.routes import deps
+
+    # NOT the thread NAME. Under TestClient the loop does not necessarily run
+    # on MainThread, so a name comparison passes whether or not the call was
+    # offloaded -- the first version of this test asserted exactly that and the
+    # mutation harness reported MISSED. The question is not which thread ran
+    # it, it is whether that thread had a live event loop to block.
+    loop_thread = {}
+    real = ops_data.snapshot
+
+    def spy(*a, **k):
+        try:
+            asyncio.get_running_loop()
+            loop_thread["on_the_loop"] = True
+        except RuntimeError:
+            loop_thread["on_the_loop"] = False
+        return real(*a, **k)
+
+    monkeypatch.setattr(ops_data, "LIVE_ISSUES", False)
+    monkeypatch.setattr(ops_data, "LIVE_TODAY", False)
+    monkeypatch.setattr(ops_data, "snapshot", spy)
+    pw = os.environ.get("ADMIN_PASSWORD", deps._ADMIN_DEV_FALLBACK)
+    r = TestClient(app).get("/admin/ops", auth=("admin", pw))
+    assert r.status_code == 200
+    assert loop_thread["on_the_loop"] is False, \
+        "snapshot() made its blocking calls on a thread with a running loop"
+
+
+def test_the_page_tells_the_drill_down_which_shape_the_rows_are(monkeypatch):
+    """`today_live` picks the row renderer; nothing noticed if it was wrong.
+
+    Live rows are PRs and workflow runs; fallback rows are attributed cycles.
+    Hardcode the flag and the drill-down renders PR dicts through the cycle
+    template -- a panel of blanks, with no error anywhere.
+    """
+    import os
+    from fastapi.testclient import TestClient
+    from astro_ai.main import app
+    from astro_ai.routes import deps
+
+    _stub(monkeypatch, [_pr(1, "2026-10-18T09:00:00Z")], [])
+    monkeypatch.setattr(ops_data, "LIVE_TODAY", True)
+    monkeypatch.setattr(ops_data, "LIVE_ISSUES", False)
+    pw = os.environ.get("ADMIN_PASSWORD", deps._ADMIN_DEV_FALLBACK)
+    body = TestClient(app).get("/admin/ops", auth=("admin", pw)).text
+    assert '"today_live": true' in body.lower().replace(" :", ":"), \
+        "the live flag did not reach the page"

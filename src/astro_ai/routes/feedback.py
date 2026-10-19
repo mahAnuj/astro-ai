@@ -12,6 +12,7 @@ by its absolute name; a relative import here would self-import and fail obscurel
 from __future__ import annotations
 
 import html as _html
+import logging
 import os
 
 from fastapi import APIRouter, Form, Request
@@ -60,6 +61,11 @@ async def submit_feedback(
         # nobody being told, and the first symptom would be noticing months
         # later that nothing had been read. The email block immediately below
         # already logs its own failure; this now matches it.
+        #
+        # `logging` is imported at MODULE scope on purpose (#408). It used to be
+        # imported inside the email `except` below, which made it function-local
+        # for the whole of this handler, so THIS line raised UnboundLocalError
+        # and a saved submission came back as a 500.
         logging.getLogger(__name__).warning(
             "feedback Telegram notify failed (feedback itself was saved): %s", err
         )
@@ -116,7 +122,6 @@ async def submit_feedback(
             )
             email_sender.send(admin_to, subject=f"[Shubh Bhagya feedback] {label}", html=html)
     except Exception as err:
-        import logging
         logging.getLogger(__name__).warning("admin feedback notification failed: %s", err)
 
     return JSONResponse({"ok": True})

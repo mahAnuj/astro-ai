@@ -21,6 +21,7 @@ Absolute imports only.
 
 from __future__ import annotations
 
+import asyncio
 import json
 
 from fastapi import APIRouter, Depends, Request
@@ -185,7 +186,12 @@ async def admin_ops(request: Request, window: str = "") -> HTMLResponse:
         days = int(window)
     except ValueError:
         days = 0
-    ops = ops_data.snapshot(app_days=days)
+    # OFF THE EVENT LOOP. `snapshot()` is synchronous and now makes up to three
+    # blocking `urllib` calls at OPS_HTTP_TIMEOUT (4s) each -- awaited inline in
+    # a coroutine that is 12s of a single-process app serving nobody, not 12s of
+    # this request. #353 introduced the pattern with one call; this page has
+    # three, so it is moved rather than documented.
+    ops = await asyncio.to_thread(ops_data.snapshot, app_days=days)
     L, I = ops["loop"], ops["issues"]
     client = {
         "repo": "mahAnuj/astro-ai",

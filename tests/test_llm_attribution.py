@@ -247,6 +247,13 @@ def test_describe_store_names_the_bucket_or_the_local_dir(monkeypatch, tmp_path)
 
 def _ops_page(client, monkeypatch, tmp_path):
     monkeypatch.setattr(ops_data, "LIVE_ISSUES", False)
+    # AND the today tiles. Rendering /admin/ops goes down the live path for
+    # both, and `conftest.py`'s hermeticity guard only pins `geocode_place` --
+    # nothing stops `urlopen`, so without this the behaviour suite spends the
+    # runner's 60/hour GitHub budget and depends on a network it is documented
+    # not to use. Found by QA on #418 with a `urlopen` recorder, not by a
+    # failing test: a real request that succeeds looks exactly like no request.
+    monkeypatch.setattr(ops_data, "LIVE_TODAY", False)
     monkeypatch.setenv("OPS_MEASUREMENTS_DIR", str(tmp_path / "none"))
     ops_data._cache.clear()
     ops_data._app_cache.clear()
