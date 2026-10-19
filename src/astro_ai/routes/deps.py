@@ -31,6 +31,7 @@ import time as _time
 from datetime import date
 from pathlib import Path
 
+import jinja2
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -189,7 +190,25 @@ def _asset_fingerprint(rel_path: str) -> str:
         return "0"
 
 
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+# Autoescape is PINNED here, not inherited (#409). Starlette's own default for
+# `directory=` happens to be `jinja2.select_autoescape()` — escape .html/.htm/.xml
+# — and that default is the only thing between a visitor's `<script>` in a
+# feedback `message`/`page`/`ua` and the owner's browser at /admin/feedback.
+# Nothing asserted it; a dependency bump or an `autoescape=False` would have
+# kept every gate green. tests/test_autoescape_pinned.py asserts it now.
+#
+# The extension list is spelled out to reproduce the inherited behaviour
+# byte-for-byte, NOT to widen it: `.svg` is deliberately absent because
+# cosmic_card.svg has always rendered unescaped (select_autoescape() does not
+# list it) and changing that would alter shipped output. See ARCHITECTURE.md.
+templates = Jinja2Templates(env=jinja2.Environment(
+    loader=jinja2.FileSystemLoader(str(TEMPLATES_DIR)),
+    autoescape=jinja2.select_autoescape(
+        enabled_extensions=("html", "htm", "xml"),
+        default_for_string=True,
+        default=False,
+    ),
+))
 # Expose i18n to every template as `t(key, **kwargs)`. Templates pass the
 # current `lang` (also injected per-request) into the call.
 templates.env.globals["t"] = _i18n_translate

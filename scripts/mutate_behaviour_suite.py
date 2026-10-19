@@ -1093,6 +1093,39 @@ MUTATIONS = [
      'measured["natal+payload"] = (n_en + user, n_hi + user)',
      'measured["natal+payload"] = (n_en, n_hi)',
      "test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt"),
+
+    # #409: visitor text at /admin/feedback is protected by autoescape ALONE.
+    ("#409: autoescape turned off in the real environment",
+     "src/astro_ai/routes/deps.py",
+     '    autoescape=jinja2.select_autoescape(\n'
+     '        enabled_extensions=("html", "htm", "xml"),\n'
+     '        default_for_string=True,\n'
+     '        default=False,\n'
+     '    ),\n',
+     '    autoescape=False,\n',
+     "test_autoescape_is_on_for_html_templates"),
+
+    ("#409: .html dropped from the autoescape extension list",
+     "src/astro_ai/routes/deps.py",
+     'enabled_extensions=("html", "htm", "xml"),',
+     'enabled_extensions=("htm", "xml"),',
+     "test_a_quote_and_angle_brackets_cannot_leave_the_mailto_attribute"),
+
+    ("#409: |safe on the User-Agent at /admin/feedback (the field nobody mentions)",
+     "src/astro_ai/templates/admin_feedback.html",
+     "{{ e.ua }}", "{{ e.ua | safe }}",
+     "test_feedback_templates_use_no_escape_hatch_at_all"),
+
+    ("#409: |safe on the email inside the mailto: attribute",
+     "src/astro_ai/templates/admin_feedback.html",
+     'href="mailto:{{ e.email }}"', 'href="mailto:{{ e.email | safe }}"',
+     "test_no_template_renders_a_visitor_field_through_an_escape_hatch"),
+
+    ("#409: the scanner stops matching |safe (the check itself goes blind)",
+     "tests/test_autoescape_pinned.py",
+     '_UNSAFE = re.compile(r"\\|\\s*(?:safe|markup)\\b|\\bMarkup\\s*\\(")',
+     '_UNSAFE = re.compile(r"\\|\\s*(?:safe_never|markup)\\b|\\bMarkup\\s*\\(")',
+     "test_the_scanner_catches_each_escape_hatch"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
