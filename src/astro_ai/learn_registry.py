@@ -2048,8 +2048,7 @@ ARTICLES: tuple[Article, ...] = (
             '• Hamsa (Jupiter): Sagittarius/Pisces/Cancer in kendra — wisdom, dharma, scholarly fame\n'
             '• Malavya (Venus): Taurus/Libra/Pisces in kendra — beauty, luxury, artistic success, marital happiness\n'
             '• Sasa (Saturn): Capricorn/Aquarius/Libra in kendra — discipline, leadership of multitudes, longevity\n'
-            '• Each grants LIFELONG signature qualities of that planet — not period-bound\n'
-            "• Effects concentrate in that planet's Mahadasha"
+            '• Each grants LIFELONG signature qualities of that planet — not period-bound'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2808,7 +2807,7 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "Can Rahu remedies fix my addiction?", "a": "Remedies are a support layer, not a substitute for professional care. Rahu-driven addictions (substances, phone/gaming, compulsive behaviours) need therapy + medical support if severe. Remedies help by reducing the underlying restless craving over time."},
         ),
         llm_summary=(
-            'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhram Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) service to outsiders/marginalised/animals, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black gram/urad daal, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Anti-exploitation: legitimate Trimbakeshwar Nagbali ₹5-25K; anything quoted in lakhs is scam'
+            'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhram Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) pilgrimage or research donation, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black gram/urad daal, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Anti-exploitation: legitimate Trimbakeshwar Nagbali ₹5-25K; anything quoted in lakhs is scam'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
