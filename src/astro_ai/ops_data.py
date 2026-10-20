@@ -378,9 +378,18 @@ def _loop_view(doc: dict | None, today_ist: str,
         # fallback and are NOT merged with the live ones -- two sources counting
         # different units into one tile is how a number stops meaning anything.
         "today_live": live_today is not None,
-        "today_shipped": (live_today["shipped"] if live_today is not None
+        # `.get` on this path too, finishing the job the `today_truncated`
+        # comment below started. These two read `live_today["shipped"]` while
+        # the no-snapshot branch above read `.get(..., [])` off the same dict,
+        # so the two branches disagreed about how much they trusted it — and
+        # the branch that trusted was the one that runs on every ordinary
+        # render. `_loop_view` is called from `snapshot()`, whose docstring is
+        # "Never raises", OUTSIDE any try: a KeyError here is not a blank tile,
+        # it is a 500 on the whole control room. Blanking one tile is the
+        # failure mode this module already chose everywhere else.
+        "today_shipped": (live_today.get("shipped", []) if live_today is not None
                           else [r for r in today if r["outcome"] == "shipped"]),
-        "today_failed": (live_today["failed"] if live_today is not None
+        "today_failed": (live_today.get("failed", []) if live_today is not None
                          else [r for r in today if r["outcome"] in ("failed", "unknown")]),
         # A FLOOR, NOT A COUNT, when this is True. `fetch_today` spent MAX_PAGES
         # on at least one endpoint and stopped while rows inside the day were
@@ -448,7 +457,27 @@ def _issues_view(doc: dict | None, today_ist: str, *, live: bool = False,
     it is showing is the failure #353 exists to fix.
     """
     if not doc or not isinstance(doc.get("rows"), list):
-        return {"ok": False, "rows": [], "live": False, "fell_back": fell_back}
+        # EVERY KEY THE OK PATH RETURNS IS PRESENT HERE, with an empty value —
+        # the identical rule `_loop_view`'s zero-state states above, in ten
+        # lines, after it 500'd the whole page. It was not carried across to
+        # the sibling view, and the short version here cost the same failure:
+        # `routes/admin.py:197` is `I["filed_today"]`, so an unreadable backlog
+        # raised `KeyError: 'filed_today'` and /admin/ops returned 500 rather
+        # than one blank panel.
+        #
+        # Reachable in production, 2026-10-20: the container ships no
+        # `measurements/` directory, so `issues.json` arrives over HTTPS from
+        # raw.githubusercontent.com and the live backlog from api.github.com —
+        # BOTH GitHub. One GitHub outage takes out the fallback and the live
+        # read together, `issues_doc` is None, and the control room dies of
+        # exactly the event it exists to report. Found by making the behaviour
+        # suite hermetic: the two tests that rendered this page had been
+        # fetching the real file over the network, so the degraded branch had
+        # never once run under test.
+        return {"ok": False, "generated_at": None, "live": False,
+                "fell_back": fell_back, "open": 0, "rows": [], "with_ask": 0,
+                "by_priority": {}, "by_area": {}, "by_type": {},
+                "blocked": [], "filed_today": []}
     rows = doc["rows"]
     filed_today = [r for r in rows
                    if (d := _ist(r.get("created"))) and d.strftime("%Y-%m-%d") == today_ist]
@@ -612,7 +641,13 @@ def _cost_view(doc: dict | None, shipped_30d: int) -> dict:
     page says "at least $X, plus N items with no readable figure".
     """
     if not doc or not isinstance(doc.get("rows"), list):
-        return {"ok": False, "rows": []}
+        # Every key the ok path returns, with an empty value — see the same
+        # note on `_issues_view` and `_loop_view`. The template's `.arith`
+        # block reads `C.known_usd` unguarded, so the short version raised
+        # `UndefinedError: 'dict object' has no attribute 'known_usd'` and
+        # 500'd the page when `cost.json` was unreadable.
+        return {"ok": False, "rows": [], "known_usd": 0, "unknown": [],
+                "shipped_30d": shipped_30d, "per_issue_usd": None}
     rows = doc["rows"]
     known = [r for r in rows if isinstance(r.get("monthly_usd"), (int, float))]
     unknown = [r for r in rows if not isinstance(r.get("monthly_usd"), (int, float))]

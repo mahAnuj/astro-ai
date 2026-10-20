@@ -1108,8 +1108,8 @@ MUTATIONS = [
 
     ("#ops-today: a clock-killed run stops counting (cancelled is not failed)",
      "src/astro_ai/ops_today.py",
-     'FAILED_CONCLUSIONS = ("failure", "timed_out", "cancelled")',
-     'FAILED_CONCLUSIONS = ("failure", "timed_out")',
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral")',
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral", "cancelled")',
      "test_a_run_killed_by_the_clock_counts_as_failed"),
 
     ("#ops-today: the runs query is bounded by today's UTC date (drops 00:00-05:30 IST)",
@@ -1126,8 +1126,8 @@ MUTATIONS = [
 
     ("#ops-today: live rows are merged with the snapshot instead of replacing it",
      "src/astro_ai/ops_data.py",
-     '        "today_failed": (live_today["failed"] if live_today is not None',
-     '        "today_failed": (live_today["failed"] + [r for r in today] if live_today is not None',
+     '        "today_failed": (live_today.get("failed", []) if live_today is not None',
+     '        "today_failed": (live_today.get("failed", []) + [r for r in today] if live_today is not None',
      "test_live_rows_replace_the_snapshot_rather_than_joining_them"),
 
     ("#ops-today: the failure alert is gated on loop.json again (the broken part reports itself)",
@@ -1166,8 +1166,8 @@ MUTATIONS = [
 
     ("#ops-today: failed is sorted oldest-first",
      "src/astro_ai/ops_today.py",
-     '"failed": sorted(failed, key=lambda f: f["started"] or "", reverse=True)',
-     '"failed": sorted(failed, key=lambda f: f["started"] or "")',
+     '"failed": sorted(failed.values(), key=lambda f: f["started"] or "", reverse=True)',
+     '"failed": sorted(failed.values(), key=lambda f: f["started"] or "")',
      "test_shipped_and_failed_are_newest_first"),
 
     ("#ops-today: the live cache never expires (the tiles freeze for the process)",
@@ -1263,6 +1263,185 @@ MUTATIONS = [
      "fell_back=LIVE_TODAY and live_today is None)",
      "fell_back=False)",
      "test_a_programming_error_in_the_live_path_raises_an_alert"),
+
+    # ---- QA round 3 on #418 (2026-10-20). Twelve guard gaps, each one proved
+    # ---- by a hand-built mutant that survived the whole suite AND the 179-row
+    # ---- sweep. Their shared shape, worth stating once: every one of them
+    # ---- pinned a TRANSPORT and not a USE. `fetch_today` was tested against a
+    # ---- day start handed to it already correct, so nothing tested the line
+    # ---- that COMPUTES it; `truncated` was tested as a dict key, so nothing
+    # ---- tested the badge; `today_live` was tested as a serialised JSON
+    # ---- field, so nothing tested the branch that picks a renderer from it.
+
+    ("#ops-today r3 G1: the IST day start is computed in UTC (THE original "
+     "boundary bug, at the caller this time)",
+     "src/astro_ai/ops_data.py",
+     "    day_start = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)",
+     "    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)",
+     "test_the_page_computes_the_day_start_in_ist_not_in_utc"),
+
+    ("#ops-today r3 G1: the date printed beside the tiles is the UTC one",
+     "src/astro_ai/ops_data.py",
+     '    today_ist = now_ist.strftime("%Y-%m-%d")',
+     '    today_ist = now.strftime("%Y-%m-%d")',
+     "test_the_day_start_handed_to_the_api_is_the_one_the_page_prints"),
+
+    ("#ops-today r3 G2: the LIVE_TODAY kill switch stops switching anything",
+     "src/astro_ai/ops_data.py",
+     "    live_today = _live_today(day_start.astimezone(timezone.utc)) if LIVE_TODAY else None",
+     "    live_today = _live_today(day_start.astimezone(timezone.utc))",
+     "test_pinning_the_tiles_to_the_snapshot_makes_no_api_call_and_is_not_a_fallback"),
+
+    ("#ops-today r3 G2: the behaviour suite can reach the network again",
+     "tests/conftest.py",
+     '    monkeypatch.setattr(urllib.request, "urlopen", _blocked)',
+     "    assert _blocked",
+     "test_the_behaviour_suite_cannot_reach_the_network"),
+
+    ("#ops-today r3 G3: the live-BACKLOG catch narrows back to four types",
+     "src/astro_ai/ops_data.py",
+     "    except Exception as exc:  # noqa: BLE001\n"
+     "        # Broad for the same reason as `_live_today` below",
+     "    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:\n"
+     "        # Broad for the same reason as `_live_today` below",
+     "test_a_backlog_failure_outside_the_four_old_exception_types_does_not_500"),
+
+    ("#ops-today r3 G3: the backlog falls back to a stale count and no alert says so",
+     "src/astro_ai/ops_data.py",
+     '    if issues.get("fell_back"):',
+     "    if False:",
+     "test_a_backlog_programming_error_degrades_the_panel_rather_than_the_page"),
+
+    ("#ops-today r3 G4: the Shipped tile is badged `live` off the snapshot",
+     "src/astro_ai/templates/admin_ops.html",
+     "{% if L.today_live %}<span class=\"age\">live{% if L.shipped_truncated %}, at least{% endif %}</span>",
+     "{% if True %}<span class=\"age\">live{% if L.shipped_truncated %}, at least{% endif %}</span>",
+     "test_the_shipped_tile_says_live_only_when_it_is_live"),
+
+    ("#ops-today r3 G4: the Failed-today fallback drops the agent-work-only caveat",
+     "src/astro_ai/templates/admin_ops.html",
+     "agent-work only, as of {{ ops.ages.Delivery.text }}",
+     "as of {{ ops.ages.Delivery.text }}",
+     "test_the_failed_tile_fallback_says_it_counts_agent_work_only"),
+
+    ("#ops-today r3 G4: the Filed-today source badge is deleted outright",
+     "src/astro_ai/templates/admin_ops.html",
+     '      <span class="foot">new issues opened<br>\n'
+     '        {% if I.live %}<span class="age">live</span>\n'
+     '        {% else %}<span class="age {{ \'stale\' if ops.ages.Backlog.stale }}">'
+     'as of {{ ops.ages.Backlog.text }}</span>{% endif %}</span>',
+     '      <span class="foot">new issues opened</span>',
+     "test_the_filed_tile_carries_its_own_source_badge"),
+
+    ("#ops-today r3 G5: the drill-down hardcodes the cycle renderer (a panel of blanks)",
+     "src/astro_ai/templates/admin_ops.html",
+     '                      D.today_live ? "pr" : "cycle"],',
+     '                      "cycle"],',
+     "test_the_drill_down_picks_its_row_renderer_from_the_live_flag"),
+
+    ("#ops-today r3 G5: every PR in the sheet links to the same pull request",
+     "src/astro_ai/templates/admin_ops.html",
+     'link(REPO + "/pull/" + r.pr, "PR diff &rarr;")',
+     'link(REPO + "/pull/418", "PR diff &rarr;")',
+     "test_the_drill_down_links_a_merged_pr_by_its_own_number"),
+
+    ("#ops-today r3 G6: no snapshot AND no API renders three tiles reading `0 ... live`",
+     "src/astro_ai/ops_data.py",
+     '                "today_live": live_today is not None,',
+     '                "today_live": True,',
+     "test_no_snapshot_and_no_api_is_an_absence_not_three_live_zeroes"),
+
+    ("#ops-today r3 G7: the fallback alert loses the whole explanation",
+     "src/astro_ai/ops_data.py",
+     '                "From the committed snapshot, not live, so this counts "\n'
+     '                "agent-work only and may be out of date. A cycle that did not "\n'
+     '                "deliver leaves its issue untouched.")',
+     '                "A cycle that did not deliver leaves its issue untouched.")',
+     "test_the_fallback_alert_says_the_count_is_stale_and_agent_work_only"),
+
+    ("#ops-today r3 G8: Filed today borrows the delivery panel's live flag",
+     "src/astro_ai/routes/admin.py",
+     '        "filed_live": I.get("live", False),',
+     '        "filed_live": True,',
+     "test_the_filed_drill_down_flag_follows_the_backlog_not_the_delivery_read"),
+
+    ("#ops-today r3 G9: the page cap goes to 99 (84/hour becomes 2,400/hour)",
+     "src/astro_ai/ops_today.py",
+     "MAX_PAGES = 3",
+     "MAX_PAGES = 99",
+     "test_a_pathological_day_is_capped_at_three_pages_per_endpoint"),
+
+    ("#ops-today r3 G9: per_page drops to 30 (an ordinary day becomes 'at least')",
+     "src/astro_ai/ops_today.py",
+     "PER_PAGE = 100",
+     "PER_PAGE = 30",
+     "test_each_page_asks_for_a_hundred_rows"),
+
+    ("#ops-today r3 G9: the day-boundary stop rule never fires",
+     "src/astro_ai/ops_today.py",
+     "        if oldest(batch[-1]) < since:\n"
+     "            return rows, False          # paged back past the day start",
+     "        if False:\n"
+     "            return rows, False          # paged back past the day start",
+     "test_the_pager_stops_at_the_day_boundary_not_only_on_a_short_page"),
+
+    ("#ops-today r3 G9: a 403 body is accepted as an empty page (0/0/0, badged live)",
+     "src/astro_ai/ops_today.py",
+     "        if not isinstance(batch, list):\n"
+     "            raise ValueError(f\"{base.rsplit('/', 1)[-1]} did not return a list\")",
+     "        if not isinstance(batch, list):\n"
+     "            batch = []",
+     "test_a_page_that_is_not_a_list_raises_rather_than_counting_as_empty"),
+
+    ("#ops-today r3 G11: failed loses its cross-page distinctness",
+     "src/astro_ai/ops_today.py",
+     '        failed[rid if rid is not None else ("no-id", len(failed))] = {',
+     "        failed[(\"row\", len(failed))] = {",
+     "test_a_run_repeated_across_a_page_boundary_is_counted_once"),
+
+    ("#ops-today r3 G11: dedupe becomes a drop for a row with no id",
+     "src/astro_ai/ops_today.py",
+     '        failed[rid if rid is not None else ("no-id", len(failed))] = {',
+     "        failed[rid] = {",
+     "test_a_run_with_no_id_is_kept_rather_than_collapsed"),
+
+    ("#ops-today r3 G12: the COST paragraph goes back to the pre-pager 36/hour",
+     "src/astro_ai/ops_today.py",
+     "                                     = 84/hour",
+     "                                     = 36/hour",
+     "test_the_cost_paragraph_states_the_actual_worst_case"),
+
+    ("#ops-today r3 G15: the ok path trusts a key the degraded path does not",
+     "src/astro_ai/ops_data.py",
+     '        "today_shipped": (live_today.get("shipped", []) if live_today is not None',
+     '        "today_shipped": (live_today["shipped"] if live_today is not None',
+     "test_a_live_dict_missing_a_key_blanks_a_tile_rather_than_500ing_the_page"),
+
+    ("#ops-today r3 G10: the workflow exhaustiveness scan globs *.yml only",
+     "tests/test_ops_today_live.py",
+     '            if p.is_file() and p.suffix in (".yml", ".yaml")}',
+     '            if p.is_file() and p.suffix == ".yml"}',
+     "test_the_workflow_scan_sees_a_yaml_as_well_as_a_yml"),
+
+    # Two 500s found by making the suite hermetic, in the branch that had never
+    # once run under test because the tests rendering it were fetching the real
+    # files over the network. `_loop_view` already carried the rule, in ten
+    # lines, written after this exact failure; neither sibling inherited it.
+    ("#ops-today r3: the backlog zero-state drops keys (KeyError: 'filed_today')",
+     "src/astro_ai/ops_data.py",
+     '        return {"ok": False, "generated_at": None, "live": False,\n'
+     '                "fell_back": fell_back, "open": 0, "rows": [], "with_ask": 0,\n'
+     '                "by_priority": {}, "by_area": {}, "by_type": {},\n'
+     '                "blocked": [], "filed_today": []}',
+     '        return {"ok": False, "rows": [], "live": False, "fell_back": fell_back}',
+     "test_the_ops_page_survives_every_source_being_unreadable"),
+
+    ("#ops-today r3: the cost zero-state drops keys (UndefinedError: known_usd)",
+     "src/astro_ai/ops_data.py",
+     '        return {"ok": False, "rows": [], "known_usd": 0, "unknown": [],\n'
+     '                "shipped_30d": shipped_30d, "per_issue_usd": None}',
+     '        return {"ok": False, "rows": []}',
+     "test_the_ops_page_survives_every_source_being_unreadable"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

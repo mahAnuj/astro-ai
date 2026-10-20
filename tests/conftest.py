@@ -163,6 +163,57 @@ def _offline_geocode(monkeypatch):
                         lambda place: (19.0760, 72.8777, "Asia/Kolkata"))
 
 
+@pytest.fixture(autouse=True)
+def _no_outbound_http(monkeypatch):
+    """Make `urllib.request.urlopen` unreachable for EVERY test, always.
+
+    MEASURED, 2026-10-20 — the docstring at the top of this file has promised
+    "no network" since the suite was written, and `_offline_geocode` above says
+    in as many words that a guard which does not guard is worse than none. This
+    suite was making **16 real HTTPS requests to raw.githubusercontent.com per
+    run**, eight each from `test_llm_attribution.py::test_ops_says_it_is_
+    reading_a_local_dev_store` and `::test_ops_names_the_bucket_when_one_is_
+    configured` (loop/cost/issues/agents/ga4-daily/gsc-daily/gsc-trend-page/
+    gsc-trend-query.json). Recorded with a `urlopen` spy, because a real request
+    that succeeds looks exactly like no request.
+
+    The cause is a correct-looking local patch. `_ops_page` pins `LIVE_ISSUES`
+    and `LIVE_TODAY` off, which stops the two `api.github.com` calls, and then
+    sets `OPS_MEASUREMENTS_DIR` to a path that does not exist — which makes
+    `measurements_dir()` return None and drops every `_fetch` onto its HTTPS
+    branch instead. Round 1 removed 2 of 18 requests and recorded that the
+    suite no longer depended on a network it is documented not to use; 16
+    remained. So the claim is made true here rather than restated.
+
+    WHY A SUITE-WIDE FIXTURE AND NOT A THIRD LINE IN `_ops_page`. Both of
+    `_fetch`'s callers reach the network through a path no test mentions, and
+    the pattern of this defect is that the next test will not mention it
+    either: `/admin/ops` renders eight files, and nothing on the way there
+    reads as outbound I/O. An opt-in guard is the one a new test forgets, which
+    is exactly how the nine Nominatim tests got in.
+
+    `urllib.error.URLError` rather than an assertion, deliberately: it is what
+    an unreachable network actually raises, so a caller that is supposed to
+    degrade — `ops_data._fetch` returns None and logs, by contract — degrades,
+    and a caller that is not supposed to still fails. Tests that need a stubbed
+    GitHub patch the same attribute inside the test body and win, because
+    `monkeypatch` unwinds in LIFO order.
+
+    `httpx` (Brevo, the TestClient) and `google-cloud-storage` are untouched:
+    neither goes through `urllib`, and both are already stubbed where used.
+    """
+    import urllib.request
+
+    def _blocked(*a, **k):
+        import urllib.error
+        raise urllib.error.URLError(
+            "the behaviour suite is hermetic: no outbound HTTP. Stub "
+            "urllib.request.urlopen in your test if it needs a response."
+        )
+
+    monkeypatch.setattr(urllib.request, "urlopen", _blocked)
+
+
 @pytest.fixture
 def today_iso() -> str:
     return date.today().isoformat()
