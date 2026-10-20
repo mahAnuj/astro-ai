@@ -167,10 +167,24 @@ protect clause 1 of Standing ruling 4. Before you dispatch:
 1. **Is a cycle already running or queued?** `gh run list --workflow agent-work.yml
    --json status,databaseId`. If anything is `in_progress` or `queued`, dispatch nothing
    and say so. One is in flight; the stall may clear without you.
-2. **Did you already dispatch for this PR?** Look for your own prior comment on it. If
-   you did and the stall persists, **that is `steward-ineffective` and it goes to
-   `chief`** — not a second dispatch. Re-dispatching the same cycle hoping for a
-   different result is the same error as asking QA again for a better verdict.
+2. **Did you already dispatch for this PR, FOR THIS STALL KIND?** Look for your own prior
+   comment on it and read which kind it names. If you dispatched for *the same kind* and
+   the stall persists, **that is `steward-ineffective` and it goes to `chief`** — not a
+   second dispatch. Re-dispatching the same cycle hoping for a different result is the
+   same error as asking QA again for a better verdict.
+
+   **A DIFFERENT KIND IS NEW INFORMATION AND GETS ITS OWN DISPATCH.** This clause used to
+   read "your own prior comment on it", full stop, and that was wrong in a way that would
+   have fired the first time it mattered: on 2026-10-19 you commented on #410, #412, #418
+   and #419 saying you could not act, because no detector could see a `qa-fail` PR at all
+   until #435. Those four then became `qa-fail-unaddressed` and `qa-fail-refixed` — kinds
+   with actions you *can* perform — and a guard keyed on "any prior comment" would have
+   read your own admission of helplessness as a spent dispatch and sent all four to
+   `chief`. That is the treadmill this guard exists to prevent, caused by the guard.
+
+   Say in your comment which kind you are dispatching for, every time. A comment that does
+   not name its kind cannot be told apart from one that does by the next run — which is
+   you — and the next run will have to assume the worse case.
 3. **One dispatch per run, maximum.** If several stalls each want a cycle, take the one
    blocking the oldest finished work and say which others you left. A queue of four
    cycles at roughly fifty minutes each is most of a day's Actions budget, and clause 1
