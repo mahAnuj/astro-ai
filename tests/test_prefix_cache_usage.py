@@ -740,7 +740,7 @@ def test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means(
     _install_model(monkeypatch, [_usage(2363, cached=2304)])
     _chat()
     html = admin.get("/admin").text
-    assert "A dash has three causes" in html
+    assert "A dash has four causes" in html
     assert "not a short prompt" not in html, (
         "that was the absolute claim the table's own tooltip contradicted")
 
@@ -861,8 +861,9 @@ def test_the_unmeasurable_report_notice_names_the_benign_cause_and_forbids_the_h
     _chat()
     assert _agg()["reported_unmeasurable"] == 1
     html = admin.get("/admin").text
-    assert "non-Groq provider reporting its own cache" in html
-    assert "Do not add a non-Groq model to the" in html
+    text = _notice(html)
+    assert "non-Groq provider reporting its own cache" in text
+    assert "Do not add a non-Groq model to the reporting set" in text
 
 
 def test_a_malformed_stat_key_is_counted_and_logged_not_dropped_silently(
@@ -904,9 +905,17 @@ def test_the_skip_notice_survives_when_every_row_is_skipped(
     agg = llm_stats.range_summary(1)["aggregate"]
     assert agg["prefix_cache"] == {} and agg["prefix_cache_skipped_rows"] == 1
     html = admin.get("/admin").text
-    assert "written by an older schema and excluded" in html, (
+    assert "stored row(s) were excluded as unreadable" in html, (
         "when every row is skipped the table is absent, so the notice must not be "
         "inside the table's own {% if %}")
+    # The same clauses as the footnote's notice, in the total-loss variant
+    # (QA round 5): both causes of a skip are named, and "every row" is the claim
+    # that distinguishes this variant from the footnote's.
+    import html as _html
+    flat = re.sub(r"\s+", " ", _html.unescape(re.sub(r"<[^>]+>", "", html)))
+    assert ("(written by an older schema, or keyed in a shape this page does not "
+            "recognise) — which is every row in this window, so there is no table "
+            "to show") in flat
 
 
 def test_the_skip_warning_is_not_emitted_once_per_row_per_request(
@@ -971,6 +980,35 @@ def _seed(stats_dir, row, *, counts=None, route="ask",
         "prefix_cache": {key: {**llm_stats._PREFIX_ZERO, **row}},
     }))
     return llm_stats.range_summary(1)["aggregate"]
+
+
+# A coherent row in which calls != measurable != reported: 9 fresh calls, 7 of them
+# measurable silences on a reporting model, 2 reports on calls the rule calls
+# unmeasurable (so reported_unmeasurable == 2). Every clause of `_is_impossible`
+# holds, so a test using it cannot pass or fail on the anomaly flag.
+_GAP_ROW = {"calls": 9, "measurable": 7, "prompt_measurable": 7000,
+            "reported": 2, "prompt_reported": 2000, "cached_tokens": 1000,
+            "reported_unmeasurable": 2}
+
+
+def _notice(html: str) -> str:
+    """The prefix-cache footnote as the operator reads it: tags gone, entities
+    decoded, whitespace collapsed. Asserting on raw HTML pins line breaks and
+    `&ldquo;`, so a re-flowed paragraph read as a deleted claim (and a deleted
+    claim could hide behind a re-flow)."""
+    import html as _html
+    start = html.index("Two different caches")
+    para = html[start:html.index("</p>", start)]
+    return re.sub(r"\s+", " ", _html.unescape(re.sub(r"<[^>]+>", "", para))).strip()
+
+
+def _pc_cells(html: str, route: str) -> list[str]:
+    """Cells of `route` in the PREFIX-CACHE table, not the By-route one above it
+    (both have a row for most routes)."""
+    import html as _html
+    table = html[html.index("Provider-side prefix cache (Groq)"):]
+    cells = re.findall(r"<td\b.*?</td>", _row(table, route), flags=re.S)
+    return [_html.unescape(re.sub(r"<[^>]+>", "", c)).strip() for c in cells]
 
 
 def test_an_impossible_report_is_not_booked_as_a_measured_zero(stats_dir, monkeypatch):
@@ -1090,34 +1128,39 @@ def test_the_gap_against_by_route_is_counted_not_explained_away(admin, stats_dir
     guidance about a mismatch: it told the operator that a measured 400-call
     discrepancy six rows up in the same card was expected and meaningless.
 
-    The fixture is the real shape: a day with 407 calls in `counts` and a
-    prefix_cache row for only 7 of them, which is what a window spanning the
+    The fixture is the real shape: a day with 409 calls in `counts` and a
+    prefix_cache row for only 9 of them, which is what a window spanning the
     #396 deploy looks like. `skipped_rows` stays 0, so neither pre-existing
     notice fires -- that is why the gap needed its own number.
+
+    `calls` (9) and `measurable` (7) DIFFER on purpose (QA round 5, G-2). The
+    gap is by_route minus `calls`; with both at 7 a computation that subtracted
+    `measurable` instead rendered the same 400 and this test could not tell.
+    Now it would render 402.
     """
     key = "groq120|openai/gpt-oss-120b|ask"
-    agg = _seed(stats_dir, {"calls": 7, "measurable": 7, "prompt_measurable": 7000},
-                counts={key: 407})
+    agg = _seed(stats_dir, _GAP_ROW, counts={key: 409})
     assert agg["prefix_cache_skipped_rows"] == 0, (
         "the fixture must not trip the schema notice, or it cannot show that "
         "the gap was previously undisclosed")
-    assert agg["prefix_cache_unaccounted"] == {"ask": 400}
-    html = admin.get("/admin").text
-    assert "400 call(s) in &ldquo;By route&rdquo; above have no" in html \
-        or "400 call(s) in “By route” above have no" in html, (
-        "the 400-call gap is not stated anywhere on the page")
-    assert "never match anyway" not in html, (
+    e = agg["prefix_cache"]["ask"]
+    assert (e["calls"], e["measurable"]) == (9, 7), "fixture shape drifted"
+    assert agg["prefix_cache_unaccounted"] == {"ask": 400}, (
+        "409 in By route minus 9 CALLS is 400; minus 7 measurable would be 402")
+    text = _notice(admin.get("/admin").text)
+    assert "400 call(s) in “By route” above are not counted in Fresh calls here" in text, (
+        "the exact 400-call gap is not stated anywhere on the page")
+    assert "402 call(s)" not in text, "the gap was computed from `measurable`, not `calls`"
+    assert "never match anyway" not in text, (
         "the false caveat is back: the two lists ARE keyed the same way")
 
 
 def test_no_gap_is_claimed_when_the_two_lists_agree(admin, stats_dir):
     """The disclosure must mean something, so it must be absent when exact."""
     key = "groq120|openai/gpt-oss-120b|ask"
-    agg = _seed(stats_dir, {"calls": 7, "measurable": 7, "prompt_measurable": 7000},
-                counts={key: 7})
+    agg = _seed(stats_dir, _GAP_ROW, counts={key: 9})
     assert agg["prefix_cache_unaccounted"] == {}
-    assert "have no\n          prefix-cache row here" not in admin.get("/admin").text
-
+    assert "not counted in Fresh calls here" not in _notice(admin.get("/admin").text)
 
 def test_a_prompt_exactly_at_the_floor_is_measurable(stats_dir, monkeypatch):
     """BUG-5, round 4. `>=` -> `>` left the whole suite green.
@@ -1148,3 +1191,303 @@ def test_a_prompt_exactly_at_the_floor_is_measurable(stats_dir, monkeypatch):
     assert _agg()["measurable"] == 0, (
         "one token under the floor must not be measurable, or the floor is not "
         "a floor")
+
+
+# --- QA round 5 ----------------------------------------------------------------
+#
+# S-1 and S-2 were FALSE SENTENCES on a page that contradicted itself on one
+# screen:
+#
+#   S-1  the `reported_unmeasurable` notice told the operator a misreporting
+#        provider "needs no action" and that "its figure counts toward Hit
+#        rate". For an IMPOSSIBLE report both are false -- `record()` discards
+#        the figure (reported stays 0) and Hit rate renders a dash six columns
+#        to the left of the sentence. The counter holds TWO populations (a real
+#        report on an unmeasurable call; an impossible report) and cannot tell
+#        them apart WITHOUT a ninth `_PREFIX_ZERO` key (issue #431), so the copy
+#        states both and each clause must be true of the case it names.
+#   S-2  the gap sentence said the unaccounted calls "count toward Fresh calls
+#        above" -- the opposite of its definition (`by_route - pc.calls`) -- and
+#        said routes with a schema-skipped row have "no prefix-cache row" when
+#        the row exists and was excluded.
+#
+# The guards below hold EVERY factual clause of that notice area to the rendered
+# page: a seeded dashboard, the real route, and for each claim both the sentence
+# and the table cell it is about. A sentence-only assert passes when the data
+# changes under it; a cell-only assert passes when the sentence is rewritten to
+# say the opposite -- which is exactly what shipped.
+
+def _seed_both_causes(monkeypatch=None):
+    """2 genuine reports on a non-Groq model (route `ask`) and 3 impossible ones
+    on a Groq model (route `today`) -- distinct counts so a wrong sum or a
+    swapped route cannot hide behind symmetry.
+
+    Through `record()`, the function `chat()` calls with the 3-tuple
+    `_prefix_usage` returns: routes other than `ask` fail the quality gate on the
+    fake provider's canned text, and the real-path half is already driven by
+    test_an_impossible_report_is_not_booked_as_a_measured_zero."""
+    for _ in range(2):
+        llm_stats.record(provider="openai", model="gpt-4o", route="ask",
+                         prompt_tokens=5000, cached_tokens=4500)
+    for _ in range(3):
+        llm_stats.record(provider="groq120", model=CACHING_MODEL, route="today",
+                         prompt_tokens=1000, cached_tokens=None,
+                         reported_impossible=True)
+
+
+def _by_route_counts(html: str) -> dict[str, int]:
+    """The llm_stats card's "By route" list (a <ul>), which the gap sentence calls
+    "By route above". NOT the response-cache table that shares the heading."""
+    start = html.index('mb-2">By route</div>')
+    ul = html[start:html.index("</ul>", start)]
+    return {r: int(n) for r, n in re.findall(
+        r'<span class="text-bhagya-ink-soft">(.*?)</span>\s*<span[^>]*>(\d+)</span>', ul)}
+
+
+def test_the_unmeasurable_notice_sums_both_causes_into_its_count(
+        admin, stats_dir, monkeypatch):
+    _seed_both_causes()
+    ru = sum(v["reported_unmeasurable"] for v in
+             llm_stats.range_summary(1)["aggregate"]["prefix_cache"].values())
+    assert ru == 5, "fixture shape drifted: 2 genuine + 3 impossible"
+    assert "5 call(s) carried a cache report that Effective leaves out" in _notice(
+        admin.get("/admin").text), (
+        "the count is the sum over routes of BOTH populations")
+
+
+def test_a_genuine_unmeasurable_report_is_in_hit_rate_and_out_of_effective_as_the_notice_says(
+        admin, stats_dir, monkeypatch):
+    """Cause (1). The notice says: counted in Reported and in Hit rate, kept out
+    of Effective, needs no action."""
+    _seed_both_causes()
+    html = admin.get("/admin").text
+    cells = _pc_cells(html, "ask")
+    # Fresh, Measurable, Msr pair, Reported, Rep pair, Hit rate, Effective
+    assert cells[1:] == ["2", "0", "—", "2", "10000 / 9000", "90.0%", "—"], (
+        f"the row the (1) clause describes changed: {cells}")
+    text = _notice(html)
+    assert "that figure is counted in Reported and in Hit rate" in text
+    assert "is rightly kept out of Effective" in text
+
+
+def test_an_impossible_report_is_in_neither_rate_and_not_harmless_as_the_notice_says(
+        admin, stats_dir, monkeypatch):
+    """Cause (2), S-1. The notice used to say this case "needs no action" and
+    "counts toward Hit rate" while the row beside it rendered a dash."""
+    _seed_both_causes()
+    html = admin.get("/admin").text
+    cells = _pc_cells(html, "today")
+    assert cells[1:] == ["3", "0", "—", "0", "—", "—", "—"], (
+        "three impossible reports must leave Reported 0 and both rates a dash, "
+        f"which is what the (2) clause promises: {cells}")
+    text = _notice(html)
+    cause2 = text[text.index("(2) An impossible report."):]
+    assert "in neither Hit rate nor Effective" in cause2
+    assert "not in Reported or Measurable, only in Fresh calls" in cause2
+    assert "does need attention" in cause2
+    # The two harmless-sounding claims are about cause (1) ONLY.
+    assert "needs no action" not in cause2, (
+        "an impossible report was described as needing no action")
+    assert "counts toward Hit rate" not in text and "counted in Hit rate" not in cause2, (
+        "an impossible report was described as counted in Hit rate")
+    assert "needs no action" in text[:text.index("(2) An impossible report.")], (
+        "cause (1) lost the reassurance that is true of it")
+
+
+def test_a_route_of_only_impossible_reports_shows_a_dash_in_both_rates_as_the_notice_says(
+        admin, stats_dir, monkeypatch):
+    """The notice's last clause about cause (2): "a route whose only reports were
+    of this kind shows a dash in both rates"."""
+    for _ in range(2):
+        llm_stats.record(provider="groq120", model=CACHING_MODEL, route="today",
+                         prompt_tokens=1000, cached_tokens=None, reported_impossible=True)
+    html = admin.get("/admin").text
+    e = llm_stats.range_summary(1)["aggregate"]["prefix_cache"]["today"]
+    assert e["hit_pct"] is None and e["effective_pct"] is None
+    assert _pc_cells(html, "today")[-2:] == ["—", "—"]
+    assert "a route whose only reports were of this kind shows a dash in both rates" in _notice(html)
+
+
+def test_the_floor_the_notice_names_is_the_floor_the_code_applies(
+        admin, stats_dir, monkeypatch):
+    """"the 128-token floor" and "at least 128 prompt tokens" are numbers the page
+    states about the code; they must follow MIN_CACHEABLE_PREFIX."""
+    _seed_both_causes()
+    text = _notice(admin.get("/admin").text)
+    n = llm_stats.MIN_CACHEABLE_PREFIX
+    assert f"the {n}-token floor is too high for a Groq model" in text
+    assert f"with at least {n} prompt tokens" in text
+
+
+def test_the_footnote_count_of_cache_reporting_models_is_the_set_size(
+        admin, stats_dir, monkeypatch):
+    """"one of the three cache-reporting models": the set holds six model STRINGS
+    (each of three models with and without the `openai/` prefix)."""
+    _seed_both_causes()
+    models = {m.rsplit("/", 1)[-1] for m in llm_stats.CACHE_REPORTING_MODELS}
+    assert len(models) == 3, "the set changed; the footnote's 'three' is now wrong"
+    assert "one of the three cache-reporting models" in _notice(admin.get("/admin").text)
+
+
+def test_the_dash_causes_are_counted_and_the_fourth_is_the_impossible_report(
+        admin, stats_dir, monkeypatch):
+    """The sentence said "three causes" after round 4 added a fourth: a route
+    whose every report was discarded shows a dash in both rates (see the `today`
+    row below) and none of the three listed causes describes it."""
+    _seed_both_causes()
+    html = admin.get("/admin").text
+    assert _pc_cells(html, "today")[-2:] == ["—", "—"]
+    text = _notice(html)
+    causes = text[text.index("A dash has four causes"):]
+    assert "every report it sent was impossible and discarded" in causes
+    assert "three causes" not in text
+
+
+def test_the_excluded_rows_notice_counts_rows_and_names_both_causes_and_the_calls_are_missing(
+        admin, stats_dir):
+    """"N stored row(s) were excluded as unreadable (older schema, or a key shape
+    the page does not recognise), so their calls are missing from this table."
+
+    The old copy said only "written by an older schema", which is false for a
+    malformed key -- the other branch that increments `skipped_rows`. Two rows,
+    one of each, on routes the current-schema row does not cover, so the count
+    (2) and the missing rows are both observable.
+    """
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    today = date.today()
+    good_key = "groq120|openai/gpt-oss-120b|ask"
+    (stats_dir / f"{today.isoformat()}.json").write_text(json.dumps({
+        "date": today.isoformat(),
+        "counts": {good_key: 9, "groq120|openai/gpt-oss-120b|today": 5,
+                   "groq120|openai/gpt-oss-120b|natal": 4},
+        "totals": {"ask": 9, "today": 5, "natal": 4}, "fallbacks": 0,
+        "prefix_cache": {
+            good_key: {**llm_stats._PREFIX_ZERO, **_GAP_ROW},
+            # older schema: `prompt_tokens`, no `prompt_measurable`
+            "groq120|openai/gpt-oss-120b|today": {
+                "calls": 5, "reported": 5, "prompt_tokens": 50, "cached_tokens": 40},
+            # a key shape with a fourth segment
+            "groq120|openai/gpt-oss-120b|natal|extra": dict(llm_stats._PREFIX_ZERO),
+        },
+    }))
+    agg = llm_stats.range_summary(1)["aggregate"]
+    assert agg["prefix_cache_skipped_rows"] == 2
+    html = admin.get("/admin").text
+    text = _notice(html)
+    assert ("2 stored row(s) were excluded as unreadable (written by an older "
+            "schema, or keyed in a shape this page does not recognise), so their "
+            "calls are missing from this table") in text
+    for skipped_only in ("today", "natal"):
+        with pytest.raises(AssertionError):
+            _pc_cells(html, skipped_only)      # "missing from this table", literally
+
+
+def test_the_gap_sentence_says_the_unaccounted_calls_are_not_in_fresh_calls(
+        admin, stats_dir):
+    """S-2. The sentence said these calls "count toward Fresh calls above" while
+    `prefix_cache_unaccounted` is DEFINED as by_route minus the Fresh calls cell.
+    Tie the sentence to the cell: By route 409, Fresh calls 9, gap 400."""
+    key = "groq120|openai/gpt-oss-120b|ask"
+    _seed(stats_dir, _GAP_ROW, counts={key: 409})
+    html = admin.get("/admin").text
+    assert _pc_cells(html, "ask")[1] == "9", "Fresh calls is the row's `calls`"
+    assert _by_route_counts(html)["ask"] == 409, (
+        "By route no longer carries the 409 the gap is measured against")
+    text = _notice(html)
+    assert "are not counted in Fresh calls here" in text
+    assert "count toward Fresh calls" not in text, (
+        "the gap sentence claims the unaccounted calls ARE in Fresh calls, the "
+        "opposite of how the gap is defined")
+
+
+def test_the_gap_lists_every_route_with_its_own_count_and_sums_them(
+        admin, stats_dir):
+    """"(ask 400 · today 3)": per-route numbers, and the headline is their sum."""
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    today = date.today()
+    ask, td = "groq120|openai/gpt-oss-120b|ask", "groq120|openai/gpt-oss-120b|today"
+    (stats_dir / f"{today.isoformat()}.json").write_text(json.dumps({
+        "date": today.isoformat(), "counts": {ask: 409, td: 3},
+        "totals": {"ask": 409, "today": 3}, "fallbacks": 0,
+        "prefix_cache": {ask: {**llm_stats._PREFIX_ZERO, **_GAP_ROW}},
+    }))
+    text = _notice(admin.get("/admin").text)
+    assert "403 call(s) in “By route” above are not counted in Fresh calls here (ask 400 · today 3)" in text
+
+
+def test_the_gap_names_both_causes_and_a_skipped_row_really_does_widen_it(
+        admin, stats_dir):
+    """S-2, second half. The sentence said routes with a schema-skipped row have
+    "no prefix-cache row here". The row exists and was EXCLUDED, and its calls
+    are in the gap. Both halves of that are asserted: the data, then the words."""
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    today = date.today()
+    td = "groq120|openai/gpt-oss-120b|today"
+    (stats_dir / f"{today.isoformat()}.json").write_text(json.dumps({
+        "date": today.isoformat(), "counts": {td: 3}, "totals": {"today": 3},
+        "fallbacks": 0,
+        "prefix_cache": {td: {"calls": 3, "reported": 1, "prompt_tokens": 9,
+                              "cached_tokens": 1}},          # older schema
+    }))
+    agg = llm_stats.range_summary(1)["aggregate"]
+    assert agg["prefix_cache_skipped_rows"] == 1
+    assert agg["prefix_cache_unaccounted"] == {"today": 3}, (
+        "a skipped row's calls are in By route and not in the table, so they ARE the gap")
+    # No current-schema row at all -> the table is absent and the total-loss
+    # notice carries the explanation; add one so the footnote (and the gap) render.
+    _seed_alongside(stats_dir, td)
+    text = _notice(admin.get("/admin").text)
+    assert "days recorded before this panel existed, which carry no cache figure at all" in text
+    assert ("and the stored rows excluded as unreadable (counted above when there are "
+            "any), whose calls “By route” still counts") in text
+    assert "no prefix-cache row" not in text, "a skipped row does exist; it was excluded"
+
+
+def _seed_alongside(stats_dir, skipped_key):
+    """Add a readable current-schema `ask` row to today's blob, keeping the
+    skipped one, so the footnote renders."""
+    p = stats_dir / f"{date.today().isoformat()}.json"
+    blob = json.loads(p.read_text())
+    ask = "groq120|openai/gpt-oss-120b|ask"
+    blob["counts"][ask] = 9
+    blob["totals"]["ask"] = 9
+    blob["prefix_cache"][ask] = {**llm_stats._PREFIX_ZERO, **_GAP_ROW}
+    p.write_text(json.dumps(blob))
+
+
+def test_both_lists_are_keyed_on_the_same_route_as_the_gap_sentence_claims(
+        admin, stats_dir):
+    """"The two lists are keyed the same way -- both on the chat route". The
+    claim is checked by finding the SAME label in both tables."""
+    key = "groq120|openai/gpt-oss-120b|ask"
+    _seed(stats_dir, _GAP_ROW, counts={key: 409})
+    html = admin.get("/admin").text
+    assert "ask" in _by_route_counts(html) and _pc_cells(html, "ask"), (
+        "By route and the prefix-cache table no longer share a route label")
+    assert "both on the chat route" in _notice(html)
+    assert "web route" not in _notice(html), (
+        "the false vocabulary-mismatch caveat is back")
+
+
+def test_the_part_of_the_gap_owed_to_older_days_does_shrink_as_they_age_out(
+        stats_dir):
+    """"The part owed to older days shrinks as they age out of the window." True
+    only if the gap is computed over the requested window. A pre-#396 day two
+    days back (counts, no prefix_cache) is in a 3-day gap and not in a 1-day one."""
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    key = "groq120|openai/gpt-oss-120b|ask"
+    for back, with_pc in ((0, True), (2, False)):
+        day = date.today() - timedelta(days=back)
+        blob = {"date": day.isoformat(), "counts": {key: 9}, "totals": {"ask": 9},
+                "fallbacks": 0}
+        if with_pc:
+            blob["prefix_cache"] = {key: {**llm_stats._PREFIX_ZERO, **_GAP_ROW}}
+        (stats_dir / f"{day.isoformat()}.json").write_text(json.dumps(blob))
+    assert llm_stats.range_summary(1)["aggregate"]["prefix_cache_unaccounted"] == {}
+    assert llm_stats.range_summary(3)["aggregate"]["prefix_cache_unaccounted"] == {"ask": 9}
+
+
+def test_the_gap_copy_says_older_days_age_out(admin, stats_dir):
+    key = "groq120|openai/gpt-oss-120b|ask"
+    _seed(stats_dir, _GAP_ROW, counts={key: 409})
+    assert "shrinks as they age out of the window" in _notice(admin.get("/admin").text)

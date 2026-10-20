@@ -1123,7 +1123,7 @@ MUTATIONS = [
 
     ("#410: the unmeasurable-report notice drops the benign cause and the warning",
      "src/astro_ai/templates/admin_dashboard.html",
-     "Most likely a non-Groq provider reporting its own cache", "Most likely nothing",
+     "Most likely a non-Groq provider reporting\n", "Most likely nothing\n",
      "test_the_unmeasurable_report_notice_names_the_benign_cause_and_forbids_the_harmful_fix"),
 
     ("#410: a malformed stat_key is dropped silently again (a whole window can vanish)",
@@ -1532,6 +1532,135 @@ MUTATIONS = [
      'raise RuntimeError("a conflict hunk has no `=======` separator")',
      'return out',
      "test_a_hunk_with_no_separator_raises_rather_than_returning_nothing"),
+
+    # ---- QA round 5 on #396. S-1 / S-2 / G-2 were FALSE SENTENCES and a guard
+    # ---- that could not tell `calls` from `measurable`. Each row restores one
+    # ---- false clause (or breaks the number the clause is about) and must die on
+    # ---- its OWN named test.
+    ("#396 r5: an impossible report is described as counted in Hit rate again (S-1)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "discarded: it is in <em>neither</em> Hit rate <em>nor</em> Effective, and the call",
+     "discarded: its figure counts toward Hit rate, and the call",
+     "test_an_impossible_report_is_in_neither_rate_and_not_harmless_as_the_notice_says"),
+
+    ("#396 r5: an impossible report is told it needs no action again (S-1)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "This one does need attention &mdash;", "This one needs no action &mdash;",
+     "test_an_impossible_report_is_in_neither_rate_and_not_harmless_as_the_notice_says"),
+
+    ("#396 r5: a rejected report is booked as Reported (the row would contradict the notice)",
+     "src/astro_ai/llm_stats.py",
+     '                pc["reported_unmeasurable"] = pc.get("reported_unmeasurable", 0) + 1\n',
+     '                pc["reported_unmeasurable"] = pc.get("reported_unmeasurable", 0) + 1\n'
+     '                pc["reported"] = pc.get("reported", 0) + 1\n',
+     "test_an_impossible_report_is_in_neither_rate_and_not_harmless_as_the_notice_says"),
+
+    ("#396 r5: the notice counts reports, not unmeasurable-report calls",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "map(attribute='reported_unmeasurable') | sum", "map(attribute='reported') | sum",
+     "test_the_unmeasurable_notice_sums_both_causes_into_its_count"),
+
+    ("#396 r5: the genuine-report clause stops saying the figure is in Hit rate",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "that figure is counted in", "that figure is dropped from",
+     "test_a_genuine_unmeasurable_report_is_in_hit_rate_and_out_of_effective_as_the_notice_says"),
+
+    ("#396 r5: a genuine unmeasurable report stops reaching the Hit-rate numerator",
+     "src/astro_ai/llm_stats.py",
+     'pc["cached_tokens"] = pc.get("cached_tokens", 0) + cached_tokens',
+     'pc["cached_tokens"] = pc.get("cached_tokens", 0) + 0',
+     "test_a_genuine_unmeasurable_report_is_in_hit_rate_and_out_of_effective_as_the_notice_says"),
+
+    ("#396 r5: 'a route of only impossible reports shows a dash in both rates' is rewritten",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "shows a dash in both rates.", "shows 0% in both rates.",
+     "test_a_route_of_only_impossible_reports_shows_a_dash_in_both_rates_as_the_notice_says"),
+
+    ("#396 r5: the notice names a floor the code does not apply",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "It can also mean the 128-token floor", "It can also mean the 1024-token floor",
+     "test_the_floor_the_notice_names_is_the_floor_the_code_applies"),
+
+    ("#396 r5: the footnote miscounts the cache-reporting models",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "on one of the three cache-reporting models", "on one of the four cache-reporting models",
+     "test_the_footnote_count_of_cache_reporting_models_is_the_set_size"),
+
+    ("#396 r5: the dash sentence goes back to three causes",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "<strong>A dash has four causes</strong>", "<strong>A dash has three causes</strong>",
+     "test_the_dash_causes_are_counted_and_the_fourth_is_the_impossible_report"),
+
+    ("#396 r5: the dash sentence drops the impossible-report cause",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "or every report it sent was\n          impossible and discarded",
+     "or nothing at all was\n          sent",
+     "test_the_dash_causes_are_counted_and_the_fourth_is_the_impossible_report"),
+
+    ("#396 r5: the excluded-rows notice goes back to naming only the older schema",
+     "src/astro_ai/templates/admin_dashboard.html",
+     " (written by an older schema, or keyed\n          in a shape this page does not recognise), so their calls are missing",
+     " (written by an older schema), so their calls are missing",
+     "test_the_excluded_rows_notice_counts_rows_and_names_both_causes_and_the_calls_are_missing"),
+
+    ("#396 r5: the excluded-rows notice prints the wrong count",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "<strong>{{ llm_stats.aggregate.prefix_cache_skipped_rows }}\n          stored row(s) were excluded as unreadable",
+     "<strong>{{ llm_stats.aggregate.prefix_cache | length }}\n          stored row(s) were excluded as unreadable",
+     "test_the_excluded_rows_notice_counts_rows_and_names_both_causes_and_the_calls_are_missing"),
+
+    ("#396 r5: the total-loss notice stops claiming it is every row",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "&mdash; which is every row in this window", "&mdash; which is some of the rows in this window",
+     "test_the_skip_notice_survives_when_every_row_is_skipped"),
+
+    ("#396 r5: the gap is computed from `measurable`, not `calls` (G-2)",
+     "src/astro_ai/llm_stats.py",
+     '                route: n - prefix_acc.get(route, {}).get("calls", 0)\n'
+     '                for route, n in by_route.items()\n'
+     '                if n > prefix_acc.get(route, {}).get("calls", 0)\n',
+     '                route: n - prefix_acc.get(route, {}).get("measurable", 0)\n'
+     '                for route, n in by_route.items()\n'
+     '                if n > prefix_acc.get(route, {}).get("measurable", 0)\n',
+     "test_the_gap_against_by_route_is_counted_not_explained_away"),
+
+    ("#396 r5: the gap sentence says the unaccounted calls ARE in Fresh calls (S-2)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "not counted in Fresh calls here</strong>", "counted in Fresh calls above</strong>",
+     "test_the_gap_sentence_says_the_unaccounted_calls_are_not_in_fresh_calls"),
+
+    ("#396 r5: the false 'count toward Fresh calls' sentence is reinstated (S-2)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "          Two ordinary causes:",
+     "          Those calls count toward Fresh calls above. Two ordinary causes:",
+     "test_the_gap_sentence_says_the_unaccounted_calls_are_not_in_fresh_calls"),
+
+    ("#396 r5: every gap route is listed with the TOTAL instead of its own count",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{{ route }} {{ n }}{% if not loop.last %}",
+     "{{ route }} {{ gap.values() | sum }}{% if not loop.last %}",
+     "test_the_gap_lists_every_route_with_its_own_count_and_sums_them"),
+
+    ("#396 r5: the gap stops naming the excluded-rows cause (S-2, second half)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "; and the stored rows excluded as unreadable", "; and nothing else",
+     "test_the_gap_names_both_causes_and_a_skipped_row_really_does_widen_it"),
+
+    ("#396 r5: the gap sentence goes back to the false vocabulary-mismatch claim",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "both on the chat route", "web route there, chat route here",
+     "test_both_lists_are_keyed_on_the_same_route_as_the_gap_sentence_claims"),
+
+    ("#396 r5: the gap sentence stops saying it shrinks as older days age out",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "shrinks as they age out of the window", "stays until it is cleared",
+     "test_the_gap_copy_says_older_days_age_out"),
+
+    ("#396 r5: the gap ignores the requested window (older days never age out)",
+     "src/astro_ai/llm_stats.py",
+     "    prefix_acc: dict[str, dict[str, int]] = {}\n    skipped_rows = 0",
+     "    days = max(days, 3)\n    prefix_acc: dict[str, dict[str, int]] = {}\n    skipped_rows = 0",
+     "test_the_part_of_the_gap_owed_to_older_days_does_shrink_as_they_age_out"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

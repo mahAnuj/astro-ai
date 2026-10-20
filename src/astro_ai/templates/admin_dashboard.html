@@ -222,8 +222,9 @@
          Without this the only trace is a server log nobody reads (QA r3, BUG-12). #}
       <p class="text-xs text-bhagya-muted mt-6">
         <strong>Provider-side prefix cache: {{ llm_stats.aggregate.prefix_cache_skipped_rows }}
-        stored row(s) were written by an older schema and excluded</strong> &mdash; which is every
-        row in this window, so there is no table to show. Widen the window, or re-record.
+        stored row(s) were excluded as unreadable</strong> (written by an older schema, or keyed in
+        a shape this page does not recognise) &mdash; which is every row in this window, so there is
+        no table to show. Widen the window, or re-record.
       </p>
       {% endif %}
       {% if llm_stats.aggregate.prefix_cache %}
@@ -278,17 +279,24 @@
           saving. <em>Effective is a saving over the Measurable calls, not over Fresh calls</em>
           &mdash; compare those two columns before reading it as a share of the route's traffic.
           {% set ru = llm_stats.aggregate.prefix_cache.values() | map(attribute='reported_unmeasurable') | sum %}
-          {% if ru %}<strong>{{ ru }} call(s) reported a cache figure on a call this rule treats as
-          unmeasurable.</strong> Most likely a non-Groq provider reporting its own cache, which is
-          correct and needs no action &mdash; its figure counts toward Hit rate and is rightly kept
-          out of Effective, because its silences follow a different convention. It can also mean the
-          128-token floor is too high for a Groq model. <em>Do not add a non-Groq model to the
-          reporting set to silence this</em>: that would make its silences count as measured zeros
-          under a Groq-derived floor, which is the original defect this panel was built to remove.
+          {% if ru %}<strong>{{ ru }} call(s) carried a cache report that Effective leaves out.</strong>
+          The counter cannot tell its two causes apart, so read both. <strong>(1) A real report on a
+          call this rule treats as unmeasurable.</strong> Most likely a non-Groq provider reporting
+          its own cache, which is correct and needs no action &mdash; that figure is counted in
+          Reported and in Hit rate, and is rightly kept out of Effective, because its silences follow
+          a different convention. It can also mean the 128-token floor is too high for a Groq model.
+          <strong>(2) An impossible report.</strong> The provider claimed more cached tokens than the
+          prompt it came from, or a count that was not a non-negative whole number. That figure was
+          discarded: it is in <em>neither</em> Hit rate <em>nor</em> Effective, and the call is not in
+          Reported or Measurable, only in Fresh calls. This one does need attention &mdash; a route
+          whose only reports were of this kind shows a dash in both rates. <em>Do not add a non-Groq
+          model to the reporting set to silence this</em>: that would make its silences count as
+          measured zeros under a Groq-derived floor, which is the original defect this panel was
+          built to remove.
           {% endif %}
           {% if llm_stats.aggregate.prefix_cache_skipped_rows %}<strong>{{ llm_stats.aggregate.prefix_cache_skipped_rows }}
-          stored row(s) written by an older schema were excluded</strong>, so their calls are
-          missing from this table.{% endif %}
+          stored row(s) were excluded as unreadable</strong> (written by an older schema, or keyed
+          in a shape this page does not recognise), so their calls are missing from this table.{% endif %}
           {#- THE GAP, NAMED AND COUNTED. What stood here was a footnote claiming "By route"
               above and Fresh calls here "never match anyway" because one is keyed by web
               route and the other by chat route. Both are the third segment of
@@ -297,19 +305,21 @@
               measured 400-call discrepancy six rows up in the same card was expected and
               meaningless. #}
           {% set gap = llm_stats.aggregate.prefix_cache_unaccounted %}
-          {% if gap %}<strong>{{ gap.values() | sum }} call(s) in &ldquo;By route&rdquo; above have no
-          prefix-cache row here</strong> ({% for route, n in gap.items() %}{{ route }} {{ n }}{% if not loop.last %} &middot; {% endif %}{% endfor %}).
-          Almost always days recorded before this panel existed: those calls count toward Fresh
-          calls above and carry no cache figure at all, so they are absent rather than zero.
+          {% if gap %}<strong>{{ gap.values() | sum }} call(s) in &ldquo;By route&rdquo; above are
+          not counted in Fresh calls here</strong> ({% for route, n in gap.items() %}{{ route }} {{ n }}{% if not loop.last %} &middot; {% endif %}{% endfor %}).
+          Two ordinary causes: days recorded before this panel existed, which carry no cache figure
+          at all and so are absent rather than zero; and the stored rows excluded as unreadable
+          (counted above when there are any), whose calls &ldquo;By route&rdquo; still counts.
           The two lists <em>are</em> keyed the same way &mdash; both on the chat route &mdash; so
-          a gap here is a real difference and not a vocabulary mismatch. It shrinks as older days
-          age out of the window.{% endif %}
+          a gap here is a real difference and not a vocabulary mismatch. The part owed to older
+          days shrinks as they age out of the window.{% endif %}
           A call is Measurable on one of the three cache-reporting models with at least 128 prompt
           tokens, counted on the whole request (system + question or chart), not the system prompt
-          alone. <strong>A dash has three causes</strong>, so check which before concluding
+          alone. <strong>A dash has four causes</strong>, so check which before concluding
           anything: a non-reporting model served every call; the prompts were under the minimum
-          (no route's system prompt is under 732 tokens, so this should not happen); or the
-          provider returned no usable <code>usage</code> block at all. The Measurable column tells
+          (no route's system prompt is under 732 tokens, so this should not happen); the
+          provider returned no usable <code>usage</code> block at all; or every report it sent was
+          impossible and discarded (the notice above says so when that has happened). The Measurable column tells
           the first two apart from Fresh calls.
 
         </p>
