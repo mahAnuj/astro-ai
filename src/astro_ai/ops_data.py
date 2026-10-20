@@ -57,7 +57,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from astro_ai import issue_backlog
+from astro_ai import issue_backlog, ops_today
 
 log = logging.getLogger(__name__)
 
@@ -87,6 +87,11 @@ GH_REPO = os.environ.get("OPS_GH_REPO", "mahAnuj/astro-ai")
 #: Live backlog, on by default. "0" pins the page to the committed snapshot —
 #: what the tests set, and what an environment with no egress wants.
 LIVE_ISSUES = os.environ.get("OPS_LIVE_ISSUES", "1") != "0"
+
+#: Live "today" tiles, on by default. Same switch shape as LIVE_ISSUES: "0"
+#: pins the three tiles to the committed snapshot, which is what the tests set
+#: and what an environment with no egress wants.
+LIVE_TODAY = os.environ.get("OPS_LIVE_TODAY", "1") != "0"
 
 #: Optional. A token raises the API budget from 60/hour shared across every
 #: tenant on this egress IP to 5,000/hour for this app alone. The live path
@@ -143,8 +148,21 @@ def _fetch(name: str) -> Any | None:
         try:
             with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT) as resp:  # noqa: S310
                 data = json.loads(resp.read().decode("utf-8"))
-        except (urllib.error.URLError, OSError, ValueError) as exc:
-            log.warning("ops_data: could not fetch %s: %s", url, exc)
+        # DELIBERATELY BROAD, for the reason recorded on `_live_today`: the
+        # four-type tuple read as exhaustive and was not.
+        # `http.client.IncompleteRead` inherits from HTTPException and is none
+        # of these, so it escaped and 500'd the WHOLE /admin/ops page.
+        #
+        # QA round 2 found this reader still narrow after the two live-API
+        # callers were widened, and it is the HOTTER path: in the container
+        # there is no `measurements/` directory, so EVERY file on a cold render
+        # -- loop.json, issues.json, cost.json, agents.json, the ga4/gsc pair --
+        # comes through here over HTTPS. Reproduced: a truncated read gave
+        # `GET /admin/ops -> 500` with the traceback ending in this line, where
+        # the docstring promises "None on any failure, with a log line". The
+        # commit that widened the other two presented the class as closed.
+        except Exception as exc:  # noqa: BLE001 -- see above
+            log.warning("ops_data: could not fetch %s: %s", url, exc, exc_info=True)
             data = None
 
     if data is not None:
@@ -199,10 +217,71 @@ def _live_issues(objective: str) -> dict | None:
         # OBJECTIVE.md, which the container does not have. Fetching the
         # backlog live does not make that file appear.
         doc = issue_backlog.build(issues, repo=GH_REPO, objective=objective)
-    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:
-        log.warning("ops_data: live backlog unavailable, using the snapshot: %s", exc)
+    except Exception as exc:  # noqa: BLE001
+        # Broad for the same reason as `_live_today` below, and it is the same
+        # page: the old (URLError, OSError, ValueError, KeyError) tuple missed
+        # `http.client.IncompleteRead` and anything else outside OSError, and
+        # an escape here 500s the whole control room to protect one panel.
+        log.warning("ops_data: live backlog unavailable, using the snapshot: %s",
+                    exc, exc_info=True)
         return None
     _live_cache = (now, doc)
+    return doc
+
+
+#: (monotonic stamp, the IST day it describes, the answer or None).
+#:
+#: THE DAY IS PART OF THE KEY. Without it the entry survives IST midnight and
+#: the page reports YESTERDAY's merges and failures as "today, live" for up to
+#: CACHE_TTL. The tiles are bucketed by IST day and 00:00 IST is 18:30 UTC, so
+#: the boundary falls in the middle of an ordinary working afternoon in UTC --
+#: it is not a quiet hour anyone would notice it in.
+#:
+#: None IS CACHED TOO. A failure that is not remembered costs one request per
+#: render forever, and the overwhelmingly likely failure here is a 403 from the
+#: 60/hour unauthenticated budget -- so not caching it is what keeps the budget
+#: spent. Re-asking on every reload is how an outage becomes a self-inflicted
+#: one.
+_today_cache: tuple[float, str, dict | None] | None = None
+
+
+def _live_today(day_start: datetime) -> dict | None:
+    """Today's shipped and failed counts from the API. None on ANY failure.
+
+    Separate cache from `_live_issues` because the two have different failure
+    modes and sharing one would make a 403 on either blank both panels.
+
+    The caller renders the committed snapshot when this returns None and says
+    so on the page, so a failure here costs freshness, never the tiles.
+    """
+    global _today_cache
+    now = time.monotonic()
+    day = day_start.isoformat()
+    if (_today_cache and _today_cache[1] == day
+            and now - _today_cache[0] < CACHE_TTL):
+        return _today_cache[2]
+    try:
+        doc = ops_today.fetch_today(
+            GH_REPO, day_start, timeout=HTTP_TIMEOUT, token=GH_TOKEN)
+    except Exception as exc:  # noqa: BLE001 -- see below
+        # DELIBERATELY BROAD, and the docstring above is the contract: None on
+        # ANY failure. The previous tuple was
+        # (URLError, OSError, ValueError, KeyError), which reads as
+        # exhaustive and is not: `http.client.IncompleteRead` -- a truncated
+        # response, the ordinary failure of a long-poll over a flaky link --
+        # inherits from HTTPException and is none of those four, so it escaped
+        # and 500'd the WHOLE /admin/ops page rather than one tile.
+        #
+        # The asymmetry is what decides it. Letting an exception through here
+        # takes down the one page you open when the system is broken, to
+        # protect a freshness nicety; catching it costs a stale label that the
+        # page already prints. `exc_info` keeps the bug visible in the log,
+        # which is what a broad catch usually throws away.
+        log.warning("ops_data: live today unavailable, using the snapshot: %s",
+                    exc, exc_info=True)
+        _today_cache = (now, day, None)
+        return None
+    _today_cache = (now, day, doc)
     return doc
 
 
@@ -235,15 +314,49 @@ def next_cycle_ist(now: datetime | None = None) -> datetime:
     return best.astimezone(IST)
 
 
-def _loop_view(doc: dict | None, today_ist: str) -> dict:
+def _loop_view(doc: dict | None, today_ist: str,
+               live_today: dict | None = None,
+               *, fell_back: bool = False) -> dict:
     """Rows for the ribbon, plus the counts the tiles show.
 
     `started_ist_minutes` is minutes past IST midnight, which is what the
     ribbon positions a block by. Computed once here so the template holds no
     arithmetic.
+
+    THE RIBBON AND THE TILES NOW HAVE DIFFERENT SOURCES, deliberately. The
+    ribbon is 30 days of attributed cycles and can only come from the committed
+    snapshot -- `collect_loop_measurements.py` spends 48 requests and 92
+    seconds building it, which is not a thing to do inside a request. The three
+    "today" tiles are two requests, so they are read live and `today_live` says
+    which the reader is looking at.
+
+    When `live_today` is None the tiles fall back to the snapshot, exactly as
+    before. That path is still wrong in the way the module docstring of
+    `ops_today` describes -- it can only ever see agent-work runs -- so the
+    template labels it rather than presenting it as equivalent.
     """
     if not doc or not isinstance(doc.get("rows"), list):
-        return {"ok": False, "rows": [], "generated_at": None}
+        # Still surface live tiles when the snapshot is missing entirely: the
+        # ribbon is what needs the file, the tiles are not.
+        #
+        # EVERY KEY THE OK PATH RETURNS IS PRESENT HERE, with an empty value.
+        # The short version of this branch raised
+        #   UndefinedError: 'dict object' has no attribute 'attribution'
+        # at admin_ops.html:1161 -- a 500 on the WHOLE page, not a blank panel.
+        # Reproduced 2026-10-18. The trigger is `loop.json` being unreadable,
+        # which is precisely what `agent-measure` failing to commit leads to,
+        # so the page was one missing file away from dying of the outage it
+        # exists to report.
+        return {"ok": False, "rows": [], "generated_at": None,
+                "outcomes": {}, "attribution": {}, "days": [], "latest": None,
+                "today": [],
+                "today_live": live_today is not None,
+                "today_shipped": (live_today or {}).get("shipped", []),
+                "today_failed": (live_today or {}).get("failed", []),
+                "today_truncated": bool((live_today or {}).get("truncated")),
+                "shipped_truncated": bool((live_today or {}).get("shipped_truncated")),
+                "failed_truncated": bool((live_today or {}).get("failed_truncated")),
+                "fell_back": fell_back}
     rows = []
     for r in doc["rows"]:
         started = _ist(r.get("started"))
@@ -261,8 +374,44 @@ def _loop_view(doc: dict | None, today_ist: str) -> dict:
         "outcomes": dict(Counter(r["outcome"] for r in rows).most_common()),
         "attribution": dict(Counter(r.get("attribution") for r in rows).most_common()),
         "today": today,
-        "today_shipped": [r for r in today if r["outcome"] == "shipped"],
-        "today_failed": [r for r in today if r["outcome"] in ("failed", "unknown")],
+        # Live first, snapshot second. The snapshot numerators are kept as the
+        # fallback and are NOT merged with the live ones -- two sources counting
+        # different units into one tile is how a number stops meaning anything.
+        "today_live": live_today is not None,
+        # `.get` on this path too, finishing the job the `today_truncated`
+        # comment below started. These two read `live_today["shipped"]` while
+        # the no-snapshot branch above read `.get(..., [])` off the same dict,
+        # so the two branches disagreed about how much they trusted it — and
+        # the branch that trusted was the one that runs on every ordinary
+        # render. `_loop_view` is called from `snapshot()`, whose docstring is
+        # "Never raises", OUTSIDE any try: a KeyError here is not a blank tile,
+        # it is a 500 on the whole control room. Blanking one tile is the
+        # failure mode this module already chose everywhere else.
+        "today_shipped": (live_today.get("shipped", []) if live_today is not None
+                          else [r for r in today if r["outcome"] == "shipped"]),
+        "today_failed": (live_today.get("failed", []) if live_today is not None
+                         else [r for r in today if r["outcome"] in ("failed", "unknown")]),
+        # A FLOOR, NOT A COUNT, when this is True. `fetch_today` spent MAX_PAGES
+        # on at least one endpoint and stopped while rows inside the day were
+        # still unread, so both live tiles are "at least N".
+        #
+        # QA round 2 found this flag computed in `ops_today` and read NOWHERE --
+        # not here, not in `routes/admin.py`, not in the template -- while THREE
+        # places said the page showed it, including the ARCHITECTURE decision
+        # row. Rendered against a permanently-full runs page the tile printed a
+        # flat `300` with a `live` badge and no caveat anywhere, in the one
+        # situation (a run storm during an incident) where the tile matters
+        # most. `.get` on the strict path too: `live_today` is this module's own
+        # dict, but the no-snapshot branch below is lenient and the two should
+        # not disagree about how trusting they are.
+        "today_truncated": bool((live_today or {}).get("truncated")),
+        # Per tile, so a capped runs read cannot put a floor marker on a
+        # complete pulls read.
+        "shipped_truncated": bool((live_today or {}).get("shipped_truncated")),
+        "failed_truncated": bool((live_today or {}).get("failed_truncated")),
+        # Travels WITH the numbers, the way `_issues_view` does it, so the alert
+        # cannot disagree with the tile about whether this is live.
+        "fell_back": fell_back,
         # Newest first in the file; the ribbon wants oldest-day at the bottom.
         "days": sorted({r["date_ist"] for r in rows if r["date_ist"]}, reverse=True),
         "latest": rows[0] if rows else None,
@@ -308,7 +457,27 @@ def _issues_view(doc: dict | None, today_ist: str, *, live: bool = False,
     it is showing is the failure #353 exists to fix.
     """
     if not doc or not isinstance(doc.get("rows"), list):
-        return {"ok": False, "rows": [], "live": False, "fell_back": fell_back}
+        # EVERY KEY THE OK PATH RETURNS IS PRESENT HERE, with an empty value —
+        # the identical rule `_loop_view`'s zero-state states above, in ten
+        # lines, after it 500'd the whole page. It was not carried across to
+        # the sibling view, and the short version here cost the same failure:
+        # `routes/admin.py:197` is `I["filed_today"]`, so an unreadable backlog
+        # raised `KeyError: 'filed_today'` and /admin/ops returned 500 rather
+        # than one blank panel.
+        #
+        # Reachable in production, 2026-10-20: the container ships no
+        # `measurements/` directory, so `issues.json` arrives over HTTPS from
+        # raw.githubusercontent.com and the live backlog from api.github.com —
+        # BOTH GitHub. One GitHub outage takes out the fallback and the live
+        # read together, `issues_doc` is None, and the control room dies of
+        # exactly the event it exists to report. Found by making the behaviour
+        # suite hermetic: the two tests that rendered this page had been
+        # fetching the real file over the network, so the degraded branch had
+        # never once run under test.
+        return {"ok": False, "generated_at": None, "live": False,
+                "fell_back": fell_back, "open": 0, "rows": [], "with_ask": 0,
+                "by_priority": {}, "by_area": {}, "by_type": {},
+                "blocked": [], "filed_today": []}
     rows = doc["rows"]
     filed_today = [r for r in rows
                    if (d := _ist(r.get("created"))) and d.strftime("%Y-%m-%d") == today_ist]
@@ -472,7 +641,13 @@ def _cost_view(doc: dict | None, shipped_30d: int) -> dict:
     page says "at least $X, plus N items with no readable figure".
     """
     if not doc or not isinstance(doc.get("rows"), list):
-        return {"ok": False, "rows": []}
+        # Every key the ok path returns, with an empty value — see the same
+        # note on `_issues_view` and `_loop_view`. The template's `.arith`
+        # block reads `C.known_usd` unguarded, so the short version raised
+        # `UndefinedError: 'dict object' has no attribute 'known_usd'` and
+        # 500'd the page when `cost.json` was unreadable.
+        return {"ok": False, "rows": [], "known_usd": 0, "unknown": [],
+                "shipped_30d": shipped_30d, "per_issue_usd": None}
     rows = doc["rows"]
     known = [r for r in rows if isinstance(r.get("monthly_usd"), (int, float))]
     unknown = [r for r in rows if not isinstance(r.get("monthly_usd"), (int, float))]
@@ -873,15 +1048,70 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
                 f"{ran} of {due} slots since {(lp.get('schedule_since') or '')[:10]}.",
                 lp.get("display") or "")
 
-    if loop.get("ok") and loop.get("today_failed"):
-        add("amber", f"{len(loop['today_failed'])} cycle(s) failed today",
-            "A cycle that did not deliver leaves its issue untouched.")
+    # NOT gated on `loop["ok"]`: the tiles are live and the ribbon is not, so
+    # a missing `loop.json` must not silence a real failure. That gate was the
+    # second half of the 2026-10-18 defect -- the snapshot that would have
+    # unlocked this alert was itself unwritable because `agent-measure` was
+    # failing, which is the very thing the alert exists to announce.
+    if loop.get("today_failed"):
+        n = len(loop["today_failed"])
+        if loop.get("today_live"):
+            # Live rows are WORKFLOW RUNS and carry `workflow`.
+            which = ", ".join(sorted({f.get("workflow") or "an unnamed workflow"
+                                      for f in loop["today_failed"]}))
+            # "At least" when the read was capped, for the same reason the tile
+            # says it: MAX_PAGES was spent with rows inside the day still
+            # unread, so n is a floor. An admitted floor beats a confident
+            # wrong number, and a run storm is exactly when both happen.
+            #
+            # KEYED ON `failed_truncated`, NOT `today_truncated`. These rows are
+            # workflow RUNS; `today_truncated` is the OR of both endpoints
+            # (`pr_more or runs_more`), so with the PULLS read capped and the
+            # runs read complete it says this exact count is a floor when it is
+            # not -- while the tile, which already reads the per-endpoint flag,
+            # renders the same number flat. Two statements about one number
+            # disagreeing on one screen, and the alert was the false one.
+            # `_loop_view`'s own comment is why the per-endpoint flags exist:
+            # "PER ENDPOINT, not one flag for both."
+            at_least = "At least " if loop.get("failed_truncated") else ""
+            add("amber", f"{at_least}{n} loop run(s) failed today",
+                f"{which}. A leg that did not finish leaves its work untouched."
+                + (" The run list was capped before the day was fully read, so "
+                   "this is a floor, not a total." if loop.get("failed_truncated")
+                   else ""))
+        else:
+            # Fallback rows are agent-work CYCLES from loop.json and have no
+            # `workflow` key at all, so the live wording rendered a literal
+            # "?" to the reader -- on the one path that is taken whenever the
+            # API is unreachable, i.e. exactly when someone is reading this
+            # page to find out what broke. Say what the rows actually are.
+            add("amber", f"{n} agent-work cycle(s) failed today",
+                "From the committed snapshot, not live, so this counts "
+                "agent-work only and may be out of date. A cycle that did not "
+                "deliver leaves its issue untouched.")
 
     # --- the data under the page ----------------------------------------
     # Rule 1 above: a source that could not be read says so. The backlog is
     # normally live, so falling back to the committed file is a FAILED API
     # call, not a quiet downgrade -- and the figure it fell back to may be a
     # day old while the strip above it stays silent.
+    # The SAME alert for the delivery tiles, which did not have one. QA round 2
+    # drove `fetch_today` into a plain `TypeError` -- a programming error, not a
+    # network one -- and the page degraded to three tiles reading `0 ... as of
+    # 4d ago` with a WARNING in Cloud Run as the only signal. That is within an
+    # "as of" footer of the 2026-10-18 screen this panel was built to prevent,
+    # and it would stay that way forever. The bare `except Exception` on
+    # `_live_today` is deliberate and correct -- one tile must not 500 the page
+    # -- but "the page survives" and "nobody is told" are different properties,
+    # and only the first was implemented. The plumbing already existed one panel
+    # over and was not mirrored.
+    if loop.get("fell_back"):
+        add("amber", "Today's delivery tiles fell back to the committed snapshot",
+            "The live GitHub call failed, so Shipped/Filed/Failed today are as "
+            "of the last collection and count agent-work cycles only. If this "
+            "persists it is not the 60/hour budget — check the logs for a "
+            "stack trace.")
+
     if issues.get("fell_back"):
         add("amber", "Backlog fell back to the committed snapshot",
             "The live GitHub call failed, most likely the 60/hour unauthenticated "
@@ -916,7 +1146,13 @@ def snapshot(now: datetime | None = None) -> dict:
     snap_doc = _fetch("issues.json")
     live_doc = _live_issues((snap_doc or {}).get("objective") or "") if LIVE_ISSUES else None
     issues_doc = live_doc or snap_doc
-    loop = _loop_view(loop_doc, today_ist)
+    # Midnight IST today, as UTC: the cut the API query uses. Computed from
+    # `now` rather than from `today_ist` so a test can drive the whole page
+    # from one injected clock.
+    day_start = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)
+    live_today = _live_today(day_start.astimezone(timezone.utc)) if LIVE_TODAY else None
+    loop = _loop_view(loop_doc, today_ist, live_today,
+                      fell_back=LIVE_TODAY and live_today is None)
     issues = _issues_view(issues_doc, today_ist, live=live_doc is not None,
                           fell_back=LIVE_ISSUES and live_doc is None)
 

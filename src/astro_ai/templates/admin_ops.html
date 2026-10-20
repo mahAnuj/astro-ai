@@ -590,21 +590,30 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
 
   {# ── Tiles. Every one opens the rows behind it. ─────────────────────── #}
   <section class="tiles">
-    <button class="tile" data-drill="today-shipped">
+    {#- The three "today" tiles are LIVE, the ribbon below them is not. Each
+        one says which, because a zero from an unreachable API and a zero from
+        a quiet day are the same glyph. On 2026-10-18 all three read 0 from a
+        three-day-old file while five loop runs had failed. -#}
+    <button class="tile" data-drill="today-shipped" {{ '' if L.today_shipped else 'disabled' }}>
       <span class="caret">▸</span><span class="lbl">Shipped today</span>
-      <span class="v"><span class="num c-shipped">{{ L.today_shipped|length }}</span></span>
-      <span class="foot">merged to main, {{ ops.today_ist }}<br>
-        <span class="age {{ 'stale' if ops.ages.Delivery.stale }}">as of {{ ops.ages.Delivery.text }}</span></span>
+      <span class="v"><span class="num c-shipped">{{ '\u2265' if L.shipped_truncated }}{{ L.today_shipped|length }}</span></span>
+      <span class="foot">PRs merged, {{ ops.today_ist }}<br>
+        {% if L.today_live %}<span class="age">live{% if L.shipped_truncated %}, at least{% endif %}</span>
+        {% else %}<span class="age {{ 'stale' if ops.ages.Delivery.stale }}">as of {{ ops.ages.Delivery.text }}</span>{% endif %}</span>
     </button>
     <button class="tile" data-drill="today-filed" {{ '' if I.filed_today else 'disabled' }}>
       <span class="caret">▸</span><span class="lbl">Filed today</span>
       <span class="v"><span class="num">{{ I.filed_today|length }}</span></span>
-      <span class="foot">new issues opened</span>
+      <span class="foot">new issues opened<br>
+        {% if I.live %}<span class="age">live</span>
+        {% else %}<span class="age {{ 'stale' if ops.ages.Backlog.stale }}">as of {{ ops.ages.Backlog.text }}</span>{% endif %}</span>
     </button>
-    <button class="tile" data-drill="today-failed">
+    <button class="tile" data-drill="today-failed" {{ '' if L.today_failed else 'disabled' }}>
       <span class="caret">▸</span><span class="lbl">Failed today</span>
-      <span class="v"><span class="num {{ 'c-failed' if L.today_failed else 'c-nothing' }}">{{ L.today_failed|length }}</span></span>
-      <span class="foot">cycles that did not deliver</span>
+      <span class="v"><span class="num {{ 'c-failed' if L.today_failed else 'c-nothing' }}">{{ '\u2265' if L.failed_truncated }}{{ L.today_failed|length }}</span></span>
+      <span class="foot">loop runs that did not finish<br>
+        {% if L.today_live %}<span class="age">live{% if L.failed_truncated %}, at least{% endif %}</span>
+        {% else %}<span class="age {{ 'stale' if ops.ages.Delivery.stale }}">agent-work only, as of {{ ops.ages.Delivery.text }}</span>{% endif %}</span>
     </button>
     <button class="tile" data-drill="backlog">
       <span class="caret">▸</span><span class="lbl">Open backlog</span>
@@ -1222,6 +1231,27 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           '<div class="meta">' + esc(bits.join(" \u00b7 ")) + "</div>" +
           '<div class="links">' + ls.join("") + "</div></div>";
       }
+      /* A merged PR. The live "shipped today" rows are PRs, not cycles: the
+         unit was always the PR (collect_loop_measurements.py says to count
+         distinct `pr` values), and counting PRs also catches one a human
+         merged, which the cycle-shaped number dropped. */
+      if (kind === "pr") {
+        return '<div class="item row">' +
+          '<div class="r1"><span class="chip shipped">merged</span>' +
+          '<span class="t">PR #' + r.pr + " " + esc(r.title) + "</span></div>" +
+          '<div class="meta">' + esc(String(r.merged_at || "").replace("T", " ").replace("Z", " UTC")) + "</div>" +
+          '<div class="links">' + link(REPO + "/pull/" + r.pr, "PR diff &rarr;") + "</div></div>";
+      }
+      /* A loop run that did not finish. Spans every leg, not just agent-work:
+         on 2026-10-18 every failure of the day was `agent-measure`, which the
+         agent-work-only source could not represent at any freshness. */
+      if (kind === "run") {
+        return '<div class="item row">' +
+          '<div class="r1"><span class="chip failed">' + esc(r.conclusion) + "</span>" +
+          '<span class="t">' + esc(r.workflow) + "</span></div>" +
+          '<div class="meta">' + esc(String(r.started || "").replace("T", " ").replace("Z", " UTC")) + "</div>" +
+          '<div class="links">' + link(REPO + "/actions/runs/" + r.run, "run log &rarr;") + "</div></div>";
+      }
       var chips = "";
       if (r.priority && r.priority !== "unset") chips += '<span class="chip ' + esc(r.priority) + '">' + esc(r.priority) + "</span>";
       if (r.blocked) chips += '<span class="chip blocked">blocked</span>';
@@ -1262,12 +1292,22 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
 
   /* Tiles ---------------------------------------------------------------- */
   var TILES = {
-    "today-shipped": ["shipped today", "Cycles that merged to main today",
-                      function () { return D.today_shipped; }, "cycle"],
-    "today-filed":   ["filed today", "Issues opened today",
+    /* The row SHAPE follows the source: live tiles carry PRs and runs, the
+       snapshot fallback carries attributed cycles. `D.today_live` decides,
+       because a renderer that sniffed the first row would pick wrongly on an
+       empty list — which is the common case and the one that matters. */
+    "today-shipped": [D.today_live ? "shipped today, live" : "shipped today",
+                      "Pull requests merged today",
+                      function () { return D.today_shipped; },
+                      D.today_live ? "pr" : "cycle"],
+    "today-filed":   [D.filed_live ? "filed today, live" : "filed today",
+                      "Issues opened today",
                       function () { return D.filed_today; }, "issue"],
-    "today-failed":  ["failed today", "Cycles that did not deliver today",
-                      function () { return D.today_failed; }, "cycle"],
+    "today-failed":  [D.today_live ? "failed today, live" : "failed today",
+                      D.today_live ? "Loop runs that did not finish today"
+                                   : "Agent-work cycles that did not deliver today",
+                      function () { return D.today_failed; },
+                      D.today_live ? "run" : "cycle"],
     "backlog":       ["backlog", "Every open issue, highest priority first",
                       function () {
                         var rank = { high: 0, medium: 1, low: 2, unset: 3 };

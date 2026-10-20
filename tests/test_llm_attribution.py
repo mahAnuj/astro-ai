@@ -247,6 +247,22 @@ def test_describe_store_names_the_bucket_or_the_local_dir(monkeypatch, tmp_path)
 
 def _ops_page(client, monkeypatch, tmp_path):
     monkeypatch.setattr(ops_data, "LIVE_ISSUES", False)
+    # AND the today tiles. Rendering /admin/ops goes down the live path for
+    # both, so without this the behaviour suite spends the runner's 60/hour
+    # GitHub budget. Found by QA on #418 with a `urlopen` recorder, not by a
+    # failing test: a real request that succeeds looks exactly like no request.
+    #
+    # These two lines are no longer what makes this test hermetic, and the
+    # round-1 version of this comment claimed they were. They stopped the two
+    # `api.github.com` calls and left SIXTEEN requests to
+    # raw.githubusercontent.com — eight per test — because the line below
+    # points `OPS_MEASUREMENTS_DIR` at a path that does not exist, which is
+    # exactly what drops every `_fetch` onto its HTTPS branch. The guard that
+    # actually holds is `conftest._no_outbound_http`; these stay because
+    # pinning the two switches is still the right thing for a test that is not
+    # about the live path, and because a URLError'd live read is a different
+    # code path from a switched-off one.
+    monkeypatch.setattr(ops_data, "LIVE_TODAY", False)
     monkeypatch.setenv("OPS_MEASUREMENTS_DIR", str(tmp_path / "none"))
     ops_data._cache.clear()
     ops_data._app_cache = None

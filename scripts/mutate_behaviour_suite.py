@@ -1276,6 +1276,359 @@ MUTATIONS = [
      "and prompt_tokens > MIN_CACHEABLE_PREFIX",
      "test_a_prompt_exactly_at_the_floor_is_measurable"),
 
+    ("#ops-today: the failure tile is scoped back to agent-work (the 2026-10-18 blindness)",
+     "src/astro_ai/ops_today.py",
+     '    "agent-measure.yml",\n',
+     '',
+     "test_every_loop_leg_counts_as_a_failure_not_just_agent_work"),
+
+    ("#ops-today: a red pr-gates run counts as a loop failure (every caught defect reads as an outage)",
+     "src/astro_ai/ops_today.py",
+     '    "verify-production.yml",\n)',
+     '    "verify-production.yml",\n    "pr-gates.yml",\n)',
+     "test_a_red_pr_gate_is_not_a_loop_failure"),
+
+    ("#ops-today: a clock-killed run stops counting (cancelled is not failed)",
+     "src/astro_ai/ops_today.py",
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral")',
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral", "cancelled")',
+     "test_a_run_killed_by_the_clock_counts_as_failed"),
+
+    ("#ops-today: the runs query is bounded by today's UTC date (drops 00:00-05:30 IST)",
+     "src/astro_ai/ops_today.py",
+     'day = day_start.strftime("%Y-%m-%d")',
+     'day = datetime.now(timezone.utc).strftime("%Y-%m-%d")',
+     "test_the_actions_query_is_bounded_by_the_ist_day_start_not_todays_utc_date"),
+
+    ("#ops-today: the workflow match reads the display name, not the path",
+     "src/astro_ai/ops_today.py",
+     'path = (r.get("path") or "").rsplit("/", 1)[-1]',
+     'path = (r.get("name") or "") + ".yml"',
+     "test_a_renamed_workflow_display_name_does_not_empty_the_tile"),
+
+    ("#ops-today: live rows are merged with the snapshot instead of replacing it",
+     "src/astro_ai/ops_data.py",
+     '        "today_failed": (live_today.get("failed", []) if live_today is not None',
+     '        "today_failed": (live_today.get("failed", []) + [r for r in today] if live_today is not None',
+     "test_live_rows_replace_the_snapshot_rather_than_joining_them"),
+
+    ("#ops-today: the failure alert is gated on loop.json again (the broken part reports itself)",
+     "src/astro_ai/ops_data.py",
+     '    if loop.get("today_failed"):\n        n = len(loop["today_failed"])',
+     '    if loop.get("ok") and loop.get("today_failed"):\n        n = len(loop["today_failed"])',
+     "test_the_failure_alert_fires_even_with_no_loop_json"),
+
+    # --- QA round 1 on #418 (2026-10-18). Eleven findings; these are the
+    # mutations for the ones that were real. Every behaviour below had NO gate
+    # that could fail before this round. -----------------------------------
+    ("#ops-today: the live cache is keyed on the clock alone (survives IST midnight)",
+     "src/astro_ai/ops_data.py",
+     '    if (_today_cache and _today_cache[1] == day\n'
+     '            and now - _today_cache[0] < CACHE_TTL):',
+     '    if _today_cache and now - _today_cache[0] < CACHE_TTL:',
+     "test_the_live_cache_does_not_survive_ist_midnight"),
+
+    ("#ops-today: the live-today catch narrows back to four types (IncompleteRead 500s the page)",
+     "src/astro_ai/ops_data.py",
+     "    except Exception as exc:  # noqa: BLE001 -- see below",
+     "    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:",
+     "test_a_failure_outside_the_four_old_exception_types_does_not_500_the_page"),
+
+    ("#ops-today: a failure is not remembered (an outage costs a request per render)",
+     "src/astro_ai/ops_data.py",
+     '        _today_cache = (now, day, None)\n        return None',
+     '        return None',
+     "test_a_failing_live_path_is_not_retried_on_every_render"),
+
+    ("#ops-today: shipped is sorted oldest-first",
+     "src/astro_ai/ops_today.py",
+     '"shipped": sorted(shipped.values(), key=lambda s: s["merged_at"], reverse=True)',
+     '"shipped": sorted(shipped.values(), key=lambda s: s["merged_at"])',
+     "test_shipped_and_failed_are_newest_first"),
+
+    ("#ops-today: failed is sorted oldest-first",
+     "src/astro_ai/ops_today.py",
+     '"failed": sorted(failed.values(), key=lambda f: f["started"] or "", reverse=True)',
+     '"failed": sorted(failed.values(), key=lambda f: f["started"] or "")',
+     "test_shipped_and_failed_are_newest_first"),
+
+    ("#ops-today: the live cache never expires (the tiles freeze for the process)",
+     "src/astro_ai/ops_data.py",
+     '            and now - _today_cache[0] < CACHE_TTL):',
+     '            and True):',
+     "test_the_live_cache_expires"),
+
+    ("#ops-today: a truncated page is reported as complete (a silent undercount)",
+     "src/astro_ai/ops_today.py",
+     '        "truncated": pr_more or runs_more,',
+     '        "truncated": False,',
+     "test_a_truncated_runs_page_is_admitted_rather_than_undercounted"),
+
+    ("#ops-today: the pager always spends MAX_PAGES (3x the budget on a quiet day)",
+     "src/astro_ai/ops_today.py",
+     '        if len(batch) < PER_PAGE:\n            return rows, False',
+     '        if False:\n            return rows, False',
+     "test_an_ordinary_day_still_costs_one_request_per_endpoint"),
+
+    ("#ops-today: the steward drops off the loop (the leg that reports stoppage, invisible)",
+     "src/astro_ai/ops_today.py",
+     '    "agent-steward.yml",\n',
+     '',
+     "test_the_steward_counts_as_a_loop_leg"),
+
+    ("#ops-today: the fallback alert renders a literal '?' to the reader",
+     "src/astro_ai/ops_data.py",
+     '            add("amber", f"{n} agent-work cycle(s) failed today",',
+     '            add("amber", f"{n} loop run(s) failed today - ?",',
+     "test_the_fallback_alert_does_not_render_a_literal_question_mark"),
+
+    ("#ops-today: snapshot() is awaited inline (up to 12s of event loop, app-wide)",
+     "src/astro_ai/routes/admin.py",
+     '    ops = await asyncio.to_thread(ops_data.snapshot)',
+     '    ops = ops_data.snapshot()',
+     "test_the_ops_page_does_not_block_the_event_loop"),
+
+    ("#ops-today: today_live is hardcoded (the drill-down picks the wrong renderer)",
+     "src/astro_ai/routes/admin.py",
+     '        "today_live": L.get("today_live", False),',
+     '        "today_live": False,',
+     "test_the_page_tells_the_drill_down_which_shape_the_rows_are"),
+
+    ("#ops-today: a missing snapshot blanks the live tiles too",
+     "src/astro_ai/ops_data.py",
+     '                "today_failed": (live_today or {}).get("failed", []),',
+     '                "today_failed": [],',
+     "test_live_tiles_survive_a_missing_snapshot_file"),
+    # ---- QA round 2 on #418. Three ship-blocking findings. The first is the
+    # ---- one this block exists for: `truncated` was computed and read NOWHERE
+    # ---- while three places said the page showed it. 18 of the reviewer's 29
+    # ---- hand-built mutants survived the suite AND the 179-row sweep.
+
+    ("#ops-today r2: the truncation flag never reaches the view",
+     "src/astro_ai/ops_data.py",
+     '"failed_truncated": bool((live_today or {}).get("failed_truncated")),\n        # Travels WITH',
+     '"failed_truncated": False,\n        # Travels WITH',
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+
+    ("#ops-today r2: the tile prints a capped count as a total",
+     "src/astro_ai/templates/admin_ops.html",
+     "{{ '\\u2265' if L.failed_truncated }}{{ L.today_failed|length }}",
+     "{{ L.today_failed|length }}",
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+
+    ("#ops-today r2: a startup_failure counts as a success (a leg that never ran reads as 0)",
+     "src/astro_ai/ops_today.py",
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral")',
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral", "startup_failure")',
+     "test_any_conclusion_that_is_not_a_success_counts_as_a_failure"),
+
+    ("#ops-today r2: conclusions go back to an allow-list of failures",
+     "src/astro_ai/ops_today.py",
+     "        if concl is None or concl in SUCCEEDED_CONCLUSIONS:\n            continue",
+     '        if concl not in ("failure", "timed_out", "cancelled"):\n            continue',
+     "test_any_conclusion_that_is_not_a_success_counts_as_a_failure"),
+
+    ("#ops-today r2: _fetch keeps the four-type tuple (a truncated read 500s the page)",
+     "src/astro_ai/ops_data.py",
+     '        except Exception as exc:  # noqa: BLE001 -- see above\n            log.warning("ops_data: could not fetch %s: %s", url, exc, exc_info=True)',
+     '        except (urllib.error.URLError, OSError, ValueError) as exc:\n            log.warning("ops_data: could not fetch %s: %s", url, exc)',
+     "test_the_measurements_fetch_does_not_500_the_page_on_a_truncated_read"),
+
+    ("#ops-today r2: the tiles fall back to a stale snapshot and no alert says so",
+     "src/astro_ai/ops_data.py",
+     '    if loop.get("fell_back"):',
+     "    if False:",
+     "test_a_programming_error_in_the_live_path_raises_an_alert"),
+
+    ("#ops-today r2: fell_back is never computed for the delivery tiles",
+     "src/astro_ai/ops_data.py",
+     "fell_back=LIVE_TODAY and live_today is None)",
+     "fell_back=False)",
+     "test_a_programming_error_in_the_live_path_raises_an_alert"),
+
+    # ---- QA round 3 on #418 (2026-10-20). Twelve guard gaps, each one proved
+    # ---- by a hand-built mutant that survived the whole suite AND the 179-row
+    # ---- sweep. Their shared shape, worth stating once: every one of them
+    # ---- pinned a TRANSPORT and not a USE. `fetch_today` was tested against a
+    # ---- day start handed to it already correct, so nothing tested the line
+    # ---- that COMPUTES it; `truncated` was tested as a dict key, so nothing
+    # ---- tested the badge; `today_live` was tested as a serialised JSON
+    # ---- field, so nothing tested the branch that picks a renderer from it.
+
+    ("#ops-today r3 G1: the IST day start is computed in UTC (THE original "
+     "boundary bug, at the caller this time)",
+     "src/astro_ai/ops_data.py",
+     "    day_start = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)",
+     "    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)",
+     "test_the_page_computes_the_day_start_in_ist_not_in_utc"),
+
+    ("#ops-today r3 G1: the date printed beside the tiles is the UTC one",
+     "src/astro_ai/ops_data.py",
+     '    today_ist = now_ist.strftime("%Y-%m-%d")',
+     '    today_ist = now.strftime("%Y-%m-%d")',
+     "test_the_day_start_handed_to_the_api_is_the_one_the_page_prints"),
+
+    ("#ops-today r3 G2: the LIVE_TODAY kill switch stops switching anything",
+     "src/astro_ai/ops_data.py",
+     "    live_today = _live_today(day_start.astimezone(timezone.utc)) if LIVE_TODAY else None",
+     "    live_today = _live_today(day_start.astimezone(timezone.utc))",
+     "test_pinning_the_tiles_to_the_snapshot_makes_no_api_call_and_is_not_a_fallback"),
+
+    ("#ops-today r3 G2: the behaviour suite can reach the network again",
+     "tests/conftest.py",
+     '    monkeypatch.setattr(urllib.request, "urlopen", _blocked)',
+     "    assert _blocked",
+     "test_the_behaviour_suite_cannot_reach_the_network"),
+
+    ("#ops-today r3 G3: the live-BACKLOG catch narrows back to four types",
+     "src/astro_ai/ops_data.py",
+     "    except Exception as exc:  # noqa: BLE001\n"
+     "        # Broad for the same reason as `_live_today` below",
+     "    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:\n"
+     "        # Broad for the same reason as `_live_today` below",
+     "test_a_backlog_failure_outside_the_four_old_exception_types_does_not_500"),
+
+    ("#ops-today r3 G3: the backlog falls back to a stale count and no alert says so",
+     "src/astro_ai/ops_data.py",
+     '    if issues.get("fell_back"):',
+     "    if False:",
+     "test_a_backlog_programming_error_degrades_the_panel_rather_than_the_page"),
+
+    ("#ops-today r3 G4: the Shipped tile is badged `live` off the snapshot",
+     "src/astro_ai/templates/admin_ops.html",
+     "{% if L.today_live %}<span class=\"age\">live{% if L.shipped_truncated %}, at least{% endif %}</span>",
+     "{% if True %}<span class=\"age\">live{% if L.shipped_truncated %}, at least{% endif %}</span>",
+     "test_the_shipped_tile_says_live_only_when_it_is_live"),
+
+    ("#ops-today r3 G4: the Failed-today fallback drops the agent-work-only caveat",
+     "src/astro_ai/templates/admin_ops.html",
+     "agent-work only, as of {{ ops.ages.Delivery.text }}",
+     "as of {{ ops.ages.Delivery.text }}",
+     "test_the_failed_tile_fallback_says_it_counts_agent_work_only"),
+
+    ("#ops-today r3 G4: the Filed-today source badge is deleted outright",
+     "src/astro_ai/templates/admin_ops.html",
+     '      <span class="foot">new issues opened<br>\n'
+     '        {% if I.live %}<span class="age">live</span>\n'
+     '        {% else %}<span class="age {{ \'stale\' if ops.ages.Backlog.stale }}">'
+     'as of {{ ops.ages.Backlog.text }}</span>{% endif %}</span>',
+     '      <span class="foot">new issues opened</span>',
+     "test_the_filed_tile_carries_its_own_source_badge"),
+
+    ("#ops-today r3 G5: the drill-down hardcodes the cycle renderer (a panel of blanks)",
+     "src/astro_ai/templates/admin_ops.html",
+     '                      D.today_live ? "pr" : "cycle"],',
+     '                      "cycle"],',
+     "test_the_drill_down_picks_its_row_renderer_from_the_live_flag"),
+
+    ("#ops-today r3 G5: every PR in the sheet links to the same pull request",
+     "src/astro_ai/templates/admin_ops.html",
+     'link(REPO + "/pull/" + r.pr, "PR diff &rarr;")',
+     'link(REPO + "/pull/418", "PR diff &rarr;")',
+     "test_the_drill_down_links_a_merged_pr_by_its_own_number"),
+
+    ("#ops-today r3 G6: no snapshot AND no API renders three tiles reading `0 ... live`",
+     "src/astro_ai/ops_data.py",
+     '                "today_live": live_today is not None,',
+     '                "today_live": True,',
+     "test_no_snapshot_and_no_api_is_an_absence_not_three_live_zeroes"),
+
+    ("#ops-today r3 G7: the fallback alert loses the whole explanation",
+     "src/astro_ai/ops_data.py",
+     '                "From the committed snapshot, not live, so this counts "\n'
+     '                "agent-work only and may be out of date. A cycle that did not "\n'
+     '                "deliver leaves its issue untouched.")',
+     '                "A cycle that did not deliver leaves its issue untouched.")',
+     "test_the_fallback_alert_says_the_count_is_stale_and_agent_work_only"),
+
+    ("#ops-today r3 G8: Filed today borrows the delivery panel's live flag",
+     "src/astro_ai/routes/admin.py",
+     '        "filed_live": I.get("live", False),',
+     '        "filed_live": True,',
+     "test_the_filed_drill_down_flag_follows_the_backlog_not_the_delivery_read"),
+
+    ("#ops-today r3 G9: the page cap goes to 99 (120/hour becomes 2,424/hour)",
+     "src/astro_ai/ops_today.py",
+     "MAX_PAGES = 3",
+     "MAX_PAGES = 99",
+     "test_a_pathological_day_is_capped_at_three_pages_per_endpoint"),
+
+    ("#ops-today r3 G9: per_page drops to 30 (an ordinary day becomes 'at least')",
+     "src/astro_ai/ops_today.py",
+     "PER_PAGE = 100",
+     "PER_PAGE = 30",
+     "test_each_page_asks_for_a_hundred_rows"),
+
+    ("#ops-today r3 G9: the day-boundary stop rule never fires",
+     "src/astro_ai/ops_today.py",
+     "        if oldest(batch[-1]) < since:\n"
+     "            return rows, False          # paged back past the day start",
+     "        if False:\n"
+     "            return rows, False          # paged back past the day start",
+     "test_the_pager_stops_at_the_day_boundary_not_only_on_a_short_page"),
+
+    ("#ops-today r3 G9: a 403 body is accepted as an empty page (0/0/0, badged live)",
+     "src/astro_ai/ops_today.py",
+     "        if not isinstance(batch, list):\n"
+     "            raise ValueError(f\"{base.rsplit('/', 1)[-1]} did not return a list\")",
+     "        if not isinstance(batch, list):\n"
+     "            batch = []",
+     "test_a_page_that_is_not_a_list_raises_rather_than_counting_as_empty"),
+
+    ("#ops-today r3 G11: failed loses its cross-page distinctness",
+     "src/astro_ai/ops_today.py",
+     '        failed[rid if rid is not None else ("no-id", len(failed))] = {',
+     "        failed[(\"row\", len(failed))] = {",
+     "test_a_run_repeated_across_a_page_boundary_is_counted_once"),
+
+    ("#ops-today r3 G11: dedupe becomes a drop for a row with no id",
+     "src/astro_ai/ops_today.py",
+     '        failed[rid if rid is not None else ("no-id", len(failed))] = {',
+     "        failed[rid] = {",
+     "test_a_run_with_no_id_is_kept_rather_than_collapsed"),
+
+    # RE-POINTED. F2 rewrote this paragraph from 84/hour to 120/hour, which
+    # orphaned the old anchor -- and the new static pre-flight above caught it
+    # in milliseconds, where the sweep would have spent a sandboxed suite run
+    # to report ANCHOR MISSED. That is the whole argument for the pre-flight,
+    # demonstrated by the change that introduced it.
+    ("#ops-today r3 G12: the COST paragraph goes back to the pre-pager figure",
+     "src/astro_ai/ops_today.py",
+     "                                     = 120/hour",
+     "                                     = 36/hour",
+     "test_the_cost_paragraph_states_the_actual_worst_case"),
+
+    ("#ops-today r3 G15: the ok path trusts a key the degraded path does not",
+     "src/astro_ai/ops_data.py",
+     '        "today_shipped": (live_today.get("shipped", []) if live_today is not None',
+     '        "today_shipped": (live_today["shipped"] if live_today is not None',
+     "test_a_live_dict_missing_a_key_blanks_a_tile_rather_than_500ing_the_page"),
+
+    ("#ops-today r3 G10: the workflow exhaustiveness scan globs *.yml only",
+     "tests/test_ops_today_live.py",
+     '            if p.is_file() and p.suffix in (".yml", ".yaml")}',
+     '            if p.is_file() and p.suffix == ".yml"}',
+     "test_the_workflow_scan_sees_a_yaml_as_well_as_a_yml"),
+
+    # Two 500s found by making the suite hermetic, in the branch that had never
+    # once run under test because the tests rendering it were fetching the real
+    # files over the network. `_loop_view` already carried the rule, in ten
+    # lines, written after this exact failure; neither sibling inherited it.
+    ("#ops-today r3: the backlog zero-state drops keys (KeyError: 'filed_today')",
+     "src/astro_ai/ops_data.py",
+     '        return {"ok": False, "generated_at": None, "live": False,\n'
+     '                "fell_back": fell_back, "open": 0, "rows": [], "with_ask": 0,\n'
+     '                "by_priority": {}, "by_area": {}, "by_type": {},\n'
+     '                "blocked": [], "filed_today": []}',
+     '        return {"ok": False, "rows": [], "live": False, "fell_back": fell_back}',
+     "test_the_ops_page_survives_every_source_being_unreadable"),
+
+    ("#ops-today r3: the cost zero-state drops keys (UndefinedError: known_usd)",
+     "src/astro_ai/ops_data.py",
+     '        return {"ok": False, "rows": [], "known_usd": 0, "unknown": [],\n'
+     '                "shipped_30d": shipped_30d, "per_issue_usd": None}',
+     '        return {"ok": False, "rows": []}',
+     "test_the_ops_page_survives_every_source_being_unreadable"),
     # #409: visitor text at /admin/feedback is protected by autoescape ALONE.
     ("#409: autoescape turned off in the real environment",
      "src/astro_ai/routes/deps.py",
@@ -1451,6 +1804,84 @@ MUTATIONS = [
      '        if not text.strip():',
      '        if False:',
      "test_an_empty_main_is_not_a_pass"),
+    # ---- QA round 4 on #418: F1 and F2 ------------------------------------
+    # F1. The truncation marker leaking onto a tile whose read was COMPLETE.
+    # The old assertions were whole-PAGE substrings (`"≥" in body`), so this
+    # mutant left 772 tests green while the page rendered `≥0 PRs merged`. The
+    # scoped form that catches it was credited to this branch by a comment and
+    # actually lived on #419, never an ancestor of it.
+    ("#418/F1: the truncation flag leaks onto the SHIPPED tile",
+     "src/astro_ai/ops_today.py",
+     '"shipped_truncated": pr_more,',
+     '"shipped_truncated": pr_more or runs_more,',
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+    # F2. The COST paragraph's worst case is derived from BOTH pagers now, so
+    # moving either constant must move the stated number or the gate is again
+    # holding a wrong figure in place -- which is exactly what `+ 1` did.
+    ("#418/F2: the backlog pager shrinks and the stated cost does not follow",
+     "src/astro_ai/issue_backlog.py",
+     "MAX_PAGES = 4",
+     "MAX_PAGES = 1",
+     "test_the_cost_paragraph_states_the_actual_worst_case"),
+    # ---- QA round 4 on #418: F4-F10. Every mutant below was built FIRST and
+    # confirmed to survive the suite, then the test was written against it. Two
+    # of my first attempts were vacuous (F6 never put the hostile title on the
+    # page; F9 mutated a fallback another fallback had already made dead code)
+    # and one "catch" was a SyntaxError rather than a catch -- all three found
+    # by probing, which is why each row here is parseable and proven.
+    ("#418/F4: the tile says a floor and the alert states it as a total",
+     "src/astro_ai/ops_data.py",
+     'at_least = "At least " if loop.get("failed_truncated") else ""',
+     'at_least = ""',
+     "test_the_alert_admits_the_floor_when_the_tile_does"),
+
+    # Round 5, N-1. The alert keyed its floor disclosure off `today_truncated`,
+    # the OR of both endpoints, while the tile reads the per-endpoint flag -- so
+    # with the PULLS read capped and the runs read complete the two disagreed
+    # about one number on one screen, and the alert was the false one. Both
+    # halves of the disclosure get a row, because they are two separate reads of
+    # the same flag and F4 only ever pinned the first.
+    ("#418/N1: the alert's floor disclosure goes back to the OR of both endpoints",
+     "src/astro_ai/ops_data.py",
+     'at_least = "At least " if loop.get("failed_truncated") else ""',
+     'at_least = "At least " if loop.get("today_truncated") else ""',
+     "test_a_capped_pulls_read_does_not_make_the_failure_count_a_floor"),
+
+    ("#418/N1: the floor SENTENCE goes back to the OR of both endpoints",
+     "src/astro_ai/ops_data.py",
+     '"this is a floor, not a total." if loop.get("failed_truncated")',
+     '"this is a floor, not a total." if loop.get("today_truncated")',
+     "test_a_capped_pulls_read_does_not_make_the_failure_count_a_floor"),
+    ("#418/F4b: the truncation flag never reaches the alert",
+     "src/astro_ai/ops_data.py",
+     '"today_truncated": bool((live_today or {}).get("truncated")),\n        # Per tile',
+     '"today_truncated": False,\n        # Per tile',
+     "test_the_alert_admits_the_floor_when_the_tile_does"),
+    ("#418/F10: the alert stops deduping and names a workflow once per run",
+     "src/astro_ai/ops_data.py",
+     'sorted({f.get("workflow") or "an unnamed workflow"\n                                      for f in loop["today_failed"]})',
+     'sorted([f.get("workflow") or "an unnamed workflow"\n                                      for f in loop["today_failed"]])',
+     "test_every_failing_workflow_is_named_once"),
+    ("#418/F9: a run with no name is no longer identified at all",
+     "src/astro_ai/ops_today.py",
+     '"workflow": r.get("name") or path',
+     '"workflow": r.get("name")',
+     "test_a_run_with_no_name_is_still_named_something"),
+    ("#418/F6: a PR title can terminate the ops-data script block",
+     "src/astro_ai/routes/admin.py",
+     'json.dumps(client).replace("</", "<\\\\/")',
+     "json.dumps(client)",
+     "test_the_ops_json_blob_cannot_be_escaped_by_a_pr_title"),
+    ("#418/F5: the GitHub token stops reaching the wire",
+     "src/astro_ai/ops_today.py",
+     'headers["Authorization"] = f"Bearer {token}"',
+     "pass",
+     "test_the_request_carries_a_user_agent_and_the_token_when_set"),
+    ("#418/F5b: the User-Agent GitHub requires is dropped",
+     "src/astro_ai/ops_today.py",
+     '"User-Agent": _UA,',
+     "",
+     "test_the_request_carries_a_user_agent_and_the_token_when_set"),
     # ---- #442: the steward can dispatch, and a merge is not a refix ---------
     ("#442: the carrier stops refusing a lenient dispatch line",
      "scripts/dispatch_cycle.sh",
@@ -2008,6 +2439,80 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
 # contend and the wall time stops improving. `cpu_count or 1` because it returns
 # None on some platforms.
 _WORKERS = min(int(os.environ.get("MUTATE_WORKERS", "4")), (os.cpu_count() or 1))
+
+# STATIC ANCHOR PRE-FLIGHT (#418/F7). Claimed in two PR comments -- "a static
+# anchor validator now runs over every 5-tuple", upgraded to "zero rows anchor
+# on a comment" -- and it was in neither the repo nor any workflow. QA round 4
+# looked for it and reported the quoted counts as unreproducible. So it is built
+# here rather than claimed again.
+#
+# WHY STATIC AND AHEAD OF THE SWEEP. `_run_in_sandbox` already reports
+# ANCHOR MISSED, but only per row, only at run time, and only for uniqueness --
+# so a bad anchor costs a full sandboxed suite run before it says so, and an
+# anchor sitting on a COMMENT passes it completely. A row anchored on a comment
+# mutates prose: it changes no behaviour, so it reports MISSED for a defect that
+# is in fact guarded, and the row silently stops being a gate. One did, for two
+# QA rounds (#ops-today's clock-killed run), and that is this log's recurring
+# subject.
+#
+# Cheap: pure text, no subprocess, no suite. It runs before anything is spent.
+def _preflight_anchors() -> list[str]:
+    problems: list[str] = []
+    for label, rel, old, new, test in MUTATIONS:
+        path = ROOT / rel
+        if not path.exists():
+            problems.append(f"{label}: {rel} does not exist")
+            continue
+        src = path.read_text(encoding="utf-8")
+        n = src.count(old)
+        if n != 1:
+            problems.append(f"{label}: anchor matches {n}x in {rel}, need exactly 1")
+            continue
+        if old == new:
+            problems.append(f"{label}: the mutant is identical to the anchor")
+        # The anchor must not BEGIN on a comment line: mutating prose changes no
+        # behaviour, so such a row cannot ever catch anything.
+        #
+        # Read off the anchor's OWN resolved position, never by scanning the file
+        # for its first line. The scanning version rejected 65 of 243 rows: any
+        # line anywhere that merely CONTAINED the anchor's first line satisfied
+        # `first in line`, so a comment quoting a line of code condemned the row
+        # that mutates it -- and the pre-flight exits before the sweep, so it was
+        # a false positive in the blocking direction, in the validator added to
+        # stop exactly this class of mistake. `old` is already known to occur
+        # EXACTLY ONCE (checked above), so its position is not a search.
+        at = src.index(old)
+        bol = src.rfind("\n", 0, at) + 1
+        eol = src.find("\n", at)
+        line = src[bol:eol if eol != -1 else len(src)]
+        if line.lstrip().startswith(("#", "//", "<!--")):
+            problems.append(
+                f"{label}: anchor begins on a COMMENT line in {rel} -- mutating "
+                f"prose changes no behaviour, so this row cannot ever catch "
+                f"anything: {line.strip()[:70]}")
+    return problems
+
+
+_anchor_problems = _preflight_anchors()
+if _anchor_problems:
+    print(f"ANCHOR PRE-FLIGHT FAILED - {len(_anchor_problems)} row(s), "
+          f"nothing was run:")
+    for _p in _anchor_problems:
+        print(f"  {_p}")
+    print("\nA row whose anchor is wrong is not a weak gate, it is no gate. Fix")
+    print("the anchor or remove the row deliberately; do not let the sweep")
+    print("spend a sandboxed suite run per row to tell you the same thing.")
+    raise SystemExit(1)
+print(f"anchor pre-flight: {len(MUTATIONS)} rows -- every anchor resolves exactly "
+      f"once, differs from its mutant, and does not begin on a comment line")
+
+if "--preflight-only" in sys.argv:
+    # The pre-flight is a gate in its own right, it runs BEFORE the sweep, and it
+    # can fail the whole run on its own -- so it has to be checkable without
+    # paying for a sandboxed suite run per row. This module cannot be imported to
+    # test it (there is no __main__ guard; importing starts the sweep), so the
+    # only way in is argv. Used by tests/test_mutation_preflight.py.
+    raise SystemExit(0)
 
 _work = [_CONTROL] + list(MUTATIONS)
 _verdicts: dict[int, tuple[str, str]] = {}
