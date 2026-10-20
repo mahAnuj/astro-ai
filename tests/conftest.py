@@ -202,13 +202,41 @@ def _no_outbound_http(monkeypatch):
     `httpx` (Brevo, the TestClient) and `google-cloud-storage` are untouched:
     neither goes through `urllib`, and both are already stubbed where used.
     """
+    import urllib.parse
     import urllib.request
 
-    def _blocked(*a, **k):
+    real = urllib.request.urlopen
+
+    #: Loopback is NOT outbound, and blocking it broke a real test rather than a
+    #: real request. `tests/test_hindi_surface_gate.py` (#424) drives the
+    #: `verify_hindi_surface` gate against a stub HTTP server it starts itself on
+    #: an ephemeral port, through this same `urlopen` — so a blanket block turned
+    #: "the suite sends no packets off this machine", which is the promise, into
+    #: "no test may run a server", which is not. Measured on the merge of #418
+    #: and #424: two failures, both in that file, neither a network request.
+    #:
+    #: Reaching a loopback address still cannot leave the machine, so the
+    #: hermeticity claim this fixture exists to make true is unaffected: the 16
+    #: raw.githubusercontent.com requests stay blocked, asserted by
+    #: `test_the_behaviour_suite_cannot_reach_the_network`.
+    _LOOPBACK = ("127.0.0.1", "localhost", "::1", "[::1]")
+
+    def _host_of(target) -> str:
+        url = getattr(target, "full_url", None) or (
+            target if isinstance(target, str) else "")
+        try:
+            return (urllib.parse.urlsplit(url).hostname or "").lower()
+        except ValueError:
+            return ""
+
+    def _blocked(target=None, *a, **k):
+        if _host_of(target) in _LOOPBACK:
+            return real(target, *a, **k)
         import urllib.error
         raise urllib.error.URLError(
             "the behaviour suite is hermetic: no outbound HTTP. Stub "
-            "urllib.request.urlopen in your test if it needs a response."
+            "urllib.request.urlopen in your test if it needs a response. "
+            "(Loopback is allowed — a test may run its own server.)"
         )
 
     monkeypatch.setattr(urllib.request, "urlopen", _blocked)
