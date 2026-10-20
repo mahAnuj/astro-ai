@@ -1299,11 +1299,11 @@ MUTATIONS = [
      '            n = int(tok.get("input_tokens") or 0)',
      "test_the_stack_sums_to_the_underlying_blobs"),
 
-    ("#ops-errors: saturation is inferred from len() == limit, ambiguous at exactly the cap",
+    ("#ops-errors: the error read ignores the window (GUARD-1: a 0.29% day rendered 30.85%)",
      "src/astro_ai/ops_data.py",
-     '                               limit=ERROR_EVENT_LIMIT + 1) or []\n        errors_truncated = len(errors) > ERROR_EVENT_LIMIT',
-     '                               limit=ERROR_EVENT_LIMIT) or []\n        errors_truncated = len(errors) >= ERROR_EVENT_LIMIT',
-     "test_exactly_the_cap_is_not_reported_as_truncated"),
+     "        brk = events.error_breakdown(days=days) or {}",
+     "        brk = events.error_breakdown() or {}",
+     "test_the_window_is_honoured_so_a_quiet_day_is_not_scored_on_a_bad_month"),
     # ---- QA round 2 on #419. Six of these mutants survived all 745 tests AND
     # ---- the 195-row sweep; the sweep's own rows only mutated what the
     # ---- round-1 fix had moved, so they could not see the sign, the gate
@@ -1331,7 +1331,7 @@ MUTATIONS = [
      "src/astro_ai/ops_data.py",
      '"errors": errors_total,',
      '"errors": len(errors),',
-     "test_the_rate_comes_from_the_uncapped_count_not_the_capped_sample"),
+     "test_the_count_and_the_rate_are_both_exact"),
 
     ("#ops-errors: the rate reverts to the capped sample (widening lowers it again)",
      "src/astro_ai/ops_data.py",
@@ -1345,17 +1345,17 @@ MUTATIONS = [
      '"error_rate": (None if errors_truncated or not calls else round(errors_total / calls * 100, 2)),',
      "test_volume_alone_does_not_raise_an_alert"),
 
-    ("#ops-errors: a sample-derived alert count drops its floor marker (93 printed for 180)",
+    ("#ops-errors: `exhausted` reads the wrong key, so provider failures read 0",
      "src/astro_ai/ops_data.py",
-     'add("red", f"{at_least}{app[\'exhausted\']} requests had every provider fail "',
-     'add("red", f"{app[\'exhausted\']} requests had every provider fail "',
-     "test_a_sample_derived_alert_count_is_marked_as_a_floor"),
+     '        exhausted = kinds.get("AllProvidersExhausted", 0)',
+     '        exhausted = kinds.get("AllProvidersExhaused", 0)',
+     "test_a_provider_failure_behind_many_newer_errors_is_still_counted"),
 
-    ("#ops-errors: the floor sentence is never appended to a sampled alert",
+    ("#ops-errors: `too_large` reads the wrong key, so 413s read 0",
      "src/astro_ai/ops_data.py",
-     '        sampled = ("" if not app.get("errors_truncated") else',
-     '        sampled = ("" if True else',
-     "test_a_sample_derived_alert_count_is_marked_as_a_floor"),
+     '        too_large = kinds.get("RequestTooLarge", 0)',
+     '        too_large = kinds.get("RequestTooLarg", 0)',
+     "test_a_provider_failure_behind_many_newer_errors_is_still_counted"),
 
     ("#ops-tpl: the TPD line is drawn unguarded (y=-300 for a 50k peak)",
      "src/astro_ai/templates/admin_ops.html",
@@ -1369,17 +1369,17 @@ MUTATIONS = [
      '          {%- if True %}\n          <span class="lg"><i class="sw tpdsw"></i>',
      "test_the_page_draws_no_tpd_line_when_one_bucket_is_off_the_chart"),
 
-    ("#ops-tpl: the capped-sample notice is unreachable",
-     "src/astro_ai/templates/admin_ops.html",
-     '          {%- if ops.app.errors_truncated %}\n          <div class="wide"><span>&nbsp;</span>',
-     '          {%- if False %}\n          <div class="wide"><span>&nbsp;</span>',
-     "test_the_page_discloses_that_a_capped_sample_fed_the_breakdowns"),
+    ("#ops-errors: budget breaks count every error kind, not the two budget kinds",
+     "src/astro_ai/ops_data.py",
+     "            if kind in BUDGET_ERROR_TYPES:",
+     "            if True:",
+     "test_the_budget_breaks_are_counted_per_source_over_the_budget_kinds_only"),
 
-    ("#ops-tpl: a sampled breakdown count is printed as exact",
-     "src/astro_ai/templates/admin_ops.html",
-     """<b class="mono {{ 'c-failed' if ops.app.budget_breaks_total }}">{{ '≥' if ops.app.errors_truncated }}{{ ops.app.budget_breaks_total }}</b>""",
-     """<b class="mono {{ 'c-failed' if ops.app.budget_breaks_total }}">{{ ops.app.budget_breaks_total }}</b>""",
-     "test_the_page_discloses_that_a_capped_sample_fed_the_breakdowns"),
+    ("#ops-errors: the breakdown stops filtering on the event type (page views counted as errors)",
+     "src/astro_ai/events.py",
+     '            if evt.get("type") != "error":\n                continue\n            data = evt.get("data") or {}',
+     '            data = evt.get("data") or {}',
+     "test_the_count_and_the_rate_are_both_exact"),
 
     ("#ops-tpl: the error cell goes back to a hardcoded red threshold",
      "src/astro_ai/templates/admin_ops.html",
@@ -1387,6 +1387,40 @@ MUTATIONS = [
      "ops.app.error_rate >= 5",
      "test_the_error_cell_takes_its_red_threshold_from_the_module"),
 
+    # ---- QA round 3 on #419, SB-1. The cap is gone; these guard the uncapped
+    # ---- walk that replaced it, which had no direct test at all (every
+    # ---- ops-side test stubs it, correctly -- so three mutants of the walk
+    # ---- itself survived the whole suite).
+
+    ("#ops-errors: the breakdown counts non-error events too (page views inflate the rate)",
+     "src/astro_ai/events.py",
+     '            if evt.get("type") != "error":\n                continue\n            data = evt.get("data") or {}',
+     '            data = evt.get("data") or {}',
+     "test_only_error_events_are_counted"),
+
+    ("#ops-errors: the retention clamp is dropped, so every window reads one day",
+     "src/astro_ai/events.py",
+     "    days = max(1, min(days, EVENT_RETENTION_DAYS))\n    today = date.today()\n    wanted_days = [today - timedelta(days=i) for i in range(days)]\n\n    # Same fan-out",
+     "    days = 1\n    today = date.today()\n    wanted_days = [today - timedelta(days=i) for i in range(days)]\n\n    # Same fan-out",
+     "test_the_window_is_clamped_to_the_retention_ceiling"),
+
+    ("#ops-errors: a marginal counts pair KEYS instead of pair COUNTS",
+     "src/astro_ai/events.py",
+     "        by_source[src] = by_source.get(src, 0) + n",
+     "        by_source[src] = by_source.get(src, 0) + 1",
+     "test_the_cross_tab_and_both_marginals_agree_with_the_total"),
+
+    ("#ops-errors: an unclassifiable error is dropped rather than counted as '?'",
+     "src/astro_ai/events.py",
+     '            key = (data.get("error_type") or "?", data.get("source") or "?")',
+     '            if not data.get("error_type"):\n                continue\n            key = (data.get("error_type") or "?", data.get("source") or "?")',
+     "test_an_error_with_no_shape_is_counted_rather_than_dropped"),
+
+    ("#ops-errors: a corrupt day blob aborts the walk instead of being skipped",
+     "src/astro_ai/events.py",
+     "    pairs: dict[tuple[str, str], int] = {}\n    for blob in blobs:\n        if blob is None:\n            continue",
+     "    pairs: dict[tuple[str, str], int] = {}\n    for blob in blobs:\n        if blob is None:\n            raise RuntimeError('missing day')",
+     "test_a_missing_or_unreadable_day_does_not_abort_the_walk"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

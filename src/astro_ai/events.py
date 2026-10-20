@@ -245,3 +245,78 @@ def counts_by_type(*, days: int = 7) -> dict[str, int]:
             t = evt.get("type", "unknown")
             totals[t] = totals.get(t, 0) + 1
     return totals
+
+
+def error_breakdown(*, days: int = 7) -> dict[str, Any]:
+    """UNCAPPED counts of error events, by `error_type` and by `source`.
+
+    Returns `{"total": int, "by_error_type": {...}, "by_source": {...}}`.
+
+    WHY THIS EXISTS RATHER THAN `recent(types=["error"], limit=N)`.
+
+    `recent` is newest-first and stops dead at `limit`, because its job is to
+    hand back event DICTS for display. /admin/ops does not want the dicts -- it
+    wants aggregates -- and taking aggregates off a capped list made the page
+    state things that were false, three rounds running:
+
+      * the error RATE divided a capped numerator by an uncapped denominator, so
+        a steady 10% true rate rendered 10.0% at 1 day, 1.79% at 7 and nothing
+        at all at 30. Widening the window made the app look healthier.
+      * fixing only the rate left `exhausted`, `too_large`, the per-type counts
+        and the per-source counts still coming off the sample, so a RED alert
+        read "93 requests had every provider fail" against a true 180 -- and
+        read the SAME at 7 days and 30, which is the first defect again.
+      * marking those with a leading "at least" did not save it either, because
+        a cap cannot mark a ZERO. Measured: 1,020 errors in the window whose
+        newest 500 were all rate-limit 429s, behind them 300
+        AllProvidersExhausted and 120 RequestTooLarge. The sample contained
+        none of either, so the panel printed `0` and `0` and the alert strip --
+        whose own rule is "silence means checked-and-clear, never not-checked"
+        -- said nothing at all. 300 visitors had seen the "high demand" page.
+
+    A floor is only honest about what it cannot see. The fix is to see it.
+
+    COST: none beyond the walk it already shares. `_read_day` is memoised and
+    pins an elapsed day for the process lifetime, so this fans out over the same
+    blobs `counts_by_type` reads and the second walk is served from cache --
+    measured at 0 extra fetches at every window, cold and warm. It also replaces
+    `counts_by_type` + `recent` for this caller, so the page now makes ONE
+    aggregation pass where it made two, and the two can no longer disagree
+    (they could: `counts_by_type` could be served a today-blob up to
+    `_TODAY_TTL_S` old while `recent` refetched a fresh one after a `record()`,
+    which rendered "500 of 400 events").
+    """
+    days = max(1, min(days, EVENT_RETENTION_DAYS))
+    today = date.today()
+    wanted_days = [today - timedelta(days=i) for i in range(days)]
+
+    # Same fan-out as `counts_by_type`: I/O-bound on cross-region GCS, and the
+    # aggregation stays on this thread so no worker touches the counters.
+    with ThreadPoolExecutor(max_workers=_READ_WORKERS) as pool:
+        blobs = list(pool.map(_read_day, wanted_days))
+
+    # ONE cross-tab, and the two marginals DERIVED from it, so they cannot
+    # disagree with each other or with the total. The caller needs the cross-tab
+    # anyway: "which features did the token budget break" is per-source counted
+    # over two specific error types, and two marginals cannot answer it.
+    pairs: dict[tuple[str, str], int] = {}
+    for blob in blobs:
+        if blob is None:
+            continue
+        for evt in blob.get("events", []):
+            if evt.get("type") != "error":
+                continue
+            data = evt.get("data") or {}
+            # "?" rather than dropping it: an error whose shape we do not
+            # recognise still happened, and a count that silently excludes it is
+            # the undercount this function exists to remove.
+            key = (data.get("error_type") or "?", data.get("source") or "?")
+            pairs[key] = pairs.get(key, 0) + 1
+
+    by_error_type: dict[str, int] = {}
+    by_source: dict[str, int] = {}
+    for (k, src), n in pairs.items():
+        by_error_type[k] = by_error_type.get(k, 0) + n
+        by_source[src] = by_source.get(src, 0) + n
+    return {"total": sum(pairs.values()), "pairs": pairs,
+            "by_error_type": by_error_type, "by_source": by_source}

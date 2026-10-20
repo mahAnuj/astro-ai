@@ -407,22 +407,40 @@ def test_the_tpd_line_is_measured_from_the_top_of_the_chart_not_the_bottom():
 # errors being the one that reported none.
 # --------------------------------------------------------------------------- #
 
-def _app_with(n_errors, calls, monkeypatch, days=7):
-    """`_app_view` over a store holding `n_errors` errors and `calls` calls.
+def _breakdown_stub(errors):
+    """An `error_breakdown` that HONOURS `days`, as the real one does.
 
-    BOTH reads are stubbed, and they must agree: `counts_by_type` is uncapped
-    and is where the COUNT comes from, `recent` honours `limit` exactly as the
-    real one does and is where the BREAKDOWNS come from. A mock that ignored
-    `limit` would make the sampling untestable -- the defect lives in the cap,
-    so a fixture that cannot be capped cannot see it.
+    `errors` is a list of `(day_offset, error_type, source)`.
+
+    The window matters and the previous stub ignored it. QA round 3 found that
+    `_app_with` and `_ops_html` both stubbed the error read as
+    `lambda **kw: {...}`, so `test_widening_the_window_cannot_lower_the_rate_on
+    _the_same_data` -- the test named after the property -- could not see the
+    window at all. Measured consequence on the real store: a day whose true rate
+    is 0.29% rendered as a 30.85% red alert under a mutant that dropped `days`,
+    100x wrong, which is the numerator/denominator window mismatch this whole
+    branch exists to fix. This file's own `_app_with` docstring had argued for
+    exactly this and then not done it for the second read.
     """
+    def breakdown(*, days):
+        pairs: dict[tuple[str, str], int] = {}
+        for off, kind, src in errors:
+            if off < days:
+                pairs[(kind, src)] = pairs.get((kind, src), 0) + 1
+        by_k: dict[str, int] = {}
+        by_s: dict[str, int] = {}
+        for (k, s), n in pairs.items():
+            by_k[k] = by_k.get(k, 0) + n
+            by_s[s] = by_s.get(s, 0) + n
+        return {"total": sum(pairs.values()), "pairs": pairs,
+                "by_error_type": by_k, "by_source": by_s}
+    return breakdown
+
+
+def _app_with(errors, calls, monkeypatch, days=7):
+    """`_app_view` over a store holding `errors` and `calls`."""
     from astro_ai import llm_stats
-    store = [{"data": {"error_type": "AllProvidersExhausted", "source": "chart:natal"}}
-             for _ in range(n_errors)]
-    monkeypatch.setattr(events, "counts_by_type",
-                        lambda **kw: {"error": n_errors, "page_view": 7})
-    monkeypatch.setattr(events, "recent",
-                        lambda **kw: store[:kw.get("limit", 100)])
+    monkeypatch.setattr(events, "error_breakdown", _breakdown_stub(errors))
     monkeypatch.setattr(llm_stats, "usage_summary",
                         lambda d: {"days": d, "total_calls": calls, "cache_hits": 0,
                                    "cache_misses": calls, "hit_rate_pct": 0,
@@ -433,114 +451,121 @@ def _app_with(n_errors, calls, monkeypatch, days=7):
     return ops_data._app_view(days)
 
 
+def _errs(n, kind="APITimeoutError", source="chart:natal", off=0):
+    return [(off, kind, source)] * n
+
+
 def _alerts_for(app):
     return ops_data._alerts({"ok": True, "rows": [], "today_failed": []},
                             {"ok": True}, {"ok": True}, app, {})
 
 
-def test_an_unsaturated_read_reports_an_exact_count_and_rate(monkeypatch):
-    app = _app_with(50, 1000, monkeypatch)
+def test_the_count_and_the_rate_are_both_exact(monkeypatch):
+    app = _app_with(_errs(50), 1000, monkeypatch)
     assert app["errors"] == 50
-    assert app["errors_sampled"] == 50
-    assert app["errors_truncated"] is False
     assert app["error_rate"] == 5.0
 
 
-def test_the_rate_comes_from_the_uncapped_count_not_the_capped_sample(monkeypatch):
-    """600 errors against 10,000 calls is 6%. The sample stops at 500.
+def test_a_provider_failure_behind_many_newer_errors_is_still_counted(monkeypatch):
+    """THE ROUND-3 SHIP-BLOCKER. A capped read could not mark a zero.
 
-    Reading the numerator off the sample gave 5.0% -- and the further the true
-    count ran past the cap, the further the reported rate fell. The count is
-    now read from `events.counts_by_type`, which has no limit, so the rate is
-    a rate at every window and the sample size is reported separately.
+    The store: 1,020 errors in the window. The newest 600 are rate-limit 429s
+    from a rashifal blast; behind them sit 300 AllProvidersExhausted and 120
+    RequestTooLarge. A read capped at 500 saw none of either, so the panel
+    printed `0 every provider failed` and `0` 413s -- neither in red, neither
+    marked -- and because a zero is falsy the red alerts never fired and the
+    strip was silent. 300 visitors had been shown the "high demand" page
+    instead of a reading.
+
+    `_alerts`' own rule 1: "Silence means checked-and-clear, never
+    not-checked." This is that rule, asserted.
     """
-    app = _app_with(600, 10_000, monkeypatch)
-    assert app["errors"] == 600, "the count must be the true total, not the sample"
-    assert app["errors_sampled"] == ops_data.ERROR_EVENT_LIMIT
-    assert app["errors_truncated"] is True
-    assert app["error_rate"] == 6.0
+    store = (_errs(600, "RateLimitError", "rashifal_single:aries")
+             + _errs(300, "AllProvidersExhausted", "chart:natal")
+             + _errs(120, "RequestTooLarge", "chart:natal"))
+    app = _app_with(store, 1_000_000, monkeypatch)
+
+    assert app["errors"] == 1020
+    assert app["exhausted"] == 300, (
+        "the provider failures are behind 600 newer errors and were invisible "
+        "to a capped read"
+    )
+    assert app["too_large"] == 120
+
+    titles = [a["title"] for a in _alerts_for(app)]
+    assert any("every provider fail" in t for t in titles), (
+        f"300 visitors saw the high-demand page and the strip was silent: {titles}"
+    )
+    assert any("size limit" in t for t in titles), titles
+    # No floor marker anywhere: there is no sample to be a floor of.
+    assert not any(t.startswith("\u2265") for t in titles), titles
 
 
 def test_widening_the_window_cannot_lower_the_rate_on_the_same_data(monkeypatch):
-    """The property the whole finding was about, asserted directly.
+    """The property the whole branch was filed for, with a window-aware stub.
 
-    Identical store, two windows. Before, the capped numerator made 7d report
+    Identical per-day traffic at 9%. Before, the capped numerator made 7d report
     a lower rate than 1d and 30d lower still, so the operator's instinct --
     widen the window to see the trend -- moved the number the wrong way.
     """
-    rates = [_app_with(900, 10_000, monkeypatch, days=d)["error_rate"]
+    store = [(off, "APITimeoutError", "chart:natal")
+             for off in range(30) for _ in range(90)]
+    rates = [_app_with(store, 1000 * d, monkeypatch, days=d)["error_rate"]
              for d in (1, 7, 30)]
     assert rates == [9.0, 9.0, 9.0], rates
 
 
-def test_exactly_the_cap_is_not_reported_as_truncated(monkeypatch):
-    """The off-by-one that `limit + 1` exists to settle.
+def test_the_window_is_honoured_so_a_quiet_day_is_not_scored_on_a_bad_month(monkeypatch):
+    """The converse of the test above, and the one that pins `days`.
 
-    `len(sample) == limit` is ambiguous -- the same result for a store holding
-    exactly 500 and one holding 5,000 -- so one extra is fetched and the flag
-    is set on the overflow, not on the equality.
+    A clean 1-day window must not inherit a month of errors. Without this, a
+    stub (or an implementation) that ignores `days` passes the test above --
+    because 9% at every window is also what you get by ignoring the window.
     """
-    app = _app_with(ops_data.ERROR_EVENT_LIMIT, 10_000, monkeypatch)
-    assert app["errors_truncated"] is False
-    assert app["errors"] == app["errors_sampled"] == ops_data.ERROR_EVENT_LIMIT
-
-
-def test_a_sample_derived_alert_count_is_marked_as_a_floor(monkeypatch):
-    """`exhausted` comes from the capped sample; the rate does not.
-
-    QA round 2 measured this on the real local store: a RED alert read
-    "93 requests had every provider fail in 7d" against a true 180, and read
-    the SAME at 7d and 30d -- the widening-changes-nothing lie, surviving two
-    lines below a new alert that explained the read had stopped at 500. Every
-    figure taken from the sample is a floor and must say so.
-    """
-    app = _app_with(1_200, 10_000, monkeypatch)
-    assert app["errors_truncated"] is True
-    # All 500 sampled events are AllProvidersExhausted, so `exhausted` is the
-    # sample size -- a floor under the true 1,200.
-    assert app["exhausted"] == ops_data.ERROR_EVENT_LIMIT < app["errors"]
-    hit = [a for a in _alerts_for(app) if "provider fail" in a["title"]]
-    assert hit, "the exhausted alert vanished"
-    assert hit[0]["title"].startswith("\u2265"), hit[0]["title"]
-    assert "floor" in hit[0]["detail"], hit[0]["detail"]
-
-
-def test_an_exact_sample_derived_count_carries_no_floor_marker(monkeypatch):
-    """The marker must mean something, so it must be absent when exact."""
-    app = _app_with(40, 10_000, monkeypatch)
-    hit = [a for a in _alerts_for(app) if "provider fail" in a["title"]]
-    assert hit and not hit[0]["title"].startswith("\u2265"), hit[0]["title"]
-    assert "floor" not in hit[0]["detail"]
+    store = [(off, "APITimeoutError", "chart:natal")
+             for off in range(1, 30) for _ in range(100)]   # nothing today
+    app = _app_with(store, 1000, monkeypatch, days=1)
+    assert app["errors"] == 0, "a 1-day window counted errors from older days"
+    assert app["error_rate"] == 0.0
+    assert _app_with(store, 30_000, monkeypatch, days=30)["errors"] == 2900
 
 
 def test_volume_alone_does_not_raise_an_alert(monkeypatch):
     """501 errors against 1,000,000 calls is 0.05%. That is a healthy app.
 
-    The first version of this fix withheld the rate whenever the COUNT
-    saturated, regardless of the denominator, and raised a red alert in its
-    place -- so a busy site got a red that never cleared and no number at all,
-    which is exactly the "teaches the reader to skip the strip" failure rule 2
-    of `_alerts` is written against.
+    An earlier fix withheld the rate whenever the COUNT saturated, regardless of
+    the denominator, and raised a red alert in its place -- so a busy site got a
+    red that never cleared and no number at all, which is the "teaches the reader
+    to skip the strip" failure rule 2 of `_alerts` is written against.
     """
-    app = _app_with(501, 1_000_000, monkeypatch)
+    app = _app_with(_errs(501), 1_000_000, monkeypatch)
     assert app["error_rate"] == 0.05
-    assert app["errors_truncated"] is True
-    noisy = [a for a in _alerts_for(app)
+    noisy = [a["title"] for a in _alerts_for(app)
              if "error event" in a["title"] or "erroring" in a["title"]
              or "Error rate" in a["title"]]
-    assert not noisy, f"a 0.05% error rate raised {[a['title'] for a in noisy]}"
+    assert not noisy, f"a 0.05% error rate raised {noisy}"
 
 
-def test_a_real_error_rate_still_alerts_when_the_sample_is_capped(monkeypatch):
-    """The converse: saturation must not become a reason for silence either.
-
-    900 errors against 5,000 calls is 18%, well over ERROR_RATE_RED, and the
-    sample is capped. The rate is exact, so the alert is the ordinary one.
-    """
-    app = _app_with(900, 5_000, monkeypatch)
-    assert app["errors_truncated"] is True and app["error_rate"] == 18.0
+def test_a_real_error_rate_still_alerts(monkeypatch):
+    app = _app_with(_errs(900), 5_000, monkeypatch)
+    assert app["error_rate"] == 18.0
     red = [a for a in _alerts_for(app) if "erroring" in a["title"]]
     assert red and red[0]["level"] == "red", [a["title"] for a in _alerts_for(app)]
+
+
+def test_the_budget_breaks_are_counted_per_source_over_the_budget_kinds_only(monkeypatch):
+    """`budget_breaks` needs the cross-tab, which is why `error_breakdown`
+    returns `pairs` and not only the two marginals.
+
+    A timeout on the same source must not count, and a budget failure on a
+    second source must.
+    """
+    store = (_errs(5, "AllProvidersExhausted", "rashifal_single:aries")
+             + _errs(3, "RequestTooLarge", "chart:natal")
+             + _errs(7, "APITimeoutError", "rashifal_single:aries"))
+    app = _app_with(store, 1000, monkeypatch)
+    assert dict(app["budget_breaks"]) == {"rashifal_single:aries": 5, "chart:natal": 3}
+    assert app["budget_breaks_total"] == 8, "a timeout was counted as a budget break"
 
 
 # --------------------------------------------------------------------------- #
@@ -558,13 +583,14 @@ def test_a_real_error_rate_still_alerts_when_the_sample_is_capped(monkeypatch):
 # A claim about what a page shows belongs in a test that renders the page.
 # --------------------------------------------------------------------------- #
 
-def _ops_html(monkeypatch, *, peak=None, n_errors=0, calls=1000, window=None):
-    """The real page, with the app panel driven from a stubbed store."""
+def _ops_html(monkeypatch, *, peak=None, errors=(), calls=1000, window=None):
+    """The real page, with the app panel driven from a stubbed store.
+
+    `errors` is the `(day_offset, error_type, source)` list `_breakdown_stub`
+    takes, so the page respects `?window=` exactly as the app does.
+    """
     from astro_ai import llm_stats
-    store = [{"data": {"error_type": "AllProvidersExhausted", "source": "chart:natal"}}
-             for _ in range(n_errors)]
-    monkeypatch.setattr(events, "counts_by_type", lambda **kw: {"error": n_errors})
-    monkeypatch.setattr(events, "recent", lambda **kw: store[:kw.get("limit", 100)])
+    monkeypatch.setattr(events, "error_breakdown", _breakdown_stub(list(errors)))
     monkeypatch.setattr(llm_stats, "usage_summary",
                         lambda d: {"days": d, "total_calls": calls, "cache_hits": 0,
                                    "cache_misses": calls, "hit_rate_pct": 0,
@@ -602,34 +628,25 @@ def test_the_page_draws_the_tpd_line_and_its_legend_together(monkeypatch):
 
 def test_the_page_never_renders_a_none_rate(monkeypatch):
     """`{{ None }}%` reads as "None%". The cell must always carry a number."""
-    html = _ops_html(monkeypatch, n_errors=600, calls=10_000)
+    html = _ops_html(monkeypatch, errors=_errs(600), calls=10_000)
     assert "None%" not in html
     assert "600 · 6.0%" in html, "the exact count and rate are not on the page"
 
 
-def test_the_page_discloses_that_a_capped_sample_fed_the_breakdowns(monkeypatch):
-    html = _ops_html(monkeypatch, n_errors=600, calls=10_000)
-    flat = " ".join(html.split())          # the notice wraps across source lines
-    assert "so each is a floor, not a total" in flat
-    assert "newest 500 of those 600 events" in flat
-    # EVERY sample-derived figure carries the marker, asserted per element.
-    # A bare `"≥500" in html` passed with the budget-break marker removed,
-    # because the sources table below also renders one -- the same
-    # satisfied-by-a-different-element shape as the rest of this file's
-    # findings.
-    assert flat.count('<b class="mono c-failed">≥500</b>') == 2, (
-        "the budget-break total and its per-feature row must both be marked"
-    )
-    assert '<td class="n">≥500</td>' in flat, (
-        "the 'Where the errors are' table prints a sampled count as exact"
-    )
-    assert '<span class="t">≥500 requests had every provider fail' in flat
+def test_the_page_claims_no_floor_because_there_is_no_sample(monkeypatch):
+    """Every figure in the panel is exact now, so none may be hedged.
 
-
-def test_the_page_says_nothing_about_a_sample_when_the_read_was_complete(monkeypatch):
-    html = _ops_html(monkeypatch, n_errors=40, calls=10_000)
-    assert "so each is a floor, not a total" not in " ".join(html.split())
-    assert "≥" not in html.split('<h3 class="lbl" style="margin:22px 0 10px">Where the errors are')[0][-4000:]
+    A leftover `\u2265` or "floor, not a total" would be worse than the bug it
+    replaced: it would tell the operator a true number is a lower bound.
+    """
+    html = _ops_html(monkeypatch, errors=_errs(1200), calls=10_000)
+    flat = " ".join(html.split())
+    assert "1,200 \u00b7 12.0%" in flat or "1200 \u00b7 12.0%" in flat, (
+        "the exact count is not on the page"
+    )
+    assert "floor, not a total" not in flat
+    assert "read capped" not in flat
+    assert "\u2265" not in flat, "a figure is marked as a floor when it is exact"
 
 
 def test_the_error_cell_takes_its_red_threshold_from_the_module(monkeypatch):
@@ -643,12 +660,12 @@ def test_the_error_cell_takes_its_red_threshold_from_the_module(monkeypatch):
     """
     assert ops_data.snapshot()["error_rate_red"] == ops_data.ERROR_RATE_RED
     # 3% is under the real threshold of 5, so the cell is not red...
-    html = _ops_html(monkeypatch, n_errors=30, calls=1_000)
+    html = _ops_html(monkeypatch, errors=_errs(30), calls=1_000)
     assert "30 · 3.0%" in html
     assert 'c-failed">30 · 3.0%' not in html
     # ...and becomes red when the module's threshold moves below it.
     monkeypatch.setattr(ops_data, "ERROR_RATE_RED", 2.0)
-    html = _ops_html(monkeypatch, n_errors=30, calls=1_000)
+    html = _ops_html(monkeypatch, errors=_errs(30), calls=1_000)
     assert 'c-failed">30 · 3.0%' in html, (
         "the cell did not follow ERROR_RATE_RED, so it is still reading a literal"
     )

@@ -173,7 +173,24 @@ def _app_with_errors(errs, monkeypatch):
                                       "total_input_tokens": 0, "total_output_tokens": 0,
                                       "by_route": []})
     monkeypatch.setattr(llm_stats, "range_summary", lambda days: {"days": []})
-    monkeypatch.setattr(events, "recent", lambda **kw: errs)
+    # `error_breakdown`, not `recent`: the error panel reads one uncapped
+    # aggregation pass now. `days` is honoured here as the real one does -- a
+    # stub that ignored it would make the window untestable, which is a defect
+    # QA round 3 found in this suite's sibling file.
+    def breakdown(*, days):
+        pairs = {}
+        for e in errs:
+            d = e.get("data") or {}
+            key = (d.get("error_type") or "?", d.get("source") or "?")
+            pairs[key] = pairs.get(key, 0) + 1
+        by_k, by_s = {}, {}
+        for (k, src), n in pairs.items():
+            by_k[k] = by_k.get(k, 0) + n
+            by_s[src] = by_s.get(src, 0) + n
+        return {"total": sum(pairs.values()), "pairs": pairs,
+                "by_error_type": by_k, "by_source": by_s}
+
+    monkeypatch.setattr(events, "error_breakdown", breakdown)
     return ops_data._app_view(7)
 
 

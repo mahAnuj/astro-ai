@@ -712,15 +712,16 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
            recovered and the visitor got their reading. These are the times it
            did not. Per feature, because "something broke 97 times" and
            "rashifal broke 97 times" are different instructions. #}
-        {#- A FLOOR WHEN THE SAMPLE IS CAPPED. These are counted over the newest
-            ERROR_EVENT_LIMIT error events, while `errors` and `error_rate` are
-            exact. Printed as an exact count, this read "93" against a true 180
-            and read the SAME at 7d and 30d. -#}
+        {#- Exact, not a floor: these come from the same uncapped walk as the
+            total and the rate. An earlier version read them off a capped
+            sample and marked them ≥, which cannot mark a zero -- so a
+            window holding 300 provider failures behind 500 newer 429s
+            printed 0 here and raised no alert. -#}
         <div><span>features broken by the budget — visitor saw an error</span>
-          <b class="mono {{ 'c-failed' if ops.app.budget_breaks_total }}">{{ '≥' if ops.app.errors_truncated }}{{ ops.app.budget_breaks_total }}</b></div>
+          <b class="mono {{ 'c-failed' if ops.app.budget_breaks_total }}">{{ ops.app.budget_breaks_total }}</b></div>
         {% for feature, n in ops.app.budget_breaks %}
         <div><span>&nbsp;&nbsp;{{ feature }}</span>
-          <b class="mono c-failed">{{ '≥' if ops.app.errors_truncated }}{{ n }}</b></div>
+          <b class="mono c-failed">{{ n }}</b></div>
         {% endfor %}
         {% if ops.app.fallback_reasons %}
         <div class="wide"><span>why</span>
@@ -1174,13 +1175,6 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
               literal, so the cell and the alert strip cannot disagree. -#}
           <div><span>error events</span>
             <b class="mono {{ 'c-failed' if ops.app.error_rate and ops.app.error_rate >= ops.error_rate_red }}">{{ "{:,}".format(ops.app.errors) }} · {{ ops.app.error_rate }}%</b></div>
-          {%- if ops.app.errors_truncated %}
-          <div class="wide"><span>&nbsp;</span><b class="sub" style="font-weight:400">
-            The breakdowns below were counted over the newest
-            {{ "{:,}".format(ops.app.errors_sampled) }} of those
-            {{ "{:,}".format(ops.app.errors) }} events, so each is a floor, not a total.
-            Narrow the window for exact per-feature counts.</b></div>
-          {%- endif %}
           <div><span>every provider failed</span>
             <b class="mono {{ 'c-failed' if ops.app.exhausted }}">{{ ops.app.exhausted }}</b></div>
           <div><span>needed a retry or a 2nd provider</span>
@@ -1198,7 +1192,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           <thead><tr><th>source</th><th class="n">events</th></tr></thead>
           <tbody>
           {% for src, cnt in ops.app.sources %}
-          <tr><td>{{ src }}</td><td class="n">{{ '≥' if ops.app.errors_truncated }}{{ cnt }}</td></tr>
+          <tr><td>{{ src }}</td><td class="n">{{ cnt }}</td></tr>
           {% endfor %}
           </tbody>
         </table></div>
