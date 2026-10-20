@@ -759,13 +759,28 @@ class _NoDupes(yaml.SafeLoader):
 
 
 def _no_dupes(loader, node, deep=False):
-    seen: set = set()
+    """Refuse a duplicated key, comparing the KEY NODES rather than their values.
+
+    Constructing the key first is the obvious shape and it is wrong twice over.
+    With `deep=False` PyYAML defers nested construction, so every complex key
+    (`? [a, b]`) comes back as an empty list — two different ones compare equal
+    and the gate invents a duplicate. And an unhashable key then dies with
+    `TypeError` before any of this is reached. Both were measured against
+    hand-written files; the false positive is the dangerous one, because a gate
+    that cries wolf gets relaxed.
+
+    Workflow keys are always scalars, so scalars are what this compares. A
+    non-scalar key is left to PyYAML, which raises `found unhashable key` and is
+    reported by `check_file` as a parse failure — which is what it is.
+    """
+    seen: set[str] = set()
     for k, _v in node.value:
-        key = loader.construct_object(k, deep=deep)
-        if key in seen:
+        if not isinstance(k, yaml.ScalarNode):
+            continue
+        if k.value in seen:
             raise yaml.constructor.ConstructorError(
-                None, None, f"duplicate key {key!r}", k.start_mark)
-        seen.add(key)
+                None, None, f"duplicate key {k.value!r}", k.start_mark)
+        seen.add(k.value)
     return yaml.SafeLoader.construct_mapping(loader, node, deep)
 
 
@@ -777,6 +792,8 @@ def check_no_duplicate_keys(path: Path, rep: Report) -> None:
     try:
         yaml.load(path.read_text(encoding="utf-8"), _NoDupes)
     except yaml.constructor.ConstructorError as exc:
+        if not (exc.problem or "").startswith("duplicate key"):
+            return  # PyYAML's own construction error; check_file reports it as [parse]
         line = exc.problem_mark.line + 1 if exc.problem_mark else None
         rep.fail(path.name, line, "(file)", "duplicate-key",
                  f"{exc.problem} — GitHub refuses the whole file and reports it as a "
