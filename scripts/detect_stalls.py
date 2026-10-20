@@ -148,6 +148,38 @@ def boundary_paths(pr: int) -> set[str]:
             if isinstance(q := f.get("path", ""), str) and q.startswith(BOUNDARY)}
 
 
+def qa_fail_age(pr: int) -> float | None:
+    """Hours since `qa-fail` was last applied, or None if it never was.
+
+    Read from the timeline rather than the label list, because the label alone
+    says a verdict exists and not WHEN — and when is the whole question: a head
+    newer than the verdict means somebody fixed it and it needs re-reviewing,
+    while a head older than the verdict means nobody has touched it.
+    """
+    try:
+        events = json.loads(gh("api", f"repos/{REPO}/issues/{pr}/timeline",
+                               "--paginate", "--jq",
+                               '[.[] | select(.event=="labeled")'
+                               ' | select(.label.name=="qa-fail") | .created_at]'))
+    except RuntimeError:
+        return None
+    if not isinstance(events, list) or not events:
+        return None
+    return age_hours(sorted(events)[-1])
+
+
+def head_pushed_hours_ago(pr: int) -> float | None:
+    """Hours since this PR's head commit. None if it cannot be read."""
+    try:
+        out = json.loads(gh("pr", "view", str(pr), "--repo", REPO, "--json", "commits"))
+    except RuntimeError:
+        return None
+    commits = out.get("commits") or []
+    if not commits:
+        return None
+    return age_hours(commits[-1].get("committedDate") or "")
+
+
 def find_stalls(hours: float) -> list[dict]:
     stalls: list[dict] = []
 
@@ -250,6 +282,50 @@ def find_stalls(hours: float) -> list[dict]:
                                detail=f"open {age:.0f}h with no check runs at all — {why}",
                                checks={}, labels=sorted(labels), agent_pushable=pushable,
                                conflicting=conflicting))
+        elif "qa-fail" in labels:
+            # A VERDICT FOUND DEFECTS AND THE LOOP COULD NOT SEE IT. Until
+            # 2026-10-20 every use of `qa-fail` in this file was a NEGATION
+            # (`"qa-fail" not in labels`), so a PR carrying it matched no
+            # detector at all and was invisible to the loop permanently --
+            # which is the most common state a PR is ever in. Measured the
+            # moment it was noticed: #410 fired `no-qa-verdict` and
+            # `steward-ineffective` while unlabelled, and fired NOTHING once its
+            # FAIL was recorded. Recording the verdict correctly hid the PR.
+            #
+            # Two states, two different actions, and the deciding fact is
+            # whether the head moved AFTER the verdict:
+            #
+            #   head older than the label -> nobody fixed it. Dispatch a cycle
+            #                                at the findings.
+            #   head newer than the label -> somebody fixed it and no verdict
+            #                                has seen the fix. Dispatch QA.
+            #
+            # Both are obliged actions an agent can perform, which is what keeps
+            # this out of chief's lap: it is work, not a decision.
+            fail_age = qa_fail_age(n)
+            head_age = head_pushed_hours_ago(n)
+            if fail_age is None or head_age is None:
+                # Could not read one of the two. Report it rather than guessing
+                # a direction -- a wrong guess here dispatches the wrong agent
+                # and burns a full cycle on it.
+                stalls.append(dict(
+                    kind="qa-fail-unreadable", pr=n, issue=issue, age_h=round(age, 1),
+                    detail=(f"carries qa-fail but the verdict time or the head commit time "
+                            f"could not be read, so whether a fix has landed is unknown"),
+                    checks=checks, labels=sorted(labels), agent_pushable=False))
+            elif head_age < fail_age:
+                stalls.append(dict(
+                    kind="qa-fail-refixed", pr=n, issue=issue, age_h=round(fail_age, 1),
+                    detail=(f"qa-fail {fail_age:.0f}h ago, head pushed {head_age:.0f}h ago — a fix "
+                            f"landed after the verdict and no round has seen it. Dispatch QA."),
+                    checks=checks, labels=sorted(labels), agent_pushable=pushable))
+            else:
+                stalls.append(dict(
+                    kind="qa-fail-unaddressed", pr=n, issue=issue, age_h=round(fail_age, 1),
+                    detail=(f"qa-fail {fail_age:.0f}h ago and nothing pushed since (head is "
+                            f"{head_age:.0f}h old) — the findings are unaddressed. Dispatch a "
+                            f"cycle at them."),
+                    checks=checks, labels=sorted(labels), agent_pushable=pushable))
         elif "qa-pass" not in labels and "qa-fail" not in labels and green:
             # Gates green and no verdict either way: the cycle did not reach QA.
             # Distinct from the above because the fix is a QA dispatch, not a
@@ -292,7 +368,8 @@ def find_stalls(hours: float) -> list[dict]:
     # reading that history needs the Actions API, and the agent's own token 403s
     # on it (#323). A detector that can fail on a permission is how the
     # measurement arm stayed silent for its entire life.
-    STEWARD_CLEARABLE = {"draft-never-readied", "no-qa-verdict"}
+    STEWARD_CLEARABLE = {"draft-never-readied", "no-qa-verdict",
+                         "qa-fail-unaddressed", "qa-fail-refixed"}
     for st in list(stalls):
         if st["kind"] in STEWARD_CLEARABLE and (st["age_h"] or 0) > 18 \
                 and st.get("agent_pushable", True):
@@ -375,7 +452,8 @@ def main(argv: list[str]) -> int:
     # they route to an escalation or an issue, not a dispatch.
     obliged = [x for x in stalls
                if x["kind"] in {"draft-never-readied", "no-qa-verdict",
-                                "mergeable-but-open", "steward-ineffective"}
+                                "mergeable-but-open", "steward-ineffective",
+                                "qa-fail-unaddressed", "qa-fail-refixed"}
                and x.get("agent_pushable", True)]
     print(f"OBLIGED_ACTIONS={len(obliged)}")
 
