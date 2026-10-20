@@ -27,9 +27,12 @@ Every conflict resolved by hand on 2026-10-20 — across #412, #418, #419 and
                                      drop: `verify_no_relaxation.py` fails on a
                                      falling row count, and it is right to.
 
-  scripts/verify_behaviour.py        EXPECTED_TESTS is a FLOOR, so neither side's
-                                     number is the answer. It is measured on the
-                                     merge result afterwards.
+  scripts/verify_behaviour.py        EXPECTED_TESTS is an absolute BACKSTOP that
+                                     PRs no longer edit (#446), so a conflict
+                                     here should not happen. If one does, keep
+                                     OURS: the per-PR floor is derived by
+                                     scripts/verify_test_floor.py and stores
+                                     nothing.
 
 ANYTHING ELSE IS REFUSED AND THE MERGE IS ABORTED. A conflict in a source file
 is a semantic question, and this script has no way to answer one.
@@ -262,19 +265,13 @@ def main(argv: list[str]) -> int:
         print(f"  resolved {f}  ({RESOLVERS[f].__name__})")
         git("add", f)
 
-    # EXPECTED_TESTS is a floor and neither side's number describes the merge, so
-    # it is set from the result. Done before the suite runs, so verify_behaviour
-    # below checks the number that will actually be committed.
-    n = measured_test_count()
-    vb = ROOT / "scripts/verify_behaviour.py"
-    if n and vb.exists():
-        txt = vb.read_text()
-        new = re.sub(r"^EXPECTED_TESTS = \d+$", f"EXPECTED_TESTS = {n}",
-                     txt, count=1, flags=re.M)
-        if new != txt:
-            vb.write_text(new)
-            git("add", "scripts/verify_behaviour.py")
-            print(f"  EXPECTED_TESTS measured on the merge result: {n}")
+    # EXPECTED_TESTS IS NO LONGER MEASURED HERE (#446). It stopped being the
+    # per-PR floor: `scripts/verify_test_floor.py` derives that from the merge
+    # base and stores nothing. Rewriting the constant on every merge would put
+    # the churn back in the one line this change exists to stop editing -- and
+    # a RISING floor is still a diff on a shared line, which is all a conflict
+    # needs. If a merge genuinely drops the count under the backstop, the gate
+    # says so and names the tests.
 
     print("\nVerifying the MERGE RESULT, which is code no round has seen:")
     checks: list[tuple[bool, str]] = []
@@ -307,7 +304,7 @@ def main(argv: list[str]) -> int:
         f"Merge {args.base} into {branch}\n\n"
         f"Conflicts resolved mechanically by scripts/merge_main_into_branch.py:\n"
         f"decision-log rows unioned and date-ordered, mutation rows unioned with\n"
-        f"nothing dropped, and EXPECTED_TESTS measured on the merge result ({n}).\n\n"
+        f"nothing dropped. EXPECTED_TESTS is NOT touched (#446).\n\n"
         f"Verified ON THE MERGE RESULT: no conflict markers, ast syntax sweep,\n"
         f"behaviour suite, verify_behaviour, verify_architecture_counts,\n"
         f"verify_no_relaxation, verify_token_budget — all green.")
