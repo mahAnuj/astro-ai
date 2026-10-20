@@ -122,10 +122,20 @@ jobs:
           # against the right instant rather than against the whole day.
           echo "started=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
           # Through `env:`, not interpolated. `workflow_run` is a PRIVILEGED
-          # trigger -- repo-write permissions and secrets -- so a `${{ }}` in a
-          # run block is substituted before bash parses the line and becomes
+          # trigger -- repo-write permissions and secrets -- so an expression in
+          # a run block is substituted before bash parses the line and becomes
           # shell injection. scripts/verify_workflows.py refused this change
           # until it was fixed, which is the gate doing its job (#358).
+          #
+          # THIS COMMENT MAY NOT SPELL THE CONSTRUCT IT WARNS ABOUT, and that is
+          # not style. GitHub substitutes expressions into the WHOLE run: string,
+          # shell comments included -- it has no idea bash would ignore this
+          # line. An EMPTY one is a syntax error, so the earlier wording of this
+          # comment made the entire file unparseable: six zero-job failed runs
+          # on 2026-10-20, no annotation anywhere, and the workflow listed by
+          # path instead of by name. Measured on a probe branch: rewording this
+          # one line is the whole fix, and an expression in a YAML comment
+          # (line 442) is harmless because the YAML parser removes it first.
           uv run python scripts/detect_stalls.py \
             --hours "${STALL_HOURS:-4}" --json > /tmp/stalls.txt 2>&1
           code=$?
