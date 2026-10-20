@@ -224,7 +224,7 @@
         <strong>Provider-side prefix cache: {{ llm_stats.aggregate.prefix_cache_skipped_rows }}
         stored row(s) were excluded as unreadable</strong> (written by an older schema, or keyed in
         a shape this page does not recognise) &mdash; which is every row in this window, so there is
-        no table to show. Widen the window, or re-record.
+        no table to show.
       </p>
       {% endif %}
       {% if llm_stats.aggregate.prefix_cache %}
@@ -254,12 +254,12 @@
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.reported }}</td>
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{% if pc.reported %}{{ pc.prompt_reported }} / {{ pc.cached_tokens }}{% else %}&mdash;{% endif %}</td>
               {% if pc.hit_pct is none %}
-              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Either no call returned a cache figure, or the reported prompt total is zero. Not zero cached — unmeasured.">&mdash;</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%. The note below the table lists what a dash can mean.">&mdash;</td>
               {% else %}
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.hit_pct }}%</td>
               {% endif %}
               {% if pc.effective_pct is none %}
-              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Nothing measurable here: a non-reporting model, every prompt under the minimum cacheable length, or no usable usage block. Unmeasured, not 0%.">&mdash;</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%. The note below the table lists what a dash can mean.">&mdash;</td>
               {% else %}
               <td class="py-2 text-right text-bhagya-sindoor font-semibold tabular-nums">{{ pc.effective_pct }}%</td>
               {% endif %}
@@ -270,8 +270,8 @@
         </div>
         <p class="text-xs text-bhagya-muted mt-4">
           Two different caches. The <strong>response cache</strong> is this app's own: it lives in
-          each Cloud Run instance and dies with it. The <strong>prefix cache</strong> is Groq's: it
-          survives our cold starts, expires after about 2 hours idle, and is opportunistic.
+          each Cloud Run instance and dies with it. The <strong>prefix cache</strong> is Groq's, and
+          is opportunistic.
           <strong>Read Effective, not Hit rate.</strong> Groq returns no cache figure at all on a
           miss &mdash; not a zero &mdash; so Hit rate's denominator counts only the calls that hit
           and overstates the saving. Measured against live Groq 2026-10-17: 1 hit in 7 identical
@@ -316,12 +316,9 @@
           A call is Measurable on one of the three cache-reporting models with at least 128 prompt
           tokens, counted on the whole request (system + question or chart), not the system prompt
           alone. <strong>A dash has four causes</strong>, so check which before concluding
-          anything: a non-reporting model served every call; the prompts were under the minimum
-          (no route's system prompt is under 732 tokens, so this should not happen); the
-          provider returned no usable <code>usage</code> block at all; or every report it sent was
-          impossible and discarded (the notice above says so when that has happened). The Measurable column tells
-          the first two apart from Fresh calls.
-
+          anything: a non-reporting model served every call; the prompts were under the minimum;
+          the provider returned no usable <code>usage</code> block at all; or every report it sent was
+          impossible and discarded.
         </p>
       </div>
       {% endif %}

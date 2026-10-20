@@ -298,7 +298,9 @@ def test_dashboard_names_both_caches_and_shows_unreported_as_a_dash(
     measured = _row(html, "rashifal_single")
     assert "84.3%" in measured
     unmeasured = _row(html, "today")
-    assert "—" in unmeasured
+    assert _pc_cells(html, "today")[-2:] == ["—", "—"], (
+        "both rates are dashes; this used to pass on a literal em dash that "
+        "only appeared inside the Hit-rate TOOLTIP text")
     assert "0%" not in re.sub(r"<[^>]+>", " ", unmeasured), (
         "a route the provider never reported on must not read as 0% cached")
 
@@ -735,14 +737,91 @@ def test_a_skipped_old_schema_row_is_logged_and_counted(stats_dir, monkeypatch, 
 
 def test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means(
         admin, stats_dir, monkeypatch):
-    """NEW-1. The footnote asserted ONE cause; the tooltip above it said two, and
-    a third (no usable `usage` block at all) is reachable on a reporting model."""
-    _install_model(monkeypatch, [_usage(2363, cached=2304)])
-    _chat()
+    """NEW-1, then QA round 6 (F-1, F-2). The tooltips used to ENUMERATE the
+    causes of a dash (three of them) while the footnote listed four, so on the
+    fourth the tooltip's whole list was false -- and this test only checked the
+    footnote, never the tooltip it was named for. The tooltips now enumerate
+    nothing and point at the footnote; this reads them off a row of EACH of the
+    four causes and asserts the footnote lists those four."""
+    _seed_four_dash_causes()
     html = admin.get("/admin").text
     assert "A dash has four causes" in html
     assert "not a short prompt" not in html, (
         "that was the absolute claim the table's own tooltip contradicted")
+    tooltips = set()
+    for route in _FOUR_DASH_ROUTES:
+        row = _row(html[html.index("Provider-side prefix cache (Groq)"):], route)
+        titles = re.findall(r'<td\b[^>]*\btitle="([^"]*)"[^>]*>&mdash;</td>', row)
+        assert len(titles) == 2, f"{route}: Hit rate and Effective should both be dashes with a tooltip"
+        tooltips.update(titles)
+    assert len(tooltips) == 1, f"the two dash tooltips diverged: {tooltips}"
+    (tip,) = tooltips
+    assert tip.startswith("Unmeasured, not 0%."), tip
+    assert "lists what a dash can mean" in tip, tip
+    for cause in ("non-reporting", "minimum", "usage", "impossible", "no call"):
+        assert cause not in tip, (
+            f"a tooltip that names a cause is false on a row of another cause: {tip!r}")
+
+
+# One route per cause of a dash. Fresh calls is 3 on every one so that no count
+# differs; the four rows must be indistinguishable in every column.
+_FOUR_DASH_ROUTES = ("ask", "today", "natal", "monthly")
+
+
+def _seed_four_dash_causes():
+    for _ in range(3):
+        # (1) a non-reporting model served every call
+        llm_stats.record(provider="openai", model="gpt-4o", route="ask",
+                         prompt_tokens=5000, cached_tokens=None)
+        # (2) a reporting model, prompt under the minimum
+        llm_stats.record(provider="groq120", model=CACHING_MODEL, route="today",
+                         prompt_tokens=100, cached_tokens=None)
+        # (3) a reporting model, no usable usage block
+        llm_stats.record(provider="groq120", model=CACHING_MODEL, route="natal")
+        # (4) every report was impossible and discarded
+        llm_stats.record(provider="groq120", model=CACHING_MODEL, route="monthly",
+                         prompt_tokens=1000, cached_tokens=None,
+                         reported_impossible=True)
+
+
+def test_all_four_dash_causes_render_identically_and_the_footnote_lists_them(
+        admin, stats_dir):
+    """QA round 6, F-1. The footnote said "The Measurable column tells the first
+    two apart from Fresh calls". Seeded, all four causes give Fresh 3,
+    Measurable 0, Reported 0 and dashes: NO column separates them, which is why
+    the footnote tells the operator to check, and why that sentence is gone.
+    Each of the four causes is also named in the footnote (an unguarded deletion
+    of one, 'no usable usage block', survived round 6)."""
+    _seed_four_dash_causes()
+    html = admin.get("/admin").text
+    for route in _FOUR_DASH_ROUTES:
+        assert _pc_cells(html, route)[1:] == ["3", "0", "—", "0", "—", "—", "—"], route
+    causes = _notice(html)
+    causes = causes[causes.index("A dash has four causes"):]
+    for phrase in ("a non-reporting model served every call",
+                   "the prompts were under the minimum",
+                   "the provider returned no usable usage block at all",
+                   "every report it sent was impossible and discarded"):
+        assert phrase in causes, phrase
+
+
+def test_sentences_that_no_test_could_pin_stay_deleted(admin, stats_dir):
+    """QA round 6, F-1/F-3/F-4. Each of these was a claim the page made that no
+    assertion could fail on: F-1's and F-3's were FALSE (seeded, no column
+    separates the four dash causes; a route of only impossible reports gets a
+    notice that does not say the fourth cause happened), the rest are facts
+    about Groq or about prompt sizes that nothing in this tree ties the page to
+    (the 732 figure is scripts/verify_token_budget.py's, not the page's). A
+    sentence that cannot fail a test is deleted, not reworded."""
+    _seed_four_dash_causes()
+    _seed_both_causes()
+    html = admin.get("/admin").text
+    text = _notice(html)
+    for gone in ("Measurable column tells",
+                 "the notice above says so when that has happened",
+                 "732", "should not happen",
+                 "survives our cold starts", "2 hours"):
+        assert gone not in text, f"{gone!r} is back in the footnote"
 
 
 def test_a_reporting_model_with_no_usage_block_is_unmeasured(stats_dir, monkeypatch):
@@ -915,7 +994,9 @@ def test_the_skip_notice_survives_when_every_row_is_skipped(
     flat = re.sub(r"\s+", " ", _html.unescape(re.sub(r"<[^>]+>", "", html)))
     assert ("(written by an older schema, or keyed in a shape this page does not "
             "recognise) — which is every row in this window, so there is no table "
-            "to show") in flat
+            "to show.") in flat
+    assert "Widen the window" not in flat and "re-record" not in flat, (
+        "advice with no test behind it (QA round 6, F-4)")
 
 
 def test_the_skip_warning_is_not_emitted_once_per_row_per_request(
@@ -1253,6 +1334,11 @@ def test_the_unmeasurable_notice_sums_both_causes_into_its_count(
     assert "5 call(s) carried a cache report that Effective leaves out" in _notice(
         admin.get("/admin").text), (
         "the count is the sum over routes of BOTH populations")
+    # "The counter cannot tell its two causes apart" is true BECAUSE of the sum
+    # above: one counter, fed by both populations (2 + 3). Round 6 mutated it to
+    # "tells" and nothing failed.
+    assert "The counter cannot tell its two causes apart" in _notice(
+        admin.get("/admin").text)
 
 
 def test_a_genuine_unmeasurable_report_is_in_hit_rate_and_out_of_effective_as_the_notice_says(
@@ -1306,6 +1392,22 @@ def test_a_route_of_only_impossible_reports_shows_a_dash_in_both_rates_as_the_no
     assert e["hit_pct"] is None and e["effective_pct"] is None
     assert _pc_cells(html, "today")[-2:] == ["—", "—"]
     assert "a route whose only reports were of this kind shows a dash in both rates" in _notice(html)
+
+
+def test_the_impossible_report_clause_names_exactly_what_the_code_rejects(
+        admin, stats_dir):
+    """QA round 6, F-4. Cause (2) says an impossible report is "more cached
+    tokens than the prompt it came from, or a count that was not a non-negative
+    whole number". Round 6 mutated "more" to "fewer" and deleted the second
+    half; nothing failed. The sentence is now tied to what the code rejects."""
+    for cached in (101, -1, 1.5, "5", True):
+        assert providers._prefix_usage(_usage(100, cached=cached)) == (100, None, True), cached
+    for cached in (0, 100):
+        assert providers._prefix_usage(_usage(100, cached=cached)) == (100, cached, False), cached
+    _seed_both_causes()
+    assert ("The provider claimed more cached tokens than the prompt it came from, "
+            "or a count that was not a non-negative whole number.") in _notice(
+        admin.get("/admin").text)
 
 
 def test_the_floor_the_notice_names_is_the_floor_the_code_applies(
@@ -1441,6 +1543,9 @@ def test_the_gap_names_both_causes_and_a_skipped_row_really_does_widen_it(
     assert ("and the stored rows excluded as unreadable (counted above when there are "
             "any), whose calls “By route” still counts") in text
     assert "no prefix-cache row" not in text, "a skipped row does exist; it was excluded"
+    # Days before the panel existed are ABSENT from the table, not scored as a
+    # zero -- the older-day test below shows them in the gap and in no row.
+    assert "and so are absent rather than zero" in text
 
 
 def _seed_alongside(stats_dir, skipped_key):

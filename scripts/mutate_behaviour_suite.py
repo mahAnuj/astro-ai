@@ -1661,6 +1661,93 @@ MUTATIONS = [
      "    prefix_acc: dict[str, dict[str, int]] = {}\n    skipped_rows = 0",
      "    days = max(days, 3)\n    prefix_acc: dict[str, dict[str, int]] = {}\n    skipped_rows = 0",
      "test_the_part_of_the_gap_owed_to_older_days_does_shrink_as_they_age_out"),
+
+    # ---- QA round 6 on #396. A THIRD round of false sentences in one paragraph.
+    # ---- A sentence no test can fail on is DELETED (and its reinstatement is a
+    # ---- row here); one that stays is tied to the code it describes.
+    ("#396 r6 F-1: the false 'Measurable column tells the first two apart' sentence is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     '          impossible and discarded.\n        </p>',
+     '          impossible and discarded. The Measurable column tells\n          the first two apart from Fresh calls.\n        </p>',
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-3: the overclaiming '(the notice above says so ...)' parenthetical is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     '          impossible and discarded.\n        </p>',
+     '          impossible and discarded (the notice above says so when that has happened).\n        </p>',
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: the unpinned '732 tokens' parenthetical is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'the prompts were under the minimum;\n',
+     "the prompts were under the minimum\n          (no route's system prompt is under 732 tokens, so this should not happen);\n",
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: the unpinned 'survives our cold starts' claim is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     "is Groq's, and\n          is opportunistic.",
+     "is Groq's: it survives our cold starts, and\n          is opportunistic.",
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: the unpinned 'expires after about 2 hours idle' claim is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     "is Groq's, and\n          is opportunistic.",
+     "is Groq's: it expires after about 2 hours idle, and\n          is opportunistic.",
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: 'Widen the window, or re-record.' is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     '        no table to show.\n',
+     '        no table to show. Widen the window, or re-record.\n',
+     'test_the_skip_notice_survives_when_every_row_is_skipped'),
+
+    ('#396 r6 F-2: the Hit-rate dash tooltip enumerates causes again (false on the impossible-report row)',
+     'src/astro_ai/templates/admin_dashboard.html',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%.',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Either no call returned a cache figure. Unmeasured, not 0%.',
+     'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
+
+    ('#396 r6 F-2: the Effective dash tooltip enumerates three causes again (false on the fourth)',
+     'src/astro_ai/templates/admin_dashboard.html',
+     '{% if pc.effective_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%.',
+     '{% if pc.effective_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Nothing measurable here: a non-reporting model, every prompt under the minimum cacheable length, or no usable usage block. Unmeasured, not 0%.',
+     'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
+
+    ("#396 r6 F-4: the 'Unmeasured, not 0%' tooltip text stops saying it (Hit rate)",
+     'src/astro_ai/templates/admin_dashboard.html',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%.',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Zero.',
+     'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
+
+    ("#396 r6 F-4: an impossible report is 'fewer' cached tokens than the prompt, not more",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'claimed more cached tokens than the',
+     'claimed fewer cached tokens than the',
+     'test_the_impossible_report_clause_names_exactly_what_the_code_rejects'),
+
+    ("#396 r6 F-4: the 'not a non-negative whole number' half of the impossible-report clause is deleted",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'or a count that was not a non-negative whole number',
+     'or nothing else',
+     'test_the_impossible_report_clause_names_exactly_what_the_code_rejects'),
+
+    ("#396 r6 F-4: 'The counter cannot tell its two causes apart' becomes 'tells'",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'The counter cannot tell its two causes apart',
+     'The counter tells its two causes apart',
+     'test_the_unmeasurable_notice_sums_both_causes_into_its_count'),
+
+    ('#396 r6 F-4: older days are described as scored zero, not absent',
+     'src/astro_ai/templates/admin_dashboard.html',
+     'and so are absent rather than zero',
+     'and so are zero',
+     'test_the_gap_names_both_causes_and_a_skipped_row_really_does_widen_it'),
+
+    ("#396 r6 F-4: the 'no usable usage block' cause is deleted from the dash list",
+     'src/astro_ai/templates/admin_dashboard.html',
+     '          the provider returned no usable <code>usage</code> block at all; or every report',
+     '          every report',
+     'test_all_four_dash_causes_render_identically_and_the_footnote_lists_them'),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
