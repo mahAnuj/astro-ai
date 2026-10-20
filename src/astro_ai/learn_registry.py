@@ -644,7 +644,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What's the single best remedy for Sade Sati?",
-                "a": "Daily Vishnu worship, especially on Saturdays — Vishnu (with Brahma) is Saturn's classical deity, and the Vishnu Sahasranama is a steady daily practice. Combine with serving the elderly, donating to those who have less, and accepting the lessons Saturn is teaching — Saturn rewards willing students more than ritual compliance.",
+                "a": "Daily Vishnu worship, especially on Saturdays — Vishnu (with Brahma) is Saturn's classical deity; a Vishnu mantra, or a hymn your own tradition keeps, is the daily practice. Combine with serving the elderly, donating to those who have less, and accepting the lessons Saturn is teaching — Saturn rewards willing students more than ritual compliance.",
             },
         ),
         llm_summary=(
@@ -724,7 +724,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What's the best remedy for difficult Saturn?",
-                "a": "Daily worship of Vishnu (Saturn's classical deity, with Brahma — the Vishnu Sahasranama is the universal practice), plus serving elders, working harder rather than less, and accepting the lessons Saturn is teaching. Specifically NOT: blue sapphire without a proper chart reading, which can be destabilising if Saturn is poorly placed.",
+                "a": "Daily worship of Vishnu (Saturn's classical deity, with Brahma — a Vishnu mantra, or a hymn your own tradition keeps), plus serving elders, working harder rather than less, and accepting the lessons Saturn is teaching. Specifically NOT: blue sapphire without a proper chart reading, which can be destabilising if Saturn is poorly placed.",
             },
             {
                 "q": "When does Saturn give its best results?",
@@ -2801,9 +2801,9 @@ ARTICLES: tuple[Article, ...] = (
         related=("rahu-in-vedic-astrology", "rahu-mahadasha-ketu-antardasha", "kaal-sarp-dosh", "ketu-in-vedic-astrology"),
         faqs=(
             {"q": "Which is the strongest remedy for Rahu?", "a": "Consistency across multiple practices > intensity of any single one. The classical primary pairing: daily Rahu Beej mantra (108x) + weekly Durga Chalisa on Saturdays + a research donation or pilgrimage when you can. Trimbakeshwar Nagbali is the deepest single ritual but only for severe cases with proper chart confirmation."},
-            {"q": "Can I do Rahu remedies without a gemstone?", "a": "Yes — and it's actually recommended. Rahu's classical gemstone (hessonite) can backfire when Rahu is a functional malefic for your Ascendant. All the practices in this guide (mantra, service, charity, Durga worship, Ganesha, Trimbakeshwar) are safe universal remedies that don't require chart analysis."},
+            {"q": "Can I do Rahu remedies without a gemstone?", "a": "Yes — and it's actually recommended. Rahu's classical gemstone (hessonite) can backfire when Rahu is a functional malefic for your Ascendant. All the practices in this guide (mantra, supporting research or a pilgrimage, charity, Durga worship, Ganesha, Trimbakeshwar) are safe universal remedies that don't require chart analysis."},
             {"q": "How long do Rahu remedies take to show effect?", "a": "Weeks 1-4: mostly building the habit; internal shifts (quieter mind). Months 2-6: perceptible shifts — situations that used to trigger panic feel manageable. Months 6-12: structural shifts — old patterns dissolve. Year 2+: Rahu's underlying karma unfolds; remedies compound. Faster than medication, slower than instant relief."},
-            {"q": "Do I need to visit Trimbakeshwar for Kaal Sarp remedy?", "a": "Only for serious cases: full Kaal Sarp Dosh + active Rahu Mahadasha + repeated life shocks. For most Rahu afflictions, daily mantra + weekly Durga + monthly service is sufficient. Trimbakeshwar priests are officially registered — beware of touts; legitimate costs are ₹5,000-25,000 range, anyone quoting lakhs is exploiting."},
+            {"q": "Do I need to visit Trimbakeshwar for Kaal Sarp remedy?", "a": "Only for serious cases: full Kaal Sarp Dosh + active Rahu Mahadasha + repeated life shocks. For most Rahu afflictions, daily mantra + weekly Durga + supporting research or a pilgrimage is sufficient. Trimbakeshwar priests are officially registered — beware of touts; legitimate costs are ₹5,000-25,000 range, anyone quoting lakhs is exploiting."},
             {"q": "Can Rahu remedies fix my addiction?", "a": "Remedies are a support layer, not a substitute for professional care. Rahu-driven addictions (substances, phone/gaming, compulsive behaviours) need therapy + medical support if severe. Remedies help by reducing the underlying restless craving over time."},
         ),
         llm_summary=(
@@ -2851,7 +2851,7 @@ ARTICLES: tuple[Article, ...] = (
         slug="chandra-moon-remedies", title="Moon Remedies: Chandra Practices for Emotional Peace and Mental Health",
         summary="The Moon (Chandra) is Vedic astrology's karaka of mind, emotion, mother, memory, and mental peace. Since psychological wellbeing depends more on Moon than any other planet, Moon remedies are among the most consequential. Classical remedies focus on Monday practices, devotion to Chandra's deities (Gauri, Lalita, Saraswati, Krishna), Chandra Beej mantra, silver items, pearl gemstone, mother-service, and modern extensions (Nadi Shodhana, sleep hygiene). Complement — never replace — professional mental healthcare.",
         seo_title="Moon (Chandra) Remedies: Deities, Silver, Somvar Vrat",
-        seo_description="Classical Moon remedies — Monday worship of Chandra's deities, silver items, Chandra Beej mantra, mother-service. Support mental peace; combine with professional mental healthcare when needed.",
+        seo_description="Classical Moon remedies — Monday worship of Chandra's deities, silver items, Chandra Beej mantra, mother-service. Combine with professional mental healthcare.",
         category="Grahas", hero_image="/static/learn/chandra-moon-remedies/hero.svg", read_time="8 min", last_updated="2026-07",
         related=("chandra-moon-in-vedic-astrology", "the-9-grahas-overview"),
         faqs=(
