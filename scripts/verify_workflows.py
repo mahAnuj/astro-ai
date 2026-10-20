@@ -558,9 +558,25 @@ def check_interpolation(name: str, text: str, doc: dict, rep: Report) -> None:
     Values reach these jobs through `env:` instead, where bash never re-parses
     them, and are expanded quoted. That is mechanical, so this gate is too.
 
-    Shell comments are stripped first: the fix is documented in comments that
-    necessarily quote the construct they warn about, and a gate that could not
-    tell a warning from an occurrence would punish explaining itself.
+    SHELL COMMENTS ARE NOT STRIPPED, AND USED TO BE. The reasoning that stripped
+    them was "a gate that cannot tell a warning from an occurrence would punish
+    explaining itself" -- which reads well and is wrong about the only thing that
+    matters: GitHub substitutes into the WHOLE run: string and has no concept of
+    a shell comment. A `${{ ... }}` on a commented line is interpolated exactly
+    like any other, so a multi-line untrusted value breaks out of the comment on
+    its second line; and an EMPTY one is a syntax error that makes GitHub refuse
+    the entire file.
+
+    That is not hypothetical. `agent-steward.yml` carried an empty expression
+    inside a run: block comment -- in the comment explaining this very rule --
+    from #438 until 2026-10-20. Every push produced a zero-job failed run of a
+    workflow listed by PATH instead of name, with no annotation through any API
+    endpoint, and this gate printed `ok ... no `${{ }}` in any run: block` on it
+    the whole time. Measured by bisection on a probe branch, which is the only
+    instrument that can see this.
+
+    Across all 15 workflows the strict rule costs exactly one reworded comment,
+    so "punish explaining itself" was never the trade it looked like.
     """
     on = yaml_get(doc, "on")
     if isinstance(on, str):
@@ -576,9 +592,6 @@ def check_interpolation(name: str, text: str, doc: dict, rep: Report) -> None:
     hits = 0
     for lineno, raw in run_blocks(text):
         if "${{" not in raw:
-            continue
-        # strip_shell_comments preserves line count, so index 0 is this line.
-        if "${{" not in strip_shell_comments(raw):
             continue
         # DETECTION IS THE PRESENCE OF `${{`, NOT A MATCH ON THE WHOLE
         # EXPRESSION. The first draft of this check reported
@@ -600,7 +613,10 @@ def check_interpolation(name: str, text: str, doc: dict, rep: Report) -> None:
             rep.fail(name, lineno, "(run:)", "interpolation",
                      f"`{expr.strip()}` is substituted into shell before bash parses it; "
                      f"this workflow is triggered by {'/'.join(privileged)}, so pass it "
-                     "through `env:` and expand it quoted instead (#358)")
+                     "through `env:` and expand it quoted instead (#358). A SHELL COMMENT "
+                     "IS NOT AN EXEMPTION -- GitHub substitutes into the whole run: string "
+                     "and does not know bash would skip the line; reword the comment so it "
+                     "does not spell the construct.")
     if not hits:
         rep.note(f"ok    {name}  [interpolation]  privileged trigger "
                  f"({'/'.join(privileged)}); no `${{{{ }}}}` in any run: block")
@@ -720,6 +736,123 @@ def check_job(name: str, text_lines: dict, jid: str, job: dict, doc: dict, rep: 
                          f"expect HTTP 403 at run time.")
 
 
+class _NoDupes(yaml.SafeLoader):
+    """A loader that REFUSES a duplicate mapping key, as GitHub's parser does.
+
+    `yaml.safe_load` silently keeps the last of a duplicated key, so a workflow
+    with two `name:` keys parses here and is rejected by GitHub — which reports
+    it as a zero-job failed run on EVERY PUSH, names the workflow by its path
+    rather than its name, and exposes no annotation through the API.
+
+    MEASURED, because the first version of this docstring asserted it. A minimal
+    otherwise-valid workflow carrying a duplicated `name:` was pushed to a probe
+    branch on 2026-10-20 and produced exactly that run; the same file with one
+    `name:` produced none.
+
+    It is NOT, however, what broke `agent-steward.yml`. #440 introduced a
+    duplicate `name:` into a file that was already out of service for an
+    unrelated reason (see `check_empty_expression`), so the duplicate was masked
+    from the moment it landed and removing it changed nothing visible. Two
+    defects of the same signature, stacked — which is precisely why each needs
+    its own gate rather than one diagnosis standing in for both.
+    """
+
+
+def _no_dupes(loader, node, deep=False):
+    """Refuse a duplicated key, comparing the KEY NODES rather than their values.
+
+    Constructing the key first is the obvious shape and it is wrong twice over.
+    With `deep=False` PyYAML defers nested construction, so every complex key
+    (`? [a, b]`) comes back as an empty list — two different ones compare equal
+    and the gate invents a duplicate. And an unhashable key then dies with
+    `TypeError` before any of this is reached. Both were measured against
+    hand-written files; the false positive is the dangerous one, because a gate
+    that cries wolf gets relaxed.
+
+    Workflow keys are always scalars, so scalars are what this compares. A
+    non-scalar key is left to PyYAML, which raises `found unhashable key` and is
+    reported by `check_file` as a parse failure — which is what it is.
+    """
+    seen: set[str] = set()
+    for k, _v in node.value:
+        if not isinstance(k, yaml.ScalarNode):
+            continue
+        if k.value in seen:
+            raise yaml.constructor.ConstructorError(
+                None, None, f"duplicate key {k.value!r}", k.start_mark)
+        seen.add(k.value)
+    return yaml.SafeLoader.construct_mapping(loader, node, deep)
+
+
+_NoDupes.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _no_dupes)
+
+
+def check_no_duplicate_keys(path: Path, rep: Report) -> None:
+    """GitHub rejects a duplicated key; PyYAML does not. Reject it here."""
+    try:
+        yaml.load(path.read_text(encoding="utf-8"), _NoDupes)
+    except yaml.constructor.ConstructorError as exc:
+        if not (exc.problem or "").startswith("duplicate key"):
+            return  # PyYAML's own construction error; check_file reports it as [parse]
+        line = exc.problem_mark.line + 1 if exc.problem_mark else None
+        rep.fail(path.name, line, "(file)", "duplicate-key",
+                 f"{exc.problem} — GitHub refuses the whole file and reports it as a "
+                 f"zero-job failed run on every push, with no annotation anywhere. "
+                 f"`yaml.safe_load` keeps the last one silently, which is why this "
+                 f"needs its own check.")
+    except (yaml.YAMLError, UnicodeDecodeError):
+        pass  # the ordinary parse check in check_file reports this
+
+
+_EMPTY_EXPR = re.compile(r"\$\{\{\s*\}\}")
+
+
+def walk_strings(node, path=()):
+    """Every string value in the parsed document, with its key path.
+
+    PARSED, deliberately, not the raw text: GitHub evaluates expressions in
+    values, and the YAML parser has already removed YAML comments by the time it
+    sees them. Measured on a probe branch 2026-10-20 -- an empty expression in a
+    YAML comment is harmless, the same characters inside a `run:` block scalar
+    make GitHub refuse the file. Walking the parse is what tells those apart.
+    """
+    if isinstance(node, str):
+        yield path, node
+    elif isinstance(node, dict):
+        for k, v in node.items():
+            yield from walk_strings(v, path + (str(k),))
+    elif isinstance(node, list):
+        for i, v in enumerate(node):
+            yield from walk_strings(v, path + (str(i),))
+
+
+def check_empty_expression(name: str, text: str, doc: dict, rep: Report) -> None:
+    """An empty `${{ }}` is a SYNTAX ERROR and GitHub refuses the whole file.
+
+    Separate from check 5 because it is not about injection and not about
+    privileged triggers: `${{ }}` in any value of any workflow takes the file
+    out of service entirely. The failure is also uniquely hard to see -- a
+    zero-job failed run on every push, the workflow listed by path rather than
+    name, and no annotation on any API endpoint, so `gh run view --log` says
+    only "log not found". It cost six failed runs and two wrong diagnoses on
+    2026-10-20 before a bisection on a probe branch found it.
+    """
+    hits = 0
+    for path, value in walk_strings(doc):
+        if not _EMPTY_EXPR.search(value):
+            continue
+        frag = next(l for l in value.splitlines() if _EMPTY_EXPR.search(l))
+        lineno = next((i + 1 for i, l in enumerate(text.splitlines())
+                       if frag.strip() and frag.strip() in l), None)
+        hits += 1
+        rep.fail(name, lineno, f"({'.'.join(path[-2:]) or 'file'}:)", "empty-expression",
+                 "an EMPTY `${{ }}` is a syntax error, so GitHub refuses this whole file "
+                 "and every push produces a zero-job failed run with no annotation "
+                 f"anywhere -- found in {'.'.join(path)}: {frag.strip()[:70]!r}")
+    if not hits:
+        rep.note(f"ok    {name}  [empty-expression]  no empty `${{{{ }}}}` in any value")
+
+
 def declared_names(files: list[Path]) -> set[str]:
     """Every name GitHub knows a workflow in this repo by.
 
@@ -755,6 +888,7 @@ def check_file(path: Path, rep: Report, known: set[str] | None = None) -> None:
     check_triggers(name, doc, rep)
     if known is not None:
         check_workflow_run_targets(name, doc, known, rep)
+    check_empty_expression(name, text, doc, rep)
     check_interpolation(name, text, doc, rep)
     for jid, job in doc["jobs"].items():
         if isinstance(job, dict):
@@ -781,6 +915,7 @@ def main() -> int:
             f"{EXPECTED_WORKFLOWS} (EXPECTED_WORKFLOWS) -- one was deleted or renamed out of "
             "the sweep. If that was deliberate, lower the pin in the same commit and say why.")
     for f in files:
+        check_no_duplicate_keys(f, rep)
         check_file(f, rep, known)
 
     for n in rep.notes:
@@ -790,7 +925,8 @@ def main() -> int:
     if rep.failures:
         print(f"\nFAIL - {len(rep.failures)} problem(s) across {len(files)} workflow files")
         return 1
-    print(f"PASS - {len(files)} workflow files; workflow_run targets, self-reference, "
+    print(f"PASS - {len(files)} workflow files; duplicate keys, empty expressions, "
+          f"workflow_run targets, self-reference, "
           f"gh-vs-permissions, "
           "pull_request types and run:-interpolation checks clean")
     return 0
