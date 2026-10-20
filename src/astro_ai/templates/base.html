@@ -161,9 +161,10 @@
      file is ~80KB, cacheable, and parses as plain CSS.
      Loaded BEFORE the <style> block below so the hand-written rules there
      continue to win the cascade. -->
-<!-- ?v= is a CONTENT hash, not a version bump (#253). static/sw.js caches
-     /static/ first-with-no-revalidation, so a fixed URL meant rebuilt CSS was
-     never re-fetched by returning visitors — two rebuilds shipped that way.
+<!-- ?v= is a CONTENT hash, not a version bump (#253). static/sw.js kept
+     /static/ cache-first with no revalidation (it is cache-first for ?v= URLs
+     still), so a fixed URL meant rebuilt CSS was never re-fetched by returning
+     visitors — two rebuilds shipped that way.
      The hash changes only when the bytes change, so a no-op redeploy does not
      evict anyone's cache. -->
 <link rel="stylesheet" href="/static/css/app.css?v={{ asset_v('css/app.css') }}">
