@@ -148,27 +148,62 @@ def test_the_template_offers_exactly_the_windows_the_module_declares():
     the page that `snapshot` then refuses and silently renders as 7.
     """
     h = _page().text
-    assert len(re.findall(r'href="\?window=\d+"', h)) == len(ops_data.APP_WINDOWS)
+    # QA round 1, BUG-5. This compared COUNTS: `len(found) == len(APP_WINDOWS)`
+    # is true of (1, 1, 1), of (2, 9, 400) and of any permutation, so the test
+    # named for the selector could not see WHICH windows it offered. Assert the
+    # values, and that nothing else is offered.
+    found = [int(x) for x in re.findall(r'href="\?window=(\d+)"', h)]
+    assert found == list(ops_data.APP_WINDOWS), (
+        f"the selector offers {found}, the app accepts {list(ops_data.APP_WINDOWS)}")
+    for d in ops_data.APP_WINDOWS:
+        assert f'href="?window={d}"' in h, d
 
 
 # --------------------------------------------------------------------------- #
 # The alert strip follows the window, and says so
 # --------------------------------------------------------------------------- #
 
-def test_an_app_alert_names_the_window_it_was_measured_over():
+def test_an_app_alert_names_the_window_it_was_measured_over(monkeypatch):
     """A rate is a rate OVER a window.
 
     A 30-day error rate sitting above a 1-day table is two different claims
     stacked on each other, and the reader has nothing to tell them apart.
+
+    QA round 4, F-3: this test used to read `snapshot(app_days=1)` against the
+    LOCAL store and `pytest.skip` when it found no LLM activity. A fresh
+    checkout has no `/tmp/bhagya_*`, so THAT IS THE CI CONDITION -- in
+    `pr-gates` the test contributed nothing, and every round until then reported
+    "0 skipped" because we were all running against a populated dev store. The
+    same eight-tests-skipped-into-green class as #449.
+
+    Now seeded, so it cannot skip and cannot depend on how busy the box is, and
+    run over every window rather than only the one that happened to be asked
+    for -- a hardcoded "1d" would satisfy the old assertion at `app_days=1`.
     """
-    alerts = ops_data.snapshot(app_days=1)["alerts"]
-    app_alerts = [a for a in alerts
-                  if "erroring" in a["title"] or "Error rate" in a["title"]
-                  or "provider fail" in a["title"] or "size limit" in a["title"]]
-    if not app_alerts:
-        pytest.skip("no LLM activity in the local store, so no app alert to check")
-    assert all("1d" in a["title"] or "1d" in a["detail"] or "1 days" in a["detail"]
-               for a in app_alerts), app_alerts
+    for days in (1, 7, 30):
+        for kind, needle in (("APITimeoutError", "erroring"),
+                             ("AllProvidersExhausted", "provider fail"),
+                             ("RequestTooLarge", "size limit")):
+            app = _app_with(_errs(600, kind=kind), 10_000, monkeypatch, days=days)
+            app_alerts = [a for a in _alerts_for(app)
+                          if "erroring" in a["title"] or "Error rate" in a["title"]
+                          or "provider fail" in a["title"] or "size limit" in a["title"]]
+            assert app_alerts, (
+                f"{days}d/{kind}: a seeded 6% error rate raised no app alert, so "
+                f"this test would have had nothing to check -- which is exactly "
+                f"how it passed while skipping in CI")
+            assert any(needle in a["title"] for a in app_alerts), (
+                f"{days}d: no alert for {kind}; titles "
+                f"{[a['title'] for a in app_alerts]}")
+            for a in app_alerts:
+                where = f"{a['title']} {a['detail']}"
+                assert f"{days}d" in where or f"{days} days" in where, (
+                    f"an alert measured over {days} days does not say so: {a}")
+                for other in (1, 7, 30):
+                    if other == days:
+                        continue
+                    assert f"{other}d" not in where and f"{other} days" not in where, (
+                        f"an alert over {days} days also names {other}: {a}")
 
 
 # --------------------------------------------------------------------------- #
@@ -279,11 +314,33 @@ def test_beyond_the_top_n_features_are_grouped_never_dropped():
     assert tr["grouped"], "the grouped names must be listed on the page"
 
 
-def test_no_bar_can_overflow_the_axis():
-    """`top` is a rounded-up peak, so the tallest stack is <= 100% of it."""
-    tr = ops_data._token_trend(_rng(("2026-10-01", {"a": 7, "b": 11})), 1)
-    assert tr["top"] >= tr["peak"] > 0
-    assert sum(tr["series"][0]["by_feature"].values()) / tr["top"] <= 1.0
+def test_no_bar_can_overflow_the_axis(monkeypatch):
+    """QA round 1, BUG-6. This was a TAUTOLOGY and is now a measurement.
+
+    It used to assert `sum(by_feature) / tr["top"] <= 1.0` -- which is
+    `peak <= _nice_top(peak)` restated, true of every implementation and of
+    every fixture, so it could not fail. It also never touched a bar: the
+    overflow it is named for is a RENDERED coordinate, and `_token_trend`
+    returns no coordinates at all.
+
+    Driven at the boundary, where `top == peak`, so the stack is exactly the
+    full axis and any off-by-one in the template shows up immediately rather
+    than hiding in the headroom the nice-number ladder usually leaves.
+    """
+    rng = _rng(("2026-10-01", {"ask": 120_000, "kundli": 80_000}))
+    tr = ops_data._token_trend(rng, 1)
+    assert tr["top"] == tr["peak"] == 200_000, (
+        "the fixture must sit ON the boundary, or headroom hides the defect")
+
+    bars = _bars(_trend_html(monkeypatch, rng))
+    assert bars, "no bar was rendered at all"
+    for b in bars:
+        assert b["y"] >= -0.01, f"a segment starts above the viewBox: {b}"
+        assert b["y"] + b["h"] <= 100.01, f"a segment runs past the floor: {b}"
+        assert b["h"] >= 0, f"a negative height: {b}"
+    assert abs(sum(b["h"] for b in bars) - 100.0) < 0.02, (
+        "the peak day is the whole axis here, so its stack must be exactly "
+        "100 units tall")
 
 
 def test_a_window_with_no_tokens_is_not_ok_rather_than_a_flat_zero_chart():
@@ -669,3 +726,209 @@ def test_the_error_cell_takes_its_red_threshold_from_the_module(monkeypatch):
     assert 'c-failed">30 · 3.0%' in html, (
         "the cell did not follow ERROR_RATE_RED, so it is still reading a literal"
     )
+
+
+# --------------------------------------------------------------------------- #
+# QA round 4, F-1 and F-2. The chart this PR exists to add had NO test that
+# reads a bar and no mutation row that touches one, so it could be deleted
+# outright with all 830 tests and the 266-row sweep green. And the reference
+# line's placement was pinned only by fixtures where `peak == top`, so swapping
+# the denominator -- two names one line apart -- walked through everything.
+#
+# Everything below reads the RENDERED rects, because the bug shapes QA built
+# are all in the template: a stack drawn from the wrong edge, a threshold that
+# emits nothing, and a height on a different scale from the line beside it.
+# --------------------------------------------------------------------------- #
+
+_TB = re.compile(
+    r'<rect x="(?P<x>[-\d.]+)" width="(?P<w>[-\d.]+)"\s+'
+    r'y="(?P<y>[-\d.]+)" height="(?P<h>[-\d.]+)"\s+'
+    r'class="tb f(?P<f>\d+)"><title>(?P<t>[^<]*)</title></rect>')
+
+
+def _bars(html: str) -> list[dict]:
+    """Every stacked segment the page actually drew."""
+    out = []
+    for m in _TB.finditer(html):
+        d = m.groupdict()
+        out.append({"x": float(d["x"]), "w": float(d["w"]), "y": float(d["y"]),
+                    "h": float(d["h"]), "f": int(d["f"]), "title": d["t"]})
+    return out
+
+
+def _trend_html(monkeypatch, rng, *, window=None):
+    """The real page with `range_summary` driven from a chosen multi-day doc.
+
+    `_ops_html` takes a single `peak` and emits one day of one feature, which
+    cannot express a STACK -- the thing the chart is. That is why no test read a
+    bar: no helper could produce more than one.
+    """
+    from astro_ai import llm_stats
+    monkeypatch.setattr(events, "error_breakdown", _breakdown_stub([]))
+    monkeypatch.setattr(llm_stats, "usage_summary",
+                        lambda d: {"days": d, "total_calls": 1000, "cache_hits": 0,
+                                   "cache_misses": 1000, "hit_rate_pct": 0,
+                                   "total_input_tokens": 0, "total_output_tokens": 0,
+                                   "by_route": []})
+    monkeypatch.setattr(llm_stats, "range_summary", lambda d: rng)
+    ops_data._app_cache.clear()
+    r = _page(window)
+    assert r.status_code == 200, r.status_code
+    return r.text
+
+
+_STACK = _rng(
+    ("2026-10-01", {"ask": 30_000, "kundli": 20_000}),
+    ("2026-10-02", {"ask": 50_000, "kundli": 10_000, "matching": 5_000}),
+    ("2026-10-03", {"ask": 10_000}),
+)
+
+
+def test_the_chart_draws_a_rect_for_every_non_zero_feature_day(monkeypatch):
+    """F-2's second mutant: `{%- if v > 0 %}` raised to a threshold nothing
+    reaches emits NO rects at all, and the suite stayed green -- the chart this
+    work exists to add could be deleted and every gate passed.
+
+    Counted against the fixture, so "the chart is there" is an assertion about
+    the data rather than about the string `<rect`.
+    """
+    html = _trend_html(monkeypatch, _STACK)
+    expected = sum(1 for d in _STACK["days"]
+                   for tok in d["route_tokens"].values()
+                   if (tok["input_tokens"] + tok["output_tokens"]) > 0)
+    bars = _bars(html)
+    assert expected == 6, "the fixture must hold a real stack"
+    assert len(bars) == expected, (
+        f"the chart drew {len(bars)} segments for {expected} non-zero "
+        f"feature-days -- a stack that silently loses or invents a segment")
+    assert {b["f"] for b in bars} <= {0, 1, 2}, bars
+
+
+def test_each_segment_height_is_its_share_of_the_axis_top(monkeypatch):
+    """F-2's third mutant: `h = v / trend.top` -> `v / trend.peak` puts the bars
+    on a different scale from the reference line drawn across them, so the line
+    stops meaning anything and nothing failed.
+
+    Asserted against `top` read off the view, not against a literal, so the
+    nice-number ladder can change without making this a false alarm.
+    """
+    tr = ops_data._token_trend(_STACK, 3)
+    html = _trend_html(monkeypatch, _STACK)
+    by_day = {s["full_date"]: s for s in tr["series"]}
+    for b in _bars(html):
+        day, feature = b["title"].split(" · ")[0], b["title"].split(" · ")[1].split(":")[0]
+        v = by_day[day]["by_feature"][feature]
+        assert abs(b["h"] - v / tr["top"] * 100) < 0.01, (
+            f"{day}/{feature}: height {b['h']} is not {v}/{tr['top']} of the axis")
+
+
+def test_the_stack_is_anchored_at_the_axis_floor_not_the_top_edge(monkeypatch):
+    """F-2's first mutant: `y="{{ 100 - ns.acc }}"` -> `y="{{ ns.acc }}"` draws
+    the stack upside down from the top edge, and the suite stayed green.
+
+    SVG y grows downward, so a segment's BOTTOM is `y + h` and the first
+    segment of each day must sit ON the floor at 100. The whole stack must also
+    be contiguous: each segment's bottom is the next one's top.
+    """
+    tr = ops_data._token_trend(_STACK, 3)
+    bars = _bars(_trend_html(monkeypatch, _STACK))
+    per_day: dict[str, list[dict]] = {}
+    for b in bars:
+        per_day.setdefault(b["title"].split(" · ")[0], []).append(b)
+
+    for day, segs in per_day.items():
+        segs.sort(key=lambda s: -s["y"])          # bottom-most first
+        assert abs(segs[0]["y"] + segs[0]["h"] - 100) < 0.01, (
+            f"{day}: the stack does not start at the axis floor -- "
+            f"y={segs[0]['y']} h={segs[0]['h']}")
+        for lower, upper in zip(segs, segs[1:]):
+            assert abs(upper["y"] + upper["h"] - lower["y"]) < 0.01, (
+                f"{day}: a gap or overlap between stacked segments")
+        total = by = sum(s["h"] for s in segs)
+        day_total = next(s["total"] for s in tr["series"] if s["full_date"] == day)
+        assert abs(total - day_total / tr["top"] * 100) < 0.02, (
+            f"{day}: the stack's height is not the day's total ({by})")
+        assert all(s["y"] >= -0.01 for s in segs), (
+            f"{day}: a segment is drawn above the viewBox")
+
+
+def test_the_tpd_line_is_placed_from_the_axis_top_not_the_raw_peak(monkeypatch):
+    """F-1. `tpd_y`'s denominator is `top`; `peak` is one line away in the same
+    dict and substituting it survived all 830 tests AND the 266-row sweep.
+
+    Both existing placement tests pin `peak == top` (TPD*2 -> top 400,000;
+    TPD*5 -> top 1,000,000), which also makes `assert 'y1="-' not in html`
+    blind -- and the sweep's row mutates to `top * 2`, which the TPD*2 fixture
+    does separate, so the row passed while the REALISTIC substitution walked
+    through. The fixture, not the assertion, for the third time on this branch.
+
+    184,422 is the smallest thing that fixes it: an ordinary, reachable day
+    whose nice-number top is 200,000, so `peak < top` and the two names stop
+    being interchangeable. Under the mutant the line renders at y=-8.45 --
+    outside the viewBox -- while the legend still reads "200,000 TPD".
+    """
+    peak = 184_422
+    tr = ops_data._token_trend(_rng(("2026-10-01", {"ask": peak})), 1)
+    assert tr["peak"] == peak
+    assert tr["top"] == 200_000, "the nice-number ladder moved; pick a new peak"
+    assert tr["peak"] < tr["top"], (
+        "the fixture MUST separate peak from top or it cannot see the defect")
+    assert tr["tpd_visible"] is True
+    assert tr["tpd_y"] == 0.0, (
+        "one bucket is the whole axis here, so the line belongs at the top "
+        "edge; a negative y means the denominator is the raw peak")
+
+    html = _trend_html(monkeypatch, _rng(("2026-10-01", {"ask": peak})))
+    assert 'class="tpdline"' in html
+    assert 'y1="-' not in html and 'y2="-' not in html, (
+        "the reference line is drawn outside the viewBox while the legend "
+        "still promises it")
+    assert "200,000 TPD · one model" in html
+
+
+# --------------------------------------------------------------------------- #
+# QA round 4, F-5 and F-6. Two statements the page made that nothing could fail:
+# a window label promising a rolling 24 hours the reader never gets, and a chart
+# that vanished in silence.
+# --------------------------------------------------------------------------- #
+
+def test_the_day_window_is_not_advertised_as_a_rolling_24_hours():
+    """F-5. `window=1` is the current CALENDAR day, not the last 24 hours.
+
+    `events.error_breakdown` and `llm_stats` both build their day list as
+    `[today - timedelta(days=i) for i in range(days)]` from `date.today()`, so
+    `days=1` is `[today]` -- today SO FAR. At 00:30 that is thirty minutes of
+    data presented as a day, overstating the window by up to 48x on the panel
+    whose only job is to size a budget against a daily ceiling.
+    """
+    from datetime import date, timedelta
+    import astro_ai.events as ev
+    # The claim under test is about the code, so read it off the code first.
+    assert [date.today() - timedelta(days=i) for i in range(1)] == [date.today()], (
+        "the day list stopped being calendar-day based; re-read this label")
+    assert ev.EVENT_RETENTION_DAYS >= 30
+
+    h = _page("1").text
+    assert "not a rolling 24 hours" in h, (
+        "the day window does not say what it actually is")
+    assert "the last 24 hours" not in h, (
+        "the page still promises a rolling 24-hour window")
+
+
+def test_an_empty_trend_says_so_rather_than_vanishing(monkeypatch):
+    """F-6. `_token_trend` returns `ok: False` for a window with no tokens --
+    deliberately, because a flat chart reads as "we spent nothing" instead of
+    "nothing recorded". But the whole block then disappeared with no statement,
+    so a quiet window and a broken chart looked identical on a panel that
+    otherwise says `live`.
+    """
+    html = _trend_html(monkeypatch, {"days": []})
+    assert not _bars(html), "precondition: there is nothing to draw"
+    assert "Tokens per day, by feature" in html, (
+        "the whole section vanished, so the reader cannot tell a quiet window "
+        "from a chart that failed")
+    assert "No per-day token figures in this window" in html
+    assert "This is an absence, not a zero" in html, (
+        "an empty chart must say which of the two it is")
+    assert 'class="tpdline"' not in html, (
+        "a reference line with no bars is a number with nothing to reference")

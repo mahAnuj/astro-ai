@@ -679,8 +679,15 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         {%- for d in ops.app_windows %}
         <a href="?window={{ d }}" class="win{{ ' on' if d == ops.app_days }}"
            {% if d == ops.app_days %}aria-current="true"{% endif %}
-           title="{{ {1: 'the last 24 hours', 7: 'the last 7 days',
-                      30: 'the last 30 days — the event-retention ceiling'}[d] }}"
+           {#- CALENDAR DAYS, NOT A ROLLING WINDOW. `events.error_breakdown` and
+               `llm_stats` both build `[today - timedelta(days=i) for i in
+               range(days)]` from `date.today()`, so `window=1` is the current
+               server day SO FAR -- at 00:30 UTC it is thirty minutes of data,
+               and calling it "the last 24 hours" overstated it by up to 48x on
+               the one panel whose job is to size a budget. -#}
+           title="{{ {1: 'the current day so far — a calendar day, not a rolling 24 hours',
+                      7: 'the last 7 calendar days, today included and still filling',
+                      30: 'the last 30 calendar days — the event-retention ceiling'}[d] }}"
            >{{ {1: 'day', 7: 'week', 30: 'month'}[d] }}</a>
         {%- endfor %}
       </span>
@@ -744,6 +751,17 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
            a colour means the same thing on every bar.
            Server-rendered SVG, no chart library: the data is already in the
            page and a dependency here would ship to every admin render. -#}
+      {% if not ops.app.trend.ok %}
+      {#- SAY SO. `_token_trend` returns `ok: False` for a window with no tokens
+          -- deliberately, because a chart of zeroes reads as "we spent nothing"
+          rather than "nothing recorded". But the whole block then disappeared
+          with no statement, so the reader could not tell a quiet window from a
+          chart that had broken, on a panel that otherwise says `live`. -#}
+      <h3 class="lbl" style="margin:22px 0 10px">Tokens per day, by feature</h3>
+      <div class="empty">No per-day token figures in this window, so there is no
+        chart. This is an absence, not a zero: a flat chart would read as
+        &ldquo;nothing was spent&rdquo;.</div>
+      {% endif %}
       {% if ops.app.trend.ok %}
       <h3 class="lbl" style="margin:22px 0 10px">Tokens per day, by feature
         <span style="font-weight:400;color:var(--ink-mute);text-transform:none;letter-spacing:0">

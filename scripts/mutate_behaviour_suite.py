@@ -2011,6 +2011,76 @@ MUTATIONS = [
      'elif isinstance(node, ast.ClassDef) and node.name.startswith("Test"):',
      "elif False:",
      "test_a_method_removed_from_a_test_class_fails"),
+
+    # --- #419/#452 QA round 4: F-1, F-2, F-3, F-5, F-6, BUG-5, BUG-6 --------
+    # F-2 is the headline: the stacked bars had NO test and NO row, so all three
+    # of these survived the whole suite and the 266-row sweep -- and the second
+    # one DELETES the chart this work exists to add.
+    ("#452/F-2a: the stack is drawn from the top edge, upside down",
+     "src/astro_ai/templates/admin_ops.html",
+     '''y="{{ '%.3f'|format(100 - ns.acc) }}"''',
+     '''y="{{ '%.3f'|format(ns.acc) }}"''',
+     "test_the_stack_is_anchored_at_the_axis_floor_not_the_top_edge"),
+
+    ("#452/F-2b: the bar threshold emits nothing, deleting the chart outright",
+     "src/astro_ai/templates/admin_ops.html",
+     "{%- if v > 0 %}", "{%- if v > 999999999999 %}",
+     "test_the_chart_draws_a_rect_for_every_non_zero_feature_day"),
+
+    ("#452/F-2c: the bars use a different scale from the line across them",
+     "src/astro_ai/templates/admin_ops.html",
+     "{%- set h = v / ops.app.trend.top * 100 %}",
+     "{%- set h = v / ops.app.trend.peak * 100 %}",
+     "test_each_segment_height_is_its_share_of_the_axis_top"),
+
+    # F-1. `top` and `peak` are one line apart in the same dict, and BOTH
+    # existing placement fixtures pinned `peak == top`, which also made
+    # `assert 'y1="-' not in html` blind. The old row mutated to `top * 2`,
+    # which the TPD*2 fixture does separate -- so the row passed while the
+    # realistic substitution walked through.
+    ("#452/F-1: tpd_y is placed from the raw peak instead of the axis top",
+     "src/astro_ai/ops_data.py",
+     '"tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '"tpd_y": round(100 - TPD_PER_MODEL / peak * 100, 2) if top else 100,',
+     "test_the_tpd_line_is_placed_from_the_axis_top_not_the_raw_peak"),
+
+    # F-3. The only test of this decision used to `pytest.skip` on an empty
+    # store, which IS the CI condition, so both of these were unguarded there.
+    ("#452/F-3: the error-rate alert hardcodes its window",
+     "src/astro_ai/ops_data.py",
+     '''f"{app['days']} days.", "/admin/activity")''',
+     '''f"7 days.", "/admin/activity")''',
+     "test_an_app_alert_names_the_window_it_was_measured_over"),
+
+    ("#452/F-3: the provider-fail alert hardcodes its window",
+     "src/astro_ai/ops_data.py",
+     '''f"in {app['days']}d",''',
+     '''f"in 7d",''',
+     "test_an_app_alert_names_the_window_it_was_measured_over"),
+
+    ("#452/F-5: the day window is advertised as a rolling 24 hours",
+     "src/astro_ai/templates/admin_ops.html",
+     "1: 'the current day so far — a calendar day, not a rolling 24 hours',",
+     "1: 'the last 24 hours',",
+     "test_the_day_window_is_not_advertised_as_a_rolling_24_hours"),
+
+    ("#452/F-6: an empty trend chart vanishes with no statement",
+     "src/astro_ai/templates/admin_ops.html",
+     "This is an absence, not a zero", "This is a zero",
+     "test_an_empty_trend_says_so_rather_than_vanishing"),
+
+    ("#452/BUG-5: the window selector hardcodes one window",
+     "src/astro_ai/templates/admin_ops.html",
+     'href="?window={{ d }}"', 'href="?window=1"',
+     "test_the_window_selector"),
+
+    # BUG-6. The old assertion was `peak <= _nice_top(peak)` restated, so it
+    # could not fail; it now reads rendered coordinates at the boundary.
+    ("#452/BUG-6: a bar segment is drawn past the axis floor",
+     "src/astro_ai/templates/admin_ops.html",
+     '''height="{{ '%.3f'|format(h) }}"''',
+     '''height="{{ '%.3f'|format(h * 1.5) }}"''',
+     "test_no_bar_can_overflow_the_axis"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
