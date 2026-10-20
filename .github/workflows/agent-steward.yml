@@ -187,6 +187,21 @@ jobs:
             their check runs and the relevant run logs before writing any
             diagnosis. A finding you did not check is a guess.
 
+            **IF A FINDING OBLIGES A CYCLE, DO NOT RUN `gh workflow run` --
+            YOUR TOKEN IS REFUSED (HTTP 403, #442).** Write AT MOST ONE line,
+            exactly `issue=<number>`, to `/tmp/steward-dispatch.txt`, and a
+            later step carries it out with a credential that can. No line means
+            no dispatch, and that is a legitimate outcome: write one only for a
+            PR a cycle can actually adopt -- an `issue/*` branch with an owning
+            issue, never a PR a human opened on their own branch, and never "to
+            be safe", because the step cannot tell a considered dispatch from a
+            hedge and a wasted cycle is ~50 Actions minutes.
+
+            You do not need to check whether a cycle is already running, or
+            whether the issue is open. The step checks both itself, with a
+            credential that can read the Actions API, and refuses rather than
+            queueing a second.
+
             Your value is the diagnosis, not the detection. Read steward.md and
             obey its constraints exactly — in particular you may NOT apply or
             remove `qa-pass`/`qa-fail`, may not merge, close or push, and may
@@ -214,6 +229,34 @@ jobs:
             # `scripts/verify_no_relaxation.py` is the real guard and it runs on
             # the PR. This list is the second lock, not the first.
             --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(git push --force:*),Bash(git push -f:*),Bash(git reset --hard:*),Bash(gh pr merge:*),Bash(gh pr review:*),Bash(gh pr edit:*),Bash(gh issue close:*),Bash(gh pr close:*),Bash(gh repo:*),Bash(gh secret:*),Bash(gcloud:*)"
+
+      # THE STEWARD'S OWN CARRIER (#442). This is the step whose absence made
+      # chief the dispatcher by construction.
+      #
+      # `steward.md` tells the steward to dispatch a cycle in six routing rows.
+      # Its `gh` is the Claude GitHub App token and `gh workflow run` answers it
+      # HTTP 403 "Resource not accessible by integration" -- the `actions: write`
+      # above belongs to `github.token`, which only `run:` steps receive. So on
+      # 2026-10-20 the steward diagnosed four stalls correctly, was refused, and
+      # the accountability step below woke chief to perform a dispatch the
+      # steward had already decided. A whole extra agent invocation for a
+      # mechanical act, on every run with an obliged stall.
+      #
+      # IT MUST SIT BEFORE `acted`, not after. `acted` asks "did a cycle start
+      # since this run began"; a carrier placed after it would dispatch and
+      # still be recorded as having done nothing, which is the exact
+      # false-negative that wakes chief.
+      #
+      # Same credential, same guards and the same script as chief's carrier
+      # below -- one mechanism, not a second copy. `scripts/dispatch_cycle.sh`
+      # carries the reasoning and the exit codes.
+      - name: Carry out the steward's dispatch
+        id: steward_dispatch
+        if: steps.detect.outputs.stalled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: bash scripts/dispatch_cycle.sh /tmp/steward-dispatch.txt steward
 
       # DID IT ACTUALLY DO THE ACTIONABLES? This step is why chief exists in
       # this file.
@@ -361,86 +404,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          set -uo pipefail
-          if [ ! -s /tmp/chief-dispatch.txt ]; then
-            echo "chief recorded no dispatch. That is a ruling, not a failure."
-            exit 0
-          fi
-
-          # Strict parse. Anything that is not exactly `issue=<digits>` on the
-          # first line is refused rather than guessed at, because the failure
-          # mode of a lenient parser here is dispatching a cycle at the wrong
-          # issue — 50 minutes spent on work nobody ruled on.
-          line=$(head -1 /tmp/chief-dispatch.txt | tr -d '[:space:]')
-          issue=$(printf '%s' "$line" | grep -oE '^issue=[0-9]+$' | cut -d= -f2)
-          if [ -z "$issue" ]; then
-            echo "::error::chief wrote an unparseable dispatch line: '$line'. Refusing to guess."
-            exit 1
-          fi
-
-          # The issue must be open. A cycle at a closed issue is the
-          # `cannot-reproduce` path burned at full cycle cost.
-          state=$(gh issue view "$issue" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)
-          if [ "$state" != "OPEN" ]; then
-            echo "::error::chief ruled a dispatch at #$issue, which is $state. Not dispatching."
-            exit 1
-          fi
-
-          # Guard 1, the one chief recorded as "could not establish".
-          busy=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 10 \
-                   --json status --jq '[.[] | select(.status != "completed")] | length' 2>/dev/null || echo unknown)
-          if [ "$busy" != "0" ]; then
-            echo "::warning::a cycle is in flight (or the check failed: '$busy'). Chief's ruling at #$issue stands; it waits for the next run rather than queueing behind this one."
-            exit 0
-          fi
-
-          # `gh workflow run` EXITS 0 ONCE THE RUN IS CREATED, and says nothing
-          # about whether it then did anything. That is how #421 stayed invisible
-          # for three days: the action refused the Bot actor 1.5s in, the run
-          # concluded `failure` in ~33s, and this step reported "carried out" to
-          # the summary every time. A dispatch nobody can tell from a no-op is
-          # worse than no dispatch, because the stall detector then sees a cycle
-          # was tried and the steward reports success.
-          #
-          # So: remember the newest run id, dispatch, wait for a NEW one, and
-          # give it a window to die in. Anything already `completed` inside the
-          # window concluded without doing a cycle's work -- a real cycle runs
-          # for tens of minutes -- so that is a failure of this step, not a
-          # finished job.
-          before=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml \
-                     --limit 1 --json databaseId --jq '.[0].databaseId // 0' 2>/dev/null || echo 0)
-          gh workflow run agent-work.yml --repo "$GH_REPO" -f issue="$issue"
-          echo "::notice::requested agent-work at #$issue on chief's ruling; verifying it started"
-
-          run_id=""
-          for _ in $(seq 1 12); do          # up to ~60s for the run to appear
-            sleep 5
-            cand=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml \
-                     --limit 1 --json databaseId --jq '.[0].databaseId // 0' 2>/dev/null || echo 0)
-            if [ "$cand" != "0" ] && [ "$cand" != "$before" ]; then run_id="$cand"; break; fi
-          done
-          if [ -z "$run_id" ]; then
-            echo "::error::dispatch at #$issue created no new agent-work run within 60s. Not reporting it as carried out."
-            exit 1
-          fi
-
-          # 90s is chosen against the measured failure, not guessed: the three
-          # #421 runs concluded in 33-36s. A cycle that is still running here is
-          # genuinely working and this step must NOT wait for it.
-          for _ in $(seq 1 18); do
-            sleep 5
-            read -r status conclusion <<<"$(gh run view "$run_id" --repo "$GH_REPO" \
-              --json status,conclusion --jq '"\(.status) \(.conclusion // "")"' 2>/dev/null || echo "unknown ")"
-            if [ "$status" = "completed" ]; then
-              echo "::error::agent-work run $run_id concluded '$conclusion' within 90s of dispatch at #$issue -- it did not run a cycle. See #421."
-              exit 1
-            fi
-          done
-
-          echo "::notice::agent-work run $run_id is running a cycle at #$issue"
-          echo "DISPATCHED=$issue" >> "$GITHUB_ENV"
-          echo "DISPATCHED_RUN=$run_id" >> "$GITHUB_ENV"
+        run: bash scripts/dispatch_cycle.sh /tmp/chief-dispatch.txt chief
 
       # Say what happened either way. A loop that reports nothing when it found
       # nothing cannot be told from one that failed to run — which is the defect
@@ -467,9 +431,9 @@ jobs:
                   # "carried out" is now only ever printed for a run this job
                   # watched start AND saw still running 90s later. See #421 for
                   # what this sentence used to mean.
-                  echo "chief ruled a dispatch and it was carried out: \`agent-work\` at #${DISPATCHED} ([run ${DISPATCHED_RUN:-?}](${SERVER_URL}/${REPO_SLUG}/actions/runs/${DISPATCHED_RUN:-}))."
+                  echo "${DISPATCHED_BY:-chief} ruled a dispatch and it was carried out: \`agent-work\` at #${DISPATCHED} ([run ${DISPATCHED_RUN:-?}](${SERVER_URL}/${REPO_SLUG}/actions/runs/${DISPATCHED_RUN:-}))."
                 else
-                  echo "chief recorded no dispatch — either it ruled the stalls un-dispatchable, or the guard refused. Its ruling is a comment on the PRs named above."
+                  echo "no dispatch was recorded — either the stalls were ruled un-dispatchable, or the guard refused. Its ruling is a comment on the PRs named above."
                 fi
               fi
             else

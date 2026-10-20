@@ -101,9 +101,30 @@ That is `USER AUTHORISED PUSH` one level up. So:
    would unstick it. Name the run IDs. Someone must be able to check you.
 3. **File ONE issue per distinct root cause**, with the Evidence Block the loop
    requires and an executable `repro:`. Several stalls with one cause get one issue.
-4. **Dispatch a cycle at an issue** — `gh workflow run agent-work.yml -f issue=<n>` —
-   when the repair is ordinary delivery work. Check `agent-work`'s concurrency first; a
-   queued dispatch behind a running cycle is fine, a second simultaneous one is not.
+4. **Record a cycle dispatch** — write **one** line, exactly `issue=<n>`, to
+   `/tmp/steward-dispatch.txt` — when the repair is ordinary delivery work.
+
+   **Do NOT run `gh workflow run` yourself. It is refused** (#442). Inside this loop
+   your `gh` is the Claude GitHub App token and the Actions API answers it
+   `HTTP 403 Resource not accessible by integration`; the `actions: write` in
+   `agent-steward.yml` belongs to `github.token`, which only `run:` steps receive.
+   Measured 2026-10-20: the steward diagnosed four stalls correctly, was refused,
+   produced no action, and the accountability step woke `chief` to carry out a
+   dispatch the steward had already decided — a full agent invocation for a
+   mechanical act. A later step now carries your line out with a credential that
+   works, and `chief` is no longer on this path.
+
+   **You do not check concurrency or whether the issue is open.** The carrier
+   (`scripts/dispatch_cycle.sh`) re-checks both with a token that can read the
+   Actions API, refuses rather than queueing a second cycle, and verifies the run
+   it created survived 90s — because `gh workflow run` exits 0 on a run that then
+   dies in 1.5 seconds, which is how #421 hid for three days.
+
+   **No line is a legitimate outcome, and one line is the maximum.** Write one only
+   for a PR a cycle can actually adopt: an `issue/*` branch with an owning issue.
+   A PR a human opened on their own branch is not this loop's — a cycle has nothing
+   to adopt — and writing a line "to be safe" spends ~50 Actions minutes on work
+   nobody ruled on. The step cannot tell a considered dispatch from a hedge.
 5. **Apply ROUTING labels only**: `needs-human-review`, `skill:*`, `needs-evidence`.
    Never a verdict label.
 6. **Escalate to `chief`** in either shape, and prefer it over parking a decision:
@@ -145,7 +166,7 @@ suppress the escalation you wanted.
 | `pr-conflicting` | **Dispatch a cycle, and tell it to run `scripts/merge_main_into_branch.py --push` first.** A conflicting PR gets no check runs at all — GitHub cannot build the merge ref `pull_request` workflows run against — so it is dead until `main` is merged in, and nothing downstream can proceed. This is work, not a decision: do not escalate it. The script resolves only the three conflict classes this repo produces mechanically (decision-log rows unioned and date-ordered, mutation rows unioned with nothing dropped, `EXPECTED_TESTS` measured on the result) and **refuses anything else with exit 2**, so a conflict in a source file still reaches a person. It also verifies the merge RESULT and exits 1 without committing when that is red — which is the normal case here, not a surprise: both merges on 2026-10-20 whose conflicts were purely mechanical still broke the suite, from defects neither branch could see alone. On exit 1 the cycle fixes what the merge broke; on exit 2 comment what conflicts and stop. |
 | `draft-held-by-qa-fail` | **Dispatch a cycle to FIX the findings, and say in your comment that the PR must stay a draft.** The draft is the gate, not an oversight: a round looked at this and found defects. Never `gh pr ready` it and never ask a cycle to — that is `draft-never-readied`'s action and it is the wrong one here. Measured 2026-10-20 on #425, a draft whose round found a live exploitable XSS and said it should stay a draft until the sink is escaped; the detector classified it as an unreadied draft because `isDraft` was checked before the label, and the routed action would have opened the gate. |
 | `qa-fail-unaddressed` | **Dispatch a cycle at the owning issue.** A verdict found defects and nothing has been pushed since — the detail line carries both ages. `/agent-cycle` Step 2.5 adopts the branch, the PR and the verdict, and Step 0's close path is disabled while an open PR exists. This is the state most PRs spend most of their life in, and until 2026-10-20 no detector could see it: every use of `qa-fail` in `detect_stalls.py` was a negation, so a failed PR was invisible to this loop permanently. Four sat 12–64h that way. |
-| `qa-fail-refixed` | **Dispatch a cycle at the owning issue, and say in your comment that the fix already landed.** The head is newer than the verdict, so there is nothing to fix — what is missing is a round that has seen it. Step 2.5 compares the two and goes straight to QA rather than re-fixing. Do **not** apply or remove a label yourself; you may not touch `qa-pass` or `qa-fail`, and the round that runs will. |
+| `qa-fail-refixed` | **Dispatch a cycle at the owning issue — and READ THE COMMITS before you say a fix landed.** The detector only knows the head is NEWER than the verdict; it cannot know what the new commits contain, and "newer" is not "fixed". Measured 2026-10-20 on #418 and #419: the only post-verdict commits on both were `Merge origin/main` clearing a conflict, so this kind fired on two PRs whose findings were untouched, and the routed comment would have told a QA round the fix had landed. The detail line now says which it is when it can tell. If the new commits are merges, treat it as `qa-fail-unaddressed` and fix the findings; a QA round on unaddressed findings returns the same FAIL at full cost. Step 2.5 compares the two and goes straight to QA rather than re-fixing. Do **not** apply or remove a label yourself; you may not touch `qa-pass` or `qa-fail`, and the round that runs will. |
 | `qa-fail-unreadable` | **Comment and move on.** The detector could not read either the verdict time or the head commit time, so which of the two states above applies is unknown. Guessing dispatches the wrong agent and spends a full cycle finding out. Say which API read failed. |
 | `mergeable-but-open` | **Do not touch the PR.** Every merge condition is satisfied, so the merge GATE has a defect. Diagnose it, file one issue, dispatch a cycle at that issue. PR #319 sat nine hours this way on a `cancelled` check run that voted forever. |
 | `no-checks-ever` | **Read the detail line — there are two causes with opposite fixes.** If it says CONFLICTING, GitHub cannot build the merge ref that `pull_request` workflows run against, so pushes fire no run at all; the fix is to resolve the conflict and reopening does nothing. Otherwise it is the GITHUB_TOKEN case below. |
