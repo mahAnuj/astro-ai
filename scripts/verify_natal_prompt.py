@@ -747,7 +747,8 @@ _HANUMAN_SATURN = (
 )
 _DONOR_VERB = (
     r"(?:serv(?:e|es|ed|ing|ice|ices)|support(?:s|ing)?|help(?:s|ing)?"
-    r"|donat(?:e|es|ing|ion)|feed(?:s|ing)?)"
+    r"|donat(?:e|es|ed|ing|ion|ions)|feed(?:s|ing)?|offer(?:s|ed|ing|ings)?"
+    r"|giv(?:e|es|ing)|gave)"
 )
 READER_FORBIDDEN = (
     (r"red[- ]*lentils?|masoor|masur|मसूर",
@@ -760,11 +761,45 @@ READER_FORBIDDEN = (
     (_HANUMAN_SATURN,
      "C: Saturn -> Vishnu, Brahma; Hanuman only via Mars with Saturnine influence "
      "- unless the sentence labels it popular/folk tradition AND names the Mars route"),
-    (r"sesame[- ]+oil|(?:\btil|\bteel|\btila|gingelly)[- ]+oil|\btil(?:\s+ka)?\s+tel\b|oil\s+of\s+sesame"
-     r"|तिल\s*(?:का|के)\s*तेल",
+    (r"sesame(?:[- ]+seeds?)?[- ]+oil|(?:\btil|\bteel|\btila|gingelly)[- ]+oil"
+     r"|\btil(?:\s+ka)?\s+tel\b|oil\s+of\s+sesame|तिल\s*(?:का|के)\s*तेल"
+     # The oil was the only literal, so the CROSS-ASSIGNMENT underneath it walked
+     # through: QA pasted "sesame seeds and black lentils" and "offer sesame +
+     # black lentils" back into two Ketu records and the whole sweep stayed green.
+     # Sesame paired with BLACK LENTILS is the Ketu shape -- Saturn's own rows say
+     # "urad daal", never "black lentils" -- so this pins it without needing the
+     # planet, which a string in `numerology.py` does not carry.
+     r"|sesame[^.;\n]{0,40}black\s+lentils|black\s+lentils[^.;\n]{0,40}sesame",
      "D: unsourced; sesame is Saturn's and Rao gives Ketu no grain or oil"),
-    (rf"{_DONOR_VERB}(?:\s+(?:to|of|for))?\s+(?:[\w'-]+[\s/,]+){{0,4}}?(?:outsiders?|marginali[sz]ed)",
-     "E: unsourced; Rao's Rahu deed is a donation to a research organisation or a pilgrimage"),
+    # The donor NOUNS were only `outsiders|marginalised`, so the verbatim string
+    # this slice was filed about -- "Offer to lepers, outcasts, or homeless on
+    # Saturday sunset" -- reinstated green. Widened to the whole family.
+    (rf"{_DONOR_VERB}(?:\s+(?:to|of|for))?\s+(?:[\w'-]+[\s/,]+){{0,4}}?"
+     rf"(?:outsiders?|marginali[sz]ed|lepers?|outcast\w*)",
+     "E: unsourced; Rao's Rahu deed is a donation to a research organisation or a "
+     "pilgrimage, and Saturn's is physical labour, manual labourers and the elderly"),
+
+    # F. The claim THIS SLICE introduced while retiring family C: it replaced
+    # Hanuman with Vishnu (correct, Table 7.1) and then named a HYMN as the
+    # practice and ranked it -- "the most universal Saturn practice" -- in nine
+    # reader-facing places. `sahasranama` returns one hit in `knowledge/`, and it
+    # is LALITA Sahasranama in the Sri Yantra section. Scoped to one sentence, so
+    # "For Saturn delays: ... . For general 10th house strengthening: Vishnu
+    # Sahasranama" stays legal: there the hymn is the 10th house's, not Saturn's.
+    (rf"{_SATURN}[^.;\n]{{0,140}}Sahasranama|Sahasranama[^.;\n]{{0,140}}{_SATURN}",
+     "F: Saturn's sourced remedy is the DEITY (Vishnu, Brahma - Table 7.1); no book "
+     "we hold names a hymn as Saturn's practice, let alone ranks one"),
+
+    # G. A reader-facing remedy line borrowing authority from a source name. NOT a
+    # blanket ban -- source names are deliberate and pervasive elsewhere (Cheiro,
+    # Johari, Phaladeepika, Saravali) -- just this construction, which is how the
+    # same wrong attribution survived on two pages: the grain tables are Rao's
+    # (remedies.md 5.1/13.1), and BPHS is not where they come from.
+    (r"\bper\s+(?:BPHS|Brihat\s+Parashara\w*|Parashara\w*|Phaladeepika|Saravali"
+     r"|Rao'?s?|Raman'?s?)\s+remedial\s+tradition"
+     r"|classical\s+grain\s+per\s+\w+",
+     "G: a remedy line must not borrow authority from a source name on a reader-facing "
+     "page, and the grain tables are Rao's, not BPHS's"),
 )
 
 # Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.

@@ -102,7 +102,32 @@ GATE7_SAMPLES = {
           "teel-oil", "Til ka tel", "gingelly oil", "तिल का तेल"),
     "E": ("Serve outsiders", "service to outsiders", "serving the marginalised",
           "support the marginalized", "helping outsiders", "donate to lepers or the marginalised",
-          "feed unusual/marginalised people", "monthly serving of marginalised communities"),
+          "feed unusual/marginalised people", "monthly serving of marginalised communities",
+          # The verbatim string this slice was filed about, which reinstated GREEN
+          # under the old noun list -- QA round 2 pasted it back and the whole
+          # sweep passed. The nouns, not the verbs, were the gap.
+          "Offer to lepers, outcasts, or homeless on Saturday sunset.",
+          "Donations to leper colonies are classical Saturn remedies",
+          "serve the outcastes on a Saturday"),
+    # F. Introduced by this slice while retiring family C: Vishnu is Saturn's
+    # deity (Table 7.1) and that part is right, but a HYMN was then named as the
+    # practice and RANKED, in nine reader-facing places. One sentence apart is
+    # the boundary: the hymn may be named for the 10th house or for Mercury and
+    # Jupiter, whose deity Vishnu genuinely is.
+    "F": ("the Vishnu Sahasranama is the most universal Saturn practice",
+          "Saturn's classical deity (with Brahma) - the Vishnu Sahasranama is a good daily practice",
+          "the Vishnu Sahasranama is the universal practice for Shani",
+          "Vishnu Sahasranama recitation eases Sade Sati",
+          "Daily Sahasranama on Saturdays",
+          "recite the Sahasranama through a hard Saturn period"),
+    # G. A reader-facing remedy line borrowing a source name -- and the wrong
+    # one. The same construction survived on a second page after the first was
+    # fixed, because nothing checked for it.
+    "G": ("Mars's classical grain per BPHS remedial tradition",
+          "Rahu's classical grain per BPHS remedial tradition",
+          "Saturn's grain per Parashara remedial tradition",
+          "the classical grain per Saravali",
+          "Toor daal is Mars's classical grain per Rao's remedial tradition"),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -120,6 +145,24 @@ GATE7_LEGAL = (
     "Hanuman Chalisa is a 40-verse hymn. Recited daily, especially on Tuesdays.",
     "Donate toor daal (dark yellow lentil) on Tuesdays; wheat on Sundays; rice on Mondays.",
     "Donate black sesame, mustard oil and iron to the elderly on Saturdays.",
+    # F must not fire on the hymn where Vishnu IS the deity, nor across a
+    # sentence boundary. Both of these are live in the tree and correct.
+    "For Saturn delays: Shani chalisa, Saturday oil-lamp, service to elderly/poor. "
+    "For general 10th house strengthening: Vishnu Sahasranama, worship of your ishta devata.",
+    "Because Vishnu is one of Mercury's ruling deities, the Vishnu Sahasranama is a "
+    "safe universal Mercury remedy.",
+    "For deeper practice, add the Guru Chalisa or Vishnu Sahasranama (Vishnu being "
+    "Jupiter's ruling deity).",
+    # E must not fire on an ancestral rite, which is not Rahu's family at all --
+    # the first draft of the widened nouns did, on pitru-dosh-remedies.html.
+    "Feed one Brahmin or one homeless person",
+    # ...nor on Saturn's own sourced deed, which names the people it serves.
+    "Saturn's classical good deed is labour itself: perform some physical labour, "
+    "help people who live on manual labour, and serve the elderly.",
+    # G is a construction, not a ban on source names: these must stay green.
+    "Cheiro's Book of Numbers gives 4 to Rahu.",
+    "Rao's Table 78 maps Saturn to Vishnu and Brahma.",
+    "Per Johari, the reduction differs.",
 )
 
 # The one honest Hanuman-Saturn sentence a page may keep: it must say popular/folk

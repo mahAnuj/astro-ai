@@ -1121,7 +1121,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What is the safest Saturn remedy that works for anyone?",
-                "a": "Daily worship of Vishnu, Saturn's classical deity (with Brahma) — the Vishnu Sahasranama is a good daily practice. Safe for any chart, no consultation needed, no cost. Other universal safe practices: (1) Weekly service to elderly relatives, (2) Sri Yantra worship, (3) Practicing patience deliberately in daily situations. None of these require chart consultation, none can backfire, and all four together are more effective than any expensive puja.",
+                "a": "Daily worship of Vishnu, Saturn's classical deity (with Brahma) — a Vishnu mantra, or a hymn your own tradition keeps, is the daily practice. Safe for any chart, no consultation needed, no cost. Other universal safe practices: (1) Weekly service to elderly relatives, (2) Sri Yantra worship, (3) Practicing patience deliberately in daily situations. None of these require chart consultation, none can backfire, and all four together are more effective than any expensive puja.",
             },
             {
                 "q": "What is Saturn's mantra?",
