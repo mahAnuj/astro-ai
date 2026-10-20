@@ -76,6 +76,157 @@ def anything_reported(text: str) -> set[str]:
     return rules_reported(text) | (set() if headings_ok else {"seven-headings"})
 
 
+# ----------------------------------------------------------------------------
+# Gate 7 mutation rows
+# ----------------------------------------------------------------------------
+
+# family letter -> spellings that must each turn the gate red. The first entry
+# of each family is the literal that was actually found on a page.
+GATE7_SAMPLES = {
+    "A": ("Donate red lentils on Sundays", "red-lentil charity", "Red Lentils (masoor dal)",
+          "masur dal", "masoor", "Red  Lentil", "मसूर की दाल का दान"),
+    "B": ("Milk offering to Shiva on Mondays", "milk abhishek of Lord Shiva",
+          "offer milk to Shivling", "pour milk over a Shivalinga", "offer white flowers or milk at Shiva temples",
+          "water/milk offerings to Shiva", "milk (abhishek) to the Shivalinga",
+          "Moon is a deep devotee of Shiva", "Moon (Chandra) Remedies: Shiva Puja", "Moon → Shiva",
+          "Shiva abhishek every Monday with cow milk"),
+    "C": ("Hanuman is the only deity classical texts say can intercede with Shani",
+          "Saturn → Hanuman", "Hanuman Chalisa on Saturdays", "Bajrangbali for Sade Sati",
+          "Hanuman is Shani's protector", "Daily Hanuman worship to ease Saturn",
+          "Maruti worship, especially on Saturday", "हनुमान चालीसा का शनिवार को पाठ",
+          # the first run's window stopped at a full stop and missed both of these
+          "Hanuman Chalisa is a 40-verse hymn. Recited daily, especially Tuesdays and Saturdays.",
+          "Any priest selling a Shani nivaran puja is selling anxiety. Mantras + Chalisa + Hanuman worship cost nothing.",
+          "हनुमान चालीसा एक स्तोत्र है। इसे शनिवार को पढ़ें।"),
+    "D": ("Donate blankets, sesame oil, or grey cloth", "sesame-oil lamp", "Sesame  Oil", "til oil",
+          "teel-oil", "Til ka tel", "gingelly oil", "तिल का तेल"),
+    "E": ("Serve outsiders", "service to outsiders", "serving the marginalised",
+          "support the marginalized", "helping outsiders", "donate to lepers or the marginalised",
+          "feed unusual/marginalised people", "monthly serving of marginalised communities"),
+}
+
+# Text that must stay green. Hanuman as a MARS deity, the correct per-planet
+# tables, Shiva as the Sun's deity, and the Kaal Sarp practices (a different,
+# out-of-slice practice - not Moon -> Shiva) are all legal.
+GATE7_LEGAL = (
+    "Mars deities: Hanuman, Rudra, Kartikeya", "Hanuman Chalisa daily, especially on Tuesdays",
+    "Sun → Shiva or Rama; Moon → Devi; Mars → Hanuman or Kartikeya; Saturn → Vishnu or Brahma",
+    "Sun → Shiva, Moon → Devi, Mars → Hanuman, Saturn → Vishnu",
+    "Moon → Devi, Sun → Shiva", "Shiva is the Sun's deity, not the Moon's.",
+    "Nag Panchami (fast + serpent milk offering), Monday Shiva worship + milk abhishek",
+    "Shiva holds the crescent Moon on his forehead.",
+    "Saturn rules: discipline, the elderly, the marginalised, hard-won wisdom.",
+    "Mars → Hanuman or Kartikeya, Saturn → Vishnu or Brahma, Rahu → Durga.",
+    "Hanuman Chalisa is a 40-verse hymn. Recited daily, especially on Tuesdays.",
+    "Donate toor daal (dark yellow lentil) on Tuesdays; wheat on Sundays; rice on Mondays.",
+    "Donate black sesame, mustard oil and iron to the elderly on Saturdays.",
+)
+
+# The one honest Hanuman-Saturn sentence a page may keep: it must say popular/folk
+# AND name Mars. Each half, removed, must turn the gate red.
+_HONEST = ("Many people recite the Hanuman Chalisa on Saturdays through a hard Saturn period; "
+           "that is a popular tradition, not a classical Saturn assignment. The classical road "
+           "to Hanuman runs through Mars carrying Saturnine influence.")
+
+
+def gate7_mutations() -> tuple[int, int]:
+    caught = missed = 0
+    real = gate.reader_surface_units()
+    with redirect_stdout(io.StringIO()):
+        control = gate.gate_7_no_retired_claims_on_reader_surfaces(real)
+    if not control:
+        print("  BLIND — Gate 7 already fails on the real tree:")
+        gate.gate_7_no_retired_claims_on_reader_surfaces(real)
+        return 0, 1
+
+    # Small, real baseline: the longest unit of each required surface. Running
+    # the whole 5,000-unit tree once per mutation would take minutes.
+    base: dict[str, tuple[str, str]] = {}
+    for surface in gate._REQUIRED_SURFACES:
+        cands = [(w, t) for w, t in real if w.startswith(surface)]
+        base[surface] = max(cands, key=lambda wt: len(wt[1]))
+
+    def run(units):
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            ok = gate.gate_7_no_retired_claims_on_reader_surfaces(units)
+        return ok, buf.getvalue()
+
+    def inject(surface: str, sample: str):
+        units = []
+        for s, (w, t) in base.items():
+            units.append((w, t + ("\n" + sample + "\n" if s == surface else "")))
+        return units, base[surface][0].rpartition(":")[0]
+
+    # Hindi copies live in i18n.py (and a Devanagari sample in a template is
+    # meaningless), so Devanagari samples are only injected into i18n.
+    for family, samples in GATE7_SAMPLES.items():
+        for sample in samples:
+            for surface in gate._REQUIRED_SURFACES:
+                if re.search("[ऀ-ॿ]", sample) and surface != "i18n.py":
+                    continue
+                units, fname = inject(surface, sample)
+                ok, out = run(units)
+                if (not ok) and f"{fname}:" in out:
+                    caught += 1
+                else:
+                    missed += 1
+                    print(f"  MISSED  reader-claim {family}  {sample!r} in {surface} "
+                          f"(went red={not ok}, named {fname}={f'{fname}:' in out})")
+
+    for legal in GATE7_LEGAL:
+        for surface in gate._REQUIRED_SURFACES:
+            units, _ = inject(surface, legal)
+            if run(units)[0]:
+                caught += 1
+            else:
+                missed += 1
+                print(f"  MISSED  reader-claim  legal text wrongly forbidden in {surface}: {legal!r}")
+
+    # The honest sentence stays green with both labels, red when either is cut.
+    for label, sentence, want_green in (
+        ("labelled", _HONEST, True),
+        ("no 'popular'", _HONEST.replace("popular", "widespread"), False),
+        ("no Mars", _HONEST.replace("Mars", "Venus"), False),
+    ):
+        units, _ = inject("templates/learn/", sentence)
+        if run(units)[0] == want_green:
+            caught += 1
+        else:
+            missed += 1
+            print(f"  MISSED  reader-claim C  honest sentence ({label}) expected "
+                  f"{'green' if want_green else 'red'}")
+
+    # A gate that checks nothing must fail: no units, a lone surface, a tree with
+    # no files, and a tree whose files exist but hold no text.
+    import tempfile
+
+    stubs = {"no units": [], "templates only": [u for u in real if u[0].startswith("templates/")]}
+    with tempfile.TemporaryDirectory() as empty, tempfile.TemporaryDirectory() as hollow:
+        stubs["empty tree"] = gate.reader_surface_units(Path(empty))
+        (Path(hollow) / "templates" / "learn").mkdir(parents=True)
+        (Path(hollow) / "templates" / "learn" / "x.html").write_text("")
+        for name in ("i18n.py", "numerology.py", "learn_registry.py"):
+            (Path(hollow) / name).write_text("")
+        stubs["hollow tree"] = gate.reader_surface_units(Path(hollow))
+    for label, units in stubs.items():
+        if not run(units)[0]:
+            caught += 1
+        else:
+            missed += 1
+            print(f"  MISSED  reader-claim  a stub ({label}) with nothing to scan PASSED")
+
+    # Every family in the gate has samples here, so a sixth family cannot be added
+    # to READER_FORBIDDEN without a row proving it.
+    if len(gate.READER_FORBIDDEN) == len(GATE7_SAMPLES):
+        caught += 1
+    else:
+        missed += 1
+        print(f"  MISSED  reader-claim  {len(gate.READER_FORBIDDEN)} families in the gate, "
+              f"{len(GATE7_SAMPLES)} with mutation samples")
+    return caught, missed
+
+
 def main() -> int:
     original = gate.PROMPT.read_text(encoding="utf-8")
 
@@ -216,6 +367,16 @@ def main() -> int:
         else:
             missed += 1
             print(f"  MISSED  summary-claim  legal text wrongly forbidden: {legal!r}")
+
+    # Gate 7 scans the pages a reader opens directly. Same insertion shape: a
+    # retired claim is injected into ONE real unit of each surface (a template,
+    # the registry's FAQ/SEO strings, i18n, numerology) and the gate must go red
+    # AND name that file - a gate that fails without saying where is a gate
+    # nobody can act on. Several spellings per family, because QA found 17 of 38
+    # variants slipping past the first Gate 5 patterns.
+    c7, m7 = gate7_mutations()
+    caught += c7
+    missed += m7
 
     lines = original.splitlines(keepends=True)
     unprotected = [
