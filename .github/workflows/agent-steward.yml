@@ -137,6 +137,24 @@ jobs:
         if: steps.detect.outputs.stalled == 'true'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # WITHOUT THIS THE workflow_run PATH DIES IN 1.5 SECONDS, which is
+          # #421 again and in the change that was supposed to end it. For a
+          # `workflow_run` event `github.actor` is whoever initiated the
+          # ORIGINATING run — and when the steward dispatches `agent-work`, that
+          # actor is `github-actions[bot]`. claude-code-action then refuses:
+          #
+          #   Workflow initiated by non-human actor: github-actions (type: Bot).
+          #
+          # So the first time the new trigger mattered — a cycle the steward
+          # itself dispatched finishing — the steward's reaction run would have
+          # died before reading a single stall. Measured on #421: 3 of 3
+          # bot-initiated dispatches failed identically, 0 of 4 human or cron
+          # runs did.
+          #
+          # `github-actions`, never `'*'`: exactly this repository's own
+          # GITHUB_TOKEN, which already has the write access it would need, so
+          # no new principal gains anything.
+          allowed_bots: "github-actions"
           prompt: |
             Dispatch the `steward` agent with `run_in_background: false`.
 
@@ -253,6 +271,10 @@ jobs:
         if: steps.acted.outputs.ok == 'false'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Same reason as the steward step above (#421). chief is woken when the
+          # steward produced no action, and that is reached on the same
+          # bot-actored path.
+          allowed_bots: "github-actions"
           prompt: |
             Dispatch the `chief` agent with `run_in_background: false`.
 
