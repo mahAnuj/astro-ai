@@ -203,7 +203,28 @@ def find_stalls(hours: float) -> list[dict]:
         green = bool(checks) and all(v == "success" for v in checks.values())
         pushable = agent_pushable(n)
 
-        if pr["isDraft"]:
+        if pr["isDraft"] and "qa-fail" in labels:
+            # A DRAFT HELD OPEN BY A VERDICT IS NOT A DRAFT NOBODY READIED, and
+            # conflating them would have had the loop open a gate somebody shut
+            # on purpose. `draft-never-readied` routes to "dispatch a cycle,
+            # which runs QA, READIES THE PR and labels it" -- correct for a
+            # cycle that died before readying, and catastrophic here.
+            #
+            # Measured 2026-10-20 on #425: a draft carrying `qa-fail` whose
+            # independent round found a live exploitable XSS and said in as many
+            # words that it should stay a draft until the sink is escaped. The
+            # draft IS the gate. Readying it makes it eligible for pr-gates and
+            # then for agent-merge.
+            #
+            # Checked BEFORE the draft branch, not inside it, because the
+            # ordering is the whole defect: `isDraft` was first in the chain, so
+            # the label could never be reached.
+            stalls.append(dict(
+                kind="draft-held-by-qa-fail", pr=n, issue=issue, age_h=round(age, 1),
+                detail=(f"draft for {age:.0f}h carrying qa-fail — the draft is the gate, not an "
+                        f"oversight. Fix the findings; do NOT ready it."),
+                checks=checks, labels=sorted(labels), agent_pushable=pushable))
+        elif pr["isDraft"]:
             # /agent-cycle opens the PR in draft BEFORE QA, deliberately, so the
             # work survives the runner. Nothing used to take it out. A draft
             # cannot merge and GitHub reports nothing about why. (PR #303, #321.)
@@ -278,6 +299,28 @@ def find_stalls(hours: float) -> list[dict]:
                    "mergeable, so the PR object itself is the problem: it was "
                    "most likely created by GITHUB_TOKEN, whose events GitHub "
                    "suppresses. A HUMAN must close and reopen it.")
+            if conflicting:
+                # A CONFLICT IS WORK, NOT A DECISION, and routing it through
+                # `no-checks-ever` made it an escalation. That kind is
+                # deliberately absent from `obliged` -- it covers the
+                # GITHUB_TOKEN case, which no agent can rescue -- so a
+                # conflicting PR woke chief to rule on `git merge origin/main`.
+                #
+                # Measured 2026-10-20: #418 and #419 both sat CONFLICTING with
+                # independent verdicts on them, and both were cleared by hand in
+                # minutes. `scripts/merge_main_into_branch.py` does the three
+                # resolutions this repo produces mechanically and REFUSES
+                # anything else, so the split is safe: a source-file conflict
+                # still lands in front of a person.
+                stalls.append(dict(
+                    kind="pr-conflicting", pr=n, issue=issue, age_h=round(age, 1),
+                    detail=(f"CONFLICTING for {age:.0f}h, so GitHub cannot build the merge ref "
+                            f"and no check will ever run. Resolvable by "
+                            f"scripts/merge_main_into_branch.py unless the conflict is in a "
+                            f"source file, which it refuses."),
+                    conflicting=True,
+                    checks=checks, labels=sorted(labels), agent_pushable=pushable))
+                continue
             stalls.append(dict(kind="no-checks-ever", pr=n, issue=issue, age_h=round(age, 1),
                                detail=f"open {age:.0f}h with no check runs at all — {why}",
                                checks={}, labels=sorted(labels), agent_pushable=pushable,
@@ -369,7 +412,8 @@ def find_stalls(hours: float) -> list[dict]:
     # on it (#323). A detector that can fail on a permission is how the
     # measurement arm stayed silent for its entire life.
     STEWARD_CLEARABLE = {"draft-never-readied", "no-qa-verdict",
-                         "qa-fail-unaddressed", "qa-fail-refixed"}
+                         "qa-fail-unaddressed", "qa-fail-refixed",
+                         "draft-held-by-qa-fail", "pr-conflicting"}
     for st in list(stalls):
         if st["kind"] in STEWARD_CLEARABLE and (st["age_h"] or 0) > 18 \
                 and st.get("agent_pushable", True):
@@ -453,7 +497,8 @@ def main(argv: list[str]) -> int:
     obliged = [x for x in stalls
                if x["kind"] in {"draft-never-readied", "no-qa-verdict",
                                 "mergeable-but-open", "steward-ineffective",
-                                "qa-fail-unaddressed", "qa-fail-refixed"}
+                                "qa-fail-unaddressed", "qa-fail-refixed",
+                                "draft-held-by-qa-fail", "pr-conflicting"}
                and x.get("agent_pushable", True)]
     print(f"OBLIGED_ACTIONS={len(obliged)}")
 
