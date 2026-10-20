@@ -379,7 +379,7 @@ def test_one_render_costs_three_api_calls_and_a_second_render_costs_none(monkeyp
     degenerate short page and the pager could not have spent a second request
     whatever `MAX_PAGES` or the stop rules said. Served one real row each now,
     so three is three because the stop rules fired, not because there was
-    nothing to read. The worst case -- 7 per render, which is OVER the 60/hour
+    nothing to read. The worst case -- 10 per render, which is OVER the 60/hour
     budget at 12 cache misses an hour -- is pinned by
     `test_a_pathological_day_is_capped_at_three_pages_per_endpoint` and
     `test_the_cost_paragraph_states_the_actual_worst_case`.
@@ -1355,8 +1355,9 @@ def test_a_pathological_day_is_capped_at_three_pages_per_endpoint(monkeypatch):
     """The worst case, in LITERAL requests, against the 60/hour ceiling.
 
     Three per endpoint and six per cache miss. With `ops_data`'s one backlog
-    request that is 7 per render, and at the 300 s cache TTL a reader holding
-    refresh costs 84/hour against a budget of 60 shared with every other
+    read that is FOUR (`issue_backlog.MAX_PAGES`), that is 10 per render, and at
+    the 300 s cache TTL a reader holding refresh costs 120/hour against a budget
+    of 60 shared with every other
     tenant on this egress IP -- see the COST paragraph in `ops_today`, which
     this number is deliberately duplicated from so that raising the cap breaks
     something.
@@ -1504,7 +1505,7 @@ def test_a_run_with_no_id_is_kept_rather_than_collapsed(monkeypatch):
 # --------------------------------------------------------------------------- #
 # G12. The COST paragraph went stale the moment the pager landed: it still said
 # "Two requests" and "36/hour worst case" while `MAX_PAGES = 3` on two
-# endpoints makes the worst case 7 per render and 84/hour -- against the
+# endpoints makes the worst case 10 per render and 120/hour -- against the
 # 60/hour ceiling the same paragraph reasons about. A docstring that argues
 # from a number is a claim, and this one would have justified a self-inflicted
 # 403 straight back into the 0/0/0 fallback the module exists to fix.
@@ -1536,6 +1537,54 @@ def test_the_cost_paragraph_states_the_actual_worst_case():
     )
     assert "60/hour" in doc, "the worst case is stated with nothing to compare it to"
     assert "Two requests" not in doc, "the pre-pager figure is still claimed"
+
+
+def test_the_cost_paragraph_states_the_measured_ordinary_case(monkeypatch):
+    """QA round 5, N-2. The worst case was corrected and the ORDINARY case was
+    left behind -- and the ordinary case is the one that runs all day.
+
+    The paragraph said "today's real volumes cost one request per endpoint and 3
+    per render (36/hour)". That 3 came from stubbing SHORT pages, which is a
+    shape chosen to make the pager stop rather than a shape measured against the
+    repo. Measured on 2026-10-20 the runs read already needed two pages and the
+    backlog already needed two: 5 per cold render, 60/hour, which IS the ceiling.
+
+    This pins the half that is a property of the CODE -- a full first runs page
+    costs a second request -- and then asserts the paragraph states the measured
+    figure and has stopped claiming the old one. The backlog term is a property
+    of the repo's open-issue count, so the paragraph dates and attributes it
+    instead of asserting it, and this test does not pretend to pin it.
+    """
+    stamp = "2026-10-18T09:00:00Z"
+    full = [_run(2000 + i, "agent-work.yml", "failure", stamp)
+            for i in range(ops_today.PER_PAGE)]
+    urls = _stub_paged(
+        monkeypatch,
+        pulls_pages=([_pr(1, stamp)],),
+        runs_pages=(full, [_run(2999, "agent-work.yml", "failure", stamp)]))
+    ops_today.fetch_today("x/y", DAY_START, timeout=1)
+
+    assert len([u for u in urls if "/pulls" in u]) == 1, urls
+    assert len([u for u in urls if "/actions/runs" in u]) == 2, (
+        "a FULL first page must cost a second request -- that is the term the "
+        "old 'one request per endpoint' claim dropped")
+    assert len(urls) == 3, urls
+
+    doc = ops_today.__doc__
+    assert "= 5 per cold render" in doc, (
+        "the COST paragraph does not state the measured ordinary render")
+    assert "= 60/hour" in doc, (
+        "the ordinary case is stated without the ceiling it now equals")
+    # NOT a substring test on "3 per render (36/hour)": that phrase still occurs,
+    # inside the correction that QUOTES the old claim, and a test that cannot
+    # tell a quotation from an assertion would force the history to be deleted.
+    # The stale ARITHMETIC ROW appears nowhere else, so it is the anchor.
+    assert "fetch_today 2 + backlog 1" not in doc, (
+        "the stale ordinary arithmetic is still presented as a derivation")
+    # The phrase still OCCURS, inside the correction that quotes the old claim.
+    # What must be gone is the claim itself, in the indicative.
+    assert "It is latent, not live" not in doc, (
+        "the paragraph still asserts that a budget it now exhausts is latent")
 
 
 # --------------------------------------------------------------------------- #
@@ -1693,6 +1742,37 @@ def test_the_alert_admits_the_floor_when_the_tile_does(monkeypatch):
     assert "this is a floor, not a total" in body, (
         "the alert drops the sentence that explains why the number is a floor"
     )
+
+
+def test_a_capped_pulls_read_does_not_make_the_failure_count_a_floor(monkeypatch):
+    """QA round 5, N-1. The case neither F4 test covered, and the one that is
+    ORDINARY rather than a run storm: the PULLS read is capped and the runs read
+    is complete.
+
+    `_loop_view` publishes a flag PER ENDPOINT precisely so this cannot happen --
+    `shipped_truncated` is `pr_more`, `failed_truncated` is `runs_more` -- and the
+    tile already reads the per-endpoint one. The alert read `today_truncated`,
+    the OR of both, so it announced THIS count as a floor off a runs read that
+    was complete, while the tile three inches away rendered it flat. Two
+    statements about one number, disagreeing on one screen.
+
+    The shipped assertion is the precondition: without it a fixture that capped
+    nothing would pass this test while proving nothing.
+    """
+    stamp = _inside_today_utc()
+    full_prs = [_pr(1000 + i, stamp) for i in range(ops_today.PER_PAGE)]
+    body = _ops_body(monkeypatch, full_prs,
+                     [_run(1, "agent-work.yml", "failure", stamp)])
+
+    assert 'class="num c-shipped">\u2265' in body, (
+        "precondition: the PULLS read must really be capped, or this test "
+        "cannot distinguish the OR from the per-endpoint flag")
+    assert 'class="num c-failed">\u2265' not in body, (
+        "the runs read was complete; the failed tile must not claim a floor")
+    assert "At least" not in body, (
+        "the runs read was complete and the alert called its count a floor")
+    assert "this is a floor, not a total" not in body, (
+        "the explanation of a floor appears on a number that is not one")
 
 
 def test_an_uncapped_read_claims_no_floor_in_the_alert_either(monkeypatch):

@@ -1569,7 +1569,7 @@ MUTATIONS = [
      '        "filed_live": True,',
      "test_the_filed_drill_down_flag_follows_the_backlog_not_the_delivery_read"),
 
-    ("#ops-today r3 G9: the page cap goes to 99 (84/hour becomes 2,400/hour)",
+    ("#ops-today r3 G9: the page cap goes to 99 (120/hour becomes 2,424/hour)",
      "src/astro_ai/ops_today.py",
      "MAX_PAGES = 3",
      "MAX_PAGES = 99",
@@ -1853,9 +1853,27 @@ MUTATIONS = [
     # by probing, which is why each row here is parseable and proven.
     ("#418/F4: the tile says a floor and the alert states it as a total",
      "src/astro_ai/ops_data.py",
-     'at_least = "At least " if loop.get("today_truncated") else ""',
+     'at_least = "At least " if loop.get("failed_truncated") else ""',
      'at_least = ""',
      "test_the_alert_admits_the_floor_when_the_tile_does"),
+
+    # Round 5, N-1. The alert keyed its floor disclosure off `today_truncated`,
+    # the OR of both endpoints, while the tile reads the per-endpoint flag -- so
+    # with the PULLS read capped and the runs read complete the two disagreed
+    # about one number on one screen, and the alert was the false one. Both
+    # halves of the disclosure get a row, because they are two separate reads of
+    # the same flag and F4 only ever pinned the first.
+    ("#418/N1: the alert's floor disclosure goes back to the OR of both endpoints",
+     "src/astro_ai/ops_data.py",
+     'at_least = "At least " if loop.get("failed_truncated") else ""',
+     'at_least = "At least " if loop.get("today_truncated") else ""',
+     "test_a_capped_pulls_read_does_not_make_the_failure_count_a_floor"),
+
+    ("#418/N1: the floor SENTENCE goes back to the OR of both endpoints",
+     "src/astro_ai/ops_data.py",
+     '"this is a floor, not a total." if loop.get("failed_truncated")',
+     '"this is a floor, not a total." if loop.get("today_truncated")',
+     "test_a_capped_pulls_read_does_not_make_the_failure_count_a_floor"),
     ("#418/F4b: the truncation flag never reaches the alert",
      "src/astro_ai/ops_data.py",
      '"today_truncated": bool((live_today or {}).get("truncated")),\n        # Per tile',
@@ -2210,16 +2228,26 @@ def _preflight_anchors() -> list[str]:
             continue
         if old == new:
             problems.append(f"{label}: the mutant is identical to the anchor")
-        # The anchor must be EXECUTABLE. Checked on the first line of a
-        # multi-line anchor, which is where the match begins.
-        first = old.splitlines()[0]
-        for line in src.splitlines():
-            if first in line and line.lstrip().startswith(("#", "//", "<!--")):
-                problems.append(
-                    f"{label}: anchor sits on a COMMENT line in {rel} -- mutating "
-                    f"prose changes no behaviour, so this row cannot ever catch "
-                    f"anything: {line.strip()[:70]}")
-                break
+        # The anchor must not BEGIN on a comment line: mutating prose changes no
+        # behaviour, so such a row cannot ever catch anything.
+        #
+        # Read off the anchor's OWN resolved position, never by scanning the file
+        # for its first line. The scanning version rejected 65 of 243 rows: any
+        # line anywhere that merely CONTAINED the anchor's first line satisfied
+        # `first in line`, so a comment quoting a line of code condemned the row
+        # that mutates it -- and the pre-flight exits before the sweep, so it was
+        # a false positive in the blocking direction, in the validator added to
+        # stop exactly this class of mistake. `old` is already known to occur
+        # EXACTLY ONCE (checked above), so its position is not a search.
+        at = src.index(old)
+        bol = src.rfind("\n", 0, at) + 1
+        eol = src.find("\n", at)
+        line = src[bol:eol if eol != -1 else len(src)]
+        if line.lstrip().startswith(("#", "//", "<!--")):
+            problems.append(
+                f"{label}: anchor begins on a COMMENT line in {rel} -- mutating "
+                f"prose changes no behaviour, so this row cannot ever catch "
+                f"anything: {line.strip()[:70]}")
     return problems
 
 
@@ -2233,7 +2261,16 @@ if _anchor_problems:
     print("the anchor or remove the row deliberately; do not let the sweep")
     print("spend a sandboxed suite run per row to tell you the same thing.")
     raise SystemExit(1)
-print(f"anchor pre-flight: {len(MUTATIONS)} rows, every anchor unique and executable")
+print(f"anchor pre-flight: {len(MUTATIONS)} rows -- every anchor resolves exactly "
+      f"once, differs from its mutant, and does not begin on a comment line")
+
+if "--preflight-only" in sys.argv:
+    # The pre-flight is a gate in its own right, it runs BEFORE the sweep, and it
+    # can fail the whole run on its own -- so it has to be checkable without
+    # paying for a sandboxed suite run per row. This module cannot be imported to
+    # test it (there is no __main__ guard; importing starts the sweep), so the
+    # only way in is argv. Used by tests/test_mutation_preflight.py.
+    raise SystemExit(0)
 
 _work = [_CONTROL] + list(MUTATIONS)
 _verdicts: dict[int, tuple[str, str]] = {}

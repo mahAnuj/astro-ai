@@ -1228,11 +1228,21 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
             # says it: MAX_PAGES was spent with rows inside the day still
             # unread, so n is a floor. An admitted floor beats a confident
             # wrong number, and a run storm is exactly when both happen.
-            at_least = "At least " if loop.get("today_truncated") else ""
+            #
+            # KEYED ON `failed_truncated`, NOT `today_truncated`. These rows are
+            # workflow RUNS; `today_truncated` is the OR of both endpoints
+            # (`pr_more or runs_more`), so with the PULLS read capped and the
+            # runs read complete it says this exact count is a floor when it is
+            # not -- while the tile, which already reads the per-endpoint flag,
+            # renders the same number flat. Two statements about one number
+            # disagreeing on one screen, and the alert was the false one.
+            # `_loop_view`'s own comment is why the per-endpoint flags exist:
+            # "PER ENDPOINT, not one flag for both."
+            at_least = "At least " if loop.get("failed_truncated") else ""
             add("amber", f"{at_least}{n} loop run(s) failed today",
                 f"{which}. A leg that did not finish leaves its work untouched."
                 + (" The run list was capped before the day was fully read, so "
-                   "this is a floor, not a total." if loop.get("today_truncated")
+                   "this is a floor, not a total." if loop.get("failed_truncated")
                    else ""))
         else:
             # Fallback rows are agent-work CYCLES from loop.json and have no
