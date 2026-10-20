@@ -148,6 +148,24 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # WITHOUT THIS, EVERY DISPATCH FROM A WORKFLOW DIES IN 1.5 SECONDS.
+          # The action refuses a run whose actor is a Bot:
+          #
+          #   Workflow initiated by non-human actor: github-actions (type: Bot).
+          #   Add bot to allowed_bots list or use '*' to allow all bots.
+          #
+          # Measured on #421: 3 of 3 bot-initiated dispatches failed identically
+          # (runs 38948547928, 39033334347, 39129439785), 0 of 4 human or cron
+          # runs did. The steward's "Carry out chief's dispatch ruling" step is
+          # the only automated path to a stalled PR, and it is a Bot, so chief's
+          # rulings have never once reached an agent.
+          #
+          # `github-actions`, NEVER `'*'`. This trusts exactly one actor: this
+          # repository's own GITHUB_TOKEN, which already needs write access to
+          # create the dispatch at all, so no new principal gains anything. `'*'`
+          # would trust every bot with access, including any app installed later,
+          # and that is a different and much larger grant.
+          allowed_bots: "github-actions"
           prompt: |
             /agent-cycle ${{ github.event.inputs.issue }}
 

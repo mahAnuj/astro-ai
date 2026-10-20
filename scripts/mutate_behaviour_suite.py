@@ -1094,6 +1094,7 @@ MUTATIONS = [
      'measured["natal+payload"] = (n_en, n_hi)',
      "test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt"),
 
+<<<<<<< HEAD
     ("#397: the /ask overlay re-asserts 'no cancelling conditions' for Nadi",
      "src/astro_ai/prompts/ask_matching.txt",
      '- Nadi is not among the Bhakoot parihāras. The exemptions the tradition records apply OUTSIDE the Madhya Nadi only and this product applies none of them — never tell a seeker whose Nadi is Madhya that one exists for their case. A slight (alpa) grade applies where pada-Nadi differs. Never invent any other Nadi condition.',
@@ -1217,6 +1218,28 @@ MUTATIONS = [
      "  <div class=\"callout-label\">Nadi Dosh is graded, not cancelled</div>\n"
      "  <p>Nadi can never be cancelled or waived by anything.</p>",
      "test_a_nadi_absolute_cannot_return_in_a_third_phrasing"),
+=======
+    # ---- The gate that printed PASS against thirteen HTTP 500s. Every row
+    # ---- below removes one of the three guards and must turn the suite red.
+
+    ("#hindi-gate: no health probe, so a foreign server on the port is measured as ours",
+     "scripts/verify_hindi_surface.py",
+     '    if probe_code != 200 or \'"ok"\' not in probe:',
+     '    if False:',
+     "test_a_foreign_server_on_the_port_is_not_this_app"),
+
+    ("#hindi-gate: any status is read as a page, so 500s sweep clean (the original defect)",
+     "scripts/verify_hindi_surface.py",
+     '        if code not in (200, 503):',
+     '        if code not in (200, 503, 404, 500):',
+     "test_a_page_status_the_gate_cannot_read_is_not_a_pass"),
+
+    ("#hindi-gate: an empty <main> satisfies every negative check and is called a pass",
+     "scripts/verify_hindi_surface.py",
+     '        if not text.strip():',
+     '        if False:',
+     "test_an_empty_main_is_not_a_pass"),
+>>>>>>> origin/main
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

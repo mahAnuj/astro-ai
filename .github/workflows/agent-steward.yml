@@ -323,9 +323,52 @@ jobs:
             exit 0
           fi
 
+          # `gh workflow run` EXITS 0 ONCE THE RUN IS CREATED, and says nothing
+          # about whether it then did anything. That is how #421 stayed invisible
+          # for three days: the action refused the Bot actor 1.5s in, the run
+          # concluded `failure` in ~33s, and this step reported "carried out" to
+          # the summary every time. A dispatch nobody can tell from a no-op is
+          # worse than no dispatch, because the stall detector then sees a cycle
+          # was tried and the steward reports success.
+          #
+          # So: remember the newest run id, dispatch, wait for a NEW one, and
+          # give it a window to die in. Anything already `completed` inside the
+          # window concluded without doing a cycle's work -- a real cycle runs
+          # for tens of minutes -- so that is a failure of this step, not a
+          # finished job.
+          before=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml \
+                     --limit 1 --json databaseId --jq '.[0].databaseId // 0' 2>/dev/null || echo 0)
           gh workflow run agent-work.yml --repo "$GH_REPO" -f issue="$issue"
-          echo "::notice::dispatched agent-work at #$issue on chief's ruling"
+          echo "::notice::requested agent-work at #$issue on chief's ruling; verifying it started"
+
+          run_id=""
+          for _ in $(seq 1 12); do          # up to ~60s for the run to appear
+            sleep 5
+            cand=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml \
+                     --limit 1 --json databaseId --jq '.[0].databaseId // 0' 2>/dev/null || echo 0)
+            if [ "$cand" != "0" ] && [ "$cand" != "$before" ]; then run_id="$cand"; break; fi
+          done
+          if [ -z "$run_id" ]; then
+            echo "::error::dispatch at #$issue created no new agent-work run within 60s. Not reporting it as carried out."
+            exit 1
+          fi
+
+          # 90s is chosen against the measured failure, not guessed: the three
+          # #421 runs concluded in 33-36s. A cycle that is still running here is
+          # genuinely working and this step must NOT wait for it.
+          for _ in $(seq 1 18); do
+            sleep 5
+            read -r status conclusion <<<"$(gh run view "$run_id" --repo "$GH_REPO" \
+              --json status,conclusion --jq '"\(.status) \(.conclusion // "")"' 2>/dev/null || echo "unknown ")"
+            if [ "$status" = "completed" ]; then
+              echo "::error::agent-work run $run_id concluded '$conclusion' within 90s of dispatch at #$issue -- it did not run a cycle. See #421."
+              exit 1
+            fi
+          done
+
+          echo "::notice::agent-work run $run_id is running a cycle at #$issue"
           echo "DISPATCHED=$issue" >> "$GITHUB_ENV"
+          echo "DISPATCHED_RUN=$run_id" >> "$GITHUB_ENV"
 
       # Say what happened either way. A loop that reports nothing when it found
       # nothing cannot be told from one that failed to run — which is the defect
@@ -341,7 +384,10 @@ jobs:
                 echo ""
                 echo "**The steward produced no action, so chief was woken.**"
                 if [ -n "${DISPATCHED:-}" ]; then
-                  echo "chief ruled a dispatch and it was carried out: \`agent-work\` at #${DISPATCHED}."
+                  # "carried out" is now only ever printed for a run this job
+                  # watched start AND saw still running 90s later. See #421 for
+                  # what this sentence used to mean.
+                  echo "chief ruled a dispatch and it was carried out: \`agent-work\` at #${DISPATCHED} ([run ${DISPATCHED_RUN:-?}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${DISPATCHED_RUN:-}))."
                 else
                   echo "chief recorded no dispatch — either it ruled the stalls un-dispatchable, or the guard refused. Its ruling is a comment on the PRs named above."
                 fi
