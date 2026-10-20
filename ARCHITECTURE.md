@@ -247,6 +247,145 @@ reading" and silently meant English.
   Python that *assembles* the user message. Bump it whenever assembly logic changes.
   Currently `v3`.
 
+### Two caches, one word (#396)
+
+"Cache hit" means two unrelated things here, and the dashboard used to show only one.
+
+| | response cache | Groq prefix cache |
+|---|---|---|
+| whose | this app (`cache.py`, `daily_cache`, GCS tier) | Groq's, inside the provider |
+| lifetime | dies with the Cloud Run instance: `ENV BHAGYA_CACHE_DB=/tmp/bhagya.db` (`Dockerfile:48`) on `--min-instances 0 --max-instances 5` (`deploy.sh:79-80`) | survives our cold starts; expires after 2 hours without use |
+| a hit | no provider call at all | a provider call that was partly served from cache |
+| shown as | "Response-cache hits" on `/admin` | "Provider-side prefix cache (Groq), by prompt route" on `/admin` |
+
+The prefix cache is automatic and opportunistic: a stable prefix at least a model-dependent
+minimum long (128-1024 tokens), and a route that sees fewer than one request per 2 hours never
+warms it. `_system_prompt` is byte-identical per (route, lang, overlay) and goes first, so the
+request shape already suits it. Nothing is padded to cross the threshold: that would spend
+tokens to earn a discount we do not pay for.
+
+What Groq's documentation says, from https://console.groq.com/docs/prompt-caching (fetched
+2026-10-17; this is DOCUMENTATION, not something this repo has measured): *"Cached tokens do not
+count towards your rate limits. However, cached tokens are subtracted from your limits after
+processing, so it's still possible to hit your limits if you are sending a large number of input
+tokens in parallel requests."* The same page's FAQ says only "Cached tokens do not count toward
+your rate limits". The two sentences do not obviously agree for a burst, and the free-tier
+question (do cached tokens relieve TPM/TPD) is what #396 is meant to settle.
+
+How it is recorded: `providers._call_one` reads `usage.prompt_tokens` and
+`usage.prompt_tokens_details.cached_tokens` into the `_last_prefix` ContextVar (reset by `chat()`
+before every provider attempt, so a failed provider's figures cannot be booked against the next
+one). `llm_stats.record` adds them to a `prefix_cache` key in the SAME per-day mutator that
+already writes `counts` — zero extra storage operations.
+
+Eight stored counters and two derived rates, because a silence means two different things.
+`_PREFIX_ZERO` is the one definition of the row and it has eight keys: `calls`, `measurable`,
+`reported`, `prompt_measurable`, `prompt_reported`, `cached_tokens`, `cached_measurable`,
+`reported_unmeasurable`. This line said "three" until QA round 3 and "five" until round 4 —
+twice wrong, each time edited to a different wrong number, which is why it now names them: a
+count can drift silently, a list cannot. Adding a ninth key is NOT free — `range_summary`
+gates on `_PREFIX_ZERO.keys() <= pc.keys()`, so a new field makes every row already stored fail
+the gate and vanish from the table. A new counter needs a schema-version plan, not an append.
+`calls` moves on every served call. `reported` moves when the provider returned a figure, **on any
+model**. `measurable` moves when a *silence* from that call would have meant "missed" — a
+`CACHE_REPORTING_MODELS` model with at least `MIN_CACHEABLE_PREFIX` prompt tokens.
+
+**`reported` and `measurable` are independent; neither contains the other.** A non-Groq provider
+reporting its own cache is reported but not measurable; Groq missing is measurable but not
+reported. (An earlier revision of this section said `measurable` "sits between" them and that a
+non-Groq call "adds to `calls` and nothing else"; QA disproved both — such a call adds to four
+fields.) **Absent is still not zero**, and **a measured miss IS zero** and belongs in the
+denominator.
+
+So there are two rates, and they are far apart:
+
+| | numerator | denominator | what it says |
+|---|---|---|---|
+| `hit_pct` | `cached_tokens` | `prompt_reported` | how hard a hit lands |
+| `effective_pct` | `cached_measurable` | `prompt_measurable` | **the quota actually saved** |
+
+**Two numerators, not one, and that is the load-bearing part.** `reported` sums whatever the
+provider actually told us, on any model — `prompt_tokens_details.cached_tokens` is an
+OpenAI-compatible field and four of the eight configured providers are not Groq. `measurable` is
+the separate question of whether a *silence* from that call would have meant "missed", which is a
+property of `(model, prompt size)` alone. Sharing one `cached_tokens` between the two forced a
+`cached is not None or ...` disjunct into the measurability test to stop the rate exceeding 100%,
+and that disjunct is what made measurability depend on the **outcome**: a hit at 714 tokens counted
+toward the denominator and a miss at 714 did not, so the denominator selected for hits. Separate
+numerators remove the need for it, and because one call's cached tokens cannot exceed its own
+prompt tokens, neither rate can exceed 100% by construction rather than by the clamp.
+
+Two counters exist so the rule is falsifiable in production rather than by live calls:
+`reported_unmeasurable` (a provider reported on a call the rule said could not — the floor is too
+high, or a model is missing from the set — **or** reported something impossible, which is discarded
+and lands in neither rate; the counter cannot tell the two apart and the panel copy says so) and `prefix_cache_skipped_rows` (stored rows from an older
+schema or with an unrecognised key shape, excluded; also logged at WARNING). Both are surfaced on `/admin` — the skipped-row count twice, because when
+*every* row is skipped the table does not render and the notice had to move outside it.
+
+An `impossible` flag rides the route cell whenever the stored sums cannot describe a real cache.
+It is deliberately on the route cell and not on a percentage: it first hung off `effective_pct`'s
+`{% else %}` branch, so a reported-side impossibility with `effective_pct` of `None` rendered
+nothing at all while Hit rate showed a tidy clamped 100% — the exact outcome the flag exists to
+prevent. The clamp keeps a nonsense percentage off the page, but *smoothing* an impossible figure
+into a plausible one hides the only evidence the accounting is broken.
+
+Per-call sanity is enforced upstream instead of assumed: `providers._prefix_usage` rejects a
+`cached` count exceeding its own `prompt_tokens`, which is what makes "neither rate can exceed
+100%" a property of the code. Before that, `(prompt=100, cached=5000)` was stored intact and only
+the display clamp hid the 5000%.
+
+Measured live 2026-10-17 on `openai/gpt-oss-120b`: 1 hit in 7 identical calls, 2,304 of 2,363
+prompt tokens cached. `hit_pct` 97.5%, `effective_pct` 13.9% — a 7x gap, and only the second is a
+saving. An earlier revision published `hit_pct` alone, which is why the dashboard now says which
+one to read. Both are `None` (a dash), never 0, when nothing measurable happened, and both are
+clamped to 0–100 because the figures are the provider's and nothing upstream guarantees them.
+
+The threshold is compared against the provider's `prompt_tokens` — **the whole request, system plus
+question or chart**, not the system prompt alone. `MIN_CACHEABLE_PREFIX` is 128, the BOTTOM of
+Groq's documented 128–1024 range. Lowering it was not itself the fix — it only shrank the
+asymmetric band to [0,128) — and the claim that a sub-128 hit "cannot occur" was an assumption
+about Groq, not a property of this code. Separate numerators are what removed the asymmetry; the
+floor now only decides what a silence means, and 128 keeps the residual error in the understating
+direction. See the constant's comment.
+
+Chat route (the `route=` passed to `providers.chat`, NOT the web route in "By route") to prompt
+file, with system-prompt tokens measured by tiktoken `o200k_base` on 2026-10-17 (issue #396):
+
+| chat route | system prompt | tokens |
+|---|---|---|
+| `natal` | `natal.txt` | 3,083 |
+| `rashifal_single` | `rashifal_single.txt` | 2,278 |
+| `matching` | `matching.txt` | 1,265 |
+| `ask` | `ask.txt` (+ `ask_matching*.txt` / `ask_numerology.txt` overlay) | 1,251 alone; 1,822-2,090 with overlay |
+| `dasha` | `dasha_deep_dive.txt` | 944 |
+| `outlook` | `monthly.txt` / `yearly.txt` | 732 / 819 |
+| `today` | `daily.txt` | 743 |
+
+Those are **system-prompt** tokens. The measurability threshold is judged on the whole request, so
+every route clears 128 once its question or chart payload is added — `natal` alone is 6,770 tokens
+with a golden chart against 3,083 for the prompt file (`scripts/verify_token_budget.py`; both moved
+when #398 trimmed `natal.txt` to 13,013 B, and this table was staled by that merge while the §10
+row at 2026-09-05 already carried the corrected pair — the doc stated both). An
+earlier revision predicted `dasha`, `outlook` and `today` would read "a dash or about 0" from being
+under the threshold; that was wrong twice, because it compared the system prompt against a limit
+applied to the full request, and because "about 0" is a reading the code deliberately never
+produces. **A dash has four causes** and they must not be conflated: a non-reporting model served
+every call; every prompt was under `MIN_CACHEABLE_PREFIX`; the provider returned no
+usable `usage` block, in which case `_prefix_usage` yields `None` and even the prompt size
+is unknown; or every report it sent was impossible and was discarded (QA round 5: the page said
+"three" after round 4 added this one). Only the first is likely on current traffic. An earlier revision of this
+section asserted the first as the only cause, which the table's own column tooltip
+contradicted.
+
+Known limits, stated so nobody over-reads the panel:
+
+- A call that fails the quality gate, or returns empty, is never recorded (`llm_stats.record` runs
+  only on success). The ratio covers **served** calls only.
+- Response-cache hits make no provider call and record nothing here.
+- **`cached_tokens` alone does not say how Groq debits the daily limit (TPD).** Answering that needs
+  a live `x-ratelimit-remaining-tokens` delta across a cached and an uncached call, or a console
+  reconciliation. Not done; follow-up.
+
 ---
 
 ## 5. LLM layer
@@ -540,6 +679,7 @@ Dated, with the evidence. **Check here before proposing a change.**
 
 | date | decision | why, measured |
 |---|---|---|
+| 2026-10-17 | **Groq prefix-cache usage is recorded in `llm_stats` (`prefix_cache`), not in `cache.py`'s `llm_calls`; absent is never zero** | #396. `grep -rn "cached_tokens\|prompt_tokens_details" src/` returned 0, so `/admin` could show a route as uncached while Groq served half its prefix, with only the response cache's hit rate beside it. Recorded in the per-day `llm_stats` blob inside the mutator `record()` already runs: **0 added storage operations**, **0 added LLM calls**, **0 prompt tokens** (it reads a field already in the response). A `cached_tokens` column on `llm_calls` was **not** added, though the issue proposed it: the dashboard never reads `llm_calls` (it reads `llm_stats`); `llm_calls` rows are per reading, not per provider attempt, so a fallback chain would need to pick one attempt's figure; `rashifal` runs `chat()` in a thread pool, where a ContextVar set in the worker is not visible to the caller that writes the row; and its `route` is the web route (`rashifal`), not the chat route (`rashifal_single`), so a per-prompt ratio could not be keyed from it. Rejected too: deriving the figure from `input_tokens`, which is a text-length estimate (~4 chars/token) and would present a guess as a measurement. Superseded the same day by measurement: a MISS also arrives as `prompt_tokens_details: null`, so "cached/prompt over reported calls only" excluded every miss from its own denominator and read 97.5% where the saving was 13.9%. Now two rates — `hit_pct` over hits, `effective_pct` over all measurable calls with misses as the zeros they are — and `measurable` is the counter that tells a non-reporting model from one that simply missed. Mutation-tested: `scripts/mutate_behaviour_suite.py` re-breaks "absent coerced to 0" and "no reset between providers" and the suite goes red **QA round 4 returned FAIL with ten findings and no blocker — and the two that mattered were both introduced by round 3, the round that was fixing things.** (1) **A false caveat was suppressing a real gap.** Round 3 shipped *"Do not read that against 'By route' above: that table is keyed by web route and this one by chat route, so the two never match anyway."* The list it names is six rows up **in the same card** and is built from `counts` keys `provider|model|route` — the identical chat-route key that keys `prefix_cache`. The claim is false, and it was load-bearing in the wrong direction: days recorded before this panel existed count toward `total_calls` and `by_route` and contribute no `prefix_cache` key at all, so `skipped_rows` stays 0 and neither existing notice fires. Measured on the real store: `by_route` rashifal_single **407** / natal 2 against Fresh calls rashifal_single **7** / natal 2 — **400 calls vanished between two lists on one screen**, with a footnote telling the operator the discrepancy was meaningless. Replaced by `prefix_cache_unaccounted`, computed per route, rendered as a count with the cause named; verified on a seeded 407/7 day, the page stated *"400 call(s) in ‘By route’ above have no prefix-cache row here"* (reworded in round 5, below, because the sentence after it was false). (2) **An impossible provider report was smoothed into a measured zero** — the fix for round 3's own BUG-9 did the thing the docstring shipped beside it forbids (*"SMOOTHING an impossible figure into a plausible one is its own defect"*). `_prefix_usage` rejected `cached > prompt` by returning a **silence**, and on an eligible call `record()` books a silence as a measured zero: `_prefix_usage(1000, 5000)` gave `{reported: 0, cached_tokens: 0, effective_pct: 0.0, reported_unmeasurable: 0, impossible: false}`. No warning, no dash, and the counter that exists to make the rule falsifiable stayed 0 because it is gated on `cached_tokens is not None`. `_prefix_usage` now returns a **3-tuple** whose third element distinguishes a rejection from a silence, and `record()` keeps a rejected call out of **both** denominators while counting it. **Counted in `reported_unmeasurable`, deliberately not a new field:** a ninth key in `_PREFIX_ZERO` would fail `_PREFIX_ZERO.keys() <= pc.keys()` for every row already stored, so every historical row would be skipped whole and the panel would empty itself — trading a wrong number for no number. Verified end to end: an impossible report now reads `measurable=0, reported_unmeasurable=1, effective_pct=None`, a genuine miss still reads `measurable=1, effective_pct=0.0`, and a real hit is unchanged — three cases that were two. **Four guards round 3 shipped without a test** are now pinned: the measurable side of `_is_impossible` (its reported-side twin was pinned; the side the footnote tells the operator to read was not), the ⚠ tooltip's text (rewriting it to *"All good here."* stayed green), the Effective-fraction guard (`pc.measurable` → `pc.reported` stayed green and breaks the most common production shape, rendering a dash beside a real `0.0%`), and `MIN_CACHEABLE_PREFIX`'s comparison. **The boundary finding is worth recording as a method, not just a fix:** the parametrize list was `[50, 100, 127, 714, 1023, 2363]` — every value strictly below or strictly above 128, so `>=` and `>` were indistinguishable. Adding 128 to it **did not kill the mutant either**, because that test asserts a hit and a miss of the same size AGREE and flipping the comparison moves both together. A boundary needs a test that asserts the VALUE. Caught by a bite harness that runs each mutant against its **own named test** rather than the whole suite — the distinction matters, because a suite only ever answers whether SOMETHING went red: two of these eight mutants first died on a neighbouring guard, leaving the intended one unpinned while everything looked green (the same shape as PR #424's MISSED row the same week). Also corrected: §1 said *"Five stored counters"* against eight — the literal successor of round 3's own *"three"*, edited to a different wrong number, so it now **names** them, because a count can drift silently and a list cannot; and the §4 token table was staled by the #398 merge (3,111/6,798 against the script's **3,083/6,770**) while §10's 2026-09-05 row already carried the corrected pair, so the document stated both. 8 new mutation rows, 8/8 killed by their own named test; one pre-existing anchor re-pointed by the 3-tuple change; suite 720 → 728 **QA round 5 returned FAIL: two ship-blocking FALSE SENTENCES and one guard that could not tell two numbers apart.** (S-1) The `reported_unmeasurable` notice said a misreporting provider "needs no action" and that "its figure counts toward Hit rate". That counter holds **two populations** that cannot be told apart without a ninth `_PREFIX_ZERO` key (#431, deliberately not added): a genuine report on a call the rule calls unmeasurable (`record()` books `reported`, `prompt_reported` and `cached_tokens`, so it **is** in Hit rate and out of Effective), and an **impossible** report (`reported_impossible`: discarded, `reported` stays 0, in **neither** rate). For the second the claim was false and the Hit-rate cell six columns left of the sentence rendered a dash, so the page contradicted itself on one screen. The notice now states the two causes separately, each clause true of the case it names, and says the impossible one **does** need attention. (S-2) The gap sentence said the unaccounted calls "count toward Fresh calls above" — the opposite of `prefix_cache_unaccounted`'s definition (`by_route` minus `pc.calls`) — and said a schema-skipped route had "no prefix-cache row" when the row exists and was excluded. It now reads *"N call(s) in ‘By route’ above are not counted in Fresh calls here"* and names both causes (pre-panel days; rows excluded as unreadable). Sweeping the same paragraph found two more false clauses: "written by an older schema" is only one of the two branches that increment `skipped_rows` (the other is a malformed key), in both the footnote and the total-loss notice; and "a dash has three causes" had become four when round 4 added the discarded impossible report. (G-2) The BUG-1 guard seeded `calls` and `measurable` both to 7, so swapping one for the other in the gap computation rendered the same 400 and stayed green; the fixture is now `calls=9, measurable=7` (gap 400 vs 402). Every factual clause in the notice area now has a test that asserts the sentence **and** the table cell it is about on a rendered `/admin` (a sentence-only assert passes when the data changes under it; a cell-only assert passes when the sentence is rewritten to say the opposite, which is what shipped). 14 new tests, 22 new mutation rows, each killed by its own named test (run with the named test only); suite 821 → 835. 0 runtime tokens: the round touches the template, tests, the mutation table and this document only — `providers.py` and `llm_stats.py` are unchanged **QA round 6 returned FAIL: the same paragraph, a third round of false sentences, and the repair is deletion.** (F-1) "The Measurable column tells the first two apart from Fresh calls" was false for every reading: seeded, all four causes of a dash render Fresh 3, Measurable 0, Reported 0 and two dashes, so no column separates them. (F-2) The Effective dash tooltip listed three causes beside a footnote listing four, so on the fourth row every cause the tooltip named was false, and the test named for tooltip/footnote agreement never read the tooltip; both dash tooltips now enumerate nothing ("Unmeasured, not 0%. The note below the table lists what a dash can mean.") and the test reads them off a row of each cause. (F-3) "(the notice above says so when that has happened)" overclaimed: for a route of only impossible reports the notice never says the fourth cause happened. (F-4) Ten clauses survived a mutant each. The rule applied, on the chief's instruction: **a sentence no test can make fail when it is false is deleted, not reworded.** Deleted: F-1, F-3, the 732-token parenthetical (that figure belongs to `scripts/verify_token_budget.py`; nothing ties the page to it), "survives our cold starts" and "expires after about 2 hours idle" (facts about Groq, true per its docs, but nothing in this tree can fail on them; they remain in the two-caches table above), and "Widen the window, or re-record.". Kept and now tied to the code they describe: the two halves of the impossible-report definition (against `_prefix_usage`'s actual rejections), "cannot tell its two causes apart" (against the 2 + 3 sum in one counter), "absent rather than zero", and each of the four named dash causes (against a seeded row of each). Also found: `test_dashboard_names_both_caches_and_shows_unreported_as_a_dash` asserted a literal em dash in the row's raw HTML and was passing on the Hit-rate TOOLTIP's text, not the cell; it now reads the cells. 13 new mutation rows; suite 835 → 838. 0 runtime tokens: template, tests, mutation table and this document only **QA round 7 returned FAIL on one sentence, and the repair is to state the RULE instead of counting causes.** (N-1) “A dash has four causes” was false on the commonest Groq shape: a route where every measurable call missed renders a Hit-rate dash beside a real Effective `0.0%`, and none of the four describes it — Measurable is 3, the model reports, the prompts are long enough, no report was discarded. The dash's own tooltip then sent the reader to a note that did not cover it. The cause is structural, not editorial: the two columns dash under DIFFERENT rules, both of them `_rate`'s (`None` exactly when `not n or prompt <= 0`), so ONE shared tooltip and one shared count had to be false on one of them — which is why rounds 4, 5, 6 and 7 each found one more cause in the same paragraph. Fixed by splitting the tooltip per column and scoping the count: Effective's four causes are exhaustive **for Effective** (`measurable == 0` iff one of them held, and a measurable call carries at least `MIN_CACHEABLE_PREFIX` prompt tokens so the `prompt <= 0` clause is unreachable there), while Hit rate now states its own two-clause rule — no call reported a figure, or the ones that did reported no prompt tokens. That second clause is what round 7 flagged as a possible **sixth** cause it had not seeded; it is not a sixth cause, it is the rule's other half, and it is now pinned by a coherent fixture. (F-4 carry-over) Round 7's two SURVIVING mutants are pinned rather than deleted, because both claims are true: “is opportunistic” (Groq's docs say hits are not guaranteed) and “dies with it” (the response cache is per-instance). The earlier guard read “survives **our** cold starts” and the surviving mutant said “survives cold starts”, walking through the word “our” — the new assertions pin the claim, not one spelling of its negation. **Six repaired anchors are the finding worth keeping:** rewording the paragraph silently broke six existing mutation rows, whose `old` text no longer occurred, so each would have been un-runnable while the table still read as full. 6 new mutation rows (270 total), 3 new tests; suite 838 → 841. 0 runtime tokens: template, tests, mutation table and this document only |
 | 2026-09-05 | **`natal.txt` compressed 18,095 B → 13,135 B, and the natal request now has a pre-flight size guard** | `/kundli` was dead in production with a Groq **413 — "Limit 8000, Requested 8562"**. A size failure, not a rate failure: a request bigger than the whole per-minute budget cannot succeed at any traffic level, and `groq120`/`groq20` share the 8,000 TPM cap, so the chain's fallback re-sent the identical bytes and got the identical 413. Measured with tiktoken `o200k_base` over the eight golden charts (`scripts/measure_natal_request.py`, which is the first thing in this repo to read `tests/kundali-qa-fixtures.json`): the old prompt was **4,332 tok — 54% of the request**, and the largest fixture assembled to **8,019 tok, already over the ceiling before Groq adds its own accounting**. That is the outage reproduced from a fixture, not inferred. Compression removed redundancy and no rules, and saves **1,221 tok on every natal call** (4,332 → 3,111, measured with tiktoken o200k_base). It read 1,250 for one commit: that was correct for the 13,029 B intermediate, and the follow-up that grew the prompt to 13,124 B updated the byte and worst-case figures on this very line while leaving the saving — the exact drift this log exists to prevent, caught by QA rather than by any gate. One correction to how that was first written up, because the count matters: the same three prohibitions ("no separate section", "do not list the placements", "do not name the technique") were restated by **two** of the six conditional-block handlers, not six — only D-9 and D-10 ever carried all three. So folding them into one umbrella is deduplication for those two and a **new, broader constraint** for the other four, which is a different thing and was briefly a self-contradiction: an umbrella reading "never list the placements it contains" sat over a block called `--- HOUSE LORD PLACEMENTS ---` whose own bullet requires conveying exactly those placements. The umbrella is now scoped — "treat a block as a LENS, never as a heading" governs all of them; the placement and technique-naming bans apply to the two DIVISIONAL blocks only. Found by QA, not by the gate, which anchors on the rule's words and cannot see what the rule is scoped to. Worst case is now **6,798 tok** (en) / **6,930** (hi), leaving ~1,200 of headroom. `scripts/verify_natal_prompt.py` holds the 45 rules and the byte budget; it was written BEFORE the compression, against the pre-compression file, so the rule set was captured before anything moved. **#398 (2026-10-18) trimmed it to 13,013 B / 3,083 tok** by correcting the remedies line and dropping the D-9 yoga sentence against Rao Ch. 34 / §11 (`knowledge/remedies.md` §12, `divisional_charts.md`); `verify_natal_prompt.py` Gate 5 now fails if a retired claim returns |
 | 2026-09-05 | **Optional prompt blocks shed in a declared order rather than the request 413ing** | Compression alone moves the cliff; the next chart with a long Manglik block and five topic summaries finds it again. `llm._shed_to_fit` drops, worst-first: topic summaries (trimmed ENTRY BY ENTRY first — dropping all five to save fifty tokens is a bad trade), then aspects, nakshatras, D-10, D-9. **House lords, planet dignity, Manglik detail and yogas are never shed**: the last two are rendered as panels on the same page, so dropping them from the prompt makes the prose disagree with the panel beside it, which is the #176 failure class and worse than a thinner reading. Every shed logs at WARNING — a silent degradation is how "why is my reading shorter than my friend's" goes unexplained for months |
 | 2026-09-05 | **Two measured bytes-per-token constants, not one; the safety lives in the margin** | Instruction prose runs **4.227 B/tok** (4.295 for hi), chart-data blocks **3.697–3.778**. Each constant sits just below the **floor** for its own kind, not below the average — 3.7 looks safe against a "3.70–3.78" range and is not, because `strong-gajakesari` is 3.6970 and gets under-counted by two tokens (`tests/test_natal_request_size.py` found this against tiktoken). A single 3.9 average was tried and rejected: it priced the hi system prompt 326 tok high and made the guard shed the whole 4.6 kB summaries block on 4 of 8 charts to save ~50 tokens they did not need. `cache.estimate_tokens` is deliberately NOT reused — at 4.0 it under-counts these requests by ~3%, and a guard that under-counts waves through exactly what it exists to stop. It stays as-is for the `/admin/usage` counters, which are stats, not a safety check |
