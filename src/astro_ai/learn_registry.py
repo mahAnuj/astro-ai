@@ -214,7 +214,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are classical remedies for a weak or afflicted Moon?",
-                "a": "Serve and respect your mother — Moon is the primary karaka for mother. Drink water in silver, wear white on Mondays, offer white flowers or milk at Shiva temples. Fast on Mondays with a light single meal. Chant Chandra Beej Mantra or the Shiva Panchakshari (Om Namah Shivaya). Pearl is the classical gem for Moon but requires chart review — an afflicted natal Moon can be destabilised further by wearing pearl.",
+                "a": "Serve and respect your mother — Moon is the primary karaka for mother. Drink water in silver, wear white on Mondays, worship one of the Moon's deities (Gauri, Lalita, Saraswati, Krishna). Fast on Mondays with a light single meal. Chant Chandra Beej Mantra or the mantra of your chosen Moon deity. Pearl is the classical gem for Moon but requires chart review — an afflicted natal Moon can be destabilised further by wearing pearl.",
             },
         ),
         llm_summary=(
@@ -300,7 +300,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What's the best remedy for a difficult Mars?",
-                "a": "The universal Mars remedy is Hanuman Chalisa daily, especially on Tuesdays — Hanuman is considered the mediator between the seeker and Mars's fierce energy. Recite the Mangal mantra 'Om Ang Angarakaya Namah' 108 times Tuesday morning. Fast on Tuesdays with a single meal, avoiding salt. Donate red lentils (masoor dal), copper, or jaggery on Tuesdays. Physical exercise is an underrated Mars remedy — controlled physical exertion channels the planet's energy productively. Red Coral (Moonga) requires chart consultation before wearing.",
+                "a": "The universal Mars remedy is Hanuman Chalisa daily, especially on Tuesdays — Hanuman is considered the mediator between the seeker and Mars's fierce energy. Recite the Mangal mantra 'Om Ang Angarakaya Namah' 108 times Tuesday morning. Fast on Tuesdays with a single meal, avoiding salt. Donate toor daal (dark yellow lentil), copper, or jaggery on Tuesdays. Physical exercise is an underrated Mars remedy — controlled physical exertion channels the planet's energy productively. Red Coral (Moonga) requires chart consultation before wearing.",
             },
         ),
         llm_summary=(
@@ -429,7 +429,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What's the best remedy for a difficult Rahu?",
-                "a": "The classical Rahu remedy is Durga worship — chant 'Om Ram Rahave Namah' or the Durga Chalisa daily. Feed birds (especially crows), donate to lepers or the marginalised, and worship the goddess in her fierce forms (Kali, Durga, Chamunda). Blue or grey clothing on Saturdays. Meditation practice is unusually helpful for Rahu — the outward hunger settles when the mind learns to sit still. Hessonite (Gomedh) is the classical gemstone but requires careful chart consultation.",
+                "a": "The classical Rahu remedy is Durga worship — chant 'Om Ram Rahave Namah' or the Durga Chalisa daily. Feed birds (especially crows), donate to a research organisation or go on a pilgrimage, and worship the goddess in her fierce forms (Kali, Durga, Chamunda). Blue or grey clothing on Saturdays. Meditation practice is unusually helpful for Rahu — the outward hunger settles when the mind learns to sit still. Hessonite (Gomedh) is the classical gemstone but requires careful chart consultation.",
             },
         ),
         llm_summary=(
@@ -472,7 +472,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What's the best remedy for a difficult Ketu?",
-                "a": "The classical Ketu remedy is Ganesha worship — chant 'Om Gam Ganapataye Namah' 108 times daily. Ganesha, as the remover of obstacles and lord of beginnings, is considered Ketu's presiding deity. Serve dogs and stray animals (Ketu's associated creatures). Meditate daily — Ketu responds to inner stillness more than any other planet. Donate blankets, sesame oil, or grey/multi-coloured cloth on Tuesdays. Visit ancestral temples or perform Pitru Tarpan — Ketu rules ancestral karma. Cat's Eye (Lehsunia) is the classical gem but should never be worn without careful chart review.",
+                "a": "The classical Ketu remedy is Ganesha worship — chant 'Om Gam Ganapataye Namah' 108 times daily. Ganesha, as the remover of obstacles and lord of beginnings, is considered Ketu's presiding deity. Serve dogs and stray animals (Ketu's associated creatures). Meditate daily — Ketu responds to inner stillness more than any other planet. Donate blankets or grey/multi-coloured cloth on Tuesdays. Visit ancestral temples or perform Pitru Tarpan — Ketu rules ancestral karma. Cat's Eye (Lehsunia) is the classical gem but should never be worn without careful chart review.",
             },
         ),
         llm_summary=(
@@ -644,7 +644,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What's the single best remedy for Sade Sati?",
-                "a": "Daily Hanuman Chalisa, especially on Saturdays. Hanuman is the only deity classical texts say can intercede with Shani. Combine with serving the elderly, donating to those who have less, and accepting the lessons Saturn is teaching — Saturn rewards willing students more than ritual compliance.",
+                "a": "Daily Vishnu worship, especially on Saturdays — Vishnu (with Brahma) is Saturn's classical deity, and the Vishnu Sahasranama is a steady daily practice. Combine with serving the elderly, donating to those who have less, and accepting the lessons Saturn is teaching — Saturn rewards willing students more than ritual compliance.",
             },
         ),
         llm_summary=(
@@ -686,7 +686,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Are expensive Kaal Sarp removal pujas necessary?",
-                "a": "Usually not. The &quot;Kaal Sarp Shanti puja&quot; industry charges ₹5,000-50,000+ and preys on fear. For most charts, simple personal remedies (Mahamrityunjaya mantra, Hanuman Chalisa, Saturday donations) are sufficient. Before paying for an elaborate ceremony, get a clear assessment of whether the dosha applies and what cancellation factors are present.",
+                "a": "Usually not. The &quot;Kaal Sarp Shanti puja&quot; industry charges ₹5,000-50,000+ and preys on fear. For most charts, simple personal remedies (Mahamrityunjaya mantra, worship of Durga and Ganesha, Saturday donations) are sufficient. Before paying for an elaborate ceremony, get a clear assessment of whether the dosha applies and what cancellation factors are present.",
             },
         ),
         llm_summary=(
@@ -724,7 +724,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What's the best remedy for difficult Saturn?",
-                "a": "Daily Hanuman Chalisa (the universal Saturn remedy — Hanuman is the only deity that can intercede with Shani per classical texts), plus serving elders, working harder rather than less, and accepting the lessons Saturn is teaching. Specifically NOT: blue sapphire without a proper chart reading, which can be destabilising if Saturn is poorly placed.",
+                "a": "Daily worship of Vishnu (Saturn's classical deity, with Brahma — the Vishnu Sahasranama is the universal practice), plus serving elders, working harder rather than less, and accepting the lessons Saturn is teaching. Specifically NOT: blue sapphire without a proper chart reading, which can be destabilising if Saturn is poorly placed.",
             },
             {
                 "q": "When does Saturn give its best results?",
@@ -819,7 +819,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the most effective Manglik Dosh remedies?",
-                "a": "Classical remedies focus on Mars pacification: fasting on Tuesdays, reciting the Mangal mantra or Hanuman Chalisa, donating red lentils or copper, wearing red coral (only after a chart consultation — never blindly). For marriage matching specifically, the classical recommendation is to match with another Manglik partner of comparable severity, which mutually cancels the dosha — the cancellation rests on the two charts being similarly afflicted, not merely on both carrying the label. Tradition asks for comparability without setting a threshold, so we set one and say it is ours: we treat equal or adjacent severity grades as comparable and do not cancel a low against a high.",
+                "a": "Classical remedies focus on Mars pacification: fasting on Tuesdays, reciting the Mangal mantra or Hanuman Chalisa, donating toor daal or copper, wearing red coral (only after a chart consultation — never blindly). For marriage matching specifically, the classical recommendation is to match with another Manglik partner of comparable severity, which mutually cancels the dosha — the cancellation rests on the two charts being similarly afflicted, not merely on both carrying the label. Tradition asks for comparability without setting a threshold, so we set one and say it is ours: we treat equal or adjacent severity grades as comparable and do not cancel a low against a high.",
             },
             {
                 "q": "Does Manglik Dosh weaken with age?",
@@ -1077,7 +1077,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Why is Hanuman worship considered the best Mars remedy?",
-                "a": "Because Hanuman himself is the archetypal disciplined warrior — the embodiment of Mars energy channelled through devotion and service rather than ego. Classical tradition holds that Hanuman worship pacifies Mars more effectively than direct Mangal worship because Hanuman represents Mars in his ideal form. The most-used practices: daily Hanuman Chalisa (especially Tuesdays and Saturdays), visits to Hanuman temples with red flowers and ghee lamps, Sundarakanda recitation for deeper practice.",
+                "a": "Because Hanuman himself is the archetypal disciplined warrior — the embodiment of Mars energy channelled through devotion and service rather than ego. Classical tradition holds that Hanuman worship pacifies Mars more effectively than direct Mangal worship because Hanuman represents Mars in his ideal form. The most-used practices: daily Hanuman Chalisa (especially Tuesdays), visits to Hanuman temples with red flowers and ghee lamps, Sundarakanda recitation for deeper practice.",
             },
             {
                 "q": "What is Mars's mantra?",
@@ -1121,7 +1121,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What is the safest Saturn remedy that works for anyone?",
-                "a": "Daily Hanuman Chalisa recitation. This works via a classical myth — Hanuman once rescued Saturn, and Saturn promised anyone devoted to Hanuman would be protected from his harshest effects. Safe for any chart, no consultation needed, no cost. Other universal safe practices: (1) Weekly service to elderly relatives, (2) Sri Yantra worship, (3) Practicing patience deliberately in daily situations. None of these require chart consultation, none can backfire, and all four together are more effective than any expensive puja.",
+                "a": "Daily worship of Vishnu, Saturn's classical deity (with Brahma) — the Vishnu Sahasranama is a good daily practice. Safe for any chart, no consultation needed, no cost. Other universal safe practices: (1) Weekly service to elderly relatives, (2) Sri Yantra worship, (3) Practicing patience deliberately in daily situations. None of these require chart consultation, none can backfire, and all four together are more effective than any expensive puja.",
             },
             {
                 "q": "What is Saturn's mantra?",
@@ -1129,11 +1129,11 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Is Sade Sati really as bad as people say?",
-                "a": "Sade Sati is genuinely difficult but not the catastrophe online content portrays. It's Saturn's 7.5-year transit around your natal Moon sign — a period of restructuring, testing, and eventual maturation. Remedies during Sade Sati: daily Hanuman Chalisa (very effective), Saturday partial fasting (skip one meal), donations of mustard oil/black sesame/iron, service to elderly, avoiding major new commitments in the middle phase. Most people who work with Sade Sati's lessons emerge stronger. Most people who fight it find the difficulty extended.",
+                "a": "Sade Sati is genuinely difficult but not the catastrophe online content portrays. It's Saturn's 7.5-year transit around your natal Moon sign — a period of restructuring, testing, and eventual maturation. Remedies during Sade Sati: daily Vishnu worship, Saturday partial fasting (skip one meal), donations of mustard oil/black sesame/iron, service to elderly, avoiding major new commitments in the middle phase. Most people who work with Sade Sati's lessons emerge stronger. Most people who fight it find the difficulty extended.",
             },
             {
                 "q": "Are expensive Shani puja packages worth it?",
-                "a": "Almost never. Any priest demanding tens of thousands of rupees for a Shani nivaran puja is selling anxiety, not tradition. Genuine classical remedies are inexpensive — mantras + Chalisa + Hanuman worship + service to elderly costs almost nothing and is more powerful than expensive rituals done without devotion. The classical framing from Rao: 'Remedies are devotional acts, not transactional payments.' Anyone treating them as 'paying to make the problem go away' misunderstands the tradition and often makes the underlying pattern worse.",
+                "a": "Almost never. Any priest demanding tens of thousands of rupees for a Shani nivaran puja is selling anxiety, not tradition. Genuine classical remedies are inexpensive — mantras + Chalisa + Vishnu worship + service to elderly costs almost nothing and is more powerful than expensive rituals done without devotion. The classical framing from Rao: 'Remedies are devotional acts, not transactional payments.' Anyone treating them as 'paying to make the problem go away' misunderstands the tradition and often makes the underlying pattern worse.",
             },
             {
                 "q": "Can Saturn remedies remove my career problems?",
@@ -1374,7 +1374,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What remedies help career during Sade Sati?",
-                "a": "Universal Saturn practices apply, with a career emphasis. Recite the Hanuman Chalisa daily (especially on Saturdays) — classical Vedic tradition names Hanuman as the deity whose recitation softens Shani's severity. Serve elders in your professional environment (Saturn rules seniority; being genuinely useful to older colleagues is direct Saturn karma). Work harder, not less — Saturn rewards effort, not escapism. Donate on Saturdays (black sesame, mustard oil, dark cloth, iron, footwear for the elderly poor). Avoid expensive Shani nivaran puja packages — the vendor manipulation around Sade Sati is enormous and largely ineffective. And never wear blue sapphire without a proper chart consultation — it is Saturn's most powerful gem and, when wrong for the chart, the fastest way to destabilise a difficult transit further.",
+                "a": "Universal Saturn practices apply, with a career emphasis. Worship Vishnu daily (especially on Saturdays) — Vishnu, with Brahma, is Saturn's classical deity. Serve elders in your professional environment (Saturn rules seniority; being genuinely useful to older colleagues is direct Saturn karma). Work harder, not less — Saturn rewards effort, not escapism. Donate on Saturdays (black sesame, mustard oil, dark cloth, iron, footwear for the elderly poor). Avoid expensive Shani nivaran puja packages — the vendor manipulation around Sade Sati is enormous and largely ineffective. And never wear blue sapphire without a proper chart consultation — it is Saturn's most powerful gem and, when wrong for the chart, the fastest way to destabilise a difficult transit further.",
             },
         ),
         llm_summary=(
@@ -1799,7 +1799,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What remedies help 10th lord in the 6th house?",
-                "a": "Safe universal classical practices: weekly worship of the deity associated with your specific 10th lord (Sun → Shiva or Rama; Moon → Devi; Mars → Hanuman or Kartikeya; Mercury → Vishnu; Jupiter → Vishnu or Sri Guru; Venus → Lakshmi or Devi; Saturn → Hanuman as Shani's intercessor); consciously serving people working under difficulty around you (office cleaning staff, delivery workers, security guards — direct 6th-house karma); confronting rather than avoiding professional conflicts (avoided 6th-house conflicts compound); managing debts carefully; maintaining health discipline (regular check-ups, sleep, refusal to overwork past physical limits — the 6th is the house of illness); donating to hospitals or medical charities. Avoid: gemstone remedies for your 10th lord without a proper chart consultation, and expensive dosha-removal packages (there is no such thing as a 10th-lord-in-6th nivaran puja).",
+                "a": "Safe universal classical practices: weekly worship of the deity associated with your specific 10th lord (Sun → Shiva or Rama; Moon → Devi; Mars → Hanuman or Kartikeya; Mercury → Vishnu; Jupiter → Vishnu or Sri Guru; Venus → Lakshmi or Devi; Saturn → Vishnu or Brahma); consciously serving people working under difficulty around you (office cleaning staff, delivery workers, security guards — direct 6th-house karma); confronting rather than avoiding professional conflicts (avoided 6th-house conflicts compound); managing debts carefully; maintaining health discipline (regular check-ups, sleep, refusal to overwork past physical limits — the 6th is the house of illness); donating to hospitals or medical charities. Avoid: gemstone remedies for your 10th lord without a proper chart consultation, and expensive dosha-removal packages (there is no such thing as a 10th-lord-in-6th nivaran puja).",
             },
             {
                 "q": "Is 10th lord in the 6th house Vipreet Raja Yoga?",
@@ -1853,7 +1853,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the best remedies for career during Rahu Mahadasha?",
-                "a": "Safe universal practices: chant the Rahu Beej mantra Om Bhraam Bhreem Bhraum Sah Rahave Namah as a slow long-term practice (classical count 18,000 total), donate black gram daal or blue cloth on Saturdays, serve outsiders and the marginalised (Rahu is the karaka of outsiders), support research or unusual knowledge, undertake a pilgrimage to a shrine you have not visited, and worship Durga (Rahu's classical ruling deity). Avoid: expensive Rahu shanti puja packages, and never wear hessonite (gomedh) without proper chart consultation. The deepest remedy is often alignment — matching your work to what Rahu's placement actually wants.",
+                "a": "Safe universal practices: chant the Rahu Beej mantra Om Bhraam Bhreem Bhraum Sah Rahave Namah as a slow long-term practice (classical count 18,000 total), donate black gram daal or blue cloth on Saturdays, donate to a research organisation, undertake a pilgrimage to a shrine you have not visited, and worship Durga (Rahu's classical ruling deity). Avoid: expensive Rahu shanti puja packages, and never wear hessonite (gomedh) without proper chart consultation. The deepest remedy is often alignment — matching your work to what Rahu's placement actually wants.",
             },
         ),
         llm_summary=(
@@ -1947,7 +1947,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Can classical remedies really help with chronic illness?",
-                "a": "Classical remedies work at the karmic-support layer, not the biological one. Practices like the Mahamrityunjaya Mantra (for general health and longevity), Dhanvantari worship (the deity of Ayurveda), Hanuman worship (Saturn's classical intercessor for chronic conditions), planet-specific mantras and fasting all support the karmic weather around a condition. They do not replace medication, surgery, or specialist care. What we see with patients who engage both: the medical treatment holds its ground more reliably, the emotional side of the illness feels less isolating, and lifestyle discipline (which the remedies embed) supports the biological outcome. Both lenses matter — use them together.",
+                "a": "Classical remedies work at the karmic-support layer, not the biological one. Practices like the Mahamrityunjaya Mantra (for general health and longevity), Dhanvantari worship (the deity of Ayurveda), Vishnu worship (Saturn's classical deity), planet-specific mantras and fasting all support the karmic weather around a condition. They do not replace medication, surgery, or specialist care. What we see with patients who engage both: the medical treatment holds its ground more reliably, the emotional side of the illness feels less isolating, and lifestyle discipline (which the remedies embed) supports the biological outcome. Both lenses matter — use them together.",
             },
             {
                 "q": "Should I wear a gemstone to fix my health?",
@@ -2794,13 +2794,13 @@ ARTICLES: tuple[Article, ...] = (
     # ─── Cycle 8 remedy cluster (#97-102, #107) ───────────────────────
     Article(
         slug="rahu-remedies", title="Rahu Remedies: 7 Classical Practices to Soften a Difficult Rahu",
-        summary="Rahu is Vedic astrology's karaka of ambition, foreignness, and sudden change. When afflicted, produces confusion, foreign complications, and reputation shocks. Classical remedies focus on Beej mantra, Durga worship, Ganesha protection, service to outsiders, Saturday charity, and — for severe cases — Trimbakeshwar Nagbali. This guide walks the 7 most classically-cited Rahu remedies with honest expectations for what each does. NO risky gemstones required.",
+        summary="Rahu is Vedic astrology's karaka of ambition, foreignness, and sudden change. When afflicted, produces confusion, foreign complications, and reputation shocks. Classical remedies focus on Beej mantra, Durga worship, Ganesha protection, a research donation or pilgrimage, Saturday charity, and — for severe cases — Trimbakeshwar Nagbali. This guide walks the 7 most classically-cited Rahu remedies with honest expectations for what each does. NO risky gemstones required.",
         seo_title="Rahu Remedies: 7 Classical Practices That Actually Work",
-        seo_description="7 classical Rahu remedies from BPHS + Phaladeepika — Beej mantra, Durga worship, service to outsiders, Saturday charity. Honest, safe, no expensive rituals.",
+        seo_description="7 classical Rahu remedies — Beej mantra, Durga worship, a research donation or pilgrimage, Saturday charity. Honest, safe, no expensive rituals.",
         category="Grahas", hero_image="/static/learn/rahu-remedies/hero.svg", read_time="10 min", last_updated="2026-07",
         related=("rahu-in-vedic-astrology", "rahu-mahadasha-ketu-antardasha", "kaal-sarp-dosh", "ketu-in-vedic-astrology"),
         faqs=(
-            {"q": "Which is the strongest remedy for Rahu?", "a": "Consistency across multiple practices > intensity of any single one. The classical primary pairing: daily Rahu Beej mantra (108x) + weekly Durga Chalisa on Saturdays + monthly serving of marginalised communities. Trimbakeshwar Nagbali is the deepest single ritual but only for severe cases with proper chart confirmation."},
+            {"q": "Which is the strongest remedy for Rahu?", "a": "Consistency across multiple practices > intensity of any single one. The classical primary pairing: daily Rahu Beej mantra (108x) + weekly Durga Chalisa on Saturdays + a research donation or pilgrimage when you can. Trimbakeshwar Nagbali is the deepest single ritual but only for severe cases with proper chart confirmation."},
             {"q": "Can I do Rahu remedies without a gemstone?", "a": "Yes — and it's actually recommended. Rahu's classical gemstone (hessonite) can backfire when Rahu is a functional malefic for your Ascendant. All the practices in this guide (mantra, service, charity, Durga worship, Ganesha, Trimbakeshwar) are safe universal remedies that don't require chart analysis."},
             {"q": "How long do Rahu remedies take to show effect?", "a": "Weeks 1-4: mostly building the habit; internal shifts (quieter mind). Months 2-6: perceptible shifts — situations that used to trigger panic feel manageable. Months 6-12: structural shifts — old patterns dissolve. Year 2+: Rahu's underlying karma unfolds; remedies compound. Faster than medication, slower than instant relief."},
             {"q": "Do I need to visit Trimbakeshwar for Kaal Sarp remedy?", "a": "Only for serious cases: full Kaal Sarp Dosh + active Rahu Mahadasha + repeated life shocks. For most Rahu afflictions, daily mantra + weekly Durga + monthly service is sufficient. Trimbakeshwar priests are officially registered — beware of touts; legitimate costs are ₹5,000-25,000 range, anyone quoting lakhs is exploiting."},
@@ -2849,14 +2849,14 @@ ARTICLES: tuple[Article, ...] = (
     ),
     Article(
         slug="chandra-moon-remedies", title="Moon Remedies: Chandra Practices for Emotional Peace and Mental Health",
-        summary="The Moon (Chandra) is Vedic astrology's karaka of mind, emotion, mother, memory, and mental peace. Since psychological wellbeing depends more on Moon than any other planet, Moon remedies are among the most consequential. Classical remedies focus on Monday practices, milk offering to Shiva, Chandra Beej mantra, silver items, pearl gemstone, mother-service, and modern extensions (Nadi Shodhana, sleep hygiene). Complement — never replace — professional mental healthcare.",
-        seo_title="Moon (Chandra) Remedies: Shiva Puja, Silver, Somvar Vrat",
-        seo_description="Classical Moon remedies — Monday Shiva puja, silver items, Chandra Beej mantra, mother-service. Support mental peace; combine with professional mental healthcare when needed.",
+        summary="The Moon (Chandra) is Vedic astrology's karaka of mind, emotion, mother, memory, and mental peace. Since psychological wellbeing depends more on Moon than any other planet, Moon remedies are among the most consequential. Classical remedies focus on Monday practices, devotion to Chandra's deities (Gauri, Lalita, Saraswati, Krishna), Chandra Beej mantra, silver items, pearl gemstone, mother-service, and modern extensions (Nadi Shodhana, sleep hygiene). Complement — never replace — professional mental healthcare.",
+        seo_title="Moon (Chandra) Remedies: Deities, Silver, Somvar Vrat",
+        seo_description="Classical Moon remedies — Monday worship of Chandra's deities, silver items, Chandra Beej mantra, mother-service. Support mental peace; combine with professional mental healthcare when needed.",
         category="Grahas", hero_image="/static/learn/chandra-moon-remedies/hero.svg", read_time="8 min", last_updated="2026-07",
         related=("chandra-moon-in-vedic-astrology", "the-9-grahas-overview"),
         faqs=(
             {"q": "Are Moon remedies enough for depression or anxiety?", "a": "No. Moon remedies support mental peace but are NOT a substitute for professional mental healthcare. If you have symptoms of depression, anxiety disorder, bipolar, PTSD, or any other diagnosed condition, please consult a mental health professional. Remedies work best as adjunct to treatment."},
-            {"q": "Why milk to Shiva for Moon remedy?", "a": "Shiva holds the crescent Moon on his forehead — he is the deity most closely associated with regulating Chandra's turbulent nature. Monday temple abhishek (milk pouring) + 108 recitations of 'Om Namah Shivaya' + 10 minutes of quiet sitting is the classical primary Moon remedy."},
+            {"q": "Which deity should I worship for a Moon remedy?", "a": "The deities classically linked with the Moon are Gauri, Lalita, Saraswati and Krishna; Shiva is the Sun's deity. A Monday temple visit + 108 recitations of the Chandra Beej mantra (or your deity's mantra) + 10 minutes of quiet sitting is a simple, safe Moon practice."},
             {"q": "What is Solah Somvar vrat?", "a": "16 consecutive Monday fasts (partial: one meal only, no rice, no lentils). Traditionally observed by unmarried women seeking a good spouse, or by anyone with severe emotional difficulty. Peak during Shravana month (July-August). Not for those with medical conditions or pregnancy."},
             {"q": "Can I wear Pearl (Moti) as Moon remedy?", "a": "Pearl is safer than most gemstones but still requires Ascendant verification. Cancer, Scorpio, Pisces most compatible. Consult a qualified astrologer before wearing. The Monday practices + silver items are safe universal remedies."},
         ),
