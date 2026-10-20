@@ -1384,8 +1384,8 @@ MUTATIONS = [
 
     ("#ops-today: snapshot() is awaited inline (up to 12s of event loop, app-wide)",
      "src/astro_ai/routes/admin.py",
-     '    ops = await asyncio.to_thread(ops_data.snapshot)',
-     '    ops = ops_data.snapshot()',
+     '    ops = await asyncio.to_thread(ops_data.snapshot, app_days=days)',
+     '    ops = ops_data.snapshot(app_days=days)',
      "test_the_ops_page_does_not_block_the_event_loop"),
 
     ("#ops-today: today_live is hardcoded (the drill-down picks the wrong renderer)",
@@ -1399,6 +1399,210 @@ MUTATIONS = [
      '                "today_failed": (live_today or {}).get("failed", []),',
      '                "today_failed": [],',
      "test_live_tiles_survive_a_missing_snapshot_file"),
+
+    ("#ops-window: the app cache goes back to one slot (window A answers under B's heading)",
+     "src/astro_ai/ops_data.py",
+     "    hit = _app_cache.get(days)",
+     "    hit = next(iter(_app_cache.values()), None)",
+     "test_two_windows_do_not_share_one_cache_slot"),
+
+    ("#ops-window: an unoffered window is clamped instead of refused (3650 renders as 30)",
+     "src/astro_ai/ops_data.py",
+     "    if app_days not in APP_WINDOWS:\n        app_days = DEFAULT_APP_DAYS",
+     "    app_days = max(1, min(app_days, max(APP_WINDOWS)))",
+     "test_an_unoffered_window_falls_back_rather_than_being_clamped"),
+
+    ("#ops-window: a window above the event-retention ceiling is offered",
+     "src/astro_ai/ops_data.py",
+     "APP_WINDOWS = (1, 7, 30)",
+     "APP_WINDOWS = (1, 7, 30, 90)",
+     "test_the_offered_windows_stay_inside_the_retention_ceiling"),
+
+    ("#ops-window: ?window=abc 422s the whole control room",
+     "src/astro_ai/routes/admin.py",
+     "async def admin_ops(request: Request, window: str = \"\") -> HTMLResponse:",
+     "async def admin_ops(request: Request, window: int = 0) -> HTMLResponse:",
+     "test_a_mistyped_window_renders_the_default_page_not_an_error"),
+
+    ("#ops-trend: features are ranked per day, so a bar changes colour daily",
+     "src/astro_ai/ops_data.py",
+     "    ranked = sorted(totals, key=lambda r: -totals[r])",
+     "    ranked = sorted(totals)",
+     "test_features_are_ranked_over_the_window_not_per_day"),
+
+    ("#ops-trend: the overflow features are dropped instead of grouped",
+     "src/astro_ai/ops_data.py",
+     '            key = "other" if route in rest else route\n            per[key] = per.get(key, 0) + n',
+     '            if route in rest:\n                continue\n            per[route] = per.get(route, 0) + n',
+     "test_beyond_the_top_n_features_are_grouped_never_dropped"),
+
+    ("#ops-trend: the chart reads newest-first, so the trend runs backwards",
+     "src/astro_ai/ops_data.py",
+     '    rows = sorted(rows, key=lambda d: d.get("date") or "")',
+     '    rows = sorted(rows, key=lambda d: d.get("date") or "", reverse=True)',
+     "test_days_read_left_to_right_oldest_first"),
+
+    ("#ops-trend: an empty window renders a flat zero chart instead of nothing",
+     "src/astro_ai/ops_data.py",
+     '    if not totals or not any(totals.values()):\n        return {"ok": False, "days": days}',
+     '    if False:\n        return {"ok": False, "days": days}',
+     "test_a_window_with_no_tokens_is_not_ok_rather_than_a_flat_zero_chart"),
+
+    ("#ops-trend: the axis top ignores the peak, so the tallest bar overflows",
+     "src/astro_ai/ops_data.py",
+     '"total": day_total, "by_feature": per})\n\n    top = _nice_top(peak)',
+     '"total": day_total, "by_feature": per})\n\n    top = _nice_top(peak // 2) if peak else 1',
+     "test_no_bar_can_overflow_the_axis"),
+    # ---- QA round 1 on #419. Every row below is a defect the reviewer found
+    # ---- in this PR's own code, re-broken here so the new tests must stay red
+    # ---- against it. The first three were mutants that survived all 705 tests.
+
+    ("#ops-trend: the TPD line is clamped back onto the top edge (BUG-1, 4x overstatement)",
+     "src/astro_ai/ops_data.py",
+     '        "tpd_visible": top >= TPD_PER_MODEL,\n        "tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '        "tpd_visible": top >= TPD_PER_MODEL * 0.25,\n        "tpd_y": round(100 - min(TPD_PER_MODEL / top, 1.0) * 100, 2) if top else 100,',
+     "test_the_tpd_line_appears_exactly_when_one_bucket_fits_on_the_chart"),
+
+    ("#ops-trend: the TPD line is placed by its own scale, not the bars'",
+     "src/astro_ai/ops_data.py",
+     '        "tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '        "tpd_y": round(100 - TPD_PER_MODEL / (top * 2) * 100, 2) if top else 100,',
+     "test_the_tpd_line_is_drawn_at_the_height_its_label_claims"),
+
+    ("#ops-trend: the ranking counts input only, so the legend orders by half the budget (BUG-3)",
+     "src/astro_ai/ops_data.py",
+     '            totals[route] = (totals.get(route, 0)\n                             + int(tok.get("input_tokens") or 0)\n                             + int(tok.get("output_tokens") or 0))',
+     '            totals[route] = totals.get(route, 0) + int(tok.get("input_tokens") or 0)',
+     "test_the_ranking_is_by_total_tokens_not_input"),
+
+    ("#ops-trend: a bar counts input only, so the stack understates the day",
+     "src/astro_ai/ops_data.py",
+     '            n = int(tok.get("input_tokens") or 0) + int(tok.get("output_tokens") or 0)',
+     '            n = int(tok.get("input_tokens") or 0)',
+     "test_the_stack_sums_to_the_underlying_blobs"),
+
+    ("#ops-errors: the error read ignores the window (GUARD-1: a 0.29% day rendered 30.85%)",
+     "src/astro_ai/ops_data.py",
+     "        brk = events.error_breakdown(days=days) or {}",
+     "        brk = events.error_breakdown() or {}",
+     "test_the_window_is_honoured_so_a_quiet_day_is_not_scored_on_a_bad_month"),
+    # ---- QA round 2 on #419. Six of these mutants survived all 745 tests AND
+    # ---- the 195-row sweep; the sweep's own rows only mutated what the
+    # ---- round-1 fix had moved, so they could not see the sign, the gate
+    # ---- value, or any template branch.
+
+    ("#ops-trend: the TPD gate is strict, so the whole (150k, 200k] band loses its line",
+     "src/astro_ai/ops_data.py",
+     '"tpd_visible": top >= TPD_PER_MODEL,',
+     '"tpd_visible": top > TPD_PER_MODEL,',
+     "test_the_tpd_line_appears_exactly_when_one_bucket_fits_on_the_chart"),
+
+    ("#ops-trend: the TPD gate slides to half a bucket (line clipped, legend still promises it)",
+     "src/astro_ai/ops_data.py",
+     '"tpd_visible": top >= TPD_PER_MODEL,',
+     '"tpd_visible": top >= TPD_PER_MODEL / 2,',
+     "test_the_tpd_line_appears_exactly_when_one_bucket_fits_on_the_chart"),
+
+    ("#ops-trend: tpd_y is measured from the bottom edge (11 buckets reads as none)",
+     "src/astro_ai/ops_data.py",
+     '"tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '"tpd_y": round(TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     "test_the_tpd_line_is_measured_from_the_top_of_the_chart_not_the_bottom"),
+
+    ("#ops-errors: the count reverts to the capped sample",
+     "src/astro_ai/ops_data.py",
+     '"errors": errors_total,',
+     '"errors": len(errors),',
+     "test_the_count_and_the_rate_are_both_exact"),
+
+    ("#ops-errors: the rate reverts to the capped sample (widening lowers it again)",
+     "src/astro_ai/ops_data.py",
+     '"error_rate": (round(errors_total / calls * 100, 2) if calls else None),',
+     '"error_rate": (round(len(errors) / calls * 100, 2) if calls else None),',
+     "test_widening_the_window_cannot_lower_the_rate_on_the_same_data"),
+
+    ("#ops-errors: the rate is withheld on saturation (0.05% on a busy site shows no number)",
+     "src/astro_ai/ops_data.py",
+     '"error_rate": (round(errors_total / calls * 100, 2) if calls else None),',
+     '"error_rate": (None if errors_truncated or not calls else round(errors_total / calls * 100, 2)),',
+     "test_volume_alone_does_not_raise_an_alert"),
+
+    ("#ops-errors: `exhausted` reads the wrong key, so provider failures read 0",
+     "src/astro_ai/ops_data.py",
+     '        exhausted = kinds.get("AllProvidersExhausted", 0)',
+     '        exhausted = kinds.get("AllProvidersExhaused", 0)',
+     "test_a_provider_failure_behind_many_newer_errors_is_still_counted"),
+
+    ("#ops-errors: `too_large` reads the wrong key, so 413s read 0",
+     "src/astro_ai/ops_data.py",
+     '        too_large = kinds.get("RequestTooLarge", 0)',
+     '        too_large = kinds.get("RequestTooLarg", 0)',
+     "test_a_provider_failure_behind_many_newer_errors_is_still_counted"),
+
+    ("#ops-tpl: the TPD line is drawn unguarded (y=-300 for a 50k peak)",
+     "src/astro_ai/templates/admin_ops.html",
+     '          {%- if ops.app.trend.tpd_visible %}\n          <line x1="0"',
+     '          {%- if True %}\n          <line x1="0"',
+     "test_the_page_draws_no_tpd_line_when_one_bucket_is_off_the_chart"),
+
+    ("#ops-tpl: the TPD legend is shown unguarded (200,000 claimed on every window)",
+     "src/astro_ai/templates/admin_ops.html",
+     '          {%- if ops.app.trend.tpd_visible %}\n          <span class="lg"><i class="sw tpdsw"></i>',
+     '          {%- if True %}\n          <span class="lg"><i class="sw tpdsw"></i>',
+     "test_the_page_draws_no_tpd_line_when_one_bucket_is_off_the_chart"),
+
+    ("#ops-errors: budget breaks count every error kind, not the two budget kinds",
+     "src/astro_ai/ops_data.py",
+     "            if kind in BUDGET_ERROR_TYPES:",
+     "            if True:",
+     "test_the_budget_breaks_are_counted_per_source_over_the_budget_kinds_only"),
+
+    ("#ops-errors: the breakdown stops filtering on the event type (page views counted as errors)",
+     "src/astro_ai/events.py",
+     '            if evt.get("type") != "error":\n                continue\n            data = evt.get("data") or {}',
+     '            data = evt.get("data") or {}',
+     "test_the_count_and_the_rate_are_both_exact"),
+
+    ("#ops-tpl: the error cell goes back to a hardcoded red threshold",
+     "src/astro_ai/templates/admin_ops.html",
+     "ops.app.error_rate >= ops.error_rate_red",
+     "ops.app.error_rate >= 5",
+     "test_the_error_cell_takes_its_red_threshold_from_the_module"),
+
+    # ---- QA round 3 on #419, SB-1. The cap is gone; these guard the uncapped
+    # ---- walk that replaced it, which had no direct test at all (every
+    # ---- ops-side test stubs it, correctly -- so three mutants of the walk
+    # ---- itself survived the whole suite).
+
+    ("#ops-errors: the breakdown counts non-error events too (page views inflate the rate)",
+     "src/astro_ai/events.py",
+     '            if evt.get("type") != "error":\n                continue\n            data = evt.get("data") or {}',
+     '            data = evt.get("data") or {}',
+     "test_only_error_events_are_counted"),
+
+    ("#ops-errors: the retention clamp is dropped, so every window reads one day",
+     "src/astro_ai/events.py",
+     "    days = max(1, min(days, EVENT_RETENTION_DAYS))\n    today = date.today()\n    wanted_days = [today - timedelta(days=i) for i in range(days)]\n\n    # Same fan-out",
+     "    days = 1\n    today = date.today()\n    wanted_days = [today - timedelta(days=i) for i in range(days)]\n\n    # Same fan-out",
+     "test_the_window_is_clamped_to_the_retention_ceiling"),
+
+    ("#ops-errors: a marginal counts pair KEYS instead of pair COUNTS",
+     "src/astro_ai/events.py",
+     "        by_source[src] = by_source.get(src, 0) + n",
+     "        by_source[src] = by_source.get(src, 0) + 1",
+     "test_the_cross_tab_and_both_marginals_agree_with_the_total"),
+
+    ("#ops-errors: an unclassifiable error is dropped rather than counted as '?'",
+     "src/astro_ai/events.py",
+     '            key = (data.get("error_type") or "?", data.get("source") or "?")',
+     '            if not data.get("error_type"):\n                continue\n            key = (data.get("error_type") or "?", data.get("source") or "?")',
+     "test_an_error_with_no_shape_is_counted_rather_than_dropped"),
+
+    ("#ops-errors: a corrupt day blob aborts the walk instead of being skipped",
+     "src/astro_ai/events.py",
+     "    pairs: dict[tuple[str, str], int] = {}\n    for blob in blobs:\n        if blob is None:\n            continue",
+     "    pairs: dict[tuple[str, str], int] = {}\n    for blob in blobs:\n        if blob is None:\n            raise RuntimeError('missing day')",
+     "test_a_missing_or_unreadable_day_does_not_abort_the_walk"),
     # ---- QA round 2 on #418. Three ship-blocking findings. The first is the
     # ---- one this block exists for: `truncated` was computed and read NOWHERE
     # ---- while three places said the page showed it. 18 of the reviewer's 29
@@ -2253,6 +2457,76 @@ MUTATIONS = [
      'elif isinstance(node, ast.ClassDef) and node.name.startswith("Test"):',
      "elif False:",
      "test_a_method_removed_from_a_test_class_fails"),
+
+    # --- #419/#452 QA round 4: F-1, F-2, F-3, F-5, F-6, BUG-5, BUG-6 --------
+    # F-2 is the headline: the stacked bars had NO test and NO row, so all three
+    # of these survived the whole suite and the 266-row sweep -- and the second
+    # one DELETES the chart this work exists to add.
+    ("#452/F-2a: the stack is drawn from the top edge, upside down",
+     "src/astro_ai/templates/admin_ops.html",
+     '''y="{{ '%.3f'|format(100 - ns.acc) }}"''',
+     '''y="{{ '%.3f'|format(ns.acc) }}"''',
+     "test_the_stack_is_anchored_at_the_axis_floor_not_the_top_edge"),
+
+    ("#452/F-2b: the bar threshold emits nothing, deleting the chart outright",
+     "src/astro_ai/templates/admin_ops.html",
+     "{%- if v > 0 %}", "{%- if v > 999999999999 %}",
+     "test_the_chart_draws_a_rect_for_every_non_zero_feature_day"),
+
+    ("#452/F-2c: the bars use a different scale from the line across them",
+     "src/astro_ai/templates/admin_ops.html",
+     "{%- set h = v / ops.app.trend.top * 100 %}",
+     "{%- set h = v / ops.app.trend.peak * 100 %}",
+     "test_each_segment_height_is_its_share_of_the_axis_top"),
+
+    # F-1. `top` and `peak` are one line apart in the same dict, and BOTH
+    # existing placement fixtures pinned `peak == top`, which also made
+    # `assert 'y1="-' not in html` blind. The old row mutated to `top * 2`,
+    # which the TPD*2 fixture does separate -- so the row passed while the
+    # realistic substitution walked through.
+    ("#452/F-1: tpd_y is placed from the raw peak instead of the axis top",
+     "src/astro_ai/ops_data.py",
+     '"tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '"tpd_y": round(100 - TPD_PER_MODEL / peak * 100, 2) if top else 100,',
+     "test_the_tpd_line_is_placed_from_the_axis_top_not_the_raw_peak"),
+
+    # F-3. The only test of this decision used to `pytest.skip` on an empty
+    # store, which IS the CI condition, so both of these were unguarded there.
+    ("#452/F-3: the error-rate alert hardcodes its window",
+     "src/astro_ai/ops_data.py",
+     '''f"{app['days']} days.", "/admin/activity")''',
+     '''f"7 days.", "/admin/activity")''',
+     "test_an_app_alert_names_the_window_it_was_measured_over"),
+
+    ("#452/F-3: the provider-fail alert hardcodes its window",
+     "src/astro_ai/ops_data.py",
+     '''f"in {app['days']}d",''',
+     '''f"in 7d",''',
+     "test_an_app_alert_names_the_window_it_was_measured_over"),
+
+    ("#452/F-5: the day window is advertised as a rolling 24 hours",
+     "src/astro_ai/templates/admin_ops.html",
+     "1: 'the current day so far — a calendar day, not a rolling 24 hours',",
+     "1: 'the last 24 hours',",
+     "test_the_day_window_is_not_advertised_as_a_rolling_24_hours"),
+
+    ("#452/F-6: an empty trend chart vanishes with no statement",
+     "src/astro_ai/templates/admin_ops.html",
+     "This is an absence, not a zero", "This is a zero",
+     "test_an_empty_trend_says_so_rather_than_vanishing"),
+
+    ("#452/BUG-5: the window selector hardcodes one window",
+     "src/astro_ai/templates/admin_ops.html",
+     'href="?window={{ d }}"', 'href="?window=1"',
+     "test_the_window_selector"),
+
+    # BUG-6. The old assertion was `peak <= _nice_top(peak)` restated, so it
+    # could not fail; it now reads rendered coordinates at the boundary.
+    ("#452/BUG-6: a bar segment is drawn past the axis floor",
+     "src/astro_ai/templates/admin_ops.html",
+     '''height="{{ '%.3f'|format(h) }}"''',
+     '''height="{{ '%.3f'|format(h * 1.5) }}"''',
+     "test_no_bar_can_overflow_the_axis"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

@@ -1678,7 +1678,12 @@ def test_the_ops_page_survives_every_source_being_unreadable(monkeypatch):
     monkeypatch.setattr(ops_data, "measurements_dir", lambda: None)
     monkeypatch.setattr(ops_data, "LIVE_TODAY", True)
     monkeypatch.setattr(ops_data, "LIVE_ISSUES", True)
-    monkeypatch.setattr(ops_data, "_app_cache", None)
+    # `.clear()`, not `= None`. #419 made `_app_cache` a dict keyed by window
+    # (a single slot served window A's figures under window B's heading), so
+    # `= None` makes `_app_cache.get(days)` raise AttributeError and the page
+    # 500s -- which is the opposite of what this test asserts. Written on the
+    # pre-#419 base, caught by the merge of the two.
+    ops_data._app_cache.clear()
     ops_data._cache.clear()
     ops_data._today_cache = None
     ops_data._live_cache = None

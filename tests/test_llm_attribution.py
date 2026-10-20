@@ -265,11 +265,11 @@ def _ops_page(client, monkeypatch, tmp_path):
     monkeypatch.setattr(ops_data, "LIVE_TODAY", False)
     monkeypatch.setenv("OPS_MEASUREMENTS_DIR", str(tmp_path / "none"))
     ops_data._cache.clear()
-    ops_data._app_cache = None
+    ops_data._app_cache.clear()
     try:
         r = client.get("/admin/ops", auth=("admin", "bhagya-dev"))
     finally:
-        ops_data._app_cache = None
+        ops_data._app_cache.clear()
         ops_data._cache.clear()
     return r
 
