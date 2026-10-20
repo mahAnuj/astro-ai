@@ -1094,6 +1094,38 @@ MUTATIONS = [
      'measured["natal+payload"] = (n_en, n_hi)',
      "test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt"),
 
+    # #409: visitor text at /admin/feedback is protected by autoescape ALONE.
+    ("#409: autoescape turned off in the real environment",
+     "src/astro_ai/routes/deps.py",
+     '    autoescape=jinja2.select_autoescape(\n'
+     '        enabled_extensions=("html", "htm", "xml", "svg"),\n'
+     '        default_for_string=True,\n'
+     '        default=False,\n'
+     '    ),\n',
+     '    autoescape=False,\n',
+     "test_autoescape_is_on_for_html_templates"),
+
+    ("#409: .html dropped from the autoescape extension list",
+     "src/astro_ai/routes/deps.py",
+     'enabled_extensions=("html", "htm", "xml", "svg"),',
+     'enabled_extensions=("htm", "xml", "svg"),',
+     "test_a_quote_and_angle_brackets_cannot_leave_the_mailto_attribute"),
+
+    ("#409: |safe on the User-Agent at /admin/feedback (the field nobody mentions)",
+     "src/astro_ai/templates/admin_feedback.html",
+     "{{ e.ua }}", "{{ e.ua | safe }}",
+     "test_feedback_templates_use_no_escape_hatch_at_all"),
+
+    ("#409: |safe on the email inside the mailto: attribute",
+     "src/astro_ai/templates/admin_feedback.html",
+     'href="mailto:{{ e.email }}"', 'href="mailto:{{ e.email | safe }}"',
+     "test_no_template_renders_a_visitor_field_through_an_escape_hatch"),
+
+    ("#409: the scanner stops matching |safe (the check itself goes blind)",
+     "tests/test_autoescape_pinned.py",
+     '_UNSAFE = re.compile(r"\\|\\s*(?:safe|markup)\\b|\\bMarkup\\s*\\(")',
+     '_UNSAFE = re.compile(r"\\|\\s*(?:safe_never|markup)\\b|\\bMarkup\\s*\\(")',
+     "test_the_scanner_catches_each_escape_hatch"),
     ("#397: the /ask overlay re-asserts 'no cancelling conditions' for Nadi",
      "src/astro_ai/prompts/ask_matching.txt",
      '- Nadi is not among the Bhakoot parihāras. The exemptions the tradition records apply OUTSIDE the Madhya Nadi only and this product applies none of them — never tell a seeker whose Nadi is Madhya that one exists for their case. A slight (alpa) grade applies where pada-Nadi differs. Never invent any other Nadi condition.',
@@ -1268,6 +1300,45 @@ MUTATIONS = [
      "if split is None:",
      "if False:",
      "test_unclassifiable_commits_hedge_instead_of_guessing"),
+    # ---- #409 round 2: the SVG sink, and the header that hid behind a platform.
+    # Each anchor is executable code, never a comment -- the anchor validator
+    # exists because a dead row once pinned itself to prose.
+    ("#409: `.svg` dropped back out of the autoescape list (the XSS sink)",
+     "src/astro_ai/routes/deps.py",
+     'enabled_extensions=("html", "htm", "xml", "svg"),',
+     'enabled_extensions=("html", "htm", "xml"),',
+     "test_svg_is_autoescaped_and_text_is_not"),
+    ("#409: the seeker's NAME routed round autoescape with |safe",
+     "src/astro_ai/templates/cosmic_card.svg",
+     "{{ display_name or 'Janma Kundli' }}",
+     "{{ (display_name or 'Janma Kundli') | safe }}",
+     "test_a_script_tag_in_a_visitor_field_cannot_reach_the_cosmic_card"),
+    ("#409: the seeker's BIRTH PLACE routed round autoescape with |safe",
+     "src/astro_ai/templates/cosmic_card.svg",
+     "{{ details.birth_place }}",
+     "{{ details.birth_place | safe }}",
+     "test_a_script_tag_in_a_visitor_field_cannot_reach_the_cosmic_card"),
+    ("#409: the session-derived card made publicly cacheable again",
+     "src/astro_ai/routes/kundli_card.py",
+     '"Cache-Control": "private, max-age=3600",',
+     '"Cache-Control": "public, max-age=3600",',
+     "test_the_cosmic_card_is_not_cacheable_by_a_shared_cache"),
+    # ---- the conflict resolver's own parser, found by PR #443 x #425 --------
+    ("#443: the resolver drops a side's trailing newline (rows get absorbed)",
+     "scripts/merge_main_into_branch.py",
+     'assert side == "" or side.endswith("\\n"), "a conflict side lost its newline"',
+     'assert True',
+     "test_a_dated_union_never_absorbs_one_row_into_another"),
+    ("#443: the dirty check counts untracked files again (script can never run)",
+     "scripts/merge_main_into_branch.py",
+     'git("status", "--porcelain", "--untracked-files=no")',
+     'git("status", "--porcelain")',
+     "test_the_dirty_check_ignores_untracked_files"),
+    ("#443: a malformed hunk returns nothing instead of raising",
+     "scripts/merge_main_into_branch.py",
+     'raise RuntimeError("a conflict hunk has no `=======` separator")',
+     'return out',
+     "test_a_hunk_with_no_separator_raises_rather_than_returning_nothing"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

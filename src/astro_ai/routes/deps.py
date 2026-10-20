@@ -31,6 +31,7 @@ import time as _time
 from datetime import date
 from pathlib import Path
 
+import jinja2
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -190,7 +191,44 @@ def _asset_fingerprint(rel_path: str) -> str:
         return "0"
 
 
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+# Autoescape is PINNED here, not inherited (#409). Starlette's own default for
+# `directory=` happens to be `jinja2.select_autoescape()` — escape .html/.htm/.xml
+# — and that default is the only thing between a visitor's `<script>` in a
+# feedback `message`/`page`/`ua` and the owner's browser at /admin/feedback.
+# Nothing asserted it; a dependency bump or an `autoescape=False` would have
+# kept every gate green. tests/test_autoescape_pinned.py asserts it now.
+#
+# `.svg` IS IN THE LIST, and that is the one place this deliberately does NOT
+# reproduce the inherited behaviour. The first version of this change excluded
+# it on the reasoning that "cosmic_card.svg has always rendered unescaped and
+# changing that would alter shipped output" -- which is true, and is the bug:
+# the shipped output is a stored XSS.
+#
+# `/kundli/card` renders `display_name` and `details.birth_place` -- both typed
+# by the visitor -- into an `image/svg+xml` response. An SVG loaded as a
+# DOCUMENT executes `<script>`, so the card was a script-injection sink for
+# whoever opened it, and `select_autoescape()`'s default list is the reason:
+# it carries `xml` but not `svg`, although SVG *is* XML.
+#
+# Escaping is correct for SVG, not a compromise. It is XML, so `&amp; &lt; &gt;
+# &#34; &#39;` are the right serialisations in both text nodes and attribute
+# values, and nothing else in the file moves -- the astrological glyphs are not
+# in Jinja's escape set. It also fixes a latent rendering bug in the other
+# direction: a place name containing `&` ("Dadra & Nagar Haveli") emitted a raw
+# ampersand, which is malformed XML, so the card broke for those visitors
+# already.
+#
+# There is exactly ONE `.svg` template in this repo and all 12 of its
+# expressions are plain text nodes, so the widening was reviewed in full rather
+# than assumed safe.
+templates = Jinja2Templates(env=jinja2.Environment(
+    loader=jinja2.FileSystemLoader(str(TEMPLATES_DIR)),
+    autoescape=jinja2.select_autoescape(
+        enabled_extensions=("html", "htm", "xml", "svg"),
+        default_for_string=True,
+        default=False,
+    ),
+))
 # Expose i18n to every template as `t(key, **kwargs)`. Templates pass the
 # current `lang` (also injected per-request) into the call.
 templates.env.globals["t"] = _i18n_translate
@@ -374,9 +412,11 @@ def _lang(request: Request) -> str:
     - No CDN-cached HTML route depends on _lang, and this is now load-bearing
       rather than incidental: it is what stops a cookie-`hi` render being
       snapshotted by a shared cache and served to a cookieless visitor sitting
-      at an English URL. `routes/kundli_card.py:127` (the cosmic-card SVG) is
-      still the ONLY `public, max-age` response in the app and it still does not
-      call _lang; /panchang, /rashifal and /festivals are all `_no_cdn_cache`.
+      at an English URL. As of 2026-10-20 there is NO `public, max-age` response
+      left in the app: the cosmic-card SVG (`routes/kundli_card.py`) was the last
+      one and is now `private`, because it is session-derived. So this reason is
+      stronger than it was, not weaker. /panchang, /rashifal and /festivals are
+      all `_no_cdn_cache`; nothing cacheable by a shared cache calls _lang.
       Edge caches key on the full URL including query string anyway, so
       `?lang=hi` and the bare path cannot collide. Keep it true.
     - INVALIDATED — `base.html` emits `<link rel=canonical>` from
