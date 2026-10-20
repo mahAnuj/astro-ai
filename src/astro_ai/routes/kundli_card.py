@@ -3,10 +3,30 @@
 Owns:
     GET /kundli/card   1080×1920 SVG of the user's saved chart (issue #113)
 
-This is the ONLY route in the app that serves a ``public, max-age`` response.
-Its ``Cache-Control`` and ``Content-Disposition`` headers are part of the
-contract with the CDN and with social-platform og:image fetchers, so they are
-set by hand here and deliberately NOT routed through ``_no_cdn_cache``.
+CACHING, AND WHY IT IS ``private`` NOW
+
+This response is DERIVED FROM THE SESSION -- `load_collection(request).active`
+-- and carries the visitor's name, birth date, birth time and birth place. It
+used to be sent ``public, max-age=3600`` with no ``Vary: Cookie``.
+
+That was safe only by accident. shubhagya.com is served through Firebase
+Hosting (``firebase.json`` rewrites ``**`` to Cloud Run), and Firebase's CDN
+"automatically" makes the ``__session`` cookie "part of the cache key, meaning
+that it's impossible for two users with different cookies to receive the other's
+cached response". `session.py` names the cookie ``__session`` for the unrelated
+reason that Firebase strips every other cookie -- so the platform happened to
+key on the one cookie this app happens to use. Measured 2026-10-20: no
+cross-user leak on this edge.
+
+``public`` is still wrong, because the guarantee comes from one platform's
+cache-key rule and not from the response. Any OTHER shared cache -- a corporate
+or ISP proxy -- knows nothing about ``__session`` and would store one visitor's
+card and serve it to the next. ``private`` costs nothing: the browser still
+caches it for an hour, which is the whole point of the header, and no shared
+cache may.
+
+``Content-Disposition`` stays hand-set for social-platform og:image fetchers,
+and this route is still deliberately NOT routed through ``_no_cdn_cache``.
 
 Moved verbatim from ``main.py``; only the decorator prefix changed
 (``@app.`` → ``@router.``). Absolute imports only — nothing here may import
@@ -119,12 +139,13 @@ async def kundli_cosmic_card(request: Request) -> Response:
         manglik=manglik,
         sade_sati=sade_sati,
     )
-    # Cache for 1h since chart details rarely change; browsers + Fastly cache too.
+    # 1h in the VISITOR'S browser; no shared cache. See the module docstring --
+    # this body carries their name, birth date, time and place.
     return Response(
         content=svg,
         media_type="image/svg+xml",
         headers={
-            "Cache-Control": "public, max-age=3600",
+            "Cache-Control": "private, max-age=3600",
             "Content-Disposition": _card_content_disposition(details.name),
         },
     )

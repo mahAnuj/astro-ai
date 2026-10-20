@@ -71,8 +71,11 @@ def main() -> int:
     if result.returncode == 0 and count < EXPECTED_TESTS:
         print(f"FAIL — only {count} tests ran, expected at least {EXPECTED_TESTS}.")
         print("       Coverage vanished silently: a test renamed out of `test_*`, a")
-        print("       file no longer collected, or a deletion. If the drop is")
-        print("       deliberate, lower EXPECTED_TESTS in this file ON PURPOSE.")
+        print("       file no longer collected, or a deletion.")
+        print("       This is the ABSOLUTE backstop, so hitting it means a large drop.")
+        print("       `scripts/verify_test_floor.py` names which tests went missing;")
+        print("       read that first. Lowering this number is a last resort and")
+        print("       never a way to make a run green.")
         return 1
     print("FAIL — do not tune a test to silence it. Each one is a defect that")
     print("       shipped; a red test means it is back.")

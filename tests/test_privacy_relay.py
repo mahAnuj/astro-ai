@@ -216,6 +216,30 @@ _FORBIDDEN_IN_EVENT = [
 ]
 
 
+def _scannable(evt: dict) -> str:
+    """The event as JSON, WITHOUT its server timestamp.
+
+    `ts` is `datetime.isoformat()`, so it carries `HH:MM:SS` — and a birth time
+    is `HH:MM`. Any birth time whose minutes are a valid second count therefore
+    appears inside a legitimate timestamp once an hour, for one second, and a
+    whole-blob substring scan reads that as an identity leak.
+
+    Measured: CI run 39379764420 started at 06:21:15 UTC and failed on
+    `assert '21:15' not in blob` because `B_TIME` is `21:15`. Both fixtures
+    collide — `TIME` at `*:06:47`, `B_TIME` at `*:21:15` — so roughly two
+    seconds an hour, ~48s a day, this suite fails for no reason. It fired on a
+    merge commit and would have sent the stall loop after a phantom.
+
+    `ts` is a server clock reading and is not identity, so it is excluded rather
+    than the needles being narrowed: narrowing them is what would lose the
+    guard. Everything that could actually carry a leak — `type`, `email` and
+    every `data` field — is still scanned, and a time planted in any of those
+    still fails.
+    """
+    return json.dumps({k: v for k, v in evt.items() if k != "ts"},
+                      ensure_ascii=False)
+
+
 def _only(events_: list[dict], type_: str) -> dict:
     found = [e for e in events_ if e["type"] == type_]
     assert len(found) == 1, f"expected one {type_} event, got {events_!r}"
@@ -232,7 +256,7 @@ def test_kundli_event_keeps_analytics_and_drops_identity(
     extra = set(evt["data"]) - _ALLOWED["form_kundli"]
     assert not extra, f"form_kundli carries fields outside the allow-list: {extra}"
     assert set(evt["data"]) == _ALLOWED["form_kundli"], evt["data"]
-    blob = json.dumps(evt, ensure_ascii=False)
+    blob = _scannable(evt)
     for needle in _FORBIDDEN_IN_EVENT:
         assert needle not in blob, f"{needle!r} leaked into the event:\n{blob}"
 
@@ -255,7 +279,7 @@ def test_matching_event_keeps_scores_and_drops_identity(
     evt = _only(event_log(), "form_matching")
     assert set(evt["data"]) <= _ALLOWED["form_matching"], evt["data"]
     assert set(evt["data"]) == _ALLOWED["form_matching"], evt["data"]
-    blob = json.dumps(evt, ensure_ascii=False)
+    blob = _scannable(evt)
     for needle in _FORBIDDEN_IN_EVENT:
         assert needle not in blob, f"{needle!r} leaked into the event:\n{blob}"
     assert evt["data"]["groom_key"] != evt["data"]["bride_key"]
@@ -295,7 +319,7 @@ def test_chart_error_is_relayed_without_its_message_or_traceback(sink, event_log
         assert needle not in text, f"{needle!r} in Telegram text:\n{text}"
         assert needle not in dedup_key
     evt = _only(event_log(), "error")
-    blob = json.dumps(evt, ensure_ascii=False)
+    blob = _scannable(evt)
     for needle in ("Quillmere", "Oxfordshire", "Geocoding failed"):
         assert needle not in blob, f"{needle!r} in the recorded event:\n{blob}"
     assert evt["data"]["error_type"] == "ChartError"

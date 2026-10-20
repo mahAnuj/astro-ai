@@ -1447,6 +1447,38 @@ MUTATIONS = [
      '                "shipped_30d": shipped_30d, "per_issue_usd": None}',
      '        return {"ok": False, "rows": []}',
      "test_the_ops_page_survives_every_source_being_unreadable"),
+    # #409: visitor text at /admin/feedback is protected by autoescape ALONE.
+    ("#409: autoescape turned off in the real environment",
+     "src/astro_ai/routes/deps.py",
+     '    autoescape=jinja2.select_autoescape(\n'
+     '        enabled_extensions=("html", "htm", "xml", "svg"),\n'
+     '        default_for_string=True,\n'
+     '        default=False,\n'
+     '    ),\n',
+     '    autoescape=False,\n',
+     "test_autoescape_is_on_for_html_templates"),
+
+    ("#409: .html dropped from the autoescape extension list",
+     "src/astro_ai/routes/deps.py",
+     'enabled_extensions=("html", "htm", "xml", "svg"),',
+     'enabled_extensions=("htm", "xml", "svg"),',
+     "test_a_quote_and_angle_brackets_cannot_leave_the_mailto_attribute"),
+
+    ("#409: |safe on the User-Agent at /admin/feedback (the field nobody mentions)",
+     "src/astro_ai/templates/admin_feedback.html",
+     "{{ e.ua }}", "{{ e.ua | safe }}",
+     "test_feedback_templates_use_no_escape_hatch_at_all"),
+
+    ("#409: |safe on the email inside the mailto: attribute",
+     "src/astro_ai/templates/admin_feedback.html",
+     'href="mailto:{{ e.email }}"', 'href="mailto:{{ e.email | safe }}"',
+     "test_no_template_renders_a_visitor_field_through_an_escape_hatch"),
+
+    ("#409: the scanner stops matching |safe (the check itself goes blind)",
+     "tests/test_autoescape_pinned.py",
+     '_UNSAFE = re.compile(r"\\|\\s*(?:safe|markup)\\b|\\bMarkup\\s*\\(")',
+     '_UNSAFE = re.compile(r"\\|\\s*(?:safe_never|markup)\\b|\\bMarkup\\s*\\(")',
+     "test_the_scanner_catches_each_escape_hatch"),
     ("#397: the /ask overlay re-asserts 'no cancelling conditions' for Nadi",
      "src/astro_ai/prompts/ask_matching.txt",
      '- Nadi is not among the Bhakoot parihāras. The exemptions the tradition records apply OUTSIDE the Madhya Nadi only and this product applies none of them — never tell a seeker whose Nadi is Madhya that one exists for their case. A slight (alpa) grade applies where pada-Nadi differs. Never invent any other Nadi condition.',
@@ -1650,6 +1682,113 @@ MUTATIONS = [
      '"User-Agent": _UA,',
      "",
      "test_the_request_carries_a_user_agent_and_the_token_when_set"),
+    # ---- #442: the steward can dispatch, and a merge is not a refix ---------
+    ("#442: the carrier stops refusing a lenient dispatch line",
+     "scripts/dispatch_cycle.sh",
+     "grep -oE '^issue=[0-9]+$'",
+     "grep -oE 'issue=[0-9]+'",
+     "test_anything_but_issue_equals_digits_is_refused"),
+    ("#442: the carrier stops treating an unreadable concurrency check as busy",
+     "scripts/dispatch_cycle.sh",
+     'if [ "$busy" != "0" ]; then',
+     'if [ "$busy" = "1" ]; then',
+     "test_an_unreadable_concurrency_check_counts_as_busy"),
+    ("#442: the carrier dispatches at a closed issue",
+     "scripts/dispatch_cycle.sh",
+     'if [ "$state" != "OPEN" ]; then',
+     'if [ "$state" = "NEVER" ]; then',
+     "test_a_closed_issue_is_refused"),
+    ("#442: a merge after the verdict is called a fix again",
+     "scripts/detect_stalls.py",
+     "elif split[0] == 0 and split[1] > 0:",
+     "elif False:",
+     "test_a_merge_after_the_verdict_is_not_a_refix"),
+    ("#442: merge-ness read from the message instead of the parent count",
+     "scripts/detect_stalls.py",
+     'if int(meta.get("parents", 1)) > 1:',
+     'if (c.get("messageHeadline") or "").startswith("Merge"):',
+     "test_merge_ness_comes_from_parent_count_not_the_message"),
+    ("#442: unclassifiable commits assert a fix instead of hedging",
+     "scripts/detect_stalls.py",
+     "if split is None:",
+     "if False:",
+     "test_unclassifiable_commits_hedge_instead_of_guessing"),
+    # ---- #409 round 2: the SVG sink, and the header that hid behind a platform.
+    # Each anchor is executable code, never a comment -- the anchor validator
+    # exists because a dead row once pinned itself to prose.
+    ("#409: `.svg` dropped back out of the autoescape list (the XSS sink)",
+     "src/astro_ai/routes/deps.py",
+     'enabled_extensions=("html", "htm", "xml", "svg"),',
+     'enabled_extensions=("html", "htm", "xml"),',
+     "test_svg_is_autoescaped_and_text_is_not"),
+    ("#409: the seeker's NAME routed round autoescape with |safe",
+     "src/astro_ai/templates/cosmic_card.svg",
+     "{{ display_name or 'Janma Kundli' }}",
+     "{{ (display_name or 'Janma Kundli') | safe }}",
+     "test_a_script_tag_in_a_visitor_field_cannot_reach_the_cosmic_card"),
+    ("#409: the seeker's BIRTH PLACE routed round autoescape with |safe",
+     "src/astro_ai/templates/cosmic_card.svg",
+     "{{ details.birth_place }}",
+     "{{ details.birth_place | safe }}",
+     "test_a_script_tag_in_a_visitor_field_cannot_reach_the_cosmic_card"),
+    ("#409: the session-derived card made publicly cacheable again",
+     "src/astro_ai/routes/kundli_card.py",
+     '"Cache-Control": "private, max-age=3600",',
+     '"Cache-Control": "public, max-age=3600",',
+     "test_the_cosmic_card_is_not_cacheable_by_a_shared_cache"),
+    # ---- the conflict resolver's own parser, found by PR #443 x #425 --------
+    # RE-TARGETED. This row used to replace the newline ASSERTION with
+    # `assert True` -- and that assertion is a guard, not the mechanism:
+    # `hunks()` is line-based and preserves newlines structurally, so removing
+    # the assert changes no behaviour and no test could possibly catch it. The
+    # row reported MISSED the first time the fast-path harness ran it, and under
+    # the old harness it would have been MISSED too and nobody looked.
+    #
+    # A mutation must break the BEHAVIOUR the test asserts. `splitlines(True)`
+    # is what keeps each row a row; without keepends every row in the hunk
+    # collapses into one, which is exactly the defect that shipped into
+    # ARCHITECTURE.md on 2026-10-20.
+    ("#443: the dated union stops keeping line endings (rows get absorbed)",
+     "scripts/merge_main_into_branch.py",
+     "both = (theirs + ours).splitlines(True)",
+     "both = (theirs + ours).splitlines()",
+     "test_a_dated_union_never_absorbs_one_row_into_another"),
+    ("#443: the dirty check counts untracked files again (script can never run)",
+     "scripts/merge_main_into_branch.py",
+     'git("status", "--porcelain", "--untracked-files=no")',
+     'git("status", "--porcelain")',
+     "test_the_dirty_check_ignores_untracked_files"),
+    ("#443: a malformed hunk returns nothing instead of raising",
+     "scripts/merge_main_into_branch.py",
+     'raise RuntimeError("a conflict hunk has no `=======` separator")',
+     'return out',
+     "test_a_hunk_with_no_separator_raises_rather_than_returning_nothing"),
+    # ---- #446: the derived test-count floor ---------------------------------
+    ("#446: the floor compares against LOCAL main again (passes 543 >= 0)",
+     "scripts/verify_test_floor.py",
+     'base = git("merge-base", "HEAD", "origin/main").strip()',
+     'base = git("merge-base", "HEAD", "main").strip()',
+     "test_it_never_compares_against_local_main"),
+    ("#446: a vanished test is no longer reported as missing",
+     "scripts/verify_test_floor.py",
+     "gone = sorted(before - head)",
+     "gone = sorted(head - before)",
+     "test_a_deleted_file_fails_and_names_every_test"),
+    ("#446: any drop is accepted, declared or not",
+     "scripts/verify_test_floor.py",
+     "    if reason:",
+     "    if True:",
+     "test_a_declared_drop_needs_the_trailer_not_just_the_words"),
+    ("#446: a missing tests/ directory reads as a pass",
+     "scripts/verify_test_floor.py",
+     'print(f"COULD NOT RUN (exit 2) — no {TESTS}/ directory. This is NOT a pass.")\n        return 2',
+     'return 0',
+     "test_a_missing_tests_directory_exits_2_not_0"),
+    ("#446: a class method that disappears is not counted",
+     "scripts/verify_test_floor.py",
+     'elif isinstance(node, ast.ClassDef) and node.name.startswith("Test"):',
+     "elif False:",
+     "test_a_method_removed_from_a_test_class_fails"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -1770,16 +1909,56 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
         if source.count(old) != 1:
             return False, f"ANCHOR MISSED ({source.count(old)})"
         target.write_text(source.replace(old, new))
-        result = subprocess.run(
-            [sys.executable, "-m", "pytest", str(sandbox / "tests"), "-q", "--no-header"],
-            capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
-        )
+
+        def _pytest(*extra: str) -> subprocess.CompletedProcess:
+            return subprocess.run(
+                [sys.executable, "-m", "pytest", str(sandbox / "tests"),
+                 "-q", "--no-header", *extra],
+                capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
+            )
+
+        def _red(r: subprocess.CompletedProcess) -> bool:
+            """A real assertion failure, not a collection error.
+
+            A non-zero exit from a collection error looks like a catch and is
+            worth nothing, which is why this reads the output and not just the
+            code. pytest exits 5 on "no tests matched", which is neither.
+            """
+            return r.returncode not in (0, 5) and (
+                "FAILED" in r.stdout or "failed" in r.stdout)
+
+        # EVERY ROW ALREADY NAMES THE TEST THAT MUST CATCH IT, so run that test
+        # and not the other 766. Measured 2026-10-20 on this tree: one named
+        # test is 0.34s against 19.5s for the whole suite, and this step was
+        # 80% of every pr-gates run (1054s and 673s on two consecutive runs,
+        # 191 rows x a full suite / 4 workers).
+        #
+        # It is also a STRICTER question than the one asked before. "The suite
+        # goes red" and "THIS test goes red" are different claims, and each row
+        # asserts the second -- the `test` field is not decoration, the
+        # GUARD GONE check above already treats it as load-bearing.
+        #
+        # So the fast path can only ever CONFIRM a catch. It can never create a
+        # failure, because a named test that stays green falls through to the
+        # full suite below, exactly as before.
+        if test and test != "_control":
+            fast = _pytest("-k", test.split("[", 1)[0])
+            if _red(fast):
+                return True, "CAUGHT"
+
+        # Reached when the named test did not catch it, or for the control row,
+        # which must see the whole suite or it would stop being a control.
+        result = _pytest()
         if result.returncode == 0:
             return False, "*** MISSED ***"
-        # A non-zero exit from a collection error would look like a catch and
-        # be worth nothing, so require an actual assertion failure.
-        if "FAILED" not in result.stdout and "failed" not in result.stdout:
+        if not _red(result):
             return False, f"NON-TEST FAILURE rc={result.returncode}"
+        if test and test != "_control":
+            # NEW INFORMATION, and it was invisible before: something caught the
+            # mutation but not the test this row names. The row still counts as
+            # caught -- the defect cannot escape -- but its `test` field is
+            # wrong, and a wrong field is what the GUARD GONE check cannot see.
+            return True, "CAUGHT BY ANOTHER TEST — row names `" + test + "`"
         return True, "CAUGHT"
 
 
@@ -1886,8 +2065,16 @@ for i, (label, _rel, _old, _new, _test) in enumerate(_work):
 print(f"{'mutation':<58} {'verdict'}")
 print("-" * 76)
 bad = 0
+mispointed: list[str] = []
 for label, verdict in rows:
-    if verdict != "CAUGHT":
+    if verdict.startswith("CAUGHT BY ANOTHER TEST"):
+        # CAUGHT, so it does NOT count as bad: the defect cannot escape, which
+        # is what this harness is for. What is wrong is the row's `test` field,
+        # and that is reported separately below rather than turning the gate
+        # red -- a speed change may not invent failures, or nobody will trust
+        # the number it prints.
+        mispointed.append(f"{label} -> {verdict}")
+    elif verdict != "CAUGHT":
         bad += 1
     print(f"  {label:<56} {verdict}")
 print()
@@ -1898,6 +2085,14 @@ real = len(rows) - 1
 caught = real - (bad - 1)
 print(f"{caught}/{real} mutations caught")
 print("repository untouched: mutations run in a temporary copy")
+if mispointed:
+    print()
+    print(f"{len(mispointed)} row(s) are MIS-POINTED: the mutation was caught, but not by")
+    print("the test the row names. The protection is real; the bookkeeping is wrong,")
+    print("and until 2026-10-20 this was invisible because every row ran the whole")
+    print("suite and any failure read as CAUGHT.")
+    for line in mispointed:
+        print(f"  - {line}")
 if not control_ok:
     print()
     print("CONTROL FAILED — the sandbox reports CAUGHT for an edit that changes")
