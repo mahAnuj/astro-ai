@@ -1094,7 +1094,6 @@ MUTATIONS = [
      'measured["natal+payload"] = (n_en, n_hi)',
      "test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt"),
 
-<<<<<<< HEAD
     ("#397: the /ask overlay re-asserts 'no cancelling conditions' for Nadi",
      "src/astro_ai/prompts/ask_matching.txt",
      '- Nadi is not among the Bhakoot parihāras. The exemptions the tradition records apply OUTSIDE the Madhya Nadi only and this product applies none of them — never tell a seeker whose Nadi is Madhya that one exists for their case. A slight (alpa) grade applies where pada-Nadi differs. Never invent any other Nadi condition.',
@@ -1218,7 +1217,6 @@ MUTATIONS = [
      "  <div class=\"callout-label\">Nadi Dosh is graded, not cancelled</div>\n"
      "  <p>Nadi can never be cancelled or waived by anything.</p>",
      "test_a_nadi_absolute_cannot_return_in_a_third_phrasing"),
-=======
     # ---- The gate that printed PASS against thirteen HTTP 500s. Every row
     # ---- below removes one of the three guards and must turn the suite red.
 
@@ -1239,7 +1237,6 @@ MUTATIONS = [
      '        if not text.strip():',
      '        if False:',
      "test_an_empty_main_is_not_a_pass"),
->>>>>>> origin/main
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
