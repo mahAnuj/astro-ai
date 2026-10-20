@@ -31,6 +31,31 @@ on:
     # before the 23:00 dispatch. A stall caught within half a day is the point;
     # catching it within the hour would mostly catch normal operation.
     - cron: "0 9,15 * * *"
+  # REACT, DO NOT ONLY POLL. A verdict recorded at 09:05 waited until 15:00 for
+  # anything to notice, and the twice-daily cron plus "one dispatch per run"
+  # means four stalls take two days to work through. `agent-work` finishing is
+  # the moment a verdict is most likely to have just been written, so it is the
+  # moment worth checking.
+  #
+  # WHY `workflow_run` AND NOT `pull_request: [labeled]`, which is the obvious
+  # choice and does not work. The loop labels with `${{ github.token }}`, and
+  # GitHub SUPPRESSES workflow-triggering events from GITHUB_TOKEN. This
+  # repository has already paid for that lesson once -- it is the
+  # `no-checks-ever (mergeable)` case, a PR "created by an actor whose events
+  # GitHub suppresses" -- so a `labeled` trigger would fire for a label a human
+  # applies and never for one the loop applies, which is the case it would be
+  # built for. Wiring that reports present and never fires is #421 exactly.
+  #
+  # `workflow_run` fires regardless of the triggering actor, which is the whole
+  # reason this is the shape chosen.
+  #
+  # Bounded on purpose: `agent-work` runs about once a day, so this adds about
+  # one steward run a day (~2.5 minutes, under a minute when nothing is found).
+  # NOT wired to `pr-gates`, which completes on every push to every PR and would
+  # queue steward runs behind the `agent-steward` concurrency group all day.
+  workflow_run:
+    workflows: ["agent-work"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       hours:
@@ -80,14 +105,20 @@ jobs:
       - name: Is anything actually stuck?
         id: detect
         env:
+          STALL_HOURS: ${{ github.event.inputs.hours || '4' }}
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
           # Timestamped BEFORE the agent runs, so "did anything happen" compares
           # against the right instant rather than against the whole day.
           echo "started=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          # Through `env:`, not interpolated. `workflow_run` is a PRIVILEGED
+          # trigger -- repo-write permissions and secrets -- so a `${{ }}` in a
+          # run block is substituted before bash parses the line and becomes
+          # shell injection. scripts/verify_workflows.py refused this change
+          # until it was fixed, which is the gate doing its job (#358).
           uv run python scripts/detect_stalls.py \
-            --hours "${{ github.event.inputs.hours || '4' }}" --json > /tmp/stalls.txt 2>&1
+            --hours "${STALL_HOURS:-4}" --json > /tmp/stalls.txt 2>&1
           code=$?
           set -e
           cat /tmp/stalls.txt
@@ -375,19 +406,27 @@ jobs:
       # this entire loop exists to catch, so it must not commit it.
       - name: Report
         if: always()
+        env:
+          # Same reason as the detect step: a privileged trigger makes every
+          # `${{ }}` in a run block an injection point, so all four values this
+          # block needs arrive through the environment and are expanded quoted.
+          STALLED: ${{ steps.detect.outputs.stalled }}
+          ACTED_OK: ${{ steps.acted.outputs.ok }}
+          SERVER_URL: ${{ github.server_url }}
+          REPO_SLUG: ${{ github.repository }}
         run: |
           {
             echo "### Steward"
-            if [ "${{ steps.detect.outputs.stalled }}" = "true" ]; then
+            if [ "${STALLED:-}" = "true" ]; then
               echo "Detector reported a stall; the steward was woken. Its diagnosis is on the issues and PRs it names."
-              if [ "${{ steps.acted.outputs.ok }}" = "false" ]; then
+              if [ "${ACTED_OK:-}" = "false" ]; then
                 echo ""
                 echo "**The steward produced no action, so chief was woken.**"
                 if [ -n "${DISPATCHED:-}" ]; then
                   # "carried out" is now only ever printed for a run this job
                   # watched start AND saw still running 90s later. See #421 for
                   # what this sentence used to mean.
-                  echo "chief ruled a dispatch and it was carried out: \`agent-work\` at #${DISPATCHED} ([run ${DISPATCHED_RUN:-?}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${DISPATCHED_RUN:-}))."
+                  echo "chief ruled a dispatch and it was carried out: \`agent-work\` at #${DISPATCHED} ([run ${DISPATCHED_RUN:-?}](${SERVER_URL}/${REPO_SLUG}/actions/runs/${DISPATCHED_RUN:-}))."
                 else
                   echo "chief recorded no dispatch — either it ruled the stalls un-dispatchable, or the guard refused. Its ruling is a comment on the PRs named above."
                 fi
