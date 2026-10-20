@@ -262,6 +262,38 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
    "9h ago" does. Amber once a daily collection has been missed. */
 .age{font-family:var(--mono);font-size:12px;color:var(--ink-mute);letter-spacing:.02em}
 .age.stale{color:var(--open)}
+/* Window filter. Sits in an <h2> beside .lbl, so it inherits nothing from the
+   heading's weight — every state is declared. The selected one is the only
+   one that gets ink; the rest read as what you could switch to. */
+.winsel{display:inline-flex;gap:1px;margin-left:9px;vertical-align:middle;
+  border:1px solid var(--line-2);border-radius:5px;overflow:hidden}
+.win{font:600 10px/1 Manrope,sans-serif;letter-spacing:.07em;text-transform:uppercase;
+  padding:4px 8px;color:var(--ink-mute);text-decoration:none;background:transparent}
+.win:hover{color:var(--ink);background:var(--line-2)}
+.win.on{color:var(--night);background:var(--ink)}
+.win:focus-visible{outline:2px solid var(--open);outline-offset:-2px}
+/* Token trend. The SVG is stretched by viewBox, so every stroke would scale
+   with it — hence no strokes on the bars and vector-effect on the one line. */
+.trend{margin-top:4px}
+.trendsvg{display:block;width:100%;height:132px;background:
+  linear-gradient(to top,transparent 0,transparent 24.5%,var(--line-2) 24.5%,var(--line-2) 25.5%,
+  transparent 25.5%,transparent 49.5%,var(--line-2) 49.5%,var(--line-2) 50.5%,
+  transparent 50.5%,transparent 74.5%,var(--line-2) 74.5%,var(--line-2) 75.5%,transparent 75.5%)}
+.tb{shape-rendering:crispEdges}
+.tb.f0{fill:var(--shipped)} .tb.f1{fill:var(--open)} .tb.f2{fill:#6f8fd0}
+.tb.f3{fill:#b07fc7} .tb.f4{fill:#4fa3a8} .tb.f5{fill:#c9a227} .tb.f6{fill:var(--nothing)}
+.tpdline{stroke:var(--failed);stroke-width:1;stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
+.trendx{display:flex;margin-top:5px}
+.trendx span{flex:1;text-align:center;font:400 9px/1 "JetBrains Mono",ui-monospace,monospace;
+  color:var(--ink-mute);overflow:hidden;white-space:nowrap}
+.trendleg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:9px;
+  font:600 10px/1 Manrope,sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.lg{display:inline-flex;align-items:center;gap:5px;color:var(--ink)}
+.sw{width:9px;height:9px;border-radius:2px;display:inline-block}
+.sw.f0{background:var(--shipped)} .sw.f1{background:var(--open)} .sw.f2{background:#6f8fd0}
+.sw.f3{background:#b07fc7} .sw.f4{background:#4fa3a8} .sw.f5{background:#c9a227}
+.sw.f6{background:var(--nothing)}
+.sw.tpdsw{background:repeating-linear-gradient(90deg,var(--failed) 0 3px,transparent 3px 5px);border-radius:0}
 /* `live` is a state, not an age, so it gets a dot rather than a colour of its
    own — three panels with three different freshness stories (live, live,
    and a snapshot that CANNOT be live) have to be comparable at a glance.
@@ -590,21 +622,30 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
 
   {# ── Tiles. Every one opens the rows behind it. ─────────────────────── #}
   <section class="tiles">
-    <button class="tile" data-drill="today-shipped">
+    {#- The three "today" tiles are LIVE, the ribbon below them is not. Each
+        one says which, because a zero from an unreachable API and a zero from
+        a quiet day are the same glyph. On 2026-10-18 all three read 0 from a
+        three-day-old file while five loop runs had failed. -#}
+    <button class="tile" data-drill="today-shipped" {{ '' if L.today_shipped else 'disabled' }}>
       <span class="caret">▸</span><span class="lbl">Shipped today</span>
-      <span class="v"><span class="num c-shipped">{{ L.today_shipped|length }}</span></span>
-      <span class="foot">merged to main, {{ ops.today_ist }}<br>
-        <span class="age {{ 'stale' if ops.ages.Delivery.stale }}">as of {{ ops.ages.Delivery.text }}</span></span>
+      <span class="v"><span class="num c-shipped">{{ '\u2265' if L.shipped_truncated }}{{ L.today_shipped|length }}</span></span>
+      <span class="foot">PRs merged, {{ ops.today_ist }}<br>
+        {% if L.today_live %}<span class="age">live{% if L.shipped_truncated %}, at least{% endif %}</span>
+        {% else %}<span class="age {{ 'stale' if ops.ages.Delivery.stale }}">as of {{ ops.ages.Delivery.text }}</span>{% endif %}</span>
     </button>
     <button class="tile" data-drill="today-filed" {{ '' if I.filed_today else 'disabled' }}>
       <span class="caret">▸</span><span class="lbl">Filed today</span>
       <span class="v"><span class="num">{{ I.filed_today|length }}</span></span>
-      <span class="foot">new issues opened</span>
+      <span class="foot">new issues opened<br>
+        {% if I.live %}<span class="age">live</span>
+        {% else %}<span class="age {{ 'stale' if ops.ages.Backlog.stale }}">as of {{ ops.ages.Backlog.text }}</span>{% endif %}</span>
     </button>
-    <button class="tile" data-drill="today-failed">
+    <button class="tile" data-drill="today-failed" {{ '' if L.today_failed else 'disabled' }}>
       <span class="caret">▸</span><span class="lbl">Failed today</span>
-      <span class="v"><span class="num {{ 'c-failed' if L.today_failed else 'c-nothing' }}">{{ L.today_failed|length }}</span></span>
-      <span class="foot">cycles that did not deliver</span>
+      <span class="v"><span class="num {{ 'c-failed' if L.today_failed else 'c-nothing' }}">{{ '\u2265' if L.failed_truncated }}{{ L.today_failed|length }}</span></span>
+      <span class="foot">loop runs that did not finish<br>
+        {% if L.today_live %}<span class="age">live{% if L.failed_truncated %}, at least{% endif %}</span>
+        {% else %}<span class="age {{ 'stale' if ops.ages.Delivery.stale }}">agent-work only, as of {{ ops.ages.Delivery.text }}</span>{% endif %}</span>
     </button>
     <button class="tile" data-drill="backlog">
       <span class="caret">▸</span><span class="lbl">Open backlog</span>
@@ -629,6 +670,27 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
   <section class="panel">
     <h2>Token budget
       <span class="lbl">last {{ ops.app.days }} d · {{ "{:,}".format(ops.tpm_per_model) }} TPM per model</span>
+      {#- The window filter. Plain links, not JS: the figures are computed
+          server-side from a different span of GCS blobs, so there is nothing
+          in the page for a script to re-filter. A link also makes the window
+          bookmarkable and shareable, which a toggle does not.
+          30 is the ceiling -- events.EVENT_RETENTION_DAYS. -#}
+      <span class="winsel" role="group" aria-label="Token budget window">
+        {%- for d in ops.app_windows %}
+        <a href="?window={{ d }}" class="win{{ ' on' if d == ops.app_days }}"
+           {% if d == ops.app_days %}aria-current="true"{% endif %}
+           {#- CALENDAR DAYS, NOT A ROLLING WINDOW. `events.error_breakdown` and
+               `llm_stats` both build `[today - timedelta(days=i) for i in
+               range(days)]` from `date.today()`, so `window=1` is the current
+               server day SO FAR -- at 00:30 UTC it is thirty minutes of data,
+               and calling it "the last 24 hours" overstated it by up to 48x on
+               the one panel whose job is to size a budget. -#}
+           title="{{ {1: 'the current day so far — a calendar day, not a rolling 24 hours',
+                      7: 'the last 7 calendar days, today included and still filling',
+                      30: 'the last 30 calendar days — the event-retention ceiling'}[d] }}"
+           >{{ {1: 'day', 7: 'week', 30: 'month'}[d] }}</a>
+        {%- endfor %}
+      </span>
       {% if ops.app.measured %}<span class="age live"
             title="read from this app's own GCS stores on the request, 60 s cache">live</span>{% endif %}
       {% if ops.app.store_is_local %}<span class="age stale" style="margin-left:7px"
@@ -657,6 +719,11 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
            recovered and the visitor got their reading. These are the times it
            did not. Per feature, because "something broke 97 times" and
            "rashifal broke 97 times" are different instructions. #}
+        {#- Exact, not a floor: these come from the same uncapped walk as the
+            total and the rate. An earlier version read them off a capped
+            sample and marked them ≥, which cannot mark a zero -- so a
+            window holding 300 provider failures behind 500 newer 429s
+            printed 0 here and raised no alert. -#}
         <div><span>features broken by the budget — visitor saw an error</span>
           <b class="mono {{ 'c-failed' if ops.app.budget_breaks_total }}">{{ ops.app.budget_breaks_total }}</b></div>
         {% for feature, n in ops.app.budget_breaks %}
@@ -675,6 +742,76 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
             <span style="font-weight:400;color:var(--ink-mute)">· {{ ops.app.peak_day_pct }}% of a day's
             bucket</span>{% else %}—{% endif %}</b></div>
       </div>
+
+      {#- ── Token trend, by feature ──────────────────────────────────────
+           A STACK, not lines. The question this panel answers is "how much of
+           the budget did a DAY consume", and that is the sum; lines would show
+           six shapes and hide the only number with a ceiling. Each bar's
+           segments are ordered by the feature's rank over the WHOLE window, so
+           a colour means the same thing on every bar.
+           Server-rendered SVG, no chart library: the data is already in the
+           page and a dependency here would ship to every admin render. -#}
+      {% if not ops.app.trend.ok %}
+      {#- SAY SO. `_token_trend` returns `ok: False` for a window with no tokens
+          -- deliberately, because a chart of zeroes reads as "we spent nothing"
+          rather than "nothing recorded". But the whole block then disappeared
+          with no statement, so the reader could not tell a quiet window from a
+          chart that had broken, on a panel that otherwise says `live`. -#}
+      <h3 class="lbl" style="margin:22px 0 10px">Tokens per day, by feature</h3>
+      <div class="empty">No per-day token figures in this window, so there is no
+        chart. This is an absence, not a zero: a flat chart would read as
+        &ldquo;nothing was spent&rdquo;.</div>
+      {% endif %}
+      {% if ops.app.trend.ok %}
+      <h3 class="lbl" style="margin:22px 0 10px">Tokens per day, by feature
+        <span style="font-weight:400;color:var(--ink-mute);text-transform:none;letter-spacing:0">
+          — total (input + output), the figure the limit counts</span></h3>
+      <div class="trend">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="trendsvg"
+             role="img" aria-label="Daily token use by feature over the last {{ ops.app.trend.days }} days">
+          {%- set n = ops.app.trend.series|length %}
+          {%- set bw = 100 / n %}
+          {%- for s in ops.app.trend.series %}
+            {%- set x = loop.index0 * bw %}
+            {%- set ns = namespace(acc=0) %}
+            {%- for f in ops.app.trend.features %}
+              {%- set v = s.by_feature.get(f, 0) %}
+              {%- if v > 0 %}
+                {%- set h = v / ops.app.trend.top * 100 %}
+                {%- set ns.acc = ns.acc + h %}
+          <rect x="{{ '%.3f'|format(x + bw * 0.14) }}" width="{{ '%.3f'|format(bw * 0.72) }}"
+                y="{{ '%.3f'|format(100 - ns.acc) }}" height="{{ '%.3f'|format(h) }}"
+                class="tb f{{ loop.index0 }}"><title>{{ s.full_date }} · {{ f }}: {{ "{:,}".format(v) }}</title></rect>
+              {%- endif %}
+            {%- endfor %}
+          {%- endfor %}
+          {#- The per-MODEL daily bucket. A reference, not a ceiling for this
+              stack: the stack is the whole chain across every model, the same
+              caveat `peak_day_pct` carries. -#}
+          {%- if ops.app.trend.tpd_visible %}
+          <line x1="0" x2="100" y1="{{ ops.app.trend.tpd_y }}" y2="{{ ops.app.trend.tpd_y }}" class="tpdline"/>
+          {%- endif %}
+        </svg>
+        <div class="trendx">
+          {%- for s in ops.app.trend.series %}
+          <span title="{{ s.full_date }} — {{ "{:,}".format(s.total) }} tokens">{{ s.date }}</span>
+          {%- endfor %}
+        </div>
+        <div class="trendleg">
+          {%- for f in ops.app.trend.features %}
+          <span class="lg"><i class="sw f{{ loop.index0 }}"></i>{{ f }}</span>
+          {%- endfor %}
+          {%- if ops.app.trend.tpd_visible %}
+          <span class="lg"><i class="sw tpdsw"></i>{{ "{:,}".format(ops.app.trend.tpd) }} TPD · one model</span>
+          {%- endif %}
+          <span class="lg" style="color:var(--ink-mute)">peak {{ "{:,}".format(ops.app.trend.peak) }}/day</span>
+        </div>
+        {%- if ops.app.trend.grouped %}
+        <p class="sub" style="margin:6px 0 0">&ldquo;other&rdquo; groups {{ ops.app.trend.grouped|join(', ') }}
+          — grouped, never dropped: the stack still sums to the day&rsquo;s total.</p>
+        {%- endif %}
+      </div>
+      {% endif %}
 
       <h3 class="lbl" style="margin:22px 0 10px">Tokens per request, by feature</h3>
       <div class="tscroll" role="region" aria-label="Tokens per request, by feature"><table class="rt cols7">
@@ -1050,8 +1187,12 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         {% else %}
         <div class="kv">
           <div><span>LLM calls</span><b class="mono">{{ "{:,}".format(ops.app.calls) }}</b></div>
+          {#- The count and the rate are both exact: `errors` comes from the
+              uncapped `counts_by_type`, not from the capped `recent` sample.
+              The threshold comes from ERROR_RATE_RED through `client`, never a
+              literal, so the cell and the alert strip cannot disagree. -#}
           <div><span>error events</span>
-            <b class="mono {{ 'c-failed' if ops.app.error_rate and ops.app.error_rate >= 5 }}">{{ ops.app.errors }} · {{ ops.app.error_rate }}%</b></div>
+            <b class="mono {{ 'c-failed' if ops.app.error_rate and ops.app.error_rate >= ops.error_rate_red }}">{{ "{:,}".format(ops.app.errors) }} · {{ ops.app.error_rate }}%</b></div>
           <div><span>every provider failed</span>
             <b class="mono {{ 'c-failed' if ops.app.exhausted }}">{{ ops.app.exhausted }}</b></div>
           <div><span>needed a retry or a 2nd provider</span>
@@ -1222,6 +1363,27 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           '<div class="meta">' + esc(bits.join(" \u00b7 ")) + "</div>" +
           '<div class="links">' + ls.join("") + "</div></div>";
       }
+      /* A merged PR. The live "shipped today" rows are PRs, not cycles: the
+         unit was always the PR (collect_loop_measurements.py says to count
+         distinct `pr` values), and counting PRs also catches one a human
+         merged, which the cycle-shaped number dropped. */
+      if (kind === "pr") {
+        return '<div class="item row">' +
+          '<div class="r1"><span class="chip shipped">merged</span>' +
+          '<span class="t">PR #' + r.pr + " " + esc(r.title) + "</span></div>" +
+          '<div class="meta">' + esc(String(r.merged_at || "").replace("T", " ").replace("Z", " UTC")) + "</div>" +
+          '<div class="links">' + link(REPO + "/pull/" + r.pr, "PR diff &rarr;") + "</div></div>";
+      }
+      /* A loop run that did not finish. Spans every leg, not just agent-work:
+         on 2026-10-18 every failure of the day was `agent-measure`, which the
+         agent-work-only source could not represent at any freshness. */
+      if (kind === "run") {
+        return '<div class="item row">' +
+          '<div class="r1"><span class="chip failed">' + esc(r.conclusion) + "</span>" +
+          '<span class="t">' + esc(r.workflow) + "</span></div>" +
+          '<div class="meta">' + esc(String(r.started || "").replace("T", " ").replace("Z", " UTC")) + "</div>" +
+          '<div class="links">' + link(REPO + "/actions/runs/" + r.run, "run log &rarr;") + "</div></div>";
+      }
       var chips = "";
       if (r.priority && r.priority !== "unset") chips += '<span class="chip ' + esc(r.priority) + '">' + esc(r.priority) + "</span>";
       if (r.blocked) chips += '<span class="chip blocked">blocked</span>';
@@ -1262,12 +1424,22 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
 
   /* Tiles ---------------------------------------------------------------- */
   var TILES = {
-    "today-shipped": ["shipped today", "Cycles that merged to main today",
-                      function () { return D.today_shipped; }, "cycle"],
-    "today-filed":   ["filed today", "Issues opened today",
+    /* The row SHAPE follows the source: live tiles carry PRs and runs, the
+       snapshot fallback carries attributed cycles. `D.today_live` decides,
+       because a renderer that sniffed the first row would pick wrongly on an
+       empty list — which is the common case and the one that matters. */
+    "today-shipped": [D.today_live ? "shipped today, live" : "shipped today",
+                      "Pull requests merged today",
+                      function () { return D.today_shipped; },
+                      D.today_live ? "pr" : "cycle"],
+    "today-filed":   [D.filed_live ? "filed today, live" : "filed today",
+                      "Issues opened today",
                       function () { return D.filed_today; }, "issue"],
-    "today-failed":  ["failed today", "Cycles that did not deliver today",
-                      function () { return D.today_failed; }, "cycle"],
+    "today-failed":  [D.today_live ? "failed today, live" : "failed today",
+                      D.today_live ? "Loop runs that did not finish today"
+                                   : "Agent-work cycles that did not deliver today",
+                      function () { return D.today_failed; },
+                      D.today_live ? "run" : "cycle"],
     "backlog":       ["backlog", "Every open issue, highest priority first",
                       function () {
                         var rank = { high: 0, medium: 1, low: 2, unset: 3 };

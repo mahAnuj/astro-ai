@@ -1050,6 +1050,137 @@ MUTATIONS = [
      "",
      "test_a_copied_marker_in_someone_elses_comment_does_not_suppress_the_stop"),
 
+    ("#396: a provider that omits prompt_tokens_details is recorded as a measured 0 (absent -> zero)",
+     "src/astro_ai/providers.py",
+     'cached = getattr(details, "cached_tokens", None)',
+     'cached = getattr(details, "cached_tokens", 0)',
+     "test_a_provider_that_does_not_report_is_absent_never_zero"),
+
+    ("#396: chat() stops resetting the prefix figure before each call (provider A's cached count leaks to B)",
+     "src/astro_ai/providers.py",
+     "                _last_prefix.set(None)\n",
+     "",
+     "test_chat_resets_the_figure_before_each_call_so_a_stub_cannot_inherit_it"),
+
+    # --- #396 follow-up: classifying a SILENCE. Groq sends no cache figure at
+    # all on a miss, so "absent" means either "this model cannot report" or
+    # "this model reported nothing". Only the first is unmeasurable. Each row
+    # below collapses that distinction in one direction or the other -- the
+    # first four inflate the saving, the fifth invents one.
+    ("#396: a junk cache figure discards the prompt size too (a miss becomes unclassifiable)",
+     "src/astro_ai/providers.py",
+     "    if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:\n"
+     "        # Present but not a count (a string, a float, a bool) or negative. The\n"
+     "        # provider DID say something and it is unusable, so this is a rejection\n"
+     "        # and must not read as a measured zero either.\n"
+     "        return prompt, None, True\n",
+     "    if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:\n"
+     "        return None\n",
+     "test_prefix_usage_accepts_only_real_ints"),
+
+    ("#396: the model allowlist is ignored, so a non-caching model's silence scores 0%",
+     "src/astro_ai/llm_stats.py",
+     "            measurable = (model in CACHE_REPORTING_MODELS",
+     "            measurable = (True",
+     "test_a_miss_on_a_non_reporting_model_is_not_scored_as_zero"),
+
+    ("#396: the minimum-prefix threshold is ignored (an ineligible prompt scores 0%)",
+     "src/astro_ai/llm_stats.py",
+     "prompt_tokens >= MIN_CACHEABLE_PREFIX)", "True)",
+     "test_a_prompt_under_the_minimum_cacheable_length_is_not_measurable"),
+
+    # Superseded: there is no longer a `cached is not None or ...` disjunct to
+    # remove -- separate numerators made it unnecessary. The equivalent defect in
+    # the new design is restoring the outcome-dependence it replaced.
+    ("#396: measurability reads the OUTCOME again (a hit counts, a miss of the same size does not)",
+     "src/astro_ai/llm_stats.py",
+     "            measurable = (model in CACHE_REPORTING_MODELS\n",
+     "            measurable = (cached_tokens is not None or model in CACHE_REPORTING_MODELS\n",
+     "test_measurability_never_depends_on_the_outcome_at_any_size"),
+
+    ("#396: effective_pct borrows the shared numerator (a sub-floor hit inflates it)",
+     "src/astro_ai/llm_stats.py",
+     '_rate(v["cached_measurable"], v["prompt_measurable"],',
+     '_rate(v["cached_tokens"], v["prompt_measurable"],',
+     "test_a_sub_floor_report_does_not_inflate_the_effective_numerator"),
+
+    # --- #410 QA round 3. Each row restores a defect round 3 measured.
+    ("#410: a cached count larger than its own prompt is accepted again (5000% stored)",
+     "src/astro_ai/providers.py",
+     "    if cached > prompt:", "    if False:",
+     "test_a_cached_count_larger_than_its_prompt_is_refused_at_the_source"),
+
+    ("#410: the impossible flag leaves the route cell, invisible when Effective is a dash",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{{ route }}{% if pc.impossible %}", "{{ route }}{% if False %}",
+     "test_the_anomaly_flag_is_visible_when_only_the_reported_side_is_broken"),
+
+    ("#410: the table pairs the measurable denominator with the reported numerator again",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{{ pc.prompt_measurable }} / {{ pc.cached_measurable }}",
+     "{{ pc.prompt_measurable }} / {{ pc.cached_tokens }}",
+     "test_the_two_column_pairs_each_divide_to_their_own_rate"),
+
+    ("#410: the unmeasurable-report notice drops the benign cause and the warning",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "Most likely a non-Groq provider reporting\n", "Most likely nothing\n",
+     "test_the_unmeasurable_report_notice_names_the_benign_cause_and_forbids_the_harmful_fix"),
+
+    ("#410: a malformed stat_key is dropped silently again (a whole window can vanish)",
+     "src/astro_ai/llm_stats.py",
+     "                                compound_key, len(parts))\n                skipped_rows += 1",
+     "                                compound_key, len(parts))",
+     "test_a_malformed_stat_key_is_counted_and_logged_not_dropped_silently"),
+
+    ("#410: the skip notice moves back inside the table's own if (total loss is silent)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{% if llm_stats.aggregate.prefix_cache_skipped_rows and not llm_stats.aggregate.prefix_cache %}",
+     "{% if False %}",
+     "test_the_skip_notice_survives_when_every_row_is_skipped"),
+
+    ("#410: the By-route table's headers are overwritten with the prefix-cache ones",
+     "src/astro_ai/templates/admin_dashboard.html",
+     '            <th class="text-right py-2">Response-cache hits</th>',
+     '            <th class="text-right py-2">Measurable</th>',
+     "test_the_by_route_table_still_has_its_own_headers"),
+
+    ("#396: effective_pct divides by reported tokens, collapsing it into hit_pct (the original defect)",
+     "src/astro_ai/llm_stats.py",
+     '_rate(v["cached_measurable"], v["prompt_measurable"],\n'
+     '                                               v["measurable"]),',
+     '_rate(v["cached_measurable"], v["prompt_reported"],\n'
+     '                                               v["measurable"]),',
+     "test_the_two_rates_diverge_and_effective_is_the_honest_one"),
+
+    # --- #410 QA round 1: the follow-up's own defects. Each row restores the
+    # behaviour QA measured and the suite must go red.
+    ("#410: MIN_CACHEABLE_PREFIX back to 1024 (a hit is measurable, a miss of the same size is not)",
+     "src/astro_ai/llm_stats.py",
+     "MIN_CACHEABLE_PREFIX = 128", "MIN_CACHEABLE_PREFIX = 1024",
+     "test_a_miss_and_a_hit_at_the_same_size_are_both_measurable"),
+
+    ("#410: an older stored schema is summed field-by-field again (mixed window published 571%)",
+     "src/astro_ai/llm_stats.py",
+     "            if not _PREFIX_ZERO.keys() <= pc.keys():", "            if False:",
+     "test_an_old_schema_day_blob_is_skipped_whole_not_summed_field_by_field"),
+
+    ("#410: the rate is no longer clamped (a misreporting provider puts 250% on the dashboard)",
+     "src/astro_ai/llm_stats.py",
+     "    return round(max(0.0, min(100.0, cached / prompt * 100)), 1)",
+     "    return round(cached / prompt * 100, 1)",
+     "test_a_rate_is_clamped_and_a_negative_count_is_refused"),
+
+    ("#410: a negative cached count is accepted as a measurement",
+     "src/astro_ai/providers.py",
+     "or isinstance(cached, bool) or cached < 0:", "or isinstance(cached, bool):",
+     "test_a_rate_is_clamped_and_a_negative_count_is_refused"),
+
+    ("#410: the footnote names prompt overlays as if they were chat routes",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "          A call is Measurable on one of the three cache-reporting models",
+     "          <code>ask_matching</code> and <code>ask_numerology</code> are excluded.\n"
+     "          A call is Measurable on one of the three cache-reporting models",
+     "test_every_route_name_in_the_footnote_is_a_real_chat_route"),
     # --- #400: the per-route token budget gate. A size gate that cannot go red is
     # the honour system it replaced; each row neuters one comparison it makes.
     ("#400: the ceiling comparison is neutered (an oversized prompt passes)",
@@ -1093,7 +1224,615 @@ MUTATIONS = [
      'measured["natal+payload"] = (n_en + user, n_hi + user)',
      'measured["natal+payload"] = (n_en, n_hi)',
      "test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt"),
+    # ---- QA round 4 on #396. BUG-1 and BUG-2 were introduced by round 3 --
+    # ---- the round that was fixing things. Each row below was checked to die
+    # ---- on its OWN named test, not merely to turn the suite red.
 
+    ("#396 r4: an impossible provider report is booked as a measured zero",
+     "src/astro_ai/llm_stats.py",
+     "            if reported_impossible:",
+     "            if False and reported_impossible:",
+     "test_an_impossible_report_is_not_booked_as_a_measured_zero"),
+
+    ("#396 r4: a rejected report collapses back into a silence",
+     "src/astro_ai/providers.py",
+     "        return prompt, None, True\n    return prompt, cached, False",
+     "        return prompt, None, False\n    return prompt, cached, False",
+     "test_an_impossible_report_is_not_booked_as_a_measured_zero"),
+
+    ("#396 r4: the measurable-side impossibility clause is deleted",
+     "src/astro_ai/llm_stats.py",
+     '            or v["cached_measurable"] > v["prompt_measurable"]\n',
+     "",
+     "test_the_measurable_side_of_the_impossibility_check_is_pinned"),
+
+    ("#396 r4: the impossible-row tooltip stops saying the row is untrustworthy",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "Every percentage on this row is clamped and untrustworthy.",
+     "All good here.",
+     "test_the_impossible_tooltip_says_the_row_is_untrustworthy"),
+
+    ("#396 r4: the Effective fraction is guarded on `reported` (hides its own numerator)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{% if pc.measurable %}{{ pc.prompt_measurable }} / {{ pc.cached_measurable }}",
+     "{% if pc.reported %}{{ pc.prompt_measurable }} / {{ pc.cached_measurable }}",
+     "test_the_effective_fraction_is_guarded_on_measurable_not_reported"),
+
+    ("#396 r4: the By-route gap disclosure is removed from the panel",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{% if gap %}<strong>{{ gap.values() | sum }} call(s)",
+     "{% if False %}<strong>{{ gap.values() | sum }} call(s)",
+     "test_the_gap_against_by_route_is_counted_not_explained_away"),
+
+    ("#396 r4: the By-route gap is never computed",
+     "src/astro_ai/llm_stats.py",
+     '                if n > prefix_acc.get(route, {}).get("calls", 0)',
+     "                if False",
+     "test_the_gap_against_by_route_is_counted_not_explained_away"),
+
+    ("#396 r4: MIN_CACHEABLE_PREFIX excludes a prompt exactly at the floor",
+     "src/astro_ai/llm_stats.py",
+     "and prompt_tokens >= MIN_CACHEABLE_PREFIX",
+     "and prompt_tokens > MIN_CACHEABLE_PREFIX",
+     "test_a_prompt_exactly_at_the_floor_is_measurable"),
+
+    ("#ops-today: the failure tile is scoped back to agent-work (the 2026-10-18 blindness)",
+     "src/astro_ai/ops_today.py",
+     '    "agent-measure.yml",\n',
+     '',
+     "test_every_loop_leg_counts_as_a_failure_not_just_agent_work"),
+
+    ("#ops-today: a red pr-gates run counts as a loop failure (every caught defect reads as an outage)",
+     "src/astro_ai/ops_today.py",
+     '    "verify-production.yml",\n)',
+     '    "verify-production.yml",\n    "pr-gates.yml",\n)',
+     "test_a_red_pr_gate_is_not_a_loop_failure"),
+
+    ("#ops-today: a clock-killed run stops counting (cancelled is not failed)",
+     "src/astro_ai/ops_today.py",
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral")',
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral", "cancelled")',
+     "test_a_run_killed_by_the_clock_counts_as_failed"),
+
+    ("#ops-today: the runs query is bounded by today's UTC date (drops 00:00-05:30 IST)",
+     "src/astro_ai/ops_today.py",
+     'day = day_start.strftime("%Y-%m-%d")',
+     'day = datetime.now(timezone.utc).strftime("%Y-%m-%d")',
+     "test_the_actions_query_is_bounded_by_the_ist_day_start_not_todays_utc_date"),
+
+    ("#ops-today: the workflow match reads the display name, not the path",
+     "src/astro_ai/ops_today.py",
+     'path = (r.get("path") or "").rsplit("/", 1)[-1]',
+     'path = (r.get("name") or "") + ".yml"',
+     "test_a_renamed_workflow_display_name_does_not_empty_the_tile"),
+
+    ("#ops-today: live rows are merged with the snapshot instead of replacing it",
+     "src/astro_ai/ops_data.py",
+     '        "today_failed": (live_today.get("failed", []) if live_today is not None',
+     '        "today_failed": (live_today.get("failed", []) + [r for r in today] if live_today is not None',
+     "test_live_rows_replace_the_snapshot_rather_than_joining_them"),
+
+    ("#ops-today: the failure alert is gated on loop.json again (the broken part reports itself)",
+     "src/astro_ai/ops_data.py",
+     '    if loop.get("today_failed"):\n        n = len(loop["today_failed"])',
+     '    if loop.get("ok") and loop.get("today_failed"):\n        n = len(loop["today_failed"])',
+     "test_the_failure_alert_fires_even_with_no_loop_json"),
+
+    # --- QA round 1 on #418 (2026-10-18). Eleven findings; these are the
+    # mutations for the ones that were real. Every behaviour below had NO gate
+    # that could fail before this round. -----------------------------------
+    ("#ops-today: the live cache is keyed on the clock alone (survives IST midnight)",
+     "src/astro_ai/ops_data.py",
+     '    if (_today_cache and _today_cache[1] == day\n'
+     '            and now - _today_cache[0] < CACHE_TTL):',
+     '    if _today_cache and now - _today_cache[0] < CACHE_TTL:',
+     "test_the_live_cache_does_not_survive_ist_midnight"),
+
+    ("#ops-today: the live-today catch narrows back to four types (IncompleteRead 500s the page)",
+     "src/astro_ai/ops_data.py",
+     "    except Exception as exc:  # noqa: BLE001 -- see below",
+     "    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:",
+     "test_a_failure_outside_the_four_old_exception_types_does_not_500_the_page"),
+
+    ("#ops-today: a failure is not remembered (an outage costs a request per render)",
+     "src/astro_ai/ops_data.py",
+     '        _today_cache = (now, day, None)\n        return None',
+     '        return None',
+     "test_a_failing_live_path_is_not_retried_on_every_render"),
+
+    ("#ops-today: shipped is sorted oldest-first",
+     "src/astro_ai/ops_today.py",
+     '"shipped": sorted(shipped.values(), key=lambda s: s["merged_at"], reverse=True)',
+     '"shipped": sorted(shipped.values(), key=lambda s: s["merged_at"])',
+     "test_shipped_and_failed_are_newest_first"),
+
+    ("#ops-today: failed is sorted oldest-first",
+     "src/astro_ai/ops_today.py",
+     '"failed": sorted(failed.values(), key=lambda f: f["started"] or "", reverse=True)',
+     '"failed": sorted(failed.values(), key=lambda f: f["started"] or "")',
+     "test_shipped_and_failed_are_newest_first"),
+
+    ("#ops-today: the live cache never expires (the tiles freeze for the process)",
+     "src/astro_ai/ops_data.py",
+     '            and now - _today_cache[0] < CACHE_TTL):',
+     '            and True):',
+     "test_the_live_cache_expires"),
+
+    ("#ops-today: a truncated page is reported as complete (a silent undercount)",
+     "src/astro_ai/ops_today.py",
+     '        "truncated": pr_more or runs_more,',
+     '        "truncated": False,',
+     "test_a_truncated_runs_page_is_admitted_rather_than_undercounted"),
+
+    ("#ops-today: the pager always spends MAX_PAGES (3x the budget on a quiet day)",
+     "src/astro_ai/ops_today.py",
+     '        if len(batch) < PER_PAGE:\n            return rows, False',
+     '        if False:\n            return rows, False',
+     "test_an_ordinary_day_still_costs_one_request_per_endpoint"),
+
+    ("#ops-today: the steward drops off the loop (the leg that reports stoppage, invisible)",
+     "src/astro_ai/ops_today.py",
+     '    "agent-steward.yml",\n',
+     '',
+     "test_the_steward_counts_as_a_loop_leg"),
+
+    ("#ops-today: the fallback alert renders a literal '?' to the reader",
+     "src/astro_ai/ops_data.py",
+     '            add("amber", f"{n} agent-work cycle(s) failed today",',
+     '            add("amber", f"{n} loop run(s) failed today - ?",',
+     "test_the_fallback_alert_does_not_render_a_literal_question_mark"),
+
+    ("#ops-today: snapshot() is awaited inline (up to 12s of event loop, app-wide)",
+     "src/astro_ai/routes/admin.py",
+     '    ops = await asyncio.to_thread(ops_data.snapshot, app_days=days)',
+     '    ops = ops_data.snapshot(app_days=days)',
+     "test_the_ops_page_does_not_block_the_event_loop"),
+
+    ("#ops-today: today_live is hardcoded (the drill-down picks the wrong renderer)",
+     "src/astro_ai/routes/admin.py",
+     '        "today_live": L.get("today_live", False),',
+     '        "today_live": False,',
+     "test_the_page_tells_the_drill_down_which_shape_the_rows_are"),
+
+    ("#ops-today: a missing snapshot blanks the live tiles too",
+     "src/astro_ai/ops_data.py",
+     '                "today_failed": (live_today or {}).get("failed", []),',
+     '                "today_failed": [],',
+     "test_live_tiles_survive_a_missing_snapshot_file"),
+
+    ("#ops-window: the app cache goes back to one slot (window A answers under B's heading)",
+     "src/astro_ai/ops_data.py",
+     "    hit = _app_cache.get(days)",
+     "    hit = next(iter(_app_cache.values()), None)",
+     "test_two_windows_do_not_share_one_cache_slot"),
+
+    ("#ops-window: an unoffered window is clamped instead of refused (3650 renders as 30)",
+     "src/astro_ai/ops_data.py",
+     "    if app_days not in APP_WINDOWS:\n        app_days = DEFAULT_APP_DAYS",
+     "    app_days = max(1, min(app_days, max(APP_WINDOWS)))",
+     "test_an_unoffered_window_falls_back_rather_than_being_clamped"),
+
+    ("#ops-window: a window above the event-retention ceiling is offered",
+     "src/astro_ai/ops_data.py",
+     "APP_WINDOWS = (1, 7, 30)",
+     "APP_WINDOWS = (1, 7, 30, 90)",
+     "test_the_offered_windows_stay_inside_the_retention_ceiling"),
+
+    ("#ops-window: ?window=abc 422s the whole control room",
+     "src/astro_ai/routes/admin.py",
+     "async def admin_ops(request: Request, window: str = \"\") -> HTMLResponse:",
+     "async def admin_ops(request: Request, window: int = 0) -> HTMLResponse:",
+     "test_a_mistyped_window_renders_the_default_page_not_an_error"),
+
+    ("#ops-trend: features are ranked per day, so a bar changes colour daily",
+     "src/astro_ai/ops_data.py",
+     "    ranked = sorted(totals, key=lambda r: -totals[r])",
+     "    ranked = sorted(totals)",
+     "test_features_are_ranked_over_the_window_not_per_day"),
+
+    ("#ops-trend: the overflow features are dropped instead of grouped",
+     "src/astro_ai/ops_data.py",
+     '            key = "other" if route in rest else route\n            per[key] = per.get(key, 0) + n',
+     '            if route in rest:\n                continue\n            per[route] = per.get(route, 0) + n',
+     "test_beyond_the_top_n_features_are_grouped_never_dropped"),
+
+    ("#ops-trend: the chart reads newest-first, so the trend runs backwards",
+     "src/astro_ai/ops_data.py",
+     '    rows = sorted(rows, key=lambda d: d.get("date") or "")',
+     '    rows = sorted(rows, key=lambda d: d.get("date") or "", reverse=True)',
+     "test_days_read_left_to_right_oldest_first"),
+
+    ("#ops-trend: an empty window renders a flat zero chart instead of nothing",
+     "src/astro_ai/ops_data.py",
+     '    if not totals or not any(totals.values()):\n        return {"ok": False, "days": days}',
+     '    if False:\n        return {"ok": False, "days": days}',
+     "test_a_window_with_no_tokens_is_not_ok_rather_than_a_flat_zero_chart"),
+
+    ("#ops-trend: the axis top ignores the peak, so the tallest bar overflows",
+     "src/astro_ai/ops_data.py",
+     '"total": day_total, "by_feature": per})\n\n    top = _nice_top(peak)',
+     '"total": day_total, "by_feature": per})\n\n    top = _nice_top(peak // 2) if peak else 1',
+     "test_no_bar_can_overflow_the_axis"),
+    # ---- QA round 1 on #419. Every row below is a defect the reviewer found
+    # ---- in this PR's own code, re-broken here so the new tests must stay red
+    # ---- against it. The first three were mutants that survived all 705 tests.
+
+    ("#ops-trend: the TPD line is clamped back onto the top edge (BUG-1, 4x overstatement)",
+     "src/astro_ai/ops_data.py",
+     '        "tpd_visible": top >= TPD_PER_MODEL,\n        "tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '        "tpd_visible": top >= TPD_PER_MODEL * 0.25,\n        "tpd_y": round(100 - min(TPD_PER_MODEL / top, 1.0) * 100, 2) if top else 100,',
+     "test_the_tpd_line_appears_exactly_when_one_bucket_fits_on_the_chart"),
+
+    ("#ops-trend: the TPD line is placed by its own scale, not the bars'",
+     "src/astro_ai/ops_data.py",
+     '        "tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '        "tpd_y": round(100 - TPD_PER_MODEL / (top * 2) * 100, 2) if top else 100,',
+     "test_the_tpd_line_is_drawn_at_the_height_its_label_claims"),
+
+    ("#ops-trend: the ranking counts input only, so the legend orders by half the budget (BUG-3)",
+     "src/astro_ai/ops_data.py",
+     '            totals[route] = (totals.get(route, 0)\n                             + int(tok.get("input_tokens") or 0)\n                             + int(tok.get("output_tokens") or 0))',
+     '            totals[route] = totals.get(route, 0) + int(tok.get("input_tokens") or 0)',
+     "test_the_ranking_is_by_total_tokens_not_input"),
+
+    ("#ops-trend: a bar counts input only, so the stack understates the day",
+     "src/astro_ai/ops_data.py",
+     '            n = int(tok.get("input_tokens") or 0) + int(tok.get("output_tokens") or 0)',
+     '            n = int(tok.get("input_tokens") or 0)',
+     "test_the_stack_sums_to_the_underlying_blobs"),
+
+    ("#ops-errors: the error read ignores the window (GUARD-1: a 0.29% day rendered 30.85%)",
+     "src/astro_ai/ops_data.py",
+     "        brk = events.error_breakdown(days=days) or {}",
+     "        brk = events.error_breakdown() or {}",
+     "test_the_window_is_honoured_so_a_quiet_day_is_not_scored_on_a_bad_month"),
+    # ---- QA round 2 on #419. Six of these mutants survived all 745 tests AND
+    # ---- the 195-row sweep; the sweep's own rows only mutated what the
+    # ---- round-1 fix had moved, so they could not see the sign, the gate
+    # ---- value, or any template branch.
+
+    ("#ops-trend: the TPD gate is strict, so the whole (150k, 200k] band loses its line",
+     "src/astro_ai/ops_data.py",
+     '"tpd_visible": top >= TPD_PER_MODEL,',
+     '"tpd_visible": top > TPD_PER_MODEL,',
+     "test_the_tpd_line_appears_exactly_when_one_bucket_fits_on_the_chart"),
+
+    ("#ops-trend: the TPD gate slides to half a bucket (line clipped, legend still promises it)",
+     "src/astro_ai/ops_data.py",
+     '"tpd_visible": top >= TPD_PER_MODEL,',
+     '"tpd_visible": top >= TPD_PER_MODEL / 2,',
+     "test_the_tpd_line_appears_exactly_when_one_bucket_fits_on_the_chart"),
+
+    ("#ops-trend: tpd_y is measured from the bottom edge (11 buckets reads as none)",
+     "src/astro_ai/ops_data.py",
+     '"tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '"tpd_y": round(TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     "test_the_tpd_line_is_measured_from_the_top_of_the_chart_not_the_bottom"),
+
+    ("#ops-errors: the count reverts to the capped sample",
+     "src/astro_ai/ops_data.py",
+     '"errors": errors_total,',
+     '"errors": len(errors),',
+     "test_the_count_and_the_rate_are_both_exact"),
+
+    ("#ops-errors: the rate reverts to the capped sample (widening lowers it again)",
+     "src/astro_ai/ops_data.py",
+     '"error_rate": (round(errors_total / calls * 100, 2) if calls else None),',
+     '"error_rate": (round(len(errors) / calls * 100, 2) if calls else None),',
+     "test_widening_the_window_cannot_lower_the_rate_on_the_same_data"),
+
+    ("#ops-errors: the rate is withheld on saturation (0.05% on a busy site shows no number)",
+     "src/astro_ai/ops_data.py",
+     '"error_rate": (round(errors_total / calls * 100, 2) if calls else None),',
+     '"error_rate": (None if errors_truncated or not calls else round(errors_total / calls * 100, 2)),',
+     "test_volume_alone_does_not_raise_an_alert"),
+
+    ("#ops-errors: `exhausted` reads the wrong key, so provider failures read 0",
+     "src/astro_ai/ops_data.py",
+     '        exhausted = kinds.get("AllProvidersExhausted", 0)',
+     '        exhausted = kinds.get("AllProvidersExhaused", 0)',
+     "test_a_provider_failure_behind_many_newer_errors_is_still_counted"),
+
+    ("#ops-errors: `too_large` reads the wrong key, so 413s read 0",
+     "src/astro_ai/ops_data.py",
+     '        too_large = kinds.get("RequestTooLarge", 0)',
+     '        too_large = kinds.get("RequestTooLarg", 0)',
+     "test_a_provider_failure_behind_many_newer_errors_is_still_counted"),
+
+    ("#ops-tpl: the TPD line is drawn unguarded (y=-300 for a 50k peak)",
+     "src/astro_ai/templates/admin_ops.html",
+     '          {%- if ops.app.trend.tpd_visible %}\n          <line x1="0"',
+     '          {%- if True %}\n          <line x1="0"',
+     "test_the_page_draws_no_tpd_line_when_one_bucket_is_off_the_chart"),
+
+    ("#ops-tpl: the TPD legend is shown unguarded (200,000 claimed on every window)",
+     "src/astro_ai/templates/admin_ops.html",
+     '          {%- if ops.app.trend.tpd_visible %}\n          <span class="lg"><i class="sw tpdsw"></i>',
+     '          {%- if True %}\n          <span class="lg"><i class="sw tpdsw"></i>',
+     "test_the_page_draws_no_tpd_line_when_one_bucket_is_off_the_chart"),
+
+    ("#ops-errors: budget breaks count every error kind, not the two budget kinds",
+     "src/astro_ai/ops_data.py",
+     "            if kind in BUDGET_ERROR_TYPES:",
+     "            if True:",
+     "test_the_budget_breaks_are_counted_per_source_over_the_budget_kinds_only"),
+
+    ("#ops-errors: the breakdown stops filtering on the event type (page views counted as errors)",
+     "src/astro_ai/events.py",
+     '            if evt.get("type") != "error":\n                continue\n            data = evt.get("data") or {}',
+     '            data = evt.get("data") or {}',
+     "test_the_count_and_the_rate_are_both_exact"),
+
+    ("#ops-tpl: the error cell goes back to a hardcoded red threshold",
+     "src/astro_ai/templates/admin_ops.html",
+     "ops.app.error_rate >= ops.error_rate_red",
+     "ops.app.error_rate >= 5",
+     "test_the_error_cell_takes_its_red_threshold_from_the_module"),
+
+    # ---- QA round 3 on #419, SB-1. The cap is gone; these guard the uncapped
+    # ---- walk that replaced it, which had no direct test at all (every
+    # ---- ops-side test stubs it, correctly -- so three mutants of the walk
+    # ---- itself survived the whole suite).
+
+    ("#ops-errors: the breakdown counts non-error events too (page views inflate the rate)",
+     "src/astro_ai/events.py",
+     '            if evt.get("type") != "error":\n                continue\n            data = evt.get("data") or {}',
+     '            data = evt.get("data") or {}',
+     "test_only_error_events_are_counted"),
+
+    ("#ops-errors: the retention clamp is dropped, so every window reads one day",
+     "src/astro_ai/events.py",
+     "    days = max(1, min(days, EVENT_RETENTION_DAYS))\n    today = date.today()\n    wanted_days = [today - timedelta(days=i) for i in range(days)]\n\n    # Same fan-out",
+     "    days = 1\n    today = date.today()\n    wanted_days = [today - timedelta(days=i) for i in range(days)]\n\n    # Same fan-out",
+     "test_the_window_is_clamped_to_the_retention_ceiling"),
+
+    ("#ops-errors: a marginal counts pair KEYS instead of pair COUNTS",
+     "src/astro_ai/events.py",
+     "        by_source[src] = by_source.get(src, 0) + n",
+     "        by_source[src] = by_source.get(src, 0) + 1",
+     "test_the_cross_tab_and_both_marginals_agree_with_the_total"),
+
+    ("#ops-errors: an unclassifiable error is dropped rather than counted as '?'",
+     "src/astro_ai/events.py",
+     '            key = (data.get("error_type") or "?", data.get("source") or "?")',
+     '            if not data.get("error_type"):\n                continue\n            key = (data.get("error_type") or "?", data.get("source") or "?")',
+     "test_an_error_with_no_shape_is_counted_rather_than_dropped"),
+
+    ("#ops-errors: a corrupt day blob aborts the walk instead of being skipped",
+     "src/astro_ai/events.py",
+     "    pairs: dict[tuple[str, str], int] = {}\n    for blob in blobs:\n        if blob is None:\n            continue",
+     "    pairs: dict[tuple[str, str], int] = {}\n    for blob in blobs:\n        if blob is None:\n            raise RuntimeError('missing day')",
+     "test_a_missing_or_unreadable_day_does_not_abort_the_walk"),
+    # ---- QA round 2 on #418. Three ship-blocking findings. The first is the
+    # ---- one this block exists for: `truncated` was computed and read NOWHERE
+    # ---- while three places said the page showed it. 18 of the reviewer's 29
+    # ---- hand-built mutants survived the suite AND the 179-row sweep.
+
+    ("#ops-today r2: the truncation flag never reaches the view",
+     "src/astro_ai/ops_data.py",
+     '"failed_truncated": bool((live_today or {}).get("failed_truncated")),\n        # Travels WITH',
+     '"failed_truncated": False,\n        # Travels WITH',
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+
+    ("#ops-today r2: the tile prints a capped count as a total",
+     "src/astro_ai/templates/admin_ops.html",
+     "{{ '\\u2265' if L.failed_truncated }}{{ L.today_failed|length }}",
+     "{{ L.today_failed|length }}",
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+
+    ("#ops-today r2: a startup_failure counts as a success (a leg that never ran reads as 0)",
+     "src/astro_ai/ops_today.py",
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral")',
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral", "startup_failure")',
+     "test_any_conclusion_that_is_not_a_success_counts_as_a_failure"),
+
+    ("#ops-today r2: conclusions go back to an allow-list of failures",
+     "src/astro_ai/ops_today.py",
+     "        if concl is None or concl in SUCCEEDED_CONCLUSIONS:\n            continue",
+     '        if concl not in ("failure", "timed_out", "cancelled"):\n            continue',
+     "test_any_conclusion_that_is_not_a_success_counts_as_a_failure"),
+
+    ("#ops-today r2: _fetch keeps the four-type tuple (a truncated read 500s the page)",
+     "src/astro_ai/ops_data.py",
+     '        except Exception as exc:  # noqa: BLE001 -- see above\n            log.warning("ops_data: could not fetch %s: %s", url, exc, exc_info=True)',
+     '        except (urllib.error.URLError, OSError, ValueError) as exc:\n            log.warning("ops_data: could not fetch %s: %s", url, exc)',
+     "test_the_measurements_fetch_does_not_500_the_page_on_a_truncated_read"),
+
+    ("#ops-today r2: the tiles fall back to a stale snapshot and no alert says so",
+     "src/astro_ai/ops_data.py",
+     '    if loop.get("fell_back"):',
+     "    if False:",
+     "test_a_programming_error_in_the_live_path_raises_an_alert"),
+
+    ("#ops-today r2: fell_back is never computed for the delivery tiles",
+     "src/astro_ai/ops_data.py",
+     "fell_back=LIVE_TODAY and live_today is None)",
+     "fell_back=False)",
+     "test_a_programming_error_in_the_live_path_raises_an_alert"),
+
+    # ---- QA round 3 on #418 (2026-10-20). Twelve guard gaps, each one proved
+    # ---- by a hand-built mutant that survived the whole suite AND the 179-row
+    # ---- sweep. Their shared shape, worth stating once: every one of them
+    # ---- pinned a TRANSPORT and not a USE. `fetch_today` was tested against a
+    # ---- day start handed to it already correct, so nothing tested the line
+    # ---- that COMPUTES it; `truncated` was tested as a dict key, so nothing
+    # ---- tested the badge; `today_live` was tested as a serialised JSON
+    # ---- field, so nothing tested the branch that picks a renderer from it.
+
+    ("#ops-today r3 G1: the IST day start is computed in UTC (THE original "
+     "boundary bug, at the caller this time)",
+     "src/astro_ai/ops_data.py",
+     "    day_start = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)",
+     "    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)",
+     "test_the_page_computes_the_day_start_in_ist_not_in_utc"),
+
+    ("#ops-today r3 G1: the date printed beside the tiles is the UTC one",
+     "src/astro_ai/ops_data.py",
+     '    today_ist = now_ist.strftime("%Y-%m-%d")',
+     '    today_ist = now.strftime("%Y-%m-%d")',
+     "test_the_day_start_handed_to_the_api_is_the_one_the_page_prints"),
+
+    ("#ops-today r3 G2: the LIVE_TODAY kill switch stops switching anything",
+     "src/astro_ai/ops_data.py",
+     "    live_today = _live_today(day_start.astimezone(timezone.utc)) if LIVE_TODAY else None",
+     "    live_today = _live_today(day_start.astimezone(timezone.utc))",
+     "test_pinning_the_tiles_to_the_snapshot_makes_no_api_call_and_is_not_a_fallback"),
+
+    ("#ops-today r3 G2: the behaviour suite can reach the network again",
+     "tests/conftest.py",
+     '    monkeypatch.setattr(urllib.request, "urlopen", _blocked)',
+     "    assert _blocked",
+     "test_the_behaviour_suite_cannot_reach_the_network"),
+
+    ("#ops-today r3 G3: the live-BACKLOG catch narrows back to four types",
+     "src/astro_ai/ops_data.py",
+     "    except Exception as exc:  # noqa: BLE001\n"
+     "        # Broad for the same reason as `_live_today` below",
+     "    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:\n"
+     "        # Broad for the same reason as `_live_today` below",
+     "test_a_backlog_failure_outside_the_four_old_exception_types_does_not_500"),
+
+    ("#ops-today r3 G3: the backlog falls back to a stale count and no alert says so",
+     "src/astro_ai/ops_data.py",
+     '    if issues.get("fell_back"):',
+     "    if False:",
+     "test_a_backlog_programming_error_degrades_the_panel_rather_than_the_page"),
+
+    ("#ops-today r3 G4: the Shipped tile is badged `live` off the snapshot",
+     "src/astro_ai/templates/admin_ops.html",
+     "{% if L.today_live %}<span class=\"age\">live{% if L.shipped_truncated %}, at least{% endif %}</span>",
+     "{% if True %}<span class=\"age\">live{% if L.shipped_truncated %}, at least{% endif %}</span>",
+     "test_the_shipped_tile_says_live_only_when_it_is_live"),
+
+    ("#ops-today r3 G4: the Failed-today fallback drops the agent-work-only caveat",
+     "src/astro_ai/templates/admin_ops.html",
+     "agent-work only, as of {{ ops.ages.Delivery.text }}",
+     "as of {{ ops.ages.Delivery.text }}",
+     "test_the_failed_tile_fallback_says_it_counts_agent_work_only"),
+
+    ("#ops-today r3 G4: the Filed-today source badge is deleted outright",
+     "src/astro_ai/templates/admin_ops.html",
+     '      <span class="foot">new issues opened<br>\n'
+     '        {% if I.live %}<span class="age">live</span>\n'
+     '        {% else %}<span class="age {{ \'stale\' if ops.ages.Backlog.stale }}">'
+     'as of {{ ops.ages.Backlog.text }}</span>{% endif %}</span>',
+     '      <span class="foot">new issues opened</span>',
+     "test_the_filed_tile_carries_its_own_source_badge"),
+
+    ("#ops-today r3 G5: the drill-down hardcodes the cycle renderer (a panel of blanks)",
+     "src/astro_ai/templates/admin_ops.html",
+     '                      D.today_live ? "pr" : "cycle"],',
+     '                      "cycle"],',
+     "test_the_drill_down_picks_its_row_renderer_from_the_live_flag"),
+
+    ("#ops-today r3 G5: every PR in the sheet links to the same pull request",
+     "src/astro_ai/templates/admin_ops.html",
+     'link(REPO + "/pull/" + r.pr, "PR diff &rarr;")',
+     'link(REPO + "/pull/418", "PR diff &rarr;")',
+     "test_the_drill_down_links_a_merged_pr_by_its_own_number"),
+
+    ("#ops-today r3 G6: no snapshot AND no API renders three tiles reading `0 ... live`",
+     "src/astro_ai/ops_data.py",
+     '                "today_live": live_today is not None,',
+     '                "today_live": True,',
+     "test_no_snapshot_and_no_api_is_an_absence_not_three_live_zeroes"),
+
+    ("#ops-today r3 G7: the fallback alert loses the whole explanation",
+     "src/astro_ai/ops_data.py",
+     '                "From the committed snapshot, not live, so this counts "\n'
+     '                "agent-work only and may be out of date. A cycle that did not "\n'
+     '                "deliver leaves its issue untouched.")',
+     '                "A cycle that did not deliver leaves its issue untouched.")',
+     "test_the_fallback_alert_says_the_count_is_stale_and_agent_work_only"),
+
+    ("#ops-today r3 G8: Filed today borrows the delivery panel's live flag",
+     "src/astro_ai/routes/admin.py",
+     '        "filed_live": I.get("live", False),',
+     '        "filed_live": True,',
+     "test_the_filed_drill_down_flag_follows_the_backlog_not_the_delivery_read"),
+
+    ("#ops-today r3 G9: the page cap goes to 99 (120/hour becomes 2,424/hour)",
+     "src/astro_ai/ops_today.py",
+     "MAX_PAGES = 3",
+     "MAX_PAGES = 99",
+     "test_a_pathological_day_is_capped_at_three_pages_per_endpoint"),
+
+    ("#ops-today r3 G9: per_page drops to 30 (an ordinary day becomes 'at least')",
+     "src/astro_ai/ops_today.py",
+     "PER_PAGE = 100",
+     "PER_PAGE = 30",
+     "test_each_page_asks_for_a_hundred_rows"),
+
+    ("#ops-today r3 G9: the day-boundary stop rule never fires",
+     "src/astro_ai/ops_today.py",
+     "        if oldest(batch[-1]) < since:\n"
+     "            return rows, False          # paged back past the day start",
+     "        if False:\n"
+     "            return rows, False          # paged back past the day start",
+     "test_the_pager_stops_at_the_day_boundary_not_only_on_a_short_page"),
+
+    ("#ops-today r3 G9: a 403 body is accepted as an empty page (0/0/0, badged live)",
+     "src/astro_ai/ops_today.py",
+     "        if not isinstance(batch, list):\n"
+     "            raise ValueError(f\"{base.rsplit('/', 1)[-1]} did not return a list\")",
+     "        if not isinstance(batch, list):\n"
+     "            batch = []",
+     "test_a_page_that_is_not_a_list_raises_rather_than_counting_as_empty"),
+
+    ("#ops-today r3 G11: failed loses its cross-page distinctness",
+     "src/astro_ai/ops_today.py",
+     '        failed[rid if rid is not None else ("no-id", len(failed))] = {',
+     "        failed[(\"row\", len(failed))] = {",
+     "test_a_run_repeated_across_a_page_boundary_is_counted_once"),
+
+    ("#ops-today r3 G11: dedupe becomes a drop for a row with no id",
+     "src/astro_ai/ops_today.py",
+     '        failed[rid if rid is not None else ("no-id", len(failed))] = {',
+     "        failed[rid] = {",
+     "test_a_run_with_no_id_is_kept_rather_than_collapsed"),
+
+    # RE-POINTED. F2 rewrote this paragraph from 84/hour to 120/hour, which
+    # orphaned the old anchor -- and the new static pre-flight above caught it
+    # in milliseconds, where the sweep would have spent a sandboxed suite run
+    # to report ANCHOR MISSED. That is the whole argument for the pre-flight,
+    # demonstrated by the change that introduced it.
+    ("#ops-today r3 G12: the COST paragraph goes back to the pre-pager figure",
+     "src/astro_ai/ops_today.py",
+     "                                     = 120/hour",
+     "                                     = 36/hour",
+     "test_the_cost_paragraph_states_the_actual_worst_case"),
+
+    ("#ops-today r3 G15: the ok path trusts a key the degraded path does not",
+     "src/astro_ai/ops_data.py",
+     '        "today_shipped": (live_today.get("shipped", []) if live_today is not None',
+     '        "today_shipped": (live_today["shipped"] if live_today is not None',
+     "test_a_live_dict_missing_a_key_blanks_a_tile_rather_than_500ing_the_page"),
+
+    ("#ops-today r3 G10: the workflow exhaustiveness scan globs *.yml only",
+     "tests/test_ops_today_live.py",
+     '            if p.is_file() and p.suffix in (".yml", ".yaml")}',
+     '            if p.is_file() and p.suffix == ".yml"}',
+     "test_the_workflow_scan_sees_a_yaml_as_well_as_a_yml"),
+
+    # Two 500s found by making the suite hermetic, in the branch that had never
+    # once run under test because the tests rendering it were fetching the real
+    # files over the network. `_loop_view` already carried the rule, in ten
+    # lines, written after this exact failure; neither sibling inherited it.
+    ("#ops-today r3: the backlog zero-state drops keys (KeyError: 'filed_today')",
+     "src/astro_ai/ops_data.py",
+     '        return {"ok": False, "generated_at": None, "live": False,\n'
+     '                "fell_back": fell_back, "open": 0, "rows": [], "with_ask": 0,\n'
+     '                "by_priority": {}, "by_area": {}, "by_type": {},\n'
+     '                "blocked": [], "filed_today": []}',
+     '        return {"ok": False, "rows": [], "live": False, "fell_back": fell_back}',
+     "test_the_ops_page_survives_every_source_being_unreadable"),
+
+    ("#ops-today r3: the cost zero-state drops keys (UndefinedError: known_usd)",
+     "src/astro_ai/ops_data.py",
+     '        return {"ok": False, "rows": [], "known_usd": 0, "unknown": [],\n'
+     '                "shipped_30d": shipped_30d, "per_issue_usd": None}',
+     '        return {"ok": False, "rows": []}',
+     "test_the_ops_page_survives_every_source_being_unreadable"),
     # #409: visitor text at /admin/feedback is protected by autoescape ALONE.
     ("#409: autoescape turned off in the real environment",
      "src/astro_ai/routes/deps.py",
@@ -1269,6 +2008,84 @@ MUTATIONS = [
      '        if not text.strip():',
      '        if False:',
      "test_an_empty_main_is_not_a_pass"),
+    # ---- QA round 4 on #418: F1 and F2 ------------------------------------
+    # F1. The truncation marker leaking onto a tile whose read was COMPLETE.
+    # The old assertions were whole-PAGE substrings (`"≥" in body`), so this
+    # mutant left 772 tests green while the page rendered `≥0 PRs merged`. The
+    # scoped form that catches it was credited to this branch by a comment and
+    # actually lived on #419, never an ancestor of it.
+    ("#418/F1: the truncation flag leaks onto the SHIPPED tile",
+     "src/astro_ai/ops_today.py",
+     '"shipped_truncated": pr_more,',
+     '"shipped_truncated": pr_more or runs_more,',
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+    # F2. The COST paragraph's worst case is derived from BOTH pagers now, so
+    # moving either constant must move the stated number or the gate is again
+    # holding a wrong figure in place -- which is exactly what `+ 1` did.
+    ("#418/F2: the backlog pager shrinks and the stated cost does not follow",
+     "src/astro_ai/issue_backlog.py",
+     "MAX_PAGES = 4",
+     "MAX_PAGES = 1",
+     "test_the_cost_paragraph_states_the_actual_worst_case"),
+    # ---- QA round 4 on #418: F4-F10. Every mutant below was built FIRST and
+    # confirmed to survive the suite, then the test was written against it. Two
+    # of my first attempts were vacuous (F6 never put the hostile title on the
+    # page; F9 mutated a fallback another fallback had already made dead code)
+    # and one "catch" was a SyntaxError rather than a catch -- all three found
+    # by probing, which is why each row here is parseable and proven.
+    ("#418/F4: the tile says a floor and the alert states it as a total",
+     "src/astro_ai/ops_data.py",
+     'at_least = "At least " if loop.get("failed_truncated") else ""',
+     'at_least = ""',
+     "test_the_alert_admits_the_floor_when_the_tile_does"),
+
+    # Round 5, N-1. The alert keyed its floor disclosure off `today_truncated`,
+    # the OR of both endpoints, while the tile reads the per-endpoint flag -- so
+    # with the PULLS read capped and the runs read complete the two disagreed
+    # about one number on one screen, and the alert was the false one. Both
+    # halves of the disclosure get a row, because they are two separate reads of
+    # the same flag and F4 only ever pinned the first.
+    ("#418/N1: the alert's floor disclosure goes back to the OR of both endpoints",
+     "src/astro_ai/ops_data.py",
+     'at_least = "At least " if loop.get("failed_truncated") else ""',
+     'at_least = "At least " if loop.get("today_truncated") else ""',
+     "test_a_capped_pulls_read_does_not_make_the_failure_count_a_floor"),
+
+    ("#418/N1: the floor SENTENCE goes back to the OR of both endpoints",
+     "src/astro_ai/ops_data.py",
+     '"this is a floor, not a total." if loop.get("failed_truncated")',
+     '"this is a floor, not a total." if loop.get("today_truncated")',
+     "test_a_capped_pulls_read_does_not_make_the_failure_count_a_floor"),
+    ("#418/F4b: the truncation flag never reaches the alert",
+     "src/astro_ai/ops_data.py",
+     '"today_truncated": bool((live_today or {}).get("truncated")),\n        # Per tile',
+     '"today_truncated": False,\n        # Per tile',
+     "test_the_alert_admits_the_floor_when_the_tile_does"),
+    ("#418/F10: the alert stops deduping and names a workflow once per run",
+     "src/astro_ai/ops_data.py",
+     'sorted({f.get("workflow") or "an unnamed workflow"\n                                      for f in loop["today_failed"]})',
+     'sorted([f.get("workflow") or "an unnamed workflow"\n                                      for f in loop["today_failed"]])',
+     "test_every_failing_workflow_is_named_once"),
+    ("#418/F9: a run with no name is no longer identified at all",
+     "src/astro_ai/ops_today.py",
+     '"workflow": r.get("name") or path',
+     '"workflow": r.get("name")',
+     "test_a_run_with_no_name_is_still_named_something"),
+    ("#418/F6: a PR title can terminate the ops-data script block",
+     "src/astro_ai/routes/admin.py",
+     'json.dumps(client).replace("</", "<\\\\/")',
+     "json.dumps(client)",
+     "test_the_ops_json_blob_cannot_be_escaped_by_a_pr_title"),
+    ("#418/F5: the GitHub token stops reaching the wire",
+     "src/astro_ai/ops_today.py",
+     'headers["Authorization"] = f"Bearer {token}"',
+     "pass",
+     "test_the_request_carries_a_user_agent_and_the_token_when_set"),
+    ("#418/F5b: the User-Agent GitHub requires is dropped",
+     "src/astro_ai/ops_today.py",
+     '"User-Agent": _UA,',
+     "",
+     "test_the_request_carries_a_user_agent_and_the_token_when_set"),
     # ---- #442: the steward can dispatch, and a merge is not a refix ---------
     ("#442: the carrier stops refusing a lenient dispatch line",
      "scripts/dispatch_cycle.sh",
@@ -1350,6 +2167,366 @@ MUTATIONS = [
      'raise RuntimeError("a conflict hunk has no `=======` separator")',
      'return out',
      "test_a_hunk_with_no_separator_raises_rather_than_returning_nothing"),
+
+    # ---- QA round 5 on #396. S-1 / S-2 / G-2 were FALSE SENTENCES and a guard
+    # ---- that could not tell `calls` from `measurable`. Each row restores one
+    # ---- false clause (or breaks the number the clause is about) and must die on
+    # ---- its OWN named test.
+    ("#396 r5: an impossible report is described as counted in Hit rate again (S-1)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "discarded: it is in <em>neither</em> Hit rate <em>nor</em> Effective, and the call",
+     "discarded: its figure counts toward Hit rate, and the call",
+     "test_an_impossible_report_is_in_neither_rate_and_not_harmless_as_the_notice_says"),
+
+    ("#396 r5: an impossible report is told it needs no action again (S-1)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "This one does need attention &mdash;", "This one needs no action &mdash;",
+     "test_an_impossible_report_is_in_neither_rate_and_not_harmless_as_the_notice_says"),
+
+    ("#396 r5: a rejected report is booked as Reported (the row would contradict the notice)",
+     "src/astro_ai/llm_stats.py",
+     '                pc["reported_unmeasurable"] = pc.get("reported_unmeasurable", 0) + 1\n',
+     '                pc["reported_unmeasurable"] = pc.get("reported_unmeasurable", 0) + 1\n'
+     '                pc["reported"] = pc.get("reported", 0) + 1\n',
+     "test_an_impossible_report_is_in_neither_rate_and_not_harmless_as_the_notice_says"),
+
+    ("#396 r5: the notice counts reports, not unmeasurable-report calls",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "map(attribute='reported_unmeasurable') | sum", "map(attribute='reported') | sum",
+     "test_the_unmeasurable_notice_sums_both_causes_into_its_count"),
+
+    ("#396 r5: the genuine-report clause stops saying the figure is in Hit rate",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "that figure is counted in", "that figure is dropped from",
+     "test_a_genuine_unmeasurable_report_is_in_hit_rate_and_out_of_effective_as_the_notice_says"),
+
+    ("#396 r5: a genuine unmeasurable report stops reaching the Hit-rate numerator",
+     "src/astro_ai/llm_stats.py",
+     'pc["cached_tokens"] = pc.get("cached_tokens", 0) + cached_tokens',
+     'pc["cached_tokens"] = pc.get("cached_tokens", 0) + 0',
+     "test_a_genuine_unmeasurable_report_is_in_hit_rate_and_out_of_effective_as_the_notice_says"),
+
+    ("#396 r5: 'a route of only impossible reports shows a dash in both rates' is rewritten",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "shows a dash in both rates.", "shows 0% in both rates.",
+     "test_a_route_of_only_impossible_reports_shows_a_dash_in_both_rates_as_the_notice_says"),
+
+    ("#396 r5: the notice names a floor the code does not apply",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "It can also mean the 128-token floor", "It can also mean the 1024-token floor",
+     "test_the_floor_the_notice_names_is_the_floor_the_code_applies"),
+
+    ("#396 r5: the footnote miscounts the cache-reporting models",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "on one of the three cache-reporting models", "on one of the four cache-reporting models",
+     "test_the_footnote_count_of_cache_reporting_models_is_the_set_size"),
+
+    ("#396 r5: the dash sentence goes back to three causes",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "<strong>An Effective dash has four causes</strong>",
+     "<strong>An Effective dash has three causes</strong>",
+     "test_the_dash_causes_are_counted_and_the_fourth_is_the_impossible_report"),
+
+    ("#396 r5: the dash sentence drops the impossible-report cause",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "or every report it sent was\n          impossible and discarded",
+     "or nothing at all was\n          sent",
+     "test_the_dash_causes_are_counted_and_the_fourth_is_the_impossible_report"),
+
+    ("#396 r5: the excluded-rows notice goes back to naming only the older schema",
+     "src/astro_ai/templates/admin_dashboard.html",
+     " (written by an older schema, or keyed\n          in a shape this page does not recognise), so their calls are missing",
+     " (written by an older schema), so their calls are missing",
+     "test_the_excluded_rows_notice_counts_rows_and_names_both_causes_and_the_calls_are_missing"),
+
+    ("#396 r5: the excluded-rows notice prints the wrong count",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "<strong>{{ llm_stats.aggregate.prefix_cache_skipped_rows }}\n          stored row(s) were excluded as unreadable",
+     "<strong>{{ llm_stats.aggregate.prefix_cache | length }}\n          stored row(s) were excluded as unreadable",
+     "test_the_excluded_rows_notice_counts_rows_and_names_both_causes_and_the_calls_are_missing"),
+
+    ("#396 r5: the total-loss notice stops claiming it is every row",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "&mdash; which is every row in this window", "&mdash; which is some of the rows in this window",
+     "test_the_skip_notice_survives_when_every_row_is_skipped"),
+
+    ("#396 r5: the gap is computed from `measurable`, not `calls` (G-2)",
+     "src/astro_ai/llm_stats.py",
+     '                route: n - prefix_acc.get(route, {}).get("calls", 0)\n'
+     '                for route, n in by_route.items()\n'
+     '                if n > prefix_acc.get(route, {}).get("calls", 0)\n',
+     '                route: n - prefix_acc.get(route, {}).get("measurable", 0)\n'
+     '                for route, n in by_route.items()\n'
+     '                if n > prefix_acc.get(route, {}).get("measurable", 0)\n',
+     "test_the_gap_against_by_route_is_counted_not_explained_away"),
+
+    ("#396 r5: the gap sentence says the unaccounted calls ARE in Fresh calls (S-2)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "not counted in Fresh calls here</strong>", "counted in Fresh calls above</strong>",
+     "test_the_gap_sentence_says_the_unaccounted_calls_are_not_in_fresh_calls"),
+
+    ("#396 r5: the false 'count toward Fresh calls' sentence is reinstated (S-2)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "          Two ordinary causes:",
+     "          Those calls count toward Fresh calls above. Two ordinary causes:",
+     "test_the_gap_sentence_says_the_unaccounted_calls_are_not_in_fresh_calls"),
+
+    ("#396 r5: every gap route is listed with the TOTAL instead of its own count",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{{ route }} {{ n }}{% if not loop.last %}",
+     "{{ route }} {{ gap.values() | sum }}{% if not loop.last %}",
+     "test_the_gap_lists_every_route_with_its_own_count_and_sums_them"),
+
+    ("#396 r5: the gap stops naming the excluded-rows cause (S-2, second half)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "; and the stored rows excluded as unreadable", "; and nothing else",
+     "test_the_gap_names_both_causes_and_a_skipped_row_really_does_widen_it"),
+
+    ("#396 r5: the gap sentence goes back to the false vocabulary-mismatch claim",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "both on the chat route", "web route there, chat route here",
+     "test_both_lists_are_keyed_on_the_same_route_as_the_gap_sentence_claims"),
+
+    ("#396 r5: the gap sentence stops saying it shrinks as older days age out",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "shrinks as they age out of the window", "stays until it is cleared",
+     "test_the_gap_copy_says_older_days_age_out"),
+
+    ("#396 r5: the gap ignores the requested window (older days never age out)",
+     "src/astro_ai/llm_stats.py",
+     "    prefix_acc: dict[str, dict[str, int]] = {}\n    skipped_rows = 0",
+     "    days = max(days, 3)\n    prefix_acc: dict[str, dict[str, int]] = {}\n    skipped_rows = 0",
+     "test_the_part_of_the_gap_owed_to_older_days_does_shrink_as_they_age_out"),
+
+    # ---- QA round 6 on #396. A THIRD round of false sentences in one paragraph.
+    # ---- A sentence no test can fail on is DELETED (and its reinstatement is a
+    # ---- row here); one that stays is tied to the code it describes.
+    ("#396 r6 F-1: the false 'Measurable column tells the first two apart' sentence is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'not that nothing was measured.\n        </p>',
+     'not that nothing was measured. The Measurable column tells\n          the first two apart from Fresh calls.\n        </p>',
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-3: the overclaiming '(the notice above says so ...)' parenthetical is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'not that nothing was measured.\n        </p>',
+     'not that nothing was measured (the notice above says so when that has happened).\n        </p>',
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: the unpinned '732 tokens' parenthetical is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'the prompts were under the minimum;\n',
+     "the prompts were under the minimum\n          (no route's system prompt is under 732 tokens, so this should not happen);\n",
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: the unpinned 'survives our cold starts' claim is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     "is Groq's, and\n          is opportunistic.",
+     "is Groq's: it survives our cold starts, and\n          is opportunistic.",
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: the unpinned 'expires after about 2 hours idle' claim is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     "is Groq's, and\n          is opportunistic.",
+     "is Groq's: it expires after about 2 hours idle, and\n          is opportunistic.",
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: 'Widen the window, or re-record.' is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     '        no table to show.\n',
+     '        no table to show. Widen the window, or re-record.\n',
+     'test_the_skip_notice_survives_when_every_row_is_skipped'),
+
+    ('#396 r6 F-2: the Hit-rate dash tooltip enumerates causes again (false on the impossible-report row)',
+     'src/astro_ai/templates/admin_dashboard.html',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%:',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Either no call returned a cache figure. Unmeasured, not 0%.',
+     'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
+
+    ('#396 r6 F-2: the Effective dash tooltip enumerates three causes again (false on the fourth)',
+     'src/astro_ai/templates/admin_dashboard.html',
+     '{% if pc.effective_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%:',
+     '{% if pc.effective_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Nothing measurable here: a non-reporting model, every prompt under the minimum cacheable length, or no usable usage block. Unmeasured, not 0%.',
+     'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
+
+    ("#396 r6 F-4: the 'Unmeasured, not 0%' tooltip text stops saying it (Hit rate)",
+     'src/astro_ai/templates/admin_dashboard.html',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%:',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Zero.',
+     'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
+
+    ("#396 r6 F-4: an impossible report is 'fewer' cached tokens than the prompt, not more",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'claimed more cached tokens than the',
+     'claimed fewer cached tokens than the',
+     'test_the_impossible_report_clause_names_exactly_what_the_code_rejects'),
+
+    ("#396 r6 F-4: the 'not a non-negative whole number' half of the impossible-report clause is deleted",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'or a count that was not a non-negative whole number',
+     'or nothing else',
+     'test_the_impossible_report_clause_names_exactly_what_the_code_rejects'),
+
+    ("#396 r6 F-4: 'The counter cannot tell its two causes apart' becomes 'tells'",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'The counter cannot tell its two causes apart',
+     'The counter tells its two causes apart',
+     'test_the_unmeasurable_notice_sums_both_causes_into_its_count'),
+
+    ('#396 r6 F-4: older days are described as scored zero, not absent',
+     'src/astro_ai/templates/admin_dashboard.html',
+     'and so are absent rather than zero',
+     'and so are zero',
+     'test_the_gap_names_both_causes_and_a_skipped_row_really_does_widen_it'),
+
+    ("#396 r6 F-4: the 'no usable usage block' cause is deleted from the dash list",
+     'src/astro_ai/templates/admin_dashboard.html',
+     '          the provider returned no usable <code>usage</code> block at all; or every report',
+     '          every report',
+     'test_all_four_dash_causes_render_identically_and_the_footnote_lists_them'),
+
+    # --- #396 QA round 7 ---------------------------------------------------
+    # Two of round 7's seventeen mutants SURVIVED. Both are claims the page makes
+    # that no assertion could fail, and the rule here is that such a sentence is
+    # deleted or pinned. Both are true, so they are pinned.
+    ("#396 r7: Groq's prefix cache is promised as a guarantee",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "is opportunistic.", "is guaranteed.",
+     "test_the_two_caches_sentences_cannot_be_softened"),
+
+    ("#396 r7: the response cache is claimed to outlive its instance",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "dies with it.", "survives cold starts.",
+     "test_the_two_caches_sentences_cannot_be_softened"),
+
+    # N-1. The two rate columns dash under DIFFERENT rules, so ONE tooltip for
+    # both is necessarily false on one of them -- which is what round 7 failed
+    # the page on. This puts the shared tooltip back.
+    ("#396 r7 N-1: one tooltip serves both dash columns again",
+     "src/astro_ai/templates/admin_dashboard.html",
+     'title="Unmeasured, not 0%: no call on this route reported a cache figure, or those '
+     'that did reported no prompt tokens. Groq returns no figure on a miss, so this sits '
+     'beside a real Effective number when nothing hit."',
+     'title="Unmeasured, not 0%: no call on this route was Measurable. The note below the '
+     'table lists the four causes."',
+     "test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means"),
+
+    ("#396 r7 N-1: Effective's four causes are claimed of every dash again",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "<strong>An Effective dash has four causes</strong>",
+     "<strong>A dash has four causes</strong>",
+     "test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means"),
+
+    # Round 7 called a zero reported-prompt total a possible SIXTH cause it had
+    # not seeded. It is `_rate`'s second clause, and the tooltip must say so.
+    ("#396 r7: the Hit-rate tooltip drops its denominator clause",
+     "src/astro_ai/templates/admin_dashboard.html",
+     ", or those that did reported no prompt tokens", "",
+     "test_a_reported_prompt_total_of_zero_is_the_hit_rate_rules_second_clause"),
+
+    # The code side of the same rule: with `not n` gone, a route where every call
+    # missed reads a flat 0.0% hit rate instead of a dash -- "absent" booked as
+    # "measured zero", the defect this whole panel exists to avoid.
+    ("#396 r7: _rate books an unobserved rate as a measured zero",
+     "src/astro_ai/llm_stats.py",
+     "    if not n or prompt <= 0:", "    if prompt <= 0:",
+     "test_an_all_miss_route_dashes_hit_rate_beside_a_real_effective"),
+    # ---- #446: the derived test-count floor ---------------------------------
+    ("#446: the floor compares against LOCAL main again (passes 543 >= 0)",
+     "scripts/verify_test_floor.py",
+     'base = git("merge-base", "HEAD", "origin/main").strip()',
+     'base = git("merge-base", "HEAD", "main").strip()',
+     "test_it_never_compares_against_local_main"),
+    ("#446: a vanished test is no longer reported as missing",
+     "scripts/verify_test_floor.py",
+     "gone = sorted(before - head)",
+     "gone = sorted(head - before)",
+     "test_a_deleted_file_fails_and_names_every_test"),
+    ("#446: any drop is accepted, declared or not",
+     "scripts/verify_test_floor.py",
+     "    if reason:",
+     "    if True:",
+     "test_a_declared_drop_needs_the_trailer_not_just_the_words"),
+    ("#446: a missing tests/ directory reads as a pass",
+     "scripts/verify_test_floor.py",
+     'print(f"COULD NOT RUN (exit 2) — no {TESTS}/ directory. This is NOT a pass.")\n        return 2',
+     'return 0',
+     "test_a_missing_tests_directory_exits_2_not_0"),
+    ("#446: a class method that disappears is not counted",
+     "scripts/verify_test_floor.py",
+     'elif isinstance(node, ast.ClassDef) and node.name.startswith("Test"):',
+     "elif False:",
+     "test_a_method_removed_from_a_test_class_fails"),
+
+    # --- #419/#452 QA round 4: F-1, F-2, F-3, F-5, F-6, BUG-5, BUG-6 --------
+    # F-2 is the headline: the stacked bars had NO test and NO row, so all three
+    # of these survived the whole suite and the 266-row sweep -- and the second
+    # one DELETES the chart this work exists to add.
+    ("#452/F-2a: the stack is drawn from the top edge, upside down",
+     "src/astro_ai/templates/admin_ops.html",
+     '''y="{{ '%.3f'|format(100 - ns.acc) }}"''',
+     '''y="{{ '%.3f'|format(ns.acc) }}"''',
+     "test_the_stack_is_anchored_at_the_axis_floor_not_the_top_edge"),
+
+    ("#452/F-2b: the bar threshold emits nothing, deleting the chart outright",
+     "src/astro_ai/templates/admin_ops.html",
+     "{%- if v > 0 %}", "{%- if v > 999999999999 %}",
+     "test_the_chart_draws_a_rect_for_every_non_zero_feature_day"),
+
+    ("#452/F-2c: the bars use a different scale from the line across them",
+     "src/astro_ai/templates/admin_ops.html",
+     "{%- set h = v / ops.app.trend.top * 100 %}",
+     "{%- set h = v / ops.app.trend.peak * 100 %}",
+     "test_each_segment_height_is_its_share_of_the_axis_top"),
+
+    # F-1. `top` and `peak` are one line apart in the same dict, and BOTH
+    # existing placement fixtures pinned `peak == top`, which also made
+    # `assert 'y1="-' not in html` blind. The old row mutated to `top * 2`,
+    # which the TPD*2 fixture does separate -- so the row passed while the
+    # realistic substitution walked through.
+    ("#452/F-1: tpd_y is placed from the raw peak instead of the axis top",
+     "src/astro_ai/ops_data.py",
+     '"tpd_y": round(100 - TPD_PER_MODEL / top * 100, 2) if top else 100,',
+     '"tpd_y": round(100 - TPD_PER_MODEL / peak * 100, 2) if top else 100,',
+     "test_the_tpd_line_is_placed_from_the_axis_top_not_the_raw_peak"),
+
+    # F-3. The only test of this decision used to `pytest.skip` on an empty
+    # store, which IS the CI condition, so both of these were unguarded there.
+    ("#452/F-3: the error-rate alert hardcodes its window",
+     "src/astro_ai/ops_data.py",
+     '''f"{app['days']} days.", "/admin/activity")''',
+     '''f"7 days.", "/admin/activity")''',
+     "test_an_app_alert_names_the_window_it_was_measured_over"),
+
+    ("#452/F-3: the provider-fail alert hardcodes its window",
+     "src/astro_ai/ops_data.py",
+     '''f"in {app['days']}d",''',
+     '''f"in 7d",''',
+     "test_an_app_alert_names_the_window_it_was_measured_over"),
+
+    ("#452/F-5: the day window is advertised as a rolling 24 hours",
+     "src/astro_ai/templates/admin_ops.html",
+     "1: 'the current day so far — a calendar day, not a rolling 24 hours',",
+     "1: 'the last 24 hours',",
+     "test_the_day_window_is_not_advertised_as_a_rolling_24_hours"),
+
+    ("#452/F-6: an empty trend chart vanishes with no statement",
+     "src/astro_ai/templates/admin_ops.html",
+     "This is an absence, not a zero", "This is a zero",
+     "test_an_empty_trend_says_so_rather_than_vanishing"),
+
+    ("#452/BUG-5: the window selector hardcodes one window",
+     "src/astro_ai/templates/admin_ops.html",
+     'href="?window={{ d }}"', 'href="?window=1"',
+     "test_the_window_selector"),
+
+    # BUG-6. The old assertion was `peak <= _nice_top(peak)` restated, so it
+    # could not fail; it now reads rendered coordinates at the boundary.
+    ("#452/BUG-6: a bar segment is drawn past the axis floor",
+     "src/astro_ai/templates/admin_ops.html",
+     '''height="{{ '%.3f'|format(h) }}"''',
+     '''height="{{ '%.3f'|format(h * 1.5) }}"''',
+     "test_no_bar_can_overflow_the_axis"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -1536,6 +2713,80 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
 # contend and the wall time stops improving. `cpu_count or 1` because it returns
 # None on some platforms.
 _WORKERS = min(int(os.environ.get("MUTATE_WORKERS", "4")), (os.cpu_count() or 1))
+
+# STATIC ANCHOR PRE-FLIGHT (#418/F7). Claimed in two PR comments -- "a static
+# anchor validator now runs over every 5-tuple", upgraded to "zero rows anchor
+# on a comment" -- and it was in neither the repo nor any workflow. QA round 4
+# looked for it and reported the quoted counts as unreproducible. So it is built
+# here rather than claimed again.
+#
+# WHY STATIC AND AHEAD OF THE SWEEP. `_run_in_sandbox` already reports
+# ANCHOR MISSED, but only per row, only at run time, and only for uniqueness --
+# so a bad anchor costs a full sandboxed suite run before it says so, and an
+# anchor sitting on a COMMENT passes it completely. A row anchored on a comment
+# mutates prose: it changes no behaviour, so it reports MISSED for a defect that
+# is in fact guarded, and the row silently stops being a gate. One did, for two
+# QA rounds (#ops-today's clock-killed run), and that is this log's recurring
+# subject.
+#
+# Cheap: pure text, no subprocess, no suite. It runs before anything is spent.
+def _preflight_anchors() -> list[str]:
+    problems: list[str] = []
+    for label, rel, old, new, test in MUTATIONS:
+        path = ROOT / rel
+        if not path.exists():
+            problems.append(f"{label}: {rel} does not exist")
+            continue
+        src = path.read_text(encoding="utf-8")
+        n = src.count(old)
+        if n != 1:
+            problems.append(f"{label}: anchor matches {n}x in {rel}, need exactly 1")
+            continue
+        if old == new:
+            problems.append(f"{label}: the mutant is identical to the anchor")
+        # The anchor must not BEGIN on a comment line: mutating prose changes no
+        # behaviour, so such a row cannot ever catch anything.
+        #
+        # Read off the anchor's OWN resolved position, never by scanning the file
+        # for its first line. The scanning version rejected 65 of 243 rows: any
+        # line anywhere that merely CONTAINED the anchor's first line satisfied
+        # `first in line`, so a comment quoting a line of code condemned the row
+        # that mutates it -- and the pre-flight exits before the sweep, so it was
+        # a false positive in the blocking direction, in the validator added to
+        # stop exactly this class of mistake. `old` is already known to occur
+        # EXACTLY ONCE (checked above), so its position is not a search.
+        at = src.index(old)
+        bol = src.rfind("\n", 0, at) + 1
+        eol = src.find("\n", at)
+        line = src[bol:eol if eol != -1 else len(src)]
+        if line.lstrip().startswith(("#", "//", "<!--")):
+            problems.append(
+                f"{label}: anchor begins on a COMMENT line in {rel} -- mutating "
+                f"prose changes no behaviour, so this row cannot ever catch "
+                f"anything: {line.strip()[:70]}")
+    return problems
+
+
+_anchor_problems = _preflight_anchors()
+if _anchor_problems:
+    print(f"ANCHOR PRE-FLIGHT FAILED - {len(_anchor_problems)} row(s), "
+          f"nothing was run:")
+    for _p in _anchor_problems:
+        print(f"  {_p}")
+    print("\nA row whose anchor is wrong is not a weak gate, it is no gate. Fix")
+    print("the anchor or remove the row deliberately; do not let the sweep")
+    print("spend a sandboxed suite run per row to tell you the same thing.")
+    raise SystemExit(1)
+print(f"anchor pre-flight: {len(MUTATIONS)} rows -- every anchor resolves exactly "
+      f"once, differs from its mutant, and does not begin on a comment line")
+
+if "--preflight-only" in sys.argv:
+    # The pre-flight is a gate in its own right, it runs BEFORE the sweep, and it
+    # can fail the whole run on its own -- so it has to be checkable without
+    # paying for a sandboxed suite run per row. This module cannot be imported to
+    # test it (there is no __main__ guard; importing starts the sweep), so the
+    # only way in is argv. Used by tests/test_mutation_preflight.py.
+    raise SystemExit(0)
 
 _work = [_CONTROL] + list(MUTATIONS)
 _verdicts: dict[int, tuple[str, str]] = {}

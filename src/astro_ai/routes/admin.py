@@ -21,6 +21,7 @@ Absolute imports only.
 
 from __future__ import annotations
 
+import asyncio
 import json
 
 from fastapi import APIRouter, Depends, Request
@@ -151,20 +152,46 @@ async def admin_insights(request: Request, days: int = 30,
 
 @router.get("/admin/ops", response_class=HTMLResponse,
             dependencies=[Depends(require_admin)])
-async def admin_ops(request: Request) -> HTMLResponse:
+async def admin_ops(request: Request, window: str = "") -> HTMLResponse:
     """The agent team's control room — what the loop did, costs, and the backlog.
 
-    Reads only the committed `measurements/*.json` files via `ops_data`, which
+    Mostly the committed `measurements/*.json` files via `ops_data`, which
     returns None per file on failure rather than raising, so a missing file
-    blanks one panel and the footer names it. Nothing here calls the GitHub API
-    at request time: Cloud Run's egress IP is shared, and an unauthenticated
-    API call would start failing at 60/hour for reasons invisible to the owner.
+    blanks one panel and the footer names it.
+
+    THREE THINGS ARE FETCHED LIVE, and the page says so on each: the open
+    backlog (#353) and the "shipped today" / "failed today" tiles. The old
+    rule here was "nothing calls the GitHub API at request time", on the
+    grounds that Cloud Run's egress IP is shared and an unauthenticated call
+    starts failing at 60/hour invisibly. That reasoning still holds and is why
+    every live path falls back to the snapshot and labels itself — but
+    "invisible" was the thing to fix, not "live". A committed file cannot
+    answer "what happened today" at all: on 2026-10-18 the three today tiles
+    read 0/0/0 from a file written on the 15th, while five loop runs had
+    failed. See `ops_today` for the measurement and the budget.
 
     The same snapshot is serialised into the page as JSON so the drill-downs
     filter data already rendered — a drill-down cannot disagree with the
     headline it was opened from.
     """
-    ops = ops_data.snapshot()
+    # `window` is the Token budget / App health span in days. Validated inside
+    # `snapshot`, against an explicit set: an unknown value falls back to the
+    # default rather than being clamped, because a clamped 3650 would render
+    # 30 days of data under a heading claiming ten years.
+    # A STRING, parsed here, not an `int` parameter. Declaring it `int` makes
+    # FastAPI answer `?window=abc` with a 422 validation page -- a mistyped URL
+    # would take the whole control room down instead of showing the default
+    # window. The page degrades; it does not argue.
+    try:
+        days = int(window)
+    except ValueError:
+        days = 0
+    # OFF THE EVENT LOOP. `snapshot()` is synchronous and now makes up to three
+    # blocking `urllib` calls at OPS_HTTP_TIMEOUT (4s) each -- awaited inline in
+    # a coroutine that is 12s of a single-process app serving nobody, not 12s of
+    # this request. #353 introduced the pattern with one call; this page has
+    # three, so it is moved rather than documented.
+    ops = await asyncio.to_thread(ops_data.snapshot, app_days=days)
     L, I = ops["loop"], ops["issues"]
     client = {
         "repo": "mahAnuj/astro-ai",
@@ -172,6 +199,13 @@ async def admin_ops(request: Request) -> HTMLResponse:
         "issues": I["rows"],
         "today_shipped": L["today_shipped"],
         "today_failed": L["today_failed"],
+        # Which SHAPE the two lists above carry: live rows are PRs and runs,
+        # the fallback rows are attributed cycles. The drill-down renderer
+        # picks its template from this rather than sniffing the first row.
+        "today_live": L.get("today_live", False),
+        # The backlog has its own live flag (#353) and its own failure mode,
+        # so "Filed today" cannot borrow the delivery one.
+        "filed_live": I.get("live", False),
         "filed_today": I["filed_today"],
         "by_priority": I.get("by_priority", {}),
         "by_area": I.get("by_area", {}),
