@@ -1324,10 +1324,21 @@ MUTATIONS = [
      '"Cache-Control": "public, max-age=3600",',
      "test_the_cosmic_card_is_not_cacheable_by_a_shared_cache"),
     # ---- the conflict resolver's own parser, found by PR #443 x #425 --------
-    ("#443: the resolver drops a side's trailing newline (rows get absorbed)",
+    # RE-TARGETED. This row used to replace the newline ASSERTION with
+    # `assert True` -- and that assertion is a guard, not the mechanism:
+    # `hunks()` is line-based and preserves newlines structurally, so removing
+    # the assert changes no behaviour and no test could possibly catch it. The
+    # row reported MISSED the first time the fast-path harness ran it, and under
+    # the old harness it would have been MISSED too and nobody looked.
+    #
+    # A mutation must break the BEHAVIOUR the test asserts. `splitlines(True)`
+    # is what keeps each row a row; without keepends every row in the hunk
+    # collapses into one, which is exactly the defect that shipped into
+    # ARCHITECTURE.md on 2026-10-20.
+    ("#443: the dated union stops keeping line endings (rows get absorbed)",
      "scripts/merge_main_into_branch.py",
-     'assert side == "" or side.endswith("\\n"), "a conflict side lost its newline"',
-     'assert True',
+     "both = (theirs + ours).splitlines(True)",
+     "both = (theirs + ours).splitlines()",
      "test_a_dated_union_never_absorbs_one_row_into_another"),
     ("#443: the dirty check counts untracked files again (script can never run)",
      "scripts/merge_main_into_branch.py",
@@ -1459,16 +1470,56 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
         if source.count(old) != 1:
             return False, f"ANCHOR MISSED ({source.count(old)})"
         target.write_text(source.replace(old, new))
-        result = subprocess.run(
-            [sys.executable, "-m", "pytest", str(sandbox / "tests"), "-q", "--no-header"],
-            capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
-        )
+
+        def _pytest(*extra: str) -> subprocess.CompletedProcess:
+            return subprocess.run(
+                [sys.executable, "-m", "pytest", str(sandbox / "tests"),
+                 "-q", "--no-header", *extra],
+                capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
+            )
+
+        def _red(r: subprocess.CompletedProcess) -> bool:
+            """A real assertion failure, not a collection error.
+
+            A non-zero exit from a collection error looks like a catch and is
+            worth nothing, which is why this reads the output and not just the
+            code. pytest exits 5 on "no tests matched", which is neither.
+            """
+            return r.returncode not in (0, 5) and (
+                "FAILED" in r.stdout or "failed" in r.stdout)
+
+        # EVERY ROW ALREADY NAMES THE TEST THAT MUST CATCH IT, so run that test
+        # and not the other 766. Measured 2026-10-20 on this tree: one named
+        # test is 0.34s against 19.5s for the whole suite, and this step was
+        # 80% of every pr-gates run (1054s and 673s on two consecutive runs,
+        # 191 rows x a full suite / 4 workers).
+        #
+        # It is also a STRICTER question than the one asked before. "The suite
+        # goes red" and "THIS test goes red" are different claims, and each row
+        # asserts the second -- the `test` field is not decoration, the
+        # GUARD GONE check above already treats it as load-bearing.
+        #
+        # So the fast path can only ever CONFIRM a catch. It can never create a
+        # failure, because a named test that stays green falls through to the
+        # full suite below, exactly as before.
+        if test and test != "_control":
+            fast = _pytest("-k", test.split("[", 1)[0])
+            if _red(fast):
+                return True, "CAUGHT"
+
+        # Reached when the named test did not catch it, or for the control row,
+        # which must see the whole suite or it would stop being a control.
+        result = _pytest()
         if result.returncode == 0:
             return False, "*** MISSED ***"
-        # A non-zero exit from a collection error would look like a catch and
-        # be worth nothing, so require an actual assertion failure.
-        if "FAILED" not in result.stdout and "failed" not in result.stdout:
+        if not _red(result):
             return False, f"NON-TEST FAILURE rc={result.returncode}"
+        if test and test != "_control":
+            # NEW INFORMATION, and it was invisible before: something caught the
+            # mutation but not the test this row names. The row still counts as
+            # caught -- the defect cannot escape -- but its `test` field is
+            # wrong, and a wrong field is what the GUARD GONE check cannot see.
+            return True, "CAUGHT BY ANOTHER TEST — row names `" + test + "`"
         return True, "CAUGHT"
 
 
@@ -1520,8 +1571,16 @@ for i, (label, _rel, _old, _new, _test) in enumerate(_work):
 print(f"{'mutation':<58} {'verdict'}")
 print("-" * 76)
 bad = 0
+mispointed: list[str] = []
 for label, verdict in rows:
-    if verdict != "CAUGHT":
+    if verdict.startswith("CAUGHT BY ANOTHER TEST"):
+        # CAUGHT, so it does NOT count as bad: the defect cannot escape, which
+        # is what this harness is for. What is wrong is the row's `test` field,
+        # and that is reported separately below rather than turning the gate
+        # red -- a speed change may not invent failures, or nobody will trust
+        # the number it prints.
+        mispointed.append(f"{label} -> {verdict}")
+    elif verdict != "CAUGHT":
         bad += 1
     print(f"  {label:<56} {verdict}")
 print()
@@ -1532,6 +1591,14 @@ real = len(rows) - 1
 caught = real - (bad - 1)
 print(f"{caught}/{real} mutations caught")
 print("repository untouched: mutations run in a temporary copy")
+if mispointed:
+    print()
+    print(f"{len(mispointed)} row(s) are MIS-POINTED: the mutation was caught, but not by")
+    print("the test the row names. The protection is real; the bookkeeping is wrong,")
+    print("and until 2026-10-20 this was invisible because every row ran the whole")
+    print("suite and any failure read as CAUGHT.")
+    for line in mispointed:
+        print(f"  - {line}")
 if not control_ok:
     print()
     print("CONTROL FAILED — the sandbox reports CAUGHT for an edit that changes")

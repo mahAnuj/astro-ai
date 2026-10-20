@@ -233,17 +233,62 @@ jobs:
           # the LLM works, and that is where they should move.
           NEEDS_LIVE_LLM="verify_english_surface verify_hindi_surface"
 
-          pass=0; failed=""; skipped=""
+          # RUN THEM IN PARALLEL, except the ones that cannot be.
+          # Measured 2026-10-20: this step was 170s and 110s on two consecutive
+          # runs, 13% of the job, with ~24 gates executed one after another.
+          # Nearly all of them only read files.
+          #
+          # NOT parallel: anything that drives the dev server on a fixed port.
+          # `verify_lang_switch_browser` drives a real Chromium and
+          # `verify_devanagari_serif` needs the server on 127.0.0.1:8000, and
+          # CLAUDE.md records that port being squatted by foreign processes as a
+          # live hazard. They run after, serially, with no concurrency to add a
+          # second failure mode to a check that has already been flaky.
+          NEEDS_SERVER="verify_devanagari_serif verify_lang_switch_browser"
+
+          # NO HEREDOC. The first version wrote the per-gate helper with
+          # `cat > ... <<'GATE'` inside this block scalar, which made the whole
+          # workflow unparseable -- `verify_workflows.py` caught it in one run,
+          # on the same day an empty expression in a comment took this repo's
+          # steward offline for two days -- in the comment explaining that very
+          # rule, and the gate caught this one too. A `run:` block is YAML first and shell
+          # second, and anything that looks like a key is a trap.
+          RES=$(mktemp -d)
+
+          par=""; ser=""
           for f in scripts/verify_*.py; do
             n=$(basename "$f" .py)
             case " $NEEDS_LIVE_LLM " in
               *" $n "*) echo "::notice::$n not run here — needs a live LLM; covered by verify-production.yml"; continue ;;
             esac
-            uv run python "$f" > "/tmp/$n.log" 2>&1
-            code=$?
+            case " $NEEDS_SERVER " in
+              *" $n "*) ser="$ser $f"; continue ;;
+            esac
+            par="$par $f"
+          done
+
+          # -P 4 matches the runner's cores; -n 1 so one gate is one process.
+          # `_` is argv[0] for the inner shell, then the gate file and the
+          # results directory arrive as "$1" and "$2" -- passed as ARGUMENTS
+          # rather than interpolated into the script, so a path can never be
+          # parsed as code.
+          printf '%s\n' $par \
+            | xargs -n 1 -P 4 -I GATEFILE sh -c 'n=$(basename "$1" .py); uv run python "$1" > "/tmp/$n.log" 2>&1; echo $? > "$2/$n.code"' _ GATEFILE "$RES"
+          for f in $ser; do n=$(basename "$f" .py); uv run python "$f" > "/tmp/$n.log" 2>&1; echo $? > "$RES/$n.code"; done
+
+          # VERDICTS ARE READ AFTER THE FACT, from files. A parallel loop cannot
+          # accumulate shell variables -- each gate runs in its own process and
+          # its `pass=$((pass+1))` would be lost, which would read as "0 of 24
+          # passed" and fail every PR. The exit code of each gate is the only
+          # thing crossing the boundary.
+          pass=0; failed=""; skipped=""
+          for f in $par $ser; do
+            n=$(basename "$f" .py)
+            code=$(cat "$RES/$n.code" 2>/dev/null || echo 99)
             case $code in
               0) pass=$((pass+1)); echo "::notice::$n PASS" ;;
               2) skipped="$skipped $n"; echo "::error::$n SKIPPED (exit 2) — the check did not run, which is not a pass" ;;
+              99) failed="$failed $n"; echo "::error::$n produced NO exit code — it never ran, which is not a pass" ;;
               *) failed="$failed $n"; echo "::error::$n FAIL (exit $code)"; tail -25 "/tmp/$n.log" ;;
             esac
           done
