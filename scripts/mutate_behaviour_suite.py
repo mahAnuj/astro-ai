@@ -1070,7 +1070,10 @@ MUTATIONS = [
     ("#396: a junk cache figure discards the prompt size too (a miss becomes unclassifiable)",
      "src/astro_ai/providers.py",
      "    if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:\n"
-     "        return prompt, None\n",
+     "        # Present but not a count (a string, a float, a bool) or negative. The\n"
+     "        # provider DID say something and it is unusable, so this is a rejection\n"
+     "        # and must not read as a measured zero either.\n"
+     "        return prompt, None, True\n",
      "    if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:\n"
      "        return None\n",
      "test_prefix_usage_accepts_only_real_ints"),
@@ -1221,6 +1224,57 @@ MUTATIONS = [
      'measured["natal+payload"] = (n_en + user, n_hi + user)',
      'measured["natal+payload"] = (n_en, n_hi)',
      "test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt"),
+    # ---- QA round 4 on #396. BUG-1 and BUG-2 were introduced by round 3 --
+    # ---- the round that was fixing things. Each row below was checked to die
+    # ---- on its OWN named test, not merely to turn the suite red.
+
+    ("#396 r4: an impossible provider report is booked as a measured zero",
+     "src/astro_ai/llm_stats.py",
+     "            if reported_impossible:",
+     "            if False and reported_impossible:",
+     "test_an_impossible_report_is_not_booked_as_a_measured_zero"),
+
+    ("#396 r4: a rejected report collapses back into a silence",
+     "src/astro_ai/providers.py",
+     "        return prompt, None, True\n    return prompt, cached, False",
+     "        return prompt, None, False\n    return prompt, cached, False",
+     "test_an_impossible_report_is_not_booked_as_a_measured_zero"),
+
+    ("#396 r4: the measurable-side impossibility clause is deleted",
+     "src/astro_ai/llm_stats.py",
+     '            or v["cached_measurable"] > v["prompt_measurable"]\n',
+     "",
+     "test_the_measurable_side_of_the_impossibility_check_is_pinned"),
+
+    ("#396 r4: the impossible-row tooltip stops saying the row is untrustworthy",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "Every percentage on this row is clamped and untrustworthy.",
+     "All good here.",
+     "test_the_impossible_tooltip_says_the_row_is_untrustworthy"),
+
+    ("#396 r4: the Effective fraction is guarded on `reported` (hides its own numerator)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{% if pc.measurable %}{{ pc.prompt_measurable }} / {{ pc.cached_measurable }}",
+     "{% if pc.reported %}{{ pc.prompt_measurable }} / {{ pc.cached_measurable }}",
+     "test_the_effective_fraction_is_guarded_on_measurable_not_reported"),
+
+    ("#396 r4: the By-route gap disclosure is removed from the panel",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{% if gap %}<strong>{{ gap.values() | sum }} call(s)",
+     "{% if False %}<strong>{{ gap.values() | sum }} call(s)",
+     "test_the_gap_against_by_route_is_counted_not_explained_away"),
+
+    ("#396 r4: the By-route gap is never computed",
+     "src/astro_ai/llm_stats.py",
+     '                if n > prefix_acc.get(route, {}).get("calls", 0)',
+     "                if False",
+     "test_the_gap_against_by_route_is_counted_not_explained_away"),
+
+    ("#396 r4: MIN_CACHEABLE_PREFIX excludes a prompt exactly at the floor",
+     "src/astro_ai/llm_stats.py",
+     "and prompt_tokens >= MIN_CACHEABLE_PREFIX",
+     "and prompt_tokens > MIN_CACHEABLE_PREFIX",
+     "test_a_prompt_exactly_at_the_floor_is_measurable"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

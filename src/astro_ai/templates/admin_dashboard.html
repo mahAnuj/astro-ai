@@ -288,9 +288,22 @@
           {% endif %}
           {% if llm_stats.aggregate.prefix_cache_skipped_rows %}<strong>{{ llm_stats.aggregate.prefix_cache_skipped_rows }}
           stored row(s) written by an older schema were excluded</strong>, so their calls are
-          missing from this table. (Do not read that against &ldquo;By route&rdquo; above: that
-          table is keyed by web route and this one by chat route, so the two never match
-          anyway.){% endif %}
+          missing from this table.{% endif %}
+          {#- THE GAP, NAMED AND COUNTED. What stood here was a footnote claiming "By route"
+              above and Fresh calls here "never match anyway" because one is keyed by web
+              route and the other by chat route. Both are the third segment of
+              `provider|model|route` -- the same vocabulary -- so the claim was false, and it
+              was the panel's only guidance about a mismatch: it told the operator that a
+              measured 400-call discrepancy six rows up in the same card was expected and
+              meaningless. #}
+          {% set gap = llm_stats.aggregate.prefix_cache_unaccounted %}
+          {% if gap %}<strong>{{ gap.values() | sum }} call(s) in &ldquo;By route&rdquo; above have no
+          prefix-cache row here</strong> ({% for route, n in gap.items() %}{{ route }} {{ n }}{% if not loop.last %} &middot; {% endif %}{% endfor %}).
+          Almost always days recorded before this panel existed: those calls count toward Fresh
+          calls above and carry no cache figure at all, so they are absent rather than zero.
+          The two lists <em>are</em> keyed the same way &mdash; both on the chat route &mdash; so
+          a gap here is a real difference and not a vocabulary mismatch. It shrinks as older days
+          age out of the window.{% endif %}
           A call is Measurable on one of the three cache-reporting models with at least 128 prompt
           tokens, counted on the whole request (system + question or chart), not the system prompt
           alone. <strong>A dash has three causes</strong>, so check which before concluding

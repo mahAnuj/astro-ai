@@ -155,11 +155,15 @@ def test_prefix_usage_accepts_only_real_ints(bad):
     # A junk CACHED figure is discarded but the prompt size survives: it is what
     # lets llm_stats.record() tell "this model never reports" from "this call
     # missed". Returning None for the pair here is what hid that distinction.
-    assert providers._prefix_usage(_usage(100, cached=bad)) == (100, None)
+    # `True` for the third element: the provider DID say something and it was
+    # unusable, which record() must not book as a measured zero. Round 4 found
+    # that collapsing "said nothing" into "said something impossible" made a
+    # misreporting provider indistinguishable from one that missed.
+    assert providers._prefix_usage(_usage(100, cached=bad)) == (100, None, True)
     # A junk PROMPT size leaves nothing usable, so the whole pair is dropped.
     assert providers._prefix_usage(SimpleNamespace(prompt_tokens=bad)) is None
     assert providers._prefix_usage(None) is None
-    assert providers._prefix_usage(_usage(100, cached=40)) == (100, 40)
+    assert providers._prefix_usage(_usage(100, cached=40)) == (100, 40, False)
 
 
 # 5 -------------------------------------------------------------------------
@@ -507,7 +511,7 @@ def test_a_rate_is_clamped_and_a_negative_count_is_refused(stats_dir, monkeypatc
     """BUG-6. The figures are the provider's; nothing upstream vouches for them."""
     # Negative counts never become a measurement in the first place.
     assert providers._prefix_usage(_usage(-5, cached=-1)) is None
-    assert providers._prefix_usage(_usage(2000, cached=-1)) == (2000, None)
+    assert providers._prefix_usage(_usage(2000, cached=-1)) == (2000, None, True)
     # And an impossible overshoot is clamped rather than published.
     assert llm_stats._rate(5000, 2000, 1) == 100.0
     assert llm_stats._rate(0, 0, 1) is None
@@ -616,7 +620,14 @@ def test_every_route_name_in_the_footnote_is_a_real_chat_route():
 # [50,100,127] pin the 128-floor variant of the bug and [714,1023] the 1024-floor
 # variant. 2363 is the live-measured request size: it cannot fail under any floor
 # in play, and is kept as documentation of the real call, not as a guard (QA r3).
-@pytest.mark.parametrize("size", [50, 100, 127, 714, 1023, 2363])
+# 128 is included so SYMMETRY is pinned at the boundary too, but note what this
+# test can and cannot see: it asserts a hit and a miss of the same size AGREE,
+# and flipping `>=` to `>` moves both together, so they still agree. Adding 128
+# here does NOT pin the comparison -- that needs
+# `test_a_prompt_exactly_at_the_floor_is_measurable` below, which asserts the
+# value rather than the symmetry. QA round 4 reported the flip surviving the
+# suite; my first response was to add 128 here, which did not kill it either.
+@pytest.mark.parametrize("size", [50, 100, 127, 128, 714, 1023, 2363])
 def test_measurability_never_depends_on_the_outcome_at_any_size(
         size, stats_dir, monkeypatch):
     """BUG-3, round 2. The asymmetry must be STRUCTURALLY absent, not just rare.
@@ -778,10 +789,15 @@ def test_a_cached_count_larger_than_its_prompt_is_refused_at_the_source():
     code, which is the error species round 2 condemned. Now enforced, so the
     claim is true of the code and the clamp is defence in depth.
     """
-    assert providers._prefix_usage(_usage(100, cached=5000)) == (100, None)
-    assert providers._prefix_usage(_usage(0, cached=900)) == (0, None)
-    assert providers._prefix_usage(_usage(100, cached=100)) == (100, 100), "equal is legal"
-    assert providers._prefix_usage(_usage(2363, cached=2304)) == (2363, 2304)
+    assert providers._prefix_usage(_usage(100, cached=5000)) == (100, None, True)
+    assert providers._prefix_usage(_usage(0, cached=900)) == (0, None, True)
+    assert providers._prefix_usage(_usage(100, cached=100)) == (100, 100, False), "equal is legal"
+    assert providers._prefix_usage(_usage(2363, cached=2304)) == (2363, 2304, False)
+    # A true SILENCE is not a rejection, and the two must never be the same
+    # value: Groq omits the field on a miss, which record() resolves from the
+    # model. This is the pair round 4 found collapsed.
+    assert providers._prefix_usage(_usage(1000)) == (1000, None, False)
+    assert providers._prefix_usage(_usage(1000, cached=None)) == (1000, None, False)
 
 
 def test_the_anomaly_flag_is_visible_when_only_the_reported_side_is_broken(
@@ -932,3 +948,203 @@ def test_the_by_route_table_still_has_its_own_headers():
         assert alien not in by_route, (
             f"{alien!r} belongs to the prefix-cache table; the By-route headers were "
             "overwritten and its cells no longer match its labels")
+
+
+# --- QA round 4 findings -------------------------------------------------------
+#
+# Every finding below was introduced by round 3 -- the round that was fixing
+# things -- except the two unpinned guards, which round 3 shipped without a
+# test. Each test here was bite-tested against its own mutant AND checked that
+# the mutant dies on THIS guard rather than on a neighbouring one: the #424 miss
+# this week was a mutant caught by the wrong check, which leaves the intended
+# one unpinned while the suite looks green.
+
+def _seed(stats_dir, row, *, counts=None, route="ask",
+          key="groq120|openai/gpt-oss-120b|ask"):
+    """Write one day's blob with a chosen prefix_cache row."""
+    stats_dir.mkdir(parents=True, exist_ok=True)
+    today = date.today()
+    (stats_dir / f"{today.isoformat()}.json").write_text(json.dumps({
+        "date": today.isoformat(),
+        "counts": counts if counts is not None else {key: row.get("calls", 0)},
+        "totals": {route: row.get("calls", 0)}, "fallbacks": 0,
+        "prefix_cache": {key: {**llm_stats._PREFIX_ZERO, **row}},
+    }))
+    return llm_stats.range_summary(1)["aggregate"]
+
+
+def test_an_impossible_report_is_not_booked_as_a_measured_zero(stats_dir, monkeypatch):
+    """BUG-2, round 4, introduced by round 3's fix for round 3's BUG-9.
+
+    `_prefix_usage` rejects `cached > prompt` by returning a SILENCE, and on an
+    eligible call `record()` books a silence as a measured zero. Measured before
+    this fix:
+
+        _prefix_usage(prompt=1000, cached=5000) -> (1000, None)
+          -> {"reported": 0, "cached_tokens": 0, "effective_pct": 0.0,
+              "reported_unmeasurable": 0, "impossible": false}
+
+    No warning, no dash, and `reported_unmeasurable` -- the counter that exists
+    to make the rule falsifiable -- stayed 0 because it is gated on
+    `cached_tokens is not None`. A misreporting provider was indistinguishable
+    from one that genuinely missed, and it dragged the published saving down.
+    That is the thing the docstring shipped in the same diff forbids: "SMOOTHING
+    an impossible figure into a plausible one is its own defect".
+
+    The three cases must be mutually distinguishable, so all three are asserted
+    together -- asserting only the impossible one would pass on a change that
+    broke the genuine miss instead.
+    """
+    _install_model(monkeypatch, [_usage(1000, cached=5000)])   # impossible
+    _chat()
+    bad = _agg()
+    assert bad["reported_unmeasurable"] == 1, "the rejection left no evidence"
+    assert bad["measurable"] == 0, (
+        "an impossible report entered the Effective denominator, so it reads as "
+        "a measured zero")
+    assert bad["effective_pct"] is None, (
+        f"published {bad['effective_pct']}% off a report we threw away")
+
+    # A GENUINE miss on the same model and size is still a measured zero, which
+    # is correct and is the distinction that was lost.
+    _install_model(monkeypatch, [_usage(1000)])
+    _chat()
+    good = _agg()
+    assert good["measurable"] == 1 and good["reported_unmeasurable"] == 1
+    assert good["effective_pct"] == 0.0, (
+        "a real miss must still count as the zero it is, or the fix for the "
+        "impossible case has thrown away the measurement it was protecting")
+
+
+def test_the_measurable_side_of_the_impossibility_check_is_pinned(stats_dir):
+    """BUG-3, round 4. Deleting the clause left 720 tests passing.
+
+    `_is_impossible` has two published-ratio clauses. The reported-side twin was
+    pinned; the measurable side -- the column the footnote tells the operator to
+    read -- was not. The row below is impossible on the MEASURABLE side only, so
+    the reported clause cannot fire and this isolates the one under test.
+    """
+    row = {"calls": 7, "measurable": 7, "reported": 7,
+           "prompt_measurable": 100, "cached_measurable": 5000,
+           "prompt_reported": 6000, "cached_tokens": 5000}
+    agg = _seed(stats_dir, row)
+    e = agg["prefix_cache"]["ask"]
+
+    # THE FIXTURE MUST SATISFY EVERY OTHER CLAUSE, or deleting the target one
+    # leaves a neighbour firing and the test passes for the wrong reason. My
+    # first version set cached_tokens=0, which tripped
+    # `cached_measurable > cached_tokens` as well -- the clause under test could
+    # be deleted and this still read True. The bite harness caught it; the suite
+    # did not, because a suite only ever asks whether SOMETHING went red.
+    assert e["cached_tokens"] <= e["prompt_reported"]        # reported ratio ok
+    assert e["cached_measurable"] <= e["cached_tokens"]      # subset ok
+    assert e["measurable"] <= e["calls"] and e["reported"] <= e["calls"]
+    assert e["cached_tokens"] >= 0 and e["cached_measurable"] >= 0
+    assert e["cached_measurable"] > e["prompt_measurable"]   # the one clause left
+
+    assert e["impossible"] is True, (
+        "cached_measurable 5000 > prompt_measurable 100 is not a cache, and it "
+        "is the only clause this row violates")
+
+
+def test_the_impossible_tooltip_says_the_row_is_untrustworthy(admin, stats_dir):
+    """BUG-4, round 4. Rewriting the warning to "All good here." stayed green.
+
+    The glyph was asserted; its text was not, so the one sentence that tells an
+    operator what the glyph MEANS could say anything.
+    """
+    _seed(stats_dir, {"calls": 7, "reported": 7,
+                      "prompt_reported": 100, "cached_tokens": 5000})
+    html = admin.get("/admin").text
+    assert "&#9888;" in html or "⚠" in html
+    assert "clamped and untrustworthy" in html, (
+        "the glyph renders with no statement that the row cannot be trusted")
+
+
+def test_the_effective_fraction_is_guarded_on_measurable_not_reported(admin, stats_dir):
+    """BUG-4, round 4. `{% if pc.measurable %}` -> `{% if pc.reported %}` stayed green.
+
+    The mutant breaks the most common production shape -- a reporting model where
+    every call missed -- by rendering a dash in the fraction cell beside a real
+    `Effective 0.0%`: a percentage with its own numerator and denominator hidden.
+
+    So the fixture is exactly that shape: measurable > 0, reported == 0.
+    """
+    _seed(stats_dir, {"calls": 7, "measurable": 7, "prompt_measurable": 7000})
+    e = llm_stats.range_summary(1)["aggregate"]["prefix_cache"]["ask"]
+    assert e["measurable"] == 7 and e["reported"] == 0, "fixture shape drifted"
+    assert e["effective_pct"] == 0.0, "a measurable all-miss route reads 0%, not a dash"
+    row = _row(admin.get("/admin").text, "ask")
+    assert "7000 / 0" in row, (
+        "Effective reads 0.0% while its own fraction renders a dash — the "
+        "numerator and denominator behind the published percentage are hidden")
+
+
+def test_the_gap_against_by_route_is_counted_not_explained_away(admin, stats_dir):
+    """BUG-1, round 4, introduced by round 3.
+
+    Round 3 shipped: "Do not read that against 'By route' above: that table is
+    keyed by web route and this one by chat route, so the two never match
+    anyway." Both lists are the third segment of `provider|model|route` -- the
+    same vocabulary -- so the claim is false, and it was the panel's only
+    guidance about a mismatch: it told the operator that a measured 400-call
+    discrepancy six rows up in the same card was expected and meaningless.
+
+    The fixture is the real shape: a day with 407 calls in `counts` and a
+    prefix_cache row for only 7 of them, which is what a window spanning the
+    #396 deploy looks like. `skipped_rows` stays 0, so neither pre-existing
+    notice fires -- that is why the gap needed its own number.
+    """
+    key = "groq120|openai/gpt-oss-120b|ask"
+    agg = _seed(stats_dir, {"calls": 7, "measurable": 7, "prompt_measurable": 7000},
+                counts={key: 407})
+    assert agg["prefix_cache_skipped_rows"] == 0, (
+        "the fixture must not trip the schema notice, or it cannot show that "
+        "the gap was previously undisclosed")
+    assert agg["prefix_cache_unaccounted"] == {"ask": 400}
+    html = admin.get("/admin").text
+    assert "400 call(s) in &ldquo;By route&rdquo; above have no" in html \
+        or "400 call(s) in “By route” above have no" in html, (
+        "the 400-call gap is not stated anywhere on the page")
+    assert "never match anyway" not in html, (
+        "the false caveat is back: the two lists ARE keyed the same way")
+
+
+def test_no_gap_is_claimed_when_the_two_lists_agree(admin, stats_dir):
+    """The disclosure must mean something, so it must be absent when exact."""
+    key = "groq120|openai/gpt-oss-120b|ask"
+    agg = _seed(stats_dir, {"calls": 7, "measurable": 7, "prompt_measurable": 7000},
+                counts={key: 7})
+    assert agg["prefix_cache_unaccounted"] == {}
+    assert "have no\n          prefix-cache row here" not in admin.get("/admin").text
+
+
+def test_a_prompt_exactly_at_the_floor_is_measurable(stats_dir, monkeypatch):
+    """BUG-5, round 4. `>=` -> `>` left the whole suite green.
+
+    The parametrize list that was meant to cover this ran
+    [50, 100, 127, 714, 1023, 2363]: every value is strictly below or strictly
+    above 128, so the only value that distinguishes the two comparisons was
+    never driven. Round 3 reviewed that list and added nothing at the boundary.
+
+    Adding 128 to it is not enough either, and that is worth recording: that
+    test asserts a hit and a miss of the same size AGREE about measurability,
+    and flipping the comparison moves both together, so they go on agreeing.
+    A boundary needs a test that asserts the VALUE, not the symmetry.
+
+    Both sides of the edge, because asserting only `== MIN` would pass on a
+    rule that measured everything.
+    """
+    _install_model(monkeypatch, [_usage(llm_stats.MIN_CACHEABLE_PREFIX)])
+    _chat()
+    assert _agg()["measurable"] == 1, (
+        f"a prompt of exactly {llm_stats.MIN_CACHEABLE_PREFIX} tokens is at the "
+        "floor and must be measurable; `>` instead of `>=` excludes it")
+
+    for f in stats_dir.glob("*.json"):
+        f.unlink()
+    _install_model(monkeypatch, [_usage(llm_stats.MIN_CACHEABLE_PREFIX - 1)])
+    _chat()
+    assert _agg()["measurable"] == 0, (
+        "one token under the floor must not be measurable, or the floor is not "
+        "a floor")

@@ -236,7 +236,8 @@ def _read_day(day: date) -> dict[str, Any] | None:
 def record(*, provider: str, model: str, route: str = "", fallback: bool = False,
            fallback_reason: str = "", failed_provider: str = "",
            prompt_tokens: int | None = None,
-           cached_tokens: int | None = None) -> None:
+           cached_tokens: int | None = None,
+           reported_impossible: bool = False) -> None:
     """Increment counters for today's LLM call. Best-effort; never raises.
 
     Called from providers.chat() after a successful response. `route` labels
@@ -321,25 +322,66 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
             # while nothing in the code established it -- (prompt=100, cached=5000)
             # was stored intact and the 5000% was saved only by the display clamp.
             # `_is_impossible` stays as the detector for a violation that reaches
-            # the store some other way, e.g. a hand-edited or older blob.
+            # the store some other way. NOT "an older blob": QA round 4 found
+            # that justification circular, because an older-shaped row is
+            # skipped whole by the schema gate in `range_summary` BEFORE this
+            # detector ever sees it. The reachable causes are a hand-edited
+            # blob, a row that `record()` upgraded in place until it carried all
+            # eight keys while its sums were accumulated under the old meaning,
+            # and a future bug in this module. Writing down a justification and
+            # then treating the writing as the fact is the pattern CLAUDE.md
+            # names; this comment was an instance of it.
             measurable = (model in CACHE_REPORTING_MODELS
                           and prompt_tokens >= MIN_CACHEABLE_PREFIX)
-            if measurable:
-                pc["measurable"] = pc.get("measurable", 0) + 1
-                pc["prompt_measurable"] = pc.get("prompt_measurable", 0) + prompt_tokens
-            if cached_tokens is not None:
-                pc["reported"] = pc.get("reported", 0) + 1
-                pc["prompt_reported"] = pc.get("prompt_reported", 0) + prompt_tokens
-                pc["cached_tokens"] = pc.get("cached_tokens", 0) + cached_tokens
+            if reported_impossible:
+                # THE PROVIDER SPOKE AND WE THREW IT AWAY. That is not a
+                # measurement, so it enters NEITHER denominator -- and the
+                # reason it must not is the defect QA round 4 found here.
+                #
+                # `_prefix_usage` rejects `cached > prompt` by returning a
+                # SILENCE, and on an eligible call a silence is booked as a
+                # measured zero: `_prefix_usage(prompt=1000, cached=5000)` gave
+                # `{"reported": 0, "cached_tokens": 0, "effective_pct": 0.0,
+                #   "reported_unmeasurable": 0, "impossible": false}`. No warning,
+                # no dash -- a misreporting provider became indistinguishable
+                # from one that genuinely missed, it dragged the published saving
+                # down with nothing to explain it, and the counter that exists to
+                # make this rule falsifiable stayed 0 because it is gated on
+                # `cached_tokens is not None`. The fix for an earlier bug did the
+                # exact thing the docstring shipped beside it forbids:
+                # "SMOOTHING an impossible figure into a plausible one is its own
+                # defect".
+                #
+                # Counted in `reported_unmeasurable`, NOT a new field. A ninth
+                # key in `_PREFIX_ZERO` would fail `_PREFIX_ZERO.keys() <=
+                # pc.keys()` for every row already stored, so every historical
+                # row would be skipped whole and the panel would empty itself --
+                # trading a wrong number for no number. The counter already means
+                # "the provider reported on a call this rule cannot use"; an
+                # impossible report is exactly that, and the panel copy names
+                # both causes.
+                pc["reported_unmeasurable"] = pc.get("reported_unmeasurable", 0) + 1
+            else:
                 if measurable:
-                    pc["cached_measurable"] = pc.get("cached_measurable", 0) + cached_tokens
-                else:
-                    # The provider reported on a call our rule says it could not.
-                    # Kept as a counter rather than discarded, because it is
-                    # evidence the rule is wrong -- too high a floor, or a model
-                    # missing from the set -- and it makes that falsifiable by
-                    # production instead of by live calls nobody may spend.
-                    pc["reported_unmeasurable"] = pc.get("reported_unmeasurable", 0) + 1
+                    pc["measurable"] = pc.get("measurable", 0) + 1
+                    pc["prompt_measurable"] = pc.get("prompt_measurable", 0) + prompt_tokens
+                if cached_tokens is not None:
+                    pc["reported"] = pc.get("reported", 0) + 1
+                    pc["prompt_reported"] = pc.get("prompt_reported", 0) + prompt_tokens
+                    pc["cached_tokens"] = pc.get("cached_tokens", 0) + cached_tokens
+                    if measurable:
+                        pc["cached_measurable"] = (
+                            pc.get("cached_measurable", 0) + cached_tokens)
+                    else:
+                        # The provider reported on a call our rule says it could
+                        # not. Kept as a counter rather than discarded, because it
+                        # is evidence the rule is wrong -- too high a floor, or a
+                        # model missing from the set -- and it makes that
+                        # falsifiable by production instead of by live calls
+                        # nobody may spend. An IMPOSSIBLE report lands here too,
+                        # from the branch above; the panel copy names both.
+                        pc["reported_unmeasurable"] = (
+                            pc.get("reported_unmeasurable", 0) + 1)
         return data
 
     result = storage.update_json(_key_for(today), _mut, default=None)
@@ -641,5 +683,27 @@ def range_summary(days: int) -> dict[str, Any]:
             # Non-zero means some stored rows were written by an older schema and
             # excluded, so this table's Fresh calls will be short of "By route".
             "prefix_cache_skipped_rows": skipped_rows,
+            # THE GAP, MEASURED, per route -- calls that `by_route` counts and
+            # this table does not.
+            #
+            # It exists for an ordinary reason with no notice attached to it:
+            # every day recorded BEFORE #396 contributes to `counts` (and so to
+            # `by_route` and `total_calls`) and contributes no `prefix_cache` key
+            # at all, so `skipped_rows` stays 0 and neither existing notice
+            # renders. Measured on the real store: `by_route` rashifal_single 407
+            # / natal 2 against Fresh calls rashifal_single 7 / natal 2 -- 400
+            # calls absent from one card with nothing saying so.
+            #
+            # QA round 4 found the panel's response to this was a footnote
+            # asserting the two lists "never match anyway" because one is keyed
+            # by web route and the other by chat route. That is false -- both are
+            # the third segment of `provider|model|route` -- and it instructed
+            # the operator that a real 400-call discrepancy was meaningless. A
+            # number is the only honest answer to "why do these disagree".
+            "prefix_cache_unaccounted": {
+                route: n - prefix_acc.get(route, {}).get("calls", 0)
+                for route, n in by_route.items()
+                if n > prefix_acc.get(route, {}).get("calls", 0)
+            },
         },
     }

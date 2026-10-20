@@ -167,13 +167,15 @@ _last_usage: ContextVar[int | None] = ContextVar("_last_usage", default=None)
 # when the cache figure is absent, and llm_stats.record() -- which knows the model
 # -- is what resolves the ambiguity. Returning None for the whole tuple on a miss
 # (the original shape) threw away the one number needed to resolve it.
-_last_prefix: ContextVar[tuple[int, int | None] | None] = ContextVar("_last_prefix", default=None)
+_last_prefix: ContextVar[tuple[int, int | None, bool] | None] = ContextVar(
+    "_last_prefix", default=None)
 
 
-def _prefix_usage(usage) -> tuple[int, int | None] | None:
-    """(prompt_tokens, cached_tokens) from a usage block; cached may be None.
+def _prefix_usage(usage) -> tuple[int, int | None, bool] | None:
+    """(prompt_tokens, cached_tokens, rejected) from a usage block.
 
-    Three outcomes, because the provider has three things to say:
+    FOUR outcomes, because the provider has four things to say, and the
+    fourth used to be indistinguishable from the second:
 
     * `None`            -- no readable prompt size, so nothing is known at all.
     * `(prompt, None)`  -- the prompt size is known, the cache figure is NOT.
@@ -182,7 +184,21 @@ def _prefix_usage(usage) -> tuple[int, int | None] | None:
                            confident "0% cached" against a call that may simply
                            have been ineligible. Resolving which is
                            llm_stats.record()'s job -- it knows the model.
-    * `(prompt, n)`     -- the provider reported, and `n` may legitimately be 0.
+    * `(prompt, n, False)`     -- the provider reported, and `n` may legitimately
+                                  be 0.
+    * `(prompt, None, True)`   -- the provider reported something IMPOSSIBLE and
+                                  it was thrown away. Distinct from a silence,
+                                  and QA round 4 found that collapsing the two
+                                  was its own defect: `record()` books a silence
+                                  on an eligible call as a measured zero, so a
+                                  misreporting provider became indistinguishable
+                                  from one that genuinely missed, dragged the
+                                  published saving down, and left
+                                  `reported_unmeasurable` -- the counter that
+                                  exists to make this rule falsifiable -- at 0.
+                                  The flag is what lets `record()` keep the call
+                                  out of both denominators and still count the
+                                  rejection.
 
     bool is excluded because it is an int subclass. A negative count, and a
     cached count LARGER than the prompt it came from, are both rejected: neither
@@ -200,8 +216,15 @@ def _prefix_usage(usage) -> tuple[int, int | None] | None:
         return None
     if not isinstance(prompt, int) or isinstance(prompt, bool) or prompt < 0:
         return None
+    if cached is None:
+        # A SILENCE. Not a rejection: Groq omits the field entirely on a miss,
+        # so this is the ambiguous case `record()` resolves from the model.
+        return prompt, None, False
     if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:
-        return prompt, None
+        # Present but not a count (a string, a float, a bool) or negative. The
+        # provider DID say something and it is unusable, so this is a rejection
+        # and must not read as a measured zero either.
+        return prompt, None, True
     if cached > prompt:
         # Cached tokens are a SUBSET of prompt tokens (Groq: "cached_tokens:
         # Number of input tokens that were served from cache"), so this is not a
@@ -211,8 +234,8 @@ def _prefix_usage(usage) -> tuple[int, int | None] | None:
         # round 3 found the claim was resting on vendor sanity with nothing
         # enforcing it: _prefix_usage(prompt=100, cached=5000) returned
         # (100, 5000) and the published 5000% was saved only by the clamp.
-        return prompt, None
-    return prompt, cached
+        return prompt, None, True
+    return prompt, cached, False
 
 
 def last_used_model() -> str:
@@ -895,6 +918,7 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                         failed_provider=last_failed_provider,
                         prompt_tokens=prefix[0] if prefix else None,
                         cached_tokens=prefix[1] if prefix else None,
+                        reported_impossible=bool(prefix[2]) if prefix else False,
                     )
                 except Exception:  # noqa: BLE001 — stats never break the reading
                     log.debug("llm_stats.record failed", exc_info=True)
