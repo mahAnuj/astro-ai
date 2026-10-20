@@ -151,6 +151,37 @@ MUTATIONS = [
      swap('case "$PR_BRANCH" in',
           'case "${{ format(\'{0}\', steps.pr.outputs.branch) }}" in'),
      ["agent-merge.yml", "[interpolation]", "format("]),
+    # ---- The run:-comment boundary, measured 2026-10-20 ---------------------
+    # Inverted from controls. See the note in main() for what they cost.
+    ("an interpolation in a WHOLE-LINE shell comment IS interpolated",
+     "agent-merge.yml",
+     swap('case "$PR_BRANCH" in',
+          '# never write ${{ steps.pr.outputs.branch }} here\n          case "$PR_BRANCH" in'),
+     ["agent-merge.yml", "[interpolation]", "steps.pr.outputs.branch"]),
+    ("an interpolation in a TRAILING shell comment IS interpolated",
+     "agent-merge.yml",
+     swap('case "$PR_BRANCH" in',
+          'case "$PR_BRANCH" in  # not ${{ steps.pr.outputs.branch }}'),
+     ["agent-merge.yml", "[interpolation]", "steps.pr.outputs.branch"]),
+    # The real defect, restored verbatim: the comment that explains the rule
+    # used to spell an EMPTY expression, which is a syntax error, so GitHub
+    # refused the file on every push for two days.
+    ("an EMPTY expression in a run: block takes the whole file out of service",
+     "agent-steward.yml",
+     swap("so an expression in", "so a `${{ }}` in"),
+     ["agent-steward.yml", "[empty-expression]"]),
+    # Pins the #440 check. `workflow_run` matches a workflow's `name:`, never
+    # its filename, and `workflows: ["agent-work"]` matched nothing for two
+    # days while reading as wired.
+    ("a workflow_run naming a workflow no file declares", "agent-steward.yml",
+     swap('workflows: ["Agent work"]', 'workflows: ["agent-work"]'),
+     ["agent-steward.yml", "[workflow-run-target]"]),
+    # Pins the #441 check. GitHub refuses a duplicated key outright; measured on
+    # a probe branch with an otherwise-valid minimal workflow, which failed.
+    # `yaml.safe_load` keeps the last one silently, so nothing else here sees it.
+    ("a duplicated top-level key", "agent-sync.yml",
+     swap("name: Agent sync\n", "name: Agent sync\nname: Agent sync\n"),
+     ["agent-sync.yml", "[duplicate-key]"]),
 ]
 
 
@@ -198,30 +229,25 @@ def main() -> int:
                 bad.append(f"control '{label}' exited {code}")
                 print(f"  BAD  {label} exited {code} - false positive on prose")
 
-        # Check 5's own false-positive control (#358). The fix is explained in
-        # comments that quote the construct they warn about -- agent-merge.yml
-        # and close-on-evidence.yml both do -- so a gate that could not tell a
-        # warning from an occurrence would punish explaining itself. The
-        # untouched copy already covers the comments in the real files; this
-        # plants one inside a run: block, where the check actually looks.
-        for label, new in (
-            ("an interpolation named only in a WHOLE-LINE shell comment",
-             '# never write ${{ steps.pr.outputs.branch }} here\n          case "$PR_BRANCH" in'),
-            ("an interpolation named only in a TRAILING shell comment",
-             'case "$PR_BRANCH" in  # not ${{ steps.pr.outputs.branch }}'),
-        ):
-            d = fresh_copy(base, "ctl5_" + str(abs(hash(label))))
-            f = d / "agent-merge.yml"
-            before = f.read_text()
-            f.write_text(swap('case "$PR_BRANCH" in', new)(before))
-            assert f.read_text() != before
-            code, out = run_gate(d)
-            n_controls += 1
-            if code == 0:
-                print(f"  OK   {label} passes (exit 0)")
-            else:
-                bad.append(f"control '{label}' exited {code}")
-                print(f"  BAD  {label} exited {code} - false positive on prose")
+        # THE TWO CONTROLS THAT USED TO LIVE HERE ARE NOW MUTATIONS, and the
+        # reason is measured rather than argued. They required the gate to exit
+        # 0 on `${{ ... }}` inside a shell comment in a run: block, on the
+        # premise that "a gate that cannot tell a warning from an occurrence
+        # would punish explaining itself". GitHub does not share that premise:
+        # it substitutes into the whole run: string and has no concept of a
+        # shell comment, so a commented expression is interpolated like any
+        # other -- and an EMPTY one makes GitHub refuse the entire file.
+        #
+        # That is what took `agent-steward.yml` out of service from #438 to
+        # 2026-10-20: six zero-job failed runs, the workflow listed by path
+        # instead of name, no annotation on any API endpoint, and this gate
+        # printing `ok ... no `${{ }}` in any run: block` throughout. These
+        # controls are why it printed ok.
+        #
+        # So they are INVERTED, not deleted -- the same correction this file
+        # already carries for check 1, which had enshrined the mirror-image
+        # false positive. Three mutation rows below pin the boundary where the
+        # measurement actually puts it.
 
         d = fresh_copy(base, "empty")
         for p in d.glob("*.yml"):

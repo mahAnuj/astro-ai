@@ -1275,6 +1275,263 @@ MUTATIONS = [
      "and prompt_tokens >= MIN_CACHEABLE_PREFIX",
      "and prompt_tokens > MIN_CACHEABLE_PREFIX",
      "test_a_prompt_exactly_at_the_floor_is_measurable"),
+
+    # #409: visitor text at /admin/feedback is protected by autoescape ALONE.
+    ("#409: autoescape turned off in the real environment",
+     "src/astro_ai/routes/deps.py",
+     '    autoescape=jinja2.select_autoescape(\n'
+     '        enabled_extensions=("html", "htm", "xml", "svg"),\n'
+     '        default_for_string=True,\n'
+     '        default=False,\n'
+     '    ),\n',
+     '    autoescape=False,\n',
+     "test_autoescape_is_on_for_html_templates"),
+
+    ("#409: .html dropped from the autoescape extension list",
+     "src/astro_ai/routes/deps.py",
+     'enabled_extensions=("html", "htm", "xml", "svg"),',
+     'enabled_extensions=("htm", "xml", "svg"),',
+     "test_a_quote_and_angle_brackets_cannot_leave_the_mailto_attribute"),
+
+    ("#409: |safe on the User-Agent at /admin/feedback (the field nobody mentions)",
+     "src/astro_ai/templates/admin_feedback.html",
+     "{{ e.ua }}", "{{ e.ua | safe }}",
+     "test_feedback_templates_use_no_escape_hatch_at_all"),
+
+    ("#409: |safe on the email inside the mailto: attribute",
+     "src/astro_ai/templates/admin_feedback.html",
+     'href="mailto:{{ e.email }}"', 'href="mailto:{{ e.email | safe }}"',
+     "test_no_template_renders_a_visitor_field_through_an_escape_hatch"),
+
+    ("#409: the scanner stops matching |safe (the check itself goes blind)",
+     "tests/test_autoescape_pinned.py",
+     '_UNSAFE = re.compile(r"\\|\\s*(?:safe|markup)\\b|\\bMarkup\\s*\\(")',
+     '_UNSAFE = re.compile(r"\\|\\s*(?:safe_never|markup)\\b|\\bMarkup\\s*\\(")',
+     "test_the_scanner_catches_each_escape_hatch"),
+    ("#397: the /ask overlay re-asserts 'no cancelling conditions' for Nadi",
+     "src/astro_ai/prompts/ask_matching.txt",
+     '- Nadi is not among the Bhakoot parihāras. The exemptions the tradition records apply OUTSIDE the Madhya Nadi only and this product applies none of them — never tell a seeker whose Nadi is Madhya that one exists for their case. A slight (alpa) grade applies where pada-Nadi differs. Never invent any other Nadi condition.',
+     "- Nadi has no cancelling conditions in this tradition. Never invent one.",
+     "test_no_surface_asserts_nadi_has_no_cancelling_conditions"),
+
+    ("#397: the two /ask overlays' Nadi lines drift apart",
+     "src/astro_ai/prompts/ask_matching_third_party.txt",
+     "apply OUTSIDE the Madhya Nadi only and this product applies none of them",
+     "apply OUTSIDE the Madhya Nadi only and this product applies them",
+     "test_both_ask_overlays_carry_the_identical_nadi_line"),
+
+    ("#397: the engine's Nadi note re-asserts the absolute beside the exemption",
+     "src/astro_ai/matching.py",
+     '" Nadi is not among the Bhakoot parihāras and is required to be sound "\n        "alongside them, and the tradition prescribes shanti where it is present."',
+     '" Nadi has no cancelling conditions in this tradition and is required to be sound "\n        "alongside them, and the tradition prescribes shanti where it is present."',
+     "test_engine_note_states_the_narrowed_position_and_keeps_the_disclosure"),
+
+    ("#397: /ask context stops feeding nd.unevaluated (overlay names what the model cannot see)",
+     "src/astro_ai/llm.py",
+     '        lines += [f"  not evaluated: {u}" for u in nd.unevaluated]\n',
+     "",
+     "test_ask_context_names_the_exemptions_the_overlay_refers_to"),
+
+    ("#397: Hindi panel footnote regains the false first sentence",
+     "src/astro_ai/i18n.py",
+     '"भकूट के परिहारों में नाड़ी सम्मिलित नहीं है; किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     '"नाड़ी का कोई परिहार नहीं होता। किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     "test_panel_footnote_still_says_no_points_and_not_the_absolute"),
+
+    # ---- QA round 1 on #397. All four blockers were introduced BY this
+    # ---- change; the last row is a pre-existing hole the reviewer measured.
+
+    ("#397 QA: the exemption sentence is unscoped again, so a Madhya pair is told one was declined",
+     "src/astro_ai/matching.py",
+     '    note += (\n        " The regional and community exemptions it records do not extend to the "\n        "Madhya Nadi."\n        if grave else\n        " It also records exemptions by region and community (shown below), "\n        "which we do not apply."\n    )',
+     '    note += (\n        " It also records exemptions by region and community (shown below), "\n        "which we do not apply."\n    )',
+     "test_a_madhya_pair_is_not_told_an_exemption_was_declined_for_it"),
+
+    ("#397 QA: the Hindi footnote states the OPPOSITE position (ASCII _ABSOLUTE cannot see it)",
+     "src/astro_ai/i18n.py",
+     '"भकूट के परिहारों में नाड़ी सम्मिलित नहीं है; किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     '"नाड़ी के परिहार लागू होते हैं; किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     "test_the_hindi_footnote_states_the_position_and_not_only_the_points"),
+
+    ("#397 QA: a contradicting overlay instruction on a line the old prefix scan could not see",
+     "src/astro_ai/prompts/ask_matching.txt",
+     "- The same holds for every Nadi mitigation:",
+     "- Regional or community exemptions for Nadi are not part of this tradition; never tell the seeker one exists.\n- The same holds for every Nadi mitigation:",
+     "test_no_other_line_in_an_overlay_restates_the_nadi_rule"),
+
+    ("#397 QA: the alpa branch says the tradition REMOVES the dosha",
+     "src/astro_ai/matching.py",
+     '"dosha slight in this case — reduced, not removed."',
+     '"dosha removed entirely in this case."',
+     "test_the_alpa_branch_says_reduced_and_never_removed"),
+
+    ("#397 QA: the alpa grading is inverted (no fixture reached this branch at all)",
+     "src/astro_ai/matching.py",
+     "            if g_pn != b_pn:\n                alpa = True",
+     "            if g_pn == b_pn:\n                alpa = True",
+     "test_the_alpa_branch_says_reduced_and_never_removed"),
+
+    ("#397 QA: a same-Nadi pair is awarded 8/8 (18.0 Avara -> 26.0 Madhyam, 681 tests passed)",
+     "src/astro_ai/matching.py",
+     'name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=0.0,',
+     'name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=8.0,',
+     "test_a_nadi_dosha_awards_no_points_however_it_is_graded"),
+    # ---- QA round 2 on #397. S-1 is a fourth surface the round-1 FIX created;
+    # ---- the rest are guards round 1's fixes shipped without. 13 of the
+    # ---- reviewer's 19 hand-built mutants survived the suite AND the sweep.
+
+    ("#397 r2: the /ask context NOTE is unscoped again (the 4th surface)",
+     "src/astro_ai/llm.py",
+     '"Madhya Nadi, and are not applied here."))',
+     '"Madhya Nadi, and are applied here."))',
+     "test_the_ask_context_scopes_the_exemption_on_the_grade"),
+
+    ("#397 r2: the overlay scope is INVERTED (\"to the Madhya Nadi only\")",
+     "src/astro_ai/prompts/ask_matching.txt",
+     "apply OUTSIDE the Madhya Nadi only",
+     "apply to the Madhya Nadi only",
+     "test_both_ask_overlays_carry_the_identical_nadi_line"),
+
+    ("#397 r2: the overlay's anti-hallucination clause is deleted",
+     "src/astro_ai/prompts/ask_matching.txt",
+     " Never invent any other Nadi condition.", "",
+     "test_both_ask_overlays_carry_the_identical_nadi_line"),
+
+    ("#397 r2: the English footnote asserts the OPPOSITE position",
+     "src/astro_ai/i18n.py",
+     '"Nadi is not among the Bhakoot parihāras, and no mitigation adds points to it.",',
+     '"Nadi is among the Bhakoot parihāras, and no mitigation adds points to it.",',
+     "test_the_english_footnote_states_the_position_and_not_only_the_points"),
+
+    ("#397 r2: the scoped sentence never reaches the rendered panel",
+     "src/astro_ai/templates/matching_result.html",
+     "{{ _nd.note }}", "{{ '' }}",
+     "test_the_scoped_sentence_actually_reaches_the_rendered_panel"),
+
+    ("#397 r2: the exemption disclosure is suppressed, so \"(shown below)\" points at nothing",
+     "src/astro_ai/templates/matching_result.html",
+     "{% if _nd.unevaluated %}", "{% if False %}",
+     "test_the_exemption_disclosure_reaches_the_rendered_panel"),
+
+    ("#397 r2: the disclosure says we DO apply the exemptions",
+     "src/astro_ai/matching.py",
+     '"We do not apply those exemptions automatically.",',
+     '"We apply those exemptions automatically.",',
+     "test_the_exemption_disclosure_says_we_do_NOT_apply_them"),
+
+    ("#397 r2: the alpa pointer claims the dosha is cleared, contradicting the mitigation below it",
+     "src/astro_ai/matching.py",
+     'note += " One mitigation applies, below."',
+     'note += " A mitigation applies which clears this dosha, below."',
+     "test_the_alpa_pointer_cannot_contradict_the_mitigation_it_points_at"),
+
+    ("#397 r2: the Nadi absolute returns on /learn in a phrasing _ABSOLUTE never matched",
+     "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html",
+     "  <div class=\"callout-label\">Nadi Dosh is graded, not cancelled</div>",
+     "  <div class=\"callout-label\">Nadi Dosh is graded, not cancelled</div>\n"
+     "  <p>Nadi can never be cancelled or waived by anything.</p>",
+     "test_a_nadi_absolute_cannot_return_in_a_third_phrasing"),
+    # ---- The gate that printed PASS against thirteen HTTP 500s. Every row
+    # ---- below removes one of the three guards and must turn the suite red.
+
+    ("#hindi-gate: no health probe, so a foreign server on the port is measured as ours",
+     "scripts/verify_hindi_surface.py",
+     '    if probe_code != 200 or \'"ok"\' not in probe:',
+     '    if False:',
+     "test_a_foreign_server_on_the_port_is_not_this_app"),
+
+    ("#hindi-gate: any status is read as a page, so 500s sweep clean (the original defect)",
+     "scripts/verify_hindi_surface.py",
+     '        if code not in (200, 503):',
+     '        if code not in (200, 503, 404, 500):',
+     "test_a_page_status_the_gate_cannot_read_is_not_a_pass"),
+
+    ("#hindi-gate: an empty <main> satisfies every negative check and is called a pass",
+     "scripts/verify_hindi_surface.py",
+     '        if not text.strip():',
+     '        if False:',
+     "test_an_empty_main_is_not_a_pass"),
+    # ---- #442: the steward can dispatch, and a merge is not a refix ---------
+    ("#442: the carrier stops refusing a lenient dispatch line",
+     "scripts/dispatch_cycle.sh",
+     "grep -oE '^issue=[0-9]+$'",
+     "grep -oE 'issue=[0-9]+'",
+     "test_anything_but_issue_equals_digits_is_refused"),
+    ("#442: the carrier stops treating an unreadable concurrency check as busy",
+     "scripts/dispatch_cycle.sh",
+     'if [ "$busy" != "0" ]; then',
+     'if [ "$busy" = "1" ]; then',
+     "test_an_unreadable_concurrency_check_counts_as_busy"),
+    ("#442: the carrier dispatches at a closed issue",
+     "scripts/dispatch_cycle.sh",
+     'if [ "$state" != "OPEN" ]; then',
+     'if [ "$state" = "NEVER" ]; then',
+     "test_a_closed_issue_is_refused"),
+    ("#442: a merge after the verdict is called a fix again",
+     "scripts/detect_stalls.py",
+     "elif split[0] == 0 and split[1] > 0:",
+     "elif False:",
+     "test_a_merge_after_the_verdict_is_not_a_refix"),
+    ("#442: merge-ness read from the message instead of the parent count",
+     "scripts/detect_stalls.py",
+     'if int(meta.get("parents", 1)) > 1:',
+     'if (c.get("messageHeadline") or "").startswith("Merge"):',
+     "test_merge_ness_comes_from_parent_count_not_the_message"),
+    ("#442: unclassifiable commits assert a fix instead of hedging",
+     "scripts/detect_stalls.py",
+     "if split is None:",
+     "if False:",
+     "test_unclassifiable_commits_hedge_instead_of_guessing"),
+    # ---- #409 round 2: the SVG sink, and the header that hid behind a platform.
+    # Each anchor is executable code, never a comment -- the anchor validator
+    # exists because a dead row once pinned itself to prose.
+    ("#409: `.svg` dropped back out of the autoescape list (the XSS sink)",
+     "src/astro_ai/routes/deps.py",
+     'enabled_extensions=("html", "htm", "xml", "svg"),',
+     'enabled_extensions=("html", "htm", "xml"),',
+     "test_svg_is_autoescaped_and_text_is_not"),
+    ("#409: the seeker's NAME routed round autoescape with |safe",
+     "src/astro_ai/templates/cosmic_card.svg",
+     "{{ display_name or 'Janma Kundli' }}",
+     "{{ (display_name or 'Janma Kundli') | safe }}",
+     "test_a_script_tag_in_a_visitor_field_cannot_reach_the_cosmic_card"),
+    ("#409: the seeker's BIRTH PLACE routed round autoescape with |safe",
+     "src/astro_ai/templates/cosmic_card.svg",
+     "{{ details.birth_place }}",
+     "{{ details.birth_place | safe }}",
+     "test_a_script_tag_in_a_visitor_field_cannot_reach_the_cosmic_card"),
+    ("#409: the session-derived card made publicly cacheable again",
+     "src/astro_ai/routes/kundli_card.py",
+     '"Cache-Control": "private, max-age=3600",',
+     '"Cache-Control": "public, max-age=3600",',
+     "test_the_cosmic_card_is_not_cacheable_by_a_shared_cache"),
+    # ---- the conflict resolver's own parser, found by PR #443 x #425 --------
+    # RE-TARGETED. This row used to replace the newline ASSERTION with
+    # `assert True` -- and that assertion is a guard, not the mechanism:
+    # `hunks()` is line-based and preserves newlines structurally, so removing
+    # the assert changes no behaviour and no test could possibly catch it. The
+    # row reported MISSED the first time the fast-path harness ran it, and under
+    # the old harness it would have been MISSED too and nobody looked.
+    #
+    # A mutation must break the BEHAVIOUR the test asserts. `splitlines(True)`
+    # is what keeps each row a row; without keepends every row in the hunk
+    # collapses into one, which is exactly the defect that shipped into
+    # ARCHITECTURE.md on 2026-10-20.
+    ("#443: the dated union stops keeping line endings (rows get absorbed)",
+     "scripts/merge_main_into_branch.py",
+     "both = (theirs + ours).splitlines(True)",
+     "both = (theirs + ours).splitlines()",
+     "test_a_dated_union_never_absorbs_one_row_into_another"),
+    ("#443: the dirty check counts untracked files again (script can never run)",
+     "scripts/merge_main_into_branch.py",
+     'git("status", "--porcelain", "--untracked-files=no")',
+     'git("status", "--porcelain")',
+     "test_the_dirty_check_ignores_untracked_files"),
+    ("#443: a malformed hunk returns nothing instead of raising",
+     "scripts/merge_main_into_branch.py",
+     'raise RuntimeError("a conflict hunk has no `=======` separator")',
+     'return out',
+     "test_a_hunk_with_no_separator_raises_rather_than_returning_nothing"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -1395,16 +1652,56 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
         if source.count(old) != 1:
             return False, f"ANCHOR MISSED ({source.count(old)})"
         target.write_text(source.replace(old, new))
-        result = subprocess.run(
-            [sys.executable, "-m", "pytest", str(sandbox / "tests"), "-q", "--no-header"],
-            capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
-        )
+
+        def _pytest(*extra: str) -> subprocess.CompletedProcess:
+            return subprocess.run(
+                [sys.executable, "-m", "pytest", str(sandbox / "tests"),
+                 "-q", "--no-header", *extra],
+                capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
+            )
+
+        def _red(r: subprocess.CompletedProcess) -> bool:
+            """A real assertion failure, not a collection error.
+
+            A non-zero exit from a collection error looks like a catch and is
+            worth nothing, which is why this reads the output and not just the
+            code. pytest exits 5 on "no tests matched", which is neither.
+            """
+            return r.returncode not in (0, 5) and (
+                "FAILED" in r.stdout or "failed" in r.stdout)
+
+        # EVERY ROW ALREADY NAMES THE TEST THAT MUST CATCH IT, so run that test
+        # and not the other 766. Measured 2026-10-20 on this tree: one named
+        # test is 0.34s against 19.5s for the whole suite, and this step was
+        # 80% of every pr-gates run (1054s and 673s on two consecutive runs,
+        # 191 rows x a full suite / 4 workers).
+        #
+        # It is also a STRICTER question than the one asked before. "The suite
+        # goes red" and "THIS test goes red" are different claims, and each row
+        # asserts the second -- the `test` field is not decoration, the
+        # GUARD GONE check above already treats it as load-bearing.
+        #
+        # So the fast path can only ever CONFIRM a catch. It can never create a
+        # failure, because a named test that stays green falls through to the
+        # full suite below, exactly as before.
+        if test and test != "_control":
+            fast = _pytest("-k", test.split("[", 1)[0])
+            if _red(fast):
+                return True, "CAUGHT"
+
+        # Reached when the named test did not catch it, or for the control row,
+        # which must see the whole suite or it would stop being a control.
+        result = _pytest()
         if result.returncode == 0:
             return False, "*** MISSED ***"
-        # A non-zero exit from a collection error would look like a catch and
-        # be worth nothing, so require an actual assertion failure.
-        if "FAILED" not in result.stdout and "failed" not in result.stdout:
+        if not _red(result):
             return False, f"NON-TEST FAILURE rc={result.returncode}"
+        if test and test != "_control":
+            # NEW INFORMATION, and it was invisible before: something caught the
+            # mutation but not the test this row names. The row still counts as
+            # caught -- the defect cannot escape -- but its `test` field is
+            # wrong, and a wrong field is what the GUARD GONE check cannot see.
+            return True, "CAUGHT BY ANOTHER TEST — row names `" + test + "`"
         return True, "CAUGHT"
 
 
@@ -1456,8 +1753,16 @@ for i, (label, _rel, _old, _new, _test) in enumerate(_work):
 print(f"{'mutation':<58} {'verdict'}")
 print("-" * 76)
 bad = 0
+mispointed: list[str] = []
 for label, verdict in rows:
-    if verdict != "CAUGHT":
+    if verdict.startswith("CAUGHT BY ANOTHER TEST"):
+        # CAUGHT, so it does NOT count as bad: the defect cannot escape, which
+        # is what this harness is for. What is wrong is the row's `test` field,
+        # and that is reported separately below rather than turning the gate
+        # red -- a speed change may not invent failures, or nobody will trust
+        # the number it prints.
+        mispointed.append(f"{label} -> {verdict}")
+    elif verdict != "CAUGHT":
         bad += 1
     print(f"  {label:<56} {verdict}")
 print()
@@ -1468,6 +1773,14 @@ real = len(rows) - 1
 caught = real - (bad - 1)
 print(f"{caught}/{real} mutations caught")
 print("repository untouched: mutations run in a temporary copy")
+if mispointed:
+    print()
+    print(f"{len(mispointed)} row(s) are MIS-POINTED: the mutation was caught, but not by")
+    print("the test the row names. The protection is real; the bookkeeping is wrong,")
+    print("and until 2026-10-20 this was invisible because every row ran the whole")
+    print("suite and any failure read as CAUGHT.")
+    for line in mispointed:
+        print(f"  - {line}")
 if not control_ok:
     print()
     print("CONTROL FAILED — the sandbox reports CAUGHT for an edit that changes")

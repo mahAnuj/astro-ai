@@ -564,8 +564,30 @@ def format_guna_milan_for_prompt(guna, pair_label: str | None = None) -> str:
         sev = "gravest form" if nd.grave else ("reduced" if nd.alpa else "present")
         lines.append(f"Nadi dosha: {nd.nadi} Nadi — {sev}")
         lines += [f"  mitigation: {m}" for m in nd.mitigations]
-        lines.append("  NOTE: Nadi has NO cancelling conditions in this tradition and "
-                     "gains no points from any mitigation.")
+        # Fed the same way as `bd.unevaluated` above. The overlay names the
+        # regional/community exemptions; without this line the model is told
+        # they exist and is never shown what /matching says about them (#397).
+        lines += [f"  not evaluated: {u}" for u in nd.unevaluated]
+        # SCOPED ON `grave`, the same way `matching.py`'s note and both overlays
+        # are. QA round 2 found this was the FOURTH surface and the only one the
+        # scoping fix missed -- and it is a surface that fix created: on main the
+        # NOTE made no exemption claim at all. So a Madhya couple's model context
+        # carried, directly under their own "gravest form" line, a flat statement
+        # that exemptions exist and are not applied here, with nothing saying
+        # they are excluded from them. That is BUG-1's exact shape, one surface
+        # over, and the commit body claimed "every surface".
+        #
+        # `nd.note` -- the one place the scoped sentence already lived -- is
+        # deliberately NOT rendered here, and that is why this line has to carry
+        # the scope itself rather than deferring to it.
+        lines.append(
+            "  NOTE: Nadi gains no points from any mitigation, and is not among "
+            "the Bhakoot parihāras. " + (
+                "The regional and community exemptions the text records do not "
+                "extend to the Madhya Nadi, so none applies to this pair."
+                if nd.grave else
+                "Regional/community exemptions exist in the text, outside the "
+                "Madhya Nadi, and are not applied here."))
 
     return "\n".join(lines)
 
