@@ -91,18 +91,57 @@ def git(*args: str, check: bool = True) -> str:
 
 
 def hunks(text: str, mark: str) -> list[tuple[int, int, int, str, str]]:
-    """Every conflict hunk as `(start, mid, end, ours, theirs)`."""
+    """Every conflict hunk as `(start, mid, end, ours, theirs)`, char offsets.
+
+    LINE-BASED, after two character-offset versions each got a side wrong. Both
+    failures were real conflict shapes, found on 2026-10-20 while resolving PR
+    #443 against #425 by hand because this script could not run at all:
+
+    * `text.index("\n=======")` misses an EMPTY OURS side, because then
+      `=======` sits at the very start of the search region with no newline
+      before it inside that region.
+    * `text.index("\n=======\n")` misses an EMPTY THEIRS side, because then the
+      text reads `=======\n>>>>>>>` and there is no newline before the marker.
+
+    Both raised ValueError, which the caller reads as "no hunk here" rather than
+    "an empty side" -- a parse bug that presents as a clean file.
+
+    Each side is returned WITH its trailing newline, or as `""`. A side whose
+    last line lost its newline silently CONCATENATED two decision-log rows in
+    `ARCHITECTURE.md`: one row's text ended up inside another and a third
+    stopped being a row, with every test green.
+    """
+    lines = text.splitlines(True)
+    offs, acc = [], 0
+    for ln in lines:
+        offs.append(acc)
+        acc += len(ln)
+    offs.append(acc)
+
     out: list[tuple[int, int, int, str, str]] = []
     i = 0
-    while True:
-        a = text.find("<<<<<<< ", i)
-        if a < 0:
-            return out
-        nl = text.index("\n", a) + 1
-        m = text.index("\n=======\n", nl)
-        b = text.index(f"\n>>>>>>> {mark}", m)
-        out.append((a, m, b, text[nl:m + 1], text[m + len("\n=======\n"):b + 1]))
-        i = b + 1
+    while i < len(lines):
+        if not lines[i].startswith("<<<<<<< "):
+            i += 1
+            continue
+        mid = next((j for j in range(i + 1, len(lines))
+                    if lines[j].rstrip("\n") == "======="), None)
+        if mid is None:
+            raise RuntimeError("a conflict hunk has no `=======` separator")
+        end = next((j for j in range(mid + 1, len(lines))
+                    if lines[j].startswith(f">>>>>>> {mark}")), None)
+        if end is None:
+            raise RuntimeError(f"a conflict hunk has no `>>>>>>> {mark}` marker")
+        ours = "".join(lines[i + 1:mid])
+        theirs = "".join(lines[mid + 1:end])
+        for side in (ours, theirs):
+            assert side == "" or side.endswith("\n"), "a conflict side lost its newline"
+        # `mid` and `end` keep the original contract: the offset of the newline
+        # ENDING the line before the marker, so `text.index("\n", b + 1)` in the
+        # resolvers still finds the end of the `>>>>>>>` line.
+        out.append((offs[i], offs[mid] - 1, offs[end] - 1, ours, theirs))
+        i = end + 1
+    return out
 
 
 def resolve_union_dated(text: str, mark: str) -> str:
@@ -166,8 +205,22 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--base", default="origin/main")
     args = ap.parse_args(argv)
 
-    if git("status", "--porcelain").strip():
-        print("COULD NOT RUN: the working tree is dirty. Commit or stash first.")
+    # `--untracked-files=no`, and this is not a loosening. The plain form lists
+    # UNTRACKED files too, and this repository permanently carries several by
+    # intention -- CLAUDE.md names `.local/`, `.serena/`, `QA_LOG.md`,
+    # `.claude/worktrees/` and `verify-main/` and says to leave them alone. So
+    # this check was unsatisfiable in the only tree it was written for: the
+    # script could NEVER run here, while `steward.md` routed every
+    # `pr-conflicting` stall to it. An instruction the system cannot execute,
+    # which is #442's defect class exactly, found the first time a conflict
+    # actually needed it (PR #443 against #425, 2026-10-20).
+    #
+    # Untracked files cannot be lost by a merge: git refuses one that would
+    # overwrite an untracked path, with its own error. TRACKED modifications
+    # still block, which is the case that matters.
+    if git("status", "--porcelain", "--untracked-files=no").strip():
+        print("COULD NOT RUN: the working tree has uncommitted TRACKED changes. "
+              "Commit or stash first.")
         return 3
     branch = git("rev-parse", "--abbrev-ref", "HEAD").strip()
     if branch == "HEAD":
