@@ -1588,7 +1588,8 @@ MUTATIONS = [
 
     ("#396 r5: the dash sentence goes back to three causes",
      "src/astro_ai/templates/admin_dashboard.html",
-     "<strong>A dash has four causes</strong>", "<strong>A dash has three causes</strong>",
+     "<strong>An Effective dash has four causes</strong>",
+     "<strong>An Effective dash has three causes</strong>",
      "test_the_dash_causes_are_counted_and_the_fourth_is_the_impossible_report"),
 
     ("#396 r5: the dash sentence drops the impossible-report cause",
@@ -1667,14 +1668,14 @@ MUTATIONS = [
     # ---- row here); one that stays is tied to the code it describes.
     ("#396 r6 F-1: the false 'Measurable column tells the first two apart' sentence is reinstated",
      'src/astro_ai/templates/admin_dashboard.html',
-     '          impossible and discarded.\n        </p>',
-     '          impossible and discarded. The Measurable column tells\n          the first two apart from Fresh calls.\n        </p>',
+     'not that nothing was measured.\n        </p>',
+     'not that nothing was measured. The Measurable column tells\n          the first two apart from Fresh calls.\n        </p>',
      'test_sentences_that_no_test_could_pin_stay_deleted'),
 
     ("#396 r6 F-3: the overclaiming '(the notice above says so ...)' parenthetical is reinstated",
      'src/astro_ai/templates/admin_dashboard.html',
-     '          impossible and discarded.\n        </p>',
-     '          impossible and discarded (the notice above says so when that has happened).\n        </p>',
+     'not that nothing was measured.\n        </p>',
+     'not that nothing was measured (the notice above says so when that has happened).\n        </p>',
      'test_sentences_that_no_test_could_pin_stay_deleted'),
 
     ("#396 r6 F-4: the unpinned '732 tokens' parenthetical is reinstated",
@@ -1703,19 +1704,19 @@ MUTATIONS = [
 
     ('#396 r6 F-2: the Hit-rate dash tooltip enumerates causes again (false on the impossible-report row)',
      'src/astro_ai/templates/admin_dashboard.html',
-     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%.',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%:',
      '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Either no call returned a cache figure. Unmeasured, not 0%.',
      'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
 
     ('#396 r6 F-2: the Effective dash tooltip enumerates three causes again (false on the fourth)',
      'src/astro_ai/templates/admin_dashboard.html',
-     '{% if pc.effective_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%.',
+     '{% if pc.effective_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%:',
      '{% if pc.effective_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Nothing measurable here: a non-reporting model, every prompt under the minimum cacheable length, or no usable usage block. Unmeasured, not 0%.',
      'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
 
     ("#396 r6 F-4: the 'Unmeasured, not 0%' tooltip text stops saying it (Hit rate)",
      'src/astro_ai/templates/admin_dashboard.html',
-     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%.',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%:',
      '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Zero.',
      'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
 
@@ -1748,6 +1749,53 @@ MUTATIONS = [
      '          the provider returned no usable <code>usage</code> block at all; or every report',
      '          every report',
      'test_all_four_dash_causes_render_identically_and_the_footnote_lists_them'),
+
+    # --- #396 QA round 7 ---------------------------------------------------
+    # Two of round 7's seventeen mutants SURVIVED. Both are claims the page makes
+    # that no assertion could fail, and the rule here is that such a sentence is
+    # deleted or pinned. Both are true, so they are pinned.
+    ("#396 r7: Groq's prefix cache is promised as a guarantee",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "is opportunistic.", "is guaranteed.",
+     "test_the_two_caches_sentences_cannot_be_softened"),
+
+    ("#396 r7: the response cache is claimed to outlive its instance",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "dies with it.", "survives cold starts.",
+     "test_the_two_caches_sentences_cannot_be_softened"),
+
+    # N-1. The two rate columns dash under DIFFERENT rules, so ONE tooltip for
+    # both is necessarily false on one of them -- which is what round 7 failed
+    # the page on. This puts the shared tooltip back.
+    ("#396 r7 N-1: one tooltip serves both dash columns again",
+     "src/astro_ai/templates/admin_dashboard.html",
+     'title="Unmeasured, not 0%: no call on this route reported a cache figure, or those '
+     'that did reported no prompt tokens. Groq returns no figure on a miss, so this sits '
+     'beside a real Effective number when nothing hit."',
+     'title="Unmeasured, not 0%: no call on this route was Measurable. The note below the '
+     'table lists the four causes."',
+     "test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means"),
+
+    ("#396 r7 N-1: Effective's four causes are claimed of every dash again",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "<strong>An Effective dash has four causes</strong>",
+     "<strong>A dash has four causes</strong>",
+     "test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means"),
+
+    # Round 7 called a zero reported-prompt total a possible SIXTH cause it had
+    # not seeded. It is `_rate`'s second clause, and the tooltip must say so.
+    ("#396 r7: the Hit-rate tooltip drops its denominator clause",
+     "src/astro_ai/templates/admin_dashboard.html",
+     ", or those that did reported no prompt tokens", "",
+     "test_a_reported_prompt_total_of_zero_is_the_hit_rate_rules_second_clause"),
+
+    # The code side of the same rule: with `not n` gone, a route where every call
+    # missed reads a flat 0.0% hit rate instead of a dash -- "absent" booked as
+    # "measured zero", the defect this whole panel exists to avoid.
+    ("#396 r7: _rate books an unobserved rate as a measured zero",
+     "src/astro_ai/llm_stats.py",
+     "    if not n or prompt <= 0:", "    if prompt <= 0:",
+     "test_an_all_miss_route_dashes_hit_rate_beside_a_real_effective"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

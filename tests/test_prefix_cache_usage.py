@@ -745,22 +745,35 @@ def test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means(
     four causes and asserts the footnote lists those four."""
     _seed_four_dash_causes()
     html = admin.get("/admin").text
-    assert "A dash has four causes" in html
+    assert "An Effective dash has four causes" in html
     assert "not a short prompt" not in html, (
         "that was the absolute claim the table's own tooltip contradicted")
-    tooltips = set()
+    hit_tips, eff_tips = set(), set()
     for route in _FOUR_DASH_ROUTES:
         row = _row(html[html.index("Provider-side prefix cache (Groq)"):], route)
         titles = re.findall(r'<td\b[^>]*\btitle="([^"]*)"[^>]*>&mdash;</td>', row)
         assert len(titles) == 2, f"{route}: Hit rate and Effective should both be dashes with a tooltip"
-        tooltips.update(titles)
-    assert len(tooltips) == 1, f"the two dash tooltips diverged: {tooltips}"
-    (tip,) = tooltips
-    assert tip.startswith("Unmeasured, not 0%."), tip
-    assert "lists what a dash can mean" in tip, tip
-    for cause in ("non-reporting", "minimum", "usage", "impossible", "no call"):
-        assert cause not in tip, (
-            f"a tooltip that names a cause is false on a row of another cause: {tip!r}")
+        # Positional: the Hit-rate cell precedes the Effective cell in the row.
+        hit_tips.add(titles[0])
+        eff_tips.add(titles[1])
+    assert len(hit_tips) == 1 and len(eff_tips) == 1, (
+        f"a tooltip varies by row: {hit_tips} / {eff_tips}")
+    (hit_tip,), (eff_tip,) = hit_tips, eff_tips
+    assert hit_tip != eff_tip, (
+        "ONE tooltip for both columns is the round-7 defect: they dash under "
+        "different rules, so a shared text is false on one of them")
+    for tip in (hit_tip, eff_tip):
+        assert tip.startswith("Unmeasured, not 0%"), tip
+    # Effective points at the footnote's four causes and names none of them, so it
+    # cannot be false on a row of another cause.
+    assert "lists the four causes" in eff_tip, eff_tip
+    for cause in ("non-reporting", "minimum", "usage", "impossible"):
+        assert cause not in eff_tip, (
+            f"a tooltip that names a cause is false on a row of another cause: {eff_tip!r}")
+    # Hit rate states its OWN rule and must not borrow Effective's count.
+    assert "reported a cache figure" in hit_tip, hit_tip
+    assert "four causes" not in hit_tip, (
+        "Effective's four causes do not describe a Hit-rate dash -- round 7, N-1")
 
 
 # One route per cause of a dash. Fresh calls is 3 on every one so that no count
@@ -797,7 +810,7 @@ def test_all_four_dash_causes_render_identically_and_the_footnote_lists_them(
     for route in _FOUR_DASH_ROUTES:
         assert _pc_cells(html, route)[1:] == ["3", "0", "—", "0", "—", "—", "—"], route
     causes = _notice(html)
-    causes = causes[causes.index("A dash has four causes"):]
+    causes = causes[causes.index("An Effective dash has four causes"):]
     for phrase in ("a non-reporting model served every call",
                    "the prompts were under the minimum",
                    "the provider returned no usable usage block at all",
@@ -1440,7 +1453,7 @@ def test_the_dash_causes_are_counted_and_the_fourth_is_the_impossible_report(
     html = admin.get("/admin").text
     assert _pc_cells(html, "today")[-2:] == ["—", "—"]
     text = _notice(html)
-    causes = text[text.index("A dash has four causes"):]
+    causes = text[text.index("An Effective dash has four causes"):]
     assert "every report it sent was impossible and discarded" in causes
     assert "three causes" not in text
 
@@ -1596,3 +1609,113 @@ def test_the_gap_copy_says_older_days_age_out(admin, stats_dir):
     key = "groq120|openai/gpt-oss-120b|ask"
     _seed(stats_dir, _GAP_ROW, counts={key: 409})
     assert "shrinks as they age out of the window" in _notice(admin.get("/admin").text)
+
+
+# The two rate columns dash under DIFFERENT rules, both of them `_rate`'s:
+#
+#   hit_pct       = _rate(cached_tokens,     prompt_reported,   reported)
+#   effective_pct = _rate(cached_measurable, prompt_measurable, measurable)
+#
+# and `_rate` returns None exactly when `not n or prompt <= 0`. So each column
+# has a TWO-CLAUSE rule and nothing else, which is why the page now states the
+# rule per column instead of counting causes: rounds 4, 5, 6 and 7 each found
+# one more cause, because an enumeration cannot be closed by inspection.
+#
+# A route where every measurable call MISSED: Groq sends no figure on a miss, so
+# `reported` is 0 while `measurable` is not. Hit rate dashes (n == 0) and
+# Effective is a real 0.0%. This is the commonest shape on a Groq route and it is
+# the row round 7 failed the page on -- none of Effective's four causes describes
+# it, and the shared tooltip sent the reader to a note that did not cover it.
+_ALL_MISS_ROW = {"calls": 3, "measurable": 3, "prompt_measurable": 3000,
+                 "cached_measurable": 0, "reported": 0, "prompt_reported": 0,
+                 "cached_tokens": 0}
+
+
+def _dash_titles(html: str, route: str) -> list[str]:
+    row = _row(html[html.index("Provider-side prefix cache (Groq)"):], route)
+    return re.findall(r'<td\b[^>]*\btitle="([^"]*)"[^>]*>&mdash;</td>', row)
+
+
+def test_an_all_miss_route_dashes_hit_rate_beside_a_real_effective(admin, stats_dir):
+    """QA round 7, N-1. Every call measurable, every one a miss: Hit rate is a
+    dash and Effective is a measured 0.0%. The page used to say "A dash has four
+    causes" and none of the four is true here -- Measurable is 3, the model
+    reports, the prompts are long enough and no report was discarded -- while the
+    dash's own tooltip pointed at that list. Both are now scoped to Effective."""
+    _seed(stats_dir, _ALL_MISS_ROW, route="allmiss",
+          key="groq120|openai/gpt-oss-120b|allmiss")
+    html = admin.get("/admin").text
+    assert _pc_cells(html, "allmiss")[1:] == [
+        "3", "3", "3000 / 0", "0", "—", "—", "0.0%"], _pc_cells(html, "allmiss")
+
+    # Exactly one dash on this row, and it is Hit rate's.
+    (tip,) = _dash_titles(html, "allmiss")
+    assert "reported a cache figure" in tip, tip
+    assert "four causes" not in tip, (
+        "Effective's four causes are all false on this row -- the round-7 defect")
+
+    # And the footnote names this pair rather than leaving the reader to infer it.
+    text = _notice(html)
+    assert "beside a real" in text and "Effective number" in text, text
+    assert "no call hit" in text, (
+        "the operator needs to be told what the pair MEANS, not just that it occurs")
+
+    # `_rate`'s two guards are INDEPENDENT, and the row above exercises only the
+    # denominator one: `reported` and `prompt_reported` are both 0 there, so
+    # dropping `not n` changes nothing on it. Asserted directly, because a stored
+    # row carrying prompt tokens against zero observed calls must still read as
+    # unobserved -- booking it as a measured 0.0% is the one error this whole
+    # panel exists to prevent ("absent is never zero").
+    assert llm_stats._rate(0, 5000, 0) is None, (
+        "zero observations is unobserved, whatever the denominator says")
+
+
+def test_a_reported_prompt_total_of_zero_is_the_hit_rate_rules_second_clause(
+        admin, stats_dir):
+    """Round 7 listed this as a possible SIXTH cause it had not seeded. It is not
+    a sixth cause -- it is the second clause of `_rate`'s own rule (`prompt <= 0`),
+    which is why the page states the rule instead of a list. Reports arrived, so
+    `reported` is 3, but they carried no prompt tokens: Hit rate dashes on the
+    denominator, not on the count."""
+    row = {**_ALL_MISS_ROW, "reported": 3, "prompt_reported": 0}
+    assert not llm_stats._is_impossible({**llm_stats._PREFIX_ZERO, **row}), (
+        "the fixture must be a coherent row, or it proves nothing about the rule")
+    assert llm_stats._rate(0, 0, 3) is None, "the clause under test"
+    _seed(stats_dir, row, route="zeroprompt",
+          key="groq120|openai/gpt-oss-120b|zeroprompt")
+    html = admin.get("/admin").text
+    cells = _pc_cells(html, "zeroprompt")
+    # Rep p/c is "0 / 0", NOT a dash: reports did arrive (`reported` is 3), so the
+    # cell renders its sums. The dash is Hit rate's alone, and it comes from the
+    # denominator. That distinction is the whole fixture.
+    assert cells[1:] == ["3", "3", "3000 / 0", "3", "0 / 0", "—", "0.0%"], cells
+    (tip,) = _dash_titles(html, "zeroprompt")
+    assert "reported no prompt tokens" in tip, (
+        f"the tooltip must cover the denominator clause, not only the count: {tip!r}")
+    assert "reported no prompt tokens" in _notice(html)
+
+
+def test_the_two_caches_sentences_cannot_be_softened(admin, stats_dir):
+    """Round 7 ran 17 mutants and TWO survived: "is opportunistic" -> "is
+    guaranteed", and "dies with it" -> "survives cold starts". Both are claims the
+    page makes that no assertion could fail, and this repo's rule is that such a
+    sentence is deleted or pinned. Both are true and worth keeping -- Groq's docs
+    say hits are not guaranteed, and the response cache is per-instance -- so they
+    are pinned here.
+
+    Note the earlier guard read "survives our cold starts"; the surviving mutant
+    said "survives cold starts" and walked straight through the word "our". This
+    asserts on the claim, not on one spelling of its negation."""
+    _seed_four_dash_causes()
+    text = _notice(html := admin.get("/admin").text)
+
+    assert "is opportunistic" in text, text
+    assert "guarantee" not in text.lower(), (
+        "Groq's docs say it 'tries to maximize cache hits, but this is not "
+        "guaranteed'; a page promising a guarantee would be false")
+
+    assert "dies with it" in text, text
+    assert "survives" not in text.lower(), (
+        "the response cache lives in one Cloud Run instance; any claim that it "
+        "survives an instance going away is false, however it is spelled")
+    assert html is not None

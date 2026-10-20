@@ -254,12 +254,12 @@
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.reported }}</td>
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{% if pc.reported %}{{ pc.prompt_reported }} / {{ pc.cached_tokens }}{% else %}&mdash;{% endif %}</td>
               {% if pc.hit_pct is none %}
-              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%. The note below the table lists what a dash can mean.">&mdash;</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%: no call on this route reported a cache figure, or those that did reported no prompt tokens. Groq returns no figure on a miss, so this sits beside a real Effective number when nothing hit.">&mdash;</td>
               {% else %}
               <td class="py-2 text-right text-bhagya-muted tabular-nums">{{ pc.hit_pct }}%</td>
               {% endif %}
               {% if pc.effective_pct is none %}
-              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%. The note below the table lists what a dash can mean.">&mdash;</td>
+              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%: no call on this route was Measurable. The note below the table lists the four causes.">&mdash;</td>
               {% else %}
               <td class="py-2 text-right text-bhagya-sindoor font-semibold tabular-nums">{{ pc.effective_pct }}%</td>
               {% endif %}
@@ -315,10 +315,14 @@
           days shrinks as they age out of the window.{% endif %}
           A call is Measurable on one of the three cache-reporting models with at least 128 prompt
           tokens, counted on the whole request (system + question or chart), not the system prompt
-          alone. <strong>A dash has four causes</strong>, so check which before concluding
+          alone. Each column dashes under its own rule, and the rule is the whole of it.
+          <strong>An Effective dash has four causes</strong>, so check which before concluding
           anything: a non-reporting model served every call; the prompts were under the minimum;
           the provider returned no usable <code>usage</code> block at all; or every report it sent was
-          impossible and discarded.
+          impossible and discarded. <strong>Hit rate dashes on its own rule:</strong> no call
+          reported a cache figure, or the ones that did reported no prompt tokens. Groq sends no
+          figure on a miss, so a route where nothing hit shows a Hit-rate dash beside a real
+          Effective number &mdash; that pair means no call hit, not that nothing was measured.
         </p>
       </div>
       {% endif %}
