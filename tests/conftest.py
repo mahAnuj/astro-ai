@@ -199,8 +199,33 @@ def _no_outbound_http(monkeypatch):
     GitHub patch the same attribute inside the test body and win, because
     `monkeypatch` unwinds in LIFO order.
 
-    `httpx` (Brevo, the TestClient) and `google-cloud-storage` are untouched:
-    neither goes through `urllib`, and both are already stubbed where used.
+    `httpx` (Brevo, the TestClient, THE LLM CLIENT) and `google-cloud-storage`
+    are untouched: neither goes through `urllib`.
+
+    AND "both are already stubbed where used" WAS WRONG, which is why that
+    clause is gone. QA round 4 found it with a spy on `socket.socket.connect`
+    and `socket.getaddrinfo` -- a layer `urlopen` patching cannot see -- and I
+    re-measured it on `main`: `test_the_scoped_sentence_actually_reaches_the_
+    rendered_panel` and `test_the_exemption_disclosure_reaches_the_rendered_
+    panel` in `test_nadi_position_coherence.py` make **2 real TCP connections
+    to a live LLM provider per suite run** (`api.groq.com` here,
+    `api.openai.com` on the reviewer's machine -- it follows whichever provider
+    the environment is configured for). No key was present in either
+    measurement, so nothing was spent; on any machine or runner that has one,
+    those two tests reach the provider every run, against a free tier whose
+    daily budget production has already exhausted once.
+
+    So the number this fixture delivers is **16 -> 2, not 16 -> 0.** The 16 are
+    gone and that is verified -- deleting the patch below kills the suite -- but
+    the residue is real and is NOT this fixture's to fix: it is a different
+    transport in an unrelated test file. Filed as #449, which also asks for the
+    guard this one cannot be: a socket-level check, since a `urllib` guard is
+    aimed at the wrong layer for an `httpx` client.
+
+    Saying "0" here would be the defect `_offline_geocode` above warns about in
+    as many words -- a guard that does not guard is worse than none, and a
+    hermeticity claim nobody can check is how 16 requests survived a docstring
+    promising none since the suite was written.
     """
     import urllib.parse
     import urllib.request

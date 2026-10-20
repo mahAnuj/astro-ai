@@ -765,13 +765,31 @@ def test_a_truncated_read_renders_an_at_least_on_the_tiles(monkeypatch):
     full = [_run(1000 + i, "agent-work.yml", "failure", stamp)
             for i in range(ops_today.PER_PAGE)]
     body = _ops_body(monkeypatch, [], full)
-    assert "today_truncated" in body.lower() or "≥" in body, body[:200]
-    assert "≥" in body, (
-        "the capped count renders as a flat number, so the page states a total "
-        "it cannot stand behind"
+
+    # SCOPED TO THE TILE, and that is the finding. These assertions used to be
+    # `"≥" in body` and `"live, at least" in body` -- whole-PAGE substrings, so
+    # they could be satisfied by a `≥` on any other tile or anywhere in the
+    # markup. The PR comment that claimed to have fixed this quoted the scoped
+    # form, but the scoped form lived on `feat/ops-token-window` (#419) and was
+    # never an ancestor of this branch; checked with `git merge-base
+    # --is-ancestor`, 2026-10-20.
+    #
+    # Measured consequence: `"shipped_truncated": pr_more` -> `pr_more or
+    # runs_more` left 772 tests GREEN while the page rendered
+    # `<span class="num c-shipped">≥0</span>` off a complete, empty pulls read
+    # and printed "live, at least" twice. The marker appeared on the wrong tile
+    # and nothing noticed.
+    assert 'class="num c-failed">≥' in body, (
+        "the capped FAILED count renders as a flat number, so the page states "
+        "a total it cannot stand behind"
     )
-    assert "live, at least" in body, (
-        "the live badge does not admit that the read was capped"
+    assert 'class="num c-shipped">≥' not in body, (
+        "the floor marker reached the SHIPPED tile, whose read was complete -- "
+        "a truncation flag is leaking across tiles"
+    )
+    assert body.count("live, at least") == 1, (
+        f'the "at least" badge appears {body.count("live, at least")} times; '
+        "exactly one tile was truncated, so exactly one badge may say so"
     )
 
 
@@ -1501,7 +1519,13 @@ def test_the_cost_paragraph_states_the_actual_worst_case():
     wrong by a factor of 2.3 and on the wrong side of the budget.
     """
     doc = ops_today.__doc__
-    per_render = ops_today.MAX_PAGES * 2 + 1       # both endpoints + the backlog
+    # DERIVED FROM BOTH CONSTANTS. This was `+ 1`, which pinned the paragraph at
+    # 7/84 while the real worst case is 10/120 -- so the gate built to stop the
+    # arithmetic drifting was HOLDING THE WRONG NUMBER IN PLACE, and correcting
+    # the docstring turned this test red. `issue_backlog.fetch_live` pages to
+    # `issue_backlog.MAX_PAGES`, so that is the term, not a literal.
+    from astro_ai import issue_backlog
+    per_render = ops_today.MAX_PAGES * 2 + issue_backlog.MAX_PAGES
     per_hour = per_render * 12                      # CACHE_TTL defaults to 300 s
     assert f"MAX_PAGES ({ops_today.MAX_PAGES})" in doc
     assert f"= {per_render} per render" in doc, (
@@ -1636,3 +1660,180 @@ def test_the_ops_page_survives_every_source_being_unreadable(monkeypatch):
     # And both live reads are reported as fallbacks, so the strip is not silent.
     assert snap["loop"]["fell_back"] is True
     assert snap["issues"]["fell_back"] is True
+
+
+# --------------------------------------------------------------------------- #
+# QA round 4, findings F4-F10. Every one of these is a mechanism that WORKS and
+# that nothing pins, so each test below was written by first building the mutant
+# that survives the suite, then asserting on what a reader is actually told.
+# --------------------------------------------------------------------------- #
+
+def test_the_alert_admits_the_floor_when_the_tile_does(monkeypatch):
+    """F4. The tile says `≥100`; the alert must not say `100` as a total.
+
+    Two separate single-line mutants survived the whole suite: `_loop_view`'s
+    `"today_truncated": bool(...)` forced to `False`, and `_alerts`' `at_least`
+    forced to `""`. Either leaves the tile marked as a floor and the alert
+    stating the same number as a fact, on the one occasion it happens -- a run
+    storm, which is when the page matters most.
+
+    `_loop_view`'s own comment says the flag must travel with the numbers "so
+    the alert cannot disagree with the tile". Nothing checked that it does.
+    """
+    stamp = _inside_today_utc()
+    full = [_run(2000 + i, "agent-work.yml", "failure", stamp)
+            for i in range(ops_today.PER_PAGE)]
+    body = _ops_body(monkeypatch, [], full)
+
+    assert 'class="num c-failed">≥' in body, "precondition: the tile is a floor"
+    assert "At least" in body, (
+        "the tile admits a capped read and the alert states the count as a "
+        "total -- the two disagree about the same number on the same screen"
+    )
+    assert "this is a floor, not a total" in body, (
+        "the alert drops the sentence that explains why the number is a floor"
+    )
+
+
+def test_an_uncapped_read_claims_no_floor_in_the_alert_either(monkeypatch):
+    """F4's other side, so the disclosure means something when it appears."""
+    body = _ops_body(
+        monkeypatch, [],
+        [_run(1, "agent-work.yml", "failure", _inside_today_utc())])
+    assert "At least" not in body, "a complete read is announced as a floor"
+    assert "this is a floor, not a total" not in body
+
+
+def test_every_failing_workflow_is_named_once(monkeypatch):
+    """F10. The alert dedupes with `sorted({...})` and nothing pinned it.
+
+    Dropping the set turns today's real data into the same workflow name
+    printed once per failed run -- 11 times on 2026-10-20 -- in a sentence
+    meant to tell an operator which legs are broken.
+    """
+    stamp = _inside_today_utc()
+    runs = [_run(3000 + i, "agent-steward.yml", "failure", stamp) for i in range(6)]
+    runs += [_run(3100 + i, "agent-measure.yml", "failure", stamp) for i in range(4)]
+    body = _ops_body(monkeypatch, [], runs)
+
+    # The names come from the run payloads; each must appear once in the alert.
+    alert = body.split("loop run(s) failed today")[1][:400]
+    assert alert.count("agent-steward") == 1, (
+        f"the alert names the same workflow repeatedly: {alert[:160]!r}")
+    assert alert.count("agent-measure") == 1
+
+
+def test_a_run_with_no_name_is_still_named_something(monkeypatch):
+    """F9. `r.get("name") or path` -- the fallback was never exercised.
+
+    Measured on the real API 2026-10-20: GitHub returned the literal
+    `.github/workflows/agent-steward.yml` as a run's `name` for 11 runs, which
+    is why the fallback looks unreachable. It is reachable the moment a run
+    payload omits `name`, and then the alert must not print `None`.
+    """
+    stamp = _inside_today_utc()
+    run = _run(4000, "agent-work.yml", "failure", stamp)
+    run.pop("name", None)
+    body = _ops_body(monkeypatch, [], [run])
+
+    # THE REACHABLE FALLBACK IS `ops_today`'s, not `_alerts`'. My first version
+    # of this test mutated `_alerts`' `or "an unnamed workflow"` and the test
+    # passed -- because `ops_today`'s `r.get("name") or path` had already
+    # substituted the workflow PATH, so the downstream fallback never runs.
+    # That is F9's actual finding: one fallback makes the other dead code.
+    # So this asserts on the path appearing, which is what a reader is told.
+    alert = body.split("loop run(s) failed today")[1][:400]
+    assert "agent-work" in alert, (
+        f"a run with no `name` is not identified at all: {alert[:160]!r}")
+    assert "None" not in alert, "the missing name renders as the string None"
+
+
+def test_the_ops_json_blob_cannot_be_escaped_by_a_pr_title(monkeypatch):
+    """F6. Pre-existing line, newly load-bearing.
+
+    `json.dumps(client).replace("</", "<\\\\/")` has no test; deleting it leaves
+    the suite green. It predates this PR, but THIS PR is what first puts GitHub
+    PR titles -- outsider-authored text in a public repo -- into that blob.
+    """
+    stamp = _inside_today_utc()
+    hostile = '</script><img src=x onerror=alert(1)>'
+    # `_pr` TAKES NO `title`, which is why the first version of this test was
+    # vacuous: it never put the hostile string on the page at all, and deleting
+    # the escape left it green. The title has to be injected onto the row.
+    pr = {**_pr(7, stamp), "title": hostile}
+    body = _ops_body(monkeypatch, [pr], [])
+
+    assert "onerror=alert(1)" in body, (
+        "precondition failed: the hostile title never reached the page, so "
+        "this test would assert nothing")
+    # The escape rewrites `</` inside the JSON string. Without it the raw
+    # `</script>` terminates the block early and the <img> becomes live markup.
+    assert "</script><img src=x" not in body, (
+        "a PR title closed the ops-data <script> block early -- everything "
+        "after it is live markup in the admin page")
+    assert "<\\/script><img src=x" in body, (
+        "the `</` escape did not reach the rendered blob")
+
+
+def test_the_request_carries_a_user_agent_and_the_token_when_set():
+    """F5. `OPS_GH_TOKEN` is the stated mitigation for the request budget, and
+    nothing asserted it reaches the wire.
+
+    Both `headers["Authorization"] = f"Bearer {token}"` and
+    `"User-Agent": _UA` could be deleted with the whole suite green. The wire
+    was verified correct by execution during QA round 4 -- an UNGUARDED working
+    wire, not a broken one -- which is the state that silently becomes a broken
+    one. GitHub rejects a request with no User-Agent, and without the token the
+    60/hour ceiling stays in force while the docstring says it does not.
+    """
+    import urllib.request
+
+    seen = {}
+
+    class _R:
+        def read(self): return b"[]"
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def spy(req, *a, **kw):
+        seen["headers"] = dict(req.headers)
+        return _R()
+
+    orig = urllib.request.urlopen
+    urllib.request.urlopen = spy
+    try:
+        ops_today._get("https://api.github.com/x", timeout=1, token="t0ken")
+    finally:
+        urllib.request.urlopen = orig
+
+    # urllib title-cases header names.
+    h = {k.lower(): v for k, v in seen["headers"].items()}
+    assert h.get("authorization") == "Bearer t0ken", (
+        f"the token does not reach the wire, so the rate-limit mitigation this "
+        f"module documents does not exist: {sorted(h)}")
+    assert h.get("user-agent") == ops_today._UA, (
+        f"no User-Agent: GitHub rejects the request outright. got {sorted(h)}")
+
+
+def test_no_token_sends_no_authorization_header():
+    """The other side: an unauthenticated read must not send an empty Bearer."""
+    import urllib.request
+
+    seen = {}
+
+    class _R:
+        def read(self): return b"[]"
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    orig = urllib.request.urlopen
+    urllib.request.urlopen = lambda req, *a, **kw: (
+        seen.update(headers=dict(req.headers)) or _R())
+    try:
+        ops_today._get("https://api.github.com/x", timeout=1, token=None)
+    finally:
+        urllib.request.urlopen = orig
+
+    h = {k.lower(): v for k, v in seen["headers"].items()}
+    assert "authorization" not in h, f"sent an Authorization header with no token: {sorted(h)}"
+    assert h.get("user-agent") == ops_today._UA

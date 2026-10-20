@@ -1609,9 +1609,14 @@ MUTATIONS = [
      "        failed[rid] = {",
      "test_a_run_with_no_id_is_kept_rather_than_collapsed"),
 
-    ("#ops-today r3 G12: the COST paragraph goes back to the pre-pager 36/hour",
+    # RE-POINTED. F2 rewrote this paragraph from 84/hour to 120/hour, which
+    # orphaned the old anchor -- and the new static pre-flight above caught it
+    # in milliseconds, where the sweep would have spent a sandboxed suite run
+    # to report ANCHOR MISSED. That is the whole argument for the pre-flight,
+    # demonstrated by the change that introduced it.
+    ("#ops-today r3 G12: the COST paragraph goes back to the pre-pager figure",
      "src/astro_ai/ops_today.py",
-     "                                     = 84/hour",
+     "                                     = 120/hour",
      "                                     = 36/hour",
      "test_the_cost_paragraph_states_the_actual_worst_case"),
 
@@ -1646,6 +1651,38 @@ MUTATIONS = [
      '                "shipped_30d": shipped_30d, "per_issue_usd": None}',
      '        return {"ok": False, "rows": []}',
      "test_the_ops_page_survives_every_source_being_unreadable"),
+    # #409: visitor text at /admin/feedback is protected by autoescape ALONE.
+    ("#409: autoescape turned off in the real environment",
+     "src/astro_ai/routes/deps.py",
+     '    autoescape=jinja2.select_autoescape(\n'
+     '        enabled_extensions=("html", "htm", "xml", "svg"),\n'
+     '        default_for_string=True,\n'
+     '        default=False,\n'
+     '    ),\n',
+     '    autoescape=False,\n',
+     "test_autoescape_is_on_for_html_templates"),
+
+    ("#409: .html dropped from the autoescape extension list",
+     "src/astro_ai/routes/deps.py",
+     'enabled_extensions=("html", "htm", "xml", "svg"),',
+     'enabled_extensions=("htm", "xml", "svg"),',
+     "test_a_quote_and_angle_brackets_cannot_leave_the_mailto_attribute"),
+
+    ("#409: |safe on the User-Agent at /admin/feedback (the field nobody mentions)",
+     "src/astro_ai/templates/admin_feedback.html",
+     "{{ e.ua }}", "{{ e.ua | safe }}",
+     "test_feedback_templates_use_no_escape_hatch_at_all"),
+
+    ("#409: |safe on the email inside the mailto: attribute",
+     "src/astro_ai/templates/admin_feedback.html",
+     'href="mailto:{{ e.email }}"', 'href="mailto:{{ e.email | safe }}"',
+     "test_no_template_renders_a_visitor_field_through_an_escape_hatch"),
+
+    ("#409: the scanner stops matching |safe (the check itself goes blind)",
+     "tests/test_autoescape_pinned.py",
+     '_UNSAFE = re.compile(r"\\|\\s*(?:safe|markup)\\b|\\bMarkup\\s*\\(")',
+     '_UNSAFE = re.compile(r"\\|\\s*(?:safe_never|markup)\\b|\\bMarkup\\s*\\(")',
+     "test_the_scanner_catches_each_escape_hatch"),
     ("#397: the /ask overlay re-asserts 'no cancelling conditions' for Nadi",
      "src/astro_ai/prompts/ask_matching.txt",
      '- Nadi is not among the Bhakoot parihāras. The exemptions the tradition records apply OUTSIDE the Madhya Nadi only and this product applies none of them — never tell a seeker whose Nadi is Madhya that one exists for their case. A slight (alpa) grade applies where pada-Nadi differs. Never invent any other Nadi condition.',
@@ -1789,6 +1826,173 @@ MUTATIONS = [
      '        if not text.strip():',
      '        if False:',
      "test_an_empty_main_is_not_a_pass"),
+    # ---- QA round 4 on #418: F1 and F2 ------------------------------------
+    # F1. The truncation marker leaking onto a tile whose read was COMPLETE.
+    # The old assertions were whole-PAGE substrings (`"≥" in body`), so this
+    # mutant left 772 tests green while the page rendered `≥0 PRs merged`. The
+    # scoped form that catches it was credited to this branch by a comment and
+    # actually lived on #419, never an ancestor of it.
+    ("#418/F1: the truncation flag leaks onto the SHIPPED tile",
+     "src/astro_ai/ops_today.py",
+     '"shipped_truncated": pr_more,',
+     '"shipped_truncated": pr_more or runs_more,',
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+    # F2. The COST paragraph's worst case is derived from BOTH pagers now, so
+    # moving either constant must move the stated number or the gate is again
+    # holding a wrong figure in place -- which is exactly what `+ 1` did.
+    ("#418/F2: the backlog pager shrinks and the stated cost does not follow",
+     "src/astro_ai/issue_backlog.py",
+     "MAX_PAGES = 4",
+     "MAX_PAGES = 1",
+     "test_the_cost_paragraph_states_the_actual_worst_case"),
+    # ---- QA round 4 on #418: F4-F10. Every mutant below was built FIRST and
+    # confirmed to survive the suite, then the test was written against it. Two
+    # of my first attempts were vacuous (F6 never put the hostile title on the
+    # page; F9 mutated a fallback another fallback had already made dead code)
+    # and one "catch" was a SyntaxError rather than a catch -- all three found
+    # by probing, which is why each row here is parseable and proven.
+    ("#418/F4: the tile says a floor and the alert states it as a total",
+     "src/astro_ai/ops_data.py",
+     'at_least = "At least " if loop.get("today_truncated") else ""',
+     'at_least = ""',
+     "test_the_alert_admits_the_floor_when_the_tile_does"),
+    ("#418/F4b: the truncation flag never reaches the alert",
+     "src/astro_ai/ops_data.py",
+     '"today_truncated": bool((live_today or {}).get("truncated")),\n        # Per tile',
+     '"today_truncated": False,\n        # Per tile',
+     "test_the_alert_admits_the_floor_when_the_tile_does"),
+    ("#418/F10: the alert stops deduping and names a workflow once per run",
+     "src/astro_ai/ops_data.py",
+     'sorted({f.get("workflow") or "an unnamed workflow"\n                                      for f in loop["today_failed"]})',
+     'sorted([f.get("workflow") or "an unnamed workflow"\n                                      for f in loop["today_failed"]])',
+     "test_every_failing_workflow_is_named_once"),
+    ("#418/F9: a run with no name is no longer identified at all",
+     "src/astro_ai/ops_today.py",
+     '"workflow": r.get("name") or path',
+     '"workflow": r.get("name")',
+     "test_a_run_with_no_name_is_still_named_something"),
+    ("#418/F6: a PR title can terminate the ops-data script block",
+     "src/astro_ai/routes/admin.py",
+     'json.dumps(client).replace("</", "<\\\\/")',
+     "json.dumps(client)",
+     "test_the_ops_json_blob_cannot_be_escaped_by_a_pr_title"),
+    ("#418/F5: the GitHub token stops reaching the wire",
+     "src/astro_ai/ops_today.py",
+     'headers["Authorization"] = f"Bearer {token}"',
+     "pass",
+     "test_the_request_carries_a_user_agent_and_the_token_when_set"),
+    ("#418/F5b: the User-Agent GitHub requires is dropped",
+     "src/astro_ai/ops_today.py",
+     '"User-Agent": _UA,',
+     "",
+     "test_the_request_carries_a_user_agent_and_the_token_when_set"),
+    # ---- #442: the steward can dispatch, and a merge is not a refix ---------
+    ("#442: the carrier stops refusing a lenient dispatch line",
+     "scripts/dispatch_cycle.sh",
+     "grep -oE '^issue=[0-9]+$'",
+     "grep -oE 'issue=[0-9]+'",
+     "test_anything_but_issue_equals_digits_is_refused"),
+    ("#442: the carrier stops treating an unreadable concurrency check as busy",
+     "scripts/dispatch_cycle.sh",
+     'if [ "$busy" != "0" ]; then',
+     'if [ "$busy" = "1" ]; then',
+     "test_an_unreadable_concurrency_check_counts_as_busy"),
+    ("#442: the carrier dispatches at a closed issue",
+     "scripts/dispatch_cycle.sh",
+     'if [ "$state" != "OPEN" ]; then',
+     'if [ "$state" = "NEVER" ]; then',
+     "test_a_closed_issue_is_refused"),
+    ("#442: a merge after the verdict is called a fix again",
+     "scripts/detect_stalls.py",
+     "elif split[0] == 0 and split[1] > 0:",
+     "elif False:",
+     "test_a_merge_after_the_verdict_is_not_a_refix"),
+    ("#442: merge-ness read from the message instead of the parent count",
+     "scripts/detect_stalls.py",
+     'if int(meta.get("parents", 1)) > 1:',
+     'if (c.get("messageHeadline") or "").startswith("Merge"):',
+     "test_merge_ness_comes_from_parent_count_not_the_message"),
+    ("#442: unclassifiable commits assert a fix instead of hedging",
+     "scripts/detect_stalls.py",
+     "if split is None:",
+     "if False:",
+     "test_unclassifiable_commits_hedge_instead_of_guessing"),
+    # ---- #409 round 2: the SVG sink, and the header that hid behind a platform.
+    # Each anchor is executable code, never a comment -- the anchor validator
+    # exists because a dead row once pinned itself to prose.
+    ("#409: `.svg` dropped back out of the autoescape list (the XSS sink)",
+     "src/astro_ai/routes/deps.py",
+     'enabled_extensions=("html", "htm", "xml", "svg"),',
+     'enabled_extensions=("html", "htm", "xml"),',
+     "test_svg_is_autoescaped_and_text_is_not"),
+    ("#409: the seeker's NAME routed round autoescape with |safe",
+     "src/astro_ai/templates/cosmic_card.svg",
+     "{{ display_name or 'Janma Kundli' }}",
+     "{{ (display_name or 'Janma Kundli') | safe }}",
+     "test_a_script_tag_in_a_visitor_field_cannot_reach_the_cosmic_card"),
+    ("#409: the seeker's BIRTH PLACE routed round autoescape with |safe",
+     "src/astro_ai/templates/cosmic_card.svg",
+     "{{ details.birth_place }}",
+     "{{ details.birth_place | safe }}",
+     "test_a_script_tag_in_a_visitor_field_cannot_reach_the_cosmic_card"),
+    ("#409: the session-derived card made publicly cacheable again",
+     "src/astro_ai/routes/kundli_card.py",
+     '"Cache-Control": "private, max-age=3600",',
+     '"Cache-Control": "public, max-age=3600",',
+     "test_the_cosmic_card_is_not_cacheable_by_a_shared_cache"),
+    # ---- the conflict resolver's own parser, found by PR #443 x #425 --------
+    # RE-TARGETED. This row used to replace the newline ASSERTION with
+    # `assert True` -- and that assertion is a guard, not the mechanism:
+    # `hunks()` is line-based and preserves newlines structurally, so removing
+    # the assert changes no behaviour and no test could possibly catch it. The
+    # row reported MISSED the first time the fast-path harness ran it, and under
+    # the old harness it would have been MISSED too and nobody looked.
+    #
+    # A mutation must break the BEHAVIOUR the test asserts. `splitlines(True)`
+    # is what keeps each row a row; without keepends every row in the hunk
+    # collapses into one, which is exactly the defect that shipped into
+    # ARCHITECTURE.md on 2026-10-20.
+    ("#443: the dated union stops keeping line endings (rows get absorbed)",
+     "scripts/merge_main_into_branch.py",
+     "both = (theirs + ours).splitlines(True)",
+     "both = (theirs + ours).splitlines()",
+     "test_a_dated_union_never_absorbs_one_row_into_another"),
+    ("#443: the dirty check counts untracked files again (script can never run)",
+     "scripts/merge_main_into_branch.py",
+     'git("status", "--porcelain", "--untracked-files=no")',
+     'git("status", "--porcelain")',
+     "test_the_dirty_check_ignores_untracked_files"),
+    ("#443: a malformed hunk returns nothing instead of raising",
+     "scripts/merge_main_into_branch.py",
+     'raise RuntimeError("a conflict hunk has no `=======` separator")',
+     'return out',
+     "test_a_hunk_with_no_separator_raises_rather_than_returning_nothing"),
+    # ---- #446: the derived test-count floor ---------------------------------
+    ("#446: the floor compares against LOCAL main again (passes 543 >= 0)",
+     "scripts/verify_test_floor.py",
+     'base = git("merge-base", "HEAD", "origin/main").strip()',
+     'base = git("merge-base", "HEAD", "main").strip()',
+     "test_it_never_compares_against_local_main"),
+    ("#446: a vanished test is no longer reported as missing",
+     "scripts/verify_test_floor.py",
+     "gone = sorted(before - head)",
+     "gone = sorted(head - before)",
+     "test_a_deleted_file_fails_and_names_every_test"),
+    ("#446: any drop is accepted, declared or not",
+     "scripts/verify_test_floor.py",
+     "    if reason:",
+     "    if True:",
+     "test_a_declared_drop_needs_the_trailer_not_just_the_words"),
+    ("#446: a missing tests/ directory reads as a pass",
+     "scripts/verify_test_floor.py",
+     'print(f"COULD NOT RUN (exit 2) — no {TESTS}/ directory. This is NOT a pass.")\n        return 2',
+     'return 0',
+     "test_a_missing_tests_directory_exits_2_not_0"),
+    ("#446: a class method that disappears is not counted",
+     "scripts/verify_test_floor.py",
+     'elif isinstance(node, ast.ClassDef) and node.name.startswith("Test"):',
+     "elif False:",
+     "test_a_method_removed_from_a_test_class_fails"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -1909,16 +2113,56 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
         if source.count(old) != 1:
             return False, f"ANCHOR MISSED ({source.count(old)})"
         target.write_text(source.replace(old, new))
-        result = subprocess.run(
-            [sys.executable, "-m", "pytest", str(sandbox / "tests"), "-q", "--no-header"],
-            capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
-        )
+
+        def _pytest(*extra: str) -> subprocess.CompletedProcess:
+            return subprocess.run(
+                [sys.executable, "-m", "pytest", str(sandbox / "tests"),
+                 "-q", "--no-header", *extra],
+                capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
+            )
+
+        def _red(r: subprocess.CompletedProcess) -> bool:
+            """A real assertion failure, not a collection error.
+
+            A non-zero exit from a collection error looks like a catch and is
+            worth nothing, which is why this reads the output and not just the
+            code. pytest exits 5 on "no tests matched", which is neither.
+            """
+            return r.returncode not in (0, 5) and (
+                "FAILED" in r.stdout or "failed" in r.stdout)
+
+        # EVERY ROW ALREADY NAMES THE TEST THAT MUST CATCH IT, so run that test
+        # and not the other 766. Measured 2026-10-20 on this tree: one named
+        # test is 0.34s against 19.5s for the whole suite, and this step was
+        # 80% of every pr-gates run (1054s and 673s on two consecutive runs,
+        # 191 rows x a full suite / 4 workers).
+        #
+        # It is also a STRICTER question than the one asked before. "The suite
+        # goes red" and "THIS test goes red" are different claims, and each row
+        # asserts the second -- the `test` field is not decoration, the
+        # GUARD GONE check above already treats it as load-bearing.
+        #
+        # So the fast path can only ever CONFIRM a catch. It can never create a
+        # failure, because a named test that stays green falls through to the
+        # full suite below, exactly as before.
+        if test and test != "_control":
+            fast = _pytest("-k", test.split("[", 1)[0])
+            if _red(fast):
+                return True, "CAUGHT"
+
+        # Reached when the named test did not catch it, or for the control row,
+        # which must see the whole suite or it would stop being a control.
+        result = _pytest()
         if result.returncode == 0:
             return False, "*** MISSED ***"
-        # A non-zero exit from a collection error would look like a catch and
-        # be worth nothing, so require an actual assertion failure.
-        if "FAILED" not in result.stdout and "failed" not in result.stdout:
+        if not _red(result):
             return False, f"NON-TEST FAILURE rc={result.returncode}"
+        if test and test != "_control":
+            # NEW INFORMATION, and it was invisible before: something caught the
+            # mutation but not the test this row names. The row still counts as
+            # caught -- the defect cannot escape -- but its `test` field is
+            # wrong, and a wrong field is what the GUARD GONE check cannot see.
+            return True, "CAUGHT BY ANOTHER TEST — row names `" + test + "`"
         return True, "CAUGHT"
 
 
@@ -1935,6 +2179,61 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
 # contend and the wall time stops improving. `cpu_count or 1` because it returns
 # None on some platforms.
 _WORKERS = min(int(os.environ.get("MUTATE_WORKERS", "4")), (os.cpu_count() or 1))
+
+# STATIC ANCHOR PRE-FLIGHT (#418/F7). Claimed in two PR comments -- "a static
+# anchor validator now runs over every 5-tuple", upgraded to "zero rows anchor
+# on a comment" -- and it was in neither the repo nor any workflow. QA round 4
+# looked for it and reported the quoted counts as unreproducible. So it is built
+# here rather than claimed again.
+#
+# WHY STATIC AND AHEAD OF THE SWEEP. `_run_in_sandbox` already reports
+# ANCHOR MISSED, but only per row, only at run time, and only for uniqueness --
+# so a bad anchor costs a full sandboxed suite run before it says so, and an
+# anchor sitting on a COMMENT passes it completely. A row anchored on a comment
+# mutates prose: it changes no behaviour, so it reports MISSED for a defect that
+# is in fact guarded, and the row silently stops being a gate. One did, for two
+# QA rounds (#ops-today's clock-killed run), and that is this log's recurring
+# subject.
+#
+# Cheap: pure text, no subprocess, no suite. It runs before anything is spent.
+def _preflight_anchors() -> list[str]:
+    problems: list[str] = []
+    for label, rel, old, new, test in MUTATIONS:
+        path = ROOT / rel
+        if not path.exists():
+            problems.append(f"{label}: {rel} does not exist")
+            continue
+        src = path.read_text(encoding="utf-8")
+        n = src.count(old)
+        if n != 1:
+            problems.append(f"{label}: anchor matches {n}x in {rel}, need exactly 1")
+            continue
+        if old == new:
+            problems.append(f"{label}: the mutant is identical to the anchor")
+        # The anchor must be EXECUTABLE. Checked on the first line of a
+        # multi-line anchor, which is where the match begins.
+        first = old.splitlines()[0]
+        for line in src.splitlines():
+            if first in line and line.lstrip().startswith(("#", "//", "<!--")):
+                problems.append(
+                    f"{label}: anchor sits on a COMMENT line in {rel} -- mutating "
+                    f"prose changes no behaviour, so this row cannot ever catch "
+                    f"anything: {line.strip()[:70]}")
+                break
+    return problems
+
+
+_anchor_problems = _preflight_anchors()
+if _anchor_problems:
+    print(f"ANCHOR PRE-FLIGHT FAILED - {len(_anchor_problems)} row(s), "
+          f"nothing was run:")
+    for _p in _anchor_problems:
+        print(f"  {_p}")
+    print("\nA row whose anchor is wrong is not a weak gate, it is no gate. Fix")
+    print("the anchor or remove the row deliberately; do not let the sweep")
+    print("spend a sandboxed suite run per row to tell you the same thing.")
+    raise SystemExit(1)
+print(f"anchor pre-flight: {len(MUTATIONS)} rows, every anchor unique and executable")
 
 _work = [_CONTROL] + list(MUTATIONS)
 _verdicts: dict[int, tuple[str, str]] = {}
@@ -1970,8 +2269,16 @@ for i, (label, _rel, _old, _new, _test) in enumerate(_work):
 print(f"{'mutation':<58} {'verdict'}")
 print("-" * 76)
 bad = 0
+mispointed: list[str] = []
 for label, verdict in rows:
-    if verdict != "CAUGHT":
+    if verdict.startswith("CAUGHT BY ANOTHER TEST"):
+        # CAUGHT, so it does NOT count as bad: the defect cannot escape, which
+        # is what this harness is for. What is wrong is the row's `test` field,
+        # and that is reported separately below rather than turning the gate
+        # red -- a speed change may not invent failures, or nobody will trust
+        # the number it prints.
+        mispointed.append(f"{label} -> {verdict}")
+    elif verdict != "CAUGHT":
         bad += 1
     print(f"  {label:<56} {verdict}")
 print()
@@ -1982,6 +2289,14 @@ real = len(rows) - 1
 caught = real - (bad - 1)
 print(f"{caught}/{real} mutations caught")
 print("repository untouched: mutations run in a temporary copy")
+if mispointed:
+    print()
+    print(f"{len(mispointed)} row(s) are MIS-POINTED: the mutation was caught, but not by")
+    print("the test the row names. The protection is real; the bookkeeping is wrong,")
+    print("and until 2026-10-20 this was invisible because every row ran the whole")
+    print("suite and any failure read as CAUGHT.")
+    for line in mispointed:
+        print(f"  - {line}")
 if not control_ok:
     print()
     print("CONTROL FAILED — the sandbox reports CAUGHT for an edit that changes")

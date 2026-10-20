@@ -31,6 +31,40 @@ on:
     # before the 23:00 dispatch. A stall caught within half a day is the point;
     # catching it within the hour would mostly catch normal operation.
     - cron: "0 9,15 * * *"
+  # REACT, DO NOT ONLY POLL. A verdict recorded at 09:05 waited until 15:00 for
+  # anything to notice, and the twice-daily cron plus "one dispatch per run"
+  # means four stalls take two days to work through. `agent-work` finishing is
+  # the moment a verdict is most likely to have just been written, so it is the
+  # moment worth checking.
+  #
+  # WHY `workflow_run` AND NOT `pull_request: [labeled]`, which is the obvious
+  # choice and does not work. The loop labels with `${{ github.token }}`, and
+  # GitHub SUPPRESSES workflow-triggering events from GITHUB_TOKEN. This
+  # repository has already paid for that lesson once -- it is the
+  # `no-checks-ever (mergeable)` case, a PR "created by an actor whose events
+  # GitHub suppresses" -- so a `labeled` trigger would fire for a label a human
+  # applies and never for one the loop applies, which is the case it would be
+  # built for. Wiring that reports present and never fires is #421 exactly.
+  #
+  # `workflow_run` fires regardless of the triggering actor, which is the whole
+  # reason this is the shape chosen.
+  #
+  # Bounded on purpose: `agent-work` runs about once a day, so this adds about
+  # one steward run a day (~2.5 minutes, under a minute when nothing is found).
+  # NOT wired to `pr-gates`, which completes on every push to every PR and would
+  # queue steward runs behind the `agent-steward` concurrency group all day.
+  workflow_run:
+    # "Agent work" is agent-work.yml's `name:`, NOT its filename, and the
+    # distinction is the whole bug. `workflows: ["agent-work"]` matched nothing,
+    # so this trigger could never fire — #421's class a third time, in the
+    # change written to make the loop react, on top of the bot-actor miss #439
+    # fixed. Two defects stacked in one trigger, both of the same shape: wiring
+    # that reports present and does nothing.
+    #
+    # `scripts/verify_workflows.py` now fails a `workflow_run` naming a workflow
+    # no file declares, so this cannot recur silently.
+    workflows: ["Agent work"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       hours:
@@ -80,14 +114,30 @@ jobs:
       - name: Is anything actually stuck?
         id: detect
         env:
+          STALL_HOURS: ${{ github.event.inputs.hours || '4' }}
           GH_TOKEN: ${{ github.token }}
         run: |
           set +e
           # Timestamped BEFORE the agent runs, so "did anything happen" compares
           # against the right instant rather than against the whole day.
           echo "started=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          # Through `env:`, not interpolated. `workflow_run` is a PRIVILEGED
+          # trigger -- repo-write permissions and secrets -- so an expression in
+          # a run block is substituted before bash parses the line and becomes
+          # shell injection. scripts/verify_workflows.py refused this change
+          # until it was fixed, which is the gate doing its job (#358).
+          #
+          # THIS COMMENT MAY NOT SPELL THE CONSTRUCT IT WARNS ABOUT, and that is
+          # not style. GitHub substitutes expressions into the WHOLE run: string,
+          # shell comments included -- it has no idea bash would ignore this
+          # line. An EMPTY one is a syntax error, so the earlier wording of this
+          # comment made the entire file unparseable: six zero-job failed runs
+          # on 2026-10-20, no annotation anywhere, and the workflow listed by
+          # path instead of by name. Measured on a probe branch: rewording this
+          # one line is the whole fix, and an expression in a YAML comment
+          # (line 442) is harmless because the YAML parser removes it first.
           uv run python scripts/detect_stalls.py \
-            --hours "${{ github.event.inputs.hours || '4' }}" --json > /tmp/stalls.txt 2>&1
+            --hours "${STALL_HOURS:-4}" --json > /tmp/stalls.txt 2>&1
           code=$?
           set -e
           cat /tmp/stalls.txt
@@ -106,6 +156,24 @@ jobs:
         if: steps.detect.outputs.stalled == 'true'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # WITHOUT THIS THE workflow_run PATH DIES IN 1.5 SECONDS, which is
+          # #421 again and in the change that was supposed to end it. For a
+          # `workflow_run` event `github.actor` is whoever initiated the
+          # ORIGINATING run — and when the steward dispatches `agent-work`, that
+          # actor is `github-actions[bot]`. claude-code-action then refuses:
+          #
+          #   Workflow initiated by non-human actor: github-actions (type: Bot).
+          #
+          # So the first time the new trigger mattered — a cycle the steward
+          # itself dispatched finishing — the steward's reaction run would have
+          # died before reading a single stall. Measured on #421: 3 of 3
+          # bot-initiated dispatches failed identically, 0 of 4 human or cron
+          # runs did.
+          #
+          # `github-actions`, never `'*'`: exactly this repository's own
+          # GITHUB_TOKEN, which already has the write access it would need, so
+          # no new principal gains anything.
+          allowed_bots: "github-actions"
           prompt: |
             Dispatch the `steward` agent with `run_in_background: false`.
 
@@ -118,6 +186,21 @@ jobs:
             `uv run python scripts/detect_stalls.py --json`, then read the PRs,
             their check runs and the relevant run logs before writing any
             diagnosis. A finding you did not check is a guess.
+
+            **IF A FINDING OBLIGES A CYCLE, DO NOT RUN `gh workflow run` --
+            YOUR TOKEN IS REFUSED (HTTP 403, #442).** Write AT MOST ONE line,
+            exactly `issue=<number>`, to `/tmp/steward-dispatch.txt`, and a
+            later step carries it out with a credential that can. No line means
+            no dispatch, and that is a legitimate outcome: write one only for a
+            PR a cycle can actually adopt -- an `issue/*` branch with an owning
+            issue, never a PR a human opened on their own branch, and never "to
+            be safe", because the step cannot tell a considered dispatch from a
+            hedge and a wasted cycle is ~50 Actions minutes.
+
+            You do not need to check whether a cycle is already running, or
+            whether the issue is open. The step checks both itself, with a
+            credential that can read the Actions API, and refuses rather than
+            queueing a second.
 
             Your value is the diagnosis, not the detection. Read steward.md and
             obey its constraints exactly — in particular you may NOT apply or
@@ -146,6 +229,34 @@ jobs:
             # `scripts/verify_no_relaxation.py` is the real guard and it runs on
             # the PR. This list is the second lock, not the first.
             --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(git push --force:*),Bash(git push -f:*),Bash(git reset --hard:*),Bash(gh pr merge:*),Bash(gh pr review:*),Bash(gh pr edit:*),Bash(gh issue close:*),Bash(gh pr close:*),Bash(gh repo:*),Bash(gh secret:*),Bash(gcloud:*)"
+
+      # THE STEWARD'S OWN CARRIER (#442). This is the step whose absence made
+      # chief the dispatcher by construction.
+      #
+      # `steward.md` tells the steward to dispatch a cycle in six routing rows.
+      # Its `gh` is the Claude GitHub App token and `gh workflow run` answers it
+      # HTTP 403 "Resource not accessible by integration" -- the `actions: write`
+      # above belongs to `github.token`, which only `run:` steps receive. So on
+      # 2026-10-20 the steward diagnosed four stalls correctly, was refused, and
+      # the accountability step below woke chief to perform a dispatch the
+      # steward had already decided. A whole extra agent invocation for a
+      # mechanical act, on every run with an obliged stall.
+      #
+      # IT MUST SIT BEFORE `acted`, not after. `acted` asks "did a cycle start
+      # since this run began"; a carrier placed after it would dispatch and
+      # still be recorded as having done nothing, which is the exact
+      # false-negative that wakes chief.
+      #
+      # Same credential, same guards and the same script as chief's carrier
+      # below -- one mechanism, not a second copy. `scripts/dispatch_cycle.sh`
+      # carries the reasoning and the exit codes.
+      - name: Carry out the steward's dispatch
+        id: steward_dispatch
+        if: steps.detect.outputs.stalled == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: bash scripts/dispatch_cycle.sh /tmp/steward-dispatch.txt steward
 
       # DID IT ACTUALLY DO THE ACTIONABLES? This step is why chief exists in
       # this file.
@@ -222,6 +333,10 @@ jobs:
         if: steps.acted.outputs.ok == 'false'
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Same reason as the steward step above (#421). chief is woken when the
+          # steward produced no action, and that is reached on the same
+          # bot-actored path.
+          allowed_bots: "github-actions"
           prompt: |
             Dispatch the `chief` agent with `run_in_background: false`.
 
@@ -289,107 +404,36 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          set -uo pipefail
-          if [ ! -s /tmp/chief-dispatch.txt ]; then
-            echo "chief recorded no dispatch. That is a ruling, not a failure."
-            exit 0
-          fi
-
-          # Strict parse. Anything that is not exactly `issue=<digits>` on the
-          # first line is refused rather than guessed at, because the failure
-          # mode of a lenient parser here is dispatching a cycle at the wrong
-          # issue — 50 minutes spent on work nobody ruled on.
-          line=$(head -1 /tmp/chief-dispatch.txt | tr -d '[:space:]')
-          issue=$(printf '%s' "$line" | grep -oE '^issue=[0-9]+$' | cut -d= -f2)
-          if [ -z "$issue" ]; then
-            echo "::error::chief wrote an unparseable dispatch line: '$line'. Refusing to guess."
-            exit 1
-          fi
-
-          # The issue must be open. A cycle at a closed issue is the
-          # `cannot-reproduce` path burned at full cycle cost.
-          state=$(gh issue view "$issue" --repo "$GH_REPO" --json state --jq .state 2>/dev/null || echo MISSING)
-          if [ "$state" != "OPEN" ]; then
-            echo "::error::chief ruled a dispatch at #$issue, which is $state. Not dispatching."
-            exit 1
-          fi
-
-          # Guard 1, the one chief recorded as "could not establish".
-          busy=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml --limit 10 \
-                   --json status --jq '[.[] | select(.status != "completed")] | length' 2>/dev/null || echo unknown)
-          if [ "$busy" != "0" ]; then
-            echo "::warning::a cycle is in flight (or the check failed: '$busy'). Chief's ruling at #$issue stands; it waits for the next run rather than queueing behind this one."
-            exit 0
-          fi
-
-          # `gh workflow run` EXITS 0 ONCE THE RUN IS CREATED, and says nothing
-          # about whether it then did anything. That is how #421 stayed invisible
-          # for three days: the action refused the Bot actor 1.5s in, the run
-          # concluded `failure` in ~33s, and this step reported "carried out" to
-          # the summary every time. A dispatch nobody can tell from a no-op is
-          # worse than no dispatch, because the stall detector then sees a cycle
-          # was tried and the steward reports success.
-          #
-          # So: remember the newest run id, dispatch, wait for a NEW one, and
-          # give it a window to die in. Anything already `completed` inside the
-          # window concluded without doing a cycle's work -- a real cycle runs
-          # for tens of minutes -- so that is a failure of this step, not a
-          # finished job.
-          before=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml \
-                     --limit 1 --json databaseId --jq '.[0].databaseId // 0' 2>/dev/null || echo 0)
-          gh workflow run agent-work.yml --repo "$GH_REPO" -f issue="$issue"
-          echo "::notice::requested agent-work at #$issue on chief's ruling; verifying it started"
-
-          run_id=""
-          for _ in $(seq 1 12); do          # up to ~60s for the run to appear
-            sleep 5
-            cand=$(gh run list --repo "$GH_REPO" --workflow agent-work.yml \
-                     --limit 1 --json databaseId --jq '.[0].databaseId // 0' 2>/dev/null || echo 0)
-            if [ "$cand" != "0" ] && [ "$cand" != "$before" ]; then run_id="$cand"; break; fi
-          done
-          if [ -z "$run_id" ]; then
-            echo "::error::dispatch at #$issue created no new agent-work run within 60s. Not reporting it as carried out."
-            exit 1
-          fi
-
-          # 90s is chosen against the measured failure, not guessed: the three
-          # #421 runs concluded in 33-36s. A cycle that is still running here is
-          # genuinely working and this step must NOT wait for it.
-          for _ in $(seq 1 18); do
-            sleep 5
-            read -r status conclusion <<<"$(gh run view "$run_id" --repo "$GH_REPO" \
-              --json status,conclusion --jq '"\(.status) \(.conclusion // "")"' 2>/dev/null || echo "unknown ")"
-            if [ "$status" = "completed" ]; then
-              echo "::error::agent-work run $run_id concluded '$conclusion' within 90s of dispatch at #$issue -- it did not run a cycle. See #421."
-              exit 1
-            fi
-          done
-
-          echo "::notice::agent-work run $run_id is running a cycle at #$issue"
-          echo "DISPATCHED=$issue" >> "$GITHUB_ENV"
-          echo "DISPATCHED_RUN=$run_id" >> "$GITHUB_ENV"
+        run: bash scripts/dispatch_cycle.sh /tmp/chief-dispatch.txt chief
 
       # Say what happened either way. A loop that reports nothing when it found
       # nothing cannot be told from one that failed to run — which is the defect
       # this entire loop exists to catch, so it must not commit it.
       - name: Report
         if: always()
+        env:
+          # Same reason as the detect step: a privileged trigger makes every
+          # `${{ }}` in a run block an injection point, so all four values this
+          # block needs arrive through the environment and are expanded quoted.
+          STALLED: ${{ steps.detect.outputs.stalled }}
+          ACTED_OK: ${{ steps.acted.outputs.ok }}
+          SERVER_URL: ${{ github.server_url }}
+          REPO_SLUG: ${{ github.repository }}
         run: |
           {
             echo "### Steward"
-            if [ "${{ steps.detect.outputs.stalled }}" = "true" ]; then
+            if [ "${STALLED:-}" = "true" ]; then
               echo "Detector reported a stall; the steward was woken. Its diagnosis is on the issues and PRs it names."
-              if [ "${{ steps.acted.outputs.ok }}" = "false" ]; then
+              if [ "${ACTED_OK:-}" = "false" ]; then
                 echo ""
                 echo "**The steward produced no action, so chief was woken.**"
                 if [ -n "${DISPATCHED:-}" ]; then
                   # "carried out" is now only ever printed for a run this job
                   # watched start AND saw still running 90s later. See #421 for
                   # what this sentence used to mean.
-                  echo "chief ruled a dispatch and it was carried out: \`agent-work\` at #${DISPATCHED} ([run ${DISPATCHED_RUN:-?}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${DISPATCHED_RUN:-}))."
+                  echo "${DISPATCHED_BY:-chief} ruled a dispatch and it was carried out: \`agent-work\` at #${DISPATCHED} ([run ${DISPATCHED_RUN:-?}](${SERVER_URL}/${REPO_SLUG}/actions/runs/${DISPATCHED_RUN:-}))."
                 else
-                  echo "chief recorded no dispatch — either it ruled the stalls un-dispatchable, or the guard refused. Its ruling is a comment on the PRs named above."
+                  echo "no dispatch was recorded — either the stalls were ruled un-dispatchable, or the guard refused. Its ruling is a comment on the PRs named above."
                 fi
               fi
             else

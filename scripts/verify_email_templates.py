@@ -161,8 +161,13 @@ def _context(*, lang: str, sections: list, with_panchang: bool = True) -> dict:
     }
 
 
-# Same Jinja environment the app renders these with (autoescape and all),
-# built without importing main.py.
+# Same autoescape behaviour as the app's environment, built without importing
+# main.py. This one is Starlette's `directory=` default, which for .html is
+# identical to the explicit pin in routes/deps.py (#409); the pin itself is
+# asserted by tests/test_autoescape_pinned.py, against the REAL `templates.env`,
+# so this gate renders the email templates escaped only for as long as that test
+# holds. (It used to be an unasserted comment: nothing failed if either side
+# turned autoescape off.)
 _env = Jinja2Templates(directory=str(TEMPLATES_DIR)).env
 
 
