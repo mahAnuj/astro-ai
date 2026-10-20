@@ -111,6 +111,25 @@ uv run python scripts/validate_issue.py <n> --samples 5
 - **Does not reproduce in 5 samples** → **close it**, with every request and response in the
   closing comment, and label `cannot-reproduce`.
 
+  **UNLESS AN OPEN PR ALREADY EXISTS FOR THIS ISSUE. Then do not close, and do not probe for a
+  verdict at all — skip to Step 2.5.**
+
+  ```bash
+  gh pr list --repo "$GH_REPO" --state open --search "<n> in:body" --json number,headRefName
+  git ls-remote --heads origin "issue/<n>-*" "partial/<n>-*"
+  ```
+
+  The reasoning is one sentence: **production cannot show work that has not merged.** A cycle
+  dispatched at a PR carrying `qa-fail` is there to fix the findings, and the PR is the state of
+  that work — not the deployed site. Probing production and closing on the result would close an
+  issue whose fix is sitting in an open PR with named defects, and the `cannot-reproduce` label
+  would be true of production and false of the repository.
+
+  This is not hypothetical: every PR in the 2026-10-20 queue (#410, #418, #419, #425) is an
+  unmerged feature whose issue production cannot demonstrate either way. Most return `NO-REPRO`
+  (exit 3) and are safe by accident; a feature that happens to have an executable `repro:` would
+  have been closed.
+
   Granted 2026-10-08: five probes against live production, with varied inputs, is stronger
   evidence than any claim in a comment — and it is the same standard `project-manager` closes
   "does not reproduce" on. #156 and #157 sat open for weeks having been filed against a local
@@ -213,6 +232,39 @@ Then:
 - **A QA verdict from a previous round** — read the defects it names before writing anything. This
   project has run fifteen QA passes with every one failing its first submission; the second round
   should not rediscover the first round's findings.
+
+  **If that verdict is a FAIL, fixing it is the cycle's whole job. Compare two timestamps first,
+  because they decide which half of the work is left:**
+
+  ```bash
+  gh api "repos/$GH_REPO/issues/<pr>/timeline" --paginate \
+    --jq '[.[] | select(.event=="labeled") | select(.label.name=="qa-fail") | .created_at] | last'
+  gh pr view <pr> --repo "$GH_REPO" --json commits --jq '.commits[-1].committedDate'
+  ```
+
+  - **Head OLDER than the verdict — nobody fixed it.** Fix the findings. Address **every** one it
+    names, or say in your comment which you are not fixing and why; a round that fixes four of
+    six and reports success is how the next round rediscovers the other two. Then QA.
+  - **Head NEWER than the verdict — a fix already landed and no round has seen it.** Do not
+    re-fix: re-reading a verdict whose defects are gone produces a second guess at an answer that
+    already exists, and that is the shape in which three consecutive rounds on #419 each found
+    the previous round's *fix* was the defect. Go straight to QA.
+
+  **Dispatch the QA round with the verdict's findings in its brief and the diff since that
+  verdict**, not "review this PR". A round asked to re-establish a whole PR re-reads everything
+  the last round established — measured on 2026-10-20 at 124k–229k tokens per round, with the
+  most expensive being the one that re-ran a 55-minute mutation sweep its predecessor had already
+  run on substantially the same rows.
+
+  **A DRAFT CARRYING `qa-fail` STAYS A DRAFT.** Step 4's "ready the PR" does not apply: the draft
+  is a gate somebody shut because a round found defects, and `gh pr ready` opens it. Fix, let QA
+  run, and leave the readying to whoever decides the findings are closed. #425 is the case —
+  its round found a live exploitable XSS and said the draft should hold until the sink is
+  escaped.
+
+  **A fix you wrote is never a fix you verify.** `qa.md`'s independence rule is unchanged, and
+  the label it applies now carries `qa:in-cycle` — which is the weaker provenance on purpose,
+  because a cycle reviewing its own fix shares the premises that produced it.
 
 **Say in your issue comment what you found and what you are reusing.** A cycle that silently
 redoes finished work looks identical to one doing it for the first time, and the only way anyone

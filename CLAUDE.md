@@ -134,9 +134,34 @@ What has NOT changed, and why it matters more now than before:
   `mutate_behaviour_suite.py` proving the suite can go red. `verify_rule_citations` mutates
   a citation to a section the book does not contain and requires itself to catch it —
   that gate is the one thing a self-assessing agent cannot argue past.
-- **`qa.md` still holds that "PASS is a report, not an action".** The agent reports; the
-  gates decide; `agent-merge` acts. Those are three different things on purpose, because
-  the failure recorded below is an agent writing its own justification and then citing it.
+- **`qa` now records its own verdict as a label — owner's decision, 2026-10-20.** It applies
+  `qa-pass` or `qa-fail` itself, where before it reported and a session transcribed. The
+  bottleneck was real: verdicts sat in agent output while PRs stalled for days, and a FAIL left
+  no machine-readable mark at all, so `detect_stalls.py` could not tell "reviewed and failed"
+  from "never reviewed".
+
+  **What did NOT change, and it is the part that carries the weight.** The gates still decide
+  and `agent-merge` still acts; those are two different things from the verdict on purpose.
+  `qa.md` now binds the label to three conditions: the verdict **comment is posted first** and a
+  label with no matching comment above it is the fabrication shape this repo has been burned by
+  twice; one label only, clearing the other; and `qa-pass` stays forbidden everywhere `qa.md`
+  already forbids a PASS (outsider provenance, a `resolve_provenance.py` exit 2, an unmeasured
+  token claim, anything it could not check). `qa-fail` only ever blocks, so it is safe at any
+  confidence; `qa-pass` is a claim the change can run in front of users, on a site with no
+  staging where a push to `main` is the deploy.
+
+  **Every verdict also carries its provenance** — `qa:independent` for a round dispatched to
+  review a PR its reviewer had no hand in, `qa:in-cycle` for the `qa` step inside
+  `/agent-cycle` reviewing its own cycle's work. GitHub's timeline already separates the loop
+  (`github-actions[bot]`) from a top-level session, but it cannot separate anything *inside* one
+  session: a verdict the agent applies itself and one a session transcribed are the same actor on
+  the same credentials. The provenance label is the only thing that says which, and it is a trust
+  gradient rather than bookkeeping. **`qa-pass` stays the sole merge trigger** — `agent-merge` is
+  unchanged, and `qa:*` is not in its exclusion list, so provenance cannot accidentally block a
+  merge or become a second thing that must be spelled right for one to happen.
+
+  **`steward` still may not touch either label** (`steward.md`), and `chief` still cannot grant
+  merge authority to anything (`chief.md`) — that is not a label and never was.
 - **Branch, then merge — never a direct commit to `main`.** Not as ceremony: a PR is what
   makes `pr-gates` run at all. A direct push to `main` would deploy with no gate between
   the agent and production, on a site with no staging.

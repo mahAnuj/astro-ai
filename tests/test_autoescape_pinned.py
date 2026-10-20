@@ -66,13 +66,122 @@ def test_the_environment_was_not_left_to_a_default(tmp_path):
     assert "&lt;script&gt;" in out and "<script>" not in out
 
 
-def test_text_and_svg_templates_keep_their_pre_pin_behaviour():
-    # The pin reproduces select_autoescape()'s defaults EXACTLY, so no shipped
-    # output moved. .svg (cosmic_card.svg) has always rendered unescaped; this
-    # records it as a decision rather than an accident. Widening it is a
-    # separate change that alters shipped bytes -- see ARCHITECTURE.md (#409).
-    assert templates.env.autoescape("cosmic_card.svg") is False
+def test_svg_is_autoescaped_and_text_is_not():
+    """THIS ASSERTION USED TO READ `is False`, and that is the whole finding.
+
+    It pinned `cosmic_card.svg` as unescaped and called it "a decision rather
+    than an accident" -- so the test locked the vulnerability in place and
+    would have gone red on the fix. An assertion whose job is to stop a change
+    has to be right about whether the change is wanted.
+
+    `.svg` is NOT in `select_autoescape()`'s default list although SVG is XML,
+    and `/kundli/card` renders visitor-typed `display_name` and `birth_place`
+    into an `image/svg+xml` response that executes script when opened as a
+    document.
+    """
+    assert templates.env.autoescape("cosmic_card.svg") is True
     assert templates.env.autoescape("x.txt") is False
+
+
+@pytest.mark.parametrize("field", ["name", "birth_place"])
+def test_a_script_tag_in_a_visitor_field_cannot_reach_the_cosmic_card(field):
+    """Rendered, not configured. The setting above is necessary and not enough.
+
+    Asserting `autoescape("cosmic_card.svg") is True` says what the ENVIRONMENT
+    would do; it says nothing about whether this template's expressions pass
+    through it. A `|safe` on one line, or an expression moved into a context
+    Jinja escapes differently, leaves the setting true and the output exploitable
+    -- which is the shape this repo keeps finding: the configuration is right
+    and the thing it was meant to protect was never reached.
+
+    So this renders the real template with the real payload in each of the two
+    visitor-controlled fields, and reads the bytes.
+    """
+    import datetime
+
+    from astro_ai.chart import compute_chart
+    from astro_ai.llm import BirthDetails
+
+    payload = '<script>alert(1)</script>'
+    details = BirthDetails(
+        name=payload if field == "name" else "Asha",
+        birth_date=datetime.date(1990, 1, 1),
+        birth_time=datetime.time(10, 30),
+        birth_place=payload if field == "birth_place" else "Chennai",
+    )
+    chart = compute_chart(details.birth_date, details.birth_time, "Chennai")
+    svg = templates.env.get_template("cosmic_card.svg").render(
+        details=details, chart=chart,
+        display_name=details.name, moon_nakshatra="", lagna_glyph="",
+        moon_glyph="", sun_glyph="", manglik=None, sade_sati=None,
+    )
+    assert "<script>" not in svg, f"{field} reached the card as live markup"
+    assert "&lt;script&gt;" in svg, f"{field} was dropped rather than escaped"
+
+
+def test_the_cosmic_card_is_not_cacheable_by_a_shared_cache(client):
+    """`public` on a session-derived body — asserted ON A 200, which is the point.
+
+    THE FIRST VERSION OF THIS TEST WAS VACUOUS AND THE MUTATION HARNESS CAUGHT
+    IT. It fetched `/kundli/card` with no cookie, got the 303 "no saved chart"
+    redirect, and asserted `"public" not in cache-control` against a response
+    that carries no `Cache-Control` from this route at all. Flipping the header
+    back to `public` left it green: 190 of 191 mutations caught, this one MISSED.
+
+    That is the week's defect in one line — the assertion was fine and never
+    reached the code it was about — committed in the test written to close an
+    assertion with exactly that flaw. So this signs a real `__session` cookie
+    with a saved chart, requires a 200, and reads the header off the body that
+    actually carries the seeker's name, birth date, time and place.
+    """
+    from dataclasses import asdict
+
+    from astro_ai import session as sess
+
+    chart = sess.SavedChart(id="abc12345", name="Asha", birth_date="1990-01-01",
+                            birth_time="10:30", birth_place="Chennai")
+    cookie = sess._serializer().dumps(
+        {"charts": [asdict(chart)], "active_id": chart.id, "lang": "en"})
+    client.cookies.set(sess.COOKIE_NAME, cookie)
+    try:
+        r = client.get("/kundli/card", follow_redirects=False)
+    finally:
+        client.cookies.clear()
+
+    assert r.status_code == 200, (
+        f"the cookie did not produce a card ({r.status_code}); this test asserts "
+        f"nothing unless it reaches the 200 path")
+    cc = r.headers.get("cache-control", "")
+    assert "public" not in cc, f"session-derived body sent as {cc!r}"
+    assert "private" in cc, cc
+    # and the body really is the seeker's
+    assert "Asha" in r.text
+
+
+def test_an_ampersand_in_a_place_name_is_well_formed_xml():
+    """The other direction, and it was already broken for real visitors.
+
+    An unescaped `&` is malformed XML, so "Dadra & Nagar Haveli" produced a card
+    no strict parser would render. The fix repairs this as a side effect, and
+    this test is what stops a later `|safe` reintroducing it quietly.
+    """
+    import datetime
+    import xml.etree.ElementTree as ET
+
+    from astro_ai.chart import compute_chart
+    from astro_ai.llm import BirthDetails
+
+    details = BirthDetails(name="A & B", birth_date=datetime.date(1990, 1, 1),
+                           birth_time=datetime.time(10, 30),
+                           birth_place="Dadra & Nagar Haveli")
+    chart = compute_chart(details.birth_date, details.birth_time, "Chennai")
+    svg = templates.env.get_template("cosmic_card.svg").render(
+        details=details, chart=chart, display_name=details.name,
+        moon_nakshatra="", lagna_glyph="", moon_glyph="", sun_glyph="",
+        manglik=None, sade_sati=None,
+    )
+    assert "&amp;" in svg
+    ET.fromstring(svg)  # raises ParseError on a raw `&`
 
 
 # --------------------------------------------------------------------------

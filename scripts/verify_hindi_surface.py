@@ -72,6 +72,30 @@ deliberately NOT in any CI workflow.
 
 Needs a running server: pass --url. Exits 2 when it cannot reach one, never 0,
 because an unrunnable gate must not read as a green one.
+
+AND IT DID READ AS A GREEN ONE. Measured 2026-10-19: pointed at a server that
+answers 500 on every path -- a foreign process squatting the default port, which
+is exactly what was on :8000 that day -- this gate printed
+
+    /hi/rashifal  [500] devanagari=0% sentinels=0 prose=0 nav=0   (x13)
+    PASS (13 Hindi URLs: no English sentinel in <main>, Devanagari above each
+          page type's floor)
+
+and exited 0. Every check is a search for something BAD in a region that a 500
+does not contain: no <main>, so no sentinel, no prose, no nav label, and the
+Devanagari floor -- the one check that looks for something GOOD -- was already
+gated on `code == 200` and so skipped itself. The final line then asserted the
+floor had been cleared on thirteen pages where it was never applied.
+
+A gate whose every assertion is a negative passes hardest when it is given
+nothing. So three guards now stand before any of them, and all three exit 2:
+
+  1. /health must answer 200 with this app's JSON. A server answering is not
+     this app answering, and the port is the only thing the URL proves.
+  2. A page's status must be 200 or 503. 503 is the documented degraded path
+     (above); anything else means the response is not a page of ours.
+  3. <main> must be present and carry visible text. An empty region satisfies
+     every negative check in this file and proves nothing about any of them.
 """
 from __future__ import annotations
 
@@ -216,12 +240,32 @@ def main() -> int:
 
     NAV_EXPECTED = {k: _t("hi", k) for k in NAV_KEYS}
 
+    # WHOSE SERVER IS THIS. `--url` names a port, and a port is not an
+    # identity: on 2026-10-19 a foreign uvicorn held the default one and
+    # answered 500 to everything, which this gate reported as a clean PASS.
+    # /health is this app's own route and returns {"ok", "revision",
+    # "build_sha"}; anything else on the port fails to look like it.
+    try:
+        with urllib.request.urlopen(args.url + "/health", timeout=15) as r:
+            probe, probe_code = r.read(4096).decode("utf-8", "replace"), r.status
+    except urllib.error.HTTPError as e:
+        probe, probe_code = e.read(4096).decode("utf-8", "replace"), e.code
+    except Exception as e:
+        print(f"COULD NOT VERIFY: {args.url}/health unreachable ({e})")
+        return 2
+    if probe_code != 200 or '"ok"' not in probe:
+        print(f"COULD NOT VERIFY: {args.url}/health answered {probe_code} and does "
+              f"not look like this app: {probe[:120]!r}\n"
+              f"Something else is on that port. Start the app, or pass --url.")
+        return 2
+
     paths = sorted(hindi_pages.HINDI_PUBLISHED)
     hindi_urls = [hindi_pages.hindi_url(p) for p in paths]
 
     print(f"Hindi surface (#124) — {len(hindi_urls)} published URLs, reading <main>\n")
     problems: list[str] = []
     checked = 0
+    floored = 0        # pages the Devanagari floor was actually applied to
 
     for url in hindi_urls:
         full = args.url + url
@@ -236,8 +280,21 @@ def main() -> int:
             print(f"COULD NOT VERIFY: {full} unreachable ({e})")
             return 2
 
+        # 200 is a rendered page and 503 is the documented degraded card. Any
+        # other status is not a page of ours, and every check below is a search
+        # for something BAD -- all of which a non-page passes.
+        if code not in (200, 503):
+            print(f"COULD NOT VERIFY: {full} answered {code}; this gate reads "
+                  f"rendered Hindi and a {code} has none to read.")
+            return 2
+
         main = _region(html, "main")
         text = _visible(main)
+        if not text.strip():
+            print(f"COULD NOT VERIFY: {full} [{code}] has no visible text in "
+                  f"<main>. An empty region satisfies every negative check in "
+                  f"this file; it is not evidence that any of them held.")
+            return 2
         share = _devanagari_share(text)
         hits = [s for s in SENTINELS if s in text]
         prose = _english_prose(text)
@@ -290,6 +347,8 @@ def main() -> int:
             )
         kind = "rashi" if re.match(r"^/hi/rashifal/[a-z]+$", url) else "hub"
         floor = FLOORS[kind]
+        if code == 200:
+            floored += 1
         if code == 200 and share < floor:
             problems.append(
                 f"{url} [200]: Devanagari share {share:.0%} is below the "
@@ -307,8 +366,11 @@ def main() -> int:
               "this gate exists for. Route it through t(lang, …).")
         return 1
 
-    print(f"\nPASS ({checked} Hindi URLs: no English sentinel in <main>, "
-          f"Devanagari above each page type's floor)")
+    # Says which pages the floor was actually applied to. The old line claimed
+    # it for all of them, including the 503s where `code == 200` skips it.
+    print(f"\nPASS ({checked} Hindi URLs: no English sentinel in <main>; "
+          f"Devanagari above each page type's floor on the {floored} that "
+          f"rendered 200, not applied to the {checked - floored} degraded)")
     return 0
 
 

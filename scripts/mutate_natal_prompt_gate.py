@@ -124,23 +124,98 @@ def main() -> int:
     # Gate 5 is the opposite shape: it forbids text rather than requiring it, so
     # the mutation is INSERTION. Each retired claim, appended to the real
     # prompt, must turn Gate 5 red; the unmutated control must be green.
-    samples = {  # a literal that each alternation pattern must catch
-        r"red[- ]lentil|masoor": "red-lentil",
-        r"sesame[- ]oil": "sesame-oil",
-        r"black[- ]sesame": "black-sesame",
+    # Several spellings per pattern: QA round 1 found "service to outsiders"
+    # slipping past a literal "serve outsiders", so each pattern is tried with
+    # the variants it exists to catch, not just one sample.
+    samples = {  # literals each pattern must catch; default is the pattern itself
+        r"red[- ]lentils?|masoor|masur": ("red-lentil", "red lentils", "masur dal", "masoor"),
+        r"Surya[- ]?Namaskar|Sun[- ]salutation": ("Surya Namaskar", "Suryanamaskar", "Sun salutation"),
+        r"sesame[- ]oil|(?:\btil|teel)[- ]oil": ("sesame-oil", "sesame oil", "til oil"),
+        r"black[- ]sesame": ("black-sesame", "black sesame"),
+        r"(?:serv(?:e|es|ing|ice)|support(?:ing)?|help(?:ing)?)(?:\s+to)?\s+(?:the\s+)?(?:outsiders|marginali[sz]ed)":
+            ("serve outsiders", "service to outsiders", "serving the marginalised", "support outsiders"),
     }
     for pattern, _why in gate.FORBIDDEN:
-        sample = samples.get(pattern, pattern)
-        buf = io.StringIO()
-        with redirect_stdout(buf):
-            green = gate.gate_5_no_retired_claims(original)
-            mutant_ok = gate.gate_5_no_retired_claims(original + "\n" + sample + "\n")
-        if green and not mutant_ok:
+        for sample in samples.get(pattern, (pattern,)):
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                green = gate.gate_5_no_retired_claims(original)
+                mutant_ok = gate.gate_5_no_retired_claims(original + "\n" + sample + "\n")
+            if green and not mutant_ok:
+                caught += 1
+            else:
+                missed += 1
+                print(f"  MISSED  retired-claim  /{pattern}/ with {sample!r} (control "
+                      f"green={green}, mutant went red={not mutant_ok})")
+
+    # Gate 6 is the same insertion shape, applied to the topic summaries. The
+    # mutation re-inserts a retired claim into ONE real summary and requires the
+    # gate to go red AND to name that slug - a gate that fails without saying
+    # where is a gate nobody can act on. Variant rows go into the very article
+    # that shipped the variant (rahu-remedies, chandra-moon-remedies), because
+    # that is where a regression would reappear.
+    from astro_ai.learn_registry import ARTICLES
+
+    real = [(a.slug, a.llm_summary) for a in ARTICLES if a.llm_summary]
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        control6 = gate.gate_6_no_retired_claims_in_summaries(real)
+    if not control6:
+        print("  BLIND — Gate 6 already fails on the real registry:")
+        print(buf.getvalue())
+        return 1
+    summary_samples = {  # (slug to inject into or None for the first, literal)
+        r"red[- ]lentils?|masoor|masur": (("mars-remedies", "red-lentil Sunday charity"),
+                                          (None, "red masur dal charity")),
+        r"Surya[- ]?Namaskar|Sun[- ]salutation": (("surya-sun-remedies", "Surya Namaskar 12 rounds"),
+                                                 (None, "Sun salutation at sunrise")),
+        r"sesame[- ]oil|(?:\btil|teel)[- ]oil": (("ketu-remedies", "sesame oil, grey clothes"),
+                                                 (None, "til oil charity")),
+        r"black[- ]sesame": ((None, "black-sesame seeds"),),
+        r"(?:serv(?:e|es|ing|ice)|support(?:ing)?|help(?:ing)?)(?:\s+to)?\s+(?:the\s+)?(?:outsiders|marginali[sz]ed)":
+            (("rahu-remedies", "(2) service to outsiders/marginalised/animals"),
+             (None, "serve outsiders"), (None, "support the marginalized")),
+        gate.MILK_TO_SHIVA: (("chandra-moon-remedies", "Monday milk offering to Lord Shiva"),
+                             (None, "milk offering to Shiva"), (None, "milk abhishek of Shiva"),
+                             (None, "offer milk to Shivling")),
+        r"(?:Hanuman|Bajrang\w*|Maruti|Anjaneya)[^\n]{0,60}(?:Shani|Saturn|Saturday|Sade[- ]Sati)"
+        r"|(?:Shani|Saturn|Saturday|Sade[- ]Sati)[^\n]{0,60}(?:Hanuman|Bajrang\w*|Maruti|Anjaneya)":
+            ((None, "Hanuman is the classical intercessor with Shani"),
+             ("sade-sati", "Hanuman Chalisa Saturdays"), (None, "Bajrangbali for Sade Sati")),
+        r"confirmation in D-?9|Raja Yoga confirmation":
+            (("gajakesari-yoga", "Confirmation in D-9 Navamsha strengthens the effect"),),
+    }
+    first = real[0][0]
+    for pattern, _why in gate.SUMMARY_FORBIDDEN:
+        for target, sample in summary_samples.get(pattern, ((None, pattern),)):
+            target = target or first
+            mutated = [(slug, text + ("\n• " + sample if slug == target else ""))
+                       for slug, text in real]
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                mutant_ok = gate.gate_6_no_retired_claims_in_summaries(mutated)
+            if not mutant_ok and f"{target}: /{pattern}/" in buf.getvalue():
+                caught += 1
+            else:
+                missed += 1
+                print(f"  MISSED  summary-claim  /{pattern}/ with {sample!r} in {target} "
+                      f"(went red={not mutant_ok}, named {target}={f'{target}:' in buf.getvalue()})")
+
+    # Legal text must stay legal, or the widened patterns are just a louder
+    # false positive: Hanuman as a MARS deity (Table 78) and the Kaal Sarp
+    # Nag Panchami serpent milk, which is not the retired Moon -> Shiva claim.
+    for target, legal in (
+        ("mars-remedies", "Mars deities: Hanuman, Rudra, Kartikeya"),
+        ("kaal-sarp-dosh-remedies", "Nag Panchami (fast + serpent milk offering), Monday Shiva worship + milk abhishek"),
+    ):
+        mutated = [(slug, text + ("\n• " + legal if slug == target else "")) for slug, text in real]
+        with redirect_stdout(io.StringIO()):
+            still_green = gate.gate_6_no_retired_claims_in_summaries(mutated)
+        if still_green:
             caught += 1
         else:
             missed += 1
-            print(f"  MISSED  retired-claim  /{pattern}/ (control green={green}, "
-                  f"mutant went red={not mutant_ok})")
+            print(f"  MISSED  summary-claim  legal text wrongly forbidden: {legal!r}")
 
     lines = original.splitlines(keepends=True)
     unprotected = [
