@@ -148,8 +148,21 @@ def _fetch(name: str) -> Any | None:
         try:
             with urllib.request.urlopen(url, timeout=HTTP_TIMEOUT) as resp:  # noqa: S310
                 data = json.loads(resp.read().decode("utf-8"))
-        except (urllib.error.URLError, OSError, ValueError) as exc:
-            log.warning("ops_data: could not fetch %s: %s", url, exc)
+        # DELIBERATELY BROAD, for the reason recorded on `_live_today`: the
+        # four-type tuple read as exhaustive and was not.
+        # `http.client.IncompleteRead` inherits from HTTPException and is none
+        # of these, so it escaped and 500'd the WHOLE /admin/ops page.
+        #
+        # QA round 2 found this reader still narrow after the two live-API
+        # callers were widened, and it is the HOTTER path: in the container
+        # there is no `measurements/` directory, so EVERY file on a cold render
+        # -- loop.json, issues.json, cost.json, agents.json, the ga4/gsc pair --
+        # comes through here over HTTPS. Reproduced: a truncated read gave
+        # `GET /admin/ops -> 500` with the traceback ending in this line, where
+        # the docstring promises "None on any failure, with a log line". The
+        # commit that widened the other two presented the class as closed.
+        except Exception as exc:  # noqa: BLE001 -- see above
+            log.warning("ops_data: could not fetch %s: %s", url, exc, exc_info=True)
             data = None
 
     if data is not None:
@@ -302,7 +315,8 @@ def next_cycle_ist(now: datetime | None = None) -> datetime:
 
 
 def _loop_view(doc: dict | None, today_ist: str,
-               live_today: dict | None = None) -> dict:
+               live_today: dict | None = None,
+               *, fell_back: bool = False) -> dict:
     """Rows for the ribbon, plus the counts the tiles show.
 
     `started_ist_minutes` is minutes past IST midnight, which is what the
@@ -338,7 +352,11 @@ def _loop_view(doc: dict | None, today_ist: str,
                 "today": [],
                 "today_live": live_today is not None,
                 "today_shipped": (live_today or {}).get("shipped", []),
-                "today_failed": (live_today or {}).get("failed", [])}
+                "today_failed": (live_today or {}).get("failed", []),
+                "today_truncated": bool((live_today or {}).get("truncated")),
+                "shipped_truncated": bool((live_today or {}).get("shipped_truncated")),
+                "failed_truncated": bool((live_today or {}).get("failed_truncated")),
+                "fell_back": fell_back}
     rows = []
     for r in doc["rows"]:
         started = _ist(r.get("started"))
@@ -364,6 +382,27 @@ def _loop_view(doc: dict | None, today_ist: str,
                           else [r for r in today if r["outcome"] == "shipped"]),
         "today_failed": (live_today["failed"] if live_today is not None
                          else [r for r in today if r["outcome"] in ("failed", "unknown")]),
+        # A FLOOR, NOT A COUNT, when this is True. `fetch_today` spent MAX_PAGES
+        # on at least one endpoint and stopped while rows inside the day were
+        # still unread, so both live tiles are "at least N".
+        #
+        # QA round 2 found this flag computed in `ops_today` and read NOWHERE --
+        # not here, not in `routes/admin.py`, not in the template -- while THREE
+        # places said the page showed it, including the ARCHITECTURE decision
+        # row. Rendered against a permanently-full runs page the tile printed a
+        # flat `300` with a `live` badge and no caveat anywhere, in the one
+        # situation (a run storm during an incident) where the tile matters
+        # most. `.get` on the strict path too: `live_today` is this module's own
+        # dict, but the no-snapshot branch below is lenient and the two should
+        # not disagree about how trusting they are.
+        "today_truncated": bool((live_today or {}).get("truncated")),
+        # Per tile, so a capped runs read cannot put a floor marker on a
+        # complete pulls read.
+        "shipped_truncated": bool((live_today or {}).get("shipped_truncated")),
+        "failed_truncated": bool((live_today or {}).get("failed_truncated")),
+        # Travels WITH the numbers, the way `_issues_view` does it, so the alert
+        # cannot disagree with the tile about whether this is live.
+        "fell_back": fell_back,
         # Newest first in the file; the ribbon wants oldest-day at the bottom.
         "days": sorted({r["date_ist"] for r in rows if r["date_ist"]}, reverse=True),
         "latest": rows[0] if rows else None,
@@ -985,8 +1024,16 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
             # Live rows are WORKFLOW RUNS and carry `workflow`.
             which = ", ".join(sorted({f.get("workflow") or "an unnamed workflow"
                                       for f in loop["today_failed"]}))
-            add("amber", f"{n} loop run(s) failed today",
-                f"{which}. A leg that did not finish leaves its work untouched.")
+            # "At least" when the read was capped, for the same reason the tile
+            # says it: MAX_PAGES was spent with rows inside the day still
+            # unread, so n is a floor. An admitted floor beats a confident
+            # wrong number, and a run storm is exactly when both happen.
+            at_least = "At least " if loop.get("today_truncated") else ""
+            add("amber", f"{at_least}{n} loop run(s) failed today",
+                f"{which}. A leg that did not finish leaves its work untouched."
+                + (" The run list was capped before the day was fully read, so "
+                   "this is a floor, not a total." if loop.get("today_truncated")
+                   else ""))
         else:
             # Fallback rows are agent-work CYCLES from loop.json and have no
             # `workflow` key at all, so the live wording rendered a literal
@@ -1003,6 +1050,23 @@ def _alerts(loop: dict, issues: dict, agents: dict, app: dict,
     # normally live, so falling back to the committed file is a FAILED API
     # call, not a quiet downgrade -- and the figure it fell back to may be a
     # day old while the strip above it stays silent.
+    # The SAME alert for the delivery tiles, which did not have one. QA round 2
+    # drove `fetch_today` into a plain `TypeError` -- a programming error, not a
+    # network one -- and the page degraded to three tiles reading `0 ... as of
+    # 4d ago` with a WARNING in Cloud Run as the only signal. That is within an
+    # "as of" footer of the 2026-10-18 screen this panel was built to prevent,
+    # and it would stay that way forever. The bare `except Exception` on
+    # `_live_today` is deliberate and correct -- one tile must not 500 the page
+    # -- but "the page survives" and "nobody is told" are different properties,
+    # and only the first was implemented. The plumbing already existed one panel
+    # over and was not mirrored.
+    if loop.get("fell_back"):
+        add("amber", "Today's delivery tiles fell back to the committed snapshot",
+            "The live GitHub call failed, so Shipped/Filed/Failed today are as "
+            "of the last collection and count agent-work cycles only. If this "
+            "persists it is not the 60/hour budget — check the logs for a "
+            "stack trace.")
+
     if issues.get("fell_back"):
         add("amber", "Backlog fell back to the committed snapshot",
             "The live GitHub call failed, most likely the 60/hour unauthenticated "
@@ -1042,7 +1106,8 @@ def snapshot(now: datetime | None = None) -> dict:
     # from one injected clock.
     day_start = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)
     live_today = _live_today(day_start.astimezone(timezone.utc)) if LIVE_TODAY else None
-    loop = _loop_view(loop_doc, today_ist, live_today)
+    loop = _loop_view(loop_doc, today_ist, live_today,
+                      fell_back=LIVE_TODAY and live_today is None)
     issues = _issues_view(issues_doc, today_ist, live=live_doc is not None,
                           fell_back=LIVE_ISSUES and live_doc is None)
 

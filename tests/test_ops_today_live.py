@@ -491,7 +491,7 @@ def test_an_ordinary_day_still_costs_one_request_per_endpoint(monkeypatch):
     A short page means the endpoint ran out; there is nothing unfetched.
     """
     urls = _stub(monkeypatch, [_pr(1, "2026-10-18T09:00:00Z")],
-                 [_run(1, "agent-work.yml", "failure", "2026-10-18T09:00:00Z")])
+                 [_run(1, "agent-work.yml", "failure", _inside_today_utc())])
     got = ops_today.fetch_today("x/y", DAY_START, timeout=1)
     assert got["truncated"] is False
     assert len(urls) == 2, urls
@@ -602,3 +602,191 @@ def test_the_page_tells_the_drill_down_which_shape_the_rows_are(monkeypatch):
     body = TestClient(app).get("/admin/ops", auth=("admin", pw)).text
     assert '"today_live": true' in body.lower().replace(" :", ":"), \
         "the live flag did not reach the page"
+
+
+# --------------------------------------------------------------------------- #
+# Round 2 QA (2026-10-20). Three ship-blocking findings, and the first is the
+# one this block exists for: `truncated` was computed in `ops_today` and read
+# NOWHERE -- not in `ops_data`, not in `routes/admin.py`, not in the template --
+# while THREE places said the page showed it, one of them the ARCHITECTURE
+# decision row. The flag's existing test asserted only the dict key, so forcing
+# it True left all 706 tests green.
+#
+# Every test below reads the RENDERED PAGE, because every one of these findings
+# is about what a reader is told.
+# --------------------------------------------------------------------------- #
+
+def _ops_body(monkeypatch, prs, runs, *, pages=1):
+    """The real /admin/ops page over a stubbed GitHub."""
+    import os
+    from fastapi.testclient import TestClient
+    from astro_ai.main import app
+    from astro_ai.routes import deps
+
+    class _Resp:
+        def __init__(self, payload): self._p = payload
+        def read(self): return json.dumps(self._p).encode()
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def fake(req, timeout=None):
+        url = req.full_url if hasattr(req, "full_url") else str(req)
+        if "api.github.com" not in url:
+            raise urllib.error.URLError("no raw fetches in this test")
+        if "/pulls" in url:
+            return _Resp(prs)
+        return _Resp({"workflow_runs": runs})
+
+    monkeypatch.setattr(ops_today.urllib.request, "urlopen", fake)
+    monkeypatch.setattr(ops_data.urllib.request, "urlopen", fake)
+    monkeypatch.setattr(ops_data, "LIVE_TODAY", True)
+    monkeypatch.setattr(ops_data, "LIVE_ISSUES", False)
+    ops_data._today_cache = None
+    pw = os.environ.get("ADMIN_PASSWORD", deps._ADMIN_DEV_FALLBACK)
+    r = TestClient(app).get("/admin/ops", auth=("admin", pw))
+    assert r.status_code == 200, r.status_code
+    return r.text
+
+
+def _inside_today_utc() -> str:
+    """A UTC stamp inside the CURRENT IST day.
+
+    The route calls `snapshot()` with no `now`, so a hardcoded date falls
+    outside the window and the rows are filtered out before the pager is ever
+    reached -- which is how my first version of this test passed while
+    asserting nothing. Derived, not written down.
+    """
+    now = datetime.now(timezone.utc)
+    ist = now + timedelta(hours=5, minutes=30)
+    day_start = (ist.replace(hour=0, minute=0, second=0, microsecond=0)
+                 - timedelta(hours=5, minutes=30))
+    return (day_start + timedelta(minutes=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _fetch_with(*, prs, runs):
+    """The real `fetch_today` over a stubbed `_get`, no monkeypatch needed."""
+    def _get(url, *, timeout, token=None):
+        return prs if "/pulls" in url else {"workflow_runs": runs}
+    orig = ops_today._get
+    ops_today._get = _get
+    try:
+        return ops_today.fetch_today("x/y", DAY_START, timeout=1)
+    finally:
+        ops_today._get = orig
+
+def test_a_truncated_read_renders_an_at_least_on_the_tiles(monkeypatch):
+    """S-1, through the page. `≥` on the number and "at least" on the badge."""
+    stamp = _inside_today_utc()
+    full = [_run(1000 + i, "agent-work.yml", "failure", stamp)
+            for i in range(ops_today.PER_PAGE)]
+    body = _ops_body(monkeypatch, [], full)
+    assert "today_truncated" in body.lower() or "≥" in body, body[:200]
+    assert "≥" in body, (
+        "the capped count renders as a flat number, so the page states a total "
+        "it cannot stand behind"
+    )
+    assert "live, at least" in body, (
+        "the live badge does not admit that the read was capped"
+    )
+
+
+def test_an_uncapped_read_claims_no_floor(monkeypatch):
+    """The marker must mean something, so it must be absent when exact."""
+    body = _ops_body(
+        monkeypatch, [],
+        [_run(1, "agent-work.yml", "failure", _inside_today_utc())])
+    assert "live, at least" not in body
+    assert "≥" not in body.split('data-drill="backlog"')[0], (
+        "a complete read is marked as a floor"
+    )
+
+
+@pytest.mark.parametrize("conclusion", [
+    "startup_failure",      # invalid YAML, missing secret, runner never started
+    "action_required",
+    "stale",
+    "some_value_github_adds_in_2027",
+])
+def test_any_conclusion_that_is_not_a_success_counts_as_a_failure(conclusion):
+    """S-2. The allow-list of FAILURES was the wrong way round.
+
+    `FAILED_CONCLUSIONS = ("failure", "timed_out", "cancelled")` omitted
+    `startup_failure` -- a leg that produced nothing at all. A bad `on:` block
+    landing in `agent-steward.yml` would kill the loop for days while this tile
+    read `0 Failed today, live` and raised no alert: the 2026-10-18 screen,
+    through the one conclusion value nobody wrote down.
+
+    This module already had the right reasoning one screen up -- `LOOP_WORKFLOWS`
+    is "every workflow except the PR gates ... so the list grows by default
+    rather than by remembering" -- and it was not carried across.
+    """
+    runs = [_run(1, "agent-work.yml", conclusion, "2026-10-18T09:00:00Z")]
+    doc = _fetch_with(prs=[], runs=runs)
+    assert len(doc["failed"]) == 1, (
+        f"a run concluding {conclusion!r} produced nothing at all and is not "
+        f"counted as a failure: {doc['failed']}"
+    )
+    assert doc["failed"][0]["conclusion"] == conclusion
+
+
+@pytest.mark.parametrize("conclusion", ["success", "skipped", "neutral"])
+def test_a_successful_conclusion_is_not_a_failure(conclusion):
+    """The converse, so the set cannot be widened into meaninglessness."""
+    assert conclusion in ops_today.SUCCEEDED_CONCLUSIONS
+
+
+def test_a_run_still_in_flight_is_not_counted_as_failed():
+    """`conclusion is None` means not finished, which is not the same as badly."""
+    assert None not in ops_today.SUCCEEDED_CONCLUSIONS, (
+        "None must be excluded by the caller explicitly, not by sitting in the "
+        "success set where it would read as 'this run succeeded'"
+    )
+
+
+def test_the_measurements_fetch_does_not_500_the_page_on_a_truncated_read(monkeypatch):
+    """S-3. `_fetch` kept the four-type tuple after the live callers were widened.
+
+    `http.client.IncompleteRead` inherits from HTTPException and is none of
+    `URLError`/`OSError`/`ValueError`, and in the container there is no
+    `measurements/` directory, so EVERY file on a cold render comes through this
+    HTTPS path -- far more traffic than the two API calls the fix hardened.
+    Reproduced by QA round 2 as `GET /admin/ops -> 500`, where `_fetch`'s own
+    docstring promises "None on any failure, with a log line".
+    """
+    import http.client
+
+    def boom(*a, **k):
+        raise http.client.IncompleteRead(b"27 bytes")
+
+    monkeypatch.setattr(ops_data.urllib.request, "urlopen", boom)
+    monkeypatch.setattr(ops_data, "LIVE_TODAY", False)
+    monkeypatch.setattr(ops_data, "LIVE_ISSUES", False)
+    monkeypatch.setattr(ops_data, "measurements_dir", lambda: None)
+    ops_data._cache.clear()
+    snap = ops_data.snapshot()
+    assert snap["loop"]["ok"] is False, "a blanked panel, not an exception"
+
+
+def test_a_programming_error_in_the_live_path_raises_an_alert(monkeypatch):
+    """G-13. The bare `except Exception` is right; the silence was not.
+
+    QA round 2 drove `fetch_today` into a plain `TypeError` and the page
+    degraded to three tiles reading `0 ... as of 4d ago`, forever, with a
+    WARNING in Cloud Run as the only signal -- within an "as of" footer of the
+    2026-10-18 screen this panel exists to prevent. "The page survives" and
+    "somebody is told" are different properties and only the first was built.
+    The backlog panel's identical alert already existed one screen over.
+    """
+    def boom(*a, **k):
+        raise TypeError("a programming error, not a network one")
+
+    monkeypatch.setattr(ops_today, "fetch_today", boom)
+    monkeypatch.setattr(ops_data, "LIVE_TODAY", True)
+    monkeypatch.setattr(ops_data, "LIVE_ISSUES", False)
+    ops_data._today_cache = None
+    snap = ops_data.snapshot()
+    assert snap["loop"]["fell_back"] is True
+    titles = [a["title"] for a in snap["alerts"]]
+    assert any("delivery tiles fell back" in t for t in titles), (
+        f"the tiles fell back to a stale snapshot and no alert said so: {titles}"
+    )

@@ -1214,9 +1214,55 @@ MUTATIONS = [
 
     ("#ops-today: a missing snapshot blanks the live tiles too",
      "src/astro_ai/ops_data.py",
-     '                "today_failed": (live_today or {}).get("failed", [])}',
-     '                "today_failed": []}',
+     '                "today_failed": (live_today or {}).get("failed", []),',
+     '                "today_failed": [],',
      "test_live_tiles_survive_a_missing_snapshot_file"),
+    # ---- QA round 2 on #418. Three ship-blocking findings. The first is the
+    # ---- one this block exists for: `truncated` was computed and read NOWHERE
+    # ---- while three places said the page showed it. 18 of the reviewer's 29
+    # ---- hand-built mutants survived the suite AND the 179-row sweep.
+
+    ("#ops-today r2: the truncation flag never reaches the view",
+     "src/astro_ai/ops_data.py",
+     '"failed_truncated": bool((live_today or {}).get("failed_truncated")),\n        # Travels WITH',
+     '"failed_truncated": False,\n        # Travels WITH',
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+
+    ("#ops-today r2: the tile prints a capped count as a total",
+     "src/astro_ai/templates/admin_ops.html",
+     "{{ '\\u2265' if L.failed_truncated }}{{ L.today_failed|length }}",
+     "{{ L.today_failed|length }}",
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+
+    ("#ops-today r2: a startup_failure counts as a success (a leg that never ran reads as 0)",
+     "src/astro_ai/ops_today.py",
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral")',
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral", "startup_failure")',
+     "test_any_conclusion_that_is_not_a_success_counts_as_a_failure"),
+
+    ("#ops-today r2: conclusions go back to an allow-list of failures",
+     "src/astro_ai/ops_today.py",
+     "        if concl is None or concl in SUCCEEDED_CONCLUSIONS:\n            continue",
+     '        if concl not in ("failure", "timed_out", "cancelled"):\n            continue',
+     "test_any_conclusion_that_is_not_a_success_counts_as_a_failure"),
+
+    ("#ops-today r2: _fetch keeps the four-type tuple (a truncated read 500s the page)",
+     "src/astro_ai/ops_data.py",
+     '        except Exception as exc:  # noqa: BLE001 -- see above\n            log.warning("ops_data: could not fetch %s: %s", url, exc, exc_info=True)',
+     '        except (urllib.error.URLError, OSError, ValueError) as exc:\n            log.warning("ops_data: could not fetch %s: %s", url, exc)',
+     "test_the_measurements_fetch_does_not_500_the_page_on_a_truncated_read"),
+
+    ("#ops-today r2: the tiles fall back to a stale snapshot and no alert says so",
+     "src/astro_ai/ops_data.py",
+     '    if loop.get("fell_back"):',
+     "    if False:",
+     "test_a_programming_error_in_the_live_path_raises_an_alert"),
+
+    ("#ops-today r2: fell_back is never computed for the delivery tiles",
+     "src/astro_ai/ops_data.py",
+     "fell_back=LIVE_TODAY and live_today is None)",
+     "fell_back=False)",
+     "test_a_programming_error_in_the_live_path_raises_an_alert"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

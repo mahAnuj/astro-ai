@@ -596,9 +596,9 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         three-day-old file while five loop runs had failed. -#}
     <button class="tile" data-drill="today-shipped" {{ '' if L.today_shipped else 'disabled' }}>
       <span class="caret">▸</span><span class="lbl">Shipped today</span>
-      <span class="v"><span class="num c-shipped">{{ L.today_shipped|length }}</span></span>
+      <span class="v"><span class="num c-shipped">{{ '\u2265' if L.shipped_truncated }}{{ L.today_shipped|length }}</span></span>
       <span class="foot">PRs merged, {{ ops.today_ist }}<br>
-        {% if L.today_live %}<span class="age">live</span>
+        {% if L.today_live %}<span class="age">live{% if L.shipped_truncated %}, at least{% endif %}</span>
         {% else %}<span class="age {{ 'stale' if ops.ages.Delivery.stale }}">as of {{ ops.ages.Delivery.text }}</span>{% endif %}</span>
     </button>
     <button class="tile" data-drill="today-filed" {{ '' if I.filed_today else 'disabled' }}>
@@ -610,9 +610,9 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
     </button>
     <button class="tile" data-drill="today-failed" {{ '' if L.today_failed else 'disabled' }}>
       <span class="caret">▸</span><span class="lbl">Failed today</span>
-      <span class="v"><span class="num {{ 'c-failed' if L.today_failed else 'c-nothing' }}">{{ L.today_failed|length }}</span></span>
+      <span class="v"><span class="num {{ 'c-failed' if L.today_failed else 'c-nothing' }}">{{ '\u2265' if L.failed_truncated }}{{ L.today_failed|length }}</span></span>
       <span class="foot">loop runs that did not finish<br>
-        {% if L.today_live %}<span class="age">live</span>
+        {% if L.today_live %}<span class="age">live{% if L.failed_truncated %}, at least{% endif %}</span>
         {% else %}<span class="age {{ 'stale' if ops.ages.Delivery.stale }}">agent-work only, as of {{ ops.ages.Delivery.text }}</span>{% endif %}</span>
     </button>
     <button class="tile" data-drill="backlog">

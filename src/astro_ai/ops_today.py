@@ -113,11 +113,28 @@ NOT_LOOP_WORKFLOWS = (
     "verify-build.yml",
 )
 
-#: A run that ended in any of these did not do its job. `cancelled` is here
-#: because that is what a job killed by `timeout-minutes` reports, and a gate
-#: killed by the clock did not fail -- it never ran, which is worse and was
-#: invisible for exactly as long as this tile ignored it.
-FAILED_CONCLUSIONS = ("failure", "timed_out", "cancelled")
+#: A run that ended in one of these DID its job. Everything else is a failure.
+#:
+#: AN ALLOW-LIST OF FAILURES WAS THE WRONG WAY ROUND, and this module already
+#: knew that: `LOOP_WORKFLOWS` above is defined as "every workflow except the PR
+#: gates ... so the list grows by default rather than by remembering", with a
+#: declared complement and an exhaustiveness test. The identical reasoning
+#: applies to conclusions and was not carried across.
+#:
+#: What it cost: `FAILED_CONCLUSIONS = ("failure", "timed_out", "cancelled")`
+#: omitted `startup_failure` -- invalid workflow YAML, a missing secret, a runner
+#: that could not start -- which is a leg that produced NOTHING. So a bad `on:`
+#: block landing in `agent-steward.yml` would kill the loop for days while this
+#: tile read `0 Failed today, live` and raised no alert: the 2026-10-18 screen
+#: this module exists to prevent, reached through the one conclusion value
+#: nobody wrote down. `action_required` and `stale` were missing too.
+#:
+#: `cancelled` counting as failure is the case that made the direction obvious:
+#: it is what `timeout-minutes` reports, and a job killed by the clock did not
+#: fail -- it never finished, which is worse.
+#:
+#: `None` is a run still in flight and is excluded by the caller, not here.
+SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral")
 
 #: 100 rows a page, and MORE PAGES ONLY WHEN THE PAGE DID NOT REACH BACK PAST
 #: THE DAY START. "One page is always enough" was close to false already:
@@ -135,7 +152,8 @@ PER_PAGE = 100
 
 #: A hard stop, because the budget is 60/hour on a shared egress IP and a
 #: runaway loop here is worse than an undercount. 300 runs is ~3.7x the
-#: measured busiest day. Hitting it sets `truncated`, which the page shows --
+#: measured busiest day. Hitting it sets `truncated`, which the page renders
+#: as an "at least" on every affected tile and in the alert --
 #: an admitted "at least N" beats a confident wrong number.
 MAX_PAGES = 3
 
@@ -236,7 +254,11 @@ def fetch_today(repo: str, day_start: datetime, *,
         path = (r.get("path") or "").rsplit("/", 1)[-1]
         if path not in LOOP_WORKFLOWS:
             continue
-        if r.get("conclusion") not in FAILED_CONCLUSIONS:
+        concl = r.get("conclusion")
+        # In flight: not a failure, and not an outcome yet. A run with no
+        # conclusion is excluded here rather than in the set, because "has not
+        # finished" is a different kind of thing from "finished badly".
+        if concl is None or concl in SUCCEEDED_CONCLUSIONS:
             continue
         if (r.get("created_at") or "") < since:
             continue
@@ -253,7 +275,14 @@ def fetch_today(repo: str, day_start: datetime, *,
         # True when a page cap was reached with rows still inside the day, so
         # the counts below are a floor. The page says "at least" rather than
         # printing a number it cannot stand behind.
+        # PER ENDPOINT, not one flag for both. A single OR marked the Shipped
+        # tile as a floor when only the RUNS read was capped -- rendering
+        # "≥0 PRs merged" off a pulls read that was complete, which is a new
+        # wrong statement in place of the old missing one. `truncated` stays as
+        # the OR for any caller that only wants "was anything capped".
         "truncated": pr_more or runs_more,
+        "shipped_truncated": pr_more,
+        "failed_truncated": runs_more,
         "shipped": sorted(shipped.values(), key=lambda s: s["merged_at"], reverse=True),
         "failed": sorted(failed, key=lambda f: f["started"] or "", reverse=True),
     }
