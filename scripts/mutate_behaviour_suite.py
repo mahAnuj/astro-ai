@@ -1108,8 +1108,8 @@ MUTATIONS = [
 
     ("#ops-today: a clock-killed run stops counting (cancelled is not failed)",
      "src/astro_ai/ops_today.py",
-     'FAILED_CONCLUSIONS = ("failure", "timed_out", "cancelled")',
-     'FAILED_CONCLUSIONS = ("failure", "timed_out")',
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral")',
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral", "cancelled")',
      "test_a_run_killed_by_the_clock_counts_as_failed"),
 
     ("#ops-today: the runs query is bounded by today's UTC date (drops 00:00-05:30 IST)",
@@ -1126,8 +1126,8 @@ MUTATIONS = [
 
     ("#ops-today: live rows are merged with the snapshot instead of replacing it",
      "src/astro_ai/ops_data.py",
-     '        "today_failed": (live_today["failed"] if live_today is not None',
-     '        "today_failed": (live_today["failed"] + [r for r in today] if live_today is not None',
+     '        "today_failed": (live_today.get("failed", []) if live_today is not None',
+     '        "today_failed": (live_today.get("failed", []) + [r for r in today] if live_today is not None',
      "test_live_rows_replace_the_snapshot_rather_than_joining_them"),
 
     ("#ops-today: the failure alert is gated on loop.json again (the broken part reports itself)",
@@ -1166,8 +1166,8 @@ MUTATIONS = [
 
     ("#ops-today: failed is sorted oldest-first",
      "src/astro_ai/ops_today.py",
-     '"failed": sorted(failed, key=lambda f: f["started"] or "", reverse=True)',
-     '"failed": sorted(failed, key=lambda f: f["started"] or "")',
+     '"failed": sorted(failed.values(), key=lambda f: f["started"] or "", reverse=True)',
+     '"failed": sorted(failed.values(), key=lambda f: f["started"] or "")',
      "test_shipped_and_failed_are_newest_first"),
 
     ("#ops-today: the live cache never expires (the tiles freeze for the process)",
@@ -1214,8 +1214,8 @@ MUTATIONS = [
 
     ("#ops-today: a missing snapshot blanks the live tiles too",
      "src/astro_ai/ops_data.py",
-     '                "today_failed": (live_today or {}).get("failed", [])}',
-     '                "today_failed": []}',
+     '                "today_failed": (live_today or {}).get("failed", []),',
+     '                "today_failed": [],',
      "test_live_tiles_survive_a_missing_snapshot_file"),
 
     ("#ops-window: the app cache goes back to one slot (window A answers under B's heading)",
@@ -1421,6 +1421,374 @@ MUTATIONS = [
      "    pairs: dict[tuple[str, str], int] = {}\n    for blob in blobs:\n        if blob is None:\n            continue",
      "    pairs: dict[tuple[str, str], int] = {}\n    for blob in blobs:\n        if blob is None:\n            raise RuntimeError('missing day')",
      "test_a_missing_or_unreadable_day_does_not_abort_the_walk"),
+    # ---- QA round 2 on #418. Three ship-blocking findings. The first is the
+    # ---- one this block exists for: `truncated` was computed and read NOWHERE
+    # ---- while three places said the page showed it. 18 of the reviewer's 29
+    # ---- hand-built mutants survived the suite AND the 179-row sweep.
+
+    ("#ops-today r2: the truncation flag never reaches the view",
+     "src/astro_ai/ops_data.py",
+     '"failed_truncated": bool((live_today or {}).get("failed_truncated")),\n        # Travels WITH',
+     '"failed_truncated": False,\n        # Travels WITH',
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+
+    ("#ops-today r2: the tile prints a capped count as a total",
+     "src/astro_ai/templates/admin_ops.html",
+     "{{ '\\u2265' if L.failed_truncated }}{{ L.today_failed|length }}",
+     "{{ L.today_failed|length }}",
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+
+    ("#ops-today r2: a startup_failure counts as a success (a leg that never ran reads as 0)",
+     "src/astro_ai/ops_today.py",
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral")',
+     'SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral", "startup_failure")',
+     "test_any_conclusion_that_is_not_a_success_counts_as_a_failure"),
+
+    ("#ops-today r2: conclusions go back to an allow-list of failures",
+     "src/astro_ai/ops_today.py",
+     "        if concl is None or concl in SUCCEEDED_CONCLUSIONS:\n            continue",
+     '        if concl not in ("failure", "timed_out", "cancelled"):\n            continue',
+     "test_any_conclusion_that_is_not_a_success_counts_as_a_failure"),
+
+    ("#ops-today r2: _fetch keeps the four-type tuple (a truncated read 500s the page)",
+     "src/astro_ai/ops_data.py",
+     '        except Exception as exc:  # noqa: BLE001 -- see above\n            log.warning("ops_data: could not fetch %s: %s", url, exc, exc_info=True)',
+     '        except (urllib.error.URLError, OSError, ValueError) as exc:\n            log.warning("ops_data: could not fetch %s: %s", url, exc)',
+     "test_the_measurements_fetch_does_not_500_the_page_on_a_truncated_read"),
+
+    ("#ops-today r2: the tiles fall back to a stale snapshot and no alert says so",
+     "src/astro_ai/ops_data.py",
+     '    if loop.get("fell_back"):',
+     "    if False:",
+     "test_a_programming_error_in_the_live_path_raises_an_alert"),
+
+    ("#ops-today r2: fell_back is never computed for the delivery tiles",
+     "src/astro_ai/ops_data.py",
+     "fell_back=LIVE_TODAY and live_today is None)",
+     "fell_back=False)",
+     "test_a_programming_error_in_the_live_path_raises_an_alert"),
+
+    # ---- QA round 3 on #418 (2026-10-20). Twelve guard gaps, each one proved
+    # ---- by a hand-built mutant that survived the whole suite AND the 179-row
+    # ---- sweep. Their shared shape, worth stating once: every one of them
+    # ---- pinned a TRANSPORT and not a USE. `fetch_today` was tested against a
+    # ---- day start handed to it already correct, so nothing tested the line
+    # ---- that COMPUTES it; `truncated` was tested as a dict key, so nothing
+    # ---- tested the badge; `today_live` was tested as a serialised JSON
+    # ---- field, so nothing tested the branch that picks a renderer from it.
+
+    ("#ops-today r3 G1: the IST day start is computed in UTC (THE original "
+     "boundary bug, at the caller this time)",
+     "src/astro_ai/ops_data.py",
+     "    day_start = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)",
+     "    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)",
+     "test_the_page_computes_the_day_start_in_ist_not_in_utc"),
+
+    ("#ops-today r3 G1: the date printed beside the tiles is the UTC one",
+     "src/astro_ai/ops_data.py",
+     '    today_ist = now_ist.strftime("%Y-%m-%d")',
+     '    today_ist = now.strftime("%Y-%m-%d")',
+     "test_the_day_start_handed_to_the_api_is_the_one_the_page_prints"),
+
+    ("#ops-today r3 G2: the LIVE_TODAY kill switch stops switching anything",
+     "src/astro_ai/ops_data.py",
+     "    live_today = _live_today(day_start.astimezone(timezone.utc)) if LIVE_TODAY else None",
+     "    live_today = _live_today(day_start.astimezone(timezone.utc))",
+     "test_pinning_the_tiles_to_the_snapshot_makes_no_api_call_and_is_not_a_fallback"),
+
+    ("#ops-today r3 G2: the behaviour suite can reach the network again",
+     "tests/conftest.py",
+     '    monkeypatch.setattr(urllib.request, "urlopen", _blocked)',
+     "    assert _blocked",
+     "test_the_behaviour_suite_cannot_reach_the_network"),
+
+    ("#ops-today r3 G3: the live-BACKLOG catch narrows back to four types",
+     "src/astro_ai/ops_data.py",
+     "    except Exception as exc:  # noqa: BLE001\n"
+     "        # Broad for the same reason as `_live_today` below",
+     "    except (urllib.error.URLError, OSError, ValueError, KeyError) as exc:\n"
+     "        # Broad for the same reason as `_live_today` below",
+     "test_a_backlog_failure_outside_the_four_old_exception_types_does_not_500"),
+
+    ("#ops-today r3 G3: the backlog falls back to a stale count and no alert says so",
+     "src/astro_ai/ops_data.py",
+     '    if issues.get("fell_back"):',
+     "    if False:",
+     "test_a_backlog_programming_error_degrades_the_panel_rather_than_the_page"),
+
+    ("#ops-today r3 G4: the Shipped tile is badged `live` off the snapshot",
+     "src/astro_ai/templates/admin_ops.html",
+     "{% if L.today_live %}<span class=\"age\">live{% if L.shipped_truncated %}, at least{% endif %}</span>",
+     "{% if True %}<span class=\"age\">live{% if L.shipped_truncated %}, at least{% endif %}</span>",
+     "test_the_shipped_tile_says_live_only_when_it_is_live"),
+
+    ("#ops-today r3 G4: the Failed-today fallback drops the agent-work-only caveat",
+     "src/astro_ai/templates/admin_ops.html",
+     "agent-work only, as of {{ ops.ages.Delivery.text }}",
+     "as of {{ ops.ages.Delivery.text }}",
+     "test_the_failed_tile_fallback_says_it_counts_agent_work_only"),
+
+    ("#ops-today r3 G4: the Filed-today source badge is deleted outright",
+     "src/astro_ai/templates/admin_ops.html",
+     '      <span class="foot">new issues opened<br>\n'
+     '        {% if I.live %}<span class="age">live</span>\n'
+     '        {% else %}<span class="age {{ \'stale\' if ops.ages.Backlog.stale }}">'
+     'as of {{ ops.ages.Backlog.text }}</span>{% endif %}</span>',
+     '      <span class="foot">new issues opened</span>',
+     "test_the_filed_tile_carries_its_own_source_badge"),
+
+    ("#ops-today r3 G5: the drill-down hardcodes the cycle renderer (a panel of blanks)",
+     "src/astro_ai/templates/admin_ops.html",
+     '                      D.today_live ? "pr" : "cycle"],',
+     '                      "cycle"],',
+     "test_the_drill_down_picks_its_row_renderer_from_the_live_flag"),
+
+    ("#ops-today r3 G5: every PR in the sheet links to the same pull request",
+     "src/astro_ai/templates/admin_ops.html",
+     'link(REPO + "/pull/" + r.pr, "PR diff &rarr;")',
+     'link(REPO + "/pull/418", "PR diff &rarr;")',
+     "test_the_drill_down_links_a_merged_pr_by_its_own_number"),
+
+    ("#ops-today r3 G6: no snapshot AND no API renders three tiles reading `0 ... live`",
+     "src/astro_ai/ops_data.py",
+     '                "today_live": live_today is not None,',
+     '                "today_live": True,',
+     "test_no_snapshot_and_no_api_is_an_absence_not_three_live_zeroes"),
+
+    ("#ops-today r3 G7: the fallback alert loses the whole explanation",
+     "src/astro_ai/ops_data.py",
+     '                "From the committed snapshot, not live, so this counts "\n'
+     '                "agent-work only and may be out of date. A cycle that did not "\n'
+     '                "deliver leaves its issue untouched.")',
+     '                "A cycle that did not deliver leaves its issue untouched.")',
+     "test_the_fallback_alert_says_the_count_is_stale_and_agent_work_only"),
+
+    ("#ops-today r3 G8: Filed today borrows the delivery panel's live flag",
+     "src/astro_ai/routes/admin.py",
+     '        "filed_live": I.get("live", False),',
+     '        "filed_live": True,',
+     "test_the_filed_drill_down_flag_follows_the_backlog_not_the_delivery_read"),
+
+    ("#ops-today r3 G9: the page cap goes to 99 (84/hour becomes 2,400/hour)",
+     "src/astro_ai/ops_today.py",
+     "MAX_PAGES = 3",
+     "MAX_PAGES = 99",
+     "test_a_pathological_day_is_capped_at_three_pages_per_endpoint"),
+
+    ("#ops-today r3 G9: per_page drops to 30 (an ordinary day becomes 'at least')",
+     "src/astro_ai/ops_today.py",
+     "PER_PAGE = 100",
+     "PER_PAGE = 30",
+     "test_each_page_asks_for_a_hundred_rows"),
+
+    ("#ops-today r3 G9: the day-boundary stop rule never fires",
+     "src/astro_ai/ops_today.py",
+     "        if oldest(batch[-1]) < since:\n"
+     "            return rows, False          # paged back past the day start",
+     "        if False:\n"
+     "            return rows, False          # paged back past the day start",
+     "test_the_pager_stops_at_the_day_boundary_not_only_on_a_short_page"),
+
+    ("#ops-today r3 G9: a 403 body is accepted as an empty page (0/0/0, badged live)",
+     "src/astro_ai/ops_today.py",
+     "        if not isinstance(batch, list):\n"
+     "            raise ValueError(f\"{base.rsplit('/', 1)[-1]} did not return a list\")",
+     "        if not isinstance(batch, list):\n"
+     "            batch = []",
+     "test_a_page_that_is_not_a_list_raises_rather_than_counting_as_empty"),
+
+    ("#ops-today r3 G11: failed loses its cross-page distinctness",
+     "src/astro_ai/ops_today.py",
+     '        failed[rid if rid is not None else ("no-id", len(failed))] = {',
+     "        failed[(\"row\", len(failed))] = {",
+     "test_a_run_repeated_across_a_page_boundary_is_counted_once"),
+
+    ("#ops-today r3 G11: dedupe becomes a drop for a row with no id",
+     "src/astro_ai/ops_today.py",
+     '        failed[rid if rid is not None else ("no-id", len(failed))] = {',
+     "        failed[rid] = {",
+     "test_a_run_with_no_id_is_kept_rather_than_collapsed"),
+
+    ("#ops-today r3 G12: the COST paragraph goes back to the pre-pager 36/hour",
+     "src/astro_ai/ops_today.py",
+     "                                     = 84/hour",
+     "                                     = 36/hour",
+     "test_the_cost_paragraph_states_the_actual_worst_case"),
+
+    ("#ops-today r3 G15: the ok path trusts a key the degraded path does not",
+     "src/astro_ai/ops_data.py",
+     '        "today_shipped": (live_today.get("shipped", []) if live_today is not None',
+     '        "today_shipped": (live_today["shipped"] if live_today is not None',
+     "test_a_live_dict_missing_a_key_blanks_a_tile_rather_than_500ing_the_page"),
+
+    ("#ops-today r3 G10: the workflow exhaustiveness scan globs *.yml only",
+     "tests/test_ops_today_live.py",
+     '            if p.is_file() and p.suffix in (".yml", ".yaml")}',
+     '            if p.is_file() and p.suffix == ".yml"}',
+     "test_the_workflow_scan_sees_a_yaml_as_well_as_a_yml"),
+
+    # Two 500s found by making the suite hermetic, in the branch that had never
+    # once run under test because the tests rendering it were fetching the real
+    # files over the network. `_loop_view` already carried the rule, in ten
+    # lines, written after this exact failure; neither sibling inherited it.
+    ("#ops-today r3: the backlog zero-state drops keys (KeyError: 'filed_today')",
+     "src/astro_ai/ops_data.py",
+     '        return {"ok": False, "generated_at": None, "live": False,\n'
+     '                "fell_back": fell_back, "open": 0, "rows": [], "with_ask": 0,\n'
+     '                "by_priority": {}, "by_area": {}, "by_type": {},\n'
+     '                "blocked": [], "filed_today": []}',
+     '        return {"ok": False, "rows": [], "live": False, "fell_back": fell_back}',
+     "test_the_ops_page_survives_every_source_being_unreadable"),
+
+    ("#ops-today r3: the cost zero-state drops keys (UndefinedError: known_usd)",
+     "src/astro_ai/ops_data.py",
+     '        return {"ok": False, "rows": [], "known_usd": 0, "unknown": [],\n'
+     '                "shipped_30d": shipped_30d, "per_issue_usd": None}',
+     '        return {"ok": False, "rows": []}',
+     "test_the_ops_page_survives_every_source_being_unreadable"),
+    ("#397: the /ask overlay re-asserts 'no cancelling conditions' for Nadi",
+     "src/astro_ai/prompts/ask_matching.txt",
+     '- Nadi is not among the Bhakoot parihāras. The exemptions the tradition records apply OUTSIDE the Madhya Nadi only and this product applies none of them — never tell a seeker whose Nadi is Madhya that one exists for their case. A slight (alpa) grade applies where pada-Nadi differs. Never invent any other Nadi condition.',
+     "- Nadi has no cancelling conditions in this tradition. Never invent one.",
+     "test_no_surface_asserts_nadi_has_no_cancelling_conditions"),
+
+    ("#397: the two /ask overlays' Nadi lines drift apart",
+     "src/astro_ai/prompts/ask_matching_third_party.txt",
+     "apply OUTSIDE the Madhya Nadi only and this product applies none of them",
+     "apply OUTSIDE the Madhya Nadi only and this product applies them",
+     "test_both_ask_overlays_carry_the_identical_nadi_line"),
+
+    ("#397: the engine's Nadi note re-asserts the absolute beside the exemption",
+     "src/astro_ai/matching.py",
+     '" Nadi is not among the Bhakoot parihāras and is required to be sound "\n        "alongside them, and the tradition prescribes shanti where it is present."',
+     '" Nadi has no cancelling conditions in this tradition and is required to be sound "\n        "alongside them, and the tradition prescribes shanti where it is present."',
+     "test_engine_note_states_the_narrowed_position_and_keeps_the_disclosure"),
+
+    ("#397: /ask context stops feeding nd.unevaluated (overlay names what the model cannot see)",
+     "src/astro_ai/llm.py",
+     '        lines += [f"  not evaluated: {u}" for u in nd.unevaluated]\n',
+     "",
+     "test_ask_context_names_the_exemptions_the_overlay_refers_to"),
+
+    ("#397: Hindi panel footnote regains the false first sentence",
+     "src/astro_ai/i18n.py",
+     '"भकूट के परिहारों में नाड़ी सम्मिलित नहीं है; किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     '"नाड़ी का कोई परिहार नहीं होता। किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     "test_panel_footnote_still_says_no_points_and_not_the_absolute"),
+
+    # ---- QA round 1 on #397. All four blockers were introduced BY this
+    # ---- change; the last row is a pre-existing hole the reviewer measured.
+
+    ("#397 QA: the exemption sentence is unscoped again, so a Madhya pair is told one was declined",
+     "src/astro_ai/matching.py",
+     '    note += (\n        " The regional and community exemptions it records do not extend to the "\n        "Madhya Nadi."\n        if grave else\n        " It also records exemptions by region and community (shown below), "\n        "which we do not apply."\n    )',
+     '    note += (\n        " It also records exemptions by region and community (shown below), "\n        "which we do not apply."\n    )',
+     "test_a_madhya_pair_is_not_told_an_exemption_was_declined_for_it"),
+
+    ("#397 QA: the Hindi footnote states the OPPOSITE position (ASCII _ABSOLUTE cannot see it)",
+     "src/astro_ai/i18n.py",
+     '"भकूट के परिहारों में नाड़ी सम्मिलित नहीं है; किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     '"नाड़ी के परिहार लागू होते हैं; किसी भी छूट से इसके अंक नहीं बढ़ते।",',
+     "test_the_hindi_footnote_states_the_position_and_not_only_the_points"),
+
+    ("#397 QA: a contradicting overlay instruction on a line the old prefix scan could not see",
+     "src/astro_ai/prompts/ask_matching.txt",
+     "- The same holds for every Nadi mitigation:",
+     "- Regional or community exemptions for Nadi are not part of this tradition; never tell the seeker one exists.\n- The same holds for every Nadi mitigation:",
+     "test_no_other_line_in_an_overlay_restates_the_nadi_rule"),
+
+    ("#397 QA: the alpa branch says the tradition REMOVES the dosha",
+     "src/astro_ai/matching.py",
+     '"dosha slight in this case — reduced, not removed."',
+     '"dosha removed entirely in this case."',
+     "test_the_alpa_branch_says_reduced_and_never_removed"),
+
+    ("#397 QA: the alpa grading is inverted (no fixture reached this branch at all)",
+     "src/astro_ai/matching.py",
+     "            if g_pn != b_pn:\n                alpa = True",
+     "            if g_pn == b_pn:\n                alpa = True",
+     "test_the_alpa_branch_says_reduced_and_never_removed"),
+
+    ("#397 QA: a same-Nadi pair is awarded 8/8 (18.0 Avara -> 26.0 Madhyam, 681 tests passed)",
+     "src/astro_ai/matching.py",
+     'name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=0.0,',
+     'name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=8.0,',
+     "test_a_nadi_dosha_awards_no_points_however_it_is_graded"),
+    # ---- QA round 2 on #397. S-1 is a fourth surface the round-1 FIX created;
+    # ---- the rest are guards round 1's fixes shipped without. 13 of the
+    # ---- reviewer's 19 hand-built mutants survived the suite AND the sweep.
+
+    ("#397 r2: the /ask context NOTE is unscoped again (the 4th surface)",
+     "src/astro_ai/llm.py",
+     '"Madhya Nadi, and are not applied here."))',
+     '"Madhya Nadi, and are applied here."))',
+     "test_the_ask_context_scopes_the_exemption_on_the_grade"),
+
+    ("#397 r2: the overlay scope is INVERTED (\"to the Madhya Nadi only\")",
+     "src/astro_ai/prompts/ask_matching.txt",
+     "apply OUTSIDE the Madhya Nadi only",
+     "apply to the Madhya Nadi only",
+     "test_both_ask_overlays_carry_the_identical_nadi_line"),
+
+    ("#397 r2: the overlay's anti-hallucination clause is deleted",
+     "src/astro_ai/prompts/ask_matching.txt",
+     " Never invent any other Nadi condition.", "",
+     "test_both_ask_overlays_carry_the_identical_nadi_line"),
+
+    ("#397 r2: the English footnote asserts the OPPOSITE position",
+     "src/astro_ai/i18n.py",
+     '"Nadi is not among the Bhakoot parihāras, and no mitigation adds points to it.",',
+     '"Nadi is among the Bhakoot parihāras, and no mitigation adds points to it.",',
+     "test_the_english_footnote_states_the_position_and_not_only_the_points"),
+
+    ("#397 r2: the scoped sentence never reaches the rendered panel",
+     "src/astro_ai/templates/matching_result.html",
+     "{{ _nd.note }}", "{{ '' }}",
+     "test_the_scoped_sentence_actually_reaches_the_rendered_panel"),
+
+    ("#397 r2: the exemption disclosure is suppressed, so \"(shown below)\" points at nothing",
+     "src/astro_ai/templates/matching_result.html",
+     "{% if _nd.unevaluated %}", "{% if False %}",
+     "test_the_exemption_disclosure_reaches_the_rendered_panel"),
+
+    ("#397 r2: the disclosure says we DO apply the exemptions",
+     "src/astro_ai/matching.py",
+     '"We do not apply those exemptions automatically.",',
+     '"We apply those exemptions automatically.",',
+     "test_the_exemption_disclosure_says_we_do_NOT_apply_them"),
+
+    ("#397 r2: the alpa pointer claims the dosha is cleared, contradicting the mitigation below it",
+     "src/astro_ai/matching.py",
+     'note += " One mitigation applies, below."',
+     'note += " A mitigation applies which clears this dosha, below."',
+     "test_the_alpa_pointer_cannot_contradict_the_mitigation_it_points_at"),
+
+    ("#397 r2: the Nadi absolute returns on /learn in a phrasing _ABSOLUTE never matched",
+     "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html",
+     "  <div class=\"callout-label\">Nadi Dosh is graded, not cancelled</div>",
+     "  <div class=\"callout-label\">Nadi Dosh is graded, not cancelled</div>\n"
+     "  <p>Nadi can never be cancelled or waived by anything.</p>",
+     "test_a_nadi_absolute_cannot_return_in_a_third_phrasing"),
+    # ---- The gate that printed PASS against thirteen HTTP 500s. Every row
+    # ---- below removes one of the three guards and must turn the suite red.
+
+    ("#hindi-gate: no health probe, so a foreign server on the port is measured as ours",
+     "scripts/verify_hindi_surface.py",
+     '    if probe_code != 200 or \'"ok"\' not in probe:',
+     '    if False:',
+     "test_a_foreign_server_on_the_port_is_not_this_app"),
+
+    ("#hindi-gate: any status is read as a page, so 500s sweep clean (the original defect)",
+     "scripts/verify_hindi_surface.py",
+     '        if code not in (200, 503):',
+     '        if code not in (200, 503, 404, 500):',
+     "test_a_page_status_the_gate_cannot_read_is_not_a_pass"),
+
+    ("#hindi-gate: an empty <main> satisfies every negative check and is called a pass",
+     "scripts/verify_hindi_surface.py",
+     '        if not text.strip():',
+     '        if False:',
+     "test_an_empty_main_is_not_a_pass"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

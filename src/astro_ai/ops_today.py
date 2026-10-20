@@ -42,15 +42,38 @@ number silently dropped.
 doing its job; counting it as a loop failure would make every caught defect
 look like an outage and would bury the failures that are real.
 
-COST
-----
-Two requests, both unauthenticated-safe (the repo is public). The budget is
-60/hour shared across every tenant on this egress IP, and `ops_data` already
-spends one on the live backlog. Cached for `CACHE_TTL` by the caller, so a
-worst case of constant reloading is 36/hour; the realistic case is a handful a
-day, because this is an admin page. `OPS_GH_TOKEN` raises the ceiling to
-5,000/hour if that ever stops being true. Any failure raises, and the caller
-renders the committed snapshot and labels it.
+COST — RE-DERIVED AFTER THE PAGER, BECAUSE THE OLD NUMBER WENT STALE
+--------------------------------------------------------------------
+Two endpoints, both unauthenticated-safe (the repo is public). This paragraph
+used to say "two requests ... 36/hour worst case", and that was true until
+`MAX_PAGES` was added: `_pages` will spend up to `MAX_PAGES` requests per
+endpoint, so the arithmetic is
+
+    MAX_PAGES (3) x 2 endpoints      = 6 per cache miss here
+    + 1 for `ops_data._live_issues`  = 7 per render
+    x 12 cache misses an hour (CACHE_TTL 300 s)
+                                     = 84/hour
+
+against a ceiling of **60/hour shared across every tenant on this egress IP**.
+So the documented worst case now EXCEEDS the budget, and the failure it would
+produce is a self-inflicted 403 that drops the page back into the 0/0/0
+fallback this module exists to fix.
+
+It is latent, not live: the pager stops as soon as the oldest row fetched is
+older than the day start, so today's real volumes cost one request per endpoint
+and 3 per render (36/hour) — the figure the old paragraph quoted, which was
+the ordinary case being written down as the worst case. The pathological shape
+is a run storm filling every page, i.e. during an incident, which is exactly
+when the budget is least affordable.
+
+Two things keep it honest rather than a comment: `truncated` is surfaced on
+every affected tile, so an over-long day reads as "at least N" instead of
+spending more requests; and `OPS_GH_TOKEN` raises the ceiling to 5,000/hour.
+`test_the_cost_paragraph_states_the_actual_worst_case` recomputes the two
+integers above from `MAX_PAGES`, so raising the cap cannot leave this
+paragraph behind the way the pager already did once.
+
+Any failure raises, and the caller renders the committed snapshot and labels it.
 """
 
 from __future__ import annotations
@@ -113,11 +136,28 @@ NOT_LOOP_WORKFLOWS = (
     "verify-build.yml",
 )
 
-#: A run that ended in any of these did not do its job. `cancelled` is here
-#: because that is what a job killed by `timeout-minutes` reports, and a gate
-#: killed by the clock did not fail -- it never ran, which is worse and was
-#: invisible for exactly as long as this tile ignored it.
-FAILED_CONCLUSIONS = ("failure", "timed_out", "cancelled")
+#: A run that ended in one of these DID its job. Everything else is a failure.
+#:
+#: AN ALLOW-LIST OF FAILURES WAS THE WRONG WAY ROUND, and this module already
+#: knew that: `LOOP_WORKFLOWS` above is defined as "every workflow except the PR
+#: gates ... so the list grows by default rather than by remembering", with a
+#: declared complement and an exhaustiveness test. The identical reasoning
+#: applies to conclusions and was not carried across.
+#:
+#: What it cost: `FAILED_CONCLUSIONS = ("failure", "timed_out", "cancelled")`
+#: omitted `startup_failure` -- invalid workflow YAML, a missing secret, a runner
+#: that could not start -- which is a leg that produced NOTHING. So a bad `on:`
+#: block landing in `agent-steward.yml` would kill the loop for days while this
+#: tile read `0 Failed today, live` and raised no alert: the 2026-10-18 screen
+#: this module exists to prevent, reached through the one conclusion value
+#: nobody wrote down. `action_required` and `stale` were missing too.
+#:
+#: `cancelled` counting as failure is the case that made the direction obvious:
+#: it is what `timeout-minutes` reports, and a job killed by the clock did not
+#: fail -- it never finished, which is worse.
+#:
+#: `None` is a run still in flight and is excluded by the caller, not here.
+SUCCEEDED_CONCLUSIONS = ("success", "skipped", "neutral")
 
 #: 100 rows a page, and MORE PAGES ONLY WHEN THE PAGE DID NOT REACH BACK PAST
 #: THE DAY START. "One page is always enough" was close to false already:
@@ -135,7 +175,8 @@ PER_PAGE = 100
 
 #: A hard stop, because the budget is 60/hour on a shared egress IP and a
 #: runaway loop here is worse than an undercount. 300 runs is ~3.7x the
-#: measured busiest day. Hitting it sets `truncated`, which the page shows --
+#: measured busiest day. Hitting it sets `truncated`, which the page renders
+#: as an "at least" on every affected tile and in the alert --
 #: an admitted "at least N" beats a confident wrong number.
 MAX_PAGES = 3
 
@@ -231,29 +272,57 @@ def fetch_today(repo: str, day_start: datetime, *,
             "url": p.get("html_url") or "",
         }
 
-    failed = []
+    # Distinct by run id, for the reason stated on `shipped` above and for one
+    # more that is specific to the pager. The reasoning was written down for
+    # the PR list and not carried to this one, which is the asymmetry: one
+    # list enforced its unit and its sibling assumed it.
+    #
+    # REPRODUCED DETERMINISTICALLY 2026-10-20: `/actions/runs` is newest-first
+    # and paged, so a run created BETWEEN the page-1 and page-2 fetches shifts
+    # every row one place later. With 150 failed runs and one run starting in
+    # that window, page 2 re-serves the last row of page 1 -- 151 rows, 150
+    # distinct ids, the boundary run counted twice on the tile and listed
+    # twice in the drill-down. Low probability per render; certain eventually,
+    # the window is widest during the run storm that makes paging happen at
+    # all.
+    failed: dict = {}
     for r in runs:
         path = (r.get("path") or "").rsplit("/", 1)[-1]
         if path not in LOOP_WORKFLOWS:
             continue
-        if r.get("conclusion") not in FAILED_CONCLUSIONS:
+        concl = r.get("conclusion")
+        # In flight: not a failure, and not an outcome yet. A run with no
+        # conclusion is excluded here rather than in the set, because "has not
+        # finished" is a different kind of thing from "finished badly".
+        if concl is None or concl in SUCCEEDED_CONCLUSIONS:
             continue
         if (r.get("created_at") or "") < since:
             continue
-        failed.append({
-            "run": r.get("id"),
+        rid = r.get("id")
+        # A row with no id cannot be deduped. Keyed uniquely rather than
+        # collapsed: silently dropping all but one of them would be a bigger
+        # error than counting one twice, which is the error being fixed.
+        failed[rid if rid is not None else ("no-id", len(failed))] = {
+            "run": rid,
             "workflow": r.get("name") or path,
             "conclusion": r.get("conclusion"),
             "started": r.get("created_at"),
             "url": r.get("html_url") or "",
-        })
+        }
 
     return {
         "since": since,
         # True when a page cap was reached with rows still inside the day, so
         # the counts below are a floor. The page says "at least" rather than
         # printing a number it cannot stand behind.
+        # PER ENDPOINT, not one flag for both. A single OR marked the Shipped
+        # tile as a floor when only the RUNS read was capped -- rendering
+        # "≥0 PRs merged" off a pulls read that was complete, which is a new
+        # wrong statement in place of the old missing one. `truncated` stays as
+        # the OR for any caller that only wants "was anything capped".
         "truncated": pr_more or runs_more,
+        "shipped_truncated": pr_more,
+        "failed_truncated": runs_more,
         "shipped": sorted(shipped.values(), key=lambda s: s["merged_at"], reverse=True),
-        "failed": sorted(failed, key=lambda f: f["started"] or "", reverse=True),
+        "failed": sorted(failed.values(), key=lambda f: f["started"] or "", reverse=True),
     }

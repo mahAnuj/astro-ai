@@ -261,3 +261,63 @@ def test_one_render_makes_one_api_call_however_many_panels_read_the_backlog(
         ops_data.snapshot(now=datetime(2026, 10, 15, 6, 0, tzinfo=timezone.utc))
         ops_data.snapshot(now=datetime(2026, 10, 15, 6, 1, tzinfo=timezone.utc))
     assert len(calls) == 1, "the 300s cache is what keeps this inside the API budget"
+
+
+# --------------------------------------------------------------------------
+# QA round 3 on #418 (2026-10-20). G3: the widening of this module's OWN
+# `except` was the only one of the three that never got a test. #418 widened
+# `_live_today`, `_live_issues` and `_fetch` from the same four-type tuple in
+# the same breath, and wrote tests for two of them -- so reverting THIS one
+# left the suite and the 179-row sweep green, and the panel that 500s the
+# control room is the one the page is most likely to be opened for.
+# --------------------------------------------------------------------------
+
+def test_a_backlog_failure_outside_the_four_old_exception_types_does_not_500(
+        monkeypatch):
+    """`http.client.IncompleteRead` is not URLError, OSError, ValueError or KeyError.
+
+    It inherits from `http.client.HTTPException`, which inherits from
+    `Exception` and nothing else -- so the old tuple, which reads as
+    exhaustive, let a truncated HTTP read escape `_live_issues`, escape
+    `snapshot()` (whose docstring is "Never raises") and take down the whole
+    of /admin/ops. A truncated response is the ordinary failure of a read over
+    a flaky link, not an exotic one.
+
+    `_live_issues`' own docstring is the contract being pinned: "Returns None
+    on ANY failure". The word is ANY, and only a bare `except Exception` means
+    it.
+    """
+    import http.client
+
+    def boom(*a, **k):
+        raise http.client.IncompleteRead(b"half a page of JSON")
+
+    monkeypatch.setattr(issue_backlog, "fetch_live", boom)
+    ops_data._live_cache = None
+    try:
+        assert ops_data._live_issues("an objective") is None
+    finally:
+        ops_data._live_cache = None
+
+
+def test_a_backlog_programming_error_degrades_the_panel_rather_than_the_page(
+        committed, monkeypatch):
+    """The other half of ANY: a TypeError is not a network failure either.
+
+    Narrowing the catch to network types is the plausible "tidy-up", and it
+    reads as safe because a programming error "should" be loud. On this page
+    it is not safe: the panel is one of six, and losing the page loses the
+    five that were fine, at the moment someone is looking for what broke. The
+    alert strip is what keeps it from being silent -- asserted here, so the
+    broad catch cannot be mistaken for a swallow.
+    """
+    def boom(*a, **k):
+        raise TypeError("a programming error, not a network one")
+
+    monkeypatch.setattr(issue_backlog, "fetch_live", boom)
+    snap = ops_data.snapshot(now=datetime(2026, 10, 15, 6, 0, tzinfo=timezone.utc))
+    I = snap["issues"]
+    assert I["ok"] is True, "a programming error blanked the panel"
+    assert I["live"] is False and I["fell_back"] is True
+    titles = [a["title"] for a in snap["alerts"]]
+    assert any(t.startswith("Backlog fell back") for t in titles), titles
