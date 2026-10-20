@@ -1405,9 +1405,14 @@ MUTATIONS = [
      "        failed[rid] = {",
      "test_a_run_with_no_id_is_kept_rather_than_collapsed"),
 
-    ("#ops-today r3 G12: the COST paragraph goes back to the pre-pager 36/hour",
+    # RE-POINTED. F2 rewrote this paragraph from 84/hour to 120/hour, which
+    # orphaned the old anchor -- and the new static pre-flight above caught it
+    # in milliseconds, where the sweep would have spent a sandboxed suite run
+    # to report ANCHOR MISSED. That is the whole argument for the pre-flight,
+    # demonstrated by the change that introduced it.
+    ("#ops-today r3 G12: the COST paragraph goes back to the pre-pager figure",
      "src/astro_ai/ops_today.py",
-     "                                     = 84/hour",
+     "                                     = 120/hour",
      "                                     = 36/hour",
      "test_the_cost_paragraph_states_the_actual_worst_case"),
 
@@ -1604,6 +1609,47 @@ MUTATIONS = [
      "MAX_PAGES = 4",
      "MAX_PAGES = 1",
      "test_the_cost_paragraph_states_the_actual_worst_case"),
+    # ---- QA round 4 on #418: F4-F10. Every mutant below was built FIRST and
+    # confirmed to survive the suite, then the test was written against it. Two
+    # of my first attempts were vacuous (F6 never put the hostile title on the
+    # page; F9 mutated a fallback another fallback had already made dead code)
+    # and one "catch" was a SyntaxError rather than a catch -- all three found
+    # by probing, which is why each row here is parseable and proven.
+    ("#418/F4: the tile says a floor and the alert states it as a total",
+     "src/astro_ai/ops_data.py",
+     'at_least = "At least " if loop.get("today_truncated") else ""',
+     'at_least = ""',
+     "test_the_alert_admits_the_floor_when_the_tile_does"),
+    ("#418/F4b: the truncation flag never reaches the alert",
+     "src/astro_ai/ops_data.py",
+     '"today_truncated": bool((live_today or {}).get("truncated")),\n        # Per tile',
+     '"today_truncated": False,\n        # Per tile',
+     "test_the_alert_admits_the_floor_when_the_tile_does"),
+    ("#418/F10: the alert stops deduping and names a workflow once per run",
+     "src/astro_ai/ops_data.py",
+     'sorted({f.get("workflow") or "an unnamed workflow"\n                                      for f in loop["today_failed"]})',
+     'sorted([f.get("workflow") or "an unnamed workflow"\n                                      for f in loop["today_failed"]])',
+     "test_every_failing_workflow_is_named_once"),
+    ("#418/F9: a run with no name is no longer identified at all",
+     "src/astro_ai/ops_today.py",
+     '"workflow": r.get("name") or path',
+     '"workflow": r.get("name")',
+     "test_a_run_with_no_name_is_still_named_something"),
+    ("#418/F6: a PR title can terminate the ops-data script block",
+     "src/astro_ai/routes/admin.py",
+     'json.dumps(client).replace("</", "<\\\\/")',
+     "json.dumps(client)",
+     "test_the_ops_json_blob_cannot_be_escaped_by_a_pr_title"),
+    ("#418/F5: the GitHub token stops reaching the wire",
+     "src/astro_ai/ops_today.py",
+     'headers["Authorization"] = f"Bearer {token}"',
+     "pass",
+     "test_the_request_carries_a_user_agent_and_the_token_when_set"),
+    ("#418/F5b: the User-Agent GitHub requires is dropped",
+     "src/astro_ai/ops_today.py",
+     '"User-Agent": _UA,',
+     "",
+     "test_the_request_carries_a_user_agent_and_the_token_when_set"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -1750,6 +1796,61 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
 # contend and the wall time stops improving. `cpu_count or 1` because it returns
 # None on some platforms.
 _WORKERS = min(int(os.environ.get("MUTATE_WORKERS", "4")), (os.cpu_count() or 1))
+
+# STATIC ANCHOR PRE-FLIGHT (#418/F7). Claimed in two PR comments -- "a static
+# anchor validator now runs over every 5-tuple", upgraded to "zero rows anchor
+# on a comment" -- and it was in neither the repo nor any workflow. QA round 4
+# looked for it and reported the quoted counts as unreproducible. So it is built
+# here rather than claimed again.
+#
+# WHY STATIC AND AHEAD OF THE SWEEP. `_run_in_sandbox` already reports
+# ANCHOR MISSED, but only per row, only at run time, and only for uniqueness --
+# so a bad anchor costs a full sandboxed suite run before it says so, and an
+# anchor sitting on a COMMENT passes it completely. A row anchored on a comment
+# mutates prose: it changes no behaviour, so it reports MISSED for a defect that
+# is in fact guarded, and the row silently stops being a gate. One did, for two
+# QA rounds (#ops-today's clock-killed run), and that is this log's recurring
+# subject.
+#
+# Cheap: pure text, no subprocess, no suite. It runs before anything is spent.
+def _preflight_anchors() -> list[str]:
+    problems: list[str] = []
+    for label, rel, old, new, test in MUTATIONS:
+        path = ROOT / rel
+        if not path.exists():
+            problems.append(f"{label}: {rel} does not exist")
+            continue
+        src = path.read_text(encoding="utf-8")
+        n = src.count(old)
+        if n != 1:
+            problems.append(f"{label}: anchor matches {n}x in {rel}, need exactly 1")
+            continue
+        if old == new:
+            problems.append(f"{label}: the mutant is identical to the anchor")
+        # The anchor must be EXECUTABLE. Checked on the first line of a
+        # multi-line anchor, which is where the match begins.
+        first = old.splitlines()[0]
+        for line in src.splitlines():
+            if first in line and line.lstrip().startswith(("#", "//", "<!--")):
+                problems.append(
+                    f"{label}: anchor sits on a COMMENT line in {rel} -- mutating "
+                    f"prose changes no behaviour, so this row cannot ever catch "
+                    f"anything: {line.strip()[:70]}")
+                break
+    return problems
+
+
+_anchor_problems = _preflight_anchors()
+if _anchor_problems:
+    print(f"ANCHOR PRE-FLIGHT FAILED - {len(_anchor_problems)} row(s), "
+          f"nothing was run:")
+    for _p in _anchor_problems:
+        print(f"  {_p}")
+    print("\nA row whose anchor is wrong is not a weak gate, it is no gate. Fix")
+    print("the anchor or remove the row deliberately; do not let the sweep")
+    print("spend a sandboxed suite run per row to tell you the same thing.")
+    raise SystemExit(1)
+print(f"anchor pre-flight: {len(MUTATIONS)} rows, every anchor unique and executable")
 
 _work = [_CONTROL] + list(MUTATIONS)
 _verdicts: dict[int, tuple[str, str]] = {}
