@@ -1162,6 +1162,61 @@ MUTATIONS = [
      'name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=0.0,',
      'name="Nadi", sanskrit="नाड़ी", max_points=8, awarded=8.0,',
      "test_a_nadi_dosha_awards_no_points_however_it_is_graded"),
+    # ---- QA round 2 on #397. S-1 is a fourth surface the round-1 FIX created;
+    # ---- the rest are guards round 1's fixes shipped without. 13 of the
+    # ---- reviewer's 19 hand-built mutants survived the suite AND the sweep.
+
+    ("#397 r2: the /ask context NOTE is unscoped again (the 4th surface)",
+     "src/astro_ai/llm.py",
+     '"Madhya Nadi, and are not applied here."))',
+     '"Madhya Nadi, and are applied here."))',
+     "test_the_ask_context_scopes_the_exemption_on_the_grade"),
+
+    ("#397 r2: the overlay scope is INVERTED (\"to the Madhya Nadi only\")",
+     "src/astro_ai/prompts/ask_matching.txt",
+     "apply OUTSIDE the Madhya Nadi only",
+     "apply to the Madhya Nadi only",
+     "test_both_ask_overlays_carry_the_identical_nadi_line"),
+
+    ("#397 r2: the overlay's anti-hallucination clause is deleted",
+     "src/astro_ai/prompts/ask_matching.txt",
+     " Never invent any other Nadi condition.", "",
+     "test_both_ask_overlays_carry_the_identical_nadi_line"),
+
+    ("#397 r2: the English footnote asserts the OPPOSITE position",
+     "src/astro_ai/i18n.py",
+     '"Nadi is not among the Bhakoot parihāras, and no mitigation adds points to it.",',
+     '"Nadi is among the Bhakoot parihāras, and no mitigation adds points to it.",',
+     "test_the_english_footnote_states_the_position_and_not_only_the_points"),
+
+    ("#397 r2: the scoped sentence never reaches the rendered panel",
+     "src/astro_ai/templates/matching_result.html",
+     "{{ _nd.note }}", "{{ '' }}",
+     "test_the_scoped_sentence_actually_reaches_the_rendered_panel"),
+
+    ("#397 r2: the exemption disclosure is suppressed, so \"(shown below)\" points at nothing",
+     "src/astro_ai/templates/matching_result.html",
+     "{% if _nd.unevaluated %}", "{% if False %}",
+     "test_the_exemption_disclosure_reaches_the_rendered_panel"),
+
+    ("#397 r2: the disclosure says we DO apply the exemptions",
+     "src/astro_ai/matching.py",
+     '"We do not apply those exemptions automatically.",',
+     '"We apply those exemptions automatically.",',
+     "test_the_exemption_disclosure_says_we_do_NOT_apply_them"),
+
+    ("#397 r2: the alpa pointer claims the dosha is cleared, contradicting the mitigation below it",
+     "src/astro_ai/matching.py",
+     'note += " One mitigation applies, below."',
+     'note += " A mitigation applies which clears this dosha, below."',
+     "test_the_alpa_pointer_cannot_contradict_the_mitigation_it_points_at"),
+
+    ("#397 r2: the Nadi absolute returns on /learn in a phrasing _ABSOLUTE never matched",
+     "src/astro_ai/templates/learn/kundali-matching-ashtakoot-guna-milan.html",
+     "  <div class=\"callout-label\">Nadi Dosh is graded, not cancelled</div>",
+     "  <div class=\"callout-label\">Nadi Dosh is graded, not cancelled</div>\n"
+     "  <p>Nadi can never be cancelled or waived by anything.</p>",
+     "test_a_nadi_absolute_cannot_return_in_a_third_phrasing"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
