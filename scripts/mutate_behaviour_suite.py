@@ -1050,6 +1050,137 @@ MUTATIONS = [
      "",
      "test_a_copied_marker_in_someone_elses_comment_does_not_suppress_the_stop"),
 
+    ("#396: a provider that omits prompt_tokens_details is recorded as a measured 0 (absent -> zero)",
+     "src/astro_ai/providers.py",
+     'cached = getattr(details, "cached_tokens", None)',
+     'cached = getattr(details, "cached_tokens", 0)',
+     "test_a_provider_that_does_not_report_is_absent_never_zero"),
+
+    ("#396: chat() stops resetting the prefix figure before each call (provider A's cached count leaks to B)",
+     "src/astro_ai/providers.py",
+     "                _last_prefix.set(None)\n",
+     "",
+     "test_chat_resets_the_figure_before_each_call_so_a_stub_cannot_inherit_it"),
+
+    # --- #396 follow-up: classifying a SILENCE. Groq sends no cache figure at
+    # all on a miss, so "absent" means either "this model cannot report" or
+    # "this model reported nothing". Only the first is unmeasurable. Each row
+    # below collapses that distinction in one direction or the other -- the
+    # first four inflate the saving, the fifth invents one.
+    ("#396: a junk cache figure discards the prompt size too (a miss becomes unclassifiable)",
+     "src/astro_ai/providers.py",
+     "    if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:\n"
+     "        # Present but not a count (a string, a float, a bool) or negative. The\n"
+     "        # provider DID say something and it is unusable, so this is a rejection\n"
+     "        # and must not read as a measured zero either.\n"
+     "        return prompt, None, True\n",
+     "    if not isinstance(cached, int) or isinstance(cached, bool) or cached < 0:\n"
+     "        return None\n",
+     "test_prefix_usage_accepts_only_real_ints"),
+
+    ("#396: the model allowlist is ignored, so a non-caching model's silence scores 0%",
+     "src/astro_ai/llm_stats.py",
+     "            measurable = (model in CACHE_REPORTING_MODELS",
+     "            measurable = (True",
+     "test_a_miss_on_a_non_reporting_model_is_not_scored_as_zero"),
+
+    ("#396: the minimum-prefix threshold is ignored (an ineligible prompt scores 0%)",
+     "src/astro_ai/llm_stats.py",
+     "prompt_tokens >= MIN_CACHEABLE_PREFIX)", "True)",
+     "test_a_prompt_under_the_minimum_cacheable_length_is_not_measurable"),
+
+    # Superseded: there is no longer a `cached is not None or ...` disjunct to
+    # remove -- separate numerators made it unnecessary. The equivalent defect in
+    # the new design is restoring the outcome-dependence it replaced.
+    ("#396: measurability reads the OUTCOME again (a hit counts, a miss of the same size does not)",
+     "src/astro_ai/llm_stats.py",
+     "            measurable = (model in CACHE_REPORTING_MODELS\n",
+     "            measurable = (cached_tokens is not None or model in CACHE_REPORTING_MODELS\n",
+     "test_measurability_never_depends_on_the_outcome_at_any_size"),
+
+    ("#396: effective_pct borrows the shared numerator (a sub-floor hit inflates it)",
+     "src/astro_ai/llm_stats.py",
+     '_rate(v["cached_measurable"], v["prompt_measurable"],',
+     '_rate(v["cached_tokens"], v["prompt_measurable"],',
+     "test_a_sub_floor_report_does_not_inflate_the_effective_numerator"),
+
+    # --- #410 QA round 3. Each row restores a defect round 3 measured.
+    ("#410: a cached count larger than its own prompt is accepted again (5000% stored)",
+     "src/astro_ai/providers.py",
+     "    if cached > prompt:", "    if False:",
+     "test_a_cached_count_larger_than_its_prompt_is_refused_at_the_source"),
+
+    ("#410: the impossible flag leaves the route cell, invisible when Effective is a dash",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{{ route }}{% if pc.impossible %}", "{{ route }}{% if False %}",
+     "test_the_anomaly_flag_is_visible_when_only_the_reported_side_is_broken"),
+
+    ("#410: the table pairs the measurable denominator with the reported numerator again",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{{ pc.prompt_measurable }} / {{ pc.cached_measurable }}",
+     "{{ pc.prompt_measurable }} / {{ pc.cached_tokens }}",
+     "test_the_two_column_pairs_each_divide_to_their_own_rate"),
+
+    ("#410: the unmeasurable-report notice drops the benign cause and the warning",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "Most likely a non-Groq provider reporting\n", "Most likely nothing\n",
+     "test_the_unmeasurable_report_notice_names_the_benign_cause_and_forbids_the_harmful_fix"),
+
+    ("#410: a malformed stat_key is dropped silently again (a whole window can vanish)",
+     "src/astro_ai/llm_stats.py",
+     "                                compound_key, len(parts))\n                skipped_rows += 1",
+     "                                compound_key, len(parts))",
+     "test_a_malformed_stat_key_is_counted_and_logged_not_dropped_silently"),
+
+    ("#410: the skip notice moves back inside the table's own if (total loss is silent)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{% if llm_stats.aggregate.prefix_cache_skipped_rows and not llm_stats.aggregate.prefix_cache %}",
+     "{% if False %}",
+     "test_the_skip_notice_survives_when_every_row_is_skipped"),
+
+    ("#410: the By-route table's headers are overwritten with the prefix-cache ones",
+     "src/astro_ai/templates/admin_dashboard.html",
+     '            <th class="text-right py-2">Response-cache hits</th>',
+     '            <th class="text-right py-2">Measurable</th>',
+     "test_the_by_route_table_still_has_its_own_headers"),
+
+    ("#396: effective_pct divides by reported tokens, collapsing it into hit_pct (the original defect)",
+     "src/astro_ai/llm_stats.py",
+     '_rate(v["cached_measurable"], v["prompt_measurable"],\n'
+     '                                               v["measurable"]),',
+     '_rate(v["cached_measurable"], v["prompt_reported"],\n'
+     '                                               v["measurable"]),',
+     "test_the_two_rates_diverge_and_effective_is_the_honest_one"),
+
+    # --- #410 QA round 1: the follow-up's own defects. Each row restores the
+    # behaviour QA measured and the suite must go red.
+    ("#410: MIN_CACHEABLE_PREFIX back to 1024 (a hit is measurable, a miss of the same size is not)",
+     "src/astro_ai/llm_stats.py",
+     "MIN_CACHEABLE_PREFIX = 128", "MIN_CACHEABLE_PREFIX = 1024",
+     "test_a_miss_and_a_hit_at_the_same_size_are_both_measurable"),
+
+    ("#410: an older stored schema is summed field-by-field again (mixed window published 571%)",
+     "src/astro_ai/llm_stats.py",
+     "            if not _PREFIX_ZERO.keys() <= pc.keys():", "            if False:",
+     "test_an_old_schema_day_blob_is_skipped_whole_not_summed_field_by_field"),
+
+    ("#410: the rate is no longer clamped (a misreporting provider puts 250% on the dashboard)",
+     "src/astro_ai/llm_stats.py",
+     "    return round(max(0.0, min(100.0, cached / prompt * 100)), 1)",
+     "    return round(cached / prompt * 100, 1)",
+     "test_a_rate_is_clamped_and_a_negative_count_is_refused"),
+
+    ("#410: a negative cached count is accepted as a measurement",
+     "src/astro_ai/providers.py",
+     "or isinstance(cached, bool) or cached < 0:", "or isinstance(cached, bool):",
+     "test_a_rate_is_clamped_and_a_negative_count_is_refused"),
+
+    ("#410: the footnote names prompt overlays as if they were chat routes",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "          A call is Measurable on one of the three cache-reporting models",
+     "          <code>ask_matching</code> and <code>ask_numerology</code> are excluded.\n"
+     "          A call is Measurable on one of the three cache-reporting models",
+     "test_every_route_name_in_the_footnote_is_a_real_chat_route"),
     # --- #400: the per-route token budget gate. A size gate that cannot go red is
     # the honour system it replaced; each row neuters one comparison it makes.
     ("#400: the ceiling comparison is neutered (an oversized prompt passes)",
@@ -1093,6 +1224,57 @@ MUTATIONS = [
      'measured["natal+payload"] = (n_en + user, n_hi + user)',
      'measured["natal+payload"] = (n_en, n_hi)',
      "test_the_natal_row_includes_the_chart_payload_not_only_the_system_prompt"),
+    # ---- QA round 4 on #396. BUG-1 and BUG-2 were introduced by round 3 --
+    # ---- the round that was fixing things. Each row below was checked to die
+    # ---- on its OWN named test, not merely to turn the suite red.
+
+    ("#396 r4: an impossible provider report is booked as a measured zero",
+     "src/astro_ai/llm_stats.py",
+     "            if reported_impossible:",
+     "            if False and reported_impossible:",
+     "test_an_impossible_report_is_not_booked_as_a_measured_zero"),
+
+    ("#396 r4: a rejected report collapses back into a silence",
+     "src/astro_ai/providers.py",
+     "        return prompt, None, True\n    return prompt, cached, False",
+     "        return prompt, None, False\n    return prompt, cached, False",
+     "test_an_impossible_report_is_not_booked_as_a_measured_zero"),
+
+    ("#396 r4: the measurable-side impossibility clause is deleted",
+     "src/astro_ai/llm_stats.py",
+     '            or v["cached_measurable"] > v["prompt_measurable"]\n',
+     "",
+     "test_the_measurable_side_of_the_impossibility_check_is_pinned"),
+
+    ("#396 r4: the impossible-row tooltip stops saying the row is untrustworthy",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "Every percentage on this row is clamped and untrustworthy.",
+     "All good here.",
+     "test_the_impossible_tooltip_says_the_row_is_untrustworthy"),
+
+    ("#396 r4: the Effective fraction is guarded on `reported` (hides its own numerator)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{% if pc.measurable %}{{ pc.prompt_measurable }} / {{ pc.cached_measurable }}",
+     "{% if pc.reported %}{{ pc.prompt_measurable }} / {{ pc.cached_measurable }}",
+     "test_the_effective_fraction_is_guarded_on_measurable_not_reported"),
+
+    ("#396 r4: the By-route gap disclosure is removed from the panel",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{% if gap %}<strong>{{ gap.values() | sum }} call(s)",
+     "{% if False %}<strong>{{ gap.values() | sum }} call(s)",
+     "test_the_gap_against_by_route_is_counted_not_explained_away"),
+
+    ("#396 r4: the By-route gap is never computed",
+     "src/astro_ai/llm_stats.py",
+     '                if n > prefix_acc.get(route, {}).get("calls", 0)',
+     "                if False",
+     "test_the_gap_against_by_route_is_counted_not_explained_away"),
+
+    ("#396 r4: MIN_CACHEABLE_PREFIX excludes a prompt exactly at the floor",
+     "src/astro_ai/llm_stats.py",
+     "and prompt_tokens >= MIN_CACHEABLE_PREFIX",
+     "and prompt_tokens > MIN_CACHEABLE_PREFIX",
+     "test_a_prompt_exactly_at_the_floor_is_measurable"),
 
     ("#ops-today: the failure tile is scoped back to agent-work (the 2026-10-18 blindness)",
      "src/astro_ai/ops_today.py",
@@ -1985,6 +2167,270 @@ MUTATIONS = [
      'raise RuntimeError("a conflict hunk has no `=======` separator")',
      'return out',
      "test_a_hunk_with_no_separator_raises_rather_than_returning_nothing"),
+
+    # ---- QA round 5 on #396. S-1 / S-2 / G-2 were FALSE SENTENCES and a guard
+    # ---- that could not tell `calls` from `measurable`. Each row restores one
+    # ---- false clause (or breaks the number the clause is about) and must die on
+    # ---- its OWN named test.
+    ("#396 r5: an impossible report is described as counted in Hit rate again (S-1)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "discarded: it is in <em>neither</em> Hit rate <em>nor</em> Effective, and the call",
+     "discarded: its figure counts toward Hit rate, and the call",
+     "test_an_impossible_report_is_in_neither_rate_and_not_harmless_as_the_notice_says"),
+
+    ("#396 r5: an impossible report is told it needs no action again (S-1)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "This one does need attention &mdash;", "This one needs no action &mdash;",
+     "test_an_impossible_report_is_in_neither_rate_and_not_harmless_as_the_notice_says"),
+
+    ("#396 r5: a rejected report is booked as Reported (the row would contradict the notice)",
+     "src/astro_ai/llm_stats.py",
+     '                pc["reported_unmeasurable"] = pc.get("reported_unmeasurable", 0) + 1\n',
+     '                pc["reported_unmeasurable"] = pc.get("reported_unmeasurable", 0) + 1\n'
+     '                pc["reported"] = pc.get("reported", 0) + 1\n',
+     "test_an_impossible_report_is_in_neither_rate_and_not_harmless_as_the_notice_says"),
+
+    ("#396 r5: the notice counts reports, not unmeasurable-report calls",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "map(attribute='reported_unmeasurable') | sum", "map(attribute='reported') | sum",
+     "test_the_unmeasurable_notice_sums_both_causes_into_its_count"),
+
+    ("#396 r5: the genuine-report clause stops saying the figure is in Hit rate",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "that figure is counted in", "that figure is dropped from",
+     "test_a_genuine_unmeasurable_report_is_in_hit_rate_and_out_of_effective_as_the_notice_says"),
+
+    ("#396 r5: a genuine unmeasurable report stops reaching the Hit-rate numerator",
+     "src/astro_ai/llm_stats.py",
+     'pc["cached_tokens"] = pc.get("cached_tokens", 0) + cached_tokens',
+     'pc["cached_tokens"] = pc.get("cached_tokens", 0) + 0',
+     "test_a_genuine_unmeasurable_report_is_in_hit_rate_and_out_of_effective_as_the_notice_says"),
+
+    ("#396 r5: 'a route of only impossible reports shows a dash in both rates' is rewritten",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "shows a dash in both rates.", "shows 0% in both rates.",
+     "test_a_route_of_only_impossible_reports_shows_a_dash_in_both_rates_as_the_notice_says"),
+
+    ("#396 r5: the notice names a floor the code does not apply",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "It can also mean the 128-token floor", "It can also mean the 1024-token floor",
+     "test_the_floor_the_notice_names_is_the_floor_the_code_applies"),
+
+    ("#396 r5: the footnote miscounts the cache-reporting models",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "on one of the three cache-reporting models", "on one of the four cache-reporting models",
+     "test_the_footnote_count_of_cache_reporting_models_is_the_set_size"),
+
+    ("#396 r5: the dash sentence goes back to three causes",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "<strong>An Effective dash has four causes</strong>",
+     "<strong>An Effective dash has three causes</strong>",
+     "test_the_dash_causes_are_counted_and_the_fourth_is_the_impossible_report"),
+
+    ("#396 r5: the dash sentence drops the impossible-report cause",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "or every report it sent was\n          impossible and discarded",
+     "or nothing at all was\n          sent",
+     "test_the_dash_causes_are_counted_and_the_fourth_is_the_impossible_report"),
+
+    ("#396 r5: the excluded-rows notice goes back to naming only the older schema",
+     "src/astro_ai/templates/admin_dashboard.html",
+     " (written by an older schema, or keyed\n          in a shape this page does not recognise), so their calls are missing",
+     " (written by an older schema), so their calls are missing",
+     "test_the_excluded_rows_notice_counts_rows_and_names_both_causes_and_the_calls_are_missing"),
+
+    ("#396 r5: the excluded-rows notice prints the wrong count",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "<strong>{{ llm_stats.aggregate.prefix_cache_skipped_rows }}\n          stored row(s) were excluded as unreadable",
+     "<strong>{{ llm_stats.aggregate.prefix_cache | length }}\n          stored row(s) were excluded as unreadable",
+     "test_the_excluded_rows_notice_counts_rows_and_names_both_causes_and_the_calls_are_missing"),
+
+    ("#396 r5: the total-loss notice stops claiming it is every row",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "&mdash; which is every row in this window", "&mdash; which is some of the rows in this window",
+     "test_the_skip_notice_survives_when_every_row_is_skipped"),
+
+    ("#396 r5: the gap is computed from `measurable`, not `calls` (G-2)",
+     "src/astro_ai/llm_stats.py",
+     '                route: n - prefix_acc.get(route, {}).get("calls", 0)\n'
+     '                for route, n in by_route.items()\n'
+     '                if n > prefix_acc.get(route, {}).get("calls", 0)\n',
+     '                route: n - prefix_acc.get(route, {}).get("measurable", 0)\n'
+     '                for route, n in by_route.items()\n'
+     '                if n > prefix_acc.get(route, {}).get("measurable", 0)\n',
+     "test_the_gap_against_by_route_is_counted_not_explained_away"),
+
+    ("#396 r5: the gap sentence says the unaccounted calls ARE in Fresh calls (S-2)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "not counted in Fresh calls here</strong>", "counted in Fresh calls above</strong>",
+     "test_the_gap_sentence_says_the_unaccounted_calls_are_not_in_fresh_calls"),
+
+    ("#396 r5: the false 'count toward Fresh calls' sentence is reinstated (S-2)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "          Two ordinary causes:",
+     "          Those calls count toward Fresh calls above. Two ordinary causes:",
+     "test_the_gap_sentence_says_the_unaccounted_calls_are_not_in_fresh_calls"),
+
+    ("#396 r5: every gap route is listed with the TOTAL instead of its own count",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "{{ route }} {{ n }}{% if not loop.last %}",
+     "{{ route }} {{ gap.values() | sum }}{% if not loop.last %}",
+     "test_the_gap_lists_every_route_with_its_own_count_and_sums_them"),
+
+    ("#396 r5: the gap stops naming the excluded-rows cause (S-2, second half)",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "; and the stored rows excluded as unreadable", "; and nothing else",
+     "test_the_gap_names_both_causes_and_a_skipped_row_really_does_widen_it"),
+
+    ("#396 r5: the gap sentence goes back to the false vocabulary-mismatch claim",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "both on the chat route", "web route there, chat route here",
+     "test_both_lists_are_keyed_on_the_same_route_as_the_gap_sentence_claims"),
+
+    ("#396 r5: the gap sentence stops saying it shrinks as older days age out",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "shrinks as they age out of the window", "stays until it is cleared",
+     "test_the_gap_copy_says_older_days_age_out"),
+
+    ("#396 r5: the gap ignores the requested window (older days never age out)",
+     "src/astro_ai/llm_stats.py",
+     "    prefix_acc: dict[str, dict[str, int]] = {}\n    skipped_rows = 0",
+     "    days = max(days, 3)\n    prefix_acc: dict[str, dict[str, int]] = {}\n    skipped_rows = 0",
+     "test_the_part_of_the_gap_owed_to_older_days_does_shrink_as_they_age_out"),
+
+    # ---- QA round 6 on #396. A THIRD round of false sentences in one paragraph.
+    # ---- A sentence no test can fail on is DELETED (and its reinstatement is a
+    # ---- row here); one that stays is tied to the code it describes.
+    ("#396 r6 F-1: the false 'Measurable column tells the first two apart' sentence is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'not that nothing was measured.\n        </p>',
+     'not that nothing was measured. The Measurable column tells\n          the first two apart from Fresh calls.\n        </p>',
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-3: the overclaiming '(the notice above says so ...)' parenthetical is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'not that nothing was measured.\n        </p>',
+     'not that nothing was measured (the notice above says so when that has happened).\n        </p>',
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: the unpinned '732 tokens' parenthetical is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'the prompts were under the minimum;\n',
+     "the prompts were under the minimum\n          (no route's system prompt is under 732 tokens, so this should not happen);\n",
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: the unpinned 'survives our cold starts' claim is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     "is Groq's, and\n          is opportunistic.",
+     "is Groq's: it survives our cold starts, and\n          is opportunistic.",
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: the unpinned 'expires after about 2 hours idle' claim is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     "is Groq's, and\n          is opportunistic.",
+     "is Groq's: it expires after about 2 hours idle, and\n          is opportunistic.",
+     'test_sentences_that_no_test_could_pin_stay_deleted'),
+
+    ("#396 r6 F-4: 'Widen the window, or re-record.' is reinstated",
+     'src/astro_ai/templates/admin_dashboard.html',
+     '        no table to show.\n',
+     '        no table to show. Widen the window, or re-record.\n',
+     'test_the_skip_notice_survives_when_every_row_is_skipped'),
+
+    ('#396 r6 F-2: the Hit-rate dash tooltip enumerates causes again (false on the impossible-report row)',
+     'src/astro_ai/templates/admin_dashboard.html',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%:',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Either no call returned a cache figure. Unmeasured, not 0%.',
+     'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
+
+    ('#396 r6 F-2: the Effective dash tooltip enumerates three causes again (false on the fourth)',
+     'src/astro_ai/templates/admin_dashboard.html',
+     '{% if pc.effective_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%:',
+     '{% if pc.effective_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Nothing measurable here: a non-reporting model, every prompt under the minimum cacheable length, or no usable usage block. Unmeasured, not 0%.',
+     'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
+
+    ("#396 r6 F-4: the 'Unmeasured, not 0%' tooltip text stops saying it (Hit rate)",
+     'src/astro_ai/templates/admin_dashboard.html',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Unmeasured, not 0%:',
+     '{% if pc.hit_pct is none %}\n              <td class="py-2 text-right text-bhagya-muted tabular-nums" title="Zero.',
+     'test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means'),
+
+    ("#396 r6 F-4: an impossible report is 'fewer' cached tokens than the prompt, not more",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'claimed more cached tokens than the',
+     'claimed fewer cached tokens than the',
+     'test_the_impossible_report_clause_names_exactly_what_the_code_rejects'),
+
+    ("#396 r6 F-4: the 'not a non-negative whole number' half of the impossible-report clause is deleted",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'or a count that was not a non-negative whole number',
+     'or nothing else',
+     'test_the_impossible_report_clause_names_exactly_what_the_code_rejects'),
+
+    ("#396 r6 F-4: 'The counter cannot tell its two causes apart' becomes 'tells'",
+     'src/astro_ai/templates/admin_dashboard.html',
+     'The counter cannot tell its two causes apart',
+     'The counter tells its two causes apart',
+     'test_the_unmeasurable_notice_sums_both_causes_into_its_count'),
+
+    ('#396 r6 F-4: older days are described as scored zero, not absent',
+     'src/astro_ai/templates/admin_dashboard.html',
+     'and so are absent rather than zero',
+     'and so are zero',
+     'test_the_gap_names_both_causes_and_a_skipped_row_really_does_widen_it'),
+
+    ("#396 r6 F-4: the 'no usable usage block' cause is deleted from the dash list",
+     'src/astro_ai/templates/admin_dashboard.html',
+     '          the provider returned no usable <code>usage</code> block at all; or every report',
+     '          every report',
+     'test_all_four_dash_causes_render_identically_and_the_footnote_lists_them'),
+
+    # --- #396 QA round 7 ---------------------------------------------------
+    # Two of round 7's seventeen mutants SURVIVED. Both are claims the page makes
+    # that no assertion could fail, and the rule here is that such a sentence is
+    # deleted or pinned. Both are true, so they are pinned.
+    ("#396 r7: Groq's prefix cache is promised as a guarantee",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "is opportunistic.", "is guaranteed.",
+     "test_the_two_caches_sentences_cannot_be_softened"),
+
+    ("#396 r7: the response cache is claimed to outlive its instance",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "dies with it.", "survives cold starts.",
+     "test_the_two_caches_sentences_cannot_be_softened"),
+
+    # N-1. The two rate columns dash under DIFFERENT rules, so ONE tooltip for
+    # both is necessarily false on one of them -- which is what round 7 failed
+    # the page on. This puts the shared tooltip back.
+    ("#396 r7 N-1: one tooltip serves both dash columns again",
+     "src/astro_ai/templates/admin_dashboard.html",
+     'title="Unmeasured, not 0%: no call on this route reported a cache figure, or those '
+     'that did reported no prompt tokens. Groq returns no figure on a miss, so this sits '
+     'beside a real Effective number when nothing hit."',
+     'title="Unmeasured, not 0%: no call on this route was Measurable. The note below the '
+     'table lists the four causes."',
+     "test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means"),
+
+    ("#396 r7 N-1: Effective's four causes are claimed of every dash again",
+     "src/astro_ai/templates/admin_dashboard.html",
+     "<strong>An Effective dash has four causes</strong>",
+     "<strong>A dash has four causes</strong>",
+     "test_the_footnote_and_the_column_tooltip_agree_on_what_a_dash_means"),
+
+    # Round 7 called a zero reported-prompt total a possible SIXTH cause it had
+    # not seeded. It is `_rate`'s second clause, and the tooltip must say so.
+    ("#396 r7: the Hit-rate tooltip drops its denominator clause",
+     "src/astro_ai/templates/admin_dashboard.html",
+     ", or those that did reported no prompt tokens", "",
+     "test_a_reported_prompt_total_of_zero_is_the_hit_rate_rules_second_clause"),
+
+    # The code side of the same rule: with `not n` gone, a route where every call
+    # missed reads a flat 0.0% hit rate instead of a dash -- "absent" booked as
+    # "measured zero", the defect this whole panel exists to avoid.
+    ("#396 r7: _rate books an unobserved rate as a measured zero",
+     "src/astro_ai/llm_stats.py",
+     "    if not n or prompt <= 0:", "    if prompt <= 0:",
+     "test_an_all_miss_route_dashes_hit_rate_beside_a_real_effective"),
     # ---- #446: the derived test-count floor ---------------------------------
     ("#446: the floor compares against LOCAL main again (passes 543 >= 0)",
      "scripts/verify_test_floor.py",
