@@ -418,6 +418,49 @@ def resolve_token(step: dict, job: dict, doc: dict) -> str | None:
 # The three checks
 # --------------------------------------------------------------------------
 
+def check_workflow_run_targets(name: str, doc: dict, known: set[str], rep: Report) -> None:
+    """A `workflow_run` trigger must name a workflow some file declares.
+
+    `workflows:` matches a workflow's `name:` FIELD, never its filename, and an
+    unmatched entry is not an error GitHub reports — the trigger simply never
+    fires. That is the most expensive failure shape in this repository: wiring
+    that reads as present and does nothing.
+
+    Measured 2026-10-20. `agent-steward.yml` was given
+
+        workflow_run:
+          workflows: ["agent-work"]
+
+    while `agent-work.yml` declares `name: Agent work`. Nothing matched, so the
+    trigger added to make the steward react to a finished cycle could never have
+    fired — on top of the separate bot-actor defect #439 fixed in the same
+    trigger. Two never-fires bugs stacked in six lines, both the same class as
+    #421, and both inside the change written to end #421.
+
+    A workflow with no `name:` is known by its path, which is what GitHub lists,
+    so that spelling is accepted too.
+    """
+    on = yaml_get(doc, "on")
+    if not isinstance(on, dict):
+        return
+    wr = on.get("workflow_run")
+    if not isinstance(wr, dict):
+        return
+    targets = wr.get("workflows")
+    if not isinstance(targets, list) or not targets:
+        rep.fail(name, None, "(on: workflow_run)", "workflow-run-target",
+                 "`workflow_run` with no `workflows:` list — it will fire for "
+                 "every workflow in the repository, which is almost never meant")
+        return
+    for t in targets:
+        if not isinstance(t, str) or t not in known:
+            rep.fail(name, None, "(on: workflow_run)", "workflow-run-target",
+                     f"`workflows: [{t!r}]` names no workflow in this repository. "
+                     f"It matches a workflow's `name:` field, not its filename, so "
+                     f"this trigger NEVER FIRES and says nothing about it. "
+                     f"Declared names: {', '.join(sorted(known))}")
+
+
 def check_triggers(name: str, doc: dict, rep: Report) -> None:
     on = yaml_get(doc, "on")
     if isinstance(on, str):
@@ -677,7 +720,25 @@ def check_job(name: str, text_lines: dict, jid: str, job: dict, doc: dict, rep: 
                          f"expect HTTP 403 at run time.")
 
 
-def check_file(path: Path, rep: Report) -> None:
+def declared_names(files: list[Path]) -> set[str]:
+    """Every name GitHub knows a workflow in this repo by.
+
+    Its `name:` when it has one, and otherwise the repo-relative path, which is
+    what the API lists (`agent-steward.yml` had no `name:` and appeared as
+    `.github/workflows/agent-steward.yml` until 2026-10-20).
+    """
+    out: set[str] = set()
+    for f in files:
+        try:
+            doc = yaml.safe_load(f.read_text(encoding="utf-8"))
+        except (yaml.YAMLError, UnicodeDecodeError):
+            continue
+        nm = doc.get("name") if isinstance(doc, dict) else None
+        out.add(nm if isinstance(nm, str) and nm.strip() else f".github/workflows/{f.name}")
+    return out
+
+
+def check_file(path: Path, rep: Report, known: set[str] | None = None) -> None:
     name = path.name
     try:
         text = path.read_text(encoding="utf-8")
@@ -692,6 +753,8 @@ def check_file(path: Path, rep: Report) -> None:
         rep.fail(name, None, "(file)", "parse", "no top-level `jobs:` mapping")
         return
     check_triggers(name, doc, rep)
+    if known is not None:
+        check_workflow_run_targets(name, doc, known, rep)
     check_interpolation(name, text, doc, rep)
     for jid, job in doc["jobs"].items():
         if isinstance(job, dict):
@@ -710,6 +773,7 @@ def main() -> int:
         print(f"COULD NOT VERIFY (exit 2) - no workflow files in {wdir}. This is NOT a pass.")
         return 2
 
+    known = declared_names(files)
     rep = Report()
     if len(files) < EXPECTED_WORKFLOWS:
         rep.failures.append(
@@ -717,7 +781,7 @@ def main() -> int:
             f"{EXPECTED_WORKFLOWS} (EXPECTED_WORKFLOWS) -- one was deleted or renamed out of "
             "the sweep. If that was deliberate, lower the pin in the same commit and say why.")
     for f in files:
-        check_file(f, rep)
+        check_file(f, rep, known)
 
     for n in rep.notes:
         print(n)
@@ -726,7 +790,8 @@ def main() -> int:
     if rep.failures:
         print(f"\nFAIL - {len(rep.failures)} problem(s) across {len(files)} workflow files")
         return 1
-    print(f"PASS - {len(files)} workflow files; self-reference, gh-vs-permissions, "
+    print(f"PASS - {len(files)} workflow files; workflow_run targets, self-reference, "
+          f"gh-vs-permissions, "
           "pull_request types and run:-interpolation checks clean")
     return 0
 

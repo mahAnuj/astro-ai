@@ -24,6 +24,12 @@
 # incentive to relax them, and that is `USER AUTHORISED PUSH` one level up.
 name: Agent steward
 
+#: The only workflow here that had no `name:`, so GitHub listed it by path and
+#: every run of it said `.github/workflows/agent-steward.yml`. Harmless until a
+#: `workflow_run` trigger had to NAME a workflow, at which point "what is this
+#: one called" stopped being cosmetic.
+name: Agent steward
+
 on:
   schedule:
     # Twice daily, offset from every other loop. 09:00 and 15:00 UTC sit after
@@ -54,7 +60,16 @@ on:
   # NOT wired to `pr-gates`, which completes on every push to every PR and would
   # queue steward runs behind the `agent-steward` concurrency group all day.
   workflow_run:
-    workflows: ["agent-work"]
+    # "Agent work" is agent-work.yml's `name:`, NOT its filename, and the
+    # distinction is the whole bug. `workflows: ["agent-work"]` matched nothing,
+    # so this trigger could never fire — #421's class a third time, in the
+    # change written to make the loop react, on top of the bot-actor miss #439
+    # fixed. Two defects stacked in one trigger, both of the same shape: wiring
+    # that reports present and does nothing.
+    #
+    # `scripts/verify_workflows.py` now fails a `workflow_run` naming a workflow
+    # no file declares, so this cannot recur silently.
+    workflows: ["Agent work"]
     types: [completed]
   workflow_dispatch:
     inputs:
