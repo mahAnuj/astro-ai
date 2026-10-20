@@ -6,7 +6,7 @@
  *   - Every other /static/ asset (manifest, icons, analytics.js): stale-while-
  *     revalidate. Served from cache at once, then re-fetched from the origin
  *     with a conditional request and the cache entry replaced, so a changed
- *     file reaches a returning visitor on the visit after next and a
+ *     file reaches a returning visitor on the next visit and a
  *     CACHE_VERSION bump is no longer the only eviction path (#253).
  *     Only 2xx responses are ever stored; a transient 404/500 is not kept.
  *   - Network-first for everything else, with a cached fallback so the app
