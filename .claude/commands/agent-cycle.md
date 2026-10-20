@@ -256,6 +256,12 @@ Then:
   most expensive being the one that re-ran a 55-minute mutation sweep its predecessor had already
   run on substantially the same rows.
 
+  **A DRAFT CARRYING `qa-fail` STAYS A DRAFT.** Step 4's "ready the PR" does not apply: the draft
+  is a gate somebody shut because a round found defects, and `gh pr ready` opens it. Fix, let QA
+  run, and leave the readying to whoever decides the findings are closed. #425 is the case —
+  its round found a live exploitable XSS and said the draft should hold until the sink is
+  escaped.
+
   **A fix you wrote is never a fix you verify.** `qa.md`'s independence rule is unchanged, and
   the label it applies now carries `qa:in-cycle` — which is the weaker provenance on purpose,
   because a cycle reviewing its own fix shares the premises that produced it.
