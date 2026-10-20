@@ -1,8 +1,14 @@
 /* Bhagya service worker.
  *
  * Strategy:
- *   - Cache-first for static assets (manifest, icons, fonts that hit /static/).
- *     These never change between deploys without a version bump.
+ *   - /static/ URLs carrying a `?v=` fingerprint (app.css): cache-first. The
+ *     fingerprint is a content hash, so changed bytes are a changed URL.
+ *   - Every other /static/ asset (manifest, icons, analytics.js): stale-while-
+ *     revalidate. Served from cache at once, then re-fetched from the origin
+ *     with a conditional request and the cache entry replaced, so a changed
+ *     file reaches a returning visitor on the visit after next and a
+ *     CACHE_VERSION bump is no longer the only eviction path (#253).
+ *     Only 2xx responses are ever stored; a transient 404/500 is not kept.
  *   - Network-first for everything else, with a cached fallback so the app
  *     still loads (showing stale content) when offline.
  *
@@ -11,7 +17,7 @@
  * clients drop their stale cache on the next service-worker install.
  */
 
-const CACHE_VERSION = 'bhagya-v3';  // bump after every static-asset change
+const CACHE_VERSION = 'bhagya-v4';  // bump on any change to this file
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
 // Assets we want available offline as soon as the SW installs.
@@ -47,6 +53,16 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Store a response only if it is a real success. A transient 404/500 (or an
+// opaque response, status 0) cached here would be served until the next bump.
+function storeIfOk(req, res) {
+  if (!res || !res.ok || res.type === 'opaque') return Promise.resolve();
+  const copy = res.clone();  // clone synchronously, before the body is consumed
+  return caches.open(STATIC_CACHE)
+    .then((c) => c.put(req, copy))
+    .catch(() => {});  // e.g. 206 partial content is not storable; not fatal
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
 
@@ -61,14 +77,28 @@ self.addEventListener('fetch', (event) => {
   // Never cache admin or mutating routes.
   if (NEVER_CACHE_PREFIXES.some((p) => url.pathname.startsWith(p))) return;
 
-  // Static assets: cache-first.
+  // Static assets. Fingerprinted (?v=) URLs are immutable: cache-first.
+  // Everything else is stale-while-revalidate (#253).
   if (url.pathname.startsWith('/static/')) {
     event.respondWith(
-      caches.match(req).then((hit) => hit || fetch(req).then((res) => {
-        const copy = res.clone();
-        caches.open(STATIC_CACHE).then((c) => c.put(req, copy));
-        return res;
-      }))
+      caches.match(req).then((hit) => {
+        if (hit && url.searchParams.has('v')) return hit;
+
+        // Revalidation must reach the origin, not the browser's 5-minute HTTP
+        // cache (non-fingerprinted assets are served `public, max-age=300`).
+        const network = fetch(req, hit ? { cache: 'no-cache' } : undefined).then((res) => {
+          event.waitUntil(storeIfOk(req, res));
+          return res;
+        });
+
+        if (hit) {
+          // Answer from cache now; refresh in the background. A failed refresh
+          // (offline) is not an error for the visitor, who already has `hit`.
+          event.waitUntil(network.catch(() => {}));
+          return hit;
+        }
+        return network;  // no cached copy: wait on the network, let failure surface
+      })
     );
     return;
   }
