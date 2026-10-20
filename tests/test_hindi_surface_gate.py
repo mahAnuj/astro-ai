@@ -45,6 +45,15 @@ _spec.loader.exec_module(gate)
 
 HEALTH = b'{"ok":true,"revision":"stub","build_sha":null}'
 
+#: A page every one of the gate's own checks passes: Devanagari well above
+#: each floor, no English sentinel, the localised nav label present. Used
+#: wherever a test must isolate ONE guard -- if the page itself were
+#: rejectable, the test could not say which guard did the rejecting.
+GOOD_HINDI = (
+    '<html><body><nav aria-label="Main">राशिफल</nav>'
+    '<main>' + 'आज का राशिफल ' * 30 + '</main></body></html>'
+).encode()
+
 
 def _serve(handler_body):
     """A stub server on an ephemeral port. Returns (base_url, shutdown)."""
@@ -99,17 +108,25 @@ def test_a_foreign_server_on_the_port_is_not_this_app():
     only the health probe can tell the difference -- which is the point: a
     different app on the port would otherwise be measured as if it were ours.
     """
-    page = ("<html><body><main>" + "राशिफल " * 40
-            + "</main></body></html>").encode()
     def body(path):
-        return (404, b"not me") if path == "/health" else (200, page)
+        return (404, b"not me") if path == "/health" else (200, GOOD_HINDI)
     assert _run(body) == 2
 
 
-def test_a_page_status_the_gate_cannot_read_is_not_a_pass():
-    """200 is a rendered page, 503 the documented degraded card. 404 is neither."""
+@pytest.mark.parametrize("code", [404, 500, 502])
+def test_a_page_status_the_gate_cannot_read_is_not_a_pass(code):
+    """200 is a rendered page, 503 the documented degraded card. Nothing else is.
+
+    THE PAGE HERE IS PERFECTLY GOOD HINDI, and that is the whole design of the
+    fixture. The first version served `<html>gone</html>`, so the empty-<main>
+    guard rejected it too -- and the mutation widening the allow-list to
+    `(200, 503, 404, 500)` still produced exit 2. *** MISSED ***, caught by a
+    different guard than the one under test, reported by both the local sweep
+    and CI. With a full Devanagari <main> the ONLY thing that can reject this
+    response is its status code.
+    """
     def body(path):
-        return (200, HEALTH) if path == "/health" else (404, b"<html>gone</html>")
+        return (200, HEALTH) if path == "/health" else (code, GOOD_HINDI)
     assert _run(body) == 2
 
 
@@ -130,9 +147,6 @@ def test_a_readable_page_is_still_read(code):
     a gate that had simply been made to exit 2 unconditionally -- which is the
     failure mode a file full of negative assertions invites.
     """
-    page = ("<html><body><nav aria-label=\"Main\">राशिफल</nav>"
-            "<main>" + "आज का राशिफल " * 30
-            + "</main></body></html>").encode()
     def body(path):
-        return (200, HEALTH) if path == "/health" else (code, page)
+        return (200, HEALTH) if path == "/health" else (code, GOOD_HINDI)
     assert _run(body) == 0
