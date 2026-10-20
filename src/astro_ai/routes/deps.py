@@ -165,9 +165,10 @@ def _seeker_role(saved, last) -> str:
 def _asset_fingerprint(rel_path: str) -> str:
     """Short content hash for a file under static/, or "0" if unreadable.
 
-    Why this exists (#253). `static/sw.js` serves everything under /static/
-    cache-first with no revalidation, and its only eviction path is a manual
-    bump of CACHE_VERSION. `app.css` was linked at a fixed URL, so a rebuilt
+    Why this exists (#253). `static/sw.js` used to serve everything under
+    /static/ cache-first with no revalidation, its only eviction path a manual
+    bump of CACHE_VERSION (it is now stale-while-revalidate for un-fingerprinted
+    URLs; a `?v=` URL is still cache-first, which is why this hash matters). `app.css` was linked at a fixed URL, so a rebuilt
     stylesheet was never re-fetched: two rebuilds (1e07122, e06c4e7) shipped
     after the service worker landed and neither bumped the constant, so
     returning visitors were still being served the 348ab01 CSS. One of those

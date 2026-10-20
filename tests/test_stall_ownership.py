@@ -152,7 +152,7 @@ def test_agent_pushable_fails_open(monkeypatch):
         "hiding a real stall is worse than spending a ruling on a false one")
 
 
-def test_no_checks_ever_names_conflict_as_the_cause(monkeypatch):
+def test_a_conflicting_pr_is_its_own_kind_and_is_actionable(monkeypatch):
     """A CONFLICTING PR gets no checks ever, and the fix is not "reopen it".
 
     `pull_request` workflows run against `refs/pull/N/merge`, which GitHub cannot
@@ -161,8 +161,19 @@ def test_no_checks_ever_names_conflict_as_the_cause(monkeypatch):
     after `main` moved underneath produced zero runs.
 
     The steward used to be told only "no check runs at all", which it read as the
-    GITHUB_TOKEN case and routed to "a human reopens it". That advice cannot
-    work here, so the detail line has to separate the two.
+    GITHUB_TOKEN case and routed to "a human reopens it". That advice cannot work
+    here, so the two had to be separated.
+
+    THE SEPARATION IS NOW BY KIND, NOT BY DETAIL LINE, and this test moved with
+    it rather than being loosened. Carrying both causes under `no-checks-ever`
+    meant they shared its routing, and that kind is deliberately absent from
+    `obliged` because the GITHUB_TOKEN case is one no agent can rescue — so a
+    conflict, which is `git merge origin/main`, woke chief to rule on it. #418
+    and #419 both sat CONFLICTING on 2026-10-20 with independent verdicts on
+    them, and both were cleared by hand in minutes.
+
+    So this asserts the stronger property: a distinct kind, still naming its
+    cause, still refusing the reopen advice, AND reachable by an agent.
     """
     prs = [_pr(340, draft=False, hours=36, labels=[])]
     prs[0]["mergeable"] = "CONFLICTING"
@@ -170,11 +181,17 @@ def test_no_checks_ever_names_conflict_as_the_cause(monkeypatch):
     monkeypatch.setattr(detect_stalls, "latest_checks", lambda sha: {})
     stalls = detect_stalls.find_stalls(4)
 
-    hit = [s for s in stalls if s["kind"] == "no-checks-ever"]
-    assert len(hit) == 1
+    hit = [s for s in stalls if s["kind"] == "pr-conflicting"]
+    assert len(hit) == 1, [s["kind"] for s in stalls]
     assert hit[0]["conflicting"] is True
-    assert "RESOLVE THE CONFLICT" in hit[0]["detail"]
-    assert "reopen" not in hit[0]["detail"].lower().replace("reopening will not help", "")
+    assert hit[0]["agent_pushable"] is True, "a conflict is work an agent can do"
+    assert "CONFLICTING" in hit[0]["detail"]
+    assert "merge_main_into_branch" in hit[0]["detail"], (
+        "the detail must name the mechanism, or the steward has to guess one")
+    assert "reopen" not in hit[0]["detail"].lower()
+    # And it must NOT also surface as the kind whose routing cannot help it.
+    assert not [s for s in stalls if s["kind"] == "no-checks-ever"], (
+        "a conflicting PR must not carry the GITHUB_TOKEN routing as well")
 
 
 def test_no_checks_ever_on_a_clean_pr_still_says_reopen(monkeypatch):

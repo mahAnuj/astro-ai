@@ -142,6 +142,11 @@ suppress the escalation you wanted.
 |---|---|
 | `draft-never-readied` | **Dispatch a cycle at the owning issue.** `/agent-cycle` step 2.5 resumes from the existing branch and PR rather than starting over, then runs QA, readies the PR and labels it. This is the common case and it clears itself. |
 | `no-qa-verdict` | **Dispatch a cycle at the owning issue.** Same path: step 2.5 adopts the branch, QA runs, the label follows. |
+| `pr-conflicting` | **Dispatch a cycle, and tell it to run `scripts/merge_main_into_branch.py --push` first.** A conflicting PR gets no check runs at all — GitHub cannot build the merge ref `pull_request` workflows run against — so it is dead until `main` is merged in, and nothing downstream can proceed. This is work, not a decision: do not escalate it. The script resolves only the three conflict classes this repo produces mechanically (decision-log rows unioned and date-ordered, mutation rows unioned with nothing dropped, `EXPECTED_TESTS` measured on the result) and **refuses anything else with exit 2**, so a conflict in a source file still reaches a person. It also verifies the merge RESULT and exits 1 without committing when that is red — which is the normal case here, not a surprise: both merges on 2026-10-20 whose conflicts were purely mechanical still broke the suite, from defects neither branch could see alone. On exit 1 the cycle fixes what the merge broke; on exit 2 comment what conflicts and stop. |
+| `draft-held-by-qa-fail` | **Dispatch a cycle to FIX the findings, and say in your comment that the PR must stay a draft.** The draft is the gate, not an oversight: a round looked at this and found defects. Never `gh pr ready` it and never ask a cycle to — that is `draft-never-readied`'s action and it is the wrong one here. Measured 2026-10-20 on #425, a draft whose round found a live exploitable XSS and said it should stay a draft until the sink is escaped; the detector classified it as an unreadied draft because `isDraft` was checked before the label, and the routed action would have opened the gate. |
+| `qa-fail-unaddressed` | **Dispatch a cycle at the owning issue.** A verdict found defects and nothing has been pushed since — the detail line carries both ages. `/agent-cycle` Step 2.5 adopts the branch, the PR and the verdict, and Step 0's close path is disabled while an open PR exists. This is the state most PRs spend most of their life in, and until 2026-10-20 no detector could see it: every use of `qa-fail` in `detect_stalls.py` was a negation, so a failed PR was invisible to this loop permanently. Four sat 12–64h that way. |
+| `qa-fail-refixed` | **Dispatch a cycle at the owning issue, and say in your comment that the fix already landed.** The head is newer than the verdict, so there is nothing to fix — what is missing is a round that has seen it. Step 2.5 compares the two and goes straight to QA rather than re-fixing. Do **not** apply or remove a label yourself; you may not touch `qa-pass` or `qa-fail`, and the round that runs will. |
+| `qa-fail-unreadable` | **Comment and move on.** The detector could not read either the verdict time or the head commit time, so which of the two states above applies is unknown. Guessing dispatches the wrong agent and spends a full cycle finding out. Say which API read failed. |
 | `mergeable-but-open` | **Do not touch the PR.** Every merge condition is satisfied, so the merge GATE has a defect. Diagnose it, file one issue, dispatch a cycle at that issue. PR #319 sat nine hours this way on a `cancelled` check run that voted forever. |
 | `no-checks-ever` | **Read the detail line — there are two causes with opposite fixes.** If it says CONFLICTING, GitHub cannot build the merge ref that `pull_request` workflows run against, so pushes fire no run at all; the fix is to resolve the conflict and reopening does nothing. Otherwise it is the GITHUB_TOKEN case below. |
 | `no-checks-ever` (mergeable) | **You cannot rescue it, and neither can a cycle.** The PR object was created by an actor whose events GitHub suppresses, so no push will give it checks. Escalate **Shape B to `chief`**: the options are a human reopening it (which fires `reopened`, which `pr-gates` now listens for) or abandoning the PR and letting a cycle open a fresh one. Both have costs; you do not choose. |
@@ -162,10 +167,24 @@ protect clause 1 of Standing ruling 4. Before you dispatch:
 1. **Is a cycle already running or queued?** `gh run list --workflow agent-work.yml
    --json status,databaseId`. If anything is `in_progress` or `queued`, dispatch nothing
    and say so. One is in flight; the stall may clear without you.
-2. **Did you already dispatch for this PR?** Look for your own prior comment on it. If
-   you did and the stall persists, **that is `steward-ineffective` and it goes to
-   `chief`** — not a second dispatch. Re-dispatching the same cycle hoping for a
-   different result is the same error as asking QA again for a better verdict.
+2. **Did you already dispatch for this PR, FOR THIS STALL KIND?** Look for your own prior
+   comment on it and read which kind it names. If you dispatched for *the same kind* and
+   the stall persists, **that is `steward-ineffective` and it goes to `chief`** — not a
+   second dispatch. Re-dispatching the same cycle hoping for a different result is the
+   same error as asking QA again for a better verdict.
+
+   **A DIFFERENT KIND IS NEW INFORMATION AND GETS ITS OWN DISPATCH.** This clause used to
+   read "your own prior comment on it", full stop, and that was wrong in a way that would
+   have fired the first time it mattered: on 2026-10-19 you commented on #410, #412, #418
+   and #419 saying you could not act, because no detector could see a `qa-fail` PR at all
+   until #435. Those four then became `qa-fail-unaddressed` and `qa-fail-refixed` — kinds
+   with actions you *can* perform — and a guard keyed on "any prior comment" would have
+   read your own admission of helplessness as a spent dispatch and sent all four to
+   `chief`. That is the treadmill this guard exists to prevent, caused by the guard.
+
+   Say in your comment which kind you are dispatching for, every time. A comment that does
+   not name its kind cannot be told apart from one that does by the next run — which is
+   you — and the next run will have to assume the worse case.
 3. **One dispatch per run, maximum.** If several stalls each want a cycle, take the one
    blocking the oldest finished work and say which others you left. A queue of four
    cycles at roughly fifty minutes each is most of a day's Actions budget, and clause 1

@@ -150,9 +150,11 @@
     </div>
     {% endif %}
 
-    <!-- Nadi Dosh strip (#170). Nadi has no parihāras in this tradition, so this
-         reports GRADATION (grave / slight / plain) rather than cancellation, and
-         says outright that nothing here adds points. -->
+    <!-- Nadi Dosh strip (#170). Nadi is a precondition, not among the Bhakoot
+         parihāras; the tradition also records regional/community exemptions
+         (rendered below as `unevaluated`, never applied). So this reports
+         GRADATION (grave / slight / plain) rather than cancellation, and says
+         outright that nothing here adds points (#397). -->
     {% if guna.nadi_dosha.present %}
     {% set _nd = guna.nadi_dosha %}
     <div class="px-6 sm:px-8 py-4 border-t {{ palette.border }} flex items-start gap-3

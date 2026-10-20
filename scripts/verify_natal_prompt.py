@@ -54,6 +54,17 @@ the 413 taught us about.
   Gate 5 - no retired claims.  Strings #398 removed as wrong or unsourced
       (FORBIDDEN) must not reappear.
 
+  Gate 6 - no retired claims in the topic summaries.  The natal user message
+      carries RELEVANT TOPIC SUMMARIES, built from `Article.llm_summary` in
+      `learn_registry.py` (`chart.format_topic_summaries_for_prompt` emits
+      nothing else). Gate 5 cleaned the system prompt and the summaries
+      kept saying red-lentil, Surya Namaskar, black sesame and "Hanuman is
+      the intercessor with Shani" - so a reader was still told them, from
+      the other half of the same request. This gate runs SUMMARY_FORBIDDEN
+      over every llm_summary and names the offending slug. Only llm_summary
+      is scanned: the /learn article bodies and FAQs are a later slice of
+      #398 and would fail it today.
+
 Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris — it reads one
 file, so it runs anywhere and belongs in the `verify_*` sweep.
 
@@ -69,6 +80,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+# Gate 6 reads the registry. learn_registry.py imports only `dataclasses`, so
+# this stays runnable with no API key and no ephemeris, like the other gates.
+sys.path.insert(0, str(REPO_ROOT / "src"))
 PROMPT = REPO_ROOT / "src" / "astro_ai" / "prompts" / "natal.txt"
 
 # --- Gate 1 ------------------------------------------------------------------
@@ -609,12 +623,13 @@ def gate_4_no_stale_size_citations(text: str) -> bool:
 # training-data folk practice, which is exactly what a later edit reintroduces.
 # Matching is case-insensitive and hyphen/space-agnostic.
 FORBIDDEN = (
-    (r"red[- ]lentil|masoor", "Sun's grain is wheat; red lentil is in no book we hold"),
-    (r"Surya Namaskar", "proved absent from all 14 books"),
+    (r"red[- ]lentils?|masoor|masur", "Sun's grain is wheat; red lentil is in no book we hold"),
+    (r"Surya[- ]?Namaskar|Sun[- ]salutation", "proved absent from all 14 books"),
     (r"milk offering", "Shiva is the Sun's deity, not the Moon's (Table 78)"),
     (r"Hanuman intercession", "Saturn -> Vishnu, Brahma; Hanuman only via Mars with Saturnine influence"),
-    (r"serve outsiders", "unsourced; Rao's Rahu deed is a donation to research or a pilgrimage"),
-    (r"sesame[- ]oil", "unsourced; sesame is Saturn's and Rao gives Ketu no grain or oil"),
+    (r"(?:serv(?:e|es|ing|ice)|support(?:ing)?|help(?:ing)?)(?:\s+to)?\s+(?:the\s+)?(?:outsiders|marginali[sz]ed)",
+     "unsourced (serve/serving/service to/support outsiders or the marginalised); Rao's Rahu deed is a donation to research or a pilgrimage"),
+    (r"sesame[- ]oil|(?:\btil|teel)[- ]oil", "unsourced; sesame is Saturn's and Rao gives Ketu no grain or oil"),
     (r"black[- ]sesame", "'black' is ours; Rao says sesame"),
     (r"per Parashara", "misattributed: his rule is a ten-chart count, not a D-9 gate"),
     (r"fully manifested", "Rao §11.7.2 / §11.11 deny that any one factor settles a yoga"),
@@ -633,6 +648,69 @@ def gate_5_no_retired_claims(text: str) -> bool:
     return ok
 
 
+# What Gate 6 forbids inside an llm_summary: FORBIDDEN, except that the bare
+# "milk offering" is replaced by MILK_TO_SHIVA (the claim #398 actually
+# retired is Moon -> Shiva; kaal-sarp-dosh-remedies has a Nag Panchami serpent
+# milk offering, a different practice, and a bare pattern would force a
+# rewrite of it to satisfy a regex), plus two patterns the system prompt never
+# carried but the summaries did. Round 1 of QA found `rahu-remedies` saying
+# "service to outsiders" past a literal "serve outsiders" - hence the widened
+# FORBIDDEN rows above.
+# Moon -> Shiva by milk, in the spellings seen or likely: "milk offering to
+# Shiva", "milk offering to Lord Shiva", "milk abhishek of Shiva", "offer milk
+# to Shivling". Every alternative needs milk and Shiva ADJACENT through a
+# preposition, which is what keeps kaal-sarp-dosh-remedies legal: its
+# "Monday Shiva worship + milk abhishek" has no "to/of/for Shiva" after the
+# milk, and its Nag Panchami "serpent milk offering" has no Shiva at all.
+MILK_TO_SHIVA = (
+    r"milk[\s-]+(?:offerings?|abhishek(?:a|am)?|bath)\s+(?:to|of|for)\s+(?:Lord\s+|Bhagwan\s+)?Shiv"
+    r"|(?:offer|offering|pour|pouring)\s+(?:of\s+)?milk\s+(?:to|on|over)\s+(?:Lord\s+|Bhagwan\s+)?Shiv"
+)
+
+SUMMARY_FORBIDDEN = tuple(
+    (p, w) for p, w in FORBIDDEN if p != r"milk offering"
+) + (
+    (MILK_TO_SHIVA, "Shiva is the Sun's deity, not the Moon's (Table 78)"),
+    # Per LINE, because a summary is bulleted and the planets sit on one bullet.
+    # Saturday is Saturn's day, so "Hanuman ... Saturday" is the same folk rule
+    # reached by the weekday. Hanuman as a MARS deity (Table 78) is untouched.
+    (r"(?:Hanuman|Bajrang\w*|Maruti|Anjaneya)[^\n]{0,60}(?:Shani|Saturn|Saturday|Sade[- ]Sati)"
+     r"|(?:Shani|Saturn|Saturday|Sade[- ]Sati)[^\n]{0,60}(?:Hanuman|Bajrang\w*|Maruti|Anjaneya)",
+     "Saturn -> Vishnu, Brahma; Hanuman only via Mars with Saturnine influence (Rao 19504-19506)"),
+    # "D-9 confirmation" in a MARRIAGE bullet is a different, sourced use and
+    # does not match: the pattern needs the confirmation to come first.
+    (r"confirmation in D-?9|Raja Yoga confirmation",
+     "yoga manifestation is D-1/D-10, not a D-9 gate (Rao 20217-20219; divisional_charts.md:107-113)"),
+)
+
+
+def gate_6_no_retired_claims_in_summaries(summaries=None) -> bool:
+    """`summaries` is an iterable of (slug, text); default is the real registry.
+
+    The parameter exists so `mutate_natal_prompt_gate.py` can feed it a
+    re-broken summary without editing learn_registry.py.
+    """
+    print("Gate 6 - no retired claims in topic summaries (Article.llm_summary)")
+    if summaries is None:
+        from astro_ai.learn_registry import ARTICLES
+
+        summaries = [(a.slug, a.llm_summary) for a in ARTICLES]
+    summaries = [(slug, text) for slug, text in summaries if text]
+    ok = True
+    for slug, text in summaries:
+        for pattern, why in SUMMARY_FORBIDDEN:
+            for m in re.finditer(pattern, text, flags=re.IGNORECASE):
+                ok = False
+                _fail(f"{slug}: /{pattern}/ matched {m.group(0)!r} - {why}")
+    if not summaries:
+        ok = False
+        _fail("no Article carries an llm_summary, so this gate is checking nothing")
+    elif ok:
+        print(f"  ok    {len(summaries)} summaries x {len(SUMMARY_FORBIDDEN)} "
+              f"retired claims: none present")
+    return ok
+
+
 def main() -> int:
     if not PROMPT.exists():
         print(f"FAIL: {PROMPT} does not exist")
@@ -645,6 +723,7 @@ def main() -> int:
         gate_3_budget(text),
         gate_4_no_stale_size_citations(text),
         gate_5_no_retired_claims(text),
+        gate_6_no_retired_claims_in_summaries(),
     ]
     print()
     if all(results):
