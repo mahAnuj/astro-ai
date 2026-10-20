@@ -1585,6 +1585,25 @@ MUTATIONS = [
      '        if not text.strip():',
      '        if False:',
      "test_an_empty_main_is_not_a_pass"),
+    # ---- QA round 4 on #418: F1 and F2 ------------------------------------
+    # F1. The truncation marker leaking onto a tile whose read was COMPLETE.
+    # The old assertions were whole-PAGE substrings (`"≥" in body`), so this
+    # mutant left 772 tests green while the page rendered `≥0 PRs merged`. The
+    # scoped form that catches it was credited to this branch by a comment and
+    # actually lived on #419, never an ancestor of it.
+    ("#418/F1: the truncation flag leaks onto the SHIPPED tile",
+     "src/astro_ai/ops_today.py",
+     '"shipped_truncated": pr_more,',
+     '"shipped_truncated": pr_more or runs_more,',
+     "test_a_truncated_read_renders_an_at_least_on_the_tiles"),
+    # F2. The COST paragraph's worst case is derived from BOTH pagers now, so
+    # moving either constant must move the stated number or the gate is again
+    # holding a wrong figure in place -- which is exactly what `+ 1` did.
+    ("#418/F2: the backlog pager shrinks and the stated cost does not follow",
+     "src/astro_ai/issue_backlog.py",
+     "MAX_PAGES = 4",
+     "MAX_PAGES = 1",
+     "test_the_cost_paragraph_states_the_actual_worst_case"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

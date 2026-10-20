@@ -50,9 +50,27 @@ used to say "two requests ... 36/hour worst case", and that was true until
 endpoint, so the arithmetic is
 
     MAX_PAGES (3) x 2 endpoints      = 6 per cache miss here
-    + 1 for `ops_data._live_issues`  = 7 per render
+    + issue_backlog.MAX_PAGES (4)    = 10 per render
+      for `ops_data._live_issues`
     x 12 cache misses an hour (CACHE_TTL 300 s)
-                                     = 84/hour
+                                     = 120/hour
+
+THE `+ 1` ON THAT THIRD LINE WAS WRONG and said 7/84 until 2026-10-20. It
+treated the backlog read as ONE request because `issue_backlog`'s own comment
+says "the backlog is 67, so the normal case is a single request" -- true of the
+ORDINARY case, and this paragraph computes the WORST one.
+`issue_backlog.fetch_live` loops `for page in range(1, MAX_PAGES + 1)` with
+`MAX_PAGES = 4`, so the backlog contributes up to 4.
+
+Measured deterministically on 2026-10-20 by stubbing the HTTP layer and varying
+the page fill, because the count is a property of the pager, not of the network:
+
+    ordinary day (pages short, pager stops)    fetch_today 2 + backlog 1 =  3
+    saturated day (pages full, MAX_PAGES hit)  fetch_today 6 + backlog 4 = 10
+
+The live limit was observed at `remaining=0 / limit=60` the same morning, which
+is CONSISTENT with this and does not attribute it: the budget is per egress IP
+and shared with everything else running from it.
 
 against a ceiling of **60/hour shared across every tenant on this egress IP**.
 So the documented worst case now EXCEEDS the budget, and the failure it would

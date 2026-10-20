@@ -765,13 +765,31 @@ def test_a_truncated_read_renders_an_at_least_on_the_tiles(monkeypatch):
     full = [_run(1000 + i, "agent-work.yml", "failure", stamp)
             for i in range(ops_today.PER_PAGE)]
     body = _ops_body(monkeypatch, [], full)
-    assert "today_truncated" in body.lower() or "≥" in body, body[:200]
-    assert "≥" in body, (
-        "the capped count renders as a flat number, so the page states a total "
-        "it cannot stand behind"
+
+    # SCOPED TO THE TILE, and that is the finding. These assertions used to be
+    # `"≥" in body` and `"live, at least" in body` -- whole-PAGE substrings, so
+    # they could be satisfied by a `≥` on any other tile or anywhere in the
+    # markup. The PR comment that claimed to have fixed this quoted the scoped
+    # form, but the scoped form lived on `feat/ops-token-window` (#419) and was
+    # never an ancestor of this branch; checked with `git merge-base
+    # --is-ancestor`, 2026-10-20.
+    #
+    # Measured consequence: `"shipped_truncated": pr_more` -> `pr_more or
+    # runs_more` left 772 tests GREEN while the page rendered
+    # `<span class="num c-shipped">≥0</span>` off a complete, empty pulls read
+    # and printed "live, at least" twice. The marker appeared on the wrong tile
+    # and nothing noticed.
+    assert 'class="num c-failed">≥' in body, (
+        "the capped FAILED count renders as a flat number, so the page states "
+        "a total it cannot stand behind"
     )
-    assert "live, at least" in body, (
-        "the live badge does not admit that the read was capped"
+    assert 'class="num c-shipped">≥' not in body, (
+        "the floor marker reached the SHIPPED tile, whose read was complete -- "
+        "a truncation flag is leaking across tiles"
+    )
+    assert body.count("live, at least") == 1, (
+        f'the "at least" badge appears {body.count("live, at least")} times; '
+        "exactly one tile was truncated, so exactly one badge may say so"
     )
 
 
@@ -1501,7 +1519,13 @@ def test_the_cost_paragraph_states_the_actual_worst_case():
     wrong by a factor of 2.3 and on the wrong side of the budget.
     """
     doc = ops_today.__doc__
-    per_render = ops_today.MAX_PAGES * 2 + 1       # both endpoints + the backlog
+    # DERIVED FROM BOTH CONSTANTS. This was `+ 1`, which pinned the paragraph at
+    # 7/84 while the real worst case is 10/120 -- so the gate built to stop the
+    # arithmetic drifting was HOLDING THE WRONG NUMBER IN PLACE, and correcting
+    # the docstring turned this test red. `issue_backlog.fetch_live` pages to
+    # `issue_backlog.MAX_PAGES`, so that is the term, not a literal.
+    from astro_ai import issue_backlog
+    per_render = ops_today.MAX_PAGES * 2 + issue_backlog.MAX_PAGES
     per_hour = per_render * 12                      # CACHE_TTL defaults to 300 s
     assert f"MAX_PAGES ({ops_today.MAX_PAGES})" in doc
     assert f"= {per_render} per render" in doc, (
