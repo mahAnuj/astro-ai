@@ -720,6 +720,48 @@ def check_job(name: str, text_lines: dict, jid: str, job: dict, doc: dict, rep: 
                          f"expect HTTP 403 at run time.")
 
 
+class _NoDupes(yaml.SafeLoader):
+    """A loader that REFUSES a duplicate mapping key, as GitHub's parser does.
+
+    `yaml.safe_load` silently keeps the last of a duplicated key, so a workflow
+    with two `name:` keys parses here and is rejected by GitHub — which reports
+    it as a zero-job failed run on EVERY PUSH, names the workflow by its path
+    rather than its name, and exposes no annotation through the API. Measured
+    2026-10-20: `agent-steward.yml` carried two `name: Agent steward` keys for
+    fourteen minutes and four failed runs, and the only reason it was found was
+    reading the file by hand. This gate parsed it clean the whole time.
+    """
+
+
+def _no_dupes(loader, node, deep=False):
+    seen: set = set()
+    for k, _v in node.value:
+        key = loader.construct_object(k, deep=deep)
+        if key in seen:
+            raise yaml.constructor.ConstructorError(
+                None, None, f"duplicate key {key!r}", k.start_mark)
+        seen.add(key)
+    return yaml.SafeLoader.construct_mapping(loader, node, deep)
+
+
+_NoDupes.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _no_dupes)
+
+
+def check_no_duplicate_keys(path: Path, rep: Report) -> None:
+    """GitHub rejects a duplicated key; PyYAML does not. Reject it here."""
+    try:
+        yaml.load(path.read_text(encoding="utf-8"), _NoDupes)
+    except yaml.constructor.ConstructorError as exc:
+        line = exc.problem_mark.line + 1 if exc.problem_mark else None
+        rep.fail(path.name, line, "(file)", "duplicate-key",
+                 f"{exc.problem} — GitHub refuses the whole file and reports it as a "
+                 f"zero-job failed run on every push, with no annotation anywhere. "
+                 f"`yaml.safe_load` keeps the last one silently, which is why this "
+                 f"needs its own check.")
+    except (yaml.YAMLError, UnicodeDecodeError):
+        pass  # the ordinary parse check in check_file reports this
+
+
 def declared_names(files: list[Path]) -> set[str]:
     """Every name GitHub knows a workflow in this repo by.
 
@@ -781,6 +823,7 @@ def main() -> int:
             f"{EXPECTED_WORKFLOWS} (EXPECTED_WORKFLOWS) -- one was deleted or renamed out of "
             "the sweep. If that was deliberate, lower the pin in the same commit and say why.")
     for f in files:
+        check_no_duplicate_keys(f, rep)
         check_file(f, rep, known)
 
     for n in rep.notes:
@@ -790,7 +833,8 @@ def main() -> int:
     if rep.failures:
         print(f"\nFAIL - {len(rep.failures)} problem(s) across {len(files)} workflow files")
         return 1
-    print(f"PASS - {len(files)} workflow files; workflow_run targets, self-reference, "
+    print(f"PASS - {len(files)} workflow files; duplicate keys, workflow_run targets, "
+          f"self-reference, "
           f"gh-vs-permissions, "
           "pull_request types and run:-interpolation checks clean")
     return 0

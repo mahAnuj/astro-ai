@@ -24,12 +24,6 @@
 # incentive to relax them, and that is `USER AUTHORISED PUSH` one level up.
 name: Agent steward
 
-#: The only workflow here that had no `name:`, so GitHub listed it by path and
-#: every run of it said `.github/workflows/agent-steward.yml`. Harmless until a
-#: `workflow_run` trigger had to NAME a workflow, at which point "what is this
-#: one called" stopped being cosmetic.
-name: Agent steward
-
 on:
   schedule:
     # Twice daily, offset from every other loop. 09:00 and 15:00 UTC sit after
