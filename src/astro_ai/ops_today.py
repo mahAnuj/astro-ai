@@ -65,8 +65,23 @@ ORDINARY case, and this paragraph computes the WORST one.
 Measured deterministically on 2026-10-20 by stubbing the HTTP layer and varying
 the page fill, because the count is a property of the pager, not of the network:
 
-    ordinary day (pages short, pager stops)    fetch_today 2 + backlog 1 =  3
     saturated day (pages full, MAX_PAGES hit)  fetch_today 6 + backlog 4 = 10
+
+THE ORDINARY CASE IS NOT 3, AND SAYING SO WAS THE SAME MISTAKE ONE LEVEL DOWN.
+"Ordinary" was computed by stubbing SHORT pages -- a shape chosen to make the
+pager stop, not a shape measured against the repo. Measured against the real
+API on 2026-10-20, at this repo's actual volume:
+
+    pulls          1 page  (short, pager stops)                     = 1
+    actions/runs   2 pages (page 1 FULL, page 2 short)              = 2
+    + issue_backlog 2 pages (104 open issues at 100 per page)       = 2
+                                                 = 5 per cold render
+    x 12 cache misses an hour (CACHE_TTL 300 s)  = 60/hour
+
+So the ordinary case SITS EXACTLY ON the 60/hour ceiling and the worst case is
+double it. Both terms that moved are volume, not code: the runs page filled, and
+the backlog crossed 100 open issues. Neither is unusual and neither is an
+incident, which is what "latent, not live" got wrong.
 
 The live limit was observed at `remaining=0 / limit=60` the same morning, which
 is CONSISTENT with this and does not attribute it: the budget is per egress IP
@@ -77,12 +92,20 @@ So the documented worst case now EXCEEDS the budget, and the failure it would
 produce is a self-inflicted 403 that drops the page back into the 0/0/0
 fallback this module exists to fix.
 
-It is latent, not live: the pager stops as soon as the oldest row fetched is
-older than the day start, so today's real volumes cost one request per endpoint
-and 3 per render (36/hour) — the figure the old paragraph quoted, which was
-the ordinary case being written down as the worst case. The pathological shape
+IT IS NOT LATENT. That sentence stood here until 2026-10-20 and claimed
+"today's real volumes cost one request per endpoint and 3 per render (36/hour)".
+Both halves were false at the time of writing: the runs read already needed two
+pages, and the backlog already needed two. The measured ordinary render is 5,
+i.e. 60/hour, which IS the ceiling — a reader holding refresh exhausts the
+shared budget without any incident at all. The pathological shape on top of that
 is a run storm filling every page, i.e. during an incident, which is exactly
 when the budget is least affordable.
+
+The lesson is the one this paragraph keeps re-learning: a request count measured
+against a fixture is a property of the fixture. The worst case is derived from
+`MAX_PAGES` and pinned; the ordinary case is a property of the repo's volume and
+is therefore dated, attributed and re-measurable, never asserted as a standing
+fact.
 
 Two things keep it honest rather than a comment: `truncated` is surfaced on
 every affected tile, so an over-long day reads as "at least N" instead of
