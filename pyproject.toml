@@ -62,6 +62,9 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q --tb=short"
+markers = [
+    "network_allowed(*hosts, reason): permit a test to resolve and connect to exactly these hosts. Narrow door in the socket guard (tests/conftest.py _no_outbound_sockets); reason is mandatory prose.",
+]
 
 [build-system]
 requires = ["hatchling"]

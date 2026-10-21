@@ -22,6 +22,7 @@ from the concurrency one.
 import concurrent.futures
 import os
 import pathlib
+import re
 import shutil
 import signal
 import subprocess
@@ -2533,6 +2534,51 @@ MUTATIONS = [
      '''height="{{ '%.3f'|format(h) }}"''',
      '''height="{{ '%.3f'|format(h * 1.5) }}"''',
      "test_no_bar_can_overflow_the_axis"),
+
+    # #449. The socket guard in tests/conftest.py is a defect fix whose proof is
+    # that it bites, and every one of these is a way it could silently stop.
+    # Each anchors on a line of the GUARD, never on a test. Not mutated, on
+    # purpose: dropping the `connect` patch makes the self-test's refused
+    # connect a REAL one (a SYN to TEST-NET-3), and a harness that emits packets
+    # to prove a suite does not is the wrong shape.
+    ("#449: the guard stops recording a refused lookup (a swallowed OSError passes)",
+     "tests/conftest.py",
+     '        violations.append(f"getaddrinfo({host!r})")',
+     "        pass",
+     "test_a_non_loopback_lookup_and_connect_are_refused_and_recorded"),
+
+    ("#449: the guard stops recording a refused connect",
+     "tests/conftest.py",
+     '        violations.append(f"connect({address[0]!r})")',
+     "        pass",
+     "test_a_non_loopback_lookup_and_connect_are_refused_and_recorded"),
+
+    ("#449: the teardown assertion is gone (the guard only raises, and is swallowed)",
+     "tests/conftest.py",
+     "    assert not violations, (",
+     "    assert True or not violations, (",
+     "test_a_swallowed_refusal_still_fails_the_test"),
+
+    ("#449: network_allowed opens every host for lookup, not the named one",
+     "tests/conftest.py",
+     "        if str(host).lower() in allowed_hosts:",
+     "        if True:",
+     "test_the_marker_opens_only_the_host_it_names"),
+
+    ("#449: network_allowed opens every host for connect, not the named one",
+     "tests/conftest.py",
+     "or str(host).lower() in allowed_hosts)",
+     "or True)",
+     "test_the_marker_opens_only_the_host_it_names"),
+
+    # The two tests that reached a live provider. Un-stubbing the shared helper
+    # un-stubs both; they pass on their own assertions (the route degrades to
+    # "scores still returned"), so ONLY the guard's teardown can catch it.
+    ("#449: the /matching nadi tests stop stubbing the provider (live LLM call)",
+     "tests/test_nadi_position_coherence.py",
+     '    stub_llm("## Compatibility\\n" + "A canned narrative body for the stub. " * 20)',
+     "    pass",
+     "test_the_scoped_sentence_actually_reaches_the_rendered_panel"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -2668,8 +2714,14 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
             worth nothing, which is why this reads the output and not just the
             code. pytest exits 5 on "no tests matched", which is neither.
             """
+            #
+            # A TEARDOWN error counts, and has to: the socket guard (#449) fails
+            # a test whose body PASSED, so its only signal is `1 passed, 1
+            # error` and a line `ERROR path::test`. A collection error has no
+            # `::` in its line, so it is still not a catch.
             return r.returncode not in (0, 5) and (
-                "FAILED" in r.stdout or "failed" in r.stdout)
+                "FAILED" in r.stdout or "failed" in r.stdout
+                or re.search(r"^ERROR \S+::", r.stdout, re.M) is not None)
 
         # EVERY ROW ALREADY NAMES THE TEST THAT MUST CATCH IT, so run that test
         # and not the other 766. Measured 2026-10-20 on this tree: one named

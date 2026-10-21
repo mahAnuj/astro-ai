@@ -200,32 +200,19 @@ def _no_outbound_http(monkeypatch):
     `monkeypatch` unwinds in LIFO order.
 
     `httpx` (Brevo, the TestClient, THE LLM CLIENT) and `google-cloud-storage`
-    are untouched: neither goes through `urllib`.
+    do not go through `urllib`, so this fixture cannot see them. That is
+    `_no_outbound_sockets` below, which guards the layer every transport shares.
 
-    AND "both are already stubbed where used" WAS WRONG, which is why that
-    clause is gone. QA round 4 found it with a spy on `socket.socket.connect`
-    and `socket.getaddrinfo` -- a layer `urlopen` patching cannot see -- and I
-    re-measured it on `main`: `test_the_scoped_sentence_actually_reaches_the_
-    rendered_panel` and `test_the_exemption_disclosure_reaches_the_rendered_
-    panel` in `test_nadi_position_coherence.py` make **2 real TCP connections
-    to a live LLM provider per suite run** (`api.groq.com` here,
-    `api.openai.com` on the reviewer's machine -- it follows whichever provider
-    the environment is configured for). No key was present in either
-    measurement, so nothing was spent; on any machine or runner that has one,
-    those two tests reach the provider every run, against a free tier whose
-    daily budget production has already exhausted once.
-
-    So the number this fixture delivers is **16 -> 2, not 16 -> 0.** The 16 are
-    gone and that is verified -- deleting the patch below kills the suite -- but
-    the residue is real and is NOT this fixture's to fix: it is a different
-    transport in an unrelated test file. Filed as #449, which also asks for the
-    guard this one cannot be: a socket-level check, since a `urllib` guard is
-    aimed at the wrong layer for an `httpx` client.
-
-    Saying "0" here would be the defect `_offline_geocode` above warns about in
-    as many words -- a guard that does not guard is worse than none, and a
-    hermeticity claim nobody can check is how 16 requests survived a docstring
-    promising none since the suite was written.
+    THIS FIXTURE ALONE DELIVERED 16 -> 2, NOT 16 -> 0. The comment that stood
+    here said `httpx` and `google-cloud-storage` were "already stubbed where
+    used", and it was wrong. QA round 4 found it with a spy on
+    `socket.socket.connect` and `socket.getaddrinfo` -- a layer `urlopen`
+    patching cannot see: two tests in `test_nadi_position_coherence.py` POST
+    `/matching`, whose narrative call goes out over `httpx`, so each made a real
+    TCP connection to whichever LLM provider the environment is configured for
+    (#449). No key was present, so nothing was spent; with one, every suite run
+    would have billed it. Both now stub the provider, and the socket guard is
+    what keeps the count at 0 rather than a measurement someone repeats.
     """
     import urllib.parse
     import urllib.request
@@ -243,7 +230,8 @@ def _no_outbound_http(monkeypatch):
     #: Reaching a loopback address still cannot leave the machine, so the
     #: hermeticity claim this fixture exists to make true is unaffected: the 16
     #: raw.githubusercontent.com requests stay blocked, asserted by
-    #: `test_the_behaviour_suite_cannot_reach_the_network`.
+    #: `test_the_behaviour_suite_cannot_reach_the_network`. (The socket guard
+    #: below treats loopback the same way, for the same reason.)
     _LOOPBACK = ("127.0.0.1", "localhost", "::1", "[::1]")
 
     def _host_of(target) -> str:
@@ -265,6 +253,124 @@ def _no_outbound_http(monkeypatch):
         )
 
     monkeypatch.setattr(urllib.request, "urlopen", _blocked)
+
+
+@pytest.fixture(autouse=True)
+def _no_outbound_sockets(monkeypatch, request):
+    """Fail any test that opens a NON-LOOPBACK socket, whatever the transport.
+
+    `_no_outbound_http` above is aimed at `urllib`, and the LLM client is
+    `httpx`: for the life of that guard two tests reached a live provider on
+    every run while the suite reported itself hermetic (#449). A guard per
+    library is the shape that let it happen, so this one sits on
+    `socket.socket.connect` and `socket.getaddrinfo`, which every library ends
+    in -- `httpx`, `requests`, `urllib`, `google-cloud-storage`, `asyncio`.
+
+    IT RECORDS, AND THEN FAILS AT TEARDOWN, rather than only raising. The LLM
+    client, `ops_data._fetch`, the notifiers and most routes catch an exception
+    and degrade, so a guard that merely raised from inside `connect` would be
+    swallowed one frame up and the test would go green -- the failure the
+    `urlopen` guard documents ("a real request that succeeds looks exactly like
+    no request"), reproduced one layer down. It still raises an `OSError` so
+    nothing leaves the machine; the teardown assertion is what makes it fail.
+
+    Allowed: loopback (127.0.0.0/8, ::1, `localhost`) and AF_UNIX paths --
+    `test_hindi_surface_gate.py` runs its own server, and a loopback connection
+    cannot leave the host. Anything else is a defect to FIX with a stub, never
+    to allow-list, with ONE narrow door:
+
+        @pytest.mark.network_allowed("some.host", reason="why")
+
+    permits resolving that exact host for that exact test, and connecting only
+    to the addresses it resolved to. It exists for
+    `test_the_token_estimator_never_under_counts_a_real_request`, which needs
+    tiktoken's real `o200k_base` vocabulary and there is no honest stub for
+    "the estimate is at least the real count". Any other host under the marker
+    still fails.
+
+    Function-scoped, like the fixtures above: a module-scoped one would run
+    before them. Not covered: `socket.gethostbyname` and friends, which this
+    suite does not use, and anything run at import or collection time.
+
+    Yields the list of violations so the test that proves the guard bites can
+    inspect it and clear it; no other test should touch it.
+    """
+    import errno
+    import ipaddress
+    import socket
+
+    marker = request.node.get_closest_marker("network_allowed")
+    allowed_hosts = {str(h).lower() for h in (marker.args if marker else ())}
+    resolved: set[str] = set()      # addresses an allowed host resolved to
+    violations: list[str] = []
+
+    def _is_loopback(host) -> bool:
+        if isinstance(host, bytes):
+            host = host.decode("ascii", "replace")
+        host = str(host).lower().split("%")[0]
+        if host == "localhost":
+            return True
+        try:
+            ip = ipaddress.ip_address(host)
+        except ValueError:
+            return False
+        mapped = getattr(ip, "ipv4_mapped", None)
+        return (mapped or ip).is_loopback
+
+    real_getaddrinfo = socket.getaddrinfo
+    real_connect = socket.socket.connect
+    real_connect_ex = socket.socket.connect_ex
+
+    def getaddrinfo(host, *a, **k):
+        # `None` is a passive lookup (binding a server), not a destination.
+        if host is None or _is_loopback(host):
+            return real_getaddrinfo(host, *a, **k)
+        if isinstance(host, bytes):
+            host = host.decode("ascii", "replace")
+        if str(host).lower() in allowed_hosts:
+            infos = real_getaddrinfo(host, *a, **k)
+            resolved.update(i[4][0] for i in infos)
+            return infos
+        violations.append(f"getaddrinfo({host!r})")
+        raise socket.gaierror(
+            socket.EAI_NONAME,
+            f"the behaviour suite is hermetic: refused to resolve {host!r}. "
+            "Stub the call that reaches it; loopback is allowed.")
+
+    def _permitted(self, address) -> bool:
+        if self.family == socket.AF_UNIX or isinstance(address, (str, bytes)):
+            return True
+        host = address[0]
+        return (_is_loopback(host) or str(host) in resolved
+                or str(host).lower() in allowed_hosts)
+
+    def connect(self, address, *a, **k):
+        if _permitted(self, address):
+            return real_connect(self, address, *a, **k)
+        violations.append(f"connect({address[0]!r})")
+        raise OSError(errno.ENETUNREACH,
+                      f"the behaviour suite is hermetic: refused to connect to "
+                      f"{address[0]!r}. Stub the call that reaches it.")
+
+    def connect_ex(self, address, *a, **k):
+        if _permitted(self, address):
+            return real_connect_ex(self, address, *a, **k)
+        violations.append(f"connect_ex({address[0]!r})")
+        return errno.ENETUNREACH
+
+    monkeypatch.setattr(socket, "getaddrinfo", getaddrinfo)
+    monkeypatch.setattr(socket.socket, "connect", connect)
+    monkeypatch.setattr(socket.socket, "connect_ex", connect_ex)
+
+    yield violations
+
+    assert not violations, (
+        "this test reached beyond loopback, and whatever caught the OSError "
+        "hid it from the test body: " + "; ".join(violations) + ". Stub the "
+        "call that reaches the network (stub_llm for the provider). If it "
+        "truly needs one host, mark it @pytest.mark.network_allowed(host, "
+        "reason=...) -- that is a decision to defend, not a way to go green."
+    )
 
 
 @pytest.fixture
