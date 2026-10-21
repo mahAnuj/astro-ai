@@ -401,6 +401,11 @@ def test_request_too_large_still_renders_the_degraded_page():
     assert issubclass(providers.RequestTooLarge, providers.AllProvidersExhausted)
 
 
+@pytest.mark.network_allowed(
+    "openaipublic.blob.core.windows.net",
+    reason="tiktoken downloads the o200k_base vocabulary on first use; "
+           "a dependency fetch, not LLM spend, and there is no honest stub "
+           "for 'the estimate is at least the real count' (#449)")
 def test_the_token_estimator_never_under_counts_a_real_request():
     """A guard that under-counts waves through exactly what it exists to stop.
 

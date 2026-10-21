@@ -373,8 +373,16 @@ def test_ask_context_names_the_exemptions_the_overlay_refers_to():
 
 # --- QA round 2: the surfaces nothing rendered ---------------------------------
 
-def _match_html(client, d1, t1, d2, t2):
-    """POST /matching for a real pair and return the rendered page."""
+def _match_html(client, stub_llm, d1, t1, d2, t2):
+    """POST /matching for a real pair and return the rendered page.
+
+    The provider call is stubbed, and ONLY that: the route's narrative goes out
+    over `httpx`, which `_no_outbound_http` cannot see, and these two tests made
+    a real connection to a live LLM provider on every run (#449). The panels
+    asserted on below are rendered from the Guna Milan result, not from the
+    narrative, so a canned body leaves them exactly as real as before.
+    """
+    stub_llm("## Compatibility\n" + "A canned narrative body for the stub. " * 20)
     r = client.post("/matching", data={
         "g_name": "A", "g_birth_date": d1, "g_birth_time": t1, "g_birth_place": "Mumbai",
         "b_name": "B", "b_birth_date": d2, "b_birth_time": t2, "b_birth_place": "Mumbai",
@@ -383,14 +391,14 @@ def _match_html(client, d1, t1, d2, t2):
     return r.text
 
 
-def test_the_scoped_sentence_actually_reaches_the_rendered_panel(client):
+def test_the_scoped_sentence_actually_reaches_the_rendered_panel(client, stub_llm):
     """G-3. BUG-1 was a RENDERED defect; its fix was asserted on a dataclass.
 
     QA round 2 emptied `{{ _nd.note }}` in `matching_result.html` and the entire
     scoped sentence -- the fix -- vanished from the panel with 686 tests green.
     A fix for something a user reads has to be asserted where the user reads it.
     """
-    html = _match_html(client, "1990-01-01", "10:00", "1990-01-04", "10:00")
+    html = _match_html(client, stub_llm, "1990-01-01", "10:00", "1990-01-04", "10:00")
     assert "gravest form of this affliction" in html
     assert "do not extend to the Madhya Nadi" in html, (
         "the scoped sentence is not on the page a Madhya couple is shown"
@@ -398,14 +406,14 @@ def test_the_scoped_sentence_actually_reaches_the_rendered_panel(client):
     assert "which we do not apply" not in html, "the unscoped version is rendered"
 
 
-def test_the_exemption_disclosure_reaches_the_rendered_panel(client):
+def test_the_exemption_disclosure_reaches_the_rendered_panel(client, stub_llm):
     """G-3, second half. `{% if _nd.unevaluated %}` -> False stayed green.
 
     The non-grave note ends "(shown below)". With the disclosure block gone that
     pointer aims at nothing -- a panel referring the reader to text that is not
     there.
     """
-    html = _match_html(client, "1990-01-02", "10:00", "1990-01-03", "10:00")
+    html = _match_html(client, stub_llm, "1990-01-02", "10:00", "1990-01-03", "10:00")
     assert "(shown below)" in html, "the non-grave note is not rendering"
     assert "We do not apply those exemptions" in html, (
         "the note says 'shown below' and nothing is shown below"
