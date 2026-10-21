@@ -65,6 +65,19 @@ the 413 taught us about.
       is scanned: the /learn article bodies and FAQs are a later slice of
       #398 and would fail it today.
 
+  Gate 7 - no retired claims on the reader-facing surfaces.  The same claims
+      sat on the pages a reader opens directly: the /learn article bodies,
+      the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
+      languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
+      is shown. This gate scans those surfaces for the seven families the
+      slice retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
+      Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
+      practice, and "per <source> remedial tradition" (READER_FORBIDDEN) - and names
+      file:line. It does NOT forbid the families still open on #398 (Surya
+      Namaskar, "black sesame", weekday fasting): forbidding them here would
+      only make main red. It must also see at least one unit from each
+      surface, so a gate pointed at an empty tree fails instead of passing.
+
 Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris — it reads one
 file, so it runs anywhere and belongs in the `verify_*` sweep.
 
@@ -74,6 +87,7 @@ CONTROL passes. A gate that has only ever passed is not evidence.
 """
 from __future__ import annotations
 
+import ast
 import re
 import sys
 from dataclasses import dataclass, field
@@ -711,6 +725,205 @@ def gate_6_no_retired_claims_in_summaries(summaries=None) -> bool:
     return ok
 
 
+# --- Gate 7 ------------------------------------------------------------------
+
+SRC = REPO_ROOT / "src" / "astro_ai"
+
+# The reader-facing counterpart of FORBIDDEN/SUMMARY_FORBIDDEN, but only for
+# the seven families this slice of #398 fixed. Patterns are wider than the
+# literals that were found (QA measured 17 of 38 spelling variants slipping
+# past the first Gate 5 patterns): hyphen/space-agnostic, singular/plural,
+# Devanagari where i18n.py carries a Hindi copy.
+_HANU = r"(?:Hanuman|Bajrang\w*|Maruti|Anjaneya|हनुमान)"
+_SATURN = r"(?:Shani|Saturn|Saturday|Sade[- ]Sati|शनि)"
+# "Sahasranam" without the trailing -a is the commoner Indian spelling, and
+# the Hindi surface has no native reader, so both are the likeliest way the
+# retired claim comes back. QA round 4 measured each escaping family F.
+_HYMN = r"(?:Sahasranama?|सहस्रनाम)"
+# A window must not run across an arrow or a ';' - "Mars -> Hanuman; ...;
+# Saturn -> Vishnu" is the correct table and must stay legal. Tags are blanked
+# before matching, so the window is wide enough to cross "</strong>".
+_NO_ARROW = r"(?:(?!→|->)[^.\n;])"
+_HANUMAN_SATURN = (
+    # ", Saturn -> Vishnu" after a Mars entry is the correct table, not the claim.
+    rf"{_HANU}{_NO_ARROW}{{0,100}}?{_SATURN}(?!\w*\s*(?:→|->))"
+    rf"|{_SATURN}{_NO_ARROW}{{0,100}}?{_HANU}"
+    rf"|{_SATURN}\s*(?:→|->)\s*{_HANU}"
+)
+_DONOR_VERB = (
+    r"(?:serv(?:e|es|ed|ing|ice|ices)|support(?:s|ing)?|help(?:s|ing)?"
+    r"|donat(?:e|es|ed|ing|ion|ions)|feed(?:s|ing)?|offer(?:s|ed|ing|ings)?"
+    r"|giv(?:e|es|ing)|gave)"
+)
+READER_FORBIDDEN = (
+    (r"red[- ]*lentils?|masoor|masur|मसूर",
+     "A: Sun's grain is wheat, Mars's is toor daal; red lentil is in no book we hold"),
+    (MILK_TO_SHIVA
+     + r"|milk\s*(?:\(abhishek\))?\s+(?:at|to|over|on)\s+(?:a\s+|the\s+)?(?:Lord\s+)?Shiv"
+     + r"|Shiv\w*\s+(?:abhishek\w*|puja)[^.;\n]{0,40}\bmilk"
+     + r"|\b(?:Moon|Chandra)\b(?:\s*(?:→|->)\s*|(?:(?!→|->)[^.\n;,]){0,40}?)\bShiv",
+     "B: Moon -> Gauri, Lalita, Saraswati, Krishna; Shiva is the Sun's (Table 78)"),
+    (_HANUMAN_SATURN,
+     "C: Saturn -> Vishnu, Brahma; Hanuman only via Mars with Saturnine influence "
+     "- unless the sentence labels it popular/folk tradition AND names the Mars route"),
+    (r"sesame(?:[- ]+seeds?)?[- ]+oil|(?:\btil|\bteel|\btila|gingelly)[- ]+oil"
+     r"|\btil(?:\s+ka)?\s+tel\b|oil\s+of\s+sesame|तिल\s*(?:का|के)\s*तेल"
+     # The oil was the only literal, so the CROSS-ASSIGNMENT underneath it walked
+     # through: QA pasted "sesame seeds and black lentils" and "offer sesame +
+     # black lentils" back into two Ketu records and the whole sweep stayed green.
+     # Sesame paired with BLACK LENTILS is the Ketu shape -- Saturn's own rows say
+     # "urad daal", never "black lentils" -- so this pins it without needing the
+     # planet, which a string in `numerology.py` does not carry.
+     r"|sesame[^.;\n]{0,40}black\s+lentils|black\s+lentils[^.;\n]{0,40}sesame",
+     "D: unsourced; sesame is Saturn's and Rao gives Ketu no grain or oil"),
+    # The donor NOUNS were only `outsiders|marginalised`, so the verbatim string
+    # this slice was filed about -- "Offer to lepers, outcasts, or homeless on
+    # Saturday sunset" -- reinstated green. Widened to the whole family.
+    (rf"{_DONOR_VERB}(?:\s+(?:to|of|for))?\s+(?:[\w'-]+[\s/,]+){{0,4}}?"
+     rf"(?:outsiders?|marginali[sz]ed|lepers?|outcast\w*)",
+     "E: unsourced; Rao's Rahu deed is a donation to a research organisation or a "
+     "pilgrimage, and Saturn's is physical labour and manual labourers"),
+
+    # F. The claim THIS SLICE introduced while retiring family C: it replaced
+    # Hanuman with Vishnu (correct, Table 7.1) and then named a HYMN as the
+    # practice and ranked it -- "the most universal Saturn practice" -- in nine
+    # reader-facing places. `sahasranama` returns one hit in `knowledge/`, and it
+    # is LALITA Sahasranama in the Sri Yantra section. Scoped to one sentence, so
+    # "For Saturn delays: ... . For general 10th house strengthening: Vishnu
+    # Sahasranama" stays legal: there the hymn is the 10th house's, not Saturn's.
+    (rf"{_SATURN}[^.;\n]{{0,140}}{_HYMN}|{_HYMN}[^.;\n]{{0,140}}{_SATURN}",
+     "F: Saturn's sourced remedy is the DEITY (Vishnu, Brahma - Table 7.1); no book "
+     "we hold names a hymn as Saturn's practice, let alone ranks one"),
+
+    # G. A reader-facing remedy line borrowing authority from a source name. NOT a
+    # blanket ban -- source names are deliberate and pervasive elsewhere (Cheiro,
+    # Johari, Phaladeepika, Saravali) -- just this construction, which is how the
+    # same wrong attribution survived on two pages: the grain tables are Rao's
+    # (remedies.md 5.1/13.1), and BPHS is not where they come from.
+    (r"\bper\s+(?:the\s+)?(?:BPHS|Brihat\s+Parashara\w*|Parashara\w*|Phaladeepika|Saravali"
+     r"|Rao'?s?|Raman'?s?)\s+remedial\s+tradition"
+     r"|classical\s+grain\s+per\s+\w+",
+     "G: a remedy line must not borrow authority from a source name on a reader-facing "
+     "page, and the grain tables are Rao's, not BPHS's"),
+)
+
+# Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.
+_HANUMAN_ROW = 2
+# The window above stops at a full stop, so "Hanuman Chalisa - a 40-verse hymn.
+# Recited daily, especially Tuesdays and Saturdays." and "...a Shani nivaran
+# puja is selling anxiety. ... mantras + Chalisa + Hanuman worship" both slipped
+# past it on the first run. So family C is ALSO checked per line: Hanuman and a
+# Saturn word on one line (one string, for the .py surfaces). Measured on the
+# tree: only six lines carry both, four of them correct per-planet tables, which
+# is why a per-line rule is affordable here. A "Saturn -> Vishnu or Brahma" table
+# entry is blanked before the check, so the correct table stays legal.
+_SATURN_TABLE_ENTRY = re.compile(
+    rf"{_SATURN}\s*(?:→|->)\s*(?!{_HANU})\w+(?:\s+(?:or|and)\s+\w+)*", re.IGNORECASE)
+_HONEST_LABEL = (r"popular|folk", r"\bMars\b")
+
+# What a surface is: (path-relative-to-src, kind). Every group must contribute
+# at least one unit, or the gate is looking at nothing.
+_REQUIRED_SURFACES = ("templates/learn/", "i18n.py", "numerology.py", "learn_registry.py")
+
+
+def _blank_tags(html: str) -> str:
+    """Same-length blanking so offsets (and so line numbers) survive."""
+    return re.sub(r"<[^>]*>", lambda m: re.sub(r"[^\n]", " ", m.group(0)), html)
+
+
+def _py_string_units(path: Path):
+    """(lineno, text) for every string constant, except `llm_summary=` values.
+
+    The summaries are Gate 6's, with a stricter pattern set (it also forbids
+    Surya Namaskar, black sesame and so on), and are what the LLM is shown.
+    """
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    skip: set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.keyword) and node.arg == "llm_summary":
+            skip.update(id(n) for n in ast.walk(node.value))
+    for node in ast.walk(tree):
+        if (isinstance(node, ast.Constant) and isinstance(node.value, str)
+                and id(node) not in skip):
+            yield node.lineno, node.value
+
+
+def reader_surface_units(root: Path | None = None):
+    """[(where, text)] for every reader-facing surface under `root` (src/astro_ai).
+
+    `where` is `relpath:line`; for a template, `text` is the whole file with
+    tags blanked, and `where` is the file with the line added when reported.
+    """
+    root = root or SRC
+    units: list[tuple[str, str]] = []
+    for path in sorted((root / "templates").glob("**/*.html")):
+        units.append((f"{path.relative_to(root)}:1", _blank_tags(path.read_text(encoding="utf-8"))))
+    for name in ("i18n.py", "numerology.py", "learn_registry.py"):
+        path = root / name
+        if path.exists():
+            for lineno, text in _py_string_units(path):
+                units.append((f"{name}:{lineno}", text))
+    return units
+
+
+def _labelled_honestly(text: str, start: int, end: int) -> bool:
+    """True if the line(s) holding the match call it popular/folk AND name Mars."""
+    a = text.rfind("\n", 0, start) + 1
+    b = text.find("\n", end)
+    line = text[a: len(text) if b < 0 else b]
+    return all(re.search(p, line, flags=re.IGNORECASE) for p in _HONEST_LABEL)
+
+
+def _hanuman_saturn_same_line(text: str):
+    """(start, end, snippet) for each line carrying both a Hanuman and a Saturn word."""
+    pos = 0
+    for line in text.split("\n"):
+        blanked = _SATURN_TABLE_ENTRY.sub(lambda m: " " * len(m.group(0)), line)
+        h = re.search(_HANU, blanked, flags=re.IGNORECASE)
+        s = re.search(_SATURN, blanked, flags=re.IGNORECASE)
+        if h and s:
+            yield pos + h.start(), pos + max(h.end(), s.end()), h.group(0) + " .. " + s.group(0)
+        pos += len(line) + 1
+
+
+def gate_7_no_retired_claims_on_reader_surfaces(units=None) -> bool:
+    """`units` is an iterable of (where, text); default is the real tree.
+
+    The parameter exists so `mutate_natal_prompt_gate.py` can feed it a
+    re-broken surface without editing a template or the registry.
+    """
+    print("Gate 7 - no retired claims on reader-facing surfaces "
+          "(templates, learn_registry, i18n, numerology)")
+    units = list(reader_surface_units() if units is None else units)
+    ok = True
+    missing = [s for s in _REQUIRED_SURFACES if not any(w.startswith(s) for w, _ in units)]
+    if missing:
+        ok = False
+        _fail(f"no text scanned from {missing} - this gate is checking nothing "
+              f"there (an empty or moved tree must fail, not pass)")
+    hits = 0
+    for where, text in units:
+        path, _, base = where.rpartition(":")
+        base = int(base)
+        for row, (pattern, why) in enumerate(READER_FORBIDDEN):
+            found = [(m.start(), m.end(), m.group(0))
+                     for m in re.finditer(pattern, text, flags=re.IGNORECASE)]
+            if row == _HANUMAN_ROW:
+                found += list(_hanuman_saturn_same_line(text))
+            for start, end, matched in found:
+                if row == _HANUMAN_ROW and _labelled_honestly(text, start, end):
+                    continue
+                ok = False
+                hits += 1
+                line = base + text.count("\n", 0, start)
+                _fail(f"{path}:{line} matched "
+                      f"{' '.join(matched.split())[:60]!r} - {why}")
+    if ok:
+        print(f"  ok    {len(units)} text units x {len(READER_FORBIDDEN)} retired "
+              f"claim families: none present")
+    return ok
+
+
 def main() -> int:
     if not PROMPT.exists():
         print(f"FAIL: {PROMPT} does not exist")
@@ -724,6 +937,7 @@ def main() -> int:
         gate_4_no_stale_size_citations(text),
         gate_5_no_retired_claims(text),
         gate_6_no_retired_claims_in_summaries(),
+        gate_7_no_retired_claims_on_reader_surfaces(),
     ]
     print()
     if all(results):

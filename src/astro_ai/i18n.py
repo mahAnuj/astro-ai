@@ -197,7 +197,7 @@ _EN: Final[dict[str, str]] = {
     "sade_sati_precautions":
         "Donate black sesame, black cloth, or iron on Saturdays. "
         "Light a mustard-oil lamp under a peepal tree. "
-        "Recite the Hanuman Chalisa or Shani Stotra regularly. "
+        "Worship Vishnu (Saturn's classical deity) or recite the Shani Stotra regularly. "
         "Eat simple food, sleep on time, and avoid hasty decisions. "
         "Help the elderly, the poor, and those in service work — Saturn rewards humility and service.",
     "sade_sati_balance_label": "What this period gives in return",
@@ -763,7 +763,7 @@ _HI: Final[dict[str, str]] = {
     "sade_sati_precautions":
         "शनिवार को काले तिल, काला कपड़ा या लोहे का दान करें। "
         "पीपल वृक्ष के नीचे सरसों के तेल का दीपक जलाएँ। "
-        "हनुमान चालीसा या शनि स्तोत्र का नियमित पाठ करें। "
+        "विष्णु (शनि के शास्त्रीय देवता) की उपासना करें या शनि स्तोत्र का नियमित पाठ करें। "
         "सादा भोजन करें, समय पर सोएँ, और जल्दबाज़ी में निर्णय लेने से बचें। "
         "वृद्धों, ज़रूरतमंदों और सेवा कर्म करने वालों की सहायता करें — शनि विनम्रता और सेवा का पुरस्कार देते हैं।",
     "sade_sati_balance_label": "इस अवधि का सकारात्मक पक्ष",

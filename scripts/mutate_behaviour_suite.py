@@ -2515,10 +2515,16 @@ MUTATIONS = [
      "This is an absence, not a zero", "This is a zero",
      "test_an_empty_trend_says_so_rather_than_vanishing"),
 
+    # The row shipped in #455 naming `test_the_window_selector`, which has
+    # never existed. #455 was green alone because rows still ran the whole
+    # suite then, and the GUARD GONE check arrived in a sibling PR -- so two
+    # independently-green PRs made main red, and nothing noticed because
+    # pr-gates does not run on main. Pointed at the guard that names the
+    # defect: it reports "offers [1, 1, 1], the app accepts [1, 7, 30]".
     ("#452/BUG-5: the window selector hardcodes one window",
      "src/astro_ai/templates/admin_ops.html",
      'href="?window={{ d }}"', 'href="?window=1"',
-     "test_the_window_selector"),
+     "test_the_template_offers_exactly_the_windows_the_module_declares"),
 
     # BUG-6. The old assertion was `peak <= _nice_top(peak)` restated, so it
     # could not fail; it now reads rendered coordinates at the boundary.
