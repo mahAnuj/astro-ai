@@ -736,6 +736,10 @@ SRC = REPO_ROOT / "src" / "astro_ai"
 # Devanagari where i18n.py carries a Hindi copy.
 _HANU = r"(?:Hanuman|Bajrang\w*|Maruti|Anjaneya|हनुमान)"
 _SATURN = r"(?:Shani|Saturn|Saturday|Sade[- ]Sati|शनि)"
+# "Sahasranam" without the trailing -a is the commoner Indian spelling, and
+# the Hindi surface has no native reader, so both are the likeliest way the
+# retired claim comes back. QA round 4 measured each escaping family F.
+_HYMN = r"(?:Sahasranama?|सहस्रनाम)"
 # A window must not run across an arrow or a ';' - "Mars -> Hanuman; ...;
 # Saturn -> Vishnu" is the correct table and must stay legal. Tags are blanked
 # before matching, so the window is wide enough to cross "</strong>".
@@ -778,7 +782,7 @@ READER_FORBIDDEN = (
     (rf"{_DONOR_VERB}(?:\s+(?:to|of|for))?\s+(?:[\w'-]+[\s/,]+){{0,4}}?"
      rf"(?:outsiders?|marginali[sz]ed|lepers?|outcast\w*)",
      "E: unsourced; Rao's Rahu deed is a donation to a research organisation or a "
-     "pilgrimage, and Saturn's is physical labour, manual labourers and the elderly"),
+     "pilgrimage, and Saturn's is physical labour and manual labourers"),
 
     # F. The claim THIS SLICE introduced while retiring family C: it replaced
     # Hanuman with Vishnu (correct, Table 7.1) and then named a HYMN as the
@@ -787,7 +791,7 @@ READER_FORBIDDEN = (
     # is LALITA Sahasranama in the Sri Yantra section. Scoped to one sentence, so
     # "For Saturn delays: ... . For general 10th house strengthening: Vishnu
     # Sahasranama" stays legal: there the hymn is the 10th house's, not Saturn's.
-    (rf"{_SATURN}[^.;\n]{{0,140}}Sahasranama|Sahasranama[^.;\n]{{0,140}}{_SATURN}",
+    (rf"{_SATURN}[^.;\n]{{0,140}}{_HYMN}|{_HYMN}[^.;\n]{{0,140}}{_SATURN}",
      "F: Saturn's sourced remedy is the DEITY (Vishnu, Brahma - Table 7.1); no book "
      "we hold names a hymn as Saturn's practice, let alone ranks one"),
 
@@ -796,7 +800,7 @@ READER_FORBIDDEN = (
     # Johari, Phaladeepika, Saravali) -- just this construction, which is how the
     # same wrong attribution survived on two pages: the grain tables are Rao's
     # (remedies.md 5.1/13.1), and BPHS is not where they come from.
-    (r"\bper\s+(?:BPHS|Brihat\s+Parashara\w*|Parashara\w*|Phaladeepika|Saravali"
+    (r"\bper\s+(?:the\s+)?(?:BPHS|Brihat\s+Parashara\w*|Parashara\w*|Phaladeepika|Saravali"
      r"|Rao'?s?|Raman'?s?)\s+remedial\s+tradition"
      r"|classical\s+grain\s+per\s+\w+",
      "G: a remedy line must not borrow authority from a source name on a reader-facing "

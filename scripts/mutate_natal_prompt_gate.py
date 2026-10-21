@@ -119,7 +119,12 @@ GATE7_SAMPLES = {
           "the Vishnu Sahasranama is the universal practice for Shani",
           "Vishnu Sahasranama recitation eases Sade Sati",
           "Daily Sahasranama on Saturdays",
-          "recite the Sahasranama through a hard Saturn period"),
+          "recite the Sahasranama through a hard Saturn period",
+          # QA round 4: both of these escaped family F. "Sahasranam" without
+          # the trailing -a is the commoner Indian spelling, and the Hindi
+          # surface is the one with no native reader to catch a reinstatement.
+          "Daily Sahasranam for Shani",
+          "शनि के लिए विष्णु सहस्रनाम का पाठ"),
     # G. A reader-facing remedy line borrowing a source name -- and the wrong
     # one. The same construction survived on a second page after the first was
     # fixed, because nothing checked for it.
@@ -127,7 +132,9 @@ GATE7_SAMPLES = {
           "Rahu's classical grain per BPHS remedial tradition",
           "Saturn's grain per Parashara remedial tradition",
           "the classical grain per Saravali",
-          "Toor daal is Mars's classical grain per Rao's remedial tradition"),
+          "Toor daal is Mars's classical grain per Rao's remedial tradition",
+          # QA round 4: one article before the source name escaped the construction.
+          "Mars's classical grain per the BPHS remedial tradition"),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -157,8 +164,12 @@ GATE7_LEGAL = (
     # the first draft of the widened nouns did, on pitru-dosh-remedies.html.
     "Feed one Brahmin or one homeless person",
     # ...nor on Saturn's own sourced deed, which names the people it serves.
+    # This is the sentence AS SHIPPED. It ended "and serve the elderly" until
+    # bb4ccd2: remedies.md 11.2 records that clause as a product addition, not
+    # Rao's, so a fixture carrying it would pin the overclaim this slice removed
+    # as legal, under a comment calling it sourced. Keep it matching the tree.
     "Saturn's classical good deed is labour itself: perform some physical labour, "
-    "help people who live on manual labour, and serve the elderly.",
+    "help people who live on manual labour.",
     # G is a construction, not a ban on source names: these must stay green.
     "Cheiro's Book of Numbers gives 4 to Rahu.",
     "Rao's Table 78 maps Saturn to Vishnu and Brahma.",
