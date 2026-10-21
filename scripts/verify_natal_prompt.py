@@ -69,9 +69,10 @@ the 413 taught us about.
       sat on the pages a reader opens directly: the /learn article bodies,
       the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
       languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
-      is shown. This gate scans those surfaces for the five families the
+      is shown. This gate scans those surfaces for the seven families the
       slice retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
-      Ketu->sesame oil, Rahu->serve outsiders (READER_FORBIDDEN) - and names
+      Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
+      practice, and "per <source> remedial tradition" (READER_FORBIDDEN) - and names
       file:line. It does NOT forbid the families still open on #398 (Surya
       Namaskar, "black sesame", weekday fasting): forbidding them here would
       only make main red. It must also see at least one unit from each
@@ -729,7 +730,7 @@ def gate_6_no_retired_claims_in_summaries(summaries=None) -> bool:
 SRC = REPO_ROOT / "src" / "astro_ai"
 
 # The reader-facing counterpart of FORBIDDEN/SUMMARY_FORBIDDEN, but only for
-# the five families this slice of #398 fixed. Patterns are wider than the
+# the seven families this slice of #398 fixed. Patterns are wider than the
 # literals that were found (QA measured 17 of 38 spelling variants slipping
 # past the first Gate 5 patterns): hyphen/space-agnostic, singular/plural,
 # Devanagari where i18n.py carries a Hindi copy.
