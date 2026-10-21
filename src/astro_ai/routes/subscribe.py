@@ -173,7 +173,23 @@ def _shared_three_tier(
     started = _time.time()
     text = call_fn()
     latency_ms = int((_time.time() - started) * 1000)
-    in_tok = cache.estimate_tokens(text) * 2
+    # INPUT IS NOT KNOWABLE HERE, so it is not guessed (#473).
+    #
+    # This read `cache.estimate_tokens(text) * 2  # input ~= 2x output` until
+    # 2026-10-21 -- `text` is the model's OUTPUT, so input was DEFINED as twice
+    # an estimate of it. Every route on /admin/ops therefore reported a flawless
+    # 2:1 ratio that no traffic could disturb, and rashifal read 7,692 input
+    # tokens against a job that measures ~38,500.
+    #
+    # Two things were wrong and only one was the arithmetic. This function sees
+    # a cached DOCUMENT; `generate_rashifal` fans one out to twelve provider
+    # calls, so even a perfect number here would be the wrong unit. The real
+    # pair is recorded where it is known -- `providers.chat` ->
+    # `llm_stats.record` -- keyed by provider route.
+    #
+    # Zero means UNKNOWN. ops_data renders it as a dash, never as a measured
+    # zero, and never divides by it.
+    in_tok = 0
     out_tok = cache.estimate_tokens(text)
     cache.put(cache_key, text, route=route, ttl_days=1,
               input_tokens=in_tok, output_tokens=out_tok)

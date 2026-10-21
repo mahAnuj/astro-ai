@@ -269,10 +269,48 @@ def liveness(repo: str, now: datetime, days: int) -> list[dict]:
             "runs_total": len(recent),
             "last_run": (last or {}).get("created_at"),
             "last_conclusion": (last or {}).get("conclusion") or (last or {}).get("status"),
+            # Is the LAST RUN red, amber or green, independent of the verdict?
+            #
+            # The two answer different questions and /admin/ops needs both. The
+            # verdict grades the SCHEDULE -- a loop between slots is
+            # `not-due-yet` whether its last run was green or red -- and for six
+            # days `agent-measure` read healthy on that page while every run was
+            # failing to push (#393). `agent-design` sits at `not-due-yet` right
+            # now with a `failure` as its most recent run.
+            #
+            # Computed here rather than in the template because SELF_REPORTING
+            # lives here: `loop-outcomes` exits non-zero when it FINDS
+            # something, so painting its red the same red as a crash is the
+            # thing this file's own header warns teaches a reader to ignore red.
+            # A template deriving the colour from the conclusion string alone
+            # could not know that, and would have got it wrong.
+            "last_run_health": _health((last or {}).get("conclusion"),
+                                       (last or {}).get("status"),
+                                       name in SELF_REPORTING),
             "verdict": verdict,
         })
     rows.sort(key=lambda r: (r["verdict"] != "broken", r["verdict"] != "dormant", r["workflow"]))
     return rows
+
+
+def _health(conclusion: str | None, status: str | None, self_reporting: bool) -> str:
+    """"green" | "red" | "amber" | "running" | "unknown" for the most recent run.
+
+    `unknown`, never a default of green: a loop that has never run has no health
+    and saying otherwise is the silence this whole file exists to break. A run
+    still in flight is `running` for the same reason -- `in_progress` carries no
+    conclusion, and the first version of the column painted it green.
+    """
+    if conclusion in (None, ""):
+        if status in ("in_progress", "queued", "requested", "waiting", "pending"):
+            return "running"
+        return "unknown"
+    if conclusion == "success":
+        return "green"
+    if conclusion in ("cancelled", "skipped", "neutral", "stale", "action_required"):
+        return "amber"
+    # failure, timed_out, startup_failure
+    return "amber" if self_reporting else "red"
 
 
 # ── agents ──────────────────────────────────────────────────────────────────

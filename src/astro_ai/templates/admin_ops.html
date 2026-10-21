@@ -629,7 +629,15 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
     <button class="tile" data-drill="today-shipped" {{ '' if L.today_shipped else 'disabled' }}>
       <span class="caret">▸</span><span class="lbl">Shipped today</span>
       <span class="v"><span class="num c-shipped">{{ '\u2265' if L.shipped_truncated }}{{ L.today_shipped|length }}</span></span>
-      <span class="foot">PRs merged, {{ ops.today_ist }}<br>
+      {#- Loop vs session. "3 shipped" cannot distinguish the agent team
+          shipping three from a human shipping three while the loop sat idle,
+          and that difference is the whole question this page is asked. Split
+          on the PR's AUTHOR TYPE, never its branch: `issue/*` is used by both
+          (PR #471 is a human's). #}
+      {%- set n_loop = L.today_shipped|selectattr('by','equalto','loop')|list|length %}
+      {%- set n_session = L.today_shipped|rejectattr('by','equalto','loop')|list|length %}
+      <span class="foot">{% if L.today_shipped %}<span class="c-shipped">{{ n_loop }} by the loop</span>
+        · {{ n_session }} by a session<br>{% endif %}PRs merged, {{ ops.today_ist }}<br>
         {% if L.today_live %}<span class="age">live{% if L.shipped_truncated %}, at least{% endif %}</span>
         {% else %}<span class="age {{ 'stale' if ops.ages.Delivery.stale }}">as of {{ ops.ages.Delivery.text }}</span>{% endif %}</span>
     </button>
@@ -821,13 +829,14 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         <tbody>
         {% for r in ops.app.routes %}
         <tr>
-          <td>{{ r.route }}<span class="sub">{{ "{:,}".format(r.input_tokens) }} in · {{ "{:,}".format(r.output_tokens) }} out</span></td>
-          <td class="n">{{ "{:,}".format(r.calls) }}</td>
+          <td>{{ r.route }}{% if r.token_source == 'estimated' %}<span class="c-open" title="No provider usage recorded for this route in the window, so these tokens are cache.estimate_tokens(text) x 2 — input DEFINED as twice a guess at the output. See #473.">&nbsp;est</span>{% endif %}<span class="sub">{{ "{:,}".format(r.input_tokens) }} in · {{ "{:,}".format(r.output_tokens) }} out</span></td>
+          <td class="n">{{ "{:,}".format(r.calls) }}{% if r.fan_out and r.fan_out > 1.5 %}<span class="sub" title="Provider calls behind one cached request. generate_rashifal fans one document out to 12 parallel calls.">{{ "{:,}".format(r.llm_calls) }} LLM calls</span>{% endif %}</td>
           <td class="n {{ 'c-open' if r.hit_rate == 0 }}">{{ r.hit_rate }}%</td>
           <td class="n">{{ "{:,}".format(r.per_request_total) if r.per_request_total is not none else '—' }}
             <span class="sub">{{ "{:,}".format(r.per_request) if r.per_request is not none else '—' }} in ·
               {{ "{:,}".format(r.per_request_out) if r.per_request_out is not none else '—' }} out</span></td>
-          <td class="n {{ 'c-failed' if r.tpm_pct and r.tpm_pct >= 50 }}">{{ r.tpm_pct ~ '%' if r.tpm_pct is not none else '—' }}</td>
+          <td class="n {{ 'c-failed' if r.tpm_pct and r.tpm_pct >= 50 }}">{{ r.tpm_pct ~ '%' if r.tpm_pct is not none else '—' }}
+            {%- if r.per_call_total is not none %}<span class="sub" title="Tokens on the wire for ONE provider call. The TPM bucket is charged per call, not per request.">{{ "{:,}".format(r.per_call_total) }}/call</span>{% endif %}</td>
           <td class="n">{{ "%.1f s"|format(r.avg_miss_ms / 1000) if r.avg_miss_ms is not none else '—' }}</td>
           <td class="n">{{ "{:,}".format(r.saved) if r.saved else '—' }}</td>
         </tr>
@@ -840,13 +849,26 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         beneath it because input is the half that grows <em>silently</em>: #212 measured prompt
         input growing 18.5% per call, and #266 was a 413, a pure input-size failure. Total is
         the ceiling; input is the regression signal.
-        <b>of one bucket</b> is that total against {{ "{:,}".format(ops.tpm_per_model) }} TPM
-        for a single model — the chain is two models with separate buckets, so a route near
-        100% cannot run twice concurrently on the same one whatever its hit rate looks like.
-        All of it divides by <em>misses</em>, not calls: a cache hit spends no tokens, so
-        dividing by calls would make every prompt look cheaper as the cache warms.
-        <b>saved by cache</b> is hits × the mean cost of a miss on that route — an estimate,
-        because the avoided prompt was never measured. A feature at <b>0%</b> cache pays full
+        <b>of one bucket</b> weighs <em>one provider call</em> against
+        {{ "{:,}".format(ops.tpm_per_model) }} TPM for a single model — per call, because that
+        is how the bucket is charged. For a fanned-out feature the two differ: a rashifal
+        request is ~61,600 tokens in total but 5,133 on any one call, and quoting the request
+        against a per-minute bucket would print a percentage no request could mean. The chain
+        is two models with separate buckets, so a route near 100% cannot run twice
+        concurrently on the same one whatever its hit rate looks like.
+        <b>calls</b> counts cached <em>requests</em>, which is not the same as LLM calls: a
+        rashifal request is one document generated by <em>twelve</em> parallel provider calls,
+        and the row says so when the two differ. A measured row divides by the provider calls
+        that were actually sized; an <span class="c-open">est</span> row has no provider usage
+        in the window and divides by misses instead. Either way a cache hit spends no tokens,
+        so dividing by total calls would make every prompt look cheaper as the cache warms.
+        Until #473 these columns were <em>not measured at all</em> —
+        <code>cache.estimate_tokens(text) × 2</code>, input defined as twice a guess at the
+        output, which is why every route used to report a flawless 2:1 and why rashifal read
+        7,692 input tokens for a job that measures ~38,500.
+        <b>saved by cache</b> is hits × the mean cost of a miss on that route, counted per
+        <em>request</em>: a hit avoids a whole document, all twelve calls of a rashifal, not
+        one. A feature at <b>0%</b> cache pays full
         price every request.
         <b>avg miss</b> is wall-clock per generated reading and covers only days recorded since
         #355; earlier days stored one global figure, so a feature with none shows <b>—</b>,
@@ -933,7 +955,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
             title="from measurements/agents.json, collected {{ A.generated_at or 'never' }}">as of {{ ops.ages.Team.text }}</span></h2>
     <div class="body">
       <div class="tscroll" role="region" aria-label="Scheduled loops"><table class="loops">
-        <thead><tr><th>Loop</th><th>Cadence</th><th>Due</th><th>Ran</th><th>Last</th><th></th></tr></thead>
+        <thead><tr><th>Loop</th><th>Cadence</th><th>Due</th><th>Ran</th><th>Last</th><th>Last run</th><th></th></tr></thead>
         <tbody>
         {% for r in A.scheduled %}
           <tr>
@@ -942,6 +964,20 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
             <td class="c">{{ r.slots_due if r.slots_due is not none else '—' }}</td>
             <td class="c">{{ r.runs_scheduled }}</td>
             <td class="c">{{ (r.last_run or '—')[0:10] }}</td>
+            {# Green or red for the LAST RUN, which the verdict does not carry.
+               `agent-design` sits at `not-due-yet` -- true -- with a `failure`
+               as its most recent run, and for six days `agent-measure` read
+               healthy here while every run was failing to push (#393). The
+               conclusion had been collected and committed into agents.json
+               since #345 and was never drawn.
+
+               The COLOUR comes from the collector, not from this string:
+               `loop-outcomes` goes red when it FINDS something, and only
+               collect_agent_performance.py knows that. A template mapping the
+               conclusion itself would paint a working report as a crash. #}
+            <td class="c">{% if r.last_conclusion %}<span
+                class="chip {{ {'red': 'v-broken', 'amber': 'v-reporting', 'green': 'v-ok'}.get(r.last_run_health, 'v-not-due-yet') }}"
+                title="{{ r.last_conclusion }} — the most recent run, whenever it was; the verdict on the right grades the schedule instead">{{ r.last_conclusion }}</span>{% else %}—{% endif %}</td>
             <td><span class="chip v-{{ r.verdict }}">{{ r.verdict }}</span></td>
           </tr>
         {% endfor %}
@@ -955,6 +991,10 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         <b>reporting</b> means the run went red because its own script found something, not because
         it failed: <code>loop-outcomes</code> exits non-zero when a loop is broken, so colouring it
         the same red as a crash teaches a reader to ignore red.
+        <b>Last run</b> is the conclusion of the most recent run whenever it happened, which the
+        verdict on the right deliberately does not carry: a loop between slots is
+        <code>not-due-yet</code> whether its last run was green or red, and for six days
+        <code>agent-measure</code> read healthy on this page while every run was failing to push.
       </p>
 
       <div class="cols" style="margin-top:22px">
