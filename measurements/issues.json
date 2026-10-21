@@ -1,50 +1,779 @@
 {
-  "generated_at": "2026-10-15T15:30:25Z",
+  "generated_at": "2026-10-21T20:28:12Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 69,
-  "with_ask": 33,
+  "open": 112,
+  "with_ask": 54,
   "by_area": {
-    "UNCLASSIFIED": 13,
-    "INFRA": 10,
+    "UNCLASSIFIED": 44,
+    "INFRA": 12,
     "REDESIGN": 10,
+    "UI": 8,
     "FEATURE": 7,
-    "SECURITY": 4,
-    "UI": 4,
-    "BUG": 3,
+    "SECURITY": 3,
     "NUMEROLOGY": 3,
+    "AGENT-MERGE": 2,
+    "PROMPTS": 2,
     "SEO": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
-    "TASK": 2,
     "CHORE": 2,
-    "LLM": 1,
+    "BUG": 2,
+    "DETECT_STALLS": 1,
+    "CHART": 1,
+    "CONTENT": 1,
+    "GATES": 1,
+    "ASK": 1,
+    "ARCHITECTURE": 1,
     "KUNDLI": 1,
+    "TASK": 1,
     "BLOCKER": 1,
     "KNOWLEDGE": 1,
     "MATCHING": 1
   },
   "by_type": {
-    "enhancement": 22,
-    "untyped": 15,
-    "bug": 13,
+    "bug": 37,
+    "untyped": 28,
+    "enhancement": 23,
+    "correctness": 8,
+    "design": 7,
     "chore": 6,
-    "design": 6,
-    "correctness": 6,
-    "ui": 1
+    "ui": 3
   },
   "by_priority": {
-    "unset": 41,
-    "medium": 17,
-    "high": 11
+    "unset": 74,
+    "medium": 21,
+    "high": 17
   },
-  "blocked": 6,
+  "blocked": 8,
   "rows": [
     {
-      "number": 362,
-      "title": "security: a change to `prompts/*.txt` is invisible to the gates, although it is what the app sends to the model on every request",
+      "number": 475,
+      "title": "Pace LLM calls against a per-model token bucket so a 429_tpm is a short wait, not a failure",
+      "ask": "A _TokenBucket per model in providers.py.",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement"
+      ],
+      "created": "2026-10-21T17:59:35Z",
+      "updated": "2026-10-21T17:59:35Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 472,
+      "title": "test_loopback_and_unix_sockets_stay_open fails on macOS: AF_UNIX path too long",
+      "ask": "Bind under a short directory instead of tmp_path — tempfile.mkdtemp(dir=\"/tmp\")",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-21T17:24:52Z",
+      "updated": "2026-10-21T17:24:52Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 468,
+      "title": "Three more product-added remedies presented as classical or ranked — including a 'Classical' heading whose first bullet is the addition and third is the line #451 fixed",
       "ask": "",
-      "area": "SECURITY",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-21T05:41:01Z",
+      "updated": "2026-10-21T05:41:47Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 467,
+      "title": "Gate 7 is literal-bound: QA measured 18 of 20 plausible rewrites escaping, and families B, E, F do not fire on Devanagari at all",
+      "ask": "Devanagari parity for B, E, F — close the gap on the unreadable surface first.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-21T05:17:49Z",
+      "updated": "2026-10-21T05:17:49Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 466,
+      "title": "ARCHITECTURE.md holds four successive revisions of one decision-log row as four rows — resolve_union_dated keeps an edited row as two (second head of #460)",
+      "ask": "The 2026-10-20 log already records a related incident: a hand resolution in this same table \"silently concatenated two decision-log rows … a row's text ended up inside another and",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-21T04:49:46Z",
+      "updated": "2026-10-21T04:49:46Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 465,
+      "title": "Mercury and Jupiter pages call the Vishnu Sahasranama 'the universal safe practice' — remedies.md gives that role to the Sri Yantra and never cites that hymn (#398 follow-on)",
+      "ask": "Deity sourced, practice generic, no \"classical\" attached to the hymn.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-21T04:49:13Z",
+      "updated": "2026-10-21T04:49:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 464,
+      "title": "Gate 7 cannot catch an FAQ naming a practice its page lacks — QA pasted the fixed defect back and the gate stayed green (#398 F2)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-21T04:48:02Z",
+      "updated": "2026-10-21T04:48:02Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 463,
+      "title": "No gate measures seo_description length — 8 of 38 exceed 160 chars decoded, up to 187 (#398 F6)",
+      "ask": "A gate added inside #451 would have been red on arrival — 8 pre-existing violations — and this repo's rule is that a gate lands green or it does not land.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-21T04:47:37Z",
+      "updated": "2026-10-21T05:43:57Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 462,
+      "title": "Three MIS-POINTED mutation rows, and the 0.2s static check that would have caught the GUARD GONE row before a 40-minute sweep",
+      "ask": "The sweep deliberately does not fail on these — \"a speed change may not manufacture red builds\" — and that judgement is right.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-21T04:45:01Z",
+      "updated": "2026-10-21T04:45:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 461,
+      "title": "pr-gates never runs on main, so a red main is invisible — two independently-green PRs made main red for a day and nothing reported it",
+      "ask": "Add main to pr-gates.yml's push: branches.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-21T04:44:34Z",
+      "updated": "2026-10-21T04:44:34Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 460,
+      "title": "resolve_union corrupts a mutation row when the conflict is intra-row, and only the anchor pre-flight notices",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-20T17:09:43Z",
+      "updated": "2026-10-20T17:09:43Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 459,
+      "title": "Squash merge leaves a branch looking unmerged: phantom PRs for shipped work, and stacked PRs conflicting with their own parent",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-20T17:09:17Z",
+      "updated": "2026-10-21T18:13:34Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 457,
+      "title": "detect_stalls: steward-ineffective and 'CONFLICTING for Nh' use PR age, not stall age (PR #410)",
+      "ask": "Not in scope: choosing the exact source of the \"since when\" timestamp.",
+      "area": "DETECT_STALLS",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-20T16:38:34Z",
+      "updated": "2026-10-20T16:38:34Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 456,
+      "title": "needs-human-review can be applied with no stated reason, which makes the merge block unactionable",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-20T16:10:42Z",
+      "updated": "2026-10-20T16:10:42Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 453,
+      "title": "The loop can only address work by issue number, so any PR not on an issue/* branch is permanently unserviceable",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-20T16:03:10Z",
+      "updated": "2026-10-20T16:05:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 450,
+      "title": "ops_data.snapshot: asyncio.to_thread removes the loop's serialisation, so two concurrent renders can each spend the full API budget",
+      "ask": "Serve stale while revalidating — return the previous snapshot immediately and refresh in one background task.",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "medium",
+      "labels": [
+        "category:technical",
+        "priority:medium"
+      ],
+      "created": "2026-10-20T10:12:38Z",
+      "updated": "2026-10-20T10:12:38Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 447,
+      "title": "close-on-evidence: an issue closed with three of four parts undone — the three facts it checks cannot see scope",
+      "ask": "Refuse to close when the merged PR's body says the work is partial — grep the PR body and the issue for PARTIAL/part N of M/Pending.",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "high",
+      "labels": [
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-10-20T09:27:40Z",
+      "updated": "2026-10-20T09:27:40Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 444,
+      "title": "[INFRA] Loop outcome report (weekly)",
+      "ask": "",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-20T08:48:15Z",
+      "updated": "2026-10-20T08:48:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 433,
+      "title": "verify_hindi_surface: eight guard gaps from QA round 1 on #424 (five live mutation survivors)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "provenance:trusted",
+        "needs-evidence"
+      ],
+      "created": "2026-10-20T03:39:56Z",
+      "updated": "2026-10-21T15:57:09Z",
+      "blocked": false,
+      "needs_evidence": true
+    },
+    {
+      "number": 432,
+      "title": "One Effective prefix-cache figure spans two models' caches, and CACHE_REPORTING_MODELS carries three spellings no provider produces",
+      "ask": "The panel's own copy tells the operator to \"Read Effective, not Hit rate\" and",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-20T02:57:03Z",
+      "updated": "2026-10-20T02:57:03Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 431,
+      "title": "prefix_cache rows have no schema version, so adding a ninth counter would erase all stored history",
+      "ask": "It bit immediately.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-20T02:56:39Z",
+      "updated": "2026-10-20T02:56:39Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 430,
+      "title": "Sade Sati phase names: the engine says arohini/avarohini, knowledge/ and the articles say Arambha/Uttara, and all four names are absent from every book in data/",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "severity:medium",
+        "priority:medium",
+        "astrology-correctness"
+      ],
+      "created": "2026-10-20T02:24:53Z",
+      "updated": "2026-10-20T02:34:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 429,
+      "title": "chart: the Manglik severity ladder is UNSOURCED, and its \"1st house = moderate\" tier is counter-indicated by the only corpus source that lists the houses",
+      "ask": "",
+      "area": "CHART",
+      "type": "correctness",
+      "priority": "medium",
+      "labels": [
+        "severity:medium",
+        "priority:medium",
+        "astrology-correctness"
+      ],
+      "created": "2026-10-20T02:24:10Z",
+      "updated": "2026-10-20T02:34:09Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 426,
+      "title": "[CONTENT] Saturn's exit from Pisces is stated as 'early 2027' / 'late Feb 2027' on /learn/sade-sati and the gochar page; the engine's ephemeris says 2027-06-03 — and Jupiter does not stay in Cancer for 12 months",
+      "ask": "",
+      "area": "CONTENT",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "seo",
+        "content",
+        "astrology-correctness"
+      ],
+      "created": "2026-10-19T23:20:46Z",
+      "updated": "2026-10-19T23:20:55Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 423,
+      "title": "verify_hindi_surface and verify_english_surface run nowhere — excluded from pr-gates on a move that was never made",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-19T09:37:16Z",
+      "updated": "2026-10-19T09:37:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 413,
+      "title": "agent-work.yml cannot report a cycle that stops after the engineer: the completeness check is guarded by if: failure(), so a half-finished run concludes success",
+      "ask": "PR #412 is not evidence of this bug.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-17T15:01:50Z",
+      "updated": "2026-10-17T17:25:24Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 407,
+      "title": "gates: verify_hindi_surface returns PASS against an app answering 500 on every URL — the Devanagari floor is applied only to a 200",
+      "ask": "",
+      "area": "GATES",
+      "type": "untyped",
+      "priority": "high",
+      "labels": [
+        "category:technical",
+        "priority:high",
+        "provenance:trusted"
+      ],
+      "created": "2026-10-17T09:17:53Z",
+      "updated": "2026-10-21T15:56:53Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 406,
+      "title": "agent-merge: qa-fail is write-only — nothing removes it, so one failed QA round strands a PR until a human intervenes",
+      "ask": "",
+      "area": "AGENT-MERGE",
+      "type": "untyped",
+      "priority": "high",
+      "labels": [
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-10-17T08:49:53Z",
+      "updated": "2026-10-17T08:49:53Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 403,
+      "title": "agent-merge: a conflicting PR is now skipped silently — report the conflict and auto-merge main when it is clean, but never auto-resolve",
+      "ask": "",
+      "area": "AGENT-MERGE",
+      "type": "untyped",
+      "priority": "high",
+      "labels": [
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-10-17T07:52:18Z",
+      "updated": "2026-10-17T07:52:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 402,
+      "title": "ask: the four life areas users actually ask about — studies, career, relationships, money — are answered from model recall against a one-line hint, with no transit data for timing",
+      "ask": "",
+      "area": "ASK",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "provenance:trusted"
+      ],
+      "created": "2026-10-17T07:36:25Z",
+      "updated": "2026-10-20T01:49:57Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 399,
+      "title": "architecture: knowledge/ ships in the image but no runtime code ever reads it — ground the readings in the corpus by retrieval, replacing recalled prompt text",
+      "ask": "",
+      "area": "ARCHITECTURE",
+      "type": "untyped",
+      "priority": "high",
+      "labels": [
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-10-17T07:17:17Z",
+      "updated": "2026-10-17T07:17:17Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 398,
+      "title": "prompts: natal.txt assigns Mars's remedies to the Sun and Saturn, and attributes a D-9 rule to Parashara that the corpus does not carry",
+      "ask": "Correct the prompt text to the corpus, or mark a claim as the product's own convention rather than",
+      "area": "PROMPTS",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "priority:high",
+        "provenance:trusted"
+      ],
+      "created": "2026-10-17T07:01:08Z",
+      "updated": "2026-10-21T01:43:44Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 392,
+      "title": "[INFRA] detect_stalls cannot name the owner of a partial/* PR, and reports human-owned PRs as pipeline stalls",
+      "ask": "A. Map partial/<n>-* to issue n.",
+      "area": "INFRA",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "category:technical"
+      ],
+      "created": "2026-10-16T13:40:15Z",
+      "updated": "2026-10-20T14:26:44Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 391,
+      "title": "The sweep believes a gh that prints a value and then exits non-zero",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-16T08:46:48Z",
+      "updated": "2026-10-16T08:46:48Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 390,
+      "title": "_walk's non-greedy extraction can lift an unterminated fragment, and two negative tests then pass against code that never ran",
+      "ask": "The second is stronger: it pins that the loop reached its own tail, not merely that it parsed.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-16T08:46:46Z",
+      "updated": "2026-10-16T08:46:46Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 389,
+      "title": "verify_no_relaxation reports 'mutations kept (182 -> 183)' — that is not a count of mutations",
+      "ask": "Or, if the substring proxy is wanted for robustness against an ast failure, rename the line so it does not claim to be a count — e.g.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-16T08:43:47Z",
+      "updated": "2026-10-16T08:43:47Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 388,
+      "title": "Multi-line feedback arrives as one run-on paragraph in the owner's email",
+      "ask": "Add white-space:pre-wrap; to the blockquote's existing inline style in src/astro_ai/routes/feedback.py.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-16T08:43:45Z",
+      "updated": "2026-10-16T08:43:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 387,
+      "title": "notify._escape_md does not escape its own escape character — a visitor can forge Markdown in the owner's Telegram",
+      "ask": "Drop parse_mode for visitor-supplied text.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-16T08:43:42Z",
+      "updated": "2026-10-16T08:43:42Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 386,
+      "title": "verify_no_relaxation's phrase check reads HEAD, so a local run reports a floor it did not check",
+      "ask": "The second is one string and cannot change the gate's verdict; the first is more useful locally but changes what the gate measures, so it needs a mutation row.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-16T05:59:26Z",
+      "updated": "2026-10-16T05:59:26Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 385,
+      "title": "verify_no_relaxation floors catch DELETION of a policy phrase, not SOFTENING BY QUALIFICATION",
+      "ask": "Floor the complete line verbatim, including its terminal .",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-16T05:59:24Z",
+      "updated": "2026-10-16T05:59:24Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 384,
+      "title": "No gate greps tracked files for merge-conflict markers — ARCHITECTURE.md shipped with a live conflict block",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "provenance:trusted"
+      ],
+      "created": "2026-10-16T03:48:40Z",
+      "updated": "2026-10-16T15:20:40Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 382,
+      "title": "[UI] Subscribe modal covers the /matching and /numerology result on a first visit — the htmx swap counts as visit 2",
+      "ask": "",
+      "area": "UI",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "design-proposal",
+        "page:matching"
+      ],
+      "created": "2026-10-15T22:59:04Z",
+      "updated": "2026-10-15T22:59:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 381,
+      "title": "[UI] Install/favicon icons are still the retired purple — #233 moved the site to night/gold and the manifest says night",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-10-15T22:59:03Z",
+      "updated": "2026-10-15T22:59:03Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 380,
+      "title": "[UI] Birth-chart labels render at 6.5–8.3px on mobile (/kundli, /matching) — the planet and degree text is the content",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer",
+        "page:kundli"
+      ],
+      "created": "2026-10-15T22:59:01Z",
+      "updated": "2026-10-15T23:00:36Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 379,
+      "title": "[UI] PWA install banner: the Install button sits under the mobile tab bar — unreachable on Android/Chrome",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-10-15T22:59:00Z",
+      "updated": "2026-10-15T22:59:00Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 367,
+      "title": "Triage an outsider's issue automatically: ask for what is missing, or recommend declining with a reason — never implement, never close",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "medium",
+      "labels": [
+        "enhancement",
+        "category:technical",
+        "priority:medium",
+        "qa-fail"
+      ],
+      "created": "2026-10-15T17:18:46Z",
+      "updated": "2026-10-16T18:35:20Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 366,
+      "title": "[UI] Sub-12px text remains on / (24 nodes), /panchang (9) and 16 other templates — remainder of #307",
+      "ask": "",
+      "area": "UI",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-15T16:26:29Z",
+      "updated": "2026-10-15T22:59:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 365,
+      "title": "A third-party PR gets CI and nothing else — no agent reviews it, and there is no security reviewer at all",
+      "ask": "PR #363 measured that agent-merge's QA verdict step honours only qa-fail/qa-pass, so needs-human-review stops only the #357 sweep and not the labeled/workflow_run legs.",
+      "area": "UNCLASSIFIED",
       "type": "bug",
       "priority": "high",
       "labels": [
@@ -52,26 +781,46 @@
         "category:technical",
         "priority:high"
       ],
+      "created": "2026-10-15T16:25:46Z",
+      "updated": "2026-10-15T16:25:46Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 362,
+      "title": "prompts: ten of eleven system prompts have no contract gate and no eval — a broken prompt change passes every gate",
+      "ask": "",
+      "area": "PROMPTS",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:high",
+        "provenance:trusted"
+      ],
       "created": "2026-10-15T14:32:57Z",
-      "updated": "2026-10-15T14:32:57Z",
+      "updated": "2026-10-17T07:02:07Z",
       "blocked": false,
       "needs_evidence": false
     },
     {
       "number": 361,
       "title": "security: the loop acts on any issue from anyone, and strictness should key on the issue's author rather than on the PR's paths",
-      "ask": "",
+      "ask": "Exit 1 originally told the agent to *\"post one comment saying the loop does not implement issues",
       "area": "SECURITY",
       "type": "bug",
       "priority": "high",
       "labels": [
         "bug",
         "category:technical",
-        "priority:high"
+        "priority:high",
+        "needs-human-review",
+        "qa-pass"
       ],
       "created": "2026-10-15T14:32:55Z",
-      "updated": "2026-10-15T15:11:15Z",
-      "blocked": false,
+      "updated": "2026-10-16T20:41:28Z",
+      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -104,23 +853,6 @@
       ],
       "created": "2026-10-15T13:50:45Z",
       "updated": "2026-10-15T14:11:16Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 355,
-      "title": "llm: a cache miss averages 40s and half of all misses need a second provider — and neither is attributable per route",
-      "ask": "Record miss latency per route (and ideally per provider attempt).",
-      "area": "LLM",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "qa-pass"
-      ],
-      "created": "2026-10-15T04:47:23Z",
-      "updated": "2026-10-15T15:06:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -197,7 +929,7 @@
         "chore"
       ],
       "created": "2026-10-13T23:19:23Z",
-      "updated": "2026-10-13T23:19:23Z",
+      "updated": "2026-10-20T22:18:52Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -213,7 +945,7 @@
         "priority:high"
       ],
       "created": "2026-10-13T17:49:46Z",
-      "updated": "2026-10-13T18:09:41Z",
+      "updated": "2026-10-21T18:14:26Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -260,7 +992,7 @@
         "design-proposal"
       ],
       "created": "2026-10-09T00:18:11Z",
-      "updated": "2026-10-09T03:21:16Z",
+      "updated": "2026-10-15T22:59:18Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -276,7 +1008,7 @@
         "design-proposal"
       ],
       "created": "2026-10-09T00:18:09Z",
-      "updated": "2026-10-09T00:18:09Z",
+      "updated": "2026-10-15T22:59:16Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -292,23 +1024,7 @@
         "design-proposal"
       ],
       "created": "2026-10-09T00:18:08Z",
-      "updated": "2026-10-09T00:18:08Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 307,
-      "title": "[UI] Sub-12px text is back: 10px tab-bar labels on every page, 234 sub-12px nodes on /learn, chip counts at 4.21:1",
-      "ask": "",
-      "area": "UI",
-      "type": "ui",
-      "priority": "unset",
-      "labels": [
-        "ui",
-        "skill:ui-fixer"
-      ],
-      "created": "2026-10-09T00:18:06Z",
-      "updated": "2026-10-09T00:18:06Z",
+      "updated": "2026-10-15T22:59:19Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -347,10 +1063,12 @@
       "area": "INFRA",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "needs-human-review"
+      ],
       "created": "2026-10-08T05:53:58Z",
-      "updated": "2026-10-09T22:26:51Z",
-      "blocked": false,
+      "updated": "2026-10-16T20:42:01Z",
+      "blocked": true,
       "needs_evidence": false
     },
     {
@@ -376,21 +1094,6 @@
       "labels": [],
       "created": "2026-09-19T13:44:15Z",
       "updated": "2026-09-19T17:06:34Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 266,
-      "title": "[BUG] /kundli returns \"high demand\" for every chart — Groq 413, the natal request is bigger than the whole TPM budget",
-      "ask": "",
-      "area": "BUG",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-09-05T06:54:53Z",
-      "updated": "2026-10-13T23:19:41Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -466,22 +1169,6 @@
       ],
       "created": "2026-09-02T12:18:38Z",
       "updated": "2026-09-02T12:18:38Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 253,
-      "title": "The service worker has been serving a stale stylesheet to returning visitors since 2026-08-16",
-      "ask": "Cache-bust the URL rather than bumping the constant.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high"
-      ],
-      "created": "2026-09-02T12:18:19Z",
-      "updated": "2026-09-04T11:17:01Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -672,7 +1359,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-09-01T18:01:50Z",
-      "updated": "2026-09-01T18:01:50Z",
+      "updated": "2026-10-20T22:18:53Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -801,9 +1488,12 @@
       "area": "NUMEROLOGY",
       "type": "untyped",
       "priority": "unset",
-      "labels": [],
+      "labels": [
+        "qa-pass",
+        "provenance:trusted"
+      ],
       "created": "2026-08-10T12:55:44Z",
-      "updated": "2026-08-10T12:55:44Z",
+      "updated": "2026-10-16T01:31:56Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -837,21 +1527,6 @@
       ],
       "created": "2026-08-08T18:59:03Z",
       "updated": "2026-08-08T18:59:03Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 191,
-      "title": "[TASK] Extract the ~22,000 readable lines already in data/ — no OCR needed",
-      "ask": "Extract vedic_astro_textbook.pdf fully.",
-      "area": "TASK",
-      "type": "enhancement",
-      "priority": "unset",
-      "labels": [
-        "enhancement"
-      ],
-      "created": "2026-08-08T12:47:46Z",
-      "updated": "2026-08-08T12:55:02Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -911,7 +1586,7 @@
         "astrology-correctness"
       ],
       "created": "2026-08-08T08:55:15Z",
-      "updated": "2026-08-16T17:48:15Z",
+      "updated": "2026-10-17T07:02:19Z",
       "blocked": false,
       "needs_evidence": false
     },
