@@ -30,7 +30,10 @@ three days old.
 WHAT THIS CHANGES, STATED RATHER THAN IMPLIED
 ---------------------------------------------
 `shipped` here means **a pull request merged during the IST day**, counted
-once. The snapshot counts an agent-work *cycle* whose PR merged, and
+once, and SPLIT BY WHO SHIPPED IT -- `shipped_by_loop` for the unattended
+agent loop, `shipped_by_session` for a session at a keyboard. The total alone
+cannot distinguish "the team shipped three" from "the loop shipped nothing and
+a human shipped three", which is the question this page exists to answer. The snapshot counts an agent-work *cycle* whose PR merged, and
 `collect_loop_measurements.py`'s own header says to "count distinct `pr`
 values" because two runs can share one PR -- so the PR, not the run, was
 always the unit. A PR a human merged now counts too, which the cycle-shaped
@@ -311,6 +314,20 @@ def fetch_today(repo: str, day_start: datetime, *,
             "title": p.get("title") or "",
             "merged_at": merged,
             "url": p.get("html_url") or "",
+            # WHO SHIPPED IT: the unattended loop, or a session at a keyboard.
+            #
+            # Read from the PR's AUTHOR TYPE, not its branch name. `issue/*` is
+            # the obvious-looking discriminator and it is wrong: PR #471 is an
+            # `issue/*` branch opened by a human session, and #445, #443 and
+            # the rest of that week are `fix/*` and `feat/*` from the same
+            # hands. The branch says what the work was about; only the author
+            # says who did it.
+            #
+            # `user.type == "Bot"` rather than a login allow-list, because the
+            # App's login has already changed once in this repo's history and a
+            # stale allow-list would silently reclassify every loop PR as human
+            # work -- which reads as the loop having stopped shipping.
+            "by": "loop" if (p.get("user") or {}).get("type") == "Bot" else "session",
         }
 
     # Distinct by run id, for the reason stated on `shipped` above and for one
@@ -365,5 +382,12 @@ def fetch_today(repo: str, day_start: datetime, *,
         "shipped_truncated": pr_more,
         "failed_truncated": runs_more,
         "shipped": sorted(shipped.values(), key=lambda s: s["merged_at"], reverse=True),
+        # The split, so "3 shipped" can be read as what it is. The autonomous
+        # loop shipping nothing while a session ships three is a very different
+        # day from the loop shipping three, and the single total cannot tell
+        # them apart -- which is the whole question this repo's dashboards
+        # exist to answer about the agent team.
+        "shipped_by_loop": sum(1 for v in shipped.values() if v["by"] == "loop"),
+        "shipped_by_session": sum(1 for v in shipped.values() if v["by"] == "session"),
         "failed": sorted(failed.values(), key=lambda f: f["started"] or "", reverse=True),
     }

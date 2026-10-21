@@ -159,6 +159,9 @@ async def _render_outlook(
             cache_key, route=active_page, lang=lang, ttl_days=ttl,
             call_fn=lambda: generate_outlook_reading(
                 saved_details,
+                # The SAME value as the cache route above, so the measured
+                # tokens land on the row this request is counted in (#473).
+                route=active_page,
                 natal=natal,
                 transit=transit,
                 flags=flags,

@@ -152,6 +152,19 @@ _last_model: ContextVar[str] = ContextVar("_last_model", default="")
 # (None when the response carries no usage) so a fallback provider that omits
 # usage cannot inherit the figure from the one that failed before it.
 _last_usage: ContextVar[int | None] = ContextVar("_last_usage", default=None)
+
+# completion_tokens for the most recent call, or None when the provider did not
+# report one (#473). The INPUT half has been available since #396 as
+# `_last_prefix[0]` and was used only for the prefix-cache ratios; the output
+# half was never read at all.
+#
+# Until #473 the /admin/ops token columns came from
+# `cache.estimate_tokens(text) * 2` -- input DEFINED as twice an estimate of the
+# output, which is why every route on that page reported a perfect 2:1 ratio. It
+# was a constant wearing the costume of a measurement, and it understated the
+# rashifal job by ~5x because a cache-layer "call" there is twelve provider
+# calls. Both halves are in the response and were being discarded.
+_last_completion: ContextVar[int | None] = ContextVar("_last_completion", default=None)
 # (prompt_tokens, cached_tokens_or_None) for the most recent call, or None when
 # even the prompt size could not be read (#396). Kept apart from _last_usage on
 # purpose: that one is a total other modules already read. chat() resets this to
@@ -678,6 +691,11 @@ def _call_one(provider: ProviderConfig, messages: list[dict]) -> str:
 
     _last_usage.set(getattr(getattr(response, "usage", None), "total_tokens", None))
     _last_prefix.set(_prefix_usage(getattr(response, "usage", None)))
+    # `int(...)` guarded: a provider may answer a string or a bool here and a
+    # bool is an int, so `isinstance(n, int)` alone would store `True` as 1.
+    _comp = getattr(getattr(response, "usage", None), "completion_tokens", None)
+    _last_completion.set(
+        int(_comp) if isinstance(_comp, (int, float)) and not isinstance(_comp, bool) else None)
 
     choice = response.choices[0]
     content = choice.message.content or ""
@@ -919,6 +937,12 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                         prompt_tokens=prefix[0] if prefix else None,
                         cached_tokens=prefix[1] if prefix else None,
                         reported_impossible=bool(prefix[2]) if prefix else False,
+                        # #473: the MEASURED pair, recorded here because this is
+                        # the only layer that knows it. The cache layer above
+                        # counts documents, not provider calls -- one rashifal
+                        # "call" is twelve of these -- so tokens summed there can
+                        # never be right however good the arithmetic.
+                        completion_tokens=_last_completion.get(None),
                     )
                 except Exception:  # noqa: BLE001 — stats never break the reading
                     log.debug("llm_stats.record failed", exc_info=True)

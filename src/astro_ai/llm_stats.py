@@ -237,7 +237,8 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
            fallback_reason: str = "", failed_provider: str = "",
            prompt_tokens: int | None = None,
            cached_tokens: int | None = None,
-           reported_impossible: bool = False) -> None:
+           reported_impossible: bool = False,
+           completion_tokens: int | None = None) -> None:
     """Increment counters for today's LLM call. Best-effort; never raises.
 
     Called from providers.chat() after a successful response. `route` labels
@@ -253,6 +254,29 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
     `prompt_tokens` / `cached_tokens` (#396) are what the provider reported for
     its own prefix cache, or None when it reported nothing. They are counted in
     the same mutator -- no extra storage write -- and only when BOTH are given.
+
+    `prompt_tokens` / `completion_tokens` are ALSO the measured size of this
+    call, and #473 is where they started being kept as such in
+    `measured_by_route`. Until then the only token figures the ops page had came
+    from `cache.estimate_tokens(text) * 2` at the cache layer: input DEFINED as
+    twice an estimate of the output, a fixed 2:1 ratio for every route forever.
+
+    Two reasons this is the right layer and the cache layer is not:
+
+      * it is the only one that sees a usage block at all, and
+      * a cache-layer "call" is a DOCUMENT. `generate_rashifal` fans one out to
+        twelve provider calls, so tokens attributed per cached request there
+        understate the job by 12x before any estimate is involved.
+
+    `route` here is the PROVIDER route (`rashifal_single`, `dasha`), which is
+    not always the cached feature (`rashifal`, `dasha_deep_dive`). ops_data owns
+    that mapping; this module stores what it was told, unaggregated.
+
+    A SILENCE IS NOT A ZERO -- the same rule the prefix-cache block below keeps,
+    for the same reason. A call whose provider reported no usage adds to
+    `calls` and to nothing else, so `measured` is always the honest denominator
+    and `input_tokens / measured` is a real mean rather than one diluted by
+    calls nobody could size.
     """
     today = date.today()
     stat_key = f"{provider}|{model}|{route or 'unknown'}"
@@ -269,6 +293,18 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
             reasons = data.setdefault("fallback_reasons", {})
             rkey = f"{failed_provider or 'unknown'}|{fallback_reason or 'unknown'}"
             reasons[rkey] = reasons.get(rkey, 0) + 1
+        # #473. Keyed by ROUTE alone, not provider|model|route: the question
+        # it answers is "what does one <feature> request cost", and splitting it
+        # per model would make every row a fraction of an answer on a chain that
+        # falls back between models mid-feature.
+        mb = data.setdefault("measured_by_route", {}).setdefault(
+            route_key, {"calls": 0, "measured": 0, "input_tokens": 0, "output_tokens": 0})
+        mb["calls"] = mb.get("calls", 0) + 1
+        if prompt_tokens is not None and completion_tokens is not None:
+            mb["measured"] = mb.get("measured", 0) + 1
+            mb["input_tokens"] = mb.get("input_tokens", 0) + int(prompt_tokens)
+            mb["output_tokens"] = mb.get("output_tokens", 0) + int(completion_tokens)
+
         pc = data.setdefault("prefix_cache", {}).setdefault(stat_key, dict(_PREFIX_ZERO))
         pc["calls"] = pc.get("calls", 0) + 1
         if prompt_tokens is not None:
@@ -486,6 +522,7 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
     peak_tok = 0
     peak_date: str | None = None
     by_route_acc: dict[str, dict[str, int]] = {}
+    measured_acc: dict[str, dict[str, int]] = {}
     for i in range(days):
         d = today - timedelta(days=i)
         blob = _read_day(d)
@@ -507,6 +544,18 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
         day_tok = c.get("input_tokens", 0) + c.get("output_tokens", 0)
         if day_tok > peak_tok:
             peak_tok, peak_date = day_tok, d.isoformat()
+        # #473: the MEASURED sums, keyed by the PROVIDER route. Accumulated
+        # beside call_by_route rather than merged into it, because the two count
+        # different things and merging them is how the old figures came to look
+        # authoritative: call_by_route counts cached DOCUMENTS and carries the
+        # `estimate_tokens(text) * 2` numbers, this one counts PROVIDER CALLS
+        # and carries what the provider said. ops_data joins them and says which
+        # it used.
+        for route, r in (blob.get("measured_by_route") or {}).items():
+            acc = measured_acc.setdefault(route, {"calls": 0, "measured": 0,
+                                                  "input_tokens": 0, "output_tokens": 0})
+            for k in acc:
+                acc[k] += int(r.get(k) or 0)
         for route, r in blob.get("call_by_route", {}).items():
             acc = by_route_acc.setdefault(route, {"calls": 0, "hits": 0,
                                                     "input_tokens": 0, "output_tokens": 0,
@@ -544,6 +593,15 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
         "peak_day": peak_date,
         "avg_miss_latency_ms": int(miss_latency_sum / misses) if misses else 0,
         "by_route": by_route,
+        # #473. PROVIDER-route keyed and deliberately NOT folded into by_route:
+        # one `rashifal` document is twelve `rashifal_single` provider calls, so
+        # the two lists have different row counts and different units. Empty for
+        # every day recorded before #473, which is what lets ops_data fall back
+        # to the old estimate and SAY that it did rather than render a zero.
+        "measured_by_route": sorted(
+            [{"route": k, **v} for k, v in measured_acc.items()],
+            key=lambda r: -r["input_tokens"],
+        ),
         "cache_entries": 0,   # SQLite-only concept; filled by admin_usage from cache.py
     }
 

@@ -382,6 +382,30 @@ def _format_seeker_message(
     )
 
 
+#: The two cached features `generate_outlook_reading` serves. Declared, and
+#: enforced below, because its `route` is passed by the caller rather than
+#: written as a literal -- so the static scanners that keep route names honest
+#: (tests/test_prefix_cache_usage.py) cannot see it any other way, and a typo
+#: at the call site would otherwise open a silent third route that collects
+#: tokens nothing displays.
+OUTLOOK_ROUTES = ("monthly", "yearly")
+
+
+def _outlook_route(route: str) -> str:
+    """`route` if it is one of OUTLOOK_ROUTES, else the first of them.
+
+    Falls back rather than raising: a reading is worth more than a tidy label,
+    and this is on the request path. The fallback is logged because an unknown
+    route silently becomes "monthly" in the token figures, which is the kind of
+    quiet misattribution #473 exists to stop.
+    """
+    if route in OUTLOOK_ROUTES:
+        return route
+    _log.warning("outlook called with route=%r, not one of %s; "
+                 "recording it as %s", route, OUTLOOK_ROUTES, OUTLOOK_ROUTES[0])
+    return OUTLOOK_ROUTES[0]
+
+
 def generate_outlook_reading(
     details: BirthDetails,
     natal: Chart,
@@ -392,12 +416,22 @@ def generate_outlook_reading(
     prompt_path: Path,
     model: str | None = None,
     lang: str = "en",
+    route: str = "outlook",
 ) -> str:
     """Multi-week or multi-month outlook (used by /monthly and /yearly).
 
     Shape mirrors generate_daily_reading but accepts no Panchang (irrelevant
     for windows >1 day) and adds the slow-mover gochar impacts list, which
     is the primary signal at these timescales.
+
+    `route` is the FEATURE this call is being made for -- "monthly" or
+    "yearly" -- and the caller passes its `active_page`, the same value it
+    already uses as the cache route. It defaulted to the literal "outlook" for
+    both, which was harmless while nothing summed tokens per route and became a
+    defect in #473: one provider route serving two cached features cannot be
+    attributed to either, so /monthly and /yearly would have shared a row that
+    matched neither of them. Naming the feature at the call site is the fix;
+    a lookup table could not express a one-to-two split at all.
     """
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
@@ -405,7 +439,7 @@ def generate_outlook_reading(
             "role": "user",
             "content": _format_outlook_message(details, natal, transit, flags, gochar_impacts, events),
         },
-    ], route="outlook")
+    ], route=_outlook_route(route))
     return content.strip()
 
 

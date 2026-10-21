@@ -554,8 +554,16 @@ def test_effective_is_disclosed_as_a_share_of_measurable_not_of_traffic(
 # either in the prefix-cache copy is the same defect as naming a prompt overlay:
 # a row that can never appear. Deriving this set from `route="..."` across src/
 # yields a SUPERSET and lets exactly that mistake through.
+#: `outlook` left this set in #473. `generate_outlook_reading` serves BOTH
+#: /monthly and /yearly and used to label every call "outlook", so one provider
+#: route stood for two cached features and its measured tokens could be
+#: attributed to neither. It now takes the caller's `active_page`, so the names
+#: here are "monthly" and "yearly" -- which is also why the default argument
+#: `route: str = "outlook"` is not a `route="..."` literal and no longer
+#: appears to this scan.
 CHAT_ROUTES = frozenset({
-    "natal", "ask", "matching", "rashifal_single", "today", "dasha", "outlook"})
+    "natal", "ask", "matching", "rashifal_single", "today", "dasha",
+    "monthly", "yearly"})
 
 
 def test_every_route_name_in_the_footnote_is_a_real_chat_route():
@@ -579,6 +587,12 @@ def test_every_route_name_in_the_footnote_is_a_real_chat_route():
     src = _pl.Path(__file__).resolve().parents[1] / "src" / "astro_ai"
     code = "\n".join(q.read_text() for q in src.rglob("*.py"))
     declared = set(re.findall(r'route="([A-Za-z_0-9]+)"', code))
+    # #473: `generate_outlook_reading` takes its route from the caller, so
+    # "monthly" and "yearly" are never `route="..."` literals. Imported rather
+    # than re-listed here -- a second copy of a route list is how the first
+    # version of this test went stale.
+    from astro_ai.llm import OUTLOOK_ROUTES
+    declared |= set(OUTLOOK_ROUTES)
     assert CHAT_ROUTES <= declared, (
         f"CHAT_ROUTES names {CHAT_ROUTES - declared}, which no longer appears in "
         "src/ -- update the set rather than deleting the check")
@@ -607,7 +621,13 @@ def test_every_route_name_in_the_footnote_is_a_real_chat_route():
     # And unwrapped: any non-chat route name anywhere in the block, whole-word and
     # case-insensitive. `\b` is what stops `rashifal` matching `rashifal_single`
     # (underscore is a word character, so the boundary does not fire mid-token).
-    ghosts = (declared - CHAT_ROUTES) | {"ask_matching", "ask_numerology", "panchang", "monthly"}
+    # "monthly" left this list in #473 and is now a CHAT route: it used to be a
+    # web-cache route only, because every /monthly and /yearly call reached
+    # providers.chat labelled "outlook". Threading the feature name through is
+    # what made its tokens attributable, and it is what moves it across this
+    # line. "yearly" was never listed, so it needs no removal -- which is worth
+    # noticing: the pair was already asymmetric here.
+    ghosts = (declared - CHAT_ROUTES) | {"ask_matching", "ask_numerology", "panchang"}
     for ghost in sorted(ghosts):
         assert not re.search(rf"\b{re.escape(ghost)}\b", block, re.IGNORECASE), (
             f"{ghost!r} is a prompt overlay, a prompt file or a web-cache route, so it "

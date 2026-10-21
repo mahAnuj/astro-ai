@@ -851,10 +851,14 @@ MUTATIONS = [
      'BUDGET_FAIL_REASONS = ("413", "429_tpm", "429_tpd")',
      "test_every_reason_providers_can_emit_is_classified"),
 
+    # The anchor gained its `and denom` in #473: a route with no sized call
+    # must render a dash, not a confident 0.0. The mutation is unchanged in
+    # spirit -- drop the output half and the figure stops being what both of
+    # Groq's limits count.
     ("#355: tokens per request goes back to counting input only",
      "src/astro_ai/ops_data.py",
-     "per_total = ((in_tok + out_tok) / m) if m else None",
-     "per_total = (in_tok / m) if m else None",
+     "per_total = ((in_tok + out_tok) / m) if (m and denom) else None",
+     "per_total = (in_tok / m) if (m and denom) else None",
      "test_per_request_total_is_input_plus_output_over_misses"),
 
     ("#355: the daily figure becomes the last day instead of the worst",

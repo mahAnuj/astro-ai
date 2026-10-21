@@ -103,6 +103,23 @@ GH_TOKEN = os.environ.get("OPS_GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or N
 #: clock time rendered is IST. Fixed offset: India has no DST.
 IST = timezone(timedelta(hours=5, minutes=30))
 
+#: PROVIDER route -> the cached FEATURE it serves, for the rows where the two
+#: names differ (#473). Everything else is its own feature and needs no entry.
+#:
+#: The split is real, not cosmetic. `llm.generate_rashifal` fans ONE cached
+#: `rashifal` document out to TWELVE `rashifal_single` provider calls, so a
+#: token figure attributed per cached request understates the job 12x before
+#: any estimate is involved -- which is half of why the old panel read 7,692
+#: input tokens for a job that measures ~38,500.
+#:
+#: tests/test_token_budget_measured.py scans both layers out of the source and
+#: fails on any provider route that is neither a feature name nor listed here,
+#: so a new route cannot arrive unmapped and silently lose its tokens.
+PROVIDER_ROUTE_FEATURE = {
+    "rashifal_single": "rashifal",
+    "dasha": "dasha_deep_dive",
+}
+
 #: The two `agent-work` crons, as UTC hour/minute, from .github/workflows.
 #: Used only to say when the next cycle is due.
 CRONS_UTC = ((23, 0), (11, 0))
@@ -387,8 +404,14 @@ def _loop_view(doc: dict | None, today_ist: str,
         # "Never raises", OUTSIDE any try: a KeyError here is not a blank tile,
         # it is a 500 on the whole control room. Blanking one tile is the
         # failure mode this module already chose everywhere else.
+        # The fallback rows come from measurements/loop.json, which holds
+        # agent-work CYCLES and nothing else -- so every one of them is loop
+        # work by definition and is tagged as such. Without this the split
+        # silently sums to less than the total on exactly the days the live
+        # path is unavailable, which is when a reader is least able to tell.
         "today_shipped": (live_today.get("shipped", []) if live_today is not None
-                          else [r for r in today if r["outcome"] == "shipped"]),
+                          else [dict(r, by=r.get("by", "loop"))
+                                for r in today if r["outcome"] == "shipped"]),
         "today_failed": (live_today.get("failed", []) if live_today is not None
                          else [r for r in today if r["outcome"] in ("failed", "unknown")]),
         # A FLOOR, NOT A COUNT, when this is True. `fetch_today` spent MAX_PAGES
@@ -828,6 +851,142 @@ def _token_trend(rng: dict, days: int) -> dict:
     }
 
 
+def _route_rows(usage: dict) -> list[dict]:
+    """One row per cached feature, measured where the provider reported (#473).
+
+    Module-level and taking `usage` alone so it can be driven from a test
+    with a pinned summary. It was inline in `_app_view`, which reaches GCS
+    and the GitHub API, so the arithmetic that produced the wrong numbers
+    for months was the one part of this page nothing could exercise.
+    """
+    # Provider-route sums folded onto the feature each one serves, so the
+    # row the reader sees ("rashifal") carries the tokens its twelve
+    # `rashifal_single` calls actually spent.
+    measured: dict[str, dict[str, int]] = {}
+    for mrow in usage.get("measured_by_route") or []:
+        key = PROVIDER_ROUTE_FEATURE.get(mrow.get("route") or "", mrow.get("route") or "")
+        acc = measured.setdefault(key, {"calls": 0, "measured": 0,
+                                        "input_tokens": 0, "output_tokens": 0})
+        for k in acc:
+            acc[k] += int(mrow.get(k) or 0)
+
+    routes = []
+    for r in usage.get("by_route") or []:
+        c, h = int(r.get("calls") or 0), int(r.get("hits") or 0)
+        m = max(c - h, 0)
+        # TOTAL, not input. Groq's 8,000 TPM and 200,000 TPD both count
+        # input + output, so an input-only figure reads as headroom the
+        # budget does not have. ARCHITECTURE.md records a measured
+        # ~7,800-token natal call against that 8,000 bucket; whether it
+        # already included completion tokens was never written down, which
+        # is why this now shows both and why #350's Limit/Used/Requested
+        # parse is worth doing.
+        #
+        # Input stays broken out beside it because input is the half that
+        # grows SILENTLY -- #212 measured prompt input growing 18.5%/call,
+        # and #266 was a 413, a pure input-size failure. Total is the
+        # ceiling; input is the regression signal. Neither replaces the
+        # other.
+        name = r.get("route") or "unknown"
+
+        # #473. MEASURED FIRST, estimated only as a labelled fallback.
+        #
+        # What `r` carries is `cache.estimate_tokens(text) * 2` -- input
+        # DEFINED as twice an estimate of the output, which is why every
+        # route on this page reported a flawless 2:1 and why the owner read
+        # "rashifal: 7,692 in" against a job that measures ~38,500. It is a
+        # constant in the costume of a measurement.
+        #
+        # `measured` is what the provider's own usage block said, summed
+        # over PROVIDER calls. The denominator changes with it: the
+        # estimated figure divides by cache MISSES (one document), the
+        # measured one by the calls that were actually sized. For rashifal
+        # those differ by 12x, and dividing measured sums by misses would
+        # rebuild the original error with better inputs.
+        mr = measured.get(name) or {}
+        m_calls = int(mr.get("measured") or 0)
+        if m_calls:
+            in_tok = int(mr.get("input_tokens") or 0)
+            out_tok = int(mr.get("output_tokens") or 0)
+            denom, source = m_calls, "measured"
+        else:
+            in_tok = int(r.get("input_tokens") or 0)
+            out_tok = int(r.get("output_tokens") or 0)
+            # Days recorded since #473 carry input_tokens=0 from the cache
+            # layer, because input is not knowable there and is no longer
+            # guessed. Nothing to divide, so every per-request figure stays
+            # None and the template prints a dash. A route that genuinely spent
+            # tokens and reported none is a GAP IN THE RECORD; printing "0
+            # tokens per request" for it would be a claim, and this page has
+            # already shipped one of those for months.
+            denom = m if (in_tok or out_tok) else 0
+            source = "estimated" if denom else "unknown"
+        # TWO DENOMINATORS, because this table answers two questions that
+        # differ by the fan-out -- 12x on rashifal, 1x everywhere else.
+        #
+        #   per CALL      what one provider request puts on the wire. This is
+        #                 the figure to weigh against an 8,000 TPM bucket,
+        #                 because the bucket is charged per call.
+        #   per REQUEST   what one cached document costs altogether. This is
+        #                 the daily-budget figure, and the one `saved by cache`
+        #                 must use: a cache HIT avoids a whole document, all
+        #                 twelve of its calls, not one.
+        #
+        # Mixing them is not academic. The first version of this change divided
+        # the measured sums by CALLS and then multiplied by DOCUMENT hits, which
+        # reported rashifal's cache saving as 3,210 tokens instead of ~38,520 --
+        # a wrong number built out of two right ones.
+        # `denom` is the KNOWN-ness gate for both: when it is 0 nothing was
+        # sized, and `in_tok / m` would hand back a confident 0.0 for a route
+        # that plainly spent something.
+        per_call = ((in_tok + out_tok) / denom) if denom else None
+        per = (in_tok / m) if (m and denom) else None
+        per_out = (out_tok / m) if (m and denom) else None
+        per_total = ((in_tok + out_tok) / m) if (m and denom) else None
+        routes.append({
+            "route": name,
+            "calls": c, "hits": h, "misses": m,
+            "hit_rate": int(r.get("hit_rate_pct") or 0),
+            # WHICH NUMBER THIS ROW IS. A page that cannot say whether a
+            # figure was measured or invented teaches people to trust the
+            # invented one -- that is the whole lesson of #473, and leaving
+            # it off would repeat it with better arithmetic.
+            "token_source": source,
+            # Provider calls behind one cached request: 12 for rashifal, 1
+            # for everything else today. None when nothing was measured, so
+            # the template can print a dash rather than a confident 0.
+            "llm_calls": int(mr.get("calls") or 0) or None,
+            "fan_out": round(int(mr.get("calls") or 0) / m, 1) if (mr and m) else None,
+            "input_tokens": in_tok,
+            "output_tokens": out_tok,
+            "per_request": round(per) if per is not None else None,
+            "per_request_out": round(per_out) if per_out is not None else None,
+            "per_request_total": round(per_total) if per_total is not None else None,
+            # The per-request total as a share of ONE MODEL'S per-minute
+            # bucket. This is the number that makes the column actionable:
+            # a route at 90% cannot run two at once without a 429, however
+            # healthy its hit rate looks. ARCHITECTURE.md already records
+            # "a full ~7,800-token natal call against an 8,000 TPM
+            # per-model bucket" -- 97% of it -- and nothing on this page
+            # said so.
+            # PER CALL, not per request. The bucket is charged per provider
+            # call, so a 12-call rashifal document at 5,133 tokens each is 64%
+            # of a bucket twelve times over -- not 770% once, which is a
+            # percentage no single request could mean and which would turn the
+            # one actionable number on this page into noise.
+            "per_call_total": round(per_call) if per_call is not None else None,
+            "tpm_pct": round(per_call / TPM_PER_MODEL * 100) if per_call else None,
+            # None, not 0: no recorded latency means UNKNOWN, and a zero
+            # would read as fast. Covers only days recorded since #355.
+            "avg_miss_ms": r.get("avg_miss_latency_ms"),
+            # What the cache avoided: hits x the mean cost of a miss on
+            # this same route. An estimate, and labelled as one on the page.
+            "saved": round(h * per) if per is not None else 0,
+        })
+    routes.sort(key=lambda r: -(r["input_tokens"] or 0))
+    return routes
+
+
 def _app_view(days: int = 7) -> dict:
     """App health, read from the app's OWN stores, in-process.
 
@@ -899,53 +1058,7 @@ def _app_view(days: int = 7) -> dict:
         # hit spends none -- so tokens per request divides by misses, not calls.
         # Dividing by calls would quietly understate every prompt as the cache
         # warms, which is the opposite of what a budget reader needs.
-        routes = []
-        for r in usage.get("by_route") or []:
-            c, h = int(r.get("calls") or 0), int(r.get("hits") or 0)
-            m = max(c - h, 0)
-            # TOTAL, not input. Groq's 8,000 TPM and 200,000 TPD both count
-            # input + output, so an input-only figure reads as headroom the
-            # budget does not have. ARCHITECTURE.md records a measured
-            # ~7,800-token natal call against that 8,000 bucket; whether it
-            # already included completion tokens was never written down, which
-            # is why this now shows both and why #350's Limit/Used/Requested
-            # parse is worth doing.
-            #
-            # Input stays broken out beside it because input is the half that
-            # grows SILENTLY -- #212 measured prompt input growing 18.5%/call,
-            # and #266 was a 413, a pure input-size failure. Total is the
-            # ceiling; input is the regression signal. Neither replaces the
-            # other.
-            in_tok = int(r.get("input_tokens") or 0)
-            out_tok = int(r.get("output_tokens") or 0)
-            per = (in_tok / m) if m else None
-            per_out = (out_tok / m) if m else None
-            per_total = ((in_tok + out_tok) / m) if m else None
-            routes.append({
-                "route": r.get("route") or "unknown",
-                "calls": c, "hits": h, "misses": m,
-                "hit_rate": int(r.get("hit_rate_pct") or 0),
-                "input_tokens": in_tok,
-                "output_tokens": out_tok,
-                "per_request": round(per) if per is not None else None,
-                "per_request_out": round(per_out) if per_out is not None else None,
-                "per_request_total": round(per_total) if per_total is not None else None,
-                # The per-request total as a share of ONE MODEL'S per-minute
-                # bucket. This is the number that makes the column actionable:
-                # a route at 90% cannot run two at once without a 429, however
-                # healthy its hit rate looks. ARCHITECTURE.md already records
-                # "a full ~7,800-token natal call against an 8,000 TPM
-                # per-model bucket" -- 97% of it -- and nothing on this page
-                # said so.
-                "tpm_pct": round(per_total / TPM_PER_MODEL * 100) if per_total else None,
-                # None, not 0: no recorded latency means UNKNOWN, and a zero
-                # would read as fast. Covers only days recorded since #355.
-                "avg_miss_ms": r.get("avg_miss_latency_ms"),
-                # What the cache avoided: hits x the mean cost of a miss on
-                # this same route. An estimate, and labelled as one on the page.
-                "saved": round(h * per) if per is not None else 0,
-            })
-        routes.sort(key=lambda r: -(r["input_tokens"] or 0))
+        routes = _route_rows(usage)
 
         # A 413 is a size failure and a 429 is a rate failure; they need
         # opposite fixes. providers.py separates the exception types for
