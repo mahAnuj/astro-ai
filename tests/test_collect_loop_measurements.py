@@ -426,8 +426,14 @@ def test_commit_job_grants_exactly_the_scopes_the_collector_needs_and_orders_its
     # This is an exact pin, not a floor: a scope appearing here that no step
     # needs is as much a defect as a missing one, so widening it has to be a
     # deliberate edit to this line rather than something a PR can drift into.
-    assert job["permissions"] == {"contents": "write", "actions": "read",
-                                  "pull-requests": "read", "issues": "read"}
+    #
+    # #393 widened three of them, and each buys one thing the job could not do
+    # before: `pull-requests: write` opens the PR and enables auto-merge, and
+    # `actions: write` dispatches pr-gates and verify-build -- without which a
+    # PR opened by GITHUB_TOKEN carries no checks at all (#322) and can never
+    # merge. The read scopes they replace were strictly weaker, not additional.
+    assert job["permissions"] == {"contents": "write", "actions": "write",
+                                  "pull-requests": "write", "issues": "read"}
     names = [s.get("name") for s in job["steps"]]
     collect_i, commit_i = names.index("Collect loop measurements"), names.index("Commit the measurement")
     assert collect_i < commit_i
@@ -438,7 +444,11 @@ def test_commit_job_grants_exactly_the_scopes_the_collector_needs_and_orders_its
     run_text = job["steps"][commit_i]["run"]
     # the report-less early exit would skip the collector's files on the worst days
     assert 'echo "no report to persist"\n            exit 0' not in run_text
-    assert run_text.index("git pull --rebase origin main") < run_text.index("git push origin HEAD:main")
+    # The push itself moved to scripts/publish_measurements.sh (#393) and is
+    # pinned by tests/test_publish_measurements.py, across all six loops. What
+    # stays here is the ORDERING this file is about: the collector has to run
+    # before the step that publishes its output.
+    assert "scripts/publish_measurements.sh" in run_text
 
 
 COLLECTORS_ONLY_CRON = "0 2 * * *"

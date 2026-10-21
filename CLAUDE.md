@@ -12,11 +12,34 @@ managed with `uv`.
 **One exception, and it is invisible from the tree.** The trigger
 `rmgpgab-bhagya-asia-south1-mahAnuj-astro-ai--mapzk` carries
 `ignoredFiles: measurements/**`, added 2026-10-07. A push touching **only**
-`measurements/` builds nothing — that is what lets the nightly analyst loop
-commit its report to `main` without redeploying production every night. A push
+`measurements/` builds nothing — that is what lets the measurement loops land
+their reports on `main` without redeploying production every night. A push
 mixing `measurements/` with anything else still deploys, which is correct.
 
-Two consequences worth knowing before you move that directory:
+**Those loops land through a pull request, not a direct push — changed
+2026-10-21.** `main` acquired branch protection on 2026-10-15 and the six
+workflows that ended in `git push origin HEAD:main` all broke at once with
+`GH006: Changes must be made through a pull request`. `agent-measure` runs eight
+times a day and failed ~40 times in six days while /admin/ops went on presenting
+2026-10-14's numbers as today's; the other four weekly loops were still latent.
+All six now call **`scripts/publish_measurements.sh`**, which branches, opens a
+PR, dispatches `pr-gates` and `verify-build` (a PR opened with `GITHUB_TOKEN`
+emits no `pull_request` event and would otherwise carry no checks — #322), and
+enables auto-merge. Three things follow:
+
+- **`measurements/**` is the only tree the script will publish**, and it refuses
+  anything else at exit 2 — including `measurements/../src`. That boundary is
+  load-bearing: `pr-gates`' scope step reads a measurements-only diff as
+  `code=false` and skips the behaviour suite and all 29 verification gates, so a
+  path slipped past this check would reach `main` ungated with auto-merge
+  already on.
+- **`allow_auto_merge` is on for the repository** (set 2026-10-21). Turn it off
+  and every measurement PR stays open forever with no error anywhere.
+- **Expect ~8 short-lived `measurements/<run-id>-<attempt>` branches a day.**
+  Not `feat/**` (a second `pr-gates` run) and not `issue/*` (`agent-merge`
+  sweeps those every 30 min for a `qa-pass` label these will never carry).
+
+Two more consequences worth knowing before you move that directory:
 
 - **Rename or relocate `measurements/` and the filter silently stops matching.**
   Nothing in the repository will say so; the next measurement commit will quietly
