@@ -169,7 +169,15 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     permissions:
+      # contents       the branch push
+      # pull-requests  `gh pr create` and `gh pr merge --auto`
+      # actions        `gh workflow run` -- #322: a PR opened with GITHUB_TOKEN
+      #                emits no `pull_request` event, so pr-gates and
+      #                verify-build have to be dispatched or the required
+      #                checks never report and the PR never merges
       contents: write
+      pull-requests: write
+      actions: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -179,22 +187,25 @@ jobs:
         continue-on-error: true
 
       - name: Commit the queue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           [ -s /tmp/out/report.md ] || { echo "nothing to persist"; exit 0; }
           mkdir -p measurements/prioritise
           stamp=$(date -u +%Y-%m-%d)
           cp /tmp/out/report.md "measurements/prioritise/$stamp.md"
           cp /tmp/out/report.md measurements/prioritise/latest.md
+          # THROUGH A PULL REQUEST, not `git push origin HEAD:main` (#393).
+          # `main` requires one, so the old direct push was rejected with
+          # GH006. This loop is weekly, so its breakage was still latent when
+          # the fix landed -- `agent-measure` is the one that surfaced it, by
+          # failing ~40 times in six days.
+          # BACKLOG.md itself is NOT written here: it sits at the repo root,
+          # outside measurements/**, so committing it would redeploy production
+          # for a triage document -- and publish_measurements.sh refuses any
+          # path outside measurements/ for exactly that reason. Promote from
+          # measurements/prioritise/latest.md by hand when it is worth it.
 
-          git config user.name  "shubhagya-agent"
-          git config user.email "agent@users.noreply.github.com"
-          git add measurements/prioritise/
-          git diff --cached --quiet && { echo "unchanged"; exit 0; }
-          git commit -m "backlog scan $stamp
-
-          measurements/** is on the Cloud Build trigger's ignoredFiles, so this
-          does not deploy. BACKLOG.md itself is NOT written here: it sits at the
-          repo root, outside that filter, so committing it would redeploy
-          production for a triage document. Promote from
-          measurements/prioritise/latest.md by hand when it is worth it."
-          git push origin HEAD:main
+          bash scripts/publish_measurements.sh \
+            --path measurements/prioritise --title "backlog scan"

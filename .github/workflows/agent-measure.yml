@@ -227,15 +227,20 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     permissions:
-      contents: write        # the push
+      contents: write        # the branch push
+      # #393: the report now lands on `main` through a PULL REQUEST, because
+      # `main` requires one. `pull-requests: write` opens it and enables
+      # auto-merge; `actions: write` dispatches pr-gates and verify-build,
+      # which is what makes the two required checks report at all -- a PR
+      # opened with GITHUB_TOKEN emits no `pull_request` event (#322).
+      pull-requests: write
+      actions: write
       # The next step reads other workflows' runs and their job logs
       # (`actions/...`) and looks pull requests up (`pulls/...`) with `gh api`
       # INSIDE a script, which scripts/verify_workflows.py cannot see. The
       # endpoint -> scope table is in that script's header; a test pins this
       # block against it. An omitted scope is `none`, so leaving either out
       # reads as a 403 and the step would write nothing, quietly.
-      actions: read
-      pull-requests: read
       issues: read           # `gh issue list` in the backlog collector below
     steps:
       - uses: actions/checkout@v4
@@ -291,6 +296,9 @@ jobs:
             || echo "::warning::agent performance not refreshed; measurements/agents.json is the previous one"
 
       - name: Commit the measurement
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
           mkdir -p measurements
           stamp=$(date -u +%Y-%m-%d)
@@ -304,19 +312,21 @@ jobs:
             echo "no report to persist"
           fi
 
-          git config user.name  "shubhagya-agent"
-          git config user.email "agent@users.noreply.github.com"
-          git add measurements/
-          if git diff --cached --quiet; then
-            echo "measurement unchanged since last run"
-            exit 0
-          fi
-          git commit -m "measurement $stamp
-
-          Written by the analyst loop. measurements/** is on the Cloud Build
-          trigger's ignoredFiles, so this does not deploy."
-          # The analyst job takes minutes to hours; main moves meanwhile, and
-          # a plain push of a checkout from before that is rejected as
-          # non-fast-forward. Rebase onto what is there now.
-          git pull --rebase origin main
-          git push origin HEAD:main
+          # THROUGH A PULL REQUEST (#393). This step ran
+          # `git pull --rebase origin main && git push origin HEAD:main` until
+          # 2026-10-21 and had been rejected on EVERY scheduled run since
+          # 2026-10-15 -- `GH006: Protected branch update failed ... Changes
+          # must be made through a pull request ... 2 of 2 required status
+          # checks are expected`. ~40 runs, all red, while /admin/ops went on
+          # presenting 2026-10-14's numbers as today's. The loop whose job is
+          # to report what is broken was the thing that was broken, and a file
+          # that cannot be written does not announce itself -- it just stops
+          # moving (#345 found the same circularity from the other end).
+          #
+          # The rebase is gone with the push. It existed because the analyst
+          # job takes minutes to hours while `main` moves underneath, and a
+          # plain push of a stale checkout is a non-fast-forward. A pull
+          # request has no such problem: GitHub merges it against `main` as it
+          # is at merge time, not as it was at checkout.
+          bash scripts/publish_measurements.sh \
+            --path measurements --title "measurement"
