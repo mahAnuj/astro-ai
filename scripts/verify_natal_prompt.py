@@ -69,17 +69,20 @@ the 413 taught us about.
       sat on the pages a reader opens directly: the /learn article bodies,
       the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
       languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
-      is shown. This gate scans those surfaces for the nine families #398
+      is shown. This gate scans those surfaces for the ten families #398
       retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
       Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
-      practice, "per <source> remedial tradition", Surya Namaskar (slice 4),
-      and a rule lent Parashara's name, "(per Parashara's grid)" (slice 4)
-      (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
+      practice or as ANY planet's universal/classical/safe one (slice 5),
+      "per <source> remedial tradition", Surya Namaskar (slice 4),
+      a rule lent Parashara's name, "(per Parashara's grid)" (slice 4), and
+      three shapes by which a product-added remedy was called classical or
+      ranked above ritual (slice 5, #468) (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
       families still open on #398 ("black sesame", weekday fasting):
       forbidding them here would only make main red. A bare "per BPHS" is
       also not forbidden, for the same reason (family I's comment has the
       count). It must also see at least one unit from each
-      surface, so a gate pointed at an empty tree fails instead of passing.
+      surface (festival_registry.py included since slice 5), so a gate pointed
+      at an empty tree fails instead of passing.
 
 Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris — it reads one
 file, so it runs anywhere and belongs in the `verify_*` sweep.
@@ -769,7 +772,7 @@ def gate_6_no_retired_claims_in_summaries(summaries=None) -> bool:
 SRC = REPO_ROOT / "src" / "astro_ai"
 
 # The reader-facing counterpart of FORBIDDEN/SUMMARY_FORBIDDEN, but only for
-# the nine families slices 3 and 4 of #398 fixed. Patterns are wider than the
+# the ten families slices 3-5 of #398 fixed. Patterns are wider than the
 # literals that were found (QA measured 17 of 38 spelling variants slipping
 # past the first Gate 5 patterns): hyphen/space-agnostic, singular/plural,
 # Devanagari where i18n.py carries a Hindi copy.
@@ -779,6 +782,14 @@ _SATURN = r"(?:Shani|Saturn|Saturday|Sade[- ]Sati|शनि)"
 # the Hindi surface has no native reader, so both are the likeliest way the
 # retired claim comes back. QA round 4 measured each escaping family F.
 _HYMN = r"(?:Sahasranama?|सहस्रनाम)"
+# "Sri Lalita Sahasranama" is remedies.md 8's own practice (Sri Yantra section).
+_HYMN_NOT_LALITA = rf"(?<!Lalita\s){_HYMN}"
+# Words that CERTIFY a practice rather than mention it. "safe for anyone to
+# recite" is deliberately not here: it is the register slice 3 kept for the
+# Saturn pages, and the tree carries it as plain description.
+_HYMN_CERT = (r"(?:universal(?:ly)?|classical(?:ly)?|primary|powerful"
+              r"|safe\s+(?:universal|foundation|practice|mantra|fallback)"
+              r"|most\s+(?:classical\w*|cited|reliable|direct))")
 # A window must not run across an arrow or a ';' - "Mars -> Hanuman; ...;
 # Saturn -> Vishnu" is the correct table and must stay legal. Tags are blanked
 # before matching, so the window is wide enough to cross "</strong>".
@@ -823,16 +834,22 @@ READER_FORBIDDEN = (
      "E: unsourced; Rao's Rahu deed is a donation to a research organisation or a "
      "pilgrimage, and Saturn's is physical labour and manual labourers"),
 
-    # F. The claim THIS SLICE introduced while retiring family C: it replaced
+    # F. The claim slice 3 introduced while retiring family C: it replaced
     # Hanuman with Vishnu (correct, Table 7.1) and then named a HYMN as the
     # practice and ranked it -- "the most universal Saturn practice" -- in nine
     # reader-facing places. `sahasranama` returns one hit in `knowledge/`, and it
     # is LALITA Sahasranama in the Sri Yantra section. Scoped to one sentence, so
     # "For Saturn delays: ... . For general 10th house strengthening: Vishnu
     # Sahasranama" stays legal: there the hymn is the 10th house's, not Saturn's.
-    (rf"{_SATURN}[^.;\n]{{0,140}}{_HYMN}|{_HYMN}[^.;\n]{{0,140}}{_SATURN}",
-     "F: Saturn's sourced remedy is the DEITY (Vishnu, Brahma - Table 7.1); no book "
-     "we hold names a hymn as Saturn's practice, let alone ranks one"),
+    # Slice 5 (#465) widened it past Saturn: the same hymn was "the classical
+    # universal Mercury remedy" and "the universal safe mantra" for Jupiter. The
+    # deity link there IS sourced (Table 7.1), so a hymn beside a planet stays
+    # legal; what is forbidden is the hymn beside a CERTIFYING word. The Lalita
+    # Sahasranama is exempt because remedies.md 8 does name it, under Sri Sukta.
+    (rf"{_SATURN}[^.;\n]{{0,140}}{_HYMN}|{_HYMN}[^.;\n]{{0,140}}{_SATURN}"
+     rf"|{_HYMN_NOT_LALITA}[^.\n]{{0,140}}{_HYMN_CERT}|{_HYMN_CERT}[^.\n]{{0,140}}{_HYMN_NOT_LALITA}",
+     "F: the deity is sourced (Vishnu for Mercury, Jupiter and Saturn - Table 7.1); no book "
+     "we hold names a hymn as ANY planet's practice, let alone calls one universal/classical/safe"),
 
     # G. A reader-facing remedy line borrowing authority from a source name. NOT a
     # blanket ban -- source names are deliberate and pervasive elsewhere (Cheiro,
@@ -874,6 +891,23 @@ READER_FORBIDDEN = (
      r"|(?:पाराशर|पराशर)[\u0900-\u097f]*\s*(?:जी\s*)?(?:के\s+|की\s+|का\s+)?(?:अनुसार|मतानुसार|ग्रिड|तालिका)",
      "I: a rule must not borrow Parashara's name on a reader-facing page: the Graha Maitri "
      "grid is Muhurta Chintamani's (matching.md vv.27-28) and BPHS is not in data/"),
+
+    # J. A product-added remedy presented as classical, or ranked. #468: the Saturn
+    # good-deeds list was headed "Classical Saturn-domain good deeds" while its first
+    # bullet was "serve the elderly", which remedies.md 11.2 records as ours (Rao's
+    # Saturn deed is labour and manual labourers, remedies.md 5); shani-saturn said
+    # elder-respect works "more than to most rituals"; ketu-remedies called serving
+    # renunciates "Ketu's most classically-cited karma-clearing practice" when Rao's
+    # Ketu deed is meditation. A forbidden LITERAL cannot express "a product addition
+    # called classical" (that needs the claim compared against the sourcing table),
+    # so this pins only the three shapes found. The wording that stays legal is
+    # Rao's own: "Saturn's classical good deed is labour itself", "the classical good
+    # deeds for Rahu" -- the heading shape is "Classical <Planet>-domain good deeds".
+    (r"\bclassical\s+[A-Za-z]+-domain\s+good\s+deeds?"
+     r"|\bmore\s+than\s+(?:to\s+)?most\s+(?:rituals?|remed(?:y|ies)|pujas?)"
+     r"|\bmost[\s-]+classically[\s-]+cited[^.\n]{0,40}\b(?:practice|remedy|deed|mantra)\b",
+     "J: remedies.md 11.2 lists 'serve the elderly' and 'support renunciates' as product "
+     "additions, so no heading, superlative or comparison may present them as classical"),
 )
 
 # Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.
@@ -892,7 +926,8 @@ _HONEST_LABEL = (r"popular|folk", r"\bMars\b")
 
 # What a surface is: (path-relative-to-src, kind). Every group must contribute
 # at least one unit, or the gate is looking at nothing.
-_REQUIRED_SURFACES = ("templates/learn/", "i18n.py", "numerology.py", "learn_registry.py")
+_REQUIRED_SURFACES = ("templates/learn/", "i18n.py", "numerology.py", "learn_registry.py",
+                      "festival_registry.py")
 
 
 def _blank_tags(html: str) -> str:
@@ -927,7 +962,7 @@ def reader_surface_units(root: Path | None = None):
     units: list[tuple[str, str]] = []
     for path in sorted((root / "templates").glob("**/*.html")):
         units.append((f"{path.relative_to(root)}:1", _blank_tags(path.read_text(encoding="utf-8"))))
-    for name in ("i18n.py", "numerology.py", "learn_registry.py"):
+    for name in ("i18n.py", "numerology.py", "learn_registry.py", "festival_registry.py"):
         path = root / name
         if path.exists():
             for lineno, text in _py_string_units(path):
@@ -962,7 +997,7 @@ def gate_7_no_retired_claims_on_reader_surfaces(units=None) -> bool:
     re-broken surface without editing a template or the registry.
     """
     print("Gate 7 - no retired claims on reader-facing surfaces "
-          "(templates, learn_registry, i18n, numerology)")
+          "(templates, learn_registry, festival_registry, i18n, numerology)")
     units = list(reader_surface_units() if units is None else units)
     ok = True
     missing = [s for s in _REQUIRED_SURFACES if not any(w.startswith(s) for w, _ in units)]

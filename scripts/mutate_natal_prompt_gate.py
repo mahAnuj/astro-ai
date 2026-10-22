@@ -113,7 +113,10 @@ GATE7_SAMPLES = {
     # deity (Table 7.1) and that part is right, but a HYMN was then named as the
     # practice and RANKED, in nine reader-facing places. One sentence apart is
     # the boundary: the hymn may be named for the 10th house or for Mercury and
-    # Jupiter, whose deity Vishnu genuinely is.
+    # Jupiter, whose deity Vishnu genuinely is -- but NOT called universal,
+    # classical, primary, powerful or safe (slice 5, #465: the first five
+    # entries after the Saturn ones are the sentences actually found on the
+    # Mercury and Jupiter pages, which the Saturn-only pattern let through).
     "F": ("the Vishnu Sahasranama is the most universal Saturn practice",
           "Saturn's classical deity (with Brahma) - the Vishnu Sahasranama is a good daily practice",
           "the Vishnu Sahasranama is the universal practice for Shani",
@@ -124,7 +127,17 @@ GATE7_SAMPLES = {
           # the trailing -a is the commoner Indian spelling, and the Hindi
           # surface is the one with no native reader to catch a reinstatement.
           "Daily Sahasranam for Shani",
-          "शनि के लिए विष्णु सहस्रनाम का पाठ"),
+          "शनि के लिए विष्णु सहस्रनाम का पाठ",
+          "Vishnu Sahasranama is the classical universal Mercury remedy",
+          "The universal safe mantra: Vishnu Sahasranama",
+          "reciting the Vishnu Sahasranama is a powerful Jupiter remedy",
+          "Vishnu is Mercury's ruling deity; his Sahasranama is a safe universal Mercury practice",
+          "Weekly Vishnu Sahasranama recitation - Vishnu is Mercury's ruling deity; safe universal Mercury practice",
+          "the Vishnu Sahasranama is one of the most powerful and universally accessible Mercury remedies",
+          "Vishnu is the primary deity and the Sahasranama its primary practice",
+          "Sahasranam is the classical Jupiter remedy",
+          "the most reliable Mercury practice is the Vishnu Sahasranama",
+          "The universal safe practice: Vishnu SAHASRANAMA"),
     # G. A reader-facing remedy line borrowing a source name -- and the wrong
     # one. The same construction survived on a second page after the first was
     # fixed, because nothing checked for it.
@@ -165,6 +178,22 @@ GATE7_SAMPLES = {
           "Parashara-grid", "as per Sage Parashara", "according to Maharishi Parashara",
           "as per the classical Parashara",
           "पराशर के अनुसार पाँच अंक", "पराशर जी के अनुसार", "पाराशर ग्रिड के अनुसार"),
+    # J. A product-added remedy called classical, or ranked above ritual (#468).
+    # The first three are the sentences as found; the rest move the planet, the
+    # article, the hyphen and the noun, which is how earlier patterns were walked
+    # around.
+    "J": ("Classical Saturn-domain good deeds",
+          "Saturn responds to elder-respect more than to most rituals",
+          "Serving these groups is Ketu's most classically-cited karma-clearing practice.",
+          "Classical Venus-domain good deeds", "Classical Mercury-domain good deeds",
+          "Classical Jupiter-domain good deeds", "classical Mars-domain good deed",
+          "CLASSICAL  Moon-domain  good  deeds",
+          "Serving the elderly works more than most rituals",
+          "Saturn rewards patience more than to most remedies",
+          "it works more than most pujas",
+          "Feeding crows is Saturn's most classically cited practice",
+          "the most classically-cited deed for Mars",
+          "his most classically cited mantra"),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -186,8 +215,23 @@ GATE7_LEGAL = (
     # sentence boundary. Both of these are live in the tree and correct.
     "For Saturn delays: Shani chalisa, Saturday oil-lamp, service to elderly/poor. "
     "For general 10th house strengthening: Vishnu Sahasranama, worship of your ishta devata.",
-    "Because Vishnu is one of Mercury's ruling deities, the Vishnu Sahasranama is a "
-    "safe universal Mercury remedy.",
+    "Because Vishnu is one of Mercury's ruling deities, many readers also recite the "
+    "Vishnu Sahasranama on Wednesdays.",
+    # Slice 5 INVERTED the legal sample that stood here. It read "the Vishnu
+    # Sahasranama is a safe universal Mercury remedy", under a comment calling it
+    # correct, and so pinned the very overclaim #465 removed as legal: it is now
+    # sample F above. A fixture that outlives its refutation is the defect class
+    # this repo keeps paying for.
+    "Many keep the Vishnu Sahasranama as that practice; the choice of hymn is yours.",
+    # The Lalita Sahasranama is remedies.md 8's own, so it may sit beside a
+    # certifying word; and Rao's own labour deed keeps its "classical".
+    "Sri Sukta or the Lalita Sahasranama is the classical daily practice before the Sri Yantra.",
+    "Recite the Lalita Sahasranama or Durga Chalisa - Goddess worship is Venus's devotional path.",
+    "The classical good deeds for Rahu are a research donation or a pilgrimage.",
+    "Good deeds in Saturn's domain",
+    "Serving these groups is a widely-kept Ketu karma-clearing practice.",
+    "Your health matters more than any ritual.",
+    "This guide walks the six most classically-cited Ketu remedies with realistic expectations.",
     "For deeper practice, add the Guru Chalisa or Vishnu Sahasranama (Vishnu being "
     "Jupiter's ruling deity).",
     # E must not fire on an ancestral rite, which is not Rahu's family at all --
@@ -298,12 +342,14 @@ def gate7_mutations() -> tuple[int, int]:
     # no files, and a tree whose files exist but hold no text.
     import tempfile
 
-    stubs = {"no units": [], "templates only": [u for u in real if u[0].startswith("templates/")]}
+    stubs = {"no units": [], "templates only": [u for u in real if u[0].startswith("templates/")],
+             # slice 5: festival_registry.py is a required surface, so dropping it must fail
+             "no festival_registry": [u for u in real if not u[0].startswith("festival_registry.py")]}
     with tempfile.TemporaryDirectory() as empty, tempfile.TemporaryDirectory() as hollow:
         stubs["empty tree"] = gate.reader_surface_units(Path(empty))
         (Path(hollow) / "templates" / "learn").mkdir(parents=True)
         (Path(hollow) / "templates" / "learn" / "x.html").write_text("")
-        for name in ("i18n.py", "numerology.py", "learn_registry.py"):
+        for name in ("i18n.py", "numerology.py", "learn_registry.py", "festival_registry.py"):
             (Path(hollow) / name).write_text("")
         stubs["hollow tree"] = gate.reader_surface_units(Path(hollow))
     for label, units in stubs.items():
