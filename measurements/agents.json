@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-22T09:51:14Z",
+  "generated_at": "2026-10-22T15:47:42Z",
   "repo": "mahAnuj/astro-ai",
   "window_days": 30,
   "loops": [
@@ -10,7 +10,7 @@
         "00 20 * * 4"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-22T07:10:59Z",
+      "schedule_since": "2026-10-22T09:54:30Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 3,
@@ -26,10 +26,10 @@
         "00 20 * * 1"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-22T07:10:59Z",
+      "schedule_since": "2026-10-22T09:54:30Z",
       "slots_due": 0,
-      "runs_scheduled": 2,
-      "runs_total": 4,
+      "runs_scheduled": 0,
+      "runs_total": 0,
       "last_run": "2026-10-19T23:16:49Z",
       "last_conclusion": "failure",
       "last_run_health": "red",
@@ -42,7 +42,7 @@
         "00 19 * * 2"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-22T07:10:59Z",
+      "schedule_since": "2026-10-22T09:54:30Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 4,
@@ -58,9 +58,9 @@
       "cadence_error": "only a fixed minute and hour are supported: '0 5,8,11,14,17,20 * * *'",
       "schedule_since": null,
       "slots_due": null,
-      "runs_scheduled": 47,
-      "runs_total": 54,
-      "last_run": "2026-10-22T09:51:02Z",
+      "runs_scheduled": 48,
+      "runs_total": 55,
+      "last_run": "2026-10-22T15:47:33Z",
       "last_conclusion": "in_progress",
       "last_run_health": "running",
       "verdict": "on-demand"
@@ -72,9 +72,9 @@
       "cadence_error": "only a fixed minute and hour are supported: '*/30 * * * *'",
       "schedule_since": null,
       "slots_due": null,
-      "runs_scheduled": 12,
+      "runs_scheduled": 13,
       "runs_total": 100,
-      "last_run": "2026-10-22T07:07:24Z",
+      "last_run": "2026-10-22T11:27:46Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -86,7 +86,7 @@
         "00 17 * * 0"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-22T07:10:59Z",
+      "schedule_since": "2026-10-22T09:54:30Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 5,
@@ -102,7 +102,7 @@
         "00 19 * * 3"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-22T07:10:59Z",
+      "schedule_since": "2026-10-22T09:54:30Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 2,
@@ -118,9 +118,9 @@
       "cadence_error": "only a fixed minute and hour are supported: '0 9,15 * * *'",
       "schedule_since": null,
       "slots_due": null,
-      "runs_scheduled": 20,
-      "runs_total": 42,
-      "last_run": "2026-10-22T05:33:13Z",
+      "runs_scheduled": 21,
+      "runs_total": 43,
+      "last_run": "2026-10-22T14:23:06Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -132,7 +132,7 @@
         "00 18 * * 5"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-22T07:10:59Z",
+      "schedule_since": "2026-10-22T09:54:30Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 2,
@@ -149,14 +149,14 @@
         "00 11 * * *"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-22T07:10:59Z",
-      "slots_due": 0,
+      "schedule_since": "2026-10-22T09:54:30Z",
+      "slots_due": 1,
       "runs_scheduled": 23,
       "runs_total": 57,
       "last_run": "2026-10-22T04:45:46Z",
       "last_conclusion": "success",
       "last_run_health": "green",
-      "verdict": "not-due-yet"
+      "verdict": "ok"
     },
     {
       "workflow": "close-on-evidence.yml",
@@ -179,7 +179,7 @@
         "30 03 * * 2"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-22T07:10:59Z",
+      "schedule_since": "2026-10-22T09:54:30Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 3,
@@ -196,8 +196,8 @@
       "schedule_since": null,
       "slots_due": null,
       "runs_scheduled": 0,
-      "runs_total": 100,
-      "last_run": "2026-10-22T07:07:14Z",
+      "runs_total": 0,
+      "last_run": "2026-10-22T09:51:57Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -211,7 +211,7 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-10-22T07:11:03Z",
+      "last_run": "2026-10-22T09:54:34Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -223,7 +223,7 @@
         "17 06 * * 1"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-22T07:10:59Z",
+      "schedule_since": "2026-10-22T09:54:30Z",
       "slots_due": 0,
       "runs_scheduled": 18,
       "runs_total": 94,
@@ -254,7 +254,7 @@
       "schedule_since": null,
       "slots_due": null,
       "runs_scheduled": 0,
-      "runs_total": 1,
+      "runs_total": 0,
       "last_run": "2026-10-20T07:08:43Z",
       "last_conclusion": "failure",
       "last_run_health": "red",
@@ -282,7 +282,7 @@
       "schedule_since": null,
       "slots_due": null,
       "runs_scheduled": 0,
-      "runs_total": 1,
+      "runs_total": 0,
       "last_run": "2026-10-20T07:10:45Z",
       "last_conclusion": "failure",
       "last_run_health": "red",
@@ -310,7 +310,7 @@
       "schedule_since": null,
       "slots_due": null,
       "runs_scheduled": 0,
-      "runs_total": 1,
+      "runs_total": 0,
       "last_run": "2026-10-20T07:10:47Z",
       "last_conclusion": "failure",
       "last_run_health": "red",
@@ -361,13 +361,13 @@
   },
   "agents": {
     "window_days": 30,
-    "comments_total": 420,
-    "comments_by_agents": 241,
+    "comments_total": 421,
+    "comments_by_agents": 242,
     "comments_by_automation": 57,
     "by_agent": {
       "agent-cycle": 56,
       "qa": 46,
-      "steward": 39,
+      "steward": 40,
       "analyst": 31,
       "chief": 14,
       "infra-lead": 4,
@@ -375,7 +375,7 @@
       "engineer": 2
     },
     "unmatched_count": 47,
-    "unmatched_pct": 20,
+    "unmatched_pct": 19,
     "unmatched_sample": [
       {
         "issue": "272",
