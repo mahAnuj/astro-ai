@@ -600,7 +600,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What's the best way to use Sun Mahadasha well?",
-                "a": "Sun rewards effort in visible, authoritative work. Take on leadership roles, build your professional reputation, mend the relationship with your father if it needs work, pay attention to heart and eye health, honour any government or civic duties. Avoid ego-driven overreach — Sun punishes arrogance more than any planet. Practice the classical Sun Namaskar in the morning, offer water to the rising Sun on Sundays, and give the period the discipline it demands.",
+                "a": "Sun rewards effort in visible, authoritative work. Take on leadership roles, build your professional reputation, mend the relationship with your father if it needs work, pay attention to heart and eye health, honour any government or civic duties. Avoid ego-driven overreach — Sun punishes arrogance more than any planet. Visit a temple or give to one (the Sun's classical good deed), offer water to the rising Sun on Sundays, and give the period the discipline it demands.",
             },
         ),
         llm_summary=(
@@ -1416,7 +1416,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "How to strengthen a debilitated Sun?",
-                "a": "Safe universal classical practices: offer arghya (water offering) to the rising Sun at dawn, especially on Sundays; recite the Aditya Hridayam (12 or 108 times on Sundays); practice daily Surya Namaskar; slow long-term chanting of the Sun beej mantra Om Hraam Hreem Hraum Sah Suryaya Namah; donate wheat, jaggery, red cloth, or copper vessels on Sundays; and consciously honour the father and elders in your life (Sun is the karaka of the father — repairing that relationship is often the deepest remedy). Never wear a ruby or Sun-related gemstone without a proper chart consultation — for a functional malefic Sun, ruby can amplify difficulty rather than help. Pattern-alignment remedies (matching career to placement) matter more than physical remedies.",
+                "a": "Safe universal classical practices: offer arghya (water offering) to the rising Sun at dawn, especially on Sundays; recite the Aditya Hridayam (12 or 108 times on Sundays); visit a temple, donate to one, or help with its running (the Sun's classical good deed); slow long-term chanting of the Sun beej mantra Om Hraam Hreem Hraum Sah Suryaya Namah; donate wheat, jaggery, red cloth, or copper vessels on Sundays; and consciously honour the father and elders in your life (Sun is the karaka of the father — repairing that relationship is often the deepest remedy). Never wear a ruby or Sun-related gemstone without a proper chart consultation — for a functional malefic Sun, ruby can amplify difficulty rather than help. Pattern-alignment remedies (matching career to placement) matter more than physical remedies.",
             },
             {
                 "q": "Does Sun in Libra mean no government job?",
@@ -2831,13 +2831,13 @@ ARTICLES: tuple[Article, ...] = (
     ),
     Article(
         slug="surya-sun-remedies", title="Sun Remedies: Strengthening Surya for Confidence, Authority, and Vitality",
-        summary="The Sun (Surya) is Vedic astrology's karaka of self, authority, father, vitality, and confidence. Weak Sun manifests as low self-worth, difficulty asserting oneself, father-relationship issues, and physical vitality drops. Classical Sun remedies are safe and immediate — daily Surya Namaskar, Aditya Hridaya Stotra, copper vessel water offering at sunrise, Sunday charity of wheat and jaggery, Sun Beej mantra, Sunday partial fast, and serving father/authority.",
-        seo_title="Sun (Surya) Remedies: Surya Namaskar + Aditya Hridaya",
-        seo_description="Classical Sun remedies — Surya Namaskar daily, Aditya Hridaya Stotra, sunrise water offering (arghya), Sunday charity, mantra. Safe, immediate, no expensive rituals.",
+        summary="The Sun (Surya) is Vedic astrology's karaka of self, authority, father, vitality, and confidence. Weak Sun manifests as low self-worth, difficulty asserting oneself, father-relationship issues, and physical vitality drops. Classical Sun remedies are safe and immediate — temple visits and temple giving, Aditya Hridaya Stotra, copper vessel water offering at sunrise, Sunday charity of wheat and jaggery, Sun Beej mantra, Sunday partial fast, and serving father/authority.",
+        seo_title="Sun (Surya) Remedies: Temple Giving + Aditya Hridaya",
+        seo_description="Classical Sun remedies — temple giving, Aditya Hridaya Stotra, sunrise water offering (arghya), Sunday charity, mantra. Safe, immediate, no expensive rituals.",
         category="Grahas", hero_image="/static/learn/surya-sun-remedies/hero.svg", read_time="8 min", last_updated="2026-07",
         related=("surya-sun-in-vedic-astrology", "sun-mahadasha", "debilitated-sun-career", "sun-in-10th-house-career"),
         faqs=(
-            {"q": "How many rounds of Surya Namaskar should I do?", "a": "Traditional: 12 rounds daily at sunrise facing east — one for each of the 12 Aditya names. Beginners: start with 3 rounds and build to 12 over weeks. Sundays are the peak day; missing weekdays is fine but never miss Sunday."},
+            {"q": "What is the classical good deed for the Sun?", "a": "Visit a temple, donate money to a temple, or help with the running of one. Shiva and Rama are the Sun's deities, so a Shiva or Rama temple is a natural choice. It is done as a devotional act for the Sun's sake, not as a bargain for an outcome."},
             {"q": "Can I wear Ruby (Manik) without astrologer consultation?", "a": "No. Ruby is safer than hessonite or blue sapphire but STILL requires chart analysis. Never wear ruby when Sun is a functional malefic for your Ascendant (Aquarius, Pisces), combust, or in a dusthana. The practices above are safe universal remedies that don't need chart analysis."},
             {"q": "What is the Aditya Hridaya Stotra?", "a": "A Sanskrit hymn from the Ramayana (Yuddha Kanda) where Agastya Rishi taught it to Rama on the battlefield before slaying Ravana. Sun's most powerful shastric hymn. Recite once daily at sunrise (~8 minutes), three times on Sundays."},
             {"q": "How do Sun remedies help with father-relationship?", "a": "Sun is father-karaka. Classical practice: if father is living, serve consciously (touch feet, seek blessings, listen); if deceased, perform annual shraddha. Sun rewards those who honor the father archetype — this often produces healing in the actual relationship over months."},
