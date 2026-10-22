@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-10-22T20:25:35Z",
+  "generated_at": "2026-10-22T23:56:24Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 112,
+  "open": 113,
   "with_ask": 53,
   "by_area": {
     "UNCLASSIFIED": 43,
@@ -20,6 +20,7 @@
     "DESIGN": 2,
     "CHORE": 2,
     "BUG": 2,
+    "MEASURE": 1,
     "CHART": 1,
     "CONTENT": 1,
     "GATES": 1,
@@ -33,7 +34,7 @@
   },
   "by_type": {
     "bug": 36,
-    "untyped": 29,
+    "untyped": 30,
     "enhancement": 23,
     "correctness": 8,
     "design": 7,
@@ -41,12 +42,25 @@
     "ui": 3
   },
   "by_priority": {
-    "unset": 73,
+    "unset": 74,
     "medium": 21,
     "high": 18
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 490,
+      "title": "[MEASURE] No per-page x per-day export, so no page-level ship can be scored before its 28-day window ends",
+      "ask": "",
+      "area": "MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-22T23:55:18Z",
+      "updated": "2026-10-22T23:55:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 485,
       "title": "detect_stalls: partial/* PRs are reported as mergeable-but-open forever, though agent-merge ignores them by design",
