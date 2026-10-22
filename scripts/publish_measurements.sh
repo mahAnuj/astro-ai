@@ -180,3 +180,62 @@ run gh pr merge --repo "$GH_REPO" --auto --squash --delete-branch "$branch" \
   || fail "could not enable auto-merge on $branch; the PR is open and needs a hand"
 
 echo "published ${PATHS[*]} on $branch; auto-merge is set and will land it when both checks are green"
+
+# ---------------------------------------------------------------------------
+# TIDY UP THE PREVIOUS RUNS' BRANCHES.
+#
+# GitHub did not delete the head branch after either of the first two
+# auto-merges -- PR #477 and #478, both left `measurements/<run>-1` behind --
+# although `delete_branch_on_merge` is true on the repo, the `deletion` rule in
+# `main-history-integrity` is conditioned on `refs/heads/main` alone, and
+# `--delete-branch` is passed above. A plain `git push origin --delete` then
+# removed both with no complaint, so nothing was blocking it. `--auto` enables
+# auto-merge through `enablePullRequestAutoMerge`, which carries no
+# delete-branch option, so the flag above is most likely being ignored.
+#
+# This run CANNOT delete its own branch however it is written: auto-merge lands
+# the PR minutes after this script has exited, and waiting for it is the very
+# thing the comment at the top refuses to do. So it collects the PREVIOUS runs'
+# instead. That is self-healing in the way that matters -- a publish that dies
+# before its merge leaves a branch for the next publish to collect, and a
+# cleanup that fails is retried every publish rather than never.
+#
+# ONLY a ref whose PR actually merged. An open PR's branch would take its own
+# pull request down with it, and the branch this run just created has a PR that
+# has not merged yet BY CONSTRUCTION -- `$branch` is skipped explicitly rather
+# than relying on the MERGED test to cover it, because the two guards fail
+# differently and this one must not depend on timing.
+#
+# `--state all` is not optional: `gh pr list --head` defaults to `--state open`
+# and would report NO pr for every merged branch here, which reads as "not
+# merged" and deletes nothing. That default is the same one that produced the
+# phantom PRs in #458 and #470.
+#
+# Cleanup never fails the publish. The measurement is already pushed, the PR is
+# already open and auto-merge is already set by the time this runs; a leaked
+# branch is untidy, and failing the step over one would turn a tidy-up into the
+# red loop this script exists to end.
+# ---------------------------------------------------------------------------
+gh api "repos/$GH_REPO/git/matching-refs/heads/measurements/" \
+     --jq '.[].ref | sub("^refs/heads/"; "")' 2>/dev/null \
+| while read -r ref; do
+    [ -n "$ref" ] || continue
+    # NOT `[ "$ref" = "$branch" ] && continue`. Under `set -e` that AND-list
+    # returns non-zero whenever the test is FALSE -- which is the ordinary
+    # case, every ref that is not this run's -- and killed the loop on its
+    # first iteration, silently, with the sweep still reading as wired up.
+    if [ "$ref" = "$branch" ]; then continue; fi
+    state=$(gh pr list --repo "$GH_REPO" --state all --head "$ref" \
+              --json state --jq '.[0].state' 2>/dev/null) || continue
+    [ "$state" = "MERGED" ] || continue
+    if run gh api -X DELETE "repos/$GH_REPO/git/refs/heads/$ref"; then
+      echo "::notice::deleted $ref, whose PR merged (GitHub left it behind)"
+    else
+      echo "::warning::could not delete merged branch $ref; harmless, retried next publish"
+    fi
+  done || true
+# ^ `|| true` is load-bearing, not defensive noise. `set -o pipefail` is on, so
+# a `gh api` that cannot reach GitHub makes the whole pipeline non-zero, and
+# `set -e` would then fail the step -- turning a cosmetic tidy-up into a red
+# publish, on a loop whose entire defect was that a failure nobody saw stopped
+# the dashboard moving. Nothing below this line may fail the publish.
