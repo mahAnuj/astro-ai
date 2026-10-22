@@ -783,7 +783,13 @@ _SATURN = r"(?:Shani|Saturn|Saturday|Sade[- ]Sati|शनि)"
 # retired claim comes back. QA round 4 measured each escaping family F.
 _HYMN = r"(?:Sahasranama?|सहस्रनाम)"
 # "Sri Lalita Sahasranama" is remedies.md 8's own practice (Sri Yantra section).
-_HYMN_NOT_LALITA = rf"(?<!Lalita\s){_HYMN}"
+# Python lookbehinds are fixed-width, so one per separator length: QA round 1
+# measured "Lalita-Sahasranama" and "Lalita  Sahasranama" firing as the Vishnu
+# hymn, and the Hindi/"Lalitha" spellings are the likeliest next ones.
+_LALITA_SEP = r"[\s\-\u2010\u2011]"
+_HYMN_NOT_LALITA = "".join(
+    rf"(?<!{name}{_LALITA_SEP}{{{k}}})"
+    for name in ("Lalita", "Lalitha", "ललिता") for k in (1, 2, 3)) + _HYMN
 # Words that CERTIFY a practice rather than mention it. "safe for anyone to
 # recite" is deliberately not here: it is the register slice 3 kept for the
 # Saturn pages, and the tree carries it as plain description.
@@ -900,12 +906,23 @@ READER_FORBIDDEN = (
     # renunciates "Ketu's most classically-cited karma-clearing practice" when Rao's
     # Ketu deed is meditation. A forbidden LITERAL cannot express "a product addition
     # called classical" (that needs the claim compared against the sourcing table),
-    # so this pins only the three shapes found. The wording that stays legal is
+    # so this pins the shapes found (three in the first pass, four more after QA round 1
+    # of PR #487). The wording that stays legal is
     # Rao's own: "Saturn's classical good deed is labour itself", "the classical good
     # deeds for Rahu" -- the heading shape is "Classical <Planet>-domain good deeds".
-    (r"\bclassical\s+[A-Za-z]+-domain\s+good\s+deeds?"
+    (r"\bclassical\s+[A-Za-z]+[\s\-\u2010-\u2015]+domain\s+(?:good\s+)?(?:deeds?|practices?|remed(?:y|ies))"
      r"|\bmore\s+than\s+(?:to\s+)?most\s+(?:rituals?|remed(?:y|ies)|pujas?)"
-     r"|\bmost[\s-]+classically[\s-]+cited[^.\n]{0,40}\b(?:practice|remedy|deed|mantra)\b",
+     # QA round 1 (PR #487): the same ranking in the other words a copywriter
+     # reaches for. "faster than any temple visit" and "more powerful than expensive
+     # rituals" survived the first pass because J pinned three literals. These are
+     # still narrow on purpose: "faster than most people" (Ketu), "more effective than
+     # sporadic elaborate rituals" and "matters more than any ritual" are legal.
+     r"|\b(?:faster|sooner|quicker)\s+than\s+(?:any|most|all)\s+(?:\w+\s+){0,2}?"
+     r"(?:temple|ritual|puja|remed|rite|offering|mantra|visit)\w*"
+     r"|\bmore\s+(?:powerful|effective|potent)\s+than\s+(?:any\s+|most\s+)?(?:expensive|costly)\b"
+     # Plural nouns and any dash. NOT `remedies`: "the six most classically-cited Ketu
+     # remedies" is a page's own count and is pinned legal.
+     r"|\bmost[\s\-\u2010\u2011]+classically[\s\-\u2010\u2011]+cited[^.\n]{0,40}\b(?:practices?|remedy|deeds?|mantras?)\b",
      "J: remedies.md 11.2 lists 'serve the elderly' and 'support renunciates' as product "
      "additions, so no heading, superlative or comparison may present them as classical"),
 )

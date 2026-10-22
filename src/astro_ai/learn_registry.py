@@ -989,7 +989,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Why is Vishnu worship considered a strong Mercury remedy?",
-                "a": "Vishnu (Maha Vishnu) is Mercury's primary ruling deity in classical Vedic tradition. Classical teaching holds that the deity form is often more accessible than the abstract planet — so worshipping Vishnu directly is often more effective than reciting Mercury's own mantras. Practical practices: daily Vishnu Sahasranama recitation (widely available in every major Indian language, safe for anyone), offering tulsi leaves (Vishnu's beloved plant), worshipping Vishnu icons on Wednesdays, and observing Ekadashi (11th day of the lunar fortnight, Vishnu's day). This is also why Buddha worship helps — the Buddha is considered a Vishnu avatar in classical Vedic tradition.",
+                "a": "Vishnu (Maha Vishnu) is Mercury's primary ruling deity in classical Vedic tradition. Classical teaching holds that the deity form is often more accessible than the abstract planet — so worshipping Vishnu directly is often more effective than reciting Mercury's own mantras. Practical practices: daily Vishnu worship with a Vishnu mantra, or a hymn your own tradition keeps (many recite the Vishnu Sahasranama, which is widely available in every major Indian language), offering tulsi leaves (Vishnu's beloved plant), worshipping Vishnu icons on Wednesdays, and observing Ekadashi (11th day of the lunar fortnight, Vishnu's day). This is also why Buddha worship helps — the Buddha is considered a Vishnu avatar in classical Vedic tradition.",
             },
             {
                 "q": "What are the safest Mercury remedies for anyone?",
@@ -1001,7 +1001,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "How do Mercury remedies help with communication difficulty or stammer?",
-                "a": "Mercury is the karaka of speech and the physical organs of speech (throat, tongue). Chronic communication difficulty — stammer, verbal freeze under pressure, meandering speech — usually indicates weak or afflicted Mercury. Classical remedies specifically help: daily reading aloud practice (10-15 minutes of scripture, poetry, or serious prose, read slowly and clearly), daily writing practice by hand, weekly Saraswati or Vishnu worship, chanting the Vishnu Sahasranama slowly and aloud (combines speech-practice and mantra dimensions), and reduced consumption of low-quality speech (gossip media, argumentative content). Mercury absorbs what he is fed — feed him well and he strengthens.",
+                "a": "Mercury is the karaka of speech and the physical organs of speech (throat, tongue). Chronic communication difficulty — stammer, verbal freeze under pressure, meandering speech — usually indicates weak or afflicted Mercury. Practices that specifically help: daily reading aloud practice (10-15 minutes of scripture, poetry, or serious prose, read slowly and clearly), daily writing practice by hand, weekly Saraswati or Vishnu worship, a Vishnu mantra, or a hymn your own tradition keeps, chanted slowly and aloud (combines speech-practice and mantra dimensions), and reduced consumption of low-quality speech (gossip media, argumentative content). Mercury absorbs what he is fed — feed him well and he strengthens.",
             },
         ),
         llm_summary=(
@@ -1121,7 +1121,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What is the safest Saturn remedy that works for anyone?",
-                "a": "Daily worship of Vishnu, Saturn's classical deity (with Brahma) — a Vishnu mantra, or a hymn your own tradition keeps, is the daily practice. Safe for any chart, no consultation needed, no cost. Other universal safe practices: (1) Weekly service to elderly relatives, (2) Sri Yantra worship, (3) Practicing patience deliberately in daily situations. None of these require chart consultation, none can backfire, and all four together are more effective than any expensive puja.",
+                "a": "Daily worship of Vishnu, Saturn's classical deity (with Brahma) — a Vishnu mantra, or a hymn your own tradition keeps, is the daily practice. Safe for any chart, no consultation needed, no cost. Other universal safe practices: (1) Weekly service to elderly relatives, (2) Sri Yantra worship, (3) Practicing patience deliberately in daily situations. None of these require chart consultation, none can backfire, and none of them needs an expensive puja package.",
             },
             {
                 "q": "What is Saturn's mantra?",

@@ -137,7 +137,12 @@ GATE7_SAMPLES = {
           "Vishnu is the primary deity and the Sahasranama its primary practice",
           "Sahasranam is the classical Jupiter remedy",
           "the most reliable Mercury practice is the Vishnu Sahasranama",
-          "The universal safe practice: Vishnu SAHASRANAMA"),
+          "The universal safe practice: Vishnu SAHASRANAMA",
+          # PR #487 QA round 1: widening the Lalita exemption must not exempt the
+          # VISHNU hymn sitting in the same sentence, or one with a hyphen.
+          "The Lalita Sahasranama and the Vishnu Sahasranama are both classical practices",
+          "Vishnu-Sahasranama is the universal practice",
+          "the classical practice is the Lalitha Sahasranama, or failing that the Vishnu Sahasranama"),
     # G. A reader-facing remedy line borrowing a source name -- and the wrong
     # one. The same construction survived on a second page after the first was
     # fixed, because nothing checked for it.
@@ -193,7 +198,23 @@ GATE7_SAMPLES = {
           "it works more than most pujas",
           "Feeding crows is Saturn's most classically cited practice",
           "the most classically-cited deed for Mars",
-          "his most classically cited mantra"),
+          "his most classically cited mantra",
+          # PR #487 QA round 1. The first is the sentence as found (shani-saturn);
+          # the next two are saturn-remedies and the FAQ twin in learn_registry.
+          "Doing right by elders pacifies Saturn faster than any temple visit.",
+          "is more powerful than expensive rituals done without devotion.",
+          "all four together are more effective than any expensive puja package.",
+          "works faster than most rituals", "sooner than any puja", "Quicker than all remedies",
+          "faster than any other temple visit", "faster than any expensive offering",
+          "more potent than costly pujas", "More Powerful Than Most Expensive rituals",
+          "more effective than costly remedies",
+          # plural nouns, other dashes, a space instead of the dash
+          "Classical Saturn\u2011domain good deeds", "Classical Saturn\u2013domain good deeds",
+          "Classical Saturn domain good deeds", "Classical Saturn-domain practices",
+          "classical Mars-domain remedies", "Classical Venus-domain deeds",
+          "Classical  Jupiter \u2010 domain  good  deeds",
+          "Ketu's most classically-cited practices", "the most classically\u2011cited deeds for Mars",
+          "his most classically cited mantras"),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -227,10 +248,27 @@ GATE7_LEGAL = (
     # certifying word; and Rao's own labour deed keeps its "classical".
     "Sri Sukta or the Lalita Sahasranama is the classical daily practice before the Sri Yantra.",
     "Recite the Lalita Sahasranama or Durga Chalisa - Goddess worship is Venus's devotional path.",
+    # PR #487 QA round 1: the hyphen, a double space and the other spellings of the
+    # one hymn remedies.md 8 does name.
+    "Sri Sukta or the Lalita-Sahasranama is the classical daily practice before the Sri Yantra.",
+    "Sri Sukta or the Lalita  Sahasranama is the classical daily practice before the Sri Yantra.",
+    "The classical daily practice is the Lalitha Sahasranam before the Sri Yantra.",
+    "The universal Sri Yantra practice is the Lalita\u2011Sahasranama.",
+    "सबसे शक्तिशाली powerful ललिता सहस्रनाम",
     "The classical good deeds for Rahu are a research donation or a pilgrimage.",
     "Good deeds in Saturn's domain",
     "Serving these groups is a widely-kept Ketu karma-clearing practice.",
     "Your health matters more than any ritual.",
+    # Near misses the widened J must leave alone (all live in the tree or its register).
+    "Moon orbits Earth moving faster than any other graha across the zodiac.",
+    "Ketu releases the difficulty faster than most people process it.",
+    "Weekly worship on the planet's day is more effective than sporadic elaborate rituals.",
+    "A good match matters more than any single remedy.",
+    "none of them needs an expensive puja package.",
+    "Genuine puja for Saturn is inexpensive; expensive rituals done without devotion are not "
+    "what the tradition asks for.",
+    "Classical Saturn good deed: labour itself.",
+    "This guide walks the six most classically-cited Rahu remedies with honest expectations.",
     "This guide walks the six most classically-cited Ketu remedies with realistic expectations.",
     "For deeper practice, add the Guru Chalisa or Vishnu Sahasranama (Vishnu being "
     "Jupiter's ruling deity).",
