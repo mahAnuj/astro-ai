@@ -43,6 +43,14 @@ Schema (per-day file):
           "cached_tokens": 2304,       # cached tokens over reported calls    -> hit numer
           "reported_unmeasurable": 0}  # reported on a call the rule said could not
       },
+      "measured_by_model": {         # #475 — the grain Groq's TPM bucket is enforced at
+        "groq120|openai/gpt-oss-120b": {"calls": 7, "measured": 6,
+                                        "input_tokens": 19260, "output_tokens": 11538}
+      },
+      "peak_tpm_by_model": {         # #475 — ONE overwritten entry per model, never a list
+        "groq120|openai/gpt-oss-120b": {"peak": 9100, "peak_minute": 29500012,
+                                        "minute": 29500031, "tokens": 3200}
+      },                             # minute = UTC epoch minute; see record()
       "calls": {"total": .., "hits": .., "misses": .., "miss_latency_sum_ms": ..},
       "call_by_route": {
         "rashifal": {"calls": .., "hits": .., "input_tokens": .., "output_tokens": ..,
@@ -90,8 +98,9 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -211,6 +220,11 @@ _PREFIX_ZERO = {"calls": 0, "measurable": 0, "reported": 0,
                 "cached_measurable": 0, "reported_unmeasurable": 0}
 
 
+def _now_minute() -> int:
+    """The UTC epoch minute. A function so a test can pin it (#475)."""
+    return int(time.time() // 60)
+
+
 def _key_for(day: date) -> str:
     return f"llm_stats/{day.isoformat()}.json"
 
@@ -280,6 +294,9 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
     """
     today = date.today()
     stat_key = f"{provider}|{model}|{route or 'unknown'}"
+    # Read ONCE, outside _mut: update_json retries the mutator on a CAS conflict,
+    # and a retry that re-read the clock could book one call into two minutes.
+    minute = _now_minute()
 
     def _mut(current: dict | None) -> dict:
         data = current or {"date": today.isoformat(), "counts": {}, "totals": {}, "fallbacks": 0}
@@ -304,6 +321,45 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
             mb["measured"] = mb.get("measured", 0) + 1
             mb["input_tokens"] = mb.get("input_tokens", 0) + int(prompt_tokens)
             mb["output_tokens"] = mb.get("output_tokens", 0) + int(completion_tokens)
+
+        # #475. The SECOND store beside measured_by_route, at the grain the limit
+        # is enforced at: Groq's TPM bucket is per MODEL, and a chain that falls
+        # back mid-feature spreads one feature across several of them. Same four
+        # counters, same silence rule as above -- every call counts, tokens move
+        # only when BOTH figures were reported.
+        model_key = f"{provider}|{model}"
+        mm = data.setdefault("measured_by_model", {}).setdefault(
+            model_key, {"calls": 0, "measured": 0, "input_tokens": 0, "output_tokens": 0})
+        mm["calls"] = mm.get("calls", 0) + 1
+        sized = prompt_tokens is not None and completion_tokens is not None
+        if sized:
+            mm["measured"] = mm.get("measured", 0) + 1
+            mm["input_tokens"] = mm.get("input_tokens", 0) + int(prompt_tokens)
+            mm["output_tokens"] = mm.get("output_tokens", 0) + int(completion_tokens)
+
+        if sized:
+            # Busiest minute: ONE entry per model, overwritten in place, so the
+            # blob grows with the number of models and never with the number of
+            # minutes. `minute`/`tokens` are the accumulator for the minute in
+            # progress; `peak`/`peak_minute` are the largest finished-or-current
+            # total seen so far. A silent call contributes nothing here -- a
+            # call nobody could size is not a zero-token minute.
+            #
+            # UTC midnight is an epoch-minute boundary and Cloud Run runs UTC, so
+            # a minute never straddles two day blobs (date.today() is the key).
+            pk = data.setdefault("peak_tpm_by_model", {}).setdefault(
+                model_key, {"peak": 0, "peak_minute": None, "minute": None, "tokens": 0})
+            if pk.get("minute") is None or minute > pk["minute"]:
+                pk["minute"] = minute
+                pk["tokens"] = 0
+            if minute >= pk["minute"]:
+                # A late arrival (minute < stored) is skipped, not folded in: it
+                # belongs to a minute already closed, and adding it to the open
+                # one would inflate a figure that is only ever read as a ceiling.
+                pk["tokens"] = pk.get("tokens", 0) + int(prompt_tokens) + int(completion_tokens)
+                if pk["tokens"] > pk.get("peak", 0):
+                    pk["peak"] = pk["tokens"]
+                    pk["peak_minute"] = minute
 
         pc = data.setdefault("prefix_cache", {}).setdefault(stat_key, dict(_PREFIX_ZERO))
         pc["calls"] = pc.get("calls", 0) + 1
@@ -504,6 +560,41 @@ def record_call(*, route: str, cache_hit: bool, latency_ms: int = 0,
         log.debug("llm_stats.record_call local fallback failed: %s", err)
 
 
+def _as_int(v: Any) -> int:
+    """int(v) for a stored counter, 0 for anything a hand-edited blob put there."""
+    if isinstance(v, bool):
+        return 0
+    try:
+        return int(v or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _model_rows_from(acc: dict[str, dict[str, int]],
+                     peaks: dict[str, tuple[int, int | None]]) -> list[dict[str, Any]]:
+    """Flatten the per-model accumulators into rows for usage_summary (#475)."""
+    rows = []
+    for key in set(acc) | set(peaks):
+        provider, _, model = key.partition("|")   # split on the FIRST pipe
+        v = acc.get(key, {})
+        peak = peaks.get(key)
+        peak_minute = None
+        if peak and peak[1] is not None:
+            peak_minute = datetime.fromtimestamp(peak[1] * 60, tz=timezone.utc).isoformat(
+                timespec="minutes")
+        rows.append({
+            "key": key, "provider": provider, "model": model,
+            "calls": v.get("calls", 0), "measured": v.get("measured", 0),
+            "input_tokens": v.get("input_tokens", 0),
+            "output_tokens": v.get("output_tokens", 0),
+            # None when no day carried the key -- not 0.
+            "peak_tpm": peak[0] if peak else None,
+            "peak_minute": peak_minute,
+        })
+    rows.sort(key=lambda r: (-r["calls"], r["key"]))
+    return rows
+
+
 def usage_summary(days: int = 1) -> dict[str, Any]:
     """Return the same shape cache.usage_summary used to, from GCS.
 
@@ -523,6 +614,9 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
     peak_date: str | None = None
     by_route_acc: dict[str, dict[str, int]] = {}
     measured_acc: dict[str, dict[str, int]] = {}
+    model_acc: dict[str, dict[str, int]] = {}
+    model_peak: dict[str, tuple[int, int | None]] = {}   # key -> (peak, peak_minute)
+    model_days = 0
     for i in range(days):
         d = today - timedelta(days=i)
         blob = _read_day(d)
@@ -556,6 +650,33 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
                                                   "input_tokens": 0, "output_tokens": 0})
             for k in acc:
                 acc[k] += int(r.get(k) or 0)
+        # #475. Per-key .get only, and no `keys() <=` shape gate: a day recorded
+        # before this key existed must contribute NOTHING (not a zero) and a
+        # malformed row must not take the window down with it. `model_days`
+        # counts only days that carried the key, which is what lets the panel
+        # say "recorded for N of M days" instead of averaging in silence.
+        mbm = blob.get("measured_by_model")
+        if isinstance(mbm, dict) and mbm:
+            model_days += 1
+            for mkey, r in mbm.items():
+                if not isinstance(r, dict):
+                    continue
+                acc = model_acc.setdefault(mkey, {"calls": 0, "measured": 0,
+                                                  "input_tokens": 0, "output_tokens": 0})
+                for k in acc:
+                    acc[k] += _as_int(r.get(k))
+        pbm = blob.get("peak_tpm_by_model")
+        if isinstance(pbm, dict):
+            for mkey, e in pbm.items():
+                if not isinstance(e, dict):
+                    continue
+                pk = _as_int(e.get("peak"))
+                pm = e.get("peak_minute")
+                pm = pm if isinstance(pm, int) and not isinstance(pm, bool) else None
+                # MAX across days, never SUM: a peak is a rate, and two days'
+                # peaks added together describe a minute that never happened.
+                if mkey not in model_peak or pk > model_peak[mkey][0]:
+                    model_peak[mkey] = (pk, pm)
         for route, r in blob.get("call_by_route", {}).items():
             acc = by_route_acc.setdefault(route, {"calls": 0, "hits": 0,
                                                     "input_tokens": 0, "output_tokens": 0,
@@ -602,6 +723,11 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
             [{"route": k, **v} for k, v in measured_acc.items()],
             key=lambda r: -r["input_tokens"],
         ),
+        # #475. Keyed `provider|model` (the grain Groq's TPM bucket is enforced
+        # at), where measured_by_route is keyed by route. [] with
+        # model_days_recorded == 0 means NOT RECORDED -- a silence, not a zero.
+        "measured_by_model": _model_rows_from(model_acc, model_peak),
+        "model_days_recorded": model_days,
         "cache_entries": 0,   # SQLite-only concept; filled by admin_usage from cache.py
     }
 
