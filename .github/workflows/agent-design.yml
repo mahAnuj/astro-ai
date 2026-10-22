@@ -132,9 +132,33 @@ jobs:
           name: design-report
           path: /tmp/out
         continue-on-error: true
+      # #393: the PR opened below must NOT be authored by `github-actions[bot]`.
+      # Since 2026-06-11 GitHub holds the `pull_request` runs of a PR that bot
+      # opens in `action_required`, and while one held suite sits on the head
+      # SHA it reports NO status rollup for the PR AT ALL -- measured on #477
+      # and #478, where `gates` and `build-gates` were green on the SHA, the
+      # rollup was null for nine minutes, and auto-merge never fired. There is
+      # no setting that disables it; the fork-PR approval policy was tested at
+      # its loosest value and made no difference. A GitHub App token is
+      # GitHub's own documented remedy, and this repo already demonstrates it:
+      # `claude[bot]`'s PRs have never been held.
+      #
+      # `continue-on-error` plus the `||` below is what keeps a missing or
+      # expired key from being WORSE than the bot: the publish still happens on
+      # `github.token`, the checks are held, and someone approves them by hand
+      # -- exactly today's behaviour, rather than a failed step and a
+      # dashboard that silently stops moving.
+      - name: Mint a publisher token
+        id: app-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.PUBLISHER_APP_ID }}
+          private-key: ${{ secrets.PUBLISHER_APP_PRIVATE_KEY }}
+
       - name: Commit the report
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           [ -s /tmp/out/report.md ] || { echo "nothing to persist"; exit 0; }
