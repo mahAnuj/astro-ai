@@ -27,7 +27,10 @@ assertion and the marker's scope in turn, and each must turn this file red.
 from __future__ import annotations
 
 import errno
+import os
+import shutil
 import socket
+import tempfile
 
 import pytest
 
@@ -59,7 +62,12 @@ def test_a_non_loopback_lookup_and_connect_are_refused_and_recorded(
     violations.clear()
 
 
-def test_loopback_and_unix_sockets_stay_open(_no_outbound_sockets, tmp_path):
+#: macOS `sun_path` is 104 bytes; Linux allows 108. Asserted rather than
+#: trusted because the number is the whole reason this test binds where it does.
+_SUN_PATH_MAX = 104
+
+
+def test_loopback_and_unix_sockets_stay_open(_no_outbound_sockets):
     with socket.socket() as server:
         server.bind(("127.0.0.1", 0))
         server.listen(1)
@@ -68,12 +76,37 @@ def test_loopback_and_unix_sockets_stay_open(_no_outbound_sockets, tmp_path):
         with socket.socket() as client:
             client.connect(("127.0.0.1", port))
 
-    path = str(tmp_path / "s")
-    with socket.socket(socket.AF_UNIX) as server:
-        server.bind(path)
-        server.listen(1)
-        with socket.socket(socket.AF_UNIX) as client:
-            client.connect(path)
+    # NOT pytest's `tmp_path` (#472). On macOS that is already 127 bytes --
+    # `/var/folders/_z/3m0wb73157nczwxzppyv3mb40000gn/T/pytest-of-<user>/
+    # pytest-N/<test-name>0/s` -- against a 104-byte `sun_path`, so `bind`
+    # raised "AF_UNIX path too long" for every macOS developer from the day
+    # this file landed. The Linux runner's `/tmp/pytest-of-runner/...` fits
+    # under its 108, so CI was green and only local runs were red. That is the
+    # worst arrangement available: `uv run pytest` is what CLAUDE.md asks
+    # everyone to run before handing work back, and a suite that is always red
+    # for an unrelated reason gets ignored -- which is what this guard exists
+    # to prevent.
+    #
+    # `socket.socketpair()` would drop the filesystem entirely, and #472
+    # proposed it, but it never calls `connect` -- and an AF_UNIX `connect`
+    # being let through is the entire assertion here, since the guard hooks
+    # `socket.socket.connect`. It would turn this case into a no-op that still
+    # passed. A short directory keeps `bind` and `connect` real.
+    sock_dir = tempfile.mkdtemp(prefix="hermetic-")
+    try:
+        path = os.path.join(sock_dir, "s")
+        assert len(path.encode()) <= _SUN_PATH_MAX, (
+            f"AF_UNIX bind path is {len(path.encode())} bytes, over the "
+            f"{_SUN_PATH_MAX}-byte macOS limit: {path!r}. Bind under a short "
+            f"temp root; this is #472 returning."
+        )
+        with socket.socket(socket.AF_UNIX) as server:
+            server.bind(path)
+            server.listen(1)
+            with socket.socket(socket.AF_UNIX) as client:
+                client.connect(path)
+    finally:
+        shutil.rmtree(sock_dir, ignore_errors=True)
 
     assert _no_outbound_sockets == []
 
