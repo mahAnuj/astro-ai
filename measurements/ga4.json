@@ -2,21 +2,21 @@
   "source": "ga4",
   "property": "543505751",
   "window": [
-    "2026-09-21",
-    "2026-10-18"
+    "2026-09-22",
+    "2026-10-19"
   ],
   "dimensions": [
     "landingPagePlusQueryString",
     "sessionDefaultChannelGroup"
   ],
   "note": "window excludes the last 3 days \u2014 GA4 standard reports lag 24-48h",
-  "total_sessions": 341,
-  "rows_sessions": 343,
+  "total_sessions": 348,
+  "rows_sessions": 350,
   "coverage_pct": 101,
-  "row_count": 100,
-  "landing_count": 71,
+  "row_count": 105,
+  "landing_count": 72,
   "truncated": false,
-  "coverage_note": "rows account for 101% of the property's 341 sessions",
+  "coverage_note": "rows account for 101% of the property's 348 sessions",
   "rows": [
     {
       "landing": "/",
@@ -24,23 +24,23 @@
       "sessions": 77,
       "bounce_rate": 0.3247,
       "pages_per_session": 3.77,
-      "active_users": 28
+      "active_users": 27
     },
     {
       "landing": "/learn/rahu-mahadasha-ketu-antardasha/",
       "channel": "Organic Search",
       "sessions": 28,
-      "bounce_rate": 0.2857,
+      "bounce_rate": 0.3214,
       "pages_per_session": 1.04,
       "active_users": 26
     },
     {
       "landing": "/kundli",
       "channel": "Organic Search",
-      "sessions": 10,
-      "bounce_rate": 0.5,
-      "pages_per_session": 2.0,
-      "active_users": 7
+      "sessions": 11,
+      "bounce_rate": 0.5455,
+      "pages_per_session": 1.91,
+      "active_users": 8
     },
     {
       "landing": "/muhurat/griha-pravesh",
@@ -71,7 +71,7 @@
       "channel": "Organic Search",
       "sessions": 8,
       "bounce_rate": 0.375,
-      "pages_per_session": 1.0,
+      "pages_per_session": 1.12,
       "active_users": 8
     },
     {
@@ -99,6 +99,14 @@
       "active_users": 6
     },
     {
+      "landing": "/learn/debilitated-sun-career/",
+      "channel": "Organic Search",
+      "sessions": 6,
+      "bounce_rate": 0.1667,
+      "pages_per_session": 1.0,
+      "active_users": 6
+    },
+    {
       "landing": "/learn/griha-pravesh-muhurat-2026-2027/",
       "channel": "Direct",
       "sessions": 6,
@@ -115,7 +123,7 @@
       "active_users": 2
     },
     {
-      "landing": "/learn/debilitated-sun-career/",
+      "landing": "/learn/7th-lord-placement-marriage-guide/",
       "channel": "Organic Search",
       "sessions": 5,
       "bounce_rate": 0.2,
@@ -176,14 +184,6 @@
       "sessions": 4,
       "bounce_rate": 1.0,
       "pages_per_session": 0.0,
-      "active_users": 4
-    },
-    {
-      "landing": "/learn/7th-lord-placement-marriage-guide/",
-      "channel": "Organic Search",
-      "sessions": 4,
-      "bounce_rate": 0.25,
-      "pages_per_session": 1.0,
       "active_users": 4
     },
     {
@@ -283,14 +283,6 @@
       "active_users": 3
     },
     {
-      "landing": "/learn/shukra-venus-in-vedic-astrology/",
-      "channel": "Organic Search",
-      "sessions": 3,
-      "bounce_rate": 1.0,
-      "pages_per_session": 1.0,
-      "active_users": 1
-    },
-    {
       "landing": "/?lang=hi",
       "channel": "Direct",
       "sessions": 2,
@@ -299,12 +291,12 @@
       "active_users": 2
     },
     {
-      "landing": "/learn/2nd-lord-placement-wealth-guide/",
-      "channel": "Direct",
+      "landing": "/ask?q=But+you+said+i+am+very+unlikely+to+get+stable+relstionship.&c=general",
+      "channel": "Organic Search",
       "sessions": 2,
       "bounce_rate": 1.0,
       "pages_per_session": 1.0,
-      "active_users": 2
+      "active_users": 1
     },
     {
       "landing": "/learn/dhana-yoga-wealth-combinations/",
@@ -371,6 +363,14 @@
       "active_users": 2
     },
     {
+      "landing": "/learn/shukra-venus-in-vedic-astrology/",
+      "channel": "Organic Search",
+      "sessions": 2,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
       "landing": "/matching",
       "channel": "AI Assistant",
       "sessions": 2,
@@ -411,19 +411,19 @@
       "active_users": 1
     },
     {
-      "landing": "/ask?q=But+you+said+i+am+very+unlikely+to+get+stable+relstionship.&c=general",
-      "channel": "Organic Search",
-      "sessions": 1,
-      "bounce_rate": 1.0,
-      "pages_per_session": 1.0,
-      "active_users": 1
-    },
-    {
       "landing": "/learn/",
       "channel": "Organic Search",
       "sessions": 1,
       "bounce_rate": 0.0,
       "pages_per_session": 7.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/2nd-lord-placement-wealth-guide/",
+      "channel": "Direct",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
       "active_users": 1
     },
     {
@@ -445,6 +445,22 @@
     {
       "landing": "/learn/ashwini-nakshatra/",
       "channel": "Organic Search",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/dhana-yoga-wealth-combinations/",
+      "channel": "Organic Search",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/foreign-career-yoga-kundli/",
+      "channel": "AI Assistant",
       "sessions": 1,
       "bounce_rate": 0.0,
       "pages_per_session": 1.0,
@@ -512,6 +528,14 @@
       "sessions": 1,
       "bounce_rate": 0.0,
       "pages_per_session": 3.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/learn/ketu-in-vedic-astrology/",
+      "channel": "Direct",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
       "active_users": 1
     },
     {
@@ -683,6 +707,14 @@
       "active_users": 1
     },
     {
+      "landing": "/learn/saturn-remedies/",
+      "channel": "Organic Search",
+      "sessions": 1,
+      "bounce_rate": 0.0,
+      "pages_per_session": 2.0,
+      "active_users": 1
+    },
+    {
       "landing": "/learn/shukra-venus-in-vedic-astrology/",
       "channel": "Unassigned",
       "sessions": 1,
@@ -776,6 +808,14 @@
       "sessions": 1,
       "bounce_rate": 0.0,
       "pages_per_session": 10.0,
+      "active_users": 1
+    },
+    {
+      "landing": "/muhurat/vidyarambh",
+      "channel": "Organic Search",
+      "sessions": 1,
+      "bounce_rate": 1.0,
+      "pages_per_session": 1.0,
       "active_users": 1
     },
     {
