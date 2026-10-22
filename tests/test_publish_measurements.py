@@ -276,7 +276,20 @@ def test_every_loop_publishes_through_the_script_and_never_pushes_main(wf, path)
     assert got["perms"].get("contents") == "write"
     assert got["perms"].get("pull-requests") == "write"
     assert got["perms"].get("actions") == "write"
-    assert got["step"]["env"]["GH_TOKEN"] == "${{ github.token }}"
+    # The token was pinned to exactly `${{ github.token }}` until #393's
+    # follow-up. What that pin was really protecting is that no long-lived
+    # credential of a HUMAN is used here, and that still holds: the identity is
+    # now an App installation token, minted per run and expiring in an hour,
+    # with the job token behind it. The two tests at the bottom of this file
+    # pin the preference and the fallback separately, because they fail for
+    # different reasons and the fallback is the one that keeps a missing secret
+    # from stopping the loop.
+    tok = got["step"]["env"]["GH_TOKEN"]
+    assert "github.token" in tok, f"{wf} dropped the job-token fallback: {tok!r}"
+    assert "secrets." not in tok, (
+        f"{wf} reads a secret straight into GH_TOKEN; it should mint a "
+        f"short-lived App token in its own step instead: {tok!r}"
+    )
 
 
 def test_pr_gates_still_skips_its_expensive_steps_for_a_measurements_only_diff():
@@ -410,3 +423,53 @@ def test_a_broken_sweep_does_not_fail_the_publish(tmp_path):
         f"a tidy-up failure turned a good publish red:\n{r.stdout}\n{r.stderr}"
     )
     assert "published measurements" in r.stdout, "the publish itself did not report"
+
+
+# --------------------------------------------------------------------------- #
+# the publisher identity
+# --------------------------------------------------------------------------- #
+#
+# Since 2026-06-11 GitHub holds the `pull_request` runs of a PR opened by
+# `github-actions[bot]`, and while one held suite sits on the head SHA it
+# reports NO status rollup for the PR at all -- so the required contexts never
+# resolve and auto-merge never fires, however green the checks are. Measured on
+# PR #477 and #478. There is no setting that turns it off; the fork-PR approval
+# policy was tested at its loosest value and changed nothing.
+#
+# A GitHub App token is the documented remedy and this repo demonstrates it:
+# `claude[bot]`'s PRs were never held. The identity is therefore load-bearing,
+# and reverting any of these six to `github.token` would restore a failure
+# whose only symptom is a dashboard that quietly stops moving.
+
+@pytest.mark.parametrize("wf", sorted(LOOPS))
+def test_the_publish_step_prefers_the_app_token(wf):
+    step = _commit_step(wf)["step"]
+    tok = (step.get("env") or {}).get("GH_TOKEN", "")
+    assert "steps.app-token.outputs.token" in tok, (
+        f"{wf} publishes as github-actions[bot]; its PR's checks will be held "
+        f"and it will never auto-merge (GH_TOKEN={tok!r})"
+    )
+    assert "github.token" in tok, (
+        f"{wf} has no fallback: a missing or expired key would fail the step "
+        f"outright, which is worse than the bot it replaces (GH_TOKEN={tok!r})"
+    )
+
+
+@pytest.mark.parametrize("wf", sorted(LOOPS))
+def test_a_missing_key_cannot_fail_the_publish(wf):
+    """`continue-on-error` is what makes the `||` above reachable.
+
+    Without it `create-github-app-token` fails the job before the publish runs,
+    and an unset secret stops the loop dead instead of degrading it to the
+    behaviour it has today.
+    """
+    doc = yaml.safe_load((WORKFLOWS / f"{wf}.yml").read_text())
+    minted = [
+        s for job in doc["jobs"].values() for s in job.get("steps", [])
+        if s.get("id") == "app-token"
+    ]
+    assert minted, f"{wf} references steps.app-token but never mints one"
+    for s in minted:
+        assert s.get("continue-on-error") is True, (
+            f"{wf}'s token step is fatal; an unset secret would stop the loop"
+        )
