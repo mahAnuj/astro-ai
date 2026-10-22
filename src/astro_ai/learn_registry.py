@@ -942,7 +942,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the safest Jupiter remedies for anyone?",
-                "a": "Four practices anyone can do without chart consultation: (1) Daily Vishnu Sahasranama recitation (Vishnu is Jupiter's ruling deity); (2) Weekly Thursday support of a child's education — sponsoring, tutoring, or reading to a child; (3) Weekly feeding of cows or donating to a gaushala; (4) Genuine respect for teachers you encounter. These four together, done consistently over a few months, produce measurable improvement in Jupiter-domain life themes.",
+                "a": "Four practices anyone can do without chart consultation: (1) Daily Vishnu worship — a Vishnu mantra, or a hymn your own tradition keeps (Vishnu is Jupiter's ruling deity); (2) Weekly Thursday support of a child's education — sponsoring, tutoring, or reading to a child; (3) Weekly feeding of cows or donating to a gaushala; (4) Genuine respect for teachers you encounter. These four together, done consistently over a few months, produce measurable improvement in Jupiter-domain life themes.",
             },
             {
                 "q": "How do Jupiter remedies help with marriage or children?",
@@ -954,7 +954,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Should I do expensive Guru puja packages?",
-                "a": "Almost never. Genuine Jupiter puja is inexpensive — a simple havan with yellow flowers, ghee, and chick peas offered to Vishnu costs almost nothing. Any priest demanding tens of thousands is selling anxiety, not tradition. Mantras + Chalisa + Vishnu Sahasranama + genuine wisdom-seeking are more powerful than expensive rituals done without devotion. The core teaching: remedies are devotional acts, not transactional payments.",
+                "a": "Almost never. Genuine Jupiter puja is inexpensive — a simple havan with yellow flowers, ghee, and chick peas offered to Vishnu costs almost nothing. Any priest demanding tens of thousands is selling anxiety, not tradition. Mantras + Chalisa + Vishnu worship + genuine wisdom-seeking cost almost nothing; expensive rituals done without devotion are not what the tradition asks for. The core teaching: remedies are devotional acts, not transactional payments.",
             },
         ),
         llm_summary=(
@@ -993,7 +993,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the safest Mercury remedies for anyone?",
-                "a": "Four practices anyone can do without chart consultation: (1) Weekly Vishnu Sahasranama recitation — Vishnu is Mercury's ruling deity; safe universal Mercury practice; (2) Weekly Wednesday support of a student's education — sponsoring books, tutoring, or funding a young girl's schooling; (3) Daily disciplined speech practice — reducing unnecessary talk, cultivating clarity and precision; (4) Daily writing or study practice — 10 minutes of journal writing or rigorous study of any subject. Mercury is honored by discipline of the tongue and precision of the mind, not by volume. These four together produce measurable improvement in Mercury-domain themes and none can backfire.",
+                "a": "Four practices anyone can do without chart consultation: (1) Weekly Vishnu worship — Vishnu is Mercury's ruling deity; a Vishnu mantra, or a hymn your own tradition keeps; (2) Weekly Wednesday support of a student's education — sponsoring books, tutoring, or funding a young girl's schooling; (3) Daily disciplined speech practice — reducing unnecessary talk, cultivating clarity and precision; (4) Daily writing or study practice — 10 minutes of journal writing or rigorous study of any subject. Mercury is honored by discipline of the tongue and precision of the mind, not by volume. These four together produce measurable improvement in Mercury-domain themes and none can backfire.",
             },
             {
                 "q": "Why does modern life weaken Mercury so much?",
@@ -1133,7 +1133,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Are expensive Shani puja packages worth it?",
-                "a": "Almost never. Any priest demanding tens of thousands of rupees for a Shani nivaran puja is selling anxiety, not tradition. Genuine classical remedies are inexpensive — mantras + Chalisa + Vishnu worship + service to elderly costs almost nothing and is more powerful than expensive rituals done without devotion. The classical framing from Rao: 'Remedies are devotional acts, not transactional payments.' Anyone treating them as 'paying to make the problem go away' misunderstands the tradition and often makes the underlying pattern worse.",
+                "a": "Almost never. Any priest demanding tens of thousands of rupees for a Shani nivaran puja is selling anxiety, not tradition. Genuine remedies are inexpensive — mantras + Chalisa + Vishnu worship + service to elderly costs almost nothing; expensive rituals done without devotion are not what the tradition asks for. The classical framing from Rao: 'Remedies are devotional acts, not transactional payments.' Anyone treating them as 'paying to make the problem go away' misunderstands the tradition and often makes the underlying pattern worse.",
             },
             {
                 "q": "Can Saturn remedies remove my career problems?",
