@@ -69,13 +69,16 @@ the 413 taught us about.
       sat on the pages a reader opens directly: the /learn article bodies,
       the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
       languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
-      is shown. This gate scans those surfaces for the seven families the
-      slice retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
+      is shown. This gate scans those surfaces for the nine families #398
+      retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
       Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
-      practice, and "per <source> remedial tradition" (READER_FORBIDDEN) - and names
-      file:line. It does NOT forbid the families still open on #398 (Surya
-      Namaskar, "black sesame", weekday fasting): forbidding them here would
-      only make main red. It must also see at least one unit from each
+      practice, "per <source> remedial tradition", Surya Namaskar (slice 4),
+      and a rule lent Parashara's name, "(per Parashara's grid)" (slice 4)
+      (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
+      families still open on #398 ("black sesame", weekday fasting):
+      forbidding them here would only make main red. A bare "per BPHS" is
+      also not forbidden, for the same reason (family I's comment has the
+      count). It must also see at least one unit from each
       surface, so a gate pointed at an empty tree fails instead of passing.
 
 Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris — it reads one
@@ -636,9 +639,45 @@ def gate_4_no_stale_size_citations(text: str) -> bool:
 # else asked whether a corrected claim had crept back, and these came from
 # training-data folk practice, which is exactly what a later edit reintroduces.
 # Matching is case-insensitive and hyphen/space-agnostic.
+#
+# Surya Namaskar (#398 slice 4). remedies.md 12 row 2: 0 hits for any of 4
+# spellings of "Surya Namaskar" and any of 3 of "namaskar" across all 94,019
+# corpus lines. The first FORBIDDEN row for it was two literals --
+# `Surya[- ]?Namaskar|Sun[- ]salutation` -- and the tree already held a THIRD
+# spelling it missed ("the classical Sun Namaskar", learn_registry.py), which is
+# the #467 shape: a pattern bound to the strings that happened to be found.
+# So this is built from parts. A bare "Namaskar" is NOT forbidden (it is also a
+# greeting, and "Guru Namaskar" in numerology.py is a different, un-retired
+# practice); what is forbidden is a namaskar tied to the Sun by a name beside
+# it or by a practice word in the same sentence, a Sun-salutation, or the
+# "twelve rounds / postures" shape the retired text was made of.
+_PARASH = (r"(?:Parashar\w*|Parasar\w*|Brihat\s+Parashar\w*|Brhat\s+Parashar\w*"
+           r"|पाराशर\w*|पराशर\w*)")
+_POSS = r"(?:['\u2019]s?)?"
+_TITLE = r"(?:(?:classical|ancient|great|sage|rishi|maharishi|maharshi|saint)\s+)*"
+_NAM = r"nam[\w\u0300-\u036f]{0,3}k[aā\u0300-\u036f]*r[\w\u0300-\u036f]*"
+_SUNNAME = (r"(?:s[uū]ry[aā]?|s(?:oo|u)riy[aā]?|soory[aā]?|s[uū]r[aā]j|sun|aditya|ravi|bhaskar)")
+_PRACTICE = r"(?:sun|surya|sunrise|dawn|east|rounds?|postures?|poses?|asanas?|yoga)"
+_SEP = r"[\s\-_/.,:()*]"
+SURYA_NAMASKAR = (
+    rf"\b{_SUNNAME}{_SEP}{{0,4}}{_NAM}"
+    rf"|{_NAM}{_SEP}{{0,3}}(?:(?:of|to|for)\s+)?(?:the\s+)?(?:rising\s+)?{_SUNNAME}\b"
+    rf"|{_NAM}[^.;\n]{{0,60}}?\b{_PRACTICE}\b"
+    rf"|\b{_PRACTICE}\b[^.;\n]{{0,60}}?{_NAM}"
+    # "a sun salute each morning" and "salute the rising Sun" are the same practice
+    # in other words; "Salutations to Surya" (the shloka's meaning) is not.
+    r"|\bsun[\s\-_]*salut\w*|\bsalut(?:e|es|ed|ing)\s+(?:the\s+)?(?:rising\s+)?sun\b"
+    r"|\b(?:12|twelve)[\s\-]+(?:\w+[\s\-]+)?(?:rounds?|postures?|poses?|asanas?)\b"
+    # Devanagari (i18n.py carries the Hindi copy, with no native reader to catch a
+    # reinstatement). The bare Hindi word for "greetings" is legal; only the
+    # Sun-prefixed compound is the practice. [\u0900-\u097f] rather than \w,
+    # because the virama and the vowel signs are not word characters.
+    r"|(?:स[ूु]?र्य|स[ूु]रज)[\s\-_/.,]{0,3}नम[\u0900-\u097f]{1,4}क[\u0900-\u097f]{0,2}र"
+)
+
 FORBIDDEN = (
     (r"red[- ]lentils?|masoor|masur", "Sun's grain is wheat; red lentil is in no book we hold"),
-    (r"Surya[- ]?Namaskar|Sun[- ]salutation", "proved absent from all 14 books"),
+    (SURYA_NAMASKAR, "proved absent from all 14 books (remedies.md 12 row 2)"),
     (r"milk offering", "Shiva is the Sun's deity, not the Moon's (Table 78)"),
     (r"Hanuman intercession", "Saturn -> Vishnu, Brahma; Hanuman only via Mars with Saturnine influence"),
     (r"(?:serv(?:e|es|ing|ice)|support(?:ing)?|help(?:ing)?)(?:\s+to)?\s+(?:the\s+)?(?:outsiders|marginali[sz]ed)",
@@ -730,7 +769,7 @@ def gate_6_no_retired_claims_in_summaries(summaries=None) -> bool:
 SRC = REPO_ROOT / "src" / "astro_ai"
 
 # The reader-facing counterpart of FORBIDDEN/SUMMARY_FORBIDDEN, but only for
-# the seven families this slice of #398 fixed. Patterns are wider than the
+# the nine families slices 3 and 4 of #398 fixed. Patterns are wider than the
 # literals that were found (QA measured 17 of 38 spelling variants slipping
 # past the first Gate 5 patterns): hyphen/space-agnostic, singular/plural,
 # Devanagari where i18n.py carries a Hindi copy.
@@ -805,6 +844,36 @@ READER_FORBIDDEN = (
      r"|classical\s+grain\s+per\s+\w+",
      "G: a remedy line must not borrow authority from a source name on a reader-facing "
      "page, and the grain tables are Rao's, not BPHS's"),
+
+    # H. Surya Namaskar, retired by #398 slice 4. Same pattern Gates 5/6 use, so a
+    # spelling cannot be legal on a page and illegal in the prompt.
+    (SURYA_NAMASKAR,
+     "H: Surya Namaskar / Sun salutation is in none of the 14 books (remedies.md 12 row 2); "
+     "the Sun's sourced practices are a temple visit or gift, wheat, Shiva/Rama, and its mantra"),
+
+    # I. "(per Parashara's grid)" -- a source name lent to a rule the corpus does not
+    # attribute to him. The Graha Maitri scoring is Muhurta Chintamani's (matching.md
+    # vv.27-28), not BPHS's, and BPHS is not in data/ at all. The owner's rule is that
+    # no source appears in reader-facing text; this is the construction by which one
+    # did. SCOPE, measured on the tree: Parashara-named "per/according to" is banned
+    # outright (0 other hits), and BPHS-named only when it is followed by a grid-like
+    # noun. "Parashara's natural-friendship grid" (rahu/ketu-in-vedic-astrology, the-9-grahas,
+    # shani-saturn) is NOT banned either: it states what a source's table covers, is a
+    # different and equally unsourced claim (grahas.md 11.1 gives Rahu/Ketu friendships,
+    # which those sentences deny), and is reported rather than fixed here. A bare "per BPHS" is NOT banned: it sits on five pages (rahu/ketu beej
+    # mantras, dhana yoga, matching.html Tara, about.html's own explanation of the
+    # phrase) that are separate claims needing their own sourcing, and banning it here
+    # would turn main red over work this slice does not do.
+    (rf"\b(?:(?:as\s+)?per|according\s+to|as\s+(?:given|laid\s+down|set\s+out|prescribed|stated)\s+(?:by|in))"
+     rf"\s+(?:the\s+)?{_TITLE}{_PARASH}"
+     rf"|\b(?:(?:as\s+)?per|according\s+to|following|using|from|by|in|under)\s+(?:the\s+)?(?:{_PARASH}|BPHS|B\.P\.H\.S\.)"
+     rf"{_POSS}\s+(?:own\s+|classical\s+|natural\s+)?(?:grid|matrix|table|scoring|scheme|scale)s?\b"
+     rf"|\b(?:{_PARASH}|BPHS){_POSS}[\s\-]+(?:(?:own|classical|friendship|maitri)[\s\-]+)?(?:grid|matrix)\b"
+     rf"|\b(?:grid|matrix)\s+(?:of|from|by|in)\s+(?:the\s+)?(?:{_PARASH}|BPHS)"
+     # Hindi: "पराशर के अनुसार", "पराशर ग्रिड". No native reader checks this copy.
+     r"|(?:पाराशर|पराशर)[\u0900-\u097f]*\s*(?:जी\s*)?(?:के\s+|की\s+|का\s+)?(?:अनुसार|मतानुसार|ग्रिड|तालिका)",
+     "I: a rule must not borrow Parashara's name on a reader-facing page: the Graha Maitri "
+     "grid is Muhurta Chintamani's (matching.md vv.27-28) and BPHS is not in data/"),
 )
 
 # Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.
@@ -835,7 +904,7 @@ def _py_string_units(path: Path):
     """(lineno, text) for every string constant, except `llm_summary=` values.
 
     The summaries are Gate 6's, with a stricter pattern set (it also forbids
-    Surya Namaskar, black sesame and so on), and are what the LLM is shown.
+    black sesame and so on), and are what the LLM is shown.
     """
     tree = ast.parse(path.read_text(encoding="utf-8"))
     skip: set[int] = set()

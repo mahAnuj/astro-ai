@@ -135,6 +135,36 @@ GATE7_SAMPLES = {
           "Toor daal is Mars's classical grain per Rao's remedial tradition",
           # QA round 4: one article before the source name escaped the construction.
           "Mars's classical grain per the BPHS remedial tradition"),
+    # H. Surya Namaskar (slice 4). The two literals the old Gate 5 row knew
+    # ("Surya Namaskar", "Sun salutation") are the FIRST two; the rest are the
+    # spellings it could not see, written before the pattern was, and the tree
+    # held one of them already ("the classical Sun Namaskar"). #467.
+    "H": ("Surya Namaskar at sunrise, twelve rounds facing east",
+          "Practise Sun salutations daily", "the classical Sun Namaskar in the morning",
+          "Suryanamaskar", "Surya-Namaskar", "SURYA NAMASKAR", "Surya  Namaskar", "Surya\nNamaskar",
+          "Surya Namaskara", "Surya Namaskaar", "Surya Namaskaram", "Surya Namashkar",
+          "Surya Namskar", "S\u016brya Namask\u0101ra", "Soorya Namaskar", "Sun Namaskar",
+          "Aditya Namaskar", "Sun-salutation", "Sun Salutation sequence",
+          "Namaskar to the rising Sun", "Namaskar of Surya", "a daily namaskar at sunrise",
+          "Namaskar facing east, three rounds", "12 rounds daily", "twelve postures with a mantra each",
+          "12-round sunrise practice", "a sun salute each morning", "Salute the rising Sun",
+          "Suriya Namaskar", "12 Aditya rounds",
+          "सूर्य नमस्कार", "सूर्यनमस्कार", "सूर्य-नमस्कार", "सुर्य नमस्कार", "सूरज नमस्कार",
+          "रोज़ सूर्य नमस्कर करें"),
+    # I. "(per Parashara's grid)": a rule lent a source's name. Every variant here
+    # keeps the construction and moves the article, the possessive, the verb or
+    # the noun, which is how the first G patterns were walked around.
+    "I": ("natural friends (per Parashara's grid), full 5 points",
+          "per the Parashara grid", "per Parashara", "as per Parashara's table",
+          "according to Parashara", "according to Parashara's scoring", "as given by Parashara",
+          "as laid down by Parashara", "per Parashari rules", "per Parasara's tables",
+          "per Brihat Parashara Hora Shastra", "following Parashara's scheme",
+          "using Parashara's grid", "Parashara's grid", "the Parashara grid", "per BPHS grid",
+          "per the BPHS table", "per BPHS's grid", "BPHS grid", "the grid from Parashara",
+          "as per the Parashar grid", "(per Parashara\u2019s grid)", "Parashara's friendship grid says",
+          "Parashara-grid", "as per Sage Parashara", "according to Maharishi Parashara",
+          "as per the classical Parashara",
+          "पराशर के अनुसार पाँच अंक", "पराशर जी के अनुसार", "पाराशर ग्रिड के अनुसार"),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -174,6 +204,19 @@ GATE7_LEGAL = (
     "Cheiro's Book of Numbers gives 4 to Rahu.",
     "Rao's Table 78 maps Saturn to Vishnu and Brahma.",
     "Per Johari, the reduction differs.",
+    # H and I are constructions, not bans on a word. "Guru Namaskar" is a different
+    # practice this slice did not retire (numerology.py, Jupiter's puja); a Hindi
+    # greeting and the Sun's own shloka are not the retired practice; and a
+    # Sunday sunrise offering is Arghya, which is still on the pages.
+    "Guru Namaskar; offer yellow flowers + jaggery to Vishnu", "Namaskar! Welcome to Shubh Bhagya.",
+    "नमस्कार, आपका स्वागत है।", "Om Suryaya Namah - I bow to the Sun.",
+    "Salutations to Surya, the source of all life and clarity.",
+    "Offer arghya (water with red flowers) at sunrise; recite the Aditya Hridaya Stotra on Sunday.",
+    "Visit a temple, donate to one, or help with its running (the Sun's classical good deed).",
+    "Parashara is the author of Brihat Parashara Hora Shastra.",
+    "Per Johari, the grid differs from the one Cheiro published.",
+    "The friendship grid scores the two Moon-sign lords.",
+    "A 12-month plan, in 3 rounds of review.",
 )
 
 # The one honest Hanuman-Saturn sentence a page may keep: it must say popular/folk
@@ -334,7 +377,9 @@ def main() -> int:
     # the variants it exists to catch, not just one sample.
     samples = {  # literals each pattern must catch; default is the pattern itself
         r"red[- ]lentils?|masoor|masur": ("red-lentil", "red lentils", "masur dal", "masoor"),
-        r"Surya[- ]?Namaskar|Sun[- ]salutation": ("Surya Namaskar", "Suryanamaskar", "Sun salutation"),
+        gate.SURYA_NAMASKAR: ("Surya Namaskar", "Suryanamaskar", "Sun salutation", "Sun Namaskar",
+                              "Surya Namaskaram", "Soorya Namaskar", "12 rounds at sunrise",
+                              "सूर्य नमस्कार"),
         r"sesame[- ]oil|(?:\btil|teel)[- ]oil": ("sesame-oil", "sesame oil", "til oil"),
         r"black[- ]sesame": ("black-sesame", "black sesame"),
         r"(?:serv(?:e|es|ing|ice)|support(?:ing)?|help(?:ing)?)(?:\s+to)?\s+(?:the\s+)?(?:outsiders|marginali[sz]ed)":
@@ -372,8 +417,9 @@ def main() -> int:
     summary_samples = {  # (slug to inject into or None for the first, literal)
         r"red[- ]lentils?|masoor|masur": (("mars-remedies", "red-lentil Sunday charity"),
                                           (None, "red masur dal charity")),
-        r"Surya[- ]?Namaskar|Sun[- ]salutation": (("surya-sun-remedies", "Surya Namaskar 12 rounds"),
-                                                 (None, "Sun salutation at sunrise")),
+        gate.SURYA_NAMASKAR: (("surya-sun-remedies", "Surya Namaskar 12 rounds"),
+                              (None, "Sun salutation at sunrise"), (None, "the classical Sun Namaskar"),
+                              (None, "Suryanamaskaram daily"), (None, "सूर्य नमस्कार")),
         r"sesame[- ]oil|(?:\btil|teel)[- ]oil": (("ketu-remedies", "sesame oil, grey clothes"),
                                                  (None, "til oil charity")),
         r"black[- ]sesame": ((None, "black-sesame seeds"),),

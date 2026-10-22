@@ -845,7 +845,7 @@ _REMEDIES: dict[int, NumerologyRemedy] = {
         yantra="Surya Yantra — engraved on copper or gold plate, installed facing east and worshipped at sunrise with red flowers and jaggery-water.",
         charity="Wheat, jaggery, copper vessels, red cloth, red sandalwood. Offer to father-figures, elder males, or Surya temples on Sunday morning.",
         sacred_plants="Bilva (bael), red hibiscus, sunflower, Arka (calotropis). Grow bilva at home; offer bilva leaves or red hibiscus to Surya at sunrise.",
-        puja="Surya Namaskar 12 rounds daily facing east; offer arghya (water with red flowers) at sunrise; Aditya Hridaya Stotra weekly, ideally on Sunday.",
+        puja="Visit a temple or give to one; offer arghya (water with red flowers) at sunrise; Aditya Hridaya Stotra weekly, ideally on Sunday.",
     ),
     2: NumerologyRemedy(
         planet="Moon", planet_sanskrit="Chandra",
