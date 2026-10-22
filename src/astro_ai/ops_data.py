@@ -987,6 +987,109 @@ def _route_rows(usage: dict) -> list[dict]:
     return routes
 
 
+# The 429 classes that mean a per-minute or per-day BUCKET refused the call.
+# Narrower than BUDGET_FAIL_REASONS on purpose: a bare "429" and "413" are not
+# attributable to a model's bucket, and this column is read as one.
+_BUCKET_429_REASONS = ("429_tpm", "429_tpd")
+
+
+def _chain_keys() -> list[str]:
+    """`provider|model` for each entry of the live chain, or [] if it can't be read.
+
+    The chain is read at render time rather than assumed: `_chain()` skips a
+    provider only when its KEY is missing, so the number of rows is whatever the
+    deploy is configured with, not a figure written here (#475).
+    """
+    try:
+        from astro_ai import providers
+        return [f"{p.name}|{p.model()}" for p in providers._chain()]
+    except Exception:                       # noqa: BLE001 — the page never fails
+        log.debug("ops model panel: could not read the provider chain", exc_info=True)
+        return []
+
+
+def _model_rows(usage: dict, chain: list[str], agg: dict) -> list[dict]:
+    """One row per model: calls, tokens, busiest minute, share of one bucket (#475).
+
+    Module-level and taking plain data so a test can drive it, as `_route_rows`
+    is. `chain` is the list of `provider|model` keys in chain order.
+
+    Read ONLY from the per-model store. Joining `range_summary`'s `by_model`
+    call counts would put two different day sets in one row: that table counts
+    every day in the window, this store only days recorded since #475, and a
+    row whose calls came from one and whose tokens came from the other would
+    be a ratio of unlike things.
+
+    Three states a cell can be in, and they must not look alike:
+      * a number          -- recorded
+      * 0 calls           -- the model served nothing in days that WERE recorded
+      * an em-dash        -- no figure exists (silence is not a zero)
+    """
+    observed = {r.get("key"): r for r in (usage.get("measured_by_model") or [])
+                if isinstance(r, dict) and r.get("key")}
+    days_rec = int(usage.get("model_days_recorded") or 0)
+    window = int(usage.get("days") or 0)
+
+    # failed_provider|reason -> per provider. Only fallbacks that FOLLOWED a 429
+    # on this model: a request where the whole chain failed has no fallback and
+    # so is in no figure here. Joined on the provider NAME, which is what
+    # providers.py writes as `failed_provider`.
+    fb429: dict[str, int] = {}
+    for k, n in (agg.get("fallback_reasons") or {}).items():
+        prov, _, reason = str(k).partition("|")
+        if reason in _BUCKET_429_REASONS:
+            fb429[prov] = fb429.get(prov, 0) + int(n or 0)
+
+    order = list(dict.fromkeys(chain))
+    extra = sorted((k for k in observed if k not in order),
+                   key=lambda k: (-int(observed[k].get("calls") or 0), k))
+
+    rows = []
+    for key in order + extra:
+        provider, _, model = key.partition("|")
+        o = observed.get(key)
+        row: dict[str, Any] = {
+            "key": key, "provider": provider, "model": model,
+            "in_chain": key in order,
+            "calls": None, "unsized": None, "input_tokens": None, "output_tokens": None,
+            "peak": None, "peak_minute": None, "pct": None,
+            "fb429": fb429.get(provider, 0) if days_rec else None,
+            "title": "",
+        }
+        if not days_rec:
+            row["title"] = "not recorded"
+        elif o is None:
+            row["calls"] = 0
+            row["title"] = f"served no calls in the {days_rec} recorded days"
+        else:
+            calls = int(o.get("calls") or 0)
+            measured = int(o.get("measured") or 0)
+            row["calls"] = calls
+            row["unsized"] = max(calls - measured, 0)
+            if measured:
+                row["input_tokens"] = int(o.get("input_tokens") or 0)
+                row["output_tokens"] = int(o.get("output_tokens") or 0)
+            peak = o.get("peak_tpm")
+            if peak is not None:
+                row["peak"] = int(peak)
+                pm = o.get("peak_minute")
+                if pm:
+                    try:
+                        row["peak_minute"] = datetime.fromisoformat(pm).strftime(
+                            "%m-%d %H:%M UTC")
+                    except (TypeError, ValueError):
+                        row["peak_minute"] = None
+                # Groq's bucket only. Another provider's limit is not this
+                # constant, and a percentage of the wrong denominator is worse
+                # than a dash.
+                if provider.startswith("groq"):
+                    row["pct"] = round(row["peak"] / TPM_PER_MODEL * 100)
+        row["days_recorded"] = days_rec
+        row["window"] = window
+        rows.append(row)
+    return rows
+
+
 def _app_view(days: int = 7) -> dict:
     """App health, read from the app's OWN stores, in-process.
 
@@ -1148,6 +1251,11 @@ def _app_view(days: int = 7) -> dict:
             "kinds": kinds.most_common(6),
             "sources": sources.most_common(8),
             "routes": routes,
+            # #475. Per MODEL, because that is the grain Groq's bucket is
+            # enforced at; `routes` cannot see two models both filling up.
+            # `.get` with a default: older summaries (and test stubs) have no key.
+            "models": _model_rows(usage, _chain_keys(), agg),
+            "models_days_recorded": int(usage.get("model_days_recorded") or 0),
             "input_tokens": int(usage.get("total_input_tokens") or 0),
             "output_tokens": int(usage.get("total_output_tokens") or 0),
             # The WORST day in the window, against a ceiling. An average over

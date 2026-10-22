@@ -2583,6 +2583,64 @@ MUTATIONS = [
      '    stub_llm("## Compatibility\\n" + "A canned narrative body for the stub. " * 20)',
      "    pass",
      "test_the_scoped_sentence_actually_reaches_the_rendered_panel"),
+
+    # #475. Per-MODEL token accounting and the busiest-minute figure. Each row
+    # re-breaks one way the second store could quietly stop being true; the named
+    # test is the only one the sweep runs, so a row pointing at the wrong test
+    # shows up as MIS-POINTED.
+    ("#475: the minute reset is gone (a new minute inherits the last one's total)",
+     "src/astro_ai/llm_stats.py",
+     '                pk["minute"] = minute\n                pk["tokens"] = 0\n',
+     '                pk["minute"] = minute\n',
+     "test_the_same_minute_accumulates_and_a_later_minute_resets"),
+
+    ("#475: the peak is the LAST minute, not the max",
+     "src/astro_ai/llm_stats.py",
+     '                if pk["tokens"] > pk.get("peak", 0):',
+     '                if True:',
+     "test_the_same_minute_accumulates_and_a_later_minute_resets"),
+
+    ("#475: a late arrival resets the open minute",
+     "src/astro_ai/llm_stats.py",
+     '            if pk.get("minute") is None or minute > pk["minute"]:',
+     '            if pk.get("minute") is None or minute != pk["minute"]:',
+     "test_a_late_arrival_neither_resets_nor_inflates_the_open_minute"),
+
+    ("#475: the model store books a silent call as a measurement",
+     "src/astro_ai/llm_stats.py",
+     '        mm["calls"] = mm.get("calls", 0) + 1\n        sized = prompt_tokens is not None and completion_tokens is not None\n        if sized:\n            mm["measured"] = mm.get("measured", 0) + 1\n',
+     '        mm["calls"] = mm.get("calls", 0) + 1\n        sized = prompt_tokens is not None and completion_tokens is not None\n        mm["measured"] = mm.get("measured", 0) + 1\n        if sized:\n',
+     "test_a_silent_call_counts_as_a_call_and_touches_no_accumulator"),
+
+    ("#475: the model key loses its provider (two providers share one model name)",
+     "src/astro_ai/llm_stats.py",
+     '        model_key = f"{provider}|{model}"',
+     '        model_key = f"{model}"',
+     "test_two_models_on_one_route_make_two_model_rows_and_one_route_row"),
+
+    ("#475: usage_summary SUMS the peak across days (a minute that never happened)",
+     "src/astro_ai/llm_stats.py",
+     '                if mkey not in model_peak or pk > model_peak[mkey][0]:\n                    model_peak[mkey] = (pk, pm)\n',
+     '                if True:\n                    model_peak[mkey] = (pk + model_peak.get(mkey, (0, None))[0], pm)\n',
+     "test_across_days_the_peak_is_the_max_and_the_tokens_are_the_sum"),
+
+    ("#475: model_days_recorded counts every day, recorded or not",
+     "src/astro_ai/llm_stats.py",
+     '        if isinstance(mbm, dict) and mbm:\n            model_days += 1\n',
+     '        model_days += 1\n        if isinstance(mbm, dict) and mbm:\n',
+     "test_across_days_the_peak_is_the_max_and_the_tokens_are_the_sum"),
+
+    ("#475: the bucket percentage divides by the DAILY limit",
+     "src/astro_ai/ops_data.py",
+     'row["pct"] = round(row["peak"] / TPM_PER_MODEL * 100)',
+     'row["pct"] = round(row["peak"] / TPD_PER_MODEL * 100)',
+     "test_the_percentage_is_the_peak_over_the_module_constant"),
+
+    ("#475: a non-Groq provider is scored against Groq's bucket",
+     "src/astro_ai/ops_data.py",
+     '                if provider.startswith("groq"):',
+     '                if True:',
+     "test_only_groq_models_get_a_percentage_of_the_groq_bucket"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
