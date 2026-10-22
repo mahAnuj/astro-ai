@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-21T23:56:56Z",
+  "generated_at": "2026-10-22T07:06:29Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 112,
-  "with_ask": 54,
+  "open": 111,
+  "with_ask": 53,
   "by_area": {
-    "UNCLASSIFIED": 44,
+    "UNCLASSIFIED": 43,
     "INFRA": 12,
     "REDESIGN": 10,
     "UI": 8,
@@ -32,7 +32,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 37,
+    "bug": 36,
     "untyped": 28,
     "enhancement": 23,
     "correctness": 8,
@@ -41,9 +41,9 @@
     "ui": 3
   },
   "by_priority": {
-    "unset": 74,
+    "unset": 72,
     "medium": 21,
-    "high": 17
+    "high": 18
   },
   "blocked": 8,
   "rows": [
@@ -53,27 +53,17 @@
       "ask": "A _TokenBucket per model in providers.py.",
       "area": "UNCLASSIFIED",
       "type": "enhancement",
-      "priority": "unset",
+      "priority": "high",
       "labels": [
-        "enhancement"
+        "enhancement",
+        "category:technical",
+        "priority:high",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-21T17:59:35Z",
-      "updated": "2026-10-21T17:59:35Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 472,
-      "title": "test_loopback_and_unix_sockets_stay_open fails on macOS: AF_UNIX path too long",
-      "ask": "Bind under a short directory instead of tmp_path — tempfile.mkdtemp(dir=\"/tmp\")",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-10-21T17:24:52Z",
-      "updated": "2026-10-21T17:24:52Z",
+      "updated": "2026-10-22T05:34:25Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -531,7 +521,7 @@
         "provenance:trusted"
       ],
       "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-21T01:43:44Z",
+      "updated": "2026-10-22T02:01:32Z",
       "blocked": false,
       "needs_evidence": false
     },
