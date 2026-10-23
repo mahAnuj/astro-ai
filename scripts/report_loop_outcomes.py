@@ -83,6 +83,17 @@ FAILED = {"failure", "timed_out", "cancelled", "action_required", "startup_failu
 # this table against the `cron:` lines so the two cannot drift apart.
 MIN_RUNS = {"agent-work": 5, "agent-measure": 5, "agent-discover": 1, "agent-design": 1}
 
+# The job that PRODUCES the report. A run where it was `skipped` owed no report
+# and must not be read as having failed to write one (#495).
+#
+# agent-measure declares 8 slots a day and only the `0 21` one runs the analyst:
+# `measure.if` is an allow-list, so the other seven skip that job and run the
+# collectors alone, committing ga4.json / gsc-*.json and NOT latest.md. This
+# file demanded a latest.md commit from every successful run, so it reported
+# five working collector runs as BROKEN in the week of 2026-10-23 -- beside 31
+# genuine failures, which is how a true signal gets buried under a false one.
+REPORT_JOB = {"agent-measure": "measure"}
+
 # The loop's own report file; a commit touching it is the loop's effect.
 REPORT_PATH = {
     "agent-measure": "measurements/latest.md",
@@ -663,29 +674,58 @@ def classify_work(runs, prs, traces, window: Window) -> Finding:
     return Finding(loop, verdict, f"{loop}: {len(attempts)} runs: " + ", ".join(parts) + ".", [])
 
 
-def classify_report_loop(loop: str, runs, commits, window: Window, issues_created=None) -> Finding:
+def classify_report_loop(loop: str, runs, commits, window: Window, issues_created=None,
+                         jobs_for=None) -> Finding:
     """A report IS the contract for measure/discover/design, so a run that
     concludes success without committing one is never 'idle'. Caveat, accepted:
     the persist step skips an UNCHANGED report, which reads as no commit."""
     attempts = [r for r in _done(runs) if window.settled(r["updated_at"])]
     if not attempts:
         return Finding(loop, IDLE, f"{loop}: no completed runs in the window.", [])
-    nothing, failed = [], []
+    nothing, failed, skipped = [], [], []
     for r in attempts:
         start = ts(r.get("run_started_at") or r["created_at"])
         end = ts(r["updated_at"]) + RUN_PAD
         if r.get("conclusion") != "success":
             failed.append(f"run {r['id']} concluded {r.get('conclusion')}")
         elif not any(start <= ts(c["commit"]["committer"]["date"]) <= end for c in commits):
-            nothing.append(f"run {r['id']}")
+            # Did this run's report job actually run? `jobs_for` is optional so the
+            # offline tests and any caller without `actions: read` keep the old,
+            # stricter reading; absent it, a missing commit stays BROKEN.
+            if _report_job_skipped(loop, r, jobs_for):
+                skipped.append(f"run {r['id']}")
+            else:
+                nothing.append(f"run {r['id']}")
     if failed or nothing:
         bits = failed + [f"{x} concluded success but produced nothing (no commit touching "
                          f"{REPORT_PATH[loop]}; or the report was unchanged)" for x in nothing]
         return Finding(loop, BROKEN, f"{loop}: {len(failed) + len(nothing)} of {len(attempts)} runs produced "
                        "no report -- " + "; ".join(bits) + ".", bits)
+    due = len(attempts) - len(skipped)
+    tail = (f" ({len(skipped)} further run(s) skipped the `{REPORT_JOB.get(loop)}` job and "
+            f"owed no report)") if skipped else ""
     if issues_created == 0:
-        return Finding(loop, IDLE, f"{loop}: {len(attempts)} report(s) committed, 0 issues filed (no findings).", [])
-    return Finding(loop, OK, f"{loop}: {len(attempts)} report(s) committed.", [])
+        return Finding(loop, IDLE, f"{loop}: {due} report(s) committed, 0 issues filed "
+                       f"(no findings).{tail}", [])
+    return Finding(loop, OK, f"{loop}: {due} report(s) committed.{tail}", [])
+
+
+def _report_job_skipped(loop: str, run: dict, jobs_for) -> bool:
+    """True only when the named report job is PRESENT and `skipped` for this run.
+
+    Anything else -- no job name for the loop, no `jobs_for`, an unreadable jobs
+    list, or a job that ran -- returns False, so a run keeps owing a report. A
+    helper that guessed "probably skipped" would excuse the failures this file
+    exists to find.
+    """
+    name = REPORT_JOB.get(loop)
+    if not name or jobs_for is None:
+        return False
+    try:
+        jobs = jobs_for(run["id"]) or []
+    except ApiError:
+        return False
+    return any(j.get("name") == name and j.get("conclusion") == "skipped" for j in jobs)
 
 
 def classify_schedule(loop: str, runs, window: Window) -> Finding:
@@ -823,7 +863,18 @@ def check_report(loop: str):
             issues = sum(1 for i in src.get(f"issues?state=all&since={iso(window.since)}&per_page=100")
                          if "pull_request" not in i and i["user"]["type"] == "Bot"
                          and window.contains(i["created_at"]))
-        out.append(classify_report_loop(loop, runs, commits, window, issues))
+        # One jobs call per run that would otherwise be flagged, memoised -- not
+        # one per run in the window. `agent-measure` had 38 runs this week and 5
+        # needed the question asked.
+        _jobs: dict[int, list] = {}
+
+        def jobs_for(run_id: int):
+            if run_id not in _jobs:
+                _jobs[run_id] = src.get(f"actions/runs/{run_id}/jobs?per_page=100")["jobs"]
+            return _jobs[run_id]
+
+        out.append(classify_report_loop(loop, runs, commits, window, issues,
+                                        jobs_for=jobs_for))
         if loop == "agent-discover":
             measures = sum(1 for r in list_runs(src, "agent-measure", window) if r.get("conclusion") == "success")
             out.append(classify_receipts(loop, receipts_for(src, runs, window), measures))
