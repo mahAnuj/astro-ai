@@ -316,6 +316,14 @@ def test_the_page_prints_seconds_and_the_sub_line_when_populated(_ops, monkeypat
     assert "None" not in panel
 
 
+def test_a_model_that_was_only_skipped_does_not_read_0_of_0_waited(_ops, monkeypatch):
+    """QA round 2: skips with no reservations printed "0 of 0 waited · 2 skipped"."""
+    panel = _panel(_page_html(monkeypatch, _usage([_urow(
+        K120, reserved=0, waits=0, wait_ms=0, skips=2, forced=1)])))
+    cell = _cells(panel, "gpt-oss-120b")[-1]
+    assert cell == "0 none admitted · 2 skipped · 1 forced", cell
+
+
 def test_a_sub_second_wait_is_not_rounded_into_a_false_zero(_ops, monkeypatch):
     panel = _panel(_page_html(monkeypatch, _usage([_urow(
         K120, reserved=3, waits=1, wait_ms=400)])))

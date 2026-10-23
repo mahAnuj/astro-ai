@@ -2760,48 +2760,93 @@ MUTATIONS = [
 
     # #475 Phase 1 (QA round 1). The job wait budget reaches chat(), and every
     # provider's pacing reaches llm_stats.
-    ("#475: /admin/warm-rashifal stops passing the job budget (jobs get the 6 s default)",
+    ("#475: /admin/warm-rashifal stops passing a job deadline (jobs get the 6 s default)",
      "src/astro_ai/routes/subscribe.py",
      "                festival=festivals.festival_for_date(date.today()),\n"
-     "                # A batch job: nobody is waiting, so the bucket may make a\n"
-     "                # call wait the job budget instead of the 6 s interactive one.\n"
-     "                max_wait_s=llm_providers.PACE_JOB_BUDGET_S,\n",
+     "                pace_deadline=pace_deadline,\n",
      "                festival=festivals.festival_for_date(date.today()),\n",
-     "test_warm_rashifal_passes_the_job_budget"),
+     "test_warm_rashifal_passes_a_job_deadline"),
 
-    ("#475: /admin/send-daily-rashifal stops passing the job budget",
+    ("#475: /admin/send-daily-rashifal stops passing the deadline",
      "src/astro_ai/routes/subscribe.py",
-     "                    festival=festivals.festival_for_date(date.today()),\n"
-     "                    # Batch job (the 7 AM blast): see /admin/warm-rashifal.\n"
-     "                    max_wait_s=llm_providers.PACE_JOB_BUDGET_S,\n",
-     "                    festival=festivals.festival_for_date(date.today()),\n",
-     "test_send_daily_rashifal_passes_the_job_budget_for_both_languages"),
+     "                    pace_deadline=pace_deadline,\n"
+     "                ),\n            )\n            sections_by_lang[lang]",
+     "                ),\n            )\n            sections_by_lang[lang]",
+     "test_send_daily_shares_ONE_deadline_across_both_languages"),
 
-    ("#475: the welcome email (interactive) is given the job budget",
+    ("#475: /admin/send-daily-rashifal computes a deadline PER LANGUAGE (24 calls, two allowances)",
+     "src/astro_ai/routes/subscribe.py",
+     '    pace_deadline = llm_providers.pace_deadline()\n    for lang in ("en", "hi"):\n',
+     '    for lang in ("en", "hi"):\n        pace_deadline = llm_providers.pace_deadline()\n',
+     "test_send_daily_shares_ONE_deadline_across_both_languages"),
+
+    ("#475: the welcome email (interactive) is given a job deadline",
      "src/astro_ai/routes/subscribe.py",
      "                festival=festivals.festival_for_date(date.today()),\n            ),\n        )\n        sections = [",
      "                festival=festivals.festival_for_date(date.today()),\n"
-     "                max_wait_s=llm_providers.PACE_JOB_BUDGET_S,\n            ),\n        )\n        sections = [",
-     "test_the_welcome_email_is_interactive_and_passes_no_budget"),
+     "                pace_deadline=llm_providers.pace_deadline(),\n            ),\n        )\n        sections = [",
+     "test_the_welcome_email_is_interactive_and_passes_no_deadline"),
 
-    ("#475: generate_rashifal does not hand the budget to its pool workers",
+    ("#475: generate_rashifal does not hand the deadline to its pool workers",
      "src/astro_ai/llm.py",
-     "                pacer, max_wait_s,\n",
+     "                pacer, pace_deadline,\n",
      "                pacer,\n",
-     "test_generate_rashifal_hands_the_budget_to_all_twelve_pool_calls"),
+     "test_generate_rashifal_hands_each_pool_call_its_own_wait_from_the_deadline"),
 
-    ("#475: _generate_rashifal_single drops the budget before providers.chat",
+    ("#475: _generate_rashifal_single drops the deadline before providers.chat",
      "src/astro_ai/llm.py",
-     'route="rashifal_single", max_wait_s=max_wait_s)',
-     'route="rashifal_single")',
-     "test_generate_rashifal_hands_the_budget_to_all_twelve_pool_calls"),
+     'max_wait_s=providers.pace_wait_budget(pace_deadline))',
+     'max_wait_s=None)',
+     "test_generate_rashifal_hands_each_pool_call_its_own_wait_from_the_deadline"),
 
-    ("#475: the on-demand /rashifal/{rashi} card is given the job budget (a user waits 150 s)",
+    ("#475: _generate_rashifal_single ignores the deadline and hands every call the full budget",
+     "src/astro_ai/llm.py",
+     'max_wait_s=providers.pace_wait_budget(pace_deadline))',
+     'max_wait_s=providers.PACE_JOB_BUDGET_S)',
+     "test_a_deadline_already_past_gives_every_pool_call_zero"),
+
+    ("#475: the on-demand /rashifal/{rashi} card is given a job deadline (a user waits up to 150 s)",
      "src/astro_ai/llm.py",
      "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n    )",
      "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n"
-     "        max_wait_s=providers.PACE_JOB_BUDGET_S,\n    )",
+     "        pace_deadline=providers.pace_deadline(),\n    )",
      "test_the_on_demand_rashi_card_passes_no_budget"),
+
+    ("#475: pace_wait_budget lets the allowance go negative after the deadline (clamp at 0 dropped)",
+     "src/astro_ai/providers.py",
+     "    return max(0.0, min(PACE_JOB_BUDGET_S, deadline - _pace_clock()))\n",
+     "    return min(PACE_JOB_BUDGET_S, deadline - _pace_clock())\n",
+     "test_the_per_call_wait_is_zero_once_the_deadline_has_passed"),
+
+    ("#475: pace_wait_budget drops the per-call cap (a far deadline lets one call wait past the budget)",
+     "src/astro_ai/providers.py",
+     "    return max(0.0, min(PACE_JOB_BUDGET_S, deadline - _pace_clock()))\n",
+     "    return max(0.0, deadline - _pace_clock())\n",
+     "test_the_per_call_wait_never_exceeds_the_budget_and_decays_with_the_clock"),
+
+    ("#475: pace_wait_budget ignores the deadline (every call may wait the full budget)",
+     "src/astro_ai/providers.py",
+     "    return max(0.0, min(PACE_JOB_BUDGET_S, deadline - _pace_clock()))\n",
+     "    return PACE_JOB_BUDGET_S\n",
+     "test_24_calls_sleep_no_more_than_the_deadline_allows"),
+
+    ("#475: pace_wait_budget measures from a stale clock (the allowance never decays)",
+     "src/astro_ai/providers.py",
+     "    return max(0.0, min(PACE_JOB_BUDGET_S, deadline - _pace_clock()))\n",
+     "    return max(0.0, min(PACE_JOB_BUDGET_S, deadline - (deadline - PACE_JOB_DEADLINE_S)))\n",
+     "test_24_calls_sleep_no_more_than_the_deadline_allows"),
+
+    ("#475: pace_deadline ignores the job allowance constant",
+     "src/astro_ai/providers.py",
+     "    return _pace_clock() + (PACE_JOB_DEADLINE_S if allowance_s is None else allowance_s)\n",
+     "    return _pace_clock() + 10_000.0\n",
+     "test_the_per_call_wait_never_exceeds_the_budget_and_decays_with_the_clock"),
+
+    ("#475: the job deadline default grows past the Cloud Run timeout's headroom",
+     "src/astro_ai/providers.py",
+     'os.environ.get("BHAGYA_PACE_JOB_DEADLINE_S", "230")',
+     'os.environ.get("BHAGYA_PACE_JOB_DEADLINE_S", "290")',
+     "test_the_job_deadline_leaves_headroom_under_the_300s_cloud_run_timeout"),
 
     ("#475: the job budget constant collapses to the interactive default",
      "src/astro_ai/providers.py",
@@ -2826,6 +2871,12 @@ MUTATIONS = [
      '                pm = data.setdefault("paced_by_model", {}).setdefault(\n                    pkey,',
      '                pm = data.setdefault("paced_by_model", {}).setdefault(\n                    model_key,',
      "test_one_record_call_books_every_model_in_the_mapping_under_its_own_key"),
+
+    ("#475: a skip-only model reads '0 of 0 waited' again on /admin/ops",
+     "src/astro_ai/templates/admin_ops.html",
+     '{% if m.reserved == 0 and (m.skips or m.forced) %}none admitted{% else %}{{ "{:,}".format(m.waits) }} of {{ "{:,}".format(m.reserved) }} waited{% endif %}',
+     '{{ "{:,}".format(m.waits) }} of {{ "{:,}".format(m.reserved) }} waited',
+     "test_a_model_that_was_only_skipped_does_not_read_0_of_0_waited"),
 
     ("#475: a skip is no longer counted (the panel's 'skipped' stays 0)",
      "src/astro_ai/providers.py",

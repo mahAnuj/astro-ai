@@ -904,7 +904,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           <td class="n"{% if m.reserved is none %} title="not recorded: pacing off, not a Groq model, or no paced day in this window"{% endif %}>
             {%- if m.reserved is none %}—
             {%- else %}{{ ("{:g}".format(m.wait_s) ~ ' s') if m.wait_s else '0' }}
-            <span class="sub" title="of the calls the bucket admitted, how many had to wait; skipped = sent to the next provider instead of waiting; forced = last-resort calls that bypassed the bucket">{{ "{:,}".format(m.waits) }} of {{ "{:,}".format(m.reserved) }} waited · {{ m.skips }} skipped · {{ m.forced }} forced</span>
+            <span class="sub" title="of the calls the bucket admitted, how many had to wait; skipped = sent to the next provider instead of waiting; forced = last-resort calls that bypassed the bucket">{% if m.reserved == 0 and (m.skips or m.forced) %}none admitted{% else %}{{ "{:,}".format(m.waits) }} of {{ "{:,}".format(m.reserved) }} waited{% endif %} · {{ m.skips }} skipped · {{ m.forced }} forced</span>
             {%- endif %}</td>
         </tr>
         {% else %}

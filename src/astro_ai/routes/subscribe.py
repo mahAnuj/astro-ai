@@ -457,6 +457,10 @@ async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
     except ChartError as err:
         return JSONResponse({"ok": False, "error": f"Couldn't compute reference chart: {err}"}, status_code=500)
     transit = compute_transit_snapshot(neutral_chart)
+    # A batch job: nobody is waiting, so the bucket may make a call wait up to the
+    # job budget -- but never past this deadline (#475). One language fits today;
+    # the deadline is the guarantee, not the arithmetic.
+    pace_deadline = llm_providers.pace_deadline()
 
     cache_key, storage_key = combined_keys(lang, today_iso)
     try:
@@ -470,9 +474,7 @@ async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
                 prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
                 panchang=compute_panchang(neutral_chart),
                 festival=festivals.festival_for_date(date.today()),
-                # A batch job: nobody is waiting, so the bucket may make a
-                # call wait the job budget instead of the 6 s interactive one.
-                max_wait_s=llm_providers.PACE_JOB_BUDGET_S,
+                pace_deadline=pace_deadline,
             ),
         )
     except AllProvidersExhausted as err:
@@ -568,6 +570,11 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     transit = compute_transit_snapshot(neutral_chart)
 
     sections_by_lang: dict[str, list] = {}
+    # ONE deadline for the whole job, computed before the first language: en and
+    # hi share it (24 calls in this one 300 s request). Per language it would
+    # grant each 12-call half its own allowance and the sum would pass the
+    # timeout (#475, QA round 2: 319-395 s simulated).
+    pace_deadline = llm_providers.pace_deadline()
     for lang in ("en", "hi"):
         cache_key = f"rashifal:{today_iso}:{lang}:{prompt_fp}"
         storage_key = f"rashifal/{today_iso}-{lang}-{prompt_fp}.txt"
@@ -587,7 +594,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
                     # The email's festival callout renders all of them.
                     festival=festivals.festival_for_date(date.today()),
                     # Batch job (the 7 AM blast): see /admin/warm-rashifal.
-                    max_wait_s=llm_providers.PACE_JOB_BUDGET_S,
+                    pace_deadline=pace_deadline,
                 ),
             )
             sections_by_lang[lang] = [

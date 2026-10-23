@@ -989,15 +989,62 @@ RETRY_AFTER_BUDGET_S = 10.0
 # send-daily rashifal jobs have nobody waiting and are the traffic that overspends
 # a bucket, so they pass this instead -- see llm.generate_rashifal(max_wait_s=).
 #
-# A per-call bound, NOT a promise that the job fits. QA simulated twelve
-# rashifal-sized calls on one bucket: ~240 s of the 300 s Cloud Run timeout at a
-# 150 s budget, so a 2-language job (24 calls) can run past it. A wait beyond the
-# budget does not fail the call -- the provider is skipped to the next, and if
-# every one is over budget the call is FORCED through un-waited -- so exceeding
-# the budget costs a possible 429, never a reading. Simulated, not measured in
-# production; the /admin/ops "blocked on bucket" column is where it shows up.
+# A per-call bound ONLY -- on its own it does not make a job fit. QA simulated the
+# inline two-language send (24 calls, 2 workers): 319-395 s in 8 of 8 seeds, past
+# the 300 s Cloud Run timeout, because every call could still wait its full 150 s.
+# Hence PACE_JOB_DEADLINE_S below, which bounds the TOTAL. A wait beyond the budget
+# does not fail the call -- the provider is skipped to the next, and if every one
+# is over budget the call is FORCED through un-waited -- so exceeding it costs a
+# possible 429, never a reading. Simulated, not measured in production; the
+# /admin/ops "blocked on bucket" column is where it shows up.
 # Env-overridable like REQUEST_TOKEN_CEILING above.
 PACE_JOB_BUDGET_S = float(os.environ.get("BHAGYA_PACE_JOB_BUDGET_S", "150"))
+
+# Job-level deadline for pacing waits (#475 Phase 1, QA round 2). The job entry
+# point (see pace_deadline) turns this into ONE absolute time shared by every call
+# of the job -- both languages of /admin/send-daily-rashifal -- and each chat call
+# is handed min(PACE_JOB_BUDGET_S, time left): the allowance decays as the job
+# runs, and a call that arrives after the deadline has 0 s to wait, so it skips to
+# the next provider and then takes the forced, un-waited pass (today's pre-pacing
+# behaviour: it may 429 and falls to the existing 429 handling).
+#
+# Why 230: the Cloud Run request timeout is 300 s and the deadline stops WAITING,
+# not the job. Calls after it still cost their own latency (~10 s, two workers)
+# and the forced pass's 429 handling (one hint sleep <= RETRY_AFTER_MAX_S, then
+# the next provider), and the email loop runs after generation. Simulated (scaled
+# clock, Groq-shaped limiter, real chat(), 2 workers, 24 calls, 8 seeds): the job
+# ended 245-258 s at 230 (15-28 s past it), 239-249 at 220 and 245-272 at 240, so
+# 230 + ~28 s = ~258 s leaves ~40 s of the 300 for the emails. Higher buys fewer
+# forced calls but spends that headroom (260 -> up to 282 s); lower fails more.
+# Simulated, NOT production-measured. It bounds the wait, not the failures: at 230
+# the forced tail 429s and exhausted the chain for one language in 7 of 8 seeds
+# (a language that completed is cached; one that failed is not). One language per request -- the
+# /admin/warm-rashifal path -- never reached the deadline (119-191 s, 0 429s).
+# Env-overridable like PACE_JOB_BUDGET_S.
+PACE_JOB_DEADLINE_S = float(os.environ.get("BHAGYA_PACE_JOB_DEADLINE_S", "230"))
+
+
+def pace_deadline(allowance_s: float | None = None) -> float:
+    """The absolute pacing deadline for a job that starts now.
+
+    Call ONCE at the job's entry point and pass the result down as a plain
+    argument -- never a ContextVar: the rashifal fan-out runs in pool threads and
+    context does not propagate into them. Uses the same injectable clock as the
+    buckets, so a test's fake clock moves the deadline and the buckets together.
+    """
+    return _pace_clock() + (PACE_JOB_DEADLINE_S if allowance_s is None else allowance_s)
+
+
+def pace_wait_budget(deadline: float | None) -> float | None:
+    """The `max_wait_s` for a chat() call made now under `deadline`.
+
+    None (no deadline) stays None = the interactive default. Otherwise
+    min(PACE_JOB_BUDGET_S, time left), floored at 0: never more than the
+    per-call budget, and exactly 0 once the deadline has passed.
+    """
+    if deadline is None:
+        return None
+    return max(0.0, min(PACE_JOB_BUDGET_S, deadline - _pace_clock()))
 
 _RETRY_PROSE = re.compile(r"try again in\s+([0-9]*\.?[0-9]+)\s*(ms|s\b|seconds?)", re.I)
 
