@@ -62,21 +62,27 @@ the 413 taught us about.
       the intercessor with Shani" - so a reader was still told them, from
       the other half of the same request. This gate runs SUMMARY_FORBIDDEN
       over every llm_summary and names the offending slug. Only llm_summary
-      is scanned: the /learn article bodies and FAQs are a later slice of
-      #398 and would fail it today.
+      is scanned: the /learn article bodies and FAQs are Gate 7's. Slice 6
+      added three rows here: a hymn beside a certifying word (Jupiter's and
+      Mercury's summaries said "safe universal practices ... Vishnu
+      Sahasranama", and so did Manglik's "7 classical remedies"), and the
+      Graha Maitri and Rahu/Ketu-grid shapes of Gate 7 families K and L.
 
   Gate 7 - no retired claims on the reader-facing surfaces.  The same claims
       sat on the pages a reader opens directly: the /learn article bodies,
       the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
       languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
-      is shown. This gate scans those surfaces for the ten families #398
+      is shown. This gate scans those surfaces for the twelve families #398
       retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
       Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
       practice or as ANY planet's universal/classical/safe one (slice 5),
       "per <source> remedial tradition", Surya Namaskar (slice 4),
       a rule lent Parashara's name, "(per Parashara's grid)" (slice 4), and
       three shapes by which a product-added remedy was called classical or
-      ranked above ritual (slice 5, #468) (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
+      ranked above ritual (slice 5, #468), the Graha Maitri ladder collapsed
+      to friend / neutral-"partial" / enemy-0 (K, slice 6) and Rahu and Ketu
+      placed outside "Parashara's" friendship grid (L, slice 6)
+      (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
       families still open on #398 ("black sesame", weekday fasting):
       forbidding them here would only make main red. A bare "per BPHS" is
       also not forbidden, for the same reason (family I's comment has the
@@ -704,6 +710,103 @@ def gate_5_no_retired_claims(text: str) -> bool:
     return ok
 
 
+# The hymn vocabulary Gate 6 (summaries) and Gate 7 family F share. Defined
+# here, above SUMMARY_FORBIDDEN, because a summary said "Jupiter safe universal
+# practices ... Vishnu Sahasranama" to the LLM for as long as the pages did, and the
+# two gates must not be able to disagree about what counts as certifying it.
+# "Sahasranam" without the trailing -a is the commoner Indian spelling, and
+# the Hindi surface has no native reader, so both are the likeliest way the
+# retired claim comes back. QA round 4 measured each escaping family F.
+_HYMN = r"(?:Sahasranama?|सहस्रनाम)"
+# "Sri Lalita Sahasranama" is remedies.md 8's own practice (Sri Yantra section).
+# Python lookbehinds are fixed-width, so one per separator length: QA round 1
+# measured "Lalita-Sahasranama" and "Lalita  Sahasranama" firing as the Vishnu
+# hymn, and the Hindi/"Lalitha" spellings are the likeliest next ones.
+_LALITA_SEP = r"[\s\-\u2010\u2011]"
+_HYMN_NOT_LALITA = "".join(
+    rf"(?<!{name}{_LALITA_SEP}{{{k}}})"
+    for name in ("Lalita", "Lalitha", "ललिता") for k in (1, 2, 3)) + _HYMN
+# Words that CERTIFY a practice rather than mention it. "safe for anyone to
+# recite" is deliberately not here: it is the register slice 3 kept for the
+# Saturn pages, and the tree carries it as plain description.
+_HYMN_CERT = (r"(?:universal(?:ly)?|classical(?:ly)?|primary|powerful"
+              r"|safe\s+(?:universal|foundation|practice|mantra|fallback)"
+              r"|most\s+(?:classical\w*|cited|reliable|direct))")
+HYMN_CERTIFIED = (rf"{_HYMN_NOT_LALITA}[^.\n]{{0,140}}{_HYMN_CERT}"
+                  rf"|{_HYMN_CERT}[^.\n]{{0,140}}{_HYMN_NOT_LALITA}")
+
+# K. The Graha Maitri ladder collapsed to three rungs (#398 slice 6). The
+# koota is graded -- matching.md vv.27-28: friend+friend or one lord for both
+# signs 5, friend+neutral 4, neutral+neutral 3, friend+enemy 2, neutral+enemy 1,
+# enemy+enemy 0 (matching.py _graha_maitri_score) -- and the Ashtakoot article
+# said "friends 5, neutral partial, enemies 0", which gives 0 to the 44 of 144
+# rashi pairs that really score 1 or 2. "Enemies, 0" is NOT wrong on its own:
+# enemy+enemy IS 0, so a bare "mutual enemies, 0" and the matrix row
+# "enemy + enemy 0" stay legal. What is forbidden is the three-rung SHAPE:
+#   (a) "neutral, partial" / "neutral -> half" -- the middle rung is one of
+#       three numbers (4, 3, 1), never "partial";
+#   (b) an "if ... enemies, 0" with no "both"/"mutual"/"each" in it, i.e. 0 for
+#       any enemy at all, plus its "enemies get/score nothing" spellings.
+_ARROW = r"[\s,:=\-\u2010-\u2015\u2192>(]*"
+_ENEMY = r"(?:enem(?:y|ies)|inimical|hostile|foes?|unfriendly|enmity|adversar\w+|shatru\w*)(?:\s+(?:planets?|lords?|grahas?|signs?))?"
+_ZERO = r"(?:0|zero|nil|nothing|no\s+points?)"
+_NOT_BOTH = r"(?:(?!\bboth\b|\bmutual\w*|\beach\b|\bpair\b)[^.\n]){0,40}?"
+GRAHA_MAITRI_MISSTATED = (
+    rf"\bneutral(?:s|\s+(?:lords?|planets?|signs?|pair))?\b{_ARROW}(?:(?:gives?|gets?|scores?|earns?|receives?|yields?|is|are|means?)\s+)?"
+    rf"(?:a\s+)?(?:partial|half|some|reduced|middling|medium|in[\s\-]between)\w*"
+    # A bare plural "enemies, 0" opening a list item or table cell ("friends 5,
+    # neutrals 3, enemies 0"). Anchored to a delimiter because "if both lords are
+    # enemies, 0" is enemy+enemy and correct, and lookbehind cannot be variable.
+    rf"|(?:^|(?<=[;,.(\n=:])|(?<=\band)|(?<=\bor))\s*\benemies\b{_ARROW}{_ZERO}\b"
+    rf"|\b(?:if|when|where|should)\b{_NOT_BOTH}\b{_ENEMY}\b{_ARROW}(?:then\s+)?{_ZERO}\b"
+    rf"|\b(?:if|when|where|should)\b{_NOT_BOTH}\b{_ENEMY}\b[^.\n]{{0,15}}?\b(?:score|scores|get|gets|receive|receives"
+    rf"|earn|earns|give|gives|yield|yields)\s+{_ZERO}\b"
+    # Hindi: no Graha Maitri copy exists in i18n.py today; "if the lords are
+    # enemies, 0" is the only shape worth pinning without a native reader.
+    r"|\u092f\u0926\u093f[^.\n\u0964]{0,40}?\u0936\u0924\u094d\u0930\u0941[\u0900-\u097f]*(?:\s+[\u0900-\u097f]+){0,2}[\s,:=\-]*(?:0|\u0966|\u0936\u0942\u0928\u094d\u092f)"
+)
+
+# L. Rahu and Ketu "outside Parashara's grid" (#398 slice 6). grahas.md 11.1
+# gives the seven-planet table as the classical one AND gives Rahu/Ketu
+# friendships (friendly with Venus and Saturn, enemies of Sun, Moon, Mars,
+# neutral with the rest -- "traditions vary here more than for the classical 7").
+# So the sourced statement is "the standard table covers seven planets; the
+# two nodes' friendships come from tradition and vary". Four pages said instead
+# that the grid is Parashara's, that it "predates their formal inclusion in the
+# graha family", that it "was built for the 7-planet model", and that modern
+# practice "uses ad-hoc rules" -- history grahas.md does not carry. Forbidden:
+# the attribution of a friendship table to Parashara/BPHS, the "predates" and
+# "7-planet model" history, "ad-hoc rules" for the nodes, and an absence from a
+# CLASSICAL/Parashara/ancient/original grid ("Outside the standard
+# natural-friendship table" is the sourced wording and stays legal).
+_FGRID = r"(?:grid|table|chart|matrix|scheme)s?"
+_GRID_WORD = r"(?:natural[\s\-]*|friendship[\s\-]*|maitri[\s\-]*|naisargika[\s\-]*)"
+RAHU_KETU_GRID = (
+    rf"\b(?:{_PARASH}|BPHS){_POSS}[\s\-]+(?:{_GRID_WORD}|classical[\s\-]+|own[\s\-]+){{1,4}}"
+    rf"(?:{_FGRID}|maitri|friendships?)\b"
+    rf"|(?:\bnot|n['\u2019]t|\bnever)\s+(?:be\s+)?(?:part\s+of|appear(?:ing)?|(?:included|listed|covered|found|present|given|shown)"
+    rf"(?:\s+(?:in|on|by))?|in)\s+(?:the\s+|any\s+)?(?:\w+[\s\-]+){{0,2}}?"
+    rf"(?:classical|{_PARASH}|BPHS|ancient|traditional|original|canonical)[\w'\u2019\s\-]{{0,40}}?{_FGRID}"
+    rf"|\b(?:excluded|left\s+out|absent|missing|omitted|outside)(?:\s+(?:from|of))?\s+(?:the\s+|any\s+)?(?:\w+[\s\-]+){{0,2}}?"
+    rf"(?:classical|{_PARASH}|BPHS|ancient|traditional|original|canonical)[\w'\u2019\s\-]{{0,40}}?{_FGRID}"
+    # Hindi: "पराशर की मैत्री तालिका". i18n.py carries no such copy today.
+    r"|(?:पाराशर|पराशर)\w*\s+(?:की|के|का)\s+(?:नैसर्गिक\s+)?(?:मैत्री|तालिका|ग्रिड)"
+    # The reverse shape: the grid is the subject and the node is what it lacks.
+    rf"|(?:classical|{_PARASH}|BPHS|ancient|traditional|original|canonical)[\w'\u2019\s\-]{{0,40}}?{_FGRID}\s+"
+    rf"(?:(?:does\s+not|doesn['\u2019]t|did\s+not|didn['\u2019]t|never)\s+)?"
+    rf"(?:include|cover|list|contain|mention|know|exclude|omit|has\s+no|have\s+no|lacks?)\w*\s+(?:both\s+)?(?:Rahu|Ketu)"
+    # History the corpus does not carry, in the other words it can be put.
+    r"|\bpredat\w+\s+(?:the\s+)?(?:nodes|lunar\s+nodes|shadow\s+planets)"
+    r"|\b(?:original|older|earlier|early)\s+(?:7|seven)[\s\-]planet"
+    r"|\bonly\s+knew\s+(?:of\s+)?(?:the\s+)?(?:7|seven)\b"
+    r"|\b(?:added|included|admitted|counted)\s+(?:later|afterwards|subsequently)\b"
+    r"|\bbefore\s+(?:Rahu|Ketu)[^.\n]{0,30}\bwere\s+(?:counted|added|included|recogni[sz]ed)"
+    r"|\bpredat\w+[^.\n;]{0,60}?(?:formal\s+inclusion|inclusion|graha\s+family|nava?graha|nine[\s\-]graha)"
+    r"|\b(?:Rahu|Ketu)\b[^.\n]{0,80}?\bpredat\w+"
+    r"|\b(?:built|made|designed|drawn\s+up|written)\s+for\s+the\s+(?:7|seven)[\s\-]planet"
+    r"|\bad[\s\-]?hoc\s+(?:rules?|assignments?|conventions?|friendships?|relationships?)\b"
+)
+
 # What Gate 6 forbids inside an llm_summary: FORBIDDEN, except that the bare
 # "milk offering" is replaced by MILK_TO_SHIVA (the claim #398 actually
 # retired is Moon -> Shiva; kaal-sarp-dosh-remedies has a Nag Panchami serpent
@@ -737,6 +840,18 @@ SUMMARY_FORBIDDEN = tuple(
     # does not match: the pattern needs the confirmation to come first.
     (r"confirmation in D-?9|Raja Yoga confirmation",
      "yoga manifestation is D-1/D-10, not a D-9 gate (Rao 20217-20219; divisional_charts.md:107-113)"),
+    # Slice 6. Jupiter's and Mercury's summaries said "safe universal practices"
+    # and listed the Vishnu Sahasranama (remedies.md 8: the universal safe
+    # practice is the Sri Yantra; the hymn is in no book we hold). Same pattern
+    # as Gate 7 family F's certifying half, so the two cannot disagree.
+    (HYMN_CERTIFIED,
+     "no book we hold names the Vishnu Sahasranama as ANY planet's practice, let alone a "
+     "universal/classical/safe one (remedies.md 8, 11.2)"),
+    (GRAHA_MAITRI_MISSTATED,
+     "Graha Maitri is a six-rung ladder 5/4/3/2/1/0 (matching.md vv.27-28), not friends/neutral/enemies"),
+    (RAHU_KETU_GRID,
+     "grahas.md 11.1 gives Rahu/Ketu friendships; the standard table covers seven planets and the "
+     "'Parashara / predates / ad-hoc' history is unsourced"),
 )
 
 
@@ -772,30 +887,12 @@ def gate_6_no_retired_claims_in_summaries(summaries=None) -> bool:
 SRC = REPO_ROOT / "src" / "astro_ai"
 
 # The reader-facing counterpart of FORBIDDEN/SUMMARY_FORBIDDEN, but only for
-# the ten families slices 3-5 of #398 fixed. Patterns are wider than the
+# the twelve families slices 3-6 of #398 fixed. Patterns are wider than the
 # literals that were found (QA measured 17 of 38 spelling variants slipping
 # past the first Gate 5 patterns): hyphen/space-agnostic, singular/plural,
 # Devanagari where i18n.py carries a Hindi copy.
 _HANU = r"(?:Hanuman|Bajrang\w*|Maruti|Anjaneya|हनुमान)"
 _SATURN = r"(?:Shani|Saturn|Saturday|Sade[- ]Sati|शनि)"
-# "Sahasranam" without the trailing -a is the commoner Indian spelling, and
-# the Hindi surface has no native reader, so both are the likeliest way the
-# retired claim comes back. QA round 4 measured each escaping family F.
-_HYMN = r"(?:Sahasranama?|सहस्रनाम)"
-# "Sri Lalita Sahasranama" is remedies.md 8's own practice (Sri Yantra section).
-# Python lookbehinds are fixed-width, so one per separator length: QA round 1
-# measured "Lalita-Sahasranama" and "Lalita  Sahasranama" firing as the Vishnu
-# hymn, and the Hindi/"Lalitha" spellings are the likeliest next ones.
-_LALITA_SEP = r"[\s\-\u2010\u2011]"
-_HYMN_NOT_LALITA = "".join(
-    rf"(?<!{name}{_LALITA_SEP}{{{k}}})"
-    for name in ("Lalita", "Lalitha", "ललिता") for k in (1, 2, 3)) + _HYMN
-# Words that CERTIFY a practice rather than mention it. "safe for anyone to
-# recite" is deliberately not here: it is the register slice 3 kept for the
-# Saturn pages, and the tree carries it as plain description.
-_HYMN_CERT = (r"(?:universal(?:ly)?|classical(?:ly)?|primary|powerful"
-              r"|safe\s+(?:universal|foundation|practice|mantra|fallback)"
-              r"|most\s+(?:classical\w*|cited|reliable|direct))")
 # A window must not run across an arrow or a ';' - "Mars -> Hanuman; ...;
 # Saturn -> Vishnu" is the correct table and must stay legal. Tags are blanked
 # before matching, so the window is wide enough to cross "</strong>".
@@ -852,8 +949,7 @@ READER_FORBIDDEN = (
     # deity link there IS sourced (Table 7.1), so a hymn beside a planet stays
     # legal; what is forbidden is the hymn beside a CERTIFYING word. The Lalita
     # Sahasranama is exempt because remedies.md 8 does name it, under Sri Sukta.
-    (rf"{_SATURN}[^.;\n]{{0,140}}{_HYMN}|{_HYMN}[^.;\n]{{0,140}}{_SATURN}"
-     rf"|{_HYMN_NOT_LALITA}[^.\n]{{0,140}}{_HYMN_CERT}|{_HYMN_CERT}[^.\n]{{0,140}}{_HYMN_NOT_LALITA}",
+    (rf"{_SATURN}[^.;\n]{{0,140}}{_HYMN}|{_HYMN}[^.;\n]{{0,140}}{_SATURN}|{HYMN_CERTIFIED}",
      "F: the deity is sourced (Vishnu for Mercury, Jupiter and Saturn - Table 7.1); no book "
      "we hold names a hymn as ANY planet's practice, let alone calls one universal/classical/safe"),
 
@@ -881,9 +977,9 @@ READER_FORBIDDEN = (
     # did. SCOPE, measured on the tree: Parashara-named "per/according to" is banned
     # outright (0 other hits), and BPHS-named only when it is followed by a grid-like
     # noun. "Parashara's natural-friendship grid" (rahu/ketu-in-vedic-astrology, the-9-grahas,
-    # shani-saturn) is NOT banned either: it states what a source's table covers, is a
-    # different and equally unsourced claim (grahas.md 11.1 gives Rahu/Ketu friendships,
-    # which those sentences deny), and is reported rather than fixed here. A bare "per BPHS" is NOT banned: it sits on five pages (rahu/ketu beej
+    # shani-saturn) was NOT banned here in slice 4 -- it is a different claim (grahas.md 11.1
+    # gives Rahu/Ketu friendships, which those sentences denied) -- and is family L since
+    # slice 6, which also fixed the four pages. A bare "per BPHS" is NOT banned: it sits on five pages (rahu/ketu beej
     # mantras, dhana yoga, matching.html Tara, about.html's own explanation of the
     # phrase) that are separate claims needing their own sourcing, and banning it here
     # would turn main red over work this slice does not do.
@@ -925,6 +1021,19 @@ READER_FORBIDDEN = (
      r"|\bmost[\s\-\u2010\u2011]+classically[\s\-\u2010\u2011]+cited[^.\n]{0,40}\b(?:practices?|remedy|deeds?|mantras?)\b",
      "J: remedies.md 11.2 lists 'serve the elderly' and 'support renunciates' as product "
      "additions, so no heading, superlative or comparison may present them as classical"),
+
+    # K. Graha Maitri collapsed to friend / neutral-partial / enemy-0 (#398 slice 6;
+    # kundali-matching-ashtakoot-guna-milan). See GRAHA_MAITRI_MISSTATED for what is
+    # and is not forbidden: "mutual enemies, 0" is correct and stays legal.
+    (GRAHA_MAITRI_MISSTATED,
+     "K: Graha Maitri is a six-rung ladder 5/4/3/2/1/0 (matching.md vv.27-28; matching.py "
+     "_graha_maitri_score): 0 only for enemy+enemy, 1 for neutral+enemy, 2 for friend+enemy"),
+
+    # L. Rahu and Ketu "outside Parashara's grid" (#398 slice 6). See RAHU_KETU_GRID.
+    (RAHU_KETU_GRID,
+     "L: grahas.md 11.1 gives Rahu/Ketu friendships; say the standard table covers the seven "
+     "planets and the nodes' friendships come from tradition and vary - no Parashara "
+     "attribution, no 'predates' history, no 'ad-hoc rules'"),
 )
 
 # Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.

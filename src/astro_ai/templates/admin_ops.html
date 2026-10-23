@@ -445,6 +445,7 @@ header.top{border-bottom:1px solid var(--line);margin-bottom:28px}
 .tscroll::-webkit-scrollbar{height:8px}
 .tscroll::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:4px}
 .rt.cols7{min-width:720px}
+.rt.cols8{min-width:860px}
 .loops{min-width:520px}
 
 /* ── Cost table ───────────────────────────────────────────────────────── */
@@ -882,11 +883,12 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
            This is the grain the limit is enforced at. No Tailwind and no
            app.css: this page carries its own <style>. -#}
       <h3 class="lbl" style="margin:22px 0 10px">Tokens per minute, by model</h3>
-      <div class="tscroll" role="region" aria-label="Tokens per minute, by model"><table class="rt cols7">
+      <div class="tscroll" role="region" aria-label="Tokens per minute, by model"><table class="rt cols8">
         <thead><tr><th>model</th><th class="n">calls</th><th class="n">input</th>
           <th class="n">output</th><th class="n">busiest minute</th>
           <th class="n">% of {{ "{:,}".format(ops.tpm_per_model) }} TPM</th>
-          <th class="n">429 via fallback</th></tr></thead>
+          <th class="n">429 via fallback</th>
+          <th class="n">blocked on bucket</th></tr></thead>
         <tbody>
         {% for m in ops.app.models %}
         <tr>
@@ -899,9 +901,14 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
             {%- if m.peak_minute %}<span class="sub">{{ m.peak_minute }}</span>{% endif %}</td>
           <td class="n"{% if m.title %} title="{{ m.title }}"{% endif %}>{{ m.pct ~ '%' if m.pct is not none else '—' }}</td>
           <td class="n">{{ m.fb429 if m.fb429 is not none else '—' }}</td>
+          <td class="n"{% if m.reserved is none %} title="not recorded: pacing off, not a Groq model, or no paced day in this window"{% endif %}>
+            {%- if m.reserved is none %}—
+            {%- else %}{{ ("{:g}".format(m.wait_s) ~ ' s') if m.wait_s else '0' }}
+            <span class="sub" title="of the calls the bucket admitted, how many had to wait; skipped = sent to the next provider instead of waiting; forced = last-resort calls that bypassed the bucket">{% if m.reserved == 0 and (m.skips or m.forced) %}none admitted{% else %}{{ "{:,}".format(m.waits) }} of {{ "{:,}".format(m.reserved) }} waited{% endif %} · {{ m.skips }} skipped · {{ m.forced }} forced</span>
+            {%- endif %}</td>
         </tr>
         {% else %}
-        <tr><td colspan="7"><div class="empty">No provider chain could be read and no per-model
+        <tr><td colspan="8"><div class="empty">No provider chain could be read and no per-model
           figures are recorded, so there is nothing to list.</div></td></tr>
         {% endfor %}
         </tbody>
@@ -923,6 +930,19 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         <b>—</b> means not recorded: days before this panel shipped carry no per-model figures;
         this window has them for {{ ops.app.models_days_recorded }} of {{ ops.app.days }} days.
         A model with <b>0</b> calls served nothing in the recorded days.
+        <b>blocked on bucket</b> is the total time this app&rsquo;s own token bucket made calls to
+        that model wait before sending, with how many of the admitted calls waited, how many were
+        skipped to the next provider instead, and how many were forced through as a last resort.
+        It is <b>per process, not account</b>: each running instance keeps its own bucket, so it
+        cannot see another instance&rsquo;s calls or any other caller of the key, and a 429 from
+        Groq is still handled as before. <b>—</b> there means pacing was not recorded
+        (off, a non-Groq model, or a day before it shipped); <b>0</b> means pacing was on and
+        nothing waited. This window has pacing for {{ ops.app.models_paced_days }} of
+        {{ ops.app.days }} days. Only requests that were served are counted; one that failed on
+        every provider is not. The bucket models Groq&rsquo;s limit as a steady refill, which is an
+        <b>inference</b> from one 429 message and not a measurement: if Groq counts a strict
+        60-second window instead, this bucket can still admit enough to be rejected, and the
+        &ldquo;429 via fallback&rdquo; column above is what would show it.
       </p>
       {% endif %}
     </div>

@@ -888,6 +888,7 @@ def _generate_rashifal_single(
     prompt_path: Path,
     lang: str,
     pacer: "_StartPacer | None" = None,
+    pace_deadline: float | None = None,
 ) -> str:
     """Generate a single rashi's daily reading — one LLM call, ~200 tokens output.
 
@@ -897,6 +898,12 @@ def _generate_rashifal_single(
     `pacer` throttles the START of the call, not the call itself. It is None
     for the on-demand single-rashi path (`generate_rashifal_for_rashi`), where
     a user is waiting on one call and there is no burst to spread.
+
+    `pace_deadline` (#475) is the job's absolute pacing deadline from
+    providers.pace_deadline(); None = the interactive default wait. This call
+    turns it into its own `max_wait_s` the moment before it calls chat(), so the
+    allowance shrinks as the job runs. A plain argument, not a ContextVar: this
+    runs in a ThreadPoolExecutor worker and context does not propagate into one.
     """
     if pacer is not None:
         waited = pacer.wait()
@@ -933,7 +940,7 @@ def _generate_rashifal_single(
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
-    ], route="rashifal_single")
+    ], route="rashifal_single", max_wait_s=providers.pace_wait_budget(pace_deadline))
     return _strip_inline_markdown(content.strip())
 
 
@@ -1040,6 +1047,7 @@ def generate_rashifal(
     lang: str = "en",
     panchang: DailyPanchang | None = None,
     festival: dict | None = None,
+    pace_deadline: float | None = None,
 ) -> str:
     """Generate today's Rashifal — sectioned predictions for all 12 rashis.
 
@@ -1057,6 +1065,15 @@ def generate_rashifal(
     old 12-rashi batch prompt. Callers should pass RASHIFAL_PROMPT_PATH; the
     module-level constant in main.py has been updated to point at the new
     single-rashi file.
+
+    `pace_deadline` (#475) is the absolute time (providers.pace_deadline()) after
+    which no call may WAIT on the per-model token bucket; each of the twelve calls
+    gets min(PACE_JOB_BUDGET_S, time left). None keeps the interactive 6 s
+    default. The batch callers -- /admin/warm-rashifal and
+    /admin/send-daily-rashifal, where nobody is waiting -- pass one; the
+    send-daily job passes the SAME one for both languages, which is what bounds
+    its 24 calls. The welcome email runs inside the subscriber's own request and
+    passes none.
     """
     day_signals = _build_rashifal_day_signals(transit, today_iso, lang, panchang, festival)
     day_signals_block = "\n".join(f"- {s}" for s in day_signals)
@@ -1097,7 +1114,7 @@ def generate_rashifal(
             pool.submit(
                 _generate_rashifal_single,
                 anchor, day_signals_block, transit_block, prompt_path, lang,
-                pacer,
+                pacer, pace_deadline,
             ): idx
             for idx, anchor in enumerate(_RASHI_ANCHORS)
         }
