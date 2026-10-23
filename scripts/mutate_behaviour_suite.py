@@ -2641,6 +2641,43 @@ MUTATIONS = [
      '                if provider.startswith("groq"):',
      '                if True:',
      "test_only_groq_models_get_a_percentage_of_the_groq_bucket"),
+
+    # #475 Phase 1 (S1). The "blocked on bucket" store and column.
+    ("#475: record() does not write paced_by_model",
+     "src/astro_ai/llm_stats.py",
+     '        if isinstance(pacing, dict):\n',
+     '        if False:\n',
+     "test_record_writes_paced_by_model_and_sums_across_calls"),
+
+    ("#475: a call with no pacing still writes a zeroed paced_by_model entry (silence becomes a zero)",
+     "src/astro_ai/llm_stats.py",
+     '        if isinstance(pacing, dict):\n',
+     '        if True:\n',
+     "test_a_call_with_no_pacing_writes_no_key_at_all"),
+
+    ("#475: usage_summary counts every day as a paced day",
+     "src/astro_ai/llm_stats.py",
+     '        if isinstance(pcd, dict) and pcd:\n            paced_days += 1\n',
+     '        paced_days += 1\n        if isinstance(pcd, dict) and pcd:\n',
+     "test_usage_summary_sums_pacing_and_counts_only_days_that_carried_it"),
+
+    ("#475: a model with no pacing row reads 0 reserved instead of None",
+     "src/astro_ai/llm_stats.py",
+     '(paced[key][f] if key in paced else None)',
+     '(paced[key][f] if key in paced else 0)',
+     "test_a_model_with_no_pacing_row_reports_none_not_zero"),
+
+    ("#475: the panel row drops the wait (wait_s is always 0)",
+     "src/astro_ai/ops_data.py",
+     'row["wait_s"] = round(int(o.get("wait_ms") or 0) / 1000, 1)',
+     'row["wait_s"] = 0',
+     "test_model_rows_turn_milliseconds_into_seconds_and_keep_the_counts"),
+
+    ("#475: the panel prints a dash for a measured zero",
+     "src/astro_ai/templates/admin_ops.html",
+     "{%- if m.reserved is none %}—",
+     "{%- if m.reserved is none or not m.wait_s %}—",
+     "test_the_page_prints_zero_for_a_measured_zero"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

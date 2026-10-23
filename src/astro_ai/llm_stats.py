@@ -51,6 +51,10 @@ Schema (per-day file):
         "groq120|openai/gpt-oss-120b": {"peak": 9100, "peak_minute": 29500012,
                                         "minute": 29500031, "tokens": 3200}
       },                             # minute = UTC epoch minute; see record()
+      "paced_by_model": {            # #475 Phase 1 — what the per-process token bucket did
+        "groq120|openai/gpt-oss-120b": {"reserved": 17, "waits": 5,
+                                        "wait_ms": 42000, "skips": 2, "forced": 1}
+      },                             # absent = pacing off / not recorded; reserved 0 = on, idle
       "calls": {"total": .., "hits": .., "misses": .., "miss_latency_sum_ms": ..},
       "call_by_route": {
         "rashifal": {"calls": .., "hits": .., "input_tokens": .., "output_tokens": ..,
@@ -252,7 +256,8 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
            prompt_tokens: int | None = None,
            cached_tokens: int | None = None,
            reported_impossible: bool = False,
-           completion_tokens: int | None = None) -> None:
+           completion_tokens: int | None = None,
+           pacing: dict | None = None) -> None:
     """Increment counters for today's LLM call. Best-effort; never raises.
 
     Called from providers.chat() after a successful response. `route` labels
@@ -291,6 +296,13 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
     `calls` and to nothing else, so `measured` is always the honest denominator
     and `input_tokens / measured` is a real mean rather than one diluted by
     calls nobody could size.
+
+    `pacing` (#475 Phase 1) is what the per-model token bucket did on the way to
+    THIS success: {reserved, waits, wait_ms, skips, forced}, accumulated by the
+    caller for this model across the request. It is folded into
+    `paced_by_model` inside the same mutator -- still one storage write. None
+    means pacing was off or not applicable, and writes nothing, which is how the
+    panel tells "not paced" (a dash) from "paced and never blocked" (a zero).
     """
     today = date.today()
     stat_key = f"{provider}|{model}|{route or 'unknown'}"
@@ -360,6 +372,19 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
                 if pk["tokens"] > pk.get("peak", 0):
                     pk["peak"] = pk["tokens"]
                     pk["peak_minute"] = minute
+
+        if isinstance(pacing, dict):
+            # #475 Phase 1. What the bucket did to this model's calls: how many
+            # reservations it granted, how many of those waited and for how long,
+            # how often a call was skipped to the next provider instead, and how
+            # often the last-resort pass bypassed it. Plain sums, one entry per
+            # model, so the blob grows with models and never with calls.
+            # `reserved` is written whenever pacing was on -- even as 0 -- because
+            # that is what lets the panel print a measured 0 instead of a dash.
+            pm = data.setdefault("paced_by_model", {}).setdefault(
+                model_key, {"reserved": 0, "waits": 0, "wait_ms": 0, "skips": 0, "forced": 0})
+            for k in ("reserved", "waits", "wait_ms", "skips", "forced"):
+                pm[k] = _as_int(pm.get(k)) + max(_as_int(pacing.get(k)), 0)
 
         pc = data.setdefault("prefix_cache", {}).setdefault(stat_key, dict(_PREFIX_ZERO))
         pc["calls"] = pc.get("calls", 0) + 1
@@ -570,11 +595,16 @@ def _as_int(v: Any) -> int:
         return 0
 
 
+_PACED_FIELDS = ("reserved", "waits", "wait_ms", "skips", "forced")
+
+
 def _model_rows_from(acc: dict[str, dict[str, int]],
-                     peaks: dict[str, tuple[int, int | None]]) -> list[dict[str, Any]]:
+                     peaks: dict[str, tuple[int, int | None]],
+                     paced: dict[str, dict[str, int]] | None = None) -> list[dict[str, Any]]:
     """Flatten the per-model accumulators into rows for usage_summary (#475)."""
+    paced = paced or {}
     rows = []
-    for key in set(acc) | set(peaks):
+    for key in set(acc) | set(peaks) | set(paced):
         provider, _, model = key.partition("|")   # split on the FIRST pipe
         v = acc.get(key, {})
         peak = peaks.get(key)
@@ -590,6 +620,10 @@ def _model_rows_from(acc: dict[str, dict[str, int]],
             # None when no day carried the key -- not 0.
             "peak_tpm": peak[0] if peak else None,
             "peak_minute": peak_minute,
+            # Phase 1. None when no day carried pacing for the key -- NOT 0: a
+            # model the bucket never saw and one it saw and never blocked are
+            # different facts, and `reserved` is written as 0 for the second.
+            **{f: (paced[key][f] if key in paced else None) for f in _PACED_FIELDS},
         })
     rows.sort(key=lambda r: (-r["calls"], r["key"]))
     return rows
@@ -617,6 +651,8 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
     model_acc: dict[str, dict[str, int]] = {}
     model_peak: dict[str, tuple[int, int | None]] = {}   # key -> (peak, peak_minute)
     model_days = 0
+    paced_acc: dict[str, dict[str, int]] = {}
+    paced_days = 0
     for i in range(days):
         d = today - timedelta(days=i)
         blob = _read_day(d)
@@ -663,6 +699,19 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
                     continue
                 acc = model_acc.setdefault(mkey, {"calls": 0, "measured": 0,
                                                   "input_tokens": 0, "output_tokens": 0})
+                for k in acc:
+                    acc[k] += _as_int(r.get(k))
+        # Phase 1. Same tolerance as above, and `paced_days` is counted apart from
+        # `model_days`: pacing is switchable (BHAGYA_TPM_PACING), so a day can
+        # carry per-model figures and no pacing ones. Sums, since every field is
+        # a count or a duration; a day with no key adds nothing, not a zero.
+        pcd = blob.get("paced_by_model")
+        if isinstance(pcd, dict) and pcd:
+            paced_days += 1
+            for mkey, r in pcd.items():
+                if not isinstance(r, dict):
+                    continue
+                acc = paced_acc.setdefault(mkey, dict.fromkeys(_PACED_FIELDS, 0))
                 for k in acc:
                     acc[k] += _as_int(r.get(k))
         pbm = blob.get("peak_tpm_by_model")
@@ -726,8 +775,11 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
         # #475. Keyed `provider|model` (the grain Groq's TPM bucket is enforced
         # at), where measured_by_route is keyed by route. [] with
         # model_days_recorded == 0 means NOT RECORDED -- a silence, not a zero.
-        "measured_by_model": _model_rows_from(model_acc, model_peak),
+        "measured_by_model": _model_rows_from(model_acc, model_peak, paced_acc),
         "model_days_recorded": model_days,
+        # Phase 1. Days whose blob carried `paced_by_model`; 0 = pacing never
+        # recorded in this window (off, or before it shipped) -- a silence.
+        "paced_days": paced_days,
         "cache_entries": 0,   # SQLite-only concept; filled by admin_usage from cache.py
     }
 
