@@ -1,6 +1,34 @@
 {
-  "generated_at": "2026-10-23T15:38:37Z",
+  "generated_at": "2026-10-23T20:12:21Z",
   "rows": [
+    {
+      "run": 39987488558,
+      "workflow": "agent-work",
+      "date": "2026-10-23",
+      "started": "2026-10-23T16:31:34Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 29.4,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "nothing",
+      "attribution": "receipt"
+    },
+    {
+      "run": 39980147953,
+      "workflow": "agent-work",
+      "date": "2026-10-23",
+      "started": "2026-10-23T15:39:28Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 50.0,
+      "issue": null,
+      "pr": null,
+      "pr_merged": null,
+      "outcome": "nothing",
+      "attribution": "receipt"
+    },
     {
       "run": 39966993890,
       "workflow": "agent-work",
