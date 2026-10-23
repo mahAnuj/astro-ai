@@ -938,7 +938,11 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
         Groq is still handled as before. <b>—</b> there means pacing was not recorded
         (off, a non-Groq model, or a day before it shipped); <b>0</b> means pacing was on and
         nothing waited. This window has pacing for {{ ops.app.models_paced_days }} of
-        {{ ops.app.days }} days.
+        {{ ops.app.days }} days. Only requests that were served are counted; one that failed on
+        every provider is not. The bucket models Groq&rsquo;s limit as a steady refill, which is an
+        <b>inference</b> from one 429 message and not a measurement: if Groq counts a strict
+        60-second window instead, this bucket can still admit enough to be rejected, and the
+        &ldquo;429 via fallback&rdquo; column above is what would show it.
       </p>
       {% endif %}
     </div>

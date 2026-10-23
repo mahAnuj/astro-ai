@@ -470,6 +470,9 @@ async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
                 prompt_path=RASHIFAL_PROMPT_PATH, lang=lang,
                 panchang=compute_panchang(neutral_chart),
                 festival=festivals.festival_for_date(date.today()),
+                # A batch job: nobody is waiting, so the bucket may make a
+                # call wait the job budget instead of the 6 s interactive one.
+                max_wait_s=llm_providers.PACE_JOB_BUDGET_S,
             ),
         )
     except AllProvidersExhausted as err:
@@ -583,6 +586,8 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
                     # blast: a type error here fails the whole 7 AM send.
                     # The email's festival callout renders all of them.
                     festival=festivals.festival_for_date(date.today()),
+                    # Batch job (the 7 AM blast): see /admin/warm-rashifal.
+                    max_wait_s=llm_providers.PACE_JOB_BUDGET_S,
                 ),
             )
             sections_by_lang[lang] = [

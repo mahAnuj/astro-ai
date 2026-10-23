@@ -2757,6 +2757,81 @@ MUTATIONS = [
      "LIMIT = 8000\n",
      'LIMIT = float("inf")\n',
      "test_without_the_bucket_the_same_burst_is_rejected"),
+
+    # #475 Phase 1 (QA round 1). The job wait budget reaches chat(), and every
+    # provider's pacing reaches llm_stats.
+    ("#475: /admin/warm-rashifal stops passing the job budget (jobs get the 6 s default)",
+     "src/astro_ai/routes/subscribe.py",
+     "                festival=festivals.festival_for_date(date.today()),\n"
+     "                # A batch job: nobody is waiting, so the bucket may make a\n"
+     "                # call wait the job budget instead of the 6 s interactive one.\n"
+     "                max_wait_s=llm_providers.PACE_JOB_BUDGET_S,\n",
+     "                festival=festivals.festival_for_date(date.today()),\n",
+     "test_warm_rashifal_passes_the_job_budget"),
+
+    ("#475: /admin/send-daily-rashifal stops passing the job budget",
+     "src/astro_ai/routes/subscribe.py",
+     "                    festival=festivals.festival_for_date(date.today()),\n"
+     "                    # Batch job (the 7 AM blast): see /admin/warm-rashifal.\n"
+     "                    max_wait_s=llm_providers.PACE_JOB_BUDGET_S,\n",
+     "                    festival=festivals.festival_for_date(date.today()),\n",
+     "test_send_daily_rashifal_passes_the_job_budget_for_both_languages"),
+
+    ("#475: the welcome email (interactive) is given the job budget",
+     "src/astro_ai/routes/subscribe.py",
+     "                festival=festivals.festival_for_date(date.today()),\n            ),\n        )\n        sections = [",
+     "                festival=festivals.festival_for_date(date.today()),\n"
+     "                max_wait_s=llm_providers.PACE_JOB_BUDGET_S,\n            ),\n        )\n        sections = [",
+     "test_the_welcome_email_is_interactive_and_passes_no_budget"),
+
+    ("#475: generate_rashifal does not hand the budget to its pool workers",
+     "src/astro_ai/llm.py",
+     "                pacer, max_wait_s,\n",
+     "                pacer,\n",
+     "test_generate_rashifal_hands_the_budget_to_all_twelve_pool_calls"),
+
+    ("#475: _generate_rashifal_single drops the budget before providers.chat",
+     "src/astro_ai/llm.py",
+     'route="rashifal_single", max_wait_s=max_wait_s)',
+     'route="rashifal_single")',
+     "test_generate_rashifal_hands_the_budget_to_all_twelve_pool_calls"),
+
+    ("#475: the on-demand /rashifal/{rashi} card is given the job budget (a user waits 150 s)",
+     "src/astro_ai/llm.py",
+     "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n    )",
+     "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n"
+     "        max_wait_s=providers.PACE_JOB_BUDGET_S,\n    )",
+     "test_the_on_demand_rashi_card_passes_no_budget"),
+
+    ("#475: the job budget constant collapses to the interactive default",
+     "src/astro_ai/providers.py",
+     'os.environ.get("BHAGYA_PACE_JOB_BUDGET_S", "150")',
+     'os.environ.get("BHAGYA_PACE_JOB_BUDGET_S", "6")',
+     "test_the_job_budget_is_150_seconds_and_longer_than_the_interactive_default"),
+
+    ("#475: chat() ignores max_wait_s and always uses the interactive default",
+     "src/astro_ai/providers.py",
+     "    pace_left = RETRY_AFTER_MAX_S if max_wait_s is None else max(0.0, float(max_wait_s))\n",
+     "    pace_left = RETRY_AFTER_MAX_S\n",
+     "test_the_job_budget_waits_where_the_interactive_default_skips"),
+
+    ("#475: only the SERVING provider's pacing counters reach llm_stats",
+     "src/astro_ai/providers.py",
+     "pacing={k: dict(v) for k, v in paced.items()} or None,",
+     "pacing={_bucket_key(provider): dict(pc)} if pc else None,",
+     "test_a_provider_that_waited_then_429d_is_booked_under_its_own_key"),
+
+    ("#475: record() books every provider's pacing under the SERVING model's key",
+     "src/astro_ai/llm_stats.py",
+     '                pm = data.setdefault("paced_by_model", {}).setdefault(\n                    pkey,',
+     '                pm = data.setdefault("paced_by_model", {}).setdefault(\n                    model_key,',
+     "test_one_record_call_books_every_model_in_the_mapping_under_its_own_key"),
+
+    ("#475: a skip is no longer counted (the panel's 'skipped' stays 0)",
+     "src/astro_ai/providers.py",
+     '                    pc["skips"] += 1\n',
+     '                    pc["skips"] += 0\n',
+     "test_a_skipped_provider_that_did_not_serve_still_shows_its_skip"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

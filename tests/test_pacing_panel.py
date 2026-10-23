@@ -73,10 +73,10 @@ def _write_day(day_dir: Path, d: date, blob: dict) -> None:
 def test_record_writes_paced_by_model_and_sums_across_calls(day):
     llm_stats.record(provider=G120[0], model=G120[1], route="rashifal_single",
                      prompt_tokens=3000, completion_tokens=500,
-                     pacing=_pace(reserved=1, waits=1, wait_ms=4470, skips=1))
+                     pacing={K120: _pace(reserved=1, waits=1, wait_ms=4470, skips=1)})
     llm_stats.record(provider=G120[0], model=G120[1], route="rashifal_single",
                      prompt_tokens=3000, completion_tokens=500,
-                     pacing=_pace(reserved=1, forced=1))
+                     pacing={K120: _pace(reserved=1, forced=1)})
     p = _blob(day)["paced_by_model"][K120]
     assert p == {"reserved": 2, "waits": 1, "wait_ms": 4470, "skips": 1, "forced": 1}
 
@@ -93,7 +93,7 @@ def test_a_call_with_no_pacing_writes_no_key_at_all(day):
 
 def test_pacing_on_but_nothing_waited_is_written_as_a_zero_not_omitted(day):
     llm_stats.record(provider=G120[0], model=G120[1], route="natal",
-                     prompt_tokens=100, completion_tokens=50, pacing=_pace(reserved=1))
+                     prompt_tokens=100, completion_tokens=50, pacing={K120: _pace(reserved=1)})
     assert _blob(day)["paced_by_model"][K120]["wait_ms"] == 0
     assert _blob(day)["paced_by_model"][K120]["reserved"] == 1
 
@@ -108,14 +108,25 @@ def test_record_is_still_exactly_one_storage_write_per_call(monkeypatch):
     monkeypatch.setattr(llm_stats.storage, "update_json", fake_update)
     llm_stats.record(provider=G120[0], model=G120[1], route="rashifal_single",
                      prompt_tokens=3000, completion_tokens=500,
-                     pacing=_pace(reserved=1, waits=1, wait_ms=900))
+                     pacing={K120: _pace(reserved=1, waits=1, wait_ms=900)})
     assert len(calls) == 1, f"pacing must ride the existing mutator, got {len(calls)} writes"
+
+
+def test_one_record_call_books_every_model_in_the_mapping_under_its_own_key(day):
+    """The serving model is K20; K120 only waited and 429'd. Both must land."""
+    llm_stats.record(provider=G120[0], model="x", route="natal",
+                     pacing={K120: _pace(reserved=1, waits=1, wait_ms=3000),
+                             K20: _pace(reserved=1, skips=2)})
+    p = _blob(day)["paced_by_model"]
+    assert p[K120] == {"reserved": 1, "waits": 1, "wait_ms": 3000, "skips": 0, "forced": 0}
+    assert p[K20] == {"reserved": 1, "waits": 0, "wait_ms": 0, "skips": 2, "forced": 0}
+    assert f"{G120[0]}|x" not in p, "the serving model was credited with a pacing it did not do"
 
 
 def test_the_blob_grows_with_models_not_with_calls(day):
     for i in range(200):
         who = ("groq120", "a") if i % 2 else ("groq20", "b")
-        llm_stats.record(provider=who[0], model=who[1], route="natal", pacing=_pace(waits=1, wait_ms=10))
+        llm_stats.record(provider=who[0], model=who[1], route="natal", pacing={f"{who[0]}|{who[1]}": _pace(waits=1, wait_ms=10)})
     p = _blob(day)["paced_by_model"]
     assert set(p) == {"groq120|a", "groq20|b"}
     assert sum(v["reserved"] for v in p.values()) == 200
@@ -123,8 +134,8 @@ def test_the_blob_grows_with_models_not_with_calls(day):
 
 def test_a_garbage_or_negative_pacing_value_cannot_poison_the_counters(day):
     llm_stats.record(provider="g", model="m", route="natal",
-                     pacing={"reserved": 2, "waits": "x", "wait_ms": -500, "skips": None,
-                             "forced": True})
+                     pacing={"g|m": {"reserved": 2, "waits": "x", "wait_ms": -500, "skips": None,
+                                     "forced": True}})
     assert _blob(day)["paced_by_model"]["g|m"] == {
         "reserved": 2, "waits": 0, "wait_ms": 0, "skips": 0, "forced": 0}
 

@@ -298,11 +298,19 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
     calls nobody could size.
 
     `pacing` (#475 Phase 1) is what the per-model token bucket did on the way to
-    THIS success: {reserved, waits, wait_ms, skips, forced}, accumulated by the
-    caller for this model across the request. It is folded into
-    `paced_by_model` inside the same mutator -- still one storage write. None
-    means pacing was off or not applicable, and writes nothing, which is how the
-    panel tells "not paced" (a dash) from "paced and never blocked" (a zero).
+    THIS success, for EVERY provider the request touched, not only the one that
+    served it: {"provider|model": {reserved, waits, wait_ms, skips, forced}}. A
+    provider that waited and then 429'd, or was skipped outright, is exactly the
+    one whose wait the panel exists to show, and it never reaches record() as a
+    serving provider -- keying the argument by model is what lets one call book
+    them all, inside the same mutator, still one storage write. None or {} means
+    pacing was off or not applicable and writes nothing, which is how the panel
+    tells "not paced" (a dash) from "paced and never blocked" (a zero).
+
+    KNOWN GAP: a request whose whole chain fails never reaches record() (it is
+    called on success only, and there is no failure-path record call to ride),
+    so the waits and skips of a request that ends in AllProvidersExhausted are
+    not booked. Adding a write for it would be a new storage op.
     """
     today = date.today()
     stat_key = f"{provider}|{model}|{route or 'unknown'}"
@@ -374,17 +382,23 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
                     pk["peak_minute"] = minute
 
         if isinstance(pacing, dict):
-            # #475 Phase 1. What the bucket did to this model's calls: how many
+            # #475 Phase 1. What the bucket did to each model's calls: how many
             # reservations it granted, how many of those waited and for how long,
             # how often a call was skipped to the next provider instead, and how
             # often the last-resort pass bypassed it. Plain sums, one entry per
-            # model, so the blob grows with models and never with calls.
+            # model, so the blob grows with models and never with calls. Every
+            # model the request touched is booked under ITS OWN key, serving or
+            # not -- booking it all under the serving model's key would credit
+            # groq20 with a wait that groq120 spent before it 429'd.
             # `reserved` is written whenever pacing was on -- even as 0 -- because
             # that is what lets the panel print a measured 0 instead of a dash.
-            pm = data.setdefault("paced_by_model", {}).setdefault(
-                model_key, {"reserved": 0, "waits": 0, "wait_ms": 0, "skips": 0, "forced": 0})
-            for k in ("reserved", "waits", "wait_ms", "skips", "forced"):
-                pm[k] = _as_int(pm.get(k)) + max(_as_int(pacing.get(k)), 0)
+            for pkey, counters in pacing.items():
+                if not isinstance(pkey, str) or not isinstance(counters, dict):
+                    continue
+                pm = data.setdefault("paced_by_model", {}).setdefault(
+                    pkey, {"reserved": 0, "waits": 0, "wait_ms": 0, "skips": 0, "forced": 0})
+                for k in ("reserved", "waits", "wait_ms", "skips", "forced"):
+                    pm[k] = _as_int(pm.get(k)) + max(_as_int(counters.get(k)), 0)
 
         pc = data.setdefault("prefix_cache", {}).setdefault(stat_key, dict(_PREFIX_ZERO))
         pc["calls"] = pc.get("calls", 0) + 1

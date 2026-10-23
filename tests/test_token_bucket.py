@@ -583,6 +583,25 @@ def test_when_every_provider_is_over_budget_the_call_is_forced_not_failed(
     assert (p["reserved"], p["waits"], p["skips"], p["forced"]) == (0, 0, 1, 1)
 
 
+def test_the_job_budget_waits_where_the_interactive_default_skips(
+        monkeypatch, world, pacing_on, stats_dir):
+    """Same saturated bucket, same chain: only the budget differs, and it decides.
+
+    This is what the job-budget plumbing (tests/test_pacing_job_budget.py) buys:
+    with nobody waiting, the batch sits out a 15 s wait for the model it was
+    given instead of spending a fallback on the next one.
+    """
+    msgs, est = _messages(2000)
+    calls = _install(monkeypatch, world, [P120, P20])
+    _fill(P120, 15.0, est)
+    providers.chat(msgs, route="ask")                            # interactive default
+    assert [m for m, _t in calls] == [M20] and world.sleeps == []
+    del calls[:]
+    providers.chat(msgs, route="ask", max_wait_s=providers.PACE_JOB_BUDGET_S)
+    assert [m for m, _t in calls] == [M120], "the job budget should have waited for room"
+    assert world.sleeps == [pytest.approx(15.0, abs=0.01)]
+
+
 def test_forced_calls_go_in_ascending_predicted_wait(
         monkeypatch, world, pacing_on, stats_dir):
     msgs, est = _messages(2000)
@@ -770,6 +789,74 @@ def test_paced_by_model_lands_in_the_blob_in_one_storage_write(
     providers.chat(msgs, route="ask")
     assert len(writes) == 1, f"pacing added a storage write: {writes}"
     assert K120 in _blob(stats_dir)["paced_by_model"]
+
+
+# --- every provider's pacing is booked under ITS OWN key (QA round 1, #475) ---
+#
+# chat() keeps one counter dict per provider it touches, but only the serving
+# provider's used to reach llm_stats.record(). So the model that waited and then
+# 429'd, or that was skipped, was exactly the one missing from the panel.
+
+def test_a_provider_that_waited_then_429d_is_booked_under_its_own_key(
+        monkeypatch, world, pacing_on, stats_dir):
+    msgs, est = _messages(2000)
+
+    def limited(model, n):
+        if model == M120:
+            raise _rate_limit("Rate limit reached on tokens per minute (TPM)")  # no hint: no retry
+
+    calls = _install(monkeypatch, world, [P120, P20], script=limited)
+    _fill(P120, 3.0, est)                          # within the 6 s default: it WAITS, then 429s
+    providers.chat(msgs, route="ask")
+    assert [m for m, _t in calls] == [M120, M20]
+    paced = _blob(stats_dir)["paced_by_model"]
+    p120 = paced[K120]
+    assert (p120["reserved"], p120["waits"], p120["skips"], p120["forced"]) == (1, 1, 0, 0)
+    assert p120["wait_ms"] == pytest.approx(3000, abs=10), "the 3 s wait went to the wrong model"
+    assert paced[K20] == {"reserved": 1, "waits": 0, "wait_ms": 0, "skips": 0, "forced": 0}
+
+
+def test_a_skipped_provider_that_did_not_serve_still_shows_its_skip(
+        monkeypatch, world, pacing_on, stats_dir):
+    msgs, est = _messages(2000)
+    _install(monkeypatch, world, [P120, P20])
+    _fill(P120, 15.0, est)                         # over the 6 s default: skipped, not called
+    providers.chat(msgs, route="ask")
+    paced = _blob(stats_dir)["paced_by_model"]
+    assert paced[K120] == {"reserved": 0, "waits": 0, "wait_ms": 0, "skips": 1, "forced": 0}
+    assert paced[K20]["reserved"] == 1 and paced[K20]["skips"] == 0
+
+
+def test_when_both_are_over_budget_both_skips_are_booked_and_the_forced_one_too(
+        monkeypatch, world, pacing_on, stats_dir):
+    msgs, est = _messages(2000)
+    calls = _install(monkeypatch, world, [P120, P20])
+    _fill(P120, 12.0, est)
+    _fill(P20, 14.0, est)
+    providers.chat(msgs, route="ask")
+    assert [m for m, _t in calls] == [M120], "the shorter predicted wait is forced"
+    paced = _blob(stats_dir)["paced_by_model"]
+    assert (paced[K120]["skips"], paced[K120]["forced"], paced[K120]["reserved"]) == (1, 1, 0)
+    assert (paced[K20]["skips"], paced[K20]["forced"], paced[K20]["reserved"]) == (1, 0, 0), (
+        "the second provider's skip was lost: only the serving provider was recorded")
+
+
+def test_several_models_pacing_is_still_one_storage_write(
+        monkeypatch, world, pacing_on, stats_dir):
+    msgs, est = _messages(2000)
+    _install(monkeypatch, world, [P120, P20])
+    _fill(P120, 15.0, est)
+    writes = []
+    real = llm_stats.storage.update_json
+
+    def counting(key, mutator, **kw):
+        writes.append(key)
+        return real(key, mutator, **kw)
+
+    monkeypatch.setattr(llm_stats.storage, "update_json", counting)
+    providers.chat(msgs, route="ask")
+    assert set(_blob(stats_dir)["paced_by_model"]) == {K120, K20}
+    assert len(writes) == 1, f"booking two models added a storage write: {writes}"
 
 
 def test_the_llm_call_log_carries_the_time_spent_waiting(

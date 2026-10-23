@@ -983,6 +983,22 @@ def _ordered_for_request() -> list[ProviderConfig]:
 RETRY_AFTER_MAX_S = 6.0
 RETRY_AFTER_BUDGET_S = 10.0
 
+# Token-bucket wait budget for BATCH callers (#475 Phase 1). chat(max_wait_s=None)
+# is the interactive default (RETRY_AFTER_MAX_S, 6 s): a user is waiting, so a
+# provider whose bucket is more than 6 s from having room is skipped. The warm and
+# send-daily rashifal jobs have nobody waiting and are the traffic that overspends
+# a bucket, so they pass this instead -- see llm.generate_rashifal(max_wait_s=).
+#
+# A per-call bound, NOT a promise that the job fits. QA simulated twelve
+# rashifal-sized calls on one bucket: ~240 s of the 300 s Cloud Run timeout at a
+# 150 s budget, so a 2-language job (24 calls) can run past it. A wait beyond the
+# budget does not fail the call -- the provider is skipped to the next, and if
+# every one is over budget the call is FORCED through un-waited -- so exceeding
+# the budget costs a possible 429, never a reading. Simulated, not measured in
+# production; the /admin/ops "blocked on bucket" column is where it shows up.
+# Env-overridable like REQUEST_TOKEN_CEILING above.
+PACE_JOB_BUDGET_S = float(os.environ.get("BHAGYA_PACE_JOB_BUDGET_S", "150"))
+
 _RETRY_PROSE = re.compile(r"try again in\s+([0-9]*\.?[0-9]+)\s*(ms|s\b|seconds?)", re.I)
 
 
@@ -1249,7 +1265,10 @@ def chat(messages: list[dict], *, route: str = "",
                         # "call" is twelve of these -- so tokens summed there can
                         # never be right however good the arithmetic.
                         completion_tokens=_last_completion.get(None),
-                        pacing=dict(pc) if pc else None,
+                        # EVERY provider's counters, under its own key (#475): the
+                        # one that waited and then 429'd, or was skipped, is not
+                        # the one serving, and `pc` alone would drop it.
+                        pacing={k: dict(v) for k, v in paced.items()} or None,
                     )
                 except Exception:  # noqa: BLE001 — stats never break the reading
                     log.debug("llm_stats.record failed", exc_info=True)
@@ -1327,6 +1346,11 @@ def chat(messages: list[dict], *, route: str = "",
                     break
                 log.warning("provider %s unexpected error (%s) — trying next in chain", provider.name, err)
                 break
+    # Known gap (#475): pacing counters (`paced`) are booked by llm_stats.record()
+    # on SUCCESS only. A request that ends here has no record call to ride, and a
+    # new one would be an added storage op on the failure path, so the waits and
+    # skips of a chain that exhausts are not on the panel; they are still in the
+    # log (skips at INFO, forced passes at WARNING).
     if too_large:
         raise RequestTooLarge(
             f"The request is larger than the per-request ceiling of every provider "
