@@ -959,7 +959,7 @@ ARTICLES: tuple[Article, ...] = (
         ),
         llm_summary=(
             'Keypoints:\n'
-            "• Jupiter safe universal practices (any chart): Thursday fasting (light meal only), Vishnu Sahasranama chanting, Guru Beej mantra 'Om Gram Greem Groum Sah Gurave Namah'\n"
+            "• Jupiter everyday practices: Thursday fasting (light meal only), Vishnu worship (a mantra, or a hymn your own tradition keeps), Guru Beej mantra 'Om Gram Greem Groum Sah Gurave Namah'\n"
             '• Charity: yellow lentils (chana dal), turmeric, yellow cloth, gold (to genuine teachers or dharmic causes) on Thursdays\n'
             '• Behavioural: honour teachers/elders, study a wisdom tradition, keep Bhagavad Gita or comparable text in home\n'
             '• Gemstone (Pukhraj / yellow sapphire): CLASSICAL Jupiter gem BUT never wear without full chart consultation — a debilitated/afflicted Jupiter reacts unpredictably\n'
@@ -1006,7 +1006,7 @@ ARTICLES: tuple[Article, ...] = (
         ),
         llm_summary=(
             'Keypoints:\n'
-            "• Mercury safe universal practices: Wednesday fasting or vegetarian diet, Vishnu Sahasranama, Mercury Beej mantra 'Om Bram Breem Broum Sah Budhaya Namah'\n"
+            "• Mercury everyday practices: Wednesday fasting or vegetarian diet, Vishnu worship (a mantra, or a hymn your own tradition keeps), Mercury Beej mantra 'Om Bram Breem Broum Sah Budhaya Namah'\n"
             '• Charity: green cloth, green lentils (moong dal), emerald-colored items, education-related donations on Wednesdays\n'
             '• Behavioural: teach a skill freely, help someone learn to read/write, honour communication tools (books, notebooks)\n'
             '• Gemstone (Emerald / Panna): NEVER without full chart consultation — combusted Mercury commonly problematic\n'
@@ -2915,7 +2915,7 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "What if I'm Manglik and my partner is not?", "a": "Classical tradition recommends Manglik-Manglik matching, with one condition that most retellings drop: the two doshas must be of comparable severity, because it is the symmetry between the charts that cancels them. Tradition asks for comparability but never says how wide a gap is too wide, so we set that band ourselves and call it ours rather than scripture — equal or adjacent grades on low/moderate/high count as comparable, and a low does not cancel a high. If mismatch: soften with Hanuman practices + Vishnu worship + Kumbh Vivah before marriage. Also: many 'mismatch' cases are actually cancelled Manglik in one or both charts — verify with our /manglik-check tool first."},
         ),
         llm_summary=(
-            'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 counted from ALL THREE of Lagna, Moon and Venus (any one frame qualifying is enough)\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching a partner of comparable Manglik severity)\n• 7 classical remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) Vishnu Sahasranama + Ekadashi vrat, (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (toor daal/arhar — Mars classical grain, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS), (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels ONLY when both partners are Manglik of comparable severity — Bhagya convention, stated as ours not scripture: equal or adjacent grades on low/moderate/high are comparable, a low does not cancel a high), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
+            'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 counted from ALL THREE of Lagna, Moon and Venus (any one frame qualifying is enough)\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching a partner of comparable Manglik severity)\n• 7 remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) Vishnu worship (a mantra, or a hymn your own tradition keeps) + Ekadashi vrat, (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (toor daal/arhar — Mars classical grain, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS), (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels ONLY when both partners are Manglik of comparable severity — Bhagya convention, stated as ours not scripture: equal or adjacent grades on low/moderate/high are comparable, a low does not cancel a high), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
