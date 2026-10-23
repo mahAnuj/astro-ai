@@ -49,6 +49,7 @@ import threading
 import time
 from contextvars import ContextVar
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 from openai import BadRequestError, OpenAI
 from openai import APIError, APIConnectionError, APITimeoutError, RateLimitError
@@ -589,6 +590,228 @@ def estimate_data_tokens(text: str) -> int:
     return estimate_data_tokens_for_bytes(len(text.encode("utf-8")))
 
 
+# --- Per-model token bucket (#475 Phase 1) ----------------------------------
+#
+# Groq's 8,000 TPM is keyed PER MODEL. Until now the only reaction to it was
+# reactive: send, take the 429, sleep the hint, retry once. This is the
+# proactive half -- chat() asks a per-model bucket for room BEFORE it sends, and
+# waits a bounded time, or moves to the next provider, instead of spending a
+# call on a guaranteed 429.
+#
+# A CONTINUOUS-REFILL BUCKET, deliberately not a strict sliding 60 s window. A
+# sliding window over 8,000 admits at most two 3,210-token calls per 60 s, so
+# twelve calls would need start times spread over >= 300 s -- the issue's own
+# acceptance (12 x 3,210 within 300 s) would be unreachable by construction.
+# The one Groq 429 body on record (llm.py, "Limit 8000, Used 5009, Requested
+# 3587 ... try again in 4.47s") satisfies (5009 + 3587 - 8000) / (8000 / 60)
+# = 4.47 EXACTLY, i.e. Groq behaves like a bucket refilling at LIMIT/60 per
+# second. That is an inference from one 429 body, not a measurement of Groq's
+# limiter (the x-ratelimit headers that would settle it are #396, out of scope).
+# If Groq turns out to be stricter, the 429 handling below stays the backstop.
+#
+# PER PROCESS, NOT PER ACCOUNT. Each Cloud Run instance builds its own buckets,
+# so two instances can still jointly overspend a model, and anything else using
+# the key is invisible. This narrows the 429 rate; it cannot remove it.
+#
+# Capacity is LIMIT - margin. The 600 is judgment, not a measurement: the one
+# measured unknown is the chat-template remainder (~543 tok, 8,562 reported vs
+# 8,019 counted, 2026-09-05), rounded up. The estimator below already adds its
+# own scaffold, so the two overlap on purpose -- an over-reserve costs a short
+# wait; an under-reserve costs a 429 and a wasted call.
+_TPM_MARGIN = 600
+
+# Pre-flight cost of one request = estimated prompt + scaffold + a completion
+# reserve. Reserved at FULL weight: Groq's prefix cache may discount the cached
+# part of the prompt, but how a cache hit counts against TPM is #396 and still
+# open, so over-reserving is the safe direction. No max_completion_tokens is
+# sent (qwen's truncation history is in PROVIDERS above), so the completion
+# half is a reserve, not a cap. Calibrated against tiktoken by
+# tests/test_token_bucket.py::test_the_request_estimate_*.
+_SCAFFOLD_TOKENS = 250
+_COMPLETION_RESERVE: dict[str, int] = {"rashifal_single": 500}
+_COMPLETION_RESERVE_DEFAULT = 800
+
+
+def _completion_reserve(route: str) -> int:
+    return _COMPLETION_RESERVE.get(route, _COMPLETION_RESERVE_DEFAULT)
+
+
+def estimate_request_tokens(messages: list[dict], route: str = "") -> int:
+    """What one chat() call will cost the TPM bucket, before it is sent.
+
+    System messages are instruction prose and everything else is chart data --
+    the same split, and the same two byte-density constants, as the natal
+    pre-flight guard, because the two halves of a request have genuinely
+    different densities (see _BYTES_PER_TOKEN_PROSE).
+    """
+    total = _SCAFFOLD_TOKENS + _completion_reserve(route)
+    for m in messages:
+        content = m.get("content")
+        text = content if isinstance(content, str) else str(content or "")
+        total += (estimate_prose_tokens(text) if m.get("role") == "system"
+                  else estimate_data_tokens(text))
+    return total
+
+
+@dataclass
+class _Reservation:
+    """A claim on a bucket. `tokens` is what was charged (clamped to capacity)."""
+    bucket: "_TokenBucket"
+    tokens: int
+    wait_s: float
+    forced: bool = False
+    settled: bool = False
+
+
+class _TokenBucket:
+    """Continuous-refill token bucket with FIFO slots; O(1) under its own lock.
+
+    State is (level, t): the level as of time `t`, and `t` MAY BE IN THE FUTURE
+    -- a reservation that has to wait is assigned the slot at which the bucket
+    will have drained enough, and `t` moves to that slot. The next caller is
+    therefore queued behind it without any polling or re-check, and slots can
+    never go backwards. The caller sleeps OUTSIDE the lock, so one waiting
+    thread never blocks another from reserving its own, later slot.
+    """
+
+    def __init__(self, limit: int, margin: int, *, clock=time.monotonic):
+        self.cap = max(limit - margin, 1)
+        self.rate = limit / 60.0          # tokens per second
+        self._clock = clock
+        self._lock = threading.Lock()
+        self._level = 0.0
+        self._t = 0.0
+
+    def _level_at(self, t0: float) -> float:
+        # t0 >= self._t always holds at the call sites; the max() is belt and braces.
+        return max(0.0, self._level - max(0.0, t0 - self._t) * self.rate)
+
+    def reserve(self, tokens: int, max_wait_s: float, *, force: bool = False
+                ) -> tuple["_Reservation | None", float]:
+        """(reservation, predicted_wait_s). None means DENIED, with state untouched.
+
+        Denied when the wait would exceed `max_wait_s` -- the caller skips to
+        another provider instead. `force=True` is the last resort: it charges
+        the bucket at once, never waits, and may overdraft it (the next caller
+        then queues behind the debt).
+        """
+        # Clamped: a request bigger than the whole bucket could otherwise never
+        # be admitted, and would wait forever. The ~7k-token natal chart is
+        # within a few hundred tokens of the cap.
+        n = min(max(int(tokens), 0), self.cap)
+        with self._lock:
+            now = self._clock()
+            if force:
+                if self._t <= now:
+                    self._level = self._level_at(now)
+                    self._t = now
+                self._level += n
+                return _Reservation(self, n, 0.0, forced=True), 0.0
+            t0 = max(now, self._t)
+            level = self._level_at(t0)
+            deficit = level + n - self.cap
+            slot = t0 + (deficit / self.rate if deficit > 0 else 0.0)
+            wait = max(0.0, slot - now)
+            if wait > max_wait_s:
+                return None, wait
+            self._level = max(0.0, level - (slot - t0) * self.rate) + n
+            self._t = slot
+            return _Reservation(self, n, wait), wait
+
+    def settle(self, res: "_Reservation", actual: int) -> None:
+        """Replace the estimate with what the call really used. Once per reservation."""
+        with self._lock:
+            if res.settled:
+                return
+            res.settled = True
+            self._level = max(0.0, self._level + max(int(actual), 0) - res.tokens)
+
+    def refund(self, res: "_Reservation") -> None:
+        self.settle(res, 0)
+
+
+# Injectable so tests never sleep for real. Looked up at call time, so a test
+# that monkeypatches either name takes effect for buckets already built.
+def _pace_clock() -> float:
+    return time.monotonic()
+
+
+def _pace_sleep(seconds: float) -> None:
+    time.sleep(seconds)
+
+
+_BUCKETS: dict[str, _TokenBucket] = {}
+_BUCKETS_LOCK = threading.Lock()
+
+
+def _bucket_key(provider: ProviderConfig) -> str:
+    # The SAME key chat() hands llm_stats.record, so /admin/ops can line the
+    # bucket's figures up with measured_by_model. Provider name AND model: the
+    # model alone is what Groq limits, but listing `groq` beside `groq120` in the
+    # chain is already documented as a mistake, and keying on the pair is what
+    # the recorded stats do, so the two views cannot disagree about a row.
+    return f"{provider.name}|{provider.model()}"
+
+
+def _tpm_limit(provider: ProviderConfig) -> int | None:
+    """The TPM ceiling we know for this provider, or None = do not pace it.
+
+    Only Groq's is known (REQUEST_TOKEN_CEILING, one definition). A limit we
+    have not measured is not guessed at: an unknown provider is sent to
+    unpaced, exactly as before.
+    """
+    host = urlparse(provider.api_base).hostname if provider.api_base else None
+    return REQUEST_TOKEN_CEILING if host == "api.groq.com" else None
+
+
+def _bucket_for(provider: ProviderConfig) -> _TokenBucket | None:
+    limit = _tpm_limit(provider)
+    if limit is None:
+        return None
+    key = _bucket_key(provider)
+    # The registry lock is released before any bucket lock is taken, and no
+    # thread ever holds two while sleeping.
+    with _BUCKETS_LOCK:
+        bucket = _BUCKETS.get(key)
+        if bucket is None:
+            bucket = _BUCKETS[key] = _TokenBucket(
+                limit, _TPM_MARGIN, clock=lambda: _pace_clock())
+    return bucket
+
+
+def _pacing_enabled() -> bool:
+    """Kill switch, read per call: BHAGYA_TPM_PACING=0 restores the pre-#475 path.
+
+    Roll back with `gcloud run services update bhagya
+    --update-env-vars=BHAGYA_TPM_PACING=0` -- --update-env-vars, never
+    --set-env-vars, which would replace the whole environment.
+    """
+    return os.environ.get("BHAGYA_TPM_PACING", "1").strip().lower() not in (
+        "0", "false", "off", "no")
+
+
+def _pace_done(res: "_Reservation | None", err: Exception | None) -> None:
+    """Settle `res` once its call has finished, successfully or not.
+
+    If the response carried usage, charge what Groq will have counted -- the
+    same (prompt, completion) pair llm_stats books -- which also covers an
+    empty or quality-failed completion, since usage is read before that check.
+    Without usage: a 429 or any other 4xx was REFUSED, so nothing was consumed
+    and the estimate is returned; a timeout, a dropped connection, a 5xx or an
+    unexpected error may well have been counted upstream, so the estimate stays.
+    """
+    if res is None:
+        return
+    prefix, completion = _last_prefix.get(), _last_completion.get(None)
+    if prefix and completion is not None:
+        res.bucket.settle(res, prefix[0] + completion)
+        return
+    status = getattr(err, "status_code", None)
+    if isinstance(err, RateLimitError) or (
+            isinstance(status, int) and not isinstance(status, bool) and 400 <= status < 500):
+        res.bucket.refund(res)
+
+
 def _legacy_provider() -> ProviderConfig | None:
     """Build a one-element chain from the old single-provider env vars.
 
@@ -786,7 +1009,8 @@ def _retry_after_seconds(err: Exception) -> float | None:
     return value / 1000.0 if m.group(2).lower() == "ms" else value
 
 
-def chat(messages: list[dict], *, route: str = "") -> str:
+def chat(messages: list[dict], *, route: str = "",
+         max_wait_s: float | None = None) -> str:
     """Send `messages` through the configured provider chain.
 
     Order resolution: random shuffle per request (default), or strict
@@ -798,6 +1022,13 @@ def chat(messages: list[dict], *, route: str = "") -> str:
     `route` is a short label for the calling feature ("natal", "ask", ...)
     used for the /admin/usage per-route breakdown. Defaults to empty which
     aggregates under "unknown".
+
+    `max_wait_s` (#475) is the TOTAL time this call may spend waiting on the
+    per-model token bucket, across the whole chain. None means the interactive
+    default (RETRY_AFTER_MAX_S); 0 means never wait, only fail over. A provider
+    whose wait would not fit is skipped, and if the chain then fails, the skipped
+    ones are tried in ascending predicted wait WITHOUT waiting -- pacing alone
+    never turns a reading into AllProvidersExhausted. See _TokenBucket.
 
     Returns the assistant's text content.
     """
@@ -817,6 +1048,13 @@ def chat(messages: list[dict], *, route: str = "") -> str:
     last_failed_provider = ""
     last_reason = ""
     sleep_budget = RETRY_AFTER_BUDGET_S
+    # Token-bucket pacing (#475). `pace_left` is separate from `sleep_budget`:
+    # that one belongs to the provider's own "try again in Ns" hints.
+    pacing_on = _pacing_enabled()
+    pace_left = RETRY_AFTER_MAX_S if max_wait_s is None else max(0.0, float(max_wait_s))
+    est: int | None = None
+    paced: dict[str, dict[str, int]] = {}
+    deferred: list[tuple[float, ProviderConfig]] = []
     # Hosts that have already rejected this request as too large. Same-host
     # providers share the per-request ceiling, so once one says 413 the rest
     # will too — see RequestTooLarge.
@@ -858,7 +1096,21 @@ def chat(messages: list[dict], *, route: str = "") -> str:
         )
         return True
 
-    for provider in order:
+    def _worklist():
+        """The chain, then (only if it all failed) the providers pacing skipped.
+
+        Evaluated lazily: the second pass reads `deferred` and `too_large` as
+        they stand when the first pass has ended. A 413 is structural, and
+        sending forced calls after it would only repeat it.
+        """
+        for p in order:
+            yield p, False
+        if too_large:
+            return
+        for _wait, p in sorted(deferred, key=lambda d: d[0]):
+            yield p, True
+
+    for provider, force in _worklist():
         if provider.api_base in too_large_hosts:
             continue
         # ONE retry of THIS provider when it tells us how long to wait, before
@@ -871,11 +1123,62 @@ def chat(messages: list[dict], *, route: str = "") -> str:
         # web request threads as well as in the nightly rashifal job.
         retried = False
         while True:
+            # Ask the bucket for room BEFORE spending a call (#475). Outside the
+            # try: a denial is a `break`, and nothing here is a provider failure.
+            res = None
+            pc = None
+            bucket = _bucket_for(provider) if pacing_on else None
+            if bucket is not None:
+                key = _bucket_key(provider)
+                pc = paced.setdefault(key, {"reserved": 0, "waits": 0, "wait_ms": 0,
+                                            "skips": 0, "forced": 0})
+                if est is None:
+                    est = estimate_request_tokens(messages, route)
+                res, predicted = bucket.reserve(est, pace_left, force=force)
+                if res is None:
+                    pc["skips"] += 1
+                    log.info("provider %s skipped by the token bucket (route=%s): "
+                             "would wait %.1fs, %.1fs allowed", provider.name, route,
+                             predicted, pace_left)
+                    # A retry after a real 429 is an optimisation, not a request
+                    # that pacing owes a second pass.
+                    if not retried:
+                        deferred.append((predicted, provider))
+                    break
+                if res.forced:
+                    pc["forced"] += 1
+                    log.warning("provider %s forced past the token bucket (route=%s): "
+                                "every provider's wait exceeded the budget",
+                                provider.name, route)
+                else:
+                    pc["reserved"] += 1
+                if res.wait_s > 0:
+                    pc["waits"] += 1
+                    pc["wait_ms"] += int(round(res.wait_s * 1000))
+                    pace_left -= res.wait_s
+                    (log.info if res.wait_s > 1.0 else log.debug)(
+                        "provider %s: waiting %.2fs for token-bucket room (route=%s)",
+                        provider.name, res.wait_s, route)
+                    _pace_sleep(res.wait_s)
             try:
-                # Reset first: a fake or failing _call_one never sets it, and
+                # Reset first: a fake or failing _call_one never sets these, and
                 # the previous provider's figures must not be read as this one's.
+                # _last_usage and _last_completion join _last_prefix here (#475):
+                # _pace_done reads the pair, and a ThreadPool worker keeps its
+                # context across tasks. The real _call_one sets all three
+                # together, so the leak needs an attempt that raises before it
+                # gets there or a response with a partial usage block -- but then
+                # the bucket would be settled against the PREVIOUS task's figures,
+                # and last_used_tokens() would report them.
                 _last_prefix.set(None)
-                raw_text = _call_one(provider, messages)
+                _last_usage.set(None)
+                _last_completion.set(None)
+                try:
+                    raw_text = _call_one(provider, messages)
+                except BaseException as call_err:
+                    _pace_done(res, call_err)
+                    raise
+                _pace_done(res, None)
                 prefix = _last_prefix.get()
                 # Sanitize reasoning-model leakage BEFORE the quality gate so
                 # the heading-count check operates on the visible answer, not
@@ -921,6 +1224,9 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                         # Groq prefix cache (#396); null = not reported, not 0.
                         "prompt_tokens": prefix[0] if prefix else None,
                         "cached_tokens": prefix[1] if prefix else None,
+                        # Seconds this request waited on the token bucket for
+                        # this model; null = not paced (#475).
+                        "paced_wait_s": round(pc["wait_ms"] / 1000, 2) if pc else None,
                     }},
                 )
                 # Persistent per-day counter for /admin/usage. Best-effort;
@@ -943,6 +1249,7 @@ def chat(messages: list[dict], *, route: str = "") -> str:
                         # "call" is twelve of these -- so tokens summed there can
                         # never be right however good the arithmetic.
                         completion_tokens=_last_completion.get(None),
+                        pacing=dict(pc) if pc else None,
                     )
                 except Exception:  # noqa: BLE001 — stats never break the reading
                     log.debug("llm_stats.record failed", exc_info=True)

@@ -104,6 +104,27 @@ def _clear_durable_miss_cache():
 
 
 @pytest.fixture(autouse=True)
+def _token_bucket_off_and_empty(monkeypatch):
+    """Switch the per-model token bucket OFF and empty its registry, every test.
+
+    The bucket (#475) is process-global state with a clock and a sleep behind
+    it. Left on, a test that sends several calls through a fake Groq chain
+    would be paced against the REAL clock and sleep for real; left populated,
+    one test's reservations would delay the next one's. Off is also the
+    pre-#475 path exactly, which is what every older test was written against.
+
+    `tests/test_token_bucket.py` opts in by setting BHAGYA_TPM_PACING itself --
+    inside the test body, which runs after this fixture and so wins.
+    """
+    from astro_ai import providers
+
+    monkeypatch.setenv("BHAGYA_TPM_PACING", "0")
+    providers._BUCKETS.clear()
+    yield
+    providers._BUCKETS.clear()
+
+
+@pytest.fixture(autouse=True)
 def _dummy_api_key(monkeypatch):
     """Give EVERY test a placeholder `OPENAI_API_KEY`, overriding any real one.
 

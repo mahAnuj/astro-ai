@@ -2678,6 +2678,85 @@ MUTATIONS = [
      "{%- if m.reserved is none %}—",
      "{%- if m.reserved is none or not m.wait_s %}—",
      "test_the_page_prints_zero_for_a_measured_zero"),
+
+    # #475 Phase 1 (S2). The per-model token bucket in providers.py.
+    ("#475: the bucket level never leaks (a charge is held forever)",
+     "src/astro_ai/providers.py",
+     "        return max(0.0, self._level - max(0.0, t0 - self._t) * self.rate)\n",
+     "        return self._level\n",
+     "test_the_level_leaks_with_time"),
+
+    ("#475: an oversize request is not clamped to the bucket's capacity",
+     "src/astro_ai/providers.py",
+     "        n = min(max(int(tokens), 0), self.cap)\n",
+     "        n = max(int(tokens), 0)\n",
+     "test_an_oversize_request_is_clamped_and_waits_a_finite_time"),
+
+    ("#475: a DENIED reserve still charges the bucket",
+     "src/astro_ai/providers.py",
+     "                return None, wait\n",
+     "                self._level = level + n\n                self._t = t0\n                return None, wait\n",
+     "test_a_denied_reserve_changes_nothing"),
+
+    ("#475: settle ignores what the call actually used",
+     "src/astro_ai/providers.py",
+     "            self._level = max(0.0, self._level + max(int(actual), 0) - res.tokens)\n",
+     "            self._level = max(0.0, self._level)\n",
+     "test_settle_shrinks_and_grows_the_charge_and_only_once"),
+
+    ("#475: a 429 keeps its estimate and a timeout is refunded (rule swapped)",
+     "src/astro_ai/providers.py",
+     "    if isinstance(err, RateLimitError) or (\n            isinstance(status, int) and not isinstance(status, bool) and 400 <= status < 500):\n",
+     "    if not (isinstance(err, RateLimitError) or (\n            isinstance(status, int) and not isinstance(status, bool) and 400 <= status < 500)):\n",
+     "test_a_429_is_refunded_because_nothing_was_consumed"),
+
+    ("#475: the per-attempt _last_usage/_last_completion reset is removed",
+     "src/astro_ai/providers.py",
+     "                _last_usage.set(None)\n                _last_completion.set(None)\n",
+     "",
+     "test_a_later_attempt_is_not_settled_against_an_earlier_calls_figures"),
+
+    ("#475: the pacing sleep happens while holding the bucket lock",
+     "src/astro_ai/providers.py",
+     "                    _pace_sleep(res.wait_s)\n",
+     "                    with bucket._lock:\n                        _pace_sleep(res.wait_s)\n",
+     "test_the_bucket_lock_is_free_while_a_caller_sleeps"),
+
+    ("#475: the bucket key drops the provider name (no longer llm_stats' key)",
+     "src/astro_ai/providers.py",
+     '    return f"{provider.name}|{provider.model()}"\n',
+     "    return provider.model()\n",
+     "test_the_bucket_key_is_the_key_llm_stats_books_the_call_under"),
+
+    ("#475: every provider is paced, not only Groq",
+     "src/astro_ai/providers.py",
+     '    return REQUEST_TOKEN_CEILING if host == "api.groq.com" else None\n',
+     "    return REQUEST_TOKEN_CEILING\n",
+     "test_only_groq_hosts_have_a_known_limit"),
+
+    ("#475: the BHAGYA_TPM_PACING kill switch is ignored",
+     "src/astro_ai/providers.py",
+     '    return os.environ.get("BHAGYA_TPM_PACING", "1").strip().lower() not in (\n        "0", "false", "off", "no")\n',
+     "    return True\n",
+     "test_the_kill_switch_restores_the_unpaced_path_exactly"),
+
+    ("#475: a denied reservation proceeds instead of skipping to the next provider",
+     "src/astro_ai/providers.py",
+     "                res, predicted = bucket.reserve(est, pace_left, force=force)\n",
+     "                res, predicted = bucket.reserve(est, pace_left, force=True)\n",
+     "test_a_provider_that_would_wait_too_long_is_skipped_before_any_sleep"),
+
+    ("#475: the forced second pass is removed (pacing alone can exhaust the chain)",
+     "src/astro_ai/providers.py",
+     "        if too_large:\n            return\n        for _wait, p in sorted(",
+     "        return\n        for _wait, p in sorted(",
+     "test_when_every_provider_is_over_budget_the_call_is_forced_not_failed"),
+
+    ("#475: the acceptance stub can no longer refuse (control must go red)",
+     "tests/test_token_bucket.py",
+     "LIMIT = 8000\n",
+     'LIMIT = float("inf")\n',
+     "test_without_the_bucket_the_same_burst_is_rejected"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
