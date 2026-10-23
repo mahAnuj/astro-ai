@@ -296,6 +296,42 @@ def _book_text(filename: str) -> str | None:
 
 _SECTION_RE = re.compile(r"§\s*(\d+(?:\.\d+)*)")
 
+# ─── the knowledge ledger (#279/#505) ─────────────────────────────────────
+# `data/` is gitignored, so CI holds NONE of the registered books and the
+# section check below could only ever run on a developer's machine. The
+# extraction in `src/astro_ai/knowledge/` is the source of truth that CI does
+# hold, so a cited section must also carry a row in a provenance ledger there.
+#
+# A ledger is a markdown table under `<!-- provenance-ledger: <book title> -->`
+# whose first column is `§<section>` and whose third is the plain-pdftotext
+# line range. The RANGE IS NOT MACHINE-CHECKED: `_book_text` below returns
+# `-layout` text (corpus_search's flag) and these pins are plain, so comparing
+# them would be comparing two different coordinate systems. The range is
+# verified by whoever adds the row, against the book, with the command the
+# ledger states -- adding a row is a deliberate, reviewable act, exactly like
+# adding to _UNHELD_ATTRIBUTIONS. What the gate asserts is that the row EXISTS:
+# a citation to a section nobody has ever opened the book for now fails in CI,
+# which it could not do before.
+KNOWLEDGE_DIR = ROOT / "src" / "astro_ai" / "knowledge"
+_LEDGER_MARK = re.compile(r"<!--\s*provenance-ledger:\s*(.+?)\s*-->")
+_LEDGER_ROW = re.compile(r"^\|\s*§\s*(\d+(?:\.\d+)*)\s*\|([^|]*)\|([^|]*)\|", re.M)
+
+
+def _ledger_sections() -> dict[str, dict[str, str]]:
+    """{book title: {section: line range}} from every knowledge ledger."""
+    out: dict[str, dict[str, str]] = {}
+    for md in sorted(KNOWLEDGE_DIR.glob("*.md")):
+        text = md.read_text(encoding="utf-8", errors="replace")
+        marks = list(_LEDGER_MARK.finditer(text))
+        for i, mark in enumerate(marks):
+            end = marks[i + 1].start() if i + 1 < len(marks) else len(text)
+            book = out.setdefault(mark.group(1), {})
+            for sec, _title, lines in _LEDGER_ROW.findall(text[mark.end():end]):
+                book.setdefault(sec, lines.strip())
+    return out
+
+
+
 
 def _problems(text: str, html: str) -> tuple[list[str], list[str]]:
     """(failures, notes). Notes are things this run could NOT verify."""
@@ -379,12 +415,24 @@ def _problems(text: str, html: str) -> tuple[list[str], list[str]]:
         fails.append(f"_VAGUE_ATTRIBUTIONS lists {stale!r}, which no rule uses "
                      f"any more. Remove it.")
 
-    # Cited sections must exist in the book, where the book is here to ask.
+    # Cited sections must carry a knowledge-ledger row (checkable everywhere,
+    # including CI), and must exist in the book where the book is here to ask.
+    ledgers = _ledger_sections()
     for title, sections in sorted(section_checks.items()):
         filename = titles[title]
+        pinned = ledgers.get(title, {})
+        for sec in sorted(sections):
+            if sec not in pinned:
+                fails.append(
+                    f"cites {title} §{sec}, but no provenance ledger in "
+                    f"src/astro_ai/knowledge/ pins that section. Extract it from "
+                    f"the book locally and add a row — CI holds no books, so the "
+                    f"ledger is the only thing that makes this citation "
+                    f"checkable (#279, #505).")
         if title not in present:
-            notes.append(f"{title}: NOT in data/ — could not verify "
-                         f"§{', §'.join(sorted(sections))}")
+            notes.append(f"{title}: NOT in data/ — {len(sections)} cited section(s) "
+                         f"checked against the knowledge ledger only "
+                         f"(§{', §'.join(sorted(sections))})")
             continue
         body = _book_text(filename)
         if body is None:

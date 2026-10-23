@@ -654,4 +654,62 @@ them:
 
 ---
 
+## Provenance ledger — every section `chart.py` cites to the reader
+
+<!-- provenance-ledger: Vedic Astrology: An Integrated Approach -->
+
+**Why this table exists.** `chart.py` prints `Source: Vedic Astrology: An
+Integrated Approach §11.3.4` under a yoga card, and `verify_rule_citations.py`
+check 4 asserts that the cited section really is in the book. That check could
+only ever run where `data/` held the PDF — which is this machine and nowhere
+else, because `data/` is gitignored and CI holds **0 of 8** books (#279, #505).
+This file is the source of truth instead: a citation is checkable in CI against
+the pin below, and the pin is what somebody with the book verified.
+
+**Measurement.** `pdftotext` 26.07.0, **no `-layout`**, on
+`data/vedic_astro_textbook.pdf` → 20,669 lines total, which matches
+`SOURCES.md`'s re-measured count for source 2. `-layout` reflows columns and
+yields different numbers; it is not what these pins mean. Re-derive the whole
+table with `grep -n '^11\.[0-9]' <extraction>` — every boundary below is a
+section heading on its own line, and a range ends where the next heading begins.
+
+**Titles are the book's own transliteration**, which differs from the headings
+used above in this file (Rao writes *Budha-Aaditya*, *Sunaphaa*, *Anaphaa*,
+*Maalavya*). A verifier greps for the book's spelling, not ours.
+
+| § | Title as printed | Plain lines | Cited by |
+|---|---|---|---|
+| §11.2 | Ravi Yogas | 5349–5401 | heading §3 above |
+| §11.2.1 | Vesi Yoga | 5355–5364 | `chart.py` |
+| §11.2.2 | Vosi Yoga | 5365–5373 | `chart.py` |
+| §11.2.3 | Ubhayachara Yoga | 5374–5382 | `chart.py` |
+| §11.2.4 | Budha-Aaditya Yoga (Nipuna Yoga) | 5383–5401 | `chart.py` |
+| §11.3 | Chandra Yogas | 5402–5492 | heading §4 above |
+| §11.3.1 | Sunaphaa Yoga | 5422–5433 | `chart.py` |
+| §11.3.2 | Anaphaa Yoga | 5434–5444 | `chart.py` |
+| §11.3.3 | Duradhara Yoga | 5445–5454 | `chart.py` |
+| §11.3.4 | Kemadruma Yoga | 5455–5473 | `chart.py` |
+| §11.3.5 | Chandra-Mangala Yoga | 5474–5482 | `chart.py` |
+| §11.3.6 | Adhi Yoga | 5483–5492 | `chart.py` |
+| §11.4 | Pancha Mahapurusha Yogas | 5493–5591 | heading §5 above |
+| §11.4.1 | Ruchaka Yoga | 5518–5531 | `chart.py` (dynamic `§{section}`) |
+| §11.4.2 | Bhadra Yoga | 5532–5546 | `chart.py` (dynamic `§{section}`) |
+| §11.4.3 | Sasa Yoga | 5547–5564 | `chart.py` (dynamic `§{section}`) |
+| §11.4.4 | Maalavya Yoga | 5565–5577 | `chart.py` (dynamic `§{section}`) |
+| §11.4.5 | Hamsa Yoga | 5578–5591 | `chart.py` (dynamic `§{section}`) |
+| §11.6 | Other Popular Yogas | 5796–6107 | `chart.py` |
+
+**Sections of Ch. 11 this product does not cite**, recorded so the table is not
+mistaken for the chapter: §11.1 Introduction 5309–5348, §11.5 Naabhasa Yogas
+5592–5795 (sub-sections §11.5.1 5613, §11.5.2 5630, §11.5.3 5652, §11.5.4
+5754), §11.7 Raaja Yogas 6108–6336 (§11.7.1 6112, §11.7.2 6151, §11.7.3 6235),
+§11.8 Raaja Sambandha 6337–6412, §11.9 Dhana Yogas 6413–6489, §11.10 Daridra
+Yogas 6490–6534, §11.11 Conclusion 6535–.
+
+**Adding a row is how you make a new citation checkable.** Derive it from the
+book with the flags above, never from this file or from another extraction — a
+pin copied from a pin verifies nothing.
+
+---
+
 *Extracted: 2026-07-24 from P.V.R. Narasimha Rao "Vedic Astrology: An Integrated Approach" Ch. 11 §§11.1–11.10. Cross-verified with the yoga content already in vedic_reference.md §4 which was sourced from Raman. Where Rao and vedic_reference.md overlap (Pancha Mahapurusha, Nabhasa, Vipareeta Raja, Sun/Moon yogas), this file cross-links rather than duplicating. Guru Chandala, Kaal Sarp, and other doshas are treated in vedic_reference.md as doshas rather than as yogas.*
