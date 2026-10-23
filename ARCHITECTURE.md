@@ -35,7 +35,7 @@ trust the number.
 | top-level templates | 57 | `ls src/astro_ai/templates/*.html \| wc -l` |
 | `/learn` articles | 76 | `ls src/astro_ai/templates/learn/*.html \| wc -l` |
 | LLM prompt templates | 11 | `ls src/astro_ai/prompts/*.txt \| wc -l` |
-| knowledge files | 11 files, 9,358 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
+| knowledge files | 11 files, 9,416 lines | `ls src/astro_ai/knowledge/*.md \| wc -l; cat src/astro_ai/knowledge/*.md \| wc -l` |
 | verification gates | measured | `ls scripts/verify_*.py \| wc -l` |
 | behaviour suite | measured | `uv run pytest --collect-only -p no:warnings \| grep -oE '[0-9]+ tests? collected' \| awk '{print $1}'` |
 
