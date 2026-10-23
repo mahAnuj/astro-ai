@@ -118,7 +118,7 @@ jobs:
             # job's contents:read permission, not the tool list.
             --max-turns 80
             --effort high
-            --allowedTools "Read,Write,Glob,Grep,TodoWrite,Skill,WebFetch,WebSearch,Bash"
+            --allowedTools "Agent,Read,Write,Glob,Grep,TodoWrite,Skill,WebFetch,WebSearch,Bash"
             --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*)"
 
       - name: Publish the report
@@ -129,6 +129,17 @@ jobs:
           else
             echo "### No report written — treat this run as having produced nothing" \
               | tee -a "$GITHUB_STEP_SUMMARY"
+          # A RUN THAT PRODUCED NOTHING IS A FAILURE, NOT A SUCCESS.
+          # It used to echo this line and exit 0. Measured on agent-prioritise:
+          # three runs (2026-10-08, 10-11, 10-18) concluded `success` in 74-109
+          # seconds having written no report at all, so `measurements/prioritise/`
+          # has nothing newer than 10-08 and BACKLOG.md nothing newer than
+          # 2026-08-27 -- its header still reads "36 open issues at scan time"
+          # against ~60 now. Nobody looked, because nothing was red.
+          # This is CLAUDE.md's named signature failure: "A green run that did
+          # exactly nothing." The `if: always()` above stays, so the summary is
+          # still written and the artifact still uploads; only the verdict changes.
+            exit 1
           fi
 
       - name: Collect for persistence

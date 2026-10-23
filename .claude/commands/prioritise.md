@@ -22,7 +22,8 @@ Follow your agent definition. In particular:
 
 3. **Then the two lists**: what is blocked and on what (noting where a blocked *value* still has an unblocked *disclosure* fix), and what looks urgent but should NOT be done, with reasons.
 
-Read `BACKLOG.md` (the standing overview from the last scan) FIRST, then the issues, the
+Read `measurements/prioritise/latest.md` (what this loop wrote last week) and `BACKLOG.md`
+(the human-promoted overview) FIRST — prefer whichever is newer and say which — then the issues, the
 git and deploy state, and AGENT_STATUS.md before ranking. Treat `BACKLOG.md` as a cache,
 not as evidence: use it to decide where to look, re-verify anything whose files changed
 since the SHA in its header, and never restamp a carried-forward verdict with today's SHA.

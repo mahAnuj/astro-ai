@@ -23,7 +23,14 @@ If you find yourself writing acceptance criteria, stop — you are doing product
 
 **Do not rank from issue titles.** Titles lie, and several in this repo are actively wrong (#144 was titled "cold start" and was not one).
 
-0. **`BACKLOG.md` in the repo root — read this first.** It is the standing overview left by
+0. **`measurements/prioritise/latest.md` FIRST, then `BACKLOG.md`.** The weekly loop writes
+   the former and cannot write the latter: `publish_measurements.sh` refuses any path outside
+   `measurements/**` (exit 2), because `measurements/**` is the only tree on the Cloud Build
+   trigger's `ignoredFiles` and committing a root file would redeploy production for a triage
+   document. So BACKLOG.md only moves when a human promotes it, and on 2026-10-23 it had not
+   moved since 2026-08-27 while its header still claimed 36 open issues against ~60. Prefer
+   whichever is newer, say which you used, and treat BOTH as caches. `BACKLOG.md` is the
+   standing overview left by
    the previous scan: prior verdicts, the SHA each was verified at, the last queue, and the
    proposed closures that were pending. It is a **cache, not evidence.** Use it to decide
    *where to look*, never to skip a check. Diff `origin/main` against the SHA in its header:

@@ -508,6 +508,73 @@ def check_triggers(name: str, doc: dict, rep: Report) -> None:
                      "readied later gets no run (#303).")
 
 
+#: `.claude/commands/` — a slash command's body is where its ONE action lives.
+COMMANDS_DIR = ROOT / ".claude" / "commands"
+
+
+def check_subagent_tools(name: str, doc: dict, rep: Report,
+                         cmd_dir: Path = COMMANDS_DIR) -> None:
+    """A loop whose command dispatches a subagent must allow the `Agent` tool.
+
+    `--allowedTools` is an ALLOW-LIST: a tool absent from it is denied. Three of
+    the commands in `.claude/commands/` state their action as a literal
+    `Agent(subagent_type=...)` call -- `/prioritise`, `/discover` and
+    `/agent-cycle`. Only `agent-work.yml` lists `Agent`.
+
+    The failure is not a crash. The top-level agent cannot dispatch, so it does
+    the work itself -- which silently discards the whole point of the dispatch:
+    the subagent's own definition. `project-manager` is read-only BY DEFINITION
+    ("you read BACKLOG.md but never write it"), ranks from `gh issue list`
+    rather than titles, and carries the closure permission the delivery agents
+    are denied. None of that constrains a top-level agent improvising the same
+    job from the command file's prose.
+
+    So this is a FAIL, not a note: a green run that produced the right artefact
+    by the wrong actor is the harder kind of wrong to notice.
+    """
+    for jid, job in (doc.get("jobs") or {}).items():
+        if not isinstance(job, dict):
+            continue
+        for step in (job.get("steps") or []):
+            if not isinstance(step, dict):
+                continue
+            if "claude-code-action" not in str(step.get("uses") or ""):
+                continue
+            with_ = step.get("with") or {}
+            if not isinstance(with_, dict):
+                continue
+            args = str(with_.get("claude_args") or "")
+            m = re.search(r"--allowedTools\s+[\"']([^\"']*)[\"']", args)
+            if not m:
+                continue   # no allow-list at all: nothing is denied, nothing to check
+            allowed = {t.strip() for t in m.group(1).split(",") if t.strip()}
+            if "Agent" in allowed:
+                continue
+            # Only a slash command at the START of a prompt line is an invocation;
+            # `/tmp/report.md` and `/admin/ops` appear in prose all over these files.
+            prompt = str(with_.get("prompt") or "")
+            # `/name` then whitespace or end of line. The lookahead is what keeps
+            # `/tmp/report.md` and `/admin/ops` out: a second `/` is not whitespace.
+            # NOT anchored at end-of-line -- `/discover ${{ inputs.focus }}` takes an
+            # argument, and an earlier version of this check missed it for that alone.
+            for slash in re.findall(r"(?m)^[ \t]*/([a-z][a-z0-9-]*)(?=[ \t]|$)", prompt):
+                f = cmd_dir / f"{slash}.md"
+                if not f.is_file():
+                    continue
+                try:
+                    body = f.read_text(encoding="utf-8")
+                except OSError:
+                    continue
+                if not re.search(r"\bAgent\s*\(|subagent_type\s*=", body):
+                    continue
+                rep.fail(name, None, f"jobs.{jid}", "subagent-tools",
+                         f"runs `/{slash}`, whose action in .claude/commands/{slash}.md is an "
+                         f"`Agent(subagent_type=...)` dispatch, but --allowedTools denies it: "
+                         f"{sorted(allowed)}. The dispatch cannot happen, so the top-level "
+                         f"agent improvises the subagent's job without its definition or its "
+                         f"permissions. Add `Agent`, as agent-work.yml does.")
+
+
 def run_blocks(text: str) -> list[tuple[int, str]]:
     """(1-based line of each `run:` body line, that line) for every run: scalar.
 
@@ -886,6 +953,7 @@ def check_file(path: Path, rep: Report, known: set[str] | None = None) -> None:
         rep.fail(name, None, "(file)", "parse", "no top-level `jobs:` mapping")
         return
     check_triggers(name, doc, rep)
+    check_subagent_tools(name, doc, rep)
     if known is not None:
         check_workflow_run_targets(name, doc, known, rep)
     check_empty_expression(name, text, doc, rep)
@@ -926,7 +994,7 @@ def main() -> int:
         print(f"\nFAIL - {len(rep.failures)} problem(s) across {len(files)} workflow files")
         return 1
     print(f"PASS - {len(files)} workflow files; duplicate keys, empty expressions, "
-          f"workflow_run targets, self-reference, "
+          f"workflow_run targets, self-reference, subagent tools, "
           f"gh-vs-permissions, "
           "pull_request types and run:-interpolation checks clean")
     return 0
