@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-22T23:56:24Z",
+  "generated_at": "2026-10-23T06:58:43Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 113,
-  "with_ask": 53,
+  "open": 114,
+  "with_ask": 54,
   "by_area": {
-    "UNCLASSIFIED": 43,
+    "UNCLASSIFIED": 44,
     "INFRA": 12,
     "REDESIGN": 10,
     "UI": 8,
@@ -33,7 +33,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 36,
+    "bug": 37,
     "untyped": 30,
     "enhancement": 23,
     "correctness": 8,
@@ -44,10 +44,27 @@
   "by_priority": {
     "unset": 74,
     "medium": 21,
-    "high": 18
+    "high": 19
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 495,
+      "title": "loop-outcomes reports working loops as BROKEN: collectors-only runs and every partial/ PR",
+      "ask": "REPORT_PATH[\"agent-measure\"] = \"measurements/latest.md\" and classify_report_loop demands a commit touching it from every successful run.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-10-23T04:48:24Z",
+      "updated": "2026-10-23T04:48:24Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 490,
       "title": "[MEASURE] No per-page x per-day export, so no page-level ship can be scored before its 28-day window ends",
@@ -85,12 +102,10 @@
         "enhancement",
         "category:technical",
         "priority:high",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
+        "provenance:trusted"
       ],
       "created": "2026-10-21T17:59:35Z",
-      "updated": "2026-10-22T05:34:25Z",
+      "updated": "2026-10-23T05:10:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -548,7 +563,7 @@
         "provenance:trusted"
       ],
       "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-22T15:55:55Z",
+      "updated": "2026-10-23T02:31:40Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -818,7 +833,7 @@
         "provenance:trusted"
       ],
       "created": "2026-10-15T14:32:57Z",
-      "updated": "2026-10-17T07:02:07Z",
+      "updated": "2026-10-23T06:16:26Z",
       "blocked": false,
       "needs_evidence": false
     },
