@@ -218,6 +218,38 @@ def test_success_with_no_report_commit_is_broken_not_idle():
     assert other.verdict == lo.BROKEN
 
 
+
+def test_a_run_that_skipped_the_report_job_owed_no_report():
+    """7 of agent-measure's 8 daily slots skip `measure` and run the collectors
+    alone (#495). Demanding latest.md from those reported five working runs as
+    BROKEN, beside 31 genuine failures -- burying the true signal under a false one."""
+    run = _run(7, "schedule", "success", "2026-10-09T02:00:00Z", "2026-10-09T02:05:00Z")
+
+    # No jobs_for: unchanged, stricter reading. A missing commit is still BROKEN.
+    assert lo.classify_report_loop("agent-measure", [run], [], WINDOW).verdict == lo.BROKEN
+
+    skipped = lambda _id: [{"name": "measure", "conclusion": "skipped"},
+                           {"name": "commit", "conclusion": "success"}]
+    f = lo.classify_report_loop("agent-measure", [run], [], WINDOW, jobs_for=skipped)
+    assert f.verdict == lo.OK, f.sentence
+    assert "owed no report" in f.sentence
+
+    # The job RAN and still committed nothing: that is the failure this file is for.
+    ran = lambda _id: [{"name": "measure", "conclusion": "success"},
+                       {"name": "commit", "conclusion": "success"}]
+    assert lo.classify_report_loop("agent-measure", [run], [], WINDOW,
+                                   jobs_for=ran).verdict == lo.BROKEN
+
+    # An unreadable jobs list must not excuse anything.
+    def boom(_id):
+        raise lo.ApiError(403, "actions/runs/7/jobs", "no actions: read")
+    assert lo.classify_report_loop("agent-measure", [run], [], WINDOW,
+                                   jobs_for=boom).verdict == lo.BROKEN
+
+    # A loop with no named report job is unaffected.
+    assert lo.classify_report_loop("agent-discover", [run], [], WINDOW,
+                                   jobs_for=skipped).verdict == lo.BROKEN
+
 def test_discover_with_a_report_and_no_issues_is_idle_not_broken():
     run = _run(10, "schedule", "success", "2026-10-09T21:00:00Z", "2026-10-09T21:30:00Z")
     f = lo.classify_report_loop("agent-discover", [run], [_commit("2026-10-09T21:31:00Z")], WINDOW, issues_created=0)
