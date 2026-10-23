@@ -1084,6 +1084,17 @@ def _model_rows(usage: dict, chain: list[str], agg: dict) -> list[dict]:
                 # than a dash.
                 if provider.startswith("groq"):
                     row["pct"] = round(row["peak"] / TPM_PER_MODEL * 100)
+        # Phase 1. Four states, kept apart: None everywhere = pacing never
+        # recorded for this model (off, not Groq, or before it shipped); a
+        # number = recorded, and `reserved` is written even when nothing waited,
+        # so 0 here is a measurement and not a gap.
+        row.update(reserved=None, waits=None, wait_s=None, skips=None, forced=None)
+        if o is not None and o.get("reserved") is not None:
+            row["reserved"] = int(o.get("reserved") or 0)
+            row["waits"] = int(o.get("waits") or 0)
+            row["wait_s"] = round(int(o.get("wait_ms") or 0) / 1000, 1)
+            row["skips"] = int(o.get("skips") or 0)
+            row["forced"] = int(o.get("forced") or 0)
         row["days_recorded"] = days_rec
         row["window"] = window
         rows.append(row)
@@ -1256,6 +1267,7 @@ def _app_view(days: int = 7) -> dict:
             # `.get` with a default: older summaries (and test stubs) have no key.
             "models": _model_rows(usage, _chain_keys(), agg),
             "models_days_recorded": int(usage.get("model_days_recorded") or 0),
+            "models_paced_days": int(usage.get("paced_days") or 0),
             "input_tokens": int(usage.get("total_input_tokens") or 0),
             "output_tokens": int(usage.get("total_output_tokens") or 0),
             # The WORST day in the window, against a ceiling. An average over

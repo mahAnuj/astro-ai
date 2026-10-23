@@ -2642,6 +2642,248 @@ MUTATIONS = [
      '                if True:',
      "test_only_groq_models_get_a_percentage_of_the_groq_bucket"),
 
+    # #475 Phase 1 (S1). The "blocked on bucket" store and column.
+    ("#475: record() does not write paced_by_model",
+     "src/astro_ai/llm_stats.py",
+     '        if isinstance(pacing, dict):\n',
+     '        if False:\n',
+     "test_record_writes_paced_by_model_and_sums_across_calls"),
+
+    ("#475: a call with no pacing still writes a zeroed paced_by_model entry (silence becomes a zero)",
+     "src/astro_ai/llm_stats.py",
+     '        if isinstance(pacing, dict):\n',
+     '        if True:\n',
+     "test_a_call_with_no_pacing_writes_no_key_at_all"),
+
+    ("#475: usage_summary counts every day as a paced day",
+     "src/astro_ai/llm_stats.py",
+     '        if isinstance(pcd, dict) and pcd:\n            paced_days += 1\n',
+     '        paced_days += 1\n        if isinstance(pcd, dict) and pcd:\n',
+     "test_usage_summary_sums_pacing_and_counts_only_days_that_carried_it"),
+
+    ("#475: a model with no pacing row reads 0 reserved instead of None",
+     "src/astro_ai/llm_stats.py",
+     '(paced[key][f] if key in paced else None)',
+     '(paced[key][f] if key in paced else 0)',
+     "test_a_model_with_no_pacing_row_reports_none_not_zero"),
+
+    ("#475: the panel row drops the wait (wait_s is always 0)",
+     "src/astro_ai/ops_data.py",
+     'row["wait_s"] = round(int(o.get("wait_ms") or 0) / 1000, 1)',
+     'row["wait_s"] = 0',
+     "test_model_rows_turn_milliseconds_into_seconds_and_keep_the_counts"),
+
+    ("#475: the panel prints a dash for a measured zero",
+     "src/astro_ai/templates/admin_ops.html",
+     "{%- if m.reserved is none %}—",
+     "{%- if m.reserved is none or not m.wait_s %}—",
+     "test_the_page_prints_zero_for_a_measured_zero"),
+
+    # #475 Phase 1 (S2). The per-model token bucket in providers.py.
+    ("#475: the bucket level never leaks (a charge is held forever)",
+     "src/astro_ai/providers.py",
+     "        return max(0.0, self._level - max(0.0, t0 - self._t) * self.rate)\n",
+     "        return self._level\n",
+     "test_the_level_leaks_with_time"),
+
+    ("#475: an oversize request is not clamped to the bucket's capacity",
+     "src/astro_ai/providers.py",
+     "        n = min(max(int(tokens), 0), self.cap)\n",
+     "        n = max(int(tokens), 0)\n",
+     "test_an_oversize_request_is_clamped_and_waits_a_finite_time"),
+
+    ("#475: a DENIED reserve still charges the bucket",
+     "src/astro_ai/providers.py",
+     "                return None, wait\n",
+     "                self._level = level + n\n                self._t = t0\n                return None, wait\n",
+     "test_a_denied_reserve_changes_nothing"),
+
+    ("#475: settle ignores what the call actually used",
+     "src/astro_ai/providers.py",
+     "            self._level = max(0.0, self._level + max(int(actual), 0) - res.tokens)\n",
+     "            self._level = max(0.0, self._level)\n",
+     "test_settle_shrinks_and_grows_the_charge_and_only_once"),
+
+    ("#475: a 429 keeps its estimate and a timeout is refunded (rule swapped)",
+     "src/astro_ai/providers.py",
+     "    if isinstance(err, RateLimitError) or (\n            isinstance(status, int) and not isinstance(status, bool) and 400 <= status < 500):\n",
+     "    if not (isinstance(err, RateLimitError) or (\n            isinstance(status, int) and not isinstance(status, bool) and 400 <= status < 500)):\n",
+     "test_a_429_is_refunded_because_nothing_was_consumed"),
+
+    ("#475: the per-attempt _last_usage/_last_completion reset is removed",
+     "src/astro_ai/providers.py",
+     "                _last_usage.set(None)\n                _last_completion.set(None)\n",
+     "",
+     "test_a_later_attempt_is_not_settled_against_an_earlier_calls_figures"),
+
+    ("#475: the pacing sleep happens while holding the bucket lock",
+     "src/astro_ai/providers.py",
+     "                    _pace_sleep(res.wait_s)\n",
+     "                    with bucket._lock:\n                        _pace_sleep(res.wait_s)\n",
+     "test_the_bucket_lock_is_free_while_a_caller_sleeps"),
+
+    ("#475: the bucket key drops the provider name (no longer llm_stats' key)",
+     "src/astro_ai/providers.py",
+     '    return f"{provider.name}|{provider.model()}"\n',
+     "    return provider.model()\n",
+     "test_the_bucket_key_is_the_key_llm_stats_books_the_call_under"),
+
+    ("#475: every provider is paced, not only Groq",
+     "src/astro_ai/providers.py",
+     '    return REQUEST_TOKEN_CEILING if host == "api.groq.com" else None\n',
+     "    return REQUEST_TOKEN_CEILING\n",
+     "test_only_groq_hosts_have_a_known_limit"),
+
+    ("#475: the BHAGYA_TPM_PACING kill switch is ignored",
+     "src/astro_ai/providers.py",
+     '    return os.environ.get("BHAGYA_TPM_PACING", "1").strip().lower() not in (\n        "0", "false", "off", "no")\n',
+     "    return True\n",
+     "test_the_kill_switch_restores_the_unpaced_path_exactly"),
+
+    ("#475: a denied reservation proceeds instead of skipping to the next provider",
+     "src/astro_ai/providers.py",
+     "                res, predicted = bucket.reserve(est, pace_left, force=force)\n",
+     "                res, predicted = bucket.reserve(est, pace_left, force=True)\n",
+     "test_a_provider_that_would_wait_too_long_is_skipped_before_any_sleep"),
+
+    ("#475: the forced second pass is removed (pacing alone can exhaust the chain)",
+     "src/astro_ai/providers.py",
+     "        if too_large:\n            return\n        for _wait, p in sorted(",
+     "        return\n        for _wait, p in sorted(",
+     "test_when_every_provider_is_over_budget_the_call_is_forced_not_failed"),
+
+    ("#475: the acceptance stub can no longer refuse (control must go red)",
+     "tests/test_token_bucket.py",
+     "LIMIT = 8000\n",
+     'LIMIT = float("inf")\n',
+     "test_without_the_bucket_the_same_burst_is_rejected"),
+
+    # #475 Phase 1 (QA round 1). The job wait budget reaches chat(), and every
+    # provider's pacing reaches llm_stats.
+    ("#475: /admin/warm-rashifal stops passing a job deadline (jobs get the 6 s default)",
+     "src/astro_ai/routes/subscribe.py",
+     "                festival=festivals.festival_for_date(date.today()),\n"
+     "                pace_deadline=pace_deadline,\n",
+     "                festival=festivals.festival_for_date(date.today()),\n",
+     "test_warm_rashifal_passes_a_job_deadline"),
+
+    ("#475: /admin/send-daily-rashifal stops passing the deadline",
+     "src/astro_ai/routes/subscribe.py",
+     "                    pace_deadline=pace_deadline,\n"
+     "                ),\n            )\n            sections_by_lang[lang]",
+     "                ),\n            )\n            sections_by_lang[lang]",
+     "test_send_daily_shares_ONE_deadline_across_both_languages"),
+
+    ("#475: /admin/send-daily-rashifal computes a deadline PER LANGUAGE (24 calls, two allowances)",
+     "src/astro_ai/routes/subscribe.py",
+     '    pace_deadline = llm_providers.pace_deadline()\n    for lang in ("en", "hi"):\n',
+     '    for lang in ("en", "hi"):\n        pace_deadline = llm_providers.pace_deadline()\n',
+     "test_send_daily_shares_ONE_deadline_across_both_languages"),
+
+    ("#475: the welcome email (interactive) is given a job deadline",
+     "src/astro_ai/routes/subscribe.py",
+     "                festival=festivals.festival_for_date(date.today()),\n            ),\n        )\n        sections = [",
+     "                festival=festivals.festival_for_date(date.today()),\n"
+     "                pace_deadline=llm_providers.pace_deadline(),\n            ),\n        )\n        sections = [",
+     "test_the_welcome_email_is_interactive_and_passes_no_deadline"),
+
+    ("#475: generate_rashifal does not hand the deadline to its pool workers",
+     "src/astro_ai/llm.py",
+     "                pacer, pace_deadline,\n",
+     "                pacer,\n",
+     "test_generate_rashifal_hands_each_pool_call_its_own_wait_from_the_deadline"),
+
+    ("#475: _generate_rashifal_single drops the deadline before providers.chat",
+     "src/astro_ai/llm.py",
+     'max_wait_s=providers.pace_wait_budget(pace_deadline))',
+     'max_wait_s=None)',
+     "test_generate_rashifal_hands_each_pool_call_its_own_wait_from_the_deadline"),
+
+    ("#475: _generate_rashifal_single ignores the deadline and hands every call the full budget",
+     "src/astro_ai/llm.py",
+     'max_wait_s=providers.pace_wait_budget(pace_deadline))',
+     'max_wait_s=providers.PACE_JOB_BUDGET_S)',
+     "test_a_deadline_already_past_gives_every_pool_call_zero"),
+
+    ("#475: the on-demand /rashifal/{rashi} card is given a job deadline (a user waits up to 150 s)",
+     "src/astro_ai/llm.py",
+     "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n    )",
+     "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n"
+     "        pace_deadline=providers.pace_deadline(),\n    )",
+     "test_the_on_demand_rashi_card_passes_no_budget"),
+
+    ("#475: pace_wait_budget lets the allowance go negative after the deadline (clamp at 0 dropped)",
+     "src/astro_ai/providers.py",
+     "    return max(0.0, min(PACE_JOB_BUDGET_S, deadline - _pace_clock()))\n",
+     "    return min(PACE_JOB_BUDGET_S, deadline - _pace_clock())\n",
+     "test_the_per_call_wait_is_zero_once_the_deadline_has_passed"),
+
+    ("#475: pace_wait_budget drops the per-call cap (a far deadline lets one call wait past the budget)",
+     "src/astro_ai/providers.py",
+     "    return max(0.0, min(PACE_JOB_BUDGET_S, deadline - _pace_clock()))\n",
+     "    return max(0.0, deadline - _pace_clock())\n",
+     "test_the_per_call_wait_never_exceeds_the_budget_and_decays_with_the_clock"),
+
+    ("#475: pace_wait_budget ignores the deadline (every call may wait the full budget)",
+     "src/astro_ai/providers.py",
+     "    return max(0.0, min(PACE_JOB_BUDGET_S, deadline - _pace_clock()))\n",
+     "    return PACE_JOB_BUDGET_S\n",
+     "test_24_calls_sleep_no_more_than_the_deadline_allows"),
+
+    ("#475: pace_wait_budget measures from a stale clock (the allowance never decays)",
+     "src/astro_ai/providers.py",
+     "    return max(0.0, min(PACE_JOB_BUDGET_S, deadline - _pace_clock()))\n",
+     "    return max(0.0, min(PACE_JOB_BUDGET_S, deadline - (deadline - PACE_JOB_DEADLINE_S)))\n",
+     "test_24_calls_sleep_no_more_than_the_deadline_allows"),
+
+    ("#475: pace_deadline ignores the job allowance constant",
+     "src/astro_ai/providers.py",
+     "    return _pace_clock() + (PACE_JOB_DEADLINE_S if allowance_s is None else allowance_s)\n",
+     "    return _pace_clock() + 10_000.0\n",
+     "test_the_per_call_wait_never_exceeds_the_budget_and_decays_with_the_clock"),
+
+    ("#475: the job deadline default grows past the Cloud Run timeout's headroom",
+     "src/astro_ai/providers.py",
+     'os.environ.get("BHAGYA_PACE_JOB_DEADLINE_S", "230")',
+     'os.environ.get("BHAGYA_PACE_JOB_DEADLINE_S", "290")',
+     "test_the_job_deadline_leaves_headroom_under_the_300s_cloud_run_timeout"),
+
+    ("#475: the job budget constant collapses to the interactive default",
+     "src/astro_ai/providers.py",
+     'os.environ.get("BHAGYA_PACE_JOB_BUDGET_S", "150")',
+     'os.environ.get("BHAGYA_PACE_JOB_BUDGET_S", "6")',
+     "test_the_job_budget_is_150_seconds_and_longer_than_the_interactive_default"),
+
+    ("#475: chat() ignores max_wait_s and always uses the interactive default",
+     "src/astro_ai/providers.py",
+     "    pace_left = RETRY_AFTER_MAX_S if max_wait_s is None else max(0.0, float(max_wait_s))\n",
+     "    pace_left = RETRY_AFTER_MAX_S\n",
+     "test_the_job_budget_waits_where_the_interactive_default_skips"),
+
+    ("#475: only the SERVING provider's pacing counters reach llm_stats",
+     "src/astro_ai/providers.py",
+     "pacing={k: dict(v) for k, v in paced.items()} or None,",
+     "pacing={_bucket_key(provider): dict(pc)} if pc else None,",
+     "test_a_provider_that_waited_then_429d_is_booked_under_its_own_key"),
+
+    ("#475: record() books every provider's pacing under the SERVING model's key",
+     "src/astro_ai/llm_stats.py",
+     '                pm = data.setdefault("paced_by_model", {}).setdefault(\n                    pkey,',
+     '                pm = data.setdefault("paced_by_model", {}).setdefault(\n                    model_key,',
+     "test_one_record_call_books_every_model_in_the_mapping_under_its_own_key"),
+
+    ("#475: a skip-only model reads '0 of 0 waited' again on /admin/ops",
+     "src/astro_ai/templates/admin_ops.html",
+     '{% if m.reserved == 0 and (m.skips or m.forced) %}none admitted{% else %}{{ "{:,}".format(m.waits) }} of {{ "{:,}".format(m.reserved) }} waited{% endif %}',
+     '{{ "{:,}".format(m.waits) }} of {{ "{:,}".format(m.reserved) }} waited',
+     "test_a_model_that_was_only_skipped_does_not_read_0_of_0_waited"),
+
+    ("#475: a skip is no longer counted (the panel's 'skipped' stays 0)",
+     "src/astro_ai/providers.py",
+     '                    pc["skips"] += 1\n',
+     '                    pc["skips"] += 0\n',
+     "test_a_skipped_provider_that_did_not_serve_still_shows_its_skip"),
+
     # ---- #362 Part A1: the static prompt-contract gate. Two blocks. The first
     # deletes or rewrites ONE sentence of a shipped prompt, inside the sandbox
     # only, and the single contract test must go red: 13 of these left the whole

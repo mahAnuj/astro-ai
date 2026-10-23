@@ -215,6 +215,52 @@ GATE7_SAMPLES = {
           "Classical  Jupiter \u2010 domain  good  deeds",
           "Ketu's most classically-cited practices", "the most classically\u2011cited deeds for Mars",
           "his most classically cited mantras"),
+    # K. Graha Maitri collapsed to friend / neutral-partial / enemy-0 (slice 6). The
+    # first is the sentence as found on kundali-matching-ashtakoot-guna-milan; the
+    # rest move the verb, the arrow, the synonym for "partial" and for "enemies".
+    "K": ("If the two Moon-sign lords are natural friends, full 5 points. If neutral, partial. If enemies, 0.",
+          "If neutral, partial", "neutral: half", "Neutral \u2192 reduced", "neutral - middling",
+          "NEUTRAL  medium", "neutral, in-between", "neutral = some points",
+          "If enemies, 0 points", "if the lords are enemies, 0", "If they are enemies: zero",
+          "When the two lords are enemy planets, nil", "if the lords are inimical then 0",
+          "if hostile, 0", "If enemies \u2192 0", "If enemies = 0", "Where the lords are enemies, zero points",
+          "should the lords be enemies, 0",
+          "If enemies score nothing", "if enemies get no points", "If the lords are enemies they receive zero",
+          "Friends 5, neutral partial, enemies 0",
+          # Measured by the author's own probe of 21 rewrites before these were widened:
+          # 12 of 21 escaped. Each of these was one of them.
+          "Neutral lords give partial credit", "neutral gives half marks", "Enemies = 0, friends = 5",
+          "enemies: 0", "If the lords are foes, 0", "If at enmity, 0", "if the lords are unfriendly, 0",
+          "neutral lords: partial points", "neutral: partially", "Neutral (partial)",
+          "If the lords are neutral, a partial score", "friends 5, neutrals 3, enemies 0",
+          "\u092f\u0926\u093f \u0930\u093e\u0936\u0940\u0936 \u0936\u0924\u094d\u0930\u0941 \u0939\u094b\u0902 \u0924\u094b 0 \u0905\u0902\u0915"),
+    # L. Rahu and Ketu "outside Parashara's grid" (slice 6). The first four are the
+    # sentences as found (rahu, ketu, the-9-grahas, shani-saturn); the rest move the
+    # source name, the noun, the negation and the history.
+    "L": ("Not part of Parashara's natural-friendship grid",
+          "Not part of the classical natural-friendship grid (Parashara's Naisargika Maitri predates "
+          "Rahu's formal inclusion in the graha family)",
+          "Rahu and Ketu aren't included in Parashara's natural-friendship grid because it predates their "
+          "formal inclusion in the graha family. Modern practice uses ad-hoc rules for them.",
+          "Rahu and Ketu are not in classical natural-friendship grids (Parashara's tables were built for "
+          "the 7-planet model).",
+          "Not part of BPHS's friendship table", "BPHS's natural friendship grid", "Parashara's friendship table",
+          "Parasara's Naisargika Maitri", "Parashar's natural-friendship tables", "Parashari natural-friendship grid",
+          "Ketu is not in the traditional natural-friendship chart",
+          "Rahu isn't listed in the ancient friendship table", "Ketu was never part of the original friendship grid",
+          "Rahu is excluded from the classical friendship table", "Ketu was left out of the classical grid",
+          "Rahu is missing from Parashara's own table", "Rahu: outside the classical natural-friendship grid",
+          "The table predates the formal inclusion of Rahu and Ketu", "it predates their inclusion in the navagraha",
+          "predates their inclusion in the nine-graha system", "Rahu and Ketu came late and the table predates them",
+          "Modern practice uses ad hoc rules for them", "ad-hoc assignments for Rahu", "Ketu follows ad hoc conventions",
+          "Parashara's tables were built for the seven planet model", "designed for the seven-planet model",
+          # 9 of 16 rewrites escaped the first version of this family; each of these was one.
+          "Rahu and Ketu don't appear in the classical friendship table",
+          "The grid was drawn up before Rahu and Ketu were counted",
+          "Parashara's table has no Rahu or Ketu", "the classical grid does not include Rahu",
+          "The table predates the nodes", "Rahu and Ketu were added later to the graha family",
+          "this scheme only knew seven planets", "The original 7-planet friendship table",
+          "\u092a\u0930\u093e\u0936\u0930 \u0915\u0940 \u092e\u0948\u0924\u094d\u0930\u0940 \u0924\u093e\u0932\u093f\u0915\u093e \u092e\u0947\u0902 \u0930\u093e\u0939\u0941 \u0928\u0939\u0940\u0902"),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -299,6 +345,29 @@ GATE7_LEGAL = (
     "Per Johari, the grid differs from the one Cheiro published.",
     "The friendship grid scores the two Moon-sign lords.",
     "A 12-month plan, in 3 rounds of review.",
+    # K is the three-rung SHAPE, not a ban on "enemies" or on 0: enemy+enemy IS 0
+    # (matching.md vv.27-28) and the rest of the ladder is the correct text.
+    "Mutual enemies score 0 points.", "0 only when both are enemies",
+    "friend + enemy 2, neutral + enemy 1, enemy + enemy 0",
+    "If both lords are enemies, 0.", "If the lords are mutual enemies, zero.",
+    "If one lord is a friend and the other an enemy, 2 points.",
+    "If one lord is neutral and the other an enemy, 1 point.", "If the lords are neutral, 3 points.",
+    "5 points if the lords are friends or the same planet rules both Moon signs, 4 for a friend and a "
+    "neutral, 3 for two neutrals, 2 for a friend and an enemy, 1 for a neutral and an enemy, and 0 only "
+    "when both are enemies.",
+    "Neutral planets: Mars, Jupiter, Venus, Saturn", "The Moon has no enemies.",
+    "If both lords are enemies, 0.", "both enemies, 0", "two enemies: 0 points",
+    # L is the Parashara/predates/ad-hoc history, not a ban on saying the standard table
+    # covers seven planets. The first two are the sentences as shipped after slice 6.
+    "Outside the standard natural-friendship table, which covers the seven visible planets; Rahu's "
+    "friendships are assigned by tradition (commonly friendly with Venus and Saturn, hostile to the Sun, "
+    "Moon and Mars) and vary between schools",
+    "The standard table above covers the seven visible planets. Rahu and Ketu are given friendships by "
+    "tradition and schools vary on this more than they do on the seven.",
+    "Rahu and Ketu are not in the standard natural-friendship table.",
+    "The friendship table excludes Rahu and Ketu.", "The table covers only the seven visible planets.",
+    "The classical grid (Naisargika Maitri):", "Rahu is friendly with Venus and Saturn.",
+    "The Vimshottari scheme was built for nine planets.", "Ketu's friendships vary between schools.",
 )
 
 # The one honest Hanuman-Saturn sentence a page may keep: it must say popular/folk
@@ -519,6 +588,20 @@ def main() -> int:
              ("sade-sati", "Hanuman Chalisa Saturdays"), (None, "Bajrangbali for Sade Sati")),
         r"confirmation in D-?9|Raja Yoga confirmation":
             (("gajakesari-yoga", "Confirmation in D-9 Navamsha strengthens the effect"),),
+        # Slice 6. The first row of each is the sentence the summary actually carried.
+        gate.HYMN_CERTIFIED: (("jupiter-remedies", "Jupiter safe universal practices (any chart): Thursday fasting, Vishnu Sahasranama chanting"),
+                              ("mercury-remedies", "Mercury safe universal practices: Wednesday fasting, Vishnu Sahasranama"),
+                              ("manglik-remedies", "7 classical remedies: (1) Hanuman worship, (2) Vishnu Sahasranama + Ekadashi vrat"),
+                              (None, "Vishnu Sahasranam is the classical Jupiter remedy"),
+                              (None, "the most reliable Mercury practice is the Vishnu Sahasranama"),
+                              (None, "विष्णु सहस्रनाम सबसे शक्तिशाली powerful उपाय")),
+        gate.GRAHA_MAITRI_MISSTATED: (("kundali-matching-ashtakoot-guna-milan", "Graha Maitri: friends 5, if neutral, partial, if enemies, 0"),
+                                      (None, "Friends full 5 points. Neutral: half."),
+                                      (None, "if hostile, zero")),
+        gate.RAHU_KETU_GRID: (("rahu-in-vedic-astrology", "Not part of Parashara's natural-friendship grid"),
+                              (None, "Rahu and Ketu aren't in classical natural-friendship grids"),
+                              (None, "the table predates Rahu's formal inclusion"),
+                              (None, "Modern practice uses ad-hoc rules for them")),
     }
     first = real[0][0]
     for pattern, _why in gate.SUMMARY_FORBIDDEN:
@@ -542,6 +625,11 @@ def main() -> int:
     for target, legal in (
         ("mars-remedies", "Mars deities: Hanuman, Rudra, Kartikeya"),
         ("kaal-sarp-dosh-remedies", "Nag Panchami (fast + serpent milk offering), Monday Shiva worship + milk abhishek"),
+        # Slice 6: the Lalita hymn is remedies.md 8's own; mutual enemies ARE 0; the seven-planet table.
+        ("venus-remedies", "Venus safe universal practices: Friday fasting, Sri Lalita Sahasranama, Devi/Lakshmi worship"),
+        ("kundali-matching-ashtakoot-guna-milan", "friend+enemy 2, neutral+enemy 1, enemy+enemy 0; mutual enemies score 0"),
+        ("rahu-in-vedic-astrology", "Outside the standard natural-friendship table, which covers the seven visible planets"),
+        ("jupiter-remedies", "Vishnu worship (a mantra, or a hymn your own tradition keeps), many recite the Vishnu Sahasranama"),
     ):
         mutated = [(slug, text + ("\n• " + legal if slug == target else "")) for slug, text in real]
         with redirect_stdout(io.StringIO()):
