@@ -987,7 +987,7 @@ RETRY_AFTER_BUDGET_S = 10.0
 # is the interactive default (RETRY_AFTER_MAX_S, 6 s): a user is waiting, so a
 # provider whose bucket is more than 6 s from having room is skipped. The warm and
 # send-daily rashifal jobs have nobody waiting and are the traffic that overspends
-# a bucket, so they pass this instead -- see llm.generate_rashifal(max_wait_s=).
+# a bucket, so they pass this instead -- see llm.generate_rashifal(pace_deadline=).
 #
 # A per-call bound ONLY -- on its own it does not make a job fit. QA simulated the
 # inline two-language send (24 calls, 2 workers): 319-395 s in 8 of 8 seeds, past
