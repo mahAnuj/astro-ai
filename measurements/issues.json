@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-23T15:38:41Z",
+  "generated_at": "2026-10-23T20:12:27Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 114,
-  "with_ask": 54,
+  "open": 116,
+  "with_ask": 55,
   "by_area": {
-    "UNCLASSIFIED": 44,
+    "UNCLASSIFIED": 46,
     "INFRA": 12,
     "REDESIGN": 10,
     "UI": 8,
@@ -34,7 +34,7 @@
   },
   "by_type": {
     "bug": 37,
-    "untyped": 30,
+    "untyped": 32,
     "enhancement": 23,
     "correctness": 8,
     "design": 7,
@@ -42,12 +42,38 @@
     "ui": 3
   },
   "by_priority": {
-    "unset": 74,
+    "unset": 76,
     "medium": 21,
     "high": 19
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 503,
+      "title": "stall routing: no independent-QA path for human-authored partial/ PRs, guard 2 misreads a working dispatch, chief-dispatched qa cannot record its label",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-23T19:06:27Z",
+      "updated": "2026-10-23T19:06:27Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 502,
+      "title": "detect_stalls/agent-cycle read QA verdict time from the qa-fail label event, which does not move on a repeat FAIL",
+      "ask": "The fix belongs to whoever owns detect_stalls.py / qa.md / agent-cycle.md.",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-23T19:06:26Z",
+      "updated": "2026-10-23T19:06:26Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 495,
       "title": "loop-outcomes reports working loops as BROKEN: collectors-only runs and every partial/ PR",
@@ -106,7 +132,7 @@
         "provenance:trusted"
       ],
       "created": "2026-10-21T17:59:35Z",
-      "updated": "2026-10-23T14:19:23Z",
+      "updated": "2026-10-23T17:00:41Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -564,7 +590,7 @@
         "provenance:trusted"
       ],
       "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-23T02:31:40Z",
+      "updated": "2026-10-23T16:29:11Z",
       "blocked": false,
       "needs_evidence": false
     },
