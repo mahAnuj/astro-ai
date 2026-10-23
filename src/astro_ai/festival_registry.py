@@ -343,7 +343,7 @@ _DECLARED: tuple[Festival, ...] = (
             "Hanuman Jayanti falls on the Chaitra full moon in the North Indian reckoning and "
             "celebrates the appearance of Hanuman — the servant, the strength, and one of the "
             "chiranjivis the texts hold to be still present. Because Hanuman is invoked for courage, "
-            "protection, and relief from the harder transits of Shani and Mangal, the day carries a "
+            "protection, and relief from the harder transits of Mangal, the day carries a "
             "practical reputation alongside the devotional one. Southern and western traditions keep "
             "Hanuman's day at other points in the year; the Chaitra Purnima date is the northern custom."
         ),
