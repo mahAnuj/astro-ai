@@ -51,3 +51,7 @@ node_modules/
 # ignored. Keyed on (path, size, mtime, pdftotext version, flags), so a
 # changed or re-extracted book invalidates its own entry.
 .corpus-cache/
+
+# Scratch for the nightly rashifal job (#515). Lives in the workspace because
+# Claude Code may only write inside it; never committed.
+.rashifal-run/
