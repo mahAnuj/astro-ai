@@ -147,9 +147,35 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
     "monthly":                  (732, 1000, _D, "hi 864 + 10%"),
     "yearly":                   (819, 1050, _D, "hi 951 + 10%"),
     "matching":                 (1265, 1550, _D, "hi 1397 + 10%"),
-    "rashifal_single":          (2278, 2700, _D,
-                                 "hi 2410 + 10%; sent on a cache miss of "
-                                 "/rashifal/{rashi}, a free-tier TPD path"),
+    # RAISED 2026-10-24, deliberately, by the owner's decision: "we are now not
+    # worried about the token budget as we are using claude code now for it"
+    # (#515 moves generation to a nightly Claude Code job where the free-tier
+    # ceiling does not bind). 2,278 -> 2,874 en / 3,006 hi, +26.2%.
+    #
+    # What the growth bought, all of it measured rather than asserted (#513):
+    #   * the fixed four-paragraph shape replaced by one that rotates per
+    #     (date, rashi) -- 90.9% of 252 published readings had exactly four
+    #     paragraphs and two consecutive days opened ALL FOUR with the same
+    #     frames while sharing 5.2% of their 3-grams
+    #   * the day's actual Gochara verdict, so the prose agrees with the sky
+    #     instead of the model's mood
+    #   * the tone section the owner asked for
+    #
+    # IT STILL FITS THE FALLBACK, which is the only reason this row still
+    # matters: Groq generates the day whenever the nightly job publishes
+    # nothing. Measured 2026-10-24 end to end, system + day signals + transit +
+    # gochara + anchor: en 5,295 tok and hi 5,807 against the 7,400 bucket
+    # (8,000 TPM less the 600 margin), leaving 2,105 and 1,593 of headroom. A
+    # fallback day still works.
+    #
+    # The ceiling is hi 3,006 + 10% rounded up to the next 50, per the rule
+    # above. If this row grows again, re-measure the FULL REQUEST, not the
+    # system prompt -- the bucket is what bites, and this number is only a
+    # tripwire in front of it.
+    "rashifal_single":          (2874, 3350, "2026-10-24",
+                                 "hi 3006 + 10%; sent on a cache miss of "
+                                 "/rashifal/{rashi}, a free-tier TPD path, and "
+                                 "on every Groq fallback day"),
     "dasha_deep_dive":          (944, 1200, _D, "hi 1076 + 10%"),
     # System prompt + the largest golden chart's user message, unshed. Not
     # derived from the prompt: derived from the BUCKET. Groq's TPM is 8,000 per
