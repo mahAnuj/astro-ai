@@ -186,6 +186,23 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
     # 1,000-tok margin to the 8,000 bucket (12.5%) is what keeps #266 away.
     # Headroom at baseline is 202 tok en, 70 tok hi, deliberately thin: this is
     # the row that broke production, and an edit to natal.txt SHOULD come here.
+    # ADDED 2026-10-24 (#523). This route was measured on its SYSTEM PROMPT
+    # alone, so the row read "+0.0%" while a change added ~120 tok per rashi to
+    # the USER message -- the gochara verdict, four per-area counts and the
+    # remedy line. QA found the gate passing BECAUSE it could not see the
+    # change: the same vacuous-pass shape as a SKIPPED run read as a pass.
+    #
+    # Ceiling is hi 4,129 + 10% rounded up to the next 50. It is NOT the whole
+    # request: the Rashifal fans out twelve of these and the binding number is
+    # the per-model bucket, 8,000 TPM less the 600 margin = 7,400. Measured end
+    # to end on the same day, system + signals + transit + gochara + areas +
+    # remedy + anchor: en 5,295 and hi 5,807, leaving 2,105 and 1,593 of
+    # headroom. That is what the Groq fallback has to fit inside, and this row
+    # is the tripwire in front of it -- re-measure the FULL REQUEST, not this
+    # figure, if it grows again.
+    "rashifal_single+payload":  (3997, 4600, "2026-10-24",
+                                 "hi 4129 + 10%; the per-rashi user message, "
+                                 "which carries the day's computed verdicts"),
     "natal+payload":            (6798, 7000, _D,
                                  "7,000 = 8,000 TPM less the runtime guard's 1,000 margin"),
 }
@@ -228,6 +245,36 @@ def load_encoding():
         return tiktoken.get_encoding("o200k_base")
     except Exception as exc:  # noqa: BLE001 — ImportError, URLError, ValueError(hash)...
         raise CouldNotRun(f"tiktoken o200k_base unavailable: {type(exc).__name__}: {exc}") from exc
+
+
+def rashifal_payload(llm, chart_mod) -> str:
+    """The per-rashi USER message for one rashi, as `chat()` would receive it.
+
+    Added 2026-10-24 (#523). Until now this route was measured on its system
+    prompt alone, and the row read "+0.0%" while a change added ~120-137 tokens
+    per rashi to the USER message -- the gochara verdict, the four per-area
+    counts and the remedy line. QA found the gate passing BECAUSE it could not
+    see the change, which is the same vacuous-pass shape as a SKIPPED run read
+    as a pass.
+    """
+    from datetime import date
+    from astro_ai import festivals
+    natal = chart_mod.compute_chart("2000-01-01", "12:00", "Mumbai, India")
+    transit = chart_mod.compute_transit_snapshot(natal)
+    panchang = chart_mod.compute_panchang(natal)
+    today = date.today()
+    signals = "\n".join(
+        f"- {s}" for s in llm._build_rashifal_day_signals(
+            transit, today.isoformat(), "en", panchang,
+            festivals.festival_for_date(today)))
+    anchor = llm._RASHI_ANCHORS[0]
+    # Rashi 0 every day: the block's size is dominated by the day signals and
+    # the transit, which are shared, so one rashi is representative and the
+    # measurement does not swing on which sign happens to be worst today.
+    return (signals + "\n" + llm.format_transit_for_prompt(transit) + "\n"
+            + llm._gochara_block(0, transit) + "\n"
+            + llm._RASHIFAL_SHAPES[0] + "\n" + llm._OPENING_MOVES[0] + "\n"
+            + anchor.get("opening_style", ""))
 
 
 def route_files(deps) -> dict[str, tuple[Path, Path | None]]:
@@ -413,6 +460,11 @@ def main(argv: list[str] | None = None) -> int:
             user = count(natal_payload(llm))
             n_en, n_hi = measured["natal"]
             measured["natal+payload"] = (n_en + user, n_hi + user)
+        if "rashifal_single" in measured:
+            from astro_ai import chart as _chart
+            r_user = count(rashifal_payload(llm, _chart))
+            r_en, r_hi = measured["rashifal_single"]
+            measured["rashifal_single+payload"] = (r_en + r_user, r_hi + r_user)
     except CouldNotRun as exc:
         print(f"  COULD NOT VERIFY: {exc}")
         print("  -> SKIPPED (exit 2). This is NOT a pass — the check did not run.")
