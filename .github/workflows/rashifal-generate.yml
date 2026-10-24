@@ -263,10 +263,20 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rashifal-${{ matrix.lang }}-${{ github.run_id }}
+          # RELATIVE, not $RUNDIR. `actions/upload-artifact` does not expand
+          # shell variables in `path:` -- run 40081709799 uploaded nothing and
+          # logged the literal string `$RUNDIR/rashifal-en.txt`, with
+          # `if-no-files-found: warn` keeping the step green. Same class of
+          # mistake as the /tmp denial it was added to diagnose: a path that
+          # does not mean what it looks like, failing quietly. The working
+          # directory is the workspace, so a relative path needs no expansion
+          # at all.
           path: |
-            $RUNDIR/rashifal-${{ matrix.lang }}.txt
-            $RUNDIR/brief-${{ matrix.lang }}.md
-          if-no-files-found: warn
+            .rashifal-run/rashifal-${{ matrix.lang }}.txt
+            .rashifal-run/brief-${{ matrix.lang }}.md
+          # `error`, not `warn`: the whole point of this step is to make a run
+          # readable, and a silent miss is how the path bug above survived.
+          if-no-files-found: error
           retention-days: 7
 
       - name: Report

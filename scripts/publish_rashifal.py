@@ -243,11 +243,40 @@ def main() -> int:
 
     if args.merge:
         existing = storage.get(storage_key) or ""
-        if not existing.strip():
+        if not existing.strip() and not args.dry_run:
             print(f"publish_rashifal: --merge, but nothing is published at "
                   f"{storage_key} yet. There is no day to splice into; run the "
                   f"full twelve first.", file=sys.stderr)
             return 1
+        if not existing.strip():
+            # DRY RUN WITH NOTHING PUBLISHED. Refusing here is right when we
+            # are about to write -- a one-section blob would be a cache hit
+            # that hides eleven rashis. But a dry run writes nothing, and the
+            # reason to run one rashi by hand is to READ it. So check the
+            # reading on its own and say plainly what was not checked.
+            #
+            # Found by the owner's second dispatch (40081709799): the agent
+            # wrote the file correctly and this exited 1 before anything could
+            # be inspected, which made a working run look like a broken one.
+            print(f"--merge: nothing published at {storage_key} yet, so there "
+                  f"is no day to splice into.\n"
+                  f"This is a DRY RUN, so the reading below is checked ON ITS "
+                  f"OWN instead. The 12-section requirement is NOT applied and "
+                  f"NOT satisfied — publishing still needs a full day first.\n")
+            args.merge = False
+            fails = [f for f in validate(text, args.date)
+                     if "need exactly 12" not in f and "attributable" not in f]
+            print(f"lang={args.lang} date={args.date}")
+            print(f"key={storage_key}")
+            print(f"sections in this file: {len(parse_sectioned_reading(text))}")
+            if fails:
+                print(f"\nPROBLEMS in the reading itself ({len(fails)}):")
+                for f in fails:
+                    print(f"  - {f}")
+                return 1
+            print("\nOK — the reading breaks none of the output rules. "
+                  "Section count deliberately not judged; see above.")
+            return 0
         before = len(parse_sectioned_reading(existing))
         incoming = [t for t, _ in parse_sectioned_reading(text)]
         text = merge_into_day(text, existing)
