@@ -39,11 +39,22 @@ def _strip_names(text: str) -> str:
     return text
 
 
-def test_english_block_is_byte_identical_to_the_pre_localisation_literals():
-    """The refactor moved the English into i18n; it must not have moved a byte.
+def test_english_block_tells_the_model_the_windows_are_background_only():
+    """The block names the two windows to STATE them, never to have them echoed.
 
-    Exact text for one weekday (readable on failure) plus a digest across all
-    seven (the hash was taken from the code BEFORE #270, at d6c570d).
+    It used to read "Name them ('during Rahu Kaal', 'in the Abhijit window near
+    midday')" — so the model was instructed to put them in the prose, and it
+    did: `the abhijit muhurta` appeared in Aries on 21 of 21 consecutive days,
+    and the exact 5-gram `the abhijit muhurta near midday` on 18 of 21 (#513).
+    The email and page already render each reader their own computed times in a
+    panel directly above the reading, so the prose was duplicating a table the
+    reader can see and replacing an exact window ("9:15-10:39 AM") with a vaguer
+    one ("mid-morning").
+
+    The facts sentence is unchanged and still names both windows — the model
+    needs them to know the day's shape. Only the directive flipped, from
+    "say these" to "never say these". Exact text for one weekday (readable on
+    failure) plus a digest across all seven.
     """
     assert _block("en", 8) == (  # Thursday: Rahu Kaal is segment 6
         "Today's inauspicious and auspicious windows. Rahu Kaal falls in the "
@@ -51,20 +62,31 @@ def test_english_block_is_byte_identical_to_the_pre_localisation_literals():
         "and is the wrong time to begin anything, sign, or decide. Abhijit "
         "Muhurta is the ~48 minutes centred on LOCAL solar noon, and is the "
         "day's most favourable window for important action.\n"
-        "Write these two names EXACTLY as: \"Rahu Kaal\" and \"Abhijit Muhurta\". Do not "
-        "transliterate them yourself, do not romanise them, and do not bold "
-        "or otherwise mark them up.\n"
-        "CRITICAL: state NEITHER as a clock time. Both are computed from the "
-        "reader's own sunrise and sunset, and this one reading is published to "
-        "the whole country — across Indian cities these windows shift by up to "
-        "79 minutes, enough that two readers' Abhijit windows do not overlap at "
-        "all. Name them ('during Rahu Kaal', 'in the Abhijit window near "
-        "midday') and let the page show each reader their own times. Do not "
-        "invent any other hour, minute, or 'after 4 pm'-style cutoff either — "
-        "you have no clock for this reader."
+        "BACKGROUND ONLY — never surface this. Do not name Rahu Kaal or "
+        "Abhijit Muhurta, and do not paraphrase either window; the page and "
+        "the email already show this reader their own times for both. State "
+        "no clock time and no soft clock ('mid-morning', 'near midday') — "
+        "across Indian cities these windows shift by up to 79 minutes. Use "
+        "the shape above only to decide whether the day favours pushing or "
+        "waiting."
     )
     digest = hashlib.sha256("".join(_week("en")).encode()).hexdigest()[:16]
-    assert digest == "04118625184f5800"
+    assert digest == "185ff1401795566a"
+
+
+def test_no_language_tells_the_model_to_name_a_window():
+    """The regression that #513 is about, pinned in every language we ship.
+
+    An instruction to name the windows is what produced 21/21 days of
+    `the abhijit muhurta`, so the ban has to hold for EN, HI and the
+    English-fallback path alike — a directive that forbids it in English while
+    still asking for it in Hindi would put it straight back on /hi/rashifal.
+    """
+    for lang in ("en", "hi", "ta"):
+        directive = translate(lang, "rashifal_window_directive")
+        assert "{rahu}" in directive and "{abhijit}" in directive, lang
+        for banned in ("Name them", "के दौरान", "के आसपास"):
+            assert banned not in directive, (lang, banned)
 
 
 def test_hindi_block_carries_no_english_once_the_two_names_are_removed():
@@ -91,10 +113,15 @@ def test_hindi_block_names_every_segment_and_band_distinctly():
     assert len(set(week)) == 7  # seven weekdays, seven different blocks
 
 
-def test_hindi_block_still_gives_the_exact_names_and_forbids_clock_times():
+def test_hindi_block_forbids_naming_the_windows_and_any_clock_time():
     block = _block("hi")
     for key in ("rahu_kaal", "abhijit_muhurta"):
-        assert f'"{translate("hi", key)}"' in block
+        # Still present — the model needs the names to read the facts line.
+        assert translate("hi", key) in block
+    # ...but no longer quoted as the exact spelling to reproduce: that framing
+    # was the instruction to echo them (#513).
+    for key in ("rahu_kaal", "abhijit_muhurta"):
+        assert f'"{translate("hi", key)}"' not in block
     assert "79" in block and "48" in block
     # The anti-copy sentence for the English example phrases still living in
     # prompts/rashifal_single.txt (the second echo source).

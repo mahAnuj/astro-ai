@@ -304,13 +304,13 @@ MUTATIONS = [
     ("#270: the English band text drifts from the pre-localisation literal",
      "src/astro_ai/i18n.py",
      '"rahu_band_6": "mid-afternoon"', '"rahu_band_6": "mid afternoon"',
-     "test_english_block_is_byte_identical_to_the_pre_localisation_literals"),
+     "test_english_block_tells_the_model_the_windows_are_background_only"),
 
     ("#270: the Hindi anti-copy sentence is dropped from the directive",
      "src/astro_ai/i18n.py",
-     "अन्य निर्देशों में दिए गए अंग्रेज़ी उदाहरण-वाक्यांशों को कभी न दोहराएँ",
-     "अन्य निर्देशों को कभी न दोहराएँ",
-     "test_hindi_block_still_gives_the_exact_names_and_forbids_clock_times"),
+     "अन्य निर्देशों के अंग्रेज़ी उदाहरण-वाक्यांश कभी न दोहराएँ",
+     "अन्य निर्देश कभी न दोहराएँ",
+     "test_hindi_block_forbids_naming_the_windows_and_any_clock_time"),
 
     ("/today: the two window cards render without checking the flag (#228)",
      "src/astro_ai/templates/today.html",

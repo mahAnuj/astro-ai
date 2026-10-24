@@ -622,9 +622,10 @@ why = "ARCHITECTURE.md voice rules: one national text, local sunrise; a clock ti
 all = ['DO NOT state any clock time', 'Never a clock time']
 
 [[prompts."rashifal_single.txt".rules]]
-id = "windows-are-named-from-the-user-message"
-why = "Windows come from the supplied Panchang. Deliberately NOT anchored on what each window is for (doctrine; astro-auditor F8)."
-all = ['use the named windows given in your user message']
+id = "windows-are-never-named-in-the-prose"
+why = "INVERTED 2026-10-24 (#513). This rule used to require 'use the named windows given in your user message', and the model obeyed: `the abhijit muhurta` appeared in Aries on 21 of 21 consecutive days, the exact 5-gram `the abhijit muhurta near midday` on 18 of 21, measured over 252 readings. The email and page already render each reader their OWN computed times in a panel directly above the reading, so the prose was duplicating a table the reader can see and swapping an exact window (9:15-10:39 AM) for a vaguer one (mid-morning). Still deliberately NOT anchored on what each window is for (doctrine; astro-auditor F8) -- only on the ban."
+all = ['DO NOT name Rahu Kaal or Abhijit Muhurta', 'do not refer to either window at all']
+forbid = ['use the named windows given in your user message', 'Say "during Rahu Kaal"']
 
 [[prompts."rashifal_single.txt".rules]]
 id = "no-markdown"
