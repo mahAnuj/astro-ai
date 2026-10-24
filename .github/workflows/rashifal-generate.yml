@@ -1,0 +1,258 @@
+# Generate the day's twelve readings with Claude Code and publish them to GCS,
+# before the Groq path would do it (#515).
+#
+# WHY THIS EXISTS. Everything the rashifal route bends around -- the per-model
+# token bucket, #475's pacing deadlines, the 429 wait-and-retry, the "does it
+# fit the free tier" rule every agent owes an answer to -- exists because
+# generation happens on a Groq free key inside a 300 s request. Doing it in a
+# nightly job removes that ceiling for this route, and the prose defects #513
+# measured are partly a weak-model problem: 78 of 252 readings over 21 days
+# named a planet the prompt forbids outright (31.0%), while the SAME prompt's
+# banned-opening rule held at 2.0%. The rules are enforceable. They were just
+# being enforced by the cheapest model that fit the budget.
+#
+# THE FALLBACK IS THE ABSENCE OF A BLOB, NOT A CODE PATH. If this job fails,
+# times out, hits the Claude cap, or produces anything that fails validation,
+# it writes NOTHING -- and /admin/warm-rashifal at 01:00 UTC generates via Groq
+# exactly as it does today, because `_shared_three_tier` finds no GCS entry and
+# falls through. There is no flag to leave in the wrong position and nothing to
+# remember to turn back on. That matters on a route with a 21-day silent
+# outage in its history (2026-08-01..08-21).
+#
+# AND A BAD BLOB IS WORSE THAN NO BLOB. The app reads GCS FIRST, so a partial
+# or malformed document is a cache HIT: it suppresses the fallback above and
+# ships broken text for a whole day to the page and to every subscriber.
+# `scripts/publish_rashifal.py` is the gate, and it refuses on anything short
+# of twelve clean, individually-attributable sections. Do not relax it to make
+# a run green -- a refusal costs nothing, because Groq still runs.
+#
+# ONE PROMPT, NOT TWO. `scripts/rashifal_brief.py` prints the REAL system
+# prompt and the REAL twelve user messages by calling llm.py's own builders,
+# and the real storage key by calling `combined_keys`. Nothing here composes a
+# prompt or an f-string key. `combined_keys`' docstring says why: "Two copies
+# of these f-strings is a derive path that silently reads a key nobody writes."
+name: Rashifal generate
+
+on:
+  schedule:
+    # 22:00 UTC = 03:30 IST. Early enough that an early riser reads Claude's
+    # text rather than triggering a Groq generation themselves: the job has 45
+    # minutes of budget, so the blob lands by ~04:15 IST, ahead of the first
+    # real traffic. Ahead of the two existing jobs too, which is what makes the
+    # fallback automatic:
+    #   22:00 UTC (03:30 IST)  this job        writes the blob      <- new
+    #   01:00 UTC (06:30 IST)  warm-rashifal   GCS hit -> no LLM call
+    #   01:30 UTC (07:00 IST)  send-daily      reads the cache
+    #
+    # THE DATE IS NOT THE RUNNER'S. At 22:00 UTC the runner's own
+    # `date.today()` is still YESTERDAY, while `compute_panchang(natal, None)`
+    # resolves through `datetime.now(Asia/Kolkata)` and returns tomorrow's day.
+    # Taking the runner's date would file tomorrow's panchang under yesterday's
+    # key -- a cache hit on the wrong day, the exact failure this job exists to
+    # prevent. Both scripts default to an IST-computed day for that reason; do
+    # not "simplify" them back to date.today().
+    #
+    # QUOTA. This sits between agent-measure (21:00 UTC) and agent-work (23:00
+    # UTC), so it contends with them and with the owner's own interactive use
+    # for the same Claude 5 h rolling cap -- the cap that already forced a
+    # VivaTrades job from 02:00 to 04:30. Size it on a real run before trusting
+    # it nightly; if it starves, this is the job to move, not the cycle.
+    - cron: "0 22 * * *"
+  workflow_dispatch:
+    inputs:
+      lang:
+        description: "Language"
+        type: choice
+        default: all
+        options: [all, en, hi]
+      rashi:
+        description: "Rashi — one is spliced into the published day, not published alone"
+        type: choice
+        default: all
+        options: [all, aries, taurus, gemini, cancer, leo, virgo, libra,
+                  scorpio, sagittarius, capricorn, aquarius, pisces]
+      dry_run:
+        description: "Validate and report, publish nothing"
+        type: boolean
+        default: true
+
+concurrency:
+  group: rashifal-generate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write        # keyless WIF; the org forbids service-account keys
+
+jobs:
+  # The matrix is computed rather than literal so a manual run can pick ONE
+  # language. A schedule run has no `inputs`, so every expression below falls
+  # through to the full pair -- the nightly behaviour is the default, not a
+  # special case.
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      langs: ${{ steps.pick.outputs.langs }}
+      rashi: ${{ steps.pick.outputs.rashi }}
+    steps:
+      - id: pick
+        run: |
+          set -euo pipefail
+          LANG_IN="${{ inputs.lang || 'all' }}"
+          RASHI_IN="${{ inputs.rashi || 'all' }}"
+          if [ "$LANG_IN" = "all" ]; then LANGS='["en","hi"]'; else LANGS="[\"$LANG_IN\"]"; fi
+          echo "langs=$LANGS" >> "$GITHUB_OUTPUT"
+          echo "rashi=$RASHI_IN" >> "$GITHUB_OUTPUT"
+          echo "languages: $LANGS | rashi: $RASHI_IN" >> "$GITHUB_STEP_SUMMARY"
+
+  generate:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      # Languages are INDEPENDENT on purpose: `fail-fast: false` so a failed
+      # Hindi run still leaves a published English blob, and `max-parallel: 1`
+      # so the two do not contend for the same Claude rolling-window quota.
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        lang: ${{ fromJSON(needs.prepare.outputs.langs) }}
+    env:
+      RASHI: ${{ needs.prepare.outputs.rashi }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - run: uv sync --frozen
+        name: Install dependencies
+
+      # Build the brief FIRST. If the chart, panchang or transit cannot be
+      # computed this exits 2 and the job stops here, having written nothing --
+      # which is the correct outcome, not a thing to retry past.
+      - name: Build the brief from the live prompt
+        run: |
+          set -euo pipefail
+          uv run python scripts/rashifal_brief.py --lang ${{ matrix.lang }} \
+            --rashi "$RASHI" > /tmp/brief-${{ matrix.lang }}.md
+          echo "brief: $(wc -l < /tmp/brief-${{ matrix.lang }}.md) lines"
+          echo "key:   $(uv run python scripts/rashifal_brief.py --lang ${{ matrix.lang }} --key-only)"
+          # One rashi is spliced into the published day; the merged result is
+          # what gets validated, so it still has to be twelve clean sections.
+          if [ "$RASHI" = "all" ]; then echo "MERGE=" >> "$GITHUB_ENV";
+          else echo "MERGE=--merge" >> "$GITHUB_ENV"; fi
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: --max-turns 40
+          prompt: |
+            You are writing today's Rashifal for shubhagya.com. This text is
+            published to readers unedited, so write it as the finished article.
+
+            The brief may ask for all twelve readings or for ONE. Write exactly
+            the readings it lists and no others.
+
+            Read /tmp/brief-${{ matrix.lang }}.md. It contains the system prompt
+            and twelve user messages, generated from the running code. Treat the
+            system prompt as binding in full, including every DO NOT.
+
+            Write all twelve readings into /tmp/rashifal-${{ matrix.lang }}.txt,
+            in the order the brief gives them, each starting with its own `## `
+            heading exactly as its message states, separated by a blank line.
+            Write nothing else into that file -- no preamble, no commentary, no
+            code fences.
+
+            Five rules the previous generator broke, measured over 252 readings.
+            These are the reason this job exists, so hold them:
+
+            1. Do NOT name Rahu Kaal or Abhijit Muhurta, or paraphrase either
+               ("the auspicious window", "the midday window"). The page and the
+               email already print the reader their own computed times for both.
+               The old generator named Abhijit in 99.6% of readings.
+            2. Do NOT name a planet in the prediction text. The old generator
+               did in 31.0% of readings despite the prompt forbidding it.
+            3. Do NOT state a clock time or a soft clock ("mid-morning", "near
+               midday"). One computation is published nationwide and these
+               windows shift by up to 79 minutes between Indian cities.
+            4. Do NOT end on a lucky colour, direction, object or ritual. The
+               day's colour is rendered as a computed FIELD beside the Panchang;
+               one invented here contradicts what the reader can see.
+            5. Make the twelve differ from EACH OTHER and from yesterday. The
+               old generator opened all four paragraphs of consecutive days with
+               the same frames -- "You stride out...", "At work, the...",
+               "Family conversations flow...", "Take a...". Vary the opening,
+               the order of concerns, and the shape. Not every reading needs
+               four paragraphs or a money mention.
+
+            Then run, and fix anything it reports:
+              uv run python scripts/publish_rashifal.py --lang ${{ matrix.lang }} \
+                --file /tmp/rashifal-${{ matrix.lang }}.txt $MERGE --dry-run
+
+            Do not run it without --dry-run; a later step publishes. Do not edit
+            that script, the prompt, or anything else in the repo -- your only
+            output is the .txt file. If you cannot produce twelve clean
+            readings, leave the file absent or incomplete and say so: Groq
+            generates the day at 01:00 UTC and a bad file would suppress it.
+
+      # Validate again here, outside the agent's reach. The agent ran the same
+      # gate itself, but an agent reporting that it passed its own check is not
+      # evidence -- this repo has been burned by exactly that shape twice.
+      - name: Validate (authoritative)
+        id: check
+        run: |
+          set -euo pipefail
+          test -s /tmp/rashifal-${{ matrix.lang }}.txt \
+            || { echo "::warning::no document produced — Groq will generate at 01:00 UTC"; exit 1; }
+          uv run python scripts/publish_rashifal.py --lang ${{ matrix.lang }} \
+            --file /tmp/rashifal-${{ matrix.lang }}.txt $MERGE --dry-run
+
+      - uses: google-github-actions/auth@v2
+        if: ${{ success() && !inputs.dry_run }}
+        with:
+          workload_identity_provider: projects/89117619584/locations/global/workloadIdentityPools/github/providers/astro-ai
+          service_account: agent-analytics@bhagya-500701.iam.gserviceaccount.com
+
+      # NOTE: that service account is READ-ONLY today. Publishing needs
+      # roles/storage.objectCreator on gs://shubhagya-cache-us/rashifal/* and
+      # that grant is the owner's to make (#515, risk 2). Until it exists this
+      # step fails, nothing is written, and Groq runs -- which is the designed
+      # failure mode, so the workflow is safe to merge before the grant.
+      - name: Publish to GCS
+        if: ${{ success() && !inputs.dry_run }}
+        env:
+          BHAGYA_STORAGE_BUCKET: shubhagya-cache-us
+        run: |
+          set -euo pipefail
+          uv run python scripts/publish_rashifal.py --lang ${{ matrix.lang }} \
+            --file /tmp/rashifal-${{ matrix.lang }}.txt $MERGE
+
+      # A dry run that throws away what Claude wrote tells you pass/fail and
+      # nothing else -- and the whole reason to trigger this by hand is to READ
+      # the prose before trusting it nightly. The brief goes up too, so a bad
+      # reading can be traced to the instruction that produced it rather than
+      # guessed at. Both are plain text, a few KB, and neither is a secret: the
+      # brief is the prompt this repo already ships in src/ and the reading is
+      # published to the world a few hours later.
+      - name: Upload the reading and its brief
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rashifal-${{ matrix.lang }}-${{ github.run_id }}
+          path: |
+            /tmp/rashifal-${{ matrix.lang }}.txt
+            /tmp/brief-${{ matrix.lang }}.md
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Report
+        if: always()
+        run: |
+          echo "lang=${{ matrix.lang }} result=${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ job.status }}" != "success" ]; then
+            echo "Nothing was published for ${{ matrix.lang }}. /admin/warm-rashifal" \
+                 "generates it via Groq at 01:00 UTC — this is the designed fallback," \
+                 "not an outage." >> "$GITHUB_STEP_SUMMARY"
+          fi

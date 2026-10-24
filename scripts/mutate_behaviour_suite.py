@@ -20,6 +20,8 @@ from the concurrency one.
     uv run python scripts/mutate_behaviour_suite.py     # exit 1 if any escapes
 """
 import concurrent.futures
+import threading
+import contextlib
 import os
 import pathlib
 import re
@@ -304,13 +306,13 @@ MUTATIONS = [
     ("#270: the English band text drifts from the pre-localisation literal",
      "src/astro_ai/i18n.py",
      '"rahu_band_6": "mid-afternoon"', '"rahu_band_6": "mid afternoon"',
-     "test_english_block_is_byte_identical_to_the_pre_localisation_literals"),
+     "test_english_block_tells_the_model_the_windows_are_background_only"),
 
     ("#270: the Hindi anti-copy sentence is dropped from the directive",
      "src/astro_ai/i18n.py",
-     "अन्य निर्देशों में दिए गए अंग्रेज़ी उदाहरण-वाक्यांशों को कभी न दोहराएँ",
-     "अन्य निर्देशों को कभी न दोहराएँ",
-     "test_hindi_block_still_gives_the_exact_names_and_forbids_clock_times"),
+     "अन्य निर्देशों के अंग्रेज़ी उदाहरण-वाक्यांश कभी न दोहराएँ",
+     "अन्य निर्देश कभी न दोहराएँ",
+     "test_hindi_block_forbids_naming_the_windows_and_any_clock_time"),
 
     ("/today: the two window cards render without checking the flag (#228)",
      "src/astro_ai/templates/today.html",
@@ -2807,9 +2809,17 @@ MUTATIONS = [
 
     ("#475: the on-demand /rashifal/{rashi} card is given a job deadline (a user waits up to 150 s)",
      "src/astro_ai/llm.py",
-     "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n    )",
+     # Anchored on the FIRST argument line alone, and the mutation inserts the
+     # kwarg straight after it. An anchor that spanned the call down to its
+     # closing paren broke twice in one day as #513 added shape=,
+     # opening_move= and gochara_block= between the two ends; keyword
+     # arguments may be given in any order, so injecting here is equivalent
+     # and cannot be displaced by the next kwarg. The pool call site uses
+     # `anchor,` rather than `_RASHI_ANCHORS[rashi_index],`, so this still
+     # matches exactly once.
+     "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n",
      "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n"
-     "        pace_deadline=providers.pace_deadline(),\n    )",
+     "        pace_deadline=providers.pace_deadline(),\n",
      "test_the_on_demand_rashi_card_passes_no_budget"),
 
     ("#475: pace_wait_budget lets the allowance go negative after the deadline (clamp at 0 dropped)",
@@ -3114,9 +3124,45 @@ _CONTROL = (
 )
 
 
+# Where each named test lives, computed ONCE. `pytest tests -k NAME` imports
+# every test module before it can filter, and that import is most of the cost:
+# measured on this tree, `pytest tests -k NAME` is 0.96s against 0.66s for
+# `pytest tests/the_file.py::NAME`, and the difference is collection, not the
+# test. Across 467 rows that is ~140s of pure import, repeated.
+#
+# A name that is ambiguous or missing falls back to the whole directory, so the
+# map can only ever make the run FASTER, never change its verdict. All 467
+# named tests resolve uniquely on this tree; the fallback is for the row added
+# next week that does not.
+_TEST_FILE_CACHE: dict[str, str] | None = None
+
+
+def _test_nodeid(sandbox: pathlib.Path, test: str) -> list[str]:
+    """pytest args selecting one test as narrowly as the tree allows."""
+    global _TEST_FILE_CACHE
+    base = test.split("[", 1)[0]
+    if _TEST_FILE_CACHE is None:
+        found: dict[str, list[str]] = {}
+        for f in sorted((ROOT / "tests").rglob("test_*.py")):
+            try:
+                body = f.read_text(errors="replace")
+            except OSError:
+                continue
+            for name in re.findall(r"^def (test_\w+)\(", body, re.M):
+                found.setdefault(name, []).append(f.relative_to(ROOT).as_posix())
+        _TEST_FILE_CACHE = {k: v[0] for k, v in found.items() if len(v) == 1}
+    rel = _TEST_FILE_CACHE.get(base)
+    if rel and (sandbox / rel).exists():
+        return [str(sandbox / rel), "-k", base]
+    return [str(sandbox / "tests"), "-k", base]
+
+
 def _sandbox_env() -> dict:
     """Parent env plus the repo's .env, which the sandbox cannot discover."""
     env = dict(os.environ)
+    # A stale __pycache__ surviving a restore would serve the next row the
+    # MUTATED module; see _worker_sandbox.
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
     dotenv = ROOT / ".env"
     if dotenv.exists():
         for line in dotenv.read_text().splitlines():
@@ -3125,6 +3171,62 @@ def _sandbox_env() -> dict:
                 k, v = line.split("=", 1)
                 env.setdefault(k.strip(), v.strip().strip("\"'"))
     return env
+
+
+# ONE SANDBOX PER WORKER, not one per row. Each row used to build its own
+# temporary tree: 5 directories, ~700 files, 14 MB, measured at 0.233s a copy,
+# which across 467 rows is ~109s of pure file copying inside a step that takes
+# 545s in CI. A worker reuses its tree and restores the single file it mutated,
+# because a row mutates exactly one file and the sandbox is thread-local.
+#
+# THE ISOLATION PROPERTY IS PRESERVED, and it is the only thing that matters
+# here. The original design note is still right -- "a sandbox removes the
+# failure mode rather than handling it. There is no restore path to get wrong,
+# and no signal that can beat it" -- and that argument was about the REPOSITORY,
+# which is still never touched. What is reused is a throwaway copy under
+# tempfile, so a missed restore can corrupt one worker's scratch tree and
+# nothing a human owns.
+#
+# A missed restore would still be a silent gate failure, so it does not depend
+# on `finally` alone: the file's original bytes are captured before the write
+# and compared after the restore, and a mismatch retires that sandbox rather
+# than handing it to the next row. And the CONTROL row is the end-to-end
+# canary it always was -- a no-op edit that does NOT report MISSED means the
+# harness has stopped measuring, whatever the cause.
+#
+# PYTHONDONTWRITEBYTECODE is set in the sandbox env for the same reason: a
+# stale __pycache__ surviving a restore would serve the mutated module to the
+# next row.
+_SANDBOXES = threading.local()
+
+
+@contextlib.contextmanager
+def _worker_sandbox():
+    """This thread's sandbox tree, built once and kept for the run."""
+    existing = getattr(_SANDBOXES, "path", None)
+    if existing is not None and existing.exists():
+        yield existing
+        return
+    tmp = tempfile.mkdtemp(prefix="mutate-")
+    _SANDBOX_DIRS.append(tmp)
+    sandbox = pathlib.Path(tmp) / "repo"
+    for sub in _SANDBOX_SUBDIRS:
+        shutil.copytree(ROOT / sub, sandbox / sub,
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    _SANDBOXES.path = sandbox
+    yield sandbox
+
+
+_SANDBOX_DIRS: list[str] = []
+_SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements")
+
+
+def _drop_worker_sandbox() -> None:
+    """Retire this thread's tree so the next row builds a clean one."""
+    path = getattr(_SANDBOXES, "path", None)
+    _SANDBOXES.path = None
+    if path is not None:
+        shutil.rmtree(path.parent, ignore_errors=True)
 
 
 def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool, str]:
@@ -3139,8 +3241,7 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
     A sandbox removes the failure mode rather than handling it. There is no
     restore path to get wrong, and no signal that can beat it.
     """
-    with tempfile.TemporaryDirectory(prefix="mutate-") as tmp:
-        sandbox = pathlib.Path(tmp) / "repo"
+    with _worker_sandbox() as sandbox:
         # `.github` because the suite now reads the verify-production workflow
         # to check that its jq field reads still match what /health emits.
         #
@@ -3167,9 +3268,7 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
         # `measurements` since #338: test_committed_measurement_files_pass_their_
         # validators reads loop.json and cost.json, and without them every row
         # would fail at that one test and read as CAUGHT.
-        for sub in ("src", "tests", ".github", "scripts", "measurements"):
-            shutil.copytree(ROOT / sub, sandbox / sub,
-                            ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        # (the tree itself is built once per worker — see _worker_sandbox)
         # GUARD GONE — "the defect escaped" and "the test meant to catch it no
         # longer exists" both used to print as MISSED, and the difference is
         # enormous: one is a weak test, the other is no test at all.
@@ -3194,63 +3293,86 @@ def _run_in_sandbox(rel: str, old: str, new: str, test: str = "") -> tuple[bool,
         if source.count(old) != 1:
             return False, f"ANCHOR MISSED ({source.count(old)})"
         target.write_text(source.replace(old, new))
+        try:
+            return _probe(sandbox, rel, target, test)
+        finally:
+            # Restore, then PROVE the restore. A sandbox that cannot be put
+            # back is retired rather than reused: handing a still-mutated tree
+            # to the next row would report CAUGHT for a defect nobody tested.
+            try:
+                target.write_text(source)
+                restored = target.read_text() == source
+            except OSError:
+                restored = False
+            if not restored:
+                _drop_worker_sandbox()
 
-        def _pytest(*extra: str) -> subprocess.CompletedProcess:
-            return subprocess.run(
-                [sys.executable, "-m", "pytest", str(sandbox / "tests"),
-                 "-q", "--no-header", *extra],
-                capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
-            )
 
-        def _red(r: subprocess.CompletedProcess) -> bool:
-            """A real assertion failure, not a collection error.
+def _probe(sandbox, rel: str, target, test: str) -> tuple[bool, str]:
+    """Run the suite against an already-mutated sandbox."""
 
-            A non-zero exit from a collection error looks like a catch and is
-            worth nothing, which is why this reads the output and not just the
-            code. pytest exits 5 on "no tests matched", which is neither.
-            """
-            #
-            # A TEARDOWN error counts, and has to: the socket guard (#449) fails
-            # a test whose body PASSED, so its only signal is `1 passed, 1
-            # error` and a line `ERROR path::test`. A collection error has no
-            # `::` in its line, so it is still not a catch.
-            return r.returncode not in (0, 5) and (
-                "FAILED" in r.stdout or "failed" in r.stdout
-                or re.search(r"^ERROR \S+::", r.stdout, re.M) is not None)
+    def _pytest(*extra: str) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            [sys.executable, "-m", "pytest", str(sandbox / "tests"),
+             "-q", "--no-header", *extra],
+            capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
+        )
 
-        # EVERY ROW ALREADY NAMES THE TEST THAT MUST CATCH IT, so run that test
-        # and not the other 766. Measured 2026-10-20 on this tree: one named
-        # test is 0.34s against 19.5s for the whole suite, and this step was
-        # 80% of every pr-gates run (1054s and 673s on two consecutive runs,
-        # 191 rows x a full suite / 4 workers).
+    def _red(r: subprocess.CompletedProcess) -> bool:
+        """A real assertion failure, not a collection error.
+
+        A non-zero exit from a collection error looks like a catch and is
+        worth nothing, which is why this reads the output and not just the
+        code. pytest exits 5 on "no tests matched", which is neither.
+        """
         #
-        # It is also a STRICTER question than the one asked before. "The suite
-        # goes red" and "THIS test goes red" are different claims, and each row
-        # asserts the second -- the `test` field is not decoration, the
-        # GUARD GONE check above already treats it as load-bearing.
-        #
-        # So the fast path can only ever CONFIRM a catch. It can never create a
-        # failure, because a named test that stays green falls through to the
-        # full suite below, exactly as before.
-        if test and test != "_control":
-            fast = _pytest("-k", test.split("[", 1)[0])
-            if _red(fast):
-                return True, "CAUGHT"
+        # A TEARDOWN error counts, and has to: the socket guard (#449) fails
+        # a test whose body PASSED, so its only signal is `1 passed, 1
+        # error` and a line `ERROR path::test`. A collection error has no
+        # `::` in its line, so it is still not a catch.
+        return r.returncode not in (0, 5) and (
+            "FAILED" in r.stdout or "failed" in r.stdout
+            or re.search(r"^ERROR \S+::", r.stdout, re.M) is not None)
 
-        # Reached when the named test did not catch it, or for the control row,
-        # which must see the whole suite or it would stop being a control.
-        result = _pytest()
-        if result.returncode == 0:
-            return False, "*** MISSED ***"
-        if not _red(result):
-            return False, f"NON-TEST FAILURE rc={result.returncode}"
-        if test and test != "_control":
-            # NEW INFORMATION, and it was invisible before: something caught the
-            # mutation but not the test this row names. The row still counts as
-            # caught -- the defect cannot escape -- but its `test` field is
-            # wrong, and a wrong field is what the GUARD GONE check cannot see.
-            return True, "CAUGHT BY ANOTHER TEST — row names `" + test + "`"
-        return True, "CAUGHT"
+    # EVERY ROW ALREADY NAMES THE TEST THAT MUST CATCH IT, so run that test
+    # and not the other 766. Measured 2026-10-20 on this tree: one named
+    # test is 0.34s against 19.5s for the whole suite, and this step was
+    # 80% of every pr-gates run (1054s and 673s on two consecutive runs,
+    # 191 rows x a full suite / 4 workers).
+    #
+    # It is also a STRICTER question than the one asked before. "The suite
+    # goes red" and "THIS test goes red" are different claims, and each row
+    # asserts the second -- the `test` field is not decoration, the
+    # GUARD GONE check above already treats it as load-bearing.
+    #
+    # So the fast path can only ever CONFIRM a catch. It can never create a
+    # failure, because a named test that stays green falls through to the
+    # full suite below, exactly as before.
+    if test and test != "_control":
+        # Narrowed to the test's own FILE where the name resolves uniquely;
+        # see _test_nodeid. Same question, less import.
+        fast = subprocess.run(
+            [sys.executable, "-m", "pytest", *_test_nodeid(sandbox, test),
+             "-q", "--no-header"],
+            capture_output=True, text=True, cwd=sandbox, env=_sandbox_env(),
+        )
+        if _red(fast):
+            return True, "CAUGHT"
+
+    # Reached when the named test did not catch it, or for the control row,
+    # which must see the whole suite or it would stop being a control.
+    result = _pytest()
+    if result.returncode == 0:
+        return False, "*** MISSED ***"
+    if not _red(result):
+        return False, f"NON-TEST FAILURE rc={result.returncode}"
+    if test and test != "_control":
+        # NEW INFORMATION, and it was invisible before: something caught the
+        # mutation but not the test this row names. The row still counts as
+        # caught -- the defect cannot escape -- but its `test` field is
+        # wrong, and a wrong field is what the GUARD GONE check cannot see.
+        return True, "CAUGHT BY ANOTHER TEST — row names `" + test + "`"
+    return True, "CAUGHT"
 
 
 # Run the mutations concurrently. Each one already builds its own temporary
@@ -3341,7 +3463,94 @@ if "--preflight-only" in sys.argv:
     # only way in is argv. Used by tests/test_mutation_preflight.py.
     raise SystemExit(0)
 
-_work = [_CONTROL] + list(MUTATIONS)
+# --- DIFF SCOPING: fewer rows on a PR, every row on main ---------------------
+#
+# The remaining cost is pytest start-up, ~0.66s that every row pays and no
+# narrowing removes. The only way past it is running fewer rows, and that is a
+# GATE RELAXATION, not an optimisation -- so it is opt-in, it is loud about
+# what it skipped, and `main` never uses it.
+#
+# WHAT IT ASSUMES, stated so it can be argued with: for a file a PR does not
+# touch, whether its guard can still go red was proven by the last full sweep
+# on main and nothing in the PR changed it. That holds only if the PR also did
+# not touch the TEST, so a row is selected when EITHER its mutated file or its
+# named test's file is in the diff. The second half is the one that matters --
+# a PR deleting a guard must still hit that row's GUARD GONE check.
+#
+# FOUR ESCAPE HATCHES, all of which run everything:
+#   * the diff cannot be computed (no base, not a repo, git failed)
+#   * this harness itself changed -- it decides what is proven
+#   * tests/conftest.py changed -- shared fixtures reach every row
+#   * pyproject.toml / uv.lock changed -- the interpreter under every row
+# Failure falls back to the FULL sweep. A scoping bug must cost time, never
+# coverage.
+#
+# The CONTROL is never scoped out. A run that skips it cannot tell whether it
+# is measuring anything at all.
+_ALWAYS_FULL = ("scripts/mutate_behaviour_suite.py", "tests/conftest.py",
+                "pyproject.toml", "uv.lock")
+
+
+def _changed_files(base: str) -> list[str] | None:
+    """Paths changed against `base`, or None if that cannot be answered."""
+    try:
+        r = subprocess.run(["git", "diff", "--name-only", base, "HEAD"],
+                           capture_output=True, text=True, cwd=ROOT, timeout=60)
+        if r.returncode != 0:
+            return None
+        return [l.strip() for l in r.stdout.splitlines() if l.strip()]
+    except Exception:  # noqa: BLE001 - see _ALWAYS_FULL
+        return None
+
+
+def _scope_rows(base: str) -> tuple[list, str]:
+    """(rows to run, one line saying why). Falls back to every row."""
+    changed = _changed_files(base)
+    if changed is None:
+        return list(MUTATIONS), f"could not diff against {base!r} — running every row"
+    if not changed:
+        return list(MUTATIONS), f"no changes against {base!r} — running every row"
+    hit = sorted(set(changed) & set(_ALWAYS_FULL))
+    if hit:
+        return list(MUTATIONS), f"{', '.join(hit)} changed — running every row"
+
+    changed_set = set(changed)
+    # Build the name -> test file map the same way the fast path does.
+    test_file: dict[str, str] = {}
+    seen: dict[str, int] = {}
+    for f in sorted((ROOT / "tests").rglob("test_*.py")):
+        rel_f = f.relative_to(ROOT).as_posix()
+        for name in re.findall(r"^def (test_\w+)\(", f.read_text(errors="replace"), re.M):
+            seen[name] = seen.get(name, 0) + 1
+            test_file.setdefault(name, rel_f)
+
+    picked = []
+    for row in MUTATIONS:
+        _label, rel, _old, _new, test = row
+        base_name = (test or "").split("[", 1)[0]
+        tf = test_file.get(base_name) if seen.get(base_name) == 1 else None
+        # An unresolvable test name selects the row rather than dropping it.
+        if rel in changed_set or tf is None or tf in changed_set:
+            picked.append(row)
+    return picked, (f"{len(changed)} file(s) changed against {base!r} — "
+                    f"{len(picked)} of {len(MUTATIONS)} rows touch them "
+                    f"(by mutated file or by named test's file)")
+
+
+_scope_base = ""
+for _i, _a in enumerate(sys.argv):
+    if _a == "--changed-since" and _i + 1 < len(sys.argv):
+        _scope_base = sys.argv[_i + 1]
+if _scope_base:
+    _rows, _why = _scope_rows(_scope_base)
+    print(f"scope: {_why}")
+    if len(_rows) < len(MUTATIONS):
+        print("       rows for untouched files were proven by the last full "
+              "sweep on main; this is a PR-only narrowing, never used there")
+else:
+    _rows = list(MUTATIONS)
+
+_work = [_CONTROL] + _rows
 _verdicts: dict[int, tuple[str, str]] = {}
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=_WORKERS) as _pool:

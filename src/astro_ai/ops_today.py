@@ -178,6 +178,16 @@ LOOP_WORKFLOWS = (
 NOT_LOOP_WORKFLOWS = (
     "pr-gates.yml",
     "verify-build.yml",
+    # Nightly content generation, not an agent loop leg (#515). Declared here
+    # for a reason beyond taxonomy: a FAILED run of it is the designed
+    # behaviour, not an incident. The job publishes all 24 readings or none,
+    # because a partial document would be a cache hit that suppresses the Groq
+    # fallback -- so a night it declines to publish exits non-zero, Groq
+    # generates the day at 01:00 UTC, and nothing is wrong. Counting that as a
+    # loop failure would turn the delivery tile red on correct behaviour, which
+    # is how a signal stops being read. Its real health is its own panel, which
+    # counts published readings (24/24) rather than exit codes.
+    "rashifal-generate.yml",
 )
 
 #: A run that ended in one of these DID its job. Everything else is a failure.

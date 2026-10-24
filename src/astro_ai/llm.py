@@ -17,14 +17,16 @@ import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
-from datetime import datetime
+from datetime import date as _date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from astro_ai import providers
 
 _log = logging.getLogger(__name__)
+from astro_ai import rashifal_quality
 from astro_ai.chart import (
+    gochara_for_rashi,
     Chart,
     DailyPanchang,  # used by daily reading + rashifal day-signal block
     DashaState,
@@ -731,6 +733,95 @@ def generate_dasha_deep_dive(
 # instruction forces structural variety across the 12 outputs on the page.
 # The style hint targets the rashi's own character — Aries opens with a
 # body-image, Taurus with a sensory image, Gemini with a question, etc.
+# --- The day's SHAPE, rotated per (date, rashi) (#513) -----------------------
+#
+# `opening_style` below varies across the twelve and is CONSTANT across days.
+# The output format was the same: four paragraphs, in one fixed order, with
+# work-and-money second and a closing instruction fourth. Both were written to
+# stop the twelve converging with each other on one page, and both succeeded at
+# that -- while creating the other convergence nobody was measuring, the one a
+# daily reader actually experiences.
+#
+# What it produced, measured over 252 readings / 21 days of published blobs:
+#
+#   exactly 4 paragraphs .................. 90.9%
+#   a sentence starting "Take a ..." ...... 70%
+#   "At work ..." ......................... 45%
+#   "Hold off ..." ........................ 43%
+#   "A modest ..." ........................ 32%
+#   "Family conversations ..." ............ 23%
+#
+# And on the owner's own two consecutive emails, ALL FOUR paragraphs opened
+# with the same frame -- "You stride out" / "You step out", "At work, the
+# spark" / "At work, the pulse", "Family conversations flow" / "Family talks
+# flow", "Take a moment" / "Take a short walk" -- while sharing only 5.2% of
+# their 3-grams. 95% of the words new, 100% of the scaffolding identical. A
+# reader perceives the frame, not the vocabulary.
+#
+# So both axes now rotate on (date, rashi) instead of on rashi alone:
+#
+#   index = (date ordinal + rashi index) % len(pool)
+#
+# On any one day the twelve get twelve different entries, because the rashi
+# index differs -- the original anti-convergence property, preserved. Across
+# days one rashi walks the whole pool, because the ordinal advances. Pool sizes
+# are coprime-ish with 12 and with each other so the (shape, move) PAIR does
+# not repeat on a 12-day cycle: 7 shapes x 11 moves = 77 pairings before a
+# rashi sees the same combination again.
+#
+# Costs nothing: these replace text that was already in the prompt. The shapes
+# are shorter than the fixed four-paragraph spec they displace.
+
+_RASHIFAL_SHAPES: tuple[str, ...] = (
+    "Four short paragraphs: the day's feeling, then work and money, then "
+    "people, then one concrete thing to do.",
+    "Three paragraphs. Lead with PEOPLE -- a conversation, a household, "
+    "someone the reader has been avoiding -- then work, then close on a "
+    "single action. Do not mention money at all today.",
+    "Three paragraphs, no closing instruction. Open mid-situation, develop "
+    "it, and end on an observation rather than advice. Let the reader draw "
+    "the action themselves.",
+    "Four paragraphs, but lead with the ONE thing to do today and spend the "
+    "rest of the reading explaining why the day suits it.",
+    "Two longer paragraphs. First the shape of the day across work and "
+    "home together; second what that asks of the reader. No list-like "
+    "progression through life areas.",
+    "Three paragraphs organised by TIME rather than by life area -- how the "
+    "day starts, how it turns, how it ends -- with no clock time and no "
+    "named window anywhere in it.",
+    "Four paragraphs, and make the SECOND one about rest, health or the "
+    "body rather than about work. Work gets one sentence at most today.",
+)
+
+_OPENING_MOVES: tuple[str, ...] = (
+    "Open on something the reader is already doing as they read.",
+    "Open on a question they have been turning over.",
+    "Open on an object in the room with them.",
+    "Open on something that happened yesterday and is not finished.",
+    "Open on a sound, or on the absence of one.",
+    "Open on a person they have not replied to.",
+    "Open on a decision they have deliberately not made.",
+    "Open on the weather or the light, and make it mean something.",
+    "Open on a small physical gesture -- a hand, a breath, a step.",
+    "Open on a number, a date or a count that matters to them.",
+    "Open flatly, with a plain statement about the day, and no image at all.",
+)
+
+
+def _rotation_index(today_iso: str, rashi_index: int, pool: int) -> int:
+    """Pick from a pool so it varies by DAY and across the twelve on one day.
+
+    A bad date is not worth failing a generation over -- it falls back to the
+    rashi index, which still differs across the twelve and merely stops
+    rotating. Never raises.
+    """
+    try:
+        ordinal = _date.fromisoformat(today_iso).toordinal()
+    except Exception:  # noqa: BLE001 - see docstring
+        ordinal = 0
+    return (ordinal + rashi_index) % pool
+
+
 _RASHI_ANCHORS: tuple[dict[str, str], ...] = (
     {"en": "Aries",       "sa": "Mesha",       "lord": "Mars",    "element": "Fire",  "quality": "Movable",
      "opening_style": "Open with an active body image (a stance, a stride, a raised hand). Aries moves first — the sentence should move."},
@@ -878,6 +969,76 @@ def generate_rashifal_for_rashi(
     transit_block = format_transit_for_prompt(transit)
     return _generate_rashifal_single(
         _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,
+        shape=_RASHIFAL_SHAPES[_rotation_index(today_iso, rashi_index,
+                                               len(_RASHIFAL_SHAPES))],
+        opening_move=_OPENING_MOVES[_rotation_index(today_iso, rashi_index,
+                                                    len(_OPENING_MOVES))],
+        gochara_block=_gochara_block(rashi_index, transit),
+    )
+
+
+_HOUSE_ORD = {1: "1st", 2: "2nd", 3: "3rd", 4: "4th", 5: "5th", 6: "6th",
+              7: "7th", 8: "8th", 9: "9th", 10: "10th", 11: "11th", 12: "12th"}
+
+
+def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
+    """The day's ACTUAL verdict for one rashi, as prompt text. "" if unavailable.
+
+    Until this existed the reading had no idea whether the day was good or bad
+    for the reader it was written for. The day signals are universal -- weekday,
+    tithi, the Moon's nakshatra, retrogrades -- so twelve readings were written
+    from one set of facts, and whether each came out hopeful or cautious was the
+    model's mood rather than the sky. A reader was told their day looked
+    promising on a day nine of nine grahas transited against them.
+
+    This is Raman's Gochara table (knowledge/vedic_reference.md §2A, Astrology
+    for Beginners Ch. XII p.101) applied to today's positions, counted from the
+    janma rashi the reading is for. It differs per rashi and moves as the sky
+    moves, which is exactly what "how is my day" means classically.
+
+    The counts are reported, never summed into a score. Raman classifies each
+    planet-house pair and gives no aggregation rule; the only ordering he states
+    is that the slow movers dominate, so that is the only one asserted here.
+    """
+    try:
+        entries = gochara_for_rashi(rashi_index, transit)
+    except Exception:  # noqa: BLE001 - a missing verdict must not fail the call
+        return ""
+    if not entries:
+        return ""
+    fav = [e for e in entries if e["verdict"] == "favourable"]
+    cha = [e for e in entries if e["verdict"] == "challenging"]
+
+    def names(es):
+        return ", ".join(f"{e['planet']} ({_HOUSE_ORD[e['house']]})" for e in es) or "none"
+
+    if len(fav) >= 6:
+        tone = ("A GENUINELY GOOD DAY for this rashi. Say so plainly and warmly. "
+                "Do not hedge it into an ordinary day.")
+    elif len(fav) >= 4:
+        tone = ("A MIXED DAY, tilted favourable. Name what supports the reader "
+                "and what does not.")
+    elif len(fav) >= 2:
+        tone = ("A MIXED DAY, tilted difficult. Name the difficulty plainly, "
+                "then give a way through it.")
+    else:
+        tone = ("A GENUINELY HARD DAY for this rashi. Do NOT dress it up as "
+                "promising. Name it honestly, keep it calm, and make the whole "
+                "reading about how to spend such a day well. This is the day a "
+                "reader most needs to be told the truth.")
+    return (
+        f"TODAY'S GOCHARA FOR THIS RASHI — the classical transit verdict, counted "
+        f"from this janma rashi. THIS IS THE DAY'S ACTUAL WEATHER FOR THIS READER "
+        f"AND YOUR READING MUST AGREE WITH IT:\n"
+        f"- {len(fav)} of {len(entries)} grahas transit favourably.\n"
+        f"- Favourable: {names(fav)}\n"
+        f"- Challenging: {names(cha)}\n"
+        f"- Saturn, Jupiter and Rahu weigh most (classical); the Moon is the part "
+        f"that changes every day.\n"
+        f"- {tone}\n"
+        f"Do not name any planet in your prose — describe the qualities, as the "
+        f"system prompt requires. This block tells you WHAT IS TRUE, not what to "
+        f"say."
     )
 
 
@@ -889,6 +1050,9 @@ def _generate_rashifal_single(
     lang: str,
     pacer: "_StartPacer | None" = None,
     pace_deadline: float | None = None,
+    shape: str = _RASHIFAL_SHAPES[0],
+    opening_move: str = _OPENING_MOVES[0],
+    gochara_block: str = "",
 ) -> str:
     """Generate a single rashi's daily reading — one LLM call, ~200 tokens output.
 
@@ -929,19 +1093,61 @@ def _generate_rashifal_single(
         f"- Element (Tattva): {anchor['element']}\n"
         f"- Quality (Guna): {anchor['quality']}\n"
         f"\n"
-        f"OPENING STYLE HINT (CRITICAL — this is how you avoid opening with "
-        f"'Today, you may feel...' like every other rashi will):\n"
+        + (f"{gochara_block}\n\n" if gochara_block else "")
+        + (
+        f"THE SHAPE FOR TODAY (overrides the generic structure in the system "
+        f"prompt — follow THIS):\n"
+        f"{shape}\n"
+        f"\n"
+        f"OPENING MOVE FOR TODAY (how to start; it changes every day so the "
+        f"reading does not open the same way it did yesterday):\n"
+        f"{opening_move}\n"
+        f"\n"
+        f"THE RASHI'S OWN CHARACTER (express the opening move in THIS "
+        f"character — it is what keeps the twelve from sounding alike):\n"
         f"{anchor.get('opening_style', 'Open with a concrete image, not a generic feeling.')}\n"
         f"\n"
         f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
         f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose. "
         f"Follow the opening-style hint above. Do not use any banned opening phrase."
-    )
+    ))
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
     ], route="rashifal_single", max_wait_s=providers.pace_wait_budget(pace_deadline))
-    return _strip_inline_markdown(content.strip())
+    reading = _strip_inline_markdown(content.strip())
+    _log_rule_violations(reading, anchor["en"], lang)
+    return reading
+
+
+def _log_rule_violations(reading: str, rashi: str, lang: str) -> None:
+    """Measure the Groq fallback's output against the prompt's own rules.
+
+    The same checks `scripts/publish_rashifal.py` BLOCKS on, run here where
+    they only count. The asymmetry is deliberate and `rashifal_quality`'s
+    docstring carries the reasoning: the nightly job publishes 24 readings or
+    none, so a refusal there costs nothing, while refusing on this path would
+    trade a cosmetic rule break for an outage on the one route in this product
+    that has already been silently down for 21 days.
+
+    This closes the half of the gate that was missing. The rules were only ever
+    checked where Claude writes; the path that actually served readers for the
+    whole measurement window -- 31.0% of them naming a planet the prompt
+    forbids -- was checked nowhere at all. Now it is at least COUNTED, which is
+    the precondition for deciding whether blocking is worth its cost.
+
+    Never raises, never slows the call by more than a few regex scans over
+    ~160 words, and never changes what the reader is served.
+    """
+    try:
+        found = rashifal_quality.check_reading(reading)
+        if found["style"]:
+            _log.warning(
+                "rashifal output rules broken (%s, lang=%s): %s — SERVED anyway; "
+                "the nightly job blocks on these, this path measures them",
+                rashi, lang, "; ".join(found["style"]))
+    except Exception:  # noqa: BLE001 - a linter must never break a reading
+        _log.debug("rashifal rule check failed for %s", rashi, exc_info=True)
 
 
 _MD_BOLD = re.compile(r"(\*\*|__)(?=\S)(.+?)(?<=\S)\1", re.S)
@@ -1115,6 +1321,11 @@ def generate_rashifal(
                 _generate_rashifal_single,
                 anchor, day_signals_block, transit_block, prompt_path, lang,
                 pacer, pace_deadline,
+                _RASHIFAL_SHAPES[_rotation_index(today_iso, idx,
+                                                 len(_RASHIFAL_SHAPES))],
+                _OPENING_MOVES[_rotation_index(today_iso, idx,
+                                               len(_OPENING_MOVES))],
+                _gochara_block(idx, transit),
             ): idx
             for idx, anchor in enumerate(_RASHI_ANCHORS)
         }

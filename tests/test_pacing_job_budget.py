@@ -267,6 +267,28 @@ def test_a_far_deadline_still_caps_each_call_at_the_budget(monkeypatch, clock):
 # the bound itself: 24 calls, two languages, one deadline
 # --------------------------------------------------------------------------- #
 
+_PINNED_CALL_TOKENS = 4_500
+"""Per-call bucket cost for the 24-call scenario below. An INPUT, not a measurement.
+
+It used to be inherited from the real rashifal messages, and that made this
+test's pressure a hostage to prompt wording: on 2026-10-24 a prompt edit (#513,
+dropping the Rahu Kaal / Abhijit instruction -- -119 tok/call EN, -219 HI) took
+the overrun away and the deadline stopped biting at all. `given` bottomed out at
+2.7 instead of reaching 0.0, so the bound this file exists to prove was no
+longer being exercised. Pinning it means a wording change can never silently
+drain the scenario again.
+
+**This has a WINDOW, not a floor, so do not just raise it.** Too low and the
+waits never exhaust the allowance (3,330 -> min 2.7; 3,900 -> 3.9; 4,200 ->
+1.6). Too high and each wait exceeds `pace_left`, so calls are FORCED past the
+bucket without sleeping and the clock stops advancing -- 4,800 jumps back to
+min 13.5 with sleeps falling 88.6s -> 68.8s. 4,500 sits in the window: min 0.0,
+88.6s of sleep against the 100s allowance. If this ever goes red, re-find the
+window; never weaken the `0.0 in given` guard to make a run green, because a
+vacuous pass here is a pacing bound nothing is checking.
+"""
+
+
 def _fan_out_two_languages(monkeypatch, world, *, per_call_only: bool):
     """Both languages of the send-daily job against a Groq-shaped limiter.
 
@@ -279,6 +301,18 @@ def _fan_out_two_languages(monkeypatch, world, *, per_call_only: bool):
     """
     monkeypatch.setattr(llm, "_RASHIFAL_CONCURRENCY", 1)
     monkeypatch.setattr(providers, "PACE_JOB_DEADLINE_S", 100.0)
+    # Per-call bucket cost is an INPUT to this scenario, like `usage=` and
+    # `latency=` beside it -- not something to inherit from whatever the
+    # rashifal prompt happens to weigh this week. It WAS inherited: the
+    # reservation is estimated from the real messages, so on 2026-10-24 a prompt
+    # edit (#513 -- dropping the Rahu Kaal / Abhijit instruction, -119 tok/call
+    # EN and -219 HI) took the pressure out and the deadline stopped biting at
+    # all. `given` came back [100.0, 99.0, 98.0, ...] with no 0.0 and the guard
+    # below caught it. A pacing bound that silently stops being exercised by a
+    # wording change is not a bound, so the cost is pinned to what these 24
+    # calls weighed when the bound was written.
+    monkeypatch.setattr(providers, "estimate_request_tokens",
+                        lambda messages, route="": _PINNED_CALL_TOKENS)
     if per_call_only:
         monkeypatch.setattr(providers, "pace_wait_budget",
                             lambda deadline: providers.PACE_JOB_BUDGET_S)

@@ -607,9 +607,10 @@ why = "Twelve independent calls; one that writes two readings poisons its own ca
 all = ['Do NOT output any other rashi.s reading']
 
 [[prompts."rashifal_single.txt".rules]]
-id = "four-paragraphs-no-markup-in-the-body"
-why = "Body shape."
-all = ['4 short flowing paragraphs', 'no sub-headings, no bullets, no labels']
+id = "the-shape-is-not-fixed"
+why = "INVERTED 2026-10-24 (#513). This required '4 short flowing paragraphs', and the model complied: 90.9% of 252 published readings had exactly four, 70% contained a sentence starting 'Take a', 45% 'At work'. Two consecutive days shared 5.2% of their 3-grams and still opened all four paragraphs with the same frames — 95% new words inside 100% identical scaffolding. The shape now rotates per (date, rashi) from llm._RASHIFAL_SHAPES and arrives in the user message; the prompt must defer to it and must ban the five measured frames."
+all = ['THE SHAPE IS NOT FIXED', 'SHAPE FOR TODAY', 'no sub-headings, no bullets, no labels']
+forbid = ['4 short flowing paragraphs']
 
 [[prompts."rashifal_single.txt".rules]]
 id = "length-is-capped"
@@ -622,9 +623,10 @@ why = "ARCHITECTURE.md voice rules: one national text, local sunrise; a clock ti
 all = ['DO NOT state any clock time', 'Never a clock time']
 
 [[prompts."rashifal_single.txt".rules]]
-id = "windows-are-named-from-the-user-message"
-why = "Windows come from the supplied Panchang. Deliberately NOT anchored on what each window is for (doctrine; astro-auditor F8)."
-all = ['use the named windows given in your user message']
+id = "windows-are-never-named-in-the-prose"
+why = "INVERTED 2026-10-24 (#513). This rule used to require 'use the named windows given in your user message', and the model obeyed: `the abhijit muhurta` appeared in Aries on 21 of 21 consecutive days, the exact 5-gram `the abhijit muhurta near midday` on 18 of 21, measured over 252 readings. The email and page already render each reader their OWN computed times in a panel directly above the reading, so the prose was duplicating a table the reader can see and swapping an exact window (9:15-10:39 AM) for a vaguer one (mid-morning). Still deliberately NOT anchored on what each window is for (doctrine; astro-auditor F8) -- only on the ban."
+all = ['DO NOT name Rahu Kaal or Abhijit Muhurta', 'do not refer to either window at all']
+forbid = ['use the named windows given in your user message', 'Say "during Rahu Kaal"']
 
 [[prompts."rashifal_single.txt".rules]]
 id = "no-markdown"
@@ -694,6 +696,13 @@ why = "Instruction-style filler."
 all = ['consider taking up', 'consider planning', 'consider focusing', 'sentence starting with\W+consider']
 
 [[prompts."rashifal_single.txt".rules]]
+id = "one-usable-thing-and-warmth-without-a-promise"
+why = "The owner's goal for this product, verbatim: the reader should 'feel blessed to extract something useful'. Both halves are failure modes if taken alone — warmth with nothing usable is a horoscope that reads nicely and changes nothing, and usefulness with no warmth is a task list. The bans here are what keep the warmth honest: manufactured good news is a promise that eventually fails, and fear framing is how every competitor makes advice land. Measured over 252 readings before this section existed: fear framing 0.0%, absolute claims 0.0% — so this is a ratchet on behaviour that was already right."
+all = ['WHAT THE READER SHOULD BE LEFT WITH', 'SOMETHING USABLE',
+       'WARMTH THAT IS NOT A PROMISE', 'NEVER manufacture good news',
+       'NEVER use fear to create weight']
+
+[[prompts."rashifal_single.txt".rules]]
 id = "never-predict-disaster-or-guaranteed-gains"
 why = "Product safety (TONE block)."
 all = ['NEVER predict disaster', 'NEVER promise guaranteed gains']
@@ -704,6 +713,7 @@ why = "Voice rule."
 all = ['No astrology disclaimers']
 
 [[prompts."rashifal_single.txt".rules]]
-id = "opening-style-hint-is-honoured"
-why = "Coupled to llm.py: the per-rashi OPENING STYLE HINT is emitted in the user message."
-all = ['opened per the OPENING STYLE HINT']
+id = "the-opening-move-rotates-and-the-frames-are-banned"
+why = "RENAMED 2026-10-24 (#513). Was `opening-style-hint-is-honoured`, requiring 'opened per the OPENING STYLE HINT' — a per-rashi constant that never varied by date, so each rashi opened the same way every day (opening-sentence similarity 0.360 against body similarity 0.089, 4x). The character hint still travels, but a rotating OPENING MOVE now leads it, and the five frames the old fixed shape produced are banned by name."
+all = ['OPENING MOVE FOR TODAY', 'NEVER begin a sentence with', 'Take a', 'At work', 'Hold off', 'A modest', 'Family conversations']
+forbid = ['opened per the OPENING STYLE HINT']
