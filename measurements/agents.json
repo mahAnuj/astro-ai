@@ -1,24 +1,8 @@
 {
-  "generated_at": "2026-10-24T22:15:08Z",
+  "generated_at": "2026-10-24T22:56:26Z",
   "repo": "mahAnuj/astro-ai",
   "window_days": 30,
   "loops": [
-    {
-      "workflow": "rashifal-generate.yml",
-      "display": "Rashifal generate",
-      "cadence": [
-        "00 22 * * *"
-      ],
-      "cadence_error": null,
-      "schedule_since": "2026-10-24T19:18:26Z",
-      "slots_due": 1,
-      "runs_scheduled": 0,
-      "runs_total": 3,
-      "last_run": "2026-10-24T09:37:32Z",
-      "last_conclusion": "success",
-      "last_run_health": "green",
-      "verdict": "dormant"
-    },
     {
       "workflow": "agent-design.yml",
       "display": "Agent design",
@@ -26,7 +10,7 @@
         "00 20 * * 4"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-24T19:18:26Z",
+      "schedule_since": "2026-10-24T22:17:34Z",
       "slots_due": 0,
       "runs_scheduled": 3,
       "runs_total": 4,
@@ -42,7 +26,7 @@
         "00 20 * * 1"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-24T19:18:26Z",
+      "schedule_since": "2026-10-24T22:17:34Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 4,
@@ -58,7 +42,7 @@
         "00 19 * * 2"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-24T19:18:26Z",
+      "schedule_since": "2026-10-24T22:17:34Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 4,
@@ -74,9 +58,9 @@
       "cadence_error": "only a fixed minute and hour are supported: '0 5,8,11,14,17,20 * * *'",
       "schedule_since": null,
       "slots_due": null,
-      "runs_scheduled": 60,
-      "runs_total": 67,
-      "last_run": "2026-10-24T22:14:58Z",
+      "runs_scheduled": 61,
+      "runs_total": 68,
+      "last_run": "2026-10-24T22:50:28Z",
       "last_conclusion": "in_progress",
       "last_run_health": "running",
       "verdict": "on-demand"
@@ -90,7 +74,7 @@
       "slots_due": null,
       "runs_scheduled": 17,
       "runs_total": 100,
-      "last_run": "2026-10-24T19:41:19Z",
+      "last_run": "2026-10-24T22:19:03Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -102,7 +86,7 @@
         "00 17 * * 0"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-24T19:18:26Z",
+      "schedule_since": "2026-10-24T22:17:34Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 5,
@@ -118,7 +102,7 @@
         "00 19 * * 3"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-24T19:18:26Z",
+      "schedule_since": "2026-10-24T22:17:34Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 2,
@@ -148,7 +132,7 @@
         "00 18 * * 5"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-24T19:18:26Z",
+      "schedule_since": "2026-10-24T22:17:34Z",
       "slots_due": 0,
       "runs_scheduled": 3,
       "runs_total": 3,
@@ -165,7 +149,7 @@
         "00 11 * * *"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-24T19:18:26Z",
+      "schedule_since": "2026-10-24T22:17:34Z",
       "slots_due": 0,
       "runs_scheduled": 28,
       "runs_total": 68,
@@ -195,7 +179,7 @@
         "30 03 * * 2"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-24T19:18:26Z",
+      "schedule_since": "2026-10-24T22:17:34Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 3,
@@ -213,10 +197,26 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-10-24T19:23:07Z",
+      "last_run": "2026-10-24T22:15:57Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
+    },
+    {
+      "workflow": "rashifal-generate.yml",
+      "display": "Rashifal generate",
+      "cadence": [
+        "00 22 * * *"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-24T22:17:34Z",
+      "slots_due": 0,
+      "runs_scheduled": 0,
+      "runs_total": 3,
+      "last_run": "2026-10-24T09:37:32Z",
+      "last_conclusion": "success",
+      "last_run_health": "green",
+      "verdict": "not-due-yet"
     },
     {
       "workflow": "verify-build.yml",
@@ -227,7 +227,7 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-10-24T19:23:07Z",
+      "last_run": "2026-10-24T22:17:38Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -239,7 +239,7 @@
         "17 06 * * 1"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-24T19:18:26Z",
+      "schedule_since": "2026-10-24T22:17:34Z",
       "slots_due": 0,
       "runs_scheduled": 13,
       "runs_total": 100,
@@ -377,21 +377,21 @@
   },
   "agents": {
     "window_days": 30,
-    "comments_total": 501,
-    "comments_by_agents": 306,
+    "comments_total": 505,
+    "comments_by_agents": 310,
     "comments_by_automation": 57,
     "by_agent": {
       "agent-cycle": 71,
       "qa": 57,
       "steward": 46,
-      "analyst": 41,
+      "analyst": 45,
       "chief": 20,
       "infra-lead": 4,
       "architect": 2,
       "engineer": 2
     },
     "unmatched_count": 63,
-    "unmatched_pct": 21,
+    "unmatched_pct": 20,
     "unmatched_sample": [
       {
         "issue": "272",
@@ -576,7 +576,5 @@
       "max_rounds": 4
     }
   },
-  "alerts": [
-    "rashifal-generate.yml"
-  ]
+  "alerts": []
 }
