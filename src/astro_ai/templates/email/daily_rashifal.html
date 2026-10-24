@@ -299,14 +299,19 @@
                      separately and gives no combined figure. -#}
                   {#- #523. The day's shape, scannable. Each figure counts
                      how many of that life area's KARAKAS transit favourably
-                     from this rashi (knowledge/houses.md, Raman Ch. IV & VIII).
+                     from this rashi (knowledge/houses.md -- the karaka lines
+                     themselves, NOT "Raman Ch. IV & VIII": that citation was
+                     retracted, see chart.py:_AREA_KARAKAS and houses.md:616).
                      A count, never a score: Raman classifies each planet-house
                      pair and gives no aggregation rule, so four-and-a-half
                      stars would be an invented weighting wearing a citation.
-                     Relationships is out of 2 because houses.md:217 gives the
-                     7th karaka as "Venus (spouse for men), Jupiter (husband for
-                     women)" and a Rashifal has no gender -- both are counted
-                     rather than one silently chosen.
+                     Relationships is out of 3: houses.md:217-218 gives the 7th
+                     karakas as "Venus (spouse for men), Jupiter (husband for
+                     women)" AND Mars. A Rashifal has no gender, so the gendered
+                     pair is both-counted rather than one silently chosen, and
+                     Mars is counted because the field names it. An earlier
+                     draft said "out of 2"; that was a wrap-continuation line
+                     dropped while reading the field, not a decision.
                      The same numbers go into the reading's own prompt, so the
                      prose cannot contradict the figures printed beside it. -#}
                   {%- set dd = (day_detail or {}).get(rashi_slug) %}

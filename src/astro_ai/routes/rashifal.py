@@ -28,6 +28,7 @@ from astro_ai.i18n import translate as t
 from astro_ai import hot_cache, muhurat
 from astro_ai.chart import (compute_chart, compute_panchang,
                             compute_transit_snapshot, gochara_for_rashi,
+                            RASHIFAL_REFERENCE_PLACE, rashifal_day_moment,
                             area_ratings_for_rashi, remedy_for_rashi)
 from astro_ai.llm import parse_sectioned_reading
 from astro_ai.rashifal_derive import derive_single_reading
@@ -174,11 +175,17 @@ def _day_detail_today(rashi_index: int, lang: str = "en"):
     """{'areas', 'remedy'} for one rashi today, or None. Cached, shared (#523).
 
     Same computation the reading was written from, so the panel and the prose
-    agree by construction rather than by review.
+    agree by construction rather than by review -- which is true only because
+    both pass `when=chart.rashifal_day_moment(date)`, a moment PINNED to local
+    noon on the day. Under `datetime.now()` this claim was false: the reading
+    is generated once and cached for the day while this recomputes every 900 s,
+    and QA measured the two disagreeing on 9 of 90 days (areas moved for 10 of
+    12 rashis on 2026-10-31, the remedy graha on 2 of 90). See
+    `chart.rashifal_day_moment` for why noon and not sunrise.
     """
     def compute() -> dict:
-        natal = compute_chart("2000-01-01", "12:00", "Mumbai, India")
-        snapshot = compute_transit_snapshot(natal)
+        natal = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
+        snapshot = compute_transit_snapshot(natal, when=rashifal_day_moment(date.today()))
         return {i: {"areas": area_ratings_for_rashi(i, snapshot),
                     "remedy": remedy_for_rashi(i, snapshot, lang)} for i in range(12)}
 
@@ -204,8 +211,8 @@ def _gochara_today(rashi_index: int):
     universal, only the counting rashi differs.
     """
     def compute() -> dict:
-        natal = compute_chart("2000-01-01", "12:00", "Mumbai, India")
-        snapshot = compute_transit_snapshot(natal)
+        natal = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
+        snapshot = compute_transit_snapshot(natal, when=rashifal_day_moment(date.today()))
         return {i: gochara_for_rashi(i, snapshot) for i in range(12)}
 
     try:
@@ -236,8 +243,8 @@ def _chandra_bala_today(slug: str):
     renders nothing -- a decoration must never 500 a page.
     """
     def compute() -> dict:
-        natal = compute_chart("2000-01-01", "12:00", "Mumbai, India")
-        snapshot = compute_transit_snapshot(natal)
+        natal = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
+        snapshot = compute_transit_snapshot(natal, when=rashifal_day_moment(date.today()))
         moon = next((pl for pl in snapshot.planets if pl.name == "Moon"), None)
         return muhurat.chandra_bala_by_rashi(moon.rashi) if moon else {}
 
@@ -405,9 +412,13 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         # Generate. Wrap in the same try/except pattern the old route had
         # so an LLM failure returns a friendly-error response.
         try:
-            neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
-            transit = compute_transit_snapshot(neutral_chart)
-            panchang_now = compute_panchang(neutral_chart)
+            neutral_chart = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
+            # Day-PINNED, not now(): the panel beside this reading, the email
+            # and the nightly job all pin with chart.rashifal_day_moment for the same
+            # date, and under now() they disagreed (QA: 9 of 90 days).
+            transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(date.today()))
+            panchang_now = compute_panchang(
+                neutral_chart, when=rashifal_day_moment(date.today()))
             # DELIBERATELY singular — see the note at the /panchang call site.
             # llm._build_rashifal_day_signals takes `dict | None` and emits one
             # "Today is X" sentence into an already-crowded signal block; a list

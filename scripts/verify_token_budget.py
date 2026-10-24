@@ -200,9 +200,15 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
     # headroom. That is what the Groq fallback has to fit inside, and this row
     # is the tripwire in front of it -- re-measure the FULL REQUEST, not this
     # figure, if it grows again.
-    "rashifal_single+payload":  (3997, 4600, "2026-10-24",
-                                 "hi 4129 + 10%; the per-rashi user message, "
-                                 "which carries the day's computed verdicts"),
+    "rashifal_single+payload":  (4133, 4600, "2026-10-25",
+                                 "hi 4265 + 8%; the per-rashi user message, "
+                                 "which carries the day's computed verdicts. "
+                                 "RAISED from 3,997 (recorded 2026-10-24) "
+                                 "because that figure came from a hand-written "
+                                 "copy of the message that omitted its section "
+                                 "headers and the closing instruction and "
+                                 "undercounted by 4.8%; this is the real "
+                                 "builder, pinned. The route did not grow"),
     "natal+payload":            (6798, 7000, _D,
                                  "7,000 = 8,000 TPM less the runtime guard's 1,000 margin"),
 }
@@ -250,31 +256,45 @@ def load_encoding():
 def rashifal_payload(llm, chart_mod) -> str:
     """The per-rashi USER message for one rashi, as `chat()` would receive it.
 
-    Added 2026-10-24 (#523). Until now this route was measured on its system
-    prompt alone, and the row read "+0.0%" while a change added ~120-137 tokens
-    per rashi to the USER message -- the gochara verdict, the four per-area
-    counts and the remedy line. QA found the gate passing BECAUSE it could not
-    see the change, which is the same vacuous-pass shape as a SKIPPED run read
-    as a pass.
+    Added 2026-10-24 (#523). Until then this route was measured on its system
+    prompt alone, so the row read "+0.0%" while a change added ~137 tokens per
+    rashi to the USER message -- the gochara verdict, the four per-area counts
+    and the remedy line. The gate passed BECAUSE it could not see the change,
+    which is the same vacuous-pass shape as a SKIPPED run read as a pass.
+
+    TWO THINGS QA THEN FOUND WRONG WITH THE FIRST VERSION OF THIS FUNCTION,
+    both fixed here:
+
+    1. It re-concatenated the message's parts BY HAND and so omitted the
+       section headers ("TODAY'S SKY SIGNALS", "RASHI TO WRITE FOR:", "THE
+       SHAPE FOR TODAY", "OPENING MOVE") and the closing instruction --
+       undercounting the real request by 4.8% and leaving a later edit
+       confined to those strings invisible, the same blind spot again. It now
+       calls `llm._format_rashifal_message`, the function the serving path
+       calls, following the `natal+payload` precedent below.
+    2. It used `date.today()` with an unpinned transit, so the row drifted
+       109 tokens (2.73% of the baseline) across 40 days with NO code change
+       -- more than half a 5% growth allowance spent on the calendar. A real
+       +3% would trip on a high-swing day and a real +2% would be masked on a
+       low one. Now pinned to `_PINNED_WHEN`, exactly as `natal_payload` is.
     """
-    from datetime import date
     from astro_ai import festivals
     natal = chart_mod.compute_chart("2000-01-01", "12:00", "Mumbai, India")
-    transit = chart_mod.compute_transit_snapshot(natal)
-    panchang = chart_mod.compute_panchang(natal)
-    today = date.today()
+    # PINNED, not today(): see note 2 above.
+    transit = chart_mod.compute_transit_snapshot(natal, _PINNED_WHEN)
+    panchang = chart_mod.compute_panchang(natal, when=_PINNED_WHEN)
+    day = _PINNED_WHEN.date()
     signals = "\n".join(
         f"- {s}" for s in llm._build_rashifal_day_signals(
-            transit, today.isoformat(), "en", panchang,
-            festivals.festival_for_date(today)))
-    anchor = llm._RASHI_ANCHORS[0]
+            transit, day.isoformat(), "en", panchang,
+            festivals.festival_for_date(day)))
     # Rashi 0 every day: the block's size is dominated by the day signals and
     # the transit, which are shared, so one rashi is representative and the
     # measurement does not swing on which sign happens to be worst today.
-    return (signals + "\n" + llm.format_transit_for_prompt(transit) + "\n"
-            + llm._gochara_block(0, transit) + "\n"
-            + llm._RASHIFAL_SHAPES[0] + "\n" + llm._OPENING_MOVES[0] + "\n"
-            + anchor.get("opening_style", ""))
+    return llm._format_rashifal_message(
+        llm._RASHI_ANCHORS[0], signals, llm.format_transit_for_prompt(transit),
+        llm._gochara_block(0, transit), llm._RASHIFAL_SHAPES[0],
+        llm._OPENING_MOVES[0])
 
 
 def route_files(deps) -> dict[str, tuple[Path, Path | None]]:
@@ -448,6 +468,10 @@ def main(argv: list[str] | None = None) -> int:
             )
 
         measured: dict[str, tuple[int, int]] = {}
+        # route -> (en messages, hi messages) for the two +payload rows, kept so
+        # the footer can ask providers.estimate_request_tokens what the TPM
+        # bucket would actually reserve, instead of a number written by hand.
+        payload_messages: dict[str, tuple[list, list]] = {}
         for route, (base, overlay) in routes.items():
             try:
                 measured[route] = (
@@ -457,14 +481,24 @@ def main(argv: list[str] | None = None) -> int:
             except OSError as exc:
                 failures.append(f"{route}: prompt unreadable: {exc}")
         if "natal" in measured:
-            user = count(natal_payload(llm))
+            payload = natal_payload(llm)
+            user = count(payload)
             n_en, n_hi = measured["natal"]
             measured["natal+payload"] = (n_en + user, n_hi + user)
+            base, overlay = routes["natal"]
+            payload_messages["natal"] = tuple(
+                [{"role": "system", "content": llm._system_prompt(base, lang, overlay)},
+                 {"role": "user", "content": payload}] for lang in ("en", "hi"))
         if "rashifal_single" in measured:
             from astro_ai import chart as _chart
-            r_user = count(rashifal_payload(llm, _chart))
+            payload = rashifal_payload(llm, _chart)
+            r_user = count(payload)
             r_en, r_hi = measured["rashifal_single"]
             measured["rashifal_single+payload"] = (r_en + r_user, r_hi + r_user)
+            base, overlay = routes["rashifal_single"]
+            payload_messages["rashifal_single"] = tuple(
+                [{"role": "system", "content": llm._system_prompt(base, lang, overlay)},
+                 {"role": "user", "content": payload}] for lang in ("en", "hi"))
     except CouldNotRun as exc:
         print(f"  COULD NOT VERIFY: {exc}")
         print("  -> SKIPPED (exit 2). This is NOT a pass — the check did not run.")
@@ -486,8 +520,29 @@ def main(argv: list[str] | None = None) -> int:
     hi_costs = {hi - en for en, hi in measured.values()}
     print(f"\n  Hindi suffix adds {', '.join(f'{c:,}' for c in sorted(hi_costs))} tok per route "
           f"(ceiling is judged on the larger of en/hi; growth on en).")
-    print("  Scope: system prompt only, except natal+payload (system + one golden chart,\n"
-          "  unshed). Zero LLM calls; zero runtime tokens.")
+    print("  Scope: system prompt only, except the two +payload rows (system +\n"
+          "  one golden payload, unshed). Zero LLM calls; zero runtime tokens.")
+    # PRINTED, never recorded in prose. Three different "full request" figures
+    # for this route reached a comment, a commit message and a PR comment on
+    # the same day -- 355 tokens apart -- because each was measured by hand and
+    # then frozen as text. A printed number cannot go stale.
+    #
+    # This asks providers.estimate_request_tokens, the function the TPM bucket
+    # actually reserves against (#475), NOT the row above: the bucket adds a
+    # scaffold and a per-route completion reserve on top of the message, so the
+    # row and the reservation are different numbers and conflating them is how
+    # the wrong figure got published in the first place.
+    try:
+        from astro_ai import providers as _prov
+        for route, msgs in sorted(payload_messages.items()):
+            n_en, n_hi = (_prov.estimate_request_tokens(m, route=route)
+                          for m in msgs)
+            print(f"  Reserved against the 7,400 TPM bucket on {route}: "
+                  f"en {n_en:,} / hi {n_hi:,} "
+                  f"(headroom {7400 - max(n_en, n_hi):,}) -- message + scaffold "
+                  f"+ completion reserve, as providers.chat() reserves it.")
+    except Exception as exc:  # noqa: BLE001 - a printed extra must not fail a gate
+        print(f"  (bucket reservation not printed: {exc})")
     shrunk = [r for r, (en, _hi) in measured.items()
               if r in BUDGET and en < BUDGET[r][0] * (1 - args.max_growth_pct / 100)]
     if shrunk:

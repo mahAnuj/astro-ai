@@ -45,6 +45,8 @@ from astro_ai.chart import (
     compute_chart,
     compute_panchang,
     compute_transit_snapshot,
+    RASHIFAL_REFERENCE_PLACE,
+    rashifal_day_moment,
     symbol_for_rashi_label,
 )
 from astro_ai.llm import generate_rashifal, parse_sectioned_reading
@@ -429,8 +431,8 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
 
     # Build today's Rashifal sections (may trigger generation if cold).
     try:
-        neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
-        transit = compute_transit_snapshot(neutral_chart)
+        neutral_chart = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
+        transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(date.today()))
         text = _daily_rashifal_text(
             lang=lang,
             today_iso=today_iso,
@@ -528,10 +530,10 @@ async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
     today_iso = date.today().isoformat()
     started = _time.time()
     try:
-        neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+        neutral_chart = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
     except ChartError as err:
         return JSONResponse({"ok": False, "error": f"Couldn't compute reference chart: {err}"}, status_code=500)
-    transit = compute_transit_snapshot(neutral_chart)
+    transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(date.today()))
     # A batch job: nobody is waiting, so the bucket may make a call wait up to the
     # job budget -- but never past this deadline (#475). One language fits today;
     # the deadline is the guarantee, not the arithmetic.
@@ -639,10 +641,10 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     # We trigger generation via _shared_three_tier so cold-start days still
     # produce content rather than emailing empty bodies.
     try:
-        neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+        neutral_chart = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
     except ChartError as err:
         return JSONResponse({"ok": False, "error": f"Couldn't compute reference chart: {err}"}, status_code=500)
-    transit = compute_transit_snapshot(neutral_chart)
+    transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(date.today()))
 
     sections_by_lang: dict[str, list] = {}
     # ONE deadline for the whole job, computed before the first language: en and

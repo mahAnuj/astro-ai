@@ -92,7 +92,11 @@ def offline(monkeypatch):
     from astro_ai.routes import subscribe
 
     monkeypatch.setattr(subscribe, "compute_chart", lambda *a, **k: {"stub": "chart"})
-    monkeypatch.setattr(subscribe, "compute_transit_snapshot", lambda chart: {})
+    # `when=` since #523: the Rashifal paths pin the day moment
+    # (chart.rashifal_day_moment) so the reading, the panel and the email
+    # are computed from ONE sky. A stub that cannot take it is stale.
+    monkeypatch.setattr(subscribe, "compute_transit_snapshot",
+                        lambda chart, when=None: {})
 
 
 def _post(client, headers):

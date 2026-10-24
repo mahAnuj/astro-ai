@@ -1074,6 +1074,58 @@ def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
     )
 
 
+def _format_rashifal_message(anchor: dict, day_signals_block: str, transit_block: str,
+                             gochara_block: str, shape: str, opening_move: str) -> str:
+    """The per-rashi USER message, exactly as `chat()` receives it.
+
+    Extracted from `_generate_rashifal_single` so `verify_token_budget` can
+    measure the REAL message instead of re-concatenating its parts by hand.
+    QA found the hand-written copy omitting the section headers and the closing
+    instruction, undercounting the real request by 4.8% -- the same blind spot
+    as the row that measured only the system prompt, because a later edit
+    confined to these strings would be invisible to the gate.
+
+    SHARED PREFIX FIRST, per-rashi anchor LAST (#212). `day_signals_block` and
+    `transit_block` are computed once and are identical across all 12 calls;
+    the anchor is the only part that differs. Leading with the anchor meant the
+    12 calls diverged at character 29 of the user message, so the ~2.9k
+    characters they have in common could never be a cacheable prefix.
+    Reordering does not itself send fewer tokens -- it is the precondition for
+    any prefix cache to have something to hit.
+    """
+    return (
+        f"TODAY'S SKY SIGNALS (use these to make the reading feel like TODAY):\n"
+        f"{day_signals_block}\n"
+        f"\n"
+        f"Raw planetary positions (background context — do NOT recite):\n"
+        f"{transit_block}\n"
+        f"\n"
+        f"RASHI TO WRITE FOR:\n"
+        f"- Name: {anchor['en']} / {anchor['sa']}\n"
+        f"- Ruling planet (Swami): {anchor['lord']}\n"
+        f"- Element (Tattva): {anchor['element']}\n"
+        f"- Quality (Guna): {anchor['quality']}\n"
+        f"\n"
+        + (f"{gochara_block}\n\n" if gochara_block else "")
+        + (
+        f"THE SHAPE FOR TODAY (overrides the generic structure in the system "
+        f"prompt — follow THIS):\n"
+        f"{shape}\n"
+        f"\n"
+        f"OPENING MOVE FOR TODAY (how to start; it changes every day so the "
+        f"reading does not open the same way it did yesterday):\n"
+        f"{opening_move}\n"
+        f"\n"
+        f"THE RASHI'S OWN CHARACTER (express the opening move in THIS "
+        f"character — it is what keeps the twelve from sounding alike):\n"
+        f"{anchor.get('opening_style', 'Open with a concrete image, not a generic feeling.')}\n"
+        f"\n"
+        f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
+        f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose. "
+        f"Follow the opening-style hint above. Do not use any banned opening phrase."
+    ))
+
+
 def _generate_rashifal_single(
     anchor: dict[str, str],
     day_signals_block: str,
@@ -1105,44 +1157,9 @@ def _generate_rashifal_single(
         waited = pacer.wait()
         if waited > 0:
             _log.debug("rashifal pacer: waited %.1fs before %s", waited, anchor["en"])
-    # SHARED PREFIX FIRST, per-rashi anchor LAST (#212). `day_signals_block`
-    # and `transit_block` are computed once and are identical across all 12
-    # calls; the anchor is the only part that differs. Leading with the anchor
-    # meant the 12 calls diverged at character 29 of the user message, so the
-    # ~2.9k characters they have in common could never be a cacheable prefix.
-    # Reordering does not itself send fewer tokens — it is the precondition
-    # for any prefix cache to have something to hit.
-    user_message = (
-        f"TODAY'S SKY SIGNALS (use these to make the reading feel like TODAY):\n"
-        f"{day_signals_block}\n"
-        f"\n"
-        f"Raw planetary positions (background context — do NOT recite):\n"
-        f"{transit_block}\n"
-        f"\n"
-        f"RASHI TO WRITE FOR:\n"
-        f"- Name: {anchor['en']} / {anchor['sa']}\n"
-        f"- Ruling planet (Swami): {anchor['lord']}\n"
-        f"- Element (Tattva): {anchor['element']}\n"
-        f"- Quality (Guna): {anchor['quality']}\n"
-        f"\n"
-        + (f"{gochara_block}\n\n" if gochara_block else "")
-        + (
-        f"THE SHAPE FOR TODAY (overrides the generic structure in the system "
-        f"prompt — follow THIS):\n"
-        f"{shape}\n"
-        f"\n"
-        f"OPENING MOVE FOR TODAY (how to start; it changes every day so the "
-        f"reading does not open the same way it did yesterday):\n"
-        f"{opening_move}\n"
-        f"\n"
-        f"THE RASHI'S OWN CHARACTER (express the opening move in THIS "
-        f"character — it is what keeps the twelve from sounding alike):\n"
-        f"{anchor.get('opening_style', 'Open with a concrete image, not a generic feeling.')}\n"
-        f"\n"
-        f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
-        f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose. "
-        f"Follow the opening-style hint above. Do not use any banned opening phrase."
-    ))
+    user_message = _format_rashifal_message(
+        anchor, day_signals_block, transit_block, gochara_block, shape,
+        opening_move)
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},

@@ -483,6 +483,68 @@ def compute_transit_snapshot(
     )
 
 
+#: The reference place every Rashifal is computed at. A Rashifal is written for
+#: a rashi, not a person, so there is no birthplace to use -- this is the
+#: neutral stand-in the whole surface already shared by convention.
+RASHIFAL_REFERENCE_PLACE = "Mumbai, India"
+
+#: Its timezone, as a constant rather than read off a Chart. The pin must be a
+#: pure function of the DATE: two callers holding differently-built charts for
+#: the same reference place would otherwise be able to pin differently, which
+#: is the bug this whole mechanism exists to remove.
+RASHIFAL_REFERENCE_TZ = "Asia/Kolkata"
+
+
+def rashifal_day_moment(day: date_) -> datetime:
+    """Local NOON on `day` at the reference place -- the moment a Rashifal means.
+
+    WHY A PINNED MOMENT, AND WHY THIS IS NOT COSMETIC
+    -------------------------------------------------
+    A Rashifal is a statement about a CALENDAR DAY, and every artefact of that
+    day has to be computed from one moment or they disagree with each other.
+    Before this, each caller passed no `when` and got `datetime.now()`, so:
+
+      * `routes/rashifal.py` computed the panel's counts at render time while
+        the reading beside them had been generated (and cached for the day)
+        at some earlier hour. QA measured the two disagreeing on 9 of 90 days,
+        with the area counts moving for 10 of 12 rashis on 2026-10-31.
+      * worse, and not what QA tested: the nightly job (#515) generates every
+        reading at ~03:30 IST and the page renders it all day, so under
+        `now()` the panel and the published prose would diverge by DESIGN
+        rather than occasionally.
+
+    Pinning makes the agreement structural -- any process, at any hour, asking
+    for a given day gets the same sky -- which is what `_day_detail_today`
+    already claimed and could not deliver.
+
+    LOCAL NOON, following the convention already in the tree: `routes/panchang`
+    pins a named date the same way (`_target_moment`, local noon in the chart's
+    own tz). Noon is also the safe choice for a date: it cannot land on the
+    previous or next calendar day under any timezone offset, which an hour near
+    midnight can.
+
+    NOT sunrise, though sunrise is the classical day boundary and
+    `compute_panchang` uses it for the tithi. Sunrise is location-dependent and
+    can be absent entirely at polar latitudes (`DailyPanchang.daylight_ordinary`
+    exists for exactly that), so it would make a Rashifal's own transit fail on
+    dates where the panchang already degrades. The tithi keeps its sunrise
+    convention; this pins the GOCHARA, which has no classical clock.
+
+    EVERY Rashifal call site must pass this as `when=`:
+
+        compute_transit_snapshot(natal, when=rashifal_day_moment(day))
+
+    There is deliberately no wrapper that does both. The call sites are stubbed
+    in tests by patching `compute_transit_snapshot` where it is imported, and a
+    wrapper calling it internally would route around that seam. The guarantee
+    does not need a wrapper anyway: this function is a pure function of the
+    date, so two callers that both pass it agree by construction.
+    `tests/test_rashifal_day_detail.py` asserts no Rashifal path forgets it.
+    """
+    tz = ZoneInfo(RASHIFAL_REFERENCE_TZ)
+    return datetime(day.year, day.month, day.day, 12, 0, tzinfo=tz)
+
+
 # ---------------------------------------------------------------------------
 # Vedic dosha flags — Mangal Dosh + Sade Sati
 # ---------------------------------------------------------------------------
@@ -2936,6 +2998,13 @@ def gochara_for_rashi(rashi_index: int, transit: "TransitSnapshot") -> list[dict
     """
     out: list[dict] = []
     try:
+        # Guarded, like llm.generate_rashifal_for_rashi: `((p - r) % 12) + 1`
+        # accepts any int silently, and rashi_index=12 returned an ALL-ZEROS
+        # panel -- the worst-looking day possible and indistinguishable from a
+        # real one. Both call sites pass range(12) today, so this is a latch,
+        # not a live bug.
+        if not 0 <= rashi_index < 12:
+            return []
         for planet in transit.planets:
             benefic = _GOCHARA_BENEFIC_FROM_MOON.get(planet.name)
             if benefic is None:
@@ -3134,7 +3203,20 @@ _GRAHA_HI: dict[str, str] = {
     "Saturn": "\u0936\u0928\u093f", "Rahu": "\u0930\u093e\u0939\u0941",
     "Ketu": "\u0915\u0947\u0924\u0941",
 }
-_HOUSE_ORDINAL_HI = {n: f"{n}\u0935\u0947\u0902" for n in range(1, 13)}
+_HOUSE_ORDINAL_HI: dict[int, str] = { 1: "\u092a\u0939\u0932\u0947",
+    2: "\u0926\u0942\u0938\u0930\u0947", 3: "\u0924\u0940\u0938\u0930\u0947",
+    4: "\u091a\u094c\u0925\u0947", 5: "\u092a\u093e\u0902\u091a\u0935\u0947\u0902",
+    6: "\u091b\u0920\u0947", 7: "\u0938\u093e\u0924\u0935\u0947\u0902",
+    8: "\u0906\u0920\u0935\u0947\u0902", 9: "\u0928\u094c\u0935\u0947\u0902",
+    10: "\u0926\u0938\u0935\u0947\u0902",
+    11: "\u0917\u094d\u092f\u093e\u0930\u0939\u0935\u0947\u0902",
+    12: "\u092c\u093e\u0930\u0939\u0935\u0947\u0902",}
+"""Twelve literal entries, for exactly the reason the English table below
+states about itself. The first version here was `{n: f"{n}\u0935\u0947\u0902"}` -- the same
+naive rule -- and it rendered "1\u0935\u0947\u0902" and "3\u0935\u0947\u0902" where Hindi wants
+\u092a\u0939\u0932\u0947 and \u0924\u0940\u0938\u0930\u0947. Hindi ordinals are irregular at the same places the
+English ones are (1, 2, 3, 6), so a derived rule is wrong in 4 of 12 cases --
+QA found 2 of the 3 pages it rendered showing one."""
 
 _HOUSE_ORDINAL = {1: "1st", 2: "2nd", 3: "3rd", 4: "4th", 5: "5th", 6: "6th",
                   7: "7th", 8: "8th", 9: "9th", 10: "10th", 11: "11th", 12: "12th"}
@@ -3145,7 +3227,16 @@ first draft of remedy_for_rashi, and an ordinal rule that handles 1/2/3 but not
 
 def remedy_for_rashi(rashi_index: int, transit: "TransitSnapshot",
                      lang: str = "en") -> dict | None:
-    """{'planet', 'house', 'deed'} for today's heaviest adverse transit, or None.
+    """{'planet', 'house', 'deed'} for ONE adverse transit today, or None.
+
+    Not "the heaviest". The tiers that are SOURCED -- a Saturn Sade Sati or
+    Ashtama phase (vedic_reference.md \u00a72, \u00a72.4), then Raman's slow movers
+    (Saturn, Jupiter, Rahu) -- settle only about half the cases; the rest are
+    broken by house NUMBER, which carries no weight in the corpus and is not a
+    heaviness claim (QA measured the number deciding on 6 of 12 rashis today).
+    So: one of the grahas the corpus names as dominant, picked
+    deterministically. The panel prints the graha and its house so a reader can
+    check it rather than trust an ordering.
 
     None when nothing transits unfavourably -- a day with no affliction needs no
     remedy, and inventing one would be the fabrication this product avoids.
