@@ -26,7 +26,9 @@ from astro_ai import providers
 _log = logging.getLogger(__name__)
 from astro_ai import rashifal_quality
 from astro_ai.chart import (
+    area_ratings_for_rashi as chart_area_ratings,
     gochara_for_rashi,
+    remedy_for_rashi as chart_remedy,
     Chart,
     DailyPanchang,  # used by daily reading + rashifal day-signal block
     DashaState,
@@ -1009,6 +1011,34 @@ def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
     fav = [e for e in entries if e["verdict"] == "favourable"]
     cha = [e for e in entries if e["verdict"] == "challenging"]
 
+    # THE PER-AREA COUNTS THE READER WILL SEE BESIDE THIS READING (#523). They
+    # are rendered as fields in the email and on the page, so a reading that
+    # says "push your project" on Work 0/3 contradicts a number printed inches
+    # away. That contradiction is precisely what makes AstroSage's page
+    # untrustworthy -- Family 1/5 sitting beside "the best day of your married
+    # life today" -- and it is cheap to avoid: the model is simply told the
+    # figures.
+    areas = chart_area_ratings(rashi_index, transit)
+    areas_line = ""
+    if areas:
+        shown = ", ".join(f"{a['area']} {a['favourable']}/{a['total']}" for a in areas)
+        areas_line = (
+            f"- PER-AREA COUNTS SHOWN TO THE READER BESIDE YOUR TEXT: {shown}.\n"
+            f"  Your reading must not contradict these. Do not promise a good "
+            f"day at work on a low Work count, or trouble at home on a high one. "
+            f"Weight the reading toward whichever area is most extreme.\n")
+    # The remedy is rendered as its own line, so the prose must not repeat it --
+    # the day colour taught that lesson (#514): a duplicate in prose reads as
+    # filler and, when invented, contradicts the computed field.
+    remedy = chart_remedy(rashi_index, transit)
+    remedy_line = ""
+    if remedy:
+        remedy_line = (
+            f"- A REMEDY IS PRINTED SEPARATELY for {remedy['planet']} in the "
+            f"{remedy['house_ord']}: \"{remedy['deed']}\". Do NOT restate it, do "
+            f"not suggest any other remedy, ritual or object, and never mention "
+            f"a gemstone.\n")
+
     def names(es):
         return ", ".join(f"{e['planet']} ({_HOUSE_ORD[e['house']]})" for e in es) or "none"
 
@@ -1035,6 +1065,8 @@ def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
         f"- Challenging: {names(cha)}\n"
         f"- Saturn, Jupiter and Rahu weigh most (classical); the Moon is the part "
         f"that changes every day.\n"
+        f"{areas_line}"
+        f"{remedy_line}"
         f"- {tone}\n"
         f"Do not name any planet in your prose — describe the qualities, as the "
         f"system prompt requires. This block tells you WHAT IS TRUE, not what to "

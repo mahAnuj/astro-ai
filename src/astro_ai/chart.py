@@ -2957,6 +2957,169 @@ def gochara_for_rashi(rashi_index: int, transit: "TransitSnapshot") -> list[dict
     return out
 
 
+# --- Per-area day ratings, from the Gochara karakas (#523) -------------------
+#
+# `gochara_for_rashi` gives nine verdicts and the Rashifal surfaced them as one
+# number, "1 of 9 favourable". That is honest and unscannable: a reader learns
+# the day's shape only by reading 123 words of prose. AstroSage puts six star
+# ratings at the top and the day is legible in a second -- the one thing it
+# genuinely does better. Its ratings are also invented and self-contradicting
+# (Family 1/5 beside "the best day of your married life today"), so the fix is
+# the same signal, computed.
+#
+# Life area -> house -> that house's karakas, straight out of
+# knowledge/houses.md, which cites Raman (*Astrology for Beginners*, Ch. IV and
+# VIII, with page numbers) and BPHS where quoted:
+#
+#   Work           10th Karma Bhava   houses.md:296  Sun (authority, status),
+#                                                    Mercury (business),
+#                                                    Jupiter (dharmic profession)
+#   Money          2nd Dhana          houses.md:83   Jupiter (wealth),
+#                  + 11th Labha       houses.md:336  Mercury (speech/business
+#                                                    gain), Venus (family comfort)
+#   Relationships  7th Kalatra        houses.md:217  Venus (spouse for men),
+#                                                    Jupiter (husband for women)
+#   Health         6th Roga           houses.md:194  Mars (enemies), Saturn
+#                  + 1st Tanu         houses.md:51   (chronic illness),
+#                                                    Sun (soul-atma)
+#
+# A COUNT, NEVER A SCORE, and this is the constraint that must not be relaxed.
+# Raman classifies each planet-house pair and supplies NO aggregation rule; the
+# only ordering he gives is that the slow movers dominate. Turning three
+# verdicts into four-and-a-half stars would be an invented weighting wearing a
+# citation -- the exact defect QA caught in #512, and the reason
+# gochara_for_rashi already refuses to sum. "1 of 3" is scannable in the same
+# second a star row is, and every digit in it is checkable.
+#
+# RELATIONSHIPS COUNTS BOTH VENUS AND JUPITER on purpose. houses.md:217 gives
+# "Venus (spouse for men), Jupiter (husband for women)" -- the karaka is
+# gendered and the Rashifal has no gender, so picking one would be a silent
+# choice about the reader. Both are counted and the denominator says 2.
+_AREA_KARAKAS: tuple[tuple[str, tuple[str, ...], str], ...] = (
+    ("Work",          ("Sun", "Mercury", "Jupiter"), "10th house karakas"),
+    ("Money",         ("Jupiter", "Mercury", "Venus"), "2nd and 11th house karakas"),
+    ("Relationships", ("Venus", "Jupiter"), "7th house karakas"),
+    ("Health",        ("Mars", "Saturn", "Sun"), "6th and 1st house karakas"),
+)
+
+
+def area_ratings_for_rashi(rashi_index: int, transit: "TransitSnapshot") -> list[dict]:
+    """Per-area day verdicts for one rashi: [{area, favourable, total, ...}].
+
+    Each entry counts how many of that area's karakas transit favourably from
+    this rashi today, using the same `gochara_for_rashi` verdicts the reading is
+    written from -- so the ratings and the prose cannot disagree.
+
+    Returns [] rather than raising: this feeds a panel and a prompt, and neither
+    may fail over a decoration.
+    """
+    try:
+        verdicts = {e["planet"]: e for e in gochara_for_rashi(rashi_index, transit)}
+        if not verdicts:
+            return []
+        out = []
+        for area, karakas, basis in _AREA_KARAKAS:
+            seen = [verdicts[k] for k in karakas if k in verdicts]
+            if not seen:
+                continue
+            fav = [e for e in seen if e["verdict"] == "favourable"]
+            out.append({
+                "area": area,
+                "favourable": len(fav),
+                "total": len(seen),
+                "basis": basis,
+                "karakas": [{"planet": e["planet"], "house": e["house"],
+                             "verdict": e["verdict"]} for e in seen],
+            })
+        return out
+    except Exception:  # noqa: BLE001 - see docstring
+        return []
+
+
+# --- The day's remedy, for the graha weighing most against this rashi (#523) --
+#
+# AstroSage carries a one-line Remedy and it is a real part of why its page
+# reads as specific. This is that field, sourced: Rao's per-planet good deeds,
+# knowledge/remedies.md §5 (Rao §34.3), which the corpus records verbatim.
+#
+# WHICH graha, and why that is a selection and not an invented weighting:
+# among the grahas transiting UNfavourably from this rashi, prefer the ones
+# Raman names as dominant -- "the transiting effects of the slow moving ones,
+# viz., Jupiter, Saturn and Rahu are universally held to be most powerful"
+# (quoted in _GOCHARA_WEIGHTY). That is his ordering, not ours. Nothing is
+# summed or scored; one graha is picked and named, so the reader can see which.
+#
+# NEVER A GEMSTONE. remedies.md §1.4 is categorical: gemstones require the
+# Ascendant AND the functional benefic/malefic classification for it, and the
+# wrong stone -- blue sapphire for Saturn above all -- WORSENS the affliction.
+# A Rashifal has no Ascendant. This table is good deeds only, and the gemstone
+# table in §4.2 is deliberately not reachable from here.
+#
+# Rao's own wording, trimmed to the first clause for a daily line; the full
+# entries are in remedies.md §5.
+_GRAHA_GOOD_DEED: dict[str, str] = {
+    "Sun":     "visit a temple, or donate to one",
+    "Moon":    "help a woman who needs it, or support a music school",
+    "Mars":    "take physical exercise, or donate blood",
+    "Mercury": "seek a scholar's blessing, or donate to a place of learning",
+    "Jupiter": "show respect to a teacher, and give where learning is served",
+    "Venus":   "read poetry, or support an artist",
+    "Saturn":  "do physical work yourself, or serve the elderly",
+    "Rahu":    "give to research, or make a pilgrimage",
+    "Ketu":    "sit in meditation, or support those who have renounced",
+}
+
+
+_HOUSE_ORDINAL = {1: "1st", 2: "2nd", 3: "3rd", 4: "4th", 5: "5th", 6: "6th",
+                  7: "7th", 8: "8th", 9: "9th", 10: "10th", 11: "11th", 12: "12th"}
+"""Spelled out rather than derived: "3th" shipped from a naive f"{h}th" in the
+first draft of remedy_for_rashi, and an ordinal rule that handles 1/2/3 but not
+11/12/13 is the classic version of the same bug. Twelve entries, no rule."""
+
+
+# The same deeds in Hindi. An English SENTENCE inside a Hindi reading is the
+# #124/#270 defect -- `verify_hindi_surface` exists for exactly it, and does not
+# happen to catch a short line like this one, which is a gap in the gate rather
+# than permission. Faithful to Rao's wording in §5, in the register the rest of
+# the Hindi surface uses.
+_GRAHA_GOOD_DEED_HI: dict[str, str] = {
+    "Sun":     "\u092e\u0902\u0926\u093f\u0930 \u091c\u093e\u090f\u0901, \u092f\u093e \u092e\u0902\u0926\u093f\u0930 \u0915\u094b \u0926\u093e\u0928 \u0926\u0947\u0902",
+    "Moon":    "\u0915\u093f\u0938\u0940 \u091c\u093c\u0930\u0942\u0930\u0924\u092e\u0902\u0926 \u0938\u094d\u0924\u094d\u0930\u0940 \u0915\u0940 \u0938\u0939\u093e\u092f\u0924\u093e \u0915\u0930\u0947\u0902, \u092f\u093e \u0938\u0902\u0917\u0940\u0924 \u0935\u093f\u0926\u094d\u092f\u093e\u0932\u092f \u0915\u094b \u0926\u093e\u0928 \u0926\u0947\u0902",
+    "Mars":    "\u0935\u094d\u092f\u093e\u092f\u093e\u092e \u0915\u0930\u0947\u0902, \u092f\u093e \u0930\u0915\u094d\u0924\u0926\u093e\u0928 \u0915\u0930\u0947\u0902",
+    "Mercury": "\u0915\u093f\u0938\u0940 \u0935\u093f\u0926\u094d\u0935\u093e\u0928 \u0915\u093e \u0906\u0936\u0940\u0930\u094d\u0935\u093e\u0926 \u0932\u0947\u0902, \u092f\u093e \u0935\u093f\u0926\u094d\u092f\u093e\u0932\u092f \u0915\u094b \u0926\u093e\u0928 \u0926\u0947\u0902",
+    "Jupiter": "\u0917\u0941\u0930\u0941 \u0915\u093e \u0938\u092e\u094d\u092e\u093e\u0928 \u0915\u0930\u0947\u0902, \u0914\u0930 \u0936\u093f\u0915\u094d\u0937\u093e \u0915\u0947 \u0915\u093e\u0930\u094d\u092f \u092e\u0947\u0902 \u0926\u093e\u0928 \u0926\u0947\u0902",
+    "Venus":   "\u0915\u0935\u093f\u0924\u093e \u092a\u0922\u093c\u0947\u0902, \u092f\u093e \u0915\u093f\u0938\u0940 \u0915\u0932\u093e\u0915\u093e\u0930 \u0915\u0940 \u0938\u0939\u093e\u092f\u0924\u093e \u0915\u0930\u0947\u0902",
+    "Saturn":  "\u0938\u094d\u0935\u092f\u0902 \u0936\u093e\u0930\u0940\u0930\u093f\u0915 \u0936\u094d\u0930\u092e \u0915\u0930\u0947\u0902, \u092f\u093e \u0935\u0943\u0926\u094d\u0927\u091c\u0928\u094b\u0902 \u0915\u0940 \u0938\u0947\u0935\u093e \u0915\u0930\u0947\u0902",
+    "Rahu":    "\u0936\u094b\u0927-\u0915\u093e\u0930\u094d\u092f \u0915\u094b \u0926\u093e\u0928 \u0926\u0947\u0902, \u092f\u093e \u0924\u0940\u0930\u094d\u0925\u092f\u093e\u0924\u094d\u0930\u093e \u0915\u0930\u0947\u0902",
+    "Ketu":    "\u0927\u094d\u092f\u093e\u0928 \u0915\u0930\u0947\u0902, \u092f\u093e \u0938\u0902\u0928\u094d\u092f\u093e\u0938\u093f\u092f\u094b\u0902 \u0915\u0940 \u0938\u0939\u093e\u092f\u0924\u093e \u0915\u0930\u0947\u0902",
+}
+
+
+def remedy_for_rashi(rashi_index: int, transit: "TransitSnapshot",
+                     lang: str = "en") -> dict | None:
+    """{'planet', 'house', 'deed'} for today's heaviest adverse transit, or None.
+
+    None when nothing transits unfavourably -- a day with no affliction needs no
+    remedy, and inventing one would be the fabrication this product avoids.
+    Never raises.
+    """
+    try:
+        adverse = [e for e in gochara_for_rashi(rashi_index, transit)
+                   if e["verdict"] == "challenging" and e["planet"] in _GRAHA_GOOD_DEED]
+        if not adverse:
+            return None
+        # Raman's ordering: the slow movers dominate. Among equals, the lowest
+        # house number, so the choice is deterministic rather than arbitrary.
+        adverse.sort(key=lambda e: (e["planet"] not in _GOCHARA_WEIGHTY, e["house"]))
+        pick = adverse[0]
+        return {"planet": pick["planet"], "house": pick["house"],
+                "house_ord": _HOUSE_ORDINAL.get(pick["house"], str(pick["house"])),
+                "deed": (_GRAHA_GOOD_DEED_HI if lang == "hi"
+                         else _GRAHA_GOOD_DEED)[pick["planet"]]}
+    except Exception:  # noqa: BLE001 - see docstring
+        return None
+
+
 @dataclass(frozen=True)
 class GocharImpact:
     """One slow-mover's current transit + houses + favourability classification."""

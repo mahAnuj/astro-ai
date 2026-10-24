@@ -27,7 +27,8 @@ from astro_ai import daily_cache, festivals, hindi_pages
 from astro_ai.i18n import translate as t
 from astro_ai import hot_cache, muhurat
 from astro_ai.chart import (compute_chart, compute_panchang,
-                            compute_transit_snapshot, gochara_for_rashi)
+                            compute_transit_snapshot, gochara_for_rashi,
+                            area_ratings_for_rashi, remedy_for_rashi)
 from astro_ai.llm import parse_sectioned_reading
 from astro_ai.rashifal_derive import derive_single_reading
 from astro_ai import providers as llm_providers
@@ -167,6 +168,28 @@ _RASHIFAL_UI_META: dict[str, dict[str, str]] = {
     "aquarius":    {"glyph": "♒︎", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Fixed",    "lord": "Saturn",   "sa": "Kumbha"},
     "pisces":      {"glyph": "♓︎", "glyph_color": "text-teal-700",    "element": "water", "quality": "Dual",     "lord": "Jupiter",  "sa": "Meena"},
 }
+
+
+def _day_detail_today(rashi_index: int, lang: str = "en"):
+    """{'areas', 'remedy'} for one rashi today, or None. Cached, shared (#523).
+
+    Same computation the reading was written from, so the panel and the prose
+    agree by construction rather than by review.
+    """
+    def compute() -> dict:
+        natal = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+        snapshot = compute_transit_snapshot(natal)
+        return {i: {"areas": area_ratings_for_rashi(i, snapshot),
+                    "remedy": remedy_for_rashi(i, snapshot, lang)} for i in range(12)}
+
+    try:
+        table = hot_cache.get_or_compute(
+            f"rashifal:day_detail:{lang}:{date.today().isoformat()}", 900.0, compute)
+        entry = (table or {}).get(rashi_index)
+        return entry if entry and entry.get("areas") else None
+    except Exception:  # noqa: BLE001 - a panel must never 500 a page
+        log.warning("day detail unavailable for rashi %s", rashi_index, exc_info=True)
+        return None
 
 
 def _gochara_today(rashi_index: int):
@@ -498,6 +521,7 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         # already a DailyPanchang); only this one needs computing.
         "chandra_bala": _chandra_bala_today(canonical_slug),
         "gochara": _gochara_today(idx),
+        "day_detail": _day_detail_today(idx, lang),
     }
     template = "_rashifal_card_content.html" if is_htmx else "rashifal_single.html"
     # Only cache-harden the full-page render; the HTMX fragment is

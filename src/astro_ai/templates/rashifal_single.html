@@ -114,6 +114,32 @@
        Reported as a count and a list, never summed into a score: Raman
        classifies each planet-house pair and gives no aggregation rule, so a
        single number would be an invented weighting wearing a citation. -#}
+    {#- #523: the day's shape by life area, counted from the same Gochara
+       verdicts the reading was written from. See the email template for why it
+       is a count and never a score, and why Relationships is out of 2. -#}
+    {%- if day_detail and day_detail.areas %}
+    <div class="mt-4 pt-4 border-t border-bhagya-line-2">
+      <div class="flex flex-wrap gap-x-5 gap-y-2">
+        {%- for a in day_detail.areas %}
+        {%- set tone = 'text-emerald-800' if a.favourable == a.total else ('text-bhagya-sindoor' if a.favourable == 0 else 'text-bhagya-ink') %}
+        <div class="text-sm">
+          <span class="uppercase text-xs tracking-wider text-bhagya-muted">{% if lang == 'hi' %}{{ {'Work':'कार्य','Money':'धन','Relationships':'संबंध','Health':'स्वास्थ्य'}[a.area] }}{% else %}{{ a.area }}{% endif %}</span>
+          <span class="{{ tone }} font-medium ml-1.5 tabular-nums">{{ a.favourable }}/{{ a.total }}</span>
+        </div>
+        {%- endfor %}
+      </div>
+      {%- if day_detail.remedy %}
+      <p class="mt-3 text-sm text-bhagya-ink">
+        <span class="uppercase text-xs tracking-wider text-bhagya-muted">{% if lang == 'hi' %}आज का उपाय{% else %}Today's remedy{% endif %}</span>
+        <span class="ml-1.5">{{ day_detail.remedy.deed }}</span>
+        <span class="text-bhagya-muted text-xs">({% if lang == 'hi' %}{{ day_detail.remedy.planet }} {{ day_detail.remedy.house_ord }} भाव{% else %}for {{ day_detail.remedy.planet }} in the {{ day_detail.remedy.house_ord }}{% endif %})</span>
+      </p>
+      {%- endif %}
+      <p class="mt-2 text-xs text-bhagya-muted leading-relaxed">
+        {% if lang == 'hi' %}प्रत्येक अंक बताता है कि उस क्षेत्र के कारक ग्रहों में से कितने आज आपकी राशि से शुभ गोचर में हैं (रमन)। अंक जोड़े नहीं गए।{% else %}Each figure counts how many of that area's karaka grahas transit favourably from your rashi today (Raman, <em>Astrology for Beginners</em>). Not summed into a score.{% endif %}
+      </p>
+    </div>
+    {%- endif %}
     {%- if gochara %}
     {%- set g_tone = 'text-emerald-800' if gochara.favourable >= 6 else ('text-bhagya-sindoor' if gochara.favourable <= 1 else 'text-bhagya-ink') %}
     <div class="mt-4 pt-4 border-t border-bhagya-line-2">
