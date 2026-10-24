@@ -93,7 +93,7 @@ Then 120-160 words of substantive content as 4 short flowing paragraphs (no sub-
 
 3. Relationships, family, communication (2-3 sentences) — how conversations are likely to land. Practical advice ("speak less than you listen today", not "communication is highlighted").
 
-4. One specific guidance + a lucky suggestion (2-3 sentences) — a single concrete action to take (or avoid) today. Then a closing line with a lucky element: colour, direction, or a small ritual (light a lamp at sunset, wear blue, face north while you reflect). Sunrise and sunset are safe to reference — every reader has their own and knows when theirs is. A clock time is not.
+4. One specific guidance (1-2 sentences) — a single concrete action to take (or avoid) today. Nothing else: no lucky colour, no direction, no object to carry, no ritual to perform. The page and the email render the day's colour as a FIELD beside the Panchang, computed from the weekday lord, so a colour invented here contradicts the one the reader can see (on 2026-10-24 the prose said "a small red stone" against a computed "Blue or Black"). Sunrise and sunset are safe to reference — every reader has their own and knows when theirs is. A clock time is not.
 
 ═══════════════════════════════════════════════════════════════════════
 STRICT OUTPUT RULES

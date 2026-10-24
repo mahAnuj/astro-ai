@@ -1013,6 +1013,29 @@ def _tara_bala(user_moon_nakshatra: str, transit_nakshatra: str) -> tuple[int, s
     return position, name, verdict
 
 
+def chandra_bala_by_rashi(transit_moon_rashi: str) -> dict[str, tuple[int, str]]:
+    """{rashi slug: (house 1..12, verdict)} for all twelve, for the daily Rashifal.
+
+    The Rashifal is keyed on the reader's janma rashi, which IS the natal Moon
+    rashi `_chandra_bala` counts from -- so all twelve verdicts fall out of
+    today's transit Moon alone, with nothing asked of the reader and no chart
+    computed. Slugs are the lowercase English name ("aries"), matching what the
+    email template already derives from a section title.
+
+    This exists because the readings had no per-rashi field that changed from
+    one day to the next: measured over 252 readings, the prose was 95% new words
+    inside 100% identical scaffolding, so the email read as unchanged (#513).
+    Chandra Bala varies on BOTH axes the prose failed on -- day to day, and
+    across the twelve on one day -- and unlike a star rating it is computed from
+    BPHS's house list rather than invented (#514).
+
+    Returns "" as the verdict for a rashi it cannot place, same as
+    `_chandra_bala`; the caller renders nothing rather than guessing.
+    """
+    return {r.split(" (")[0].lower(): _chandra_bala(r, transit_moon_rashi)
+            for r in RASHIS}
+
+
 def _chandra_bala(user_moon_rashi: str, transit_moon_rashi: str) -> tuple[int, str]:
     """Return (house 1..12, verdict) for the user's Chandra Bala on this day."""
     try:

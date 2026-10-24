@@ -41,7 +41,7 @@
 
     Sections (in render order):
       1. Branded night header band (logo + tagline)
-      2. Date + Panchang strip (sunrise / Rahu Kaal / Abhijit) — ONLY if
+      2. Date + Panchang strip (sunrise / Rahu Kaal / Abhijit / day colour) — ONLY if
          we have Panchang for the subscriber's city
       3. Festival callout — ONLY if today is a named festival or tithi-based observance
       4. All 12 rashi predictions
@@ -55,7 +55,9 @@
       today_iso        — '2026-06-27'
       today_pretty     — 'Saturday, 27 June 2026'
       panchang         — DailyPanchang | None  (None → skip Panchang strip)
-      rashifal_sections — list of (glyph, title, body) tuples
+      rashifal_sections — list of (glyph, title, teaser, body) tuples
+      chandra_bala     — {rashi slug: (house, verdict)} from
+                         muhurat.chandra_bala_by_rashi(); {} → skip the line
       shlok            — dict from shloks.shlok_for_date()
       festivals        — list of dicts from festivals.festivals_for_date(); [] if none
       trivia           — dict from trivia.trivia_for_date()
@@ -183,6 +185,23 @@
                         <span style="color:#15803d;font-size:11px;">({% if lang == 'hi' %}शुभ{% else %}auspicious{% endif %})</span>
                       </td>
                     </tr>
+                    {#- Day colour: the weekday-lord's colour, computed in
+                       _WEEKDAY_LORDS and already shown on /today and /panchang.
+                       It is here because the READING used to invent its own --
+                       on 2026-10-24 the prose said "a small red stone" while
+                       this value was "Blue or Black", so the product shipped two
+                       different lucky colours on one day (#514). A field, not a
+                       sentence: that is what stops it reading the same every
+                       day, and the prompt no longer asks for one. -#}
+                    {%- if panchang.day_color %}
+                    <tr>
+                      <td style="font-size:12px;color:#44403c;padding:2px 0;line-height:1.5;">
+                        <strong style="color:#7c2d12;">{% if lang == 'hi' %}आज का रंग{% else %}Today's colour{% endif %}</strong>
+                        {{ panchang.day_color }}
+                        <span style="color:#78716c;font-size:11px;">({% if lang == 'hi' %}{{ panchang.day_lord }} का दिन{% else %}{{ panchang.day_lord }}'s day{% endif %})</span>
+                      </td>
+                    </tr>
+                    {%- endif %}
                     {%- else %}
                     <tr>
                       <td style="font-size:12px;color:#44403c;padding:2px 0;line-height:1.5;">
@@ -255,6 +274,23 @@
                       <td style="font-size:15px;font-weight:600;color:#1c1917;vertical-align:middle;">{{ title }}</td>
                     </tr>
                   </table>
+
+                  {#- Chandra Bala: today's Moon counted from THIS rashi (BPHS
+                     houses 1,3,6,7,10,11 strong / 4,8,12 weak), computed in
+                     muhurat.chandra_bala_by_rashi. The one field that varies on
+                     both axes the prose failed on -- day to day, and across the
+                     twelve on one day (#513, #514). Rendered only when the
+                     verdict is non-empty: an unplaceable rashi shows nothing
+                     rather than a guess. -#}
+                  {%- set cb = (chandra_bala or {}).get(rashi_slug) %}
+                  {%- if cb and cb[1] %}
+                  {%- set cb_color = '#15803d' if cb[1] == 'strong' else ('#b45309' if cb[1] == 'weak' else '#78716c') %}
+                  <div style="font-size:12px;color:#57534e;margin-top:6px;line-height:1.5;">
+                    <strong style="color:{{ cb_color }};">{% if lang == 'hi' %}चंद्र बल{% else %}Chandra Bala{% endif %}</strong>
+                    <span style="color:{{ cb_color }};">{% if lang == 'hi' %}{{ {'strong':'बलवान','neutral':'सामान्य','weak':'कमज़ोर'}[cb[1]] }}{% else %}{{ cb[1] }}{% endif %}</span>
+                    <span style="color:#a8a29e;font-size:11px;">{% if lang == 'hi' %}(चंद्रमा {{ cb[0] }}वें भाव में){% else %}(Moon in house {{ cb[0] }} from this rashi){% endif %}</span>
+                  </div>
+                  {%- endif %}
 
                   {% if is_digest %}
                   {#- DIGEST: teaser-only + prominent deep link -#}

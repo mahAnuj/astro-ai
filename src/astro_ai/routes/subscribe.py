@@ -39,6 +39,7 @@ from astro_ai import (
     trivia,
 )
 from astro_ai import providers as llm_providers
+from astro_ai import muhurat
 from astro_ai.chart import (
     ChartError,
     compute_chart,
@@ -337,6 +338,21 @@ def _email_context(*, lang: str, city: str | None, request_cache: dict | None = 
     }
 
 
+def _chandra_bala_for(transit) -> dict:
+    """{rashi slug: (house, verdict)} for today, or {} if the Moon is unreadable.
+
+    The per-rashi field the email renders under each card. Never raises: a
+    missing or malformed transit Moon returns {} and the template skips the
+    line, because a daily blast must not fail over a decoration (#514).
+    """
+    try:
+        moon = next((pl for pl in transit.planets if pl.name == "Moon"), None)
+        return muhurat.chandra_bala_by_rashi(moon.rashi) if moon else {}
+    except Exception:  # noqa: BLE001 - a decoration must not end the blast
+        log.warning("chandra bala unavailable for today's email", exc_info=True)
+        return {}
+
+
 def _filter_rashi_sections(sections: list, rashi: str) -> list:
     """If a subscriber chose a single rashi, return just that card. Otherwise
     return all 12. Matches by the English slug (first word of "Aries / Mesha")."""
@@ -388,6 +404,8 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
 
     ctx = _email_context(lang=lang, city=city)
     ctx["rashifal_sections"] = _filter_rashi_sections(sections, rashi)
+    ctx["chandra_bala"] = _chandra_bala_for(compute_transit_snapshot(
+        compute_chart("2000-01-01", "12:00", "Mumbai, India")))
     ctx["unsubscribe_url"] = (
         f"{ctx['site_url']}/unsubscribe?email={email}"
         f"&token={subscribers.unsubscribe_token(email)}"
@@ -614,6 +632,9 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     # the send so subscribers sharing a city only trigger one geocode.
     template = templates.env.get_template("email/daily_rashifal.html")
     panchang_cache: dict = {}
+    # Universal for the day -- the transit Moon is the same for every
+    # subscriber -- so it is computed once here, not per row.
+    chandra_bala = _chandra_bala_for(transit)
     sent = failed = 0
     failures: list[str] = []
     # Capture the list ONCE. Calling list_subscribers() again for the count
@@ -660,6 +681,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
 
             ctx = _email_context(lang=lang, city=sub.get("city", ""),
                                  request_cache=panchang_cache)
+            ctx["chandra_bala"] = chandra_bala
             ctx["rashifal_sections"] = _filter_rashi_sections(
                 sections_by_lang[lang], sub.get("rashi", "all")
             )
