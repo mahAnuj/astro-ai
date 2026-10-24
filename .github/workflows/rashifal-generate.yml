@@ -119,8 +119,19 @@ jobs:
         lang: ${{ fromJSON(needs.prepare.outputs.langs) }}
     env:
       RASHI: ${{ needs.prepare.outputs.rashi }}
+      # IN THE WORKSPACE, NOT /tmp. The first real run (40080708209) reported
+      # `permission_denials_count: 2`, `num_turns: 3`, `is_error: false` -- the
+      # agent was denied Read and Write on /tmp, did nothing, and exited
+      # SUCCESSFULLY. Claude Code's default permissions cover the working
+      # directory; a path outside it is refused without failing the step, which
+      # is the worst shape a failure can take. The validate step caught it
+      # ("no document produced"), which is the only reason this was visible.
+      RUNDIR: ${{ github.workspace }}/.rashifal-run
     steps:
       - uses: actions/checkout@v4
+
+      - name: Scratch directory inside the workspace
+        run: mkdir -p "$RUNDIR"
 
       - uses: astral-sh/setup-uv@v5
         with:
@@ -136,8 +147,8 @@ jobs:
         run: |
           set -euo pipefail
           uv run python scripts/rashifal_brief.py --lang ${{ matrix.lang }} \
-            --rashi "$RASHI" > /tmp/brief-${{ matrix.lang }}.md
-          echo "brief: $(wc -l < /tmp/brief-${{ matrix.lang }}.md) lines"
+            --rashi "$RASHI" > $RUNDIR/brief-${{ matrix.lang }}.md
+          echo "brief: $(wc -l < $RUNDIR/brief-${{ matrix.lang }}.md) lines"
           echo "key:   $(uv run python scripts/rashifal_brief.py --lang ${{ matrix.lang }} --key-only)"
           # One rashi is spliced into the published day; the merged result is
           # what gets validated, so it still has to be twelve clean sections.
@@ -147,7 +158,11 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: --max-turns 40
+          # Write is NOT in the action's default tool set, and a denial does
+          # not fail the step -- see RUNDIR above. Named explicitly so the
+          # refusal cannot recur silently. Bash is for the agent's own
+          # --dry-run check.
+          claude_args: --max-turns 40 --allowedTools "Read,Write,Edit,Bash,Glob,Grep"
           prompt: |
             You are writing today's Rashifal for shubhagya.com. This text is
             published to readers unedited, so write it as the finished article.
@@ -155,11 +170,11 @@ jobs:
             The brief may ask for all twelve readings or for ONE. Write exactly
             the readings it lists and no others.
 
-            Read /tmp/brief-${{ matrix.lang }}.md. It contains the system prompt
+            Read .rashifal-run/brief-${{ matrix.lang }}.md. It contains the system prompt
             and twelve user messages, generated from the running code. Treat the
             system prompt as binding in full, including every DO NOT.
 
-            Write all twelve readings into /tmp/rashifal-${{ matrix.lang }}.txt,
+            Write all twelve readings into .rashifal-run/rashifal-${{ matrix.lang }}.txt,
             in the order the brief gives them, each starting with its own `## `
             heading exactly as its message states, separated by a blank line.
             Write nothing else into that file -- no preamble, no commentary, no
@@ -187,15 +202,22 @@ jobs:
                the order of concerns, and the shape. Not every reading needs
                four paragraphs or a money mention.
 
-            Then run, and fix anything it reports:
+            Then check your own work, and fix anything it reports:
               uv run python scripts/publish_rashifal.py --lang ${{ matrix.lang }} \
-                --file /tmp/rashifal-${{ matrix.lang }}.txt $MERGE --dry-run
+                --file .rashifal-run/rashifal-${{ matrix.lang }}.txt --dry-run
 
-            Do not run it without --dry-run; a later step publishes. Do not edit
+            If the brief asked for ONE rashi, that check will report "11 or 12
+            sections, need exactly 12" and that is EXPECTED -- a later step
+            splices your reading into the published day and validates the
+            merged result. Everything it says about YOUR reading still applies:
+            a named planet, a clock time or a window is a real defect. Ignore
+            only the section count.
+
+            Never run it without --dry-run; a later step publishes. Do not edit
             that script, the prompt, or anything else in the repo -- your only
-            output is the .txt file. If you cannot produce twelve clean
-            readings, leave the file absent or incomplete and say so: Groq
-            generates the day at 01:00 UTC and a bad file would suppress it.
+            output is the .txt file. If you cannot produce clean readings,
+            leave the file absent and say so: Groq generates the day at 01:00
+            UTC, and a bad file would be a cache hit that suppresses it.
 
       # Validate again here, outside the agent's reach. The agent ran the same
       # gate itself, but an agent reporting that it passed its own check is not
@@ -204,10 +226,10 @@ jobs:
         id: check
         run: |
           set -euo pipefail
-          test -s /tmp/rashifal-${{ matrix.lang }}.txt \
+          test -s $RUNDIR/rashifal-${{ matrix.lang }}.txt \
             || { echo "::warning::no document produced — Groq will generate at 01:00 UTC"; exit 1; }
           uv run python scripts/publish_rashifal.py --lang ${{ matrix.lang }} \
-            --file /tmp/rashifal-${{ matrix.lang }}.txt $MERGE --dry-run
+            --file $RUNDIR/rashifal-${{ matrix.lang }}.txt $MERGE --dry-run
 
       - uses: google-github-actions/auth@v2
         if: ${{ success() && !inputs.dry_run }}
@@ -227,7 +249,7 @@ jobs:
         run: |
           set -euo pipefail
           uv run python scripts/publish_rashifal.py --lang ${{ matrix.lang }} \
-            --file /tmp/rashifal-${{ matrix.lang }}.txt $MERGE
+            --file $RUNDIR/rashifal-${{ matrix.lang }}.txt $MERGE
 
       # A dry run that throws away what Claude wrote tells you pass/fail and
       # nothing else -- and the whole reason to trigger this by hand is to READ
@@ -242,8 +264,8 @@ jobs:
         with:
           name: rashifal-${{ matrix.lang }}-${{ github.run_id }}
           path: |
-            /tmp/rashifal-${{ matrix.lang }}.txt
-            /tmp/brief-${{ matrix.lang }}.md
+            $RUNDIR/rashifal-${{ matrix.lang }}.txt
+            $RUNDIR/brief-${{ matrix.lang }}.md
           if-no-files-found: warn
           retention-days: 7
 
