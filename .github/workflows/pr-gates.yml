@@ -183,9 +183,35 @@ jobs:
         run: uv run pytest -q
 
       # A suite that cannot go red proves nothing. #141 and #146 are why.
+      # SCOPED ON A PR, EVERY ROW ON main. Measured on this repo's own run: 545s
+      # of a ~640s job, 90% of `gates`, against 25s for the behaviour suite it
+      # validates. 467 rows x ~0.66s of pytest start-up that no narrowing
+      # removes -- so the only remaining lever is running fewer rows.
+      #
+      # That IS a relaxation and is treated as one. A row is selected when its
+      # mutated file OR its named test's file is in the diff, so a PR deleting a
+      # guard still hits that row's GUARD GONE check. The assumption for
+      # everything else -- that an untouched file's guard still goes red -- was
+      # proven by the last full sweep on main, which is why main never scopes.
+      # The script forces every row anyway if the harness, tests/conftest.py,
+      # pyproject.toml or uv.lock changed, or if the diff cannot be computed at
+      # all: a scoping bug must cost time, never coverage. The CONTROL always
+      # runs.
+      #
+      # Measured against real diff shapes: one route file 10/467 rows, this
+      # whole PR minus the harness 40/467, a template- or docs-only change 0.
       - name: Prove the suite can fail
         if: steps.scope.outputs.code == 'true'
-        run: uv run python scripts/mutate_behaviour_suite.py
+        run: |
+          set -euo pipefail
+          BASE="${{ github.event.pull_request.base.sha }}"
+          if [ -n "$BASE" ]; then
+            echo "pull request -> scoping to the diff against $BASE"
+            uv run python scripts/mutate_behaviour_suite.py --changed-since "$BASE"
+          else
+            echo "not a pull request -> every row"
+            uv run python scripts/mutate_behaviour_suite.py
+          fi
 
       # Same rule, applied to the workflow gate. `verify_workflows.py` already
       # runs via the `scripts/verify_*.py` sweep below, but running is not the

@@ -3463,7 +3463,94 @@ if "--preflight-only" in sys.argv:
     # only way in is argv. Used by tests/test_mutation_preflight.py.
     raise SystemExit(0)
 
-_work = [_CONTROL] + list(MUTATIONS)
+# --- DIFF SCOPING: fewer rows on a PR, every row on main ---------------------
+#
+# The remaining cost is pytest start-up, ~0.66s that every row pays and no
+# narrowing removes. The only way past it is running fewer rows, and that is a
+# GATE RELAXATION, not an optimisation -- so it is opt-in, it is loud about
+# what it skipped, and `main` never uses it.
+#
+# WHAT IT ASSUMES, stated so it can be argued with: for a file a PR does not
+# touch, whether its guard can still go red was proven by the last full sweep
+# on main and nothing in the PR changed it. That holds only if the PR also did
+# not touch the TEST, so a row is selected when EITHER its mutated file or its
+# named test's file is in the diff. The second half is the one that matters --
+# a PR deleting a guard must still hit that row's GUARD GONE check.
+#
+# FOUR ESCAPE HATCHES, all of which run everything:
+#   * the diff cannot be computed (no base, not a repo, git failed)
+#   * this harness itself changed -- it decides what is proven
+#   * tests/conftest.py changed -- shared fixtures reach every row
+#   * pyproject.toml / uv.lock changed -- the interpreter under every row
+# Failure falls back to the FULL sweep. A scoping bug must cost time, never
+# coverage.
+#
+# The CONTROL is never scoped out. A run that skips it cannot tell whether it
+# is measuring anything at all.
+_ALWAYS_FULL = ("scripts/mutate_behaviour_suite.py", "tests/conftest.py",
+                "pyproject.toml", "uv.lock")
+
+
+def _changed_files(base: str) -> list[str] | None:
+    """Paths changed against `base`, or None if that cannot be answered."""
+    try:
+        r = subprocess.run(["git", "diff", "--name-only", base, "HEAD"],
+                           capture_output=True, text=True, cwd=ROOT, timeout=60)
+        if r.returncode != 0:
+            return None
+        return [l.strip() for l in r.stdout.splitlines() if l.strip()]
+    except Exception:  # noqa: BLE001 - see _ALWAYS_FULL
+        return None
+
+
+def _scope_rows(base: str) -> tuple[list, str]:
+    """(rows to run, one line saying why). Falls back to every row."""
+    changed = _changed_files(base)
+    if changed is None:
+        return list(MUTATIONS), f"could not diff against {base!r} — running every row"
+    if not changed:
+        return list(MUTATIONS), f"no changes against {base!r} — running every row"
+    hit = sorted(set(changed) & set(_ALWAYS_FULL))
+    if hit:
+        return list(MUTATIONS), f"{', '.join(hit)} changed — running every row"
+
+    changed_set = set(changed)
+    # Build the name -> test file map the same way the fast path does.
+    test_file: dict[str, str] = {}
+    seen: dict[str, int] = {}
+    for f in sorted((ROOT / "tests").rglob("test_*.py")):
+        rel_f = f.relative_to(ROOT).as_posix()
+        for name in re.findall(r"^def (test_\w+)\(", f.read_text(errors="replace"), re.M):
+            seen[name] = seen.get(name, 0) + 1
+            test_file.setdefault(name, rel_f)
+
+    picked = []
+    for row in MUTATIONS:
+        _label, rel, _old, _new, test = row
+        base_name = (test or "").split("[", 1)[0]
+        tf = test_file.get(base_name) if seen.get(base_name) == 1 else None
+        # An unresolvable test name selects the row rather than dropping it.
+        if rel in changed_set or tf is None or tf in changed_set:
+            picked.append(row)
+    return picked, (f"{len(changed)} file(s) changed against {base!r} — "
+                    f"{len(picked)} of {len(MUTATIONS)} rows touch them "
+                    f"(by mutated file or by named test's file)")
+
+
+_scope_base = ""
+for _i, _a in enumerate(sys.argv):
+    if _a == "--changed-since" and _i + 1 < len(sys.argv):
+        _scope_base = sys.argv[_i + 1]
+if _scope_base:
+    _rows, _why = _scope_rows(_scope_base)
+    print(f"scope: {_why}")
+    if len(_rows) < len(MUTATIONS):
+        print("       rows for untouched files were proven by the last full "
+              "sweep on main; this is a PR-only narrowing, never used there")
+else:
+    _rows = list(MUTATIONS)
+
+_work = [_CONTROL] + _rows
 _verdicts: dict[int, tuple[str, str]] = {}
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=_WORKERS) as _pool:
