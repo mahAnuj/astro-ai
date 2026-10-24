@@ -261,6 +261,56 @@ GATE7_SAMPLES = {
           "The table predates the nodes", "Rahu and Ketu were added later to the graha family",
           "this scheme only knew seven planets", "The original 7-planet friendship table",
           "\u092a\u0930\u093e\u0936\u0930 \u0915\u0940 \u092e\u0948\u0924\u094d\u0930\u0940 \u0924\u093e\u0932\u093f\u0915\u093e \u092e\u0947\u0902 \u0930\u093e\u0939\u0941 \u0928\u0939\u0940\u0902"),
+    # M-Q: #398 slice 7. In each family the first entry is the sentence as found on a page;
+    # the rest are the rewordings a copywriter reaches for (the #467 finding: a pattern
+    # bound to one spelling goes green on the first rewrite).
+    "M": ("Guru (Jupiter) \u2014 Mercury's natural enemy in the friendship grid",
+          "Jupiter is Mercury's enemy", "Jupiter, Mercury's classical foe", "Mercury's enemy: Jupiter",
+          "Mercury's sworn enemy is Jupiter", "Mercury and Jupiter are natural enemies",
+          "Jupiter and Mercury are mutual foes", "Budha and Guru are natural enemies",
+          "Mercury considers Jupiter an enemy", "Mercury regards Guru as hostile",
+          "Brihaspati is Budha's natural enemy", "Jupiter is the natural enemy of Mercury's own friendship set: Mercury's enemy",
+          "\u092c\u0941\u0927 \u0915\u093e \u0936\u0924\u094d\u0930\u0941 \u0917\u0941\u0930\u0941 \u0939\u0948 \u0936\u0924\u094d\u0930\u0941"),
+    # N. The first is the heading found; the second the shipped FAQ list; the rest move the verb.
+    "N": ("Vishnu worship for uncancelled Manglik",
+          "If mismatch: soften with Hanuman practices + Vishnu worship + Kumbh Vivah before marriage.",
+          "Classical tradition also recommends Vishnu worship for Mars", "Manglik remedy: Ekadashi vrat",
+          "Mars is pacified by Satya Narayan Katha on Purnima", "Recite the Vishnu Sahasranama to soften Manglik",
+          "For Manglik Dosh, Narayana puja every Ekadashi", "Kumbh Vivah and Vishnu worship",
+          "Vishnu puja is a Mars remedy", "Manglik: observe the Ekadashi fast", "Vishnu worship, then Kumbh Vivah",
+          "Mars Dosh \u2014 Vishnu mantra daily"),
+    # O. Headings, openers and rank words for Monday Shiva as the Kaal Sarp remedy.
+    "O": ("1. Shiva worship on Mondays",
+          "Any KSD remedy begins with Shiva worship.",
+          "weekly Monday Shiva visits are the most accessible starting point",
+          "Monday Shiva worship is the first Kaal Sarp remedy", "Shiva puja on Mondays is the primary remedy",
+          "Start with Shiva worship for Kaal Sarp", "Kaal Sarp remedies begin with Shiva puja",
+          "The classical Monday Shiva remedy", "Shiva worship every Monday is essential",
+          "(1) Monday Shiva worship + milk abhishek", "Shiva visits on Mondays are the foundation, the starting point",
+          "Shiva is the master of serpents, so Monday Shiva puja must come first",
+          "Real remedies are simple: Nag Panchami observance, Shiva worship on Mondays, silver serpent offering"),
+    # P. A tradition, regional custom or count called classical.
+    "P": ("Classical KSD remedy: obtain a small pair of silver serpents",
+          "Nag Panchami is the classical annual serpent-worship day and KSD's peak remedial day",
+          "The classical \"big remedy\" for full KSD is the Nagbali at Trimbakeshwar",
+          "Every classically-valid remedy below can be done for under 2,000",
+          "This guide walks the seven classically-cited remedies for Kaal Sarp Dosh",
+          "Kaal Sarp Dosh = pattern\n\u2022 7 classical remedies: (1) Durga",
+          "the classical Nag Panchami fast", "Trimbakeshwar is the classical answer",
+          "the silver serpent pair is a classical remedy", "Nagbali is a classical practice",
+          "KSD's peak remedial day is Nag Panchami", "the best Kaal Sarp remedy day",
+          "Nag Panchami, a classical observance", "Nag Panchami is classical"),
+    # Q. "Universal safe" claimed for a non-Venus remedy page.
+    "Q": ("The universal safe fallback\n\nIf you're anxious about Saturn",
+          "these universal Jupiter practices are safe for anyone", "these Mercury practices are safe for anyone",
+          "these Mars practices are safe for anyone", "the safest universal practices are:",
+          "Daily Hanuman Chalisa recitation \u2014 the most universally-recommended Mars-related practice",
+          "Mars practice \u2014 the most universally recommended", "4. Deity propitiation (safe universal practice)",
+          "Vishnu is Saturn's classical deity; safe for any chart, no consultation needed.",
+          "None of these require chart consultation, none can backfire. Saturn practices",
+          "Mars practices together are measurable and none can backfire",
+          "The universal safe fallback for Mercury", "universal safe practice for Jupiter: ...",
+          "Mars: the universal safe practice, as the pattern shows"),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -368,6 +418,41 @@ GATE7_LEGAL = (
     "The friendship table excludes Rahu and Ketu.", "The table covers only the seven visible planets.",
     "The classical grid (Naisargika Maitri):", "Rahu is friendly with Venus and Saturn.",
     "The Vimshottari scheme was built for nine planets.", "Ketu's friendships vary between schools.",
+    # M-Q must leave the true text alone.
+    "Jupiter counts Mercury among its natural enemies, while Mercury treats Jupiter as neutral; the two "
+    "together often produce brilliant minds.",
+    "Mercury is Jupiter's natural enemy.", "Mercury's enemy is the Moon; Jupiter is neutral to it.",
+    "Mercury: friends Sun, Venus; enemy Moon; neutral Mars, Jupiter, Saturn", "Jupiter and Mercury are friends in the chart of this native.",
+    "Narasimha is an angry form of Vishnu, so if Vishnu is your family's deity, this is the route that stays within it.",
+    "Mars: Hanuman, Rudra, Kartikeya (Subrahmanya), Narasimha \u2014 the man-lion form of Vishnu.",
+    "Vishnu devotions your family already keeps (Ekadashi fasts, Satya Narayan Katha) are worth continuing as "
+    "devotion in their own right. They are a devotional tradition, not one of the deities the classical table "
+    "gives Mars.",
+    "Ketu releases the difficulty; Ekadashi vrat is also kept for Ketu by tradition.",
+    "Many families also keep Monday Shiva worship for Kaal Sarp, because Shiva's iconography shows Nagas "
+    "wrapped around his neck. That is a popular devotional tradition rather than the deity either node is "
+    "given in the table (the table pairs Shiva with the Sun), so treat it as devotion you may add, not as a "
+    "required first step.",
+    "Monday temple visit \u2014 offer milk, water, bilva leaves to Shivalinga",
+    "Regular visits to the deity you chose in section 1 (weekly for a year); Monday Shiva visits if that is "
+    "your family's tradition",
+    "7 remedies; only (1) the deities of Rahu and Ketu and (4) the Beej mantras are classical, the rest is "
+    "tradition: (1) Rahu: Durga or Narasimha, Ketu: Ganesha (Monday Shiva worship + Om Namah Shivaya 108x is "
+    "a devotional tradition, not the deity of either node)",
+    "Only the deity pairing in section 1 and the Rahu and Ketu Beej mantras are classical. Monday Shiva "
+    "worship, Nag Panchami observance, the silver serpent offering and the Trimbakeshwar Nagbali are "
+    "traditional and regional practice.",
+    "Nag Panchami is the traditional annual serpent-worship day, widely kept for Kaal Sarp.",
+    "A traditional practice, not a classical remedy: obtain a small pair of silver serpents (Nag-Nagini)",
+    "KSY is not defined in the classical Sanskrit Jyotish texts. Remedies are Nag Panchami observance, Shiva puja on Mondays.",
+    "Rahu's classical remedies number six; Rahu's seven classical remedies are listed in the guide.",
+    "A simple place to start", "If you're anxious about Saturn, these are simple practices to start with:",
+    "Hanuman is the first-listed of Mars's classical deities.",
+    "Weekly Sri Sukta recitation before a Sri Yantra \u2014 the universal safe Venus / Lakshmi practice.",
+    "The universal safe fallback\n\nIf you don't know your Ascendant, these Venus practices are safe for anyone:",
+    "Four practices anyone can do: Sri Sukta before a Sri Yantra. Venus-domain themes and none can backfire.",
+    "Good deeds in Mars's domain (safe for anyone)",
+    "None of these needs an expensive puja package.",
 )
 
 # The one honest Hanuman-Saturn sentence a page may keep: it must say popular/folk
@@ -602,6 +687,19 @@ def main() -> int:
                               (None, "Rahu and Ketu aren't in classical natural-friendship grids"),
                               (None, "the table predates Rahu's formal inclusion"),
                               (None, "Modern practice uses ad-hoc rules for them")),
+        # Slice 7. The first row of each is the claim as it stood in (or would reach) the summary.
+        gate.MERCURY_JUPITER_ENEMY: (("budha-mercury-in-vedic-astrology", "Jupiter is Mercury's natural enemy"),
+                                     (None, "Mercury and Jupiter are natural enemies"),
+                                     (None, "Mercury regards Guru as hostile")),
+        gate.VISHNU_FOR_MANGLIK: (("manglik-remedies", "7 remedies: (1) Hanuman worship, (2) Vishnu worship (a mantra, or a hymn your own tradition keeps) + Ekadashi vrat, (3) Mars Beej mantra"),
+                                  (None, "If mismatch: soften with Hanuman practices + Vishnu worship + Kumbh Vivah"),
+                                  (None, "Manglik remedy: Satya Narayan Katha monthly")),
+        gate.KSD_SHIVA_FIRST: (("kaal-sarp-dosh-remedies", "7 classical remedies: (1) Monday Shiva worship + milk abhishek"),
+                               (None, "Any KSD remedy begins with Shiva worship"),
+                               (None, "weekly Monday Shiva visits are the most accessible starting point")),
+        gate.KSD_TRADITION_AS_CLASSICAL: (("kaal-sarp-dosh-remedies", "7 classical remedies: (1) Durga"),
+                                          (None, "Nag Panchami is the classical annual serpent-worship day"),
+                                          (None, "KSD's peak remedial day is Nag Panchami")),
     }
     first = real[0][0]
     for pattern, _why in gate.SUMMARY_FORBIDDEN:

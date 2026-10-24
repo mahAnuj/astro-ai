@@ -67,12 +67,15 @@ the 413 taught us about.
       Mercury's summaries said "safe universal practices ... Vishnu
       Sahasranama", and so did Manglik's "7 classical remedies"), and the
       Graha Maitri and Rahu/Ketu-grid shapes of Gate 7 families K and L.
+      Slice 7 added four more (M Mercury-Jupiter enmity, N Vishnu rite for
+      Manglik, O Monday Shiva as the Kaal Sarp remedy, P Kaal Sarp tradition
+      called classical); the constants are shared with Gate 7.
 
   Gate 7 - no retired claims on the reader-facing surfaces.  The same claims
       sat on the pages a reader opens directly: the /learn article bodies,
       the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
       languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
-      is shown. This gate scans those surfaces for the twelve families #398
+      is shown. This gate scans those surfaces for the seventeen families #398
       retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
       Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
       practice or as ANY planet's universal/classical/safe one (slice 5),
@@ -81,7 +84,11 @@ the 413 taught us about.
       three shapes by which a product-added remedy was called classical or
       ranked above ritual (slice 5, #468), the Graha Maitri ladder collapsed
       to friend / neutral-"partial" / enemy-0 (K, slice 6) and Rahu and Ketu
-      placed outside "Parashara's" friendship grid (L, slice 6)
+      placed outside "Parashara's" friendship grid (L, slice 6), and (slice 7)
+      Jupiter as "Mercury's natural enemy" (M), a Vishnu rite as a Manglik
+      remedy (N), Monday Shiva as the first/classical Kaal Sarp remedy (O),
+      Kaal Sarp tradition called classical (P) and "universal safe" on the
+      Saturn/Jupiter/Mercury/Mars pages (Q)
       (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
       families still open on #398 ("black sesame", weekday fasting):
       forbidding them here would only make main red. A bare "per BPHS" is
@@ -807,6 +814,121 @@ RAHU_KETU_GRID = (
     r"|\bad[\s\-]?hoc\s+(?:rules?|assignments?|conventions?|friendships?|relationships?)\b"
 )
 
+# --- #398 slice 7 ------------------------------------------------------------
+# Five more reader-facing defects, each checked against knowledge/*.md first.
+# Written wider than the literals found (the #467 finding: a pattern bound to
+# one spelling is a gate that goes green on the first rewording).
+
+# M. Jupiter as "Mercury's natural enemy". grahas.md 11.1: Mercury's enemy is the
+# Moon and Jupiter is NEUTRAL to it; Jupiter's enemies are Mercury and Venus. So
+# the relation is one-way: "Jupiter counts Mercury among its enemies" and "Mercury
+# is Jupiter's enemy" are true, "Jupiter is Mercury's enemy" and "Mercury and
+# Jupiter are natural enemies" are not. The window refuses to cross a ';' or the
+# word Moon/neutral, so a sentence that correctly names the Moon stays legal.
+_MJ_NOT_MOON = r"(?:(?!Moon|Chandra|neutral)[^.\n;])"
+_MJ = r"(?:Jupiter|Guru|Brihaspati|Brhaspati)"
+_MERC = r"(?:Mercury|Budha)"
+_ENEMY_N = r"(?:enem(?:y|ies)|foes?|inimical|hostile|adversar\w+)"
+MERCURY_JUPITER_ENEMY = (
+    rf"\b{_MJ}\b{_MJ_NOT_MOON}{{0,60}}?\b{_MERC}['’]?s?\s+(?:natural\s+|sworn\s+|classical\s+|own\s+)?{_ENEMY_N}"
+    rf"|\b{_MERC}['’]?s\s+(?:natural\s+|sworn\s+|classical\s+|own\s+)?{_ENEMY_N}{_MJ_NOT_MOON}{{0,40}}?\b{_MJ}\b"
+    rf"|\b{_MERC}\b{_MJ_NOT_MOON}{{0,30}}?\b(?:and|&|with|\+)\s+{_MJ}\b{_MJ_NOT_MOON}{{0,25}}?\b(?:are|being|as|remain)\s+(?:\w+\s+){{0,2}}?{_ENEMY_N}"
+    rf"|\b{_MJ}\b{_MJ_NOT_MOON}{{0,30}}?\b(?:and|&|with|\+)\s+{_MERC}\b{_MJ_NOT_MOON}{{0,25}}?\b(?:are|being|as|remain)\s+(?:\w+\s+){{0,2}}?{_ENEMY_N}"
+    rf"|\b{_MERC}\s+(?:considers?|treats?|sees?|regards?|counts?|views?)\s+{_MJ}\b{_MJ_NOT_MOON}{{0,30}}?{_ENEMY_N}"
+    # Hindi: "बुध का शत्रु गुरु"
+    r"|बुध[^.\n।]{0,30}(?:गुरु|बृहस्पति)[^.\n।]{0,30}शत्रु"
+)
+
+# N. Vishnu worship / Ekadashi vrat / Satya Narayan Katha as a MANGLIK (Mars)
+# remedy. remedies.md 7.1 maps Mars to Hanuman, Rudra, Kartikeya (Subrahmanya)
+# and Narasimha, and vedic_reference.md 1.5 lists matching, a Mars-deity text,
+# Tuesday toor daal and (only after review) coral -- no Vishnu rite. Narasimha IS
+# a form of Vishnu (remedies.md 7.2), so "Narasimha, the man-lion form of Vishnu"
+# stays legal: what is forbidden is a Vishnu RITE beside Manglik/Mars in one
+# sentence, or the shipped list "Hanuman practices + Vishnu worship + Kumbh Vivah".
+_VISHNU_RITE = r"(?:Vishnu|Narayan\w*)\W+(?:\w+\W+){0,2}?(?:worship|puja|vrat|katha|mantra|stotra|sahasranama?)"
+_RITE_ALONE = r"(?:Ekadashi\s+(?:vrat|fast\w*)|Satya[\s\-]*Narayan\w*(?:\s+(?:katha|puja|vrat))?)"
+_MANGLIK_N = r"(?:Manglik|Mangal(?:ik)?\b|Kuja|Mars\b)"
+_NEG = r"(?:(?!\bnot\b|n['’]t\b|\bnor\b|\bnone\b|\bnever\b)[^.\n;])"
+VISHNU_FOR_MANGLIK = (
+    rf"\b{_MANGLIK_N}{_NEG}{{0,80}}?\b(?:{_VISHNU_RITE}|{_RITE_ALONE})"
+    rf"|\b(?:{_VISHNU_RITE}|{_RITE_ALONE}){_NEG}{{0,80}}?\b{_MANGLIK_N}"
+    r"|\bsoften\w*\b[^.\n;]{0,60}?\bVishnu\s+worship"
+    r"|\bVishnu\s+(?:worship|puja)\s*(?:\+|,|and|&|then|followed\s+by)\s*(?:then\s+)?Kumbh"
+    r"|\bKumbh\s+Vivah\s*(?:\+|,|and|&)\s*Vishnu\s+(?:worship|puja)"
+    r"|\bVishnu\s+worship\s+for\s+(?:an?\s+)?(?:uncancelled\s+|severe\s+)?Manglik"
+)
+
+# O. Monday Shiva worship as the first / classical / primary remedy for Kaal Sarp
+# (kaal-sarp-dosh-remedies; learn_registry). remedies.md 7.1: Rahu -> Durga,
+# Narasimha; Ketu -> Ganesha; Shiva is the SUN's deity (7.1, 7.2). vedic_reference.md
+# 3.2/8.1 call KSD post-classical and name Trimbakeshwar puja a folk practice, and
+# remedies.md 12 row 11 records weekday observance as unsourced as stated. So Monday
+# Shiva may be described as a devotional tradition; it may not be ranked or called
+# classical. The window is short (50) and a ';' ends it, because the summary line
+# "...classical, the rest is tradition: (1) Rahu: Durga...(Monday Shiva worship..." is
+# the correct text and sits ~70 characters from the word "classical".
+# _GAP never crosses a full stop, ';' or a newline: "...are classical. Monday Shiva
+# worship, Nag Panchami..." is two sentences and the correct text.
+_GAP = r"[^\w.;\n!?]+"
+_MON_SHIVA = (rf"(?:Mondays?{_GAP}(?:[\w+/]+{_GAP}){{0,4}}?Shiv\w*"
+              rf"|Shiv\w*{_GAP}(?:[\w+/]+{_GAP}){{0,4}}?(?:on\s+|every\s+|each\s+)?Mondays?\b)")
+_RANK = (r"(?:classical(?:ly)?|first|foremost|primary|essential|the\s+master|begins?\b"
+         r"|most\s+(?:accessible|effective|important|reliable|powerful|direct)"
+         r"|starting\s+point|real\s+remed\w+|must\b|peak)")
+KSD_SHIVA_FIRST = (
+    rf"{_MON_SHIVA}[^.;\n]{{0,50}}?\b{_RANK}"
+    rf"|\b{_RANK}[^.;\n]{{0,50}}?{_MON_SHIVA}"
+    r"|\b(?:begin|start)s?\s+with\s+(?:\w+\s+){0,2}?Shiv\w*"
+    r"|\bShiv\w*\s+(?:worship|puja)\s+(?:is|as)\s+(?:the\s+)?(?:first|primary|foremost|starting|most)\b"
+    r"|\b1[.)]?\s+(?:Shiv\w*\s+(?:worship|puja)\s+on\s+Mondays?|Monday\s+Shiv\w*)"
+    r"|\(1\)\s+Monday\s+Shiv\w*"
+)
+
+# P. A tradition or a regional custom called classical, in the Kaal Sarp remedies.
+# KSD is post-classical (vedic_reference.md 3.2) and Trimbakeshwar puja is "folk
+# practice, never scripture" (vedic_reference.md 8.1); Nag Panchami and the silver
+# serpent pair are not in remedies.md at all. Only the nodes' deities (7.1) and the
+# bija mantras (6.3) are classical there.
+_KSD_PRACTICE = (r"(?:Nag\s+Panchami|Trimbak\w*|Nagbali|silver\s+serpents?|Nag[\s\-]*Nagini"
+                 r"|serpent[\s\-]worship|(?:Kaal\s*Sarp|KSD|Kalsarp)(?:['’]s)?\s+(?:remed\w+|peak))")
+KSD_TRADITION_AS_CLASSICAL = (
+    # "not a classical ..." is the correct text ("A traditional practice, not a classical remedy").
+    rf"(?<!not\s)(?<!not\sa\s)(?<!not\sthe\s)\bclassical(?:ly)?{_GAP}(?:[\w'’\-]+{_GAP}){{0,3}}?{_KSD_PRACTICE}"
+    rf"|{_KSD_PRACTICE}(?:{_GAP}(?!not\b|n['’]t\b)[\w'’\-]+){{0,2}}?{_GAP}(?:(?:is|are|as|a|an|the)\s+)+classical(?:ly)?\b"
+    r"|\b(?:KSD|Kaal\s*Sarp|Kalsarp)(?:['’]s)?\s+(?:peak|best|ideal)\s+remed\w+"
+    r"|\b(?:7|seven)\s+classical(?:ly[\s\-]cited)?\s+remed\w+[^.\n]{0,30}?\b(?:Kaal\s*Sarp|KSD|Kalsarp)\b"
+    # A count of "classical" remedies, only where the same string is about Kaal Sarp:
+    # Rahu's and the Sun's summaries say "7 classical remedies" about other things.
+    r"|(?:Kaal\s*Sarp|KSD|Kalsarp)[\s\S]{0,700}?\b(?:7|seven)\s+classical(?:ly[\s\-]cited)?\s+remed\w+"
+    r"|\bclassically[\s\-]valid\b"
+    r"|\b(?:peak|best|ideal)\s+(?:KSD|Kaal\s*Sarp)[\s\-]+remed\w+"
+    r"|\bclassical\W{0,3}big\s+remedy"
+)
+
+# Q. "Universal safe" claimed for the non-Venus remedy pages. remedies.md 8 and 10.7
+# reserve "the universal safe fallback" for Sri Yantra + Sri Sukta (the Venus page's
+# own heading is legitimate), and 5/6 describe good deeds and mantras as the safe
+# options without extending that to a deity list. Scoped to the four pages' shapes:
+# the heading followed by a non-Venus planet, "these <planet> practices are safe for
+# anyone", "the safest universal practices", "none can backfire", the Mars ranking,
+# and the Saturn deity heading. "(safe for anyone)" on a GOOD-DEEDS heading is
+# remedies.md 10.2's own wording and is deliberately not forbidden.
+_NON_VENUS = r"(?:Saturn|Shani|Jupiter|Guru|Mercury|Budha|Mars|Mangal)"
+NON_VENUS_UNIVERSAL_SAFE = (
+    rf"universal\s+safe\s+(?:fallback|practice|remed\w+|foundation)(?=\W+(?:[\w'’]+\W+){{0,25}}?\b{_NON_VENUS}\b)"
+    rf"|\b(?:these|the|our)\s+(?:universal\s+)?{_NON_VENUS}\s+practices\s+are\s+(?:safe\s+for\s+(?:anyone|everyone|any\s+chart)|universal)"
+    r"|\b(?:the\s+)?safest\s+universal\s+(?:practices?|remed\w+)"
+    # "none can backfire" only where the same string also names a non-Venus planet: the
+    # Venus page's list IS Sri Sukta and Sri Yantra, which remedies.md 8 does certify.
+    rf"|\b{_NON_VENUS}\b[\s\S]{{0,500}}?\bnone\s+(?:of\s+(?:them|these)\s+)?(?:can|could|will)\s+(?:ever\s+)?backfire"
+    rf"|\bnone\s+(?:of\s+(?:them|these)\s+)?(?:can|could|will)\s+(?:ever\s+)?backfire[^\n]{{0,60}}?\b{_NON_VENUS}\b"
+    rf"|\b{_NON_VENUS}\b\W+(?:[\w'’]+\W+){{0,6}}?universal\s+safe\s+(?:fallback|practice|remed\w+)"
+    r"|\bmost\s+universally[\s\-]+recommended"
+    r"|\bDeity\s+propitiation\s*\(\s*safe\s+universal"
+    r"|\bsafe\s+for\s+any\s+chart,?\s+no\s+consultation"
+)
+
 # What Gate 6 forbids inside an llm_summary: FORBIDDEN, except that the bare
 # "milk offering" is replaced by MILK_TO_SHIVA (the claim #398 actually
 # retired is Moon -> Shiva; kaal-sarp-dosh-remedies has a Nag Panchami serpent
@@ -852,6 +974,18 @@ SUMMARY_FORBIDDEN = tuple(
     (RAHU_KETU_GRID,
      "grahas.md 11.1 gives Rahu/Ketu friendships; the standard table covers seven planets and the "
      "'Parashara / predates / ad-hoc' history is unsourced"),
+    # Slice 7.
+    (MERCURY_JUPITER_ENEMY,
+     "grahas.md 11.1: Mercury is NEUTRAL to Jupiter; only Jupiter counts Mercury an enemy"),
+    (VISHNU_FOR_MANGLIK,
+     "remedies.md 7.1: Mars -> Hanuman, Rudra, Kartikeya, Narasimha; no book we hold gives a Vishnu "
+     "rite, Ekadashi vrat or Satya Narayan Katha as a Manglik remedy"),
+    (KSD_SHIVA_FIRST,
+     "remedies.md 7.1: Rahu -> Durga, Narasimha; Ketu -> Ganesha; Shiva is the Sun's. Monday Shiva "
+     "is a devotional tradition, never the first or classical Kaal Sarp remedy"),
+    (KSD_TRADITION_AS_CLASSICAL,
+     "vedic_reference.md 3.2/8.1: Kaal Sarp is post-classical and Trimbakeshwar puja is folk practice; "
+     "Nag Panchami and the silver pair are in no remedies.md row"),
 )
 
 
@@ -887,7 +1021,7 @@ def gate_6_no_retired_claims_in_summaries(summaries=None) -> bool:
 SRC = REPO_ROOT / "src" / "astro_ai"
 
 # The reader-facing counterpart of FORBIDDEN/SUMMARY_FORBIDDEN, but only for
-# the twelve families slices 3-6 of #398 fixed. Patterns are wider than the
+# the families slices 3-7 of #398 fixed. Patterns are wider than the
 # literals that were found (QA measured 17 of 38 spelling variants slipping
 # past the first Gate 5 patterns): hyphen/space-agnostic, singular/plural,
 # Devanagari where i18n.py carries a Hindi copy.
@@ -1034,6 +1168,23 @@ READER_FORBIDDEN = (
      "L: grahas.md 11.1 gives Rahu/Ketu friendships; say the standard table covers the seven "
      "planets and the nodes' friendships come from tradition and vary - no Parashara "
      "attribution, no 'predates' history, no 'ad-hoc rules'"),
+
+    # M-Q: #398 slice 7. See the constants above for the sourcing of each.
+    (MERCURY_JUPITER_ENEMY,
+     "M: grahas.md 11.1: Mercury -> Jupiter is NEUTRAL, only Jupiter -> Mercury is enemy; "
+     "'Jupiter counts Mercury an enemy' is true, 'Mercury's natural enemy' is not"),
+    (VISHNU_FOR_MANGLIK,
+     "N: remedies.md 7.1 gives Mars Hanuman, Rudra, Kartikeya and Narasimha; a Vishnu rite "
+     "(Sahasranama, Ekadashi vrat, Satya Narayan Katha) is not a Manglik remedy in any book we hold"),
+    (KSD_SHIVA_FIRST,
+     "O: Rahu -> Durga, Narasimha and Ketu -> Ganesha (remedies.md 7.1); Monday Shiva worship is a "
+     "devotional tradition and may not be called first, classical or the starting point"),
+    (KSD_TRADITION_AS_CLASSICAL,
+     "P: Kaal Sarp is post-classical (vedic_reference.md 3.2); Nag Panchami, the silver pair and "
+     "Trimbakeshwar are tradition/geography, not classical remedies"),
+    (NON_VENUS_UNIVERSAL_SAFE,
+     "Q: remedies.md 8 reserves 'the universal safe fallback' for Sri Yantra + Sri Sukta (Venus); "
+     "the Saturn/Jupiter/Mercury/Mars pages may say 'a simple place to start', not universal or safe"),
 )
 
 # Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.
