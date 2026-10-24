@@ -25,6 +25,7 @@ from astro_ai import providers
 
 _log = logging.getLogger(__name__)
 from astro_ai.chart import (
+    gochara_for_rashi,
     Chart,
     DailyPanchang,  # used by daily reading + rashifal day-signal block
     DashaState,
@@ -971,6 +972,72 @@ def generate_rashifal_for_rashi(
                                                len(_RASHIFAL_SHAPES))],
         opening_move=_OPENING_MOVES[_rotation_index(today_iso, rashi_index,
                                                     len(_OPENING_MOVES))],
+        gochara_block=_gochara_block(rashi_index, transit),
+    )
+
+
+_HOUSE_ORD = {1: "1st", 2: "2nd", 3: "3rd", 4: "4th", 5: "5th", 6: "6th",
+              7: "7th", 8: "8th", 9: "9th", 10: "10th", 11: "11th", 12: "12th"}
+
+
+def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
+    """The day's ACTUAL verdict for one rashi, as prompt text. "" if unavailable.
+
+    Until this existed the reading had no idea whether the day was good or bad
+    for the reader it was written for. The day signals are universal -- weekday,
+    tithi, the Moon's nakshatra, retrogrades -- so twelve readings were written
+    from one set of facts, and whether each came out hopeful or cautious was the
+    model's mood rather than the sky. A reader was told their day looked
+    promising on a day nine of nine grahas transited against them.
+
+    This is Raman's Gochara table (knowledge/vedic_reference.md §2A, Astrology
+    for Beginners Ch. XII p.101) applied to today's positions, counted from the
+    janma rashi the reading is for. It differs per rashi and moves as the sky
+    moves, which is exactly what "how is my day" means classically.
+
+    The counts are reported, never summed into a score. Raman classifies each
+    planet-house pair and gives no aggregation rule; the only ordering he states
+    is that the slow movers dominate, so that is the only one asserted here.
+    """
+    try:
+        entries = gochara_for_rashi(rashi_index, transit)
+    except Exception:  # noqa: BLE001 - a missing verdict must not fail the call
+        return ""
+    if not entries:
+        return ""
+    fav = [e for e in entries if e["verdict"] == "favourable"]
+    cha = [e for e in entries if e["verdict"] == "challenging"]
+
+    def names(es):
+        return ", ".join(f"{e['planet']} ({_HOUSE_ORD[e['house']]})" for e in es) or "none"
+
+    if len(fav) >= 6:
+        tone = ("A GENUINELY GOOD DAY for this rashi. Say so plainly and warmly. "
+                "Do not hedge it into an ordinary day.")
+    elif len(fav) >= 4:
+        tone = ("A MIXED DAY, tilted favourable. Name what supports the reader "
+                "and what does not.")
+    elif len(fav) >= 2:
+        tone = ("A MIXED DAY, tilted difficult. Name the difficulty plainly, "
+                "then give a way through it.")
+    else:
+        tone = ("A GENUINELY HARD DAY for this rashi. Do NOT dress it up as "
+                "promising. Name it honestly, keep it calm, and make the whole "
+                "reading about how to spend such a day well. This is the day a "
+                "reader most needs to be told the truth.")
+    return (
+        f"TODAY'S GOCHARA FOR THIS RASHI — the classical transit verdict, counted "
+        f"from this janma rashi. THIS IS THE DAY'S ACTUAL WEATHER FOR THIS READER "
+        f"AND YOUR READING MUST AGREE WITH IT:\n"
+        f"- {len(fav)} of {len(entries)} grahas transit favourably.\n"
+        f"- Favourable: {names(fav)}\n"
+        f"- Challenging: {names(cha)}\n"
+        f"- Saturn, Jupiter and Rahu weigh most (classical); the Moon is the part "
+        f"that changes every day.\n"
+        f"- {tone}\n"
+        f"Do not name any planet in your prose — describe the qualities, as the "
+        f"system prompt requires. This block tells you WHAT IS TRUE, not what to "
+        f"say."
     )
 
 
@@ -984,6 +1051,7 @@ def _generate_rashifal_single(
     pace_deadline: float | None = None,
     shape: str = _RASHIFAL_SHAPES[0],
     opening_move: str = _OPENING_MOVES[0],
+    gochara_block: str = "",
 ) -> str:
     """Generate a single rashi's daily reading — one LLM call, ~200 tokens output.
 
@@ -1024,6 +1092,8 @@ def _generate_rashifal_single(
         f"- Element (Tattva): {anchor['element']}\n"
         f"- Quality (Guna): {anchor['quality']}\n"
         f"\n"
+        + (f"{gochara_block}\n\n" if gochara_block else "")
+        + (
         f"THE SHAPE FOR TODAY (overrides the generic structure in the system "
         f"prompt — follow THIS):\n"
         f"{shape}\n"
@@ -1039,7 +1109,7 @@ def _generate_rashifal_single(
         f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
         f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose. "
         f"Follow the opening-style hint above. Do not use any banned opening phrase."
-    )
+    ))
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
@@ -1222,6 +1292,7 @@ def generate_rashifal(
                                                  len(_RASHIFAL_SHAPES))],
                 _OPENING_MOVES[_rotation_index(today_iso, idx,
                                                len(_OPENING_MOVES))],
+                _gochara_block(idx, transit),
             ): idx
             for idx, anchor in enumerate(_RASHI_ANCHORS)
         }

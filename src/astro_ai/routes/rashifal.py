@@ -26,7 +26,8 @@ from fastapi.responses import HTMLResponse
 from astro_ai import daily_cache, festivals, hindi_pages
 from astro_ai.i18n import translate as t
 from astro_ai import hot_cache, muhurat
-from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot
+from astro_ai.chart import (compute_chart, compute_panchang,
+                            compute_transit_snapshot, gochara_for_rashi)
 from astro_ai.llm import parse_sectioned_reading
 from astro_ai.rashifal_derive import derive_single_reading
 from astro_ai import providers as llm_providers
@@ -166,6 +167,35 @@ _RASHIFAL_UI_META: dict[str, dict[str, str]] = {
     "aquarius":    {"glyph": "♒︎", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Fixed",    "lord": "Saturn",   "sa": "Kumbha"},
     "pisces":      {"glyph": "♓︎", "glyph_color": "text-teal-700",    "element": "water", "quality": "Dual",     "lord": "Jupiter",  "sa": "Meena"},
 }
+
+
+def _gochara_today(rashi_index: int):
+    """{'favourable': n, 'total': n, 'entries': [...]} for one rashi, or None.
+
+    The reader-facing half of the same verdict the reading is written from
+    (llm._gochara_block). Both read `chart.gochara_for_rashi`, so the panel and
+    the prose cannot disagree -- which is the whole point: a verdict the reader
+    can check is what makes "how is my day" an answer rather than a mood.
+
+    Cached and shared across the twelve like Chandra Bala; the transit is
+    universal, only the counting rashi differs.
+    """
+    def compute() -> dict:
+        natal = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+        snapshot = compute_transit_snapshot(natal)
+        return {i: gochara_for_rashi(i, snapshot) for i in range(12)}
+
+    try:
+        table = hot_cache.get_or_compute(
+            f"rashifal:gochara:{date.today().isoformat()}", 900.0, compute)
+        entries = (table or {}).get(rashi_index) or []
+        if not entries:
+            return None
+        fav = sum(1 for e in entries if e["verdict"] == "favourable")
+        return {"favourable": fav, "total": len(entries), "entries": entries}
+    except Exception:  # noqa: BLE001 - a panel must never 500 a page
+        log.warning("gochara unavailable for rashi %s", rashi_index, exc_info=True)
+        return None
 
 
 def _chandra_bala_today(slug: str):
@@ -467,6 +497,7 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         # day's colour comes off `panchang_strip` in the template (it is
         # already a DailyPanchang); only this one needs computing.
         "chandra_bala": _chandra_bala_today(canonical_slug),
+        "gochara": _gochara_today(idx),
     }
     template = "_rashifal_card_content.html" if is_htmx else "rashifal_single.html"
     # Only cache-harden the full-page render; the HTMX fragment is

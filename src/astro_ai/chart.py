@@ -2881,6 +2881,82 @@ _GOCHAR_FAVOURABILITY: dict[tuple[str, int], str] = {
 }
 
 
+# --- Gochara for a whole rashi, all nine grahas (#513) -----------------------
+#
+# `_GOCHAR_BENEFIC_HOUSES` above carries only the four slow movers, because
+# only those are computed for a natal chart. Its own comment records why the
+# rest was left: "His full table (all nine, houses from the Moon) is recorded
+# in knowledge/vedic_reference.md §2A so the rest is not lost." This is that
+# table, transcribed from §2A, for the daily Rashifal -- which can use it
+# because the Rashifal is keyed on janma rashi, and Gochara is measured from
+# the janma rashi by definition.
+#
+# Raman, verbatim via §2A: "The passage of planets through certain angular
+# positions from the radical Moon is technically termed Gochara." Source:
+# B.V. Raman, *Astrology for Beginners*, Ch. XII, benefic/malefic table p.101
+# (line 5203+ under `pdftotext -layout` in the copy in data/). §2A records two
+# OCR repairs it resolved by cross-reading the prose, and Rahu and Ketu share
+# ONE row there -- Raman gives them no separate lists.
+#
+# All twelve houses are classified for every graha, with no reachable
+# "neutral": the four-planet table above documents that trap, and the same
+# reasoning applies here -- Raman classifies all twelve, so a default of
+# neutral would be a claim he does not make.
+_GOCHARA_BENEFIC_FROM_MOON: dict[str, frozenset[int]] = {
+    "Sun":     frozenset({3, 6, 10, 11}),
+    "Moon":    frozenset({1, 3, 6, 7, 10, 11}),
+    "Mars":    frozenset({3, 6, 11}),
+    "Mercury": frozenset({2, 4, 6, 8, 10, 11}),
+    "Jupiter": frozenset({2, 5, 7, 9, 11}),
+    "Venus":   frozenset({1, 2, 3, 4, 5, 8, 9, 11, 12}),
+    "Saturn":  frozenset({3, 6, 11}),
+    "Rahu":    frozenset({3, 6, 11}),
+    "Ketu":    frozenset({3, 6, 11}),
+}
+
+# Raman's own weighting of which transits dominate, quoted in the four-planet
+# table above: "the transiting effects of the slow moving ones, viz., Jupiter,
+# Saturn and Rahu are universally held to be most powerful." That is the ONLY
+# ordering he gives, so it is the only one used -- the grahas are reported
+# individually and are NEVER summed into a single score. Raman classifies each
+# planet-house pair and supplies no aggregation rule; inventing weights to
+# produce one number would be an unsourced rule wearing a citation.
+_GOCHARA_WEIGHTY = ("Saturn", "Jupiter", "Rahu")
+
+
+def gochara_for_rashi(rashi_index: int, transit: "TransitSnapshot") -> list[dict]:
+    """Every graha's Gochara verdict for one rashi today, strongest first.
+
+    `rashi_index` is 0-based from Aries, i.e. the janma rashi the Rashifal is
+    written for. Each entry carries the graha, the house it occupies counted
+    FROM that rashi, and Raman's classification of that planet in that house.
+
+    Returns [] rather than raising: this feeds a reading and a panel, and
+    neither may fail over a decoration.
+    """
+    out: list[dict] = []
+    try:
+        for planet in transit.planets:
+            benefic = _GOCHARA_BENEFIC_FROM_MOON.get(planet.name)
+            if benefic is None:
+                continue
+            try:
+                p_idx = RASHIS.index(planet.rashi)
+            except ValueError:
+                continue
+            house = ((p_idx - rashi_index) % 12) + 1
+            out.append({
+                "planet": planet.name,
+                "house": house,
+                "verdict": "favourable" if house in benefic else "challenging",
+                "weighty": planet.name in _GOCHARA_WEIGHTY,
+            })
+    except Exception:  # noqa: BLE001 - see docstring
+        return []
+    out.sort(key=lambda e: (not e["weighty"], e["planet"]))
+    return out
+
+
 @dataclass(frozen=True)
 class GocharImpact:
     """One slow-mover's current transit + houses + favourability classification."""

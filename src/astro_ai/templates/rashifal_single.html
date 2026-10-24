@@ -108,6 +108,30 @@
       {%- endif %}
     </div>
     {%- endif %}
+    {#- The day's verdict, from the same computation the reading was written
+       from (llm._gochara_block -> chart.gochara_for_rashi). Raman's Gochara
+       table, knowledge/vedic_reference.md §2A, counted from THIS janma rashi.
+       Reported as a count and a list, never summed into a score: Raman
+       classifies each planet-house pair and gives no aggregation rule, so a
+       single number would be an invented weighting wearing a citation. -#}
+    {%- if gochara %}
+    {%- set g_tone = 'text-emerald-800' if gochara.favourable >= 6 else ('text-bhagya-sindoor' if gochara.favourable <= 1 else 'text-bhagya-ink') %}
+    <div class="mt-4 pt-4 border-t border-bhagya-line-2">
+      <div class="text-sm">
+        <span class="uppercase text-xs tracking-wider text-bhagya-muted">{% if lang == 'hi' %}आज का गोचर{% else %}Today's Gochara{% endif %}</span>
+        <span class="{{ g_tone }} font-medium ml-1.5">{{ gochara.favourable }}/{{ gochara.total }}</span>
+        <span class="text-bhagya-muted text-xs ml-1">{% if lang == 'hi' %}ग्रह अनुकूल{% else %}grahas transiting favourably{% endif %}</span>
+      </div>
+      <div class="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+        {%- for e in gochara.entries %}
+        <span class="{{ 'text-emerald-800' if e.verdict == 'favourable' else 'text-bhagya-muted' }}">{{ e.planet }} <span class="tabular-nums">{{ e.house }}</span>{{ '↑' if e.verdict == 'favourable' else '↓' }}</span>
+        {%- endfor %}
+      </div>
+      <p class="mt-2 text-xs text-bhagya-muted leading-relaxed">
+        {% if lang == 'hi' %}जन्म राशि से गिने गए गोचर फल (रमन, <em>Astrology for Beginners</em>, अध्याय XII)। अंक जोड़े नहीं गए — शास्त्र हर ग्रह का फल अलग बताता है, कोई संयुक्त अंक नहीं।{% else %}Transit results counted from the janma rashi (Raman, <em>Astrology for Beginners</em>, Ch. XII). Not summed into a score — the classical table rates each graha separately and gives no combined figure.{% endif %}
+      </p>
+    </div>
+    {%- endif %}
     <div class="pt-4 mt-4 border-t border-bhagya-line-2 flex flex-wrap items-center gap-3 justify-between text-sm no-print">
       {# lang_prefix: this carries a Hindi LABEL and pointed at the English hub,
          so "सभी 12 राशियाँ" landed a Hindi reader in English (#124). #}

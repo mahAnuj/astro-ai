@@ -2807,13 +2807,17 @@ MUTATIONS = [
 
     ("#475: the on-demand /rashifal/{rashi} card is given a job deadline (a user waits up to 150 s)",
      "src/astro_ai/llm.py",
-     # Anchored on the closing paren of the call rather than on its first
-     # argument line: #513 inserted shape= and opening_move= kwargs between
-     # the two, and an anchor spanning them matched 0x. The mutation still
-     # injects the deadline this row exists to catch.
-     "                                                    len(_OPENING_MOVES))],\n    )",
-     "                                                    len(_OPENING_MOVES))],\n"
-     "        pace_deadline=providers.pace_deadline(),\n    )",
+     # Anchored on the FIRST argument line alone, and the mutation inserts the
+     # kwarg straight after it. An anchor that spanned the call down to its
+     # closing paren broke twice in one day as #513 added shape=,
+     # opening_move= and gochara_block= between the two ends; keyword
+     # arguments may be given in any order, so injecting here is equivalent
+     # and cannot be displaced by the next kwarg. The pool call site uses
+     # `anchor,` rather than `_RASHI_ANCHORS[rashi_index],`, so this still
+     # matches exactly once.
+     "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n",
+     "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n"
+     "        pace_deadline=providers.pace_deadline(),\n",
      "test_the_on_demand_rashi_card_passes_no_budget"),
 
     ("#475: pace_wait_budget lets the allowance go negative after the deadline (clamp at 0 dropped)",
