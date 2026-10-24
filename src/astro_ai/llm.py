@@ -17,7 +17,7 @@ import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, replace
-from datetime import datetime
+from datetime import date as _date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -731,6 +731,95 @@ def generate_dasha_deep_dive(
 # instruction forces structural variety across the 12 outputs on the page.
 # The style hint targets the rashi's own character — Aries opens with a
 # body-image, Taurus with a sensory image, Gemini with a question, etc.
+# --- The day's SHAPE, rotated per (date, rashi) (#513) -----------------------
+#
+# `opening_style` below varies across the twelve and is CONSTANT across days.
+# The output format was the same: four paragraphs, in one fixed order, with
+# work-and-money second and a closing instruction fourth. Both were written to
+# stop the twelve converging with each other on one page, and both succeeded at
+# that -- while creating the other convergence nobody was measuring, the one a
+# daily reader actually experiences.
+#
+# What it produced, measured over 252 readings / 21 days of published blobs:
+#
+#   exactly 4 paragraphs .................. 90.9%
+#   a sentence starting "Take a ..." ...... 70%
+#   "At work ..." ......................... 45%
+#   "Hold off ..." ........................ 43%
+#   "A modest ..." ........................ 32%
+#   "Family conversations ..." ............ 23%
+#
+# And on the owner's own two consecutive emails, ALL FOUR paragraphs opened
+# with the same frame -- "You stride out" / "You step out", "At work, the
+# spark" / "At work, the pulse", "Family conversations flow" / "Family talks
+# flow", "Take a moment" / "Take a short walk" -- while sharing only 5.2% of
+# their 3-grams. 95% of the words new, 100% of the scaffolding identical. A
+# reader perceives the frame, not the vocabulary.
+#
+# So both axes now rotate on (date, rashi) instead of on rashi alone:
+#
+#   index = (date ordinal + rashi index) % len(pool)
+#
+# On any one day the twelve get twelve different entries, because the rashi
+# index differs -- the original anti-convergence property, preserved. Across
+# days one rashi walks the whole pool, because the ordinal advances. Pool sizes
+# are coprime-ish with 12 and with each other so the (shape, move) PAIR does
+# not repeat on a 12-day cycle: 7 shapes x 11 moves = 77 pairings before a
+# rashi sees the same combination again.
+#
+# Costs nothing: these replace text that was already in the prompt. The shapes
+# are shorter than the fixed four-paragraph spec they displace.
+
+_RASHIFAL_SHAPES: tuple[str, ...] = (
+    "Four short paragraphs: the day's feeling, then work and money, then "
+    "people, then one concrete thing to do.",
+    "Three paragraphs. Lead with PEOPLE -- a conversation, a household, "
+    "someone the reader has been avoiding -- then work, then close on a "
+    "single action. Do not mention money at all today.",
+    "Three paragraphs, no closing instruction. Open mid-situation, develop "
+    "it, and end on an observation rather than advice. Let the reader draw "
+    "the action themselves.",
+    "Four paragraphs, but lead with the ONE thing to do today and spend the "
+    "rest of the reading explaining why the day suits it.",
+    "Two longer paragraphs. First the shape of the day across work and "
+    "home together; second what that asks of the reader. No list-like "
+    "progression through life areas.",
+    "Three paragraphs organised by TIME rather than by life area -- how the "
+    "day starts, how it turns, how it ends -- with no clock time and no "
+    "named window anywhere in it.",
+    "Four paragraphs, and make the SECOND one about rest, health or the "
+    "body rather than about work. Work gets one sentence at most today.",
+)
+
+_OPENING_MOVES: tuple[str, ...] = (
+    "Open on something the reader is already doing as they read.",
+    "Open on a question they have been turning over.",
+    "Open on an object in the room with them.",
+    "Open on something that happened yesterday and is not finished.",
+    "Open on a sound, or on the absence of one.",
+    "Open on a person they have not replied to.",
+    "Open on a decision they have deliberately not made.",
+    "Open on the weather or the light, and make it mean something.",
+    "Open on a small physical gesture -- a hand, a breath, a step.",
+    "Open on a number, a date or a count that matters to them.",
+    "Open flatly, with a plain statement about the day, and no image at all.",
+)
+
+
+def _rotation_index(today_iso: str, rashi_index: int, pool: int) -> int:
+    """Pick from a pool so it varies by DAY and across the twelve on one day.
+
+    A bad date is not worth failing a generation over -- it falls back to the
+    rashi index, which still differs across the twelve and merely stops
+    rotating. Never raises.
+    """
+    try:
+        ordinal = _date.fromisoformat(today_iso).toordinal()
+    except Exception:  # noqa: BLE001 - see docstring
+        ordinal = 0
+    return (ordinal + rashi_index) % pool
+
+
 _RASHI_ANCHORS: tuple[dict[str, str], ...] = (
     {"en": "Aries",       "sa": "Mesha",       "lord": "Mars",    "element": "Fire",  "quality": "Movable",
      "opening_style": "Open with an active body image (a stance, a stride, a raised hand). Aries moves first — the sentence should move."},
@@ -878,6 +967,10 @@ def generate_rashifal_for_rashi(
     transit_block = format_transit_for_prompt(transit)
     return _generate_rashifal_single(
         _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,
+        shape=_RASHIFAL_SHAPES[_rotation_index(today_iso, rashi_index,
+                                               len(_RASHIFAL_SHAPES))],
+        opening_move=_OPENING_MOVES[_rotation_index(today_iso, rashi_index,
+                                                    len(_OPENING_MOVES))],
     )
 
 
@@ -889,6 +982,8 @@ def _generate_rashifal_single(
     lang: str,
     pacer: "_StartPacer | None" = None,
     pace_deadline: float | None = None,
+    shape: str = _RASHIFAL_SHAPES[0],
+    opening_move: str = _OPENING_MOVES[0],
 ) -> str:
     """Generate a single rashi's daily reading — one LLM call, ~200 tokens output.
 
@@ -929,8 +1024,16 @@ def _generate_rashifal_single(
         f"- Element (Tattva): {anchor['element']}\n"
         f"- Quality (Guna): {anchor['quality']}\n"
         f"\n"
-        f"OPENING STYLE HINT (CRITICAL — this is how you avoid opening with "
-        f"'Today, you may feel...' like every other rashi will):\n"
+        f"THE SHAPE FOR TODAY (overrides the generic structure in the system "
+        f"prompt — follow THIS):\n"
+        f"{shape}\n"
+        f"\n"
+        f"OPENING MOVE FOR TODAY (how to start; it changes every day so the "
+        f"reading does not open the same way it did yesterday):\n"
+        f"{opening_move}\n"
+        f"\n"
+        f"THE RASHI'S OWN CHARACTER (express the opening move in THIS "
+        f"character — it is what keeps the twelve from sounding alike):\n"
         f"{anchor.get('opening_style', 'Open with a concrete image, not a generic feeling.')}\n"
         f"\n"
         f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
@@ -1115,6 +1218,10 @@ def generate_rashifal(
                 _generate_rashifal_single,
                 anchor, day_signals_block, transit_block, prompt_path, lang,
                 pacer, pace_deadline,
+                _RASHIFAL_SHAPES[_rotation_index(today_iso, idx,
+                                                 len(_RASHIFAL_SHAPES))],
+                _OPENING_MOVES[_rotation_index(today_iso, idx,
+                                               len(_OPENING_MOVES))],
             ): idx
             for idx, anchor in enumerate(_RASHI_ANCHORS)
         }

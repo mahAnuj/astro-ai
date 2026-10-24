@@ -25,6 +25,7 @@ from fastapi.responses import HTMLResponse
 
 from astro_ai import daily_cache, festivals, hindi_pages
 from astro_ai.i18n import translate as t
+from astro_ai import hot_cache, muhurat
 from astro_ai.chart import compute_chart, compute_panchang, compute_transit_snapshot
 from astro_ai.llm import parse_sectioned_reading
 from astro_ai.rashifal_derive import derive_single_reading
@@ -165,6 +166,41 @@ _RASHIFAL_UI_META: dict[str, dict[str, str]] = {
     "aquarius":    {"glyph": "♒︎", "glyph_color": "text-sky-700",     "element": "air",   "quality": "Fixed",    "lord": "Saturn",   "sa": "Kumbha"},
     "pisces":      {"glyph": "♓︎", "glyph_color": "text-teal-700",    "element": "water", "quality": "Dual",     "lord": "Jupiter",  "sa": "Meena"},
 }
+
+
+def _chandra_bala_today(slug: str):
+    """(house, verdict) for one rashi today, or None. Never raises.
+
+    The per-rashi field that changes day to day -- the email got it in #514 and
+    the page is the other half. Computed from today's transit Moon counted from
+    this rashi (BPHS: 1,3,6,7,10,11 strong / 4,8,12 weak), which the Rashifal
+    can do for free because it is keyed on janma rashi, i.e. the natal Moon
+    rashi `_chandra_bala` counts from.
+
+    Cached for 15 minutes and shared across all twelve pages: the transit Moon
+    is universal, so this is one ephemeris call a quarter-hour for the whole
+    route rather than one per request. A failure returns None and the template
+    renders nothing -- a decoration must never 500 a page.
+    """
+    def compute() -> dict:
+        natal = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+        snapshot = compute_transit_snapshot(natal)
+        moon = next((pl for pl in snapshot.planets if pl.name == "Moon"), None)
+        return muhurat.chandra_bala_by_rashi(moon.rashi) if moon else {}
+
+    try:
+        # get_or_COMPUTE, not get_or_refresh: the latter returns `initial` on a
+        # cold cache and fills in behind, so the first reader after a deploy
+        # would see no field at all. This is a local Swiss Ephemeris call of a
+        # few milliseconds, not a network round-trip, so blocking once per
+        # quarter-hour is cheaper than rendering an empty panel.
+        table = hot_cache.get_or_compute(
+            f"rashifal:chandra_bala:{date.today().isoformat()}", 900.0, compute)
+        pair = (table or {}).get(slug)
+        return pair if pair and pair[1] else None
+    except Exception:  # noqa: BLE001 - see docstring
+        log.warning("chandra bala unavailable for /rashifal/%s", slug, exc_info=True)
+        return None
 
 
 @router.get("/rashifal/{rashi}", response_class=HTMLResponse)
@@ -427,6 +463,10 @@ async def rashifal_single(request: Request, rashi: str) -> HTMLResponse:
         # See the grid route — the seeker's own Rahu Kaal / Abhijit, since the
         # reading itself is forbidden from stating a clock time.
         **panchang_strip_ctx(request),
+        # #514: the two fields the prose is no longer allowed to invent. The
+        # day's colour comes off `panchang_strip` in the template (it is
+        # already a DailyPanchang); only this one needs computing.
+        "chandra_bala": _chandra_bala_today(canonical_slug),
     }
     template = "_rashifal_card_content.html" if is_htmx else "rashifal_single.html"
     # Only cache-harden the full-page render; the HTMX fragment is

@@ -63,7 +63,101 @@ _WINDOWS = re.compile(r"\bRahu\s+Kaal\b|\bAbhijit\b", re.I)
 _MARKDOWN = re.compile(r"\*\*|__|`")
 
 
-def validate(text: str) -> list[str]:
+# --- Grounding: the prose may not contradict the day, or invent authority ----
+#
+# Measured over 252 published readings / 21 days before this gate existed, so
+# these are rates the gate has to hold, not fears:
+#
+#   predicts a specific event ....... 0.0%
+#   absolute / guaranteed claim ..... 0.0%
+#   health directive ................ 0.0%
+#   money directive ................. 0.4%  (one "invest in", 2026-10-20 Libra)
+#   fear framing .................... 0.0%
+#   names a tithi that is not today . 0.0%
+#   names a nakshatra not today's ... 0.4%  (2026-10-16 Scorpio said Jyeshtha,
+#                                            the Moon was in Mula)
+#
+# So the output was already substantially grounded and this gate is a ratchet,
+# not a rescue. The two real defects are both the same shape -- the model
+# reaching for a sky fact it was not given -- which is exactly what a
+# deterministic check can catch and a prompt rule cannot.
+#
+# The tithi/nakshatra check is the load-bearing one: the day's REAL values come
+# from Swiss Ephemeris, so naming a different one is a verifiable falsehood
+# about the sky, published to every reader. Nothing else in the pipeline could
+# notice it.
+_TITHIS = ("Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami", "Shashthi",
+           "Saptami", "Ashtami", "Navami", "Dashami", "Ekadashi", "Dwadashi",
+           "Trayodashi", "Chaturdashi", "Purnima", "Amavasya")
+_NAKSHATRAS = ("Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra",
+               "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni",
+               "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha",
+               "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha",
+               "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada",
+               "Uttara Bhadrapada", "Revati")
+
+_GROUNDING = {
+    "predicts a specific event":
+        r"\byou will (?:receive|get|meet|find|win|be given|hear from)\b"
+        r"|\bis going to happen\b|\bexpect a (?:call|visit|offer|payment)\b",
+    "makes an absolute claim":
+        r"\bguaranteed\b|\bcertainly will\b|\bdefinitely will\b"
+        r"|\bwithout (?:a )?doubt\b|\bis sure to\b",
+    "gives a health directive":
+        r"\b(?:stop|start) taking\b|\bsee a doctor\b|\bmedication\b"
+        r"|\bdiagnos\w+\b|\bprescrib\w+\b",
+    "gives a money directive":
+        r"\binvest in\b|\bsell your\b|\bbuy (?:shares|stock)\b|\btake a loan\b",
+    "uses fear framing":
+        r"\bfatal\b|\bdisaster\b|\bcatastroph\w+\b|\bruinous\b|\bcursed?\b",
+}
+
+
+def _todays_sky(day: str) -> tuple[str, str]:
+    """(tithi name, Moon nakshatra) for an IST day, or ("", "") if unavailable.
+
+    Computed, never taken from the document being checked -- the whole point is
+    to have an independent answer to compare the prose against.
+    """
+    try:
+        import swisseph as swe
+        from astro_ai.chart import compute_chart, compute_panchang
+        d = date.fromisoformat(day)
+        natal = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+        tithi = compute_panchang(
+            natal, when=datetime(d.year, d.month, d.day, 9, 0,
+                                 tzinfo=ZoneInfo("Asia/Kolkata"))).tithi_name or ""
+        lon = swe.calc_ut(swe.julday(d.year, d.month, d.day, 3.5), swe.MOON,
+                          swe.FLG_SIDEREAL | swe.FLG_SWIEPH)[0][0]
+        return tithi, _NAKSHATRAS[int(lon // (360 / 27)) % 27]
+    except Exception:  # noqa: BLE001 - absence disables the check, never the publish
+        print("publish_rashifal: could not compute today's sky; the tithi and "
+              "nakshatra checks are SKIPPED for this run.", file=sys.stderr)
+        return "", ""
+
+
+def grounding_fails(title: str, body: str, tithi: str, nakshatra: str) -> list[str]:
+    """Every grounding problem in one reading."""
+    name = title.split("/")[0].strip() or title.strip()
+    out = []
+    for label, rx in _GROUNDING.items():
+        hit = re.search(rx, body, re.I)
+        if hit:
+            out.append(f"{name}: {label} — {hit.group(0)!r}")
+    # A sky fact the model was not given is a falsehood about the sky, not a
+    # style slip. Checked only when we have an independent value to compare to.
+    if tithi:
+        for t in _TITHIS:
+            if re.search(rf"\b{t}\b", body, re.I) and t.lower() not in tithi.lower():
+                out.append(f"{name}: names tithi {t!r}, but today is {tithi!r}")
+    if nakshatra:
+        for n in _NAKSHATRAS:
+            if re.search(rf"\b{re.escape(n)}\b", body, re.I) and n.lower() != nakshatra.lower():
+                out.append(f"{name}: names nakshatra {n!r}, but the Moon is in {nakshatra!r}")
+    return out
+
+
+def validate(text: str, day: str = "") -> list[str]:
     """Every problem found, as human-readable lines. Empty list = publishable."""
     fails: list[str] = []
     sections = parse_sectioned_reading(text or "")
@@ -78,8 +172,10 @@ def validate(text: str) -> list[str]:
         fails.append(f"{len(attributed)} rashi/rashis attributable to exactly one "
                      f"section, need 12 — a heading is missing, duplicated or misspelt")
 
+    tithi, nakshatra = _todays_sky(day) if day else ("", "")
     for title, body in sections:
         name = title.split("/")[0].strip() or title.strip()
+        fails += grounding_fails(title, body, tithi, nakshatra)
         words = len(body.split())
         if not _MIN_WORDS <= words <= _MAX_WORDS:
             fails.append(f"{name}: {words} words, outside {_MIN_WORDS}-{_MAX_WORDS}")
@@ -201,7 +297,7 @@ def main() -> int:
         print(f"merged {len(incoming)} section(s) into {before} already published: "
               f"{', '.join(_rashi_of(t) for t in incoming) or '(none)'}")
 
-    fails = validate(text)
+    fails = validate(text, args.date)
     print(f"lang={args.lang} date={args.date}")
     print(f"key={storage_key}")
     print(f"bytes={len(text.encode('utf-8'))} sections={len(parse_sectioned_reading(text))}")

@@ -16,6 +16,10 @@
   </div>
   <div class="text-[13px] text-bhagya-ink-soft leading-relaxed space-y-2 whitespace-pre-line flex-1 min-h-0 overflow-y-auto pr-1">
 {{ reading_body }}
+{%- if chandra_bala %}
+
+{% if lang == 'hi' %}चंद्र बल{% else %}Chandra Bala{% endif %}: {% if lang == 'hi' %}{{ {'strong':'बलवान','neutral':'सामान्य','weak':'कमज़ोर'}[chandra_bala[1]] }}{% else %}{{ chandra_bala[1] }}{% endif %}{% if panchang_strip and panchang_strip.day_color %} · {% if lang == 'hi' %}आज का रंग{% else %}Today's colour{% endif %}: {{ panchang_strip.day_color }}{% endif %}
+{%- endif %}
   </div>
   <div class="pt-2 border-t border-bhagya-line-2 flex items-center justify-between text-xs shrink-0">
     <a href="{{ permalink }}" target="_blank" rel="noopener" class="text-bhagya-sindoor hover:underline font-semibold">Open full page →</a>

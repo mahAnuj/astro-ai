@@ -2807,8 +2807,12 @@ MUTATIONS = [
 
     ("#475: the on-demand /rashifal/{rashi} card is given a job deadline (a user waits up to 150 s)",
      "src/astro_ai/llm.py",
-     "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n    )",
-     "        _RASHI_ANCHORS[rashi_index], day_signals_block, transit_block, prompt_path, lang,\n"
+     # Anchored on the closing paren of the call rather than on its first
+     # argument line: #513 inserted shape= and opening_move= kwargs between
+     # the two, and an anchor spanning them matched 0x. The mutation still
+     # injects the deadline this row exists to catch.
+     "                                                    len(_OPENING_MOVES))],\n    )",
+     "                                                    len(_OPENING_MOVES))],\n"
      "        pace_deadline=providers.pace_deadline(),\n    )",
      "test_the_on_demand_rashi_card_passes_no_budget"),
 
