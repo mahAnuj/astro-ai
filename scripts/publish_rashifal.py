@@ -41,6 +41,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from astro_ai import storage                                              # noqa: E402
+from astro_ai.rashifal_quality import NAKSHATRAS, check_reading
 from astro_ai.rashifal_derive import (combined_keys, parse_sectioned_reading,  # noqa: E402
                                       sections_by_rashi)
 
@@ -63,61 +64,36 @@ _WINDOWS = re.compile(r"\bRahu\s+Kaal\b|\bAbhijit\b", re.I)
 _MARKDOWN = re.compile(r"\*\*|__|`")
 
 
-# --- Grounding: the prose may not contradict the day, or invent authority ----
+# --- Grounding and style: ONE definition, in src/astro_ai/rashifal_quality.py -
 #
-# Measured over 252 published readings / 21 days before this gate existed, so
-# these are rates the gate has to hold, not fears:
+# The checks used to live here. They moved to `src/` so the SERVING path can
+# run them too: scripts/ is not copied into the image (the Dockerfile takes
+# pyproject.toml, uv.lock, README.md and src/), so anything only this file knew
+# was a rule the Groq fallback could never be measured against. Two copies of a
+# rule set is how one of them silently stops matching.
 #
-#   predicts a specific event ....... 0.0%
-#   absolute / guaranteed claim ..... 0.0%
+# Measured over 252 published readings / 21 days before any of this existed,
+# so these are rates the gate holds, not fears:
+#
+#   predicts a specific event ....... 0.0%      names a planet .......... 31.0%
+#   absolute / guaranteed claim ..... 0.0%      ("may feel", same prompt)  2.0%
 #   health directive ................ 0.0%
-#   money directive ................. 0.4%  (one "invest in", 2026-10-20 Libra)
+#   money directive ................. 0.4%  one "invest in", 2026-10-20 Libra
 #   fear framing .................... 0.0%
-#   names a tithi that is not today . 0.0%
-#   names a nakshatra not today's ... 0.4%  (2026-10-16 Scorpio said Jyeshtha,
-#                                            the Moon was in Mula)
+#   names a tithi not today's ....... 0.0%
+#   names a nakshatra not today's ... 0.4%  2026-10-16 Scorpio said Jyeshtha,
+#                                           the Moon was in Mula
 #
-# So the output was already substantially grounded and this gate is a ratchet,
-# not a rescue. The two real defects are both the same shape -- the model
-# reaching for a sky fact it was not given -- which is exactly what a
-# deterministic check can catch and a prompt rule cannot.
-#
-# The tithi/nakshatra check is the load-bearing one: the day's REAL values come
-# from Swiss Ephemeris, so naming a different one is a verifiable falsehood
-# about the sky, published to every reader. Nothing else in the pipeline could
-# notice it.
-_TITHIS = ("Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami", "Shashthi",
-           "Saptami", "Ashtami", "Navami", "Dashami", "Ekadashi", "Dwadashi",
-           "Trayodashi", "Chaturdashi", "Purnima", "Amavasya")
-_NAKSHATRAS = ("Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra",
-               "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni",
-               "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha",
-               "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha",
-               "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada",
-               "Uttara Bhadrapada", "Revati")
-
-_GROUNDING = {
-    "predicts a specific event":
-        r"\byou will (?:receive|get|meet|find|win|be given|hear from)\b"
-        r"|\bis going to happen\b|\bexpect a (?:call|visit|offer|payment)\b",
-    "makes an absolute claim":
-        r"\bguaranteed\b|\bcertainly will\b|\bdefinitely will\b"
-        r"|\bwithout (?:a )?doubt\b|\bis sure to\b",
-    "gives a health directive":
-        r"\b(?:stop|start) taking\b|\bsee a doctor\b|\bmedication\b"
-        r"|\bdiagnos\w+\b|\bprescrib\w+\b",
-    "gives a money directive":
-        r"\binvest in\b|\bsell your\b|\bbuy (?:shares|stock)\b|\btake a loan\b",
-    "uses fear framing":
-        r"\bfatal\b|\bdisaster\b|\bcatastroph\w+\b|\bruinous\b|\bcursed?\b",
-}
+# Here they BLOCK, because the nightly job publishes 24 readings or none and a
+# refusal costs nothing -- Groq generates the day at 01:00 UTC instead. On the
+# serving path they only measure; rashifal_quality's docstring says why.
 
 
 def _todays_sky(day: str) -> tuple[str, str]:
     """(tithi name, Moon nakshatra) for an IST day, or ("", "") if unavailable.
 
     Computed, never taken from the document being checked -- the whole point is
-    to have an independent answer to compare the prose against.
+    an independent answer to compare the prose against.
     """
     try:
         import swisseph as swe
@@ -129,7 +105,7 @@ def _todays_sky(day: str) -> tuple[str, str]:
                                  tzinfo=ZoneInfo("Asia/Kolkata"))).tithi_name or ""
         lon = swe.calc_ut(swe.julday(d.year, d.month, d.day, 3.5), swe.MOON,
                           swe.FLG_SIDEREAL | swe.FLG_SWIEPH)[0][0]
-        return tithi, _NAKSHATRAS[int(lon // (360 / 27)) % 27]
+        return tithi, NAKSHATRAS[int(lon // (360 / 27)) % 27]
     except Exception:  # noqa: BLE001 - absence disables the check, never the publish
         print("publish_rashifal: could not compute today's sky; the tithi and "
               "nakshatra checks are SKIPPED for this run.", file=sys.stderr)
@@ -137,24 +113,10 @@ def _todays_sky(day: str) -> tuple[str, str]:
 
 
 def grounding_fails(title: str, body: str, tithi: str, nakshatra: str) -> list[str]:
-    """Every grounding problem in one reading."""
+    """Every style and grounding problem in one reading, named by its rashi."""
     name = title.split("/")[0].strip() or title.strip()
-    out = []
-    for label, rx in _GROUNDING.items():
-        hit = re.search(rx, body, re.I)
-        if hit:
-            out.append(f"{name}: {label} — {hit.group(0)!r}")
-    # A sky fact the model was not given is a falsehood about the sky, not a
-    # style slip. Checked only when we have an independent value to compare to.
-    if tithi:
-        for t in _TITHIS:
-            if re.search(rf"\b{t}\b", body, re.I) and t.lower() not in tithi.lower():
-                out.append(f"{name}: names tithi {t!r}, but today is {tithi!r}")
-    if nakshatra:
-        for n in _NAKSHATRAS:
-            if re.search(rf"\b{re.escape(n)}\b", body, re.I) and n.lower() != nakshatra.lower():
-                out.append(f"{name}: names nakshatra {n!r}, but the Moon is in {nakshatra!r}")
-    return out
+    found = check_reading(body, tithi=tithi, nakshatra=nakshatra)
+    return [f"{name}: {m}" for m in found["grounding"] + found["style"]]
 
 
 def validate(text: str, day: str = "") -> list[str]:
@@ -179,11 +141,6 @@ def validate(text: str, day: str = "") -> list[str]:
         words = len(body.split())
         if not _MIN_WORDS <= words <= _MAX_WORDS:
             fails.append(f"{name}: {words} words, outside {_MIN_WORDS}-{_MAX_WORDS}")
-        for label, rx in (("names a planet", _PLANETS), ("states a clock time", _CLOCK),
-                          ("names a day window", _WINDOWS), ("contains markdown", _MARKDOWN)):
-            hit = rx.search(body)
-            if hit:
-                fails.append(f"{name}: {label} — {hit.group(0)!r}")
     return fails
 
 

@@ -24,6 +24,7 @@ from zoneinfo import ZoneInfo
 from astro_ai import providers
 
 _log = logging.getLogger(__name__)
+from astro_ai import rashifal_quality
 from astro_ai.chart import (
     gochara_for_rashi,
     Chart,
@@ -1114,7 +1115,39 @@ def _generate_rashifal_single(
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
     ], route="rashifal_single", max_wait_s=providers.pace_wait_budget(pace_deadline))
-    return _strip_inline_markdown(content.strip())
+    reading = _strip_inline_markdown(content.strip())
+    _log_rule_violations(reading, anchor["en"], lang)
+    return reading
+
+
+def _log_rule_violations(reading: str, rashi: str, lang: str) -> None:
+    """Measure the Groq fallback's output against the prompt's own rules.
+
+    The same checks `scripts/publish_rashifal.py` BLOCKS on, run here where
+    they only count. The asymmetry is deliberate and `rashifal_quality`'s
+    docstring carries the reasoning: the nightly job publishes 24 readings or
+    none, so a refusal there costs nothing, while refusing on this path would
+    trade a cosmetic rule break for an outage on the one route in this product
+    that has already been silently down for 21 days.
+
+    This closes the half of the gate that was missing. The rules were only ever
+    checked where Claude writes; the path that actually served readers for the
+    whole measurement window -- 31.0% of them naming a planet the prompt
+    forbids -- was checked nowhere at all. Now it is at least COUNTED, which is
+    the precondition for deciding whether blocking is worth its cost.
+
+    Never raises, never slows the call by more than a few regex scans over
+    ~160 words, and never changes what the reader is served.
+    """
+    try:
+        found = rashifal_quality.check_reading(reading)
+        if found["style"]:
+            _log.warning(
+                "rashifal output rules broken (%s, lang=%s): %s — SERVED anyway; "
+                "the nightly job blocks on these, this path measures them",
+                rashi, lang, "; ".join(found["style"]))
+    except Exception:  # noqa: BLE001 - a linter must never break a reading
+        _log.debug("rashifal rule check failed for %s", rashi, exc_info=True)
 
 
 _MD_BOLD = re.compile(r"(\*\*|__)(?=\S)(.+?)(?<=\S)\1", re.S)
