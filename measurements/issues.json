@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-24T09:18:19Z",
+  "generated_at": "2026-10-24T14:15:26Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
   "open": 122,
-  "with_ask": 58,
+  "with_ask": 57,
   "by_area": {
     "UNCLASSIFIED": 51,
     "INFRA": 12,
@@ -50,6 +50,23 @@
   "blocked": 8,
   "rows": [
     {
+      "number": 523,
+      "title": "Per-area day ratings from Gochara karakas — Work / Money / Relationships / Health, counted not scored",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-10-24T09:46:37Z",
+      "updated": "2026-10-24T09:46:37Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
       "number": 518,
       "title": "Learn articles are 56% of sessions and 71% have no route to a tool — the median first link sits at 92% page depth",
       "ask": "",
@@ -63,23 +80,6 @@
       ],
       "created": "2026-10-24T09:07:13Z",
       "updated": "2026-10-24T09:07:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 515,
-      "title": "Generate the daily rashifal nightly with Claude Code in Actions, write it to GCS, keep Groq as the fallback",
-      "ask": "23:30 UTC (05:00 IST)  rashifal-generate   Claude writes the blob    <- new",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "high",
-      "labels": [
-        "enhancement",
-        "category:technical",
-        "priority:high"
-      ],
-      "created": "2026-10-24T06:28:56Z",
-      "updated": "2026-10-24T06:28:56Z",
       "blocked": false,
       "needs_evidence": false
     },
