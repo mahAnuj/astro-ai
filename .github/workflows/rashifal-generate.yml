@@ -229,6 +229,24 @@ jobs:
           uv run python scripts/publish_rashifal.py --lang ${{ matrix.lang }} \
             --file /tmp/rashifal-${{ matrix.lang }}.txt $MERGE
 
+      # A dry run that throws away what Claude wrote tells you pass/fail and
+      # nothing else -- and the whole reason to trigger this by hand is to READ
+      # the prose before trusting it nightly. The brief goes up too, so a bad
+      # reading can be traced to the instruction that produced it rather than
+      # guessed at. Both are plain text, a few KB, and neither is a secret: the
+      # brief is the prompt this repo already ships in src/ and the reading is
+      # published to the world a few hours later.
+      - name: Upload the reading and its brief
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rashifal-${{ matrix.lang }}-${{ github.run_id }}
+          path: |
+            /tmp/rashifal-${{ matrix.lang }}.txt
+            /tmp/brief-${{ matrix.lang }}.md
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Report
         if: always()
         run: |
