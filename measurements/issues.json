@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-10-24T22:15:08Z",
+  "generated_at": "2026-10-24T22:56:26Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 122,
+  "open": 123,
   "with_ask": 57,
   "by_area": {
     "UNCLASSIFIED": 51,
@@ -19,6 +19,7 @@
     "DESIGN": 2,
     "CHORE": 2,
     "BUG": 2,
+    "PRIVACY": 1,
     "MEASURE": 1,
     "REPO": 1,
     "CHART": 1,
@@ -34,7 +35,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 38,
+    "bug": 39,
     "untyped": 34,
     "enhancement": 26,
     "correctness": 8,
@@ -43,12 +44,27 @@
     "ui": 3
   },
   "by_priority": {
-    "unset": 77,
+    "unset": 78,
     "high": 23,
     "medium": 22
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 528,
+      "title": "privacy: the visitor's /ask question travels in the URL and is recorded by GA4 as a landing page",
+      "ask": "",
+      "area": "PRIVACY",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-24T22:53:58Z",
+      "updated": "2026-10-24T22:54:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 523,
       "title": "Per-area day ratings from Gochara karakas — Work / Money / Relationships / Health, counted not scored",
