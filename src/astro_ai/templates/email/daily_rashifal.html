@@ -314,7 +314,7 @@
                   <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:8px;">
                     <tr>
                       {%- for a in dd.areas %}
-                      {%- set tone = '#15803d' if a.favourable * 2 >= a.total * 2 and a.favourable == a.total else ('#b45309' if a.favourable == 0 else '#57534e') %}
+                      {%- set tone = '#15803d' if a.favourable == a.total else ('#b45309' if a.favourable == 0 else '#57534e') %}
                       <td style="padding:0 12px 0 0;font-size:12px;color:#78716c;line-height:1.5;white-space:nowrap;">
                         {% if lang == 'hi' %}{{ {'Work':'कार्य','Money':'धन','Relationships':'संबंध','Health':'स्वास्थ्य'}[a.area] }}{% else %}{{ a.area }}{% endif %}
                         <strong style="color:{{ tone }};">{{ a.favourable }}/{{ a.total }}</strong>
@@ -322,12 +322,15 @@
                       {%- endfor %}
                     </tr>
                   </table>
+                  <div style="font-size:11px;color:#a8a29e;margin-top:4px;line-height:1.5;">
+                    {% if lang == 'hi' %}प्रत्येक अंक बताता है कि उस क्षेत्र के कारक ग्रहों में से कितने आज आपकी राशि से शुभ गोचर में हैं। अंक जोड़े नहीं गए।{% else %}Each figure counts how many of that area's karaka grahas transit favourably from your rashi today. Not summed into a score.{% endif %}
+                  </div>
                   {%- endif %}
                   {%- if dd and dd.remedy %}
                   <div style="font-size:12px;color:#57534e;margin-top:6px;line-height:1.5;">
                     <strong style="color:#b45309;">{% if lang == 'hi' %}आज का उपाय{% else %}Today's remedy{% endif %}</strong>
                     {{ dd.remedy.deed }}
-                    <span style="color:#a8a29e;font-size:11px;">({% if lang == 'hi' %}{{ dd.remedy.planet }} {{ dd.remedy.house_ord }} भाव में{% else %}for {{ dd.remedy.planet }} in the {{ dd.remedy.house_ord }}{% endif %})</span>
+                    <span style="color:#a8a29e;font-size:11px;">({% if lang == 'hi' %}{{ dd.remedy.planet_label }} {{ dd.remedy.house_ord }} भाव में{% else %}for {{ dd.remedy.planet }} in the {{ dd.remedy.house_ord }}{% endif %})</span>
                   </div>
                   {%- endif %}
                   {%- set gc = (gochara or {}).get(rashi_slug) %}
