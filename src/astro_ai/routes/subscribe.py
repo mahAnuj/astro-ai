@@ -338,6 +338,35 @@ def _email_context(*, lang: str, city: str | None, request_cache: dict | None = 
     }
 
 
+def _gochara_for(transit) -> dict:
+    """{rashi slug: {favourable, total, entries}} for today. {} if unavailable.
+
+    The email's half of the verdict the reading was written from -- the pages
+    got it first and that was backwards, since the email is the surface a
+    subscriber actually opens. Both read `chart.gochara_for_rashi`, so the panel
+    and the prose cannot disagree.
+
+    Never raises: a decoration must not end the 7 AM blast (#220, #223).
+    """
+    try:
+        from astro_ai.chart import gochara_for_rashi
+        from astro_ai.muhurat import RASHIS
+        out = {}
+        for i, full in enumerate(RASHIS):
+            entries = gochara_for_rashi(i, transit)
+            if not entries:
+                continue
+            out[full.split(" (")[0].lower()] = {
+                "favourable": sum(1 for e in entries if e["verdict"] == "favourable"),
+                "total": len(entries),
+                "entries": entries,
+            }
+        return out
+    except Exception:  # noqa: BLE001 - see docstring
+        log.warning("gochara unavailable for today's email", exc_info=True)
+        return {}
+
+
 def _chandra_bala_for(transit) -> dict:
     """{rashi slug: (house, verdict)} for today, or {} if the Moon is unreadable.
 
@@ -404,8 +433,10 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
 
     ctx = _email_context(lang=lang, city=city)
     ctx["rashifal_sections"] = _filter_rashi_sections(sections, rashi)
-    ctx["chandra_bala"] = _chandra_bala_for(compute_transit_snapshot(
-        compute_chart("2000-01-01", "12:00", "Mumbai, India")))
+    _welcome_transit = compute_transit_snapshot(
+        compute_chart("2000-01-01", "12:00", "Mumbai, India"))
+    ctx["chandra_bala"] = _chandra_bala_for(_welcome_transit)
+    ctx["gochara"] = _gochara_for(_welcome_transit)
     ctx["unsubscribe_url"] = (
         f"{ctx['site_url']}/unsubscribe?email={email}"
         f"&token={subscribers.unsubscribe_token(email)}"
@@ -635,6 +666,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     # Universal for the day -- the transit Moon is the same for every
     # subscriber -- so it is computed once here, not per row.
     chandra_bala = _chandra_bala_for(transit)
+    gochara = _gochara_for(transit)
     sent = failed = 0
     failures: list[str] = []
     # Capture the list ONCE. Calling list_subscribers() again for the count
@@ -682,6 +714,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
             ctx = _email_context(lang=lang, city=sub.get("city", ""),
                                  request_cache=panchang_cache)
             ctx["chandra_bala"] = chandra_bala
+            ctx["gochara"] = gochara
             ctx["rashifal_sections"] = _filter_rashi_sections(
                 sections_by_lang[lang], sub.get("rashi", "all")
             )

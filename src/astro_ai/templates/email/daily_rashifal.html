@@ -291,6 +291,21 @@
                     <span style="color:#a8a29e;font-size:11px;">{% if lang == 'hi' %}(चंद्रमा {{ cb[0] }}वें भाव में){% else %}(Moon in house {{ cb[0] }} from this rashi){% endif %}</span>
                   </div>
                   {%- endif %}
+                  {#- The day's verdict, same computation the reading was
+                     written from (llm._gochara_block -> chart.gochara_for_rashi).
+                     Raman's Gochara table, knowledge/vedic_reference.md §2A,
+                     counted from this janma rashi. A count and a list, never a
+                     summed score -- the classical table rates each graha
+                     separately and gives no combined figure. -#}
+                  {%- set gc = (gochara or {}).get(rashi_slug) %}
+                  {%- if gc %}
+                  {%- set g_color = '#15803d' if gc.favourable >= 6 else ('#b45309' if gc.favourable <= 1 else '#57534e') %}
+                  <div style="font-size:12px;color:#57534e;margin-top:4px;line-height:1.5;">
+                    <strong style="color:{{ g_color }};">{% if lang == 'hi' %}आज का गोचर{% else %}Today's Gochara{% endif %}</strong>
+                    <span style="color:{{ g_color }};">{{ gc.favourable }}/{{ gc.total }}</span>
+                    <span style="color:#a8a29e;font-size:11px;">{% if lang == 'hi' %}ग्रह अनुकूल{% else %}grahas transiting favourably{% endif %}</span>
+                  </div>
+                  {%- endif %}
 
                   {% if is_digest %}
                   {#- DIGEST: teaser-only + prominent deep link -#}
