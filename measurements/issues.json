@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-24T06:52:31Z",
+  "generated_at": "2026-10-24T09:18:19Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 121,
+  "open": 122,
   "with_ask": 58,
   "by_area": {
-    "UNCLASSIFIED": 50,
+    "UNCLASSIFIED": 51,
     "INFRA": 12,
     "REDESIGN": 10,
     "UI": 8,
@@ -36,7 +36,7 @@
   "by_type": {
     "bug": 38,
     "untyped": 34,
-    "enhancement": 25,
+    "enhancement": 26,
     "correctness": 8,
     "design": 7,
     "chore": 6,
@@ -44,11 +44,28 @@
   },
   "by_priority": {
     "unset": 77,
-    "high": 22,
+    "high": 23,
     "medium": 22
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 518,
+      "title": "Learn articles are 56% of sessions and 71% have no route to a tool — the median first link sits at 92% page depth",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-10-24T09:07:13Z",
+      "updated": "2026-10-24T09:07:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 515,
       "title": "Generate the daily rashifal nightly with Claude Code in Actions, write it to GCS, keep Groq as the fallback",
