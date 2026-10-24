@@ -2883,6 +2883,197 @@ MUTATIONS = [
      '                    pc["skips"] += 1\n',
      '                    pc["skips"] += 0\n',
      "test_a_skipped_provider_that_did_not_serve_still_shows_its_skip"),
+
+    # ---- #362 Part A1: the static prompt-contract gate. Two blocks. The first
+    # deletes or rewrites ONE sentence of a shipped prompt, inside the sandbox
+    # only, and the single contract test must go red: 13 of these left the whole
+    # suite at "1084 passed" before the gate existed (measured 2026-10-23), which
+    # is the claim this block exists to keep false. The second neuters the gate's
+    # own checks, each pointed at the one test that proves it.
+    ("#362: ask_matching_third_party loses 'Do NOT tell anyone to marry' (prompt)",
+     "src/astro_ai/prompts/ask_matching_third_party.txt",
+     "- Do NOT tell anyone to marry, not marry, call it off, or proceed. Give them the reading and leave the decision theirs.\n",
+     "",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    ("#362: ask_matching_third_party loses 'a cancelled dosha still scores ZERO' (prompt)",
+     "src/astro_ai/prompts/ask_matching_third_party.txt",
+     "A cancelled dosha still scores ZERO. A cancellation removes the DOSHA; it never restores the koota's points.\n",
+     "",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    ("#362: ask_matching_third_party stops speaking to the concern vs the couple (prompt)",
+     "src/astro_ai/prompts/ask_matching_third_party.txt",
+     "Answer in the second person about THEIR CONCERN, and in the third person about THE COUPLE.",
+     "Answer plainly.",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    ("#362: ask_matching_third_party gains the first-party framing (prompt, forbid)",
+     "src/astro_ai/prompts/ask_matching_third_party.txt",
+     "- Do NOT invent a partner for the seeker,",
+     "- Speak about \"you and your partner\". Do NOT invent a partner for the seeker,",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    ("#362: ask_matching loses 'NEVER recalculate a koota' (prompt)",
+     "src/astro_ai/prompts/ask_matching.txt",
+     "- NEVER recalculate a koota, re-add the total, or estimate a figure you were not given.\n",
+     "",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    ("#362: ask_numerology stops declaring its school (prompt, AC3)",
+     "src/astro_ai/prompts/ask_numerology.txt",
+     "The numerology block is modern Chaldean numerology. It is NOT classical Vedic astrology and it is NOT derived from the chart.",
+     "The numerology block is numerology.",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    ("#362: daily loses 'DO NOT explain WHY' (prompt)",
+     "src/astro_ai/prompts/daily.txt",
+     "- DO NOT explain WHY a theme is showing up.\n",
+     "",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    # Starts mid-line: the pre-flight rejects an anchor whose own line begins with `#`.
+    ("#362: monthly renames a section heading the route splits on (prompt)",
+     "src/astro_ai/prompts/monthly.txt",
+     "work decisions.\n\n## Money & Wealth\n",
+     "work decisions.\n\n## Money and Wealth\n",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    ("#362: yearly loses the plain-words rule on planets, signs and houses (prompt)",
+     "src/astro_ai/prompts/yearly.txt",
+     "- DO NOT name specific planets or signs or natal house numbers.\n",
+     "",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    ("#362: dasha_deep_dive loses the one-link rule (prompt)",
+     "src/astro_ai/prompts/dasha_deep_dive.txt",
+     "Only ONE such link per reading. Do not add links in other sections.",
+     "",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    ("#362: matching loses 'DO NOT cite specific koota scores' (prompt)",
+     "src/astro_ai/prompts/matching.txt",
+     "- DO NOT cite specific koota scores (\"Varna scored 1/1\", \"Nadi scored 0/8\"). The table shows these.\n",
+     "",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    ("#362: ask loses 'DO NOT predict death, terminal illness' (prompt)",
+     "src/astro_ai/prompts/ask.txt",
+     "- DO NOT predict death, terminal illness, specific accidents, or exact dates.\n",
+     "",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    ("#362: rashifal_single is told to state clock times (prompt)",
+     "src/astro_ai/prompts/rashifal_single.txt",
+     "- DO NOT state any clock time",
+     "- State any clock time",
+     "test_every_shipped_prompt_satisfies_its_contract"),
+
+    # The gate's own checks. Each is a defect that would let a prompt rewrite
+    # through while the gate printed PASS.
+    ("#362: the gate stops noticing a prompt with no row (ships uncontracted)",
+     "scripts/verify_prompt_contracts.py",
+     "    extra = sorted(on_disk - set(rows))", "    extra = []",
+     "test_a_prompt_with_no_row_fails_naming_the_file"),
+
+    ("#362: the gate stops noticing a row for a deleted prompt",
+     "scripts/verify_prompt_contracts.py",
+     "    stale = sorted(set(rows) - on_disk)", "    stale = []",
+     "test_a_row_for_a_deleted_prompt_fails"),
+
+    ("#362: the heading comparison is neutered (a renamed section passes)",
+     "scripts/verify_prompt_contracts.py",
+     "    if got != want:", "    if False:",
+     "test_a_renamed_or_reordered_heading_fails"),
+
+    ("#362: `all` is satisfied by ONE pattern matching (half a rule passes)",
+     "scripts/verify_prompt_contracts.py",
+     "    missing = [p for p in rule.get(\"all\", []) if not _rx(p).search(text)]\n",
+     "    missing = [p for p in rule.get(\"all\", []) if not _rx(p).search(text)]\n    missing = missing if len(missing) == len(rule.get(\"all\", [])) else []\n",
+     "test_every_pattern_of_an_all_rule_must_match"),
+
+    ("#362: `same_line` accepts the tokens spread across lines (a dropped list entry passes)",
+     "scripts/verify_prompt_contracts.py",
+     "        if not any(all(r.search(line) for r in regexes) for line in text.splitlines()):",
+     "        if not any(any(r.search(line) for r in regexes) for line in text.splitlines()):",
+     "test_same_line_needs_one_line_to_state_every_token"),
+
+    ("#362: the forbid check is neutered (a sibling's framing may leak in)",
+     "scripts/verify_prompt_contracts.py",
+     "    for pattern in rule.get(\"forbid\", []):", "    for pattern in []:",
+     "test_a_forbidden_phrase_fires"),
+
+    ("#362: the pin check is neutered (a rule deleted but echoed elsewhere passes)",
+     "scripts/verify_prompt_contracts.py",
+     "    if (rule.get(\"all\") or same) and not fails and not pin_lines(text, rule):",
+     "    if False:",
+     "test_a_rule_whose_words_survive_elsewhere_is_not_pinned"),
+
+    ("#362: a pattern on TWO lines counts as pinned",
+     "scripts/verify_prompt_contracts.py",
+     "        hit = sorted({_line_of(text, m.start()) for m in _rx(pattern).finditer(text)})\n        if len(hit) == 1:",
+     "        hit = sorted({_line_of(text, m.start()) for m in _rx(pattern).finditer(text)})\n        if len(hit) >= 1:",
+     "test_a_rule_whose_words_survive_elsewhere_is_not_pinned"),
+
+    ("#362: the covered_by delegate may stop naming natal.txt (natal silently uncovered)",
+     "scripts/verify_prompt_contracts.py",
+     "    if name not in delegate.read_text(encoding=\"utf-8\"):", "    if False:",
+     "test_a_delegate_that_no_longer_names_natal_fails"),
+
+    ("#362: covered_by may be combined with rules (the table pretends to double-cover)",
+     "scripts/verify_prompt_contracts.py",
+     "    if other:", "    if False:",
+     "test_covered_by_cannot_be_combined_with_rules"),
+
+    ("#362: a row that asserts nothing passes (a skip in disguise)",
+     "scripts/verify_prompt_contracts.py",
+     "    if not rules:", "    if False:",
+     "test_a_row_that_declares_nothing_fails"),
+
+    ("#362: a rule that declares no pattern passes",
+     "scripts/verify_prompt_contracts.py",
+     "    if not any(rule.get(key) for key in _PATTERN_KEYS):", "    if False:",
+     "test_a_row_that_declares_nothing_fails"),
+
+    ("#362: a rule with no `why` passes (what breaks if it goes is unrecorded)",
+     "scripts/verify_prompt_contracts.py",
+     "    if not rule.get(\"why\"):", "    if False:",
+     "test_a_rule_with_no_why_fails"),
+
+    ("#362: a bad regex escapes as a traceback instead of a named failure",
+     "scripts/verify_prompt_contracts.py",
+     "        except re.error as exc:", "        except KeyError as exc:",
+     "test_an_invalid_regex_is_a_named_failure_not_a_traceback"),
+
+    ("#362: a misspelt rule key is ignored (the check is silently dropped)",
+     "scripts/verify_prompt_contracts.py",
+     "    unknown = sorted(set(rule) - _RULE_KEYS)", "    unknown = []",
+     "test_a_misspelt_key_is_a_failure_not_a_silently_dropped_check"),
+
+    ("#362: a duplicate rule id is accepted",
+     "scripts/verify_prompt_contracts.py",
+     "        if rid in seen:", "        if False:",
+     "test_an_unknown_group_and_a_duplicate_id_fail"),
+
+    ("#362: a failure no longer names the file (AC2)",
+     "scripts/verify_prompt_contracts.py",
+     "    head = f\"{name} :: {rid} - \"", "    head = f\"{rid} - \"",
+     "test_deleting_any_declared_rule_fails_and_names_the_file_and_the_rule"),
+
+    ("#362: a failure no longer names the rule (AC2)",
+     "scripts/verify_prompt_contracts.py",
+     "    head = f\"{name} :: {rid} - \"", "    head = f\"{name} :: - \"",
+     "test_deleting_any_declared_rule_fails_and_names_the_file_and_the_rule"),
+
+    ("#362: could-not-run exits 0 (an unread table reads as green)",
+     "scripts/verify_prompt_contracts.py",
+     "the check did not run.\")\n        return 2", "the check did not run.\")\n        return 0",
+     "test_a_missing_table_is_exit_two_not_zero"),
+
+    ("#362: a failing gate exits 0",
+     "scripts/verify_prompt_contracts.py",
+     "            print(f\"  - {f}\")\n        return 1", "            print(f\"  - {f}\")\n        return 0",
+     "test_main_exits_one_on_a_failure_and_zero_on_the_shipped_tree"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

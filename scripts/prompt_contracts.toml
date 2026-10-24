@@ -1,0 +1,709 @@
+# PROMPT CONTRACTS -- what each prompts/*.txt must still STATE. (#362 Part A1)
+#
+# Read by scripts/verify_prompt_contracts.py. One table row per prompt file;
+# a prompt with no row is a FAILURE, not a skip. A row is DATA: adding a
+# twelfth prompt is adding a [prompts."x.txt"] block here and nothing else.
+#
+# WHAT THIS ASSERTS: that a prompt still SAYS its own rule. It never asserts
+# that the rule is astrologically correct -- nothing here adds a doctrine, and
+# every pattern is read back from text already in the file.
+#
+# HOW A RULE MATCHES (all case-insensitive; TOML literal '...' strings, so
+# backslashes are NOT doubled and a regex may not contain a single quote --
+# write \W or . for an apostrophe):
+#   all       every regex must match somewhere in the file
+#   same_line one single line must match every regex (list-shaped rules: the
+#             nine planet names, the avoid-list -- losing ONE entry is the loss
+#             a file-wide search cannot see)
+#   forbid    NO regex may match (a sibling prompt's framing leaking in)
+#   PIN: a rule with all/same_line must have one pattern that lands on exactly
+#   ONE line, so deleting that instruction cannot be masked by the same words
+#   surviving elsewhere (verify_natal_prompt's sade-sati anchors had this flaw).
+#
+# Do NOT anchor, and do not add an anchor for: the Uttam/Madhyam/Avara bands, the
+# "below 18" threshold, "Rahu Kaal for holding off", the seven tithi characters,
+# an absolute "Nadi has no cancelling conditions", or any /learn/ slug. Each is on
+# astro-auditor's "Do not gate on these" list (#362 comment, 2026-10-17) or
+# is a fact that belongs to another gate.
+#
+# Size is NOT here: scripts/verify_token_budget.py owns every ceiling. "Length"
+# below means the prompt still STATES a word-count range, not which numbers.
+
+# ---------------------------------------------------------------- shared groups
+
+[groups.overlay]
+why = "The three /ask overlays are appended to ask.txt (deps.py ASK_OVERLAY_PATHS)."
+
+[[groups.overlay.rules]]
+id = "overlay-adds-to-the-base-rules"
+why = "Without it the model may read the overlay as REPLACING ask.txt's voice, honesty and cross-link rules."
+all = ['\bOVERLAY\b', 'everything above still applies', 'nothing here relaxes']
+
+[groups.matching-overlay]
+why = "ask_matching.txt and ask_matching_third_party.txt carry one shared safety block; it must not drift between them (tests/test_nadi_position_coherence.py already caught that once)."
+
+[[groups.matching-overlay.rules]]
+id = "quote-the-computed-block-never-derive"
+why = "A number that differs from the page the seeker just left reads as a broken product."
+all = ['quote the total and the individual koota scores']
+
+[[groups.matching-overlay.rules]]
+id = "never-recalculate-a-koota"
+why = "The engine owns every figure; a recalculated koota or re-added total contradicts the page."
+all = ['never\s+recalculate\s+a\s+koota', 're-add the total']
+
+[[groups.matching-overlay.rules]]
+id = "no-score-for-a-koota-not-in-the-block"
+why = "An unsupplied koota given a score is an invented figure."
+all = ['koota is not in the block,? say nothing about its score']
+
+[[groups.matching-overlay.rules]]
+id = "cancelled-dosha-still-scores-zero"
+why = "The counter-intuitive rule the model most wants to correct. A cancellation removes the DOSHA; it never restores the koota points (matching.py: points table only)."
+all = ['cancelled\s+dosha\s+still\s+scores\s+zero', 'never\s+restores\s+the\s+koota.s\s+points']
+
+[[groups.matching-overlay.rules]]
+id = "do-not-correct-a-score-upward"
+why = "Names the trap itself: writing that a score should be higher because a dosha was cancelled."
+all = ['should\W{1,3}be higher because a dosha was cancelled']
+
+[[groups.matching-overlay.rules]]
+id = "reduced-nadi-dosha-still-scores-zero"
+why = "A slight (alpa) Nadi dosha is a gradation of the dosha, not of the points."
+all = ['reduced\s+Nadi\s+dosha\s+is\s+still\s+a\s+zero-scoring\s+Nadi']
+
+[[groups.matching-overlay.rules]]
+id = "no-invented-nadi-condition"
+why = "Asserts only that the PROHIBITION survives. The Nadi position itself (exemptions clause) is pinned by tests/test_nadi_position_coherence.py and is deliberately not restated here."
+all = ['never\s+invent\s+any\s+other\s+Nadi\s+condition']
+
+[[groups.matching-overlay.rules]]
+id = "unevaluated-parihara-is-said-not-assessed"
+why = "matching.py _PARIHARA_UNEVALUATED: reporting an unevaluated remedy as absent is a false negative."
+all = ['not evaluated\W{1,4}\s*say it was not assessed', 'do not report it as absent']
+
+[[groups.matching-overlay.rules]]
+id = "a-total-is-not-a-verdict"
+why = "Stops the model turning a summary of eight tests into a decision about two people."
+all = ['not a verdict on whether two people should be together', 'a high score is not a guarantee']
+
+[[groups.matching-overlay.rules]]
+id = "no-instruction-to-marry-or-not"
+why = "Product safety: the reading never decides for the family."
+all = ['do not tell anyone to marry', 'call it off', 'leave the decision theirs']
+
+[[groups.matching-overlay.rules]]
+id = "no-fatalism"
+why = "Product safety: nothing and no one is called cursed, doomed or beyond help."
+all = ['never describe\b.{0,40}\bcursed\b', '\bdoomed\b']
+
+[[groups.matching-overlay.rules]]
+id = "say-traditions-differ"
+why = "Matching conventions are regionally scoped; the model must say so rather than imply one universal rule."
+all = ['traditions differ']
+
+[groups.plain-words-core]
+why = "The Indian-reader plain-words avoid-list, shared by five prompts. natal.txt has the longer list in verify_natal_prompt.BANNED_WORDS."
+
+[[groups.plain-words-core.rules]]
+id = "plain-words-avoid-list-keeps-its-core"
+why = "Dropping one entry from the list is exactly the loss a file-wide search misses."
+same_line = ['SIMPLE WORDS', 'introspection', 'endeavour', 'manifest', 'navigate']
+
+# ------------------------------------------------------------------- the rows
+
+[prompts."natal.txt"]
+covered_by = "scripts/verify_natal_prompt.py"
+
+# --- /ask overlays -----------------------------------------------------------
+
+[prompts."ask_matching_third_party.txt"]
+include = ["overlay", "matching-overlay"]
+
+[[prompts."ask_matching_third_party.txt".rules]]
+id = "seeker-is-not-one-of-the-pair"
+why = "The unusual case: a parent matched two OTHER people. Reading the seeker as a party invents a partner."
+all = ['\bNOT one of the matched pair', 'invent a partner for the seeker']
+
+[[prompts."ask_matching_third_party.txt".rules]]
+id = "the-couple-is-named-by-the-block"
+why = "Without it the model has no way to know who the couple is."
+all = ['Ashtakoota block names whose match it is']
+
+[[prompts."ask_matching_third_party.txt".rules]]
+id = "score-belongs-to-the-couple"
+why = "Telling a parent that THEIR compatibility is 25/36 is the failure this overlay was split off to prevent (bf37351)."
+all = ['address the seeker as though the score were theirs']
+
+[[prompts."ask_matching_third_party.txt".rules]]
+id = "second-person-concern-third-person-couple"
+why = "Safety-shaped voice rule: the worry is the seeker's, the match is theirs."
+all = ['second person\b.{0,30}\bconcern', 'third person\b.{0,30}\bcouple']
+
+[[prompts."ask_matching_third_party.txt".rules]]
+id = "seekers-chart-is-context-only"
+why = "Only the seeker's own chart is supplied; reading it as one of the pair is wrong."
+all = ['chart is supplied for context only', 'never as a party to the match']
+
+[[prompts."ask_matching_third_party.txt".rules]]
+id = "first-party-framing-must-not-leak"
+why = "The two overlays are mutually exclusive on this point (astro-auditor A8). These are the FIRST-party overlay's required phrases."
+forbid = ['you and your partner', 'prospective partner']
+
+[prompts."ask_matching.txt"]
+include = ["overlay", "matching-overlay"]
+
+[[prompts."ask_matching.txt".rules]]
+id = "speaks-to-the-pair"
+why = "The seeker IS one of the pair here; two charts are supplied."
+all = ['you and your partner', 'two natal charts are supplied']
+
+[[prompts."ask_matching.txt".rules]]
+id = "no-groom-bride-assumption"
+why = "The blocks do not say who is the groom; the answer must not turn on it."
+all = ['do not assume who is the groom and who is the bride']
+
+[[prompts."ask_matching.txt".rules]]
+id = "third-party-framing-must-not-leak"
+why = "Mirror of first-party-framing-must-not-leak: telling a seeker who IS in the match that it is not theirs."
+forbid = ['\bNOT one of the matched pair', 'address the seeker as though the score', 'third person about the couple']
+
+[prompts."ask_numerology.txt"]
+include = ["overlay"]
+
+[[prompts."ask_numerology.txt".rules]]
+id = "school-declared-modern-chaldean"
+why = "#362 AC3. The standing lineage: the site's only letter table is Chaldean (ARCHITECTURE.md section 7). Remove it and the model supplies a school from training data."
+all = ['\bmodern Chaldean\b', 'NOT classical Vedic astrology']
+
+[[prompts."ask_numerology.txt".rules]]
+id = "two-systems-not-one"
+why = "Stops the model presenting a number as chart-derived, or one system as confirming the other."
+all = ['two systems, not one', 'never claim one causes or confirms']
+
+[[prompts."ask_numerology.txt".rules]]
+id = "chart-is-primary-numbers-cross-reference"
+why = "Sets the ordering of authority between the two systems."
+all = ['chart is the primary reading']
+
+[[prompts."ask_numerology.txt".rules]]
+id = "quote-the-numbers-never-derive"
+why = "A number the model derives independently contradicts the page (the reduction rules are specific)."
+all = ['never compute a number yourself', 'never re-reduce a number']
+
+[[prompts."ask_numerology.txt".rules]]
+id = "an-absent-number-is-intentional"
+why = "Name-derived numbers are deliberately omitted when a name cannot be scored; pointing it out or asking for another spelling breaks that."
+all = ['if a number is not in the block, do not mention it', 'do not ask for a different spelling']
+
+[[prompts."ask_numerology.txt".rules]]
+id = "no-source-names"
+why = "Voice rule: provenance belongs in the structured panels, not the conversation."
+all = ['do not name numerology books, authors, or systems by name']
+
+[[prompts."ask_numerology.txt".rules]]
+id = "numbers-are-tendency-not-fate"
+why = "Product safety: no number is called bad or unlucky."
+all = ['tendency and temperament, not fixed fate', 'never tell the seeker a number is bad']
+
+[[prompts."ask_numerology.txt".rules]]
+id = "no-rename-remedy"
+why = "Product safety: the reading never prescribes a new spelling or a renamed child or business."
+all = ['do not recommend changing the spelling of a name']
+
+# --- /ask --------------------------------------------------------------------
+
+[prompts."ask.txt"]
+
+[[prompts."ask.txt".rules]]
+id = "answer-first"
+why = "The most important rule in the file; without it every answer opens with throat-clearing."
+all = ['FIRST sentence MUST directly answer']
+
+[[prompts."ask.txt".rules]]
+id = "answer-in-the-language-asked"
+why = "Coupled to the language suffix appended at the END of this prompt (llm._LANG_SUFFIX): the sentence saying that suffix wins is what makes the two agree."
+all = ['SAME language and script', 'explicit language instruction appears at the END of this prompt']
+
+[[prompts."ask.txt".rules]]
+id = "no-planets-named"
+why = "Plain-words rule shared with the natal reading."
+same_line = ['DO NOT name specific planets', '\bJupiter\b', '\bSaturn\b', '\bRahu\b', '\bMars\b', '\bSun\b', '\bMoon\b']
+
+[[prompts."ask.txt".rules]]
+id = "no-signs-or-house-numbers"
+why = "Same rule, the other two thirds of it."
+all = ['DO NOT name specific signs', 'DO NOT reference natal house numbers']
+
+[[prompts."ask.txt".rules]]
+id = "no-jargon"
+why = "A Sanskrit or regional name smuggles the jargon back in."
+same_line = ['DO NOT use jargon', 'Lagna lord', 'conjunction', 'aspect', 'Navamsa', 'Karaka']
+
+[[prompts."ask.txt".rules]]
+id = "no-classical-text-names"
+why = "ARCHITECTURE.md voice rules: ask.txt bans book-and-chapter citations outright."
+same_line = ['DO NOT cite classical texts by name', 'Phaladeepika', 'BPHS', 'Mansagari']
+
+[[prompts."ask.txt".rules]]
+id = "no-death-illness-or-exact-dates"
+why = "Product safety."
+all = ['DO NOT predict death, terminal illness']
+
+[[prompts."ask.txt".rules]]
+id = "no-promised-outcomes"
+why = "Preserves the seeker's agency."
+all = ['DO NOT promise outcomes']
+
+[[prompts."ask.txt".rules]]
+id = "astrology-cannot-name-countries-or-partners"
+why = "States the limit so the model says it when asked where or whom."
+all = ['CANNOT pinpoint specific countries']
+
+[[prompts."ask.txt".rules]]
+id = "length-is-capped"
+why = "Prompt still states a word range and a hard ceiling (the seeker should read it in 30 seconds)."
+all = ['\d+-\d+ words total', 'never beyond']
+
+[[prompts."ask.txt".rules]]
+id = "no-headings-no-bullets"
+why = "The answer renders as plain paragraphs."
+all = ['NO headings, NO bullet lists']
+
+[[prompts."ask.txt".rules]]
+id = "no-platitudes-no-recap"
+why = "The CLOSING block: end on the last useful sentence."
+all = ['NO platitudes', 'NO meta-questions', 'NO recap of the question']
+
+[[prompts."ask.txt".rules]]
+id = "cross-link-only-from-the-listed-slugs"
+why = "A model told to link a guide will invent slugs unless told it may not."
+all = ['Use ONLY these exact article slugs', 'do not invent slugs', 'Only ONE link per answer']
+
+# --- reading prompts with a heading contract ----------------------------------
+
+[prompts."matching.txt"]
+include = ["plain-words-core"]
+headings = [
+  "Overall Compatibility",
+  "Emotional Connection",
+  "Communication & Daily Life",
+  "Marriage Foundation",
+  "Areas to Nurture",
+]
+
+[[prompts."matching.txt".rules]]
+id = "no-koota-scores-cited"
+why = "The table on the page shows them. Opposite of the /ask overlays, which must QUOTE them -- the two are not merged (astro-auditor M2 vs A1)."
+all = ['DO NOT cite specific koota scores', 'the table shows these']
+
+[[prompts."matching.txt".rules]]
+id = "no-planets-named"
+why = "Plain-words rule."
+same_line = ['DO NOT name specific planets', '\bJupiter\b', '\bSaturn\b', '\bMars\b', '\bMercury\b', '\bVenus\b', '\bSun\b', '\bMoon\b']
+
+[[prompts."matching.txt".rules]]
+id = "no-signs-or-house-numbers"
+why = "Plain-words rule."
+all = ['DO NOT name specific signs', 'DO NOT reference house numbers']
+
+[[prompts."matching.txt".rules]]
+id = "no-astrological-mechanics"
+why = "Give the conclusion, not the mechanism."
+all = ['DO NOT explain the WHY']
+
+[[prompts."matching.txt".rules]]
+id = "dosha-named-at-most-once"
+why = "Stops a reading that says Bhakoot Dosha in every paragraph."
+all = ['Bhakoot Dosha\W+may be named once', 'Nadi Dosha\W+may be named once']
+
+[[prompts."matching.txt".rules]]
+id = "mangal-dosh-verdict-is-supplied-not-chosen"
+why = "The Mangal Dosh note in the user message states the verdict and the severity convention; the reading follows it (matching.py mangal_dosh_verdict)."
+all = ['do not assert a different verdict']
+
+[[prompts."matching.txt".rules]]
+id = "no-fatalism"
+why = "Product safety."
+all = ['avoid fatalism', 'tendencies, not destinies']
+
+[[prompts."matching.txt".rules]]
+id = "no-subheadings-no-bullets"
+why = "The route splits the reading on the five headings."
+all = ['No `###` sub-headings', 'No bullets']
+
+[[prompts."matching.txt".rules]]
+id = "no-bare-heading-markers"
+why = "A bare ## is parsed as a heading (llm.py _BARE_HEADING_RE exists because the model emits them)."
+all = ['DO NOT output bare']
+
+[[prompts."matching.txt".rules]]
+id = "no-disclaimers"
+why = "Voice rule."
+all = ['No disclaimers about astrology']
+
+[[prompts."matching.txt".rules]]
+id = "length-is-capped"
+why = "Prompt still states a total word range."
+all = ['Total length across all five sections:\s*\d+\s*-\s*\d+\s*words']
+
+[[prompts."matching.txt".rules]]
+id = "cross-link-is-capped"
+why = "At most two /learn/ links per reading. Deliberately NOT anchored on a slug (one of them is stale, see the design note)."
+all = ['Cap:\s*at most 2 links total']
+
+[prompts."monthly.txt"]
+include = ["plain-words-core"]
+headings = [
+  "Career & Profession",
+  "Money & Wealth",
+  "Love & Relationships",
+  "Health",
+  "Emotional Wellbeing",
+]
+
+[[prompts."monthly.txt".rules]]
+id = "two-part-structure"
+why = "A prose intro, then the five headed sections."
+all = ['PART 1\W.{0,12}FLOWING PROSE INTRO', 'PART 2\W.{0,12}FIVE LIFE-AREA SECTIONS']
+
+[[prompts."monthly.txt".rules]]
+id = "intro-has-no-headings"
+why = "A heading inside the intro splits it into a card with no home."
+all = ['NO headings, three paragraphs', 'Do NOT add\b.{0,10}##']
+
+[[prompts."monthly.txt".rules]]
+id = "halves-are-led-in"
+why = "The first/second-half paragraphs are the month's shape."
+all = ['In the first 15 days', 'second half of the month']
+
+[[prompts."monthly.txt".rules]]
+id = "no-planets-signs-or-house-numbers"
+why = "Plain-words rule."
+all = ['DO NOT name specific planets or signs or natal house numbers']
+
+[[prompts."monthly.txt".rules]]
+id = "no-technical-vocabulary"
+why = "Jargon the seeker does not know."
+same_line = ['DO NOT use the words', 'transit', 'gochar', 'retrograde', 'natal Lagna', 'natal Moon']
+
+[[prompts."monthly.txt".rules]]
+id = "no-explaining-why"
+why = "Give the conclusion, not the mechanism."
+all = ['DO NOT explain WHY a theme']
+
+[[prompts."monthly.txt".rules]]
+id = "flags-may-be-named"
+why = "Sade Sati and Manglik are the two named concepts the reader asks for; without the allowance they are suppressed with the planets."
+all = ['Sade Sati\W+by name', 'Manglik / Mangal Dosh\W+by name']
+
+[[prompts."monthly.txt".rules]]
+id = "no-bare-heading-markers"
+why = "A bare ## is parsed as a heading."
+all = ['DO NOT output bare']
+
+[[prompts."monthly.txt".rules]]
+id = "no-disclaimers"
+why = "Voice rule."
+all = ['No astrology disclaimers']
+
+[[prompts."monthly.txt".rules]]
+id = "footer-link-sits-on-its-own-line"
+why = "_linkify_learn turns a bare slug into an anchor; woven into prose it reads as a stray URL."
+all = ['CROSS-LINK RULE', 'Do NOT weave the link into any paragraph']
+
+[[prompts."monthly.txt".rules]]
+id = "length-is-capped"
+why = "Prompt still states a total word range."
+all = ['Total length across BOTH parts:\s*\d+\s*-\s*\d+\s*words']
+
+[prompts."yearly.txt"]
+include = ["plain-words-core"]
+headings = [
+  "Career & Profession",
+  "Money & Wealth",
+  "Love & Relationships",
+  "Health",
+  "Emotional Wellbeing",
+]
+
+[[prompts."yearly.txt".rules]]
+id = "two-part-structure"
+why = "A prose intro, then the five headed sections."
+all = ['PART 1\W.{0,12}FLOWING PROSE INTRO', 'PART 2\W.{0,12}FIVE LIFE-AREA SECTIONS']
+
+[[prompts."yearly.txt".rules]]
+id = "intro-has-no-headings"
+why = "A heading inside the intro splits it into a card with no home."
+all = ['NO headings, four-to-five paragraphs', 'Do NOT add\b.{0,10}##']
+
+[[prompts."yearly.txt".rules]]
+id = "four-quarters-in-order"
+why = "The year's shape."
+all = ['four quarters in order']
+
+[[prompts."yearly.txt".rules]]
+id = "no-planets-signs-or-house-numbers"
+why = "Plain-words rule."
+all = ['DO NOT name specific planets or signs or natal house numbers']
+
+[[prompts."yearly.txt".rules]]
+id = "no-technical-vocabulary"
+why = "Jargon the seeker does not know."
+same_line = ['DO NOT use the words', 'transit', 'gochar', 'retrograde', 'natal Lagna', 'natal Moon']
+
+[[prompts."yearly.txt".rules]]
+id = "no-explaining-why"
+why = "Give the conclusion, not the mechanism."
+all = ['DO NOT explain WHY a theme']
+
+[[prompts."yearly.txt".rules]]
+id = "flags-may-be-named"
+why = "Sade Sati and Manglik are the two named concepts the reader asks for."
+all = ['Sade Sati\W+by name', 'Manglik / Mangal Dosh\W+by name']
+
+[[prompts."yearly.txt".rules]]
+id = "no-bare-heading-markers"
+why = "A bare ## is parsed as a heading."
+all = ['DO NOT output bare']
+
+[[prompts."yearly.txt".rules]]
+id = "no-disclaimers"
+why = "Voice rule."
+all = ['No astrology disclaimers']
+
+[[prompts."yearly.txt".rules]]
+id = "footer-link-sits-on-its-own-line"
+why = "_linkify_learn turns a bare slug into an anchor; woven into prose it reads as a stray URL."
+all = ['CROSS-LINK RULE', 'Never weave the link into the narrative']
+
+[[prompts."yearly.txt".rules]]
+id = "length-is-capped"
+why = "Prompt still states a total word range."
+all = ['Total length across BOTH parts:\s*\d+\s*-\s*\d+\s*words']
+
+[prompts."dasha_deep_dive.txt"]
+headings = [
+  "Where you are in the Dasha journey",
+  "The Mahadasha backdrop ([Mahadasha lord])",
+  "The Antardasha flavour ([Antardasha lord])",
+  "How these two interact for you",
+  "The road ahead",
+  "Remedies for the Antardasha",
+]
+
+[[prompts."dasha_deep_dive.txt".rules]]
+id = "exactly-six-sections-in-order"
+why = "The headings list checks the text; this checks the instruction that makes them mandatory."
+all = ['exactly these 6 sections, in this order']
+
+[[prompts."dasha_deep_dive.txt".rules]]
+id = "second-person-never-the-name"
+why = "Voice rule."
+all = ['2nd person', 'never refer to the seeker by name']
+
+[[prompts."dasha_deep_dive.txt".rules]]
+id = "no-ai-no-hedge"
+why = "Voice rule: deliver the reading."
+all = ['DO NOT mention\W{1,3}AI\W', 'rough reading']
+
+[[prompts."dasha_deep_dive.txt".rules]]
+id = "hard-periods-are-instruction-not-punishment"
+why = "Product safety: difficulty is framed with a way through."
+all = ['not punishment', 'Always offer the way through']
+
+[[prompts."dasha_deep_dive.txt".rules]]
+id = "remedies-are-bulleted-and-bounded"
+why = "Three to five remedies, with the gemstone caveat the prompt itself states."
+all = ['3-5 specific, practical remedies', 'bulleted list', 'gemstone caution']
+
+[[prompts."dasha_deep_dive.txt".rules]]
+id = "cross-link-is-single"
+why = "One link per reading, placed after the backdrop section."
+all = ['Only ONE such link per reading', 'Do not add links in other sections']
+
+[[prompts."dasha_deep_dive.txt".rules]]
+id = "length-is-capped"
+why = "Prompt still states a total word range."
+all = ['Total:\s*~?\d+\s*-\s*\d+\s*words']
+
+# --- daily / rashifal ---------------------------------------------------------
+
+[prompts."daily.txt"]
+include = ["plain-words-core"]
+
+[[prompts."daily.txt".rules]]
+id = "length-is-capped"
+why = "Prompt still states a word range for the reading."
+all = ['\d{2,4}\s*-\s*\d{2,4}\s+word reading']
+
+[[prompts."daily.txt".rules]]
+id = "four-paragraphs-no-headers"
+why = "The reading is four flowing paragraphs and a footer, no headings."
+all = ['No headers, no bullets']
+
+[[prompts."daily.txt".rules]]
+id = "rahu-kaal-and-colour-come-from-the-panchang"
+why = "Times are quoted from the supplied Panchang, never derived."
+all = ['exact times from Panchang', '\*\*favourable colour\*\*']
+
+[[prompts."daily.txt".rules]]
+id = "no-planets-named"
+why = "Plain-words rule."
+same_line = ['DO NOT name specific planets', '\bJupiter\b', '\bSaturn\b', '\bRahu\b', '\bKetu\b', '\bMars\b', '\bMercury\b', '\bVenus\b', '\bSun\b', '\bMoon\b']
+
+[[prompts."daily.txt".rules]]
+id = "no-signs-or-house-numbers"
+why = "Plain-words rule."
+all = ['DO NOT name specific signs', 'DO NOT reference natal house numbers']
+
+[[prompts."daily.txt".rules]]
+id = "no-technical-vocabulary"
+why = "Jargon the seeker does not know."
+same_line = ['DO NOT use the words', 'transit', 'gochar', 'retrograde', 'natal Lagna', 'natal Moon']
+
+[[prompts."daily.txt".rules]]
+id = "no-explaining-why"
+why = "Give the conclusion, not the mechanism."
+all = ['DO NOT explain WHY a theme']
+
+[[prompts."daily.txt".rules]]
+id = "sade-sati-may-be-named-with-phase"
+why = "Without the allowance it is suppressed with the planet names."
+all = ['Sade Sati\W+by name \+ phase']
+
+[[prompts."daily.txt".rules]]
+id = "no-specific-event-predictions"
+why = "Describe the day's energy, not outcomes."
+all = ['predict specific events']
+
+[[prompts."daily.txt".rules]]
+id = "no-bare-heading-markers"
+why = "A bare ## is parsed as a heading."
+all = ['DO NOT output bare']
+
+[[prompts."daily.txt".rules]]
+id = "no-disclaimers"
+why = "Voice rule."
+all = ['No astrology disclaimers']
+
+[[prompts."daily.txt".rules]]
+id = "footer-link-sits-on-its-own-line"
+why = "_linkify_learn turns a bare slug into an anchor."
+all = ['CROSS-LINK RULE', 'Do NOT put the link inside any of the four paragraphs']
+
+[prompts."rashifal_single.txt"]
+include = ["plain-words-core"]
+headings = ["{Rashi English} / {Rashi Sanskrit}"]
+
+[[prompts."rashifal_single.txt".rules]]
+id = "heading-line-first-no-preamble"
+why = "llm._generate_rashifal_single builds this heading from _RASHI_ANCHORS; the card renderer expects it first."
+all = ['Start with EXACTLY this line, no preamble']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "one-rashi-only"
+why = "Twelve independent calls; one that writes two readings poisons its own card."
+all = ['Do NOT output any other rashi.s reading']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "four-paragraphs-no-markup-in-the-body"
+why = "Body shape."
+all = ['4 short flowing paragraphs', 'no sub-headings, no bullets, no labels']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "length-is-capped"
+why = "Prompt still states a word range."
+all = ['\d+-\d+ words of substantive content']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "no-clock-times"
+why = "ARCHITECTURE.md voice rules: one national text, local sunrise; a clock time is wrong for nearly every reader (measured 79-minute spread)."
+all = ['DO NOT state any clock time', 'Never a clock time']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "windows-are-named-from-the-user-message"
+why = "Windows come from the supplied Panchang. Deliberately NOT anchored on what each window is for (doctrine; astro-auditor F8)."
+all = ['use the named windows given in your user message']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "no-markdown"
+why = "reading_body renders raw under whitespace-pre-line; also enforced by a stripper in llm.py."
+all = ['DO NOT use markdown']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "no-planets-named"
+why = "Plain-words rule."
+same_line = ['DO NOT name specific planets', '\bSun\b', '\bMoon\b', '\bJupiter\b', '\bSaturn\b', '\bMercury\b', '\bMars\b', '\bVenus\b', '\bRahu\b', '\bKetu\b']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "weekday-lord-by-quality-never-by-name"
+why = "The day-varying signal that makes the twelve differ; naming the planet breaks the plain-words rule."
+all = ['use the qualities, never the planet name']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "no-houses-transits-or-technical-terms"
+why = "Plain-words rule."
+all = ['DO NOT reference houses, transits']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "no-specific-event-predictions"
+why = "Describe energies, not outcomes."
+all = ['DO NOT predict specific events']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "no-ai-no-hedge"
+why = "Voice rule."
+all = ['DO NOT mention\W{1,3}AI\W']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "banned-opening-phrases-all-listed"
+why = "The anti-convergence list: each entry is a real opening the page converged on. Dropping one re-admits it."
+all = [
+  'BANNED OPENING PHRASES',
+  'Today, you may feel',
+  'Today, you might feel',
+  'As the day begins',
+  'As today unfolds',
+  'This is a day of',
+  'Today brings',
+  'You may feel a strong sense of',
+  'You may find yourself',
+]
+
+[[prompts."rashifal_single.txt".rules]]
+id = "banned-hedges-all-listed"
+why = "Same, for the filler hedges."
+all = [
+  'BANNED HEDGES',
+  'money matters need attention',
+  'relationships bring both joy and challenges',
+  'balance work and personal life',
+  'focus on health today',
+  'listen to your inner voice',
+  'trust the process',
+  'communication is highlighted',
+  'important decisions await',
+  'an old friend may reach out',
+  'avoid unnecessary conflicts',
+]
+
+[[prompts."rashifal_single.txt".rules]]
+id = "banned-filler-consider"
+why = "Instruction-style filler."
+all = ['consider taking up', 'consider planning', 'consider focusing', 'sentence starting with\W+consider']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "never-predict-disaster-or-guaranteed-gains"
+why = "Product safety (TONE block)."
+all = ['NEVER predict disaster', 'NEVER promise guaranteed gains']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "no-disclaimers"
+why = "Voice rule."
+all = ['No astrology disclaimers']
+
+[[prompts."rashifal_single.txt".rules]]
+id = "opening-style-hint-is-honoured"
+why = "Coupled to llm.py: the per-rashi OPENING STYLE HINT is emitted in the user message."
+all = ['opened per the OPENING STYLE HINT']
