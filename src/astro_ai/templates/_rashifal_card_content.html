@@ -16,6 +16,12 @@
   </div>
   <div class="text-[13px] text-bhagya-ink-soft leading-relaxed space-y-2 whitespace-pre-line flex-1 min-h-0 overflow-y-auto pr-1">
 {{ reading_body }}
+{#- #523: the HTMX flip-card got chandra_bala but not the area counts, so the
+   route computed day_detail and discarded it on this branch. Same numbers,
+   one line, since the card has no room for the footnote the full page shows. -#}
+{%- if day_detail and day_detail.areas %}
+{% for a in day_detail.areas %}{% if lang == 'hi' %}{{ {'Work':'कार्य','Money':'धन','Relationships':'संबंध','Health':'स्वास्थ्य'}[a.area] }}{% else %}{{ a.area }}{% endif %} {{ a.favourable }}/{{ a.total }}{% if not loop.last %} · {% endif %}{% endfor %}
+{%- endif %}
 {%- if chandra_bala %}
 
 {% if lang == 'hi' %}चंद्र बल{% else %}Chandra Bala{% endif %}: {% if lang == 'hi' %}{{ {'strong':'बलवान','neutral':'सामान्य','weak':'कमज़ोर'}[chandra_bala[1]] }}{% else %}{{ chandra_bala[1] }}{% endif %}{% if panchang_strip and panchang_strip.day_color %} · {% if lang == 'hi' %}आज का रंग{% else %}Today's colour{% endif %}: {{ panchang_strip.day_color }}{% endif %}

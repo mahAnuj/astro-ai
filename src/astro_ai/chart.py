@@ -483,6 +483,73 @@ def compute_transit_snapshot(
     )
 
 
+#: The reference place every Rashifal is computed at. A Rashifal is written for
+#: a rashi, not a person, so there is no birthplace to use -- this is the
+#: neutral stand-in the whole surface already shared by convention.
+RASHIFAL_REFERENCE_PLACE = "Mumbai, India"
+
+#: Its timezone, as a constant rather than read off a Chart. The pin must be a
+#: pure function of the DATE: two callers holding differently-built charts for
+#: the same reference place would otherwise be able to pin differently, which
+#: is the bug this whole mechanism exists to remove.
+RASHIFAL_REFERENCE_TZ = "Asia/Kolkata"
+
+
+def rashifal_day_moment(day: date_) -> datetime:
+    """Local NOON on `day` at the reference place -- the moment a Rashifal means.
+
+    WHY A PINNED MOMENT, AND WHY THIS IS NOT COSMETIC
+    -------------------------------------------------
+    A Rashifal is a statement about a CALENDAR DAY, and every artefact of that
+    day has to be computed from one moment or they disagree with each other.
+    Before this, each caller passed no `when` and got `datetime.now()`, so:
+
+      * `routes/rashifal.py` computed the panel's counts at render time while
+        the reading beside them had been generated (and cached for the day)
+        at some earlier hour. QA measured the two disagreeing on 9 of 90 days,
+        with the area counts moving for 10 of 12 rashis on 2026-10-31.
+      * worse, and not what QA tested: the nightly job (#515) generates every
+        reading at ~03:30 IST and the page renders it all day, so under
+        `now()` the panel and the published prose would diverge by DESIGN
+        rather than occasionally.
+
+    Pinning makes the agreement structural -- any process, at any hour, asking
+    for a given day gets the same sky -- which is what `_day_detail_today`
+    already claimed and could not deliver.
+
+    LOCAL NOON, following the convention already in the tree: `routes/panchang`
+    pins a named date the same way (`_target_moment`, local noon in the chart's
+    own tz). Noon is also the safe choice for a date: it cannot land on the
+    previous or next calendar day under any timezone offset, which an hour near
+    midnight can.
+
+    NOT sunrise, though sunrise is the classical day boundary and
+    `compute_panchang` uses it for the tithi. Sunrise is location-dependent and
+    can be absent entirely at polar latitudes (`DailyPanchang.daylight_ordinary`
+    exists for exactly that), so it would make a Rashifal's own transit fail on
+    dates where the panchang already degrades. The tithi keeps its sunrise
+    convention; this pins the GOCHARA, which has no classical clock.
+
+    EVERY Rashifal call site must pass this as `when=`:
+
+        compute_transit_snapshot(natal, when=rashifal_day_moment(day))
+
+    There is deliberately no wrapper that does both. The call sites are stubbed
+    in tests by patching `compute_transit_snapshot` where it is imported, and a
+    wrapper calling it internally would route around that seam. The guarantee
+    does not need a wrapper anyway: this function is a pure function of the
+    date, so two callers that both pass it agree by construction.
+    The guard is the spy block in `tests/test_rashifal_day_detail.py`
+    (`test_the_panel_helpers_*`, `test_the_reading_path_*`, `test_the_morning_blast_*`,
+    `test_the_warm_job_*`, `test_the_welcome_email_*`, `test_the_nightly_brief_*`): each
+    drives one path and fails if the `when` reaching `compute_transit_snapshot` is not
+    this function's value. A NEW call site is not covered until it gets a test there --
+    grep `compute_transit_snapshot(` when adding one.
+    """
+    tz = ZoneInfo(RASHIFAL_REFERENCE_TZ)
+    return datetime(day.year, day.month, day.day, 12, 0, tzinfo=tz)
+
+
 # ---------------------------------------------------------------------------
 # Vedic dosha flags — Mangal Dosh + Sade Sati
 # ---------------------------------------------------------------------------
@@ -2936,6 +3003,13 @@ def gochara_for_rashi(rashi_index: int, transit: "TransitSnapshot") -> list[dict
     """
     out: list[dict] = []
     try:
+        # Guarded, like llm.generate_rashifal_for_rashi: `((p - r) % 12) + 1`
+        # accepts any int silently, and rashi_index=12 returned an ALL-ZEROS
+        # panel -- the worst-looking day possible and indistinguishable from a
+        # real one. Both call sites pass range(12) today, so this is a latch,
+        # not a live bug.
+        if not 0 <= rashi_index < 12:
+            return []
         for planet in transit.planets:
             benefic = _GOCHARA_BENEFIC_FROM_MOON.get(planet.name)
             if benefic is None:
@@ -2955,6 +3029,292 @@ def gochara_for_rashi(rashi_index: int, transit: "TransitSnapshot") -> list[dict
         return []
     out.sort(key=lambda e: (not e["weighty"], e["planet"]))
     return out
+
+
+# --- Per-area day ratings, from the Gochara karakas (#523) -------------------
+#
+# `gochara_for_rashi` gives nine verdicts and the Rashifal surfaced them as one
+# number, "1 of 9 favourable" -- honest and unscannable. These are the same
+# verdicts grouped by the life area each graha signifies.
+#
+# THE KARAKA SETS ARE THE WHOLE Karakas: FIELD, NOT ITS FIRST LINE. The first
+# version of this table dropped Mercury from Health, Mars from Relationships
+# and Saturn from Work, and QA found why: every dropped graha was one whose
+# NAME falls on the wrap continuation of a two-line markdown paragraph. The
+# giveaway was Jupiter at houses.md:296 -- kept, because the word "Jupiter"
+# ends line 296, while its own qualifier "(dharmic profession)" and Saturn two
+# words later sit on 297 and were dropped. No editorial rule produces that; a
+# line-wise read does. The sets below are taken from the full field:
+#
+#   Work           10th Karma Bhava   houses.md:296-297  Sun, Mercury, Jupiter,
+#                                                        Saturn
+#   Money          2nd Dhana          houses.md:83-84    Jupiter, Mercury, Venus
+#                  + 11th Labha       houses.md:336      (Jupiter, Mercury again)
+#   Relationships  7th Kalatra        houses.md:217-218  Venus, Jupiter, Mars
+#   Health         6th Roga           houses.md:194-195  Mars, Saturn, Mercury
+#                  + 1st Tanu         houses.md:51       + Sun
+#
+# A CHOICE OF TABLE WAS MADE AND IT IS NOT PURELY A SOURCING ONE. houses.md:611
+# redirects "Karakas per house" to vedic_reference.md §5A.2, which gives ONE
+# Naisargika karaka per house: 10th Mercury, 2nd/11th Jupiter, 7th Venus, 6th
+# Mars, 1st Sun. Both tables are Naisargika, so Rao's warning at §5A.1 -- "One
+# should not use the three types of karakas in a mixed-up way" -- is about
+# mixing Naisargika with Chara and Sthira and does not forbid the fuller list.
+#
+# But §5A.2 would give denominators of 1 and 2, and a rating that reads 0/1 or
+# 1/1 is a binary, not a scale. So the fuller per-house field is used BECAUSE
+# IT PRODUCES A USABLE DENOMINATOR, which is a product reason and not a
+# scriptural one. Saying so here rather than implying the corpus settled it.
+# Worth an astro-auditor ruling: if §5A.2 is meant to be canonical for this,
+# the feature should be re-shaped around 1-2 denominators rather than quietly
+# using a different list.
+#
+# A SECOND, SEPARATE CHOICE, for the same astro-auditor ruling: several houses
+# are multi-topic, and a graha is listed there for ONE facet that is not always
+# the facet of the area it is counted under. Three assignments cite a different
+# facet than the area's name suggests:
+#   * Mercury under Health -- houses.md:194-195 gives Mercury at the 6th as
+#     "debts / accounts", not health.
+#   * Sun under Health -- houses.md:51 gives Sun at the 1st as "soul-atma", not
+#     bodily health (the 1st is in the set for the body; the Sun's own entry
+#     there is the self).
+#   * Venus under Money -- houses.md:83-84 gives Venus at the 2nd as "family
+#     comfort", where Jupiter is the one given as "wealth".
+# Each is in the corpus's Karakas: field for a house the area counts, so none is
+# invented; but the reader sees "Health" or "Money" and not the facet. The karaka
+# sets above are deliberately NOT changed here -- that is the astro-auditor's
+# call -- this only records that the area label is wider than the facet cited.
+#
+# NONE OF THE SIX LINES CARRIES ITS OWN CITATION. The [Raman, Ch. IV, p. 36]
+# style citations near them attach to neighbouring claims -- longevity,
+# Maraka, Kendra/Digbala -- not to the Karakas: fields. houses.md:616
+# describes the file as "Classical significations cross-verified ... where
+# Raman was brief". The earlier claim that these lists are "cited to Raman with
+# page numbers" was wrong and is corrected in the PR body.
+#
+# A COUNT, NEVER A SCORE. Raman classifies each planet-house pair and supplies
+# no aggregation rule (verified against vedic_reference.md §2A, which is a
+# table plus prose and gives none). Turning verdicts into stars would be an
+# invented weighting wearing a citation.
+#
+# RELATIONSHIPS COUNTS VENUS, JUPITER AND MARS. houses.md:217-218 gives "Venus
+# (spouse for men), Jupiter (husband for women), Mars (marriage in some
+# traditions)". The first two are gendered and a Rashifal has no gender, so
+# both are counted rather than one silently chosen; Mars is carried with the
+# hedge the corpus itself uses.
+_AREA_KARAKAS: tuple[tuple[str, tuple[str, ...], str], ...] = (
+    ("Work",          ("Sun", "Mercury", "Jupiter", "Saturn"), "10th house karakas"),
+    ("Money",         ("Jupiter", "Mercury", "Venus"), "2nd and 11th house karakas"),
+    ("Relationships", ("Venus", "Jupiter", "Mars"), "7th house karakas"),
+    ("Health",        ("Mars", "Saturn", "Mercury", "Sun"), "6th and 1st house karakas"),
+)
+
+
+def area_ratings_for_rashi(rashi_index: int, transit: "TransitSnapshot") -> list[dict]:
+    """Per-area day verdicts for one rashi: [{area, favourable, total, ...}].
+
+    Each entry counts how many of that area's karakas transit favourably from
+    this rashi today, using the same `gochara_for_rashi` verdicts the reading is
+    written from -- so the ratings and the prose cannot disagree.
+
+    Returns [] rather than raising: this feeds a panel and a prompt, and neither
+    may fail over a decoration.
+    """
+    try:
+        verdicts = {e["planet"]: e for e in gochara_for_rashi(rashi_index, transit)}
+        if not verdicts:
+            return []
+        out = []
+        for area, karakas, basis in _AREA_KARAKAS:
+            seen = [verdicts[k] for k in karakas if k in verdicts]
+            if not seen:
+                continue
+            fav = [e for e in seen if e["verdict"] == "favourable"]
+            out.append({
+                "area": area,
+                "favourable": len(fav),
+                "total": len(seen),
+                "basis": basis,
+                "karakas": [{"planet": e["planet"], "house": e["house"],
+                             "verdict": e["verdict"]} for e in seen],
+            })
+        return out
+    except Exception:  # noqa: BLE001 - see docstring
+        return []
+
+
+# --- The day's remedy, for the graha weighing most against this rashi (#523) --
+#
+# AstroSage carries a one-line Remedy and it is a real part of why its page
+# reads as specific. This is that field, sourced: Rao's per-planet good deeds,
+# knowledge/remedies.md §5 (Rao §34.3), which the corpus records verbatim.
+#
+# WHICH graha, and why that is a selection and not an invented weighting:
+# among the grahas transiting UNfavourably from this rashi, prefer the ones
+# Raman names as dominant -- "the transiting effects of the slow moving ones,
+# viz., Jupiter, Saturn and Rahu are universally held to be most powerful"
+# (quoted in _GOCHARA_WEIGHTY). That is his ordering, not ours. Nothing is
+# summed or scored; one graha is picked and named, so the reader can see which.
+#
+# NEVER A GEMSTONE. remedies.md §1.4 is categorical: gemstones require the
+# Ascendant AND the functional benefic/malefic classification for it, and the
+# wrong stone -- blue sapphire for Saturn above all -- WORSENS the affliction.
+# A Rashifal has no Ascendant. This table is good deeds only, and the gemstone
+# table in §4.2 is deliberately not reachable from here.
+#
+# EVERY CLAUSE HERE IS RAO'S, and that took a correction. remedies.md §11.2 --
+# titled "Unsourced additions already in this file", written by earlier work so
+# "a reader can tell the two apart" -- names four clauses in §5's table that are
+# NOT in Rao §34.3: Mars "blood donation", Venus "support artists", Saturn
+# "serve the elderly", Ketu "support renunciates". The first version of this
+# table picked precisely those four as its second clause, under a commit
+# claiming "Rao's own wording". The warning sits immediately below the table it
+# warns about; the table was read and the warning was not.
+#
+# TWO CLAUSES ARE STILL NOT VERBATIM, disclosed rather than hidden:
+#   * Jupiter. Rao (remedies.md:187) writes "a learned Brahmin/priest". Rendered
+#     here as "a learned priest or teacher" -- a deliberate softening of a caste
+#     referent for daily user-facing copy, NOT a sourcing claim. The act Rao
+#     describes (respect and donation to a learned religious figure) is intact.
+#   * Mercury. Rao writes "organizations of scholars"; "a body of scholars" is a
+#     plain-English rendering of the same referent, not "a place of learning",
+#     which the first version used and which is a different thing.
+#
+# Selection is also described accurately now: these are Rao's first and second
+# clauses, or first and third where the second is a §11.2 addition. The earlier
+# comment claimed "trimmed to the first clause", which no entry actually was.
+_GRAHA_GOOD_DEED: dict[str, str] = {
+    "Sun":     "visit a temple, or donate to one",
+    "Moon":    "help a woman who needs it, or give to a music school",
+    "Mars":    "take physical exercise, or give to a school gym",
+    "Mercury": "seek a scholar's blessing, or give to a body of scholars",
+    "Jupiter": "show respect to a learned priest or teacher, and give to them",
+    "Venus":   "read poetry, or help a poet",
+    "Saturn":  "do physical work yourself, or help manual labourers",
+    "Rahu":    "give to research, or make a pilgrimage",
+    "Ketu":    "sit in meditation",
+}
+
+# The same deeds in Hindi, matched clause for clause to the English above. An
+# English SENTENCE inside a Hindi reading is the #124/#270 defect class, which
+# verify_hindi_surface does not catch at this length -- a gap in the gate, not
+# permission.
+_GRAHA_GOOD_DEED_HI: dict[str, str] = {
+    "Sun":     "\u092e\u0902\u0926\u093f\u0930 \u091c\u093e\u090f\u0901, \u092f\u093e \u092e\u0902\u0926\u093f\u0930 \u0915\u094b \u0926\u093e\u0928 \u0926\u0947\u0902",
+    "Moon":    "\u0915\u093f\u0938\u0940 \u091c\u093c\u0930\u0942\u0930\u0924\u092e\u0902\u0926 \u0938\u094d\u0924\u094d\u0930\u0940 \u0915\u0940 \u0938\u0939\u093e\u092f\u0924\u093e \u0915\u0930\u0947\u0902, \u092f\u093e \u0938\u0902\u0917\u0940\u0924 \u0935\u093f\u0926\u094d\u092f\u093e\u0932\u092f \u0915\u094b \u0926\u093e\u0928 \u0926\u0947\u0902",
+    "Mars":    "\u0935\u094d\u092f\u093e\u092f\u093e\u092e \u0915\u0930\u0947\u0902, \u092f\u093e \u0935\u094d\u092f\u093e\u092f\u093e\u092e\u0936\u093e\u0932\u093e \u0915\u094b \u0926\u093e\u0928 \u0926\u0947\u0902",
+    "Mercury": "\u0915\u093f\u0938\u0940 \u0935\u093f\u0926\u094d\u0935\u093e\u0928 \u0915\u093e \u0906\u0936\u0940\u0930\u094d\u0935\u093e\u0926 \u0932\u0947\u0902, \u092f\u093e \u0935\u093f\u0926\u094d\u0935\u093e\u0928\u094b\u0902 \u0915\u0940 \u0938\u0902\u0938\u094d\u0925\u093e \u0915\u094b \u0926\u093e\u0928 \u0926\u0947\u0902",
+    "Jupiter": "\u0915\u093f\u0938\u0940 \u0935\u093f\u0926\u094d\u0935\u093e\u0928 \u092a\u0941\u0930\u094b\u0939\u093f\u0924 \u092f\u093e \u0917\u0941\u0930\u0941 \u0915\u093e \u0938\u092e\u094d\u092e\u093e\u0928 \u0915\u0930\u0947\u0902, \u0914\u0930 \u0909\u0928\u094d\u0939\u0947\u0902 \u0926\u093e\u0928 \u0926\u0947\u0902",
+    "Venus":   "\u0915\u0935\u093f\u0924\u093e \u092a\u0922\u093c\u0947\u0902, \u092f\u093e \u0915\u093f\u0938\u0940 \u0915\u0935\u093f \u0915\u0940 \u0938\u0939\u093e\u092f\u0924\u093e \u0915\u0930\u0947\u0902",
+    "Saturn":  "\u0938\u094d\u0935\u092f\u0902 \u0936\u093e\u0930\u0940\u0930\u093f\u0915 \u0936\u094d\u0930\u092e \u0915\u0930\u0947\u0902, \u092f\u093e \u0936\u094d\u0930\u092e\u093f\u0915\u094b\u0902 \u0915\u0940 \u0938\u0939\u093e\u092f\u0924\u093e \u0915\u0930\u0947\u0902",
+    "Rahu":    "\u0936\u094b\u0927-\u0915\u093e\u0930\u094d\u092f \u0915\u094b \u0926\u093e\u0928 \u0926\u0947\u0902, \u092f\u093e \u0924\u0940\u0930\u094d\u0925\u092f\u093e\u0924\u094d\u0930\u093e \u0915\u0930\u0947\u0902",
+    "Ketu":    "\u0927\u094d\u092f\u093e\u0928 \u0915\u0930\u0947\u0902",
+}
+
+# Graha names and house ordinals in Devanagari, so the remedy's parenthetical
+# attribution does not put Latin script inside a Hindi sentence. QA caught
+# "(Jupiter 4th भाव)" on a brand-new line: the planet name is arguably the same
+# pre-existing class as the Gochara panel, but `house_ord` was introduced by
+# this change and "4th" had never appeared on a Hindi surface before. A new
+# leak is not covered by a disclosure about old ones.
+_GRAHA_HI: dict[str, str] = {
+    "Sun": "\u0938\u0942\u0930\u094d\u092f", "Moon": "\u091a\u0902\u0926\u094d\u0930",
+    "Mars": "\u092e\u0902\u0917\u0932", "Mercury": "\u092c\u0941\u0927",
+    "Jupiter": "\u0917\u0941\u0930\u0941", "Venus": "\u0936\u0941\u0915\u094d\u0930",
+    "Saturn": "\u0936\u0928\u093f", "Rahu": "\u0930\u093e\u0939\u0941",
+    "Ketu": "\u0915\u0947\u0924\u0941",
+}
+_HOUSE_ORDINAL_HI: dict[int, str] = { 1: "\u092a\u0939\u0932\u0947",
+    2: "\u0926\u0942\u0938\u0930\u0947", 3: "\u0924\u0940\u0938\u0930\u0947",
+    4: "\u091a\u094c\u0925\u0947", 5: "\u092a\u093e\u0902\u091a\u0935\u0947\u0902",
+    6: "\u091b\u0920\u0947", 7: "\u0938\u093e\u0924\u0935\u0947\u0902",
+    8: "\u0906\u0920\u0935\u0947\u0902", 9: "\u0928\u094c\u0935\u0947\u0902",
+    10: "\u0926\u0938\u0935\u0947\u0902",
+    11: "\u0917\u094d\u092f\u093e\u0930\u0939\u0935\u0947\u0902",
+    12: "\u092c\u093e\u0930\u0939\u0935\u0947\u0902",}
+"""Twelve literal entries, for exactly the reason the English table below
+states about itself. The first version here was `{n: f"{n}\u0935\u0947\u0902"}` -- the same
+naive rule -- and it rendered "1\u0935\u0947\u0902" and "3\u0935\u0947\u0902" where Hindi wants
+\u092a\u0939\u0932\u0947 and \u0924\u0940\u0938\u0930\u0947. Hindi ordinals are irregular at the same places the
+English ones are (1, 2, 3, 6), so a derived rule is wrong in 4 of 12 cases --
+QA found 2 of the 3 pages it rendered showing one."""
+
+_HOUSE_ORDINAL = {1: "1st", 2: "2nd", 3: "3rd", 4: "4th", 5: "5th", 6: "6th",
+                  7: "7th", 8: "8th", 9: "9th", 10: "10th", 11: "11th", 12: "12th"}
+"""Spelled out rather than derived: "3th" shipped from a naive f"{h}th" in the
+first draft of remedy_for_rashi, and an ordinal rule that handles 1/2/3 but not
+11/12/13 is the classic version of the same bug. Twelve entries, no rule."""
+
+
+def remedy_for_rashi(rashi_index: int, transit: "TransitSnapshot",
+                     lang: str = "en") -> dict | None:
+    """{'planet', 'house', 'deed'} for ONE adverse transit today, or None.
+
+    Not "the heaviest". The tiers that are SOURCED -- a Saturn Sade Sati phase
+    (Saturn 12th/1st/2nd from the Moon, vedic_reference.md \u00a72.7.1), then Raman's
+    slow movers (Saturn, Jupiter, Rahu) -- settle only about half the cases; the rest are
+    broken by house NUMBER, which carries no weight in the corpus and is not a
+    heaviness claim (QA measured the number deciding on 6 of 12 rashis today).
+    So: one of the grahas the corpus names as dominant, picked
+    deterministically. The panel prints the graha and its house so a reader can
+    check it rather than trust an ordering.
+
+    None when nothing transits unfavourably -- a day with no affliction needs no
+    remedy, and inventing one would be the fabrication this product avoids.
+    Never raises.
+    """
+    try:
+        adverse = [e for e in gochara_for_rashi(rashi_index, transit)
+                   if e["verdict"] == "challenging" and e["planet"] in _GRAHA_GOOD_DEED]
+        if not adverse:
+            return None
+        # ORDERING. Tiers 1 and 2 are sourced; tier 3 is a tie-break, not a claim.
+        #
+        # 1. Saturn in the 12th, 1st or 2nd from the janma rashi -- Sade Sati.
+        #    SOURCED: vedic_reference.md §2.7.1, Rao, *Lessons on Vedic
+        #    Astrology* Vol. I, Lesson 1 note 11: Saturn "in three signs i.e.,
+        #    the sign behind the Moon, the sign of the Mo and the sign ahead of
+        #    the Mo". The Rashifal counts from the janma rashi, which IS that
+        #    Moon, so the three houses are directly computable.
+        #
+        #    The 8th (Ashtama Shani) is DELIBERATELY NOT in this tier. An earlier
+        #    version had (12, 1, 2, 8) and called all of it sourced; §2.4 is
+        #    marked UNSOURCED by the repo's own audit (vedic_reference.md §2.7.3:
+        #    `ashtama shani` = 0 across 14 books, `ashtama` = 0 in Rao). Saturn
+        #    in the 8th is still an adverse Saturn transit and still ranks in
+        #    tier 2 like any other slow mover; it just does not outrank Jupiter
+        #    or Rahu on a claim the corpus cannot back.
+        #
+        #    This tier exists because the first version had none, and it showed:
+        #    on the day QA checked, Aries was in Sade Sati arambha (Saturn 12th)
+        #    and Aquarius in Sade Sati uttara (2nd), and the remedy named Jupiter
+        #    and Rahu instead -- because houses 4 and 1 sort before 12 and 2.
+        #    Phases of a Saturn Sade Sati were passed over by a rule whose
+        #    docstring said "heaviest".
+        #
+        # 2. Then Raman's own weighting, quoted at _GOCHARA_WEIGHTY: "the
+        #    transiting effects of the slow moving ones, viz., Jupiter, Saturn
+        #    and Rahu are universally held to be most powerful."
+        #
+        # 3. Then house number, PURELY to make the pick deterministic. This tier
+        #    is not a heaviness claim and the corpus supports no such reading of
+        #    it; it only stops the answer depending on dict order.
+        def _rank(e: dict) -> tuple:
+            saturn_phase = e["planet"] == "Saturn" and e["house"] in (12, 1, 2)
+            return (not saturn_phase, e["planet"] not in _GOCHARA_WEIGHTY, e["house"])
+
+        adverse.sort(key=_rank)
+        pick = adverse[0]
+        return {"planet": pick["planet"], "house": pick["house"],
+                "house_ord": (_HOUSE_ORDINAL_HI if lang == "hi"
+                              else _HOUSE_ORDINAL).get(
+                                  pick["house"], str(pick["house"])),
+                "planet_label": (_GRAHA_HI[pick["planet"]] if lang == "hi"
+                                 else pick["planet"]),
+                "deed": (_GRAHA_GOOD_DEED_HI if lang == "hi"
+                         else _GRAHA_GOOD_DEED)[pick["planet"]]}
+    except Exception:  # noqa: BLE001 - see docstring
+        return None
 
 
 @dataclass(frozen=True)

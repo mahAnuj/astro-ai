@@ -45,6 +45,8 @@ from astro_ai.chart import (
     compute_chart,
     compute_panchang,
     compute_transit_snapshot,
+    RASHIFAL_REFERENCE_PLACE,
+    rashifal_day_moment,
     symbol_for_rashi_label,
 )
 from astro_ai.llm import generate_rashifal, parse_sectioned_reading
@@ -338,6 +340,31 @@ def _email_context(*, lang: str, city: str | None, request_cache: dict | None = 
     }
 
 
+def _day_detail_for(transit, lang: str = "en") -> dict:
+    """{rashi slug: {areas, remedy}} for today. {} if unavailable (#523).
+
+    The per-area counts and the remedy the reading was written against, so the
+    fields and the prose cannot disagree -- the failure that makes AstroSage's
+    page untrustworthy (Family 1/5 beside "the best day of your married life").
+
+    Never raises: a decoration must not end the 7 AM blast (#220, #223).
+    """
+    try:
+        from astro_ai.chart import area_ratings_for_rashi, remedy_for_rashi
+        from astro_ai.muhurat import RASHIS
+        out = {}
+        for i, full in enumerate(RASHIS):
+            areas = area_ratings_for_rashi(i, transit)
+            if not areas:
+                continue
+            out[full.split(" (")[0].lower()] = {
+                "areas": areas, "remedy": remedy_for_rashi(i, transit, lang)}
+        return out
+    except Exception:  # noqa: BLE001 - see docstring
+        log.warning("per-area day detail unavailable for today's email", exc_info=True)
+        return {}
+
+
 def _gochara_for(transit) -> dict:
     """{rashi slug: {favourable, total, entries}} for today. {} if unavailable.
 
@@ -404,8 +431,8 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
 
     # Build today's Rashifal sections (may trigger generation if cold).
     try:
-        neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
-        transit = compute_transit_snapshot(neutral_chart)
+        neutral_chart = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
+        transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(date.today()))
         text = _daily_rashifal_text(
             lang=lang,
             today_iso=today_iso,
@@ -433,10 +460,18 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
 
     ctx = _email_context(lang=lang, city=city)
     ctx["rashifal_sections"] = _filter_rashi_sections(sections, rashi)
+    # Pinned like the transit above. email/welcome.html does NOT render these
+    # three today (only email/daily_rashifal.html does), so no reader sees a
+    # difference now; they stay pinned so that a template which adopts the panel
+    # cannot start from a different sky than the reading -- the defect
+    # chart.rashifal_day_moment exists to remove. tests/test_rashifal_day_detail.py
+    # spies on this site, so an unpinned call is caught, not just a visible one.
     _welcome_transit = compute_transit_snapshot(
-        compute_chart("2000-01-01", "12:00", "Mumbai, India"))
+        compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE),
+        when=rashifal_day_moment(date.today()))
     ctx["chandra_bala"] = _chandra_bala_for(_welcome_transit)
     ctx["gochara"] = _gochara_for(_welcome_transit)
+    ctx["day_detail"] = _day_detail_for(_welcome_transit, lang)
     ctx["unsubscribe_url"] = (
         f"{ctx['site_url']}/unsubscribe?email={email}"
         f"&token={subscribers.unsubscribe_token(email)}"
@@ -502,10 +537,10 @@ async def warm_rashifal(request: Request, lang: str = "en") -> JSONResponse:
     today_iso = date.today().isoformat()
     started = _time.time()
     try:
-        neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+        neutral_chart = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
     except ChartError as err:
         return JSONResponse({"ok": False, "error": f"Couldn't compute reference chart: {err}"}, status_code=500)
-    transit = compute_transit_snapshot(neutral_chart)
+    transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(date.today()))
     # A batch job: nobody is waiting, so the bucket may make a call wait up to the
     # job budget -- but never past this deadline (#475). One language fits today;
     # the deadline is the guarantee, not the arithmetic.
@@ -613,10 +648,10 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     # We trigger generation via _shared_three_tier so cold-start days still
     # produce content rather than emailing empty bodies.
     try:
-        neutral_chart = compute_chart("2000-01-01", "12:00", "Mumbai, India")
+        neutral_chart = compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE)
     except ChartError as err:
         return JSONResponse({"ok": False, "error": f"Couldn't compute reference chart: {err}"}, status_code=500)
-    transit = compute_transit_snapshot(neutral_chart)
+    transit = compute_transit_snapshot(neutral_chart, when=rashifal_day_moment(date.today()))
 
     sections_by_lang: dict[str, list] = {}
     # ONE deadline for the whole job, computed before the first language: en and
@@ -667,6 +702,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
     # subscriber -- so it is computed once here, not per row.
     chandra_bala = _chandra_bala_for(transit)
     gochara = _gochara_for(transit)
+    day_detail = {lg: _day_detail_for(transit, lg) for lg in ("en", "hi")}
     sent = failed = 0
     failures: list[str] = []
     # Capture the list ONCE. Calling list_subscribers() again for the count
@@ -715,6 +751,7 @@ async def send_daily_rashifal(request: Request) -> JSONResponse:
                                  request_cache=panchang_cache)
             ctx["chandra_bala"] = chandra_bala
             ctx["gochara"] = gochara
+            ctx["day_detail"] = day_detail.get(lang, {})
             ctx["rashifal_sections"] = _filter_rashi_sections(
                 sections_by_lang[lang], sub.get("rashi", "all")
             )
