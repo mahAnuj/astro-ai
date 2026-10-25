@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-24T09:18:19Z",
+  "generated_at": "2026-10-25T14:49:56Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 122,
-  "with_ask": 58,
+  "open": 123,
+  "with_ask": 57,
   "by_area": {
     "UNCLASSIFIED": 51,
     "INFRA": 12,
@@ -19,6 +19,7 @@
     "DESIGN": 2,
     "CHORE": 2,
     "BUG": 2,
+    "PRIVACY": 1,
     "MEASURE": 1,
     "REPO": 1,
     "CHART": 1,
@@ -34,7 +35,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 38,
+    "bug": 39,
     "untyped": 34,
     "enhancement": 26,
     "correctness": 8,
@@ -43,12 +44,44 @@
     "ui": 3
   },
   "by_priority": {
-    "unset": 77,
+    "unset": 78,
     "high": 23,
     "medium": 22
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 528,
+      "title": "privacy: the visitor's /ask question travels in the URL and is recorded by GA4 as a landing page",
+      "ask": "",
+      "area": "PRIVACY",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-24T22:53:58Z",
+      "updated": "2026-10-24T22:54:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 523,
+      "title": "Per-area day ratings from Gochara karakas — Work / Money / Relationships / Health, counted not scored",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "enhancement",
+      "priority": "high",
+      "labels": [
+        "enhancement",
+        "category:technical",
+        "priority:high"
+      ],
+      "created": "2026-10-24T09:46:37Z",
+      "updated": "2026-10-24T09:46:37Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 518,
       "title": "Learn articles are 56% of sessions and 71% have no route to a tool — the median first link sits at 92% page depth",
@@ -59,27 +92,13 @@
       "labels": [
         "enhancement",
         "category:technical",
-        "priority:high"
+        "priority:high",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-24T09:07:13Z",
-      "updated": "2026-10-24T09:07:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 515,
-      "title": "Generate the daily rashifal nightly with Claude Code in Actions, write it to GCS, keep Groq as the fallback",
-      "ask": "23:30 UTC (05:00 IST)  rashifal-generate   Claude writes the blob    <- new",
-      "area": "UNCLASSIFIED",
-      "type": "enhancement",
-      "priority": "high",
-      "labels": [
-        "enhancement",
-        "category:technical",
-        "priority:high"
-      ],
-      "created": "2026-10-24T06:28:56Z",
-      "updated": "2026-10-24T06:28:56Z",
+      "updated": "2026-10-25T13:58:09Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -110,12 +129,13 @@
       "labels": [
         "bug",
         "category:technical",
-        "priority:high"
+        "priority:high",
+        "needs-evidence"
       ],
       "created": "2026-10-24T03:29:51Z",
-      "updated": "2026-10-24T05:42:10Z",
+      "updated": "2026-10-24T14:22:14Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 510,
@@ -156,7 +176,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-23T19:06:27Z",
-      "updated": "2026-10-23T19:06:27Z",
+      "updated": "2026-10-24T17:55:39Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -230,7 +250,7 @@
         "provenance:trusted"
       ],
       "created": "2026-10-21T17:59:35Z",
-      "updated": "2026-10-24T03:15:49Z",
+      "updated": "2026-10-24T17:56:34Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -257,12 +277,13 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "needs-evidence"
       ],
       "created": "2026-10-21T05:17:49Z",
-      "updated": "2026-10-21T05:17:49Z",
+      "updated": "2026-10-24T14:22:17Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 466,
@@ -317,12 +338,14 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "provenance:trusted",
+        "needs-evidence"
       ],
       "created": "2026-10-21T04:47:37Z",
-      "updated": "2026-10-21T05:43:57Z",
+      "updated": "2026-10-24T14:22:11Z",
       "blocked": false,
-      "needs_evidence": false
+      "needs_evidence": true
     },
     {
       "number": 462,
@@ -704,7 +727,7 @@
         "provenance:trusted"
       ],
       "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-24T01:31:21Z",
+      "updated": "2026-10-25T01:01:27Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -721,7 +744,7 @@
         "provenance:outsider"
       ],
       "created": "2026-10-16T13:40:15Z",
-      "updated": "2026-10-23T21:14:14Z",
+      "updated": "2026-10-25T01:46:52Z",
       "blocked": false,
       "needs_evidence": false
     },

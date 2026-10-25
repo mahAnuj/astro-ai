@@ -209,12 +209,31 @@ So you now apply the label yourself, under three conditions that are not optiona
 2. **One verdict label, never both, and clear the other — plus your provenance.**
 
    ```bash
-   gh pr comment <pr> --repo "$GH_REPO" --body-file verdict.md   # FIRST
-   gh pr edit <pr> --repo "$GH_REPO" \
-     --add-label qa-fail --remove-label qa-pass \
-     --add-label qa:independent        # or qa:in-cycle — see below
-   #                   or qa-pass --remove-label qa-fail
+   gh pr comment <pr> --repo "$GH_REPO" --body-file verdict.md   # FIRST, always
+   scripts/qa_verdict.sh --pr <pr> --verdict FAIL \
+     --provenance independent \
+     --sha <the SHA you examined>            # or --verdict PASS
    ```
+
+   **One command, and it is the only thing that may write these labels.** It applies the
+   verdict label and this round's provenance to **the PR and the issue**, removes the
+   opposite of each from both, readies the PR on a PASS, and leaves a draft alone on a
+   FAIL — as one transition. Four loose `gh` calls were four places to stop half-done,
+   and the version of this snippet before 2026-10-25 never touched the **issue** at all,
+   so `gh issue list --label qa-pass` was missing verdicts that existed on the PR.
+
+   **`--sha` is the commit you actually examined.** On a PASS the script compares it to
+   the PR's current head and refuses (exit 3) if the branch moved under you. A label says
+   *that* you passed something; only the SHA says *what*. Do not pass `HEAD` read at the
+   end of your round — that is how a verdict comes to describe code nobody reviewed.
+
+   **A PASS now clears a previous round's `qa-fail`**, on the PR and the issue. That is
+   deliberate and new: `agent-merge` still refuses any PR carrying `qa-fail`, so before
+   this, the first failed round was terminal — the loop could fix the defects, re-verify
+   them, and still only hand the PR to a human. The property worth keeping was never "a
+   failure is permanent", it was **"only a QA round may clear one"**, and routing every
+   write through this script is what enforces that where a bare `--add-label qa-pass`
+   did not.
 
    **Why the second label.** GitHub's timeline records who applied a label, and
    that already separates the loop (`github-actions[bot]`) from a top-level
@@ -238,8 +257,11 @@ So you now apply the label yourself, under three conditions that are not optiona
    PR, a `resolve_provenance.py` exit 2, an unmeasured token claim, or any case you could not
    check. Those stay FAIL, and FAIL gets the label too.
 
-**Know what `qa-pass` does before you apply it.** `agent-merge` merges an `issue/*` PR carrying
-it, a push to `main` is the deploy, and there is no staging. `qa-fail` only ever blocks, so it
+**Know what `qa-pass` does before you apply it.** `agent-merge` merges ANY PR carrying it that
+this system or the owner authored — `issue/*`, `partial/*`, `fix/*` alike, since 2026-10-25, when
+the gate moved from the branch name to the PR's author. A push to `main` is the deploy, and there
+is no staging. The name used to be an accidental brake: a `partial/` slice could not merge
+whatever you labelled it. **It can now, so your label is load-bearing on more PRs than it was.** `qa-fail` only ever blocks, so it
 is safe at any confidence; `qa-pass` is a claim that this change can run in front of users. If
 you are not sure, FAIL and say what you could not establish — an unsure FAIL costs one more
 round, an unsure PASS costs an outage.

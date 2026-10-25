@@ -192,10 +192,13 @@ jobs:
             exactly `issue=<number>`, to `/tmp/steward-dispatch.txt`, and a
             later step carries it out with a credential that can. No line means
             no dispatch, and that is a legitimate outcome: write one only for a
-            PR a cycle can actually adopt -- an `issue/*` branch with an owning
-            issue, never a PR a human opened on their own branch, and never "to
-            be safe", because the step cannot tell a considered dispatch from a
-            hedge and a wasted cycle is ~50 Actions minutes.
+            PR a cycle can actually adopt -- one the DETECTOR named an owning
+            issue for, authored by `claude[bot]` or the repository owner. The
+            branch NAME is not the test (#531): `partial/` and `fix/` carry an
+            issue number too, and `agent-cycle` Step 2.5 adopts the existing
+            branch and PR whoever opened it. Never write one "to be safe",
+            because the step cannot tell a considered dispatch from a hedge and
+            a wasted cycle is ~50 Actions minutes.
 
             You do not need to check whether a cycle is already running, or
             whether the issue is open. The step checks both itself, with a
@@ -371,9 +374,11 @@ jobs:
             `/tmp/chief-dispatch.txt` containing AT MOST ONE line, exactly
             `issue=<number>`, and nothing else. No line means no dispatch, and
             that is a legitimate ruling — #315's case is exactly it. Do not
-            write a line for a PR a cycle cannot clear (one whose diff touches
-            `.github/workflows/**`, or that a human authored), and do not write
-            one to be safe: the step cannot tell a considered dispatch from a
+            write a line for a PR a cycle cannot clear -- one whose diff touches
+            `.github/workflows/**` (the App token has no `workflows` permission),
+            or one the detector could not name an owning issue for, or one
+            authored by neither `claude[bot]` nor the repository owner -- and do
+            not write one to be safe: the step cannot tell a considered dispatch from a
             hedge, and a wasted cycle is ~50 Actions minutes under clause 1.
 
             You do not need to check whether a cycle is already running. The

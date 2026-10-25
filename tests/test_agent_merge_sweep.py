@@ -54,6 +54,27 @@ def _sweep_filter() -> str:
 FILTER = _sweep_filter()
 
 
+def _agent_authors() -> str:
+    """`AGENT_AUTHORS` out of the job env, with the owner expression resolved.
+
+    Read rather than hardcoded: the whole point of the 2026-10-25 change is that
+    this list -- not a branch name -- decides what the sweep will consider, so a
+    test asserting against its own copy of the list would pass while the
+    workflow shipped a different one.
+    """
+    env = yaml.safe_load(WORKFLOW.read_text())["jobs"]["merge"]["env"]
+    authors = env["AGENT_AUTHORS"]
+    assert "${{ github.repository_owner }}" in authors, (
+        "the owner must come from the context, not a literal: a hardcoded owner "
+        "silently empties or widens the set on a rename or a fork"
+    )
+    return authors.replace("${{ github.repository_owner }}", REPO.split("/")[0])
+
+
+AUTHORS = _agent_authors()
+AGENT = AUTHORS.split(",")[0]
+
+
 def _pick(pulls: list[dict]) -> str:
     """Run the workflow's own jq over a /pulls payload.
 
@@ -65,6 +86,7 @@ def _pick(pulls: list[dict]) -> str:
     shell = (
         'printf %s "$PULLS" | jq --raw-output \''
         + FILTER.replace("'\"$GH_REPO\"'", REPO)
+                .replace("'\"$AGENT_AUTHORS\"'", AUTHORS)
         + "'"
     )
     p = subprocess.run(["bash", "-c", shell], capture_output=True, text=True,
@@ -73,10 +95,12 @@ def _pick(pulls: list[dict]) -> str:
     return p.stdout.strip()
 
 
-def pr(number: int, *, labels=("qa-pass",), branch=None, draft=False, repo=REPO) -> dict:
+def pr(number: int, *, labels=("qa-pass",), branch=None, draft=False, repo=REPO,
+       user=None) -> dict:
     return {
         "number": number,
         "draft": draft,
+        "user": {"login": user or AGENT},
         "head": {"ref": branch or f"issue/{number}-x", "repo": {"full_name": repo}},
         "labels": [{"name": n} for n in labels],
     }
@@ -131,9 +155,52 @@ def test_a_fork_head_is_never_a_candidate():
     assert _pick([pr(356, repo="someone/astro-ai")]) == ""
 
 
-def test_a_human_branch_is_never_a_candidate():
-    assert _pick([pr(356, branch="chore/hand-edit")]) == ""
-    assert _pick([pr(356, branch="main")]) == ""
+def test_the_candidate_is_chosen_by_author_and_not_by_branch_name():
+    """The 2026-10-25 change, pinned in both directions.
+
+    This test used to assert the opposite -- that `chore/hand-edit` and `main`
+    were refused *because of their names*. The name was carrying a meaning it
+    could not carry: cycles name a slice `partial/<n>-<slug>` whenever work
+    remains that the loop cannot do, and that name made the PR unmergeable on
+    spelling alone. #480, #482 and #487 each had `qa-pass` on green gates and
+    waited for a human; between 2026-10-21 and 2026-10-25 every code PR did.
+    """
+    # Any namespace an agent cycle may produce is a candidate.
+    for ref in ("issue/523-x", "partial/523-x", "fix/515-x", "chore/hand-edit"):
+        assert _pick([pr(356, branch=ref)]) == "356", ref
+
+    # Authorship is what refuses one. A third-party bot is not in the list even
+    # though it opens PRs on this repo every day -- the measurement publisher.
+    assert _pick([pr(356, user="shubhagya-publisher[bot]")]) == ""
+    assert _pick([pr(356, user="dependabot[bot]")]) == ""
+    assert _pick([pr(356, user="drive-by-contributor")]) == ""
+
+
+def test_a_near_miss_on_the_author_name_is_not_a_candidate():
+    """Exact membership, not a substring or prefix match.
+
+    `claude[bot]` contains `[`, which is a glob metacharacter in a shell `case`
+    and a regex metacharacter almost everywhere else, so a filter written with
+    either would admit names it never meant to.
+    """
+    for impostor in ("claude[bot]-x", "xclaude[bot]", "claude", "notmahAnuj",
+                     "mahAnuj-evil", "Claude[bot]"):
+        assert _pick([pr(356, user=impostor)]) == "", impostor
+
+
+def test_the_owner_is_a_candidate_where_a_branch_name_used_to_refuse_them():
+    """The one widening here that is not purely a bug fix.
+
+    Before this, a branch the owner pushed by hand was refused by the name test,
+    so `AGENT_AUTHORS` including the owner puts their PRs in scope. Nothing
+    downstream is relaxed -- gates, qa-pass, size and the trust boundary are all
+    re-read -- but the sweep will now spend a run on one, so it is pinned
+    deliberately rather than left as a side effect.
+    """
+    owner = REPO.split("/")[0]
+    assert _pick([pr(356, user=owner, branch="chore/hand-edit")]) == "356"
+    # And `needs-human-review` is the way to hold one, since a name no longer is.
+    assert _pick([pr(356, user=owner, labels=("qa-pass", "needs-human-review"))]) == ""
 
 
 def test_a_draft_is_never_a_candidate():
