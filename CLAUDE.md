@@ -233,6 +233,38 @@ What has NOT changed, and why it matters more now than before:
   **That is six places one coupling lived.** When a rule is restated in prose for agents
   to read, grep for every copy before believing a fix is done — `agent-merge`,
   `agent-work`, `detect_stalls.py`, `steward.md` ×2 and `agent-steward.yml` ×2.
+- **A green PR gets its QA round immediately, not in four hours — `qa-on-green.yml`,
+  added 2026-10-25.** `workflow_run` on `PR gates` completing: if the PR is open, its
+  author is in `AGENT_AUTHORS`, the head still matches what was gated, it carries no
+  `qa-pass`/`qa-fail`/`needs-human-review`, its diff misses `.github/workflows/**` and its
+  branch names an owning issue, it dispatches one cycle through the shared
+  `scripts/dispatch_cycle.sh`.
+
+  Nothing previously treated "the gates passed" as a reason to run QA. QA lives inside
+  `/agent-cycle`, and a cycle started only two ways: the twice-daily `agent-work` cron, or
+  a steward dispatch that could not see a PR until `detect_stalls.py`'s **4h** threshold
+  and then spent one dispatch per run. Measured on #536: a cycle shipped 16 files, ran QA
+  round 1, fixed its findings and stopped; both gates were green at 16:35Z; the PR was 47
+  minutes old, so nothing could see it, and once it could it queued behind two others.
+
+  **Why it is deterministic and the steward is not wired here.** `agent-steward.yml`
+  records that it is *"NOT wired to `pr-gates`, which completes on every push to every PR
+  and would queue steward runs ... all day"*. That objection is about the AGENT, not the
+  trigger — a steward run costs a Claude invocation, this costs a few API reads and no
+  model. So the frequent check is cheap and the expensive thing stays rare.
+
+  **The loop guard is the load-bearing part.** A cycle that runs a round, pushes a fix and
+  ends with no verdict leaves exactly the state this fires on, so without a guard it would
+  dispatch at its own output forever at ~50 Actions minutes a turn. One dispatch per HEAD
+  COMMIT, remembered as a `qa-on-green: dispatched at <sha>` comment written **before** the
+  dispatch. A new commit earns another round; the same commit never does.
+
+  **It cannot write a verdict.** It holds `pull-requests: write` for that one comment and
+  for nothing else; `tests/test_qa_on_green.py` fails the build if `gh pr edit`,
+  `--add-label` or `--remove-label` appears in any `run:` block. A dispatcher that could
+  label could hand itself `qa-pass` and make `agent-merge` decorative. A `qa-fail` PR is
+  left alone: that needs a FIX, and which fix is a judgment `steward.md`'s routing table
+  holds across three kinds with different actions.
 - **The mutation sandbox copies `.claude/` — since 2026-10-25.** `_SANDBOX_SUBDIRS` in
   `mutate_behaviour_suite.py` had `src`, `tests`, `.github`, `scripts` and `measurements`,
   so a row naming an agent definition or a slash command died with `FileNotFoundError` and

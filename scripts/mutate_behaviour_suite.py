@@ -839,6 +839,52 @@ MUTATIONS = [
      'r"^[a-z]+/(\\d+)"',
      "test_a_measurement_branch_never_yields_an_issue"),
 
+    # ---- qa-on-green: the dispatcher that fires on EVERY green ------------
+    #
+    # Unique among the dispatchers in that its trigger is frequent, so its
+    # failure modes are not "inert" but "spends the Actions budget". The loop
+    # guard is the one that bites: a cycle that runs a round, pushes a fix and
+    # ends with no verdict leaves exactly the state this workflow fires on.
+    ("qa-on-green dispatches at its own output forever (the loop guard loses the head)",
+     ".github/workflows/qa-on-green.yml",
+     "qa-on-green: dispatched at $head",
+     "qa-on-green: dispatched at",
+     "test_the_dispatch_is_remembered_against_the_head_commit"),
+
+    # The `[bot]` glob trap, a third time in this repo. Unquoted, `claude[bot]`
+    # is a character class matching only `b`, `o` or `t`, so the gate matches
+    # nothing and the whole workflow is silently inert.
+    ("qa-on-green reads [bot] as a glob class (the dispatcher never fires)",
+     ".github/workflows/qa-on-green.yml",
+     '*",$author,"*)',
+     '*,$author,*)',
+     "test_an_agent_author_is_accepted"),
+
+    # ~8 measurement branches a day; `measurements/40140256532-1` would aim a
+    # ~50-minute cycle at issue 40140256532.
+    ("qa-on-green reads a measurement run-id as an issue number",
+     ".github/workflows/qa-on-green.yml",
+     "s#^(issue|partial|fix)/([0-9]+).*#",
+     "s#^[a-z]+/([0-9]+).*#",
+     "test_a_branch_with_no_owning_issue_yields_nothing"),
+
+    # A push during the gate run moves the head, and a round aimed at a stale
+    # green verifies code the gates never saw.
+    ("qa-on-green acts on a green that belongs to an older commit",
+     ".github/workflows/qa-on-green.yml",
+     '[ "$head" != "$HEAD_SHA" ]',
+     '[ "$head" = "" ]',
+     "test_it_refuses_to_act_on_a_stale_green"),
+
+    # A `qa-fail` PR needs a FIX, and which fix is a judgment `steward.md`'s
+    # routing table holds across three kinds with different actions. Sending a
+    # round at unaddressed findings returns the same FAIL at full cost.
+    ("qa-on-green sends a round at a PR whose findings are unaddressed",
+     ".github/workflows/qa-on-green.yml",
+     '*",qa-fail,"*)',
+     '*",qa-fail-never,"*)',
+     "test_it_declines_a_pr_that_is_already_routed"),
+
     # #531 fixed the branch-name coupling in three places and the loop STILL
     # could not dispatch, because two more copies of the rule live as PROSE in
     # the steward's and chief's prompts: "an `issue/*` branch with an owning
