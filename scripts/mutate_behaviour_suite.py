@@ -795,11 +795,60 @@ MUTATIONS = [
      "",
      "test_both_trigger_legs_require_the_head_to_be_this_repository"),
 
-    ("#358: the agent-branch filter interpolates the branch name again",
+    # Was anchored on `case "$PR_BRANCH" in` when eligibility was a branch-name
+    # test. That moved to the AUTHOR on 2026-10-25, and the author is
+    # attacker-chosen in exactly the same sense -- a fork PR carries whatever
+    # login opened it -- so the #358 invariant now lives here.
+    ("#358: the eligibility filter interpolates a PR value again",
      ".github/workflows/agent-merge.yml",
-     'case "$PR_BRANCH" in',
-     'case "${{ steps.pr.outputs.branch }}" in',
-     "test_the_agent_branch_filter_reads_an_env_var_not_an_interpolation"),
+     '*",$PR_AUTHOR,"*)',
+     '*",${{ steps.pr.outputs.author }},"*)',
+     "test_the_eligibility_filter_reads_env_vars_not_interpolations"),
+
+    # A NEW silent failure mode, introduced by that same move. `claude[bot]`
+    # contains `[` and `]`, and the author is expanded into a `case` PATTERN --
+    # the one position in shell where a variable's contents become matching
+    # syntax. Only the quoting makes it literal; both forms parse. Unquoted it
+    # fails CLOSED (the list matches nothing, so the loop merges nothing), which
+    # is the benign direction and therefore the one nobody notices: #469 was the
+    # last autonomous merge and four days passed before it was looked into.
+    ("the author match reads [bot] as a glob class (loop silently merges nothing)",
+     ".github/workflows/agent-merge.yml",
+     '*",$PR_AUTHOR,"*)',
+     '*,$PR_AUTHOR,*)',
+     "test_the_eligibility_gate_executes_correctly_for_every_author"),
+
+    # Every routed action in steward.md is "dispatch a cycle at the owning
+    # issue", so a null here is a stall the steward can SEE and cannot ACT on.
+    # Measured 2026-10-25: #521 and #524 sat `no-qa-verdict` 21h with green
+    # gates, three steward runs cleared neither, and `steward-ineffective`
+    # escalated both -- because their branches were `partial/` and the regex
+    # was `^issue/`.
+    ("the stall detector cannot name a partial branch's issue (steward is mute)",
+     "scripts/detect_stalls.py",
+     'r"^(?:issue|partial|fix)/(\\d+)"',
+     'r"^issue/(\\d+)"',
+     "test_the_owning_issue_resolves_for_every_cycle_namespace"),
+
+    # The opposite error, which is the obvious widening: ~8 measurement
+    # branches a day, and `measurements/40140256532-1` would route a dispatch
+    # at issue 40140256532.
+    ("the stall detector reads a measurement run-id as an issue number",
+     "scripts/detect_stalls.py",
+     'r"^(?:issue|partial|fix)/(\\d+)"',
+     'r"^[a-z]+/(\\d+)"',
+     "test_a_measurement_branch_never_yields_an_issue"),
+
+    # The safety net in agent-work gated on `issue/*` until 2026-10-25, so a
+    # cycle ending on a `partial/` branch was told "Cycle shipped nothing" and
+    # exited 0 WITHOUT PUSHING -- discarding real commits inside a runner about
+    # to be destroyed, which is the exact loss the step exists to prevent.
+    # agent-cycle.md:363 had recorded it as a known gap. This is its first guard.
+    ("the push net refuses a partial branch again (work lost with the runner)",
+     ".github/workflows/agent-work.yml",
+     "            main|HEAD)",
+     "            main|HEAD|partial/*|fix/*)",
+     "test_the_push_net_rescues_every_branch_a_cycle_may_end_on"),
 
     # The failure mode of the env: refactor itself: an undeclared name expands
     # to the empty string, so the post-merge issue comment goes to `gh issue
