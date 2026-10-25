@@ -504,7 +504,10 @@ def test_the_second_slot_runs_the_collectors_without_the_analyst():
 
 
 def test_no_workflow_was_added():
-    assert len(list((ROOT / ".github" / "workflows").glob("*.yml"))) == 16
+    # 17 since 2026-10-25: qa-on-green.yml, which dispatches a QA round when a
+    # PR's gates go green rather than waiting for detect_stalls.py's 4h
+    # threshold and the steward's one-dispatch-per-run budget.
+    assert len(list((ROOT / ".github" / "workflows").glob("*.yml"))) == 17
 
 
 def test_committed_measurement_files_pass_their_validators():
