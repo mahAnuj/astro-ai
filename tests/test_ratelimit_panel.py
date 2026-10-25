@@ -162,6 +162,15 @@ def test_a_populated_row_prints_every_figure_the_header_describes(_ops, monkeypa
     assert "None" not in p
 
 
+def test_a_tiny_negative_fraction_prints_as_zero_not_as_a_signed_zero(_ops, monkeypatch):
+    """Rendered from a real run: f = -0.004 printed '-0.00', which reads as a measured sign."""
+    near_zero = probe(warm_seen=30, warm_n=30, warm_rem=30 * 4000 - 300, warm_exp=30 * 4000,
+                      warm_cached=30 * 2304, cold_seen=6, cold_n=6)
+    c = cells(panel(page(monkeypatch, usage([urow(K120, near_zero)]))), "gpt-oss-120b")
+    assert c[4].startswith("0.00 "), c[4]
+    assert "-0.00" not in c[4]
+
+
 def test_cold_calls_are_never_folded_into_the_warm_sample_count(_ops, monkeypatch):
     only_cold = probe(cold_seen=40, cold_n=39, cold_rem=39 * 4000, cold_exp=39 * 4000,
                       skip_noanchor=1)

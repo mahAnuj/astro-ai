@@ -3171,6 +3171,85 @@ MUTATIONS = [
      "scripts/verify_prompt_contracts.py",
      "            print(f\"  - {f}\")\n        return 1", "            print(f\"  - {f}\")\n        return 0",
      "test_main_exits_one_on_a_failure_and_zero_on_the_shipped_tree"),
+
+    # #475 Phase 1b. The cached-token accounting probe (measure-only). Each row
+    # re-breaks one way the probe could report a verdict the data does not
+    # support; the CONTROL arm and the isolation rule are what make a verdict
+    # mean anything, so most rows attack those.
+    ("#475 1b: a cold call (cached 0 or absent) is counted as a warm sample",
+     "src/astro_ai/ratelimit_probe.py",
+     "        warm = bool(cached)                       # None (absent) and 0 are both cold\n",
+     "        warm = True\n",
+     "test_a_cold_call_runs_the_same_formula_but_is_never_a_warm_sample"),
+
+    ("#475 1b: the adjacency check is removed (a call begun while another was in flight is scored)",
+     "src/astro_ai/ratelimit_probe.py",
+     "            adjacent = anchor if anchor is not None and anchor[3] + 1 == s else None\n",
+     "            adjacent = anchor\n",
+     "test_a_call_that_starts_while_another_is_in_flight_is_not_a_sample_even_if_it_finishes_first"),
+
+    ("#475 1b: the sign of the error is flipped (a discount reads as extra charge)",
+     "src/astro_ai/ratelimit_probe.py",
+     "        e = exp_i - remaining                     # > 0: Groq charged MORE than predicted\n",
+     "        e = remaining - exp_i\n",
+     "test_a_header_above_the_prediction_by_most_of_the_cached_count_votes_discounted"),
+
+    ("#475 1b: the verdict no longer requires a cold control",
+     "src/astro_ai/ratelimit_probe.py",
+     '    if n_w < MIN_WARM or n_c < MIN_COLD or out["f"] is None:\n',
+     '    if n_w < MIN_WARM or out["f"] is None:\n',
+     "test_verdict_is_insufficient_below_the_sample_floors_and_not_above_them"),
+
+    ("#475 1b: the probe's counters are written into _PREFIX_ZERO (the ninth-key trap)",
+     "src/astro_ai/llm_stats.py",
+     '"cached_measurable": 0, "reported_unmeasurable": 0}',
+     '"cached_measurable": 0, "reported_unmeasurable": 0, "warm_seen": 0}',
+     "test_prefix_zero_is_untouched_and_prefix_rows_survive_a_probe_write"),
+
+    ("#475 1b: settle() subtracts cached tokens (the measure-only phase changes the bucket)",
+     "src/astro_ai/providers.py",
+     "        res.bucket.settle(res, prefix[0] + completion)\n",
+     "        res.bucket.settle(res, prefix[0] - (prefix[1] or 0) + completion)\n",
+     "test_settle_is_unchanged_a_warm_call_is_still_charged_prompt_plus_completion"),
+
+    ("#475 1b: _last_rl is not reset before an attempt (stale headers scored against the next provider)",
+     "src/astro_ai/providers.py",
+     "                _last_rl.set(None)\n",
+     "                pass\n",
+     "test_last_rl_is_reset_before_every_attempt"),
+
+    ("#475 1b: every call makes a SECOND request to read the headers",
+     "src/astro_ai/providers.py",
+     "    raw = client.chat.completions.with_raw_response.create(**kwargs)\n",
+     "    client.chat.completions.with_raw_response.create(**kwargs)\n"
+     "    raw = client.chat.completions.with_raw_response.create(**kwargs)\n",
+     "test_one_http_request_per_chat_call_and_no_probe_request"),
+
+    ("#475 1b: a failed attempt is forgotten, so the next call is scored against the old anchor",
+     "src/astro_ai/ratelimit_probe.py",
+     "            _seq[ticket[0]] = _seq.get(ticket[0], 0) + 1\n"
+     "            _anchor.pop(ticket[0], None)\n",
+     "            _seq[ticket[0]] = ticket[1] - 1\n",
+     "test_a_failed_attempt_breaks_the_chain_because_it_may_still_have_been_charged"),
+
+    ("#475 1b: last_limit is summed across days (8,000 reads as 56,000)",
+     "src/astro_ai/llm_stats.py",
+     '                if not acc["last_limit"]:\n'
+     '                    acc["last_limit"] = max(_as_int(r.get("last_limit")), 0)\n',
+     '                acc["last_limit"] += max(_as_int(r.get("last_limit")), 0)\n',
+     "test_usage_summary_sums_across_days_and_counts_only_days_that_carried_the_key"),
+
+    ("#475 1b: a probe that ran and kept no warm sample prints a dash, not a zero",
+     "src/astro_ai/templates/admin_ops.html",
+     "          {%- if r.probe is none %}\n",
+     "          {%- if not r.warm_n %}\n",
+     "test_a_probe_that_ran_and_kept_no_warm_sample_prints_zero_not_a_dash"),
+
+    ("#475 1b: the panel folds cold samples into the warm count",
+     "src/astro_ai/ops_data.py",
+     '            warm_n, cold_n = n(probe, "warm_n"), n(probe, "cold_n")\n',
+     '            warm_n, cold_n = n(probe, "warm_n") + n(probe, "cold_n"), n(probe, "cold_n")\n',
+     "test_cold_calls_are_never_folded_into_the_warm_sample_count"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

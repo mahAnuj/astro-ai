@@ -1152,6 +1152,9 @@ def _ratelimit_rows(usage: dict, chain: list[str]) -> list[dict]:
                 mean_exp=round(n(probe, "warm_exp") / warm_n) if warm_n else None,
                 mean_cached=round(v["mean_cached"]) if v["mean_cached"] is not None else None,
                 f=v["f"], disc=n(probe, "warm_disc"),
+                # "+ 0.0" turns -0.0 into 0.0: a fraction of -0.004 must print as
+                # 0.00, not as a signed zero that reads like a measured sign.
+                f_text=(f"{round(v['f'], 2) + 0.0:.2f}" if v["f"] is not None else None),
                 cold_mean_abs=(round(v["cold_mean_abs"], 1)
                                if v["cold_mean_abs"] is not None else None),
                 verdict=v["verdict"],

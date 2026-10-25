@@ -135,7 +135,10 @@ def begin(key: str) -> tuple | None:
 
 def abort(ticket) -> None:
     """A failed attempt. It may still have been charged upstream (a timeout, a
-    5xx), so the anchor is cleared and the next call re-anchors."""
+    5xx), so it must leave a hole in the sequence and no anchor behind: the next
+    call re-anchors. begin() already numbered the attempt, which alone makes the
+    next call non-adjacent; this keeps that true if the attempt never reaches a
+    finish() and drops the stale anchor."""
     if ticket is None:
         return
     try:

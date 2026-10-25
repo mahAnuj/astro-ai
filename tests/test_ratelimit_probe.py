@@ -149,6 +149,20 @@ def test_overlapping_calls_are_both_skipped_and_leave_no_anchor(clock):
     assert one_call(clock, K120, 5000).get("skip_noanchor") == 1
 
 
+def test_a_call_that_starts_while_another_is_in_flight_is_not_a_sample_even_if_it_finishes_first(clock):
+    """The second call sees no start or finish during its OWN run -- but the first was already
+    running when it began, so the bucket was shared for all of it."""
+    one_call(clock, K120, 5000)                                           # anchor
+    first = rp.begin(K120)
+    clock.now += 1
+    second = rp.begin(K120)
+    clock.now += 5
+    out_second = rp.finish(second, (LIMIT, 4000), (3000, 2304, False), 300)
+    assert out_second.get("skip_noanchor") == 1 and "warm_n" not in out_second
+    out_first = rp.finish(first, (LIMIT, 3000), (3000, 2304, False), 300)
+    assert out_first.get("skip_overlap") == 1 and "warm_n" not in out_first
+
+
 def test_a_failed_attempt_breaks_the_chain_because_it_may_still_have_been_charged(clock):
     one_call(clock, K120, 5000)
     t = rp.begin(K120)

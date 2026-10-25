@@ -1013,7 +1013,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           <td class="n">{{ "{:,}".format(r.warm_n) }}<span class="sub">of {{ "{:,}".format(r.warm_seen) }} warm calls · skipped, warm and cold: {{ r.skips.noanchor }} no anchor · {{ r.skips.overlap }} overlapped · {{ r.skips.nohdr }} no header · {{ r.skips.clamp }} clamped</span></td>
           <td class="n">{% if r.mean_rem is none %}—{% else %}{{ "{:,}".format(r.mean_rem) }} vs {{ "{:,}".format(r.mean_exp) }}{% endif %}</td>
           <td class="n">{{ "{:,}".format(r.mean_cached) if r.mean_cached is not none else '—' }}</td>
-          <td class="n">{% if r.f is none %}—{% else %}{{ "%.2f"|format(r.f) }}<span class="sub">{{ r.disc }} of {{ r.warm_n }} samples individually discounted</span>{% endif %}</td>
+          <td class="n">{% if r.f is none %}—{% else %}{{ r.f_text }}<span class="sub">{{ r.disc }} of {{ r.warm_n }} samples individually discounted</span>{% endif %}</td>
           <td class="n">{{ "{:,}".format(r.cold_n) }} isolated<span class="sub">{{ "{:,}".format(r.cold_seen) }} cold calls excluded from the warm count{% if r.cold_mean_abs is not none %} · mean |error| {{ "%.1f"|format(r.cold_mean_abs) }}{% endif %}</span></td>
           <td class="n"><b>{{ r.verdict }}</b></td>
           {%- endif %}
