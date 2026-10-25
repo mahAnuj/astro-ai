@@ -351,7 +351,18 @@ GATE7_SAMPLES = {
           "Rahu Yantra worshipped with blue flowers and black til", "sesame seeds donated to appease Rahu",
           "Rahu remedy: black til on Saturdays", "black sesame for Rahu mahadasha", "Rahu  \u2014 teel daan",
           "til for Rahu", "Rahu-related unstable wealth: donating black sesame",
-          "\u0930\u093e\u0939\u0941 \u0915\u0947 \u0932\u093f\u090f \u0924\u093f\u0932 \u0915\u093e \u0926\u093e\u0928"),
+          "\u0930\u093e\u0939\u0941 \u0915\u0947 \u0932\u093f\u090f \u0924\u093f\u0932 \u0915\u093e \u0926\u093e\u0928",
+          # The sentence exemptions are per sentence: an ancestor rite or a "Saturn rules sesame"
+          # in the NEXT sentence must not launder this one (QA round 1, D2).
+          "Water to ancestors on Pitru Paksha. Rahu: offer sesame seeds.",
+          "Saturn rules sesame seeds. Donate sesame seeds to Rahu on Saturdays.",
+          "Rahu: black til daan. Tarpan is a separate rite."),
+    # V. Both nodes "in their friendly signs" as a Kaal Sarp cancellation (grahas.md 11.1).
+    "V": ("Both Rahu and Ketu are in their friendly signs",
+          "Rahu and Ketu in friendly signs",
+          "Rahu & Ketu in their friendly rashis",
+          "both Rahu/Ketu placed in friendly signs",
+          "Cancellation: Rahu and Ketu are in its friendly sign and Jupiter is in a kendra"),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -517,6 +528,18 @@ GATE7_LEGAL = (
     "Sources and traditions\nThe Somvar vrats and silver are devotional and family tradition that we have not "
     "traced to a classical text.",
     "The Aditya Hridaya Stotra is a hymn from the Ramayana (Yuddha Kanda).",
+    # QA round 1 (D2): three correct sentences the first T and U patterns flagged.
+    "Saturn rules sesame seeds, Rahu rules black gram daal.",
+    "Pitru dosh with Rahu: tarpan with black sesame",
+    "Rahu: black til is Saturn's grain",
+    # V: the sourced wording, and a single node in a friendly sign (learn_registry's Rahu-dasha FAQ).
+    "Both Rahu and Ketu are in signs ruled by their traditional friends, Venus and Saturn (traditions vary "
+    "on the nodes' friendships)",
+    "A well-placed Rahu (in the 3rd, 6th, 10th, or 11th house, in a friendly sign, aspected by benefics)",
+    "Rahu and Ketu in signs ruled by their traditional friends (Venus, Saturn)",
+    # D4: the callout wording that replaced "the standard planet-by-planet remedy lists".
+    "The Beej mantra in its widely-accepted seed form follows one modern textbook's planet-by-planet "
+    "remedy table.",
 )
 
 # The one honest Hanuman-Saturn sentence a page may keep: it must say popular/folk
@@ -543,10 +566,13 @@ def gate7_mutations() -> tuple[int, int]:
         cands = [(w, t) for w, t in real if w.startswith(surface)]
         base[surface] = max(cands, key=lambda wt: len(wt[1]))
 
-    def run(units):
+    real_fields = gate.numerology_remedy_fields()
+
+    def run(units, fields=None):
         buf = io.StringIO()
         with redirect_stdout(buf):
-            ok = gate.gate_7_no_retired_claims_on_reader_surfaces(units)
+            ok = gate.gate_7_no_retired_claims_on_reader_surfaces(
+                units, real_fields if fields is None else fields)
         return ok, buf.getvalue()
 
     def inject(surface: str, sample: str):
@@ -593,6 +619,36 @@ def gate7_mutations() -> tuple[int, int]:
             missed += 1
             print(f"  MISSED  reader-claim C  honest sentence ({label}) expected "
                   f"{'green' if want_green else 'red'}")
+
+    # W. The numerology remedy rows carry no planet word in their strings, so the gate reads the
+    # structure (QA round 1, D1: sesame put back into the Rahu yantra and charity strings stayed
+    # green). Mutate the first offering field of each planet's row and require the gate to name it.
+    def row_of(planet: str):
+        return next(i for i, (_, pl, _t) in enumerate(real_fields) if pl == planet)
+
+    for planet, extra, want_green in (
+        ("Rahu", ", sesame seeds", False), ("Rahu", " with blue flowers and black sesame.", False),
+        ("Rahu", " Til daan.", False), ("Saturn", ", urad daal", False), ("Saturn", " and black gram.", False),
+        ("Rahu", " Donate black gram (urad daal).", True), ("Saturn", ", sesame seeds, iron nails.", True),
+    ):
+        i = row_of(planet)
+        fields = list(real_fields)
+        w, pl, t = fields[i]
+        fields[i] = (w, pl, t + extra)
+        ok, out = run(real, fields)
+        if ok == want_green and (want_green or f"{w}" in out):
+            caught += 1
+        else:
+            missed += 1
+            print(f"  MISSED  reader-claim W  {planet} remedy + {extra!r}: expected "
+                  f"{'green' if want_green else 'red naming ' + w}, went {'green' if ok else 'red'}")
+    for label, fields in (("no rows", []), ("no Rahu row", [f for f in real_fields if f[1] != "Rahu"]),
+                          ("no Saturn row", [f for f in real_fields if f[1] != "Saturn"])):
+        if not run(real, fields)[0]:
+            caught += 1
+        else:
+            missed += 1
+            print(f"  MISSED  reader-claim W  a stub ({label}) with nothing to scan PASSED")
 
     # A gate that checks nothing must fail: no units, a lone surface, a tree with
     # no files, and a tree whose files exist but hold no text.
