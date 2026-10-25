@@ -316,26 +316,43 @@ On a **PASS** (and **only** if Step 0a exited 0 — for a `provenance:outsider` 
 verdict as a comment):
 
 ```bash
-gh pr ready   <pr>    --repo "$GH_REPO"          # <-- see below; a draft cannot merge
-gh pr edit    <pr>    --repo "$GH_REPO" --add-label qa-pass
-gh issue edit <issue> --repo "$GH_REPO" --add-label qa-pass
-gh pr comment <pr>    --repo "$GH_REPO" --body "QA: PASS — <what was executed, and the numbers>"
+scripts/qa_verdict.sh --pr <pr> --verdict PASS --sha <the SHA QA EXAMINED> \
+  --note "<what was executed, and the numbers>"
 ```
 
-**`gh pr ready` is not optional, and it is first.** Step 3.6 tells you to open the PR in
-draft before QA has run, which is right — work that never left the runner is lost. But nothing
-used to take it *out* of draft, and **GitHub refuses to merge a draft PR**. PR #303 carried
-`qa-pass`, had its fix verified, and sat open from 2026-10-08 18:09 until a human un-drafted
-it, because the loop never did.
+**One command, and it is the only thing that may write `qa-pass` or `qa-fail`.** It readies
+the PR, applies the label to the PR *and* the issue, removes the opposite label from both,
+and posts the verdict comment — as one transition, because four loose `gh` calls are four
+places a cycle can run out of turns and leave the merge gate in a state no rule describes.
+
+**`--sha` is the SHA QA actually examined, not `HEAD` read afterwards.** If the branch moved
+underneath the round, the script refuses with exit 3 rather than labelling code nobody
+verified. A label records *that* QA passed; only the SHA records *what* it passed.
+
+**Readying the PR is not optional, and the script does it first.** Step 3.6 tells you to open
+the PR in draft before QA has run, which is right — work that never left the runner is lost.
+But nothing used to take it *out* of draft, and **GitHub refuses to merge a draft PR**. PR #303
+carried `qa-pass`, had its fix verified, and sat open from 2026-10-08 18:09 until a human
+un-drafted it, because the loop never did.
 
 Marking it ready is also what makes the gates run on it: `pr-gates` listens for
 `ready_for_review` (added 2026-10-09 for exactly this), so a draft that is never readied has
 **no checks at all** — and `agent-merge` refuses on "no checks reported", which is the correct
 behaviour applied to a PR that could never satisfy it.
 
-On a **FAIL**, `qa-fail` on both, and the comment says what broke. `agent-merge` checks `qa-fail`
-first and refuses regardless of anything else, so a later `qa-pass` cannot override a failure
-nobody re-verified.
+On a **FAIL**, the same command with `--verdict FAIL` and a `--note` saying what broke. It puts
+`qa-fail` on both, removes any `qa-pass`, and **leaves the draft a draft**.
+
+**A later round that genuinely passes CLEARS the failure.** `agent-merge` still checks `qa-fail`
+first and refuses regardless of anything else — but a PASS recorded through this script removes
+`qa-fail` from the PR and the issue as part of the same transition, so the two labels can never
+coexist and that check now refuses a *stale* failure rather than a fixed one. This is the
+opposite of what this file said until 2026-10-25 ("a later `qa-pass` cannot override a failure
+nobody re-verified"), and the old wording had made the first failed round terminal: the loop
+could fix the defects, re-verify them, and still only hand the PR to a human. #530 was sitting
+in exactly that state. The property worth keeping was never "a failure is permanent" — it was
+"only a QA round may clear one", and routing every write through this script is what enforces
+that, where a bare `--add-label qa-pass` did not.
 
 Three reasons it is a label and not prose:
 
@@ -360,12 +377,16 @@ git push -u origin issue/<n>-<slug>        # or partial/<n>-<slug> — see Step 
 
 Then keep pushing after each subsequent commit — QA rounds included.
 
-**On a `partial/<n>-<slug>` branch this is not optional, and nothing will catch you.**
-`.github/workflows/agent-work.yml`'s safety-net step ("Push the branch and open the PR"), its
-"Report an unfinished cycle" summary and its loop receipt only recognise `issue/*` branches (a
-`case` on `issue/*`, `origin/issue/*` and `refs/heads/issue/`). On a `partial/` branch they report
-"shipped nothing", push nothing and attribute no PR to the run. Push after **every** commit yourself.
-This is a known gap in the workflow that this loop's token cannot fix (no `workflows` permission).
+**Push after every commit anyway — the net is a net, not the plan.** As of 2026-10-25 the three
+steps in `.github/workflows/agent-work.yml` that used to recognise only `issue/*` — the safety-net
+step ("Push the branch and open the PR"), the "Report an unfinished cycle" summary and the loop
+receipt — cover `issue/`, `partial/` and `fix/` alike. The net now refuses only `main` and a
+detached HEAD, and asks the question it was always meant to ask: *are there commits here that
+would be lost?*
+
+Until then a `partial/` branch hit a `case` on `issue/*`, was told "Cycle shipped nothing", and was
+**discarded unpushed** inside a runner about to be destroyed — the exact loss this step exists to
+prevent, in the namespace that needed it most.
 
 **Why, measured:** the GitHub App token the action gives you **expires after one hour**. Run
 37749887640 spent 63 minutes on #270 — architect, engineer, QA — produced a complete branch, and
@@ -382,12 +403,25 @@ runner is not.
 
 ## Step 4 — branch and PR
 
-Two branch forms, and the choice is made by whether the PR **fully closes** the issue:
+Two branch forms, and the choice is made by whether the PR **fully closes** the issue.
+
+**The name no longer decides whether it can merge** — changed 2026-10-25. `agent-merge` gates on
+the PR's **author** (`AGENT_AUTHORS`), so both forms are merged by the loop on the same evidence:
+gates green on the head SHA, `qa-pass`, no `qa-fail`, inside the size limit, no trust-boundary
+path. What the name still decides is whether the **issue** closes, which is a different question
+and the only one a name was ever able to answer.
 
 | | branch | PR body | what happens at merge |
 |---|---|---|---|
 | fixes every acceptance criterion | `issue/<n>-<slug>` | `closes #<n>` | `agent-merge` may merge it (provenance permitting); `close-on-evidence` may close the issue after verifying production |
-| acceptance criteria remain that the loop cannot do (e.g. anything under `.github/workflows/`) | `partial/<n>-<slug>` | `refs #<n>`, plus what remains | `agent-merge` ignores it (it only manages `issue/`); a human reviews and merges; nothing closes the issue |
+| acceptance criteria remain that the loop cannot do (e.g. anything under `.github/workflows/`) | `partial/<n>-<slug>` | `refs #<n>`, plus what remains | `agent-merge` may merge it on the same evidence; **nothing closes the issue** — `close-on-evidence` and the merge comment both read `^issue/<n>` and find nothing, which is correct while work remains |
+
+**So choose the name by what is left to do, never by what you want to happen to the PR.** Naming a
+finished fix `partial/` leaves its issue open forever; naming an unfinished one `issue/` closes an
+issue whose acceptance criteria are not met. Between 2026-10-21 and 2026-10-25 the name also
+silently decided mergeability, and every `partial/` PR in that window — #480, #482 and #487 among
+them, each carrying `qa-pass` on green gates — waited for a human. That is the coupling this change
+removed.
 
 ```bash
 git switch -c issue/<n>-<slug>             # or partial/<n>-<slug>
@@ -419,9 +453,15 @@ If you find yourself pushing to `main`, or routing around a refusal, stop and fi
 **The table above is the rule; this is the reason.** A PR for a PARTIAL fix must not carry
 `closes #<n>` and must not use an `issue/<n>-` branch.
 `close-on-evidence` falls back to the branch name when the body has no closing keyword, so
-`issue/<n>-…` alone is enough for it to close an issue the PR only half-delivered, and
-`agent-merge` treats `issue/` as "the loop's own branch". Name a partial branch `partial/<n>-<slug>`,
-say in the body what remains, and reference the issue as `refs #<n>`.
+`issue/<n>-…` alone is enough for it to close an issue the PR only half-delivered. Name a partial
+branch `partial/<n>-<slug>`, say in the body what remains, and reference the issue as `refs #<n>`.
+
+Note what this costs you now and did not before: the name used to be load-bearing twice over, and
+a `partial/` name bought you a human reviewer. It no longer does — `agent-merge` gates on
+authorship — so the branch name's **only** remaining job is to keep `close-on-evidence` off an
+issue that is not finished. If a slice needs a human to look at it for some other reason, say so
+with `needs-human-review`, which the sweep and the label check both refuse. Do not reach for a
+branch name to express it.
 
 ## Step 4.5 — blocked on a CHOICE, not on a conflict? Escalate to `chief`.
 

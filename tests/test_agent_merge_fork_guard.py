@@ -24,6 +24,8 @@ reads the declarations, not just one that reads the shell.
 from __future__ import annotations
 
 import re
+import subprocess
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -60,13 +62,81 @@ def test_neither_leg_can_fire_without_its_own_head_check():
     assert "workflow_run" in right and "head_repository.full_name" in right, right
 
 
-def test_the_agent_branch_filter_reads_an_env_var_not_an_interpolation():
+def test_the_eligibility_filter_reads_env_vars_not_interpolations():
     # The injection point in #358: the filter itself was
     # `case "${{ steps.pr.outputs.branch }}" in`, so the branch name was shell
     # source inside the step meant to reject it.
+    #
+    # Since 2026-10-25 the step tests the AUTHOR rather than the branch name,
+    # and the author is attacker-chosen in exactly the same sense -- a fork PR
+    # carries whatever login opened it -- so it arrives the same way, by env.
     own = next(s for s in JOB["steps"] if s.get("id") == "own")
-    assert 'case "$PR_BRANCH" in' in run_text(own)
+    assert 'case ",$AGENT_AUTHORS," in' in run_text(own)
+    assert '*",$PR_AUTHOR,"*' in run_text(own)
     assert "${{" not in run_text(own)
+
+
+def test_the_eligibility_gate_executes_correctly_for_every_author():
+    """Run the `own` step's real shell, rather than reading its text.
+
+    `claude[bot]` contains `[` and `]`, which are glob metacharacters, and the
+    author is expanded into a `case` PATTERN -- the one position in shell where
+    a variable's contents become matching syntax. Quoting the expansion
+    (`*",$PR_AUTHOR,"*`) is what makes it literal, and nothing about the source
+    says so: both forms parse, and the unquoted one reads `[bot]` as a
+    character class.
+
+    The unquoted form happens to fail CLOSED here (it matches nothing, so the
+    loop merges nothing), which is the benign direction but still a silent
+    outage of the kind this repo has shipped before -- #469 was the last
+    autonomous merge and nobody noticed for four days. So this executes it.
+    """
+    own = next(st for st in JOB["steps"] if st.get("id") == "own")
+    body = own["run"]
+    authors = JOB["env"]["AGENT_AUTHORS"].replace(
+        "${{ github.repository_owner }}", "mahAnuj")
+
+    def eligible(author: str) -> bool:
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "out"
+            p = subprocess.run(
+                ["bash", "-c", body],
+                capture_output=True, text=True,
+                env={"AGENT_AUTHORS": authors, "PR_AUTHOR": author,
+                     "PR_BRANCH": "partial/523-x", "GITHUB_OUTPUT": str(out),
+                     "PATH": "/usr/bin:/bin"},
+            )
+            assert p.returncode == 0, p.stderr
+            return "ok=true" in (out.read_text() if out.exists() else "")
+
+    # In the list.
+    assert eligible("claude[bot]")
+    assert eligible("mahAnuj")
+
+    # The glob reading of `[bot]`, which must NOT be how this matches.
+    for ch in ("claudeb", "claudeo", "claudet", "b", "o", "t"):
+        assert not eligible(ch), ch
+
+    # Substring and case near-misses.
+    for impostor in ("claude[bot]-x", "xclaude[bot]", "claude", "Claude[bot]",
+                     "notmahAnuj", "mahAnuj-evil", "", "shubhagya-publisher[bot]"):
+        assert not eligible(impostor), impostor
+
+
+def test_the_author_is_matched_exactly_and_not_by_substring():
+    # `claude[bot]` contains `[`, a glob metacharacter in a shell `case`. The
+    # membership test must therefore be the comma-delimited form -- a bare
+    # `*"$PR_AUTHOR"*` would admit `claude[bot]-x`, and an unanchored `case
+    # "$PR_AUTHOR" in claude[bot])` would read the brackets as a character
+    # class and match the single characters b, o and t.
+    own = run_text(next(s for s in JOB["steps"] if s.get("id") == "own"))
+    assert '*"$PR_AUTHOR"*' not in own, "substring match on the author"
+    for literal in ("claude[bot])", "mahAnuj)"):
+        assert literal not in own, (
+            f"{literal} as a `case` pattern reads `[bot]` as a glob character "
+            "class; the author list belongs in AGENT_AUTHORS, matched by "
+            "comma-delimited membership"
+        )
 
 
 def test_no_step_interpolates_anything_into_its_run_block():

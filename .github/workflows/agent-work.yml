@@ -219,7 +219,8 @@ jobs:
           {
             echo "### Cycle did not finish"
             echo "Branches pushed by this run, if any:"
-            git branch -r --list 'origin/issue/*' --sort=-committerdate | head -3
+            git branch -r --list 'origin/issue/*' 'origin/partial/*' 'origin/fix/*' \
+              --sort=-committerdate | head -3
             echo ""
             echo "If no PR was opened, the work is on the branch and the issue has no comment."
           } >> "$GITHUB_STEP_SUMMARY"
@@ -242,20 +243,36 @@ jobs:
           # success this system produced in a day. The outcome is now stated
           # whether or not anything shipped.
           branch=$(git rev-parse --abbrev-ref HEAD)
+          # ANY branch but `main` is work worth rescuing — it used to be
+          # `issue/*` only, and that cost this net exactly the cases it was
+          # written for. agent-cycle.md Step 4 tells a cycle to name its branch
+          # `partial/<n>-<slug>` whenever acceptance criteria remain that the
+          # loop cannot do, and on such a branch this step reported "Cycle
+          # shipped nothing" and exited 0 WITHOUT PUSHING — discarding real
+          # commits inside a runner about to be destroyed. agent-cycle.md:363
+          # says so outright: "On a `partial/` branch this is not optional, and
+          # nothing will catch you."
+          #
+          # The question this step exists to ask is "are there commits that
+          # would be lost", and a name cannot answer it. The commit check below
+          # answers it, so the only branch to refuse here is `main` itself —
+          # where a push is the deploy and this net must never fire. HEAD
+          # detached reports "HEAD", which is not a pushable ref either.
           case "$branch" in
-            issue/*) ;;
-            *)
+            main|HEAD)
               {
                 echo "### Cycle shipped nothing"
-                echo "Ended on \`$branch\`, not an \`issue/*\` branch, so no work was committed."
+                echo "Ended on \`$branch\`, which this step will not push."
                 echo ""
                 echo "Either the cycle stopped legitimately at step 0 — \`cannot-reproduce\`, or a"
                 echo "premise it could not establish — or it dispatched a subagent and ended its"
                 echo "turn before the result came back, which kills the subagent (#285). Read the"
                 echo "issue comment this run wrote: a legitimate stop says so, a lost dispatch"
                 echo "claims an engineer was dispatched and leaves nothing behind."
+                echo ""
+                echo "A cycle that MEANT to ship never ends on \`main\`: it branches first."
               } >> "$GITHUB_STEP_SUMMARY"
-              echo "on '$branch', not an issue branch — nothing to push"
+              echo "on '$branch' — nothing to push"
               exit 0 ;;
           esac
           if [ -z "$(git log origin/main..HEAD --oneline)" ]; then
@@ -363,12 +380,19 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
+          # EVERY branch namespace a cycle may end on, not just `issue/`. A
+          # `partial/` cycle recorded `branch=none pr=none` here and /admin/ops
+          # read that as "the run shipped nothing" — for runs that had opened a
+          # PR. #480, #487, #512 and #530 were all invisible to the receipt.
           branch=$(git for-each-ref --sort=-committerdate --count=1 \
-            --format='%(refname:short)' refs/heads/issue/ || true)
+            --format='%(refname:short)' \
+            refs/heads/issue/ refs/heads/partial/ refs/heads/fix/ || true)
           issue=none
           pr=none
           if [ -n "$branch" ]; then
-            n=$(printf '%s' "$branch" | sed -n 's|^issue/\([0-9][0-9]*\).*|\1|p')
+            # The owning issue number, from whichever namespace it is in. A
+            # `partial/` branch still refs its issue; it just does not close it.
+            n=$(printf '%s' "$branch" | sed -n 's|^[a-z][a-z]*/\([0-9][0-9]*\).*|\1|p')
             [ -n "$n" ] && issue=$n
             # A FAILED lookup is not "no PR". Printing pr=none then would record a
             # false `nothing` for a run that did open one, so print no receipt at

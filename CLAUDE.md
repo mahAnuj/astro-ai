@@ -36,8 +36,12 @@ enables auto-merge. Three things follow:
 - **`allow_auto_merge` is on for the repository** (set 2026-10-21). Turn it off
   and every measurement PR stays open forever with no error anywhere.
 - **Expect ~8 short-lived `measurements/<run-id>-<attempt>` branches a day.**
-  Not `feat/**` (a second `pr-gates` run) and not `issue/*` (`agent-merge`
-  sweeps those every 30 min for a `qa-pass` label these will never carry).
+  Not `feat/**`, which would trigger a second `pr-gates` run. The `issue/*`
+  half of this warning expired on 2026-10-25: `agent-merge` no longer gates on
+  the branch NAME at all, so no name keeps a PR away from its sweep. What keeps
+  these out is that the sweep requires `qa-pass`, which a measurement PR never
+  carries, and that their author (`shubhagya-publisher[bot]`) is not in
+  `AGENT_AUTHORS`. They self-merge via `allow_auto_merge`, not via that job.
 
 Two more consequences worth knowing before you move that directory:
 
@@ -193,8 +197,38 @@ What has NOT changed, and why it matters more now than before:
   `src/astro_ai/prompts/`, `src/astro_ai/knowledge/`, `.github/workflows/`, `events.py`,
   `notify.py`, `email_sender.py` or `storage.py`. The loop still pushes and merges
   everything else. The list is the `TRUST_BOUNDARY` env var in `agent-merge.yml`.
+- **What `agent-merge` will consider is decided by the PR's AUTHOR, not its branch name
+  — changed 2026-10-25.** `AGENT_AUTHORS` in `agent-merge.yml` holds `claude[bot]` and the
+  repo owner; a fork PR cannot reach the job at all.
+
+  It was a `case` on `issue/*`, and the name carried none of the meaning it was asked to
+  carry. Cycles correctly name a branch `partial/<n>-<slug>` whenever acceptance criteria
+  remain that the loop cannot do, and every such PR became unmergeable — not on a safety
+  judgment, on its spelling. #480, #482 and #487 each carried `qa-pass` on green gates and
+  were un-drafted by the loop itself; all three waited for a human, and **between
+  2026-10-21 and 2026-10-25 every code PR did.** The last branch the loop merged on its own
+  was #469 on 2026-10-21.
+
+  **Two consequences to know.** The owner's own branches are now in scope where they were
+  silently excluded before — everything downstream still applies, so this grants no
+  exemption, it only stops the job ignoring the PR. And a branch name no longer holds
+  anything back: to hold a PR for a human, use `needs-human-review`, which the sweep and
+  the label check both refuse. The branch name's one remaining job is to keep
+  `close-on-evidence` off an issue that is not finished.
+- **Every QA label is written by `scripts/qa_verdict.sh` and by nothing else.** It applies
+  the verdict and this round's provenance to the PR *and* the issue, removes the opposite of
+  each from both, binds a PASS to the SHA that QA examined (refusing if the branch has moved
+  since), readies the PR on a PASS and leaves a draft alone on a FAIL — one transition
+  instead of four `gh` calls that can each stop half-done.
+
+  **A PASS clears a previous round's `qa-fail`.** `agent-merge` still refuses any PR carrying
+  `qa-fail`, so before this the first failed round was terminal: the loop could fix the
+  defects, re-verify them, and still only hand the PR to a human. The property worth keeping
+  was never "a failure is permanent" but **"only a QA round may clear one"** — which routing
+  every write through one script enforces and a bare `--add-label qa-pass` did not.
 - **A merge can arrive up to 30 minutes after the gates go green (#357).** `agent-merge`
-  now also runs on a `*/30` cron and re-evaluates open `issue/*` PRs carrying `qa-pass`,
+  now also runs on a `*/30` cron and re-evaluates every open PR carrying `qa-pass` whose
+  author is in `AGENT_AUTHORS` (`claude[bot]` and the repo owner),
   because its two event triggers are edges and a PR whose last green check landed after
   the last edge used to strand forever — four times, most recently #356. **So a PR that
   has not merged yet is not a PR that was refused.** Check `gh run list --workflow=
