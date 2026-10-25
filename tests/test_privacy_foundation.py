@@ -10,6 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from _fake_openai import fake_client
 from astro_ai import identity, profiling, providers
 
 
@@ -90,8 +91,7 @@ def _fake_client(usage):
                                  finish_reason="stop")],
         usage=usage,
     )
-    completions = SimpleNamespace(create=lambda **kw: resp)
-    return lambda **kw: SimpleNamespace(chat=SimpleNamespace(completions=completions))
+    return lambda **kw: fake_client(lambda **k: resp)
 
 
 def _call(monkeypatch, usage):

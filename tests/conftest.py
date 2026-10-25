@@ -116,12 +116,16 @@ def _token_bucket_off_and_empty(monkeypatch):
     `tests/test_token_bucket.py` opts in by setting BHAGYA_TPM_PACING itself --
     inside the test body, which runs after this fixture and so wins.
     """
-    from astro_ai import providers
+    from astro_ai import providers, ratelimit_probe
 
     monkeypatch.setenv("BHAGYA_TPM_PACING", "0")
     providers._BUCKETS.clear()
+    # The cached-token probe (#475 Phase 1b) is process-global too: its anchors
+    # and sequence numbers would otherwise carry one test's calls into the next.
+    ratelimit_probe.reset()
     yield
     providers._BUCKETS.clear()
+    ratelimit_probe.reset()
 
 
 @pytest.fixture(autouse=True)
