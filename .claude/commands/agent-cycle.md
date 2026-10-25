@@ -116,7 +116,7 @@ uv run python scripts/validate_issue.py <n> --samples 5
 
   ```bash
   gh pr list --repo "$GH_REPO" --state open --search "<n> in:body" --json number,headRefName
-  git ls-remote --heads origin "issue/<n>-*" "partial/<n>-*"
+  git ls-remote --heads origin "issue/<n>-*" "partial/<n>-*" "fix/<n>-*"
   ```
 
   The reasoning is one sentence: **production cannot show work that has not merged.** A cycle
@@ -214,14 +214,14 @@ have spent it again.
 Before dispatching anyone, establish what exists:
 
 ```bash
-git ls-remote --heads origin "issue/<n>-*" "partial/<n>-*"   # a branch from an earlier cycle? (both forms; see Step 4)
+git ls-remote --heads origin "issue/<n>-*" "partial/<n>-*" "fix/<n>-*"   # a branch from an earlier cycle? (all three forms; see Step 4)
 gh issue view <n> --comments                        # a design? a QA verdict? a failure?
 gh pr list --repo "$GH_REPO" --head "<branch>"      # a PR already open?
 ```
 
 Then:
 
-- **A branch on `origin` with commits** (`issue/<n>-*` or `partial/<n>-*`) — continue from it. `git switch` to it and carry on;
+- **A branch on `origin` with commits** (`issue/<n>-*`, `partial/<n>-*` or `fix/<n>-*`) — continue from it. `git switch` to it and carry on;
   do not start a parallel branch. The commits on it are real work that survived.
 - **An architect design in the comments and no branch** — the design stands. **Skip the architect
   and hand that design straight to the engineer.** #270 carries a complete one: 18 i18n keys, EN

@@ -839,6 +839,44 @@ MUTATIONS = [
      'r"^[a-z]+/(\\d+)"',
      "test_a_measurement_branch_never_yields_an_issue"),
 
+    # #531 fixed the branch-name coupling in three places and the loop STILL
+    # could not dispatch, because two more copies of the rule live as PROSE in
+    # the steward's and chief's prompts: "an `issue/*` branch with an owning
+    # issue, never a PR a human opened on their own branch". Both clauses were
+    # false by then -- `agent-cycle` Step 2.5 adopts a branch whoever opened the
+    # PR, and the repository owner opens PRs on cycle branches routinely (#521,
+    # #524 were both `mahAnuj` on `partial/`). Nothing type-checks prose, so
+    # these rows are the only thing that can notice it coming back.
+    ("the steward's dispatch rule demands an `issue/*` branch again",
+     ".claude/agents/steward.md",
+     "one the detector printed an owning issue for",
+     "an `issue/*` branch with an owning issue",
+     "test_the_dispatch_rule_never_requires_an_issue_slash_branch"),
+
+    ("the steward stands down on a PR the owner opened (the 21h stall)",
+     ".claude/agents/steward.md",
+     "- A PR the detector could not name an owning issue for",
+     "- A PR a human opened is not this loop's.\n#",
+     "test_the_dispatch_rule_never_refuses_a_pr_for_who_opened_it"),
+
+    # chief's copy of the same rule. It is the LAST gate: `steward-ineffective`
+    # routes every long-lived stall here, so a wrong refusal in this prompt
+    # cannot be worked around by any other path.
+    ("chief refuses a dispatch by who authored the PR rather than by trust",
+     ".github/workflows/agent-steward.yml",
+     "authored by neither `claude[bot]` nor the repository owner",
+     "that a human authored",
+     "test_chief_keeps_the_two_refusals_that_are_real"),
+
+    # A dispatch the cycle cannot act on is worse than none: Step 2.5 reports
+    # "no branch", opens a parallel one, and the stalled PR is never touched --
+    # ~50 Actions minutes against a free-tier budget to clear nothing.
+    ("a cycle cannot find the fix/ branch the steward dispatched about",
+     ".claude/commands/agent-cycle.md",
+     '"fix/<n>-*"   # a branch from an earlier cycle?',
+     '# a branch from an earlier cycle?',
+     "test_a_cycle_looks_for_every_namespace_the_steward_may_dispatch_at"),
+
     # The safety net in agent-work gated on `issue/*` until 2026-10-25, so a
     # cycle ending on a `partial/` branch was told "Cycle shipped nothing" and
     # exited 0 WITHOUT PUSHING -- discarding real commits inside a runner about
@@ -3261,13 +3299,26 @@ def _worker_sandbox():
     sandbox = pathlib.Path(tmp) / "repo"
     for sub in _SANDBOX_SUBDIRS:
         shutil.copytree(ROOT / sub, sandbox / sub,
-                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc",
+                                                      "worktrees"))
     _SANDBOXES.path = sandbox
     yield sandbox
 
 
 _SANDBOX_DIRS: list[str] = []
-_SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements")
+# `.claude` is here because in THIS repo the agent definitions and slash
+# commands are load-bearing behaviour, not configuration: the whole autonomous
+# loop is prose in `.claude/agents/*.md` and `.claude/commands/*.md`, nothing
+# type-checks it, and until 2026-10-25 no mutation row could reach it -- a row
+# naming one of those files died with FileNotFoundError and, worse, any test
+# that READ one failed to import in the sandbox, which reports rc=2 on every
+# row including CONTROL and blinds the whole harness.
+#
+# `worktrees` is excluded in the copy above and that exclusion is load-bearing:
+# `.claude/worktrees/` is untracked scratch space holding git worktrees, 4.2 GB
+# of it when this was measured, and copying it per sandbox would make the sweep
+# unrunnable rather than merely slow.
+_SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements", ".claude")
 
 
 def _drop_worker_sandbox() -> None:
