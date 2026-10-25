@@ -121,7 +121,17 @@ fi
 # The owning issue. The branch name is a HINT and nothing more -- --issue wins,
 # and `none` means the PR carries the verdict by itself.
 if [ -z "$ISSUE" ]; then
-  ISSUE=$(printf '%s' "$BRANCH" | sed -n 's|^[a-z][a-z]*/\([0-9][0-9]*\).*|\1|p')
+  # Only the three namespaces that carry an issue number by construction
+  # (agent-cycle.md Step 4). A bare `[a-z]*` would read
+  # `measurements/40140256532-1` as issue 40140256532 and label a stranger.
+  # `sed -E`, NOT a BRE with `\|`: alternation and `+` in a basic regex are GNU
+  # extensions that match NOTHING on BSD sed, which is what runs on the
+  # maintainer's macOS. detect_stalls.py carries the same warning, measured.
+  # Caught here by this script returning `issue=none` on a `partial/` branch.
+  # `#` as the delimiter, not `|`: `|` is both the s-command delimiter and the
+  # alternation operator, and BSD sed reads the first alternation `|` as the
+  # closing delimiter -- "RE error: parentheses not balanced".
+  ISSUE=$(printf '%s' "$BRANCH" | sed -nE 's#^(issue|partial|fix)/([0-9]+).*#\2#p')
   [ -n "$ISSUE" ] || ISSUE=none
 fi
 

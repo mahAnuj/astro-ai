@@ -818,6 +818,27 @@ MUTATIONS = [
      '*,$PR_AUTHOR,*)',
      "test_the_eligibility_gate_executes_correctly_for_every_author"),
 
+    # Every routed action in steward.md is "dispatch a cycle at the owning
+    # issue", so a null here is a stall the steward can SEE and cannot ACT on.
+    # Measured 2026-10-25: #521 and #524 sat `no-qa-verdict` 21h with green
+    # gates, three steward runs cleared neither, and `steward-ineffective`
+    # escalated both -- because their branches were `partial/` and the regex
+    # was `^issue/`.
+    ("the stall detector cannot name a partial branch's issue (steward is mute)",
+     "scripts/detect_stalls.py",
+     'r"^(?:issue|partial|fix)/(\\d+)"',
+     'r"^issue/(\\d+)"',
+     "test_the_owning_issue_resolves_for_every_cycle_namespace"),
+
+    # The opposite error, which is the obvious widening: ~8 measurement
+    # branches a day, and `measurements/40140256532-1` would route a dispatch
+    # at issue 40140256532.
+    ("the stall detector reads a measurement run-id as an issue number",
+     "scripts/detect_stalls.py",
+     'r"^(?:issue|partial|fix)/(\\d+)"',
+     'r"^[a-z]+/(\\d+)"',
+     "test_a_measurement_branch_never_yields_an_issue"),
+
     # The safety net in agent-work gated on `issue/*` until 2026-10-25, so a
     # cycle ending on a `partial/` branch was told "Cycle shipped nothing" and
     # exited 0 WITHOUT PUSHING -- discarding real commits inside a runner about

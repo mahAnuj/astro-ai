@@ -675,7 +675,7 @@ jobs:
           # issue whose slice shipped with no comment on it is the audit gap
           # Phase 7 exists to close. The WORDING differs because the outcome
           # does -- see the second branch.
-          issue=$(printf '%s' "$PR_BRANCH" | grep -oE '^[a-z]+/[0-9]+' | grep -oE '[0-9]+' || true)
+          issue=$(printf '%s' "$PR_BRANCH" | grep -oE '^(issue|partial|fix)/[0-9]+' | grep -oE '[0-9]+' || true)
           case "$PR_BRANCH" in
             issue/*) full=1 ;;
             *)       full=0 ;;
@@ -769,7 +769,7 @@ jobs:
         run: |
           # Any namespace: a red gate on a `partial/` slice is as worth
           # reporting on the issue as a red gate on a full fix.
-          issue=$(printf '%s' "$PR_BRANCH" | grep -oE '^[a-z]+/[0-9]+' | grep -oE '[0-9]+' || true)
+          issue=$(printf '%s' "$PR_BRANCH" | grep -oE '^(issue|partial|fix)/[0-9]+' | grep -oE '[0-9]+' || true)
           [ -z "$issue" ] && exit 0
           gh issue comment "$issue" --repo "$GH_REPO" --body \
             "\`pr-gates\` failed on PR #$PR_NUMBER (\`$PR_SHA\`), conclusion: $RUN_CONCLUSION.
