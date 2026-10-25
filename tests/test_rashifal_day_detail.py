@@ -528,9 +528,10 @@ def test_the_welcome_email_pins_every_transit_it_computes(monkeypatch):
     """routes/subscribe.py `_send_welcome_email`: TWO call sites in one function.
 
     The first feeds the generated reading; the second feeds the Chandra Bala,
-    Gochara and per-area panel printed beside it. The second was left on now()
-    when the per-area panel was added to this email, which is the exact defect
-    the pin exists to remove -- a panel and a reading from different skies.
+    Gochara and per-area context. email/welcome.html does not render that
+    context today (only email/daily_rashifal.html does), so this guards the
+    next template to adopt it, not a difference a reader sees now: left on
+    now() it would be a panel and a reading from different skies.
     """
     subscribe = _disarm_mail_and_generation(monkeypatch)
     seen = _spy(monkeypatch, subscribe, "compute_transit_snapshot")

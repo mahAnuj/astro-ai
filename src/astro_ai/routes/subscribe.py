@@ -460,10 +460,12 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
 
     ctx = _email_context(lang=lang, city=city)
     ctx["rashifal_sections"] = _filter_rashi_sections(sections, rashi)
-    # Pinned like the transit above: this one feeds the panel printed beside the
-    # reading, so left on now() the two are computed from different skies -- the
-    # defect chart.rashifal_day_moment exists to remove (found by
-    # tests/test_rashifal_day_detail.py when it began spying on every site).
+    # Pinned like the transit above. email/welcome.html does NOT render these
+    # three today (only email/daily_rashifal.html does), so no reader sees a
+    # difference now; they stay pinned so that a template which adopts the panel
+    # cannot start from a different sky than the reading -- the defect
+    # chart.rashifal_day_moment exists to remove. tests/test_rashifal_day_detail.py
+    # spies on this site, so an unpinned call is caught, not just a visible one.
     _welcome_transit = compute_transit_snapshot(
         compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE),
         when=rashifal_day_moment(date.today()))
