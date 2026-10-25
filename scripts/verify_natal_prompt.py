@@ -69,13 +69,16 @@ the 413 taught us about.
       Graha Maitri and Rahu/Ketu-grid shapes of Gate 7 families K and L.
       Slice 7 added four more (M Mercury-Jupiter enmity, N Vishnu rite for
       Manglik, O Monday Shiva as the Kaal Sarp remedy, P Kaal Sarp tradition
-      called classical); the constants are shared with Gate 7.
+      called classical); the constants are shared with Gate 7. Slice 8 added
+      three more: the bija mantras lent BPHS's name (S), urad given as a
+      Saturn practice (T) and sesame as a Rahu one (U) - including a summary
+      that said "donate black daal / mustard oil" under Sade Sati.
 
   Gate 7 - no retired claims on the reader-facing surfaces.  The same claims
       sat on the pages a reader opens directly: the /learn article bodies,
       the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
       languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
-      is shown. This gate scans those surfaces for the seventeen families #398
+      is shown. This gate scans those surfaces for the twenty-one families #398
       retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
       Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
       practice or as ANY planet's universal/classical/safe one (slice 5),
@@ -88,7 +91,10 @@ the 413 taught us about.
       Jupiter as "Mercury's natural enemy" (M), a Vishnu rite as a Manglik
       remedy (N), Monday Shiva as the first/classical Kaal Sarp remedy (O),
       Kaal Sarp tradition called classical (P) and "universal safe" on the
-      Saturn/Jupiter/Mercury/Mars pages (Q)
+      Saturn/Jupiter/Mercury/Mars pages (Q), and (slice 8) a remedy page citing
+      a BPHS "<planet> adhyaya", a Surya Samhita or a Muhurtha Chintamani
+      "charity list" or "Grahashanti tradition" (R), the bija mantras "per BPHS"
+      (S), urad / black gram as a Saturn practice (T) and sesame as a Rahu one (U)
       (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
       families still open on #398 ("black sesame", weekday fasting):
       forbidding them here would only make main red. A bare "per BPHS" is
@@ -929,6 +935,75 @@ NON_VENUS_UNIVERSAL_SAFE = (
     r"|\bsafe\s+for\s+any\s+chart,?\s+no\s+consultation"
 )
 
+# --- #398 slice 8 ------------------------------------------------------------
+# Four more reader-facing defects, each checked against knowledge/*.md first.
+# Written wider than the literals found (#467): spelling, spacing, case, order.
+
+# R. A remedy page borrowing authority from a chapter or book nobody on this
+# project has checked. BPHS is not in data/ (chart.py's comment on the deleted
+# "(per BPHS)" attribution says so) and remedies.md 5/6/7 attribute the planet ->
+# deity table and the good-deed/grain list to Rao's Ch. 34, not to a Parashara
+# "<planet> adhyaya"; "Surya Samhita" is in no book we hold; "Sunday charity list per
+# Muhurtha Chintamani" is a claim nothing shows is true. The pages' "Classical sources
+# cited" callouts carried all four. The label itself is pinned only where it still
+# sits over folk material (the two tail alternatives), because manglik- and
+# pitru-dosh-remedies keep it over a different, unreviewed attribution that is not this
+# slice's to change. Muhurat pages say "per Muhurtha Chintamani" for windows; only the
+# charity-list shape is forbidden.
+_PLANET_ANY = (r"(?:S[uū]rya|Sun|Chandra|Moon|Mangal|Mars|Budh\w*|Mercury|Guru|Jupiter|Shukra|Venus"
+               r"|Shani|Saturn|Rahu|Ketu)")
+_ADHYAYA = r"adhy?[aā]y\w*"
+BPHS_REMEDY_ATTRIBUTION = (
+    rf"\b(?:BPHS|B\.P\.H\.S\.|{_PARASH})[^.;\n]{{0,50}}?\b{_PLANET_ANY}\s+{_ADHYAYA}"
+    rf"|\b{_PLANET_ANY}\s+{_ADHYAYA}"
+    r"|\bS[uū]rya\s+Sa[mṃ]hit[aā]"
+    r"|\b(?:charity|donation|daan|dana)\s+(?:list|items?)\s+(?:per|from|in|according\s+to)\s+(?:the\s+)?Muhurt\w*\s+Chintamani"
+    r"|\bMuhurt\w*\s+Chintamani[^.;\n]{0,30}\b(?:charity|donation)\s+(?:list|items?)"
+    rf"|\b(?:ones|remedies|practices)\s+(?:from|in)\s+(?:the\s+)?(?:BPHS|B\.P\.H\.S\.|{_PARASH})"
+    r"|\bGraha[\s\-]*sh?(?:a|ā)+nth?[iī]\w*\s+tradition"
+    r"|\bClassical\s+sources\s+cited[\s\S]{0,900}?not\s+traced\s+to\s+a\s+classical"
+    r"|\bClassical\s+sources\s+cited[\s\S]{0,60}?(?:modern\s+)?folk\s+tradition"
+)
+
+# S. The bija mantras lent BPHS's name. remedies.md 6.3 calls them "widely-accepted
+# ... universally cited across classical sources" and attributes them to no book; the
+# two Rahu/Ketu pages said "the full classical form per BPHS is ...". A bare
+# "per BPHS" elsewhere is still not forbidden (family I's comment has the count).
+_BIJA = r"(?:beej|beeja|bheej|bija|seed)\w*"
+_BPHS_NAME = rf"(?:BPHS|B\.P\.H\.S\.|{_PARASH})"
+BIJA_PER_BPHS = (
+    rf"\b{_BIJA}[^.;\n]{{0,80}}?\b(?:per|according\s+to|from|in|by|given\s+in)\s+(?:the\s+)?{_BPHS_NAME}"
+    rf"|\b(?:per|according\s+to)\s+(?:the\s+)?{_BPHS_NAME}[^.;\n]{{0,60}}?\b{_BIJA}"
+    rf"|\b(?:full|classical|original|standard)\s+(?:classical\s+)?(?:form|version)\s+(?:is\s+)?(?:per|from|in|according\s+to)\s+(?:the\s+)?{_BPHS_NAME}"
+)
+
+# T/U. Grain cross-assignments against Rao 34.3 (remedies.md 5.1): Saturn rules
+# SESAME, Rahu rules BLACK GRAM (urad) daal, Ketu none. T: urad/black gram given as a
+# Saturn practice -- it names Saturn, or sits beside Saturn's own sesame / iron /
+# mustard oil in one list (saturn-in-10th-house-career had "black sesame, iron, mustard
+# oil, or black gram (urad dal)" with no planet word in the bullet at all, and the
+# sade-sati summary "donate black daal / mustard oil"). U: sesame given as a Rahu
+# practice. The window refuses to cross the OTHER planet's name, so "this is Saturn's
+# grain" (rahu-remedies, which flags the substitution honestly) stays legal.
+# The look-around keeps "Anuradha" (a nakshatra, on a dozen pages) from reading as "urad".
+_URAD = (r"(?<![A-Za-z])(?:urad|urd|udad|maash|black[\s\-]+(?:gram|daal|dal|dhal|lentils?)"
+         r"|kaali[\s\-]+(?:daal|dal)|उड़द|उरद)(?![A-Za-z])")
+_NOT_RAHU = r"(?:(?!Rahu|राहु)[^.;\n])"
+_SATURN_ONLY = r"(?:Saturn|Shani|Sade[\s\-]*Sati|शनि)"
+_SATURN_ITEM = r"(?:sesame|til\b|tila\b|teel\b|iron|mustard[\s\-]+oil|तिल)"
+URAD_AS_SATURN = (
+    rf"{_URAD}\b{_NOT_RAHU}{{0,100}}?\b{_SATURN_ONLY}"
+    rf"|\b{_SATURN_ONLY}{_NOT_RAHU}{{0,100}}?{_URAD}"
+    rf"|{_URAD}\b[^.;\n]{{0,60}}?\b{_SATURN_ITEM}"
+    rf"|\b{_SATURN_ITEM}[^.;\n]{{0,60}}?{_URAD}"
+)
+_SESAME = r"(?:\b(?:sesame|til|tila|teel)\b|तिल)"
+_NOT_SATURN = r"(?:(?!Saturn|Shani|शनि)[^.;\n])"
+SESAME_AS_RAHU = (
+    rf"(?:\bRahu\b|राहु){_NOT_SATURN}{{0,100}}?{_SESAME}"
+    rf"|{_SESAME}{_NOT_SATURN}{{0,100}}?(?:\bRahu\b|राहु)"
+)
+
 # What Gate 6 forbids inside an llm_summary: FORBIDDEN, except that the bare
 # "milk offering" is replaced by MILK_TO_SHIVA (the claim #398 actually
 # retired is Moon -> Shiva; kaal-sarp-dosh-remedies has a Nag Panchami serpent
@@ -986,6 +1061,13 @@ SUMMARY_FORBIDDEN = tuple(
     (KSD_TRADITION_AS_CLASSICAL,
      "vedic_reference.md 3.2/8.1: Kaal Sarp is post-classical and Trimbakeshwar puja is folk practice; "
      "Nag Panchami and the silver pair are in no remedies.md row"),
+    # Slice 8.
+    (BIJA_PER_BPHS,
+     "remedies.md 6.3: the bija mantras are 'widely-accepted', attributed to no book; BPHS is not in data/"),
+    (URAD_AS_SATURN,
+     "Rao 34.3 (remedies.md 5.1): Saturn rules sesame seeds, Rahu rules black gram (urad) daal"),
+    (SESAME_AS_RAHU,
+     "Rao 34.3 (remedies.md 5.1): sesame is Saturn's grain; Rahu's is black gram (urad) daal"),
 )
 
 
@@ -1185,6 +1267,19 @@ READER_FORBIDDEN = (
     (NON_VENUS_UNIVERSAL_SAFE,
      "Q: remedies.md 8 reserves 'the universal safe fallback' for Sri Yantra + Sri Sukta (Venus); "
      "the Saturn/Jupiter/Mercury/Mars pages may say 'a simple place to start', not universal or safe"),
+
+    # R-U: #398 slice 8. See the constants above for the sourcing of each.
+    (BPHS_REMEDY_ATTRIBUTION,
+     "R: BPHS is not in data/, and no book we hold shows a Parashara '<planet> adhyaya', a Surya Samhita "
+     "or a Muhurtha Chintamani 'charity list'; state what remedies.md supports and label the rest "
+     "devotional/folk tradition, under a heading that does not say 'Classical'"),
+    (BIJA_PER_BPHS,
+     "S: remedies.md 6.3 calls the bija mantras 'widely-accepted', attributed to no book; "
+     "'the full classical form per BPHS' is a claim nothing we hold supports"),
+    (URAD_AS_SATURN,
+     "T: Rao 34.3 gives Saturn sesame seeds and Rahu black gram (urad) daal; urad is not a Saturn grain"),
+    (SESAME_AS_RAHU,
+     "U: Rao 34.3 gives Rahu black gram (urad) daal and Saturn sesame seeds; sesame is not a Rahu grain"),
 )
 
 # Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.

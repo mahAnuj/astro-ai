@@ -654,7 +654,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Peak phase (~2.5y in 1st) → health, identity, self-doubt themes\n"
             "• Setting phase (~2.5y in 2nd) → family, speech, financial recovery themes\n"
             "• Not universally bad — forces maturity, discipline, long-term foundation\n"
-            "• Safe remedies: Vishnu worship, serve elderly, donate black daal / mustard oil\n"
+            "• Safe remedies: Vishnu worship, serve elderly, donate sesame / mustard oil\n"
             "• Do NOT blame all life difficulty on Sade Sati — check Dasha + transit context first"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
@@ -682,7 +682,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are real cancellation factors for Kaal Sarp?",
-                "a": "Strong Lagna lord, Jupiter in a kendra (1st/4th/7th/10th) or trine (5th/9th), Rahu and Ketu in friendly signs, exalted planets, presence of Raja or Dhana yogas, and natural softening after age 40-45 all reduce or cancel the dosha's effects. Most charts have at least one of these.",
+                "a": "Strong Lagna lord, Jupiter in a kendra (1st/4th/7th/10th) or trine (5th/9th), Rahu and Ketu in signs ruled by their traditional friends (Venus, Saturn), exalted planets, presence of Raja or Dhana yogas, and natural softening after age 40-45 all reduce or cancel the dosha's effects. Most charts have at least one of these.",
             },
             {
                 "q": "Are expensive Kaal Sarp removal pujas necessary?",
@@ -1228,7 +1228,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the genuine classical remedies for financial struggles?",
-                "a": "The most reliable: (1) Sri Yantra worship — the classical universal wealth-generating practice, can be done by anyone. (2) For Jupiter strengthening: Sri Sukta, Guru mantra (Om Brihaspataye Namah), Thursday fasting, feeding brahmins. (3) For 2nd house strengthening: disciplined honest speech (2nd rules speech, honest speech produces wealth), generous feeding of family and guests. (4) For 11th house gains: serving elder siblings and mentors. (5) For Rahu-related unstable wealth: Rahu mantra, donating black sesame. Avoid: expensive 'Lakshmi puja packages', speculation without genuine analysis, treating astrological wealth Dashas as guaranteed outcomes.",
+                "a": "The most reliable: (1) Sri Yantra worship — the classical universal wealth-generating practice, can be done by anyone. (2) For Jupiter strengthening: Sri Sukta, Guru mantra (Om Brihaspataye Namah), Thursday fasting, feeding brahmins. (3) For 2nd house strengthening: disciplined honest speech (2nd rules speech, honest speech produces wealth), generous feeding of family and guests. (4) For 11th house gains: serving elder siblings and mentors. (5) For Rahu-related unstable wealth: Rahu mantra, donating black gram (urad daal). Avoid: expensive 'Lakshmi puja packages', speculation without genuine analysis, treating astrological wealth Dashas as guaranteed outcomes.",
             },
         ),
         llm_summary=(
