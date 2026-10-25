@@ -36,8 +36,12 @@ enables auto-merge. Three things follow:
 - **`allow_auto_merge` is on for the repository** (set 2026-10-21). Turn it off
   and every measurement PR stays open forever with no error anywhere.
 - **Expect ~8 short-lived `measurements/<run-id>-<attempt>` branches a day.**
-  Not `feat/**` (a second `pr-gates` run) and not `issue/*` (`agent-merge`
-  sweeps those every 30 min for a `qa-pass` label these will never carry).
+  Not `feat/**`, which would trigger a second `pr-gates` run. The `issue/*`
+  half of this warning expired on 2026-10-25: `agent-merge` no longer gates on
+  the branch NAME at all, so no name keeps a PR away from its sweep. What keeps
+  these out is that the sweep requires `qa-pass`, which a measurement PR never
+  carries, and that their author (`shubhagya-publisher[bot]`) is not in
+  `AGENT_AUTHORS`. They self-merge via `allow_auto_merge`, not via that job.
 
 Two more consequences worth knowing before you move that directory:
 
@@ -193,8 +197,96 @@ What has NOT changed, and why it matters more now than before:
   `src/astro_ai/prompts/`, `src/astro_ai/knowledge/`, `.github/workflows/`, `events.py`,
   `notify.py`, `email_sender.py` or `storage.py`. The loop still pushes and merges
   everything else. The list is the `TRUST_BOUNDARY` env var in `agent-merge.yml`.
+- **What `agent-merge` will consider is decided by the PR's AUTHOR, not its branch name
+  — changed 2026-10-25.** `AGENT_AUTHORS` in `agent-merge.yml` holds `claude[bot]` and the
+  repo owner; a fork PR cannot reach the job at all.
+
+  It was a `case` on `issue/*`, and the name carried none of the meaning it was asked to
+  carry. Cycles correctly name a branch `partial/<n>-<slug>` whenever acceptance criteria
+  remain that the loop cannot do, and every such PR became unmergeable — not on a safety
+  judgment, on its spelling. #480, #482 and #487 each carried `qa-pass` on green gates and
+  were un-drafted by the loop itself; all three waited for a human, and **between
+  2026-10-21 and 2026-10-25 every code PR did.** The last branch the loop merged on its own
+  was #469 on 2026-10-21.
+
+  **Two consequences to know.** The owner's own branches are now in scope where they were
+  silently excluded before — everything downstream still applies, so this grants no
+  exemption, it only stops the job ignoring the PR. And a branch name no longer holds
+  anything back: to hold a PR for a human, use `needs-human-review`, which the sweep and
+  the label check both refuse. The branch name's one remaining job is to keep
+  `close-on-evidence` off an issue that is not finished.
+- **What the STEWARD will dispatch a cycle for is decided the same way — changed
+  2026-10-25, hours after the above.** Fixing the merge gate was not enough: the steward's
+  and `chief`'s prompts carried their own copies of the branch-name rule, as prose, saying
+  to write a dispatch line only for *"an `issue/*` branch with an owning issue, never a PR
+  a human opened on their own branch"*. Both clauses were false by then — `agent-cycle`
+  Step 2.5 adopts an existing branch and PR whoever opened it, `partial/` and `fix/` carry
+  an issue number by construction, and the owner opens PRs on cycle branches routinely.
+  So #521 and #524 sat `no-qa-verdict` with green gates while `detect_stalls.py` named
+  their issues correctly and the steward, reading its own prompt, stood down twice a day.
+
+  The test is now **the author plus an owning issue the detector named.** The two refusals
+  that remain are a diff touching `.github/workflows/**` (the App token has no `workflows`
+  permission) and an author outside `AGENT_AUTHORS`. Guarded by
+  `tests/test_steward_dispatch_scope.py` and four mutation rows.
+
+  **That is six places one coupling lived.** When a rule is restated in prose for agents
+  to read, grep for every copy before believing a fix is done — `agent-merge`,
+  `agent-work`, `detect_stalls.py`, `steward.md` ×2 and `agent-steward.yml` ×2.
+- **A green PR gets its QA round immediately, not in four hours — `qa-on-green.yml`,
+  added 2026-10-25.** `workflow_run` on `PR gates` completing: if the PR is open, its
+  author is in `AGENT_AUTHORS`, the head still matches what was gated, it carries no
+  `qa-pass`/`qa-fail`/`needs-human-review`, its diff misses `.github/workflows/**` and its
+  branch names an owning issue, it dispatches one cycle through the shared
+  `scripts/dispatch_cycle.sh`.
+
+  Nothing previously treated "the gates passed" as a reason to run QA. QA lives inside
+  `/agent-cycle`, and a cycle started only two ways: the twice-daily `agent-work` cron, or
+  a steward dispatch that could not see a PR until `detect_stalls.py`'s **4h** threshold
+  and then spent one dispatch per run. Measured on #536: a cycle shipped 16 files, ran QA
+  round 1, fixed its findings and stopped; both gates were green at 16:35Z; the PR was 47
+  minutes old, so nothing could see it, and once it could it queued behind two others.
+
+  **Why it is deterministic and the steward is not wired here.** `agent-steward.yml`
+  records that it is *"NOT wired to `pr-gates`, which completes on every push to every PR
+  and would queue steward runs ... all day"*. That objection is about the AGENT, not the
+  trigger — a steward run costs a Claude invocation, this costs a few API reads and no
+  model. So the frequent check is cheap and the expensive thing stays rare.
+
+  **The loop guard is the load-bearing part.** A cycle that runs a round, pushes a fix and
+  ends with no verdict leaves exactly the state this fires on, so without a guard it would
+  dispatch at its own output forever at ~50 Actions minutes a turn. One dispatch per HEAD
+  COMMIT, remembered as a `qa-on-green: dispatched at <sha>` comment written **before** the
+  dispatch. A new commit earns another round; the same commit never does.
+
+  **It cannot write a verdict.** It holds `pull-requests: write` for that one comment and
+  for nothing else; `tests/test_qa_on_green.py` fails the build if `gh pr edit`,
+  `--add-label` or `--remove-label` appears in any `run:` block. A dispatcher that could
+  label could hand itself `qa-pass` and make `agent-merge` decorative. A `qa-fail` PR is
+  left alone: that needs a FIX, and which fix is a judgment `steward.md`'s routing table
+  holds across three kinds with different actions.
+- **The mutation sandbox copies `.claude/` — since 2026-10-25.** `_SANDBOX_SUBDIRS` in
+  `mutate_behaviour_suite.py` had `src`, `tests`, `.github`, `scripts` and `measurements`,
+  so a row naming an agent definition or a slash command died with `FileNotFoundError` and
+  — far worse — **any test that merely READ one failed to import in the sandbox, which
+  reports rc=2 on every row including CONTROL and reports the whole harness blind.** In
+  this repo the loop's behaviour IS prose in `.claude/`, so that was the one tree the
+  mutation gate could not reach. `.claude/worktrees/` is excluded in the copy and that
+  exclusion is load-bearing: it held 4.2 GB of git worktrees when measured.
+- **Every QA label is written by `scripts/qa_verdict.sh` and by nothing else.** It applies
+  the verdict and this round's provenance to the PR *and* the issue, removes the opposite of
+  each from both, binds a PASS to the SHA that QA examined (refusing if the branch has moved
+  since), readies the PR on a PASS and leaves a draft alone on a FAIL — one transition
+  instead of four `gh` calls that can each stop half-done.
+
+  **A PASS clears a previous round's `qa-fail`.** `agent-merge` still refuses any PR carrying
+  `qa-fail`, so before this the first failed round was terminal: the loop could fix the
+  defects, re-verify them, and still only hand the PR to a human. The property worth keeping
+  was never "a failure is permanent" but **"only a QA round may clear one"** — which routing
+  every write through one script enforces and a bare `--add-label qa-pass` did not.
 - **A merge can arrive up to 30 minutes after the gates go green (#357).** `agent-merge`
-  now also runs on a `*/30` cron and re-evaluates open `issue/*` PRs carrying `qa-pass`,
+  now also runs on a `*/30` cron and re-evaluates every open PR carrying `qa-pass` whose
+  author is in `AGENT_AUTHORS` (`claude[bot]` and the repo owner),
   because its two event triggers are edges and a PR whose last green check landed after
   the last edge used to strand forever — four times, most recently #356. **So a PR that
   has not merged yet is not a PR that was refused.** Check `gh run list --workflow=

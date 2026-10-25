@@ -121,10 +121,14 @@ That is `USER AUTHORISED PUSH` one level up. So:
    dies in 1.5 seconds, which is how #421 hid for three days.
 
    **No line is a legitimate outcome, and one line is the maximum.** Write one only
-   for a PR a cycle can actually adopt: an `issue/*` branch with an owning issue.
-   A PR a human opened on their own branch is not this loop's — a cycle has nothing
-   to adopt — and writing a line "to be safe" spends ~50 Actions minutes on work
-   nobody ruled on. The step cannot tell a considered dispatch from a hedge.
+   for a PR a cycle can actually adopt: one the detector printed an owning issue for,
+   authored by `claude[bot]` or the repository owner. **The branch name is not the
+   test** — that coupling cost this loop four days and is recorded in #531. `issue/`,
+   `partial/` and `fix/` all carry an issue number, and `agent-cycle` Step 2.5 adopts
+   an existing branch and PR whoever opened it, so an owner-opened PR on a cycle
+   branch is squarely this loop's. Writing a line "to be safe" spends ~50 Actions
+   minutes on work nobody ruled on, and the step cannot tell a considered dispatch
+   from a hedge.
 5. **Apply ROUTING labels only**: `needs-human-review`, `skill:*`, `needs-evidence`.
    Never a verdict label.
 6. **Escalate to `chief`** in either shape, and prefer it over parking a decision:
@@ -241,7 +245,12 @@ Do not manufacture work. These are normal and you leave them alone:
 - `qa-fail` present. That PR is correctly blocked; QA found something. Not your
   business.
 - A red gate. That is the system working. A failing check is information, not a stall.
-- A PR a human opened. Branches outside `issue/*` are not this loop's.
+- A PR the detector could not name an owning issue for — a `measurements/*` branch,
+  or anything outside `issue/`, `partial/` and `fix/`. A dispatch needs an issue to
+  aim at. **Who OPENED the PR is not the test** (#531): the owner opens PRs on cycle
+  branches, and those are this loop's to unblock.
+- A PR authored by neither `claude[bot]` nor the repository owner. A contributor's PR
+  is not this loop's to drive.
 - `needs-human-review` already on the issue. Someone has been told. Re-filing is noise.
 
 **If the detector's findings are all of the above, say so and produce nothing.** A quiet

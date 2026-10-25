@@ -795,11 +795,144 @@ MUTATIONS = [
      "",
      "test_both_trigger_legs_require_the_head_to_be_this_repository"),
 
-    ("#358: the agent-branch filter interpolates the branch name again",
+    # Was anchored on `case "$PR_BRANCH" in` when eligibility was a branch-name
+    # test. That moved to the AUTHOR on 2026-10-25, and the author is
+    # attacker-chosen in exactly the same sense -- a fork PR carries whatever
+    # login opened it -- so the #358 invariant now lives here.
+    ("#358: the eligibility filter interpolates a PR value again",
      ".github/workflows/agent-merge.yml",
-     'case "$PR_BRANCH" in',
-     'case "${{ steps.pr.outputs.branch }}" in',
-     "test_the_agent_branch_filter_reads_an_env_var_not_an_interpolation"),
+     '*",$PR_AUTHOR,"*)',
+     '*",${{ steps.pr.outputs.author }},"*)',
+     "test_the_eligibility_filter_reads_env_vars_not_interpolations"),
+
+    # A NEW silent failure mode, introduced by that same move. `claude[bot]`
+    # contains `[` and `]`, and the author is expanded into a `case` PATTERN --
+    # the one position in shell where a variable's contents become matching
+    # syntax. Only the quoting makes it literal; both forms parse. Unquoted it
+    # fails CLOSED (the list matches nothing, so the loop merges nothing), which
+    # is the benign direction and therefore the one nobody notices: #469 was the
+    # last autonomous merge and four days passed before it was looked into.
+    ("the author match reads [bot] as a glob class (loop silently merges nothing)",
+     ".github/workflows/agent-merge.yml",
+     '*",$PR_AUTHOR,"*)',
+     '*,$PR_AUTHOR,*)',
+     "test_the_eligibility_gate_executes_correctly_for_every_author"),
+
+    # Every routed action in steward.md is "dispatch a cycle at the owning
+    # issue", so a null here is a stall the steward can SEE and cannot ACT on.
+    # Measured 2026-10-25: #521 and #524 sat `no-qa-verdict` 21h with green
+    # gates, three steward runs cleared neither, and `steward-ineffective`
+    # escalated both -- because their branches were `partial/` and the regex
+    # was `^issue/`.
+    ("the stall detector cannot name a partial branch's issue (steward is mute)",
+     "scripts/detect_stalls.py",
+     'r"^(?:issue|partial|fix)/(\\d+)"',
+     'r"^issue/(\\d+)"',
+     "test_the_owning_issue_resolves_for_every_cycle_namespace"),
+
+    # The opposite error, which is the obvious widening: ~8 measurement
+    # branches a day, and `measurements/40140256532-1` would route a dispatch
+    # at issue 40140256532.
+    ("the stall detector reads a measurement run-id as an issue number",
+     "scripts/detect_stalls.py",
+     'r"^(?:issue|partial|fix)/(\\d+)"',
+     'r"^[a-z]+/(\\d+)"',
+     "test_a_measurement_branch_never_yields_an_issue"),
+
+    # ---- qa-on-green: the dispatcher that fires on EVERY green ------------
+    #
+    # Unique among the dispatchers in that its trigger is frequent, so its
+    # failure modes are not "inert" but "spends the Actions budget". The loop
+    # guard is the one that bites: a cycle that runs a round, pushes a fix and
+    # ends with no verdict leaves exactly the state this workflow fires on.
+    ("qa-on-green dispatches at its own output forever (the loop guard loses the head)",
+     ".github/workflows/qa-on-green.yml",
+     "qa-on-green: dispatched at $head",
+     "qa-on-green: dispatched at",
+     "test_the_dispatch_is_remembered_against_the_head_commit"),
+
+    # The `[bot]` glob trap, a third time in this repo. Unquoted, `claude[bot]`
+    # is a character class matching only `b`, `o` or `t`, so the gate matches
+    # nothing and the whole workflow is silently inert.
+    ("qa-on-green reads [bot] as a glob class (the dispatcher never fires)",
+     ".github/workflows/qa-on-green.yml",
+     '*",$author,"*)',
+     '*,$author,*)',
+     "test_an_agent_author_is_accepted"),
+
+    # ~8 measurement branches a day; `measurements/40140256532-1` would aim a
+    # ~50-minute cycle at issue 40140256532.
+    ("qa-on-green reads a measurement run-id as an issue number",
+     ".github/workflows/qa-on-green.yml",
+     "s#^(issue|partial|fix)/([0-9]+).*#",
+     "s#^[a-z]+/([0-9]+).*#",
+     "test_a_branch_with_no_owning_issue_yields_nothing"),
+
+    # A push during the gate run moves the head, and a round aimed at a stale
+    # green verifies code the gates never saw.
+    ("qa-on-green acts on a green that belongs to an older commit",
+     ".github/workflows/qa-on-green.yml",
+     '[ "$head" != "$HEAD_SHA" ]',
+     '[ "$head" = "" ]',
+     "test_it_refuses_to_act_on_a_stale_green"),
+
+    # A `qa-fail` PR needs a FIX, and which fix is a judgment `steward.md`'s
+    # routing table holds across three kinds with different actions. Sending a
+    # round at unaddressed findings returns the same FAIL at full cost.
+    ("qa-on-green sends a round at a PR whose findings are unaddressed",
+     ".github/workflows/qa-on-green.yml",
+     '*",qa-fail,"*)',
+     '*",qa-fail-never,"*)',
+     "test_it_declines_a_pr_that_is_already_routed"),
+
+    # #531 fixed the branch-name coupling in three places and the loop STILL
+    # could not dispatch, because two more copies of the rule live as PROSE in
+    # the steward's and chief's prompts: "an `issue/*` branch with an owning
+    # issue, never a PR a human opened on their own branch". Both clauses were
+    # false by then -- `agent-cycle` Step 2.5 adopts a branch whoever opened the
+    # PR, and the repository owner opens PRs on cycle branches routinely (#521,
+    # #524 were both `mahAnuj` on `partial/`). Nothing type-checks prose, so
+    # these rows are the only thing that can notice it coming back.
+    ("the steward's dispatch rule demands an `issue/*` branch again",
+     ".claude/agents/steward.md",
+     "one the detector printed an owning issue for",
+     "an `issue/*` branch with an owning issue",
+     "test_the_dispatch_rule_never_requires_an_issue_slash_branch"),
+
+    ("the steward stands down on a PR the owner opened (the 21h stall)",
+     ".claude/agents/steward.md",
+     "- A PR the detector could not name an owning issue for",
+     "- A PR a human opened is not this loop's.\n#",
+     "test_the_dispatch_rule_never_refuses_a_pr_for_who_opened_it"),
+
+    # chief's copy of the same rule. It is the LAST gate: `steward-ineffective`
+    # routes every long-lived stall here, so a wrong refusal in this prompt
+    # cannot be worked around by any other path.
+    ("chief refuses a dispatch by who authored the PR rather than by trust",
+     ".github/workflows/agent-steward.yml",
+     "authored by neither `claude[bot]` nor the repository owner",
+     "that a human authored",
+     "test_chief_keeps_the_two_refusals_that_are_real"),
+
+    # A dispatch the cycle cannot act on is worse than none: Step 2.5 reports
+    # "no branch", opens a parallel one, and the stalled PR is never touched --
+    # ~50 Actions minutes against a free-tier budget to clear nothing.
+    ("a cycle cannot find the fix/ branch the steward dispatched about",
+     ".claude/commands/agent-cycle.md",
+     '"fix/<n>-*"   # a branch from an earlier cycle?',
+     '# a branch from an earlier cycle?',
+     "test_a_cycle_looks_for_every_namespace_the_steward_may_dispatch_at"),
+
+    # The safety net in agent-work gated on `issue/*` until 2026-10-25, so a
+    # cycle ending on a `partial/` branch was told "Cycle shipped nothing" and
+    # exited 0 WITHOUT PUSHING -- discarding real commits inside a runner about
+    # to be destroyed, which is the exact loss the step exists to prevent.
+    # agent-cycle.md:363 had recorded it as a known gap. This is its first guard.
+    ("the push net refuses a partial branch again (work lost with the runner)",
+     ".github/workflows/agent-work.yml",
+     "            main|HEAD)",
+     "            main|HEAD|partial/*|fix/*)",
+     "test_the_push_net_rescues_every_branch_a_cycle_may_end_on"),
 
     # The failure mode of the env: refactor itself: an undeclared name expands
     # to the empty string, so the post-merge issue comment goes to `gh issue
@@ -3212,13 +3345,26 @@ def _worker_sandbox():
     sandbox = pathlib.Path(tmp) / "repo"
     for sub in _SANDBOX_SUBDIRS:
         shutil.copytree(ROOT / sub, sandbox / sub,
-                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc",
+                                                      "worktrees"))
     _SANDBOXES.path = sandbox
     yield sandbox
 
 
 _SANDBOX_DIRS: list[str] = []
-_SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements")
+# `.claude` is here because in THIS repo the agent definitions and slash
+# commands are load-bearing behaviour, not configuration: the whole autonomous
+# loop is prose in `.claude/agents/*.md` and `.claude/commands/*.md`, nothing
+# type-checks it, and until 2026-10-25 no mutation row could reach it -- a row
+# naming one of those files died with FileNotFoundError and, worse, any test
+# that READ one failed to import in the sandbox, which reports rc=2 on every
+# row including CONTROL and blinds the whole harness.
+#
+# `worktrees` is excluded in the copy above and that exclusion is load-bearing:
+# `.claude/worktrees/` is untracked scratch space holding git worktrees, 4.2 GB
+# of it when this was measured, and copying it per sandbox would make the sweep
+# unrunnable rather than merely slow.
+_SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements", ".claude")
 
 
 def _drop_worker_sandbox() -> None:

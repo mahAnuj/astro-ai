@@ -35,7 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from astro_ai import festivals, llm                      # noqa: E402
 from astro_ai.chart import (compute_chart, compute_panchang,              # noqa: E402
-                            compute_transit_snapshot)
+                            compute_transit_snapshot, rashifal_day_moment)
 from astro_ai.rashifal_derive import combined_keys                        # noqa: E402
 from astro_ai.routes.deps import RASHIFAL_PROMPT_PATH                     # noqa: E402
 
@@ -67,9 +67,15 @@ def build(lang: str, today_iso: str, rashi: str = "all") -> tuple[str, str]:
     on its own.
     """
     natal = compute_chart(*_NEUTRAL)
-    transit = compute_transit_snapshot(natal)
-    panchang = compute_panchang(natal)
     today = date.fromisoformat(today_iso)
+    # PINNED to `today`, never now(): this job runs at 22:00 UTC for the IST
+    # day that is just starting, and the page serves the result for the next
+    # 24 hours. Under now() the published prose and the page's own panel are
+    # computed from different skies by design -- the defect QA measured on the
+    # serving path (9 of 90 days) in its guaranteed form. rashifal_day_moment
+    # is the one definition every Rashifal artefact shares.
+    transit = compute_transit_snapshot(natal, when=rashifal_day_moment(today))
+    panchang = compute_panchang(natal, when=rashifal_day_moment(today))
 
     signals = llm._build_rashifal_day_signals(
         transit, today_iso, lang, panchang, festivals.festival_for_date(today))

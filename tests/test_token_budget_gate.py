@@ -111,7 +111,14 @@ def test_every_shipped_prompt_file_is_covered_and_every_route_has_a_row():
 
     routes = gate.route_files(deps)
     assert gate.uncovered_prompts(routes, deps.PROMPTS_DIR) == []
-    assert set(gate.BUDGET) == set(routes) | {"natal+payload"}
+    # The two SYNTHETIC rows: a route's system prompt plus its user message.
+    # `natal+payload` because #266 was the SUM crossing the TPM line, not the
+    # prompt alone; `rashifal_single+payload` added 2026-10-24 (#523) for the
+    # same reason in reverse -- that route was measured on its system prompt
+    # only, so the row read "+0.0%" while ~120 tok per rashi went into the USER
+    # message and the gate passed BECAUSE it could not see the change.
+    assert set(gate.BUDGET) == set(routes) | {"natal+payload",
+                                              "rashifal_single+payload"}
     assert len(routes) == 11  # one per prompts/*.txt, overlays as ask.txt + overlay
 
 

@@ -234,7 +234,24 @@ def find_stalls(hours: float) -> list[dict]:
         # steward routes on this, so leaving it to be inferred downstream is how
         # a dispatch lands on the wrong issue. `grep`-equivalent, not GNU sed:
         # `\+` is a GNU extension and matched nothing on BSD twice this week.
-        m = re.match(r"^issue/(\d+)", pr["headRefName"] or "")
+        #
+        # ALL THREE CYCLE NAMESPACES, not just `issue/` -- fixed 2026-10-25.
+        # Every routed action in steward.md's table is "dispatch a cycle at the
+        # owning issue", so a `None` here is not a missing field, it is a stall
+        # the steward can SEE and cannot ACT on. Measured the day this changed:
+        # #521 and #524 sat `no-qa-verdict` for 21h with green gates and no
+        # verdict either way, the steward ran at least three times against
+        # both, cleared neither, and `steward-ineffective` escalated both to
+        # chief -- which would have ruled the same un-dispatchable answer on
+        # every run. The PRs were not held by any judgment; their branches were
+        # called `partial/` and this regex returned nothing.
+        #
+        # NOT `^[a-z]+/(\d+)`: that matches `measurements/40140256532-1` and
+        # yields issue 40140256532, so a measurement PR open long enough to be
+        # judged stalled would route a dispatch at an issue that does not
+        # exist. The namespaces are enumerated because only these three carry
+        # an issue number by construction (agent-cycle.md Step 4).
+        m = re.match(r"^(?:issue|partial|fix)/(\d+)", pr["headRefName"] or "")
         issue = int(m.group(1)) if m else None
         labels = {l["name"] for l in pr["labels"]}
         # `merge` is agent-merge's own check run; it is not a gate.
