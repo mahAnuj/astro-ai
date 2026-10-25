@@ -278,8 +278,11 @@ def _page_html(monkeypatch, extra, chain=(K120, K20)):
 
 
 def _panel(html: str) -> str:
+    # Ends where the Phase 1b table begins: it sits under this one in the same
+    # <section>, and its own columns are not this panel's.
     start = html.index("Tokens per minute, by model")
-    return html[start:html.index("</section>", start)]
+    end = html.index("Cached-token accounting", start)
+    return html[start:end]
 
 
 def _cells(panel: str, key_model: str) -> list[str]:
