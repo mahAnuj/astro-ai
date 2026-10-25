@@ -1,8 +1,25 @@
 {
-  "generated_at": "2026-10-25T22:18:46Z",
+  "generated_at": "2026-10-25T23:02:58Z",
   "repo": "mahAnuj/astro-ai",
   "window_days": 30,
   "loops": [
+    {
+      "workflow": "agent-work.yml",
+      "display": "Agent work",
+      "cadence": [
+        "00 23 * * *",
+        "00 11 * * *"
+      ],
+      "cadence_error": null,
+      "schedule_since": "2026-10-25T22:21:35Z",
+      "slots_due": 1,
+      "runs_scheduled": 30,
+      "runs_total": 73,
+      "last_run": "2026-10-25T18:12:32Z",
+      "last_conclusion": "failure",
+      "last_run_health": "red",
+      "verdict": "broken"
+    },
     {
       "workflow": "agent-design.yml",
       "display": "Agent design",
@@ -10,7 +27,7 @@
         "00 20 * * 4"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-25T19:29:12Z",
+      "schedule_since": "2026-10-25T22:21:35Z",
       "slots_due": 0,
       "runs_scheduled": 3,
       "runs_total": 4,
@@ -26,7 +43,7 @@
         "00 20 * * 1"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-25T19:29:12Z",
+      "schedule_since": "2026-10-25T22:21:35Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 4,
@@ -42,7 +59,7 @@
         "00 19 * * 2"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-25T19:29:12Z",
+      "schedule_since": "2026-10-25T22:21:35Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 4,
@@ -58,9 +75,9 @@
       "cadence_error": "only a fixed minute and hour are supported: '0 5,8,11,14,17,20 * * *'",
       "schedule_since": null,
       "slots_due": null,
-      "runs_scheduled": 66,
-      "runs_total": 73,
-      "last_run": "2026-10-25T22:18:32Z",
+      "runs_scheduled": 67,
+      "runs_total": 74,
+      "last_run": "2026-10-25T22:59:23Z",
       "last_conclusion": "in_progress",
       "last_run_health": "running",
       "verdict": "on-demand"
@@ -74,7 +91,7 @@
       "slots_due": null,
       "runs_scheduled": 17,
       "runs_total": 100,
-      "last_run": "2026-10-25T21:07:52Z",
+      "last_run": "2026-10-25T22:19:50Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -86,7 +103,7 @@
         "00 17 * * 0"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-25T19:29:12Z",
+      "schedule_since": "2026-10-25T22:21:35Z",
       "slots_due": 0,
       "runs_scheduled": 3,
       "runs_total": 6,
@@ -102,7 +119,7 @@
         "00 19 * * 3"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-25T19:29:12Z",
+      "schedule_since": "2026-10-25T22:21:35Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 2,
@@ -132,30 +149,13 @@
         "00 18 * * 5"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-25T19:29:12Z",
+      "schedule_since": "2026-10-25T22:21:35Z",
       "slots_due": 0,
       "runs_scheduled": 3,
       "runs_total": 3,
       "last_run": "2026-10-23T21:07:19Z",
       "last_conclusion": "success",
       "last_run_health": "green",
-      "verdict": "not-due-yet"
-    },
-    {
-      "workflow": "agent-work.yml",
-      "display": "Agent work",
-      "cadence": [
-        "00 23 * * *",
-        "00 11 * * *"
-      ],
-      "cadence_error": null,
-      "schedule_since": "2026-10-25T19:29:12Z",
-      "slots_due": 0,
-      "runs_scheduled": 30,
-      "runs_total": 73,
-      "last_run": "2026-10-25T18:12:32Z",
-      "last_conclusion": "failure",
-      "last_run_health": "red",
       "verdict": "not-due-yet"
     },
     {
@@ -179,7 +179,7 @@
         "30 03 * * 2"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-25T19:29:12Z",
+      "schedule_since": "2026-10-25T22:21:35Z",
       "slots_due": 0,
       "runs_scheduled": 2,
       "runs_total": 3,
@@ -197,7 +197,7 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-10-25T19:36:18Z",
+      "last_run": "2026-10-25T22:19:40Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -210,8 +210,8 @@
       "schedule_since": null,
       "slots_due": null,
       "runs_scheduled": 0,
-      "runs_total": 2,
-      "last_run": "2026-10-25T19:28:07Z",
+      "runs_total": 3,
+      "last_run": "2026-10-25T22:19:50Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -223,14 +223,14 @@
         "00 22 * * *"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-25T19:29:12Z",
-      "slots_due": 1,
+      "schedule_since": "2026-10-25T22:21:35Z",
+      "slots_due": 0,
       "runs_scheduled": 1,
       "runs_total": 4,
       "last_run": "2026-10-25T00:08:10Z",
       "last_conclusion": "success",
       "last_run_health": "green",
-      "verdict": "ok"
+      "verdict": "not-due-yet"
     },
     {
       "workflow": "verify-build.yml",
@@ -241,7 +241,7 @@
       "slots_due": null,
       "runs_scheduled": 0,
       "runs_total": 100,
-      "last_run": "2026-10-25T19:29:16Z",
+      "last_run": "2026-10-25T22:21:39Z",
       "last_conclusion": "success",
       "last_run_health": "green",
       "verdict": "on-demand"
@@ -253,7 +253,7 @@
         "17 06 * * 1"
       ],
       "cadence_error": null,
-      "schedule_since": "2026-10-25T19:29:12Z",
+      "schedule_since": "2026-10-25T22:21:35Z",
       "slots_due": 0,
       "runs_scheduled": 8,
       "runs_total": 100,
@@ -392,20 +392,20 @@
   },
   "agents": {
     "window_days": 30,
-    "comments_total": 531,
-    "comments_by_agents": 329,
+    "comments_total": 536,
+    "comments_by_agents": 334,
     "comments_by_automation": 61,
     "by_agent": {
       "agent-cycle": 76,
       "qa": 62,
       "steward": 54,
-      "analyst": 45,
+      "analyst": 49,
       "chief": 21,
       "infra-lead": 4,
       "architect": 2,
       "engineer": 2
     },
-    "unmatched_count": 63,
+    "unmatched_count": 64,
     "unmatched_pct": 19,
     "unmatched_sample": [
       {
@@ -599,5 +599,7 @@
       "max_rounds": 4
     }
   },
-  "alerts": []
+  "alerts": [
+    "agent-work.yml"
+  ]
 }
