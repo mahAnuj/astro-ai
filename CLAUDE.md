@@ -215,6 +215,32 @@ What has NOT changed, and why it matters more now than before:
   anything back: to hold a PR for a human, use `needs-human-review`, which the sweep and
   the label check both refuse. The branch name's one remaining job is to keep
   `close-on-evidence` off an issue that is not finished.
+- **What the STEWARD will dispatch a cycle for is decided the same way — changed
+  2026-10-25, hours after the above.** Fixing the merge gate was not enough: the steward's
+  and `chief`'s prompts carried their own copies of the branch-name rule, as prose, saying
+  to write a dispatch line only for *"an `issue/*` branch with an owning issue, never a PR
+  a human opened on their own branch"*. Both clauses were false by then — `agent-cycle`
+  Step 2.5 adopts an existing branch and PR whoever opened it, `partial/` and `fix/` carry
+  an issue number by construction, and the owner opens PRs on cycle branches routinely.
+  So #521 and #524 sat `no-qa-verdict` with green gates while `detect_stalls.py` named
+  their issues correctly and the steward, reading its own prompt, stood down twice a day.
+
+  The test is now **the author plus an owning issue the detector named.** The two refusals
+  that remain are a diff touching `.github/workflows/**` (the App token has no `workflows`
+  permission) and an author outside `AGENT_AUTHORS`. Guarded by
+  `tests/test_steward_dispatch_scope.py` and four mutation rows.
+
+  **That is six places one coupling lived.** When a rule is restated in prose for agents
+  to read, grep for every copy before believing a fix is done — `agent-merge`,
+  `agent-work`, `detect_stalls.py`, `steward.md` ×2 and `agent-steward.yml` ×2.
+- **The mutation sandbox copies `.claude/` — since 2026-10-25.** `_SANDBOX_SUBDIRS` in
+  `mutate_behaviour_suite.py` had `src`, `tests`, `.github`, `scripts` and `measurements`,
+  so a row naming an agent definition or a slash command died with `FileNotFoundError` and
+  — far worse — **any test that merely READ one failed to import in the sandbox, which
+  reports rc=2 on every row including CONTROL and reports the whole harness blind.** In
+  this repo the loop's behaviour IS prose in `.claude/`, so that was the one tree the
+  mutation gate could not reach. `.claude/worktrees/` is excluded in the copy and that
+  exclusion is load-bearing: it held 4.2 GB of git worktrees when measured.
 - **Every QA label is written by `scripts/qa_verdict.sh` and by nothing else.** It applies
   the verdict and this round's provenance to the PR *and* the issue, removes the opposite of
   each from both, binds a PASS to the SHA that QA examined (refusing if the branch has moved
