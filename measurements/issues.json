@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-25T09:35:05Z",
+  "generated_at": "2026-10-25T14:49:56Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
   "open": 123,
@@ -92,10 +92,13 @@
       "labels": [
         "enhancement",
         "category:technical",
-        "priority:high"
+        "priority:high",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-24T09:07:13Z",
-      "updated": "2026-10-24T09:07:13Z",
+      "updated": "2026-10-25T13:58:09Z",
       "blocked": false,
       "needs_evidence": false
     },

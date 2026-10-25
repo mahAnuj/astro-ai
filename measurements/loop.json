@@ -1,6 +1,20 @@
 {
-  "generated_at": "2026-10-25T09:35:01Z",
+  "generated_at": "2026-10-25T14:49:48Z",
   "rows": [
+    {
+      "run": 40198469142,
+      "workflow": "agent-work",
+      "date": "2026-10-25",
+      "started": "2026-10-25T13:37:38Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 14.6,
+      "issue": 518,
+      "pr": 521,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt"
+    },
     {
       "run": 40148506600,
       "workflow": "agent-work",
