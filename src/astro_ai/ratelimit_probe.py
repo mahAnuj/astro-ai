@@ -59,6 +59,8 @@ FULL_MAX_F = 0.25            # discounted fraction at or below this reads as FUL
 DISCOUNT_MIN_F = 0.75        # ... at or above this as DISCOUNTED; between is PARTIAL
 VOTE_MAX = 0.25              # FULL WEIGHT needs at most this share of samples voting "discounted"
 VOTE_MIN = 0.75              # DISCOUNTED needs at least this share
+VOTE_CACHED_FRACTION = 0.5   # a warm sample votes "discounted" if Groq's figure sits more than this
+                             # share of its cached count ABOVE the prediction
 
 VERDICTS = ("INSUFFICIENT", "NOISY", "FULL WEIGHT", "DISCOUNTED", "PARTIAL")
 
@@ -209,7 +211,7 @@ def finish(ticket, rl, prefix, completion) -> dict | None:
         out[f"{side}_exp"] = exp_i
         if warm:
             out["warm_cached"] = cached
-            out["warm_disc"] = 1 if e < -cached / 2 else 0
+            out["warm_disc"] = 1 if e < -cached * VOTE_CACHED_FRACTION else 0
         else:
             out["cold_abs"] = abs(e)
         return out

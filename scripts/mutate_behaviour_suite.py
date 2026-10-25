@@ -3250,6 +3250,55 @@ MUTATIONS = [
      '            warm_n, cold_n = n(probe, "warm_n"), n(probe, "cold_n")\n',
      '            warm_n, cold_n = n(probe, "warm_n") + n(probe, "cold_n"), n(probe, "cold_n")\n',
      "test_cold_calls_are_never_folded_into_the_warm_sample_count"),
+
+    # #475 1b, QA round 1: every sentence on the panel is pinned to what it describes.
+    ("#475 1b: the fold says a dash always means the probe recorded nothing (false for a seen model with no warm sample)",
+     "src/astro_ai/templates/admin_ops.html",
+     "beside a quiet cold control. <b>—</b> means there is no figure to show: a row that is one\n"
+     "          dash means the probe recorded nothing for the model in this window, and a dash in the\n"
+     "          remaining-tokens, mean cached or discounted-fraction cell means the model was seen but no\n"
+     "          warm sample was kept to average.",
+     "beside a quiet cold control. <b>—</b> means the probe recorded nothing for the model in\n"
+     "          this window;",
+     "test_the_dash_sentence_is_true_for_both_dash_situations"),
+
+    ("#475 1b: the fold says 'mean error' where the cold control uses the mean ABSOLUTE error",
+     "src/astro_ai/templates/admin_ops.html",
+     "mean absolute error\n",
+     "mean error\n",
+     "test_the_threshold_sentences_state_the_whole_rule_from_the_constants"),
+
+    ("#475 1b: the fold drops the vote condition from DISCOUNTED (verdict() still requires it)",
+     "src/astro_ai/templates/admin_ops.html",
+     " or more and at least\n          {{ \"%d\"|format(RL.vote_min_pct) }}% did, and PARTIAL",
+     " or more, and PARTIAL",
+     "test_the_threshold_sentences_state_the_whole_rule_from_the_constants"),
+
+    ("#475 1b: verdict() reads DISCOUNTED on the fraction alone (the sentence says the vote is required too)",
+     "src/astro_ai/ratelimit_probe.py",
+     '    elif out["f"] >= DISCOUNT_MIN_F and out["vote"] >= VOTE_MIN:\n',
+     '    elif out["f"] >= DISCOUNT_MIN_F:\n',
+     "test_the_threshold_sentences_state_the_whole_rule_from_the_constants"),
+
+    ("#475 1b: the fold reverses the direction another caller of the key pushes the reading",
+     "src/astro_ai/templates/admin_ops.html",
+     "only make cached tokens look fully charged, never discounted,",
+     "only make cached tokens look discounted, never fully charged,",
+     "test_the_other_caller_sentence_is_what_the_probe_does"),
+
+    ("#475 1b: a header BELOW the prediction (another caller) votes discounted as well as one above it",
+     "src/astro_ai/ratelimit_probe.py",
+     '            out["warm_disc"] = 1 if e < -cached * VOTE_CACHED_FRACTION else 0\n',
+     '            out["warm_disc"] = 1 if abs(e) > cached * VOTE_CACHED_FRACTION else 0\n',
+     "test_the_other_caller_sentence_is_what_the_probe_does"),
+
+    ("#475 1b: the fold stops saying the verdict column is a live reading, not the recorded decision",
+     "src/astro_ai/templates/admin_ops.html",
+     "The verdict column is a live reading of this window, not the\n"
+     "          recorded decision: the row in ARCHITECTURE.md is written by a person after at least\n"
+     "          {{ RL.min_warm }} warm and {{ RL.min_cold }} cold samples for the model.\n",
+     "",
+     "test_the_live_verdict_is_not_the_recorded_decision_and_the_fold_says_so"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

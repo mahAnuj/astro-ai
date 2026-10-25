@@ -225,9 +225,7 @@ def test_the_fold_states_only_what_the_code_does(_ops, monkeypatch):
     assert "a warm call is still settled at its full prompt + completion tokens" in text
     # the thresholds are printed FROM the constants the verdict applies
     assert (f"at least {rp.MIN_WARM} warm and {rp.MIN_COLD} cold samples") in text
-    assert (f"exceeds {rp.COLD_NOISE_FRACTION * 100:.0f}% of the mean cached count") in text
-    assert (f"FULL WEIGHT at a fraction of {rp.FULL_MAX_F:.2f} or less") in text
-    assert (f"DISCOUNTED at {rp.DISCOUNT_MIN_F:.2f} or more") in text
+    # (the threshold sentences themselves are pinned whole in test_the_threshold_sentences_...)
     assert "A warm call is one whose provider reported cached_tokens above 0" in text
     assert "a call reporting 0 or nothing is cold, is never counted as a warm sample" in text
     assert "limit ÷ 60 per second" in text
@@ -267,3 +265,109 @@ def test_the_dash_and_zero_sentence_is_true(_ops, monkeypatch):
     assert "means it ran and kept no sample" in text
     assert cells(panel(html), "gpt-oss-120b")[1].startswith("0 of 0")
     assert cells(panel(html), "gpt-oss-20b")[1:] == ["—"]
+
+
+def test_the_dash_sentence_is_true_for_both_dash_situations(_ops, monkeypatch):
+    """A dash is two different facts. QA found the fold calling both 'recorded nothing'."""
+    seen_no_warm = probe(warm_seen=3, cold_seen=4, cold_n=2, cold_abs=4, skip_noanchor=3)
+    html = page(monkeypatch, usage([urow(K120, seen_no_warm), urow(K20)]))
+    p = panel(html)
+    seen, unseen = cells(p, "gpt-oss-120b"), cells(p, "gpt-oss-20b")
+    # situation 1: the model was never seen -> ONE dash spanning the row
+    assert unseen[1:] == ["—"]
+    # situation 2: seen, warm calls arrived, none kept -> the row is NOT 'nothing recorded'
+    assert seen[1].startswith("0 of 3 warm calls"), seen
+    assert seen[2:5] == ["—", "—", "—"], seen
+    assert seen[6] == "INSUFFICIENT"
+    text = flat(p)
+    assert ("— means there is no figure to show: a row that is one dash means the probe recorded "
+            "nothing for the model in this window, and a dash in the remaining-tokens, mean cached "
+            "or discounted-fraction cell means the model was seen but no warm sample was kept to "
+            "average") in text
+    assert "0 means it ran and kept no sample" in text
+    assert "means the probe recorded nothing for the model in this window;" not in text, \
+        "the old sentence claimed that for EVERY dash"
+
+
+def test_the_threshold_sentences_state_the_whole_rule_from_the_constants(_ops, monkeypatch):
+    """The fold said 'DISCOUNTED at 0.75 or more'; verdict() also needs the vote."""
+    text = flat(panel(page(monkeypatch, usage([urow(K120, POPULATED)]))))
+    noise, vmax, vmin = (f"{rp.COLD_NOISE_FRACTION * 100:.0f}", f"{rp.VOTE_MAX * 100:.0f}",
+                         f"{rp.VOTE_MIN * 100:.0f}")
+    assert (f"It reads NOISY when the cold control’s mean absolute error exceeds {noise}% of the "
+            f"mean cached count. Otherwise it reads FULL WEIGHT when the discounted fraction is "
+            f"{rp.FULL_MAX_F:.2f} or less and at most {vmax}% of warm samples individually voted "
+            f"discounted, DISCOUNTED when the fraction is {rp.DISCOUNT_MIN_F:.2f} or more and at "
+            f"least {vmin}% did, and PARTIAL for everything else, including a fraction past a line "
+            f"with too few votes. A warm sample votes discounted when Groq’s figure sits more than "
+            f"{rp.VOTE_CACHED_FRACTION * 100:.0f}% of its cached count above the prediction.") in text
+    # ... and each clause is what verdict() does, one side of each line at a time
+    def v(**kw):
+        return rp.verdict(counters(**kw))
+    base = dict(warm_n=rp.MIN_WARM, cold_n=rp.MIN_COLD)
+    assert v(**base, f=0.0, vote=rp.VOTE_MAX)["verdict"] == "FULL WEIGHT"
+    assert v(**base, f=0.0, vote=0.35)["verdict"] == "PARTIAL", "fraction alone is not enough"
+    assert v(**base, f=0.9, vote=rp.VOTE_MIN)["verdict"] == "DISCOUNTED"
+    assert v(**base, f=0.9, vote=0.5)["verdict"] == "PARTIAL", "f past the line, too few votes"
+    assert v(**base, f=0.9, vote=1.0, cold_mean_abs=0.3 * 2304)["verdict"] == "NOISY"
+    # "mean absolute": a cold control whose errors cancel in sign still reads noisy
+    assert rp.verdict({**counters(f=0.0), "cold_abs": 5 * 2304})["verdict"] == "NOISY"
+
+
+def counters(*, warm_n=20, cold_n=5, f=0.0, cached=2304, vote=0.0, cold_mean_abs=0.0):
+    """Same shape as test_ratelimit_probe.counters: counters that yield a chosen f, vote and cold error."""
+    return {"warm_n": warm_n, "warm_cached": cached * warm_n,
+            "warm_exp": 10000 * warm_n, "warm_rem": round((10000 + f * cached) * warm_n),
+            "warm_disc": round(vote * warm_n),
+            "cold_n": cold_n, "cold_abs": round(cold_mean_abs * cold_n)}
+
+
+def test_the_live_verdict_is_not_the_recorded_decision_and_the_fold_says_so(_ops, monkeypatch):
+    text = flat(panel(page(monkeypatch, usage([urow(K120, POPULATED)]))))
+    assert ("The verdict column is a live reading of this window, not the recorded decision: the "
+            f"row in ARCHITECTURE.md is written by a person after at least {rp.MIN_WARM} warm and "
+            f"{rp.MIN_COLD} cold samples for the model.") in text
+
+
+def _score(monkeypatch, remaining_after_warm):
+    """One cold call anchors the bucket, then one isolated warm call whose header is chosen.
+
+    The prediction is exactly 3,700 (anchor 7,000 minus 3,000 + 300), so a header of 3,700 is a
+    full charge, below it is another consumer on the key, and +2,304 is cached tokens not charged.
+    """
+    rp.reset()
+    monkeypatch.setattr(rp, "_clock", lambda: 0.0)
+    key = "groq120|m"
+    t = rp.begin(key)
+    rp.finish(t, (8000, 7000), (3000, 0, False), 300)
+    t = rp.begin(key)
+    return rp.finish(t, (8000, remaining_after_warm), (3000, 2304, False), 300)
+
+
+def test_the_other_caller_sentence_is_what_the_probe_does(_ops, monkeypatch):
+    """Pins 'can only make cached tokens look fully charged, never discounted' to behaviour.
+
+    QA flipped the sentence to 'look discounted, never fully charged' and every panel and probe
+    test stayed green: the behaviour was tested in test_ratelimit_probe.py and the sentence in
+    nothing. Here both are asserted by one test, so reversing either goes red.
+    """
+    text = flat(panel(page(monkeypatch, usage([urow(K120, POPULATED)]))))
+    assert ("Another caller of the same key lowers Groq’s figure below the prediction, which can "
+            "only make cached tokens look fully charged, never discounted") in text
+    # the instrument CAN vote discounted: header 2,304 above the prediction
+    assert _score(monkeypatch, 3700 + 2304)["warm_disc"] == 1
+    assert _score(monkeypatch, 3700)["warm_disc"] == 0
+    # ... and an extra consumer, at every size that leaves the arithmetic valid, never does
+    totals = dict.fromkeys(("warm_n", "warm_rem", "warm_exp", "warm_cached", "warm_disc"), 0)
+    for extra in (1, 300, 900, 1500, 2500, 3600):
+        out = _score(monkeypatch, 3700 - extra)
+        assert out["warm_exp"] - out["warm_rem"] == extra, "the extra consumer lowers the figure"
+        assert out["warm_disc"] == 0, extra
+        for k in totals:
+            totals[k] += out[k]
+    totals = {**totals, "warm_n": rp.MIN_WARM, "cold_n": rp.MIN_COLD, "cold_abs": 0}
+    scale = rp.MIN_WARM / 6
+    for k in ("warm_rem", "warm_exp", "warm_cached"):
+        totals[k] = int(totals[k] * scale)
+    v = rp.verdict(totals)
+    assert v["f"] < 0 and v["verdict"] == "FULL WEIGHT", v

@@ -1105,7 +1105,9 @@ def _rl_rules() -> dict:
     from astro_ai import ratelimit_probe as rp
     return {"min_warm": rp.MIN_WARM, "min_cold": rp.MIN_COLD,
             "noise_pct": rp.COLD_NOISE_FRACTION * 100,
-            "full_max_f": rp.FULL_MAX_F, "discount_min_f": rp.DISCOUNT_MIN_F}
+            "full_max_f": rp.FULL_MAX_F, "discount_min_f": rp.DISCOUNT_MIN_F,
+            "vote_max_pct": rp.VOTE_MAX * 100, "vote_min_pct": rp.VOTE_MIN * 100,
+            "vote_cached_pct": rp.VOTE_CACHED_FRACTION * 100}
 
 
 def _ratelimit_rows(usage: dict, chain: list[str]) -> list[dict]:

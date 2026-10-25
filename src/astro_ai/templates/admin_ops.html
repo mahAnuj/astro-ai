@@ -1041,16 +1041,25 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           does not hold) &mdash; and is never counted as agreement.
           <b>discounted fraction</b> is 0 if cached tokens were charged in full and 1 if they were
           not charged at all; the <b>verdict</b> needs at least {{ RL.min_warm }} warm and
-          {{ RL.min_cold }} cold samples. It reads NOISY when the cold control&rsquo;s mean error exceeds
-          {{ "%d"|format(RL.noise_pct) }}% of the mean cached count, FULL WEIGHT at a fraction of
-          {{ "%.2f"|format(RL.full_max_f) }} or less, DISCOUNTED at {{ "%.2f"|format(RL.discount_min_f) }} or
-          more, otherwise PARTIAL. Those thresholds are judgment, not measurement.
+          {{ RL.min_cold }} cold samples. It reads NOISY when the cold control&rsquo;s mean absolute error
+          exceeds {{ "%d"|format(RL.noise_pct) }}% of the mean cached count. Otherwise it reads FULL WEIGHT
+          when the discounted fraction is {{ "%.2f"|format(RL.full_max_f) }} or less and at most
+          {{ "%d"|format(RL.vote_max_pct) }}% of warm samples individually voted discounted,
+          DISCOUNTED when the fraction is {{ "%.2f"|format(RL.discount_min_f) }} or more and at least
+          {{ "%d"|format(RL.vote_min_pct) }}% did, and PARTIAL for everything else, including a fraction past
+          a line with too few votes. A warm sample votes discounted when Groq&rsquo;s figure sits more than
+          {{ "%d"|format(RL.vote_cached_pct) }}% of its cached count above the prediction. Those thresholds
+          are judgment, not measurement. The verdict column is a live reading of this window, not the
+          recorded decision: the row in ARCHITECTURE.md is written by a person after at least
+          {{ RL.min_warm }} warm and {{ RL.min_cold }} cold samples for the model.
           Another caller of the same key lowers Groq&rsquo;s figure below the prediction, which can
           only make cached tokens look fully charged, never discounted, so read FULL WEIGHT only
-          beside a quiet cold control. <b>—</b> means the probe recorded nothing for the model in
-          this window; <b>0</b> means it ran and kept no sample. This window has probe figures for
-          {{ ops.app.ratelimit_days }} of {{ ops.app.days }} days. Only requests that were served are
-          counted.
+          beside a quiet cold control. <b>—</b> means there is no figure to show: a row that is one
+          dash means the probe recorded nothing for the model in this window, and a dash in the
+          remaining-tokens, mean cached or discounted-fraction cell means the model was seen but no
+          warm sample was kept to average. <b>0</b> means it ran and kept no sample. This window has
+          probe figures for {{ ops.app.ratelimit_days }} of {{ ops.app.days }} days. Only requests that
+          were served are counted.
         </p>
       </details>
       {% endif %}
