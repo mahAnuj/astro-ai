@@ -163,10 +163,11 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
     #
     # IT STILL FITS THE FALLBACK, which is the only reason this row still
     # matters: Groq generates the day whenever the nightly job publishes
-    # nothing. Measured 2026-10-24 end to end, system + day signals + transit +
-    # gochara + anchor: en 5,295 tok and hi 5,807 against the 7,400 bucket
-    # (8,000 TPM less the 600 margin), leaving 2,105 and 1,593 of headroom. A
-    # fallback day still works.
+    # nothing. The full-request figure against the 7,400 bucket (8,000 TPM less
+    # the 600 margin) is PRINTED by this gate on every run ("Reserved against
+    # the 7,400 TPM bucket on rashifal_single") -- read it there. A number
+    # written here goes stale the day the next edit lands, and three of them
+    # already disagreed.
     #
     # The ceiling is hi 3,006 + 10% rounded up to the next 50, per the rule
     # above. If this row grows again, re-measure the FULL REQUEST, not the
@@ -192,23 +193,25 @@ BUDGET: dict[str, tuple[int, int, str, str]] = {
     # remedy line. QA found the gate passing BECAUSE it could not see the
     # change: the same vacuous-pass shape as a SKIPPED run read as a pass.
     #
-    # Ceiling is hi 4,129 + 10% rounded up to the next 50. It is NOT the whole
-    # request: the Rashifal fans out twelve of these and the binding number is
-    # the per-model bucket, 8,000 TPM less the 600 margin = 7,400. Measured end
-    # to end on the same day, system + signals + transit + gochara + areas +
-    # remedy + anchor: en 5,295 and hi 5,807, leaving 2,105 and 1,593 of
-    # headroom. That is what the Groq fallback has to fit inside, and this row
-    # is the tripwire in front of it -- re-measure the FULL REQUEST, not this
-    # figure, if it grows again.
+    # The ceiling is NOT the whole request: the Rashifal fans out twelve of
+    # these and the binding number is the per-model bucket, 8,000 TPM less the
+    # 600 margin = 7,400. That full-request figure (system + signals + transit
+    # + gochara + areas + remedy + anchor + the bucket's scaffold and
+    # completion reserve) is PRINTED by this gate on every run, for en and for
+    # hi, each from its own language's message. This row is the tripwire in
+    # front of it; if it grows again, read the printed figure rather than this
+    # comment.
     "rashifal_single+payload":  (4133, 4600, "2026-10-25",
-                                 "hi 4265 + 8%; the per-rashi user message, "
+                                 "hi 4332 + 6%; the per-rashi user message, "
                                  "which carries the day's computed verdicts. "
                                  "RAISED from 3,997 (recorded 2026-10-24) "
                                  "because that figure came from a hand-written "
                                  "copy of the message that omitted its section "
                                  "headers and the closing instruction and "
                                  "undercounted by 4.8%; this is the real "
-                                 "builder, pinned. The route did not grow"),
+                                 "builder, pinned. The route did not grow. "
+                                 "hi is built from the HI message (it was "
+                                 "built from the en one and read 4265)"),
     "natal+payload":            (6798, 7000, _D,
                                  "7,000 = 8,000 TPM less the runtime guard's 1,000 margin"),
 }
@@ -253,7 +256,7 @@ def load_encoding():
         raise CouldNotRun(f"tiktoken o200k_base unavailable: {type(exc).__name__}: {exc}") from exc
 
 
-def rashifal_payload(llm, chart_mod) -> str:
+def rashifal_payload(llm, chart_mod, lang: str = "en") -> str:
     """The per-rashi USER message for one rashi, as `chat()` would receive it.
 
     Added 2026-10-24 (#523). Until then this route was measured on its system
@@ -277,6 +280,14 @@ def rashifal_payload(llm, chart_mod) -> str:
        -- more than half a 5% growth allowance spent on the calendar. A real
        +3% would trip on a high-swing day and a real +2% would be masked on a
        low one. Now pinned to `_PINNED_WHEN`, exactly as `natal_payload` is.
+
+    A THIRD THING, found by the next QA round: the `hi` figure was built from
+    the ENGLISH message. `lang` reaches the user message through
+    `_build_rashifal_day_signals` (Hindi weekday, tithi and nakshatra names),
+    so the hi request is larger than the en one by more than the system
+    prompt's 132-token suffix, and a gate that measures hi from the en message
+    undercounts exactly the language whose ceiling it judges on. `lang` is
+    therefore a parameter and the caller builds BOTH.
     """
     from astro_ai import festivals
     natal = chart_mod.compute_chart("2000-01-01", "12:00", "Mumbai, India")
@@ -286,7 +297,7 @@ def rashifal_payload(llm, chart_mod) -> str:
     day = _PINNED_WHEN.date()
     signals = "\n".join(
         f"- {s}" for s in llm._build_rashifal_day_signals(
-            transit, day.isoformat(), "en", panchang,
+            transit, day.isoformat(), lang, panchang,
             festivals.festival_for_date(day)))
     # Rashi 0 every day: the block's size is dominated by the day signals and
     # the transit, which are shared, so one rashi is representative and the
@@ -491,14 +502,16 @@ def main(argv: list[str] | None = None) -> int:
                  {"role": "user", "content": payload}] for lang in ("en", "hi"))
         if "rashifal_single" in measured:
             from astro_ai import chart as _chart
-            payload = rashifal_payload(llm, _chart)
-            r_user = count(payload)
+            # One payload PER LANGUAGE: the day signals are language-dependent,
+            # so a single en payload undercounts hi (see rashifal_payload).
+            payloads = {lang: rashifal_payload(llm, _chart, lang) for lang in ("en", "hi")}
             r_en, r_hi = measured["rashifal_single"]
-            measured["rashifal_single+payload"] = (r_en + r_user, r_hi + r_user)
+            measured["rashifal_single+payload"] = (r_en + count(payloads["en"]),
+                                                   r_hi + count(payloads["hi"]))
             base, overlay = routes["rashifal_single"]
             payload_messages["rashifal_single"] = tuple(
                 [{"role": "system", "content": llm._system_prompt(base, lang, overlay)},
-                 {"role": "user", "content": payload}] for lang in ("en", "hi"))
+                 {"role": "user", "content": payloads[lang]}] for lang in ("en", "hi"))
     except CouldNotRun as exc:
         print(f"  COULD NOT VERIFY: {exc}")
         print("  -> SKIPPED (exit 2). This is NOT a pass — the check did not run.")

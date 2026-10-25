@@ -460,8 +460,13 @@ def _send_welcome_email(email: str, lang: str, city: str = "", rashi: str = "all
 
     ctx = _email_context(lang=lang, city=city)
     ctx["rashifal_sections"] = _filter_rashi_sections(sections, rashi)
+    # Pinned like the transit above: this one feeds the panel printed beside the
+    # reading, so left on now() the two are computed from different skies -- the
+    # defect chart.rashifal_day_moment exists to remove (found by
+    # tests/test_rashifal_day_detail.py when it began spying on every site).
     _welcome_transit = compute_transit_snapshot(
-        compute_chart("2000-01-01", "12:00", "Mumbai, India"))
+        compute_chart("2000-01-01", "12:00", RASHIFAL_REFERENCE_PLACE),
+        when=rashifal_day_moment(date.today()))
     ctx["chandra_bala"] = _chandra_bala_for(_welcome_transit)
     ctx["gochara"] = _gochara_for(_welcome_transit)
     ctx["day_detail"] = _day_detail_for(_welcome_transit, lang)

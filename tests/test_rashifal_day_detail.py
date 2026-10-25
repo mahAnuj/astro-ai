@@ -213,11 +213,16 @@ def test_no_deed_in_either_language_offers_a_gemstone():
 # ---------------------------------------------------------------------------
 
 def test_an_adverse_saturn_in_a_named_phase_always_wins_the_remedy(natal):
-    """Defect (4). Sade Sati (12/1/2) and Ashtama Shani (8) are SOURCED.
+    """Defect (4). Sade Sati (Saturn 12th/1st/2nd) is SOURCED; the 8th is not.
 
     The first version sorted on house number, so houses 4, 7 and 1 came before
-    12, 8 and 2 and the phase was passed over on 3 of the 4 rashis that had
-    one. Swept over a year so the assertion does not depend on today's sky.
+    12 and 2 and the phase was passed over on 3 of the 4 rashis that had one.
+    Swept over a year so the assertion does not depend on today's sky.
+
+    The set is (12, 1, 2) and NOT (12, 1, 2, 8): vedic_reference.md §2.7.1
+    sources the three Sade Sati signs to Rao, and marks §2.4 Ashtama Shani
+    UNSOURCED (`ashtama shani` = 0 across 14 books). See the next test for the
+    8th.
     """
     checked = 0
     for n in range(0, 366, 7):
@@ -228,7 +233,7 @@ def test_an_adverse_saturn_in_a_named_phase_always_wins_the_remedy(natal):
                        if e["verdict"] == "challenging"
                        and e["planet"] in chart_mod._GRAHA_GOOD_DEED]
             phase = [e for e in adverse
-                     if e["planet"] == "Saturn" and e["house"] in (12, 1, 2, 8)]
+                     if e["planet"] == "Saturn" and e["house"] in (12, 1, 2)]
             if not phase:
                 continue
             checked += 1
@@ -239,6 +244,31 @@ def test_an_adverse_saturn_in_a_named_phase_always_wins_the_remedy(natal):
                 f"remedy named {pick and pick['planet']}"
             )
     assert checked > 50, f"only {checked} phase-days swept; the guard is weak"
+
+
+def _entry(planet: str, house: int) -> dict:
+    return {"planet": planet, "house": house, "verdict": "challenging", "weighty": True}
+
+
+def test_saturn_in_the_eighth_is_not_special_cased_by_the_remedy(natal, monkeypatch):
+    """Ashtama Shani is UNSOURCED (vedic_reference.md §2.4, audited at §2.7.3).
+
+    It was once in the Saturn tier via `(12, 1, 2, 8)` under a comment saying
+    every tier was sourced. So an adverse Saturn in the 8th must rank as an
+    ordinary slow mover -- behind a lower-numbered Jupiter -- while Saturn in
+    the 12th, 1st or 2nd, which Rao sources, still outranks that same Jupiter.
+    Driven through `remedy_for_rashi` with the Gochara entries fixed, so the
+    ranking is the only thing varying.
+    """
+    def pick(saturn_house: int):
+        monkeypatch.setattr(chart_mod, "gochara_for_rashi",
+                            lambda r, t: [_entry("Jupiter", 4), _entry("Saturn", saturn_house)])
+        got = remedy_for_rashi(0, object())
+        return got and got["planet"]
+
+    assert pick(8) == "Jupiter", "Saturn in the 8th outranked Jupiter: Ashtama is back in the sourced tier"
+    for house in (12, 1, 2):
+        assert pick(house) == "Saturn", f"Sade Sati house {house} lost the Saturn tier"
 
 
 def test_no_remedy_is_invented_when_nothing_transits_adversely(transit):
@@ -270,6 +300,24 @@ def test_the_hindi_ordinals_are_twelve_literals_not_a_derived_rule():
             f"house {n}: {word!r} is the derived f'{{n}}वें' form; Hindi "
             f"ordinals are irregular at 1, 2, 3 and 6"
         )
+
+
+def test_every_hindi_table_the_remedy_can_print_is_free_of_latin_letters():
+    """All nine deeds, all nine graha names, all twelve ordinals -- not the one
+    the pinned day happens to pick.
+
+    The per-rashi test below only inspects whichever graha `remedy_for_rashi`
+    selects on one date, so a Latin word put into the Ketu deed -- a graha that
+    day never picks -- left the suite green. The tables are the surface; walk
+    them.
+    """
+    for name in ("_GRAHA_GOOD_DEED_HI", "_GRAHA_HI", "_HOUSE_ORDINAL_HI"):
+        table = getattr(chart_mod, name)
+        assert table, f"{name} is empty -- the guard would be vacuous"
+        for key, text in table.items():
+            assert not _LATIN.search(str(text)), (
+                f"{name}[{key!r}] = {text!r} has a Latin letter on a Hindi surface")
+    assert len(chart_mod._GRAHA_GOOD_DEED_HI) == 9, "expected all nine grahas' deeds"
 
 
 @pytest.mark.parametrize("rashi", range(12))
@@ -340,6 +388,182 @@ def test_the_pinned_moment_is_local_noon_and_cannot_slip_a_day():
         assert moment.astimezone(ZoneInfo("UTC")).date() == day, (
             "noon at the reference place must stay on the same UTC date"
         )
+
+
+# ---------------------------------------------------------------------------
+# The pin must reach EVERY call site -- the helper being pure is not enough
+# ---------------------------------------------------------------------------
+#
+# The test above compares `rashifal_day_moment` with itself, so it guards the
+# helper and nothing else. QA reverted the `when=` at each of five call sites
+# and the suite stayed green every time (1229 passed): a comment in chart.py
+# said "this file asserts no Rashifal path forgets it" and nothing did.
+#
+# Each test below drives the REAL path in-process with `compute_transit_snapshot`
+# (and `compute_panchang` where the path pins it) wrapped by a spy patched where
+# that module LOOKS IT UP -- `from astro_ai.chart import compute_transit_snapshot`
+# binds a second name, so patching `chart` rebinds nothing. The spy records the
+# `when` it receives and delegates to the real function, so the path still runs.
+# No LLM (`providers.chat` / `_daily_rashifal_text` stubbed), no mail, no GCS.
+
+def _spy(monkeypatch, module, name):
+    """Wrap `module.<name>`; return the list of `when` values it was called with.
+
+    A missing `when` is recorded as None, so "forgot the pin" and "passed the
+    wrong moment" both fail the same assertion.
+    """
+    seen: list = []
+    real = getattr(module, name)
+
+    def spy(*args, **kwargs):
+        seen.append(kwargs["when"] if "when" in kwargs
+                    else (args[1] if len(args) > 1 else None))
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(module, name, spy)
+    return seen
+
+
+def _assert_all_pinned(seen: list, day: date, what: str) -> None:
+    assert seen, f"{what}: the spy was never reached -- the test is not driving the path"
+    want = rashifal_day_moment(day)
+    assert seen == [want] * len(seen), (
+        f"{what}: expected every call to be pinned to {want!r}, got {seen!r}. "
+        f"A None here is a call site that forgot `when=` and so reads now()."
+    )
+
+
+@pytest.fixture
+def _empty_hot_cache():
+    from astro_ai import hot_cache
+
+    hot_cache.clear()
+    yield
+    hot_cache.clear()
+
+
+@pytest.mark.parametrize("helper,args", [
+    ("_day_detail_today", (0,)),
+    ("_gochara_today", (0,)),
+    ("_chandra_bala_today", ("aries",)),
+])
+def test_the_panel_helpers_compute_from_the_pinned_moment(
+        monkeypatch, _empty_hot_cache, helper, args):
+    """routes/rashifal.py: the three panel helpers beside the reading."""
+    from astro_ai.routes import rashifal
+
+    seen = _spy(monkeypatch, rashifal, "compute_transit_snapshot")
+    getattr(rashifal, helper)(*args)
+    _assert_all_pinned(seen, date.today(), f"rashifal.{helper}")
+
+
+def test_the_reading_path_pins_both_the_transit_and_the_panchang(
+        client, stub_llm, rashi_body, today_iso, monkeypatch):
+    """routes/rashifal.py `rashifal_single`: the sky the LLM is shown.
+
+    This is the call whose pin makes the PROSE agree with the panel. Driven
+    through the real route with the provider stubbed (`providers.chat`), so the
+    live-generation branch -- the only one that computes a transit -- runs.
+    """
+    from astro_ai import daily_cache
+    from astro_ai.routes import rashifal
+
+    stub_llm(lambda _n: rashi_body(heading="Aries / Mesha"))
+    daily_cache.put("rashifal_single", "aries-en", {"body": ""}, today_iso)
+    transits = _spy(monkeypatch, rashifal, "compute_transit_snapshot")
+    panchangs = _spy(monkeypatch, rashifal, "compute_panchang")
+
+    r = client.get("/rashifal/aries")
+
+    assert r.status_code == 200, r.status_code
+    _assert_all_pinned(transits, date.today(), "rashifal_single transit")
+    _assert_all_pinned(panchangs, date.today(), "rashifal_single panchang")
+
+
+def _disarm_mail_and_generation(monkeypatch):
+    """Stub generation and sending so the subscribe paths touch no LLM, mail or GCS."""
+    from astro_ai.routes import subscribe
+
+    sections = "\n\n".join(
+        f"## {r}\n" + "A steady day for measured work. " * 40
+        for r in ("Aries / Mesha", "Taurus / Vrishabha"))
+    monkeypatch.setattr(subscribe, "_daily_rashifal_text", lambda **k: sections)
+    monkeypatch.setattr(subscribe.email_sender, "send", lambda *a, **k: True)
+    monkeypatch.setattr(subscribe.subscribers, "list_subscribers", lambda: [])
+    return subscribe
+
+
+@pytest.fixture
+def _admin():
+    from astro_ai.main import app
+    from astro_ai.routes.deps import require_admin
+
+    app.dependency_overrides[require_admin] = lambda: None
+    yield
+    app.dependency_overrides.pop(require_admin, None)
+
+
+def test_the_morning_blast_pins_the_transit(client, _admin, monkeypatch):
+    """routes/subscribe.py `send_daily_rashifal` (the 7 AM email)."""
+    subscribe = _disarm_mail_and_generation(monkeypatch)
+    seen = _spy(monkeypatch, subscribe, "compute_transit_snapshot")
+
+    r = client.post("/admin/send-daily-rashifal")
+
+    assert r.status_code == 200, r.text
+    _assert_all_pinned(seen, date.today(), "send_daily_rashifal")
+
+
+def test_the_warm_job_pins_the_transit(client, _admin, monkeypatch):
+    """routes/subscribe.py `warm_rashifal` (the cache the blast and pages read)."""
+    subscribe = _disarm_mail_and_generation(monkeypatch)
+    seen = _spy(monkeypatch, subscribe, "compute_transit_snapshot")
+
+    client.post("/admin/warm-rashifal?lang=en")
+
+    _assert_all_pinned(seen, date.today(), "warm_rashifal")
+
+
+def test_the_welcome_email_pins_every_transit_it_computes(monkeypatch):
+    """routes/subscribe.py `_send_welcome_email`: TWO call sites in one function.
+
+    The first feeds the generated reading; the second feeds the Chandra Bala,
+    Gochara and per-area panel printed beside it. The second was left on now()
+    when the per-area panel was added to this email, which is the exact defect
+    the pin exists to remove -- a panel and a reading from different skies.
+    """
+    subscribe = _disarm_mail_and_generation(monkeypatch)
+    seen = _spy(monkeypatch, subscribe, "compute_transit_snapshot")
+
+    assert subscribe._send_welcome_email("a@example.test", "en") is True
+
+    assert len(seen) == 2, f"expected the reading's and the panel's transit, got {len(seen)}"
+    _assert_all_pinned(seen, date.today(), "_send_welcome_email")
+
+
+def test_the_nightly_brief_pins_the_day_it_was_asked_for(monkeypatch):
+    """scripts/rashifal_brief.py `build`: pinned to the IST day it is given.
+
+    Driven by calling `build` directly -- it composes the prompt from the same
+    builders as the app and makes no provider call, so nothing needs stubbing
+    beyond the autouse offline geocode. A date that is NOT today, so a pin that
+    silently fell back to now() cannot pass by coincidence.
+    """
+    import importlib.util
+
+    path = Path(__file__).resolve().parents[1] / "scripts" / "rashifal_brief.py"
+    spec = importlib.util.spec_from_file_location("rashifal_brief_under_test", path)
+    brief = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(brief)
+
+    transits = _spy(monkeypatch, brief, "compute_transit_snapshot")
+    panchangs = _spy(monkeypatch, brief, "compute_panchang")
+    day = date(2026, 3, 4)
+
+    brief.build("en", day.isoformat(), "aries")
+
+    _assert_all_pinned(transits, day, "rashifal_brief transit")
+    _assert_all_pinned(panchangs, day, "rashifal_brief panchang")
 
 
 # ---------------------------------------------------------------------------

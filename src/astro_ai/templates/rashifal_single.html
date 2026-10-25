@@ -132,11 +132,11 @@
       <p class="mt-3 text-sm text-bhagya-ink">
         <span class="uppercase text-xs tracking-wider text-bhagya-muted">{% if lang == 'hi' %}आज का उपाय{% else %}Today's remedy{% endif %}</span>
         <span class="ml-1.5">{{ day_detail.remedy.deed }}</span>
-        <span class="text-bhagya-muted text-xs">({% if lang == 'hi' %}{{ day_detail.remedy.planet_label }} {{ day_detail.remedy.house_ord }} भाव में{% else %}for {{ day_detail.remedy.planet }} in the {{ day_detail.remedy.house_ord }}{% endif %})</span>
+        <span class="text-bhagya-muted text-xs">({% if lang == 'hi' %}{{ day_detail.remedy.planet_label }} {{ day_detail.remedy.house_ord }} भाव में{% else %}for {{ day_detail.remedy.planet }} in the {{ day_detail.remedy.house_ord }} house{% endif %})</span>
       </p>
       {%- endif %}
       <p class="mt-2 text-xs text-bhagya-muted leading-relaxed">
-        {% if lang == 'hi' %}प्रत्येक अंक बताता है कि उस क्षेत्र के कारक ग्रहों में से कितने आज आपकी राशि से शुभ गोचर में हैं (रमन)। अंक जोड़े नहीं गए।{% else %}Each figure counts how many of that area's karaka grahas transit favourably from your rashi today (Raman, <em>Astrology for Beginners</em>). Not summed into a score.{% endif %}
+        {% if lang == 'hi' %}प्रत्येक अंक बताता है कि उस क्षेत्र के कारक ग्रहों में से कितने आज आपकी राशि से शुभ गोचर में हैं (रमन)। अंक जोड़े नहीं गए।{% else %}Each figure counts how many of that area's karaka grahas (the planets that signify it) transit favourably from your rashi today (Raman, <em>Astrology for Beginners</em>). Not summed into a score.{% endif %}
       </p>
     </div>
     {%- endif %}

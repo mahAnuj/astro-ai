@@ -328,14 +328,14 @@
                     </tr>
                   </table>
                   <div style="font-size:11px;color:#a8a29e;margin-top:4px;line-height:1.5;">
-                    {% if lang == 'hi' %}प्रत्येक अंक बताता है कि उस क्षेत्र के कारक ग्रहों में से कितने आज आपकी राशि से शुभ गोचर में हैं। अंक जोड़े नहीं गए।{% else %}Each figure counts how many of that area's karaka grahas transit favourably from your rashi today. Not summed into a score.{% endif %}
+                    {% if lang == 'hi' %}प्रत्येक अंक बताता है कि उस क्षेत्र के कारक ग्रहों में से कितने आज आपकी राशि से शुभ गोचर में हैं। अंक जोड़े नहीं गए।{% else %}Each figure counts how many of that area's karaka grahas (the planets that signify it) transit favourably from your rashi today. Not summed into a score.{% endif %}
                   </div>
                   {%- endif %}
                   {%- if dd and dd.remedy %}
                   <div style="font-size:12px;color:#57534e;margin-top:6px;line-height:1.5;">
                     <strong style="color:#b45309;">{% if lang == 'hi' %}आज का उपाय{% else %}Today's remedy{% endif %}</strong>
                     {{ dd.remedy.deed }}
-                    <span style="color:#a8a29e;font-size:11px;">({% if lang == 'hi' %}{{ dd.remedy.planet_label }} {{ dd.remedy.house_ord }} भाव में{% else %}for {{ dd.remedy.planet }} in the {{ dd.remedy.house_ord }}{% endif %})</span>
+                    <span style="color:#a8a29e;font-size:11px;">({% if lang == 'hi' %}{{ dd.remedy.planet_label }} {{ dd.remedy.house_ord }} भाव में{% else %}for {{ dd.remedy.planet }} in the {{ dd.remedy.house_ord }} house{% endif %})</span>
                   </div>
                   {%- endif %}
                   {%- set gc = (gochara or {}).get(rashi_slug) %}

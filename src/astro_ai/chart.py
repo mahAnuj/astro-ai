@@ -539,7 +539,12 @@ def rashifal_day_moment(day: date_) -> datetime:
     wrapper calling it internally would route around that seam. The guarantee
     does not need a wrapper anyway: this function is a pure function of the
     date, so two callers that both pass it agree by construction.
-    `tests/test_rashifal_day_detail.py` asserts no Rashifal path forgets it.
+    The guard is the spy block in `tests/test_rashifal_day_detail.py`
+    (`test_the_panel_helpers_*`, `test_the_reading_path_*`, `test_the_morning_blast_*`,
+    `test_the_warm_job_*`, `test_the_welcome_email_*`, `test_the_nightly_brief_*`): each
+    drives one path and fails if the `when` reaching `compute_transit_snapshot` is not
+    this function's value. A NEW call site is not covered until it gets a test there --
+    grep `compute_transit_snapshot(` when adding one.
     """
     tz = ZoneInfo(RASHIFAL_REFERENCE_TZ)
     return datetime(day.year, day.month, day.day, 12, 0, tzinfo=tz)
@@ -3064,6 +3069,22 @@ def gochara_for_rashi(rashi_index: int, transit: "TransitSnapshot") -> list[dict
 # the feature should be re-shaped around 1-2 denominators rather than quietly
 # using a different list.
 #
+# A SECOND, SEPARATE CHOICE, for the same astro-auditor ruling: several houses
+# are multi-topic, and a graha is listed there for ONE facet that is not always
+# the facet of the area it is counted under. Three assignments cite a different
+# facet than the area's name suggests:
+#   * Mercury under Health -- houses.md:194-195 gives Mercury at the 6th as
+#     "debts / accounts", not health.
+#   * Sun under Health -- houses.md:51 gives Sun at the 1st as "soul-atma", not
+#     bodily health (the 1st is in the set for the body; the Sun's own entry
+#     there is the self).
+#   * Venus under Money -- houses.md:83-84 gives Venus at the 2nd as "family
+#     comfort", where Jupiter is the one given as "wealth".
+# Each is in the corpus's Karakas: field for a house the area counts, so none is
+# invented; but the reader sees "Health" or "Money" and not the facet. The karaka
+# sets above are deliberately NOT changed here -- that is the astro-auditor's
+# call -- this only records that the area label is wider than the facet cited.
+#
 # NONE OF THE SIX LINES CARRIES ITS OWN CITATION. The [Raman, Ch. IV, p. 36]
 # style citations near them attach to neighbouring claims -- longevity,
 # Maraka, Kendra/Digbala -- not to the Karakas: fields. houses.md:616
@@ -3229,9 +3250,9 @@ def remedy_for_rashi(rashi_index: int, transit: "TransitSnapshot",
                      lang: str = "en") -> dict | None:
     """{'planet', 'house', 'deed'} for ONE adverse transit today, or None.
 
-    Not "the heaviest". The tiers that are SOURCED -- a Saturn Sade Sati or
-    Ashtama phase (vedic_reference.md \u00a72, \u00a72.4), then Raman's slow movers
-    (Saturn, Jupiter, Rahu) -- settle only about half the cases; the rest are
+    Not "the heaviest". The tiers that are SOURCED -- a Saturn Sade Sati phase
+    (Saturn 12th/1st/2nd from the Moon, vedic_reference.md \u00a72.7.1), then Raman's
+    slow movers (Saturn, Jupiter, Rahu) -- settle only about half the cases; the rest are
     broken by house NUMBER, which carries no weight in the corpus and is not a
     heaviness claim (QA measured the number deciding on 6 of 12 rashis today).
     So: one of the grahas the corpus names as dominant, picked
@@ -3247,21 +3268,29 @@ def remedy_for_rashi(rashi_index: int, transit: "TransitSnapshot",
                    if e["verdict"] == "challenging" and e["planet"] in _GRAHA_GOOD_DEED]
         if not adverse:
             return None
-        # ORDERING, every tier of it sourced.
+        # ORDERING. Tiers 1 and 2 are sourced; tier 3 is a tie-break, not a claim.
         #
-        # 1. Saturn in the houses the corpus names by name. vedic_reference.md
-        #    §2 defines Sade Sati as Saturn transiting the 12th, 1st and 2nd
-        #    from the natal Moon, and §2.4 Ashtama Shani as the 8th, which it
-        #    calls "worth flagging in readings". The Rashifal counts from the
-        #    janma rashi, which IS that Moon, so these are directly computable.
+        # 1. Saturn in the 12th, 1st or 2nd from the janma rashi -- Sade Sati.
+        #    SOURCED: vedic_reference.md §2.7.1, Rao, *Lessons on Vedic
+        #    Astrology* Vol. I, Lesson 1 note 11: Saturn "in three signs i.e.,
+        #    the sign behind the Moon, the sign of the Mo and the sign ahead of
+        #    the Mo". The Rashifal counts from the janma rashi, which IS that
+        #    Moon, so the three houses are directly computable.
+        #
+        #    The 8th (Ashtama Shani) is DELIBERATELY NOT in this tier. An earlier
+        #    version had (12, 1, 2, 8) and called all of it sourced; §2.4 is
+        #    marked UNSOURCED by the repo's own audit (vedic_reference.md §2.7.3:
+        #    `ashtama shani` = 0 across 14 books, `ashtama` = 0 in Rao). Saturn
+        #    in the 8th is still an adverse Saturn transit and still ranks in
+        #    tier 2 like any other slow mover; it just does not outrank Jupiter
+        #    or Rahu on a claim the corpus cannot back.
         #
         #    This tier exists because the first version had none, and it showed:
-        #    on the day QA checked, Aries was in Sade Sati arambha (Saturn 12th),
-        #    Leo in Ashtama Shani (8th) and Aquarius in Sade Sati uttara (2nd),
-        #    and the remedy named Jupiter, Rahu and Rahu instead -- because
-        #    houses 4, 7 and 1 sort before 12, 8 and 2. Three of the four rashis
-        #    in a named Saturn phase were passed over by a rule whose docstring
-        #    said "heaviest".
+        #    on the day QA checked, Aries was in Sade Sati arambha (Saturn 12th)
+        #    and Aquarius in Sade Sati uttara (2nd), and the remedy named Jupiter
+        #    and Rahu instead -- because houses 4 and 1 sort before 12 and 2.
+        #    Phases of a Saturn Sade Sati were passed over by a rule whose
+        #    docstring said "heaviest".
         #
         # 2. Then Raman's own weighting, quoted at _GOCHARA_WEIGHTY: "the
         #    transiting effects of the slow moving ones, viz., Jupiter, Saturn
@@ -3271,7 +3300,7 @@ def remedy_for_rashi(rashi_index: int, transit: "TransitSnapshot",
         #    is not a heaviness claim and the corpus supports no such reading of
         #    it; it only stops the answer depending on dict order.
         def _rank(e: dict) -> tuple:
-            saturn_phase = e["planet"] == "Saturn" and e["house"] in (12, 1, 2, 8)
+            saturn_phase = e["planet"] == "Saturn" and e["house"] in (12, 1, 2)
             return (not saturn_phase, e["planet"] not in _GOCHARA_WEIGHTY, e["house"])
 
         adverse.sort(key=_rank)
