@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-25T23:02:58Z",
+  "generated_at": "2026-10-26T07:25:29Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 123,
+  "open": 124,
   "with_ask": 57,
   "by_area": {
-    "UNCLASSIFIED": 51,
+    "UNCLASSIFIED": 52,
     "INFRA": 12,
     "REDESIGN": 10,
     "UI": 8,
@@ -39,17 +39,35 @@
     "untyped": 34,
     "enhancement": 26,
     "correctness": 8,
+    "chore": 7,
     "design": 7,
-    "chore": 6,
     "ui": 3
   },
   "by_priority": {
     "unset": 78,
-    "high": 23,
-    "medium": 22
+    "medium": 23,
+    "high": 23
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 543,
+      "title": "Nothing executes the shell `repro:` dialect, so step 0's probe has run on 0 of 123 open issues",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "chore",
+      "priority": "medium",
+      "labels": [
+        "category:technical",
+        "priority:medium",
+        "chore",
+        "provenance:trusted"
+      ],
+      "created": "2026-10-26T05:05:03Z",
+      "updated": "2026-10-26T05:35:15Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 528,
       "title": "privacy: the visitor's /ask question travels in the URL and is recorded by GA4 as a landing page",
@@ -250,12 +268,12 @@
         "enhancement",
         "category:technical",
         "priority:high",
-        "qa-fail",
+        "qa-pass",
         "provenance:trusted",
-        "qa:independent"
+        "qa:in-cycle"
       ],
       "created": "2026-10-21T17:59:35Z",
-      "updated": "2026-10-25T17:17:40Z",
+      "updated": "2026-10-26T04:39:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -729,10 +747,12 @@
       "labels": [
         "bug",
         "priority:high",
-        "provenance:trusted"
+        "qa-pass",
+        "provenance:trusted",
+        "qa:independent"
       ],
       "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-25T01:01:27Z",
+      "updated": "2026-10-26T01:36:49Z",
       "blocked": false,
       "needs_evidence": false
     },
