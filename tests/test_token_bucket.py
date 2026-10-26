@@ -21,7 +21,7 @@ HOW THESE ARE BUILT.
   `test_the_stub_limiter_reproduces_groqs_own_429`; that arithmetic,
   (5009 + 3587 - 8000) / (8000 / 60) = 4.47, is also the ONLY evidence that Groq
   behaves like a continuous-refill bucket at all (an inference from one body, not
-  a measurement; the x-ratelimit headers are #396).
+  a measurement; the x-ratelimit headers are read by #475 Phase 1b).
 * `LIMIT` is the stub's ceiling and has a mutation row: raise it to infinity and
   the control (`test_without_the_bucket_the_same_burst_is_rejected`) must go red,
   which is what shows the acceptance test could ever have failed.
@@ -42,6 +42,7 @@ import httpx
 import pytest
 from openai import APITimeoutError, RateLimitError
 
+from _fake_openai import fake_client
 from astro_ai import llm, llm_stats, providers
 
 GROQ = "https://api.groq.com/openai/v1"
@@ -263,7 +264,7 @@ def _install(monkeypatch, world, chain, *, usage=(2700, 510), latency=0.0, limit
                 limiter.admit(model, usage[0] + usage[1])
             world.now += latency
             return _response(text, *usage)
-        return SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+        return fake_client(create)
 
     monkeypatch.setattr(providers, "OpenAI", factory)
     monkeypatch.setattr(providers, "_ordered_for_request", lambda: list(chain))

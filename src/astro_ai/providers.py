@@ -54,6 +54,8 @@ from urllib.parse import urlparse
 from openai import BadRequestError, OpenAI
 from openai import APIError, APIConnectionError, APITimeoutError, RateLimitError
 
+from astro_ai import ratelimit_probe
+
 log = logging.getLogger(__name__)
 
 
@@ -183,6 +185,13 @@ _last_completion: ContextVar[int | None] = ContextVar("_last_completion", defaul
 # (the original shape) threw away the one number needed to resolve it.
 _last_prefix: ContextVar[tuple[int, int | None, bool] | None] = ContextVar(
     "_last_prefix", default=None)
+# (limit_tokens, remaining_tokens) from the most recent response's
+# x-ratelimit-*-tokens headers, or None when they were absent or unusable (#475
+# Phase 1b). Same lifecycle as _last_prefix: set by _call_one, reset to None by
+# chat() before EVERY attempt, so one provider's headers cannot be read as the
+# next one's. Read only by ratelimit_probe; nothing here changes what is sent or
+# how the bucket settles.
+_last_rl: ContextVar[tuple[int, int] | None] = ContextVar("_last_rl", default=None)
 
 
 def _prefix_usage(usage) -> tuple[int, int | None, bool] | None:
@@ -606,7 +615,8 @@ def estimate_data_tokens(text: str) -> int:
 # 3587 ... try again in 4.47s") satisfies (5009 + 3587 - 8000) / (8000 / 60)
 # = 4.47 EXACTLY, i.e. Groq behaves like a bucket refilling at LIMIT/60 per
 # second. That is an inference from one 429 body, not a measurement of Groq's
-# limiter (the x-ratelimit headers that would settle it are #396, out of scope).
+# limiter (the x-ratelimit headers that would settle it are being read by the
+# #475 Phase 1b probe, ratelimit_probe.py -- measure-only, no verdict yet).
 # If Groq turns out to be stricter, the 429 handling below stays the backstop.
 #
 # PER PROCESS, NOT PER ACCOUNT. Each Cloud Run instance builds its own buckets,
@@ -622,8 +632,8 @@ _TPM_MARGIN = 600
 
 # Pre-flight cost of one request = estimated prompt + scaffold + a completion
 # reserve. Reserved at FULL weight: Groq's prefix cache may discount the cached
-# part of the prompt, but how a cache hit counts against TPM is #396 and still
-# open, so over-reserving is the safe direction. No max_completion_tokens is
+# part of the prompt, but how a cache hit counts against TPM is open (#475
+# Phase 1b is measuring it), so over-reserving is the safe direction. No max_completion_tokens is
 # sent (qwen's truncation history is in PROVIDERS above), so the completion
 # half is a reserve, not a cap. Calibrated against tiktoken by
 # tests/test_token_bucket.py::test_the_request_estimate_*.
@@ -753,6 +763,39 @@ def _bucket_key(provider: ProviderConfig) -> str:
     return f"{provider.name}|{provider.model()}"
 
 
+def _model_is_shared(provider: ProviderConfig) -> bool:
+    """True when another LIVE chain entry resolves to this same Groq model.
+
+    BUG-4 from the independent QA round on PR #536. `_bucket_key` is
+    `name|model()`, but Groq limits per account AND MODEL -- so two chain
+    entries on the same model and key (`groq` and `groq120` are exactly that,
+    see PROVIDERS) share one Groq bucket while the probe gives them two
+    independent sequences. A sibling's charge between this call's anchor and
+    its response is then invisible, the sample is booked clean, and the error
+    runs the WRONG WAY: a hidden charge lowers Groq's reported figure below the
+    prediction, pushing toward a false FULL WEIGHT -- the one verdict that
+    would justify leaving `settle()` alone for good.
+
+    `_bucket_key` itself is deliberately NOT changed: it is the same key
+    `chat()` hands `llm_stats.record`, so re-keying it would make the bucket's
+    figures and `measured_by_model` disagree about a row on /admin/ops. The
+    PROBE refuses instead. The pacing bucket keeps the pre-existing behaviour,
+    which is a real but separate defect and not a regression of this change.
+
+    The default chain does not list both -- PROVIDERS says so in as many words
+    -- but `_chain()` accepts whatever `BHAGYA_LLM_PROVIDERS` supplies and
+    nothing prevents it, which is precisely the case a measurement must not be
+    silently wrong in.
+    """
+    try:
+        model = provider.model()
+        return sum(1 for q in _chain() if q.model() == model) > 1
+    except Exception:
+        # A probe refusing to score is always safe; raising here would take
+        # down a live LLM call for the sake of a measurement.
+        return True
+
+
 def _tpm_limit(provider: ProviderConfig) -> int | None:
     """The TPM ceiling we know for this provider, or None = do not pace it.
 
@@ -860,6 +903,21 @@ _NO_REASONING_EFFORT: set[str] = set()
 _NO_REASONING_LOCK = threading.Lock()
 
 
+def _create(client, **kwargs):
+    """One chat completion, with the response HEADERS kept (#475 Phase 1b).
+
+    `.create()` returns the parsed object and drops the headers, and the
+    x-ratelimit-remaining-tokens header is the only place Groq exposes its own
+    accounting. `with_raw_response` is the SDK's route to them: the SAME HTTP
+    request (no extra call, no extra token), and the same exceptions on a non-2xx,
+    so the reasoning_effort retry in _call_one is unchanged. The parsed headers go
+    to `_last_rl`; a missing or unusable header is None, never an error.
+    """
+    raw = client.chat.completions.with_raw_response.create(**kwargs)
+    _last_rl.set(ratelimit_probe.parse_headers(raw.headers))
+    return raw.parse()
+
+
 def _call_one(provider: ProviderConfig, messages: list[dict]) -> str:
     """Issue the chat completion to one provider; raise on any failure.
 
@@ -897,9 +955,7 @@ def _call_one(provider: ProviderConfig, messages: list[dict]) -> str:
         kwargs["reasoning_effort"] = "low"
 
     try:
-        response = client.chat.completions.create(
-            model=model, messages=messages, **kwargs
-        )
+        response = _create(client, model=model, messages=messages, **kwargs)
     except BadRequestError as err:
         # Only retry for THIS parameter. Any other 400 is a real error and must
         # propagate, or a malformed request would silently look like a
@@ -910,7 +966,7 @@ def _call_one(provider: ProviderConfig, messages: list[dict]) -> str:
             _NO_REASONING_EFFORT.add(model)
         log.info("provider %s (%s) does not accept reasoning_effort — "
                  "retrying without it and remembering", provider.name, model)
-        response = client.chat.completions.create(model=model, messages=messages)
+        response = _create(client, model=model, messages=messages)
 
     _last_usage.set(getattr(getattr(response, "usage", None), "total_tokens", None))
     _last_prefix.set(_prefix_usage(getattr(response, "usage", None)))
@@ -1232,17 +1288,30 @@ def chat(messages: list[dict], *, route: str = "",
                 # together, so the leak needs an attempt that raises before it
                 # gets there or a response with a partial usage block -- but then
                 # the bucket would be settled against the PREVIOUS task's figures,
-                # and last_used_tokens() would report them.
+                # and last_used_tokens() would report them. _last_rl (Phase 1b)
+                # is reset for the same reason: the probe would otherwise score
+                # this attempt against the previous one's headers.
                 _last_prefix.set(None)
                 _last_usage.set(None)
                 _last_completion.set(None)
+                _last_rl.set(None)
+                # #475 Phase 1b: number this attempt in the cached-token probe.
+                # Groq hosts only -- the probe's formula is Groq's bucket. Every
+                # attempt is closed, success or failure, because a failed one may
+                # still have been charged and must break the probe's chain.
+                ticket = (ratelimit_probe.begin(_bucket_key(provider))
+                          if _tpm_limit(provider) is not None
+                          and not _model_is_shared(provider) else None)
                 try:
                     raw_text = _call_one(provider, messages)
                 except BaseException as call_err:
                     _pace_done(res, call_err)
+                    ratelimit_probe.abort(ticket)
                     raise
                 _pace_done(res, None)
                 prefix = _last_prefix.get()
+                rl_book = ratelimit_probe.finish(
+                    ticket, _last_rl.get(), prefix, _last_completion.get(None))
                 # Sanitize reasoning-model leakage BEFORE the quality gate so
                 # the heading-count check operates on the visible answer, not
                 # on the model's `<think>` scratchpad. Also prevents any
@@ -1316,6 +1385,10 @@ def chat(messages: list[dict], *, route: str = "",
                         # one that waited and then 429'd, or was skipped, is not
                         # the one serving, and `pc` alone would drop it.
                         pacing={k: dict(v) for k, v in paced.items()} or None,
+                        # #475 Phase 1b: the cached-token probe's increments for
+                        # THIS (serving) attempt; None when not a Groq host or
+                        # the call could not be classified warm or cold.
+                        ratelimit=rl_book,
                     )
                 except Exception:  # noqa: BLE001 — stats never break the reading
                     log.debug("llm_stats.record failed", exc_info=True)

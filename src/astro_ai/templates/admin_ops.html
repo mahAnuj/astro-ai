@@ -961,7 +961,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           can read above 100% without a 429 and a burst straddling a minute boundary reads as two
           smaller ones; calls whose provider sent no usage block count under calls and add no
           tokens; cached input tokens are counted at full weight (whether Groq discounts them
-          against TPM is open, #396). A high figure proves pressure. A low one proves nothing about
+          against TPM is being measured in the table below, #475 Phase 1b). A high figure proves pressure. A low one proves nothing about
           headroom. The counter is one blob in GCS shared by every instance.
           <b>429 via fallback</b> is fallbacks that followed a 429 on this model, not all 429s: a
           request where the whole chain failed is in no fallback and so in no figure here.
@@ -981,6 +981,92 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           <b>inference</b> from one 429 message and not a measurement: if Groq counts a strict
           60-second window instead, this bucket can still admit enough to be rejected, and the
           &ldquo;429 via fallback&rdquo; column above is what would show it.
+        </p>
+      </details>
+
+      {#- ── Cached-token accounting (#475 Phase 1b) ─────────────────────
+           MEASURE-ONLY. Does Groq charge cached prompt tokens against TPM? The
+           bucket above charges them in full (settle() is unchanged); this table
+           reads Groq's own x-ratelimit-remaining-tokens off calls already being
+           made and compares it with what that accounting predicted. No new
+           calls, no new storage write. Inline styles only: no Tailwind class,
+           so no app.css rebuild. Every sentence below has a test in
+           tests/test_ratelimit_panel.py that fails if it stops being true. -#}
+      {% set RL = ops.rl_rules %}
+      <h3 class="lbl" style="margin:22px 0 10px">Cached-token accounting
+        <span style="font-weight:400;color:var(--ink-mute);text-transform:none;letter-spacing:0">
+          — Groq&rsquo;s own remaining-tokens header against this app&rsquo;s prediction</span></h3>
+      <div class="tscroll" role="region" aria-label="Cached-token accounting, by model"><table class="rt cols7">
+        <thead><tr><th>model</th><th class="n">warm samples</th>
+          <th class="n">remaining tokens: header vs predicted</th>
+          <th class="n">mean cached tokens</th><th class="n">discounted fraction</th>
+          <th class="n">cold control</th><th class="n">verdict</th></tr></thead>
+        <tbody>
+        {% for r in ops.app.ratelimit %}
+        <tr>
+          <td>{{ r.provider }}<span class="sub">{{ r.model }}{% if not r.in_chain %} · <span class="c-open">not in current chain</span>{% endif %}</span></td>
+          {%- if r.probe is none %}
+          <td class="n" colspan="6" title="the probe recorded nothing for this model in this window">—</td>
+          {%- elif r.no_header %}
+          <td class="n" colspan="6">no header received on {{ "{:,}".format(r.no_header_calls) }} calls</td>
+          {%- else %}
+          <td class="n">{{ "{:,}".format(r.warm_n) }}<span class="sub">of {{ "{:,}".format(r.warm_seen) }} warm calls · skipped, warm and cold: {{ r.skips.noanchor }} no anchor · {{ r.skips.overlap }} overlapped · {{ r.skips.nohdr }} no header · {{ r.skips.clamp }} clamped · {{ r.skips.full }} bucket at ceiling{% if r.last_limit %} · header-reported limit {{ "{:,}".format(r.last_limit) }}{% endif %}</span></td>
+          <td class="n">{% if r.mean_rem is none %}—{% else %}{{ "{:,}".format(r.mean_rem) }} vs {{ "{:,}".format(r.mean_exp) }}{% endif %}</td>
+          <td class="n">{{ "{:,}".format(r.mean_cached) if r.mean_cached is not none else '—' }}</td>
+          <td class="n">{% if r.f is none %}—{% else %}{{ r.f_text }}<span class="sub">{{ r.disc }} of {{ r.warm_n }} samples individually discounted</span>{% endif %}</td>
+          <td class="n">{{ "{:,}".format(r.cold_n) }} isolated<span class="sub">{{ "{:,}".format(r.cold_seen) }} cold calls excluded from the warm count{% if r.cold_mean_abs is not none %} · mean |error| {{ "%.1f"|format(r.cold_mean_abs) }}{% endif %}</span></td>
+          <td class="n"><b>{{ r.verdict }}</b></td>
+          {%- endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="7"><div class="empty">No provider chain could be read and no probe figures are recorded,
+          so there is nothing to list.</div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+      <details class="q-fold">
+        <summary>How the comparison is made, and what it cannot tell you</summary>
+        <p class="q-note">
+          <b>Measure-only.</b> Nothing here changes what the bucket charges: a warm call is still
+          settled at its full prompt + completion tokens. This panel only records whether Groq agrees.
+          <b>predicted</b> is the remaining figure of the previous isolated response, plus a steady
+          refill of limit &divide; 60 per second since then, minus this call&rsquo;s prompt +
+          completion tokens &mdash; cached tokens charged in full. <b>header</b> is what Groq reported.
+          A <b>warm</b> call is one whose provider reported <code>cached_tokens</code> above 0; a call
+          reporting 0 or nothing is <b>cold</b>, is never counted as a warm sample, and runs through
+          the same formula as a control. A call is a sample only if nothing else on that model
+          started or finished between the previous response and its own response; every other
+          candidate is counted under <b>skipped</b> &mdash; no anchor (nothing usable before it),
+          overlapped, no header, clamped (the prediction fell outside the bucket, or Groq
+          reported zero remaining), or at its ceiling (the bucket was full when the call started, or
+          would have refilled past full before it finished, so the refill term cannot hold).
+          <b>That last one has two causes these counters cannot tell apart</b>: the model&rsquo;s
+          calls are spaced far enough apart that the bucket had refilled completely, or the request
+          is about the size of the whole bucket (the natal estimate is 98&ndash;101% of 8,000, the
+          estimator&rsquo;s charge rather than billed tokens). A model showing ceiling skips rising
+          while warm samples stay at zero is therefore getting no usable samples, and nothing on this
+          panel says which of the two causes it is. A skipped call is never counted as agreement.
+          <b>discounted fraction</b> is 0 if cached tokens were charged in full and 1 if they were
+          not charged at all; the <b>verdict</b> needs at least {{ RL.min_warm }} warm and
+          {{ RL.min_cold }} cold samples. It reads NOISY when the cold control&rsquo;s mean absolute error
+          exceeds {{ "%d"|format(RL.noise_pct) }}% of the mean cached count. Otherwise it reads FULL WEIGHT
+          when the discounted fraction is {{ "%.2f"|format(RL.full_max_f) }} or less and at most
+          {{ "%d"|format(RL.vote_max_pct) }}% of warm samples individually voted discounted,
+          DISCOUNTED when the fraction is {{ "%.2f"|format(RL.discount_min_f) }} or more and at least
+          {{ "%d"|format(RL.vote_min_pct) }}% did, and PARTIAL for everything else, including a fraction past
+          a line with too few votes. A warm sample votes discounted when Groq&rsquo;s figure sits more than
+          {{ "%d"|format(RL.vote_cached_pct) }}% of its cached count above the prediction. Those thresholds
+          are judgment, not measurement. The verdict column is a live reading of this window, not the
+          recorded decision: the row in ARCHITECTURE.md is written by a person after at least
+          {{ RL.min_warm }} warm and {{ RL.min_cold }} cold samples for the model.
+          Another caller of the same key lowers Groq&rsquo;s figure below the prediction, which can
+          only make cached tokens look fully charged, never discounted, so read FULL WEIGHT only
+          beside a quiet cold control. <b>—</b> means there is no figure to show: a row that is one
+          dash means the probe recorded nothing for the model in this window, and a dash in the
+          remaining-tokens, mean cached or discounted-fraction cell means the model was seen but no
+          warm sample was kept to average. <b>0</b> means it ran and kept no sample. This window has
+          probe figures for {{ ops.app.ratelimit_days }} of {{ ops.app.days }} days. Only requests that
+          were served are counted.
         </p>
       </details>
       {% endif %}

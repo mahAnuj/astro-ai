@@ -1101,6 +1101,79 @@ def _model_rows(usage: dict, chain: list[str], agg: dict) -> list[dict]:
     return rows
 
 
+def _rl_rules() -> dict:
+    from astro_ai import ratelimit_probe as rp
+    return {"min_warm": rp.MIN_WARM, "min_cold": rp.MIN_COLD,
+            "noise_pct": rp.COLD_NOISE_FRACTION * 100,
+            "full_max_f": rp.FULL_MAX_F, "discount_min_f": rp.DISCOUNT_MIN_F,
+            "vote_max_pct": rp.VOTE_MAX * 100, "vote_min_pct": rp.VOTE_MIN * 100,
+            "vote_cached_pct": rp.VOTE_CACHED_FRACTION * 100}
+
+
+def _ratelimit_rows(usage: dict, chain: list[str]) -> list[dict]:
+    """One row per model for the cached-token accounting panel (#475 Phase 1b).
+
+    Reads ONLY `measured_by_model[*]["ratelimit"]`, the probe's own store, and
+    turns its sums into the figures the panel prints. Taking plain data so a
+    test can drive it, as `_model_rows` is. Three states that must not look
+    alike: `probe is None` = the probe recorded nothing for the model in this
+    window (a dash); `probe` present with `warm_n == 0` = it ran and kept no warm
+    sample (a measured 0); `no_header` = every classified call arrived without
+    usable x-ratelimit headers.
+    """
+    from astro_ai import ratelimit_probe as rp
+
+    def n(d: dict, k: str) -> int:
+        v = d.get(k)
+        return v if isinstance(v, int) and not isinstance(v, bool) and v > 0 else 0
+
+    observed = {r.get("key"): r for r in (usage.get("measured_by_model") or [])
+                if isinstance(r, dict) and r.get("key")}
+    order = list(dict.fromkeys(chain))
+    extra = sorted(k for k, r in observed.items()
+                   if k not in order and isinstance(r.get("ratelimit"), dict))
+    rows = []
+    for key in order + extra:
+        provider, _, model = key.partition("|")
+        probe = (observed.get(key) or {}).get("ratelimit")
+        probe = probe if isinstance(probe, dict) else None
+        row: dict[str, Any] = {"key": key, "provider": provider, "model": model,
+                               "in_chain": key in order, "probe": probe}
+        if probe is not None:
+            warm_n, cold_n = n(probe, "warm_n"), n(probe, "cold_n")
+            seen = n(probe, "warm_seen") + n(probe, "cold_seen")
+            v = rp.verdict(probe)
+            row.update(
+                warm_seen=n(probe, "warm_seen"), warm_n=warm_n,
+                cold_seen=n(probe, "cold_seen"), cold_n=cold_n,
+                skips={"noanchor": n(probe, "skip_noanchor"),
+                       "overlap": n(probe, "skip_overlap"),
+                       "nohdr": n(probe, "skip_nohdr"),
+                       "clamp": n(probe, "skip_clamp"),
+                       # Counted apart from `clamp` because it means something
+                       # different to the reader: a ceiling has two causes the
+                       # counters cannot tell apart (calls spaced far enough
+                       # apart that the bucket refilled, or a request about the
+                       # size of the bucket), so `full` rising while `warm_n`
+                       # stays 0 says only "no usable samples", not why.
+                       "full": n(probe, "skip_full")},
+                mean_rem=round(n(probe, "warm_rem") / warm_n) if warm_n else None,
+                mean_exp=round(n(probe, "warm_exp") / warm_n) if warm_n else None,
+                mean_cached=round(v["mean_cached"]) if v["mean_cached"] is not None else None,
+                f=v["f"], disc=n(probe, "warm_disc"),
+                # "+ 0.0" turns -0.0 into 0.0: a fraction of -0.004 must print as
+                # 0.00, not as a signed zero that reads like a measured sign.
+                f_text=(f"{round(v['f'], 2) + 0.0:.2f}" if v["f"] is not None else None),
+                cold_mean_abs=(round(v["cold_mean_abs"], 1)
+                               if v["cold_mean_abs"] is not None else None),
+                verdict=v["verdict"],
+                last_limit=n(probe, "last_limit") or None,
+                no_header=seen > 0 and n(probe, "skip_nohdr") == seen,
+                no_header_calls=seen)
+        rows.append(row)
+    return rows
+
+
 def _app_view(days: int = 7) -> dict:
     """App health, read from the app's OWN stores, in-process.
 
@@ -1268,6 +1341,9 @@ def _app_view(days: int = 7) -> dict:
             "models": _model_rows(usage, _chain_keys(), agg),
             "models_days_recorded": int(usage.get("model_days_recorded") or 0),
             "models_paced_days": int(usage.get("paced_days") or 0),
+            # Phase 1b. The cached-token accounting probe, per model.
+            "ratelimit": _ratelimit_rows(usage, _chain_keys()),
+            "ratelimit_days": int(usage.get("ratelimit_days") or 0),
             "input_tokens": int(usage.get("total_input_tokens") or 0),
             "output_tokens": int(usage.get("total_output_tokens") or 0),
             # The WORST day in the window, against a ceiling. An average over
@@ -1681,6 +1757,9 @@ def snapshot(now: datetime | None = None,
         # meant to compare against, and a literal in HTML is a number nothing
         # can keep in step with `TPM_PER_MODEL` when the tier changes.
         "tpm_per_model": TPM_PER_MODEL,
+        # Phase 1b. The verdict thresholds, from their one definition, so the
+        # sentence on the page cannot drift from the rule the code applies.
+        "rl_rules": _rl_rules(),
         "budget_fail_reasons": BUDGET_FAIL_REASONS,
         "tpd_per_model": TPD_PER_MODEL,
         # Same reason, for the same template: the error cell coloured itself

@@ -824,6 +824,96 @@ MUTATIONS = [
     # gates, three steward runs cleared neither, and `steward-ineffective`
     # escalated both -- because their branches were `partial/` and the regex
     # was `^issue/`.
+    # ---- #536 round 2: the independent round's findings, pinned -----------
+    #
+    # BUG-2. The guard used to test `exp_full`, the OUTPUT of the arithmetic, so
+    # a clamped `pre` went unnoticed and the over-add of `rate x duration` was
+    # booked as agreement. Because `pred` is 98-101% of `limit` for natal
+    # (7,871 en / 8,056 hi against 8,000, measured 2026-10-25), `exp_full > 0`
+    # REQUIRED a near-full bucket -- so the samples that survived were exactly
+    # the invalid ones, and which ones survived depended on the answer.
+    ("the clamp guard reads its own output again (samples chosen by the answer)",
+     "src/astro_ai/ratelimit_probe.py",
+     # Disables the ceiling test so the sample falls through and is BOOKED,
+     # which is the old defect. Swapping the condition for `exp_full > limit`
+     # is NOT the old behaviour -- the branch would still set `skip_full` -- and
+     # an earlier draft of this row made exactly that mistake and reported
+     # MIS-POINTED.
+     "if raw_pre > limit or raw_mid > limit:",
+     "if raw_pre > limit * 100:",
+     "test_a_sample_whose_bucket_was_at_the_ceiling_is_never_counted_clean"),
+
+    # BUG-3. ARCHITECTURE points at this panel twice to settle whether the
+    # header is TPM. The value was computed at ops_data.py:1163 and dropped, so
+    # the stated route to answering that question led to a page without it.
+    ("the header-reported limit is computed and never rendered",
+     "src/astro_ai/templates/admin_ops.html",
+     ' · header-reported limit {{ "{:,}".format(r.last_limit) }}',
+     "",
+     "test_the_header_reported_limit_reaches_the_page"),
+
+    # BUG-4. `groq` and `groq120` are one Groq bucket and two probe sequences,
+    # so a sibling's charge is invisible and lowers Groq's figure below the
+    # prediction -- pushing toward a FALSE FULL WEIGHT, the one verdict that
+    # would justify leaving settle() alone for good.
+    ("the probe scores a model two live chain entries share",
+     "src/astro_ai/providers.py",
+     "and not _model_is_shared(provider) else None)",
+     "else None)",
+     # Names the CALL-SITE test, not the helper test: deleting the guard from
+     # `chat()` leaves `_model_is_shared` itself correct, so a row aimed at the
+     # helper reports MIS-POINTED. An earlier draft did exactly that.
+     "test_chat_books_no_sample_at_all_when_the_model_is_shared"),
+
+    # ---- #536 round 3: D1/D2/D3, each pinned by the test that was missing ---
+    #
+    # D3(a). POPULATED has skip_full=0, so replacing the read with a literal 0
+    # changed nothing on any page -- on the counter the operator is told to watch.
+    ("the ceiling-skip count is never read from the probe (always 0 on the page)",
+     "src/astro_ai/ops_data.py",
+     '"full": n(probe, "skip_full")},',
+     '"full": 0},',
+     "test_a_nonzero_ceiling_count_reaches_the_page"),
+
+    # D3(b). `raw_pre <= limit < raw_mid` is the completion-model clamp that
+    # produced the original wrong samples; nothing covered it. (Dropping
+    # `raw_pre > limit` ALONE is an equivalent mutant -- raw_mid >= raw_pre -- and
+    # is deliberately not a row.)
+    ("a bucket that would cross the ceiling DURING the call is booked as a clean sample",
+     "src/astro_ai/ratelimit_probe.py",
+     "if raw_pre > limit or raw_mid > limit:",
+     "if raw_pre > limit:",
+     "test_a_bucket_that_would_cross_the_ceiling_during_the_call_is_skipped_not_booked"),
+
+    # D3(d). A header of 0 remaining is a floor, not a measurement.
+    ("a zero-remaining header is booked as a sample (the empty-end clamp is gone)",
+     "src/astro_ai/ratelimit_probe.py",
+     "if exp_full <= 0 or remaining == 0:",
+     "if exp_full <= 0:",
+     "test_a_header_of_zero_remaining_is_a_clamp_skip_not_a_sample"),
+
+    # D3(c). Only the ceiling half of the sentence was asserted.
+    ("the fold's zero-remaining clause is reworded away",
+     "src/astro_ai/templates/admin_ops.html",
+     "reported zero remaining)",
+     "reported an empty bucket)",
+     "test_the_fold_says_what_the_empty_end_clamp_is"),
+
+    # D1. The fix commit spliced its sentence into the middle of an older one.
+    ("the fold's closing sentence is spliced into an older one again",
+     "src/astro_ai/templates/admin_ops.html",
+     "causes it is. A skipped call is never counted as agreement.",
+     "causes it is. The arithmetic does not hold) &mdash; and is never counted as agreement.",
+     "test_the_fold_skip_passage_reads_exactly_as_written_and_is_not_spliced"),
+
+    # D2. `skip_full` with `warm_n` 0 is also what sparse traffic on a light
+    # request produces, so "cannot be measured at all" over-claims.
+    ("the fold says a ceiling skip means the path cannot be measured at all",
+     "src/astro_ai/templates/admin_ops.html",
+     "is therefore getting no usable samples,",
+     "is therefore not under-deployed &mdash; it cannot be measured by this instrument at all,",
+     "test_the_fold_does_not_say_a_ceiling_means_the_path_cannot_be_measured"),
+
     ("the stall detector cannot name a partial branch's issue (steward is mute)",
      "scripts/detect_stalls.py",
      'r"^(?:issue|partial|fix)/(\\d+)"',
@@ -3217,6 +3307,134 @@ MUTATIONS = [
      "scripts/verify_prompt_contracts.py",
      "            print(f\"  - {f}\")\n        return 1", "            print(f\"  - {f}\")\n        return 0",
      "test_main_exits_one_on_a_failure_and_zero_on_the_shipped_tree"),
+
+    # #475 Phase 1b. The cached-token accounting probe (measure-only). Each row
+    # re-breaks one way the probe could report a verdict the data does not
+    # support; the CONTROL arm and the isolation rule are what make a verdict
+    # mean anything, so most rows attack those.
+    ("#475 1b: a cold call (cached 0 or absent) is counted as a warm sample",
+     "src/astro_ai/ratelimit_probe.py",
+     "        warm = bool(cached)                       # None (absent) and 0 are both cold\n",
+     "        warm = True\n",
+     "test_a_cold_call_runs_the_same_formula_but_is_never_a_warm_sample"),
+
+    ("#475 1b: the adjacency check is removed (a call begun while another was in flight is scored)",
+     "src/astro_ai/ratelimit_probe.py",
+     "            adjacent = anchor if anchor is not None and anchor[3] + 1 == s else None\n",
+     "            adjacent = anchor\n",
+     "test_a_call_that_starts_while_another_is_in_flight_is_not_a_sample_even_if_it_finishes_first"),
+
+    ("#475 1b: the sign of the error is flipped (a discount reads as extra charge)",
+     "src/astro_ai/ratelimit_probe.py",
+     "        e = exp_i - remaining                     # > 0: Groq charged MORE than predicted\n",
+     "        e = remaining - exp_i\n",
+     "test_a_header_above_the_prediction_by_most_of_the_cached_count_votes_discounted"),
+
+    ("#475 1b: the verdict no longer requires a cold control",
+     "src/astro_ai/ratelimit_probe.py",
+     '    if n_w < MIN_WARM or n_c < MIN_COLD or out["f"] is None:\n',
+     '    if n_w < MIN_WARM or out["f"] is None:\n',
+     "test_verdict_is_insufficient_below_the_sample_floors_and_not_above_them"),
+
+    ("#475 1b: the probe's counters are written into _PREFIX_ZERO (the ninth-key trap)",
+     "src/astro_ai/llm_stats.py",
+     '"cached_measurable": 0, "reported_unmeasurable": 0}',
+     '"cached_measurable": 0, "reported_unmeasurable": 0, "warm_seen": 0}',
+     "test_prefix_zero_is_untouched_and_prefix_rows_survive_a_probe_write"),
+
+    ("#475 1b: settle() subtracts cached tokens (the measure-only phase changes the bucket)",
+     "src/astro_ai/providers.py",
+     "        res.bucket.settle(res, prefix[0] + completion)\n",
+     "        res.bucket.settle(res, prefix[0] - (prefix[1] or 0) + completion)\n",
+     "test_settle_is_unchanged_a_warm_call_is_still_charged_prompt_plus_completion"),
+
+    ("#475 1b: _last_rl is not reset before an attempt (stale headers scored against the next provider)",
+     "src/astro_ai/providers.py",
+     "                _last_rl.set(None)\n",
+     "                pass\n",
+     "test_last_rl_is_reset_before_every_attempt"),
+
+    ("#475 1b: every call makes a SECOND request to read the headers",
+     "src/astro_ai/providers.py",
+     "    raw = client.chat.completions.with_raw_response.create(**kwargs)\n",
+     "    client.chat.completions.with_raw_response.create(**kwargs)\n"
+     "    raw = client.chat.completions.with_raw_response.create(**kwargs)\n",
+     "test_one_http_request_per_chat_call_and_no_probe_request"),
+
+    ("#475 1b: a failed attempt is forgotten, so the next call is scored against the old anchor",
+     "src/astro_ai/ratelimit_probe.py",
+     "            _seq[ticket[0]] = _seq.get(ticket[0], 0) + 1\n"
+     "            _anchor.pop(ticket[0], None)\n",
+     "            _seq[ticket[0]] = ticket[1] - 1\n",
+     "test_a_failed_attempt_breaks_the_chain_because_it_may_still_have_been_charged"),
+
+    ("#475 1b: last_limit is summed across days (8,000 reads as 56,000)",
+     "src/astro_ai/llm_stats.py",
+     '                if not acc["last_limit"]:\n'
+     '                    acc["last_limit"] = max(_as_int(r.get("last_limit")), 0)\n',
+     '                acc["last_limit"] += max(_as_int(r.get("last_limit")), 0)\n',
+     "test_usage_summary_sums_across_days_and_counts_only_days_that_carried_the_key"),
+
+    ("#475 1b: a probe that ran and kept no warm sample prints a dash, not a zero",
+     "src/astro_ai/templates/admin_ops.html",
+     "          {%- if r.probe is none %}\n",
+     "          {%- if not r.warm_n %}\n",
+     "test_a_probe_that_ran_and_kept_no_warm_sample_prints_zero_not_a_dash"),
+
+    ("#475 1b: the panel folds cold samples into the warm count",
+     "src/astro_ai/ops_data.py",
+     '            warm_n, cold_n = n(probe, "warm_n"), n(probe, "cold_n")\n',
+     '            warm_n, cold_n = n(probe, "warm_n") + n(probe, "cold_n"), n(probe, "cold_n")\n',
+     "test_cold_calls_are_never_folded_into_the_warm_sample_count"),
+
+    # #475 1b, QA round 1: every sentence on the panel is pinned to what it describes.
+    ("#475 1b: the fold says a dash always means the probe recorded nothing (false for a seen model with no warm sample)",
+     "src/astro_ai/templates/admin_ops.html",
+     "beside a quiet cold control. <b>—</b> means there is no figure to show: a row that is one\n"
+     "          dash means the probe recorded nothing for the model in this window, and a dash in the\n"
+     "          remaining-tokens, mean cached or discounted-fraction cell means the model was seen but no\n"
+     "          warm sample was kept to average.",
+     "beside a quiet cold control. <b>—</b> means the probe recorded nothing for the model in\n"
+     "          this window;",
+     "test_the_dash_sentence_is_true_for_both_dash_situations"),
+
+    ("#475 1b: the fold says 'mean error' where the cold control uses the mean ABSOLUTE error",
+     "src/astro_ai/templates/admin_ops.html",
+     "mean absolute error\n",
+     "mean error\n",
+     "test_the_threshold_sentences_state_the_whole_rule_from_the_constants"),
+
+    ("#475 1b: the fold drops the vote condition from DISCOUNTED (verdict() still requires it)",
+     "src/astro_ai/templates/admin_ops.html",
+     " or more and at least\n          {{ \"%d\"|format(RL.vote_min_pct) }}% did, and PARTIAL",
+     " or more, and PARTIAL",
+     "test_the_threshold_sentences_state_the_whole_rule_from_the_constants"),
+
+    ("#475 1b: verdict() reads DISCOUNTED on the fraction alone (the sentence says the vote is required too)",
+     "src/astro_ai/ratelimit_probe.py",
+     '    elif out["f"] >= DISCOUNT_MIN_F and out["vote"] >= VOTE_MIN:\n',
+     '    elif out["f"] >= DISCOUNT_MIN_F:\n',
+     "test_the_threshold_sentences_state_the_whole_rule_from_the_constants"),
+
+    ("#475 1b: the fold reverses the direction another caller of the key pushes the reading",
+     "src/astro_ai/templates/admin_ops.html",
+     "only make cached tokens look fully charged, never discounted,",
+     "only make cached tokens look discounted, never fully charged,",
+     "test_the_other_caller_sentence_is_what_the_probe_does"),
+
+    ("#475 1b: a header BELOW the prediction (another caller) votes discounted as well as one above it",
+     "src/astro_ai/ratelimit_probe.py",
+     '            out["warm_disc"] = 1 if e < -cached * VOTE_CACHED_FRACTION else 0\n',
+     '            out["warm_disc"] = 1 if abs(e) > cached * VOTE_CACHED_FRACTION else 0\n',
+     "test_the_other_caller_sentence_is_what_the_probe_does"),
+
+    ("#475 1b: the fold stops saying the verdict column is a live reading, not the recorded decision",
+     "src/astro_ai/templates/admin_ops.html",
+     "The verdict column is a live reading of this window, not the\n"
+     "          recorded decision: the row in ARCHITECTURE.md is written by a person after at least\n"
+     "          {{ RL.min_warm }} warm and {{ RL.min_cold }} cold samples for the model.\n",
+     "",
+     "test_the_live_verdict_is_not_the_recorded_decision_and_the_fold_says_so"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

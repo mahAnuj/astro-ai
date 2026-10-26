@@ -55,6 +55,14 @@ Schema (per-day file):
         "groq120|openai/gpt-oss-120b": {"reserved": 17, "waits": 5,
                                         "wait_ms": 42000, "skips": 2, "forced": 1}
       },                             # absent = pacing off / not recorded; reserved 0 = on, idle
+      "ratelimit_by_model": {        # #475 Phase 1b — cached-token accounting probe (measure-only)
+        "groq120|openai/gpt-oss-120b": {"warm_seen": 9, "warm_n": 4, "warm_rem": 24100,
+                                        "warm_exp": 24350, "warm_cached": 9216, "warm_disc": 0,
+                                        "cold_seen": 6, "cold_n": 2, "cold_rem": 11900,
+                                        "cold_exp": 11880, "cold_abs": 35,
+                                        "skip_noanchor": 4, "skip_overlap": 3,
+                                        "skip_nohdr": 0, "skip_clamp": 2, "last_limit": 8000}
+      },                             # see ratelimit_probe; absent = probe never ran for the model
       "calls": {"total": .., "hits": .., "misses": .., "miss_latency_sum_ms": ..},
       "call_by_route": {
         "rashifal": {"calls": .., "hits": .., "input_tokens": .., "output_tokens": ..,
@@ -108,7 +116,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from astro_ai import storage
+from astro_ai import ratelimit_probe, storage
 
 log = logging.getLogger(__name__)
 
@@ -257,7 +265,8 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
            cached_tokens: int | None = None,
            reported_impossible: bool = False,
            completion_tokens: int | None = None,
-           pacing: dict | None = None) -> None:
+           pacing: dict | None = None,
+           ratelimit: dict | None = None) -> None:
     """Increment counters for today's LLM call. Best-effort; never raises.
 
     Called from providers.chat() after a successful response. `route` labels
@@ -306,6 +315,12 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
     them all, inside the same mutator, still one storage write. None or {} means
     pacing was off or not applicable and writes nothing, which is how the panel
     tells "not paced" (a dash) from "paced and never blocked" (a zero).
+
+    `ratelimit` (#475 Phase 1b) is the counter increments ratelimit_probe.finish()
+    returned for the call that SERVED this request, or None when the probe did not
+    apply (not a Groq host) or could not classify the call. It rides the same
+    mutator -- no extra storage write -- and `_PREFIX_ZERO` is deliberately not
+    touched (the "ninth key" warning in the prefix-cache block below).
 
     KNOWN GAP: a request whose whole chain fails never reaches record() (it is
     called on success only, and there is no failure-path record call to ride),
@@ -399,6 +414,17 @@ def record(*, provider: str, model: str, route: str = "", fallback: bool = False
                     pkey, {"reserved": 0, "waits": 0, "wait_ms": 0, "skips": 0, "forced": 0})
                 for k in ("reserved", "waits", "wait_ms", "skips", "forced"):
                     pm[k] = _as_int(pm.get(k)) + max(_as_int(counters.get(k)), 0)
+
+        if isinstance(ratelimit, dict) and ratelimit:
+            # #475 Phase 1b. One entry per model, plain sums, so the blob grows
+            # with models and never with calls. `last_limit` is the one value that
+            # is overwritten rather than summed.
+            rl = data.setdefault("ratelimit_by_model", {}).setdefault(
+                model_key, dict.fromkeys(ratelimit_probe.FIELDS, 0))
+            for k in ratelimit_probe.SUM_FIELDS:
+                rl[k] = _as_int(rl.get(k)) + max(_as_int(ratelimit.get(k)), 0)
+            if _as_int(ratelimit.get("last_limit")) > 0:
+                rl["last_limit"] = _as_int(ratelimit.get("last_limit"))
 
         pc = data.setdefault("prefix_cache", {}).setdefault(stat_key, dict(_PREFIX_ZERO))
         pc["calls"] = pc.get("calls", 0) + 1
@@ -614,11 +640,13 @@ _PACED_FIELDS = ("reserved", "waits", "wait_ms", "skips", "forced")
 
 def _model_rows_from(acc: dict[str, dict[str, int]],
                      peaks: dict[str, tuple[int, int | None]],
-                     paced: dict[str, dict[str, int]] | None = None) -> list[dict[str, Any]]:
+                     paced: dict[str, dict[str, int]] | None = None,
+                     ratelimit: dict[str, dict[str, int]] | None = None) -> list[dict[str, Any]]:
     """Flatten the per-model accumulators into rows for usage_summary (#475)."""
     paced = paced or {}
+    ratelimit = ratelimit or {}
     rows = []
-    for key in set(acc) | set(peaks) | set(paced):
+    for key in set(acc) | set(peaks) | set(paced) | set(ratelimit):
         provider, _, model = key.partition("|")   # split on the FIRST pipe
         v = acc.get(key, {})
         peak = peaks.get(key)
@@ -638,6 +666,10 @@ def _model_rows_from(acc: dict[str, dict[str, int]],
             # model the bucket never saw and one it saw and never blocked are
             # different facts, and `reserved` is written as 0 for the second.
             **{f: (paced[key][f] if key in paced else None) for f in _PACED_FIELDS},
+            # Phase 1b. None when no day carried the probe for the key -- NOT a
+            # dict of zeros: a model the probe never saw and one it saw and
+            # skipped every call are different facts.
+            "ratelimit": dict(ratelimit[key]) if key in ratelimit else None,
         })
     rows.sort(key=lambda r: (-r["calls"], r["key"]))
     return rows
@@ -667,6 +699,8 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
     model_days = 0
     paced_acc: dict[str, dict[str, int]] = {}
     paced_days = 0
+    rl_acc: dict[str, dict[str, int]] = {}
+    rl_days = 0
     for i in range(days):
         d = today - timedelta(days=i)
         blob = _read_day(d)
@@ -728,6 +762,21 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
                 acc = paced_acc.setdefault(mkey, dict.fromkeys(_PACED_FIELDS, 0))
                 for k in acc:
                     acc[k] += _as_int(r.get(k))
+        # Phase 1b. Same tolerance as the two above. Sums, except `last_limit`:
+        # days are walked newest first, so the first nonzero value seen is the
+        # latest one, and a limit is a state, not a quantity -- summing it would
+        # print 56,000 for a model limited to 8,000.
+        rld = blob.get("ratelimit_by_model")
+        if isinstance(rld, dict) and rld:
+            rl_days += 1
+            for mkey, r in rld.items():
+                if not isinstance(r, dict):
+                    continue
+                acc = rl_acc.setdefault(mkey, dict.fromkeys(ratelimit_probe.FIELDS, 0))
+                for k in ratelimit_probe.SUM_FIELDS:
+                    acc[k] += _as_int(r.get(k))
+                if not acc["last_limit"]:
+                    acc["last_limit"] = max(_as_int(r.get("last_limit")), 0)
         pbm = blob.get("peak_tpm_by_model")
         if isinstance(pbm, dict):
             for mkey, e in pbm.items():
@@ -789,11 +838,14 @@ def usage_summary(days: int = 1) -> dict[str, Any]:
         # #475. Keyed `provider|model` (the grain Groq's TPM bucket is enforced
         # at), where measured_by_route is keyed by route. [] with
         # model_days_recorded == 0 means NOT RECORDED -- a silence, not a zero.
-        "measured_by_model": _model_rows_from(model_acc, model_peak, paced_acc),
+        "measured_by_model": _model_rows_from(model_acc, model_peak, paced_acc, rl_acc),
         "model_days_recorded": model_days,
         # Phase 1. Days whose blob carried `paced_by_model`; 0 = pacing never
         # recorded in this window (off, or before it shipped) -- a silence.
         "paced_days": paced_days,
+        # Phase 1b. Days whose blob carried `ratelimit_by_model`; 0 = the probe
+        # recorded nothing in this window -- a silence, not a zero.
+        "ratelimit_days": rl_days,
         "cache_entries": 0,   # SQLite-only concept; filled by admin_usage from cache.py
     }
 

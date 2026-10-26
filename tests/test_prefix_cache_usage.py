@@ -25,6 +25,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from _fake_openai import fake_client
 from astro_ai import events, llm_stats, providers
 
 GOOD = "A perfectly adequate reading. " * 10
@@ -70,8 +71,7 @@ def _install(monkeypatch, replies, route="ask"):
             choices=[SimpleNamespace(message=SimpleNamespace(content=text),
                                      finish_reason="stop")],
             usage=usage)
-        completions = SimpleNamespace(create=lambda **k: resp)
-        return SimpleNamespace(chat=SimpleNamespace(completions=completions))
+        return fake_client(lambda **k: resp)
 
     monkeypatch.setattr(providers, "OpenAI", factory)
     monkeypatch.setattr(providers, "_ordered_for_request", lambda: chain)
@@ -197,8 +197,7 @@ def test_chat_resets_the_figure_before_each_call_so_a_stub_cannot_inherit_it(
             choices=[SimpleNamespace(message=SimpleNamespace(content=SHORT),
                                      finish_reason="stop")],
             usage=_usage(2000, cached=1000))
-        return SimpleNamespace(chat=SimpleNamespace(
-            completions=SimpleNamespace(create=lambda **k: resp)))
+        return fake_client(lambda **k: resp)
 
     def call_one(provider, messages):
         if provider.name == "a":
@@ -336,7 +335,7 @@ def _install_model(monkeypatch, usages, model=CACHING_MODEL, route="ask"):
                 choices=[SimpleNamespace(message=SimpleNamespace(content=GOOD),
                                          finish_reason="stop")],
                 usage=usage)
-        return SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+        return fake_client(create)
 
     monkeypatch.setattr(providers, "OpenAI", factory)
     monkeypatch.setattr(providers, "_ordered_for_request", lambda: chain)
