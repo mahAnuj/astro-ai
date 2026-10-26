@@ -902,15 +902,15 @@ MUTATIONS = [
     # D1. The fix commit spliced its sentence into the middle of an older one.
     ("the fold's closing sentence is spliced into an older one again",
      "src/astro_ai/templates/admin_ops.html",
-     "bucket. A skipped call is never counted as agreement.",
-     "bucket. The arithmetic does not hold) &mdash; and is never counted as agreement.",
+     "causes it is. A skipped call is never counted as agreement.",
+     "causes it is. The arithmetic does not hold) &mdash; and is never counted as agreement.",
      "test_the_fold_skip_passage_reads_exactly_as_written_and_is_not_spliced"),
 
     # D2. `skip_full` with `warm_n` 0 is also what sparse traffic on a light
     # request produces, so "cannot be measured at all" over-claims.
     ("the fold says a ceiling skip means the path cannot be measured at all",
      "src/astro_ai/templates/admin_ops.html",
-     "therefore needs calls closer together or a smaller request,",
+     "is therefore getting no usable samples,",
      "is therefore not under-deployed &mdash; it cannot be measured by this instrument at all,",
      "test_the_fold_does_not_say_a_ceiling_means_the_path_cannot_be_measured"),
 

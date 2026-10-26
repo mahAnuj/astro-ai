@@ -204,12 +204,12 @@ def test_a_full_or_empty_bucket_is_skipped_as_clamped_not_counted_as_agreement(c
     """The two invalid shapes are skipped, and counted APART from each other.
 
     They mean different things to an operator. A ceiling means the bucket was
-    already full when the call started, which happens when a model's calls are
-    spaced far apart OR when the request is about the size of the bucket; the
-    counters cannot say which, so `skip_full` rising while `warm_n` stays at 0
-    says "closer-spaced calls or a smaller request", not "unmeasurable". An
-    empty or negative prediction is a different shape. One counter for both
-    could not show either.
+    full when the call started, or would have refilled past full before it
+    finished, which happens when a model's calls are spaced far apart OR when
+    the request is about the size of the bucket; the counters cannot say which,
+    so `skip_full` rising while `warm_n` stays at 0 says "no usable samples",
+    not "unmeasurable" and not a remedy. An empty or negative prediction is a
+    different shape. One counter for both could not show either.
     """
     one_call(clock, K120, 8000)
     # remaining 8000 + refill beyond the limit - tiny charge: the bucket was at

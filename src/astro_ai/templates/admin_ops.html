@@ -1044,9 +1044,8 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           calls are spaced far enough apart that the bucket had refilled completely, or the request
           is about the size of the whole bucket (the natal estimate is 98&ndash;101% of 8,000, the
           estimator&rsquo;s charge rather than billed tokens). A model showing ceiling skips rising
-          while warm samples stay at zero therefore needs calls closer together or a smaller request,
-          and nothing on this panel says which; closer calls cannot help a request the size of the
-          bucket. A skipped call is never counted as agreement.
+          while warm samples stay at zero is therefore getting no usable samples, and nothing on this
+          panel says which of the two causes it is. A skipped call is never counted as agreement.
           <b>discounted fraction</b> is 0 if cached tokens were charged in full and 1 if they were
           not charged at all; the <b>verdict</b> needs at least {{ RL.min_warm }} warm and
           {{ RL.min_cold }} cold samples. It reads NOISY when the cold control&rsquo;s mean absolute error

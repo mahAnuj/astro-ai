@@ -414,9 +414,8 @@ SKIP_PASSAGE = (
     "apart that the bucket had refilled completely, or the request is about the size of the "
     "whole bucket (the natal estimate is 98–101% of 8,000, the estimator’s charge rather than "
     "billed tokens). A model showing ceiling skips rising while warm samples stay at zero "
-    "therefore needs calls closer together or a smaller request, and nothing on this panel says "
-    "which; closer calls cannot help a request the size of the bucket. A skipped call is never "
-    "counted as agreement."
+    "is therefore getting no usable samples, and nothing on this panel says which of the two "
+    "causes it is. A skipped call is never counted as agreement."
 )
 
 

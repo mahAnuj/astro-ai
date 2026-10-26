@@ -1155,7 +1155,7 @@ def _ratelimit_rows(usage: dict, chain: list[str]) -> list[dict]:
                        # counters cannot tell apart (calls spaced far enough
                        # apart that the bucket refilled, or a request about the
                        # size of the bucket), so `full` rising while `warm_n`
-                       # stays 0 says only "closer calls or a smaller request".
+                       # stays 0 says only "no usable samples", not why.
                        "full": n(probe, "skip_full")},
                 mean_rem=round(n(probe, "warm_rem") / warm_n) if warm_n else None,
                 mean_exp=round(n(probe, "warm_exp") / warm_n) if warm_n else None,

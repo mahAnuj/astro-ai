@@ -218,15 +218,20 @@ def finish(ticket, rl, prefix, completion) -> dict | None:
         exp_full = raw_mid - pred
         if raw_pre > limit or raw_mid > limit:
             # The ceiling, counted SEPARATELY from the other invalid shapes.
-            # It has two causes and this counter cannot tell them apart: the
-            # model's calls are spaced far enough apart that the bucket had
-            # refilled (any call after an idle gap), or the request is about
-            # the size of the whole bucket (natal, 98-101% of `limit`). QA's
-            # fake-clock sweep on PR #536 showed both give the same signature
-            # -- `skip_full` rising while `warm_n` stays 0 -- so it says "needs
-            # closer-spaced calls or a smaller request", never "cannot be
-            # measured at all". It is kept apart from `skip_clamp` (an empty
-            # or negative prediction), which means something different.
+            # Either the bucket was full when the call started (`raw_pre`) or
+            # it would have refilled past full before the call finished
+            # (`raw_mid`). The cause has two shapes this counter cannot tell
+            # apart: the model's calls are spaced far enough apart that the
+            # bucket had refilled (any call after an idle gap), or the request
+            # is about the size of the whole bucket (natal, 98-101% of
+            # `limit`). QA's fake-clock sweeps on PR #536 showed both give the
+            # same signature -- `skip_full` rising while `warm_n` stays 0 -- so
+            # it says "no usable samples", never "cannot be measured at all"
+            # and never a remedy: a bucket-sized request still yields a counted
+            # sample in a window about a second wide, so neither "closer
+            # calls" nor "farther calls" is true of it. It is kept apart from
+            # `skip_clamp` (an empty or negative prediction), which means
+            # something different.
             out["skip_full"] = 1
             return out
         if exp_full <= 0 or remaining == 0:
