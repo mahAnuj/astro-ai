@@ -152,9 +152,9 @@ def test_a_populated_row_prints_every_figure_the_header_describes(_ops, monkeypa
     p = panel(page(monkeypatch, usage([urow(K120, POPULATED)])))
     c = cells(p, "gpt-oss-120b")
     assert len(c) == 7
-    # `bucket at ceiling` is counted apart from `clamped` (BUG-2 on PR #536): a
-    # ceiling is structural, so a model showing it rise while warm samples stay
-    # at 0 cannot be measured at all — which must not read as "wait longer".
+    # `bucket at ceiling` is counted apart from `clamped` (BUG-2 on PR #536): it
+    # has two causes the counters cannot tell apart (calls spaced far apart, or a
+    # request the size of the bucket), so it is shown, not interpreted, here.
     # `header-reported limit` renders here because ARCHITECTURE points at this
     # panel to settle whether the header is TPM, and it used to be computed and
     # then dropped (BUG-3).
@@ -391,7 +391,7 @@ def test_the_other_caller_sentence_is_what_the_probe_does(_ops, monkeypatch):
 def test_the_fold_describes_the_ceiling_skip_the_code_actually_implements(_ops, monkeypatch):
     """BUG-2b. The old sentence was false of the code and asserted nowhere."""
     text = page(monkeypatch, usage([urow(K120, POPULATED)]))
-    assert "the bucket was at its ceiling before the call" in text, (
+    assert "the bucket was already at its ceiling when the call started" in text, (
         "the fold no longer describes the ceiling skip, which is a counted "
         "outcome the reader sees in the breakdown"
     )
@@ -400,18 +400,64 @@ def test_the_fold_describes_the_ceiling_skip_the_code_actually_implements(_ops, 
     )
 
 
-def test_the_fold_says_a_bucket_sized_request_cannot_be_measured(_ops, monkeypatch):
-    """The finding an operator cannot reach on their own.
+#: The fold's whole skip passage, verbatim as a reader sees it. It is pinned in FULL on
+#: purpose: round 3 of PR #536 found a closing sentence spliced into the middle of an older
+#: one ("... at all. The arithmetic does not hold) -- and is never counted as agreement."),
+#: and every test then asserted a substring that the splice left intact.
+SKIP_PASSAGE = (
+    "every other candidate is counted under skipped — no anchor (nothing usable before it), "
+    "overlapped, no header, clamped (the prediction fell outside the bucket, or Groq reported "
+    "zero remaining), or the bucket was already at its ceiling when the call started (nothing "
+    "accumulated during it, so the refill term cannot hold). That last one has two causes these "
+    "counters cannot tell apart: the model’s calls are spaced far enough apart that the bucket "
+    "had refilled completely, or the request is about the size of the whole bucket (the natal "
+    "reading is 98–101% of 8,000). A model showing ceiling skips rising while warm samples stay "
+    "at zero therefore needs calls closer together or a smaller request, and nothing on this "
+    "panel says which. A skipped call is never counted as agreement."
+)
 
-    `pred` is 98-101% of `limit` for natal (7,871 en / 8,056 hi against 8,000,
-    measured 2026-10-25). On that path every call hits the ceiling, so the
-    panel will show INSUFFICIENT forever. Without this sentence that is
-    indistinguishable from "not deployed long enough", and the reader would
-    wait for a reading that cannot arrive.
-    """
-    text = page(monkeypatch, usage([urow(K120, POPULATED)]))
-    assert "the size of the whole bucket" in text
-    assert "it cannot be measured by this instrument at all" in text
+
+def test_the_fold_skip_passage_reads_exactly_as_written_and_is_not_spliced(_ops, monkeypatch):
+    """D1 of QA round 3. The whole passage, so a splice anywhere in it fails."""
+    text = flat(panel(page(monkeypatch, usage([urow(K120, POPULATED)]))))
+    assert SKIP_PASSAGE in text, "the skip passage in the fold no longer reads as written"
+    # the closing sentence on its own, and the shape of the defect that shipped
+    assert text.count("A skipped call is never counted as agreement.") == 1
+    assert "does not hold)" not in text
+    fold = text[text.index("every other candidate"):text.index("discounted fraction is 0")]
+    assert fold.count("(") == fold.count(")"), fold
+
+
+def test_the_fold_does_not_say_a_ceiling_means_the_path_cannot_be_measured(_ops, monkeypatch):
+    """D2 of QA round 3. `skip_full` with `warm_n` 0 is ALSO what a light request on sparse
+    traffic produces (QA's fake-clock sweep: 640 of 723 cells at pred/limit 0.3), and natal
+    does yield counted samples in a 50-57 s idle-gap window, so the counters support
+    'spaced far apart OR bucket-sized' and nothing stronger."""
+    text = flat(panel(page(monkeypatch, usage([urow(K120, POPULATED)]))))
+    for overclaim in ("cannot be measured by this instrument", "measured at all",
+                      "on every call", "not under-deployed"):
+        assert overclaim not in text, overclaim
+    assert "spaced far enough apart that the bucket had refilled completely" in text
+    assert "or the request is about the size of the whole bucket" in text
+
+
+def test_the_fold_says_what_the_empty_end_clamp_is(_ops, monkeypatch):
+    """D3(c). Only the ceiling clause was asserted; this is the other half of the same sentence.
+    The probe really does skip a header of zero remaining (test_ratelimit_probe)."""
+    text = flat(panel(page(monkeypatch, usage([urow(K120, POPULATED)]))))
+    assert ("clamped (the prediction fell outside the bucket, or Groq reported zero remaining)"
+            in text)
+
+
+def test_a_nonzero_ceiling_count_reaches_the_page(_ops, monkeypatch):
+    """D3(a). `skip_full` is the counter the operator is told to watch, and the POPULATED
+    fixture has it at 0, so replacing its read with a literal 0 changed nothing anywhere."""
+    seen = probe(warm_seen=40, warm_n=0, skip_full=37, skip_noanchor=3, last_limit=8000)
+    (r,) = ops_data._ratelimit_rows(usage([urow(K120, seen)]), [K120])
+    assert r["skips"]["full"] == 37 and r["warm_n"] == 0
+    p = panel(page(monkeypatch, usage([urow(K120, seen)])))
+    assert "37 bucket at ceiling" in " ".join(cells(p, "gpt-oss-120b")[1].split()), (
+        cells(p, "gpt-oss-120b")[1])
 
 
 def test_the_header_reported_limit_reaches_the_page(_ops, monkeypatch):

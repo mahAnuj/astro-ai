@@ -865,6 +865,55 @@ MUTATIONS = [
      # helper reports MIS-POINTED. An earlier draft did exactly that.
      "test_chat_books_no_sample_at_all_when_the_model_is_shared"),
 
+    # ---- #536 round 3: D1/D2/D3, each pinned by the test that was missing ---
+    #
+    # D3(a). POPULATED has skip_full=0, so replacing the read with a literal 0
+    # changed nothing on any page -- on the counter the operator is told to watch.
+    ("the ceiling-skip count is never read from the probe (always 0 on the page)",
+     "src/astro_ai/ops_data.py",
+     '"full": n(probe, "skip_full")},',
+     '"full": 0},',
+     "test_a_nonzero_ceiling_count_reaches_the_page"),
+
+    # D3(b). `raw_pre <= limit < raw_mid` is the completion-model clamp that
+    # produced the original wrong samples; nothing covered it. (Dropping
+    # `raw_pre > limit` ALONE is an equivalent mutant -- raw_mid >= raw_pre -- and
+    # is deliberately not a row.)
+    ("a bucket that would cross the ceiling DURING the call is booked as a clean sample",
+     "src/astro_ai/ratelimit_probe.py",
+     "if raw_pre > limit or raw_mid > limit:",
+     "if raw_pre > limit:",
+     "test_a_bucket_that_would_cross_the_ceiling_during_the_call_is_skipped_not_booked"),
+
+    # D3(d). A header of 0 remaining is a floor, not a measurement.
+    ("a zero-remaining header is booked as a sample (the empty-end clamp is gone)",
+     "src/astro_ai/ratelimit_probe.py",
+     "if exp_full <= 0 or remaining == 0:",
+     "if exp_full <= 0:",
+     "test_a_header_of_zero_remaining_is_a_clamp_skip_not_a_sample"),
+
+    # D3(c). Only the ceiling half of the sentence was asserted.
+    ("the fold's zero-remaining clause is reworded away",
+     "src/astro_ai/templates/admin_ops.html",
+     "reported zero remaining)",
+     "reported an empty bucket)",
+     "test_the_fold_says_what_the_empty_end_clamp_is"),
+
+    # D1. The fix commit spliced its sentence into the middle of an older one.
+    ("the fold's closing sentence is spliced into an older one again",
+     "src/astro_ai/templates/admin_ops.html",
+     "and nothing on this panel says which. A skipped call is never counted as agreement.",
+     "and nothing on this panel says which. The arithmetic does not hold) &mdash; and is never counted as agreement.",
+     "test_the_fold_skip_passage_reads_exactly_as_written_and_is_not_spliced"),
+
+    # D2. `skip_full` with `warm_n` 0 is also what sparse traffic on a light
+    # request produces, so "cannot be measured at all" over-claims.
+    ("the fold says a ceiling skip means the path cannot be measured at all",
+     "src/astro_ai/templates/admin_ops.html",
+     "therefore needs calls closer together or a smaller request,",
+     "is therefore not under-deployed &mdash; it cannot be measured by this instrument at all,",
+     "test_the_fold_does_not_say_a_ceiling_means_the_path_cannot_be_measured"),
+
     ("the stall detector cannot name a partial branch's issue (steward is mute)",
      "scripts/detect_stalls.py",
      'r"^(?:issue|partial|fix)/(\\d+)"',

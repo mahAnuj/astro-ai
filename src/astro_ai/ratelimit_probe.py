@@ -218,11 +218,15 @@ def finish(ticket, rl, prefix, completion) -> dict | None:
         exp_full = raw_mid - pred
         if raw_pre > limit or raw_mid > limit:
             # The ceiling, counted SEPARATELY from the other invalid shapes.
-            # This one is structural rather than incidental: on a path whose
-            # request is the size of the whole bucket it fires on every call
-            # forever, and an operator reading INSUFFICIENT needs to tell
-            # "this path cannot be measured by this instrument" from "not
-            # deployed long enough". One counter cannot say both.
+            # It has two causes and this counter cannot tell them apart: the
+            # model's calls are spaced far enough apart that the bucket had
+            # refilled (any call after an idle gap), or the request is about
+            # the size of the whole bucket (natal, 98-101% of `limit`). QA's
+            # fake-clock sweep on PR #536 showed both give the same signature
+            # -- `skip_full` rising while `warm_n` stays 0 -- so it says "needs
+            # closer-spaced calls or a smaller request", never "cannot be
+            # measured at all". It is kept apart from `skip_clamp` (an empty
+            # or negative prediction), which means something different.
             out["skip_full"] = 1
             return out
         if exp_full <= 0 or remaining == 0:

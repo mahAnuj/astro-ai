@@ -203,12 +203,13 @@ def test_a_cold_call_runs_the_same_formula_but_is_never_a_warm_sample(clock):
 def test_a_full_or_empty_bucket_is_skipped_as_clamped_not_counted_as_agreement(clock):
     """The two invalid shapes are skipped, and counted APART from each other.
 
-    They mean different things to an operator. A ceiling is structural -- on a
-    path whose request is the size of the whole bucket it fires on every call
-    forever, so `skip_full` rising while `warm_n` stays at 0 says "this path
-    cannot be measured by this instrument". An empty bucket is incidental.
-    One counter for both could not say which was happening, and the reader
-    would see INSUFFICIENT and assume "not deployed long enough".
+    They mean different things to an operator. A ceiling means the bucket was
+    already full when the call started, which happens when a model's calls are
+    spaced far apart OR when the request is about the size of the bucket; the
+    counters cannot say which, so `skip_full` rising while `warm_n` stays at 0
+    says "closer-spaced calls or a smaller request", not "unmeasurable". An
+    empty or negative prediction is a different shape. One counter for both
+    could not show either.
     """
     one_call(clock, K120, 8000)
     # remaining 8000 + refill beyond the limit - tiny charge: the bucket was at
@@ -241,6 +242,34 @@ def test_a_sample_whose_bucket_was_at_the_ceiling_is_never_counted_clean(clock):
         "a sample taken while the bucket was at its ceiling was counted as "
         "agreement; that is the defect this test exists for"
     )
+
+
+def test_a_bucket_that_would_cross_the_ceiling_during_the_call_is_skipped_not_booked(clock):
+    """D3(b) of QA round 3: `raw_pre <= limit < raw_mid`.
+
+    The bucket was NOT full when the call started (7,700 of 8,000), but the
+    refill over a 6 s call (800) would take it past the ceiling, so the real
+    bucket stopped filling part-way and `+ rate x duration` over-adds. Nothing
+    covered this shape, and it is the one that produced the original wrong
+    samples: with `or raw_mid > limit` dropped, `exp_full` is 5,200 > 0 and it
+    is booked as a clean warm sample.
+    """
+    one_call(clock, K120, 7700)
+    out = one_call(clock, K120, 5000, prompt=3000, cached=2304, completion=300,
+                   before=0.0, latency=6.0)
+    assert out.get("skip_full") == 1, out
+    assert "warm_n" not in out and "warm_disc" not in out, out
+    assert "skip_clamp" not in out
+
+
+def test_a_header_of_zero_remaining_is_a_clamp_skip_not_a_sample(clock):
+    """D3(d). Everything else about this call is valid -- below the ceiling, prediction positive
+    (5,000 + 800 - 3,300 = 2,500) -- so only `remaining == 0` rejects it. Groq's 0 is a floor
+    (the bucket was exhausted), not a measurement, and counting it would book e = +2,500."""
+    one_call(clock, K120, 5000)
+    out = one_call(clock, K120, 0, prompt=3000, cached=2304, completion=300, latency=6.0)
+    assert out.get("skip_clamp") == 1, out
+    assert "warm_n" not in out and "skip_full" not in out, out
 
 
 def test_a_call_whose_usage_cannot_be_read_claims_nothing(clock):
