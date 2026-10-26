@@ -74,7 +74,10 @@ def fixture(i: int) -> dict:
     }
 
 
-def issue_body(n: int) -> str:
+def issue_parts(n: int) -> tuple[str, list[str]]:
+    """(body, comment bodies). Kept apart because they have DIFFERENT authors:
+    provenance is resolved for the issue's author only, so only the body may
+    ever supply a command that is executed (#543, QA round 1)."""
     out = subprocess.run(
         ["gh", "issue", "view", str(n), "--json", "body,title,comments"],
         capture_output=True, text=True, check=False,
@@ -82,10 +85,23 @@ def issue_body(n: int) -> str:
     if out.returncode != 0:
         sys.exit(f"gh issue view {n} failed: {out.stderr.strip()[:200]}")
     d = json.loads(out.stdout)
-    # Comments matter: several in this repo carry corrections that invert the
-    # original finding, and a repro added in a comment is the current one.
-    parts = [d.get("body") or ""] + [c.get("body") or "" for c in d.get("comments", [])]
-    return "\n".join(parts)
+    return (d.get("body") or ""), [c.get("body") or "" for c in d.get("comments", [])]
+
+
+def issue_body(n: int) -> str:
+    # Comments matter to the http dialect: several in this repo carry
+    # corrections that invert the original finding, and a repro added in a
+    # comment is the current one. The shell dialect does NOT take this path.
+    body, comments = issue_parts(n)
+    return "\n".join([body] + comments)
+
+
+# `repro:` as agent-discover writes it (`- **repro:** ...`) as well as bare. The
+# bare-only form silently exited NO-REPRO on 26 of the 53 issues that
+# verify_issue_evidence counts as carrying one (QA round 1). The lookahead ends
+# a repro at the next field in either form.
+_REPRO_LINE = (r"^[ \t]*(?:[-*][ \t]+)?(?:\*\*)?repro:(?:\*\*)?[ \t]*(.+?)"
+               r"(?=\n[ \t]*(?:[-*][ \t]+)?(?:\*\*)?\w+:|\Z)")
 
 
 def last_repro_line(text: str) -> str | None:
@@ -101,7 +117,7 @@ def last_repro_line(text: str) -> str | None:
     # `repro:` line's own prefix, so two adjacent `repro:` lines matched once
     # and "last wins" quietly returned the FIRST — a stale premise reported as
     # a current verdict, which is the whole failure #543 is about.
-    for raw in re.findall(r"^\s*repro:\s*(.+?)(?=\n\s*\w+:|\Z)", text, re.M | re.S):
+    for raw in re.findall(_REPRO_LINE, text, re.M | re.S):
         found = " ".join(raw.split())
     return found
 
@@ -211,37 +227,44 @@ _SHELL_TIMEOUT = 60
 
 # An ALLOW-LIST, not a deny-list. A deny-list on a public repo is a promise to
 # have thought of everything; #358 is the standing proof that nobody does.
+#
+# The first version of this table banned write flags by EXACT TOKEN
+# (`sed -i`, `gh -X`), and QA's first round walked straight through it with
+# `sed -i.bak`, `sed -ni`, `gh --method=DELETE`, `gh -XDELETE` and `gh -fa=b`
+# -- a deny-list on flags is the same mistake as a deny-list on commands, one
+# level down. So flags are an allow-list too (`_SHELL_FLAGS`): an option that is
+# not named is refused, whatever it is spelled like.
+#
+# Dropped outright, because no flag audit makes them read-only:
+#   sort   -- `-o FILE` writes
+#   uniq   -- a second positional is an OUTPUT file
+#   jq     -- `env` / `$ENV` print the whole environment, tokens included
+#   rg     -- `--pre CMD` executes a program
+#   find   -- `-exec`, `-delete`, `-fprint`
 _SHELL_ALLOW = {
     "grep": None,
-    "rg": None,
     "sed": None,
     "wc": None,
     "cat": None,
     "head": None,
     "tail": None,
-    "sort": None,
-    "uniq": None,
     "ls": None,
     "diff": None,
-    "jq": None,
     # Read-only subcommands only. `gh` reaches the network with the caller's
     # token, so a write verb here would let an issue body act as that user.
     "gh": {("issue", "view"), ("issue", "list"), ("pr", "view"), ("pr", "list"),
            ("pr", "diff"), ("pr", "checks"), ("run", "list"), ("run", "view"),
            ("label", "list"), ("search", "issues"), ("search", "prs"),
            ("api",)},
-    # Read-only subcommands only, for the same reason.
+    # Read-only subcommands only, for the same reason. `ls-remote` is gone:
+    # `--upload-pack=CMD` runs CMD, and it is a network call besides.
     "git": {("log",), ("diff",), ("show",), ("status",), ("ls-files",),
             ("grep",), ("rev-parse",), ("cat-file",), ("describe",),
-            ("ls-remote",), ("shortlog",)},
+            ("shortlog",)},
 }
 
-# Refused by name, with the reason stated, because they are arbitrary code by
-# construction and no flag audit makes them safe:
-#   python/python3/uv  -- `-c` is a program
-#   bash/sh/zsh        -- same
-#   gsutil/gcloud/aws  -- hold cloud credentials; `cp`/`rm` reach real buckets
-#   curl/wget          -- egress, and `-o` writes files
+# Refused by name, with the reason stated, because they are arbitrary code, a
+# write, or a credential leak by construction and no flag audit makes them safe.
 _SHELL_ARBITRARY = {
     "python": "`-c` takes a program; no flag audit makes an interpreter safe",
     "python3": "`-c` takes a program; no flag audit makes an interpreter safe",
@@ -259,6 +282,11 @@ _SHELL_ARBITRARY = {
     "wget": "egress, and `-O` writes files",
     "docker": "executes arbitrary code",
     "ssh": "egress with the caller's keys",
+    "sort": "`-o FILE` writes a file",
+    "uniq": "a second positional is an OUTPUT file",
+    "jq": "`env` / `$ENV` print the environment, tokens included",
+    "rg": "`--pre CMD` executes a program",
+    "find": "`-exec`, `-delete` and `-fprint` run, remove and write",
 }
 
 # Tokens that only exist to chain, redirect or substitute. After shlex.split a
@@ -269,16 +297,88 @@ _SHELL_ARBITRARY = {
 _SHELL_OPERATORS = {"|", "||", "&&", ";", "&", ">", ">>", "<", "<<", "2>",
                     "$(", "`", "|&"}
 
-# `sed -i` edits the file. `find -exec`/`-delete` run and remove. A read-only
-# allow-list that permits these is not read-only.
-_SHELL_BANNED_FLAGS = {
-    "sed": {"-i", "--in-place"},
-    "jq": {"-f", "--from-file"},
-    "gh": {"-X", "--method", "--input", "-F", "-f", "--field", "--raw-field"},
+# Per-command option ALLOW-LIST: (short-flag characters, long-flag names).
+# A short cluster (`-nE`, `-A5`) passes only if EVERY character is listed or a
+# digit, so `-ni` / `-i.bak` / `-Ei` on sed die on the `i`. A long flag is
+# matched on its name before any `=`, so `--method=DELETE` is the same refusal
+# as `--method DELETE`. No flag takes its value from a file or a command:
+# grep -f, sed -e/-f/-s, diff --to-file, gh -X/-f/-F/-H/--input, git -c/-O/
+# --output/--ext-diff/--upload-pack are all absent, deliberately.
+_SHELL_FLAGS = {
+    "grep": ("cnilEFrRLHhwvoqsxABCme",
+             {"count", "ignore-case", "line-number", "extended-regexp",
+              "fixed-strings", "recursive", "dereference-recursive",
+              "files-with-matches", "files-without-match", "with-filename",
+              "no-filename", "word-regexp", "invert-match", "only-matching",
+              "quiet", "no-messages", "line-regexp", "include", "exclude",
+              "exclude-dir", "max-count", "regexp", "after-context",
+              "before-context", "context", "no-ignore-case", "binary-files"}),
+    "sed": ("nEr", {"quiet", "silent", "regexp-extended"}),
+    "wc": ("lwcmL", {"lines", "words", "bytes", "chars"}),
+    "cat": ("nbsE", {"number", "number-nonblank", "squeeze-blank"}),
+    "head": ("ncq", {"lines", "bytes", "quiet"}),
+    "tail": ("ncq", {"lines", "bytes", "quiet"}),
+    "ls": ("lahR1dtSFr", {"all", "almost-all", "recursive", "reverse"}),
+    "diff": ("uqrNwbiBy", {"brief", "unified", "recursive", "ignore-case",
+                           "ignore-all-space", "ignore-space-change",
+                           "new-file", "side-by-side"}),
+    "gh": ("RLqsSlcawb", {"json", "jq", "limit", "state", "label", "search",
+                          "repo", "comments", "name-only", "author", "workflow",
+                          "branch", "paginate"}),
+    "git": ("npcliFEwevhHqSGLsa", {
+        "oneline", "stat", "name-only", "name-status", "numstat", "shortstat",
+        "count", "no-color", "color", "abbrev-commit", "since", "until",
+        "after", "before", "grep", "author", "format", "pretty", "max-count",
+        "all-match", "ignore-case", "fixed-strings", "extended-regexp",
+        "files-with-matches", "line-number", "word-regexp", "invert-match",
+        "cached", "staged", "no-merges", "merges", "follow", "date", "short",
+        "porcelain", "branch", "tags", "long", "always", "abbrev", "quiet",
+        "patch", "name", "heading", "full-name", "show-toplevel", "verify",
+        "is-inside-work-tree", "others", "deleted", "modified", "stage",
+        "show-current"}),
 }
+
+# The first non-flag argument of these is not a PATH: it is a regex (grep) or
+# a sed script. It is checked by its own rule, not the path rule.
+_SED_SCRIPT = re.compile(
+    r"(?:(?:\d+|\$)(?:,(?:\d+|\$))?|/(?:[^/\\]|\\.)+/)p")
+
+# Names a repro must never read, wherever they are spelled: the git config
+# holds the remote URL (an access token), `gha-creds-*.json` is the Actions
+# credential file, `.env*` the secrets file. Matched on the RESOLVED path too,
+# so a symlink cannot launder one.
+_SECRET_NAME = re.compile(
+    r"^(?:\.git|gha-creds.*|\.env.*|.*credentials.*|.*\.(?:pem|key))$", re.I)
+
+# Backstop only: anything credential-shaped is redacted before it is printed,
+# because the printed head is exactly what a step-0 agent pastes into a public
+# comment.
+_REDACT = re.compile(
+    r"(?:gh[pousr]_[A-Za-z0-9_]{16,}|github_pat_[A-Za-z0-9_]{16,}"
+    r"|x-access-token:[^@\s]+|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_.-]{10,}"
+    r"|-----BEGIN [A-Z ]*PRIVATE KEY-----)")
+
+
+def redact(text: str) -> str:
+    return _REDACT.sub("[REDACTED]", text)
+
 
 _ARROW = re.compile(r"->|=>|→|\bexpect(?:ed)?\b|\breturns?\b|\byields?\b",
                     re.I)
+
+
+# Words that begin ANOTHER probe pasted after the first one's expectation. A
+# loop keyword counts only when a `do` follows it: "5 matches for X" is prose.
+_SHELL_CUT = (set(_SHELL_ALLOW) | set(_SHELL_ARBITRARY)
+              | {"echo", "awk", "xargs", "tee", "printenv", "env"})
+_SHELL_LOOPS = {"for", "while", "until"}
+
+
+def _starts_command(toks: list[str], i: int) -> bool:
+    bare = toks[i].strip("`")
+    if bare in _SHELL_CUT:
+        return True
+    return bare in _SHELL_LOOPS and "do" in toks[i + 1:]
 
 
 def split_shell_repro(line: str) -> tuple[str, str, int]:
@@ -308,14 +408,12 @@ def split_shell_repro(line: str) -> tuple[str, str, int]:
         toks = rest.split()
     cut = None
     for i, t in enumerate(toks):
-        bare = t.strip("`")
-        if bare in _SHELL_ALLOW or bare in _SHELL_ARBITRARY:
+        if _starts_command(toks, i):
             cut = i
             break
     probes = 1
     if cut is not None:
-        probes = 1 + sum(1 for t in toks[cut:]
-                         if t.strip("`") in _SHELL_ALLOW or t.strip("`") in _SHELL_ARBITRARY)
+        probes = 1 + sum(1 for j in range(cut, len(toks)) if _starts_command(toks, j))
         rest = " ".join(toks[:cut])
     return cmd, rest.strip(), probes
 
@@ -350,14 +448,6 @@ def vet_shell(cmd_text: str) -> tuple[list[str] | None, str]:
         return None, (f"`{exe}` is not on the allow-list. This is an allow-list, not a "
                       "deny-list: add it deliberately, with a read-only argument audit.")
 
-    banned = _SHELL_BANNED_FLAGS.get(exe, set())
-    hit = sorted(set(argv[1:]) & banned)
-    if hit:
-        return None, (f"`{exe}` with " + ", ".join(f"`{f}`" for f in hit)
-                      + " is not read-only")
-    if exe == "find" or "-exec" in argv or "-delete" in argv:
-        return None, "`-exec`/`-delete` run or remove files"
-
     sub = _SHELL_ALLOW[exe]
     consumed: set[str] = set()
     if sub is not None:
@@ -372,6 +462,11 @@ def vet_shell(cmd_text: str) -> tuple[list[str] | None, str]:
         # command and refuses every `git diff` in the backlog.
         consumed = set(matched)
 
+    bad = _bad_flags(exe, argv[1:])
+    if bad:
+        return None, (f"`{exe}` with " + ", ".join(f"`{f}`" for f in bad)
+                      + " is not read-only (or not on the flag allow-list)")
+
     # A second allow-listed executable means two commands were pasted onto one
     # line (#468 is `sed -n ... file sed -n ... file`). Running that feeds the
     # second command's name to the first as a filename and reports a confusing
@@ -381,7 +476,85 @@ def vet_shell(cmd_text: str) -> tuple[list[str] | None, str]:
     if extra:
         return None, (f"two commands on one `repro:` line (found `{extra[0]}` after `{exe}`) "
                       "-- a probe must have one command with one expectation")
+    why_not = _bad_operands(exe, argv)
+    if why_not:
+        return None, why_not
     return argv, f"`{exe}`, read-only"
+
+
+def _flag_parts(args: list[str]):
+    """Yield ('flag', arg) / ('pos', arg), honouring `--`."""
+    after = False
+    for a in args:
+        if after or a == "-" or not a.startswith("-"):
+            yield "pos", a
+        elif a == "--":
+            after = True
+        else:
+            yield "flag", a
+
+
+def _bad_flags(exe: str, args: list[str]) -> list[str]:
+    short, long_ = _SHELL_FLAGS[exe]
+    bad = []
+    for kind, a in _flag_parts(args):
+        if kind != "flag":
+            continue
+        if a.startswith("--"):
+            if a[2:].split("=", 1)[0] not in long_:
+                bad.append(a)
+        elif not all(c in short or c.isdigit() for c in a[1:]):
+            bad.append(a)
+    return bad
+
+
+def _secret_path(p: str) -> str | None:
+    """A reason when `p` must not be read, else None. Relative, inside the
+    tree, and never a credential-bearing name -- checked on the parts as
+    spelled AND, for an existing path, as resolved (symlinks)."""
+    if p.startswith(("/", "~")):
+        return f"`{p}` is absolute or home-relative; a repro reads the repo tree only"
+    parts = pathlib.PurePosixPath(p).parts
+    if ".." in parts:
+        return f"`{p}` climbs out of the tree"
+    for part in parts:
+        if _SECRET_NAME.match(part):
+            return f"`{p}` names a credential-bearing file"
+    try:
+        real = (ROOT / p).resolve()
+        rel = real.relative_to(ROOT.resolve())
+    except ValueError:
+        return f"`{p}` resolves outside the tree"
+    except OSError:
+        return None
+    for part in rel.parts:
+        if _SECRET_NAME.match(part):
+            return f"`{p}` resolves to a credential-bearing file"
+    return None
+
+
+def _bad_operands(exe: str, argv: list[str]) -> str | None:
+    args = argv[1:]
+    pos = [a for k, a in _flag_parts(args) if k == "pos"]
+    if exe == "sed":
+        if not pos or not _SED_SCRIPT.fullmatch(pos[0]):
+            return ("`sed` script is not a plain print (`N,Mp`, `$p` or `/re/p`): "
+                    "the `e`, `w`, `r` and `s///e` commands execute or write")
+        pos = pos[1:]
+    elif exe == "grep":
+        if not any(a in ("-e", "--regexp") or a.startswith("--regexp=") for a in args) and pos:
+            pos = pos[1:]  # the first positional is the pattern, not a path
+    elif exe in ("gh", "git"):
+        pos = []  # revisions, queries and endpoints; git pathspecs stay in-repo
+    for a in pos:
+        r = _secret_path(a)
+        if r:
+            return r
+    if exe == "gh" and argv[1:2] == ["api"]:
+        eps = [a for k, a in _flag_parts(args[1:]) if k == "pos" and not a.startswith("--")]
+        if any(e.lstrip("/").startswith("graphql") for e in eps):
+            return "`gh api graphql` can carry a mutation; use a REST path"
+    return None
 
 
 def expand_globs(argv: list[str]) -> list[str]:
@@ -391,6 +564,10 @@ def expand_globs(argv: list[str]) -> list[str]:
     unexpanded. glob does it without giving the issue body a shell; an argument
     that matches nothing is left verbatim so the command reports its own
     not-found error rather than silently probing fewer files.
+
+    The expansion happens AFTER vetting, so it is re-checked by
+    `check_expanded`: `cat gha-c*` passes the vet as a harmless glob and
+    expands to the credential file.
     """
     out: list[str] = []
     for a in argv:
@@ -402,18 +579,58 @@ def expand_globs(argv: list[str]) -> list[str]:
     return out
 
 
+def check_expanded(original: list[str], expanded: list[str]) -> str | None:
+    """A reason the post-glob argv must not run, else None."""
+    if expanded == original:
+        return None
+    for a in expanded:
+        if a in original:
+            continue
+        if a.startswith("-"):
+            return f"a glob expanded into the option-looking name `{a}`"
+        r = _secret_path(a)
+        if r:
+            return f"a glob expanded into a forbidden path: {r}"
+    return None
+
+
+def _child_env(exe: str) -> dict[str, str]:
+    """The environment a repro runs in: not ours. `GH_TOKEN` reaches only `gh`,
+    so `cat /proc/self/environ`, `printenv` and friends have nothing to print."""
+    keep = {"PATH", "HOME", "LANG", "LC_ALL", "TERM"}
+    if exe == "gh":
+        keep |= {"GH_TOKEN", "GITHUB_TOKEN", "GH_HOST", "GH_REPO"}
+    env = {k: v for k, v in os.environ.items() if k in keep}
+    env["GIT_CONFIG_NOSYSTEM"] = "1"
+    return env
+
+
+def _hardened(argv: list[str]) -> list[str]:
+    """Recursion must not reach the secret files that sit in the tree."""
+    if argv[0] == "grep" and any(a in ("-r", "-R") or a.startswith(("--recursive", "--dereference-recursive"))
+                                 or (a.startswith("-") and not a.startswith("--") and set("rR") & set(a))
+                                 for a in argv[1:]):
+        return [argv[0], "--exclude-dir=.git", "--exclude=gha-creds*", "--exclude=.env*",
+                "--exclude=*credentials*", *argv[1:]]
+    if argv[0] == "diff" and any(a in ("-r", "--recursive") or (a.startswith("-") and not a.startswith("--") and "r" in a)
+                                 for a in argv[1:]):
+        return [argv[0], "-x", ".git", "-x", "gha-creds*", "-x", ".env*", *argv[1:]]
+    return argv
+
+
 def one_shell_sample(argv: list[str]) -> tuple[int | None, str, str]:
     """(returncode, stdout, note). returncode None means it could not run."""
     try:
-        p = subprocess.run(argv, capture_output=True, text=True, cwd=str(ROOT),
-                           timeout=_SHELL_TIMEOUT, check=False)
+        p = subprocess.run(_hardened(argv), capture_output=True, text=True, cwd=str(ROOT),
+                           timeout=_SHELL_TIMEOUT, check=False, shell=False,
+                           env=_child_env(argv[0]))
     except subprocess.TimeoutExpired:
         return None, "", f"timed out after {_SHELL_TIMEOUT}s"
     except (OSError, ValueError) as e:
         return None, "", f"{type(e).__name__}: {e}"
     note = f"exit {p.returncode}, {len(p.stdout)}b"
     if p.returncode != 0 and p.stderr.strip():
-        note += f", stderr: {p.stderr.strip()[:120]}"
+        note += f", stderr: {redact(p.stderr.strip())[:120]}"
     return p.returncode, p.stdout, note
 
 
@@ -501,11 +718,10 @@ def main() -> int:
     ap.add_argument("--repo", default=os.environ.get("GH_REPO", ""),
                     help="OWNER/NAME — required for a shell repro, which is gated "
                          "on the issue author's permission (#543)")
-    ap.add_argument("--allow-untrusted-shell", action="store_true",
-                    help=argparse.SUPPRESS)
     args = ap.parse_args()
 
-    text = issue_body(args.issue)
+    body, comments = issue_parts(args.issue)
+    text = "\n".join([body] + comments)
     line = last_repro_line(text)
     if not line:
         print(f"#{args.issue}  NO-REPRO — no `repro:` line at all")
@@ -515,6 +731,17 @@ def main() -> int:
     spec = parse_repro(text)
     if spec:
         return _run_http(args, spec)
+    # SHELL: only the issue BODY may supply the command. Provenance is resolved
+    # for the issue's author, and anyone can comment on a public issue; "last
+    # repro wins" across body+comments let an outsider's comment run under a
+    # trusted author's gate (QA round 1, sentinel file written).
+    if last_repro_line(body) != line:
+        print(f"#{args.issue}  shell repro")
+        print(f"  command:  {redact(line)[:160]}")
+        print("\n  REFUSED — the newest `repro:` is a shell command in a COMMENT")
+        print("  -> comments are not covered by the author check, so they never")
+        print("     execute. Put the `repro:` in the issue body (#543)")
+        return 6
     return _run_shell(args, line)
 
 
@@ -559,7 +786,7 @@ def _run_shell(args, line: str) -> int:
     """The shell dialect. Verdicts are MATCHES-STATED / DIFFERS, never PASS."""
     cmd_text, stated, probes = split_shell_repro(line)
     print(f"#{args.issue}  shell repro")
-    print(f"  command:  {cmd_text[:160]}")
+    print(f"  command:  {redact(cmd_text)[:160]}")
     print(f"  stated:   {stated[:160] or '(nothing stated)'}")
     if probes > 1:
         print(f"  NOTE:     this `repro:` line states {probes} probes; only the first is")
@@ -573,23 +800,26 @@ def _run_shell(args, line: str) -> int:
         print("     `repro:` gets rewritten rather than skipped again (#543)")
         return 6
 
-    # Provenance BEFORE execution. An unresolved author is not a yes.
-    if args.allow_untrusted_shell:
-        print("  provenance: SKIPPED by --allow-untrusted-shell (local use only)")
-    else:
-        trusted, detail = provenance_is_trusted(args.issue, args.repo)
-        print(f"  provenance: {detail}")
-        if not trusted:
-            print("\n  REFUSED — the issue author is not admin/write on this repo, or "
-                  "could not be resolved")
-            print("  -> a shell `repro:` is code in an issue body; it is classified, "
-                  "never executed, for an untrusted author (#543 option C)")
-            return 6
+    # Provenance BEFORE execution. An unresolved author is not a yes, and there
+    # is deliberately no flag that skips it.
+    trusted, detail = provenance_is_trusted(args.issue, args.repo)
+    print(f"  provenance: {detail}")
+    if not trusted:
+        print("\n  REFUSED — the issue author is not admin/write on this repo, or "
+              "could not be resolved")
+        print("  -> a shell `repro:` is code in an issue body; it is classified, "
+              "never executed, for an untrusted author (#543 option C)")
+        return 6
 
     print(f"  vetted:   {why}")
     expanded = expand_globs(argv)
     if expanded != argv:
         print(f"  globbed:  {len(expanded)} args after expansion (no shell used)")
+    bad = check_expanded(argv, expanded)
+    if bad:
+        print(f"\n  REFUSED — {bad}")
+        print("  -> not executed (#543)")
+        return 6
 
     # A shell repro reads the tree, so it is deterministic and five samples
     # would print the same thing five times. Two proves determinism and catches
@@ -612,7 +842,7 @@ def _run_shell(args, line: str) -> int:
     stdout = outs[0][1]
     head = [ln for ln in stdout.splitlines() if ln.strip()][:6]
     for ln in head:
-        print(f"    | {ln[:150]}")
+        print(f"    | {redact(ln)[:150]}")
     if len(stdout.splitlines()) > 6:
         print(f"    | ... {len(stdout.splitlines()) - 6} more line(s)")
 

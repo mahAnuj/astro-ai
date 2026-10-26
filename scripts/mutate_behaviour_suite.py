@@ -3460,8 +3460,8 @@ MUTATIONS = [
 
     ("#543: `sed -i` / `gh -X` write flags stop being refused",
      "scripts/validate_issue.py",
-     "    hit = sorted(set(argv[1:]) & banned)\n",
-     "    hit = []\n",
+     "    bad = _bad_flags(exe, argv[1:])\n",
+     "    bad = []\n",
      "test_a_write_flag_on_an_allowed_command_is_refused"),
 
     ("#543: a write subcommand (`gh issue close`) passes the subcommand gate",
@@ -3488,8 +3488,8 @@ MUTATIONS = [
 
     ("#543: the repro terminator is consumed again, so two adjacent `repro:` lines match once",
      "scripts/validate_issue.py",
-     r'r"^\s*repro:\s*(.+?)(?=\n\s*\w+:|\Z)"',
-     r'r"^\s*repro:\s*(.+?)(?:\n\s*\w+:|\Z)"',
+     r'r"(?=\n[ \t]*(?:[-*][ \t]+)?(?:\*\*)?\w+:|\Z)")',
+     r'r"(?:\n[ \t]*(?:[-*][ \t]+)?(?:\*\*)?\w+:|\Z)")',
      "test_the_last_repro_wins_even_when_the_newest_is_a_different_dialect"),
 
     ("#543: a prose expectation is scored instead of reported UNSCORED",
@@ -3503,6 +3503,56 @@ MUTATIONS = [
      "        out.extend(hits or [a])\n",
      "        out.extend(hits)\n",
      "test_a_glob_matching_nothing_is_left_verbatim"),
+
+    # QA round 1 on #544: the gate WIRING and the second-generation locks. The
+    # first round proved forcing `trusted = True` survived all 62 tests.
+    ("#543: the provenance gate is bypassed (an untrusted author reaches execution)",
+     "scripts/validate_issue.py",
+     "    if not trusted:\n",
+     "    if False:\n",
+     "test_outsider_unresolved_or_odd_provenance_runs_nothing_and_exits_6"),
+
+    ("#543: a shell repro in a COMMENT executes under the author's gate",
+     "scripts/validate_issue.py",
+     "    if last_repro_line(body) != line:\n",
+     "    if False:\n",
+     "test_a_shell_repro_in_a_comment_never_executes_under_the_authors_gate"),
+
+    ("#543: the sed script check is dropped (`e` / `w` execute and write)",
+     "scripts/validate_issue.py",
+     "        if not pos or not _SED_SCRIPT.fullmatch(pos[0]):\n",
+     "        if False:\n",
+     "test_every_qa_round_1_reproducer_is_refused"),
+
+    ("#543: a path to a credential file is no longer refused",
+     "scripts/validate_issue.py",
+     "        if _SECRET_NAME.match(part):\n            return f\"`{p}` names a credential-bearing file\"\n",
+     "        if False:\n            return f\"`{p}` names a credential-bearing file\"\n",
+     "test_every_qa_round_1_reproducer_is_refused"),
+
+    ("#543: the post-glob re-check is dropped (`cat gha-c*` reaches the credential file)",
+     "scripts/validate_issue.py",
+     "    bad = check_expanded(argv, expanded)\n",
+     "    bad = None\n",
+     "test_a_glob_cannot_launder_a_credential_file_past_the_vet"),
+
+    ("#543: the child inherits the caller's whole environment",
+     "scripts/validate_issue.py",
+     "env=_child_env(argv[0]))",
+     "env=None)",
+     "test_the_child_environment_carries_no_token_except_to_gh"),
+
+    ("#543: credential-shaped output is printed unredacted",
+     "scripts/validate_issue.py",
+     "    return _REDACT.sub(\"[REDACTED]\", text)\n",
+     "    return text\n",
+     "test_a_credential_shape_is_redacted_before_it_is_printed"),
+
+    ("#543: the bold-bullet `repro:` form stops being found (26 issues silently NO-REPRO)",
+     "scripts/validate_issue.py",
+     "(?:\\*\\*)?repro:(?:\\*\\*)?",
+     "repro:",
+     "test_the_bold_bullet_form_agent_discover_writes_is_found"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
