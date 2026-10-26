@@ -60,7 +60,7 @@ def test_rows_turn_sums_into_means_and_keep_the_skip_breakdown():
     (r,) = ops_data._ratelimit_rows(usage([urow(K120, POPULATED)]), [K120])
     assert (r["warm_n"], r["warm_seen"], r["cold_n"], r["cold_seen"]) == (24, 30, 6, 8)
     assert (r["mean_rem"], r["mean_exp"], r["mean_cached"]) == (5000, 3900, 2304)
-    assert r["skips"] == {"noanchor": 3, "overlap": 2, "nohdr": 1, "clamp": 2}
+    assert r["skips"] == {"noanchor": 3, "overlap": 2, "nohdr": 1, "clamp": 2, "full": 0}
     assert r["disc"] == 3 and r["cold_mean_abs"] == 12.5 and r["last_limit"] == 8000
     assert r["f"] == pytest.approx((5000 - 3900) / 2304)
     assert r["verdict"] == rp.verdict(POPULATED)["verdict"] == "PARTIAL"
@@ -152,8 +152,15 @@ def test_a_populated_row_prints_every_figure_the_header_describes(_ops, monkeypa
     p = panel(page(monkeypatch, usage([urow(K120, POPULATED)])))
     c = cells(p, "gpt-oss-120b")
     assert len(c) == 7
+    # `bucket at ceiling` is counted apart from `clamped` (BUG-2 on PR #536): a
+    # ceiling is structural, so a model showing it rise while warm samples stay
+    # at 0 cannot be measured at all — which must not read as "wait longer".
+    # `header-reported limit` renders here because ARCHITECTURE points at this
+    # panel to settle whether the header is TPM, and it used to be computed and
+    # then dropped (BUG-3).
     assert c[1] == ("24 of 30 warm calls · skipped, warm and cold: 3 no anchor · 2 overlapped · "
-                    "1 no header · 2 clamped"), c[1]
+                    "1 no header · 2 clamped · 0 bucket at ceiling · "
+                    "header-reported limit 8,000"), c[1]
     assert c[2] == "5,000 vs 3,900", c[2]
     assert c[3] == "2,304"
     assert c[4] == "0.48 3 of 24 samples individually discounted", c[4]
@@ -371,3 +378,46 @@ def test_the_other_caller_sentence_is_what_the_probe_does(_ops, monkeypatch):
         totals[k] = int(totals[k] * scale)
     v = rp.verdict(totals)
     assert v["f"] < 0 and v["verdict"] == "FULL WEIGHT", v
+
+
+# --- the sentences added fixing the independent round's findings (PR #536) ----
+#
+# This file's rule is that every sentence on the panel is asserted here, and a
+# sentence no test can make fail is deleted rather than reworded. The round
+# found one that broke it: the fold promised a clamp was skipped when "the
+# bucket was full or empty", the code checked only the empty end, and no test
+# could tell. These pin the replacements.
+
+def test_the_fold_describes_the_ceiling_skip_the_code_actually_implements(_ops, monkeypatch):
+    """BUG-2b. The old sentence was false of the code and asserted nowhere."""
+    text = page(monkeypatch, usage([urow(K120, POPULATED)]))
+    assert "the bucket was at its ceiling before the call" in text, (
+        "the fold no longer describes the ceiling skip, which is a counted "
+        "outcome the reader sees in the breakdown"
+    )
+    assert "bucket was full or empty" not in text, (
+        "the sentence that promised both ends while the code checked one is back"
+    )
+
+
+def test_the_fold_says_a_bucket_sized_request_cannot_be_measured(_ops, monkeypatch):
+    """The finding an operator cannot reach on their own.
+
+    `pred` is 98-101% of `limit` for natal (7,871 en / 8,056 hi against 8,000,
+    measured 2026-10-25). On that path every call hits the ceiling, so the
+    panel will show INSUFFICIENT forever. Without this sentence that is
+    indistinguishable from "not deployed long enough", and the reader would
+    wait for a reading that cannot arrive.
+    """
+    text = page(monkeypatch, usage([urow(K120, POPULATED)]))
+    assert "the size of the whole bucket" in text
+    assert "it cannot be measured by this instrument at all" in text
+
+
+def test_the_header_reported_limit_reaches_the_page(_ops, monkeypatch):
+    """BUG-3. ARCHITECTURE points at this panel to settle whether the header is
+    TPM ("the panel prints `last_limit`; 8,000 would say so"). It was computed
+    at ops_data.py:1163 and then dropped, so the stated route to answering that
+    question led to a page that never printed it."""
+    p = panel(page(monkeypatch, usage([urow(K120, POPULATED)])))
+    assert "header-reported limit 8,000" in p, p

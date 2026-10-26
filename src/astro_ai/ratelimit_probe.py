@@ -69,7 +69,8 @@ VERDICTS = ("INSUFFICIENT", "NOISY", "FULL WEIGHT", "DISCOUNTED", "PARTIAL")
 #: (llm_stats.record) and the reader (llm_stats.usage_summary).
 SUM_FIELDS = ("warm_seen", "warm_n", "warm_rem", "warm_exp", "warm_cached", "warm_disc",
               "cold_seen", "cold_n", "cold_rem", "cold_exp", "cold_abs",
-              "skip_noanchor", "skip_overlap", "skip_nohdr", "skip_clamp")
+              "skip_noanchor", "skip_overlap", "skip_nohdr", "skip_clamp",
+              "skip_full")
 FIELDS = SUM_FIELDS + ("last_limit",)
 
 
@@ -198,10 +199,33 @@ def finish(ticket, rl, prefix, completion) -> dict | None:
         limit, remaining = rl
         rate = limit / 60.0
         pred = prompt + completion               # exactly what settle() charges
-        pre = min(limit, adjacent[0] + rate * (t_start - adjacent[2]))
-        exp_full = pre + rate * (t_recv - t_start) - pred
-        # A clamp at either end destroys the arithmetic the formula rests on.
-        if exp_full > limit or exp_full <= 0 or remaining == 0:
+        # THE CLAMP TEST READS ITS INPUTS, NOT ITS OUTPUT. It used to be
+        # `pre = min(limit, ...)` followed by a check on `exp_full` alone, and
+        # that inspected the wrong thing: when the `min()` bit, the bucket was
+        # already at its ceiling at t_start, could not accumulate during the
+        # call, and `+ rate * (t_recv - t_start)` over-added `rate x duration`
+        # tokens unconditionally -- yet the sample was counted clean.
+        #
+        # It was not a rare corner. `pred` is 98-101% of `limit` for the natal
+        # request (measured 2026-10-25, #475 comment 6399492544: 7,871 en and
+        # 8,056 hi against 8,000), so `exp_full > 0` REQUIRED a near-full
+        # bucket. Independent QA on PR #536 swept the idle gap and found every
+        # gap where the arithmetic was sound discarded as a clamp, and every
+        # counted sample clamped -- so which samples survived was a function of
+        # the very quantity being measured.
+        raw_pre = adjacent[0] + rate * (t_start - adjacent[2])
+        raw_mid = raw_pre + rate * (t_recv - t_start)
+        exp_full = raw_mid - pred
+        if raw_pre > limit or raw_mid > limit:
+            # The ceiling, counted SEPARATELY from the other invalid shapes.
+            # This one is structural rather than incidental: on a path whose
+            # request is the size of the whole bucket it fires on every call
+            # forever, and an operator reading INSUFFICIENT needs to tell
+            # "this path cannot be measured by this instrument" from "not
+            # deployed long enough". One counter cannot say both.
+            out["skip_full"] = 1
+            return out
+        if exp_full <= 0 or remaining == 0:
             out["skip_clamp"] = 1
             return out
         exp_i = int(round(exp_full))

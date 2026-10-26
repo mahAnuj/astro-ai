@@ -1010,7 +1010,7 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           {%- elif r.no_header %}
           <td class="n" colspan="6">no header received on {{ "{:,}".format(r.no_header_calls) }} calls</td>
           {%- else %}
-          <td class="n">{{ "{:,}".format(r.warm_n) }}<span class="sub">of {{ "{:,}".format(r.warm_seen) }} warm calls · skipped, warm and cold: {{ r.skips.noanchor }} no anchor · {{ r.skips.overlap }} overlapped · {{ r.skips.nohdr }} no header · {{ r.skips.clamp }} clamped</span></td>
+          <td class="n">{{ "{:,}".format(r.warm_n) }}<span class="sub">of {{ "{:,}".format(r.warm_seen) }} warm calls · skipped, warm and cold: {{ r.skips.noanchor }} no anchor · {{ r.skips.overlap }} overlapped · {{ r.skips.nohdr }} no header · {{ r.skips.clamp }} clamped · {{ r.skips.full }} bucket at ceiling{% if r.last_limit %} · header-reported limit {{ "{:,}".format(r.last_limit) }}{% endif %}</span></td>
           <td class="n">{% if r.mean_rem is none %}—{% else %}{{ "{:,}".format(r.mean_rem) }} vs {{ "{:,}".format(r.mean_exp) }}{% endif %}</td>
           <td class="n">{{ "{:,}".format(r.mean_cached) if r.mean_cached is not none else '—' }}</td>
           <td class="n">{% if r.f is none %}—{% else %}{{ r.f_text }}<span class="sub">{{ r.disc }} of {{ r.warm_n }} samples individually discounted</span>{% endif %}</td>
@@ -1037,7 +1037,12 @@ footer.prov code{font-family:var(--mono);color:var(--ink-dim)}
           the same formula as a control. A call is a sample only if nothing else on that model
           started or finished between the previous response and its own response; every other
           candidate is counted under <b>skipped</b> &mdash; no anchor (nothing usable before it),
-          overlapped, no header, or clamped (the bucket was full or empty, so the arithmetic
+          overlapped, no header, clamped (the prediction fell outside the bucket, or Groq
+          reported zero remaining), or the bucket was at its ceiling before the call (nothing
+          accumulated during it, so the refill term cannot hold). <b>A path whose request is
+          the size of the whole bucket produces that last one on every call</b>, so a model
+          showing ceiling skips rising while warm samples stay at zero is not under-deployed
+          — it cannot be measured by this instrument at all. The arithmetic
           does not hold) &mdash; and is never counted as agreement.
           <b>discounted fraction</b> is 0 if cached tokens were charged in full and 1 if they were
           not charged at all; the <b>verdict</b> needs at least {{ RL.min_warm }} warm and

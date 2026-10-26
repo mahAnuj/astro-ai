@@ -201,13 +201,46 @@ def test_a_cold_call_runs_the_same_formula_but_is_never_a_warm_sample(clock):
 
 
 def test_a_full_or_empty_bucket_is_skipped_as_clamped_not_counted_as_agreement(clock):
+    """The two invalid shapes are skipped, and counted APART from each other.
+
+    They mean different things to an operator. A ceiling is structural -- on a
+    path whose request is the size of the whole bucket it fires on every call
+    forever, so `skip_full` rising while `warm_n` stays at 0 says "this path
+    cannot be measured by this instrument". An empty bucket is incidental.
+    One counter for both could not say which was happening, and the reader
+    would see INSUFFICIENT and assume "not deployed long enough".
+    """
     one_call(clock, K120, 8000)
-    # remaining 8000 + refill beyond the limit - tiny charge: the formula would exceed the limit
+    # remaining 8000 + refill beyond the limit - tiny charge: the bucket was at
+    # its ceiling before the call, so nothing accumulated during it.
     out = one_call(clock, K120, 8000, prompt=100, cached=64, completion=10, before=20.0)
-    assert out.get("skip_clamp") == 1 and "warm_n" not in out
+    assert out.get("skip_full") == 1 and "warm_n" not in out
+    assert "skip_clamp" not in out, "a ceiling is counted as a ceiling, not lumped in"
     one_call(clock, K120, 100)
     out = one_call(clock, K120, 0, prompt=5000, cached=2304, completion=1000, latency=1.0)
     assert out.get("skip_clamp") == 1 and "warm_n" not in out         # predicted below zero
+    assert "skip_full" not in out
+
+
+def test_a_sample_whose_bucket_was_at_the_ceiling_is_never_counted_clean(clock):
+    """BUG-2 from the independent QA round on PR #536, pinned.
+
+    The old guard tested `exp_full` -- the OUTPUT of the arithmetic -- so when
+    `pre = min(limit, ...)` bit, the over-add of `rate x duration` went
+    unnoticed and the sample was booked as agreement. Because `pred` is
+    98-101% of `limit` for natal (7,871 en / 8,056 hi against 8,000, measured
+    2026-10-25), `exp_full > 0` required a near-full bucket -- so the samples
+    that survived were exactly the invalid ones.
+    """
+    one_call(clock, K120, 8000)
+    # A long idle gap refills past the ceiling before the call even starts.
+    out = one_call(clock, K120, 7000, prompt=3000, cached=2304, completion=800,
+                   before=600.0, latency=5.0)
+    assert out.get("skip_full") == 1, out
+    assert "warm_n" not in out and "warm_disc" not in out, (
+        "a sample taken while the bucket was at its ceiling was counted as "
+        "agreement; that is the defect this test exists for"
+    )
 
 
 def test_a_call_whose_usage_cannot_be_read_claims_nothing(clock):
@@ -553,7 +586,15 @@ def test_a_failed_attempt_in_chat_breaks_the_probe_chain(monkeypatch, stats_dir)
             pass
     c = stored(stats_dir)["ratelimit_by_model"][K120]
     # calls 1, 2 | 3 fails | 4, 5 (4 re-anchors, 5 is a sample again)
-    assert c["warm_seen"] == 4 and c["skip_noanchor"] == 2 and c["warm_n"] == 2, c
+    #
+    # `warm_n` is 1, not 2, SINCE THE BUG-2 FIX. One of the two formerly-counted
+    # samples was taken while the bucket sat at its ceiling and is now
+    # `skip_full`. It was never a valid sample; the old guard inspected
+    # `exp_full` and could not see the clamp that produced it. The drop is the
+    # fix working, and the fixture's 30s spacing is what puts the bucket there.
+    assert c["warm_seen"] == 4 and c["skip_noanchor"] == 2, c
+    assert c["warm_n"] + c.get("skip_full", 0) == 2, c
+    assert c["warm_n"] == 1 and c.get("skip_full") == 1, c
 
 
 def test_settle_is_unchanged_a_warm_call_is_still_charged_prompt_plus_completion(monkeypatch):
@@ -565,3 +606,97 @@ def test_settle_is_unchanged_a_warm_call_is_still_charged_prompt_plus_completion
     providers._last_completion.set(500)
     providers._pace_done(res, None)
     assert bucket._level == 3200, "settle() must charge prompt + completion, cached included"
+
+
+# --- BUG-4: a model two live chain entries claim is not measurable -----------
+
+def test_the_probe_refuses_a_model_two_chain_entries_share(monkeypatch):
+    """Groq limits per account AND MODEL, so `groq` and `groq120` -- same model,
+    same key -- share one bucket while `_bucket_key` gives them two sequences.
+
+    A sibling's charge between this call's anchor and its response is then
+    invisible and the sample is booked clean, and the error runs the WRONG WAY:
+    a hidden charge lowers Groq's reported figure below the prediction, pushing
+    toward a false FULL WEIGHT. That is the one verdict that would justify
+    leaving `settle()` alone for good, so a false one is the expensive
+    direction to be wrong in.
+
+    The probe refuses rather than `_bucket_key` being re-keyed: that key is the
+    one `chat()` hands `llm_stats.record`, and changing it would make the
+    bucket's figures and `measured_by_model` disagree about a row on
+    /admin/ops.
+    """
+    from astro_ai import providers
+
+    class P:
+        def __init__(self, name, model):
+            self.name, self._m = name, model
+
+        def model(self):
+            return self._m
+
+    solo = P("groq120", "openai/gpt-oss-120b")
+    monkeypatch.setattr(providers, "_chain", lambda: [solo])
+    assert providers._model_is_shared(solo) is False, (
+        "a model only one chain entry claims is measurable"
+    )
+
+    twin = P("groq", "openai/gpt-oss-120b")
+    monkeypatch.setattr(providers, "_chain", lambda: [solo, twin])
+    assert providers._model_is_shared(solo) is True
+    assert providers._model_is_shared(twin) is True
+
+    other = P("cerebras", "llama-3.3-70b")
+    monkeypatch.setattr(providers, "_chain", lambda: [solo, twin, other])
+    assert providers._model_is_shared(other) is False, (
+        "a different model is unaffected by the pair sharing one bucket"
+    )
+
+
+def test_a_probe_that_cannot_read_the_chain_refuses_rather_than_raises():
+    """A measurement must never be the thing that takes down a live LLM call."""
+    from astro_ai import providers
+
+    class Broken:
+        name = "x"
+
+        def model(self):
+            raise RuntimeError("chain unreadable")
+
+    assert providers._model_is_shared(Broken()) is True
+
+
+def test_chat_books_no_sample_at_all_when_the_model_is_shared(monkeypatch, stats_dir):
+    """BUG-4 at the CALL SITE, not just in the helper.
+
+    An earlier version of this file tested `_model_is_shared` directly and
+    nothing else, so deleting the guard from `chat()`'s `begin()` call changed
+    no test — the mutation sweep reported it MIS-POINTED, which is how a
+    guard that is present in a helper and absent from the wiring survives.
+
+    Here the chain lists two entries on the same model, which Groq limits as
+    ONE bucket, and the probe must book nothing: no warm sample, no cold
+    sample, no skip counters either, because no ticket is ever opened.
+    """
+    world = World()
+    limiter = HeaderLimiter(world)
+    install(monkeypatch, world, limiter, [P120], lambda n: (3000, 2304, 300))
+
+    class Twin:
+        name = "groq"
+
+        def model(self):
+            return P120.model()
+
+    # Both entries resolve to P120's model, so Groq charges one bucket while
+    # `_bucket_key` would hand out two independent probe sequences.
+    monkeypatch.setattr(providers, "_chain", lambda: [P120, Twin()])
+
+    for _ in range(4):
+        world.now += 30
+        providers.chat([{"role": "user", "content": "x"}], route="ask")
+
+    probe = stored(stats_dir).get("ratelimit_by_model") or {}
+    assert probe.get(K120, {}) == {} or not any(probe.get(K120, {}).values()), (
+        f"the probe scored a model two live chain entries share: {probe}"
+    )

@@ -824,6 +824,47 @@ MUTATIONS = [
     # gates, three steward runs cleared neither, and `steward-ineffective`
     # escalated both -- because their branches were `partial/` and the regex
     # was `^issue/`.
+    # ---- #536 round 2: the independent round's findings, pinned -----------
+    #
+    # BUG-2. The guard used to test `exp_full`, the OUTPUT of the arithmetic, so
+    # a clamped `pre` went unnoticed and the over-add of `rate x duration` was
+    # booked as agreement. Because `pred` is 98-101% of `limit` for natal
+    # (7,871 en / 8,056 hi against 8,000, measured 2026-10-25), `exp_full > 0`
+    # REQUIRED a near-full bucket -- so the samples that survived were exactly
+    # the invalid ones, and which ones survived depended on the answer.
+    ("the clamp guard reads its own output again (samples chosen by the answer)",
+     "src/astro_ai/ratelimit_probe.py",
+     # Disables the ceiling test so the sample falls through and is BOOKED,
+     # which is the old defect. Swapping the condition for `exp_full > limit`
+     # is NOT the old behaviour -- the branch would still set `skip_full` -- and
+     # an earlier draft of this row made exactly that mistake and reported
+     # MIS-POINTED.
+     "if raw_pre > limit or raw_mid > limit:",
+     "if raw_pre > limit * 100:",
+     "test_a_sample_whose_bucket_was_at_the_ceiling_is_never_counted_clean"),
+
+    # BUG-3. ARCHITECTURE points at this panel twice to settle whether the
+    # header is TPM. The value was computed at ops_data.py:1163 and dropped, so
+    # the stated route to answering that question led to a page without it.
+    ("the header-reported limit is computed and never rendered",
+     "src/astro_ai/templates/admin_ops.html",
+     ' · header-reported limit {{ "{:,}".format(r.last_limit) }}',
+     "",
+     "test_the_header_reported_limit_reaches_the_page"),
+
+    # BUG-4. `groq` and `groq120` are one Groq bucket and two probe sequences,
+    # so a sibling's charge is invisible and lowers Groq's figure below the
+    # prediction -- pushing toward a FALSE FULL WEIGHT, the one verdict that
+    # would justify leaving settle() alone for good.
+    ("the probe scores a model two live chain entries share",
+     "src/astro_ai/providers.py",
+     "and not _model_is_shared(provider) else None)",
+     "else None)",
+     # Names the CALL-SITE test, not the helper test: deleting the guard from
+     # `chat()` leaves `_model_is_shared` itself correct, so a row aimed at the
+     # helper reports MIS-POINTED. An earlier draft did exactly that.
+     "test_chat_books_no_sample_at_all_when_the_model_is_shared"),
+
     ("the stall detector cannot name a partial branch's issue (steward is mute)",
      "scripts/detect_stalls.py",
      'r"^(?:issue|partial|fix)/(\\d+)"',

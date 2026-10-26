@@ -1149,7 +1149,13 @@ def _ratelimit_rows(usage: dict, chain: list[str]) -> list[dict]:
                 skips={"noanchor": n(probe, "skip_noanchor"),
                        "overlap": n(probe, "skip_overlap"),
                        "nohdr": n(probe, "skip_nohdr"),
-                       "clamp": n(probe, "skip_clamp")},
+                       "clamp": n(probe, "skip_clamp"),
+                       # Counted apart from `clamp` because it means something
+                       # different to the reader: a ceiling is structural and
+                       # fires forever on a path whose request is the size of
+                       # the bucket, so `full` rising while `warm_n` stays 0 is
+                       # "this path cannot be measured", not "wait longer".
+                       "full": n(probe, "skip_full")},
                 mean_rem=round(n(probe, "warm_rem") / warm_n) if warm_n else None,
                 mean_exp=round(n(probe, "warm_exp") / warm_n) if warm_n else None,
                 mean_cached=round(v["mean_cached"]) if v["mean_cached"] is not None else None,

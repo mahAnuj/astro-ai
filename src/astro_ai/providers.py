@@ -763,6 +763,39 @@ def _bucket_key(provider: ProviderConfig) -> str:
     return f"{provider.name}|{provider.model()}"
 
 
+def _model_is_shared(provider: ProviderConfig) -> bool:
+    """True when another LIVE chain entry resolves to this same Groq model.
+
+    BUG-4 from the independent QA round on PR #536. `_bucket_key` is
+    `name|model()`, but Groq limits per account AND MODEL -- so two chain
+    entries on the same model and key (`groq` and `groq120` are exactly that,
+    see PROVIDERS) share one Groq bucket while the probe gives them two
+    independent sequences. A sibling's charge between this call's anchor and
+    its response is then invisible, the sample is booked clean, and the error
+    runs the WRONG WAY: a hidden charge lowers Groq's reported figure below the
+    prediction, pushing toward a false FULL WEIGHT -- the one verdict that
+    would justify leaving `settle()` alone for good.
+
+    `_bucket_key` itself is deliberately NOT changed: it is the same key
+    `chat()` hands `llm_stats.record`, so re-keying it would make the bucket's
+    figures and `measured_by_model` disagree about a row on /admin/ops. The
+    PROBE refuses instead. The pacing bucket keeps the pre-existing behaviour,
+    which is a real but separate defect and not a regression of this change.
+
+    The default chain does not list both -- PROVIDERS says so in as many words
+    -- but `_chain()` accepts whatever `BHAGYA_LLM_PROVIDERS` supplies and
+    nothing prevents it, which is precisely the case a measurement must not be
+    silently wrong in.
+    """
+    try:
+        model = provider.model()
+        return sum(1 for q in _chain() if q.model() == model) > 1
+    except Exception:
+        # A probe refusing to score is always safe; raising here would take
+        # down a live LLM call for the sake of a measurement.
+        return True
+
+
 def _tpm_limit(provider: ProviderConfig) -> int | None:
     """The TPM ceiling we know for this provider, or None = do not pace it.
 
@@ -1267,7 +1300,8 @@ def chat(messages: list[dict], *, route: str = "",
                 # attempt is closed, success or failure, because a failed one may
                 # still have been charged and must break the probe's chain.
                 ticket = (ratelimit_probe.begin(_bucket_key(provider))
-                          if _tpm_limit(provider) is not None else None)
+                          if _tpm_limit(provider) is not None
+                          and not _model_is_shared(provider) else None)
                 try:
                     raw_text = _call_one(provider, messages)
                 except BaseException as call_err:
