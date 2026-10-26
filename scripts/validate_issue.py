@@ -37,15 +37,20 @@ cookie and the LLM runs on the redirect target, so a POST alone proves nothing.
 from __future__ import annotations
 
 import argparse
+import glob
 import http.cookiejar
 import json
+import os
+import pathlib
 import re
+import shlex
 import subprocess
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 
+ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = "https://shubhagya.com"
 TIMEOUT = 180
 # Varied inputs so a probe cannot pass by hitting one lucky code path: #266
@@ -83,11 +88,27 @@ def issue_body(n: int) -> str:
     return "\n".join(parts)
 
 
-def parse_repro(text: str) -> dict | None:
-    """Last `repro:` wins — a correction in a comment supersedes the body."""
+def last_repro_line(text: str) -> str | None:
+    """The last `repro:` line, whatever dialect it is in.
+
+    Dialect-agnostic on purpose. The previous version skipped any line that was
+    not `GET`/`POST`, so an issue whose newest `repro:` was a shell command but
+    which also carried an older http one silently probed the STALE line and
+    reported a verdict on it (#543).
+    """
     found = None
-    for raw in re.findall(r"^\s*repro:\s*(.+?)(?:\n\s*\w+:|\Z)", text, re.M | re.S):
-        line = " ".join(raw.split())
+    # A LOOKAHEAD, not a consuming group. Consuming `\n<field>:` ate the next
+    # `repro:` line's own prefix, so two adjacent `repro:` lines matched once
+    # and "last wins" quietly returned the FIRST — a stale premise reported as
+    # a current verdict, which is the whole failure #543 is about.
+    for raw in re.findall(r"^\s*repro:\s*(.+?)(?=\n\s*\w+:|\Z)", text, re.M | re.S):
+        found = " ".join(raw.split())
+    return found
+
+
+def parse_repro(text: str) -> dict | None:
+    """The http dialect only. `None` means "not an http repro", not "no repro"."""
+    for line in ([last_repro_line(text)] if last_repro_line(text) else []):
         m = re.match(r"(GET|POST)\s+(\S+)(.*)", line, re.I)
         if not m:
             continue
@@ -100,8 +121,8 @@ def parse_repro(text: str) -> dict | None:
         spec["status"] = int(st.group(1)) if st else 200
         spec["contains"] = re.findall(r'contains\s+"([^"]+)"', rest, re.I)
         spec["absent"] = re.findall(r'absent\s+"([^"]+)"', rest, re.I)
-        found = spec
-    return found
+        return spec
+    return None
 
 
 def one_sample(spec: dict, fixture: dict) -> tuple[bool, str]:
@@ -144,20 +165,360 @@ def one_sample(spec: dict, fixture: dict) -> tuple[bool, str]:
     return True, f"HTTP {status}, {len(body)}b"
 
 
+# ---------------------------------------------------------------------------
+# THE SHELL DIALECT (#543)
+# ---------------------------------------------------------------------------
+# `verify_issue_evidence.py` has classified `repro:` lines into two dialects
+# since 2026-10-13 and deliberately refused to pick a winner:
+#
+#     "BOTH DIALECTS ARE CORRECT, AND THAT IS THE POINT ... `http` repros are
+#      reported as executable by validate_issue.py, `shell` repros as
+#      executable by the caller"
+#
+# That is right, and the gap it left is that "executable by the caller" had no
+# caller. Measured 2026-10-26: 26 of 123 open issues carry a `repro:`, and
+# 0 were executable here, so this probe had never had a single input.
+#
+# It lives in THIS file rather than a sibling script on purpose. The repo has
+# recorded what copied logic does ("copied files diverge", five times in two
+# days) and `close-on-evidence.yml` cites that as the reason it does not let
+# `agent-merge` close issues itself. One implementation, two dialects, one
+# verdict vocabulary -- so step 0 reads the same whichever dialect an issue
+# happens to use.
+#
+# WHY THE POLARITY IS NOT INVERTED HERE, AND WHY THERE IS NO PASS/FAIL
+# --------------------------------------------------------------------
+# The two dialects state OPPOSITE things, and conflating them would invert
+# every verdict:
+#
+#   http   `GET /kundli -> 200 contains "Lagna"`   states the HEALTHY state.
+#          It passing means the bug is GONE -> CANNOT-REPRODUCE.
+#   shell  `grep -c 'Requested' providers.py -> 16` states the state AS FOUND,
+#          i.e. the defect. It matching means the premise STILL HOLDS.
+#
+# And the polarity is per-issue, not per-dialect: some shell repros record the
+# broken count, others record what a fixed file should contain. Nothing in the
+# grammar distinguishes them, so this does NOT guess. It reports whether the
+# command still produces what the issue recorded, and leaves the reading to the
+# caller:
+#
+#   MATCHES-STATED  the numbers/strings the issue recorded are still produced
+#   DIFFERS         the command now produces something else -- look at it
+#
+# Inventing a polarity would have been the easy thing and would have made every
+# verdict on a drifted premise exactly backwards.
+_SHELL_TIMEOUT = 60
+
+# An ALLOW-LIST, not a deny-list. A deny-list on a public repo is a promise to
+# have thought of everything; #358 is the standing proof that nobody does.
+_SHELL_ALLOW = {
+    "grep": None,
+    "rg": None,
+    "sed": None,
+    "wc": None,
+    "cat": None,
+    "head": None,
+    "tail": None,
+    "sort": None,
+    "uniq": None,
+    "ls": None,
+    "diff": None,
+    "jq": None,
+    # Read-only subcommands only. `gh` reaches the network with the caller's
+    # token, so a write verb here would let an issue body act as that user.
+    "gh": {("issue", "view"), ("issue", "list"), ("pr", "view"), ("pr", "list"),
+           ("pr", "diff"), ("pr", "checks"), ("run", "list"), ("run", "view"),
+           ("label", "list"), ("search", "issues"), ("search", "prs"),
+           ("api",)},
+    # Read-only subcommands only, for the same reason.
+    "git": {("log",), ("diff",), ("show",), ("status",), ("ls-files",),
+            ("grep",), ("rev-parse",), ("cat-file",), ("describe",),
+            ("ls-remote",), ("shortlog",)},
+}
+
+# Refused by name, with the reason stated, because they are arbitrary code by
+# construction and no flag audit makes them safe:
+#   python/python3/uv  -- `-c` is a program
+#   bash/sh/zsh        -- same
+#   gsutil/gcloud/aws  -- hold cloud credentials; `cp`/`rm` reach real buckets
+#   curl/wget          -- egress, and `-o` writes files
+_SHELL_ARBITRARY = {
+    "python": "`-c` takes a program; no flag audit makes an interpreter safe",
+    "python3": "`-c` takes a program; no flag audit makes an interpreter safe",
+    "uv": "`uv run` executes arbitrary code",
+    "uvx": "`uvx` executes arbitrary code",
+    "bash": "a shell executes arbitrary code",
+    "sh": "a shell executes arbitrary code",
+    "zsh": "a shell executes arbitrary code",
+    "node": "executes arbitrary code",
+    "make": "runs whatever the Makefile says",
+    "gsutil": "holds cloud credentials and reaches real buckets",
+    "gcloud": "holds cloud credentials",
+    "aws": "holds cloud credentials",
+    "curl": "egress, and `-o` writes files",
+    "wget": "egress, and `-O` writes files",
+    "docker": "executes arbitrary code",
+    "ssh": "egress with the caller's keys",
+}
+
+# Tokens that only exist to chain, redirect or substitute. After shlex.split a
+# QUOTED pipe is one character inside one argument -- `grep -n 'a\|b' f` is a
+# regex alternation and is fine. A BARE `|` is a real pipe, and since this runs
+# with shell=False it would be passed to grep as a filename anyway; refusing it
+# is how the caller learns why instead of reading a confusing grep error.
+_SHELL_OPERATORS = {"|", "||", "&&", ";", "&", ">", ">>", "<", "<<", "2>",
+                    "$(", "`", "|&"}
+
+# `sed -i` edits the file. `find -exec`/`-delete` run and remove. A read-only
+# allow-list that permits these is not read-only.
+_SHELL_BANNED_FLAGS = {
+    "sed": {"-i", "--in-place"},
+    "jq": {"-f", "--from-file"},
+    "gh": {"-X", "--method", "--input", "-F", "-f", "--field", "--raw-field"},
+}
+
+_ARROW = re.compile(r"->|=>|→|\bexpect(?:ed)?\b|\breturns?\b|\byields?\b",
+                    re.I)
+
+
+def split_shell_repro(line: str) -> tuple[str, str, int]:
+    """('command', 'stated expectation', probes_on_this_line).
+
+    The arrow separates command from expectation. The THIRD value exists
+    because several `repro:` lines in this backlog paste two or three probes
+    onto one line, and splitting on the first arrow alone pulls the NEXT
+    command's numbers into the FIRST command's expectation.
+
+    Measured on #423: `grep -c "verify_hindi_surface" ...verify-production.yml
+    -> 0 grep -n "verify_hindi_surface" ...pr-gates.yml -> 234`. Taking
+    everything after the first arrow gave the expectation `[0, 234]`, the
+    command correctly reported 0, and the probe announced DIFFERS with
+    "missing [234]" -- a false drift report on an issue whose premise was
+    intact. So the expectation is truncated at the next command name, and the
+    count is surfaced rather than hidden.
+    """
+    m = _ARROW.search(line)
+    if not m:
+        return line.strip(), "", 1
+    cmd, rest = line[: m.start()].strip(), line[m.end():].strip()
+    # Truncate the expectation where the next command starts.
+    try:
+        toks = shlex.split(rest)
+    except ValueError:
+        toks = rest.split()
+    cut = None
+    for i, t in enumerate(toks):
+        bare = t.strip("`")
+        if bare in _SHELL_ALLOW or bare in _SHELL_ARBITRARY:
+            cut = i
+            break
+    probes = 1
+    if cut is not None:
+        probes = 1 + sum(1 for t in toks[cut:]
+                         if t.strip("`") in _SHELL_ALLOW or t.strip("`") in _SHELL_ARBITRARY)
+        rest = " ".join(toks[:cut])
+    return cmd, rest.strip(), probes
+
+
+def vet_shell(cmd_text: str) -> tuple[list[str] | None, str]:
+    """(argv, reason). argv is None when the command must not be executed.
+
+    Every refusal names what it refused and why, because #543's acceptance is
+    "0 silently skipped" -- an unexplained skip is how the http dialect sat at
+    0 of 123 for three weeks without anyone noticing.
+    """
+    text = cmd_text.strip().strip("`").strip()
+    if not text:
+        return None, "the `repro:` line states no command"
+    try:
+        argv = shlex.split(text)
+    except ValueError as e:
+        return None, f"cannot be tokenised ({e}) -- probably a heredoc or an unbalanced quote"
+    if not argv:
+        return None, "the `repro:` line states no command"
+
+    ops = sorted({t for t in argv if t in _SHELL_OPERATORS})
+    if ops:
+        return None, ("contains the shell operator(s) " + ", ".join(f"`{o}`" for o in ops)
+                      + " -- this runs with shell=False, so nothing interprets them. "
+                        "Rewrite as a single command, or as an `http` repro.")
+
+    exe = argv[0]
+    if exe in _SHELL_ARBITRARY:
+        return None, f"`{exe}` is refused: {_SHELL_ARBITRARY[exe]}"
+    if exe not in _SHELL_ALLOW:
+        return None, (f"`{exe}` is not on the allow-list. This is an allow-list, not a "
+                      "deny-list: add it deliberately, with a read-only argument audit.")
+
+    banned = _SHELL_BANNED_FLAGS.get(exe, set())
+    hit = sorted(set(argv[1:]) & banned)
+    if hit:
+        return None, (f"`{exe}` with " + ", ".join(f"`{f}`" for f in hit)
+                      + " is not read-only")
+    if exe == "find" or "-exec" in argv or "-delete" in argv:
+        return None, "`-exec`/`-delete` run or remove files"
+
+    sub = _SHELL_ALLOW[exe]
+    consumed: set[str] = set()
+    if sub is not None:
+        words = tuple(a for a in argv[1:] if not a.startswith("-"))
+        matched = next((ok for ok in sub if words[: len(ok)] == ok), None)
+        if matched is None:
+            return None, (f"`{exe} {' '.join(words[:2])}` is not a read-only subcommand. "
+                          f"Allowed: " + ", ".join(sorted(" ".join(s) for s in sub)))
+        # The subcommand itself may BE an allow-listed executable name --
+        # `git diff`, `git grep`, `git show`, `gh api`. Without this the
+        # two-commands check below reads its own subcommand as a second
+        # command and refuses every `git diff` in the backlog.
+        consumed = set(matched)
+
+    # A second allow-listed executable means two commands were pasted onto one
+    # line (#468 is `sed -n ... file sed -n ... file`). Running that feeds the
+    # second command's name to the first as a filename and reports a confusing
+    # failure, so refuse and say which.
+    extra = [a for a in argv[1:]
+             if a not in consumed and (a in _SHELL_ALLOW or a in _SHELL_ARBITRARY)]
+    if extra:
+        return None, (f"two commands on one `repro:` line (found `{extra[0]}` after `{exe}`) "
+                      "-- a probe must have one command with one expectation")
+    return argv, f"`{exe}`, read-only"
+
+
+def expand_globs(argv: list[str]) -> list[str]:
+    """Expand `*`/`?` with glob, never with a shell.
+
+    `grep -c x src/.../*.html` is 10 of the backlog's shape and is useless
+    unexpanded. glob does it without giving the issue body a shell; an argument
+    that matches nothing is left verbatim so the command reports its own
+    not-found error rather than silently probing fewer files.
+    """
+    out: list[str] = []
+    for a in argv:
+        if a.startswith("-") or not any(c in a for c in "*?["):
+            out.append(a)
+            continue
+        hits = sorted(glob.glob(a, root_dir=str(ROOT)))
+        out.extend(hits or [a])
+    return out
+
+
+def one_shell_sample(argv: list[str]) -> tuple[int | None, str, str]:
+    """(returncode, stdout, note). returncode None means it could not run."""
+    try:
+        p = subprocess.run(argv, capture_output=True, text=True, cwd=str(ROOT),
+                           timeout=_SHELL_TIMEOUT, check=False)
+    except subprocess.TimeoutExpired:
+        return None, "", f"timed out after {_SHELL_TIMEOUT}s"
+    except (OSError, ValueError) as e:
+        return None, "", f"{type(e).__name__}: {e}"
+    note = f"exit {p.returncode}, {len(p.stdout)}b"
+    if p.returncode != 0 and p.stderr.strip():
+        note += f", stderr: {p.stderr.strip()[:120]}"
+    return p.returncode, p.stdout, note
+
+
+# NO sign. An earlier version used `-?\d[\d,]*` and read the hyphens in
+# `2026-10-08T06:57:17` as minus signs, so #461's stated expectation came out
+# as [2026, -10, -8, 6, 57, 17] and #518's output as [10, -6, 4, ...]. Counts
+# and positions in a `repro:` are never negative, and a date must tokenise the
+# same way on both sides of the comparison or the comparison is noise.
+_INT = re.compile(r"(?<![\w.])\d[\d,]*")
+
+
+def _ints(text: str) -> list[int]:
+    out = []
+    for m in _INT.finditer(text):
+        try:
+            out.append(int(m.group().replace(",", "")))
+        except ValueError:
+            pass
+    return out
+
+
+def score_shell(stated: str, stdout: str) -> tuple[bool | None, str]:
+    """(matches, detail). None when the expectation is not machine-comparable.
+
+    Deliberately narrow. It compares the integers and the quoted strings the
+    issue recorded, and when the expectation carries neither it says so instead
+    of inventing a verdict -- `grep -c 'Requested' providers.py -> the string
+    appears in a docstring` has nothing a script can check, and reporting that
+    honestly is worth more than a confident coin flip.
+    """
+    want_contains = re.findall(r'contains\s+"([^"]+)"', stated, re.I)
+    want_absent = re.findall(r'absent\s+"([^"]+)"', stated, re.I)
+    if want_contains or want_absent:
+        missing = [s for s in want_contains if s.lower() not in stdout.lower()]
+        present = [s for s in want_absent if s.lower() in stdout.lower()]
+        if missing or present:
+            bits = []
+            if missing:
+                bits.append(f"missing {missing!r}")
+            if present:
+                bits.append(f"found forbidden {present!r}")
+            return False, "; ".join(bits)
+        return True, "every stated string still matches"
+
+    want = _ints(stated)
+    got = _ints(stdout)
+    if not want:
+        return None, ("the expectation states no number and no `contains \"...\"`, "
+                      "so nothing can be compared mechanically")
+    absent = [n for n in want if n not in got]
+    if absent:
+        return False, (f"stated {want} -- the command now reports {got[:12]}"
+                       f"{' ...' if len(got) > 12 else ''}; missing {absent}")
+    return True, f"stated {want}, all still present in the output"
+
+
+def provenance_is_trusted(issue: int, repo: str) -> tuple[bool, str]:
+    """Gate execution on WHO WROTE THE ISSUE (#361's resolver, #543 option C).
+
+    A shell `repro:` is code supplied in an issue body, and this repo is public.
+    Running it on a host that holds a `gh` token is letting an issue form act as
+    that user, which is #358's shape with a different entry point. So: resolve
+    the author, and execute only for admin/write.
+    """
+    if not repo:
+        return False, "no --repo and no GH_REPO, so the author cannot be resolved"
+    p = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "resolve_provenance.py"),
+         str(issue), "--repo", repo],
+        capture_output=True, text=True, check=False,
+    )
+    first = (p.stdout.strip().splitlines() or [""])[0]
+    if p.returncode == 0:
+        return True, first or "trusted"
+    # 1 outsider, 2 unresolved -- and UNRESOLVED must not execute either. A
+    # resolver that cannot answer is not a yes; that is how a revoked token
+    # turns every issue trusted.
+    return False, first or f"resolve_provenance exited {p.returncode}"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("issue", type=int)
     ap.add_argument("--samples", type=int, default=5)
+    ap.add_argument("--repo", default=os.environ.get("GH_REPO", ""),
+                    help="OWNER/NAME — required for a shell repro, which is gated "
+                         "on the issue author's permission (#543)")
+    ap.add_argument("--allow-untrusted-shell", action="store_true",
+                    help=argparse.SUPPRESS)
     args = ap.parse_args()
 
-    spec = parse_repro(issue_body(args.issue))
-    if not spec:
-        # Not a pass and not a fail. An issue with no executable repro cannot be
-        # validated, and that is a discovery defect, not a verdict on the bug.
-        print(f"#{args.issue}  NO-REPRO — no executable `repro:` line found")
+    text = issue_body(args.issue)
+    line = last_repro_line(text)
+    if not line:
+        print(f"#{args.issue}  NO-REPRO — no `repro:` line at all")
         print("  -> label needs-evidence; route back to discovery")
         return 3
 
+    spec = parse_repro(text)
+    if spec:
+        return _run_http(args, spec)
+    return _run_shell(args, line)
+
+
+def _run_http(args, spec: dict) -> int:
     print(f"#{args.issue}  {spec['method']} {spec['path']}"
           f"{' -> follow' if spec['follow'] else ''}  x{args.samples}")
     results = []
@@ -192,6 +553,84 @@ def main() -> int:
           f"({100 * passed // len(ran)}% hit rate)")
     print("  -> a different bug from a deterministic one; say so on the issue")
     return 0
+
+
+def _run_shell(args, line: str) -> int:
+    """The shell dialect. Verdicts are MATCHES-STATED / DIFFERS, never PASS."""
+    cmd_text, stated, probes = split_shell_repro(line)
+    print(f"#{args.issue}  shell repro")
+    print(f"  command:  {cmd_text[:160]}")
+    print(f"  stated:   {stated[:160] or '(nothing stated)'}")
+    if probes > 1:
+        print(f"  NOTE:     this `repro:` line states {probes} probes; only the first is")
+        print(f"            scored. The rest are not checked by anything — split them")
+        print(f"            onto their own issues or their own `repro:` lines (#543).")
+
+    argv, why = vet_shell(cmd_text)
+    if argv is None:
+        print(f"\n  REFUSED — {why}")
+        print("  -> not executed, and that is a verdict: record it on the issue so the")
+        print("     `repro:` gets rewritten rather than skipped again (#543)")
+        return 6
+
+    # Provenance BEFORE execution. An unresolved author is not a yes.
+    if args.allow_untrusted_shell:
+        print("  provenance: SKIPPED by --allow-untrusted-shell (local use only)")
+    else:
+        trusted, detail = provenance_is_trusted(args.issue, args.repo)
+        print(f"  provenance: {detail}")
+        if not trusted:
+            print("\n  REFUSED — the issue author is not admin/write on this repo, or "
+                  "could not be resolved")
+            print("  -> a shell `repro:` is code in an issue body; it is classified, "
+                  "never executed, for an untrusted author (#543 option C)")
+            return 6
+
+    print(f"  vetted:   {why}")
+    expanded = expand_globs(argv)
+    if expanded != argv:
+        print(f"  globbed:  {len(expanded)} args after expansion (no shell used)")
+
+    # A shell repro reads the tree, so it is deterministic and five samples
+    # would print the same thing five times. Two proves determinism and catches
+    # a `gh`/network repro that is not.
+    n = max(1, min(args.samples, 2))
+    outs = []
+    for i in range(n):
+        rc, out, note = one_shell_sample(expanded)
+        outs.append((rc, out))
+        print(f"  {i + 1}/{n}  {'ERR ' if rc is None else 'ran '}  {note}")
+    if any(rc is None for rc, _ in outs):
+        print("\n  INCONCLUSIVE — the command could not run")
+        print("  -> do NOT label, do NOT close, do NOT queue work from this")
+        return 4
+    if len({o for _, o in outs}) > 1:
+        print("\n  NON-DETERMINISTIC — the same command gave different output")
+        print("  -> treat like INTERMITTENT: say so on the issue, do not rank from it")
+        return 5
+
+    stdout = outs[0][1]
+    head = [ln for ln in stdout.splitlines() if ln.strip()][:6]
+    for ln in head:
+        print(f"    | {ln[:150]}")
+    if len(stdout.splitlines()) > 6:
+        print(f"    | ... {len(stdout.splitlines()) - 6} more line(s)")
+
+    matches, detail = score_shell(stated, stdout)
+    print()
+    if matches is None:
+        print(f"  UNSCORED — {detail}")
+        print("  -> the output above is the evidence; a human reads it. Rewrite the")
+        print("     `repro:` with a number or a `contains \"...\"` to make it scorable")
+        return 5
+    if matches:
+        print(f"  MATCHES-STATED — {detail}")
+        print("  -> the premise still holds as the issue recorded it")
+        return 0
+    print(f"  DIFFERS — {detail}")
+    print("  -> the premise has drifted. Read the output before ranking this issue;")
+    print("     it may be fixed, or the finding may have moved (#543)")
+    return 5
 
 
 if __name__ == "__main__":

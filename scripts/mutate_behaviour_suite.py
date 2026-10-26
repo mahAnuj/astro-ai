@@ -3435,6 +3435,74 @@ MUTATIONS = [
      "          {{ RL.min_warm }} warm and {{ RL.min_cold }} cold samples for the model.\n",
      "",
      "test_the_live_verdict_is_not_the_recorded_decision_and_the_fold_says_so"),
+
+    # ---- #543: the shell `repro:` executor. These are SECURITY guards: a
+    # refusal that stops refusing is a vulnerability, not a lost convenience.
+    ("#543: an arbitrary interpreter is no longer refused by name",
+     "scripts/validate_issue.py",
+     '    if exe in _SHELL_ARBITRARY:\n'
+     '        return None, f"`{exe}` is refused: {_SHELL_ARBITRARY[exe]}"\n',
+     '    if False:\n'
+     '        return None, f"`{exe}` is refused: {_SHELL_ARBITRARY[exe]}"\n',
+     "test_an_arbitrary_executor_is_refused_by_name_with_a_reason"),
+
+    ("#543: a bare shell operator is no longer refused (| reaches the argv)",
+     "scripts/validate_issue.py",
+     "    ops = sorted({t for t in argv if t in _SHELL_OPERATORS})\n",
+     "    ops = []\n",
+     "test_a_bare_shell_operator_is_refused"),
+
+    ("#543: the allow-list becomes a pass-through (any executable runs)",
+     "scripts/validate_issue.py",
+     "    if exe not in _SHELL_ALLOW:\n",
+     "    if False:\n",
+     "test_an_unknown_executable_is_refused_because_this_is_an_allow_list"),
+
+    ("#543: `sed -i` / `gh -X` write flags stop being refused",
+     "scripts/validate_issue.py",
+     "    hit = sorted(set(argv[1:]) & banned)\n",
+     "    hit = []\n",
+     "test_a_write_flag_on_an_allowed_command_is_refused"),
+
+    ("#543: a write subcommand (`gh issue close`) passes the subcommand gate",
+     "scripts/validate_issue.py",
+     "        matched = next((ok for ok in sub if words[: len(ok)] == ok), None)\n",
+     "        matched = next(iter(sub))\n",
+     "test_a_write_subcommand_is_refused_even_on_an_allowed_executable"),
+
+    # The provenance gate's one dangerous failure mode: UNRESOLVED read as a
+    # yes. resolve_provenance's own docstring names it -- that is how a revoked
+    # token turns every issue into a trusted one.
+    ("#543: an UNRESOLVED author is treated as trusted",
+     "scripts/validate_issue.py",
+     '    if p.returncode == 0:\n        return True, first or "trusted"\n',
+     '    if p.returncode != 1:\n        return True, first or "trusted"\n',
+     "test_an_unresolved_author_is_not_a_yes"),
+
+    # Both defects this work introduced, each caught by the test it names.
+    ("#543: a second probe on the line leaks into the first expectation (the #423 false DIFFERS)",
+     "scripts/validate_issue.py",
+     "    cut = None\n    for i, t in enumerate(toks):\n",
+     "    cut = None\n    for i, t in []:\n",
+     "test_a_second_probe_on_the_line_does_not_leak_into_the_first_expectation"),
+
+    ("#543: the repro terminator is consumed again, so two adjacent `repro:` lines match once",
+     "scripts/validate_issue.py",
+     r'r"^\s*repro:\s*(.+?)(?=\n\s*\w+:|\Z)"',
+     r'r"^\s*repro:\s*(.+?)(?:\n\s*\w+:|\Z)"',
+     "test_the_last_repro_wins_even_when_the_newest_is_a_different_dialect"),
+
+    ("#543: a prose expectation is scored instead of reported UNSCORED",
+     "scripts/validate_issue.py",
+     '    if not want:\n        return None, ("the expectation states no number',
+     '    if False:\n        return None, ("the expectation states no number',
+     "test_a_prose_expectation_is_unscored_not_guessed"),
+
+    ("#543: a glob that matches nothing is dropped instead of left verbatim",
+     "scripts/validate_issue.py",
+     "        out.extend(hits or [a])\n",
+     "        out.extend(hits)\n",
+     "test_a_glob_matching_nothing_is_left_verbatim"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
