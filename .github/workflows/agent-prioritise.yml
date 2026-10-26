@@ -134,7 +134,7 @@ jobs:
           claude_args: |
             --max-turns 80
             --effort high
-            --allowedTools "Agent,Read,Write,Glob,Grep,TodoWrite,Bash"
+            --allowedTools "Agent,Read,Write,Glob,Grep,TodoWrite,Bash,WebFetch"
             --disallowedTools "Bash(rm:*),Bash(sudo:*),Bash(gcloud:*),Bash(gh secret:*),Bash(gh repo:*)"
 
       - name: Publish the queue

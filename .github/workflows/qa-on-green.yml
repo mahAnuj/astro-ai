@@ -1,0 +1,224 @@
+# A PR whose gates just went green, and which no QA round has ruled on, gets a
+# cycle NOW instead of in four hours.
+#
+# WHY THIS EXISTS
+# ---------------
+# Nothing in this system treats "the gates passed" as a reason to run QA. QA
+# lives inside `/agent-cycle`, and a cycle starts only two ways: the twice-daily
+# `agent-work` cron, or a steward dispatch. The steward cannot see a PR until
+# `detect_stalls.py`'s 4h threshold has elapsed, and it dispatches once per run
+# against 2-4 runs a day.
+#
+# Measured 2026-10-25 on PR #536. A cycle shipped 16 files, ran QA round 1,
+# fixed its findings in `f91a2bc`, and stopped -- correctly, because a fix must
+# be verified by a NEW round and it had no budget for one. Both gates were green
+# at 16:35Z. The PR was 47 minutes old, so the detector could not see it; once it
+# could, it would queue behind #524 and #530 at one dispatch per run. A finished,
+# green, unverified PR therefore waited most of a day for the round that would
+# have taken fifteen minutes.
+#
+# WHY THIS IS NOT WIRED INTO THE STEWARD
+# --------------------------------------
+# `agent-steward.yml` records the reason verbatim: it is "NOT wired to
+# `pr-gates`, which completes on every push to every PR and would queue steward
+# runs behind the `agent-steward` concurrency group all day."
+#
+# That objection is about the AGENT, not the trigger. A steward run costs a
+# Claude invocation; the decision here costs a few API reads and no model at
+# all. So this is deterministic -- every condition below is a fact some API
+# states, none is a judgment -- and it spends a cycle only when they all hold.
+# The expensive thing stays rare; the cheap check gets to be frequent.
+#
+# WHAT IT WILL NOT DO
+# -------------------
+#   * It does not rule on a `qa-fail` PR. That one needs a FIX, not a round, and
+#     `steward.md`'s routing table already owns it (`qa-fail-unaddressed`,
+#     `qa-fail-refixed`, `draft-held-by-qa-fail` -- three kinds with different
+#     actions, which is a judgment and belongs with the agent that holds it).
+#   * It does not apply, remove or read a verdict as permission. It cannot label
+#     at all: `pull-requests: read`. Only `scripts/qa_verdict.sh` writes those.
+#   * It does not dispatch twice for the same head. See the loop guard below.
+name: QA on green
+
+on:
+  workflow_run:
+    # "PR gates" is pr-gates.yml's `name:`, not its filename. Getting this wrong
+    # is why `agent-steward.yml`'s own `workflow_run` leg could never fire
+    # (#421's class, three times in this repo) -- `verify_workflows.py` now
+    # checks that this string matches a workflow some file declares.
+    workflows: ["PR gates"]
+    types: [completed]
+
+# One at a time. Two pushes in quick succession fire two of these, and the
+# second would read the state the first is still acting on.
+concurrency:
+  group: qa-on-green
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  # `write` is needed for ONE thing: the dispatch comment, which is the loop
+  # guard's only memory. It is NOT a licence to label. This workflow contains no
+  # `gh pr edit`, no `--add-label` and no `--remove-label`, and
+  # tests/test_qa_on_green.py fails the build if one appears -- because a
+  # dispatcher that could label could hand itself `qa-pass` and make the merge
+  # gate decorative. `scripts/qa_verdict.sh` is the only writer of a verdict.
+  pull-requests: write
+  issues: read
+  actions: write          # dispatch agent-work, via scripts/dispatch_cycle.sh
+  checks: read
+
+jobs:
+  consider:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # EVERY value arrives as an env var and is expanded quoted. This is a
+      # `workflow_run` workflow, which runs with the base repo's permissions
+      # against a head this repo did not necessarily write, so a `${{ }}` in a
+      # `run:` block is a script-injection sink. `verify_workflows.py` fails the
+      # build on one, and #358 is the time it mattered.
+      - name: Is this a PR a cycle should finish?
+        id: pick
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          GATES_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          # Same list, same meaning as agent-merge.yml and the steward: who
+          # WROTE the PR decides whether it is ours, never what the branch is
+          # called. #531 and #534 removed six copies of the branch-name rule;
+          # this is a seventh place that must not reintroduce it.
+          AGENT_AUTHORS: claude[bot],${{ github.repository_owner }}
+        run: |
+          set -uo pipefail
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+
+          if [ "$GATES_CONCLUSION" != "success" ]; then
+            say "\`PR gates\` concluded \`$GATES_CONCLUSION\` on \`$HEAD_BRANCH\` — a red gate is information, not a stall."
+            exit 0
+          fi
+
+          pr=$(gh pr list --repo "$GH_REPO" --head "$HEAD_BRANCH" --state open \
+                 --json number,author,isDraft,labels,headRefOid,files \
+                 --limit 1 2>/dev/null)
+          [ -z "$pr" ] || [ "$pr" = "[]" ] && { say "No open PR on \`$HEAD_BRANCH\`."; exit 0; }
+
+          num=$(jq -r '.[0].number' <<<"$pr")
+          author=$(jq -r '.[0].author.login' <<<"$pr")
+          head=$(jq -r '.[0].headRefOid' <<<"$pr")
+          labels=$(jq -r '[.[0].labels[].name] | join(",")' <<<"$pr")
+
+          # `gh pr view --json author` renders the app as `app/claude`; the REST
+          # API and AGENT_AUTHORS say `claude[bot]`. Normalise, or the gate
+          # refuses every PR the agent wrote.
+          case "$author" in
+            app/*) author="${author#app/}[bot]" ;;
+          esac
+
+          # Quoted, so `[` and `]` in `claude[bot]` are literal and not a glob
+          # character class. Unquoted this matches NOTHING and fails closed --
+          # measured, and pinned by tests/test_agent_merge_fork_guard.py.
+          case ",$AGENT_AUTHORS," in
+            *",$author,"*) ;;
+            *) say "PR #$num authored by \`$author\`, not in AGENT_AUTHORS — not this loop's."; exit 0 ;;
+          esac
+
+          # The gates that just passed may not be the gates on the CURRENT head:
+          # a push during the run moves it, and acting on a stale green is how a
+          # verdict gets bound to code nobody verified.
+          if [ "$head" != "$HEAD_SHA" ]; then
+            say "PR #$num has moved to \`${head:0:7}\` since \`${HEAD_SHA:0:7}\` was gated — leaving it to the next run."
+            exit 0
+          fi
+
+          case ",$labels," in
+            *",qa-pass,"*)
+              say "PR #$num already carries \`qa-pass\` — \`agent-merge\` owns it from here."; exit 0 ;;
+            *",qa-fail,"*)
+              say "PR #$num carries \`qa-fail\`. That needs a FIX, not a round, and which fix is a judgment \`steward.md\`'s routing table holds. Leaving it."; exit 0 ;;
+            *",needs-human-review,"*)
+              say "PR #$num carries \`needs-human-review\` — someone has been told."; exit 0 ;;
+          esac
+
+          # A cycle cannot update a branch whose diff touches these: the Claude
+          # App's token has no `workflows` permission and the push is refused
+          # (#442/#315). Dispatching one spends ~50 Actions minutes to reproduce
+          # the same stop.
+          if jq -e '.[0].files[] | select(.path | startswith(".github/workflows/"))' <<<"$pr" >/dev/null 2>&1; then
+            say "PR #$num touches \`.github/workflows/**\` — the App token cannot push that branch. A human has to."
+            exit 0
+          fi
+
+          # The issue to aim the dispatch at. `issue/`, `partial/` and `fix/`
+          # carry one by construction (agent-cycle.md Step 4); `measurements/`
+          # does NOT, and `^[a-z]+/(\d+)` would read run id 40140256532 as an
+          # issue number ~8 times a day. BSD sed: `-E`, and `#` as the delimiter
+          # because `|` is the alternation operator.
+          issue=$(printf '%s' "$HEAD_BRANCH" | sed -nE 's#^(issue|partial|fix)/([0-9]+).*#\2#p')
+          if [ -z "$issue" ]; then
+            say "No owning issue in the branch name \`$HEAD_BRANCH\` — a dispatch needs one to aim at."
+            exit 0
+          fi
+
+          # THE LOOP GUARD, and it is the reason this workflow is safe to run on
+          # every green. A cycle that runs a round, pushes a fix and ends without
+          # a verdict leaves exactly the state this workflow fires on -- so
+          # without this it would dispatch at its own output, forever, at ~50
+          # Actions minutes a turn. One dispatch per HEAD: a new commit is new
+          # information and earns another; the same commit never does.
+          if gh pr view "$num" --repo "$GH_REPO" --json comments \
+               --jq '.comments[].body' 2>/dev/null \
+               | grep -qF "qa-on-green: dispatched at $head"; then
+            say "PR #$num already had a cycle dispatched at \`${head:0:7}\` — not dispatching again for the same commit."
+            exit 0
+          fi
+
+          {
+            echo "pr=$num"
+            echo "issue=$issue"
+            echo "head=$head"
+            echo "go=true"
+          } >> "$GITHUB_OUTPUT"
+          say "PR #$num (issue #$issue) at \`${head:0:7}\`: gates green, no verdict — dispatching a cycle."
+
+      # Say it on the PR BEFORE dispatching, not after. The comment is the loop
+      # guard's only memory, and a dispatch that happened without one would be
+      # invisible to the next run -- which would dispatch again.
+      - name: Record the dispatch on the PR
+        if: steps.pick.outputs.go == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pick.outputs.pr }}
+          PR_HEAD: ${{ steps.pick.outputs.head }}
+          ISSUE: ${{ steps.pick.outputs.issue }}
+        run: |
+          set -uo pipefail
+          gh pr comment "$PR_NUMBER" --repo "$GH_REPO" --body \
+            "qa-on-green: dispatched at $PR_HEAD
+
+          Both gates are green on this head and no QA round has ruled on it, so a cycle is being dispatched at #$ISSUE to run one. \`/agent-cycle\` Step 2.5 adopts this branch and PR rather than starting over.
+
+          This is mechanical, not a judgment: no model ran, and nothing here applied, removed or read a verdict label. Only \`scripts/qa_verdict.sh\` writes those. One dispatch per commit — a new push earns another, this one does not."
+
+      # Same carrier as the steward's and chief's, deliberately. This repo's
+      # most reliable defect is a copied file diverging (`id-token: write` was
+      # missing from four loops each copied from a fifth), and a dispatcher whose
+      # instances drift is that bug with a worse blast radius. The script
+      # re-checks that the issue is open and that no cycle is in flight, and
+      # verifies the run it created survived 90s -- `gh workflow run` exits 0 on
+      # a run that then dies in 1.5 seconds, which is how #421 hid for three days.
+      - name: Carry out the dispatch
+        if: steps.pick.outputs.go == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE: ${{ steps.pick.outputs.issue }}
+        run: |
+          set -uo pipefail
+          printf 'issue=%s\n' "$ISSUE" > /tmp/qa-on-green-dispatch.txt
+          bash scripts/dispatch_cycle.sh /tmp/qa-on-green-dispatch.txt qa-on-green

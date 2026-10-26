@@ -297,6 +297,47 @@
                      counted from this janma rashi. A count and a list, never a
                      summed score -- the classical table rates each graha
                      separately and gives no combined figure. -#}
+                  {#- #523. The day's shape, scannable. Each figure counts
+                     how many of that life area's KARAKAS transit favourably
+                     from this rashi (knowledge/houses.md -- the karaka lines
+                     themselves, NOT "Raman Ch. IV & VIII": that citation was
+                     retracted, see chart.py:_AREA_KARAKAS and houses.md:616).
+                     A count, never a score: Raman classifies each planet-house
+                     pair and gives no aggregation rule, so four-and-a-half
+                     stars would be an invented weighting wearing a citation.
+                     Relationships is out of 3: houses.md:217-218 gives the 7th
+                     karakas as "Venus (spouse for men), Jupiter (husband for
+                     women)" AND Mars. A Rashifal has no gender, so the gendered
+                     pair is both-counted rather than one silently chosen, and
+                     Mars is counted because the field names it. An earlier
+                     draft said "out of 2"; that was a wrap-continuation line
+                     dropped while reading the field, not a decision.
+                     The same numbers go into the reading's own prompt, so the
+                     prose cannot contradict the figures printed beside it. -#}
+                  {%- set dd = (day_detail or {}).get(rashi_slug) %}
+                  {%- if dd and dd.areas %}
+                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-top:8px;">
+                    <tr>
+                      {%- for a in dd.areas %}
+                      {%- set tone = '#15803d' if a.favourable == a.total else ('#b45309' if a.favourable == 0 else '#57534e') %}
+                      <td style="padding:0 12px 0 0;font-size:12px;color:#78716c;line-height:1.5;white-space:nowrap;">
+                        {% if lang == 'hi' %}{{ {'Work':'कार्य','Money':'धन','Relationships':'संबंध','Health':'स्वास्थ्य'}[a.area] }}{% else %}{{ a.area }}{% endif %}
+                        <strong style="color:{{ tone }};">{{ a.favourable }}/{{ a.total }}</strong>
+                      </td>
+                      {%- endfor %}
+                    </tr>
+                  </table>
+                  <div style="font-size:11px;color:#a8a29e;margin-top:4px;line-height:1.5;">
+                    {% if lang == 'hi' %}प्रत्येक अंक बताता है कि उस क्षेत्र के कारक ग्रहों में से कितने आज आपकी राशि से शुभ गोचर में हैं। अंक जोड़े नहीं गए।{% else %}Each figure counts how many of that area's karaka grahas (the planets that signify it) transit favourably from your rashi today. Not summed into a score.{% endif %}
+                  </div>
+                  {%- endif %}
+                  {%- if dd and dd.remedy %}
+                  <div style="font-size:12px;color:#57534e;margin-top:6px;line-height:1.5;">
+                    <strong style="color:#b45309;">{% if lang == 'hi' %}आज का उपाय{% else %}Today's remedy{% endif %}</strong>
+                    {{ dd.remedy.deed }}
+                    <span style="color:#a8a29e;font-size:11px;">({% if lang == 'hi' %}{{ dd.remedy.planet_label }} {{ dd.remedy.house_ord }} भाव में{% else %}for {{ dd.remedy.planet }} in the {{ dd.remedy.house_ord }} house{% endif %})</span>
+                  </div>
+                  {%- endif %}
                   {%- set gc = (gochara or {}).get(rashi_slug) %}
                   {%- if gc %}
                   {%- set g_color = '#15803d' if gc.favourable >= 6 else ('#b45309' if gc.favourable <= 1 else '#57534e') %}

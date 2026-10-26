@@ -70,6 +70,16 @@ NUM_LINE = 'echo "number=$n" >> "$GITHUB_OUTPUT"'
 
 # (name, file, transform, substrings that ONE FAIL line must all contain)
 MUTATIONS = [
+    # MEASURED, run 40225736898. `agent-prioritise` allowed `Agent` and so passed
+    # the Agent-only form of this check, dispatched `project-manager`, and the
+    # SUBAGENT was then denied `WebFetch`, which its own definition declares.
+    # 2 turns, 1 denial, is_error:true, $1.30, no /tmp/report.md, and "Publish the
+    # queue" failed with "No files were found". Silent since 2026-10-18.
+    ("a dispatched subagent is denied a tool its definition declares",
+     "agent-prioritise.yml",
+     swap('--allowedTools "Agent,Read,Write,Glob,Grep,TodoWrite,Bash,WebFetch"',
+          '--allowedTools "Agent,Read,Write,Glob,Grep,TodoWrite,Bash"'),
+     ["agent-prioritise.yml", "[subagent-tools]", "project-manager"]),
     ("defect 1: steps.pr.outputs.sha back inside the `pr` step", "agent-merge.yml",
      # The anchor is `$RUN_HEAD_SHA`, not the interpolated form: #358 moved
      # every event value in this workflow behind `env:`. The mutation plants the

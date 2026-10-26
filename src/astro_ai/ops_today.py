@@ -157,6 +157,11 @@ LOOP_WORKFLOWS = (
     "agent-discover.yml",
     "agent-design.yml",
     "agent-steward.yml",
+    # A loop leg, not a gate: it decides whether a green PR gets its QA round,
+    # so a failed run of it is the pipeline not flowing -- the same thing
+    # `agent-steward.yml` above is counted for. It is triggered BY a gate
+    # (`PR gates` completing), which is not the same as being one.
+    "qa-on-green.yml",
     "agent-sync.yml",
     "agent-prioritise.yml",
     "agent-infra.yml",

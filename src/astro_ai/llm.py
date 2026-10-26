@@ -26,7 +26,9 @@ from astro_ai import providers
 _log = logging.getLogger(__name__)
 from astro_ai import rashifal_quality
 from astro_ai.chart import (
+    area_ratings_for_rashi as chart_area_ratings,
     gochara_for_rashi,
+    remedy_for_rashi as chart_remedy,
     Chart,
     DailyPanchang,  # used by daily reading + rashifal day-signal block
     DashaState,
@@ -1009,6 +1011,34 @@ def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
     fav = [e for e in entries if e["verdict"] == "favourable"]
     cha = [e for e in entries if e["verdict"] == "challenging"]
 
+    # THE PER-AREA COUNTS THE READER WILL SEE BESIDE THIS READING (#523). They
+    # are rendered as fields in the email and on the page, so a reading that
+    # says "push your project" on Work 0/3 contradicts a number printed inches
+    # away. That contradiction is precisely what makes AstroSage's page
+    # untrustworthy -- Family 1/5 sitting beside "the best day of your married
+    # life today" -- and it is cheap to avoid: the model is simply told the
+    # figures.
+    areas = chart_area_ratings(rashi_index, transit)
+    areas_line = ""
+    if areas:
+        shown = ", ".join(f"{a['area']} {a['favourable']}/{a['total']}" for a in areas)
+        areas_line = (
+            f"- PER-AREA COUNTS SHOWN TO THE READER BESIDE YOUR TEXT: {shown}.\n"
+            f"  Your reading must not contradict these. Do not promise a good "
+            f"day at work on a low Work count, or trouble at home on a high one. "
+            f"Weight the reading toward whichever area is most extreme.\n")
+    # The remedy is rendered as its own line, so the prose must not repeat it --
+    # the day colour taught that lesson (#514): a duplicate in prose reads as
+    # filler and, when invented, contradicts the computed field.
+    remedy = chart_remedy(rashi_index, transit)
+    remedy_line = ""
+    if remedy:
+        remedy_line = (
+            f"- A REMEDY IS PRINTED SEPARATELY for {remedy['planet']} in the "
+            f"{remedy['house_ord']}: \"{remedy['deed']}\". Do NOT restate it, do "
+            f"not suggest any other remedy, ritual or object, and never mention "
+            f"a gemstone.\n")
+
     def names(es):
         return ", ".join(f"{e['planet']} ({_HOUSE_ORD[e['house']]})" for e in es) or "none"
 
@@ -1035,11 +1065,65 @@ def _gochara_block(rashi_index: int, transit: "TransitSnapshot") -> str:
         f"- Challenging: {names(cha)}\n"
         f"- Saturn, Jupiter and Rahu weigh most (classical); the Moon is the part "
         f"that changes every day.\n"
+        f"{areas_line}"
+        f"{remedy_line}"
         f"- {tone}\n"
         f"Do not name any planet in your prose — describe the qualities, as the "
         f"system prompt requires. This block tells you WHAT IS TRUE, not what to "
         f"say."
     )
+
+
+def _format_rashifal_message(anchor: dict, day_signals_block: str, transit_block: str,
+                             gochara_block: str, shape: str, opening_move: str) -> str:
+    """The per-rashi USER message, exactly as `chat()` receives it.
+
+    Extracted from `_generate_rashifal_single` so `verify_token_budget` can
+    measure the REAL message instead of re-concatenating its parts by hand.
+    QA found the hand-written copy omitting the section headers and the closing
+    instruction, undercounting the real request by 4.8% -- the same blind spot
+    as the row that measured only the system prompt, because a later edit
+    confined to these strings would be invisible to the gate.
+
+    SHARED PREFIX FIRST, per-rashi anchor LAST (#212). `day_signals_block` and
+    `transit_block` are computed once and are identical across all 12 calls;
+    the anchor is the only part that differs. Leading with the anchor meant the
+    12 calls diverged at character 29 of the user message, so the ~2.9k
+    characters they have in common could never be a cacheable prefix.
+    Reordering does not itself send fewer tokens -- it is the precondition for
+    any prefix cache to have something to hit.
+    """
+    return (
+        f"TODAY'S SKY SIGNALS (use these to make the reading feel like TODAY):\n"
+        f"{day_signals_block}\n"
+        f"\n"
+        f"Raw planetary positions (background context — do NOT recite):\n"
+        f"{transit_block}\n"
+        f"\n"
+        f"RASHI TO WRITE FOR:\n"
+        f"- Name: {anchor['en']} / {anchor['sa']}\n"
+        f"- Ruling planet (Swami): {anchor['lord']}\n"
+        f"- Element (Tattva): {anchor['element']}\n"
+        f"- Quality (Guna): {anchor['quality']}\n"
+        f"\n"
+        + (f"{gochara_block}\n\n" if gochara_block else "")
+        + (
+        f"THE SHAPE FOR TODAY (overrides the generic structure in the system "
+        f"prompt — follow THIS):\n"
+        f"{shape}\n"
+        f"\n"
+        f"OPENING MOVE FOR TODAY (how to start; it changes every day so the "
+        f"reading does not open the same way it did yesterday):\n"
+        f"{opening_move}\n"
+        f"\n"
+        f"THE RASHI'S OWN CHARACTER (express the opening move in THIS "
+        f"character — it is what keeps the twelve from sounding alike):\n"
+        f"{anchor.get('opening_style', 'Open with a concrete image, not a generic feeling.')}\n"
+        f"\n"
+        f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
+        f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose. "
+        f"Follow the opening-style hint above. Do not use any banned opening phrase."
+    ))
 
 
 def _generate_rashifal_single(
@@ -1073,44 +1157,9 @@ def _generate_rashifal_single(
         waited = pacer.wait()
         if waited > 0:
             _log.debug("rashifal pacer: waited %.1fs before %s", waited, anchor["en"])
-    # SHARED PREFIX FIRST, per-rashi anchor LAST (#212). `day_signals_block`
-    # and `transit_block` are computed once and are identical across all 12
-    # calls; the anchor is the only part that differs. Leading with the anchor
-    # meant the 12 calls diverged at character 29 of the user message, so the
-    # ~2.9k characters they have in common could never be a cacheable prefix.
-    # Reordering does not itself send fewer tokens — it is the precondition
-    # for any prefix cache to have something to hit.
-    user_message = (
-        f"TODAY'S SKY SIGNALS (use these to make the reading feel like TODAY):\n"
-        f"{day_signals_block}\n"
-        f"\n"
-        f"Raw planetary positions (background context — do NOT recite):\n"
-        f"{transit_block}\n"
-        f"\n"
-        f"RASHI TO WRITE FOR:\n"
-        f"- Name: {anchor['en']} / {anchor['sa']}\n"
-        f"- Ruling planet (Swami): {anchor['lord']}\n"
-        f"- Element (Tattva): {anchor['element']}\n"
-        f"- Quality (Guna): {anchor['quality']}\n"
-        f"\n"
-        + (f"{gochara_block}\n\n" if gochara_block else "")
-        + (
-        f"THE SHAPE FOR TODAY (overrides the generic structure in the system "
-        f"prompt — follow THIS):\n"
-        f"{shape}\n"
-        f"\n"
-        f"OPENING MOVE FOR TODAY (how to start; it changes every day so the "
-        f"reading does not open the same way it did yesterday):\n"
-        f"{opening_move}\n"
-        f"\n"
-        f"THE RASHI'S OWN CHARACTER (express the opening move in THIS "
-        f"character — it is what keeps the twelve from sounding alike):\n"
-        f"{anchor.get('opening_style', 'Open with a concrete image, not a generic feeling.')}\n"
-        f"\n"
-        f"Write ONLY the reading for {anchor['en']} / {anchor['sa']}. "
-        f"Output must start with `## {anchor['en']} / {anchor['sa']}` then flowing prose. "
-        f"Follow the opening-style hint above. Do not use any banned opening phrase."
-    ))
+    user_message = _format_rashifal_message(
+        anchor, day_signals_block, transit_block, gochara_block, shape,
+        opening_move)
     content = providers.chat(messages=[
         {"role": "system", "content": _system_prompt(prompt_path, lang)},
         {"role": "user", "content": user_message},
