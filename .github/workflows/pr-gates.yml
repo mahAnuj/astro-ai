@@ -61,9 +61,62 @@ on:
   # It is still strictly better than the nothing it replaces.
   workflow_dispatch:
 
+  # #461: THE MERGE RESULT IS WHAT SHIPS, AND NOTHING GATED IT.
+  #
+  # Every leg above asserts against `<branch> + main-at-the-time`, never
+  # against `main` as it actually ends up. On 2026-10-20 two PRs landed the
+  # same day: #455 added a mutation row whose `test` field named
+  # `test_the_window_selector`, a test that has never existed, and a sibling PR
+  # added the per-row targeting that READS that field and treats it as
+  # load-bearing. Each was green on its own branch -- #455 was measured before
+  # the check existed, the check was measured against a tree without the row.
+  # The PAIR is red. No amount of per-PR gating catches that, because neither
+  # PR is wrong by itself; only their merge is.
+  #
+  # `main` then stayed red from 2026-10-20 to 2026-10-21 and nothing said so.
+  # It surfaced only when PR #451 merged `main` in and inherited the failure,
+  # where it read as a #398 defect and cost a diagnosis round to attribute.
+  # The last run on `main` before this was 2026-10-08 (`db4834c`), thirteen
+  # days earlier.
+  #
+  # The two `github.event.pull_request.base.sha` reads below already have
+  # non-PR fallbacks written for exactly this case -- the scope step falls back
+  # to `HEAD~1` and the mutation step says "not a pull request -> every row".
+  # EVERY ROW is the right choice here and must not be "optimised" to the
+  # push diff: the #455 row arrived in one main commit and its reader in
+  # another, so a sweep scoped to either commit's diff sees neither half. The
+  # full sweep is the only thing that reads the tree as it actually is.
+  #
+  # Downstream listeners were checked before this was added, because both are
+  # triggered by `workflow_run` on this workflow:
+  #   * agent-merge.yml  -- its job `if:` demands
+  #     `workflow_run.event == 'pull_request'`, so a push run never reaches it.
+  #   * qa-on-green.yml  -- resolves the PR by head branch and exits 0 on
+  #     "No open PR on `main`".
+  # Neither acts on a push run; the cost is one ~10s no-op per main commit.
+  push:
+    branches: [main]
+
 concurrency:
+  # ONE GROUP PER REF, and `main` is deliberately NOT cancellable.
+  #
+  # A cancelled run reports nothing. With `cancel-in-progress: true` on `main`,
+  # a second push during the first push's ~8 minutes would cancel it, and the
+  # commit that broke the tree would leave no verdict at all -- re-creating the
+  # exact invisibility #461 is about, through the mechanism added to fix it.
+  # Every commit on `main` gets its own verdict; branches still coalesce,
+  # because there only the latest push matters.
   group: pr-gates-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+# `issues: write` is here for ONE step: "Report a red main". The default token
+# would otherwise carry whatever the repo setting says, and this gate should not
+# depend on that. `contents: read` is all the checkout needs -- nothing in this
+# workflow writes to the repository, and it must stay that way: a gate that can
+# push is a gate that can relax itself.
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   gates:
@@ -339,3 +392,74 @@ jobs:
       - name: App log on failure
         if: failure()
         run: tail -60 /tmp/app.log || true
+
+      # #461, second half: A RED `main` MUST REACH A PERSON, NOT THE ACTIONS TAB.
+      #
+      # Running on `main` makes a red main *visible*; it does not make it
+      # *reported*. `main` was red from 2026-10-20 to 2026-10-21 and the only
+      # reason anyone found out is that PR #451 merged it in and inherited the
+      # failure. Both `workflow_run` listeners decline a push run by design
+      # (agent-merge demands `workflow_run.event == 'pull_request'`;
+      # qa-on-green exits on "No open PR on `main`"), so without this step
+      # nothing downstream says anything at all.
+      #
+      # ONE OPEN ISSUE AT A TIME, one comment per red commit. #367 is the
+      # precedent for a loop that commented on every pass, and a fresh issue
+      # per red commit would be the same mistake: `main` staying red for six
+      # commits is ONE situation, not six. So: find the open sentinel issue and
+      # comment, or file it if there is none. A comment that already names this
+      # SHA is not written twice, which makes a re-run idempotent.
+      #
+      # NOTHING IS INTERPOLATED INTO THIS SCRIPT (#358). Every value arrives as
+      # an environment variable, which bash never re-parses as source.
+      - name: Report a red main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          short=$(printf '%s' "$SHA" | cut -c1-7)
+          line="\`$short\` — [gates run]($RUN_URL)"
+
+          # The sentinel is a title prefix, not a label: a label has to exist
+          # in the repo first, and a workflow that fails because a label was
+          # renamed is a worse failure than the one it reports.
+          existing=$(gh issue list --repo "$GH_REPO" --state open \
+                       --search '"[main-red]" in:title' \
+                       --json number --jq '.[0].number // empty')
+
+          if [ -n "$existing" ]; then
+            if gh issue view "$existing" --repo "$GH_REPO" \
+                 --json comments --jq '.comments[].body' | grep -qF "$short"; then
+              echo "::notice::#$existing already records $short — not commenting twice"
+              exit 0
+            fi
+            gh issue comment "$existing" --repo "$GH_REPO" --body "\
+          Still red on \`main\` at $line
+
+          pr-gates failed on the merge result. Each entry here is one red commit on
+          \`main\`; this issue stays open until a push to \`main\` goes green."
+            echo "::notice::appended $short to #$existing"
+            exit 0
+          fi
+
+          gh issue create --repo "$GH_REPO" \
+            --title "[main-red] pr-gates failed on main at $short" \
+            --label bug \
+            --body "\
+          \`main\` is red. pr-gates runs on pushes to \`main\` (#461) and failed at $line
+
+          **Why this is filed and not just a red run:** every other pr-gates leg asserts
+          against \`<branch> + main-at-the-time\`, never against \`main\` as it ends up, so a
+          pair of individually-green PRs can land a red \`main\`. That happened on
+          2026-10-20 and was found a day later only because PR #451 merged \`main\` in and
+          inherited the failure. Neither \`workflow_run\` listener acts on a push run, so
+          this step is the only thing that reports it.
+
+          **What to do:** read the run above. Fix forward on a branch; do not push to
+          \`main\`. Further red commits are appended to this issue as comments rather than
+          filed separately — \`main\` staying red is one situation, not one per commit."
+          echo "::notice::filed a new [main-red] issue for $short"

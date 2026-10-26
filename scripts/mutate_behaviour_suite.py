@@ -3435,6 +3435,18 @@ MUTATIONS = [
      "          {{ RL.min_warm }} warm and {{ RL.min_cold }} cold samples for the model.\n",
      "",
      "test_the_live_verdict_is_not_the_recorded_decision_and_the_fold_says_so"),
+
+    ("#461: pr-gates stops running on pushes to main, so a red main is invisible",
+     ".github/workflows/pr-gates.yml",
+     "  push:\n    branches: [main]\n",
+     "",
+     "test_pr_gates_runs_on_pushes_to_main"),
+
+    ("#461: a main run becomes cancellable again, so the breaking commit leaves no verdict",
+     ".github/workflows/pr-gates.yml",
+     "  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}\n",
+     "  cancel-in-progress: true\n",
+     "test_a_main_run_is_not_cancelled_by_the_next_push"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
