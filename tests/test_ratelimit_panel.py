@@ -388,10 +388,11 @@ def test_the_other_caller_sentence_is_what_the_probe_does(_ops, monkeypatch):
 # bucket was full or empty", the code checked only the empty end, and no test
 # could tell. These pin the replacements.
 
-def test_the_fold_describes_the_ceiling_skip_the_code_actually_implements(_ops, monkeypatch):
+def test_the_fold_describes_both_ceiling_branches_the_code_implements(_ops, monkeypatch):
     """BUG-2b. The old sentence was false of the code and asserted nowhere."""
-    text = page(monkeypatch, usage([urow(K120, POPULATED)]))
-    assert "the bucket was already at its ceiling when the call started" in text, (
+    text = flat(panel(page(monkeypatch, usage([urow(K120, POPULATED)]))))
+    assert ("the bucket was full when the call started, or would have refilled past full "
+            "before it finished") in text, (
         "the fold no longer describes the ceiling skip, which is a counted "
         "outcome the reader sees in the breakdown"
     )
@@ -407,13 +408,15 @@ def test_the_fold_describes_the_ceiling_skip_the_code_actually_implements(_ops, 
 SKIP_PASSAGE = (
     "every other candidate is counted under skipped — no anchor (nothing usable before it), "
     "overlapped, no header, clamped (the prediction fell outside the bucket, or Groq reported "
-    "zero remaining), or the bucket was already at its ceiling when the call started (nothing "
-    "accumulated during it, so the refill term cannot hold). That last one has two causes these "
-    "counters cannot tell apart: the model’s calls are spaced far enough apart that the bucket "
-    "had refilled completely, or the request is about the size of the whole bucket (the natal "
-    "reading is 98–101% of 8,000). A model showing ceiling skips rising while warm samples stay "
-    "at zero therefore needs calls closer together or a smaller request, and nothing on this "
-    "panel says which. A skipped call is never counted as agreement."
+    "zero remaining), or at its ceiling (the bucket was full when the call started, or would "
+    "have refilled past full before it finished, so the refill term cannot hold). That last one "
+    "has two causes these counters cannot tell apart: the model’s calls are spaced far enough "
+    "apart that the bucket had refilled completely, or the request is about the size of the "
+    "whole bucket (the natal estimate is 98–101% of 8,000, the estimator’s charge rather than "
+    "billed tokens). A model showing ceiling skips rising while warm samples stay at zero "
+    "therefore needs calls closer together or a smaller request, and nothing on this panel says "
+    "which; closer calls cannot help a request the size of the bucket. A skipped call is never "
+    "counted as agreement."
 )
 
 

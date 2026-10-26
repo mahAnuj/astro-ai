@@ -902,8 +902,8 @@ MUTATIONS = [
     # D1. The fix commit spliced its sentence into the middle of an older one.
     ("the fold's closing sentence is spliced into an older one again",
      "src/astro_ai/templates/admin_ops.html",
-     "and nothing on this panel says which. A skipped call is never counted as agreement.",
-     "and nothing on this panel says which. The arithmetic does not hold) &mdash; and is never counted as agreement.",
+     "bucket. A skipped call is never counted as agreement.",
+     "bucket. The arithmetic does not hold) &mdash; and is never counted as agreement.",
      "test_the_fold_skip_passage_reads_exactly_as_written_and_is_not_spliced"),
 
     # D2. `skip_full` with `warm_n` 0 is also what sparse traffic on a light
