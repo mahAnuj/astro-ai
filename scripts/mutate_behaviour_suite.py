@@ -565,7 +565,7 @@ MUTATIONS = [
      "scripts/report_loop_outcomes.py",
      "    return {\"expected\": sorted(closing | (branch - refs)),",
      "    return {\"expected\": sorted(closing | branch),",
-     "test_refs_decline_on_a_still_open_issue_is_not_a_shortfall"),
+     "test_claimed_issues_mirrors_close_on_evidence"),
 
     ("#316: the workflow loses pull-requests: read (the report would say UNKNOWN, forever)",
      ".github/workflows/loop-outcomes.yml",
@@ -1791,7 +1791,7 @@ MUTATIONS = [
      "src/astro_ai/events.py",
      '            if evt.get("type") != "error":\n                continue\n            data = evt.get("data") or {}',
      '            data = evt.get("data") or {}',
-     "test_the_count_and_the_rate_are_both_exact"),
+     "test_only_error_events_are_counted"),
 
     ("#ops-tpl: the error cell goes back to a hardcoded red threshold",
      "src/astro_ai/templates/admin_ops.html",
@@ -3528,19 +3528,25 @@ MUTATIONS = [
      "scripts/validate_issue.py",
      "        if _SECRET_NAME.match(part):\n            return f\"`{p}` names a credential-bearing file\"\n",
      "        if False:\n            return f\"`{p}` names a credential-bearing file\"\n",
-     "test_every_qa_round_1_reproducer_is_refused"),
+     "test_a_credential_name_is_refused_as_spelled_and_as_resolved"),
+
+    ("#543: a name that RESOLVES into a credential file (symlink) is no longer refused",
+     "scripts/validate_issue.py",
+     "        if _SECRET_NAME.match(part):\n            return f\"`{p}` resolves to a credential-bearing file\"\n",
+     "        if False:\n            return f\"`{p}` resolves to a credential-bearing file\"\n",
+     "test_a_credential_name_is_refused_as_spelled_and_as_resolved"),
 
     ("#543: the post-glob re-check is dropped (`cat gha-c*` reaches the credential file)",
      "scripts/validate_issue.py",
      "    bad = check_expanded(argv, expanded)\n",
      "    bad = None\n",
-     "test_a_glob_cannot_launder_a_credential_file_past_the_vet"),
+     "test_run_shell_refuses_a_glob_that_expands_to_a_credential"),
 
     ("#543: the child inherits the caller's whole environment",
      "scripts/validate_issue.py",
      "env=_child_env(argv[0]))",
      "env=None)",
-     "test_the_child_environment_carries_no_token_except_to_gh"),
+     "test_the_child_really_runs_without_a_shell_and_without_the_token"),
 
     ("#543: credential-shaped output is printed unredacted",
      "scripts/validate_issue.py",
@@ -3557,7 +3563,7 @@ MUTATIONS = [
     ("#543: the user's --include is placed after the injected excludes again",
      "scripts/validate_issue.py",
      "    return argv + extra\n",
-     "    return extra + argv\n",
+     "    return argv[:1] + extra + argv[1:]\n",
      "test_a_user_include_cannot_override_the_injected_excludes"),
 
     ("#543: the bold-bullet `repro:` form stops being found (26 issues silently NO-REPRO)",
@@ -3565,6 +3571,62 @@ MUTATIONS = [
      "(?:\\*\\*)?repro:(?:\\*\\*)?",
      "repro:",
      "test_the_bold_bullet_form_agent_discover_writes_is_found"),
+
+    # QA round 3 on #544: every row below is a reproducer that EXECUTED against
+    # e37a411. The first printed GH_TOKEN.
+    ("#543: a backslash in a --jq filter is allowed again (`\\(env.GH_TOKEN)` interpolates past the vet)",
+     "scripts/validate_issue.py",
+     '    if "\\\\" in expr:\n',
+     "    if False:\n",
+     "test_jq_string_interpolation_cannot_smuggle_env_past_the_vet"),
+
+    ("#543: the jq filter is no longer checked at the call site (the token-printing repro reaches main's child)",
+     "scripts/validate_issue.py",
+     "                bad = _bad_jq(expr)\n",
+     "                bad = None\n",
+     "test_the_token_printing_jq_is_refused_through_main_and_nothing_runs"),
+
+    ("#543: `-q` inside a short cluster (`-cq env`) is no longer read as a jq filter",
+     "scripts/validate_issue.py",
+     '            elif a.startswith("-") and not a.startswith("--") and "q" in a[1:]:\n',
+     "            elif False:\n",
+     "test_the_operand_check_itself_catches_q_in_a_cluster"),
+
+    ("#543: grep -r exclusions are a hand-copied subset again (*.pem / *.key printed)",
+     "scripts/validate_issue.py",
+     "            + [f\"--exclude={_ci_glob(g)}\" for g in _SECRET_FILE_GLOBS]))\n",
+     "            + [f\"--exclude={_ci_glob(g)}\" for g in _SECRET_FILE_GLOBS[:4]]))\n",
+     "test_recursive_grep_skips_every_secret_name_including_pem_and_key"),
+
+    ("#543: the secret list itself loses *.pem / *.key (vet and exclusions both)",
+     "scripts/validate_issue.py",
+     '                      "*.pem", "*.key")\n',
+     '                      )\n',
+     "test_recursive_grep_skips_every_secret_name_including_pem_and_key"),
+
+    ("#543: the case-insensitive exclusion is a plain glob (SRV.PEM is printed)",
+     "scripts/validate_issue.py",
+     '    return "".join(f"[{c.lower()}{c.upper()}]" if c.isalpha() else c for c in g)\n',
+     "    return g\n",
+     "test_recursive_grep_skips_every_secret_name_including_pem_and_key"),
+
+    ("#543: `diff -r` is allowed again (follows a symlink inside the tree)",
+     "scripts/validate_issue.py",
+     '    "diff": ("uqNwbiBy", {"brief", "unified", "ignore-case",\n',
+     '    "diff": ("uqrNwbiBy", {"brief", "unified", "recursive", "ignore-case",\n',
+     "test_diff_cannot_walk_a_tree_or_a_directory"),
+
+    ("#543: a directory operand to diff is allowed (`diff -N src .` prints one-sided credential files)",
+     "scripts/validate_issue.py",
+     "            if _is_dir(a):\n",
+     "            if False:\n",
+     "test_diff_cannot_walk_a_tree_or_a_directory"),
+
+    ("#543: a glob may expand a diff operand into a directory",
+     "scripts/validate_issue.py",
+     "            if a not in original and _is_dir(a):\n",
+     "            if False:\n",
+     "test_a_glob_cannot_turn_a_diff_of_files_into_a_diff_of_directories"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

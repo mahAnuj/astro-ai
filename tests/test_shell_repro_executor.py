@@ -266,7 +266,7 @@ def test_the_last_repro_wins_even_when_the_newest_is_a_different_dialect():
     assert vi.parse_repro(text) is None, "the stale http line was still used"
 
 
-def test_an_http_repro_is_still_parsed_as_before():
+def test_a_plain_http_repro_still_parses_to_the_same_spec():
     spec = vi.parse_repro('repro: POST /reading birth_date=1990-01-15 '
                           '-> follow -> 200 contains "Lagna" absent "high demand"')
     assert spec["method"] == "POST"
@@ -414,7 +414,8 @@ def test_the_child_environment_carries_no_token_except_to_gh(monkeypatch):
 
 def test_recursive_grep_is_told_to_skip_the_secret_files():
     argv = vi._hardened(["grep", "-rn", "x", "."])
-    assert "--exclude-dir=.git" in argv and "--exclude=gha-creds*" in argv
+    assert f"--exclude-dir={vi._ci_glob('.git')}" in argv
+    assert f"--exclude={vi._ci_glob('gha-creds*')}" in argv
     assert vi._hardened(["grep", "-c", "x", "f"]) == ["grep", "-c", "x", "f"]
 
 
@@ -563,7 +564,12 @@ def test_a_user_include_cannot_override_the_injected_excludes(tmp_path, monkeypa
     (tmp_path / ".local").mkdir()
     (tmp_path / ".local" / "n.txt").write_text("SENTINEL\n")
     for flag in ("--include=*", "--include=gha-creds*"):
-        _, out, _ = vi.one_shell_sample(["grep", "-r", flag, "SENTINEL", "."])
+        rc, out, note = vi.one_shell_sample(["grep", "-r", flag, "SENTINEL", "."])
+        # The positive half matters: if the grep never ran (rc None) the two
+        # negatives below hold vacuously, and a mutant that moved the excludes
+        # in front of `grep` itself passed this test (QA round 3). Exit 0 or 1
+        # (matched / nothing matched) both mean it ran; 2 is a usage error.
+        assert rc in (0, 1), (flag, note)
         assert "gha-creds" not in out and ".local" not in out, (flag, out)
     assert vi._hardened(["grep", "-r", "x", "--", "."])[-2:] == ["--", "."]
 
@@ -607,3 +613,148 @@ def test_run_shell_refuses_a_glob_that_expands_to_a_credential(
 
 def test_authorization_headers_are_redacted():
     assert "basic" not in vi.redact("extraheader = AUTHORIZATION: basic eHh4Onl5eXl5eXl5")
+
+
+# --------------------------------------------------------------------------
+# QA round 3 on #544 -- reproducers that still executed against e37a411.
+# --------------------------------------------------------------------------
+# jq evaluates code inside "\(...)". The literal-stripping regex read `\(` as an
+# escape pair, so the interpolation body vanished before the identifier check and
+# `env.GH_TOKEN` vetted clean -- and the child gets GH_TOKEN because exe == "gh".
+_JQ_INTERPOLATION = [
+    r"""gh api rate_limit --jq '"\(env.GH_TOKEN|split("")|join("."))"'""",
+    r"""gh api rate_limit --jq '"\(env.GH_TOKEN|length)"'""",
+    r"""gh api rate_limit --jq '"\(env)"'""",
+    r"""gh issue view 1 --jq '"\(env.GH_TOKEN)"'""",
+    r"""gh api rate_limit --jq='"\(env.GH_TOKEN)"'""",
+    r"""gh api rate_limit -q '"\(env.GH_TOKEN)"'""",
+    # `-q` hidden in a short cluster, or with its value attached
+    "gh api rate_limit -cq env", "gh api rate_limit -qenv",
+    "gh api rate_limit -sq env",
+]
+
+
+@pytest.mark.parametrize("cmd", _JQ_INTERPOLATION)
+def test_jq_string_interpolation_cannot_smuggle_env_past_the_vet(cmd):
+    argv, why = vi.vet_shell(cmd)
+    assert argv is None, f"{cmd!r} would be EXECUTED with GH_TOKEN in its environment"
+    assert why
+
+
+@pytest.mark.parametrize("argv", [
+    ["gh", "api", "x", "-cq", "env"], ["gh", "api", "x", "-qenv"],
+    ["gh", "api", "x", "-sq", "env"]])
+def test_the_operand_check_itself_catches_q_in_a_cluster(argv):
+    """The flag allow-list happens to refuse `-qenv` today. The operand check
+    must not DEPEND on that: widen the allow-list and this is the backstop."""
+    assert vi._bad_operands("gh", argv)
+
+
+def test_the_token_printing_jq_is_refused_through_main_and_nothing_runs(
+        monkeypatch, capsys):
+    """QA's reproducer, end to end: before the fix this reached execution and
+    exit 0/5; the child (a `gh`) carries GH_TOKEN."""
+    b = _Boundary(monkeypatch, 'x\nrepro: ' + _JQ_INTERPOLATION[0] + ' -> 5000\n', prov_rc=0)
+    rc, out = _main(monkeypatch, capsys)
+    assert rc == 6 and "REFUSED" in out and "backslash" in out
+    assert b.ran == []
+
+
+def test_the_jq_filters_the_backlog_actually_uses_are_not_newly_refused():
+    for cmd in ("gh api repos/o/n/issues --jq '.[].number'",
+                "gh api repos/o/n/issues -q '.[].number'",
+                "gh issue list --json number --jq 'length'",
+                "gh issue list --json labels --jq 'map(select(.name == \"a b\")) | length'"):
+        assert vi.vet_shell(cmd)[0] is not None, cmd
+
+
+def _plant_secrets(root):
+    for name in ("srv.pem", "id.key", "SRV.PEM", "ID.KEY", "mycredentials.txt",
+                 "gha-creds-x.json", ".env.local", "QA_LOG.md"):
+        (root / name).write_text("SENTINEL\n")
+    (root / "ok.txt").write_text("SENTINEL\n")
+    for d in (".git", ".local", ".serena"):
+        (root / d).mkdir()
+        (root / d / "n.txt").write_text("SENTINEL\n")
+
+
+def test_recursive_grep_skips_every_secret_name_including_pem_and_key(tmp_path, monkeypatch):
+    """`_SECRET_NAME` listed *.pem and *.key and the exclusions did not, so
+    `grep -rn PEM .` printed a planted srv.pem and id.key. Real grep, real files."""
+    monkeypatch.setattr(vi, "ROOT", tmp_path)
+    _plant_secrets(tmp_path)
+    for flags in (["-rn"], ["-rh"], ["-r", "--include=*"], ["-rl"]):
+        _, out, _ = vi.one_shell_sample(["grep", *flags, "SENTINEL", "."])
+        for leak in ("srv.pem", "id.key", "SRV.PEM", "ID.KEY", "credentials",
+                     "gha-creds", ".env", "QA_LOG", ".git", ".local", ".serena"):
+            assert leak not in out, (flags, leak, out)
+        if flags != ["-rh"]:
+            assert "ok.txt" in out, (flags, out)
+
+
+def test_the_grep_exclusions_cover_every_entry_of_the_one_secret_list():
+    """The exclusions are DERIVED from `_SECRET_*`, not copied: adding a name to
+    the list must exclude it without a second edit."""
+    argv = vi._hardened(["grep", "-r", "x", "."])
+    for g in vi._SECRET_FILE_GLOBS:
+        assert f"--exclude={vi._ci_glob(g)}" in argv, g
+    for d in vi._SECRET_DIRS:
+        assert f"--exclude-dir={vi._ci_glob(d)}" in argv, d
+    # and the vet agrees on the very names the plan above plants
+    for name in ("srv.pem", "id.key", "mycredentials.txt", "SRV.PEM"):
+        assert vi._SECRET_NAME.match(name), name
+
+
+@pytest.mark.parametrize("cmd", [
+    "diff -r src .", "diff -rN src .", "diff --recursive src .", "diff -urN a b",
+    "diff -N src .", "diff src .", "diff -N . src",
+])
+def test_diff_cannot_walk_a_tree_or_a_directory(cmd):
+    """`diff -rN src .` printed planted credential files (present on one side
+    only) and followed `sub/gitlink -> ../.git/config`. No live repro uses
+    `diff -r` (0 of 52 measured 2026-10-26), so it is refused, not patched."""
+    argv, why = vi.vet_shell(cmd)
+    assert argv is None, f"{cmd!r} would be EXECUTED"
+
+
+def test_diff_of_two_named_files_still_runs():
+    assert vi.vet_shell("diff README.md ARCHITECTURE.md")[0] is not None
+
+
+def test_a_glob_cannot_turn_a_diff_of_files_into_a_diff_of_directories(
+        tmp_path, monkeypatch):
+    monkeypatch.setattr(vi, "ROOT", tmp_path)
+    (tmp_path / "a.txt").write_text("x")
+    (tmp_path / "adir").mkdir()
+    argv, why = vi.vet_shell("diff a.txt a*")
+    assert argv is not None, why  # `a*` is only a glob to the vet
+    reason = vi.check_expanded(argv, vi.expand_globs(argv))
+    assert reason and "directory" in reason
+
+
+def test_the_http_parse_changes_are_the_true_ones_and_not_byte_identical():
+    """The old parser is NOT preserved byte for byte. Three real differences:
+    two adjacent `repro:` lines now return the LAST (the terminator is a
+    lookahead); a shell line after an http one yields None (no stale probe);
+    a `- **repro:** GET ...` line now parses."""
+    adjacent = "repro: GET /a -> 200\nrepro: GET /b -> 200\n"
+    assert vi.parse_repro(adjacent)["path"] == "/b"
+    assert vi.parse_repro("repro: GET /a -> 200\nrepro: grep -c x f -> 3\n") is None
+    assert vi.parse_repro("- **repro:** GET /a -> 200\n")["path"] == "/a"
+
+
+def test_a_credential_name_is_refused_as_spelled_and_as_resolved(tmp_path, monkeypatch):
+    """Two independent checks in `_secret_path`. For an ordinary path they agree,
+    so removing either alone is invisible -- QA round 3 found the 'as spelled'
+    mutation was caught by nothing. A symlink pulls them apart."""
+    monkeypatch.setattr(vi, "ROOT", tmp_path)
+    (tmp_path / "ok.txt").write_text("x")
+    (tmp_path / ".git").mkdir()
+    (tmp_path / ".git" / "config").write_text("x")
+    # a secret NAME that resolves somewhere harmless: only the spelled check sees it
+    (tmp_path / "gha-creds-link.json").symlink_to("ok.txt")
+    # an innocent name that resolves INTO a secret: only the resolved check sees it
+    (tmp_path / "innocent").symlink_to(".git/config")
+    assert "credential" in (vi._secret_path("gha-creds-link.json") or "")
+    assert "credential" in (vi._secret_path("innocent") or "")
+    assert vi._secret_path("ok.txt") is None

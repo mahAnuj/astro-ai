@@ -193,6 +193,12 @@ opposite things: an http repro states the *healthy* state, a shell repro the sta
 | `INCONCLUSIVE` | 4 | the command could not run |
 | `REFUSED` | 6 | not executed, with the reason printed: not on the allow-list, a bare shell operator, an untrusted/unresolved author, or the newest `repro:` is in a comment. Rewrite the `repro:`; do not skip it |
 
+**The http dialect is not byte-for-byte what it was.** `parse_repro` now reads the newest `repro:`
+of EITHER dialect, so: two adjacent `repro:` lines resolve to the *last* (before, the first); an
+`http` line followed by a newer shell line yields no http spec (before, the stale http line was
+probed); and a `- **repro:** GET ...` line now parses (before, it was `NO-REPRO`). A plain
+`repro: GET /x -> 200 ...` parses to the same spec as before.
+
 **A shell verdict can never close an issue**: only `CANNOT-REPRODUCE` (exit 1) does, and the shell
 path cannot print it. `NO-REPRO` (exit 3) still means no `repro:` line exists at all.
 

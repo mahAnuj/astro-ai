@@ -37,6 +37,7 @@ cookie and the LLM runs on the redirect target, so a POST alone proves nothing.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import glob
 import http.cookiejar
 import json
@@ -319,9 +320,14 @@ _SHELL_FLAGS = {
     "head": ("ncq", {"lines", "bytes", "quiet"}),
     "tail": ("ncq", {"lines", "bytes", "quiet"}),
     "ls": ("lahR1dtSFr", {"all", "almost-all", "recursive", "reverse"}),
-    "diff": ("uqrNwbiBy", {"brief", "unified", "recursive", "ignore-case",
-                           "ignore-all-space", "ignore-space-change",
-                           "new-file", "side-by-side"}),
+    # No `r` / `--recursive`, deliberately (QA round 3): `diff -rN src .` follows
+    # a symlink INSIDE the tree (`sub/gitlink -> ../.git/config`), which the
+    # positional check on command-line paths cannot see, and prints files that
+    # exist on one side only. No backlog `repro:` uses it (0 of 52 measured
+    # 2026-10-26). Directory operands are refused too -- see _bad_operands.
+    "diff": ("uqNwbiBy", {"brief", "unified", "ignore-case",
+                          "ignore-all-space", "ignore-space-change",
+                          "new-file", "side-by-side"}),
     "gh": ("RLqsSlcawb", {"json", "jq", "limit", "state", "label", "search",
                           "repo", "comments", "name-only", "author", "workflow",
                           "branch", "paginate"}),
@@ -347,8 +353,21 @@ _SED_SCRIPT = re.compile(
 # holds the remote URL (an access token), `gha-creds-*.json` is the Actions
 # credential file, `.env*` the secrets file. Matched on the RESOLVED path too,
 # so a symlink cannot launder one.
+# ONE list, two consumers: `_SECRET_NAME` (the vet, on a path as spelled and as
+# resolved) and `_hardened` (the `--exclude` flags on a recursive grep). They
+# were hand-copied, and the copy had dropped `*.pem` / `*.key` -- `grep -rn PEM .`
+# printed a planted srv.pem and id.key (QA round 3). Edit THIS tuple only.
+_SECRET_DIRS = (".git", ".local", ".serena")
+_SECRET_FILE_GLOBS = ("QA_LOG.md", "gha-creds*", ".env*", "*credentials*",
+                      "*.pem", "*.key")
 _SECRET_NAME = re.compile(
-    r"^(?:\.git|\.local|\.serena|QA_LOG\.md|gha-creds.*|\.env.*|.*credentials.*|.*\.(?:pem|key))$", re.I)
+    "|".join(fnmatch.translate(g) for g in _SECRET_DIRS + _SECRET_FILE_GLOBS), re.I)
+
+
+def _ci_glob(g: str) -> str:
+    """`*.pem` -> `*.[pP][eE][mM]`: _SECRET_NAME is case-insensitive and grep's
+    --exclude is not, so `SRV.PEM` would otherwise be vetted out and printed."""
+    return "".join(f"[{c.lower()}{c.upper()}]" if c.isalpha() else c for c in g)
 
 # Backstop only: anything credential-shaped is redacted before it is printed,
 # because the printed head is exactly what a step-0 agent pastes into a public
@@ -535,6 +554,13 @@ def _secret_path(p: str) -> str | None:
     return None
 
 
+def _is_dir(p: str) -> bool:
+    try:
+        return (ROOT / p).is_dir()
+    except OSError:
+        return False
+
+
 def _bad_operands(exe: str, argv: list[str]) -> str | None:
     args = argv[1:]
     pos = [a for k, a in _flag_parts(args) if k == "pos"]
@@ -548,6 +574,13 @@ def _bad_operands(exe: str, argv: list[str]) -> str | None:
             pos = pos[1:]  # the first positional is the pattern, not a path
     elif exe == "gh":
         pos = []  # revisions, queries and endpoints; checked below
+    elif exe == "diff":
+        # A directory operand compares the files inside it, and with `-N` prints
+        # one that exists on a single side -- `diff -N src .` printed a planted
+        # credential file (QA round 3). Two FILES only; each is name-vetted below.
+        for a in pos:
+            if _is_dir(a):
+                return f"`diff {a}` compares a directory; name two files instead"
     # git: EVERY positional is checked. `git diff A B` with both outside the
     # repo falls back to --no-index and reads any file (QA round 2).
     for a in pos:
@@ -564,8 +597,15 @@ def _bad_operands(exe: str, argv: list[str]) -> str | None:
             expr = None
             if a.startswith("--jq="):
                 expr = a[5:]
-            elif a in ("--jq", "-q") and i + 1 < len(args):
+            elif a == "--jq" and i + 1 < len(args):
                 expr = args[i + 1]
+            elif a.startswith("-") and not a.startswith("--") and "q" in a[1:]:
+                # `-q` hidden in a short cluster (`-cq env`) or with its value
+                # attached (`-qenv`): the expression is whatever follows the `q`
+                # in the cluster, else the next argument. Do not depend on
+                # live gh accepting the cluster -- the vet must not (QA round 3).
+                tail = a[a.index("q") + 1:]
+                expr = tail or (args[i + 1] if i + 1 < len(args) else "")
             if expr is not None:
                 bad = _bad_jq(expr)
                 if bad:
@@ -587,7 +627,17 @@ _JQ_OK = {"length", "select", "map", "keys", "not", "test", "startswith",
 def _bad_jq(expr: str) -> str | None:
     if "$" in expr or "@" in expr:
         return "`--jq` with `$` or `@` can read the environment or re-encode it"
-    bare = re.sub(r'"(?:[^"\\]|\\.)*"', '""', expr)  # drop string literals
+    # BEFORE the literal-stripping below, and independent of it. jq evaluates
+    # code inside a string via `\(...)`, and the strip treats `\(` as an escape
+    # pair, so `"\(env.GH_TOKEN|split("")|join("."))"` lost its whole body to
+    # the strip and vetted clean -- printing the token (QA round 3). A string
+    # cannot interpolate without a backslash, so refuse any backslash rather
+    # than parse jq. Cost: a `test("\\d")` regex is refused; the live backlog
+    # has none (measured 2026-10-26).
+    if "\\" in expr:
+        return ("`--jq` contains a backslash: `\\(...)` interpolates code inside a "
+                "string, which can call `env` past the identifier check")
+    bare = re.sub(r'"[^"]*"', '""', expr)  # drop string literals (no escapes: see above)
     for m in re.finditer(r"(?<![.\w])[A-Za-z_]\w*", bare):
         if m.group(0) not in _JQ_OK:
             return (f"`--jq` calls `{m.group(0)}`, which is not on the pure-function "
@@ -621,6 +671,10 @@ def check_expanded(original: list[str], expanded: list[str]) -> str | None:
     """A reason the post-glob argv must not run, else None."""
     if expanded == original:
         return None
+    if original and original[0] == "diff":
+        for a in expanded:
+            if a not in original and _is_dir(a):
+                return f"a glob expanded into the directory `{a}`, which diff would walk"
     for a in expanded:
         if a in original:
             continue
@@ -654,18 +708,19 @@ def _with_trailing(argv: list[str], extra: list[str]) -> list[str]:
 
 
 def _hardened(argv: list[str]) -> list[str]:
-    """Recursion must not reach the secret files that sit in the tree."""
+    """Recursion must not reach the secret files that sit in the tree.
+
+    Only `grep -r` recurses now: `diff -r` is refused outright by the flag
+    allow-list (it follows symlinks inside the tree), so there is no diff
+    branch here to fall out of step with `_SECRET_NAME`.
+    """
     def has_r(flag_chars: str, longs: tuple[str, ...]) -> bool:
         return any(a in longs or (a.startswith("-") and not a.startswith("--")
                                   and set(flag_chars) & set(a[1:])) for a in argv[1:])
     if argv[0] == "grep" and has_r("r", ("--recursive",)):
-        return _with_trailing(argv, [
-            "--exclude-dir=.git", "--exclude-dir=.local", "--exclude-dir=.serena",
-            "--exclude=gha-creds*", "--exclude=.env*", "--exclude=*credentials*",
-            "--exclude=QA_LOG.md"])
-    if argv[0] == "diff" and has_r("r", ("--recursive",)):
-        return [argv[0], "-x", ".git", "-x", ".local", "-x", ".serena",
-                "-x", "gha-creds*", "-x", ".env*", "-x", "QA_LOG.md", *argv[1:]]
+        return _with_trailing(argv, (
+            [f"--exclude-dir={_ci_glob(d)}" for d in _SECRET_DIRS]
+            + [f"--exclude={_ci_glob(g)}" for g in _SECRET_FILE_GLOBS]))
     return argv
 
 
