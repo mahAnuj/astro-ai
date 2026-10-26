@@ -305,9 +305,9 @@ _SHELL_OPERATORS = {"|", "||", "&&", ";", "&", ">", ">>", "<", "<<", "2>",
 # grep -f, sed -e/-f/-s, diff --to-file, gh -X/-f/-F/-H/--input, git -c/-O/
 # --output/--ext-diff/--upload-pack are all absent, deliberately.
 _SHELL_FLAGS = {
-    "grep": ("cnilEFrRLHhwvoqsxABCme",
+    "grep": ("cnilEFrLHhwvoqsxABCm",
              {"count", "ignore-case", "line-number", "extended-regexp",
-              "fixed-strings", "recursive", "dereference-recursive",
+              "fixed-strings", "recursive",
               "files-with-matches", "files-without-match", "with-filename",
               "no-filename", "word-regexp", "invert-match", "only-matching",
               "quiet", "no-messages", "line-regexp", "include", "exclude",
@@ -348,7 +348,7 @@ _SED_SCRIPT = re.compile(
 # credential file, `.env*` the secrets file. Matched on the RESOLVED path too,
 # so a symlink cannot launder one.
 _SECRET_NAME = re.compile(
-    r"^(?:\.git|gha-creds.*|\.env.*|.*credentials.*|.*\.(?:pem|key))$", re.I)
+    r"^(?:\.git|\.local|\.serena|QA_LOG\.md|gha-creds.*|\.env.*|.*credentials.*|.*\.(?:pem|key))$", re.I)
 
 # Backstop only: anything credential-shaped is redacted before it is printed,
 # because the printed head is exactly what a step-0 agent pastes into a public
@@ -356,7 +356,9 @@ _SECRET_NAME = re.compile(
 _REDACT = re.compile(
     r"(?:gh[pousr]_[A-Za-z0-9_]{16,}|github_pat_[A-Za-z0-9_]{16,}"
     r"|x-access-token:[^@\s]+|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_.-]{10,}"
-    r"|-----BEGIN [A-Z ]*PRIVATE KEY-----)")
+    r"|-----BEGIN [A-Z ]*PRIVATE KEY-----"
+    r"|(?i:authorization:?\s*(?:basic|bearer|token)?\s*[A-Za-z0-9+/=_.-]{8,})"
+    r"|(?i:extraheader\s*=.*))")
 
 
 def redact(text: str) -> str:
@@ -544,16 +546,52 @@ def _bad_operands(exe: str, argv: list[str]) -> str | None:
     elif exe == "grep":
         if not any(a in ("-e", "--regexp") or a.startswith("--regexp=") for a in args) and pos:
             pos = pos[1:]  # the first positional is the pattern, not a path
-    elif exe in ("gh", "git"):
-        pos = []  # revisions, queries and endpoints; git pathspecs stay in-repo
+    elif exe == "gh":
+        pos = []  # revisions, queries and endpoints; checked below
+    # git: EVERY positional is checked. `git diff A B` with both outside the
+    # repo falls back to --no-index and reads any file (QA round 2).
     for a in pos:
         r = _secret_path(a)
         if r:
             return r
-    if exe == "gh" and argv[1:2] == ["api"]:
-        eps = [a for k, a in _flag_parts(args[1:]) if k == "pos" and not a.startswith("--")]
-        if any(e.lstrip("/").startswith("graphql") for e in eps):
-            return "`gh api graphql` can carry a mutation; use a REST path"
+    if exe == "gh":
+        for e in (a for k, a in _flag_parts(args) if k == "pos"):
+            if "://" in e:
+                return f"`{e}` is an absolute URL; `gh api` would send the token to that host"
+            if e.lstrip("/").lower().startswith("graphql"):
+                return "`gh api graphql` can carry a mutation; use a REST path"
+        for i, a in enumerate(args):
+            expr = None
+            if a.startswith("--jq="):
+                expr = a[5:]
+            elif a in ("--jq", "-q") and i + 1 < len(args):
+                expr = args[i + 1]
+            if expr is not None:
+                bad = _bad_jq(expr)
+                if bad:
+                    return bad
+    return None
+
+
+# gh's embedded jq has `env` / `$ENV`, which print GH_TOKEN, and base64 beats
+# the redaction (QA round 2). So the filter is an allow-list too: no `$`, no `@`
+# format strings, and every bare identifier must be a known pure function. A
+# `.field` access is data, not a function, and is exempt.
+_JQ_OK = {"length", "select", "map", "keys", "not", "test", "startswith",
+          "endswith", "contains", "add", "sort_by", "unique", "first", "last",
+          "any", "all", "tostring", "tonumber", "min", "max", "group_by",
+          "join", "ascii_downcase", "null", "true", "false", "and", "or",
+          "has", "type", "to_entries", "values", "flatten", "reverse", "empty"}
+
+
+def _bad_jq(expr: str) -> str | None:
+    if "$" in expr or "@" in expr:
+        return "`--jq` with `$` or `@` can read the environment or re-encode it"
+    bare = re.sub(r'"(?:[^"\\]|\\.)*"', '""', expr)  # drop string literals
+    for m in re.finditer(r"(?<![.\w])[A-Za-z_]\w*", bare):
+        if m.group(0) not in _JQ_OK:
+            return (f"`--jq` calls `{m.group(0)}`, which is not on the pure-function "
+                    "allow-list (gh's jq has `env`, which prints the token)")
     return None
 
 
@@ -605,16 +643,29 @@ def _child_env(exe: str) -> dict[str, str]:
     return env
 
 
+def _with_trailing(argv: list[str], extra: list[str]) -> list[str]:
+    """Add options AFTER the user's, but before a `--` (past it they would be
+    operands). GNU grep applies the LAST matching include/exclude, so injected
+    excludes placed first were overridden by a user `--include=*` (QA round 2)."""
+    if "--" in argv:
+        i = argv.index("--")
+        return argv[:i] + extra + argv[i:]
+    return argv + extra
+
+
 def _hardened(argv: list[str]) -> list[str]:
     """Recursion must not reach the secret files that sit in the tree."""
-    if argv[0] == "grep" and any(a in ("-r", "-R") or a.startswith(("--recursive", "--dereference-recursive"))
-                                 or (a.startswith("-") and not a.startswith("--") and set("rR") & set(a))
-                                 for a in argv[1:]):
-        return [argv[0], "--exclude-dir=.git", "--exclude=gha-creds*", "--exclude=.env*",
-                "--exclude=*credentials*", *argv[1:]]
-    if argv[0] == "diff" and any(a in ("-r", "--recursive") or (a.startswith("-") and not a.startswith("--") and "r" in a)
-                                 for a in argv[1:]):
-        return [argv[0], "-x", ".git", "-x", "gha-creds*", "-x", ".env*", *argv[1:]]
+    def has_r(flag_chars: str, longs: tuple[str, ...]) -> bool:
+        return any(a in longs or (a.startswith("-") and not a.startswith("--")
+                                  and set(flag_chars) & set(a[1:])) for a in argv[1:])
+    if argv[0] == "grep" and has_r("r", ("--recursive",)):
+        return _with_trailing(argv, [
+            "--exclude-dir=.git", "--exclude-dir=.local", "--exclude-dir=.serena",
+            "--exclude=gha-creds*", "--exclude=.env*", "--exclude=*credentials*",
+            "--exclude=QA_LOG.md"])
+    if argv[0] == "diff" and has_r("r", ("--recursive",)):
+        return [argv[0], "-x", ".git", "-x", ".local", "-x", ".serena",
+                "-x", "gha-creds*", "-x", ".env*", "-x", "QA_LOG.md", *argv[1:]]
     return argv
 
 

@@ -3548,6 +3548,18 @@ MUTATIONS = [
      "    return text\n",
      "test_a_credential_shape_is_redacted_before_it_is_printed"),
 
+    ("#543: the repro child is run through a shell (shell=True)",
+     "scripts/validate_issue.py",
+     "check=False, shell=False,",
+     "check=False, shell=True,",
+     "test_the_child_really_runs_without_a_shell_and_without_the_token"),
+
+    ("#543: the user's --include is placed after the injected excludes again",
+     "scripts/validate_issue.py",
+     "    return argv + extra\n",
+     "    return extra + argv\n",
+     "test_a_user_include_cannot_override_the_injected_excludes"),
+
     ("#543: the bold-bullet `repro:` form stops being found (26 issues silently NO-REPRO)",
      "scripts/validate_issue.py",
      "(?:\\*\\*)?repro:(?:\\*\\*)?",

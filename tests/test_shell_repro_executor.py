@@ -537,3 +537,73 @@ def test_a_for_loop_pasted_after_the_first_probe_does_not_pollute_its_expectatio
 def test_prose_containing_for_is_not_a_second_probe():
     _, stated, probes = vi.split_shell_repro("grep -c x f -> 5 matches for the old name 12")
     assert "12" in stated and probes == 1
+
+
+# --------------------------------------------------------------------------
+# QA round 2 on #544 -- reproducers that still executed against 47762ba.
+# --------------------------------------------------------------------------
+@pytest.mark.parametrize("cmd", [
+    "grep -ex gha-creds-x.json", "grep -ex linkcfg", "grep -R S .",
+    "grep --dereference-recursive S .", "git diff /dev/null gha-creds-x.json",
+    "git diff /dev/null /etc/passwd", "cat .local/notes.txt",
+    "gh api http://127.0.0.1:8/x.json --jq '$ENV.GH_TOKEN|@base64'",
+    "gh api repos/o/n --jq env", "gh api repos/o/n --jq='env.GH_TOKEN'",
+    "gh api repos/o/n --jq input_filename", "gh api repos/o/n -q debug",
+])
+def test_every_qa_round_2_reproducer_is_refused(cmd):
+    argv, why = vi.vet_shell(cmd)
+    assert argv is None, f"{cmd!r} would be EXECUTED"
+
+
+def test_a_user_include_cannot_override_the_injected_excludes(tmp_path, monkeypatch):
+    """GNU grep applies the LAST matching include/exclude. Real grep, real files."""
+    monkeypatch.setattr(vi, "ROOT", tmp_path)
+    (tmp_path / "gha-creds-x.json").write_text("SENTINEL\n")
+    (tmp_path / "ok.txt").write_text("SENTINEL\n")
+    (tmp_path / ".local").mkdir()
+    (tmp_path / ".local" / "n.txt").write_text("SENTINEL\n")
+    for flag in ("--include=*", "--include=gha-creds*"):
+        _, out, _ = vi.one_shell_sample(["grep", "-r", flag, "SENTINEL", "."])
+        assert "gha-creds" not in out and ".local" not in out, (flag, out)
+    assert vi._hardened(["grep", "-r", "x", "--", "."])[-2:] == ["--", "."]
+
+
+def test_the_vetted_gh_jq_filters_the_backlog_uses_still_pass():
+    for cmd in ("gh api repos/o/n/issues --jq '.[].number'",
+                "gh issue list --json number --jq 'length'"):
+        assert vi.vet_shell(cmd)[0] is not None
+
+
+def test_the_child_really_runs_without_a_shell_and_without_the_token(
+        monkeypatch, capsys):
+    """Round 2 mutated `env=_child_env(..)` -> None and `shell=False` -> True and
+    the suite stayed green: the units were tested, the call site was not."""
+    monkeypatch.setenv("GH_TOKEN", "sentinel-token")
+    seen = {}
+
+    class R:
+        returncode, stdout, stderr = 0, "7\n", ""
+
+    def fake_run(argv, *a, **k):
+        seen["kwargs"] = k
+        return R()
+
+    monkeypatch.setattr(vi.subprocess, "run", fake_run)
+    vi.one_shell_sample(["grep", "-c", "x", "README.md"])
+    assert seen["kwargs"]["shell"] is False
+    assert "GH_TOKEN" not in seen["kwargs"]["env"]
+
+
+def test_run_shell_refuses_a_glob_that_expands_to_a_credential(
+        tmp_path, monkeypatch, capsys):
+    """The `check_expanded` call in _run_shell: removing it left the suite green."""
+    monkeypatch.setattr(vi, "ROOT", tmp_path)
+    (tmp_path / "gha-creds-abc.json").write_text("{}")
+    b = _Boundary(monkeypatch, "repro: cat gha-c* -> 1\n", prov_rc=0)
+    rc, out = _main(monkeypatch, capsys)
+    assert rc == 6 and "forbidden path" in out
+    assert b.ran == []
+
+
+def test_authorization_headers_are_redacted():
+    assert "basic" not in vi.redact("extraheader = AUTHORIZATION: basic eHh4Onl5eXl5eXl5")
