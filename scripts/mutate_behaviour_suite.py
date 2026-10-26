@@ -3435,6 +3435,12 @@ MUTATIONS = [
      "          {{ RL.min_warm }} warm and {{ RL.min_cold }} cold samples for the model.\n",
      "",
      "test_the_live_verdict_is_not_the_recorded_decision_and_the_fold_says_so"),
+
+    ("#387 notify: the owner's alert parses visitor text as Markdown again",
+     "src/astro_ai/notify.py",
+     '        "disable_web_page_preview": True,',
+     '        "parse_mode": "Markdown",\n        "disable_web_page_preview": True,',
+     "test_the_telegram_payload_asks_for_no_parse_mode"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
