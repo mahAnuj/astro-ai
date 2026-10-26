@@ -311,6 +311,58 @@ GATE7_SAMPLES = {
           "Mars practices together are measurable and none can backfire",
           "The universal safe fallback for Mercury", "universal safe practice for Jupiter: ...",
           "Mars: the universal safe practice, as the pattern shows"),
+    # R. A remedy page borrowing a chapter / book nobody here has checked. The first
+    # four are the callouts as they stood (surya, ketu, rahu, chandra); the rest are
+    # other spellings and the body-text twin ("the classically-cited ones from ...").
+    "R": ("Brihat Parashara Hora Shastra (Surya adhyaya), Ramayana Yuddha Kanda (Aditya Hridaya Stotra), "
+          "Surya Samhita. Sunday charity list per Muhurtha Chintamani.",
+          "Brihat Parashara Hora Shastra (Ketu adhyaya), Ganesh Purana. Beej mantra from Grahashanti tradition.",
+          "Brihat Parashara Hora Shastra (Rahu adhyaya), Ganesh Purana, Durga Saptashati.",
+          "Brihat Parashara Hora Shastra (Chandra adhyaya), Shiva Purana (Somvar vrat)",
+          "The remedies above are the classically-cited ones from Brihat Parashara Hora Shastra and Phaladeepika",
+          "the practices in BPHS", "remedies from the BPHS",
+          "BPHS (Mangal adhyay)", "Parasara Shani Adhyaya", "B.P.H.S. Guru adhyaya",
+          "Chandra adhyaya", "Surya Samhita", "S\u016brya Sa\u1e43hit\u0101", "Surya  Samhita",
+          "Sunday charity list per Muhurtha Chintamani", "the donation list from Muhurta Chintamani",
+          "Muhurtha Chintamani's charity list",
+          "Beej mantra from standard Grahashanti tradition", "Graha Shanti tradition", "Grahashaanti tradition",
+          # The label is pinned only where it sits over folk / untraced material.
+          "Classical sources cited\nModern folk tradition (KSD is post-classical).",
+          "Classical sources cited\nGanesha as Ketu's deity follow the standard lists. The rest is devotional "
+          "and family tradition that we have not traced to a classical text."),
+    # S. The bija mantras lent BPHS's name (remedies.md 6.3: widely-accepted, no book).
+    "S": ("Chant Ketu's beej mantra \u2014 the full classical form per BPHS is Om Sraam Sreem Sraum Sah Ketave Namah",
+          "Chant Rahu's beej mantra \u2014 the full classical form per BPHS is Om Bhraam",
+          "the bija mantra per BPHS", "Beej mantra according to Brihat Parashara Hora Shastra",
+          "the Rahu seed mantra given in BPHS", "Bheej mantra as per Parasara",
+          "per Parashara, the beeja mantra is", "the original version per B.P.H.S.",
+          "the standard form from BPHS is", "according to the BPHS the seed mantra for Shani",
+          "the full classical version in Brihat Parashara"),
+    # T. Urad / black gram as a SATURN practice (Rao 34.3: Saturn = sesame, Rahu = urad).
+    "T": ("Donate black sesame, iron, mustard oil, or black gram (urad dal) on Saturdays.",
+          "Saturn: donate urad daal", "Shani ko urad dal ka daan", "black daal for Sade Sati",
+          "Saturn rules black gram", "donate black daal / mustard oil", "Urad Dal and iron on Saturday",
+          "kaali dal for Shani", "mustard oil and black gram on Saturdays", "urad  dal \u2014 Saturn's grain",
+          "Sade Sati remedies: urad", "black lentils and iron for Saturn",
+          "\u0936\u0928\u093f \u0915\u0947 \u0932\u093f\u090f \u0909\u0921\u093c\u0926 \u0915\u093e \u0926\u093e\u0928"),
+    # U. Sesame as a RAHU practice.
+    "U": ("For Rahu-related unstable wealth: Rahu mantra, donations of black sesame or blue cloth, worship of Bhairava.",
+          "Rahu: offer sesame seeds", "Donate black gram daal (urad dal), black sesame, or blue cloth for Rahu",
+          "Rahu Yantra worshipped with blue flowers and black til", "sesame seeds donated to appease Rahu",
+          "Rahu remedy: black til on Saturdays", "black sesame for Rahu mahadasha", "Rahu  \u2014 teel daan",
+          "til for Rahu", "Rahu-related unstable wealth: donating black sesame",
+          "\u0930\u093e\u0939\u0941 \u0915\u0947 \u0932\u093f\u090f \u0924\u093f\u0932 \u0915\u093e \u0926\u093e\u0928",
+          # The sentence exemptions are per sentence: an ancestor rite or a "Saturn rules sesame"
+          # in the NEXT sentence must not launder this one (QA round 1, D2).
+          "Water to ancestors on Pitru Paksha. Rahu: offer sesame seeds.",
+          "Saturn rules sesame seeds. Donate sesame seeds to Rahu on Saturdays.",
+          "Rahu: black til daan. Tarpan is a separate rite."),
+    # V. Both nodes "in their friendly signs" as a Kaal Sarp cancellation (grahas.md 11.1).
+    "V": ("Both Rahu and Ketu are in their friendly signs",
+          "Rahu and Ketu in friendly signs",
+          "Rahu & Ketu in their friendly rashis",
+          "both Rahu/Ketu placed in friendly signs",
+          "Cancellation: Rahu and Ketu are in its friendly sign and Jupiter is in a kendra"),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -453,6 +505,41 @@ GATE7_LEGAL = (
     "Four practices anyone can do: Sri Sukta before a Sri Yantra. Venus-domain themes and none can backfire.",
     "Good deeds in Mars's domain (safe for anyone)",
     "None of these needs an expensive puja package.",
+    # Slice 8. Each is live in the tree or is the shipped replacement text, and must stay green.
+    "Black gram (urad daal) \u2014 Rahu's classical grain; often given raw or cooked to those in need",
+    "Some folk traditions substitute black til (sesame) \u2014 this is actually Saturn's grain, but works as a "
+    "symbolic offering on shared Saturday since Rahu and Shani both share the day. If in doubt, use urad daal.",
+    "Donate black sesame, iron, or mustard oil on Saturdays.",
+    "(4) Saturday charity (black gram/urad daal, blue clothes, coconut), (5) Ganesha pre-invocation",
+    "Hasta (Antya), Anuradha (Madhya), Shravana (Antya); complementary Jupiter\u2013Saturn temperaments",
+    "Pushya, Anuradha, Saturn in the 7th: check the nakshatra of the lord",
+    "Saturday \u2014 sunset-only meal; moong-urad khichdi with rock salt",
+    "Rahu: Durga worship. Water with sesame to ancestors on Pitru Paksha.",
+    "Rahu mantra, Durga worship, donation of black gram.",
+    "Chant Ketu's beej mantra \u2014 the widely-accepted full form is Om Sraam Sreem Sraum Sah Ketave Namah.",
+    "The Beej mantra in its widely-accepted seed form follows the standard planet-by-planet remedy lists of modern "
+    "Vedic astrology.",
+    "Parashara is the author of Brihat Parashara Hora Shastra; the Rahu Beej mantra is widely accepted.",
+    "Pradosh/Nishita muhurat windows per Muhurtha Chintamani.",
+    "Brihat Parashara Hora Shastra (Bhava Phala adhyaya), Phaladeepika Ch.11, Saravali Ch.28 (Labha bhava).",
+    "Skanda Purana (Kartik Mahatmya), Bhavishya Purana (Karva Chauth Katha).",
+    "Classical sources cited\nGarud Purana (Pitru shraddha vidhi). Gaya tri-pindi per Gayawal Brahmin tradition.",
+    "Classical sources cited\nKumbh Vivah + Peepal Vivah \u2014 modern folk-remedial practice.",
+    "Sources and traditions\nThe Somvar vrats and silver are devotional and family tradition that we have not "
+    "traced to a classical text.",
+    "The Aditya Hridaya Stotra is a hymn from the Ramayana (Yuddha Kanda).",
+    # QA round 1 (D2): three correct sentences the first T and U patterns flagged.
+    "Saturn rules sesame seeds, Rahu rules black gram daal.",
+    "Pitru dosh with Rahu: tarpan with black sesame",
+    "Rahu: black til is Saturn's grain",
+    # V: the sourced wording, and a single node in a friendly sign (learn_registry's Rahu-dasha FAQ).
+    "Both Rahu and Ketu are in signs ruled by their traditional friends, Venus and Saturn (traditions vary "
+    "on the nodes' friendships)",
+    "A well-placed Rahu (in the 3rd, 6th, 10th, or 11th house, in a friendly sign, aspected by benefics)",
+    "Rahu and Ketu in signs ruled by their traditional friends (Venus, Saturn)",
+    # D4: the callout wording that replaced "the standard planet-by-planet remedy lists".
+    "The Beej mantra in its widely-accepted seed form follows one modern textbook's planet-by-planet "
+    "remedy table.",
 )
 
 # The one honest Hanuman-Saturn sentence a page may keep: it must say popular/folk
@@ -479,10 +566,13 @@ def gate7_mutations() -> tuple[int, int]:
         cands = [(w, t) for w, t in real if w.startswith(surface)]
         base[surface] = max(cands, key=lambda wt: len(wt[1]))
 
-    def run(units):
+    real_fields = gate.numerology_remedy_fields()
+
+    def run(units, fields=None):
         buf = io.StringIO()
         with redirect_stdout(buf):
-            ok = gate.gate_7_no_retired_claims_on_reader_surfaces(units)
+            ok = gate.gate_7_no_retired_claims_on_reader_surfaces(
+                units, real_fields if fields is None else fields)
         return ok, buf.getvalue()
 
     def inject(surface: str, sample: str):
@@ -529,6 +619,36 @@ def gate7_mutations() -> tuple[int, int]:
             missed += 1
             print(f"  MISSED  reader-claim C  honest sentence ({label}) expected "
                   f"{'green' if want_green else 'red'}")
+
+    # W. The numerology remedy rows carry no planet word in their strings, so the gate reads the
+    # structure (QA round 1, D1: sesame put back into the Rahu yantra and charity strings stayed
+    # green). Mutate the first offering field of each planet's row and require the gate to name it.
+    def row_of(planet: str):
+        return next(i for i, (_, pl, _t) in enumerate(real_fields) if pl == planet)
+
+    for planet, extra, want_green in (
+        ("Rahu", ", sesame seeds", False), ("Rahu", " with blue flowers and black sesame.", False),
+        ("Rahu", " Til daan.", False), ("Saturn", ", urad daal", False), ("Saturn", " and black gram.", False),
+        ("Rahu", " Donate black gram (urad daal).", True), ("Saturn", ", sesame seeds, iron nails.", True),
+    ):
+        i = row_of(planet)
+        fields = list(real_fields)
+        w, pl, t = fields[i]
+        fields[i] = (w, pl, t + extra)
+        ok, out = run(real, fields)
+        if ok == want_green and (want_green or f"{w}" in out):
+            caught += 1
+        else:
+            missed += 1
+            print(f"  MISSED  reader-claim W  {planet} remedy + {extra!r}: expected "
+                  f"{'green' if want_green else 'red naming ' + w}, went {'green' if ok else 'red'}")
+    for label, fields in (("no rows", []), ("no Rahu row", [f for f in real_fields if f[1] != "Rahu"]),
+                          ("no Saturn row", [f for f in real_fields if f[1] != "Saturn"])):
+        if not run(real, fields)[0]:
+            caught += 1
+        else:
+            missed += 1
+            print(f"  MISSED  reader-claim W  a stub ({label}) with nothing to scan PASSED")
 
     # A gate that checks nothing must fail: no units, a lone surface, a tree with
     # no files, and a tree whose files exist but hold no text.
@@ -700,6 +820,17 @@ def main() -> int:
         gate.KSD_TRADITION_AS_CLASSICAL: (("kaal-sarp-dosh-remedies", "7 classical remedies: (1) Durga"),
                                           (None, "Nag Panchami is the classical annual serpent-worship day"),
                                           (None, "KSD's peak remedial day is Nag Panchami")),
+        # Slice 8. The T and U first rows are the claims as they stood in a summary / FAQ.
+        gate.BIJA_PER_BPHS: (("rahu-in-vedic-astrology", "Chant Rahu's beej mantra - the full classical form per BPHS"),
+                             (None, "Ketu bija mantra from Brihat Parashara"),
+                             (None, "the seed mantra given in BPHS")),
+        gate.URAD_AS_SATURN: (("sade-sati", "\u2022 Safe remedies: Vishnu worship, serve elderly, donate black daal / mustard oil"),
+                              ("saturn-remedies", "Saturn: donate urad daal"),
+                              (None, "Shani charity: black gram"),
+                              (None, "Saturday iron and urad dal for Sade Sati")),
+        gate.SESAME_AS_RAHU: (("financial-struggles", "For Rahu-related unstable wealth: Rahu mantra, donating black sesame"),
+                              ("rahu-remedies", "Rahu: offer sesame seeds"),
+                              (None, "black til for Rahu")),
     }
     first = real[0][0]
     for pattern, _why in gate.SUMMARY_FORBIDDEN:
@@ -728,6 +859,10 @@ def main() -> int:
         ("kundali-matching-ashtakoot-guna-milan", "friend+enemy 2, neutral+enemy 1, enemy+enemy 0; mutual enemies score 0"),
         ("rahu-in-vedic-astrology", "Outside the standard natural-friendship table, which covers the seven visible planets"),
         ("jupiter-remedies", "Vishnu worship (a mantra, or a hymn your own tradition keeps), many recite the Vishnu Sahasranama"),
+        # Slice 8: Rahu's own grain, Saturn's own grain, and a nakshatra that contains the letters "urad".
+        ("rahu-remedies", "Saturday charity (black gram/urad daal, blue clothes, coconut)"),
+        ("saturn-remedies", "Saturn charity: sesame/iron/mustard-oil, Shani Beej mantra"),
+        ("kundali-matching-ashtakoot-guna-milan", "Hasta (Antya), Anuradha (Madhya), Saturn-Jupiter temperaments"),
     ):
         mutated = [(slug, text + ("\n• " + legal if slug == target else "")) for slug, text in real]
         with redirect_stdout(io.StringIO()):

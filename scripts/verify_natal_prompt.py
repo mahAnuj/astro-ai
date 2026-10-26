@@ -69,13 +69,16 @@ the 413 taught us about.
       Graha Maitri and Rahu/Ketu-grid shapes of Gate 7 families K and L.
       Slice 7 added four more (M Mercury-Jupiter enmity, N Vishnu rite for
       Manglik, O Monday Shiva as the Kaal Sarp remedy, P Kaal Sarp tradition
-      called classical); the constants are shared with Gate 7.
+      called classical); the constants are shared with Gate 7. Slice 8 added
+      three more: the bija mantras lent BPHS's name (S), urad given as a
+      Saturn practice (T) and sesame as a Rahu one (U) - including a summary
+      that said "donate black daal / mustard oil" under Sade Sati.
 
   Gate 7 - no retired claims on the reader-facing surfaces.  The same claims
       sat on the pages a reader opens directly: the /learn article bodies,
       the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
       languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
-      is shown. This gate scans those surfaces for the seventeen families #398
+      is shown. This gate scans those surfaces for the twenty-two families #398
       retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
       Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
       practice or as ANY planet's universal/classical/safe one (slice 5),
@@ -88,7 +91,13 @@ the 413 taught us about.
       Jupiter as "Mercury's natural enemy" (M), a Vishnu rite as a Manglik
       remedy (N), Monday Shiva as the first/classical Kaal Sarp remedy (O),
       Kaal Sarp tradition called classical (P) and "universal safe" on the
-      Saturn/Jupiter/Mercury/Mars pages (Q)
+      Saturn/Jupiter/Mercury/Mars pages (Q), and (slice 8) a remedy page citing
+      a BPHS "<planet> adhyaya", a Surya Samhita or a Muhurtha Chintamani
+      "charity list" or "Grahashanti tradition" (R), the bija mantras "per BPHS"
+      (S), urad / black gram as a Saturn practice (T), sesame as a Rahu one (U) and both
+      nodes "in their friendly signs" (V); plus, read from the AST because a
+      `numerology.py` string carries no planet word, sesame in the Rahu remedy
+      row and urad in the Saturn one (W)
       (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
       families still open on #398 ("black sesame", weekday fasting):
       forbidding them here would only make main red. A bare "per BPHS" is
@@ -929,6 +938,116 @@ NON_VENUS_UNIVERSAL_SAFE = (
     r"|\bsafe\s+for\s+any\s+chart,?\s+no\s+consultation"
 )
 
+# --- #398 slice 8 ------------------------------------------------------------
+# Four more reader-facing defects, each checked against knowledge/*.md first.
+# Written wider than the literals found (#467): spelling, spacing, case, order.
+
+# R. A remedy page borrowing authority from a chapter or book nobody on this
+# project has checked. BPHS is not in data/ (chart.py's comment on the deleted
+# "(per BPHS)" attribution says so) and remedies.md 5/6/7 attribute the planet ->
+# deity table and the good-deed/grain list to Rao's Ch. 34, not to a Parashara
+# "<planet> adhyaya"; "Surya Samhita" is in no book we hold; "Sunday charity list per
+# Muhurtha Chintamani" is a claim nothing shows is true. The pages' "Classical sources
+# cited" callouts carried all four. The label itself is pinned only where it still
+# sits over folk material (the two tail alternatives), because manglik- and
+# pitru-dosh-remedies keep it over a different, unreviewed attribution that is not this
+# slice's to change. Muhurat pages say "per Muhurtha Chintamani" for windows; only the
+# charity-list shape is forbidden.
+_PLANET_ANY = (r"(?:S[uū]rya|Sun|Chandra|Moon|Mangal|Mars|Budh\w*|Mercury|Guru|Jupiter|Shukra|Venus"
+               r"|Shani|Saturn|Rahu|Ketu)")
+_ADHYAYA = r"adhy?[aā]y\w*"
+BPHS_REMEDY_ATTRIBUTION = (
+    rf"\b(?:BPHS|B\.P\.H\.S\.|{_PARASH})[^.;\n]{{0,50}}?\b{_PLANET_ANY}\s+{_ADHYAYA}"
+    rf"|\b{_PLANET_ANY}\s+{_ADHYAYA}"
+    r"|\bS[uū]rya\s+Sa[mṃ]hit[aā]"
+    r"|\b(?:charity|donation|daan|dana)\s+(?:list|items?)\s+(?:per|from|in|according\s+to)\s+(?:the\s+)?Muhurt\w*\s+Chintamani"
+    r"|\bMuhurt\w*\s+Chintamani[^.;\n]{0,30}\b(?:charity|donation)\s+(?:list|items?)"
+    rf"|\b(?:ones|remedies|practices)\s+(?:from|in)\s+(?:the\s+)?(?:BPHS|B\.P\.H\.S\.|{_PARASH})"
+    r"|\bGraha[\s\-]*sh?(?:a|ā)+nth?[iī]\w*\s+tradition"
+    r"|\bClassical\s+sources\s+cited[\s\S]{0,900}?not\s+traced\s+to\s+a\s+classical"
+    r"|\bClassical\s+sources\s+cited[\s\S]{0,60}?(?:modern\s+)?folk\s+tradition"
+)
+
+# S. The bija mantras lent BPHS's name. remedies.md 6.3 calls them "widely-accepted
+# ... universally cited across classical sources" and attributes them to no book; the
+# two Rahu/Ketu pages said "the full classical form per BPHS is ...". A bare
+# "per BPHS" elsewhere is still not forbidden (family I's comment has the count).
+_BIJA = r"(?:beej|beeja|bheej|bija|seed)\w*"
+_BPHS_NAME = rf"(?:BPHS|B\.P\.H\.S\.|{_PARASH})"
+BIJA_PER_BPHS = (
+    rf"\b{_BIJA}[^.;\n]{{0,80}}?\b(?:per|according\s+to|from|in|by|given\s+in)\s+(?:the\s+)?{_BPHS_NAME}"
+    rf"|\b(?:per|according\s+to)\s+(?:the\s+)?{_BPHS_NAME}[^.;\n]{{0,60}}?\b{_BIJA}"
+    rf"|\b(?:full|classical|original|standard)\s+(?:classical\s+)?(?:form|version)\s+(?:is\s+)?(?:per|from|in|according\s+to)\s+(?:the\s+)?{_BPHS_NAME}"
+)
+
+# T/U. Grain cross-assignments against Rao 34.3 (remedies.md 5.1): Saturn rules
+# SESAME, Rahu rules BLACK GRAM (urad) daal, Ketu none. T: urad/black gram given as a
+# Saturn practice -- it names Saturn, or sits beside Saturn's own sesame / iron /
+# mustard oil in one list (saturn-in-10th-house-career had "black sesame, iron, mustard
+# oil, or black gram (urad dal)" with no planet word in the bullet at all, and the
+# sade-sati summary "donate black daal / mustard oil"). U: sesame given as a Rahu
+# practice. The window refuses to cross the OTHER planet's name, so "this is Saturn's
+# grain" (rahu-remedies, which flags the substitution honestly) stays legal.
+# The look-around keeps "Anuradha" (a nakshatra, on a dozen pages) from reading as "urad".
+_URAD = (r"(?<![A-Za-z])(?:urad|urd|udad|maash|black[\s\-]+(?:gram|daal|dal|dhal|lentils?)"
+         r"|kaali[\s\-]+(?:daal|dal)|उड़द|उरद)(?![A-Za-z])")
+_NOT_RAHU = r"(?:(?!Rahu|राहु)[^.;\n])"
+_SATURN_ONLY = r"(?:Saturn|Shani|Sade[\s\-]*Sati|शनि)"
+_SATURN_ITEM = r"(?:sesame|til\b|tila\b|teel\b|iron|mustard[\s\-]+oil|तिल)"
+URAD_AS_SATURN = (
+    rf"{_URAD}\b{_NOT_RAHU}{{0,100}}?\b{_SATURN_ONLY}"
+    rf"|\b{_SATURN_ONLY}{_NOT_RAHU}{{0,100}}?{_URAD}"
+    # The two list alternatives refuse to cross Rahu as well: "Saturn rules sesame seeds,
+    # Rahu rules black gram daal" is Rao 34.3 stated correctly (QA round 1, D2).
+    rf"|{_URAD}\b{_NOT_RAHU}{{0,60}}?\b{_SATURN_ITEM}"
+    rf"|\b{_SATURN_ITEM}{_NOT_RAHU}{{0,60}}?{_URAD}"
+)
+_SESAME = r"(?:\b(?:sesame|til|tila|teel)\b|तिल)"
+_NOT_SATURN = r"(?:(?!Saturn|Shani|शनि)[^.;\n])"
+SESAME_AS_RAHU = (
+    rf"(?:\bRahu\b|राहु){_NOT_SATURN}{{0,100}}?{_SESAME}"
+    rf"|{_SESAME}{_NOT_SATURN}{{0,100}}?(?:\bRahu\b|राहु)"
+)
+# Two sentences that name Rahu and sesame and are RIGHT, which a window cannot tell from
+# the wrong ones (QA round 1, D2). A match is dropped when its own sentence (split on
+# . ; newline) either (a) is an ancestor rite -- tarpan / shraddha / pind with sesame is
+# the standard Pitru rite, and "Pitru dosh with Rahu: tarpan with black sesame" is
+# correct -- or (b) says in as many words that sesame is Saturn's ("Saturn rules sesame
+# seeds, Rahu rules black gram"; "black til is Saturn's grain"). The price is that a
+# sentence which says both can launder a wrong claim; #467 is where wording-level
+# escapes are tracked.
+_ANCESTOR_RITE = r"(?:tarpan\w*|ancestors?|ancestral|pitr\w*|shraddh\w*|shr[aā]ddh\w*|pind\w*)"
+_SESAME_IS_SATURNS = (
+    rf"(?:Saturn|Shani|शनि)(?:'s|’s|\s+rules|\s+governs|\s+owns)\s+(?:[\w\-]+\s+){{0,2}}?{_SESAME}"
+    rf"|{_SESAME}\W+(?:\w+\W+){{0,3}}?(?:is|are)\s+(?:actually\s+|really\s+)?(?:Saturn|Shani)(?:'s|’s)?\b"
+    rf"|{_SESAME}[^.;\n]{{0,30}}?(?:Saturn|Shani)(?:'s|’s)\s+(?:grain|offering|item)"
+)
+SENTENCE_EXEMPT = {
+    SESAME_AS_RAHU: (rf"\b{_ANCESTOR_RITE}\b", _SESAME_IS_SATURNS),
+}
+
+
+def exempt_by_sentence(pattern: str, text: str, start: int, end: int) -> bool:
+    """True if the sentence holding text[start:end] is one `pattern` pins as legal."""
+    exempts = SENTENCE_EXEMPT.get(pattern)
+    if not exempts:
+        return False
+    a = max(text.rfind(c, 0, start) for c in ".;\n") + 1
+    cuts = [i for i in (text.find(c, end) for c in ".;\n") if i >= 0]
+    sentence = text[a: min(cuts) if cuts else len(text)]
+    return any(re.search(p, sentence, flags=re.IGNORECASE) for p in exempts)
+
+# V. Both nodes "in their friendly signs" as a Kaal Sarp cancellation (kaal-sarp-dosh.html,
+# and the FAQ in learn_registry.py). grahas.md 11.1 gives the nodes' friendships as
+# "classically friendly with Venus and Saturn" and says traditions vary, so the sourced
+# wording is "in signs ruled by their traditional friends (Venus, Saturn)". Narrow on
+# purpose: a single "Rahu in a friendly sign" (learn_registry.py's Rahu-dasha FAQ) is a
+# coherent claim and stays legal; only the paired-nodes cancellation shape is retired.
+KSD_NODES_FRIENDLY_SIGNS = (
+    r"\b(?:Rahu|Ketu)\s*(?:and|&|/)\s*(?:Rahu|Ketu)\b[^.;\n]{0,25}?\bin\s+(?:their\s+|its\s+)?"
+    r"friendly\s+(?:signs?|rashis?)"
+)
+
 # What Gate 6 forbids inside an llm_summary: FORBIDDEN, except that the bare
 # "milk offering" is replaced by MILK_TO_SHIVA (the claim #398 actually
 # retired is Moon -> Shiva; kaal-sarp-dosh-remedies has a Nag Panchami serpent
@@ -986,6 +1105,13 @@ SUMMARY_FORBIDDEN = tuple(
     (KSD_TRADITION_AS_CLASSICAL,
      "vedic_reference.md 3.2/8.1: Kaal Sarp is post-classical and Trimbakeshwar puja is folk practice; "
      "Nag Panchami and the silver pair are in no remedies.md row"),
+    # Slice 8.
+    (BIJA_PER_BPHS,
+     "remedies.md 6.3: the bija mantras are 'widely-accepted', attributed to no book; BPHS is not in data/"),
+    (URAD_AS_SATURN,
+     "Rao 34.3 (remedies.md 5.1): Saturn rules sesame seeds, Rahu rules black gram (urad) daal"),
+    (SESAME_AS_RAHU,
+     "Rao 34.3 (remedies.md 5.1): sesame is Saturn's grain; Rahu's is black gram (urad) daal"),
 )
 
 
@@ -1005,6 +1131,8 @@ def gate_6_no_retired_claims_in_summaries(summaries=None) -> bool:
     for slug, text in summaries:
         for pattern, why in SUMMARY_FORBIDDEN:
             for m in re.finditer(pattern, text, flags=re.IGNORECASE):
+                if exempt_by_sentence(pattern, text, m.start(), m.end()):
+                    continue
                 ok = False
                 _fail(f"{slug}: /{pattern}/ matched {m.group(0)!r} - {why}")
     if not summaries:
@@ -1185,6 +1313,22 @@ READER_FORBIDDEN = (
     (NON_VENUS_UNIVERSAL_SAFE,
      "Q: remedies.md 8 reserves 'the universal safe fallback' for Sri Yantra + Sri Sukta (Venus); "
      "the Saturn/Jupiter/Mercury/Mars pages may say 'a simple place to start', not universal or safe"),
+
+    # R-U: #398 slice 8. See the constants above for the sourcing of each.
+    (BPHS_REMEDY_ATTRIBUTION,
+     "R: BPHS is not in data/, and no book we hold shows a Parashara '<planet> adhyaya', a Surya Samhita "
+     "or a Muhurtha Chintamani 'charity list'; state what remedies.md supports and label the rest "
+     "devotional/folk tradition, under a heading that does not say 'Classical'"),
+    (BIJA_PER_BPHS,
+     "S: remedies.md 6.3 calls the bija mantras 'widely-accepted', attributed to no book; "
+     "'the full classical form per BPHS' is a claim nothing we hold supports"),
+    (URAD_AS_SATURN,
+     "T: Rao 34.3 gives Saturn sesame seeds and Rahu black gram (urad) daal; urad is not a Saturn grain"),
+    (SESAME_AS_RAHU,
+     "U: Rao 34.3 gives Rahu black gram (urad) daal and Saturn sesame seeds; sesame is not a Rahu grain"),
+    (KSD_NODES_FRIENDLY_SIGNS,
+     "V: grahas.md 11.1: the nodes' friendships (Venus, Saturn) come from tradition and vary; say "
+     "'signs ruled by their traditional friends', not 'their friendly signs'"),
 )
 
 # Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.
@@ -1247,6 +1391,40 @@ def reader_surface_units(root: Path | None = None):
     return units
 
 
+# W. Grain cross-assignments in `numerology.py`, where a string carries no planet word.
+# The charity / yantra strings of a NumerologyRemedy are about the planet in its `planet=`
+# keyword, so a text window cannot see them: QA round 1 (D1) put sesame back into the Rahu
+# row's yantra and charity strings and the gate stayed green. This reads the structure.
+NUMEROLOGY_GRAIN_RULES = {
+    "Rahu": (_SESAME, "Rao 34.3: sesame is Saturn's grain; Rahu's is black gram (urad) daal"),
+    "Saturn": (_URAD, "Rao 34.3: urad is Rahu's grain; Saturn's is sesame seeds"),
+}
+
+
+# Only the fields that say what to GIVE or OFFER. `fasting_day` is a meal, and Saturn's
+# "moong-urad khichdi with rock salt" is sourced in numerology.md (section 8 table).
+_OFFERING_FIELDS = ("charity", "yantra", "sacred_plants", "puja")
+
+
+def numerology_remedy_fields(root: Path | None = None):
+    """[(where, planet, text)] for each offering field of every `NumerologyRemedy(...)`."""
+    path = (root or SRC) / "numerology.py"
+    if not path.exists():
+        return []
+    rows = []
+    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+        if not (isinstance(node, ast.Call) and getattr(node.func, "id", None) == "NumerologyRemedy"):
+            continue
+        kw = {k.arg: k.value for k in node.keywords}
+        planet = kw.get("planet")
+        if not (isinstance(planet, ast.Constant) and isinstance(planet.value, str)):
+            continue
+        for name, val in kw.items():
+            if name in _OFFERING_FIELDS and isinstance(val, ast.Constant) and isinstance(val.value, str):
+                rows.append((f"numerology.py:{val.lineno}", planet.value, val.value))
+    return rows
+
+
 def _labelled_honestly(text: str, start: int, end: int) -> bool:
     """True if the line(s) holding the match call it popular/folk AND name Mars."""
     a = text.rfind("\n", 0, start) + 1
@@ -1267,7 +1445,7 @@ def _hanuman_saturn_same_line(text: str):
         pos += len(line) + 1
 
 
-def gate_7_no_retired_claims_on_reader_surfaces(units=None) -> bool:
+def gate_7_no_retired_claims_on_reader_surfaces(units=None, remedy_fields=None) -> bool:
     """`units` is an iterable of (where, text); default is the real tree.
 
     The parameter exists so `mutate_natal_prompt_gate.py` can feed it a
@@ -1276,6 +1454,7 @@ def gate_7_no_retired_claims_on_reader_surfaces(units=None) -> bool:
     print("Gate 7 - no retired claims on reader-facing surfaces "
           "(templates, learn_registry, festival_registry, i18n, numerology)")
     units = list(reader_surface_units() if units is None else units)
+    remedy_fields = list(numerology_remedy_fields() if remedy_fields is None else remedy_fields)
     ok = True
     missing = [s for s in _REQUIRED_SURFACES if not any(w.startswith(s) for w, _ in units)]
     if missing:
@@ -1294,14 +1473,27 @@ def gate_7_no_retired_claims_on_reader_surfaces(units=None) -> bool:
             for start, end, matched in found:
                 if row == _HANUMAN_ROW and _labelled_honestly(text, start, end):
                     continue
+                if exempt_by_sentence(pattern, text, start, end):
+                    continue
                 ok = False
                 hits += 1
                 line = base + text.count("\n", 0, start)
                 _fail(f"{path}:{line} matched "
                       f"{' '.join(matched.split())[:60]!r} - {why}")
+    seen = {planet for _, planet, _ in remedy_fields}
+    if not set(NUMEROLOGY_GRAIN_RULES) <= seen:
+        ok = False
+        _fail(f"W: no NumerologyRemedy row found for {sorted(set(NUMEROLOGY_GRAIN_RULES) - seen)} "
+              f"- the grain check there is looking at nothing")
+    for where, planet, text in remedy_fields:
+        rule = NUMEROLOGY_GRAIN_RULES.get(planet)
+        if rule and (m := re.search(rule[0], text, flags=re.IGNORECASE)):
+            ok = False
+            hits += 1
+            _fail(f"{where} matched {m.group(0)!r} in the {planet} remedy - {rule[1]}")
     if ok:
         print(f"  ok    {len(units)} text units x {len(READER_FORBIDDEN)} retired "
-              f"claim families: none present")
+              f"claim families + {len(remedy_fields)} numerology remedy fields: none present")
     return ok
 
 

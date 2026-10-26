@@ -654,7 +654,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Peak phase (~2.5y in 1st) → health, identity, self-doubt themes\n"
             "• Setting phase (~2.5y in 2nd) → family, speech, financial recovery themes\n"
             "• Not universally bad — forces maturity, discipline, long-term foundation\n"
-            "• Safe remedies: Vishnu worship, serve elderly, donate black daal / mustard oil\n"
+            "• Safe remedies: Vishnu worship, serve elderly, donate sesame / mustard oil\n"
             "• Do NOT blame all life difficulty on Sade Sati — check Dasha + transit context first"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
@@ -682,7 +682,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are real cancellation factors for Kaal Sarp?",
-                "a": "Strong Lagna lord, Jupiter in a kendra (1st/4th/7th/10th) or trine (5th/9th), Rahu and Ketu in friendly signs, exalted planets, presence of Raja or Dhana yogas, and natural softening after age 40-45 all reduce or cancel the dosha's effects. Most charts have at least one of these.",
+                "a": "Strong Lagna lord, Jupiter in a kendra (1st/4th/7th/10th) or trine (5th/9th), Rahu and Ketu in signs ruled by their traditional friends (Venus, Saturn), exalted planets, presence of Raja or Dhana yogas, and natural softening after age 40-45 all reduce or cancel the dosha's effects. Most charts have at least one of these.",
             },
             {
                 "q": "Are expensive Kaal Sarp removal pujas necessary?",
@@ -1228,7 +1228,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What are the genuine classical remedies for financial struggles?",
-                "a": "The most reliable: (1) Sri Yantra worship — the classical universal wealth-generating practice, can be done by anyone. (2) For Jupiter strengthening: Sri Sukta, Guru mantra (Om Brihaspataye Namah), Thursday fasting, feeding brahmins. (3) For 2nd house strengthening: disciplined honest speech (2nd rules speech, honest speech produces wealth), generous feeding of family and guests. (4) For 11th house gains: serving elder siblings and mentors. (5) For Rahu-related unstable wealth: Rahu mantra, donating black sesame. Avoid: expensive 'Lakshmi puja packages', speculation without genuine analysis, treating astrological wealth Dashas as guaranteed outcomes.",
+                "a": "The most reliable: (1) Sri Yantra worship — the classical universal wealth-generating practice, can be done by anyone. (2) For Jupiter strengthening: Sri Sukta, Guru mantra (Om Brihaspataye Namah), Thursday fasting, feeding brahmins. (3) For 2nd house strengthening: disciplined honest speech (2nd rules speech, honest speech produces wealth), generous feeding of family and guests. (4) For 11th house gains: serving elder siblings and mentors. (5) For Rahu-related unstable wealth: Rahu mantra, donating black gram (urad daal). Avoid: expensive 'Lakshmi puja packages', speculation without genuine analysis, treating astrological wealth Dashas as guaranteed outcomes.",
             },
         ),
         llm_summary=(
@@ -2807,7 +2807,7 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "Can Rahu remedies fix my addiction?", "a": "Remedies are a support layer, not a substitute for professional care. Rahu-driven addictions (substances, phone/gaming, compulsive behaviours) need therapy + medical support if severe. Remedies help by reducing the underlying restless craving over time."},
         ),
         llm_summary=(
-            'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhram Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) pilgrimage or research donation, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black gram/urad daal, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Anti-exploitation: legitimate Trimbakeshwar Nagbali ₹5-25K; anything quoted in lakhs is scam'
+            'Keypoints:\n• Rahu = shadow planet, karaka of ambition, foreignness, obsession, sudden change\n• 7 classical remedies: (1) Rahu Beej mantra "Om Bhraam Bhreem Bhraum Sah Rahave Namah" 108x daily, (2) pilgrimage or research donation, (3) Durga worship (Chalisa, Argala Stotram), (4) Saturday charity (black gram/urad daal, blue clothes, coconut), (5) Ganesha pre-invocation, (6) fasting Saturdays (partial), (7) Trimbakeshwar Nagbali for severe cases\n• Presiding deity: Durga\n• Day: Saturday\n• SAFE — no gemstone needed; hessonite requires chart analysis first\n• Timeline: weeks (habit), 2-6 mo (shifts), 6-12 mo (structural), year 2+ (deep)\n• Anti-exploitation: legitimate Trimbakeshwar Nagbali ₹5-25K; anything quoted in lakhs is scam'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
@@ -2825,7 +2825,7 @@ ARTICLES: tuple[Article, ...] = (
             {"q": "Why does Ketu cause 'mysterious' losses?", "a": "Ketu operates through what's karmically due to end. When something is meant to conclude — a relationship, career phase, health condition — Ketu accelerates its ending. Sometimes this looks 'mysterious' because there's no visible outer cause. Remedies help you cooperate with the ending consciously rather than resisting."},
         ),
         llm_summary=(
-            'Keypoints:\n• Ketu = shadow planet, karaka of detachment, past-life karma, mysterious losses, spiritual insight\n• 6 classical remedies: (1) Ganesha worship (presiding deity — Om Gam Ganapataye Namah 108x, Sankashti vrat), (2) Ketu Beej mantra "Om Sram Sreem Sraum Sah Ketave Namah" 108x, (3) service to elderly/ascetics/orphans/animals, (4) Tuesday charity (grey clothes, blankets), (5) fasting (Tuesday partial, Amavasya full, Ekadashi), (6) Pitru Paksha shraddha\n• Day: Tuesday (shared with Mars)\n• SAFE — no gemstone; cat\'s eye requires chart analysis\n• Timeline: weeks (habit), 2-6 mo (attachments loosen), year 2+ (subtle awareness emerges)'
+            'Keypoints:\n• Ketu = shadow planet, karaka of detachment, past-life karma, mysterious losses, spiritual insight\n• 6 classical remedies: (1) Ganesha worship (presiding deity — Om Gam Ganapataye Namah 108x, Sankashti vrat), (2) Ketu Beej mantra "Om Sraam Sreem Sraum Sah Ketave Namah" 108x, (3) service to elderly/ascetics/orphans/animals, (4) Tuesday charity (grey clothes, blankets), (5) fasting (Tuesday partial, Amavasya full, Ekadashi), (6) Pitru Paksha shraddha\n• Day: Tuesday (shared with Mars)\n• SAFE — no gemstone; cat\'s eye requires chart analysis\n• Timeline: weeks (habit), 2-6 mo (attachments loosen), year 2+ (subtle awareness emerges)'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
