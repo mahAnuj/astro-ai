@@ -432,9 +432,10 @@ def test_the_fold_skip_passage_reads_exactly_as_written_and_is_not_spliced(_ops,
 
 def test_the_fold_does_not_say_a_ceiling_means_the_path_cannot_be_measured(_ops, monkeypatch):
     """D2 of QA round 3. `skip_full` with `warm_n` 0 is ALSO what a light request on sparse
-    traffic produces (QA's fake-clock sweep: 640 of 723 cells at pred/limit 0.3), and natal
-    does yield counted samples in a 50-57 s idle-gap window, so the counters support
-    'spaced far apart OR bucket-sized' and nothing stronger."""
+    traffic produces (QA's fake-clock sweep: 640 of 723 cells at pred/limit 0.3), and whether a
+    bucket-sized request yields any counted sample depends on Groq's charging model and the
+    call latency (QA round 6), so the counters support 'spaced far apart OR bucket-sized' and
+    nothing stronger."""
     text = flat(panel(page(monkeypatch, usage([urow(K120, POPULATED)]))))
     for overclaim in ("cannot be measured by this instrument", "measured at all",
                       "on every call", "not under-deployed"):

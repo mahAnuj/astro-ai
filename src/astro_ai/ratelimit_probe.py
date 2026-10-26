@@ -227,11 +227,11 @@ def finish(ticket, rl, prefix, completion) -> dict | None:
             # `limit`). QA's fake-clock sweeps on PR #536 showed both give the
             # same signature -- `skip_full` rising while `warm_n` stays 0 -- so
             # it says "no usable samples", never "cannot be measured at all"
-            # and never a remedy: a bucket-sized request still yields a counted
-            # sample in a window about a second wide, so neither "closer
-            # calls" nor "farther calls" is true of it. It is kept apart from
-            # `skip_clamp` (an empty or negative prediction), which means
-            # something different.
+            # and never a remedy: whether closer or farther calls would help
+            # depends on the request size and on when Groq charges, which
+            # these counters do not show. It is kept apart from `skip_clamp`
+            # (an empty or negative prediction), which means something
+            # different.
             out["skip_full"] = 1
             return out
         if exp_full <= 0 or remaining == 0:
