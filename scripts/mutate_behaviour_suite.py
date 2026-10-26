@@ -3435,6 +3435,34 @@ MUTATIONS = [
      "          {{ RL.min_warm }} warm and {{ RL.min_cold }} cold samples for the model.\n",
      "",
      "test_the_live_verdict_is_not_the_recorded_decision_and_the_fold_says_so"),
+
+    # --- #384: the merge-conflict marker gate -------------------------------
+    # ARCHITECTURE.md reached main carrying a live conflict block and all 27
+    # gates passed over it. These four rows are the properties of the gate that
+    # replaced that silence; each one, broken, is a marker that ships again.
+    ("#384: the scanner drops git's diff3/zdiff3 base marker",
+     "scripts/verify_conflict_markers.py",
+     "DIRECTIONAL = (OURS, BASE, THEIRS)",
+     "DIRECTIONAL = (OURS, THEIRS)",
+     "test_the_diff3_base_marker_alone_turns_the_gate_red"),
+
+    ("#384: the pattern stops requiring a space or line end after the seven characters",
+     "scripts/verify_conflict_markers.py",
+     '"^(?:" + "|".join(re.escape(m) for m in DIRECTIONAL) + r")(?:\\s|$)")',
+     '"^(?:" + "|".join(re.escape(m) for m in DIRECTIONAL) + r")")',
+     "test_a_decorative_run_of_marker_characters_is_not_a_conflict"),
+
+    ("#384: a condemned file no longer reports the separator line as context",
+     "scripts/verify_conflict_markers.py",
+     "if SEPARATOR_RE.match(line):",
+     "if False:",
+     "test_the_separator_is_reported_as_context_in_a_condemned_file"),
+
+    ("#384: the gate stops noticing that it excluded its own source from the scan",
+     "scripts/verify_conflict_markers.py",
+     "if mine and mine in tracked_files(root) and mine not in scanned:",
+     "if mine and mine in tracked_files(root) and False:",
+     "test_a_gate_that_excluded_its_own_source_exits_two"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
