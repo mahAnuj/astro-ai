@@ -512,6 +512,67 @@ def check_triggers(name: str, doc: dict, rep: Report) -> None:
 COMMANDS_DIR = ROOT / ".claude" / "commands"
 
 
+#: A subagent runs inside the top-level session, so `--allowedTools` is its
+#: ceiling too: a tool the subagent DECLARES but the workflow omits is denied at
+#: the moment the subagent reaches for it.
+#:
+#: MEASURED 2026-10-25, run 40225736898. `agent-prioritise` granted
+#: `Agent,Read,Write,Glob,Grep,TodoWrite,Bash` and dispatched `project-manager`,
+#: whose own definition declares `Read, Grep, Glob, Bash, WebFetch`. The dispatch
+#: succeeded -- `Agent` was allowed, so the check above passed -- and then the
+#: subagent was denied `WebFetch`. Result: `num_turns: 2`,
+#: `permission_denials_count: 1`, `is_error: true`, $1.30, no `/tmp/report.md`,
+#: and "Publish the queue" failed with "No files were found". The loop had not
+#: succeeded since 2026-10-18.
+#:
+#: `agent-work.yml` records the same failure shape for the top-level agent:
+#: "enumerating verbs left the first nightly cycle with 4 denials and nothing to
+#: show ... A half-blocked agent spends its turns discovering what it may not
+#: do." The check above learned that lesson for `Agent` alone; this one carries
+#: it to the tools the dispatch is FOR.
+def _agent_declared_tools(agent: str, agents_dir: Path) -> set[str] | None:
+    """The `tools:` front-matter of one agent definition, or None if unreadable."""
+    f = agents_dir / f"{agent}.md"
+    if not f.is_file():
+        return None
+    try:
+        m = re.search(r"^tools:\s*(.+)$", f.read_text(encoding="utf-8"), re.M)
+    except OSError:
+        return None
+    if not m:
+        return None   # no declaration is not a denial; it inherits
+    return {t.strip() for t in m.group(1).split(",") if t.strip()}
+
+
+def _check_subagent_declared_tools(name: str, jid: str, allowed: set[str],
+                                   with_: dict, rep: "Report",
+                                   cmd_dir: Path) -> None:
+    prompt = str(with_.get("prompt") or "")
+    agents_dir = cmd_dir.parent / "agents"
+    for slash in re.findall(r"(?m)^[ \t]*/([a-z][a-z0-9-]*)(?=[ \t]|$)", prompt):
+        f = cmd_dir / f"{slash}.md"
+        if not f.is_file():
+            continue
+        try:
+            body = f.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for sub in sorted(set(re.findall(
+                r"""subagent_type\s*=\s*["']([a-z][a-z0-9-]*)""", body))):
+            declared = _agent_declared_tools(sub, agents_dir)
+            if not declared:
+                continue
+            missing = sorted(declared - allowed)
+            if missing:
+                rep.fail(name, None, f"jobs.{jid}", "subagent-tools",
+                         f"runs `/{slash}`, which dispatches `{sub}`, whose definition "
+                         f"declares {missing} -- denied by --allowedTools "
+                         f"{sorted(allowed)}. `Agent` being allowed is not enough: the "
+                         f"allow-list is the SUBAGENT's ceiling too, and it is denied the "
+                         f"moment it reaches for one. Measured on run 40225736898: 2 turns, "
+                         f"1 denial, no output, $1.30.")
+
+
 def check_subagent_tools(name: str, doc: dict, rep: Report,
                          cmd_dir: Path = COMMANDS_DIR) -> None:
     """A loop whose command dispatches a subagent must allow the `Agent` tool.
@@ -549,6 +610,7 @@ def check_subagent_tools(name: str, doc: dict, rep: Report,
                 continue   # no allow-list at all: nothing is denied, nothing to check
             allowed = {t.strip() for t in m.group(1).split(",") if t.strip()}
             if "Agent" in allowed:
+                _check_subagent_declared_tools(name, jid, allowed, with_, rep, cmd_dir)
                 continue
             # Only a slash command at the START of a prompt line is an invocation;
             # `/tmp/report.md` and `/admin/ops` appear in prose all over these files.
