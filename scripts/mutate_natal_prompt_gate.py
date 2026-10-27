@@ -363,6 +363,45 @@ GATE7_SAMPLES = {
           "Rahu & Ketu in their friendly rashis",
           "both Rahu/Ketu placed in friendly signs",
           "Cancellation: Rahu and Ketu are in its friendly sign and Jupiter is in a kendra"),
+    # X. Books nobody here holds named for the Manglik doctrine or Kumbh Vivah (#398 slice 9).
+    # The first two are the manglik-remedies callout and the manglik-dosh sentence as they stood.
+    "X": ("Jataka Parijata, Muhurtha Chintamani, Phaladeepika (Manglik doctrine + cancellation). Hanuman Chalisa "
+          "attributed to Tulsidas (16th c). Kumbh Vivah + Peepal Vivah \u2014 modern folk-remedial practice, "
+          "not attested in BPHS / Mansagari / Phaladeepika.",
+          "This is cultural practice, not scripture \u2014 it does not appear in BPHS, Mansagari, or Phaladeepika.",
+          "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS)",
+          "Jataka Parijata and Muhurta Chintamani (Mangal Dosha doctrine)",
+          "Phaladeepika, Mansagari: Manglik cancellation rules",
+          "Jataka Chandrika / Phaladeepika for Kuja dosha",
+          "Muhurtha Chintamani, Jataka Parijata and Phaladeepika \u2014 Manglik doctrine",
+          "Peepal Vivah is not found in Brihat Parashara Hora Shastra",
+          "Kumbh Vivah is nowhere mentioned in Mansagari",
+          "Kumbh Vivah, a pot-marriage ritual, is not listed in the Phaladeepika",
+          "Banana-tree marriage does not appear in BPHS",
+          "folk-remedial practice, never attested in Jataka Parijata",
+          # Kumbh / Peepal Vivah itself called classical, over a callout that says it is not.
+          "Classical remedy for severe uncancelled Manglik BEFORE marriage: Kumbh Vivah (marriage to a kumbh)",
+          "Classical tradition prescribes it for severe uncancelled Manglik before marriage \u2014 marriage to a "
+          "clay pot (kumbh) or peepal tree",
+          "Classical remedy for Manglik: Peepal Vivah",
+          "Kumbh Vivah is a classical remedy for severe Manglik",
+          "Peepal Vivah, the classical ritual for uncancelled Mangal dosha"),
+    # Y. The Aditya Hridaya Stotra given a Ramayana kanda and a sage (#398 slice 9). The first three
+    # are the surya-sun-remedies body, its FAQ and the surya-sun-in-vedic-astrology bullet as they stood.
+    "Y": ("The Aditya Hridaya Stotra is a Sanskrit hymn from the Ramayana (Yuddha Kanda) \u2014 Agastya Rishi "
+          "taught it to Rama on the battlefield to invoke Surya's power before slaying Ravana.",
+          "A Sanskrit hymn from the Ramayana (Yuddha Kanda) where Agastya Rishi taught it to Rama on the battlefield.",
+          "Aditya Hridayam Stotra \u2014 a powerful hymn from the Ramayana in praise of Sun, taught to Rama before "
+          "his final battle.",
+          "Aditya Hridaya is from the Yuddha Kand",
+          "Aditya Hrudayam, Yuddhakanda, verse 4",
+          "Sage Agasti taught Rama this stotra",
+          "Rama received it from Agastya",
+          "Ravana was defeated after Agastya's counsel to Rama",
+          "Aditya Hridayam appears in Valmiki's account of the war",
+          "The Aditya Hridaya Stotra is recited in the Ramayana",
+          "Ramayana's hymn to the Sun, Aditya Hridayam",
+          "Valmiki gave the Aditya Hridaya Stotra"),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -527,7 +566,6 @@ GATE7_LEGAL = (
     "Classical sources cited\nKumbh Vivah + Peepal Vivah \u2014 modern folk-remedial practice.",
     "Sources and traditions\nThe Somvar vrats and silver are devotional and family tradition that we have not "
     "traced to a classical text.",
-    "The Aditya Hridaya Stotra is a hymn from the Ramayana (Yuddha Kanda).",
     # QA round 1 (D2): three correct sentences the first T and U patterns flagged.
     "Saturn rules sesame seeds, Rahu rules black gram daal.",
     "Pitru dosh with Rahu: tarpan with black sesame",
@@ -540,6 +578,29 @@ GATE7_LEGAL = (
     # D4: the callout wording that replaced "the standard planet-by-planet remedy lists".
     "The Beej mantra in its widely-accepted seed form follows one modern textbook's planet-by-planet "
     "remedy table.",
+    # Slice 9. The shipped replacement text, and the neighbours the new patterns must leave alone.
+    "Sources and traditions\nThe Manglik rules themselves are not settled in the modern books we have checked. "
+    "One author says the dosha is not found in the standard texts and rejects the usual cancellations; another "
+    "lists a few antidotes and adds that much importance need not be given to it. Kumbh Vivah and Peepal Vivah "
+    "in particular are folk-remedial practices; we have found no classical source for them.",
+    "This is cultural practice, not scripture \u2014 we have found no classical source for it.",
+    "A folk-remedial practice for severe uncancelled Manglik BEFORE marriage (we have found no classical source "
+    "for it): Kumbh Vivah (marriage to a kumbh \u2014 clay pot)",
+    "It is a folk-remedial practice, not a classical one (we have found no classical source for it), offered for "
+    "severe uncancelled Manglik before marriage \u2014 marriage to a clay pot (kumbh) or peepal tree",
+    "Classical tradition recommends Manglik-Manglik matching, with one condition that most retellings drop.",
+    "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice; no classical source found)",
+    "Pitru Dosh is less systematic in the core classical canon (Brihat Parashara Hora Shastra, Phaladeepika, "
+    "Jataka Parijata) than Mangal Dosh or Sade Sati.",
+    "Per Jataka Parijata and Muhurtha Chintamani, a Yogakaraka cannot simultaneously be the source of a major dosha.",
+    "Dhana Yogas: Classical texts (BPHS, Phaladeepika, Saravali) list dozens.",
+    "The Aditya Hridaya Stotra is a Sanskrit hymn in praise of the Sun, and a long-standing Sun devotion. "
+    "Devotional tradition links it to Rama's final battle with Ravana.",
+    "The Sun-praise hymn Rama recited before defeating Ravana.",
+    "Aditya Hridayam recitation. The classical Sun stotra Rama received before his final battle with Ravana.",
+    "Hanuman was born under a Mars-influenced lagna in Ramayana lore.",
+    "Sundarakanda recitation \u2014 the fifth book of the Ramayana, entirely about Hanuman's adventures.",
+    "Ramayana and the Ramcharitmanas place the birth in the madhyahna hours.",
 )
 
 # The one honest Hanuman-Saturn sentence a page may keep: it must say popular/folk
@@ -831,6 +892,13 @@ def main() -> int:
         gate.SESAME_AS_RAHU: (("financial-struggles", "For Rahu-related unstable wealth: Rahu mantra, donating black sesame"),
                               ("rahu-remedies", "Rahu: offer sesame seeds"),
                               (None, "black til for Rahu")),
+        # Slice 9. The first row of X is the claim as it stood in manglik-remedies' summary.
+        gate.MANGLIK_UNHELD_BOOKS: (("manglik-remedies", "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS)"),
+                                    ("manglik-dosh", "Jataka Parijata, Muhurtha Chintamani, Phaladeepika (Manglik doctrine + cancellation)"),
+                                    (None, "Kumbh Vivah is not found in Mansagari")),
+        gate.HYMN_CHAPTER_ATTRIBUTION: (("surya-sun-remedies", "Aditya Hridaya Stotra, a hymn from the Ramayana (Yuddha Kanda)"),
+                                        (None, "Agastya taught Rama the Aditya Hridayam"),
+                                        (None, "Aditya Hridayam from Valmiki's Ramayana")),
     }
     first = real[0][0]
     for pattern, _why in gate.SUMMARY_FORBIDDEN:
@@ -863,6 +931,10 @@ def main() -> int:
         ("rahu-remedies", "Saturday charity (black gram/urad daal, blue clothes, coconut)"),
         ("saturn-remedies", "Saturn charity: sesame/iron/mustard-oil, Shani Beej mantra"),
         ("kundali-matching-ashtakoot-guna-milan", "Hasta (Antya), Anuradha (Madhya), Saturn-Jupiter temperaments"),
+        # Slice 9: the replacement wording, a comparison that names the books, and the folk Rama framing.
+        ("manglik-remedies", "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice; no classical source found)"),
+        ("pitru-dosh", "less systematic than Mangal Dosh (Brihat Parashara Hora Shastra, Phaladeepika, Jataka Parijata) or Sade Sati"),
+        ("surya-sun-remedies", "Aditya Hridaya Stotra recitation; devotional tradition links it to Rama's battle with Ravana"),
     ):
         mutated = [(slug, text + ("\n• " + legal if slug == target else "")) for slug, text in real]
         with redirect_stdout(io.StringIO()):

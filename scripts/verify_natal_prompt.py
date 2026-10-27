@@ -72,13 +72,16 @@ the 413 taught us about.
       called classical); the constants are shared with Gate 7. Slice 8 added
       three more: the bija mantras lent BPHS's name (S), urad given as a
       Saturn practice (T) and sesame as a Rahu one (U) - including a summary
-      that said "donate black daal / mustard oil" under Sade Sati.
+      that said "donate black daal / mustard oil" under Sade Sati. Slice 9
+      added two: the books nobody here holds named for the Manglik doctrine
+      or for Kumbh Vivah, one summary carrying "not attested in BPHS" (X), and
+      the Aditya Hridaya Stotra given a Ramayana kanda and a sage (Y).
 
   Gate 7 - no retired claims on the reader-facing surfaces.  The same claims
       sat on the pages a reader opens directly: the /learn article bodies,
       the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
       languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
-      is shown. This gate scans those surfaces for the twenty-two families #398
+      is shown. This gate scans those surfaces for the twenty-four families #398
       retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
       Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
       practice or as ANY planet's universal/classical/safe one (slice 5),
@@ -97,7 +100,10 @@ the 413 taught us about.
       (S), urad / black gram as a Saturn practice (T), sesame as a Rahu one (U) and both
       nodes "in their friendly signs" (V); plus, read from the AST because a
       `numerology.py` string carries no planet word, sesame in the Rahu remedy
-      row and urad in the Saturn one (W)
+      row and urad in the Saturn one (W), and (slice 9) the Manglik doctrine or
+      Kumbh Vivah attributed to Jataka Parijata / Muhurtha Chintamani /
+      Phaladeepika / Mansagari (X) and the Aditya Hridaya Stotra given a
+      Ramayana "Yuddha Kanda" and Agastya (Y)
       (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
       families still open on #398 ("black sesame", weekday fasting):
       forbidding them here would only make main red. A bare "per BPHS" is
@@ -1048,6 +1054,69 @@ KSD_NODES_FRIENDLY_SIGNS = (
     r"friendly\s+(?:signs?|rashis?)"
 )
 
+# --- #398 slice 9 ------------------------------------------------------------
+# Two more reader-facing defects, each checked against knowledge/*.md first.
+
+# X. Books nobody here holds, named as the source of the Manglik doctrine. The
+# manglik-remedies callout said "Jataka Parijata, Muhurtha Chintamani, Phaladeepika
+# (Manglik doctrine + cancellation)" and, over Kumbh Vivah, "not attested in BPHS /
+# Mansagari / Phaladeepika" (the llm_summary carried "not attested in BPHS" into the natal
+# message; manglik-dosh.html had "does not appear in BPHS, Mansagari, or Phaladeepika").
+# vedic_reference.md 1.6.2 records all of them as absent from data/ ("citation defect, #216
+# class") and the doctrine as contested: Vasudev says the dosha "is not to be found in the
+# standard astrological texts", Raman gives an antidote list and says "much importance need
+# not be given to Kuja Dosham" (grahas.md 12.4). What may be said is that the rules are not
+# settled and that Kumbh / Peepal Vivah have no classical source we found - without a book
+# name. It also pins Kumbh / Peepal Vivah itself being called "classical", which the callout
+# beside it denied. Written on the shapes retired, not on every mention: manglik-dosh.html and
+# manglik_check_result.html still say "per Jataka Parijata" / "compiled from Jataka
+# Parijata, Phaladeepika ..." as positive attribution, which is a larger, still-open
+# rewrite (so the "Manglik rules compiled from <books>" order is NOT pinned here).
+_UNHELD_BOOK = (r"(?:Jataka\s+Parijata?|Jataka\s+Chandrika|Muhurt\w*\s+Chintamani|Phaladeep\w*"
+                r"|Phaladip\w*|Mansagari|Manasagari|Brihat\s+Jataka)")
+_ANY_BOOK = rf"(?:BPHS|B\.P\.H\.S\.|{_PARASH}|{_UNHELD_BOOK})"
+_MANGLIK_WORD = r"(?:Mangl?ik|Mangal|Kuja|Mars\s+dosh\w*)"
+_VIVAH = r"(?:Kumbh|Kumbha|Peepal|Pipal|Ashwatha|Banana)"
+_NOT_IN = (r"(?:(?:does|do|is|are|was|were)\s+)?(?:not|never|nowhere)\s+(?:\w+\s+){0,2}?"
+           r"(?:attested|found|mentioned|listed|present|appears?|given)\s+in")
+MANGLIK_UNHELD_BOOKS = (
+    # a list of two or more of the books, then "(Manglik ..." / "for Manglik ...": the callout's shape.
+    # A comparison ("less systematic than Mangal Dosh", pitru-dosh) is not a source claim.
+    rf"\b{_UNHELD_BOOK}(?:\s*(?:,|/|&|and|or)\s*(?:and\s+|or\s+)?{_UNHELD_BOOK}){{1,4}}"
+    rf"\s*(?:\(|(?:for|on|about)\s+(?:the\s+)?|[:\u2014\-]+\s*)(?:the\s+)?{_MANGLIK_WORD}\b"
+    # Kumbh / Peepal Vivah "not attested in <books>"
+    rf"|\b{_VIVAH}\b[^.;\n]{{0,200}}?\b{_NOT_IN}\s+(?:the\s+)?{_ANY_BOOK}"
+    # the same, once the practice has been named in the sentence before
+    rf"|\b(?:cultural|folk)(?:[\s\-]+remedial)?\s+practice,?\s+not\s+(?:scripture|classical)\b"
+    rf"[^.;\n]{{0,40}}?\b{_NOT_IN}\s+(?:the\s+)?{_ANY_BOOK}"
+    rf"|\bfolk[\s\-]+remedial[^.;\n]{{0,40}}?\b{_NOT_IN}\s+(?:the\s+)?{_ANY_BOOK}"
+    # Kumbh / Peepal Vivah itself called classical, which the callout beside it denied
+    # (the page said "Classical remedy for severe uncancelled Manglik BEFORE marriage:
+    # Kumbh Vivah" and its FAQ "Classical tradition prescribes it for severe uncancelled
+    # Manglik ... marriage to a clay pot")
+    rf"|\bClassical\s+(?:remedy|tradition\s+prescribes\s+it)\s+for\s+(?:a\s+)?(?:severe\s+)?(?:uncancelled\s+)?Mangl?ik\b"
+    rf"|\b{_VIVAH}\s+Vivah\b[^.;\n]{{0,60}}?\bclassical\s+(?:remedy|practice|rite|ritual)\b"
+)
+
+# Y. The Aditya Hridaya Stotra given a chapter and a sage. surya-sun-remedies (body and
+# FAQ) said "a Sanskrit hymn from the Ramayana (Yuddha Kanda) - Agastya Rishi taught it to
+# Rama on the battlefield", and surya-sun-in-vedic-astrology "a powerful hymn from the
+# Ramayana ... taught to Rama". remedies.md 6.3 says only that the 108-name stotras "like
+# Aditya Hridayam for Sun" should be learned from a teacher; no file in knowledge/ links
+# the hymn to the Ramayana, a kanda or Agastya (slice 8's QA round had the Ramayana
+# sentence dropped from the Surya callout for the same reason). What stays legal: the folk
+# framing "devotional tradition links it to Rama's battle with Ravana" - it names no text,
+# chapter or sage - and a bare "the hymn Rama recited before defeating Ravana".
+_ADITYA_HYMN = r"Aditya\s+Hr[iu]d\w*"
+_EPIC = r"(?:Ramayan\w*|V[aā]lm[iī]ki)"
+HYMN_CHAPTER_ATTRIBUTION = (
+    r"\bYuddha[\s\-]*K[aā][nṇ][dḍ]\w*"
+    r"|\bAgast(?:ya|i)\w*[^.;\n]{0,80}?\b(?:Rama|Ram|Raghava|Ravana)\b"
+    r"|\b(?:Rama|Ram|Raghava|Ravana)\b[^.;\n]{0,80}?\bAgast(?:ya|i)\w*"
+    rf"|{_ADITYA_HYMN}[^.;\n]{{0,100}}?\b(?:from|in|of|by)\s+(?:the\s+)?{_EPIC}"
+    rf"|\b{_EPIC}[^.;\n]{{0,80}}?{_ADITYA_HYMN}"
+)
+
 # What Gate 6 forbids inside an llm_summary: FORBIDDEN, except that the bare
 # "milk offering" is replaced by MILK_TO_SHIVA (the claim #398 actually
 # retired is Moon -> Shiva; kaal-sarp-dosh-remedies has a Nag Panchami serpent
@@ -1112,6 +1181,13 @@ SUMMARY_FORBIDDEN = tuple(
      "Rao 34.3 (remedies.md 5.1): Saturn rules sesame seeds, Rahu rules black gram (urad) daal"),
     (SESAME_AS_RAHU,
      "Rao 34.3 (remedies.md 5.1): sesame is Saturn's grain; Rahu's is black gram (urad) daal"),
+    # Slice 9.
+    (MANGLIK_UNHELD_BOOKS,
+     "vedic_reference.md 1.6.2: the books named for the Manglik doctrine are absent from data/; "
+     "the rules are contested (grahas.md 12.4), and Kumbh/Peepal Vivah have no classical source we found"),
+    (HYMN_CHAPTER_ATTRIBUTION,
+     "remedies.md 6.3 says only that stotras like Aditya Hridayam are learned from a teacher; "
+     "nothing in knowledge/ gives it a Ramayana kanda or a sage"),
 )
 
 
@@ -1329,6 +1405,15 @@ READER_FORBIDDEN = (
     (KSD_NODES_FRIENDLY_SIGNS,
      "V: grahas.md 11.1: the nodes' friendships (Venus, Saturn) come from tradition and vary; say "
      "'signs ruled by their traditional friends', not 'their friendly signs'"),
+
+    # X-Y: #398 slice 9. See the constants above for the sourcing of each.
+    (MANGLIK_UNHELD_BOOKS,
+     "X: Jataka Parijata, Muhurtha Chintamani, Phaladeepika, Mansagari and BPHS are not in data/ "
+     "(vedic_reference.md 1.6.2); say the Manglik rules are not settled and that Kumbh / Peepal Vivah "
+     "have no classical source we found, naming no book"),
+    (HYMN_CHAPTER_ATTRIBUTION,
+     "Y: nothing in knowledge/ gives the Aditya Hridaya Stotra a Ramayana kanda or a sage; call it a "
+     "Sun devotion and, if the Rama story is kept, label it devotional tradition"),
 )
 
 # Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.
