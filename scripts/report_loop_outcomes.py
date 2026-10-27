@@ -79,9 +79,9 @@ BOT = "github-actions[bot]"
 
 # GitHub's own "closes #N" auto-close fires when a PR with a closing keyword is
 # merged, and it is attributed to the MERGER (events API: `closed`, actor=merger,
-# commit_id null), 1-2 seconds after `merged_at`. 4 of the 7 shortfalls the report
-# flagged on 2026-10-27 (PRs #481, #474, #471, #410) were exactly that, merged by
-# the repo owner: the loop was never going to close those, and the report called
+# commit_id null), 1-2 seconds after `merged_at`. 5 of the 7 shortfalls the report
+# flagged on 2026-10-27 (PRs #481, #474, #471, #410, #454) were exactly that, merged
+# by the repo owner: the loop was never going to close those, and the report called
 # it a miss (#495 part 3). 60s is generous against the 1-2s measured.
 KEYWORD_CLOSE_WINDOW = timedelta(seconds=60)
 
