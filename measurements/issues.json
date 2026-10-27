@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-27T00:17:37Z",
+  "generated_at": "2026-10-27T07:18:55Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 125,
-  "with_ask": 57,
+  "open": 126,
+  "with_ask": 58,
   "by_area": {
-    "UNCLASSIFIED": 52,
+    "UNCLASSIFIED": 53,
     "INFRA": 12,
     "REDESIGN": 10,
     "UI": 8,
@@ -35,7 +35,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 39,
+    "bug": 40,
     "untyped": 34,
     "enhancement": 27,
     "correctness": 8,
@@ -44,12 +44,27 @@
     "ui": 3
   },
   "by_priority": {
-    "unset": 79,
+    "unset": 80,
     "medium": 23,
     "high": 23
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 557,
+      "title": "publish_measurements.sh: one GraphQL error enabling auto-merge strands the measurement PR (#554)",
+      "ask": "Retry the gh pr merge --auto call a small bounded number of times with a short sleep (3 tries, a few seconds apart) before fail.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-27T03:55:12Z",
+      "updated": "2026-10-27T03:55:12Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 553,
       "title": "[CONTENT] /learn/panch-mahapurush-yoga/ tells readers Kundali Matching compares yogas (it does not) and never links /kundli, the tool that answers the page",
@@ -771,12 +786,12 @@
       "labels": [
         "bug",
         "priority:high",
-        "qa-pass",
+        "qa-fail",
         "provenance:trusted",
-        "qa:independent"
+        "qa:in-cycle"
       ],
       "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-26T01:36:49Z",
+      "updated": "2026-10-27T02:32:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -866,11 +881,12 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa-fail",
+        "qa-pass",
+        "provenance:trusted",
         "qa:in-cycle"
       ],
       "created": "2026-10-16T08:43:42Z",
-      "updated": "2026-10-26T17:51:07Z",
+      "updated": "2026-10-27T04:08:13Z",
       "blocked": false,
       "needs_evidence": false
     },
