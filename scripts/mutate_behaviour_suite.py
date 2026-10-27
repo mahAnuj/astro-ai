@@ -3097,10 +3097,14 @@ MUTATIONS = [
      "                pace_deadline=llm_providers.pace_deadline(),\n            ),\n        )\n        sections = [",
      "test_the_welcome_email_is_interactive_and_passes_no_deadline"),
 
+    # Anchor re-pointed for #475 Phase 3: `pacer` sat immediately before
+    # `pace_deadline` and both were positional, so deleting the pacer shifted
+    # this argument. Dropping the deadline entirely is the same defect the old
+    # row caught -- the job silently falls back to the interactive wait budget.
     ("#475: generate_rashifal does not hand the deadline to its pool workers",
      "src/astro_ai/llm.py",
-     "                pacer, pace_deadline,\n",
-     "                pacer,\n",
+     "                pace_deadline,\n",
+     "                None,\n",
      "test_generate_rashifal_hands_each_pool_call_its_own_wait_from_the_deadline"),
 
     ("#475: _generate_rashifal_single drops the deadline before providers.chat",
