@@ -385,7 +385,34 @@ GATE7_SAMPLES = {
           "clay pot (kumbh) or peepal tree",
           "Classical remedy for Manglik: Peepal Vivah",
           "Kumbh Vivah is a classical remedy for severe Manglik",
-          "Peepal Vivah, the classical ritual for uncancelled Mangal dosha"),
+          "Peepal Vivah, the classical ritual for uncancelled Mangal dosha",
+          # QA round 1, D1: mars-remedies.html:139 said this and the gate stayed green, because
+          # the book list sat in the SENTENCE AFTER the practice and every window stopped at the
+          # full stop. Spellings below were written against that, not against the first fix.
+          "Kumbh Vivah (a symbolic pre-marriage ceremony) \u2014 <strong>this is regional folk practice, "
+          "not scripture</strong>. It does not appear in BPHS, Mansagari, or Phaladeepika.",
+          "Kumbh Vivah is a folk ritual. It is absent from BPHS and Mansagari.",
+          "Marrying a Manglik to a pot is a village custom. It has no basis in Phaladeepika.",
+          "Kumbh Vivah is regional folk practice, not scripture.\nIt does not appear in Jataka Parijata or Mansagari.",
+          "Neither BPHS nor Mansagari mentions Kumbh Vivah.",
+          "BPHS, Mansagari and Phaladeepika say nothing about Kumbh Vivah.",
+          "You will not find Kumbh Vivah in Mansagari.",
+          "Kumbh Vivah is folk practice, not scripture. Phaladeepika is silent on it.",
+          "Kumbh Vivah is an oral tradition. None of BPHS, Mansagari or Phaladeepika has it.",
+          "Kumbh Vivah is folk practice, not scripture. It is not part of BPHS, Mansagari or Phaladeepika.",
+          "Peepal Vivah is a village custom. No trace of it exists in Phaladeepika.",
+          "Kumbh Vivah is one of the classical rituals for Manglik.",
+          "Kumbh Vivah is prescribed in classical texts for severe Manglik.",
+          "Classical remedy for Mangal dosha: marriage to a peepal tree before the wedding.",
+          # The same defect on the age-28 claim, found by D1(b)'s sweep of the live tree: a CLAIM TO HAVE
+          # CHECKED books nobody here holds (manglik-dosh.html, with the <em> tags a template carries).
+          "This is <strong>modern folk tradition, not classical scripture</strong>. We checked: <em>Phaladeepika</em>, "
+          "<em>Brihat Parashara Hora Shastra</em>, <em>Mansagari</em>, and <em>Jataka Parijata</em> contain no such verse.",
+          "We searched Phaladeepika and Mansagari for it and found nothing.",
+          "Manglik Dosh 'weakens after age 28'. This is modern folk tradition, not classical scripture \u2014 there is no "
+          "such verse in Phaladeepika, Brihat Parashara Hora Shastra, Mansagari, or Jataka Parijata.",
+          "'Weakens after age 28' is folk tradition, NOT classical scripture (not in BPHS, Phaladeepika, Mansagari, Jataka Parijata)",
+          "Kumbh Vivah is folk practice, not scripture. It is not found in <em>BPHS</em> or <em>Mansagari</em>."),
     # Y. The Aditya Hridaya Stotra given a Ramayana kanda and a sage (#398 slice 9). The first three
     # are the surya-sun-remedies body, its FAQ and the surya-sun-in-vedic-astrology bullet as they stood.
     "Y": ("The Aditya Hridaya Stotra is a Sanskrit hymn from the Ramayana (Yuddha Kanda) \u2014 Agastya Rishi "
@@ -401,7 +428,17 @@ GATE7_SAMPLES = {
           "Aditya Hridayam appears in Valmiki's account of the war",
           "The Aditya Hridaya Stotra is recited in the Ramayana",
           "Ramayana's hymn to the Sun, Aditya Hridayam",
-          "Valmiki gave the Aditya Hridaya Stotra"),
+          "Valmiki gave the Aditya Hridaya Stotra",
+          # Agastya and Rama together only count WITH a verb of teaching or giving (QA round 1, D2);
+          # these are the spellings of that, in both orders and with the possessive.
+          "Agastya taught the Aditya Hridayam to Rama.",
+          "Rama learned the hymn from the sage Agastya.",
+          "Agastya's advice to Rama was to chant the Aditya Hridayam.",
+          "Rama chanted the Aditya Hridayam on Agastya's instruction.",
+          "The hymn was given to Raghava by Agastya.",
+          "Rama recited the Aditya Hridayam as Agastya had told him.",
+          "Agastya recited the Sun hymn to Rama.",
+          "The Aditya Hridayam, from the epic Ramayana, is a Sun hymn."),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -601,6 +638,29 @@ GATE7_LEGAL = (
     "Hanuman was born under a Mars-influenced lagna in Ramayana lore.",
     "Sundarakanda recitation \u2014 the fifth book of the Ramayana, entirely about Hanuman's adventures.",
     "Ramayana and the Ramcharitmanas place the birth in the madhyahna hours.",
+    # Slice 9 QA round 1, D2: correct text the first X and Y fired on. A sentence that DENIES
+    # classical status is the correct one; "classical remedy for Manglik" is legal when the
+    # remedy is Hanuman worship; two names in one sentence are not a teaching claim.
+    "Kumbh Vivah is not a classical practice; it is folk tradition.",
+    "Classical remedy for Manglik is Hanuman worship.",
+    "Rama and Agastya appear in many regional tales.",
+    "Peepal Vivah is not a classical rite.",
+    "Peepal Vivah is not a classical ritual, and no classical text we hold prescribes it.",
+    "Kumbh Vivah has no classical source that we have found.",
+    "There is no classical remedy called Kumbh Vivah.",
+    "Classical remedy for severe Manglik: Hanuman worship. Kumbh Vivah is folk practice.",
+    "The classical remedy for Manglik is matching with another Manglik of comparable severity.",
+    "Kumbh Vivah is folk, whereas Hanuman worship is a classical practice.",
+    "Classical texts do not prescribe Kumbh Vivah.",
+    "Rama visited the hermitage of Agastya during his exile.",
+    "Agastya and Rama both appear in the Ramayana.",
+    "BPHS is not in data/, so we do not cite it.",
+    "This is modern folk tradition, not classical scripture. We have found no classical source for it. It may still resonate as wisdom.",
+    "We checked the chart's Mars placement from the Lagna, the Moon and Venus.",
+    # the wording slice 9 replaced it with, as it now ships (templates and summaries)
+    "It is a folk-remedial practice, not a classical one (we have found no classical source for it).",
+    "Kumbh Vivah is regional folk practice, not scripture; we have found no classical source for it.",
+    "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice; no classical source found)",
 )
 
 # The one honest Hanuman-Saturn sentence a page may keep: it must say popular/folk
@@ -895,7 +955,10 @@ def main() -> int:
         # Slice 9. The first row of X is the claim as it stood in manglik-remedies' summary.
         gate.MANGLIK_UNHELD_BOOKS: (("manglik-remedies", "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS)"),
                                     ("manglik-dosh", "Jataka Parijata, Muhurtha Chintamani, Phaladeepika (Manglik doctrine + cancellation)"),
-                                    (None, "Kumbh Vivah is not found in Mansagari")),
+                                    (None, "Kumbh Vivah is not found in Mansagari"),
+                                    ("mars-remedies", "Kumbh Vivah \u2014 regional folk practice, not scripture. It does not appear in BPHS, Mansagari, or Phaladeepika."),
+                                    (None, "Kumbh Vivah is a folk ritual. Phaladeepika, Mansagari and BPHS do not mention it."),
+                                    ("manglik-dosh", "\u2022 'Weakens after age 28' is folk tradition, NOT classical scripture (not in BPHS, Phaladeepika, Mansagari, Jataka Parijata)")),
         gate.HYMN_CHAPTER_ATTRIBUTION: (("surya-sun-remedies", "Aditya Hridaya Stotra, a hymn from the Ramayana (Yuddha Kanda)"),
                                         (None, "Agastya taught Rama the Aditya Hridayam"),
                                         (None, "Aditya Hridayam from Valmiki's Ramayana")),
@@ -935,6 +998,10 @@ def main() -> int:
         ("manglik-remedies", "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice; no classical source found)"),
         ("pitru-dosh", "less systematic than Mangal Dosh (Brihat Parashara Hora Shastra, Phaladeepika, Jataka Parijata) or Sade Sati"),
         ("surya-sun-remedies", "Aditya Hridaya Stotra recitation; devotional tradition links it to Rama's battle with Ravana"),
+        # Slice 9 QA round 1, D2: a sentence that denies classical status, and two names in one sentence.
+        ("manglik-remedies", "Kumbh Vivah is not a classical practice; it is folk tradition"),
+        ("manglik-remedies", "Classical remedy for Manglik is Hanuman worship"),
+        ("surya-sun-remedies", "Rama and Agastya appear in many regional tales"),
     ):
         mutated = [(slug, text + ("\n• " + legal if slug == target else "")) for slug, text in real]
         with redirect_stdout(io.StringIO()):

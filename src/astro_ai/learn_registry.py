@@ -823,7 +823,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Manglik Dosh weaken with age?",
-                "a": "You will often see online that Manglik Dosh 'weakens after age 28' or 'dissolves after 36'. This is modern folk tradition, not classical scripture — there is no such verse in Phaladeepika, Brihat Parashara Hora Shastra, Mansagari, or Jataka Parijata. It may resonate as folk wisdom (people do soften with age) but it should not be cited as classical authority.",
+                "a": "You will often see online that Manglik Dosh 'weakens after age 28' or 'dissolves after 36'. This is modern folk tradition, not classical scripture — we have found no classical source for it. It may resonate as folk wisdom (people do soften with age) but it should not be cited as classical authority.",
             },
         ),
         llm_summary=(
@@ -833,7 +833,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Cancellations (any ONE cancels): Jupiter aspect on Mars, mutual-Manglik partnership where both partners are Manglik of comparable severity, Mars in own/exalted sign, Cancer/Leo Ascendant exemption, Mars in same house from both charts\n"
             "• 'Comparable severity' is the classical requirement; the texts set no band, so Bhagya's own convention (state it as ours, not scripture) is that equal or adjacent grades on low/moderate/high are comparable and a low does NOT cancel a high\n"
             "• Popular Manglik readings routinely ignore cancellations — always check\n"
-            "• 'Weakens after age 28' is folk tradition, NOT classical scripture (not in BPHS, Phaladeepika, Mansagari, Jataka Parijata)\n"
+            "• 'Weakens after age 28' is folk tradition, NOT classical scripture (we found no classical source for it)\n"
             "• Effective status is per-chart: PRESENT / MITIGATED / CANCELLED"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
