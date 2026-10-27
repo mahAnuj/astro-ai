@@ -564,3 +564,146 @@ def test_workflow_posts_even_when_the_report_step_fails_and_never_closes():
     assert "gh issue comment" in publish and "gh issue create" in publish
     assert "gh issue close" not in text, "closing is a human decision"
     assert "GH_TOKEN: ${{ github.token }}" in text
+
+
+# --------------------------------------------------------------------------- #
+# #495 parts 2 and 3: partial/ and fix/ PRs are agent PRs; GitHub's own keyword
+# auto-close on a human merge is not a miss by the loop
+# --------------------------------------------------------------------------- #
+
+class _Routes(lo.Source):
+    """A Source answering by path prefix. The first matching prefix wins; anything
+    unrouted is a 404, which run_receipt already treats as UNKNOWN."""
+
+    def __init__(self, routes):
+        self.routes = routes
+
+    def get(self, path, paginate=False):
+        for prefix, value in self.routes:
+            if path.startswith(prefix):
+                return value
+        raise lo.ApiError(404, path, "unrouted in this test")
+
+
+def _listed(number, ref, updated="2026-10-09T01:00:00Z"):
+    return {"number": number, "head": {"ref": ref}, "updated_at": updated}
+
+
+def _pulls(*refs):
+    """(listing route, one full-PR route per entry) for pulls named by head ref."""
+    listing = [_listed(100 + i, ref) for i, ref in enumerate(refs)]
+    full = [(f"pulls/{100 + i}", {**_pr(100 + i, ref=ref), "created_at": "2026-10-09T01:20:00Z",
+                                  "merged_at": "2026-10-09T01:40:00Z"}) for i, ref in enumerate(refs)]
+    return [("pulls?state=all", listing), *full]
+
+
+def test_agent_prs_spans_issue_partial_and_fix_and_nothing_else():
+    # PR #492 was a `partial/` PR and the report could not see it (#495 part 2).
+    refs = ["issue/1-a", "partial/2-b", "fix/3-c", "feat/4-d", "measurements/5-e", "dependabot/pip/x"]
+    got = lo.agent_prs(_Routes(_pulls(*refs)), WINDOW)
+    assert [p["head"]["ref"] for p in got] == ["issue/1-a", "partial/2-b", "fix/3-c"]
+
+
+def test_check_work_counts_a_merged_partial_pr_as_what_the_run_produced():
+    # Runs 39883358107 / 39889312586 produced PR #492 (`partial/`) and agent-work
+    # reported "produced no merged PR" for them.
+    run = _run(1, "schedule", "success", "2026-10-09T01:00:00Z", "2026-10-09T01:30:00Z")
+    routes = [("actions/workflows/agent-work.yml", {"workflow_runs": [run]}),
+              ("actions/workflows/agent-measure.yml", {"workflow_runs": []}),
+              ("issues/comments", []), ("issues/events", []), *_pulls("partial/9-slice")]
+    work = next(f for f in lo.check_work(_Routes(routes), WINDOW) if f.loop == "agent-work")
+    assert work.verdict == lo.OK and "1 merged a PR" in work.sentence, work.sentence
+    # control: the same run beside only a non-agent branch really did produce nothing
+    routes[-2:] = _pulls("feat/9-slice")
+    other = next(f for f in lo.check_work(_Routes(routes), WINDOW) if f.loop == "agent-work")
+    assert other.verdict == lo.BROKEN
+
+
+def test_check_merge_expects_agent_merge_to_answer_a_partial_prs_gate_run():
+    # agent-merge decides by AUTHOR since 2026-10-25 and merges partial/ and fix/
+    # PRs, so a pr-gates completion on one is a completion it owes a run for.
+    gate = {**_run(7, "pull_request", "success", "2026-10-09T01:00:00Z", "2026-10-09T01:10:00Z"),
+            "head_branch": "partial/9-slice"}
+    routes = [("actions/workflows/pr-gates.yml", {"workflow_runs": [gate]}),
+              ("actions/workflows/agent-merge.yml", {"workflow_runs": []}),
+              ("actions/workflows/verify-production.yml", {"workflow_runs": []}),
+              ("issues/", []), *_pulls("partial/9-slice")]
+    legs = lo.check_merge(_Routes(routes), WINDOW)
+    wr = next(f for f in legs if f.loop == "agent-merge workflow_run leg")
+    assert wr.verdict == lo.BROKEN and "never fired" in wr.sentence, wr.sentence
+    # a gate on a branch no agent owns is not owed one
+    gate["head_branch"] = "feat/9-slice"
+    legs = lo.check_merge(_Routes(routes), WINDOW)
+    assert next(f for f in legs if f.loop == "agent-merge workflow_run leg").verdict == lo.IDLE
+
+
+@pytest.mark.parametrize("ref, body, expected, keyword, declined", [
+    # a partial PR must NOT make the report expect a close: close-on-evidence's
+    # branch-name fallback is `^issue/[0-9]+` alone, so it closes nothing here
+    ("partial/9-x", "refs #9", [], [], []),
+    ("partial/9-x", "", [], [], []),
+    ("fix/9-x", "", [], [], []),
+    ("partial/9-x", "closes #9", [9], [9], []),
+    # the branch-name claim is expected but is NOT a keyword claim
+    ("issue/9-x", "", [9], [], []),
+    ("issue/9-x", "Closes #9", [9], [9], []),
+])
+def test_claimed_issues_branch_namespaces_and_the_keyword_subset(ref, body, expected, keyword, declined):
+    c = lo.claimed_issues(_pr(1, body, ref))
+    assert (c["expected"], c["keyword"], c["declined"]) == (expected, keyword, declined)
+
+
+MERGED_AT = "2026-10-09T00:00:00Z"
+
+
+def _closed_at(login, created_at):
+    return [{"event": "closed", "actor": {"login": login}, "created_at": created_at}]
+
+
+def _human_merge(body="Closes #5", ref=None):
+    return _pr(5, body, ref, merged_at=MERGED_AT, by="mahAnuj")
+
+
+def test_a_keyword_auto_close_on_a_human_merge_is_not_a_miss_by_the_loop():
+    # PRs #481/#474/#471/#410: `closes #N`, merged by the owner, and GitHub closed
+    # the issue 1-2 s later, attributed to the merger. Not the loop's to do.
+    f = lo.classify_close([_human_merge()], VERIFIED, [], {5: _closed_at("mahAnuj", "2026-10-09T00:00:02Z")}, WINDOW)
+    assert f.verdict == lo.OK, f.sentence
+    assert "1 closed by GitHub's keyword on a human merge" in f.sentence
+    assert "0 issue(s) owed a close" in f.sentence      # not owed, so not counted as a shortfall
+
+
+def test_the_keyword_auto_close_window_is_sixty_seconds_inclusive():
+    at = lambda s: {5: _closed_at("mahAnuj", f"2026-10-09T00:{s // 60:02d}:{s % 60:02d}Z")}  # noqa: E731
+    assert lo.classify_close([_human_merge()], VERIFIED, [], at(60), WINDOW).verdict == lo.OK
+    late = lo.classify_close([_human_merge()], VERIFIED, [], at(61), WINDOW)
+    assert late.verdict == lo.BROKEN and "closed by mahAnuj, not by the loop" in late.sentence
+    # an event BEFORE the merge is somebody's earlier close, not this merge's auto-close
+    early = {5: _closed_at("mahAnuj", "2026-10-08T23:59:59Z")}
+    assert lo.classify_close([_human_merge()], VERIFIED, [], early, WINDOW).verdict == lo.BROKEN
+
+
+def test_a_close_by_someone_other_than_the_merger_is_still_a_miss():
+    f = lo.classify_close([_human_merge()], VERIFIED, [], {5: _closed_at("someone", "2026-10-09T00:00:02Z")}, WINDOW)
+    assert f.verdict == lo.BROKEN and "closed by someone, not by the loop" in f.sentence
+
+
+def test_a_keyword_issue_still_open_after_a_human_merge_is_still_a_miss():
+    f = lo.classify_close([_human_merge()], VERIFIED, [], {5: []}, WINDOW)
+    assert f.verdict == lo.BROKEN and "still open" in f.sentence
+
+
+def test_a_branch_name_claim_closed_by_the_merger_is_still_a_miss():
+    # No keyword: GitHub closed nothing, so a close by the merger within seconds is
+    # a human acting, and close-on-evidence's branch fallback was still owed.
+    pr = _human_merge(body="", ref="issue/5-x")
+    f = lo.classify_close([pr], VERIFIED, [], {5: _closed_at("mahAnuj", "2026-10-09T00:00:02Z")}, WINDOW)
+    assert f.verdict == lo.BROKEN
+
+
+def test_a_bot_merger_does_not_make_a_bot_close_an_auto_close():
+    # BOT as both merger and closer is the loop doing its job, counted as owed+done
+    f = lo.classify_close([_pr(5, "Closes #5", merged_at=MERGED_AT)], VERIFIED, [],
+                          {5: _closed_at(lo.BOT, "2026-10-09T00:00:02Z")}, WINDOW)
+    assert f.verdict == lo.OK and "1 issue(s) owed a close, all closed by the loop" in f.sentence
+    assert "keyword" not in f.sentence
