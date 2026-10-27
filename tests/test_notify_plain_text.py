@@ -155,10 +155,43 @@ def test_no_formatter_emits_markup_or_escapes(wire, event):
 
     With no parse mode, a `*` or a backtick in the owner's own labels is read
     as a literal `*` or backtick in the notification, and an inserted backslash
-    is read as a backslash. None of the inputs above contain any of the three,
-    so anything found here was added by the module.
+    is read as a backslash. None of the inputs above contain any of the five,
+    so anything found here was added by the module. `_` and `[` are the other
+    two characters the deleted `_escape_md` handled, and the old `'_(no name)_'`
+    placeholder was an underscore pair -- a guard that omits them cannot see it
+    come back.
     """
     getattr(notify, event.split("_without")[0])(**FORMATTER_CALLS[event])
     text = _payload(wire)["text"]
-    for ch in ("*", "`", "\\"):
+    for ch in ("*", "`", "\\", "_", "["):
         assert ch not in text, f"{event} emits {ch!r} as literal text: {text!r}"
+
+
+# Every argument the old `_escape_md` was applied to with no truthiness guard in
+# front of it. `_escape_md(None)` returned "", so these printed nothing; with the
+# call inlined an unguarded `{x}` prints the word "None" to the owner.
+NONE_FIELDS = [
+    ("new_signin", dict(email=None, name="Vikram", first_time=True)),
+    ("subscribed", dict(email=None, source="footer", lang="en")),
+    ("muhurat_computed", dict(event_type=None, city="Pune", days_range=30,
+                              good_count=3)),
+    ("muhurat_computed", dict(event_type="wedding", city=None, days_range=30,
+                              good_count=3)),
+    ("numerology_computed", dict(system=None, life_path=7, key="ab12cd34")),
+    ("error_seen", dict(source=None, error_type="ValueError",
+                        error_message="boom")),
+    ("error_seen", dict(source="natal", error_type="ValueError",
+                        error_message="boom", method="GET", path=None)),
+]
+
+
+@pytest.mark.parametrize(
+    "event,kwargs", NONE_FIELDS,
+    ids=[f"{e}-{next(k for k, v in kw.items() if v is None)}"
+         for e, kw in NONE_FIELDS])
+def test_a_missing_field_is_blank_not_the_word_none(wire, event, kwargs):
+    """Seven sites printed a literal `None` once `_escape_md` was inlined away:
+    the helper's `if not s: return ""` was doing a second job nobody listed."""
+    getattr(notify, event)(**kwargs)
+    text = _payload(wire)["text"]
+    assert "None" not in text, text

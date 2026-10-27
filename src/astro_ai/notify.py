@@ -256,7 +256,7 @@ def new_signin(*, email: str, name: str, first_time: bool) -> None:
     parts = [
         "🔐  " + ("New user signed up" if first_time else "User signed in"),
         f"👤 {name or '(no name)'}",
-        f"✉️ {email}",
+        f"✉️ {email or ''}",
     ]
     dedup = f"signin:{email}"
     notify("\n".join(parts), dedup_key=dedup)
@@ -266,7 +266,7 @@ def subscribed(*, email: str, source: str, lang: str) -> None:
     """/subscribe POST → email newsletter opt-in."""
     parts = [
         "📬  Newsletter subscribe",
-        f"✉️ {email}",
+        f"✉️ {email or ''}",
         f"📍 source={source} · lang={lang}",
     ]
     dedup = f"subscribe:{email}"
@@ -320,7 +320,7 @@ def muhurat_computed(
     """/muhurat POST → event-type muhurat search completed."""
     parts = [
         "📅  Muhurat search",
-        f"🎯 {event_type} in {city}",
+        f"🎯 {event_type or ''} in {city or ''}",
         f"📊 {good_count} auspicious of {days_range} days",
     ]
     if user_email:
@@ -334,7 +334,7 @@ def numerology_computed(*, system: str, life_path: int, key: str) -> None:
     `key` is `identity.short_key(identity_key(name, birth_date))`."""
     notify(
         _compose("🔢  Numerology reading",
-                 f"🛤 life path {life_path} · system={system}",
+                 f"🛤 life path {life_path} · system={system or ''}",
                  f"🔖 {key}" if key else ""),
         dedup_key=f"numerology:{key}",
     )
@@ -362,12 +362,12 @@ def error_seen(
         msg = msg[:500] + "…"
 
     parts = [
-        f"🚨  Error: {source}",
+        f"🚨  Error: {source or ''}",
         f"⚠️ {error_type}",
         f"💬 {msg}",
     ]
     if method or path:
-        parts.append(f"🌐 {method or '?'} {path}")
+        parts.append(f"🌐 {method or '?'} {path or ''}")
     if user_email:
         parts.append(f"✉️ {user_email}")
     if traceback_str:
