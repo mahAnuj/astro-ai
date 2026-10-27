@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-27T16:12:23Z",
+  "generated_at": "2026-10-27T21:07:56Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 127,
-  "with_ask": 58,
+  "open": 126,
+  "with_ask": 57,
   "by_area": {
-    "UNCLASSIFIED": 54,
+    "UNCLASSIFIED": 53,
     "INFRA": 12,
     "REDESIGN": 10,
     "UI": 8,
@@ -35,7 +35,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 41,
+    "bug": 40,
     "untyped": 34,
     "enhancement": 27,
     "correctness": 8,
@@ -46,7 +46,7 @@
   "by_priority": {
     "unset": 81,
     "medium": 23,
-    "high": 23
+    "high": 22
   },
   "blocked": 8,
   "rows": [
@@ -264,23 +264,6 @@
       "needs_evidence": false
     },
     {
-      "number": 495,
-      "title": "loop-outcomes reports working loops as BROKEN: collectors-only runs and every partial/ PR",
-      "ask": "REPORT_PATH[\"agent-measure\"] = \"measurements/latest.md\" and classify_report_loop demands a commit touching it from every successful run.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:high"
-      ],
-      "created": "2026-10-23T04:48:24Z",
-      "updated": "2026-10-23T04:48:24Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 490,
       "title": "[MEASURE] No per-page x per-day export, so no page-level ship can be scored before its 28-day window ends",
       "ask": "",
@@ -322,7 +305,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-21T17:59:35Z",
-      "updated": "2026-10-26T04:39:07Z",
+      "updated": "2026-10-27T20:52:07Z",
       "blocked": false,
       "needs_evidence": false
     },
