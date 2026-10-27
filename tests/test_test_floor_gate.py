@@ -151,3 +151,107 @@ def test_it_never_compares_against_local_main(repo: Path):
     src = GATE.read_text()
     assert '"merge-base", "HEAD", "origin/main"' in src
     assert 'for remote in ("origin/main", "main")' not in src
+
+
+# --- parametrize cases (#446 part 3 residual) --------------------------------
+# Independent QA on PR #448 deleted one entry from the literal list in
+# tests/test_dispatch_carrier.py and the gate printed `+9 added, 0 removed`,
+# PASS, exit 0: it compared `def test_*` NAMES, and a parametrised function is
+# one name however many cases it has. These pin the case-count comparison.
+
+PARAM3 = ('import pytest\n\n\n@pytest.mark.parametrize("x", [1, 2, 3])\n'
+          'def test_p(x):\n    pass\n')
+
+
+def _commit_param(repo: Path, body: str, msg: str = "edit") -> None:
+    (repo / "tests" / "test_p.py").write_text(body)
+    _git(repo, "add", "-A"); _git(repo, "commit", "-q", "-m", msg)
+
+
+@pytest.fixture
+def param_repo(repo: Path) -> Path:
+    """`repo`, but with a 3-case parametrised test already on origin/main."""
+    origin = repo.parent / "origin"
+    (origin / "tests" / "test_p.py").write_text(PARAM3)
+    _git(origin, "add", "-A"); _git(origin, "commit", "-q", "-m", "param")
+    _git(repo, "fetch", "-q", "origin")
+    _git(repo, "checkout", "-q", "-B", "work", "origin/main")
+    return repo
+
+
+def test_a_deleted_parametrize_case_fails_and_names_the_function(param_repo: Path):
+    _commit_param(param_repo, PARAM3.replace("[1, 2, 3]", "[1, 2]"))
+    r = _run(param_repo)
+    assert r.returncode == 1, r.stdout
+    assert "tests/test_p.py::test_p: 3 -> 2 cases" in r.stdout
+
+
+def test_a_middle_case_deleted_is_still_a_drop(param_repo: Path):
+    """Index-style IDs would only shift here; the count is what catches it."""
+    _commit_param(param_repo, PARAM3.replace("[1, 2, 3]", "[1, 3]"))
+    assert _run(param_repo).returncode == 1
+
+
+def test_an_added_parametrize_case_passes(param_repo: Path):
+    _commit_param(param_repo, PARAM3.replace("[1, 2, 3]", "[1, 2, 3, 4]"))
+    r = _run(param_repo)
+    assert r.returncode == 0, r.stdout
+
+
+def test_stacked_parametrize_is_a_product(param_repo: Path):
+    stacked = ('import pytest\n\n\n@pytest.mark.parametrize("y", ["a", "b"])\n'
+               '@pytest.mark.parametrize("x", [1, 2, 3])\n'
+               'def test_p(x, y):\n    pass\n')
+    _commit_param(param_repo, stacked)             # 3 -> 6: fine
+    assert _run(param_repo).returncode == 0
+    _git(param_repo, "checkout", "-q", "-B", "work2", "origin/main")
+    # [1] x [a, b] = 2 cases, below the base's 3.
+    _commit_param(param_repo, stacked.replace("[1, 2, 3]", "[1]"))
+    r = _run(param_repo)
+    assert r.returncode == 1, r.stdout
+    assert "3 -> 2 cases" in r.stdout
+
+
+def test_a_name_bound_once_to_a_literal_is_followed(param_repo: Path):
+    named = ('import pytest\n\nCASES = [1, 2, 3]\n\n\n'
+             '@pytest.mark.parametrize("x", CASES)\n'
+             'def test_p(x):\n    pass\n')
+    _commit_param(param_repo, named)
+    assert _run(param_repo).returncode == 0
+    _git(param_repo, "checkout", "-q", "-B", "work2", "origin/main")
+    _commit_param(param_repo, named.replace("[1, 2, 3]", "[1, 2]"))
+    r = _run(param_repo)
+    assert r.returncode == 1 and "3 -> 2 cases" in r.stdout
+
+
+def test_computed_argvalues_do_not_crash_and_a_literal_turned_computed_fails(param_repo: Path):
+    computed = ('import pytest\n\n\n@pytest.mark.parametrize("x", sorted({1, 2, 3}))\n'
+                'def test_p(x):\n    pass\n')
+    _commit_param(param_repo, computed)
+    r = _run(param_repo)
+    # 3 literal cases became uncountable: unverifiable, so not a pass.
+    assert r.returncode == 1, r.stdout
+    assert "cannot be counted" in r.stdout
+    assert "Traceback" not in r.stderr
+
+
+def test_a_computed_base_is_not_compared(repo: Path):
+    """Nothing was verifiable at the base, so nothing can be said to be lost."""
+    origin = repo.parent / "origin"
+    computed = ('import pytest\n\n\n@pytest.mark.parametrize("x", sorted({1, 2, 3}))\n'
+                'def test_p(x):\n    pass\n')
+    (origin / "tests" / "test_p.py").write_text(computed)
+    _git(origin, "add", "-A"); _git(origin, "commit", "-q", "-m", "param")
+    _git(repo, "fetch", "-q", "origin")
+    _git(repo, "checkout", "-q", "-B", "work", "origin/main")
+    _commit_param(repo, computed.replace("{1, 2, 3}", "{1, 2}"))
+    r = _run(repo)
+    assert r.returncode == 0, r.stdout
+
+
+def test_a_declared_drop_passes_a_case_drop(param_repo: Path):
+    _commit_param(param_repo, PARAM3.replace("[1, 2, 3]", "[1, 2]"),
+                  "trim\n\nTest-Count-Drop: case 3 duplicated case 2")
+    r = _run(param_repo)
+    assert r.returncode == 0, r.stdout
+    assert "case 3 duplicated case 2" in r.stdout

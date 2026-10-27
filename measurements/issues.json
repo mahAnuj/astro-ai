@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-10-26T10:46:34Z",
+  "generated_at": "2026-10-27T00:17:37Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 124,
+  "open": 125,
   "with_ask": 57,
   "by_area": {
     "UNCLASSIFIED": 52,
@@ -13,6 +13,7 @@
     "SEO": 3,
     "SECURITY": 3,
     "NUMEROLOGY": 3,
+    "CONTENT": 2,
     "DETECT_STALLS": 2,
     "AGENT-MERGE": 2,
     "RASHIFAL": 2,
@@ -23,7 +24,6 @@
     "MEASURE": 1,
     "REPO": 1,
     "CHART": 1,
-    "CONTENT": 1,
     "GATES": 1,
     "ASK": 1,
     "ARCHITECTURE": 1,
@@ -37,19 +37,36 @@
   "by_type": {
     "bug": 39,
     "untyped": 34,
-    "enhancement": 26,
+    "enhancement": 27,
     "correctness": 8,
     "chore": 7,
     "design": 7,
     "ui": 3
   },
   "by_priority": {
-    "unset": 78,
+    "unset": 79,
     "medium": 23,
     "high": 23
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 553,
+      "title": "[CONTENT] /learn/panch-mahapurush-yoga/ tells readers Kundali Matching compares yogas (it does not) and never links /kundli, the tool that answers the page",
+      "ask": "",
+      "area": "CONTENT",
+      "type": "enhancement",
+      "priority": "unset",
+      "labels": [
+        "enhancement",
+        "seo",
+        "content"
+      ],
+      "created": "2026-10-26T23:35:18Z",
+      "updated": "2026-10-26T23:35:24Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 543,
       "title": "Nothing executes the shell `repro:` dialect, so step 0's probe has run on 0 of 123 open issues",
@@ -61,10 +78,12 @@
         "category:technical",
         "priority:medium",
         "chore",
-        "provenance:trusted"
+        "qa-fail",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-26T05:05:03Z",
-      "updated": "2026-10-26T05:35:15Z",
+      "updated": "2026-10-26T16:46:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -393,10 +412,12 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "qa-fail",
+        "qa:in-cycle"
       ],
       "created": "2026-10-21T04:44:34Z",
-      "updated": "2026-10-21T04:44:34Z",
+      "updated": "2026-10-26T17:51:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -506,10 +527,13 @@
       "priority": "high",
       "labels": [
         "category:technical",
-        "priority:high"
+        "priority:high",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-20T09:27:06Z",
-      "updated": "2026-10-23T21:13:51Z",
+      "updated": "2026-10-26T17:50:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -841,10 +865,12 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "qa-fail",
+        "qa:in-cycle"
       ],
       "created": "2026-10-16T08:43:42Z",
-      "updated": "2026-10-16T08:43:42Z",
+      "updated": "2026-10-26T17:51:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -887,10 +913,12 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "provenance:trusted"
+        "qa-fail",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-16T03:48:40Z",
-      "updated": "2026-10-16T15:20:40Z",
+      "updated": "2026-10-26T17:50:56Z",
       "blocked": false,
       "needs_evidence": false
     },

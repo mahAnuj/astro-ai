@@ -2688,6 +2688,29 @@ MUTATIONS = [
      "elif False:",
      "test_a_method_removed_from_a_test_class_fails"),
 
+    # ---- #446 part 3 residual: parametrize case counts -----------------------
+    # QA on PR #448 deleted one case from a literal list and got PASS, exit 0.
+    ("#446: a deleted parametrize case is invisible again (names only)",
+     "scripts/verify_test_floor.py",
+     "elif before[name] is not None and head[name] < before[name]:",
+     "elif False:",
+     "test_a_deleted_parametrize_case_fails_and_names_the_function"),
+    ("#446: stacked parametrize decorators are summed, not multiplied",
+     "scripts/verify_test_floor.py",
+     "else total * n",
+     "else total + n",
+     "test_stacked_parametrize_is_a_product"),
+    ("#446: a literal list that became computed is read as still fine",
+     "scripts/verify_test_floor.py",
+     "if before[name] is not None and head[name] is None:",
+     "if False:",
+     "test_computed_argvalues_do_not_crash_and_a_literal_turned_computed_fails"),
+    ("#446: a parametrize list held in a module-level name is not followed",
+     "scripts/verify_test_floor.py",
+     "if isinstance(node, ast.Name) and node.id in bound:",
+     "if False:",
+     "test_a_name_bound_once_to_a_literal_is_followed"),
+
     # --- #419/#452 QA round 4: F-1, F-2, F-3, F-5, F-6, BUG-5, BUG-6 --------
     # F-2 is the headline: the stacked bars had NO test and NO row, so all three
     # of these survived the whole suite and the 266-row sweep -- and the second

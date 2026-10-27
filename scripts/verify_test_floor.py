@@ -21,9 +21,27 @@ and the floor is what caught it.
 
 So the floor is now computed: count the tests at the MERGE BASE with
 `origin/main`, count them at HEAD, and require HEAD not to be lower. Nothing is
-stored, so nothing conflicts, and the comparison is strictly stronger than a
-constant — a stale constant drifts below the real count and stops protecting
-anything, which is precisely what a hand-edited floor does between bumps.
+stored, so nothing conflicts, and a stale constant drifts below the real count
+and stops protecting anything, which is precisely what a hand-edited floor does
+between bumps.
+
+WHAT IT COMPARES, STATED PRECISELY (this paragraph used to say "strictly stronger
+than a constant", which was false and was FAILED by independent QA on PR #448):
+  * test NAMES, so a deleted or renamed-out-of-`test_*` function is named; and
+  * the CASE COUNT of a function decorated with `pytest.mark.parametrize`, when
+    its argvalues is a literal list/tuple (or a module-level name bound once to
+    one). Names alone could not see a deleted case: QA removed one entry from the
+    list in tests/test_dispatch_carrier.py and got `+9 added, 0 removed`, PASS.
+    Stacked decorators multiply.
+It does NOT see: a parametrize whose argvalues is computed (`sorted(X)`,
+`range(n)`, a comprehension, a call) -- those are "unknown", and a literal at the
+base that became computed at HEAD is reported as unverifiable and fails; it does
+NOT see class-level parametrize, `pytest_generate_tests`, or fixture params; and
+it is NOT pytest collection. Nor is it a replacement for the `EXPECTED_TESTS`
+backstop, whose slack GROWS as PRs add tests (it is one integer, not re-derived),
+so the backstop alone would let a few dozen tests vanish unnoticed.
+`Test-Count-Drop:` in a commit message is a DECLARED BYPASS: `verify_no_relaxation`
+does not read it, so it is a reviewer's job to read the reason.
 
 COUNTED BY PARSING, NOT BY COLLECTING. `ast` over `tests/**/*.py` needs only the
 FILES, which `git show` hands over for any commit without a checkout, a venv or
@@ -31,7 +49,7 @@ an importable tree. Collection at an old commit would need all three. The two
 counts are therefore measured the same way on both sides, which is the only
 thing a comparison requires.
 
-It also reports WHICH tests disappeared. The old gate printed a number, so a
+It also reports WHICH tests (and how many cases) disappeared. The old gate printed a number, so a
 drop meant a manual hunt; both times it happened that hunt is what took the
 time, not the discovery.
 
@@ -44,7 +62,7 @@ convenient.
 EXIT CODES
   0  the count did not fall (or a drop is declared, or there is no base to
      compare against — reported, never silent)
-  1  tests disappeared and nothing declared it
+  1  tests or literal-parametrize cases disappeared and nothing declared it
   2  could not run: git failed, or `tests/` is missing. NOT a pass.
 """
 from __future__ import annotations
@@ -66,7 +84,37 @@ def git(*args: str) -> str:
     return out.stdout
 
 
-def _names_from_source(src: str, path: str) -> set[str]:
+# name -> literal parametrize case count (1 for an unparametrised test), or
+# None when a parametrize argvalues is computed and so cannot be counted.
+Counts = dict[str, "int | None"]
+
+
+def _literal_len(node: ast.expr, bound: dict[str, ast.expr]) -> int | None:
+    """Length of a literal list/tuple, following one module-level name."""
+    if isinstance(node, ast.Name) and node.id in bound:
+        node = bound[node.id]
+    if isinstance(node, (ast.List, ast.Tuple)) and not any(
+            isinstance(e, ast.Starred) for e in node.elts):
+        return len(node.elts)
+    return None
+
+
+def _case_count(fn: ast.FunctionDef | ast.AsyncFunctionDef,
+                bound: dict[str, ast.expr]) -> int | None:
+    """Product of the literal argvalues lengths of every `parametrize` on `fn`."""
+    total: int | None = 1
+    for dec in fn.decorator_list:
+        if not (isinstance(dec, ast.Call) and isinstance(dec.func, ast.Attribute)
+                and dec.func.attr == "parametrize"):
+            continue
+        vals = dec.args[1] if len(dec.args) > 1 else next(
+            (k.value for k in dec.keywords if k.arg == "argvalues"), None)
+        n = _literal_len(vals, bound) if vals is not None else None
+        total = None if (n is None or total is None) else total * n
+    return total
+
+
+def _names_from_source(src: str, path: str) -> Counts:
     """`def test_*` at module level or inside a Test* class, as `path::name`.
 
     A SyntaxError is not zero tests — it is a file this cannot read, and
@@ -74,31 +122,54 @@ def _names_from_source(src: str, path: str) -> set[str]:
     the caller exits 2 rather than 1.
     """
     tree = ast.parse(src, filename=path)
-    found: set[str] = set()
+    # A name assigned exactly once at module level to a literal; anything
+    # reassigned is ambiguous and is left out (so its parametrize is "unknown").
+    seen: dict[str, int] = {}
+    bound: dict[str, ast.expr] = {}
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            for t in node.targets:
+                if isinstance(t, ast.Name):
+                    seen[t.id] = seen.get(t.id, 0) + 1
+                    bound[t.id] = node.value
+    bound = {k: v for k, v in bound.items() if seen[k] == 1}
+    found: Counts = {}
     for node in tree.body:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("test"):
-            found.add(f"{path}::{node.name}")
+            found[f"{path}::{node.name}"] = _case_count(node, bound)
         elif isinstance(node, ast.ClassDef) and node.name.startswith("Test"):
             for sub in node.body:
                 if isinstance(sub, (ast.FunctionDef, ast.AsyncFunctionDef)) and sub.name.startswith("test"):
-                    found.add(f"{path}::{node.name}::{sub.name}")
+                    found[f"{path}::{node.name}::{sub.name}"] = _case_count(sub, bound)
     return found
 
 
-def names_at(ref: str | None) -> set[str]:
-    """Every test name at `ref`, or in the working tree when `ref` is None."""
-    out: set[str] = set()
+def names_at(ref: str | None) -> Counts:
+    """Every test name at `ref` (with case count), or the working tree if None."""
+    out: Counts = {}
     if ref is None:
         for p in sorted((ROOT / TESTS).rglob("test_*.py")):
             rel = p.relative_to(ROOT).as_posix()
-            out |= _names_from_source(p.read_text(encoding="utf-8"), rel)
+            out.update(_names_from_source(p.read_text(encoding="utf-8"), rel))
         return out
     listing = git("ls-tree", "-r", "--name-only", ref, "--", TESTS)
     for rel in listing.splitlines():
         name = rel.rsplit("/", 1)[-1]
         if not (name.startswith("test_") and rel.endswith(".py")):
             continue
-        out |= _names_from_source(git("show", f"{ref}:{rel}"), rel)
+        out.update(_names_from_source(git("show", f"{ref}:{rel}"), rel))
+    return out
+
+
+def case_drops(before: Counts, head: Counts) -> list[str]:
+    """Tests present in both whose literal parametrize case count fell."""
+    out: list[str] = []
+    for name in sorted(set(before) & set(head)):
+        if before[name] is not None and head[name] is None:
+            out.append(f"{name}: {before[name]} cases at the base, now computed "
+                       "-- cannot be counted")
+        elif before[name] is not None and head[name] < before[name]:
+            out.append(f"{name}: {before[name]} -> {head[name]} cases")
     return out
 
 
@@ -155,6 +226,8 @@ def main() -> int:
     # one name here and N cases there. Both sides are measured the same way, so
     # the comparison holds -- but the numbers differ from `verify_behaviour.py`'s
     # and that must not read as a regression.
+    # Literal parametrize cases are compared per function (see `lost`), but this
+    # is still not pytest's collected count.
     print(f"  HEAD: {len(head)} test functions (not pytest cases) in {TESTS}/")
 
     if base is None:
@@ -170,27 +243,30 @@ def main() -> int:
         return 2
 
     print(f"  base: {len(before)} at {base[:9]}")
-    gone = sorted(before - head)
+    # Names first (the original comparison), then per-function case counts.
+    head_counts, before_counts = head, before
+    head, before = set(head_counts), set(before_counts)
+    gone = sorted(before - head) + case_drops(before_counts, head_counts)
     added = len(head - before)
 
     if not gone:
-        print(f"  +{added} added, 0 removed")
+        print(f"  +{added} added, 0 removed (names, and literal parametrize case counts)")
         print(f"\nPASS ({len(head)} >= {len(before)})")
         return 0
 
     reason = drop_declared()
-    print(f"  +{added} added, {len(gone)} REMOVED:")
+    print(f"  +{added} added, {len(gone)} REMOVED (tests or cases):")
     for name in gone[:25]:
         print(f"    - {name}")
     if len(gone) > 25:
         print(f"    ... and {len(gone) - 25} more")
 
     if reason:
-        print(f"\nPASS — {len(gone)} test(s) removed, declared: Test-Count-Drop: {reason}")
+        print(f"\nPASS — {len(gone)} test(s)/case-set(s) removed, declared: Test-Count-Drop: {reason}")
         print("       The deletion is deliberate and its reason is in the commit.")
         return 0
 
-    print(f"\nFAIL — {len(gone)} test(s) present at the merge base are gone at HEAD, and")
+    print(f"\nFAIL — {len(gone)} test(s) or parametrized case(s) at the merge base are gone at HEAD, and")
     print("       nothing declared it. Each test in this repo is a defect that")
     print("       shipped; deleting one removes the proof it cannot come back.")
     print("       If the deletion IS deliberate, say so where it can be reviewed:")
