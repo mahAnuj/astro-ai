@@ -1225,10 +1225,18 @@ Re-derived for #475 Phase 3 rather than re-tuned. Concurrency and token rate
 are different controls, so the bucket does not subsume this one: raising it
 would not spend tokens faster — the bucket would simply make the extra workers
 wait — and lowering it would not save any, because the bucket already governs
-the rate. What it does change is wall-clock: 12 calls two-wide at ~8-12s each
-is ~6 waves, ~50-70s, which sits inside the 300s Cloud Run timeout with the
-bucket's waits on top. That is the constraint it is set against, and the
-figure to re-measure if the timeout or the per-call latency moves.
+the rate. That holds while reservations are WAITED for. It does not hold on
+the forced pass (`reserve(force=True)` never waits, and a call past the job's
+pacing deadline takes it), where more workers in flight do spend tokens
+faster, un-paced — one more reason to keep this at 2.
+
+What it does change is wall-clock: 12 calls two-wide is 6 waves. At ~8-12s per
+call that would be ~50-70s, inside the 300s Cloud Run timeout with the
+bucket's waits on top — but the ~8-12s is an ASSUMPTION, not a measurement
+(no per-call latency has been recorded anywhere in this repo; #475 says so),
+and 20s per call would make the same six waves ~120s before any bucket wait.
+That is the constraint it is set against, and the figure to measure if the
+timeout or the per-call latency moves.
 
 WHY THERE IS NO SECOND PACER HERE ANY MORE (#475 Phase 3)
 ---------------------------------------------------------

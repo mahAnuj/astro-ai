@@ -138,7 +138,7 @@ src/astro_ai/
   numerology.py    1,910  Chaldean + Lo Shu calculators
   festival_registry.py 1,509
   muhurat.py       1,475  electional scoring; shares angas with panchang
-  llm.py           1,521  prompt assembly, rashifal fan-out
+  llm.py           1,529  prompt assembly, rashifal fan-out
   rashifal_derive.py 144  /rashifal/{rashi} reading cut from the cached combined text (#268)
   matching.py      1,056  Ashtakoota 36-guna
   i18n.py          1,220  en/hi, symmetric key sets — enforced by
@@ -811,9 +811,12 @@ Dated, with the evidence. **Check here before proposing a change.**
 - **Relocating the GCS bucket** to match Cloud Run's region — free tier is US-only.
 - **Background task / worker for rashifal generation** — requires a billing change
   (`--no-cpu-throttling` bills for full instance lifetime). Explicitly declined on cost.
-- **A pacer spreading LLM call starts** — built, tested, and disabled. `reasoning_effort`
-  removed the token pressure it existed for, and it only cost wall-clock against the
-  timeout. Code retained for if pressure returns.
+- **A pacer spreading LLM call starts** — built, disabled, then deleted (#475 Phase 3).
+  `reasoning_effort` removed the token pressure it existed for, and it only cost
+  wall-clock against the timeout. It was never tested (nothing under `tests/` referenced
+  it), and when pressure did return the answer was the per-model token bucket, not this.
+  Not retained "for if pressure returns": a second pacer beside the bucket is the
+  disagreement Phase 3 exists to prevent.
 - **Showing book/author names to users** — explicitly not wanted; cite the tradition.
 - **Widening `_attribute` in `verify_learn_article_dates.py` to reach yearless dates**
   (#193) — the escaping strings sit on lines naming a *different* observance:
