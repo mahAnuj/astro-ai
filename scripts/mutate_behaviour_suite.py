@@ -620,6 +620,68 @@ MUTATIONS = [
      '        return ts(t) <= self.until - GRACE',
      '        return ts(t) < self.until - GRACE',
      "test_the_grace_boundary_is_inclusive_one_second_either_side"),
+    # #495: loop-outcomes false positives -- partial/ and fix/ PRs, and GitHub's own
+    # keyword auto-close on a human merge.
+    ('#495: the agent-PR namespaces shrink back to issue/ (every partial/ and fix/ PR is invisible again)',
+     "scripts/report_loop_outcomes.py",
+     'AGENT_BRANCH_NAMESPACES = ("issue/", "partial/", "fix/")',
+     'AGENT_BRANCH_NAMESPACES = ("issue/",)',
+     'test_agent_prs_spans_issue_partial_and_fix_and_nothing_else'),
+
+    ('#495: agent-work is not told about a merged partial/ PR (it reports a run that produced one as empty)',
+     "scripts/report_loop_outcomes.py",
+     'AGENT_BRANCH_NAMESPACES = ("issue/", "partial/", "fix/")',
+     'AGENT_BRANCH_NAMESPACES = ("issue/", "fix/")',
+     'test_check_work_counts_a_merged_partial_pr_as_what_the_run_produced'),
+
+    ('#495: the pr-gates filter in check_merge reverts to issue/ (a partial/ gate run owes agent-merge nothing)',
+     "scripts/report_loop_outcomes.py",
+     'g["head_branch"].startswith(AGENT_BRANCH_NAMESPACES)]',
+     'g["head_branch"].startswith("issue/")]',
+     'test_check_merge_expects_agent_merge_to_answer_a_partial_prs_gate_run'),
+
+    ('#495: claimed_issues widens its branch fallback to partial/ (the report demands a close the convention prevents)',
+     "scripts/report_loop_outcomes.py",
+     '    m = re.match(r"issue/(\\d+)", pr["head"]["ref"])',
+     '    m = re.match(r"(?:issue|partial|fix)/(\\d+)", pr["head"]["ref"])',
+     'test_claimed_issues_branch_namespaces_and_the_keyword_subset'),
+
+    ("#495: a human close long after the merge counts as GitHub's keyword auto-close (no upper bound)",
+     "scripts/report_loop_outcomes.py",
+     '    return timedelta(0) <= ts(closed["created_at"]) - ts(pr["merged_at"]) <= KEYWORD_CLOSE_WINDOW',
+     '    return timedelta(0) <= ts(closed["created_at"]) - ts(pr["merged_at"])',
+     'test_the_keyword_auto_close_window_is_sixty_seconds_inclusive'),
+
+    ("#495: a close BEFORE the merge counts as GitHub's keyword auto-close (no lower bound)",
+     "scripts/report_loop_outcomes.py",
+     '    return timedelta(0) <= ts(closed["created_at"]) - ts(pr["merged_at"]) <= KEYWORD_CLOSE_WINDOW',
+     '    return ts(closed["created_at"]) - ts(pr["merged_at"]) <= KEYWORD_CLOSE_WINDOW',
+     'test_the_keyword_auto_close_window_is_sixty_seconds_inclusive'),
+
+    ('#495: a close by someone other than the merger counts as the keyword auto-close',
+     "scripts/report_loop_outcomes.py",
+     '    if actor == BOT or actor != (pr.get("merged_by") or {}).get("login"):',
+     '    if actor == BOT:',
+     'test_a_close_by_someone_other_than_the_merger_is_still_a_miss'),
+
+    ('#495: a branch-name claim (no keyword) is excused as a keyword auto-close',
+     "scripts/report_loop_outcomes.py",
+     '    if closed is None or n not in claim["keyword"] or not pr.get("merged_at"):',
+     '    if closed is None or n not in claim["expected"] or not pr.get("merged_at"):',
+     'test_a_branch_name_claim_closed_by_the_merger_is_still_a_miss'),
+
+    ('#495: an issue still open after a human merge is excused (no closed event required)',
+     "scripts/report_loop_outcomes.py",
+     '    if closed is None or n not in claim["keyword"] or not pr.get("merged_at"):',
+     '    if n not in claim["keyword"] or not pr.get("merged_at"):',
+     'test_a_keyword_issue_still_open_after_a_human_merge_is_still_a_miss'),
+
+    ("#495: the loop's own close is reclassified as GitHub's keyword close (the BOT exclusion gone)",
+     "scripts/report_loop_outcomes.py",
+     '    if actor == BOT or actor != (pr.get("merged_by") or {}).get("login"):',
+     '    if actor != (pr.get("merged_by") or {}).get("login"):',
+     'test_a_bot_merger_does_not_make_a_bot_close_an_auto_close'),
+
     # #305: the /kundli identity tiles ellipsis-clipped 10 of 12 rashi names at 375px.
     ("#305: `truncate` back on the snapshot tile value line (Lagna clipped to an ellipsis)",
      "src/astro_ai/templates/result.html",
