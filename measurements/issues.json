@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-10-28T00:18:32Z",
+  "generated_at": "2026-10-28T07:56:07Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 129,
+  "open": 130,
   "with_ask": 59,
   "by_area": {
     "UNCLASSIFIED": 53,
-    "INFRA": 14,
+    "INFRA": 15,
     "REDESIGN": 10,
     "UI": 8,
     "FEATURE": 7,
@@ -35,7 +35,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 40,
+    "bug": 41,
     "untyped": 37,
     "enhancement": 27,
     "correctness": 8,
@@ -44,12 +44,27 @@
     "ui": 3
   },
   "by_priority": {
-    "unset": 84,
+    "unset": 85,
     "medium": 23,
     "high": 22
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 573,
+      "title": "[INFRA] agent-work dispatches pr-gates on every cycle; the dispatched run masks the real green and cannot trigger agent-merge, so an eligible PR strands",
+      "ask": "",
+      "area": "INFRA",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-28T06:01:11Z",
+      "updated": "2026-10-28T06:01:11Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 570,
       "title": "[MEASURE] No event records a click on an in-article tool link, so #276, #329 and #521 can only be scored through pages/session",
@@ -660,10 +675,13 @@
         "bug",
         "severity:medium",
         "priority:medium",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-20T02:24:53Z",
-      "updated": "2026-10-20T02:34:25Z",
+      "updated": "2026-10-28T02:47:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -823,12 +841,12 @@
       "labels": [
         "bug",
         "priority:high",
-        "qa-fail",
+        "qa-pass",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-27T02:32:23Z",
+      "updated": "2026-10-28T05:51:34Z",
       "blocked": false,
       "needs_evidence": false
     },

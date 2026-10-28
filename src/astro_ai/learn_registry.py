@@ -1358,7 +1358,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Is it OK to change jobs during Sade Sati?",
-                "a": "Yes, with timing. Classical Vedic tradition cautions against major voluntary moves in the first year of Madhya (peak) — decisions taken in that window often look wrong within twelve months. The safer sub-windows are late Madhya (the final 12–15 months of the peak phase, when Saturn has done most of its subtracting) and Uttara (the rebuild phase). If a change is forced on you by circumstances rather than chosen, treat it as data — take it thoughtfully, do not panic-search, and be willing to accept short contract work while a longer offer matures. Saturn punishes haste more than he punishes patience.",
+                "a": "Yes, with timing. The usual advice is to avoid major voluntary moves in the first year of Madhya (peak) — decisions taken in that window often look wrong within twelve months. The safer sub-windows are late Madhya (the final 12–15 months of the peak phase, when Saturn has done most of its subtracting) and Uttara (the rebuild phase). If a change is forced on you by circumstances rather than chosen, treat it as data — take it thoughtfully, do not panic-search, and be willing to accept short contract work while a longer offer matures. Saturn punishes haste more than he punishes patience.",
             },
             {
                 "q": "Can I get a promotion during Sade Sati?",
