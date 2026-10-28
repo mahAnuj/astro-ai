@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-28T07:56:07Z",
+  "generated_at": "2026-10-28T10:59:13Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 130,
+  "open": 129,
   "with_ask": 59,
   "by_area": {
-    "UNCLASSIFIED": 53,
+    "UNCLASSIFIED": 52,
     "INFRA": 15,
     "REDESIGN": 10,
     "UI": 8,
@@ -35,7 +35,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 41,
+    "bug": 40,
     "untyped": 37,
     "enhancement": 27,
     "correctness": 8,
@@ -45,7 +45,7 @@
   },
   "by_priority": {
     "unset": 85,
-    "medium": 23,
+    "medium": 22,
     "high": 22
   },
   "blocked": 8,
@@ -661,27 +661,6 @@
       ],
       "created": "2026-10-20T02:56:39Z",
       "updated": "2026-10-20T02:56:39Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 430,
-      "title": "Sade Sati phase names: the engine says arohini/avarohini, knowledge/ and the articles say Arambha/Uttara, and all four names are absent from every book in data/",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "severity:medium",
-        "priority:medium",
-        "astrology-correctness",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-20T02:24:53Z",
-      "updated": "2026-10-28T02:47:58Z",
       "blocked": false,
       "needs_evidence": false
     },
