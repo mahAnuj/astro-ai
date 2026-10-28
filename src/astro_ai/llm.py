@@ -1132,7 +1132,6 @@ def _generate_rashifal_single(
     transit_block: str,
     prompt_path: Path,
     lang: str,
-    pacer: "_StartPacer | None" = None,
     pace_deadline: float | None = None,
     shape: str = _RASHIFAL_SHAPES[0],
     opening_move: str = _OPENING_MOVES[0],
@@ -1143,20 +1142,12 @@ def _generate_rashifal_single(
     Called 12× in parallel by generate_rashifal(). Each call is independent so
     the model can't lazily reuse phrasing across element-groups.
 
-    `pacer` throttles the START of the call, not the call itself. It is None
-    for the on-demand single-rashi path (`generate_rashifal_for_rashi`), where
-    a user is waiting on one call and there is no burst to spread.
-
     `pace_deadline` (#475) is the job's absolute pacing deadline from
     providers.pace_deadline(); None = the interactive default wait. This call
     turns it into its own `max_wait_s` the moment before it calls chat(), so the
     allowance shrinks as the job runs. A plain argument, not a ContextVar: this
     runs in a ThreadPoolExecutor worker and context does not propagate into one.
     """
-    if pacer is not None:
-        waited = pacer.wait()
-        if waited > 0:
-            _log.debug("rashifal pacer: waited %.1fs before %s", waited, anchor["en"])
     user_message = _format_rashifal_message(
         anchor, day_signals_block, transit_block, gochara_block, shape,
         opening_move)
@@ -1222,76 +1213,58 @@ def _strip_inline_markdown(text: str) -> str:
     return _MD_TICKS.sub("", _MD_BOLD.sub(r"\2", text))
 
 
-class _StartPacer:
-    """Enforces a minimum gap between LLM call STARTS, across threads.
-
-    Concurrency caps how many calls are in flight; this caps how fast they
-    begin. Those are different controls and a token-per-minute limit needs the
-    second one: two concurrent calls that each take 10s already respect a
-    2-wide cap while starting 12 calls in 60s, which is far too fast for an
-    8,000 TPM budget at ~3,587 tokens a call.
-
-    Reserves its slot under the lock and sleeps OUTSIDE it, so N waiting
-    threads queue up at N distinct times instead of all waking together — a
-    sleep inside the lock would serialise the whole pool behind one waiter.
-    Uses time.monotonic() so an NTP step cannot make a thread sleep for hours.
-    """
-
-    def __init__(self, min_interval_s: float) -> None:
-        self._interval = max(0.0, min_interval_s)
-        self._lock = threading.Lock()
-        self._next_at = 0.0
-
-    def wait(self) -> float:
-        """Block until this caller's slot. Returns the seconds actually slept."""
-        if self._interval <= 0:
-            return 0.0
-        with self._lock:
-            now = time.monotonic()
-            due = max(now, self._next_at)
-            self._next_at = due + self._interval
-        delay = due - time.monotonic()
-        if delay > 0:
-            time.sleep(delay)
-            return delay
-        return 0.0
-
-
 _RASHIFAL_CONCURRENCY = 2
-"""Concurrent per-rashi LLM calls — how many may be IN FLIGHT at once."""
+"""Concurrent per-rashi LLM calls — how many may be IN FLIGHT at once.
 
-_RASHIFAL_MIN_INTERVAL_S = 0.0
-"""Minimum seconds between per-rashi call STARTS. DISABLED (0.0) — see below.
+NOT a rate limit, and since #475 Phase 1 not a TPM control either. It bounds
+how many sockets and how much response buffer the job holds open at a time;
+the TPM budget is enforced by the per-model token bucket in `providers.py`,
+which is the only pacing mechanism on this path.
 
-DISABLED because reasoning_effort="low" removed the problem it was built for.
-Completion tokens dropped ~85% (gpt-oss-120b: 3,072 -> ~302), so the job no
-longer approaches the TPM ceiling that motivated spreading it out. Meanwhile
-pacing costs wall-clock against a 300s Cloud Run timeout, and QA measured the
-job at ~524s when calls were slow — the pacer makes a timeout MORE likely
-while no longer buying anything.
+Re-derived for #475 Phase 3 rather than re-tuned. Concurrency and token rate
+are different controls, so the bucket does not subsume this one: raising it
+would not spend tokens faster — the bucket would simply make the extra workers
+wait — and lowering it would not save any, because the bucket already governs
+the rate. That holds while reservations are WAITED for. It does not hold on
+the forced pass (`reserve(force=True)` never waits, and a call past the job's
+pacing deadline takes it), where more workers in flight do spend tokens
+faster, un-paced — one more reason to keep this at 2.
 
-Kept rather than deleted: _StartPacer is tested and correct, and if token
-pressure returns (more subscribers, a longer prompt, a smaller free tier) this
-is the lever. Set it back to ~10.0 and re-measure the job against the timeout
-before doing so.
+What it does change is wall-clock: 12 calls two-wide is 6 waves. At ~8-12s per
+call that would be ~50-70s, inside the 300s Cloud Run timeout with the
+bucket's waits on top — but the ~8-12s is an ASSUMPTION, not a measurement
+(no per-call latency has been recorded anywhere in this repo; #475 says so),
+and 20s per call would make the same six waves ~120s before any bucket wait.
+That is the constraint it is set against, and the figure to measure if the
+timeout or the per-call latency moves.
 
-Original rationale below. The other half of the TPM
-budget, and the half concurrency cannot express.
+WHY THERE IS NO SECOND PACER HERE ANY MORE (#475 Phase 3)
+---------------------------------------------------------
+A `_StartPacer` used to sit beside this, spacing call STARTS by a
+`_RASHIFAL_MIN_INTERVAL_S`. Both are deleted. Phase 3 exists to stop two
+pacing mechanisms disagreeing, and keeping a disabled one with instructions
+for switching it back on is exactly that disagreement, deferred.
 
-The arithmetic, so the next person can re-derive it rather than trust it:
-one rashifal call reserves ~3,587 tokens, so the 12-rashi job costs ~43,000.
-Production runs four DISTINCT Groq models and Groq keys its free-tier quota per
-model, so the ceiling is 4 x 8,000 = 32,000 tokens per minute. The job therefore
-cannot complete in under 43,000/32,000 = ~81 seconds no matter how it is
-scheduled. At 10s between starts it spans ~120s, which clears that with margin.
+It had been disabled (0.0) since `reasoning_effort="low"` cut completion
+tokens ~85%, and its docstring kept it as a lever with a standing instruction:
+"if token pressure returns ... set it back to ~10.0". Two things made that
+instruction actively harmful rather than merely stale:
 
-What this does NOT cover: the provider order is randomly shuffled per call, so
-an unlucky run can land several calls on the same model and exceed that model's
-individual 8,000. That case is caught by the retry-hint backoff in
-providers.chat() — the two mechanisms are complementary, and removing either
-re-opens the failure.
+  * Token pressure DID return — /admin/ops recorded `3 of 3 retries failed on
+    the token budget` on 2026-10-21 — and the answer shipped, as the token
+    bucket. Following the instruction now would stack blind start-spacing on
+    top of the bucket's token-aware waits, against the same 300s timeout, and
+    buy no TPM protection the bucket does not already give. Its own docstring
+    conceded the pacer "makes a timeout MORE likely".
+  * The claim that justified keeping it — that it was "tested and correct" —
+    was false. Nothing under tests/ referenced it. Checked repo-wide when it
+    was removed.
 
-Set to 0.0 to disable (tests, or a paid tier with real headroom)."""
+It was also the weaker instrument by construction: it spaced call starts, so
+it could not tell a 3,210-token call from a 900-token one. The bucket reserves
+the estimated tokens, waits only for room, and reconciles against the usage
+the provider reports. tests/test_single_pacing_mechanism.py fails if a second
+mechanism reappears on this path."""
 
 
 def generate_rashifal(
@@ -1363,13 +1336,12 @@ def generate_rashifal(
     # job that completes beats a faster one that raises.
     results: dict[int, str] = {}
     errors: dict[int, Exception] = {}
-    pacer = _StartPacer(_RASHIFAL_MIN_INTERVAL_S)
     with ThreadPoolExecutor(max_workers=_RASHIFAL_CONCURRENCY) as pool:
         future_to_idx = {
             pool.submit(
                 _generate_rashifal_single,
                 anchor, day_signals_block, transit_block, prompt_path, lang,
-                pacer, pace_deadline,
+                pace_deadline,
                 _RASHIFAL_SHAPES[_rotation_index(today_iso, idx,
                                                  len(_RASHIFAL_SHAPES))],
                 _OPENING_MOVES[_rotation_index(today_iso, idx,
