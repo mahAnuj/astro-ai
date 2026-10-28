@@ -3542,6 +3542,37 @@ MUTATIONS = [
      "system={system or ''}\"",
      "system={system}\"",
      "test_a_missing_field_is_blank_not_the_word_none"),
+
+    # --- #429: the Manglik severity ladder is editorial, and says so ----------
+    ("#429: the checker credits the severity ladder to four unheld books again",
+     "src/astro_ai/templates/manglik_check_result.html",
+     "<strong>Basis:</strong>",
+     "<strong>Classical basis:</strong> Manglik Dosh rules are compiled from Jataka Parijata, Phaladeepika, Jataka Chandrika, and Muhurtha Chintamani (per P.V.R. Narasimha Rao's Jagannath Hora rule-set).",
+     "test_checker_page_names_no_unheld_book_as_the_basis"),
+
+    ("#429: the checker stops saying the ladder is Bhagya's editorial weighting",
+     "src/astro_ai/templates/manglik_check_result.html",
+     "is Bhagya's own editorial weighting, not a classical grading",
+     "is graded as follows",
+     "test_checker_page_discloses_that_the_ladder_is_editorial"),
+
+    ("#429: the LLM severity line presents the ladder as graded doctrine again",
+     "src/astro_ai/chart.py",
+     "an internal weighting of the qualifying \"\n        \"houses",
+     "graded from the qualifying \"\n        \"houses",
+     "test_llm_severity_line_does_not_present_the_ladder_as_classical"),
+
+    ("#429: the LLM severity line hands the model the word 'editorial'",
+     "src/astro_ai/chart.py",
+     "an internal weighting of the qualifying \"",
+     "an editorial weighting of the qualifying \"",
+     "test_llm_severity_line_does_not_invite_the_model_to_say_editorial"),
+
+    ("#429: the 1st-house grade moves (the tier decision is the owner's, not a side effect)",
+     "src/astro_ai/chart.py",
+     "    elif {1, 4, 12} & qualifying:",
+     "    elif {4, 12} & qualifying:",
+     "test_severity_grades_are_unchanged"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

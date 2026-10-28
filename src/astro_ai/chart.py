@@ -1096,6 +1096,16 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
         )
 
     # Severity grading: 7th/8th = most serious; 1st/4th/12th = moderate; 2nd alone = low.
+    #
+    # THIS LADDER IS BHAGYA'S OWN EDITORIAL WEIGHTING, NOT CLASSICAL DOCTRINE (#429).
+    # No book held in data/ states it. Only "7th/8th are the most serious" has
+    # any support (Vasudev's per-house prose; vedic_reference.md §1.1/§1.6) — and
+    # he grades no tiers, reading the 8th as worse than the 7th. "1st = moderate"
+    # is counter-indicated (his list is 2/4/7/8/12; the 1st is "some include"),
+    # and "2nd alone is lowest" is stated nowhere. The grades are kept as shipped
+    # pending the owner's tier decision on #429; every surface that shows them
+    # must say they are editorial (manglik_check_result.html, the LLM line in
+    # format_manglik_for_prompt). Do not cite a classical text for the tiers.
     if {7, 8} & qualifying:
         severity = "high"
     elif {1, 4, 12} & qualifying:
@@ -2264,11 +2274,14 @@ def format_manglik_for_prompt(details: ManglikDetails) -> str:
         "do not restate a different one.",
         # Severity reaches the LLM ONLY here. Without it an 8th-house 'high'
         # dosha and a 2nd-house 'low' one read in the same register.
-        f"Severity: {details.severity} — graded from the qualifying houses "
-        "(7th/8th highest, 1st/4th/12th moderate, 2nd alone lowest), then reduced "
-        "one grade (never below low) when only the Venus axis qualifies. Match the "
-        "weight of your language to this grade: do not treat a low severity as an "
-        "emergency, nor a high one as trivial.",
+        # The tiers are Bhagya's own weighting, not a classical grading (#429), so
+        # the line says "internal" and bars attributing them to scripture — but not
+        # "editorial", which the model would echo into the reading as a disclaimer.
+        f"Severity: {details.severity} — an internal weighting of the qualifying "
+        "houses (7th/8th highest, 1st/4th/12th moderate, 2nd alone lowest), reduced "
+        "one grade (never below low) when only the Venus axis qualifies; not a "
+        "classical grade. Match the weight of your language to this grade: do not "
+        "treat a low severity as an emergency, nor a high one as trivial.",
     ]
 
     cancels = [r for r in details.cancellations if r.effect == "cancels"]
