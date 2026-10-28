@@ -3538,25 +3538,61 @@ MUTATIONS = [
      "test_a_main_run_is_not_cancelled_by_the_next_push"),
     ("#461: the red-main reporter tests for `failure`, so a cancelled or timed-out main reports nothing",
      ".github/workflows/main-red-report.yml",
-     "      github.event.workflow_run.conclusion != 'success' &&\n"
      "      github.event.workflow_run.conclusion != 'skipped'\n",
      "      github.event.workflow_run.conclusion == 'failure'\n",
      "test_the_reporter_fires_on_cancelled_and_timed_out_not_only_on_failure"),
 
     ("#461: the sentinel is looked up with GitHub search again, which strips `[ ] -` and matches #461 itself",
      ".github/workflows/main-red-report.yml",
-     "          existing=$(printf '%s' \"$issues\" \\\n"
-     "                       | jq -r '[.[] | select(.title | startswith(\"[main-red] \"))] | .[0].number // empty')\n",
-     "          existing=$(gh issue list --repo \"$GH_REPO\" --state open \\\n"
-     "                       --search '\"[main-red]\" in:title' \\\n"
-     "                       --json number --jq '.[0].number // empty')\n",
+     "          sentinels=$(printf '%s' \"$issues\" \\\n"
+     "                        | jq -r '[.[] | select(.title | startswith(\"[main-red] \"))] | .[].number')\n",
+     "          sentinels=$(gh issue list --repo \"$GH_REPO\" --state open \\\n"
+     "                        --search '\"[main-red]\" in:title' \\\n"
+     "                        --json number --jq '.[0].number // empty')\n",
      "test_the_sentinel_lookup_does_not_match_the_issue_it_closes"),
 
     ("#461: the per-SHA dedup drops the backticks, so a bare hex run in the thread silences a real red commit",
      ".github/workflows/main-red-report.yml",
-     "                 | grep -qF -- \"\\`$short\\`\"; then\n",
-     "                 | grep -qF -- \"$short\"; then\n",
+     "            if grep -qF -- \"\\`$short\\`\" <<<\"$bodies\"; then\n",
+     "            if grep -qF -- \"$short\" <<<\"$bodies\"; then\n",
      "test_a_bare_hex_run_in_the_thread_does_not_suppress_a_report"),
+
+    # QA round 2 found this one. `grep -q` exits at the first match, the
+    # upstream `gh` dies of SIGPIPE, and `pipefail` makes the PIPELINE 141 --
+    # so the dedup took the false branch and double-posted. It only shows on a
+    # thread bigger than the pipe buffer, which is why the small-fixture
+    # idempotence test stayed green while the real thing was broken.
+    # QA round 2 found this. `grep -q` exits at the FIRST match, the upstream
+    # `gh` then dies of SIGPIPE, and `pipefail` makes the PIPELINE 141 -- so the
+    # dedup took the false branch and double-posted a SHA already recorded. It
+    # only shows on a thread bigger than the pipe buffer, which is exactly why
+    # the small-fixture idempotence test stayed green while the real thing was
+    # broken. The mutation has to restore the WHOLE piped form: an earlier
+    # attempt only added `| cat` inside the command substitution, where nothing
+    # exits early, and was measured MISSED.
+    ("#461: the dedup reads the thread through a pipe again, so pipefail + grep -q double-posts",
+     ".github/workflows/main-red-report.yml",
+     '            bodies=$(gh issue view "$existing" --repo "$GH_REPO" \\\n'
+     "                       --json comments --jq '.comments[].body')\n"
+     '            # The backticks are part of the match, so a bare hex run elsewhere\n'
+     '            # in the thread cannot suppress a real report.\n'
+     '            if grep -qF -- "\\`$short\\`" <<<"$bodies"; then\n',
+     '            if gh issue view "$existing" --repo "$GH_REPO" \\\n'
+     "                 --json comments --jq '.comments[].body' \\\n"
+     '                 | grep -qF -- "\\`$short\\`"; then\n',
+     "test_the_dedup_survives_a_large_comment_thread"),
+
+    ("#461: a green main stops closing the sentinel, so a stale one collects the next unrelated red main",
+     ".github/workflows/main-red-report.yml",
+     "              gh issue close \"$n\" --repo \"$GH_REPO\"\n",
+     "",
+     "test_a_green_main_closes_the_open_sentinel"),
+
+    ("#461: only the first open sentinel is closed on green, leaving the rest stale",
+     ".github/workflows/main-red-report.yml",
+     "            for n in $sentinels; do\n",
+     "            for n in $(printf '%s' \"$sentinels\" | head -n 1); do\n",
+     "test_every_open_sentinel_is_closed_not_just_the_first"),
 
     ("#461: the reporter moves back inside pr-gates, where it cannot report its own job being killed",
      ".github/workflows/pr-gates.yml",

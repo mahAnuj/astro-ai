@@ -99,24 +99,90 @@ def test_pr_gates_has_no_reporter_step_and_cannot_write_issues():
 
 def test_the_reporter_fires_on_cancelled_and_timed_out_not_only_on_failure():
     cond = _doc(REPORTER)["jobs"]["report"]["if"]
-    assert "conclusion != 'success'" in cond, (
-        f"the `if:` is {cond!r}. It must exclude conclusions rather than name "
-        "`failure`: a job over `timeout-minutes`, or cancelled by hand or by "
-        "concurrency, ends `cancelled` and is still a red `main` (QA finding 1)."
-    )
     assert "== 'failure'" not in cond, (
         f"the `if:` is {cond!r}, which tests for `failure` and so reports "
         "nothing for `cancelled` or `timed_out` -- the exact defect QA failed "
         "round 1 on."
     )
-    # `skipped` is the one non-success conclusion that asserts nothing, so it is
-    # the one documented exclusion. Anything else -- including a conclusion
-    # GitHub has not shipped yet -- must report, because the bug class here is
-    # silent non-reporting.
+    # `skipped` is the ONE excluded conclusion: nothing ran, so nothing is
+    # asserted. Everything else reaches the step, including a conclusion GitHub
+    # has not shipped yet, because the bug class here is silent non-reporting.
     assert "!= 'skipped'" in cond, (
         f"the `if:` is {cond!r}; `skipped` must be excluded explicitly, so that "
         "excluding it is a decision on the record rather than a side effect"
     )
+    # `success` must NOT be excluded -- the green path is what closes the
+    # sentinel, and round 2 excluding it is why nothing kept the promise the
+    # sentinel body makes.
+    assert "!= 'success'" not in cond, (
+        f"the `if:` is {cond!r}; excluding `success` means no green push ever "
+        "closes the sentinel, so a stale one stays open and the next unrelated "
+        "red `main` appends to it and conflates two incidents."
+    )
+
+
+@pytest.mark.parametrize("conclusion", ["failure", "cancelled", "timed_out",
+                                        "action_required", "stale", "neutral"])
+def test_every_non_green_conclusion_reports(tmp_path, conclusion):
+    """Behavioural companion to the assertion above: the step itself must file
+    for each of these, not merely be reachable."""
+    proc, done = _run_reporter(
+        tmp_path, {"open_issues": [], "comments": {}},
+        sha="abcdef1234567", conclusion=conclusion,
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert [a["kind"] for a in done] == ["create"], f"{conclusion}: {done!r}"
+    assert conclusion in done[0]["body"]
+
+
+# --------------------------------------------------------------------------
+# The green path -- the sentinel body promises this, so something must do it
+# --------------------------------------------------------------------------
+
+def test_a_green_main_closes_the_open_sentinel(tmp_path):
+    """QA BUG-2: the body said "stays open until a push to `main` goes green"
+    and nothing closed it, so a stale sentinel collected the NEXT, unrelated
+    red `main` and conflated two incidents."""
+    proc, done = _run_reporter(
+        tmp_path,
+        {"open_issues": [
+            {"number": 900, "title": "[main-red] pr-gates did not pass on main at 1111111"},
+            {"number": 461, "title": ISSUE_461_TITLE},
+        ], "comments": {"900": ["Still red on `main` at `1111111`"]}},
+        sha="9999999abcdef", conclusion="success",
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert [a["kind"] for a in done] == ["comment", "close"], f"{done!r}"
+    assert all(a["number"] == 900 for a in done), (
+        f"a green main touched something other than the sentinel: {done!r}"
+    )
+
+
+def test_every_open_sentinel_is_closed_not_just_the_first(tmp_path):
+    """Two can exist if the 500-cap warning ever fires. Leaving one behind is
+    the same stale-sentinel bug one level down."""
+    proc, done = _run_reporter(
+        tmp_path,
+        {"open_issues": [
+            {"number": 900, "title": "[main-red] pr-gates did not pass on main at 1111111"},
+            {"number": 901, "title": "[main-red] pr-gates did not pass on main at 3333333"},
+        ], "comments": {}},
+        sha="9999999abcdef", conclusion="success",
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert sorted({a["number"] for a in done}) == [900, 901], f"{done!r}"
+    assert sorted(a["kind"] for a in done) == ["close", "close", "comment", "comment"]
+
+
+def test_a_green_main_with_no_sentinel_does_nothing(tmp_path):
+    """The common case: every merge fires this, and it must be a quiet no-op."""
+    proc, done = _run_reporter(
+        tmp_path,
+        {"open_issues": [{"number": 461, "title": ISSUE_461_TITLE}], "comments": {}},
+        sha="9999999abcdef", conclusion="success",
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert done == [], f"a green main with no sentinel acted: {done!r}"
 
 
 # --------------------------------------------------------------------------
@@ -177,6 +243,8 @@ elif argv[:2] == ["issue", "view"]:
 elif argv[:2] == ["issue", "comment"]:
     path = argv[argv.index("--body-file") + 1]
     record("comment", number=int(argv[2]), body=open(path).read())
+elif argv[:2] == ["issue", "close"]:
+    record("close", number=int(argv[2]))
 elif argv[:2] == ["issue", "create"]:
     path = argv[argv.index("--body-file") + 1]
     title = argv[argv.index("--title") + 1]
@@ -187,7 +255,7 @@ else:
 '''
 
 
-def _run_reporter(tmp_path, fixture: dict, sha: str):
+def _run_reporter(tmp_path, fixture: dict, sha: str, conclusion: str = "cancelled"):
     """Execute the workflow's own shell with a fake `gh` and real `jq`."""
     if shutil.which("jq") is None:                      # pragma: no cover
         pytest.skip("the reporter's sentinel filter is jq; no jq on this box")
@@ -218,7 +286,7 @@ def _run_reporter(tmp_path, fixture: dict, sha: str):
         GH_REPO="mahAnuj/astro-ai",
         SHA=sha,
         RUN_URL="https://example.invalid/run/1",
-        CONCLUSION="cancelled",
+        CONCLUSION=conclusion,
     )
     proc = subprocess.run(
         ["bash", str(script)], env=env, capture_output=True, text=True, cwd=tmp_path
@@ -354,4 +422,43 @@ def test_no_interpolation_reaches_the_reporter_shell():
     assert not re.search(r"\$\{\{", _reporter_script()), (
         "a `${{ }}` appeared inside the reporter's run: block. Values must "
         "arrive as environment variables, which bash never re-parses as source."
+    )
+
+
+def test_the_dedup_survives_a_large_comment_thread(tmp_path):
+    """QA BUG-1, and the reason `test_the_same_sha_is_not_reported_twice` above
+    was not enough on its own.
+
+    The dedup was `gh issue view ... | grep -qF -- "\\`$short\\`"`. `grep -q`
+    exits at the FIRST match; under `set -o pipefail` the upstream `gh` then
+    dies of SIGPIPE and the PIPELINE reports 141, not 0 -- so the `if` took the
+    false branch and posted a SECOND comment for a SHA already recorded.
+
+    MEASURED, with no fake `gh` involved at all:
+
+        { printf 'match-here\\n'; yes filler | head -60000; } > big.txt
+        bash -c 'set -euo pipefail
+                 if cat big.txt | grep -qF -- match-here; then echo OK
+                 else echo "FAILED rc=$?"; fi'
+        -> FAILED rc=141          # and rc=0 on a one-line file
+
+    That is why the small-fixture test passed while the real thing would have
+    broken on any thread carrying ~64 KB of comments after the match: roughly
+    280 auto-comments, or one pasted CI log. The fixture here is deliberately
+    ~200 KB so it crosses the pipe buffer.
+    """
+    filler = "x" * 100
+    comments = ["Still red on `main` at `2222222` — **cancelled**"] + \
+               [f"{filler} {n}" for n in range(2000)]
+    proc, done = _run_reporter(
+        tmp_path,
+        {"open_issues": [
+            {"number": 900, "title": "[main-red] pr-gates did not pass on main at 1111111"}
+        ], "comments": {"900": comments}},
+        sha="2222222abcdef",
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert done == [], (
+        "the same SHA was reported twice on a large thread. `grep -q` + "
+        f"`pipefail` makes the pipeline 141 at the first match: {done!r}"
     )
