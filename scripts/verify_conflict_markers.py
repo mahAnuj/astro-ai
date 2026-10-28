@@ -40,19 +40,32 @@ but was not among the files scanned, that is exit 2, not a pass.
 
 WHAT IT MATCHES
 
-A conflict marker is seven identical characters at the START of a line,
-followed by whitespace or end-of-line. All three of git's directional markers
-count, including the diff3/zdiff3 base marker that `merge.conflictStyle` adds
-and which a scanner written from memory forgets:
+A conflict marker is a run of SEVEN OR MORE identical marker characters at the
+START of a line, followed by whitespace or end-of-line. All three of git's
+directional markers count, including the diff3/zdiff3 base marker that
+`merge.conflictStyle` adds and which a scanner written from memory forgets:
 
-    ours   -> 7x '<' + ' <ref>'
-    base   -> 7x '|' + ' <ref>'        (diff3 and zdiff3 only)
-    theirs -> 7x '>' + ' <ref>'
+    ours   -> N x '<' + ' <ref>'
+    base   -> N x '|' + ' <ref>'       (diff3 and zdiff3 only)
+    theirs -> N x '>' + ' <ref>'
 
-The bare separator — 7x '=' alone on a line — is NOT a trigger. It is also a
-legitimate Markdown setext heading rule, and git never writes it without the
-directional markers around it. It IS printed as context when a file is already
-flagged, so a human reading the output sees the whole block.
+SEVEN OR MORE, not seven. The first version of this gate matched exactly seven
+and said the width was "git's, and not configurable". It is neither:
+`conflict-marker-size` is a gitattribute, and git honours 1 through 80
+(measured 2026-10-28, one real conflict per width). A nine-character marker
+does not match a seven-character pattern -- after the seventh `<` comes an
+eighth, not the whitespace the pattern requires -- so a committed, live
+conflict block scored a clean PASS and the gate's entire purpose was defeated
+by one line in `.gitattributes`.
+
+`markers()` holds the floor and the one corroboration rule that keeps the
+widening from costing false positives. Read it there; it is a decision, not a
+regex.
+
+The bare separator — a run of '=' alone on a line — is NOT a trigger. It is
+also a legitimate Markdown setext heading rule, and git never writes it without
+the directional markers around it. It IS printed as context when a file is
+already flagged, so a human reading the output sees the whole block.
 
 WHAT THIS WEAKENS, plainly:
 
@@ -60,9 +73,12 @@ WHAT THIS WEAKENS, plainly:
     and left the bare separator behind passes. Nothing distinguishes that line
     from a setext rule, and guessing would make every `===` heading in `/learn`
     a blocker.
+  - a marker narrower than seven characters passes. See `markers()` for why
+    that floor is a judgment rather than a limit.
   - untracked files are not scanned at all. That is the point: the defect is
     what reaches `origin/main`, and the working tree during a live merge is
-    *supposed* to contain markers.
+    *supposed* to contain markers. The INDEX is what this gate reads -- paths
+    AND content, which the first version got only half right.
   - the paths in SKIP_PREFIXES are not scanned even if they become tracked.
     They are scratch space this repo deliberately keeps out of git; a marker
     inside one of them is a local mess, not a shipped artefact.
@@ -72,8 +88,8 @@ WHAT THIS WEAKENS, plainly:
 EXIT CODES
   0  no tracked file carries a marker
   1  at least one does — every hit is printed with its path and line number
-  2  could not run: not a git repository, `git ls-files` failed, or the scan
-     excluded this gate's own source. NOT a pass.
+  2  could not run: not a git repository, `git ls-files` or `git cat-file`
+     failed, or the scan excluded this gate's own source. NOT a pass.
 
 USAGE
   python scripts/verify_conflict_markers.py          # this repository
@@ -93,17 +109,40 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 # Assembled, never quoted — see "THE MARKERS ARE NEVER WRITTEN DOWN" above.
-# `MARKER_WIDTH` is git's, and is not configurable.
-MARKER_WIDTH = 7
-OURS = "<" * MARKER_WIDTH
-BASE = "|" * MARKER_WIDTH
-THEIRS = ">" * MARKER_WIDTH
-SEPARATOR = "=" * MARKER_WIDTH
+#
+# THE WIDTH IS NOT GIT'S TO FIX, and the first version of this file said it was
+# ("`MARKER_WIDTH` is git's, and is not configurable"). That claim was wrong,
+# and it was the whole gate: a regex anchored on exactly seven characters
+# cannot match a nine-character marker, because after the seventh `<` comes an
+# eighth, not the whitespace the pattern demands. A committed, live conflict
+# block scored a clean PASS.
+#
+# `conflict-marker-size` is a gitattribute and a `git merge-file` option, and
+# git honours the whole range. Measured 2026-10-28 in a scratch repository, one
+# real conflict per width:
+#
+#     requested=1   actual=1        requested=7   actual=7
+#     requested=3   actual=3        requested=20  actual=20
+#     requested=6   actual=6        requested=80  actual=80
+#
+# So the floor is a JUDGMENT, not git's limit. 7 is kept as the floor because
+# below it the marker characters are ordinary text — `> ` is a Markdown
+# blockquote and `|` opens a table row — and a gate that flags those blocks
+# every PR in a repository whose reasoning lives in Markdown.
+MARKER_MIN = 7
+OURS = "<" * MARKER_MIN
+BASE = "|" * MARKER_MIN
+THEIRS = ">" * MARKER_MIN
+SEPARATOR = "=" * MARKER_MIN
 
-DIRECTIONAL = (OURS, BASE, THEIRS)
-MARKER_RE = re.compile(
-    "^(?:" + "|".join(re.escape(m) for m in DIRECTIONAL) + r")(?:\s|$)")
-SEPARATOR_RE = re.compile("^" + re.escape(SEPARATOR) + r"[ \t]*$")
+DIRECTIONAL_CHARS = (OURS[0], BASE[0], THEIRS[0])
+SEPARATOR_CHAR = SEPARATOR[0]
+
+# A run of one marker character at the start of a line, followed by whitespace
+# or the line end. The WIDTH IS NOT FIXED here; `markers()` applies the floor
+# and the corroboration rule, because both are decisions and a regex is a bad
+# place to hide a decision.
+_CANDIDATE_RE = re.compile(r"^(<+|\|+|>+|=+)(?:\s|$)")
 
 # Untracked by intention: agent scratch space, worktrees, run artefacts and
 # local caches. Listed as literal prefixes so adding one is a visible diff line
@@ -131,22 +170,169 @@ def _skipped(rel: str) -> bool:
         rel == p or rel.startswith(p) for p in SKIP_PREFIXES)
 
 
-def tracked_files(root: Path) -> list[str]:
-    """Every path in the index, as repo-relative POSIX strings.
+def index_entries(root: Path) -> list[tuple[str, str]]:
+    """`(path, blob sha)` for every stage-0 entry in the index.
 
-    The INDEX, not the working tree: a marker only matters once it is committed
-    and shipped, and during a real merge the working tree is expected to carry
-    them. `-z` because a path may contain anything but NUL.
+    THE INDEX, CONTENT AND ALL. The previous version took its PATHS from the
+    index and then read each file from the WORKING TREE, which is a different
+    question with a different answer -- and the docstring claimed the index,
+    which is how the gap survived review. In CI the two coincide, because a
+    fresh checkout's tree matches its commit; on a developer's machine they do
+    not, and the gate's stated job is "what is about to be shipped".
+
+    An UNMERGED path is skipped (`stage != 0`). That is not a loophole: git
+    refuses to commit an index with unmerged entries at all, so such a path
+    cannot reach `main` without first being resolved, and resolving it is what
+    produces the stage-0 entry this gate then reads.
+
+    A gitlink (mode 160000) is skipped: a submodule pointer has no blob here.
+
+    `-z` because a path may contain anything but NUL.
     """
     out = subprocess.run(
-        ("git", "-C", str(root), "ls-files", "-z"),
+        ("git", "-C", str(root), "ls-files", "-s", "-z"),
         capture_output=True, timeout=120,
     )
     if out.returncode != 0:
         raise RuntimeError(
-            f"git ls-files -> rc={out.returncode} "
+            f"git ls-files -s -> rc={out.returncode} "
             f"{out.stderr.decode('utf-8', 'replace').strip()[:300]}")
-    return [p for p in out.stdout.decode("utf-8", "replace").split("\0") if p]
+    entries: list[tuple[str, str]] = []
+    for record in out.stdout.decode("utf-8", "replace").split("\0"):
+        if not record:
+            continue
+        meta, _, path = record.partition("\t")
+        parts = meta.split()
+        if len(parts) != 3 or not path:
+            continue
+        mode, sha, stage = parts
+        if stage != "0" or mode == "160000":
+            continue
+        entries.append((path, sha))
+    return entries
+
+
+def tracked_files(root: Path) -> list[str]:
+    """Just the paths, for the self-honesty check at the end of `main`."""
+    return [path for path, _ in index_entries(root)]
+
+
+def blob_bytes(root: Path, shas: list[str]) -> dict[str, bytes]:
+    """`sha -> content`, through ONE `git cat-file --batch`.
+
+    One process, not one per file: 619 blobs at a process each is seconds of
+    fork for a gate whose entire selling point is that it is cheap enough to
+    run unconditionally, before `setup-uv`, on every pull request.
+
+    `--batch` answers each request with `<oid> <type> <size>\n`, then exactly
+    `size` bytes, then a newline. Parsed as BYTES throughout -- a blob is not
+    text until this gate decides it is one, and decoding the stream to find the
+    headers would corrupt every binary file in it.
+    """
+    if not shas:
+        return {}
+    out = subprocess.run(
+        ("git", "-C", str(root), "cat-file", "--batch"),
+        input=("\n".join(shas) + "\n").encode("ascii"),
+        capture_output=True, timeout=300,
+    )
+    if out.returncode != 0:
+        raise RuntimeError(
+            f"git cat-file --batch -> rc={out.returncode} "
+            f"{out.stderr.decode('utf-8', 'replace').strip()[:300]}")
+    found: dict[str, bytes] = {}
+    buf = out.stdout
+    i = 0
+    while i < len(buf):
+        nl = buf.find(b"\n", i)
+        if nl < 0:
+            break
+        header = buf[i:nl].decode("utf-8", "replace").split()
+        i = nl + 1
+        # `<oid> missing` for an object this repository does not have. Nothing
+        # to read is not a marker, and it is not this gate's business to judge.
+        if len(header) != 3:
+            continue
+        oid, _kind, size_s = header
+        try:
+            size = int(size_s)
+        except ValueError:
+            continue
+        found[oid] = buf[i:i + size]
+        i += size + 1          # the trailing newline --batch adds
+    return found
+
+
+def markers(text: str) -> list[tuple[int, str]]:
+    """Every conflict-marker line in `text`, as `(1-based line number, line)`.
+
+    WHY THE WIDTHS ARE NOT TREATED ALIKE
+
+    At exactly `MARKER_MIN` — git's default, and the only width this repository
+    has produced — a single directional line is damning on its own. Seven `<`
+    or `>` followed by a space is not a shape that occurs in prose, and a
+    half-resolved file where someone deleted the separator by hand still gets
+    caught.
+
+    Above it, a same-width companion with a DIFFERENT marker character is
+    required, because git writes a BLOCK and prose does not. Nine `>` followed
+    by a space is a nine-deep Markdown blockquote as readily as a marker; nine
+    `>` with a matching nine-wide `=` or `<` somewhere in the same file is a
+    merge nobody finished.
+
+    MEASURED, so the trade is not a guess: scanned across the 619 tracked text
+    files on `main` at 2026-10-28, lines matching a 7-or-wider run at line
+    start followed by whitespace: **zero**. Widening the floor from "exactly 7"
+    to "7 or more" newly flags nothing that is here today.
+
+    WHAT THIS STILL LETS THROUGH, plainly:
+
+      - a width below `MARKER_MIN`. Someone who sets
+        `conflict-marker-size=3` and commits the result passes this gate. The
+        alternative is flagging every blockquote and table row in `/learn`.
+      - a lone wide marker with no companion — a hand-edited leftover at a
+        non-default width.
+
+    AND THE ONE FALSE POSITIVE IT ACCEPTS: a file carrying both a decorative
+    rule and a blockquote at the SAME width above 7 — say twelve `<` on one
+    line and twelve `>` on another — reads as a block and is flagged. It is
+    stated rather than hidden; the output names the file and the line, and one
+    space fixes it. That is the right way round for a gate whose miss shipped a
+    corrupt `ARCHITECTURE.md` to `main`.
+    """
+    candidates: list[tuple[int, str, str, int]] = []
+    for n, line in enumerate(text.splitlines(), start=1):
+        m = _CANDIDATE_RE.match(line)
+        if not m:
+            continue
+        run = m.group(1)
+        if len(run) >= MARKER_MIN:
+            candidates.append((n, line, run[0], len(run)))
+
+    chars_at_width: dict[int, set[str]] = {}
+    for _, _, ch, w in candidates:
+        chars_at_width.setdefault(w, set()).add(ch)
+
+    hits: list[tuple[int, str]] = []
+    for n, line, ch, w in candidates:
+        # The separator is context, never a trigger: a run of `=` alone on a
+        # line is a legitimate Markdown setext heading rule, and git never
+        # writes one without the directional markers around it.
+        if ch == SEPARATOR_CHAR:
+            continue
+        if w == MARKER_MIN or len(chars_at_width[w]) > 1:
+            hits.append((n, line))
+    return hits
+
+
+def separators(text: str) -> list[tuple[int, str]]:
+    """Separator lines, for printing a condemned file's whole block."""
+    out = []
+    for n, line in enumerate(text.splitlines(), start=1):
+        m = _CANDIDATE_RE.match(line)
+        if m and m.group(1)[0] == SEPARATOR_CHAR and len(m.group(1)) >= MARKER_MIN:
+            out.append((n, line))
+    return out
 
 
 def scan(root: Path) -> tuple[list[tuple[str, int, str]], list[str], int]:
@@ -158,37 +344,39 @@ def scan(root: Path) -> tuple[list[tuple[str, int, str]], list[str], int]:
     hits: list[tuple[str, int, str]] = []
     scanned: list[str] = []
     skipped = 0
-    for rel in tracked_files(root):
-        if _skipped(rel):
+
+    # One `git ls-files`, not two: the second call was a real cost on a gate
+    # that justifies its unconditional `pr-gates` step by being cheap.
+    all_entries = index_entries(root)
+    entries = [(rel, sha) for rel, sha in all_entries if not _skipped(rel)]
+    skipped += len(all_entries) - len(entries)
+    content = blob_bytes(root, sorted({sha for _, sha in entries}))
+
+    texts: dict[str, str] = {}
+    for rel, sha in entries:
+        data = content.get(sha)
+        if data is None:
             skipped += 1
             continue
-        path = root / rel
-        try:
-            data = path.read_bytes()[:_READ_LIMIT]
-        except (OSError, ValueError):
-            # Tracked but not readable here: a deleted-not-staged path, a
-            # submodule gitlink, a broken symlink. Nothing to read is not a
-            # marker, and it is not this gate's business to judge.
-            skipped += 1
-            continue
+        data = data[:_READ_LIMIT]
         if b"\0" in data:
             skipped += 1
             continue
         scanned.append(rel)
         text = data.decode("utf-8", "replace")
-        if not any(m in text for m in DIRECTIONAL):
+        texts[rel] = text
+        # Cheap pre-filter on the characters themselves, not on a fixed-width
+        # marker string: the width is no longer known in advance.
+        if not any(ch * MARKER_MIN in text for ch in DIRECTIONAL_CHARS):
             continue
-        for n, line in enumerate(text.splitlines(), start=1):
-            if MARKER_RE.match(line):
-                hits.append((rel, n, line.rstrip()))
+        for n, line in markers(text):
+            hits.append((rel, n, line.rstrip()))
+
     # The separator is context, not a trigger: only ever reported for a file
     # that a directional marker already condemned.
-    condemned = {rel for rel, _, _ in hits}
-    for rel in condemned:
-        text = (root / rel).read_bytes()[:_READ_LIMIT].decode("utf-8", "replace")
-        for n, line in enumerate(text.splitlines(), start=1):
-            if SEPARATOR_RE.match(line):
-                hits.append((rel, n, line.rstrip()))
+    for rel in {rel for rel, _, _ in hits}:
+        for n, line in separators(texts[rel]):
+            hits.append((rel, n, line.rstrip()))
     hits.sort(key=lambda h: (h[0], h[1]))
     return hits, scanned, skipped
 

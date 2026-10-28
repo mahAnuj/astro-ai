@@ -7,10 +7,18 @@ takes the first hit, so a row duplicated behind a marker is invisible to it. In
 Python or Jinja the same defect dies at `ast.parse` or a template render; in
 Markdown nothing looked.
 
-EVERY CASE RUNS AGAINST A REAL TEMPORARY GIT REPOSITORY, built with `git init`
-and `git add` under `tmp_path`. The gate reads the INDEX (`git ls-files`), so a
-fixture must be a genuine repo — a directory of files would exercise nothing but
-the exit-2 path. The repository under test is never touched.
+EVERY CASE RUNS AGAINST A REAL TEMPORARY GIT REPOSITORY under `tmp_path`. The
+gate reads the INDEX — paths from `git ls-files -s`, content from
+`git cat-file` — so a fixture must be a genuine repo; a directory of files
+would exercise nothing but the exit-2 path. The repository under test is never
+touched.
+
+THE WIDTH CASES MERGE FOR REAL rather than writing markers into a file. The
+claim under test there is about what GIT WRITES at a given
+`conflict-marker-size`, and a hand-written fixture at width 9 would prove the
+pattern while proving nothing about whether git ever emits one. The shipped
+gate's comment asserted the width was "git's, and is not configurable"; it is a
+gitattribute, and git honours 1 through 80.
 
 NO MARKER IS WRITTEN LITERALLY IN THIS FILE, and that is the point rather than a
 style choice. A marker-scanner is the one gate that trivially flags itself, and
@@ -144,16 +152,136 @@ def test_a_marker_quoted_mid_line_is_not_a_conflict(tmp_path, capsys):
     assert "PASS" in out
 
 
-def test_a_decorative_run_of_marker_characters_is_not_a_conflict(tmp_path, capsys):
-    """git writes EXACTLY seven characters and then a space or the line end.
+# --- the width is not seven, and that was the whole defect ------------------
 
-    More than seven is a hand-typed rule or a deeply nested Markdown blockquote,
-    both of which occur in prose, and neither of which is an unfinished merge.
-    Dropping the trailing requirement is the cheap way to "simplify" the pattern
-    and it turns every such line into a blocker.
+def _merge_conflict(tmp_path: Path, width: int, name: str = "f.md") -> Path:
+    """A repository whose index holds a REAL git conflict block of `width`.
+
+    Built by actually merging, never by writing markers into a file, because
+    the claim under test is about what GIT WRITES. A hand-written fixture at
+    width 9 would prove the regex and nothing about whether git ever emits one.
     """
+    root = tmp_path / f"repo{width}"
+    root.mkdir()
+    g = ("git", "-C", str(root))
+    subprocess.run(("git", "init", "-q", str(root)), check=True, timeout=60)
+    for k, v in (("user.email", "gate@test"), ("user.name", "gate")):
+        subprocess.run((*g, "config", k, v), check=True, timeout=60)
+    (root / ".gitattributes").write_text(
+        f"{name} conflict-marker-size={width}\n", encoding="utf-8")
+    (root / name).write_text("base\n", encoding="utf-8")
+    subprocess.run((*g, "add", "-A"), check=True, timeout=60)
+    subprocess.run((*g, "commit", "-qm", "base"), check=True, timeout=60)
+    subprocess.run((*g, "checkout", "-qb", "other"), check=True, timeout=60)
+    (root / name).write_text("theirs\n", encoding="utf-8")
+    subprocess.run((*g, "commit", "-qam", "theirs"), check=True, timeout=60)
+    subprocess.run((*g, "checkout", "-q", "-"), check=True, timeout=60)
+    (root / name).write_text("ours\n", encoding="utf-8")
+    subprocess.run((*g, "commit", "-qam", "ours"), check=True, timeout=60)
+    # Conflicts, so a non-zero return is the expected outcome.
+    subprocess.run((*g, "merge", "other"), capture_output=True, timeout=60)
+    # `git add` is what a person does next, and it is what puts the unfinished
+    # merge into the index -- the state this gate judges.
+    subprocess.run((*g, "add", name), check=True, timeout=60)
+    return root
+
+
+@pytest.mark.parametrize("width", [9, 20])
+def test_git_writes_whatever_marker_width_it_is_asked_for(tmp_path, width):
+    """The premise the shipped gate got wrong, measured rather than asserted.
+
+    Its comment read "`MARKER_WIDTH` is git's, and is not configurable".
+    `conflict-marker-size` is a gitattribute; git honours 1 through 80. This
+    pins the premise so the floor in `markers()` stays a stated judgment
+    instead of drifting back into a claim about git.
+    """
+    root = _merge_conflict(tmp_path, width)
+    body = (root / "f.md").read_text(encoding="utf-8")
+    opener = next(ln for ln in body.splitlines() if ln.startswith("<"))
+    assert len(opener.split()[0]) == width, opener
+
+
+@pytest.mark.parametrize("width", [9, 20])
+def test_a_real_conflict_at_a_non_default_width_turns_the_gate_red(
+        tmp_path, capsys, width):
+    """THE DEFECT. The shipped gate scored `PASS (2 tracked text files, no
+    conflict markers)` on exactly this repository: a committed, live conflict
+    block, defeated by one line in `.gitattributes`."""
+    root = _merge_conflict(tmp_path, width)
+    rc, out = _run(root, capsys)
+    assert rc == 1, out
+    assert "f.md:1:" in out
+
+
+def test_a_lone_wide_marker_needs_a_companion_of_its_own_width(tmp_path, capsys):
+    """Above the floor a single run is not enough, and that is what pays for
+    the widening.
+
+    git writes a BLOCK; prose does not. Twelve `>` followed by a space is a
+    twelve-deep Markdown blockquote as readily as a marker, so on its own it
+    passes -- which is why widening the floor from "exactly 7" to "7 or more"
+    costs no false positives on the 619 tracked text files measured on `main`.
+    """
+    root = _repo(tmp_path, {"docs/quote.md": f"{THEIRS}{'>' * 5} deep quote\n"})
+    rc, out = _run(root, capsys)
+    assert rc == 0, out
+    assert "PASS" in out
+
+
+def test_a_wide_block_is_caught_once_its_companion_is_there(tmp_path, capsys):
+    """The other side of the same rule: a wide run WITH a same-width companion
+    of a different marker character is a merge nobody finished."""
     root = _repo(tmp_path, {
-        "docs/rule.md": f"title\n{OURS}{'<' * 5}\n{THEIRS}{'>' * 5} deep quote\n"})
+        "docs/x.md": f"{OURS}{'<' * 5} HEAD\na\n{SEPARATOR}{'=' * 5}\nb\n"})
+    rc, out = _run(root, capsys)
+    assert rc == 1, out
+    assert "docs/x.md:1:" in out
+
+
+def test_a_marker_below_the_floor_is_not_a_conflict(tmp_path, capsys):
+    """The floor is a judgment and it is stated as one: below seven, `>` is a
+    blockquote and `|` opens a table row, and flagging those would block every
+    PR in a repository whose reasoning lives in Markdown. Someone who sets
+    `conflict-marker-size=3` and commits the result gets past this gate."""
+    root = _repo(tmp_path, {
+        "docs/six.md": f"{'<' * 6} HEAD\na\n{'=' * 6}\nb\n{'>' * 6} other\n"})
+    rc, out = _run(root, capsys)
+    assert rc == 0, out
+    assert "PASS" in out
+
+
+# --- the index, content and all -------------------------------------------
+
+def test_the_gate_reads_the_index_not_the_working_tree(tmp_path, capsys):
+    """The shipped gate took its PATHS from the index and read each file's
+    CONTENT from the working tree, while its docstring claimed the index. In CI
+    the two coincide; on a developer's machine they do not, and "what is about
+    to be shipped" is the index.
+
+    Here the block is staged and then tidied up on disk only. The gate must
+    still fail: `git commit` would ship the marker.
+    """
+    root = _repo(tmp_path, {"ARCHITECTURE.md": CONFLICTED})
+    (root / "ARCHITECTURE.md").write_text("# resolved on disk only\n",
+                                          encoding="utf-8")
+    rc, out = _run(root, capsys)
+    assert rc == 1, out
+    assert "ARCHITECTURE.md:2:" in out
+
+
+def test_an_unmerged_index_entry_is_skipped_not_reported(tmp_path, capsys):
+    """A conflict mid-merge has unmerged (stage 1/2/3) index entries and no
+    stage-0 entry. That is not a loophole: `git commit` refuses an index with
+    unmerged paths, so nothing can reach `main` until it is resolved -- and
+    resolving it is what creates the stage-0 entry the test above catches."""
+    root = _merge_conflict(tmp_path, 9, name="g.md")
+    # Undo the `git add` the helper does, putting the path back to unmerged.
+    subprocess.run(("git", "-C", str(root), "checkout", "-m", "--", "g.md"),
+                   check=True, timeout=60)
+    stages = subprocess.run(
+        ("git", "-C", str(root), "ls-files", "-s", "--", "g.md"),
+        capture_output=True, text=True, check=True, timeout=60).stdout
+    assert " 0\t" not in stages, f"fixture is not unmerged: {stages!r}"
     rc, out = _run(root, capsys)
     assert rc == 0, out
     assert "PASS" in out
@@ -161,12 +289,20 @@ def test_a_decorative_run_of_marker_characters_is_not_a_conflict(tmp_path, capsy
 
 def test_the_separator_is_reported_as_context_in_a_condemned_file(tmp_path, capsys):
     """The separator cannot trigger a failure, but a human reading the output
-    needs the whole block, not two of its three lines."""
+    needs the whole block, not two of its three lines.
+
+    BOTH halves are asserted, because "it appears" alone was too weak to be a
+    gate. Making the separator a trigger as well as context left this test
+    green while the line was reported twice -- and a separator that triggers
+    turns every setext heading in `/learn` into a blocked pull request. So the
+    count is pinned too: three marker lines, each exactly once.
+    """
     root = _repo(tmp_path, {"ARCHITECTURE.md": CONFLICTED})
     rc, out = _run(root, capsys)
     assert rc == 1, out
     for line in ("ARCHITECTURE.md:2:", "ARCHITECTURE.md:4:", "ARCHITECTURE.md:6:"):
-        assert line in out, out
+        assert out.count(line) == 1, out
+    assert "3 conflict-marker line(s)" in out, out
 
 
 def test_an_untracked_file_carrying_a_marker_is_ignored(tmp_path, capsys):

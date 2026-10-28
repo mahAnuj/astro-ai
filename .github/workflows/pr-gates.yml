@@ -144,9 +144,16 @@ jobs:
       # this one must not be skippable.
       #
       # It therefore runs BEFORE setup-uv and `uv sync`, and the gate is stdlib
-      # only so that it can. It reads the INDEX (`git ls-files`), which the
-      # checkout already provides -- not the working tree, which during a live
-      # merge is supposed to hold markers. 0.17s over 613 files.
+      # only so that it can. It reads the INDEX -- paths from `git ls-files -s`
+      # and content from `git cat-file --batch`, both of which the checkout
+      # already provides -- not the working tree, which during a live merge is
+      # supposed to hold markers. 0.16s over 620 files, measured 2026-10-28.
+      #
+      # That sentence was HALF TRUE when it was written: the first version took
+      # its paths from the index and read each file from the working tree. In
+      # CI the two coincide, which is why it passed review and why the gap
+      # could only ever have been found by reading the code rather than the
+      # runs. It is true now.
       #
       # On a code PR the `scripts/verify_*.py` sweep below picks it up again and
       # it runs twice. That is 0.17s, and the duplication is the point: the sweep

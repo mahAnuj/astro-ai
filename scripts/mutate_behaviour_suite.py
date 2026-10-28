@@ -3527,24 +3527,62 @@ MUTATIONS = [
 
     # --- #384: the merge-conflict marker gate -------------------------------
     # ARCHITECTURE.md reached main carrying a live conflict block and all 27
-    # gates passed over it. These four rows are the properties of the gate that
+    # gates passed over it. These rows are the properties of the gate that
     # replaced that silence; each one, broken, is a marker that ships again.
+    #
+    # THREE OF THESE REPLACE ROWS THAT PINNED THE BLINDNESS AS CORRECT. The
+    # first version matched exactly seven marker characters and read file
+    # content from the working tree, and had a row asserting that a wider run
+    # must PASS -- so the suite would have gone red on the fix. A mutation row
+    # is only as good as the premise under it.
     ("#384: the scanner drops git's diff3/zdiff3 base marker",
      "scripts/verify_conflict_markers.py",
-     "DIRECTIONAL = (OURS, BASE, THEIRS)",
-     "DIRECTIONAL = (OURS, THEIRS)",
+     "DIRECTIONAL_CHARS = (OURS[0], BASE[0], THEIRS[0])",
+     "DIRECTIONAL_CHARS = (OURS[0], THEIRS[0])",
      "test_the_diff3_base_marker_alone_turns_the_gate_red"),
 
-    ("#384: the pattern stops requiring a space or line end after the seven characters",
+    ("#384: the width goes back to EXACTLY seven, which `conflict-marker-size` defeats",
      "scripts/verify_conflict_markers.py",
-     '"^(?:" + "|".join(re.escape(m) for m in DIRECTIONAL) + r")(?:\\s|$)")',
-     '"^(?:" + "|".join(re.escape(m) for m in DIRECTIONAL) + r")")',
-     "test_a_decorative_run_of_marker_characters_is_not_a_conflict"),
+     "        if len(run) >= MARKER_MIN:\n",
+     "        if len(run) == MARKER_MIN:\n",
+     "test_a_real_conflict_at_a_non_default_width_turns_the_gate_red"),
+
+    ("#384: a wide run stops counting even with a same-width companion beside it",
+     "scripts/verify_conflict_markers.py",
+     "        if w == MARKER_MIN or len(chars_at_width[w]) > 1:\n",
+     "        if w == MARKER_MIN:\n",
+     "test_a_wide_block_is_caught_once_its_companion_is_there"),
+
+    # Pointed at the CONTEXT test, not the setext one. A file holding only a
+    # separator never reaches `markers()` -- the pre-filter in `scan()` looks
+    # for the directional characters first -- so the setext test could not see
+    # this mutation at all. Measured, not assumed: the row read MISSED until it
+    # was repointed and the context test taught to count.
+    ("#384: the separator becomes a trigger, so every setext heading blocks a PR",
+     "scripts/verify_conflict_markers.py",
+     "        if ch == SEPARATOR_CHAR:\n            continue\n",
+     "        if False:\n            continue\n",
+     "test_the_separator_is_reported_as_context_in_a_condemned_file"),
+
+    ("#384: the gate reads the working tree again instead of the staged content",
+     "scripts/verify_conflict_markers.py",
+     "        data = content.get(sha)\n",
+     "        data = (root / rel).read_bytes() if (root / rel).exists() else None\n",
+     "test_the_gate_reads_the_index_not_the_working_tree"),
+
+    # NO ROW FOR `stage != "0"`, and the absence is deliberate. Dropping that
+    # filter reads like a gate and is not one: an unmerged path's stage 1/2/3
+    # blobs are the PRE-merge sides, which carry no markers -- the markers exist
+    # only in the working tree while the merge is live. Scanning the extra
+    # stages therefore reports nothing new, the named test stays green, and the
+    # row would have been a row that pins nothing. The filter stays for the
+    # duplicate-path count it prevents; `test_an_unmerged_index_entry_is_skipped
+    # _not_reported` documents the behaviour without pretending to gate it.
 
     ("#384: a condemned file no longer reports the separator line as context",
      "scripts/verify_conflict_markers.py",
-     "if SEPARATOR_RE.match(line):",
-     "if False:",
+     "        for n, line in separators(texts[rel]):\n",
+     "        for n, line in []:\n",
      "test_the_separator_is_reported_as_context_in_a_condemned_file"),
 
     ("#384: the gate stops noticing that it excluded its own source from the scan",
