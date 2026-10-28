@@ -3524,6 +3524,24 @@ MUTATIONS = [
      "          {{ RL.min_warm }} warm and {{ RL.min_cold }} cold samples for the model.\n",
      "",
      "test_the_live_verdict_is_not_the_recorded_decision_and_the_fold_says_so"),
+
+    ("#387 notify: the owner's alert parses visitor text as Markdown again",
+     "src/astro_ai/notify.py",
+     '        "disable_web_page_preview": True,',
+     '        "parse_mode": "Markdown",\n        "disable_web_page_preview": True,',
+     "test_the_telegram_payload_asks_for_no_parse_mode"),
+
+    ("#387 notify: the 'no name' placeholder is Markdown italics again",
+     "src/astro_ai/notify.py",
+     "f\"👤 {name or '(no name)'}\",",
+     "f\"👤 {name or '_(no name)_'}\",",
+     "test_no_formatter_emits_markup_or_escapes"),
+
+    ("#387 notify: an unguarded inlined field prints the word None",
+     "src/astro_ai/notify.py",
+     "system={system or ''}\"",
+     "system={system}\"",
+     "test_a_missing_field_is_blank_not_the_word_none"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
