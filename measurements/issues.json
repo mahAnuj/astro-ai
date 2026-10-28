@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-10-28T10:59:13Z",
+  "generated_at": "2026-10-28T17:06:32Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
   "open": 129,
-  "with_ask": 59,
+  "with_ask": 58,
   "by_area": {
     "UNCLASSIFIED": 52,
     "INFRA": 15,
@@ -50,6 +50,21 @@
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 577,
+      "title": "verify_conflict_markers: the 8 MiB truncation and the 7-wide blockquote are absent from the gate's own 'what this lets through' lists",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-28T11:11:25Z",
+      "updated": "2026-10-28T11:11:25Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 573,
       "title": "[INFRA] agent-work dispatches pr-gates on every cycle; the dispatched run masks the real green and cannot trigger agent-merge, so an eligible PR strands",
@@ -906,24 +921,6 @@
       ],
       "created": "2026-10-16T08:43:45Z",
       "updated": "2026-10-16T08:43:45Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 387,
-      "title": "notify._escape_md does not escape its own escape character — a visitor can forge Markdown in the owner's Telegram",
-      "ask": "Drop parse_mode for visitor-supplied text.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-16T08:43:42Z",
-      "updated": "2026-10-27T04:08:13Z",
       "blocked": false,
       "needs_evidence": false
     },
