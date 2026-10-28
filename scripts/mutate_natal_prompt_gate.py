@@ -670,6 +670,51 @@ _HONEST = ("Many people recite the Hanuman Chalisa on Saturdays through a hard S
            "to Hanuman runs through Mars carrying Saturnine influence.")
 
 
+def gate8_mutations() -> tuple[int, int]:
+    """#430: re-break each Sade Sati phase-name surface and require Gate 8 red."""
+    caught = missed = 0
+    lines = gate.sade_sati_prompt_lines()
+    titles = gate.sade_sati_panel_titles()
+    ref = gate.sade_sati_reference()
+
+    def run(**kw):
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            ok = gate.gate_8_sade_sati_phase_names(**kw)
+        return ok
+
+    def expect(label: str, ok: bool, want_green: bool):
+        nonlocal caught, missed
+        if ok == want_green:
+            caught += 1
+        else:
+            missed += 1
+            print(f"  MISSED  sade-sati-names  {label}: expected "
+                  f"{'green' if want_green else 'red'}, went {'green' if ok else 'red'}")
+
+    expect("CONTROL (real tree)", run(), True)
+    for label, old, new in (
+        ("prompt rising (arohini)", "rising phase", "rising phase (arohini)"),
+        ("prompt setting (avarohini)", "setting phase", "setting phase (Avarohini)"),
+        ("prompt invented label", "peak phase (madhya)", "peak phase (shikhara)"),
+    ):
+        expect(label, run(prompt_lines=[ln.replace(old, new) for ln in lines]), False)
+    for key, new in (
+        ("en:sade_sati_rising_title", "Rising Phase (Arohini)"),
+        ("en:sade_sati_setting_title", "Setting Phase (Avarohini)"),
+        ("hi:sade_sati_rising_title", "आरोही चरण (आरोहिणी)"),
+        ("hi:sade_sati_setting_title", "अवरोही चरण (अवरोहिणी)"),
+        ("en:sade_sati_peak_title", "Peak Phase (Shikhara)"),
+    ):
+        expect(f"panel {key}", run(panel_titles=[(k, new if k == key else t) for k, t in titles]), False)
+    # Unchanged legal text stays green, and a gate with nothing to scan fails.
+    expect("peak (madhya) is written in the reference", run(reference=ref), True)
+    expect("empty reference", run(reference=""), False)
+    expect("no prompt lines", run(prompt_lines=[]), False)
+    expect("no panel titles", run(panel_titles=[]), False)
+    return caught, missed
+
+
 def gate7_mutations() -> tuple[int, int]:
     caught = missed = 0
     real = gate.reader_surface_units()
@@ -1021,6 +1066,10 @@ def main() -> int:
     c7, m7 = gate7_mutations()
     caught += c7
     missed += m7
+
+    c8, m8 = gate8_mutations()
+    caught += c8
+    missed += m8
 
     lines = original.splitlines(keepends=True)
     unprotected = [

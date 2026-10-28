@@ -715,9 +715,9 @@ def format_flags_for_prompt(flags: VedicFlags) -> str:
         )
     if flags.sade_sati:
         phase_text = {
-            "rising": "rising phase (arohini) — Saturn transiting 12th from natal Moon",
+            "rising": "rising phase — Saturn transiting 12th from natal Moon",
             "peak": "peak phase (madhya) — Saturn transiting natal Moon's own sign (1st from Moon)",
-            "setting": "setting phase (avarohini) — Saturn transiting 2nd from natal Moon",
+            "setting": "setting phase — Saturn transiting 2nd from natal Moon",
         }[flags.sade_sati_phase or ""]
         lines.append(
             f"- Sade Sati: YES, currently in {phase_text}. "
