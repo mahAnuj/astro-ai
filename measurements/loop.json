@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-28T10:59:08Z",
+  "generated_at": "2026-10-28T17:06:27Z",
   "rows": [
     {
       "run": 40623536535,
@@ -95,8 +95,8 @@
       "minutes": 12.6,
       "issue": 387,
       "pr": 549,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt"
     },
     {
