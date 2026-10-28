@@ -3435,6 +3435,25 @@ MUTATIONS = [
      "          {{ RL.min_warm }} warm and {{ RL.min_cold }} cold samples for the model.\n",
      "",
      "test_the_live_verdict_is_not_the_recorded_decision_and_the_fold_says_so"),
+
+    # #573. The dispatch was unconditional, so EVERY cycle attached a second
+    # `PR gates` run to the head SHA -- the one run agent-merge dedups to as
+    # the latest, and the one run its `if:` refuses as a trigger (#352). The
+    # last check to go green became the one check that cannot wake a merge.
+    ("#573: agent-work dispatches pr-gates even when the SHA already has a run",
+     ".github/workflows/agent-work.yml",
+     '\n          if [ "$gates_runs" -gt 0 ]; then\n',
+     "\n          if false; then\n",
+     "test_an_existing_pr_gates_run_is_not_given_a_second_one"),
+
+    # The `set -e` trap that made publish_measurements.sh's retry path
+    # unreachable, in the same shape: `x=$(failing_cmd)` as a standalone
+    # command carries that command's status and ends the script.
+    ("#573: the poll's gh api failure ends the step instead of falling to the #322 rescue",
+     ".github/workflows/agent-work.yml",
+     "              2>/dev/null || echo 0)\n",
+     "              2>/dev/null)\n",
+     "test_an_unreadable_answer_falls_toward_the_rescue"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
