@@ -1,111 +1,116 @@
-# infra-lead report — 2026-10-13
+# infra-lead report — 2026-10-27
 
-Focus: free-tier headroom, deploy truth, latency. Everything below was measured this run unless marked otherwise. Nothing in GCP or the repo was changed.
+Focus: free-tier headroom, deploy truth, latency. Read-only on code. **No GCP change was made** (see §1: I could not read the trigger, and the change I was asked to make was already in place).
 
-## 0. What I did not do, and why
+Labels used below: **MEASURED** = produced by a command this run. **RECORDED** = a figure from a repo file or an issue that I did not re-measure. **UNVERIFIED** = could not be checked.
 
-- **No GCP change, no trigger export.** The credential in this environment is `agent-analytics@bhagya-500701.iam.gserviceaccount.com`. It gets `PERMISSION_DENIED` on `builds triggers list` (global and asia-south1), `run services list` and `projects get-iam-policy`. The `beta` component is also not installed here. So I could not export the trigger, and per the rules I did not edit it. The brief's "you may fix this yourself" turned out not to need a fix (§1), but if it had, this run could not have made it.
-- **No edit to CLAUDE.md.** The brief says to record GCP changes there; there was no GCP change. CLAUDE.md's existing BUILD_SHA paragraph (set 2026-10-08, `--update-env-vars`) is accurate and I verified it (§1).
-- Cloud Run / GCS usage against the free tier **could not be read** (no `run.*` or monitoring access). Where I give a Cloud Run figure it is derived from GA4 sessions and labelled as such.
+## Headlines
 
-## 1. Deploy truth — the premise was stale: the `exact` tier is live and has run
+1. **The `exact` deploy tier is not "never run". It is the only tier running.** `BUILD_SHA` is on the service and every `verify-production` run I read since 2026-10-21 passed on `exact`. The brief's premise is stale; the tree's text is stale in the same way (#340).
+2. **I could not read the Cloud Build trigger, Cloud Run or Cloud Scheduler.** The service account `agent-infra` authenticates as (`agent-analytics`) is denied all three. Export-before-edit cannot be satisfied, so I changed nothing. Filed as **#568** (needs a human).
+3. **New finding, filed as #567.** `rashifal-generate`'s cron has a 3 h margin to the Groq fallback and GitHub's cron lag exceeded it on 1 of 3 runs. On 2026-10-27 both languages published after their `warm-rashifal` slots.
+4. Of the four "standing" issues, two are already closed (#266, #253), one is functionally resolved (#232), and one has its named gap closed by an instrument (#212). Details in §3.
+5. Production is healthy and fast right now: every route 200, ~0.5 s warm.
 
-The brief says the exact tier "has NEVER run". It has.
+---
 
-| Evidence | Value |
-|---|---|
-| `curl https://shubhagya.com/health` (this run) | `{"ok":true,"revision":"bhagya-00440-bvw","build_sha":"ee1949a80deb699628e6f428a6ca83bce0047b93"}` |
-| `git rev-parse HEAD` | `ee1949a80deb699628e6f428a6ca83bce0047b93` — identical |
-| run 38439139160 (2026-10-13 17:29Z) | `DEPLOY GATE: exact — build_sha 686fe3a matches this commit (revision bhagya-00438-8p2), after 20 tries` (~5 min) |
-| run 38136019114 (2026-10-11) | `DEPLOY GATE: exact … after 1 tries` |
-| #282 comment | records it set 2026-10-08, run 37740508193 |
+## 1. Deploy truth — BUILD_SHA
 
-`build_sha` has been non-null in every log I read (39dedb4, babc857, 04bc524, 5fa5ebe). Revisions seen serving: 00429 → 00440 over 2026-10-11..13.
+**MEASURED**
+- `GET https://shubhagya.com/health` -> `{"ok":true,"revision":"bhagya-00518-8zz","build_sha":"fcd2e092194426d240e3023756f193e8a59eefec"}`, taken twice this run (probe file, then my own curl). `build_sha` is non-null.
+- `fcd2e09` is "#475 Phase 3 … (#565)", dated 2026-10-28 02:22 +0530 (= 2026-10-27 20:52Z). `git log -- src pyproject.toml uv.lock README.md Dockerfile` lists it as the newest commit touching anything the Dockerfile copies. HEAD `19b8f2e` is measurements-only and produced no build — consistent with `ignoredFiles: measurements/**` still being in force (inferred from behaviour; I could not read the trigger).
+- `verify-production` runs, final gate line:
+  - `40581840674` (fcd2e09): `DEPLOY GATE: exact — build_sha fcd2e09 matches this commit (revision bhagya-00518-8zz), after 20 tries`
+  - `40555319572` (233440f): `exact … after 22 tries`
+  - `39637008475` (d12494d, 2026-10-21): `exact … after 38 tries`; also `39645143028`, `39650183990` exact.
+- Every earlier run I opened shows `serving build_sha <old sha>, want <new sha>` during the poll — i.e. the field is populated and compared per commit.
 
-**Two real problems with deploy truth, both filed:**
+**What this means.** A green `verify-production` now proves *this commit* is what is serving, as the file's header always said it could. Nothing needs setting on the trigger.
 
-- **#341** — the gate waits for `$GITHUB_SHA`, which only works if that commit is one Cloud Build builds. Run 38333011428 (dispatch 2026-10-13 01:37Z, HEAD `be4046b`, a `measurements/`-only commit that the trigger's `ignoredFiles` can never build) polled 48× for a SHA that cannot exist and failed red after 12 min, while production was healthy and serving `39dedb4`. `agent-merge.yml:352` dispatches `--ref main`, so a nightly measurements commit landing in the gap reproduces it. Run 38160697735 (push `39dedb4`) timed out the other way: it did deploy, but after the 12-min window (served 00433 by 10-13 01:37Z). I cannot see Cloud Build, so I cannot say whether that was a slow or a queued build. Proposed: wait for the newest commit ≤ `$GITHUB_SHA` that touches a path outside `measurements/`. No cost change.
-- **#340** — the tree still says the opposite and prints a dangerous command. `verify-production.yml` lines 27/206/825 and `health.py:61` tell the reader to add `--set-env-vars=BUILD_SHA=…`; CLAUDE.md says never `--set-env-vars` (it replaces the whole env, including the Groq keys). `infra-lead.md` and `agent-infra.yml` still say "has NEVER run"; `infra-lead.md` says verify-production is daily (it is `17 6 * * 1`, weekly) and names `scripts/verify_token_budget.py`, **which does not exist**.
+**Stale text in the tree** (all in #340; I added this evidence there and on #282, closed neither):
+- `verify-production.yml` lines 20-28, ~207 and ~826 say the tier "runs today" as revision-changed and tell the reader to add **`--set-env-vars=BUILD_SHA=$COMMIT_SHA`**. `--set-env-vars` replaces the service's whole environment (the Groq keys with it). `deploy.sh:20` and CLAUDE.md both say `--update-env-vars`. Anyone following the in-tree text during a regression would wipe production's environment.
+- `README.md:252` says `deploy.sh` passes secrets via `--set-env-vars`; `deploy.sh:81` uses `--update-env-vars`.
+- CLAUDE.md still says revision-changed is "the tier every run has used so far".
 
-#282 item 1 is done and item 2 was withdrawn in its own comment; the issue is stale-open. I may not close it — for `/prioritise`.
+**Not done / could not do.** I did not export the trigger (denied; `gcloud beta` is also not installed on the runner, so the command in the prompt would stall on a component install even with permission). Nothing was edited, so there is no before/after to report and CLAUDE.md was not touched for a GCP change. The trigger's `ignoredFiles: measurements/**` is unread this run — **do not treat it as re-verified**.
 
-## 2. GitHub Actions
+## 2. GCP access — #568
 
-- **#339 (needs a human): billing block.** On 2026-10-12, six jobs on four workflows never started: *"The job was not started because recent account payments have failed or your spending limit needs to be increased."* PR gates + verify-build (03:07Z), Agent merge ×2 (03:08Z), verify-production scheduled drift run (15:29Z), Agent steward (18:21Z). Window ≥ 15 h 14 m. The Monday drift check never ran. I have no billing scope, so I could not tell a failed payment from a zero spending limit.
-- The repo is **public** (`gh api repos/mahAnuj/astro-ai --jq .visibility`), where standard runner minutes are not metered. CLAUDE.md's "2,000-minute monthly allowance" is the private-repo figure. Either that line is wrong, or something here is billed that I could not identify. Flagged in #339 for the human; I make no claim which.
-- Volume, last 100 runs (2026-10-11T16:04Z → 2026-10-13T23:13Z, ~55 h), summed job wall-clock (overstates billed minutes): total **546 min** — Agent work 252 (6 runs), PR gates 185 (21), verify-build 48 (28), verify-production 42 (6), everything else < 7 each. Sustained, that is ~7,000 min/month, 3.6× the 2,000 figure, which is why §2's billing question matters.
-- Other failures in that window, none infra: PR gates "cancelled" ×6 are the concurrency group superseding itself (`Canceling since a higher priority waiting request`); PR gates `failure` ×3 and Loop outcomes `failure` ×2 exit 1 with real gate output (not investigated further); verify-build and PR gates on run 38342901013/…051 failed with a 404 from the annotations API (no log retrievable).
-- `verify-production` weekly: the paths-ignore change worked — 6 runs in 55 h, 3 of them dispatches from agent-merge, vs 12 runs/day on 10-08.
+`gcloud builds triggers list` (regional and global), `gcloud builds list`, `gcloud run services list`, `gcloud scheduler jobs list`, `gcloud projects get-iam-policy` — all `PERMISSION_DENIED` as `agent-analytics@bhagya-500701`. #280 ("gcloud is granted and unusable") was closed when the auth step was added; the step works but the identity has no roles. Ask in #568: viewer-level roles first; a separate service account if trigger-editing is ever wanted. **IAM is the owner's call and I did not try to work around it.**
 
-## 3. Latency (curl from the GitHub runner, US; this run)
+Consequence for this report: Cloud Run `maxScale`/`minScale`, request counts, CPU-seconds, GCS operation counts and the Cloud Scheduler times are all **UNVERIFIED** — I have only the RECORDED `maxScale 5` (`ARCHITECTURE.md:94`) and the scheduler times in `ARCHITECTURE.md:117-118`.
 
-| route | status | TTFB | total | size |
-|---|---|---|---|---|
-| / | 200 | 0.67 s | 0.70 s | 152 KB |
-| /kundli | 200 | 0.98 s | 1.01 s | 140 KB |
-| /matching | 200 | 0.57 s | 0.60 s | 135 KB |
-| /numerology | 200 | 0.59 s | 0.61 s | 128 KB |
-| /panchang | 200 | 0.55 s | 0.58 s | 134 KB |
-| /rashifal/aries | 200 | 0.99 s | 1.02 s | 126 KB |
-| /health | 200 | 0.60 s | 0.60 s | 96 B |
-| /static/css/app.css (CDN HIT) | 200 | 0.41 s | 0.42 s | 85.6 KB |
+## 3. Headroom — ceiling, usage, break multiple, move, free tier?
 
-Your `/tmp/probe.txt` agrees (0.65–0.92 s). Reading: the network floor from this runner is ~0.4–0.6 s (a 96-byte `/health` costs 0.60 s; a CDN-hit CSS 0.41 s), so server time on the static-ish pages is ~0.1–0.5 s. Nothing here is slow. `/kundli` GET 0.98 s and `/rashifal/aries` 0.99 s are the highest; both were warm.
+Traffic baseline, **RECORDED** (`measurements/latest.md`, GA4, window 2026-09-27..10-24, written today): **397 sessions / 28 days = 14.2/day**; `/kundli` landings **22** (0.8/day). The analyst notes the exports exclude the last 3 days and that some Direct traffic may be the owner/agents.
 
-- **Not measured:** the natal *generation* latency (the 26 s figure) — it needs a POST /kundli, which spends ~6.8k tokens of the shared Groq budget (§4). I did not spend them. Cold-start latency (min-instances 0) not measured.
-- HTML is `cache-control: private, no-cache, no-store, must-revalidate` with `x-cache: MISS`, so every page view reaches Cloud Run. At present traffic that is irrelevant (§5); it becomes the lever at much higher traffic.
-- `sw.js` is `no-cache`; `app.css` is `public, max-age=300` with a `?v=` hash. #253's stylesheet half holds; the remaining `/static/` cache-first assets are as the issue's last comment describes. Not re-tested in a browser.
+### 3a. Groq natal request (#266, closed 2026-10-21)
 
-## 4. Groq — the ceiling that binds first (#266, #212)
+- Ceiling: 8,000 TPM per model; the gate budgets a 7,400 bucket (RECORDED in `verify_token_budget.py` output); 200,000 TPD per model (RECORDED, CLAUDE.md).
+- **MEASURED** (`scripts/measure_natal_request.py`, `verify_token_budget.py`, tiktoken `o200k_base`, a proxy): natal worst fixture **6,757 tokens** (system 3,083 + user 3,674), best 6,438. Gate-reserved incl. scaffold + completion reserve, *unshed*: **en 7,872 / hi 8,057 against 7,400 — headroom −657.** So an unshed natal does not fit one model-minute. It works in production because the shed ladder drops optional blocks (the #266 history); I did not verify the shed outcome this run.
+- Break multiple, arithmetic on the numbers above (completion not counted, so optimistic):
+  - **TPM:** burst-driven, not volume-driven — about one natal per model per minute, two across `groq120,groq20`. A third inside a minute has no bucket.
+  - **TPD:** 200,000 / 6,757 ≈ 29 natals per model, ≈ **59/day across both**, *if* the nightly rashifal path costs the Groq budget nothing. Against 14.2 sessions/day as an upper bound (every session a distinct uncached chart) that is **≈ 4.2×**; against actual `/kundli` landings (0.8/day) ≈ 70×. The natal cache (SQLite + GCS) makes repeats free, so reality is nearer the second figure. On a day the rashifal fallback fires, ~40k tokens/language of TPD go first (RECORDED 12 × ~3,330 each, not re-measured), cutting the 59.
+- Move: none needed now. The structural options remain the cheap ones already listed on #266 (shrink the 3,083-token system prompt, which is 46% of every call; find out whether Groq's cached tokens count toward TPM/TPD — **#475 Phase 1b's verdict is still pending**, `ARCHITECTURE.md` 2026-10-25). All inside the free tier. A third model is a human decision.
+- **Not measured:** I did not POST `/kundli` — it spends ~6.7k of the shared bucket for no new information; the 503 rate in production is therefore not re-measured. #266's 10-21 closing probe (two distinct charts, no 503) is the latest evidence.
 
-Measured: `uv run python scripts/measure_natal_request.py` (tiktoken `o200k_base`, a proxy for gpt-oss's encoding, ±1–2 %; excludes completion and chat-template overhead).
+### 3b. Prompt growth (#212)
 
-| | tokens |
-|---|---|
-| system prompt (en) | 3,111 (fixed, every request — 46 % of the worst call) |
-| worst chart (cancer-lagna-manglik-exempt) | 6,798 total = **85 % of 8,000 TPM** |
-| best chart (manglik-uncancelled) | 6,477 |
+- **MEASURED** `verify_token_budget.py`: PASS, 13 paths inside their recorded budget. `rashifal_single` system **2,874** (baseline 2,874, +0.0%), headroom 344; with payload 4,133 (headroom 268); `natal` 3,083 (−0.9% vs baseline 3,111); `natal+payload` 6,757 (headroom 111 under its 7,000 ceiling — the tightest row).
+- #212's complaint was that nothing measured per-request tokens. At the system-prompt level something now does (#400, in the `verify_*` sweep). Runtime per-route/per-model tokens exist on `/admin/ops` (#473/#475) but I cannot read it from here. The issue's own last comment says to keep it open; whether to close it is `/prioritise`'s call. **The tightest row, `natal+payload`, has 111 tokens of headroom — one more optional block in the payload and the gate goes red, which is the gate working.**
+- Shape change worth knowing: the daily rashifal now comes from the nightly Claude job (#515), with Groq as the fallback, so the 24-calls/day TPD pressure that caused the 2026-08 outage only returns on fallback days (see §4).
 
-Ceiling table (current numbers from the above, ARCHITECTURE.md, and `measurements/latest.md`):
+### 3c. Twelve concurrent rashifal reads (#232)
 
-| Ceiling | Value | Current use | Breaks at | Move | Free tier? |
-|---|---|---|---|---|---|
-| Groq TPM, per model | 8,000 | one uncached natal = 6.5–6.8k input | **3 uncached natals in one minute** (chain `groq120,groq20` has 2 buckets) | not the binding constraint — see TPD | n/a |
-| Groq TPD, per model | 200,000 (CLAUDE.md; 198,298 reached 2026-10-08 per ARCHITECTURE.md) | ~80k/day rashifal combined job (24 × ~3,330, ARCHITECTURE.md, not re-measured) | ≈ **47 uncached natal reads/day** on input tokens alone (≈120k left on groq120 + 200k on groq20, ÷ ~6.8k); real number is lower because completion tokens are unmeasured | shrink the 3,111-token system prompt; verify whether Groq prompt caching applies to these two models and counts toward TPM/TPD (**not verified**) | yes |
-| Model beyond the two | — | — | — | **human decision** per CLAUDE.md; the obvious candidates are already ruled out there | unknown |
+- **Code read, concurrency NOT exercised.** `rashifal_derive.derive_single_reading` checks `daily_cache` tier-0, then `_durable_get` (GCS) only on a miss, negative misses held 30 s, then writes the blob back to tier-0 and derives the section. That is the memoisation #232 asks for. Residual: N simultaneous first requests on one cold instance each do their own GCS read — bounded by (cold instances ≤ 5, RECORDED maxScale) × (lang) per day.
+- At 14.2 sessions/day that residual is immaterial; I have no GCS operation counts (access denied) so no break multiple can be stated. **Move:** none. Candidate for closure by `/prioritise` with the residual stated; I did not close it.
 
-Modelled (Poisson, uniform arrivals — arithmetic, not observation) TPM collisions on a 2-request/min ceiling: 100 uncached kundlis/day → 0.08 % lost; 1,000/day → 5.7 %; 5,000/day → 47 %. TPD bites at ~47/day, long before TPM does, so TPD is the number to design to.
+### 3d. Service worker (#253, closed 2026-10-20 by `close-on-evidence`)
 
-Today's load: GA4 278 sessions / 28 days ≈ 9.9/day. If every session were a unique kundli that is ~21 % of 47/day; the real kundli rate is lower and the natal cache (SQLite + GCS) makes repeat charts free. So **the 503s in #266 at today's traffic are more probably the daily rashifal job and a kundli sharing the day's TPD or a minute, than organic kundli volume.** That is a hypothesis; a timestamped production 503 would confirm or kill it. Posted as a comment on #266.
+- **MEASURED live:** `https://shubhagya.com/static/sw.js` has `CACHE_VERSION = 'bhagya-v4'`, a `res.ok`/opaque check before `cache.put` (line 59), and a `no-cache` background revalidate under `waitUntil` (lines 89-97). The home page links `app.css?v=ad4efc16`. `sw.js` is served `cache-control: public, max-age=300`, ETag set, `x-cache: HIT` — the worker file itself is not pinned for weeks. Fix confirmed in production. Gap stated in the issue still stands: no gate executes `sw.js` and no real-browser test was run.
 
-#212: still nothing measures per-request tokens in production or CI for rashifal. `measure_natal_request.py` is offline and natal-only; `verify_token_budget.py`, which `infra-lead.md` calls "the gate that makes it real", does not exist (#340). I did not file a separate issue: #212 already carries it and building the gate is Engineering's.
+## 4. The nightly rashifal job vs. GitHub cron lag — #567 (new)
 
-## 5. Cloud Run / GCS headroom
+- Design (`rashifal-generate.yml` header): cron 22:00Z, `warm-rashifal` 01:00Z, `send-daily` 01:30Z. Margin 3 h.
+- **MEASURED** scheduled-run lag: 2 h 08 m (10-25 00:08Z), 1 h 58 m (10-25 23:58Z), **3 h 19 m (10-27 01:19Z; last job finished 01:22:47Z)**. The same week, scheduled `Agent work` ran a median 199 / max 369 min late (n=15) and `Agent measure` a median 111 / max 192 min late (n=41).
+- 1 of 3 runs published after the documented warm slots (en 01:00Z, hi 01:15Z). **UNVERIFIED:** whether Groq actually generated that morning — Cloud Scheduler is unreadable and `/admin/ops` is not reachable from here.
+- Proposed (in #567): cron earlier and off the hour, e.g. `7 20 * * *`; free-tier-neutral (no Groq tokens; Claude Max is flat). Open question left to Engineering: the shared Claude 5 h cap window. Workflow files are on the `needs-human-review` boundary.
 
-I could not read Cloud Run or GCS usage (permissions, §0). Derived only:
+## 5. Latency (MEASURED, curl from the runner, 3 tries each)
 
-- Cloud Run free tier: 2M requests/month (public figure, not re-checked this run). Traffic: GA4 278 sessions / 28 d. Even at a deliberately generous 100 requests per session (HTML + assets + bots) that is ~28k requests / 28 d ≈ **1.4 % of 2M; the breach multiple is ≈ 70× at that assumption**, higher at any realistic one. `deploy.sh` sets `--max-instances 5 --concurrency 80 --cpu 1 --memory 512Mi --min-instances 0`; I did not verify that the live service matches `deploy.sh`.
-- Cloud Run is not the first thing to break; Groq TPD is, ~15× sooner in sessions terms.
-
-## 6. #232 and #253 (standing)
-
-- **#232 is largely closed by the tree already.** `rashifal_derive.derive_single_reading` reads `daily_cache` tier 0 first and writes the GCS blob back into it (`rashifal_derive.py:112–131`), and the route is `async def rashifal_single` calling it synchronously (`routes/rashifal.py:171`, call at 268), so the first cold read blocks the loop and the other eleven then find tier 0 populated. Net: **one GCS read per instance per language per day**, not twelve. Residual: that one read blocks the event loop for the US↔asia-south1 round-trip; I did not measure GCS latency from `asia-south1`. With `maxScale=5` this is ≤ 5 reads/lang/day. I recommend someone re-verify against the 12-concurrent scenario in the issue and close it. I did not.
-- **#253** unchanged since its last comment: stylesheet half fixed (`?v=` hash seen live), `/static/` cache-first remainder open.
-
-## 7. Issues filed / commented
-
-| # | What | Needs |
+| route | status | total (s) |
 |---|---|---|
-| #339 | Actions jobs refused to start for billing, 2026-10-12 | **human** (Billing & plans) |
-| #341 | Exact deploy gate waits for a SHA that may never deploy | engineer (workflow edit) |
-| #340 | Stale "never ran" text + `--set-env-vars` advice + nonexistent `verify_token_budget.py` | engineer / doc edit |
-| #266 (comment) | Capacity numbers above | — |
+| `/` | 200 | 0.50-0.51 |
+| `/kundli` (form page, no saved chart: 139,784 B = the landing view) | 200 | 0.55-0.57 |
+| `/matching` | 200 | 0.49-0.51 |
+| `/numerology` | 200 | 0.56 |
+| `/panchang` | 200 | 0.50-0.58 |
+| `/muhurat` | 200 | 0.48-0.50 |
+| `/festivals` | 200 | **1.15** first, then 0.63-0.64 |
+| `/learn/` | 200 | 0.65-0.71 (`/learn` -> 307 -> `/learn/`, 0.31 s) |
+| `/rashifal/aries` | 200 | **0.98** first, then 0.50-0.56 |
+| `/health` | 200 | 0.28-0.34 |
+| `/static/sw.js`, `app.css` | 200 | 0.35 or 0.015 (edge hit alternating) |
 
-Suggest `/prioritise` close #282 (item 1 done, item 2 withdrawn) and look at #232.
+- Nothing is slow on the pages I probed. The only outliers are first hits on `/festivals` (1.15 s, 314 KB) and `/rashifal/aries` (0.98 s) — consistent with a cold in-process cache, 3 samples each, no more than that.
+- **Not measured:** LLM-backed misses. #355 recorded an average ~40 s cache-miss in production (RECORDED); the "26 s kundli" in the role brief is from earlier testing. I did not generate a reading (spends the shared Groq bucket). That remains the real latency exposure and the reason for the cache-first design.
+- `/learn` redirecting with a **307** (temporary) rather than 301 is Engineering's/SEO's to judge; noted, not filed.
 
-## 8. Unverified / for the next run
+## 6. GitHub Actions
 
-- Cloud Build deploy duration and queue time (case 2 in #341); needs Cloud Build read access for this service account (`roles/cloudbuild.builds.viewer`) or a human to read the build history for 39dedb4 — **adding IAM bindings is a human decision**.
-- Cloud Run / GCS actual usage vs free tier (needs `roles/monitoring.viewer` or `run.viewer`).
-- Natal completion tokens and whether Groq's prompt caching helps (needs one live, budgeted call).
-- Whether the Actions billing block recurred between 10-12 18:21Z and 10-13 01:37Z.
+- **MEASURED** (`gh run list --limit 1000`, 7 days from 2026-10-20 23:00Z): 810 runs, ~4,300 wall-clock minutes (an upper bound, not billed minutes). `PR gates` 156 runs / ~1,485 min; `Agent work` 32 / ~1,418; `verify-build` 198 / ~924; `verify-production` 31 / ~178.
+- **CLAUDE.md's "2,000-minute monthly allowance" is stale.** `measurements/cost.json` records Actions at $0 on a public repository, "unlimited since 2026-10-12 (#338)". I could not query repo visibility directly (`gh repo view` was denied in this run), so this rests on that RECORDED row and CLAUDE.md's own "the repo is public" (#354). On that basis minutes are not a ceiling that binds. Noted in the #340 comment.
+- Failures in the last 48 h read from logs: `Agent measure` 40420746687 and `Agent discover` 40420451019 (10-26 ~23:35Z) — GitHub returned `remote: Internal Server Error` on the push and then `could not enable auto-merge … needs a hand`. Transient; **no `measurements/*` branches or open PRs remain** (checked). `Agent work` 40274940597 died at exit 143 after ~3 min (runner/SIGTERM). Open PRs now: 564, 556, 552, 550, 549, 544 — all the code loop's; four are `qa-fail` drafts, 549 is `needs-human-review` + `qa-pass`.
+- Observation, not mine to fix: `loop-outcomes` (run 40479276729) reports 29 of 32 `agent-work` runs produced no merged PR while that workflow used ~1,418 wall-clock minutes this week. On a public repo this costs no money; it is a yield question for `/prioritise`.
+
+## 7. Actions taken this run
+
+- Filed **#567** (cron lag vs. fallback) and **#568** (IAM roles for `agent-infra`).
+- Commented evidence on **#340** and **#282**; closed nothing.
+- No GCP configuration changed; no file in the repo edited; no push.
+
+## 8. Next run should
+
+1. Read `/admin/ops` (or ask for a probe of it) to answer §4's open question: did the Groq fallback fire on 2026-10-27, and what do the per-model TPD numbers actually say?
+2. If #568 lands, export the trigger first and confirm `ignoredFiles: measurements/**` and the `BUILD_SHA` step are still present.
+3. Re-check #567's lag table with more samples after any cron change.

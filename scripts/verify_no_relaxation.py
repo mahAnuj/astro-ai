@@ -54,6 +54,7 @@ USAGE
 from __future__ import annotations
 
 import argparse
+import ast
 import re
 import subprocess
 import sys
@@ -112,6 +113,42 @@ def at(ref: str, path: str) -> str | None:
 
 def ints(text: str | None, pattern: str) -> list[int]:
     return [int(m) for m in re.findall(pattern, text or "")]
+
+
+def mutation_rows(text: str | None) -> int | None:
+    """Rows in a mutation harness's MUTATIONS table, or None if not countable.
+
+    #389. This used to be `text.count('("')` — a tally of a two-character
+    substring over the WHOLE module, so it also counted tuples nested inside
+    mutation bodies and every `print("` and `re.search("` in the file. On the
+    real harness it read 183 against a table of 141, and the harness's own
+    output two lines away said `141/141 mutations caught`.
+
+    The wrong number was the cheaper half of the defect. The expensive half is
+    that a tally over the whole file can RISE while a row is deleted: one added
+    comment containing `("` pays for the row that left, and rule 4's floor is
+    "the number did not fall". A real row count cannot be bought that way.
+
+    None, not 0, when there is no readable table: `mutate_natal_prompt_gate.py`
+    has no MUTATIONS at all and rule 4 selects it on filename alone. Returning
+    0 there would read as "the table emptied" and fail every diff touching it.
+    """
+    if not text:
+        return None
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return None  # a side we cannot parse is a side we cannot count
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+            continue
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+        if not any(getattr(t, "id", "") == "MUTATIONS" for t in targets):
+            continue
+        if isinstance(node.value, (ast.List, ast.Tuple)):
+            return len(node.value.elts)
+        return None  # built by concatenation or a call — not a literal to count
+    return None
 
 
 def main(argv: list[str]) -> int:
@@ -202,13 +239,22 @@ def main(argv: list[str]) -> int:
         b_txt, a_txt = at(base, path), at("HEAD", path)
         if b_txt is None or a_txt is None:
             continue
-        b_n, a_n = b_txt.count('("'), a_txt.count('("')
+        b_n, a_n = mutation_rows(b_txt), mutation_rows(a_txt)
+        what = "rows"
+        if b_n is None or a_n is None:
+            # No countable table on one side. Fall back to the old substring
+            # tally rather than skip the file — but SAY it is a proxy, because
+            # a number that claims to be a count and is not is the whole of
+            # #389. A labelled proxy is honest; an unlabelled one costs the
+            # next reader the time it takes to find out which number lied.
+            b_n, a_n = b_txt.count('("'), a_txt.count('("')
+            what = 'proxy `("` tally'
         if a_n < b_n:
-            bad.append(f"{path}: mutation/control entries fell {b_n} -> {a_n}. A harness that "
+            bad.append(f"{path}: mutation {what} fell {b_n} -> {a_n}. A harness that "
                        f"tests less proves less, and this repo has already had one enshrine a "
                        f"false positive. Removing a mutation needs a stated reason and a human.")
         else:
-            print(f"  ok   mutations kept     {path} ({b_n} -> {a_n})")
+            print(f"  ok   mutations kept     {path} ({what} {b_n} -> {a_n})")
 
     # 5 + 6. agent-merge's chain and its verdict handling
     am = ".github/workflows/agent-merge.yml"

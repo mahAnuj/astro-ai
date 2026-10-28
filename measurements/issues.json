@@ -1,18 +1,19 @@
 {
-  "generated_at": "2026-10-27T00:17:37Z",
+  "generated_at": "2026-10-28T00:18:32Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 125,
-  "with_ask": 57,
+  "open": 129,
+  "with_ask": 59,
   "by_area": {
-    "UNCLASSIFIED": 52,
-    "INFRA": 12,
+    "UNCLASSIFIED": 53,
+    "INFRA": 14,
     "REDESIGN": 10,
     "UI": 8,
     "FEATURE": 7,
     "SEO": 3,
     "SECURITY": 3,
     "NUMEROLOGY": 3,
+    "MEASURE": 2,
     "CONTENT": 2,
     "DETECT_STALLS": 2,
     "AGENT-MERGE": 2,
@@ -21,7 +22,6 @@
     "CHORE": 2,
     "BUG": 2,
     "PRIVACY": 1,
-    "MEASURE": 1,
     "REPO": 1,
     "CHART": 1,
     "GATES": 1,
@@ -35,8 +35,8 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 39,
-    "untyped": 34,
+    "bug": 40,
+    "untyped": 37,
     "enhancement": 27,
     "correctness": 8,
     "chore": 7,
@@ -44,12 +44,81 @@
     "ui": 3
   },
   "by_priority": {
-    "unset": 79,
+    "unset": 84,
     "medium": 23,
-    "high": 23
+    "high": 22
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 570,
+      "title": "[MEASURE] No event records a click on an in-article tool link, so #276, #329 and #521 can only be scored through pages/session",
+      "ask": "",
+      "area": "MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-28T00:17:18Z",
+      "updated": "2026-10-28T00:17:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 568,
+      "title": "[INFRA] agent-infra authenticates as agent-analytics, which holds no Cloud Build / Cloud Run / Scheduler roles — export-before-edit is impossible",
+      "ask": "Editing the trigger needs a Cloud Build editor role.",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-27T23:00:50Z",
+      "updated": "2026-10-27T23:00:50Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 567,
+      "title": "[INFRA] rashifal-generate's 3 h margin to the Groq fallback is smaller than GitHub's cron lag: 1 of 3 runs published after warm-rashifal",
+      "ask": "Move the cron earlier and off the :00 mark (public-repo cron is queued hardest at the top of the hour), e.g.",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-27T23:00:16Z",
+      "updated": "2026-10-27T23:00:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 560,
+      "title": "qa-on-green writes its 'dispatched at <sha>' marker before the dispatch, so a dispatch deferred for a cycle in flight is never retried (#551, #549 stranded)",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-27T15:12:04Z",
+      "updated": "2026-10-27T15:12:04Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 557,
+      "title": "publish_measurements.sh: one GraphQL error enabling auto-merge strands the measurement PR (#554)",
+      "ask": "Retry the gh pr merge --auto call a small bounded number of times with a short sleep (3 tries, a few seconds apart) before fail.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-27T03:55:12Z",
+      "updated": "2026-10-27T03:55:12Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 553,
       "title": "[CONTENT] /learn/panch-mahapurush-yoga/ tells readers Kundali Matching compares yogas (it does not) and never links /kundli, the tool that answers the page",
@@ -234,23 +303,6 @@
       "needs_evidence": false
     },
     {
-      "number": 495,
-      "title": "loop-outcomes reports working loops as BROKEN: collectors-only runs and every partial/ PR",
-      "ask": "REPORT_PATH[\"agent-measure\"] = \"measurements/latest.md\" and classify_report_loop demands a commit touching it from every successful run.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:high"
-      ],
-      "created": "2026-10-23T04:48:24Z",
-      "updated": "2026-10-23T04:48:24Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 490,
       "title": "[MEASURE] No per-page x per-day export, so no page-level ship can be scored before its 28-day window ends",
       "ask": "",
@@ -292,7 +344,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-21T17:59:35Z",
-      "updated": "2026-10-26T04:39:07Z",
+      "updated": "2026-10-27T20:52:07Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -546,7 +598,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-20T08:48:15Z",
-      "updated": "2026-10-20T08:48:15Z",
+      "updated": "2026-10-27T09:16:03Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -771,12 +823,12 @@
       "labels": [
         "bug",
         "priority:high",
-        "qa-pass",
+        "qa-fail",
         "provenance:trusted",
-        "qa:independent"
+        "qa:in-cycle"
       ],
       "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-26T01:36:49Z",
+      "updated": "2026-10-27T02:32:23Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -835,10 +887,13 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:independent"
       ],
       "created": "2026-10-16T08:43:47Z",
-      "updated": "2026-10-16T08:43:47Z",
+      "updated": "2026-10-27T15:31:31Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -866,11 +921,12 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa-fail",
+        "qa-pass",
+        "provenance:trusted",
         "qa:in-cycle"
       ],
       "created": "2026-10-16T08:43:42Z",
-      "updated": "2026-10-26T17:51:07Z",
+      "updated": "2026-10-27T04:08:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1161,7 +1217,7 @@
         "chore"
       ],
       "created": "2026-10-13T23:19:23Z",
-      "updated": "2026-10-20T22:18:52Z",
+      "updated": "2026-10-27T23:00:30Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1284,7 +1340,7 @@
         "chore"
       ],
       "created": "2026-10-08T06:16:12Z",
-      "updated": "2026-10-08T07:15:25Z",
+      "updated": "2026-10-27T23:00:31Z",
       "blocked": false,
       "needs_evidence": false
     },

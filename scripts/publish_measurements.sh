@@ -176,10 +176,108 @@ for wf in pr-gates.yml verify-build.yml; do
   fi
 done
 
-run gh pr merge --repo "$GH_REPO" --auto --squash --delete-branch "$branch" \
-  || fail "could not enable auto-merge on $branch; the PR is open and needs a hand"
+# ENABLING AUTO-MERGE IS NOT A SINGLE SHOT, AND FAILING IT STRANDS THE PR
+# FOREVER (#554, 2026-10-27).
+#
+# The old form was one `gh pr merge --auto` and `fail` on any error. PR #554
+# hit a transient GitHub 500 on exactly that call:
+#
+#   GraphQL: Something went wrong while executing your query  (BC05:26EDFD:...)
+#   ::error::could not enable auto-merge on measurements/40420451019-1
+#
+# and then sat open and green while the NEXT report (#555) merged past it 44
+# minutes later. 31 of the 32 publisher PRs merged; that one did not, and
+# nothing ever came back for it. `agent-merge`'s sweep is not a backstop here
+# either -- this script's PRs are authored by the publisher App, which is not
+# in that workflow's AGENT_AUTHORS, so it is not even a sweep candidate.
+#
+# TWO DIFFERENT FAILURES, AND ONLY ONE IS RETRYABLE
+#
+#   1. A transient 5xx. Retrying is the whole fix. Three attempts, backing off.
+#
+#   2. "Pull request is in clean status". NOT transient, and retrying it can
+#      never work: GitHub refuses to QUEUE an auto-merge on a PR it could
+#      merge right now, so this is what you get once the checks have already
+#      gone green -- which is the normal outcome when the dispatched runs above
+#      finish quickly. Verified by hand on #554 after its checks were green:
+#          $ gh pr merge --auto --squash --delete-branch 554
+#          GraphQL: Pull request Pull request is in clean status
+#      So the retry loop alone would have left #554 exactly where it was.
+#      The answer to "I cannot queue it because it is ready" is to merge it.
+#
+# WHY THE DIRECT MERGE RE-CHECKS THE GATES ITSELF
+#
+# "Clean status" is GitHub's word, and it means "no required check is failing"
+# -- which is also true of a PR carrying NO checks at all. That is #322, the
+# exact failure the two dispatches above exist to prevent, and if a dispatch
+# warned, this is where it would turn into an unverified merge to a `main` that
+# auto-deploys. So the gates are read explicitly and every one must be
+# `success`; anything queued, running, failed or absent leaves the PR open for
+# a human. This adds no authority the branch protection does not already have
+# -- it refuses in cases protection would allow.
+auto_merge() {
+  local out attempt sha states notgreen
 
-echo "published ${PATHS[*]} on $branch; auto-merge is set and will land it when both checks are green"
+  for attempt in 1 2 3; do
+    if [ "$DRY_RUN" = "1" ]; then
+      printf 'DRY-RUN: gh pr merge --auto --squash --delete-branch %q\n' "$branch"
+      return 0
+    fi
+
+    # CAUGHT IN THE `if` ITSELF, NOT AFTERWARDS. `set -euo pipefail` is on
+    # (line 72), and a plain `out=$(gh ...)` assignment carries the command's
+    # exit status -- so when the call failed, the SCRIPT exited right there and
+    # nothing below this line ever ran. The first version of this function did
+    # exactly that: every retry, every fallback and the final `fail` were
+    # unreachable, and the step died silently with no diagnostic at all.
+    # `set -e` is suspended inside an `if` condition, which is why the status
+    # has to be consumed there.
+    if out=$(gh pr merge --repo "$GH_REPO" --auto --squash --delete-branch "$branch" 2>&1); then
+      echo "::notice::auto-merge enabled on $branch; it lands when both checks are green"
+      return 0
+    fi
+    echo "$out"
+
+    case "$out" in
+      *"clean status"*)
+        echo "::notice::GitHub will not queue auto-merge on $branch because it is already mergeable — reading the gates and merging directly"
+
+        sha=$(gh pr view "$branch" --repo "$GH_REPO" --json headRefOid --jq .headRefOid || true)
+        [ -n "$sha" ] || fail "could not read the head SHA of $branch; the PR is open and needs a hand"
+
+        # Same shape as agent-merge.yml's `Gates green?`: name=status:conclusion
+        # per check run, and EVERY one must have concluded success.
+        states=$(gh api "repos/$GH_REPO/commits/$sha/check-runs" \
+                   --jq '.check_runs[] | "\(.name)=\(.status):\(.conclusion // "pending")"' || true)
+        printf '  %s\n' $states
+
+        if [ -z "$states" ]; then
+          fail "no checks reported for $sha on $branch (#322). NOT merging unverified; dispatch the gates by hand: gh workflow run pr-gates.yml --ref $branch"
+        fi
+        notgreen=$(printf '%s\n' $states | grep -v ":success$" || true)
+        if [ -n "$notgreen" ]; then
+          fail "not every check on $branch is green, so it was not merged — the PR is open and needs a hand. blocking: $(printf '%s ' $notgreen)"
+        fi
+
+        run gh pr merge --repo "$GH_REPO" --squash --delete-branch "$branch" \
+          || fail "every gate on $branch is green but the merge was refused; the PR is open and needs a hand"
+        echo "::notice::merged $branch directly — every gate on $sha was green"
+        return 0
+        ;;
+    esac
+
+    # Not `[ ... ] && sleep`: that list returns 1 on the last attempt, and as
+    # the final command in the loop body `set -e` would exit on it -- skipping
+    # the `fail` below and losing the diagnostic.
+    if [ "$attempt" -lt 3 ]; then sleep $(( attempt * 5 )); fi
+  done
+
+  fail "could not enable auto-merge on $branch after 3 attempts; the PR is open and needs a hand"
+}
+
+auto_merge
+
+echo "published ${PATHS[*]} on $branch; it is either queued for auto-merge or already merged — see the notice above"
 
 # ---------------------------------------------------------------------------
 # TIDY UP THE PREVIOUS RUNS' BRANCHES.
