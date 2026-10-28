@@ -1,18 +1,19 @@
 {
-  "generated_at": "2026-10-27T21:07:56Z",
+  "generated_at": "2026-10-28T00:18:32Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 126,
-  "with_ask": 57,
+  "open": 129,
+  "with_ask": 59,
   "by_area": {
     "UNCLASSIFIED": 53,
-    "INFRA": 12,
+    "INFRA": 14,
     "REDESIGN": 10,
     "UI": 8,
     "FEATURE": 7,
     "SEO": 3,
     "SECURITY": 3,
     "NUMEROLOGY": 3,
+    "MEASURE": 2,
     "CONTENT": 2,
     "DETECT_STALLS": 2,
     "AGENT-MERGE": 2,
@@ -21,7 +22,6 @@
     "CHORE": 2,
     "BUG": 2,
     "PRIVACY": 1,
-    "MEASURE": 1,
     "REPO": 1,
     "CHART": 1,
     "GATES": 1,
@@ -36,7 +36,7 @@
   },
   "by_type": {
     "bug": 40,
-    "untyped": 34,
+    "untyped": 37,
     "enhancement": 27,
     "correctness": 8,
     "chore": 7,
@@ -44,12 +44,51 @@
     "ui": 3
   },
   "by_priority": {
-    "unset": 81,
+    "unset": 84,
     "medium": 23,
     "high": 22
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 570,
+      "title": "[MEASURE] No event records a click on an in-article tool link, so #276, #329 and #521 can only be scored through pages/session",
+      "ask": "",
+      "area": "MEASURE",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-28T00:17:18Z",
+      "updated": "2026-10-28T00:17:18Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 568,
+      "title": "[INFRA] agent-infra authenticates as agent-analytics, which holds no Cloud Build / Cloud Run / Scheduler roles — export-before-edit is impossible",
+      "ask": "Editing the trigger needs a Cloud Build editor role.",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-27T23:00:50Z",
+      "updated": "2026-10-27T23:00:50Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 567,
+      "title": "[INFRA] rashifal-generate's 3 h margin to the Groq fallback is smaller than GitHub's cron lag: 1 of 3 runs published after warm-rashifal",
+      "ask": "Move the cron earlier and off the :00 mark (public-repo cron is queued hardest at the top of the hour), e.g.",
+      "area": "INFRA",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-27T23:00:16Z",
+      "updated": "2026-10-27T23:00:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 560,
       "title": "qa-on-green writes its 'dispatched at <sha>' marker before the dispatch, so a dispatch deferred for a cycle in flight is never retried (#551, #549 stranded)",
@@ -1178,7 +1217,7 @@
         "chore"
       ],
       "created": "2026-10-13T23:19:23Z",
-      "updated": "2026-10-20T22:18:52Z",
+      "updated": "2026-10-27T23:00:30Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1301,7 +1340,7 @@
         "chore"
       ],
       "created": "2026-10-08T06:16:12Z",
-      "updated": "2026-10-08T07:15:25Z",
+      "updated": "2026-10-27T23:00:31Z",
       "blocked": false,
       "needs_evidence": false
     },
