@@ -27,12 +27,16 @@ resolution silently concatenated two `ARCHITECTURE.md` decision rows.
 
 The per-PR floor now lives in `scripts/verify_test_floor.py`, which DERIVES it
 by comparing test names at the merge base with `origin/main` against HEAD. That
-stores nothing, so nothing conflicts, and it is strictly stronger: it names the
-tests that disappeared instead of printing a number, and it catches a test
-renamed out of `test_*` — which a count can only notice by coincidence.
+stores nothing, so nothing conflicts. It is NOT "strictly stronger" than a
+constant (this docstring used to say so; QA on PR #448 disproved it): it names
+the tests that disappeared, catches a test renamed out of `test_*`, and compares
+literal `parametrize` case counts per function -- but it does not see a computed
+parametrize list or pytest's real collection, which this constant alone counts.
 
 This number stays as a floor under BOTH of them, for the cases the derived gate
-cannot cover: a shallow clone with no merge base, and `main` itself.
+cannot cover: a shallow clone with no merge base, and `main` itself. Its slack
+GROWS as PRs add tests, because nobody raises it: it is a backstop against mass
+loss, not a per-PR guard.
 
 IT IS LEFT EXACTLY WHERE IT WAS, and that is deliberate. The first version of
 this change lowered it to 700 to "leave headroom", which `verify_no_relaxation.py`

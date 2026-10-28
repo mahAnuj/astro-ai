@@ -44,8 +44,21 @@ name: Agent merge
 # So: fire on either, re-check everything each time, merge when all of it is
 # true. Order stops mattering.
 on:
+  # BOTH gate workflows, because either can be the last to finish (#356 again,
+  # 2026-10-27). Listening to "PR gates" alone was not a narrower version of
+  # this -- it was a hole. `build-gates` lives in verify-build.yml, a DIFFERENT
+  # workflow, so when it finished LAST no edge fired here at all and the PR sat
+  # green and unmerged until a sweep happened by.
+  #
+  # The comment below reasoned that pr-gates is the slow one and inverts only
+  # on docs-only PRs. Measured on #562, a CODE PR, it inverted too:
+  #     gates        7m43s   -> workflow_run fired, build-gates still queued
+  #     build-gates 10m25s   -> no trigger listened to it
+  # so the run at 17:01Z read `build-gates=in_progress:pending` and exited.
+  # The ordering is not a property of the change, it is a race, and naming one
+  # workflow picks a winner in advance.
   workflow_run:
-    workflows: ["PR gates"]
+    workflows: ["PR gates", "verify-build"]
     types: [completed]
   pull_request_target:
     types: [labeled]
@@ -60,8 +73,9 @@ on:
   #   #352  the run that went green was `workflow_dispatch`, which the `if:`
   #         below deliberately excludes (a dispatched run checks out the
   #         BRANCH, not refs/pull/N/merge, so it does not prove the merge)
-  #   #356  `verify-build` is a different workflow, and this one listens only
-  #         to "PR gates"
+  #   #356  `verify-build` is a different workflow, and this one listened only
+  #         to "PR gates" (that hole is closed above as of 2026-10-27 -- it
+  #         recurred on #562 and cost two stranded PRs before it was)
   #
   # Each was fixed by adding or correcting an edge, and a fifth edge was always
   # going to be missed -- so the answer is to stop relying on edges. #356 shows
@@ -76,6 +90,19 @@ on:
   # condition -- author, gates green, qa-pass, size, trust boundary -- is
   # re-read from the API by the same steps, in the same order. So the worst a
   # sweep can do is merge something that already satisfies every condition.
+  #
+  # DO NOT TREAT THE INTERVAL BELOW AS THE WORST CASE. `*/30` is what is asked
+  # for, not what is delivered: GitHub throttles short-interval cron on public
+  # repos. Measured over the 71 scheduled runs to 2026-10-27:
+  #
+  #     declared   30m
+  #     actual     min 126m   mean 244m   max 444m
+  #
+  # Not once in 71 runs did it fire at 30 minutes; the FASTEST gap was 4.2x the
+  # declared interval. So the sweep is a floor on how long a stranded PR waits,
+  # measured in hours, and it is not a substitute for a correct edge. Every
+  # edge above is load-bearing. #562 waited on this and would have waited hours
+  # more.
   schedule:
     - cron: "*/30 * * * *"
   # For draining the queue by hand after a fix, without waiting for the cron.
