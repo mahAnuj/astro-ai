@@ -72,13 +72,16 @@ the 413 taught us about.
       called classical); the constants are shared with Gate 7. Slice 8 added
       three more: the bija mantras lent BPHS's name (S), urad given as a
       Saturn practice (T) and sesame as a Rahu one (U) - including a summary
-      that said "donate black daal / mustard oil" under Sade Sati.
+      that said "donate black daal / mustard oil" under Sade Sati. Slice 9
+      added two: the books nobody here holds named for the Manglik doctrine
+      or for Kumbh Vivah, one summary carrying "not attested in BPHS" (X), and
+      the Aditya Hridaya Stotra given a Ramayana kanda and a sage (Y).
 
   Gate 7 - no retired claims on the reader-facing surfaces.  The same claims
       sat on the pages a reader opens directly: the /learn article bodies,
       the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
       languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
-      is shown. This gate scans those surfaces for the twenty-two families #398
+      is shown. This gate scans those surfaces for the twenty-four families #398
       retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
       Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
       practice or as ANY planet's universal/classical/safe one (slice 5),
@@ -97,7 +100,10 @@ the 413 taught us about.
       (S), urad / black gram as a Saturn practice (T), sesame as a Rahu one (U) and both
       nodes "in their friendly signs" (V); plus, read from the AST because a
       `numerology.py` string carries no planet word, sesame in the Rahu remedy
-      row and urad in the Saturn one (W)
+      row and urad in the Saturn one (W), and (slice 9) the Manglik doctrine or
+      Kumbh Vivah attributed to Jataka Parijata / Muhurtha Chintamani /
+      Phaladeepika / Mansagari (X) and the Aditya Hridaya Stotra given a
+      Ramayana "Yuddha Kanda" and Agastya (Y)
       (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
       families still open on #398 ("black sesame", weekday fasting):
       forbidding them here would only make main red. A bare "per BPHS" is
@@ -106,8 +112,21 @@ the 413 taught us about.
       surface (festival_registry.py included since slice 5), so a gate pointed
       at an empty tree fails instead of passing.
 
-Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris — it reads one
-file, so it runs anywhere and belongs in the `verify_*` sweep.
+  Gate 8 - no Sanskrit Sade Sati phase name the knowledge base does not carry.
+      #430: the prompt told the model "rising phase (arohini)" and the UI panel
+      printed "Rising Phase (Arohini)" while knowledge/ and /learn said
+      Arambha / Madhya / Uttara - and no book we hold (corpus check, 14 books)
+      contains `arohini`, `avarohini` or `arambha`. Two unsourced vocabularies on
+      one product; the engine now names the phases by position only. This gate
+      renders the REAL Sade Sati line (chart.format_flags_for_prompt, all three
+      phases) and the EN/HI panel titles, and fails on `arohini`/`avarohini`
+      (case-insensitive, Devanagari spellings too) and on any parenthetical
+      label after "phase" that is not written in vedic_reference.md Sec 2.1-2.2.
+      Imports chart.py (needs swisseph, no ephemeris files), unlike Gates 1-7.
+
+Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris files — it reads
+the tree (and Gate 8 imports chart.py), so it runs anywhere and belongs in the
+`verify_*` sweep.
 
 Mutation-tested (2026-09-05): deleting any single rule's sentence from
 `natal.txt` turns Gate 2 red for that rule and only that rule; the unmutated
@@ -1029,6 +1048,8 @@ SENTENCE_EXEMPT = {
 
 def exempt_by_sentence(pattern: str, text: str, start: int, end: int) -> bool:
     """True if the sentence holding text[start:end] is one `pattern` pins as legal."""
+    if exempt_by_group(pattern, text, start, end):
+        return True
     exempts = SENTENCE_EXEMPT.get(pattern)
     if not exempts:
         return False
@@ -1046,6 +1067,192 @@ def exempt_by_sentence(pattern: str, text: str, start: int, end: int) -> bool:
 KSD_NODES_FRIENDLY_SIGNS = (
     r"\b(?:Rahu|Ketu)\s*(?:and|&|/)\s*(?:Rahu|Ketu)\b[^.;\n]{0,25}?\bin\s+(?:their\s+|its\s+)?"
     r"friendly\s+(?:signs?|rashis?)"
+)
+
+# --- #398 slice 9 ------------------------------------------------------------
+# Two more reader-facing defects, each checked against knowledge/*.md first.
+
+# X. Books nobody here holds, named as the source of the Manglik doctrine. The
+# manglik-remedies callout said "Jataka Parijata, Muhurtha Chintamani, Phaladeepika
+# (Manglik doctrine + cancellation)" and, over Kumbh Vivah, "not attested in BPHS /
+# Mansagari / Phaladeepika" (the llm_summary carried "not attested in BPHS" into the natal
+# message; manglik-dosh.html and mars-remedies.html had "It does not appear in BPHS,
+# Mansagari, or Phaladeepika"). What the sources say: vedic_reference.md 1.6.2's last row
+# marks BPHS, Mansagari and Jataka Parijata as absent from data/ and from fetch_corpus.py's
+# registry ("citation defect, #216 class"), and SOURCES.md "Which books our claims depend
+# on" adds Phaladeepika, Jataka Chandrika, Muhurtha Chintamani and Brihat Jataka to that
+# list - so none of these books can be said to contain, or to lack, anything here. The
+# doctrine itself is contested: Vasudev opens by saying the dosha "is not to be found in the
+# standard astrological texts" (1.6.1) and Raman gives an antidote list but says "much
+# importance need not be given to Kuja Dosham" (grahas.md 12.4). What may be said is that
+# the rules are not settled and that Kumbh / Peepal Vivah have no classical source we
+# found - without a book name. (vedic_reference.md 1.3 row 22 itself still says "not in
+# BPHS/Mansagari/Phaladeepika"; knowledge/ is not an engineer's to edit, so that row is
+# left for a human - it is the same unverifiable negative.) It also pins Kumbh / Peepal
+# Vivah itself being called "classical", which the callout beside it denied. Written on
+# the shapes retired, not on every mention: manglik-dosh.html and manglik_check_result.html
+# still say "per Jataka Parijata" / "compiled from Jataka Parijata, Phaladeepika ..." as
+# positive attribution, which is a larger, still-open rewrite (so the "Manglik rules
+# compiled from <books>" order is NOT pinned here).
+#
+# Why the first version missed mars-remedies.html (QA round 1, D1): the claim sat in the
+# SENTENCE AFTER the practice ("... regional folk practice, not scripture. It does not appear
+# in BPHS, ..."), and every alternative was bounded by [^.;\n]. The not-in-a-book shapes now
+# allow ONE sentence break between the practice and the book list, accept the other ways of
+# saying "absent" ("absent from", "has no basis in", "none of them mention it"), and read
+# the book-first order too. Why it also fired on correct text (D2): the two "classical"
+# alternatives matched a sentence DENYING the status ("not a classical practice"), and
+# "Classical remedy for Manglik" matched when the remedy was Hanuman worship. Those are now
+# anchored on a Kumbh / Peepal / pot-or-tree-marriage term and, in the (?P<cls>) group,
+# exempted by a sentence that denies classical status (SCOPED_EXEMPT below).
+_UNHELD_BOOK = (r"(?:Jataka\s+Parijata?|Jataka\s+Chandrika|Muhurt\w*\s+Chintamani|Phaladeep\w*"
+                r"|Phaladip\w*|Mansagari|Manasagari|Brihat\s+Jataka)")
+# Tag-tolerant at both ends: a template writes "<em>Phaladeepika</em>, <em>Brihat Parashara Hora Shastra</em>".
+_ANY_BOOK = rf"(?:<[^>]+>\s*)*(?:BPHS|B\.P\.H\.S\.|{_PARASH}|{_UNHELD_BOOK})(?:\s*</[^>]+>)*"
+_BOOKS = rf"{_ANY_BOOK}(?:\s*(?:,|/|&|and|or|nor)\s*(?:and\s+|or\s+|nor\s+)?{_ANY_BOOK}){{0,4}}"
+_MANGLIK_WORD = r"(?:Mangl?ik|Mangal|Kuja|Mars\s+dosh\w*)"
+_VIVAH = r"(?:Kumbh|Kumbha|Peepal|Pipal|Ashwatha|Banana)"
+_POT = r"(?:(?:clay\s+|earthen\s+)?(?:pot|kumbh|kumbha)|peepal|pipal|ashwatha|banana|tree)"
+# The practice, by name or by description: "Kumbh Vivah", "marriage to a clay pot", "married to a
+# banana tree", "marrying a Manglik to a pot", "pot-marriage", "peepal-tree marriage".
+_PRACTICE = (rf"(?:\b{_VIVAH}[\s\-]+Vivah\b"
+             rf"|\b(?:marriage|wedding|marr(?:y|ies|ied|ying))\s+(?:\w+\s+){{0,3}}?(?:to|of|with)\s+"
+             rf"(?:a\s+|an\s+|the\s+)?{_POT}\b"
+             rf"|\b{_POT}(?:[\s\-]+tree)?[\s\-]+(?:marriage|wedding)\b)")
+# The Manglik "weakens after age 28" folk claim sat under the same "not in <books>" sentence
+# ("We checked: Phaladeepika, BPHS, ... contain no such verse"; "there is no such verse in ...").
+_AGE28 = r"(?:weakens?\s+after\s+(?:age\s+)?28|\bage[\s\-]*28\b|dissolves?\s+after\s+36)"
+_CLAIM = rf"(?:{_PRACTICE}|{_AGE28})"
+_FOLK_CTX = r"(?:(?:cultural|folk|regional)(?:[\s\-]+remedial)?\s+practice\b|not\s+scripture\b)"
+_NEG = (r"(?:(?:does|do|did|is|are|was|were|will|would|can|could|has|have)\s+(?:not|never)"
+        r"|(?:doesn|don|didn|isn|aren|wasn|weren|won|wouldn|couldn|hasn|haven)['’]?t"
+        r"|can['’]?t|\bnot|\bnever|\bnowhere)")
+_NOT_IN = (rf"(?:{_NEG}\s+(?:\w+\s+){{0,3}}?(?:attested|found|find|mentioned|mention|listed|list|present|"
+           r"appears?|given|give|prescribed|prescribe|described|describe|recorded|contained|contain|"
+           r"included|include|occurs?|exists?|figures?|covered|taught|known|named|look\s+for|there)\s+(?:\w+\s+){0,2}?(?:in|by)"
+           r"|(?:(?:is|are|was|were)\s+)?(?:both\s+|all\s+)?(?:absent|missing)\s+from"
+           r"|(?:cannot|can['\u2019]?t|could\s+not|couldn['\u2019]?t)\s+be\s+(?:found|traced|located)\s+in"
+           r"|\bno\s+(?:\w+\s+)?(?:trace|mention|entry|reference|record|basis)\s+(?:of\s+(?:it|\w+)\s+)?(?:exists?\s+)?(?:in|within)"
+           r"|(?:has|have)\s+no\s+(?:\w+\s+)?(?:basis|mention|trace|support|source|record|reference)\s+(?:in|within)"
+           r"|(?:found|appears?|occurs?)\s+(?:nowhere|in\s+no)|(?:unknown\s+to|unattested\s+in|unmentioned\s+in|undocumented\s+in|unrecorded\s+in)"
+           r"|\bno\s+(?:such\s+)?(?:verse|text|passage|sloka|shloka)\s+(?:in|within)"
+           r"|(?:is\s+)?not\s+(?:in|part\s+of)|nowhere\s+in|without\s+(?:any\s+)?(?:basis|support)\s+in)")
+# What a book that "says nothing" about the practice looks like when the book comes FIRST.
+_SILENT = (r"(?:silent|mute|say(?:s)?\s+nothing|(?:do|does)(?:\s+not|n['’]t)|never|nowhere|"
+           r"no\s+mention|omit\w*|ignore\w*|skip\w*|none\s+of|(?:has|have)\s+no\s+"
+           r"(?:\w+\s+){0,2}?(?:mention|trace|record|basis|entry|reference|verse|rule|rite|ritual|practice|remedy))")
+# Words that name a DIFFERENT remedy; "Classical remedy for Manglik is Hanuman worship" is correct.
+_OTHER_REMEDY = (r"(?:Hanuman|Chalisa|mantra|worship|puja|pooja|donat\w*|charity|fast\w*|gem\w*|coral|"
+                 r"Moonga|matching|Guna|Milan|Rudra|Narasimha|Kartikeya|Tuesday|deit\w*)")
+_CLASSICAL_NOUN = r"(?:remedy|practice|rite|ritual|prescription|cure|solution)"
+MANGLIK_UNHELD_BOOKS = (
+    # a list of two or more of the books, then "(Manglik ..." / "for Manglik ...": the callout's shape.
+    # A comparison ("less systematic than Mangal Dosh", pitru-dosh) is not a source claim.
+    rf"\b{_UNHELD_BOOK}(?:\s*(?:,|/|&|and|or)\s*(?:and\s+|or\s+)?{_UNHELD_BOOK}){{1,4}}"
+    rf"\s*(?:\(|(?:for|on|about)\s+(?:the\s+)?|[:—\-]+\s*)(?:the\s+)?{_MANGLIK_WORD}\b"
+    # the practice, then "not attested in / absent from / has no basis in <books>" - in the same
+    # sentence or ONE sentence later ("... not scripture. It does not appear in BPHS, ...")
+    rf"|{_CLAIM}[^.;\n]{{0,200}}?(?:[.;]\s*[^.;]{{0,150}}?)?\b{_NOT_IN}\s+(?:the\s+)?{_ANY_BOOK}"
+    rf"|\b{_FOLK_CTX}[^.;\n]{{0,60}}?(?:[.;]\s*[^.;]{{0,150}}?)?\b{_NOT_IN}\s+(?:the\s+)?{_ANY_BOOK}"
+    rf"|\bfolk[\s\-]+remedial[^.;\n]{{0,40}}?\b{_NOT_IN}\s+(?:the\s+)?{_ANY_BOOK}"
+    # the book first: "BPHS, Mansagari and Phaladeepika say nothing about Kumbh Vivah",
+    # "Neither BPHS nor Mansagari mentions Kumbh Vivah"
+    rf"|\b{_BOOKS}[^.;\n]{{0,60}}?\b{_SILENT}\b[^.;\n]{{0,80}}?{_CLAIM}"
+    rf"|\bneither\s+{_BOOKS}[^.;\n]{{0,80}}?{_CLAIM}"
+    rf"|{_CLAIM}[^.;\n]{{0,200}}?(?:[.;]\s*[^.;]{{0,40}}?)?\b(?:neither|none\s+of)\s+{_BOOKS}"
+    # A claim to have CHECKED books nobody here holds (manglik-dosh.html: "We checked: Phaladeepika, Brihat
+    # Parashara Hora Shastra, Mansagari, and Jataka Parijata contain no such verse" - the age-28 claim)
+    rf"|\b(?:we|i)\s+(?:have\s+)?(?:checked|searched|consulted|read|looked\s+(?:in|at|through))\b[^.;\n]{{0,15}}?{_BOOKS}"
+    # "You will not find Kumbh Vivah in Mansagari" - the negation comes BEFORE the practice
+    rf"|\b{_NEG}\s+(?:find|see|look\s+for|expect)\s+(?:it\s+)?{_CLAIM}[^.;\n]{{0,40}}?\bin\s+(?:the\s+)?{_ANY_BOOK}"
+    # ...or the practice a sentence earlier and the books' silence after it
+    rf"|{_CLAIM}[^.;\n]{{0,200}}?(?:[.;]\s*[^.;]{{0,40}}?)?\b{_BOOKS}[^.;\n]{{0,60}}?\b{_SILENT}\b"
+    rf"|\b{_FOLK_CTX}[^.;\n]{{0,60}}?(?:[.;]\s*[^.;]{{0,40}}?)?[^.;\n]{{0,40}}?\b{_BOOKS}[^.;\n]{{0,60}}?\b{_SILENT}\b"
+    # Kumbh / Peepal Vivah itself called classical, which the callout beside it denied
+    # (the page said "Classical remedy for severe uncancelled Manglik BEFORE marriage:
+    # Kumbh Vivah" and its FAQ "Classical tradition prescribes it for severe uncancelled
+    # Manglik ... marriage to a clay pot"). Named group: only these alternatives are exempted
+    # by a sentence that denies the status (SCOPED_EXEMPT), never the not-in-a-book ones above.
+    rf"|(?P<cls>"
+    # "Classical remedy for Manglik" only when the practice follows before another remedy
+    # is named, in this sentence or the next
+    rf"\bClassical\s+(?:remedy|tradition\s+prescribes\s+it)\s+for\s+(?:a\s+)?(?:severe\s+)?(?:uncancelled\s+)?"
+    rf"{_MANGLIK_WORD}\b(?=(?:(?!{_OTHER_REMEDY})[^.;\n]){{0,60}}?{_PRACTICE}"
+    rf"|(?:(?!{_OTHER_REMEDY})[^.;\n]){{0,40}}[.;]\s*(?:(?!{_OTHER_REMEDY})[^.;\n]){{0,40}}?{_PRACTICE})"
+    # "Kumbh Vivah is a classical remedy", "Peepal Vivah, the classical ritual for ..." - the
+    # practice must be the subject: no comma-joined clause about some other remedy in between
+    rf"|\b{_VIVAH}[\s\-]+Vivah\b(?:\s*\([^)]{{0,60}}\))?\s*,?\s*(?:(?:is|are|was|as|remains?)\s+)?"
+    rf"(?:(?:a|an|the|one\s+of\s+the)\s+)?(?:\w+\s+){{0,2}}?classical\s+{_CLASSICAL_NOUN}s?\b"
+    rf"|\b{_VIVAH}[\s\-]+Vivah\b[^.;,\n]{{0,20}}?\b(?:is|are)\s+classical\b"
+    rf"|{_PRACTICE}[^.;\n]{{0,60}}?\b(?:prescribed|recommended|described|sanctioned|laid\s+down|taught|enjoined|"
+    rf"mentioned|attested|found|listed|cited)\s+(?:in|by)\s+(?:the\s+)?(?:classical|scriptur\w+|shastr\w+|ancient)\b"
+    rf"|\bclassical\s+(?:texts?|tradition|scriptures?|sources?|literature)\s+"
+    rf"(?:(?:(?!not\b|never\b|no\b)\w+)\s+){{0,2}}?(?:prescribes?|recommends?|mentions?|describes?|sanctions?|lists?|enjoins?)\b"
+    rf"[^.;\n]{{0,60}}?{_PRACTICE}"
+    r")"
+)
+
+# A sentence that DENIES classical status is the correct text the "classical" alternatives
+# above would otherwise match ("Kumbh Vivah is not a classical practice; it is folk tradition",
+# "there is no classical remedy called Kumbh Vivah"). Checked against the sentence holding the
+# match, and only for matches the (?P<cls>) group made - a "not scripture" in the sentence
+# before "It does not appear in BPHS" must NOT exempt that claim (that was the live defect).
+_DENIES_CLASSICAL = (
+    r"\b(?:not|never|nor|neither|isn['’]t|aren['’]t|wasn['’]t)\s+(?:\w+\s+){0,2}?"
+    r"(?:classical|scriptur\w+|shastr\w+|canonical|attested|prescribed|sanctioned)",
+    r"\bno\s+(?:\w+\s+){0,2}?(?:classical|scriptur\w+|shastr\w+)\b",
+    r"\bnon[\s\-]?classical\b|\bunclassical\b",
+    r"\b(?:rather\s+than|as\s+opposed\s+to|instead\s+of|unlike|versus)\s+(?:\w+\s+){0,3}?classical",
+)
+SCOPED_EXEMPT = {MANGLIK_UNHELD_BOOKS: ("cls", _DENIES_CLASSICAL)}
+
+
+def exempt_by_group(pattern: str, text: str, start: int, end: int) -> bool:
+    """True if the match was made by the pattern's named group and its sentence denies the claim."""
+    scoped = SCOPED_EXEMPT.get(pattern)
+    if not scoped:
+        return False
+    group, denials = scoped
+    m = re.compile(pattern, re.IGNORECASE).match(text, start)
+    if not m or m.end() != end or m.group(group) is None:
+        return False
+    a = max(text.rfind(c, 0, start) for c in ".;\n") + 1
+    cuts = [i for i in (text.find(c, end) for c in ".;\n") if i >= 0]
+    sentence = text[a: min(cuts) if cuts else len(text)]
+    return any(re.search(p, sentence, flags=re.IGNORECASE) for p in denials)
+
+
+# Y. The Aditya Hridaya Stotra given a chapter and a sage. surya-sun-remedies (body and
+# FAQ) said "a Sanskrit hymn from the Ramayana (Yuddha Kanda) - Agastya Rishi taught it to
+# Rama on the battlefield", and surya-sun-in-vedic-astrology "a powerful hymn from the
+# Ramayana ... taught to Rama". remedies.md 6.3 says only that the 108-name stotras "like
+# Aditya Hridayam for Sun" should be learned from a teacher; no file in knowledge/ links
+# the hymn to the Ramayana, a kanda or Agastya (slice 8's QA round had the Ramayana
+# sentence dropped from the Surya callout for the same reason). What stays legal: the folk
+# framing "devotional tradition links it to Rama's battle with Ravana" - it names no text,
+# chapter or sage - and a bare "the hymn Rama recited before defeating Ravana".
+# Agastya and Rama are only forbidden TOGETHER WITH a verb of teaching or giving (QA round 1,
+# D2: "Rama and Agastya appear in many regional tales" is correct, and so is "Rama visited
+# Agastya's hermitage"); bare co-occurrence was the first version's test.
+_ADITYA_HYMN = r"Aditya\s+Hr[iu]d\w*"
+_EPIC = r"(?:Ramayan\w*|V[aā]lm[iī]ki)"
+_RAMAN = r"(?:Rama|Ram|Raghava|Ravana)"
+_AGASTYA = r"Agast(?:ya|i)\w*"
+_TEACH = (r"(?:taught|teach(?:es|ing)?|told|tell(?:s|ing)?|gave|giv(?:es|ing|en)|impart\w*|"
+          r"recit(?:ed|es|ing)\s+(?:\w+\s+){0,3}?(?:to|for)|instruct\w*|counsel\w*|"
+          r"advis\w*|advice|receiv\w*|learn(?:ed|t|s)?|reveal\w*|initiat\w*|transmit\w*|narrat\w*|"
+          r"convey\w*|bestow\w*|disclos\w*|uttered|spoke|urg\w+|heard|got|obtained|acquired|whisper\w*)")
+# The narrower verbs, for the order "Rama ... Agastya had told him" where nobody is named after the verb.
+_TEACH_STRICT = r"(?:taught|told|impart\w*|instruct\w*|counsel\w*|advis\w*|reveal\w*|narrat\w*|recited|initiat\w*)"
+HYMN_CHAPTER_ATTRIBUTION = (
+    r"\bYuddha[\s\-]*K[aā][nṇ][dḍ]\w*"
+    rf"|\b{_AGASTYA}(?:['’]s)?[^.;\n]{{0,80}}?\b{_TEACH}\b[^.;\n]{{0,80}}?\b{_RAMAN}\b"
+    rf"|\b{_RAMAN}\b[^.;\n]{{0,80}}?\b{_TEACH}\b[^.;\n]{{0,80}}?\b{_AGASTYA}"
+    rf"|\b{_RAMAN}\b[^.;\n]{{0,80}}?\b{_AGASTYA}['\u2019]s\s+(?:instruct\w*|advice|counsel|guidance|teaching|direction)"
+    rf"|\b{_RAMAN}\b[^.;\n]{{0,80}}?\b{_AGASTYA}\b[^.;\n]{{0,30}}?\b{_TEACH_STRICT}\b"
+    rf"|\b{_TEACH}\b[^.;\n]{{0,60}}?\b{_RAMAN}\b[^.;\n]{{0,40}}?\bby\s+(?:the\s+)?(?:(?:sage|rishi|muni)\s+)?{_AGASTYA}"
+    rf"|{_ADITYA_HYMN}[^.;\n]{{0,100}}?\b(?:from|in|of|by)\s+(?:the\s+)?(?:epic\s+)?{_EPIC}"
+    rf"|\b{_EPIC}[^.;\n]{{0,80}}?{_ADITYA_HYMN}"
 )
 
 # What Gate 6 forbids inside an llm_summary: FORBIDDEN, except that the bare
@@ -1112,6 +1319,14 @@ SUMMARY_FORBIDDEN = tuple(
      "Rao 34.3 (remedies.md 5.1): Saturn rules sesame seeds, Rahu rules black gram (urad) daal"),
     (SESAME_AS_RAHU,
      "Rao 34.3 (remedies.md 5.1): sesame is Saturn's grain; Rahu's is black gram (urad) daal"),
+    # Slice 9.
+    (MANGLIK_UNHELD_BOOKS,
+     "vedic_reference.md 1.6.2 and SOURCES.md: the books named for the Manglik doctrine are absent from data/ "
+     "and the registry, so nothing here can say what they contain or lack; the rules are contested "
+     "(grahas.md 12.4), and Kumbh/Peepal Vivah have no classical source we found"),
+    (HYMN_CHAPTER_ATTRIBUTION,
+     "remedies.md 6.3 says only that stotras like Aditya Hridayam are learned from a teacher; "
+     "nothing in knowledge/ gives it a Ramayana kanda or a sage"),
 )
 
 
@@ -1329,6 +1544,16 @@ READER_FORBIDDEN = (
     (KSD_NODES_FRIENDLY_SIGNS,
      "V: grahas.md 11.1: the nodes' friendships (Venus, Saturn) come from tradition and vary; say "
      "'signs ruled by their traditional friends', not 'their friendly signs'"),
+
+    # X-Y: #398 slice 9. See the constants above for the sourcing of each.
+    (MANGLIK_UNHELD_BOOKS,
+     "X: Jataka Parijata, Muhurtha Chintamani, Phaladeepika, Mansagari and BPHS are not in data/ "
+     "(vedic_reference.md 1.6.2, SOURCES.md), so no page may say what they contain or lack; say the Manglik "
+     "rules are not settled and that Kumbh / Peepal Vivah and the age-28 claim have no classical source we "
+     "found, naming no book"),
+    (HYMN_CHAPTER_ATTRIBUTION,
+     "Y: nothing in knowledge/ gives the Aditya Hridaya Stotra a Ramayana kanda or a sage; call it a "
+     "Sun devotion and, if the Rama story is kept, label it devotional tradition"),
 )
 
 # Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.
@@ -1497,6 +1722,82 @@ def gate_7_no_retired_claims_on_reader_surfaces(units=None, remedy_fields=None) 
     return ok
 
 
+# --- Gate 8 ------------------------------------------------------------------
+
+REFERENCE = REPO_ROOT / "src" / "astro_ai" / "knowledge" / "vedic_reference.md"
+
+# The two engine names #430 removed. Devanagari spellings are included because
+# the HI panel carried "(आरोहिणी)". Sec 2.7.3 of vedic_reference.md lists these
+# terms (as absences), so "is it in knowledge/" cannot be the test for them.
+SADE_SATI_RETIRED_NAMES = r"avarohini|arohini|अवरोहिणी|आरोहिणी"
+SADE_SATI_PANEL_KEYS = (
+    "sade_sati_rising_title", "sade_sati_peak_title", "sade_sati_setting_title",
+)
+
+
+def sade_sati_prompt_lines() -> list[str]:
+    """The real natal-prompt Sade Sati line for each of the three phases."""
+    from astro_ai.chart import VedicFlags, format_flags_for_prompt
+
+    out = []
+    for phase in ("rising", "peak", "setting"):
+        flags = VedicFlags(
+            manglik=False, manglik_reasons=(), sade_sati=True,
+            sade_sati_phase=phase, saturn_house_from_natal_moon=1,
+        )
+        out.append(next(ln for ln in format_flags_for_prompt(flags).splitlines()
+                        if ln.startswith("- Sade Sati:")))
+    return out
+
+
+def sade_sati_panel_titles() -> list[tuple[str, str]]:
+    from astro_ai.i18n import _TABLES
+
+    return [(f"{lang}:{key}", _TABLES[lang][key])
+            for lang in ("en", "hi") for key in SADE_SATI_PANEL_KEYS]
+
+
+def sade_sati_reference() -> str:
+    """Sec 2.1-2.2 only: where the phases are defined and named. Not 2.7.3,
+    which quotes the retired names as absences and would vouch for them."""
+    text = REFERENCE.read_text(encoding="utf-8")
+    start, end = text.find("### 2.1 "), text.find("### 2.3 ")
+    return text[start:end] if 0 <= start < end else ""
+
+
+def gate_8_sade_sati_phase_names(prompt_lines=None, panel_titles=None, reference=None) -> bool:
+    """The parameters let `mutate_natal_prompt_gate.py` feed a re-broken surface."""
+    print("Gate 8 - Sade Sati phase names carry no unsourced Sanskrit (#430)")
+    prompt_lines = sade_sati_prompt_lines() if prompt_lines is None else prompt_lines
+    panel_titles = sade_sati_panel_titles() if panel_titles is None else panel_titles
+    reference = sade_sati_reference() if reference is None else reference
+    ok = True
+    if len(prompt_lines) != 3 or len(panel_titles) != 6 or not reference.strip():
+        ok = False
+        _fail(f"scanned {len(prompt_lines)} prompt lines (want 3), {len(panel_titles)} "
+              f"panel titles (want 6), {len(reference)} B of Sec 2.1-2.2 - this gate "
+              f"is checking nothing")
+    ref = reference.lower()
+    surfaces = [(f"chart.py prompt line {i + 1}", ln, r"phase \(([^)]+)\)")
+                for i, ln in enumerate(prompt_lines)]
+    surfaces += [(w, t, r"\(([^)]+)\)") for w, t in panel_titles]
+    for where, text, label_re in surfaces:
+        if m := re.search(SADE_SATI_RETIRED_NAMES, text, flags=re.IGNORECASE):
+            ok = False
+            _fail(f"{where} says {m.group(0)!r} - in no book we hold, and not the "
+                  f"name /learn or knowledge/ uses (#430)")
+        for label in re.findall(label_re, text):
+            # Only English labels can be checked against the English reference.
+            if where.startswith("hi:") or label.lower() not in ref:
+                ok = False
+                _fail(f"{where} labels the phase {label!r}, which vedic_reference.md "
+                      f"Sec 2.1-2.2 does not write - name it by position instead")
+    if ok:
+        print(f"  ok    {len(prompt_lines)} prompt lines + {len(panel_titles)} panel "
+              f"titles: no retired name, every phase label written in the reference")
+    return ok
+
+
 def main() -> int:
     if not PROMPT.exists():
         print(f"FAIL: {PROMPT} does not exist")
@@ -1511,6 +1812,7 @@ def main() -> int:
         gate_5_no_retired_claims(text),
         gate_6_no_retired_claims_in_summaries(),
         gate_7_no_retired_claims_on_reader_surfaces(),
+        gate_8_sade_sati_phase_names(),
     ]
     print()
     if all(results):

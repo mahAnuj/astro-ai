@@ -223,6 +223,12 @@ Saturn transits the rashi 12th from the natal Moon (rising / **arambha**),
 then the natal Moon rashi itself (peak / **madhya**), then the 2nd from
 natal Moon (setting / **uttara**). Each phase ~2.5 years, total ~7.5 years.
 
+The engine (LLM prompt and UI panel) names the phases only by position —
+*rising* (12th from Moon), *peak* (over the Moon), *setting* (2nd from Moon) —
+as Rao does. `arambha` / `madhya` / `uttara` are modern usage, kept in the
+`/learn` articles; none is in the corpus we hold (§2.7.3), so do not present
+them as classical.
+
 > Source: *Phaladeepika* (Mantreshwara), chapters on Saturn transits;
 > *Brihat Jataka* (Varahamihira); *Saravali* (Kalyana Varma).
 
@@ -321,8 +327,8 @@ Measured with `scripts/corpus_search.py --absent` across **14 books, 94,019
 
 | Term | Where it is used in this repo | Hits |
 |---|---|---|
-| `arohini` | `chart.py:651`, `i18n.py:172` — "Rising Phase (Arohini)" | **0** (3 spellings) |
-| `avarohini` | `chart.py:653`, `i18n.py:174` — "Setting Phase (Avarohini)" | **0** (4 spellings) |
+| `arohini` | formerly `chart.py` and `i18n.py` — removed from the engine (#430) | **0** (3 spellings) |
+| `avarohini` | formerly `chart.py` and `i18n.py` — removed from the engine (#430) | **0** (4 spellings) |
 | `arambha` | this file §2.1/§2.2, `learn_registry.py:635`, `templates/learn/career-during-sade-sati.html` | **0** (3 spellings) |
 | `madhya` | this file §2.1/§2.2, the article, the registry | **1** — Raman, *Astrology for Beginners*, and not about Sade Sati |
 | `uttara` | this file §2.1/§2.2, the article, the registry | 48 — **all nakshatra names** (Uttara Phalguni / Uttaraashaadha etc.), not phase names |
@@ -334,8 +340,8 @@ Moon, the sign of the Mo and the sign ahead of the Mo"* — and stops. So:
 
 | Open finding | Verdict |
 |---|---|
-| Engine says `arohini` / `avarohini`; `knowledge/` says `Arambha` / `Uttara`; both sets absent from the corpus | **BOTH UNSOURCED. The corpus cannot settle it, and the right answer is NOT to pick one.** This is a CONTESTED-by-silence case: the names are real in modern practice (they are in wide circulation) but no book we hold uses either set, so neither can be presented to a reader as classical |
-| The *incoherence* between the two — the same product calls the same phase two different Sanskrit names on two surfaces | **A real defect, and it is the defect.** It is a consistency bug, not a sourcing one, and it is fixable without a source: pick one vocabulary, or describe the phases positionally as Rao does ("Saturn in the sign before your Moon") and drop the Sanskrit |
+| Engine said `arohini` / `avarohini`; `knowledge/` and `/learn` say `Arambha` / `Uttara`; both sets absent from the corpus | **RESOLVED (#430) by dropping the Sanskrit from the engine.** The prompt and the UI panel now say only *rising phase* / *setting phase* (positional, as Rao does). `Arambha` / `Madhya` / `Uttara` remain in `/learn` as modern usage; no book we hold uses either set, so neither is to be presented to a reader as classical. `scripts/verify_natal_prompt.py` fails if an engine phase label is not in this section |
+| The *incoherence* between the two — the same product called the same phase two different Sanskrit names on two surfaces | **Fixed (#430).** It was a consistency bug, not a sourcing one; the engine now describes the phases positionally as Rao does ("Saturn in the sign before your Moon") and carries no Sanskrit phase name but `madhya` |
 | `Madhya` as the peak-phase name | **UNSOURCED for this use.** Its single corpus hit is unrelated |
 | §2.4 Ashtama Shani (Saturn in the 8th from Moon, ~2.5 years), sourced to "Classical transit literature; BV Raman, KN Rao" | **UNSOURCED.** `ashtama shani` = 0 across all 14 books, and `ashtama` = 0 in Rao's textbook. KN Rao is not in `data/` and not in the registry |
 
