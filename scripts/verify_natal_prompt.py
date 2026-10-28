@@ -106,8 +106,21 @@ the 413 taught us about.
       surface (festival_registry.py included since slice 5), so a gate pointed
       at an empty tree fails instead of passing.
 
-Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris — it reads one
-file, so it runs anywhere and belongs in the `verify_*` sweep.
+  Gate 8 - no Sanskrit Sade Sati phase name the knowledge base does not carry.
+      #430: the prompt told the model "rising phase (arohini)" and the UI panel
+      printed "Rising Phase (Arohini)" while knowledge/ and /learn said
+      Arambha / Madhya / Uttara - and no book we hold (corpus check, 14 books)
+      contains `arohini`, `avarohini` or `arambha`. Two unsourced vocabularies on
+      one product; the engine now names the phases by position only. This gate
+      renders the REAL Sade Sati line (chart.format_flags_for_prompt, all three
+      phases) and the EN/HI panel titles, and fails on `arohini`/`avarohini`
+      (case-insensitive, Devanagari spellings too) and on any parenthetical
+      label after "phase" that is not written in vedic_reference.md Sec 2.1-2.2.
+      Imports chart.py (needs swisseph, no ephemeris files), unlike Gates 1-7.
+
+Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris files — it reads
+the tree (and Gate 8 imports chart.py), so it runs anywhere and belongs in the
+`verify_*` sweep.
 
 Mutation-tested (2026-09-05): deleting any single rule's sentence from
 `natal.txt` turns Gate 2 red for that rule and only that rule; the unmutated
@@ -1497,6 +1510,82 @@ def gate_7_no_retired_claims_on_reader_surfaces(units=None, remedy_fields=None) 
     return ok
 
 
+# --- Gate 8 ------------------------------------------------------------------
+
+REFERENCE = REPO_ROOT / "src" / "astro_ai" / "knowledge" / "vedic_reference.md"
+
+# The two engine names #430 removed. Devanagari spellings are included because
+# the HI panel carried "(आरोहिणी)". Sec 2.7.3 of vedic_reference.md lists these
+# terms (as absences), so "is it in knowledge/" cannot be the test for them.
+SADE_SATI_RETIRED_NAMES = r"avarohini|arohini|अवरोहिणी|आरोहिणी"
+SADE_SATI_PANEL_KEYS = (
+    "sade_sati_rising_title", "sade_sati_peak_title", "sade_sati_setting_title",
+)
+
+
+def sade_sati_prompt_lines() -> list[str]:
+    """The real natal-prompt Sade Sati line for each of the three phases."""
+    from astro_ai.chart import VedicFlags, format_flags_for_prompt
+
+    out = []
+    for phase in ("rising", "peak", "setting"):
+        flags = VedicFlags(
+            manglik=False, manglik_reasons=(), sade_sati=True,
+            sade_sati_phase=phase, saturn_house_from_natal_moon=1,
+        )
+        out.append(next(ln for ln in format_flags_for_prompt(flags).splitlines()
+                        if ln.startswith("- Sade Sati:")))
+    return out
+
+
+def sade_sati_panel_titles() -> list[tuple[str, str]]:
+    from astro_ai.i18n import _TABLES
+
+    return [(f"{lang}:{key}", _TABLES[lang][key])
+            for lang in ("en", "hi") for key in SADE_SATI_PANEL_KEYS]
+
+
+def sade_sati_reference() -> str:
+    """Sec 2.1-2.2 only: where the phases are defined and named. Not 2.7.3,
+    which quotes the retired names as absences and would vouch for them."""
+    text = REFERENCE.read_text(encoding="utf-8")
+    start, end = text.find("### 2.1 "), text.find("### 2.3 ")
+    return text[start:end] if 0 <= start < end else ""
+
+
+def gate_8_sade_sati_phase_names(prompt_lines=None, panel_titles=None, reference=None) -> bool:
+    """The parameters let `mutate_natal_prompt_gate.py` feed a re-broken surface."""
+    print("Gate 8 - Sade Sati phase names carry no unsourced Sanskrit (#430)")
+    prompt_lines = sade_sati_prompt_lines() if prompt_lines is None else prompt_lines
+    panel_titles = sade_sati_panel_titles() if panel_titles is None else panel_titles
+    reference = sade_sati_reference() if reference is None else reference
+    ok = True
+    if len(prompt_lines) != 3 or len(panel_titles) != 6 or not reference.strip():
+        ok = False
+        _fail(f"scanned {len(prompt_lines)} prompt lines (want 3), {len(panel_titles)} "
+              f"panel titles (want 6), {len(reference)} B of Sec 2.1-2.2 - this gate "
+              f"is checking nothing")
+    ref = reference.lower()
+    surfaces = [(f"chart.py prompt line {i + 1}", ln, r"phase \(([^)]+)\)")
+                for i, ln in enumerate(prompt_lines)]
+    surfaces += [(w, t, r"\(([^)]+)\)") for w, t in panel_titles]
+    for where, text, label_re in surfaces:
+        if m := re.search(SADE_SATI_RETIRED_NAMES, text, flags=re.IGNORECASE):
+            ok = False
+            _fail(f"{where} says {m.group(0)!r} - in no book we hold, and not the "
+                  f"name /learn or knowledge/ uses (#430)")
+        for label in re.findall(label_re, text):
+            # Only English labels can be checked against the English reference.
+            if where.startswith("hi:") or label.lower() not in ref:
+                ok = False
+                _fail(f"{where} labels the phase {label!r}, which vedic_reference.md "
+                      f"Sec 2.1-2.2 does not write - name it by position instead")
+    if ok:
+        print(f"  ok    {len(prompt_lines)} prompt lines + {len(panel_titles)} panel "
+              f"titles: no retired name, every phase label written in the reference")
+    return ok
+
+
 def main() -> int:
     if not PROMPT.exists():
         print(f"FAIL: {PROMPT} does not exist")
@@ -1511,6 +1600,7 @@ def main() -> int:
         gate_5_no_retired_claims(text),
         gate_6_no_retired_claims_in_summaries(),
         gate_7_no_retired_claims_on_reader_surfaces(),
+        gate_8_sade_sati_phase_names(),
     ]
     print()
     if all(results):
