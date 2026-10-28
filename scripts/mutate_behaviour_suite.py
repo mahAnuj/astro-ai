@@ -3536,6 +3536,33 @@ MUTATIONS = [
      "  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}\n",
      "  cancel-in-progress: true\n",
      "test_a_main_run_is_not_cancelled_by_the_next_push"),
+    ("#461: the red-main reporter tests for `failure`, so a cancelled or timed-out main reports nothing",
+     ".github/workflows/main-red-report.yml",
+     "      github.event.workflow_run.conclusion != 'success' &&\n"
+     "      github.event.workflow_run.conclusion != 'skipped'\n",
+     "      github.event.workflow_run.conclusion == 'failure'\n",
+     "test_the_reporter_fires_on_cancelled_and_timed_out_not_only_on_failure"),
+
+    ("#461: the sentinel is looked up with GitHub search again, which strips `[ ] -` and matches #461 itself",
+     ".github/workflows/main-red-report.yml",
+     "          existing=$(printf '%s' \"$issues\" \\\n"
+     "                       | jq -r '[.[] | select(.title | startswith(\"[main-red] \"))] | .[0].number // empty')\n",
+     "          existing=$(gh issue list --repo \"$GH_REPO\" --state open \\\n"
+     "                       --search '\"[main-red]\" in:title' \\\n"
+     "                       --json number --jq '.[0].number // empty')\n",
+     "test_the_sentinel_lookup_does_not_match_the_issue_it_closes"),
+
+    ("#461: the per-SHA dedup drops the backticks, so a bare hex run in the thread silences a real red commit",
+     ".github/workflows/main-red-report.yml",
+     "                 | grep -qF -- \"\\`$short\\`\"; then\n",
+     "                 | grep -qF -- \"$short\"; then\n",
+     "test_a_bare_hex_run_in_the_thread_does_not_suppress_a_report"),
+
+    ("#461: the reporter moves back inside pr-gates, where it cannot report its own job being killed",
+     ".github/workflows/pr-gates.yml",
+     "permissions:\n  contents: read\n",
+     "permissions:\n  contents: read\n  issues: write\n",
+     "test_pr_gates_has_no_reporter_step_and_cannot_write_issues"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

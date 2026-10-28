@@ -22,22 +22,31 @@
 # treats 2 as a failure.
 name: PR gates
 
-# Pull requests ONLY.
+# Pull requests AND pushes to `main`.
 #
-# It used to run on push to `main` as well, which meant every merge re-ran 21
-# gates against a tree that had just passed them as a PR — ~5 minutes to
-# re-prove the same thing. Merging #284 fired four workflows for a two-file
-# change and made that obvious.
+# `main` WAS dropped from this list, and the reasoning is kept here because it
+# was not wrong — it was incomplete. Running on every merge re-ran 21 gates
+# against a tree that had just passed them as a PR, ~5 minutes to re-prove the
+# same thing; merging #284 fired four workflows for a two-file change and made
+# that obvious. What that argument missed is that a PR leg does not prove what
+# it appears to prove: it asserts `<branch> + main-at-the-time`, never `main` as
+# it actually ends up. Two PRs can each be green alone and red as a pair, and on
+# 2026-10-20 two of them were (#461, detailed at the `push:` key below). No
+# amount of re-running the PR leg catches that, so the ~5 minutes is not a
+# duplicate of the PR run; it is the only run that reads the tree that ships.
 #
-# What still covers `main` after a merge, and covers it better:
-#   verify-build.yml      on push — the committed CSS matches a fresh build
-#   verify-production.yml on push — the LIVE SITE, which is the only claim a
-#                         post-merge check can make that a pre-merge one cannot
+# What else covers `main` after a merge:
+#   verify-build.yml       on push — the committed CSS matches a fresh build
+#   verify-production.yml  on push — the LIVE SITE, which is the only claim a
+#                          post-merge check can make that a pre-merge one cannot
+#   main-red-report.yml    on workflow_run — turns a red `main` run into an
+#                          issue comment, because neither `workflow_run`
+#                          listener on this workflow acts on a push run
 #
-# The gap this leaves is a squash onto a moved `main` differing semantically
-# from the branch that was tested. verify-production catches that against the
-# deployed site, which is the stronger assertion anyway — and with BUILD_SHA set
-# (2026-10-08) it can now prove which commit is serving.
+# verify-production still covers the squash-onto-a-moved-`main` case against the
+# deployed site — the stronger assertion, and with BUILD_SHA set (2026-10-08) it
+# can prove which commit is serving. It just does it AFTER the bad code is live,
+# which is what the `push:` leg below exists to get ahead of.
 on:
   pull_request:
     # `ready_for_review` is NOT in the default set, which is
@@ -94,6 +103,9 @@ on:
   #   * qa-on-green.yml  -- resolves the PR by head branch and exits 0 on
   #     "No open PR on `main`".
   # Neither acts on a push run; the cost is one ~10s no-op per main commit.
+  # That is WHY `main-red-report.yml` exists: a push run that goes red has no
+  # downstream listener at all, so without it a red `main` is visible only to
+  # whoever thinks to open the Actions tab -- which is the situation #461 is.
   push:
     branches: [main]
 
@@ -109,14 +121,13 @@ concurrency:
   group: pr-gates-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
-# `issues: write` is here for ONE step: "Report a red main". The default token
-# would otherwise carry whatever the repo setting says, and this gate should not
-# depend on that. `contents: read` is all the checkout needs -- nothing in this
-# workflow writes to the repository, and it must stay that way: a gate that can
-# push is a gate that can relax itself.
+# `contents: read` is all the checkout needs, and it must stay that way: a gate
+# that can push is a gate that can relax itself. Nothing in this workflow writes
+# anywhere -- reporting a red `main` is `main-red-report.yml`'s job, a separate
+# `workflow_run` listener, because a reporter inside this job cannot report this
+# job being KILLED (`failure()` is false on `cancelled` and `timed_out`).
 permissions:
   contents: read
-  issues: write
 
 jobs:
   gates:
@@ -392,74 +403,3 @@ jobs:
       - name: App log on failure
         if: failure()
         run: tail -60 /tmp/app.log || true
-
-      # #461, second half: A RED `main` MUST REACH A PERSON, NOT THE ACTIONS TAB.
-      #
-      # Running on `main` makes a red main *visible*; it does not make it
-      # *reported*. `main` was red from 2026-10-20 to 2026-10-21 and the only
-      # reason anyone found out is that PR #451 merged it in and inherited the
-      # failure. Both `workflow_run` listeners decline a push run by design
-      # (agent-merge demands `workflow_run.event == 'pull_request'`;
-      # qa-on-green exits on "No open PR on `main`"), so without this step
-      # nothing downstream says anything at all.
-      #
-      # ONE OPEN ISSUE AT A TIME, one comment per red commit. #367 is the
-      # precedent for a loop that commented on every pass, and a fresh issue
-      # per red commit would be the same mistake: `main` staying red for six
-      # commits is ONE situation, not six. So: find the open sentinel issue and
-      # comment, or file it if there is none. A comment that already names this
-      # SHA is not written twice, which makes a re-run idempotent.
-      #
-      # NOTHING IS INTERPOLATED INTO THIS SCRIPT (#358). Every value arrives as
-      # an environment variable, which bash never re-parses as source.
-      - name: Report a red main
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          set -euo pipefail
-          short=$(printf '%s' "$SHA" | cut -c1-7)
-          line="\`$short\` — [gates run]($RUN_URL)"
-
-          # The sentinel is a title prefix, not a label: a label has to exist
-          # in the repo first, and a workflow that fails because a label was
-          # renamed is a worse failure than the one it reports.
-          existing=$(gh issue list --repo "$GH_REPO" --state open \
-                       --search '"[main-red]" in:title' \
-                       --json number --jq '.[0].number // empty')
-
-          if [ -n "$existing" ]; then
-            if gh issue view "$existing" --repo "$GH_REPO" \
-                 --json comments --jq '.comments[].body' | grep -qF "$short"; then
-              echo "::notice::#$existing already records $short — not commenting twice"
-              exit 0
-            fi
-            gh issue comment "$existing" --repo "$GH_REPO" --body "\
-          Still red on \`main\` at $line
-
-          pr-gates failed on the merge result. Each entry here is one red commit on
-          \`main\`; this issue stays open until a push to \`main\` goes green."
-            echo "::notice::appended $short to #$existing"
-            exit 0
-          fi
-
-          gh issue create --repo "$GH_REPO" \
-            --title "[main-red] pr-gates failed on main at $short" \
-            --label bug \
-            --body "\
-          \`main\` is red. pr-gates runs on pushes to \`main\` (#461) and failed at $line
-
-          **Why this is filed and not just a red run:** every other pr-gates leg asserts
-          against \`<branch> + main-at-the-time\`, never against \`main\` as it ends up, so a
-          pair of individually-green PRs can land a red \`main\`. That happened on
-          2026-10-20 and was found a day later only because PR #451 merged \`main\` in and
-          inherited the failure. Neither \`workflow_run\` listener acts on a push run, so
-          this step is the only thing that reports it.
-
-          **What to do:** read the run above. Fix forward on a branch; do not push to
-          \`main\`. Further red commits are appended to this issue as comments rather than
-          filed separately — \`main\` staying red is one situation, not one per commit."
-          echo "::notice::filed a new [main-red] issue for $short"

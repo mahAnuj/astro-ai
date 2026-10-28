@@ -162,6 +162,15 @@ LOOP_WORKFLOWS = (
     # `agent-steward.yml` above is counted for. It is triggered BY a gate
     # (`PR gates` completing), which is not the same as being one.
     "qa-on-green.yml",
+    # Same shape as `qa-on-green.yml` directly above, and counted for the same
+    # reason: triggered BY a gate (`PR gates` completing) without being one, and
+    # a failed run of it means a red `main` reached nobody. It is the
+    # `agent-steward.yml` case in this list's own docstring -- a leg whose job is
+    # to make a stoppage visible, whose own silence is therefore the worst kind.
+    # Its job is SKIPPED on every green run and on every PR run, which scores as
+    # success (`SUCCEEDED_CONCLUSIONS` below), so this does not redden the tile
+    # on the common path (#461).
+    "main-red-report.yml",
     "agent-sync.yml",
     "agent-prioritise.yml",
     "agent-infra.yml",
