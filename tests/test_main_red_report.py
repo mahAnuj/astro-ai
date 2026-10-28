@@ -235,11 +235,17 @@ if argv[:2] == ["issue", "list"]:
     print(json.dumps(issues))
 elif argv[:2] == ["issue", "view"]:
     number = int(argv[2])
-    bodies = fixture.get("comments", {}).get(str(number), [])
-    # The real call is `--json comments --jq '.comments[].body'`, which prints
-    # one body per line.
-    for b in bodies:
-        print(b)
+    # Honour the `--json` field list, because WHICH fields are asked for is
+    # exactly what the dedup got wrong: the SHA of the commit that CREATED the
+    # sentinel lives in `body`, never in `comments`. A fake that always served
+    # both would hide the defect; a fake that always served only comments would
+    # make the fix untestable.
+    fields = argv[argv.index("--json") + 1].split(",") if "--json" in argv else []
+    if "body" in fields:
+        print(fixture.get("body", {}).get(str(number), ""))
+    if "comments" in fields:
+        for b in fixture.get("comments", {}).get(str(number), []):
+            print(b)
 elif argv[:2] == ["issue", "comment"]:
     path = argv[argv.index("--body-file") + 1]
     record("comment", number=int(argv[2]), body=open(path).read())
@@ -461,4 +467,66 @@ def test_the_dedup_survives_a_large_comment_thread(tmp_path):
     assert done == [], (
         "the same SHA was reported twice on a large thread. `grep -q` + "
         f"`pipefail` makes the pipeline 141 at the first match: {done!r}"
+    )
+
+
+def test_the_sha_that_opened_the_sentinel_is_not_reported_twice(tmp_path):
+    """QA round 3, BUG-3. The dedup read `--json comments` only.
+
+    The FIRST red commit of a stretch has its SHA in the issue's TITLE and
+    BODY — it was never a comment — so that one commit was invisible to the
+    dedup, and a re-run of pr-gates for it appended a duplicate report of a SHA
+    already on the issue. The script promises "a re-run of this workflow must
+    not append the same SHA twice", and that promise was false for precisely
+    the commit that opens every red stretch.
+
+    `test_the_same_sha_is_not_reported_twice` and
+    `test_the_dedup_survives_a_large_comment_thread` both seed the SHA as a
+    COMMENT, which is the second-and-later case. Neither could see this.
+    """
+    proc, done = _run_reporter(
+        tmp_path,
+        {
+            "open_issues": [
+                {"number": 900,
+                 "title": "[main-red] pr-gates did not pass on main at 2222222"}
+            ],
+            "body": {"900": "`main` is red. `pr-gates` runs on pushes to `main` "
+                            "(#461) and did not pass at `2222222` — **cancelled**"},
+            "comments": {"900": []},
+        },
+        sha="2222222abcdef",
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert done == [], (
+        "the sentinel's own creating SHA was reported a second time; the dedup "
+        f"must read the issue body, not comments alone: {done!r}"
+    )
+
+
+def test_no_pipeline_feeds_an_early_exiting_reader():
+    """The class behind two separate defects on this PR, pinned structurally.
+
+    Under `set -o pipefail`, a reader that exits before consuming its input
+    (`grep -q`, `head`) makes the upstream die of SIGPIPE and the PIPELINE
+    report 141. Round 2 found it on `gh issue view | grep -qF` (a duplicate
+    comment); round 3 found it latent on `printf | head -n 1` (measured to fire
+    at 20,000 lines, where it would kill the step and leave a red `main`
+    unreported).
+
+    Both were invisible to behavioural tests until the input crossed the 64 KB
+    pipe buffer, so this asserts on the shape instead. Capture into a variable
+    and use a herestring or parameter expansion.
+    """
+    script = _reporter_script()
+    offenders = [
+        line.strip()
+        for line in script.splitlines()
+        if not line.lstrip().startswith("#")
+        and re.search(r"\|\s*(head\b|grep\s+-[a-zA-Z]*q)", line)
+    ]
+    assert offenders == [], (
+        "a pipeline feeds a reader that exits early; under `pipefail` the "
+        "upstream dies of SIGPIPE and the pipeline reports 141:\n  "
+        + "\n  ".join(offenders)
     )

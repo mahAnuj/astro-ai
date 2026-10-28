@@ -141,7 +141,15 @@ jobs:
             exit 0
           fi
 
-          existing=$(printf '%s' "$sentinels" | head -n 1)
+          # NOT `printf ... | head -n 1`. `head` exits after its first line, so
+          # under `pipefail` that pipeline reports 141 once the upstream is big
+          # enough to still be writing -- the identical defect as the dedup
+          # below, and here it would kill the step and leave a red `main`
+          # unreported. Unreachable at `--limit 500` (a few KB of issue numbers,
+          # well under the 64 KB pipe buffer), but measured to fire at 20,000
+          # lines, so it is removed rather than left as a landmine. Parameter
+          # expansion takes the first line with no process and no pipe.
+          existing=${sentinels%%$'\n'*}
           if [ -n "$existing" ]; then
             extra=$(printf '%s' "$sentinels" | grep -cv '^$' || true)
             if [ "$extra" -gt 1 ]; then
@@ -162,8 +170,18 @@ jobs:
             # comments after the match -- roughly 280 auto-comments, or one
             # pasted CI log. A failing `gh` inside this assignment still aborts
             # the step, which is the safe direction.
+            # `body` AND `comments`. The FIRST red commit of a stretch has its
+            # SHA recorded only in the issue's title and body -- it was never a
+            # comment -- so reading `comments` alone made that one commit
+            # invisible to the dedup, and a re-run of pr-gates for it appended a
+            # duplicate report of a SHA already on the issue. The script's own
+            # promise above ("must not append the same SHA twice") was false for
+            # exactly the commit that opens every red stretch. Both tests missed
+            # it because both seed the SHA as a COMMENT, which is the
+            # second-and-later case.
             bodies=$(gh issue view "$existing" --repo "$GH_REPO" \
-                       --json comments --jq '.comments[].body')
+                       --json body,comments \
+                       --jq '[.body] + [.comments[].body] | .[]')
             # The backticks are part of the match, so a bare hex run elsewhere
             # in the thread cannot suppress a real report.
             if grep -qF -- "\`$short\`" <<<"$bodies"; then

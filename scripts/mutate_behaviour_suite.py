@@ -3573,12 +3573,14 @@ MUTATIONS = [
     ("#461: the dedup reads the thread through a pipe again, so pipefail + grep -q double-posts",
      ".github/workflows/main-red-report.yml",
      '            bodies=$(gh issue view "$existing" --repo "$GH_REPO" \\\n'
-     "                       --json comments --jq '.comments[].body')\n"
+     '                       --json body,comments \\\n'
+     "                       --jq '[.body] + [.comments[].body] | .[]')\n"
      '            # The backticks are part of the match, so a bare hex run elsewhere\n'
      '            # in the thread cannot suppress a real report.\n'
      '            if grep -qF -- "\\`$short\\`" <<<"$bodies"; then\n',
      '            if gh issue view "$existing" --repo "$GH_REPO" \\\n'
-     "                 --json comments --jq '.comments[].body' \\\n"
+     '                 --json body,comments \\\n'
+     "                 --jq '[.body] + [.comments[].body] | .[]' \\\n"
      '                 | grep -qF -- "\\`$short\\`"; then\n',
      "test_the_dedup_survives_a_large_comment_thread"),
 
@@ -3593,6 +3595,19 @@ MUTATIONS = [
      "            for n in $sentinels; do\n",
      "            for n in $(printf '%s' \"$sentinels\" | head -n 1); do\n",
      "test_every_open_sentinel_is_closed_not_just_the_first"),
+
+    ("#461: the dedup reads comments only, so the SHA that OPENED the sentinel is reported twice",
+     ".github/workflows/main-red-report.yml",
+     '                       --json body,comments \\\n'
+     "                       --jq '[.body] + [.comments[].body] | .[]')\n",
+     "                       --json comments --jq '.comments[].body')\n",
+     "test_the_sha_that_opened_the_sentinel_is_not_reported_twice"),
+
+    ("#461: the first sentinel is taken through a pipe into `head`, the same pipefail+SIGPIPE class",
+     ".github/workflows/main-red-report.yml",
+     "          existing=${sentinels%%$'\\n'*}\n",
+     '          existing=$(printf \'%s\' "$sentinels" | head -n 1)\n',
+     "test_no_pipeline_feeds_an_early_exiting_reader"),
 
     ("#461: the reporter moves back inside pr-gates, where it cannot report its own job being killed",
      ".github/workflows/pr-gates.yml",
