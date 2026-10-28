@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-10-28T17:06:32Z",
+  "generated_at": "2026-10-28T23:53:31Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 129,
-  "with_ask": 58,
+  "open": 134,
+  "with_ask": 59,
   "by_area": {
     "UNCLASSIFIED": 52,
-    "INFRA": 15,
+    "INFRA": 16,
     "REDESIGN": 10,
     "UI": 8,
+    "NUMEROLOGY": 7,
     "FEATURE": 7,
     "SEO": 3,
     "SECURITY": 3,
-    "NUMEROLOGY": 3,
     "MEASURE": 2,
     "CONTENT": 2,
     "DETECT_STALLS": 2,
@@ -35,21 +35,97 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 40,
+    "bug": 41,
     "untyped": 37,
     "enhancement": 27,
-    "correctness": 8,
+    "correctness": 12,
     "chore": 7,
     "design": 7,
     "ui": 3
   },
   "by_priority": {
-    "unset": 85,
+    "unset": 90,
     "medium": 22,
     "high": 22
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 584,
+      "title": "numerology: 0-100 compatibility and Bhagya scores rest on invented weights, and the compound tiers contradict Cheiro on 28, 49 and 13",
+      "ask": "",
+      "area": "NUMEROLOGY",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-10-28T23:12:41Z",
+      "updated": "2026-10-28T23:12:41Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 583,
+      "title": "numerology: Life Path 'Strong/Cautious months' for 2-9 trace to nothing in the corpus; four disagree with Cheiro",
+      "ask": "",
+      "area": "NUMEROLOGY",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-10-28T23:12:01Z",
+      "updated": "2026-10-28T23:12:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 582,
+      "title": "numerology: master numbers and Karmic Debt contradict the page's own Cheiro compound row — Cheiro vs Kumar needs a ruling",
+      "ask": "Declare, don't change.",
+      "area": "NUMEROLOGY",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-10-28T23:11:39Z",
+      "updated": "2026-10-28T23:11:39Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 581,
+      "title": "numerology: name compound sums every letter; Cheiro adds each word's single number — 8 of his 9 stated results do not reproduce",
+      "ask": "",
+      "area": "NUMEROLOGY",
+      "type": "correctness",
+      "priority": "unset",
+      "labels": [
+        "astrology-correctness"
+      ],
+      "created": "2026-10-28T23:11:01Z",
+      "updated": "2026-10-28T23:11:01Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 580,
+      "title": "[INFRA] detect_stalls counts stalls no cycle can act on as OBLIGED, so the steward is accused of inaction it correctly took",
+      "ask": "",
+      "area": "INFRA",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "category:technical"
+      ],
+      "created": "2026-10-28T17:55:23Z",
+      "updated": "2026-10-28T17:55:42Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 577,
       "title": "verify_conflict_markers: the 8 MiB truncation and the 7-wide blockquote are absent from the gate's own 'what this lets through' lists",
@@ -496,10 +572,10 @@
       "labels": [
         "bug",
         "qa-fail",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-21T04:44:34Z",
-      "updated": "2026-10-26T17:51:44Z",
+      "updated": "2026-10-28T17:54:52Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -689,10 +765,13 @@
       "labels": [
         "severity:medium",
         "priority:medium",
-        "astrology-correctness"
+        "astrology-correctness",
+        "qa-pass",
+        "provenance:trusted",
+        "qa:in-cycle"
       ],
       "created": "2026-10-20T02:24:10Z",
-      "updated": "2026-10-20T02:34:09Z",
+      "updated": "2026-10-28T17:49:57Z",
       "blocked": false,
       "needs_evidence": false
     },
