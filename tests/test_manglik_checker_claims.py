@@ -37,6 +37,8 @@ _OVERCLAIMS = (
     "full classical evaluation",
     "applies them all",
     "applies every",
+    "libra debility",
+    "explicitly applies the classical cancellation",
 )
 
 _PAGES = ("/manglik-check", "/kundli", "/matching", "/about",
