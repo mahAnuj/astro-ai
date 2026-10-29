@@ -2,252 +2,268 @@
   "source": "gsc",
   "site": "sc-domain:shubhagya.com",
   "window": [
-    "2026-09-28",
-    "2026-10-25"
+    "2026-09-29",
+    "2026-10-26"
   ],
   "dimension": "page",
   "note": "window excludes the last 3 days \u2014 GSC data is not final before that",
-  "total_impressions": 12769,
-  "total_clicks": 129,
-  "rows_impressions": 12802,
+  "total_impressions": 13252,
+  "total_clicks": 139,
+  "rows_impressions": 13288,
   "coverage_pct": 100,
-  "emitted_rows": 106,
-  "emitted_impressions": 11577,
+  "emitted_rows": 104,
+  "emitted_impressions": 12040,
   "emitted_coverage_pct": 91,
   "truncated": false,
-  "coverage_note": "rows account for 100% of the property's 12769 impressions \u2014 coverage_pct/rows_impressions describe the whole fetch; --band printed 106 rows at position 6-20 covering 91% (11577 impressions): see emitted_coverage_pct/emitted_impressions",
+  "coverage_note": "rows account for 100% of the property's 13252 impressions \u2014 coverage_pct/rows_impressions describe the whole fetch; --band printed 104 rows at position 6-20 covering 91% (12040 impressions): see emitted_coverage_pct/emitted_impressions",
   "rows": [
     {
       "page": "https://shubhagya.com/learn/rahu-mahadasha-ketu-antardasha/",
-      "impressions": 2358,
-      "clicks": 29,
-      "ctr": 0.0123,
+      "impressions": 2460,
+      "clicks": 31,
+      "ctr": 0.0126,
       "position": 7.1,
-      "band_opportunity": 112.5
+      "band_opportunity": 116.6
     },
     {
       "page": "https://shubhagya.com/learn/debilitated-sun-career/",
-      "impressions": 1504,
+      "impressions": 1585,
       "clicks": 7,
-      "ctr": 0.0047,
-      "position": 6.3,
-      "band_opportunity": 83.2
+      "ctr": 0.0044,
+      "position": 6.4,
+      "band_opportunity": 88.1
     },
     {
       "page": "https://shubhagya.com/learn/sade-sati/",
-      "impressions": 1376,
-      "clicks": 8,
-      "ctr": 0.0058,
+      "impressions": 1470,
+      "clicks": 9,
+      "ctr": 0.0061,
       "position": 6.4,
-      "band_opportunity": 74.6
+      "band_opportunity": 79.2
     },
     {
       "page": "https://shubhagya.com/learn/rahu-mahadasha-career-problems/",
-      "impressions": 779,
+      "impressions": 769,
       "clicks": 10,
-      "ctr": 0.0128,
-      "position": 6.8,
-      "band_opportunity": 36.7
+      "ctr": 0.013,
+      "position": 6.9,
+      "band_opportunity": 36.1
     },
     {
       "page": "https://shubhagya.com/learn/panch-mahapurush-yoga/",
-      "impressions": 507,
-      "clicks": 3,
-      "ctr": 0.0059,
+      "impressions": 527,
+      "clicks": 4,
+      "ctr": 0.0076,
       "position": 6.9,
-      "band_opportunity": 27.4
+      "band_opportunity": 27.6
     },
     {
       "page": "https://shubhagya.com/learn/manglik-dosh/",
-      "impressions": 476,
-      "clicks": 3,
-      "ctr": 0.0063,
-      "position": 7.3,
-      "band_opportunity": 25.6
+      "impressions": 488,
+      "clicks": 4,
+      "ctr": 0.0082,
+      "position": 7.2,
+      "band_opportunity": 25.3
     },
     {
       "page": "https://shubhagya.com/learn/career-during-sade-sati/",
-      "impressions": 456,
-      "clicks": 5,
-      "ctr": 0.011,
-      "position": 6.7,
+      "impressions": 506,
+      "clicks": 8,
+      "ctr": 0.0158,
+      "position": 6.6,
       "band_opportunity": 22.4
     },
     {
       "page": "https://shubhagya.com/learn/jupiter-in-10th-house-career/",
-      "impressions": 362,
+      "impressions": 372,
       "clicks": 1,
-      "ctr": 0.0028,
+      "ctr": 0.0027,
       "position": 7.0,
-      "band_opportunity": 20.7
+      "band_opportunity": 21.3
     },
     {
       "page": "https://shubhagya.com/learn/marriage-mahadasha-timing/",
-      "impressions": 257,
+      "impressions": 263,
       "clicks": 1,
-      "ctr": 0.0039,
+      "ctr": 0.0038,
       "position": 6.6,
-      "band_opportunity": 14.4
+      "band_opportunity": 14.8
     },
     {
       "page": "https://shubhagya.com/learn/7th-lord-placement-marriage-guide/",
-      "impressions": 307,
-      "clicks": 6,
-      "ctr": 0.0195,
+      "impressions": 304,
+      "clicks": 5,
+      "ctr": 0.0164,
       "position": 7.6,
-      "band_opportunity": 12.4
+      "band_opportunity": 13.2
     },
     {
       "page": "https://shubhagya.com/learn/kundali-matching-ashtakoot-guna-milan/",
-      "impressions": 173,
+      "impressions": 179,
       "clicks": 0,
       "ctr": 0,
-      "position": 8.0,
-      "band_opportunity": 10.4
+      "position": 8,
+      "band_opportunity": 10.7
     },
     {
       "page": "https://shubhagya.com/learn/10th-lord-in-6th-house-career/",
-      "impressions": 203,
-      "clicks": 3,
-      "ctr": 0.0148,
+      "impressions": 234,
+      "clicks": 4,
+      "ctr": 0.0171,
       "position": 6.8,
-      "band_opportunity": 9.2
+      "band_opportunity": 10.0
     },
     {
       "page": "https://shubhagya.com/learn/",
-      "impressions": 147,
+      "impressions": 146,
       "clicks": 0,
       "ctr": 0,
       "position": 10.2,
       "band_opportunity": 8.8
     },
     {
-      "page": "https://shubhagya.com/rashifal",
-      "impressions": 128,
+      "page": "https://shubhagya.com/learn/gochar-2026-planetary-transits/",
+      "impressions": 140,
       "clicks": 0,
       "ctr": 0,
-      "position": 10.1,
-      "band_opportunity": 7.7
+      "position": 6.1,
+      "band_opportunity": 8.4
     },
     {
       "page": "https://shubhagya.com/learn/chronic-health-issues-kundli/",
-      "impressions": 119,
+      "impressions": 131,
       "clicks": 0,
       "ctr": 0,
-      "position": 6.4,
-      "band_opportunity": 7.1
+      "position": 6.2,
+      "band_opportunity": 7.9
     },
     {
-      "page": "https://shubhagya.com/learn/guru-jupiter-in-vedic-astrology/",
-      "impressions": 98,
+      "page": "https://shubhagya.com/rashifal",
+      "impressions": 130,
       "clicks": 0,
       "ctr": 0,
-      "position": 7.6,
-      "band_opportunity": 5.9
-    },
-    {
-      "page": "https://shubhagya.com/learn/sun-in-10th-house-career/",
-      "impressions": 98,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 6.9,
-      "band_opportunity": 5.9
-    },
-    {
-      "page": "https://shubhagya.com/learn/rahu-in-vedic-astrology/",
-      "impressions": 97,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 7.1,
-      "band_opportunity": 5.8
+      "position": 10.2,
+      "band_opportunity": 7.8
     },
     {
       "page": "https://shubhagya.com/learn/pushya-nakshatra/",
-      "impressions": 128,
+      "impressions": 138,
       "clicks": 2,
-      "ctr": 0.0156,
+      "ctr": 0.0145,
       "position": 7.4,
-      "band_opportunity": 5.7
-    },
-    {
-      "page": "https://shubhagya.com/learn/mars-remedies/",
-      "impressions": 125,
-      "clicks": 2,
-      "ctr": 0.016,
-      "position": 6.6,
-      "band_opportunity": 5.5
-    },
-    {
-      "page": "https://shubhagya.com/learn/kaal-sarp-dosh/",
-      "impressions": 136,
-      "clicks": 3,
-      "ctr": 0.0221,
-      "position": 6.2,
-      "band_opportunity": 5.2
-    },
-    {
-      "page": "https://shubhagya.com/learn/saturn-in-10th-house-career/",
-      "impressions": 120,
-      "clicks": 2,
-      "ctr": 0.0167,
-      "position": 7.5,
-      "band_opportunity": 5.2
+      "band_opportunity": 6.3
     },
     {
       "page": "https://shubhagya.com/learn/mangal-mars-in-vedic-astrology/",
-      "impressions": 121,
+      "impressions": 151,
       "clicks": 3,
-      "ctr": 0.0248,
-      "position": 7.3,
-      "band_opportunity": 4.3
+      "ctr": 0.0199,
+      "position": 7.4,
+      "band_opportunity": 6.1
+    },
+    {
+      "page": "https://shubhagya.com/learn/guru-jupiter-in-vedic-astrology/",
+      "impressions": 102,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 7.6,
+      "band_opportunity": 6.1
+    },
+    {
+      "page": "https://shubhagya.com/learn/sun-in-10th-house-career/",
+      "impressions": 94,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 6.9,
+      "band_opportunity": 5.6
+    },
+    {
+      "page": "https://shubhagya.com/learn/kaal-sarp-dosh/",
+      "impressions": 140,
+      "clicks": 3,
+      "ctr": 0.0214,
+      "position": 6.3,
+      "band_opportunity": 5.4
+    },
+    {
+      "page": "https://shubhagya.com/learn/mars-remedies/",
+      "impressions": 117,
+      "clicks": 2,
+      "ctr": 0.0171,
+      "position": 6.5,
+      "band_opportunity": 5.0
+    },
+    {
+      "page": "https://shubhagya.com/learn/saturn-in-10th-house-career/",
+      "impressions": 116,
+      "clicks": 2,
+      "ctr": 0.0172,
+      "position": 7.5,
+      "band_opportunity": 5.0
+    },
+    {
+      "page": "https://shubhagya.com/learn/rahu-in-vedic-astrology/",
+      "impressions": 100,
+      "clicks": 1,
+      "ctr": 0.01,
+      "position": 6.9,
+      "band_opportunity": 5.0
     },
     {
       "page": "https://shubhagya.com/learn/jupiter-remedies/",
       "impressions": 72,
       "clicks": 0,
       "ctr": 0,
-      "position": 7.0,
+      "position": 7.1,
       "band_opportunity": 4.3
     },
     {
       "page": "https://shubhagya.com/learn/name-numerology-explained/",
-      "impressions": 60,
+      "impressions": 65,
       "clicks": 0,
       "ctr": 0,
-      "position": 8.4,
+      "position": 8.3,
+      "band_opportunity": 3.9
+    },
+    {
+      "page": "https://shubhagya.com/learn/shukra-venus-in-vedic-astrology/",
+      "impressions": 63,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 6.3,
+      "band_opportunity": 3.8
+    },
+    {
+      "page": "https://shubhagya.com/muhurat/vidyarambh",
+      "impressions": 93,
+      "clicks": 2,
+      "ctr": 0.0215,
+      "position": 7.1,
       "band_opportunity": 3.6
     },
     {
       "page": "https://shubhagya.com/learn/the-9-grahas-overview/",
-      "impressions": 60,
+      "impressions": 59,
       "clicks": 0,
       "ctr": 0,
-      "position": 8.8,
-      "band_opportunity": 3.6
-    },
-    {
-      "page": "https://shubhagya.com/muhurat/vidyarambh",
-      "impressions": 92,
-      "clicks": 2,
-      "ctr": 0.0217,
-      "position": 7.1,
+      "position": 8.9,
       "band_opportunity": 3.5
     },
     {
       "page": "https://shubhagya.com/learn/ashwini-nakshatra/",
-      "impressions": 55,
+      "impressions": 50,
       "clicks": 0,
       "ctr": 0,
-      "position": 6.9,
-      "band_opportunity": 3.3
+      "position": 7.0,
+      "band_opportunity": 3.0
     },
     {
-      "page": "https://shubhagya.com/learn/shukra-venus-in-vedic-astrology/",
-      "impressions": 53,
+      "page": "https://shubhagya.com/learn/vivah-muhurat-2027/",
+      "impressions": 50,
       "clicks": 0,
       "ctr": 0,
-      "position": 6.3,
-      "band_opportunity": 3.2
+      "position": 9.0,
+      "band_opportunity": 3.0
     },
     {
       "page": "https://shubhagya.com/learn/rohini-nakshatra/",
@@ -259,31 +275,23 @@
     },
     {
       "page": "https://shubhagya.com/learn/santan-prapti-children-in-kundli/",
-      "impressions": 46,
+      "impressions": 45,
       "clicks": 0,
       "ctr": 0,
-      "position": 7,
-      "band_opportunity": 2.8
-    },
-    {
-      "page": "https://shubhagya.com/learn/vivah-muhurat-2027/",
-      "impressions": 44,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 9.3,
-      "band_opportunity": 2.6
+      "position": 7.0,
+      "band_opportunity": 2.7
     },
     {
       "page": "https://shubhagya.com/learn/11th-lord-placement-gains-guide/",
-      "impressions": 39,
+      "impressions": 37,
       "clicks": 0,
       "ctr": 0,
-      "position": 6.4,
-      "band_opportunity": 2.3
+      "position": 6.1,
+      "band_opportunity": 2.2
     },
     {
       "page": "https://shubhagya.com/learn/chandra-moon-in-vedic-astrology/",
-      "impressions": 33,
+      "impressions": 34,
       "clicks": 0,
       "ctr": 0,
       "position": 7.1,
@@ -291,19 +299,27 @@
     },
     {
       "page": "https://shubhagya.com/learn/financial-struggles/",
-      "impressions": 31,
+      "impressions": 30,
       "clicks": 0,
       "ctr": 0,
-      "position": 6.4,
-      "band_opportunity": 1.9
+      "position": 6.2,
+      "band_opportunity": 1.8
     },
     {
       "page": "https://shubhagya.com/learn/saturn-remedies/",
-      "impressions": 61,
+      "impressions": 62,
       "clicks": 2,
-      "ctr": 0.0328,
-      "position": 7.5,
+      "ctr": 0.0323,
+      "position": 7.6,
       "band_opportunity": 1.7
+    },
+    {
+      "page": "https://shubhagya.com/learn/surya-sun-in-vedic-astrology/",
+      "impressions": 25,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 7.7,
+      "band_opportunity": 1.5
     },
     {
       "page": "https://shubhagya.com/learn/magha-nakshatra/",
@@ -322,52 +338,60 @@
       "band_opportunity": 1.4
     },
     {
-      "page": "https://shubhagya.com/learn/surya-sun-in-vedic-astrology/",
-      "impressions": 24,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 7.6,
-      "band_opportunity": 1.4
-    },
-    {
-      "page": "https://shubhagya.com/learn/punarvasu-nakshatra/",
-      "impressions": 22,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 9.4,
-      "band_opportunity": 1.3
-    },
-    {
-      "page": "https://shubhagya.com/learn/marriage-delayed/",
-      "impressions": 20,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 7,
-      "band_opportunity": 1.2
-    },
-    {
-      "page": "https://shubhagya.com/learn/ketu-in-vedic-astrology/",
-      "impressions": 35,
-      "clicks": 1,
-      "ctr": 0.0286,
-      "position": 8.1,
-      "band_opportunity": 1.1
-    },
-    {
       "page": "https://shubhagya.com/learn/gajakesari-yoga/",
-      "impressions": 18,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 6.6,
-      "band_opportunity": 1.1
-    },
-    {
-      "page": "https://shubhagya.com/learn/job-or-business-kundli-guide/",
-      "impressions": 18,
+      "impressions": 19,
       "clicks": 0,
       "ctr": 0,
       "position": 6.3,
       "band_opportunity": 1.1
+    },
+    {
+      "page": "https://shubhagya.com/learn/marriage-delayed/",
+      "impressions": 19,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 7,
+      "band_opportunity": 1.1
+    },
+    {
+      "page": "https://shubhagya.com/learn/punarvasu-nakshatra/",
+      "impressions": 19,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.7,
+      "band_opportunity": 1.1
+    },
+    {
+      "page": "https://shubhagya.com/rashifal/pisces",
+      "impressions": 16,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.4,
+      "band_opportunity": 1.0
+    },
+    {
+      "page": "https://shubhagya.com/learn/ardra-nakshatra/",
+      "impressions": 32,
+      "clicks": 1,
+      "ctr": 0.0312,
+      "position": 7.6,
+      "band_opportunity": 0.9
+    },
+    {
+      "page": "https://shubhagya.com/learn/ketu-in-vedic-astrology/",
+      "impressions": 31,
+      "clicks": 1,
+      "ctr": 0.0323,
+      "position": 8.4,
+      "band_opportunity": 0.9
+    },
+    {
+      "page": "https://shubhagya.com/learn/second-marriage-yoga-kundli/",
+      "impressions": 15,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 7.2,
+      "band_opportunity": 0.9
     },
     {
       "page": "https://shubhagya.com/muhurat/business",
@@ -378,59 +402,11 @@
       "band_opportunity": 0.9
     },
     {
-      "page": "https://shubhagya.com/learn/ardra-nakshatra/",
-      "impressions": 30,
-      "clicks": 1,
-      "ctr": 0.0333,
-      "position": 7.6,
-      "band_opportunity": 0.8
-    },
-    {
-      "page": "https://shubhagya.com/learn/second-marriage-yoga-kundli/",
-      "impressions": 14,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 7.3,
-      "band_opportunity": 0.8
-    },
-    {
-      "page": "https://shubhagya.com/rashifal/pisces",
-      "impressions": 14,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 9.1,
-      "band_opportunity": 0.8
-    },
-    {
-      "page": "https://shubhagya.com/learn/dhana-yoga-wealth-combinations/",
-      "impressions": 28,
-      "clicks": 1,
-      "ctr": 0.0357,
-      "position": 6.7,
-      "band_opportunity": 0.7
-    },
-    {
       "page": "https://shubhagya.com/learn/career-not-progressing/",
       "impressions": 12,
       "clicks": 0,
       "ctr": 0,
       "position": 7.3,
-      "band_opportunity": 0.7
-    },
-    {
-      "page": "https://shubhagya.com/learn/griha-pravesh-muhurat-2026-2027/",
-      "impressions": 12,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 8.6,
-      "band_opportunity": 0.7
-    },
-    {
-      "page": "https://shubhagya.com/learn/mercury-remedies/",
-      "impressions": 11,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 7.5,
       "band_opportunity": 0.7
     },
     {
@@ -442,35 +418,83 @@
       "band_opportunity": 0.7
     },
     {
-      "page": "https://shubhagya.com/learn/vimshottari-dasha-explained/",
-      "impressions": 12,
-      "clicks": 0,
-      "ctr": 0,
+      "page": "https://shubhagya.com/learn/purva-phalguni-nakshatra/",
+      "impressions": 44,
+      "clicks": 2,
+      "ctr": 0.0455,
       "position": 6.5,
-      "band_opportunity": 0.7
+      "band_opportunity": 0.6
+    },
+    {
+      "page": "https://shubhagya.com/learn/dhana-yoga-wealth-combinations/",
+      "impressions": 26,
+      "clicks": 1,
+      "ctr": 0.0385,
+      "position": 7.1,
+      "band_opportunity": 0.6
     },
     {
       "page": "https://shubhagya.com/learn/swati-nakshatra/",
       "impressions": 27,
       "clicks": 1,
       "ctr": 0.037,
-      "position": 6.7,
+      "position": 6.9,
       "band_opportunity": 0.6
     },
     {
-      "page": "https://shubhagya.com/learn/surya-sun-remedies/",
+      "page": "https://shubhagya.com/learn/griha-pravesh-muhurat-2026-2027/",
       "impressions": 10,
       "clicks": 0,
       "ctr": 0,
-      "position": 7.4,
+      "position": 8.3,
       "band_opportunity": 0.6
     },
     {
-      "page": "https://shubhagya.com/learn/purva-phalguni-nakshatra/",
-      "impressions": 42,
-      "clicks": 2,
-      "ctr": 0.0476,
-      "position": 6.5,
+      "page": "https://shubhagya.com/terms",
+      "impressions": 10,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 11,
+      "band_opportunity": 0.6
+    },
+    {
+      "page": "https://shubhagya.com/learn/bharani-nakshatra/",
+      "impressions": 8,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 8.4,
+      "band_opportunity": 0.5
+    },
+    {
+      "page": "https://shubhagya.com/learn/love-vs-arranged-marriage-kundli/",
+      "impressions": 9,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 6.1,
+      "band_opportunity": 0.5
+    },
+    {
+      "page": "https://shubhagya.com/learn/mercury-remedies/",
+      "impressions": 9,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 7.7,
+      "band_opportunity": 0.5
+    },
+    {
+      "page": "https://shubhagya.com/learn/sun-mahadasha/",
+      "impressions": 9,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 9.2,
+      "band_opportunity": 0.5
+    },
+    {
+      "page": "https://shubhagya.com/learn/surya-sun-remedies/",
+      "impressions": 8,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 7.9,
       "band_opportunity": 0.5
     },
     {
@@ -482,12 +506,12 @@
       "band_opportunity": 0.5
     },
     {
-      "page": "https://shubhagya.com/terms",
-      "impressions": 9,
+      "page": "https://shubhagya.com/learn/shani-saturn/",
+      "impressions": 6,
       "clicks": 0,
       "ctr": 0,
-      "position": 11.2,
-      "band_opportunity": 0.5
+      "position": 9.3,
+      "band_opportunity": 0.4
     },
     {
       "page": "https://shubhagya.com/panchang/2026-10-19",
@@ -506,19 +530,11 @@
       "band_opportunity": 0.4
     },
     {
-      "page": "https://shubhagya.com/learn/bharani-nakshatra/",
+      "page": "https://shubhagya.com/learn/kaal-sarp-dosh-remedies/",
       "impressions": 5,
       "clicks": 0,
       "ctr": 0,
-      "position": 7.4,
-      "band_opportunity": 0.3
-    },
-    {
-      "page": "https://shubhagya.com/learn/venus-remedies/",
-      "impressions": 5,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 6,
+      "position": 11.2,
       "band_opportunity": 0.3
     },
     {
@@ -539,10 +555,10 @@
     },
     {
       "page": "https://shubhagya.com/hi/rashifal/scorpio",
-      "impressions": 3,
+      "impressions": 4,
       "clicks": 0,
       "ctr": 0,
-      "position": 7,
+      "position": 7.5,
       "band_opportunity": 0.2
     },
     {
@@ -570,11 +586,19 @@
       "band_opportunity": 0.2
     },
     {
-      "page": "https://shubhagya.com/numerology",
+      "page": "https://shubhagya.com/learn/krittika-nakshatra/",
       "impressions": 3,
       "clicks": 0,
       "ctr": 0,
-      "position": 6.7,
+      "position": 6,
+      "band_opportunity": 0.2
+    },
+    {
+      "page": "https://shubhagya.com/learn/venus-remedies/",
+      "impressions": 4,
+      "clicks": 0,
+      "ctr": 0,
+      "position": 6,
       "band_opportunity": 0.2
     },
     {
@@ -611,10 +635,10 @@
     },
     {
       "page": "https://shubhagya.com/panchang/2026-11-08",
-      "impressions": 4,
+      "impressions": 3,
       "clicks": 0,
       "ctr": 0,
-      "position": 7,
+      "position": 8.7,
       "band_opportunity": 0.2
     },
     {
@@ -635,7 +659,7 @@
     },
     {
       "page": "https://shubhagya.com/hi/rashifal/leo",
-      "impressions": 1,
+      "impressions": 2,
       "clicks": 0,
       "ctr": 0,
       "position": 9,
@@ -667,18 +691,10 @@
     },
     {
       "page": "https://shubhagya.com/learn/diwali-muhurat-2026/",
-      "impressions": 1,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 7,
-      "band_opportunity": 0.1
-    },
-    {
-      "page": "https://shubhagya.com/learn/kaal-sarp-dosh-remedies/",
       "impressions": 2,
       "clicks": 0,
       "ctr": 0,
-      "position": 16,
+      "position": 8.5,
       "band_opportunity": 0.1
     },
     {
@@ -687,22 +703,6 @@
       "clicks": 0,
       "ctr": 0,
       "position": 6,
-      "band_opportunity": 0.1
-    },
-    {
-      "page": "https://shubhagya.com/learn/shani-saturn/",
-      "impressions": 1,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 9,
-      "band_opportunity": 0.1
-    },
-    {
-      "page": "https://shubhagya.com/panchang/2026-09-28",
-      "impressions": 1,
-      "clicks": 0,
-      "ctr": 0,
-      "position": 10,
       "band_opportunity": 0.1
     },
     {
@@ -826,28 +826,12 @@
       "band_opportunity": 0.0
     },
     {
-      "page": "https://shubhagya.com/learn/sun-mahadasha/",
-      "impressions": 10,
-      "clicks": 1,
-      "ctr": 0.1,
-      "position": 8.6,
-      "band_opportunity": -0.4
-    },
-    {
       "page": "https://shubhagya.com/kundli",
-      "impressions": 58,
+      "impressions": 57,
       "clicks": 4,
-      "ctr": 0.069,
-      "position": 7.5,
-      "band_opportunity": -0.5
-    },
-    {
-      "page": "https://shubhagya.com/",
-      "impressions": 120,
-      "clicks": 8,
-      "ctr": 0.0667,
-      "position": 6.0,
-      "band_opportunity": -0.8
+      "ctr": 0.0702,
+      "position": 7.2,
+      "band_opportunity": -0.6
     },
     {
       "page": "https://shubhagya.com/panchang/2026-11-06",
