@@ -3573,6 +3573,19 @@ MUTATIONS = [
      "    elif {1, 4, 12} & qualifying:",
      "    elif {4, 12} & qualifying:",
      "test_severity_grades_are_unchanged"),
+
+    # --- #398 slice 10: the Manglik cancellations stop naming books nobody here holds ---
+    ("#398 s10: the exalted-Mars cancellation is credited to Jataka Parijata again",
+     "src/astro_ai/chart.py",
+     'description="Mars exalted in Capricorn",\n            effect="cancels",\n            source=_MANGLIK_SRC_SIGN,',
+     'description="Mars exalted in Capricorn",\n            effect="cancels",\n            source="Jataka Parijata",',
+     "test_no_manglik_rule_names_a_book_the_repo_does_not_hold"),
+
+    ("#398 s10: the Jupiter-aspect cancellation is credited to Phaladeepika again",
+     "src/astro_ai/chart.py",
+     'description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",\n            effect="cancels",\n            source=_MANGLIK_SRC_REPEATED,',
+     'description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",\n            effect="cancels",\n            source="Phaladeepika",',
+     "test_no_manglik_rule_names_a_book_the_repo_does_not_hold"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

@@ -75,13 +75,14 @@ the 413 taught us about.
       that said "donate black daal / mustard oil" under Sade Sati. Slice 9
       added two: the books nobody here holds named for the Manglik doctrine
       or for Kumbh Vivah, one summary carrying "not attested in BPHS" (X), and
-      the Aditya Hridaya Stotra given a Ramayana kanda and a sage (Y).
+      the Aditya Hridaya Stotra given a Ramayana kanda and a sage (Y). Slice 10
+      added one: a Manglik cancellation rule given to a named book (Z).
 
   Gate 7 - no retired claims on the reader-facing surfaces.  The same claims
       sat on the pages a reader opens directly: the /learn article bodies,
       the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
       languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
-      is shown. This gate scans those surfaces for the twenty-four families #398
+      is shown. This gate scans those surfaces for the twenty-five families #398
       retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
       Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
       practice or as ANY planet's universal/classical/safe one (slice 5),
@@ -103,7 +104,8 @@ the 413 taught us about.
       row and urad in the Saturn one (W), and (slice 9) the Manglik doctrine or
       Kumbh Vivah attributed to Jataka Parijata / Muhurtha Chintamani /
       Phaladeepika / Mansagari (X) and the Aditya Hridaya Stotra given a
-      Ramayana "Yuddha Kanda" and Agastya (Y)
+      Ramayana "Yuddha Kanda" and Agastya (Y), and (slice 10) a Manglik
+      cancellation rule given to a named book, or counted "over a dozen" (Z)
       (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
       families still open on #398 ("black sesame", weekday fasting):
       forbidding them here would only make main red. A bare "per BPHS" is
@@ -1255,6 +1257,67 @@ HYMN_CHAPTER_ATTRIBUTION = (
     rf"|\b{_EPIC}[^.;\n]{{0,80}}?{_ADITYA_HYMN}"
 )
 
+# --- #398 slice 10 -----------------------------------------------------------
+
+# Z. A Manglik CANCELLATION rule given to a named book. Slice 9 pinned the doctrine and
+# Kumbh Vivah and deliberately left "per Jataka Parijata" on manglik-dosh as "a larger,
+# still-open rewrite"; this is that rewrite's gate. manglik-dosh said "(per Jataka
+# Parijata)", "Per Phaladeepika, this mitigates", "Three forms all cancel per
+# Phaladeepika", "Per Jataka Parijata and Muhurtha Chintamani, a Yogakaraka cannot
+# simultaneously be the source of a major dosha", and a callout "BPHS and Phaladeepika
+# both mention Mars in these houses ... both texts immediately follow with extensive
+# lists of cancellation rules"; mangal-mars-in-vedic-astrology said "Classical texts
+# (Mansagari, Jataka Parijata, Phaladeepika) list over a dozen cancellation rules" and
+# "(per Jataka Chandrika)"; learn_registry.py carried two of those as FAQ answers, which
+# become FAQPage JSON-LD. vedic_reference.md 1.3 tags every rule to those books, and 1.6.2
+# records them as absent from data/ ("citation defect, #216 class"). What the corpus does
+# hold is ONE list of Kuja-dosha antidotes (grahas.md 12.4: both partners Manglik; per-house
+# sign exceptions; Mars-Jupiter or Mars-Moon CONJUNCTION), whose author says "much
+# importance need not be given to Kuja Dosham", and a second author who says the
+# compensation rules "were not given by maharshis". So a page may say a rule is "widely
+# repeated in the tradition" and that sources differ, never that a named book gives it, and
+# never that "over a dozen" are listed: no source we hold counts them.
+#
+# Written on the sentence, not on a list of constructions. The first version enumerated
+# "per <book>", "<book> additionally cancels", "(<books>) list ..." and so on, and a held-out batch
+# of 18 other ways to say it caught 7: the book as subject of "cancels", "is the source of the rule",
+# "comes from", "record several cancellations", "as X teaches". The claim is that a book stands
+# beside a cancellation, in either order, so that is what is pinned: a book name and a Manglik
+# cancellation word in one sentence (the window never crosses a full stop or ';'), plus the next
+# sentence's "per / in / from <book>" when the first one ends on the cancellation. It is wider than
+# slice 9's X on purpose and costs nothing today: run over the 5,591 reader-facing units after the
+# rewrite it matches nothing, and a comparison ("less systematic in the core canon (BPHS,
+# Phaladeepika, Jataka Parijata) than Mangal Dosh"), Kaal Sarp's "not in BPHS" and a book named for
+# its own subject ("Phaladeepika notes that Mercury's strength ...") have no cancellation word.
+# What it will flag later is any book named beside "cancel / mitigate / Yogakaraka / debilitated
+# Mars" - a Neechabhanga or Sade Sati cancellation given to a book is the same unverifiable claim.
+_Z_TOPIC = (r"(?:cancel\w*|parihara|bhanga|mitigat\w*|exempt\w*|exclu(?:de|des|ded|sion)|Yogakaraka|"
+            r"Mars\s+in\s+(?:these|those|the\s+\w+)\s+houses?|malefic\s+effect|debilitated\s+Mars|"
+            r"(?:own|exalted|debilitated|movable)[\s\-]+sign)")
+# Only the passive "stated in <book>" shapes, NOT a bare "per" or "from": matching.html's SEO
+# meta_description is "... Nadi cancellations. Includes Manglik compatibility per BPHS." and a
+# bare "per <book>" in the sentence after a cancellation would flag it - a page and a field
+# (the best-converting entry, verify_english_surface.py) that this slice must not move.
+_Z_ATTRIB = (r"(?:(?:this|that|it|which)\s+(?:is|was)\s+)?(?:stated|given|listed|taught|found|recorded|"
+             r"described|set\s+out|laid\s+down)\s+(?:in|by)")
+MANGLIK_RULE_TO_BOOK = (
+    # a book, then a cancellation word, in one sentence: "Jataka Parijata additionally cancels Manglik ...",
+    # "(Mansagari, Jataka Parijata, Phaladeepika) list over a dozen cancellation rules", "BPHS and
+    # Phaladeepika both mention Mars in these houses", "Mansagari cancels Manglik when Mars is in Aries"
+    rf"\b{_BOOKS}\b[^.;\n]{{0,200}}?\b{_Z_TOPIC}"
+    # a cancellation word, then a book, in one sentence: "Three forms all cancel per Phaladeepika",
+    # "cancels the Manglik dosha per classical rule (Jataka Chandrika)", "a rule found in Jataka Parijata"
+    rf"|\b{_Z_TOPIC}[^.;\n]{{0,200}}?\b{_BOOKS}\b"
+    # ...the book in the NEXT sentence: "Jupiter's aspect cancels the dosha. This is stated in Jataka Parijata."
+    rf"|\b{_Z_TOPIC}[^.;\n]{{0,120}}[.;]\s*[^.;\n]{{0,60}}?\b{_Z_ATTRIB}\s+(?:the\s+)?{_BOOKS}\b"
+    # The count: no source we hold counts the cancellation rules, and the lists disagree.
+    # "classical texts list over a dozen cancellation rules", "The classical texts give over a dozen ways ..."
+    r"|\b(?:over|more\s+than|upwards\s+of)\s+(?:a\s+)?(?:dozen|twelve|12)\s+(?:\w+\s+){0,2}?(?:cancel\w*|ways|rules|parihara)"
+    r"|\ba\s+dozen\s+(?:\w+\s+){0,2}?(?:cancel\w*|ways\s+(?:Mangl?ik|the\s+dosha))"
+    # ...and the same consensus without the number: "both texts immediately follow with extensive lists of cancellation rules"
+    r"|\b(?:both\s+|these\s+|the\s+)?(?:classical\s+)?texts\s+(?:immediately\s+)?follow\w*\s+(?:\w+\s+){0,3}?(?:lists?|set)\s+of\s+(?:\w+\s+){0,2}?cancel"
+)
+
 # What Gate 6 forbids inside an llm_summary: FORBIDDEN, except that the bare
 # "milk offering" is replaced by MILK_TO_SHIVA (the claim #398 actually
 # retired is Moon -> Shiva; kaal-sarp-dosh-remedies has a Nag Panchami serpent
@@ -1327,6 +1390,11 @@ SUMMARY_FORBIDDEN = tuple(
     (HYMN_CHAPTER_ATTRIBUTION,
      "remedies.md 6.3 says only that stotras like Aditya Hridayam are learned from a teacher; "
      "nothing in knowledge/ gives it a Ramayana kanda or a sage"),
+    # Slice 10.
+    (MANGLIK_RULE_TO_BOOK,
+     "vedic_reference.md 1.3 tags the Manglik cancellations to books absent from data/ (1.6.2); the one "
+     "antidote list we hold (grahas.md 12.4) differs and no source counts the rules - say 'widely repeated "
+     "in the tradition' and that sources differ, naming no book and giving no count"),
 )
 
 
@@ -1554,6 +1622,13 @@ READER_FORBIDDEN = (
     (HYMN_CHAPTER_ATTRIBUTION,
      "Y: nothing in knowledge/ gives the Aditya Hridaya Stotra a Ramayana kanda or a sage; call it a "
      "Sun devotion and, if the Rama story is kept, label it devotional tradition"),
+
+    # Z: #398 slice 10. See the constants above for the sourcing.
+    (MANGLIK_RULE_TO_BOOK,
+     "Z: a Manglik cancellation rule given to a book we do not hold (Jataka Parijata / Chandrika, Phaladeepika, "
+     "Muhurtha Chintamani, Mansagari, BPHS), or 'over a dozen' of them. vedic_reference.md 1.3 tags them to books "
+     "absent from data/ (1.6.2); grahas.md 12.4 holds the one antidote list we have and it differs. Say the rule "
+     "is widely repeated in the tradition and that sources differ; name no book, give no count"),
 )
 
 # Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.
