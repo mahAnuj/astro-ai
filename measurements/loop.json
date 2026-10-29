@@ -1,6 +1,34 @@
 {
-  "generated_at": "2026-10-29T11:18:51Z",
+  "generated_at": "2026-10-29T19:25:11Z",
   "rows": [
+    {
+      "run": 40920301013,
+      "workflow": "agent-work",
+      "date": "2026-10-29",
+      "started": "2026-10-29T17:19:59Z",
+      "trigger": "schedule",
+      "conclusion": "success",
+      "minutes": 70.2,
+      "issue": 398,
+      "pr": 590,
+      "pr_merged": false,
+      "outcome": "pr open",
+      "attribution": "receipt"
+    },
+    {
+      "run": 40906523134,
+      "workflow": "agent-work",
+      "date": "2026-10-29",
+      "started": "2026-10-29T15:56:02Z",
+      "trigger": "workflow_dispatch",
+      "conclusion": "success",
+      "minutes": 31.4,
+      "issue": 398,
+      "pr": 587,
+      "pr_merged": true,
+      "outcome": "shipped",
+      "attribution": "receipt"
+    },
     {
       "run": 40805022843,
       "workflow": "agent-work",
@@ -11,8 +39,8 @@
       "minutes": 76.8,
       "issue": 398,
       "pr": 587,
-      "pr_merged": false,
-      "outcome": "pr open",
+      "pr_merged": true,
+      "outcome": "shipped",
       "attribution": "receipt"
     },
     {

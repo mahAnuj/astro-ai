@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-29T11:19:00Z",
+  "generated_at": "2026-10-29T19:25:19Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
   "open": 134,
@@ -122,7 +122,7 @@
         "category:technical"
       ],
       "created": "2026-10-28T17:55:23Z",
-      "updated": "2026-10-29T03:33:14Z",
+      "updated": "2026-10-29T18:33:49Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -206,7 +206,7 @@
         "bug"
       ],
       "created": "2026-10-27T15:12:04Z",
-      "updated": "2026-10-27T15:12:04Z",
+      "updated": "2026-10-29T15:55:44Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -919,7 +919,7 @@
         "qa:independent"
       ],
       "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-29T02:21:12Z",
+      "updated": "2026-10-29T17:28:22Z",
       "blocked": false,
       "needs_evidence": false
     },
