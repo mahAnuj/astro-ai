@@ -439,6 +439,44 @@ GATE7_SAMPLES = {
           "Rama recited the Aditya Hridayam as Agastya had told him.",
           "Agastya recited the Sun hymn to Rama.",
           "The Aditya Hridayam, from the epic Ramayana, is a Sun hymn."),
+    # Z. A Manglik cancellation rule given to a book nobody here holds, or "over a dozen" of them
+    # (#398 slice 10). The first ten are the manglik-dosh / mangal-mars / index / learn_registry
+    # sentences as they stood, with the <em> tags a template carries blanked as the gate sees them.
+    "Z": ("Brihat Parashara Hora Shastra and Phaladeepika both mention Mars in these houses as a marital concern. "
+          "But both texts immediately follow with extensive lists of cancellation rules (called parihara).",
+          "The classical texts give over a dozen ways Manglik Dosh weakens or cancels entirely.",
+          "Classical texts (Mansagari, Jataka Parijata, Phaladeepika) list over a dozen cancellation rules that most "
+          "online calculators ignore.",
+          "the malefic effect drops dramatically (per Jataka Parijata).",
+          "a debilitated Mars lacks the strength to disturb (per Jataka Chandrika).",
+          "Jataka Parijata additionally cancels Manglik when Mars sits in any movable sign (Chara rashi).",
+          "Per Phaladeepika, this mitigates (not always fully cancels) the dosha.",
+          "Three forms all cancel per Phaladeepika:",
+          "Both cancel per Phaladeepika and modern compatibility practice.",
+          "Per Jataka Parijata and Muhurtha Chintamani, a Yogakaraka cannot simultaneously be the source of a major dosha.",
+          "Classical texts list over a dozen cancellation rules \u2014 a lot of people labelled Manglik actually aren't.",
+          "a debilitated Mars in a Manglik house actually cancels the Manglik dosha per classical rule (Jataka Chandrika)",
+          # other books, other word orders, the count without the books
+          "Mars in its own sign cancels Manglik dosha, according to Jataka Parijata.",
+          "As per Phaladeepika, Jupiter's aspect on Mars cancels the dosha.",
+          "Muhurtha Chintamani gives the Cancer Lagna Yogakaraka exemption from Manglik.",
+          "Mansagari lists several cancellation rules for Mangal Dosh.",
+          "BPHS describes how the dosha is cancelled when Jupiter aspects Mars.",
+          "Jataka Chandrika says a debilitated Mars cancels the dosha.",
+          "Cancellation by Jupiter's aspect is taught in Phaladeepika.",
+          "Mars conjunct Jupiter cancels the dosha (Jataka Parijata).",
+          "Venus conjunct Mars mitigates it, as given in Phaladeepika.",
+          "Parihara for Kuja dosha as listed in Jataka Parijata and Phaladeepika.",
+          "The texts (Phaladeepika, Jataka Parijata) both list cancellation rules for Manglik.",
+          "Classical sources such as Mansagari and Jataka Parijata list the cancellation rules.",
+          "More than a dozen cancellation rules are listed for Manglik dosha.",
+          "There are over twelve ways Mangal Dosh is cancelled.",
+          "A dozen ways Manglik dosha cancels have been recorded.",
+          "Both texts follow with a long list of cancellation conditions.",
+          "Mars exalted in Capricorn cancels Manglik per Brihat Parashara Hora Shastra.",
+          "Per Muhurta Chintamani, the Yogakaraka rule excludes Cancer and Leo Lagnas from the dosha.",
+          "The Yogakaraka exemption is stated in Jataka Parijata and Muhurtha Chintamani.",
+          "Phaladeepika mentions Mars in these houses as harmful to marriage."),
 }
 
 # Text that must stay green. Hanuman as a MARS deity, the correct per-planet
@@ -629,7 +667,6 @@ GATE7_LEGAL = (
     "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice; no classical source found)",
     "Pitru Dosh is less systematic in the core classical canon (Brihat Parashara Hora Shastra, Phaladeepika, "
     "Jataka Parijata) than Mangal Dosh or Sade Sati.",
-    "Per Jataka Parijata and Muhurtha Chintamani, a Yogakaraka cannot simultaneously be the source of a major dosha.",
     "Dhana Yogas: Classical texts (BPHS, Phaladeepika, Saravali) list dozens.",
     "The Aditya Hridaya Stotra is a Sanskrit hymn in praise of the Sun, and a long-standing Sun devotion. "
     "Devotional tradition links it to Rama's final battle with Ravana.",
@@ -661,6 +698,36 @@ GATE7_LEGAL = (
     "It is a folk-remedial practice, not a classical one (we have found no classical source for it).",
     "Kumbh Vivah is regional folk practice, not scripture; we have found no classical source for it.",
     "(5) Kumbh Vivah before marriage for severe cases (folk-remedial practice; no classical source found)",
+    # Slice 10. The shipped wording, and neighbours Z must leave alone: a comparison that names the
+    # books, a sentence about the matching feature, a Kaal Sarp denial, and a rule with no book.
+    "The tradition reads Mars in these houses as a marital concern. But it comes with a long set of "
+    "cancellation rules (called parihara). The dosha isn't a flat yes/no.",
+    "The rules themselves are not settled, and the modern books we checked are more cautious than the websites "
+    "that repeat them. One author says the dosha is not found in the standard texts.",
+    "The tradition repeats a number of ways Manglik Dosh is said to weaken or cancel entirely, and the sources do "
+    "not agree on them.",
+    "the malefic effect is said to drop dramatically \u2014 a widely repeated rule.",
+    "Some lists go further and count any movable sign (Chara rashi), so Mars in Libra also cancels.",
+    "The tradition says this mitigates (not always fully cancels) the dosha.",
+    "Jupiter (Guru) is the cancellation the tradition cites most often. Three forms are commonly listed.",
+    "Both are commonly listed as cancelling; the modern textbook we checked does not list Venus among its antidotes.",
+    "The reasoning commonly given is that a Yogakaraka cannot simultaneously be the source of a major dosha. "
+    "The modern textbook we checked does not state this exclusion in these terms.",
+    "The tradition repeats many cancellation rules \u2014 a lot of people labelled Manglik actually aren't.",
+    "Mars debilitated in a Manglik house cancels the dosha under a commonly repeated rule (not every source gives it).",
+    "It says the dosha is cancelled when both partners are Manglik, and counteracted by the conjunction of Mars "
+    "with Jupiter or with the Moon.",
+    "Includes Manglik compatibility per BPHS.",
+    "Pitru Dosh is less systematic in the core canon (BPHS, Phaladeepika, Jataka Parijata) than Mangal Dosh or Sade Sati.",
+    "Kaal Sarp Dosh is not defined in BPHS, Phaladeepika or Jataka Parijata.",
+    "Phaladeepika notes that Mercury's strength often determines how smoothly life runs.",
+    "Brihat Parashara Hora Shastra calls Mercury the son of the Moon, youthful and well-versed in speech.",
+    "The four Sade Sati cancellations are listed in a dozen online calculators.",
+    "A dozen planets were tested for the dosha in Jataka Parijata.",
+    "Dhana Yogas: BPHS lists many wealth combinations, Phaladeepika adds more.",
+    "Classical texts (BPHS, Phaladeepika, Saravali) list dozens of yogas.",
+    "Mars in own sign is a Ruchaka Yoga when in a kendra (Rao, section 11.4).",
+    "Per Rao, the Mars gem is red coral.",
 )
 
 # The one honest Hanuman-Saturn sentence a page may keep: it must say popular/folk
@@ -1007,6 +1074,12 @@ def main() -> int:
         gate.HYMN_CHAPTER_ATTRIBUTION: (("surya-sun-remedies", "Aditya Hridaya Stotra, a hymn from the Ramayana (Yuddha Kanda)"),
                                         (None, "Agastya taught Rama the Aditya Hridayam"),
                                         (None, "Aditya Hridayam from Valmiki's Ramayana")),
+        # Slice 10. No summary said any of this when the slice began; these are the page sentences
+        # as they would reach a summary if someone copied them in.
+        gate.MANGLIK_RULE_TO_BOOK: (("manglik-dosh", "Cancellations (any ONE cancels): Jupiter aspect on Mars per Phaladeepika"),
+                                    (None, "Classical texts (Mansagari, Jataka Parijata, Phaladeepika) list over a dozen cancellation rules"),
+                                    (None, "Cancer/Leo Lagna Yogakaraka exemption (Jataka Parijata, Muhurtha Chintamani)"),
+                                    ("mangal-mars-in-vedic-astrology", "Debilitated Mars cancels Manglik (per Jataka Chandrika)")),
     }
     first = real[0][0]
     for pattern, _why in gate.SUMMARY_FORBIDDEN:
@@ -1047,6 +1120,9 @@ def main() -> int:
         ("manglik-remedies", "Kumbh Vivah is not a classical practice; it is folk tradition"),
         ("manglik-remedies", "Classical remedy for Manglik is Hanuman worship"),
         ("surya-sun-remedies", "Rama and Agastya appear in many regional tales"),
+        # Slice 10: the replacement wording, and a comparison that names the books.
+        ("manglik-dosh", "Cancellations (any ONE cancels): Jupiter aspect on Mars, widely repeated in the tradition; sources differ"),
+        ("pitru-dosh", "less systematic than Mangal Dosh (Brihat Parashara Hora Shastra, Phaladeepika, Jataka Parijata)"),
     ):
         mutated = [(slug, text + ("\n• " + legal if slug == target else "")) for slug, text in real]
         with redirect_stdout(io.StringIO()):

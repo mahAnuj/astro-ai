@@ -296,7 +296,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Mars mean?",
-                "a": "Mars debilitated in Cancer loses much of its drive — the fiery planet in the watery, emotional sign becomes indecisive, easily upset, and less able to hold ground under pressure. Interestingly, a debilitated Mars in a Manglik house actually cancels the Manglik dosha per classical rule (Jataka Chandrika) — the weakened Mars lacks the strength to disturb marriage. Cancellation of debilitation (Neechabhanga) exists when the Cancer lord Moon is well-placed.",
+                "a": "Mars debilitated in Cancer loses much of its drive — the fiery planet in the watery, emotional sign becomes indecisive, easily upset, and less able to hold ground under pressure. Interestingly, a debilitated Mars in a Manglik house actually cancels the Manglik dosha under a commonly repeated rule (not every source gives it) — the weakened Mars lacks the strength to disturb marriage. Cancellation of debilitation (Neechabhanga) exists when the Cancer lord Moon is well-placed.",
             },
             {
                 "q": "What's the best remedy for a difficult Mars?",
@@ -807,7 +807,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Cancer or Leo rising exclude me from Manglik?",
-                "a": "Yes. For Cancer Lagna Mars rules the 5th and 10th houses, and for Leo Lagna Mars rules the 4th and 9th — in both cases Mars becomes a Yogakaraka (owns both a trine and a kendra). Per Jataka Parijata and Muhurtha Chintamani, a Yogakaraka cannot simultaneously be the source of a major dosha. If you have Cancer or Leo rising, you are effectively excluded from Manglik diagnosis regardless of where Mars sits.",
+                "a": "Yes, on the commonly repeated rule. For Cancer Lagna Mars rules the 5th and 10th houses, and for Leo Lagna Mars rules the 4th and 9th — in both cases Mars becomes a Yogakaraka (owns both a trine and a kendra). The reasoning given is that a Yogakaraka cannot simultaneously be the source of a major dosha, so if you have Cancer or Leo rising, you are effectively excluded from Manglik diagnosis regardless of where Mars sits. Sources differ here: the modern textbook we checked does not state this exclusion in these terms.",
             },
             {
                 "q": "Can a Manglik person marry a non-Manglik?",
@@ -815,7 +815,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "How can I check Manglik Dosh in my own chart?",
-                "a": "Generate your free Janma Kundli on Shubh Bhagya — we flag Manglik Dosh along with the specific classical cancellation rules that apply, so you get the full picture, not just a yes/no. The panel colour shifts to green when the dosha is cancelled, so you know at a glance where you stand.",
+                "a": "Generate your free Janma Kundli on Shubh Bhagya — we flag Manglik Dosh along with the specific cancellation rules that apply, so you get the full picture, not just a yes/no. The panel colour shifts to green when the dosha is cancelled, so you know at a glance where you stand.",
             },
             {
                 "q": "What are the most effective Manglik Dosh remedies?",

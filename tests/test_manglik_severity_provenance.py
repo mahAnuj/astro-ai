@@ -17,8 +17,9 @@ Two things are pinned here, and they are deliberately separate:
 
 The page is checked through the real route, scoped to the one paragraph the
 reader sees (anchored on its Swiss Ephemeris sentence, which no rewording of the
-provenance would drop), because the cancellation panel above it legitimately
-prints rule sources that are out of this issue's slice.
+provenance would drop), because the cancellation panel above it prints its own
+rule-source labels, a different claim: they named these same books until #398
+slice 10, and tests/test_rule_citation_surfaces.py now pins that they do not.
 """
 from __future__ import annotations
 
