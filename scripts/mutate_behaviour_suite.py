@@ -3622,6 +3622,24 @@ MUTATIONS = [
      "permissions:\n  contents: read\n",
      "permissions:\n  contents: read\n  issues: write\n",
      "test_pr_gates_has_no_reporter_step_and_cannot_write_issues"),
+    # #573. The dispatch was unconditional, so EVERY cycle attached a second
+    # `PR gates` run to the head SHA -- the one run agent-merge dedups to as
+    # the latest, and the one run its `if:` refuses as a trigger (#352). The
+    # last check to go green became the one check that cannot wake a merge.
+    ("#573: agent-work dispatches pr-gates even when the SHA already has a run",
+     ".github/workflows/agent-work.yml",
+     '\n          if [ "$gates_runs" -gt 0 ]; then\n',
+     "\n          if false; then\n",
+     "test_an_existing_pr_gates_run_is_not_given_a_second_one"),
+
+    # The `set -e` trap that made publish_measurements.sh's retry path
+    # unreachable, in the same shape: `x=$(failing_cmd)` as a standalone
+    # command carries that command's status and ends the script.
+    ("#573: the poll's gh api failure ends the step instead of falling to the #322 rescue",
+     ".github/workflows/agent-work.yml",
+     "              2>/dev/null || echo 0)\n",
+     "              2>/dev/null)\n",
+     "test_an_unreadable_answer_falls_toward_the_rescue"),
     ("#387 notify: the owner's alert parses visitor text as Markdown again",
      "src/astro_ai/notify.py",
      '        "disable_web_page_preview": True,',
@@ -3683,6 +3701,43 @@ MUTATIONS = [
      'description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",\n            effect="cancels",\n            source=_MANGLIK_SRC_REPEATED,',
      'description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",\n            effect="cancels",\n            source="Phaladeepika",',
      "test_no_manglik_rule_names_a_book_the_repo_does_not_hold"),
+
+    # --- #398 slice 11: the Manglik checker stops claiming every classical cancellation rule ---
+    ("#398 s11: the /manglik-check lead claims every classical cancellation rule again",
+     "src/astro_ai/routes/dosha.py",
+     '    "Instant Mangal Dosh diagnosis from your birth details. It checks the "',
+     '    "Instant Mangal Dosh diagnosis from your birth details, with every classical cancellation rule applied. It checks the "',
+     "test_no_page_claims_the_checker_applies_every_cancellation_rule"),
+
+    ("#398 s11: /matching claims the FULL classical evaluation again",
+     "src/astro_ai/templates/matching.html",
+     'Bhagya\'s matching goes beyond "Mars',
+     'Bhagya\'s matching applies the FULL classical evaluation, not just "Mars',
+     "test_no_page_claims_the_checker_applies_every_cancellation_rule"),
+
+    ("#398 s11: /kundli claims all classical cancellation rules applied again",
+     "src/astro_ai/templates/kundli_landing.html",
+     "checked against the cancellations commonly listed",
+     "all classical cancellation rules applied; checked against the cancellations commonly listed",
+     "test_no_page_claims_the_checker_applies_every_cancellation_rule"),
+
+    ("#398 s11: /about says Bhagya applies every cancellation rule again",
+     "src/astro_ai/templates/about.html",
+     "Bhagya applies the ones it implements",
+     "Bhagya applies them all",
+     "test_no_page_claims_the_checker_applies_every_cancellation_rule"),
+
+    ("#398 s11: the result page's guide card promises every classical cancellation rule again",
+     "src/astro_ai/templates/manglik_check_result.html",
+     "Depth: the six qualifying houses, the cancellation rules the tradition repeats",
+     "Depth: all six qualifying houses, every classical cancellation rule, the cancellation rules the tradition repeats",
+     "test_the_result_page_makes_no_such_claim_either"),
+
+    ("#398 s11: the checker lead names a rule the code does not implement instead of the Cancer/Leo one",
+     "src/astro_ai/routes/dosha.py",
+     "a Cancer or Leo ascendant",
+     "a strong Moon aspecting Mars",
+     "test_the_checker_lead_and_meta_name_only_rules_the_code_implements"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
