@@ -282,3 +282,18 @@ cannot argue past. Your label is the judgment layer on top of them, not a substi
 - **Do not close issues.**
 - Append progress to `AGENT_STATUS.md` with `printf '%s  qa #NNN  …\n' "$(date +%H:%M)" >> AGENT_STATUS.md`.
   `>>` only.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**The verdict goes on the issue as well as the PR.** The PR comment is the review; the issue
+comment is what outlives the PR and tells the next cycle what was already verified. Record
+PASS or FAIL **per acceptance criterion**, the exact SHA you examined, and what you could not
+verify and why.
+
+**On the PR:** the full verdict comment first, then record the label with
+`scripts/qa_verdict.sh` — the comment comes first, so the label never points at reasoning
+nobody can read. A verdict that exists only in your output never happened, and a FAIL with no
+machine-readable mark is indistinguishable from never having been reviewed.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.

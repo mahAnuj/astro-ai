@@ -3714,6 +3714,35 @@ MUTATIONS = [
      "a Cancer or Leo ascendant",
      "a strong Moon aspecting Mars",
      "test_the_checker_lead_and_meta_name_only_rules_the_code_implements"),
+
+    # --- #607: every agent definition says where its output goes ---
+    # The rule was stated once in CLAUDE.md, pointed at a gitignored file, and
+    # 12 of 15 definitions ended up with no instruction to write anywhere
+    # durable. These rows re-break each class so the gate cannot rot back out.
+    ("#607 trail: an agent definition loses the output-goes section",
+     ".claude/agents/engineer.md",
+     "  `>>` only \u2014 never `>`, never Write, never Edit on that file.\n\n## Where your output goes",
+     "  `>>` only \u2014 never `>`, never Write, never Edit on that file.\n\n## Notes",
+     "test_every_agent_names_where_its_output_goes"),
+
+    ("#607 trail: an agent names the issue but not the PR",
+     ".claude/agents/qa.md",
+     "**On the PR:** the full verdict comment first, then record the label with",
+     "Also, eventually, somewhere: the full verdict comment first, then the label with",
+     "test_every_agent_names_both_the_issue_and_the_pr"),
+
+    ("#607 trail: an agent is told the heartbeat file is the record",
+     ".claude/agents/architect.md",
+     "`AGENT_STATUS.md` is a **local heartbeat only** \u2014 it is gitignored, so nothing in it",
+     "`AGENT_STATUS.md` is where the trail belongs \u2014 append to it, and nothing in it",
+     "test_no_agent_is_told_the_heartbeat_file_is_the_record"),
+
+    ("#607 trail: CLAUDE.md drops the three-surfaces section",
+     "CLAUDE.md",
+     "nothing else. Every agent must leave a visible trail.\n\n### The three surfaces",
+     "nothing else. Every agent must leave a visible trail.\n\n### Leaving a trail",
+     "test_claude_md_no_longer_presents_the_gitignored_file_as_the_record"),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

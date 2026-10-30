@@ -116,3 +116,15 @@ Numbers in tables. Every table states its window. No narrative paragraphs.
   or `BACKLOG.md`.
 - **A miss is a result.** Report work that did nothing with exactly the prominence of work that
   worked. Suppressing the misses makes the whole loop decorative.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**Every measurement goes on the issue it scores**, with its date window. You already work this
+way; it is stated here because a subagent reads only its own file. A delta with no window is
+not a measurement, and GA4 lags 24-48h while GSC lags 2-3 days — so read trailing windows and
+say which one you read.
+
+**On the PR:** nothing routinely. You score what shipped; you do not review it.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.

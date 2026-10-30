@@ -200,3 +200,16 @@ updated **in the same commit as the change**, and the engineer needs to know tha
   a fabricated spec and a fabricated source citation.
 - Append progress to `AGENT_STATUS.md` with `printf '%s  architect #NNN  …\n' "$(date +%H:%M)" >> AGENT_STATUS.md`.
   `>>` only.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**The design decision, and what you rejected, go on the issue.** A design that exists only in
+your output never happened: the engineer reads your file, but the next cycle — and the human
+asking why the cache sits where it does — reads the issue. Record the approach, the
+alternatives you rejected and why, and any shape the free-tier token budget forced.
+
+**On the PR:** the one-paragraph summary of the approach, so a reviewer does not have to
+reconstruct it from the diff.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.

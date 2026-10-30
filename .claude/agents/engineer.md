@@ -117,3 +117,16 @@ See CLAUDE.md's token-budget section for the full picture.
 - **Do not close issues.**
 - Append progress to `AGENT_STATUS.md` with `printf '%s  engineer #NNN  …\n' "$(date +%H:%M)" >> AGENT_STATUS.md`.
   `>>` only — never `>`, never Write, never Edit on that file.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**What you changed and what it cost go on the issue** — the commit SHA, the files, and the
+**measured** input-token delta before and after. Growth is a defect even when the output is
+correct: #212 grew 18.5% per call with every step under its ceiling. An unmeasured token
+claim is not a claim.
+
+**On the PR:** the body or a comment stating what changed and what you exercised. Your own
+testing is not a verdict — `qa` supplies that — but a reviewer needs to know what you ran.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.

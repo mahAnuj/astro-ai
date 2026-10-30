@@ -137,3 +137,18 @@ See CLAUDE.md's token-budget section for the full picture.
   what is deliberately undone. Closing needs production evidence and is the human's call.
 - **Partial work does not close and does not get reported as complete.** Say what landed and
   what remains.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**The cycle's outcome goes on the issue** — which agents ran, what each decided, what was
+reused rather than redone, and the commit SHA. You are the only role that sees the whole
+cycle; if you do not write it down, nobody can reconstruct it, because subagents share no
+memory and yours ends with the run.
+
+**On the PR:** the body — what changed, what remains, and `closes #N` when every acceptance
+criterion is met. Write `refs #N` **only** when something genuinely remains, because `refs`
+suppresses the close and an understated PR costs a closure (#573 sat open with all four
+criteria met, for exactly this reason).
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.

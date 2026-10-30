@@ -68,3 +68,15 @@ looks right.
 - **Do not touch the rule modules**, even for a one-character fix that is obviously right.
 - Append progress to `AGENT_STATUS.md` with `printf '%s  frontend-engineer #NNN  …\n' "$(date +%H:%M)" >> AGENT_STATUS.md`.
   `>>` only — never `>`, never Write, never Edit on that file.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**What you changed goes on the issue** — the commit SHA, the templates or CSS touched, and
+what you measured in a browser rather than inferred. A rendered measure is the only kind that
+counts here; `ch` units and declared sizes lie.
+
+**On the PR:** what changed, at which breakpoints you checked it, and anything you could not
+verify without a browser.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.

@@ -525,7 +525,25 @@ user's turns, only the prompt they were handed.
 Background agents are opaque from the outside — the user sees "3 agents running" and
 nothing else. Every agent must leave a visible trail.
 
-**Append a line to `AGENT_STATUS.md` (repo root, gitignored) at every meaningful step.**
+### The three surfaces, and what belongs on each (#607)
+
+| surface | holds | lifetime |
+|---|---|---|
+| **the issue** | the **durable decision record** — what was decided, why, what was rejected, the corpus citation, the measured token cost | outlives the PR, the branch and the run |
+| **the PR** | the **review comment and status** — what a reviewer needs at the point of review: what changed, the verdict, what remains, the gate output | as long as the PR |
+| `AGENT_STATUS.md` | the **local heartbeat** only, so a watching human sees progress | this machine, this session |
+
+`AGENT_STATUS.md` is gitignored (`.gitignore:38`). **Nothing written there leaves this
+machine**, so it is not the record and a line in it is not evidence. This file used to
+mandate it in bold and say nothing about the other two, and 12 of the 15 agent
+definitions were left with no instruction to write anywhere durable — which is why five
+issues were audited on 2026-10-30 and found already complete with four of them carrying
+zero comments. Each agent definition now states where its own output goes, because a rule
+stated once centrally is a rule most subagents never see. `scripts/verify_agent_trail.py`
+fails if one stops carrying it.
+
+**Append a line to `AGENT_STATUS.md` (repo root, gitignored) at every meaningful step**,
+as the local heartbeat — in addition to the issue comment, never instead of it.
 One line, newest at the bottom:
 
 ```
