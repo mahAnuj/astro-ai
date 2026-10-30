@@ -351,7 +351,75 @@ jobs:
           # Never fail the cycle over this: the work is pushed and the PR is
           # open, which is the net's whole job. A missed dispatch is a stall the
           # steward can see, not a reason to discard a delivered branch.
-          if gh workflow run pr-gates.yml --repo "$GH_REPO" --ref "$branch"; then
+          #
+          # ONLY WHEN THERE IS NO `PR gates` RUN (#573). Unconditional, this
+          # dispatch stranded the very PRs it was written to rescue, and it did
+          # so on the path where the primary token WORKED -- the normal case,
+          # not an edge one. This step is reached on every cycle, including the
+          # one that printed "already on origin -- the agent pushed it" forty
+          # lines up, where the real `pull_request` runs already exist and the
+          # #322 rescue is not needed.
+          #
+          # The SHA then carries TWO runs named `PR gates`, and both halves of
+          # that hurt:
+          #
+          #   * agent-merge reduces check runs to the LATEST per name -- added
+          #     for #319, where a superseded `cancelled` run blocked a fully
+          #     QA'd fix. The dispatched run starts later, so it becomes the
+          #     voting `gates` entry and the real green one stops counting.
+          #   * when it finishes, it supplies no edge of its own: that job's
+          #     `if:` requires `workflow_run.event == 'pull_request'` and
+          #     excludes `workflow_dispatch` deliberately (#352 -- and the
+          #     paragraph above is why that exclusion is correct). So the LAST
+          #     check to go green is the one check that cannot wake a merge.
+          #
+          # Measured on #556, 2026-10-28: `pull_request` gates green 03:15:35Z,
+          # dispatched gates green 03:19:50Z, and the four merge edges spent
+          # between 03:11:32Z and 03:15:42Z every one read
+          # `gates=in_progress:pending` -- the last of them 7s AFTER the real
+          # green. The PR met every condition and sat 2h36m until a human
+          # drained the queue.
+          #
+          # POLLED, not read once. The real run is created asynchronously: on
+          # #556 it appeared 3s after `gh pr create` returned, so a single
+          # immediate read sees nothing and dispatches anyway, which is the
+          # redundancy this guard exists to prevent. The normal path breaks on
+          # the first iteration and costs nothing; only the #322 case, where no
+          # run is ever coming, pays the full 75s.
+          #
+          # The PR's head, not `git rev-parse HEAD`: if a later push failed (the
+          # warning further up), the remote branch is older, and the older SHA
+          # is where the checks are and what agent-merge reads.
+          sha=$(gh pr view "$branch" --repo "$GH_REPO" --json headRefOid \
+                  --jq .headRefOid 2>/dev/null || git rev-parse HEAD)
+          gates_runs=0
+          for attempt in 1 2 3 4 5 6; do
+            gates_runs=$(gh api \
+              "repos/$GH_REPO/actions/runs?head_sha=$sha&per_page=100" \
+              --jq '[.workflow_runs[] | select(.name == "PR gates")] | length' \
+              2>/dev/null || echo 0)
+            # Anything that is not a number -- an error string, an empty body --
+            # counts as zero, so this can never die on `[: integer expected` and
+            # always falls TOWARD the #322 rescue rather than toward silence. A
+            # redundant dispatch is a stall the sweep still clears; a missing
+            # one is a PR with no checks, which agent-merge refuses forever.
+            case "$gates_runs" in
+              ''|*[!0-9]*) gates_runs=0 ;;
+            esac
+            if [ "$gates_runs" -gt 0 ]; then
+              break
+            fi
+            # if/then, never a trailing `[ test ] && sleep`: on the last
+            # iteration that test is false, the `&&` list returns 1, and as the
+            # loop body's final command it becomes the step's exit status -- a
+            # step that did all its work reporting failure.
+            if [ "$attempt" -lt 6 ]; then
+              sleep 15
+            fi
+          done
+          if [ "$gates_runs" -gt 0 ]; then
+            echo "::notice::$gates_runs 'PR gates' run(s) already on $sha — not dispatching (#573); a second one would become the latest 'gates' check and strand this PR"
+          elif gh workflow run pr-gates.yml --repo "$GH_REPO" --ref "$branch"; then
             echo "::notice::dispatched pr-gates on $branch — the net's PR would otherwise carry no checks (#322)"
           else
             echo "::warning::could not dispatch pr-gates on $branch. The PR is open and carries NO CHECKS, so agent-merge will refuse it on 'no checks reported' and it will not merge. Dispatch it by hand: gh workflow run pr-gates.yml --ref $branch"
