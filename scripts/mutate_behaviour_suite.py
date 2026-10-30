@@ -1177,6 +1177,14 @@ MUTATIONS = [
      'msg = entry["message"] or ""',
      "test_a_script_payload_in_the_message_does_not_survive_as_markup"),
 
+    # The defect as it shipped: the blockquote carried no white-space rule, so
+    # every "\n" collapsed to a space in the owner's mail client.
+    ("#388: the feedback email blockquote loses white-space:pre-wrap",
+     "src/astro_ai/routes/feedback.py",
+     "background:#FAF6EF;white-space:pre-wrap;'>{msg}",
+     "background:#FAF6EF;'>{msg}",
+     "test_a_multi_line_message_keeps_its_line_breaks_in_the_owners_mail"),
+
     # The defect as it shipped: `import logging` inside the email `except`
     # block. A local import anywhere in a function makes the name local for the
     # WHOLE function, whatever the module binds -- so the Telegram handler
@@ -3631,6 +3639,50 @@ MUTATIONS = [
      "system={system or ''}\"",
      "system={system}\"",
      "test_a_missing_field_is_blank_not_the_word_none"),
+
+    # --- #429: the Manglik severity ladder is editorial, and says so ----------
+    ("#429: the checker credits the severity ladder to four unheld books again",
+     "src/astro_ai/templates/manglik_check_result.html",
+     "<strong>Basis:</strong>",
+     "<strong>Classical basis:</strong> Manglik Dosh rules are compiled from Jataka Parijata, Phaladeepika, Jataka Chandrika, and Muhurtha Chintamani (per P.V.R. Narasimha Rao's Jagannath Hora rule-set).",
+     "test_checker_page_names_no_unheld_book_as_the_basis"),
+
+    ("#429: the checker stops saying the ladder is Bhagya's editorial weighting",
+     "src/astro_ai/templates/manglik_check_result.html",
+     "is Bhagya's own editorial weighting, not a classical grading",
+     "is graded as follows",
+     "test_checker_page_discloses_that_the_ladder_is_editorial"),
+
+    ("#429: the LLM severity line presents the ladder as graded doctrine again",
+     "src/astro_ai/chart.py",
+     "an internal weighting of the qualifying \"\n        \"houses",
+     "graded from the qualifying \"\n        \"houses",
+     "test_llm_severity_line_does_not_present_the_ladder_as_classical"),
+
+    ("#429: the LLM severity line hands the model the word 'editorial'",
+     "src/astro_ai/chart.py",
+     "an internal weighting of the qualifying \"",
+     "an editorial weighting of the qualifying \"",
+     "test_llm_severity_line_does_not_invite_the_model_to_say_editorial"),
+
+    ("#429: the 1st-house grade moves (the tier decision is the owner's, not a side effect)",
+     "src/astro_ai/chart.py",
+     "    elif {1, 4, 12} & qualifying:",
+     "    elif {4, 12} & qualifying:",
+     "test_severity_grades_are_unchanged"),
+
+    # --- #398 slice 10: the Manglik cancellations stop naming books nobody here holds ---
+    ("#398 s10: the exalted-Mars cancellation is credited to Jataka Parijata again",
+     "src/astro_ai/chart.py",
+     'description="Mars exalted in Capricorn",\n            effect="cancels",\n            source=_MANGLIK_SRC_SIGN,',
+     'description="Mars exalted in Capricorn",\n            effect="cancels",\n            source="Jataka Parijata",',
+     "test_no_manglik_rule_names_a_book_the_repo_does_not_hold"),
+
+    ("#398 s10: the Jupiter-aspect cancellation is credited to Phaladeepika again",
+     "src/astro_ai/chart.py",
+     'description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",\n            effect="cancels",\n            source=_MANGLIK_SRC_REPEATED,',
+     'description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",\n            effect="cancels",\n            source="Phaladeepika",',
+     "test_no_manglik_rule_names_a_book_the_repo_does_not_hold"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

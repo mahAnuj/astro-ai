@@ -853,13 +853,44 @@ def _jupiter_aspects(jupiter_house: int, target_house: int) -> bool:
     return delta in {4, 6, 8}   # +4 = 5th aspect, +6 = 7th, +8 = 9th
 
 
-def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
-    """All classical cancellation/mitigation rules that apply to this chart's Mars.
+# What result.html prints beside each Manglik cancellation (`{{ rule.source }}`).
+# These used to name Jataka Parijata, Jataka Chandrika, Phaladeepika and Muhurtha
+# Chintamani as the authority for each rule. None of those books is held
+# (vedic_reference.md §1.6.2: "citation defect, #216 class"), so a reader was told
+# a rule was checkable in a book nobody here can open, and the owner's 2026-10-17
+# rule is that no book or author is named in user-facing output (#398 slice 10).
+# What the corpus does hold on Kuja-dosha antidotes is one list (grahas.md §12.4:
+# both partners Manglik; per-house sign exceptions; Mars-Jupiter or Mars-Moon
+# CONJUNCTION), with the remark that "much importance need not be given to Kuja
+# Dosham", and a second author who says the compensation rules "were not given by
+# maharshis". So each label says only what can be traced:
+#   - the sign rules (own, exalted, debilitated, Libra, Jupiter's and Venus's signs):
+#     repeated in the tradition; the modern list we hold gives DIFFERENT sign
+#     exceptions, house by house (grahas.md §12.4 lines 3651-3671);
+#   - Mars conjunct Jupiter: also in that list (lines 3672-3674);
+#   - Jupiter's aspect, the 7th house / 7th lord, Venus's aspect and the Cancer/Leo
+#     Lagna exclusion: repeated in the tradition and NOT in that list (§12.4: it
+#     "gives Mars-Jupiter and Mars-Moon conjunction (not Jupiter's aspect)" and "does
+#     not give the Cancer/Leo lagna yogakaraka exclusion in these terms").
+# Do not name a book here and do not upgrade "repeated" to "classical": the gate
+# scripts/verify_rule_citations.py fails an unregistered book, and its
+# _HONEST_DISCLOSURES holds these exact strings.
+_MANGLIK_SRC_SIGN = ("widely repeated in the tradition; the modern textbook we checked "
+                     "lists different sign exceptions, house by house")
+_MANGLIK_SRC_CONJ = ("widely repeated in the tradition; the modern textbook we checked "
+                     "also lists Mars-Jupiter conjunction")
+_MANGLIK_SRC_REPEATED = ("widely repeated in the tradition; sources differ, and the "
+                         "modern textbook we checked does not list it")
 
-    Compiled from Jataka Parijata, Phaladeepika, Jataka Chandrika, and Muhurtha
-    Chintamani via P.V.R. Narasimha Rao's Jagannath Hora rule-set. See
-    knowledge/vedic_reference.md §1.3 for the full citation list — keep that
-    file and this function in sync when adding new rules.
+
+def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
+    """All cancellation/mitigation rules the tradition lists that apply to this chart's Mars.
+
+    The rule-set is a compilation (knowledge/vedic_reference.md §1.3 records
+    which books it was compiled from, via P.V.R. Narasimha Rao's Jagannath Hora
+    rule-set) and none of those books is held here, so the `source=` labels below
+    deliberately name none of them (#398 slice 10; see the label constants above
+    this function). Keep §1.3 and this function in sync when adding new rules.
     """
     mars = next(p for p in chart.planets if p.name == "Mars")
     jupiter = next(p for p in chart.planets if p.name == "Jupiter")
@@ -878,30 +909,31 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
             slug="mars_own_sign",
             description=f"Mars in own sign ({mars_sign})",
             effect="cancels",
-            source="Jataka Parijata",
+            source=_MANGLIK_SRC_SIGN,
         ))
     if mars_sign == "Capricorn":
         rules.append(ManglikRule(
             slug="mars_exalted",
             description="Mars exalted in Capricorn",
             effect="cancels",
-            source="Jataka Parijata",
+            source=_MANGLIK_SRC_SIGN,
         ))
     if mars_sign == "Cancer":
         rules.append(ManglikRule(
             slug="mars_debilitated",
             description="Mars debilitated in Cancer (lacks strength to disturb)",
             effect="cancels",
-            source="Jataka Chandrika",
+            source=_MANGLIK_SRC_SIGN,
         ))
-    # Movable-sign (Chara rashi) — per Jataka Parijata, Mars in Libra also
-    # cancels (Aries/Cancer/Capricorn already covered by own/exalted/debilitated).
+    # Movable-sign (Chara rashi) — Mars in Libra also cancels on the lists that
+    # count every movable sign (Aries/Cancer/Capricorn already covered by
+    # own/exalted/debilitated).
     if mars_sign == "Libra":
         rules.append(ManglikRule(
             slug="mars_libra_movable",
             description="Mars in Libra (movable sign — Chara rashi cancellation)",
             effect="cancels",
-            source="Jataka Parijata",
+            source=_MANGLIK_SRC_SIGN,
         ))
     # Friendly-sign mitigations — Mars in Jupiter's signs (Sagittarius, Pisces)
     # or Venus's signs (Taurus, Libra; Libra already handled above)
@@ -910,14 +942,14 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
             slug="mars_in_jupiters_sign",
             description=f"Mars in Jupiter's sign ({mars_sign}) — dispositor benefic mitigates",
             effect="mitigates",
-            source="Phaladeepika",
+            source=_MANGLIK_SRC_SIGN,
         ))
     if mars_sign == "Taurus":
         rules.append(ManglikRule(
             slug="mars_in_venus_sign",
             description="Mars in Taurus (Venus's sign) — dispositor karaka softens marriage impact",
             effect="mitigates",
-            source="Phaladeepika",
+            source=_MANGLIK_SRC_SIGN,
         ))
 
     # Ascendant-specific yogakaraka exclusions (Cancer/Leo lagna)
@@ -926,14 +958,14 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
             slug="cancer_lagna_yogakaraka",
             description="Cancer Lagna — Mars is Yogakaraka (rules 5th + 10th); excluded from dosha",
             effect="cancels",
-            source="Jataka Parijata / Muhurtha Chintamani",
+            source=_MANGLIK_SRC_REPEATED,
         ))
     if lagna_sign == "Leo":
         rules.append(ManglikRule(
             slug="leo_lagna_yogakaraka",
             description="Leo Lagna — Mars is Yogakaraka (rules 4th + 9th); excluded from dosha",
             effect="cancels",
-            source="Jataka Parijata / Muhurtha Chintamani",
+            source=_MANGLIK_SRC_REPEATED,
         ))
 
     # Benefic conjunction / aspect — Jupiter is the primary classical cancellation.
@@ -944,21 +976,21 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
             slug="mars_jupiter_conjunct",
             description="Mars conjunct Jupiter (Jupiter neutralises Martian disturbance)",
             effect="cancels",
-            source="Jataka Parijata",
+            source=_MANGLIK_SRC_CONJ,
         ))
     elif _jupiter_aspects(jupiter.house, mars.house):
         rules.append(ManglikRule(
             slug="jupiter_aspects_mars",
             description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",
             effect="cancels",
-            source="Phaladeepika",
+            source=_MANGLIK_SRC_REPEATED,
         ))
     elif _jupiter_aspects(jupiter.house, 7):
         rules.append(ManglikRule(
             slug="jupiter_aspects_7h",
             description="Jupiter aspects the 7th house (marital karaka support)",
             effect="cancels",
-            source="Phaladeepika",
+            source=_MANGLIK_SRC_REPEATED,
         ))
     else:
         # 7th lord aspect check — find who rules the 7th and see if Jupiter aspects them.
@@ -974,7 +1006,7 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
                 slug="jupiter_aspects_7l",
                 description=f"Jupiter aspects the 7th lord ({seventh_lord_name})",
                 effect="cancels",
-                source="Phaladeepika",
+                source=_MANGLIK_SRC_REPEATED,
             ))
 
     # Venus with Mars — conjunction OR 7th aspect (opposition) both help.
@@ -991,7 +1023,7 @@ def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
             slug="venus_aspects_mars",
             description="Venus aspects Mars from 7th (opposition — relationship karaka moderates)",
             effect="cancels",
-            source="Phaladeepika",
+            source=_MANGLIK_SRC_REPEATED,
         ))
 
     # Combustion — Mars within 6° of Sun on absolute sidereal longitude
@@ -1096,6 +1128,16 @@ def compute_manglik_details(chart: Chart) -> ManglikDetails:
         )
 
     # Severity grading: 7th/8th = most serious; 1st/4th/12th = moderate; 2nd alone = low.
+    #
+    # THIS LADDER IS BHAGYA'S OWN EDITORIAL WEIGHTING, NOT CLASSICAL DOCTRINE (#429).
+    # No book held in data/ states it. Only "7th/8th are the most serious" has
+    # any support (Vasudev's per-house prose; vedic_reference.md §1.1/§1.6) — and
+    # he grades no tiers, reading the 8th as worse than the 7th. "1st = moderate"
+    # is counter-indicated (his list is 2/4/7/8/12; the 1st is "some include"),
+    # and "2nd alone is lowest" is stated nowhere. The grades are kept as shipped
+    # pending the owner's tier decision on #429; every surface that shows them
+    # must say they are editorial (manglik_check_result.html, the LLM line in
+    # format_manglik_for_prompt). Do not cite a classical text for the tiers.
     if {7, 8} & qualifying:
         severity = "high"
     elif {1, 4, 12} & qualifying:
@@ -2264,11 +2306,14 @@ def format_manglik_for_prompt(details: ManglikDetails) -> str:
         "do not restate a different one.",
         # Severity reaches the LLM ONLY here. Without it an 8th-house 'high'
         # dosha and a 2nd-house 'low' one read in the same register.
-        f"Severity: {details.severity} — graded from the qualifying houses "
-        "(7th/8th highest, 1st/4th/12th moderate, 2nd alone lowest), then reduced "
-        "one grade (never below low) when only the Venus axis qualifies. Match the "
-        "weight of your language to this grade: do not treat a low severity as an "
-        "emergency, nor a high one as trivial.",
+        # The tiers are Bhagya's own weighting, not a classical grading (#429), so
+        # the line says "internal" and bars attributing them to scripture — but not
+        # "editorial", which the model would echo into the reading as a disclaimer.
+        f"Severity: {details.severity} — an internal weighting of the qualifying "
+        "houses (7th/8th highest, 1st/4th/12th moderate, 2nd alone lowest), reduced "
+        "one grade (never below low) when only the Venus axis qualifies; not a "
+        "classical grade. Match the weight of your language to this grade: do not "
+        "treat a low severity as an emergency, nor a high one as trivial.",
     ]
 
     cancels = [r for r in details.cancellations if r.effect == "cancels"]
