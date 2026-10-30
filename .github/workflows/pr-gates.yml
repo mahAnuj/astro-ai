@@ -195,6 +195,36 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      # #384: ARCHITECTURE.md reached `main` carrying a live conflict block at
+      # lines 40-44 and every gate passed over it, because none of them looked.
+      # `verify_architecture_counts.py` reads that exact file and matches each row
+      # by label, taking the first hit, so the duplicated row behind the marker
+      # was invisible to it.
+      #
+      # NO `if:` HERE, DELIBERATELY. The scope step above reads a docs-only diff
+      # as code=false and skips the behaviour suite and the whole verify_* sweep
+      # -- and a docs-only diff is exactly the shape that shipped this defect. A
+      # conflict marker in Markdown is invisible to every other check here, so
+      # this one must not be skippable.
+      #
+      # It therefore runs BEFORE setup-uv and `uv sync`, and the gate is stdlib
+      # only so that it can. It reads the INDEX -- paths from `git ls-files -s`
+      # and content from `git cat-file --batch`, both of which the checkout
+      # already provides -- not the working tree, which during a live merge is
+      # supposed to hold markers. 0.16s over 620 files, measured 2026-10-28.
+      #
+      # That sentence was HALF TRUE when it was written: the first version took
+      # its paths from the index and read each file from the working tree. In
+      # CI the two coincide, which is why it passed review and why the gap
+      # could only ever have been found by reading the code rather than the
+      # runs. It is true now.
+      #
+      # On a code PR the `scripts/verify_*.py` sweep below picks it up again and
+      # it runs twice. That is 0.17s, and the duplication is the point: the sweep
+      # is the normal path, this step is the docs-only safety net.
+      - name: Merge-conflict markers in tracked files
+        run: python3 scripts/verify_conflict_markers.py
+
       # enable-cache MUST be an explicit false. The action defaults to `auto`,
       # which turns caching on for hosted runners, so merely deleting
       # `enable-cache: true` left it on — and its POST step kept exiting 2 while
