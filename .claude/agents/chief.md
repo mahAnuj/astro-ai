@@ -449,7 +449,7 @@ A ruling, posted as a comment on the issue, containing:
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**Every escalation and every ruling is an issue comment** — already your rule, restated here
+**On the issue:** **Every escalation and every ruling** — already your rule, restated here
 because it is the one that makes a fabricated escalation visible: a ruling with no matching
 dissent above it reads as what it is. A ruling that exists only in your output never happened.
 

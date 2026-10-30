@@ -101,7 +101,7 @@ you produce**, because it is the part nobody else will find.
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**Every finding goes on the issue, with its citation.** A finding that exists only in your
+**On the issue:** **Every finding goes on the issue, with its citation.** A finding that exists only in your
 output never happened. State the verdict, the file and line in `numerology.py` or its tables,
 and the `knowledge/numerology.md` section that settles it — or `[UNSOURCED]`. Name the school
 (Chaldean, Vedic, Western) every time, because the traditions contradict each other and a

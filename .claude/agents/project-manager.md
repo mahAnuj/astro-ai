@@ -139,7 +139,7 @@ cannot tell how much of it is fresh.
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**The ranking and its reasoning go on the issue you picked** — why this one, what you probed
+**On the issue:** **The ranking and its reasoning go on the issue you picked** — why this one, what you probed
 to confirm it is still live, and which candidates you passed over. Do not rank from issue
 titles; titles lie, and the comment is what proves you did not.
 

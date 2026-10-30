@@ -53,10 +53,14 @@ WHAT THIS DOES NOT CHECK, PLAINLY
     agent can carry the rule and ignore it; only the absence of a comment on a
     worked issue shows that, and nothing here can see it.
   - Whether what an agent writes is any good, or true.
-  - The three roles whose section is tailored differently (`analyst`, `chief`,
-    `steward` write no routine PR comment) still have to name the PR surface to
-    say so — which is deliberate: "nothing routinely" is an answer, silence is
-    not.
+  - Three roles write no routine PR comment — `analyst`, `product-manager` and
+    `project-manager` — and they still have to name the PR surface to say
+    "nothing routinely", which is deliberate: that is an answer, silence is
+    not. (`chief` and `steward` DO specify one. An earlier draft of this
+    sentence named the wrong three; QA on PR #609 caught it.)
+  - Both markers are LITERAL strings, not meanings. Rewording `**On the PR:**`
+    to `**On the PR**:` fails. That is the trade for machine-checkability, and
+    this docstring says so rather than claiming the checks are about substance.
 
     uv run python scripts/verify_agent_trail.py
 """
@@ -101,9 +105,13 @@ def main() -> int:
 
         block = s[s.index(SECTION):]
         problems = []
-        # the issue and the PR do different jobs; both must be named
-        if "issue" not in block.lower():
-            problems.append("does not name the issue")
+        # The issue and the PR do different jobs, and BOTH need a literal
+        # marker. `"issue" in block` was near-vacuous: the block starts at the
+        # heading, whose suffix reads "— the issue is durable, the PR is the
+        # review", so the word was always present and an inverted instruction
+        # under an intact heading passed. Found by QA on PR #609.
+        if "**On the issue:**" not in block:
+            problems.append("does not name the issue surface (needs `**On the issue:**`)")
         if "**On the PR:**" not in block:
             problems.append("does not name the PR surface (say 'nothing routinely' if so)")
         if LOCAL_ONLY not in block:
@@ -117,7 +125,11 @@ def main() -> int:
 
     # ---- CLAUDE.md ----
     print()
-    c = CLAUDE.read_text()
+    try:
+        c = CLAUDE.read_text()
+    except OSError as exc:
+        print(f"COULD NOT RUN (exit 2) — CLAUDE.md is unreadable ({exc})")
+        return 2
     if "### The three surfaces" in c:
         print("  ok    CLAUDE.md names the three surfaces")
     else:

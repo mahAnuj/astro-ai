@@ -52,10 +52,13 @@ def test_every_agent_names_both_the_issue_and_the_pr():
     for p in AGENTS:
         s = p.read_text()
         block = s[s.index("## Where your output goes"):]
-        if "issue" not in block.lower() or "**On the PR:**" not in block:
+        if "**On the issue:**" not in block or "**On the PR:**" not in block:
             bad.append(p.stem)
     assert bad == [], (
-        f"these name only one surface: {bad}. The issue is the durable decision record and "
+        f"these name only one surface: {bad}. Both markers are LITERAL: `**On the issue:**` "
+        "and `**On the PR:**`. The word 'issue' alone is not enough — the section heading "
+        "contains it, which made this check near-vacuous until QA on #609 found it. "
+        "The issue is the durable decision record and "
         "the PR is the review; 'nothing routinely' is an acceptable answer for the PR, "
         "silence is not."
     )

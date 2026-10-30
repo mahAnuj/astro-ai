@@ -285,7 +285,7 @@ cannot argue past. Your label is the judgment layer on top of them, not a substi
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**The verdict goes on the issue as well as the PR.** The PR comment is the review; the issue
+**On the issue:** **The verdict goes on the issue as well as the PR.** The PR comment is the review; the issue
 comment is what outlives the PR and tells the next cycle what was already verified. Record
 PASS or FAIL **per acceptance criterion**, the exact SHA you examined, and what you could not
 verify and why.

@@ -119,7 +119,7 @@ Numbers in tables. Every table states its window. No narrative paragraphs.
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**Every measurement goes on the issue it scores**, with its date window. You already work this
+**On the issue:** **Every measurement goes on the issue it scores**, with its date window. You already work this
 way; it is stated here because a subagent reads only its own file. A delta with no window is
 not a measurement, and GA4 lags 24-48h while GSC lags 2-3 days — so read trailing windows and
 say which one you read.

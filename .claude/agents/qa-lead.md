@@ -74,7 +74,7 @@ glosses a gap is worse than a FAIL because it ends the scrutiny.
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**The routing decision and the verdict you accepted go on the issue** — which verifier ran,
+**On the issue:** **The routing decision and the verdict you accepted** — which verifier ran,
 what it covered, and what remains unverified. An unverified area that nobody names reads
 exactly like a verified one.
 

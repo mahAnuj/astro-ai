@@ -140,7 +140,7 @@ See CLAUDE.md's token-budget section for the full picture.
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**The cycle's outcome goes on the issue** — which agents ran, what each decided, what was
+**On the issue:** **The cycle's outcome** — which agents ran, what each decided, what was
 reused rather than redone, and the commit SHA. You are the only role that sees the whole
 cycle; if you do not write it down, nobody can reconstruct it, because subagents share no
 memory and yours ends with the run.

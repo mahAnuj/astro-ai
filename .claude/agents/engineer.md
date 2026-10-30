@@ -120,7 +120,7 @@ See CLAUDE.md's token-budget section for the full picture.
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**What you changed and what it cost go on the issue** — the commit SHA, the files, and the
+**On the issue:** **What you changed and what it cost** — the commit SHA, the files, and the
 **measured** input-token delta before and after. Growth is a defect even when the output is
 correct: #212 grew 18.5% per call with every step under its ceiling. An unmeasured token
 claim is not a claim.

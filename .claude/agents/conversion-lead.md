@@ -65,7 +65,7 @@ One issue per finding, each carrying:
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**The funnel finding and the decision it implies go on the issue**, with the measurement and
+**On the issue:** **The funnel finding and the decision it implies**, with the measurement and
 its date window. A conversion claim with no window is an opinion wearing a number.
 
 **On the PR:** what the change is expected to move, and the metric that will judge it.

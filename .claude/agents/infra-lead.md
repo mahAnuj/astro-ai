@@ -77,7 +77,7 @@ There is no bigger quota here.
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**The finding and the remedy go on the issue**, with the measurement and the date. An uptime
+**On the issue:** **The finding and the remedy**, with the measurement and the date. An uptime
 or cost claim with no number attached is not actionable by the next cycle.
 
 **On the PR:** what changed in the deploy path, and what you verified against the live

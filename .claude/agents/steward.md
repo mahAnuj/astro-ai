@@ -273,7 +273,7 @@ run that did nothing — do not become an instance of it.
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**Every stall you find and every dispatch you make is an issue comment** — already your rule.
+**On the issue:** **Every stall you find and every dispatch you make** — already your rule.
 Say which kind you dispatched for, every time: a comment that does not name its kind cannot be
 told apart from one that does by the next run, which is you.
 

@@ -71,7 +71,7 @@ looks right.
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**What you changed goes on the issue** — the commit SHA, the templates or CSS touched, and
+**On the issue:** **What you changed** — the commit SHA, the templates or CSS touched, and
 what you measured in a browser rather than inferred. A rendered measure is the only kind that
 counts here; `ch` units and declared sizes lie.
 

@@ -203,7 +203,7 @@ updated **in the same commit as the change**, and the engineer needs to know tha
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**The design decision, and what you rejected, go on the issue.** A design that exists only in
+**On the issue:** **The design decision, and what you rejected, go on the issue.** A design that exists only in
 your output never happened: the engineer reads your file, but the next cycle — and the human
 asking why the cache sits where it does — reads the issue. Record the approach, the
 alternatives you rejected and why, and any shape the free-tier token budget forced.

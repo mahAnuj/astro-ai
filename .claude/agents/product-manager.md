@@ -90,7 +90,7 @@ See CLAUDE.md's token-budget section for the full picture.
 
 ## Where your output goes — the issue is durable, the PR is the review (#607)
 
-**The spec and its Evidence Block go on the issue** — the user story, the acceptance criteria,
+**On the issue:** **The spec and its Evidence Block** — the user story, the acceptance criteria,
 what is out of scope, the traffic thesis and the metric that will judge it, the measured
 free-tier token cost, and the corpus source or `[UNSOURCED]`. A spec that exists only in your
 output cannot be ranked, built or scored.
