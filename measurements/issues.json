@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-30T00:37:48Z",
+  "generated_at": "2026-10-30T08:03:52Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 139,
-  "with_ask": 59,
+  "open": 138,
+  "with_ask": 58,
   "by_area": {
-    "UNCLASSIFIED": 52,
+    "UNCLASSIFIED": 51,
     "INFRA": 16,
     "UI": 12,
     "REDESIGN": 10,
@@ -35,7 +35,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 42,
+    "bug": 41,
     "untyped": 37,
     "enhancement": 27,
     "correctness": 12,
@@ -44,7 +44,7 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 94,
+    "unset": 93,
     "medium": 22,
     "high": 22,
     "low": 1
@@ -1004,7 +1004,7 @@
         "qa:independent"
       ],
       "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-29T17:28:22Z",
+      "updated": "2026-10-30T03:02:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1070,21 +1070,6 @@
       ],
       "created": "2026-10-16T08:43:47Z",
       "updated": "2026-10-27T15:31:31Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 388,
-      "title": "Multi-line feedback arrives as one run-on paragraph in the owner's email",
-      "ask": "Add white-space:pre-wrap; to the blockquote's existing inline style in src/astro_ai/routes/feedback.py.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-10-16T08:43:45Z",
-      "updated": "2026-10-16T08:43:45Z",
       "blocked": false,
       "needs_evidence": false
     },
