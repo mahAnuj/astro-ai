@@ -1,16 +1,17 @@
 {
-  "generated_at": "2026-10-29T23:48:28Z",
+  "generated_at": "2026-10-30T00:37:48Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 134,
+  "open": 139,
   "with_ask": 59,
   "by_area": {
     "UNCLASSIFIED": 52,
     "INFRA": 16,
+    "UI": 12,
     "REDESIGN": 10,
-    "UI": 8,
     "NUMEROLOGY": 7,
     "FEATURE": 7,
+    "BUG": 3,
     "SEO": 3,
     "SECURITY": 3,
     "MEASURE": 2,
@@ -20,7 +21,6 @@
     "RASHIFAL": 2,
     "DESIGN": 2,
     "CHORE": 2,
-    "BUG": 2,
     "PRIVACY": 1,
     "REPO": 1,
     "CHART": 1,
@@ -35,21 +35,106 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 41,
+    "bug": 42,
     "untyped": 37,
     "enhancement": 27,
     "correctness": 12,
+    "design": 8,
     "chore": 7,
-    "design": 7,
-    "ui": 3
+    "ui": 6
   },
   "by_priority": {
-    "unset": 90,
+    "unset": 94,
     "medium": 22,
-    "high": 22
+    "high": 22,
+    "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 597,
+      "title": "[UI] /kundli on mobile: the first form field sits 138px under the tab bar — / keeps the same form wholly in the fold",
+      "ask": "",
+      "area": "UI",
+      "type": "design",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "design-proposal",
+        "page:kundli",
+        "effort:s",
+        "risk:low"
+      ],
+      "created": "2026-10-29T23:50:53Z",
+      "updated": "2026-10-29T23:51:02Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 596,
+      "title": "[UI] Six form controls (subscribe modal, feedback widget, /learn search) have a placeholder and no accessible name",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-10-29T23:50:33Z",
+      "updated": "2026-10-29T23:50:39Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 595,
+      "title": "[UI] /numerology result: 38 text nodes under 12px, down to 9px on the Lo Shu grid — not on #366's checklist",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-10-29T23:50:32Z",
+      "updated": "2026-10-29T23:50:32Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 594,
+      "title": "[UI] Top /learn landing article uses the raw path \"/dasha\" as link text",
+      "ask": "",
+      "area": "UI",
+      "type": "ui",
+      "priority": "unset",
+      "labels": [
+        "ui",
+        "skill:ui-fixer"
+      ],
+      "created": "2026-10-29T23:50:30Z",
+      "updated": "2026-10-29T23:50:30Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 593,
+      "title": "[BUG] /panchang shows yesterday's date, weekday and tithi from 00:00 to 05:30 IST while the home strip shows today's",
+      "ask": "",
+      "area": "BUG",
+      "type": "bug",
+      "priority": "low",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:low"
+      ],
+      "created": "2026-10-29T23:50:13Z",
+      "updated": "2026-10-29T23:50:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 584,
       "title": "numerology: 0-100 compatibility and Bhagya scores rest on invented weights, and the compound tiers contradict Cheiro on 28, 49 and 13",
@@ -1064,7 +1149,7 @@
         "page:matching"
       ],
       "created": "2026-10-15T22:59:04Z",
-      "updated": "2026-10-15T22:59:04Z",
+      "updated": "2026-10-29T23:50:54Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1080,7 +1165,7 @@
         "skill:ui-fixer"
       ],
       "created": "2026-10-15T22:59:03Z",
-      "updated": "2026-10-15T22:59:03Z",
+      "updated": "2026-10-29T23:50:58Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1097,7 +1182,7 @@
         "page:kundli"
       ],
       "created": "2026-10-15T22:59:01Z",
-      "updated": "2026-10-15T23:00:36Z",
+      "updated": "2026-10-29T23:50:56Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1113,7 +1198,7 @@
         "skill:ui-fixer"
       ],
       "created": "2026-10-15T22:59:00Z",
-      "updated": "2026-10-15T22:59:00Z",
+      "updated": "2026-10-29T23:50:55Z",
       "blocked": false,
       "needs_evidence": false
     },
