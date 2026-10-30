@@ -76,6 +76,28 @@ GRACE = timedelta(hours=2)
 RUN_PAD = timedelta(minutes=15)
 
 BOT = "github-actions[bot]"
+
+# GitHub's own "closes #N" auto-close fires when a PR with a closing keyword is
+# merged, and it is attributed to the MERGER (events API: `closed`, actor=merger,
+# commit_id null), 1-2 seconds after `merged_at`. 5 of the 7 shortfalls the report
+# flagged on 2026-10-27 (PRs #481, #474, #471, #410, #454) were exactly that, merged
+# by the repo owner: the loop was never going to close those, and the report called
+# it a miss (#495 part 3). 60s is generous against the 1-2s measured.
+KEYWORD_CLOSE_WINDOW = timedelta(seconds=60)
+
+# The branch namespaces an agent PR can live in. NOT just `issue/` -- #495 part 2.
+# `agent-cycle` names a branch `partial/<n>-<slug>` whenever acceptance criteria
+# remain that the loop cannot do, and `fix/` likewise carries an issue number, so
+# the report was blind to #480, #482, #487 and #492 and told agent-work it
+# "produced no merged PR" for runs that had produced one.
+#
+# The issue proposed SPLITTING this ("agent-merge ignores partial/ by design"),
+# and that premise went stale on 2026-10-25: agent-merge.yml now decides by the PR's
+# AUTHOR (AGENT_AUTHORS) and merges partial/ and fix/ PRs like any other (its own
+# issue-number regex is `^(issue|partial|fix)/[0-9]+`). So every consumer here --
+# merge, close, work -- spans all three. Do not re-split without re-reading
+# agent-merge.yml. claimed_issues() is the one deliberate exception: see there.
+AGENT_BRANCH_NAMESPACES = ("issue/", "partial/", "fix/")
 FAILED = {"failure", "timed_out", "cancelled", "action_required", "startup_failure"}
 
 # Runs per WEEK a schedule must produce. Hard-coded rather than parsed from the
@@ -411,10 +433,19 @@ def claimed_issues(pr: dict) -> dict:
     text = f"{pr.get('title') or ''}\n{pr.get('body') or ''}"
     closing = {int(n) for n in _CLOSING.findall(text)}
     refs = {int(n) for n in _REFS.findall(text)}
+    # `issue/` ONLY, deliberately not AGENT_BRANCH_NAMESPACES: close-on-evidence's
+    # branch-name fallback matches `^issue/[0-9]+` alone, so that a `partial/<n>`
+    # PR does NOT close its issue (agent-cycle.md). Widening this would make the
+    # report demand the very close the convention exists to prevent.
     m = re.match(r"issue/(\d+)", pr["head"]["ref"])
     branch = {int(m.group(1))} if m else set()
     refs_lines = [ln.strip() for ln in text.splitlines() if _REFS.search(ln)]
+    # `keyword` is the subset claimed by a closing KEYWORD rather than the branch
+    # fallback: only those are closed by GitHub itself at merge time (see
+    # KEYWORD_CLOSE_WINDOW), whereas a branch-name claim is closed by the loop or
+    # by nobody.
     return {"expected": sorted(closing | (branch - refs)),
+            "keyword": sorted(closing),
             "declined": sorted((branch & refs) - closing),
             "refs_lines": refs_lines}
 
@@ -560,18 +591,34 @@ def classify_last_mile(prs, verify_runs, window: Window) -> Finding:
     return Finding(loop, OK, f"{loop}: all {total} agent merge(s) were followed by a verification run{note}.", [])
 
 
+def _keyword_autoclosed(pr: dict, claim: dict, n: int, closed: dict | None) -> bool:
+    """True when GitHub, not the loop, closed issue n: a closing keyword in the PR,
+    the `closed` event attributed to the human who merged it, inside
+    KEYWORD_CLOSE_WINDOW after the merge. Every clause is load-bearing -- a human
+    close later, by someone else, or on a branch-name claim is still a miss."""
+    if closed is None or n not in claim["keyword"] or not pr.get("merged_at"):
+        return False
+    actor = closed["actor"]["login"]
+    if actor == BOT or actor != (pr.get("merged_by") or {}).get("login"):
+        return False
+    return timedelta(0) <= ts(closed["created_at"]) - ts(pr["merged_at"]) <= KEYWORD_CLOSE_WINDOW
+
+
 def classify_close(prs, verify_runs, close_runs, issue_events, window: Window,
                    logs_for: Callable[[], tuple[list[str], int]] = lambda: ([], 0)) -> Finding:
     """close-on-evidence: a green-verified merged PR claiming issue N should leave a
     `closed` event on N whose actor is the bot. Anything else is effect zero."""
     loop = "close-on-evidence"
     eligible, _, _ = eligible_prs(prs, verify_runs, window)
-    owed, declined_ok, shortfalls = 0, [], []
+    owed, declined_ok, shortfalls, by_keyword = 0, [], [], []
     for pr in eligible:
         claim = claimed_issues(pr)
         for n in claim["expected"] + claim["declined"]:
-            closer = next((e["actor"]["login"] for e in reversed(issue_events.get(n, []))
-                           if e["event"] == "closed"), None)
+            closed = next((e for e in reversed(issue_events.get(n, [])) if e["event"] == "closed"), None)
+            closer = closed["actor"]["login"] if closed else None
+            if _keyword_autoclosed(pr, claim, n, closed):
+                by_keyword.append(f"#{n} (PR #{pr['number']} merged by {closer})")
+                continue
             if n in claim["declined"]:
                 if closer is None:
                     declined_ok.append(f"#{n} (PR #{pr['number']}: {' / '.join(claim['refs_lines'])})")
@@ -588,7 +635,10 @@ def classify_close(prs, verify_runs, close_runs, issue_events, window: Window,
         return Finding(loop, IDLE, f"{loop}: no merged agent PR had a green verification to act on.", [])
     if not shortfalls:
         note = f"; {len(declined_ok)} deliberately declined via Refs" if declined_ok else ""
-        return Finding(loop, OK, f"{loop}: {owed} issue(s) owed a close, all closed by the loop{note}.", declined_ok)
+        if by_keyword:
+            note += f"; {len(by_keyword)} closed by GitHub's keyword on a human merge, not owed to the loop"
+        return Finding(loop, OK, f"{loop}: {owed} issue(s) owed a close, all closed by the loop{note}.",
+                       declined_ok + by_keyword)
     texts, unreadable = logs_for()
     done_runs = _done(close_runs)
     evidence, bits = [], []
@@ -752,7 +802,7 @@ def agent_prs(src: Source, window: Window) -> list[dict]:
     First 100 by recent update only: a week of agent work is a handful."""
     listing = src.get("pulls?state=all&sort=updated&direction=desc&per_page=100")
     return [src.get(f"pulls/{p['number']}") for p in listing
-            if p["head"]["ref"].startswith("issue/") and ts(p["updated_at"]) >= window.since]
+            if p["head"]["ref"].startswith(AGENT_BRANCH_NAMESPACES) and ts(p["updated_at"]) >= window.since]
 
 
 def with_checks(src: Source, prs: list[dict]) -> list[dict]:
@@ -796,7 +846,7 @@ def receipts_for(src: Source, runs: list[dict], window: Window) -> list[tuple[in
 def check_merge(src, window):
     runs = list_runs(src, "agent-merge", window)
     gates = [g for g in list_runs(src, "pr-gates", window)
-             if g.get("event") == "pull_request" and g["head_branch"].startswith("issue/")]
+             if g.get("event") == "pull_request" and g["head_branch"].startswith(AGENT_BRANCH_NAMESPACES)]
     prs = with_checks(src, agent_prs(src, window))
     labels = qa_pass_events(src, prs)
     verify = list_runs(src, "verify-production", window)

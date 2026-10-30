@@ -620,6 +620,68 @@ MUTATIONS = [
      '        return ts(t) <= self.until - GRACE',
      '        return ts(t) < self.until - GRACE',
      "test_the_grace_boundary_is_inclusive_one_second_either_side"),
+    # #495: loop-outcomes false positives -- partial/ and fix/ PRs, and GitHub's own
+    # keyword auto-close on a human merge.
+    ('#495: the agent-PR namespaces shrink back to issue/ (every partial/ and fix/ PR is invisible again)',
+     "scripts/report_loop_outcomes.py",
+     'AGENT_BRANCH_NAMESPACES = ("issue/", "partial/", "fix/")',
+     'AGENT_BRANCH_NAMESPACES = ("issue/",)',
+     'test_agent_prs_spans_issue_partial_and_fix_and_nothing_else'),
+
+    ('#495: agent-work is not told about a merged partial/ PR (it reports a run that produced one as empty)',
+     "scripts/report_loop_outcomes.py",
+     'AGENT_BRANCH_NAMESPACES = ("issue/", "partial/", "fix/")',
+     'AGENT_BRANCH_NAMESPACES = ("issue/", "fix/")',
+     'test_check_work_counts_a_merged_partial_pr_as_what_the_run_produced'),
+
+    ('#495: the pr-gates filter in check_merge reverts to issue/ (a partial/ gate run owes agent-merge nothing)',
+     "scripts/report_loop_outcomes.py",
+     'g["head_branch"].startswith(AGENT_BRANCH_NAMESPACES)]',
+     'g["head_branch"].startswith("issue/")]',
+     'test_check_merge_expects_agent_merge_to_answer_a_partial_prs_gate_run'),
+
+    ('#495: claimed_issues widens its branch fallback to partial/ (the report demands a close the convention prevents)',
+     "scripts/report_loop_outcomes.py",
+     '    m = re.match(r"issue/(\\d+)", pr["head"]["ref"])',
+     '    m = re.match(r"(?:issue|partial|fix)/(\\d+)", pr["head"]["ref"])',
+     'test_claimed_issues_branch_namespaces_and_the_keyword_subset'),
+
+    ("#495: a human close long after the merge counts as GitHub's keyword auto-close (no upper bound)",
+     "scripts/report_loop_outcomes.py",
+     '    return timedelta(0) <= ts(closed["created_at"]) - ts(pr["merged_at"]) <= KEYWORD_CLOSE_WINDOW',
+     '    return timedelta(0) <= ts(closed["created_at"]) - ts(pr["merged_at"])',
+     'test_the_keyword_auto_close_window_is_sixty_seconds_inclusive'),
+
+    ("#495: a close BEFORE the merge counts as GitHub's keyword auto-close (no lower bound)",
+     "scripts/report_loop_outcomes.py",
+     '    return timedelta(0) <= ts(closed["created_at"]) - ts(pr["merged_at"]) <= KEYWORD_CLOSE_WINDOW',
+     '    return ts(closed["created_at"]) - ts(pr["merged_at"]) <= KEYWORD_CLOSE_WINDOW',
+     'test_the_keyword_auto_close_window_is_sixty_seconds_inclusive'),
+
+    ('#495: a close by someone other than the merger counts as the keyword auto-close',
+     "scripts/report_loop_outcomes.py",
+     '    if actor == BOT or actor != (pr.get("merged_by") or {}).get("login"):',
+     '    if actor == BOT:',
+     'test_a_close_by_someone_other_than_the_merger_is_still_a_miss'),
+
+    ('#495: a branch-name claim (no keyword) is excused as a keyword auto-close',
+     "scripts/report_loop_outcomes.py",
+     '    if closed is None or n not in claim["keyword"] or not pr.get("merged_at"):',
+     '    if closed is None or n not in claim["expected"] or not pr.get("merged_at"):',
+     'test_a_branch_name_claim_closed_by_the_merger_is_still_a_miss'),
+
+    ('#495: an issue still open after a human merge is excused (no closed event required)',
+     "scripts/report_loop_outcomes.py",
+     '    if closed is None or n not in claim["keyword"] or not pr.get("merged_at"):',
+     '    if n not in claim["keyword"] or not pr.get("merged_at"):',
+     'test_a_keyword_issue_still_open_after_a_human_merge_is_still_a_miss'),
+
+    ("#495: the loop's own close is reclassified as GitHub's keyword close (the BOT exclusion gone)",
+     "scripts/report_loop_outcomes.py",
+     '    if actor == BOT or actor != (pr.get("merged_by") or {}).get("login"):',
+     '    if actor != (pr.get("merged_by") or {}).get("login"):',
+     'test_a_bot_merger_does_not_make_a_bot_close_an_auto_close'),
+
     # #305: the /kundli identity tiles ellipsis-clipped 10 of 12 rashi names at 375px.
     ("#305: `truncate` back on the snapshot tile value line (Lagna clipped to an ellipsis)",
      "src/astro_ai/templates/result.html",
@@ -1114,6 +1176,14 @@ MUTATIONS = [
      'msg = _html.escape(entry["message"] or "")',
      'msg = entry["message"] or ""',
      "test_a_script_payload_in_the_message_does_not_survive_as_markup"),
+
+    # The defect as it shipped: the blockquote carried no white-space rule, so
+    # every "\n" collapsed to a space in the owner's mail client.
+    ("#388: the feedback email blockquote loses white-space:pre-wrap",
+     "src/astro_ai/routes/feedback.py",
+     "background:#FAF6EF;white-space:pre-wrap;'>{msg}",
+     "background:#FAF6EF;'>{msg}",
+     "test_a_multi_line_message_keeps_its_line_breaks_in_the_owners_mail"),
 
     # The defect as it shipped: `import logging` inside the email `except`
     # block. A local import anywhere in a function makes the name local for the
@@ -2688,6 +2758,29 @@ MUTATIONS = [
      "elif False:",
      "test_a_method_removed_from_a_test_class_fails"),
 
+    # ---- #446 part 3 residual: parametrize case counts -----------------------
+    # QA on PR #448 deleted one case from a literal list and got PASS, exit 0.
+    ("#446: a deleted parametrize case is invisible again (names only)",
+     "scripts/verify_test_floor.py",
+     "elif before[name] is not None and head[name] < before[name]:",
+     "elif False:",
+     "test_a_deleted_parametrize_case_fails_and_names_the_function"),
+    ("#446: stacked parametrize decorators are summed, not multiplied",
+     "scripts/verify_test_floor.py",
+     "else total * n",
+     "else total + n",
+     "test_stacked_parametrize_is_a_product"),
+    ("#446: a literal list that became computed is read as still fine",
+     "scripts/verify_test_floor.py",
+     "if before[name] is not None and head[name] is None:",
+     "if False:",
+     "test_computed_argvalues_do_not_crash_and_a_literal_turned_computed_fails"),
+    ("#446: a parametrize list held in a module-level name is not followed",
+     "scripts/verify_test_floor.py",
+     "if isinstance(node, ast.Name) and node.id in bound:",
+     "if False:",
+     "test_a_name_bound_once_to_a_literal_is_followed"),
+
     # --- #419/#452 QA round 4: F-1, F-2, F-3, F-5, F-6, BUG-5, BUG-6 --------
     # F-2 is the headline: the stacked bars had NO test and NO row, so all three
     # of these survived the whole suite and the 266-row sweep -- and the second
@@ -3012,10 +3105,14 @@ MUTATIONS = [
      "                pace_deadline=llm_providers.pace_deadline(),\n            ),\n        )\n        sections = [",
      "test_the_welcome_email_is_interactive_and_passes_no_deadline"),
 
+    # Anchor re-pointed for #475 Phase 3: `pacer` sat immediately before
+    # `pace_deadline` and both were positional, so deleting the pacer shifted
+    # this argument. Dropping the deadline entirely is the same defect the old
+    # row caught -- the job silently falls back to the interactive wait budget.
     ("#475: generate_rashifal does not hand the deadline to its pool workers",
      "src/astro_ai/llm.py",
-     "                pacer, pace_deadline,\n",
-     "                pacer,\n",
+     "                pace_deadline,\n",
+     "                None,\n",
      "test_generate_rashifal_hands_each_pool_call_its_own_wait_from_the_deadline"),
 
     ("#475: _generate_rashifal_single drops the deadline before providers.chat",
@@ -3627,6 +3724,67 @@ MUTATIONS = [
      "            if a not in original and _is_dir(a):\n",
      "            if False:\n",
      "test_a_glob_cannot_turn_a_diff_of_files_into_a_diff_of_directories"),
+    ("#387 notify: the owner's alert parses visitor text as Markdown again",
+     "src/astro_ai/notify.py",
+     '        "disable_web_page_preview": True,',
+     '        "parse_mode": "Markdown",\n        "disable_web_page_preview": True,',
+     "test_the_telegram_payload_asks_for_no_parse_mode"),
+
+    ("#387 notify: the 'no name' placeholder is Markdown italics again",
+     "src/astro_ai/notify.py",
+     "f\"👤 {name or '(no name)'}\",",
+     "f\"👤 {name or '_(no name)_'}\",",
+     "test_no_formatter_emits_markup_or_escapes"),
+
+    ("#387 notify: an unguarded inlined field prints the word None",
+     "src/astro_ai/notify.py",
+     "system={system or ''}\"",
+     "system={system}\"",
+     "test_a_missing_field_is_blank_not_the_word_none"),
+
+    # --- #429: the Manglik severity ladder is editorial, and says so ----------
+    ("#429: the checker credits the severity ladder to four unheld books again",
+     "src/astro_ai/templates/manglik_check_result.html",
+     "<strong>Basis:</strong>",
+     "<strong>Classical basis:</strong> Manglik Dosh rules are compiled from Jataka Parijata, Phaladeepika, Jataka Chandrika, and Muhurtha Chintamani (per P.V.R. Narasimha Rao's Jagannath Hora rule-set).",
+     "test_checker_page_names_no_unheld_book_as_the_basis"),
+
+    ("#429: the checker stops saying the ladder is Bhagya's editorial weighting",
+     "src/astro_ai/templates/manglik_check_result.html",
+     "is Bhagya's own editorial weighting, not a classical grading",
+     "is graded as follows",
+     "test_checker_page_discloses_that_the_ladder_is_editorial"),
+
+    ("#429: the LLM severity line presents the ladder as graded doctrine again",
+     "src/astro_ai/chart.py",
+     "an internal weighting of the qualifying \"\n        \"houses",
+     "graded from the qualifying \"\n        \"houses",
+     "test_llm_severity_line_does_not_present_the_ladder_as_classical"),
+
+    ("#429: the LLM severity line hands the model the word 'editorial'",
+     "src/astro_ai/chart.py",
+     "an internal weighting of the qualifying \"",
+     "an editorial weighting of the qualifying \"",
+     "test_llm_severity_line_does_not_invite_the_model_to_say_editorial"),
+
+    ("#429: the 1st-house grade moves (the tier decision is the owner's, not a side effect)",
+     "src/astro_ai/chart.py",
+     "    elif {1, 4, 12} & qualifying:",
+     "    elif {4, 12} & qualifying:",
+     "test_severity_grades_are_unchanged"),
+
+    # --- #398 slice 10: the Manglik cancellations stop naming books nobody here holds ---
+    ("#398 s10: the exalted-Mars cancellation is credited to Jataka Parijata again",
+     "src/astro_ai/chart.py",
+     'description="Mars exalted in Capricorn",\n            effect="cancels",\n            source=_MANGLIK_SRC_SIGN,',
+     'description="Mars exalted in Capricorn",\n            effect="cancels",\n            source="Jataka Parijata",',
+     "test_no_manglik_rule_names_a_book_the_repo_does_not_hold"),
+
+    ("#398 s10: the Jupiter-aspect cancellation is credited to Phaladeepika again",
+     "src/astro_ai/chart.py",
+     'description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",\n            effect="cancels",\n            source=_MANGLIK_SRC_REPEATED,',
+     'description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",\n            effect="cancels",\n            source="Phaladeepika",',
+     "test_no_manglik_rule_names_a_book_the_repo_does_not_hold"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

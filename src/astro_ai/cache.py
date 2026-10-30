@@ -144,7 +144,20 @@ def fingerprint_chart(birth_date: str, birth_time: str, birth_place: str) -> str
 # the commit that needed the bump did not carry it, and the commit that
 # carried it did not need it. If gochar were ever reverted independently, the
 # stale-reading window would come back with no note explaining why.
-PROMPT_LOGIC_VERSION = "v3"
+# v4 (#430): `chart.format_flags_for_prompt` stopped telling the model the
+# Sade Sati phases are "arohini"/"avarohini" (no book we hold names them) and
+# now says only "rising phase" / "setting phase". Message-assembly logic again,
+# invisible to the file hash, and natal readings are written with
+# `ttl_days=None` and a durable GCS tier — so a reading generated for a rising
+# or setting chart under the old line would have kept saying "Arohini" beside a
+# panel that no longer does. The line reaches natal, outlook, ask and daily
+# prompts (not matching). The token is global, so the bump also moves every
+# other fingerprint-keyed entry (matching, rashifal, today, dasha). Cost: those
+# entries regenerate lazily, on their next view (nothing regenerates eagerly);
+# a natal reading is ~7.8k tokens, a rashifal page ~3.3k, so a deploy landing
+# after the nightly rashifal-generate job can spend up to a day's visit-driven
+# live generation on pages the job had already published under v3.
+PROMPT_LOGIC_VERSION = "v4"
 
 
 def fingerprint_prompt(prompt_path: Path) -> str:

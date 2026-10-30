@@ -53,7 +53,7 @@ RULES FOR ANYONE EDITING THIS FILE
   normal state of a fresh clone. It reports that PER CITATION, loudly, and does
   not silently count as verified. Say which books were present whenever you
   report on this gate (CLAUDE.md).
-- The self-test runs on every invocation: it re-breaks #216 and #218 six ways
+- The self-test runs on every invocation: it re-breaks #216 and #218 nine ways
   — including on the page's own provenance line — and #209 nineteen more
   (count, yoga removed, seven moolatrikona spellings plus the plain claim,
   seven banned phrases, the missing section, a positional-slug yoga), and
@@ -92,27 +92,21 @@ _FORBIDDEN: tuple[str, ...] = (
 # Book titles that may legitimately appear in a citation but are NOT in
 # `fetch_corpus.py`'s registry, with the reason each is still here.
 #
-# These are all in `_manglik_cancellations()`, which predates this gate and is
-# outside #218's scope: it was audited for the ONE label that was not a
-# citation at all (`mars_combust`, now disclosed as unsourced). The rest name
-# real classical compendia we do not hold and cannot check — the same defect
-# class as the BPHS labels, one step less severe because knowledge/
-# vedic_reference.md §1.3 at least records where the rule set came from
-# (Rao's Jagannath Hora rule-set) rather than asserting a first-hand reading.
+# EMPTY since #398 slice 10. This ledger held four entries, all in
+# `_manglik_cancellations()`: Jataka Parijata, Jataka Chandrika, Phaladeepika and
+# Muhurtha Chintamani, each disclosed as "text not held; open (#216)". Disclosing
+# them was never the fix: result.html printed the name beside the rule, which
+# told the reader the rule could be checked in a book nobody here can open, and
+# the owner's 2026-10-17 rule is that no book or author is named in user-facing
+# output. The Manglik labels now say what can be traced (see the `_MANGLIK_SRC_*`
+# constants in chart.py) and are listed in `_HONEST_DISCLOSURES` below.
 #
-# This ledger is a disclosure, not an approval. Shrinking it is work; growing
-# it needs a reason written here.
-_UNHELD_ATTRIBUTIONS: dict[str, str] = {
-    "Jataka Parijata":
-        "Manglik cancellations, via Rao's Jagannath Hora rule-set — "
-        "knowledge/vedic_reference.md §1.3. Text not held; open (#216).",
-    "Jataka Chandrika":
-        "Manglik cancellation (Mars debilitated). Text not held; open (#216).",
-    "Phaladeepika":
-        "Manglik cancellations and mitigations. Text not held; open (#216).",
-    "Muhurtha Chintamani":
-        "Cancer/Leo lagna yogakaraka exclusion. Text not held; open (#216).",
-}
+# The mechanism stays: the ledger is still exact in both directions, so any book
+# that reappears in a `source=` label fails here with "names no book in
+# fetch_corpus.py's registry and is in no ledger" - and adding an entry back is
+# how you justify an attribution nobody can check. If you are adding one to make
+# a new citation green, you are the regression.
+_UNHELD_ATTRIBUTIONS: dict[str, str] = {}
 
 # Labels that name no book at all. Each is either an honest disclosure of a
 # gap, or a vague formula inherited from before this gate — and the two are
@@ -120,6 +114,16 @@ _UNHELD_ATTRIBUTIONS: dict[str, str] = {
 # disclosure is the fix.
 _HONEST_DISCLOSURES: frozenset[str] = frozenset({
     "unsourced: absent from the classical Kuja-dosha antidote lists we hold",
+    # The three Manglik labels that replaced four book names (#398 slice 10). Each
+    # says only what grahas.md 12.4 supports: repeated in the tradition, and how the
+    # one modern antidote list we hold differs. They must match chart.py's
+    # _MANGLIK_SRC_* constants exactly (the gate reads them from the AST).
+    "widely repeated in the tradition; the modern textbook we checked lists different "
+    "sign exceptions, house by house",
+    "widely repeated in the tradition; the modern textbook we checked also lists "
+    "Mars-Jupiter conjunction",
+    "widely repeated in the tradition; sources differ, and the modern textbook we "
+    "checked does not list it",
 })
 
 _VAGUE_ATTRIBUTIONS: dict[str, str] = {
@@ -619,6 +623,17 @@ _MUTATIONS: tuple[tuple[str, str, str, str], ...] = (
     ("#218's unsourced disclosure quietly deleted",
      'source="unsourced: absent from the classical Kuja-dosha antidote lists we hold",',
      'source="Classical matching practice",', ""),
+    # #398 slice 10: the Manglik labels named four books nobody here holds, and the
+    # ledger that disclosed them is now empty - so re-attributing any rule must fail.
+    ("#398 slice 10: a Manglik rule is re-attributed to Jataka Parijata",
+     'source=_MANGLIK_SRC_CONJ,',
+     'source="Jataka Parijata",', ""),
+    ("#398 slice 10: a Manglik sign rule is re-attributed to Phaladeepika",
+     'source=_MANGLIK_SRC_SIGN,',
+     'source="Phaladeepika",', ""),
+    ("#398 slice 10: the Cancer/Leo exclusion is re-attributed to two books",
+     'source=_MANGLIK_SRC_REPEATED,',
+     'source="Jataka Parijata / Muhurtha Chintamani",', ""),
     ("a held book cited to a section that is not in it",
      'source=f"{_RAO} §11.2.3",',
      'source=f"{_RAO} §11.2.9",', "Vedic Astrology: An Integrated Approach"),

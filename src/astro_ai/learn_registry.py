@@ -296,7 +296,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "What does debilitated Mars mean?",
-                "a": "Mars debilitated in Cancer loses much of its drive — the fiery planet in the watery, emotional sign becomes indecisive, easily upset, and less able to hold ground under pressure. Interestingly, a debilitated Mars in a Manglik house actually cancels the Manglik dosha per classical rule (Jataka Chandrika) — the weakened Mars lacks the strength to disturb marriage. Cancellation of debilitation (Neechabhanga) exists when the Cancer lord Moon is well-placed.",
+                "a": "Mars debilitated in Cancer loses much of its drive — the fiery planet in the watery, emotional sign becomes indecisive, easily upset, and less able to hold ground under pressure. Interestingly, a debilitated Mars in a Manglik house actually cancels the Manglik dosha under a commonly repeated rule (not every source gives it) — the weakened Mars lacks the strength to disturb marriage. Cancellation of debilitation (Neechabhanga) exists when the Cancer lord Moon is well-placed.",
             },
             {
                 "q": "What's the best remedy for a difficult Mars?",
@@ -807,7 +807,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Cancer or Leo rising exclude me from Manglik?",
-                "a": "Yes. For Cancer Lagna Mars rules the 5th and 10th houses, and for Leo Lagna Mars rules the 4th and 9th — in both cases Mars becomes a Yogakaraka (owns both a trine and a kendra). Per Jataka Parijata and Muhurtha Chintamani, a Yogakaraka cannot simultaneously be the source of a major dosha. If you have Cancer or Leo rising, you are effectively excluded from Manglik diagnosis regardless of where Mars sits.",
+                "a": "Yes, on the commonly repeated rule. For Cancer Lagna Mars rules the 5th and 10th houses, and for Leo Lagna Mars rules the 4th and 9th — in both cases Mars becomes a Yogakaraka (owns both a trine and a kendra). The reasoning given is that a Yogakaraka cannot simultaneously be the source of a major dosha, so if you have Cancer or Leo rising, you are effectively excluded from Manglik diagnosis regardless of where Mars sits. Sources differ here: the modern textbook we checked does not state this exclusion in these terms.",
             },
             {
                 "q": "Can a Manglik person marry a non-Manglik?",
@@ -815,7 +815,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "How can I check Manglik Dosh in my own chart?",
-                "a": "Generate your free Janma Kundli on Shubh Bhagya — we flag Manglik Dosh along with the specific classical cancellation rules that apply, so you get the full picture, not just a yes/no. The panel colour shifts to green when the dosha is cancelled, so you know at a glance where you stand.",
+                "a": "Generate your free Janma Kundli on Shubh Bhagya — we flag Manglik Dosh along with the specific cancellation rules that apply, so you get the full picture, not just a yes/no. The panel colour shifts to green when the dosha is cancelled, so you know at a glance where you stand.",
             },
             {
                 "q": "What are the most effective Manglik Dosh remedies?",
@@ -823,7 +823,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Does Manglik Dosh weaken with age?",
-                "a": "You will often see online that Manglik Dosh 'weakens after age 28' or 'dissolves after 36'. This is modern folk tradition, not classical scripture — there is no such verse in Phaladeepika, Brihat Parashara Hora Shastra, Mansagari, or Jataka Parijata. It may resonate as folk wisdom (people do soften with age) but it should not be cited as classical authority.",
+                "a": "You will often see online that Manglik Dosh 'weakens after age 28' or 'dissolves after 36'. This is modern folk tradition, not classical scripture — we have found no classical source for it. It may resonate as folk wisdom (people do soften with age) but it should not be cited as classical authority.",
             },
         ),
         llm_summary=(
@@ -833,7 +833,7 @@ ARTICLES: tuple[Article, ...] = (
             "• Cancellations (any ONE cancels): Jupiter aspect on Mars, mutual-Manglik partnership where both partners are Manglik of comparable severity, Mars in own/exalted sign, Cancer/Leo Ascendant exemption, Mars in same house from both charts\n"
             "• 'Comparable severity' is the classical requirement; the texts set no band, so Bhagya's own convention (state it as ours, not scripture) is that equal or adjacent grades on low/moderate/high are comparable and a low does NOT cancel a high\n"
             "• Popular Manglik readings routinely ignore cancellations — always check\n"
-            "• 'Weakens after age 28' is folk tradition, NOT classical scripture (not in BPHS, Phaladeepika, Mansagari, Jataka Parijata)\n"
+            "• 'Weakens after age 28' is folk tradition, NOT classical scripture (we found no classical source for it)\n"
             "• Effective status is per-chart: PRESENT / MITIGATED / CANCELLED"
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
@@ -1358,7 +1358,7 @@ ARTICLES: tuple[Article, ...] = (
             },
             {
                 "q": "Is it OK to change jobs during Sade Sati?",
-                "a": "Yes, with timing. Classical Vedic tradition cautions against major voluntary moves in the first year of Madhya (peak) — decisions taken in that window often look wrong within twelve months. The safer sub-windows are late Madhya (the final 12–15 months of the peak phase, when Saturn has done most of its subtracting) and Uttara (the rebuild phase). If a change is forced on you by circumstances rather than chosen, treat it as data — take it thoughtfully, do not panic-search, and be willing to accept short contract work while a longer offer matures. Saturn punishes haste more than he punishes patience.",
+                "a": "Yes, with timing. The usual advice is to avoid major voluntary moves in the first year of Madhya (peak) — decisions taken in that window often look wrong within twelve months. The safer sub-windows are late Madhya (the final 12–15 months of the peak phase, when Saturn has done most of its subtracting) and Uttara (the rebuild phase). If a change is forced on you by circumstances rather than chosen, treat it as data — take it thoughtfully, do not panic-search, and be willing to accept short contract work while a longer offer matures. Saturn punishes haste more than he punishes patience.",
             },
             {
                 "q": "Can I get a promotion during Sade Sati?",
@@ -2839,7 +2839,7 @@ ARTICLES: tuple[Article, ...] = (
         faqs=(
             {"q": "What is the classical good deed for the Sun?", "a": "Visit a temple, donate money to a temple, or help with the running of one. Shiva and Rama are the Sun's deities, so a Shiva or Rama temple is a natural choice. It is done as a devotional act for the Sun's sake, not as a bargain for an outcome."},
             {"q": "Can I wear Ruby (Manik) without astrologer consultation?", "a": "No. Ruby is safer than hessonite or blue sapphire but STILL requires chart analysis. Never wear ruby when Sun is a functional malefic for your Ascendant (Aquarius, Pisces), combust, or in a dusthana. The practices above are safe universal remedies that don't need chart analysis."},
-            {"q": "What is the Aditya Hridaya Stotra?", "a": "A Sanskrit hymn from the Ramayana (Yuddha Kanda) where Agastya Rishi taught it to Rama on the battlefield before slaying Ravana. Sun's most powerful shastric hymn. Recite once daily at sunrise (~8 minutes), three times on Sundays."},
+            {"q": "What is the Aditya Hridaya Stotra?", "a": "A Sanskrit hymn in praise of the Sun, and a long-standing Sun devotion; devotional tradition links it to Rama's final battle with Ravana. Ideally learn the pronunciation from someone who knows it. Recite once daily at sunrise (~8 minutes), three times on Sundays."},
             {"q": "How do Sun remedies help with father-relationship?", "a": "Sun is father-karaka. Classical practice: if father is living, serve consciously (touch feet, seek blessings, listen); if deceased, perform annual shraddha. Sun rewards those who honor the father archetype — this often produces healing in the actual relationship over months."},
         ),
         llm_summary=(
@@ -2909,13 +2909,13 @@ ARTICLES: tuple[Article, ...] = (
         category="Doshas", hero_image="/static/learn/manglik-remedies/hero.svg", read_time="9 min", last_updated="2026-07",
         related=("manglik-dosh", "mangal-mars-in-vedic-astrology", "mars-remedies", "kundali-matching-ashtakoot-guna-milan"),
         faqs=(
-            {"q": "Is Kumbh Vivah remedy legitimate?", "a": "Classical tradition prescribes it for severe uncancelled Manglik before marriage — marriage to a clay pot (kumbh) or peepal tree that 'consumes' the first Manglik-marriage karma. Cost ₹2K-10K from legitimate priests. Not universally accepted by modern astrologers; some question efficacy. Often more valuable as psychological closure than ritual mechanic."},
+            {"q": "Is Kumbh Vivah remedy legitimate?", "a": "It is a folk-remedial practice, not a classical one (we have found no classical source for it), offered for severe uncancelled Manglik before marriage — marriage to a clay pot (kumbh) or peepal tree that 'consumes' the first Manglik-marriage karma. Cost ₹2K-10K from legitimate priests. Not universally accepted by modern astrologers; some question efficacy. Often more valuable as psychological closure than ritual mechanic."},
             {"q": "Do I need to check Manglik cancellation before doing remedies?", "a": "YES — this is the most important first step. Use our /manglik-check tool which explicitly applies classical cancellation rules (Cancer/Leo Lagna Yogakaraka, Jupiter aspect, own-sign Mars, etc.). Most 'Manglik' charts are actually cancelled and need no remedy at all."},
             {"q": "Can red coral (Moonga) cancel Manglik?", "a": "Red Coral is Mars's classical gemstone but can backfire when Mars is a functional malefic for your Ascendant. NEVER wear coral without proper chart analysis. Hanuman worship + Tuesday practices are safe universal remedies that don't need chart verification."},
             {"q": "What if I'm Manglik and my partner is not?", "a": "Classical tradition recommends Manglik-Manglik matching, with one condition that most retellings drop: the two doshas must be of comparable severity, because it is the symmetry between the charts that cancels them. Tradition asks for comparability but never says how wide a gap is too wide, so we set that band ourselves and call it ours rather than scripture — equal or adjacent grades on low/moderate/high count as comparable, and a low does not cancel a high. If mismatch: soften with Hanuman practices (or Narasimha, Kartikeya or Rudra, Mars's other deities) + Kumbh Vivah before marriage. Also: many 'mismatch' cases are actually cancelled Manglik in one or both charts — verify with our /manglik-check tool first."},
         ),
         llm_summary=(
-            'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 counted from ALL THREE of Lagna, Moon and Venus (any one frame qualifying is enough)\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching a partner of comparable Manglik severity)\n• 7 remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) the other Mars deities (Narasimha, Kartikeya, Rudra; Vishnu devotions are devotion, not a Mars remedy), (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (toor daal/arhar — Mars classical grain, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases (folk-remedial practice, not attested in BPHS), (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels ONLY when both partners are Manglik of comparable severity — Bhagya convention, stated as ours not scripture: equal or adjacent grades on low/moderate/high are comparable, a low does not cancel a high), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
+            'Keypoints:\n• Manglik = Mars in 1/2/4/7/8/12 counted from ALL THREE of Lagna, Moon and Venus (any one frame qualifying is enough)\n• CHECK CANCELLATION FIRST — most Manglik is cancelled by classical rules (Cancer/Leo Lagna, Jupiter aspect, own-sign Mars, matching a partner of comparable Manglik severity)\n• 7 remedies: (1) Hanuman worship (Chalisa daily, Ashtak Tuesdays), (2) the other Mars deities (Narasimha, Kartikeya, Rudra; Vishnu devotions are devotion, not a Mars remedy), (3) Mars Beej mantra "Om Kraam Kreem Kraum Sah Bhaumaya Namah" 108x, (4) Tuesday charity (toor daal/arhar — Mars classical grain, jaggery, red items), (5) Kumbh Vivah before marriage for severe cases (folk-remedial practice; no classical source found), (6) Ashtakoot Guna Milan matching (Manglik-Manglik cancels ONLY when both partners are Manglik of comparable severity — Bhagya convention, stated as ours not scripture: equal or adjacent grades on low/moderate/high are comparable, a low does not cancel a high), (7) behavioural (exercise, avoid red meat/alcohol during intensive remedy)\n• Day: Tuesday\n• Red Coral needs chart check; unsafe as blanket remedy\n• STRONGEST REMEDY: finding a compatible partner via proper matching'
         ),
         qa_status="qa-passed", qa_date="2026-07-30",
     ),
