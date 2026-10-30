@@ -256,10 +256,11 @@ footer a{color:var(--text-dim)}
     The strictest rule in the repo is that <strong>no agent decides what lands.</strong> An agent
     pushes a branch and opens a PR; the authority to merge lives in
     <code>agent-merge.yml</code>, gated on evidence rather than on anyone's judgment that the work
-    is finished. Three conditions actually bind — author, gates green, <code>qa-pass</code> — plus a
-    diff touching no trust-boundary path. A fifth, diff size, is <strong>in place but switched
-    off</strong>: <code>MAX_LINES: 1000000</code> in <code>agent-merge.yml</code> admits any
-    plausible diff, so it holds nothing today.
+    is finished. Four conditions bind — author, <code>pr-gates</code> green on the head SHA,
+    <code>qa-pass</code>, and a diff touching no trust-boundary path (<code>agent-merge.yml</code>
+    steps <code>own</code>, <code>gates</code>, <code>qa</code>, <code>boundary</code>). A fifth,
+    diff size (step <code>size</code>), is <strong>in place but switched off</strong>:
+    <code>MAX_LINES: 1000000</code> admits any plausible diff, so it holds nothing today.
   </p>
   <p>
     This matters because the loop has twice produced an agent that wrote its own permission slip.
@@ -320,7 +321,7 @@ const BANDS = [
       <p><strong>One issue per run.</strong> A single cycle is 10–15 agent invocations, and QA historically fails its first submission most of the time, so two or three QA rounds per issue is the budget.</p>
       <p class="sec">It passes on</p><p>A prompt (<code>/agent-cycle</code>) and nothing else. The cycle rediscovers all its own state from GitHub, because the previous run's memory is gone.</p>` },
     { id:"weekly", kind:"workflow", name:"six weekly loops", cap:"discover · infra · research · design · sync · prioritise. Staggered across the week.",
-      body:`<p>Each wakes once a week on its own day, so they never contend for the same quota window. The crons are <strong>UTC</strong>; the times below are IST, which is why four of them fall a day later than the day named in the workflow comments:</p>
+      body:`<p>Each wakes once a week, staggered so they never contend for the same quota window — in IST two of them share Friday (design just after midnight, sync late evening), which the UTC crons keep a day apart. The crons are <strong>UTC</strong>; the times below are IST, which is why four of them fall a day later than the day named in the workflow comments:</p>
       <ul><li><code>agent-prioritise</code> — Sun 22:30, ahead of the week</li>
       <li><code>agent-discover</code> — Tue 01:30 (<code>0 20 * * 1</code>), product-manager leads</li>
       <li><code>agent-infra</code> — Wed 00:30 (<code>0 19 * * 2</code>), <code>infra-lead</code></li>
@@ -399,7 +400,8 @@ const BANDS = [
       <ul><li>An escalation must present <strong>both positions verbatim</strong>. A summary is not an escalation.</li>
       <li>It chooses between the options presented or returns <code>insufficient-evidence</code>. It may not invent a third.</li>
       <li>It <strong>cannot grant push, merge or deploy authority</strong> to anything — that authority lives in the gates, so there is nothing to hand out.</li>
-      <li>Three escalations per cycle, maximum. A fourth stops the cycle and files <code>needs-human-review</code>.</li></ul>
+      <li>Three escalations per cycle, maximum. A fourth stops the cycle and files <code>needs-human-review</code>.</li>
+      <li><strong>One carve-out (Shape C, owner 2026-10-20):</strong> it may clear <code>needs-human-review</code> itself — adding <code>chief-cleared</code> — but only when <em>every</em> trust-boundary path the PR touches is <code>prompts/</code> or <code>knowledge/</code>. Never on workflows, <code>email_sender.py</code>, <code>notify.py</code>, <code>storage.py</code> or <code>events.py</code>.</li></ul>
       <p>Every escalation and ruling is an issue comment, so a <em>fabricated</em> escalation is visible as a ruling with no matching dissent above it.</p>` },
   ]},
 
@@ -438,13 +440,13 @@ const BANDS = [
       body:`<p>Green CI is a weak signal here by the repo's own admission: coverage is narrow and most of the app has none. So a green gate buys a QA round rather than a merge.</p>
       <p>It dispatches a cycle through <code>scripts/dispatch_cycle.sh</code>, and the QA step inside <code>/agent-cycle</code> records <code>qa:in-cycle</code> — "the weaker provenance on purpose", because a cycle reviewing its own fix shares the premises that produced it. So this workflow does <strong>not</strong> produce <code>qa:independent</code>; that comes from a round dispatched outside the cycle. It exits cleanly when there is no open PR, so it is safe to fire on any green run.</p>
       <p class="sec">Why it does not dispatch the same round twice</p>
-      <p>Both triggers can fire repeatedly for one commit, and a cycle costs roughly fifty minutes of Actions budget, so the guard is <strong>idempotence per head SHA</strong>, written where the next run can read it: before dispatching, it greps the PR's comments for <code>qa-on-green: dispatched at &lt;sha&gt;</code> and stops if its own earlier run already left one for that commit. It also re-reads the head and <strong>declines</strong> if the branch moved since the SHA the gates went green on — a verdict belongs to exact code. This is the same pattern as the steward's one-dispatch-per-run cap: a loop with no memory has to leave its own state in a comment, because there is nowhere else for it to live.</p>` },
+      <p>Its one <code>workflow_run</code> trigger can fire repeatedly for one commit, and a cycle costs roughly fifty minutes of Actions budget, so the guard is <strong>idempotence per head SHA</strong>, written where the next run can read it: before dispatching, it greps the PR's comments for <code>qa-on-green: dispatched at &lt;sha&gt;</code> and stops if its own earlier run already left one for that commit. It also re-reads the head and <strong>declines</strong> if the branch moved since the SHA the gates went green on — a verdict belongs to exact code. This is the same pattern as the steward's one-dispatch-per-run cap: a loop with no memory has to leave its own state in a comment, because there is nowhere else for it to live.</p>` },
   ]},
 
   { n:"05", t:"Decide what lands", d:"The only stage holding merge authority. It belongs to a workflow, not to any agent, and it re-reads every condition from the API.", nodes:[
-    { id:"merge", kind:"workflow", name:"agent-merge.yml", cap:"Four conditions, all required. Fires on either gate, on a label, and on cron.",
+    { id:"merge", kind:"workflow", name:"agent-merge.yml", cap:"Four conditions bind; a fifth, diff size, is switched off. Fires on either gate, on a label, and on cron.",
       body:`<p><strong>This is where "full autonomy" stops being a plan.</strong> No agent decides what lands; the authority is here, gated on evidence rather than on anyone's judgment that the work is finished.</p>
-      <p class="sec">Four conditions, all required</p>
+      <p class="sec">Four conditions bind, and a fifth does not</p>
       <ul><li>The PR was opened by this system or the repo owner — <strong>authorship, never a branch name</strong>. It used to test <code>issue/*</code>, and every correctly-named <code>partial/</code> PR became unmergeable on its spelling alone.</li>
       <li><code>pr-gates</code> actually green on the head SHA — not merely "no failures".</li>
       <li>A QA verdict of PASS, read as the <code>qa-pass</code> label.</li>
@@ -473,7 +475,7 @@ const BANDS = [
       <li><code>/health</code> reporting that commit as the one serving</li></ul>
       <p class="sec">Why all three</p>
       <p>#143 was closed as fixed while a fourth wrong date was live in production. A merge proves code moved; only <code>/health</code> proves it is what visitors are getting.</p>
-      <p>A docs-only change never satisfies this — <code>verify-production</code> is skipped, so there is no run to point at. Those close through <code>/prioritise</code> instead.</p>` },
+      <p>A docs-only change does not close this way either, but <strong>not</strong> because the run is skipped: <code>verify-production.yml</code>'s <code>paths-ignore</code> covers <code>.github/**</code>, <code>.claude/**</code>, <code>scripts/**</code>, <code>measurements/**</code>, <code>evals/**</code> and <code>*.md</code> — <code>docs/**</code> is not on it, and <code>agent-merge</code> dispatches the run after every merge regardless. What declines is the first proof: <code>/health</code> must report a <code>build_sha</code> equal to the merge commit, and while it reports none, <code>close-on-evidence</code> says so and closes nothing (<code>close-on-evidence.yml:117-123</code>; setting <code>BUILD_SHA</code> is #282). Those issues close through <code>/prioritise</code> instead.</p>` },
     { id:"outcomes", kind:"workflow", name:"loop-outcomes.yml", cap:"Records what each run actually produced, including the misses.",
       body:`<p>The audit layer. It counts what the loops produced — PRs merged against rejected, cycles that ended in nothing, issues closed with evidence — so a loop that quietly stops working is visible.</p>
       <p>That failure shape is the reason it exists: two of three scheduled jobs on a sibling project were failing with nothing reporting it, and a growth log sat four cycles stale at one date. A file that cannot be written does not announce itself; it just stops moving.</p>` },
@@ -494,10 +496,12 @@ const EDGES = [
   ["verdict","pr","label"],
   ["pr","prgates","pull_request"], ["pr","vbuild","pull_request"],
   ["prgates","qagreen","workflow_run"],
-  ["prgates","merge","workflow_run"], ["vbuild","merge","workflow_run"], ["qagreen","merge","qa-pass"],
-  ["merge","hold","boundary / size","hold"],
+  ["prgates","merge","workflow_run"], ["vbuild","merge","workflow_run"],
+  ["qagreen","qa","dispatches a round","back"],
+  ["merge","hold","boundary / needs-human-review","hold"],
   ["merge","vprod","dispatch"], ["vprod","close","run + /health"], ["close","outcomes","closed"],
   ["outcomes","score","28 days"], ["score","weekly","what worked","back"],
+  ["measure","score","GA4 + GSC"], ["sweep","merge","re-asks"],
 ];
 
 const NODES = {}, ROW = {};
