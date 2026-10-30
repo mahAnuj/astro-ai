@@ -3594,6 +3594,43 @@ MUTATIONS = [
      'description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",\n            effect="cancels",\n            source=_MANGLIK_SRC_REPEATED,',
      'description="Jupiter aspects Mars (primary classical Mangal Dosha cancellation)",\n            effect="cancels",\n            source="Phaladeepika",',
      "test_no_manglik_rule_names_a_book_the_repo_does_not_hold"),
+
+    # --- #398 slice 11: the Manglik checker stops claiming every classical cancellation rule ---
+    ("#398 s11: the /manglik-check lead claims every classical cancellation rule again",
+     "src/astro_ai/routes/dosha.py",
+     '    "Instant Mangal Dosh diagnosis from your birth details. It checks the "',
+     '    "Instant Mangal Dosh diagnosis from your birth details, with every classical cancellation rule applied. It checks the "',
+     "test_no_page_claims_the_checker_applies_every_cancellation_rule"),
+
+    ("#398 s11: /matching claims the FULL classical evaluation again",
+     "src/astro_ai/templates/matching.html",
+     'Bhagya\'s matching goes beyond "Mars',
+     'Bhagya\'s matching applies the FULL classical evaluation, not just "Mars',
+     "test_no_page_claims_the_checker_applies_every_cancellation_rule"),
+
+    ("#398 s11: /kundli claims all classical cancellation rules applied again",
+     "src/astro_ai/templates/kundli_landing.html",
+     "checked against the cancellations commonly listed",
+     "all classical cancellation rules applied; checked against the cancellations commonly listed",
+     "test_no_page_claims_the_checker_applies_every_cancellation_rule"),
+
+    ("#398 s11: /about says Bhagya applies every cancellation rule again",
+     "src/astro_ai/templates/about.html",
+     "Bhagya applies the ones it implements",
+     "Bhagya applies them all",
+     "test_no_page_claims_the_checker_applies_every_cancellation_rule"),
+
+    ("#398 s11: the result page's guide card promises every classical cancellation rule again",
+     "src/astro_ai/templates/manglik_check_result.html",
+     "Depth: the six qualifying houses, the cancellation rules the tradition repeats",
+     "Depth: all six qualifying houses, every classical cancellation rule, the cancellation rules the tradition repeats",
+     "test_the_result_page_makes_no_such_claim_either"),
+
+    ("#398 s11: the checker lead names a rule the code does not implement instead of the Cancer/Leo one",
+     "src/astro_ai/routes/dosha.py",
+     "a Cancer or Leo ascendant",
+     "a strong Moon aspecting Mars",
+     "test_the_checker_lead_and_meta_name_only_rules_the_code_implements"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

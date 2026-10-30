@@ -34,6 +34,22 @@ from astro_ai.session import load_collection
 
 router = APIRouter()
 
+# The lead and meta description of /manglik-check. They used to say "every" /
+# "all" classical cancellation rule applied (#398 slice 11); the checker applies
+# only the rules _manglik_cancellations implements, and vedic_reference.md 1.3
+# lists others it does not (strong-Moon aspect, Mars-Mercury, lagna-specific
+# own-sign, retrograde, enemy signs) and says no source we hold counts them. So
+# the claim is the rules it implements, plus that the page shows which fired.
+_MANGLIK_CHECK_LEAD = (
+    "Instant Mangal Dosh diagnosis from your birth details. It checks the "
+    "cancellations commonly listed \u2014 Jupiter's influence, own-sign or exalted Mars, "
+    "a Cancer or Leo ascendant \u2014 and shows which ones applied. Free, no sign-up."
+)
+_MANGLIK_CHECK_META = (
+    "Free Manglik Dosh Check \u2014 instant diagnosis that shows which commonly "
+    "listed cancellations applied to your chart. No sign-up. Honest, no upsell."
+)
+
 
 # ─── Standalone dosha checkers (issues #109 / #110 / #111) ────────────
 #
@@ -107,10 +123,10 @@ async def manglik_check_form(request: Request) -> HTMLResponse:
         request, "dosha_check_form.html",
         _dosha_form_ctx(
             page_title="Free Manglik Dosh Check — With Classical Cancellation Rules",
-            page_lead="Instant Mangal Dosh diagnosis from your birth details, with every classical cancellation rule applied. Free, no sign-up.",
+            page_lead=_MANGLIK_CHECK_LEAD,
             form_action="/manglik-check",
             submit_label="Check Manglik Dosh →",
-            meta_desc="Free Manglik Dosh Check — instant diagnosis with all classical cancellation rules applied. No sign-up. Chart-based, honest, no upsell.",
+            meta_desc=_MANGLIK_CHECK_META,
             prefill=_prefill_from_cookie(request),
         ),
     )
@@ -133,10 +149,10 @@ async def manglik_check_result(
             request, "dosha_check_form.html",
             _dosha_form_ctx(
                 page_title="Free Manglik Dosh Check — With Classical Cancellation Rules",
-                page_lead="Instant Mangal Dosh diagnosis from your birth details, with every classical cancellation rule applied. Free, no sign-up.",
+                page_lead=_MANGLIK_CHECK_LEAD,
                 form_action="/manglik-check",
                 submit_label="Check Manglik Dosh →",
-                meta_desc="Free Manglik Dosh Check — instant diagnosis with all classical cancellation rules applied. No sign-up. Chart-based, honest, no upsell.",
+                meta_desc=_MANGLIK_CHECK_META,
                 prefill={"name": name, "birth_date": birth_date, "birth_time": birth_time, "birth_place": birth_place},
                 error=str(err),
             ),

@@ -884,7 +884,12 @@ _MANGLIK_SRC_REPEATED = ("widely repeated in the tradition; sources differ, and 
 
 
 def _manglik_cancellations(chart: Chart) -> tuple[ManglikRule, ...]:
-    """All cancellation/mitigation rules the tradition lists that apply to this chart's Mars.
+    """The cancellation/mitigation rules implemented here that apply to this chart's Mars.
+
+    This is a SUBSET of vedic_reference.md §1.3. Not implemented: strong-Moon
+    aspect (9), Mars-Mercury (11), lagna-specific own-sign (14-16), retrograde
+    (17), enemy signs (19) — and no source we hold counts the rules, so no
+    surface may say the checker applies "all" / "every" of them (#398 slice 11).
 
     The rule-set is a compilation (knowledge/vedic_reference.md §1.3 records
     which books it was compiled from, via P.V.R. Narasimha Rao's Jagannath Hora
@@ -4861,12 +4866,13 @@ def compute_bhagya_score(chart: Chart, lang: str = "en") -> BhagyaScore:
         _add(+5 * n_yogas, "bs_yogas_active", n=n_yogas,
              plural=("s" if n_yogas > 1 and lang == "en" else ""), names=yoga_names)
 
-    # ─── Manglik status (from Mars-in-1/2/4/7/8/12 with all classical
-    #     cancellation rules applied — mangal_details returns the FINAL
+    # ─── Manglik status (from Mars-in-1/2/4/7/8/12 with the cancellation
+    #     rules _manglik_cancellations implements applied (a subset of
+    #     vedic_reference.md §1.3) — mangal_details returns the FINAL
     #     effective status, not the raw placement). Possible values are
     #     'none' | 'present' | 'mitigated' | 'cancelled'.
     #     - none      : no Manglik pattern detected, no driver
-    #     - cancelled : all classical cancellations applied, +5
+    #     - cancelled : at least one implemented cancellation applied, +5
     #     - mitigated : Manglik pattern but some (not all) cancellations, -3
     #     - present   : Manglik pattern, no cancellations applied, -8
     mangal = compute_manglik_details(chart)
