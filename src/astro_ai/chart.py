@@ -3727,7 +3727,8 @@ _TITHI_SIGNIFICANCE: dict[str, str] = {
     # The 8th is on the same avoid list as the 4th (Raman Ch. II line 802), so
     # "focused action" is dropped for an inward reading (#398).
     "Ashtami":     ("Durga/Shakti themes — courage, protection, inner resolve; "
-                    "also on the classical avoid list for new undertakings"),
+                    "Raman places the 8th on his avoid list for new "
+                    "undertakings, though Rao's table recommends it"),
     "Navami":      "Devi themes — completion of a cycle of worship",
     "Dashami":     "Vijayadashami undertones — victory, right action",
 }

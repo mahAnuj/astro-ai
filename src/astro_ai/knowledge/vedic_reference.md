@@ -2280,8 +2280,15 @@ the same caution because the 8th is on the same list (Ch. II line 802).
 `prompts/rashifal_single.txt`'s tithi block is relabelled as widely-held
 popular association rather than classical rule, with §29.10 cited in the
 prompt itself, and forbids writing the 4th or 8th as a day to start or launch.
+A FOURTH surface on the same page was missed in the first pass and is now also
+corrected: `templates/panchang.html`'s explainer called these "specific classical
+characters" and named Chaturthi with no caution, 158 lines below the data cell that
+had just been fixed — found by QA on PR #606. It now reads "widely-held popular
+characters … association rather than classical rule". The 8th is **attributed, not
+settled**: Raman Ch. II line 802 places it on his avoid list while Rao's Table 79
+recommends it (Jaya → 3, 8, 13), so the code says whose list it is.
 Pinned by `scripts/prompt_contracts.toml` (`tithi-character-provenance`) and
-`tests/test_tithi_provenance.py`.
+`tests/test_tithi_provenance.py` (9 tests).
 
 ### 29.9 B.V. Raman, *Muhurtha* (1948) — what it settles, and its limits
 

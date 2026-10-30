@@ -3657,7 +3657,7 @@ MUTATIONS = [
     # that resolution on each of the three surfaces it landed on.
     ("#398 tithi: the prompt presents the table as classical again",
      "src/astro_ai/prompts/rashifal_single.txt",
-     "Tithi character \u2014 POPULAR ASSOCIATION, NOT A CLASSICAL RULE (\u00a729.10). Use one only\nif it genuinely fits, never as what the texts prescribe:\n",
+     'Tithi character. The CHARACTERS below are POPULAR ASSOCIATION, NOT A CLASSICAL RULE\n(§29.10) — use one only if it fits, never as what the texts prescribe. The explicit\ncautions ARE sourced, and you may state them:\n',
      "Tithi character (reference in the reading only if it genuinely fits):\n",
      "test_the_prompt_does_not_present_the_table_as_classical"),
 
@@ -3681,10 +3681,28 @@ MUTATIONS = [
 
     ("#398 tithi: /panchang restores 'focused action' on the 8th",
      "src/astro_ai/chart.py",
-     '    "Ashtami":     ("Durga/Shakti themes \u2014 courage, protection, inner resolve; "\n                    "also on the classical avoid list for new undertakings"),\n',
+     '    "Ashtami":     ("Durga/Shakti themes — courage, protection, inner resolve; "\n                    "Raman places the 8th on his avoid list for new "\n                    "undertakings, though Rao\'s table recommends it"),\n',
      '    "Ashtami":     "Durga/Shakti themes \u2014 courage, protection, focused action",\n',
      "test_panchang_drops_focused_action_on_the_eighth"),
 
+
+    ("#398 tithi: the /panchang explainer calls the characters classical again",
+     "src/astro_ai/templates/panchang.html",
+     "Some tithis carry widely-held popular characters",
+     "Some tithis have specific classical characters",
+     "test_the_panchang_explainer_does_not_call_the_characters_classical"),
+
+    ("#398 tithi: the 8th is called settled classical doctrine again",
+     "src/astro_ai/chart.py",
+     '"Raman places the 8th on his avoid list for new "',
+     '"also on the classical avoid list for new "',
+     "test_the_eighth_is_attributed_rather_than_called_settled"),
+
+    ("#398 tithi: a leaked internal section marker stops being caught",
+     "src/astro_ai/rashifal_quality.py",
+     '    "cites a document section": re.compile(r"\u00a7\\s*\\d"),',
+     '    "cites a document section": re.compile(r"ZZZ_NEVER_MATCHES"),',
+     "test_a_reading_that_leaks_an_internal_section_marker_is_caught"),
     ("#398 tithi: the knowledge ledger claims this is still uncorrected",
      "src/astro_ai/knowledge/vedic_reference.md",
      "**CORRECTED 2026-10-30 (#398), by saying both rather than deleting either**",

@@ -49,8 +49,9 @@ Weekday-lord translation table (use the qualities, never the planet name):
 
 If today is Friday, do NOT write "the Venusian energy of Friday" — write about relational warmth, aesthetic focus, or a slower sensory day. Show the day-lord in the ADVICE, not by naming it.
 
-Tithi character — POPULAR ASSOCIATION, NOT A CLASSICAL RULE (§29.10). Use one only
-if it genuinely fits, never as what the texts prescribe:
+Tithi character. The CHARACTERS below are POPULAR ASSOCIATION, NOT A CLASSICAL RULE
+(§29.10) — use one only if it fits, never as what the texts prescribe. The explicit
+cautions ARE sourced, and you may state them:
 - Ekadashi → fasting, spiritual introspection, avoid heavy commitments
 - Purnima → culmination, generosity, emotional peak, worship
 - Amavasya → ancestral rites, quiet resets, avoid new ventures
