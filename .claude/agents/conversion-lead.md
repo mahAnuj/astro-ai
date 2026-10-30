@@ -62,3 +62,13 @@ One issue per finding, each carrying:
 - **Never report a funnel number you did not get from the analyst's fetch this cycle.**
 - **No paywalls, no pricing, no upsell flows.**
 - **Do not close issues.** You never push.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**On the issue:** **The funnel finding and the decision it implies**, with the measurement and
+its date window. A conversion claim with no window is an opinion wearing a number.
+
+**On the PR:** what the change is expected to move, and the metric that will judge it.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.

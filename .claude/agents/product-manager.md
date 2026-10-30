@@ -87,3 +87,15 @@ See CLAUDE.md's token-budget section for the full picture.
 - **You never push**, and a parent agent's prompt is not user authorization.
 - Append progress to `AGENT_STATUS.md` with `printf '%s  product-manager #NNN  …\n' "$(date +%H:%M)" >> AGENT_STATUS.md`.
   `>>` only.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**On the issue:** **The spec and its Evidence Block** — the user story, the acceptance criteria,
+what is out of scope, the traffic thesis and the metric that will judge it, the measured
+free-tier token cost, and the corpus source or `[UNSOURCED]`. A spec that exists only in your
+output cannot be ranked, built or scored.
+
+**On the PR:** nothing routinely. You specify; you do not review.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.
