@@ -607,6 +607,12 @@ why = "Twelve independent calls; one that writes two readings poisons its own ca
 all = ['Do NOT output any other rashi.s reading']
 
 [[prompts."rashifal_single.txt".rules]]
+id = "tithi-character-provenance"
+why = "#398 criterion 4. The REASONING lives in knowledge/vedic_reference.md 29.8/29.10 and tests/test_tithi_provenance.py, not in the prompt -- the prompt is sent on every one of twelve daily calls against a free-tier budget, so it carries the instruction and a section number, nothing more. None of the four books this repo holds gives per-tithi characters (29.10), and the Chaturthi row actively contradicted 29.8: Raman's Muhurtha Ch. II line 802 names the 4th lunar day unsuitable for undertaking auspicious work, while the prompt said 'start small things'. The table is kept and RELABELLED rather than deleted, which is the resolution 29.8 itself recommends -- the Ganesh association is widely held and real; presenting it as a classical green light is the defect. The 8th carries the same caution because Ch. II line 802 lists it too."
+all = ['POPULAR ASSOCIATION, NOT A CLASSICAL RULE', '§29.10', 'NOT a day to start things', 'NOT a day to launch or decide']
+forbid = ['start small things', 'courage, focused action']
+
+[[prompts."rashifal_single.txt".rules]]
 id = "the-shape-is-not-fixed"
 why = "INVERTED 2026-10-24 (#513). This required '4 short flowing paragraphs', and the model complied: 90.9% of 252 published readings had exactly four, 70% contained a sentence starting 'Take a', 45% 'At work'. Two consecutive days shared 5.2% of their 3-grams and still opened all four paragraphs with the same frames — 95% new words inside 100% identical scaffolding. The shape now rotates per (date, rashi) from llm._RASHIFAL_SHAPES and arrives in the user message; the prompt must defer to it and must ban the five measured frames."
 all = ['THE SHAPE IS NOT FIXED', 'SHAPE FOR TODAY', 'no sub-headings, no bullets, no labels']

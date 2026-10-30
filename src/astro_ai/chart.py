@@ -3714,10 +3714,20 @@ _TITHI_SIGNIFICANCE: dict[str, str] = {
     "Chaturdashi": "sensitive day, meditation and quiet effort favoured",
     "Purnima":     "full moon — culmination, generosity, worship, emotional peak",
     "Amavasya":    "new moon — ancestral rites (Pitru), quiet resets, avoid new ventures",
-    "Chaturthi":   "Ganesh day — remove obstacles, start small things",
+    # NOT "start small things" (#398). `knowledge/vedic_reference.md` §29.8 calls
+    # this "the sharpest tension §29 found between shipped copy and the corpus":
+    # Raman's Muhurtha Ch. II line 802 names the 4th lunar day unsuitable for
+    # undertaking auspicious work, and Rao's only muhurta table (§26.8) excludes
+    # it from all eight tasks. The Ganesh association is real and widely held, so
+    # the resolution §29.8 recommends is to say BOTH rather than delete either.
+    "Chaturthi":   ("Ganesh day — removing obstacles; a Rikta tithi, so the texts "
+                    "we hold do not favour starting new work on it"),
     "Panchami":    "Nag/Saraswati themes — learning, arts, snakes in symbolism",
     "Saptami":     "Sun-themed — health, vitality, father matters",
-    "Ashtami":     "Durga/Shakti themes — courage, protection, focused action",
+    # The 8th is on the same avoid list as the 4th (Raman Ch. II line 802), so
+    # "focused action" is dropped for an inward reading (#398).
+    "Ashtami":     ("Durga/Shakti themes — courage, protection, inner resolve; "
+                    "also on the classical avoid list for new undertakings"),
     "Navami":      "Devi themes — completion of a cycle of worship",
     "Dashami":     "Vijayadashami undertones — victory, right action",
 }

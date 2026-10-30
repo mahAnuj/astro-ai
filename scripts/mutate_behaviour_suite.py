@@ -3649,6 +3649,48 @@ MUTATIONS = [
      "a Cancer or Leo ascendant",
      "a strong Moon aspecting Mars",
      "test_the_checker_lead_and_meta_name_only_rules_the_code_implements"),
+
+    # --- #398 slice 12: the tithi characters are labelled, not deleted ---
+    # `knowledge/vedic_reference.md` §29.8 called the Chaturthi row "the
+    # sharpest tension §29 found between shipped copy and the corpus" and
+    # recommended saying BOTH rather than deleting either. These rows re-break
+    # that resolution on each of the three surfaces it landed on.
+    ("#398 tithi: the prompt presents the table as classical again",
+     "src/astro_ai/prompts/rashifal_single.txt",
+     "Tithi character \u2014 POPULAR ASSOCIATION, NOT A CLASSICAL RULE (\u00a729.10). Use one only\nif it genuinely fits, never as what the texts prescribe:\n",
+     "Tithi character (reference in the reading only if it genuinely fits):\n",
+     "test_the_prompt_does_not_present_the_table_as_classical"),
+
+    ("#398 tithi: the prompt tells the reader to start things on the 4th again",
+     "src/astro_ai/prompts/rashifal_single.txt",
+     "- Chaturthi \u2192 Ganesh energy, removing obstacles. NOT a day to start things.\n",
+     "- Chaturthi \u2192 Ganesh energy, start small things, remove obstacles\n",
+     "test_the_prompt_does_not_tell_the_reader_to_start_things_on_the_fourth"),
+
+    ("#398 tithi: the prompt drops the 8th's caution",
+     "src/astro_ai/prompts/rashifal_single.txt",
+     "- Ashtami \u2192 Durga/Shakti, courage, inner resolve. NOT a day to launch or decide.\n",
+     "- Ashtami \u2192 Durga/Shakti, courage, focused action\n",
+     "test_the_prompt_cautions_the_eighth_too"),
+
+    ("#398 tithi: /panchang says start small things again",
+     "src/astro_ai/chart.py",
+     '    "Chaturthi":   ("Ganesh day \u2014 removing obstacles; a Rikta tithi, so the texts "\n                    "we hold do not favour starting new work on it"),\n',
+     '    "Chaturthi":   "Ganesh day \u2014 remove obstacles, start small things",\n',
+     "test_panchang_says_both_on_the_fourth"),
+
+    ("#398 tithi: /panchang restores 'focused action' on the 8th",
+     "src/astro_ai/chart.py",
+     '    "Ashtami":     ("Durga/Shakti themes \u2014 courage, protection, inner resolve; "\n                    "also on the classical avoid list for new undertakings"),\n',
+     '    "Ashtami":     "Durga/Shakti themes \u2014 courage, protection, focused action",\n',
+     "test_panchang_drops_focused_action_on_the_eighth"),
+
+    ("#398 tithi: the knowledge ledger claims this is still uncorrected",
+     "src/astro_ai/knowledge/vedic_reference.md",
+     "**CORRECTED 2026-10-30 (#398), by saying both rather than deleting either**",
+     "**Flagged, not corrected** \u2014 the resolution is probably to say both",
+     "test_the_knowledge_ledger_no_longer_says_flagged_not_corrected"),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
