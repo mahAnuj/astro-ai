@@ -170,7 +170,7 @@ app never imports from `evals/`.
 ## How the agent team works
 
 This repo ships itself. Fifteen agents and seventeen workflows take an issue
-from a cron trigger to a merged, production-verified fix with **no human in the
+from a cron trigger to a merged, production-verified fix with **nobody inside the
 loop** — and no agent anywhere in it holds the authority to merge.
 
 **[→ Open the interactive diagram](docs/agent-cycle.html)** — animated, with an
@@ -213,6 +213,7 @@ flowchart TD
         QG["qa-on-green<br/>QA round · qa:in-cycle"]
     end
 
+    SW["*/30 sweep<br/>backstop for a missed edge"]
     AM{{"agent-merge.yml<br/>author · gates · qa-pass · boundary"}}
     HOLD["held for a human<br/>trust boundary /<br/>needs-human-review"]
 
@@ -227,7 +228,9 @@ flowchart TD
     QA --> QV --> PR
     PR --> G1 & G2
     G1 --> QG
-    G1 & G2 & QG --> AM
+    G1 & G2 --> AM
+    QG -. "dispatches a round" .-> QA
+    SW -. "re-asks" .-> AM
     AM -- "every condition holds" --> VP --> CE
     AM -. "boundary / needs-human-review" .-> HOLD
     CE --> M
@@ -268,7 +271,9 @@ after which the sweep merges it (Shape C, owner 2026-10-20). A third path, a
 diff over the size limit, is written but inert. Green CI means very different
 things for a one-file deletion and a 3D chart, and `main` deploys with no
 staging — so path is treated as evidence too, and size would be if it were
-switched back on.
+switched back on. One caveat on `needs-human-review`: `agent-merge` reads that
+label in its `*/30` sweep candidate filter and nowhere else, so it stops the
+sweep from selecting a PR but not the edge-triggered path (#604).
 
 ## Deploying to GCP Cloud Run
 

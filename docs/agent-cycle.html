@@ -199,7 +199,7 @@ footer a{color:var(--text-dim)}
       <div class="fact"><b>17</b><span>workflows</span></div>
       <div class="fact"><b>7</b><span>stages</span></div>
       <div class="fact"><b>0</b><span>agents that can merge</span></div>
-      <div class="fact"><b>0</b><span>humans in the loop</span></div>
+      <div class="fact"><b>0</b><span>humans inside a cycle</span></div>
     </div>
   </div>
 </header>
@@ -272,7 +272,8 @@ footer a{color:var(--text-dim)}
     Two paths stop for a person today: a diff touching the <strong>trust boundary</strong>
     (prompts, knowledge, workflows, <code>notify.py</code>, <code>events.py</code>,
     <code>storage.py</code>, <code>email_sender.py</code>), and anything labelled
-    <code>needs-human-review</code> — with one carve-out: <code>chief</code> may clear that label
+    <code>needs-human-review</code> (which holds the <code>*/30</code> sweep but not the
+    edge-triggered path — #604) — with one carve-out: <code>chief</code> may clear that label
     itself on a PR whose only trust-boundary paths are <code>prompts/</code> or
     <code>knowledge/</code> (Shape C, owner 2026-10-20), adding <code>chief-cleared</code>, after
     which the sweep merges it. A third path, a diff <strong>over the size limit</strong>, is
@@ -315,7 +316,7 @@ footer a{color:var(--text-dim)}
 
 <script>
 const BANDS = [
-  { n:"00", t:"The clock", d:"Nothing here is event-driven. Six loops wake on cron, staggered into the window after the usage cap resets.", nodes:[
+  { n:"00", t:"The clock", d:"Almost nothing here is event-driven: these loops wake on cron, staggered into the window after the usage cap resets. The one exception is the steward, which also listens for Agent work to finish.", nodes:[
     { id:"work", kind:"workflow", name:"agent-work.yml", cap:"Twice daily, 04:30 and 16:30 IST. Runs /agent-cycle — one issue, start to PR.",
       body:`<p>The delivery loop. Fires <code>0 23 * * *</code> — 04:30 IST, deliberately just after the Claude Max 5-hour rolling cap resets, because a cycle that dies mid-run leaves a half-finished branch. Since 2026-10-13 it also fires <code>0 11 * * *</code> — 16:30 IST, twelve hours on — so this runs <strong>twice a day, not once</strong>.</p>
       <p><strong>One issue per run.</strong> A single cycle is 10–15 agent invocations, and QA historically fails its first submission most of the time, so two or three QA rounds per issue is the budget.</p>
@@ -333,7 +334,7 @@ const BANDS = [
       body:`<p>Runs two hours ahead of <code>agent-work</code> so the day's delivery can rank against fresh numbers. Only the 02:30 IST slot is a full run: a second slot at 07:30 IST and one every three hours after it run the <strong>collectors only</strong> — GitHub API and committed rates, zero LLM calls, no GA4 or GSC.</p>
       <p>The <code>analyst</code> is <strong>strictly read-only</strong> — it files issues and comments and touches no source file. Its highest-value output is the <em>6–20 position band</em>: queries one or two places off page one.</p>
       <p class="sec">The part that closes the circuit</p>
-      <p>For every issue closed in the last 28 days it posts the landing-page delta against the 28 days before, <strong>as a comment on that issue</strong>. Shipped work gets a score, and the score is public — including when it went the wrong way.</p>
+      <p>For every issue closed in the last 28 days <em>that carried a <code>thesis:</code> and a <code>metric:</code></em>, it posts the landing-page delta against the 28 days before, <strong>as a comment on that issue</strong>. Shipped work gets a score, and the score is public — including when it went the wrong way.</p>
       <p class="sec">Why it must read trailing windows</p>
       <p>GA4 lags 24–48h and GSC 2–3 days. An analyst reading "today" would score a ship against data that has not arrived.</p>` },
     { id:"steward", kind:"workflow", name:"agent-steward.yml", cap:"Finds work that stopped moving and re-dispatches a cycle at it.",
@@ -394,7 +395,7 @@ const BANDS = [
       <li>A claim of traffic impact with no measurement is a FAIL.</li>
       <li>Every user-facing astrological claim must trace to a sourced corpus line.</li></ul>
       <p>A FAIL loops straight back to the engineer, and the PR stays a draft.</p>` },
-    { id:"chief", kind:"hold", name:"chief", cap:"Breaks ties only. Cannot start work, and cannot grant anyone permission.",
+    { id:"chief", kind:"agent", name:"chief", cap:"Breaks ties only. Cannot start work, and cannot grant anyone permission.",
       body:`<p>Invoked only by a formal escalation — never on a schedule — when two agents genuinely disagree and neither can decide.</p>
       <p class="sec">Deliberately constrained</p>
       <ul><li>An escalation must present <strong>both positions verbatim</strong>. A summary is not an escalation.</li>
@@ -430,7 +431,7 @@ const BANDS = [
       <p class="sec">The mutation sweep</p>
       <p>It breaks the code on purpose, one row at a time, and requires a named test to go red for each. A suite that passes is worthless if it would also pass on broken code. The <strong>CONTROL row must report MISSED</strong> — a sweep reporting "N/N caught" without it is ambiguous between a working harness and a blind one.</p>
       <p class="sec">Pull requests only</p>
-      <p>It does not run on push to <code>main</code>: every merge would re-run 21 gates against a tree that had just passed them as a PR. A docs-only diff skips the expensive steps and finishes in seconds, deliberately — so the merge workflow still gets its trigger.</p>` },
+      <p>It does not run on push to <code>main</code>: every merge would re-run all 29 gates against a tree that had just passed them as a PR. A docs-only diff skips the expensive steps and finishes in seconds, deliberately — so the merge workflow still gets its trigger.</p>` },
     { id:"vbuild", kind:"workflow", name:"verify-build.yml → build-gates", cap:"A different workflow. Finishing last here is what stranded PR #562.",
       body:`<p>Publishes the second required check. It has no docs-only skip, so on a trivial diff it takes far longer than <code>gates</code> — and on PR #562 it also outlasted <code>gates</code> on a <em>code</em> diff: 10m25s against 7m43s.</p>
       <p class="sec">Why that was a bug and not a detail</p>
@@ -459,7 +460,7 @@ const BANDS = [
       <p class="sec">Three ways to land here</p>
       <ul><li><strong>Trust boundary</strong> — the diff touches <code>prompts/</code>, <code>knowledge/</code>, <code>.github/workflows/</code>, <code>notify.py</code>, <code>events.py</code>, <code>storage.py</code> or <code>email_sender.py</code>.</li>
       <li><strong>Too large</strong> — green CI proves little on a big diff, and <code>main</code> deploys with no staging. <strong>This one cannot fire today:</strong> <code>MAX_LINES</code> is 1000000. The mechanism was left in place rather than deleted so it survives to be re-enabled.</li>
-      <li><strong><code>needs-human-review</code></strong> — anything already escalated, except a <code>prompts/</code>- or <code>knowledge/</code>-only PR, which <code>chief</code> may clear itself (Shape C).</li></ul>
+      <li><strong><code>needs-human-review</code></strong> — anything already escalated, except a <code>prompts/</code>- or <code>knowledge/</code>-only PR, which <code>chief</code> may clear itself (Shape C). <strong>Narrower than it looks:</strong> this label is read by the <code>*/30</code> sweep's candidate filter and nowhere else, so it keeps the sweep from <em>selecting</em> a PR but does not stop the edge-triggered path. A labelled PR touching no trust-boundary path can still merge on a <code>workflow_run</code> or label edge (#604).</li></ul>
       <p>The sweep deliberately skips every one of these, which is what stops a held PR from being re-labelled every half hour forever.</p>` },
   ]},
 
@@ -475,12 +476,12 @@ const BANDS = [
       <li><code>/health</code> reporting that commit as the one serving</li></ul>
       <p class="sec">Why all three</p>
       <p>#143 was closed as fixed while a fourth wrong date was live in production. A merge proves code moved; only <code>/health</code> proves it is what visitors are getting.</p>
-      <p>A docs-only change does not close this way either, but <strong>not</strong> because the run is skipped: <code>verify-production.yml</code>'s <code>paths-ignore</code> covers <code>.github/**</code>, <code>.claude/**</code>, <code>scripts/**</code>, <code>measurements/**</code>, <code>evals/**</code> and <code>*.md</code> — <code>docs/**</code> is not on it, and <code>agent-merge</code> dispatches the run after every merge regardless. What declines is the first proof: <code>/health</code> must report a <code>build_sha</code> equal to the merge commit, and while it reports none, <code>close-on-evidence</code> says so and closes nothing (<code>close-on-evidence.yml:117-123</code>; setting <code>BUILD_SHA</code> is #282). Those issues close through <code>/prioritise</code> instead.</p>` },
+      <p>A docs-only change does not close this way either, and the reason is worth getting right. It is <strong>not</strong> that the run is skipped — <code>verify-production.yml</code>'s <code>paths-ignore</code> covers <code>.github/**</code>, <code>.claude/**</code>, <code>scripts/**</code>, <code>measurements/**</code>, <code>evals/**</code> and <code>*.md</code>, but <code>docs/**</code> is not on it. Nor is it that <code>/health</code> reports no <code>build_sha</code>: it has reported one since <code>BUILD_SHA</code> was set on 2026-10-08. What actually declines is the <em>exact-commit</em> proof. A docs or measurements push produces no new revision, so <code>/health</code>'s <code>build_sha</code> stays at the last commit that changed code, and <code>close-on-evidence</code> takes its <code>live != SHA</code> branch — "a newer deploy landed, not closing" (<code>close-on-evidence.yml:117-126</code>). Measured 2026-10-30: <code>main</code> at <code>df10ee6</code> (a measurements commit) while <code>/health</code> served <code>c932a8b</code>, the most recent code commit. Those issues close through <code>/prioritise</code> instead.</p>` },
     { id:"outcomes", kind:"workflow", name:"loop-outcomes.yml", cap:"Records what each run actually produced, including the misses.",
       body:`<p>The audit layer. It counts what the loops produced — PRs merged against rejected, cycles that ended in nothing, issues closed with evidence — so a loop that quietly stops working is visible.</p>
-      <p>That failure shape is the reason it exists: two of three scheduled jobs on a sibling project were failing with nothing reporting it, and a growth log sat four cycles stale at one date. A file that cannot be written does not announce itself; it just stops moving.</p>` },
+      <p>That failure shape is the reason it exists, and the workflow says so: on 2026-10-08/09 <strong>four defects in the loops' own plumbing each hid behind a green or absent workflow status</strong> (#316, part 2 of #313) — a step that 403s inside <code>continue-on-error</code>, a trigger leg failing every time while its twin works, a close job that runs and closes nothing. A file that cannot be written does not announce itself; it just stops moving.</p>` },
     { id:"score", kind:"agent", name:"analyst scores it", cap:"28 days later, posts the traffic delta on the issue it closed.",
-      body:`<p>The edge that makes this a circuit rather than a line. For every issue closed in the last 28 days, the analyst compares the landing page against the 28 days before and comments the delta on that issue.</p>
+      body:`<p>The edge that makes this a circuit rather than a line — for the subset it can score. For every issue closed in the last 28 days <em>that carried a <code>thesis:</code> and a <code>metric:</code></em> (<code>analyst.md:76-77</code>), the analyst compares the landing page against the 28 days before and comments the delta on that issue.</p>
       <p>That number then feeds the next ranking, so discovery is decided by what measurably worked rather than by what seemed promising. Without it the agents would ship forever and never learn.</p>
       <p>Published in full, including results that went the wrong way.</p>` },
   ]},
@@ -500,7 +501,7 @@ const EDGES = [
   ["qagreen","qa","dispatches a round","back"],
   ["merge","hold","boundary / needs-human-review","hold"],
   ["merge","vprod","dispatch"], ["vprod","close","run + /health"], ["close","outcomes","closed"],
-  ["outcomes","score","28 days"], ["score","weekly","what worked","back"],
+  ["score","weekly","what worked","back"],
   ["measure","score","GA4 + GSC"], ["sweep","merge","re-asks"],
 ];
 
