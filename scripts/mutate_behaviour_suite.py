@@ -3714,6 +3714,44 @@ MUTATIONS = [
      "a Cancer or Leo ascendant",
      "a strong Moon aspecting Mars",
      "test_the_checker_lead_and_meta_name_only_rules_the_code_implements"),
+
+    # --- #450: single-flight on the two live caches. Each row removes ONE
+    # piece of the serialisation; the suite must notice every piece. --------
+    ("#450: the backlog read is not serialised (N cold renders spend N)",
+     "src/astro_ai/ops_data.py",
+     "    with _live_lock:\n        return _live_issues_locked(objective)",
+     "    return _live_issues_locked(objective)",
+     "test_concurrent_cold_backlog_reads_spend_one_request"),
+
+    ("#450: the today read is not serialised (N cold renders spend N)",
+     "src/astro_ai/ops_data.py",
+     "    with _today_lock:\n        return _live_today_locked(day_start, day)",
+     "    return _live_today_locked(day_start, day)",
+     "test_concurrent_cold_today_reads_spend_one_renders_worth"),
+
+    ("#450: the backlog waiter does not re-check the cache once it has the lock",
+     "src/astro_ai/ops_data.py",
+     "    hit = _issues_fresh(now)\n    if hit:\n        return hit[1]\n    try:",
+     "    try:",
+     "test_concurrent_cold_backlog_reads_spend_one_request"),
+
+    ("#450: the today waiter does not re-check the cache once it has the lock",
+     "src/astro_ai/ops_data.py",
+     "    hit = _today_fresh(day, now)\n    if hit:\n        return hit[2]\n    try:",
+     "    try:",
+     "test_concurrent_cold_today_reads_spend_one_renders_worth"),
+
+    ("#450: the two caches share one lock (a slow backlog read blocks the tiles)",
+     "src/astro_ai/ops_data.py",
+     "_today_lock = threading.Lock()",
+     "_today_lock = _live_lock",
+     "test_one_cache_being_filled_does_not_block_the_other"),
+
+    ("#450: the today lock is taken and never released (a waiter hangs)",
+     "src/astro_ai/ops_data.py",
+     "    with _today_lock:\n        return _live_today_locked(day_start, day)",
+     "    _today_lock.acquire()\n    return _live_today_locked(day_start, day)",
+     "test_a_failing_first_today_read_is_cached_and_the_lock_released"),
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
