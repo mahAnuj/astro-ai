@@ -256,8 +256,10 @@ footer a{color:var(--text-dim)}
     The strictest rule in the repo is that <strong>no agent decides what lands.</strong> An agent
     pushes a branch and opens a PR; the authority to merge lives in
     <code>agent-merge.yml</code>, gated on evidence rather than on anyone's judgment that the work
-    is finished. Four conditions, all required — author, gates green, <code>qa-pass</code>, and a
-    diff inside the size limit that touches no trust-boundary path.
+    is finished. Three conditions actually bind — author, gates green, <code>qa-pass</code> — plus a
+    diff touching no trust-boundary path. A fifth, diff size, is <strong>in place but switched
+    off</strong>: <code>MAX_LINES: 1000000</code> in <code>agent-merge.yml</code> admits any
+    plausible diff, so it holds nothing today.
   </p>
   <p>
     This matters because the loop has twice produced an agent that wrote its own permission slip.
@@ -266,12 +268,17 @@ footer a{color:var(--text-dim)}
     agent to grant itself.
   </p>
   <p>
-    Three paths stop for a person: a diff touching the <strong>trust boundary</strong>
+    Two paths stop for a person today: a diff touching the <strong>trust boundary</strong>
     (prompts, knowledge, workflows, <code>notify.py</code>, <code>events.py</code>,
-    <code>storage.py</code>, <code>email_sender.py</code>), a diff <strong>over the size
-    limit</strong>, and anything labelled <code>needs-human-review</code>. Green CI means very
-    different things for a one-file deletion and a 3D chart, and <code>main</code> deploys with no
-    staging — so size and path are treated as evidence too.
+    <code>storage.py</code>, <code>email_sender.py</code>), and anything labelled
+    <code>needs-human-review</code> — with one carve-out: <code>chief</code> may clear that label
+    itself on a PR whose only trust-boundary paths are <code>prompts/</code> or
+    <code>knowledge/</code> (Shape C, owner 2026-10-20), adding <code>chief-cleared</code>, after
+    which the sweep merges it. A third path, a diff <strong>over the size limit</strong>, is
+    written but inert — <code>MAX_LINES</code> was raised to 1000000 on 2026-10-08 and left in
+    place so the mechanism survives. Green CI means very different things for a one-file deletion
+    and a 3D chart, and <code>main</code> deploys with no staging — so path is treated as evidence
+    too, and size would be if it were switched back on.
   </p>
 </div></section>
 
@@ -308,21 +315,21 @@ footer a{color:var(--text-dim)}
 <script>
 const BANDS = [
   { n:"00", t:"The clock", d:"Nothing here is event-driven. Six loops wake on cron, staggered into the window after the usage cap resets.", nodes:[
-    { id:"work", kind:"workflow", name:"agent-work.yml", cap:"Daily 04:30 IST. Runs /agent-cycle — one issue, start to PR.",
-      body:`<p>The delivery loop. Fires <code>0 23 * * *</code> — 04:30 IST, deliberately just after the Claude Max 5-hour rolling cap resets, because a cycle that dies mid-run leaves a half-finished branch.</p>
+    { id:"work", kind:"workflow", name:"agent-work.yml", cap:"Twice daily, 04:30 and 16:30 IST. Runs /agent-cycle — one issue, start to PR.",
+      body:`<p>The delivery loop. Fires <code>0 23 * * *</code> — 04:30 IST, deliberately just after the Claude Max 5-hour rolling cap resets, because a cycle that dies mid-run leaves a half-finished branch. Since 2026-10-13 it also fires <code>0 11 * * *</code> — 16:30 IST, twelve hours on — so this runs <strong>twice a day, not once</strong>.</p>
       <p><strong>One issue per run.</strong> A single cycle is 10–15 agent invocations, and QA historically fails its first submission most of the time, so two or three QA rounds per issue is the budget.</p>
       <p class="sec">It passes on</p><p>A prompt (<code>/agent-cycle</code>) and nothing else. The cycle rediscovers all its own state from GitHub, because the previous run's memory is gone.</p>` },
-    { id:"weekly", kind:"workflow", name:"six weekly loops", cap:"discover · infra · research · design · sync · prioritise. One per weekday.",
-      body:`<p>Each wakes once a week on its own day, so they never contend for the same quota window:</p>
+    { id:"weekly", kind:"workflow", name:"six weekly loops", cap:"discover · infra · research · design · sync · prioritise. Staggered across the week.",
+      body:`<p>Each wakes once a week on its own day, so they never contend for the same quota window. The crons are <strong>UTC</strong>; the times below are IST, which is why four of them fall a day later than the day named in the workflow comments:</p>
       <ul><li><code>agent-prioritise</code> — Sun 22:30, ahead of the week</li>
-      <li><code>agent-discover</code> — Mon 01:30, product-manager leads</li>
-      <li><code>agent-infra</code> — Tue 00:30, <code>infra-lead</code></li>
-      <li><code>agent-research</code> — Wed 00:30, astrologer + numerologist</li>
-      <li><code>agent-design</code> — Thu 01:30, audits the <em>live</em> site</li>
+      <li><code>agent-discover</code> — Tue 01:30 (<code>0 20 * * 1</code>), product-manager leads</li>
+      <li><code>agent-infra</code> — Wed 00:30 (<code>0 19 * * 2</code>), <code>infra-lead</code></li>
+      <li><code>agent-research</code> — Thu 00:30 (<code>0 19 * * 3</code>), astrologer + numerologist</li>
+      <li><code>agent-design</code> — Fri 01:30 (<code>0 20 * * 4</code>), audits the <em>live</em> site</li>
       <li><code>agent-sync</code> — Fri 23:30, after the week's loops have run</li></ul>
       <p>Weekly rather than daily is a quota decision, not a judgment about importance.</p>` },
-    { id:"measure", kind:"workflow", name:"agent-measure.yml", cap:"Daily 02:30 IST. The analyst reads GA4 + GSC. Writes no code, ever.",
-      body:`<p>Runs two hours ahead of <code>agent-work</code> so the day's delivery can rank against fresh numbers.</p>
+    { id:"measure", kind:"workflow", name:"agent-measure.yml", cap:"Full run 02:30 IST, collectors again at 07:30 and every three hours. Writes no code, ever.",
+      body:`<p>Runs two hours ahead of <code>agent-work</code> so the day's delivery can rank against fresh numbers. Only the 02:30 IST slot is a full run: a second slot at 07:30 IST and one every three hours after it run the <strong>collectors only</strong> — GitHub API and committed rates, zero LLM calls, no GA4 or GSC.</p>
       <p>The <code>analyst</code> is <strong>strictly read-only</strong> — it files issues and comments and touches no source file. Its highest-value output is the <em>6–20 position band</em>: queries one or two places off page one.</p>
       <p class="sec">The part that closes the circuit</p>
       <p>For every issue closed in the last 28 days it posts the landing-page delta against the 28 days before, <strong>as a comment on that issue</strong>. Shipped work gets a score, and the score is public — including when it went the wrong way.</p>
@@ -346,12 +353,12 @@ const BANDS = [
     { id:"validate", kind:"script", name:"validate_issue.py", cap:"Replays the repro against shubhagya.com. Exit code is the verdict.",
       body:`<p>Step 0, and mandatory. It runs the issue's <code>repro:</code> steps against <strong>live production</strong> — not the tree, not localhost — and records the actual response.</p>
       <p class="sec">Verdicts</p>
-      <ul><li><code>0</code> MATCHES-STATED — confirmed, proceed</li>
-      <li><code>1</code> CANNOT-REPRODUCE — stop; this is the only code that may auto-close</li>
-      <li><code>3</code> NO-REPRO — no executable repro exists. <strong>Not</strong> the same as cannot-reproduce; do not stop</li>
-      <li><code>4</code> INCONCLUSIVE</li>
-      <li><code>5</code> DIFFERS — reproduces, but not as described; route back to discovery</li>
-      <li><code>6</code> REFUSED — provenance said no</li></ul>
+      <ul><li><code>0</code> <strong>REPRODUCES</strong> — every sample failed, deterministic; proceed</li>
+      <li><code>0</code> <strong>INTERMITTENT</strong> — some samples passed. Same exit code, different verdict: the hit rate is printed, and an intermittent bug is a different bug from a deterministic one</li>
+      <li><code>1</code> <strong>CANNOT-REPRODUCE</strong> — every sample passed. Comment with the samples and label <code>cannot-reproduce</code>; the script's own output says <strong>DO NOT close</strong></li>
+      <li><code>3</code> <strong>NO-REPRO</strong> — no executable <code>repro:</code> line. <strong>Not</strong> the same as cannot-reproduce: label <code>needs-evidence</code> and route back to discovery</li>
+      <li><code>4</code> <strong>INCONCLUSIVE</strong> — the probe itself could not run. Do not label, do not close, do not queue work from it</li></ul>
+      <p>Those are all of them: <code>validate_issue.py</code> returns 0, 1, 3 and 4, and nothing else. The verdict is the printed word, not the code — <code>REPRODUCES</code> and <code>INTERMITTENT</code> share exit 0.</p>
       <p class="sec">Why this exists at all</p>
       <p><code>BACKLOG.md</code> once recorded 36 open issues against 50 actual, and the ranking agent's own definition says <em>"do not rank from issue titles — titles lie."</em> Reading is not testing.</p>` },
     { id:"rank", kind:"agent", name:"project-manager", cap:"Ranks probe-first. Refuses any issue whose Evidence Block fails.",
@@ -370,17 +377,17 @@ const BANDS = [
       <p class="sec">Dispatched in the foreground</p>
       <p>It waits for each agent rather than firing and polling. A backgrounded dispatch whose result is never collected reads exactly like a step that succeeded.</p>` },
     { id:"architect", kind:"agent", name:"architect", cap:"Turns the spec into a numbered task list with explicit dependencies.",
-      body:`<p>Read-only — <code>Read, Grep, Glob, Bash, WebFetch</code>, no Write. It chooses the approach and produces tasks an engineer can execute independently, which is what allows several engineers to run in parallel.</p>
+      body:`<p>Tools are <code>Read, Grep, Glob, Bash, Write</code> — it has <code>Write</code>, for the design document, and no <code>WebFetch</code>. It chooses the approach and produces tasks an engineer can execute independently, which is what allows several engineers to run in parallel.</p>
       <p>Token shape is treated as a design decision here: prompt construction, caching and chunking are recorded in <code>ARCHITECTURE.md</code>, because the runtime is a free Groq tier and a design that exceeds the TPM budget is <strong>unbuildable as specified</strong>, not merely slow.</p>` },
     { id:"engineer", kind:"agent", name:"engineer", cap:"Implements one scoped task. Never pushes to main. Never verifies itself.",
       body:`<p>Takes a self-contained task — Goal, Files, Steps, Done-when — not "implement the feature". Several run in parallel when the architect's tasks are independent.</p>
       <p class="sec">Two rules repeated in its own definition</p>
-      <p>It <strong>never pushes to <code>main</code></strong>, and it <strong>never verifies its own work</strong>. The never-push rule is restated in all seven agent definitions rather than once centrally, because a subagent reads only its own definition and its prompt — a rule stated once is a rule most of them never see.</p>
-      <p>It must also measure input tokens before and after: growth is a defect even when the output is correct. One path grew 18.5% per call and caused a 21-day outage.</p>` },
+      <p>It <strong>never pushes to <code>main</code></strong>, and it <strong>never verifies its own work</strong>. The never-push rule is restated in <strong>9 of the 15</strong> agent definitions rather than once centrally, because a subagent reads only its own definition and its prompt — a rule stated once is a rule most of them never see. (<code>grep -lEi 'never push|do not push' .claude/agents/*.md | wc -l</code>. <code>CLAUDE.md</code> says "every one", which is itself the stale-number defect it warns about: the six without it are the roles that never write code.)</p>
+      <p>It must also measure input tokens before and after: growth is a defect even when the output is correct. One path grew 18.5% per call (#212) — on the path that had <em>already</em> caused a 21-day outage, not as its cause. That outage was Firebase Hosting's ~60s cap on a rewrite to Cloud Run, misdiagnosed twice before it was found.</p>` },
     { id:"qa", kind:"agent", name:"qa", cap:"Independent. Verifies against acceptance criteria and returns PASS or FAIL.",
       body:`<p>Exercises the feature for real — curl, browser, direct call — and reports per criterion. It exists because the engineer cannot be the judge of its own work; the whole point is the independence.</p>
       <p class="sec">A verdict is a report, not an action</p>
-      <p>QA cannot merge, and cannot apply its own label — subagents are refused <code>gh pr edit</code>. It returns prose; <code>qa_verdict.sh</code> is what turns prose into a label a workflow can read.</p>
+      <p>QA cannot merge. It <strong>does</strong> apply its own label, though — owner's decision, 2026-10-20 — by running <code>scripts/qa_verdict.sh</code>, which is the only thing that writes <code>qa-pass</code> or <code>qa-fail</code>. Before that, verdicts sat in agent output while PRs stalled for days, and a FAIL left no machine-readable mark at all. Only <code>agent-steward</code> is denied <code>gh pr edit</code>; the delivery cycle is not.</p>
       <p class="sec">Standing failure rules</p>
       <ul><li>An <strong>unmeasured token claim is a FAIL</strong>, as is a measured regression.</li>
       <li>A claim of traffic impact with no measurement is a FAIL.</li>
@@ -427,9 +434,11 @@ const BANDS = [
       <p class="sec">Why that was a bug and not a detail</p>
       <p><code>agent-merge</code> originally listened only to <code>PR gates</code>. When <code>build-gates</code> finished last, <strong>no edge fired at all</strong>: the merge workflow had already run, seen a pending check, and exited "leaving the PR open". Nothing re-asked.</p>
       <p>The ordering is a race, not a property of the change, so naming one workflow picks a winner in advance. Both are now triggers.</p>` },
-    { id:"qagreen", kind:"workflow", name:"qa-on-green.yml", cap:"Dispatches an independent QA round once the gates are green.",
+    { id:"qagreen", kind:"workflow", name:"qa-on-green.yml", cap:"Dispatches a QA round once the gates are green. Records qa:in-cycle, not independent.",
       body:`<p>Green CI is a weak signal here by the repo's own admission: coverage is narrow and most of the app has none. So a green gate buys a QA round rather than a merge.</p>
-      <p>This is where a QA that did <strong>not</strong> write the fix gets to attack it — the <code>qa:independent</code> provenance that <code>qa_verdict.sh</code> records. It exits cleanly when there is no open PR, so it is safe to fire on any green run.</p>` },
+      <p>It dispatches a cycle through <code>scripts/dispatch_cycle.sh</code>, and the QA step inside <code>/agent-cycle</code> records <code>qa:in-cycle</code> — "the weaker provenance on purpose", because a cycle reviewing its own fix shares the premises that produced it. So this workflow does <strong>not</strong> produce <code>qa:independent</code>; that comes from a round dispatched outside the cycle. It exits cleanly when there is no open PR, so it is safe to fire on any green run.</p>
+      <p class="sec">Why it does not dispatch the same round twice</p>
+      <p>Both triggers can fire repeatedly for one commit, and a cycle costs roughly fifty minutes of Actions budget, so the guard is <strong>idempotence per head SHA</strong>, written where the next run can read it: before dispatching, it greps the PR's comments for <code>qa-on-green: dispatched at &lt;sha&gt;</code> and stops if its own earlier run already left one for that commit. It also re-reads the head and <strong>declines</strong> if the branch moved since the SHA the gates went green on — a verdict belongs to exact code. This is the same pattern as the steward's one-dispatch-per-run cap: a loop with no memory has to leave its own state in a comment, because there is nowhere else for it to live.</p>` },
   ]},
 
   { n:"05", t:"Decide what lands", d:"The only stage holding merge authority. It belongs to a workflow, not to any agent, and it re-reads every condition from the API.", nodes:[
@@ -439,17 +448,17 @@ const BANDS = [
       <ul><li>The PR was opened by this system or the repo owner — <strong>authorship, never a branch name</strong>. It used to test <code>issue/*</code>, and every correctly-named <code>partial/</code> PR became unmergeable on its spelling alone.</li>
       <li><code>pr-gates</code> actually green on the head SHA — not merely "no failures".</li>
       <li>A QA verdict of PASS, read as the <code>qa-pass</code> label.</li>
-      <li>Inside the size limit, and touching no trust-boundary path.</li></ul>
+      <li>Touching no trust-boundary path. The size half of this condition is written but inert — <code>MAX_LINES: 1000000</code>.</li></ul>
       <p class="sec">Every trigger is load-bearing</p>
       <p>Both gate workflows on <code>workflow_run</code>, <code>pull_request_target</code> on label, plus the cron sweep — because either a gate or the label can be the last signal to arrive, and order must stop mattering.</p>
       <p>A fork PR never reaches this job at all: it is refused by the job's own <code>if:</code>, not by the author filter, because a fork PR can be authored by anyone.</p>` },
-    { id:"hold", kind:"hold", name:"held for a human", cap:"Trust boundary, oversized diff, or needs-human-review. Left open and labelled.",
+    { id:"hold", kind:"hold", name:"held for a human", cap:"Trust boundary or needs-human-review. Left open and labelled. The size hold is switched off.",
       body:`<p>A held PR is <strong>not blocked</strong> — it is left open, labelled, and reported. The hold is a machine rule, not a human in the loop.</p>
       <p class="sec">Three ways to land here</p>
       <ul><li><strong>Trust boundary</strong> — the diff touches <code>prompts/</code>, <code>knowledge/</code>, <code>.github/workflows/</code>, <code>notify.py</code>, <code>events.py</code>, <code>storage.py</code> or <code>email_sender.py</code>.</li>
-      <li><strong>Too large</strong> — green CI proves little on a big diff, and <code>main</code> deploys with no staging.</li>
-      <li><strong><code>needs-human-review</code></strong> — anything already escalated.</li></ul>
-      <p>The sweep deliberately skips all three, which is what stops a held PR from being re-labelled every half hour forever.</p>` },
+      <li><strong>Too large</strong> — green CI proves little on a big diff, and <code>main</code> deploys with no staging. <strong>This one cannot fire today:</strong> <code>MAX_LINES</code> is 1000000. The mechanism was left in place rather than deleted so it survives to be re-enabled.</li>
+      <li><strong><code>needs-human-review</code></strong> — anything already escalated, except a <code>prompts/</code>- or <code>knowledge/</code>-only PR, which <code>chief</code> may clear itself (Shape C).</li></ul>
+      <p>The sweep deliberately skips every one of these, which is what stops a held PR from being re-labelled every half hour forever.</p>` },
   ]},
 
   { n:"06", t:"Prove it, then close", d:"A merge is not a fix. The issue closes only when production is observed serving the change.", nodes:[

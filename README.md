@@ -186,9 +186,9 @@ the next one to find.
 ```mermaid
 flowchart TD
     subgraph CLOCK["00 · the clock"]
-        W["agent-work.yml<br/>daily 04:30 IST"]
+        W["agent-work.yml<br/>04:30 + 16:30 IST"]
         S["agent-steward.yml<br/>finds stalled work"]
-        M["agent-measure.yml<br/>daily · analyst"]
+        M["agent-measure.yml<br/>02:30 IST · analyst<br/>collectors every 3h"]
     end
 
     subgraph PICK["01 · choose the work"]
@@ -210,11 +210,11 @@ flowchart TD
     subgraph GATE["04 · gate it"]
         G1["pr-gates → gates"]
         G2["verify-build → build-gates"]
-        QG["qa-on-green<br/>independent round"]
+        QG["qa-on-green<br/>QA round · qa:in-cycle"]
     end
 
-    AM{{"agent-merge.yml<br/>author · gates · qa-pass · size+boundary"}}
-    HOLD["held for a human<br/>trust boundary / too large"]
+    AM{{"agent-merge.yml<br/>author · gates · qa-pass · boundary"}}
+    HOLD["held for a human<br/>trust boundary /<br/>needs-human-review"]
 
     subgraph PROVE["06 · prove it, then close"]
         VP["verify-production"]
@@ -228,8 +228,8 @@ flowchart TD
     PR --> G1 & G2
     G1 --> QG
     G1 & G2 & QG --> AM
-    AM -- "all four hold" --> VP --> CE
-    AM -. "boundary / size" .-> HOLD
+    AM -- "every condition holds" --> VP --> CE
+    AM -. "boundary / needs-human-review" .-> HOLD
     CE --> M
     M -- "28-day traffic delta,<br/>commented on the issue" --> R
 ```
@@ -239,7 +239,7 @@ flowchart TD
 | Channel | Written by | Read by | Why this one |
 | --- | --- | --- | --- |
 | `issue comment` | every agent | the next cycle, the steward, you | The only record that outlives the run. `AGENT_STATUS.md` is gitignored, so it is invisible outside one machine. |
-| `label` | `qa_verdict.sh` **only** | `agent-merge` | QA writes a *report*; the label is what a workflow can act on. Subagents are refused `gh pr edit`. |
+| `label` | `qa_verdict.sh` **only** | `agent-merge` | QA writes a *report*; the label is what a workflow can act on. QA runs `qa_verdict.sh` itself (owner, 2026-10-20) — before that, verdicts sat in agent output while PRs stalled, and a FAIL left no machine-readable mark. Only `agent-steward` is denied `gh pr edit`. |
 | `commit SHA` | engineer | QA, gates, `close-on-evidence` | Binds a verdict to exact code — a pass on a moved branch is refused. |
 | `workflow_run` | GitHub | `agent-merge`, `qa-on-green` | The edge that says a gate finished. Miss one and a green PR strands silently. |
 | `/health` | production | `close-on-evidence` | Proof the fix is actually serving, not merely merged. |
@@ -247,22 +247,28 @@ flowchart TD
 ### Where the authority sits
 
 No agent decides what lands. An agent pushes a branch and opens a PR; the
-authority to merge lives in `agent-merge.yml`, gated on four conditions that
-are all required: the PR's **author**, `pr-gates` actually **green** on the head
-SHA, a **`qa-pass`** label, and a diff inside the **size limit** touching no
-**trust-boundary** path.
+authority to merge lives in `agent-merge.yml`, gated on conditions that are all
+required: the PR's **author**, `pr-gates` actually **green** on the head SHA, a
+**`qa-pass`** label, and a diff touching no **trust-boundary** path. A diff-size
+condition is written beside them but is **switched off** — `MAX_LINES: 1000000`
+admits any plausible diff, left in place rather than deleted so the mechanism
+survives to be re-enabled.
 
 That separation is deliberate. The loop has twice produced an agent that wrote
 its own permission slip — one recorded `USER AUTHORISED PUSH this turn` into a
 status file and then cited its own line as the authorization. Keeping merge
 authority in a workflow means there is nothing for an agent to grant itself.
 
-Three paths stop for a person: a diff touching the trust boundary (prompts,
+Two paths stop for a person today: a diff touching the trust boundary (prompts,
 knowledge, `.github/workflows/`, `notify.py`, `events.py`, `storage.py`,
-`email_sender.py`), a diff over the size limit, and anything labelled
-`needs-human-review`. Green CI means very different things for a one-file
-deletion and a 3D chart, and `main` deploys with no staging — so size and path
-are treated as evidence too.
+`email_sender.py`), and anything labelled `needs-human-review` — with one
+carve-out, where `chief` may clear that label itself on a PR whose only
+trust-boundary paths are `prompts/` or `knowledge/`, adding `chief-cleared`,
+after which the sweep merges it (Shape C, owner 2026-10-20). A third path, a
+diff over the size limit, is written but inert. Green CI means very different
+things for a one-file deletion and a 3D chart, and `main` deploys with no
+staging — so path is treated as evidence too, and size would be if it were
+switched back on.
 
 ## Deploying to GCP Cloud Run
 
