@@ -75,13 +75,14 @@ the 413 taught us about.
       that said "donate black daal / mustard oil" under Sade Sati. Slice 9
       added two: the books nobody here holds named for the Manglik doctrine
       or for Kumbh Vivah, one summary carrying "not attested in BPHS" (X), and
-      the Aditya Hridaya Stotra given a Ramayana kanda and a sage (Y).
+      the Aditya Hridaya Stotra given a Ramayana kanda and a sage (Y). Slice 10
+      added one: a Manglik cancellation rule given to a named book (Z).
 
   Gate 7 - no retired claims on the reader-facing surfaces.  The same claims
       sat on the pages a reader opens directly: the /learn article bodies,
       the FAQ answers / SEO fields in `learn_registry.py`, `i18n.py` (both
       languages) and `numerology.py`. Gates 5 and 6 cleaned only what the LLM
-      is shown. This gate scans those surfaces for the twenty-four families #398
+      is shown. This gate scans those surfaces for the twenty-five families #398
       retired - Sun->red lentils, Moon->milk/Shiva, Saturn->Hanuman,
       Ketu->sesame oil, Rahu->serve outsiders, a named hymn as Saturn's
       practice or as ANY planet's universal/classical/safe one (slice 5),
@@ -103,7 +104,8 @@ the 413 taught us about.
       row and urad in the Saturn one (W), and (slice 9) the Manglik doctrine or
       Kumbh Vivah attributed to Jataka Parijata / Muhurtha Chintamani /
       Phaladeepika / Mansagari (X) and the Aditya Hridaya Stotra given a
-      Ramayana "Yuddha Kanda" and Agastya (Y)
+      Ramayana "Yuddha Kanda" and Agastya (Y), and (slice 10) a Manglik
+      cancellation rule given to a named book, or counted "over a dozen" (Z)
       (READER_FORBIDDEN) - and names file:line. It does NOT forbid the
       families still open on #398 ("black sesame", weekday fasting):
       forbidding them here would only make main red. A bare "per BPHS" is
@@ -112,8 +114,21 @@ the 413 taught us about.
       surface (festival_registry.py included since slice 5), so a gate pointed
       at an empty tree fails instead of passing.
 
-Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris — it reads one
-file, so it runs anywhere and belongs in the `verify_*` sweep.
+  Gate 8 - no Sanskrit Sade Sati phase name the knowledge base does not carry.
+      #430: the prompt told the model "rising phase (arohini)" and the UI panel
+      printed "Rising Phase (Arohini)" while knowledge/ and /learn said
+      Arambha / Madhya / Uttara - and no book we hold (corpus check, 14 books)
+      contains `arohini`, `avarohini` or `arambha`. Two unsourced vocabularies on
+      one product; the engine now names the phases by position only. This gate
+      renders the REAL Sade Sati line (chart.format_flags_for_prompt, all three
+      phases) and the EN/HI panel titles, and fails on `arohini`/`avarohini`
+      (case-insensitive, Devanagari spellings too) and on any parenthetical
+      label after "phase" that is not written in vedic_reference.md Sec 2.1-2.2.
+      Imports chart.py (needs swisseph, no ephemeris files), unlike Gates 1-7.
+
+Exit 0 = PASS, 1 = FAIL. No network, no API key, no ephemeris files — it reads
+the tree (and Gate 8 imports chart.py), so it runs anywhere and belongs in the
+`verify_*` sweep.
 
 Mutation-tested (2026-09-05): deleting any single rule's sentence from
 `natal.txt` turns Gate 2 red for that rule and only that rule; the unmutated
@@ -1242,6 +1257,67 @@ HYMN_CHAPTER_ATTRIBUTION = (
     rf"|\b{_EPIC}[^.;\n]{{0,80}}?{_ADITYA_HYMN}"
 )
 
+# --- #398 slice 10 -----------------------------------------------------------
+
+# Z. A Manglik CANCELLATION rule given to a named book. Slice 9 pinned the doctrine and
+# Kumbh Vivah and deliberately left "per Jataka Parijata" on manglik-dosh as "a larger,
+# still-open rewrite"; this is that rewrite's gate. manglik-dosh said "(per Jataka
+# Parijata)", "Per Phaladeepika, this mitigates", "Three forms all cancel per
+# Phaladeepika", "Per Jataka Parijata and Muhurtha Chintamani, a Yogakaraka cannot
+# simultaneously be the source of a major dosha", and a callout "BPHS and Phaladeepika
+# both mention Mars in these houses ... both texts immediately follow with extensive
+# lists of cancellation rules"; mangal-mars-in-vedic-astrology said "Classical texts
+# (Mansagari, Jataka Parijata, Phaladeepika) list over a dozen cancellation rules" and
+# "(per Jataka Chandrika)"; learn_registry.py carried two of those as FAQ answers, which
+# become FAQPage JSON-LD. vedic_reference.md 1.3 tags every rule to those books, and 1.6.2
+# records them as absent from data/ ("citation defect, #216 class"). What the corpus does
+# hold is ONE list of Kuja-dosha antidotes (grahas.md 12.4: both partners Manglik; per-house
+# sign exceptions; Mars-Jupiter or Mars-Moon CONJUNCTION), whose author says "much
+# importance need not be given to Kuja Dosham", and a second author who says the
+# compensation rules "were not given by maharshis". So a page may say a rule is "widely
+# repeated in the tradition" and that sources differ, never that a named book gives it, and
+# never that "over a dozen" are listed: no source we hold counts them.
+#
+# Written on the sentence, not on a list of constructions. The first version enumerated
+# "per <book>", "<book> additionally cancels", "(<books>) list ..." and so on, and a held-out batch
+# of 18 other ways to say it caught 7: the book as subject of "cancels", "is the source of the rule",
+# "comes from", "record several cancellations", "as X teaches". The claim is that a book stands
+# beside a cancellation, in either order, so that is what is pinned: a book name and a Manglik
+# cancellation word in one sentence (the window never crosses a full stop or ';'), plus the next
+# sentence's "per / in / from <book>" when the first one ends on the cancellation. It is wider than
+# slice 9's X on purpose and costs nothing today: run over the 5,591 reader-facing units after the
+# rewrite it matches nothing, and a comparison ("less systematic in the core canon (BPHS,
+# Phaladeepika, Jataka Parijata) than Mangal Dosh"), Kaal Sarp's "not in BPHS" and a book named for
+# its own subject ("Phaladeepika notes that Mercury's strength ...") have no cancellation word.
+# What it will flag later is any book named beside "cancel / mitigate / Yogakaraka / debilitated
+# Mars" - a Neechabhanga or Sade Sati cancellation given to a book is the same unverifiable claim.
+_Z_TOPIC = (r"(?:cancel\w*|parihara|bhanga|mitigat\w*|exempt\w*|exclu(?:de|des|ded|sion)|Yogakaraka|"
+            r"Mars\s+in\s+(?:these|those|the\s+\w+)\s+houses?|malefic\s+effect|debilitated\s+Mars|"
+            r"(?:own|exalted|debilitated|movable)[\s\-]+sign)")
+# Only the passive "stated in <book>" shapes, NOT a bare "per" or "from": matching.html's SEO
+# meta_description is "... Nadi cancellations. Includes Manglik compatibility per BPHS." and a
+# bare "per <book>" in the sentence after a cancellation would flag it - a page and a field
+# (the best-converting entry, verify_english_surface.py) that this slice must not move.
+_Z_ATTRIB = (r"(?:(?:this|that|it|which)\s+(?:is|was)\s+)?(?:stated|given|listed|taught|found|recorded|"
+             r"described|set\s+out|laid\s+down)\s+(?:in|by)")
+MANGLIK_RULE_TO_BOOK = (
+    # a book, then a cancellation word, in one sentence: "Jataka Parijata additionally cancels Manglik ...",
+    # "(Mansagari, Jataka Parijata, Phaladeepika) list over a dozen cancellation rules", "BPHS and
+    # Phaladeepika both mention Mars in these houses", "Mansagari cancels Manglik when Mars is in Aries"
+    rf"\b{_BOOKS}\b[^.;\n]{{0,200}}?\b{_Z_TOPIC}"
+    # a cancellation word, then a book, in one sentence: "Three forms all cancel per Phaladeepika",
+    # "cancels the Manglik dosha per classical rule (Jataka Chandrika)", "a rule found in Jataka Parijata"
+    rf"|\b{_Z_TOPIC}[^.;\n]{{0,200}}?\b{_BOOKS}\b"
+    # ...the book in the NEXT sentence: "Jupiter's aspect cancels the dosha. This is stated in Jataka Parijata."
+    rf"|\b{_Z_TOPIC}[^.;\n]{{0,120}}[.;]\s*[^.;\n]{{0,60}}?\b{_Z_ATTRIB}\s+(?:the\s+)?{_BOOKS}\b"
+    # The count: no source we hold counts the cancellation rules, and the lists disagree.
+    # "classical texts list over a dozen cancellation rules", "The classical texts give over a dozen ways ..."
+    r"|\b(?:over|more\s+than|upwards\s+of)\s+(?:a\s+)?(?:dozen|twelve|12)\s+(?:\w+\s+){0,2}?(?:cancel\w*|ways|rules|parihara)"
+    r"|\ba\s+dozen\s+(?:\w+\s+){0,2}?(?:cancel\w*|ways\s+(?:Mangl?ik|the\s+dosha))"
+    # ...and the same consensus without the number: "both texts immediately follow with extensive lists of cancellation rules"
+    r"|\b(?:both\s+|these\s+|the\s+)?(?:classical\s+)?texts\s+(?:immediately\s+)?follow\w*\s+(?:\w+\s+){0,3}?(?:lists?|set)\s+of\s+(?:\w+\s+){0,2}?cancel"
+)
+
 # What Gate 6 forbids inside an llm_summary: FORBIDDEN, except that the bare
 # "milk offering" is replaced by MILK_TO_SHIVA (the claim #398 actually
 # retired is Moon -> Shiva; kaal-sarp-dosh-remedies has a Nag Panchami serpent
@@ -1314,6 +1390,11 @@ SUMMARY_FORBIDDEN = tuple(
     (HYMN_CHAPTER_ATTRIBUTION,
      "remedies.md 6.3 says only that stotras like Aditya Hridayam are learned from a teacher; "
      "nothing in knowledge/ gives it a Ramayana kanda or a sage"),
+    # Slice 10.
+    (MANGLIK_RULE_TO_BOOK,
+     "vedic_reference.md 1.3 tags the Manglik cancellations to books absent from data/ (1.6.2); the one "
+     "antidote list we hold (grahas.md 12.4) differs and no source counts the rules - say 'widely repeated "
+     "in the tradition' and that sources differ, naming no book and giving no count"),
 )
 
 
@@ -1541,6 +1622,13 @@ READER_FORBIDDEN = (
     (HYMN_CHAPTER_ATTRIBUTION,
      "Y: nothing in knowledge/ gives the Aditya Hridaya Stotra a Ramayana kanda or a sage; call it a "
      "Sun devotion and, if the Rama story is kept, label it devotional tradition"),
+
+    # Z: #398 slice 10. See the constants above for the sourcing.
+    (MANGLIK_RULE_TO_BOOK,
+     "Z: a Manglik cancellation rule given to a book we do not hold (Jataka Parijata / Chandrika, Phaladeepika, "
+     "Muhurtha Chintamani, Mansagari, BPHS), or 'over a dozen' of them. vedic_reference.md 1.3 tags them to books "
+     "absent from data/ (1.6.2); grahas.md 12.4 holds the one antidote list we have and it differs. Say the rule "
+     "is widely repeated in the tradition and that sources differ; name no book, give no count"),
 )
 
 # Pattern index in READER_FORBIDDEN whose hits a labelled sentence may keep.
@@ -1709,6 +1797,82 @@ def gate_7_no_retired_claims_on_reader_surfaces(units=None, remedy_fields=None) 
     return ok
 
 
+# --- Gate 8 ------------------------------------------------------------------
+
+REFERENCE = REPO_ROOT / "src" / "astro_ai" / "knowledge" / "vedic_reference.md"
+
+# The two engine names #430 removed. Devanagari spellings are included because
+# the HI panel carried "(आरोहिणी)". Sec 2.7.3 of vedic_reference.md lists these
+# terms (as absences), so "is it in knowledge/" cannot be the test for them.
+SADE_SATI_RETIRED_NAMES = r"avarohini|arohini|अवरोहिणी|आरोहिणी"
+SADE_SATI_PANEL_KEYS = (
+    "sade_sati_rising_title", "sade_sati_peak_title", "sade_sati_setting_title",
+)
+
+
+def sade_sati_prompt_lines() -> list[str]:
+    """The real natal-prompt Sade Sati line for each of the three phases."""
+    from astro_ai.chart import VedicFlags, format_flags_for_prompt
+
+    out = []
+    for phase in ("rising", "peak", "setting"):
+        flags = VedicFlags(
+            manglik=False, manglik_reasons=(), sade_sati=True,
+            sade_sati_phase=phase, saturn_house_from_natal_moon=1,
+        )
+        out.append(next(ln for ln in format_flags_for_prompt(flags).splitlines()
+                        if ln.startswith("- Sade Sati:")))
+    return out
+
+
+def sade_sati_panel_titles() -> list[tuple[str, str]]:
+    from astro_ai.i18n import _TABLES
+
+    return [(f"{lang}:{key}", _TABLES[lang][key])
+            for lang in ("en", "hi") for key in SADE_SATI_PANEL_KEYS]
+
+
+def sade_sati_reference() -> str:
+    """Sec 2.1-2.2 only: where the phases are defined and named. Not 2.7.3,
+    which quotes the retired names as absences and would vouch for them."""
+    text = REFERENCE.read_text(encoding="utf-8")
+    start, end = text.find("### 2.1 "), text.find("### 2.3 ")
+    return text[start:end] if 0 <= start < end else ""
+
+
+def gate_8_sade_sati_phase_names(prompt_lines=None, panel_titles=None, reference=None) -> bool:
+    """The parameters let `mutate_natal_prompt_gate.py` feed a re-broken surface."""
+    print("Gate 8 - Sade Sati phase names carry no unsourced Sanskrit (#430)")
+    prompt_lines = sade_sati_prompt_lines() if prompt_lines is None else prompt_lines
+    panel_titles = sade_sati_panel_titles() if panel_titles is None else panel_titles
+    reference = sade_sati_reference() if reference is None else reference
+    ok = True
+    if len(prompt_lines) != 3 or len(panel_titles) != 6 or not reference.strip():
+        ok = False
+        _fail(f"scanned {len(prompt_lines)} prompt lines (want 3), {len(panel_titles)} "
+              f"panel titles (want 6), {len(reference)} B of Sec 2.1-2.2 - this gate "
+              f"is checking nothing")
+    ref = reference.lower()
+    surfaces = [(f"chart.py prompt line {i + 1}", ln, r"phase \(([^)]+)\)")
+                for i, ln in enumerate(prompt_lines)]
+    surfaces += [(w, t, r"\(([^)]+)\)") for w, t in panel_titles]
+    for where, text, label_re in surfaces:
+        if m := re.search(SADE_SATI_RETIRED_NAMES, text, flags=re.IGNORECASE):
+            ok = False
+            _fail(f"{where} says {m.group(0)!r} - in no book we hold, and not the "
+                  f"name /learn or knowledge/ uses (#430)")
+        for label in re.findall(label_re, text):
+            # Only English labels can be checked against the English reference.
+            if where.startswith("hi:") or label.lower() not in ref:
+                ok = False
+                _fail(f"{where} labels the phase {label!r}, which vedic_reference.md "
+                      f"Sec 2.1-2.2 does not write - name it by position instead")
+    if ok:
+        print(f"  ok    {len(prompt_lines)} prompt lines + {len(panel_titles)} panel "
+              f"titles: no retired name, every phase label written in the reference")
+    return ok
+
+
 def main() -> int:
     if not PROMPT.exists():
         print(f"FAIL: {PROMPT} does not exist")
@@ -1723,6 +1887,7 @@ def main() -> int:
         gate_5_no_retired_claims(text),
         gate_6_no_retired_claims_in_summaries(),
         gate_7_no_retired_claims_on_reader_surfaces(),
+        gate_8_sade_sati_phase_names(),
     ]
     print()
     if all(results):
