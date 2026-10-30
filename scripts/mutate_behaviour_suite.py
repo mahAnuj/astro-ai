@@ -1177,6 +1177,14 @@ MUTATIONS = [
      'msg = entry["message"] or ""',
      "test_a_script_payload_in_the_message_does_not_survive_as_markup"),
 
+    # The defect as it shipped: the blockquote carried no white-space rule, so
+    # every "\n" collapsed to a space in the owner's mail client.
+    ("#388: the feedback email blockquote loses white-space:pre-wrap",
+     "src/astro_ai/routes/feedback.py",
+     "background:#FAF6EF;white-space:pre-wrap;'>{msg}",
+     "background:#FAF6EF;'>{msg}",
+     "test_a_multi_line_message_keeps_its_line_breaks_in_the_owners_mail"),
+
     # The defect as it shipped: `import logging` inside the email `except`
     # block. A local import anywhere in a function makes the name local for the
     # WHOLE function, whatever the module binds -- so the Telegram handler
