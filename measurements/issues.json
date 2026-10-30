@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-10-30T08:03:52Z",
+  "generated_at": "2026-10-30T11:11:17Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 138,
-  "with_ask": 58,
+  "open": 139,
+  "with_ask": 59,
   "by_area": {
-    "UNCLASSIFIED": 51,
+    "UNCLASSIFIED": 52,
     "INFRA": 16,
     "UI": 12,
     "REDESIGN": 10,
@@ -35,7 +35,7 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 41,
+    "bug": 42,
     "untyped": 37,
     "enhancement": 27,
     "correctness": 12,
@@ -44,13 +44,30 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 93,
+    "unset": 94,
     "medium": 22,
     "high": 22,
     "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 602,
+      "title": "agent-work gates guard: an empty $sha makes the API return every run in the repo, suppressing the #322 rescue",
+      "ask": "An engineer may prefer head_sha=${sha:-0000000000000000000000000000000000000000} so an empty value can only ever match nothing.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug",
+        "category:technical",
+        "provenance:trusted"
+      ],
+      "created": "2026-10-30T11:09:16Z",
+      "updated": "2026-10-30T11:09:16Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 597,
       "title": "[UI] /kundli on mobile: the first form field sits 138px under the tab bar — / keeps the same form wholly in the fold",
@@ -234,10 +251,12 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "qa-pass",
+        "qa:independent"
       ],
       "created": "2026-10-28T06:01:11Z",
-      "updated": "2026-10-28T06:01:11Z",
+      "updated": "2026-10-30T11:03:01Z",
       "blocked": false,
       "needs_evidence": false
     },
