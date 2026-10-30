@@ -110,10 +110,15 @@ async def submit_feedback(
             msg = _html.escape(entry["message"] or "")
             page = _html.escape(entry["page"] or "") or "unknown page"
             frm = _html.escape(entry["email"] or "") or "(anonymous)"
+            # `white-space:pre-wrap` on the blockquote keeps the visitor's line
+            # breaks (#388): a bare \n in HTML collapses to one space, so a
+            # steps/expected/actual report arrived as a single run-on paragraph.
+            # It composes with the escape above -- no nl2br, no markup to forge.
+            # Inline, because mail clients never see a stylesheet.
             html = (
                 f"<p><strong>{label}</strong> via {page}</p>"
                 f"<blockquote style='border-left:3px solid #9E2B25;padding:8px 12px;"
-                f"margin:8px 0;background:#FAF6EF;'>{msg}</blockquote>"
+                f"margin:8px 0;background:#FAF6EF;white-space:pre-wrap;'>{msg}</blockquote>"
                 f"<p style='font-size:12px;color:#6B6259;'>"
                 f"From: {frm}<br>"
                 f"At: {_html.escape(str(entry['ts']))}<br>"
