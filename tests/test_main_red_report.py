@@ -205,7 +205,7 @@ The model: GitHub splits a title on non-alphanumerics and requires every term in
 the query to be present. `[`, `]` and `-` are therefore not matchable at all,
 which is the whole defect.
 """
-import json, os, re, sys
+import json, os, re, subprocess, sys
 
 argv = sys.argv[1:]
 fixture = json.load(open(os.environ["FIXTURE"]))
@@ -233,6 +233,24 @@ if argv[:2] == ["issue", "list"]:
         print(issues[0]["number"] if issues else "")
         sys.exit(0)
     print(json.dumps(issues))
+elif argv[0] == "api" and "/jobs" in argv[1]:
+    # The reporter asks whether `pr-gates`' "GATES ASSERTED" step ran, because
+    # a run conclusion of `success` does NOT mean the gates executed -- every
+    # gate step is scope-gated, so a docs-only push skips them all and still
+    # concludes success. The fixture decides what the step says; default
+    # `success`, so every pre-existing test keeps its old meaning.
+    state = fixture.get("asserted", "success")
+    steps = [{"name": "Verification gates", "conclusion": "success"}]
+    if state != "absent":
+        steps.append({"name": "GATES ASSERTED", "conclusion": state})
+    if "--jq" in argv:
+        payload = {"jobs": [{"steps": steps}]}
+        expr = argv[argv.index("--jq") + 1]
+        r = subprocess.run(("jq", "-r", expr), input=json.dumps(payload),
+                           capture_output=True, text=True)
+        sys.stdout.write(r.stdout)
+        sys.exit(r.returncode)
+    sys.exit(0)
 elif argv[:2] == ["issue", "view"]:
     number = int(argv[2])
     # Honour the `--json` field list, because WHICH fields are asked for is
@@ -241,11 +259,25 @@ elif argv[:2] == ["issue", "view"]:
     # both would hide the defect; a fake that always served only comments would
     # make the fix untestable.
     fields = argv[argv.index("--json") + 1].split(",") if "--json" in argv else []
+    payload = {}
     if "body" in fields:
-        print(fixture.get("body", {}).get(str(number), ""))
+        payload["body"] = fixture.get("body", {}).get(str(number), "")
     if "comments" in fields:
-        for b in fixture.get("comments", {}).get(str(number), []):
-            print(b)
+        payload["comments"] = [{"body": b}
+                               for b in fixture.get("comments", {}).get(str(number), [])]
+    # HONOUR `--jq`, by shelling out to the real jq (#461 round 4, BUG-3).
+    # The previous fake parsed `--json` and ignored `--jq`, so the tests pinned
+    # WHICH fields were requested and nothing about what was done with them.
+    # Mutating the jq expression alone -- `[.body] + [.comments[].body]` back to
+    # `.comments[].body`, which is exactly round 3's defect -- left all 26 tests
+    # green. The harness already requires jq, so there is nothing new to install.
+    if "--jq" in argv:
+        expr = argv[argv.index("--jq") + 1]
+        r = subprocess.run(("jq", "-r", expr), input=json.dumps(payload),
+                           capture_output=True, text=True)
+        sys.stdout.write(r.stdout)
+        sys.exit(r.returncode)
+    print(json.dumps(payload))
 elif argv[:2] == ["issue", "comment"]:
     path = argv[argv.index("--body-file") + 1]
     record("comment", number=int(argv[2]), body=open(path).read())
@@ -292,6 +324,7 @@ def _run_reporter(tmp_path, fixture: dict, sha: str, conclusion: str = "cancelle
         GH_REPO="mahAnuj/astro-ai",
         SHA=sha,
         RUN_URL="https://example.invalid/run/1",
+        RUN_ID="1",
         CONCLUSION=conclusion,
     )
     proc = subprocess.run(
@@ -518,15 +551,109 @@ def test_no_pipeline_feeds_an_early_exiting_reader():
     pipe buffer, so this asserts on the shape instead. Capture into a variable
     and use a herestring or parameter expansion.
     """
-    script = _reporter_script()
-    offenders = [
-        line.strip()
-        for line in script.splitlines()
-        if not line.lstrip().startswith("#")
-        and re.search(r"\|\s*(head\b|grep\s+-[a-zA-Z]*q)", line)
-    ]
+    # EVERY `run:` block in both workflows, not just the reporter's (#461
+    # round 4, BUG-5). Scanning the reporter alone left `pr-gates.yml` --
+    # which THIS PR newly runs on `main` -- unscanned, and it contains
+    # `echo "$changed" | grep -qE ...` in the scope step. That one is not
+    # reachable today (the largest `main` commit's file list measured 847
+    # bytes against a 64 KB pipe buffer) but it is the same class, in a file
+    # this change touches, invisible to the test that exists for the class.
+    RX = re.compile(
+        r"\|\s*(head\b|read\b|grep\b[^|]*?\s-[a-zA-Z]*(?:q|m\s*1)[a-zA-Z]*\b"
+        r"|sed\b[^|]*\bq[;'\"]?)"
+    )
+    offenders = []
+    for wf in ("main-red-report.yml", "pr-gates.yml"):
+        doc = yaml.safe_load((WF_DIR / wf).read_text())
+        for job_name, job in (doc.get("jobs") or {}).items():
+            for step in job.get("steps") or []:
+                for line in (step.get("run") or "").splitlines():
+                    if line.lstrip().startswith("#"):
+                        continue
+                    if RX.search(line):
+                        offenders.append(
+                            f"{wf}  job={job_name}  step={step.get('name')!r}\n"
+                            f"      {line.strip()}")
     assert offenders == [], (
         "a pipeline feeds a reader that exits early; under `pipefail` the "
-        "upstream dies of SIGPIPE and the pipeline reports 141:\n  "
-        + "\n  ".join(offenders)
+        "upstream dies of SIGPIPE and the pipeline reports 141 — and it only "
+        "manifests past the 64 KB pipe buffer, so a small-fixture test will "
+        "not catch it:\n  " + "\n  ".join(offenders)
+    )
+
+
+# ---------------------------------------------------------------------------
+# #461 round 4, BUG-1: a run that asserted nothing must not be judged.
+#
+# Every gate step in `pr-gates.yml` is `if: steps.scope.outputs.code ==
+# 'true'`, so a docs- or measurements-only push skips all of them and the job
+# still concludes `success`. Measured 2026-10-31: 26 of the last 40 commits on
+# `main` were that shape. The reporter used to CLOSE the sentinel on those and
+# comment "`pr-gates` passed on the merge result", which is false.
+# ---------------------------------------------------------------------------
+
+def test_a_green_run_that_skipped_every_gate_does_not_close_the_sentinel(tmp_path):
+    """The blocker. A docs-only push concludes `success` and asserts nothing."""
+    fixture = {
+        "open_issues": [{"number": 700, "title": "[main-red] main is red at deadbee"}],
+        "body": {"700": "`deadbee` — **failure**"},
+        "comments": {},
+        "asserted": "skipped",          # the gates were scope-skipped
+    }
+    proc, done = _run_reporter(tmp_path, fixture, sha="cafebabe123", conclusion="success")
+    assert proc.returncode == 0, proc.stderr
+    assert done == [], (
+        "a run that executed no gate closed the sentinel — the exact defect "
+        f"round 4 found; actions taken: {done}"
+    )
+    assert "nothing was asserted" in proc.stdout
+
+
+def test_a_green_run_that_skipped_every_gate_does_not_open_one_either(tmp_path):
+    """The same rule in the other direction: no verdict means no sentinel."""
+    fixture = {"open_issues": [], "comments": {}, "asserted": "skipped"}
+    proc, done = _run_reporter(tmp_path, fixture, sha="cafebabe123", conclusion="failure")
+    assert proc.returncode == 0, proc.stderr
+    assert done == [], f"a run that executed no gate filed a sentinel: {done}"
+
+
+def test_a_run_whose_gates_really_ran_is_still_judged(tmp_path):
+    """The control. Without this the test above passes on a reporter that does
+    nothing at all, which would be a far worse bug than the one it pins."""
+    fixture = {"open_issues": [], "comments": {}, "asserted": "success"}
+    proc, done = _run_reporter(tmp_path, fixture, sha="cafebabe123", conclusion="failure")
+    assert proc.returncode == 0, proc.stderr
+    assert done, "a run whose gates DID execute was not reported at all"
+    assert done[0]["kind"] == "create"
+
+
+def test_a_missing_marker_step_fails_loudly_rather_than_guessing(tmp_path):
+    """If `pr-gates.yml` renames the step, the reporter must not fall back to
+    trusting the run conclusion — that silently restores the defect."""
+    fixture = {"open_issues": [], "comments": {}, "asserted": "absent"}
+    proc, done = _run_reporter(tmp_path, fixture, sha="cafebabe123", conclusion="failure")
+    assert proc.returncode == 1, (
+        f"a drifted step name was tolerated; rc={proc.returncode}\n{proc.stdout}"
+    )
+    assert done == []
+    assert "drifted apart" in proc.stdout
+
+
+def test_pr_gates_carries_the_step_the_reporter_reads(tmp_path):
+    """The other half of the coupling: the two files must agree on the name.
+
+    The reporter failing loudly is only useful if someone notices; this fails
+    at PR time instead.
+    """
+    import yaml
+    wf = yaml.safe_load((WF_DIR / "pr-gates.yml").read_text())
+    steps = wf["jobs"]["gates"]["steps"]
+    marker = [s for s in steps if s.get("name") == "GATES ASSERTED"]
+    assert len(marker) == 1, (
+        "pr-gates.yml has no 'GATES ASSERTED' step; main-red-report.yml reads "
+        "it by name to tell a real green from a scope-skipped one"
+    )
+    assert "steps.scope.outputs.code" in marker[0].get("if", ""), (
+        "the marker must be gated on the same condition as the gates it "
+        f"stands for; got: {marker[0].get('if')!r}"
     )

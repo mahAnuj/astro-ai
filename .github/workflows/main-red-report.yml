@@ -46,9 +46,32 @@ on:
     workflows: ["PR gates"]
     types: [completed]
 
+# SERIALISED REPO-WIDE (#461 round 4). The sentinel lookup is read-then-write
+# with no lock: two reporters that both read "no sentinel open" both file one.
+# Reachable because `pr-gates` on `main` is `cancel-in-progress: false`, so a
+# push burst pending-cancels a middle run whose `workflow_run/completed` fires
+# immediately while the long run is still going.
+#
+# NOT keyed on the SHA: like `agent-merge`, this job does not know which
+# sentinel it is about until its first `gh issue list` has run, so keying on
+# anything finer would not serialise the thing that races.
+#
+# `cancel-in-progress: false` for `agent-merge`'s reason: cancelling the thing
+# that reports a kill is the one outcome worth avoiding.
+concurrency:
+  group: main-red-report
+  cancel-in-progress: false
+
 permissions:
   contents: read
   issues: write
+  # `actions: read` for ONE call: reading back whether `pr-gates`' "GATES
+  # ASSERTED" step ran on this commit. An omitted scope is `none`, so without
+  # this the jobs API is a 403 and the reporter would fall back to trusting
+  # the run conclusion -- which is the defect it exists to avoid.
+  # `verify_workflows.py`'s gh-vs-permissions check caught the omission here
+  # rather than in production.
+  actions: read
 
 jobs:
   report:
@@ -84,11 +107,51 @@ jobs:
           GH_REPO: ${{ github.repository }}
           SHA: ${{ github.event.workflow_run.head_sha }}
           RUN_URL: ${{ github.event.workflow_run.html_url }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
           CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
           set -euo pipefail
           short=$(printf '%s' "$SHA" | cut -c1-7)
           line="\`$short\` — **$CONCLUSION** — [gates run]($RUN_URL)"
+
+          # DID THE GATES ACTUALLY RUN? (#461 round 4, BUG-1)
+          #
+          # `conclusion` alone cannot answer this. Every gate step in
+          # `pr-gates.yml` is `if: steps.scope.outputs.code == 'true'`, so a
+          # docs- or measurements-only push skips all of them and the job
+          # still concludes `success`. Measured 2026-10-31: 26 of the last 40
+          # commits on `main` were that shape -- several a day, every day.
+          #
+          # Acting on it was the live defect: a green-but-empty run CLOSED the
+          # sentinel and commented "`pr-gates` passed on the merge result",
+          # which is false. Applied to the 2026-10-20 incident this file
+          # exists to report, the sentinel would have closed the same
+          # afternoon.
+          #
+          # So ask the jobs API for the conclusion of the one step that runs
+          # only when the gates do. `skipped` there means the run asserted
+          # nothing: neither open a sentinel nor close one, exactly as the
+          # `conclusion != 'skipped'` job filter already does for a run that
+          # never started.
+          asserted=$(gh api "repos/$GH_REPO/actions/runs/$RUN_ID/jobs" \
+                       --jq '[.jobs[].steps[]
+                             | select(.name == "GATES ASSERTED")
+                             | .conclusion] | first // "absent"' \
+                     2>/dev/null || echo "unreadable")
+          echo "GATES ASSERTED step: $asserted"
+
+          if [ "$asserted" = "absent" ]; then
+            # The step is gone or renamed. Failing loudly beats silently
+            # reverting to "trust the run conclusion", which is the bug.
+            echo "::error::no 'GATES ASSERTED' step on run $RUN_ID — pr-gates.yml" \
+                 "and this reporter have drifted apart; refusing to judge the run"
+            exit 1
+          fi
+          if [ "$asserted" != "success" ]; then
+            echo "::notice::the gates did not run on $short (step: $asserted)" \
+                 "— nothing was asserted, so nothing is opened or closed"
+            exit 0
+          fi
 
           # THE SENTINEL IS FOUND CLIENT-SIDE, NOT WITH `--search`.
           #

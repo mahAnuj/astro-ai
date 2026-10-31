@@ -116,7 +116,14 @@ concurrency:
   # a second push during the first push's ~8 minutes would cancel it, and the
   # commit that broke the tree would leave no verdict at all -- re-creating the
   # exact invisibility #461 is about, through the mechanism added to fix it.
-  # Every commit on `main` gets its own verdict; branches still coalesce,
+  # Nearly every commit on `main` gets its own verdict; branches still coalesce,
+  # NOT every one: GitHub keeps a single PENDING run per group, so a burst of
+  # three pushes inside one run drops the middle one (`agent-merge.yml:110-117`
+  # records the same mechanism). That commit gets no verdict of its own, and
+  # the reporter deliberately reports `cancelled` -- so it can file a
+  # "[main-red] ... did not pass" for a commit whose gates never actually
+  # failed. Round 4 of #461 found this claim overstated; it is narrowed rather
+  # than deleted because the common case really is one verdict per commit.
   # because there only the latest push matters.
   group: pr-gates-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
@@ -177,7 +184,16 @@ jobs:
           # Everything the suite, the gates or the build actually read.
           # .github/workflows counts: the behaviour suite reads
           # verify-production.yml to check its jq field reads still match /health.
-          if echo "$changed" | grep -qE '^(src/|tests/|scripts/|assets/|\.github/workflows/|package(-lock)?\.json|tailwind\.config\.js|pyproject\.toml|uv\.lock)'; then
+          # A HERESTRING, not `echo ... | grep -q` (#461 round 4). Under
+          # `pipefail` a `grep -q` exits as soon as it matches, the upstream
+          # dies of SIGPIPE, and the PIPELINE reports 141 -- but only once the
+          # input crosses the 64 KB pipe buffer, so no fixture-sized test
+          # catches it. Not reachable here today (the largest `main` commit's
+          # file list measured 847 bytes, and every tracked file name together
+          # is 27 KB) but it is the class that cost this PR two rounds, and a
+          # herestring removes it rather than relying on the input staying
+          # small.
+          if grep -qE '^(src/|tests/|scripts/|assets/|\.github/workflows/|package(-lock)?\.json|tailwind\.config\.js|pyproject\.toml|uv\.lock)' <<<"$changed"; then
             echo "code=true" >> "$GITHUB_OUTPUT"
             echo "-> running the full gates"
           else
@@ -429,6 +445,23 @@ jobs:
             echo "::error::$pass of $total gates passed — failed:$failed skipped:$skipped"
             exit 1
           fi
+
+      # THE REPORTER READS THIS STEP BY NAME (#461). Everything above is
+      # `if: steps.scope.outputs.code == 'true'`, so a docs- or
+      # measurements-only push SKIPS every gate and the job still concludes
+      # `success` -- indistinguishable, from outside, from a run in which all
+      # 21 gates passed. Measured 2026-10-31: 26 of the last 40 commits on
+      # `main` were that shape.
+      #
+      # `main-red-report.yml` therefore asks the jobs API for this step's
+      # conclusion rather than trusting the run's. `success` here means the
+      # gates really executed; `skipped` means the run asserted nothing and so
+      # must neither open a sentinel nor close one. Renaming this step without
+      # updating the reporter silently restores the bug, which is why the
+      # reporter fails loudly when it cannot find the step at all.
+      - name: GATES ASSERTED
+        if: steps.scope.outputs.code == 'true'
+        run: echo "the suite and every gate ran against this commit"
 
       - name: App log on failure
         if: failure()

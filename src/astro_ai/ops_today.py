@@ -167,9 +167,12 @@ LOOP_WORKFLOWS = (
     # a failed run of it means a red `main` reached nobody. It is the
     # `agent-steward.yml` case in this list's own docstring -- a leg whose job is
     # to make a stoppage visible, whose own silence is therefore the worst kind.
-    # Its job is SKIPPED on every green run and on every PR run, which scores as
-    # success (`SUCCEEDED_CONCLUSIONS` below), so this does not redden the tile
-    # on the common path (#461).
+    # Its job is SKIPPED on every PR run; on a green PUSH to `main` it RUNS and
+    # concludes `success`. Both are in `SUCCEEDED_CONCLUSIONS` below, so the
+    # tile stays green either way -- but the reason differs, and this comment
+    # said "skipped on every green run" until round 4 caught it, which stopped
+    # being true the moment round 2 moved the reporter into its own
+    # `workflow_run` workflow (#461).
     "main-red-report.yml",
     "agent-sync.yml",
     "agent-prioritise.yml",
