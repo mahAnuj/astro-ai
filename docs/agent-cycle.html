@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Agent Cycle</title>
+<meta name="description" content="How astro-ai's autonomous agents pass work to each other, and what actually holds the authority to merge.">
+<style>
+:root{
+  --ink:#0b0e20; --ink-2:#141934; --ink-3:#1e2548;
+  --line:#2d3666; --line-soft:#232a52;
+  --text:#e8e9f5; --text-dim:#a2a8cf; --text-faint:#6f78a8;
+  --brass:#e8a33d; --teal:#3fd2c7; --rose:#f2637e; --violet:#9b8cf0;
+  --signal:var(--teal);
+  --r:3px;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --ink:#f7f6f2; --ink-2:#fffefb; --ink-3:#efedfa;
+  --line:#c3c7e0; --line-soft:#dcdfee;
+  --text:#14183a; --text-dim:#4d5480; --text-faint:#7b82a8;
+  --brass:#a86d10; --teal:#117f78; --rose:#c22e4e; --violet:#5b49c4;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ink); color:var(--text);
+  font-family:var(--sans); line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+/* ---------- header ---------- */
+header{border-bottom:1px solid var(--line-soft);padding:56px 0 40px;position:relative;overflow:hidden}
+header::after{
+  content:"";position:absolute;inset:auto 0 0 0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--brass),transparent);
+  opacity:.5;
+}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--brass);margin:0 0 18px
+}
+h1{
+  font-size:clamp(30px,5.4vw,56px);line-height:1.04;margin:0 0 20px;
+  font-weight:600;letter-spacing:-.025em;max-width:22ch
+}
+h1 em{font-style:normal;color:var(--brass)}
+.thesis{font-size:clamp(15px,2vw,19px);color:var(--text-dim);max-width:62ch;margin:0}
+.thesis strong{color:var(--text);font-weight:600}
+.facts{
+  display:flex;flex-wrap:wrap;gap:0;margin:34px 0 0;
+  border:1px solid var(--line-soft);border-radius:var(--r);overflow:hidden
+}
+.fact{flex:1 1 130px;padding:14px 16px;border-right:1px solid var(--line-soft);background:var(--ink-2)}
+.fact:last-child{border-right:0}
+.fact b{display:block;font-family:var(--mono);font-size:21px;color:var(--teal);font-weight:500}
+.fact span{font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em}
+
+/* ---------- controls ---------- */
+.controls{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:20px 0;position:sticky;top:0;z-index:40;
+  background:color-mix(in srgb,var(--ink) 92%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line-soft)
+}
+button{
+  font-family:var(--mono);font-size:12px;letter-spacing:.04em;
+  background:var(--ink-3);color:var(--text);border:1px solid var(--line);
+  padding:9px 15px;border-radius:var(--r);cursor:pointer;transition:.16s
+}
+button:hover{border-color:var(--brass);color:var(--brass)}
+button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+button.on{background:var(--brass);color:#1a1200;border-color:var(--brass);font-weight:600}
+.spacer{flex:1}
+.hint{font-family:var(--mono);font-size:11px;color:var(--text-faint)}
+
+/* ---------- legend ---------- */
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:16px 0 4px}
+.lg{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--text-dim)}
+.sw{width:11px;height:11px;border-radius:2px;flex:none}
+
+/* ---------- diagram ---------- */
+.stage-wrap{position:relative;padding:12px 0 60px}
+#edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;overflow:visible}
+.band{position:relative;z-index:2;margin:0 0 34px}
+.band-h{
+  display:flex;align-items:baseline;gap:12px;margin:0 0 14px;
+  padding-bottom:7px;border-bottom:1px solid var(--line-soft)
+}
+.band-n{font-family:var(--mono);font-size:11px;color:var(--brass);letter-spacing:.1em}
+.band-t{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.band-d{font-size:12px;color:var(--text-faint);margin-left:auto;text-align:right;max-width:46ch}
+.row{display:flex;flex-wrap:wrap;gap:12px}
+
+.node{position:relative;
+  flex:1 1 190px;min-width:175px;max-width:300px;
+  background:var(--ink-2);border:1px solid var(--line);border-left-width:3px;
+  border-radius:var(--r);padding:12px 13px;cursor:pointer;
+  transition:transform .16s,border-color .16s,box-shadow .16s;text-align:left;
+  font-family:inherit;color:inherit;display:block
+}
+.node:hover{transform:translateY(-2px);border-color:var(--text-faint)}
+.node.lit{
+  border-color:var(--signal);
+  box-shadow:0 0 0 1px var(--signal),0 6px 26px -6px color-mix(in srgb,var(--signal) 55%,transparent);
+  transform:translateY(-2px)
+}
+.node.sel{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass)}
+.node .kind{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--text-faint);display:block;margin-bottom:5px
+}
+.node .name{font-family:var(--mono);font-size:12.5px;font-weight:600;display:block;margin-bottom:5px;line-height:1.3}
+.node .cap{font-size:11.5px;color:var(--text-dim);line-height:1.45;display:block}
+.node .hb{
+  position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.06em;text-transform:uppercase;padding:2px 5px;border-radius:3px;
+  border:1px solid currentColor;opacity:.92;
+}
+.hb-green{color:var(--teal)} .hb-amber{color:var(--brass)}
+.hb-red{color:var(--rose)} .hb-running{color:var(--text-faint)}
+.hb-unknown{color:var(--text-faint)}
+.node .hr{
+  display:block;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line-soft);
+  font-family:var(--mono);font-size:10.5px;color:var(--text-faint);line-height:1.5;
+}
+/* The actionable banner. It is deliberately the first thing on the page when
+   anything is failing: the question this page exists to answer is "what do I
+   fix", and a reader should not have to hunt for it. */
+#todo{margin:0 0 26px;border:1px solid var(--rose);border-radius:var(--r);overflow:hidden}
+#todo.allgreen{border-color:var(--teal)}
+#todo .th{
+  padding:11px 15px;background:color-mix(in srgb,var(--rose) 9%,transparent);
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--rose);border-bottom:1px solid var(--line-soft);
+}
+#todo.allgreen .th{background:color-mix(in srgb,var(--teal) 9%,transparent);color:var(--teal)}
+#todo .th.sub{color:var(--brass);background:color-mix(in srgb,var(--brass) 8%,transparent);border-top:1px solid var(--line-soft)}
+#todo.allgreen .th.sub{color:var(--brass)}
+#todo ul{margin:0;padding:12px 15px 13px 32px}
+#todo li{margin:0 0 9px;font-size:13px;line-height:1.55}
+#todo li:last-child{margin-bottom:0}
+#todo b{font-family:var(--mono);font-size:12px}
+#todo .act{display:block;color:var(--text-dim);font-size:12px;margin-top:2px}
+#todo .asof{padding:8px 15px;border-top:1px solid var(--line-soft);font-size:11px;color:var(--text-faint)}
+.node[data-kind="agent"]{border-left-color:var(--violet)}
+.node[data-kind="workflow"]{border-left-color:var(--teal)}
+.node[data-kind="script"]{border-left-color:var(--brass)}
+.node[data-kind="hold"]{border-left-color:var(--rose)}
+.node[data-kind="clock"]{border-left-color:var(--text-faint)}
+
+/* edges */
+.ed{fill:none;stroke:var(--line);stroke-width:1.4}
+.ed.hold{stroke:var(--rose);stroke-dasharray:5 4;opacity:.75}
+.ed.back{stroke:var(--brass);stroke-dasharray:3 5;opacity:.7}
+.pulse{fill:none;stroke:var(--signal);stroke-width:2.4;stroke-linecap:round;opacity:0}
+.pulse.go{opacity:1;animation:dash 1s linear forwards}
+@keyframes dash{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:0}}
+.edlab{
+  font-family:var(--mono);font-size:9.5px;fill:var(--text-faint);
+  paint-order:stroke;stroke:var(--ink);stroke-width:4px;stroke-linejoin:round
+}
+
+/* ---------- panel ---------- */
+.panel{
+  position:fixed;right:0;top:0;bottom:0;width:min(430px,100%);z-index:60;
+  background:var(--ink-2);border-left:1px solid var(--line);
+  transform:translateX(101%);transition:transform .26s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;overflow:hidden
+}
+.panel.open{transform:none}
+.panel-h{padding:20px 22px 14px;border-bottom:1px solid var(--line-soft);flex:none}
+.panel-h .kind{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--brass)}
+.panel-h h3{font-family:var(--mono);font-size:16px;margin:7px 0 0;font-weight:600;word-break:break-word}
+.panel-b{padding:18px 22px 40px;overflow-y:auto;font-size:13.5px;color:var(--text-dim);line-height:1.62}
+.panel-b p{margin:0 0 13px}
+.panel-b strong{color:var(--text);font-weight:600}
+.panel-b code{font-family:var(--mono);font-size:12px;background:var(--ink-3);padding:1px 5px;border-radius:2px;color:var(--teal)}
+.panel-b .sec{
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-faint);margin:20px 0 8px;padding-top:14px;border-top:1px solid var(--line-soft)
+}
+.panel-b ul{margin:0 0 13px;padding-left:18px}
+.panel-b li{margin:0 0 6px}
+.close{position:absolute;top:16px;right:16px;padding:5px 10px;font-size:14px;line-height:1}
+.scrim{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .26s;z-index:55}
+.scrim.on{opacity:.55;pointer-events:auto}
+
+/* ---------- prose sections ---------- */
+section.prose{border-top:1px solid var(--line-soft);padding:44px 0}
+section.prose h2{font-size:clamp(19px,2.6vw,25px);margin:0 0 14px;font-weight:600;letter-spacing:-.02em}
+section.prose p{color:var(--text-dim);max-width:70ch;margin:0 0 14px;font-size:14.5px}
+section.prose code{font-family:var(--mono);font-size:12.5px;background:var(--ink-3);padding:1.5px 5px;border-radius:2px;color:var(--teal)}
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:13px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);font-weight:500}
+td code{white-space:nowrap}
+footer{border-top:1px solid var(--line-soft);padding:26px 0 50px;font-size:12px;color:var(--text-faint)}
+footer a{color:var(--text-dim)}
+
+@media (max-width:720px){
+  .band-d{display:none}
+  .node{flex:1 1 100%;max-width:none}
+  .facts{flex-direction:column}
+  .fact{border-right:0;border-bottom:1px solid var(--line-soft)}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;transition-duration:.001ms!important}
+  .pulse.go{opacity:1;stroke-dashoffset:0}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="eyebrow">astro-ai · shubhagya.com</p>
+    <h1>No agent ever talks to <em>another agent</em>.</h1>
+    <p class="thesis">
+      A subagent starts with no memory of any other, so this system cannot pass work by
+      conversation. Every handoff is <strong>written down somewhere durable</strong> — an issue
+      comment, a label, a commit SHA, a PR body, a <code>workflow_run</code> event. The diagram
+      below is that paper trail. The arrows are not calls; they are
+      <strong>artifacts one agent leaves for the next one to find.</strong>
+    </p>
+    <div class="facts">
+      <div class="fact"><b>15</b><span>agents</span></div>
+      <div class="fact"><b>17</b><span>workflows</span></div>
+      <div class="fact"><b>7</b><span>stages</span></div>
+      <div class="fact"><b>0</b><span>agents that can merge</span></div>
+      <div class="fact"><b>0</b><span>humans inside a cycle</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <button id="play">▶ Play the cycle</button>
+    <button id="reset">Reset</button>
+    <span class="spacer"></span>
+    <span class="hint" id="status">Click any node for the explanation</span>
+    <button id="theme">◐</button>
+  </div>
+
+  <div class="legend">
+    <span class="lg"><i class="sw" style="background:var(--violet)"></i>agent (an LLM invocation)</span>
+    <span class="lg"><i class="sw" style="background:var(--teal)"></i>workflow (GitHub Actions)</span>
+    <span class="lg"><i class="sw" style="background:var(--brass)"></i>script (deterministic)</span>
+    <span class="lg"><i class="sw" style="background:var(--rose)"></i>hold — stops here for a human</span>
+    <span class="lg"><i class="sw" style="background:var(--text-faint)"></i>clock</span>
+  </div>
+
+  <div class="stage-wrap">
+    <svg id="edges" aria-hidden="true"></svg>
+    <div id="todo" hidden></div>
+<div id="bands"></div>
+  </div>
+</div>
+
+<section class="prose"><div class="wrap">
+  <h2>What the arrows actually carry</h2>
+  <p>
+    Because nothing shares memory, the medium matters more than the message. Each channel below
+    has a different durability, and that is what decides which one a handoff uses.
+  </p>
+  <table>
+    <thead><tr><th>Channel</th><th>Written by</th><th>Read by</th><th>Why this one</th></tr></thead>
+    <tbody>
+      <tr><td><code>issue comment</code></td><td>every agent</td><td>the next cycle, the steward, you</td>
+          <td>The only record that outlives the run. <code>AGENT_STATUS.md</code> is gitignored, so it is invisible outside one machine.</td></tr>
+      <tr><td><code>label</code></td><td><code>qa_verdict.sh</code> only</td><td><code>agent-merge</code></td>
+          <td>A machine-readable verdict. QA writes a <em>report</em>; the label is what a workflow can act on.</td></tr>
+      <tr><td><code>commit SHA</code></td><td>engineer</td><td>QA, gates, <code>close-on-evidence</code></td>
+          <td>Binds a verdict to exact code. A pass on a moved branch is refused.</td></tr>
+      <tr><td><code>workflow_run</code></td><td>GitHub</td><td><code>agent-merge</code>, <code>qa-on-green</code></td>
+          <td>The edge that says a gate finished. Miss one and a green PR strands silently.</td></tr>
+      <tr><td><code>/health</code></td><td>production</td><td><code>close-on-evidence</code></td>
+          <td>Proof the fix is actually serving, not merely merged.</td></tr>
+    </tbody>
+  </table>
+</div></section>
+
+<section class="prose"><div class="wrap">
+  <h2>Where the authority really sits</h2>
+  <p>
+    The strictest rule in the repo is that <strong>no agent decides what lands.</strong> An agent
+    pushes a branch and opens a PR; the authority to merge lives in
+    <code>agent-merge.yml</code>, gated on evidence rather than on anyone's judgment that the work
+    is finished. Four conditions bind — author, <code>pr-gates</code> green on the head SHA,
+    <code>qa-pass</code>, and a diff touching no trust-boundary path (<code>agent-merge.yml</code>
+    steps <code>own</code>, <code>gates</code>, <code>qa</code>, <code>boundary</code>). A fifth,
+    diff size (step <code>size</code>), is <strong>in place but switched off</strong>:
+    <code>MAX_LINES: 1000000</code> admits any plausible diff, so it holds nothing today.
+  </p>
+  <p>
+    This matters because the loop has twice produced an agent that wrote its own permission slip.
+    One recorded <code>USER AUTHORISED PUSH this turn</code> into a status file, then cited its own
+    line as the authorization. Keeping merge authority in a workflow means there is nothing for an
+    agent to grant itself.
+  </p>
+  <p>
+    Two paths stop for a person today: a diff touching the <strong>trust boundary</strong>
+    (prompts, knowledge, workflows, <code>notify.py</code>, <code>events.py</code>,
+    <code>storage.py</code>, <code>email_sender.py</code>), and anything labelled
+    <code>needs-human-review</code> (which holds the <code>*/30</code> sweep but not the
+    edge-triggered path — #604) — with one carve-out: <code>chief</code> may clear that label
+    itself on a PR whose only trust-boundary paths are <code>prompts/</code> or
+    <code>knowledge/</code> (Shape C, owner 2026-10-20), adding <code>chief-cleared</code>, after
+    which the sweep merges it. A third path, a diff <strong>over the size limit</strong>, is
+    written but inert — <code>MAX_LINES</code> was raised to 1000000 on 2026-10-08 and left in
+    place so the mechanism survives. Green CI means very different things for a one-file deletion
+    and a 3D chart, and <code>main</code> deploys with no staging — so path is treated as evidence
+    too, and size would be if it were switched back on.
+  </p>
+</div></section>
+
+<section class="prose"><div class="wrap">
+  <h2>The failure this diagram keeps teaching</h2>
+  <p>
+    Every edge in the authority stage is load-bearing, and the recurring bug is a
+    <em>missing</em> one. <code>agent-merge</code> listened only to <code>PR gates</code>, but
+    <code>build-gates</code> is published by <code>verify-build</code> — a different workflow — so
+    whenever that finished last, nothing fired and a green, <code>qa-pass</code>, mergeable PR sat
+    untouched. Measured on PR #562: <code>gates</code> 7m43s, <code>build-gates</code> 10m25s.
+  </p>
+  <p>
+    The scheduled sweep is the backstop, and it is weaker than it looks. Its cron asks for every
+    30 minutes; measured over 71 runs it delivered a <strong>126-minute best case</strong> and a
+    444-minute worst, because GitHub throttles short-interval cron on public repos. A backstop that
+    arrives in hours is not a substitute for an edge that arrives in seconds.
+  </p>
+</div></section>
+
+<footer><div class="wrap">
+  Generated for <a href="https://github.com/mahAnuj/astro-ai">mahAnuj/astro-ai</a>.
+  Node descriptions trace to <code>.claude/agents/</code>, <code>.claude/commands/</code> and
+  <code>.github/workflows/</code> as of 2026-10-27.
+</div></footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="panel" id="panel" aria-live="polite">
+  <button class="close" id="close" aria-label="Close">✕</button>
+  <div class="panel-h"><span class="kind" id="pk"></span><h3 id="pt"></h3></div>
+  <div class="panel-b" id="pb"></div>
+</aside>
+
+<script>
+const BANDS = [
+  { n:"00", t:"The clock", d:"Almost nothing here is event-driven: these loops wake on cron, staggered into the window after the usage cap resets. The one exception is the steward, which also listens for Agent work to finish.", nodes:[
+    { id:"work", kind:"workflow", name:"agent-work.yml", cap:"Twice daily, 04:30 and 16:30 IST. Runs /agent-cycle — one issue, start to PR.",
+      body:`<p>The delivery loop. Fires <code>0 23 * * *</code> — 04:30 IST, deliberately just after the Claude Max 5-hour rolling cap resets, because a cycle that dies mid-run leaves a half-finished branch. Since 2026-10-13 it also fires <code>0 11 * * *</code> — 16:30 IST, twelve hours on — so this runs <strong>twice a day, not once</strong>.</p>
+      <p><strong>One issue per run.</strong> A single cycle is 10–15 agent invocations, and QA historically fails its first submission most of the time, so two or three QA rounds per issue is the budget.</p>
+      <p class="sec">It passes on</p><p>A prompt (<code>/agent-cycle</code>) and nothing else. The cycle rediscovers all its own state from GitHub, because the previous run's memory is gone.</p>` },
+    { id:"weekly", kind:"workflow", name:"six weekly loops", cap:"discover · infra · research · design · sync · prioritise. Staggered across the week.",
+      body:`<p>Each wakes once a week, staggered so they never contend for the same quota window — in IST two of them share Friday (design just after midnight, sync late evening), which the UTC crons keep a day apart. The crons are <strong>UTC</strong>; the times below are IST, which is why four of them fall a day later than the day named in the workflow comments:</p>
+      <ul><li><code>agent-prioritise</code> — Sun 22:30, ahead of the week</li>
+      <li><code>agent-discover</code> — Tue 01:30 (<code>0 20 * * 1</code>), product-manager leads</li>
+      <li><code>agent-infra</code> — Wed 00:30 (<code>0 19 * * 2</code>), <code>infra-lead</code></li>
+      <li><code>agent-research</code> — Thu 00:30 (<code>0 19 * * 3</code>), astrologer + numerologist</li>
+      <li><code>agent-design</code> — Fri 01:30 (<code>0 20 * * 4</code>), audits the <em>live</em> site</li>
+      <li><code>agent-sync</code> — Fri 23:30, after the week's loops have run</li></ul>
+      <p>Weekly rather than daily is a quota decision, not a judgment about importance.</p>` },
+    { id:"measure", kind:"workflow", name:"agent-measure.yml", cap:"Full run 02:30 IST, collectors again at 07:30 and every three hours. Writes no code, ever.",
+      body:`<p>Runs two hours ahead of <code>agent-work</code> so the day's delivery can rank against fresh numbers. Only the 02:30 IST slot is a full run: a second slot at 07:30 IST and one every three hours after it run the <strong>collectors only</strong> — GitHub API and committed rates, zero LLM calls, no GA4 or GSC.</p>
+      <p>The <code>analyst</code> is <strong>strictly read-only</strong> — it files issues and comments and touches no source file. Its highest-value output is the <em>6–20 position band</em>: queries one or two places off page one.</p>
+      <p class="sec">The part that closes the circuit</p>
+      <p>For every issue closed in the last 28 days <em>that carried a <code>thesis:</code> and a <code>metric:</code></em>, it posts the landing-page delta against the 28 days before, <strong>as a comment on that issue</strong>. Shipped work gets a score, and the score is public — including when it went the wrong way.</p>
+      <p class="sec">Why it must read trailing windows</p>
+      <p>GA4 lags 24–48h and GSC 2–3 days. An analyst reading "today" would score a ship against data that has not arrived.</p>` },
+    { id:"steward", kind:"workflow", name:"agent-steward.yml", cap:"Finds work that stopped moving and re-dispatches a cycle at it.",
+      body:`<p>The loop's immune system. It looks for PRs that are stalled — green but unmerged, <code>qa-fail</code> with unaddressed findings, a draft nobody readied — and dispatches a cycle to act on them.</p>
+      <p>It is deliberately <strong>denied</strong> <code>gh pr merge</code>, <code>gh pr review</code>, <code>gh pr edit</code>, <code>gh issue close</code> and <code>gh pr close</code>. It decides what to <em>work on</em>, never what lands.</p>
+      <p>One dispatch per run, and it verifies the head SHA still matches the one QA examined before calling findings unaddressed.</p>` },
+    { id:"sweep", kind:"clock", name:"*/30 sweep", cap:"The backstop for a missed edge. Measured: 126–444 min, never 30.",
+      body:`<p><code>agent-merge</code> also runs on cron, because its two event triggers are <strong>edges</strong> and an edge can be spent before the last green check lands. That stranded PRs four separate times (#303, #322, #352, #356).</p>
+      <p class="sec">It adds no authority</p><p>It only supplies a PR number. Every condition is re-read from the API by the same steps in the same order, so the worst it can do is merge something that already satisfies all of them.</p>
+      <p class="sec">And it is slower than it claims</p>
+      <p>The cron asks for 30 minutes. Measured across 71 scheduled runs: <strong>min 126m, mean 244m, max 444m</strong> — not once at 30, and the fastest gap was 4.2× the declared interval. GitHub throttles short-interval cron on public repos. Treat it as a floor measured in hours.</p>` },
+  ]},
+
+  { n:"01", t:"Choose the work", d:"An open issue is not evidence that the problem still exists. Nothing is built before the premise is tested against production.", nodes:[
+    { id:"prov", kind:"script", name:"Step 0a — provenance", cap:"Who wrote this issue? Decides whether its text may be executed.",
+      body:`<p>Runs <em>before</em> the issue is read as instructions. An issue body is untrusted input: it can contain a shell command in its <code>repro:</code> line, and executing one written by a stranger is remote code execution with the repo's token.</p>
+      <p>So the author is established first, and that decides what the issue is allowed to do. A repro supplied in a <strong>comment</strong> IS parsed — the last <code>repro:</code> wins, because a correction in a comment supersedes the body — and the real safeguard is that the probe can only issue a GET or POST against production, not that comments are ignored. Only the AUTHOR decides what the issue is allowed to do, on a trusted issue — provenance covers the author, not commenters.</p>` },
+    { id:"validate", kind:"script", name:"validate_issue.py", cap:"Replays the repro against shubhagya.com. Exit code is the verdict.",
+      body:`<p>Step 0, and mandatory. It runs the issue's <code>repro:</code> steps against <strong>live production</strong> — not the tree, not localhost — and records the actual response.</p>
+      <p class="sec">Verdicts</p>
+      <ul><li><code>0</code> <strong>REPRODUCES</strong> — every sample failed, deterministic; proceed</li>
+      <li><code>0</code> <strong>INTERMITTENT</strong> — some samples passed. Same exit code, different verdict: the hit rate is printed, and an intermittent bug is a different bug from a deterministic one</li>
+      <li><code>1</code> <strong>CANNOT-REPRODUCE</strong> — every sample passed. Comment with the samples and label <code>cannot-reproduce</code>; the script's own output says <strong>DO NOT close</strong></li>
+      <li><code>3</code> <strong>NO-REPRO</strong> — no executable <code>repro:</code> line. <strong>Not</strong> the same as cannot-reproduce: label <code>needs-evidence</code> and route back to discovery</li>
+      <li><code>4</code> <strong>INCONCLUSIVE</strong> — the probe itself could not run. Do not label, do not close, do not queue work from it</li></ul>
+      <p>Those are all of them: <code>validate_issue.py</code> returns 0, 1, 3 and 4, and nothing else. The verdict is the printed word, not the code — <code>REPRODUCES</code> and <code>INTERMITTENT</code> share exit 0.</p>
+      <p class="sec">Why this exists at all</p>
+      <p><code>BACKLOG.md</code> once recorded 36 open issues against 50 actual, and the ranking agent's own definition says <em>"do not rank from issue titles — titles lie."</em> Reading is not testing.</p>` },
+    { id:"rank", kind:"agent", name:"project-manager", cap:"Ranks probe-first. Refuses any issue whose Evidence Block fails.",
+      body:`<p>Read-only by design — it holds no Write tool. It ranks only confirmed-live items, so a fixed-but-open issue is caught at triage instead of after an engineer has spent a cycle on it.</p>
+      <p>It <strong>refuses to rank</strong> an issue whose Evidence Block is missing or fails <code>verify_issue_evidence.py</code>, labels it <code>needs-evidence</code> and moves on. That label is the discovery loop's queue, so an unevidenced issue routes back for data rather than being built on a guess.</p>
+      <p>It is also one of the three things permitted to close an issue — but only inside <code>/prioritise</code>, and only as already-fixed, does-not-reproduce, overtaken or duplicate.</p>` },
+    { id:"resume", kind:"script", name:"Step 2.5 — resume", cap:"Checks whether a previous cycle already did half of this.",
+      body:`<p>Because cycles have no memory of each other, the second cycle on an issue would otherwise start from zero and redo work — or worse, contradict it.</p>
+      <p>So before building, the cycle reads what is already on the issue and the branch: prior comments, an existing <code>partial/</code> branch, an open PR, a QA verdict and the SHA it was bound to. Then it continues from there.</p>
+      <p>This is why a slice that could not be finished lands as <code>partial/&lt;n&gt;-&lt;slug&gt;</code> with the remaining criteria written down, rather than as silence.</p>` },
+  ]},
+
+  { n:"02", t:"Build it", d:"Four agents in sequence, none of which can see the others' context. The dev-lead is the only thing carrying state between them.", nodes:[
+    { id:"devlead", kind:"agent", name:"dev-lead", cap:"Orchestrates. Re-states the whole problem to each agent it dispatches.",
+      body:`<p>The coordinator, and the only agent that holds the thread. Each subagent it calls has <strong>no memory of the others</strong>, so the dev-lead's real job is context handoff: it must restate the spec, the design and the findings in every dispatch.</p>
+      <p class="sec">Dispatched in the foreground</p>
+      <p>It waits for each agent rather than firing and polling. A backgrounded dispatch whose result is never collected reads exactly like a step that succeeded.</p>` },
+    { id:"architect", kind:"agent", name:"architect", cap:"Turns the spec into a numbered task list with explicit dependencies.",
+      body:`<p>Tools are <code>Read, Grep, Glob, Bash, Write</code> — it has <code>Write</code>, for the design document, and no <code>WebFetch</code>. It chooses the approach and produces tasks an engineer can execute independently, which is what allows several engineers to run in parallel.</p>
+      <p>Token shape is treated as a design decision here: prompt construction, caching and chunking are recorded in <code>ARCHITECTURE.md</code>, because the runtime is a free Groq tier and a design that exceeds the TPM budget is <strong>unbuildable as specified</strong>, not merely slow.</p>` },
+    { id:"engineer", kind:"agent", name:"engineer", cap:"Implements one scoped task. Never pushes to main. Never verifies itself.",
+      body:`<p>Takes a self-contained task — Goal, Files, Steps, Done-when — not "implement the feature". Several run in parallel when the architect's tasks are independent.</p>
+      <p class="sec">Two rules repeated in its own definition</p>
+      <p>It <strong>never pushes to <code>main</code></strong>, and it <strong>never verifies its own work</strong>. The never-push rule is restated in <strong>9 of the 15</strong> agent definitions rather than once centrally, because a subagent reads only its own definition and its prompt — a rule stated once is a rule most of them never see. (<code>grep -lEi 'never push|do not push' .claude/agents/*.md | wc -l</code>. <code>CLAUDE.md</code> says "every one", which is itself the stale-number defect it warns about: the six without it are the roles that never write code.)</p>
+      <p>It must also measure input tokens before and after: growth is a defect even when the output is correct. One path grew 18.5% per call (#212) — on the path that had <em>already</em> caused a 21-day outage, not as its cause. That outage was Firebase Hosting's ~60s cap on a rewrite to Cloud Run, misdiagnosed twice before it was found.</p>` },
+    { id:"qa", kind:"agent", name:"qa", cap:"Independent. Verifies against acceptance criteria and returns PASS or FAIL.",
+      body:`<p>Exercises the feature for real — curl, browser, direct call — and reports per criterion. It exists because the engineer cannot be the judge of its own work; the whole point is the independence.</p>
+      <p class="sec">A verdict is a report, not an action</p>
+      <p>QA cannot merge. It <strong>does</strong> apply its own label, though — owner's decision, 2026-10-20 — by running <code>scripts/qa_verdict.sh</code>, which is the only thing that writes <code>qa-pass</code> or <code>qa-fail</code>. Before that, verdicts sat in agent output while PRs stalled for days, and a FAIL left no machine-readable mark at all. Only <code>agent-steward</code> is denied <code>gh pr edit</code>; the delivery cycle is not.</p>
+      <p class="sec">Standing failure rules</p>
+      <ul><li>An <strong>unmeasured token claim is a FAIL</strong>, as is a measured regression.</li>
+      <li>A claim of traffic impact with no measurement is a FAIL.</li>
+      <li>Every user-facing astrological claim must trace to a sourced corpus line.</li></ul>
+      <p>A FAIL loops straight back to the engineer, and the PR stays a draft.</p>` },
+    { id:"chief", kind:"agent", name:"chief", cap:"Breaks ties only. Cannot start work, and cannot grant anyone permission.",
+      body:`<p>Invoked only by a formal escalation — never on a schedule — when two agents genuinely disagree and neither can decide.</p>
+      <p class="sec">Deliberately constrained</p>
+      <ul><li>An escalation must present <strong>both positions verbatim</strong>. A summary is not an escalation.</li>
+      <li>It chooses between the options presented or returns <code>insufficient-evidence</code>. It may not invent a third.</li>
+      <li>It <strong>cannot grant push, merge or deploy authority</strong> to anything — that authority lives in the gates, so there is nothing to hand out.</li>
+      <li>Three escalations per cycle, maximum. A fourth stops the cycle and files <code>needs-human-review</code>.</li>
+      <li><strong>One carve-out (Shape C, owner 2026-10-20):</strong> it may clear <code>needs-human-review</code> itself — adding <code>chief-cleared</code> — but only when <em>every</em> trust-boundary path the PR touches is <code>prompts/</code> or <code>knowledge/</code>. Never on workflows, <code>email_sender.py</code>, <code>notify.py</code>, <code>storage.py</code> or <code>events.py</code>.</li></ul>
+      <p>Every escalation and ruling is an issue comment, so a <em>fabricated</em> escalation is visible as a ruling with no matching dissent above it.</p>` },
+  ]},
+
+  { n:"03", t:"Write it down", d:"The point at which in-memory work becomes durable: a branch, a PR, and a label that a workflow can read.", nodes:[
+    { id:"push", kind:"script", name:"Step 3.6 — push early", cap:"Pushes as soon as the first commit exists, not at the end.",
+      body:`<p>Deliberately early. A cycle that dies on quota after committing locally but before pushing loses the work entirely and leaves nothing for the next run to resume from.</p>
+      <p>Pushing a branch is also the one write an agent is allowed. Branches and PRs only — never <code>main</code>.</p>
+      <p class="sec">One thing it cannot push</p>
+      <p>Changes under <code>.github/workflows/**</code>. The App token has no <code>workflows</code> permission, so a broken workflow can never be fixed by the loop that it broke. That repair needs a human session.</p>` },
+    { id:"verdict", kind:"script", name:"qa_verdict.sh", cap:"The only writer of qa-pass / qa-fail. Binds a pass to one SHA.",
+      body:`<p>The sole bridge from QA's prose to a machine-readable verdict, and the <strong>only</strong> thing that writes those two labels.</p>
+      <ul><li><code>PASS</code> → adds <code>qa-pass</code>, removes <code>qa-fail</code>, and runs <code>gh pr ready</code></li>
+      <li><code>FAIL</code> → adds <code>qa-fail</code>, removes <code>qa-pass</code>, and the draft stays a draft</li></ul>
+      <p class="sec">Bound to a commit</p>
+      <p>A pass is recorded against <code>--sha</code> and the script <strong>refuses (exit 3) if the branch has moved</strong>. Otherwise a verdict earned on one commit would silently vouch for whatever was pushed after it.</p>
+      <p>It also records provenance — <code>qa:independent</code> or the weaker <code>qa:in-cycle</code> — because who ran the QA changes how much the pass is worth.</p>` },
+    { id:"pr", kind:"script", name:"Step 4 — open the PR", cap:"The PR body is the handoff document for every later stage.",
+      body:`<p>A branch plus a PR, and the cycle stops. The PR body is read later by the gates, by the next cycle, and by the steward, so it carries the evidence rather than a summary.</p>
+      <p class="sec">The keyword trap</p>
+      <p>GitHub's closing-keyword parser matches <code>clos(e|es|ed)</code>, <code>fix(e[sd])?</code> and <code>resolv(e|es|ed)</code> followed by <code>#N</code> — and it <strong>ignores negation</strong>. A commit saying "not fixed: #412" closes #412. A partial slice therefore writes <code>refs #N</code>, never <code>fixes #N</code>.</p>` },
+  ]},
+
+  { n:"04", t:"Gate it", d:"Two separate workflows publish the two required checks. Which of them finishes last is a race, and both must be listened to.", nodes:[
+    { id:"prgates", kind:"workflow", name:"pr-gates.yml → gates", cap:"pytest, every verify_*.py, and a mutation sweep that proves the suite can fail.",
+      body:`<p>The main gate. Runs the suite, then every <code>scripts/verify_*.py</code> in <strong>one</strong> step under <code>xargs -P 4</code>, reading each exit code back from a file. Deliberately not a step per gate: <code>bash -e</code> would kill the step before the code could be read, which is how the first run of this workflow reported nothing about which gate failed. It still names the failures — <code>::error::$pass of $total gates passed — failed:$failed</code>.</p>
+      <p class="sec">The mutation sweep</p>
+      <p>It breaks the code on purpose, one row at a time, and requires a named test to go red for each. A suite that passes is worthless if it would also pass on broken code. The <strong>CONTROL row must report MISSED</strong> — a sweep reporting "N/N caught" without it is ambiguous between a working harness and a blind one.</p>
+      <p class="sec">Pull requests only</p>
+      <p>It does not run on push to <code>main</code>: every merge would re-run every non-excluded <code>verify_*.py</code> against a tree that had just passed them as a PR. A docs-only diff skips the expensive steps and finishes in seconds, deliberately — so the merge workflow still gets its trigger.</p>` },
+    { id:"vbuild", kind:"workflow", name:"verify-build.yml → build-gates", cap:"A different workflow. Finishing last here is what stranded PR #562.",
+      body:`<p>Publishes the second required check. It has no docs-only skip, so on a trivial diff it takes far longer than <code>gates</code> — and on PR #562 it also outlasted <code>gates</code> on a <em>code</em> diff: 10m25s against 7m43s.</p>
+      <p class="sec">Why that was a bug and not a detail</p>
+      <p><code>agent-merge</code> originally listened only to <code>PR gates</code>. When <code>build-gates</code> finished last, <strong>no edge fired at all</strong>: the merge workflow had already run, seen a pending check, and exited "leaving the PR open". Nothing re-asked.</p>
+      <p>The ordering is a race, not a property of the change, so naming one workflow picks a winner in advance. Both are now triggers.</p>` },
+    { id:"qagreen", kind:"workflow", name:"qa-on-green.yml", cap:"Dispatches a QA round once the gates are green. Records qa:in-cycle, not independent.",
+      body:`<p>Green CI is a weak signal here by the repo's own admission: coverage is narrow and most of the app has none. So a green gate buys a QA round rather than a merge.</p>
+      <p>It dispatches a cycle through <code>scripts/dispatch_cycle.sh</code>, and the QA step inside <code>/agent-cycle</code> records <code>qa:in-cycle</code> — "the weaker provenance on purpose", because a cycle reviewing its own fix shares the premises that produced it. So this workflow does <strong>not</strong> produce <code>qa:independent</code>; that comes from a round dispatched outside the cycle. It exits cleanly when there is no open PR, so it is safe to fire on any green run.</p>
+      <p class="sec">Why it does not dispatch the same round twice</p>
+      <p>Its one <code>workflow_run</code> trigger can fire repeatedly for one commit, and a cycle costs roughly fifty minutes of Actions budget, so the guard is <strong>idempotence per head SHA</strong>, written where the next run can read it: before dispatching, it greps the PR's comments for <code>qa-on-green: dispatched at &lt;sha&gt;</code> and stops if its own earlier run already left one for that commit. It also re-reads the head and <strong>declines</strong> if the branch moved since the SHA the gates went green on — a verdict belongs to exact code. This is the same pattern as the steward's one-dispatch-per-run cap: a loop with no memory has to leave its own state in a comment, because there is nowhere else for it to live.</p>` },
+  ]},
+
+  { n:"05", t:"Decide what lands", d:"The only stage holding merge authority. It belongs to a workflow, not to any agent, and it re-reads every condition from the API.", nodes:[
+    { id:"merge", kind:"workflow", name:"agent-merge.yml", cap:"Four conditions bind; a fifth, diff size, is switched off. Fires on either gate, on a label, and on cron.",
+      body:`<p><strong>This is where "full autonomy" stops being a plan.</strong> No agent decides what lands; the authority is here, gated on evidence rather than on anyone's judgment that the work is finished.</p>
+      <p class="sec">Four conditions bind, and a fifth does not</p>
+      <ul><li>The PR was opened by this system or the repo owner — <strong>authorship, never a branch name</strong>. It used to test <code>issue/*</code>, and every correctly-named <code>partial/</code> PR became unmergeable on its spelling alone.</li>
+      <li><code>pr-gates</code> actually green on the head SHA — not merely "no failures".</li>
+      <li>A QA verdict of PASS, read as the <code>qa-pass</code> label.</li>
+      <li>Touching no trust-boundary path. The size half of this condition is written but inert — <code>MAX_LINES: 1000000</code>.</li></ul>
+      <p class="sec">Every trigger is load-bearing</p>
+      <p>Both gate workflows on <code>workflow_run</code>, <code>pull_request_target</code> on label, plus the cron sweep — because either a gate or the label can be the last signal to arrive, and order must stop mattering.</p>
+      <p>A fork PR never reaches this job at all: it is refused by the job's own <code>if:</code>, not by the author filter, because a fork PR can be authored by anyone.</p>` },
+    { id:"hold", kind:"hold", name:"held for a human", cap:"Trust boundary or needs-human-review. Left open and labelled. The size hold is switched off.",
+      body:`<p>A held PR is <strong>not blocked</strong> — it is left open, labelled, and reported. The hold is a machine rule, not a human in the loop.</p>
+      <p class="sec">Three ways to land here</p>
+      <ul><li><strong>Trust boundary</strong> — the diff touches <code>prompts/</code>, <code>knowledge/</code>, <code>.github/workflows/</code>, <code>notify.py</code>, <code>events.py</code>, <code>storage.py</code> or <code>email_sender.py</code>.</li>
+      <li><strong>Too large</strong> — green CI proves little on a big diff, and <code>main</code> deploys with no staging. <strong>This one cannot fire today:</strong> <code>MAX_LINES</code> is 1000000. The mechanism was left in place rather than deleted so it survives to be re-enabled.</li>
+      <li><strong><code>needs-human-review</code></strong> — anything already escalated, except a <code>prompts/</code>- or <code>knowledge/</code>-only PR, which <code>chief</code> may clear itself (Shape C). <strong>Narrower than it looks:</strong> this label is read by the <code>*/30</code> sweep's candidate filter and nowhere else, so it keeps the sweep from <em>selecting</em> a PR but does not stop the edge-triggered path. A labelled PR touching no trust-boundary path can still merge on a <code>workflow_run</code> or label edge (#604).</li></ul>
+      <p>The sweep deliberately skips every one of these, which is what stops a held PR from being re-labelled every half hour forever.</p>` },
+  ]},
+
+  { n:"06", t:"Prove it, then close", d:"A merge is not a fix. The issue closes only when production is observed serving the change.", nodes:[
+    { id:"vprod", kind:"workflow", name:"verify-production.yml", cap:"Asserts against the deployed site. Dispatched right after the merge.",
+      body:`<p>Runs against <code>https://shubhagya.com</code>, not the tree — <code>main</code> is the deploy, and production is the first place code runs.</p>
+      <p>The merge workflow dispatches it explicitly, and warns loudly if that dispatch fails: without it nothing asserts against production and the issue will never auto-close.</p>
+      <p>It is also the reason agents can validate at all. Agents in the sandbox often cannot reach shubhagya.com, but <strong>GitHub runners have open network</strong>.</p>` },
+    { id:"close", kind:"workflow", name:"close-on-evidence.yml", cap:"Closes the issue on three proofs — all three, or nothing.",
+      body:`<p><em>"Close an issue when production proves its fix is live — and only then."</em></p>
+      <ul><li>A <strong>merged</strong> PR saying <code>closes #N</code></li>
+      <li><code>verify-production</code> success for <strong>that exact commit</strong></li>
+      <li><code>/health</code> reporting that commit as the one serving</li></ul>
+      <p class="sec">Why all three</p>
+      <p>#143 was closed as fixed while a fourth wrong date was live in production. A merge proves code moved; only <code>/health</code> proves it is what visitors are getting.</p>
+      <p>A docs-only change does not close this way either, and the reason is worth getting right. It is <strong>not</strong> that the run is skipped — <code>verify-production.yml</code>'s <code>paths-ignore</code> covers <code>.github/**</code>, <code>.claude/**</code>, <code>scripts/**</code>, <code>measurements/**</code>, <code>evals/**</code> and <code>*.md</code>, but <code>docs/**</code> is not on it. Nor is it that <code>/health</code> reports no <code>build_sha</code>: it has reported one since <code>BUILD_SHA</code> was set on 2026-10-08. What actually declines is the <em>exact-commit</em> proof. A measurements-only push produces no new revision — the Cloud Build trigger ignores <code>measurements/**</code> and nothing else, so a push mixing it with anything else still deploys, so <code>/health</code>'s <code>build_sha</code> stays at the last commit that changed code, and <code>close-on-evidence</code> takes its <code>live != SHA</code> branch — "a newer deploy landed, not closing" (<code>close-on-evidence.yml:117-126</code>). Measured 2026-10-30: <code>main</code> at <code>df10ee6</code> (a measurements commit) while <code>/health</code> served <code>c932a8b</code>, the most recent code commit. Those issues close through <code>/prioritise</code> instead.</p>` },
+    { id:"outcomes", kind:"workflow", name:"loop-outcomes.yml", cap:"Records what each run actually produced, including the misses.",
+      body:`<p>The audit layer. It counts what the loops produced — PRs merged against rejected, cycles that ended in nothing, issues closed with evidence — so a loop that quietly stops working is visible.</p>
+      <p>That failure shape is the reason it exists, and the workflow says so: on 2026-10-08/09 <strong>four defects in the loops' own plumbing each hid behind a green or absent workflow status</strong> (#316, part 2 of #313) — a step that 403s inside <code>continue-on-error</code>, a trigger leg failing every time while its twin works, a close job that runs and closes nothing. A file that cannot be written does not announce itself; it just stops moving.</p>` },
+    { id:"score", kind:"agent", name:"analyst scores it", cap:"28 days later, posts the traffic delta on the issue it closed.",
+      body:`<p>The edge that makes this a circuit rather than a line — for the subset it can score. For every issue closed in the last 28 days <em>that carried a <code>thesis:</code> and a <code>metric:</code></em> (<code>analyst.md:76-77</code>), the analyst compares the landing page against the 28 days before and comments the delta on that issue.</p>
+      <p>That number then feeds the next ranking, so discovery is decided by what measurably worked rather than by what seemed promising. Without it the agents would ship forever and never learn.</p>
+      <p>Published in full, including results that went the wrong way.</p>` },
+  ]},
+];
+
+const EDGES = [
+  ["work","prov","cron"], ["steward","prov","dispatch"], ["weekly","rank","issues"],
+  ["prov","validate","author ok"], ["validate","rank","verdict"], ["rank","resume","top item"],
+  ["resume","devlead","spec"],
+  ["devlead","architect","spec"], ["architect","engineer","task list"], ["engineer","qa","commit SHA"],
+  ["qa","engineer","FAIL → findings","back"], ["devlead","chief","deadlock","hold"],
+  ["engineer","push","commit"], ["qa","verdict","PASS / FAIL"], ["push","pr","branch"],
+  ["verdict","pr","label"],
+  ["pr","prgates","pull_request"], ["pr","vbuild","pull_request"],
+  ["prgates","qagreen","workflow_run"],
+  ["prgates","merge","workflow_run"], ["vbuild","merge","workflow_run"],
+  ["qagreen","qa","dispatches a round","back"],
+  ["merge","hold","boundary / needs-human-review","hold"],
+  ["merge","vprod","dispatch"], ["vprod","close","run + /health"], ["close","outcomes","closed"],
+  ["score","weekly","what worked","back"],
+  ["measure","score","GA4 + GSC"], ["sweep","merge","re-asks"],
+];
+
+/* ---------- LIVE: generated by scripts/build_agent_cycle_dag.py ---------- */
+const LIVE = {"generated_at": "2026-10-31T00:24:03Z","nodes": {"close": {"changed": "","concl": "success","health": "green","last": "2026-10-30T18:05","produced": 0,"ran": 0,"raw": "green","runs": 98,"verdict": "on-demand","wf": "close-on-evidence.yml"},"measure": {"changed": "","concl": "in_progress","health": "running","last": "2026-10-31T00:19","produced": 0,"ran": 0,"raw": "running","runs": 99,"verdict": "on-demand","wf": "agent-measure.yml"},"merge": {"changed": "","concl": "success","health": "green","last": "2026-10-30T23:58","produced": 0,"ran": 0,"raw": "green","runs": 100,"verdict": "on-demand","wf": "agent-merge.yml"},"outcomes": {"changed": "","concl": "failure","health": "reporting","last": "2026-10-27T09:14","produced": 0,"ran": 0,"raw": "amber","runs": 4,"verdict": "not-due-yet","wf": "loop-outcomes.yml"},"prgates": {"changed": "","concl": "success","health": "green","last": "2026-10-30T23:28","produced": 0,"ran": 0,"raw": "green","runs": 100,"verdict": "on-demand","wf": "pr-gates.yml"},"qagreen": {"changed": "","concl": "success","health": "green","last": "2026-10-30T23:29","produced": 0,"ran": 0,"raw": "green","runs": 100,"verdict": "on-demand","wf": "qa-on-green.yml"},"steward": {"changed": "","concl": "success","health": "green","last": "2026-10-30T18:00","produced": 0,"ran": 0,"raw": "green","runs": 73,"verdict": "on-demand","wf": "agent-steward.yml"},"sweep": {"changed": "","concl": "success","health": "green","last": "2026-10-30T23:58","produced": 0,"ran": 0,"raw": "green","runs": 100,"verdict": "on-demand","wf": "agent-merge.yml"},"vbuild": {"changed": "","concl": "success","health": "green","last": "2026-10-30T23:31","produced": 0,"ran": 0,"raw": "green","runs": 100,"verdict": "on-demand","wf": "verify-build.yml"},"vprod": {"changed": "","concl": "success","health": "green","last": "2026-10-30T17:59","produced": 0,"ran": 0,"raw": "green","runs": 100,"verdict": "not-due-yet","wf": "verify-production.yml"},"weekly": {"concl": "mixed","health": "red","last": "2026-10-30T22:00","members": [{"changed": "2026-10-27T23:26","concl": "failure","health": "fixed?","last": "2026-10-26T23:32","produced": 0,"ran": 0,"raw": "red","runs": 5,"verdict": "not-due-yet","wf": "agent-discover.yml"},{"changed": "","concl": "success","health": "green","last": "2026-10-27T22:54","produced": 0,"ran": 0,"raw": "green","runs": 5,"verdict": "not-due-yet","wf": "agent-infra.yml"},{"changed": "2026-10-17T13:14","concl": "failure","health": "red","last": "2026-10-28T23:00","produced": 0,"ran": 0,"raw": "red","runs": 3,"verdict": "not-due-yet","wf": "agent-research.yml"},{"changed": "","concl": "success","health": "green","last": "2026-10-29T23:41","produced": 0,"ran": 0,"raw": "green","runs": 5,"verdict": "not-due-yet","wf": "agent-design.yml"},{"changed": "","concl": "success","health": "green","last": "2026-10-30T22:00","produced": 0,"ran": 0,"raw": "green","runs": 4,"verdict": "not-due-yet","wf": "agent-sync.yml"},{"changed": "2026-10-27T23:26","concl": "failure","health": "fixed?","last": "2026-10-25T19:22","produced": 0,"ran": 0,"raw": "red","runs": 6,"verdict": "not-due-yet","wf": "agent-prioritise.yml"}],"produced": 0,"ran": 0,"runs": 28,"verdict": "","wf": "six weekly loops"},"work": {"changed": "","concl": "success","health": "green","last": "2026-10-30T16:57","produced": 66,"ran": 94,"raw": "green","runs": 94,"verdict": "not-due-yet","wf": "agent-work.yml"}}};
+/* ---------- end LIVE ---------- */
+
+const NODES = {}, ROW = {};
+BANDS.forEach((b,i) => b.nodes.forEach(n => { NODES[n.id] = n; ROW[n.id] = i; }));
+
+/* ---------- render ---------- */
+const bandsEl = document.getElementById("bands");
+/* ---------- live health, from the LIVE snapshot ---------- */
+/* What each loop stopping actually COSTS. The colour alone is not actionable:
+   "agent-discover is red" tells a reader nothing they can decide on, while
+   "nothing is finding new work" names the consequence and implies the fix.
+   Keyed on the workflow so it is data, not prose scattered through the page. */
+const COST = {
+  "agent-discover.yml":   "nothing is finding new work, so the backlog stops growing from evidence",
+  "agent-prioritise.yml": "nothing is ranking the backlog, so cycles pick by whatever is nearest",
+  "agent-research.yml":   "no corpus work is landing, so unsourced claims stay unsourced",
+  "agent-design.yml":     "the live site is not being audited for visual regressions",
+  "agent-sync.yml":       "cross-repo state is drifting unreported",
+  "agent-infra.yml":      "uptime, cost and the free-tier ceilings are unwatched",
+  "loop-outcomes.yml":    "nothing is reporting whether any loop has an effect — the one check that would have caught the others",
+  "agent-work.yml":       "no issue is being worked end to end",
+  "agent-measure.yml":    "no GA4/GSC numbers are arriving, so shipped work goes unscored",
+  "agent-steward.yml":    "stalled PRs are not being found",
+  "agent-merge.yml":      "nothing is merging, so finished work sits",
+  "pr-gates.yml":         "the gate that decides what can merge is itself failing",
+  "verify-build.yml":     "the second required check is failing",
+  "qa-on-green.yml":      "green PRs are not getting a QA round",
+  "verify-production.yml":"nothing is asserting against the deployed site",
+  "close-on-evidence.yml":"issues are not closing on production evidence",
+};
+const L = (id) => (LIVE && LIVE.nodes && LIVE.nodes[id]) || null;
+
+function liveBadge(id){
+  const d = L(id);
+  if (!d) return "";
+  return `<span class="hb hb-${d.health}">${d.health}</span>`;
+}
+function liveRun(id){
+  const d = L(id);
+  if (!d) return "";
+  const eff = d.ran ? ` · ${d.produced}/${d.ran} runs produced something` : "";
+  return `<span class="hr">last ${d.last || "never"} → ${d.concl}${eff}</span>`;
+}
+
+/* The banner. Red and amber only, worst first, each with its cost and the one
+   command that shows why. */
+function renderTodo(){
+  const el = document.getElementById("todo");
+  if (!LIVE || !LIVE.nodes) return;
+  /* Three states, not one. "last run failed" is NOT the same as "broken":
+     a fix may have landed since, and one workflow exits non-zero by design.
+     Collapsing them is what made the first version of this page call three
+     healthy loops broken. */
+  const bad = [], waiting = [], reporting = [];
+  const flat = [];
+  for (const d of Object.values(LIVE.nodes)){
+    if (Array.isArray(d.members)) flat.push(...d.members); else flat.push(d);
+  }
+  for (const d of flat){
+    if (d.health === "red" || d.health === "amber") bad.push(d);
+    else if (d.health === "fixed?") waiting.push(d);
+    else if (d.health === "reporting") reporting.push(d);
+  }
+  const asof = `Snapshot ${LIVE.generated_at || "unknown"} — regenerate with <code>uv run python scripts/build_agent_cycle_dag.py</code>. This page is committed, not live.`;
+  const why = (d) => `<span class="act">check: <code>gh run list --workflow=${d.wf} --limit 5</code>` +
+                     ` then <code>gh run view &lt;id&gt; --log-failed</code></span>`;
+  let out = "";
+  if (bad.length){
+    out += `<div class="th">${bad.length} loop${bad.length > 1 ? "s" : ""} broken — fix ${bad.length > 1 ? "these" : "this"} first</div><ul>` +
+      bad.map(d => `<li><b>${d.wf}</b> — last run ${d.last || "never"} → <b>${d.concl}</b>, and nothing in it has changed since` +
+        `<span class="act">${COST[d.wf] || "this loop is not doing its job"}.</span>${why(d)}</li>`).join("") + `</ul>`;
+  }
+  if (waiting.length){
+    out += `<div class="th sub">${waiting.length} already fixed — nothing to do, awaiting the next run</div><ul>` +
+      waiting.map(d => `<li><b>${d.wf}</b> — failed ${d.last}, but its workflow or a script it calls changed on <b>${d.changed || "a later date"}</b>` +
+        `<span class="act">the fix has not been exercised yet; it runs on its own schedule.</span></li>`).join("") + `</ul>`;
+  }
+  if (reporting.length){
+    out += `<div class="th sub">${reporting.length} reporting findings — read ${reporting.length > 1 ? "them" : "it"}</div><ul>` +
+      reporting.map(d => `<li><b>${d.wf}</b> — exits non-zero <em>by design</em> when it finds something` +
+        `<span class="act">a red run here means it has something to tell you, not that it is broken.</span>${why(d)}</li>`).join("") + `</ul>`;
+  }
+  if (!out){
+    el.className = "allgreen";
+    el.innerHTML = `<div class="th">every loop green at last run</div><div class="asof">${asof}</div>`;
+    el.hidden = false;
+    return;
+  }
+  el.className = bad.length ? "" : "allgreen";
+  el.innerHTML = out + `<div class="asof">${asof} Health is derived: a failure counts as <b>broken</b> only if nothing in the workflow or the scripts it names has changed since.</div>`;
+  el.hidden = false;
+}
+
+bandsEl.innerHTML = BANDS.map(b => `
+  <div class="band">
+    <div class="band-h">
+      <span class="band-n">${b.n}</span><span class="band-t">${b.t}</span>
+      <span class="band-d">${b.d}</span>
+    </div>
+    <div class="row">
+      ${b.nodes.map(n => `
+        <button class="node" data-id="${n.id}" data-kind="${n.kind}">
+          <span class="kind">${n.kind}</span>
+          ${liveBadge(n.id)}
+          <span class="name">${n.name}</span>
+          <span class="cap">${n.cap}</span>
+          ${liveRun(n.id)}
+        </button>`).join("")}
+    </div>
+  </div>`).join("");
+
+renderTodo();
+
+/* ---------- edges ---------- */
+const svg = document.getElementById("edges");
+const NS = "http://www.w3.org/2000/svg";
+
+function draw(){
+  svg.innerHTML = "";
+  const host = svg.parentElement.getBoundingClientRect();
+  svg.setAttribute("viewBox", `0 0 ${host.width} ${host.height}`);
+
+  for (const [from, to, label, kind] of EDGES){
+    const a = document.querySelector(`[data-id="${from}"]`);
+    const b = document.querySelector(`[data-id="${to}"]`);
+    if (!a || !b) continue;
+    const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+    const A = { l:ra.left-host.left, r:ra.right-host.left, t:ra.top-host.top, b:ra.bottom-host.top,
+                cx:ra.left-host.left+ra.width/2, cy:ra.top-host.top+ra.height/2 };
+    const B = { l:rb.left-host.left, r:rb.right-host.left, t:rb.top-host.top, b:rb.bottom-host.top,
+                cx:rb.left-host.left+rb.width/2, cy:rb.top-host.top+rb.height/2 };
+
+    // CLASSIFY BY BAND, NOT BY GEOMETRY. Cards in a row share a top edge, so
+    // `A.bottom - B.top` equals the card height for every same-row pair -- which
+    // read as "B is above A" and routed all four build-stage edges as back
+    // edges. The band index is the thing actually being asked about.
+    const dir = ROW[to] - ROW[from];
+
+    let d, mx, my;
+    if (dir > 0){                                        // downward
+      const x1=A.cx, y1=A.b, x2=B.cx, y2=B.t, m=(y1+y2)/2;
+      d=`M${x1},${y1} C${x1},${m} ${x2},${m} ${x2},${y2}`;
+      mx=(x1+x2)/2; my=m;
+    } else if (dir < 0){                                 // back edge, around the left
+      // Clamped so a node sitting near the container edge cannot push the
+      // curve -- and its label -- off the left of the viewport.
+      const x1=A.l, y1=A.cy, x2=B.l, y2=B.cy;
+      const off=Math.max(26,Math.min(78,Math.min(A.l,B.l)-18));
+      d=`M${x1},${y1} C${x1-off},${y1} ${x2-off},${y2} ${x2},${y2}`;
+      mx=Math.max(26,Math.min(x1,x2)-off*0.62); my=(y1+y2)/2;
+    } else {                                             // same row
+      // Dips BENEATH the row rather than running straight across it: a
+      // left-to-right edge between non-adjacent cards would otherwise be drawn
+      // through every card in between, which reads as an edge to each of them.
+      // Deeper dip for a longer edge, so the four build-stage edges and their
+      // labels sit on separate lines instead of stacking on one.
+      const x1=A.cx, x2=B.cx;
+      const y=Math.max(A.b,B.b)+16+Math.min(38,Math.abs(x2-x1)*0.055);
+      d=`M${x1},${A.b} C${x1},${y} ${x2},${y} ${x2},${B.b}`;
+      mx=(x1+x2)/2; my=y+11;
+    }
+
+    const base = document.createElementNS(NS,"path");
+    base.setAttribute("d", d);
+    base.setAttribute("class", "ed" + (kind ? " "+kind : ""));
+    svg.appendChild(base);
+
+    const pulse = document.createElementNS(NS,"path");
+    pulse.setAttribute("d", d);
+    pulse.setAttribute("class","pulse");
+    pulse.dataset.from = from; pulse.dataset.to = to;
+    svg.appendChild(pulse);
+
+    if (label){
+      const t = document.createElementNS(NS,"text");
+      t.setAttribute("x", mx); t.setAttribute("y", my);
+      t.setAttribute("text-anchor","middle");
+      t.setAttribute("class","edlab");
+      t.textContent = label;
+      svg.appendChild(t);
+    }
+  }
+}
+
+/* ---------- panel ---------- */
+const panel=document.getElementById("panel"), scrim=document.getElementById("scrim");
+function open(id){
+  const n = NODES[id]; if(!n) return;
+  document.getElementById("pk").textContent = n.kind;
+  document.getElementById("pt").textContent = n.name;
+  document.getElementById("pb").innerHTML = n.body;
+  panel.classList.add("open"); scrim.classList.add("on");
+  document.querySelectorAll(".node").forEach(e=>e.classList.toggle("sel", e.dataset.id===id));
+}
+function shut(){
+  panel.classList.remove("open"); scrim.classList.remove("on");
+  document.querySelectorAll(".node.sel").forEach(e=>e.classList.remove("sel"));
+}
+document.getElementById("close").onclick = shut;
+scrim.onclick = shut;
+addEventListener("keydown", e => { if(e.key==="Escape") shut(); });
+bandsEl.addEventListener("click", e => {
+  const b = e.target.closest(".node"); if (b) open(b.dataset.id);
+});
+
+/* ---------- play ---------- */
+const status = document.getElementById("status");
+let timers = [], running = false;
+
+function reset(){
+  timers.forEach(clearTimeout); timers = []; running = false;
+  document.querySelectorAll(".node.lit").forEach(e=>e.classList.remove("lit"));
+  document.querySelectorAll(".pulse.go").forEach(e=>e.classList.remove("go"));
+  document.getElementById("play").classList.remove("on");
+  document.getElementById("play").textContent = "▶ Play the cycle";
+  status.textContent = "Click any node for the explanation";
+}
+
+/* One ordered walk of the happy path, so the sequence reads as time. */
+const WALK = [
+  ["work",    "04:30 IST — agent-work wakes on cron"],
+  ["prov",    "Step 0a: establish who wrote the issue"],
+  ["validate","Step 0: replay the repro against production"],
+  ["rank",    "project-manager ranks what is confirmed live"],
+  ["resume",  "Step 2.5: continue whatever a prior cycle started"],
+  ["devlead", "dev-lead picks up the issue"],
+  ["architect","architect returns a numbered task list"],
+  ["engineer","engineer implements one task"],
+  ["qa",      "QA verifies independently — PASS or FAIL"],
+  ["push",    "branch pushed as soon as a commit exists"],
+  ["verdict", "qa_verdict.sh writes qa-pass, bound to the SHA"],
+  ["pr",      "PR opened. The agent's work ends here"],
+  ["prgates", "gates: suite, verifiers, mutation sweep"],
+  ["vbuild",  "build-gates — a different workflow, racing"],
+  ["qagreen", "a QA round on green — records qa:in-cycle, not independent"],
+  ["merge",   "agent-merge re-reads all four conditions"],
+  ["vprod",   "verify-production asserts against the live site"],
+  ["close",   "close-on-evidence: merged + green + /health"],
+  ["outcomes","the run is recorded, misses included"],
+  ["score",   "28 days later the analyst scores it"],
+  ["weekly",  "the number decides next week's work"],
+];
+
+function play(){
+  reset(); running = true;
+  const btn = document.getElementById("play");
+  btn.classList.add("on"); btn.textContent = "■ Stop";
+  const STEP = 820;
+
+  WALK.forEach(([id, note], i) => {
+    timers.push(setTimeout(() => {
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (el){
+        el.classList.add("lit");
+        status.textContent = `${String(i+1).padStart(2,"0")} · ${note}`;
+        if (i === 0) el.scrollIntoView({behavior:"smooth", block:"center"});
+        else if (i % 3 === 0) el.scrollIntoView({behavior:"smooth", block:"center"});
+      }
+      const prev = i > 0 ? WALK[i-1][0] : null;
+      if (prev){
+        const p = svg.querySelector(`.pulse[data-from="${prev}"][data-to="${id}"]`);
+        if (p){
+          const len = p.getTotalLength();
+          p.style.setProperty("--len", len);
+          p.style.strokeDasharray = `${Math.max(28,len*0.16)} ${len}`;
+          p.classList.remove("go"); void p.getBBox();
+          p.classList.add("go");
+        }
+      }
+      if (i === WALK.length-1){
+        timers.push(setTimeout(() => {
+          status.textContent = "…and the circuit closes. Measurement decides discovery.";
+          btn.classList.remove("on"); btn.textContent = "▶ Play again";
+          running = false;
+        }, STEP));
+      }
+    }, i * STEP));
+  });
+}
+
+document.getElementById("play").onclick = () => running ? reset() : play();
+document.getElementById("reset").onclick = reset;
+
+/* ---------- theme ---------- */
+const root = document.documentElement;
+if (matchMedia("(prefers-color-scheme: light)").matches) root.dataset.theme = "light";
+document.getElementById("theme").onclick = () => {
+  root.dataset.theme = root.dataset.theme === "light" ? "dark" : "light";
+  requestAnimationFrame(draw);
+};
+
+/* ---------- lifecycle ---------- */
+addEventListener("load", draw);
+addEventListener("resize", () => { clearTimeout(window._rz); window._rz = setTimeout(draw, 140); });
+draw();
+</script>
+</body>
+</html>
