@@ -49,6 +49,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -189,6 +190,23 @@ def _fetch(name: str) -> Any | None:
 
 _live_cache: tuple[float, dict] | None = None
 
+#: SINGLE-FLIGHT, one lock PER CACHE (#450). `routes/admin.py` runs `snapshot`
+#: under `asyncio.to_thread`, so these are real threads, and the `await` that
+#: yields while one render is inside the thread lets a second request see the
+#: cache still empty and start its own full set of reads. Measured by
+#: `tests/test_ops_single_flight.py` before the fix, 4 cold threads: 4 backlog
+#: requests (one render's worth is 1), 8 today-tile requests (2), 12 for the
+#: whole snapshot (3). The ceiling is 60/hour on a shared egress IP.
+#:
+#: A threading.Lock, not an asyncio.Lock: the callers are threads, and an
+#: asyncio lock held across `to_thread` would guard nothing inside it. The
+#: waiter blocks (up to HTTP_TIMEOUT per request) and then reads the warm cache.
+#:
+#: SEPARATE LOCKS, NOT ONE, for the reason the two caches are separate: a 403
+#: or a slow read on one must not blank or delay the other. Always taken with
+#: `with`, so an exception cannot leave a waiter hanging.
+_live_lock = threading.Lock()
+
 
 def _live_issues(objective: str) -> dict | None:
     """The backlog from the GitHub API, shaped exactly like issues.json.
@@ -223,10 +241,31 @@ def _live_issues(objective: str) -> dict | None:
     another tenant on the same egress IP. The caller then renders the committed
     snapshot and labels it, so a failure here costs freshness, never the panel.
     """
-    global _live_cache
-    now = time.monotonic()
+    hit = _issues_fresh(time.monotonic())
+    if hit:
+        return hit[1]
+    # Re-check under the lock: whoever held it before us has usually filled
+    # the cache by the time we get in, and then this costs no request at all.
+    with _live_lock:
+        return _live_issues_locked(objective)
+
+
+def _issues_fresh(now: float) -> tuple[float, dict] | None:
+    """The cache entry if it is inside the TTL, else None. One copy, because
+    the fast path and the re-check under the lock must never disagree."""
     if _live_cache and now - _live_cache[0] < CACHE_TTL:
-        return _live_cache[1]
+        return _live_cache
+    return None
+
+
+def _live_issues_locked(objective: str) -> dict | None:
+    """The body of `_live_issues`. Caller holds `_live_lock`."""
+    global _live_cache
+    # A fresh clock reading: the wait for the lock can be a whole fetch long.
+    now = time.monotonic()
+    hit = _issues_fresh(now)
+    if hit:
+        return hit[1]
     try:
         issues = issue_backlog.fetch_live(
             GH_REPO, timeout=HTTP_TIMEOUT, token=GH_TOKEN)
@@ -261,6 +300,10 @@ def _live_issues(objective: str) -> dict | None:
 #: one.
 _today_cache: tuple[float, str, dict | None] | None = None
 
+#: Single-flight for `_today_cache`; see `_live_lock` for why it is a
+#: threading.Lock and why it is not shared with that one.
+_today_lock = threading.Lock()
+
 
 def _live_today(day_start: datetime) -> dict | None:
     """Today's shipped and failed counts from the API. None on ANY failure.
@@ -271,12 +314,35 @@ def _live_today(day_start: datetime) -> dict | None:
     The caller renders the committed snapshot when this returns None and says
     so on the page, so a failure here costs freshness, never the tiles.
     """
-    global _today_cache
-    now = time.monotonic()
     day = day_start.isoformat()
+    hit = _today_fresh(day, time.monotonic())
+    if hit:
+        return hit[2]
+    # Re-check under the lock -- see `_live_lock`. A cached None is a hit too,
+    # so waiters behind a failed first read are served the failure rather than
+    # each re-asking a budget that has just been refused.
+    with _today_lock:
+        return _live_today_locked(day_start, day)
+
+
+def _today_fresh(day: str, now: float) -> tuple[float, str, dict | None] | None:
+    """The cache entry if it describes `day` and is inside the TTL, else None.
+
+    Returns the ENTRY, not its payload, because a cached None is a hit and
+    `if payload:` would read it as a miss. One copy, as `_issues_fresh`."""
     if (_today_cache and _today_cache[1] == day
             and now - _today_cache[0] < CACHE_TTL):
-        return _today_cache[2]
+        return _today_cache
+    return None
+
+
+def _live_today_locked(day_start: datetime, day: str) -> dict | None:
+    """The body of `_live_today`. Caller holds `_today_lock`."""
+    global _today_cache
+    now = time.monotonic()
+    hit = _today_fresh(day, now)
+    if hit:
+        return hit[2]
     try:
         doc = ops_today.fetch_today(
             GH_REPO, day_start, timeout=HTTP_TIMEOUT, token=GH_TOKEN)
