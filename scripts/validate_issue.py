@@ -667,16 +667,48 @@ def expand_globs(argv: list[str]) -> list[str]:
     return out
 
 
+def _glob_produced(original: list[str]) -> set[str]:
+    """Exactly the paths a glob in `original` PRODUCES, by re-running the
+    expansion per argument.
+
+    THIS IS WHY `check_expanded` NO LONGER ASKS `a in original` (QA round 4).
+    That test identified a glob's output by its VALUE, and a value can reach
+    the original argv as something that is not a path at all. `grep` takes a
+    PATTERN before its file operands, so:
+
+        grep -v .env .en?
+
+    passes the vet -- `.env` is a search pattern, which `_bad_operands` is
+    right not to treat as a path -- and `.en?` then expands to the PATH
+    `.env`. Because that string already sat in the original argv as the
+    pattern, `a in original` skipped it and `_secret_path` never ran. The
+    command printed the credential file in full. Measured: it is the fourth
+    distinct secret read in four rounds, and the FIRST one that was not a gap
+    in `_SECRET_FILE_GLOBS` -- `.env*` has been in that tuple throughout. The
+    deny-list was correct and was bypassed, so widening it would not have
+    helped.
+
+    Provenance, not value: an argument is the glob's output or it is not.
+    """
+    produced: set[str] = set()
+    for a in original:
+        if a.startswith("-") or not any(c in a for c in "*?["):
+            continue
+        produced.update(glob.glob(a, root_dir=str(ROOT)))
+    return produced
+
+
 def check_expanded(original: list[str], expanded: list[str]) -> str | None:
     """A reason the post-glob argv must not run, else None."""
     if expanded == original:
         return None
+    produced = _glob_produced(original)
     if original and original[0] == "diff":
         for a in expanded:
-            if a not in original and _is_dir(a):
+            if a in produced and _is_dir(a):
                 return f"a glob expanded into the directory `{a}`, which diff would walk"
     for a in expanded:
-        if a in original:
+        if a not in produced:
             continue
         if a.startswith("-"):
             return f"a glob expanded into the option-looking name `{a}`"

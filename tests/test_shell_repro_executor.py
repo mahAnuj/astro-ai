@@ -398,6 +398,68 @@ def test_a_glob_cannot_expand_into_an_option(tmp_path, monkeypatch):
     assert vi.check_expanded(argv, vi.expand_globs(argv))
 
 
+def test_a_glob_cannot_launder_a_credential_by_naming_it_as_the_grep_pattern(
+        tmp_path, monkeypatch):
+    """QA ROUND 4, and the first secret read that was NOT a deny-list gap.
+
+    `grep` takes a PATTERN before its file operands, so `.env` as a pattern is
+    legitimately not a path and `_bad_operands` is right to skip it. The old
+    `check_expanded` then identified the glob's output by VALUE -- `a in
+    original` -- so the expanded PATH `.env` matched the pattern string that
+    was already there, the secret check was skipped, and the command printed
+    the credential file in full.
+
+    `.env*` was in `_SECRET_FILE_GLOBS` the whole time. Widening the deny-list
+    would not have closed this; the fix is to identify the glob's output by
+    PROVENANCE instead.
+    """
+    monkeypatch.setattr(vi, "ROOT", tmp_path)
+    (tmp_path / ".env").write_text("SECRET=abc123\n")
+    (tmp_path / ".enx").write_text("harmless\n")
+    argv, why = vi.vet_shell("grep -v .env .en?")
+    assert argv is not None, why           # the vet passes it: a pattern + a glob
+    assert ".env" in vi.expand_globs(argv)  # and the glob really reaches the file
+    reason = vi.check_expanded(argv, vi.expand_globs(argv))
+    assert reason and "credential" in reason, reason
+
+
+def test_the_pattern_laundry_is_refused_for_every_credential_shape(
+        tmp_path, monkeypatch):
+    """Not one command -- a family. Any name the deny-list covers can be spelled
+    as a non-path argument and then reached by a glob."""
+    monkeypatch.setattr(vi, "ROOT", tmp_path)
+    (tmp_path / ".env").write_text("x")
+    (tmp_path / "srv.pem").write_text("x")
+    (tmp_path / "id.key").write_text("x")
+    for cmd in ("grep -v .env .en?",
+                "grep -v srv.pem *.pe?",
+                "grep -v id.key *.ke?",
+                "grep -c .env .en? .enx"):
+        argv, why = vi.vet_shell(cmd)
+        if argv is None:
+            continue                        # refused earlier, also fine
+        reason = vi.check_expanded(argv, vi.expand_globs(argv))
+        assert reason, f"{cmd} reached the credential file"
+
+
+def test_a_legitimate_glob_still_expands_after_the_provenance_fix():
+    """The fix must not pay for itself in false refusals: these are the two
+    commonest glob shapes in the live backlog."""
+    for cmd in ("grep -c x src/astro_ai/templates/learn/*.html",
+                "grep -n def scripts/*.py"):
+        argv, why = vi.vet_shell(cmd)
+        assert argv is not None, why
+        assert vi.check_expanded(argv, vi.expand_globs(argv)) is None, cmd
+
+
+def test_glob_produced_reports_provenance_not_value():
+    """The unit under the two tests above: the pattern `.env` is in the argv but
+    is not something a glob produced, so it is not treated as the glob's
+    output."""
+    produced = vi._glob_produced(["grep", "-v", ".env", "no/such/*.zzz"])
+    assert produced == set()
+
+
 def test_a_credential_shape_is_redacted_before_it_is_printed():
     out = vi.redact("origin https://x-access-token:ghs_abcdefghijklmnop1234@github.com/o/n "
                     "and ghp_abcdefghijklmnopqrstuv")
