@@ -609,12 +609,71 @@ def test_a_green_run_that_skipped_every_gate_does_not_close_the_sentinel(tmp_pat
     assert "nothing was asserted" in proc.stdout
 
 
-def test_a_green_run_that_skipped_every_gate_does_not_open_one_either(tmp_path):
-    """The same rule in the other direction: no verdict means no sentinel."""
+def test_a_red_run_reports_even_though_the_marker_reads_skipped(tmp_path):
+    """THE INVERSION. This test previously asserted the bug.
+
+    It paired `asserted="skipped"` with `conclusion="failure"` and demanded
+    silence — but that pairing is exactly a real failing gates run, because an
+    `if:` with no status-check function carries an implicit `success()` and so
+    the marker is `skipped` whenever an earlier step failed. Measured on run
+    41097631280: steps 14, 15 and 16 share the marker's `if:` and all read
+    `skipped` on a `failure` run.
+
+    So the suite was pinning "a red `main` reports nothing", which is the
+    opposite of what this workflow is for.
+    """
     fixture = {"open_issues": [], "comments": {}, "asserted": "skipped"}
     proc, done = _run_reporter(tmp_path, fixture, sha="cafebabe123", conclusion="failure")
     assert proc.returncode == 0, proc.stderr
-    assert done == [], f"a run that executed no gate filed a sentinel: {done}"
+    assert done, (
+        "a red `main` filed nothing — the marker must gate only the GREEN "
+        "path, because on a red run it always reads `skipped`"
+    )
+    assert done[0]["kind"] == "create"
+
+
+@pytest.mark.parametrize(
+    "conclusion,marker,want_action,why",
+    [
+        # A non-green conclusion IS the verdict. The marker is irrelevant to it
+        # and, on a real red run, always reads `skipped` or `absent`.
+        ("failure",   "skipped",    True,  "a failing gate must reach a person"),
+        ("failure",   "absent",     True,  "a job that never started is still red"),
+        ("failure",   "unreadable", True,  "an unreadable jobs API must not silence a red run"),
+        ("cancelled", "skipped",    True,  "the killed-job case this file exists for"),
+        ("cancelled", "absent",     True,  "pending-cancelled: the API returns steps: []"),
+        ("timed_out", "skipped",    True,  "a timeout is the other half of that case"),
+        # Green is the only path the marker disambiguates.
+        ("success",   "success",    True,  "a real green closes the sentinel"),
+        ("success",   "skipped",    False, "green but no gate ran: round 4's defect"),
+        ("success",   "unreadable", False, "green and unverifiable: decline to close"),
+    ],
+)
+def test_the_marker_gates_only_the_green_path(tmp_path, conclusion, marker, want_action, why):
+    """A (conclusion x marker) MATRIX, because testing one axis at a time is
+    precisely how the inversion above shipped: every single-axis test passed."""
+    fixture = {
+        "open_issues": [{"number": 700, "title": "[main-red] main is red at deadbee"}],
+        "body": {"700": "`deadbee` — **failure**"},
+        "comments": {},
+        "asserted": marker,
+    }
+    proc, done = _run_reporter(tmp_path, fixture, sha="cafebabe123", conclusion=conclusion)
+    assert proc.returncode == 0, f"{why}\n{proc.stdout}\n{proc.stderr}"
+    assert bool(done) is want_action, (
+        f"{conclusion} + marker {marker}: expected "
+        f"{'an action' if want_action else 'silence'}, got {done}\n{why}"
+    )
+
+
+def test_a_green_run_with_a_missing_marker_fails_loudly(tmp_path):
+    """Drift is fatal on the green path only — where the marker is the only
+    thing standing between a scope-skipped run and a false close."""
+    fixture = {"open_issues": [], "comments": {}, "asserted": "absent"}
+    proc, done = _run_reporter(tmp_path, fixture, sha="cafebabe123", conclusion="success")
+    assert proc.returncode == 1, f"drift was tolerated on a green run:\n{proc.stdout}"
+    assert done == []
+    assert "drifted apart" in proc.stdout
 
 
 def test_a_run_whose_gates_really_ran_is_still_judged(tmp_path):
@@ -625,18 +684,6 @@ def test_a_run_whose_gates_really_ran_is_still_judged(tmp_path):
     assert proc.returncode == 0, proc.stderr
     assert done, "a run whose gates DID execute was not reported at all"
     assert done[0]["kind"] == "create"
-
-
-def test_a_missing_marker_step_fails_loudly_rather_than_guessing(tmp_path):
-    """If `pr-gates.yml` renames the step, the reporter must not fall back to
-    trusting the run conclusion — that silently restores the defect."""
-    fixture = {"open_issues": [], "comments": {}, "asserted": "absent"}
-    proc, done = _run_reporter(tmp_path, fixture, sha="cafebabe123", conclusion="failure")
-    assert proc.returncode == 1, (
-        f"a drifted step name was tolerated; rc={proc.returncode}\n{proc.stdout}"
-    )
-    assert done == []
-    assert "drifted apart" in proc.stdout
 
 
 def test_pr_gates_carries_the_step_the_reporter_reads(tmp_path):
@@ -656,4 +703,24 @@ def test_pr_gates_carries_the_step_the_reporter_reads(tmp_path):
     assert "steps.scope.outputs.code" in marker[0].get("if", ""), (
         "the marker must be gated on the same condition as the gates it "
         f"stands for; got: {marker[0].get('if')!r}"
+    )
+
+
+def test_the_reporter_is_serialised():
+    """The sentinel lookup is read-then-write with no lock (#461 round 4).
+
+    Two reporters that both read "no sentinel open" both file one. QA round 5
+    deleted this block and all 65 tests stayed green, so it is pinned here:
+    the fix was correct and unprotected.
+    """
+    doc = yaml.safe_load((WF_DIR / "main-red-report.yml").read_text())
+    conc = doc.get("concurrency")
+    assert conc, (
+        "main-red-report.yml has no concurrency group; it is the only "
+        "state-mutating workflow_run listener without one, and its sentinel "
+        "lookup is read-then-write"
+    )
+    assert conc.get("cancel-in-progress") is False, (
+        "cancel-in-progress must be false for agent-merge's reason: "
+        f"cancelling the thing that reports a kill is the worst outcome; got {conc}"
     )

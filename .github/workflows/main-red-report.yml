@@ -140,17 +140,44 @@ jobs:
                      2>/dev/null || echo "unreadable")
           echo "GATES ASSERTED step: $asserted"
 
-          if [ "$asserted" = "absent" ]; then
-            # The step is gone or renamed. Failing loudly beats silently
-            # reverting to "trust the run conclusion", which is the bug.
-            echo "::error::no 'GATES ASSERTED' step on run $RUN_ID — pr-gates.yml" \
-                 "and this reporter have drifted apart; refusing to judge the run"
-            exit 1
-          fi
-          if [ "$asserted" != "success" ]; then
-            echo "::notice::the gates did not run on $short (step: $asserted)" \
-                 "— nothing was asserted, so nothing is opened or closed"
-            exit 0
+          # THE MARKER ONLY DISAMBIGUATES A *GREEN* RUN (#461 round 5).
+          #
+          # The first version of this check gated BOTH paths on the marker and
+          # that was strictly worse than the bug it fixed: an `if:` with no
+          # status-check function carries an implicit `success()`, so the
+          # marker is `skipped` whenever an EARLIER step in the job failed --
+          # which is every genuinely red run. Measured on this repo's own run
+          # 41097631280 (`pr-gates`, conclusion `failure`): steps 14, 15 and 16
+          # all carry the identical `if:` and all read `skipped`. A
+          # pending-cancelled run (40643796437) returns `steps: []` -> `absent`.
+          #
+          # So a red `main`, a cancelled run and a timed-out run ALL filed
+          # nothing. The workflow became a no-op on the exact path #461 exists
+          # for, and the test written for it asserted that silence.
+          #
+          # A non-green conclusion IS the verdict and must always reach a
+          # person -- that is this file's whole premise, and `skipped` runs are
+          # already excluded by the job `if:` above. The marker answers only
+          # the narrower question round 4 raised: a run that concluded
+          # `success` having executed no gate must not CLOSE a sentinel.
+          if [ "$CONCLUSION" = success ]; then
+            if [ "$asserted" = "absent" ]; then
+              # Drift between the two files, on the only path where the marker
+              # is load-bearing. Loud, because a silently-degraded close is how
+              # round 4's defect shipped.
+              echo "::error::no 'GATES ASSERTED' step on run $RUN_ID —" \
+                   "pr-gates.yml and this reporter have drifted apart;" \
+                   "refusing to close anything on an unverifiable green"
+              exit 1
+            fi
+            if [ "$asserted" != "success" ]; then
+              # Includes `unreadable` (a 403, a rate limit, a bad gateway).
+              # Declining to close is the conservative direction: the sentinel
+              # stays open and a person still sees it.
+              echo "::notice::green at $short but the gates did not run" \
+                   "(step: $asserted) — nothing was asserted, so nothing is closed"
+              exit 0
+            fi
           fi
 
           # THE SENTINEL IS FOUND CLIENT-SIDE, NOT WITH `--search`.

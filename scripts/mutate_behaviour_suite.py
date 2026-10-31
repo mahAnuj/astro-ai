@@ -3937,6 +3937,28 @@ MUTATIONS = [
      "nothing else. Every agent must leave a visible trail.\n\n### Leaving a trail",
      "test_claude_md_no_longer_presents_the_gitignored_file_as_the_record"),
 
+
+    # --- #461 round 5: the marker gate and the concurrency block ---
+    # Both are load-bearing and neither had a row. QA deleted the whole
+    # `concurrency:` block and all 65 tests stayed green.
+    ("#461 r5: the marker gates the RED path too, silencing every red main",
+     ".github/workflows/main-red-report.yml",
+     '          if [ "$CONCLUSION" = success ]; then\n            if [ "$asserted" = "absent" ]; then',
+     '          if true; then\n            if [ "$asserted" = "absent" ]; then',
+     "test_the_marker_gates_only_the_green_path"),
+
+    ("#461 r5: a green run with no gates closes the sentinel again",
+     ".github/workflows/main-red-report.yml",
+     '            if [ "$asserted" != "success" ]; then',
+     '            if false; then',
+     "test_a_green_run_that_skipped_every_gate_does_not_close_the_sentinel"),
+
+    ("#461 r5: the reporter loses its concurrency group",
+     ".github/workflows/main-red-report.yml",
+     "concurrency:\n  group: main-red-report\n  cancel-in-progress: false\n",
+     "",
+     "test_the_reporter_is_serialised"),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent

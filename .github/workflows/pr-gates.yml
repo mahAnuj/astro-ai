@@ -124,7 +124,7 @@ concurrency:
   # "[main-red] ... did not pass" for a commit whose gates never actually
   # failed. Round 4 of #461 found this claim overstated; it is narrowed rather
   # than deleted because the common case really is one verdict per commit.
-  # because there only the latest push matters.
+  # Branches still coalesce, because there only the latest push matters.
   group: pr-gates-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
@@ -184,15 +184,22 @@ jobs:
           # Everything the suite, the gates or the build actually read.
           # .github/workflows counts: the behaviour suite reads
           # verify-production.yml to check its jq field reads still match /health.
-          # A HERESTRING, not `echo ... | grep -q` (#461 round 4). Under
-          # `pipefail` a `grep -q` exits as soon as it matches, the upstream
-          # dies of SIGPIPE, and the PIPELINE reports 141 -- but only once the
-          # input crosses the 64 KB pipe buffer, so no fixture-sized test
-          # catches it. Not reachable here today (the largest `main` commit's
-          # file list measured 847 bytes, and every tracked file name together
-          # is 27 KB) but it is the class that cost this PR two rounds, and a
-          # herestring removes it rather than relying on the input staying
-          # small.
+          # A HERESTRING, not `echo ... | grep -q`.
+          #
+          # CORRECTED in round 5: the rationale first written here was wrong.
+          # It blamed SIGPIPE under `pipefail` and said the 64 KB pipe buffer
+          # was what kept it unreachable. But this workflow sets no `shell:`
+          # and no `defaults:`, so its steps run under GitHub's default
+          # `bash -e` -- errexit WITHOUT pipefail -- and only the step that
+          # sets `set -euo pipefail` for itself has the defect at all. The
+          # scope step never had it.
+          #
+          # Kept anyway, for two reasons that are true: a herestring cannot
+          # acquire the defect if anyone later adds `pipefail` to this file,
+          # and it is safer against a changed filename beginning with `-`.
+          # Recorded rather than quietly reworded, because a comment that
+          # explains a change by the wrong mechanism teaches the next reader
+          # to look in the wrong place.
           if grep -qE '^(src/|tests/|scripts/|assets/|\.github/workflows/|package(-lock)?\.json|tailwind\.config\.js|pyproject\.toml|uv\.lock)' <<<"$changed"; then
             echo "code=true" >> "$GITHUB_OUTPUT"
             echo "-> running the full gates"
