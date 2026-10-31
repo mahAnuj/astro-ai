@@ -3752,6 +3752,44 @@ MUTATIONS = [
      "    with _today_lock:\n        return _live_today_locked(day_start, day)",
      "    _today_lock.acquire()\n    return _live_today_locked(day_start, day)",
      "test_a_failing_first_today_read_is_cached_and_the_lock_released"),
+    # --- #607: every agent definition says where its output goes ---
+    # The rule was stated once in CLAUDE.md, pointed at a gitignored file, and
+    # 12 of 15 definitions ended up with no instruction to write anywhere
+    # durable. These rows re-break each class so the gate cannot rot back out.
+    ("#607 trail: an agent definition loses the output-goes section",
+     ".claude/agents/engineer.md",
+     "  `>>` only \u2014 never `>`, never Write, never Edit on that file.\n\n## Where your output goes",
+     "  `>>` only \u2014 never `>`, never Write, never Edit on that file.\n\n## Notes",
+     "test_every_agent_names_where_its_output_goes"),
+
+    # The SYMMETRIC row. Its absence is why the issue-side check shipped
+    # near-vacuous: `"issue" in block` was always true because the section
+    # heading says "the issue is durable". QA on #609 inverted an agent's
+    # issue instruction, left the heading intact, and the gate said `ok`.
+    ("#607 trail: an agent names the PR but not the issue",
+     ".claude/agents/infra-lead.md",
+     "**On the issue:**",
+     "Keep it in your own output:",
+     "test_every_agent_names_both_the_issue_and_the_pr"),
+
+    ("#607 trail: an agent names the issue but not the PR",
+     ".claude/agents/qa.md",
+     "**On the PR:** the full verdict comment first, then record the label with",
+     "Also, eventually, somewhere: the full verdict comment first, then the label with",
+     "test_every_agent_names_both_the_issue_and_the_pr"),
+
+    ("#607 trail: an agent is told the heartbeat file is the record",
+     ".claude/agents/architect.md",
+     "`AGENT_STATUS.md` is a **local heartbeat only** \u2014 it is gitignored, so nothing in it",
+     "`AGENT_STATUS.md` is where the trail belongs \u2014 append to it, and nothing in it",
+     "test_no_agent_is_told_the_heartbeat_file_is_the_record"),
+
+    ("#607 trail: CLAUDE.md drops the three-surfaces section",
+     "CLAUDE.md",
+     "nothing else. Every agent must leave a visible trail.\n\n### The three surfaces",
+     "nothing else. Every agent must leave a visible trail.\n\n### Leaving a trail",
+     "test_claude_md_no_longer_presents_the_gitignored_file_as_the_record"),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -3882,6 +3920,18 @@ def _worker_sandbox():
         shutil.copytree(ROOT / sub, sandbox / sub,
                         ignore=shutil.ignore_patterns("__pycache__", "*.pyc",
                                                       "worktrees"))
+    # ROOT-LEVEL FILES TOO (#607). The loop above copies directories, so until
+    # now nothing at the repo root existed in the sandbox -- and that is the
+    # same hole `.claude` had before 2026-10-25, with the same two
+    # consequences the comment below records: a row naming `CLAUDE.md` dies
+    # with FileNotFoundError, and any test that READS it fails to import in
+    # the sandbox, which reports rc=2 on every row INCLUDING CONTROL and
+    # blinds the whole harness. Observed on PR #609: one bad row made the
+    # sweep print "CONTROL FAILED -- every verdict above is worthless".
+    for f in _SANDBOX_FILES:
+        src = ROOT / f
+        if src.exists():
+            shutil.copy2(src, sandbox / f)
     _SANDBOXES.path = sandbox
     yield sandbox
 
@@ -3900,6 +3950,11 @@ _SANDBOX_DIRS: list[str] = []
 # of it when this was measured, and copying it per sandbox would make the sweep
 # unrunnable rather than merely slow.
 _SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements", ".claude")
+# Repo-root FILES the sandbox needs. `CLAUDE.md` is load-bearing behaviour in this
+# repo the same way `.claude/` is -- it is loaded into every session, several gates
+# and tests read it, and a mutation row targeting it could not run at all before
+# #607. Keep this list short: every entry is copied into every worker sandbox.
+_SANDBOX_FILES = ("CLAUDE.md",)
 
 
 def _drop_worker_sandbox() -> None:
@@ -4092,6 +4147,23 @@ def _preflight_anchors() -> list[str]:
         path = ROOT / rel
         if not path.exists():
             problems.append(f"{label}: {rel} does not exist")
+            continue
+        # THE SANDBOX MUST CONTAIN IT (#607). Existing in the repo is not
+        # enough: the sweep runs each row in a copy that holds only
+        # `_SANDBOX_SUBDIRS` plus `_SANDBOX_FILES`, so a row naming anything
+        # else dies with FileNotFoundError mid-sweep -- and, worse, a TEST
+        # that reads such a path fails to import in the sandbox, which reports
+        # rc=2 on every row including CONTROL and blinds the whole harness.
+        # Observed on PR #609, where one such row made the sweep print
+        # "CONTROL FAILED -- every verdict above is worthless" after 40
+        # minutes. This check is free and says so before anything is spent.
+        top = pathlib.PurePosixPath(rel).parts[0]
+        if top not in _SANDBOX_SUBDIRS and rel not in _SANDBOX_FILES:
+            problems.append(
+                f"{label}: {rel} is outside the sandbox — the sweep copies "
+                f"{list(_SANDBOX_SUBDIRS)} and {list(_SANDBOX_FILES)}, so this "
+                f"row cannot run. Add it to _SANDBOX_FILES/_SANDBOX_SUBDIRS or "
+                f"drop the row deliberately.")
             continue
         src = path.read_text(encoding="utf-8")
         n = src.count(old)

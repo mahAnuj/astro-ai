@@ -270,3 +270,15 @@ Write an issue comment per stall and a run summary that states, in order:
 
 Never report a repair you did not make. The defect this role exists to catch is a green
 run that did nothing — do not become an instance of it.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**On the issue:** **Every stall you find and every dispatch you make** — already your rule.
+Say which kind you dispatched for, every time: a comment that does not name its kind cannot be
+told apart from one that does by the next run, which is you.
+
+**On the PR:** the stall diagnosis, on the PR that is stalled. You are denied `gh pr edit`, so
+a comment is the only mark you can leave — and it is enough.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.
