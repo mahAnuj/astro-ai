@@ -392,6 +392,31 @@ jobs:
           # is where the checks are and what agent-merge reads.
           sha=$(gh pr view "$branch" --repo "$GH_REPO" --json headRefOid \
                   --jq .headRefOid 2>/dev/null || git rev-parse HEAD)
+          # AN EMPTY $sha MUST NOT REACH THE QUERY (#602).
+          #
+          # `gh pr view` can exit 0 and print NOTHING, and `|| git rev-parse`
+          # above fires only on a non-zero exit, never on empty stdout. The URL
+          # then reads `?head_sha=&per_page=100`, and GitHub treats an empty
+          # filter VALUE as NO FILTER: the response is the most recent 100 runs
+          # in the REPOSITORY. "PR gates" runs are always among them, so
+          # `gates_runs` is large, the poll below breaks on its first attempt,
+          # and the #322 rescue dispatch never happens -- leaving a PR with no
+          # checks, which `agent-merge` refuses forever.
+          #
+          # The `case` guard inside the poll was written for the opposite shape
+          # (an error string, a gh warning, an empty BODY) and correctly falls
+          # TOWARD the rescue. It cannot help here, because the count is a
+          # legitimately large number about the wrong question.
+          #
+          # `${sha:-...}`, NOT an `if`: `$(...)` strips trailing newlines, so a
+          # bare newline from `--jq` on a null field also lands here. And an
+          # `if`/`fi` would put a `fi` at column 0 ahead of the poll's own,
+          # which is what `tests/test_agent_work_gates_dispatch.py` anchors its
+          # extraction on -- adding one silently cut the polling logic out of
+          # what that test was driving, and five of its tests went red. A
+          # standalone `[ -n "$sha" ] || echo ...` is out for the reason the
+          # same file records: under `-e` it would end the script.
+          sha=${sha:-$(git rev-parse HEAD)}
           gates_runs=0
           for attempt in 1 2 3 4 5 6; do
             gates_runs=$(gh api \

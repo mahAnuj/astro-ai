@@ -400,7 +400,9 @@ jobs:
       # the size limit, no trust-boundary path -- so this grants no exemption;
       # it only stops the job from ignoring the PR. A branch the owner wants
       # held regardless carries `needs-human-review`, which the sweep filter
-      # and the labels step both refuse.
+      # and the `QA verdict` step both refuse. The labels step did NOT read it
+      # until #604 -- this sentence was written as a claim and was false for
+      # the edge-triggered path for as long as it stood.
       - name: Is this ours to merge?
         id: own
         if: steps.pr.outputs.number
@@ -524,9 +526,34 @@ jobs:
           labels=$(gh pr view "$PR_NUMBER" --repo "$GH_REPO" \
                      --json labels --jq '[.labels[].name] | join(",")')
           echo "labels: ${labels:-none}"
+          # THREE cases, and `needs-human-review` is the one that was missing
+          # (#604). The sweep filter at the top of this file refuses it, and the
+          # comment above the `own` step asserted that "the sweep filter and the
+          # labels step both refuse" it. The second half was FALSE: this `case`
+          # read only `qa-fail` and `qa-pass`, so on an EDGE-triggered run
+          # (`workflow_run`, `pull_request_target`, `check_suite`) a PR carrying
+          # `needs-human-review` + `qa-pass` + green gates passed this step.
+          #
+          # What it did NOT reach, and why no boundary PR was ever merged by the
+          # hole: the `Trust boundary` step below is a PATH check against
+          # $TRUST_BOUNDARY and runs on both paths, so a PR touching
+          # `.github/workflows/` or `prompts/` was held by its diff regardless
+          # of the label. The hole was for the OTHER use of the label -- a hold
+          # placed on a PR that touches no boundary path, which is the only way
+          # a human or `chief` can say "not this one". That hold worked in the
+          # `*/30` sweep and not on the edge, so whether it held was a race.
+          #
+          # `too-large-to-automerge` is deliberately NOT added here. The `Size
+          # and path limits` step below re-measures the diff every run and is
+          # the authority for it; honouring the label too would make a PR that
+          # was legitimately shrunk unmergeable forever, which is a new bug in
+          # place of this one.
           case ",$labels," in
             *,qa-fail,*)
               echo "::notice::qa-fail is set — not merging, whatever else is present"
+              exit 0 ;;
+            *,needs-human-review,*)
+              echo "::notice::needs-human-review is set — a human merges this one, whatever else is present"
               exit 0 ;;
             *,qa-pass,*)
               echo "ok=true" >> "$GITHUB_OUTPUT" ;;
