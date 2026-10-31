@@ -41,7 +41,15 @@ ROWS = [
  ("agents count, README word form",    R, "Fifteen agents", "Fifty agents"),
  ("workflows count, HTML fact tile",   H, "<b>17</b><span>workflows</span>", "<b>3</b><span>workflows</span>"),
  ("workflows count, README",           R, "seventeen workflows", "three workflows"),
- ("gates pr-gates runs",               H, "re-run all 29 gates", "re-run all 99 gates"),
+ # INVERTED, and the only row of this shape. Every other row restores a
+ # falsehood; this one restores a hard-coded NUMBER -- which is what
+ # `pr-gates.yml:326-333` forbids ("a literal number goes stale the moment a
+ # gate is added") and what the first version of this gate REQUIRED. Two gates
+ # landed on `main` between writing that version and merging it, so it would
+ # have failed the required `gates` check for every code PR and halted
+ # `agent-merge`. Found by independent QA on #564 before it merged.
+ ("a hard-coded gate count comes back", H,
+  "re-run every non-excluded <code>verify_*.py</code>", "re-run all 29 gates"),
  ("never-push count",                  H, "9 of the 15", "15 of the 15"),
  ("qa-on-green trigger count",         H, "Its one <code>workflow_run</code> trigger", "Its two triggers"),
  ("a weekly cron's IST day",           H, "<code>agent-discover</code> — Tue 01:30", "<code>agent-discover</code> — Mon 01:30"),

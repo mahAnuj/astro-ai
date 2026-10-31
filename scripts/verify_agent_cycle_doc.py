@@ -23,9 +23,21 @@ told something the other file had already retracted.
 So this gate does the two things the previous hand-written checker could not:
 
   1. It DERIVES each number from the repo and compares, instead of matching a
-     blacklist of known-bad strings. Rewording a falsehood no longer passes.
-  2. It checks BOTH artefacts against the same derived value, so a correction
-     that lands in one file fails until it lands in the other.
+     blacklist of known-bad strings. Rewording a falsehood no longer passes
+     FOR A DERIVED NUMBER -- but prose around it still can be reworded freely,
+     and QA on PR #564 passed three such rewordings (the `agent-work` cadence
+     described without the matched phrase, the exit-code NAMES falsified while
+     the digits held, and architect's tool list contradicted in adjacent
+     prose).
+  2. It checks both artefacts against the same derived value FOR THE TWO
+     QUANTITIES BOTH FILES STATE -- agents and workflows. The rest are
+     one-sided because only one file states them: the gate count, the
+     never-push count, the weekly crons, `qa-on-green`'s trigger count,
+     architect's tools and the exit codes are HTML-only, and the
+     trust-boundary list is satisfied by EITHER file. So the
+     "lands in one file only" defect is caught for 2 of 11 derived
+     quantities, not all of them. Independent QA measured this on PR #564;
+     the earlier wording claimed the guarantee applied to all of them.
 
 This is `verify_architecture_counts.py`'s rule (#405) applied to prose: a
 number in a document is a liability unless something re-derives it. That gate's
@@ -48,13 +60,17 @@ wherever the document mentions it at all:
   validate_issue      the set of exit codes it can return
   trust boundary      TRUST_BOUNDARY in agent-merge.yml
 
-Plus structure and cross-file agreement: HTML well-formed, node ids unique, no
-edge endpoint naming a missing node, no node drawn without an edge, the
-mermaid block balanced with every referenced id defined, the two files'
-hold-edge labels equal, no `qagreen -> merge` edge in EITHER file, and no
-absolute URL outside an allow-list in EITHER file.
+Plus structure: HTML well-formed, node ids unique, no edge endpoint naming a
+missing node, no node drawn without an edge, the two files'
+hold-edge labels equal TO EACH OTHER, and no `qagreen -> merge` edge in either
+file. The published page's absolute URLs are held to an allow-list; README.md
+is checked only for a credential-shaped parameter, because it legitimately
+links to upstream docs. The mermaid block is checked for balanced brackets,
+braces, quotes and subgraph/end pairs -- NOT that every referenced id is
+defined; that check does not exist.
 
-A CLAIM THIS GATE CANNOT PARSE IS A FAILURE, NOT A SKIP. That is the one rule
+A CLAIM THIS GATE CANNOT PARSE IS A FAILURE, NOT A SKIP, with two measured
+exceptions named at the end of this docstring. That is the one rule
 it enforces about itself, for the reason `verify_architecture_counts.py` gives:
 a checker that silently narrows its own scope and reports success is worse than
 no checker, because the success gets quoted later as evidence. The previous
@@ -72,6 +88,29 @@ WHAT THIS DOES NOT CHECK, PLAINLY
   - Rendering. No browser. The mermaid block is checked for balance, not for
     whether it draws.
   - Anything in the two documents that names no derivable quantity.
+  - **The `WALK` array is not read at all.** No walk string is compared to the
+    node it animates and no walk id is checked against `ids`. The one
+    surviving round-1 defect on this PR lived there for four rounds: the walk
+    narrated `qa-on-green` as "an independent QA round" while the node it
+    animates says the opposite.
+  - Node and workflow NAMES are not resolved to files. Only counts are
+    derived, so renaming an agent or a workflow leaves both documents stale
+    and this gate green.
+  - The fact tiles other than agents and workflows -- "7 stages", "0 agents
+    that can merge", "0 humans inside a cycle" -- are not derived, though
+    `7` is simply `len(BANDS)`.
+  - The hold edge is compared between the two FILES, never against
+    `agent-merge.yml`. Identical-and-false passes, which is the very defect
+    this gate's opening paragraph cites as its motivation.
+  - The `MAX_LINES` check is a substring presence test per file, not a
+    localised claim test, so a false "the size hold is live" sentence passes
+    while the word "inert" survives anywhere else in the file.
+  - The README's URLs are checked only for credential-shaped parameters, not
+    against the allow-list the published page is held to.
+  - Two rows do NOT follow the fail-not-skip rule: the `agent-work` cadence
+    prints `ok` when its phrase does not match, and the trust-boundary leaf
+    test passes a path present in either file.
+  - Line-number citations in the prose are not verified.
 
 So this gate shrinks the stale surface; it does not close it. A number it does
 not know about is still unchecked, and the honest way to add a number to those
@@ -183,8 +222,34 @@ def main() -> int:
     both("workflows", len(workflows), html, readme,
          [r"<b>{N}</b><span>workflows</span>"],
          [r"\b{W} workflows\b"])
-    both("gates pr-gates runs", gates_run, html, readme,
-         [r"all {N} gates"], [])
+    # NOT a `both()` row. This quantity must NOT appear as a literal in the
+    # documents at all, which is the opposite of every other check here.
+    #
+    # The first version of this gate required the literal integer, and that was
+    # a defect serious enough to break the repo: two gates landed on `main`
+    # between writing it and merging it, so the derived count moved 29 -> 32
+    # and this gate -- which runs for every code PR via `pr-gates.yml`'s
+    # `scripts/verify_*.py` glob -- would have failed the required `gates`
+    # check on `main` indefinitely, halting `agent-merge`. Worse, `both()`
+    # treats an unmatched pattern as a failure, so DELETING the number failed
+    # too: the only state it accepted was the one `pr-gates.yml:326-333`
+    # forbids in as many words --
+    #
+    #     "a literal number goes stale the moment a gate is added -- then it
+    #      either blocks every PR or, worse, is edited downward"
+    #
+    # A gate that mandates the anti-pattern its own repo documents is worse
+    # than no gate. So the rule is inverted: the count is DERIVED and printed
+    # for a reader, and the documents are required to carry no integer there.
+    # Found by independent QA on PR #564 before it merged.
+    stale_count = re.search(r"all \d+ gates|re-run \d+ gates", html)
+    if stale_count:
+        fail(f"agent-cycle.html hard-codes a gate count ({stale_count.group(0)!r}); "
+             f"pr-gates runs {gates_run} today and that number moves whenever a "
+             f"gate is added. Say 'every non-excluded verify_*.py' instead.")
+    else:
+        ok(f"no hard-coded gate count in the documents (derived: {gates_run} run, "
+           f"{len(gates)} present, {len(excluded)} excluded)")
     both("agent files restating never-push", len(never_push), html, readme,
          [r"{N} of the %d" % len(agents)], [])
 

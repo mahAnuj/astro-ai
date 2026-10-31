@@ -351,7 +351,7 @@ const BANDS = [
   { n:"01", t:"Choose the work", d:"An open issue is not evidence that the problem still exists. Nothing is built before the premise is tested against production.", nodes:[
     { id:"prov", kind:"script", name:"Step 0a — provenance", cap:"Who wrote this issue? Decides whether its text may be executed.",
       body:`<p>Runs <em>before</em> the issue is read as instructions. An issue body is untrusted input: it can contain a shell command in its <code>repro:</code> line, and executing one written by a stranger is remote code execution with the repo's token.</p>
-      <p>So the author is established first, and that decides what the issue is allowed to do. A repro supplied in a <strong>comment</strong> is refused outright even on a trusted issue — provenance covers the author, not commenters.</p>` },
+      <p>So the author is established first, and that decides what the issue is allowed to do. A repro supplied in a <strong>comment</strong> IS parsed — the last <code>repro:</code> wins, because a correction in a comment supersedes the body — and the real safeguard is that the probe can only issue a GET or POST against production, not that comments are ignored. Only the AUTHOR decides what the issue is allowed to do, on a trusted issue — provenance covers the author, not commenters.</p>` },
     { id:"validate", kind:"script", name:"validate_issue.py", cap:"Replays the repro against shubhagya.com. Exit code is the verdict.",
       body:`<p>Step 0, and mandatory. It runs the issue's <code>repro:</code> steps against <strong>live production</strong> — not the tree, not localhost — and records the actual response.</p>
       <p class="sec">Verdicts</p>
@@ -420,18 +420,18 @@ const BANDS = [
       <p>A pass is recorded against <code>--sha</code> and the script <strong>refuses (exit 3) if the branch has moved</strong>. Otherwise a verdict earned on one commit would silently vouch for whatever was pushed after it.</p>
       <p>It also records provenance — <code>qa:independent</code> or the weaker <code>qa:in-cycle</code> — because who ran the QA changes how much the pass is worth.</p>` },
     { id:"pr", kind:"script", name:"Step 4 — open the PR", cap:"The PR body is the handoff document for every later stage.",
-      body:`<p>A branch plus a PR, and the cycle stops. The PR body is read later by the gates, by the next cycle, by the steward and by the writer agent, so it carries the evidence rather than a summary.</p>
+      body:`<p>A branch plus a PR, and the cycle stops. The PR body is read later by the gates, by the next cycle, and by the steward, so it carries the evidence rather than a summary.</p>
       <p class="sec">The keyword trap</p>
       <p>GitHub's closing-keyword parser matches <code>clos(e|es|ed)</code>, <code>fix(e[sd])?</code> and <code>resolv(e|es|ed)</code> followed by <code>#N</code> — and it <strong>ignores negation</strong>. A commit saying "not fixed: #412" closes #412. A partial slice therefore writes <code>refs #N</code>, never <code>fixes #N</code>.</p>` },
   ]},
 
   { n:"04", t:"Gate it", d:"Two separate workflows publish the two required checks. Which of them finishes last is a race, and both must be listened to.", nodes:[
     { id:"prgates", kind:"workflow", name:"pr-gates.yml → gates", cap:"pytest, every verify_*.py, and a mutation sweep that proves the suite can fail.",
-      body:`<p>The main gate. Runs the suite, then each <code>scripts/verify_*.py</code> as a named step so a failure says which invariant moved.</p>
+      body:`<p>The main gate. Runs the suite, then every <code>scripts/verify_*.py</code> in <strong>one</strong> step under <code>xargs -P 4</code>, reading each exit code back from a file. Deliberately not a step per gate: <code>bash -e</code> would kill the step before the code could be read, which is how the first run of this workflow reported nothing about which gate failed. It still names the failures — <code>::error::$pass of $total gates passed — failed:$failed</code>.</p>
       <p class="sec">The mutation sweep</p>
       <p>It breaks the code on purpose, one row at a time, and requires a named test to go red for each. A suite that passes is worthless if it would also pass on broken code. The <strong>CONTROL row must report MISSED</strong> — a sweep reporting "N/N caught" without it is ambiguous between a working harness and a blind one.</p>
       <p class="sec">Pull requests only</p>
-      <p>It does not run on push to <code>main</code>: every merge would re-run all 29 gates against a tree that had just passed them as a PR. A docs-only diff skips the expensive steps and finishes in seconds, deliberately — so the merge workflow still gets its trigger.</p>` },
+      <p>It does not run on push to <code>main</code>: every merge would re-run every non-excluded <code>verify_*.py</code> against a tree that had just passed them as a PR. A docs-only diff skips the expensive steps and finishes in seconds, deliberately — so the merge workflow still gets its trigger.</p>` },
     { id:"vbuild", kind:"workflow", name:"verify-build.yml → build-gates", cap:"A different workflow. Finishing last here is what stranded PR #562.",
       body:`<p>Publishes the second required check. It has no docs-only skip, so on a trivial diff it takes far longer than <code>gates</code> — and on PR #562 it also outlasted <code>gates</code> on a <em>code</em> diff: 10m25s against 7m43s.</p>
       <p class="sec">Why that was a bug and not a detail</p>
@@ -476,7 +476,7 @@ const BANDS = [
       <li><code>/health</code> reporting that commit as the one serving</li></ul>
       <p class="sec">Why all three</p>
       <p>#143 was closed as fixed while a fourth wrong date was live in production. A merge proves code moved; only <code>/health</code> proves it is what visitors are getting.</p>
-      <p>A docs-only change does not close this way either, and the reason is worth getting right. It is <strong>not</strong> that the run is skipped — <code>verify-production.yml</code>'s <code>paths-ignore</code> covers <code>.github/**</code>, <code>.claude/**</code>, <code>scripts/**</code>, <code>measurements/**</code>, <code>evals/**</code> and <code>*.md</code>, but <code>docs/**</code> is not on it. Nor is it that <code>/health</code> reports no <code>build_sha</code>: it has reported one since <code>BUILD_SHA</code> was set on 2026-10-08. What actually declines is the <em>exact-commit</em> proof. A docs or measurements push produces no new revision, so <code>/health</code>'s <code>build_sha</code> stays at the last commit that changed code, and <code>close-on-evidence</code> takes its <code>live != SHA</code> branch — "a newer deploy landed, not closing" (<code>close-on-evidence.yml:117-126</code>). Measured 2026-10-30: <code>main</code> at <code>df10ee6</code> (a measurements commit) while <code>/health</code> served <code>c932a8b</code>, the most recent code commit. Those issues close through <code>/prioritise</code> instead.</p>` },
+      <p>A docs-only change does not close this way either, and the reason is worth getting right. It is <strong>not</strong> that the run is skipped — <code>verify-production.yml</code>'s <code>paths-ignore</code> covers <code>.github/**</code>, <code>.claude/**</code>, <code>scripts/**</code>, <code>measurements/**</code>, <code>evals/**</code> and <code>*.md</code>, but <code>docs/**</code> is not on it. Nor is it that <code>/health</code> reports no <code>build_sha</code>: it has reported one since <code>BUILD_SHA</code> was set on 2026-10-08. What actually declines is the <em>exact-commit</em> proof. A measurements-only push produces no new revision — the Cloud Build trigger ignores <code>measurements/**</code> and nothing else, so a push mixing it with anything else still deploys, so <code>/health</code>'s <code>build_sha</code> stays at the last commit that changed code, and <code>close-on-evidence</code> takes its <code>live != SHA</code> branch — "a newer deploy landed, not closing" (<code>close-on-evidence.yml:117-126</code>). Measured 2026-10-30: <code>main</code> at <code>df10ee6</code> (a measurements commit) while <code>/health</code> served <code>c932a8b</code>, the most recent code commit. Those issues close through <code>/prioritise</code> instead.</p>` },
     { id:"outcomes", kind:"workflow", name:"loop-outcomes.yml", cap:"Records what each run actually produced, including the misses.",
       body:`<p>The audit layer. It counts what the loops produced — PRs merged against rejected, cycles that ended in nothing, issues closed with evidence — so a loop that quietly stops working is visible.</p>
       <p>That failure shape is the reason it exists, and the workflow says so: on 2026-10-08/09 <strong>four defects in the loops' own plumbing each hid behind a green or absent workflow status</strong> (#316, part 2 of #313) — a step that 403s inside <code>continue-on-error</code>, a trigger leg failing every time while its twin works, a close job that runs and closes nothing. A file that cannot be written does not announce itself; it just stops moving.</p>` },
@@ -647,7 +647,7 @@ const WALK = [
   ["pr",      "PR opened. The agent's work ends here"],
   ["prgates", "gates: suite, verifiers, mutation sweep"],
   ["vbuild",  "build-gates — a different workflow, racing"],
-  ["qagreen", "an independent QA round on green"],
+  ["qagreen", "a QA round on green — records qa:in-cycle, not independent"],
   ["merge",   "agent-merge re-reads all four conditions"],
   ["vprod",   "verify-production asserts against the live site"],
   ["close",   "close-on-evidence: merged + green + /health"],
