@@ -3803,6 +3803,140 @@ MUTATIONS = [
      "a Cancer or Leo ascendant",
      "a strong Moon aspecting Mars",
      "test_the_checker_lead_and_meta_name_only_rules_the_code_implements"),
+
+    # --- #398 slice 12: the tithi characters are labelled, not deleted ---
+    # `knowledge/vedic_reference.md` §29.8 called the Chaturthi row "the
+    # sharpest tension §29 found between shipped copy and the corpus" and
+    # recommended saying BOTH rather than deleting either. These rows re-break
+    # that resolution on each of the three surfaces it landed on.
+    ("#398 tithi: the prompt presents the table as classical again",
+     "src/astro_ai/prompts/rashifal_single.txt",
+     'Tithi character. The CHARACTERS below are POPULAR ASSOCIATION, NOT A CLASSICAL RULE\n(§29.10) — use one only if it fits, never as what the texts prescribe. The explicit\ncautions ARE sourced, and you may state them:\n',
+     "Tithi character (reference in the reading only if it genuinely fits):\n",
+     "test_the_prompt_does_not_present_the_table_as_classical"),
+
+    ("#398 tithi: the prompt tells the reader to start things on the 4th again",
+     "src/astro_ai/prompts/rashifal_single.txt",
+     "- Chaturthi \u2192 Ganesh energy, removing obstacles. NOT a day to start things.\n",
+     "- Chaturthi \u2192 Ganesh energy, start small things, remove obstacles\n",
+     "test_the_prompt_does_not_tell_the_reader_to_start_things_on_the_fourth"),
+
+    ("#398 tithi: the prompt drops the 8th's caution",
+     "src/astro_ai/prompts/rashifal_single.txt",
+     "- Ashtami \u2192 Durga/Shakti, courage, inner resolve. NOT a day to launch or decide.\n",
+     "- Ashtami \u2192 Durga/Shakti, courage, focused action\n",
+     "test_the_prompt_cautions_the_eighth_too"),
+
+    ("#398 tithi: /panchang says start small things again",
+     "src/astro_ai/chart.py",
+     '    "Chaturthi":   ("Ganesh day \u2014 removing obstacles; a Rikta tithi, so the texts "\n                    "we hold do not favour starting new work on it"),\n',
+     '    "Chaturthi":   "Ganesh day \u2014 remove obstacles, start small things",\n',
+     "test_panchang_says_both_on_the_fourth"),
+
+    ("#398 tithi: /panchang restores 'focused action' on the 8th",
+     "src/astro_ai/chart.py",
+     '    "Ashtami":     ("Durga/Shakti themes — courage, protection, inner resolve; "\n                    "Raman places the 8th on his avoid list for new "\n                    "undertakings, though Rao\'s table recommends it"),\n',
+     '    "Ashtami":     "Durga/Shakti themes \u2014 courage, protection, focused action",\n',
+     "test_panchang_drops_focused_action_on_the_eighth"),
+
+
+    ("#398 tithi: the /panchang explainer calls the characters classical again",
+     "src/astro_ai/templates/panchang.html",
+     "Some tithis carry widely-held popular characters",
+     "Some tithis have specific classical characters",
+     "test_the_panchang_explainer_does_not_call_the_characters_classical"),
+
+    ("#398 tithi: the 8th is called settled classical doctrine again",
+     "src/astro_ai/chart.py",
+     '"Raman places the 8th on his avoid list for new "',
+     '"also on the classical avoid list for new "',
+     "test_the_eighth_is_attributed_rather_than_called_settled"),
+
+    ("#398 tithi: a leaked internal section marker stops being caught",
+     "src/astro_ai/rashifal_quality.py",
+     '    "cites a document section": re.compile(r"\u00a7\\s*\\d"),',
+     '    "cites a document section": re.compile(r"ZZZ_NEVER_MATCHES"),',
+     "test_a_reading_that_leaks_an_internal_section_marker_is_caught"),
+    ("#398 tithi: the knowledge ledger claims this is still uncorrected",
+     "src/astro_ai/knowledge/vedic_reference.md",
+     "**CORRECTED 2026-10-30 (#398), by saying both rather than deleting either**",
+     "**Flagged, not corrected** \u2014 the resolution is probably to say both",
+     "test_the_knowledge_ledger_no_longer_says_flagged_not_corrected"),
+    # --- #450: single-flight on the two live caches. Each row removes ONE
+    # piece of the serialisation; the suite must notice every piece. --------
+    ("#450: the backlog read is not serialised (N cold renders spend N)",
+     "src/astro_ai/ops_data.py",
+     "    with _live_lock:\n        return _live_issues_locked(objective)",
+     "    return _live_issues_locked(objective)",
+     "test_concurrent_cold_backlog_reads_spend_one_request"),
+
+    ("#450: the today read is not serialised (N cold renders spend N)",
+     "src/astro_ai/ops_data.py",
+     "    with _today_lock:\n        return _live_today_locked(day_start, day)",
+     "    return _live_today_locked(day_start, day)",
+     "test_concurrent_cold_today_reads_spend_one_renders_worth"),
+
+    ("#450: the backlog waiter does not re-check the cache once it has the lock",
+     "src/astro_ai/ops_data.py",
+     "    hit = _issues_fresh(now)\n    if hit:\n        return hit[1]\n    try:",
+     "    try:",
+     "test_concurrent_cold_backlog_reads_spend_one_request"),
+
+    ("#450: the today waiter does not re-check the cache once it has the lock",
+     "src/astro_ai/ops_data.py",
+     "    hit = _today_fresh(day, now)\n    if hit:\n        return hit[2]\n    try:",
+     "    try:",
+     "test_concurrent_cold_today_reads_spend_one_renders_worth"),
+
+    ("#450: the two caches share one lock (a slow backlog read blocks the tiles)",
+     "src/astro_ai/ops_data.py",
+     "_today_lock = threading.Lock()",
+     "_today_lock = _live_lock",
+     "test_one_cache_being_filled_does_not_block_the_other"),
+
+    ("#450: the today lock is taken and never released (a waiter hangs)",
+     "src/astro_ai/ops_data.py",
+     "    with _today_lock:\n        return _live_today_locked(day_start, day)",
+     "    _today_lock.acquire()\n    return _live_today_locked(day_start, day)",
+     "test_a_failing_first_today_read_is_cached_and_the_lock_released"),
+    # --- #607: every agent definition says where its output goes ---
+    # The rule was stated once in CLAUDE.md, pointed at a gitignored file, and
+    # 12 of 15 definitions ended up with no instruction to write anywhere
+    # durable. These rows re-break each class so the gate cannot rot back out.
+    ("#607 trail: an agent definition loses the output-goes section",
+     ".claude/agents/engineer.md",
+     "  `>>` only \u2014 never `>`, never Write, never Edit on that file.\n\n## Where your output goes",
+     "  `>>` only \u2014 never `>`, never Write, never Edit on that file.\n\n## Notes",
+     "test_every_agent_names_where_its_output_goes"),
+
+    # The SYMMETRIC row. Its absence is why the issue-side check shipped
+    # near-vacuous: `"issue" in block` was always true because the section
+    # heading says "the issue is durable". QA on #609 inverted an agent's
+    # issue instruction, left the heading intact, and the gate said `ok`.
+    ("#607 trail: an agent names the PR but not the issue",
+     ".claude/agents/infra-lead.md",
+     "**On the issue:**",
+     "Keep it in your own output:",
+     "test_every_agent_names_both_the_issue_and_the_pr"),
+
+    ("#607 trail: an agent names the issue but not the PR",
+     ".claude/agents/qa.md",
+     "**On the PR:** the full verdict comment first, then record the label with",
+     "Also, eventually, somewhere: the full verdict comment first, then the label with",
+     "test_every_agent_names_both_the_issue_and_the_pr"),
+
+    ("#607 trail: an agent is told the heartbeat file is the record",
+     ".claude/agents/architect.md",
+     "`AGENT_STATUS.md` is a **local heartbeat only** \u2014 it is gitignored, so nothing in it",
+     "`AGENT_STATUS.md` is where the trail belongs \u2014 append to it, and nothing in it",
+     "test_no_agent_is_told_the_heartbeat_file_is_the_record"),
+
+    ("#607 trail: CLAUDE.md drops the three-surfaces section",
+     "CLAUDE.md",
+     "nothing else. Every agent must leave a visible trail.\n\n### The three surfaces",
+     "nothing else. Every agent must leave a visible trail.\n\n### Leaving a trail",
+     "test_claude_md_no_longer_presents_the_gitignored_file_as_the_record"),
+
 ]
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -3933,6 +4067,18 @@ def _worker_sandbox():
         shutil.copytree(ROOT / sub, sandbox / sub,
                         ignore=shutil.ignore_patterns("__pycache__", "*.pyc",
                                                       "worktrees"))
+    # ROOT-LEVEL FILES TOO (#607). The loop above copies directories, so until
+    # now nothing at the repo root existed in the sandbox -- and that is the
+    # same hole `.claude` had before 2026-10-25, with the same two
+    # consequences the comment below records: a row naming `CLAUDE.md` dies
+    # with FileNotFoundError, and any test that READS it fails to import in
+    # the sandbox, which reports rc=2 on every row INCLUDING CONTROL and
+    # blinds the whole harness. Observed on PR #609: one bad row made the
+    # sweep print "CONTROL FAILED -- every verdict above is worthless".
+    for f in _SANDBOX_FILES:
+        src = ROOT / f
+        if src.exists():
+            shutil.copy2(src, sandbox / f)
     _SANDBOXES.path = sandbox
     yield sandbox
 
@@ -3951,6 +4097,11 @@ _SANDBOX_DIRS: list[str] = []
 # of it when this was measured, and copying it per sandbox would make the sweep
 # unrunnable rather than merely slow.
 _SANDBOX_SUBDIRS = ("src", "tests", ".github", "scripts", "measurements", ".claude")
+# Repo-root FILES the sandbox needs. `CLAUDE.md` is load-bearing behaviour in this
+# repo the same way `.claude/` is -- it is loaded into every session, several gates
+# and tests read it, and a mutation row targeting it could not run at all before
+# #607. Keep this list short: every entry is copied into every worker sandbox.
+_SANDBOX_FILES = ("CLAUDE.md",)
 
 
 def _drop_worker_sandbox() -> None:
@@ -4143,6 +4294,23 @@ def _preflight_anchors() -> list[str]:
         path = ROOT / rel
         if not path.exists():
             problems.append(f"{label}: {rel} does not exist")
+            continue
+        # THE SANDBOX MUST CONTAIN IT (#607). Existing in the repo is not
+        # enough: the sweep runs each row in a copy that holds only
+        # `_SANDBOX_SUBDIRS` plus `_SANDBOX_FILES`, so a row naming anything
+        # else dies with FileNotFoundError mid-sweep -- and, worse, a TEST
+        # that reads such a path fails to import in the sandbox, which reports
+        # rc=2 on every row including CONTROL and blinds the whole harness.
+        # Observed on PR #609, where one such row made the sweep print
+        # "CONTROL FAILED -- every verdict above is worthless" after 40
+        # minutes. This check is free and says so before anything is spent.
+        top = pathlib.PurePosixPath(rel).parts[0]
+        if top not in _SANDBOX_SUBDIRS and rel not in _SANDBOX_FILES:
+            problems.append(
+                f"{label}: {rel} is outside the sandbox — the sweep copies "
+                f"{list(_SANDBOX_SUBDIRS)} and {list(_SANDBOX_FILES)}, so this "
+                f"row cannot run. Add it to _SANDBOX_FILES/_SANDBOX_SUBDIRS or "
+                f"drop the row deliberately.")
             continue
         src = path.read_text(encoding="utf-8")
         n = src.count(old)

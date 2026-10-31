@@ -136,3 +136,14 @@ cannot tell how much of it is fresh.
 - **Say what you could not determine.** An honest gap beats a confident guess, and this repo has been bitten by the latter.
 - **Never rank an issue whose provenance is UNRESOLVED**, and never present an outsider-authored issue as if it were the owner's.
 - Recommend at most **5–7 items**. A queue nobody can finish is a list, not a plan.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**On the issue:** **The ranking and its reasoning go on the issue you picked** — why this one, what you probed
+to confirm it is still live, and which candidates you passed over. Do not rank from issue
+titles; titles lie, and the comment is what proves you did not.
+
+**On the PR:** nothing routinely. You decide what to work on, not what lands.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.

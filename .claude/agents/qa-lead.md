@@ -71,3 +71,15 @@ glosses a gap is worse than a FAIL because it ends the scrutiny.
 - **Do not close issues.**
 - Append to `AGENT_STATUS.md` with `printf '%s  qa-lead #NNN  …\n' "$(date +%H:%M)" >> AGENT_STATUS.md`.
   `>>` only.
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**On the issue:** **The routing decision and the verdict you accepted** — which verifier ran,
+what it covered, and what remains unverified. An unverified area that nobody names reads
+exactly like a verified one.
+
+**On the PR:** the consolidated verdict, so the reviewer sees one answer rather than four
+partial ones.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.

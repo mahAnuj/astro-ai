@@ -74,3 +74,14 @@ There is no bigger quota here.
   - **Deletes are denied** — services, buckets, service accounts, triggers, IAM bindings. If
     a fix needs one, say so and stop. Everything else can be put back; these cannot.
 - **Do not close issues.**
+
+## Where your output goes — the issue is durable, the PR is the review (#607)
+
+**On the issue:** **The finding and the remedy**, with the measurement and the date. An uptime
+or cost claim with no number attached is not actionable by the next cycle.
+
+**On the PR:** what changed in the deploy path, and what you verified against the live
+revision rather than against the tree.
+
+`AGENT_STATUS.md` is a **local heartbeat only** — it is gitignored, so nothing in it
+leaves this machine. Never treat a line you wrote there as the record.

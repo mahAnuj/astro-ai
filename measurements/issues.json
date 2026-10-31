@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-10-30T11:11:17Z",
+  "generated_at": "2026-10-31T07:59:27Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 139,
-  "with_ask": 59,
+  "open": 136,
+  "with_ask": 57,
   "by_area": {
-    "UNCLASSIFIED": 52,
-    "INFRA": 16,
+    "UNCLASSIFIED": 50,
+    "INFRA": 15,
     "UI": 12,
     "REDESIGN": 10,
     "NUMEROLOGY": 7,
     "FEATURE": 7,
+    "DETECT_STALLS": 3,
     "BUG": 3,
     "SEO": 3,
     "SECURITY": 3,
     "MEASURE": 2,
     "CONTENT": 2,
-    "DETECT_STALLS": 2,
     "AGENT-MERGE": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
@@ -27,7 +27,6 @@
     "GATES": 1,
     "ASK": 1,
     "ARCHITECTURE": 1,
-    "PROMPTS": 1,
     "KUNDLI": 1,
     "TASK": 1,
     "BLOCKER": 1,
@@ -35,8 +34,8 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 42,
-    "untyped": 37,
+    "bug": 38,
+    "untyped": 38,
     "enhancement": 27,
     "correctness": 12,
     "design": 8,
@@ -44,13 +43,90 @@
     "ui": 6
   },
   "by_priority": {
-    "unset": 94,
-    "medium": 22,
+    "unset": 92,
     "high": 22,
+    "medium": 21,
     "low": 1
   },
   "blocked": 8,
   "rows": [
+    {
+      "number": 618,
+      "title": "The production verifier POSTs real user forms, so every verify fires an owner Telegram alert — 4-6 identical ones a day",
+      "ask": "Scope it deliberately to the no-PII diagnostic alerts only.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "medium",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:medium",
+        "provenance:trusted"
+      ],
+      "created": "2026-10-31T07:09:19Z",
+      "updated": "2026-10-31T07:09:19Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 616,
+      "title": "detect_stalls: a green qa-pass PR that later became CONFLICTING is reported mergeable-but-open, routing it to 'diagnose the gate' instead of 'merge main in'",
+      "ask": "Test pr.get(\"mergeable\") == \"CONFLICTING\" before the qa-pass and green branch and emit pr-conflicting for it, so a conflicted PR is routed to the cycle that merges main in",
+      "area": "DETECT_STALLS",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-31T02:25:29Z",
+      "updated": "2026-10-31T02:25:40Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 610,
+      "title": "chief-cleared is documented as releasing a prompts/knowledge PR but no workflow reads it; agent-merge's boundary step re-holds it",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-30T18:25:45Z",
+      "updated": "2026-10-30T18:25:45Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 605,
+      "title": "test_rashifal_day_detail.py module-scoped fixture bypasses _offline_geocode and hits Nominatim, so gates goes red on a 429",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "untyped",
+      "priority": "unset",
+      "labels": [],
+      "created": "2026-10-30T15:39:52Z",
+      "updated": "2026-10-30T15:39:52Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
+    {
+      "number": 604,
+      "title": "needs-human-review does not hold a PR: agent-merge reads it only in the sweep filter, so an edge-triggered run still merges",
+      "ask": "A needs-human-review check in the same chain as boundary, so it binds on every trigger rather than only in the sweep — and correct :402 to name only the defences that exist.",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "high",
+      "labels": [
+        "bug",
+        "category:technical",
+        "priority:high",
+        "provenance:trusted"
+      ],
+      "created": "2026-10-30T15:03:21Z",
+      "updated": "2026-10-30T15:03:21Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 602,
       "title": "agent-work gates guard: an empty $sha makes the API return every run in the repo, suppressing the #322 rescue",
@@ -239,24 +315,7 @@
         "bug"
       ],
       "created": "2026-10-28T11:11:25Z",
-      "updated": "2026-10-28T11:11:25Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 573,
-      "title": "[INFRA] agent-work dispatches pr-gates on every cycle; the dispatched run masks the real green and cannot trigger agent-merge, so an eligible PR strands",
-      "ask": "",
-      "area": "INFRA",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "qa:independent"
-      ],
-      "created": "2026-10-28T06:01:11Z",
-      "updated": "2026-10-30T11:03:01Z",
+      "updated": "2026-10-30T11:26:24Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -359,10 +418,10 @@
         "chore",
         "qa-fail",
         "provenance:trusted",
-        "qa:in-cycle"
+        "qa:independent"
       ],
       "created": "2026-10-26T05:05:03Z",
-      "updated": "2026-10-26T16:46:44Z",
+      "updated": "2026-10-30T18:25:42Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -417,7 +476,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-24T09:07:13Z",
-      "updated": "2026-10-25T13:58:09Z",
+      "updated": "2026-10-31T02:26:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -457,23 +516,6 @@
       "needs_evidence": true
     },
     {
-      "number": 510,
-      "title": "/admin/ops: the column glossaries are walls of 12px text on a phone — 2,394 chars in one paragraph",
-      "ask": "Cut those and the panel starts reading as more certain than it is.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "medium",
-      "labels": [
-        "bug",
-        "category:technical",
-        "priority:medium"
-      ],
-      "created": "2026-10-24T00:00:21Z",
-      "updated": "2026-10-24T00:00:21Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 508,
       "title": "[SEO] /matching ranks 4.3 on 336 impressions and got 0 clicks — title/meta test (2026-09-23..10-20)",
       "ask": "",
@@ -508,7 +550,7 @@
       "priority": "unset",
       "labels": [],
       "created": "2026-10-23T19:06:26Z",
-      "updated": "2026-10-23T19:06:26Z",
+      "updated": "2026-10-31T02:25:41Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -559,21 +601,6 @@
       "needs_evidence": false
     },
     {
-      "number": 468,
-      "title": "Three more product-added remedies presented as classical or ranked — including a 'Classical' heading whose first bullet is the addition and third is the line #451 fixed",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-10-21T05:41:01Z",
-      "updated": "2026-10-21T05:41:47Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 467,
       "title": "Gate 7 is literal-bound: QA measured 18 of 20 plausible rewrites escaping, and families B, E, F do not fire on Devanagari at all",
       "ask": "Devanagari parity for B, E, F — close the gap on the unreadable surface first.",
@@ -601,21 +628,6 @@
       ],
       "created": "2026-10-21T04:49:46Z",
       "updated": "2026-10-21T04:49:46Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 465,
-      "title": "Mercury and Jupiter pages call the Vishnu Sahasranama 'the universal safe practice' — remedies.md gives that role to the Sri Yantra and never cites that hymn (#398 follow-on)",
-      "ask": "Deity sourced, practice generic, no \"classical\" attached to the hymn.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-10-21T04:49:13Z",
-      "updated": "2026-10-21T04:49:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -679,7 +691,7 @@
         "qa:independent"
       ],
       "created": "2026-10-21T04:44:34Z",
-      "updated": "2026-10-28T17:54:52Z",
+      "updated": "2026-10-30T18:25:43Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -745,22 +757,6 @@
       "labels": [],
       "created": "2026-10-20T16:03:10Z",
       "updated": "2026-10-20T16:05:41Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 450,
-      "title": "ops_data.snapshot: asyncio.to_thread removes the loop's serialisation, so two concurrent renders can each spend the full API budget",
-      "ask": "Serve stale while revalidating — return the previous snapshot immediately and refresh in one background task.",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "medium",
-      "labels": [
-        "category:technical",
-        "priority:medium"
-      ],
-      "created": "2026-10-20T10:12:38Z",
-      "updated": "2026-10-20T10:12:38Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1009,25 +1005,6 @@
       "needs_evidence": false
     },
     {
-      "number": 398,
-      "title": "prompts: natal.txt assigns Mars's remedies to the Sun and Saturn, and attributes a D-9 rule to Parashara that the corpus does not carry",
-      "ask": "Correct the prompt text to the corpus, or mark a claim as the product's own convention rather than",
-      "area": "PROMPTS",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-10-17T07:01:08Z",
-      "updated": "2026-10-30T03:02:13Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 392,
       "title": "[INFRA] detect_stalls cannot name the owner of a partial/* PR, and reports human-owned PRs as pipeline stalls",
       "ask": "A. Map partial/<n>-* to issue n.",
@@ -1075,24 +1052,6 @@
       "needs_evidence": false
     },
     {
-      "number": 389,
-      "title": "verify_no_relaxation reports 'mutations kept (182 -> 183)' — that is not a count of mutations",
-      "ask": "Or, if the substring proxy is wanted for robustness against an ast failure, rename the line so it does not claim to be a count — e.g.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-10-16T08:43:47Z",
-      "updated": "2026-10-27T15:31:31Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 386,
       "title": "verify_no_relaxation's phrase check reads HEAD, so a local run reports a floor it did not check",
       "ask": "The second is one string and cannot change the gate's verdict; the first is more useful locally but changes what the gate measures, so it needs a mutation row.",
@@ -1100,10 +1059,11 @@
       "type": "bug",
       "priority": "unset",
       "labels": [
-        "bug"
+        "bug",
+        "provenance:trusted"
       ],
       "created": "2026-10-16T05:59:26Z",
-      "updated": "2026-10-16T05:59:26Z",
+      "updated": "2026-10-30T17:00:19Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1119,24 +1079,6 @@
       ],
       "created": "2026-10-16T05:59:24Z",
       "updated": "2026-10-16T05:59:24Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 384,
-      "title": "No gate greps tracked files for merge-conflict markers — ARCHITECTURE.md shipped with a live conflict block",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-fail",
-        "provenance:trusted",
-        "qa:in-cycle"
-      ],
-      "created": "2026-10-16T03:48:40Z",
-      "updated": "2026-10-26T17:50:56Z",
       "blocked": false,
       "needs_evidence": false
     },

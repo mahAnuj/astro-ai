@@ -2269,11 +2269,26 @@ Chaturthi (tithi 4, Rikta) as "Ganesh day — remove obstacles, start small
 things" — a favourable note for a tithi Rao's only muhurta table excludes from
 all eight tasks and Raman names outright as unsuitable for auspicious work.
 The Ganesh association is real and widely held, and a panchang character note
-is not the same claim as a muhurta rule — but the page currently says
+is not the same claim as a muhurta rule — but the page previously said
 "start small things" on a day one source we hold says not to start things.
-That is the sharpest tension §29 found between shipped copy and the corpus.
-**Flagged, not corrected** — the resolution is probably to say both, not to
-delete either.
+That was the sharpest tension §29 found between shipped copy and the corpus.
+**CORRECTED 2026-10-30 (#398), by saying both rather than deleting either** —
+the resolution this section recommended. `chart.py`'s `_TITHI_SIGNIFICANCE`
+now renders Chaturthi as "Ganesh day — removing obstacles; a Rikta tithi, so
+the texts we hold do not favour starting new work on it", and Ashtami carries
+the same caution because the 8th is on the same list (Ch. II line 802).
+`prompts/rashifal_single.txt`'s tithi block is relabelled as widely-held
+popular association rather than classical rule, with §29.10 cited in the
+prompt itself, and forbids writing the 4th or 8th as a day to start or launch.
+A FOURTH surface on the same page was missed in the first pass and is now also
+corrected: `templates/panchang.html`'s explainer called these "specific classical
+characters" and named Chaturthi with no caution, 158 lines below the data cell that
+had just been fixed — found by QA on PR #606. It now reads "widely-held popular
+characters … association rather than classical rule". The 8th is **attributed, not
+settled**: Raman Ch. II line 802 places it on his avoid list while Rao's Table 79
+recommends it (Jaya → 3, 8, 13), so the code says whose list it is.
+Pinned by `scripts/prompt_contracts.toml` (`tithi-character-provenance`) and
+`tests/test_tithi_provenance.py` (9 tests).
 
 ### 29.9 B.V. Raman, *Muhurtha* (1948) — what it settles, and its limits
 
