@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-31T10:43:54Z",
+  "generated_at": "2026-10-31T15:57:24Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
   "open": 136,
@@ -421,7 +421,7 @@
         "qa:independent"
       ],
       "created": "2026-10-26T05:05:03Z",
-      "updated": "2026-10-30T18:25:42Z",
+      "updated": "2026-10-31T15:09:15Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -687,11 +687,11 @@
       "priority": "unset",
       "labels": [
         "bug",
-        "qa-fail",
+        "qa-pass",
         "qa:independent"
       ],
       "created": "2026-10-21T04:44:34Z",
-      "updated": "2026-10-30T18:25:43Z",
+      "updated": "2026-10-31T14:35:08Z",
       "blocked": false,
       "needs_evidence": false
     },

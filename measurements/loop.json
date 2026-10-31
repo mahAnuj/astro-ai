@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-31T10:43:50Z",
+  "generated_at": "2026-10-31T15:57:19Z",
   "rows": [
     {
       "run": 41160004688,
@@ -12,7 +12,7 @@
       "issue": 450,
       "pr": 617,
       "pr_merged": false,
-      "outcome": "pr open",
+      "outcome": "failed",
       "attribution": "receipt"
     },
     {
