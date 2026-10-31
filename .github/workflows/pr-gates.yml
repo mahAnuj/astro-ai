@@ -22,22 +22,31 @@
 # treats 2 as a failure.
 name: PR gates
 
-# Pull requests ONLY.
+# Pull requests AND pushes to `main`.
 #
-# It used to run on push to `main` as well, which meant every merge re-ran 21
-# gates against a tree that had just passed them as a PR — ~5 minutes to
-# re-prove the same thing. Merging #284 fired four workflows for a two-file
-# change and made that obvious.
+# `main` WAS dropped from this list, and the reasoning is kept here because it
+# was not wrong — it was incomplete. Running on every merge re-ran 21 gates
+# against a tree that had just passed them as a PR, ~5 minutes to re-prove the
+# same thing; merging #284 fired four workflows for a two-file change and made
+# that obvious. What that argument missed is that a PR leg does not prove what
+# it appears to prove: it asserts `<branch> + main-at-the-time`, never `main` as
+# it actually ends up. Two PRs can each be green alone and red as a pair, and on
+# 2026-10-20 two of them were (#461, detailed at the `push:` key below). No
+# amount of re-running the PR leg catches that, so the ~5 minutes is not a
+# duplicate of the PR run; it is the only run that reads the tree that ships.
 #
-# What still covers `main` after a merge, and covers it better:
-#   verify-build.yml      on push — the committed CSS matches a fresh build
-#   verify-production.yml on push — the LIVE SITE, which is the only claim a
-#                         post-merge check can make that a pre-merge one cannot
+# What else covers `main` after a merge:
+#   verify-build.yml       on push — the committed CSS matches a fresh build
+#   verify-production.yml  on push — the LIVE SITE, which is the only claim a
+#                          post-merge check can make that a pre-merge one cannot
+#   main-red-report.yml    on workflow_run — turns a red `main` run into an
+#                          issue comment, because neither `workflow_run`
+#                          listener on this workflow acts on a push run
 #
-# The gap this leaves is a squash onto a moved `main` differing semantically
-# from the branch that was tested. verify-production catches that against the
-# deployed site, which is the stronger assertion anyway — and with BUILD_SHA set
-# (2026-10-08) it can now prove which commit is serving.
+# verify-production still covers the squash-onto-a-moved-`main` case against the
+# deployed site — the stronger assertion, and with BUILD_SHA set (2026-10-08) it
+# can prove which commit is serving. It just does it AFTER the bad code is live,
+# which is what the `push:` leg below exists to get ahead of.
 on:
   pull_request:
     # `ready_for_review` is NOT in the default set, which is
@@ -61,9 +70,71 @@ on:
   # It is still strictly better than the nothing it replaces.
   workflow_dispatch:
 
+  # #461: THE MERGE RESULT IS WHAT SHIPS, AND NOTHING GATED IT.
+  #
+  # Every leg above asserts against `<branch> + main-at-the-time`, never
+  # against `main` as it actually ends up. On 2026-10-20 two PRs landed the
+  # same day: #455 added a mutation row whose `test` field named
+  # `test_the_window_selector`, a test that has never existed, and a sibling PR
+  # added the per-row targeting that READS that field and treats it as
+  # load-bearing. Each was green on its own branch -- #455 was measured before
+  # the check existed, the check was measured against a tree without the row.
+  # The PAIR is red. No amount of per-PR gating catches that, because neither
+  # PR is wrong by itself; only their merge is.
+  #
+  # `main` then stayed red from 2026-10-20 to 2026-10-21 and nothing said so.
+  # It surfaced only when PR #451 merged `main` in and inherited the failure,
+  # where it read as a #398 defect and cost a diagnosis round to attribute.
+  # The last run on `main` before this was 2026-10-08 (`db4834c`), thirteen
+  # days earlier.
+  #
+  # The two `github.event.pull_request.base.sha` reads below already have
+  # non-PR fallbacks written for exactly this case -- the scope step falls back
+  # to `HEAD~1` and the mutation step says "not a pull request -> every row".
+  # EVERY ROW is the right choice here and must not be "optimised" to the
+  # push diff: the #455 row arrived in one main commit and its reader in
+  # another, so a sweep scoped to either commit's diff sees neither half. The
+  # full sweep is the only thing that reads the tree as it actually is.
+  #
+  # Downstream listeners were checked before this was added, because both are
+  # triggered by `workflow_run` on this workflow:
+  #   * agent-merge.yml  -- its job `if:` demands
+  #     `workflow_run.event == 'pull_request'`, so a push run never reaches it.
+  #   * qa-on-green.yml  -- resolves the PR by head branch and exits 0 on
+  #     "No open PR on `main`".
+  # Neither acts on a push run; the cost is one ~10s no-op per main commit.
+  # That is WHY `main-red-report.yml` exists: a push run that goes red has no
+  # downstream listener at all, so without it a red `main` is visible only to
+  # whoever thinks to open the Actions tab -- which is the situation #461 is.
+  push:
+    branches: [main]
+
 concurrency:
+  # ONE GROUP PER REF, and `main` is deliberately NOT cancellable.
+  #
+  # A cancelled run reports nothing. With `cancel-in-progress: true` on `main`,
+  # a second push during the first push's ~8 minutes would cancel it, and the
+  # commit that broke the tree would leave no verdict at all -- re-creating the
+  # exact invisibility #461 is about, through the mechanism added to fix it.
+  # Nearly every commit on `main` gets its own verdict; branches still coalesce,
+  # NOT every one: GitHub keeps a single PENDING run per group, so a burst of
+  # three pushes inside one run drops the middle one (`agent-merge.yml:110-117`
+  # records the same mechanism). That commit gets no verdict of its own, and
+  # the reporter deliberately reports `cancelled` -- so it can file a
+  # "[main-red] ... did not pass" for a commit whose gates never actually
+  # failed. Round 4 of #461 found this claim overstated; it is narrowed rather
+  # than deleted because the common case really is one verdict per commit.
+  # Branches still coalesce, because there only the latest push matters.
   group: pr-gates-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+# `contents: read` is all the checkout needs, and it must stay that way: a gate
+# that can push is a gate that can relax itself. Nothing in this workflow writes
+# anywhere -- reporting a red `main` is `main-red-report.yml`'s job, a separate
+# `workflow_run` listener, because a reporter inside this job cannot report this
+# job being KILLED (`failure()` is false on `cancelled` and `timed_out`).
+permissions:
+  contents: read
 
 jobs:
   gates:
@@ -113,7 +184,23 @@ jobs:
           # Everything the suite, the gates or the build actually read.
           # .github/workflows counts: the behaviour suite reads
           # verify-production.yml to check its jq field reads still match /health.
-          if echo "$changed" | grep -qE '^(src/|tests/|scripts/|assets/|\.github/workflows/|package(-lock)?\.json|tailwind\.config\.js|pyproject\.toml|uv\.lock)'; then
+          # A HERESTRING, not `echo ... | grep -q`.
+          #
+          # CORRECTED in round 5: the rationale first written here was wrong.
+          # It blamed SIGPIPE under `pipefail` and said the 64 KB pipe buffer
+          # was what kept it unreachable. But this workflow sets no `shell:`
+          # and no `defaults:`, so its steps run under GitHub's default
+          # `bash -e` -- errexit WITHOUT pipefail -- and only the step that
+          # sets `set -euo pipefail` for itself has the defect at all. The
+          # scope step never had it.
+          #
+          # Kept anyway, for two reasons that are true: a herestring cannot
+          # acquire the defect if anyone later adds `pipefail` to this file,
+          # and it is safer against a changed filename beginning with `-`.
+          # Recorded rather than quietly reworded, because a comment that
+          # explains a change by the wrong mechanism teaches the next reader
+          # to look in the wrong place.
+          if grep -qE '^(src/|tests/|scripts/|assets/|\.github/workflows/|package(-lock)?\.json|tailwind\.config\.js|pyproject\.toml|uv\.lock)' <<<"$changed"; then
             echo "code=true" >> "$GITHUB_OUTPUT"
             echo "-> running the full gates"
           else
@@ -365,6 +452,23 @@ jobs:
             echo "::error::$pass of $total gates passed — failed:$failed skipped:$skipped"
             exit 1
           fi
+
+      # THE REPORTER READS THIS STEP BY NAME (#461). Everything above is
+      # `if: steps.scope.outputs.code == 'true'`, so a docs- or
+      # measurements-only push SKIPS every gate and the job still concludes
+      # `success` -- indistinguishable, from outside, from a run in which all
+      # 21 gates passed. Measured 2026-10-31: 26 of the last 40 commits on
+      # `main` were that shape.
+      #
+      # `main-red-report.yml` therefore asks the jobs API for this step's
+      # conclusion rather than trusting the run's. `success` here means the
+      # gates really executed; `skipped` means the run asserted nothing and so
+      # must neither open a sentinel nor close one. Renaming this step without
+      # updating the reporter silently restores the bug, which is why the
+      # reporter fails loudly when it cannot find the step at all.
+      - name: GATES ASSERTED
+        if: steps.scope.outputs.code == 'true'
+        run: echo "the suite and every gate ran against this commit"
 
       - name: App log on failure
         if: failure()

@@ -35,12 +35,24 @@ import pathlib, shutil, subprocess, sys, tempfile, os
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 H, R = "docs/agent-cycle.html", "README.md"
 
+# Derived so the rows below cannot go stale when a workflow is added.
+_WORKFLOWS = len(list((ROOT / ".github" / "workflows").glob("*.yml")))
+_WORD = {15: "fifteen", 16: "sixteen", 17: "seventeen", 18: "eighteen",
+         19: "nineteen", 20: "twenty"}
+
 # (label, file, old, new)
 ROWS = [
  ("agents count, HTML fact tile",      H, "<b>15</b><span>agents</span>", "<b>50</b><span>agents</span>"),
  ("agents count, README word form",    R, "Fifteen agents", "Fifty agents"),
- ("workflows count, HTML fact tile",   H, "<b>17</b><span>workflows</span>", "<b>3</b><span>workflows</span>"),
- ("workflows count, README",           R, "seventeen workflows", "three workflows"),
+ # DERIVED, not hardcoded. These two anchored on the literal "17"/"seventeen"
+ # and went stale the moment #461 added an 18th workflow -- the harness then
+ # reported NOT BEHAVING for rows whose subject was fine. A mutation anchor
+ # that tracks the repo cannot rot that way, and the gate it tests derives the
+ # same number.
+ ("workflows count, HTML fact tile",   H,
+  f"<b>{_WORKFLOWS}</b><span>workflows</span>", "<b>3</b><span>workflows</span>"),
+ ("workflows count, README",           R,
+  f"{_WORD[_WORKFLOWS]} workflows", "three workflows"),
  # INVERTED, and the only row of this shape. Every other row restores a
  # falsehood; this one restores a hard-coded NUMBER -- which is what
  # `pr-gates.yml:326-333` forbids ("a literal number goes stale the moment a

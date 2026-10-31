@@ -1,0 +1,315 @@
+# A red `main` must reach a person, not sit in the Actions tab -- and the
+# sentinel it files must close itself when `main` goes green again.
+#
+# WHY THIS IS A SEPARATE WORKFLOW AND NOT A STEP IN `pr-gates`
+# -----------------------------------------------------------
+# It WAS a step. Round 1 of #461 ended `pr-gates`' `gates` job with:
+#
+#     - name: Report a red main
+#       if: failure() && github.event_name == 'push' && ...
+#
+# That cannot work for the two likeliest shapes of a red `main`, because
+# `failure()` is FALSE when the job was KILLED rather than when it ran and
+# returned non-zero:
+#
+#   * a job that exceeds `timeout-minutes` ends `cancelled`, not `failure`
+#   * a run cancelled by hand, or by a concurrency rule, ends `cancelled`
+#
+# A reporter that lives inside the job it reports on is also reporting on its
+# own executioner: when the job is killed, the step reporting the kill is
+# killed with it. `always()` would not fix it either -- a cancelled job gives
+# its remaining steps a short, unguaranteed grace period, so the report would
+# be best-effort exactly when it matters most.
+#
+# `workflow_run` is a different process. It fires AFTER the gates run reaches
+# a terminal state, reads that state as data (`conclusion`), and cannot be
+# cancelled by whatever cancelled the run it is describing.
+#
+# THE COST OF THIS SHAPE, STATED
+# ------------------------------
+# A `workflow_run` workflow only ever runs the copy on the DEFAULT BRANCH. So
+# this file cannot be exercised from the PR that introduces it -- the same edge
+# that produced #303/#322/#352/#356 -- and its first real execution is after
+# merge. That is why `tests/test_main_red_report.py` asserts against the parsed
+# FILE and against the step's own extracted shell: a unit test over the config
+# and the script is the only check available before merge.
+#
+# NO `${{ }}` INSIDE A `run:` BLOCK (#358). `workflow_run` is a privileged
+# trigger: it runs the base repo's definition with a write token. Every value
+# reaches bash as an environment variable, which bash never re-parses as
+# source. `scripts/verify_workflows.py` enforces this and will fail the build
+# if an interpolation appears below.
+name: Report a red main
+
+on:
+  workflow_run:
+    workflows: ["PR gates"]
+    types: [completed]
+
+# SERIALISED REPO-WIDE (#461 round 4). The sentinel lookup is read-then-write
+# with no lock: two reporters that both read "no sentinel open" both file one.
+# Reachable because `pr-gates` on `main` is `cancel-in-progress: false`, so a
+# push burst pending-cancels a middle run whose `workflow_run/completed` fires
+# immediately while the long run is still going.
+#
+# NOT keyed on the SHA: like `agent-merge`, this job does not know which
+# sentinel it is about until its first `gh issue list` has run, so keying on
+# anything finer would not serialise the thing that races.
+#
+# `cancel-in-progress: false` for `agent-merge`'s reason: cancelling the thing
+# that reports a kill is the one outcome worth avoiding.
+concurrency:
+  group: main-red-report
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+  # `actions: read` for ONE call: reading back whether `pr-gates`' "GATES
+  # ASSERTED" step ran on this commit. An omitted scope is `none`, so without
+  # this the jobs API is a 403 and the reporter would fall back to trusting
+  # the run conclusion -- which is the defect it exists to avoid.
+  # `verify_workflows.py`'s gh-vs-permissions check caught the omission here
+  # rather than in production.
+  actions: read
+
+jobs:
+  report:
+    # `event == 'push'` and `head_branch == 'main'`, because only the `main` leg
+    # of pr-gates asserts against the merge result. A PR run going red is
+    # already reported on the PR and `agent-merge` already refuses it; filing an
+    # issue for that would be #367's "commented on every pass" bug. MEASURED
+    # over the last 100 pr-gates runs: `action_required` does occur here -- a
+    # run that never ran -- but every instance was `event: pull_request`, so it
+    # is excluded by the event guard rather than by any conclusion filter.
+    #
+    # `skipped` is the ONE conclusion excluded, because nothing ran and so
+    # nothing is asserted. Every other conclusion reaches the step, including
+    # one GitHub has not shipped yet: the bug class here is silent
+    # non-reporting, so an unrecognised conclusion must be loud.
+    #
+    # `success` is deliberately NOT excluded. The sentinel body promises the
+    # issue "stays open until a push to `main` goes green", and round 2 excluded
+    # `success` -- so nothing ever closed it, a stale sentinel sat open, and the
+    # next unrelated red `main` appended to it and conflated two incidents. A
+    # promise in an issue body that no code keeps is worse than no promise. The
+    # green path is a ~10s no-op when no sentinel is open, which is the common
+    # case.
+    if: >-
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.conclusion != 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+      - name: File, append to, or close the main-red sentinel
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: |
+          set -euo pipefail
+          short=$(printf '%s' "$SHA" | cut -c1-7)
+          line="\`$short\` — **$CONCLUSION** — [gates run]($RUN_URL)"
+
+          # DID THE GATES ACTUALLY RUN? (#461 round 4, BUG-1)
+          #
+          # `conclusion` alone cannot answer this. Every gate step in
+          # `pr-gates.yml` is `if: steps.scope.outputs.code == 'true'`, so a
+          # docs- or measurements-only push skips all of them and the job
+          # still concludes `success`. Measured 2026-10-31: 26 of the last 40
+          # commits on `main` were that shape -- several a day, every day.
+          #
+          # Acting on it was the live defect: a green-but-empty run CLOSED the
+          # sentinel and commented "`pr-gates` passed on the merge result",
+          # which is false. Applied to the 2026-10-20 incident this file
+          # exists to report, the sentinel would have closed the same
+          # afternoon.
+          #
+          # So ask the jobs API for the conclusion of the one step that runs
+          # only when the gates do. `skipped` there means the run asserted
+          # nothing: neither open a sentinel nor close one, exactly as the
+          # `conclusion != 'skipped'` job filter already does for a run that
+          # never started.
+          asserted=$(gh api "repos/$GH_REPO/actions/runs/$RUN_ID/jobs" \
+                       --jq '[.jobs[].steps[]
+                             | select(.name == "GATES ASSERTED")
+                             | .conclusion] | first // "absent"' \
+                     2>/dev/null || echo "unreadable")
+          echo "GATES ASSERTED step: $asserted"
+
+          # THE MARKER ONLY DISAMBIGUATES A *GREEN* RUN (#461 round 5).
+          #
+          # The first version of this check gated BOTH paths on the marker and
+          # that was strictly worse than the bug it fixed: an `if:` with no
+          # status-check function carries an implicit `success()`, so the
+          # marker is `skipped` whenever an EARLIER step in the job failed --
+          # which is every genuinely red run. Measured on this repo's own run
+          # 41097631280 (`pr-gates`, conclusion `failure`): steps 14, 15 and 16
+          # all carry the identical `if:` and all read `skipped`. A
+          # pending-cancelled run (40643796437) returns `steps: []` -> `absent`.
+          #
+          # So a red `main`, a cancelled run and a timed-out run ALL filed
+          # nothing. The workflow became a no-op on the exact path #461 exists
+          # for, and the test written for it asserted that silence.
+          #
+          # A non-green conclusion IS the verdict and must always reach a
+          # person -- that is this file's whole premise, and `skipped` runs are
+          # already excluded by the job `if:` above. The marker answers only
+          # the narrower question round 4 raised: a run that concluded
+          # `success` having executed no gate must not CLOSE a sentinel.
+          if [ "$CONCLUSION" = success ]; then
+            if [ "$asserted" = "absent" ]; then
+              # Drift between the two files, on the only path where the marker
+              # is load-bearing. Loud, because a silently-degraded close is how
+              # round 4's defect shipped.
+              echo "::error::no 'GATES ASSERTED' step on run $RUN_ID —" \
+                   "pr-gates.yml and this reporter have drifted apart;" \
+                   "refusing to close anything on an unverifiable green"
+              exit 1
+            fi
+            if [ "$asserted" != "success" ]; then
+              # Includes `unreadable` (a 403, a rate limit, a bad gateway).
+              # Declining to close is the conservative direction: the sentinel
+              # stays open and a person still sees it.
+              echo "::notice::green at $short but the gates did not run" \
+                   "(step: $asserted) — nothing was asserted, so nothing is closed"
+              exit 0
+            fi
+          fi
+
+          # THE SENTINEL IS FOUND CLIENT-SIDE, NOT WITH `--search`.
+          #
+          # Round 1 used `--search '"[main-red]" in:title'`. GitHub's search
+          # tokenizer strips `[`, `]` and `-`, so that phrase degrades to the
+          # two words `main red` and matches any open issue whose title holds
+          # both. MEASURED 2026-10-28 against this repo: it returns #461,
+          # "pr-gates never runs on main, so a red main is invisible" -- the
+          # issue this work closes. The first red `main` would have commented
+          # there instead of filing a sentinel, and the quoting looks exact,
+          # so nothing about the call site suggests otherwise.
+          #
+          # `jq startswith` is a plain string comparison with no tokenizer in
+          # front of it, which is the property actually needed here.
+          issues=$(gh issue list --repo "$GH_REPO" --state open \
+                     --limit 500 --json number,title)
+          # Counted into a variable first. Inside an `if` condition errexit is
+          # suspended, so a `$(...)` that failed there would be swallowed and
+          # only surface at the NEXT jq call, as a confusing error in the wrong
+          # place. A truncated list would silently file a DUPLICATE sentinel, so
+          # the cap announces itself rather than degrading quietly.
+          open_count=$(printf '%s' "$issues" | jq 'length')
+          if [ "$open_count" -ge 500 ]; then
+            echo "::warning::open-issue list hit the 500 cap; a second [main-red] issue may be filed"
+          fi
+          sentinels=$(printf '%s' "$issues" \
+                        | jq -r '[.[] | select(.title | startswith("[main-red] "))] | .[].number')
+
+          # GREEN: keep the promise the sentinel body makes.
+          if [ "$CONCLUSION" = success ]; then
+            if [ -z "$sentinels" ]; then
+              echo "::notice::main is green at $short and no [main-red] sentinel is open"
+              exit 0
+            fi
+            # EVERY open sentinel, not just the first. Two can exist if the
+            # 500-cap warning above ever fires, and leaving one behind is the
+            # stale-sentinel bug this branch exists to prevent.
+            for n in $sentinels; do
+              cat > "$RUNNER_TEMP/body.md" <<EOF
+          Green again on \`main\` at $line
+
+          Closing: \`pr-gates\` passed on the merge result. A later red commit files a
+          fresh sentinel rather than reopening this one, so each issue covers exactly
+          one stretch of red.
+          EOF
+              gh issue comment "$n" --repo "$GH_REPO" --body-file "$RUNNER_TEMP/body.md"
+              gh issue close "$n" --repo "$GH_REPO"
+              echo "::notice::closed #$n — main is green at $short"
+            done
+            exit 0
+          fi
+
+          # NOT `printf ... | head -n 1`. `head` exits after its first line, so
+          # under `pipefail` that pipeline reports 141 once the upstream is big
+          # enough to still be writing -- the identical defect as the dedup
+          # below, and here it would kill the step and leave a red `main`
+          # unreported. Unreachable at `--limit 500` (a few KB of issue numbers,
+          # well under the 64 KB pipe buffer), but measured to fire at 20,000
+          # lines, so it is removed rather than left as a landmine. Parameter
+          # expansion takes the first line with no process and no pipe.
+          existing=${sentinels%%$'\n'*}
+          if [ -n "$existing" ]; then
+            extra=$(printf '%s' "$sentinels" | grep -cv '^$' || true)
+            if [ "$extra" -gt 1 ]; then
+              echo "::warning::$extra open [main-red] sentinels; appending to #$existing only"
+            fi
+            # One comment per red commit. `main` staying red over six commits
+            # is ONE situation, not six, and a re-run of this workflow must not
+            # append the same SHA twice.
+            #
+            # THE BODIES ARE CAPTURED FIRST, NOT PIPED INTO `grep -q`.
+            # `grep -q` exits at the first match; under `set -o pipefail` the
+            # upstream `gh` then dies of SIGPIPE and the PIPELINE reports 141,
+            # not 0 -- so the `if` took the FALSE branch and posted a duplicate
+            # comment for a SHA already recorded. MEASURED: identical code over
+            # a 3 MB stream gives rc=141, over a one-line stream gives rc=0,
+            # which is why the idempotence test passed with a small fixture and
+            # the real thing would have broken on any thread with ~64 KB of
+            # comments after the match -- roughly 280 auto-comments, or one
+            # pasted CI log. A failing `gh` inside this assignment still aborts
+            # the step, which is the safe direction.
+            # `body` AND `comments`. The FIRST red commit of a stretch has its
+            # SHA recorded only in the issue's title and body -- it was never a
+            # comment -- so reading `comments` alone made that one commit
+            # invisible to the dedup, and a re-run of pr-gates for it appended a
+            # duplicate report of a SHA already on the issue. The script's own
+            # promise above ("must not append the same SHA twice") was false for
+            # exactly the commit that opens every red stretch. Both tests missed
+            # it because both seed the SHA as a COMMENT, which is the
+            # second-and-later case.
+            bodies=$(gh issue view "$existing" --repo "$GH_REPO" \
+                       --json body,comments \
+                       --jq '[.body] + [.comments[].body] | .[]')
+            # The backticks are part of the match, so a bare hex run elsewhere
+            # in the thread cannot suppress a real report.
+            if grep -qF -- "\`$short\`" <<<"$bodies"; then
+              echo "::notice::#$existing already records $short — not commenting twice"
+              exit 0
+            fi
+            cat > "$RUNNER_TEMP/body.md" <<EOF
+          Still red on \`main\` at $line
+
+          \`pr-gates\` did not pass on the merge result. Each entry here is one red
+          commit on \`main\`; this issue is closed automatically by the next push to
+          \`main\` whose gates pass.
+          EOF
+            gh issue comment "$existing" --repo "$GH_REPO" --body-file "$RUNNER_TEMP/body.md"
+            echo "::notice::appended $short to #$existing"
+            exit 0
+          fi
+
+          cat > "$RUNNER_TEMP/body.md" <<EOF
+          \`main\` is red. \`pr-gates\` runs on pushes to \`main\` (#461) and did not pass
+          at $line
+
+          **Why this is filed and not just a red run:** every other \`pr-gates\` leg
+          asserts against \`<branch> + main-at-the-time\`, never against \`main\` as it
+          ends up, so a pair of individually-green PRs can land a red \`main\`. That
+          happened on 2026-10-20 and was found a day later only because PR #451 merged
+          \`main\` in and inherited the failure. Neither \`workflow_run\` listener on
+          \`pr-gates\` acts on a push run — \`agent-merge\` demands
+          \`workflow_run.event == 'pull_request'\`, \`qa-on-green\` exits on "No open PR
+          on \`main\`" — so this workflow is the only thing that reports it.
+
+          **What to do:** read the run above. Fix forward on a branch; do not push to
+          \`main\`. Further red commits are appended here as comments rather than filed
+          separately — \`main\` staying red is one situation, not one per commit. This
+          issue closes itself on the next push to \`main\` whose gates pass.
+          EOF
+          gh issue create --repo "$GH_REPO" \
+            --title "[main-red] pr-gates did not pass on main at $short" \
+            --label bug \
+            --body-file "$RUNNER_TEMP/body.md"
+          echo "::notice::filed a new [main-red] issue for $short"
