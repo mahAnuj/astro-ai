@@ -1,30 +1,29 @@
 {
-  "generated_at": "2026-10-31T15:57:24Z",
+  "generated_at": "2026-10-31T20:23:56Z",
   "repo": "mahAnuj/astro-ai",
   "objective": "Move the 6–20 position band into the top 5 on the ten highest-impression queries.",
-  "open": 136,
-  "with_ask": 57,
+  "open": 128,
+  "with_ask": 53,
   "by_area": {
-    "UNCLASSIFIED": 50,
+    "UNCLASSIFIED": 46,
     "INFRA": 15,
     "UI": 12,
     "REDESIGN": 10,
-    "NUMEROLOGY": 7,
     "FEATURE": 7,
+    "NUMEROLOGY": 6,
     "DETECT_STALLS": 3,
     "BUG": 3,
     "SEO": 3,
-    "SECURITY": 3,
     "MEASURE": 2,
     "CONTENT": 2,
-    "AGENT-MERGE": 2,
+    "SECURITY": 2,
     "RASHIFAL": 2,
     "DESIGN": 2,
     "CHORE": 2,
     "PRIVACY": 1,
     "REPO": 1,
     "CHART": 1,
-    "GATES": 1,
+    "AGENT-MERGE": 1,
     "ASK": 1,
     "ARCHITECTURE": 1,
     "KUNDLI": 1,
@@ -34,22 +33,37 @@
     "MATCHING": 1
   },
   "by_type": {
-    "bug": 38,
-    "untyped": 38,
+    "bug": 35,
+    "untyped": 35,
     "enhancement": 27,
-    "correctness": 12,
+    "correctness": 11,
     "design": 8,
-    "chore": 7,
-    "ui": 6
+    "ui": 6,
+    "chore": 6
   },
   "by_priority": {
-    "unset": 92,
-    "high": 22,
-    "medium": 21,
+    "unset": 89,
+    "medium": 20,
+    "high": 18,
     "low": 1
   },
-  "blocked": 8,
+  "blocked": 7,
   "rows": [
+    {
+      "number": 628,
+      "title": "/admin/ops misreports loop health two ways: loop-outcomes' contract exit reads as a failure, and a weekly loop's failure is invisible 6 days in 7",
+      "ask": "",
+      "area": "UNCLASSIFIED",
+      "type": "bug",
+      "priority": "unset",
+      "labels": [
+        "bug"
+      ],
+      "created": "2026-10-31T19:57:13Z",
+      "updated": "2026-10-31T19:57:13Z",
+      "blocked": false,
+      "needs_evidence": false
+    },
     {
       "number": 618,
       "title": "The production verifier POSTs real user forms, so every verify fires an owner Telegram alert — 4-6 identical ones a day",
@@ -123,7 +137,7 @@
         "provenance:trusted"
       ],
       "created": "2026-10-30T15:03:21Z",
-      "updated": "2026-10-30T15:03:21Z",
+      "updated": "2026-10-31T19:43:13Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -406,26 +420,6 @@
       "needs_evidence": false
     },
     {
-      "number": 543,
-      "title": "Nothing executes the shell `repro:` dialect, so step 0's probe has run on 0 of 123 open issues",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "chore",
-      "priority": "medium",
-      "labels": [
-        "category:technical",
-        "priority:medium",
-        "chore",
-        "qa-fail",
-        "provenance:trusted",
-        "qa:independent"
-      ],
-      "created": "2026-10-26T05:05:03Z",
-      "updated": "2026-10-31T15:09:15Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 528,
       "title": "privacy: the visitor's /ask question travels in the URL and is recorded by GA4 as a landing page",
       "ask": "",
@@ -679,23 +673,6 @@
       "needs_evidence": false
     },
     {
-      "number": 461,
-      "title": "pr-gates never runs on main, so a red main is invisible — two independently-green PRs made main red for a day and nothing reported it",
-      "ask": "Add main to pr-gates.yml's push: branches.",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug",
-        "qa-pass",
-        "qa:independent"
-      ],
-      "created": "2026-10-21T04:44:34Z",
-      "updated": "2026-10-31T14:35:08Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 460,
       "title": "resolve_union corrupts a mutation row when the conflict is intra-row, and only the anchor pre-flight notices",
       "ask": "",
@@ -871,7 +848,7 @@
         "qa:in-cycle"
       ],
       "created": "2026-10-20T02:24:10Z",
-      "updated": "2026-10-28T17:49:57Z",
+      "updated": "2026-10-31T16:27:29Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -919,39 +896,6 @@
       ],
       "created": "2026-10-17T15:01:50Z",
       "updated": "2026-10-17T17:25:24Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 407,
-      "title": "gates: verify_hindi_surface returns PASS against an app answering 500 on every URL — the Devanagari floor is applied only to a 200",
-      "ask": "",
-      "area": "GATES",
-      "type": "untyped",
-      "priority": "high",
-      "labels": [
-        "category:technical",
-        "priority:high",
-        "provenance:trusted"
-      ],
-      "created": "2026-10-17T09:17:53Z",
-      "updated": "2026-10-21T15:56:53Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 406,
-      "title": "agent-merge: qa-fail is write-only — nothing removes it, so one failed QA round strands a PR until a human intervenes",
-      "ask": "",
-      "area": "AGENT-MERGE",
-      "type": "untyped",
-      "priority": "high",
-      "labels": [
-        "category:technical",
-        "priority:high"
-      ],
-      "created": "2026-10-17T08:49:53Z",
-      "updated": "2026-10-17T08:49:53Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1213,39 +1157,6 @@
       "created": "2026-10-15T14:32:55Z",
       "updated": "2026-10-16T20:41:28Z",
       "blocked": true,
-      "needs_evidence": false
-    },
-    {
-      "number": 358,
-      "title": "security: a fork-chosen branch name is interpolated into `run:` shell in `agent-merge`, which holds a repo-write token and has no fork guard",
-      "ask": "Never interpolate a PR-controlled value into run:.",
-      "area": "SECURITY",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high",
-        "needs-human-review"
-      ],
-      "created": "2026-10-15T13:50:51Z",
-      "updated": "2026-10-15T14:11:18Z",
-      "blocked": true,
-      "needs_evidence": false
-    },
-    {
-      "number": 357,
-      "title": "`agent-merge` is edge-triggered only, so a docs-only PR strands: `pr-gates` skips its suite in 9s and wakes the merge 60s before `verify-build` finishes",
-      "ask": "Add a scheduled job that re-evaluates open PRs carrying qa-pass whose every check has",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "high",
-      "labels": [
-        "bug",
-        "priority:high"
-      ],
-      "created": "2026-10-15T13:50:45Z",
-      "updated": "2026-10-15T14:11:16Z",
-      "blocked": false,
       "needs_evidence": false
     },
     {
@@ -1743,19 +1654,6 @@
       "needs_evidence": false
     },
     {
-      "number": 232,
-      "title": "rashifal page: memoise the blast text so twelve concurrent reads become one GCS call",
-      "ask": "",
-      "area": "UNCLASSIFIED",
-      "type": "untyped",
-      "priority": "unset",
-      "labels": [],
-      "created": "2026-09-01T18:01:50Z",
-      "updated": "2026-10-20T22:18:53Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 231,
       "title": "Cosmic Card is served as SVG, so snapshot og:image previews fail on every major platform",
       "ask": "Rasterise to PNG.",
@@ -1765,21 +1663,6 @@
       "labels": [],
       "created": "2026-08-31T17:52:23Z",
       "updated": "2026-08-31T17:52:23Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
-      "number": 230,
-      "title": "prompts/*.txt assert sourced astrological claims, and no gate can see them",
-      "ask": "Where the corpus supports the claim, cite the book we hold — chart.py now does this as Rao, Vedic Astrology: An Integrated Approach §11.2.1, and ae35b3a re-cited five more yogas",
-      "area": "UNCLASSIFIED",
-      "type": "bug",
-      "priority": "unset",
-      "labels": [
-        "bug"
-      ],
-      "created": "2026-08-30T07:22:10Z",
-      "updated": "2026-08-30T07:22:10Z",
       "blocked": false,
       "needs_evidence": false
     },
@@ -1998,21 +1881,6 @@
       "needs_evidence": false
     },
     {
-      "number": 163,
-      "title": "numerology: two compatibility tables disagree on 23 of 45 pairs; 3 table rows are unreachable",
-      "ask": "",
-      "area": "NUMEROLOGY",
-      "type": "correctness",
-      "priority": "unset",
-      "labels": [
-        "astrology-correctness"
-      ],
-      "created": "2026-08-08T08:47:35Z",
-      "updated": "2026-08-26T14:54:55Z",
-      "blocked": false,
-      "needs_evidence": false
-    },
-    {
       "number": 159,
       "title": "[FEATURE] Local RAG index over knowledge/*.md + data/ books for citation-bearing rule lookup",
       "ask": "",
@@ -2134,7 +2002,7 @@
         "priority:high"
       ],
       "created": "2026-07-31T04:30:11Z",
-      "updated": "2026-10-09T22:26:56Z",
+      "updated": "2026-10-31T19:43:20Z",
       "blocked": false,
       "needs_evidence": false
     },
